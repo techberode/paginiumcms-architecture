@@ -1,0 +1,10 @@
+# ============================================
+# PAGINIUMCMS - CONTENT OCHRANA
+# ============================================
+
+# Úplný zákaz priameho prístupu k obsahu
+Order Deny,Allow
+Deny from all
+
+# Povoliť len prístup cez API
+# Všetok obsah sa pristupuje cez PHP

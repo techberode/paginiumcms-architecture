@@ -88,3 +88,5 @@ interface TwoFactorInterface
      */
     public function generateSecret(): string;
 }
+
+    public function isTotpVerified(User $user): bool;

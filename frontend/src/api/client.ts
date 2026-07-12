@@ -1,82 +1,173 @@
 // frontend/src/api/client.ts
-import axios, { type AxiosInstance, type AxiosError } from 'axios';
-import type { ApiError } from './types';
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
+
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  message?: string;
+}
+
+export interface ApiError {
+  success: false;
+  error: string;
+  status?: number;
+}
+
 class ApiClient {
   private client: AxiosInstance;
+  private static instance: ApiClient;
 
-  constructor() {
+  private constructor() {
     this.client = axios.create({
       baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080',
+      timeout: 30000,
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
       withCredentials: true,
     });
 
-    // Request interceptor pre CSRF token
-    this.client.interceptors.request.use((config) => {
-      const token = localStorage.getItem('csrf_token');
-      if (token) {
-        config.headers['X-CSRF-Token'] = token;
-      }
-      return config;
-    });
+    // Request interceptor
+    this.client.interceptors.request.use(
+      (config) => {
+        // Pridanie CSRF tokenu
+        const csrfToken = this.getCsrfToken();
+        if (csrfToken) {
+          config.headers['X-CSRF-TOKEN'] = csrfToken;
+        }
 
-    // Response interceptor pre spracovanie chýb
+        // Pridanie Authorization header ak existuje
+        const token = localStorage.getItem('auth_token');
+        if (token) {
+          config.headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        return config;
+      },
+      (error) => Promise.reject(error)
+    );
+
+    // Response interceptor
     this.client.interceptors.response.use(
       (response) => response,
-                                          (error: AxiosError<ApiError>) => {
-                                            if (error.response?.status === 401) {
-                                              localStorage.removeItem('auth_user');
-                                              window.dispatchEvent(new CustomEvent('auth:logout'));
-                                            }
-                                            return Promise.reject(error);
-                                          }
+      (error: AxiosError) => {
+        if (error.response?.status === 401) {
+          // Redirect na login
+          window.location.href = '/login';
+        }
+        return Promise.reject(error);
+      }
     );
   }
 
-  // GET request
-  async get<T>(url: string, params?: Record<string, unknown>): Promise<T> {
-    const response = await this.client.get<T>(url, { params });
-    return response.data;
+  public static getInstance(): ApiClient {
+    if (!ApiClient.instance) {
+      ApiClient.instance = new ApiClient();
+    }
+    return ApiClient.instance;
   }
 
+  private getCsrfToken(): string | null {
+    return localStorage.getItem('csrf_token') || null;
+  }
+
+  public setAuthToken(token: string): void {
+    localStorage.setItem('auth_token', token);
+  }
+
+  public clearAuthToken(): void {
+    localStorage.removeItem('auth_token');
+  }
+
+  public setCsrfToken(token: string): void {
+    localStorage.setItem('csrf_token', token);
+  }
+
+  // GET request
+  public async get<T = any>(
+    url: string,
+    config?: AxiosRequestConfig
+  ): Promise<ApiResponse<T>> {
+    try {
+      const response: AxiosResponse<ApiResponse<T>> = await this.client.get(url, config);
+      return response.data;
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
 
   // POST request
-  async post<T>(url: string, data?: unknown): Promise<T> {
-    const response = await this.client.post<T>(url, data);
-    return response.data;
+  public async post<T = any>(
+    url: string,
+    data?: any,
+    config?: AxiosRequestConfig
+  ): Promise<ApiResponse<T>> {
+    try {
+      const response: AxiosResponse<ApiResponse<T>> = await this.client.post(url, data, config);
+      return response.data;
+    } catch (error) {
+      return this.handleError(error);
+    }
   }
 
   // PUT request
-  async put<T>(url: string, data?: unknown): Promise<T> {
-    const response = await this.client.put<T>(url, data);
-    return response.data;
+  public async put<T = any>(
+    url: string,
+    data?: any,
+    config?: AxiosRequestConfig
+  ): Promise<ApiResponse<T>> {
+    try {
+      const response: AxiosResponse<ApiResponse<T>> = await this.client.put(url, data, config);
+      return response.data;
+    } catch (error) {
+      return this.handleError(error);
+    }
   }
 
   // DELETE request
-  async delete<T>(url: string): Promise<T> {
-    const response = await this.client.delete<T>(url);
-    return response.data;
+  public async delete<T = any>(
+    url: string,
+    config?: AxiosRequestConfig
+  ): Promise<ApiResponse<T>> {
+    try {
+      const response: AxiosResponse<ApiResponse<T>> = await this.client.delete(url, config);
+      return response.data;
+    } catch (error) {
+      return this.handleError(error);
+    }
   }
 
-  // CSRF token
-  async getCsrfToken(key?: string): Promise<string> {
+  // PATCH request
+  public async patch<T = any>(
+    url: string,
+    data?: any,
+    config?: AxiosRequestConfig
+  ): Promise<ApiResponse<T>> {
     try {
-      const response = await this.client.get<{ csrf_token: string }>('/auth/csrf-token', {
-        params: key ? { key } : undefined,
-      });
-      const token = response.data.csrf_token;
-      localStorage.setItem('csrf_token', token);
-      return token;
-    } catch {
-      // Fallback token pre vývoj
-      const fallbackToken = 'dev-' + Math.random().toString(36).substring(2);
-      localStorage.setItem('csrf_token', fallbackToken);
-      return fallbackToken;
+      const response: AxiosResponse<ApiResponse<T>> = await this.client.patch(url, data, config);
+      return response.data;
+    } catch (error) {
+      return this.handleError(error);
     }
+  }
+
+  private handleError(error: any): ApiResponse {
+    if (axios.isAxiosError(error)) {
+      const response = error.response?.data as ApiResponse;
+      return {
+        success: false,
+        error: response?.error || error.message,
+        message: response?.message || 'An error occurred',
+      };
+    }
+    return {
+      success: false,
+      error: error?.message || 'Unknown error occurred',
+    };
   }
 }
 
-// SPRÁVNY EXPORT - na úrovni MODULU (nie vo vnútri triedy!)
-export default new ApiClient();
+export const apiClient = ApiClient.getInstance();
+export default apiClient;

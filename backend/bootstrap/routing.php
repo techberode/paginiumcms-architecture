@@ -1,3 +1,5 @@
+use PsrHttpMessageServerRequestInterface as Request;
+use PsrHttpMessageResponseInterface as Response;
 <?php
 
 declare(strict_types=1);
@@ -11,9 +13,22 @@ use PaginiumCMS\Http\Middleware\AuthMiddleware;
 use PaginiumCMS\Http\Middleware\RoleMiddleware;
 use PaginiumCMS\Modules\Security\Services\AuthorizationManager;
 use DI\Container;
+use PaginiumCMS\Http\Controllers\Admin\CodeEditorController;
+use PaginiumCMS\Http\Controllers\Admin\VersionController;
+use PaginiumCMS\Http\Controllers\Admin\AuditTrailController;
 
 return function (App $app): void {
     $container = $app->getContainer();
+if ($container === null) {
+    throw new \RuntimeException("Container not available");
+}
+if ($container === null) {
+    throw new \RuntimeException("Container nie je dostupný");
+}
+    if ($container === null) {
+        throw new \RuntimeException('Container nie je dostupný');
+    }
+    $service = $container->get(SomeClass::class);
 
     // Registrácia auth routes
     $authRoutes = require __DIR__ . '/../app/Http/Routes/auth.php';

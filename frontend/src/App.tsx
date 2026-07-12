@@ -1,75 +1,67 @@
 // frontend/src/App.tsx
-import React, { useEffect, useState } from 'react';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import api from './api/client';
-
-interface Page {
-  id: number;
-  title: string;
-  slug: string;
-  content: string;
-}
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { ResponsiveLayout } from './components/layout/ResponsiveLayout';
+import { DashboardView } from './components/backend/DashboardView';
+import { PagesManager } from './components/backend/PagesManager';
+import { MarkdownEditor } from './components/backend/MarkdownEditor';
+import { BackupManager } from './components/backend/BackupManager';
+import { CodeEditor } from './components/CodeEditor/CodeEditor';
+import { AuditTrail } from './components/Audit/AuditTrail';
+import { LoginModal } from './components/frontend/LoginModal';
+import { useAuth } from './hooks/useAuth';
 
 function App() {
-  const [pages, setPages] = useState<Page[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetch('http://localhost:8080/api/pages')
-    .then(res => res.json())
-    .then(data => {
-      setPages(data);
-      setLoading(false);
-    })
-    .catch(err => {
-      console.error('Chyba načítania:', err);
-      setError('Nepodarilo sa načítať obsah');
-      setLoading(false);
-    });
-  }, []);
+  const { user, loading } = useAuth();
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-      <div className="text-xl text-gray-600">Načítavam obsah...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
       </div>
     );
   }
 
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-      <div className="text-xl text-red-600">{error}</div>
-      </div>
-    );
+  if (!user) {
+    return <LoginModal isOpen={true} onClose={() => {}} />;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-    <header className="bg-white shadow-sm border-b">
-    <div className="max-w-7xl mx-auto px-4 py-4">
-    <h1 className="text-2xl font-bold text-blue-600">PaginiumCMS</h1>
-    </div>
-    </header>
-
-    <main className="max-w-7xl mx-auto px-4 py-8">
-    <div className="grid gap-6 md:grid-cols-2">
-    {pages.map(page => (
-      <div key={page.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition">
-      <h2 className="text-xl font-semibold text-gray-800 mb-2">{page.title}</h2>
-      <div
-      className="text-gray-600 prose"
-      dangerouslySetInnerHTML={{ __html: page.content }}
-      />
-      <div className="mt-4 text-sm text-gray-400">
-      Slug: /{page.slug}
-      </div>
-      </div>
-    ))}
-    </div>
-    </main>
-    </div>
+    <ResponsiveLayout>
+      <Routes>
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/dashboard" element={<DashboardView />} />
+        <Route path="/pages" element={<PagesManager type="pages" />} />
+        <Route path="/pages/:slug" element={<MarkdownEditor type="page" />} />
+        <Route path="/articles" element={<PagesManager type="articles" />} />
+        <Route path="/articles/:slug" element={<MarkdownEditor type="article" />} />
+        <Route path="/code-editor" element={<CodeEditor />} />
+        <Route path="/code-editor/*" element={<CodeEditor />} />
+        <Route path="/backups" element={<BackupManager />} />
+        <Route path="/audit" element={<AuditTrail />} />
+        <Route path="/audit/content/:contentId" element={<AuditTrail />} />
+        <Route path="/audit/user/:userId" element={<AuditTrail />} />
+        <Route path="/settings" element={
+          <div className="card">
+            <div className="card-body">
+              <h2 className="text-xl font-semibold mb-4">Settings</h2>
+              <p className="text-gray-500 dark:text-gray-400">Settings page coming soon...</p>
+            </div>
+          </div>
+        } />
+        <Route path="*" element={
+          <div className="card">
+            <div className="card-body text-center py-12">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">404</h2>
+              <p className="text-gray-500 dark:text-gray-400 mt-2">Page not found</p>
+              <a href="/dashboard" className="btn btn-primary mt-4 inline-block">
+                Go to Dashboard
+              </a>
+            </div>
+          </div>
+        } />
+      </Routes>
+    </ResponsiveLayout>
   );
 }
 

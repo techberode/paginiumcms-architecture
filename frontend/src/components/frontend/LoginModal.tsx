@@ -1,151 +1,109 @@
-// src/components/frontend/LoginModal.tsx
+// frontend/src/components/frontend/LoginModal.tsx
 import React, { useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
+import { useToast } from '../../hooks/useToast';
 
-interface LoginModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-}
+export const LoginModal: React.FC = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
+  const toast = useToast();
 
-export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [twoFactorCode, setTwoFactorCode] = useState('');
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [showTwoFactor, setShowTwoFactor] = useState(false);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email || !password) {
+      toast.warning('Please fill in all fields');
+      return;
+    }
 
-    const { login, verifyLoginTwoFactor } = useAuth();
+    setLoading(true);
+    try {
+      const success = await login(email, password);
+      if (success) {
+        toast.success('Login successful!');
+      } else {
+        toast.error('Invalid email or password');
+      }
+    } catch (error) {
+      toast.error('Login failed');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    if (!isOpen) return null;
-
-    const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError('');
-        setLoading(true);
-
-        try {
-            await login(email, password);
-            // Ak je potrebná 2FA, zobrazí sa formulár
-            // (2FA sa rieši v AuthContext)
-            onClose();
-        } catch (err: any) {
-            setError(err.message || 'Prihlásenie zlyhalo');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleTwoFactorSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError('');
-        setLoading(true);
-
-        try {
-            await verifyLoginTwoFactor(twoFactorCode);
-            onClose();
-        } catch (err: any) {
-            setError(err.message || 'Overenie TOTP zlyhalo');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-8 max-w-md w-full">
-        <h2 className="text-2xl font-bold mb-4 dark:text-white">
-        {showTwoFactor ? 'Overenie TOTP' : 'Prihlásenie'}
-        </h2>
-
-        {error && (
-            <div className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 p-3 rounded mb-4">
-            {error}
-            </div>
-        )}
-
-        {!showTwoFactor ? (
-            <form onSubmit={handleLogin}>
-            <div className="mb-4">
-            <label className="block text-sm font-medium mb-1 dark:text-gray-300">Email</label>
-            <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            required
-            disabled={loading}
-            />
-            </div>
-
-            <div className="mb-4">
-            <label className="block text-sm font-medium mb-1 dark:text-gray-300">Heslo</label>
-            <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            required
-            disabled={loading}
-            />
-            </div>
-
-            <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 disabled:opacity-50"
-            >
-            {loading ? 'Prihlasovanie...' : 'Prihlásiť'}
-            </button>
-            </form>
-        ) : (
-            <form onSubmit={handleTwoFactorSubmit}>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-            Zadajte kód z Google Authenticator:
-            </p>
-
-            <div className="mb-4">
-            <label className="block text-sm font-medium mb-1 dark:text-gray-300">TOTP kód</label>
-            <input
-            type="text"
-            value={twoFactorCode}
-            onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-            className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white text-center text-2xl tracking-widest"
-            placeholder="000000"
-            maxLength={6}
-            required
-            disabled={loading}
-            />
-            </div>
-
-            <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 disabled:opacity-50"
-            >
-            {loading ? 'Overovanie...' : 'Overiť'}
-            </button>
-
-            <button
-            type="button"
-            onClick={() => {
-                setShowTwoFactor(false);
-                setError('');
-            }}
-            className="w-full mt-2 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-            >
-            Späť na prihlásenie
-            </button>
-            </form>
-        )}
-
-        <button
-        onClick={onClose}
-        className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-        >
-        ✕
-        </button>
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
+            PaginiumCMS
+          </h2>
+          <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+            Sign in to your account
+          </p>
         </div>
-        </div>
-    );
+        
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <div className="rounded-md shadow-sm -space-y-px">
+            <div>
+              <label htmlFor="email" className="sr-only">
+                Email address
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white dark:bg-gray-700 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Email address"
+              />
+            </div>
+            <div>
+              <label htmlFor="password" className="sr-only">
+                Password
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white dark:bg-gray-700 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Password"
+              />
+            </div>
+          </div>
+
+          <div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 disabled:opacity-50"
+              >
+              {loading ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Signing in...
+                </>
+              ) : (
+                'Sign in'
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 };
+
+export default LoginModal;

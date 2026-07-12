@@ -1,0 +1,70 @@
+# ============================================
+# PAGINIUMCMS - PRODUKČNÝ .HTACCESS
+# ============================================
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Redirect na HTTPS (produkcia)
+    RewriteCond %{HTTPS} off
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+    # Redirect z www na non-www
+    RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+    RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
+
+    # Neexistujúce súbory -> index.php
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [QSA,L]
+</IfModule>
+
+# ---------- BEZPEČNOSTNÉ HLAVIČKY ----------
+<IfModule mod_headers.c>
+    # HSTS (HTTP Strict Transport Security)
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+
+    # XSS ochrana
+    Header always set X-XSS-Protection "1; mode=block"
+
+    # Content Type ochrana
+    Header always set X-Content-Type-Options "nosniff"
+
+    # Frame ochrana
+    Header always set X-Frame-Options "DENY"
+
+    # Referrer politika
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # CSP (Content Security Policy)
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self'"
+
+    # Permissions-Policy
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), payment=()"
+
+    # Odstránenie informácií o serveri
+    Header always unset X-Powered-By
+    Header always unset Server
+</IfModule>
+
+# ---------- KOMPRESIA ----------
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css text/javascript
+    AddOutputFilterByType DEFLATE application/javascript application/json
+    AddOutputFilterByType DEFLATE application/xml application/rss+xml
+    AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# ---------- KONEČNÝ LOKALHOST PRE VÝVOJ ----------
+# Toto sa prepíše v produkcii
+# Odstráňte pre produkčné nasadenie
+<IfModule mod_rewrite.c>
+    RewriteCond %{REMOTE_ADDR} ^127\.0\.0\.1$
+    RewriteRule ^ - [L]
+</IfModule>
+
+# ---------- BLOKOVANIE ZLÝCH BOTOV ----------
+<IfModule mod_rewrite.c>
+    RewriteCond %{HTTP_USER_AGENT} (ahrefs|semrush|majestic|rogerbot|dotbot) [NC]
+    RewriteRule .* - [F,L]
+</IfModule>

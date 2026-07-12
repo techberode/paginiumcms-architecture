@@ -1,5 +1,5 @@
-// backend/app/Core/CodeEditor/Services/SyntaxChecker.php
 <?php
+// backend/app/Core/CodeEditor/Services/SyntaxChecker.php
 
 declare(strict_types=1);
 
