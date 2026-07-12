@@ -1,0 +1,15 @@
+{
+    "id": "backup_6a4b60930a3050.15205942",
+    "name": "Test Backup API",
+    "createdAt": "2026-07-06 08:00:19",
+    "size": 286898,
+    "sizeFormatted": "280.17 KB",
+    "filePath": "\/home\/maxxim\/projects\/paginiumcms-architecture\/backend\/bootstrap\/..\/storage\/backups\/2026-07-06_08-00-19_Test_Backup_API.zip",
+    "includes": [
+        "content",
+        "config",
+        "data"
+    ],
+    "version": "2.0",
+    "status": "completed"
+}

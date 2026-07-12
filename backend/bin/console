@@ -1,0 +1,17 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use Symfony\Component\Console\Application;
+use PaginiumCMS\Modules\Audit\Commands\RunAuditCommand;
+
+// Správna cesta k autoloaderu
+require_once __DIR__ . '/../../vendor/autoload.php';
+
+$app = require_once __DIR__ . '/../bootstrap/app.php';
+$container = $app->getContainer();
+
+$application = new Application('PaginiumCMS', '2.0');
+$application->add($container->get(RunAuditCommand::class));
+$application->run();

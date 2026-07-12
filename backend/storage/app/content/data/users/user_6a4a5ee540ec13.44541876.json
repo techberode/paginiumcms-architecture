@@ -1,0 +1,14 @@
+{
+    "id": "user_6a4a5ee540ec13.44541876",
+    "email": "test_6a4a5ee53fd44@example.com",
+    "passwordHash": "$argon2id$v=19$m=65536,t=4,p=1$bnpVNUNXYXBHTC4xc0MyUQ$uQyv2oGHJfRxQDxNX4SERNaUWTApH9UuAtwTDSeEzcY",
+    "roles": [
+        "USER"
+    ],
+    "name": "Test User",
+    "twoFactorEnabled": false,
+    "twoFactorSecret": null,
+    "twoFactorVerifiedAt": null,
+    "createdAt": 1783258853,
+    "updatedAt": 1783258853
+}
