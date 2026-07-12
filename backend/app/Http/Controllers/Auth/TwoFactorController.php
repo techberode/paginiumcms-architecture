@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Auth;
 
-use PaginiumCMS\Modules\Security\Contracts\TwoFactorInterface;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
+use PaginiumCMS\Modules\Security\Contracts\TwoFactorInterface;
 use PaginiumCMS\Modules\Security\Models\User;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;

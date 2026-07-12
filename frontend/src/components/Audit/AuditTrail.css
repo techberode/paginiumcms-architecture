@@ -1,0 +1,102 @@
+/* frontend/src/components/Audit/AuditTrail.css */
+.audit-trail-container {
+  @apply bg-white dark:bg-gray-800 rounded-lg shadow;
+}
+
+.audit-trail-header {
+  @apply px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center flex-wrap gap-2;
+}
+
+.audit-event {
+  @apply flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors;
+}
+
+.audit-event-icon {
+  @apply text-xl mt-0.5;
+}
+
+.audit-event-content {
+  @apply flex-1 min-w-0;
+}
+
+.audit-event-meta {
+  @apply flex items-center gap-2 flex-wrap;
+}
+
+.audit-event-action {
+  @apply font-medium text-sm;
+}
+
+.audit-event-severity {
+  @apply px-2 py-0.5 text-xs rounded-full;
+}
+
+.audit-event-severity-critical {
+  @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200;
+}
+
+.audit-event-severity-error {
+  @apply bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200;
+}
+
+.audit-event-severity-warning {
+  @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200;
+}
+
+.audit-event-severity-info {
+  @apply bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200;
+}
+
+.audit-event-message {
+  @apply text-sm text-gray-600 dark:text-gray-400 mt-1;
+}
+
+.audit-event-details {
+  @apply flex items-center gap-4 mt-1 text-xs text-gray-500 dark:text-gray-400;
+}
+
+.audit-event-time {
+  @apply text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap;
+}
+
+/* Stats */
+.audit-stats-grid {
+  @apply grid grid-cols-2 md:grid-cols-4 gap-4;
+}
+
+.audit-stats-item {
+  @apply p-4 bg-gray-50 dark:bg-gray-900 rounded-lg;
+}
+
+.audit-stats-label {
+  @apply text-sm text-gray-500 dark:text-gray-400;
+}
+
+.audit-stats-value {
+  @apply text-2xl font-bold;
+}
+
+/* Timeline */
+.audit-timeline {
+  @apply mt-4;
+}
+
+.audit-timeline-title {
+  @apply text-sm font-medium mb-2;
+}
+
+.audit-timeline-bars {
+  @apply flex items-end h-16 gap-1;
+}
+
+.audit-timeline-bar {
+  @apply flex-1 flex flex-col items-center;
+}
+
+.audit-timeline-bar-fill {
+  @apply w-full bg-indigo-500 dark:bg-indigo-400 rounded-t;
+}
+
+.audit-timeline-label {
+  @apply text-xs text-gray-500 dark:text-gray-400 mt-1;
+}

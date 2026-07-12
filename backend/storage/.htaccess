@@ -1,0 +1,37 @@
+# ============================================
+# PAGINIUMCMS - STORAGE OCHRANA
+# ============================================
+
+# Úplný zákaz prístupu
+Order Deny,Allow
+Deny from all
+
+# Povolenie prístupu len pre PHP súbory (nie je potrebné)
+# <FilesMatch "\.(php)$">
+#     Order Deny,Allow
+#     Deny from all
+# </FilesMatch>
+
+# Alebo povoliť len index.php v storage (ak existuje)
+<FilesMatch "index\.php$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
+
+# Blokovanie prístupu k .env a .git
+<FilesMatch "^\.">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
+
+# Blokovanie JSON súborov s dátami používateľov
+<FilesMatch "\.(json|yml|yaml)$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
+
+# Povolenie ZIP súborov pre zálohy (iba ak sú v podadresári backups)
+<LocationMatch "/backups/.*\.zip$">
+    Order Deny,Allow
+    Deny from all
+</LocationMatch>

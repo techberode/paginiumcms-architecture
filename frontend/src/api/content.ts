@@ -1,82 +1,99 @@
-// src/api/content.ts
-import api from './client';
-import type { Page, Article, Content } from './types';
+// frontend/src/api/content.ts
+import apiClient from './client';
+import { Page, Article, MediaFile } from './types';
 
 export const contentApi = {
   // Stránky
-  async getPages(): Promise<Page[]> {
-    const response = await api.get<{ pages: Page[] }>('/api/content/pages');
-    return response.pages;
-  },
+  pages: {
+    getAll: async (params?: { status?: string; author?: string }): Promise<Page[]> => {
+      const response = await apiClient.get<Page[]>('/api/pages', { params });
+      return response.data || [];
+    },
 
-  async getPage(slug: string): Promise<Page | null> {
-    try {
-      const response = await api.get<{ page: Page }>(`/api/content/pages/${slug}`);
-      return response.page;
-    } catch {
-      return null;
-    }
-  },
+    getBySlug: async (slug: string): Promise<Page> => {
+      const response = await apiClient.get<Page>(`/api/pages/${slug}`);
+      return response.data as Page;
+    },
 
-  async createPage(data: Partial<Page>): Promise<Page> {
-    const response = await api.post<{ page: Page }>('/api/content/pages', data);
-    return response.page;
-  },
+    create: async (data: Partial<Page>): Promise<Page> => {
+      const response = await apiClient.post<Page>('/api/pages', data);
+      return response.data as Page;
+    },
 
-  async updatePage(slug: string, data: Partial<Page>): Promise<Page> {
-    const response = await api.put<{ page: Page }>(`/api/content/pages/${slug}`, data);
-    return response.page;
-  },
+    update: async (slug: string, data: Partial<Page>): Promise<Page> => {
+      const response = await apiClient.put<Page>(`/api/pages/${slug}`, data);
+      return response.data as Page;
+    },
 
-  async deletePage(slug: string): Promise<void> {
-    await api.delete(`/api/content/pages/${slug}`);
+    delete: async (slug: string): Promise<{ success: boolean }> => {
+      const response = await apiClient.delete(`/api/pages/${slug}`);
+      return response.data as { success: boolean };
+    },
+
+    changeStatus: async (slug: string, status: 'draft' | 'published' | 'archived'): Promise<Page> => {
+      const response = await apiClient.patch<Page>(`/api/pages/${slug}/status`, { status });
+      return response.data as Page;
+    },
   },
 
   // Články
-  async getArticles(): Promise<Article[]> {
-    const response = await api.get<{ articles: Article[] }>('/api/content/articles');
-    return response.articles;
+  articles: {
+    getAll: async (params?: { status?: string; author?: string; tag?: string }): Promise<Article[]> => {
+      const response = await apiClient.get<Article[]>('/api/articles', { params });
+      return response.data || [];
+    },
+
+    getBySlug: async (slug: string): Promise<Article> => {
+      const response = await apiClient.get<Article>(`/api/articles/${slug}`);
+      return response.data as Article;
+    },
+
+    create: async (data: Partial<Article>): Promise<Article> => {
+      const response = await apiClient.post<Article>('/api/articles', data);
+      return response.data as Article;
+    },
+
+    update: async (slug: string, data: Partial<Article>): Promise<Article> => {
+      const response = await apiClient.put<Article>(`/api/articles/${slug}`, data);
+      return response.data as Article;
+    },
+
+    delete: async (slug: string): Promise<{ success: boolean }> => {
+      const response = await apiClient.delete(`/api/articles/${slug}`);
+      return response.data as { success: boolean };
+    },
   },
 
-  async getArticle(slug: string): Promise<Article | null> {
-    try {
-      const response = await api.get<{ article: Article }>(`/api/content/articles/${slug}`);
-      return response.article;
-    } catch {
-      return null;
-    }
-  },
+  // Médiá
+  media: {
+    upload: async (file: File): Promise<MediaFile> => {
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await apiClient.post<MediaFile>(
+        '/api/media/upload',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+      return response.data as MediaFile;
+    },
 
-  async createArticle(data: Partial<Article>): Promise<Article> {
-    const response = await api.post<{ article: Article }>('/api/content/articles', data);
-    return response.article;
-  },
+    getAll: async (params?: { type?: string; search?: string }): Promise<MediaFile[]> => {
+      const response = await apiClient.get<MediaFile[]>('/api/media', { params });
+      return response.data || [];
+    },
 
-  async updateArticle(slug: string, data: Partial<Article>): Promise<Article> {
-    const response = await api.put<{ article: Article }>(`/api/content/articles/${slug}`, data);
-    return response.article;
-  },
+    delete: async (path: string): Promise<{ success: boolean }> => {
+      const response = await apiClient.delete(`/api/media/${encodeURIComponent(path)}`);
+      return response.data as { success: boolean };
+    },
 
-  async deleteArticle(slug: string): Promise<void> {
-    await api.delete(`/api/content/articles/${slug}`);
-  },
-
-  // Obsah všeobecne
-  async getContent(path: string): Promise<Content | null> {
-    try {
-      const response = await api.get<{ content: Content }>(`/api/content/${path}`);
-      return response.content;
-    } catch {
-      return null;
-    }
-  },
-
-  async saveContent(path: string, data: Partial<Content>): Promise<Content> {
-    const response = await api.put<{ content: Content }>(`/api/content/${path}`, data);
-    return response.content;
-  },
-
-  async deleteContent(path: string): Promise<void> {
-    await api.delete(`/api/content/${path}`);
+    update: async (path: string, data: { altText?: string }): Promise<MediaFile> => {
+      const response = await apiClient.patch<MediaFile>(`/api/media/${encodeURIComponent(path)}`, data);
+      return response.data as MediaFile;
+    },
   },
 };

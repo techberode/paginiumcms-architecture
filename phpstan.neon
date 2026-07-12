@@ -1,0 +1,23 @@
+includes:
+    # Tu môžete neskôr pridať rozšírenia (napr. pre Slim framework, ak budú potrebné)
+
+parameters:
+    # Nastavenie prísnosti (Level 8 kontroluje typy, null hodnoty a striktné volania)
+    level: 8
+
+    # Priečinky, ktoré ideme analyzovať
+    paths:
+        - backend/app/Core
+        - backend/bootstrap
+
+    # Vynecháme zložky, kde sa kód nespúšťa (napr. vygenerovaná cache alebo knižnice tretích strán)
+    excludePaths:
+        - backend/vendor/*
+        - storage/*
+
+    # Povolíme analýzu moderných PHP 8.5 konštrukcií
+    phpVersion: 80500
+
+    # Ak narazíš na chybu, ktorú nevieme ovplyvniť (napr. z vfsStream v testoch), môžeme ju ignorovať tu:
+    ignoreErrors:
+        # Sem budeme pridávať výnimky neskôr, ak to bude nutné

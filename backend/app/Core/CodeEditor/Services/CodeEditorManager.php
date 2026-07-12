@@ -1,11 +1,13 @@
-// backend/app/Core/CodeEditor/Services/CodeEditorManager.php
 <?php
+// backend/app/Core/CodeEditor/Services/CodeEditorManager.php
 
 declare(strict_types=1);
 
 namespace PaginiumCMS\Core\CodeEditor\Services;
 
 use PaginiumCMS\Core\CodeEditor\Contracts\CodeEditorInterface;
+use PaginiumCMS\Core\AuditTrail\Services\AuditTrailService;
+use PaginiumCMS\Modules\Security\Models\User;
 
 class CodeEditorManager implements CodeEditorInterface
 {
