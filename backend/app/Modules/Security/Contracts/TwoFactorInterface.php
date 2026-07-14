@@ -98,5 +98,3 @@ interface TwoFactorInterface
      */
     public function isTwoFactorPassed(User $user): bool;
 }
-
-    public function isTotpVerified(User $user): bool;
