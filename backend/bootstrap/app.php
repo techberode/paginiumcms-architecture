@@ -40,6 +40,7 @@ use PaginiumCMS\Http\Controllers\Auth\TwoFactorController;
 use PaginiumCMS\Http\Controllers\Admin\BackupController;
 use PaginiumCMS\Http\Middleware\AuthMiddleware;
 use PaginiumCMS\Http\Middleware\RoleMiddleware;
+use PaginiumCMS\Http\Middleware\TwoFactorMiddleware;
 use PaginiumCMS\Core\Backup\Services\BackupManager;
 use PaginiumCMS\Core\Backup\Contracts\BackupInterface;
 use PaginiumCMS\Core\Logging\Services\Logger;
@@ -88,10 +89,22 @@ $containerBuilder->addDefinitions([
         return new FileDriver($cachePath);
     },
 
+    \PaginiumCMS\Core\Cache\Drivers\MemoryDriver::class => function () {
+        return new \PaginiumCMS\Core\Cache\Drivers\MemoryDriver();
+    },
+
+    \PaginiumCMS\Core\Cache\Drivers\ChainedDriver::class => function ($container) {
+        return new \PaginiumCMS\Core\Cache\Drivers\ChainedDriver(
+            $container->get(\PaginiumCMS\Core\Cache\Drivers\MemoryDriver::class),
+            $container->get(FileDriver::class)
+        );
+    },
+
     CacheManager::class => function ($container) {
         return new CacheManager(
-            $container->get(FileDriver::class),
-                                'paginium_'
+            $container->get(\PaginiumCMS\Core\Cache\Drivers\ChainedDriver::class),
+            'paginium_',
+            __DIR__ . '/../storage/cache/locks'
         );
     },
 
@@ -162,13 +175,14 @@ $containerBuilder->addDefinitions([
     // toho proxy (zvyčajne 127.0.0.1, ak nginx a PHP-FPM bežia na tom
     // istom stroji/kontajneri).
     RateLimitMiddleware::class => function ($container) {
+        $isTesting = (getenv('APP_ENV') === 'testing');
         return new RateLimitMiddleware(
             $container->get(CacheManager::class),
-                                       maxRequests: (int)($_ENV['RATE_LIMIT_MAX_REQUESTS'] ?? 60),
-                                       window: (int)($_ENV['RATE_LIMIT_WINDOW'] ?? 60),
-                                       excludedPaths: ['/api/health', '/api/test'],
-                                       excludedIps: [],
-                                       trustedProxies: array_filter(explode(',', (string)($_ENV['TRUSTED_PROXIES'] ?? '127.0.0.1,::1')))
+            maxRequests: $isTesting ? 100000 : (int)($_ENV['RATE_LIMIT_MAX_REQUESTS'] ?? 60),
+            window: $isTesting ? 60 : (int)($_ENV['RATE_LIMIT_WINDOW'] ?? 60),
+            excludedPaths: ['/api/health', '/api/test'],
+            excludedIps: $isTesting ? ['127.0.0.1', '::1'] : [],
+            trustedProxies: array_filter(explode(',', (string)($_ENV['TRUSTED_PROXIES'] ?? '127.0.0.1,::1')))
         );
     },
 
@@ -274,6 +288,12 @@ $containerBuilder->addDefinitions([
         );
     },
 
+    TwoFactorMiddleware::class => function ($container) {
+        return new TwoFactorMiddleware(
+            $container->get(TwoFactorInterface::class)
+        );
+    },
+
     // ============================================
     // 9. BACKUP
     // ============================================
@@ -299,7 +319,7 @@ $containerBuilder->addDefinitions([
 // 10. NAČÍTANIE LOGGING SLUŽIEB (Core moduly majú vlastný Config/services.php)
 // ============================================
 
-$loggingServices = require_once __DIR__ . '/../app/Core/Logging/Config/services.php';
+$loggingServices = require __DIR__ . '/../app/Core/Logging/Config/services.php';
 if (is_callable($loggingServices)) {
     $containerBuilder->addDefinitions($loggingServices);
 }
@@ -312,7 +332,7 @@ if (is_callable($loggingServices)) {
 // vôbec vytvoriť cez kontajner.
 // ============================================
 
-$httpServices = require_once __DIR__ . '/../app/Http/Config/services.php';
+$httpServices = require __DIR__ . '/../app/Http/Config/services.php';
 if (is_array($httpServices)) {
     $containerBuilder->addDefinitions($httpServices);
 }
@@ -396,20 +416,8 @@ $app->group('/api/auth', function (RouteCollectorProxy $group) use ($container) 
         $protected->get('/2fa/qr-code', [$twoFactorController, 'getQrCode']);
         $protected->get('/2fa/status', [$twoFactorController, 'getStatus']);
         $protected->post('/2fa/verify-login', [$twoFactorController, 'verifyLogin']);
-    })->add($container->get(AuthMiddleware::class));
-
-    $group->group('/admin', function (RouteCollectorProxy $admin) use ($container) {
-        $admin->get('/users', function ($request, $response) {
-            $response->getBody()->write(json_encode([
-                'success' => true,
-                'message' => 'Admin endpoint - users management (TODO)'
-            ]));
-            return $response->withStatus(200)->withHeader('Content-Type', 'application/json');
-        });
-    })->add(new RoleMiddleware(
-        $container->get(AuthorizationInterface::class),
-                               ['ADMIN', 'SUPER_ADMIN']
-    ))->add($container->get(AuthMiddleware::class));
+    })->add($container->get(TwoFactorMiddleware::class))
+        ->add($container->get(AuthMiddleware::class));
 });
 
 // ---------- BACKUP ROUTY ----------
@@ -421,7 +429,9 @@ $app->group('/api/admin', function (RouteCollectorProxy $group) use ($container)
     $group->get('/backups/{id}/download', [$backupController, 'downloadBackup']);
     $group->post('/backups/{id}/restore', [$backupController, 'restoreBackup']);
     $group->delete('/backups/{id}', [$backupController, 'deleteBackup']);
-})->add($container->get(AuthMiddleware::class));
+})->add(new RoleMiddleware($container->get(AuthorizationInterface::class), ['ADMIN', 'SUPER_ADMIN']))
+    ->add($container->get(TwoFactorMiddleware::class))
+    ->add($container->get(AuthMiddleware::class));
 
 // ---------- HEALTH CHECK ----------
 $app->get('/api/health', function ($request, $response) {
@@ -492,15 +502,33 @@ $app->any('/{path:.*}', function ($request, $response) {
         return $response->withStatus(204);
     }
 
-    $response->getBody()->write(json_encode([
+    $response->getBody()->write((string) json_encode([
+        'success' => false,
         'error' => 'Endpoint nenájdený',
-        'path' => $path
-    ], JSON_PRETTY_PRINT));
+        'path' => $path,
+    ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
     return $response
     ->withStatus(404)
     ->withHeader('Content-Type', 'application/json');
 });
+
+// ============================================
+// 16. JEDNOTNÝ ERROR HANDLER (Iterácia 4)
+//
+// Neošetrené výnimky sa prevedú na jednotný JSON obal
+// { success:false, error, ... }. ValidationException → 422 (+ errors),
+// Slim HttpException → jeho status, ostatné → 500.
+// Pridané tu (pred záverečným CORS obalom), takže CORS obal ostáva
+// najvrchnejší a error odpovede tiež dostanú CORS hlavičky.
+// display_error_details je zapnuté mimo produkcie.
+// ============================================
+
+$displayErrorDetails = getenv('APP_ENV') !== 'production';
+$errorMiddleware = $app->addErrorMiddleware($displayErrorDetails, true, true);
+$errorMiddleware->setDefaultErrorHandler(
+    new \PaginiumCMS\Http\Support\ApiErrorHandler($app->getResponseFactory())
+);
 
 // Pridanie CORS Middleware pre lokálny vývoj
 $app->add(function ($request, $handler) {

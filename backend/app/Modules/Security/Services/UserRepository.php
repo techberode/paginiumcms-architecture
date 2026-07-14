@@ -168,22 +168,6 @@ class UserRepository
         return $user;
     }
 
-    private function extract(User $user): array
-    {
-        return [
-            'id' => $user->getId(),
-            'email' => $user->getEmail(),
-            'passwordHash' => $user->getPasswordHash(),
-            'roles' => $user->getRoles(),
-            'name' => $user->getName(),
-            'twoFactorEnabled' => $user->isTwoFactorEnabled(),
-            'twoFactorSecret' => $user->getTwoFactorSecret(),
-            'createdAt' => $user->getCreatedAt(),
-            'updatedAt' => $user->getUpdatedAt(),
-        ];
-    }
-}
-
     public function saveResetToken(User $user, string $token): void
     {
         $data = $this->extract($user);
@@ -237,3 +221,20 @@ class UserRepository
         
         $this->writer->write($path, $json);
     }
+
+    private function extract(User $user): array
+    {
+        return [
+            'id' => $user->getId(),
+            'email' => $user->getEmail(),
+            'passwordHash' => $user->getPasswordHash(),
+            'roles' => $user->getRoles(),
+            'name' => $user->getName(),
+            'twoFactorEnabled' => $user->isTwoFactorEnabled(),
+            'twoFactorSecret' => $user->getTwoFactorSecret(),
+            'createdAt' => $user->getCreatedAt(),
+            'updatedAt' => $user->getUpdatedAt(),
+        ];
+    }
+}
+

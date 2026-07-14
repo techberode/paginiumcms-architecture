@@ -1,112 +1,120 @@
 // frontend/src/api/auth.ts
+// === Auth API (Iterácia 5 – session/HttpOnly cookie, bez Bearer tokenu) ===
 import apiClient from './client';
-import { User, LoginRequest, LoginResponse, RegisterRequest, RegisterResponse } from './types';
+import { User, LoginRequest, RegisterRequest } from './types';
+
+export interface LoginResult {
+  success: boolean;
+  user?: User;
+  requiresTwoFactor?: boolean;
+  error?: string;
+}
 
 export const authApi = {
-  // Prihlásenie
-  login: async (data: LoginRequest): Promise<LoginResponse> => {
-    const response = await apiClient.post<LoginResponse>('/api/auth/login', data);
-    if (response.success && response.data?.user) {
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      if (response.data.token) {
-        apiClient.setAuthToken(response.data.token);
-      }
+  login: async (data: LoginRequest): Promise<LoginResult> => {
+    const res = await apiClient.post<LoginResult & { requires_two_factor?: boolean; user?: User }>(
+      '/api/auth/login',
+      data
+    );
+    if (res.success && res.user) {
+      return { success: true, user: res.user, requiresTwoFactor: Boolean(res.requires_two_factor) };
     }
-    return response.data as LoginResponse;
+    return { success: false, error: res.error || 'Prihlásenie zlyhalo' };
   },
 
-  // Registrácia
-  register: async (data: RegisterRequest): Promise<RegisterResponse> => {
-    const response = await apiClient.post<RegisterResponse>('/api/auth/register', data);
-    return response.data as RegisterResponse;
+  register: async (data: RegisterRequest): Promise<LoginResult> => {
+    const res = await apiClient.post<{ user?: User }>('/api/auth/register', data);
+    if (res.success && res.user) {
+      return { success: true, user: res.user };
+    }
+    return { success: false, error: res.error || 'Registrácia zlyhala' };
   },
 
-  // Odhlásenie
-  logout: async (): Promise<{ success: boolean }> => {
-    const response = await apiClient.post('/api/auth/logout');
-    localStorage.removeItem('user');
-    apiClient.clearAuthToken();
-    return response.data as { success: boolean };
+  logout: async (): Promise<boolean> => {
+    const res = await apiClient.post('/api/auth/logout');
+    return Boolean(res.success);
   },
 
-  // Získanie aktuálneho používateľa
   getCurrentUser: async (): Promise<User | null> => {
-    const response = await apiClient.get<{ user: User }>('/api/auth/me');
-    if (response.success && response.data?.user) {
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      return response.data.user;
-    }
-    return null;
+    const res = await apiClient.get<{ user?: User }>('/api/auth/me');
+    return res.user ?? res.data?.user ?? null;
   },
 
-  // Zmena hesla
-  changePassword: async (oldPassword: string, newPassword: string): Promise<{ success: boolean }> => {
-    const response = await apiClient.post('/api/auth/change-password', {
+  changePassword: async (oldPassword: string, newPassword: string): Promise<boolean> => {
+    const res = await apiClient.post('/api/auth/change-password', {
       old_password: oldPassword,
       new_password: newPassword,
     });
-    return response.data as { success: boolean };
+    return Boolean(res.success);
   },
 
-  // Reset hesla
   resetPassword: async (email: string): Promise<{ success: boolean; token?: string }> => {
-    const response = await apiClient.post('/api/auth/reset-password', { email });
-    return response.data as { success: boolean; token?: string };
+    const res = await apiClient.post<{ token?: string }>('/api/auth/reset-password', { email });
+    return { success: Boolean(res.success), token: res.token };
   },
 
-  // Overenie reset tokenu
-  verifyResetToken: async (token: string, newPassword: string): Promise<{ success: boolean }> => {
-    const response = await apiClient.post('/api/auth/verify-reset-token', {
+  verifyResetToken: async (token: string, newPassword: string): Promise<boolean> => {
+    const res = await apiClient.post('/api/auth/verify-reset-token', {
       token,
       new_password: newPassword,
     });
-    return response.data as { success: boolean };
+    return Boolean(res.success);
   },
 
-  // CSRF token
-  getCsrfToken: async (key?: string): Promise<{ token: string }> => {
-    const response = await apiClient.get<{ token: string }>('/api/auth/csrf-token', {
+  getCsrfToken: async (key?: string): Promise<string | null> => {
+    const res = await apiClient.get<{ token?: string }>('/api/auth/csrf-token', {
       params: { key: key || 'default' },
     });
-    if (response.success && response.data?.token) {
-      apiClient.setCsrfToken(response.data.token);
+    const token = res.token ?? res.data?.token;
+    if (token) {
+      apiClient.setCsrfToken(token);
     }
-    return response.data as { token: string };
+    return token ?? null;
   },
 
-  // 2FA
   twoFactor: {
-    enable: async (): Promise<{ secret: string; qr_code: string; provisioning_uri: string }> => {
-      const response = await apiClient.post('/api/auth/2fa/enable');
-      return response.data as { secret: string; qr_code: string; provisioning_uri: string };
+    enable: async (): Promise<{ secret: string; qr_code: string; provisioning_uri: string } | null> => {
+      const res = await apiClient.post<{ secret: string; qr_code: string; provisioning_uri: string }>(
+        '/api/auth/2fa/enable'
+      );
+      if (res.secret && res.qr_code) {
+        return { secret: res.secret, qr_code: res.qr_code, provisioning_uri: res.provisioning_uri };
+      }
+      return res.data ?? null;
     },
 
-    disable: async (): Promise<{ success: boolean }> => {
-      const response = await apiClient.post('/api/auth/2fa/disable');
-      return response.data as { success: boolean };
+    disable: async (): Promise<boolean> => {
+      const res = await apiClient.post('/api/auth/2fa/disable');
+      return Boolean(res.success);
     },
 
-    verify: async (code: string): Promise<{ success: boolean }> => {
-      const response = await apiClient.post('/api/auth/2fa/verify', { code });
-      return response.data as { success: boolean };
+    verify: async (code: string): Promise<boolean> => {
+      const res = await apiClient.post('/api/auth/2fa/verify', { code });
+      return Boolean(res.success);
     },
 
     getStatus: async (): Promise<{ enabled: boolean; verified: boolean }> => {
-      const response = await apiClient.get('/api/auth/2fa/status');
-      return response.data as { enabled: boolean; verified: boolean };
+      const res = await apiClient.get<{ enabled: boolean; verified: boolean }>('/api/auth/2fa/status');
+      return {
+        enabled: Boolean(res.enabled ?? res.data?.enabled),
+        verified: Boolean(res.verified ?? res.data?.verified),
+      };
     },
 
-    getQrCode: async (): Promise<{ qr_code: string; provisioning_uri: string }> => {
-      const response = await apiClient.get('/api/auth/2fa/qr-code');
-      return response.data as { qr_code: string; provisioning_uri: string };
-    },
-
-    verifyLogin: async (code: string): Promise<{ success: boolean; user: User }> => {
-      const response = await apiClient.post('/api/auth/2fa/verify-login', { code });
-      if (response.success && response.data?.user) {
-        localStorage.setItem('user', JSON.stringify(response.data.user));
+    getQrCode: async (): Promise<{ qr_code: string; provisioning_uri: string } | null> => {
+      const res = await apiClient.get<{ qr_code: string; provisioning_uri: string }>('/api/auth/2fa/qr-code');
+      if (res.qr_code) {
+        return { qr_code: res.qr_code, provisioning_uri: res.provisioning_uri };
       }
-      return response.data as { success: boolean; user: User };
+      return res.data ?? null;
+    },
+
+    verifyLogin: async (code: string): Promise<LoginResult> => {
+      const res = await apiClient.post<{ user?: User }>('/api/auth/2fa/verify-login', { code });
+      if (res.success && res.user) {
+        return { success: true, user: res.user };
+      }
+      return { success: false, error: res.error || 'Neplatný TOTP kód' };
     },
   },
 };

@@ -73,17 +73,23 @@ class VersionManager implements VersionableInterface
         return empty($versions) ? null : $versions[0];
     }
 
+    /**
+     * @return array<int, Version>
+     */
     public function getVersions(string $contentId): array
     {
         $versions = [];
         $pattern = $this->getFullPath('') . $contentId . '_*.json';
-        $files = glob($pattern);
+        $files = glob($pattern) ?: [];
 
         foreach ($files as $file) {
             try {
                 $content = file_get_contents($file);
+                if ($content === false) {
+                    continue;
+                }
                 $data = json_decode($content, true);
-                if ($data) {
+                if (is_array($data)) {
                     $versions[] = $this->hydrate($data);
                 }
             } catch (\Exception) {
@@ -133,6 +139,9 @@ class VersionManager implements VersionableInterface
         return $deleted;
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function getDiff(string $contentId, int $from, int $to): ?array
     {
         $fromVersion = $this->getVersion($contentId, $from);
@@ -149,12 +158,41 @@ class VersionManager implements VersionableInterface
     {
         $path = $this->getVersionPath($version->getContentId(), $version->getVersion());
         $this->ensureDirectoryExists($path);
-        $this->writer->write($path, json_encode($version->toArray(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        $this->writer->write(
+            $path,
+            (string) json_encode($version->toArray(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+        );
     }
 
+    /**
+     * Rekonštruuje objekt Version z uložených dát.
+     *
+     * @param array<string, mixed> $data
+     */
     private function hydrate(array $data): Version
     {
         $version = new Version();
+
+        // ID je generované v konštruktore – prepíšeme ho uloženou hodnotou cez reflexiu.
+        // (setAccessible netreba: od PHP 8.1 je reflexia súkromných vlastností dostupná priamo.)
+        if (isset($data['id'])) {
+            $idProp = new \ReflectionProperty($version, 'id');
+            $idProp->setValue($version, (string) $data['id']);
+        }
+
+        $version
+            ->setContentId((string) ($data['contentId'] ?? ''))
+            ->setContentType((string) ($data['contentType'] ?? ''))
+            ->setVersion((int) ($data['version'] ?? 1))
+            ->setContent((string) ($data['content'] ?? ''))
+            ->setFrontMatter((string) ($data['frontMatter'] ?? ''))
+            ->setCreatedBy((string) ($data['createdBy'] ?? ''))
+            ->setMessage((string) ($data['message'] ?? ''));
+
+        if (isset($data['diff']) && is_array($data['diff'])) {
+            $version->setDiff($data['diff']);
+        }
+
         return $version;
     }
 

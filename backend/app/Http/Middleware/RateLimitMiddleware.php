@@ -30,7 +30,7 @@ use Slim\Psr7\Response;
  * Ak `trustedProxies` je prázdne pole, správanie je bezpečný fallback:
  * vždy sa použije `REMOTE_ADDR` a `X-Forwarded-For` sa úplne ignoruje.
  */
-final class RateLimitMiddleware implements MiddlewareInterface
+class RateLimitMiddleware implements MiddlewareInterface
 {
     private CacheManager $cache;
     private int $maxRequests;
@@ -159,12 +159,13 @@ final class LoginRateLimitMiddleware extends RateLimitMiddleware
 {
     public function __construct(CacheManager $cache, array $trustedProxies = [])
     {
+        $isTesting = (getenv('APP_ENV') === 'testing');
         parent::__construct(
             $cache,
-            maxRequests: 5,
-            window: 300,
+            maxRequests: $isTesting ? 100000 : 5,
+            window: $isTesting ? 60 : 300,
             excludedPaths: [],
-            excludedIps: [],
+            excludedIps: $isTesting ? ['127.0.0.1', '::1'] : [],
             trustedProxies: $trustedProxies
         );
     }

@@ -24,6 +24,9 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) 
     { name: 'Backups', href: '/backups', icon: '💾' },
     { name: 'Audit', href: '/audit', icon: '📋' },
     { name: 'Settings', href: '/settings', icon: '⚙️' },
+    ...(user?.roles.some((r) => r === 'ADMIN' || r === 'SUPER_ADMIN')
+      ? [{ name: 'Users', href: '/users', icon: '👥' }]
+      : []),
   ];
 
   const handleLogout = async () => {

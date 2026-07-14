@@ -10,9 +10,8 @@ class BackupControllerTest extends TestCase
 {
     public function testListBackups(): void
     {
-        $userData = $this->createTestUser();
-        $loginResult = $this->loginTestUser($userData['email'], $userData['password']);
-        $this->assertEquals(200, $loginResult['response']->getStatusCode());
+        $userData = $this->loginAsAdminUser();
+        $this->assertEquals(200, $userData['response']->getStatusCode());
 
         $request = $this->createJsonRequest('GET', '/api/admin/backups');
         $response = $this->handleRequest($request);
@@ -25,9 +24,8 @@ class BackupControllerTest extends TestCase
 
     public function testCreateBackup(): void
     {
-        $userData = $this->createTestUser();
-        $loginResult = $this->loginTestUser($userData['email'], $userData['password']);
-        $this->assertEquals(200, $loginResult['response']->getStatusCode());
+        $userData = $this->loginAsAdminUser();
+        $this->assertEquals(200, $userData['response']->getStatusCode());
 
         $request = $this->createJsonRequest('POST', '/api/admin/backups', [
             'name' => 'Test Backup API',
@@ -43,9 +41,8 @@ class BackupControllerTest extends TestCase
 
     public function testCreateBackupWithoutName(): void
     {
-        $userData = $this->createTestUser();
-        $loginResult = $this->loginTestUser($userData['email'], $userData['password']);
-        $this->assertEquals(200, $loginResult['response']->getStatusCode());
+        $userData = $this->loginAsAdminUser();
+        $this->assertEquals(200, $userData['response']->getStatusCode());
 
         $request = $this->createJsonRequest('POST', '/api/admin/backups', []);
         $response = $this->handleRequest($request);
@@ -57,9 +54,8 @@ class BackupControllerTest extends TestCase
 
     public function testDeleteBackup(): void
     {
-        $userData = $this->createTestUser();
-        $loginResult = $this->loginTestUser($userData['email'], $userData['password']);
-        $this->assertEquals(200, $loginResult['response']->getStatusCode());
+        $userData = $this->loginAsAdminUser();
+        $this->assertEquals(200, $userData['response']->getStatusCode());
 
         $createRequest = $this->createJsonRequest('POST', '/api/admin/backups', [
             'name' => 'Test Backup Delete',

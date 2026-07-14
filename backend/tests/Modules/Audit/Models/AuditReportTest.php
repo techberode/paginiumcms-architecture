@@ -22,37 +22,36 @@ class AuditReportTest extends TestCase
     }
 
     public function testAddIssue(): void
-{
-    $report = new AuditReport();
-    $issue = new AuditIssue(
-        AuditSeverity::WARNING,
-        'test',
-        'Test issue',
-        'Test description'
-    );
+    {
+        $report = new AuditReport();
+        $issue = new AuditIssue(
+            AuditSeverity::WARNING,
+            'test',
+            'Test issue',
+            'Test description'
+        );
 
-    $report->addIssue($issue);
+        $report->addIssue($issue);
 
-    $this->assertEquals(1, $report->getTotalIssues());
-    // WARNING neovplyvňuje isPassed() – stále vráti true
-    $this->assertTrue($report->isPassed());
-}
+        $this->assertEquals(1, $report->getTotalIssues());
+        $this->assertTrue($report->isPassed());
+    }
 
-public function testAddCriticalIssue(): void
-{
-    $report = new AuditReport();
-    $issue = new AuditIssue(
-        AuditSeverity::CRITICAL,
-        'test',
-        'Critical issue',
-        'Test description'
-    );
+    public function testAddCriticalIssue(): void
+    {
+        $report = new AuditReport();
+        $issue = new AuditIssue(
+            AuditSeverity::CRITICAL,
+            'test',
+            'Critical issue',
+            'Test description'
+        );
 
-    $report->addIssue($issue);
+        $report->addIssue($issue);
 
-    $this->assertEquals(1, $report->getTotalIssues());
-    $this->assertFalse($report->isPassed());
-}
+        $this->assertEquals(1, $report->getTotalIssues());
+        $this->assertFalse($report->isPassed());
+    }
 
     public function testGetIssuesBySeverity(): void
     {

@@ -1,106 +1,132 @@
 // frontend/src/components/frontend/LoginModal.tsx
-import React, { useState } from 'react';
+// === Prihlásenie + 2FA krok (Iterácia 5) ===
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
 
 export const LoginModal: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [totpCode, setTotpCode] = useState('');
+  const [step, setStep] = useState<'credentials' | 'totp'>('credentials');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, verifyTwoFactorLogin, pendingTwoFactor, user } = useAuth();
   const toast = useToast();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  useEffect(() => {
+    if (pendingTwoFactor && user) {
+      setStep('totp');
+    }
+  }, [pendingTwoFactor, user]);
+
+  const handleCredentials = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email || !password) {
-      toast.warning('Please fill in all fields');
+      toast.warning('Vyplňte e-mail a heslo');
       return;
     }
 
     setLoading(true);
     try {
-      const success = await login(email, password);
-      if (success) {
-        toast.success('Login successful!');
+      const outcome = await login(email, password);
+      if (outcome.success && outcome.requiresTwoFactor) {
+        setStep('totp');
+        toast.info('Zadajte TOTP kód z autentifikátora');
+      } else if (outcome.success) {
+        toast.success('Prihlásenie úspešné');
       } else {
-        toast.error('Invalid email or password');
+        toast.error('Neplatný e-mail alebo heslo');
       }
-    } catch (error) {
-      toast.error('Login failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTotp = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!totpCode.trim()) {
+      toast.warning('Zadajte TOTP kód');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const ok = await verifyTwoFactorLogin(totpCode.trim());
+      if (ok) {
+        toast.success('2FA overenie úspešné');
+      } else {
+        toast.error('Neplatný TOTP kód');
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4">
       <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
-            PaginiumCMS
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-            Sign in to your account
+        <div className="text-center">
+          <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white">PaginiumCMS</h2>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            {step === 'totp' ? 'Dvojfaktorové overenie' : 'Prihlásenie do administrácie'}
           </p>
         </div>
-        
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="email" className="sr-only">
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white dark:bg-gray-700 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white dark:bg-gray-700 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
-              />
-            </div>
-          </div>
 
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 disabled:opacity-50"
-              >
-              {loading ? (
-                <>
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  Signing in...
-                </>
-              ) : (
-                'Sign in'
-              )}
+        {step === 'credentials' ? (
+          <form className="mt-8 space-y-6" onSubmit={handleCredentials}>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="form-input w-full"
+              placeholder="E-mail"
+              autoComplete="email"
+            />
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="form-input w-full"
+              placeholder="Heslo"
+              autoComplete="current-password"
+            />
+            <button type="submit" disabled={loading} className="w-full btn btn-primary">
+              {loading ? 'Prihlasujem…' : 'Prihlásiť sa'}
             </button>
-          </div>
-        </form>
+          </form>
+        ) : (
+          <form className="mt-8 space-y-6" onSubmit={handleTotp}>
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={6}
+              required
+              value={totpCode}
+              onChange={(e) => setTotpCode(e.target.value)}
+              className="form-input w-full text-center text-2xl tracking-widest"
+              placeholder="000000"
+              autoComplete="one-time-code"
+            />
+            <button type="submit" disabled={loading} className="w-full btn btn-primary">
+              {loading ? 'Overujem…' : 'Overiť kód'}
+            </button>
+            <button
+              type="button"
+              className="w-full text-sm text-gray-500 hover:text-gray-700"
+              onClick={() => {
+                setStep('credentials');
+                setTotpCode('');
+              }}
+            >
+              Späť na prihlásenie
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );

@@ -6,9 +6,9 @@ declare(strict_types=1);
  * Konfigurácia PHP session pre produkčné prostredie.
  */
 
-// Importujeme reálne triedy z vášho chráneného jadra Core
-use PaginiumCMS\Core\Security\SessionManager;
-use PaginiumCMS\Core\Security\Models\User; // Upravte ak sa model User nachádza v inom priečinku (napr. Core\Auth\Models\User)
+// Importujeme reálne triedy z Security modulu
+use PaginiumCMS\Modules\Security\Services\SessionManager;
+use PaginiumCMS\Modules\Security\Models\User;
 
 // ---------- ZÁKLADNÉ NASTAVENIA ----------
 ini_set('session.cookie_httponly', '1');
