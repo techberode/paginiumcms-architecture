@@ -1,0 +1,223 @@
+<?php
+
+declare(strict_types=1);
+
+namespace PaginiumCMS\Core\Settings\Services;
+
+use InvalidArgumentException;
+use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
+use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
+use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
+use PaginiumCMS\Core\Settings\SettingsSchema;
+use PaginiumCMS\Core\Validation\Validator;
+use RuntimeException;
+
+/**
+ * === Služba: SettingsRepository ===
+ * Flat-file úložisko nastavení nad `data/settings.json` (Iterácia 4).
+ *
+ * Ukladá iba ODCHÝLKY od predvolieb zo schémy. Efektívne hodnoty pri čítaní
+ * vzniknú prekrytím predvolieb uloženými odchýlkami – budúce zmeny predvolieb
+ * sa tak prejavia bez migrácie súboru.
+ *
+ * Súbežnosť: celý cyklus "načítaj → uprav → zapíš" beží pod `flock(LOCK_EX)`
+ * (rovnaký princíp ako LockManager/ConflictLogger), takže paralelné uloženia
+ * sa navzájom neprepíšu.
+ */
+final class SettingsRepository implements SettingsRepositoryInterface
+{
+    private string $absolutePath;
+
+    public function __construct(
+        private FileReaderInterface $reader,
+        private FileWriterInterface $writer,
+        private Validator $validator,
+        private string $file = 'data/settings.json'
+    ) {
+        $this->absolutePath = rtrim($this->reader->getBasePath(), '/') . '/' . ltrim($this->file, '/');
+    }
+
+    public function all(): array
+    {
+        return $this->mergeWithDefaults($this->readOverrides());
+    }
+
+    public function group(string $group): array
+    {
+        return $this->all()[$group] ?? [];
+    }
+
+    public function get(string $key, mixed $default = null): mixed
+    {
+        $parts = explode('.', $key, 2);
+        $group = $parts[0];
+        $field = $parts[1] ?? null;
+        $all = $this->all();
+
+        if ($field === null) {
+            return $all[$group] ?? $default;
+        }
+
+        return $all[$group][$field] ?? $default;
+    }
+
+    public function setGroup(string $group, array $values): array
+    {
+        if (!SettingsSchema::hasGroup($group)) {
+            throw new InvalidArgumentException("Neznáma skupina nastavení: {$group}");
+        }
+
+        $rules = SettingsSchema::rulesFor($group);
+
+        // Prijmeme len polia definované v schéme (ochrana pred pretečením neznámych kľúčov).
+        $filtered = array_intersect_key($values, $rules);
+
+        // Vyhodí ValidationException (→ 422 cez jednotný Error Handler).
+        $validated = $this->validator->validate($filtered, $rules);
+
+        $this->withLockedOverrides(function (array &$overrides) use ($group, $validated): void {
+            $current = $overrides[$group] ?? [];
+            $overrides[$group] = array_merge($current, $validated);
+        });
+
+        return $this->group($group);
+    }
+
+    public function reset(): void
+    {
+        $this->withLockedOverrides(static function (array &$overrides): void {
+            $overrides = [];
+        });
+    }
+
+    // === Blok: Efektívne hodnoty (predvolby prekryté odchýlkami) ===
+
+    /**
+     * @param array<string, array<string, mixed>> $overrides
+     * @return array<string, array<string, mixed>>
+     */
+    private function mergeWithDefaults(array $overrides): array
+    {
+        $effective = SettingsSchema::defaults();
+
+        foreach ($effective as $group => $fields) {
+            $groupOverrides = $overrides[$group] ?? [];
+            foreach ($fields as $key => $default) {
+                if (array_key_exists($key, $groupOverrides)) {
+                    $effective[$group][$key] = $groupOverrides[$key];
+                }
+            }
+        }
+
+        return $effective;
+    }
+
+    // === Blok: Interná atomická práca s odchýlkami ===
+
+    /**
+     * @return array<string, array<string, mixed>>
+     */
+    private function readOverrides(): array
+    {
+        if (!$this->reader->exists($this->file)) {
+            return [];
+        }
+
+        try {
+            $decoded = json_decode($this->reader->read($this->file), true);
+        } catch (\Throwable) {
+            return [];
+        }
+
+        return is_array($decoded) ? $this->normalizeOverrides($decoded) : [];
+    }
+
+    /**
+     * @param array<mixed> $decoded
+     * @return array<string, array<string, mixed>>
+     */
+    private function normalizeOverrides(array $decoded): array
+    {
+        $overrides = [];
+        foreach ($decoded as $group => $fields) {
+            if (is_string($group) && is_array($fields)) {
+                $overrides[$group] = $fields;
+            }
+        }
+
+        return $overrides;
+    }
+
+    /**
+     * @param callable(array<string, array<string, mixed>>): void $mutator
+     */
+    private function withLockedOverrides(callable $mutator): void
+    {
+        $this->ensureStorage();
+
+        $handle = fopen($this->absolutePath, 'c+');
+        if ($handle === false) {
+            throw new RuntimeException('Nepodarilo sa otvoriť súbor nastavení: ' . $this->absolutePath);
+        }
+
+        try {
+            if (!flock($handle, LOCK_EX)) {
+                throw new RuntimeException('Nepodarilo sa získať exkluzívny zámok nastavení.');
+            }
+
+            $overrides = $this->readHandle($handle);
+            $before = json_encode($overrides);
+            $mutator($overrides);
+            $after = json_encode($overrides);
+
+            if ($after !== $before) {
+                $this->writeHandle($handle, $overrides);
+            }
+        } finally {
+            flock($handle, LOCK_UN);
+            fclose($handle);
+        }
+    }
+
+    /**
+     * @param resource $handle
+     * @return array<string, array<string, mixed>>
+     */
+    private function readHandle($handle): array
+    {
+        rewind($handle);
+        $raw = stream_get_contents($handle);
+        if ($raw === false || trim($raw) === '') {
+            return [];
+        }
+
+        $decoded = json_decode($raw, true);
+
+        return is_array($decoded) ? $this->normalizeOverrides($decoded) : [];
+    }
+
+    /**
+     * @param resource $handle
+     * @param array<string, array<string, mixed>> $overrides
+     */
+    private function writeHandle($handle, array $overrides): void
+    {
+        $payload = json_encode($overrides, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        if ($payload === false) {
+            $payload = '{}';
+        }
+
+        rewind($handle);
+        ftruncate($handle, 0);
+        fwrite($handle, $payload);
+        fflush($handle);
+    }
+
+    private function ensureStorage(): void
+    {
+        $dir = dirname($this->file);
+        if ($dir !== '' && $dir !== '.') {
+            $this->writer->createDirectory($dir);
+        }
+    }
+}

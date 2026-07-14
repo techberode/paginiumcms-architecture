@@ -87,6 +87,14 @@ interface TwoFactorInterface
      * @return string Tajný kľúč.
      */
     public function generateSecret(): string;
-}
 
-    public function isTotpVerified(User $user): bool;
+    /**
+     * Zistí, či bola TOTP overená v aktuálnej session.
+     */
+    public function isTotpVerified(): bool;
+
+    /**
+     * Zistí, či používateľ prešiel 2FA (alebo ju nemá zapnutú).
+     */
+    public function isTwoFactorPassed(User $user): bool;
+}

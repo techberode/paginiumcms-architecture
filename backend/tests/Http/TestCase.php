@@ -20,6 +20,8 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
+        $this->clearRateLimitCache();
+
         if (session_status() === PHP_SESSION_ACTIVE) {
             session_destroy();
         }
@@ -28,6 +30,14 @@ abstract class TestCase extends BaseTestCase
 
         $this->app = require __DIR__ . '/../../bootstrap/app.php';
         $this->currentUser = null;
+    }
+
+    private function clearRateLimitCache(): void
+    {
+        $cachePath = __DIR__ . '/../../storage/cache';
+        foreach (glob($cachePath . '/*.cache') ?: [] as $file) {
+            @unlink($file);
+        }
     }
 
     protected function tearDown(): void
@@ -94,6 +104,33 @@ abstract class TestCase extends BaseTestCase
             'user' => $data['user'] ?? null,
             'response' => $response,
         ];
+    }
+
+    /**
+     * Prihlási používateľa s rolou ADMIN (pre integračné testy admin rout).
+     *
+     * @return array{email: string, password: string, name: string, user: mixed, response: \Psr\Http\Message\ResponseInterface}
+     */
+    protected function loginAsAdminUser(
+        string $email = null,
+        string $password = null,
+        string $name = null
+    ): array {
+        $userData = $this->createTestUser($email, $password, $name);
+
+        $repo = $this->app->getContainer()->get(\PaginiumCMS\Modules\Security\Services\UserRepository::class);
+        $user = $repo->findByEmail($userData['email']);
+        if ($user !== null) {
+            $user->setRoles(['ADMIN']);
+            $repo->save($user);
+        }
+
+        $login = $this->loginTestUser($userData['email'], $userData['password']);
+        if ($this->currentUser !== null) {
+            $this->currentUser->setRoles(['ADMIN']);
+        }
+
+        return array_merge($userData, $login);
     }
 
     protected function loginTestUser(string $email, string $password): array

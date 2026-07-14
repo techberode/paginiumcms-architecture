@@ -1,8 +1,8 @@
 // frontend/src/components/CodeEditor/VersionHistory.tsx
 import React, { useState, useEffect } from 'react';
-import { useApi } from '../hooks/useApi';
+import { useApi } from '../../hooks/useApi';
 import { formatDistanceToNow } from 'date-fns';
-import { DiffViewer } from './DiffViewer';
+import { DiffViewer } from '../versioning/DiffViewer';
 
 interface VersionHistoryProps {
   contentId: string;
@@ -15,7 +15,7 @@ export const VersionHistory: React.FC<VersionHistoryProps> = ({ contentId, onRes
   const [selectedVersions, setSelectedVersions] = useState<[number, number] | null>(null);
   const [diffData, setDiffData] = useState<any>(null);
   const [showDiff, setShowDiff] = useState(false);
-  const { get, post, del } = useApi();
+  const { get, post, delete: del } = useApi();
 
   useEffect(() => {
     loadHistory();

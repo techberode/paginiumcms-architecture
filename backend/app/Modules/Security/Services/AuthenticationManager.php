@@ -52,7 +52,9 @@ class AuthenticationManager implements AuthenticationInterface
         }
 
         $this->session->setUser($user);
-        
+        // Nové prihlásenie vždy vyžaduje čerstvé TOTP overenie (ak je 2FA zapnutá).
+        $this->session->clearTotpVerified();
+
         return $user;
     }
 

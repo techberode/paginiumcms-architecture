@@ -5,18 +5,18 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Admin;
 
+use PaginiumCMS\Core\Versioning\Services\ContentVersioningService;
 use PaginiumCMS\Core\Versioning\Services\EnhancedVersionManager;
+use PaginiumCMS\Modules\Security\Models\User;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Slim\Psr7\Response;
 
 class VersionController
 {
-    private EnhancedVersionManager $versionManager;
-
-    public function __construct(EnhancedVersionManager $versionManager)
-    {
-        $this->versionManager = $versionManager;
+    public function __construct(
+        private EnhancedVersionManager $versionManager,
+        private ContentVersioningService $contentVersioning
+    ) {
     }
 
     /**
@@ -84,7 +84,7 @@ class VersionController
 
     /**
      * POST /api/admin/versions/restore
-     * Obnoví verziu
+     * Obnoví verziu do live flat-file obsahu
      */
     public function restoreVersion(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
@@ -101,7 +101,9 @@ class VersionController
         }
 
         try {
-            $result = $this->versionManager->restoreVersion($contentId, $version);
+            $user = $request->getAttribute('user');
+            $user = $user instanceof User ? $user : null;
+            $result = $this->contentVersioning->restoreToLiveContent($contentId, $version, $user);
 
             $response->getBody()->write(json_encode([
                 'success' => $result,

@@ -51,7 +51,7 @@ class CodeEditorLogger
         $this->logger->info($entry->getMessage(), $entry->getContext());
         
         // Debug log pre developer mode
-        if ($this->developerMode->isEnabled()) {
+        if ($this->developerMode->isActive()) {
             $this->developerMode->logQuery('FILE_ACCESS', [
                 'action' => $action,
                 'path' => $path,
@@ -85,7 +85,7 @@ class CodeEditorLogger
         $this->logger->log($severity, $entry->getMessage(), $entry->getContext());
 
         // Uloženie do developer debug logu
-        if ($this->developerMode->isEnabled()) {
+        if ($this->developerMode->isActive()) {
             $this->developerMode->logQuery('FILE_CHANGE', [
                 'action' => $action,
                 'path' => $path,
@@ -118,7 +118,7 @@ class CodeEditorLogger
 
         $this->logger->error($entry->getMessage(), $entry->getContext());
 
-        if ($this->developerMode->isEnabled()) {
+        if ($this->developerMode->isActive()) {
             $this->developerMode->logError($error);
         }
     }
