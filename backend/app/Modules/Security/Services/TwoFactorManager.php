@@ -4,153 +4,125 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Modules\Security\Services;
 
-use PaginiumCMS\Modules\Security\Services\UserRepository;
+use PaginiumCMS\Modules\Security\Contracts\TwoFactorInterface;
+use PaginiumCMS\Modules\Security\Contracts\TOTPGeneratorInterface;
 use PaginiumCMS\Modules\Security\Models\User;
-use ParagonIE\ConstantTime\Base32;
+use PaginiumCMS\Modules\Security\Exception\TwoFactorException;
 
-class TwoFactorManager
+class TwoFactorManager implements TwoFactorInterface
 {
+    private TOTPGeneratorInterface $totpGenerator;
+    private QRCodeGenerator $qrCodeGenerator;
     private UserRepository $userRepository;
+    private SessionManager $session;
 
-    private int $window = 1;
-    private int $period = 30;
-    private int $digits = 6;
-
-    public function __construct(UserRepository $userRepository)
-    {
+    public function __construct(
+        TOTPGeneratorInterface $totpGenerator,
+        QRCodeGenerator $qrCodeGenerator,
+        UserRepository $userRepository,
+        SessionManager $session
+    ) {
+        $this->totpGenerator = $totpGenerator;
+        $this->qrCodeGenerator = $qrCodeGenerator;
         $this->userRepository = $userRepository;
+        $this->session = $session;
+    }
+
+    public function enableTwoFactor(User $user): string
+    {
+        $secret = $this->totpGenerator->generateSecret();
+
+        $user->setTwoFactorSecret($secret);
+        $user->setTwoFactorEnabled(true);
+        $this->userRepository->save($user);
+
+        return $secret;
+    }
+
+    public function disableTwoFactor(User $user): void
+    {
+        $user->setTwoFactorSecret(null);
+        $user->setTwoFactorEnabled(false);
+        $user->setTwoFactorVerifiedAt(null);
+        $this->userRepository->save($user);
+
+        $this->session->clearTotpVerified();
+    }
+
+    public function isTwoFactorEnabled(User $user): bool
+    {
+        return $user->isTwoFactorEnabled();
+    }
+
+    public function verifyCode(User $user, string $code): bool
+    {
+        $freshUser = $this->userRepository->findByEmail($user->getEmail());
+
+        if ($freshUser === null) {
+            throw new TwoFactorException('Používateľ nebol nájdený');
+        }
+
+        if (!$freshUser->isTwoFactorEnabled()) {
+            throw new TwoFactorException('Dvojfaktorová autentifikácia nie je aktivovaná');
+        }
+
+        $secret = $freshUser->getTwoFactorSecret();
+
+        if ($secret === null) {
+            throw new TwoFactorException('Tajný kľúč pre 2FA nie je nastavený');
+        }
+
+        $isValid = $this->totpGenerator->verifyCode($secret, $code);
+
+        if ($isValid) {
+            $freshUser->setTwoFactorVerifiedAt(time());
+            $this->userRepository->save($freshUser);
+            $this->session->setTotpVerified();
+        }
+
+        return $isValid;
+    }
+
+    public function requireValidCode(User $user, string $code): void
+    {
+        if (!$this->verifyCode($user, $code)) {
+            throw new TwoFactorException('Neplatný TOTP kód');
+        }
+    }
+
+    public function getQRCode(string $secret, string $userEmail, string $issuer = 'PaginiumCMS'): string
+    {
+        $provisioningUri = $this->getProvisioningUri($secret, $userEmail, $issuer);
+
+        return $this->qrCodeGenerator->generate($provisioningUri);
+    }
+
+    public function getProvisioningUri(string $secret, string $userEmail, string $issuer = 'PaginiumCMS'): string
+    {
+        return $this->totpGenerator->getProvisioningUri($secret, $userEmail, $issuer);
+    }
+
+    public function getCurrentCode(string $secret): string
+    {
+        return $this->totpGenerator->getCurrentCode($secret);
     }
 
     public function generateSecret(): string
     {
-        return Base32::encodeUpper(random_bytes(20));
+        return $this->totpGenerator->generateSecret();
     }
 
-    public function enable(User $user, string $secret, string $code): bool
+    public function isTotpVerified(): bool
     {
-        if (!$this->verifyCode($secret, $code)) {
-            return false;
-        }
-
-        $user->setTwoFactorEnabled(true);
-        $user->setTwoFactorSecret($secret);
-        $this->userRepository->save($user);
-
-        return true;
+        return $this->session->isTotpVerified();
     }
 
-    public function disable(User $user, string $code): bool
-    {
-        $secret = $user->getTwoFactorSecret();
-        if ($secret === null) {
-            return false;
-        }
-
-        if (!$this->verifyCode($secret, $code)) {
-            return false;
-        }
-
-        $user->setTwoFactorEnabled(false);
-        $user->setTwoFactorSecret(null);
-        $this->userRepository->save($user);
-
-        return true;
-    }
-
-    public function verify(User $user, string $code): bool
+    public function isTwoFactorPassed(User $user): bool
     {
         if (!$user->isTwoFactorEnabled()) {
             return true;
         }
 
-        $secret = $user->getTwoFactorSecret();
-        if ($secret === null) {
-            return false;
-        }
-
-        return $this->verifyCode($secret, $code);
-    }
-
-    public function verifyUserByEmail(string $email, string $code): ?User
-    {
-        $user = $this->userRepository->findByEmail($email);
-
-        if ($user === null) {
-            return null;
-        }
-
-        if (!$this->verify($user, $code)) {
-            return null;
-        }
-
-        return $user;
-    }
-
-    public function generateCode(string $secret): string
-    {
-        $time = floor(time() / $this->period);
-        $data = pack('N*', 0) . pack('N*', $time);
-
-        $secretDecoded = Base32::decodeUpper($secret);
-        $hash = hash_hmac('sha1', $data, $secretDecoded, true);
-
-        $offset = ord($hash[strlen($hash) - 1]) & 0xF;
-        $binary = (
-            (ord($hash[$offset]) & 0x7F) << 24 |
-            (ord($hash[$offset + 1]) & 0xFF) << 16 |
-            (ord($hash[$offset + 2]) & 0xFF) << 8 |
-            (ord($hash[$offset + 3]) & 0xFF)
-        );
-
-        return str_pad((string) ($binary % (10 ** $this->digits)), $this->digits, '0', STR_PAD_LEFT);
-    }
-
-    public function verifyCode(string $secret, string $code): bool
-    {
-        $time = floor(time() / $this->period);
-
-        for ($i = -$this->window; $i <= $this->window; $i++) {
-            $timeWindow = $time + $i;
-            $data = pack('N*', 0) . pack('N*', $timeWindow);
-
-            $secretDecoded = Base32::decodeUpper($secret);
-            $hash = hash_hmac('sha1', $data, $secretDecoded, true);
-
-            $offset = ord($hash[strlen($hash) - 1]) & 0xF;
-            $binary = (
-                (ord($hash[$offset]) & 0x7F) << 24 |
-                (ord($hash[$offset + 1]) & 0xFF) << 16 |
-                (ord($hash[$offset + 2]) & 0xFF) << 8 |
-                (ord($hash[$offset + 3]) & 0xFF)
-            );
-
-            $generatedCode = str_pad((string) ($binary % (10 ** $this->digits)), $this->digits, '0', STR_PAD_LEFT);
-
-            if (hash_equals($generatedCode, $code)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public function generateQrCodeUri(User $user, string $secret): string
-    {
-        $label = $user->getEmail();
-        $issuer = 'PaginiumCMS';
-
-        return sprintf(
-            'otpauth://totp/%s?secret=%s&issuer=%s&digits=%d&period=%d',
-            urlencode($label),
-                       $secret,
-                       urlencode($issuer),
-                       $this->digits,
-                       $this->period
-        );
+        return $this->isTotpVerified();
     }
 }
-
-    public function isTotpVerified(User $user): bool
-    {
-        return $user->isTwoFactorVerified();
-    }

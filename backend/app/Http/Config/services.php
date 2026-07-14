@@ -1,0 +1,239 @@
+<?php
+
+declare(strict_types=1);
+
+use PaginiumCMS\Core\AuditTrail\Services\AuditTrailService;
+use PaginiumCMS\Core\Cache\CacheManager;
+use PaginiumCMS\Core\Cache\ContentCacheService;
+use PaginiumCMS\Core\CodeEditor\Services\CodeEditorLogger;
+use PaginiumCMS\Core\CodeEditor\Services\CodeEditorManager;
+use PaginiumCMS\Core\CodeEditor\Services\DiffGenerator;
+use PaginiumCMS\Core\Config\ConfigManager;
+use PaginiumCMS\Core\Developer\DeveloperMode;
+use PaginiumCMS\Core\Developer\DeveloperModeGate;
+use PaginiumCMS\Core\Developer\DevTokenGenerator;
+use PaginiumCMS\Core\Developer\DevTokenRegistry;
+use PaginiumCMS\Core\Developer\Services\DeveloperLogger;
+use PaginiumCMS\Core\Event\EventDispatcher;
+use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
+use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
+use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
+use PaginiumCMS\Core\FlatFile\Contracts\FrontMatterParserInterface;
+use PaginiumCMS\Core\FlatFile\Contracts\MarkdownContentParserInterface;
+use PaginiumCMS\Core\FlatFile\Contracts\MarkdownParserInterface;
+use PaginiumCMS\Core\Conflict\Contracts\ConflictLoggerInterface;
+use PaginiumCMS\Core\Conflict\Services\ConflictLogger;
+use PaginiumCMS\Core\Drafts\Contracts\DraftManagerInterface;
+use PaginiumCMS\Core\Drafts\Services\DraftManager;
+use PaginiumCMS\Core\FlatFile\Services\ContentRepository;
+use PaginiumCMS\Core\FlatFile\Services\ContentRevision;
+use PaginiumCMS\Core\FlatFile\Services\FrontMatterParser;
+use PaginiumCMS\Core\FlatFile\Services\MarkdownContentParser;
+use PaginiumCMS\Core\FlatFile\Services\MarkdownParser;
+use PaginiumCMS\Core\Locking\Contracts\LockManagerInterface;
+use PaginiumCMS\Core\Locking\Services\LockManager;
+use PaginiumCMS\Core\Logging\Contracts\LoggerInterface;
+use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
+use PaginiumCMS\Core\Settings\Services\SettingsRepository;
+use PaginiumCMS\Core\Validation\Validator;
+use PaginiumCMS\Core\Versioning\Services\ContentVersioningService;
+use PaginiumCMS\Core\Versioning\Services\EnhancedVersionManager;
+use PaginiumCMS\Http\Controllers\Admin\AuditTrailController;
+use PaginiumCMS\Http\Controllers\Admin\CodeEditorController;
+use PaginiumCMS\Http\Controllers\Admin\DeveloperController;
+use PaginiumCMS\Http\Controllers\Admin\GatedCodeEditorController;
+use PaginiumCMS\Http\Controllers\Admin\SettingsController;
+use PaginiumCMS\Http\Controllers\Admin\VersionController;
+use PaginiumCMS\Http\Controllers\Admin\ConflictController;
+use PaginiumCMS\Http\Controllers\Admin\UserController;
+use PaginiumCMS\Http\Controllers\Validation\ValidationController;
+use PaginiumCMS\Http\Controllers\Content\ContentController;
+use PaginiumCMS\Http\Controllers\Content\DraftController;
+use PaginiumCMS\Http\Controllers\Locking\LockController;
+use PaginiumCMS\Http\Controllers\Media\MediaController;
+use PaginiumCMS\Http\Middleware\DeveloperModeMiddleware;
+use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
+use PaginiumCMS\Modules\Media\Services\MediaRepository;
+use PaginiumCMS\Modules\Security\Contracts\PasswordPolicyInterface;
+use PaginiumCMS\Modules\Security\Contracts\TwoFactorInterface;
+use PaginiumCMS\Modules\Security\Services\UserRepository;
+
+use function DI\create;
+use function DI\get;
+
+return [
+    // FlatFile content stack
+    FrontMatterParserInterface::class => create(FrontMatterParser::class),
+    MarkdownContentParserInterface::class => create(MarkdownContentParser::class),
+    MarkdownParserInterface::class => create(MarkdownParser::class)
+        ->constructor(
+            get(FrontMatterParserInterface::class),
+            get(MarkdownContentParserInterface::class)
+        ),
+    ContentRepositoryInterface::class => create(ContentRepository::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class),
+            get(MarkdownParserInterface::class)
+        ),
+
+    // === Blok: Nastavenia + validácia (Iterácia 4) ===
+    // Zdieľaný validator (bezstavový) – používa ho SettingsRepository aj ďalšie moduly.
+    Validator::class => create(Validator::class),
+
+    // Flat-file úložisko nastavení (data/settings.json) – ukladá iba odchýlky od predvolieb.
+    SettingsRepositoryInterface::class => create(SettingsRepository::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class),
+            get(Validator::class),
+            'data/settings.json'
+        ),
+    SettingsController::class => create(SettingsController::class)
+        ->constructor(get(SettingsRepositoryInterface::class)),
+
+    ValidationController::class => create(ValidationController::class),
+
+    UserController::class => create(UserController::class)
+        ->constructor(
+            get(UserRepository::class),
+            get(Validator::class),
+            get(PasswordPolicyInterface::class)
+        ),
+
+    // Revízny odtlačok obsahu (optimistické zamykanie / detekcia konfliktov – Iterácia 2)
+    ContentRevision::class => create(ContentRevision::class),
+
+    // Log konfliktov obsahu (Iterácia 3) – flat-file data/conflicts.json
+    ConflictLoggerInterface::class => create(ConflictLogger::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class),
+            'data/conflicts.json',
+            200
+        ),
+    ConflictController::class => create(ConflictController::class)
+        ->constructor(get(ConflictLoggerInterface::class)),
+
+    // Auto-save koncepty (Iterácia 2) – oddelené flat-file úložisko data/drafts/
+    DraftManagerInterface::class => create(DraftManager::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class),
+            'data/drafts'
+        ),
+    DraftController::class => create(DraftController::class)
+        ->constructor(get(DraftManagerInterface::class)),
+
+    // Content cache (ChainedDriver via bootstrap CacheManager)
+    ContentCacheService::class => create(ContentCacheService::class)
+        ->constructor(get(CacheManager::class)),
+
+    // Media module
+    MediaRepositoryInterface::class => create(MediaRepository::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class)
+        ),
+
+    // === Blok: Systém zamykania obsahu (Iterácia 1) ===
+    // Flat-file manažér zámkov (data/locks.json), TTL 300 s = auto-release po 5 min.
+    LockManagerInterface::class => create(LockManager::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class),
+            get(LoggerInterface::class),
+            'data/locks.json',
+            300
+        ),
+    LockController::class => create(LockController::class)
+        ->constructor(get(LockManagerInterface::class)),
+
+    // Developer Mode gate + offline tokens
+    DevTokenRegistry::class => create(DevTokenRegistry::class),
+    DevTokenGenerator::class => function () {
+        $secret = getenv('DEV_UNLOCK_SECRET') ?: '';
+        if ($secret === '' && (getenv('APP_ENV') === 'testing' || getenv('APP_ENV') === 'test')) {
+            $secret = 'testing-dev-unlock-secret';
+        }
+
+        return new DevTokenGenerator($secret);
+    },
+    DeveloperModeGate::class => create(DeveloperModeGate::class)
+        ->constructor(
+            get(DevTokenGenerator::class),
+            get(DevTokenRegistry::class)
+        ),
+    DeveloperLogger::class => create(DeveloperLogger::class),
+    DeveloperModeMiddleware::class => create(DeveloperModeMiddleware::class)
+        ->constructor(get(DeveloperModeGate::class)),
+
+    // HTTP controllers
+    ContentController::class => create(ContentController::class)
+        ->constructor(
+            get(ContentRepositoryInterface::class),
+            get(ContentVersioningService::class),
+            get(ContentCacheService::class),
+            get(ContentRevision::class),
+            get(ConflictLoggerInterface::class)
+        ),
+    MediaController::class => create(MediaController::class)
+        ->constructor(get(MediaRepositoryInterface::class)),
+
+    // Code editor / versioning / audit (auto-discovered admin routes)
+    ConfigManager::class => create(ConfigManager::class),
+    EventDispatcher::class => create(EventDispatcher::class),
+    DeveloperMode::class => create(DeveloperMode::class)
+        ->constructor(
+            get(ConfigManager::class),
+            get(EventDispatcher::class),
+            get(DeveloperModeGate::class),
+            get(DeveloperLogger::class)
+        ),
+    CodeEditorLogger::class => create(CodeEditorLogger::class)
+        ->constructor(get(LoggerInterface::class), get(DeveloperMode::class)),
+    DiffGenerator::class => create(DiffGenerator::class),
+    EnhancedVersionManager::class => create(EnhancedVersionManager::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class),
+            get(DiffGenerator::class),
+            get(CodeEditorLogger::class),
+            'data/versions',
+            50
+        ),
+    AuditTrailService::class => create(AuditTrailService::class)
+        ->constructor(
+            get(LoggerInterface::class),
+            get(EnhancedVersionManager::class),
+            get(UserRepository::class)
+        ),
+    ContentVersioningService::class => create(ContentVersioningService::class)
+        ->constructor(
+            get(AuditTrailService::class),
+            get(EnhancedVersionManager::class),
+            get(ContentRepositoryInterface::class),
+            get(FrontMatterParserInterface::class),
+            get(ContentCacheService::class)
+        ),
+    CodeEditorManager::class => create(CodeEditorManager::class),
+    CodeEditorController::class => create(GatedCodeEditorController::class)
+        ->constructor(
+            get(CodeEditorManager::class),
+            get(DeveloperModeGate::class)
+        ),
+    VersionController::class => create(VersionController::class)
+        ->constructor(
+            get(EnhancedVersionManager::class),
+            get(ContentVersioningService::class)
+        ),
+    AuditTrailController::class => create(AuditTrailController::class)
+        ->constructor(get(AuditTrailService::class)),
+    DeveloperController::class => create(DeveloperController::class)
+        ->constructor(
+            get(DeveloperModeGate::class),
+            get(DeveloperMode::class),
+            get(DeveloperLogger::class),
+            get(TwoFactorInterface::class)
+        ),
+];

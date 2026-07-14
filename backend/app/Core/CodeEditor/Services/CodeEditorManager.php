@@ -101,4 +101,56 @@ class CodeEditorManager implements CodeEditorInterface
 
         return $files;
     }
+
+    public function getFileInfo(string $path): array
+    {
+        if (!$this->canEdit($path)) {
+            throw new \RuntimeException('Prístup k súboru je zakázaný');
+        }
+
+        $fullPath = __DIR__ . '/../../../' . $path;
+        if (!file_exists($fullPath)) {
+            throw new \RuntimeException('Súbor neexistuje');
+        }
+
+        $extension = pathinfo($path, PATHINFO_EXTENSION);
+        $backup = new FileBackup();
+
+        return [
+            'path' => $path,
+            'name' => basename($path),
+            'size' => filesize($fullPath),
+            'modified' => filemtime($fullPath),
+            'extension' => $extension,
+            'language' => $this->detectLanguage($extension),
+            'editable' => true,
+            'backups' => array_map('basename', $backup->getBackups($path)),
+        ];
+    }
+
+    public function getBackups(string $path): array
+    {
+        if (!$this->canEdit($path)) {
+            throw new \RuntimeException('Prístup k súboru je zakázaný');
+        }
+
+        $backup = new FileBackup();
+
+        return array_map('basename', $backup->getBackups($path));
+    }
+
+    private function detectLanguage(string $extension): string
+    {
+        return match (strtolower($extension)) {
+            'php' => 'php',
+            'js', 'jsx' => 'javascript',
+            'ts', 'tsx' => 'typescript',
+            'css' => 'css',
+            'html', 'htm' => 'html',
+            'json' => 'json',
+            'md' => 'markdown',
+            'yaml', 'yml' => 'yaml',
+            default => 'plaintext',
+        };
+    }
 }

@@ -6,13 +6,15 @@ import { DashboardView } from './components/backend/DashboardView';
 import { PagesManager } from './components/backend/PagesManager';
 import { MarkdownEditor } from './components/backend/MarkdownEditor';
 import { BackupManager } from './components/backend/BackupManager';
+import { SettingsView } from './components/backend/SettingsView';
+import { UsersManager } from './components/backend/UsersManager';
 import { CodeEditor } from './components/CodeEditor/CodeEditor';
 import { AuditTrail } from './components/Audit/AuditTrail';
 import { LoginModal } from './components/frontend/LoginModal';
 import { useAuth } from './hooks/useAuth';
 
 function App() {
-  const { user, loading } = useAuth();
+  const { user, loading, pendingTwoFactor } = useAuth();
 
   if (loading) {
     return (
@@ -22,8 +24,8 @@ function App() {
     );
   }
 
-  if (!user) {
-    return <LoginModal isOpen={true} onClose={() => {}} />;
+  if (!user || pendingTwoFactor) {
+    return <LoginModal />;
   }
 
   return (
@@ -41,14 +43,8 @@ function App() {
         <Route path="/audit" element={<AuditTrail />} />
         <Route path="/audit/content/:contentId" element={<AuditTrail />} />
         <Route path="/audit/user/:userId" element={<AuditTrail />} />
-        <Route path="/settings" element={
-          <div className="card">
-            <div className="card-body">
-              <h2 className="text-xl font-semibold mb-4">Settings</h2>
-              <p className="text-gray-500 dark:text-gray-400">Settings page coming soon...</p>
-            </div>
-          </div>
-        } />
+        <Route path="/settings" element={<SettingsView />} />
+        <Route path="/users" element={<UsersManager />} />
         <Route path="*" element={
           <div className="card">
             <div className="card-body text-center py-12">

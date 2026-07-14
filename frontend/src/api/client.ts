@@ -6,6 +6,22 @@ export interface ApiResponse<T = any> {
   data?: T;
   error?: string;
   message?: string;
+  status?: number;
+  // Priame polia z backendu (nie vždy v data) – spätne kompatibilné.
+  user?: unknown;
+  token?: string;
+  requires_two_factor?: boolean;
+  enabled?: boolean;
+  verified?: boolean;
+  secret?: string;
+  qr_code?: string;
+  provisioning_uri?: string;
+  // Doplnkové pole prítomné pri 409 konflikte zámku (viď locking API).
+  lock?: unknown;
+  // Doplnkové pole prítomné pri 409 konflikte obsahu (viď content conflict).
+  conflict?: unknown;
+  // Doplnkové pole prítomné pri 422 validačnej chybe (jednotný Error Handler, Iterácia 4).
+  errors?: Record<string, string[]>;
 }
 
 export interface ApiError {
@@ -29,19 +45,12 @@ class ApiClient {
       withCredentials: true,
     });
 
-    // Request interceptor
+    // Request interceptor – session cookie (withCredentials) + CSRF, bez Bearer tokenu.
     this.client.interceptors.request.use(
       (config) => {
-        // Pridanie CSRF tokenu
         const csrfToken = this.getCsrfToken();
         if (csrfToken) {
           config.headers['X-CSRF-TOKEN'] = csrfToken;
-        }
-
-        // Pridanie Authorization header ak existuje
-        const token = localStorage.getItem('auth_token');
-        if (token) {
-          config.headers['Authorization'] = `Bearer ${token}`;
         }
 
         return config;
@@ -73,12 +82,12 @@ class ApiClient {
     return localStorage.getItem('csrf_token') || null;
   }
 
-  public setAuthToken(token: string): void {
-    localStorage.setItem('auth_token', token);
+  public setAuthToken(_token: string): void {
+    // Session auth cez HttpOnly cookie – Bearer token sa nepoužíva (Iterácia 5).
   }
 
   public clearAuthToken(): void {
-    localStorage.removeItem('auth_token');
+    // Zachované pre kompatibilitu volaní; session sa ruší cez /api/auth/logout.
   }
 
   public setCsrfToken(token: string): void {
@@ -156,10 +165,14 @@ class ApiClient {
   private handleError(error: any): ApiResponse {
     if (axios.isAxiosError(error)) {
       const response = error.response?.data as ApiResponse;
+      // Zachováme aj prípadné doplnkové polia z chybovej odpovede (napr. `lock` pri 409 konflikte),
+      // aby ich volajúci (napr. locking API) vedel spracovať. Rozšírenie je spätne kompatibilné.
       return {
+        ...response,
         success: false,
         error: response?.error || error.message,
         message: response?.message || 'An error occurred',
+        status: error.response?.status,
       };
     }
     return {

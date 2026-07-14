@@ -226,6 +226,7 @@ class AuthController
         }
 
         return $this->jsonResponse($response, [
+            'success' => true,
             'user' => $user->jsonSerialize(),
         ]);
     }

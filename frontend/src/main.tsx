@@ -6,6 +6,7 @@ import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { ContentProvider } from './context/ContentContext';
+import { SettingsProvider } from './context/SettingsContext';
 import App from './App';
 import './index.css';
 
@@ -15,9 +16,11 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <ThemeProvider>
         <NotificationProvider>
           <AuthProvider>
-            <ContentProvider>
-              <App />
-            </ContentProvider>
+            <SettingsProvider>
+              <ContentProvider>
+                <App />
+              </ContentProvider>
+            </SettingsProvider>
           </AuthProvider>
         </NotificationProvider>
       </ThemeProvider>

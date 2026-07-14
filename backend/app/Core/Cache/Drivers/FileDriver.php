@@ -56,6 +56,33 @@ class FileDriver implements DriverInterface
         return true;
     }
 
+    /**
+     * Atomický increment cez flock (bez race pri rate limite).
+     */
+    public function increment(string $key, int $step = 1, ?int $ttl = null): int
+    {
+        $file = $this->getFilePath($key);
+        $lockFile = $file . '.lock';
+        $handle = fopen($lockFile, 'c+');
+        if ($handle === false) {
+            $current = (int) $this->get($key, 0);
+            $new = $current + $step;
+            $this->set($key, $new, $ttl);
+            return $new;
+        }
+
+        try {
+            flock($handle, LOCK_EX);
+            $current = (int) $this->get($key, 0);
+            $new = $current + $step;
+            $this->set($key, $new, $ttl);
+            return $new;
+        } finally {
+            flock($handle, LOCK_UN);
+            fclose($handle);
+        }
+    }
+
     private function getFilePath(string $key): string
     {
         return $this->path . '/' . hash($this->hashAlgo, $key) . '.cache';

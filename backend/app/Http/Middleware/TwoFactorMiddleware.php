@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Middleware;
 
-use PaginiumCMS\Modules\Security\Services\TwoFactorManager;
+use PaginiumCMS\Modules\Security\Contracts\TwoFactorInterface;
 use PaginiumCMS\Modules\Security\Models\User;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -13,51 +13,64 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Slim\Psr7\Response;
 
 /**
- * Middleware pre overenie dvojfaktorovej autentifikácie (TOTP 2FA).
+ * === Middleware: TwoFactorMiddleware ===
+ * Vynúti TOTP overenie pre chránené routy, ak má používateľ zapnutú 2FA (Iterácia 5).
+ *
+ * Preskočí cesty v $skipPathPrefixes (napr. /api/auth/me, /api/auth/2fa/*, logout),
+ * aby fungoval „polovičný“ login stav a verify-login flow.
  */
 class TwoFactorMiddleware implements MiddlewareInterface
 {
-    private TwoFactorManager $twoFactor;
+    /** @var list<string> */
+    private array $skipPathPrefixes = [
+        '/api/auth/2fa',
+        '/api/auth/me',
+        '/api/auth/logout',
+        '/api/auth/csrf-token',
+    ];
 
-    public function __construct(TwoFactorManager $twoFactor)
+    public function __construct(private TwoFactorInterface $twoFactor)
     {
-        $this->twoFactor = $twoFactor;
     }
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
+        $path = $request->getUri()->getPath();
+        foreach ($this->skipPathPrefixes as $prefix) {
+            if (str_starts_with($path, $prefix)) {
+                return $handler->handle($request);
+            }
+        }
+
         $user = $request->getAttribute('user');
 
         if (!$user instanceof User) {
-            $response = new Response();
-            $response->getBody()->write(json_encode([
-                'success' => false,
-                'error' => 'Neprihlásený používateľ',
-            ]));
-            return $response
-                ->withStatus(401)
-                ->withHeader('Content-Type', 'application/json');
+            return $this->jsonError('Neprihlásený používateľ', 401);
         }
 
-        // Ak 2FA nie je aktivovaná, pokračujeme
         if (!$user->isTwoFactorEnabled()) {
             return $handler->handle($request);
         }
 
-        // Ak je 2FA už overená v session, pokračujeme
         if ($this->twoFactor->isTotpVerified()) {
             return $handler->handle($request);
         }
 
-        // Vyžadujeme TOTP kód
+        return $this->jsonError('Vyžaduje sa TOTP overenie', 401, true);
+    }
+
+    private function jsonError(string $message, int $status, bool $requiresTwoFactor = false): ResponseInterface
+    {
+        $payload = ['success' => false, 'error' => $message];
+        if ($requiresTwoFactor) {
+            $payload['requires_two_factor'] = true;
+        }
+
         $response = new Response();
-        $response->getBody()->write(json_encode([
-            'success' => false,
-            'error' => 'Vyžaduje sa TOTP overenie',
-            'requires_two_factor' => true,
-        ]));
+        $response->getBody()->write((string) json_encode($payload, JSON_UNESCAPED_UNICODE));
+
         return $response
-            ->withStatus(401)
-            ->withHeader('Content-Type', 'application/json');
+            ->withStatus($status)
+            ->withHeader('Content-Type', 'application/json; charset=utf-8');
     }
 }

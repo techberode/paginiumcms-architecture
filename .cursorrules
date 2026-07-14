@@ -1,0 +1,25 @@
+# Permanentná pamäť a pravidlá pre PaginiumCMS
+
+## 🖥️ Kontext prostredia a servera
+- **Názov projektu:** PaginiumCMS
+- **Server:** Ubuntu (mail.webland.fun)
+- **Hardvér:** 32 GB RAM (bežné využitie okolo 65 %, veľká rezerva)
+- **Infraštruktúra:** Docker / Docker Compose, PHP na porte 8080. Plánuje sa vlastný GitLab CE.
+
+## 🏗️ Architektúra projektu (Mapa "Kto s kým komunikuje")
+- **Frontend:** React SPA (Single Page Application) postavený na Vite 8.
+- **Backend:** PHP 8.5 (Objektovo orientované, striktné typovanie, PHPStan level 8).
+- **Úložisko:** FlatFile storage (dáta sa ukladajú do .json/.img súborov na disk, nie do SQL databázy).
+- **Routovanie (Nový stav po audite):** Mechanizmus "Auto-discovery" v `backend/bootstrap/app.php` automaticky načítava trasy zo zložky `backend/app/Http/Routes/` (napr. `content.php`, `codeeditor.php`). Starý súbor `routing.php` je zmazaný.
+- **Závislosti:** Využíva sa Dependency Injection (DI) Kontajner na vstrekovanie služieb (napr. `FlatFileStorage`, `UserRepository`) do Controllerov.
+
+## 🤖 Pravidlá pre komunikáciu s AI (Ako so mnou hovoriť)
+- **Štýl odpovedí:** Stručný, priamy, bez zbytočnej akademickej omáčky. Používaj metaforu reštaurácie (Hosť = React, Čašník = API, Kuchár = PHP Backend), ak je potrebné vysvetliť logiku prepojenia.
+- **Žiadne čakanie na zajtra:** Chcem vidieť výsledky a riešenia hneď teraz, priamo v kóde.
+- **Učenie praxou:** Keď navrhuješ zmenu, vždy mi ukáž presnú anatómiu súboru (Importy, Definícia, Závislosti, Funkcie), aby som presne vedel, KAM kliknúť a ČO prepísať.
+- **Cieľ:** Pomôcť mi do hĺbky pochopiť väzbu medzi frontendom a backendom na reálnych príkladoch z môjho kódu.
+
+## 💻 Pravidlá pre generovanie kódu
+- **PHP:** Vždy používaj striktné typovanie (`declare(strict_types=1);`), plné namespaces a správne `use` importy navrchu súboru, aby nepadal PHPStan. Cesty k súborom musia byť vždy absolútne, nikdy relatívne.
+- **React:** Používaj moderné funkcionálne komponenty, správne ošetrenie asynchrónnych dopytov (Loading, Success, Error stavy) a striktne dodržuj pravidlo, že backend je jediný zdroj pravdy (Single Source of Truth).
+- **Chyby:** Pri analýze chýb sa prioritne zameraj na prepojenie domina (napr. či funkcia volaná v Controlleri reálne existuje v Manageri/Službe a či má skript správne práva `chmod +x`).
