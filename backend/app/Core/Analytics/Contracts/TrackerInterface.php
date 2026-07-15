@@ -25,12 +25,12 @@ interface TrackerInterface
     /**
      * Získa zoznam návštev pre daný deň.
      */
-    public function getVisits(string $date = null, int $limit = 100): array;
+    public function getVisits(?string $date = null, int $limit = 100): array;
 
     /**
      * Získa denné štatistiky.
      */
-    public function getDailyStats(string $date = null): array;
+    public function getDailyStats(?string $date = null): array;
 
     /**
      * Získa návštevníkov v reálnom čase.

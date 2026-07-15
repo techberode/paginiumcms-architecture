@@ -137,15 +137,11 @@ class UserRepository
 
         foreach ($data as $key => $value) {
             if ($key === 'id') {
-                $property = $reflection->getProperty('id');
-                $property->setAccessible(true);
-                $property->setValue($user, $value);
+                $reflection->getProperty('id')->setValue($user, $value);
             } elseif ($key === 'email') {
                 $user->setEmail($value);
             } elseif ($key === 'passwordHash') {
-                $property = $reflection->getProperty('passwordHash');
-                $property->setAccessible(true);
-                $property->setValue($user, $value);
+                $reflection->getProperty('passwordHash')->setValue($user, $value);
             } elseif ($key === 'roles') {
                 $user->setRoles($value);
             } elseif ($key === 'name') {
@@ -155,13 +151,9 @@ class UserRepository
             } elseif ($key === 'twoFactorSecret') {
                 $user->setTwoFactorSecret($value);
             } elseif ($key === 'createdAt') {
-                $property = $reflection->getProperty('createdAt');
-                $property->setAccessible(true);
-                $property->setValue($user, $value);
+                $reflection->getProperty('createdAt')->setValue($user, $value);
             } elseif ($key === 'updatedAt') {
-                $property = $reflection->getProperty('updatedAt');
-                $property->setAccessible(true);
-                $property->setValue($user, $value);
+                $reflection->getProperty('updatedAt')->setValue($user, $value);
             }
         }
 
@@ -193,7 +185,7 @@ class UserRepository
                 $content = $this->reader->read($this->storagePath . '/' . basename($file));
                 $data = json_decode($content, true);
 
-                if (isset($data['resetToken']) && $data['resetToken'] === $token) {
+                if (isset($data['resetToken']) && hash_equals((string)$data['resetToken'], $token)) {
                     if (isset($data['resetTokenExpires']) && $data['resetTokenExpires'] > time()) {
                         return $this->hydrate($data);
                     }

@@ -173,18 +173,28 @@ class AuthController
             return $this->jsonError($response, 'Email je povinný', 400);
         }
 
+        // Anti-enumerácia: odpoveď je vždy rovnaká, bez ohľadu na to,
+        // či účet existuje alebo nie.
+        $genericPayload = [
+            'success' => true,
+            'message' => 'Ak účet s týmto emailom existuje, poslali sme naň inštrukcie na reset hesla.',
+        ];
+
         try {
             $token = $this->auth->resetPassword($data['email']);
 
-            // V reálnej aplikácii by sme token odoslali emailom
-            // Pre demo ho vrátime v odpovedi
-            return $this->jsonResponse($response, [
-                'success' => true,
-                'message' => 'Resetovací token bol odoslaný',
-                'token' => $token, // Len pre demo účely
-            ]);
+            // Bezpečnosť: token sa NIKDY nevracia v produkčnej odpovedi
+            // (inak = prevzatie ľubovoľného účtu). V reálnej prevádzke sa
+            // posiela e-mailom. V testovacom prostredí ho vrátime, aby sa
+            // dal end-to-end otestovať celý flow resetu.
+            if (getenv('APP_ENV') === 'testing') {
+                $genericPayload['token'] = $token;
+            }
+
+            return $this->jsonResponse($response, $genericPayload);
         } catch (\Exception $e) {
-            return $this->jsonError($response, $e->getMessage(), 400);
+            // Neexistujúci účet vracia rovnakú generickú odpoveď.
+            return $this->jsonResponse($response, $genericPayload);
         }
     }
 
@@ -251,11 +261,10 @@ class AuthController
      */
     private function jsonResponse(ResponseInterface $response, array $data, int $status = 200): ResponseInterface
     {
-        $json = json_encode_utf8($data);
-        $response->getBody()->write(json_encode($data, JSON_PRETTY_PRINT));
+        $response->getBody()->write(json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
         return $response
             ->withStatus($status)
-            ->withHeader('Content-Type', 'application/json charset=utf-8');
+            ->withHeader('Content-Type', 'application/json; charset=utf-8');
     }
 
     /**

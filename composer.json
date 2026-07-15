@@ -3,7 +3,7 @@
     "description": "PaginiumCMS Core - FlatFile Engine",
     "type": "project",
     "require": {
-        "php": "^8.4",
+        "php": "^8.5",
         "symfony/yaml": "^7.0",
         "league/commonmark": "^2.0",
         "spomky-labs/otphp": "^11.0",
@@ -14,7 +14,6 @@
         "php-di/slim-bridge": "^3.4",
         "tuupola/cors-middleware": "^1.5",
         "sebastian/diff": "^5.0",
-        "symfony/yaml": "^7.0",
         "latte/latte": "^3.1",
         "respect/validation": "^3.1",
         "vlucas/phpdotenv": "^5.6"
@@ -35,6 +34,16 @@
         "psr-4": {
             "PaginiumCMS\\Tests\\": "backend/tests/"
         }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "stan": "phpstan analyse --no-progress",
+        "cs": "phpcs",
+        "cs:fix": "phpcbf",
+        "check": [
+            "@stan",
+            "@test"
+        ]
     },
     "minimum-stability": "stable",
     "prefer-stable": true

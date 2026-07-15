@@ -38,7 +38,7 @@ class GitHubService
     /**
      * Exportuje obsah do GitHub repozitára.
      */
-    public function export(string $message = 'Export obsahu', string $path = null): array
+    public function export(string $message = 'Export obsahu', ?string $path = null): array
     {
         $path = $path ?? $this->contentPath;
         $result = ['success' => true, 'files' => 0, 'errors' => [], 'skipped' => 0];
@@ -70,7 +70,7 @@ class GitHubService
     /**
      * Importuje obsah z GitHub repozitára.
      */
-    public function import(string $path = null): array
+    public function import(?string $path = null): array
     {
         $path = $path ?? $this->contentPath;
         $result = ['success' => true, 'files' => 0, 'errors' => [], 'skipped' => 0];
@@ -220,7 +220,7 @@ class GitHubService
         return is_array($response) ? $response : [];
     }
 
-    private function apiRequest(string $url, string $method = 'GET', array $data = null): array
+    private function apiRequest(string $url, string $method = 'GET', ?array $data = null): array
     {
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -242,7 +242,6 @@ class GitHubService
         $response = curl_exec($ch);
         $httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $curlError = curl_error($ch);
-        curl_close($ch);
 
         if ($response === false) {
             throw new \Exception('GitHub API request failed: ' . ($curlError ?: 'unknown error'));

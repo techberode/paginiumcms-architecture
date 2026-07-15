@@ -135,7 +135,6 @@ class FileValidator
         }
 
         $mimeType = finfo_file($finfo, $absolutePath);
-        finfo_close($finfo);
 
         return $mimeType ?: null;
     }

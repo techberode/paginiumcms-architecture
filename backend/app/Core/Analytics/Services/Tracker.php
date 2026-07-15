@@ -65,7 +65,7 @@ class Tracker implements TrackerInterface
         return $data ? $this->hydrateVisitor($data) : null;
     }
 
-    public function getVisits(string $date = null, int $limit = 100): array
+    public function getVisits(?string $date = null, int $limit = 100): array
     {
         $date = $date ?? date('Y-m-d');
         $path = $this->getFullPath('visits/' . $date . '.json');
@@ -80,7 +80,7 @@ class Tracker implements TrackerInterface
         return $data ? array_slice($data, -$limit) : [];
     }
 
-    public function getDailyStats(string $date = null): array
+    public function getDailyStats(?string $date = null): array
     {
         $date = $date ?? date('Y-m-d');
         $path = $this->getFullPath('daily/' . $date . '.json');

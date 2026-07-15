@@ -26,7 +26,7 @@ class HealthCheckManager
         }
     }
 
-    public function run(string $group = null): HealthReport
+    public function run(?string $group = null): HealthReport
     {
         $report = new HealthReport();
 
