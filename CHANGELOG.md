@@ -1,0 +1,212 @@
+# Changelog
+
+All notable changes to PaginiumCMS are documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+
+---
+
+## [2.0.5] – 2026-07-15
+
+### Iteration 9 – Prototype backend port + FE wiring
+
+#### Backend
+- Port Navigation API (`GET /api/navigation`, `PUT /api/admin/navigation`)
+- Port Comments module (public submit/list + admin moderation)
+- Port Contact form (`POST /api/contact`) and admin Messages inbox
+- Expose GitHub sync admin routes via existing `GitHubService`
+- Add `comments` settings group to `SettingsSchema`
+
+#### Frontend
+- Add `api/navigation.ts`, `comments.ts`, `contact.ts`, `messages.ts`, `github.ts`
+- Add admin views: NavigationManager, CommentsManager, MessagesViewer, GitHubSyncPanel
+- Wire ContactForm, ArticleComments, PublicSiteContext navigation
+- Fix API base URL for same-origin LAN deploy (`utils/apiBaseUrl.ts`)
+- Complete It.8: WYSIWYG toggle, MediaPickerModal, TipTap build fix
+
+#### Tests & docs
+- Add repository/controller tests for Navigation, Comments, Messages, GitHub
+- Add `docs/ITERATION_9.md`, `docs/deploy/NGINX_API.md`
+
+---
+
+## [2.0.4] – 2026-07-15
+
+### Iteration 8 – Media Manager (Frontend)
+
+#### Frontend
+- Add `api/media.ts` – list, upload, patch alt text, delete
+- Add `MediaManager` – drag & drop upload, grid previews, alt edit, copy URL, delete
+- Wire `/media` admin route; remove `MediaPlaceholder` stub
+
+#### Tests & docs
+- Add `MediaRepositoryTest`, `MediaControllerTest` (PHPUnit)
+- Add `media.test.ts`, `MediaManager.test.tsx` (Vitest)
+- Add `docs/ITERATION_8.md`
+
+---
+
+## [2.0.3] – 2026-07-15
+
+### Iteration 14 – Code policy & Code Editor foundation
+
+#### Backend
+- Add `CodePolicyEngine`, `SecurityScanner`, and `CodePolicyViolationException` (422 with grouped errors)
+- Fix `CodeEditorManager` project-root resolution, path guards, and `FileInfo[]` listing
+- Add `codePolicy` settings group; wire policy stack in DI
+- Create `backend/app/Http/Extensions/` and `backend/resources/views/themes/`
+- Fix `SimpleLogger` infinite recursion in PSR `log()` method
+
+#### Frontend
+- Add `DeveloperUnlockGate` and `api/developer.ts` for gated Code Editor access
+- Show policy violation messages on save in `CodeEditor.tsx`
+
+#### Tests & docs
+- Add `CodePolicyEngineTest`, `CodeEditorManagerTest`
+- Add `docs/ITERATION_14.md`
+
+---
+
+## [2.0.2] – 2026-07-15
+
+### Iteration 7 – Admin dashboard, monitoring, API tracker
+
+#### Backend
+- Add `RealtimeTracker` and `DashboardController` (`GET /api/admin/dashboard/overview`)
+- Wire Health module to DI and add `health.php` admin routes
+- Add `GET /api/admin/analytics/realtime`
+- Normalize `HealthController` responses to `{ success, data }` format
+
+#### Frontend
+- Rebuild `DashboardView` with health, locks, conflicts, analytics chart, and realtime stats
+- Add dashboard panels: `AnalyticsChart`, `LocksPanel`, `ConflictsPanel`, `HealthPanel`
+- Add `api/dashboard.ts`; fix `api/health.ts` response handling
+
+#### Tests & docs
+- Add `RealtimeTrackerTest`, `DashboardControllerTest`, `AnalyticsChart.test.tsx`
+- Add `docs/ITERATION_7.md`
+
+---
+
+## [2.0.1] – 2026-07-15
+
+### Iteration 6 – Notifications, analytics, auth UI
+
+#### Backend
+- Extend `SettingsSchema` with `smtp`, `notifications`, `connectors`, and `monitoring` groups
+- Add `SmtpTransport`, `NotificationFactory`, `IncidentNotifier`, and channel adapters (email, ntfy, Discord, Telegram, webhook)
+- Add `NotificationController` (`GET /api/admin/notifications/overview`, `POST /api/admin/notifications/test`)
+- Implement `Reporter`, `AnalyticsManager`, `AnalyticsMiddleware`, and `AnalyticsController`
+- Wire notification and analytics services in DI (`services.php`, `bootstrap/app.php`)
+- Password reset sends email when SMTP is configured; demo token only in `development`/`testing` without SMTP
+- Failed login and audit security events trigger `IncidentNotifier`
+- Mask password fields in admin settings API responses; ignore masked values on save
+- Expose toast settings via `GET /api/settings/public`
+
+#### Frontend
+- Add `NotificationsOverview` at `/notifications` with connector status and visit stats
+- Add `api/notifications.ts`, `api/analytics.ts`
+- Toast UI driven by settings (enabled, position, duration, debug mode)
+- Auth UI: `RegisterModal`, `ForgotPasswordModal`, `ResetPasswordModal`, `ChangePasswordModal`
+- `SettingsView` supports `password` field type
+
+#### Tests & docs
+- Add `NotificationFactoryTest`, `IncidentNotifierTest`, `notificationSettings.test.ts`
+- Rewrite `docs/architecture/SETTINGS.md` in English; add `docs/ITERATION_6.md`
+- `.cursorrules`: documentation and commit messages must be in English
+
+---
+
+## [2.0.0] – 2026-07-14
+
+**Commit:** [`09b74ab`](https://github.com/techberode/paginiumcms-architecture/commit/09b74ab)  
+**Branch:** `main` (fast-forward from `main_local`)
+
+Deliver the PaginiumCMS flat-file core across five planned iterations:
+content locking, revisions/drafts/conflicts, settings and shared validation,
+and hardened authentication with admin user management and mandatory 2FA on
+admin routes. Includes full-stack wiring (Slim 4 API + React SPA), test
+infrastructure, documentation, and `.gitignore` cleanup for runtime artifacts.
+
+### Iteration 1 – Content locking
+
+- Add `Core/Locking` (`ContentLock`, `LockManager` over `data/locks.json` with `flock`)
+- Add `LockController` and `locking.php` routes (acquire, heartbeat, release)
+- Add admin endpoints: `GET /api/locks`, `DELETE /api/locks/{resourceId}`
+- Frontend: `api/locks.ts`, `useContentLock` hook, `LockIndicator` component
+
+### Iteration 2 – Auto-save, revisions, conflict detection
+
+- Add `ContentRevision`, `ContentConflictException`, `DraftManager` (`data/drafts/`)
+- Extend `ContentController` with revision/baseRevision checks (HTTP 409)
+- Add `DraftController`, `drafts.php`, `ContentVersioningService`
+- Fix `VersionManager::hydrate()`
+- Frontend: `useAutoSave` (60s interval from settings), `api/drafts.ts`, `api/versions.ts`, `DiffViewer`, `MarkdownEditor` integration
+
+### Iteration 3 – 3-way merge and conflict resolution
+
+- Add `Core/Conflict` (`ConflictLogger` over `data/conflicts.json`)
+- Add `ConflictController` and `conflicts.php` (`GET/DELETE /api/admin/conflicts`)
+- Frontend: `merge3.ts` utility, `ConflictResolver` component, `api/conflicts.ts`
+- Auto-merge and manual resolution flow in `MarkdownEditor`
+
+### Iteration 4 – Settings engine, error handler, shared validation
+
+- Add `Core/Settings` (`SettingsSchema`, `SettingsRepository` over `data/settings.json`)
+- Add `Core/Validation` (`Validator`, `ValidationRules`, `ValidationException`)
+- Add `SettingsController`, `ValidationController`, `ApiErrorHandler` middleware
+- Unify HTTP 404/422 error responses across the API
+- Frontend: `SettingsView`, `SettingsContext`, `useSettings`, `utils/validation.ts`
+- API: `/api/admin/settings/*`, `/api/settings/public`, `/api/validation/rules`
+
+### Iteration 5 – Users, 2FA enforcement, auth hardening
+
+- Implement `UserController` (CRUD + role assignment) and `users.php` routes
+- Enforce `TwoFactorMiddleware` on all `/api/admin/*` route groups
+- Extend `TwoFactorInterface` with `isTotpVerified()` and `isTwoFactorPassed()`
+- Session-based HttpOnly cookie auth; remove dead Bearer token interceptor
+- Fix `GET /api/auth/me` to return `{ success, user }`
+- Frontend: `UsersManager`, `TwoFactorSettings`, two-step `LoginModal`, `api/users.ts`
+- Add `loginAsAdminUser()` helper for integration tests
+
+### Infrastructure and modules
+
+- `bootstrap/app.php`: route auto-discovery, HTTP DI bindings, CORS, auth groups
+- Remove dead `bootstrap/routing.php`; wire `Http/Config/services.php`
+- Cache: `ChainedDriver` (Memory→File), `ContentCacheService`, `MemoryDriver`
+- Developer Mode: `DeveloperModeGate`, `DevTokenGenerator`/`Registry`, `GatedCodeEditorController`, `DeveloperController`
+- Media module: `MediaRepository`, `MediaController`, `media.php`
+- Replace bootstrap mock content routes with real `ContentController`/`MediaController`
+- Register `PasswordPolicyInterface` and fix missing DI imports in HTTP services
+
+### Documentation
+
+- Add `docs/CONTINUATION.md`, `ROADMAP.md`, `architecture/API.md`, `PLUGINS.md`, `SETTINGS.md`, `VERSIONING.md`, `STORAGE.md`
+- Add `developer/CODING_STANDARDS.md` (CodePolicyEngine prep for iteration 14)
+- Document architectural laws: external plugins outside Core, API↔FE mapping
+
+### Tests
+
+- Backend: PHPUnit 375 tests passing, PHPStan level 8 clean
+- Frontend: Vitest 26 tests (`merge3`, `ConflictResolver`, `validation`)
+- New test suites: Locking, Drafts, Conflict, Settings, Validation, ContentRevision, UserController, ApiErrorHandler
+
+### Repository hygiene
+
+- Expand `.gitignore` for runtime/test artifacts: backup zips, cache files, PHPUnit user JSON, repomix exports, phpstan temp reports, screenshots
+- Remove previously tracked backup archives and generated dumps from VCS
+
+### Post-merge fixes (same release)
+
+| Commit     | Description                                      |
+|------------|--------------------------------------------------|
+| `12ea642`  | Clean up `UserRepository` merge artifacts        |
+| `138b2e3`  | Merge `origin/main` into `main_local`            |
+| `b79b82d`  | Remove generated phpstan reports from VCS        |
+| `3b0a4d3`  | Restore `TwoFactorInterface` after merge         |
+
+---
+
+## [1.0.0] – Initial structure
+
+- Initial repository layout (`45ea25c`, `57c28cc`)

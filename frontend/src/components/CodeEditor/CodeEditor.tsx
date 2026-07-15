@@ -4,13 +4,15 @@ import { useApi } from '../../hooks/useApi';
 import { useToast } from '../../hooks/useToast';
 import { FileTree } from './FileTree';
 import { EditorToolbar } from './EditorToolbar';
+import { DeveloperUnlockGate } from './DeveloperUnlockGate';
+import { FileInfo } from '../../api/types';
 
 interface CodeEditorProps {
   initialPath?: string;
 }
 
 export const CodeEditor: React.FC<CodeEditorProps> = ({ initialPath = '' }) => {
-  const [files, setFiles] = useState<any[]>([]);
+  const [files, setFiles] = useState<FileInfo[]>([]);
   const [currentFile, setCurrentFile] = useState<string>(initialPath);
   const [content, setContent] = useState<string>('');
   const [originalContent, setOriginalContent] = useState<string>('');
@@ -34,7 +36,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ initialPath = '' }) => {
 
   const loadFiles = async () => {
     try {
-      const response = await get<any[]>('/api/admin/code-editor/files');
+      const response = await get<FileInfo[]>('/api/admin/code-editor/files?directory=backend/app/Modules');
       if (response.success) {
         setFiles(response.data || []);
       }
@@ -83,8 +85,12 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ initialPath = '' }) => {
         toast.success('File saved successfully!');
         setTimeout(() => setSuccess(null), 3000);
       } else {
-        setError(response.error || 'Failed to save file');
-        toast.error(response.error || 'Failed to save file');
+        const policyErrors = response.errors
+          ? Object.values(response.errors).flat().join('; ')
+          : '';
+        const message = policyErrors || response.error || 'Failed to save file';
+        setError(message);
+        toast.error(message);
       }
     } catch (err: any) {
       setError(err.message || 'Failed to save file');
@@ -110,6 +116,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ initialPath = '' }) => {
   };
 
   return (
+    <DeveloperUnlockGate>
     <div className="flex flex-col h-full bg-white dark:bg-gray-800 rounded-lg shadow">
       {/* Header */}
       <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between flex-wrap gap-2">
@@ -219,6 +226,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ initialPath = '' }) => {
         </details>
       </div>
     </div>
+    </DeveloperUnlockGate>
   );
 };
 

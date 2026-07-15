@@ -5,7 +5,7 @@
 // pridanie novej skupiny na backende nevyžaduje zmenu tohto klienta.
 import apiClient, { ApiResponse } from './client';
 
-export type SettingFieldType = 'string' | 'text' | 'int' | 'bool' | 'email' | 'url' | 'enum';
+export type SettingFieldType = 'string' | 'text' | 'int' | 'bool' | 'email' | 'url' | 'enum' | 'password';
 
 export interface SettingField {
   key: string;
@@ -56,11 +56,18 @@ export async function updateSettingsGroup(
 export interface PublicSettings {
   general: {
     siteName: string;
+    siteDescription?: string;
     language: string;
     maintenanceMode: boolean;
   };
   content: Record<string, unknown>;
   editor: Record<string, unknown>;
+  notifications?: {
+    toastEnabled: boolean;
+    toastPosition: string;
+    toastDuration: number;
+    toastDebugMode: boolean;
+  };
 }
 
 export async function getPublicSettings(): Promise<PublicSettings | null> {

@@ -34,7 +34,7 @@ final class SettingsController
             'success' => true,
             'data' => [
                 'schema' => SettingsSchema::groups(),
-                'values' => $this->settings->all(),
+                'values' => $this->maskSensitiveValues($this->settings->all()),
             ],
         ]);
     }
@@ -54,7 +54,7 @@ final class SettingsController
             'success' => true,
             'data' => [
                 'schema' => SettingsSchema::groups()[$group],
-                'values' => $this->settings->group($group),
+                'values' => $this->maskSensitiveValues([$group => $this->settings->group($group)])[$group] ?? [],
             ],
         ]);
     }
@@ -66,6 +66,7 @@ final class SettingsController
     {
         $group = (string) ($args['group'] ?? '');
         $payload = $this->parseJsonBody($request);
+        $payload = $this->stripMaskedSecrets($group, $payload);
 
         try {
             // ValidationException zámerne prebubláva do jednotného Error Handlera (422).
@@ -83,7 +84,7 @@ final class SettingsController
 
     /**
      * Verejný výrez efektívnych nastavení (bez citlivých údajov).
-     * Dostupné pre všetkých prihlásených používateľov – editor, auto-save interval atď.
+     * Dostupné anonymne pre verejný web a prihlásených používateľov.
      */
     public function publicSettings(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
@@ -94,11 +95,18 @@ final class SettingsController
             'data' => [
                 'general' => [
                     'siteName' => $all['general']['siteName'] ?? 'PaginiumCMS',
+                    'siteDescription' => (string) ($all['general']['siteDescription'] ?? ''),
                     'language' => $all['general']['language'] ?? 'sk',
                     'maintenanceMode' => (bool) ($all['general']['maintenanceMode'] ?? false),
                 ],
                 'content' => $all['content'] ?? [],
                 'editor' => $all['editor'] ?? [],
+                'notifications' => [
+                    'toastEnabled' => (bool) ($all['notifications']['toastEnabled'] ?? true),
+                    'toastPosition' => (string) ($all['notifications']['toastPosition'] ?? 'top-right'),
+                    'toastDuration' => (int) ($all['notifications']['toastDuration'] ?? 3000),
+                    'toastDebugMode' => (bool) ($all['notifications']['toastDebugMode'] ?? false),
+                ],
             ],
         ]);
     }
@@ -115,6 +123,47 @@ final class SettingsController
             'data' => ['values' => $this->settings->all()],
             'message' => 'Nastavenia obnovené na predvolené hodnoty',
         ]);
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     * @return array<string, mixed>
+     */
+    private function stripMaskedSecrets(string $group, array $payload): array
+    {
+        if (!SettingsSchema::hasGroup($group)) {
+            return $payload;
+        }
+
+        foreach (SettingsSchema::groups()[$group]['fields'] as $field) {
+            if (($field['type'] ?? '') === 'password' && ($payload[$field['key']] ?? '') === '********') {
+                unset($payload[$field['key']]);
+            }
+        }
+
+        return $payload;
+    }
+
+    /**
+     * Mask password-type fields in API responses (values are still stored on save).
+     *
+     * @param array<string, array<string, mixed>> $values
+     * @return array<string, array<string, mixed>>
+     */
+    private function maskSensitiveValues(array $values): array
+    {
+        foreach (SettingsSchema::groups() as $groupKey => $group) {
+            if (!isset($values[$groupKey])) {
+                continue;
+            }
+            foreach ($group['fields'] as $field) {
+                if (($field['type'] ?? '') === 'password' && ($values[$groupKey][$field['key']] ?? '') !== '') {
+                    $values[$groupKey][$field['key']] = '********';
+                }
+            }
+        }
+
+        return $values;
     }
 
     // === Blok: Pomocné metódy ===

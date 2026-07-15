@@ -23,3 +23,8 @@
 - **PHP:** Vždy používaj striktné typovanie (`declare(strict_types=1);`), plné namespaces a správne `use` importy navrchu súboru, aby nepadal PHPStan. Cesty k súborom musia byť vždy absolútne, nikdy relatívne.
 - **React:** Používaj moderné funkcionálne komponenty, správne ošetrenie asynchrónnych dopytov (Loading, Success, Error stavy) a striktne dodržuj pravidlo, že backend je jediný zdroj pravdy (Single Source of Truth).
 - **Chyby:** Pri analýze chýb sa prioritne zameraj na prepojenie domina (napr. či funkcia volaná v Controlleri reálne existuje v Manageri/Službe a či má skript správne práva `chmod +x`).
+
+## 📝 Dokumentácia a commity (povinné od Iterácie 6)
+- **Dokumentácia:** Všetka projektová dokumentácia v `docs/` písať v **angličtine**. Pri úpravách existujúcich slovenských dokumentov ich postupne prepracovať do angličtiny.
+- **Commity:** Všetky commit správy a popisy PR v **angličtine** (kompletný popis zmien, nových nastavení a API).
+- **Kódové komentáre:** Preferuj angličtinu pre nové komentáre a docbloky; existujúce slovenské komentáre nemeníš bez dôvodu.

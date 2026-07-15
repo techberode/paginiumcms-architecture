@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { useApi } from '../hooks/useApi';
 import { Page, Article } from '../api/types';
+import { debugLogProvider } from '../utils/debugLog';
 
 interface ContentContextType {
   pages: Page[];
@@ -23,35 +24,52 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const { get } = useApi();
 
   const loadPages = useCallback(async () => {
+    debugLogProvider('content', 'loadPages.start');
     try {
       const response = await get<Page[]>('/api/pages');
       if (response.success) {
         setPages(response.data || []);
+        debugLogProvider('content', 'loadPages.done', { count: response.data?.length ?? 0 });
+      } else {
+        debugLogProvider('content', 'loadPages.failed', { error: response.error });
       }
     } catch (error) {
-      console.error('Failed to load pages:', error);
+      debugLogProvider('content', 'loadPages.error', {
+        message: error instanceof Error ? error.message : 'unknown',
+      });
     }
   }, [get]);
 
   const loadArticles = useCallback(async () => {
+    debugLogProvider('content', 'loadArticles.start');
     try {
       const response = await get<Article[]>('/api/articles');
       if (response.success) {
         setArticles(response.data || []);
+        debugLogProvider('content', 'loadArticles.done', { count: response.data?.length ?? 0 });
+      } else {
+        debugLogProvider('content', 'loadArticles.failed', { error: response.error });
       }
     } catch (error) {
-      console.error('Failed to load articles:', error);
+      debugLogProvider('content', 'loadArticles.error', {
+        message: error instanceof Error ? error.message : 'unknown',
+      });
     }
   }, [get]);
 
   const refresh = useCallback(async () => {
     setLoading(true);
+    debugLogProvider('content', 'refresh.start');
     try {
       await Promise.all([loadPages(), loadArticles()]);
+      debugLogProvider('content', 'refresh.done', {
+        pages: pages.length,
+        articles: articles.length,
+      });
     } finally {
       setLoading(false);
     }
-  }, [loadPages, loadArticles]);
+  }, [loadPages, loadArticles, pages.length, articles.length]);
 
   const getPage = useCallback((slug: string): Page | undefined => {
     return pages.find(p => p.slug === slug);

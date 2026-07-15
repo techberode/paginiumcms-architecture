@@ -22,9 +22,11 @@ class DevTokenGenerator
 
     public function __construct(private string $secret)
     {
-        if ($secret === '') {
-            throw new \InvalidArgumentException('DEV_UNLOCK_SECRET nie je nastavený');
-        }
+    }
+
+    public function isConfigured(): bool
+    {
+        return $this->secret !== '';
     }
 
     /**
@@ -32,6 +34,7 @@ class DevTokenGenerator
      */
     public function generate(string $label = 'developer', int $ttlSeconds = 86400, bool $singleUse = true): array
     {
+        $this->assertConfigured();
         $expiresAt = time() + $ttlSeconds;
         $payload = [
             'label' => $label,
@@ -58,6 +61,10 @@ class DevTokenGenerator
      */
     public function validate(string $token, DevTokenRegistry $registry): array
     {
+        if (!$this->isConfigured()) {
+            return ['valid' => false, 'reason' => 'DEV_UNLOCK_SECRET nie je nastavený'];
+        }
+
         if (!str_starts_with($token, self::PREFIX)) {
             return ['valid' => false, 'reason' => 'Neplatný formát tokenu'];
         }
@@ -107,6 +114,10 @@ class DevTokenGenerator
      */
     public function verifyStructure(string $token): array
     {
+        if (!$this->isConfigured()) {
+            return ['valid' => false, 'reason' => 'DEV_UNLOCK_SECRET nie je nastavený'];
+        }
+
         if (!str_starts_with($token, self::PREFIX)) {
             return ['valid' => false, 'reason' => 'Neplatný formát tokenu'];
         }
@@ -138,6 +149,13 @@ class DevTokenGenerator
     public function markUsed(string $token, DevTokenRegistry $registry): void
     {
         $registry->markUsed(hash('sha256', $token));
+    }
+
+    private function assertConfigured(): void
+    {
+        if (!$this->isConfigured()) {
+            throw new \InvalidArgumentException('DEV_UNLOCK_SECRET nie je nastavený');
+        }
     }
 
     private function base64UrlEncode(string $data): string

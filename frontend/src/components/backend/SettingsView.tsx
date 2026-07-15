@@ -221,13 +221,22 @@ const SettingFieldRow: React.FC<RowProps> = ({ field, value, error, onChange }) 
             />
           )}
 
-          {(field.type === 'string' || field.type === 'email' || field.type === 'url') && (
+          {(field.type === 'string' || field.type === 'email' || field.type === 'url' || field.type === 'password') && (
             <input
               id={inputId}
-              type={field.type === 'email' ? 'email' : field.type === 'url' ? 'url' : 'text'}
+              type={
+                field.type === 'email'
+                  ? 'email'
+                  : field.type === 'url'
+                    ? 'url'
+                    : field.type === 'password'
+                      ? 'password'
+                      : 'text'
+              }
               value={String(value ?? '')}
               onChange={(e) => onChange(e.target.value)}
               className={`form-input w-full ${errorClass}`}
+              autoComplete={field.type === 'password' ? 'new-password' : undefined}
             />
           )}
         </>

@@ -11,6 +11,9 @@ use PaginiumCMS\Modules\Security\Contracts\CsrfProtectionInterface;
 use PaginiumCMS\Modules\Security\Contracts\PasswordPolicyInterface;
 use PaginiumCMS\Modules\Security\Contracts\TwoFactorInterface;
 use PaginiumCMS\Modules\Security\Models\User;
+use PaginiumCMS\Core\Notification\NotificationService;
+use PaginiumCMS\Core\Notification\Services\IncidentNotifier;
+use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Psr7\Response;
@@ -26,6 +29,9 @@ class AuthController
     private PasswordPolicyInterface $passwordPolicy;
     private TwoFactorInterface $twoFactor;
     private UserRepository $userRepository;
+    private SettingsRepositoryInterface $settings;
+    private NotificationService $notifications;
+    private IncidentNotifier $incidentNotifier;
 
     public function __construct(
         AuthenticationInterface $auth,
@@ -33,7 +39,10 @@ class AuthController
         CsrfProtectionInterface $csrf,
         PasswordPolicyInterface $passwordPolicy,
         TwoFactorInterface $twoFactor,
-        UserRepository $userRepository
+        UserRepository $userRepository,
+        SettingsRepositoryInterface $settings,
+        NotificationService $notifications,
+        IncidentNotifier $incidentNotifier
     ) {
         $this->auth = $auth;
         $this->authz = $authz;
@@ -41,6 +50,9 @@ class AuthController
         $this->passwordPolicy = $passwordPolicy;
         $this->twoFactor = $twoFactor;
         $this->userRepository = $userRepository;
+        $this->settings = $settings;
+        $this->notifications = $notifications;
+        $this->incidentNotifier = $incidentNotifier;
     }
 
     /**
@@ -72,6 +84,11 @@ class AuthController
                 'user' => $user->jsonSerialize(),
             ]);
         } catch (\Exception $e) {
+            $this->incidentNotifier->notifyFailedLogin(
+                (string) ($data['email'] ?? 'unknown'),
+                $_SERVER['REMOTE_ADDR'] ?? 'unknown'
+            );
+
             return $this->jsonError($response, $e->getMessage(), 401);
         }
     }
@@ -175,14 +192,44 @@ class AuthController
 
         try {
             $token = $this->auth->resetPassword($data['email']);
+            $user = $this->userRepository->findByEmail($data['email']);
 
-            // V reálnej aplikácii by sme token odoslali emailom
-            // Pre demo ho vrátime v odpovedi
-            return $this->jsonResponse($response, [
+            $smtp = $this->settings->group('smtp');
+            $connectors = $this->settings->group('connectors');
+            $emailChannel = (bool) ($connectors['emailEnabled'] ?? false) || (bool) ($smtp['enabled'] ?? false);
+
+            if ($emailChannel && $user !== null && in_array('email', $this->notifications->getAdapters(), true)) {
+                $general = $this->settings->group('general');
+                $siteUrl = rtrim((string) ($general['siteUrl'] ?? getenv('APP_URL') ?: 'http://localhost:5173'), '/');
+                $resetUrl = $siteUrl . '/reset-password?token=' . urlencode($token);
+                $body = '<p>Password reset was requested for your PaginiumCMS account.</p>'
+                    . '<p><a href="' . htmlspecialchars($resetUrl, ENT_QUOTES, 'UTF-8') . '">Reset your password</a></p>'
+                    . '<p>Token expires in 24 hours. If you did not request this, ignore this email.</p>';
+
+                $this->notifications->send(
+                    'email',
+                    $user->getEmail(),
+                    'PaginiumCMS password reset',
+                    $body,
+                    ['html' => $body, 'event' => 'auth.password_reset']
+                );
+
+                return $this->jsonResponse($response, [
+                    'success' => true,
+                    'message' => 'If the account exists, a reset link was sent by email.',
+                ]);
+            }
+
+            // Development fallback when SMTP is not configured
+            $payload = [
                 'success' => true,
-                'message' => 'Resetovací token bol odoslaný',
-                'token' => $token, // Len pre demo účely
-            ]);
+                'message' => 'Reset token generated (SMTP not configured)',
+            ];
+            if (getenv('APP_ENV') === 'development' || getenv('APP_ENV') === 'testing') {
+                $payload['token'] = $token;
+            }
+
+            return $this->jsonResponse($response, $payload);
         } catch (\Exception $e) {
             return $this->jsonError($response, $e->getMessage(), 400);
         }

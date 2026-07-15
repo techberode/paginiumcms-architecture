@@ -1,12 +1,42 @@
-# PaginiumCMS – Pokračujúci kontext a plán implementácie
+# PaginiumCMS – Continuation context & implementation plan
 
-> Tento dokument je „štartovací brífing“ pre pokračovanie vývoja. Obsahuje:
-> 1. čo je **hotové a funkčné**, 2. **stav** všetkých požiadaviek (DONE/PARTIAL/MISSING),
-> 3. **fázový plán** ďalších iterácií (podľa náročnosti/závislostí),
-> 4. **ready-to-paste pokračujúci prompt** na konci.
+> **Language note:** Project documentation is being migrated to English (see `.cursorrules`).  
+> For Iteration 6 details see [`docs/ITERATION_6.md`](ITERATION_6.md).
 
-Architektúra: React SPA (Vite 8, TS) ↔ REST API (Slim 4) ↔ PHP 8.5 jadro (PHP-DI, PHPStan L8,
-striktné typy) ↔ **Flat-File** úložisko (žiadna DB). Metafora: Hosť = React, Čašník = API, Kuchár = PHP.
+> This document is the “startup briefing” for continuing development. It contains:
+> 1. what is **done and functional**, 2. **status** of all requirements (DONE/PARTIAL/MISSING),
+> 3. **phased plan** for next iterations, 4. **ready-to-paste continuation prompt** at the end.
+
+Architecture: React SPA (Vite 8, TS) ↔ REST API (Slim 4) ↔ PHP 8.5 core (PHP-DI, PHPStan L8,
+strict types) ↔ **Flat-File** storage (no SQL database).
+
+---
+
+## Iteration 6 – DONE (2026-07-15)
+
+- **Notifications:** SMTP settings, connectors (email/ntfy/Discord/Telegram/webhook), incident alerts, admin overview API + FE
+- **Analytics:** `Reporter`, `AnalyticsMiddleware`, visit overview in notifications dashboard
+- **Auth UI:** register, forgot/reset password, change password modals; email reset without production demo token
+- **Toast settings:** position, duration, enable/disable, debug mode from admin settings
+- **Tests:** PHPUnit + Vitest extended; see `docs/ITERATION_6.md`
+
+---
+
+## Iteration 14 – DONE (2026-07-15)
+
+- **Code policy:** `CodePolicyEngine`, `SecurityScanner`, 422 violations, `codePolicy` settings group
+- **Code editor:** fixed path resolution, `FileInfo[]` API, allowed `Http/Extensions` + theme paths
+- **Developer unlock FE:** `DeveloperUnlockGate`, `api/developer.ts`
+- See `docs/ITERATION_14.md`
+
+---
+
+## Iteration 7 – DONE (2026-07-15)
+
+- **Dashboard:** locks panel, conflicts panel, health metrics, analytics chart + realtime visitors
+- **API:** `GET /api/admin/dashboard/overview`, `GET /api/admin/health/*`, `GET /api/admin/analytics/realtime`
+- **RealtimeTracker** implemented; Health module wired to DI and routes
+- See `docs/ITERATION_7.md`
 
 ---
 
@@ -54,8 +84,8 @@ Legenda: ✅ DONE · 🟡 PARTIAL (existuje časť, treba dokončiť/prepojiť) 
 | A | **Rozšírená správa používateľov + roly** | ✅ | `UserController`, `users.php`, FE `UsersManager` + `api/users.ts`. RBAC cez `RoleMiddleware`. |
 | B | **Bezpečné JWT / HttpOnly cookie auth** | ✅ | PHP session + HttpOnly cookie (`SessionManager`, `AuthMiddleware`). Bearer token odstránený z FE. `SecureSessionManager` zostáva voliteľný dlh. |
 | C | **2FA / TOTP** | ✅ | `TwoFactorManager`, `TwoFactorController`, `TwoFactorMiddleware` na admin routách, FE setup + login flow. |
-| D | **Developer mód + zamknutý CodeEditor** | 🟡 | Backend hotový (`DeveloperModeGate`, `DevTokenGenerator/Registry`, unlock cez **TOTP alebo dev-token**, 8h TTL, `GatedCodeEditorController`). FE unlock UI chýba. |
-| E | **Editory (Code/Markdown/WYSIWYG) + admin nastavenia** | 🟡 | Markdown editor plne integrovaný; CodeEditor základný (`<textarea>`, Monaco nevyužitý); `WysiwygEditor` (TipTap) hotový ale **nezapojený**. Admin nastavenia editorov chýbajú. |
+| D | **Developer mód + zamknutý CodeEditor** | 🟡 | Backend hotový (`DeveloperModeGate`, unlock cez TOTP/dev-token). FE unlock gate v Code Editor (It.14). Ďalší polish v It.8. |
+| E | **Editory (Code/Markdown/WYSIWYG) + admin nastavenia** | 🟡 | Markdown editor plne integrovaný; CodeEditor základný s policy + file tree API (It.14); Monaco nevyužitý; WYSIWYG nezapojený. |
 | F | **Validácia na dvoch úrovniach (zdieľané pravidlá)** | ✅ | `Validator`, `ValidationRules`, `ValidationException`, `GET /api/validation/rules`, FE `utils/validation.ts` + `validatePasswordPolicy`. |
 | G | **SMTP nastavenia v administrácii** | 🟡 | `NotificationService` + `EmailAdapter` existujú, ale `EmailAdapter` používa iba `mail()` (bez SMTP), nie je v DI, reset hesla neposiela e-mail. **Settings engine hotový** – It. 6 pridá SMTP skupinu do schémy. |
 | H | **Konektory ntfy / Discord / Telegram / …** | ⛔ | Žiadny kód/adaptéry/konfigurácia. |

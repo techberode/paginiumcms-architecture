@@ -36,10 +36,13 @@ export default {
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
+        display: ['Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
       },
       animation: {
         'fade-in': 'fadeIn 0.3s ease-in-out',
+        'slide-up': 'slideUp 0.3s ease-out',
+        'fade-in-simple': 'fadeInSimple 0.3s ease-out',
         'slide-in': 'slideIn 0.3s ease-out',
         'spin-slow': 'spin 3s linear infinite',
         'pulse-slow': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
@@ -53,6 +56,14 @@ export default {
         slideIn: {
           '0%': { transform: 'translateX(-100%)' },
           '100%': { transform: 'translateX(0)' },
+        },
+        slideUp: {
+          '0%': { opacity: '0', transform: 'translate(-50%, 20px)' },
+          '100%': { opacity: '1', transform: 'translate(-50%, 0)' },
+        },
+        fadeInSimple: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
         },
       },
       screens: {

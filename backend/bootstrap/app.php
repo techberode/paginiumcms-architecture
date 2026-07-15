@@ -35,6 +35,7 @@ use PaginiumCMS\Core\FlatFile\Services\FileWriter;
 use PaginiumCMS\Core\FlatFile\Services\FileValidator;
 use PaginiumCMS\Core\Cache\CacheManager;
 use PaginiumCMS\Core\Cache\Drivers\FileDriver;
+use PaginiumCMS\Core\Analytics\Middleware\AnalyticsMiddleware;
 use PaginiumCMS\Http\Controllers\Auth\AuthController;
 use PaginiumCMS\Http\Controllers\Auth\TwoFactorController;
 use PaginiumCMS\Http\Controllers\Admin\BackupController;
@@ -46,10 +47,18 @@ use PaginiumCMS\Core\Backup\Contracts\BackupInterface;
 use PaginiumCMS\Core\Logging\Services\Logger;
 use PaginiumCMS\Core\Logging\Contracts\LoggerInterface;
 use PaginiumCMS\Core\Security\SecurityLogger;
+use PaginiumCMS\Core\Logging\Services\DebugEventLogger;
+use PaginiumCMS\Http\Middleware\DebugRequestMiddleware;
 
 // ---------- NAČÍTANIE UTF-8 ----------
 require_once __DIR__ . '/utf8.php';
 require_once __DIR__ . '/../../vendor/autoload.php';
+
+// ---------- .env (voliteľné, lokálny vývoj) ----------
+$envPath = dirname(__DIR__, 2);
+if (is_file($envPath . '/.env') && class_exists(\Dotenv\Dotenv::class)) {
+    \Dotenv\Dotenv::createUnsafeImmutable($envPath)->safeLoad();
+}
 
 // ---------- SESSION BEZPEČNOSŤ ----------
 if (file_exists(__DIR__ . '/session.php')) {
@@ -180,7 +189,7 @@ $containerBuilder->addDefinitions([
             $container->get(CacheManager::class),
             maxRequests: $isTesting ? 100000 : (int)($_ENV['RATE_LIMIT_MAX_REQUESTS'] ?? 60),
             window: $isTesting ? 60 : (int)($_ENV['RATE_LIMIT_WINDOW'] ?? 60),
-            excludedPaths: ['/api/health', '/api/test'],
+            excludedPaths: ['/api/health', '/api/test', '/api/debug/client-event'],
             excludedIps: $isTesting ? ['127.0.0.1', '::1'] : [],
             trustedProxies: array_filter(explode(',', (string)($_ENV['TRUSTED_PROXIES'] ?? '127.0.0.1,::1')))
         );
@@ -267,11 +276,14 @@ $containerBuilder->addDefinitions([
     AuthController::class => function ($container) {
         return new AuthController(
             $container->get(AuthenticationInterface::class),
-                                  $container->get(AuthorizationInterface::class),
-                                  $container->get(CsrfProtectionInterface::class),
-                                  $container->get(PasswordPolicyInterface::class),
-                                  $container->get(TwoFactorInterface::class),
-                                  $container->get(UserRepository::class)
+            $container->get(AuthorizationInterface::class),
+            $container->get(CsrfProtectionInterface::class),
+            $container->get(PasswordPolicyInterface::class),
+            $container->get(TwoFactorInterface::class),
+            $container->get(UserRepository::class),
+            $container->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class),
+            $container->get(\PaginiumCMS\Core\Notification\NotificationService::class),
+            $container->get(\PaginiumCMS\Core\Notification\Services\IncidentNotifier::class)
         );
     },
 
@@ -337,11 +349,23 @@ if (is_array($httpServices)) {
     $containerBuilder->addDefinitions($httpServices);
 }
 
+$debugServices = require __DIR__ . '/../app/Http/Config/debug.php';
+if (is_array($debugServices)) {
+    $containerBuilder->addDefinitions($debugServices);
+}
+
 // ============================================
 // 11. VYTVORENIE KONTEJNERA A APLIKÁCIE
 // ============================================
 
 $container = $containerBuilder->build();
+
+if (DebugEventLogger::isEnabled()) {
+    DebugEventLogger::log('backend', 'di.container.built', [
+        'memory_mb' => round(memory_get_usage(true) / 1024 / 1024, 2),
+    ]);
+}
+
 AppFactory::setContainer($container);
 $app = AppFactory::create();
 
@@ -386,6 +410,7 @@ $app->add(new CorsMiddleware([
 
 $app->add($container->get(SecurityMiddleware::class));
 $app->add($container->get(RateLimitMiddleware::class));
+$app->add($container->get(AnalyticsMiddleware::class));
 
 // ============================================
 // 14. ROUTY
@@ -486,6 +511,11 @@ foreach (glob(__DIR__ . '/../app/Http/Routes/*.php') as $routeFile) {
     $register = require $routeFile;
     if (is_callable($register)) {
         $register($app);
+        if (DebugEventLogger::isEnabled()) {
+            DebugEventLogger::log('backend', 'routes.module.loaded', [
+                'module' => basename($routeFile, '.php'),
+            ]);
+        }
     }
 }
 
@@ -546,5 +576,20 @@ $app->add(function ($request, $handler) {
 $app->options('/{routes:.+}', function ($request, $response, $args) {
     return $response;
 });
+
+if (DebugEventLogger::isEnabled()) {
+    $app->add(new DebugRequestMiddleware());
+}
+
+if (DebugEventLogger::isEnabled()) {
+    $routeFiles = glob(__DIR__ . '/../app/Http/Routes/*.php') ?: [];
+    DebugEventLogger::log('backend', 'bootstrap.complete', [
+        'php_version' => PHP_VERSION,
+        'app_env' => getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? 'development'),
+        'route_modules' => count($routeFiles),
+        'memory_mb' => round(memory_get_usage(true) / 1024 / 1024, 2),
+        'sapi' => PHP_SAPI,
+    ]);
+}
 
 return $app;

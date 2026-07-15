@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Support;
 
 use PaginiumCMS\Core\Validation\ValidationException;
+use PaginiumCMS\Core\CodePolicy\Exceptions\CodePolicyViolationException;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -53,6 +54,14 @@ final class ApiErrorHandler
     private function map(Throwable $exception, bool $debug): array
     {
         if ($exception instanceof ValidationException) {
+            return [422, [
+                'success' => false,
+                'error' => $exception->getMessage(),
+                'errors' => $exception->getErrors(),
+            ]];
+        }
+
+        if ($exception instanceof CodePolicyViolationException) {
             return [422, [
                 'success' => false,
                 'error' => $exception->getMessage(),
