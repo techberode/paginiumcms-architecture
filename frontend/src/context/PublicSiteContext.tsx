@@ -1,6 +1,7 @@
 // frontend/src/context/PublicSiteContext.tsx
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import apiClient from '../api/client';
+import { getNavigation } from '../api/navigation';
 import { Article, Page } from '../api/types';
 import { useSettingsContext } from './SettingsContext';
 import { debugLogProvider } from '../utils/debugLog';
@@ -55,15 +56,17 @@ export const PublicSiteProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const { settings } = useSettingsContext();
   const [pages, setPages] = useState<Page[]>([]);
   const [articles, setArticles] = useState<Article[]>([]);
+  const [navigationItems, setNavigationItems] = useState<PublicNavItem[]>(CORE_NAV);
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
     setLoading(true);
     debugLogProvider('publicSite', 'refresh.start');
     try {
-      const [pagesRes, articlesRes] = await Promise.all([
+      const [pagesRes, articlesRes, navItems] = await Promise.all([
         apiClient.get<Page[]>('/api/pages'),
         apiClient.get<Article[]>('/api/articles'),
+        getNavigation(),
       ]);
       const publishedPages = pagesRes.success ? (pagesRes.data || []).filter((p) => p.status === 'published') : [];
       const publishedArticles = articlesRes.success
@@ -75,9 +78,15 @@ export const PublicSiteProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       if (articlesRes.success) {
         setArticles(publishedArticles);
       }
+      if (navItems.length > 0) {
+        setNavigationItems(navItems);
+      } else {
+        setNavigationItems(buildNavigation(publishedPages));
+      }
       debugLogProvider('publicSite', 'refresh.done', {
         pages: publishedPages.length,
         articles: publishedArticles.length,
+        nav: navItems.length,
         pagesOk: pagesRes.success,
         articlesOk: articlesRes.success,
       });
@@ -105,7 +114,19 @@ export const PublicSiteProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   );
 
   const general = settings.general as Record<string, unknown>;
-  const navigation = useMemo(() => buildNavigation(pages), [pages]);
+  const navigation = useMemo(() => {
+    if (navigationItems.length > 0) {
+      return [...navigationItems]
+        .sort((a, b) => a.order - b.order)
+        .map((item) => ({
+          id: item.id,
+          label: item.label,
+          path: item.path,
+          order: item.order,
+        }));
+    }
+    return buildNavigation(pages);
+  }, [navigationItems, pages]);
 
   const value = useMemo(
     () => ({
@@ -120,7 +141,7 @@ export const PublicSiteProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       getPageBySlug,
       getArticleBySlug,
     }),
-    [pages, articles, loading, navigation, general, refresh, getPageBySlug, getArticleBySlug]
+    [pages, articles, loading, navigation, navigationItems, general, refresh, getPageBySlug, getArticleBySlug]
   );
 
   return <PublicSiteContext.Provider value={value}>{children}</PublicSiteContext.Provider>;

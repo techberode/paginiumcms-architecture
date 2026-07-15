@@ -36,6 +36,7 @@ use PaginiumCMS\Core\Developer\DevTokenGenerator;
 use PaginiumCMS\Core\Developer\DevTokenRegistry;
 use PaginiumCMS\Core\Developer\Services\DeveloperLogger;
 use PaginiumCMS\Core\Event\EventDispatcher;
+use PaginiumCMS\Core\GitHub\Services\GitHubService;
 use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
@@ -63,6 +64,8 @@ use PaginiumCMS\Http\Controllers\Admin\AnalyticsController;
 use PaginiumCMS\Http\Controllers\Admin\AuditTrailController;
 use PaginiumCMS\Http\Controllers\Admin\DashboardController;
 use PaginiumCMS\Http\Controllers\Admin\HealthController;
+use PaginiumCMS\Http\Controllers\Admin\GitHubController;
+use PaginiumCMS\Http\Controllers\Admin\MessageController;
 use PaginiumCMS\Http\Controllers\Admin\NotificationController;
 use PaginiumCMS\Http\Controllers\Admin\CodeEditorController;
 use PaginiumCMS\Http\Controllers\Admin\DeveloperController;
@@ -72,11 +75,20 @@ use PaginiumCMS\Http\Controllers\Admin\VersionController;
 use PaginiumCMS\Http\Controllers\Admin\ConflictController;
 use PaginiumCMS\Http\Controllers\Admin\UserController;
 use PaginiumCMS\Http\Controllers\Validation\ValidationController;
+use PaginiumCMS\Http\Controllers\Comments\CommentsController;
+use PaginiumCMS\Http\Controllers\Contact\ContactController;
+use PaginiumCMS\Http\Controllers\Navigation\NavigationController;
 use PaginiumCMS\Http\Controllers\Content\ContentController;
 use PaginiumCMS\Http\Controllers\Content\DraftController;
 use PaginiumCMS\Http\Controllers\Locking\LockController;
 use PaginiumCMS\Http\Controllers\Media\MediaController;
 use PaginiumCMS\Http\Middleware\DeveloperModeMiddleware;
+use PaginiumCMS\Modules\Comments\Contracts\CommentsRepositoryInterface;
+use PaginiumCMS\Modules\Comments\Services\CommentsRepository;
+use PaginiumCMS\Modules\Messages\Contracts\MessageRepositoryInterface;
+use PaginiumCMS\Modules\Messages\Services\MessageRepository;
+use PaginiumCMS\Modules\Navigation\Contracts\NavigationRepositoryInterface;
+use PaginiumCMS\Modules\Navigation\Services\NavigationRepository;
 use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
 use PaginiumCMS\Modules\Media\Services\MediaRepository;
 use PaginiumCMS\Modules\Security\Contracts\PasswordPolicyInterface;
@@ -160,6 +172,56 @@ return [
             get(FileReaderInterface::class),
             get(FileWriterInterface::class)
         ),
+
+    NavigationRepositoryInterface::class => create(NavigationRepository::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class)
+        ),
+    NavigationController::class => create(NavigationController::class)
+        ->constructor(get(NavigationRepositoryInterface::class)),
+
+    CommentsRepositoryInterface::class => create(CommentsRepository::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class)
+        ),
+    CommentsController::class => create(CommentsController::class)
+        ->constructor(
+            get(CommentsRepositoryInterface::class),
+            get(SettingsRepositoryInterface::class),
+            get(Validator::class)
+        ),
+
+    MessageRepositoryInterface::class => create(MessageRepository::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class)
+        ),
+    ContactController::class => create(ContactController::class)
+        ->constructor(
+            get(MessageRepositoryInterface::class),
+            get(Validator::class)
+        ),
+    MessageController::class => create(MessageController::class)
+        ->constructor(get(MessageRepositoryInterface::class)),
+
+    GitHubService::class => function ($container) {
+        return new GitHubService(
+            $container->get(FileReaderInterface::class),
+            $container->get(FileWriterInterface::class),
+            [
+                'token' => getenv('GITHUB_TOKEN') ?: ($_ENV['GITHUB_TOKEN'] ?? ''),
+                'repo' => getenv('GITHUB_REPO') ?: ($_ENV['GITHUB_REPO'] ?? ''),
+                'branch' => getenv('GITHUB_BRANCH') ?: ($_ENV['GITHUB_BRANCH'] ?? 'main'),
+                'enabled' => filter_var(getenv('GITHUB_ENABLED') ?: ($_ENV['GITHUB_ENABLED'] ?? 'false'), FILTER_VALIDATE_BOOLEAN),
+                'auto_sync' => filter_var(getenv('GITHUB_AUTO_SYNC') ?: ($_ENV['GITHUB_AUTO_SYNC'] ?? 'false'), FILTER_VALIDATE_BOOLEAN),
+                'content_path' => getenv('GITHUB_CONTENT_PATH') ?: ($_ENV['GITHUB_CONTENT_PATH'] ?? 'content'),
+            ]
+        );
+    },
+    GitHubController::class => create(GitHubController::class)
+        ->constructor(get(GitHubService::class)),
 
     // === Blok: Systém zamykania obsahu (Iterácia 1) ===
     // Flat-file manažér zámkov (data/locks.json), TTL 300 s = auto-release po 5 min.

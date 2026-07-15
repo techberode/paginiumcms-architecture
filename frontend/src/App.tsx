@@ -14,7 +14,11 @@ import { BackupManager } from './components/backend/BackupManager';
 import { SettingsView } from './components/backend/SettingsView';
 import { UsersManager } from './components/backend/UsersManager';
 import { NotificationsOverview } from './components/backend/NotificationsOverview';
-import { MediaPlaceholder } from './components/backend/MediaPlaceholder';
+import { MediaManager } from './components/backend/MediaManager';
+import { NavigationManager } from './components/backend/NavigationManager';
+import { CommentsManager } from './components/backend/CommentsManager';
+import { MessagesViewer } from './components/backend/MessagesViewer';
+import { GitHubSyncPanel } from './components/backend/GitHubSyncPanel';
 import { CodeEditor } from './components/CodeEditor/CodeEditor';
 import { AuditTrail } from './components/Audit/AuditTrail';
 import { LoginModal } from './components/frontend/LoginModal';
@@ -110,7 +114,11 @@ function App() {
         <Route path="/pages/:slug" element={<MarkdownEditor type="page" />} />
         <Route path="/articles" element={<PagesManager type="articles" />} />
         <Route path="/articles/:slug" element={<MarkdownEditor type="article" />} />
-        <Route path="/media" element={<MediaPlaceholder />} />
+        <Route path="/media" element={<MediaManager />} />
+        <Route path="/navigation" element={<NavigationManager />} />
+        <Route path="/comments" element={<CommentsManager />} />
+        <Route path="/messages" element={<MessagesViewer />} />
+        <Route path="/github" element={<GitHubSyncPanel />} />
         <Route path="/code-editor" element={<CodeEditor />} />
         <Route path="/code-editor/*" element={<CodeEditor />} />
         <Route path="/backups" element={<BackupManager />} />

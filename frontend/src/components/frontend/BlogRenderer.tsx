@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { usePublicSite } from '../../context/PublicSiteContext';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { MarkdownRenderer } from '../common/MarkdownRenderer';
+import { ArticleComments } from './ArticleComments';
 import {
   Calendar,
   User,
@@ -138,6 +139,8 @@ export const BlogRenderer: React.FC = () => {
               </div>
             </div>
           )}
+
+          <ArticleComments articleSlug={activeArticle.slug} />
         </main>
       </div>
     );

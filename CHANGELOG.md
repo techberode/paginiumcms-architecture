@@ -6,6 +6,46 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [2.0.5] – 2026-07-15
+
+### Iteration 9 – Prototype backend port + FE wiring
+
+#### Backend
+- Port Navigation API (`GET /api/navigation`, `PUT /api/admin/navigation`)
+- Port Comments module (public submit/list + admin moderation)
+- Port Contact form (`POST /api/contact`) and admin Messages inbox
+- Expose GitHub sync admin routes via existing `GitHubService`
+- Add `comments` settings group to `SettingsSchema`
+
+#### Frontend
+- Add `api/navigation.ts`, `comments.ts`, `contact.ts`, `messages.ts`, `github.ts`
+- Add admin views: NavigationManager, CommentsManager, MessagesViewer, GitHubSyncPanel
+- Wire ContactForm, ArticleComments, PublicSiteContext navigation
+- Fix API base URL for same-origin LAN deploy (`utils/apiBaseUrl.ts`)
+- Complete It.8: WYSIWYG toggle, MediaPickerModal, TipTap build fix
+
+#### Tests & docs
+- Add repository/controller tests for Navigation, Comments, Messages, GitHub
+- Add `docs/ITERATION_9.md`, `docs/deploy/NGINX_API.md`
+
+---
+
+## [2.0.4] – 2026-07-15
+
+### Iteration 8 – Media Manager (Frontend)
+
+#### Frontend
+- Add `api/media.ts` – list, upload, patch alt text, delete
+- Add `MediaManager` – drag & drop upload, grid previews, alt edit, copy URL, delete
+- Wire `/media` admin route; remove `MediaPlaceholder` stub
+
+#### Tests & docs
+- Add `MediaRepositoryTest`, `MediaControllerTest` (PHPUnit)
+- Add `media.test.ts`, `MediaManager.test.tsx` (Vitest)
+- Add `docs/ITERATION_8.md`
+
+---
+
 ## [2.0.3] – 2026-07-15
 
 ### Iteration 14 – Code policy & Code Editor foundation

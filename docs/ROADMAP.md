@@ -146,11 +146,11 @@ Základ pre všetky admin nastavenia (SMTP, notifikácie, SEO, feedy v ďalšíc
 - Panel zámkov (`GET /api/locks`) a konfliktov (`GET /api/admin/conflicts`) + Health metriky.
 - Dokončenie Analytics (`AnalyticsManager/Reporter/RealtimeTracker/Middleware`), reporty návštevnosti, realtime, notifikácie cez konektor.
 
-## Iterácia 8 – Media manager / DAM (FE) + editory + developer unlock UI ⏳ 🟡
-- FE `MediaManager` (upload/grid/metadáta) nad existujúcim `/api/media`.
-- **Plný DAM:** viacúrovňové priečinky, `.meta.json` sidecar, hromadné operácie, zamykanie assetov.
-- Admin voľba editora (markdown/WYSIWYG/Monaco) + zapojenie `WysiwygEditor`.
-- Developer unlock UI (gate modal → `/api/admin/developer/unlock`, TOTP/dev-token).
+## Iterácia 8 – Media manager / DAM (FE) + editory + developer unlock UI 🟡
+- ✅ FE `MediaManager` (upload/grid/altText/delete) nad existujúcim `/api/media`.
+- ⏳ **Plný DAM:** viacúrovňové priečinky, `.meta.json` sidecar, hromadné operácie, zamykanie assetov.
+- ⏳ Admin voľba editora (markdown/WYSIWYG/Monaco) + zapojenie `WysiwygEditor`.
+- ⏳ Developer unlock UI (gate modal → `/api/admin/developer/unlock`, TOTP/dev-token).
 
 ## Iterácia 9 – SEO: automatické tagy + rozšírené nastavenia ⏳ 🟢
 - `Core/Seo/*` – automatické meta description, canonical, Open Graph, Twitter Card, JSON-LD z obsahu/front matter.

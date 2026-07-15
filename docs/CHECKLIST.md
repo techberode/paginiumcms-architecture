@@ -196,7 +196,7 @@ This document is the single source of truth for what exists in the backend API, 
 | Developer unlock gate | ✅ | ✅ | DeveloperControllerTest, DeveloperUnlockGate Vitest |
 | Code editor (Monaco) | — | ⛔ textarea only | — |
 | WYSIWYG (TipTap) | — | ⛔ orphan component | — |
-| Media manager | ✅ API | ⛔ no view | — |
+| Media manager | ✅ API | ✅ `MediaManager` | `/media` |
 | Public site theme | backend views | ⛔ separate from admin SPA | `paginium_home.png` etc. |
 | SEO admin UI | settings groups | 🟡 in SettingsView | `seo_site.png` |
 
@@ -278,7 +278,7 @@ This document is the single source of truth for what exists in the backend API, 
 
 ## 7. Known gaps (next iterations)
 
-1. **Iteration 8:** Media manager FE, WYSIWYG, Monaco, prototype CSS alignment
+1. **Iteration 8 (partial):** WYSIWYG, Monaco picker, full DAM folders
 2. **Iteration 15:** PluginManager on `Http/Extensions`
 3. **Audit sub-routes:** wire `useParams` in `AuditTrail`
 4. **Version UI:** mount `VersionHistory` in editor sidebar

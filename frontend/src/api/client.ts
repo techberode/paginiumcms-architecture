@@ -1,6 +1,7 @@
 // frontend/src/api/client.ts
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import { debugLogApi } from '../utils/debugLog';
+import { resolveApiBaseUrl } from '../utils/apiBaseUrl';
 
 export interface ApiResponse<T = any> {
   success: boolean;
@@ -37,7 +38,7 @@ class ApiClient {
 
   private constructor() {
     this.client = axios.create({
-      baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080',
+      baseURL: resolveApiBaseUrl(),
       timeout: 30000,
       headers: {
         'Content-Type': 'application/json',
@@ -94,6 +95,10 @@ class ApiClient {
               '/pages',
               '/articles',
               '/media',
+              '/navigation',
+              '/comments',
+              '/messages',
+              '/github',
               '/code-editor',
               '/backups',
               '/audit',

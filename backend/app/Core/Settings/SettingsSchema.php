@@ -125,6 +125,15 @@ final class SettingsSchema
                     ['key' => 'forbiddenPhpFunctions', 'type' => 'text', 'label' => 'Forbidden PHP functions', 'default' => 'eval,exec,shell_exec,system,passthru,proc_open,popen,assert,create_function', 'rules' => ['string', 'max:2000'], 'help' => 'Comma-separated list scanned before save.'],
                 ],
             ],
+            'comments' => [
+                'label' => 'Comments',
+                'fields' => [
+                    ['key' => 'enabled', 'type' => 'bool', 'label' => 'Enable comments', 'default' => true, 'rules' => ['bool']],
+                    ['key' => 'requireApproval', 'type' => 'bool', 'label' => 'Require admin approval', 'default' => true, 'rules' => ['bool']],
+                    ['key' => 'allowGuestComments', 'type' => 'bool', 'label' => 'Allow guest comments', 'default' => true, 'rules' => ['bool']],
+                    ['key' => 'maxLength', 'type' => 'int', 'label' => 'Max comment length', 'default' => 2000, 'rules' => ['required', 'int', 'min:50', 'max:5000']],
+                ],
+            ],
         ];
     }
 

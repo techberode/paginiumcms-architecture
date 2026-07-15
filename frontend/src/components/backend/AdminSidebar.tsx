@@ -15,6 +15,9 @@ import {
   Users,
   Shield,
   Bell,
+  GitBranch,
+  MessageSquare,
+  Mail,
   HardDrive,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -67,6 +70,10 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
     { id: 'pages', label: 'Podstránky', href: '/pages', icon: FileText, count: pages.length },
     { id: 'articles', label: 'Články (Blog)', href: '/articles', icon: BookOpen, count: articles.length },
     { id: 'media', label: 'Médiá', href: '/media', icon: ImageIcon },
+    { id: 'navigation', label: 'Navigácia', href: '/navigation', icon: Database },
+    { id: 'comments', label: 'Komentáre', href: '/comments', icon: MessageSquare, adminOnly: true },
+    { id: 'messages', label: 'Správy', href: '/messages', icon: Mail, adminOnly: true },
+    { id: 'github', label: 'GitHub', href: '/github', icon: GitBranch, adminOnly: true },
     { id: 'code-editor', label: 'Code Editor', href: '/code-editor', icon: Code },
     { id: 'backups', label: 'Zálohy', href: '/backups', icon: HardDrive },
     { id: 'audit', label: 'Audit Trail', href: '/audit', icon: History },

@@ -2,26 +2,28 @@
 import React from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import Link from '@tiptap/extension-link';
-import Image from '@tiptap/extension-image';
-import Underline from '@tiptap/extension-underline';
-import TextStyle from '@tiptap/extension-text-style';
-import Color from '@tiptap/extension-color';
-import Table from '@tiptap/extension-table';
-import TableRow from '@tiptap/extension-table-row';
-import TableCell from '@tiptap/extension-table-cell';
-import TableHeader from '@tiptap/extension-table-header';
+import { Link } from '@tiptap/extension-link';
+import { Image } from '@tiptap/extension-image';
+import { Underline } from '@tiptap/extension-underline';
+import { TextStyle } from '@tiptap/extension-text-style';
+import { Color } from '@tiptap/extension-color';
+import { Table } from '@tiptap/extension-table';
+import { TableRow } from '@tiptap/extension-table-row';
+import { TableCell } from '@tiptap/extension-table-cell';
+import { TableHeader } from '@tiptap/extension-table-header';
 
 interface WysiwygEditorProps {
   value: string;
   onChange: (value: string) => void;
   readOnly?: boolean;
+  onPickMedia?: () => void;
 }
 
 export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
   value,
   onChange,
   readOnly = false,
+  onPickMedia,
 }) => {
   const editor = useEditor({
     extensions: [
@@ -50,6 +52,14 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
       onChange(editor.getHTML());
     },
   });
+
+  useEffect(() => {
+    if (!editor) return;
+    const current = editor.getHTML();
+    if (value !== current) {
+      editor.commands.setContent(value, false);
+    }
+  }, [value, editor]);
 
   if (!editor) {
     return <div className="p-4 text-gray-500">Načítavanie editora...</div>;
@@ -147,8 +157,13 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
           🔗❌
         </button>
         <button
+          type="button"
           onClick={() => {
-            const url = prompt('Zadajte URL obrázka:');
+            if (onPickMedia) {
+              onPickMedia();
+              return;
+            }
+            const url = prompt('Enter image URL:');
             if (url) {
               editor.chain().focus().setImage({ src: url }).run();
             }
