@@ -223,6 +223,9 @@ class AuthControllerTest extends TestCase
 
     public function testResetPassword(): void
     {
+        putenv('APP_ENV=testing');
+        $_ENV['APP_ENV'] = 'testing';
+
         $userData = $this->createTestUser();
         $this->assertEquals(201, $userData['response']->getStatusCode());
 
@@ -235,7 +238,7 @@ class AuthControllerTest extends TestCase
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertTrue($data['success']);
-        $this->assertArrayHasKey('token', $data);
+        $this->assertArrayHasKey('token', $data, 'Token should be returned in testing when SMTP is not configured');
 
         $newPassword = 'ResetPassword123!';
         $verifyRequest = $this->createJsonRequest('POST', '/api/auth/verify-reset-token', [

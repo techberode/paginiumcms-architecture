@@ -1,6 +1,7 @@
 // frontend/src/components/frontend/LoginModal.tsx
-// === Prihlásenie + 2FA krok (Iterácia 5) ===
+// === Login + 2FA + auth links (Iteration 5–6) ===
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
 
@@ -95,8 +96,16 @@ export const LoginModal: React.FC = () => {
               autoComplete="current-password"
             />
             <button type="submit" disabled={loading} className="w-full btn btn-primary">
-              {loading ? 'Prihlasujem…' : 'Prihlásiť sa'}
+              {loading ? 'Signing in…' : 'Sign in'}
             </button>
+            <div className="flex justify-between text-sm">
+              <Link to="/forgot-password" className="text-indigo-600 hover:underline">
+                Forgot password?
+              </Link>
+              <Link to="/register" className="text-indigo-600 hover:underline">
+                Create account
+              </Link>
+            </div>
           </form>
         ) : (
           <form className="mt-8 space-y-6" onSubmit={handleTotp}>

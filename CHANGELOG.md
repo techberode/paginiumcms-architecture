@@ -6,6 +6,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [2.1.0] – 2026-07-15
+
+### Iteration 6 – Notifications, analytics, auth UI
+
+#### Backend
+- Extend `SettingsSchema` with `smtp`, `notifications`, `connectors`, and `monitoring` groups
+- Add `SmtpTransport`, `NotificationFactory`, `IncidentNotifier`, and channel adapters (email, ntfy, Discord, Telegram, webhook)
+- Add `NotificationController` (`GET /api/admin/notifications/overview`, `POST /api/admin/notifications/test`)
+- Implement `Reporter`, `AnalyticsManager`, `AnalyticsMiddleware`, and `AnalyticsController`
+- Wire notification and analytics services in DI (`services.php`, `bootstrap/app.php`)
+- Password reset sends email when SMTP is configured; demo token only in `development`/`testing` without SMTP
+- Failed login and audit security events trigger `IncidentNotifier`
+- Mask password fields in admin settings API responses; ignore masked values on save
+- Expose toast settings via `GET /api/settings/public`
+
+#### Frontend
+- Add `NotificationsOverview` at `/notifications` with connector status and visit stats
+- Add `api/notifications.ts`, `api/analytics.ts`
+- Toast UI driven by settings (enabled, position, duration, debug mode)
+- Auth UI: `RegisterModal`, `ForgotPasswordModal`, `ResetPasswordModal`, `ChangePasswordModal`
+- `SettingsView` supports `password` field type
+
+#### Tests & docs
+- Add `NotificationFactoryTest`, `IncidentNotifierTest`, `notificationSettings.test.ts`
+- Rewrite `docs/architecture/SETTINGS.md` in English; add `docs/ITERATION_6.md`
+- `.cursorrules`: documentation and commit messages must be in English
+
+---
+
 ## [2.0.0] – 2026-07-14
 
 **Commit:** [`09b74ab`](https://github.com/techberode/paginiumcms-architecture/commit/09b74ab)  

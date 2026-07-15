@@ -2,7 +2,17 @@
 
 declare(strict_types=1);
 
+use PaginiumCMS\Core\Analytics\Contracts\ReporterInterface;
+use PaginiumCMS\Core\Analytics\Contracts\TrackerInterface;
+use PaginiumCMS\Core\Analytics\Middleware\AnalyticsMiddleware;
+use PaginiumCMS\Core\Analytics\Services\AnalyticsManager;
+use PaginiumCMS\Core\Analytics\Services\GeoIPService;
+use PaginiumCMS\Core\Analytics\Services\Reporter;
+use PaginiumCMS\Core\Analytics\Services\Tracker;
 use PaginiumCMS\Core\AuditTrail\Services\AuditTrailService;
+use PaginiumCMS\Core\Notification\NotificationService;
+use PaginiumCMS\Core\Notification\Services\IncidentNotifier;
+use PaginiumCMS\Core\Notification\Services\NotificationFactory;
 use PaginiumCMS\Core\Cache\CacheManager;
 use PaginiumCMS\Core\Cache\ContentCacheService;
 use PaginiumCMS\Core\CodeEditor\Services\CodeEditorLogger;
@@ -38,7 +48,9 @@ use PaginiumCMS\Core\Settings\Services\SettingsRepository;
 use PaginiumCMS\Core\Validation\Validator;
 use PaginiumCMS\Core\Versioning\Services\ContentVersioningService;
 use PaginiumCMS\Core\Versioning\Services\EnhancedVersionManager;
+use PaginiumCMS\Http\Controllers\Admin\AnalyticsController;
 use PaginiumCMS\Http\Controllers\Admin\AuditTrailController;
+use PaginiumCMS\Http\Controllers\Admin\NotificationController;
 use PaginiumCMS\Http\Controllers\Admin\CodeEditorController;
 use PaginiumCMS\Http\Controllers\Admin\DeveloperController;
 use PaginiumCMS\Http\Controllers\Admin\GatedCodeEditorController;
@@ -202,11 +214,49 @@ return [
             'data/versions',
             50
         ),
+    // === Blok: Notifikácie + analytika (Iterácia 6) ===
+    GeoIPService::class => create(GeoIPService::class),
+    TrackerInterface::class => create(Tracker::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class),
+            get(GeoIPService::class),
+            'data/analytics'
+        ),
+    ReporterInterface::class => create(Reporter::class)
+        ->constructor(get(TrackerInterface::class)),
+    NotificationService::class => function ($container) {
+        return NotificationFactory::create($container->get(SettingsRepositoryInterface::class));
+    },
+    IncidentNotifier::class => create(IncidentNotifier::class)
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(NotificationService::class)
+        ),
+    AnalyticsManager::class => create(AnalyticsManager::class)
+        ->constructor(
+            get(TrackerInterface::class),
+            get(ReporterInterface::class),
+            get(SettingsRepositoryInterface::class),
+            get(IncidentNotifier::class)
+        ),
+    AnalyticsMiddleware::class => create(AnalyticsMiddleware::class)
+        ->constructor(get(AnalyticsManager::class)),
+    AnalyticsController::class => create(AnalyticsController::class)
+        ->constructor(get(ReporterInterface::class)),
+    NotificationController::class => create(NotificationController::class)
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(NotificationService::class),
+            get(ReporterInterface::class)
+        ),
+
     AuditTrailService::class => create(AuditTrailService::class)
         ->constructor(
             get(LoggerInterface::class),
             get(EnhancedVersionManager::class),
-            get(UserRepository::class)
+            get(UserRepository::class),
+            get(IncidentNotifier::class)
         ),
     ContentVersioningService::class => create(ContentVersioningService::class)
         ->constructor(

@@ -1,92 +1,123 @@
-# PaginiumCMS – Iterácia 4: Settings, Error Handler, Validácia
+# PaginiumCMS – Settings, Validation & Notifications
 
-> Doplnok k `API.md`. Flat-file nastavenia, jednotný JSON error obal, zdieľané validačné pravidlá FE↔BE.
+> Flat-file settings engine, unified JSON error handling, shared FE↔BE validation, and Iteration 6 notification/analytics settings.
 
 ---
 
 ## 1. Settings engine
 
-### Úložisko
+### Storage
 
-- Súbor: `backend/storage/app/content/data/settings.json`
-- Ukladajú sa **iba odchýlky** od predvolieb v `SettingsSchema`
-- Súbežnosť: `flock(LOCK_EX)` (`SettingsRepository`)
+- File: `backend/storage/app/content/data/settings.json`
+- Only **overrides** from `SettingsSchema` defaults are persisted
+- Concurrency: `flock(LOCK_EX)` in `SettingsRepository`
 
-### Endpointy
+### Endpoints
 
-| Metóda | Endpoint | Auth | Popis |
+| Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| `GET` | `/api/settings/public` | prihlásený | Verejný výrez (general/content/editor) pre celú aplikáciu |
-| `GET` | `/api/admin/settings` | ADMIN | Schéma + efektívne hodnoty všetkých skupín |
-| `GET` | `/api/admin/settings/{group}` | ADMIN | Schéma + hodnoty jednej skupiny |
-| `PUT` | `/api/admin/settings/{group}` | ADMIN | Validácia + uloženie skupiny |
-| `DELETE` | `/api/admin/settings` | ADMIN | Reset na predvolené hodnoty |
+| `GET` | `/api/settings/public` | logged-in | Public slice for the SPA (general, content, editor, notifications toast settings) |
+| `GET` | `/api/admin/settings` | ADMIN | Schema + effective values (password fields masked as `********`) |
+| `GET` | `/api/admin/settings/{group}` | ADMIN | Schema + values for one group |
+| `PUT` | `/api/admin/settings/{group}` | ADMIN | Validate + save group (masked passwords are ignored) |
+| `DELETE` | `/api/admin/settings` | ADMIN | Reset all groups to defaults |
 
-### Skupiny schémy
+### Schema groups
 
-- `general` – siteName, siteUrl, adminEmail, language, timezone, maintenanceMode
-- `content` – itemsPerPage, defaultStatus, autoSaveInterval, lockTtl
-- `editor` – defaultEditor, spellcheck, tabSize
+| Group | Purpose |
+|---|---|
+| `general` | siteName, siteUrl, adminEmail, language, timezone, maintenanceMode |
+| `content` | itemsPerPage, defaultStatus, autoSaveInterval, lockTtl |
+| `editor` | defaultEditor, spellcheck, tabSize |
+| `smtp` | SMTP transport (host, port, TLS, credentials, from address) |
+| `notifications` | Toast UI: enabled, position, duration, debug mode |
+| `connectors` | Email, ntfy, Discord, Telegram, webhook toggles and config |
+| `monitoring` | Incident alerts, fallback email, failed-login/security/traffic-spike rules |
 
 ### Frontend
 
-| Súbor | Rola |
+| File | Role |
 |---|---|
-| `api/settings.ts` | Typované volania |
-| `components/backend/SettingsView.tsx` | Generický formulár riadený schémou |
-| `context/SettingsContext.tsx` | Globálny prístup k nastaveniam |
-| `hooks/useSettings.ts` | Skrátený hook |
-| `hooks/useAutoSave.ts` | Interval z `content.autoSaveInterval` |
+| `api/settings.ts` | Typed admin + public settings API |
+| `components/backend/SettingsView.tsx` | Schema-driven admin form (supports `password` fields) |
+| `context/SettingsContext.tsx` | Global effective settings |
+| `context/NotificationContext.tsx` | Toast UI driven by `notifications` public settings |
+| `hooks/useToast.ts` | Shortcut for toast helpers |
 
 ---
 
-## 2. Jednotný Error Handler
+## 2. Notifications & analytics (Iteration 6)
 
-Registrovaný v `bootstrap/app.php` cez `ApiErrorHandler`.
+### Admin API
 
-| Výnimka | HTTP | JSON obal |
+| Method | Endpoint | Description |
 |---|---|---|
-| `ValidationException` | 422 | `{ success: false, error, errors: { pole: [správy] } }` |
-| Slim `HttpException` | kód výnimky | `{ success: false, error }` |
-| ostatné | 500 | `{ success: false, error }` (+ detaily v debug režime) |
+| `GET` | `/api/admin/notifications/overview` | Active connectors, fallback email, visit stats, top pages |
+| `POST` | `/api/admin/notifications/test` | Send test message via one enabled adapter |
+| `GET` | `/api/admin/analytics/overview` | Visits, page views, referers, devices (`?period=today`) |
+| `GET` | `/api/admin/analytics/chart` | Daily chart (`?days=30`) |
 
-404 catch-all tiež vracia `{ success: false, error, path }`.
+### Backend services
 
----
-
-## 3. Zdieľaná validácia
-
-### Backend
-
-- `Core/Validation/Validator.php` – bezstavový validátor pravidiel
-- `Core/Validation/ValidationRules.php` – katalóg (login, password, content, user)
-- `ValidationException` → 422 cez Error Handler
-
-### Endpointy
-
-| Metóda | Endpoint | Auth | Popis |
-|---|---|---|---|
-| `GET` | `/api/validation/rules` | verejný | Celý katalóg pravidiel |
-| `GET` | `/api/validation/rules/{context}` | verejný | Jedna sada (login, password, content, user) |
+- `NotificationFactory` – builds `NotificationService` from settings
+- `SmtpTransport` – lightweight SMTP client (TLS + AUTH LOGIN)
+- Adapters: `EmailAdapter`, `NtfyAdapter`, `DiscordAdapter`, `TelegramAdapter`, `WebhookAdapter`
+- `IncidentNotifier` – multi-channel alerts for auth failures, audit security events, traffic spikes
+- `AnalyticsMiddleware` – tracks non-API page views
+- `Reporter` / `AnalyticsManager` – flat-file analytics reports
 
 ### Frontend
 
-- `utils/validation.ts` – zrkadlo backendového Validatora
-- `validatePasswordPolicy()` – politika hesiel (zosúladená s PasswordPolicy)
-- `api/validation.ts` – stiahnutie pravidiel z API
+| File | Role |
+|---|---|
+| `api/notifications.ts` | Notification overview + test send |
+| `api/analytics.ts` | Analytics reports |
+| `components/backend/NotificationsOverview.tsx` | Admin dashboard for connectors + visits |
 
 ---
 
-## 4. Testy
+## 3. Auth flows (Iteration 6)
 
-| Balík | Súbory |
-|---|---|
-| PHPUnit | `SettingsRepositoryTest`, `ValidatorTest`, `ValidationRulesTest`, `ApiErrorHandlerTest` |
-| Vitest | `validation.test.ts` (validate + validatePasswordPolicy) |
+| Flow | API | Frontend |
+|---|---|---|
+| Login | `POST /api/auth/login` | `LoginModal` |
+| Register | `POST /api/auth/register` | `RegisterModal` (`/register`) |
+| Forgot password | `POST /api/auth/reset-password` | `ForgotPasswordModal` – sends email when SMTP configured |
+| Reset password | `POST /api/auth/verify-reset-token` | `ResetPasswordModal` (`/reset-password?token=…`) |
+| Change password | `POST /api/auth/change-password` | `ChangePasswordModal` in sidebar |
 
-Spustenie:
+Password reset no longer returns a demo token in production. Token is only included when `APP_ENV` is `development` or `testing` and SMTP is not configured.
+
+---
+
+## 4. Unified error handler
+
+Registered in `bootstrap/app.php` via `ApiErrorHandler`.
+
+| Exception | HTTP | JSON body |
+|---|---|---|
+| `ValidationException` | 422 | `{ success: false, error, errors }` |
+| Slim `HttpException` | exception code | `{ success: false, error }` |
+| other | 500 | `{ success: false, error }` |
+
+---
+
+## 5. Shared validation
+
+- Backend: `Core/Validation/Validator.php`, `ValidationRules.php`
+- Frontend: `utils/validation.ts`, `validatePasswordPolicy()`
+- Endpoint: `GET /api/validation/rules[/{context}]`
+
+---
+
+## 6. Tests
+
+- Backend: `SettingsRepositoryTest`, `NotificationFactoryTest`, `IncidentNotifierTest`, `AuthControllerTest`
+- Frontend: `notificationSettings.test.ts`, `validation.test.ts`
+
+Run:
 
 ```bash
-./vendor/bin/phpunit --filter 'SettingsRepositoryTest|ValidatorTest|ValidationRulesTest|ApiErrorHandlerTest'
+cd backend && ./vendor/bin/phpunit
 cd frontend && npm test
 ```

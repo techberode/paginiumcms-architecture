@@ -1,12 +1,24 @@
-# PaginiumCMS – Pokračujúci kontext a plán implementácie
+# PaginiumCMS – Continuation context & implementation plan
 
-> Tento dokument je „štartovací brífing“ pre pokračovanie vývoja. Obsahuje:
-> 1. čo je **hotové a funkčné**, 2. **stav** všetkých požiadaviek (DONE/PARTIAL/MISSING),
-> 3. **fázový plán** ďalších iterácií (podľa náročnosti/závislostí),
-> 4. **ready-to-paste pokračujúci prompt** na konci.
+> **Language note:** Project documentation is being migrated to English (see `.cursorrules`).  
+> For Iteration 6 details see [`docs/ITERATION_6.md`](ITERATION_6.md).
 
-Architektúra: React SPA (Vite 8, TS) ↔ REST API (Slim 4) ↔ PHP 8.5 jadro (PHP-DI, PHPStan L8,
-striktné typy) ↔ **Flat-File** úložisko (žiadna DB). Metafora: Hosť = React, Čašník = API, Kuchár = PHP.
+> This document is the “startup briefing” for continuing development. It contains:
+> 1. what is **done and functional**, 2. **status** of all requirements (DONE/PARTIAL/MISSING),
+> 3. **phased plan** for next iterations, 4. **ready-to-paste continuation prompt** at the end.
+
+Architecture: React SPA (Vite 8, TS) ↔ REST API (Slim 4) ↔ PHP 8.5 core (PHP-DI, PHPStan L8,
+strict types) ↔ **Flat-File** storage (no SQL database).
+
+---
+
+## Iteration 6 – DONE (2026-07-15)
+
+- **Notifications:** SMTP settings, connectors (email/ntfy/Discord/Telegram/webhook), incident alerts, admin overview API + FE
+- **Analytics:** `Reporter`, `AnalyticsMiddleware`, visit overview in notifications dashboard
+- **Auth UI:** register, forgot/reset password, change password modals; email reset without production demo token
+- **Toast settings:** position, duration, enable/disable, debug mode from admin settings
+- **Tests:** PHPUnit + Vitest extended; see `docs/ITERATION_6.md`
 
 ---
 

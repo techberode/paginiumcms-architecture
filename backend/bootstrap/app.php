@@ -35,6 +35,7 @@ use PaginiumCMS\Core\FlatFile\Services\FileWriter;
 use PaginiumCMS\Core\FlatFile\Services\FileValidator;
 use PaginiumCMS\Core\Cache\CacheManager;
 use PaginiumCMS\Core\Cache\Drivers\FileDriver;
+use PaginiumCMS\Core\Analytics\Middleware\AnalyticsMiddleware;
 use PaginiumCMS\Http\Controllers\Auth\AuthController;
 use PaginiumCMS\Http\Controllers\Auth\TwoFactorController;
 use PaginiumCMS\Http\Controllers\Admin\BackupController;
@@ -267,11 +268,14 @@ $containerBuilder->addDefinitions([
     AuthController::class => function ($container) {
         return new AuthController(
             $container->get(AuthenticationInterface::class),
-                                  $container->get(AuthorizationInterface::class),
-                                  $container->get(CsrfProtectionInterface::class),
-                                  $container->get(PasswordPolicyInterface::class),
-                                  $container->get(TwoFactorInterface::class),
-                                  $container->get(UserRepository::class)
+            $container->get(AuthorizationInterface::class),
+            $container->get(CsrfProtectionInterface::class),
+            $container->get(PasswordPolicyInterface::class),
+            $container->get(TwoFactorInterface::class),
+            $container->get(UserRepository::class),
+            $container->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class),
+            $container->get(\PaginiumCMS\Core\Notification\NotificationService::class),
+            $container->get(\PaginiumCMS\Core\Notification\Services\IncidentNotifier::class)
         );
     },
 
@@ -386,6 +390,7 @@ $app->add(new CorsMiddleware([
 
 $app->add($container->get(SecurityMiddleware::class));
 $app->add($container->get(RateLimitMiddleware::class));
+$app->add($container->get(AnalyticsMiddleware::class));
 
 // ============================================
 // 14. ROUTY

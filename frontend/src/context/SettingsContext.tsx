@@ -20,6 +20,12 @@ const DEFAULT_PUBLIC: PublicSettings = {
     spellcheck: true,
     tabSize: 2,
   },
+  notifications: {
+    toastEnabled: true,
+    toastPosition: 'top-right',
+    toastDuration: 3000,
+    toastDebugMode: false,
+  },
 };
 
 interface SettingsContextType {

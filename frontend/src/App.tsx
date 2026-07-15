@@ -8,9 +8,13 @@ import { MarkdownEditor } from './components/backend/MarkdownEditor';
 import { BackupManager } from './components/backend/BackupManager';
 import { SettingsView } from './components/backend/SettingsView';
 import { UsersManager } from './components/backend/UsersManager';
+import { NotificationsOverview } from './components/backend/NotificationsOverview';
 import { CodeEditor } from './components/CodeEditor/CodeEditor';
 import { AuditTrail } from './components/Audit/AuditTrail';
 import { LoginModal } from './components/frontend/LoginModal';
+import { RegisterModal } from './components/auth/RegisterModal';
+import { ForgotPasswordModal } from './components/auth/ForgotPasswordModal';
+import { ResetPasswordModal } from './components/auth/ResetPasswordModal';
 import { useAuth } from './hooks/useAuth';
 
 function App() {
@@ -25,7 +29,15 @@ function App() {
   }
 
   if (!user || pendingTwoFactor) {
-    return <LoginModal />;
+    return (
+      <Routes>
+        <Route path="/register" element={<RegisterModal />} />
+        <Route path="/forgot-password" element={<ForgotPasswordModal />} />
+        <Route path="/reset-password" element={<ResetPasswordModal />} />
+        <Route path="/login" element={<LoginModal />} />
+        <Route path="*" element={<LoginModal />} />
+      </Routes>
+    );
   }
 
   return (
@@ -43,6 +55,7 @@ function App() {
         <Route path="/audit" element={<AuditTrail />} />
         <Route path="/audit/content/:contentId" element={<AuditTrail />} />
         <Route path="/audit/user/:userId" element={<AuditTrail />} />
+        <Route path="/notifications" element={<NotificationsOverview />} />
         <Route path="/settings" element={<SettingsView />} />
         <Route path="/users" element={<UsersManager />} />
         <Route path="*" element={
