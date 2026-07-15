@@ -83,7 +83,11 @@ final class CodeEditorManager implements CodeEditorInterface
         try {
             $this->codePolicy->validate($path, $content);
         } catch (CodePolicyViolationException $e) {
-            $this->logger->logError($path, $e);
+            try {
+                $this->logger->logError($path, $e);
+            } catch (\Throwable) {
+                // Policy rejection must propagate even if audit logging fails.
+            }
             throw $e;
         }
 

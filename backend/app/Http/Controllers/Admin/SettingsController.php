@@ -84,7 +84,7 @@ final class SettingsController
 
     /**
      * Verejný výrez efektívnych nastavení (bez citlivých údajov).
-     * Dostupné pre všetkých prihlásených používateľov – editor, auto-save interval atď.
+     * Dostupné anonymne pre verejný web a prihlásených používateľov.
      */
     public function publicSettings(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
@@ -95,6 +95,7 @@ final class SettingsController
             'data' => [
                 'general' => [
                     'siteName' => $all['general']['siteName'] ?? 'PaginiumCMS',
+                    'siteDescription' => (string) ($all['general']['siteDescription'] ?? ''),
                     'language' => $all['general']['language'] ?? 'sk',
                     'maintenanceMode' => (bool) ($all['general']['maintenanceMode'] ?? false),
                 ],

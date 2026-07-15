@@ -177,9 +177,19 @@ return [
     // Developer Mode gate + offline tokens
     DevTokenRegistry::class => create(DevTokenRegistry::class),
     DevTokenGenerator::class => function () {
-        $secret = getenv('DEV_UNLOCK_SECRET') ?: '';
-        if ($secret === '' && (getenv('APP_ENV') === 'testing' || getenv('APP_ENV') === 'test')) {
-            $secret = 'testing-dev-unlock-secret';
+        $secret = (string) (getenv('DEV_UNLOCK_SECRET') ?: ($_ENV['DEV_UNLOCK_SECRET'] ?? ''));
+
+        if ($secret === '') {
+            $appEnv = (string) (getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? 'development'));
+            $appDebug = filter_var(
+                getenv('APP_DEBUG') ?: ($_ENV['APP_DEBUG'] ?? 'true'),
+                FILTER_VALIDATE_BOOLEAN
+            );
+            $localEnvs = ['testing', 'test', 'development', 'local'];
+
+            if (in_array($appEnv, $localEnvs, true) || $appDebug) {
+                $secret = 'paginium-local-dev-unlock-secret';
+            }
         }
 
         return new DevTokenGenerator($secret);

@@ -6,7 +6,7 @@ declare(strict_types=1);
  * backend/app/Http/Routes/settings.php
  * Správa nastavení CMS (Iterácia 4). Auto-discovered z bootstrap/app.php.
  *
- *  - GET  /api/settings/public          (AUTH – akýkoľvek prihlásený)
+ *  - GET  /api/settings/public          (verejný – bez auth)
  *  - GET  /api/admin/settings           (ADMIN / SUPER_ADMIN)
  *  - GET  /api/admin/settings/{group}   (ADMIN / SUPER_ADMIN)
  *  - PUT  /api/admin/settings/{group}   (ADMIN / SUPER_ADMIN)
@@ -24,9 +24,8 @@ use Slim\Routing\RouteCollectorProxy;
 return function (App $app): void {
     $container = $app->getContainer();
 
-    // Verejný výrez nastavení pre celú aplikáciu (editor, auto-save, …).
-    $app->get('/api/settings/public', [SettingsController::class, 'publicSettings'])
-        ->add($container->get(AuthMiddleware::class));
+    // Verejný výrez nastavení pre celú aplikáciu (editor, auto-save, verejný web).
+    $app->get('/api/settings/public', [SettingsController::class, 'publicSettings']);
 
     $app->group('/api/admin/settings', function (RouteCollectorProxy $group) use ($container) {
         $controller = $container->get(SettingsController::class);

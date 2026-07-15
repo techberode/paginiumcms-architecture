@@ -4,6 +4,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { User } from '../api/types';
 import { authApi, LoginResult } from '../api/auth';
+import { debugLogProvider } from '../utils/debugLog';
 
 export interface LoginOutcome {
   success: boolean;
@@ -30,13 +31,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [pendingTwoFactor, setPendingTwoFactor] = useState(false);
 
   const refreshUser = useCallback(async () => {
+    debugLogProvider('auth', 'refresh.start');
     const userData = await authApi.getCurrentUser();
     setUser(userData);
     if (userData?.twoFactorEnabled) {
       const status = await authApi.twoFactor.getStatus();
       setPendingTwoFactor(!status.verified);
+      debugLogProvider('auth', 'refresh.done', {
+        authenticated: true,
+        twoFactorEnabled: true,
+        twoFactorVerified: status.verified,
+        userId: userData.id,
+      });
     } else {
       setPendingTwoFactor(false);
+      debugLogProvider('auth', 'refresh.done', {
+        authenticated: Boolean(userData),
+        twoFactorEnabled: false,
+        userId: userData?.id ?? null,
+      });
     }
   }, []);
 
@@ -46,17 +59,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await refreshUser();
       } finally {
         setLoading(false);
+        debugLogProvider('auth', 'bootstrap.done', { loading: false });
       }
     })();
   }, [refreshUser]);
 
   const login = useCallback(async (email: string, password: string): Promise<LoginOutcome> => {
+    debugLogProvider('auth', 'login.attempt', { email });
     const result: LoginResult = await authApi.login({ email, password });
     if (result.success && result.user) {
       setUser(result.user);
       setPendingTwoFactor(Boolean(result.requiresTwoFactor));
+      debugLogProvider('auth', 'login.success', {
+        userId: result.user.id,
+        requiresTwoFactor: Boolean(result.requiresTwoFactor),
+      });
       return { success: true, requiresTwoFactor: result.requiresTwoFactor };
     }
+    debugLogProvider('auth', 'login.failed', { email });
     return { success: false };
   }, []);
 
@@ -71,10 +91,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const logout = useCallback(async () => {
+    debugLogProvider('auth', 'logout.start', { userId: user?.id ?? null });
     await authApi.logout();
     setUser(null);
     setPendingTwoFactor(false);
-  }, []);
+    debugLogProvider('auth', 'logout.done');
+  }, [user?.id]);
 
   const register = useCallback(async (email: string, password: string, name: string): Promise<boolean> => {
     const result = await authApi.register({ email, password, name });

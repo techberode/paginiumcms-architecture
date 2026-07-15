@@ -1,7 +1,15 @@
 // frontend/src/components/backend/DashboardView.tsx
-// === Admin dashboard (Iteration 7) ===
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import {
+  FileText,
+  BookOpen,
+  HardDrive,
+  Users,
+  PlusCircle,
+  Sparkles,
+  ArrowUpRight,
+} from 'lucide-react';
 import { useApi } from '../../hooks/useApi';
 import { useToast } from '../../hooks/useToast';
 import { getDashboardOverview, DashboardOverview } from '../../api/dashboard';
@@ -63,84 +71,123 @@ export const DashboardView: React.FC = () => {
     void loadDashboardData();
   }, [loadDashboardData]);
 
-  const StatCard: React.FC<{
-    title: string;
-    value: number | string;
-    icon: string;
-    color: string;
-  }> = ({ title, value, icon, color }) => (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
-          <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
-            {loading ? '...' : value}
-          </p>
-        </div>
-        <div className={`p-3 rounded-full ${color}`}>
-          <span className="text-xl">{icon}</span>
-        </div>
-      </div>
-    </div>
-  );
-
   const analytics = overview?.analytics;
 
+  const kpiCards = [
+    { title: 'Stránky', value: stats.totalPages, icon: FileText, to: '/pages', color: 'indigo' },
+    { title: 'Články', value: stats.totalArticles, icon: BookOpen, to: '/articles', color: 'emerald' },
+    { title: 'Používatelia', value: stats.totalUsers, icon: Users, to: '/users', color: 'violet' },
+    { title: 'Zálohy', value: stats.totalBackups, icon: HardDrive, to: '/backups', color: 'amber' },
+    {
+      title: 'Návštevy dnes',
+      value: analytics?.overview.visits ?? 0,
+      icon: ArrowUpRight,
+      to: '/notifications',
+      color: 'cyan',
+    },
+  ];
+
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-        <button onClick={() => void loadDashboardData()} className="btn btn-secondary text-sm" type="button">
-          Refresh
-        </button>
+    <div className="space-y-8 animate-fadeIn pb-16">
+      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-8 sm:p-10 text-white shadow-xl relative overflow-hidden border border-slate-800">
+        <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="max-w-xl">
+            <div className="inline-flex items-center gap-2 bg-indigo-500/20 text-indigo-300 font-extrabold text-xs px-3 py-1 rounded-full mb-4 border border-indigo-500/30">
+              <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+              <span>PaginiumCMS • FlatFile Architektúra</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight">
+              Vitajte v Riadiacom Centre
+            </h2>
+            <p className="mt-3 text-indigo-100 text-sm sm:text-base leading-relaxed">
+              Monitoring, zdravie systému a správa obsahu z jedného miesta.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              to="/articles"
+              className="bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold px-6 py-3.5 rounded-2xl shadow-lg shadow-indigo-600/30 transition-all flex items-center gap-2 text-sm"
+            >
+              <PlusCircle className="w-4 h-4" />
+              <span>Nový príspevok</span>
+            </Link>
+            <button
+              type="button"
+              onClick={() => void loadDashboardData()}
+              className="bg-slate-800/80 hover:bg-slate-800 text-slate-200 font-bold px-5 py-3.5 rounded-2xl border border-slate-700 transition-all text-sm"
+            >
+              Obnoviť dáta
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
+        {kpiCards.map((card) => {
+          const Icon = card.icon;
+          return (
+            <Link
+              key={card.title}
+              to={card.to}
+              className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-xl hover:border-indigo-500/50 transition-all group flex flex-col justify-between"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
+                  <Icon className="w-6 h-6" />
+                </div>
+                <ArrowUpRight className="w-5 h-5 text-slate-300 dark:text-slate-600 group-hover:text-indigo-500 transition-colors" />
+              </div>
+              <div>
+                <div className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                  {loading ? '…' : card.value}
+                </div>
+                <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mt-1">
+                  {card.title}
+                </div>
+              </div>
+            </Link>
+          );
+        })}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Pages" value={stats.totalPages} icon="📄" color="bg-blue-100 dark:bg-blue-900/30" />
-        <StatCard title="Articles" value={stats.totalArticles} icon="✍️" color="bg-green-100 dark:bg-green-900/30" />
-        <StatCard title="Users" value={stats.totalUsers} icon="👤" color="bg-purple-100 dark:bg-purple-900/30" />
-        <StatCard title="Backups" value={stats.totalBackups} icon="💾" color="bg-orange-100 dark:bg-orange-900/30" />
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          title="Visits today"
-          value={analytics?.overview.visits ?? 0}
-          icon="📈"
-          color="bg-indigo-100 dark:bg-indigo-900/30"
-        />
-        <StatCard
-          title="Realtime visitors"
-          value={analytics?.realtime.active_visitors ?? 0}
-          icon="👁️"
-          color="bg-cyan-100 dark:bg-cyan-900/30"
-        />
-        <StatCard
-          title="Active locks"
-          value={overview?.locks_count ?? 0}
-          icon="🔒"
-          color="bg-amber-100 dark:bg-amber-900/30"
-        />
-        <StatCard
-          title="Conflicts"
-          value={overview?.conflicts_count ?? 0}
-          icon="⚠️"
-          color="bg-red-100 dark:bg-red-900/30"
-        />
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
+          <p className="text-xs font-bold uppercase text-slate-500">Realtime návštevníci</p>
+          <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
+            {loading ? '…' : (analytics?.realtime.active_visitors ?? 0)}
+          </p>
+        </div>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
+          <p className="text-xs font-bold uppercase text-slate-500">Aktívne zámky</p>
+          <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
+            {loading ? '…' : (overview?.locks_count ?? 0)}
+          </p>
+        </div>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
+          <p className="text-xs font-bold uppercase text-slate-500">Konflikty</p>
+          <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
+            {loading ? '…' : (overview?.conflicts_count ?? 0)}
+          </p>
+        </div>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
+          <p className="text-xs font-bold uppercase text-slate-500">Stav systému</p>
+          <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 capitalize">
+            {loading ? '…' : (overview?.health?.status ?? 'unknown')}
+          </p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <HealthPanel health={overview?.health ?? null} loading={loading} />
-        <div className="card">
-          <div className="card-body">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Visits (14 days)</h2>
-              <Link to="/notifications" className="text-sm text-indigo-600 hover:underline">
-                Full analytics
-              </Link>
-            </div>
-            <AnalyticsChart data={analytics?.chart ?? []} loading={loading} />
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Návštevy (14 dní)</h2>
+            <Link to="/notifications" className="text-sm text-indigo-600 hover:underline">
+              Analytika
+            </Link>
           </div>
+          <AnalyticsChart data={analytics?.chart ?? []} loading={loading} />
         </div>
       </div>
 
@@ -157,51 +204,27 @@ export const DashboardView: React.FC = () => {
         />
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-        <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Recent activity</h2>
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
+        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Posledná aktivita</h2>
         </div>
-        <div className="p-4">
+        <div className="p-6">
           {loading ? (
             <div className="flex justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
             </div>
           ) : stats.recentActivity.length === 0 ? (
-            <p className="text-center text-gray-500 dark:text-gray-400 py-8">No recent activity</p>
+            <p className="text-center text-slate-500 py-8">Žiadna nedávna aktivita</p>
           ) : (
-            <div className="divide-y divide-gray-100 dark:divide-gray-700">
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
               {stats.recentActivity.slice(0, 10).map((event, index) => (
-                <div key={index} className="py-2 text-sm text-gray-700 dark:text-gray-200">
+                <div key={index} className="py-2 text-sm text-slate-700 dark:text-slate-200">
                   {(event as { log?: { message?: string } }).log?.message || 'Unknown action'}
                 </div>
               ))}
             </div>
           )}
         </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Link
-          to="/pages"
-          className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 hover:shadow-md transition-shadow text-center"
-        >
-          <span className="text-3xl block mb-2">📄</span>
-          <h3 className="font-medium text-gray-900 dark:text-white">Manage pages</h3>
-        </Link>
-        <Link
-          to="/code-editor"
-          className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 hover:shadow-md transition-shadow text-center"
-        >
-          <span className="text-3xl block mb-2">💻</span>
-          <h3 className="font-medium text-gray-900 dark:text-white">Code editor</h3>
-        </Link>
-        <Link
-          to="/notifications"
-          className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 hover:shadow-md transition-shadow text-center"
-        >
-          <span className="text-3xl block mb-2">🔔</span>
-          <h3 className="font-medium text-gray-900 dark:text-white">Notifications</h3>
-        </Link>
       </div>
     </div>
   );

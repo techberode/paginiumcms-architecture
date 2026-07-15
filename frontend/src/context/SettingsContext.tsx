@@ -5,6 +5,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { getPublicSettings, PublicSettings } from '../api/settings';
 import { useAuth } from '../hooks/useAuth';
+import { debugLogProvider } from '../utils/debugLog';
 
 /** Predvolené hodnoty – fallback ak API zlyhá alebo používateľ nie je prihlásený. */
 const DEFAULT_PUBLIC: PublicSettings = {
@@ -44,18 +45,28 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [loading, setLoading] = useState(true);
 
   const reload = useCallback(async () => {
-    if (!user) {
-      setSettings(DEFAULT_PUBLIC);
-      setLoading(false);
-      return;
-    }
-
     setLoading(true);
+    debugLogProvider('settings', 'reload.start', { hasUser: Boolean(user) });
     try {
       const payload = await getPublicSettings();
       if (payload) {
         setSettings(payload);
+        debugLogProvider('settings', 'reload.done', {
+          source: 'api',
+          siteName: payload.general?.siteName,
+        });
+      } else if (!user) {
+        setSettings(DEFAULT_PUBLIC);
+        debugLogProvider('settings', 'reload.fallback', { source: 'default_public' });
       }
+    } catch (error) {
+      if (!user) {
+        setSettings(DEFAULT_PUBLIC);
+      }
+      debugLogProvider('settings', 'reload.error', {
+        message: error instanceof Error ? error.message : 'unknown',
+        usedFallback: !user,
+      });
     } finally {
       setLoading(false);
     }

@@ -1,5 +1,6 @@
 // frontend/src/api/client.ts
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
+import { debugLogApi } from '../utils/debugLog';
 
 export interface ApiResponse<T = any> {
   success: boolean;
@@ -53,18 +54,60 @@ class ApiClient {
           config.headers['X-CSRF-TOKEN'] = csrfToken;
         }
 
+        const url = String(config.url ?? '');
+        debugLogApi('request', String(config.method ?? 'get'), url, {
+          params: config.params ?? null,
+        });
+
         return config;
       },
       (error) => Promise.reject(error)
     );
 
-    // Response interceptor
+    // Response interceptor – 401 na verejnom webe nesmie hádzať na /login.
     this.client.interceptors.response.use(
-      (response) => response,
+      (response) => {
+        const url = String(response.config.url ?? '');
+        debugLogApi('response', String(response.config.method ?? 'get'), url, {
+          status: response.status,
+          success: (response.data as ApiResponse | undefined)?.success ?? null,
+        });
+        return response;
+      },
       (error: AxiosError) => {
+        const url = String(error.config?.url ?? '');
+        debugLogApi('error', String(error.config?.method ?? 'get'), url, {
+          status: error.response?.status ?? null,
+          message: error.message,
+          apiError: (error.response?.data as ApiResponse | undefined)?.error ?? null,
+        });
+
         if (error.response?.status === 401) {
-          // Redirect na login
-          window.location.href = '/login';
+          const requestUrl = String(error.config?.url ?? '');
+          const skipRedirect =
+            requestUrl.includes('/api/auth/me') ||
+            requestUrl.includes('/api/settings/public');
+
+          if (!skipRedirect) {
+            const adminPrefixes = [
+              '/dashboard',
+              '/pages',
+              '/articles',
+              '/media',
+              '/code-editor',
+              '/backups',
+              '/audit',
+              '/notifications',
+              '/settings',
+              '/users',
+            ];
+            const onAdminPage = adminPrefixes.some((prefix) =>
+              window.location.pathname.startsWith(prefix)
+            );
+            if (onAdminPage) {
+              window.location.href = '/login';
+            }
+          }
         }
         return Promise.reject(error);
       }

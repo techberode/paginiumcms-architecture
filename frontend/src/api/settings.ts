@@ -56,6 +56,7 @@ export async function updateSettingsGroup(
 export interface PublicSettings {
   general: {
     siteName: string;
+    siteDescription?: string;
     language: string;
     maintenanceMode: boolean;
   };
