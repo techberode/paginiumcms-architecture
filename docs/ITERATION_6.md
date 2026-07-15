@@ -1,7 +1,7 @@
 # Iteration 6 – Notifications, Analytics & Auth UI
 
 **Status:** Complete  
-**Version:** 2.1.0 (pending tag)
+**Version:** 2.0.1
 
 ## Summary
 
