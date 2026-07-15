@@ -6,6 +6,48 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [2.0.3] – 2026-07-15
+
+### Iteration 14 – Code policy & Code Editor foundation
+
+#### Backend
+- Add `CodePolicyEngine`, `SecurityScanner`, and `CodePolicyViolationException` (422 with grouped errors)
+- Fix `CodeEditorManager` project-root resolution, path guards, and `FileInfo[]` listing
+- Add `codePolicy` settings group; wire policy stack in DI
+- Create `backend/app/Http/Extensions/` and `backend/resources/views/themes/`
+- Fix `SimpleLogger` infinite recursion in PSR `log()` method
+
+#### Frontend
+- Add `DeveloperUnlockGate` and `api/developer.ts` for gated Code Editor access
+- Show policy violation messages on save in `CodeEditor.tsx`
+
+#### Tests & docs
+- Add `CodePolicyEngineTest`, `CodeEditorManagerTest`
+- Add `docs/ITERATION_14.md`
+
+---
+
+## [2.0.2] – 2026-07-15
+
+### Iteration 7 – Admin dashboard, monitoring, API tracker
+
+#### Backend
+- Add `RealtimeTracker` and `DashboardController` (`GET /api/admin/dashboard/overview`)
+- Wire Health module to DI and add `health.php` admin routes
+- Add `GET /api/admin/analytics/realtime`
+- Normalize `HealthController` responses to `{ success, data }` format
+
+#### Frontend
+- Rebuild `DashboardView` with health, locks, conflicts, analytics chart, and realtime stats
+- Add dashboard panels: `AnalyticsChart`, `LocksPanel`, `ConflictsPanel`, `HealthPanel`
+- Add `api/dashboard.ts`; fix `api/health.ts` response handling
+
+#### Tests & docs
+- Add `RealtimeTrackerTest`, `DashboardControllerTest`, `AnalyticsChart.test.tsx`
+- Add `docs/ITERATION_7.md`
+
+---
+
 ## [2.0.1] – 2026-07-15
 
 ### Iteration 6 – Notifications, analytics, auth UI

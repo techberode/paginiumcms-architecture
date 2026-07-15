@@ -55,3 +55,15 @@ export async function getAnalyticsChart(days = 30): Promise<ChartPoint[]> {
   });
   return res.success && res.data?.chart ? res.data.chart : [];
 }
+
+export async function getAnalyticsRealtime(): Promise<RealtimeSnapshot | null> {
+  const res = await apiClient.get<RealtimeSnapshot>('/api/admin/analytics/realtime');
+  return res.success && res.data ? res.data : null;
+}
+
+export interface RealtimeSnapshot {
+  window_seconds: number;
+  active_visitors: number;
+  active_page_views: number;
+  top_active_pages: Array<{ uri: string; views: number }>;
+}

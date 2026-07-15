@@ -22,6 +22,24 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 
 ---
 
+## Iteration 14 – DONE (2026-07-15)
+
+- **Code policy:** `CodePolicyEngine`, `SecurityScanner`, 422 violations, `codePolicy` settings group
+- **Code editor:** fixed path resolution, `FileInfo[]` API, allowed `Http/Extensions` + theme paths
+- **Developer unlock FE:** `DeveloperUnlockGate`, `api/developer.ts`
+- See `docs/ITERATION_14.md`
+
+---
+
+## Iteration 7 – DONE (2026-07-15)
+
+- **Dashboard:** locks panel, conflicts panel, health metrics, analytics chart + realtime visitors
+- **API:** `GET /api/admin/dashboard/overview`, `GET /api/admin/health/*`, `GET /api/admin/analytics/realtime`
+- **RealtimeTracker** implemented; Health module wired to DI and routes
+- See `docs/ITERATION_7.md`
+
+---
+
 ## 1. Hotové a plne funkčné (Iterácie 1–3 + infraštruktúra)
 
 ### Iterácia 1 – Zamykanie obsahu ✅
@@ -66,8 +84,8 @@ Legenda: ✅ DONE · 🟡 PARTIAL (existuje časť, treba dokončiť/prepojiť) 
 | A | **Rozšírená správa používateľov + roly** | ✅ | `UserController`, `users.php`, FE `UsersManager` + `api/users.ts`. RBAC cez `RoleMiddleware`. |
 | B | **Bezpečné JWT / HttpOnly cookie auth** | ✅ | PHP session + HttpOnly cookie (`SessionManager`, `AuthMiddleware`). Bearer token odstránený z FE. `SecureSessionManager` zostáva voliteľný dlh. |
 | C | **2FA / TOTP** | ✅ | `TwoFactorManager`, `TwoFactorController`, `TwoFactorMiddleware` na admin routách, FE setup + login flow. |
-| D | **Developer mód + zamknutý CodeEditor** | 🟡 | Backend hotový (`DeveloperModeGate`, `DevTokenGenerator/Registry`, unlock cez **TOTP alebo dev-token**, 8h TTL, `GatedCodeEditorController`). FE unlock UI chýba. |
-| E | **Editory (Code/Markdown/WYSIWYG) + admin nastavenia** | 🟡 | Markdown editor plne integrovaný; CodeEditor základný (`<textarea>`, Monaco nevyužitý); `WysiwygEditor` (TipTap) hotový ale **nezapojený**. Admin nastavenia editorov chýbajú. |
+| D | **Developer mód + zamknutý CodeEditor** | 🟡 | Backend hotový (`DeveloperModeGate`, unlock cez TOTP/dev-token). FE unlock gate v Code Editor (It.14). Ďalší polish v It.8. |
+| E | **Editory (Code/Markdown/WYSIWYG) + admin nastavenia** | 🟡 | Markdown editor plne integrovaný; CodeEditor základný s policy + file tree API (It.14); Monaco nevyužitý; WYSIWYG nezapojený. |
 | F | **Validácia na dvoch úrovniach (zdieľané pravidlá)** | ✅ | `Validator`, `ValidationRules`, `ValidationException`, `GET /api/validation/rules`, FE `utils/validation.ts` + `validatePasswordPolicy`. |
 | G | **SMTP nastavenia v administrácii** | 🟡 | `NotificationService` + `EmailAdapter` existujú, ale `EmailAdapter` používa iba `mail()` (bez SMTP), nie je v DI, reset hesla neposiela e-mail. **Settings engine hotový** – It. 6 pridá SMTP skupinu do schémy. |
 | H | **Konektory ntfy / Discord / Telegram / …** | ⛔ | Žiadny kód/adaptéry/konfigurácia. |

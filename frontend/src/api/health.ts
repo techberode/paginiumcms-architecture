@@ -3,23 +3,24 @@ import apiClient from './client';
 import { HealthCheck, HealthReport } from './types';
 
 export const healthApi = {
-  // Spustenie všetkých kontrol
-  runAll: async (group?: string): Promise<HealthReport> => {
+  runAll: async (group?: string): Promise<HealthReport | null> => {
     const response = await apiClient.get<HealthReport>('/api/admin/health', {
-      params: { group },
+      params: group ? { group } : undefined,
     });
-    return response.data as HealthReport;
+    return response.success && response.data ? response.data : null;
   },
 
-  // Spustenie konkrétnej kontroly
-  runCheck: async (name: string): Promise<HealthCheck> => {
-    const response = await apiClient.get<HealthCheck>(`/api/admin/health/${name}`);
-    return response.data as HealthCheck;
+  runCheck: async (name: string): Promise<HealthCheck | null> => {
+    const response = await apiClient.get<HealthCheck>(`/api/admin/health/${encodeURIComponent(name)}`);
+    return response.success && response.data ? response.data : null;
   },
 
-  // Získanie zoznamu kontrol
-  getChecks: async (): Promise<{ checks: HealthCheck[]; groups: Record<string, string[]> }> => {
-    const response = await apiClient.get('/api/admin/health/checks');
-    return response.data as { checks: HealthCheck[]; groups: Record<string, string[]> };
+  getChecks: async (): Promise<{ checks: HealthCheck[]; groups: Record<string, string[]> } | null> => {
+    const response = await apiClient.get<{ checks: HealthCheck[]; groups: Record<string, string[]> }>(
+      '/api/admin/health/checks'
+    );
+    return response.success && response.data ? response.data : null;
   },
 };
+
+export default healthApi;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Admin;
 
+use PaginiumCMS\Core\Analytics\Services\RealtimeTracker;
 use PaginiumCMS\Core\Analytics\Services\Reporter;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -13,8 +14,10 @@ use Psr\Http\Message\ServerRequestInterface;
  */
 final class AnalyticsController
 {
-    public function __construct(private Reporter $reporter)
-    {
+    public function __construct(
+        private Reporter $reporter,
+        private RealtimeTracker $realtime
+    ) {
     }
 
     public function overview(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -39,6 +42,14 @@ final class AnalyticsController
         return $this->json($response, [
             'success' => true,
             'data' => ['chart' => $this->reporter->getDailyChart(max(1, min($days, 90)))],
+        ]);
+    }
+
+    public function realtime(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        return $this->json($response, [
+            'success' => true,
+            'data' => $this->realtime->getSnapshot(),
         ]);
     }
 

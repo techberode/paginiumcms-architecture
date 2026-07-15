@@ -3,11 +3,11 @@
 declare(strict_types=1);
 
 /**
- * backend/app/Http/Routes/analytics.php
- * Admin analytics reports (Iteration 6).
+ * backend/app/Http/Routes/dashboard.php
+ * Admin dashboard overview (Iteration 7).
  */
 
-use PaginiumCMS\Http\Controllers\Admin\AnalyticsController;
+use PaginiumCMS\Http\Controllers\Admin\DashboardController;
 use PaginiumCMS\Http\Middleware\AuthMiddleware;
 use PaginiumCMS\Http\Middleware\RoleMiddleware;
 use PaginiumCMS\Http\Middleware\TwoFactorMiddleware;
@@ -18,12 +18,10 @@ use Slim\Routing\RouteCollectorProxy;
 return function (App $app): void {
     $container = $app->getContainer();
 
-    $app->group('/api/admin/analytics', function (RouteCollectorProxy $group) use ($container) {
-        $controller = $container->get(AnalyticsController::class);
+    $app->group('/api/admin/dashboard', function (RouteCollectorProxy $group) use ($container) {
+        $controller = $container->get(DashboardController::class);
 
         $group->get('/overview', [$controller, 'overview']);
-        $group->get('/chart', [$controller, 'chart']);
-        $group->get('/realtime', [$controller, 'realtime']);
     })
         ->add(new RoleMiddleware($container->get(AuthorizationInterface::class), ['ADMIN', 'SUPER_ADMIN']))
         ->add($container->get(TwoFactorMiddleware::class))

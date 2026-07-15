@@ -3,11 +3,11 @@
 declare(strict_types=1);
 
 /**
- * backend/app/Http/Routes/analytics.php
- * Admin analytics reports (Iteration 6).
+ * backend/app/Http/Routes/health.php
+ * Admin health checks (Iteration 7 wiring).
  */
 
-use PaginiumCMS\Http\Controllers\Admin\AnalyticsController;
+use PaginiumCMS\Http\Controllers\Admin\HealthController;
 use PaginiumCMS\Http\Middleware\AuthMiddleware;
 use PaginiumCMS\Http\Middleware\RoleMiddleware;
 use PaginiumCMS\Http\Middleware\TwoFactorMiddleware;
@@ -18,12 +18,12 @@ use Slim\Routing\RouteCollectorProxy;
 return function (App $app): void {
     $container = $app->getContainer();
 
-    $app->group('/api/admin/analytics', function (RouteCollectorProxy $group) use ($container) {
-        $controller = $container->get(AnalyticsController::class);
+    $app->group('/api/admin/health', function (RouteCollectorProxy $group) use ($container) {
+        $controller = $container->get(HealthController::class);
 
-        $group->get('/overview', [$controller, 'overview']);
-        $group->get('/chart', [$controller, 'chart']);
-        $group->get('/realtime', [$controller, 'realtime']);
+        $group->get('', [$controller, 'index']);
+        $group->get('/checks', [$controller, 'checks']);
+        $group->get('/{name}', [$controller, 'check']);
     })
         ->add(new RoleMiddleware($container->get(AuthorizationInterface::class), ['ADMIN', 'SUPER_ADMIN']))
         ->add($container->get(TwoFactorMiddleware::class))
