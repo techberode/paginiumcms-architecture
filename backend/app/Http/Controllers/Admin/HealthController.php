@@ -7,54 +7,98 @@ namespace PaginiumCMS\Http\Controllers\Admin;
 use PaginiumCMS\Core\Health\Services\HealthCheckManager;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Slim\Psr7\Response;
 
-class HealthController
+/**
+ * Admin health check API (Iteration 7).
+ */
+final class HealthController
 {
-    private HealthCheckManager $healthManager;
-
-    public function __construct(HealthCheckManager $healthManager)
+    public function __construct(private HealthCheckManager $healthManager)
     {
-        $this->healthManager = $healthManager;
     }
 
     public function index(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $params = $request->getQueryParams();
-        $group = $params['group'] ?? null;
+        $group = isset($params['group']) ? (string) $params['group'] : null;
 
         $report = $this->healthManager->run($group);
 
-        $response->getBody()->write(json_encode($report->toArray(), JSON_PRETTY_PRINT));
-        return $response
-            ->withStatus($report->isPass() ? 200 : 500)
-            ->withHeader('Content-Type', 'application/json');
+        return $this->json($response, [
+            'success' => true,
+            'data' => $this->normalizeReport($report->toArray()),
+        ], $report->isPass() ? 200 : 500);
     }
 
     public function check(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $name = $request->getAttribute('name');
+        $name = (string) $request->getAttribute('name');
         $result = $this->healthManager->runCheck($name);
 
         if ($result === null) {
-            $response->getBody()->write(json_encode([
-                'error' => 'Kontrola nenájdená: ' . $name,
-            ], JSON_PRETTY_PRINT));
-            return $response->withStatus(404)->withHeader('Content-Type', 'application/json');
+            return $this->json($response, [
+                'success' => false,
+                'error' => 'Health check not found: ' . $name,
+            ], 404);
         }
 
-        $response->getBody()->write(json_encode($result->toArray(), JSON_PRETTY_PRINT));
-        return $response
-            ->withStatus($result->isPass() ? 200 : 500)
-            ->withHeader('Content-Type', 'application/json');
+        $payload = $this->normalizeCheck($result->toArray());
+
+        return $this->json($response, [
+            'success' => $result->isPass(),
+            'data' => $payload,
+        ], $result->isPass() ? 200 : 500);
     }
 
     public function checks(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $response->getBody()->write(json_encode([
-            'checks' => $this->healthManager->getAvailableChecks(),
-            'groups' => $this->healthManager->getGroups(),
-        ], JSON_PRETTY_PRINT));
-        return $response->withStatus(200)->withHeader('Content-Type', 'application/json');
+        return $this->json($response, [
+            'success' => true,
+            'data' => [
+                'checks' => $this->healthManager->getAvailableChecks(),
+                'groups' => $this->healthManager->getGroups(),
+            ],
+        ]);
+    }
+
+    /**
+     * @param array<string, mixed> $report
+     * @return array<string, mixed>
+     */
+    private function normalizeReport(array $report): array
+    {
+        if (!isset($report['checks']) || !is_array($report['checks'])) {
+            return $report;
+        }
+
+        $report['checks'] = array_map(
+            fn (array $check): array => $this->normalizeCheck($check),
+            $report['checks']
+        );
+
+        return $report;
+    }
+
+    /**
+     * @param array<string, mixed> $check
+     * @return array<string, mixed>
+     */
+    private function normalizeCheck(array $check): array
+    {
+        if (isset($check['check']) && !isset($check['name'])) {
+            $check['name'] = $check['check'];
+        }
+
+        return $check;
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     */
+    private function json(ResponseInterface $response, array $payload, int $status = 200): ResponseInterface
+    {
+        $response->getBody()->write((string) json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+
+        return $response->withStatus($status)->withHeader('Content-Type', 'application/json; charset=utf-8');
     }
 }

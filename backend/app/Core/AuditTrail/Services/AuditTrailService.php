@@ -10,6 +10,7 @@ use PaginiumCMS\Core\Logging\Models\LogEntry;
 use PaginiumCMS\Core\Logging\Models\LogSeverity;
 use PaginiumCMS\Core\Versioning\Services\EnhancedVersionManager;
 use PaginiumCMS\Core\Versioning\Models\Version;
+use PaginiumCMS\Core\Notification\Services\IncidentNotifier;
 use PaginiumCMS\Modules\Security\Models\User;
 
 
@@ -18,6 +19,7 @@ class AuditTrailService
     private LoggerInterface $logger;
     private EnhancedVersionManager $versionManager;
     private UserRepository $userRepository;
+    private ?IncidentNotifier $incidentNotifier;
     private array $sessionContext = [];
     private array $auditBuffer = [];
     private bool $isBuffering = false;
@@ -25,11 +27,13 @@ class AuditTrailService
     public function __construct(
         LoggerInterface $logger,
         EnhancedVersionManager $versionManager,
-        UserRepository $userRepository
+        UserRepository $userRepository,
+        ?IncidentNotifier $incidentNotifier = null
     ) {
         $this->logger = $logger;
         $this->versionManager = $versionManager;
         $this->userRepository = $userRepository;
+        $this->incidentNotifier = $incidentNotifier;
         
         $this->initializeSessionContext();
     }
@@ -182,6 +186,24 @@ class AuditTrailService
             $metadata,
             $severity
         );
+
+        if ($this->incidentNotifier !== null) {
+            $details = $action . ' on ' . $target;
+            if ($metadata !== []) {
+                $details .= ' | ' . json_encode($metadata, JSON_UNESCAPED_UNICODE);
+            }
+            $this->incidentNotifier->notifySecurityEvent($action, $details, $this->mapSeverity($severity));
+        }
+    }
+
+    private function mapSeverity(string $severity): string
+    {
+        return match (strtoupper($severity)) {
+            LogSeverity::CRITICAL => 'critical',
+            LogSeverity::ERROR => 'error',
+            LogSeverity::INFO, LogSeverity::DEBUG => 'info',
+            default => 'warning',
+        };
     }
 
     /**

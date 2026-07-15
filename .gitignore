@@ -51,6 +51,8 @@ pnpm-debug.log*
 /storage/sessions/
 backend/storage/dev/registered_tokens.json
 backend/storage/logs/developer/
+backend/storage/logs/debug/
+/prototype/
 
 ###############################################################################
 # Test & runtime artifacts (PHPUnit, Vitest, local dev)

@@ -16,6 +16,9 @@ import { LockIndicator } from '../locking/LockIndicator';
 import { ConflictResolver } from '../versioning/ConflictResolver';
 import { merge3, assembleMerged } from '../../utils/merge3';
 import { loadDraft, discardDraft, type ContentType } from '../../api/drafts';
+import { WysiwygEditor } from './WysiwygEditor';
+import { MediaPickerModal } from './MediaPickerModal';
+import { useSettingsContext } from '../../context/SettingsContext';
 
 interface MarkdownEditorProps {
   type?: ContentType;
@@ -49,9 +52,12 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
   const [conflict, setConflict] = useState<ConflictState | null>(null);
   // Neuložený koncept nájdený pri načítaní.
   const [pendingDraftAt, setPendingDraftAt] = useState<number | null>(null);
+  const [editorMode, setEditorMode] = useState<'markdown' | 'wysiwyg'>('markdown');
+  const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
 
   const { get, post, put } = useApi();
   const toast = useToast();
+  const { settings } = useSettingsContext();
   const isNew = slug === 'new' || !slug;
   const endpoint = type === 'article' ? '/api/articles' : '/api/pages';
   const resourceId = useMemo(() => `${type}:${slug ?? ''}`, [type, slug]);
@@ -63,6 +69,11 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
     data: { title, content, status, baseRevision },
     enabled: !isNew && canEdit,
   });
+
+  useEffect(() => {
+    const preferred = settings.editor?.defaultEditor === 'wysiwyg' ? 'wysiwyg' : 'markdown';
+    setEditorMode(preferred);
+  }, [settings.editor?.defaultEditor]);
 
   useEffect(() => {
     if (!isNew && slug) {
@@ -295,15 +306,56 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
           </div>
 
           <div className="form-group">
-            <label className="form-label">Obsah (Markdown)</label>
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              disabled={!canEdit}
-              className="form-input min-h-[400px] font-mono text-sm"
-              placeholder="Píšte obsah v Markdown…"
-            />
+            <div className="flex items-center justify-between mb-2">
+              <label className="form-label mb-0">Obsah</label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  className={`btn text-xs px-3 py-1 ${editorMode === 'markdown' ? 'btn-primary' : 'btn-secondary'}`}
+                  disabled={!canEdit}
+                  onClick={() => setEditorMode('markdown')}
+                >
+                  Markdown
+                </button>
+                <button
+                  type="button"
+                  className={`btn text-xs px-3 py-1 ${editorMode === 'wysiwyg' ? 'btn-primary' : 'btn-secondary'}`}
+                  disabled={!canEdit}
+                  onClick={() => setEditorMode('wysiwyg')}
+                >
+                  WYSIWYG
+                </button>
+              </div>
+            </div>
+            {editorMode === 'wysiwyg' ? (
+              <WysiwygEditor
+                value={content}
+                onChange={setContent}
+                readOnly={!canEdit}
+                onPickMedia={() => setMediaPickerOpen(true)}
+              />
+            ) : (
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                disabled={!canEdit}
+                className="form-input min-h-[400px] font-mono text-sm"
+                placeholder="Write content in Markdown…"
+              />
+            )}
           </div>
+
+          <MediaPickerModal
+            open={mediaPickerOpen}
+            onClose={() => setMediaPickerOpen(false)}
+            onSelect={(url, alt) => {
+              if (editorMode === 'wysiwyg') {
+                setContent((prev) => `${prev}<p><img src="${url}" alt="${alt.replace(/"/g, '&quot;')}" /></p>`);
+              } else {
+                setContent((prev) => `${prev}\n\n![${alt}](${url})\n`);
+              }
+            }}
+          />
 
           <div className="form-group">
             <label className="form-label">Popis zmeny (commit správa)</label>
