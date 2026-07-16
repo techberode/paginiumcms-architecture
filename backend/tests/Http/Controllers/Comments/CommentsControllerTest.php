@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Tests\Http\Controllers\Comments;
 
+use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Modules\Comments\Models\Comment;
 use PaginiumCMS\Tests\Http\TestCase;
 
@@ -47,5 +48,30 @@ class CommentsControllerTest extends TestCase
         $publicAfterApprove = $this->handleRequest($publicRequest);
         $publicAfterData = $this->getJsonResponse($publicAfterApprove);
         $this->assertCount(1, $publicAfterData['data']);
+    }
+
+    public function testGuestCommentsDisabledBySetting(): void
+    {
+        $settings = $this->app->getContainer()->get(SettingsRepositoryInterface::class);
+        $settings->setGroup('comments', array_merge($settings->group('comments'), [
+            'allowGuestComments' => false,
+        ]));
+
+        $request = $this->createJsonRequest('POST', '/api/comments', [
+            'articleSlug' => 'blocked-guest-' . uniqid(),
+            'author' => 'Guest',
+            'content' => 'Should fail',
+        ]);
+
+        $response = $this->handleRequest($request);
+        $data = $this->getJsonResponse($response);
+
+        $this->assertEquals(403, $response->getStatusCode());
+        $this->assertFalse($data['success']);
+        $this->assertStringContainsString('Anonymné', (string) ($data['error'] ?? ''));
+
+        $settings->setGroup('comments', array_merge($settings->group('comments'), [
+            'allowGuestComments' => true,
+        ]));
     }
 }

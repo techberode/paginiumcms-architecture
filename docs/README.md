@@ -1,20 +1,20 @@
 # 🏛️ PaginiumCMS
 
-> **Version:** 2.0 (Draft)  
-> **Last updated:** 13 July 2026  
+> **Version:** 2.0.8  
+> **Last updated:** 16 July 2026  
 > Modern, modular, Headless Flat-File Content Management System powered by Slim Framework (PHP) & React.
 
 ---
 
 ## 🎯 Vision & Philosophy
 
-PaginiumCMS keeps the Core intentionally minimal, secure, and fast. It moves all standard features into standalone modules, putting developer experience and content ownership first.
+PaginiumCMS keeps the Core intentionally minimal, secure, and fast. It moves standard features into standalone modules, putting developer experience and content ownership first.
 
 * **Simplicity First:** Features must deliver high value without adding unnecessary complexity.
 * **Flat-File First:** Content belongs to files (`.md`, `.json`). Databases are optional.
-* **API First:** Every admin action is completely accessible via the REST API.
+* **API First:** Every admin action is accessible via the REST API.
 * **Security by Design:** Authentication, authorization, and validation are baked into the core.
-* **Modular Design:** Core handles only infrastructure. Everything else is a Module, Plugin, or Theme.
+* **Modular Design:** Core handles infrastructure. Features live in Modules + HTTP layer.
 
 ---
 
@@ -22,21 +22,32 @@ PaginiumCMS keeps the Core intentionally minimal, secure, and fast. It moves all
 
 | Area | Status | Notes |
 |------|--------|-------|
-| **Backend API** | ✅ Functional | Slim 4 + PHP-DI, `bootstrap/app.php` is the single source of truth |
-| **Authentication** | ✅ Functional | Register, login, logout, 2FA (TOTP), password reset, CSRF |
-| **Content API** | ✅ Functional | `/api/pages`, `/api/articles` via `ContentController` + versioning + cache |
-| **Media API** | ✅ Functional | `/api/media/*` via `MediaController` + `MediaRepository` |
-| **Admin tools** | ✅ Wired | Code editor (gated), versioning + live restore, audit, backups, Developer Mode API |
-| **PHPUnit** | ✅ **317/317 passing** | 784 assertions, 18 skipped (integration placeholders) |
-| **Frontend** | 🟡 Partial | React admin UI exists; some API bindings need alignment (step 3+) |
-| **Production entry** | ✅ Fixed | `backend/public/index.php` loads real `bootstrap/app.php` |
+| **Backend API** | ✅ Production-ready core | Slim 4 + PHP-DI, `bootstrap/app.php`, auto-discovery routes |
+| **Authentication** | ✅ Functional | Register (toggle), login, logout, 2FA, password reset, CSRF, session regeneration |
+| **Authorization (RBAC)** | ✅ It. 20 | `PermissionMiddleware` on content/media writes; `RoleMiddleware` on admin |
+| **Content API** | ✅ It. 19–20 | Index, pagination, search, published filter, versioning |
+| **Media API** | ✅ Functional | `/api/media/*` + public `GET /storage/...` |
+| **Core hardening** | ✅ It. 20 | Maintenance mode, trash restore, backup cron CLI |
+| **Admin tools** | ✅ Wired | Code editor (gated), versioning, audit, backups, developer logs |
+| **PHPUnit** | ✅ **488 passing** | 1223 assertions, PHPStan level 8 (0 errors) |
+| **Frontend** | 🟡 Strong base | Admin SPA, public site, preview, role guard; It. 21 = API contract + MSW |
+| **Next iteration** | 🔴 It. 21 | API_CONTRACT.md, Postman/Newman, JsonResponder everywhere |
+
+### Recent releases
+
+| Version | Focus |
+|---------|--------|
+| **2.0.8** | Core hardening — RBAC, maintenance, `/storage`, trash API, backup cron, FE preview |
+| **2.0.7** | FlatFile index, pagination, search API |
+| **2.0.6** | PHPStan L8, 453+ tests, security & i18n foundation |
 
 ### Tech stack
 
-- **PHP** 8.4+ (tested on 8.5)
+- **PHP** 8.5+ (strict types, PHPStan L8)
 - **Backend:** Slim 4, PHP-DI, PSR-7/15, League CommonMark, OTPHP (2FA)
-- **Frontend:** React, TypeScript, Vite, TailwindCSS
+- **Frontend:** React, TypeScript, Vite 8, TailwindCSS
 - **Storage:** Flat files under `backend/storage/app/content/`
+- **Index:** `data/index/content.json` (flock-safe rebuild)
 
 ---
 
@@ -44,22 +55,21 @@ PaginiumCMS keeps the Core intentionally minimal, secure, and fast. It moves all
 
 ```mermaid
 graph TD
-A[Browser] --> B[React Frontend]
-B --> C[REST API Layer]
-C --> D[Core Layer]
-D --> E[Module Layer]
-E --> F[Storage Engine]
-D --> G[Event System]
-G --> H[Plugins]
-D --> I[Themes]
+    Browser[Browser] --> FE[React SPA :3025]
+    FE -->|/api, /storage proxy| API[Slim API :8080]
+    API --> MW[Middleware chain]
+    MW --> Core[Core: FlatFile, Cache, Settings, Versioning]
+    Core --> Storage[(storage/app/content)]
+    API --> Modules[Modules: Security, Media, Comments, …]
 ```
 
-### System Layers
-1. **Presentation Layer:** React, TypeScript, TailwindCSS (SPA Admin).
-2. **API Layer:** Slim Framework (Routing, Auth, PSR-7, Response formatting).
-3. **Core Layer:** Infrastructure only (DI Container, Cache, Events, Logging, FlatFile engine).
-4. **Module Layer:** Encapsulated features (Security, Media, Audit, Content via HTTP controllers).
-5. **Storage Layer:** Flat-file persistence (Markdown + JSON) under `storage/app/content/`.
+### System layers
+
+1. **Presentation:** React admin + public site (`frontend/src/`)
+2. **API:** Slim routes in `backend/app/Http/Routes/*.php` (auto-discovered)
+3. **Core:** FlatFile engine, cache, settings schema, backup, audit
+4. **Modules:** Security (auth/RBAC), Media, Comments, Navigation, …
+5. **Storage:** Markdown/JSON content, media, trash, settings, users
 
 ---
 
@@ -69,106 +79,123 @@ D --> I[Themes]
 paginiumcms-architecture/
 ├── backend/
 │   ├── app/
-│   │   ├── Core/           # FlatFile, Cache, CodeEditor, Versioning, AuditTrail, Backup, …
-│   │   ├── Http/           # Controllers, Middleware, Routes, Config/services.php (DI)
-│   │   ├── Modules/        # Security, Media, Audit
-│   │   └── Support/        # Lang helper
-│   ├── bootstrap/          # app.php (main bootstrap), session.php, utf8.php
-│   ├── lang/               # sk/en translation files for HTTP layer
+│   │   ├── Core/           # FlatFile, Cache, Backup, Versioning, Settings, …
+│   │   ├── Http/           # Controllers, Middleware, Routes, Config/services.php
+│   │   ├── Modules/        # Security, Media, Comments, Audit, …
+│   │   └── Support/        # Lang, JsonHelper
+│   ├── bootstrap/          # app.php (single bootstrap entry)
+│   ├── bin/console         # audit:run, backup:run-schedule
+│   ├── lang/               # sk/en translations
 │   ├── public/             # index.php → bootstrap/app.php
 │   ├── storage/            # content, cache, logs, backups
-│   └── tests/              # PHPUnit (317 tests)
-├── frontend/               # React admin SPA
-├── docs/                   # This documentation
-├── vendor/                 # Composer dependencies (project root)
+│   └── tests/              # 488 PHPUnit tests
+├── frontend/               # React admin + public site
+├── docs/                   # Architecture, roadmap, deploy guides
+├── vendor/                 # Composer (project root)
 ├── composer.json
 └── phpunit.xml
 ```
 
 ---
 
-## 🔌 API Overview (implemented)
+## 🔌 API Overview
 
-| Group | Prefix | Auth |
-|-------|--------|------|
-| Auth | `/api/auth/*` | Mixed (login public, logout/me protected) |
-| Content | `/api/pages`, `/api/articles` | GET public, write requires auth |
-| Media | `/api/media/*` | Auth required |
-| Admin backup | `/api/admin/backups/*` | Auth + ADMIN role |
-| Code editor | `/api/admin/code-editor/*` | Auth + ADMIN + **unlocked Developer Mode** |
-| Developer | `/api/admin/developer/*` | Auth + ADMIN (unlock via TOTP or offline token) |
-| Versions | `/api/admin/versions/*` | Auth + ADMIN role |
-| Audit | `/api/admin/audit/*` | Auth + ADMIN role |
-| Health | `/api/health` | Public |
+| Group | Prefix | Access |
+|-------|--------|--------|
+| Auth | `/api/auth/*` | Mixed; register can be disabled via settings |
+| Content | `/api/pages`, `/api/articles` | GET public (published filter); write = auth + permission |
+| Search | `/api/search?q=` | Public, published only |
+| Media | `/api/media/*` | EDITOR+ role; files at `/storage/app/content/media/...` |
+| Static files | `/storage/{path}` | Public (path traversal blocked) |
+| Settings | `/api/settings/public`, `/api/admin/settings/*` | Public slice / ADMIN |
+| Trash | `/api/admin/trash/*` | EDITOR+ — list & restore soft-deleted content |
+| Admin | `/api/admin/*` | Auth + role (+ 2FA where configured) |
+| Health | `/api/health` | Public (allowed during maintenance) |
 
-Routes in `backend/app/Http/Routes/*.php` are auto-discovered from `bootstrap/app.php`.
+Routes in `backend/app/Http/Routes/*.php` are auto-loaded from `bootstrap/app.php`.
+
+**Detailed contracts:**
+
+- [Content API – pagination & search](architecture/CONTENT_API.md)
+- [Core hardening – RBAC, maintenance, trash](architecture/CORE_HARDENING.md)
 
 ---
 
 ## 🔒 Security Principles
 
-* **Session auth** with secure cookie settings (`bootstrap/session.php`)
-* **Argon2id** password hashing via `PasswordPolicy`
-* **RBAC:** `RoleMiddleware` on admin routes (ADMIN, SUPER_ADMIN)
-* **2FA:** TOTP via `TwoFactorManager` + `spomky-labs/otphp`
-* **CSRF:** Token endpoint + middleware validation
-* **Rate limiting:** Global + login-specific (`RateLimitMiddleware`, `LoginRateLimitMiddleware`)
-* **Path traversal defense:** `FileValidator` base path for all FlatFile I/O
-* **Code editor allow/deny lists:** Blocks writes to `app/Core`, `bootstrap`, `vendor`
+* **Session auth** with `session_regenerate_id()` on login (`SessionManager`)
+* **Argon2id** passwords via `PasswordPolicy`
+* **RBAC:** `RoleMiddleware` + `PermissionMiddleware` (`content:*`, `media:*`)
+* **Maintenance mode:** blocks public API; staff session exempt
+* **2FA:** TOTP via `TwoFactorManager`
+* **CSRF** token endpoint + validation
+* **Rate limiting:** global + login-specific
+* **Path traversal:** `FileValidator` + `StorageController` realpath check
+* **Registration toggle:** `general.allowRegistration`
+* **Guest comments toggle:** `comments.allowGuestComments`
 
 ---
 
 ## 🚀 Getting Started
 
 ```bash
-# Install dependencies (from project root)
 composer install
-
-# Run backend tests
 ./vendor/bin/phpunit --testdox
+./vendor/bin/phpstan analyse backend --level=8
 
-# Start PHP built-in server (example)
+# Backend
 cd backend/public && php -S localhost:8080
+
+# Frontend (separate terminal)
+cd frontend && npm install && npm run dev
+# → http://localhost:3025 (proxies /api and /storage to :8080)
 ```
 
-Frontend (separate):
+See [deploy/DEV.md](deploy/DEV.md) for full local stack instructions.
+
+### Backup cron (production)
 
 ```bash
-cd frontend && npm install && npm run dev
+# crontab example — hourly check
+0 * * * * cd /path/to/project && php backend/bin/console backup:run-schedule
 ```
 
-Default API URL in frontend: `http://localhost:8080` (see `frontend/src/api/client.ts`).
+Schedule is stored in `backend/storage/backups/schedule.json` (create via admin backup API or `BackupManager::scheduleBackup()`).
 
 ### Developer Mode unlock (admin)
 
 ```bash
-# .env
-DEVELOPER_MODE=true
-DEV_UNLOCK_SECRET=long-random-secret   # GitHub Secret in CI
-
-# Generate token offline (private repo / CI)
-php backend/bin/dev-token.php generate --label=local --days=1
-php backend/bin/dev-token-register.php pagdev_....
-
-# Or unlock via API with admin TOTP (2FA required)
 POST /api/admin/developer/unlock  { "totp_code": "123456" }
-POST /api/admin/developer/unlock  { "token": "pagdev_...." }
+GET  /api/admin/developer/logs    # requires unlocked dev mode
 ```
+
+See [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md).
 
 ---
 
-## 📚 Documentation
+## 📚 Documentation Index
 
-* **Architecture deep dive + implementation status:** [`docs/architecture/ARCHITECTURE.md`](architecture/ARCHITECTURE.md)
+| Document | Purpose |
+|----------|---------|
+| [ROADMAP.md](ROADMAP.md) | Iterations 1–21, priorities, implementation phases |
+| [CHANGELOG.md](../CHANGELOG.md) | Release notes |
+| [architecture/ARCHITECTURE.md](architecture/ARCHITECTURE.md) | Deep architecture spec |
+| [architecture/CONTENT_API.md](architecture/CONTENT_API.md) | Pagination, search, published rules |
+| [architecture/CORE_HARDENING.md](architecture/CORE_HARDENING.md) | RBAC, maintenance, trash, storage |
+| [architecture/STORAGE.md](architecture/STORAGE.md) | Flat-file layout |
+| [developer/TESTING.md](developer/TESTING.md) | PHPUnit, PHPStan, test layout |
+| [developer/DEVELOPMENT.md](developer/DEVELOPMENT.md) | Contributor workflow |
+| [deploy/DEV.md](deploy/DEV.md) | Local dev stack |
+| [deploy/NGINX_API.md](deploy/NGINX_API.md) | Production nginx |
 
 ---
 
 ## ⚠️ Known Limitations
 
-* `backend/bootstrap/container.php` and `bootstrap/routes.php` are **legacy stubs** — not used by `public/index.php` anymore.
-* `SimpleLogger` (`app/Infrastructure/Logging/`) has a recursive `log()` bug — file is not in active autoload path; prefer `Core/Logging`.
-* GitHub sync tests skip real API calls; export/import degrade gracefully without network.
-* Frontend step 3 (URL alignment, dead file cleanup) is still pending.
+* **It. 21 pending:** unified `API_CONTRACT.md`, Postman/Newman CI, MSW on frontend
+* **Backup create tests** skipped under vfsStream (ZipArchive); schedule/cron logic tested on real temp dirs
+* **Trash admin UI** in React not yet built (API ready)
+* **Brute-force per-email lockout** planned in ROADMAP, not yet implemented
 
 ---
 

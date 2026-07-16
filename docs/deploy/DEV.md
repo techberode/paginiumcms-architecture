@@ -5,14 +5,15 @@ Run the app as a full stack on your machine (no nginx required).
 ## 1. Backend (PHP 8.5+)
 
 ```bash
-cd backend
-php -S localhost:8080 -t public
+cd backend/public
+php -S localhost:8080
 ```
 
 Verify:
 
 ```bash
 curl http://localhost:8080/api/test
+curl http://localhost:8080/api/health
 ```
 
 ## 2. Frontend (Vite + proxy)
@@ -28,24 +29,40 @@ npm run dev
 
 Open **http://localhost:3025**
 
-- Admin: `/login` → `/dashboard`
+- Admin: `/login` → `/dashboard` (requires EDITOR+ role via `AdminRoleGuard`)
 - Public site: `/` (home, blog, pages from flat-file storage)
-- Vite proxies `/api` → `http://localhost:8080`
+- Preview draft: `/preview/{slug}` (auth + staff role)
+- Developer logs: `/developer/logs` (dev mode unlocked)
+
+**Vite proxies:**
+
+| Path | Target |
+|------|--------|
+| `/api` | `http://localhost:8080` |
+| `/storage` | `http://localhost:8080` (media files, It. 20) |
 
 ## 3. Tests
 
 ```bash
-# Backend (437+ tests)
+# Backend (488 tests, PHPStan L8)
 ./vendor/bin/phpunit
+./vendor/bin/phpstan analyse backend --level=8
 
-# Frontend (60+ tests)
+# Frontend
 cd frontend && npm test
 
 # Production build check
 cd frontend && npm run build
 ```
 
-## 4. Integration smoke (BE)
+## 4. CLI commands
+
+```bash
+php backend/bin/console audit:run
+php backend/bin/console backup:run-schedule   # cron: checks schedule.json
+```
+
+## 5. Integration smoke (BE)
 
 `backend/tests/Http/ApplicationFlowTest.php` covers:
 
@@ -55,12 +72,21 @@ cd frontend && npm run build
 - Navigation update → public read
 - Protected routes return 401 without session
 
+`backend/tests/Http/Controllers/CoreHardeningTest.php` (It. 20):
+
+- RBAC 403 for USER on content create
+- Maintenance mode 503 + health exempt
+- Registration toggle
+- `/storage` serving + path traversal block
+
 ## Troubleshooting
 
 | Symptom | Fix |
 |--------|-----|
 | API returns HTML in browser | Use Vite dev server (3025), not `file://` or static `dist/` without nginx |
-| 401 on admin after login | Check session cookies; same host for FE and API in dev (proxy handles this) |
-| Infinite loading in Media/Nav | Fixed: stable `useToast` + no `toast` in `useCallback` deps |
+| 401 on admin after login | Check session cookies; proxy must forward credentials |
+| Media images 404 | Ensure backend serves `/storage/...` or nginx alias; Vite proxy includes `/storage` |
+| 503 on public API | Check `general.maintenanceMode` in settings |
+| USER cannot access admin | Expected — only EDITOR/ADMIN/SUPER_ADMIN (`AdminRoleGuard`) |
 
 For production deploy with one host, see [NGINX_API.md](./NGINX_API.md).

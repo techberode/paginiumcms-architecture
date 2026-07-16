@@ -101,13 +101,21 @@ class FileWriterTest extends TestCase
         $this->assertGreaterThan(0, count($trashFiles), 'Súbor nebol presunutý do koša');
 
         $found = false;
+        $metaFound = false;
         foreach ($trashFiles as $file) {
-            if (strpos($file, 'delete-me') !== false) {
+            if (str_contains($file, 'delete-me') && str_ends_with($file, '.meta.json')) {
+                $metaFound = true;
+                $meta = json_decode((string) file_get_contents($trashDir . '/' . $file), true);
+                $this->assertSame('pages/delete-me.md', $meta['originalPath'] ?? null);
+                $this->assertArrayHasKey('id', $meta);
+                $this->assertArrayHasKey('trashFilename', $meta);
+            }
+            if (str_contains($file, 'delete-me') && !str_ends_with($file, '.meta.json')) {
                 $found = true;
-                break;
             }
         }
         $this->assertTrue($found, 'Súbor delete-me.md nebol nájdený v koši');
+        $this->assertTrue($metaFound, 'Sidecar .meta.json musí existovať');
     }
 
     public function testDeletePermanently(): void

@@ -134,4 +134,49 @@ class CoreHardeningTest extends TestCase
 
         @unlink($fullPath);
     }
+
+    public function testStorageRouteRejectsPathTraversal(): void
+    {
+        $request = $this->createJsonRequest('GET', '/storage/app/content/../../../etc/passwd');
+        $response = $this->handleRequest($request);
+
+        $this->assertEquals(404, $response->getStatusCode());
+    }
+
+    public function testUserRoleCannotListMedia(): void
+    {
+        $userData = $this->createTestUser();
+        $this->loginTestUser($userData['email'], $userData['password']);
+
+        $request = $this->createJsonRequest('GET', '/api/media');
+        $response = $this->handleRequest($request);
+        $data = $this->getJsonResponse($response);
+
+        $this->assertEquals(403, $response->getStatusCode());
+        $this->assertFalse($data['success']);
+    }
+
+    public function testMaintenanceAllowsAuthenticatedEditor(): void
+    {
+        $this->patchGeneralSettings(['maintenanceMode' => true]);
+
+        $userData = $this->createTestUser();
+        $repo = $this->app->getContainer()->get(UserRepository::class);
+        $user = $repo->findByEmail($userData['email']);
+        $this->assertNotNull($user);
+        $user->setRoles(['EDITOR']);
+        $repo->save($user);
+
+        $this->loginTestUser($userData['email'], $userData['password']);
+        if ($this->currentUser instanceof User) {
+            $this->currentUser->setRoles(['EDITOR']);
+        }
+
+        $request = $this->createJsonRequest('GET', '/api/pages');
+        $response = $this->handleRequest($request);
+
+        $this->assertNotEquals(503, $response->getStatusCode());
+
+        $this->patchGeneralSettings(['maintenanceMode' => false]);
+    }
 }
