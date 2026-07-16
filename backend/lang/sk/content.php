@@ -12,5 +12,6 @@ return [
     'deleted' => 'Obsah bol vymazaný',
     'status_updated' => 'Stav obsahu bol aktualizovaný',
     'invalid_status' => 'Neplatný stav obsahu',
+    'invalid_type' => 'Neplatný typ obsahu (povolené: page, article)',
     'save_failed' => 'Nepodarilo sa uložiť obsah',
 ];

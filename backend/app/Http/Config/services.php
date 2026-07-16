@@ -48,6 +48,9 @@ use PaginiumCMS\Core\Conflict\Services\ConflictLogger;
 use PaginiumCMS\Core\Drafts\Contracts\DraftManagerInterface;
 use PaginiumCMS\Core\Drafts\Services\DraftManager;
 use PaginiumCMS\Core\FlatFile\Services\ContentRepository;
+use PaginiumCMS\Core\FlatFile\Services\ContentIndexService;
+use PaginiumCMS\Core\FlatFile\Services\JsonContentStorage;
+use PaginiumCMS\Core\FlatFile\Services\MarkdownContentStorage;
 use PaginiumCMS\Core\FlatFile\Services\ContentRevision;
 use PaginiumCMS\Core\FlatFile\Services\FrontMatterParser;
 use PaginiumCMS\Core\FlatFile\Services\MarkdownContentParser;
@@ -80,6 +83,8 @@ use PaginiumCMS\Http\Controllers\Contact\ContactController;
 use PaginiumCMS\Http\Controllers\Navigation\NavigationController;
 use PaginiumCMS\Http\Controllers\Content\ContentController;
 use PaginiumCMS\Http\Controllers\Content\DraftController;
+use PaginiumCMS\Http\Controllers\Content\SearchController;
+use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Http\Controllers\Locking\LockController;
 use PaginiumCMS\Http\Controllers\Media\MediaController;
 use PaginiumCMS\Http\Middleware\DeveloperModeMiddleware;
@@ -91,6 +96,7 @@ use PaginiumCMS\Modules\Navigation\Contracts\NavigationRepositoryInterface;
 use PaginiumCMS\Modules\Navigation\Services\NavigationRepository;
 use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
 use PaginiumCMS\Modules\Media\Services\MediaRepository;
+use PaginiumCMS\Modules\Security\Contracts\AuthenticationInterface;
 use PaginiumCMS\Modules\Security\Contracts\PasswordPolicyInterface;
 use PaginiumCMS\Modules\Security\Contracts\TwoFactorInterface;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
@@ -107,11 +113,24 @@ return [
             get(FrontMatterParserInterface::class),
             get(MarkdownContentParserInterface::class)
         ),
+    MarkdownContentStorage::class => create(MarkdownContentStorage::class)
+        ->constructor(get(MarkdownParserInterface::class)),
+    JsonContentStorage::class => create(JsonContentStorage::class)
+        ->constructor(get(MarkdownContentParserInterface::class)),
+    ContentIndexService::class => create(ContentIndexService::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            'data/index/content.json'
+        ),
+    JsonResponder::class => create(JsonResponder::class),
     ContentRepositoryInterface::class => create(ContentRepository::class)
         ->constructor(
             get(FileReaderInterface::class),
             get(FileWriterInterface::class),
-            get(MarkdownParserInterface::class)
+            get(ContentIndexService::class),
+            get(MarkdownContentStorage::class),
+            get(JsonContentStorage::class),
+            get(SettingsRepositoryInterface::class)
         ),
 
     // === Blok: Nastavenia + validácia (Iterácia 4) ===
@@ -272,7 +291,16 @@ return [
             get(ContentVersioningService::class),
             get(ContentCacheService::class),
             get(ContentRevision::class),
-            get(ConflictLoggerInterface::class)
+            get(ConflictLoggerInterface::class),
+            get(JsonResponder::class),
+            get(SettingsRepositoryInterface::class),
+            get(AuthenticationInterface::class)
+        ),
+    SearchController::class => create(SearchController::class)
+        ->constructor(
+            get(ContentIndexService::class),
+            get(ContentRepositoryInterface::class),
+            get(JsonResponder::class)
         ),
     MediaController::class => create(MediaController::class)
         ->constructor(get(MediaRepositoryInterface::class)),

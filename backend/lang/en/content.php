@@ -12,5 +12,6 @@ return [
     'deleted' => 'Content deleted successfully',
     'status_updated' => 'Content status updated',
     'invalid_status' => 'Invalid content status',
+    'invalid_type' => 'Invalid content type (allowed: page, article)',
     'save_failed' => 'Failed to save content',
 ];

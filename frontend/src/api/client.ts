@@ -24,6 +24,19 @@ export interface ApiResponse<T = any> {
   conflict?: unknown;
   // Doplnkové pole prítomné pri 422 validačnej chybe (jednotný Error Handler, Iterácia 4).
   errors?: Record<string, string[]>;
+  // Stránkovanie (Iterácia 19).
+  meta?: PaginationMeta;
+}
+
+export interface PaginationMeta {
+  page: number;
+  per_page: number;
+  total: number;
+  total_pages: number;
+}
+
+export interface PaginatedResponse<T> extends ApiResponse<T[]> {
+  meta: PaginationMeta;
 }
 
 export interface ApiError {

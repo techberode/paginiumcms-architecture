@@ -1,7 +1,8 @@
 // frontend/src/components/frontend/SiteSearchModal.tsx
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Search, FileText, BookOpen, Calendar, Tag, ChevronRight, X } from 'lucide-react';
 import { usePublicSite } from '../../context/PublicSiteContext';
+import { searchContent, SearchResultItem } from '../../api/search';
 import { Article, Page } from '../../api/types';
 
 interface SiteSearchModalProps {
@@ -49,8 +50,37 @@ function articleSnippet(article: Article, q: string): string {
 export const SiteSearchModal: React.FC<SiteSearchModalProps> = ({ isOpen, onClose, onSelectRoute }) => {
   const { pages, articles } = usePublicSite();
   const [query, setQuery] = useState('');
+  const [apiResults, setApiResults] = useState<SearchResultItem[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
 
-  const searchResults = useMemo(() => {
+  useEffect(() => {
+    if (!query.trim() || query.length < 2) {
+      setApiResults([]);
+      return;
+    }
+
+    let cancelled = false;
+    const timer = window.setTimeout(async () => {
+      setSearchLoading(true);
+      try {
+        const results = await searchContent(query, { limit: 30 });
+        if (!cancelled) {
+          setApiResults(results);
+        }
+      } finally {
+        if (!cancelled) {
+          setSearchLoading(false);
+        }
+      }
+    }, 250);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [query]);
+
+  const clientResults = useMemo(() => {
     if (!query.trim() || query.length < 2) {
       return [];
     }
@@ -96,6 +126,22 @@ export const SiteSearchModal: React.FC<SiteSearchModalProps> = ({ isOpen, onClos
     return results;
   }, [query, pages, articles]);
 
+  const searchResults: SearchResult[] = useMemo(() => {
+    if (query.trim().length >= 2 && apiResults.length > 0) {
+      return apiResults.map((item) => ({
+        id: `${item.type}:${item.slug}`,
+        title: item.title,
+        path: item.type === 'article' ? `/blog/${item.slug}` : (item.slug === 'home' ? '/' : `/${item.slug}`),
+        type: item.type,
+        date: item.updatedAt,
+        tags: item.tags,
+        matchSnippet: item.excerpt || item.title,
+      }));
+    }
+
+    return clientResults;
+  }, [apiResults, clientResults, query]);
+
   if (!isOpen) {
     return null;
   }
@@ -132,7 +178,7 @@ export const SiteSearchModal: React.FC<SiteSearchModalProps> = ({ isOpen, onClos
         </div>
 
         <div className="max-h-[60vh] overflow-y-auto p-3 divide-y divide-slate-100 dark:divide-slate-800/60">
-          {searchResults.length === 0 && query.length >= 2 && (
+          {searchResults.length === 0 && query.length >= 2 && !searchLoading && (
             <div className="py-12 text-center text-slate-500 dark:text-slate-400">
               <p className="text-base font-medium">Nenašli sa žiadne FlatFile záznamy pre &quot;{query}&quot;</p>
             </div>
@@ -196,7 +242,9 @@ export const SiteSearchModal: React.FC<SiteSearchModalProps> = ({ isOpen, onClos
 
         <div className="bg-slate-50 dark:bg-slate-800/80 px-5 py-3 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between">
           <span>Výsledky z publikovaného FlatFile obsahu</span>
-          <span className="font-semibold text-indigo-600 dark:text-indigo-400">{searchResults.length} záznamov</span>
+          <span className="font-semibold text-indigo-600 dark:text-indigo-400">
+            {searchLoading ? 'Hľadám…' : `${searchResults.length} záznamov`}
+          </span>
         </div>
       </div>
     </div>

@@ -5,39 +5,39 @@ declare(strict_types=1);
 namespace PaginiumCMS\Core\FlatFile\Services;
 
 use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
+use PaginiumCMS\Core\FlatFile\Contracts\ContentStorageInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
-use PaginiumCMS\Core\FlatFile\Contracts\MarkdownParserInterface;
+use PaginiumCMS\Core\FlatFile\Models\Article;
 use PaginiumCMS\Core\FlatFile\Models\Content;
 use PaginiumCMS\Core\FlatFile\Models\Page;
-use PaginiumCMS\Core\FlatFile\Models\Article;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Core\FlatFile\Exception\FileNotFoundException;
+use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
+use PaginiumCMS\Http\Support\PaginationQuery;
 
 /**
  * Repozitár pre prácu s obsahom.
  *
- * Spravuje CRUD operácie pre stránky a články.
+ * Spravuje CRUD operácie pre stránky a články. Podporuje Markdown aj JSON formát
+ * a udržiava flat-file index pre rýchle listy (Iterácia 19).
  */
 class ContentRepository implements ContentRepositoryInterface
 {
-    private FileReaderInterface $reader;
-    private FileWriterInterface $writer;
-    private MarkdownParserInterface $parser;
-    /** @var array<int|string, mixed> */
+    /** @var array<string, class-string<Content>> */
     private array $typeMapping = [
         'page' => Page::class,
         'article' => Article::class,
     ];
 
     public function __construct(
-        FileReaderInterface $reader,
-        FileWriterInterface $writer,
-        MarkdownParserInterface $parser
+        private FileReaderInterface $reader,
+        private FileWriterInterface $writer,
+        private ContentIndexService $index,
+        private MarkdownContentStorage $markdownStorage,
+        private JsonContentStorage $jsonStorage,
+        private SettingsRepositoryInterface $settings
     ) {
-        $this->reader = $reader;
-        $this->writer = $writer;
-        $this->parser = $parser;
     }
 
     /**
@@ -50,19 +50,13 @@ class ContentRepository implements ContentRepositoryInterface
         }
 
         try {
-            $content = $this->reader->read($relativePath);
-            $parsed = $this->parser->parse($content);
-
-            // Určenie typu podľa cesty
+            $raw = $this->reader->read($relativePath);
+            $storage = $this->storageForPath($relativePath);
+            $parsed = $storage->parse($raw);
             $type = $this->determineType($relativePath);
-
-            // Vytvorenie inštancie
-            $className = $this->typeMapping[$type] ?? Content::class;
+            $className = $this->typeMapping[$type] ?? Page::class;
+            /** @var Page|Article $object */
             $object = new $className();
-
-            if (!$object instanceof Content) {
-                throw new FlatFileException(sprintf('Neplatná trieda pre typ: %s', $type));
-            }
 
             $object->setPath($relativePath);
             $object->setFrontMatter($parsed['frontMatter']);
@@ -84,48 +78,95 @@ class ContentRepository implements ContentRepositoryInterface
      */
     public function findBySlug(string $slug, string $type = 'page'): ?Content
     {
-        $directory = $type === 'article' ? 'blog' : 'pages';
-        $files = $this->reader->listFiles($directory, '*.md');
+        $this->index->ensureBuilt($this);
+        $all = $this->index->query(
+            $type,
+            new PaginationQuery(1, PaginationQuery::MAX_PER_PAGE, '', '-updatedAt', [])
+        );
 
-        foreach ($files as $file) {
-            // Zostavíme plnú cestu
-            if (strpos($file, $directory . '/') !== 0) {
-                $fullPath = $directory . '/' . $file;
-            } else {
-                $fullPath = $file;
-            }
-
-            try {
-                $content = $this->reader->read($fullPath);
-                $frontMatter = $this->parser->extractFrontMatter($content);
-
-                if (($frontMatter['slug'] ?? '') === $slug) {
-                    return $this->findByPath($fullPath);
-                }
-            } catch (FlatFileException) {
-                continue;
+        foreach ($all['entries'] as $entry) {
+            if ($entry->slug === $slug) {
+                return $this->findByPath($entry->path);
             }
         }
 
-        return null;
+        // Index môže byť neaktuálny – fallback na disk.
+        $total = $all['total'];
+        if ($total > PaginationQuery::MAX_PER_PAGE) {
+            $page = 1;
+            while (($page - 1) * PaginationQuery::MAX_PER_PAGE < $total) {
+                $batch = $this->index->query(
+                    $type,
+                    new PaginationQuery($page, PaginationQuery::MAX_PER_PAGE, '', '-updatedAt', [])
+                );
+                foreach ($batch['entries'] as $entry) {
+                    if ($entry->slug === $slug) {
+                        return $this->findByPath($entry->path);
+                    }
+                }
+                $page++;
+            }
+        }
+
+        return $this->findBySlugScanningDisk($slug, $type);
     }
 
     /**
      * {@inheritDoc}
- * @param array<int|string, mixed> $filters
- * @return array<int|string, mixed>
- */public function findAllPages(array $filters = []): array
+     * @param array<int|string, mixed> $filters
+     * @return array<int, Page>
+     */
+    public function findAllPages(array $filters = []): array
     {
-        return $this->findAll('pages', $filters);
+        $items = $this->findAll('pages', $filters);
+
+        return array_values(array_filter($items, static fn (Content $c): bool => $c instanceof Page));
     }
 
     /**
      * {@inheritDoc}
- * @param array<int|string, mixed> $filters
- * @return array<int|string, mixed>
- */public function findAllArticles(array $filters = []): array
+     * @param array<int|string, mixed> $filters
+     * @return array<int, Article>
+     */
+    public function findAllArticles(array $filters = []): array
     {
-        return $this->findAll('blog', $filters);
+        $items = $this->findAll('blog', $filters);
+
+        return array_values(array_filter($items, static fn (Content $c): bool => $c instanceof Article));
+    }
+
+    /**
+     * {@inheritDoc}
+     * @return array{items: array<int, Page>, total: int}
+     */
+    public function findPagesPaginated(PaginationQuery $query): array
+    {
+        $result = $this->findPaginated('page', $query);
+
+        return [
+            'items' => array_values(array_filter(
+                $result['items'],
+                static fn (Content $c): bool => $c instanceof Page
+            )),
+            'total' => $result['total'],
+        ];
+    }
+
+    /**
+     * {@inheritDoc}
+     * @return array{items: array<int, Article>, total: int}
+     */
+    public function findArticlesPaginated(PaginationQuery $query): array
+    {
+        $result = $this->findPaginated('article', $query);
+
+        return [
+            'items' => array_values(array_filter(
+                $result['items'],
+                static fn (Content $c): bool => $c instanceof Article
+            )),
+            'total' => $result['total'],
+        ];
     }
 
     /**
@@ -133,29 +174,24 @@ class ContentRepository implements ContentRepositoryInterface
      */
     public function save(Content $content): void
     {
+        $storage = $this->activeStorage();
         $path = $content->getPath();
 
-        if (empty($path)) {
-            // Generovanie cesty na základe typu a slugu
-            $type = $content instanceof Article ? 'blog' : 'pages';
-            $slug = $content->getSlug();
-            $path = $type . '/' . $slug . '.md';
+        if ($path === '') {
+            $directory = $content instanceof Article ? 'blog' : 'pages';
+            $path = $storage->buildPath($directory, $content->getSlug());
             $content->setPath($path);
         }
 
-        // Serializácia
-        $markdown = $this->parser->serialize(
-            $content->getFrontMatter(),
-            $content->getContent()
-        );
+        $serialized = $storage->serialize($this->normalizeFrontMatter($content->getFrontMatter()), $content->getContent());
+        $this->writer->write($path, $serialized, true);
 
-        // Zápis
-        $this->writer->write($path, $markdown, true);
-
-        // Aktualizácia metadát
         $info = $this->reader->getInfo($path);
         $content->setSize($info['size']);
         $content->setModifiedAt($info['mtime']);
+
+        $type = $content instanceof Article ? 'article' : 'page';
+        $this->index->upsertFromContent($content, $type);
     }
 
     /**
@@ -165,39 +201,40 @@ class ContentRepository implements ContentRepositoryInterface
     {
         $path = $content->getPath();
 
-        if (empty($path)) {
+        if ($path === '') {
             throw new FlatFileException('Obsah nemá nastavenú cestu');
         }
 
+        $type = $content instanceof Article ? 'article' : 'page';
+        $slug = $content->getSlug();
+
         $this->writer->delete($path, !$permanent);
+        $this->index->remove($type, $slug);
     }
 
     /**
      * {@inheritDoc}
- * @param array<int|string, mixed> $filters
- */public function count(string $type, array $filters = []): int
+     * @param array<int|string, mixed> $filters
+     */
+    public function count(string $type, array $filters = []): int
     {
         $directory = $type === 'article' ? 'blog' : 'pages';
+        $files = array_merge(
+            $this->reader->listFiles($directory, '*.md'),
+            $this->reader->listFiles($directory, '*.json')
+        );
 
-        // Získame všetky súbory a spočítame ich priamo
-        $files = $this->reader->listFiles($directory, '*.md');
-
-        if (empty($filters)) {
+        if ($filters === []) {
             return count($files);
         }
 
-        // Ak máme filtre, musíme ich aplikovať
         $count = 0;
         foreach ($files as $file) {
-            if (strpos($file, $directory . '/') !== 0) {
-                $fullPath = $directory . '/' . $file;
-            } else {
-                $fullPath = $file;
-            }
+            $fullPath = $this->normalizeDirectoryPath($directory, $file);
 
             try {
-                $content = $this->reader->read($fullPath);
-                $frontMatter = $this->parser->extractFrontMatter($content);
+                $raw = $this->reader->read($fullPath);
+                $frontMatter = $this->storageForPath($fullPath)->parse($raw)['frontMatter'];
 
                 $matches = true;
                 foreach ($filters as $key => $value) {
@@ -219,26 +256,39 @@ class ContentRepository implements ContentRepositoryInterface
     }
 
     /**
-     * Získa všetky položky z adresára.
-     *
-     * @param string $directory Adresár ('pages' alebo 'blog').
-     * @param array<int|string, mixed> $filters Filtre.
-     * @return array<int, Content>
- */private function findAll(string $directory, array $filters = []): array
+     * @return array{items: array<int, Content>, total: int}
+     */
+    private function findPaginated(string $type, PaginationQuery $query): array
     {
-        // Získame zoznam súborov v adresári
-        $files = $this->reader->listFiles($directory, '*.md');
+        $this->index->ensureBuilt($this);
+        $result = $this->index->query($type, $query);
+
+        $items = [];
+        foreach ($result['entries'] as $entry) {
+            $content = $this->findByPath($entry->path);
+            if ($content !== null) {
+                $items[] = $content;
+            }
+        }
+
+        return ['items' => $items, 'total' => $result['total']];
+    }
+
+    /**
+     * @param array<int|string, mixed> $filters
+     * @return array<int, Content>
+     */
+    private function findAll(string $directory, array $filters = []): array
+    {
+        $files = array_merge(
+            $this->reader->listFiles($directory, '*.md'),
+            $this->reader->listFiles($directory, '*.json')
+        );
 
         $results = [];
 
         foreach ($files as $file) {
-            // $file je relatívna cesta, napr. 'home.md' alebo 'pages/home.md'
-            // Potrebujeme vytvoriť plnú cestu
-            if (strpos($file, $directory . '/') !== 0) {
-                $fullPath = $directory . '/' . $file;
-            } else {
-                $fullPath = $file;
-            }
+            $fullPath = $this->normalizeDirectoryPath($directory, $file);
 
             try {
                 $content = $this->findByPath($fullPath);
@@ -247,7 +297,6 @@ class ContentRepository implements ContentRepositoryInterface
                     continue;
                 }
 
-                // Aplikovanie filtrov
                 $matches = true;
                 foreach ($filters as $key => $value) {
                     $frontMatter = $content->getFrontMatter();
@@ -268,22 +317,82 @@ class ContentRepository implements ContentRepositoryInterface
         return $results;
     }
 
+    private function findBySlugScanningDisk(string $slug, string $type): ?Content
+    {
+        $directory = $type === 'article' ? 'blog' : 'pages';
+        $files = array_merge(
+            $this->reader->listFiles($directory, '*.md'),
+            $this->reader->listFiles($directory, '*.json')
+        );
+
+        foreach ($files as $file) {
+            $fullPath = $this->normalizeDirectoryPath($directory, $file);
+
+            try {
+                $raw = $this->reader->read($fullPath);
+                $frontMatter = $this->storageForPath($fullPath)->parse($raw)['frontMatter'];
+
+                if (($frontMatter['slug'] ?? '') === $slug) {
+                    return $this->findByPath($fullPath);
+                }
+            } catch (FlatFileException) {
+                continue;
+            }
+        }
+
+        return null;
+    }
+
+    private function activeStorage(): ContentStorageInterface
+    {
+        $format = (string) $this->settings->get('content.storageFormat', 'md');
+
+        return $format === 'json' ? $this->jsonStorage : $this->markdownStorage;
+    }
+
+    private function storageForPath(string $path): ContentStorageInterface
+    {
+        return str_ends_with(strtolower($path), '.json')
+            ? $this->jsonStorage
+            : $this->markdownStorage;
+    }
+
+    private function normalizeDirectoryPath(string $directory, string $file): string
+    {
+        if (!str_starts_with($file, $directory . '/')) {
+            return $directory . '/' . $file;
+        }
+
+        return $file;
+    }
+
     /**
-     * Určí typ obsahu podľa cesty.
-     *
      * @param string $path Relatívna cesta.
-     * @return string 'page' alebo 'article'.
+     * @return 'page'|'article'
      */
     private function determineType(string $path): string
     {
-        if (strpos($path, 'blog/') === 0) {
+        if (str_starts_with($path, 'blog/')) {
             return 'article';
         }
 
-        if (strpos($path, 'pages/') === 0) {
-            return 'page';
+        return 'page';
+    }
+
+    /**
+     * @param array<int|string, mixed> $frontMatter
+     * @return array<string, mixed>
+     */
+    private function normalizeFrontMatter(array $frontMatter): array
+    {
+        /** @var array<string, mixed> $normalized */
+        $normalized = [];
+        foreach ($frontMatter as $key => $value) {
+            if (is_string($key)) {
+                $normalized[$key] = $value;
+            }
         }
 
-        return 'page';
+        return $normalized;
     }
 }
