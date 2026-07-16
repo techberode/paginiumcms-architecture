@@ -168,10 +168,24 @@ class FileWriter implements FileWriterInterface
 
         $filename = basename($relativePath);
         $timestamp = date('Y-m-d_H-i-s');
-        $trashPath = $this->trashPath . '/' . $timestamp . '_' . $filename;
+        $trashFilename = $timestamp . '_' . $filename;
+        $trashPath = $this->trashPath . '/' . $trashFilename;
+        $metaId = $timestamp . '_' . pathinfo($filename, PATHINFO_FILENAME);
 
         if (!rename($absolutePath, $trashPath)) {
             throw new FlatFileException(sprintf('Nepodarilo sa presunúť súbor do koša: %s', $relativePath));
         }
+
+        $meta = [
+            'id' => $metaId,
+            'originalPath' => $relativePath,
+            'deletedAt' => date('c'),
+            'trashFilename' => $trashFilename,
+        ];
+
+        file_put_contents(
+            $trashPath . '.meta.json',
+            json_encode($meta, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+        );
     }
 }

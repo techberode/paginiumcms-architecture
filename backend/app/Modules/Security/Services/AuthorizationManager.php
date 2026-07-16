@@ -71,6 +71,17 @@ class AuthorizationManager implements AuthorizationInterface
             if (in_array($permission, $permissions, true)) {
                 return true;
             }
+
+            // content:manage / media:manage pokrývajú všetky akcie v doméne
+            foreach ($permissions as $perm) {
+                if (!str_ends_with($perm, ':manage')) {
+                    continue;
+                }
+                $resource = substr($perm, 0, -strlen(':manage'));
+                if (str_starts_with($permission, $resource . ':')) {
+                    return true;
+                }
+            }
         }
 
         return false;

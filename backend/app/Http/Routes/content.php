@@ -10,6 +10,8 @@ declare(strict_types=1);
 use PaginiumCMS\Http\Controllers\Content\ContentController;
 use PaginiumCMS\Http\Controllers\Content\SearchController;
 use PaginiumCMS\Http\Middleware\AuthMiddleware;
+use PaginiumCMS\Http\Middleware\PermissionMiddleware;
+use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
 use Slim\App;
 use Slim\Routing\RouteCollectorProxy;
 use PaginiumCMS\Http\Support\RouteBootstrap;
@@ -20,6 +22,7 @@ return function (App $app): void {
     $controller = $container->get(ContentController::class);
     $searchController = $container->get(SearchController::class);
     $auth = $container->get(AuthMiddleware::class);
+    $authz = $container->get(AuthorizationInterface::class);
 
     $app->get('/api/test', function ($request, $response) {
         $response->getBody()->write(JsonHelper::encode([
@@ -47,18 +50,42 @@ return function (App $app): void {
         $group->get('/{slug}', [$controller, 'getArticle']);
     });
 
-    // Zápis vyžaduje prihlásenie
+    // Zápis vyžaduje prihlásenie + RBAC oprávnenia
     $app->group('/api/pages', function (RouteCollectorProxy $group) use ($controller) {
         $group->post('', [$controller, 'createPage']);
+    })
+        ->add(new PermissionMiddleware($authz, 'content:create'))
+        ->add($auth);
+
+    $app->group('/api/pages', function (RouteCollectorProxy $group) use ($controller) {
         $group->put('/{slug}', [$controller, 'updatePage']);
         $group->patch('/{slug}/status', [$controller, 'updatePageStatus']);
+    })
+        ->add(new PermissionMiddleware($authz, 'content:edit'))
+        ->add($auth);
+
+    $app->group('/api/pages', function (RouteCollectorProxy $group) use ($controller) {
         $group->delete('/{slug}', [$controller, 'deletePage']);
-    })->add($auth);
+    })
+        ->add(new PermissionMiddleware($authz, 'content:delete'))
+        ->add($auth);
 
     $app->group('/api/articles', function (RouteCollectorProxy $group) use ($controller) {
         $group->post('', [$controller, 'createArticle']);
+    })
+        ->add(new PermissionMiddleware($authz, 'content:create'))
+        ->add($auth);
+
+    $app->group('/api/articles', function (RouteCollectorProxy $group) use ($controller) {
         $group->put('/{slug}', [$controller, 'updateArticle']);
         $group->patch('/{slug}/status', [$controller, 'updateArticleStatus']);
+    })
+        ->add(new PermissionMiddleware($authz, 'content:edit'))
+        ->add($auth);
+
+    $app->group('/api/articles', function (RouteCollectorProxy $group) use ($controller) {
         $group->delete('/{slug}', [$controller, 'deleteArticle']);
-    })->add($auth);
+    })
+        ->add(new PermissionMiddleware($authz, 'content:delete'))
+        ->add($auth);
 };

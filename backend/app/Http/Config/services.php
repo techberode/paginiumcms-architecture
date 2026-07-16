@@ -51,6 +51,7 @@ use PaginiumCMS\Core\FlatFile\Services\ContentRepository;
 use PaginiumCMS\Core\FlatFile\Services\ContentIndexService;
 use PaginiumCMS\Core\FlatFile\Services\JsonContentStorage;
 use PaginiumCMS\Core\FlatFile\Services\MarkdownContentStorage;
+use PaginiumCMS\Core\FlatFile\Services\TrashService;
 use PaginiumCMS\Core\FlatFile\Services\ContentRevision;
 use PaginiumCMS\Core\FlatFile\Services\FrontMatterParser;
 use PaginiumCMS\Core\FlatFile\Services\MarkdownContentParser;
@@ -74,6 +75,7 @@ use PaginiumCMS\Http\Controllers\Admin\CodeEditorController;
 use PaginiumCMS\Http\Controllers\Admin\DeveloperController;
 use PaginiumCMS\Http\Controllers\Admin\GatedCodeEditorController;
 use PaginiumCMS\Http\Controllers\Admin\SettingsController;
+use PaginiumCMS\Http\Controllers\Admin\TrashController;
 use PaginiumCMS\Http\Controllers\Admin\VersionController;
 use PaginiumCMS\Http\Controllers\Admin\ConflictController;
 use PaginiumCMS\Http\Controllers\Admin\UserController;
@@ -445,5 +447,13 @@ return [
             get(DeveloperMode::class),
             get(DeveloperLogger::class),
             get(TwoFactorInterface::class)
+        ),
+    TrashService::class => create(TrashService::class)
+        ->constructor(get(FileReaderInterface::class)),
+    TrashController::class => create(TrashController::class)
+        ->constructor(
+            get(TrashService::class),
+            get(ContentIndexService::class),
+            get(ContentRepositoryInterface::class)
         ),
 ];

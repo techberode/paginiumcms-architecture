@@ -276,6 +276,49 @@ class BackupManager implements BackupInterface
         return $data !== [] ? $data : ['enabled' => false];
     }
 
+    /**
+     * @return array{ran: bool, reason?: string, backup?: BackupMetadata}
+     */
+    public function runScheduledBackupIfDue(): array
+    {
+        $schedulePath = $this->backupPath . '/schedule.json';
+        if (!file_exists($schedulePath)) {
+            return ['ran' => false, 'reason' => 'no_schedule'];
+        }
+
+        $schedule = JsonHelper::decode(FileHelper::read($schedulePath));
+        $nextRun = strtotime((string) ($schedule['next_run'] ?? ''));
+        if ($nextRun === false || time() < $nextRun) {
+            return ['ran' => false, 'reason' => 'not_due'];
+        }
+
+        $backup = $this->create('scheduled_' . date('Y-m-d_H-i-s'));
+        $schedule['last_run'] = date('Y-m-d H:i:s');
+        $schedule['next_run'] = $this->calculateNextRun((string) ($schedule['interval'] ?? 'daily'));
+        file_put_contents($schedulePath, json_encode($schedule, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+
+        $keep = max(1, (int) ($schedule['keep'] ?? 7));
+        $this->pruneOldBackups($keep);
+
+        return ['ran' => true, 'backup' => $backup];
+    }
+
+    private function pruneOldBackups(int $keep): void
+    {
+        $backups = $this->listBackups();
+        if (count($backups) <= $keep) {
+            return;
+        }
+
+        usort($backups, static function (BackupMetadata $a, BackupMetadata $b): int {
+            return strcmp($b->getCreatedAt(), $a->getCreatedAt());
+        });
+
+        foreach (array_slice($backups, $keep) as $old) {
+            $this->deleteBackup($old->getId());
+        }
+    }
+
     private function addDirectoryToZip(\ZipArchive $zip, string $dir, string $prefix): void
     {
         if (!is_dir($dir)) {

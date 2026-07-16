@@ -56,8 +56,8 @@ class AuthorizationManagerTest extends TestCase
 
         $this->assertTrue($this->authz->hasPermission($user, 'user:manage'));
         $this->assertTrue($this->authz->hasPermission($user, 'content:manage'));
+        $this->assertTrue($this->authz->hasPermission($user, 'content:create')); // alias cez content:manage
         $this->assertTrue($this->authz->hasPermission($user, 'settings:manage'));
-        $this->assertFalse($this->authz->hasPermission($user, 'content:create')); // Admin nemá create
     }
 
     public function testEditorPermissions(): void

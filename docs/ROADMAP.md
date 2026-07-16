@@ -4,13 +4,13 @@
 
 Legenda: ✅ hotové · 🚧 rozpracované · ⏳ plánované · 🔴 kritická priorita jadra
 
-**Aktuálna verzia:** 2.0.7 · **Ďalšie kroky:** dokončiť It. 19 (CLI migrácia, media pagination) → It. 20
+**Aktuálna verzia:** 2.0.8 · **Ďalšie kroky:** It. 21 (API kontrakt & testovanie)
 
 | Iterácia | Názov | Priorita |
 |----------|-------|----------|
-| 19 | FlatFile storage, indexácia, stránkovanie | 🔴 ďalšia |
-| 20 | Core hardening & produkcia | 🔴 |
-| 21 | API kontrakt & testovanie | 🟡 |
+| 19 | FlatFile storage, indexácia, stránkovanie | ✅ |
+| 20 | Core hardening & produkcia | 🟡 |
+| 21 | API kontrakt & testovanie | 🔴 ďalšia |
 | 6–7 | Notifikácie, dashboard | 🟡 po It. 21 |
 | 8–10 | DAM, SEO, feedy | 🟢 |
 | 11–16 | SSO, plugins, Monaco | 🔵 |
@@ -229,87 +229,41 @@ Základ pre všetky admin nastavenia (SMTP, notifikácie, SEO, feedy v ďalšíc
 
 ---
 
-## Iterácia 19 – FlatFile storage, indexácia a stránkovanie 🟡
+## Iterácia 19 – FlatFile storage, indexácia a stránkovanie ✅
 
-**Stav (release 2.0.7):** jadro implementované; zostáva CLI migrácia `content:migrate --to=json` a pagination na ďalších list API (media, messages).
+**Stav (release 2.0.7):** jadro hotové. Zostáva voliteľne: CLI `content:migrate --to=json`, pagination na media/messages list API.
 
-**Cieľ:** Maximálne zefektivniť jadro bez pluginov — rýchle listy, search a voliteľný formát úložiska obsahu.
+**Hotové ✅:** index, pagination meta, search API, dual storage (md/json), FE pagination + search.
+
+---
+
+## Iterácia 20 – Core hardening & produkčná pripravenosť 🟡
+
+**Stav (release 2.0.8):** kritická trojica + prevádzka implementované; zostáva brute-force lockout per e-mail a trash admin UI.
 
 **Hotové ✅:**
-- `JsonResponder`, `PaginationQuery`, `PaginationMeta`
-- `ContentIndexService` (`data/index/content.json`) + rebuild/upsert/remove
-- Stránkovanie `GET /api/pages|articles?page=&per_page=&search=&status=` + `meta`
-- `GET /api/search?q=&type=&limit=` (published only)
-- `MarkdownContentStorage` + `JsonContentStorage` + setting `content.storageFormat`
-- Verejný filter `published` (session-aware pre admina)
-- FE: `PagesManager` pagination, `SiteSearchModal` → search API, `api/search.ts`
+- `PermissionMiddleware` + RBAC na content/media mutácie (`content:*`, `media:*`; ADMIN `:manage` alias)
+- `GET /storage/{path}` – servovanie médií (+ Vite proxy `/storage`)
+- `MaintenanceModeMiddleware` – `general.maintenanceMode` (výnimka admin/editor session + `/api/admin/*`)
+- `general.allowRegistration` – vypnutie registrácie
+- `comments.allowGuestComments` – vynútenie v `CommentsController`
+- Session fixation – `session_regenerate_id()` v `SessionManager::setUser()` (dokumentované)
+- Trash API: `GET /api/admin/trash`, `POST /api/admin/trash/{id}/restore` + meta pri soft-delete
+- Backup cron: `bin/console backup:run-schedule` + `BackupScheduler`
+- FE: `/preview/:slug`, `AdminRoleGuard`, `document.title`, `VersionHistory` v editore, Developer logs viewer
 
 **Zostáva ⏳:**
-- `Contracts/ContentStorageInterface.php` – jednotný kontrakt read/write/list/count.
-- `Services/MarkdownContentStorage.php` – existujúci formát (`.md` + YAML FM) ako driver.
-- `Services/JsonContentStorage.php` – čistý `.json` (metadata + `body` v jednom súbore).
-- `Services/ContentIndexService.php` – flat-file index `data/index/content.json` (slug, title, status, type, tags, excerpt, `updatedAt`).
-- Rebuild indexu pri save/delete/status change (hook v `ContentRepository`).
-- `GET /api/search?q=&type=page|article` – fulltext nad indexom, nie nad diskom.
-- Stránkovanie na list API: `?page=&per_page=&status=&sort=&search=`.
-- Jednotná odpoveď listov:
-  ```json
-  { "success": true, "data": [], "meta": { "page": 1, "per_page": 20, "total": 143, "total_pages": 8 } }
-  ```
-- `SettingsSchema` – pole `content.storageFormat` (`md` | `json`), prepojenie `content.itemsPerPage` na API.
-- CLI: `bin/console content:migrate --to=json` (jednosmerná migrácia `.md` → `.json`).
+- Brute-force lockout per e-mail/IP (rozšírenie `SecurityLogger`)
+- Trash admin UI v React
+- Plné HTTP testy trash restore
 
-**Frontend (React + TypeScript):**
-- Pagination komponenty v `PagesManager`, `MediaManager`, `CommentsManager`, `MessagesViewer`, `BlogRenderer`.
-- `api/search.ts` + prepojenie `SiteSearchModal` na BE search (namiesto client-side scan).
-- Typy `PaginatedResponse<T>` v `api/types.ts`.
-
-**Testy:**
-- `ContentRepositoryTest` – index rebuild, oba storage drivery.
-- `ContentControllerTest` – pagination shape, search, published filter (spolu s It. 20).
-- Vitest: pagination UI v admin listoch.
-
-**Kľúčové parametre:**
-
-| Parameter | Hodnota |
-|---|---|
-| Index | `data/index/content.json` |
-| Default `per_page` | z `content.itemsPerPage` (predvolene 20) |
-| Formáty obsahu | `md` (YAML FM + Markdown) \| `json` (pure JSON) |
-| Search minimum | 2 znaky (`q`) |
+**Testy (2.0.8):**
+- `CoreHardeningTest` – RBAC 403, maintenance 503, registration toggle, storage route
+- `AuthorizationManagerManagePermissionTest` – `:manage` alias
 
 ---
 
-## Iterácia 20 – Core hardening & produkčná pripravenosť ⏳ 🔴
-
-**Cieľ:** Bezpečný a prevádzkovateľný CMS bez doplnkov — zatvorenie dier v jadre identifikovaných v audite 2.0.6.
-
-**Backend:**
-- Verejné API (`GET /api/pages`, `/api/articles`, `/{slug}`) → len `status=published`; draft/archived = 404.
-- `RoleMiddleware` / permission check na content + media mutácie (EDITOR vs USER vs ADMIN).
-- Servovanie médií: Slim static route alebo nginx alias pre `/storage/app/content/media/...`.
-- `MaintenanceModeMiddleware` – vynútenie `general.maintenanceMode` (admin SPA výnimka).
-- Nastavenie `general.allowRegistration` – vypnutie `POST /api/auth/register`.
-- Vynútenie `comments.allowGuestComments` v `CommentsController`.
-- `session_regenerate_id()` pri úspešnom login (`SessionManager`).
-- Brute-force lockout per e-mail/IP (rozšírenie `SecurityLogger` + `RateLimitMiddleware`).
-- Trash: `GET /api/admin/trash`, `POST /api/admin/trash/{id}/restore` nad existujúcim soft-delete.
-- Backup cron: CLI `bin/console backup:run-schedule` + dokumentácia crontab; zapojenie `BackupScheduler`.
-
-**Frontend:**
-- Route `/preview/:slug` (auth) – náhľad nepublished obsahu.
-- `VersionHistory` mountnutý v sidebar `MarkdownEditor`.
-- FE role guard na admin routes (USER → redirect / 403).
-- `document.title` na verejnom webe (základ UX, nie plné SEO z It. 9).
-- Developer logs viewer (`GET /api/admin/developer/logs`).
-
-**Testy:**
-- HTTP testy: published filter, RBAC 403, maintenance mode, trash restore.
-- Security testy: session fixation, registration toggle.
-
----
-
-## Iterácia 21 – API kontrakt, automatizované testovanie & FE parita ⏳ 🟡
+## Iterácia 21 – API kontrakt, automatizované testovanie & FE parita ⏳ 🔴
 
 **Cieľ:** Frontendista neháda tvar API; regresia bez klikania v UI.
 

@@ -6,6 +6,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [2.0.8] – 2026-07-16
+
+### Iteration 20 – Core hardening & production readiness
+
+#### Backend
+- Add `PermissionMiddleware` – RBAC on content write (`content:create|edit|delete`) and media (`media:upload|delete`)
+- `AuthorizationManager`: `content:manage` / `media:manage` alias covers domain permissions (ADMIN role)
+- Add `MaintenanceModeMiddleware` – enforces `general.maintenanceMode` (503 on public API; admin/editor session exempt)
+- Add `GET /storage/{path}` via `StorageController` – serves files from `backend/storage/`
+- Setting `general.allowRegistration` – blocks `POST /api/auth/register` when disabled
+- Enforce `comments.allowGuestComments` in `CommentsController::submit()`
+- Trash: sidecar `.meta.json` on soft-delete; `GET /api/admin/trash`, `POST /api/admin/trash/{id}/restore`
+- Backup cron: `bin/console backup:run-schedule`, `BackupScheduler`, `BackupManager::runScheduledBackupIfDue()`
+
+#### Frontend
+- Route `/preview/:slug` (auth + staff roles) for unpublished page preview
+- `AdminRoleGuard` on admin shell – USER role redirected to public site
+- `document.title` on public site from page/article title + site name
+- `VersionHistory` mounted in `MarkdownEditor`
+- `DeveloperLogsViewer` at `/developer/logs`
+- Vite dev proxy for `/storage`
+
+#### Tests
+- `CoreHardeningTest` – RBAC 403, maintenance 503, registration toggle, storage route
+- `AuthorizationManagerManagePermissionTest`
+
+#### Docs
+- `docs/architecture/CORE_HARDENING.md`
+- `docs/ROADMAP.md` – It. 19 ✅, It. 20 🟡
+
+---
+
 ## [2.0.7] – 2026-07-16
 
 ### Iteration 19 – FlatFile index, pagination & search API

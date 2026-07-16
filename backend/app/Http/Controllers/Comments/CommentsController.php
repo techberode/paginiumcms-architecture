@@ -67,6 +67,11 @@ class CommentsController
             return $this->jsonError($response, Lang::get('disabled', [], 'comments'), 403);
         }
 
+        $user = $request->getAttribute('user');
+        if ($user === null && ($settings['allowGuestComments'] ?? true) === false) {
+            return $this->jsonError($response, 'Anonymné komentáre sú vypnuté', 403);
+        }
+
         $comment = new Comment(
             (string) $validated['articleSlug'],
             (string) $validated['author'],

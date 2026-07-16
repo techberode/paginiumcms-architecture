@@ -112,6 +112,11 @@ class AuthController
             return $this->jsonError($response, 'Email, heslo a meno sú povinné', 400);
         }
 
+        $general = $this->settings->group('general');
+        if (($general['allowRegistration'] ?? true) === false) {
+            return $this->jsonError($response, 'Registrácia nových používateľov je vypnutá', 403);
+        }
+
         try {
             // Overenie hesla
             $this->passwordPolicy->requireValid($data['password']);

@@ -7,6 +7,7 @@ import { CMSBar, CMSBarDoc } from '../frontend/CMSBar';
 import { SiteSearchModal } from '../frontend/SiteSearchModal';
 import { PageRenderer } from '../frontend/PageRenderer';
 import { usePublicSite } from '../../context/PublicSiteContext';
+import { useSettingsContext } from '../../context/SettingsContext';
 import { useAuth } from '../../hooks/useAuth';
 
 const ADMIN_PREFIXES = [
@@ -86,6 +87,8 @@ export const PublicSiteLayout: React.FC = () => {
   const navigate = useNavigate();
   const { user, pendingTwoFactor } = useAuth();
   const { getPageBySlug, getArticleBySlug } = usePublicSite();
+  const { settings } = useSettingsContext();
+  const siteName = String(settings?.general?.siteName ?? 'PaginiumCMS');
 
   const showCmsBar = Boolean(user && !pendingTwoFactor);
 
@@ -111,6 +114,11 @@ export const PublicSiteLayout: React.FC = () => {
     }
     return undefined;
   }, [pathname, getPageBySlug, getArticleBySlug]);
+
+  React.useEffect(() => {
+    const pageTitle = currentDoc?.title ?? (pathname === '/' ? siteName : null);
+    document.title = pageTitle ? `${pageTitle} | ${siteName}` : siteName;
+  }, [currentDoc, pathname, siteName]);
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors">

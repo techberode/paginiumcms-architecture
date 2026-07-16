@@ -78,4 +78,11 @@ interface BackupInterface
      * @return array Informácie o pláne.
  * @return array<int|string, mixed>
  */public function getScheduleInfo(): array;
+
+    /**
+     * Spustí zálohu podľa schedule.json, ak je termín splnený.
+     *
+     * @return array{ran: bool, reason?: string, backup?: BackupMetadata}
+     */
+    public function runScheduledBackupIfDue(): array;
 }

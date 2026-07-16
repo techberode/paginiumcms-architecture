@@ -45,6 +45,7 @@ final class SettingsSchema
                     ['key' => 'language', 'type' => 'enum', 'label' => 'Jazyk administrácie', 'default' => 'sk', 'options' => ['sk', 'en'], 'rules' => ['required', 'in:sk,en']],
                     ['key' => 'timezone', 'type' => 'string', 'label' => 'Časové pásmo', 'default' => 'Europe/Bratislava', 'rules' => ['required', 'string', 'max:64']],
                     ['key' => 'maintenanceMode', 'type' => 'bool', 'label' => 'Režim údržby', 'default' => false, 'rules' => ['bool'], 'help' => 'Zablokuje verejný web okrem administrácie.'],
+                    ['key' => 'allowRegistration', 'type' => 'bool', 'label' => 'Povoliť registráciu', 'default' => true, 'rules' => ['bool'], 'help' => 'Vypnutím zablokujete POST /api/auth/register.'],
                 ],
             ],
             'content' => [
