@@ -12,6 +12,7 @@ use PaginiumCMS\Http\Middleware\SecurityMiddleware;
 use PaginiumCMS\Http\Middleware\RateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\LoginRateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\LocaleMiddleware;
+use PaginiumCMS\Http\Middleware\MaintenanceModeMiddleware;
 
 // ---------- PÔVODNÉ IMPORTY ----------
 use PaginiumCMS\Modules\Security\Services\AuthenticationManager;
@@ -45,6 +46,8 @@ use PaginiumCMS\Http\Middleware\RoleMiddleware;
 use PaginiumCMS\Http\Middleware\TwoFactorMiddleware;
 use PaginiumCMS\Core\Backup\Services\BackupManager;
 use PaginiumCMS\Core\Backup\Contracts\BackupInterface;
+use PaginiumCMS\Core\Backup\Services\BackupScheduler;
+use PaginiumCMS\Core\Backup\Commands\RunBackupScheduleCommand;
 use PaginiumCMS\Core\Logging\Services\Logger;
 use PaginiumCMS\Core\Logging\Contracts\LoggerInterface;
 use PaginiumCMS\Core\Security\SecurityLogger;
@@ -180,6 +183,14 @@ $containerBuilder->addDefinitions([
     LocaleMiddleware::class => function ($container) {
         return new LocaleMiddleware(
             $container->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class)
+        );
+    },
+
+    MaintenanceModeMiddleware::class => function ($container) {
+        return new MaintenanceModeMiddleware(
+            $container->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class),
+            $container->get(AuthenticationInterface::class),
+            $container->get(AuthorizationInterface::class)
         );
     },
 
@@ -330,6 +341,14 @@ $containerBuilder->addDefinitions([
         );
     },
 
+    BackupScheduler::class => function ($container) {
+        return new BackupScheduler($container->get(BackupInterface::class));
+    },
+
+    RunBackupScheduleCommand::class => function ($container) {
+        return new RunBackupScheduleCommand($container->get(BackupScheduler::class));
+    },
+
 ]);
 
 // ============================================
@@ -420,6 +439,7 @@ $app->add(new CorsMiddleware([
 // ============================================
 
 $app->add($container->get(SecurityMiddleware::class));
+$app->add($container->get(MaintenanceModeMiddleware::class));
 $app->add($container->get(LocaleMiddleware::class));
 $app->add($container->get(RateLimitMiddleware::class));
 $app->add($container->get(AnalyticsMiddleware::class));

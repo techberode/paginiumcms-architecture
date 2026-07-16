@@ -27,6 +27,9 @@ import { RegisterModal } from './components/auth/RegisterModal';
 import { ForgotPasswordModal } from './components/auth/ForgotPasswordModal';
 import { ResetPasswordModal } from './components/auth/ResetPasswordModal';
 import { useAuth } from './hooks/useAuth';
+import { AdminRoleGuard } from './components/auth/AdminRoleGuard';
+import { PreviewPage } from './components/backend/PreviewPage';
+import { DeveloperLogsViewer } from './components/backend/DeveloperLogsViewer';
 import { debugLog } from './utils/debugLog';
 
 function LoadingScreen() {
@@ -56,9 +59,11 @@ function GuestRoute({ children }: { children: React.ReactNode }) {
 function AdminShell() {
   return (
     <ProtectedRoute>
-      <ResponsiveLayout>
-        <Outlet />
-      </ResponsiveLayout>
+      <AdminRoleGuard>
+        <ResponsiveLayout>
+          <Outlet />
+        </ResponsiveLayout>
+      </AdminRoleGuard>
     </ProtectedRoute>
   );
 }
@@ -128,7 +133,19 @@ function App() {
         <Route path="/notifications" element={<NotificationsOverview />} />
         <Route path="/settings" element={<SettingsView />} />
         <Route path="/users" element={<UsersManager />} />
+        <Route path="/developer/logs" element={<DeveloperLogsViewer />} />
       </Route>
+
+      <Route
+        path="/preview/:slug"
+        element={
+          <ProtectedRoute>
+            <AdminRoleGuard>
+              <PreviewPage />
+            </AdminRoleGuard>
+          </ProtectedRoute>
+        }
+      />
 
       <Route element={<PublicSiteLayout />}>
         <Route index element={<PublicHomePage />} />

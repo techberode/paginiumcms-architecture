@@ -18,6 +18,7 @@ import { merge3, assembleMerged } from '../../utils/merge3';
 import { loadDraft, discardDraft, type ContentType } from '../../api/drafts';
 import { WysiwygEditor } from './WysiwygEditor';
 import { MediaPickerModal } from './MediaPickerModal';
+import { VersionHistory } from '../CodeEditor/VersionHistory';
 import { useSettingsContext } from '../../context/SettingsContext';
 
 interface MarkdownEditorProps {
@@ -372,6 +373,17 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
           {!isNew && <div className="text-sm text-gray-500 dark:text-gray-400">Slug: /{type}s/{slug}</div>}
         </div>
       </div>
+
+      {!isNew && slug && (
+        <div className="card mt-6">
+          <div className="card-header">
+            <h2 className="text-lg font-bold">História verzií</h2>
+          </div>
+          <div className="card-body">
+            <VersionHistory contentId={slug} onRestore={() => window.location.reload()} />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
