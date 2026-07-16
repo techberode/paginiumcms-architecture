@@ -16,9 +16,10 @@ use PaginiumCMS\Http\Controllers\Content\DraftController;
 use PaginiumCMS\Http\Middleware\AuthMiddleware;
 use Slim\App;
 use Slim\Routing\RouteCollectorProxy;
+use PaginiumCMS\Http\Support\RouteBootstrap;
 
 return function (App $app): void {
-    $container = $app->getContainer();
+    $container = RouteBootstrap::container($app);
     $controller = $container->get(DraftController::class);
     $auth = $container->get(AuthMiddleware::class);
 

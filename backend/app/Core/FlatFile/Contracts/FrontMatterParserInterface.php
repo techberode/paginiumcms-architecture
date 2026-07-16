@@ -13,25 +13,22 @@ interface FrontMatterParserInterface
      * Parsuje Front Matter z Markdown obsahu.
      *
      * @param string $content Celý obsah Markdown súboru.
-     * @return array<string, mixed> Parsovaný Front Matter.
-     */
-    public function parse(string $content): array;
+     * @return array<int|string, mixed> Parsovaný Front Matter.
+ */public function parse(string $content): array;
 
     /**
      * Serializuje Front Matter do YAML reťazca.
      *
-     * @param array<string, mixed> $frontMatter Asociatívne pole.
+     * @param array<int|string, mixed> $frontMatter Asociatívne pole.
      * @return string YAML reťazec s delimiterom.
-     */
-    public function serialize(array $frontMatter): string;
+ */public function serialize(array $frontMatter): string;
 
     /**
      * Extrahuje iba Front Matter z obsahu.
      *
      * @param string $content Celý obsah.
-     * @return array<string, mixed> Parsovaný Front Matter.
-     */
-    public function extractFrontMatter(string $content): array;
+     * @return array<int|string, mixed> Parsovaný Front Matter.
+ */public function extractFrontMatter(string $content): array;
 
     /**
      * Extrahuje iba obsah (bez Front Matter).

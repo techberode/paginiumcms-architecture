@@ -6,11 +6,13 @@ namespace PaginiumCMS\Tests\Core\Notification;
 
 use PaginiumCMS\Core\Notification\NotificationService;
 use PaginiumCMS\Core\Notification\Adapters\AdapterInterface;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class NotificationServiceTest extends TestCase
 {
     private NotificationService $service;
+    /** @var AdapterInterface&MockObject */
     private AdapterInterface $mockAdapter;
 
     protected function setUp(): void
@@ -44,7 +46,9 @@ class NotificationServiceTest extends TestCase
 
     public function testSendToAll(): void
     {
+        /** @var AdapterInterface&MockObject $adapter1 */
         $adapter1 = $this->createMock(AdapterInterface::class);
+        /** @var AdapterInterface&MockObject $adapter2 */
         $adapter2 = $this->createMock(AdapterInterface::class);
 
         $adapter1->expects($this->once())

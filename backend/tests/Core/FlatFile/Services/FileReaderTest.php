@@ -79,7 +79,6 @@ class FileReaderTest extends TestCase
         // Test listovania súborov v adresári pages
         $files = $this->fileReader->listFiles('pages');
 
-        $this->assertIsArray($files);
         $this->assertNotEmpty($files, 'Zoznam súborov v pages je prázdny');
 
         // Skontrolujeme, či obsahuje očakávané súbory
@@ -100,7 +99,6 @@ class FileReaderTest extends TestCase
 
         // Test listovania súborov v adresári blog
         $blogFiles = $this->fileReader->listFiles('blog');
-        $this->assertIsArray($blogFiles);
         $this->assertNotEmpty($blogFiles, 'Zoznam súborov v blog je prázdny');
 
         $foundTest = false;
@@ -117,7 +115,6 @@ class FileReaderTest extends TestCase
     {
         // Test s patternom
         $files = $this->fileReader->listFiles('pages', '*.md');
-        $this->assertIsArray($files);
         $this->assertCount(2, $files);
     }
 

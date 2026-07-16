@@ -18,6 +18,7 @@ class LogEntry implements JsonSerializable
     private string $message;
     private ?string $userId = null;
     private ?string $ip = null;
+    /** @var array<int|string, mixed>|null */
     private ?array $context = null;
     private ?string $file = null;
     private ?int $line = null;
@@ -85,11 +86,17 @@ class LogEntry implements JsonSerializable
         return $this;
     }
 
+    /**
+     * @return array<int|string, mixed>|null
+     */
     public function getContext(): ?array
     {
         return $this->context;
     }
 
+    /**
+     * @param array<int|string, mixed> $context
+     */
     public function setContext(?array $context): self
     {
         $this->context = $context;
@@ -143,6 +150,9 @@ class LogEntry implements JsonSerializable
         return $this->severity === LogSeverity::DEBUG;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function toArray(): array
     {
         return [
@@ -159,6 +169,9 @@ class LogEntry implements JsonSerializable
         ];
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function jsonSerialize(): array
     {
         return $this->toArray();

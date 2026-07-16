@@ -102,11 +102,14 @@ class UserControllerTest extends TestCase
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param array<int|string, mixed> $data
      */
     private function streamJson(array $data): \Psr\Http\Message\StreamInterface
     {
         $stream = fopen('php://memory', 'r+');
+        if ($stream === false) {
+            self::fail('Unable to open memory stream.');
+        }
         fwrite($stream, (string) json_encode($data));
         rewind($stream);
 
@@ -114,7 +117,7 @@ class UserControllerTest extends TestCase
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<int|string, mixed>
      */
     private function decode(\Psr\Http\Message\ResponseInterface $response): array
     {

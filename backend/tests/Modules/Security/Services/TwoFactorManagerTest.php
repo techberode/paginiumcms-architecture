@@ -11,6 +11,7 @@ use PaginiumCMS\Modules\Security\Services\UserRepository;
 use PaginiumCMS\Modules\Security\Services\SessionManager;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Modules\Security\Exception\TwoFactorException;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class TwoFactorManagerTest extends TestCase
@@ -18,6 +19,7 @@ class TwoFactorManagerTest extends TestCase
     private TwoFactorManager $twoFactor;
     private TOTPGenerator $totp;
     private User $user;
+    /** @var UserRepository&MockObject */
     private UserRepository $userRepository;
 
     protected function setUp(): void

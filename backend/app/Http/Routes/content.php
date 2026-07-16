@@ -11,14 +11,16 @@ use PaginiumCMS\Http\Controllers\Content\ContentController;
 use PaginiumCMS\Http\Middleware\AuthMiddleware;
 use Slim\App;
 use Slim\Routing\RouteCollectorProxy;
+use PaginiumCMS\Http\Support\RouteBootstrap;
+use PaginiumCMS\Support\JsonHelper;
 
 return function (App $app): void {
-    $container = $app->getContainer();
+    $container = RouteBootstrap::container($app);
     $controller = $container->get(ContentController::class);
     $auth = $container->get(AuthMiddleware::class);
 
     $app->get('/api/test', function ($request, $response) {
-        $response->getBody()->write(json_encode([
+        $response->getBody()->write(JsonHelper::encode([
             'success' => true,
             'data' => [
                 'status' => 'ok',

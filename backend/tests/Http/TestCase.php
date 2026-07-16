@@ -4,15 +4,20 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Tests\Http;
 
+use PaginiumCMS\Modules\Security\Models\User;
+use PaginiumCMS\Modules\Security\Services\UserRepository;
+use PaginiumCMS\Support\JsonHelper;
 use PHPUnit\Framework\TestCase as BaseTestCase;
+use Psr\Container\ContainerInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Slim\App;
 use Slim\Psr7\Factory\ServerRequestFactory;
 use Slim\Psr7\Factory\StreamFactory;
-use Psr\Http\Message\ServerRequestInterface;
-use PaginiumCMS\Modules\Security\Models\User;
 
 abstract class TestCase extends BaseTestCase
 {
+    /** @var App<ContainerInterface> */
     protected App $app;
     protected ?User $currentUser = null;
 
@@ -42,20 +47,26 @@ abstract class TestCase extends BaseTestCase
 
     protected function tearDown(): void
     {
-        session_destroy();
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_destroy();
+        }
         parent::tearDown();
     }
 
+    /**
+     * @param array<int|string, mixed>|null $data
+     * @param array<string, string> $headers
+     */
     protected function createJsonRequest(
         string $method,
         string $uri,
-        array $data = null,
+        ?array $data = null,
         array $headers = []
     ): ServerRequestInterface {
         $request = (new ServerRequestFactory())->createServerRequest($method, $uri);
 
         if ($data !== null) {
-            $body = (new StreamFactory())->createStream(json_encode($data));
+            $body = (new StreamFactory())->createStream(JsonHelper::encode($data));
             $request = $request->withBody($body);
             $request = $request->withHeader('Content-Type', 'application/json');
         }
@@ -64,7 +75,6 @@ abstract class TestCase extends BaseTestCase
             $request = $request->withHeader($name, $value);
         }
 
-        // Ak máme aktuálneho používateľa, pridáme ho do atribútov
         if ($this->currentUser !== null) {
             $request = $request->withAttribute('user', $this->currentUser);
         }
@@ -72,18 +82,35 @@ abstract class TestCase extends BaseTestCase
         return $request;
     }
 
-    protected function handleRequest(ServerRequestInterface $request): \Psr\Http\Message\ResponseInterface
+    protected function handleRequest(ServerRequestInterface $request): ResponseInterface
     {
         return $this->app->handle($request);
     }
 
-    protected function getJsonResponse(\Psr\Http\Message\ResponseInterface $response): array
+    /**
+     * @return array<int|string, mixed>
+     */
+    protected function getJsonResponse(ResponseInterface $response): array
     {
-        return json_decode((string)$response->getBody(), true) ?? [];
+        $decoded = json_decode((string) $response->getBody(), true);
+
+        return is_array($decoded) ? $decoded : [];
     }
 
-    protected function createTestUser(string $email = null, string $password = null, string $name = null): array
-    {
+    /**
+     * @return array{
+     *     email: string,
+     *     password: string,
+     *     name: string,
+     *     user: mixed,
+     *     response: ResponseInterface
+     * }
+     */
+    protected function createTestUser(
+        ?string $email = null,
+        ?string $password = null,
+        ?string $name = null
+    ): array {
         $email = $email ?? 'test_' . uniqid() . '@example.com';
         $password = $password ?? 'StrongP@ssw0rd123!';
         $name = $name ?? 'Test User';
@@ -107,18 +134,25 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * Prihlási používateľa s rolou ADMIN (pre integračné testy admin rout).
-     *
-     * @return array{email: string, password: string, name: string, user: mixed, response: \Psr\Http\Message\ResponseInterface}
+     * @return array{
+     *     email: string,
+     *     password: string,
+     *     name: string,
+     *     user: mixed,
+     *     response: ResponseInterface,
+     *     data: array<int|string, mixed>
+     * }
      */
     protected function loginAsAdminUser(
-        string $email = null,
-        string $password = null,
-        string $name = null
+        ?string $email = null,
+        ?string $password = null,
+        ?string $name = null
     ): array {
         $userData = $this->createTestUser($email, $password, $name);
 
-        $repo = $this->app->getContainer()->get(\PaginiumCMS\Modules\Security\Services\UserRepository::class);
+        $container = $this->app->getContainer();
+
+        $repo = $container->get(UserRepository::class);
         $user = $repo->findByEmail($userData['email']);
         if ($user !== null) {
             $user->setRoles(['ADMIN']);
@@ -133,6 +167,9 @@ abstract class TestCase extends BaseTestCase
         return array_merge($userData, $login);
     }
 
+    /**
+     * @return array{response: ResponseInterface, data: array<int|string, mixed>}
+     */
     protected function loginTestUser(string $email, string $password): array
     {
         $request = $this->createJsonRequest('POST', '/api/auth/login', [
@@ -143,24 +180,21 @@ abstract class TestCase extends BaseTestCase
         $response = $this->handleRequest($request);
         $data = $this->getJsonResponse($response);
 
-        if (isset($data['user'])) {
-            // Vytvoríme User objekt z dát
+        if (isset($data['user']) && is_array($data['user'])) {
             $user = new User();
-            // Naplníme User objekt (zjednodušené – v reálnom svete by sme použili UserRepository)
             $reflection = new \ReflectionClass($user);
             foreach ($data['user'] as $key => $value) {
                 if ($key === 'id') {
                     $prop = $reflection->getProperty('id');
-                    $prop->setAccessible(true);
                     $prop->setValue($user, $value);
                 } elseif ($key === 'email') {
-                    $user->setEmail($value);
+                    $user->setEmail((string) $value);
                 } elseif ($key === 'name') {
-                    $user->setName($value);
-                } elseif ($key === 'roles') {
+                    $user->setName((string) $value);
+                } elseif ($key === 'roles' && is_array($value)) {
                     $user->setRoles($value);
                 } elseif ($key === 'twoFactorEnabled') {
-                    $user->setTwoFactorEnabled($value);
+                    $user->setTwoFactorEnabled((bool) $value);
                 }
             }
             $this->currentUser = $user;
@@ -172,9 +206,6 @@ abstract class TestCase extends BaseTestCase
         ];
     }
 
-    /**
-     * Nastaví aktuálneho používateľa priamo (pre testy, ktoré potrebujú prihláseného používateľa).
-     */
     protected function setCurrentUser(User $user): void
     {
         $this->currentUser = $user;

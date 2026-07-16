@@ -57,18 +57,19 @@ class MarkdownContentParser implements MarkdownContentParserInterface
     public function stripMarkdown(string $markdown): string
     {
         $text = utf8_normalize($markdown);
-        $text = preg_replace('/^#{1,6}\s+/m', '', $text);
-        $text = preg_replace('/\*\*(.+?)\*\*/', '$1', $text);
-        $text = preg_replace('/__(.+?)__/', '$1', $text);
-        $text = preg_replace('/\*(.+?)\*/', '$1', $text);
-        $text = preg_replace('/_(.+?)_/', '$1', $text);
-        $text = preg_replace('/~~(.+?)~~/', '$1', $text);
-        $text = preg_replace('/`(.+?)`/', '$1', $text);
-        $text = preg_replace('/\[(.+?)\]\(.+?\)/', '$1', $text);
-        $text = preg_replace('/!\[(.+?)\]\(.+?\)/', '$1', $text);
-        $text = preg_replace('/^[\-\*\+]\s+/m', '', $text);
-        $text = preg_replace('/^\d+\.\s+/m', '', $text);
-        $text = preg_replace('/^>\s+/m', '', $text);
+        $text = preg_replace('/^#{1,6}\s+/m', '', $text) ?? $text;
+        $text = preg_replace('/\*\*(.+?)\*\*/', '$1', $text) ?? $text;
+        $text = preg_replace('/__(.+?)__/', '$1', $text) ?? $text;
+        $text = preg_replace('/\*(.+?)\*/', '$1', $text) ?? $text;
+        $text = preg_replace('/_(.+?)_/', '$1', $text) ?? $text;
+        $text = preg_replace('/~~(.+?)~~/', '$1', $text) ?? $text;
+        $text = preg_replace('/`(.+?)`/', '$1', $text) ?? $text;
+        $text = preg_replace('/\[(.+?)\]\(.+?\)/', '$1', $text) ?? $text;
+        $text = preg_replace('/!\[(.+?)\]\(.+?\)/', '$1', $text) ?? $text;
+        $text = preg_replace('/^[\-\*\+]\s+/m', '', $text) ?? $text;
+        $text = preg_replace('/^\d+\.\s+/m', '', $text) ?? $text;
+        $text = preg_replace('/^>\s+/m', '', $text) ?? $text;
+
         return trim($text);
     }
 

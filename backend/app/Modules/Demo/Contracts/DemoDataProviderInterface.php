@@ -12,17 +12,17 @@ interface DemoDataProviderInterface
     public function isEnabled(): bool;
 
     /**
-     * @return list<array<string, mixed>>
-     */
-    public function comments(?string $articleSlug = null): array;
+     * @return list<array<int|string, mixed>>
+ * @return array<int|string, mixed>
+ */public function comments(?string $articleSlug = null): array;
 
     /**
-     * @return list<array<string, mixed>>
-     */
-    public function contactMessages(): array;
+     * @return list<array<int|string, mixed>>
+ * @return array<int|string, mixed>
+ */public function contactMessages(): array;
 
     /**
-     * @return list<array<string, mixed>>
-     */
-    public function newsletterSubscribers(): array;
+     * @return list<array<int|string, mixed>>
+ * @return array<int|string, mixed>
+ */public function newsletterSubscribers(): array;
 }

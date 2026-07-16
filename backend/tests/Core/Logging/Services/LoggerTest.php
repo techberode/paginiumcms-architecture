@@ -14,7 +14,6 @@ use org\bovigo\vfs\vfsStream;
 
 class LoggerTest extends TestCase
 {
-    private Logger $logger;
     private LogWriter $writer;
     private string $root;
 
@@ -35,7 +34,6 @@ class LoggerTest extends TestCase
         $writer = $this->createMock(FileWriterInterface::class);
 
         $this->writer = new LogWriter($reader, $writer, $this->root . '/logs/app');
-        $this->logger = new Logger($this->writer, 'test');
     }
 
     public function testInfo(): void

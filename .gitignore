@@ -84,6 +84,12 @@ phpstan-temp.table
 phpstan-errors.json
 phpstan-report.md
 phpstan-report.table
+project-tree*.txt
+project-tree*.pdf
+project-tree*.md
+phpstan-temp*.json
+phpstan-temp*.table
+phpstan-temp*.pdf
 
 # Repomix code dumps (AI export, not source)
 repomix-output*.xml
@@ -148,6 +154,8 @@ desktop.ini
 audit/*.json
 audit/*.html
 audit/*.pdf
+AUDIT_REPORT.md
+RECOMMENDATIONS.md
 
 ###############################################################################
 # Analytics exports

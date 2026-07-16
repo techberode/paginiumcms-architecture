@@ -11,8 +11,11 @@ setlocale(LC_ALL, 'sk_SK.UTF-8', 'sk_SK', 'sk', 'en_US.UTF-8', 'en_US', 'en');
 ini_set('default_charset', 'UTF-8');
 ini_set('json.encode.utf8', '1');
 
-iconv_set_encoding('internal_encoding', 'UTF-8');
-iconv_set_encoding('output_encoding', 'UTF-8');
+// iconv_set_encoding() je od PHP 8.5 deprecated; mb_* a default_charset stačia.
+if (PHP_VERSION_ID < 80500) {
+    iconv_set_encoding('internal_encoding', 'UTF-8');
+    iconv_set_encoding('output_encoding', 'UTF-8');
+}
 
 ini_set('xml.default_charset', 'UTF-8');
 
@@ -35,10 +38,14 @@ if (!function_exists('utf8_normalize')) {
 }
 
 if (!function_exists('json_encode_utf8')) {
+    /**
+     * @param mixed $value
+     */
     function json_encode_utf8($value, int $flags = 0): string
     {
         $flags |= JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES;
-        return json_encode($value, $flags);
+        $encoded = json_encode($value, $flags | JSON_THROW_ON_ERROR);
+        return $encoded;
     }
 }
 

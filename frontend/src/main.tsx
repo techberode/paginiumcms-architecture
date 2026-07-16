@@ -7,6 +7,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { ContentProvider } from './context/ContentContext';
 import { SettingsProvider } from './context/SettingsContext';
+import { I18nProvider } from './context/I18nContext';
 import { PublicSiteProvider } from './context/PublicSiteContext';
 import App from './App';
 import './index.css';
@@ -22,13 +23,15 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <ThemeProvider>
         <AuthProvider>
           <SettingsProvider>
-            <PublicSiteProvider>
-              <NotificationProvider>
-                <ContentProvider>
-                  <App />
-                </ContentProvider>
-              </NotificationProvider>
-            </PublicSiteProvider>
+            <I18nProvider>
+              <PublicSiteProvider>
+                <NotificationProvider>
+                  <ContentProvider>
+                    <App />
+                  </ContentProvider>
+                </NotificationProvider>
+              </PublicSiteProvider>
+            </I18nProvider>
           </SettingsProvider>
         </AuthProvider>
       </ThemeProvider>

@@ -20,7 +20,9 @@ class AuditTrailService
     private EnhancedVersionManager $versionManager;
     private UserRepository $userRepository;
     private ?IncidentNotifier $incidentNotifier;
+    /** @var array<int|string, mixed> */
     private array $sessionContext = [];
+    /** @var array<int|string, mixed> */
     private array $auditBuffer = [];
     private bool $isBuffering = false;
 
@@ -43,8 +45,10 @@ class AuditTrailService
      */
     private function initializeSessionContext(): void
     {
+        $sessionId = session_id();
+
         $this->sessionContext = [
-            'session_id' => session_id() ?? 'unknown',
+            'session_id' => $sessionId !== '' ? $sessionId : 'unknown',
             'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
             'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'unknown',
             'timestamp' => date('Y-m-d H:i:s'),
@@ -68,8 +72,8 @@ class AuditTrailService
 
     /**
      * Zaznamená zmenu obsahu s prepojením na verziu
-     */
-    public function logContentChange(
+ * @param array<int|string, mixed> $metadata
+ */public function logContentChange(
         string $contentId,
         string $contentType,
         string $action,
@@ -128,8 +132,8 @@ class AuditTrailService
 
     /**
      * Zaznamená prístup k obsahu
-     */
-    public function logContentAccess(
+ * @param array<int|string, mixed> $metadata
+ */public function logContentAccess(
         string $contentId,
         string $contentType,
         string $action,
@@ -150,8 +154,8 @@ class AuditTrailService
 
     /**
      * Zaznamená administrátorskú akciu
-     */
-    public function logAdminAction(
+ * @param array<int|string, mixed> $metadata
+ */public function logAdminAction(
         string $action,
         string $target,
         ?User $user = null,
@@ -170,8 +174,8 @@ class AuditTrailService
 
     /**
      * Zaznamená bezpečnostnú udalosť
-     */
-    public function logSecurityEvent(
+ * @param array<int|string, mixed> $metadata
+ */public function logSecurityEvent(
         string $action,
         string $target,
         ?User $user = null,
@@ -208,8 +212,8 @@ class AuditTrailService
 
     /**
      * Hlavná metóda pre logovanie audit udalostí
-     */
-    private function logAuditEvent(
+ * @param array<int|string, mixed> $metadata
+ */private function logAuditEvent(
         string $category,
         string $target,
         string $action,
@@ -264,8 +268,8 @@ class AuditTrailService
 
     /**
      * Získa kompletný audit trail pre konkrétny obsah
-     */
-    public function getContentAuditTrail(string $contentId, int $limit = 100): array
+ * @return array<int|string, mixed>
+ */public function getContentAuditTrail(string $contentId, int $limit = 100): array
     {
         $auditLogs = [];
         
@@ -319,8 +323,8 @@ class AuditTrailService
 
     /**
      * Získa kompletný audit trail pre používateľa
-     */
-    public function getUserAuditTrail(string $userId, int $limit = 100): array
+ * @return array<int|string, mixed>
+ */public function getUserAuditTrail(string $userId, int $limit = 100): array
     {
         $logs = $this->logger->getLastEntries(1000);
         
@@ -334,8 +338,9 @@ class AuditTrailService
 
     /**
      * Získa štatistiky auditu
-     */
-    public function getAuditStats(array $filters = []): array
+ * @param array<int|string, mixed> $filters
+ * @return array<int|string, mixed>
+ */public function getAuditStats(array $filters = []): array
     {
         $stats = [
             'total_events' => 0,
@@ -403,8 +408,8 @@ class AuditTrailService
 
     /**
      * Export auditu do CSV
-     */
-    public function exportAuditToCsv(array $filters = []): string
+ * @param array<int|string, mixed> $filters
+ */public function exportAuditToCsv(array $filters = []): string
     {
         $logs = $this->logger->getLastEntries(10000);
         $csv = "Timestamp,Category,Action,Target,User,Email,Severity,Message\n";
@@ -452,6 +457,9 @@ class AuditTrailService
         $this->auditBuffer = [];
     }
 
+    /**
+     * @param array<int|string, mixed> $event
+     */
     private function bufferAuditEvent(array $event): void
     {
         if ($this->isBuffering) {
@@ -459,12 +467,18 @@ class AuditTrailService
         }
     }
 
+    /**
+     * @param array<int|string, mixed> $event
+     */
     private function processBufferedEvent(array $event): void
     {
         // Spracovanie bufferovanej udalosti - napr. odoslanie do externého systému
         // Tu môžete pridať ďalšiu logiku ako odoslanie do SIEM, Slack notifikácie, atď.
     }
 
+    /**
+     * @return array{id: string, email: string, name: string}|null
+     */
     private function getUserInfo(string $userId): ?array
     {
         $user = $this->userRepository->findById($userId);
@@ -475,6 +489,9 @@ class AuditTrailService
         ] : null;
     }
 
+    /**
+     * @param array<int|string, mixed> $diff
+     */
     private function summarizeDiff(?array $diff): string
     {
         if (!$diff) {

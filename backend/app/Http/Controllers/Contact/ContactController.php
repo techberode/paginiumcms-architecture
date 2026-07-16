@@ -11,6 +11,7 @@ use PaginiumCMS\Modules\Messages\Models\ContactMessage;
 use PaginiumCMS\Support\Lang;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use PaginiumCMS\Support\JsonHelper;
 
 class ContactController
 {
@@ -69,14 +70,14 @@ class ContactController
             $payload['message'] = $message;
         }
 
-        $response->getBody()->write(json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        $response->getBody()->write(JsonHelper::encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
         return $response->withStatus($status)->withHeader('Content-Type', 'application/json; charset=utf-8');
     }
 
     private function jsonError(ResponseInterface $response, string $message, int $status = 400): ResponseInterface
     {
-        $response->getBody()->write(json_encode([
+        $response->getBody()->write(JsonHelper::encode([
             'success' => false,
             'error' => $message,
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
@@ -86,7 +87,7 @@ class ContactController
 
     private function jsonValidationError(ResponseInterface $response, ValidationException $e): ResponseInterface
     {
-        $response->getBody()->write(json_encode([
+        $response->getBody()->write(JsonHelper::encode([
             'success' => false,
             'error' => Lang::get('validation_failed', [], 'contact'),
             'errors' => $e->getErrors(),

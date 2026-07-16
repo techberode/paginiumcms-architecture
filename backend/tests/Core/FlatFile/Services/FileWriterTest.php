@@ -118,7 +118,7 @@ class FileWriterTest extends TestCase
 
         $this->assertFileDoesNotExist($this->root . '/content/pages/delete-permanent.md');
 
-        $trashFiles = glob($this->root . '/content/trash/*_delete-permanent.md');
+        $trashFiles = glob($this->root . '/content/trash/*_delete-permanent.md') ?: [];
         $this->assertCount(0, $trashFiles);
     }
 

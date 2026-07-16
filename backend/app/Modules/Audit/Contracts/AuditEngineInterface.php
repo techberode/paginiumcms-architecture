@@ -14,25 +14,22 @@ interface AuditEngineInterface
     /**
      * Spustí kompletný audit.
      *
-     * @param array<string, mixed> $options Voliteľné parametre.
+     * @param array<int|string, mixed> $options Voliteľné parametre.
      * @return AuditReport Správa z auditu.
-     */
-    public function run(array $options = []): AuditReport;
+ */public function run(array $options = []): AuditReport;
 
     /**
      * Spustí iba vybrané audity.
      *
      * @param array<int, string> $auditors Zoznam auditorov na spustenie.
      * @return AuditReport Správa z auditu.
-     */
-    public function runSelected(array $auditors): AuditReport;
+ */public function runSelected(array $auditors): AuditReport;
 
     /**
      * Získa zoznam dostupných auditorov.
      *
      * @return array<int, string> Zoznam názvov auditorov.
-     */
-    public function getAvailableAuditors(): array;
+ */public function getAvailableAuditors(): array;
 
     /**
      * Pridá vlastného auditora.

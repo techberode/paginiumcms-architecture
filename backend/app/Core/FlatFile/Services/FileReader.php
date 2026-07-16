@@ -45,6 +45,9 @@ class FileReader implements FileReaderInterface
         return $this->validator->fileExists($relativePath);
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getInfo(string $relativePath): array
     {
         $absolutePath = $this->validator->getAbsolutePath($relativePath);
@@ -79,6 +82,9 @@ class FileReader implements FileReaderInterface
     }
 
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function listFiles(string $relativePath, string $pattern = '*'): array
     {
         // Ak je cesta prázdna alebo '.', použijeme prázdny reťazec

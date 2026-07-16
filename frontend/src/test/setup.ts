@@ -1,3 +1,9 @@
 // frontend/src/test/setup.ts
-// Globálny setup pre Vitest – rozšírené DOM matchery (@testing-library/jest-dom).
 import '@testing-library/jest-dom/vitest';
+import { cleanup } from '@testing-library/react';
+import { afterEach } from 'vitest';
+
+// Izolácia DOM medzi testami v tom istom súbore.
+afterEach(() => {
+  cleanup();
+});

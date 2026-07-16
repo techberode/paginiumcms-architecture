@@ -11,6 +11,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Exception\HttpException;
 use Throwable;
+use PaginiumCMS\Support\JsonHelper;
 
 /**
  * === Jednotný Error Handler ===
@@ -42,16 +43,16 @@ final class ApiErrorHandler
 
         $response = $this->responseFactory->createResponse($status);
         $response->getBody()->write(
-            (string) json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+            JsonHelper::encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
         );
 
         return $response->withHeader('Content-Type', 'application/json; charset=utf-8');
     }
 
     /**
-     * @return array{0: int, 1: array<string, mixed>}
-     */
-    private function map(Throwable $exception, bool $debug): array
+     * @return array{0: int, 1: array<int|string, mixed>}
+ * @return array<int|string, mixed>
+ */private function map(Throwable $exception, bool $debug): array
     {
         if ($exception instanceof ValidationException) {
             return [422, [

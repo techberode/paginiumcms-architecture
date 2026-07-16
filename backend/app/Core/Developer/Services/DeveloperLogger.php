@@ -13,7 +13,7 @@ namespace PaginiumCMS\Core\Developer\Services;
 class DeveloperLogger
 {
     private string $logDir;
-    /** @var array<int, array<string, mixed>> */
+    /** @var array<int, array<int|string, mixed>> */
     private array $buffer = [];
 
     public function __construct(?string $logDir = null)
@@ -25,9 +25,8 @@ class DeveloperLogger
     }
 
     /**
-     * @param array<string, mixed> $context
-     */
-    public function log(string $channel, string $level, string $message, array $context = []): void
+     * @param array<int|string, mixed> $context
+ */public function log(string $channel, string $level, string $message, array $context = []): void
     {
         $this->buffer[] = [
             'timestamp' => date('c'),
@@ -58,9 +57,8 @@ class DeveloperLogger
     }
 
     /**
-     * @return array<int, array<string, mixed>>
-     */
-    public function tail(int $limit = 100): array
+     * @return array<int, array<int|string, mixed>>
+ */public function tail(int $limit = 100): array
     {
         $file = $this->logDir . '/' . date('Y-m-d') . '.log';
         if (!file_exists($file)) {

@@ -30,12 +30,12 @@ class CacheManager
         }
     }
 
-    public function get(string $key, $default = null)
+    public function get(string $key, mixed $default = null): mixed
     {
         return $this->driver->get($this->prefix . $key, $default);
     }
 
-    public function set(string $key, $value, ?int $ttl = null): bool
+    public function set(string $key, mixed $value, ?int $ttl = null): bool
     {
         return $this->driver->set($this->prefix . $key, $value, $ttl);
     }
@@ -55,7 +55,7 @@ class CacheManager
         return $this->driver->has($this->prefix . $key);
     }
 
-    public function remember(string $key, callable $callback, ?int $ttl = null)
+    public function remember(string $key, callable $callback, ?int $ttl = null): mixed
     {
         if ($this->has($key)) {
             return $this->get($key);
@@ -70,7 +70,7 @@ class CacheManager
     /**
      * remember() s file lock – len jeden proces regeneruje hodnotu.
      */
-    public function rememberLocked(string $key, callable $callback, ?int $ttl = null)
+    public function rememberLocked(string $key, callable $callback, ?int $ttl = null): mixed
     {
         if ($this->has($key)) {
             return $this->get($key);
@@ -82,10 +82,13 @@ class CacheManager
             return $this->remember($key, $callback, $ttl);
         }
 
+        $sentinel = new \stdClass();
+
         try {
             flock($handle, LOCK_EX);
-            if ($this->has($key)) {
-                return $this->get($key);
+            $cached = $this->driver->get($this->prefix . $key, $sentinel);
+            if ($cached !== $sentinel) {
+                return $cached;
             }
             $value = $callback();
             $this->set($key, $value, $ttl);

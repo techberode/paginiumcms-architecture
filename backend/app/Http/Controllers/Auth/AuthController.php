@@ -6,10 +6,9 @@ namespace PaginiumCMS\Http\Controllers\Auth;
 
 use PaginiumCMS\Modules\Security\Services\UserRepository;
 use PaginiumCMS\Modules\Security\Contracts\AuthenticationInterface;
-use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
 use PaginiumCMS\Modules\Security\Contracts\CsrfProtectionInterface;
 use PaginiumCMS\Modules\Security\Contracts\PasswordPolicyInterface;
-use PaginiumCMS\Modules\Security\Contracts\TwoFactorInterface;
+use PaginiumCMS\Support\JsonHelper;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Core\Notification\NotificationService;
 use PaginiumCMS\Core\Notification\Services\IncidentNotifier;
@@ -24,10 +23,8 @@ use Slim\Psr7\Response;
 class AuthController
 {
     private AuthenticationInterface $auth;
-    private AuthorizationInterface $authz;
     private CsrfProtectionInterface $csrf;
     private PasswordPolicyInterface $passwordPolicy;
-    private TwoFactorInterface $twoFactor;
     private UserRepository $userRepository;
     private SettingsRepositoryInterface $settings;
     private NotificationService $notifications;
@@ -35,20 +32,16 @@ class AuthController
 
     public function __construct(
         AuthenticationInterface $auth,
-        AuthorizationInterface $authz,
         CsrfProtectionInterface $csrf,
         PasswordPolicyInterface $passwordPolicy,
-        TwoFactorInterface $twoFactor,
         UserRepository $userRepository,
         SettingsRepositoryInterface $settings,
         NotificationService $notifications,
         IncidentNotifier $incidentNotifier
     ) {
         $this->auth = $auth;
-        $this->authz = $authz;
         $this->csrf = $csrf;
         $this->passwordPolicy = $passwordPolicy;
-        $this->twoFactor = $twoFactor;
         $this->userRepository = $userRepository;
         $this->settings = $settings;
         $this->notifications = $notifications;
@@ -295,11 +288,10 @@ class AuthController
 
     /**
      * Pomocná metóda pre JSON odpovede.
-     */
-    private function jsonResponse(ResponseInterface $response, array $data, int $status = 200): ResponseInterface
+ * @param array<int|string, mixed> $data
+ */    private function jsonResponse(ResponseInterface $response, array $data, int $status = 200): ResponseInterface
     {
-        $json = json_encode_utf8($data);
-        $response->getBody()->write(json_encode($data, JSON_PRETTY_PRINT));
+        $response->getBody()->write(JsonHelper::encode($data, JSON_PRETTY_PRINT));
         return $response
             ->withStatus($status)
             ->withHeader('Content-Type', 'application/json charset=utf-8');

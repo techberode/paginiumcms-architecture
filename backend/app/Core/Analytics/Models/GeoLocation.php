@@ -50,6 +50,9 @@ class GeoLocation implements JsonSerializable
     public function getAs(): ?string { return $this->as; }
     public function setAs(?string $as): self { $this->as = $as; return $this; }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function jsonSerialize(): array
     {
         return [

@@ -15,16 +15,14 @@ interface AuditReportInterface
      * Získa všetky problémy.
      *
      * @return array<int, AuditIssue> Zoznam problémov.
-     */
-    public function getIssues(): array;
+ */public function getIssues(): array;
 
     /**
      * Získa problémy podľa závažnosti.
      *
      * @param string $severity Závažnosť ('critical', 'error', 'warning', 'info').
      * @return array<int, AuditIssue> Zoznam problémov.
-     */
-    public function getIssuesBySeverity(string $severity): array;
+ */public function getIssuesBySeverity(string $severity): array;
 
     /**
      * Získa počet problémov.
@@ -37,8 +35,7 @@ interface AuditReportInterface
      * Získa počet problémov podľa závažnosti.
      *
      * @return array<string, int> Počet problémov podľa závažnosti.
-     */
-    public function getSeverityCounts(): array;
+ */public function getSeverityCounts(): array;
 
     /**
      * Zistí, či audit prešiel (žiadne chyby alebo kritické problémy).
@@ -50,9 +47,8 @@ interface AuditReportInterface
     /**
      * Exportuje správu do poľa.
      *
-     * @return array<string, mixed> Dáta správy.
-     */
-    public function toArray(): array;
+     * @return array<int|string, mixed> Dáta správy.
+ */public function toArray(): array;
 
     /**
      * Exportuje správu do JSON.

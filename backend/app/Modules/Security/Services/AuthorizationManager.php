@@ -33,7 +33,7 @@ class AuthorizationManager implements AuthorizationInterface
         ];
     }
 
-    public function hasRole(User $user, $roles): bool
+    public function hasRole(User $user, string|array $roles): bool
     {
         if (is_string($roles)) {
             $roles = [$roles];
@@ -76,6 +76,9 @@ class AuthorizationManager implements AuthorizationInterface
         return false;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getRoles(User $user): array
     {
         return $user->getRoles();
@@ -95,7 +98,7 @@ class AuthorizationManager implements AuthorizationInterface
         $user->removeRole($role);
     }
 
-    public function requireRole(User $user, $roles): void
+    public function requireRole(User $user, string|array $roles): void
     {
         if (!$this->hasRole($user, $roles)) {
             $roleList = is_array($roles) ? implode(', ', $roles) : $roles;
@@ -115,8 +118,7 @@ class AuthorizationManager implements AuthorizationInterface
      *
      * @param string $role Rola.
      * @param array<int, string> $permissions Zoznam oprávnení.
-     */
-    public function setRolePermissions(string $role, array $permissions): void
+ */public function setRolePermissions(string $role, array $permissions): void
     {
         $this->rolePermissions[$role] = $permissions;
     }
@@ -126,8 +128,7 @@ class AuthorizationManager implements AuthorizationInterface
      *
      * @param string $role Rola.
      * @return array<int, string> Zoznam oprávnení.
-     */
-    public function getRolePermissions(string $role): array
+ */public function getRolePermissions(string $role): array
     {
         return $this->rolePermissions[$role] ?? [];
     }

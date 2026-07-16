@@ -55,6 +55,7 @@ class SecurityChecker implements HealthCheckInterface
 
         // 5. Zakázané funkcie
         $disabledFunctions = ini_get('disable_functions');
+        $disabledFunctions = is_string($disabledFunctions) ? $disabledFunctions : '';
         $data['disabled_functions'] = $disabledFunctions;
         $dangerousFunctions = ['exec', 'shell_exec', 'system', 'passthru'];
         $found = [];

@@ -23,31 +23,49 @@ class Logger implements LoggerInterface
         $this->category = $category;
     }
 
+    /**
+     * @param array<int|string, mixed> $context
+     */
     public function info(string $message, array $context = []): void
     {
         $this->log(LogSeverity::INFO, $message, $context);
     }
 
+    /**
+     * @param array<int|string, mixed> $context
+     */
     public function warning(string $message, array $context = []): void
     {
         $this->log(LogSeverity::WARNING, $message, $context);
     }
 
+    /**
+     * @param array<int|string, mixed> $context
+     */
     public function error(string $message, array $context = []): void
     {
         $this->log(LogSeverity::ERROR, $message, $context);
     }
 
+    /**
+     * @param array<int|string, mixed> $context
+     */
     public function critical(string $message, array $context = []): void
     {
         $this->log(LogSeverity::CRITICAL, $message, $context);
     }
 
+    /**
+     * @param array<int|string, mixed> $context
+     */
     public function debug(string $message, array $context = []): void
     {
         $this->log(LogSeverity::DEBUG, $message, $context);
     }
 
+    /**
+     * @param array<int|string, mixed> $context
+     */
     public function log(string $severity, string $message, array $context = []): void
     {
         $entry = new LogEntry($severity, $this->category, $message);
@@ -68,16 +86,25 @@ class Logger implements LoggerInterface
         $this->writer->write($entry);
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getLastEntries(int $limit = 100): array
     {
         return $this->writer->readLast($limit);
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getEntriesBySeverity(string $severity, int $limit = 100): array
     {
         return $this->writer->readBySeverity($severity, $limit);
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getEntriesByCategory(string $category, int $limit = 100): array
     {
         return $this->writer->readByCategory($category, $limit);

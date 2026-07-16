@@ -14,9 +14,10 @@ use PaginiumCMS\Http\Middleware\AuthMiddleware;
 use PaginiumCMS\Http\Middleware\RoleMiddleware;
 use PaginiumCMS\Http\Middleware\TwoFactorMiddleware;
 use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
+use PaginiumCMS\Http\Support\RouteBootstrap;
 
 return function (App $app): void {
-    $container = $app->getContainer();
+    $container = RouteBootstrap::container($app);
 
     $app->group('/api/admin/audit', function (RouteCollectorProxy $group) use ($container) {
         $controller = $container->get(AuditTrailController::class);

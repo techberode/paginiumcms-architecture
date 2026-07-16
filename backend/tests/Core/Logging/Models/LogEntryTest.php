@@ -6,6 +6,7 @@ namespace PaginiumCMS\Tests\Core\Logging\Models;
 
 use PaginiumCMS\Core\Logging\Models\LogEntry;
 use PaginiumCMS\Core\Logging\Models\LogSeverity;
+use PaginiumCMS\Support\JsonHelper;
 use PHPUnit\Framework\TestCase;
 
 class LogEntryTest extends TestCase
@@ -108,9 +109,10 @@ class LogEntryTest extends TestCase
     {
         $entry = new LogEntry(LogSeverity::INFO, 'test', 'Test message');
         $json = json_encode($entry);
+        self::assertIsString($json);
 
         $this->assertJson($json);
-        $data = json_decode($json, true);
+        $data = JsonHelper::decode($json);
         $this->assertArrayHasKey('id', $data);
         $this->assertArrayHasKey('timestamp', $data);
         $this->assertArrayHasKey('severity', $data);

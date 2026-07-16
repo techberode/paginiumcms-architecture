@@ -87,8 +87,8 @@ final class SmtpTransport
     /**
      * @param resource $socket
      * @param list<int> $codes
-     */
-    private function expect($socket, array $codes): void
+ * @param array<int|string, mixed> $codes
+ */private function expect($socket, array $codes): void
     {
         $response = $this->read($socket);
         $code = (int) substr($response, 0, 3);

@@ -45,7 +45,7 @@ final class CodePolicyEngineTest extends TestCase
     {
         $engine = $this->makeEngine();
         $engine->validate('backend/app/Modules/Test.php', '<?php declare(strict_types=1); echo "ok";');
-        $this->assertTrue(true);
+        $this->addToAssertionCount(1);
     }
 
     private function makeEngine(): CodePolicyEngine

@@ -11,8 +11,8 @@ interface MediaRepositoryInterface
 {
     /**
      * @return array<int, MediaFile>
-     */
-    public function findAll(array $filters = []): array;
+ * @param array<int|string, mixed> $filters
+ */public function findAll(array $filters = []): array;
 
     public function findByPath(string $path): ?MediaFile;
 

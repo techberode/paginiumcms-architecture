@@ -10,6 +10,7 @@ use PaginiumCMS\Core\Versioning\Services\EnhancedVersionManager;
 use PaginiumCMS\Modules\Security\Models\User;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use PaginiumCMS\Support\JsonHelper;
 
 class VersionController
 {
@@ -22,15 +23,15 @@ class VersionController
     /**
      * GET /api/admin/versions/{contentId}
      * Získa históriu verzií pre obsah
-     */
-    public function getHistory(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+ * @param array<int|string, mixed> $args
+ */public function getHistory(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $contentId = $args['contentId'] ?? '';
 
         try {
             $history = $this->versionManager->getVersionHistory($contentId);
 
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => true,
                 'data' => [
                     'content_id' => $contentId,
@@ -40,7 +41,7 @@ class VersionController
             ]));
             return $response->withHeader('Content-Type', 'application/json');
         } catch (\Exception $e) {
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => false,
                 'error' => $e->getMessage()
             ]));
@@ -51,8 +52,8 @@ class VersionController
     /**
      * GET /api/admin/versions/{contentId}/{version}
      * Získa konkrétnu verziu
-     */
-    public function getVersion(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+ * @param array<int|string, mixed> $args
+ */public function getVersion(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $contentId = $args['contentId'] ?? '';
         $version = (int)($args['version'] ?? 0);
@@ -61,20 +62,20 @@ class VersionController
             $versionData = $this->versionManager->getVersion($contentId, $version);
 
             if (!$versionData) {
-                $response->getBody()->write(json_encode([
+                $response->getBody()->write(JsonHelper::encode([
                     'success' => false,
                     'error' => 'Version not found'
                 ]));
                 return $response->withStatus(404)->withHeader('Content-Type', 'application/json');
             }
 
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => true,
                 'data' => $versionData->toArray()
             ]));
             return $response->withHeader('Content-Type', 'application/json');
         } catch (\Exception $e) {
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => false,
                 'error' => $e->getMessage()
             ]));
@@ -93,7 +94,7 @@ class VersionController
         $version = (int)($data['version'] ?? 0);
 
         if (empty($contentId) || $version <= 0) {
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => false,
                 'error' => 'Content ID and version are required'
             ]));
@@ -105,13 +106,13 @@ class VersionController
             $user = $user instanceof User ? $user : null;
             $result = $this->contentVersioning->restoreToLiveContent($contentId, $version, $user);
 
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => $result,
                 'message' => $result ? 'Version restored successfully' : 'Failed to restore version'
             ]));
             return $response->withHeader('Content-Type', 'application/json');
         } catch (\Exception $e) {
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => false,
                 'error' => $e->getMessage()
             ]));
@@ -131,7 +132,7 @@ class VersionController
         $version2 = (int)($params['version2'] ?? 0);
 
         if (empty($contentId) || $version1 <= 0 || $version2 <= 0) {
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => false,
                 'error' => 'Content ID and both versions are required'
             ]));
@@ -141,13 +142,13 @@ class VersionController
         try {
             $comparison = $this->versionManager->compareVersions($contentId, $version1, $version2);
 
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => true,
                 'data' => $comparison
             ]));
             return $response->withHeader('Content-Type', 'application/json');
         } catch (\Exception $e) {
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => false,
                 'error' => $e->getMessage()
             ]));
@@ -164,13 +165,13 @@ class VersionController
         try {
             $stats = $this->versionManager->getVersionStats();
 
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => true,
                 'data' => $stats
             ]));
             return $response->withHeader('Content-Type', 'application/json');
         } catch (\Exception $e) {
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => false,
                 'error' => $e->getMessage()
             ]));
@@ -181,8 +182,8 @@ class VersionController
     /**
      * DELETE /api/admin/versions/{contentId}
      * Vymaže staré verzie
-     */
-    public function cleanupVersions(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+ * @param array<int|string, mixed> $args
+ */public function cleanupVersions(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $contentId = $args['contentId'] ?? '';
         $params = $request->getQueryParams();
@@ -191,14 +192,14 @@ class VersionController
         try {
             $deleted = $this->versionManager->deleteVersions($contentId, $keep);
 
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => true,
                 'deleted' => $deleted,
                 'message' => sprintf('Deleted %d old versions, kept %d', $deleted, $keep)
             ]));
             return $response->withHeader('Content-Type', 'application/json');
         } catch (\Exception $e) {
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => false,
                 'error' => $e->getMessage()
             ]));

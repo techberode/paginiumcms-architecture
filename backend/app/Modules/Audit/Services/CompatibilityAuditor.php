@@ -7,6 +7,7 @@ namespace PaginiumCMS\Modules\Audit\Services;
 use PaginiumCMS\Modules\Audit\Contracts\AuditorInterface;
 use PaginiumCMS\Modules\Audit\Models\AuditIssue;
 use PaginiumCMS\Modules\Audit\Models\AuditSeverity;
+use PaginiumCMS\Support\FileHelper;
 
 /**
  * Auditor pre kontrolu kompatibility.
@@ -30,6 +31,10 @@ class CompatibilityAuditor implements AuditorInterface
         return 'Kontroluje kompatibilitu verzií PHP, Slim a závislostí.';
     }
 
+    /**
+     * @param array<int|string, mixed> $options
+     * @return array<int|string, mixed>
+     */
     public function run(array $options = []): array
     {
         $issues = [];
@@ -46,6 +51,9 @@ class CompatibilityAuditor implements AuditorInterface
         return $issues;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     private function checkPhpVersion(): array
     {
         $issues = [];
@@ -71,6 +79,9 @@ class CompatibilityAuditor implements AuditorInterface
         return $issues;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     private function checkComposerDependencies(): array
     {
         $issues = [];
@@ -86,7 +97,7 @@ class CompatibilityAuditor implements AuditorInterface
             return $issues;
         }
 
-        $lock = json_decode(file_get_contents($lockPath), true);
+        $lock = FileHelper::readJson($lockPath);
         $packages = $lock['packages'] ?? [];
 
         // Kontrola známych zastaraných balíkov
@@ -115,6 +126,9 @@ class CompatibilityAuditor implements AuditorInterface
         return $issues;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     private function checkSlimVersion(): array
     {
         $issues = [];

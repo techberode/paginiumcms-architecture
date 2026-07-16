@@ -6,6 +6,7 @@ namespace PaginiumCMS\Core\Hook;
 
 class HookManager
 {
+    /** @var array<int|string, mixed> */
     private array $hooks = [];
 
     public function add(string $hook, callable $callback, int $priority = 10): void
@@ -13,6 +14,10 @@ class HookManager
         $this->hooks[$hook][$priority][] = $callback;
     }
 
+    /**
+     * @param array<int|string, mixed> $args
+     * @return array<int|string, mixed>
+     */
     public function run(string $hook, array $args = []): array
     {
         $result = [];
@@ -25,7 +30,10 @@ class HookManager
         return $result;
     }
 
-    public function runFirst(string $hook, array $args = [])
+    /**
+     * @param array<int|string, mixed> $args
+     */
+    public function runFirst(string $hook, array $args = []): mixed
     {
         $callbacks = $this->getCallbacks($hook);
         if (!empty($callbacks)) {
@@ -44,6 +52,9 @@ class HookManager
         unset($this->hooks[$hook]);
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     private function getCallbacks(string $hook): array
     {
         $callbacks = [];

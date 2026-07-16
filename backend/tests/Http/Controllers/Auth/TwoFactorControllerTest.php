@@ -201,9 +201,6 @@ class TwoFactorControllerTest extends TestCase
         $logoutResponse = $this->handleRequest($logoutRequest);
         $this->assertEquals(200, $logoutResponse->getStatusCode());
 
-        // Reset cookies
-        $this->cookies = [];
-
         // Prihlásenie – malo by vrátiť requires_two_factor = true
         $loginResult = $this->loginTestUser($userData['email'], $userData['password']);
         $this->assertEquals(200, $loginResult['response']->getStatusCode());

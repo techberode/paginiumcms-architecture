@@ -63,9 +63,8 @@ final class ContentLock implements JsonSerializable
     /**
      * Rekonštruuje zámok zo záznamu v `locks.json`.
      *
-     * @param array<string, mixed> $data
-     */
-    public static function fromArray(array $data): self
+     * @param array<int|string, mixed> $data
+ */public static function fromArray(array $data): self
     {
         return new self(
             (string) ($data['resourceId'] ?? ''),
@@ -158,9 +157,8 @@ final class ContentLock implements JsonSerializable
     /**
      * Plná reprezentácia vrátane tokenu – LEN pre uloženie do `locks.json`.
      *
-     * @return array<string, mixed>
-     */
-    public function toArray(): array
+     * @return array<int|string, mixed>
+ */public function toArray(): array
     {
         return [
             'resourceId' => $this->resourceId,
@@ -177,9 +175,8 @@ final class ContentLock implements JsonSerializable
      * Bezpečná reprezentácia pre API odpoveď – BEZ tokenu.
      * Token sa nikdy neposiela iným klientom (len vlastníkovi pri acquire).
      *
-     * @return array<string, mixed>
-     */
-    public function jsonSerialize(): array
+     * @return array<int|string, mixed>
+ */public function jsonSerialize(): array
     {
         return [
             'resourceId' => $this->resourceId,

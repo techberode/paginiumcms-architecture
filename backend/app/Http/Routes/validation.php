@@ -13,9 +13,10 @@ declare(strict_types=1);
 use PaginiumCMS\Http\Controllers\Validation\ValidationController;
 use Slim\App;
 use Slim\Routing\RouteCollectorProxy;
+use PaginiumCMS\Http\Support\RouteBootstrap;
 
 return function (App $app): void {
-    $container = $app->getContainer();
+    $container = RouteBootstrap::container($app);
 
     $app->group('/api/validation', function (RouteCollectorProxy $group) use ($container) {
         $controller = $container->get(ValidationController::class);

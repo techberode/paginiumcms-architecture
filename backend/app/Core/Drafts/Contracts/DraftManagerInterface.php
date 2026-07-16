@@ -16,9 +16,8 @@ interface DraftManagerInterface
     /**
      * Uloží (alebo prepíše) koncept.
      *
-     * @param array<string, mixed> $payload  Údaje konceptu (title, content, status, baseRevision).
-     */
-    public function save(string $type, string $slug, array $payload, string $userId): Draft;
+     * @param array<int|string, mixed> $payload  Údaje konceptu (title, content, status, baseRevision).
+ */public function save(string $type, string $slug, array $payload, string $userId): Draft;
 
     /**
      * Načíta koncept, alebo null ak neexistuje.

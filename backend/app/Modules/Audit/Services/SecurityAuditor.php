@@ -30,6 +30,10 @@ class SecurityAuditor implements AuditorInterface
         return 'Kontroluje bezpečnostné nastavenia a konfiguráciu.';
     }
 
+    /**
+     * @param array<int|string, mixed> $options
+     * @return array<int|string, mixed>
+     */
     public function run(array $options = []): array
     {
         $issues = [];
@@ -52,6 +56,9 @@ class SecurityAuditor implements AuditorInterface
         return $issues;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     private function checkEnvFile(): array
     {
         $issues = [];
@@ -69,10 +76,14 @@ class SecurityAuditor implements AuditorInterface
         return $issues;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     private function checkDebugMode(): array
     {
         $issues = [];
-        $debug = getenv('APP_DEBUG') ?? 'false';
+        $debugValue = getenv('APP_DEBUG');
+        $debug = is_string($debugValue) && $debugValue !== '' ? $debugValue : 'false';
 
         if ($debug === 'true' || $debug === '1') {
             $issues[] = (new AuditIssue(
@@ -86,6 +97,9 @@ class SecurityAuditor implements AuditorInterface
         return $issues;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     private function checkDirectoryPermissions(): array
     {
         $issues = [];
@@ -114,6 +128,9 @@ class SecurityAuditor implements AuditorInterface
         return $issues;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     private function checkHtaccessFiles(): array
     {
         $issues = [];
@@ -132,6 +149,9 @@ class SecurityAuditor implements AuditorInterface
         return $issues;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     private function checkSessionSettings(): array
     {
         $issues = [];

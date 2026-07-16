@@ -28,8 +28,8 @@ class MarkdownParser implements MarkdownParserInterface
 
     /**
      * {@inheritDoc}
-     */
-    public function parse(string $content): array
+ * @return array<int|string, mixed>
+ */public function parse(string $content): array
     {
         $frontMatter = $this->frontMatterParser->parse($content);
         $markdown = $this->frontMatterParser->extractContent($content);
@@ -43,8 +43,8 @@ class MarkdownParser implements MarkdownParserInterface
 
     /**
      * {@inheritDoc}
-     */
-    public function serialize(array $frontMatter, string $content): string
+ * @param array<int|string, mixed> $frontMatter
+ */public function serialize(array $frontMatter, string $content): string
     {
         $serializedFrontMatter = $this->frontMatterParser->serialize($frontMatter);
         return $serializedFrontMatter . $content;
@@ -52,8 +52,8 @@ class MarkdownParser implements MarkdownParserInterface
 
     /**
      * {@inheritDoc}
-     */
-    public function extractFrontMatter(string $content): array
+ * @return array<int|string, mixed>
+ */public function extractFrontMatter(string $content): array
     {
         return $this->frontMatterParser->extractFrontMatter($content);
     }

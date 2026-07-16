@@ -20,8 +20,8 @@ class UserLogger
 
     /**
      * Zaloguje aktivitu používateľa.
-     */
-    public function log(
+ * @param array<int|string, mixed> $details
+ */public function log(
         string $userId,
         string $action,
         array $details = [],
@@ -64,8 +64,8 @@ class UserLogger
 
     /**
      * Zaloguje zmenu profilu.
-     */
-    public function profileUpdate(string $userId, array $changes): void
+ * @param array<int|string, mixed> $changes
+ */public function profileUpdate(string $userId, array $changes): void
     {
         $this->log($userId, 'profile_update', ['changes' => $changes], 'INFO');
     }

@@ -37,11 +37,17 @@ final class SettingsRepository implements SettingsRepositoryInterface
         $this->absolutePath = rtrim($this->reader->getBasePath(), '/') . '/' . ltrim($this->file, '/');
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function all(): array
     {
         return $this->mergeWithDefaults($this->readOverrides());
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function group(string $group): array
     {
         return $this->all()[$group] ?? [];
@@ -61,6 +67,10 @@ final class SettingsRepository implements SettingsRepositoryInterface
         return $all[$group][$field] ?? $default;
     }
 
+    /**
+     * @param array<int|string, mixed> $values
+     * @return array<int|string, mixed>
+     */
     public function setGroup(string $group, array $values): array
     {
         if (!SettingsSchema::hasGroup($group)) {
@@ -93,10 +103,10 @@ final class SettingsRepository implements SettingsRepositoryInterface
     // === Blok: Efektívne hodnoty (predvolby prekryté odchýlkami) ===
 
     /**
-     * @param array<string, array<string, mixed>> $overrides
-     * @return array<string, array<string, mixed>>
-     */
-    private function mergeWithDefaults(array $overrides): array
+     * @param array<string, array<int|string, mixed>> $overrides
+     * @return array<string, array<int|string, mixed>>
+ * @param array<int|string, mixed> $overrides
+ */private function mergeWithDefaults(array $overrides): array
     {
         $effective = SettingsSchema::defaults();
 
@@ -115,9 +125,8 @@ final class SettingsRepository implements SettingsRepositoryInterface
     // === Blok: Interná atomická práca s odchýlkami ===
 
     /**
-     * @return array<string, array<string, mixed>>
-     */
-    private function readOverrides(): array
+     * @return array<string, array<int|string, mixed>>
+ */private function readOverrides(): array
     {
         if (!$this->reader->exists($this->file)) {
             return [];
@@ -134,9 +143,8 @@ final class SettingsRepository implements SettingsRepositoryInterface
 
     /**
      * @param array<mixed> $decoded
-     * @return array<string, array<string, mixed>>
-     */
-    private function normalizeOverrides(array $decoded): array
+     * @return array<string, array<int|string, mixed>>
+ */private function normalizeOverrides(array $decoded): array
     {
         $overrides = [];
         foreach ($decoded as $group => $fields) {
@@ -149,7 +157,7 @@ final class SettingsRepository implements SettingsRepositoryInterface
     }
 
     /**
-     * @param callable(array<string, array<string, mixed>>): void $mutator
+     * @param callable(array<string, array<int|string, mixed>>): void $mutator
      */
     private function withLockedOverrides(callable $mutator): void
     {
@@ -181,9 +189,8 @@ final class SettingsRepository implements SettingsRepositoryInterface
 
     /**
      * @param resource $handle
-     * @return array<string, array<string, mixed>>
-     */
-    private function readHandle($handle): array
+     * @return array<string, array<int|string, mixed>>
+ */private function readHandle($handle): array
     {
         rewind($handle);
         $raw = stream_get_contents($handle);
@@ -198,9 +205,9 @@ final class SettingsRepository implements SettingsRepositoryInterface
 
     /**
      * @param resource $handle
-     * @param array<string, array<string, mixed>> $overrides
-     */
-    private function writeHandle($handle, array $overrides): void
+     * @param array<string, array<int|string, mixed>> $overrides
+ * @param array<int|string, mixed> $overrides
+ */private function writeHandle($handle, array $overrides): void
     {
         $payload = json_encode($overrides, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         if ($payload === false) {

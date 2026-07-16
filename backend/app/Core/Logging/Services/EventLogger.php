@@ -20,8 +20,8 @@ class EventLogger
 
     /**
      * Zaloguje systémovú udalosť.
-     */
-    public function log(
+ * @param array<int|string, mixed> $details
+ */public function log(
         string $event,
         array $details = [],
         string $severity = 'INFO'
@@ -52,24 +52,24 @@ class EventLogger
 
     /**
      * Zaloguje chybu systému.
-     */
-    public function systemError(string $error, array $details = []): void
+ * @param array<int|string, mixed> $details
+ */public function systemError(string $error, array $details = []): void
     {
         $this->log('system_error', array_merge(['error' => $error], $details), 'ERROR');
     }
 
     /**
      * Zaloguje varovanie systému.
-     */
-    public function systemWarning(string $warning, array $details = []): void
+ * @param array<int|string, mixed> $details
+ */public function systemWarning(string $warning, array $details = []): void
     {
         $this->log('system_warning', array_merge(['warning' => $warning], $details), 'WARNING');
     }
 
     /**
      * Zaloguje zálohovanie.
-     */
-    public function backup(string $type, bool $success, array $details = []): void
+ * @param array<int|string, mixed> $details
+ */public function backup(string $type, bool $success, array $details = []): void
     {
         $severity = $success ? 'INFO' : 'ERROR';
         $this->log('backup_' . $type, array_merge(['success' => $success], $details), $severity);
@@ -90,16 +90,16 @@ class EventLogger
 
     /**
      * Zaloguje údržbu.
-     */
-    public function maintenance(string $action, array $details = []): void
+ * @param array<int|string, mixed> $details
+ */public function maintenance(string $action, array $details = []): void
     {
         $this->log('maintenance_' . $action, $details, 'INFO');
     }
 
     /**
      * Zaloguje detekciu útoku.
-     */
-    public function attackDetected(string $type, string $ip, array $details = []): void
+ * @param array<int|string, mixed> $details
+ */public function attackDetected(string $type, string $ip, array $details = []): void
     {
         $this->log(
             'attack_detected',

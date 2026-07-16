@@ -7,6 +7,7 @@ namespace PaginiumCMS\Modules\Audit\Services;
 use PaginiumCMS\Modules\Audit\Contracts\AuditorInterface;
 use PaginiumCMS\Modules\Audit\Models\AuditIssue;
 use PaginiumCMS\Modules\Audit\Models\AuditSeverity;
+use PaginiumCMS\Support\FileHelper;
 
 /**
  * Auditor pre kontrolu integrity súborov.
@@ -32,6 +33,10 @@ class IntegrityAuditor implements AuditorInterface
         return 'Kontroluje integritu jadrových súborov pomocou kontrolných súčtov.';
     }
 
+    /**
+     * @param array<int|string, mixed> $options
+     * @return array<int|string, mixed>
+     */
     public function run(array $options = []): array
     {
         $issues = [];
@@ -49,8 +54,9 @@ class IntegrityAuditor implements AuditorInterface
         }
 
         // 2. Načítanie hashov
-        $hashes = json_decode(file_get_contents($hashPath), true);
-        if ($hashes === null) {
+        try {
+            $hashes = FileHelper::readJson($hashPath);
+        } catch (\JsonException) {
             $issues[] = (new AuditIssue(
                 AuditSeverity::ERROR,
                 'integrity',

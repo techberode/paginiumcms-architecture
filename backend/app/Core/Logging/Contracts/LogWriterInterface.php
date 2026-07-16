@@ -18,23 +18,23 @@ interface LogWriterInterface
 
     /**
      * Získa všetky logovacie položky.
-     */
-    public function readAll(): array;
+ * @return array<int|string, mixed>
+ */public function readAll(): array;
 
     /**
      * Získa posledné logovacie položky.
-     */
-    public function readLast(int $limit = 100): array;
+ * @return array<int|string, mixed>
+ */public function readLast(int $limit = 100): array;
 
     /**
      * Získa logovacie položky podľa priority.
-     */
-    public function readBySeverity(string $severity, int $limit = 100): array;
+ * @return array<int|string, mixed>
+ */public function readBySeverity(string $severity, int $limit = 100): array;
 
     /**
      * Získa logovacie položky podľa kategórie.
-     */
-    public function readByCategory(string $category, int $limit = 100): array;
+ * @return array<int|string, mixed>
+ */public function readByCategory(string $category, int $limit = 100): array;
 
     /**
      * Vymaže staré logovacie položky.

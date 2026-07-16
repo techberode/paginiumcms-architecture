@@ -10,6 +10,7 @@ use PaginiumCMS\Core\Analytics\Models\Visit;
 use PaginiumCMS\Core\FlatFile\Services\FileReader;
 use PaginiumCMS\Core\FlatFile\Services\FileWriter;
 use PaginiumCMS\Core\FlatFile\Services\FileValidator;
+use PaginiumCMS\Support\FileHelper;
 use PHPUnit\Framework\TestCase;
 use org\bovigo\vfs\vfsStream;
 
@@ -65,9 +66,7 @@ class TrackerTest extends TestCase
         $filePath = $this->root . '/storage/app/content/data/analytics/visits/' . $date . '.json';
         $this->assertFileExists($filePath, 'Súbor nebol vytvorený na ceste: ' . $filePath);
 
-        $content = file_get_contents($filePath);
-        $data = json_decode($content, true);
-        $this->assertIsArray($data);
+        $data = FileHelper::readJson($filePath);
         $this->assertCount(1, $data);
         $this->assertEquals('/test-page', $data[0]['requestUri']);
     }
@@ -81,7 +80,6 @@ class TrackerTest extends TestCase
 
         $date = date('Y-m-d');
         $visits = $this->tracker->getVisits($date);
-        $this->assertIsArray($visits);
         $this->assertNotEmpty($visits);
         $this->assertEquals('/test-page', $visits[0]['requestUri']);
     }
@@ -95,7 +93,6 @@ class TrackerTest extends TestCase
 
         $date = date('Y-m-d');
         $stats = $this->tracker->getDailyStats($date);
-        $this->assertIsArray($stats);
         $this->assertArrayHasKey('date', $stats);
         $this->assertArrayHasKey('visits', $stats);
         $this->assertEquals($date, $stats['date']);

@@ -18,6 +18,7 @@ class AuditIssue implements JsonSerializable
     private ?string $recommendation = null;
     private ?string $file = null;
     private ?int $line = null;
+    /** @var array<int|string, mixed>|null */
     private ?array $context = null;
 
     public function __construct(
@@ -89,11 +90,17 @@ class AuditIssue implements JsonSerializable
         return $this;
     }
 
+    /**
+     * @return array<int|string, mixed>|null
+     */
     public function getContext(): ?array
     {
         return $this->context;
     }
 
+    /**
+     * @param array<int|string, mixed> $context
+     */
     public function setContext(array $context): self
     {
         $this->context = $context;
@@ -125,6 +132,9 @@ class AuditIssue implements JsonSerializable
         return $this->severity === AuditSeverity::INFO;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function jsonSerialize(): array
     {
         return [

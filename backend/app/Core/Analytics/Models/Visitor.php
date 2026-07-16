@@ -23,6 +23,7 @@ class Visitor implements JsonSerializable
     private ?string $os;
     private ?string $browser;
     private ?string $deviceType;
+    /** @var array<int|string, mixed> */
     private array $meta = [];
 
     public function __construct(string $visitorId)
@@ -62,9 +63,18 @@ class Visitor implements JsonSerializable
     public function setBrowser(?string $browser): self { $this->browser = $browser; return $this; }
     public function getDeviceType(): ?string { return $this->deviceType; }
     public function setDeviceType(?string $type): self { $this->deviceType = $type; return $this; }
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getMeta(): array { return $this->meta; }
+    /**
+     * @param array<int|string, mixed> $meta
+     */
     public function setMeta(array $meta): self { $this->meta = $meta; return $this; }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function toArray(): array
     {
         return [
@@ -87,6 +97,9 @@ class Visitor implements JsonSerializable
         ];
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function jsonSerialize(): array
     {
         return $this->toArray();

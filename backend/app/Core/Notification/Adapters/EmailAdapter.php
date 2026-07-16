@@ -15,6 +15,9 @@ class EmailAdapter implements AdapterInterface
     ) {
     }
 
+    /**
+     * @param array<int|string, mixed> $options
+     */
     public function send(string $to, string $subject, string $message, array $options = []): bool
     {
         $html = $options['html'] ?? $message;

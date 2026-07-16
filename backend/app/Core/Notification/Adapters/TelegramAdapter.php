@@ -12,6 +12,9 @@ class TelegramAdapter implements AdapterInterface
     ) {
     }
 
+    /**
+     * @param array<int|string, mixed> $options
+     */
     public function send(string $to, string $subject, string $message, array $options = []): bool
     {
         $text = '*' . $subject . "*\n" . $message;

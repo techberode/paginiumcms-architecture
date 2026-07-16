@@ -6,6 +6,7 @@ namespace PaginiumCMS\Core\Event;
 
 class EventDispatcher
 {
+    /** @var array<int|string, mixed> */
     private array $listeners = [];
 
     public function addListener(string $event, callable $listener, int $priority = 0): void
@@ -23,6 +24,9 @@ class EventDispatcher
         }
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getListeners(string $event): array
     {
         $listeners = [];

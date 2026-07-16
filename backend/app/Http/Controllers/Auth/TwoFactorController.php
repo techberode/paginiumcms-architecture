@@ -10,6 +10,7 @@ use PaginiumCMS\Modules\Security\Models\User;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Psr7\Response;
+use PaginiumCMS\Support\JsonHelper;
 
 class TwoFactorController
 {
@@ -226,9 +227,12 @@ class TwoFactorController
         }
     }
 
+    /**
+     * @param array<int|string, mixed> $data
+     */
     private function jsonResponse(ResponseInterface $response, array $data, int $status = 200): ResponseInterface
     {
-        $response->getBody()->write(json_encode($data, JSON_PRETTY_PRINT));
+        $response->getBody()->write(JsonHelper::encode($data, JSON_PRETTY_PRINT));
         return $response
         ->withStatus($status)
         ->withHeader('Content-Type', 'application/json');

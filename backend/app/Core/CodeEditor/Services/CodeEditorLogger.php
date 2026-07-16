@@ -14,6 +14,7 @@ class CodeEditorLogger
 {
     private LoggerInterface $logger;
     private DeveloperMode $developerMode;
+    /** @var array<int|string, mixed> */
     private array $sessionContext = [];
 
     public function __construct(LoggerInterface $logger, DeveloperMode $developerMode)
@@ -32,8 +33,8 @@ class CodeEditorLogger
 
     /**
      * Logovanie prístupu k súboru
-     */
-    public function logFileAccess(string $path, string $action, array $metadata = []): void
+ * @param array<int|string, mixed> $metadata
+ */public function logFileAccess(string $path, string $action, array $metadata = []): void
     {
         $entry = new LogEntry(
             LogSeverity::INFO,
@@ -48,7 +49,7 @@ class CodeEditorLogger
             'session' => $this->sessionContext
         ], $metadata));
 
-        $this->logger->info($entry->getMessage(), $entry->getContext());
+        $this->logger->info($entry->getMessage(), $entry->getContext() ?? []);
         
         // Debug log pre developer mode
         if ($this->developerMode->isActive()) {
@@ -62,8 +63,9 @@ class CodeEditorLogger
 
     /**
      * Logovanie zmien v súbore
-     */
-    public function logFileChange(string $path, string $action, array $changes, array $metadata = []): void
+ * @param array<int|string, mixed> $changes
+ * @param array<int|string, mixed> $metadata
+ */public function logFileChange(string $path, string $action, array $changes, array $metadata = []): void
     {
         $severity = $this->determineSeverity($action, $changes);
         
@@ -82,7 +84,7 @@ class CodeEditorLogger
             'session' => $this->sessionContext
         ], $metadata));
 
-        $this->logger->log($severity, $entry->getMessage(), $entry->getContext());
+        $this->logger->log($severity, $entry->getMessage(), $entry->getContext() ?? []);
 
         // Uloženie do developer debug logu
         if ($this->developerMode->isActive()) {
@@ -97,8 +99,8 @@ class CodeEditorLogger
 
     /**
      * Logovanie chýb
-     */
-    public function logError(string $path, \Throwable $error, array $metadata = []): void
+ * @param array<int|string, mixed> $metadata
+ */public function logError(string $path, \Throwable $error, array $metadata = []): void
     {
         $entry = new LogEntry(
             LogSeverity::ERROR,
@@ -116,7 +118,7 @@ class CodeEditorLogger
             'session' => $this->sessionContext
         ], $metadata));
 
-        $this->logger->error($entry->getMessage(), $entry->getContext());
+        $this->logger->error($entry->getMessage(), $entry->getContext() ?? []);
 
         if ($this->developerMode->isActive()) {
             $this->developerMode->logError($error);
@@ -125,8 +127,8 @@ class CodeEditorLogger
 
     /**
      * Logovanie verzií
-     */
-    public function logVersion(string $path, int $version, string $action, array $metadata = []): void
+ * @param array<int|string, mixed> $metadata
+ */public function logVersion(string $path, int $version, string $action, array $metadata = []): void
     {
         $entry = new LogEntry(
             LogSeverity::INFO,
@@ -142,13 +144,13 @@ class CodeEditorLogger
             'session' => $this->sessionContext
         ], $metadata));
 
-        $this->logger->info($entry->getMessage(), $entry->getContext());
+        $this->logger->info($entry->getMessage(), $entry->getContext() ?? []);
     }
 
     /**
      * Získanie logov pre konkrétny súbor
-     */
-    public function getFileLogs(string $path, int $limit = 100): array
+ * @return array<int|string, mixed>
+ */public function getFileLogs(string $path, int $limit = 100): array
     {
         $allLogs = $this->logger->getEntriesByCategory('code_editor', 1000);
         $fileLogs = array_filter($allLogs, function($log) use ($path) {
@@ -160,8 +162,8 @@ class CodeEditorLogger
 
     /**
      * Získanie štatistík logovania
-     */
-    public function getLogStats(): array
+ * @return array<int|string, mixed>
+ */public function getLogStats(): array
     {
         $allLogs = $this->logger->getLastEntries(1000);
         
@@ -197,6 +199,9 @@ class CodeEditorLogger
         return $stats;
     }
 
+    /**
+     * @param array<int|string, mixed> $changes
+     */
     private function determineSeverity(string $action, array $changes): string
     {
         $dangerousActions = ['delete', 'overwrite', 'rename'];
@@ -215,6 +220,9 @@ class CodeEditorLogger
         return LogSeverity::INFO;
     }
 
+    /**
+     * @param array<int|string, mixed> $changes
+     */
     private function summarizeChanges(array $changes): string
     {
         $parts = [];

@@ -7,13 +7,16 @@ namespace PaginiumCMS\Tests\Core\GitHub\Services;
 use PaginiumCMS\Core\GitHub\Services\GitHubService;
 use PaginiumCMS\Core\FlatFile\Services\FileReader;
 use PaginiumCMS\Core\FlatFile\Services\FileWriter;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class GitHubApiTest extends TestCase
 {
-    private $mockReader;
-    private $mockWriter;
-    private $service;
+    /** @var FileReader&MockObject */
+    private FileReader $mockReader;
+    /** @var FileWriter&MockObject */
+    private FileWriter $mockWriter;
+    private GitHubService $service;
 
     protected function setUp(): void
     {
@@ -51,7 +54,6 @@ class GitHubApiTest extends TestCase
 
         $result = $this->service->export();
 
-        $this->assertIsArray($result);
         $this->assertArrayHasKey('success', $result);
         $this->assertArrayHasKey('files', $result);
         $this->assertArrayHasKey('errors', $result);
@@ -79,7 +81,6 @@ class GitHubApiTest extends TestCase
 
         $result = $this->service->sync();
 
-        $this->assertIsArray($result);
         $this->assertArrayHasKey('success', $result);
         $this->assertArrayHasKey('exported', $result);
         $this->assertArrayHasKey('imported', $result);

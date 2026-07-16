@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\Cache\Drivers;
 
+use PaginiumCMS\Support\FileHelper;
+use PaginiumCMS\Support\JsonHelper;
+
 class FileDriver implements DriverInterface
 {
     private string $path;
@@ -13,46 +16,69 @@ class FileDriver implements DriverInterface
     {
         $this->path = rtrim($path, '/');
         $this->hashAlgo = $hashAlgo;
-        if (!is_dir($this->path)) mkdir($this->path, 0755, true);
+        if (!is_dir($this->path)) {
+            mkdir($this->path, 0755, true);
+        }
     }
 
-    public function get(string $key, $default = null)
+    public function get(string $key, mixed $default = null): mixed
     {
         $file = $this->getFilePath($key);
-        if (!file_exists($file)) return $default;
-        $data = json_decode(file_get_contents($file), true);
-        if ($data === null) return $default;
-        if ($data['expires'] !== null && $data['expires'] < time()) { unlink($file); return $default; }
-        return $data['value'];
+        if (!file_exists($file)) {
+            return $default;
+        }
+
+        $data = JsonHelper::decode(FileHelper::read($file));
+        if ($data['expires'] !== null && (int) $data['expires'] < time()) {
+            unlink($file);
+
+            return $default;
+        }
+
+        return $data['value'] ?? $default;
     }
 
-    public function set(string $key, $value, ?int $ttl = null): bool
+    public function set(string $key, mixed $value, ?int $ttl = null): bool
     {
         $file = $this->getFilePath($key);
         $data = ['value' => $value, 'expires' => $ttl ? time() + $ttl : null, 'created' => time()];
-        return file_put_contents($file, json_encode($data, JSON_PRETTY_PRINT)) !== false;
+
+        return file_put_contents($file, JsonHelper::encode($data)) !== false;
     }
 
     public function delete(string $key): bool
     {
         $file = $this->getFilePath($key);
-        if (file_exists($file)) return unlink($file);
+        if (file_exists($file)) {
+            return unlink($file);
+        }
+
         return true;
     }
 
     public function clear(): bool
     {
-        foreach (glob($this->path . '/*.cache') as $file) unlink($file);
+        foreach (glob($this->path . '/*.cache') ?: [] as $file) {
+            unlink($file);
+        }
+
         return true;
     }
 
     public function has(string $key): bool
     {
         $file = $this->getFilePath($key);
-        if (!file_exists($file)) return false;
-        $data = json_decode(file_get_contents($file), true);
-        if ($data === null) return false;
-        if ($data['expires'] !== null && $data['expires'] < time()) { unlink($file); return false; }
+        if (!file_exists($file)) {
+            return false;
+        }
+
+        $data = JsonHelper::decode(FileHelper::read($file));
+        if ($data['expires'] !== null && (int) $data['expires'] < time()) {
+            unlink($file);
+
+            return false;
+        }
+
         return true;
     }
 
@@ -68,6 +94,7 @@ class FileDriver implements DriverInterface
             $current = (int) $this->get($key, 0);
             $new = $current + $step;
             $this->set($key, $new, $ttl);
+
             return $new;
         }
 
@@ -76,6 +103,7 @@ class FileDriver implements DriverInterface
             $current = (int) $this->get($key, 0);
             $new = $current + $step;
             $this->set($key, $new, $ttl);
+
             return $new;
         } finally {
             flock($handle, LOCK_UN);

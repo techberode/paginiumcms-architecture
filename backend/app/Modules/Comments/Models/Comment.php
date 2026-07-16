@@ -87,9 +87,8 @@ class Comment implements JsonSerializable
     }
 
     /**
-     * @param array<string, mixed> $entry
-     */
-    public static function fromArray(array $entry): self
+     * @param array<int|string, mixed> $entry
+ */public static function fromArray(array $entry): self
     {
         $comment = new self(
             (string) ($entry['articleSlug'] ?? $entry['articleId'] ?? ''),
@@ -104,7 +103,6 @@ class Comment implements JsonSerializable
             }
 
             $prop = $reflection->getProperty($property);
-            $prop->setAccessible(true);
             $prop->setValue($comment, $entry[$property]);
         }
 
@@ -113,8 +111,8 @@ class Comment implements JsonSerializable
 
     /**
      * {@inheritDoc}
-     */
-    public function jsonSerialize(): array
+ * @return array<int|string, mixed>
+ */public function jsonSerialize(): array
     {
         return [
             'id' => $this->id,

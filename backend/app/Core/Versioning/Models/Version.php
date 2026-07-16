@@ -17,6 +17,7 @@ class Version implements JsonSerializable
     private string $createdAt;
     private string $createdBy;
     private string $message;
+    /** @var array<int|string, mixed>|null */
     private ?array $diff;
 
 public function __construct()
@@ -50,9 +51,18 @@ public function __construct()
     public function setCreatedBy(string $userId): self { $this->createdBy = $userId; return $this; }
     public function getMessage(): string { return $this->message; }
     public function setMessage(string $message): self { $this->message = $message; return $this; }
+    /**
+     * @return array<int|string, mixed>|null
+     */
     public function getDiff(): ?array { return $this->diff; }
+    /**
+     * @param array<int|string, mixed> $diff
+     */
     public function setDiff(?array $diff): self { $this->diff = $diff; return $this; }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function toArray(): array
     {
         return [
@@ -69,5 +79,8 @@ public function __construct()
         ];
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function jsonSerialize(): array { return $this->toArray(); }
 }

@@ -77,8 +77,8 @@ final class NotificationFactory
 
     /**
      * @return list<array{name: string, label: string, enabled: bool}>
-     */
-    public static function connectorOverview(SettingsRepositoryInterface $settings): array
+ * @return array<int|string, mixed>
+ */public static function connectorOverview(SettingsRepositoryInterface $settings): array
     {
         $service = self::create($settings);
         $labels = [

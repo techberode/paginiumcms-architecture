@@ -1,6 +1,6 @@
 // frontend/src/components/CodeEditor/DeveloperUnlockGate.test.tsx
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { DeveloperUnlockGate } from './DeveloperUnlockGate';
 import * as developerApi from '../../api/developer';
 
@@ -74,11 +74,10 @@ describe('DeveloperUnlockGate', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: 'Unlock Developer Mode' }));
 
-    await waitFor(() => {
-      expect(developerApi.unlockDeveloperMode).toHaveBeenCalledWith({
-        totp_code: undefined,
-        token: 'pagdev_test.token',
-      });
+    expect(await screen.findByText('Editor content')).toBeInTheDocument();
+    expect(developerApi.unlockDeveloperMode).toHaveBeenCalledWith({
+      totp_code: undefined,
+      token: 'pagdev_test.token',
     });
   });
 });

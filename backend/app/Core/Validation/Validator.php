@@ -31,19 +31,20 @@ namespace PaginiumCMS\Core\Validation;
 final class Validator
 {
     /**
-     * @param array<string, mixed> $data
-     * @param array<string, list<string>> $rules Mapa pole => zoznam pravidiel.
-     * @return array<string, mixed> Validované a pretypované hodnoty.
-     * @throws ValidationException Ak aspoň jedno pole nevyhovie.
+     * @param array<int|string, mixed> $data
+     * @param array<string, list<string>> $rules
+     * @return array<int|string, mixed>
+     * @throws ValidationException
      */
     public function validate(array $data, array $rules): array
     {
         /** @var array<string, list<string>> $errors */
         $errors = [];
-        /** @var array<string, mixed> $validated */
+        /** @var array<int|string, mixed> $validated */
         $validated = [];
 
         foreach ($rules as $field => $fieldRules) {
+            $fieldName = (string) $field;
             $value = $data[$field] ?? null;
             $isRequired = in_array('required', $fieldRules, true);
             $isEmpty = $value === null || $value === '';
@@ -55,18 +56,18 @@ final class Validator
 
             $fieldErrors = [];
             foreach ($fieldRules as $rule) {
-                $error = $this->applyRule($field, $rule, $value, $fieldRules);
+                $error = $this->applyRule($fieldName, $rule, $value, $fieldRules);
                 if ($error !== null) {
                     $fieldErrors[] = $error;
                 }
             }
 
             if ($fieldErrors !== []) {
-                $errors[$field] = $fieldErrors;
+                $errors[$fieldName] = $fieldErrors;
                 continue;
             }
 
-            $validated[$field] = $this->coerce($value, $fieldRules);
+            $validated[$fieldName] = $this->coerce($value, $fieldRules);
         }
 
         if ($errors !== []) {
@@ -109,8 +110,8 @@ final class Validator
 
     /**
      * @param list<string> $fieldRules
-     */
-    private function checkMin(string $field, mixed $value, string $param, array $fieldRules): ?string
+ * @param array<int|string, mixed> $fieldRules
+ */private function checkMin(string $field, mixed $value, string $param, array $fieldRules): ?string
     {
         $min = (float) $param;
         if ($this->isNumericField($fieldRules)) {
@@ -124,8 +125,8 @@ final class Validator
 
     /**
      * @param list<string> $fieldRules
-     */
-    private function checkMax(string $field, mixed $value, string $param, array $fieldRules): ?string
+ * @param array<int|string, mixed> $fieldRules
+ */private function checkMax(string $field, mixed $value, string $param, array $fieldRules): ?string
     {
         $max = (float) $param;
         if ($this->isNumericField($fieldRules)) {
@@ -150,8 +151,8 @@ final class Validator
      * Pretypuje hodnotu podľa typového pravidla.
      *
      * @param list<string> $fieldRules
-     */
-    private function coerce(mixed $value, array $fieldRules): mixed
+ * @param array<int|string, mixed> $fieldRules
+ */private function coerce(mixed $value, array $fieldRules): mixed
     {
         if (in_array('int', $fieldRules, true)) {
             return (int) $value;
@@ -171,8 +172,8 @@ final class Validator
 
     /**
      * @param list<string> $fieldRules
-     */
-    private function isNumericField(array $fieldRules): bool
+ * @param array<int|string, mixed> $fieldRules
+ */private function isNumericField(array $fieldRules): bool
     {
         return in_array('int', $fieldRules, true) || in_array('number', $fieldRules, true);
     }

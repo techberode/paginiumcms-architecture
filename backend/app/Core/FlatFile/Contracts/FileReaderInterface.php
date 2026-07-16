@@ -38,8 +38,8 @@ interface FileReaderInterface
      * @param string $relativePath Relatívna cesta k súboru.
      * @return array{size: int, mtime: int, is_readable: bool, is_writable: bool}
      * @throws FileNotFoundException Ak súbor neexistuje.
-     */
-    public function getInfo(string $relativePath): array;
+ * @return array<int|string, mixed>
+ */public function getInfo(string $relativePath): array;
 
     /**
      * Získa zoznam súborov v adresári.
@@ -48,8 +48,7 @@ interface FileReaderInterface
      * @param string $pattern Voliteľný filter (napr. '*.md').
      * @return array<int, string> Zoznam súborov.
      * @throws InvalidPathException Ak cesta obsahuje zakázané znaky.
-     */
-    public function listFiles(string $relativePath, string $pattern = '*'): array;
+ */public function listFiles(string $relativePath, string $pattern = '*'): array;
 
     /**
      * Získa základnú cestu k úložisku.

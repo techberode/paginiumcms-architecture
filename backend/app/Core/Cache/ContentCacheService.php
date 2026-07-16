@@ -38,9 +38,9 @@ class ContentCacheService
     }
 
     /**
-     * @param array<string, mixed> $filters
-     */
-    public function rememberPageList(array $filters, callable $loader): array
+     * @param array<int|string, mixed> $filters
+ * @return array<int|string, mixed>
+ */public function rememberPageList(array $filters, callable $loader): array
     {
         $gen = $this->listGeneration('pages');
         $key = 'content.pages.list.' . $gen . '.' . md5(json_encode($filters) ?: '');
@@ -49,9 +49,9 @@ class ContentCacheService
     }
 
     /**
-     * @param array<string, mixed> $filters
-     */
-    public function rememberArticleList(array $filters, callable $loader): array
+     * @param array<int|string, mixed> $filters
+ * @return array<int|string, mixed>
+ */public function rememberArticleList(array $filters, callable $loader): array
     {
         $gen = $this->listGeneration('articles');
         $key = 'content.articles.list.' . $gen . '.' . md5(json_encode($filters) ?: '');

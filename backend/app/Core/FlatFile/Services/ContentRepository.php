@@ -24,6 +24,7 @@ class ContentRepository implements ContentRepositoryInterface
     private FileReaderInterface $reader;
     private FileWriterInterface $writer;
     private MarkdownParserInterface $parser;
+    /** @var array<int|string, mixed> */
     private array $typeMapping = [
         'page' => Page::class,
         'article' => Article::class,
@@ -111,16 +112,18 @@ class ContentRepository implements ContentRepositoryInterface
 
     /**
      * {@inheritDoc}
-     */
-    public function findAllPages(array $filters = []): array
+ * @param array<int|string, mixed> $filters
+ * @return array<int|string, mixed>
+ */public function findAllPages(array $filters = []): array
     {
         return $this->findAll('pages', $filters);
     }
 
     /**
      * {@inheritDoc}
-     */
-    public function findAllArticles(array $filters = []): array
+ * @param array<int|string, mixed> $filters
+ * @return array<int|string, mixed>
+ */public function findAllArticles(array $filters = []): array
     {
         return $this->findAll('blog', $filters);
     }
@@ -171,8 +174,8 @@ class ContentRepository implements ContentRepositoryInterface
 
     /**
      * {@inheritDoc}
-     */
-    public function count(string $type, array $filters = []): int
+ * @param array<int|string, mixed> $filters
+ */public function count(string $type, array $filters = []): int
     {
         $directory = $type === 'article' ? 'blog' : 'pages';
 
@@ -219,10 +222,9 @@ class ContentRepository implements ContentRepositoryInterface
      * Získa všetky položky z adresára.
      *
      * @param string $directory Adresár ('pages' alebo 'blog').
-     * @param array<string, mixed> $filters Filtre.
+     * @param array<int|string, mixed> $filters Filtre.
      * @return array<int, Content>
-     */
-    private function findAll(string $directory, array $filters = []): array
+ */private function findAll(string $directory, array $filters = []): array
     {
         // Získame zoznam súborov v adresári
         $files = $this->reader->listFiles($directory, '*.md');

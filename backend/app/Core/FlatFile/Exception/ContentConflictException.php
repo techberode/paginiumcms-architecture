@@ -18,10 +18,10 @@ namespace PaginiumCMS\Core\FlatFile\Exception;
 final class ContentConflictException extends FlatFileException
 {
     /**
-     * @param array<string, mixed> $serverFrontMatter
-     */
-    public function __construct(
+     * @param array<int|string, mixed> $serverFrontMatter
+ */public function __construct(
         private string $serverContent,
+        /** @var array<int|string, mixed> */
         private array $serverFrontMatter,
         private string $serverRevision,
         string $message = 'Obsah bol medzičasom zmenený iným používateľom.'
@@ -35,9 +35,8 @@ final class ContentConflictException extends FlatFileException
     }
 
     /**
-     * @return array<string, mixed>
-     */
-    public function getServerFrontMatter(): array
+     * @return array<int|string, mixed>
+ */public function getServerFrontMatter(): array
     {
         return $this->serverFrontMatter;
     }
@@ -50,9 +49,8 @@ final class ContentConflictException extends FlatFileException
     /**
      * Serializovateľný kontext konfliktu pre API odpoveď.
      *
-     * @return array<string, mixed>
-     */
-    public function toContext(): array
+     * @return array<int|string, mixed>
+ */public function toContext(): array
     {
         return [
             'serverContent' => $this->serverContent,

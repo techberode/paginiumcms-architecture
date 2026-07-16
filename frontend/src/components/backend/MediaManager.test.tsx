@@ -1,7 +1,6 @@
 // frontend/src/components/backend/MediaManager.test.tsx
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { MediaManager } from './MediaManager';
 
 const mocks = vi.hoisted(() => ({
@@ -55,12 +54,9 @@ describe('MediaManager', () => {
   it('renders media grid after load', async () => {
     render(<MediaManager />);
 
-    await waitFor(() => {
-      expect(mocks.listMedia).toHaveBeenCalled();
-    });
-
     expect(await screen.findByText('hero.png')).toBeInTheDocument();
     expect(screen.getByText(/Alt: Hero banner/)).toBeInTheDocument();
+    expect(mocks.listMedia).toHaveBeenCalled();
   });
 
   it('shows empty state when no files', async () => {
@@ -79,10 +75,11 @@ describe('MediaManager', () => {
     render(<MediaManager />);
     expect(await screen.findByText('hero.png')).toBeInTheDocument();
 
-    await userEvent.type(screen.getByPlaceholderText(/Search by name/), 'logo');
-    await waitFor(() => {
-      expect(screen.queryByText('hero.png')).not.toBeInTheDocument();
-      expect(screen.getByText('logo.svg')).toBeInTheDocument();
+    fireEvent.change(screen.getByPlaceholderText(/Search by name/), {
+      target: { value: 'logo' },
     });
+
+    expect(screen.queryByText('hero.png')).not.toBeInTheDocument();
+    expect(screen.getByText('logo.svg')).toBeInTheDocument();
   });
 });

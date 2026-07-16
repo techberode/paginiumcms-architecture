@@ -6,7 +6,9 @@ namespace PaginiumCMS\Core\Config;
 
 class ConfigManager
 {
+    /** @var array<int|string, mixed> */
     private array $config = [];
+    /** @var array<int|string, mixed> */
     private array $loaded = [];
 
     public function load(string $file): void
@@ -25,7 +27,7 @@ class ConfigManager
         }
     }
 
-    public function get(string $key, $default = null)
+    public function get(string $key, mixed $default = null): mixed
     {
         $parts = explode('.', $key);
         $config = $this->config;
@@ -40,7 +42,7 @@ class ConfigManager
         return $config;
     }
 
-    public function set(string $key, $value): void
+    public function set(string $key, mixed $value): void
     {
         $parts = explode('.', $key);
         $config = &$this->config;
@@ -57,6 +59,9 @@ class ConfigManager
         }
     }
 
+    /**
+     * @param array<int|string, mixed> $config
+     */
     public function merge(string $file, array $config): void
     {
         if (isset($this->config[$file])) {

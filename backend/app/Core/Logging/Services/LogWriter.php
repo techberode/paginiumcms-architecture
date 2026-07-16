@@ -9,6 +9,7 @@ use PaginiumCMS\Core\Logging\Models\LogEntry;
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
+use PaginiumCMS\Support\JsonHelper;
 
 class LogWriter implements LogWriterInterface
 {
@@ -36,7 +37,7 @@ class LogWriter implements LogWriterInterface
         $entries = [];
         try {
             $content = $this->reader->read($path);
-            $entries = json_decode($content, true) ?? [];
+            $entries = JsonHelper::decode($content);
         } catch (FlatFileException) {
             // Súbor neexistuje - vytvoríme nový
         }
@@ -47,10 +48,13 @@ class LogWriter implements LogWriterInterface
         // Uloženie cez FileWriter
         $this->writer->write(
             $path,
-            json_encode($entries, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+            JsonHelper::encode($entries, JSON_PRETTY_PRINT)
         );
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function readAll(): array
     {
         $allEntries = [];
@@ -75,12 +79,18 @@ class LogWriter implements LogWriterInterface
         return $allEntries;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function readLast(int $limit = 100): array
     {
         $allEntries = $this->readAll();
         return array_slice($allEntries, 0, $limit);
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function readBySeverity(string $severity, int $limit = 100): array
     {
         $allEntries = $this->readAll();
@@ -90,6 +100,9 @@ class LogWriter implements LogWriterInterface
         return array_slice($filtered, 0, $limit);
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function readByCategory(string $category, int $limit = 100): array
     {
         $allEntries = $this->readAll();
@@ -122,6 +135,9 @@ class LogWriter implements LogWriterInterface
         return $deleted;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     private function getLogFiles(): array
     {
         $pattern = $this->storagePath . '/*.json';

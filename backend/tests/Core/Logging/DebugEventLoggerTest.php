@@ -43,7 +43,6 @@ final class DebugEventLoggerTest extends TestCase
 
         $ref = new \ReflectionClass(DebugEventLogger::class);
         $prop = $ref->getProperty('logDir');
-        $prop->setAccessible(true);
         $prop->setValue(null, $this->logDir);
 
         DebugEventLogger::log('backend', 'test.event');
@@ -58,7 +57,6 @@ final class DebugEventLoggerTest extends TestCase
 
         $ref = new \ReflectionClass(DebugEventLogger::class);
         $prop = $ref->getProperty('logDir');
-        $prop->setAccessible(true);
         $prop->setValue(null, $this->logDir);
 
         DebugEventLogger::log('backend', 'backend.startup', ['php' => PHP_VERSION]);

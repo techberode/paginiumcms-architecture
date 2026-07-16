@@ -20,9 +20,10 @@ use PaginiumCMS\Http\Middleware\TwoFactorMiddleware;
 use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
 use Slim\App;
 use Slim\Routing\RouteCollectorProxy;
+use PaginiumCMS\Http\Support\RouteBootstrap;
 
 return function (App $app): void {
-    $container = $app->getContainer();
+    $container = RouteBootstrap::container($app);
 
     // Verejný výrez nastavení pre celú aplikáciu (editor, auto-save, verejný web).
     $app->get('/api/settings/public', [SettingsController::class, 'publicSettings']);

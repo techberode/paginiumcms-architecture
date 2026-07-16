@@ -9,9 +9,10 @@ use PaginiumCMS\Http\Middleware\TwoFactorMiddleware;
 use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
 use Slim\App;
 use Slim\Routing\RouteCollectorProxy;
+use PaginiumCMS\Http\Support\RouteBootstrap;
 
 return function (App $app): void {
-    $container = $app->getContainer();
+    $container = RouteBootstrap::container($app);
     $controller = $container->get(MessageController::class);
     $auth = $container->get(AuthMiddleware::class);
 

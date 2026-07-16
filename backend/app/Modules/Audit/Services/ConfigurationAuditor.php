@@ -7,6 +7,7 @@ namespace PaginiumCMS\Modules\Audit\Services;
 use PaginiumCMS\Modules\Audit\Contracts\AuditorInterface;
 use PaginiumCMS\Modules\Audit\Models\AuditIssue;
 use PaginiumCMS\Modules\Audit\Models\AuditSeverity;
+use PaginiumCMS\Support\FileHelper;
 
 /**
  * Auditor pre kontrolu konfigurácie.
@@ -30,6 +31,10 @@ class ConfigurationAuditor implements AuditorInterface
         return 'Kontroluje konfiguráciu systému.';
     }
 
+    /**
+     * @param array<int|string, mixed> $options
+     * @return array<int|string, mixed>
+     */
     public function run(array $options = []): array
     {
         $issues = [];
@@ -46,6 +51,9 @@ class ConfigurationAuditor implements AuditorInterface
         return $issues;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     private function checkEnvConfiguration(): array
     {
         $issues = [];
@@ -55,7 +63,7 @@ class ConfigurationAuditor implements AuditorInterface
             return $issues;
         }
 
-        $content = file_get_contents($envPath);
+        $content = FileHelper::read($envPath);
         $required = ['APP_ENV', 'APP_DEBUG', 'APP_URL'];
 
         foreach ($required as $key) {
@@ -72,6 +80,9 @@ class ConfigurationAuditor implements AuditorInterface
         return $issues;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     private function checkDuplicateConfig(): array
     {
         $issues = [];
@@ -82,6 +93,10 @@ class ConfigurationAuditor implements AuditorInterface
         }
 
         $files = glob($configPath . '/*.php');
+        if ($files === false) {
+            return $issues;
+        }
+
         $configs = [];
 
         foreach ($files as $file) {
@@ -100,6 +115,9 @@ class ConfigurationAuditor implements AuditorInterface
         return $issues;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     private function checkRequiredSettings(): array
     {
         $issues = [];

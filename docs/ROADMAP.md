@@ -185,6 +185,32 @@ Základ pre všetky admin nastavenia (SMTP, notifikácie, SEO, feedy v ďalšíc
 - Monaco editor, Developer unlock UI, CMS témy (`resources/views/themes/`).
 - Edit modulov/tém/doplnkov len po prechode politiky kódu; create/delete, backup restore.
 
+## Iterácia 18 – Lokalizácia admin rozhrania (i18n) ⏳ 🟡
+
+**Stav dnes:** backend čiastočne hotový, frontend základ pridaný, migrácia UI nie.
+
+**Backend (čiastočne ✅):**
+- `Support/Lang.php` – prekladač, default `sk`, fallback na SK, `Lang::addPath()` pre pluginy
+- `backend/lang/{sk|en}/{module}.php` – moduly: content, comments, contact, media, messages, navigation, github
+- `LocaleMiddleware` – locale z `general.language` + `Accept-Language`
+- `SettingsSchema` – pole `general.language` (`sk` | `en`)
+
+**Frontend (základ ✅, migrácia ⏳):**
+- `src/i18n/core/{sk,en}.ts` – jadrový katalóg administrácie
+- `registerModuleMessages()` – každý modul importuje vlastný blok (`src/i18n/modules/{module}/`)
+- `I18nProvider` + `useI18n().t('common.save')` – locale z `SettingsContext`
+
+**Zostáva (Iterácia 18):**
+- Migrovať všetky admin komponenty z hardcoded SK reťazcov na `useI18n()`
+- Pridať FE modulové súbory (media, navigation, users, settings, …)
+- Plugin/theme/extension loader: `Http/Extensions/{id}/lang/{locale}/*.php` + `frontend/src/extensions/{id}/i18n/`
+- Verejný web (PublicSite) – samostatný katalóg alebo zdieľaný core
+- API endpoint `GET /api/i18n/{locale}` pre dynamické načítanie (voliteľné)
+
+**Zákon i18n:** 1 súbor na modul a jazyk; jadro má core katalóg; doplnky nikdy neprepisujú core kľúče.
+
+---
+
 ## Iterácia 17 – ZÁKON API↔FE scaffold ⏳ 🟡
 - Scaffold: endpoint → `api/*.ts` + komponent + `API.md` záznam.
 - CodeEditor wizard „Nový doplnok"; CONTRIBUTING checklist.

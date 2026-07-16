@@ -39,14 +39,14 @@ final class FileBackup
 
     /**
      * @return list<string>
-     */
-    public function getBackups(string $path): array
+ * @return array<int|string, mixed>
+ */public function getBackups(string $path): array
     {
         $pattern = $this->backupPath . '/' . md5($path) . '_*.bak';
         $files = glob($pattern) ?: [];
-        sort($files, SORT_STRING | SORT_DESC);
+        sort($files, SORT_STRING);
 
-        return $files;
+        return array_reverse($files);
     }
 
     public function restore(string $path, string $backupFile): bool

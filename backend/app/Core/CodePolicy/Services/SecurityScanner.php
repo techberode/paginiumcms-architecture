@@ -16,8 +16,8 @@ final class SecurityScanner
     public function scanPhp(string $content, array $forbiddenFunctions): array
     {
         $violations = [];
-        $tokens = @token_get_all($content);
-        if (!is_array($tokens)) {
+        $tokens = token_get_all($content);
+        if ($tokens === []) {
             return ['Unable to tokenize PHP source'];
         }
 

@@ -78,7 +78,7 @@ class ApiErrorHandlerTest extends TestCase
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<int|string, mixed>
      */
     private function decode(\Psr\Http\Message\ResponseInterface $response): array
     {

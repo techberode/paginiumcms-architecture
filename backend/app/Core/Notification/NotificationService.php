@@ -8,6 +8,7 @@ use PaginiumCMS\Core\Notification\Adapters\AdapterInterface;
 
 class NotificationService
 {
+    /** @var array<int|string, mixed> */
     private array $adapters = [];
 
     public function addAdapter(string $name, AdapterInterface $adapter): void
@@ -15,6 +16,9 @@ class NotificationService
         $this->adapters[$name] = $adapter;
     }
 
+    /**
+     * @param array<int|string, mixed> $options
+     */
     public function send(string $adapter, string $to, string $subject, string $message, array $options = []): bool
     {
         if (!isset($this->adapters[$adapter])) {
@@ -24,6 +28,10 @@ class NotificationService
         return $this->adapters[$adapter]->send($to, $subject, $message, $options);
     }
 
+    /**
+     * @param array<int|string, mixed> $options
+     * @return array<int|string, mixed>
+     */
     public function sendToAll(string $to, string $subject, string $message, array $options = []): array
     {
         $results = [];
@@ -33,6 +41,9 @@ class NotificationService
         return $results;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getAdapters(): array
     {
         return array_keys($this->adapters);

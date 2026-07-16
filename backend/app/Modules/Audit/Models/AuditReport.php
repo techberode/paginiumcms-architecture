@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Modules\Audit\Models;
 
 use PaginiumCMS\Modules\Audit\Contracts\AuditReportInterface;
+use PaginiumCMS\Support\JsonHelper;
 
 /**
  * Model pre správu z auditu.
@@ -13,6 +14,7 @@ class AuditReport implements AuditReportInterface
 {
     private string $id;
     private string $timestamp;
+    /** @var array<int|string, mixed> */
     private array $issues = [];
     private string $summary = '';
 
@@ -28,6 +30,9 @@ class AuditReport implements AuditReportInterface
         return $this;
     }
 
+    /**
+     * @param array<int|string, mixed> $issues
+     */
     public function addIssues(array $issues): self
     {
         foreach ($issues as $issue) {
@@ -38,11 +43,17 @@ class AuditReport implements AuditReportInterface
         return $this;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getIssues(): array
     {
         return $this->issues;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getIssuesBySeverity(string $severity): array
     {
         return array_filter($this->issues, function (AuditIssue $issue) use ($severity) {
@@ -55,6 +66,9 @@ class AuditReport implements AuditReportInterface
         return count($this->issues);
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getSeverityCounts(): array
     {
         $counts = [];
@@ -129,6 +143,9 @@ class AuditReport implements AuditReportInterface
         );
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function toArray(): array
     {
         return [
@@ -146,6 +163,6 @@ class AuditReport implements AuditReportInterface
 
     public function toJson(): string
     {
-        return json_encode($this->toArray(), JSON_PRETTY_PRINT);
+        return JsonHelper::encode($this->toArray(), JSON_PRETTY_PRINT);
     }
 }

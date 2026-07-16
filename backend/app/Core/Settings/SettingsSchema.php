@@ -32,8 +32,7 @@ final class SettingsSchema
      * Celá schéma nastavení.
      *
      * @return array<string, SettingGroup>
-     */
-    public static function groups(): array
+ */public static function groups(): array
     {
         return [
             'general' => [
@@ -140,9 +139,8 @@ final class SettingsSchema
     /**
      * Predvolené hodnoty po skupinách.
      *
-     * @return array<string, array<string, mixed>>
-     */
-    public static function defaults(): array
+     * @return array<string, array<int|string, mixed>>
+ */public static function defaults(): array
     {
         $defaults = [];
         foreach (self::groups() as $group => $definition) {
@@ -158,8 +156,7 @@ final class SettingsSchema
      * Validačné pravidlá pre jednu skupinu (pole => zoznam pravidiel).
      *
      * @return array<string, list<string>>
-     */
-    public static function rulesFor(string $group): array
+ */public static function rulesFor(string $group): array
     {
         $rules = [];
         foreach (self::groups()[$group]['fields'] ?? [] as $field) {

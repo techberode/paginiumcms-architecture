@@ -11,6 +11,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Slim\Psr7\Response;
+use PaginiumCMS\Support\JsonHelper;
 
 /**
  * Middleware pre overenie rolí (RBAC).
@@ -18,9 +19,13 @@ use Slim\Psr7\Response;
 class RoleMiddleware implements MiddlewareInterface
 {
     private AuthorizationManager $authz;
-    private array $requiredRoles;
+    /** @var array<int, string>|string */
+    private array|string $requiredRoles;
 
-    public function __construct(AuthorizationManager $authz, array $requiredRoles)
+    /**
+     * @param array<int, string>|string $requiredRoles
+     */
+    public function __construct(AuthorizationManager $authz, array|string $requiredRoles)
     {
         $this->authz = $authz;
         $this->requiredRoles = $requiredRoles;
@@ -32,7 +37,7 @@ class RoleMiddleware implements MiddlewareInterface
 
         if (!$user instanceof User) {
             $response = new Response();
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => false,
                 'error' => 'Neprihlásený používateľ',
             ]));
@@ -45,7 +50,7 @@ class RoleMiddleware implements MiddlewareInterface
             $this->authz->requireRole($user, $this->requiredRoles);
         } catch (\Exception $e) {
             $response = new Response();
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => false,
                 'error' => $e->getMessage(),
             ]));

@@ -75,8 +75,7 @@ class VersionManager implements VersionableInterface
 
     /**
      * @return array<int, Version>
-     */
-    public function getVersions(string $contentId): array
+ */public function getVersions(string $contentId): array
     {
         $versions = [];
         $pattern = $this->getFullPath('') . $contentId . '_*.json';
@@ -140,7 +139,7 @@ class VersionManager implements VersionableInterface
     }
 
     /**
-     * @return array<string, mixed>|null
+     * @return array<int|string, mixed>|null
      */
     public function getDiff(string $contentId, int $from, int $to): ?array
     {
@@ -167,9 +166,8 @@ class VersionManager implements VersionableInterface
     /**
      * Rekonštruuje objekt Version z uložených dát.
      *
-     * @param array<string, mixed> $data
-     */
-    private function hydrate(array $data): Version
+     * @param array<int|string, mixed> $data
+ */private function hydrate(array $data): Version
     {
         $version = new Version();
 

@@ -21,7 +21,7 @@ class ChainedDriver implements DriverInterface
     ) {
     }
 
-    public function get(string $key, $default = null)
+    public function get(string $key, mixed $default = null): mixed
     {
         if ($this->memory->has($key)) {
             return $this->memory->get($key, $default);
@@ -36,7 +36,7 @@ class ChainedDriver implements DriverInterface
         return $value;
     }
 
-    public function set(string $key, $value, ?int $ttl = null): bool
+    public function set(string $key, mixed $value, ?int $ttl = null): bool
     {
         $this->memory->set($key, $value, $ttl);
 

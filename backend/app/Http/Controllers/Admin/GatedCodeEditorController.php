@@ -9,6 +9,7 @@ use PaginiumCMS\Core\Developer\DeveloperModeGate;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Psr7\Response;
+use PaginiumCMS\Support\JsonHelper;
 
 /**
  * Code editor s povinným odomknutým Developer Mode.
@@ -63,7 +64,7 @@ class GatedCodeEditorController extends CodeEditorController
     {
         if (!$this->gate->isFeatureAvailable()) {
             $response = new Response();
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => false,
                 'error' => 'Developer Mode nie je povolený v konfigurácii (DEVELOPER_MODE / APP_DEBUG)',
             ], JSON_UNESCAPED_UNICODE));
@@ -73,7 +74,7 @@ class GatedCodeEditorController extends CodeEditorController
 
         if (!$this->gate->isUnlocked()) {
             $response = new Response();
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => false,
                 'error' => 'Developer Mode je zamknutý. Odomknite cez TOTP alebo dev token.',
                 'gate' => $this->gate->getStatus(),

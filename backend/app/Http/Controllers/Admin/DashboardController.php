@@ -12,6 +12,7 @@ use PaginiumCMS\Core\Health\Services\HealthCheckManager;
 use PaginiumCMS\Core\Locking\Contracts\LockManagerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use PaginiumCMS\Support\JsonHelper;
 
 /**
  * Admin dashboard overview – locks, conflicts, health, analytics (Iteration 7).
@@ -59,10 +60,9 @@ final class DashboardController
     }
 
     /**
-     * @param array<string, mixed> $report
-     * @return array<string, mixed>
-     */
-    private function normalizeHealthReport(array $report): array
+     * @param array<int|string, mixed> $report
+     * @return array<int|string, mixed>
+ */private function normalizeHealthReport(array $report): array
     {
         if (!isset($report['checks']) || !is_array($report['checks'])) {
             return $report;
@@ -80,11 +80,10 @@ final class DashboardController
     }
 
     /**
-     * @param array<string, mixed> $payload
-     */
-    private function json(ResponseInterface $response, array $payload, int $status = 200): ResponseInterface
+     * @param array<int|string, mixed> $payload
+ */private function json(ResponseInterface $response, array $payload, int $status = 200): ResponseInterface
     {
-        $response->getBody()->write((string) json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        $response->getBody()->write(JsonHelper::encode($payload, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
 
         return $response->withStatus($status)->withHeader('Content-Type', 'application/json; charset=utf-8');
     }

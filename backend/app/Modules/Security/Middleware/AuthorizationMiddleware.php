@@ -6,6 +6,7 @@ namespace PaginiumCMS\Modules\Security\Middleware;
 
 use PaginiumCMS\Modules\Security\Services\AuthorizationManager;
 use PaginiumCMS\Modules\Security\Models\User;
+use PaginiumCMS\Support\JsonHelper;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -18,8 +19,12 @@ use Slim\Psr7\Response;
 class AuthorizationMiddleware implements MiddlewareInterface
 {
     private AuthorizationManager $authzManager;
+    /** @var array<int, string> */
     private array $requiredRoles;
 
+    /**
+     * @param array<int, string> $requiredRoles
+     */
     public function __construct(AuthorizationManager $authzManager, array $requiredRoles)
     {
         $this->authzManager = $authzManager;
@@ -32,7 +37,7 @@ class AuthorizationMiddleware implements MiddlewareInterface
 
         if (!$user instanceof User) {
             $response = new Response();
-            $response->getBody()->write(json_encode(['error' => 'Používateľ nie je prihlásený']));
+            $response->getBody()->write(JsonHelper::encode(['error' => 'Používateľ nie je prihlásený']));
             return $response->withStatus(401)->withHeader('Content-Type', 'application/json');
         }
 
@@ -40,7 +45,7 @@ class AuthorizationMiddleware implements MiddlewareInterface
             $this->authzManager->requireRole($user, $this->requiredRoles);
         } catch (\Exception $e) {
             $response = new Response();
-            $response->getBody()->write(json_encode(['error' => $e->getMessage()]));
+            $response->getBody()->write(JsonHelper::encode(['error' => $e->getMessage()]));
             return $response->withStatus(403)->withHeader('Content-Type', 'application/json');
         }
 

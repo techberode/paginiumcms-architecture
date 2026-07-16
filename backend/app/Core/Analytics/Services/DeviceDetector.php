@@ -9,7 +9,7 @@ namespace PaginiumCMS\Core\Analytics\Services;
  */
 class DeviceDetector
 {
-    private ?string $userAgent;
+    private string $userAgent;
 
     public function __construct(?string $userAgent = null)
     {
@@ -114,10 +114,7 @@ class DeviceDetector
         if (strpos($ua, 'Edg/') !== false) return 'Edge';
         if (strpos($ua, 'Opera') !== false || strpos($ua, 'OPR/') !== false) return 'Opera';
         if (strpos($ua, 'Chrome') !== false && strpos($ua, 'Headless') === false) {
-            // Skontrolujeme, či to nie je Edge alebo Opera
-            if (strpos($ua, 'Edg/') === false && strpos($ua, 'OPR/') === false) {
-                return 'Chrome';
-            }
+            return 'Chrome';
         }
         if (strpos($ua, 'Safari') !== false) {
             if (strpos($ua, 'Version/') !== false) {
@@ -138,6 +135,9 @@ class DeviceDetector
         return 'Unknown';
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getAll(): array
     {
         return [

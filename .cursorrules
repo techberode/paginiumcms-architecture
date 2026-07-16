@@ -20,9 +20,17 @@
 - **Cieľ:** Pomôcť mi do hĺbky pochopiť väzbu medzi frontendom a backendom na reálnych príkladoch z môjho kódu.
 
 ## 💻 Pravidlá pre generovanie kódu
+- **Kódovanie:** Všetky zdrojové súbory, API odpovede a flat-file dáta v **UTF-8** (`backend/bootstrap/utf8.php`, `declare` + JSON `JSON_UNESCAPED_UNICODE`). Nikdy Latin-1 ani bez BOM hackov.
 - **PHP:** Vždy používaj striktné typovanie (`declare(strict_types=1);`), plné namespaces a správne `use` importy navrchu súboru, aby nepadal PHPStan. Cesty k súborom musia byť vždy absolútne, nikdy relatívne.
 - **React:** Používaj moderné funkcionálne komponenty, správne ošetrenie asynchrónnych dopytov (Loading, Success, Error stavy) a striktne dodržuj pravidlo, že backend je jediný zdroj pravdy (Single Source of Truth).
 - **Chyby:** Pri analýze chýb sa prioritne zameraj na prepojenie domina (napr. či funkcia volaná v Controlleri reálne existuje v Manageri/Službe a či má skript správne práva `chmod +x`).
+
+## 🌐 Lokalizácia (i18n) – zákon CMS
+- **Predvolený jazyk:** slovenčina (`sk`). **Dostupné:** `sk`, `en`.
+- **Backend:** jeden PHP súbor na modul a locale → `backend/lang/{locale}/{module}.php`; volanie `Lang::get('key', [], 'module')`; pluginy registrujú cestu cez `Lang::addPath()`.
+- **Frontend:** jadrový katalóg `frontend/src/i18n/core/{sk,en}.ts`; každý admin modul má vlastný blok v `frontend/src/i18n/modules/{module}/` a registruje ho cez `registerModuleMessages()`; v komponentoch `useI18n().t('module.key')`.
+- **Rozšírenia:** moduly/témy/pluginy/doplnky majú **vlastný** jazykový súbor, nikdy neupravujú core katalóg.
+- **Locale zdroj:** `general.language` v nastaveniach CMS (Settings); backend `LocaleMiddleware`, frontend `I18nProvider`.
 
 ## 📝 Dokumentácia a commity (povinné od Iterácie 6)
 - **Dokumentácia:** Všetka projektová dokumentácia v `docs/` písať v **angličtine**. Pri úpravách existujúcich slovenských dokumentov ich postupne prepracovať do angličtiny.

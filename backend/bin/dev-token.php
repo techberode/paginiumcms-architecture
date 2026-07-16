@@ -28,16 +28,19 @@ if ($secret === '') {
     exit(1);
 }
 
+/** @var list<string> $cliArgs */
+$cliArgs = $_SERVER['argv'] ?? [];
+
 $generator = new DevTokenGenerator($secret);
 $registry = new DevTokenRegistry();
 
-$command = $argv[1] ?? 'help';
+$command = $cliArgs[1] ?? 'help';
 
 switch ($command) {
     case 'generate':
         $label = 'developer';
         $days = 7;
-        foreach (array_slice($argv, 2) as $arg) {
+        foreach (array_slice($cliArgs, 2) as $arg) {
             if (str_starts_with($arg, '--label=')) {
                 $label = substr($arg, 8);
             }
@@ -55,7 +58,7 @@ switch ($command) {
 
     case 'register':
         $token = null;
-        foreach (array_slice($argv, 2) as $arg) {
+        foreach (array_slice($cliArgs, 2) as $arg) {
             if (str_starts_with($arg, '--token=')) {
                 $token = substr($arg, 8);
             }

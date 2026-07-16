@@ -11,8 +11,8 @@ class HealthReport implements JsonSerializable
     private string $id;
     private string $timestamp;
     private string $status;
+    /** @var array<int|string, mixed> */
     private array $checks = [];
-    private array $summary = [];
 
     public function __construct()
     {
@@ -34,6 +34,9 @@ class HealthReport implements JsonSerializable
         return $this;
     }
 
+    /**
+     * @param array<int|string, mixed> $checks
+     */
     public function addChecks(array $checks): self
     {
         foreach ($checks as $check) {
@@ -50,8 +53,14 @@ class HealthReport implements JsonSerializable
     public function isPass(): bool { return $this->status === HealthStatus::STATUS_PASS; }
     public function isFail(): bool { return $this->status === HealthStatus::STATUS_FAIL; }
     public function isWarn(): bool { return $this->status === HealthStatus::STATUS_WARN; }
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getChecks(): array { return $this->checks; }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getSummary(): array
     {
         $summary = [
@@ -73,6 +82,9 @@ class HealthReport implements JsonSerializable
         return $summary;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function toArray(): array
     {
         return [
@@ -84,5 +96,8 @@ class HealthReport implements JsonSerializable
         ];
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function jsonSerialize(): array { return $this->toArray(); }
 }
