@@ -8,6 +8,7 @@ use PaginiumCMS\Core\FlatFile\Models\Content;
 use PaginiumCMS\Core\FlatFile\Models\Page;
 use PaginiumCMS\Core\FlatFile\Models\Article;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
+use PaginiumCMS\Http\Support\PaginationQuery;
 
 /**
  * Rozhranie pre repozitár obsahu.
@@ -71,4 +72,18 @@ interface ContentRepositoryInterface
      * @param array<int|string, mixed> $filters Voliteľné filtre.
      * @return int Počet položiek.
  */public function count(string $type, array $filters = []): int;
+
+    /**
+     * Stránkovaný zoznam stránok cez content index (Iterácia 19).
+     *
+     * @return array{items: array<int, Page>, total: int}
+     */
+    public function findPagesPaginated(PaginationQuery $query): array;
+
+    /**
+     * Stránkovaný zoznam článkov cez content index (Iterácia 19).
+     *
+     * @return array{items: array<int, Article>, total: int}
+     */
+    public function findArticlesPaginated(PaginationQuery $query): array;
 }

@@ -88,4 +88,34 @@ class ContentCacheService
             $this->cache->delete('content.article.' . $slug);
         }
     }
+
+    /**
+     * @param array<int|string, mixed> $filters
+     * @return array{items: array<int|string, mixed>, total: int}
+     */
+    public function rememberPageListPaginated(array $filters, callable $loader): array
+    {
+        $gen = $this->listGeneration('pages');
+        $key = 'content.pages.paginated.' . $gen . '.' . md5(json_encode($filters) ?: '');
+
+        return $this->cache->rememberLocked($key, $loader, self::TTL_LIST);
+    }
+
+    /**
+     * @param array<int|string, mixed> $filters
+     * @return array{items: array<int|string, mixed>, total: int}
+     */
+    public function rememberArticleListPaginated(array $filters, callable $loader): array
+    {
+        $gen = $this->listGeneration('articles');
+        $key = 'content.articles.paginated.' . $gen . '.' . md5(json_encode($filters) ?: '');
+
+        return $this->cache->rememberLocked($key, $loader, self::TTL_LIST);
+    }
+
+    public function invalidateSearch(): void
+    {
+        $this->bumpListGeneration('pages');
+        $this->bumpListGeneration('articles');
+    }
 }

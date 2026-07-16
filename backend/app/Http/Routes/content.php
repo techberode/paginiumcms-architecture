@@ -8,6 +8,7 @@ declare(strict_types=1);
  */
 
 use PaginiumCMS\Http\Controllers\Content\ContentController;
+use PaginiumCMS\Http\Controllers\Content\SearchController;
 use PaginiumCMS\Http\Middleware\AuthMiddleware;
 use Slim\App;
 use Slim\Routing\RouteCollectorProxy;
@@ -17,6 +18,7 @@ use PaginiumCMS\Support\JsonHelper;
 return function (App $app): void {
     $container = RouteBootstrap::container($app);
     $controller = $container->get(ContentController::class);
+    $searchController = $container->get(SearchController::class);
     $auth = $container->get(AuthMiddleware::class);
 
     $app->get('/api/test', function ($request, $response) {
@@ -31,6 +33,8 @@ return function (App $app): void {
 
         return $response->withHeader('Content-Type', 'application/json');
     });
+
+    $app->get('/api/search', [$searchController, 'search']);
 
     // Verejné čítanie
     $app->group('/api/pages', function (RouteCollectorProxy $group) use ($controller) {

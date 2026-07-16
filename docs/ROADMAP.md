@@ -2,7 +2,19 @@
 
 > Flat-File architektúra. Žiadna databáza. Všetok stav je v JSON / Markdown / asset súboroch na disku.
 
-Legenda: ✅ hotové · 🚧 rozpracované · ⏳ plánované
+Legenda: ✅ hotové · 🚧 rozpracované · ⏳ plánované · 🔴 kritická priorita jadra
+
+**Aktuálna verzia:** 2.0.7 · **Ďalšie kroky:** dokončiť It. 19 (CLI migrácia, media pagination) → It. 20
+
+| Iterácia | Názov | Priorita |
+|----------|-------|----------|
+| 19 | FlatFile storage, indexácia, stránkovanie | 🔴 ďalšia |
+| 20 | Core hardening & produkcia | 🔴 |
+| 21 | API kontrakt & testovanie | 🟡 |
+| 6–7 | Notifikácie, dashboard | 🟡 po It. 21 |
+| 8–10 | DAM, SEO, feedy | 🟢 |
+| 11–16 | SSO, plugins, Monaco | 🔵 |
+| 17–18 | API scaffold, i18n | priebežne / po jadre |
 
 ---
 
@@ -126,11 +138,8 @@ Základ pre všetky admin nastavenia (SMTP, notifikácie, SEO, feedy v ďalšíc
 
 ---
 
-> **Ďalšie iterácie a stav všetkých požiadaviek:** kompletný audit repozitára
-> (DONE/PARTIAL/MISSING) a fázový plán je v **`docs/CONTINUATION.md`**. Nižšie je súhrn.
-
-## Iterácia 4 – Základy: Settings + Error Handler + zdieľaná validácia ✅
-*(detail v sekcii vyššie)*
+> **Ďalšie iterácie a stav požiadaviek:** súhrn v tejto roadmape (It. 19–21);
+> detailný audit DONE/PARTIAL/MISSING doplní **`docs/CHECKLIST.md`** (refresh po 2.0.6).
 
 ## Iterácia 5 – Používatelia + kalenie autentifikácie ✅
 - Admin CRUD používateľov + priradenie rolí (`UserController`, FE `UsersManager`, `api/users.ts`).
@@ -147,10 +156,11 @@ Základ pre všetky admin nastavenia (SMTP, notifikácie, SEO, feedy v ďalšíc
 - Dokončenie Analytics (`AnalyticsManager/Reporter/RealtimeTracker/Middleware`), reporty návštevnosti, realtime, notifikácie cez konektor.
 
 ## Iterácia 8 – Media manager / DAM (FE) + editory + developer unlock UI 🟡
-- ✅ FE `MediaManager` (upload/grid/altText/delete) nad existujúcim `/api/media`.
+- ✅ FE `MediaManager` (upload/grid/altText/delete) + route `/media` nad `/api/media`.
+- ✅ Prepínač Markdown / WYSIWYG v `MarkdownEditor` + `WysiwygEditor` + `MediaPickerModal`.
+- ✅ Developer unlock UI (`DeveloperUnlockGate` → `/api/admin/developer/unlock`, TOTP/dev-token).
 - ⏳ **Plný DAM:** viacúrovňové priečinky, `.meta.json` sidecar, hromadné operácie, zamykanie assetov.
-- ⏳ Admin voľba editora (markdown/WYSIWYG/Monaco) + zapojenie `WysiwygEditor`.
-- ⏳ Developer unlock UI (gate modal → `/api/admin/developer/unlock`, TOTP/dev-token).
+- ⏳ Monaco editor namiesto textarea v Code Editori (plný stack → It. 16).
 
 ## Iterácia 9 – SEO: automatické tagy + rozšírené nastavenia ⏳ 🟢
 - `Core/Seo/*` – automatické meta description, canonical, Open Graph, Twitter Card, JSON-LD z obsahu/front matter.
@@ -214,6 +224,205 @@ Základ pre všetky admin nastavenia (SMTP, notifikácie, SEO, feedy v ďalšíc
 ## Iterácia 17 – ZÁKON API↔FE scaffold ⏳ 🟡
 - Scaffold: endpoint → `api/*.ts` + komponent + `API.md` záznam.
 - CodeEditor wizard „Nový doplnok"; CONTRIBUTING checklist.
+- Oprava `frontend/src/api/index.ts` (broken barrel).
+- Nahradiť raw `useApi` typovanými modulmi (`backup.ts`, `audit.ts`, `codeEditor.ts`).
+
+---
+
+## Iterácia 19 – FlatFile storage, indexácia a stránkovanie 🟡
+
+**Stav (release 2.0.7):** jadro implementované; zostáva CLI migrácia `content:migrate --to=json` a pagination na ďalších list API (media, messages).
+
+**Cieľ:** Maximálne zefektivniť jadro bez pluginov — rýchle listy, search a voliteľný formát úložiska obsahu.
+
+**Hotové ✅:**
+- `JsonResponder`, `PaginationQuery`, `PaginationMeta`
+- `ContentIndexService` (`data/index/content.json`) + rebuild/upsert/remove
+- Stránkovanie `GET /api/pages|articles?page=&per_page=&search=&status=` + `meta`
+- `GET /api/search?q=&type=&limit=` (published only)
+- `MarkdownContentStorage` + `JsonContentStorage` + setting `content.storageFormat`
+- Verejný filter `published` (session-aware pre admina)
+- FE: `PagesManager` pagination, `SiteSearchModal` → search API, `api/search.ts`
+
+**Zostáva ⏳:**
+- `Contracts/ContentStorageInterface.php` – jednotný kontrakt read/write/list/count.
+- `Services/MarkdownContentStorage.php` – existujúci formát (`.md` + YAML FM) ako driver.
+- `Services/JsonContentStorage.php` – čistý `.json` (metadata + `body` v jednom súbore).
+- `Services/ContentIndexService.php` – flat-file index `data/index/content.json` (slug, title, status, type, tags, excerpt, `updatedAt`).
+- Rebuild indexu pri save/delete/status change (hook v `ContentRepository`).
+- `GET /api/search?q=&type=page|article` – fulltext nad indexom, nie nad diskom.
+- Stránkovanie na list API: `?page=&per_page=&status=&sort=&search=`.
+- Jednotná odpoveď listov:
+  ```json
+  { "success": true, "data": [], "meta": { "page": 1, "per_page": 20, "total": 143, "total_pages": 8 } }
+  ```
+- `SettingsSchema` – pole `content.storageFormat` (`md` | `json`), prepojenie `content.itemsPerPage` na API.
+- CLI: `bin/console content:migrate --to=json` (jednosmerná migrácia `.md` → `.json`).
+
+**Frontend (React + TypeScript):**
+- Pagination komponenty v `PagesManager`, `MediaManager`, `CommentsManager`, `MessagesViewer`, `BlogRenderer`.
+- `api/search.ts` + prepojenie `SiteSearchModal` na BE search (namiesto client-side scan).
+- Typy `PaginatedResponse<T>` v `api/types.ts`.
+
+**Testy:**
+- `ContentRepositoryTest` – index rebuild, oba storage drivery.
+- `ContentControllerTest` – pagination shape, search, published filter (spolu s It. 20).
+- Vitest: pagination UI v admin listoch.
+
+**Kľúčové parametre:**
+
+| Parameter | Hodnota |
+|---|---|
+| Index | `data/index/content.json` |
+| Default `per_page` | z `content.itemsPerPage` (predvolene 20) |
+| Formáty obsahu | `md` (YAML FM + Markdown) \| `json` (pure JSON) |
+| Search minimum | 2 znaky (`q`) |
+
+---
+
+## Iterácia 20 – Core hardening & produkčná pripravenosť ⏳ 🔴
+
+**Cieľ:** Bezpečný a prevádzkovateľný CMS bez doplnkov — zatvorenie dier v jadre identifikovaných v audite 2.0.6.
+
+**Backend:**
+- Verejné API (`GET /api/pages`, `/api/articles`, `/{slug}`) → len `status=published`; draft/archived = 404.
+- `RoleMiddleware` / permission check na content + media mutácie (EDITOR vs USER vs ADMIN).
+- Servovanie médií: Slim static route alebo nginx alias pre `/storage/app/content/media/...`.
+- `MaintenanceModeMiddleware` – vynútenie `general.maintenanceMode` (admin SPA výnimka).
+- Nastavenie `general.allowRegistration` – vypnutie `POST /api/auth/register`.
+- Vynútenie `comments.allowGuestComments` v `CommentsController`.
+- `session_regenerate_id()` pri úspešnom login (`SessionManager`).
+- Brute-force lockout per e-mail/IP (rozšírenie `SecurityLogger` + `RateLimitMiddleware`).
+- Trash: `GET /api/admin/trash`, `POST /api/admin/trash/{id}/restore` nad existujúcim soft-delete.
+- Backup cron: CLI `bin/console backup:run-schedule` + dokumentácia crontab; zapojenie `BackupScheduler`.
+
+**Frontend:**
+- Route `/preview/:slug` (auth) – náhľad nepublished obsahu.
+- `VersionHistory` mountnutý v sidebar `MarkdownEditor`.
+- FE role guard na admin routes (USER → redirect / 403).
+- `document.title` na verejnom webe (základ UX, nie plné SEO z It. 9).
+- Developer logs viewer (`GET /api/admin/developer/logs`).
+
+**Testy:**
+- HTTP testy: published filter, RBAC 403, maintenance mode, trash restore.
+- Security testy: session fixation, registration toggle.
+
+---
+
+## Iterácia 21 – API kontrakt, automatizované testovanie & FE parita ⏳ 🟡
+
+**Cieľ:** Frontendista neháda tvar API; regresia bez klikania v UI.
+
+**Backend:**
+- `Http/Support/JsonResponder.php` – zdieľaný `success` / `error` / `paginated` / `validation`; odstránenie duplicitných `jsonSuccess` v controlleroch.
+- `docs/architecture/API_CONTRACT.md` – presná štruktúra success/error/422/409/meta (existujúci tvar `{ success, data, error, errors }`).
+- `docs/api/PaginiumCMS.postman_collection.json` – smoke kolekcia pre celé CMS.
+- OpenAPI 3.1 YAML (voliteľná fáza 2 po dokončení It. 19–20).
+- Newman v CI: `newman run` po PHPUnit.
+
+**Frontend:**
+- MSW (`frontend/src/mocks/`) – handlery pre content, auth, media; zapnutie cez `VITE_MSW=true` v dev.
+- React Hook Form + Zod – content/settings formuláre; mapovanie 422 `errors` z API.
+- Doplnenie `docs/architecture/API.md` podľa reálneho stavu 2.0.6+.
+
+**Testy:**
+- `tests/Http/Contract/ApiResponseShapeTest.php` – assertJsonStructure pre všetky typy odpovedí.
+- Rozšírenie HTTP integračných testov na chýbajúce controllery (content, media, navigation).
+- Vitest + MSW pre komponentové testy bez backendu.
+
+**Závislosť:** vychádza z It. 19 (pagination meta) a It. 20 (RBAC/published); kontrakt dokumentuje finálny stav.
+
+---
+
+## Odporúčaný postup implementácie
+
+> **Princíp:** najprv dáta a bezpečnosť (BE), potom kontrakt a testy, nakoniec FE parita a Roadmap iterácie 6–10.
+> Každá fáza končí: PHPUnit + PHPStan L8 + Vitest green + záznam v CHANGELOG.
+
+### Fáza 0 – Stabilný základ (hotové ✅, release 2.0.6)
+Locking, drafts, konflikty, settings, auth+2FA, admin moduly, verejný React web, PHPStan L8, 453 PHPUnit testov.
+
+### Fáza 1 – Dátová vrstva (It. 19) — **ĎALŠIA PRIORITA**
+```
+1. JsonResponder (základ) + pagination meta kontrakt
+2. ContentIndexService + rebuild hook
+3. Pagination na /api/pages, /api/articles, /api/media, /api/admin/*
+4. GET /api/search
+5. ContentStorageInterface + JsonContentStorage (md zostáva default)
+6. FE: pagination v admin listoch + search API
+7. Testy: ContentControllerTest, index rebuild
+```
+**Prečo first:** bez indexu a stránkovania neškáluje nič ďalšie (admin, verejný blog, search).
+
+### Fáza 2 – Bezpečnosť & prevádzka (It. 20)
+```
+1. Published filter na verejnom BE API          ← kritické
+2. RBAC na content/media zápis                 ← kritické
+3. /storage servovanie médií                    ← kritické
+4. Maintenance mode + allowRegistration
+5. Trash restore API + admin UI
+6. Backup cron CLI
+7. Preview route + VersionHistory v editore
+8. FE role guard
+```
+**Prečo second:** produkčný CMS musí byť bezpečný skôr než SEO/pluginy.
+
+### Fáza 3 – Kontrakt & testy (It. 21 + It. 17)
+```
+1. API_CONTRACT.md + doplnenie API.md
+2. JsonResponder vo všetkých controlleroch
+3. Postman collection + Newman smoke
+4. MSW handlery + RHF + Zod
+5. Oprava api/index.ts barrel
+6. Contract + integration testy
+```
+**Prečo third:** dokumentuje a zamkne API po zmenách z Fázy 1–2.
+
+### Fáza 4 – Komunikácia & monitoring (It. 6–7)
+```
+SMTP end-to-end → reset hesla e-mailom → konektory → toast perzistencia
+Analytics dokončenie → dashboard reporty → API tracker
+```
+
+### Fáza 5 – Obsah & médiá (It. 8–10)
+```
+Plný DAM → SEO engine → RSS/sitemap
+Monaco editor (It. 16) môže ísť paralelne s It. 8 ak je developer gate hotový
+```
+
+### Fáza 6 – Enterprise & rozšírenia (It. 11–16)
+```
+SSO + jemnozrnné ACL → Blueprint engine → Demo modul
+Plugin runtime (It. 15) až po stabilnom jadre (It. 19–21)
+CodeEditor plný stack + CMS témy
+```
+
+### Fáza 7 – Lokalizácia (It. 18)
+```
+Migrácia admin UI na useI18n() – ideálne po ustálení textov z It. 19–21
+Plugin i18n loader (závisí od It. 15)
+```
+
+### Diagram závislostí
+
+```
+It.19 (FlatFile+index+pagination)
+  └─► It.20 (hardening) ──► It.21 (kontrakt+testy)
+        └─► It.6–7 (notifikácie+dashboard)
+              └─► It.8–10 (DAM+SEO+feeds)
+                    └─► It.11–16 (SSO+plugins+Monaco)
+                          └─► It.18 (i18n migrácia UI)
+It.17 (API scaffold) ── beží priebežne od It.21, povinný pred It.15
+```
+
+### Pravidlo pre každú novú iteráciu
+1. Backend kontrakt + PHPUnit + PHPStan L8
+2. Typovaný FE klient (`api/*.ts`) + route/komponent
+3. Záznam v `API.md` / `API_CONTRACT.md`
+4. Vitest aspoň pre kritickú cestu
+5. CHANGELOG + bump verzie
+
+---
 
 ## Architektonické ZÁKONY (platia od It. 14+)
 
@@ -225,6 +434,13 @@ Základ pre všetky admin nastavenia (SMTP, notifikácie, SEO, feedy v ďalšíc
 - Postupné pridávanie admin API a napájanie frontendu na existujúce/nové endpointy.
 - **Stály bod:** ku každému novému modulu/funkcionalite pridať testy (PHPUnit + Vitest) + PHPStan L8.
 
-## Hotové mimo hlavných iterácií ✅
-- **In-Memory + File cache** (`Core/Cache`, chained Memory→File) zapojená v `ContentController`.
-- **Backendy bez FE** (čakajú na napojenie): Media (`/api/media`), Developer gate + gated CodeEditor, 2FA/TOTP API.
+## Hotové mimo hlavných iterácií ✅ (release 2.0.6)
+- **In-Memory + File cache** (`Core/Cache`, chained Memory→File) v `ContentController`.
+- **Verejný React web** – `PublicSiteLayout`, blog, kontaktný formulár, client-side search.
+- **Admin moduly s FE** – media, navigation, comments, messages, GitHub sync, WYSIWYG prepínač.
+- **PHPStan level 8** – 0 chýb na `backend/app`, `tests`, `bootstrap`, `bin`.
+- **PHPUnit** – 453 testov, 0 warnings, 0 deprecations.
+- **Vitest** – happy-dom, security testy FE+BE.
+- **i18n foundation** – `Lang.php`, `LocaleMiddleware`, `I18nContext` (migrácia UI → It. 18).
+
+> **Inventár funkcií:** aktuálny stav hotové / čiastočné / plánované → audit v chate alebo `docs/CHECKLIST.md` (potrebuje refresh po 2.0.6).

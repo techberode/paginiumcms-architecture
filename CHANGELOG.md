@@ -6,6 +6,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [2.0.7] – 2026-07-16
+
+### Iteration 19 – FlatFile index, pagination & search API
+
+#### Backend
+- Add `ContentIndexService` with flat-file index at `data/index/content.json` (flock-safe rebuild/upsert)
+- Add `JsonResponder`, `PaginationQuery`, `PaginationMeta` for unified paginated API responses
+- Paginated list endpoints: `GET /api/pages|articles?page=&per_page=&search=&status=` returns `{ data, meta }`
+- Legacy mode preserved: requests without `page`/`per_page` return full array (no `meta`) for backward compatibility
+- Add `GET /api/search?q=` fulltext search over index (published content only, min 2 chars)
+- Add dual content storage drivers: `MarkdownContentStorage` (default) + `JsonContentStorage`
+- New setting `content.storageFormat` (`md` | `json`) in `SettingsSchema`
+- Public API enforces `published` filter when unauthenticated; admins with session see all statuses
+- `ContentRepository` index hooks on save/delete; supports `.md` and `.json` files on read
+
+#### Frontend
+- `PagesManager`: server-side pagination, search, and status filter via query params
+- `SiteSearchModal`: uses `/api/search` with client-side fallback
+- Add `api/search.ts`, `PaginationMeta` type on `ApiResponse`
+
+#### Tests
+- `ContentRepositoryTest` (index rebuild, pagination, search)
+- `ContentControllerTest` (pagination meta, published filter, search)
+- Fix `SettingsRepositoryTest` for new `storageFormat` field
+
+---
+
 ## [2.0.6] – 2026-07-16
 
 ### PHPStan level 8 – full backend compliance

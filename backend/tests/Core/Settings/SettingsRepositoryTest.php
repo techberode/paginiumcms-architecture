@@ -57,6 +57,7 @@ class SettingsRepositoryTest extends TestCase
     {
         $result = $this->repo->setGroup('content', [
             'itemsPerPage' => '30',
+            'storageFormat' => 'md',
             'defaultStatus' => 'published',
             'autoSaveInterval' => 120,
             'lockTtl' => 600,
@@ -78,6 +79,7 @@ class SettingsRepositoryTest extends TestCase
 
         $this->repo->setGroup('content', [
             'itemsPerPage' => '999', // max:100
+            'storageFormat' => 'md',
             'defaultStatus' => 'draft',
             'autoSaveInterval' => 60,
             'lockTtl' => 300,

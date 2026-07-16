@@ -15,6 +15,11 @@ use PaginiumCMS\Core\FlatFile\Models\Page;
 use PaginiumCMS\Core\FlatFile\Services\ContentRevision;
 use PaginiumCMS\Core\Cache\ContentCacheService;
 use PaginiumCMS\Core\Versioning\Services\ContentVersioningService;
+use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
+use PaginiumCMS\Http\Support\JsonResponder;
+use PaginiumCMS\Http\Support\PaginationMeta;
+use PaginiumCMS\Http\Support\PaginationQuery;
+use PaginiumCMS\Modules\Security\Contracts\AuthenticationInterface;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Support\Lang;
 use Psr\Http\Message\ResponseInterface;
@@ -31,19 +36,16 @@ class ContentController
         private ContentVersioningService $versioning,
         private ContentCacheService $contentCache,
         private ContentRevision $revision,
-        private ConflictLoggerInterface $conflicts
+        private ConflictLoggerInterface $conflicts,
+        private JsonResponder $json,
+        private SettingsRepositoryInterface $settings,
+        private AuthenticationInterface $auth
     ) {
     }
 
     public function listPages(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $filters = $this->extractFilters($request);
-        $pages = $this->contentCache->rememberPageList($filters, fn () => $this->repository->findAllPages($filters));
-
-        return $this->jsonSuccess($response, array_map(
-            fn (Page $page) => $this->serializeContent($page, 'page'),
-            $pages
-        ));
+        return $this->listContent($request, $response, 'page');
     }
 
     /** @param array<string, string> $args
@@ -53,10 +55,14 @@ class ContentController
         $page = $this->contentCache->rememberPage($slug, fn () => $this->repository->findBySlug($slug, 'page'));
 
         if ($page === null) {
-            return $this->jsonError($response, Lang::get('not_found', [], 'content'), 404);
+            return $this->json->error($response, Lang::get('not_found', [], 'content'), 404);
         }
 
-        return $this->jsonSuccess($response, $this->serializeContent($page, 'page'));
+        if (!$this->canViewContent($request, $page)) {
+            return $this->json->error($response, Lang::get('not_found', [], 'content'), 404);
+        }
+
+        return $this->json->success($response, $this->serializeContent($page, 'page'));
     }
 
     public function createPage(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -84,13 +90,7 @@ class ContentController
 
     public function listArticles(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $filters = $this->extractFilters($request);
-        $articles = $this->contentCache->rememberArticleList($filters, fn () => $this->repository->findAllArticles($filters));
-
-        return $this->jsonSuccess($response, array_map(
-            fn (Article $article) => $this->serializeContent($article, 'article'),
-            $articles
-        ));
+        return $this->listContent($request, $response, 'article');
     }
 
     /** @param array<string, string> $args
@@ -100,10 +100,14 @@ class ContentController
         $article = $this->contentCache->rememberArticle($slug, fn () => $this->repository->findBySlug($slug, 'article'));
 
         if ($article === null) {
-            return $this->jsonError($response, Lang::get('not_found', [], 'content'), 404);
+            return $this->json->error($response, Lang::get('not_found', [], 'content'), 404);
         }
 
-        return $this->jsonSuccess($response, $this->serializeContent($article, 'article'));
+        if (!$this->canViewContent($request, $article)) {
+            return $this->json->error($response, Lang::get('not_found', [], 'content'), 404);
+        }
+
+        return $this->json->success($response, $this->serializeContent($article, 'article'));
     }
 
     public function createArticle(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -396,7 +400,8 @@ class ContentController
 
     /**
      * @return array<int|string, mixed>
- */private function extractFilters(ServerRequestInterface $request): array
+     */
+    private function extractFilters(ServerRequestInterface $request): array
     {
         $params = $request->getQueryParams();
         $filters = [];
@@ -405,7 +410,102 @@ class ContentController
             $filters['status'] = $params['status'];
         }
 
+        if (!$this->isAuthenticated($request) && !isset($filters['status'])) {
+            $filters['status'] = 'published';
+        }
+
         return $filters;
+    }
+
+    private function listContent(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        string $type
+    ): ResponseInterface {
+        $defaultPerPage = (int) $this->settings->get('content.itemsPerPage', PaginationQuery::DEFAULT_PER_PAGE);
+        $query = PaginationQuery::fromRequest($request, max(1, min(100, $defaultPerPage)));
+        $query = $this->applyPublicFilters($request, $query);
+
+        if (!$this->isPaginationRequested($request)) {
+            $filters = $this->extractFilters($request);
+            $cacheKey = array_merge($filters, ['legacy' => true]);
+            $loader = fn () => $type === 'article'
+                ? $this->repository->findAllArticles($filters)
+                : $this->repository->findAllPages($filters);
+
+            $items = $type === 'article'
+                ? $this->contentCache->rememberArticleList($cacheKey, $loader)
+                : $this->contentCache->rememberPageList($cacheKey, $loader);
+
+            return $this->json->success(
+                $response,
+                array_map(fn (Content $item) => $this->serializeContent($item, $type), $items)
+            );
+        }
+
+        $cachePayload = [
+            'page' => $query->page,
+            'perPage' => $query->perPage,
+            'search' => $query->search,
+            'sort' => $query->sort,
+            'filters' => $query->filters,
+        ];
+
+        $loader = fn () => $type === 'article'
+            ? $this->repository->findArticlesPaginated($query)
+            : $this->repository->findPagesPaginated($query);
+
+        $result = $type === 'article'
+            ? $this->contentCache->rememberArticleListPaginated($cachePayload, $loader)
+            : $this->contentCache->rememberPageListPaginated($cachePayload, $loader);
+
+        $meta = new PaginationMeta($query->page, $query->perPage, $result['total']);
+
+        return $this->json->paginated(
+            $response,
+            array_map(fn (Content $item) => $this->serializeContent($item, $type), $result['items']),
+            $meta
+        );
+    }
+
+    private function isPaginationRequested(ServerRequestInterface $request): bool
+    {
+        $params = $request->getQueryParams();
+
+        return isset($params['page']) || isset($params['per_page']) || isset($params['perPage']);
+    }
+
+    private function applyPublicFilters(ServerRequestInterface $request, PaginationQuery $query): PaginationQuery
+    {
+        if ($this->isAuthenticated($request) || isset($query->filters['status'])) {
+            return $query;
+        }
+
+        return new PaginationQuery(
+            $query->page,
+            $query->perPage,
+            $query->search,
+            $query->sort,
+            array_merge($query->filters, ['status' => 'published'])
+        );
+    }
+
+    private function isAuthenticated(ServerRequestInterface $request): bool
+    {
+        if ($request->getAttribute('user') instanceof User) {
+            return true;
+        }
+
+        return $this->auth->isAuthenticated();
+    }
+
+    private function canViewContent(ServerRequestInterface $request, Content $content): bool
+    {
+        if ($this->isAuthenticated($request)) {
+            return true;
+        }
+
+        return $content->getStatus() === 'published';
     }
 
     private function resolveUser(ServerRequestInterface $request): ?User

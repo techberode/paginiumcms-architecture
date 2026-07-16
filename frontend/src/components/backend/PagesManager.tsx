@@ -1,8 +1,9 @@
 // frontend/src/components/backend/PagesManager.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { useToast } from '../../hooks/useToast';
 import { Link } from 'react-router-dom';
+import type { PaginationMeta } from '../../api/client';
 
 interface Page {
   id: string;
@@ -18,26 +19,53 @@ interface PagesManagerProps {
   type?: 'pages' | 'articles';
 }
 
+const DEFAULT_META: PaginationMeta = {
+  page: 1,
+  per_page: 20,
+  total: 0,
+  total_pages: 0,
+};
+
 export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) => {
   const [items, setItems] = useState<Page[]>([]);
+  const [meta, setMeta] = useState<PaginationMeta>(DEFAULT_META);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [page, setPage] = useState(1);
   const { get, del } = useApi();
   const toast = useToast();
 
   const endpoint = type === 'articles' ? '/api/articles' : '/api/pages';
 
   useEffect(() => {
-    loadItems();
-  }, [type]);
+    const timer = window.setTimeout(() => setDebouncedSearch(search.trim()), 300);
+    return () => window.clearTimeout(timer);
+  }, [search]);
 
-  const loadItems = async () => {
+  useEffect(() => {
+    setPage(1);
+  }, [type, debouncedSearch, statusFilter]);
+
+  const loadItems = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await get<Page[]>(endpoint);
+      const params = new URLSearchParams({
+        page: String(page),
+        per_page: '20',
+      });
+      if (debouncedSearch.length >= 2) {
+        params.set('search', debouncedSearch);
+      }
+      if (statusFilter !== 'all') {
+        params.set('status', statusFilter);
+      }
+
+      const response = await get<Page[]>(`${endpoint}?${params.toString()}`);
       if (response.success) {
         setItems(response.data || []);
+        setMeta(response.meta ?? { ...DEFAULT_META, page });
       }
     } catch (error) {
       toast.error(`Failed to load ${type}`);
@@ -45,9 +73,13 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
     } finally {
       setLoading(false);
     }
-  };
+  }, [debouncedSearch, endpoint, get, page, statusFilter, toast, type]);
 
-  const handleDelete = async (id: string, slug: string) => {
+  useEffect(() => {
+    void loadItems();
+  }, [loadItems]);
+
+  const handleDelete = async (slug: string) => {
     if (!confirm(`Are you sure you want to delete this ${type.slice(0, -1)}?`)) {
       return;
     }
@@ -75,14 +107,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
     return `badge ${classes[status as keyof typeof classes] || 'badge-info'}`;
   };
 
-  const filteredItems = items.filter(item => {
-    const matchesSearch = item.title.toLowerCase().includes(search.toLowerCase()) ||
-                          item.slug.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
-
-  if (loading) {
+  if (loading && items.length === 0) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
@@ -96,15 +121,11 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white capitalize">
           {type === 'articles' ? 'Articles' : 'Pages'}
         </h1>
-        <Link
-          to={`/${type}/new`}
-          className="btn btn-primary"
-        >
+        <Link to={`/${type}/new`} className="btn btn-primary">
           + Create New
         </Link>
       </div>
 
-      {/* Filters */}
       <div className="flex flex-wrap gap-4">
         <div className="flex-1 min-w-[200px]">
           <input
@@ -127,10 +148,9 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
         </select>
       </div>
 
-      {/* Table */}
       <div className="card">
         <div className="card-body p-0">
-          {filteredItems.length === 0 ? (
+          {items.length === 0 ? (
             <div className="text-center py-8 text-gray-500 dark:text-gray-400">
               No {type} found
             </div>
@@ -148,14 +168,12 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredItems.map((item) => (
+                  {items.map((item) => (
                     <tr key={item.id}>
                       <td className="font-medium">{item.title}</td>
                       <td className="text-gray-500 dark:text-gray-400">{item.slug}</td>
                       <td>
-                        <span className={getStatusBadge(item.status)}>
-                          {item.status}
-                        </span>
+                        <span className={getStatusBadge(item.status)}>{item.status}</span>
                       </td>
                       <td>{item.author || 'Unknown'}</td>
                       <td className="text-sm text-gray-500 dark:text-gray-400">
@@ -177,7 +195,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                             View
                           </Link>
                           <button
-                            onClick={() => handleDelete(item.id, item.slug)}
+                            onClick={() => handleDelete(item.slug)}
                             className="btn btn-danger text-xs px-3 py-1"
                           >
                             Delete
@@ -192,6 +210,32 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
           )}
         </div>
       </div>
+
+      {meta.total_pages > 1 && (
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {meta.total} záznamov · strana {meta.page} / {meta.total_pages}
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              className="btn btn-secondary text-sm"
+              disabled={page <= 1 || loading}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
+              Predchádzajúca
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary text-sm"
+              disabled={page >= meta.total_pages || loading}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              Ďalšia
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
