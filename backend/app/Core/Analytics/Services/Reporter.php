@@ -16,6 +16,9 @@ final class Reporter implements ReporterInterface
     {
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getOverview(string $period = 'today'): array
     {
         $date = $this->resolveDate($period);
@@ -33,6 +36,9 @@ final class Reporter implements ReporterInterface
         ];
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getTopPages(int $limit = 10, string $period = 'today'): array
     {
         $visits = $this->tracker->getVisits($this->resolveDate($period), 5000);
@@ -50,6 +56,9 @@ final class Reporter implements ReporterInterface
         return $top;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getTopReferers(int $limit = 10, string $period = 'today'): array
     {
         $visits = $this->tracker->getVisits($this->resolveDate($period), 5000);
@@ -70,6 +79,9 @@ final class Reporter implements ReporterInterface
         return $top;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getDeviceStats(string $period = 'today'): array
     {
         $visits = $this->tracker->getVisits($this->resolveDate($period), 2000);
@@ -85,6 +97,9 @@ final class Reporter implements ReporterInterface
         return $counts;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getGeoStats(string $period = 'today'): array
     {
         $visits = $this->tracker->getVisits($this->resolveDate($period), 2000);
@@ -102,11 +117,15 @@ final class Reporter implements ReporterInterface
         );
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getDailyChart(int $days = 30): array
     {
         $chart = [];
         for ($i = $days - 1; $i >= 0; $i--) {
-            $date = date('Y-m-d', strtotime('-' . $i . ' days'));
+            $timestamp = strtotime('-' . $i . ' days');
+            $date = date('Y-m-d', $timestamp !== false ? $timestamp : time());
             $stats = $this->tracker->getDailyStats($date);
             $chart[] = [
                 'date' => $date,

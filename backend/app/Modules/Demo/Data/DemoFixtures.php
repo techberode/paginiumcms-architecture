@@ -12,8 +12,8 @@ final class DemoFixtures
 {
     /**
      * @return list<array{id: string, author: string, text: string, date: string, article_slug: string}>
-     */
-    public static function sampleComments(): array
+ * @return array<int|string, mixed>
+ */public static function sampleComments(): array
     {
         return [
             [
@@ -35,8 +35,8 @@ final class DemoFixtures
 
     /**
      * @return list<array{id: string, name: string, email: string, subject: string, message: string, created_at: string}>
-     */
-    public static function sampleContactMessages(): array
+ * @return array<int|string, mixed>
+ */public static function sampleContactMessages(): array
     {
         return [
             [
@@ -52,8 +52,8 @@ final class DemoFixtures
 
     /**
      * @return list<array{id: string, email: string, subscribed_at: string}>
-     */
-    public static function sampleNewsletterSubscribers(): array
+ * @return array<int|string, mixed>
+ */public static function sampleNewsletterSubscribers(): array
     {
         return [
             [
@@ -66,8 +66,8 @@ final class DemoFixtures
 
     /**
      * @return array{storage_path: string, description: string}
-     */
-    public static function meta(): array
+ * @return array<int|string, mixed>
+ */public static function meta(): array
     {
         return [
             'storage_path' => 'storage/app/demo',

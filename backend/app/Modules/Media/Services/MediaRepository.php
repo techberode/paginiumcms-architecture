@@ -9,6 +9,7 @@ use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Core\FlatFile\Models\MediaFile;
 use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
+use PaginiumCMS\Support\JsonHelper;
 
 class MediaRepository implements MediaRepositoryInterface
 {
@@ -31,6 +32,10 @@ class MediaRepository implements MediaRepositoryInterface
     ) {
     }
 
+    /**
+     * @param array<int|string, mixed> $filters
+     * @return array<int|string, mixed>
+     */
     public function findAll(array $filters = []): array
     {
         $registry = $this->loadRegistry();
@@ -70,7 +75,7 @@ class MediaRepository implements MediaRepositoryInterface
         $relativePath = self::MEDIA_DIR . '/' . $media->getId() . '_' . $safeName;
 
         $binary = is_resource($contents) ? stream_get_contents($contents) : $contents;
-        if ($binary === false || $binary === '') {
+        if (!is_string($binary) || $binary === '') {
             throw new FlatFileException('Prázdny alebo neplatný súbor');
         }
 
@@ -139,7 +144,7 @@ class MediaRepository implements MediaRepositoryInterface
     }
 
     /**
-     * @return array<int, array<string, mixed>>
+     * @return array<int, array<int|string, mixed>>
      */
     private function loadRegistry(): array
     {
@@ -158,20 +163,17 @@ class MediaRepository implements MediaRepositoryInterface
     }
 
     /**
-     * @param array<int, array<string, mixed>> $registry
+     * @param array<int, array<int|string, mixed>> $registry
      */
     private function saveRegistry(array $registry): void
     {
-        $json = json_encode($registry, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-        if ($json === false) {
-            throw new FlatFileException('Nepodarilo sa serializovať register médií');
-        }
+        $json = JsonHelper::encode($registry, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 
         $this->writer->write(self::REGISTRY, $json, true);
     }
 
     /**
-     * @param array<string, mixed> $entry
+     * @param array<int|string, mixed> $entry
      */
     private function hydrate(array $entry): MediaFile
     {
@@ -184,7 +186,6 @@ class MediaRepository implements MediaRepositoryInterface
             }
 
             $prop = $reflection->getProperty($property);
-            $prop->setAccessible(true);
             $prop->setValue($file, $entry[$property]);
         }
 
@@ -192,7 +193,7 @@ class MediaRepository implements MediaRepositoryInterface
     }
 
     /**
-     * @param array<string, mixed> $filters
+     * @param array<int|string, mixed> $filters
      */
     private function matchesFilters(MediaFile $file, array $filters): bool
     {

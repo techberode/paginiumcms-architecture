@@ -18,8 +18,7 @@ final class AuditSeverity
      * Získa všetky dostupné závažnosti.
      *
      * @return array<int, string> Zoznam závažností.
-     */
-    public static function getAll(): array
+ */public static function getAll(): array
     {
         return [
             self::CRITICAL,

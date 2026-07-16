@@ -24,8 +24,8 @@ final class RealtimeTracker
      *   active_page_views: int,
      *   top_active_pages: list<array{uri: string, views: int}>
      * }
-     */
-    public function getSnapshot(): array
+ * @return array<int|string, mixed>
+ */public function getSnapshot(): array
     {
         $visits = $this->tracker->getRealtimeVisitors();
         $visitorIds = [];

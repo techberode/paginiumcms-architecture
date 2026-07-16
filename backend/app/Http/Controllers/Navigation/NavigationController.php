@@ -11,6 +11,7 @@ use PaginiumCMS\Modules\Navigation\Contracts\NavigationRepositoryInterface;
 use PaginiumCMS\Support\Lang;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use PaginiumCMS\Support\JsonHelper;
 
 class NavigationController
 {
@@ -53,9 +54,9 @@ class NavigationController
     }
 
     /**
-     * @param array<int, array<string, mixed>> $itemsPayload
-     */
-    private function buildNavigation(array $itemsPayload): Navigation
+     * @param array<int, array<int|string, mixed>> $itemsPayload
+ * @param array<int|string, mixed> $itemsPayload
+ */private function buildNavigation(array $itemsPayload): Navigation
     {
         $items = [];
 
@@ -74,7 +75,6 @@ class NavigationController
             if (!empty($entry['id'])) {
                 $reflection = new \ReflectionClass($item);
                 $prop = $reflection->getProperty('id');
-                $prop->setAccessible(true);
                 $prop->setValue($item, (string) $entry['id']);
             }
 
@@ -102,14 +102,14 @@ class NavigationController
             $payload['message'] = $message;
         }
 
-        $response->getBody()->write(json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        $response->getBody()->write(JsonHelper::encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
         return $response->withStatus($status)->withHeader('Content-Type', 'application/json; charset=utf-8');
     }
 
     private function jsonError(ResponseInterface $response, string $message, int $status = 400): ResponseInterface
     {
-        $response->getBody()->write(json_encode([
+        $response->getBody()->write(JsonHelper::encode([
             'success' => false,
             'error' => $message,
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));

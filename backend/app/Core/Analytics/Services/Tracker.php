@@ -9,6 +9,8 @@ use PaginiumCMS\Core\Analytics\Models\Visit;
 use PaginiumCMS\Core\Analytics\Models\Visitor;
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
+use PaginiumCMS\Support\FileHelper;
+use PaginiumCMS\Support\JsonHelper;
 
 class Tracker implements TrackerInterface
 {
@@ -16,9 +18,10 @@ class Tracker implements TrackerInterface
     private FileWriterInterface $writer;
     private GeoIPService $geoIP;
     private string $storagePath;
+    /** @var list<string> */
     private array $excludeIps = ['127.0.0.1', '::1'];
+    /** @var list<string> */
     private array $excludePaths = ['/api/', '/admin/', '/assets/', '/favicon.ico'];
-    private string $basePath;
 
     public function __construct(
         FileReaderInterface $reader,
@@ -30,8 +33,6 @@ class Tracker implements TrackerInterface
         $this->writer = $writer;
         $this->geoIP = $geoIP;
         $this->storagePath = rtrim($storagePath, '/');
-        // Použijeme priamo basePath z reader-a (storage/app/content)
-        $this->basePath = $reader->getBasePath();
     }
 
     public function track(Visit $visit): void
@@ -53,47 +54,49 @@ class Tracker implements TrackerInterface
 
     public function getVisitor(string $visitorId): ?Visitor
     {
-        $path = $this->getFullPath('visitors/' . $visitorId . '.json');
-        if (!file_exists($path)) {
+        $relativePath = $this->storageRelativePath('visitors/' . $visitorId . '.json');
+        if (!$this->reader->exists($relativePath)) {
             return null;
         }
-        $content = file_get_contents($path);
-        if ($content === false) {
-            return null;
-        }
-        $data = json_decode($content, true);
-        return $data ? $this->hydrateVisitor($data) : null;
+
+        $data = JsonHelper::decode($this->reader->read($relativePath));
+
+        return $data !== [] ? $this->hydrateVisitor($data) : null;
     }
 
-    public function getVisits(string $date = null, int $limit = 100): array
+    /**
+     * @return array<int|string, mixed>
+     */
+    public function getVisits(?string $date = null, int $limit = 100): array
     {
         $date = $date ?? date('Y-m-d');
-        $path = $this->getFullPath('visits/' . $date . '.json');
-        if (!file_exists($path)) {
+        $relativePath = $this->storageRelativePath('visits/' . $date . '.json');
+        if (!$this->reader->exists($relativePath)) {
             return [];
         }
-        $content = file_get_contents($path);
-        if ($content === false) {
-            return [];
-        }
-        $data = json_decode($content, true);
-        return $data ? array_slice($data, -$limit) : [];
+
+        $data = JsonHelper::decode($this->reader->read($relativePath));
+
+        return $data !== [] ? array_slice($data, -$limit) : [];
     }
 
-    public function getDailyStats(string $date = null): array
+    /**
+     * @return array<int|string, mixed>
+     */
+    public function getDailyStats(?string $date = null): array
     {
         $date = $date ?? date('Y-m-d');
-        $path = $this->getFullPath('daily/' . $date . '.json');
-        if (!file_exists($path)) {
+        $relativePath = $this->storageRelativePath('daily/' . $date . '.json');
+        if (!$this->reader->exists($relativePath)) {
             return $this->getEmptyStats($date);
         }
-        $content = file_get_contents($path);
-        if ($content === false) {
-            return $this->getEmptyStats($date);
-        }
-        return json_decode($content, true) ?? $this->getEmptyStats($date);
+
+        return JsonHelper::decode($this->reader->read($relativePath));
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getRealtimeVisitors(): array
     {
         $cutoff = time() - 300;
@@ -102,40 +105,31 @@ class Tracker implements TrackerInterface
         if (!is_dir($visitsDir)) {
             return [];
         }
-        $files = glob($visitsDir . '*.json');
+
+        $files = glob($visitsDir . '*.json') ?: [];
         foreach ($files as $file) {
-            $content = file_get_contents($file);
-            if ($content === false) {
-                continue;
-            }
-            $data = json_decode($content, true);
-            if ($data) {
-                foreach ($data as $visit) {
-                    if (strtotime($visit['timestamp']) > $cutoff) {
-                        $visitors[] = $visit;
-                    }
+            $data = JsonHelper::decode(FileHelper::read($file));
+            foreach ($data as $visit) {
+                if (!is_array($visit)) {
+                    continue;
+                }
+                if (strtotime((string) ($visit['timestamp'] ?? '')) > $cutoff) {
+                    $visitors[] = $visit;
                 }
             }
         }
+
         return $visitors;
     }
 
     private function saveVisit(Visit $visit): void
     {
         $date = date('Y-m-d');
-        $dir = $this->getFullPath('visits/');
-        $path = $dir . $date . '.json';
-
-        if (!is_dir($dir)) {
-            mkdir($dir, 0755, true);
-        }
+        $relativePath = $this->storageRelativePath('visits/' . $date . '.json');
 
         $visits = [];
-        if (file_exists($path)) {
-            $content = file_get_contents($path);
-            if ($content !== false) {
-                $visits = json_decode($content, true) ?? [];
-            }
+        if ($this->reader->exists($relativePath)) {
+            $visits = JsonHelper::decode($this->reader->read($relativePath));
         }
 
         $visits[] = $visit->toArray();
@@ -143,18 +137,13 @@ class Tracker implements TrackerInterface
             $visits = array_slice($visits, -10000);
         }
 
-        file_put_contents($path, json_encode($visits, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        $this->writer->write($relativePath, JsonHelper::encode($visits), false);
     }
 
     private function updateVisitor(Visit $visit): void
     {
         $visitorId = $visit->getVisitorId();
-        $dir = $this->getFullPath('visitors/');
-        $path = $dir . $visitorId . '.json';
-
-        if (!is_dir($dir)) {
-            mkdir($dir, 0755, true);
-        }
+        $relativePath = $this->storageRelativePath('visitors/' . $visitorId . '.json');
 
         $location = $this->geoIP->getLocation($visit->getIp());
         $deviceInfo = (new DeviceDetector($visit->getUserAgent()))->getAll();
@@ -173,32 +162,24 @@ class Tracker implements TrackerInterface
             'browser' => $deviceInfo['browser'],
         ];
 
-        if (file_exists($path)) {
-            $content = file_get_contents($path);
-            if ($content !== false) {
-                $existing = json_decode($content, true);
-                if ($existing) {
-                    $visitorData['visitCount'] = ($existing['visitCount'] ?? 0) + 1;
-                    $visitorData['firstVisit'] = $existing['firstVisit'] ?? $visit->getTimestamp();
-                    if (empty($visitorData['country']) && !empty($existing['country'])) {
-                        $visitorData['country'] = $existing['country'];
-                    }
+        if ($this->reader->exists($relativePath)) {
+            $existing = JsonHelper::decode($this->reader->read($relativePath));
+            if ($existing !== []) {
+                $visitorData['visitCount'] = ($existing['visitCount'] ?? 0) + 1;
+                $visitorData['firstVisit'] = $existing['firstVisit'] ?? $visit->getTimestamp();
+                if (empty($visitorData['country']) && !empty($existing['country'])) {
+                    $visitorData['country'] = $existing['country'];
                 }
             }
         }
 
-        file_put_contents($path, json_encode($visitorData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        $this->writer->write($relativePath, JsonHelper::encode($visitorData), false);
     }
 
     private function updateDailyStats(Visit $visit): void
     {
         $date = date('Y-m-d');
-        $dir = $this->getFullPath('daily/');
-        $path = $dir . $date . '.json';
-
-        if (!is_dir($dir)) {
-            mkdir($dir, 0755, true);
-        }
+        $relativePath = $this->storageRelativePath('daily/' . $date . '.json');
 
         $stats = $this->getDailyStats($date);
         $stats['date'] = $date;
@@ -206,14 +187,22 @@ class Tracker implements TrackerInterface
         $stats['page_views'] = ($stats['page_views'] ?? 0) + 1;
         $stats['unique_visitors'] = ($stats['unique_visitors'] ?? 0) + 1;
 
-        file_put_contents($path, json_encode($stats, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        $this->writer->write($relativePath, JsonHelper::encode($stats), false);
+    }
+
+    private function storageRelativePath(string $path): string
+    {
+        return $this->storagePath . '/' . ltrim($path, '/');
     }
 
     private function getFullPath(string $path): string
     {
-        return $this->basePath . '/' . $this->storagePath . '/' . $path;
+        return $this->reader->getBasePath() . '/' . $this->storagePath . '/' . ltrim($path, '/');
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     private function getEmptyStats(string $date): array
     {
         return [
@@ -225,8 +214,11 @@ class Tracker implements TrackerInterface
         ];
     }
 
+    /**
+     * @param array<int|string, mixed> $data
+     */
     private function hydrateVisitor(array $data): Visitor
     {
-        return new Visitor($data['visitorId']);
+        return new Visitor((string) ($data['visitorId'] ?? ''));
     }
 }

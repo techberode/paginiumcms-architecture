@@ -44,8 +44,7 @@ interface LockManagerInterface
      * Vráti všetky aktuálne aktívne zámky (pre admin dashboard).
      *
      * @return array<int, ContentLock>
-     */
-    public function getAllLocks(): array;
+ */public function getAllLocks(): array;
 
     /**
      * Administratívne vynútené uvoľnenie zámku (bez tokenu).

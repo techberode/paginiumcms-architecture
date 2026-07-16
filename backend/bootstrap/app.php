@@ -11,6 +11,7 @@ use Tuupola\Middleware\CorsMiddleware;
 use PaginiumCMS\Http\Middleware\SecurityMiddleware;
 use PaginiumCMS\Http\Middleware\RateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\LoginRateLimitMiddleware;
+use PaginiumCMS\Http\Middleware\LocaleMiddleware;
 
 // ---------- PÔVODNÉ IMPORTY ----------
 use PaginiumCMS\Modules\Security\Services\AuthenticationManager;
@@ -176,6 +177,12 @@ $containerBuilder->addDefinitions([
         ]);
     },
 
+    LocaleMiddleware::class => function ($container) {
+        return new LocaleMiddleware(
+            $container->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class)
+        );
+    },
+
     // OPRAVA (audit, nález #7): trustedProxies pridané - viď opravený
     // RateLimitMiddleware.php. Ak appka beží priamo (bez reverse proxy),
     // ponechajte trustedProxies prázdne pole - potom sa vždy použije
@@ -276,10 +283,8 @@ $containerBuilder->addDefinitions([
     AuthController::class => function ($container) {
         return new AuthController(
             $container->get(AuthenticationInterface::class),
-            $container->get(AuthorizationInterface::class),
             $container->get(CsrfProtectionInterface::class),
             $container->get(PasswordPolicyInterface::class),
-            $container->get(TwoFactorInterface::class),
             $container->get(UserRepository::class),
             $container->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class),
             $container->get(\PaginiumCMS\Core\Notification\NotificationService::class),
@@ -332,8 +337,13 @@ $containerBuilder->addDefinitions([
 // ============================================
 
 $loggingServices = require __DIR__ . '/../app/Core/Logging/Config/services.php';
-if (is_callable($loggingServices)) {
+if (is_array($loggingServices)) {
     $containerBuilder->addDefinitions($loggingServices);
+} elseif (is_callable($loggingServices)) {
+    $definitions = $loggingServices();
+    if (is_array($definitions)) {
+        $containerBuilder->addDefinitions($definitions);
+    }
 }
 
 // ============================================
@@ -375,11 +385,12 @@ $app = AppFactory::create();
 
 $corsAllowedOrigins = [
     'http://localhost:3025',
-'http://localhost:5173',
+    'http://localhost:5173',
 ];
 
-if (getenv('APP_URL')) {
-    $corsAllowedOrigins[] = getenv('APP_URL');
+$appUrl = getenv('APP_URL');
+if (is_string($appUrl) && $appUrl !== '') {
+    $corsAllowedOrigins[] = $appUrl;
 }
 
 $app->add(new CorsMiddleware([
@@ -409,6 +420,7 @@ $app->add(new CorsMiddleware([
 // ============================================
 
 $app->add($container->get(SecurityMiddleware::class));
+$app->add($container->get(LocaleMiddleware::class));
 $app->add($container->get(RateLimitMiddleware::class));
 $app->add($container->get(AnalyticsMiddleware::class));
 
@@ -465,7 +477,7 @@ $app->get('/api/health', function ($request, $response) {
         'timestamp' => date('Y-m-d H:i:s'),
           'version' => '2.0.0',
           'php_version' => PHP_VERSION,
-          'environment' => getenv('APP_ENV') ?? 'development'
+          'environment' => getenv('APP_ENV') ?: 'development'
     ];
     $response->getBody()->write(json_encode($data, JSON_PRETTY_PRINT));
     return $response->withHeader('Content-Type', 'application/json');
@@ -502,7 +514,12 @@ $app->get('/', function ($request, $response) {
 // auth routes, ktorá by sa duplicitne registrovala popri bloku vyššie).
 // ============================================
 
-foreach (glob(__DIR__ . '/../app/Http/Routes/*.php') as $routeFile) {
+$routeFiles = glob(__DIR__ . '/../app/Http/Routes/*.php');
+if ($routeFiles === false) {
+    $routeFiles = [];
+}
+
+foreach ($routeFiles as $routeFile) {
     if (basename($routeFile) === 'auth.php') {
         // Duplicitná/nefunkčná kópia auth routes - viď poznámka vyššie.
         // Auth je už plne funkčný v bloku "AUTH ROUTY" vyššie v tomto súbore.

@@ -13,6 +13,7 @@ use PaginiumCMS\Core\Analytics\Models\GeoLocation;
 class GeoIPService
 {
     private string $apiUrl = 'http://ip-api.com/json/';
+    /** @var array<int|string, mixed> */
     private array $cache = [];
 
     /**
@@ -35,8 +36,8 @@ class GeoIPService
         }
 
         try {
-            $response = @file_get_contents($this->apiUrl . $ip);
-            if ($response === false) {
+            $response = $this->fetchRemoteJson($this->apiUrl . $ip);
+            if ($response === null) {
                 return null;
             }
 
@@ -63,6 +64,32 @@ class GeoIPService
         } catch (\Exception) {
             return null;
         }
+    }
+
+    private function fetchRemoteJson(string $url): ?string
+    {
+        $context = stream_context_create([
+            'http' => [
+                'timeout' => 2,
+                'ignore_errors' => true,
+            ],
+        ]);
+
+        $previousHandler = set_error_handler(static function (): bool {
+            return true;
+        });
+
+        try {
+            $response = file_get_contents($url, false, $context);
+        } finally {
+            restore_error_handler();
+        }
+
+        if ($response === false) {
+            return null;
+        }
+
+        return $response;
     }
 
     /**

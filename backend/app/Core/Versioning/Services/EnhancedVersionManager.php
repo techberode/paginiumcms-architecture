@@ -11,6 +11,8 @@ use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
 use PaginiumCMS\Core\CodeEditor\Services\CodeEditorLogger;
 use PaginiumCMS\Core\CodeEditor\Services\DiffGenerator;
+use PaginiumCMS\Support\FileHelper;
+use PaginiumCMS\Support\JsonHelper;
 
 class EnhancedVersionManager implements VersionableInterface
 {
@@ -20,6 +22,7 @@ class EnhancedVersionManager implements VersionableInterface
     private CodeEditorLogger $logger;
     private string $storagePath;
     private int $maxVersions;
+    /** @var array<int|string, mixed> */
     private array $versionMetadata = [];
 
     public function __construct(
@@ -105,19 +108,22 @@ class EnhancedVersionManager implements VersionableInterface
         return empty($versions) ? null : $versions[0];
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getVersions(string $contentId): array
     {
         $versions = [];
         $pattern = $this->getFullPath('') . $contentId . '_*.json';
         $files = glob($pattern);
+        if ($files === false) {
+            return $versions;
+        }
 
         foreach ($files as $file) {
             try {
-                $content = file_get_contents($file);
-                $data = json_decode($content, true);
-                if ($data) {
-                    $versions[] = $this->hydrate($data);
-                }
+                $data = JsonHelper::decode(FileHelper::read($file));
+                $versions[] = $this->hydrate($data);
             } catch (\Exception) {
                 continue;
             }
@@ -183,6 +189,9 @@ class EnhancedVersionManager implements VersionableInterface
         return $deleted;
     }
 
+    /**
+     * @return array<int|string, mixed>|null
+     */
     public function getDiff(string $contentId, int $from, int $to): ?array
     {
         $fromVersion = $this->getVersion($contentId, $from);
@@ -202,8 +211,8 @@ class EnhancedVersionManager implements VersionableInterface
 
     /**
      * Získa históriu zmien pre obsah
-     */
-    public function getVersionHistory(string $contentId): array
+ * @return array<int|string, mixed>
+ */public function getVersionHistory(string $contentId): array
     {
         $versions = $this->getVersions($contentId);
         $history = [];
@@ -224,8 +233,8 @@ class EnhancedVersionManager implements VersionableInterface
 
     /**
      * Porovná dve verzie a vráti podrobný rozdiel
-     */
-    public function compareVersions(string $contentId, int $version1, int $version2): array
+ * @return array<int|string, mixed>
+ */public function compareVersions(string $contentId, int $version1, int $version2): array
     {
         $v1 = $this->getVersion($contentId, $version1);
         $v2 = $this->getVersion($contentId, $version2);
@@ -264,8 +273,8 @@ class EnhancedVersionManager implements VersionableInterface
 
     /**
      * Získa štatistiky verzovania
-     */
-    public function getVersionStats(): array
+ * @return array<int|string, mixed>
+ */public function getVersionStats(): array
     {
         $stats = [
             'total_versions' => 0,
@@ -316,16 +325,27 @@ class EnhancedVersionManager implements VersionableInterface
         return $stats;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
+    public function getVersionMetadata(): array
+    {
+        return $this->versionMetadata;
+    }
+
     private function saveVersion(Version $version): void
     {
         $path = $this->getVersionPath($version->getContentId(), $version->getVersion());
         $this->ensureDirectoryExists($path);
         $this->writer->write(
             $path,
-            json_encode($version->toArray(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+            JsonHelper::encode($version->toArray(), JSON_PRETTY_PRINT)
         );
     }
 
+    /**
+     * @param array<int|string, mixed> $data
+     */
     private function hydrate(array $data): Version
     {
         $version = new Version();
@@ -334,7 +354,6 @@ class EnhancedVersionManager implements VersionableInterface
         foreach ($data as $key => $value) {
             if ($key === 'id') {
                 $prop = $reflection->getProperty('id');
-                $prop->setAccessible(true);
                 $prop->setValue($version, $value);
             } elseif ($key === 'contentId') {
                 $version->setContentId($value);
@@ -380,10 +399,16 @@ class EnhancedVersionManager implements VersionableInterface
         $this->deleteVersions($contentId, $this->maxVersions);
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     private function getAllContentIds(): array
     {
         $pattern = $this->getFullPath('') . '*_*.json';
         $files = glob($pattern);
+        if ($files === false) {
+            return [];
+        }
         $ids = [];
 
         foreach ($files as $file) {
@@ -396,6 +421,9 @@ class EnhancedVersionManager implements VersionableInterface
         return array_unique($ids);
     }
 
+    /**
+     * @param array<int|string, mixed> $diff
+     */
     private function summarizeDiff(?array $diff): string
     {
         if (!$diff) {

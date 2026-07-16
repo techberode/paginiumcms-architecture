@@ -14,8 +14,8 @@ interface BackupInterface
      * @param string $name Názov zálohy.
      * @param array $options Voliteľné parametre.
      * @return BackupMetadata Metadáta zálohy.
-     */
-    public function create(string $name, array $options = []): BackupMetadata;
+ * @param array<int|string, mixed> $options
+ */public function create(string $name, array $options = []): BackupMetadata;
 
     /**
      * Obnoví systém zo zálohy.
@@ -23,15 +23,14 @@ interface BackupInterface
      * @param string $backupId ID zálohy alebo cesta k súboru.
      * @param array $options Voliteľné parametre.
      * @return bool TRUE ak bola obnova úspešná.
-     */
-    public function restore(string $backupId, array $options = []): bool;
+ * @param array<int|string, mixed> $options
+ */public function restore(string $backupId, array $options = []): bool;
 
     /**
      * Získa zoznam dostupných záloh.
      *
      * @return array<int, BackupMetadata> Zoznam záloh.
-     */
-    public function listBackups(): array;
+ */public function listBackups(): array;
 
     /**
      * Získa metadáta konkrétnej zálohy.
@@ -77,6 +76,6 @@ interface BackupInterface
      * Získa informácie o naplánovaných zálohách.
      *
      * @return array Informácie o pláne.
-     */
-    public function getScheduleInfo(): array;
+ * @return array<int|string, mixed>
+ */public function getScheduleInfo(): array;
 }

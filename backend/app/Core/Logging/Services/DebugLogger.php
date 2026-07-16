@@ -15,6 +15,9 @@ class DebugLogger
     private bool $showInUi;
     private bool $logToFile;
 
+    /**
+     * @param array<int|string, mixed> $config
+     */
     public function __construct(LoggerInterface $logger, array $config = [])
     {
         $this->logger = $logger;
@@ -24,6 +27,9 @@ class DebugLogger
         $this->logToFile = $config['log_to_file'] ?? true;
     }
 
+    /**
+     * @param array<int|string, mixed> $context
+     */
     public function debug(string $message, array $context = [], string $severity = 'DEBUG'): void
     {
         if (!$this->enabled) {
@@ -43,16 +49,25 @@ class DebugLogger
         }
     }
 
+    /**
+     * @param array<int|string, mixed> $context
+     */
     public function info(string $message, array $context = []): void
     {
         $this->debug($message, $context, 'INFO');
     }
 
+    /**
+     * @param array<int|string, mixed> $context
+     */
     public function warning(string $message, array $context = []): void
     {
         $this->debug($message, $context, 'WARNING');
     }
 
+    /**
+     * @param array<int|string, mixed> $context
+     */
     public function error(string $message, array $context = []): void
     {
         $this->debug($message, $context, 'ERROR');
@@ -90,6 +105,9 @@ class DebugLogger
         $this->showInUi = $show;
     }
 
+    /**
+     * @param array<int|string, mixed> $context
+     */
     private function triggerUiNotification(string $message, array $context, string $severity): void
     {
         if (session_status() === PHP_SESSION_NONE) {
@@ -111,6 +129,9 @@ class DebugLogger
         $_SESSION['_debug_notifications'] = $notifications;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getUiNotifications(): array
     {
         return $_SESSION['_debug_notifications'] ?? [];

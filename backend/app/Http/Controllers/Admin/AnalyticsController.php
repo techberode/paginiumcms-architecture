@@ -8,6 +8,7 @@ use PaginiumCMS\Core\Analytics\Services\RealtimeTracker;
 use PaginiumCMS\Core\Analytics\Services\Reporter;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use PaginiumCMS\Support\JsonHelper;
 
 /**
  * Admin analytics API (Iteration 6).
@@ -54,11 +55,10 @@ final class AnalyticsController
     }
 
     /**
-     * @param array<string, mixed> $payload
-     */
-    private function json(ResponseInterface $response, array $payload, int $status = 200): ResponseInterface
+     * @param array<int|string, mixed> $payload
+ */private function json(ResponseInterface $response, array $payload, int $status = 200): ResponseInterface
     {
-        $response->getBody()->write((string) json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        $response->getBody()->write(JsonHelper::encode($payload, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
 
         return $response->withStatus($status)->withHeader('Content-Type', 'application/json; charset=utf-8');
     }

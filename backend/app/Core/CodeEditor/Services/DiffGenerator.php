@@ -22,8 +22,8 @@ class DiffGenerator
 
     /**
      * Generuje podrobný diff medzi dvoma verziami
-     */
-    public function generateDetailedDiff(
+ * @return array<int|string, mixed>
+ */public function generateDetailedDiff(
         string $oldContent,
         string $newContent,
         string $oldFrontMatter = '',
@@ -65,8 +65,10 @@ class DiffGenerator
 
     /**
      * Porovná dva reťazce riadok po riadku
-     */
-    private function computeLineDiff(array $oldLines, array $newLines): array
+ * @param array<int|string, mixed> $oldLines
+ * @param array<int|string, mixed> $newLines
+ * @return array<int|string, mixed>
+ */private function computeLineDiff(array $oldLines, array $newLines): array
     {
         $result = [
             'lines' => [],
@@ -125,6 +127,9 @@ class DiffGenerator
         return $result;
     }
 
+    /**
+     * @param array<int|string, mixed> $haystack
+     */
     private function findInArray(string $needle, array $haystack, int $start): bool
     {
         for ($i = $start; $i < count($haystack); $i++) {

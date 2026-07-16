@@ -140,7 +140,6 @@ class GitHubServiceTest extends TestCase
         $result = $this->service->export();
         // V reálnom scenári by sme mockovali API volania
         // Tento test len overuje, že metóda existuje a vracia správnu štruktúru
-        $this->assertIsArray($result);
         $this->assertArrayHasKey('success', $result);
     }
 
@@ -148,7 +147,6 @@ class GitHubServiceTest extends TestCase
     {
         // Overíme, že import nájde súbory
         $result = $this->service->import();
-        $this->assertIsArray($result);
         $this->assertArrayHasKey('success', $result);
     }
 }

@@ -42,6 +42,9 @@ final class ConflictLogger implements ConflictLoggerInterface
         });
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getRecent(int $limit = 100): array
     {
         return $this->withLockedLog(
@@ -98,8 +101,7 @@ final class ConflictLogger implements ConflictLoggerInterface
     /**
      * @param resource $handle
      * @return array<int, ConflictRecord>
-     */
-    private function readRecords($handle): array
+ */private function readRecords($handle): array
     {
         rewind($handle);
         $raw = stream_get_contents($handle);
@@ -125,8 +127,7 @@ final class ConflictLogger implements ConflictLoggerInterface
     /**
      * @param resource $handle
      * @param array<int, ConflictRecord> $records
-     */
-    private function writeRecords($handle, array $records): void
+ */private function writeRecords($handle, array $records): void
     {
         $payload = json_encode(
             array_map(static fn (ConflictRecord $r): array => $r->jsonSerialize(), array_values($records)),
@@ -145,8 +146,7 @@ final class ConflictLogger implements ConflictLoggerInterface
 
     /**
      * @param array<int, ConflictRecord> $records
-     */
-    private function serialize(array $records): string
+ */private function serialize(array $records): string
     {
         return (string) json_encode(
             array_map(static fn (ConflictRecord $r): array => $r->jsonSerialize(), $records)

@@ -9,6 +9,7 @@ use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\Settings\SettingsSchema;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use PaginiumCMS\Support\JsonHelper;
 
 /**
  * === Controller: SettingsController (Admin) ===
@@ -41,8 +42,7 @@ final class SettingsController
 
     /**
      * @param array<string, string> $args
-     */
-    public function show(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+ */public function show(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $group = (string) ($args['group'] ?? '');
 
@@ -61,8 +61,7 @@ final class SettingsController
 
     /**
      * @param array<string, string> $args
-     */
-    public function update(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+ */public function update(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $group = (string) ($args['group'] ?? '');
         $payload = $this->parseJsonBody($request);
@@ -126,17 +125,16 @@ final class SettingsController
     }
 
     /**
-     * @param array<string, mixed> $payload
-     * @return array<string, mixed>
-     */
-    private function stripMaskedSecrets(string $group, array $payload): array
+     * @param array<int|string, mixed> $payload
+     * @return array<int|string, mixed>
+ */private function stripMaskedSecrets(string $group, array $payload): array
     {
         if (!SettingsSchema::hasGroup($group)) {
             return $payload;
         }
 
         foreach (SettingsSchema::groups()[$group]['fields'] as $field) {
-            if (($field['type'] ?? '') === 'password' && ($payload[$field['key']] ?? '') === '********') {
+            if ($field['type'] === 'password' && ($payload[$field['key']] ?? '') === '********') {
                 unset($payload[$field['key']]);
             }
         }
@@ -147,8 +145,8 @@ final class SettingsController
     /**
      * Mask password-type fields in API responses (values are still stored on save).
      *
-     * @param array<string, array<string, mixed>> $values
-     * @return array<string, array<string, mixed>>
+     * @param array<string, array<int|string, mixed>> $values
+     * @return array<string, array<int|string, mixed>>
      */
     private function maskSensitiveValues(array $values): array
     {
@@ -157,7 +155,7 @@ final class SettingsController
                 continue;
             }
             foreach ($group['fields'] as $field) {
-                if (($field['type'] ?? '') === 'password' && ($values[$groupKey][$field['key']] ?? '') !== '') {
+                if ($field['type'] === 'password' && ($values[$groupKey][$field['key']] ?? '') !== '') {
                     $values[$groupKey][$field['key']] = '********';
                 }
             }
@@ -169,9 +167,8 @@ final class SettingsController
     // === Blok: Pomocné metódy ===
 
     /**
-     * @return array<string, mixed>
-     */
-    private function parseJsonBody(ServerRequestInterface $request): array
+     * @return array<int|string, mixed>
+ */private function parseJsonBody(ServerRequestInterface $request): array
     {
         $data = json_decode((string) $request->getBody(), true);
 
@@ -179,11 +176,10 @@ final class SettingsController
     }
 
     /**
-     * @param array<string, mixed> $payload
-     */
-    private function json(ResponseInterface $response, array $payload, int $status = 200): ResponseInterface
+     * @param array<int|string, mixed> $payload
+ */private function json(ResponseInterface $response, array $payload, int $status = 200): ResponseInterface
     {
-        $response->getBody()->write((string) json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        $response->getBody()->write(JsonHelper::encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
         return $response->withStatus($status)->withHeader('Content-Type', 'application/json; charset=utf-8');
     }

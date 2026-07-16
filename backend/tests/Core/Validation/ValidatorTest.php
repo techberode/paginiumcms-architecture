@@ -109,7 +109,7 @@ class ValidatorTest extends TestCase
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param array<int|string, mixed> $data
      * @param array<string, list<string>> $rules
      * @return array<string, list<string>>
      */

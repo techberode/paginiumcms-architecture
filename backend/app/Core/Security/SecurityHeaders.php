@@ -4,14 +4,21 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\Security;
 
+use Psr\Http\Message\ResponseInterface;
+
 /**
  * Trieda pre správu bezpečnostných hlavičiek.
  */
 final class SecurityHeaders
 {
+    /** @var array<int|string, mixed> */
     private array $headers = [];
+    /** @var array<int|string, mixed> */
     private array $config;
 
+    /**
+     * @param array<int|string, mixed> $config
+     */
     public function __construct(array $config = [])
     {
         $this->config = array_merge([
@@ -97,15 +104,18 @@ final class SecurityHeaders
         return implode(', ', $parts);
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getHeaders(): array
     {
         return $this->headers;
     }
 
-    public function applyToResponse($response): mixed
+    public function applyToResponse(ResponseInterface $response): ResponseInterface
     {
         foreach ($this->headers as $name => $value) {
-            $response = $response->withHeader($name, $value);
+            $response = $response->withHeader((string) $name, (string) $value);
         }
 
         return $response;

@@ -30,6 +30,9 @@ final class DraftManager implements DraftManagerInterface
         $this->basePath = trim($basePath, '/');
     }
 
+    /**
+     * @param array<int|string, mixed> $payload
+     */
     public function save(string $type, string $slug, array $payload, string $userId): Draft
     {
         $draft = new Draft(

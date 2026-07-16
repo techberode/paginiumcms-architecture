@@ -8,13 +8,14 @@ declare(strict_types=1);
 
 use PaginiumCMS\Http\Controllers\Debug\DebugController;
 use Slim\App;
+use PaginiumCMS\Http\Support\RouteBootstrap;
 
 return function (App $app): void {
     if (!\PaginiumCMS\Core\Logging\Services\DebugEventLogger::isEnabled()) {
         return;
     }
 
-    $container = $app->getContainer();
+    $container = RouteBootstrap::container($app);
     $controller = $container->get(DebugController::class);
 
     $app->post('/api/debug/client-event', [$controller, 'clientEvent']);

@@ -9,6 +9,8 @@ use PaginiumCMS\Core\Backup\Models\BackupMetadata;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Psr7\Response;
+use PaginiumCMS\Support\FileHelper;
+use PaginiumCMS\Support\JsonHelper;
 
 class BackupController
 {
@@ -23,7 +25,7 @@ class BackupController
     {
         $backups = $this->backup->listBackups();
 
-        $response->getBody()->write(json_encode([
+        $response->getBody()->write(JsonHelper::encode([
             'success' => true,
             'backups' => array_map(function (BackupMetadata $backup) {
                 return $backup->jsonSerialize();
@@ -39,7 +41,7 @@ class BackupController
         $name = $data['name'] ?? '';
 
         if (empty($name)) {
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => false,
                 'error' => 'Názov zálohy je povinný',
             ], JSON_PRETTY_PRINT));
@@ -49,14 +51,14 @@ class BackupController
         try {
             $backup = $this->backup->create($name);
 
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => true,
                 'backup' => $backup->jsonSerialize(),
             ], JSON_PRETTY_PRINT));
 
             return $response->withStatus(201)->withHeader('Content-Type', 'application/json');
         } catch (\Exception $e) {
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => false,
                 'error' => $e->getMessage(),
             ], JSON_PRETTY_PRINT));
@@ -72,13 +74,13 @@ class BackupController
             $filePath = $this->backup->exportBackup($id);
             $filename = basename($filePath);
 
-            $response->getBody()->write(file_get_contents($filePath));
+            $response->getBody()->write(FileHelper::read($filePath));
             return $response
                 ->withHeader('Content-Type', 'application/zip')
                 ->withHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
                 ->withHeader('Content-Length', (string)filesize($filePath));
         } catch (\Exception $e) {
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => false,
                 'error' => $e->getMessage(),
             ], JSON_PRETTY_PRINT));
@@ -93,14 +95,14 @@ class BackupController
         try {
             $result = $this->backup->restore($id);
 
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => $result,
                 'message' => $result ? 'Záloha bola obnovená' : 'Obnova zálohy zlyhala',
             ], JSON_PRETTY_PRINT));
 
             return $response->withHeader('Content-Type', 'application/json');
         } catch (\Exception $e) {
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => false,
                 'error' => $e->getMessage(),
             ], JSON_PRETTY_PRINT));
@@ -115,14 +117,14 @@ class BackupController
         try {
             $result = $this->backup->deleteBackup($id);
 
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => $result,
                 'message' => $result ? 'Záloha bola vymazaná' : 'Vymazanie zálohy zlyhalo',
             ], JSON_PRETTY_PRINT));
 
             return $response->withHeader('Content-Type', 'application/json');
         } catch (\Exception $e) {
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => false,
                 'error' => $e->getMessage(),
             ], JSON_PRETTY_PRINT));

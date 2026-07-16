@@ -30,7 +30,6 @@ class FrontMatterParserTest extends TestCase
 
         $frontMatter = $this->parser->parse($content);
 
-        $this->assertIsArray($frontMatter);
         $this->assertEquals('Test Page', $frontMatter['title']);
         $this->assertEquals('test-page', $frontMatter['slug']);
         $this->assertEquals('published', $frontMatter['status']);
@@ -41,7 +40,6 @@ class FrontMatterParserTest extends TestCase
         $content = '# Just content';
         $frontMatter = $this->parser->parse($content);
 
-        $this->assertIsArray($frontMatter);
         $this->assertEmpty($frontMatter);
     }
 
@@ -70,7 +68,6 @@ class FrontMatterParserTest extends TestCase
 
         $frontMatter = $this->parser->extractFrontMatter($content);
 
-        $this->assertIsArray($frontMatter);
         $this->assertEquals('Test', $frontMatter['title']);
     }
 

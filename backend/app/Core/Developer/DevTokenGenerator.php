@@ -31,8 +31,8 @@ class DevTokenGenerator
 
     /**
      * @return array{token: string, hash: string, expires_at: int, label: string}
-     */
-    public function generate(string $label = 'developer', int $ttlSeconds = 86400, bool $singleUse = true): array
+ * @return array<int|string, mixed>
+ */public function generate(string $label = 'developer', int $ttlSeconds = 86400, bool $singleUse = true): array
     {
         $this->assertConfigured();
         $expiresAt = time() + $ttlSeconds;
@@ -58,8 +58,8 @@ class DevTokenGenerator
 
     /**
      * @return array{valid: bool, label?: string, reason?: string}
-     */
-    public function validate(string $token, DevTokenRegistry $registry): array
+ * @return array<int|string, mixed>
+ */public function validate(string $token, DevTokenRegistry $registry): array
     {
         if (!$this->isConfigured()) {
             return ['valid' => false, 'reason' => 'DEV_UNLOCK_SECRET nie je nastavený'];
@@ -110,9 +110,9 @@ class DevTokenGenerator
     /**
      * Overí podpis a expiráciu bez registrácie (pre CLI register).
      *
-     * @return array{valid: bool, payload?: array<string, mixed>, reason?: string}
-     */
-    public function verifyStructure(string $token): array
+     * @return array{valid: bool, payload?: array<int|string, mixed>, reason?: string}
+ * @return array<int|string, mixed>
+ */public function verifyStructure(string $token): array
     {
         if (!$this->isConfigured()) {
             return ['valid' => false, 'reason' => 'DEV_UNLOCK_SECRET nie je nastavený'];

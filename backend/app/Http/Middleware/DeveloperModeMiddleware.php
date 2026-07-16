@@ -10,6 +10,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Slim\Psr7\Response;
+use PaginiumCMS\Support\JsonHelper;
 
 /**
  * Vyžaduje odomknutý Developer Mode pre code-editor a dev API.
@@ -25,7 +26,7 @@ class DeveloperModeMiddleware implements MiddlewareInterface
     {
         if (!$this->gate->isFeatureAvailable()) {
             $response = new Response();
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => false,
                 'error' => 'Developer Mode nie je povolený v konfigurácii (DEVELOPER_MODE / APP_DEBUG)',
             ], JSON_UNESCAPED_UNICODE));
@@ -35,7 +36,7 @@ class DeveloperModeMiddleware implements MiddlewareInterface
 
         if (!$this->gate->isUnlocked()) {
             $response = new Response();
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => false,
                 'error' => 'Developer Mode je zamknutý. Odomknite cez TOTP alebo dev token.',
                 'gate' => $this->gate->getStatus(),

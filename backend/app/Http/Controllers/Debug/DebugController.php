@@ -7,6 +7,7 @@ namespace PaginiumCMS\Http\Controllers\Debug;
 use PaginiumCMS\Core\Logging\Services\DebugEventLogger;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use PaginiumCMS\Support\JsonHelper;
 
 final class DebugController
 {
@@ -29,9 +30,8 @@ final class DebugController
     }
 
     /**
-     * @return array<string, mixed>
-     */
-    private function parseJsonBody(ServerRequestInterface $request): array
+     * @return array<int|string, mixed>
+ */private function parseJsonBody(ServerRequestInterface $request): array
     {
         $data = json_decode((string) $request->getBody(), true);
 
@@ -39,11 +39,10 @@ final class DebugController
     }
 
     /**
-     * @param array<string, mixed> $payload
-     */
-    private function json(ResponseInterface $response, array $payload, int $status = 200): ResponseInterface
+     * @param array<int|string, mixed> $payload
+ */private function json(ResponseInterface $response, array $payload, int $status = 200): ResponseInterface
     {
-        $response->getBody()->write((string) json_encode($payload, JSON_UNESCAPED_UNICODE));
+        $response->getBody()->write(JsonHelper::encode($payload, JSON_UNESCAPED_UNICODE));
 
         return $response->withStatus($status)->withHeader('Content-Type', 'application/json; charset=utf-8');
     }

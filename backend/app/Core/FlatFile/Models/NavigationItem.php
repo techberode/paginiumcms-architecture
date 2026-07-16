@@ -118,8 +118,8 @@ class NavigationItem implements JsonSerializable
 
     /**
      * {@inheritDoc}
-     */
-    public function jsonSerialize(): array
+ * @return array<int|string, mixed>
+ */public function jsonSerialize(): array
     {
         return [
             'id' => $this->id,

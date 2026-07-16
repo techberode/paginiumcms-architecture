@@ -19,6 +19,7 @@ use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Support\Lang;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use PaginiumCMS\Support\JsonHelper;
 
 class ContentController
 {
@@ -45,8 +46,8 @@ class ContentController
         ));
     }
 
-    /** @param array<string, string> $args */
-    public function getPage(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    /** @param array<string, string> $args
+ */public function getPage(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $slug = $args['slug'] ?? '';
         $page = $this->contentCache->rememberPage($slug, fn () => $this->repository->findBySlug($slug, 'page'));
@@ -63,20 +64,20 @@ class ContentController
         return $this->createContent($request, $response, 'page');
     }
 
-    /** @param array<string, string> $args */
-    public function updatePage(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    /** @param array<string, string> $args
+ */public function updatePage(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         return $this->updateContent($request, $response, $args['slug'] ?? '', 'page');
     }
 
-    /** @param array<string, string> $args */
-    public function deletePage(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    /** @param array<string, string> $args
+ */public function deletePage(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         return $this->deleteContent($request, $response, $args['slug'] ?? '', 'page');
     }
 
-    /** @param array<string, string> $args */
-    public function updatePageStatus(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    /** @param array<string, string> $args
+ */public function updatePageStatus(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         return $this->updateStatus($request, $response, $args['slug'] ?? '', 'page');
     }
@@ -92,8 +93,8 @@ class ContentController
         ));
     }
 
-    /** @param array<string, string> $args */
-    public function getArticle(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    /** @param array<string, string> $args
+ */public function getArticle(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $slug = $args['slug'] ?? '';
         $article = $this->contentCache->rememberArticle($slug, fn () => $this->repository->findBySlug($slug, 'article'));
@@ -110,20 +111,20 @@ class ContentController
         return $this->createContent($request, $response, 'article');
     }
 
-    /** @param array<string, string> $args */
-    public function updateArticle(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    /** @param array<string, string> $args
+ */public function updateArticle(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         return $this->updateContent($request, $response, $args['slug'] ?? '', 'article');
     }
 
-    /** @param array<string, string> $args */
-    public function deleteArticle(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    /** @param array<string, string> $args
+ */public function deleteArticle(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         return $this->deleteContent($request, $response, $args['slug'] ?? '', 'article');
     }
 
-    /** @param array<string, string> $args */
-    public function updateArticleStatus(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    /** @param array<string, string> $args
+ */public function updateArticleStatus(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         return $this->updateStatus($request, $response, $args['slug'] ?? '', 'article');
     }
@@ -289,9 +290,8 @@ class ContentController
     }
 
     /**
-     * @param array<string, mixed> $data
-     */
-    private function buildContent(string $type, array $data): Content
+     * @param array<int|string, mixed> $data
+ */private function buildContent(string $type, array $data): Content
     {
         $content = $type === 'article' ? new Article() : new Page();
         $this->applyPayload($content, $data, (string) $data['slug']);
@@ -300,9 +300,8 @@ class ContentController
     }
 
     /**
-     * @param array<string, mixed> $data
-     */
-    private function applyPayload(Content $content, array $data, string $slug): void
+     * @param array<int|string, mixed> $data
+ */private function applyPayload(Content $content, array $data, string $slug): void
     {
         $content->setSlug($slug);
         $content->setTitle((string) $data['title']);
@@ -328,9 +327,8 @@ class ContentController
     }
 
     /**
-     * @return array<string, mixed>
-     */
-    private function serializeContent(Content $content, string $type): array
+     * @return array<int|string, mixed>
+ */private function serializeContent(Content $content, string $type): array
     {
         $frontMatter = $content->getFrontMatter();
         $modifiedAt = $content->getModifiedAt() > 0
@@ -369,9 +367,8 @@ class ContentController
     }
 
     /**
-     * @return array<string, mixed>
-     */
-    private function parseJsonBody(ServerRequestInterface $request): array
+     * @return array<int|string, mixed>
+ */private function parseJsonBody(ServerRequestInterface $request): array
     {
         $data = json_decode((string) $request->getBody(), true);
 
@@ -379,9 +376,8 @@ class ContentController
     }
 
     /**
-     * @param array<string, mixed> $data
-     */
-    private function validatePayload(array $data, bool $requireSlug): ?string
+     * @param array<int|string, mixed> $data
+ */private function validatePayload(array $data, bool $requireSlug): ?string
     {
         if (empty($data['title'])) {
             return Lang::get('title_required', [], 'content');
@@ -399,9 +395,8 @@ class ContentController
     }
 
     /**
-     * @return array<string, mixed>
-     */
-    private function extractFilters(ServerRequestInterface $request): array
+     * @return array<int|string, mixed>
+ */private function extractFilters(ServerRequestInterface $request): array
     {
         $params = $request->getQueryParams();
         $filters = [];
@@ -444,9 +439,8 @@ class ContentController
     /**
      * Zaznamená konflikt do flat-file logu (admin prehľad / audit).
      *
-     * @param array<string, mixed> $data
-     */
-    private function recordConflict(
+     * @param array<int|string, mixed> $data
+ */private function recordConflict(
         ServerRequestInterface $request,
         string $type,
         string $slug,
@@ -468,9 +462,8 @@ class ContentController
     /**
      * Získa commit správu z payloadu (voliteľná). Prázdna = auto-správa vo versioning vrstve.
      *
-     * @param array<string, mixed> $data
-     */
-    private function resolveCommitMessage(array $data): string
+     * @param array<int|string, mixed> $data
+ */private function resolveCommitMessage(array $data): string
     {
         $message = $data['message'] ?? ($data['commitMessage'] ?? '');
 
@@ -488,14 +481,14 @@ class ContentController
             $payload['message'] = $message;
         }
 
-        $response->getBody()->write((string) json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        $response->getBody()->write(JsonHelper::encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
         return $response->withStatus($status)->withHeader('Content-Type', 'application/json; charset=utf-8');
     }
 
     private function jsonError(ResponseInterface $response, string $message, int $status = 400): ResponseInterface
     {
-        $response->getBody()->write((string) json_encode([
+        $response->getBody()->write(JsonHelper::encode([
             'success' => false,
             'error' => $message,
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
@@ -508,7 +501,7 @@ class ContentController
      */
     private function jsonConflict(ResponseInterface $response, ContentConflictException $e): ResponseInterface
     {
-        $response->getBody()->write((string) json_encode([
+        $response->getBody()->write(JsonHelper::encode([
             'success' => false,
             'error' => $e->getMessage(),
             'conflict' => $e->toContext(),

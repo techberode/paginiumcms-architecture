@@ -11,22 +11,26 @@ use PaginiumCMS\Modules\Security\Services\SessionManager;
 use PaginiumCMS\Modules\Security\Models\User;
 
 // ---------- ZÁKLADNÉ NASTAVENIA ----------
-ini_set('session.cookie_httponly', '1');
-ini_set('session.cookie_secure', '1');  // IBA HTTPS!
-ini_set('session.cookie_samesite', 'Lax');
-ini_set('session.use_strict_mode', '1');
-ini_set('session.use_cookies', '1');
-ini_set('session.use_only_cookies', '1');
+if (session_status() === PHP_SESSION_NONE) {
+    ini_set('session.cookie_httponly', '1');
+    ini_set('session.cookie_secure', '1');  // IBA HTTPS!
+    ini_set('session.cookie_samesite', 'Lax');
+    ini_set('session.use_strict_mode', '1');
+    ini_set('session.use_cookies', '1');
+    ini_set('session.use_only_cookies', '1');
 
-// ---------- ŽIVOTNOSŤ SESSION ----------
-ini_set('session.gc_maxlifetime', '1440'); // 24 minút
-ini_set('session.cookie_lifetime', '1440');
-ini_set('session.gc_probability', '1');
-ini_set('session.gc_divisor', '100');
+    // ---------- ŽIVOTNOSŤ SESSION ----------
+    ini_set('session.gc_maxlifetime', '1440'); // 24 minút
+    ini_set('session.cookie_lifetime', '1440');
+    ini_set('session.gc_probability', '1');
+    ini_set('session.gc_divisor', '100');
 
-// ---------- BEZPEČNOSŤ ----------
-ini_set('session.sid_length', '48');
-ini_set('session.sid_bits_per_character', '6');
+    // session.sid_* je od PHP 8.5 deprecated – nové PHP má bezpečné defaulty.
+    if (PHP_VERSION_ID < 80500) {
+        ini_set('session.sid_length', '48');
+        ini_set('session.sid_bits_per_character', '6');
+    }
+}
 
 /**
  * Bezpečnostný wrapper pre SessionManager chrániaci pred Session Hijacking.
@@ -44,7 +48,7 @@ class SecureSessionManager extends SessionManager
 
         // Ak metóda predka v PHPStane hlási chybu, uistite sa, že základný SessionManager ju reálne má.
         // Ak základný SessionManager používa iný názvov overenia (napr. isLogged), prepíšte to tu.
-        if (method_exists($this, 'isAuthenticated') && $this->isAuthenticated()) {
+        if ($this->isAuthenticated()) {
             $this->validateSession();
         }
     }
@@ -59,11 +63,7 @@ class SecureSessionManager extends SessionManager
         $_SESSION[self::CREATED_KEY] = time();
 
         // Bezpečná regenerácia ID relácie proti Session Fixation útokom
-        if (method_exists($this, 'regenerate')) {
-            $this->regenerate();
-        } else {
-            session_regenerate_id(true);
-        }
+        $this->regenerate();
     }
 
     private function validateSession(): void
@@ -99,18 +99,6 @@ class SecureSessionManager extends SessionManager
      */
     private function forceDestroy(): void
     {
-        if (method_exists($this, 'destroy')) {
-            $this->destroy();
-        } else {
-            $_SESSION = [];
-            if (ini_get("session.use_cookies")) {
-                $params = session_get_cookie_params();
-                setcookie(session_name(), '', time() - 42000,
-                          $params["path"], $params["domain"],
-                          $params["secure"], $params["httponly"]
-                );
-            }
-            @session_destroy();
-        }
+        $this->destroy();
     }
 }

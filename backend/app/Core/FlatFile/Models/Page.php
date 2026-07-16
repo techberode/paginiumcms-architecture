@@ -9,8 +9,6 @@ namespace PaginiumCMS\Core\FlatFile\Models;
  */
 class Page extends Content
 {
-    private string $template = 'default';
-
     public function getTemplate(): string
     {
         return $this->frontMatter['template'] ?? 'default';

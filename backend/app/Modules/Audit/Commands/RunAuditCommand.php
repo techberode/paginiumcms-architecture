@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Modules\Audit\Commands;
 
+use PaginiumCMS\Modules\Audit\Models\AuditReport;
 use PaginiumCMS\Modules\Audit\Services\AuditEngine;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -64,7 +65,7 @@ class RunAuditCommand extends Command
         return $report->isPassed() ? Command::SUCCESS : Command::FAILURE;
     }
 
-    private function renderTable(OutputInterface $output, $report): void
+    private function renderTable(OutputInterface $output, AuditReport $report): void
     {
         $output->writeln('');
         $output->writeln('<info>=== Audit Report ===</info>');
@@ -86,7 +87,7 @@ class RunAuditCommand extends Command
                     'warning' => 'comment',
                     default => 'info',
                 };
-                $output->writeln(sprintf('  - <fg=%s>%s</>: %d', $color, strtoupper($severity), $count));
+                $output->writeln(sprintf('  - <fg=%s>%s</>: %d', $color, strtoupper((string) $severity), $count));
             }
         }
         $output->writeln('');

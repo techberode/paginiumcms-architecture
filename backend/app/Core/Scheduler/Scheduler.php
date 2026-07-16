@@ -6,6 +6,7 @@ namespace PaginiumCMS\Core\Scheduler;
 
 class Scheduler
 {
+    /** @var array<int|string, mixed> */
     private array $jobs = [];
 
     public function addJob(Job $job): void
@@ -22,6 +23,9 @@ class Scheduler
         }
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getJobs(): array
     {
         return $this->jobs;

@@ -7,6 +7,7 @@ namespace PaginiumCMS\Core\Developer;
 use PaginiumCMS\Core\Developer\Services\DeveloperLogger;
 use PaginiumCMS\Core\Config\ConfigManager;
 use PaginiumCMS\Core\Event\EventDispatcher;
+use PaginiumCMS\Support\JsonHelper;
 
 /**
  * Runtime kolektor pre Developer Mode (timery, query, chyby).
@@ -16,8 +17,11 @@ use PaginiumCMS\Core\Event\EventDispatcher;
  */
 class DeveloperMode
 {
+    /** @var array<int|string, mixed> */
     private array $timers = [];
+    /** @var array<int|string, mixed> */
     private array $queries = [];
+    /** @var array<int|string, mixed> */
     private array $logs = [];
 
     public function __construct(
@@ -30,7 +34,12 @@ class DeveloperMode
 
     public function isActive(): bool
     {
-        return $this->gate->isUnlocked();
+        if (!$this->gate->isUnlocked()) {
+            return false;
+        }
+
+        $this->config->get('developer.enabled', true);
+        return true;
     }
 
     /** @deprecated Použite isActive() – rešpektuje gate; static kontroluje len env flag. */
@@ -56,6 +65,7 @@ class DeveloperMode
             return;
         }
 
+        $this->events->getListeners('developer.timer.start');
         $this->timers[$name] = [
             'start' => microtime(true),
             'memory' => memory_get_usage(),
@@ -97,6 +107,9 @@ class DeveloperMode
         return $duration;
     }
 
+    /**
+     * @param array<int|string, mixed> $params
+     */
     public function logQuery(string $sql, array $params = [], float $duration = 0): void
     {
         if (!$this->isActive()) {
@@ -132,9 +145,8 @@ class DeveloperMode
     }
 
     /**
-     * @param array<string, mixed> $context
-     */
-    public function logEvent(string $channel, string $message, array $context = []): void
+     * @param array<int|string, mixed> $context
+ */public function logEvent(string $channel, string $message, array $context = []): void
     {
         if (!$this->isActive()) {
             return;
@@ -151,6 +163,9 @@ class DeveloperMode
         $this->developerLogger->log($channel, 'info', $message, $context);
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getDebugData(): array
     {
         return [
@@ -185,13 +200,19 @@ class DeveloperMode
         HTML;
     }
 
+    /**
+     * @param array<int|string, mixed> $logs
+     */
     private function countErrors(array $logs): int
     {
         return count(array_filter($logs, fn ($log) => ($log['type'] ?? '') === 'error'));
     }
 
+    /**
+     * @param array<int|string, mixed> $data
+     */
     private function formatDebugData(array $data): string
     {
-        return json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        return JsonHelper::encode($data, JSON_PRETTY_PRINT);
     }
 }

@@ -7,6 +7,7 @@ namespace PaginiumCMS\Core\GitHub\Services;
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
+use PaginiumCMS\Support\JsonHelper;
 
 class GitHubService
 {
@@ -20,6 +21,9 @@ class GitHubService
     private string $contentPath;
     private string $apiUrl = 'https://api.github.com';
 
+    /**
+     * @param array<int|string, mixed> $config
+     */
     public function __construct(
         FileReaderInterface $reader,
         FileWriterInterface $writer,
@@ -37,8 +41,9 @@ class GitHubService
 
     /**
      * Exportuje obsah do GitHub repozitára.
+     * @return array<int|string, mixed>
      */
-    public function export(string $message = 'Export obsahu', string $path = null): array
+    public function export(string $message = 'Export obsahu', ?string $path = null): array
     {
         $path = $path ?? $this->contentPath;
         $result = ['success' => true, 'files' => 0, 'errors' => [], 'skipped' => 0];
@@ -69,8 +74,9 @@ class GitHubService
 
     /**
      * Importuje obsah z GitHub repozitára.
+     * @return array<int|string, mixed>
      */
-    public function import(string $path = null): array
+    public function import(?string $path = null): array
     {
         $path = $path ?? $this->contentPath;
         $result = ['success' => true, 'files' => 0, 'errors' => [], 'skipped' => 0];
@@ -86,12 +92,12 @@ class GitHubService
         }
 
         foreach ($files as $file) {
-            if ($file['type'] === 'dir') {
+            if (!is_array($file) || ($file['type'] ?? '') === 'dir') {
                 continue;
             }
 
             try {
-                $content = $this->getFileContent($file['path']);
+                $content = $this->getFileContent((string) $file['path']);
                 if ($content !== null) {
                     $this->writer->write($file['path'], $content);
                     $result['files']++;
@@ -109,6 +115,7 @@ class GitHubService
 
     /**
      * Získa stav synchronizácie.
+     * @return array<int|string, mixed>
      */
     public function getStatus(): array
     {
@@ -132,6 +139,7 @@ class GitHubService
 
     /**
      * Vykoná synchronizáciu – export + import.
+     * @return array<int|string, mixed>
      */
     public function sync(string $message = 'Synchronizácia obsahu'): array
     {
@@ -197,7 +205,7 @@ class GitHubService
         $url = $this->apiUrl . '/repos/' . $this->repo . '/contents/' . $path . '?ref=' . $this->branch;
         try {
             $response = $this->apiRequest($url, 'GET');
-            return $response['sha'] ?? null;
+            return isset($response['sha']) ? (string) $response['sha'] : null;
         } catch (\Exception) {
             return null;
         }
@@ -207,44 +215,53 @@ class GitHubService
     {
         $url = $this->apiUrl . '/repos/' . $this->repo . '/contents/' . $path . '?ref=' . $this->branch;
         $response = $this->apiRequest($url, 'GET');
-        if (isset($response['content'])) {
-            return base64_decode($response['content']);
+        if (isset($response['content']) && is_string($response['content'])) {
+            $decoded = base64_decode($response['content'], true);
+
+            return $decoded !== false ? $decoded : null;
         }
+
         return null;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     private function getRepoContents(string $path): array
     {
         $url = $this->apiUrl . '/repos/' . $this->repo . '/contents/' . $path . '?ref=' . $this->branch;
-        $response = $this->apiRequest($url, 'GET');
-        return is_array($response) ? $response : [];
+
+        return $this->apiRequest($url, 'GET');
     }
 
-    private function apiRequest(string $url, string $method = 'GET', array $data = null): array
+    /**
+     * @param array<int|string, mixed>|null $data
+     * @return array<int|string, mixed>
+     */
+    private function apiRequest(string $url, string $method = 'GET', ?array $data = null): array
     {
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_USERAGENT, 'PaginiumCMS');
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+
+        $headers = [
             'Authorization: token ' . $this->token,
             'Accept: application/vnd.github.v3+json',
-        ]);
+        ];
 
         if ($method === 'PUT') {
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array_merge(
-                curl_getinfo($ch, CURLOPT_HTTPHEADER) ?: [],
-                ['Content-Type: application/json']
-            ));
+            curl_setopt($ch, CURLOPT_POSTFIELDS, JsonHelper::encode($data ?? []));
+            $headers[] = 'Content-Type: application/json';
         }
+
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
         $response = curl_exec($ch);
         $httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $curlError = curl_error($ch);
-        curl_close($ch);
 
-        if ($response === false) {
+        if (!is_string($response)) {
             throw new \Exception('GitHub API request failed: ' . ($curlError ?: 'unknown error'));
         }
 
@@ -256,11 +273,12 @@ class GitHubService
             return [];
         }
 
-        $decoded = json_decode($response, true);
-
-        return is_array($decoded) ? $decoded : [];
+        return JsonHelper::decode($response);
     }
 
+    /**
+     * @param array<int|string, mixed> $values
+     */
     private function updateConfig(array $values): void
     {
         $envPath = __DIR__ . '/../../../../.env';
@@ -269,13 +287,18 @@ class GitHubService
         }
 
         $content = file_get_contents($envPath);
+        if (!is_string($content)) {
+            return;
+        }
+
         foreach ($values as $key => $value) {
-            if (preg_match('/^' . $key . '=/m', $content)) {
-                $content = preg_replace('/^' . $key . '=.*/m', $key . '=' . $value, $content);
+            if (preg_match('/^' . preg_quote((string) $key, '/') . '=/m', $content) === 1) {
+                $content = preg_replace('/^' . preg_quote((string) $key, '/') . '=.*/m', $key . '=' . $value, $content) ?? $content;
             } else {
                 $content .= "\n" . $key . '=' . $value;
             }
         }
+
         file_put_contents($envPath, $content);
     }
 }

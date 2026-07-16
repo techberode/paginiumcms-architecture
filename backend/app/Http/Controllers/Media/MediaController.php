@@ -10,6 +10,7 @@ use PaginiumCMS\Support\Lang;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UploadedFileInterface;
+use PaginiumCMS\Support\JsonHelper;
 
 class MediaController
 {
@@ -65,6 +66,9 @@ class MediaController
         }
     }
 
+    /**
+     * @param array<int|string, mixed> $args
+     */
     public function updateMedia(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $path = urldecode($args['path'] ?? '');
@@ -92,6 +96,9 @@ class MediaController
         }
     }
 
+    /**
+     * @param array<int|string, mixed> $args
+     */
     public function deleteMedia(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $path = urldecode($args['path'] ?? '');
@@ -112,14 +119,14 @@ class MediaController
             $payload['message'] = $message;
         }
 
-        $response->getBody()->write(json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        $response->getBody()->write(JsonHelper::encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
         return $response->withStatus($status)->withHeader('Content-Type', 'application/json; charset=utf-8');
     }
 
     private function jsonError(ResponseInterface $response, string $message, int $status = 400): ResponseInterface
     {
-        $response->getBody()->write(json_encode([
+        $response->getBody()->write(JsonHelper::encode([
             'success' => false,
             'error' => $message,
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));

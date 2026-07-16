@@ -6,6 +6,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [2.0.6] – 2026-07-16
+
+### PHPStan level 8 – full backend compliance
+
+#### Backend
+- Resolve all PHPStan level 8 errors across `backend/app`, `backend/bootstrap`, `backend/tests`, and `backend/bin` (0 errors)
+- Add `JsonHelper` / `FileHelper` for safe JSON and file I/O
+- Add `RouteBootstrap::container()` for nullable Slim container in routes
+- Extend `phpstan.neon` with `phpstan-phpunit`, full test/bin paths; remove legacy `backend/routes/web.php`
+- Remove unused `ValidationTrait`; fix nullable params and array PHPDoc types project-wide
+- Add `LocaleMiddleware` – wires `Lang` to `general.language` settings + `Accept-Language` (sk/en)
+- Extend `Lang` with plugin path support (`Lang::addPath`) and SK fallback; fix translator formatting
+- PHP 8.5 fixes: guard deprecated `iconv_set_encoding` and `session.sid_*` ini settings in bootstrap
+- `GeoIPService` silent HTTP fetch (no suppressed warnings); `TOTPGenerator` uses `InternalClock` (OTPHP 11.3+)
+- Add `SecurityMiddlewareTest`, `SecurityHeadersTest`, `LangTest`, `LocaleMiddlewareTest`
+
+#### Frontend
+- Switch Vitest from **jsdom** to **happy-dom** (~4× faster test runs)
+- Optimize slow component tests (`fireEvent.change`, remove artificial `setTimeout`)
+- Add security tests: `client.security.test.ts`, `safeUrl` helper + tests, `test:security` / `audit:security` scripts
+- Add i18n foundation: `src/i18n/` (core sk/en), `I18nProvider`, `useI18n()` hook (module blocks via `registerModuleMessages`)
+
+#### Tests & tooling
+- PHPUnit: 0 warnings, 0 deprecations (`failOnWarning`, `failOnDeprecation` in `phpunit.xml`)
+- Vitest: 73 tests, strict warning/deprecation guards in config
+- Remove PHP 8.5 deprecations: `setAccessible()`, `finfo_close()`, `curl_close()`
+- Guard session `ini_set()` when session already active (fixes PHPUnit warnings in CLI)
+- Upgrade `bacon/bacon-qr-code` to v3.1; add `phpstan/phpstan-phpunit` ^2.0
+- Add `scripts/fix-phpstan-iterables.py` for batch array PHPDoc patching
+
+---
+
 ## [2.0.5] – 2026-07-15
 
 ### Iteration 9 – Prototype backend port + FE wiring

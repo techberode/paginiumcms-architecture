@@ -11,6 +11,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Slim\Psr7\Response;
+use PaginiumCMS\Support\JsonHelper;
 
 /**
  * === Middleware: TwoFactorMiddleware ===
@@ -22,6 +23,7 @@ use Slim\Psr7\Response;
 class TwoFactorMiddleware implements MiddlewareInterface
 {
     /** @var list<string> */
+    /** @var array<int|string, mixed> */
     private array $skipPathPrefixes = [
         '/api/auth/2fa',
         '/api/auth/me',
@@ -67,7 +69,7 @@ class TwoFactorMiddleware implements MiddlewareInterface
         }
 
         $response = new Response();
-        $response->getBody()->write((string) json_encode($payload, JSON_UNESCAPED_UNICODE));
+        $response->getBody()->write(JsonHelper::encode($payload, JSON_UNESCAPED_UNICODE));
 
         return $response
             ->withStatus($status)

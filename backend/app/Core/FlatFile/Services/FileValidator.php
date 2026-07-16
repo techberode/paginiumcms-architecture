@@ -9,6 +9,7 @@ use PaginiumCMS\Core\FlatFile\Exception\InvalidPathException;
 class FileValidator
 {
     private string $basePath;
+    /** @var array<int|string, mixed> */
     private array $forbiddenPatterns = [
         '/\.\.\//',
         '/^\/\//',
@@ -135,7 +136,6 @@ class FileValidator
         }
 
         $mimeType = finfo_file($finfo, $absolutePath);
-        finfo_close($finfo);
 
         return $mimeType ?: null;
     }

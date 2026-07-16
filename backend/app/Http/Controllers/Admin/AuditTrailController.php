@@ -9,6 +9,7 @@ use PaginiumCMS\Core\AuditTrail\Services\AuditTrailService;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Psr7\Response;
+use PaginiumCMS\Support\JsonHelper;
 
 class AuditTrailController
 {
@@ -22,8 +23,8 @@ class AuditTrailController
     /**
      * GET /api/admin/audit/content/{contentId}
      * Získa audit trail pre konkrétny obsah
-     */
-    public function getContentAudit(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+ * @param array<int|string, mixed> $args
+ */public function getContentAudit(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $contentId = $args['contentId'] ?? '';
         $params = $request->getQueryParams();
@@ -32,7 +33,7 @@ class AuditTrailController
         try {
             $auditTrail = $this->auditTrailService->getContentAuditTrail($contentId, $limit);
             
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => true,
                 'data' => [
                     'content_id' => $contentId,
@@ -42,7 +43,7 @@ class AuditTrailController
             ]));
             return $response->withHeader('Content-Type', 'application/json');
         } catch (\Exception $e) {
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => false,
                 'error' => $e->getMessage()
             ]));
@@ -53,8 +54,8 @@ class AuditTrailController
     /**
      * GET /api/admin/audit/user/{userId}
      * Získa audit trail pre používateľa
-     */
-    public function getUserAudit(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+ * @param array<int|string, mixed> $args
+ */public function getUserAudit(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $userId = $args['userId'] ?? '';
         $params = $request->getQueryParams();
@@ -63,7 +64,7 @@ class AuditTrailController
         try {
             $auditTrail = $this->auditTrailService->getUserAuditTrail($userId, $limit);
             
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => true,
                 'data' => [
                     'user_id' => $userId,
@@ -73,7 +74,7 @@ class AuditTrailController
             ]));
             return $response->withHeader('Content-Type', 'application/json');
         } catch (\Exception $e) {
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => false,
                 'error' => $e->getMessage()
             ]));
@@ -95,13 +96,13 @@ class AuditTrailController
         try {
             $stats = $this->auditTrailService->getAuditStats($filters);
             
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => true,
                 'data' => $stats
             ]));
             return $response->withHeader('Content-Type', 'application/json');
         } catch (\Exception $e) {
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => false,
                 'error' => $e->getMessage()
             ]));
@@ -128,7 +129,7 @@ class AuditTrailController
                 ->withHeader('Content-Type', 'text/csv')
                 ->withHeader('Content-Disposition', 'attachment; filename="audit_trail_' . date('Y-m-d') . '.csv"');
         } catch (\Exception $e) {
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => false,
                 'error' => $e->getMessage()
             ]));
@@ -151,7 +152,7 @@ class AuditTrailController
         $severity = $data['severity'] ?? 'INFO';
 
         if (empty($category) || empty($target) || empty($action)) {
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => false,
                 'error' => 'Category, target and action are required'
             ]));
@@ -162,13 +163,13 @@ class AuditTrailController
             $user = $request->getAttribute('user');
             $this->auditTrailService->logAdminAction($action, $target, $user, $metadata, $severity);
             
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => true,
                 'message' => 'Audit event logged successfully'
             ]));
             return $response->withHeader('Content-Type', 'application/json');
         } catch (\Exception $e) {
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => false,
                 'error' => $e->getMessage()
             ]));

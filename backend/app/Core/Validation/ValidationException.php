@@ -7,18 +7,12 @@ namespace PaginiumCMS\Core\Validation;
 use RuntimeException;
 
 /**
- * === Výnimka: ValidationException ===
  * Jednotná výnimka pre zlyhanie validácie (Iterácia 4).
- *
- * Nesie mapu chýb po jednotlivých poliach (`field => [správy]`), ktorú
- * jednotný Error Handler (ApiErrorHandler) mapuje na HTTP 422 s obalom
- * `{ success: false, error, errors }`. Frontend tak vie zvýrazniť konkrétne
- * polia bez ďalšieho parsovania.
  */
 final class ValidationException extends RuntimeException
 {
     /**
-     * @param array<string, list<string>> $errors Mapa chýb podľa poľa.
+     * @param array<string, list<string>> $errors
      */
     public function __construct(
         private array $errors,
@@ -37,7 +31,7 @@ final class ValidationException extends RuntimeException
     }
 
     /**
-     * @return list<string> Ploché pole všetkých chybových správ.
+     * @return list<string>
      */
     public function getFlatMessages(): array
     {

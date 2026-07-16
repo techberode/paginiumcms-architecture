@@ -91,9 +91,8 @@ class ContactMessage implements JsonSerializable
     }
 
     /**
-     * @param array<string, mixed> $entry
-     */
-    public static function fromArray(array $entry, string $id): self
+     * @param array<int|string, mixed> $entry
+ */public static function fromArray(array $entry, string $id): self
     {
         $message = new self(
             (string) ($entry['name'] ?? ''),
@@ -103,7 +102,6 @@ class ContactMessage implements JsonSerializable
 
         $reflection = new \ReflectionClass($message);
         $idProp = $reflection->getProperty('id');
-        $idProp->setAccessible(true);
         $idProp->setValue($message, $id);
 
         if (!empty($entry['subject'])) {
@@ -114,7 +112,6 @@ class ContactMessage implements JsonSerializable
         }
         if (!empty($entry['createdAt'])) {
             $createdProp = $reflection->getProperty('createdAt');
-            $createdProp->setAccessible(true);
             $createdProp->setValue($message, (string) $entry['createdAt']);
         }
         if (!empty($entry['ip'])) {
@@ -126,8 +123,8 @@ class ContactMessage implements JsonSerializable
 
     /**
      * {@inheritDoc}
-     */
-    public function jsonSerialize(): array
+ * @return array<int|string, mixed>
+ */public function jsonSerialize(): array
     {
         return [
             'id' => $this->id,

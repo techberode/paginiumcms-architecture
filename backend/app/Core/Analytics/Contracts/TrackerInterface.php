@@ -24,16 +24,16 @@ interface TrackerInterface
 
     /**
      * Získa zoznam návštev pre daný deň.
-     */
-    public function getVisits(string $date = null, int $limit = 100): array;
+ * @return array<int|string, mixed>
+ */public function getVisits(?string $date = null, int $limit = 100): array;
 
     /**
      * Získa denné štatistiky.
-     */
-    public function getDailyStats(string $date = null): array;
+ * @return array<int|string, mixed>
+ */public function getDailyStats(?string $date = null): array;
 
     /**
      * Získa návštevníkov v reálnom čase.
-     */
-    public function getRealtimeVisitors(): array;
+ * @return array<int|string, mixed>
+ */public function getRealtimeVisitors(): array;
 }

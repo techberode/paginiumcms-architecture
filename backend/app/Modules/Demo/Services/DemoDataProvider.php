@@ -20,6 +20,9 @@ final class DemoDataProvider implements DemoDataProviderInterface
         );
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function comments(?string $articleSlug = null): array
     {
         if (!$this->isEnabled()) {
@@ -37,11 +40,17 @@ final class DemoDataProvider implements DemoDataProviderInterface
         ));
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function contactMessages(): array
     {
         return $this->isEnabled() ? DemoFixtures::sampleContactMessages() : [];
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function newsletterSubscribers(): array
     {
         return $this->isEnabled() ? DemoFixtures::sampleNewsletterSubscribers() : [];

@@ -7,7 +7,6 @@ namespace PaginiumCMS\Tests\Core\Health;
 use PaginiumCMS\Core\Health\Services\HealthCheckManager;
 use PaginiumCMS\Core\Health\Services\Checkers\SystemChecker;
 use PaginiumCMS\Core\Health\Services\Checkers\StorageChecker;
-use PaginiumCMS\Core\Health\Models\HealthStatus;
 use PHPUnit\Framework\TestCase;
 
 class HealthCheckTest extends TestCase
@@ -39,7 +38,6 @@ class HealthCheckTest extends TestCase
 
         $this->assertNotEmpty($report->getId());
         $this->assertNotEmpty($report->getTimestamp());
-        $this->assertIsArray($report->getChecks());
         $this->assertGreaterThanOrEqual(0, count($report->getChecks()));
     }
 
@@ -49,7 +47,7 @@ class HealthCheckTest extends TestCase
 
         $result = $this->manager->runCheck('system');
         $this->assertNotNull($result);
-        $this->assertInstanceOf(HealthStatus::class, $result);
+        $this->assertEquals('system', $result->getCheck());
     }
 
     public function testRunNonExistentCheck(): void

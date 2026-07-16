@@ -18,7 +18,7 @@ return function (App $app) {
               'version' => '1.0.0',
               'php_version' => PHP_VERSION,
         ];
-        $response->getBody()->write(json_encode($data, JSON_PRETTY_PRINT));
+        $response->getBody()->write((string) json_encode($data, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT));
         return $response->withHeader('Content-Type', 'application/json');
     });
 

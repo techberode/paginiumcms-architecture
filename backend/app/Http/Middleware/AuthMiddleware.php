@@ -10,6 +10,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Slim\Psr7\Response;
+use PaginiumCMS\Support\JsonHelper;
 
 /**
  * Middleware pre overenie autentifikácie.
@@ -27,7 +28,7 @@ class AuthMiddleware implements MiddlewareInterface
     {
         if (!$this->auth->isAuthenticated()) {
             $response = new Response();
-            $response->getBody()->write(json_encode([
+            $response->getBody()->write(JsonHelper::encode([
                 'success' => false,
                 'error' => 'Neprihlásený používateľ',
             ]));

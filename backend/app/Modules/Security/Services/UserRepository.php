@@ -8,6 +8,7 @@ use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
+use PaginiumCMS\Support\JsonHelper;
 
 class UserRepository
 {
@@ -65,6 +66,9 @@ class UserRepository
         return null;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function findAll(): array
     {
         $users = [];
@@ -95,7 +99,7 @@ class UserRepository
 
         $data = $this->extract($user);
         $path = $this->storagePath . '/' . $id . '.json';
-        $this->writer->write($path, json_encode($data, JSON_PRETTY_PRINT));
+        $this->writer->write($path, JsonHelper::encode($data, JSON_PRETTY_PRINT));
     }
 
     public function exists(string $id): bool
@@ -118,6 +122,9 @@ class UserRepository
         }
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     private function getAllUserFiles(): array
     {
         try {
@@ -130,6 +137,9 @@ class UserRepository
         }
     }
 
+    /**
+     * @param array<int|string, mixed> $data
+     */
     private function hydrate(array $data): User
     {
         $user = new User();
@@ -138,13 +148,11 @@ class UserRepository
         foreach ($data as $key => $value) {
             if ($key === 'id') {
                 $property = $reflection->getProperty('id');
-                $property->setAccessible(true);
                 $property->setValue($user, $value);
             } elseif ($key === 'email') {
                 $user->setEmail($value);
             } elseif ($key === 'passwordHash') {
                 $property = $reflection->getProperty('passwordHash');
-                $property->setAccessible(true);
                 $property->setValue($user, $value);
             } elseif ($key === 'roles') {
                 $user->setRoles($value);
@@ -156,11 +164,9 @@ class UserRepository
                 $user->setTwoFactorSecret($value);
             } elseif ($key === 'createdAt') {
                 $property = $reflection->getProperty('createdAt');
-                $property->setAccessible(true);
                 $property->setValue($user, $value);
             } elseif ($key === 'updatedAt') {
                 $property = $reflection->getProperty('updatedAt');
-                $property->setAccessible(true);
                 $property->setValue($user, $value);
             }
         }
@@ -222,6 +228,9 @@ class UserRepository
         $this->writer->write($path, $json);
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     private function extract(User $user): array
     {
         return [

@@ -20,6 +20,7 @@ class Visit implements JsonSerializable
     private int $responseCode;
     private int $duration;
     private ?string $userId;
+    /** @var array<int|string, mixed> */
     private array $meta;
 
     public function __construct()
@@ -51,6 +52,7 @@ class Visit implements JsonSerializable
     public function getVisitorId(): string { return $this->visitorId; }
     public function getSessionId(): string { return $this->sessionId; }
     public function getTimestamp(): string { return $this->timestamp; }
+    public function setTimestamp(string $timestamp): self { $this->timestamp = $timestamp; return $this; }
     public function getIp(): string { return $this->ip; }
     public function setIp(string $ip): self { $this->ip = $ip; return $this; }
     public function getUserAgent(): ?string { return $this->userAgent; }
@@ -67,9 +69,18 @@ class Visit implements JsonSerializable
     public function setDuration(int $duration): self { $this->duration = $duration; return $this; }
     public function getUserId(): ?string { return $this->userId; }
     public function setUserId(?string $userId): self { $this->userId = $userId; return $this; }
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getMeta(): array { return $this->meta; }
+    /**
+     * @param array<int|string, mixed> $meta
+     */
     public function setMeta(array $meta): self { $this->meta = $meta; return $this; }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function toArray(): array
     {
         return [
@@ -89,6 +100,9 @@ class Visit implements JsonSerializable
         ];
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function jsonSerialize(): array
     {
         return $this->toArray();

@@ -21,8 +21,7 @@ interface ConflictLoggerInterface
      * Vráti najnovšie konflikty (zostupne podľa času).
      *
      * @return array<int, ConflictRecord>
-     */
-    public function getRecent(int $limit = 100): array;
+ */public function getRecent(int $limit = 100): array;
 
     /**
      * Vymaže celý log konfliktov.

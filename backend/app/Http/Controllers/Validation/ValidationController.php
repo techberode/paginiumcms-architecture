@@ -7,6 +7,7 @@ namespace PaginiumCMS\Http\Controllers\Validation;
 use PaginiumCMS\Core\Validation\ValidationRules;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use PaginiumCMS\Support\JsonHelper;
 
 /**
  * === Controller: ValidationController ===
@@ -27,8 +28,7 @@ final class ValidationController
 
     /**
      * @param array<string, string> $args
-     */
-    public function show(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+ */public function show(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $context = (string) ($args['context'] ?? '');
         $rules = ValidationRules::for($context);
@@ -47,11 +47,10 @@ final class ValidationController
     }
 
     /**
-     * @param array<string, mixed> $payload
-     */
-    private function json(ResponseInterface $response, array $payload, int $status = 200): ResponseInterface
+     * @param array<int|string, mixed> $payload
+ */private function json(ResponseInterface $response, array $payload, int $status = 200): ResponseInterface
     {
-        $response->getBody()->write((string) json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        $response->getBody()->write(JsonHelper::encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
         return $response->withStatus($status)->withHeader('Content-Type', 'application/json; charset=utf-8');
     }

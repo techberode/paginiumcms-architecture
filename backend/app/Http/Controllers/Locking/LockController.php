@@ -9,6 +9,7 @@ use PaginiumCMS\Core\Locking\Exception\LockConflictException;
 use PaginiumCMS\Modules\Security\Models\User;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use PaginiumCMS\Support\JsonHelper;
 
 /**
  * === Controller: LockController ===
@@ -115,8 +116,7 @@ final class LockController
 
     /**
      * @param array<string, string> $args
-     */
-    public function forceRelease(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+ */public function forceRelease(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $resourceId = trim((string) ($args['resourceId'] ?? ''));
 
@@ -139,9 +139,8 @@ final class LockController
     }
 
     /**
-     * @return array<string, mixed>
-     */
-    private function parseJsonBody(ServerRequestInterface $request): array
+     * @return array<int|string, mixed>
+ */private function parseJsonBody(ServerRequestInterface $request): array
     {
         $data = json_decode((string) $request->getBody(), true);
 
@@ -150,7 +149,7 @@ final class LockController
 
     private function jsonConflict(ResponseInterface $response, LockConflictException $e): ResponseInterface
     {
-        $response->getBody()->write((string) json_encode([
+        $response->getBody()->write(JsonHelper::encode([
             'success' => false,
             'error' => $e->getMessage(),
             'lock' => $e->getCurrentLock()->jsonSerialize(),
@@ -170,14 +169,14 @@ final class LockController
             $payload['message'] = $message;
         }
 
-        $response->getBody()->write((string) json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        $response->getBody()->write(JsonHelper::encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
         return $response->withStatus($status)->withHeader('Content-Type', 'application/json; charset=utf-8');
     }
 
     private function jsonError(ResponseInterface $response, string $message, int $status = 400): ResponseInterface
     {
-        $response->getBody()->write((string) json_encode([
+        $response->getBody()->write(JsonHelper::encode([
             'success' => false,
             'error' => $message,
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));

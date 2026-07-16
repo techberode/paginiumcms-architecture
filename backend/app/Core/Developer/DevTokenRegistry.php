@@ -45,8 +45,8 @@ class DevTokenRegistry
 
     /**
      * @param array{hash: string, label: string, expires_at: int, single_use?: bool} $entry
-     */
-    public function register(array $entry): void
+ * @param array<int|string, mixed> $entry
+ */public function register(array $entry): void
     {
         $data = $this->load();
         $data['tokens'][] = [
@@ -62,7 +62,7 @@ class DevTokenRegistry
     }
 
     /**
-     * @return array<string, mixed>|null
+     * @return array<int|string, mixed>|null
      */
     public function findByHash(string $hash): ?array
     {
@@ -89,17 +89,16 @@ class DevTokenRegistry
     }
 
     /**
-     * @return array<int, array<string, mixed>>
-     */
-    public function listRegistered(): array
+     * @return array<int, array<int|string, mixed>>
+ */public function listRegistered(): array
     {
         return $this->load()['tokens'];
     }
 
     /**
-     * @return array{tokens: array<int, array<string, mixed>>}
-     */
-    private function load(): array
+     * @return array{tokens: array<int, array<int|string, mixed>>}
+ * @return array<int|string, mixed>
+ */private function load(): array
     {
         $raw = file_get_contents($this->registryPath);
         $data = json_decode($raw ?: '{}', true);
@@ -108,9 +107,9 @@ class DevTokenRegistry
     }
 
     /**
-     * @param array{tokens: array<int, array<string, mixed>>} $data
-     */
-    private function save(array $data): void
+     * @param array{tokens: array<int, array<int|string, mixed>>} $data
+ * @param array<int|string, mixed> $data
+ */private function save(array $data): void
     {
         file_put_contents(
             $this->registryPath,

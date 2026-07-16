@@ -29,8 +29,6 @@ namespace PaginiumCMS\Core\Validation;
 final class ValidationRules
 {
     /**
-     * Všetky zdieľané sady pravidiel pre FE↔BE validáciu.
-     *
      * @return array<string, RuleSet>
      */
     public static function all(): array
@@ -82,8 +80,6 @@ final class ValidationRules
     }
 
     /**
-     * Metaúdaje politiky hesiel – zosúladené s bootstrap PasswordPolicy.
-     *
      * @return PasswordPolicyMeta
      */
     public static function passwordPolicy(): array
@@ -99,9 +95,7 @@ final class ValidationRules
     }
 
     /**
-     * Overí heslo podľa politiky (doplnok k základnému Validatoru).
-     *
-     * @return list<string> Zoznam chybových správ; prázdne pole = OK.
+     * @return list<string>
      */
     public static function validatePasswordPolicy(string $password): array
     {

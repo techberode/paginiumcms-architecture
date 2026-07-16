@@ -8,7 +8,8 @@ use PaginiumCMS\Core\Backup\Contracts\BackupInterface;
 use PaginiumCMS\Core\Backup\Models\BackupMetadata;
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
-use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
+use PaginiumCMS\Support\FileHelper;
+use PaginiumCMS\Support\JsonHelper;
 
 class BackupManager implements BackupInterface
 {
@@ -16,6 +17,7 @@ class BackupManager implements BackupInterface
     private FileWriterInterface $writer;
     private string $backupPath;
     private string $contentPath;
+    /** @var array<int|string, mixed> */
     private array $excludePatterns = [
         '*.tmp',
         '*.cache',
@@ -32,9 +34,12 @@ class BackupManager implements BackupInterface
         $this->reader = $reader;
         $this->writer = $writer;
         $this->backupPath = rtrim($backupPath, '/');
-        $this->contentPath = rtrim($contentPath, '/');
+        $this->contentPath = rtrim($contentPath !== 'storage/app/content' ? $contentPath : $this->reader->getBasePath(), '/');
     }
 
+    /**
+     * @param array<int|string, mixed> $options
+     */
     public function create(string $name, array $options = []): BackupMetadata
     {
         $metadata = new BackupMetadata();
@@ -57,7 +62,7 @@ class BackupManager implements BackupInterface
         }
 
         // Pridanie metadát
-        $zip->addFromString('backup.json', json_encode($metadata->jsonSerialize(), JSON_PRETTY_PRINT));
+        $zip->addFromString('backup.json', JsonHelper::encode($metadata->jsonSerialize()));
 
         // Pridanie obsahu
         foreach ($metadata->getIncludes() as $include) {
@@ -75,7 +80,7 @@ class BackupManager implements BackupInterface
         if (file_exists($fullPath)) {
             clearstatcache(true, $fullPath);
             $size = @filesize($fullPath);
-            if ($size === false || $size === null) {
+            if ($size === false) {
                 $size = 0;
             }
         }
@@ -83,7 +88,7 @@ class BackupManager implements BackupInterface
 
         // Aktualizácia metadát
         $metadata->setFilePath($fullPath);
-        $metadata->setSize(filesize($fullPath));
+        $metadata->setSize($size);
         $metadata->setStatus('completed');
 
         // Uloženie metadát
@@ -92,6 +97,9 @@ class BackupManager implements BackupInterface
         return $metadata;
     }
 
+    /**
+     * @param array<int|string, mixed> $options
+     */
     public function restore(string $backupId, array $options = []): bool
     {
         // Získanie metadát
@@ -112,25 +120,27 @@ class BackupManager implements BackupInterface
         return $this->importBackup($zipPath);
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function listBackups(): array
     {
         $backups = [];
-        $metadataFiles = glob($this->backupPath . '/*.json');
+        $metadataFiles = glob($this->backupPath . '/*.json') ?: [];
 
         foreach ($metadataFiles as $file) {
             try {
-                $content = file_get_contents($file);
-                $data = json_decode($content, true);
-                if ($data) {
-                    $metadata = new BackupMetadata();
-                    $metadata->setName($data['name'] ?? '');
-                    // createdAt sa nastavuje v __construct, nevoláme setCreatedAt()
-                    // $metadata->setCreatedAt($data['createdAt'] ?? date('Y-m-d H:i:s'));
-                    $metadata->setSize($data['size'] ?? 0);
-                    $metadata->setFilePath($data['filePath'] ?? '');
-                    $metadata->setStatus($data['status'] ?? 'completed');
-                    $backups[] = $metadata;
+                $data = JsonHelper::decode(FileHelper::read($file));
+                if ($data === []) {
+                    continue;
                 }
+
+                $metadata = new BackupMetadata();
+                $metadata->setName($data['name'] ?? '');
+                $metadata->setSize($data['size'] ?? 0);
+                $metadata->setFilePath($data['filePath'] ?? '');
+                $metadata->setStatus($data['status'] ?? 'completed');
+                $backups[] = $metadata;
             } catch (\Exception) {
                 continue;
             }
@@ -152,9 +162,8 @@ class BackupManager implements BackupInterface
         }
 
         try {
-            $content = file_get_contents($metadataPath);
-            $data = json_decode($content, true);
-            if (!$data) {
+            $data = JsonHelper::decode(FileHelper::read($metadataPath));
+            if ($data === []) {
                 return null;
             }
 
@@ -253,6 +262,9 @@ class BackupManager implements BackupInterface
         );
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getScheduleInfo(): array
     {
         $schedulePath = $this->backupPath . '/schedule.json';
@@ -260,9 +272,8 @@ class BackupManager implements BackupInterface
             return ['enabled' => false];
         }
 
-        $content = file_get_contents($schedulePath);
-        $data = json_decode($content, true);
-        return $data ?: ['enabled' => false];
+        $data = JsonHelper::decode(FileHelper::read($schedulePath));
+        return $data !== [] ? $data : ['enabled' => false];
     }
 
     private function addDirectoryToZip(\ZipArchive $zip, string $dir, string $prefix): void
@@ -318,7 +329,12 @@ class BackupManager implements BackupInterface
             $destPath = $destination . '/' . $file;
 
             if (is_file($sourcePath)) {
-                copy($sourcePath, $destPath);
+                $relativeDest = $this->toContentRelativePath($destPath);
+                if ($relativeDest !== null) {
+                    $this->writer->write($relativeDest, FileHelper::read($sourcePath), false);
+                } else {
+                    copy($sourcePath, $destPath);
+                }
             } elseif (is_dir($sourcePath)) {
                 $this->restoreDirectory($sourcePath, $destPath);
             }
@@ -351,7 +367,7 @@ class BackupManager implements BackupInterface
     private function saveMetadata(BackupMetadata $metadata): void
     {
         $path = $this->backupPath . '/' . $metadata->getId() . '.json';
-        file_put_contents($path, json_encode($metadata->jsonSerialize(), JSON_PRETTY_PRINT));
+        file_put_contents($path, JsonHelper::encode($metadata->jsonSerialize()));
     }
 
     private function isExcluded(string $path): bool
@@ -366,7 +382,19 @@ class BackupManager implements BackupInterface
 
     private function sanitizeName(string $name): string
     {
-        return preg_replace('/[^a-zA-Z0-9_-]/', '_', $name);
+        $sanitized = preg_replace('/[^a-zA-Z0-9_-]/', '_', $name);
+
+        return $sanitized ?? $name;
+    }
+
+    private function toContentRelativePath(string $absolutePath): ?string
+    {
+        $contentRoot = rtrim($this->contentPath, '/') . '/';
+        if (!str_starts_with($absolutePath, $contentRoot)) {
+            return null;
+        }
+
+        return substr($absolutePath, strlen($contentRoot));
     }
 
     private function calculateNextRun(string $interval): string

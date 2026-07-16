@@ -9,10 +9,10 @@ use PaginiumCMS\Modules\Comments\Models\Comment;
 interface CommentsRepositoryInterface
 {
     /**
-     * @param array<string, mixed> $filters
+     * @param array<int|string, mixed> $filters
      * @return list<Comment>
-     */
-    public function findAll(array $filters = []): array;
+ * @return array<int|string, mixed>
+ */public function findAll(array $filters = []): array;
 
     public function findById(string $id): ?Comment;
 

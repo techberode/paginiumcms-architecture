@@ -6,6 +6,7 @@ namespace PaginiumCMS\Modules\Security\Middleware;
 
 use PaginiumCMS\Modules\Security\Services\TwoFactorManager;
 use PaginiumCMS\Modules\Security\Models\User;
+use PaginiumCMS\Support\JsonHelper;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -30,7 +31,7 @@ class TwoFactorMiddleware implements MiddlewareInterface
 
         if (!$user instanceof User) {
             $response = new Response();
-            $response->getBody()->write(json_encode(['error' => 'Používateľ nie je prihlásený']));
+            $response->getBody()->write(JsonHelper::encode(['error' => 'Používateľ nie je prihlásený']));
             return $response->withStatus(401)->withHeader('Content-Type', 'application/json');
         }
 
@@ -46,7 +47,7 @@ class TwoFactorMiddleware implements MiddlewareInterface
 
         // Vyžadujeme TOTP kód
         $response = new Response();
-        $response->getBody()->write(json_encode([
+        $response->getBody()->write(JsonHelper::encode([
             'error' => 'Vyžaduje sa TOTP overenie',
             'requires_two_factor' => true
         ]));

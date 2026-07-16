@@ -15,6 +15,7 @@ use JsonSerializable;
 abstract class Content implements JsonSerializable
 {
     protected string $path = '';
+    /** @var array<int|string, mixed> */
     protected array $frontMatter = [];
     protected string $content = '';
     protected string $html = '';
@@ -32,11 +33,17 @@ abstract class Content implements JsonSerializable
         return $this;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getFrontMatter(): array
     {
         return $this->frontMatter;
     }
 
+    /**
+     * @param array<int|string, mixed> $frontMatter
+     */
     public function setFrontMatter(array $frontMatter): self
     {
         $this->frontMatter = $frontMatter;
@@ -161,11 +168,17 @@ abstract class Content implements JsonSerializable
         return $this;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getTags(): array
     {
         return $this->frontMatter['tags'] ?? [];
     }
 
+    /**
+     * @param array<int|string, mixed> $tags
+     */
     public function setTags(array $tags): self
     {
         $this->frontMatter['tags'] = $tags;
@@ -189,8 +202,8 @@ abstract class Content implements JsonSerializable
 
     /**
      * {@inheritDoc}
-     */
-    public function jsonSerialize(): array
+ * @return array<int|string, mixed>
+ */public function jsonSerialize(): array
     {
         return [
             'path' => $this->path,

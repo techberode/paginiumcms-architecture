@@ -61,9 +61,8 @@ class NavigationRepository implements NavigationRepositoryInterface
     }
 
     /**
-     * @param array<string, mixed> $entry
-     */
-    private function hydrateItem(array $entry): NavigationItem
+     * @param array<int|string, mixed> $entry
+ */private function hydrateItem(array $entry): NavigationItem
     {
         $item = new NavigationItem(
             (string) ($entry['label'] ?? 'Link'),
@@ -77,7 +76,6 @@ class NavigationRepository implements NavigationRepositoryInterface
             }
 
             $prop = $reflection->getProperty($property);
-            $prop->setAccessible(true);
             $prop->setValue($item, $entry[$property]);
         }
 

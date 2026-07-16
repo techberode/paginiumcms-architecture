@@ -16,6 +16,9 @@ class AuditEngine implements AuditEngineInterface
     /** @var array<int, AuditorInterface> */
     private array $auditors = [];
 
+    /**
+     * @param array<int|string, mixed> $auditors
+     */
     public function __construct(array $auditors = [])
     {
         foreach ($auditors as $auditor) {
@@ -23,6 +26,9 @@ class AuditEngine implements AuditEngineInterface
         }
     }
 
+    /**
+     * @param array<int|string, mixed> $options
+     */
     public function run(array $options = []): AuditReport
     {
         $report = new AuditReport();
@@ -35,6 +41,9 @@ class AuditEngine implements AuditEngineInterface
         return $report;
     }
 
+    /**
+     * @param array<int|string, mixed> $auditors
+     */
     public function runSelected(array $auditors): AuditReport
     {
         $report = new AuditReport();
@@ -49,6 +58,9 @@ class AuditEngine implements AuditEngineInterface
         return $report;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getAvailableAuditors(): array
     {
         return array_map(function (AuditorInterface $auditor) {

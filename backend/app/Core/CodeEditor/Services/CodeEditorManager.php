@@ -17,6 +17,7 @@ final class CodeEditorManager implements CodeEditorInterface
     private string $projectRoot;
 
     /** @var list<string> */
+    /** @var array<int|string, mixed> */
     private array $allowedPaths = [
         'backend/app/Modules',
         'backend/app/Http/Extensions',
@@ -25,6 +26,7 @@ final class CodeEditorManager implements CodeEditorInterface
     ];
 
     /** @var list<string> */
+    /** @var array<int|string, mixed> */
     private array $forbiddenPaths = [
         'backend/app/Core',
         'backend/bootstrap',
@@ -91,6 +93,12 @@ final class CodeEditorManager implements CodeEditorInterface
             throw $e;
         }
 
+        if (!$this->syntaxChecker->check($path, $content)) {
+            throw new RuntimeException(
+                'Syntax check failed: ' . ($this->syntaxChecker->getLastError() ?? 'unknown error')
+            );
+        }
+
         if (file_exists($fullPath)) {
             $this->backup->create($path);
         }
@@ -108,9 +116,9 @@ final class CodeEditorManager implements CodeEditorInterface
     }
 
     /**
-     * @return list<array<string, mixed>>
-     */
-    public function listFiles(string $directory): array
+     * @return list<array<int|string, mixed>>
+ * @return array<int|string, mixed>
+ */public function listFiles(string $directory): array
     {
         if ($directory === '') {
             $directory = $this->getDefaultDirectory();
@@ -144,6 +152,9 @@ final class CodeEditorManager implements CodeEditorInterface
         return $files;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getFileInfo(string $path): array
     {
         $fullPath = $this->resolveExistingPath($path);
@@ -153,8 +164,8 @@ final class CodeEditorManager implements CodeEditorInterface
 
     /**
      * @return list<string>
-     */
-    public function getBackups(string $path): array
+ * @return array<int|string, mixed>
+ */public function getBackups(string $path): array
     {
         if (!$this->canEdit($path)) {
             throw new RuntimeException('Access to file is denied');
@@ -164,9 +175,8 @@ final class CodeEditorManager implements CodeEditorInterface
     }
 
     /**
-     * @return array<string, mixed>
-     */
-    private function buildFileInfo(string $relativePath, string $fullPath): array
+     * @return array<int|string, mixed>
+ */private function buildFileInfo(string $relativePath, string $fullPath): array
     {
         $extension = pathinfo($relativePath, PATHINFO_EXTENSION);
 

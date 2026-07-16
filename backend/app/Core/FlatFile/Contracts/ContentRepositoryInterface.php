@@ -36,18 +36,16 @@ interface ContentRepositoryInterface
     /**
      * Získa všetky stránky.
      *
-     * @param array<string, mixed> $filters Voliteľné filtre (status, autor, atď.).
+     * @param array<int|string, mixed> $filters Voliteľné filtre (status, autor, atď.).
      * @return array<int, Page> Zoznam stránok.
-     */
-    public function findAllPages(array $filters = []): array;
+ */public function findAllPages(array $filters = []): array;
 
     /**
      * Získa všetky články.
      *
-     * @param array<string, mixed> $filters Voliteľné filtre (status, tagy, autor, atď.).
+     * @param array<int|string, mixed> $filters Voliteľné filtre (status, tagy, autor, atď.).
      * @return array<int, Article> Zoznam článkov.
-     */
-    public function findAllArticles(array $filters = []): array;
+ */public function findAllArticles(array $filters = []): array;
 
     /**
      * Uloží obsah.
@@ -70,8 +68,7 @@ interface ContentRepositoryInterface
      * Získa počet položiek podľa typu.
      *
      * @param string $type Typ obsahu ('page' alebo 'article').
-     * @param array<string, mixed> $filters Voliteľné filtre.
+     * @param array<int|string, mixed> $filters Voliteľné filtre.
      * @return int Počet položiek.
-     */
-    public function count(string $type, array $filters = []): int;
+ */public function count(string $type, array $filters = []): int;
 }

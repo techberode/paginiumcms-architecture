@@ -7,7 +7,8 @@ namespace PaginiumCMS\Core\Scheduler;
 class Job
 {
     private string $name;
-    private $callback;
+    /** @var callable */
+    private mixed $callback;
     private string $expression;
     private bool $isRunning = false;
 

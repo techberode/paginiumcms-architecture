@@ -13,6 +13,7 @@ class BackupMetadata implements JsonSerializable
     private string $createdAt;
     private int $size;
     private string $filePath;
+    /** @var array<int|string, mixed> */
     private array $includes;
     private string $version;
     private string $status;
@@ -55,7 +56,7 @@ class BackupMetadata implements JsonSerializable
         return $this->size;
     }
 
-    public function setSize($size): self
+    public function setSize(int|string $size): self
     {
         $this->size = (int)$size;
         return $this;
@@ -72,11 +73,17 @@ class BackupMetadata implements JsonSerializable
         return $this;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getIncludes(): array
     {
         return $this->includes;
     }
 
+    /**
+     * @param array<int|string, mixed> $includes
+     */
     public function setIncludes(array $includes): self
     {
         $this->includes = $includes;
@@ -121,6 +128,9 @@ class BackupMetadata implements JsonSerializable
         return round($size, 2) . ' ' . $units[$i];
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function jsonSerialize(): array
     {
         return [

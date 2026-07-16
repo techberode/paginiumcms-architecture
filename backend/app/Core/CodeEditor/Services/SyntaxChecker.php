@@ -30,11 +30,11 @@ class SyntaxChecker
         $tempFile = tempnam(sys_get_temp_dir(), 'php_lint_');
         file_put_contents($tempFile, $content);
 
-        $output = shell_exec("php -l " . escapeshellarg($tempFile) . " 2>&1");
+        $output = shell_exec('php -l ' . escapeshellarg($tempFile) . ' 2>&1');
         unlink($tempFile);
 
-        if (strpos($output, 'No syntax errors detected') === false) {
-            $this->lastError = trim($output);
+        if (!is_string($output) || strpos($output, 'No syntax errors detected') === false) {
+            $this->lastError = is_string($output) ? trim($output) : 'PHP lint failed';
             return false;
         }
 

@@ -4,7 +4,11 @@
          bootstrap="tests/bootstrap.php"
          colors="true"
          testdox="true"
-         cacheDirectory=".phpunit.cache">
+         cacheDirectory=".phpunit.cache"
+         failOnWarning="true"
+         failOnDeprecation="true"
+         displayDetailsOnTestsThatTriggerWarnings="true"
+         displayDetailsOnTestsThatTriggerDeprecations="true">
     <testsuites>
         <testsuite name="PaginiumCMS Core Tests">
             <directory>backend/tests</directory>

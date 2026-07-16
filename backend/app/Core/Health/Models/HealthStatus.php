@@ -16,6 +16,7 @@ class HealthStatus implements JsonSerializable
     private string $check;
     private string $status;
     private string $message;
+    /** @var array<int|string, mixed> */
     private array $data = [];
     private float $duration;
     private string $timestamp;
@@ -37,12 +38,21 @@ class HealthStatus implements JsonSerializable
     public function isSkip(): bool { return $this->status === self::STATUS_SKIP; }
     public function getMessage(): string { return $this->message; }
     public function setMessage(string $message): self { $this->message = $message; return $this; }
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getData(): array { return $this->data; }
+    /**
+     * @param array<int|string, mixed> $data
+     */
     public function setData(array $data): self { $this->data = $data; return $this; }
     public function getDuration(): float { return $this->duration; }
     public function setDuration(float $duration): self { $this->duration = $duration; return $this; }
     public function getTimestamp(): string { return $this->timestamp; }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function toArray(): array
     {
         return [
@@ -55,5 +65,8 @@ class HealthStatus implements JsonSerializable
         ];
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function jsonSerialize(): array { return $this->toArray(); }
 }

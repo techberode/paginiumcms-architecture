@@ -18,7 +18,7 @@ class MemoryDriver implements DriverInterface
     /** @var array<string, array{value: mixed, expires: ?int}> */
     private array $store = [];
 
-    public function get(string $key, $default = null)
+    public function get(string $key, mixed $default = null): mixed
     {
         if (!$this->isValid($key)) {
             unset($this->store[$key]);
@@ -29,7 +29,7 @@ class MemoryDriver implements DriverInterface
         return $this->store[$key]['value'];
     }
 
-    public function set(string $key, $value, ?int $ttl = null): bool
+    public function set(string $key, mixed $value, ?int $ttl = null): bool
     {
         $this->store[$key] = [
             'value' => $value,

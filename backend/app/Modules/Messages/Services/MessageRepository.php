@@ -20,6 +20,9 @@ class MessageRepository implements MessageRepositoryInterface
     ) {
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function findAll(): array
     {
         $messages = [];

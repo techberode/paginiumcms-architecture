@@ -9,8 +9,6 @@ namespace PaginiumCMS\Core\FlatFile\Models;
  */
 class Article extends Content
 {
-    private string $featuredImage = '';
-
     public function getFeaturedImage(): string
     {
         return $this->frontMatter['featuredImage'] ?? '';

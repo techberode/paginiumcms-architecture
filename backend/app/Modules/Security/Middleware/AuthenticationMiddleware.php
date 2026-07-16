@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Modules\Security\Middleware;
 
 use PaginiumCMS\Modules\Security\Services\AuthenticationManager;
+use PaginiumCMS\Support\JsonHelper;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -27,7 +28,7 @@ class AuthenticationMiddleware implements MiddlewareInterface
     {
         if (!$this->authManager->isAuthenticated()) {
             $response = new Response();
-            $response->getBody()->write(json_encode(['error' => 'Neprihlásený používateľ']));
+            $response->getBody()->write(JsonHelper::encode(['error' => 'Neprihlásený používateľ']));
             return $response->withStatus(401)->withHeader('Content-Type', 'application/json');
         }
 

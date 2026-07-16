@@ -6,11 +6,14 @@ namespace PaginiumCMS\Core\Container;
 
 class ServiceContainer
 {
+    /** @var array<int|string, mixed> */
     private array $services = [];
+    /** @var array<int|string, mixed> */
     private array $singletons = [];
+    /** @var array<int|string, mixed> */
     private array $aliases = [];
 
-    public function set(string $name, $service): void
+    public function set(string $name, mixed $service): void
     {
         $this->services[$name] = $service;
     }
@@ -25,7 +28,7 @@ class ServiceContainer
         $this->aliases[$alias] = $service;
     }
 
-    public function get(string $name)
+    public function get(string $name): mixed
     {
         // Kontrola aliasu
         if (isset($this->aliases[$name])) {

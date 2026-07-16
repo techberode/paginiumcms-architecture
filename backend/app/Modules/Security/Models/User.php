@@ -14,6 +14,7 @@ class User implements JsonSerializable
     private string $id;
     private string $email;
     private string $passwordHash;
+    /** @var array<int|string, mixed> */
     private array $roles = [];
     private string $name = '';
     private bool $twoFactorEnabled = false;
@@ -67,11 +68,17 @@ class User implements JsonSerializable
         return password_verify($password, $this->passwordHash);
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getRoles(): array
     {
         return $this->roles;
     }
 
+    /**
+     * @param array<int|string, mixed> $roles
+     */
     public function setRoles(array $roles): self
     {
         $this->roles = $roles;
@@ -174,8 +181,8 @@ class User implements JsonSerializable
 
     /**
      * {@inheritDoc}
-     */
-    public function jsonSerialize(): array
+ * @return array<int|string, mixed>
+ */public function jsonSerialize(): array
     {
         return [
             'id' => $this->id,

@@ -37,6 +37,10 @@ class PerformanceAuditor implements AuditorInterface
         return 'Kontroluje výkon a veľkosť cache a logov.';
     }
 
+    /**
+     * @param array<int|string, mixed> $options
+     * @return array<int|string, mixed>
+     */
     public function run(array $options = []): array
     {
         $issues = [];
@@ -53,6 +57,9 @@ class PerformanceAuditor implements AuditorInterface
         return $issues;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     private function checkCacheSize(): array
     {
         $issues = [];
@@ -86,6 +93,9 @@ class PerformanceAuditor implements AuditorInterface
         return $issues;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     private function checkLogSize(): array
     {
         $issues = [];
@@ -119,6 +129,9 @@ class PerformanceAuditor implements AuditorInterface
         return $issues;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     private function checkOpcache(): array
     {
         $issues = [];

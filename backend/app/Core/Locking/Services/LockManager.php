@@ -120,6 +120,9 @@ final class LockManager implements LockManagerInterface
         );
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getAllLocks(): array
     {
         return $this->withLockedRegistry(
@@ -206,8 +209,7 @@ final class LockManager implements LockManagerInterface
     /**
      * @param resource $handle
      * @return array<string, ContentLock>
-     */
-    private function readLocks($handle): array
+ */private function readLocks($handle): array
     {
         rewind($handle);
         $raw = stream_get_contents($handle);
@@ -233,8 +235,7 @@ final class LockManager implements LockManagerInterface
     /**
      * @param resource $handle
      * @param array<string, ContentLock> $locks
-     */
-    private function writeLocks($handle, array $locks): void
+ */private function writeLocks($handle, array $locks): void
     {
         $payload = json_encode(
             array_map(static fn (ContentLock $lock): array => $lock->toArray(), array_values($locks)),
@@ -255,8 +256,7 @@ final class LockManager implements LockManagerInterface
      * Deterministický reťazec na porovnanie stavu registra (zmenil sa / nezmenil).
      *
      * @param array<string, ContentLock> $locks
-     */
-    private function serialize(array $locks): string
+ */private function serialize(array $locks): string
     {
         $data = array_map(static fn (ContentLock $lock): array => $lock->toArray(), $locks);
         ksort($data);

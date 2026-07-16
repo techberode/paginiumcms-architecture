@@ -20,6 +20,10 @@ class CommentsRepository implements CommentsRepositoryInterface
     ) {
     }
 
+    /**
+     * @param array<int|string, mixed> $filters
+     * @return array<int|string, mixed>
+     */
     public function findAll(array $filters = []): array
     {
         $comments = [];
@@ -98,9 +102,8 @@ class CommentsRepository implements CommentsRepositoryInterface
     }
 
     /**
-     * @return array<int, array<string, mixed>>
-     */
-    private function loadRegistry(): array
+     * @return array<int, array<int|string, mixed>>
+ */private function loadRegistry(): array
     {
         if (!$this->reader->exists(self::REGISTRY)) {
             return [];
@@ -117,9 +120,9 @@ class CommentsRepository implements CommentsRepositoryInterface
     }
 
     /**
-     * @param array<int, array<string, mixed>> $registry
-     */
-    private function writeRegistry(array $registry): void
+     * @param array<int, array<int|string, mixed>> $registry
+ * @param array<int|string, mixed> $registry
+ */private function writeRegistry(array $registry): void
     {
         $json = json_encode(array_values($registry), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
         if ($json === false) {
@@ -130,9 +133,8 @@ class CommentsRepository implements CommentsRepositoryInterface
     }
 
     /**
-     * @param array<string, mixed> $filters
-     */
-    private function matchesFilters(Comment $comment, array $filters): bool
+     * @param array<int|string, mixed> $filters
+ */private function matchesFilters(Comment $comment, array $filters): bool
     {
         if (isset($filters['articleSlug']) && $comment->getArticleSlug() !== $filters['articleSlug']) {
             return false;

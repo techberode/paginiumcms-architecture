@@ -7,6 +7,7 @@ namespace PaginiumCMS\Http\Controllers\Admin;
 use PaginiumCMS\Core\Health\Services\HealthCheckManager;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use PaginiumCMS\Support\JsonHelper;
 
 /**
  * Admin health check API (Iteration 7).
@@ -62,10 +63,9 @@ final class HealthController
     }
 
     /**
-     * @param array<string, mixed> $report
-     * @return array<string, mixed>
-     */
-    private function normalizeReport(array $report): array
+     * @param array<int|string, mixed> $report
+     * @return array<int|string, mixed>
+ */private function normalizeReport(array $report): array
     {
         if (!isset($report['checks']) || !is_array($report['checks'])) {
             return $report;
@@ -80,10 +80,9 @@ final class HealthController
     }
 
     /**
-     * @param array<string, mixed> $check
-     * @return array<string, mixed>
-     */
-    private function normalizeCheck(array $check): array
+     * @param array<int|string, mixed> $check
+     * @return array<int|string, mixed>
+ */private function normalizeCheck(array $check): array
     {
         if (isset($check['check']) && !isset($check['name'])) {
             $check['name'] = $check['check'];
@@ -93,11 +92,10 @@ final class HealthController
     }
 
     /**
-     * @param array<string, mixed> $payload
-     */
-    private function json(ResponseInterface $response, array $payload, int $status = 200): ResponseInterface
+     * @param array<int|string, mixed> $payload
+ */private function json(ResponseInterface $response, array $payload, int $status = 200): ResponseInterface
     {
-        $response->getBody()->write((string) json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        $response->getBody()->write(JsonHelper::encode($payload, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
 
         return $response->withStatus($status)->withHeader('Content-Type', 'application/json; charset=utf-8');
     }

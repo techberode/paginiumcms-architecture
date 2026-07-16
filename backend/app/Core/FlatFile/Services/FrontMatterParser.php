@@ -21,8 +21,8 @@ class FrontMatterParser implements FrontMatterParserInterface
 
     /**
      * {@inheritDoc}
-     */
-    public function parse(string $content): array
+ * @return array<int|string, mixed>
+ */public function parse(string $content): array
     {
         $content = utf8_normalize($content);
         $parts = $this->splitContent($content);
@@ -47,8 +47,8 @@ class FrontMatterParser implements FrontMatterParserInterface
 
     /**
      * {@inheritDoc}
-     */
-    public function serialize(array $frontMatter): string
+ * @param array<int|string, mixed> $frontMatter
+ */public function serialize(array $frontMatter): string
     {
         if (empty($frontMatter)) {
             return '';
@@ -61,8 +61,8 @@ class FrontMatterParser implements FrontMatterParserInterface
 
     /**
      * {@inheritDoc}
-     */
-    public function extractFrontMatter(string $content): array
+ * @return array<int|string, mixed>
+ */public function extractFrontMatter(string $content): array
     {
         $parts = $this->splitContent($content);
 
@@ -108,7 +108,7 @@ class FrontMatterParser implements FrontMatterParserInterface
     private function splitContent(string $content): ?array
     {
         // Odstránenie BOM
-        $content = preg_replace('/^\xEF\xBB\xBF/', '', $content);
+        $content = preg_replace('/^\xEF\xBB\xBF/', '', $content) ?? $content;
 
         // Kontrola, či začína delimiterom
         if (!str_starts_with(trim($content), self::DELIMITER)) {

@@ -35,9 +35,8 @@ final class ContentRevision
     /**
      * Vypočíta revíziu z raw hodnôt.
      *
-     * @param array<string, mixed> $frontMatter
-     */
-    public function compute(string $content, array $frontMatter): string
+     * @param array<int|string, mixed> $frontMatter
+ */public function compute(string $content, array $frontMatter): string
     {
         return sha1($content . self::SEPARATOR . $this->canonicalize($frontMatter));
     }
@@ -58,9 +57,8 @@ final class ContentRevision
     /**
      * Kanonická (stabilná) serializácia front matter – rekurzívne zoradené kľúče.
      *
-     * @param array<string, mixed> $data
-     */
-    private function canonicalize(array $data): string
+     * @param array<int|string, mixed> $data
+ */private function canonicalize(array $data): string
     {
         $this->ksortRecursive($data);
 
@@ -68,7 +66,7 @@ final class ContentRevision
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param array<int|string, mixed> $data
      */
     private function ksortRecursive(array &$data): void
     {

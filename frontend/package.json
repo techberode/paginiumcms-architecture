@@ -11,6 +11,8 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
+    "test:security": "vitest run src/security src/api/client.security.test.ts src/utils/debugLog.test.ts",
+    "audit:security": "npm audit --audit-level=moderate",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives",
     "lint:fix": "eslint . --ext ts,tsx --fix",
     "format": "prettier --write 'src/**/*.{ts,tsx,css}'",
@@ -53,7 +55,7 @@
     "eslint": "^9.9.0",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.9",
-    "jsdom": "^29.1.1",
+    "happy-dom": "^20.10.6",
     "typescript": "^5.5.2",
     "vite": "^8.1.4",
     "vitest": "^4.1.10"

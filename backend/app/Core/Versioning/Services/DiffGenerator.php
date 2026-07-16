@@ -8,6 +8,9 @@ use PaginiumCMS\Core\Versioning\Contracts\DiffInterface;
 
 class DiffGenerator implements DiffInterface
 {
+    /**
+     * @return array<int|string, mixed>
+     */
     public function generate(string $old, string $new): array
     {
         $oldLines = explode("\n", $old);
@@ -21,6 +24,11 @@ class DiffGenerator implements DiffInterface
         ];
     }
 
+    /**
+     * @param array<int|string, mixed> $old
+     * @param array<int|string, mixed> $new
+     * @return array<int|string, mixed>
+     */
     public function computeDiff(array $old, array $new): array
     {
         $diff = [];
@@ -46,6 +54,9 @@ class DiffGenerator implements DiffInterface
         return $diff;
     }
 
+    /**
+     * @param array<int|string, mixed> $haystack
+     */
     private function findInArray(string $needle, array $haystack, int $start): bool
     {
         for ($i = $start; $i < count($haystack); $i++) {
@@ -54,6 +65,9 @@ class DiffGenerator implements DiffInterface
         return false;
     }
 
+    /**
+     * @param array<int|string, mixed> $diff
+     */
     private function getSummary(array $diff): string
     {
         $additions = $this->countAdditions($diff);
@@ -62,6 +76,12 @@ class DiffGenerator implements DiffInterface
         return sprintf('%d pridaných, %d odstránených', $additions, $deletions);
     }
 
+    /**
+     * @param array<int|string, mixed> $diff
+     */
     private function countAdditions(array $diff): int { return count(array_filter($diff, fn($d) => $d['type'] === 'added')); }
+    /**
+     * @param array<int|string, mixed> $diff
+     */
     private function countDeletions(array $diff): int { return count(array_filter($diff, fn($d) => $d['type'] === 'removed')); }
 }

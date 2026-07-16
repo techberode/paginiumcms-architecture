@@ -6,11 +6,13 @@ namespace PaginiumCMS\Tests\Core\Logging\Services;
 
 use PaginiumCMS\Core\Logging\Services\DebugLogger;
 use PaginiumCMS\Core\Logging\Contracts\LoggerInterface;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class DebugLoggerTest extends TestCase
 {
     private DebugLogger $debugLogger;
+    /** @var LoggerInterface&MockObject */
     private LoggerInterface $mockLogger;
 
     protected function setUp(): void

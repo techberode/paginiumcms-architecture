@@ -17,8 +17,8 @@ final class LogSeverity
 
     /**
      * Získa všetky dostupné priority.
-     */
-    public static function getAll(): array
+ * @return array<int|string, mixed>
+ */public static function getAll(): array
     {
         return [
             self::DEBUG,

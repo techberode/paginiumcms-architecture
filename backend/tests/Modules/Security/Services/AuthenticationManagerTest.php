@@ -7,14 +7,16 @@ namespace PaginiumCMS\Tests\Modules\Security\Services;
 use PaginiumCMS\Modules\Security\Services\AuthenticationManager;
 use PaginiumCMS\Modules\Security\Services\SessionManager;
 use PaginiumCMS\Modules\Security\Services\PasswordPolicy;
-use PaginiumCMS\Modules\Security\Services\UserRepository;
 use PaginiumCMS\Modules\Security\Models\User;
+use PaginiumCMS\Modules\Security\Services\UserRepository;
 use PaginiumCMS\Modules\Security\Exception\AuthenticationException;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class AuthenticationManagerTest extends TestCase
 {
     private AuthenticationManager $auth;
+    /** @var UserRepository&MockObject */
     private UserRepository $userRepository;
     private User $testUser;
 
@@ -49,7 +51,9 @@ class AuthenticationManagerTest extends TestCase
 
     protected function tearDown(): void
     {
-        session_destroy();
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_destroy();
+        }
         parent::tearDown();
     }
 
@@ -63,7 +67,6 @@ class AuthenticationManagerTest extends TestCase
 
         $user = $this->auth->login('test@example.com', 'StrongP@ssw0rd123!');
 
-        $this->assertNotNull($user);
         $this->assertEquals('test@example.com', $user->getEmail());
         $this->assertTrue($this->auth->isAuthenticated());
     }
@@ -115,7 +118,8 @@ class AuthenticationManagerTest extends TestCase
 
     public function testGetCurrentUser(): void
     {
-        $this->assertNull($this->auth->getCurrentUser());
+        $currentBefore = $this->auth->getCurrentUser();
+        $this->assertNull($currentBefore);
 
         $this->userRepository
             ->expects($this->once())

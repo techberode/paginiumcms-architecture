@@ -17,6 +17,9 @@ class Navigation implements JsonSerializable
      */
     private array $items = [];
 
+    /**
+     * @param array<int|string, mixed> $items
+     */
     public function __construct(array $items = [])
     {
         foreach ($items as $item) {
@@ -43,6 +46,9 @@ class Navigation implements JsonSerializable
         return false;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getItems(): array
     {
         return $this->items;
@@ -59,6 +65,9 @@ class Navigation implements JsonSerializable
         return null;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getItemsByParentId(?string $parentId = null): array
     {
         $result = [];
@@ -96,6 +105,9 @@ class Navigation implements JsonSerializable
         return true;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getHierarchy(?string $parentId = null, int $level = 0): array
     {
         $result = [];
@@ -126,8 +138,8 @@ class Navigation implements JsonSerializable
 
     /**
      * {@inheritDoc}
-     */
-    public function jsonSerialize(): array
+ * @return array<int|string, mixed>
+ */public function jsonSerialize(): array
     {
         return array_map(function (NavigationItem $item): array {
             return $item->jsonSerialize();

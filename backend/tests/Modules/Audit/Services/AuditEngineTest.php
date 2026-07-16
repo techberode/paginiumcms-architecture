@@ -25,7 +25,7 @@ class AuditEngineTest extends TestCase
         $report = $this->engine->run();
 
         $this->assertNotEmpty($report->getId());
-        $this->assertIsInt($report->getTotalIssues());
+        $this->assertGreaterThanOrEqual(0, $report->getTotalIssues());
     }
 
     public function testGetAvailableAuditors(): void

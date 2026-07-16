@@ -28,8 +28,7 @@ interface AuditorInterface
     /**
      * Spustí audit a vráti zoznam problémov.
      *
-     * @param array<string, mixed> $options Voliteľné parametre.
+     * @param array<int|string, mixed> $options Voliteľné parametre.
      * @return array<int, AuditIssue> Zoznam nájdených problémov.
-     */
-    public function run(array $options = []): array;
+ */public function run(array $options = []): array;
 }

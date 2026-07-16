@@ -8,6 +8,7 @@ use PaginiumCMS\Core\Drafts\Contracts\DraftManagerInterface;
 use PaginiumCMS\Modules\Security\Models\User;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use PaginiumCMS\Support\JsonHelper;
 
 /**
  * === Controller: DraftController ===
@@ -25,8 +26,7 @@ final class DraftController
 
     /**
      * @param array<string, string> $args
-     */
-    public function save(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+ */public function save(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $user = $this->resolveUser($request);
         if ($user === null) {
@@ -44,8 +44,7 @@ final class DraftController
 
     /**
      * @param array<string, string> $args
-     */
-    public function load(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+ */public function load(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $type = (string) ($args['type'] ?? 'page');
         $slug = (string) ($args['slug'] ?? '');
@@ -61,8 +60,7 @@ final class DraftController
 
     /**
      * @param array<string, string> $args
-     */
-    public function discard(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+ */public function discard(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $type = (string) ($args['type'] ?? 'page');
         $slug = (string) ($args['slug'] ?? '');
@@ -82,9 +80,8 @@ final class DraftController
     }
 
     /**
-     * @return array<string, mixed>
-     */
-    private function parseJsonBody(ServerRequestInterface $request): array
+     * @return array<int|string, mixed>
+ */private function parseJsonBody(ServerRequestInterface $request): array
     {
         $data = json_decode((string) $request->getBody(), true);
 
@@ -102,14 +99,14 @@ final class DraftController
             $payload['message'] = $message;
         }
 
-        $response->getBody()->write((string) json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        $response->getBody()->write(JsonHelper::encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
         return $response->withStatus($status)->withHeader('Content-Type', 'application/json; charset=utf-8');
     }
 
     private function jsonError(ResponseInterface $response, string $message, int $status = 400): ResponseInterface
     {
-        $response->getBody()->write((string) json_encode([
+        $response->getBody()->write(JsonHelper::encode([
             'success' => false,
             'error' => $message,
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));

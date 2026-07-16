@@ -22,10 +22,10 @@ interface AuthorizationInterface
      * Overí, či má používateľ požadovanú rolu.
      *
      * @param User $user Používateľ.
-     * @param string|array $roles Požadovaná rola alebo zoznam rolí.
+     * @param string|array<int, string> $roles Požadovaná rola alebo zoznam rolí.
      * @return bool TRUE ak má požadovanú rolu.
      */
-    public function hasRole(User $user, $roles): bool;
+    public function hasRole(User $user, string|array $roles): bool;
 
     /**
      * Overí, či má používateľ požadované oprávnenie.
@@ -41,8 +41,7 @@ interface AuthorizationInterface
      *
      * @param User $user Používateľ.
      * @return array<int, string> Zoznam rolí.
-     */
-    public function getRoles(User $user): array;
+ */public function getRoles(User $user): array;
 
     /**
      * Pridá rolu používateľovi.
@@ -65,10 +64,10 @@ interface AuthorizationInterface
      * Kontrola prístupu – vyhodí výnimku ak nemá prístup.
      *
      * @param User $user Používateľ.
-     * @param string|array $roles Požadovaná rola.
+     * @param string|array<int, string> $roles Požadovaná rola.
      * @throws AuthorizationException Ak nemá prístup.
      */
-    public function requireRole(User $user, $roles): void;
+    public function requireRole(User $user, string|array $roles): void;
 
     /**
      * Kontrola prístupu – vyhodí výnimku ak nemá oprávnenie.

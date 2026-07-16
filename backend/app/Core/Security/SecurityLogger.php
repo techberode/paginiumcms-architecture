@@ -13,8 +13,12 @@ use PaginiumCMS\Core\Logging\Models\LogSeverity;
 final class SecurityLogger
 {
     private LoggerInterface $logger;
+    /** @var array<int|string, mixed> */
     private array $config;
 
+    /**
+     * @param array<int|string, mixed> $config
+     */
     public function __construct(LoggerInterface $logger, array $config = [])
     {
         $this->logger = $logger;
@@ -31,7 +35,7 @@ final class SecurityLogger
     /**
      * Zaloguje neúspešný pokus o prihlásenie.
      */
-    public function logFailedLogin(string $email, string $ip, string $userAgent = null): void
+    public function logFailedLogin(string $email, string $ip, ?string $userAgent = null): void
     {
         if (!$this->config['log_failed_logins']) {
             return;
@@ -85,8 +89,9 @@ final class SecurityLogger
 
     /**
      * Zaloguje zmenu rolí.
-     */
-    public function logRoleChange(string $userId, string $email, array $oldRoles, array $newRoles): void
+ * @param array<int|string, mixed> $oldRoles
+ * @param array<int|string, mixed> $newRoles
+ */public function logRoleChange(string $userId, string $email, array $oldRoles, array $newRoles): void
     {
         $this->logger->critical('Security: Role changed', [
             'user_id' => $userId,
@@ -127,8 +132,8 @@ final class SecurityLogger
 
     /**
      * Zaloguje bezpečnostnú chybu.
-     */
-    public function logSecurityError(\Throwable $e, array $context = []): void
+ * @param array<int|string, mixed> $context
+ */public function logSecurityError(\Throwable $e, array $context = []): void
     {
         if (!$this->config['log_security_errors']) {
             return;
@@ -155,8 +160,9 @@ final class SecurityLogger
 
     /**
      * Kontrola eskalácie privilégií.
-     */
-    private function checkPrivilegeEscalation(string $userId, array $oldRoles, array $newRoles): void
+ * @param array<int|string, mixed> $oldRoles
+ * @param array<int|string, mixed> $newRoles
+ */private function checkPrivilegeEscalation(string $userId, array $oldRoles, array $newRoles): void
     {
         // Kontrola, či boli pridané administrátorské roly
         $adminRoles = ['ADMIN', 'SUPER_ADMIN'];

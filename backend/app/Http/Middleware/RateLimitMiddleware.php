@@ -10,6 +10,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Slim\Psr7\Response;
+use PaginiumCMS\Support\JsonHelper;
 
 /**
  * backend/app/Http/Middleware/RateLimitMiddleware.php
@@ -35,10 +36,18 @@ class RateLimitMiddleware implements MiddlewareInterface
     private CacheManager $cache;
     private int $maxRequests;
     private int $window;
+    /** @var array<int|string, mixed> */
     private array $excludedPaths = [];
+    /** @var array<int|string, mixed> */
     private array $excludedIps = [];
+    /** @var array<int|string, mixed> */
     private array $trustedProxies = [];
 
+    /**
+     * @param array<int|string, mixed> $excludedPaths
+     * @param array<int|string, mixed> $excludedIps
+     * @param array<int|string, mixed> $trustedProxies
+     */
     public function __construct(
         CacheManager $cache,
         int $maxRequests = 60,
@@ -101,7 +110,7 @@ class RateLimitMiddleware implements MiddlewareInterface
 
         // Prvá IP v zozname je pôvodný klient (nginx pridáva ďalšie za ňu)
         $parts = array_map('trim', explode(',', $forwardedFor));
-        $clientIp = $parts[0] ?? $remoteAddr;
+        $clientIp = $parts[0];
 
         return filter_var($clientIp, FILTER_VALIDATE_IP) ? $clientIp : $remoteAddr;
     }
@@ -136,7 +145,7 @@ class RateLimitMiddleware implements MiddlewareInterface
     private function createRateLimitResponse(ServerRequestInterface $request): ResponseInterface
     {
         $response = new Response();
-        $response->getBody()->write(json_encode([
+        $response->getBody()->write(JsonHelper::encode([
             'success' => false,
             'error' => 'Príliš veľa požiadaviek. Skúste to neskôr.',
             'retry_after' => $this->window,
@@ -157,6 +166,9 @@ class RateLimitMiddleware implements MiddlewareInterface
  */
 final class LoginRateLimitMiddleware extends RateLimitMiddleware
 {
+    /**
+     * @param array<int|string, mixed> $trustedProxies
+     */
     public function __construct(CacheManager $cache, array $trustedProxies = [])
     {
         $isTesting = (getenv('APP_ENV') === 'testing');

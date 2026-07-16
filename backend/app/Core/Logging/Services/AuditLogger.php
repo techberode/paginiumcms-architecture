@@ -15,6 +15,9 @@ class AuditLogger
         $this->logger = $logger;
     }
 
+    /**
+     * @param array<int|string, mixed> $details
+     */
     public function log(
         string $action,
         string $target,
@@ -39,6 +42,9 @@ class AuditLogger
         $this->log($action, $contentPath, $userId, ['type' => 'content'], 'INFO');
     }
 
+    /**
+     * @param array<int|string, mixed> $changes
+     */
     public function contentChange(string $userId, string $contentPath, array $changes): void
     {
         $this->log('update', $contentPath, $userId, ['changes' => $changes], 'WARNING');
@@ -65,6 +71,10 @@ class AuditLogger
         $this->log('2fa_disable', 'user/' . $userId, $userId, [], 'WARNING');
     }
 
+    /**
+     * @param array<int|string, mixed> $oldRoles
+     * @param array<int|string, mixed> $newRoles
+     */
     public function roleChange(string $userId, array $oldRoles, array $newRoles): void
     {
         $this->log(

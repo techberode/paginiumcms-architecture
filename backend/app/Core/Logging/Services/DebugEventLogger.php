@@ -21,9 +21,8 @@ final class DebugEventLogger
     }
 
     /**
-     * @param array<string, mixed> $context
-     */
-    public static function log(string $source, string $event, array $context = []): void
+     * @param array<int|string, mixed> $context
+ */public static function log(string $source, string $event, array $context = []): void
     {
         if (!self::isEnabled()) {
             return;

@@ -15,8 +15,12 @@ use Slim\Psr7\Response;
  */
 final class SecurityMiddleware implements MiddlewareInterface
 {
+    /** @var array<int|string, mixed> */
     private array $config;
 
+    /**
+     * @param array<int|string, mixed> $config
+     */
     public function __construct(array $config = [])
     {
         $this->config = array_merge([

@@ -9,6 +9,7 @@ use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Core\FlatFile\Services\FileReader;
 use PaginiumCMS\Core\FlatFile\Services\FileWriter;
 use PaginiumCMS\Core\FlatFile\Services\FileValidator;
+use PaginiumCMS\Support\FileHelper;
 use PHPUnit\Framework\TestCase;
 use org\bovigo\vfs\vfsStream;
 
@@ -39,6 +40,9 @@ class UserRepositoryTest extends TestCase
         $this->repository = new UserRepository($this->reader, $this->writer, 'users');
     }
 
+    /**
+     * @param array<int|string, mixed> $data
+     */
     private function createUserFile(string $id, array $data): void
     {
         $filePath = $this->root . '/data/users/' . $id . '.json';
@@ -89,7 +93,7 @@ class UserRepositoryTest extends TestCase
         // Priamo skontrolujeme, či súbor obsahuje token
         $filePath = $this->root . '/data/users/' . $user->getId() . '.json';
         $this->assertFileExists($filePath);
-        $userData = json_decode(file_get_contents($filePath), true);
+        $userData = FileHelper::readJson($filePath);
         $this->assertEquals($token, $userData['resetToken'], 'Token nebol uložený v súbore');
 
         $found = $this->repository->findByResetToken($token);
@@ -121,7 +125,7 @@ class UserRepositoryTest extends TestCase
 
         // Overenie, že token nie je v súbore
         $filePath = $this->root . '/data/users/' . $user->getId() . '.json';
-        $userData = json_decode(file_get_contents($filePath), true);
+        $userData = FileHelper::readJson($filePath);
         $this->assertArrayNotHasKey('resetToken', $userData);
         $this->assertArrayNotHasKey('resetTokenExpires', $userData);
     }

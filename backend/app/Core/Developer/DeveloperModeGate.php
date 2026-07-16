@@ -100,6 +100,9 @@ class DeveloperModeGate
         return $_SESSION[self::SESSION_METHOD] ?? null;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getStatus(): array
     {
         return [

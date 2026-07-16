@@ -10,6 +10,7 @@ use PaginiumCMS\Core\Logging\Models\LogSeverity;
 use PaginiumCMS\Core\FlatFile\Services\FileReader;
 use PaginiumCMS\Core\FlatFile\Services\FileWriter;
 use PaginiumCMS\Core\FlatFile\Services\FileValidator;
+use PaginiumCMS\Support\FileHelper;
 use PHPUnit\Framework\TestCase;
 use org\bovigo\vfs\vfsStream;
 
@@ -23,9 +24,8 @@ class LogWriterTest extends TestCase
         parent::setUp();
 
         $structure = ['logs' => ['app' => []]];
-        $root = vfsStream::setup('storage', null, $structure);
+        vfsStream::setup('storage', null, $structure);
         $this->logDir = vfsStream::url('storage') . '/logs/app';
-        mkdir($this->logDir, 0755, true);
 
         $validator = new FileValidator(vfsStream::url('storage') . '/logs');
         $reader = new FileReader($validator);
@@ -42,8 +42,7 @@ class LogWriterTest extends TestCase
         $date = date('Y-m-d');
         $filePath = $this->logDir . '/' . $date . '.json';
         $this->assertFileExists($filePath);
-        $data = json_decode(file_get_contents($filePath), true);
-        $this->assertIsArray($data);
+        $data = FileHelper::readJson($filePath);
         $this->assertCount(1, $data);
         $this->assertEquals('Test message', $data[0]['message']);
     }
@@ -60,8 +59,7 @@ class LogWriterTest extends TestCase
         $filePath = $this->logDir . '/' . $date . '.json';
         $this->assertFileExists($filePath);
 
-        $data = json_decode(file_get_contents($filePath), true);
-        $this->assertIsArray($data);
+        $data = FileHelper::readJson($filePath);
         $this->assertCount(2, $data);
         $this->assertEquals('Message 1', $data[0]['message']);
         $this->assertEquals('Message 2', $data[1]['message']);

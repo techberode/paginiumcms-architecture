@@ -10,6 +10,7 @@ use PaginiumCMS\Core\Health\Models\HealthStatus;
 
 class HealthCheckManager
 {
+    /** @var array<int|string, mixed> */
     private array $checks = [];
 
     public function addCheck(HealthCheckInterface $check): void
@@ -17,6 +18,9 @@ class HealthCheckManager
         $this->checks[] = $check;
     }
 
+    /**
+     * @param array<int|string, mixed> $checks
+     */
     public function addChecks(array $checks): void
     {
         foreach ($checks as $check) {
@@ -26,7 +30,7 @@ class HealthCheckManager
         }
     }
 
-    public function run(string $group = null): HealthReport
+    public function run(?string $group = null): HealthReport
     {
         $report = new HealthReport();
 
@@ -52,6 +56,9 @@ class HealthCheckManager
         return null;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getAvailableChecks(): array
     {
         return array_map(function ($check) {
@@ -63,6 +70,9 @@ class HealthCheckManager
         }, $this->checks);
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getGroups(): array
     {
         $groups = [];
