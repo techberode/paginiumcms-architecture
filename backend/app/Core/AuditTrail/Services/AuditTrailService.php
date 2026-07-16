@@ -94,11 +94,10 @@ class AuditTrailService
             $message
         );
 
-        // Získanie predchádzajúcej verzie pre porovnanie
-        $previousVersion = $this->versionManager->getVersion(
-            $contentId,
-            $version->getVersion() - 1
-        );
+        // Získanie predchádzajúcej verzie pre porovnanie (verzia 1 nemá predchodcu)
+        $previousVersion = $version->getVersion() > 1
+            ? $this->versionManager->getVersion($contentId, $version->getVersion() - 1)
+            : null;
 
         // Zaznamenanie audit logu
         $this->logAuditEvent(

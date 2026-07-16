@@ -1,0 +1,75 @@
+<?php
+
+declare(strict_types=1);
+
+namespace PaginiumCMS\Tests\Http\Controllers\Admin;
+
+use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
+use PaginiumCMS\Core\FlatFile\Models\Page;
+use PaginiumCMS\Tests\Http\TestCase;
+
+class TrashControllerTest extends TestCase
+{
+    public function testListAndRestoreDeletedPage(): void
+    {
+        $login = $this->loginAsAdminUser();
+        $this->assertEquals(200, $login['response']->getStatusCode());
+
+        $slug = 'trash-test-' . uniqid();
+        $repo = $this->app->getContainer()->get(ContentRepositoryInterface::class);
+        $page = new Page();
+        $page->setSlug($slug);
+        $page->setFrontMatter([
+            'title' => 'Trash test',
+            'slug' => $slug,
+            'status' => 'draft',
+        ]);
+        $page->setContent("# Trash\n");
+        $repo->save($page);
+
+        $delete = $this->createJsonRequest('DELETE', '/api/pages/' . $slug);
+        $deleteResponse = $this->handleRequest($delete);
+        $this->assertEquals(200, $deleteResponse->getStatusCode());
+
+        $list = $this->createJsonRequest('GET', '/api/admin/trash');
+        $listResponse = $this->handleRequest($list);
+        $listData = $this->getJsonResponse($listResponse);
+
+        $this->assertEquals(200, $listResponse->getStatusCode());
+        $this->assertTrue($listData['success']);
+        $this->assertNotEmpty($listData['data']);
+
+        $item = null;
+        foreach ($listData['data'] as $entry) {
+            if (str_contains((string) ($entry['originalPath'] ?? ''), $slug)) {
+                $item = $entry;
+                break;
+            }
+        }
+        $this->assertNotNull($item, 'Deleted page must appear in trash list');
+
+        $restore = $this->createJsonRequest('POST', '/api/admin/trash/' . $item['id'] . '/restore');
+        $restoreResponse = $this->handleRequest($restore);
+        $restoreData = $this->getJsonResponse($restoreResponse);
+
+        $this->assertEquals(200, $restoreResponse->getStatusCode());
+        $this->assertTrue($restoreData['success']);
+
+        $repo = $this->app->getContainer()->get(ContentRepositoryInterface::class);
+        $page = $repo->findBySlug($slug, 'page');
+        $this->assertInstanceOf(Page::class, $page);
+    }
+
+    public function testRestoreUnknownItemReturns404(): void
+    {
+        $login = $this->loginAsAdminUser();
+        $this->assertEquals(200, $login['response']->getStatusCode());
+
+        $request = $this->createJsonRequest('POST', '/api/admin/trash/nonexistent-id/restore');
+        $response = $this->handleRequest($request);
+        $data = $this->getJsonResponse($response);
+
+        $this->assertEquals(404, $response->getStatusCode());
+        $this->assertFalse($data['success']);
+    }
+}

@@ -31,7 +31,7 @@ class LogWriterTest extends TestCase
         $reader = new FileReader($validator);
         $writer = new FileWriter($validator);
 
-        $this->logWriter = new LogWriter($reader, $writer, 'app');
+        $this->logWriter = new LogWriter($reader, $writer, $this->logDir);
     }
 
     public function testWrite(): void

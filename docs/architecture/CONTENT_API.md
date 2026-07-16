@@ -1,6 +1,7 @@
 # Content API – Pagination & Search (Iteration 19)
 
-> Version 2.0.7 · Flat-file index at `data/index/content.json`
+> Version 2.0.8 · Flat-file index at `data/index/content.json`  
+> **Security & write access (It. 20):** see [CORE_HARDENING.md](./CORE_HARDENING.md)
 
 ## List endpoints
 
@@ -83,6 +84,10 @@ Setting: `content.storageFormat` → `md` (default) | `json`
 | `json` | `pages/{slug}.json` | Single JSON object with `content` field + metadata |
 
 Both formats are readable on list/get; new saves use the configured format.
+
+## Soft delete (trash)
+
+`DELETE /api/pages/{slug}` and `DELETE /api/articles/{slug}` move files to `content/trash/` with a `.meta.json` sidecar (not permanent delete). Restore via admin trash API — see [CORE_HARDENING.md](./CORE_HARDENING.md).
 
 ## Frontend wiring
 

@@ -146,4 +146,78 @@ class BackupManagerTest extends TestCase
         $this->assertEquals('weekly', $schedule['interval']);
         $this->assertEquals(14, $schedule['keep']);
     }
+
+    public function testRunScheduledBackupIfDueWithoutSchedule(): void
+    {
+        $result = $this->backupManager->runScheduledBackupIfDue();
+
+        $this->assertFalse($result['ran']);
+        $this->assertSame('no_schedule', $result['reason'] ?? null);
+    }
+
+    public function testRunScheduledBackupIfDueWhenNotYetDue(): void
+    {
+        $this->backupManager->scheduleBackup('daily', 7);
+
+        $result = $this->backupManager->runScheduledBackupIfDue();
+
+        $this->assertFalse($result['ran']);
+        $this->assertSame('not_due', $result['reason'] ?? null);
+    }
+
+    public function testRunScheduledBackupIfDueWhenPastDue(): void
+    {
+        if (!class_exists(\ZipArchive::class)) {
+            $this->markTestSkipped('ZipArchive extension is required.');
+        }
+
+        $tempRoot = sys_get_temp_dir() . '/paginium_backup_' . uniqid('', true);
+        $backupPath = $tempRoot . '/backups';
+        $contentPath = $tempRoot . '/content';
+        mkdir($backupPath, 0755, true);
+        mkdir($contentPath . '/pages', 0755, true);
+        file_put_contents($contentPath . '/pages/home.md', "---\ntitle: Home\n---\n# Home");
+
+        $validator = new FileValidator($tempRoot);
+        $reader = new FileReader($validator);
+        $writer = new FileWriter($validator);
+        $manager = new BackupManager($reader, $writer, $backupPath, $contentPath);
+
+        try {
+            $manager->scheduleBackup('daily', 7);
+
+            $schedulePath = $backupPath . '/schedule.json';
+            $schedule = json_decode((string) file_get_contents($schedulePath), true);
+            $schedule['next_run'] = date('Y-m-d H:i:s', time() - 3600);
+            file_put_contents($schedulePath, json_encode($schedule, JSON_PRETTY_PRINT));
+
+            $result = $manager->runScheduledBackupIfDue();
+
+            $this->assertTrue($result['ran']);
+            $this->assertArrayHasKey('backup', $result);
+        } finally {
+            $this->removeDirectory($tempRoot);
+        }
+    }
+
+    private function removeDirectory(string $dir): void
+    {
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        foreach (scandir($dir) ?: [] as $entry) {
+            if ($entry === '.' || $entry === '..') {
+                continue;
+            }
+            $path = $dir . '/' . $entry;
+            if (is_dir($path)) {
+                $this->removeDirectory($path);
+            } else {
+                @unlink($path);
+            }
+        }
+
+        @rmdir($dir);
+    }
 }

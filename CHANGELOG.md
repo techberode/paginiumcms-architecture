@@ -17,6 +17,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Add `GET /storage/{path}` via `StorageController` – serves files from `backend/storage/`
 - Setting `general.allowRegistration` – blocks `POST /api/auth/register` when disabled
 - Enforce `comments.allowGuestComments` in `CommentsController::submit()`
+#### Bug fixes (2.0.8)
+- `LogWriter` uses direct filesystem I/O (logs no longer routed through content `FileValidator`)
+- Content `DELETE` uses soft-delete to trash instead of permanent removal
+- Audit trail skips lookup of version 0; delete versioning is best-effort
+- `EnhancedVersionManager::getVersion()` handles invalid JSON safely
 - Trash: sidecar `.meta.json` on soft-delete; `GET /api/admin/trash`, `POST /api/admin/trash/{id}/restore`
 - Backup cron: `bin/console backup:run-schedule`, `BackupScheduler`, `BackupManager::runScheduledBackupIfDue()`
 
@@ -30,7 +35,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 #### Tests
 - `CoreHardeningTest` – RBAC 403, maintenance 503, registration toggle, storage route
-- `AuthorizationManagerManagePermissionTest`
+- `TrashServiceTest`, `TrashControllerTest`, middleware unit tests (Permission, Maintenance)
+- `StorageControllerTest`, `BackupSchedulerTest`, guest comments toggle
+- **488 PHPUnit** total, PHPStan L8
 
 #### Docs
 - `docs/architecture/CORE_HARDENING.md`

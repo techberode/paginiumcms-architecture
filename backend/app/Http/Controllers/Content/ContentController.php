@@ -251,7 +251,12 @@ class ContentController
 
         try {
             $this->versioning->recordChange($content, $type, 'delete', $this->resolveUser($request));
-            $this->repository->delete($content, true);
+        } catch (\Throwable) {
+            // Verzovanie pri delete je best-effort — obsah sa aj tak presunie do koša.
+        }
+
+        try {
+            $this->repository->delete($content);
 
             return $this->jsonSuccess($response, null, Lang::get('deleted', [], 'content'));
         } catch (FlatFileException $e) {

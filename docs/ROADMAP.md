@@ -260,6 +260,10 @@ Základ pre všetky admin nastavenia (SMTP, notifikácie, SEO, feedy v ďalšíc
 **Testy (2.0.8):**
 - `CoreHardeningTest` – RBAC 403, maintenance 503, registration toggle, storage route
 - `AuthorizationManagerManagePermissionTest` – `:manage` alias
+- `TrashServiceTest`, `TrashControllerTest`, `PermissionMiddlewareTest`, `MaintenanceModeMiddlewareTest`
+- `StorageControllerTest`, `BackupSchedulerTest`, `BackupManagerTest` (schedule/cron)
+- `CommentsControllerTest` – guest comments toggle
+- `FileWriterTest` – trash `.meta.json` sidecar
 
 ---
 

@@ -96,6 +96,10 @@ class EnhancedVersionManager implements VersionableInterface
         try {
             $content = $this->reader->read($path);
             $data = json_decode($content, true);
+            if (!is_array($data)) {
+                return null;
+            }
+
             return $this->hydrate($data);
         } catch (FlatFileException) {
             return null;
