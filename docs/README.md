@@ -202,7 +202,7 @@ See [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md).
 | 7 | [ITERATION_7.md](ITERATION_7.md) | ✅ Dashboard & monitoring |
 | 8 | [ITERATION_8.md](ITERATION_8.md) | ✅ Media manager FE |
 | 9 | [ITERATION_9.md](ITERATION_9.md) | ✅ Prototype port (nav, comments, …) |
-| 10 | [ITERATION_10.md](ITERATION_10.md) | ⏳ RSS & sitemap |
+| 10 | [ITERATION_10.md](ITERATION_10.md) | 🚧 RSS & sitemap → [It. 22](ITERATION_22.md) |
 | 11 | [ITERATION_11.md](ITERATION_11.md) | ⏳ SSO & ACL |
 | 12 | [ITERATION_12.md](ITERATION_12.md) | ⏳ Blueprint engine |
 | 13 | [ITERATION_13.md](ITERATION_13.md) | ⏳ Demo module |
@@ -214,15 +214,15 @@ See [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md).
 | 19 | [ITERATION_19.md](ITERATION_19.md) | ✅ Index & pagination |
 | 20 | [ITERATION_20.md](ITERATION_20.md) | ✅ Core hardening |
 | 21 | [ITERATION_21.md](ITERATION_21.md) | ✅ API contract & MSW |
+| 22 | [ITERATION_22.md](ITERATION_22.md) | ✅ Trash UI, lockout, RSS/sitemap |
+| 23 | [ITERATION_23.md](ITERATION_23.md) | ✅ SEO meta engine |
 
 ---
 
 ## ⚠️ Known Limitations
 
-* **It. 21 (2.0.9):** ✅ Complete — see [ITERATION_21.md](ITERATION_21.md)
+* **It. 23 (2.0.11):** ✅ Complete — see [ITERATION_23.md](ITERATION_23.md)
 * **Backup create tests** skipped under vfsStream (ZipArchive); schedule/cron logic tested on real temp dirs
-* **Trash admin UI** in React not yet built (API ready)
-* **Brute-force per-email lockout** planned in ROADMAP, not yet implemented
 
 ---
 

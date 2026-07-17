@@ -6,6 +6,7 @@ namespace PaginiumCMS\Core\Security;
 
 use PaginiumCMS\Core\Logging\Contracts\LoggerInterface;
 use PaginiumCMS\Core\Logging\Models\LogSeverity;
+use PaginiumCMS\Core\Security\Services\LoginAttemptTracker;
 
 /**
  * Špecializovaný logger pre bezpečnostné udalosti.
@@ -19,8 +20,11 @@ final class SecurityLogger
     /**
      * @param array<int|string, mixed> $config
      */
-    public function __construct(LoggerInterface $logger, array $config = [])
-    {
+    public function __construct(
+        LoggerInterface $logger,
+        private ?LoginAttemptTracker $loginAttempts = null,
+        array $config = []
+    ) {
         $this->logger = $logger;
         $this->config = array_merge([
             'log_failed_logins' => true,
@@ -154,8 +158,30 @@ final class SecurityLogger
      */
     private function checkBruteForceAttempt(string $ip, string $email): void
     {
-        // TODO: Implementovať kontrolu počtu neúspešných pokusov
-        // a alert pri prekročení limitu
+        if ($this->loginAttempts === null) {
+            return;
+        }
+
+        $locked = $this->loginAttempts->recordFailure($ip, $email);
+        if ($locked) {
+            $this->logger->critical('Security: Brute-force lockout triggered', [
+                'email' => $email,
+                'ip' => $ip,
+                'timestamp' => date('Y-m-d H:i:s'),
+                'type' => 'brute_force_lockout',
+            ]);
+        }
+    }
+
+    public function recordFailedLogin(string $ip, string $email, ?string $userAgent = null): void
+    {
+        $this->logFailedLogin($email, $ip, $userAgent);
+    }
+
+    public function recordSuccessfulLogin(string $userId, string $email, string $ip): void
+    {
+        $this->loginAttempts?->clearSuccess($ip, $email);
+        $this->logSuccessfulLogin($userId, $email, $ip);
     }
 
     /**

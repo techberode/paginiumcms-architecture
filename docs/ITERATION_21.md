@@ -47,6 +47,10 @@ Locked the API response contract across all HTTP controllers, added MSW for fron
 - OpenAPI 3.1 YAML export
 - Full migration of all components from `useApi` → typed clients ([Iteration 17](ITERATION_17.md))
 
+## Next
+
+→ [Iteration 22](ITERATION_22.md) – ops finish (trash UI, brute-force) + public XML feeds
+
 ## Related
 
 - [TESTING.md](developer/TESTING.md)

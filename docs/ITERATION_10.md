@@ -1,7 +1,7 @@
 # Iteration 10 – XML Feeds (RSS & Sitemap)
 
-**Status:** Planned  
-**Version:** — (post 2.0.9)
+**Status:** In progress (delivered via [Iteration 22](ITERATION_22.md))  
+**Version:** 2.0.10 (target)
 
 ## Summary
 
@@ -48,6 +48,12 @@ Http/Routes/feeds.php
 - [ROADMAP.md](ROADMAP.md) – Iteration 10
 - [CONTENT_API.md](architecture/CONTENT_API.md) – published filter rules
 
+## Implementation track
+
+RSS + sitemap are implemented in **[Iteration 22](ITERATION_22.md)** (after It. 21 API contract).  
+See It. 22 Part 3 for final file layout and routes.
+
 ## Next
 
+→ [Iteration 22](ITERATION_22.md) – feeds (this scope)  
 → [Iteration 11](ITERATION_11.md) – SSO and fine-grained ACL

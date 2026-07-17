@@ -135,6 +135,34 @@ final class SettingsSchema
                     ['key' => 'maxLength', 'type' => 'int', 'label' => 'Max comment length', 'default' => 2000, 'rules' => ['required', 'int', 'min:50', 'max:5000']],
                 ],
             ],
+            'security' => [
+                'label' => 'Bezpečnosť',
+                'fields' => [
+                    ['key' => 'maxLoginAttempts', 'type' => 'int', 'label' => 'Max. neúspešných prihlásení', 'default' => 5, 'rules' => ['required', 'int', 'min:3', 'max:20'], 'help' => 'Po prekročení sa účet/IP dočasne zablokuje.'],
+                    ['key' => 'lockoutMinutes', 'type' => 'int', 'label' => 'Dĺžka blokácie (min)', 'default' => 15, 'rules' => ['required', 'int', 'min:1', 'max:1440']],
+                ],
+            ],
+            'feeds' => [
+                'label' => 'RSS & Sitemap',
+                'fields' => [
+                    ['key' => 'enabled', 'type' => 'bool', 'label' => 'Povoliť feedy', 'default' => true, 'rules' => ['bool']],
+                    ['key' => 'title', 'type' => 'string', 'label' => 'Názov RSS kanála', 'default' => '', 'rules' => ['string', 'max:120'], 'help' => 'Prázdne = názov stránky z všeobecných nastavení.'],
+                    ['key' => 'description', 'type' => 'text', 'label' => 'Popis RSS kanála', 'default' => '', 'rules' => ['string', 'max:500']],
+                    ['key' => 'itemsLimit', 'type' => 'int', 'label' => 'Počet položiek v RSS', 'default' => 20, 'rules' => ['required', 'int', 'min:1', 'max:100']],
+                    ['key' => 'includePages', 'type' => 'bool', 'label' => 'Sitemap: podstránky', 'default' => true, 'rules' => ['bool']],
+                    ['key' => 'includeArticles', 'type' => 'bool', 'label' => 'RSS/Sitemap: články', 'default' => true, 'rules' => ['bool']],
+                ],
+            ],
+            'seo' => [
+                'label' => 'SEO',
+                'fields' => [
+                    ['key' => 'titleTemplate', 'type' => 'string', 'label' => 'Šablóna titulku', 'default' => '%title% | %siteName%', 'rules' => ['required', 'string', 'max:120'], 'help' => 'Placeholders: %title%, %siteName%'],
+                    ['key' => 'defaultDescription', 'type' => 'text', 'label' => 'Predvolený meta popis', 'default' => '', 'rules' => ['string', 'max:300']],
+                    ['key' => 'defaultImage', 'type' => 'url', 'label' => 'Predvolený OG obrázok (URL)', 'default' => '', 'rules' => ['url', 'max:512']],
+                    ['key' => 'robotsDefault', 'type' => 'string', 'label' => 'Robots (predvolene)', 'default' => 'index,follow', 'rules' => ['required', 'string', 'max:64']],
+                    ['key' => 'twitterCard', 'type' => 'enum', 'label' => 'Twitter card typ', 'default' => 'summary_large_image', 'options' => ['summary', 'summary_large_image'], 'rules' => ['required', 'in:summary,summary_large_image']],
+                ],
+            ],
         ];
     }
 

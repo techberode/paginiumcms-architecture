@@ -46,7 +46,7 @@ export const LoginModal: React.FC = () => {
       } else if (outcome.success) {
         toast.success('Prihlásenie úspešné');
       } else {
-        toast.error('Neplatný e-mail alebo heslo');
+        toast.error(outcome.error || 'Neplatný e-mail alebo heslo');
       }
     } finally {
       setLoading(false);
