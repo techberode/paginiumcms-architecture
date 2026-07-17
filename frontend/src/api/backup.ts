@@ -3,22 +3,19 @@ import apiClient from './client';
 import { Backup, ScheduleInfo } from './types';
 
 export const backupApi = {
-  // Získanie zoznamu záloh
   getAll: async (): Promise<Backup[]> => {
     const response = await apiClient.get<Backup[]>('/api/admin/backups');
-    return response.data || [];
+    return response.success && Array.isArray(response.data) ? response.data : [];
   },
 
-  // Vytvorenie zálohy
-  create: async (name: string, includes?: string[]): Promise<Backup> => {
+  create: async (name: string, includes?: string[]): Promise<Backup | null> => {
     const response = await apiClient.post<Backup>('/api/admin/backups', {
       name,
       includes: includes || ['content', 'config', 'data'],
     });
-    return response.data as Backup;
+    return response.success && response.data ? response.data : null;
   },
 
-  // Stiahnutie zálohy
   download: async (id: string): Promise<Blob> => {
     const response = await apiClient.get(`/api/admin/backups/${id}/download`, {
       responseType: 'blob',
@@ -26,30 +23,26 @@ export const backupApi = {
     return response.data as Blob;
   },
 
-  // Obnovenie zálohy
-  restore: async (id: string): Promise<{ success: boolean }> => {
+  restore: async (id: string): Promise<boolean> => {
     const response = await apiClient.post(`/api/admin/backups/${id}/restore`);
-    return response.data as { success: boolean };
+    return Boolean(response.success);
   },
 
-  // Vymazanie zálohy
-  delete: async (id: string): Promise<{ success: boolean }> => {
+  delete: async (id: string): Promise<boolean> => {
     const response = await apiClient.delete(`/api/admin/backups/${id}`);
-    return response.data as { success: boolean };
+    return Boolean(response.success);
   },
 
-  // Naplánovanie zálohovania
-  schedule: async (interval: 'daily' | 'weekly' | 'monthly', keep: number): Promise<{ success: boolean }> => {
+  schedule: async (interval: 'daily' | 'weekly' | 'monthly', keep: number): Promise<boolean> => {
     const response = await apiClient.post('/api/admin/backups/schedule', {
       interval,
       keep,
     });
-    return response.data as { success: boolean };
+    return Boolean(response.success);
   },
 
-  // Získanie informácií o pláne
-  getSchedule: async (): Promise<ScheduleInfo> => {
+  getSchedule: async (): Promise<ScheduleInfo | null> => {
     const response = await apiClient.get<ScheduleInfo>('/api/admin/backups/schedule');
-    return response.data as ScheduleInfo;
+    return response.success && response.data ? response.data : null;
   },
 };

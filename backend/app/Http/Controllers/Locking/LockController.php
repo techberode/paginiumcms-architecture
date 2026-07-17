@@ -6,10 +6,10 @@ namespace PaginiumCMS\Http\Controllers\Locking;
 
 use PaginiumCMS\Core\Locking\Contracts\LockManagerInterface;
 use PaginiumCMS\Core\Locking\Exception\LockConflictException;
+use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Security\Models\User;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use PaginiumCMS\Support\JsonHelper;
 
 /**
  * === Controller: LockController ===
@@ -27,41 +27,40 @@ use PaginiumCMS\Support\JsonHelper;
  */
 final class LockController
 {
-    public function __construct(private LockManagerInterface $locks)
-    {
+    public function __construct(
+        private LockManagerInterface $locks,
+        private JsonResponder $json
+    ) {
     }
-
-    // === Blok: Získanie zámku ===
 
     public function acquire(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $user = $this->resolveUser($request);
         if ($user === null) {
-            return $this->jsonError($response, 'Neprihlásený používateľ', 401);
+            return $this->json->error($response, 'Neprihlásený používateľ', 401);
         }
 
         $data = $this->parseJsonBody($request);
         $resourceId = trim((string) ($data['resourceId'] ?? ''));
 
         if ($resourceId === '') {
-            return $this->jsonError($response, 'Chýba resourceId', 400);
+            return $this->json->error($response, 'Chýba resourceId', 400);
         }
 
         try {
             $lock = $this->locks->acquire($resourceId, $user);
 
-            // Token vraciame IBA vlastníkovi pri získaní zámku – frontend ho použije pri heartbeat/release.
-            return $this->jsonSuccess($response, [
+            return $this->json->success($response, [
                 'lock' => $lock->jsonSerialize(),
                 'token' => $lock->getToken(),
                 'ttl' => $lock->getExpiresAt() - $lock->getLastHeartbeat(),
-            ], 'Zámok získaný', 201);
+            ], 201, 'Zámok získaný');
         } catch (LockConflictException $e) {
-            return $this->jsonConflict($response, $e);
+            return $this->json->conflict($response, $e->getMessage(), [
+                'lock' => $e->getCurrentLock()->jsonSerialize(),
+            ]);
         }
     }
-
-    // === Blok: Heartbeat (predĺženie) ===
 
     public function heartbeat(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
@@ -70,22 +69,22 @@ final class LockController
         $token = (string) ($data['token'] ?? '');
 
         if ($resourceId === '' || $token === '') {
-            return $this->jsonError($response, 'Chýba resourceId alebo token', 400);
+            return $this->json->error($response, 'Chýba resourceId alebo token', 400);
         }
 
         try {
             $lock = $this->locks->heartbeat($resourceId, $token);
 
-            return $this->jsonSuccess($response, [
+            return $this->json->success($response, [
                 'lock' => $lock->jsonSerialize(),
                 'ttl' => $lock->getExpiresAt() - $lock->getLastHeartbeat(),
-            ], 'Zámok obnovený');
+            ], 200, 'Zámok obnovený');
         } catch (LockConflictException $e) {
-            return $this->jsonConflict($response, $e);
+            return $this->json->conflict($response, $e->getMessage(), [
+                'lock' => $e->getCurrentLock()->jsonSerialize(),
+            ]);
         }
     }
-
-    // === Blok: Uvoľnenie ===
 
     public function release(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
@@ -94,15 +93,13 @@ final class LockController
         $token = (string) ($data['token'] ?? '');
 
         if ($resourceId === '' || $token === '') {
-            return $this->jsonError($response, 'Chýba resourceId alebo token', 400);
+            return $this->json->error($response, 'Chýba resourceId alebo token', 400);
         }
 
         $this->locks->release($resourceId, $token);
 
-        return $this->jsonSuccess($response, null, 'Zámok uvoľnený');
+        return $this->json->success($response, null, 200, 'Zámok uvoľnený');
     }
-
-    // === Blok: Admin – zoznam a vynútené uvoľnenie ===
 
     public function listLocks(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
@@ -111,25 +108,24 @@ final class LockController
             $this->locks->getAllLocks()
         );
 
-        return $this->jsonSuccess($response, $locks);
+        return $this->json->success($response, $locks);
     }
 
     /**
      * @param array<string, string> $args
- */public function forceRelease(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+     */
+    public function forceRelease(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $resourceId = trim((string) ($args['resourceId'] ?? ''));
 
         if ($resourceId === '') {
-            return $this->jsonError($response, 'Chýba resourceId', 400);
+            return $this->json->error($response, 'Chýba resourceId', 400);
         }
 
         $this->locks->forceRelease($resourceId);
 
-        return $this->jsonSuccess($response, null, 'Zámok vynútene uvoľnený');
+        return $this->json->success($response, null, 200, 'Zámok vynútene uvoľnený');
     }
-
-    // === Blok: Pomocné metódy (rovnaký vzor ako ContentController) ===
 
     private function resolveUser(ServerRequestInterface $request): ?User
     {
@@ -140,47 +136,11 @@ final class LockController
 
     /**
      * @return array<int|string, mixed>
- */private function parseJsonBody(ServerRequestInterface $request): array
+     */
+    private function parseJsonBody(ServerRequestInterface $request): array
     {
         $data = json_decode((string) $request->getBody(), true);
 
         return is_array($data) ? $data : [];
-    }
-
-    private function jsonConflict(ResponseInterface $response, LockConflictException $e): ResponseInterface
-    {
-        $response->getBody()->write(JsonHelper::encode([
-            'success' => false,
-            'error' => $e->getMessage(),
-            'lock' => $e->getCurrentLock()->jsonSerialize(),
-        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
-        return $response->withStatus(409)->withHeader('Content-Type', 'application/json; charset=utf-8');
-    }
-
-    private function jsonSuccess(
-        ResponseInterface $response,
-        mixed $data,
-        ?string $message = null,
-        int $status = 200
-    ): ResponseInterface {
-        $payload = ['success' => true, 'data' => $data];
-        if ($message !== null) {
-            $payload['message'] = $message;
-        }
-
-        $response->getBody()->write(JsonHelper::encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
-        return $response->withStatus($status)->withHeader('Content-Type', 'application/json; charset=utf-8');
-    }
-
-    private function jsonError(ResponseInterface $response, string $message, int $status = 400): ResponseInterface
-    {
-        $response->getBody()->write(JsonHelper::encode([
-            'success' => false,
-            'error' => $message,
-        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
-        return $response->withStatus($status)->withHeader('Content-Type', 'application/json; charset=utf-8');
     }
 }

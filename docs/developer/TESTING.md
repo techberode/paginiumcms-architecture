@@ -1,6 +1,6 @@
 # Testovanie – PaginiumCMS
 
-> Posledná aktualizácia: 2.0.8 · **488 PHPUnit testov**, PHPStan level 8
+> Posledná aktualizácia: 2.0.9 · **502 PHPUnit testov**, PHPStan level 8
 
 ## Spustenie
 
@@ -16,6 +16,37 @@
 
 # Frontend (Vitest)
 cd frontend && npm test
+
+# MSW contract testy (bez backendu)
+cd frontend && npm run test:msw
+```
+
+## Iterácia 21 – API kontrakt
+
+| Komponent | Test / artefakt |
+|-----------|-----------------|
+| `JsonResponder` | `Http/Support/JsonResponderTest.php` |
+| HTTP response shapes | `Http/Contract/ApiResponseShapeTest.php` |
+| MSW handlery | `frontend/src/mocks/handlers.test.ts` |
+| Postman smoke | `docs/api/PaginiumCMS.postman_collection.json` |
+| Kontrakt docs | `docs/architecture/API_CONTRACT.md` |
+
+### Postman / Newman (voliteľné)
+
+```bash
+# Vyžaduje bežiaci backend na :8080 a npx newman
+npx newman run docs/api/PaginiumCMS.postman_collection.json \
+  --env-var baseUrl=http://localhost:8080
+```
+
+Dev mocks: `VITE_MSW=true npm run dev` v `frontend/`.
+
+### CI (GitHub Actions)
+
+Workflow `.github/workflows/ci.yml` — PHPUnit, PHPStan, Vitest, Newman smoke (public endpoints).
+
+```bash
+./scripts/run-api-smoke.sh   # lokálne (backend na :8080)
 ```
 
 ## Štruktúra backend testov

@@ -6,17 +6,19 @@ namespace PaginiumCMS\Http\Controllers\Admin;
 
 use PaginiumCMS\Core\CodeEditor\Services\CodeEditorManager;
 use PaginiumCMS\Core\CodePolicy\Exceptions\CodePolicyViolationException;
+use PaginiumCMS\Http\Support\JsonResponder;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use PaginiumCMS\Support\JsonHelper;
 
 /**
  * Admin code editor API (Iteration 14).
  */
 class CodeEditorController
 {
-    public function __construct(private CodeEditorManager $editor)
-    {
+    public function __construct(
+        protected CodeEditorManager $editor,
+        protected JsonResponder $json
+    ) {
     }
 
     public function listFiles(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -27,13 +29,13 @@ class CodeEditorController
         try {
             $files = $this->editor->listFiles($directory);
 
-            return $this->json($response, [
+            return $this->json->respond($response, [
                 'success' => true,
                 'data' => $files,
                 'directory' => $directory !== '' ? $directory : $this->editor->getDefaultDirectory(),
             ]);
         } catch (\Throwable $e) {
-            return $this->error($response, $e);
+            return $this->respondThrowable($response, $e);
         }
     }
 
@@ -41,24 +43,21 @@ class CodeEditorController
     {
         $path = (string) ($request->getQueryParams()['path'] ?? '');
         if ($path === '') {
-            return $this->json($response, ['success' => false, 'error' => 'Path is required'], 400);
+            return $this->json->error($response, 'Path is required', 400);
         }
 
         try {
             $content = $this->editor->readFile($path);
             $info = $this->editor->getFileInfo($path);
 
-            return $this->json($response, [
-                'success' => true,
-                'data' => [
-                    'content' => $content,
-                    'path' => $path,
-                    'language' => $info['language'],
-                    'info' => $info,
-                ],
+            return $this->json->success($response, [
+                'content' => $content,
+                'path' => $path,
+                'language' => $info['language'],
+                'info' => $info,
             ]);
         } catch (\Throwable $e) {
-            return $this->error($response, $e);
+            return $this->respondThrowable($response, $e);
         }
     }
 
@@ -66,24 +65,21 @@ class CodeEditorController
     {
         $data = json_decode((string) $request->getBody(), true);
         if (!is_array($data)) {
-            return $this->json($response, ['success' => false, 'error' => 'Invalid JSON body'], 400);
+            return $this->json->error($response, 'Invalid JSON body', 400);
         }
 
         $path = (string) ($data['path'] ?? '');
         $content = (string) ($data['content'] ?? '');
         if ($path === '') {
-            return $this->json($response, ['success' => false, 'error' => 'Path is required'], 400);
+            return $this->json->error($response, 'Path is required', 400);
         }
 
         try {
             $this->editor->writeFile($path, $content);
 
-            return $this->json($response, [
-                'success' => true,
-                'message' => 'File saved successfully',
-            ]);
+            return $this->json->success($response, null, 200, 'File saved successfully');
         } catch (\Throwable $e) {
-            return $this->error($response, $e);
+            return $this->respondThrowable($response, $e);
         }
     }
 
@@ -92,37 +88,18 @@ class CodeEditorController
         $path = (string) ($request->getQueryParams()['path'] ?? '');
 
         try {
-            return $this->json($response, [
-                'success' => true,
-                'data' => $this->editor->getBackups($path),
-            ]);
+            return $this->json->success($response, $this->editor->getBackups($path));
         } catch (\Throwable $e) {
-            return $this->error($response, $e);
+            return $this->respondThrowable($response, $e);
         }
     }
 
-    private function error(ResponseInterface $response, \Throwable $e): ResponseInterface
+    protected function respondThrowable(ResponseInterface $response, \Throwable $e): ResponseInterface
     {
         if ($e instanceof CodePolicyViolationException) {
-            return $this->json($response, [
-                'success' => false,
-                'error' => $e->getMessage(),
-                'errors' => $e->getErrors(),
-            ], 422);
+            return $this->json->validation($response, $e->getMessage(), $e->getErrors());
         }
 
-        return $this->json($response, [
-            'success' => false,
-            'error' => $e->getMessage(),
-        ], 500);
-    }
-
-    /**
-     * @param array<int|string, mixed> $payload
- */private function json(ResponseInterface $response, array $payload, int $status = 200): ResponseInterface
-    {
-        $response->getBody()->write(JsonHelper::encode($payload, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-
-        return $response->withStatus($status)->withHeader('Content-Type', 'application/json; charset=utf-8');
+        return $this->json->error($response, $e->getMessage(), 500);
     }
 }

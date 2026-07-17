@@ -5,17 +5,18 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Controllers\Media;
 
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
+use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
 use PaginiumCMS\Support\Lang;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UploadedFileInterface;
-use PaginiumCMS\Support\JsonHelper;
 
 class MediaController
 {
     public function __construct(
-        private MediaRepositoryInterface $mediaRepository
+        private MediaRepositoryInterface $mediaRepository,
+        private JsonResponder $json
     ) {
     }
 
@@ -37,7 +38,7 @@ class MediaController
             $this->mediaRepository->findAll($filters)
         );
 
-        return $this->jsonSuccess($response, $files);
+        return $this->json->success($response, $files);
     }
 
     public function uploadMedia(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -46,7 +47,7 @@ class MediaController
         $file = $uploadedFiles['file'] ?? null;
 
         if (!$file instanceof UploadedFileInterface || $file->getError() !== UPLOAD_ERR_OK) {
-            return $this->jsonError($response, Lang::get('file_required', [], 'media'), 400);
+            return $this->json->error($response, Lang::get('file_required', [], 'media'), 400);
         }
 
         $parsedBody = $request->getParsedBody();
@@ -60,9 +61,9 @@ class MediaController
                 $altText
             );
 
-            return $this->jsonSuccess($response, $media->jsonSerialize(), null, 201);
+            return $this->json->success($response, $media->jsonSerialize(), 201);
         } catch (FlatFileException $e) {
-            return $this->jsonError($response, $e->getMessage(), 400);
+            return $this->json->error($response, $e->getMessage(), 400);
         }
     }
 
@@ -75,12 +76,12 @@ class MediaController
         $media = $this->mediaRepository->findByPath($path);
 
         if ($media === null) {
-            return $this->jsonError($response, Lang::get('not_found', [], 'media'), 404);
+            return $this->json->error($response, Lang::get('not_found', [], 'media'), 404);
         }
 
         $data = json_decode((string) $request->getBody(), true);
         if (!is_array($data)) {
-            return $this->jsonError($response, Lang::get('updated', [], 'media'), 400);
+            return $this->json->error($response, Lang::get('updated', [], 'media'), 400);
         }
 
         if (array_key_exists('altText', $data)) {
@@ -90,9 +91,9 @@ class MediaController
         try {
             $this->mediaRepository->update($media);
 
-            return $this->jsonSuccess($response, $media->jsonSerialize(), Lang::get('updated', [], 'media'));
+            return $this->json->success($response, $media->jsonSerialize(), 200, Lang::get('updated', [], 'media'));
         } catch (FlatFileException $e) {
-            return $this->jsonError($response, $e->getMessage(), 500);
+            return $this->json->error($response, $e->getMessage(), 500);
         }
     }
 
@@ -106,31 +107,9 @@ class MediaController
         try {
             $this->mediaRepository->delete($path);
 
-            return $this->jsonSuccess($response, null, Lang::get('deleted', [], 'media'));
+            return $this->json->success($response, null, 200, Lang::get('deleted', [], 'media'));
         } catch (FlatFileException $e) {
-            return $this->jsonError($response, Lang::get('not_found', [], 'media'), 404);
+            return $this->json->error($response, Lang::get('not_found', [], 'media'), 404);
         }
-    }
-
-    private function jsonSuccess(ResponseInterface $response, mixed $data, ?string $message = null, int $status = 200): ResponseInterface
-    {
-        $payload = ['success' => true, 'data' => $data];
-        if ($message !== null) {
-            $payload['message'] = $message;
-        }
-
-        $response->getBody()->write(JsonHelper::encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
-        return $response->withStatus($status)->withHeader('Content-Type', 'application/json; charset=utf-8');
-    }
-
-    private function jsonError(ResponseInterface $response, string $message, int $status = 400): ResponseInterface
-    {
-        $response->getBody()->write(JsonHelper::encode([
-            'success' => false,
-            'error' => $message,
-        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
-        return $response->withStatus($status)->withHeader('Content-Type', 'application/json; charset=utf-8');
     }
 }

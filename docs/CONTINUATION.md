@@ -1,6 +1,8 @@
 # PaginiumCMS – Continuation context & implementation plan
 
 > **Language note:** Project documentation is being migrated to English (see `.cursorrules`).  
+> For per-iteration details see **`docs/ITERATION_{N}.md`** (1–21). Full index in [`docs/README.md`](README.md#documentation-index).
+
 > For Iteration 6 details see [`docs/ITERATION_6.md`](ITERATION_6.md).
 
 > This document is the “startup briefing” for continuing development. It contains:

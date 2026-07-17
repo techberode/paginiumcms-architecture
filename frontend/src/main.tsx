@@ -16,7 +16,13 @@ import { DebugRouteTracker } from './components/debug/DebugRouteTracker';
 
 logFrontendStartup();
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+async function bootstrap(): Promise<void> {
+  if (import.meta.env.VITE_MSW === 'true') {
+    const { startMockServiceWorker } = await import('./mocks/browser');
+    await startMockServiceWorker();
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
       <DebugRouteTracker />
@@ -37,4 +43,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       </ThemeProvider>
     </BrowserRouter>
   </React.StrictMode>
-);
+  );
+}
+
+void bootstrap();

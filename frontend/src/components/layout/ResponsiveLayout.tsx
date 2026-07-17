@@ -27,7 +27,9 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) 
     }
   }, [isMobile]);
 
-  const publicSiteUrl = import.meta.env.VITE_PUBLIC_URL || import.meta.env.VITE_API_URL?.replace(/:\d+$/, ':3025') || '/';
+  const publicSiteUrl =
+    import.meta.env.VITE_PUBLIC_URL ||
+    (typeof window !== 'undefined' ? window.location.origin : '/');
 
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-slate-950 font-sans overflow-hidden selection:bg-indigo-500 selection:text-white transition-colors">

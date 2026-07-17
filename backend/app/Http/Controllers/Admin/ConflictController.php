@@ -6,9 +6,9 @@ namespace PaginiumCMS\Http\Controllers\Admin;
 
 use PaginiumCMS\Core\Conflict\Contracts\ConflictLoggerInterface;
 use PaginiumCMS\Core\Conflict\Models\ConflictRecord;
+use PaginiumCMS\Http\Support\JsonResponder;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use PaginiumCMS\Support\JsonHelper;
 
 /**
  * === Controller: ConflictController (Admin) ===
@@ -19,8 +19,10 @@ use PaginiumCMS\Support\JsonHelper;
  */
 final class ConflictController
 {
-    public function __construct(private ConflictLoggerInterface $conflicts)
-    {
+    public function __construct(
+        private ConflictLoggerInterface $conflicts,
+        private JsonResponder $json
+    ) {
     }
 
     public function list(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -33,22 +35,13 @@ final class ConflictController
             $this->conflicts->getRecent($limit)
         );
 
-        return $this->json($response, ['success' => true, 'data' => ['conflicts' => $records]]);
+        return $this->json->success($response, ['conflicts' => $records]);
     }
 
     public function clear(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $this->conflicts->clear();
 
-        return $this->json($response, ['success' => true, 'message' => 'Log konfliktov vyčistený']);
-    }
-
-    /**
-     * @param array<int|string, mixed> $payload
- */private function json(ResponseInterface $response, array $payload, int $status = 200): ResponseInterface
-    {
-        $response->getBody()->write(JsonHelper::encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
-        return $response->withStatus($status)->withHeader('Content-Type', 'application/json; charset=utf-8');
+        return $this->json->success($response, null, 200, 'Log konfliktov vyčistený');
     }
 }

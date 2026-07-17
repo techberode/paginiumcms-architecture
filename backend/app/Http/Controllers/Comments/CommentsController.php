@@ -8,19 +8,20 @@ use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\Validation\ValidationException;
 use PaginiumCMS\Core\Validation\Validator;
+use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Comments\Contracts\CommentsRepositoryInterface;
 use PaginiumCMS\Modules\Comments\Models\Comment;
 use PaginiumCMS\Support\Lang;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use PaginiumCMS\Support\JsonHelper;
 
 class CommentsController
 {
     public function __construct(
         private CommentsRepositoryInterface $commentsRepository,
         private SettingsRepositoryInterface $settingsRepository,
-        private Validator $validator
+        private Validator $validator,
+        private JsonResponder $json
     ) {
     }
 
@@ -41,14 +42,14 @@ class CommentsController
             $this->commentsRepository->findAll($filters)
         );
 
-        return $this->jsonSuccess($response, $comments);
+        return $this->json->success($response, $comments);
     }
 
     public function submit(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $data = json_decode((string) $request->getBody(), true);
         if (!is_array($data)) {
-            return $this->jsonError($response, Lang::get('invalid_payload', [], 'comments'), 400);
+            return $this->json->error($response, Lang::get('invalid_payload', [], 'comments'), 400);
         }
 
         try {
@@ -59,17 +60,21 @@ class CommentsController
                 'content' => ['required', 'string', 'min:3', 'max:2000'],
             ]);
         } catch (ValidationException $e) {
-            return $this->jsonValidationError($response, $e);
+            return $this->json->validation(
+                $response,
+                Lang::get('validation_failed', [], 'comments'),
+                $e->getErrors()
+            );
         }
 
         $settings = $this->settingsRepository->group('comments');
         if (($settings['enabled'] ?? true) === false) {
-            return $this->jsonError($response, Lang::get('disabled', [], 'comments'), 403);
+            return $this->json->error($response, Lang::get('disabled', [], 'comments'), 403);
         }
 
         $user = $request->getAttribute('user');
         if ($user === null && ($settings['allowGuestComments'] ?? true) === false) {
-            return $this->jsonError($response, 'Anonymné komentáre sú vypnuté', 403);
+            return $this->json->error($response, 'Anonymné komentáre sú vypnuté', 403);
         }
 
         $comment = new Comment(
@@ -85,11 +90,11 @@ class CommentsController
 
         $this->commentsRepository->save($comment);
 
-        return $this->jsonSuccess(
+        return $this->json->success(
             $response,
             $this->publicShape($comment),
-            Lang::get('submitted', [], 'comments'),
-            201
+            201,
+            Lang::get('submitted', [], 'comments')
         );
     }
 
@@ -113,7 +118,7 @@ class CommentsController
             $this->commentsRepository->findAll($filters)
         );
 
-        return $this->jsonSuccess($response, [
+        return $this->json->success($response, [
             'items' => $comments,
             'count' => count($comments),
         ]);
@@ -127,18 +132,18 @@ class CommentsController
         $id = $args['id'] ?? '';
         $comment = $this->commentsRepository->findById($id);
         if ($comment === null) {
-            return $this->jsonError($response, Lang::get('not_found', [], 'comments'), 404);
+            return $this->json->error($response, Lang::get('not_found', [], 'comments'), 404);
         }
 
         $data = json_decode((string) $request->getBody(), true);
         if (!is_array($data)) {
-            return $this->jsonError($response, Lang::get('invalid_payload', [], 'comments'), 400);
+            return $this->json->error($response, Lang::get('invalid_payload', [], 'comments'), 400);
         }
 
         if (isset($data['status'])) {
             $status = (string) $data['status'];
             if (!in_array($status, [Comment::STATUS_PENDING, Comment::STATUS_APPROVED, Comment::STATUS_REJECTED], true)) {
-                return $this->jsonError($response, Lang::get('invalid_status', [], 'comments'), 422);
+                return $this->json->error($response, Lang::get('invalid_status', [], 'comments'), 422);
             }
             $comment->setStatus($status);
         }
@@ -146,7 +151,7 @@ class CommentsController
         if (isset($data['content'])) {
             $commentContent = trim((string) $data['content']);
             if ($commentContent === '') {
-                return $this->jsonError($response, Lang::get('content_required', [], 'comments'), 422);
+                return $this->json->error($response, Lang::get('content_required', [], 'comments'), 422);
             }
             $reflection = new \ReflectionClass($comment);
             $prop = $reflection->getProperty('content');
@@ -156,10 +161,10 @@ class CommentsController
         try {
             $this->commentsRepository->update($comment);
         } catch (FlatFileException $e) {
-            return $this->jsonError($response, $e->getMessage(), 500);
+            return $this->json->error($response, $e->getMessage(), 500);
         }
 
-        return $this->jsonSuccess($response, $comment->jsonSerialize(), Lang::get('updated', [], 'comments'));
+        return $this->json->success($response, $comment->jsonSerialize(), 200, Lang::get('updated', [], 'comments'));
     }
 
     /**
@@ -172,15 +177,16 @@ class CommentsController
         try {
             $this->commentsRepository->delete($id);
         } catch (FlatFileException) {
-            return $this->jsonError($response, Lang::get('not_found', [], 'comments'), 404);
+            return $this->json->error($response, Lang::get('not_found', [], 'comments'), 404);
         }
 
-        return $this->jsonSuccess($response, null, Lang::get('deleted', [], 'comments'));
+        return $this->json->success($response, null, 200, Lang::get('deleted', [], 'comments'));
     }
 
     /**
      * @return array<int|string, mixed>
- */private function publicShape(Comment $comment): array
+     */
+    private function publicShape(Comment $comment): array
     {
         return [
             'id' => $comment->getId(),
@@ -191,38 +197,5 @@ class CommentsController
             'createdAt' => $comment->getCreatedAt(),
             'approvedAt' => $comment->getApprovedAt(),
         ];
-    }
-
-    private function jsonSuccess(ResponseInterface $response, mixed $data, ?string $message = null, int $status = 200): ResponseInterface
-    {
-        $payload = ['success' => true, 'data' => $data];
-        if ($message !== null) {
-            $payload['message'] = $message;
-        }
-
-        $response->getBody()->write(JsonHelper::encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
-        return $response->withStatus($status)->withHeader('Content-Type', 'application/json; charset=utf-8');
-    }
-
-    private function jsonError(ResponseInterface $response, string $message, int $status = 400): ResponseInterface
-    {
-        $response->getBody()->write(JsonHelper::encode([
-            'success' => false,
-            'error' => $message,
-        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
-        return $response->withStatus($status)->withHeader('Content-Type', 'application/json; charset=utf-8');
-    }
-
-    private function jsonValidationError(ResponseInterface $response, ValidationException $e): ResponseInterface
-    {
-        $response->getBody()->write(JsonHelper::encode([
-            'success' => false,
-            'error' => Lang::get('validation_failed', [], 'comments'),
-            'errors' => $e->getErrors(),
-        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
-        return $response->withStatus(422)->withHeader('Content-Type', 'application/json; charset=utf-8');
     }
 }

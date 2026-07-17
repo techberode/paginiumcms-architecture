@@ -9,6 +9,7 @@ use PaginiumCMS\Core\FlatFile\Services\FileValidator;
 use PaginiumCMS\Core\FlatFile\Services\FileWriter;
 use PaginiumCMS\Core\Validation\Validator;
 use PaginiumCMS\Http\Controllers\Admin\UserController;
+use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Security\Contracts\PasswordPolicyInterface;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Modules\Security\Services\PasswordPolicy;
@@ -35,7 +36,7 @@ class UserControllerTest extends TestCase
 
         $validator = new FileValidator($this->baseDir . '/data');
         $this->repo = new UserRepository(new FileReader($validator), new FileWriter($validator), 'users');
-        $this->controller = new UserController($this->repo, new Validator(), new PasswordPolicy());
+        $this->controller = new UserController($this->repo, new Validator(), new PasswordPolicy(), new JsonResponder());
     }
 
     protected function tearDown(): void

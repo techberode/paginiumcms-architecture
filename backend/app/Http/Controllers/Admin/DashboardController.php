@@ -10,9 +10,9 @@ use PaginiumCMS\Core\Conflict\Contracts\ConflictLoggerInterface;
 use PaginiumCMS\Core\Conflict\Models\ConflictRecord;
 use PaginiumCMS\Core\Health\Services\HealthCheckManager;
 use PaginiumCMS\Core\Locking\Contracts\LockManagerInterface;
+use PaginiumCMS\Http\Support\JsonResponder;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use PaginiumCMS\Support\JsonHelper;
 
 /**
  * Admin dashboard overview – locks, conflicts, health, analytics (Iteration 7).
@@ -24,7 +24,8 @@ final class DashboardController
         private ConflictLoggerInterface $conflicts,
         private HealthCheckManager $health,
         private ReporterInterface $reporter,
-        private RealtimeTracker $realtime
+        private RealtimeTracker $realtime,
+        private JsonResponder $json
     ) {
     }
 
@@ -42,19 +43,16 @@ final class DashboardController
 
         $healthReport = $this->health->run();
 
-        return $this->json($response, [
-            'success' => true,
-            'data' => [
-                'locks' => $locks,
-                'locks_count' => count($locks),
-                'conflicts' => $conflicts,
-                'conflicts_count' => count($this->conflicts->getRecent(100)),
-                'health' => $this->normalizeHealthReport($healthReport->toArray()),
-                'analytics' => [
-                    'overview' => $this->reporter->getOverview('today'),
-                    'chart' => $this->reporter->getDailyChart(14),
-                    'realtime' => $this->realtime->getSnapshot(),
-                ],
+        return $this->json->success($response, [
+            'locks' => $locks,
+            'locks_count' => count($locks),
+            'conflicts' => $conflicts,
+            'conflicts_count' => count($this->conflicts->getRecent(100)),
+            'health' => $this->normalizeHealthReport($healthReport->toArray()),
+            'analytics' => [
+                'overview' => $this->reporter->getOverview('today'),
+                'chart' => $this->reporter->getDailyChart(14),
+                'realtime' => $this->realtime->getSnapshot(),
             ],
         ]);
     }
@@ -62,7 +60,8 @@ final class DashboardController
     /**
      * @param array<int|string, mixed> $report
      * @return array<int|string, mixed>
- */private function normalizeHealthReport(array $report): array
+     */
+    private function normalizeHealthReport(array $report): array
     {
         if (!isset($report['checks']) || !is_array($report['checks'])) {
             return $report;
@@ -77,14 +76,5 @@ final class DashboardController
         }, $report['checks']);
 
         return $report;
-    }
-
-    /**
-     * @param array<int|string, mixed> $payload
- */private function json(ResponseInterface $response, array $payload, int $status = 200): ResponseInterface
-    {
-        $response->getBody()->write(JsonHelper::encode($payload, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-
-        return $response->withStatus($status)->withHeader('Content-Type', 'application/json; charset=utf-8');
     }
 }

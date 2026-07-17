@@ -6,6 +6,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [2.0.9] – 2026-07-17
+
+### Iteration 21 – API contract, automated testing & FE parity
+
+#### Backend
+- Extend `JsonResponder` with `validation()`, `conflict()`, `respond()` (legacy/auth flat payloads)
+- Migrate HTTP controllers to injected `JsonResponder` (remove duplicate private JSON helpers)
+- `GET /api/health` uses standard `{ success, data }` envelope (version 2.0.9)
+
+#### Frontend
+- Add MSW handlers (`frontend/src/mocks/`) – enable dev mocks via `VITE_MSW=true`
+- Add typed `content.ts` and `user.ts` API clients; fix `api/index.ts` barrel exports
+- Vitest MSW contract tests (`npm run test:msw`)
+
+#### Tests & tooling
+- `JsonResponderTest` (6 tests)
+- `ApiResponseShapeTest` – HTTP contract assertions for success/error/pagination/auth
+- Postman smoke collection: `docs/api/PaginiumCMS.postman_collection.json`
+
+#### Completed in 2.0.9 final
+- Migrate `BackupController`, `VersionController`, `AuditTrailController` to `JsonResponder`
+- Standardize backup list/create to `{ success, data }` envelope
+- React Hook Form + Zod on `SettingsView`; `mapApiErrors` for 422
+- Newman CI: `.github/workflows/ci.yml`, `scripts/run-api-smoke.sh`
+- Refresh `docs/architecture/API.md`
+- OpenAPI 3.1 YAML export (optional)
+- Full `useApi` → typed client migration (Iteration 17)
+
+---
+
 ## [2.0.8] – 2026-07-16
 
 ### Iteration 20 – Core hardening & production readiness

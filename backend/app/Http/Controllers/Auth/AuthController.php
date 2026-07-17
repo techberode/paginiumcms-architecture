@@ -4,48 +4,33 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Auth;
 
-use PaginiumCMS\Modules\Security\Services\UserRepository;
-use PaginiumCMS\Modules\Security\Contracts\AuthenticationInterface;
-use PaginiumCMS\Modules\Security\Contracts\CsrfProtectionInterface;
-use PaginiumCMS\Modules\Security\Contracts\PasswordPolicyInterface;
-use PaginiumCMS\Support\JsonHelper;
-use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Core\Notification\NotificationService;
 use PaginiumCMS\Core\Notification\Services\IncidentNotifier;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
+use PaginiumCMS\Http\Support\JsonResponder;
+use PaginiumCMS\Modules\Security\Contracts\AuthenticationInterface;
+use PaginiumCMS\Modules\Security\Contracts\CsrfProtectionInterface;
+use PaginiumCMS\Modules\Security\Contracts\PasswordPolicyInterface;
+use PaginiumCMS\Modules\Security\Models\User;
+use PaginiumCMS\Modules\Security\Services\UserRepository;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Slim\Psr7\Response;
 
 /**
  * Kontroler pre autentifikáciu.
  */
 class AuthController
 {
-    private AuthenticationInterface $auth;
-    private CsrfProtectionInterface $csrf;
-    private PasswordPolicyInterface $passwordPolicy;
-    private UserRepository $userRepository;
-    private SettingsRepositoryInterface $settings;
-    private NotificationService $notifications;
-    private IncidentNotifier $incidentNotifier;
-
     public function __construct(
-        AuthenticationInterface $auth,
-        CsrfProtectionInterface $csrf,
-        PasswordPolicyInterface $passwordPolicy,
-        UserRepository $userRepository,
-        SettingsRepositoryInterface $settings,
-        NotificationService $notifications,
-        IncidentNotifier $incidentNotifier
+        private AuthenticationInterface $auth,
+        private CsrfProtectionInterface $csrf,
+        private PasswordPolicyInterface $passwordPolicy,
+        private UserRepository $userRepository,
+        private SettingsRepositoryInterface $settings,
+        private NotificationService $notifications,
+        private IncidentNotifier $incidentNotifier,
+        private JsonResponder $json
     ) {
-        $this->auth = $auth;
-        $this->csrf = $csrf;
-        $this->passwordPolicy = $passwordPolicy;
-        $this->userRepository = $userRepository;
-        $this->settings = $settings;
-        $this->notifications = $notifications;
-        $this->incidentNotifier = $incidentNotifier;
     }
 
     /**
@@ -54,25 +39,24 @@ class AuthController
      */
     public function login(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $data = json_decode((string)$request->getBody(), true);
+        $data = json_decode((string) $request->getBody(), true);
 
         if (!isset($data['email']) || !isset($data['password'])) {
-            return $this->jsonError($response, 'Email a heslo sú povinné', 400);
+            return $this->json->error($response, 'Email a heslo sú povinné', 400);
         }
 
         try {
             $user = $this->auth->login($data['email'], $data['password']);
 
-            // Ak má používateľ aktivovanú 2FA, vyžadujeme TOTP kód
             if ($user->isTwoFactorEnabled()) {
-                return $this->jsonResponse($response, [
+                return $this->json->respond($response, [
                     'success' => true,
                     'requires_two_factor' => true,
                     'user' => $user->jsonSerialize(),
                 ]);
             }
 
-            return $this->jsonResponse($response, [
+            return $this->json->respond($response, [
                 'success' => true,
                 'user' => $user->jsonSerialize(),
             ]);
@@ -82,7 +66,7 @@ class AuthController
                 $_SERVER['REMOTE_ADDR'] ?? 'unknown'
             );
 
-            return $this->jsonError($response, $e->getMessage(), 401);
+            return $this->json->error($response, $e->getMessage(), 401);
         }
     }
 
@@ -94,7 +78,7 @@ class AuthController
     {
         $this->auth->logout();
 
-        return $this->jsonResponse($response, [
+        return $this->json->respond($response, [
             'success' => true,
             'message' => 'Odhlásenie prebehlo úspešne',
         ]);
@@ -106,28 +90,25 @@ class AuthController
      */
     public function register(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $data = json_decode((string)$request->getBody(), true);
+        $data = json_decode((string) $request->getBody(), true);
 
         if (!isset($data['email']) || !isset($data['password']) || !isset($data['name'])) {
-            return $this->jsonError($response, 'Email, heslo a meno sú povinné', 400);
+            return $this->json->error($response, 'Email, heslo a meno sú povinné', 400);
         }
 
         $general = $this->settings->group('general');
         if (($general['allowRegistration'] ?? true) === false) {
-            return $this->jsonError($response, 'Registrácia nových používateľov je vypnutá', 403);
+            return $this->json->error($response, 'Registrácia nových používateľov je vypnutá', 403);
         }
 
         try {
-            // Overenie hesla
             $this->passwordPolicy->requireValid($data['password']);
 
-            // Kontrola, či používateľ už existuje
             $existingUser = $this->userRepository->findByEmail($data['email']);
             if ($existingUser !== null) {
-                return $this->jsonError($response, 'Používateľ s týmto emailom už existuje', 409);
+                return $this->json->error($response, 'Používateľ s týmto emailom už existuje', 409);
             }
 
-            // Vytvorenie nového používateľa
             $user = new User();
             $user->setEmail($data['email']);
             $user->setPassword($data['password']);
@@ -136,13 +117,13 @@ class AuthController
 
             $this->userRepository->save($user);
 
-            return $this->jsonResponse($response, [
+            return $this->json->respond($response, [
                 'success' => true,
                 'message' => 'Registrácia prebehla úspešne',
                 'user' => $user->jsonSerialize(),
             ], 201);
         } catch (\Exception $e) {
-            return $this->jsonError($response, $e->getMessage(), 400);
+            return $this->json->error($response, $e->getMessage(), 400);
         }
     }
 
@@ -155,24 +136,24 @@ class AuthController
         $user = $request->getAttribute('user');
 
         if (!$user instanceof User) {
-            return $this->jsonError($response, 'Neprihlásený používateľ', 401);
+            return $this->json->error($response, 'Neprihlásený používateľ', 401);
         }
 
-        $data = json_decode((string)$request->getBody(), true);
+        $data = json_decode((string) $request->getBody(), true);
 
         if (!isset($data['old_password']) || !isset($data['new_password'])) {
-            return $this->jsonError($response, 'Staré a nové heslo sú povinné', 400);
+            return $this->json->error($response, 'Staré a nové heslo sú povinné', 400);
         }
 
         try {
             $this->auth->changePassword($user, $data['old_password'], $data['new_password']);
 
-            return $this->jsonResponse($response, [
+            return $this->json->respond($response, [
                 'success' => true,
                 'message' => 'Heslo bolo úspešne zmenené',
             ]);
         } catch (\Exception $e) {
-            return $this->jsonError($response, $e->getMessage(), 400);
+            return $this->json->error($response, $e->getMessage(), 400);
         }
     }
 
@@ -182,10 +163,10 @@ class AuthController
      */
     public function resetPassword(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $data = json_decode((string)$request->getBody(), true);
+        $data = json_decode((string) $request->getBody(), true);
 
         if (!isset($data['email'])) {
-            return $this->jsonError($response, 'Email je povinný', 400);
+            return $this->json->error($response, 'Email je povinný', 400);
         }
 
         try {
@@ -212,13 +193,12 @@ class AuthController
                     ['html' => $body, 'event' => 'auth.password_reset']
                 );
 
-                return $this->jsonResponse($response, [
+                return $this->json->respond($response, [
                     'success' => true,
                     'message' => 'If the account exists, a reset link was sent by email.',
                 ]);
             }
 
-            // Development fallback when SMTP is not configured
             $payload = [
                 'success' => true,
                 'message' => 'Reset token generated (SMTP not configured)',
@@ -227,9 +207,9 @@ class AuthController
                 $payload['token'] = $token;
             }
 
-            return $this->jsonResponse($response, $payload);
+            return $this->json->respond($response, $payload);
         } catch (\Exception $e) {
-            return $this->jsonError($response, $e->getMessage(), 400);
+            return $this->json->error($response, $e->getMessage(), 400);
         }
     }
 
@@ -239,24 +219,23 @@ class AuthController
      */
     public function verifyResetToken(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $data = json_decode((string)$request->getBody(), true);
+        $data = json_decode((string) $request->getBody(), true);
 
         if (!isset($data['token']) || !isset($data['new_password'])) {
-            return $this->jsonError($response, 'Token a nové heslo sú povinné', 400);
+            return $this->json->error($response, 'Token a nové heslo sú povinné', 400);
         }
 
         try {
             $this->auth->verifyResetToken($data['token'], $data['new_password']);
 
-            return $this->jsonResponse($response, [
+            return $this->json->respond($response, [
                 'success' => true,
                 'message' => 'Heslo bolo úspešne zmenené',
             ]);
         } catch (\Exception $e) {
-            return $this->jsonError($response, $e->getMessage(), 400);
+            return $this->json->error($response, $e->getMessage(), 400);
         }
     }
-
 
     /**
      * GET /api/auth/me
@@ -267,10 +246,10 @@ class AuthController
         $user = $request->getAttribute('user');
 
         if (!$user instanceof User) {
-            return $this->jsonError($response, 'Neprihlásený používateľ', 401);
+            return $this->json->error($response, 'Neprihlásený používateľ', 401);
         }
 
-        return $this->jsonResponse($response, [
+        return $this->json->respond($response, [
             'success' => true,
             'user' => $user->jsonSerialize(),
         ]);
@@ -285,31 +264,9 @@ class AuthController
         $key = $request->getQueryParams()['key'] ?? 'default';
         $token = $this->csrf->getToken($key);
 
-        return $this->jsonResponse($response, [
+        return $this->json->respond($response, [
             'token' => $token,
             'key' => $key,
         ]);
-    }
-
-    /**
-     * Pomocná metóda pre JSON odpovede.
- * @param array<int|string, mixed> $data
- */    private function jsonResponse(ResponseInterface $response, array $data, int $status = 200): ResponseInterface
-    {
-        $response->getBody()->write(JsonHelper::encode($data, JSON_PRETTY_PRINT));
-        return $response
-            ->withStatus($status)
-            ->withHeader('Content-Type', 'application/json charset=utf-8');
-    }
-
-    /**
-     * Pomocná metóda pre JSON chyby.
-     */
-    private function jsonError(ResponseInterface $response, string $message, int $status = 400): ResponseInterface
-    {
-        return $this->jsonResponse($response, [
-            'success' => false,
-            'error' => $message,
-        ], $status);
     }
 }

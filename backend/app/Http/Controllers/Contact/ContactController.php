@@ -6,18 +6,19 @@ namespace PaginiumCMS\Http\Controllers\Contact;
 
 use PaginiumCMS\Core\Validation\ValidationException;
 use PaginiumCMS\Core\Validation\Validator;
+use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Messages\Contracts\MessageRepositoryInterface;
 use PaginiumCMS\Modules\Messages\Models\ContactMessage;
 use PaginiumCMS\Support\Lang;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use PaginiumCMS\Support\JsonHelper;
 
 class ContactController
 {
     public function __construct(
         private MessageRepositoryInterface $messageRepository,
-        private Validator $validator
+        private Validator $validator,
+        private JsonResponder $json
     ) {
     }
 
@@ -25,7 +26,7 @@ class ContactController
     {
         $data = json_decode((string) $request->getBody(), true);
         if (!is_array($data)) {
-            return $this->jsonError($response, Lang::get('invalid_payload', [], 'contact'), 400);
+            return $this->json->error($response, Lang::get('invalid_payload', [], 'contact'), 400);
         }
 
         try {
@@ -36,7 +37,11 @@ class ContactController
                 'message' => ['required', 'string', 'min:10', 'max:5000'],
             ]);
         } catch (ValidationException $e) {
-            return $this->jsonValidationError($response, $e);
+            return $this->json->validation(
+                $response,
+                Lang::get('validation_failed', [], 'contact'),
+                $e->getErrors()
+            );
         }
 
         $message = new ContactMessage(
@@ -55,44 +60,11 @@ class ContactController
 
         $this->messageRepository->save($message);
 
-        return $this->jsonSuccess(
+        return $this->json->success(
             $response,
             ['id' => $message->getId()],
-            Lang::get('submitted', [], 'contact'),
-            201
+            201,
+            Lang::get('submitted', [], 'contact')
         );
-    }
-
-    private function jsonSuccess(ResponseInterface $response, mixed $data, ?string $message = null, int $status = 200): ResponseInterface
-    {
-        $payload = ['success' => true, 'data' => $data];
-        if ($message !== null) {
-            $payload['message'] = $message;
-        }
-
-        $response->getBody()->write(JsonHelper::encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
-        return $response->withStatus($status)->withHeader('Content-Type', 'application/json; charset=utf-8');
-    }
-
-    private function jsonError(ResponseInterface $response, string $message, int $status = 400): ResponseInterface
-    {
-        $response->getBody()->write(JsonHelper::encode([
-            'success' => false,
-            'error' => $message,
-        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
-        return $response->withStatus($status)->withHeader('Content-Type', 'application/json; charset=utf-8');
-    }
-
-    private function jsonValidationError(ResponseInterface $response, ValidationException $e): ResponseInterface
-    {
-        $response->getBody()->write(JsonHelper::encode([
-            'success' => false,
-            'error' => Lang::get('validation_failed', [], 'contact'),
-            'errors' => $e->getErrors(),
-        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
-        return $response->withStatus(422)->withHeader('Content-Type', 'application/json; charset=utf-8');
     }
 }

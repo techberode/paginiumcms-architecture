@@ -4,13 +4,13 @@
 
 Legenda: ✅ hotové · 🚧 rozpracované · ⏳ plánované · 🔴 kritická priorita jadra
 
-**Aktuálna verzia:** 2.0.8 · **Ďalšie kroky:** It. 21 (API kontrakt & testovanie)
+**Aktuálna verzia:** 2.0.9 · **Ďalšie kroky:** It. 6–7 (notifikácie, dashboard polish)
 
 | Iterácia | Názov | Priorita |
 |----------|-------|----------|
 | 19 | FlatFile storage, indexácia, stránkovanie | ✅ |
-| 20 | Core hardening & produkcia | 🟡 |
-| 21 | API kontrakt & testovanie | 🔴 ďalšia |
+| 20 | Core hardening & produkcia | ✅ |
+| 21 | API kontrakt & testovanie | ✅ |
 | 6–7 | Notifikácie, dashboard | 🟡 po It. 21 |
 | 8–10 | DAM, SEO, feedy | 🟢 |
 | 11–16 | SSO, plugins, Monaco | 🔵 |
@@ -267,28 +267,25 @@ Základ pre všetky admin nastavenia (SMTP, notifikácie, SEO, feedy v ďalšíc
 
 ---
 
-## Iterácia 21 – API kontrakt, automatizované testovanie & FE parita ⏳ 🔴
+## Iterácia 21 – API kontrakt, automatizované testovanie & FE parita ✅
 
-**Cieľ:** Frontendista neháda tvar API; regresia bez klikania v UI.
+**Stav (release 2.0.9):** dokončené — JsonResponder everywhere, MSW, Newman CI, RHF+Zod, API.md refresh.
 
-**Backend:**
-- `Http/Support/JsonResponder.php` – zdieľaný `success` / `error` / `paginated` / `validation`; odstránenie duplicitných `jsonSuccess` v controlleroch.
-- `docs/architecture/API_CONTRACT.md` – presná štruktúra success/error/422/409/meta (existujúci tvar `{ success, data, error, errors }`).
-- `docs/api/PaginiumCMS.postman_collection.json` – smoke kolekcia pre celé CMS.
-- OpenAPI 3.1 YAML (voliteľná fáza 2 po dokončení It. 19–20).
-- Newman v CI: `newman run` po PHPUnit.
+**Hotové ✅:**
+- `JsonResponder` vo **všetkých** HTTP controlleroch (vrátane Backup, Version, AuditTrail)
+- `docs/architecture/API_CONTRACT.md`, `docs/architecture/API.md`
+- MSW, Postman smoke, `scripts/run-api-smoke.sh`, `.github/workflows/ci.yml`
+- `SettingsView` — React Hook Form + Zod + mapovanie 422 `errors`
+- `content.ts`, `user.ts`, opravené `backup.ts`, `audit.ts`, `api/index.ts`
 
-**Frontend:**
-- MSW (`frontend/src/mocks/`) – handlery pre content, auth, media; zapnutie cez `VITE_MSW=true` v dev.
-- React Hook Form + Zod – content/settings formuláre; mapovanie 422 `errors` z API.
-- Doplnenie `docs/architecture/API.md` podľa reálneho stavu 2.0.6+.
+**Odložené (post 2.0.9):**
+- OpenAPI 3.1 YAML
+- Plná migrácia `useApi` → typed klienty (It. 17)
 
-**Testy:**
-- `tests/Http/Contract/ApiResponseShapeTest.php` – assertJsonStructure pre všetky typy odpovedí.
-- Rozšírenie HTTP integračných testov na chýbajúce controllery (content, media, navigation).
-- Vitest + MSW pre komponentové testy bez backendu.
-
-**Závislosť:** vychádza z It. 19 (pagination meta) a It. 20 (RBAC/published); kontrakt dokumentuje finálny stav.
+**Testy (2.0.9):**
+- `JsonResponderTest`, `ApiResponseShapeTest`, `zodFromRules.test.ts`
+- `handlers.test.ts` (MSW)
+- **503+ PHPUnit**, PHPStan L8
 
 ---
 

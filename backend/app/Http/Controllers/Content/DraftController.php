@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Controllers\Content;
 
 use PaginiumCMS\Core\Drafts\Contracts\DraftManagerInterface;
+use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Security\Models\User;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use PaginiumCMS\Support\JsonHelper;
 
 /**
  * === Controller: DraftController ===
@@ -20,17 +20,20 @@ use PaginiumCMS\Support\JsonHelper;
  */
 final class DraftController
 {
-    public function __construct(private DraftManagerInterface $drafts)
-    {
+    public function __construct(
+        private DraftManagerInterface $drafts,
+        private JsonResponder $json
+    ) {
     }
 
     /**
      * @param array<string, string> $args
- */public function save(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+     */
+    public function save(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $user = $this->resolveUser($request);
         if ($user === null) {
-            return $this->jsonError($response, 'Neprihlásený používateľ', 401);
+            return $this->json->error($response, 'Neprihlásený používateľ', 401);
         }
 
         $type = (string) ($args['type'] ?? 'page');
@@ -39,12 +42,13 @@ final class DraftController
 
         $draft = $this->drafts->save($type, $slug, $payload, $user->getId());
 
-        return $this->jsonSuccess($response, $draft->jsonSerialize(), 'Koncept uložený');
+        return $this->json->success($response, $draft->jsonSerialize(), 200, 'Koncept uložený');
     }
 
     /**
      * @param array<string, string> $args
- */public function load(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+     */
+    public function load(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $type = (string) ($args['type'] ?? 'page');
         $slug = (string) ($args['slug'] ?? '');
@@ -52,25 +56,24 @@ final class DraftController
         $draft = $this->drafts->get($type, $slug);
 
         if ($draft === null) {
-            return $this->jsonError($response, 'Koncept neexistuje', 404);
+            return $this->json->error($response, 'Koncept neexistuje', 404);
         }
 
-        return $this->jsonSuccess($response, $draft->jsonSerialize());
+        return $this->json->success($response, $draft->jsonSerialize());
     }
 
     /**
      * @param array<string, string> $args
- */public function discard(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+     */
+    public function discard(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $type = (string) ($args['type'] ?? 'page');
         $slug = (string) ($args['slug'] ?? '');
 
         $this->drafts->discard($type, $slug);
 
-        return $this->jsonSuccess($response, null, 'Koncept zahodený');
+        return $this->json->success($response, null, 200, 'Koncept zahodený');
     }
-
-    // === Blok: Pomocné metódy (jednotný JSON vzor) ===
 
     private function resolveUser(ServerRequestInterface $request): ?User
     {
@@ -81,36 +84,11 @@ final class DraftController
 
     /**
      * @return array<int|string, mixed>
- */private function parseJsonBody(ServerRequestInterface $request): array
+     */
+    private function parseJsonBody(ServerRequestInterface $request): array
     {
         $data = json_decode((string) $request->getBody(), true);
 
         return is_array($data) ? $data : [];
-    }
-
-    private function jsonSuccess(
-        ResponseInterface $response,
-        mixed $data,
-        ?string $message = null,
-        int $status = 200
-    ): ResponseInterface {
-        $payload = ['success' => true, 'data' => $data];
-        if ($message !== null) {
-            $payload['message'] = $message;
-        }
-
-        $response->getBody()->write(JsonHelper::encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
-        return $response->withStatus($status)->withHeader('Content-Type', 'application/json; charset=utf-8');
-    }
-
-    private function jsonError(ResponseInterface $response, string $message, int $status = 400): ResponseInterface
-    {
-        $response->getBody()->write(JsonHelper::encode([
-            'success' => false,
-            'error' => $message,
-        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
-        return $response->withStatus($status)->withHeader('Content-Type', 'application/json; charset=utf-8');
     }
 }

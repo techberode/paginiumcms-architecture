@@ -8,9 +8,9 @@ use PaginiumCMS\Core\Analytics\Services\Reporter;
 use PaginiumCMS\Core\Notification\NotificationService;
 use PaginiumCMS\Core\Notification\Services\NotificationFactory;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
+use PaginiumCMS\Http\Support\JsonResponder;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use PaginiumCMS\Support\JsonHelper;
 
 /**
  * Admin notification overview and test-send (Iteration 6).
@@ -20,7 +20,8 @@ final class NotificationController
     public function __construct(
         private SettingsRepositoryInterface $settings,
         private NotificationService $notifications,
-        private Reporter $reporter
+        private Reporter $reporter,
+        private JsonResponder $json
     ) {
     }
 
@@ -29,16 +30,13 @@ final class NotificationController
         $general = $this->settings->group('general');
         $monitoring = $this->settings->group('monitoring');
 
-        return $this->json($response, [
-            'success' => true,
-            'data' => [
-                'connectors' => NotificationFactory::connectorOverview($this->settings),
-                'active_adapters' => $this->notifications->getAdapters(),
-                'fallback_email' => $monitoring['alertEmail'] ?? $general['adminEmail'] ?? '',
-                'alerts_enabled' => (bool) ($monitoring['alertsEnabled'] ?? false),
-                'analytics' => $this->reporter->getOverview('today'),
-                'top_pages' => $this->reporter->getTopPages(5, 'today'),
-            ],
+        return $this->json->success($response, [
+            'connectors' => NotificationFactory::connectorOverview($this->settings),
+            'active_adapters' => $this->notifications->getAdapters(),
+            'fallback_email' => $monitoring['alertEmail'] ?? $general['adminEmail'] ?? '',
+            'alerts_enabled' => (bool) ($monitoring['alertsEnabled'] ?? false),
+            'analytics' => $this->reporter->getOverview('today'),
+            'top_pages' => $this->reporter->getTopPages(5, 'today'),
         ]);
     }
 
@@ -46,16 +44,16 @@ final class NotificationController
     {
         $payload = json_decode((string) $request->getBody(), true);
         if (!is_array($payload)) {
-            return $this->json($response, ['success' => false, 'error' => 'Invalid JSON body'], 400);
+            return $this->json->error($response, 'Invalid JSON body', 400);
         }
 
         $adapter = (string) ($payload['adapter'] ?? '');
         if ($adapter === '') {
-            return $this->json($response, ['success' => false, 'error' => 'Adapter is required'], 400);
+            return $this->json->error($response, 'Adapter is required', 400);
         }
 
         if (!in_array($adapter, $this->notifications->getAdapters(), true)) {
-            return $this->json($response, ['success' => false, 'error' => 'Adapter is not enabled'], 400);
+            return $this->json->error($response, 'Adapter is not enabled', 400);
         }
 
         $general = $this->settings->group('general');
@@ -70,18 +68,9 @@ final class NotificationController
             ['event' => 'test', 'severity' => 'info']
         );
 
-        return $this->json($response, [
+        return $this->json->respond($response, [
             'success' => $ok,
             'message' => $ok ? 'Test notification sent' : 'Failed to send test notification',
         ], $ok ? 200 : 502);
-    }
-
-    /**
-     * @param array<int|string, mixed> $payload
- */private function json(ResponseInterface $response, array $payload, int $status = 200): ResponseInterface
-    {
-        $response->getBody()->write(JsonHelper::encode($payload, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-
-        return $response->withStatus($status)->withHeader('Content-Type', 'application/json; charset=utf-8');
     }
 }

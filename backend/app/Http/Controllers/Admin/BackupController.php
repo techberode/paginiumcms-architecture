@@ -6,129 +6,97 @@ namespace PaginiumCMS\Http\Controllers\Admin;
 
 use PaginiumCMS\Core\Backup\Contracts\BackupInterface;
 use PaginiumCMS\Core\Backup\Models\BackupMetadata;
+use PaginiumCMS\Http\Support\JsonResponder;
+use PaginiumCMS\Support\FileHelper;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Slim\Psr7\Response;
-use PaginiumCMS\Support\FileHelper;
-use PaginiumCMS\Support\JsonHelper;
 
 class BackupController
 {
-    private BackupInterface $backup;
-
-    public function __construct(BackupInterface $backup)
-    {
-        $this->backup = $backup;
+    public function __construct(
+        private BackupInterface $backup,
+        private JsonResponder $json
+    ) {
     }
 
     public function listBackups(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $backups = $this->backup->listBackups();
+        $backups = array_map(
+            static fn (BackupMetadata $backup) => $backup->jsonSerialize(),
+            $this->backup->listBackups()
+        );
 
-        $response->getBody()->write(JsonHelper::encode([
-            'success' => true,
-            'backups' => array_map(function (BackupMetadata $backup) {
-                return $backup->jsonSerialize();
-            }, $backups),
-        ], JSON_PRETTY_PRINT));
-
-        return $response->withHeader('Content-Type', 'application/json');
+        return $this->json->success($response, $backups);
     }
 
     public function createBackup(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $data = json_decode((string)$request->getBody(), true);
-        $name = $data['name'] ?? '';
+        $data = json_decode((string) $request->getBody(), true);
+        $name = is_array($data) ? ($data['name'] ?? '') : '';
 
-        if (empty($name)) {
-            $response->getBody()->write(JsonHelper::encode([
-                'success' => false,
-                'error' => 'Názov zálohy je povinný',
-            ], JSON_PRETTY_PRINT));
-            return $response->withStatus(400)->withHeader('Content-Type', 'application/json');
+        if ($name === '') {
+            return $this->json->error($response, 'Názov zálohy je povinný', 400);
         }
 
         try {
-            $backup = $this->backup->create($name);
+            $backup = $this->backup->create((string) $name);
 
-            $response->getBody()->write(JsonHelper::encode([
-                'success' => true,
-                'backup' => $backup->jsonSerialize(),
-            ], JSON_PRETTY_PRINT));
-
-            return $response->withStatus(201)->withHeader('Content-Type', 'application/json');
+            return $this->json->success($response, $backup->jsonSerialize(), 201);
         } catch (\Exception $e) {
-            $response->getBody()->write(JsonHelper::encode([
-                'success' => false,
-                'error' => $e->getMessage(),
-            ], JSON_PRETTY_PRINT));
-            return $response->withStatus(500)->withHeader('Content-Type', 'application/json');
+            return $this->json->error($response, $e->getMessage(), 500);
         }
     }
 
     public function downloadBackup(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $id = $request->getAttribute('id');
+        $id = (string) $request->getAttribute('id');
 
         try {
             $filePath = $this->backup->exportBackup($id);
             $filename = basename($filePath);
 
             $response->getBody()->write(FileHelper::read($filePath));
+
             return $response
                 ->withHeader('Content-Type', 'application/zip')
                 ->withHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
-                ->withHeader('Content-Length', (string)filesize($filePath));
+                ->withHeader('Content-Length', (string) filesize($filePath));
         } catch (\Exception $e) {
-            $response->getBody()->write(JsonHelper::encode([
-                'success' => false,
-                'error' => $e->getMessage(),
-            ], JSON_PRETTY_PRINT));
-            return $response->withStatus(404)->withHeader('Content-Type', 'application/json');
+            return $this->json->error($response, $e->getMessage(), 404);
         }
     }
 
     public function restoreBackup(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $id = $request->getAttribute('id');
+        $id = (string) $request->getAttribute('id');
 
         try {
             $result = $this->backup->restore($id);
 
-            $response->getBody()->write(JsonHelper::encode([
-                'success' => $result,
-                'message' => $result ? 'Záloha bola obnovená' : 'Obnova zálohy zlyhala',
-            ], JSON_PRETTY_PRINT));
+            if (!$result) {
+                return $this->json->error($response, 'Obnova zálohy zlyhala', 500);
+            }
 
-            return $response->withHeader('Content-Type', 'application/json');
+            return $this->json->success($response, null, 200, 'Záloha bola obnovená');
         } catch (\Exception $e) {
-            $response->getBody()->write(JsonHelper::encode([
-                'success' => false,
-                'error' => $e->getMessage(),
-            ], JSON_PRETTY_PRINT));
-            return $response->withStatus(500)->withHeader('Content-Type', 'application/json');
+            return $this->json->error($response, $e->getMessage(), 500);
         }
     }
 
     public function deleteBackup(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $id = $request->getAttribute('id');
+        $id = (string) $request->getAttribute('id');
 
         try {
             $result = $this->backup->deleteBackup($id);
 
-            $response->getBody()->write(JsonHelper::encode([
-                'success' => $result,
-                'message' => $result ? 'Záloha bola vymazaná' : 'Vymazanie zálohy zlyhalo',
-            ], JSON_PRETTY_PRINT));
+            if (!$result) {
+                return $this->json->error($response, 'Vymazanie zálohy zlyhalo', 500);
+            }
 
-            return $response->withHeader('Content-Type', 'application/json');
+            return $this->json->success($response, null, 200, 'Záloha bola vymazaná');
         } catch (\Exception $e) {
-            $response->getBody()->write(JsonHelper::encode([
-                'success' => false,
-                'error' => $e->getMessage(),
-            ], JSON_PRETTY_PRINT));
-            return $response->withStatus(500)->withHeader('Content-Type', 'application/json');
+            return $this->json->error($response, $e->getMessage(), 500);
         }
     }
 }

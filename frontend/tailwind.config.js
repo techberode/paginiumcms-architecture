@@ -1,10 +1,10 @@
-// frontend/tailwind.config.js
+import forms from '@tailwindcss/forms';
+import typography from '@tailwindcss/typography';
+import aspectRatio from '@tailwindcss/aspect-ratio';
+
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   darkMode: 'class',
   theme: {
     extend: {
@@ -32,7 +32,7 @@ export default {
           700: '#334155',
           800: '#1e293b',
           900: '#0f172a',
-        }
+        },
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
@@ -67,19 +67,15 @@ export default {
         },
       },
       screens: {
-        'xs': '475px',
-        'sm': '640px',
-        'md': '768px',
-        'lg': '1024px',
-        'xl': '1280px',
+        xs: '475px',
+        sm: '640px',
+        md: '768px',
+        lg: '1024px',
+        xl: '1280px',
         '2xl': '1536px',
         '3xl': '1920px',
       },
     },
   },
-  plugins: [
-    require('@tailwindcss/forms'),
-    require('@tailwindcss/typography'),
-    require('@tailwindcss/aspect-ratio'),
-  ],
-}
+  plugins: [forms, typography, aspectRatio],
+};

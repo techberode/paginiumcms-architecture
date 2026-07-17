@@ -1,7 +1,7 @@
 # 🏛️ PaginiumCMS
 
-> **Version:** 2.0.8  
-> **Last updated:** 16 July 2026  
+> **Version:** 2.0.9  
+> **Last updated:** 17 July 2026  
 > Modern, modular, Headless Flat-File Content Management System powered by Slim Framework (PHP) & React.
 
 ---
@@ -28,10 +28,10 @@ PaginiumCMS keeps the Core intentionally minimal, secure, and fast. It moves sta
 | **Content API** | ✅ It. 19–20 | Index, pagination, search, published filter, versioning |
 | **Media API** | ✅ Functional | `/api/media/*` + public `GET /storage/...` |
 | **Core hardening** | ✅ It. 20 | Maintenance mode, trash restore, backup cron CLI |
-| **Admin tools** | ✅ Wired | Code editor (gated), versioning, audit, backups, developer logs |
-| **PHPUnit** | ✅ **488 passing** | 1223 assertions, PHPStan level 8 (0 errors) |
-| **Frontend** | 🟡 Strong base | Admin SPA, public site, preview, role guard; It. 21 = API contract + MSW |
-| **Next iteration** | 🔴 It. 21 | API_CONTRACT.md, Postman/Newman, JsonResponder everywhere |
+| **API contract** | ✅ It. 21 | JsonResponder everywhere, MSW, Newman CI, RHF+Zod |
+| **PHPUnit** | ✅ **503+ passing** | PHPStan level 8 (0 errors) |
+| **Frontend** | ✅ It. 21 | MSW, typed clients, settings form validation |
+| **Next iteration** | 🟡 It. 6–7 | Notifications polish, dashboard |
 
 ### Recent releases
 
@@ -180,6 +180,7 @@ See [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md).
 | [ROADMAP.md](ROADMAP.md) | Iterations 1–21, priorities, implementation phases |
 | [CHANGELOG.md](../CHANGELOG.md) | Release notes |
 | [architecture/ARCHITECTURE.md](architecture/ARCHITECTURE.md) | Deep architecture spec |
+| [architecture/API_CONTRACT.md](architecture/API_CONTRACT.md) | JSON response envelopes (200/422/409/meta) |
 | [architecture/CONTENT_API.md](architecture/CONTENT_API.md) | Pagination, search, published rules |
 | [architecture/CORE_HARDENING.md](architecture/CORE_HARDENING.md) | RBAC, maintenance, trash, storage |
 | [architecture/STORAGE.md](architecture/STORAGE.md) | Flat-file layout |
@@ -188,11 +189,37 @@ See [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md).
 | [deploy/DEV.md](deploy/DEV.md) | Local dev stack |
 | [deploy/NGINX_API.md](deploy/NGINX_API.md) | Production nginx |
 
+### Iteration docs (`docs/ITERATION_*.md`)
+
+| It. | Document | Status |
+|-----|----------|--------|
+| 1 | [ITERATION_1.md](ITERATION_1.md) | ✅ Locking |
+| 2 | [ITERATION_2.md](ITERATION_2.md) | ✅ Drafts & versioning |
+| 3 | [ITERATION_3.md](ITERATION_3.md) | ✅ Conflict resolution |
+| 4 | [ITERATION_4.md](ITERATION_4.md) | ✅ Settings & validation |
+| 5 | [ITERATION_5.md](ITERATION_5.md) | ✅ Users & auth |
+| 6 | [ITERATION_6.md](ITERATION_6.md) | ✅ Notifications & analytics |
+| 7 | [ITERATION_7.md](ITERATION_7.md) | ✅ Dashboard & monitoring |
+| 8 | [ITERATION_8.md](ITERATION_8.md) | ✅ Media manager FE |
+| 9 | [ITERATION_9.md](ITERATION_9.md) | ✅ Prototype port (nav, comments, …) |
+| 10 | [ITERATION_10.md](ITERATION_10.md) | ⏳ RSS & sitemap |
+| 11 | [ITERATION_11.md](ITERATION_11.md) | ⏳ SSO & ACL |
+| 12 | [ITERATION_12.md](ITERATION_12.md) | ⏳ Blueprint engine |
+| 13 | [ITERATION_13.md](ITERATION_13.md) | ⏳ Demo module |
+| 14 | [ITERATION_14.md](ITERATION_14.md) | ✅ Code policy |
+| 15 | [ITERATION_15.md](ITERATION_15.md) | ⏳ Plugin runtime |
+| 16 | [ITERATION_16.md](ITERATION_16.md) | 🟡 Monaco / full editor |
+| 17 | [ITERATION_17.md](ITERATION_17.md) | 🟡 API↔FE scaffold |
+| 18 | [ITERATION_18.md](ITERATION_18.md) | 🟡 i18n UI migration |
+| 19 | [ITERATION_19.md](ITERATION_19.md) | ✅ Index & pagination |
+| 20 | [ITERATION_20.md](ITERATION_20.md) | ✅ Core hardening |
+| 21 | [ITERATION_21.md](ITERATION_21.md) | ✅ API contract & MSW |
+
 ---
 
 ## ⚠️ Known Limitations
 
-* **It. 21 pending:** unified `API_CONTRACT.md`, Postman/Newman CI, MSW on frontend
+* **It. 21 (2.0.9):** ✅ Complete — see [ITERATION_21.md](ITERATION_21.md)
 * **Backup create tests** skipped under vfsStream (ZipArchive); schedule/cron logic tested on real temp dirs
 * **Trash admin UI** in React not yet built (API ready)
 * **Brute-force per-email lockout** planned in ROADMAP, not yet implemented
