@@ -12,10 +12,13 @@ use Slim\Psr7\Factory\ServerRequestFactory;
 
 final class SecurityMiddlewareTest extends TestCase
 {
-    public function testAppliesSecurityHeaders(): void
+    public function testAppliesSecurityHeadersOnHttps(): void
     {
         $middleware = new SecurityMiddleware();
-        $request = (new ServerRequestFactory())->createServerRequest('GET', '/');
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('GET', '/')
+            ->withHeader('X-Forwarded-Proto', 'https');
+
         $inner = (new ResponseFactory())->createResponse(200);
 
         $handler = $this->createMock(RequestHandlerInterface::class);
@@ -30,6 +33,21 @@ final class SecurityMiddlewareTest extends TestCase
         $this->assertSame('nosniff', $response->getHeaderLine('X-Content-Type-Options'));
         $this->assertSame('strict-origin-when-cross-origin', $response->getHeaderLine('Referrer-Policy'));
         $this->assertStringContainsString('geolocation=()', $response->getHeaderLine('Permissions-Policy'));
+    }
+
+    public function testOmitsHstsOnPlainHttp(): void
+    {
+        $middleware = new SecurityMiddleware();
+        $request = (new ServerRequestFactory())->createServerRequest('GET', '/');
+        $inner = (new ResponseFactory())->createResponse(200);
+
+        $handler = $this->createMock(RequestHandlerInterface::class);
+        $handler->method('handle')->willReturn($inner);
+
+        $response = $middleware->process($request, $handler);
+
+        $this->assertSame('', $response->getHeaderLine('Strict-Transport-Security'));
+        $this->assertStringContainsString("default-src 'self'", $response->getHeaderLine('Content-Security-Policy'));
     }
 
     public function testRemovesSensitiveServerHeaders(): void

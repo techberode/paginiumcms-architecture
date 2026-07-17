@@ -83,3 +83,47 @@ cd frontend && npm run dev
 ```
 
 Open `http://localhost:3025` — API calls go through the Vite proxy.
+
+## LAN test layout (split hosts)
+
+| Role | Host | Port |
+|------|------|------|
+| React SPA (nginx) | `192.168.10.26` | `8081` |
+| PHP backend (Docker) | `192.168.10.20` | `8080` |
+| Vite dev (local only) | `localhost` | `3025` |
+
+Use the full server block in [`nginx-paginium-test.conf`](./nginx-paginium-test.conf) on **`.26`**.  
+Frontend build must have empty `VITE_API_URL` (same-origin `/api`).
+
+```bash
+# On dev machine — upload dist to nginx host
+./scripts/deploy-frontend-lan.sh
+
+# Smoke test
+curl http://192.168.10.26:8081/api/health
+curl -I http://192.168.10.26:8081/feed.xml
+```
+
+If backend and nginx share one VM, change upstream to `127.0.0.1:8080` (comment at bottom of the conf file).
+
+### Session cookies on HTTP (LAN)
+
+`backend/bootstrap/session.php` sets `session.cookie_secure` only when the request is HTTPS
+(or `X-Forwarded-Proto: https` from nginx). Plain `http://192.168.x.x` LAN tests work without
+Secure cookies being dropped by the browser.
+
+After deploy, clear site cookies and hard-refresh before testing login.
+
+### Backend `.env` on LAN (recommended)
+
+```env
+APP_ENV=development
+APP_URL=http://192.168.10.26:8081
+# optional explicit list (wildcards below cover LAN when APP_ENV != production)
+CORS_ALLOWED_ORIGINS=http://192.168.10.26:8081,http://192.168.10.26:3025
+TRUSTED_PROXIES=127.0.0.1,::1,192.168.10.26
+```
+
+When `APP_ENV` is not `production`, backend also allows CORS from `http://192.168.*`, `http://localhost:*` (Vite **:3025**), etc.
+
+Restart PHP / Docker after changing `.env` or pulling code.

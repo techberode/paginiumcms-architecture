@@ -10,10 +10,27 @@ declare(strict_types=1);
 use PaginiumCMS\Modules\Security\Services\SessionManager;
 use PaginiumCMS\Modules\Security\Models\User;
 
+/**
+ * Secure flag len pri reálnom HTTPS (priamo alebo cez reverse proxy).
+ * LAN test na http://192.168.x.x:8081 inak neuloží PHPSESSID do prehliadača.
+ */
+if (!function_exists('paginium_request_is_https')) {
+    function paginium_request_is_https(): bool
+    {
+        if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+            return true;
+        }
+
+        $forwarded = strtolower((string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? ''));
+
+        return $forwarded === 'https';
+    }
+}
+
 // ---------- ZÁKLADNÉ NASTAVENIA ----------
 if (session_status() === PHP_SESSION_NONE) {
     ini_set('session.cookie_httponly', '1');
-    ini_set('session.cookie_secure', '1');  // IBA HTTPS!
+    ini_set('session.cookie_secure', paginium_request_is_https() ? '1' : '0');
     ini_set('session.cookie_samesite', 'Lax');
     ini_set('session.use_strict_mode', '1');
     ini_set('session.use_cookies', '1');
