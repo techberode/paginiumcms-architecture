@@ -219,14 +219,16 @@ $containerBuilder->addDefinitions([
             window: $isTesting ? 60 : (int)($_ENV['RATE_LIMIT_WINDOW'] ?? 60),
             excludedPaths: ['/api/health', '/api/test', '/api/debug/client-event'],
             excludedIps: $isTesting ? ['127.0.0.1', '::1'] : [],
-            trustedProxies: array_filter(explode(',', (string)($_ENV['TRUSTED_PROXIES'] ?? '127.0.0.1,::1')))
+            // Ak beží ZA nginx reverse proxy (LAN: .26 → PHP .20), pridajte IP nginx hosta.
+    trustedProxies: array_filter(explode(',', (string)($_ENV['TRUSTED_PROXIES'] ?? '127.0.0.1,::1,192.168.10.26')))
         );
     },
 
     LoginRateLimitMiddleware::class => function ($container) {
         return new LoginRateLimitMiddleware(
             $container->get(CacheManager::class),
-                                            trustedProxies: array_filter(explode(',', (string)($_ENV['TRUSTED_PROXIES'] ?? '127.0.0.1,::1')))
+                                            // Ak beží ZA nginx reverse proxy (LAN: .26 → PHP .20), pridajte IP nginx hosta.
+    trustedProxies: array_filter(explode(',', (string)($_ENV['TRUSTED_PROXIES'] ?? '127.0.0.1,::1,192.168.10.26')))
         );
     },
 
@@ -420,14 +422,41 @@ $app = AppFactory::create();
 $corsAllowedOrigins = [
     'http://localhost:3025',
     'http://localhost:5173',
+    'http://localhost:4173',
 ];
 
 $appUrl = getenv('APP_URL');
 if (is_string($appUrl) && $appUrl !== '') {
-    $corsAllowedOrigins[] = $appUrl;
+    $corsAllowedOrigins[] = rtrim($appUrl, '/');
 }
 
-$app->add(new CorsMiddleware([
+$corsExtra = getenv('CORS_ALLOWED_ORIGINS') ?: ($_ENV['CORS_ALLOWED_ORIGINS'] ?? '');
+if (is_string($corsExtra) && $corsExtra !== '') {
+    foreach (explode(',', $corsExtra) as $origin) {
+        $origin = rtrim(trim($origin), '/');
+        if ($origin !== '') {
+            $corsAllowedOrigins[] = $origin;
+        }
+    }
+}
+
+$corsAllowedOrigins = array_values(array_unique($corsAllowedOrigins));
+
+$appEnv = getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? 'development');
+$corsOriginServer = is_string($appUrl) && $appUrl !== '' ? rtrim($appUrl, '/') : null;
+
+// Dev/LAN: allow private network + any localhost port (Vite :3025, nginx :8081, …)
+if ($appEnv !== 'production') {
+    $corsAllowedOrigins = array_values(array_unique(array_merge($corsAllowedOrigins, [
+        'http://localhost:*',
+        'http://127.0.0.1:*',
+        'http://192.168.*',
+        'http://10.*',
+        'http://172.*',
+    ])));
+}
+
+$corsOptions = [
     "origin" => $corsAllowedOrigins,
     "methods" => ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     "headers.allow" => [
@@ -447,7 +476,13 @@ $app->add(new CorsMiddleware([
     ],
     "credentials" => true,
     "cache" => 86400,
-]));
+];
+
+if ($corsOriginServer !== null) {
+    $corsOptions['origin.server'] = $corsOriginServer;
+}
+
+$app->add(new CorsMiddleware($corsOptions));
 
 // ============================================
 // 13. BEZPEČNOSTNÉ MIDDLEWARE (GLOBÁLNE)

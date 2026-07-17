@@ -44,11 +44,10 @@ final class SecurityMiddleware implements MiddlewareInterface
         ServerRequestInterface $request,
         RequestHandlerInterface $handler
     ): ResponseInterface {
-        /** @var ResponseInterface $response */
         $response = $handler->handle($request);
 
         // Aplikujeme bezpečnostné hlavičky
-        $response = $this->applySecurityHeaders($response);
+        $response = $this->applySecurityHeaders($request, $response);
 
         // Odstránime citlivé informácie
         if ($this->config['remove_server_headers']) {
@@ -58,13 +57,20 @@ final class SecurityMiddleware implements MiddlewareInterface
         return $response;
     }
 
-    private function applySecurityHeaders(ResponseInterface $response): ResponseInterface
-    {
-        // HSTS
-        $response = $response->withHeader(
-            'Strict-Transport-Security',
-            sprintf('max-age=%d; includeSubDomains; preload', $this->config['hsts_max_age'])
-        );
+    private function applySecurityHeaders(
+        ServerRequestInterface $request,
+        ResponseInterface $response
+    ): ResponseInterface {
+        $isHttps = (!empty($request->getServerParams()['HTTPS'])
+                && $request->getServerParams()['HTTPS'] !== 'off')
+            || strtolower($request->getHeaderLine('X-Forwarded-Proto')) === 'https';
+
+        if ($isHttps) {
+            $response = $response->withHeader(
+                'Strict-Transport-Security',
+                sprintf('max-age=%d; includeSubDomains; preload', $this->config['hsts_max_age'])
+            );
+        }
 
         // CSP (Content Security Policy)
         $csp = implode('; ', [

@@ -68,6 +68,15 @@ backend/storage/dev/
 backend/storage/logs/
 backend/storage/app/content/data/
 
+# Flat-file runtime content (PHPUnit, local dev — not seed data)
+backend/storage/app/content/pages/
+backend/storage/app/content/blog/
+backend/storage/app/content/media/
+backend/storage/app/content/trash/
+
+# Misplaced runtime logs under app/ (should use backend/storage/logs/)
+backend/app/storage/
+
 # Runtime flat-file state (generated at runtime, not seed data)
 backend/data/users/
 backend/data/drafts/

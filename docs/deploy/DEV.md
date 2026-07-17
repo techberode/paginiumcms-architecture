@@ -90,3 +90,19 @@ php backend/bin/console backup:run-schedule   # cron: checks schedule.json
 | USER cannot access admin | Expected — only EDITOR/ADMIN/SUPER_ADMIN (`AdminRoleGuard`) |
 
 For production deploy with one host, see [NGINX_API.md](./NGINX_API.md).
+
+## LAN test server (192.168.10.x)
+
+Ready-made config for the split setup (SPA on `.26:8081`, PHP on `.20:8080`):
+
+- **File:** [`nginx-paginium-test.conf`](./nginx-paginium-test.conf)
+- **Deploy script:** [`../../scripts/deploy-frontend-lan.sh`](../../scripts/deploy-frontend-lan.sh)
+
+Quick install on the nginx host:
+
+```bash
+sudo cp docs/deploy/nginx-paginium-test.conf /etc/nginx/sites-available/paginium-test
+sudo ln -sf /etc/nginx/sites-available/paginium-test /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx
+curl -s http://192.168.10.26:8081/api/health
+```
