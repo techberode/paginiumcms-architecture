@@ -4,15 +4,16 @@
 
 Legenda: ✅ hotové · 🚧 rozpracované · ⏳ plánované · 🔴 kritická priorita jadra
 
-**Aktuálna verzia:** 2.0.9 · **Ďalšie kroky:** It. 6–7 (notifikácie, dashboard polish)
+**Aktuálna verzia:** 2.0.11 · **Posledná iterácia:** [23](ITERATION_23.md) ✅
 
 | Iterácia | Názov | Priorita |
 |----------|-------|----------|
 | 19 | FlatFile storage, indexácia, stránkovanie | ✅ |
 | 20 | Core hardening & produkcia | ✅ |
 | 21 | API kontrakt & testovanie | ✅ |
-| 6–7 | Notifikácie, dashboard | 🟡 po It. 21 |
-| 8–10 | DAM, SEO, feedy | 🟢 |
+| **22** | **Ops finish & verejné feedy** | **✅** |
+| 6–7 | Notifikácie, dashboard | 🟡 ďalej |
+| 8–10 | DAM, SEO, feedy | 🟢 (feeds → It. 22) |
 | 11–16 | SSO, plugins, Monaco | 🔵 |
 | 17–18 | API scaffold, i18n | priebežne / po jadre |
 
@@ -138,7 +139,7 @@ Základ pre všetky admin nastavenia (SMTP, notifikácie, SEO, feedy v ďalšíc
 
 ---
 
-> **Ďalšie iterácie a stav požiadaviek:** súhrn v tejto roadmape (It. 19–21);
+> **Ďalšie iterácie a stav požiadaviek:** súhrn v tejto roadmape (It. 19–22);
 > detailný audit DONE/PARTIAL/MISSING doplní **`docs/CHECKLIST.md`** (refresh po 2.0.6).
 
 ## Iterácia 5 – Používatelia + kalenie autentifikácie ✅
@@ -166,8 +167,13 @@ Základ pre všetky admin nastavenia (SMTP, notifikácie, SEO, feedy v ďalšíc
 - `Core/Seo/*` – automatické meta description, canonical, Open Graph, Twitter Card, JSON-LD z obsahu/front matter.
 - Admin sekcia „SEO“ – predvolené šablóny title/description, default social image, robots, prepínače; prepojenie na sitemap/feedy.
 
-## Iterácia 10 – XML Feeds (RSS/sitemap) ⏳ 🟢
-- Generátor `/feed.xml`, `/sitemap.xml` + rozšírené admin nastavenia feedov.
+## Iterácia 10 – XML Feeds (RSS/sitemap) 🚧
+
+**Stav:** implementácia v [Iterácii 22](ITERATION_22.md) (po It. 21). Pôvodný návrh: [ITERATION_10.md](ITERATION_10.md).
+
+- Generátor `/feed.xml`, `/sitemap.xml` + admin skupina `feeds` v nastaveniach
+- Zdroj: publikovaný obsah z content indexu (It. 19)
+- Verejné routy bez auth; voliteľná cache cez `ContentCacheService`
 
 ## Iterácia 11 – SSO + jemnozrnné ACL + bezpečnostný audit log ⏳ 🔵
 - SSO (SAML/OAuth) s flat-file konfiguráciou, mapovanie na role.
@@ -237,9 +243,9 @@ Základ pre všetky admin nastavenia (SMTP, notifikácie, SEO, feedy v ďalšíc
 
 ---
 
-## Iterácia 20 – Core hardening & produkčná pripravenosť 🟡
+## Iterácia 20 – Core hardening & produkčná pripravenosť ✅
 
-**Stav (release 2.0.8):** kritická trojica + prevádzka implementované; zostáva brute-force lockout per e-mail a trash admin UI.
+**Stav (release 2.0.8):** jadro hotové. Zvyšok (trash UI, brute-force) presunutý do [Iterácie 22](ITERATION_22.md).
 
 **Hotové ✅:**
 - `PermissionMiddleware` + RBAC na content/media mutácie (`content:*`, `media:*`; ADMIN `:manage` alias)
@@ -252,12 +258,11 @@ Základ pre všetky admin nastavenia (SMTP, notifikácie, SEO, feedy v ďalšíc
 - Backup cron: `bin/console backup:run-schedule` + `BackupScheduler`
 - FE: `/preview/:slug`, `AdminRoleGuard`, `document.title`, `VersionHistory` v editore, Developer logs viewer
 
-**Zostáva ⏳:**
-- Brute-force lockout per e-mail/IP (rozšírenie `SecurityLogger`)
-- Trash admin UI v React
-- Plné HTTP testy trash restore
+**Dokončené v It. 22 🚧:**
+- Trash admin UI v React → `/trash`, `TrashManager`, `api/trash.ts`
+- Brute-force lockout per e-mail/IP → `SecurityLogger` + settings `security.*`
 
-**Testy (2.0.8):**
+**Testy (2.0.8 + It. 22):**
 - `CoreHardeningTest` – RBAC 403, maintenance 503, registration toggle, storage route
 - `AuthorizationManagerManagePermissionTest` – `:manage` alias
 - `TrashServiceTest`, `TrashControllerTest`, `PermissionMiddlewareTest`, `MaintenanceModeMiddlewareTest`
@@ -286,6 +291,40 @@ Základ pre všetky admin nastavenia (SMTP, notifikácie, SEO, feedy v ďalšíc
 - `JsonResponderTest`, `ApiResponseShapeTest`, `zodFromRules.test.ts`
 - `handlers.test.ts` (MSW)
 - **503+ PHPUnit**, PHPStan L8
+
+---
+
+## Iterácia 22 – Ops finish & verejné feedy ✅
+
+**Stav (release 2.0.10):** hotové — trash UI, brute-force lockout, RSS/sitemap. Detail: [ITERATION_22.md](ITERATION_22.md).
+
+**Hotové ✅:**
+- Trash admin UI — `/trash`, `TrashManager`, `trashApi`
+- Brute-force lockout — `LoginAttemptTracker`, settings `security.*`, HTTP 429
+- RSS + sitemap — `GET /feed.xml`, `GET /sitemap.xml`, settings `feeds.*`
+- `<link rel="alternate">` v `PublicSiteLayout`
+- Vite + nginx proxy pre feedy (`docs/deploy/NGINX_API.md`)
+- Testy: `TrashManager.test.tsx`, `FeedGeneratorTest`, `FeedControllerTest`, `AuthControllerTest::testLoginLockout`
+
+**Ďalej:**
+- It. 6–7 — SMTP end-to-end, analytics alerty
+
+---
+
+## Iterácia 23 – SEO meta engine ✅
+
+**Stav (release 2.0.11):** hotové — automatické meta tagy pre verejný web. Detail: [ITERATION_23.md](ITERATION_23.md).
+
+**Hotové ✅:**
+- `SeoMetaBuilder` — title, description, canonical, OG, Twitter, JSON-LD
+- Settings skupina `seo` + verejné `publicSettings.seo`
+- `GET /api/seo/{type}/{slug}` — publikovaný obsah, draft 404 pre anonymov
+- FE `useSeoMeta` v `PublicSiteLayout`
+- Testy: `SeoMetaBuilderTest`, `SeoControllerTest`, `useSeoMeta.test.ts`
+
+**Ďalej:**
+- It. 6–7 — SMTP end-to-end, analytics alerty
+- It. 8 — plný DAM (upload pipeline, thumbnails)
 
 ---
 
@@ -322,7 +361,7 @@ Locking, drafts, konflikty, settings, auth+2FA, admin moduly, verejný React web
 ```
 **Prečo second:** produkčný CMS musí byť bezpečný skôr než SEO/pluginy.
 
-### Fáza 3 – Kontrakt & testy (It. 21 + It. 17)
+### Fáza 3 – Kontrakt & testy (It. 21 + It. 17) — hotové ✅
 ```
 1. API_CONTRACT.md + doplnenie API.md
 2. JsonResponder vo všetkých controlleroch
@@ -331,7 +370,24 @@ Locking, drafts, konflikty, settings, auth+2FA, admin moduly, verejný React web
 5. Oprava api/index.ts barrel
 6. Contract + integration testy
 ```
-**Prečo third:** dokumentuje a zamkne API po zmenách z Fázy 1–2.
+
+### Fáza 3b – Ops finish & feedy (It. 22) — hotové ✅
+```
+1. Trash admin UI (It. 20 zvyšok)           ← ✅ hotové
+2. Brute-force lockout (SecurityLogger)     ← ✅
+3. RSS /feed.xml + sitemap /sitemap.xml     ← ✅ (It. 10 scope)
+4. Settings skupina feeds + PublicSite link
+5. PHPUnit + Vitest + CHANGELOG 2.0.10
+```
+**Prečo teraz:** produkčný CMS musí mať obnovu z koša, ochranu loginu a verejné feedy skôr než SEO/pluginy.
+
+### Fáza 3c – SEO meta engine (It. 23) — hotové ✅
+```
+1. SeoMetaBuilder + settings skupina seo
+2. GET /api/seo/{type}/{slug}
+3. FE useSeoMeta + PublicSiteLayout
+4. PHPUnit + Vitest + CHANGELOG 2.0.11
+```
 
 ### Fáza 4 – Komunikácia & monitoring (It. 6–7)
 ```
@@ -339,11 +395,12 @@ SMTP end-to-end → reset hesla e-mailom → konektory → toast perzistencia
 Analytics dokončenie → dashboard reporty → API tracker
 ```
 
-### Fáza 5 – Obsah & médiá (It. 8–10)
+### Fáza 5 – Obsah & médiá (It. 8–9, plný DAM + SEO)
 ```
-Plný DAM → SEO engine → RSS/sitemap
+Plný DAM → SEO engine (It. 9)
 Monaco editor (It. 16) môže ísť paralelne s It. 8 ak je developer gate hotový
 ```
+*(RSS/sitemap presunuté do It. 22)*
 
 ### Fáza 6 – Enterprise & rozšírenia (It. 11–16)
 ```
@@ -363,11 +420,13 @@ Plugin i18n loader (závisí od It. 15)
 ```
 It.19 (FlatFile+index+pagination)
   └─► It.20 (hardening) ──► It.21 (kontrakt+testy)
-        └─► It.6–7 (notifikácie+dashboard)
-              └─► It.8–10 (DAM+SEO+feeds)
-                    └─► It.11–16 (SSO+plugins+Monaco)
-                          └─► It.18 (i18n migrácia UI)
+        └─► It.22 (trash UI + lockout + RSS/sitemap)  ← aktuálne
+              └─► It.6–7 (notifikácie+dashboard)
+                    └─► It.8–9 (DAM+SEO)
+                          └─► It.11–16 (SSO+plugins+Monaco)
+                                └─► It.18 (i18n migrácia UI)
 It.17 (API scaffold) ── beží priebežne od It.21, povinný pred It.15
+It.10 (feeds) ── implementované v rámci It.22
 ```
 
 ### Pravidlo pre každú novú iteráciu

@@ -9,6 +9,7 @@ import { debugLogProvider } from '../utils/debugLog';
 export interface LoginOutcome {
   success: boolean;
   requiresTwoFactor?: boolean;
+  error?: string;
 }
 
 interface AuthContextType {
@@ -76,8 +77,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       return { success: true, requiresTwoFactor: result.requiresTwoFactor };
     }
-    debugLogProvider('auth', 'login.failed', { email });
-    return { success: false };
+    debugLogProvider('auth', 'login.failed', { email, error: result.error ?? null });
+    return { success: false, error: result.error };
   }, []);
 
   const verifyTwoFactorLogin = useCallback(async (code: string): Promise<boolean> => {

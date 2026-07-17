@@ -120,6 +120,48 @@ class AuthControllerTest extends TestCase
         $this->assertStringContainsString('Neplatný email alebo heslo', $data['error']);
     }
 
+    public function testLoginLockoutAfterRepeatedFailures(): void
+    {
+        $settings = $this->app->getContainer()->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class);
+        $settings->setGroup('security', [
+            'maxLoginAttempts' => 3,
+            'lockoutMinutes' => 15,
+        ]);
+
+        $email = 'lockout_' . uniqid() . '@example.com';
+        $ip = '10.99.' . random_int(1, 254) . '.' . random_int(1, 254);
+        $factory = new \Slim\Psr7\Factory\ServerRequestFactory();
+
+        for ($i = 0; $i < 3; $i++) {
+            $request = $factory->createServerRequest('POST', '/api/auth/login', ['REMOTE_ADDR' => $ip]);
+            $body = (new \Slim\Psr7\Factory\StreamFactory())->createStream(
+                \PaginiumCMS\Support\JsonHelper::encode([
+                    'email' => $email,
+                    'password' => 'WrongPassword123!',
+                ])
+            );
+            $request = $request->withBody($body)->withHeader('Content-Type', 'application/json');
+
+            $response = $this->handleRequest($request);
+            $this->assertEquals(401, $response->getStatusCode(), 'Attempt ' . ($i + 1));
+        }
+
+        $lockedRequest = $factory->createServerRequest('POST', '/api/auth/login', ['REMOTE_ADDR' => $ip]);
+        $lockedBody = (new \Slim\Psr7\Factory\StreamFactory())->createStream(
+            \PaginiumCMS\Support\JsonHelper::encode([
+                'email' => $email,
+                'password' => 'WrongPassword123!',
+            ])
+        );
+        $lockedRequest = $lockedRequest->withBody($lockedBody)->withHeader('Content-Type', 'application/json');
+        $lockedResponse = $this->handleRequest($lockedRequest);
+        $data = $this->getJsonResponse($lockedResponse);
+
+        $this->assertEquals(429, $lockedResponse->getStatusCode());
+        $this->assertFalse($data['success']);
+        $this->assertStringContainsString('Príliš veľa neúspešných pokusov', $data['error']);
+    }
+
     public function testLogout(): void
     {
         $userData = $this->createTestUser();

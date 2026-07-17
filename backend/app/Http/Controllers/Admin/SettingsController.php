@@ -97,6 +97,16 @@ final class SettingsController
                 'toastDuration' => (int) ($all['notifications']['toastDuration'] ?? 3000),
                 'toastDebugMode' => (bool) ($all['notifications']['toastDebugMode'] ?? false),
             ],
+            'seo' => [
+                'titleTemplate' => (string) ($all['seo']['titleTemplate'] ?? '%title% | %siteName%'),
+                'defaultDescription' => (string) ($all['seo']['defaultDescription'] ?? ''),
+                'defaultImage' => (string) ($all['seo']['defaultImage'] ?? ''),
+                'robotsDefault' => (string) ($all['seo']['robotsDefault'] ?? 'index,follow'),
+                'twitterCard' => (string) ($all['seo']['twitterCard'] ?? 'summary_large_image'),
+            ],
+            'feeds' => [
+                'enabled' => (bool) ($all['feeds']['enabled'] ?? true),
+            ],
         ]);
     }
 

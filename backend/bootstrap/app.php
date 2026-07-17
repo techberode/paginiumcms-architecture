@@ -52,6 +52,7 @@ use PaginiumCMS\Core\Backup\Commands\RunBackupScheduleCommand;
 use PaginiumCMS\Core\Logging\Services\Logger;
 use PaginiumCMS\Core\Logging\Contracts\LoggerInterface;
 use PaginiumCMS\Core\Security\SecurityLogger;
+use PaginiumCMS\Core\Security\Services\LoginAttemptTracker;
 use PaginiumCMS\Core\Logging\Services\DebugEventLogger;
 use PaginiumCMS\Http\Middleware\DebugRequestMiddleware;
 
@@ -149,14 +150,22 @@ $containerBuilder->addDefinitions([
     SecurityLogger::class => function ($container) {
         return new SecurityLogger(
             $container->get(LoggerInterface::class),
-                                  [
-                                      'log_failed_logins' => true,
-                                  'log_successful_logins' => true,
-                                  'log_suspicious_activity' => true,
-                                  'log_security_errors' => true,
-                                  'alert_on_brute_force' => true,
-                                  'alert_on_privilege_escalation' => true,
-                                  ]
+            $container->get(LoginAttemptTracker::class),
+            [
+                'log_failed_logins' => true,
+                'log_successful_logins' => true,
+                'log_suspicious_activity' => true,
+                'log_security_errors' => true,
+                'alert_on_brute_force' => true,
+                'alert_on_privilege_escalation' => true,
+            ]
+        );
+    },
+
+    LoginAttemptTracker::class => function ($container) {
+        return new LoginAttemptTracker(
+            $container->get(FileReaderInterface::class),
+            $container->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class)
         );
     },
 
@@ -301,6 +310,8 @@ $containerBuilder->addDefinitions([
             $container->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class),
             $container->get(\PaginiumCMS\Core\Notification\NotificationService::class),
             $container->get(\PaginiumCMS\Core\Notification\Services\IncidentNotifier::class),
+            $container->get(LoginAttemptTracker::class),
+            $container->get(SecurityLogger::class),
             $container->get(JsonResponder::class)
         );
     },

@@ -38,7 +38,16 @@ server {
         proxy_pass http://127.0.0.1:8080;
     }
 
-    # SPA fallback (must be AFTER /api)
+    # Public XML feeds (Iteration 22 — must be BEFORE SPA fallback)
+    location = /feed.xml {
+        proxy_pass http://127.0.0.1:8080/feed.xml;
+    }
+
+    location = /sitemap.xml {
+        proxy_pass http://127.0.0.1:8080/sitemap.xml;
+    }
+
+    # SPA fallback (must be AFTER /api and feed routes)
     location / {
         try_files $uri $uri/ /index.html;
     }

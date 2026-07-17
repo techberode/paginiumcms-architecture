@@ -52,6 +52,10 @@ use PaginiumCMS\Core\FlatFile\Services\ContentIndexService;
 use PaginiumCMS\Core\FlatFile\Services\JsonContentStorage;
 use PaginiumCMS\Core\FlatFile\Services\MarkdownContentStorage;
 use PaginiumCMS\Core\FlatFile\Services\TrashService;
+use PaginiumCMS\Core\Feeds\Services\FeedGenerator;
+use PaginiumCMS\Core\Feeds\Services\SitemapGenerator;
+use PaginiumCMS\Core\Seo\Services\SeoMetaBuilder;
+use PaginiumCMS\Core\Security\Services\LoginAttemptTracker;
 use PaginiumCMS\Core\FlatFile\Services\ContentRevision;
 use PaginiumCMS\Core\FlatFile\Services\FrontMatterParser;
 use PaginiumCMS\Core\FlatFile\Services\MarkdownContentParser;
@@ -76,6 +80,8 @@ use PaginiumCMS\Http\Controllers\Admin\DeveloperController;
 use PaginiumCMS\Http\Controllers\Admin\GatedCodeEditorController;
 use PaginiumCMS\Http\Controllers\Admin\SettingsController;
 use PaginiumCMS\Http\Controllers\Admin\TrashController;
+use PaginiumCMS\Http\Controllers\Feeds\FeedController;
+use PaginiumCMS\Http\Controllers\Seo\SeoController;
 use PaginiumCMS\Http\Controllers\Admin\VersionController;
 use PaginiumCMS\Http\Controllers\Admin\ConflictController;
 use PaginiumCMS\Http\Controllers\Admin\UserController;
@@ -495,6 +501,27 @@ return [
             get(TrashService::class),
             get(ContentIndexService::class),
             get(ContentRepositoryInterface::class),
+            get(JsonResponder::class)
+        ),
+    LoginAttemptTracker::class => create(LoginAttemptTracker::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(SettingsRepositoryInterface::class)
+        ),
+    FeedGenerator::class => create(FeedGenerator::class)
+        ->constructor(get(ContentIndexService::class), get(SettingsRepositoryInterface::class)),
+    SitemapGenerator::class => create(SitemapGenerator::class)
+        ->constructor(get(ContentIndexService::class), get(SettingsRepositoryInterface::class)),
+    FeedController::class => create(FeedController::class)
+        ->constructor(get(FeedGenerator::class), get(SitemapGenerator::class)),
+    SeoMetaBuilder::class => create(SeoMetaBuilder::class)
+        ->constructor(get(SettingsRepositoryInterface::class)),
+    SeoController::class => create(SeoController::class)
+        ->constructor(
+            get(ContentRepositoryInterface::class),
+            get(ContentCacheService::class),
+            get(SeoMetaBuilder::class),
+            get(AuthenticationInterface::class),
             get(JsonResponder::class)
         ),
 ];

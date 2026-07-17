@@ -1,6 +1,6 @@
 # Iteration 20 – Core Hardening & Production Readiness
 
-**Status:** Mostly complete  
+**Status:** Complete (remaining items moved to It. 22)  
 **Version:** 2.0.8
 
 ## Summary
@@ -32,10 +32,10 @@ Production security and operations: RBAC on mutations, public media serving, mai
 | Version history in editor | `VersionHistory` in `MarkdownEditor` |
 | Developer logs | `/developer/logs` → `DeveloperLogsViewer` |
 
-## Remaining ⏳
+## Remaining → moved to Iteration 22
 
-- Brute-force lockout per email/IP (`SecurityLogger` extension)
-- Trash admin UI in React
+- Brute-force lockout per email/IP (`SecurityLogger` extension) → [ITERATION_22.md](ITERATION_22.md)
+- Trash admin UI in React → ✅ done in It. 22
 - (Done in 2.0.8 patch) Full HTTP tests for trash restore
 
 ## Tests (2.0.8)
@@ -52,4 +52,5 @@ Production security and operations: RBAC on mutations, public media serving, mai
 
 ## Next
 
-→ [Iteration 21](ITERATION_21.md) – API contract & automated testing
+→ [Iteration 21](ITERATION_21.md) – API contract & automated testing  
+→ [Iteration 22](ITERATION_22.md) – trash UI, brute-force, RSS/sitemap

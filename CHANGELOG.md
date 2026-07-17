@@ -6,6 +6,45 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [2.0.11] – 2026-07-17
+
+### Iteration 23 – SEO meta engine
+
+#### Backend
+- Add `SeoMetaBuilder` — title template, description, canonical, OG, Twitter Card, JSON-LD
+- Add settings group `seo` (`titleTemplate`, `defaultDescription`, `defaultImage`, `robotsDefault`, `twitterCard`)
+- Add `GET /api/seo/{type}/{slug}` — public meta for published pages/articles
+
+#### Frontend
+- Add `useSeoMeta` hook — fetches SEO API and applies tags to `<head>`
+- Wire SEO in `PublicSiteLayout` for home, slug pages, and blog articles
+
+#### Tests
+- `SeoMetaBuilderTest`, `SeoControllerTest`, `useSeoMeta.test.ts`
+
+---
+
+## [2.0.10] – 2026-07-17
+
+### Iteration 22 – Ops finish & public discoverability
+
+#### Backend
+- Trash admin UI endpoints (unchanged from It. 20)
+- Brute-force login lockout — `LoginAttemptTracker`, HTTP 429
+- RSS `GET /feed.xml` and sitemap `GET /sitemap.xml`
+- Settings groups `feeds` and `security`
+
+#### Frontend
+- Trash manager at `/trash`
+- RSS `<link rel="alternate">` in public layout
+- Login modal 429 lockout message
+- Production deploy guard (`build:prod`, `verify-dist-api-url.mjs`)
+
+#### Tests
+- `TrashManager.test.tsx`, `FeedGeneratorTest`, `FeedControllerTest`, lockout test
+
+---
+
 ## [2.0.9] – 2026-07-17
 
 ### Iteration 21 – API contract, automated testing & FE parity

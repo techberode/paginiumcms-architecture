@@ -19,6 +19,16 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
+      '/feed.xml': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/sitemap.xml': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
   preview: {
@@ -30,6 +40,16 @@ export default defineConfig({
         secure: false,
       },
       '/storage': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/feed.xml': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/sitemap.xml': {
         target: 'http://localhost:8080',
         changeOrigin: true,
         secure: false,

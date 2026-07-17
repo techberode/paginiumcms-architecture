@@ -19,6 +19,7 @@ import {
   MessageSquare,
   Mail,
   HardDrive,
+  Trash2,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
@@ -76,6 +77,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
     { id: 'github', label: 'GitHub', href: '/github', icon: GitBranch, adminOnly: true },
     { id: 'code-editor', label: 'Code Editor', href: '/code-editor', icon: Code },
     { id: 'backups', label: 'Zálohy', href: '/backups', icon: HardDrive },
+    { id: 'trash', label: 'Kôš', href: '/trash', icon: Trash2, adminOnly: true },
     { id: 'audit', label: 'Audit Trail', href: '/audit', icon: History },
     { id: 'notifications', label: 'Notifikácie', href: '/notifications', icon: Bell },
     { id: 'users', label: 'Používatelia', href: '/users', icon: Users, adminOnly: true },

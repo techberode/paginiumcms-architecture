@@ -9,6 +9,7 @@ import { PageRenderer } from '../frontend/PageRenderer';
 import { usePublicSite } from '../../context/PublicSiteContext';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { useAuth } from '../../hooks/useAuth';
+import { useSeoMeta } from '../../hooks/useSeoMeta';
 
 const ADMIN_PREFIXES = [
   '/dashboard',
@@ -17,6 +18,7 @@ const ADMIN_PREFIXES = [
   '/media',
   '/code-editor',
   '/backups',
+  '/trash',
   '/audit',
   '/notifications',
   '/settings',
@@ -115,10 +117,28 @@ export const PublicSiteLayout: React.FC = () => {
     return undefined;
   }, [pathname, getPageBySlug, getArticleBySlug]);
 
+  const seoType = currentDoc?.type ?? null;
+  const seoSlug = currentDoc?.slug ?? null;
+  useSeoMeta(seoType, seoSlug);
+
   React.useEffect(() => {
-    const pageTitle = currentDoc?.title ?? (pathname === '/' ? siteName : null);
-    document.title = pageTitle ? `${pageTitle} | ${siteName}` : siteName;
-  }, [currentDoc, pathname, siteName]);
+    const feeds = settings?.feeds as { enabled?: boolean } | undefined;
+    if (feeds?.enabled === false) {
+      return;
+    }
+
+    const href = `${window.location.origin}/feed.xml`;
+    let link = document.querySelector<HTMLLinkElement>('link[data-paginium-feed="rss"]');
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'alternate';
+      link.type = 'application/rss+xml';
+      link.dataset.paginiumFeed = 'rss';
+      document.head.appendChild(link);
+    }
+    link.href = href;
+    link.title = `${siteName} RSS`;
+  }, [settings?.feeds, siteName]);
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors">

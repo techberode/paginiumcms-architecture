@@ -6,6 +6,8 @@ namespace PaginiumCMS\Http\Controllers\Auth;
 
 use PaginiumCMS\Core\Notification\NotificationService;
 use PaginiumCMS\Core\Notification\Services\IncidentNotifier;
+use PaginiumCMS\Core\Security\SecurityLogger;
+use PaginiumCMS\Core\Security\Services\LoginAttemptTracker;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Security\Contracts\AuthenticationInterface;
@@ -29,6 +31,8 @@ class AuthController
         private SettingsRepositoryInterface $settings,
         private NotificationService $notifications,
         private IncidentNotifier $incidentNotifier,
+        private LoginAttemptTracker $loginAttempts,
+        private SecurityLogger $securityLogger,
         private JsonResponder $json
     ) {
     }
@@ -45,8 +49,24 @@ class AuthController
             return $this->json->error($response, 'Email a heslo sú povinné', 400);
         }
 
+        $email = (string) $data['email'];
+        $ip = (string) ($request->getServerParams()['REMOTE_ADDR'] ?? 'unknown');
+
+        $lockStatus = $this->loginAttempts->status($ip, $email);
+        if ($lockStatus['locked']) {
+            $minutes = (int) ceil($lockStatus['retryAfter'] / 60);
+
+            return $this->json->error(
+                $response,
+                sprintf('Príliš veľa neúspešných pokusov. Skúste znova o %d min.', max(1, $minutes)),
+                429
+            );
+        }
+
         try {
-            $user = $this->auth->login($data['email'], $data['password']);
+            $user = $this->auth->login($email, (string) $data['password']);
+
+            $this->securityLogger->recordSuccessfulLogin($user->getId(), $email, $ip);
 
             if ($user->isTwoFactorEnabled()) {
                 return $this->json->respond($response, [
@@ -61,10 +81,8 @@ class AuthController
                 'user' => $user->jsonSerialize(),
             ]);
         } catch (\Exception $e) {
-            $this->incidentNotifier->notifyFailedLogin(
-                (string) ($data['email'] ?? 'unknown'),
-                $_SERVER['REMOTE_ADDR'] ?? 'unknown'
-            );
+            $this->securityLogger->recordFailedLogin($ip, $email);
+            $this->incidentNotifier->notifyFailedLogin($email, $ip);
 
             return $this->json->error($response, $e->getMessage(), 401);
         }

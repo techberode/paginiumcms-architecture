@@ -7,6 +7,7 @@ export * from './user';
 export * from './users';
 export * from './codeEditor';
 export * from './backup';
+export * from './trash';
 export * from './audit';
 export * from './health';
 export * from './version';
@@ -33,6 +34,7 @@ import { contentApi } from './content';
 import { userApi } from './user';
 import { codeEditorApi } from './codeEditor';
 import { backupApi } from './backup';
+import { trashApi } from './trash';
 import { auditApi } from './audit';
 import { healthApi } from './health';
 import { versionApi } from './version';
@@ -44,6 +46,7 @@ export const api = {
   user: userApi,
   codeEditor: codeEditorApi,
   backup: backupApi,
+  trash: trashApi,
   audit: auditApi,
   health: healthApi,
   version: versionApi,
