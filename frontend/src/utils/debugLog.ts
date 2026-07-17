@@ -1,5 +1,6 @@
 // frontend/src/utils/debugLog.ts
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+import { resolveApiBaseUrl } from './apiBaseUrl';
+
 const DEBUG_ENDPOINT = '/api/debug/client-event';
 
 /** Cesty, ktorých telo sa nikdy neloguje (heslá, tokeny). */
@@ -28,7 +29,7 @@ function sendToBackend(event: string, context: Record<string, unknown>): void {
     return;
   }
 
-  void fetch(`${API_URL}${DEBUG_ENDPOINT}`, {
+  void fetch(`${resolveApiBaseUrl()}${DEBUG_ENDPOINT}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     credentials: 'include',
@@ -133,7 +134,7 @@ export function logFrontendStartup(): void {
 
   debugLog('frontend.startup', {
     mode: import.meta.env.MODE,
-    apiUrl: API_URL,
+    apiUrl: resolveApiBaseUrl(),
     userAgent: navigator.userAgent,
     language: navigator.language,
     viewport: `${window.innerWidth}x${window.innerHeight}`,

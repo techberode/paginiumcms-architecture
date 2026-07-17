@@ -24,7 +24,6 @@ use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Support\Lang;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use PaginiumCMS\Support\JsonHelper;
 
 class ContentController
 {
@@ -139,12 +138,12 @@ class ContentController
         $validation = $this->validatePayload($data, true);
 
         if ($validation !== null) {
-            return $this->jsonError($response, $validation, 400);
+            return $this->json->error($response, $validation, 400);
         }
 
         $slug = (string) $data['slug'];
         if ($this->repository->findBySlug($slug, $type) !== null) {
-            return $this->jsonError(
+            return $this->json->error(
                 $response,
                 Lang::get('slug_exists', ['slug' => $slug], 'content'),
                 409
@@ -162,14 +161,14 @@ class ContentController
                 $this->resolveCommitMessage($data)
             );
 
-            return $this->jsonSuccess(
+            return $this->json->success(
                 $response,
                 $this->serializeContent($content, $type),
-                Lang::get('created', [], 'content'),
-                201
+                201,
+                Lang::get('created', [], 'content')
             );
         } catch (FlatFileException $e) {
-            return $this->jsonError($response, $e->getMessage(), 500);
+            return $this->json->error($response, $e->getMessage(), 500);
         }
     }
 
@@ -182,14 +181,14 @@ class ContentController
         $existing = $this->repository->findBySlug($slug, $type);
 
         if ($existing === null) {
-            return $this->jsonError($response, Lang::get('not_found', [], 'content'), 404);
+            return $this->json->error($response, Lang::get('not_found', [], 'content'), 404);
         }
 
         $data = $this->parseJsonBody($request);
         $validation = $this->validatePayload($data, false);
 
         if ($validation !== null) {
-            return $this->jsonError($response, $validation, 400);
+            return $this->json->error($response, $validation, 400);
         }
 
         // === Blok: Optimistické zamykanie / detekcia konfliktu (Iterácia 2) ===
@@ -199,12 +198,14 @@ class ContentController
             $this->assertNoConflict($existing, $data['baseRevision'] ?? null);
         } catch (ContentConflictException $e) {
             $this->recordConflict($request, $type, $slug, $data, $e);
-            return $this->jsonConflict($response, $e);
+            return $this->json->conflict($response, $e->getMessage(), [
+                'conflict' => $e->toContext(),
+            ]);
         }
 
         $newSlug = (string) ($data['slug'] ?? $slug);
         if ($newSlug !== $slug && $this->repository->findBySlug($newSlug, $type) !== null) {
-            return $this->jsonError(
+            return $this->json->error(
                 $response,
                 Lang::get('slug_exists', ['slug' => $newSlug], 'content'),
                 409
@@ -227,13 +228,14 @@ class ContentController
                 $this->resolveCommitMessage($data)
             );
 
-            return $this->jsonSuccess(
+            return $this->json->success(
                 $response,
                 $this->serializeContent($existing, $type),
+                200,
                 Lang::get('updated', [], 'content')
             );
         } catch (FlatFileException $e) {
-            return $this->jsonError($response, $e->getMessage(), 500);
+            return $this->json->error($response, $e->getMessage(), 500);
         }
     }
 
@@ -246,7 +248,7 @@ class ContentController
         $content = $this->repository->findBySlug($slug, $type);
 
         if ($content === null) {
-            return $this->jsonError($response, Lang::get('not_found', [], 'content'), 404);
+            return $this->json->error($response, Lang::get('not_found', [], 'content'), 404);
         }
 
         try {
@@ -258,9 +260,9 @@ class ContentController
         try {
             $this->repository->delete($content);
 
-            return $this->jsonSuccess($response, null, Lang::get('deleted', [], 'content'));
+            return $this->json->success($response, null, 200, Lang::get('deleted', [], 'content'));
         } catch (FlatFileException $e) {
-            return $this->jsonError($response, $e->getMessage(), 500);
+            return $this->json->error($response, $e->getMessage(), 500);
         }
     }
 
@@ -273,14 +275,14 @@ class ContentController
         $content = $this->repository->findBySlug($slug, $type);
 
         if ($content === null) {
-            return $this->jsonError($response, Lang::get('not_found', [], 'content'), 404);
+            return $this->json->error($response, Lang::get('not_found', [], 'content'), 404);
         }
 
         $data = $this->parseJsonBody($request);
         $status = $data['status'] ?? '';
 
         if (!in_array($status, $this->validStatuses, true)) {
-            return $this->jsonError($response, Lang::get('invalid_status', [], 'content'), 400);
+            return $this->json->error($response, Lang::get('invalid_status', [], 'content'), 400);
         }
 
         try {
@@ -288,13 +290,14 @@ class ContentController
             $this->repository->save($content);
             $this->versioning->recordChange($content, $type, 'status', $this->resolveUser($request));
 
-            return $this->jsonSuccess(
+            return $this->json->success(
                 $response,
                 $this->serializeContent($content, $type),
+                200,
                 Lang::get('status_updated', [], 'content')
             );
         } catch (FlatFileException $e) {
-            return $this->jsonError($response, $e->getMessage(), 500);
+            return $this->json->error($response, $e->getMessage(), 500);
         }
     }
 
@@ -575,43 +578,4 @@ class ContentController
         return is_string($message) ? trim($message) : '';
     }
 
-    private function jsonSuccess(
-        ResponseInterface $response,
-        mixed $data,
-        ?string $message = null,
-        int $status = 200
-    ): ResponseInterface {
-        $payload = ['success' => true, 'data' => $data];
-        if ($message !== null) {
-            $payload['message'] = $message;
-        }
-
-        $response->getBody()->write(JsonHelper::encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
-        return $response->withStatus($status)->withHeader('Content-Type', 'application/json; charset=utf-8');
-    }
-
-    private function jsonError(ResponseInterface $response, string $message, int $status = 400): ResponseInterface
-    {
-        $response->getBody()->write(JsonHelper::encode([
-            'success' => false,
-            'error' => $message,
-        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
-        return $response->withStatus($status)->withHeader('Content-Type', 'application/json; charset=utf-8');
-    }
-
-    /**
-     * Odpoveď 409 pri konflikte obsahu – nesie serverovú verziu pre DiffViewer/ConflictResolver.
-     */
-    private function jsonConflict(ResponseInterface $response, ContentConflictException $e): ResponseInterface
-    {
-        $response->getBody()->write(JsonHelper::encode([
-            'success' => false,
-            'error' => $e->getMessage(),
-            'conflict' => $e->toContext(),
-        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
-        return $response->withStatus(409)->withHeader('Content-Type', 'application/json; charset=utf-8');
-    }
 }

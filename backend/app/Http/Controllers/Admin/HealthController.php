@@ -5,17 +5,19 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Controllers\Admin;
 
 use PaginiumCMS\Core\Health\Services\HealthCheckManager;
+use PaginiumCMS\Http\Support\JsonResponder;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use PaginiumCMS\Support\JsonHelper;
 
 /**
  * Admin health check API (Iteration 7).
  */
 final class HealthController
 {
-    public function __construct(private HealthCheckManager $healthManager)
-    {
+    public function __construct(
+        private HealthCheckManager $healthManager,
+        private JsonResponder $json
+    ) {
     }
 
     public function index(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -25,10 +27,11 @@ final class HealthController
 
         $report = $this->healthManager->run($group);
 
-        return $this->json($response, [
-            'success' => true,
-            'data' => $this->normalizeReport($report->toArray()),
-        ], $report->isPass() ? 200 : 500);
+        return $this->json->success(
+            $response,
+            $this->normalizeReport($report->toArray()),
+            $report->isPass() ? 200 : 500
+        );
     }
 
     public function check(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -37,15 +40,12 @@ final class HealthController
         $result = $this->healthManager->runCheck($name);
 
         if ($result === null) {
-            return $this->json($response, [
-                'success' => false,
-                'error' => 'Health check not found: ' . $name,
-            ], 404);
+            return $this->json->error($response, 'Health check not found: ' . $name, 404);
         }
 
         $payload = $this->normalizeCheck($result->toArray());
 
-        return $this->json($response, [
+        return $this->json->respond($response, [
             'success' => $result->isPass(),
             'data' => $payload,
         ], $result->isPass() ? 200 : 500);
@@ -53,19 +53,17 @@ final class HealthController
 
     public function checks(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        return $this->json($response, [
-            'success' => true,
-            'data' => [
-                'checks' => $this->healthManager->getAvailableChecks(),
-                'groups' => $this->healthManager->getGroups(),
-            ],
+        return $this->json->success($response, [
+            'checks' => $this->healthManager->getAvailableChecks(),
+            'groups' => $this->healthManager->getGroups(),
         ]);
     }
 
     /**
      * @param array<int|string, mixed> $report
      * @return array<int|string, mixed>
- */private function normalizeReport(array $report): array
+     */
+    private function normalizeReport(array $report): array
     {
         if (!isset($report['checks']) || !is_array($report['checks'])) {
             return $report;
@@ -82,21 +80,13 @@ final class HealthController
     /**
      * @param array<int|string, mixed> $check
      * @return array<int|string, mixed>
- */private function normalizeCheck(array $check): array
+     */
+    private function normalizeCheck(array $check): array
     {
         if (isset($check['check']) && !isset($check['name'])) {
             $check['name'] = $check['check'];
         }
 
         return $check;
-    }
-
-    /**
-     * @param array<int|string, mixed> $payload
- */private function json(ResponseInterface $response, array $payload, int $status = 200): ResponseInterface
-    {
-        $response->getBody()->write(JsonHelper::encode($payload, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-
-        return $response->withStatus($status)->withHeader('Content-Type', 'application/json; charset=utf-8');
     }
 }

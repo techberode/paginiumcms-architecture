@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [main, 'release/**']
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: PHPStan level 8
+        run: ./vendor/bin/phpstan analyse backend --level=8
+
+      - name: PHPUnit
+        run: ./vendor/bin/phpunit --colors=never
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm ci
+      - run: npm test
+      - run: npm run test:msw
+      - run: npm run build
+
+  api-smoke:
+    runs-on: ubuntu-latest
+    needs: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - run: composer install --no-interaction --prefer-dist
+
+      - name: Start backend
+        run: |
+          cd backend/public
+          php -S localhost:8080 >/tmp/php-server.log 2>&1 &
+          sleep 2
+          curl -sf http://localhost:8080/api/health
+
+      - name: Newman smoke (public endpoints)
+        run: chmod +x scripts/run-api-smoke.sh && ./scripts/run-api-smoke.sh

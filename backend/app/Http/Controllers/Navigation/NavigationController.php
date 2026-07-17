@@ -7,16 +7,17 @@ namespace PaginiumCMS\Http\Controllers\Navigation;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Core\FlatFile\Models\Navigation;
 use PaginiumCMS\Core\FlatFile\Models\NavigationItem;
+use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Navigation\Contracts\NavigationRepositoryInterface;
 use PaginiumCMS\Support\Lang;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use PaginiumCMS\Support\JsonHelper;
 
 class NavigationController
 {
     public function __construct(
-        private NavigationRepositoryInterface $navigationRepository
+        private NavigationRepositoryInterface $navigationRepository,
+        private JsonResponder $json
     ) {
     }
 
@@ -24,39 +25,41 @@ class NavigationController
     {
         $navigation = $this->navigationRepository->load();
 
-        return $this->jsonSuccess($response, $navigation->jsonSerialize());
+        return $this->json->success($response, $navigation->jsonSerialize());
     }
 
     public function updateNavigation(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $data = json_decode((string) $request->getBody(), true);
         if (!is_array($data)) {
-            return $this->jsonError($response, Lang::get('invalid_payload', [], 'navigation'), 400);
+            return $this->json->error($response, Lang::get('invalid_payload', [], 'navigation'), 400);
         }
 
         $itemsPayload = $data['items'] ?? $data;
         if (!is_array($itemsPayload)) {
-            return $this->jsonError($response, Lang::get('invalid_payload', [], 'navigation'), 400);
+            return $this->json->error($response, Lang::get('invalid_payload', [], 'navigation'), 400);
         }
 
         try {
             $navigation = $this->buildNavigation($itemsPayload);
             $this->navigationRepository->save($navigation);
 
-            return $this->jsonSuccess(
+            return $this->json->success(
                 $response,
                 $navigation->jsonSerialize(),
+                200,
                 Lang::get('updated', [], 'navigation')
             );
         } catch (FlatFileException $e) {
-            return $this->jsonError($response, $e->getMessage(), 500);
+            return $this->json->error($response, $e->getMessage(), 500);
         }
     }
 
     /**
      * @param array<int, array<int|string, mixed>> $itemsPayload
- * @param array<int|string, mixed> $itemsPayload
- */private function buildNavigation(array $itemsPayload): Navigation
+     * @param array<int|string, mixed> $itemsPayload
+     */
+    private function buildNavigation(array $itemsPayload): Navigation
     {
         $items = [];
 
@@ -93,27 +96,5 @@ class NavigationController
         }
 
         return new Navigation($items);
-    }
-
-    private function jsonSuccess(ResponseInterface $response, mixed $data, ?string $message = null, int $status = 200): ResponseInterface
-    {
-        $payload = ['success' => true, 'data' => $data];
-        if ($message !== null) {
-            $payload['message'] = $message;
-        }
-
-        $response->getBody()->write(JsonHelper::encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
-        return $response->withStatus($status)->withHeader('Content-Type', 'application/json; charset=utf-8');
-    }
-
-    private function jsonError(ResponseInterface $response, string $message, int $status = 400): ResponseInterface
-    {
-        $response->getBody()->write(JsonHelper::encode([
-            'success' => false,
-            'error' => $message,
-        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
-        return $response->withStatus($status)->withHeader('Content-Type', 'application/json; charset=utf-8');
     }
 }

@@ -40,6 +40,7 @@ use PaginiumCMS\Core\Cache\Drivers\FileDriver;
 use PaginiumCMS\Core\Analytics\Middleware\AnalyticsMiddleware;
 use PaginiumCMS\Http\Controllers\Auth\AuthController;
 use PaginiumCMS\Http\Controllers\Auth\TwoFactorController;
+use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Http\Controllers\Admin\BackupController;
 use PaginiumCMS\Http\Middleware\AuthMiddleware;
 use PaginiumCMS\Http\Middleware\RoleMiddleware;
@@ -299,14 +300,16 @@ $containerBuilder->addDefinitions([
             $container->get(UserRepository::class),
             $container->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class),
             $container->get(\PaginiumCMS\Core\Notification\NotificationService::class),
-            $container->get(\PaginiumCMS\Core\Notification\Services\IncidentNotifier::class)
+            $container->get(\PaginiumCMS\Core\Notification\Services\IncidentNotifier::class),
+            $container->get(JsonResponder::class)
         );
     },
 
     TwoFactorController::class => function ($container) {
         return new TwoFactorController(
             $container->get(TwoFactorInterface::class),
-                                       $container->get(UserRepository::class)
+            $container->get(UserRepository::class),
+            $container->get(JsonResponder::class)
         );
     },
 
@@ -337,7 +340,8 @@ $containerBuilder->addDefinitions([
 
     BackupController::class => function ($container) {
         return new BackupController(
-            $container->get(BackupInterface::class)
+            $container->get(BackupInterface::class),
+            $container->get(JsonResponder::class)
         );
     },
 
@@ -491,16 +495,16 @@ $app->group('/api/admin', function (RouteCollectorProxy $group) use ($container)
     ->add($container->get(AuthMiddleware::class));
 
 // ---------- HEALTH CHECK ----------
-$app->get('/api/health', function ($request, $response) {
-    $data = [
+$app->get('/api/health', function ($request, $response) use ($container) {
+    $json = $container->get(JsonResponder::class);
+
+    return $json->success($response, [
         'status' => 'healthy',
         'timestamp' => date('Y-m-d H:i:s'),
-          'version' => '2.0.0',
-          'php_version' => PHP_VERSION,
-          'environment' => getenv('APP_ENV') ?: 'development'
-    ];
-    $response->getBody()->write(json_encode($data, JSON_PRETTY_PRINT));
-    return $response->withHeader('Content-Type', 'application/json');
+        'version' => '2.0.9',
+        'php_version' => PHP_VERSION,
+        'environment' => getenv('APP_ENV') ?: 'development',
+    ]);
 });
 
 // ---------- ROOT ENDPOINT ----------

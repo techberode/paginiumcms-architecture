@@ -7,6 +7,7 @@ namespace PaginiumCMS\Http\Controllers\Admin;
 use PaginiumCMS\Core\Validation\ValidationException;
 use PaginiumCMS\Core\Validation\ValidationRules;
 use PaginiumCMS\Core\Validation\Validator;
+use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
 use PaginiumCMS\Modules\Security\Contracts\PasswordPolicyInterface;
 use PaginiumCMS\Modules\Security\Models\User;
@@ -14,19 +15,10 @@ use PaginiumCMS\Modules\Security\Services\UserRepository;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
-use PaginiumCMS\Support\JsonHelper;
 
 /**
  * === Controller: UserController (Admin) ===
  * CRUD správa používateľov a rolí (Iterácia 5).
- *
- *  - GET    /api/admin/users           zoznam
- *  - GET    /api/admin/users/{id}      detail
- *  - POST   /api/admin/users           vytvorenie
- *  - PUT    /api/admin/users/{id}      úprava (meno, email, role, voliteľné heslo)
- *  - DELETE /api/admin/users/{id}      zmazanie
- *
- * Validačné chyby → ValidationException → jednotný Error Handler (422).
  */
 final class UserController
 {
@@ -41,7 +33,8 @@ final class UserController
     public function __construct(
         private UserRepository $users,
         private Validator $validator,
-        private PasswordPolicyInterface $passwordPolicy
+        private PasswordPolicyInterface $passwordPolicy,
+        private JsonResponder $json
     ) {
     }
 
@@ -52,25 +45,20 @@ final class UserController
             $this->users->findAll()
         );
 
-        return $this->json($response, [
-            'success' => true,
-            'data' => ['users' => $list],
-        ]);
+        return $this->json->success($response, ['users' => $list]);
     }
 
     /**
      * @param array<string, string> $args
- */public function show(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+     */
+    public function show(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $user = $this->resolveUser((string) ($args['id'] ?? ''));
         if ($user === null) {
-            return $this->json($response, ['success' => false, 'error' => 'Používateľ neexistuje'], 404);
+            return $this->json->error($response, 'Používateľ neexistuje', 404);
         }
 
-        return $this->json($response, [
-            'success' => true,
-            'data' => ['user' => $user->jsonSerialize()],
-        ]);
+        return $this->json->success($response, ['user' => $user->jsonSerialize()]);
     }
 
     public function store(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -85,7 +73,7 @@ final class UserController
         $this->assertValidRole((string) $validated['role']);
 
         if ($this->users->existsByEmail($validated['email'])) {
-            return $this->json($response, ['success' => false, 'error' => 'E-mail už existuje'], 409);
+            return $this->json->error($response, 'E-mail už existuje', 409);
         }
 
         $password = (string) ($payload['password'] ?? '');
@@ -109,20 +97,22 @@ final class UserController
 
         $this->users->save($user);
 
-        return $this->json($response, [
-            'success' => true,
-            'data' => ['user' => $user->jsonSerialize()],
-            'message' => 'Používateľ vytvorený',
-        ], 201);
+        return $this->json->success(
+            $response,
+            ['user' => $user->jsonSerialize()],
+            201,
+            'Používateľ vytvorený'
+        );
     }
 
     /**
      * @param array<string, string> $args
- */public function update(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+     */
+    public function update(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $user = $this->resolveUser((string) ($args['id'] ?? ''));
         if ($user === null) {
-            return $this->json($response, ['success' => false, 'error' => 'Používateľ neexistuje'], 404);
+            return $this->json->error($response, 'Používateľ neexistuje', 404);
         }
         $payload = $this->parseJsonBody($request);
 
@@ -139,7 +129,7 @@ final class UserController
 
         if (isset($validated['email']) && $validated['email'] !== $user->getEmail()) {
             if ($this->users->existsByEmail($validated['email'])) {
-                return $this->json($response, ['success' => false, 'error' => 'E-mail už existuje'], 409);
+                return $this->json->error($response, 'E-mail už existuje', 409);
             }
             $user->setEmail($validated['email']);
         }
@@ -166,46 +156,42 @@ final class UserController
         $user->setUpdatedAt(time());
         $this->users->save($user);
 
-        return $this->json($response, [
-            'success' => true,
-            'data' => ['user' => $user->jsonSerialize()],
-            'message' => 'Používateľ aktualizovaný',
-        ]);
+        return $this->json->success(
+            $response,
+            ['user' => $user->jsonSerialize()],
+            200,
+            'Používateľ aktualizovaný'
+        );
     }
 
     /**
      * @param array<string, string> $args
- */public function destroy(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+     */
+    public function destroy(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $targetId = (string) ($args['id'] ?? '');
         $actor = $request->getAttribute('user');
 
         if (!$actor instanceof User) {
-            return $this->json($response, ['success' => false, 'error' => 'Neprihlásený používateľ'], 401);
+            return $this->json->error($response, 'Neprihlásený používateľ', 401);
         }
 
         if ($actor->getId() === $targetId) {
-            return $this->json($response, ['success' => false, 'error' => 'Nemôžete zmazať vlastný účet'], 400);
+            return $this->json->error($response, 'Nemôžete zmazať vlastný účet', 400);
         }
 
         $target = $this->resolveUser($targetId);
         if ($target === null) {
-            return $this->json($response, ['success' => false, 'error' => 'Používateľ neexistuje'], 404);
+            return $this->json->error($response, 'Používateľ neexistuje', 404);
         }
 
         if ($target->isSuperAdmin() && $this->countSuperAdmins() <= 1) {
-            return $this->json($response, [
-                'success' => false,
-                'error' => 'Nemôžete zmazať posledného super administrátora',
-            ], 400);
+            return $this->json->error($response, 'Nemôžete zmazať posledného super administrátora', 400);
         }
 
         $this->users->delete($targetId);
 
-        return $this->json($response, [
-            'success' => true,
-            'message' => 'Používateľ zmazaný',
-        ]);
+        return $this->json->success($response, null, 200, 'Používateľ zmazaný');
     }
 
     private function resolveUser(string $id): ?User
@@ -238,19 +224,11 @@ final class UserController
 
     /**
      * @return array<int|string, mixed>
- */private function parseJsonBody(ServerRequestInterface $request): array
+     */
+    private function parseJsonBody(ServerRequestInterface $request): array
     {
         $data = json_decode((string) $request->getBody(), true);
 
         return is_array($data) ? $data : [];
-    }
-
-    /**
-     * @param array<int|string, mixed> $payload
- */private function json(ResponseInterface $response, array $payload, int $status = 200): ResponseInterface
-    {
-        $response->getBody()->write(JsonHelper::encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
-        return $response->withStatus($status)->withHeader('Content-Type', 'application/json; charset=utf-8');
     }
 }

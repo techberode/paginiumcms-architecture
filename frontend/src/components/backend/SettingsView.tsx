@@ -1,10 +1,7 @@
 // frontend/src/components/backend/SettingsView.tsx
-// === Nastavenia CMS (Iterácia 4) ===
-// Generický formulár riadený schémou z backendu (/api/admin/settings).
-// Pridanie novej skupiny/poľa na backende sa tu prejaví automaticky – žiadna
-// zmena tohto komponentu nie je potrebná. Validácia beží na dvoch úrovniach:
-// okamžite na FE (zdieľané pravidlá) a autoritatívne na BE (422 → res.errors).
 import React, { useEffect, useMemo, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
   getSettings,
   updateSettingsGroup,
@@ -13,24 +10,47 @@ import {
   SettingsValues,
   SettingField,
 } from '../../api/settings';
-import { validate, ValidationErrors } from '../../utils/validation';
 import { useToast } from '../../hooks/useToast';
 import { useSettings } from '../../hooks/useSettings';
 import { TwoFactorSettings } from '../auth/TwoFactorSettings';
+import { zodFromRules } from '../../validation/zodFromRules';
+import { applyApiValidationErrors } from '../../validation/mapApiErrors';
 
 export const SettingsView: React.FC = () => {
   const [schema, setSchema] = useState<SettingsSchema>({});
   const [values, setValues] = useState<SettingsValues>({});
   const [activeGroup, setActiveGroup] = useState<string>('');
-  const [errors, setErrors] = useState<ValidationErrors>({});
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const { success, error: toastError } = useToast();
   const { reload: reloadGlobalSettings } = useSettings();
+
+  const group = activeGroup ? schema[activeGroup] : undefined;
+  const groupRules = useMemo(
+    () => (group ? rulesFromSchema(group) : {}),
+    [group]
+  );
+  const zodSchema = useMemo(() => zodFromRules(groupRules), [groupRules]);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<Record<string, unknown>>({
+    resolver: zodResolver(zodSchema),
+    defaultValues: {},
+  });
 
   useEffect(() => {
     void load();
   }, []);
+
+  useEffect(() => {
+    if (activeGroup && values[activeGroup]) {
+      reset(values[activeGroup]);
+    }
+  }, [activeGroup, values, reset]);
 
   const load = async () => {
     setLoading(true);
@@ -48,54 +68,26 @@ export const SettingsView: React.FC = () => {
     }
   };
 
-  const groupKeys = useMemo(() => Object.keys(schema), [schema]);
-  const group = activeGroup ? schema[activeGroup] : undefined;
-  const groupValues = activeGroup ? values[activeGroup] ?? {} : {};
+  const onSubmit = async (formValues: Record<string, unknown>) => {
+    if (!activeGroup) return;
 
-  const setFieldValue = (key: string, value: unknown) => {
-    setValues((prev) => ({
-      ...prev,
-      [activeGroup]: { ...(prev[activeGroup] ?? {}), [key]: value },
-    }));
-    // Zmiznutie inline chyby po úprave poľa.
-    setErrors((prev) => {
-      if (!prev[key]) return prev;
-      const next = { ...prev };
-      delete next[key];
-      return next;
-    });
-  };
-
-  const handleSave = async () => {
-    if (!group) return;
-
-    const rules = rulesFromSchema(group);
-    const result = validate(groupValues, rules);
-    if (!result.valid) {
-      setErrors(result.errors);
-      toastError('Skontrolujte vyplnené polia');
+    const res = await updateSettingsGroup(activeGroup, formValues);
+    if (res.success && res.data) {
+      setValues((prev) => ({ ...prev, [activeGroup]: res.data!.values }));
+      await reloadGlobalSettings();
+      success('Nastavenia uložené');
       return;
     }
 
-    setSaving(true);
-    setErrors({});
-    try {
-      const res = await updateSettingsGroup(activeGroup, groupValues);
-      if (res.success && res.data) {
-        setValues((prev) => ({ ...prev, [activeGroup]: res.data!.values }));
-        await reloadGlobalSettings();
-        success('Nastavenia uložené');
-      } else if (res.errors) {
-        // Autoritatívne validačné chyby z backendu (422).
-        setErrors(res.errors);
-        toastError(res.error || 'Validácia zlyhala');
-      } else {
-        toastError(res.error || 'Uloženie zlyhalo');
-      }
-    } finally {
-      setSaving(false);
+    if (applyApiValidationErrors(res, setError)) {
+      toastError(res.error || 'Validácia zlyhala');
+      return;
     }
+
+    toastError(res.error || 'Uloženie zlyhalo');
   };
+
+  const groupKeys = Object.keys(schema);
 
   if (loading) {
     return (
@@ -109,20 +101,22 @@ export const SettingsView: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Nastavenia</h1>
-        <button onClick={handleSave} disabled={saving} className="btn btn-primary">
-          {saving ? 'Ukladám...' : 'Uložiť zmeny'}
+        <button
+          type="button"
+          onClick={() => void handleSubmit(onSubmit)()}
+          disabled={isSubmitting}
+          className="btn btn-primary"
+        >
+          {isSubmitting ? 'Ukladám...' : 'Uložiť zmeny'}
         </button>
       </div>
 
-      {/* Záložky skupín */}
       <div className="flex flex-wrap gap-2 border-b border-gray-200 dark:border-gray-700">
         {groupKeys.map((key) => (
           <button
             key={key}
-            onClick={() => {
-              setActiveGroup(key);
-              setErrors({});
-            }}
+            type="button"
+            onClick={() => setActiveGroup(key)}
             className={`px-4 py-2 -mb-px text-sm font-medium border-b-2 transition-colors ${
               activeGroup === key
                 ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
@@ -134,21 +128,19 @@ export const SettingsView: React.FC = () => {
         ))}
       </div>
 
-      {/* Formulár aktívnej skupiny */}
       {group && (
-        <div className="card">
+        <form onSubmit={handleSubmit(onSubmit)} className="card">
           <div className="card-body space-y-5">
             {group.fields.map((field) => (
               <SettingFieldRow
                 key={field.key}
                 field={field}
-                value={groupValues[field.key]}
-                error={errors[field.key]?.[0] ?? null}
-                onChange={(v) => setFieldValue(field.key, v)}
+                register={register}
+                error={errors[field.key]?.message as string | undefined}
               />
             ))}
           </div>
-        </div>
+        </form>
       )}
 
       <TwoFactorSettings />
@@ -158,12 +150,11 @@ export const SettingsView: React.FC = () => {
 
 interface RowProps {
   field: SettingField;
-  value: unknown;
-  error: string | null;
-  onChange: (value: unknown) => void;
+  register: ReturnType<typeof useForm>['register'];
+  error?: string;
 }
 
-const SettingFieldRow: React.FC<RowProps> = ({ field, value, error, onChange }) => {
+const SettingFieldRow: React.FC<RowProps> = ({ field, register, error }) => {
   const inputId = `setting-${field.key}`;
   const errorClass = error ? 'border-red-500 focus:ring-red-500' : '';
 
@@ -174,8 +165,9 @@ const SettingFieldRow: React.FC<RowProps> = ({ field, value, error, onChange }) 
           <input
             id={inputId}
             type="checkbox"
-            checked={Boolean(value)}
-            onChange={(e) => onChange(e.target.checked)}
+            {...register(field.key, {
+              setValueAs: (v) => v === true || v === 'on' || v === 'true' || v === 1,
+            })}
             className="h-4 w-4 rounded border-gray-300 text-indigo-600"
           />
           <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{field.label}</span>
@@ -189,20 +181,14 @@ const SettingFieldRow: React.FC<RowProps> = ({ field, value, error, onChange }) 
           {field.type === 'text' && (
             <textarea
               id={inputId}
-              value={String(value ?? '')}
-              onChange={(e) => onChange(e.target.value)}
               rows={3}
+              {...register(field.key)}
               className={`form-input w-full ${errorClass}`}
             />
           )}
 
           {field.type === 'enum' && (
-            <select
-              id={inputId}
-              value={String(value ?? '')}
-              onChange={(e) => onChange(e.target.value)}
-              className={`form-input w-full ${errorClass}`}
-            >
+            <select id={inputId} {...register(field.key)} className={`form-input w-full ${errorClass}`}>
               {(field.options ?? []).map((opt) => (
                 <option key={opt} value={opt}>
                   {opt}
@@ -211,17 +197,19 @@ const SettingFieldRow: React.FC<RowProps> = ({ field, value, error, onChange }) 
             </select>
           )}
 
-          {(field.type === 'int') && (
+          {field.type === 'int' && (
             <input
               id={inputId}
               type="number"
-              value={value === null || value === undefined ? '' : Number(value)}
-              onChange={(e) => onChange(e.target.value === '' ? '' : Number(e.target.value))}
+              {...register(field.key, { valueAsNumber: true })}
               className={`form-input w-full ${errorClass}`}
             />
           )}
 
-          {(field.type === 'string' || field.type === 'email' || field.type === 'url' || field.type === 'password') && (
+          {(field.type === 'string' ||
+            field.type === 'email' ||
+            field.type === 'url' ||
+            field.type === 'password') && (
             <input
               id={inputId}
               type={
@@ -233,8 +221,7 @@ const SettingFieldRow: React.FC<RowProps> = ({ field, value, error, onChange }) 
                       ? 'password'
                       : 'text'
               }
-              value={String(value ?? '')}
-              onChange={(e) => onChange(e.target.value)}
+              {...register(field.key)}
               className={`form-input w-full ${errorClass}`}
               autoComplete={field.type === 'password' ? 'new-password' : undefined}
             />

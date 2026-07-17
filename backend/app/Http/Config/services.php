@@ -148,15 +148,20 @@ return [
             'data/settings.json'
         ),
     SettingsController::class => create(SettingsController::class)
-        ->constructor(get(SettingsRepositoryInterface::class)),
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(JsonResponder::class)
+        ),
 
-    ValidationController::class => create(ValidationController::class),
+    ValidationController::class => create(ValidationController::class)
+        ->constructor(get(JsonResponder::class)),
 
     UserController::class => create(UserController::class)
         ->constructor(
             get(UserRepository::class),
             get(Validator::class),
-            get(PasswordPolicyInterface::class)
+            get(PasswordPolicyInterface::class),
+            get(JsonResponder::class)
         ),
 
     // Revízny odtlačok obsahu (optimistické zamykanie / detekcia konfliktov – Iterácia 2)
@@ -171,7 +176,10 @@ return [
             200
         ),
     ConflictController::class => create(ConflictController::class)
-        ->constructor(get(ConflictLoggerInterface::class)),
+        ->constructor(
+            get(ConflictLoggerInterface::class),
+            get(JsonResponder::class)
+        ),
 
     // Auto-save koncepty (Iterácia 2) – oddelené flat-file úložisko data/drafts/
     DraftManagerInterface::class => create(DraftManager::class)
@@ -181,7 +189,10 @@ return [
             'data/drafts'
         ),
     DraftController::class => create(DraftController::class)
-        ->constructor(get(DraftManagerInterface::class)),
+        ->constructor(
+            get(DraftManagerInterface::class),
+            get(JsonResponder::class)
+        ),
 
     // Content cache (ChainedDriver via bootstrap CacheManager)
     ContentCacheService::class => create(ContentCacheService::class)
@@ -200,7 +211,10 @@ return [
             get(FileWriterInterface::class)
         ),
     NavigationController::class => create(NavigationController::class)
-        ->constructor(get(NavigationRepositoryInterface::class)),
+        ->constructor(
+            get(NavigationRepositoryInterface::class),
+            get(JsonResponder::class)
+        ),
 
     CommentsRepositoryInterface::class => create(CommentsRepository::class)
         ->constructor(
@@ -211,7 +225,8 @@ return [
         ->constructor(
             get(CommentsRepositoryInterface::class),
             get(SettingsRepositoryInterface::class),
-            get(Validator::class)
+            get(Validator::class),
+            get(JsonResponder::class)
         ),
 
     MessageRepositoryInterface::class => create(MessageRepository::class)
@@ -222,10 +237,14 @@ return [
     ContactController::class => create(ContactController::class)
         ->constructor(
             get(MessageRepositoryInterface::class),
-            get(Validator::class)
+            get(Validator::class),
+            get(JsonResponder::class)
         ),
     MessageController::class => create(MessageController::class)
-        ->constructor(get(MessageRepositoryInterface::class)),
+        ->constructor(
+            get(MessageRepositoryInterface::class),
+            get(JsonResponder::class)
+        ),
 
     GitHubService::class => function ($container) {
         return new GitHubService(
@@ -242,7 +261,10 @@ return [
         );
     },
     GitHubController::class => create(GitHubController::class)
-        ->constructor(get(GitHubService::class)),
+        ->constructor(
+            get(GitHubService::class),
+            get(JsonResponder::class)
+        ),
 
     // === Blok: Systém zamykania obsahu (Iterácia 1) ===
     // Flat-file manažér zámkov (data/locks.json), TTL 300 s = auto-release po 5 min.
@@ -255,7 +277,10 @@ return [
             300
         ),
     LockController::class => create(LockController::class)
-        ->constructor(get(LockManagerInterface::class)),
+        ->constructor(
+            get(LockManagerInterface::class),
+            get(JsonResponder::class)
+        ),
 
     // Developer Mode gate + offline tokens
     DevTokenRegistry::class => create(DevTokenRegistry::class),
@@ -305,7 +330,10 @@ return [
             get(JsonResponder::class)
         ),
     MediaController::class => create(MediaController::class)
-        ->constructor(get(MediaRepositoryInterface::class)),
+        ->constructor(
+            get(MediaRepositoryInterface::class),
+            get(JsonResponder::class)
+        ),
 
     // Code editor / versioning / audit (auto-discovered admin routes)
     ConfigManager::class => create(ConfigManager::class),
@@ -379,7 +407,8 @@ return [
     AnalyticsController::class => create(AnalyticsController::class)
         ->constructor(
             get(ReporterInterface::class),
-            get(RealtimeTracker::class)
+            get(RealtimeTracker::class),
+            get(JsonResponder::class)
         ),
     DashboardController::class => create(DashboardController::class)
         ->constructor(
@@ -387,7 +416,8 @@ return [
             get(ConflictLoggerInterface::class),
             get(HealthCheckManager::class),
             get(ReporterInterface::class),
-            get(RealtimeTracker::class)
+            get(RealtimeTracker::class),
+            get(JsonResponder::class)
         ),
 
     // === Blok: Health checks (Iteration 7) ===
@@ -405,13 +435,17 @@ return [
             get(SecurityChecker::class),
         ]),
     HealthController::class => create(HealthController::class)
-        ->constructor(get(HealthCheckManager::class)),
+        ->constructor(
+            get(HealthCheckManager::class),
+            get(JsonResponder::class)
+        ),
 
     NotificationController::class => create(NotificationController::class)
         ->constructor(
             get(SettingsRepositoryInterface::class),
             get(NotificationService::class),
-            get(ReporterInterface::class)
+            get(ReporterInterface::class),
+            get(JsonResponder::class)
         ),
 
     AuditTrailService::class => create(AuditTrailService::class)
@@ -432,21 +466,27 @@ return [
     CodeEditorController::class => create(GatedCodeEditorController::class)
         ->constructor(
             get(CodeEditorManager::class),
-            get(DeveloperModeGate::class)
+            get(DeveloperModeGate::class),
+            get(JsonResponder::class)
         ),
     VersionController::class => create(VersionController::class)
         ->constructor(
             get(EnhancedVersionManager::class),
-            get(ContentVersioningService::class)
+            get(ContentVersioningService::class),
+            get(JsonResponder::class)
         ),
     AuditTrailController::class => create(AuditTrailController::class)
-        ->constructor(get(AuditTrailService::class)),
+        ->constructor(
+            get(AuditTrailService::class),
+            get(JsonResponder::class)
+        ),
     DeveloperController::class => create(DeveloperController::class)
         ->constructor(
             get(DeveloperModeGate::class),
             get(DeveloperMode::class),
             get(DeveloperLogger::class),
-            get(TwoFactorInterface::class)
+            get(TwoFactorInterface::class),
+            get(JsonResponder::class)
         ),
     TrashService::class => create(TrashService::class)
         ->constructor(get(FileReaderInterface::class)),
@@ -454,6 +494,7 @@ return [
         ->constructor(
             get(TrashService::class),
             get(ContentIndexService::class),
-            get(ContentRepositoryInterface::class)
+            get(ContentRepositoryInterface::class),
+            get(JsonResponder::class)
         ),
 ];

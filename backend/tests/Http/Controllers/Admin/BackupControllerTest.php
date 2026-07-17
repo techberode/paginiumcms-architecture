@@ -18,8 +18,9 @@ class BackupControllerTest extends TestCase
         $data = $this->getJsonResponse($response);
 
         $this->assertEquals(200, $response->getStatusCode());
-        $this->assertArrayHasKey('backups', $data);
-        $this->assertIsArray($data['backups']);
+        $this->assertTrue($data['success']);
+        $this->assertArrayHasKey('data', $data);
+        $this->assertIsArray($data['data']);
     }
 
     public function testCreateBackup(): void
@@ -35,8 +36,8 @@ class BackupControllerTest extends TestCase
 
         $this->assertEquals(201, $response->getStatusCode());
         $this->assertTrue($data['success']);
-        $this->assertArrayHasKey('backup', $data);
-        $this->assertEquals('Test Backup API', $data['backup']['name']);
+        $this->assertArrayHasKey('data', $data);
+        $this->assertEquals('Test Backup API', $data['data']['name']);
     }
 
     public function testCreateBackupWithoutName(): void
@@ -62,7 +63,7 @@ class BackupControllerTest extends TestCase
         ]);
         $createResponse = $this->handleRequest($createRequest);
         $createData = $this->getJsonResponse($createResponse);
-        $backupId = $createData['backup']['id'] ?? null;
+        $backupId = $createData['data']['id'] ?? null;
 
         $this->assertNotNull($backupId);
 
