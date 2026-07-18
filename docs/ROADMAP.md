@@ -199,13 +199,13 @@ Hotové v **2.0.1** — detail [ITERATION_6.md](ITERATION_6.md).
 - FE: `NavigationManager`, `CommentsManager`, `MessagesViewer`, `GitHubSyncPanel`, public wiring
 - **SEO meta engine** nie je It.9 — doručené v **[Iterácii 23](ITERATION_23.md)** ✅; admin SEO UX → **[Iterácia 27](ITERATION_27.md)** ✅
 
-## Iterácia 10 – XML Feeds (RSS/sitemap) 🚧
+## Iterácia 10 – XML Feeds (RSS/sitemap) ✅
 
-**Stav:** implementácia v [Iterácii 22](ITERATION_22.md) (po It. 21). Pôvodný návrh: [ITERATION_10.md](ITERATION_10.md).
+**Stav (release 2.0.10):** hotové — RSS + sitemap + settings `feeds.*`. Doručené v [Iterácii 22](ITERATION_22.md); pôvodný návrh: [ITERATION_10.md](ITERATION_10.md).
 
-- Generátor `/feed.xml`, `/sitemap.xml` + admin skupina `feeds` v nastaveniach
-- Zdroj: publikovaný obsah z content indexu (It. 19)
-- Verejné routy bez auth; voliteľná cache cez `ContentCacheService`
+- `GET /feed.xml`, `GET /sitemap.xml` z publikovaného content indexu
+- Admin skupina `feeds` v nastaveniach; verejný `<link rel="alternate">`
+- Voliteľná cache cez `ContentCacheService`
 
 ## Iterácia 11 – SSO + jemnozrnné ACL + bezpečnostný audit log ⏳ 🔵
 - SSO (SAML/OAuth) s flat-file konfiguráciou, mapovanie na role.

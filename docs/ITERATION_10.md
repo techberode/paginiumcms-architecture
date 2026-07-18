@@ -1,59 +1,47 @@
 # Iteration 10 – XML Feeds (RSS & Sitemap)
 
-**Status:** In progress (delivered via [Iteration 22](ITERATION_22.md))  
-**Version:** 2.0.10 (target)
+**Status:** ✅ Implemented (delivered in **2.0.10** via [Iteration 22](ITERATION_22.md))  
+**Release:** 2.0.10
 
 ## Summary
 
-Public RSS feed and XML sitemap generated from the flat-file content index, with admin settings for feed metadata and inclusion rules.
+Public RSS feed and XML sitemap generated from the flat-file content index, with admin settings for feed metadata and inclusion rules. Scope was originally planned here; implementation landed in **It. 22** together with trash UI and brute-force lockout.
 
-## Goals
+## Delivered
 
-| Deliverable | Description |
-|-------------|-------------|
-| RSS | `GET /feed.xml` – articles/pages with pubDate, excerpt, link |
-| Sitemap | `GET /sitemap.xml` – published URLs from content index |
-| Settings | Admin group `feeds`: title, description, items limit, include pages/articles |
-| Cache | Optional file cache for generated XML (reuse `ContentCacheService`) |
+| Deliverable | Status |
+|-------------|--------|
+| RSS `GET /feed.xml` | ✅ |
+| Sitemap `GET /sitemap.xml` | ✅ |
+| Settings group `feeds` (title, description, limits, include pages/articles) | ✅ |
+| Public `<link rel="alternate">` in site layout | ✅ |
+| File cache for generated XML (`ContentCacheService`) | ✅ |
 
-## Proposed backend
+## Backend (as shipped)
 
 ```
-Core/Feeds/
-├── Services/FeedGenerator.php
-├── Services/SitemapGenerator.php
-└── Config/services.php
-
+Core/Feeds/Services/FeedGenerator.php
+Core/Feeds/Services/SitemapGenerator.php
 Http/Controllers/Feeds/FeedController.php
 Http/Routes/feeds.php
 ```
 
-## Proposed frontend
+## Tests
 
-- Settings section in `SettingsView` (feeds group)
-- Public site `<link rel="alternate">` in `PublicSiteLayout`
+- `FeedGeneratorTest` – published content only, valid XML
+- HTTP smoke – `GET /feed.xml`, `GET /sitemap.xml` (via application / contract tests)
 
-## Dependencies
+## Dependencies (met)
 
 - ✅ Iteration 19 – content index + published filter
-- ✅ Iteration 23 – SEO meta on public pages (was planned under an older “It.9 SEO” label)
-
-## Tests (planned)
-
-- `FeedGeneratorTest` – only published content, valid XML
-- HTTP smoke – `GET /feed.xml`, `GET /sitemap.xml`
+- ✅ Iteration 23 – SEO meta on public pages
 
 ## Related docs
 
+- [ITERATION_22.md](ITERATION_22.md) – release that shipped It. 10 scope
 - [ROADMAP.md](ROADMAP.md) – Iteration 10
-- [CONTENT_API.md](architecture/CONTENT_API.md) – published filter rules
+- [CHANGELOG.md](../CHANGELOG.md) – `[2.0.10]`
 
-## Implementation track
+## Next (historical)
 
-RSS + sitemap are implemented in **[Iteration 22](ITERATION_22.md)** (after It. 21 API contract).  
-See It. 22 Part 3 for final file layout and routes.
-
-## Next
-
-→ [Iteration 22](ITERATION_22.md) – feeds (this scope)  
 → [Iteration 11](ITERATION_11.md) – SSO and fine-grained ACL

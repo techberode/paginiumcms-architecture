@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | Iteration | Release | Changelog |
 |-----------|---------|-----------|
 | It.6 – Notifications, SMTP, analytics, auth UI | **2.0.1** | [below](#201--2026-07-15) |
+| It.10 – RSS/sitemap feeds (via It.22) | **2.0.10** | [below](#2010--2026-07-17) |
 | It.7 – Scheduled monitoring reports + log incidents | **2.0.17** | [below](#2017--2026-07-18) |
 | It.29 – Cron planner + Job Queue | **2.0.18** | [below](#2018--2026-07-18) |
 | Users admin UI refresh | **2.0.19** | [below](#2019--2026-07-18) |

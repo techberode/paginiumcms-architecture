@@ -23,6 +23,7 @@ use PaginiumCMS\Core\Monitoring\Services\SchedulerStateStore;
 use PaginiumCMS\Core\Notification\NotificationService;
 use PaginiumCMS\Core\Notification\Services\IncidentNotifier;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
+use PaginiumCMS\Tests\Support\IncidentNotifierTestFactory;
 use PaginiumCMS\Core\Scheduler\Handlers\BackupScheduledHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\MonitoringPipelineHandler;
 use PaginiumCMS\Core\Scheduler\Services\CronExpressionEvaluator;
@@ -133,13 +134,13 @@ final class ScheduledJobRunnerTest extends TestCase
         $reportScheduler = new MonitoringReportScheduler(
             $settings,
             $builder,
-            new IncidentNotifier($settings, $this->createMock(NotificationService::class)),
+            IncidentNotifierTestFactory::create($settings, $this->createMock(NotificationService::class)),
             $state
         );
         $logScanner = new LogIncidentScanner(
             $settings,
             $this->createMock(LogWriterInterface::class),
-            new IncidentNotifier($settings, $this->createMock(NotificationService::class)),
+            IncidentNotifierTestFactory::create($settings, $this->createMock(NotificationService::class)),
             $state
         );
 

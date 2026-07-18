@@ -11,8 +11,8 @@ use PaginiumCMS\Core\Logging\Models\LogSeverity;
 use PaginiumCMS\Core\Monitoring\Services\LogIncidentScanner;
 use PaginiumCMS\Core\Monitoring\Services\SchedulerStateStore;
 use PaginiumCMS\Core\Notification\NotificationService;
-use PaginiumCMS\Core\Notification\Services\IncidentNotifier;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
+use PaginiumCMS\Tests\Support\IncidentNotifierTestFactory;
 use PHPUnit\Framework\TestCase;
 
 final class LogIncidentScannerTest extends TestCase
@@ -31,7 +31,7 @@ final class LogIncidentScannerTest extends TestCase
         $scanner = new LogIncidentScanner(
             $settings,
             $writer,
-            new IncidentNotifier($settings, $this->createMock(NotificationService::class)),
+            IncidentNotifierTestFactory::create($settings, $this->createMock(NotificationService::class)),
             $this->makeStateStore()
         );
 
@@ -78,7 +78,7 @@ final class LogIncidentScannerTest extends TestCase
         $scanner = new LogIncidentScanner(
             $settings,
             $writer,
-            new IncidentNotifier($settings, $notifications),
+            IncidentNotifierTestFactory::create($settings, $notifications),
             new SchedulerStateStore($reader, $fileWriter)
         );
 

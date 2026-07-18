@@ -20,6 +20,7 @@ use PaginiumCMS\Core\Monitoring\Services\SchedulerStateStore;
 use PaginiumCMS\Core\Notification\NotificationService;
 use PaginiumCMS\Core\Notification\Services\IncidentNotifier;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
+use PaginiumCMS\Tests\Support\IncidentNotifierTestFactory;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
 use PHPUnit\Framework\TestCase;
 
@@ -76,7 +77,7 @@ final class MonitoringReportSchedulerTest extends TestCase
         $scheduler = new MonitoringReportScheduler(
             $settings,
             $builder,
-            new IncidentNotifier($settings, $notifications),
+            IncidentNotifierTestFactory::create($settings, $notifications),
             $this->makeStateStore()
         );
 
@@ -114,7 +115,7 @@ final class MonitoringReportSchedulerTest extends TestCase
         return new MonitoringReportScheduler(
             $settings,
             new MonitoringReportBuilder($settings, $reporter, $health, $flatFile),
-            new IncidentNotifier($settings, $this->createMock(NotificationService::class)),
+            IncidentNotifierTestFactory::create($settings, $this->createMock(NotificationService::class)),
             $this->makeStateStore()
         );
     }
