@@ -201,7 +201,7 @@ See [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md).
 | 6 | [ITERATION_6.md](ITERATION_6.md) | ✅ Notifications & analytics |
 | 7 | [ITERATION_7.md](ITERATION_7.md) | ✅ Dashboard & monitoring |
 | 8 | [ITERATION_8.md](ITERATION_8.md) | ✅ Media manager FE |
-| 9 | [ITERATION_9.md](ITERATION_9.md) | ✅ Prototype port (nav, comments, …) |
+| 9 | [ITERATION_9.md](ITERATION_9.md) | ✅ Prototype port (nav, comments, contact, GitHub) |
 | 10 | [ITERATION_10.md](ITERATION_10.md) | 🚧 RSS & sitemap → [It. 22](ITERATION_22.md) |
 | 11 | [ITERATION_11.md](ITERATION_11.md) | ⏳ SSO & ACL |
 | 12 | [ITERATION_12.md](ITERATION_12.md) | ⏳ Blueprint engine |
@@ -216,6 +216,7 @@ See [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md).
 | 21 | [ITERATION_21.md](ITERATION_21.md) | ✅ API contract & MSW |
 | 22 | [ITERATION_22.md](ITERATION_22.md) | ✅ Trash UI, lockout, RSS/sitemap |
 | 23 | [ITERATION_23.md](ITERATION_23.md) | ✅ SEO meta engine |
+| 27 | [ITERATION_27.md](ITERATION_27.md) | ⏳ Admin view modes + SEO panel (next) |
 
 ---
 

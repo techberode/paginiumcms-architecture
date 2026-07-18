@@ -36,7 +36,7 @@ Http/Routes/feeds.php
 ## Dependencies
 
 - ✅ Iteration 19 – content index + published filter
-- ⏳ Iteration 9 – SEO meta (optional enrichment of feed items)
+- ✅ Iteration 23 – SEO meta on public pages (was planned under an older “It.9 SEO” label)
 
 ## Tests (planned)
 

@@ -88,5 +88,5 @@ No nginx changes required — SEO uses existing `/api/*` proxy. After deploy, ve
 ## Related
 
 - [ITERATION_22.md](ITERATION_22.md) — feeds/sitemap
-- [ROADMAP.md](ROADMAP.md) — It. 9 SEO track
+- [ROADMAP.md](ROADMAP.md) — iteration map (It.9 = prototype port; SEO = It.23 + admin UX It.27)
 - [CHANGELOG.md](../CHANGELOG.md) — `[2.0.11]` on release

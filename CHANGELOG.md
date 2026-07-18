@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [2.0.15] – Unreleased (docs)
+
+### Documentation
+
+- Complete English spec for [Iteration 9](docs/ITERATION_9.md) (prototype port — nav, comments, contact, GitHub)
+- Complete English spec for [Iteration 27](docs/ITERATION_27.md) (admin view modes + SEO panel)
+- Fix [ROADMAP.md](docs/ROADMAP.md): It.9 = prototype port; SEO engine = It.23; admin SEO UX = It.27
+
+---
+
 ## [2.0.14] – 2026-07-18
 
 ### Hotfix – Media preview display and strict format validation

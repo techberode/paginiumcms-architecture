@@ -1,9 +1,11 @@
 # PaginiumCMS – Backlog iterácií (27+)
 
-> Plánované moduly a rozšírenia po **Iterácii 26** (2.0.13).  
+> Plánované moduly a rozšírenia po **Iterácii 26 / hotfix 2.0.14**.  
 > Legenda: ⏳ plánované · 🟡 stredná priorita · 🔵 nižšia · 🔴 kritická
 
-**Aktuálne hotové:** It.1–24 ✅ · It.26 ✅ · It.25 ⏳ (setup wizard — odložené)
+**Aktuálne hotové:** It.1–24 ✅ · It.26 ✅ (2.0.13–2.0.14) · It.25 ⏳ (setup wizard — odložené)
+
+**Ďalšia iterácia:** [It.27 – Admin view modes + SEO panel](ITERATION_27.md)
 
 ---
 
@@ -12,34 +14,47 @@
 | It. | Verzia | Názov | Priorita | Poznámka |
 |-----|--------|-------|----------|----------|
 | 25 | TBD | [Setup wizard](ITERATION_25.md) | 🟡 | Odložené — téma cez Settings |
-| 26 | 2.0.13 | [Media preview lightbox](ITERATION_26.md) | ✅ | Fit + 1:1 náhľad |
-| **27** | TBD | **Bulk actions (platform)** | 🟡 | Hromadné akcie naprieč adminom |
-| **28** | TBD | **Job Queue / Background Worker** | 🔵 | Dlhé úlohy mimo requestu |
-| **29** | TBD | **Contextual Actions** | 🟡 | Akcie podľa kontextu (content, media, user) |
-| **30** | TBD | **Live Preview** | 🟡 | Náhľad stránky/článku pred publikovaním |
-| **31** | TBD | **React chunking + PHP OPcache** | 🔵 | Výkon FE/BE |
-| **32** | TBD | **Analytics: GeoIP, zariadenie, referrer** | 🟡 | Rozšírenie `Analytics/*` |
-| **33** | TBD | **System overview (PHP + FE engine)** | 🟡 | Dashboard verzií stacku |
-| **34** | TBD | **Flat-File Inspector** | 🟡 | Prehliadač súborov na disku |
-| **35** | TBD | **Pagination (admin + verejný obsah)** | 🟡 | Stránkovanie zoznamov |
-| **36** | TBD | **Inline edit na FE po prihlásení** | 🟡 | Tlačidlá „Upraviť“ na verejnom webe |
-| **37** | TBD | **Feature flags (FE moduly on/off)** | 🟡 | Settings skupina `features.*` |
-| **38** | TBD | **Komentáre: schvaľovanie rolou + hostia** | 🟡 | Role-based approve, guest toggle |
-| **39** | TBD | **Section FileManager (scoped DAM)** | 🟡 | Priečinky + práva per sekcia |
+| 26 | 2.0.14 | [Media preview + binárny hotfix](ITERATION_26.md) | ✅ | Lightbox + strict formats |
+| **27** | TBD | **[Admin view modes + SEO panel](ITERATION_27.md)** | **🟡 ďalšia** | List / list+preview / grid + SEO UX |
+| **28** | TBD | **Bulk actions (platform)** | 🟡 | Hromadné akcie naprieč adminom |
+| **29** | TBD | **Job Queue / Background Worker** | 🔵 | Dlhé úlohy mimo requestu |
+| **30** | TBD | **Contextual Actions** | 🟡 | Akcie podľa kontextu (content, media, user) |
+| **31** | TBD | **Live Preview** | 🟡 | Náhľad stránky/článku pred publikovaním |
+| **32** | TBD | **React chunking + PHP OPcache** | 🔵 | Výkon FE/BE |
+| **33** | TBD | **Analytics: GeoIP, zariadenie, referrer** | 🟡 | Rozšírenie `Analytics/*` |
+| **34** | TBD | **System overview (PHP + FE engine)** | 🟡 | Dashboard verzií stacku |
+| **35** | TBD | **Flat-File Inspector** | 🟡 | Prehliadač súborov na disku |
+| **36** | TBD | **Pagination (admin + verejný obsah)** | 🟡 | Stránkovanie zoznamov |
+| **37** | TBD | **Inline edit na FE po prihlásení** | 🟡 | Tlačidlá „Upraviť“ na verejnom webe |
+| **38** | TBD | **Feature flags (FE moduly on/off)** | 🟡 | Settings skupina `features.*` |
+| **39** | TBD | **Komentáre: schvaľovanie rolou + hostia** | 🟡 | Role-based approve, guest toggle |
+| **40** | TBD | **Section FileManager (scoped DAM)** | 🟡 | Priečinky + práva per sekcia |
 
 ---
 
-## Iterácia 27 – Bulk actions (platform) ⏳
+## Iterácia 27 – Admin view modes + SEO panel ⏳ **← next**
+
+Display modes in admin SPA and SEO metadata workflow. **Full spec (English):** [ITERATION_27.md](ITERATION_27.md)
+
+- **View modes:** `list` · `list-preview` · `preview` (grid) — Media, Articles, Pages
+- **SEO panel:** alt, tags, meta description, OG image, robots, canonical
+- **SEO health:** badge + filter for missing fields in lists
+- Builds on `SeoMetaBuilder` (It.23) and DAM sidecar (It.24)
+
+---
+
+## Iterácia 28 – Bulk actions (platform) ⏳
 
 Hromadné operácie nad viacerými entitami v administrácii (nie len Media Library).
 
 - Unified `BulkActionBar` pattern (content, users, trash, comments)
 - Backend batch endpointy s ACL
 - **Media bulk delete** už existuje (It.24) — zovšeobecniť
+- Bulk SEO patch (doplnenie meta polí) — naviazané na It.27
 
 ---
 
-## Iterácia 28 – Job Queue / Background Worker ⏳
+## Iterácia 29 – Job Queue / Background Worker ⏳
 
 - Flat-file alebo Redis fronta úloh
 - Worker CLI / cron: stock import batch, backup, index rebuild
@@ -47,7 +62,7 @@ Hromadné operácie nad viacerými entitami v administrácii (nie len Media Libr
 
 ---
 
-## Iterácia 29 – Contextual Actions ⏳
+## Iterácia 30 – Contextual Actions ⏳
 
 Kontextové menu / toolbar podľa miesta v admin SPA (stránka obsahu, media grid, audit log).
 
@@ -55,7 +70,7 @@ Kontextové menu / toolbar podľa miesta v admin SPA (stránka obsahu, media gri
 
 ---
 
-## Iterácia 30 – Live Preview ⏳
+## Iterácia 31 – Live Preview ⏳
 
 Náhľad publikovanej stránky bez opustenia editora.
 
@@ -64,14 +79,14 @@ Náhľad publikovanej stránky bez opustenia editora.
 
 ---
 
-## Iterácia 31 – React chunking + PHP OPcache ⏳
+## Iterácia 32 – React chunking + PHP OPcache ⏳
 
 **Frontend:** route-based code splitting, lazy admin routes  
 **Backend:** OPcache preload config, dokumentácia deploy
 
 ---
 
-## Iterácia 32 – Analytics enrichment ⏳
+## Iterácia 33 – Analytics enrichment ⏳
 
 Rozšírenie existujúceho `Core/Analytics/`:
 
@@ -84,7 +99,7 @@ Rozšírenie existujúceho `Core/Analytics/`:
 
 ---
 
-## Iterácia 33 – System overview ⏳
+## Iterácia 34 – System overview ⏳
 
 Admin panel: PHP verzia, OPcache stav, Vite/React build info, PaginiumCMS verzia, disk usage.
 
@@ -92,7 +107,7 @@ Admin panel: PHP verzia, OPcache stav, Vite/React build info, PaginiumCMS verzia
 
 ---
 
-## Iterácia 34 – Flat-File Inspector ⏳
+## Iterácia 35 – Flat-File Inspector ⏳
 
 Prehliadač `storage/app/content/` s read-only režimom a DEV unlock pre zápis.
 
@@ -100,14 +115,14 @@ Prehliadač `storage/app/content/` s read-only režimom a DEV unlock pre zápis.
 
 ---
 
-## Iterácia 35 – Pagination ⏳
+## Iterácia 36 – Pagination ⏳
 
 - Admin zoznamy (content, users, audit, media) — server-side `page` + `limit`
 - Verejný blog/pages — už čiastočne It.19; dorobiť FE + API kontrakt
 
 ---
 
-## Iterácia 36 – Frontend inline editing ⏳
+## Iterácia 37 – Frontend inline editing ⏳
 
 Po prihlásení editor/admin na verejnom webe:
 
@@ -116,7 +131,7 @@ Po prihlásení editor/admin na verejnom webe:
 
 ---
 
-## Iterácia 37 – Feature flags (FE modules) ⏳
+## Iterácia 38 – Feature flags (FE modules) ⏳
 
 Všetky voliteľné FE funkcie zapínateľné v administrácii.
 
@@ -125,7 +140,7 @@ Všetky voliteľné FE funkcie zapínateľné v administrácii.
 
 ---
 
-## Iterácia 38 – Komentáre: moderácia + hostia ⏳
+## Iterácia 39 – Komentáre: moderácia + hostia ⏳
 
 - Schválenie komentára rolou (EDITOR vs ADMIN)
 - `comments.allowGuestComments` — už v schéme, dorobiť FE + enforcement
@@ -133,7 +148,7 @@ Všetky voliteľné FE funkcie zapínateľné v administrácii.
 
 ---
 
-## Iterácia 39 – Section FileManager ⏳
+## Iterácia 40 – Section FileManager ⏳
 
 Jednotný alebo per-sekcia správca súborov (blog/media, pages/assets, …).
 
@@ -145,12 +160,13 @@ Jednotný alebo per-sekcia správca súborov (blog/media, pages/assets, …).
 ## Odporúčané poradie implementácie
 
 ```
-It.26 ✅ → It.35 (pagination) → It.37 (feature flags)
-         → It.38 (komentáre) → It.36 (inline FE edit)
-         → It.32 (analytics) → It.33 (system overview)
-         → It.34 (inspector) → It.39 (section FileManager)
-         → It.27 (bulk platform) → It.28 (jobs) → It.29 (contextual) → It.30 (live preview)
-         → It.31 (performance)
+It.26/2.0.14 ✅ → It.27 (view modes + SEO panel) ← ďalšia
+                → It.36 (pagination) → It.38 (feature flags)
+                → It.39 (komentáre) → It.37 (inline FE edit)
+                → It.33 (analytics) → It.34 (system overview)
+                → It.35 (inspector) → It.40 (section FileManager)
+                → It.28 (bulk platform) → It.29 (jobs) → It.30 (contextual) → It.31 (live preview)
+                → It.32 (performance)
 ```
 
 ---
@@ -158,5 +174,6 @@ It.26 ✅ → It.35 (pagination) → It.37 (feature flags)
 ## Súvisiace dokumenty
 
 - [ROADMAP.md](ROADMAP.md) — hlavná mapa It.1–24
+- [ITERATION_27.md](ITERATION_27.md) — **ďalšia iterácia**
 - [ITERATION_24.md](ITERATION_24.md) — DAM v1 + stock knižnica
-- [ITERATION_26.md](ITERATION_26.md) — media lightbox
+- [ITERATION_26.md](ITERATION_26.md) — media lightbox + 2.0.14 hotfix
