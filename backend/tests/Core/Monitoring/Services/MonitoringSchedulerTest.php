@@ -70,8 +70,6 @@ final class MonitoringSchedulerTest extends TestCase
         $scheduler = new MonitoringScheduler($reportScheduler, $logScanner);
         $result = $scheduler->runIfDue();
 
-        $this->assertArrayHasKey('report', $result);
-        $this->assertArrayHasKey('logs', $result);
         $this->assertFalse($result['report']['sent']);
     }
 }

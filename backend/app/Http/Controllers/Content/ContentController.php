@@ -719,11 +719,6 @@ class ContentController
         return $this->auth->isAuthenticated();
     }
 
-    private function canViewContent(ServerRequestInterface $request, Content $content): bool
-    {
-        return $this->canViewPayload($request, ['status' => $content->getStatus()]);
-    }
-
     /**
      * @param array<int|string, mixed> $payload
      */

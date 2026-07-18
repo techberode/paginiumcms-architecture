@@ -27,10 +27,11 @@ final class BackupScheduledHandler implements JobHandlerInterface
     public function handle(array $payload = []): JobRunResult
     {
         $result = $this->backups->runScheduledBackupIfDue();
+        $ran = (bool) $result['ran'];
 
         return new JobRunResult(
-            (bool) ($result['ran'] ?? false),
-            (bool) ($result['ran'] ?? false) ? 'Backup created' : 'Backup not due',
+            $ran,
+            $ran ? 'Backup created' : 'Backup not due',
             $result,
             isset($result['reason']) ? (string) $result['reason'] : null
         );

@@ -17,7 +17,7 @@ final class Reporter implements ReporterInterface
     }
 
     /**
-     * @return array<int|string, mixed>
+     * @return array<string, mixed>
      */
     public function getOverview(string $period = 'today'): array
     {
@@ -37,7 +37,7 @@ final class Reporter implements ReporterInterface
     }
 
     /**
-     * @return array<int|string, mixed>
+     * @return list<array{uri: string, views: int}>
      */
     public function getTopPages(int $limit = 10, string $period = 'today'): array
     {
@@ -57,7 +57,7 @@ final class Reporter implements ReporterInterface
     }
 
     /**
-     * @return array<int|string, mixed>
+     * @return list<array{referer: string, visits: int}>
      */
     public function getTopReferers(int $limit = 10, string $period = 'today'): array
     {
@@ -80,7 +80,7 @@ final class Reporter implements ReporterInterface
     }
 
     /**
-     * @return array<int|string, mixed>
+     * @return array<string, int>
      */
     public function getDeviceStats(string $period = 'today'): array
     {
@@ -98,7 +98,7 @@ final class Reporter implements ReporterInterface
     }
 
     /**
-     * @return array<int|string, mixed>
+     * @return list<array{country: string, visits: int}>
      */
     public function getGeoStats(string $period = 'today'): array
     {
@@ -118,7 +118,7 @@ final class Reporter implements ReporterInterface
     }
 
     /**
-     * @return array<int|string, mixed>
+     * @return list<array<string, mixed>>
      */
     public function getDailyChart(int $days = 30): array
     {

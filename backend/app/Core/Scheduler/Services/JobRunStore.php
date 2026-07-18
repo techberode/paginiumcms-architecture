@@ -84,14 +84,23 @@ final class JobRunStore
      */
     private function allRuns(): array
     {
-        $state = $this->load();
-        $runs = $state['runs'] ?? [];
+        $runs = $this->load()['runs'] ?? [];
+        if (!is_array($runs)) {
+            return [];
+        }
 
-        return is_array($runs) ? $runs : [];
+        $normalized = [];
+        foreach ($runs as $run) {
+            if (is_array($run)) {
+                $normalized[] = $run;
+            }
+        }
+
+        return $normalized;
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<int|string, mixed>
      */
     private function load(): array
     {
@@ -102,7 +111,7 @@ final class JobRunStore
         try {
             $decoded = JsonHelper::decode($this->reader->read(self::RUNS));
 
-            return is_array($decoded) ? $decoded : ['retain' => 200, 'runs' => []];
+            return isset($decoded['runs']) && is_array($decoded['runs']) ? $decoded : ['retain' => 200, 'runs' => []];
         } catch (\Throwable) {
             return ['retain' => 200, 'runs' => []];
         }

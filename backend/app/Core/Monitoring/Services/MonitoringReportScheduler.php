@@ -57,17 +57,17 @@ final class MonitoringReportScheduler
     }
 
     /**
-     * @return array{sent: bool, reason?: string, connector?: string}
+     * @return array{sent: bool, connector: string, reason?: string}
      */
     public function runIfDue(bool $force = false): array
     {
         if (!$force && !$this->isDue()) {
-            return ['sent' => false, 'reason' => 'not_due'];
+            return ['sent' => false, 'connector' => '', 'reason' => 'not_due'];
         }
 
         $monitoring = $this->settings->group('monitoring');
         if (!(bool) ($monitoring['reportsEnabled'] ?? false) && !$force) {
-            return ['sent' => false, 'reason' => 'disabled'];
+            return ['sent' => false, 'connector' => '', 'reason' => 'disabled'];
         }
 
         $interval = (string) ($monitoring['reportInterval'] ?? 'day');
@@ -85,12 +85,17 @@ final class MonitoringReportScheduler
 
         if ($delivery['sent']) {
             $this->state->setLastReportAt(date('c'));
+
+            return [
+                'sent' => true,
+                'connector' => $connector,
+            ];
         }
 
         return [
-            'sent' => (bool) $delivery['sent'],
+            'sent' => false,
             'connector' => $connector,
-            'reason' => $delivery['reason'] ?? ($delivery['sent'] ? null : 'delivery_failed'),
+            'reason' => $delivery['reason'] ?? 'delivery_failed',
         ];
     }
 

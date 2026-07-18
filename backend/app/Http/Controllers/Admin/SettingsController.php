@@ -126,8 +126,8 @@ final class SettingsController
     }
 
     /**
-     * @param array<int|string, mixed> $payload
-     * @return array<int|string, mixed>
+     * @param array<string, mixed> $payload
+     * @return array<string, mixed>
      */
     private function stripMaskedSecrets(string $group, array $payload): array
     {
@@ -167,12 +167,22 @@ final class SettingsController
     }
 
     /**
-     * @return array<int|string, mixed>
+     * @return array<string, mixed>
      */
     private function parseJsonBody(ServerRequestInterface $request): array
     {
         $data = json_decode((string) $request->getBody(), true);
+        if (!is_array($data)) {
+            return [];
+        }
 
-        return is_array($data) ? $data : [];
+        $payload = [];
+        foreach ($data as $key => $value) {
+            if (is_string($key)) {
+                $payload[$key] = $value;
+            }
+        }
+
+        return $payload;
     }
 }

@@ -39,8 +39,8 @@ final class FileBackup
 
     /**
      * @return list<string>
- * @return array<int|string, mixed>
- */public function getBackups(string $path): array
+     */
+    public function getBackups(string $path): array
     {
         $pattern = $this->backupPath . '/' . md5($path) . '_*.bak';
         $files = glob($pattern) ?: [];

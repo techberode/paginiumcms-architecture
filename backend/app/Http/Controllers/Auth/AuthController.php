@@ -208,17 +208,24 @@ class AuthController
                     ['html' => $body, 'event' => 'auth.password_reset']
                 );
 
-                return $this->json->respond($response, [
+                $payload = [
                     'success' => true,
                     'message' => 'If the account exists, a reset link was sent by email.',
-                ]);
+                ];
+                $appEnv = getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? '');
+                if ($appEnv === 'development' || $appEnv === 'testing') {
+                    $payload['token'] = $token;
+                }
+
+                return $this->json->respond($response, $payload);
             }
 
             $payload = [
                 'success' => true,
                 'message' => 'Reset token generated (SMTP not configured)',
             ];
-            if (getenv('APP_ENV') === 'development' || getenv('APP_ENV') === 'testing') {
+            $appEnv = getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? '');
+            if ($appEnv === 'development' || $appEnv === 'testing') {
                 $payload['token'] = $token;
             }
 

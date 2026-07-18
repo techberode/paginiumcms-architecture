@@ -107,6 +107,9 @@ final class IncidentNotifier
         $this->notify('audit.security', 'Security: ' . $action, $details, $severity);
     }
 
+    /**
+     * @param array<string, mixed> $extraOptions
+     */
     public function notifyViaConnector(
         string $connector,
         string $event,
@@ -159,13 +162,21 @@ final class IncidentNotifier
                 }
             }
 
-            return ['sent' => $any, 'reason' => $any ? null : 'delivery_failed'];
+            if ($any) {
+                return ['sent' => true];
+            }
+
+            return ['sent' => false, 'reason' => 'delivery_failed'];
         }
 
         try {
             $sent = $this->notifications->send($connector, $to, $subject, $message, $options);
 
-            return ['sent' => $sent, 'reason' => $sent ? null : 'delivery_failed'];
+            if ($sent) {
+                return ['sent' => true];
+            }
+
+            return ['sent' => false, 'reason' => 'delivery_failed'];
         } catch (\Throwable) {
             return ['sent' => false, 'reason' => 'delivery_failed'];
         }

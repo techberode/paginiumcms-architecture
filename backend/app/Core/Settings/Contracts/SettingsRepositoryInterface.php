@@ -17,14 +17,16 @@ interface SettingsRepositoryInterface
     /**
      * Všetky efektívne nastavenia po skupinách.
      *
-     * @return array<string, array<int|string, mixed>>
- */public function all(): array;
+     * @return array<string, array<string, mixed>>
+     */
+    public function all(): array;
 
     /**
      * Efektívne nastavenia jednej skupiny.
      *
-     * @return array<int|string, mixed>
- */public function group(string $group): array;
+     * @return array<string, mixed>
+     */
+    public function group(string $group): array;
 
     /**
      * Získa jednu hodnotu bodkovou notáciou `skupina.pole` (alebo celú skupinu).
@@ -34,11 +36,12 @@ interface SettingsRepositoryInterface
     /**
      * Zvaliduje a uloží hodnoty skupiny; vráti efektívny stav skupiny.
      *
-     * @param array<int|string, mixed> $values
-     * @return array<int|string, mixed>
+     * @param array<string, mixed> $values
+     * @return array<string, mixed>
      * @throws \PaginiumCMS\Core\Validation\ValidationException
      * @throws \InvalidArgumentException Ak skupina nie je v schéme.
- */public function setGroup(string $group, array $values): array;
+     */
+    public function setGroup(string $group, array $values): array;
 
     /**
      * Zahodí uložené odchýlky – vráti všetko na predvolené hodnoty.

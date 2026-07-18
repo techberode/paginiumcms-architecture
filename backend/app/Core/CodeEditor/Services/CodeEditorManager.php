@@ -17,7 +17,6 @@ final class CodeEditorManager implements CodeEditorInterface
     private string $projectRoot;
 
     /** @var list<string> */
-    /** @var array<int|string, mixed> */
     private array $allowedPaths = [
         'backend/app/Modules',
         'backend/app/Http/Extensions',
@@ -26,7 +25,6 @@ final class CodeEditorManager implements CodeEditorInterface
     ];
 
     /** @var list<string> */
-    /** @var array<int|string, mixed> */
     private array $forbiddenPaths = [
         'backend/app/Core',
         'backend/bootstrap',

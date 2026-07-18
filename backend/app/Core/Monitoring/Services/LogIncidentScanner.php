@@ -44,10 +44,6 @@ final class LogIncidentScanner
         $notifiedCount = 0;
 
         foreach ($entries as $entry) {
-            if (!is_array($entry)) {
-                continue;
-            }
-
             $id = (string) ($entry['id'] ?? '');
             if ($id === '' || isset($alreadyNotified[$id])) {
                 continue;
