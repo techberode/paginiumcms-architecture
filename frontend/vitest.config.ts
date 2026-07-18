@@ -1,4 +1,3 @@
-/// <reference types="vitest/config" />
 // frontend/vitest.config.ts
 // DOM prostredie: happy-dom (nie jsdom) – rýchlejší štart testov.
 import { defineConfig } from 'vitest/config';

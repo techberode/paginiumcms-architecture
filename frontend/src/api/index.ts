@@ -29,6 +29,15 @@ export * from './notifications';
 export * from './github';
 export * from './versions';
 
+// Niektoré názvy typov definuje viac modulov. Explicitný re-export má prednosť
+// pred `export *` a jednoznačne určuje kanonický zdroj pre barrel `../api`.
+export type { MediaFile } from './media';
+export type { NavigationItem } from './navigation';
+export type { ContentType } from './content';
+export type { RealtimeSnapshot } from './analytics';
+export type { AnalyticsOverview } from './analytics';
+export type { TopPage } from './analytics';
+
 import { authApi } from './auth';
 import { contentApi } from './content';
 import { userApi } from './user';

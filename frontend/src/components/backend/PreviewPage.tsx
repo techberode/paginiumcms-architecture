@@ -24,7 +24,7 @@ export const PreviewPage: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await get<{ success: boolean; data: Page }>(`/api/pages/${slug}`);
+        const response = await get<Page>(`/api/pages/${slug}`);
         if (!cancelled) {
           setPage(response.data ?? null);
         }

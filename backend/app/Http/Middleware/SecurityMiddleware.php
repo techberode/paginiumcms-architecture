@@ -26,7 +26,10 @@ final class SecurityMiddleware implements MiddlewareInterface
         $this->config = array_merge([
             'hsts_max_age' => 31536000,
             'csp_default' => "default-src 'self'",
-            'csp_script' => "script-src 'self' 'unsafe-inline'",
+            // script-src bez 'unsafe-inline' – Vite build servíruje len externé
+            // module skripty, takže inline skripty nie sú potrebné (tvrdšia XSS ochrana).
+            'csp_script' => "script-src 'self'",
+            // style-src ponecháva 'unsafe-inline' kvôli inline style atribútom (React/knižnice).
             'csp_style' => "style-src 'self' 'unsafe-inline'",
             'csp_img' => "img-src 'self' data: https:",
             'csp_font' => "font-src 'self' data:",

@@ -68,6 +68,9 @@ export interface PublicSettings {
     toastDuration: number;
     toastDebugMode: boolean;
   };
+  feeds?: {
+    enabled?: boolean;
+  } & Record<string, unknown>;
 }
 
 export async function getPublicSettings(): Promise<PublicSettings | null> {

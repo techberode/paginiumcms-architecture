@@ -41,12 +41,10 @@ function isNumericField(rules: Rule[]): boolean {
   return rules.includes('int') || rules.includes('number');
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function isUrl(value: string): boolean {
   try {
-    // eslint-disable-next-line no-new
     new URL(value);
     return true;
   } catch {

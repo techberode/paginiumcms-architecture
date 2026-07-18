@@ -17,6 +17,70 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | Code Editor, 2FA UX, developer unlock fixes | **2.0.21** | [below](#2021--2026-07-18) |
 | It.16 – Code Editor create/delete/restore | **2.0.22** | [below](#2022--2026-07-18) |
 | Content SEO media picker + blog preview fix | **2.0.23** | [below](#2023--2026-07-18) |
+| Post-audit security hardening (S1/S2/S4/S5) + FE type-check/lint | **Unreleased** | [below](#unreleased--security-hardening-2026-07-18) |
+
+---
+
+## [Unreleased] — Security hardening (2026-07-18)
+
+Post-audit fixes focused on real, exploitable issues plus the previously missing
+frontend type/lint safety net.
+
+### Security
+
+- **Account enumeration on password reset (S1).** `POST /api/auth/reset-password`
+  now always returns the same generic response (`"If the account exists, a reset
+  link was sent by email."`) regardless of whether the account exists. Unknown
+  accounts and mailing failures no longer change the response and are logged as
+  suspicious activity. The reset token is never returned outside `development`/
+  `testing`.
+- **Reset tokens stored in plaintext (S4).** `UserRepository` now stores only a
+  SHA-256 hash of the reset token (`resetTokenHash`) instead of the raw token and
+  verifies it with a timing-safe `hash_equals()`. Legacy plaintext `resetToken`
+  fields are migrated away on save/clear.
+- **Stored XSS via SVG media (S2).** `MediaController::serveFile` serves SVG, HTML
+  and XML media as `Content-Disposition: attachment` with
+  `X-Content-Type-Options: nosniff` and `Content-Security-Policy: sandbox; default-src 'none'`.
+  Raster images are still served `inline`.
+- **Content Security Policy (S5).** Removed `'unsafe-inline'` from `script-src` in
+  both `SecurityMiddleware` defaults and `bootstrap/app.php` (the Vite build ships
+  only external module scripts). `style-src 'unsafe-inline'` is retained for React
+  inline style attributes.
+
+### Added
+
+- Frontend type-safety and linting toolchain that was previously missing:
+  `frontend/tsconfig.json`, `frontend/tsconfig.node.json`,
+  `frontend/eslint.config.js` (ESLint v9 flat config) and
+  `frontend/src/vite-env.d.ts`.
+- CI runs `npm run type-check` and `npm run lint` for the frontend so type and lint
+  regressions are caught (`.github/workflows/ci.yml`).
+
+### Fixed
+
+- Resolved 38 pre-existing TypeScript errors surfaced by the newly enabled
+  `type-check` (untyped `import.meta.env`, missing `turndown` module declaration,
+  ambiguous duplicate type re-exports in `src/api/index.ts`, `useApi().delete` vs
+  `del` destructuring, a latent `resolvePreviewPath` bug passing `'pages'|'articles'`
+  where `'page'|'article'` was expected, a self-referential `MessageTree` type, and
+  the missing `PublicSettings.feeds` field).
+- Cleared all ESLint errors (Node globals for config/scripts, removed a redundant
+  triple-slash reference and stale `eslint-disable` directives). `type-check` and
+  `lint` both pass with zero errors.
+
+### Notes
+
+- **CSRF enforcement (S3) is intentionally deferred.** The current CSRF token is
+  single-use (`requireValidToken` clears it after verification), so global
+  enforcement would break the SPA (which reuses one token from `localStorage`) and
+  the HTTP test suite. `SameSite=Lax` cookies already mitigate CSRF; a proper
+  synchronizer-token rollout requires coordinated frontend, backend and test changes.
+
+### Verification
+
+- Backend: PHPStan level 8 clean, PHPUnit 569 passing (15 pre-existing skips).
+- Frontend: Vitest 130 passing, MSW suite 4 passing, `type-check` and `lint` clean,
+  production build succeeds with no inline scripts (compatible with the tightened CSP).
 
 ---
 
