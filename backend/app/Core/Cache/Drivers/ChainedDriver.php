@@ -64,9 +64,9 @@ class ChainedDriver implements DriverInterface
 
     public function increment(string $key, int $step = 1, ?int $ttl = null): int
     {
-        $current = (int) $this->get($key, 0);
-        $new = $current + $step;
-        $this->set($key, $new, $ttl);
+        // File je autoritatívny zdroj – RAM môže mať zastaranú generáciu.
+        $new = $this->file->increment($key, $step, $ttl);
+        $this->memory->set($key, $new, $ttl);
 
         return $new;
     }

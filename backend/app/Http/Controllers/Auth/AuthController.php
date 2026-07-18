@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Controllers\Auth;
 
 use PaginiumCMS\Core\Notification\NotificationService;
-use PaginiumCMS\Core\Notification\Services\IncidentNotifier;
 use PaginiumCMS\Core\Security\SecurityLogger;
 use PaginiumCMS\Core\Security\Services\LoginAttemptTracker;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
@@ -30,7 +29,6 @@ class AuthController
         private UserRepository $userRepository,
         private SettingsRepositoryInterface $settings,
         private NotificationService $notifications,
-        private IncidentNotifier $incidentNotifier,
         private LoginAttemptTracker $loginAttempts,
         private SecurityLogger $securityLogger,
         private JsonResponder $json
@@ -82,7 +80,6 @@ class AuthController
             ]);
         } catch (\Exception $e) {
             $this->securityLogger->recordFailedLogin($ip, $email);
-            $this->incidentNotifier->notifyFailedLogin($email, $ip);
 
             return $this->json->error($response, $e->getMessage(), 401);
         }

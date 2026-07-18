@@ -1,13 +1,5 @@
 // frontend/src/components/backend/MarkdownEditor.tsx
-// === Editor obsahu (Iterácia 2 + 3 – integrácia) ===
-// Zapája:
-//  - LockIndicator + zamykanie (Iterácia 1): kým súbor upravuje niekto iný, editor je uzamknutý,
-//  - useAutoSave: každých 60 s ukladá koncept (draft flat-file),
-//  - optimistické zamykanie: pri uložení posiela baseRevision; pri 409 konflikte,
-//  - 3-way merge (Iterácia 3): pri 409 sa pokúsi o automatické zlúčenie; ak nastane
-//    konflikt riadkov, otvorí ConflictResolver na manuálne rozhodnutie,
-//  - commit správu: voliteľný popis zmeny ukladaný k verzii.
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApi } from '../../hooks/useApi';
 import { useToast } from '../../hooks/useToast';
@@ -16,17 +8,33 @@ import { LockIndicator } from '../locking/LockIndicator';
 import { ConflictResolver } from '../versioning/ConflictResolver';
 import { merge3, assembleMerged } from '../../utils/merge3';
 import { loadDraft, discardDraft, type ContentType } from '../../api/drafts';
-import { WysiwygEditor } from './WysiwygEditor';
+import { getNavigation } from '../../api/navigation';
+import { WysiwygEditor, WysiwygEditorHandle } from './WysiwygEditor';
+import { MarkdownContentEditor } from './MarkdownContentEditor';
 import { MediaPickerModal } from './MediaPickerModal';
 import { VersionHistory } from '../CodeEditor/VersionHistory';
 import { useSettingsContext } from '../../context/SettingsContext';
-import { SeoMetadataPanel, type SeoFormValues } from './SeoMetadataPanel';
+import { ContentEditorShell } from './ContentEditorShell';
+import { type SeoFormValues } from './SeoMetadataPanel';
+import {
+  type ContentFormat,
+  type EditorMode,
+  convertForModeSwitch,
+  inferContentFormat,
+  storagePayloadFromEditor,
+  valueForEditorMode,
+} from '../../utils/contentEditor';
+import {
+  findNavigationMatches,
+  resolvePublicPath,
+  resolveStoragePath,
+  slugifyTitle,
+} from '../../utils/contentEditorMeta';
 
 interface MarkdownEditorProps {
   type?: ContentType;
 }
 
-// Stav konfliktu pre 3-way merge (base = pôvodne načítané, mine = moje, theirs = server).
 interface ConflictState {
   base: string;
   mine: string;
@@ -39,24 +47,26 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
   const navigate = useNavigate();
 
   const [title, setTitle] = useState('');
+  const [editSlug, setEditSlug] = useState('');
+  const [slugTouched, setSlugTouched] = useState(false);
+  const [template, setTemplate] = useState('');
+  const [storagePath, setStoragePath] = useState('');
   const [content, setContent] = useState('');
-  // Pôvodne načítaný obsah (spoločný predok pre 3-way merge).
   const [baseContent, setBaseContent] = useState('');
   const [status, setStatus] = useState<'draft' | 'published' | 'archived'>('draft');
   const [commitMessage, setCommitMessage] = useState('');
   const [baseRevision, setBaseRevision] = useState('');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-
-  // Zámok: kým súbor drží niekto iný, canEdit = false.
   const [canEdit, setCanEdit] = useState(true);
-  // Konflikt (409) vyžadujúci manuálne riešenie cez ConflictResolver.
   const [conflict, setConflict] = useState<ConflictState | null>(null);
-  // Neuložený koncept nájdený pri načítaní.
   const [pendingDraftAt, setPendingDraftAt] = useState<number | null>(null);
-  const [editorMode, setEditorMode] = useState<'markdown' | 'wysiwyg'>('markdown');
+  const [editorMode, setEditorMode] = useState<EditorMode>('markdown');
+  const [contentFormat, setContentFormat] = useState<ContentFormat>('markdown');
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
-  const [panelTab, setPanelTab] = useState<'content' | 'seo'>('content');
+  const [seoOpen, setSeoOpen] = useState(false);
+  const [navigationItems, setNavigationItems] = useState<Awaited<ReturnType<typeof getNavigation>>>([]);
+  const wysiwygRef = useRef<WysiwygEditorHandle>(null);
   const [seo, setSeo] = useState<SeoFormValues>({
     seoTitle: '',
     seoDescription: '',
@@ -72,8 +82,8 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
   const isNew = slug === 'new' || !slug;
   const endpoint = type === 'article' ? '/api/articles' : '/api/pages';
   const resourceId = useMemo(() => `${type}:${slug ?? ''}`, [type, slug]);
+  const storageFormat = settings.content?.storageFormat === 'json' ? 'json' : 'md';
 
-  // === Blok: Auto-save konceptu (60 s) ===
   const autoSave = useAutoSave({
     type,
     slug: slug ?? '',
@@ -82,9 +92,27 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
   });
 
   useEffect(() => {
-    const preferred = settings.editor?.defaultEditor === 'wysiwyg' ? 'wysiwyg' : 'markdown';
+    const preferred: EditorMode = settings.editor?.defaultEditor === 'wysiwyg' ? 'wysiwyg' : 'markdown';
     setEditorMode(preferred);
   }, [settings.editor?.defaultEditor]);
+
+  useEffect(() => {
+    void getNavigation().then(setNavigationItems).catch(() => setNavigationItems([]));
+  }, []);
+
+  useEffect(() => {
+    if (isNew && !slugTouched) {
+      setEditSlug(slugifyTitle(title));
+    }
+  }, [title, isNew, slugTouched]);
+
+  const switchEditorMode = (mode: EditorMode) => {
+    if (mode === editorMode) return;
+    const converted = convertForModeSwitch(content, editorMode, mode);
+    setContent(converted);
+    setContentFormat(mode === 'wysiwyg' ? 'html' : 'markdown');
+    setEditorMode(mode);
+  };
 
   useEffect(() => {
     if (!isNew && slug) {
@@ -98,12 +126,25 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
     try {
       const response = await get<any>(`${endpoint}/${slug}`);
       if (response.success && response.data) {
+        const raw = response.data.content || '';
+        const fm = response.data.frontMatter ?? {};
+        const format = inferContentFormat(raw, response.data.contentFormat ?? fm.contentFormat);
+        const preferred: EditorMode =
+          settings.editor?.defaultEditor === 'wysiwyg' ? 'wysiwyg' : 'markdown';
+        const loadedSlug = String(response.data.slug ?? slug ?? '');
+
+        setContentFormat(format);
+        setEditorMode(preferred);
+        setContent(valueForEditorMode(raw, format, preferred));
+        setBaseContent(raw);
         setTitle(response.data.title || '');
-        setContent(response.data.content || '');
-        setBaseContent(response.data.content || '');
+        setEditSlug(loadedSlug);
+        setTemplate(String(response.data.template ?? fm.template ?? loadedSlug));
+        setStoragePath(
+          resolveStoragePath(type, loadedSlug, String(response.data.path ?? ''), storageFormat)
+        );
         setStatus(response.data.status || 'draft');
         setBaseRevision(response.data.revision || '');
-        const fm = response.data.frontMatter ?? {};
         setSeo({
           seoTitle: String(response.data.seoTitle ?? fm.seoTitle ?? fm.metaTitle ?? ''),
           seoDescription: String(
@@ -122,7 +163,6 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         });
       }
 
-      // Ak existuje neuložený koncept, ponúkneme jeho obnovenie.
       if (slug) {
         const draft = await loadDraft(type, slug);
         if (draft && draft.savedAt > 0) {
@@ -137,13 +177,14 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
     }
   };
 
-  // === Blok: Obnova / zahodenie konceptu ===
   const restoreDraft = async () => {
     if (!slug) return;
     const draft = await loadDraft(type, slug);
     if (draft) {
+      const format = inferContentFormat(draft.content);
       setTitle(draft.title);
-      setContent(draft.content);
+      setContentFormat(format);
+      setContent(valueForEditorMode(draft.content, format, editorMode));
       setStatus((draft.status as typeof status) || 'draft');
       toast.info('Koncept bol obnovený');
     }
@@ -157,25 +198,30 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
     setPendingDraftAt(null);
   };
 
-  // === Blok: Uloženie (s optimistickým zamykaním a 3-way merge) ===
-  // contentOverride = použije sa namiesto stavu `content` (napr. výsledok auto-merge/resolvera),
-  // aby sme nepracovali so zastaraným stavom hneď po setContent.
   const handleSave = useCallback(
     async (forceRevision?: string, contentOverride?: string) => {
       if (!title.trim()) {
-        toast.warning('Zadajte prosím titulok');
+        toast.warning('Zadajte prosím názov');
         return;
       }
 
       const effectiveContent = contentOverride ?? content;
+      const stored = storagePayloadFromEditor(effectiveContent, editorMode);
+      const nextSlug = isNew ? slugifyTitle(editSlug || title) : slug;
+
+      if (isNew && !nextSlug) {
+        toast.warning('Slug nemôže byť prázdny');
+        return;
+      }
 
       setSaving(true);
       try {
-        const data = {
+        const data: Record<string, unknown> = {
           title: title.trim(),
-          content: effectiveContent,
+          content: stored.content,
+          contentFormat: stored.contentFormat,
           status,
-          slug: isNew ? title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-') : slug,
+          slug: nextSlug,
           message: commitMessage.trim(),
           baseRevision: forceRevision ?? baseRevision,
           seoTitle: seo.seoTitle.trim(),
@@ -189,38 +235,51 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
             .filter(Boolean),
         };
 
-        const response = isNew ? await post<any>(endpoint, data) : await put<any>(`${endpoint}/${slug}`, data);
+        if (type === 'page' && template.trim()) {
+          data.template = template.trim();
+        }
+
+        const response = isNew
+          ? await post<any>(endpoint, data)
+          : await put<any>(`${endpoint}/${slug}`, data);
 
         if (response.success) {
           setConflict(null);
           setCommitMessage('');
-          setBaseContent(effectiveContent);
+          setContentFormat(stored.contentFormat);
+          setBaseContent(stored.content);
           if (contentOverride !== undefined) {
             setContent(effectiveContent);
           }
           if (response.data?.revision) {
             setBaseRevision(response.data.revision);
           }
-          // Po úspešnom uložení zahodíme koncept – už je súčasťou publikovaného obsahu.
+          if (response.data?.path) {
+            setStoragePath(
+              resolveStoragePath(
+                type,
+                String(response.data.slug ?? nextSlug),
+                String(response.data.path),
+                storageFormat
+              )
+            );
+          }
           if (!isNew && slug) {
             await discardDraft(type, slug);
           }
           toast.success('Obsah bol uložený');
           if (isNew && response.data?.slug) {
-            navigate(`/${type}s/${response.data.slug}`);
+            navigate(`/${type === 'article' ? 'articles' : 'pages'}/${response.data.slug}`);
           }
         } else if (response.status === 409 && response.conflict) {
-          // Konflikt: obsah na disku sa medzičasom zmenil → pokus o 3-way merge.
           const c = response.conflict as { serverContent: string; serverRevision: string };
           const merge = merge3(effectiveContent, baseContent, c.serverContent);
 
           if (merge.clean) {
-            // Bez konfliktných riadkov → automatické zlúčenie a okamžité douloženie.
             const merged = assembleMerged(merge, {});
             toast.info('Zmeny boli automaticky zlúčené so serverovou verziou.');
             await handleSave(c.serverRevision, merged);
           } else {
-            // Konfliktné riadky → manuálne riešenie cez ConflictResolver.
             setConflict({
               base: baseContent,
               mine: effectiveContent,
@@ -239,15 +298,33 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         setSaving(false);
       }
     },
-    [title, content, status, commitMessage, baseRevision, baseContent, isNew, slug, endpoint, type, seo, post, put] // eslint-disable-line react-hooks/exhaustive-deps
+    [
+      title,
+      content,
+      status,
+      commitMessage,
+      baseRevision,
+      baseContent,
+      isNew,
+      slug,
+      editSlug,
+      template,
+      endpoint,
+      type,
+      seo,
+      editorMode,
+      storageFormat,
+      post,
+      put,
+      navigate,
+      toast,
+    ]
   );
 
-  // === Blok: Riešenie konfliktu (ConflictResolver) ===
   const resolveConflict = (merged: string): void => {
     if (!conflict) return;
     const rev = conflict.serverRevision;
     setConflict(null);
-    // Uložíme zlúčený obsah proti aktuálnej serverovej revízii.
     void handleSave(rev, merged);
   };
 
@@ -256,13 +333,13 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
     toast.info('Riešenie konfliktu zrušené. Vaše zmeny ostali neuložené.');
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-      </div>
-    );
-  }
+  const publicPath = resolvePublicPath(type, editSlug || slug || '');
+  const resolvedStoragePath =
+    storagePath || resolveStoragePath(type, editSlug || slug || 'new', undefined, storageFormat);
+  const navigationMatches = useMemo(
+    () => findNavigationMatches(navigationItems, type, editSlug || slug || ''),
+    [navigationItems, type, editSlug, slug]
+  );
 
   const autoSaveLabel =
     autoSave.status === 'saving'
@@ -273,37 +350,36 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
           ? 'Koncept sa nepodarilo uložiť'
           : '';
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          {isNew ? `Vytvoriť ${type}` : `Upraviť ${type}`}
-        </h1>
-        <div className="flex items-center gap-3">
-          {!isNew && <LockIndicator resourceId={resourceId} onLockChange={setCanEdit} />}
-          {autoSaveLabel && <span className="text-xs text-gray-500 dark:text-gray-400">{autoSaveLabel}</span>}
-          <button onClick={() => void handleSave()} disabled={saving || !canEdit} className="btn btn-primary">
-            {saving ? 'Ukladám…' : 'Uložiť'}
-          </button>
-        </div>
-      </div>
-
-      {/* Banner: neuložený koncept */}
       {pendingDraftAt && (
-        <div className="flex items-center justify-between rounded-md bg-blue-50 dark:bg-blue-900/30 px-4 py-3 text-sm text-blue-800 dark:text-blue-200">
+        <div className="mx-auto max-w-7xl flex items-center justify-between rounded-xl bg-blue-50 dark:bg-blue-900/30 px-4 py-3 text-sm text-blue-800 dark:text-blue-200">
           <span>Našiel sa neuložený koncept. Chcete ho obnoviť?</span>
           <span className="flex gap-2">
-            <button onClick={() => void restoreDraft()} className="rounded bg-blue-600 px-3 py-1 text-white hover:bg-blue-700">
+            <button
+              onClick={() => void restoreDraft()}
+              className="rounded bg-blue-600 px-3 py-1 text-white hover:bg-blue-700"
+            >
               Obnoviť
             </button>
-            <button onClick={() => void dismissDraft()} className="rounded px-3 py-1 hover:bg-blue-100 dark:hover:bg-blue-800">
+            <button
+              onClick={() => void dismissDraft()}
+              className="rounded px-3 py-1 hover:bg-blue-100 dark:hover:bg-blue-800"
+            >
               Zahodiť
             </button>
           </span>
         </div>
       )}
 
-      {/* Modal: 3-way merge riešenie konfliktu */}
       {conflict && (
         <ConflictResolver
           base={conflict.base}
@@ -314,114 +390,40 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         />
       )}
 
-      <div className="card">
-        <div className="card-body space-y-4">
-          <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700 pb-2">
-            <button
-              type="button"
-              className={`text-sm px-3 py-1 rounded ${panelTab === 'content' ? 'bg-indigo-600 text-white' : 'text-gray-600 dark:text-gray-300'}`}
-              onClick={() => setPanelTab('content')}
-            >
-              Content
-            </button>
-            <button
-              type="button"
-              className={`text-sm px-3 py-1 rounded ${panelTab === 'seo' ? 'bg-indigo-600 text-white' : 'text-gray-600 dark:text-gray-300'}`}
-              onClick={() => setPanelTab('seo')}
-            >
-              SEO
-            </button>
-          </div>
-
-          {panelTab === 'seo' ? (
-            <SeoMetadataPanel
-              values={seo}
-              onChange={setSeo}
-              disabled={!canEdit}
-              showTags={type === 'article'}
-            />
-          ) : (
-            <>
+      <ContentEditorShell
+        type={type}
+        isNew={isNew}
+        title={title}
+        editSlug={editSlug}
+        status={status}
+        template={template}
+        content={content}
+        editorMode={editorMode}
+        seo={seo}
+        storagePath={resolvedStoragePath}
+        publicPath={publicPath}
+        navigationMatches={navigationMatches}
+        canEdit={canEdit}
+        saving={saving}
+        seoOpen={seoOpen}
+        autoSaveLabel={autoSaveLabel}
+        lockIndicator={!isNew ? <LockIndicator resourceId={resourceId} onLockChange={setCanEdit} /> : null}
+        onTitleChange={setTitle}
+        onSlugChange={(value) => {
+          setSlugTouched(true);
+          setEditSlug(value);
+        }}
+        onStatusChange={setStatus}
+        onTemplateChange={setTemplate}
+        onDescriptionChange={(value) => setSeo((prev) => ({ ...prev, seoDescription: value }))}
+        onSeoChange={setSeo}
+        onSeoOpenChange={setSeoOpen}
+        onEditorModeChange={switchEditorMode}
+        onCancel={() => navigate(type === 'article' ? '/articles' : '/pages')}
+        onSave={() => void handleSave()}
+        footerExtra={
           <div className="form-group">
-            <label className="form-label">Titulok</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              disabled={!canEdit}
-              className="form-input"
-              placeholder="Zadajte titulok…"
-            />
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">Stav</label>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value as any)}
-              disabled={!canEdit}
-              className="form-input"
-            >
-              <option value="draft">Koncept</option>
-              <option value="published">Publikované</option>
-              <option value="archived">Archivované</option>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <div className="flex items-center justify-between mb-2">
-              <label className="form-label mb-0">Obsah</label>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  className={`btn text-xs px-3 py-1 ${editorMode === 'markdown' ? 'btn-primary' : 'btn-secondary'}`}
-                  disabled={!canEdit}
-                  onClick={() => setEditorMode('markdown')}
-                >
-                  Markdown
-                </button>
-                <button
-                  type="button"
-                  className={`btn text-xs px-3 py-1 ${editorMode === 'wysiwyg' ? 'btn-primary' : 'btn-secondary'}`}
-                  disabled={!canEdit}
-                  onClick={() => setEditorMode('wysiwyg')}
-                >
-                  WYSIWYG
-                </button>
-              </div>
-            </div>
-            {editorMode === 'wysiwyg' ? (
-              <WysiwygEditor
-                value={content}
-                onChange={setContent}
-                readOnly={!canEdit}
-                onPickMedia={() => setMediaPickerOpen(true)}
-              />
-            ) : (
-              <textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                disabled={!canEdit}
-                className="form-input min-h-[400px] font-mono text-sm"
-                placeholder="Write content in Markdown…"
-              />
-            )}
-          </div>
-
-          <MediaPickerModal
-            open={mediaPickerOpen}
-            onClose={() => setMediaPickerOpen(false)}
-            onSelect={(url, alt) => {
-              if (editorMode === 'wysiwyg') {
-                setContent((prev) => `${prev}<p><img src="${url}" alt="${alt.replace(/"/g, '&quot;')}" /></p>`);
-              } else {
-                setContent((prev) => `${prev}\n\n![${alt}](${url})\n`);
-              }
-            }}
-          />
-
-          <div className="form-group">
-            <label className="form-label">Popis zmeny (commit správa)</label>
+            <label className="form-label">Popis zmeny (voliteľné)</label>
             <input
               type="text"
               value={commitMessage}
@@ -431,15 +433,42 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
               placeholder="Napr. Aktualizácia úvodného odseku…"
             />
           </div>
+        }
+      >
+        {editorMode === 'wysiwyg' ? (
+          <WysiwygEditor
+            ref={wysiwygRef}
+            value={content}
+            onChange={setContent}
+            readOnly={!canEdit}
+            onPickMedia={() => setMediaPickerOpen(true)}
+          />
+        ) : (
+          <MarkdownContentEditor
+            value={content}
+            onChange={setContent}
+            readOnly={!canEdit}
+            spellCheck={Boolean(settings.editor?.spellcheck ?? true)}
+            tabSize={Number(settings.editor?.tabSize ?? 2)}
+            onPickMedia={() => setMediaPickerOpen(true)}
+          />
+        )}
 
-          {!isNew && <div className="text-sm text-gray-500 dark:text-gray-400">Slug: /{type}s/{slug}</div>}
-            </>
-          )}
-        </div>
-      </div>
+        <MediaPickerModal
+          open={mediaPickerOpen}
+          onClose={() => setMediaPickerOpen(false)}
+          onSelect={(url, alt) => {
+            if (editorMode === 'wysiwyg') {
+              wysiwygRef.current?.insertImage(url, alt);
+            } else {
+              setContent((prev) => `${prev}\n\n![${alt}](${url})\n`);
+            }
+          }}
+        />
+      </ContentEditorShell>
 
       {!isNew && slug && (
-        <div className="card mt-6">
+        <div className="mx-auto max-w-7xl card">
           <div className="card-header">
             <h2 className="text-lg font-bold">História verzií</h2>
           </div>

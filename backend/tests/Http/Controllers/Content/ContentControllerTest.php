@@ -37,6 +37,24 @@ class ContentControllerTest extends TestCase
         $this->assertArrayHasKey('total_pages', $data['meta']);
     }
 
+    public function testListPagesPaginatedSurvivesCacheRoundTrip(): void
+    {
+        $request = $this->createJsonRequest('GET', '/api/pages?page=1&per_page=10');
+
+        $first = $this->getJsonResponse($this->handleRequest($request));
+        $second = $this->getJsonResponse($this->handleRequest($request));
+
+        $this->assertTrue($first['success']);
+        $this->assertTrue($second['success']);
+        $this->assertSame($first['meta']['total'] ?? null, $second['meta']['total'] ?? null);
+        $this->assertCount(count($first['data']), $second['data']);
+
+        if (($first['data'][0] ?? null) !== null) {
+            $this->assertArrayHasKey('slug', $first['data'][0]);
+            $this->assertSame($first['data'][0]['slug'], $second['data'][0]['slug']);
+        }
+    }
+
     public function testPublicListPagesOnlyPublished(): void
     {
         $response = $this->handleRequest(

@@ -12,6 +12,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.7 – Scheduled monitoring reports + log incidents | **2.0.17** | [below](#2017--2026-07-18) |
 | It.29 – Cron planner + Job Queue | **2.0.18** | [below](#2018--2026-07-18) |
 | Users admin UI refresh | **2.0.19** | [below](#2019--2026-07-18) |
+| It.30 – Content editory, cache fix, admin zoznamy | **2.0.20** | [below](#2020--2026-07-18) |
+
+---
+
+## [2.0.20] – 2026-07-18
+
+### Content admin polish (It.30)
+
+#### Backend
+- Fix content list/cache: cache stores serialized arrays, not PHP `Content` objects (fixes empty lists after refresh)
+- Do not cache `null` item lookups; ChainedDriver increment uses file layer as source of truth
+- Rebuild empty content index when files exist on disk
+- CLI `content:cache-purge [--reindex]` for post-deploy cache reset
+- Stop spam login alert emails: notify on lockout only (not every failed attempt); skip `@example.com` / test emails and `APP_ENV=testing`; cooldown throttle
+
+#### Frontend
+- Markdown + WYSIWYG editors with mode switch, live preview, `contentFormat` in API
+- `ContentEditorShell`: prototype layout (path, menu hint, SEO panel, stats footer)
+- Shared `AdminListToolbar`; PagesManager SK labels, mobile cards, `itemsPerPage` from settings
+- Media library toolbar aligned with AdminListToolbar; article preview links to `/blog/{slug}`
+
+#### Docs
+- [ITERATION_30.md](docs/ITERATION_30.md)
 
 ---
 

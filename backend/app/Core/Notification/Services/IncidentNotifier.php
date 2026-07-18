@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\Notification\Services;
 
+use PaginiumCMS\Core\Cache\CacheManager;
 use PaginiumCMS\Core\Notification\NotificationService;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 
@@ -13,10 +14,12 @@ use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 final class IncidentNotifier
 {
     private const SEVERITY_RANK = ['info' => 0, 'warning' => 1, 'error' => 2, 'critical' => 3];
+    private const DEFAULT_ALERT_COOLDOWN_SECONDS = 900;
 
     public function __construct(
         private SettingsRepositoryInterface $settings,
-        private NotificationService $notifications
+        private NotificationService $notifications,
+        private CacheManager $cache
     ) {
     }
 
@@ -53,17 +56,43 @@ final class IncidentNotifier
         }
     }
 
+    /**
+     * @deprecated Prefer notifyLoginLockout() – sends at most once per cooldown on lockout.
+     */
     public function notifyFailedLogin(string $email, string $ip): void
+    {
+        $this->notifyLoginLockout($email, $ip);
+    }
+
+    /**
+     * Alert after brute-force lockout (not on every single failed attempt).
+     */
+    public function notifyLoginLockout(string $email, string $ip): void
     {
         $monitoring = $this->settings->group('monitoring');
         if (!(bool) ($monitoring['notifyFailedLogin'] ?? true)) {
             return;
         }
 
+        if ($this->shouldSkipSecurityAlert($email)) {
+            return;
+        }
+
+        $cooldown = max(60, (int) ($monitoring['failedLoginAlertCooldownSeconds'] ?? self::DEFAULT_ALERT_COOLDOWN_SECONDS));
+        $dedupeKey = 'auth.lockout:' . mb_strtolower(trim($email)) . ':' . $ip;
+        if (!$this->shouldSendThrottled($dedupeKey, $cooldown)) {
+            return;
+        }
+
         $this->notify(
             'auth.failed_login',
-            'Failed login attempt',
-            sprintf('Failed login for %s from IP %s at %s', $email, $ip, date('c')),
+            'Login lockout triggered',
+            sprintf(
+                'Repeated failed login for %s from IP %s at %s. Account/IP temporarily locked.',
+                $email,
+                $ip,
+                date('c')
+            ),
             'warning'
         );
     }
@@ -166,5 +195,34 @@ final class IncidentNotifier
         }
 
         return null;
+    }
+
+    private function shouldSkipSecurityAlert(string $email): bool
+    {
+        $env = getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? '');
+        if ($env === 'testing') {
+            return true;
+        }
+
+        $normalized = mb_strtolower(trim($email));
+        if ($normalized === '') {
+            return false;
+        }
+
+        return str_ends_with($normalized, '@example.com')
+            || str_ends_with($normalized, '@example.org')
+            || str_starts_with($normalized, 'test_');
+    }
+
+    private function shouldSendThrottled(string $dedupeKey, int $cooldownSeconds): bool
+    {
+        $cacheKey = 'incident.cooldown.' . md5($dedupeKey);
+        if ($this->cache->has($cacheKey)) {
+            return false;
+        }
+
+        $this->cache->set($cacheKey, time(), $cooldownSeconds);
+
+        return true;
     }
 }

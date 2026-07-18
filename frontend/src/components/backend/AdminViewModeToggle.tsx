@@ -10,9 +10,9 @@ export interface AdminViewModeToggleProps {
 }
 
 const MODES: { id: AdminViewMode; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { id: 'list', label: 'List', icon: LayoutList },
-  { id: 'list-preview', label: 'List with preview', icon: List },
-  { id: 'preview', label: 'Preview grid', icon: Grid3X3 },
+  { id: 'list', label: 'Zoznam', icon: LayoutList },
+  { id: 'list-preview', label: 'Zoznam + náhľad', icon: List },
+  { id: 'preview', label: 'Mriežka', icon: Grid3X3 },
 ];
 
 export const AdminViewModeToggle: React.FC<AdminViewModeToggleProps> = ({
@@ -40,6 +40,7 @@ export const AdminViewModeToggle: React.FC<AdminViewModeToggleProps> = ({
       >
         <Icon className="w-4 h-4" />
         <span className="hidden sm:inline">{label}</span>
+        <span className="sm:hidden sr-only">{label}</span>
       </button>
     ))}
   </div>
