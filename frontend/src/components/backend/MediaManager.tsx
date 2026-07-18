@@ -41,6 +41,11 @@ import {
   MediaPreviewLightbox,
   MediaPreviewMode,
 } from './MediaPreviewLightbox';
+import { AdminViewModeToggle } from './AdminViewModeToggle';
+import { MediaMetadataModal } from './MediaMetadataModal';
+import { SeoHealthBadge } from './SeoHealthBadge';
+import { useAdminViewMode } from '../../hooks/useAdminViewMode';
+import { evaluateMediaSeo } from '../../utils/seoHealth';
 
 type TypeFilter = 'all' | 'image';
 
@@ -60,8 +65,10 @@ export const MediaManager: React.FC = () => {
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
   const [editingPath, setEditingPath] = useState<string | null>(null);
+  const [editingFile, setEditingFile] = useState<MediaFile | null>(null);
   const [editAlt, setEditAlt] = useState('');
   const [editTitle, setEditTitle] = useState('');
+  const [savingMeta, setSavingMeta] = useState(false);
   const [selectedPaths, setSelectedPaths] = useState<string[]>([]);
   const [stockTopics, setStockTopics] = useState<StockImageTopic[]>([]);
   const [stockTopic, setStockTopic] = useState('tech');
@@ -72,6 +79,8 @@ export const MediaManager: React.FC = () => {
     'image/jpeg,image/png,image/gif,image/webp,image/svg+xml,application/pdf'
   );
   const [previewableMimeTypes, setPreviewableMimeTypes] = useState<string[]>([]);
+  const [seoIssuesOnly, setSeoIssuesOnly] = useState(false);
+  const { mode: viewMode, setMode: setViewMode } = useAdminViewMode('media', 'preview');
 
   useEffect(() => {
     void (async () => {
@@ -235,12 +244,21 @@ export const MediaManager: React.FC = () => {
 
   const filteredItems = items.filter((item) => {
     const q = search.toLowerCase();
-    return (
+    const matchesSearch =
       item.fileName.toLowerCase().includes(q) ||
       item.altText.toLowerCase().includes(q) ||
       (item.title ?? '').toLowerCase().includes(q) ||
-      item.mimeType.toLowerCase().includes(q)
-    );
+      item.mimeType.toLowerCase().includes(q);
+
+    if (!matchesSearch) {
+      return false;
+    }
+
+    if (seoIssuesOnly && evaluateMediaSeo(item) === 'ok') {
+      return false;
+    }
+
+    return true;
   });
 
   const openPreview = (file: MediaFile, mode: MediaPreviewMode = 'fit') => {
@@ -285,27 +303,37 @@ export const MediaManager: React.FC = () => {
   };
 
   const startEditMeta = (file: MediaFile) => {
-    setEditingPath(file.path);
     setEditAlt(file.altText);
     setEditTitle(file.title ?? '');
+    if (viewMode === 'preview') {
+      setEditingPath(file.path);
+      setEditingFile(null);
+      return;
+    }
+    setEditingFile(file);
+    setEditingPath(null);
   };
 
   const cancelEditMeta = () => {
     setEditingPath(null);
+    setEditingFile(null);
     setEditAlt('');
     setEditTitle('');
   };
 
   const saveEditMeta = async (path: string) => {
-    const ok = await updateMediaMetadata(path, { altText: editAlt, title: editTitle });
-    if (ok) {
-      toast.success('Metadata updated.');
-      setEditingPath(null);
-      setEditAlt('');
-      setEditTitle('');
-      await loadMedia();
-    } else {
-      toast.error('Failed to update metadata.');
+    setSavingMeta(true);
+    try {
+      const ok = await updateMediaMetadata(path, { altText: editAlt, title: editTitle });
+      if (ok) {
+        toast.success('Metadata updated.');
+        cancelEditMeta();
+        await loadMedia();
+      } else {
+        toast.error('Failed to update metadata.');
+      }
+    } finally {
+      setSavingMeta(false);
     }
   };
 
@@ -499,6 +527,16 @@ export const MediaManager: React.FC = () => {
           <option value="all">All files</option>
           <option value="image">Images only</option>
         </select>
+        <AdminViewModeToggle mode={viewMode} onChange={setViewMode} />
+        <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap">
+          <input
+            type="checkbox"
+            checked={seoIssuesOnly}
+            onChange={(e) => setSeoIssuesOnly(e.target.checked)}
+            className="rounded border-gray-300"
+          />
+          SEO issues only
+        </label>
       </div>
 
       {loading ? (
@@ -511,7 +549,7 @@ export const MediaManager: React.FC = () => {
             No media files in {folderLabel(currentFolder)}.
           </div>
         </div>
-      ) : (
+      ) : viewMode === 'preview' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredItems.map((file) => (
             <MediaCard
@@ -534,7 +572,34 @@ export const MediaManager: React.FC = () => {
             />
           ))}
         </div>
+      ) : (
+        <MediaListTable
+          files={filteredItems}
+          showThumbnail={viewMode === 'list-preview'}
+          selectedPaths={selectedPaths}
+          onToggleSelect={toggleSelected}
+          onCopyUrl={handleCopyUrl}
+          onPreview={openPreview}
+          onDelete={handleDelete}
+          onStartEdit={startEditMeta}
+        />
       )}
+
+      <MediaMetadataModal
+        open={editingFile !== null}
+        file={editingFile}
+        title={editTitle}
+        altText={editAlt}
+        saving={savingMeta}
+        onTitleChange={setEditTitle}
+        onAltChange={setEditAlt}
+        onSave={() => {
+          if (editingFile) {
+            void saveEditMeta(editingFile.path);
+          }
+        }}
+        onClose={cancelEditMeta}
+      />
 
       <MediaPreviewLightbox
         file={previewFile}
@@ -642,6 +707,7 @@ const MediaCard: React.FC<MediaCardProps> = ({
         <p className="text-xs text-gray-500 dark:text-gray-400">
           {file.mimeType} · {formatMediaSize(file.sizeBytes)}
         </p>
+        <SeoHealthBadge level={evaluateMediaSeo(file)} className="self-start" />
 
         {editing ? (
           <div className="space-y-2">
@@ -730,3 +796,110 @@ const MediaCard: React.FC<MediaCardProps> = ({
 };
 
 export default MediaManager;
+
+interface MediaListTableProps {
+  files: MediaFile[];
+  showThumbnail: boolean;
+  selectedPaths: string[];
+  onToggleSelect: (path: string) => void;
+  onCopyUrl: (file: MediaFile) => void;
+  onPreview: (file: MediaFile) => void;
+  onDelete: (file: MediaFile) => void;
+  onStartEdit: (file: MediaFile) => void;
+}
+
+const MediaListTable: React.FC<MediaListTableProps> = ({
+  files,
+  showThumbnail,
+  selectedPaths,
+  onToggleSelect,
+  onCopyUrl,
+  onPreview,
+  onDelete,
+  onStartEdit,
+}) => (
+  <div className="card">
+    <div className="card-body p-0 table-container">
+      <table className="table min-w-[720px]">
+        <thead>
+          <tr>
+            <th className="w-10" />
+            {showThumbnail && <th className="w-24">Preview</th>}
+            <th>Name</th>
+            <th>Type</th>
+            <th>Size</th>
+            <th>SEO</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {files.map((file) => {
+            const thumb = resolveAdminMediaPreviewUrl(file.path);
+            const fallback = resolvePublicMediaUrl(file.url);
+            return (
+              <tr key={file.id}>
+                <td>
+                  <input
+                    type="checkbox"
+                    checked={selectedPaths.includes(file.path)}
+                    onChange={() => onToggleSelect(file.path)}
+                    aria-label={`Select ${file.fileName}`}
+                  />
+                </td>
+                {showThumbnail && (
+                  <td>
+                    {isImageMedia(file) ? (
+                      <button type="button" onClick={() => onPreview(file)} className="block w-16 h-12 rounded overflow-hidden bg-gray-100">
+                        <img
+                          src={thumb}
+                          alt=""
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = fallback;
+                          }}
+                        />
+                      </button>
+                    ) : (
+                      <FileText className="w-8 h-8 text-gray-400" />
+                    )}
+                  </td>
+                )}
+                <td className="!whitespace-normal max-w-[240px] sm:max-w-xs">
+                  <p className="font-medium truncate" title={file.title || file.fileName}>
+                    {file.title || file.fileName}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2" title={file.altText || undefined}>
+                    {file.altText || '—'}
+                  </p>
+                </td>
+                <td className="text-sm">{file.mimeType}</td>
+                <td className="text-sm">{formatMediaSize(file.sizeBytes)}</td>
+                <td>
+                  <SeoHealthBadge level={evaluateMediaSeo(file)} />
+                </td>
+                <td>
+                  <div className="flex flex-wrap gap-1">
+                    <button
+                      type="button"
+                      className="btn btn-secondary text-xs px-2 py-1"
+                      title="Edit metadata"
+                      onClick={() => onStartEdit(file)}
+                    >
+                      <Pencil className="w-3 h-3" />
+                    </button>
+                    <button type="button" className="btn btn-secondary text-xs px-2 py-1" onClick={() => onCopyUrl(file)}>
+                      <Copy className="w-3 h-3" />
+                    </button>
+                    <button type="button" className="btn btn-danger text-xs px-2 py-1" onClick={() => onDelete(file)}>
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  </div>
+);

@@ -6,13 +6,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
-## [2.0.15] – Unreleased (docs)
+## [2.0.15] – 2026-07-18
 
-### Documentation
+### Iteration 27 – Admin view modes + SEO metadata panel
 
-- Complete English spec for [Iteration 9](docs/ITERATION_9.md) (prototype port — nav, comments, contact, GitHub)
-- Complete English spec for [Iteration 27](docs/ITERATION_27.md) (admin view modes + SEO panel)
-- Fix [ROADMAP.md](docs/ROADMAP.md): It.9 = prototype port; SEO engine = It.23; admin SEO UX = It.27
+#### Frontend
+- Add `useAdminViewMode` + `AdminViewModeToggle` — `list` / `list-preview` / `preview` with per-section `localStorage` persistence
+- **Media Library** — table modes + SEO health badges + “SEO issues only” filter; grid mode keeps inline metadata edit
+- Add **`MediaMetadataModal`** — responsive edit dialog for list modes (fixes table column overlap on title/alt)
+- **Articles / Pages** (`PagesManager`) — three view modes, preview cards, SEO badges and filter
+- Add `SeoMetadataPanel`, `SeoHealthBadge`, `seoHealth` utils — title, description, OG image, robots, canonical in editor
+- **`MarkdownEditor`** — Content / SEO tabs; saves SEO front matter on create/update
+
+#### Backend
+- `ContentController` — `applySeoFrontMatter()` + serialize `seoTitle`, `seoDescription`, `canonical`, `ogImage`, `noIndex`
+
+#### Tests
+- Vitest: `useAdminViewMode`, `seoHealth`, `MediaManager` (list modal save), extended manager tests
+
+#### Docs
+- [ITERATION_27.md](docs/ITERATION_27.md) — complete spec (audit API deferred to backlog)
+
+#### Deferred (post 2.0.15)
+- `GET /api/content/seo-audit` — list-wide SEO audit endpoint
 
 ---
 

@@ -4,7 +4,7 @@
 
 Legenda: ✅ hotové · 🚧 rozpracované · ⏳ plánované · 🔴 kritická priorita jadra
 
-**Aktuálna verzia:** 2.0.14 · **Posledná iterácia:** [26](ITERATION_26.md) ✅ · **Ďalšia:** [27 – view modes + SEO](ITERATION_27.md) ⏳
+**Aktuálna verzia:** 2.0.15 · **Posledná iterácia:** [27](ITERATION_27.md) ✅ · **Ďalšia:** [28+ backlog](ITERATION_BACKLOG.md) ⏳
 
 | Iterácia | Názov | Priorita |
 |----------|-------|----------|
@@ -14,9 +14,9 @@ Legenda: ✅ hotové · 🚧 rozpracované · ⏳ plánované · 🔴 kritická 
 | **22** | **Ops finish & verejné feedy** | **✅** |
 | **24** | **Full DAM v1 + stock knižnica** | **✅** |
 | **26** | **Media preview lightbox + 2.0.14 hotfix** | **✅** |
-| **27** | **Admin view modes + SEO panel** | **⏳ ďalšia** |
+| **27** | **Admin view modes + SEO panel** | **✅** |
 | 25 | Setup wizard (profil webu) | ⏳ odložené |
-| 28+ | [Backlog modulov](ITERATION_BACKLOG.md) | ⏳ |
+| 28+ | [Backlog modulov](ITERATION_BACKLOG.md) | ⏳ ďalšia |
 | 6–7 | Notifikácie, dashboard | 🟡 ďalej |
 | 8–10 | DAM, SEO, feedy | 🟢 |
 | 11–16 | SSO, plugins, Monaco | 🔵 |
@@ -175,7 +175,7 @@ Základ pre všetky admin nastavenia (SMTP, notifikácie, SEO, feedy v ďalšíc
 
 - Navigation, Comments, Contact/Messages, GitHub admin API — port z `prototype/backend/` na `/api/*`
 - FE: `NavigationManager`, `CommentsManager`, `MessagesViewer`, `GitHubSyncPanel`, public wiring
-- **SEO meta engine** nie je It.9 — doručené v **[Iterácii 23](ITERATION_23.md)** ✅; admin SEO UX → **[Iterácia 27](ITERATION_27.md)** ⏳
+- **SEO meta engine** nie je It.9 — doručené v **[Iterácii 23](ITERATION_23.md)** ✅; admin SEO UX → **[Iterácia 27](ITERATION_27.md)** ✅
 
 ## Iterácia 10 – XML Feeds (RSS/sitemap) 🚧
 
@@ -335,6 +335,22 @@ Základ pre všetky admin nastavenia (SMTP, notifikácie, SEO, feedy v ďalšíc
 **Ďalej:**
 - It. 6–7 — SMTP end-to-end, analytics alerty
 - It. 8 — plný DAM (upload pipeline, thumbnails)
+
+---
+
+## Iterácia 27 – Admin view modes + SEO panel ✅
+
+**Stav (release 2.0.15):** hotové — list / list-preview / preview režimy, SEO panel v editore, metadata modal v Media Library. Detail: [ITERATION_27.md](ITERATION_27.md).
+
+**Hotové ✅:**
+- `useAdminViewMode` + `AdminViewModeToggle` — Media, Articles, Pages
+- `SeoMetadataPanel` + SEO tab v `MarkdownEditor`
+- `SeoHealthBadge` + filter „SEO issues only"
+- `MediaMetadataModal` — edit title/alt v list režimoch (responzívny dialog)
+- `ContentController` — persist SEO front matter fields
+
+**Odložené:**
+- `GET /api/content/seo-audit` — backlog
 
 ---
 
