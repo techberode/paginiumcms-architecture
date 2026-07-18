@@ -16,6 +16,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.30 – Content editory, cache fix, admin zoznamy | **2.0.20** | [below](#2020--2026-07-18) |
 | Code Editor, 2FA UX, developer unlock fixes | **2.0.21** | [below](#2021--2026-07-18) |
 | It.16 – Code Editor create/delete/restore | **2.0.22** | [below](#2022--2026-07-18) |
+| Content SEO media picker + blog preview fix | **2.0.23** | [below](#2023--2026-07-18) |
+
+---
+
+## [2.0.23] – 2026-07-18
+
+### Content — SEO náhľadový obrázok z médií
+
+#### Frontend
+- `SeoMetadataPanel` — **Vybrať z médií**, miniatúra, vymazanie OG obrázka
+- `MediaPickerModal` — voliteľný `urlFormat: storage` pre SEO cesty
+- `BlogRenderer` — náhľad v blogových kartách cez `contentPreviewImage` (`seoImage` / `ogImage` / `featuredImage`)
+- `contentPreviewImage.ts` + unit testy
+
+#### Backend
+- `Article::getFeaturedImage()` — fallback na `seoImage` / `ogImage` vo front matter
+
+#### Docs
+- [docs/user/CONTENT_EDITOR.md](docs/user/CONTENT_EDITOR.md) — editor podstránok/článkov, SEO, médiá
+
+#### CI (same day)
+- PHPStan level 8 — 44 chýb opravených (analytics, settings, monitoring, scheduler typy)
+- Reset-password test — token v `APP_ENV=testing` aj pri aktívnom SMTP
 
 ---
 

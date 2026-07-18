@@ -85,6 +85,27 @@ Setting: `content.storageFormat` → `md` (default) | `json`
 
 Both formats are readable on list/get; new saves use the configured format.
 
+## SEO fields (pages & articles)
+
+Save via `PUT /api/pages/{slug}` or `PUT /api/articles/{slug}` (authenticated):
+
+| JSON field | Front matter / model | Notes |
+|------------|----------------------|-------|
+| `seoTitle` | `seoTitle` | Optional; public title falls back to `title` |
+| `seoDescription` | `seoDescription` | Meta description |
+| `canonical` | `canonical` | Optional absolute URL |
+| `ogImage` | `seoImage` | Media URL, e.g. `/storage/app/content/media/photo.jpg` |
+| `noIndex` | `noIndex` | Boolean |
+| `tags` | `tags[]` | Articles only |
+
+**Articles:** when `ogImage` is non-empty, backend also sets `featuredImage` (blog card thumbnail + detail hero).
+
+Serialized GET responses include `seoTitle`, `seoDescription`, `canonical`, `ogImage`, `noIndex`, and for articles `featuredImage`, `tags`, `excerpt`.
+
+Public SEO meta: `GET /api/seo/{type}/{slug}` via `SeoMetaBuilder` (uses `seoImage` → `featuredImage` → site default).
+
+Admin UX: [user/CONTENT_EDITOR.md](../user/CONTENT_EDITOR.md).
+
 ## Soft delete (trash)
 
 `DELETE /api/pages/{slug}` and `DELETE /api/articles/{slug}` move files to `content/trash/` with a `.meta.json` sidecar (not permanent delete). Restore via admin trash API — see [CORE_HARDENING.md](./CORE_HARDENING.md).

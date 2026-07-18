@@ -13,7 +13,8 @@ Iteration 8 connects `/api/media` to the admin UI and completes editor integrati
 |---|---|
 | `src/api/media.ts` | List, upload, patch, delete |
 | `src/components/backend/MediaManager.tsx` | Grid, drag & drop, alt edit |
-| `src/components/backend/MediaPickerModal.tsx` | Insert image from library (WYSIWYG) |
+| `src/components/backend/MediaPickerModal.tsx` | Insert image from library (WYSIWYG + SEO OG image) |
+| `src/components/backend/SeoMetadataPanel.tsx` | SEO form; **Vybrať z médií** for thumbnail/OG |
 | `src/components/backend/MarkdownEditor.tsx` | Markdown / WYSIWYG toggle + media insert |
 | `src/utils/apiBaseUrl.ts` | Same-origin API base when `VITE_API_URL` unset |
 

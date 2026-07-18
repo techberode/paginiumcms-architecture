@@ -52,6 +52,8 @@ This document is the single source of truth for what exists in the backend API, 
 | GET | `/api/articles/{slug}` | ✅ | `MarkdownEditor` |
 | POST/PUT/PATCH/DELETE | articles CRUD | ✅ | `MarkdownEditor` |
 
+Používateľská príručka: [user/CONTENT_EDITOR.md](user/CONTENT_EDITOR.md)
+
 ### Drafts – `/api/drafts` (3 routes)
 
 | Method | Path | Status | FE wired |
@@ -165,7 +167,7 @@ Používateľská príručka: [user/CODE_EDITOR.md](user/CODE_EDITOR.md)
 | `/pages` | `PagesManager` | pages list/delete | ✅ | part of `administration.png` |
 | `/pages/:slug` | `MarkdownEditor` | full content + locks + drafts | ✅ | `edit_article.png` |
 | `/articles` | `PagesManager` | articles | ✅ | `paginium_blog.png` (public) |
-| `/articles/:slug` | `MarkdownEditor` | articles | ✅ | `versioning_article.png` |
+| `/articles/:slug` | `MarkdownEditor` | articles + SEO media picker | ✅ | `versioning_article.png` |
 | `/code-editor` | `CodeEditor` + gate | code-editor + developer | ✅ lock + safety banner | [CODE_EDITOR.md](user/CODE_EDITOR.md) |
 | `/backups` | `BackupManager` | backups | ✅ | `backup.png` |
 | `/audit` | `AuditTrail` | audit stats/export | ✅ | part of `administration.png` |
