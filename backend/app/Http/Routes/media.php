@@ -18,6 +18,8 @@ return function (App $app): void {
     $authz = $container->get(AuthorizationInterface::class);
 
     $app->group('/api/media', function (RouteCollectorProxy $group) use ($controller) {
+        $group->get('/formats', [$controller, 'listFormats']);
+        $group->get('/file/{path:.+}', [$controller, 'serveFile']);
         $group->get('', [$controller, 'listMedia']);
         $group->get('/folders', [$controller, 'listFolders']);
         $group->get('/stock-topics', [$controller, 'listStockTopics']);

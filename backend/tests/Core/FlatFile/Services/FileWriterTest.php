@@ -41,6 +41,15 @@ class FileWriterTest extends TestCase
         $this->assertEquals($content, file_get_contents($this->root . '/content/pages/new.md'));
     }
 
+    public function testWriteBinaryPreservesRawBytes(): void
+    {
+        $binary = "\x89PNG\r\n\x1a\n" . random_bytes(16);
+        $this->fileWriter->writeBinary('pages/binary.png', $binary);
+
+        $stored = file_get_contents($this->root . '/content/pages/binary.png');
+        $this->assertSame($binary, $stored);
+    }
+
     public function testWriteExistingFileCreatesBackup(): void
     {
         // Vytvorenie existujúceho súboru

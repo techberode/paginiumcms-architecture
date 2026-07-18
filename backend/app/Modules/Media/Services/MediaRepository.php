@@ -10,6 +10,7 @@ use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Core\FlatFile\Models\MediaFile;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
+use PaginiumCMS\Modules\Media\MediaFormats;
 use PaginiumCMS\Support\JsonHelper;
 
 class MediaRepository implements MediaRepositoryInterface
@@ -18,16 +19,6 @@ class MediaRepository implements MediaRepositoryInterface
     private const REGISTRY = 'media/registry.json';
     private const FOLDERS_INDEX = 'media/folders.json';
     private const FOLDER_MARKER = '.paginium-folder';
-
-    /** @var list<string> */
-    private const DEFAULT_MIME_TYPES = [
-        'image/jpeg',
-        'image/png',
-        'image/gif',
-        'image/webp',
-        'image/svg+xml',
-        'application/pdf',
-    ];
 
     public function __construct(
         private FileReaderInterface $reader,
@@ -75,9 +66,13 @@ class MediaRepository implements MediaRepositoryInterface
         string $altText = '',
         string $folder = ''
     ): MediaFile {
-        if (!in_array($mimeType, $this->resolveAllowedMimeTypes(), true)) {
-            throw new FlatFileException('Nepodporovaný typ súboru: ' . $mimeType);
+        $binary = is_resource($contents) ? stream_get_contents($contents) : $contents;
+        if (!is_string($binary) || $binary === '') {
+            throw new FlatFileException('Prázdny alebo neplatný súbor');
         }
+
+        $allowedMimeTypes = $this->resolveAllowedMimeTypes();
+        $mimeType = MediaFormats::validate($originalName, $binary, $mimeType, $allowedMimeTypes);
 
         $folder = $this->normalizeFolder($folder);
         $safeName = $this->sanitizeFileName($originalName);
@@ -86,17 +81,12 @@ class MediaRepository implements MediaRepositoryInterface
         $prefix = self::MEDIA_DIR . ($folder !== '' ? '/' . $folder : '');
         $relativePath = $prefix . '/' . $media->getId() . '_' . $safeName;
 
-        $binary = is_resource($contents) ? stream_get_contents($contents) : $contents;
-        if (!is_string($binary) || $binary === '') {
-            throw new FlatFileException('Prázdny alebo neplatný súbor');
-        }
-
         $maxBytes = $this->resolveMaxUploadBytes();
         if (strlen($binary) > $maxBytes) {
             throw new FlatFileException('Súbor presahuje maximálnu povolenú veľkosť');
         }
 
-        $this->writer->write($relativePath, $binary, true);
+        $this->writer->writeBinary($relativePath, $binary, true);
 
         $media->setPath($relativePath);
         $media->setFileName($safeName);
@@ -345,7 +335,7 @@ class MediaRepository implements MediaRepositoryInterface
             return false;
         }
 
-        if (isset($filters['type']) && $filters['type'] === 'image' && !$file->isImage()) {
+        if (isset($filters['type']) && $filters['type'] === 'image' && !MediaFormats::isImageMime($file->getMimeType())) {
             return false;
         }
 
@@ -398,16 +388,32 @@ class MediaRepository implements MediaRepositoryInterface
     /**
      * @return list<string>
      */
-    private function resolveAllowedMimeTypes(): array
+    public function resolveAllowedMimeTypes(): array
     {
         $raw = (string) ($this->settings->group('media')['allowedMimeTypes'] ?? '');
         if ($raw === '') {
-            return self::DEFAULT_MIME_TYPES;
+            return MediaFormats::defaultMimeTypes();
         }
 
-        $types = array_map('trim', explode(',', $raw));
+        $types = array_values(array_filter(
+            array_map('trim', explode(',', $raw)),
+            static fn (string $type): bool => $type !== '' && MediaFormats::isKnownMime($type)
+        ));
 
-        return array_values(array_filter($types, static fn (string $type): bool => $type !== ''));
+        return $types !== [] ? $types : MediaFormats::defaultMimeTypes();
+    }
+
+    /**
+     * @return array{
+     *     mimeTypes: list<string>,
+     *     extensions: list<string>,
+     *     accept: string,
+     *     previewableMimeTypes: list<string>
+     * }
+     */
+    public function formatsPayload(): array
+    {
+        return MediaFormats::toApiPayload($this->resolveAllowedMimeTypes());
     }
 
     private function resolveMaxUploadBytes(): int

@@ -26,6 +26,16 @@ interface FileWriterInterface
     public function write(string $relativePath, string $content, bool $createBackup = true): void;
 
     /**
+     * Zapíše binárny obsah bez UTF-8 normalizácie (médiá, uploady).
+     *
+     * @param string $relativePath Relatívna cesta k súboru.
+     * @param string $content Binárny obsah na zápis.
+     * @param bool $createBackup Vytvoriť záložnú kópiu pred zápisom.
+     * @throws FlatFileException Ak zápis zlyhá.
+     */
+    public function writeBinary(string $relativePath, string $content, bool $createBackup = true): void;
+
+    /**
      * Vymaže súbor.
      *
      * @param string $relativePath Relatívna cesta k súboru.

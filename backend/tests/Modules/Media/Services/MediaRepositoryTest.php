@@ -15,8 +15,23 @@ use org\bovigo\vfs\vfsStream;
 
 class MediaRepositoryTest extends TestCase
 {
+    private const PNG_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+
     private MediaRepository $repository;
     private string $root;
+
+    private function pngBytes(): string
+    {
+        $bytes = base64_decode(self::PNG_BASE64, true);
+        $this->assertNotFalse($bytes);
+
+        return $bytes;
+    }
+
+    private function minimalPdfBytes(): string
+    {
+        return "%PDF-1.4\n%%EOF\n";
+    }
 
     protected function setUp(): void
     {
@@ -45,11 +60,7 @@ class MediaRepositoryTest extends TestCase
 
     public function testSaveUploadCreatesRegistryAndFile(): void
     {
-        $pngBytes = base64_decode(
-            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
-            true
-        );
-        $this->assertNotFalse($pngBytes);
+        $pngBytes = $this->pngBytes();
 
         $media = $this->repository->saveUpload('photo.png', $pngBytes, 'image/png', 'Test alt');
 
@@ -65,11 +76,21 @@ class MediaRepositoryTest extends TestCase
         $this->assertSame($media->getId(), $all[0]->getId());
     }
 
+    public function testSaveUploadPreservesBinaryPngHeader(): void
+    {
+        $pngBytes = $this->pngBytes();
+        $media = $this->repository->saveUpload('binary.png', $pngBytes, 'image/png');
+
+        $stored = file_get_contents($this->root . '/' . $media->getPath());
+        $this->assertSame($pngBytes, $stored);
+        $this->assertSame("\x89PNG\r\n\x1a\n", substr($stored, 0, 8));
+    }
+
     public function testSaveUploadIntoFolder(): void
     {
         $this->repository->createFolder('campaigns');
 
-        $media = $this->repository->saveUpload('hero.png', 'png-bytes', 'image/png', '', 'campaigns');
+        $media = $this->repository->saveUpload('hero.png', $this->pngBytes(), 'image/png', '', 'campaigns');
 
         $this->assertSame('campaigns', $media->getFolder());
         $this->assertStringStartsWith('media/campaigns/', $media->getPath());
@@ -81,7 +102,7 @@ class MediaRepositoryTest extends TestCase
 
     public function testFindByPathReturnsSavedMedia(): void
     {
-        $media = $this->repository->saveUpload('doc.pdf', '%PDF-1.4', 'application/pdf');
+        $media = $this->repository->saveUpload('doc.pdf', $this->minimalPdfBytes(), 'application/pdf');
 
         $found = $this->repository->findByPath($media->getPath());
         $this->assertNotNull($found);
@@ -91,8 +112,8 @@ class MediaRepositoryTest extends TestCase
 
     public function testFindAllFiltersImagesOnly(): void
     {
-        $this->repository->saveUpload('a.png', 'png', 'image/png');
-        $this->repository->saveUpload('b.pdf', '%PDF', 'application/pdf');
+        $this->repository->saveUpload('a.png', $this->pngBytes(), 'image/png');
+        $this->repository->saveUpload('b.pdf', $this->minimalPdfBytes(), 'application/pdf');
 
         $images = $this->repository->findAll(['type' => 'image']);
         $this->assertCount(1, $images);
@@ -101,7 +122,7 @@ class MediaRepositoryTest extends TestCase
 
     public function testUpdateMetadataWritesSidecar(): void
     {
-        $media = $this->repository->saveUpload('icon.png', 'png-bytes', 'image/png');
+        $media = $this->repository->saveUpload('icon.png', $this->pngBytes(), 'image/png');
         $media->setAltText('Updated alt');
         $media->setTitle('Updated title');
 
@@ -115,7 +136,7 @@ class MediaRepositoryTest extends TestCase
 
     public function testDeleteRemovesFileRegistryAndSidecar(): void
     {
-        $media = $this->repository->saveUpload('remove.png', 'png-bytes', 'image/png');
+        $media = $this->repository->saveUpload('remove.png', $this->pngBytes(), 'image/png');
         $path = $media->getPath();
 
         $this->repository->delete($path);
@@ -126,8 +147,8 @@ class MediaRepositoryTest extends TestCase
 
     public function testBulkDeleteRemovesMultipleFiles(): void
     {
-        $first = $this->repository->saveUpload('one.png', 'png', 'image/png');
-        $second = $this->repository->saveUpload('two.png', 'png', 'image/png');
+        $first = $this->repository->saveUpload('one.png', $this->pngBytes(), 'image/png');
+        $second = $this->repository->saveUpload('two.png', $this->pngBytes(), 'image/png');
 
         $deleted = $this->repository->bulkDelete([$first->getPath(), $second->getPath(), 'media/missing.png']);
 
@@ -138,7 +159,7 @@ class MediaRepositoryTest extends TestCase
     public function testListFoldersIncludesRootAndCreatedFolder(): void
     {
         $this->repository->createFolder('assets/icons');
-        $this->repository->saveUpload('logo.png', 'png', 'image/png', '', 'assets/icons');
+        $this->repository->saveUpload('logo.png', $this->pngBytes(), 'image/png', '', 'assets/icons');
 
         $folders = $this->repository->listFolders();
 
@@ -150,6 +171,12 @@ class MediaRepositoryTest extends TestCase
     {
         $this->expectException(FlatFileException::class);
         $this->repository->delete('media/missing.png');
+    }
+
+    public function testSaveUploadRejectsInvalidContent(): void
+    {
+        $this->expectException(FlatFileException::class);
+        $this->repository->saveUpload('photo.png', 'not-a-png', 'image/png');
     }
 
     public function testSaveUploadRejectsUnsupportedMimeType(): void

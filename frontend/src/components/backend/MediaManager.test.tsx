@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   listMediaFolders: vi.fn(),
   importStockImage: vi.fn(),
   listStockImageTopics: vi.fn(),
+  listMediaFormats: vi.fn(),
   uploadMedia: vi.fn(),
   deleteMedia: vi.fn(),
   bulkDeleteMedia: vi.fn(),
@@ -19,6 +20,7 @@ vi.mock('../../api/media', () => ({
   listMedia: mocks.listMedia,
   listMediaFolders: mocks.listMediaFolders,
   listStockImageTopics: mocks.listStockImageTopics,
+  listMediaFormats: mocks.listMediaFormats,
   importStockImage: mocks.importStockImage,
   uploadMedia: mocks.uploadMedia,
   deleteMedia: mocks.deleteMedia,
@@ -26,9 +28,12 @@ vi.mock('../../api/media', () => ({
   createMediaFolder: mocks.createMediaFolder,
   updateMediaMetadata: mocks.updateMediaMetadata,
   updateMediaAlt: mocks.updateMediaMetadata,
-  resolveMediaUrl: (url: string) => `http://localhost:8080${url}`,
+  resolveAdminMediaPreviewUrl: (path: string) => `/api/media/file/${path}`,
+  resolvePublicMediaUrl: (url: string) => url,
+  resolveMediaUrl: (url: string) => url,
   formatMediaSize: (bytes: number) => `${bytes} B`,
   isImageMedia: (file: { mimeType: string }) => file.mimeType.startsWith('image/'),
+  isPreviewableMedia: (file: { mimeType: string }) => file.mimeType.startsWith('image/'),
 }));
 
 vi.mock('../../api/settings', () => ({
@@ -69,6 +74,12 @@ describe('MediaManager', () => {
       { id: 'tech', label: 'Technológie / IT', count: 5 },
       { id: 'food', label: 'Varenie', count: 4 },
     ]);
+    mocks.listMediaFormats.mockResolvedValue({
+      mimeTypes: ['image/png'],
+      extensions: ['png'],
+      accept: 'image/png',
+      previewableMimeTypes: ['image/png'],
+    });
     mocks.importStockImage.mockResolvedValue({ ok: true, media: sampleFile });
     mocks.uploadMedia.mockResolvedValue({ ok: true, media: sampleFile });
     mocks.deleteMedia.mockResolvedValue(true);

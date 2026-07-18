@@ -2,7 +2,11 @@
 // === Media API (Iteration 8 + 24 DAM) ===
 // Typed calls to backend /api/media/*. Backend is the single source of truth.
 import apiClient from './client';
-import { resolveMediaUrl as resolveMediaUrlFromBase } from '../utils/apiBaseUrl';
+import {
+  resolveAdminMediaFileUrl,
+  resolveMediaUrl as resolveMediaUrlFromBase,
+  resolveStorageUrl,
+} from '../utils/apiBaseUrl';
 
 export interface MediaFile {
   id: string;
@@ -27,9 +31,26 @@ export type UploadMediaResult =
   | { ok: true; media: MediaFile }
   | { ok: false; error: string };
 
-/** Resolve a backend-relative media URL to an absolute URL for <img src>. */
+export interface MediaFormatsPayload {
+  mimeTypes: string[];
+  extensions: string[];
+  accept: string;
+  previewableMimeTypes: string[];
+}
+
+/** Resolve a backend-relative media URL to an absolute URL for public embeds. */
 export function resolveMediaUrl(url: string): string {
   return resolveMediaUrlFromBase(url);
+}
+
+/** Same-origin URL for admin thumbnails and lightbox preview. */
+export function resolveAdminMediaPreviewUrl(path: string): string {
+  return resolveAdminMediaFileUrl(path);
+}
+
+/** Public storage URL (same origin). */
+export function resolvePublicMediaUrl(url: string): string {
+  return resolveStorageUrl(url);
 }
 
 /** Human-readable file size. */
@@ -45,6 +66,43 @@ export function formatMediaSize(bytes: number): string {
 
 export function isImageMedia(file: MediaFile): boolean {
   return file.mimeType.startsWith('image/');
+}
+
+export function isPreviewableMedia(
+  file: MediaFile,
+  previewableMimeTypes?: string[]
+): boolean {
+  if (previewableMimeTypes && previewableMimeTypes.length > 0) {
+    return previewableMimeTypes.includes(file.mimeType);
+  }
+
+  return isImageMedia(file) && file.mimeType !== 'application/pdf';
+}
+
+/** Load strict allowed formats from backend settings. */
+export async function listMediaFormats(): Promise<MediaFormatsPayload> {
+  const fallback: MediaFormatsPayload = {
+    mimeTypes: [
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'image/svg+xml',
+      'application/pdf',
+    ],
+    extensions: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'pdf'],
+    accept: 'image/jpeg,image/png,image/gif,image/webp,image/svg+xml,application/pdf',
+    previewableMimeTypes: [
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'image/svg+xml',
+    ],
+  };
+
+  const res = await apiClient.get<MediaFormatsPayload>('/api/media/formats');
+  return res.success && res.data ? res.data : fallback;
 }
 
 /**

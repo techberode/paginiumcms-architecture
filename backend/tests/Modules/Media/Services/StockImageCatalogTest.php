@@ -37,7 +37,7 @@ class StockImageCatalogTest extends TestCase
         $catalog = new StockImageCatalog(__DIR__ . '/Fixtures/stock-images-test.json');
         $entry = $catalog->pickRandom('unknown-topic');
 
-        $this->assertSame('general-sample.jpg', $entry['fileName']);
+        $this->assertSame('general-sample.png', $entry['fileName']);
     }
 
     public function testInvalidCatalogThrows(): void

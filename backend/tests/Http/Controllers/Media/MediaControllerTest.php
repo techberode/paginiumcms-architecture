@@ -11,6 +11,16 @@ use Slim\Psr7\UploadedFile;
 
 class MediaControllerTest extends TestCase
 {
+    private const PNG_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+
+    private function pngBytes(): string
+    {
+        $bytes = base64_decode(self::PNG_BASE64, true);
+        $this->assertNotFalse($bytes);
+
+        return $bytes;
+    }
+
     public function testListMediaRequiresAuth(): void
     {
         $request = $this->createJsonRequest('GET', '/api/media');
@@ -38,11 +48,7 @@ class MediaControllerTest extends TestCase
         $login = $this->loginAsAdminUser();
         $this->assertEquals(200, $login['response']->getStatusCode());
 
-        $pngBytes = base64_decode(
-            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
-            true
-        );
-        $this->assertNotFalse($pngBytes);
+        $pngBytes = $this->pngBytes();
 
         $stream = (new StreamFactory())->createStream($pngBytes);
         $uploadedFile = new UploadedFile(
@@ -94,12 +100,12 @@ class MediaControllerTest extends TestCase
         $login = $this->loginAsAdminUser();
         $this->assertEquals(200, $login['response']->getStatusCode());
 
-        $stream = (new StreamFactory())->createStream('fake-png');
+        $stream = (new StreamFactory())->createStream($this->pngBytes());
         $uploadedFile = new UploadedFile(
             $stream,
             'lifecycle.png',
             'image/png',
-            8,
+            strlen($this->pngBytes()),
             UPLOAD_ERR_OK
         );
 
@@ -167,12 +173,12 @@ class MediaControllerTest extends TestCase
         $this->assertEquals(201, $createResponse->getStatusCode());
         $this->assertTrue($createData['success']);
 
-        $stream = (new StreamFactory())->createStream('fake-png');
+        $stream = (new StreamFactory())->createStream($this->pngBytes());
         $uploadedFile = new UploadedFile(
             $stream,
             'folder-file.png',
             'image/png',
-            8,
+            strlen($this->pngBytes()),
             UPLOAD_ERR_OK
         );
 
@@ -207,8 +213,8 @@ class MediaControllerTest extends TestCase
 
         $paths = [];
         foreach (['a.png', 'b.png'] as $name) {
-            $stream = (new StreamFactory())->createStream('fake-png');
-            $uploadedFile = new UploadedFile($stream, $name, 'image/png', 8, UPLOAD_ERR_OK);
+            $stream = (new StreamFactory())->createStream($this->pngBytes());
+            $uploadedFile = new UploadedFile($stream, $name, 'image/png', strlen($this->pngBytes()), UPLOAD_ERR_OK);
             $uploadRequest = (new ServerRequestFactory())
                 ->createServerRequest('POST', '/api/media/upload')
                 ->withUploadedFiles(['file' => $uploadedFile]);
@@ -244,5 +250,56 @@ class MediaControllerTest extends TestCase
         $this->assertTrue($data['success']);
         $this->assertIsArray($data['data']);
         $this->assertNotEmpty($data['data']);
+    }
+
+    public function testListFormats(): void
+    {
+        $login = $this->loginAsAdminUser();
+        $this->assertEquals(200, $login['response']->getStatusCode());
+
+        $request = $this->createJsonRequest('GET', '/api/media/formats');
+        $response = $this->handleRequest($request);
+        $data = $this->getJsonResponse($response);
+
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertTrue($data['success']);
+        $this->assertContains('image/png', $data['data']['mimeTypes']);
+        $this->assertStringContainsString('image/png', $data['data']['accept']);
+    }
+
+    public function testServeFileReturnsBinaryForUploadedImage(): void
+    {
+        $login = $this->loginAsAdminUser();
+        $this->assertEquals(200, $login['response']->getStatusCode());
+
+        $pngBytes = $this->pngBytes();
+        $stream = (new StreamFactory())->createStream($pngBytes);
+        $uploadedFile = new UploadedFile(
+            $stream,
+            'serve-me.png',
+            'image/png',
+            strlen($pngBytes),
+            UPLOAD_ERR_OK
+        );
+
+        $uploadRequest = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/api/media/upload')
+            ->withUploadedFiles(['file' => $uploadedFile]);
+
+        if ($this->currentUser !== null) {
+            $uploadRequest = $uploadRequest->withAttribute('user', $this->currentUser);
+        }
+
+        $uploadResponse = $this->handleRequest($uploadRequest);
+        $uploadData = $this->getJsonResponse($uploadResponse);
+        $path = $uploadData['data']['path'] ?? null;
+        $this->assertNotNull($path);
+
+        $serveRequest = $this->createJsonRequest('GET', '/api/media/file/' . $path);
+        $serveResponse = $this->handleRequest($serveRequest);
+
+        $this->assertEquals(200, $serveResponse->getStatusCode());
+        $this->assertSame('image/png', $serveResponse->getHeaderLine('Content-Type'));
+        $this->assertSame($pngBytes, (string) $serveResponse->getBody());
     }
 }

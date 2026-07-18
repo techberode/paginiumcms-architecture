@@ -66,6 +66,41 @@ class FileWriter implements FileWriterInterface
         }
     }
 
+    public function writeBinary(string $relativePath, string $content, bool $createBackup = true): void
+    {
+        $absolutePath = $this->validator->getAbsolutePath($relativePath);
+        $isVirtual = strpos($absolutePath, 'vfs://') === 0;
+
+        if ($createBackup && file_exists($absolutePath)) {
+            $this->createBackup($relativePath);
+        }
+
+        $directory = dirname($absolutePath);
+        if (!is_dir($directory)) {
+            if (!mkdir($directory, 0755, true) && !is_dir($directory)) {
+                throw new FlatFileException(sprintf('Nepodarilo sa vytvoriť adresár: %s', $directory));
+            }
+        }
+
+        if ($isVirtual) {
+            $result = file_put_contents($absolutePath, $content);
+        } else {
+            $result = file_put_contents($absolutePath, $content, LOCK_EX);
+        }
+
+        if ($result === false) {
+            throw new FlatFileException(sprintf(
+                'Nepodarilo sa zapísať binárny súbor: %s (cesta: %s)',
+                $relativePath,
+                $absolutePath
+            ));
+        }
+
+        if (!$isVirtual) {
+            chmod($absolutePath, 0644);
+        }
+    }
+
     public function delete(string $relativePath, bool $moveToTrash = true): void
     {
         $absolutePath = $this->validator->getAbsolutePath($relativePath);

@@ -39,7 +39,7 @@ class StockImageImporterTest extends TestCase
 
         $media = $importer->import('', 'stock');
 
-        $this->assertSame('food-sample.jpg', $media->getFileName());
+        $this->assertSame('food-sample.png', $media->getFileName());
         $this->assertSame('Food alt', $media->getAltText());
         $this->assertSame('Food title', $media->getTitle());
         $this->assertSame('stock', $media->getFolder());

@@ -1,7 +1,7 @@
 # Iteration 26 – Media preview lightbox
 
-**Status:** Complete  
-**Version:** 2.0.13  
+**Status:** Complete (hotfix 2.0.14 — zobrazenie + striktné formáty)  
+**Version:** 2.0.14  
 **Release track:** post-2.0.12 (DAM UX — náhľady obrázkov)
 
 ## Summary
@@ -80,4 +80,34 @@ It.24 (DAM grid) → It.26 (lightbox preview)
 
 ## Deploy
 
-Len frontend (`paginium-deploy`). Backend bez zmien.
+Frontend + backend (`paginium-deploy`). Po nasadení **zmazať a znovu nahrať** médiá uploadnuté pred 2.0.14 (binárne súbory mohli byť poškodené UTF-8 normalizáciou).
+
+---
+
+## Part 4 – Hotfix 2.0.14: zobrazenie náhľadov + striktné formáty ✅
+
+**Problém:** Náhľady v Media Library ani lightbox nefungovali. Príčiny:
+
+1. **`FileWriter::write()`** volal `utf8_normalize()` aj na binárne uploady → poškodené PNG/JPEG na disku.
+2. **`resolveMediaUrl()`** skladala absolútnu URL na API host (`VITE_API_URL` / `:8080`), zatiaľ čo admin SPA beží na nginx (`:8081`) → `<img src>` mimo same-origin / CSP.
+
+**Riešenie:**
+
+| Vrstva | Zmena |
+|--------|--------|
+| **Backend I/O** | `FileWriter::writeBinary()`, `FileReader::readBinary()` — bez UTF-8 normalizácie |
+| **Validácia** | `MediaFormats.php` — MIME + prípona + magic bytes (JPEG, PNG, GIF, WebP, SVG, PDF) |
+| **API** | `GET /api/media/formats`, `GET /api/media/file/{path}` — autentifikované servovanie |
+| **Frontend URL** | Admin náhľady: `/api/media/file/...` (same-origin); verejné embedy: `/storage/...` |
+| **UI** | `accept` z API; fallback `/storage/` pri `onError`; `MediaPickerModal` rovnaká logika |
+
+**Povolené formáty (default, riadené `Settings → Media → allowedMimeTypes`):**
+
+- `image/jpeg`, `image/png`, `image/gif`, `image/webp`, `image/svg+xml`, `application/pdf`
+- Náhľad/lightbox: raster + SVG; PDF len ikona / otvorenie v novom okne
+
+**Súbory:** `MediaFormats.php`, `MediaRepository.php`, `MediaController.php`, `media.php`, `apiBaseUrl.ts`, `media.ts`, `MediaManager.tsx`, `MediaPreviewLightbox.tsx`, `MediaPickerModal.tsx`
+
+**Testy:** `MediaFormatsTest`, rozšírené `MediaRepositoryTest`, `MediaControllerTest` (serve + formats), Vitest URL helpers.
+
+**Post-deploy:** Staré uploady treba vymazať a nahrať znova (overené manuálne: vlastný upload + generovanie z knižnice OK).
