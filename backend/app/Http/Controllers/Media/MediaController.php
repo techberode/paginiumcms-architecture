@@ -7,6 +7,8 @@ namespace PaginiumCMS\Http\Controllers\Media;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
+use PaginiumCMS\Modules\Media\Services\StockImageCatalog;
+use PaginiumCMS\Modules\Media\Services\StockImageImporter;
 use PaginiumCMS\Support\Lang;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -16,6 +18,8 @@ class MediaController
 {
     public function __construct(
         private MediaRepositoryInterface $mediaRepository,
+        private StockImageCatalog $stockImageCatalog,
+        private StockImageImporter $stockImageImporter,
         private JsonResponder $json
     ) {
     }
@@ -33,12 +37,106 @@ class MediaController
             $filters['mimeType'] = $params['mimeType'];
         }
 
+        if (array_key_exists('folder', $params)) {
+            $filters['folder'] = (string) $params['folder'];
+        }
+
         $files = array_map(
             fn ($file) => $file->jsonSerialize(),
             $this->mediaRepository->findAll($filters)
         );
 
         return $this->json->success($response, $files);
+    }
+
+    public function listFolders(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        return $this->json->success($response, $this->mediaRepository->listFolders());
+    }
+
+    public function listStockTopics(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        try {
+            return $this->json->success($response, $this->stockImageCatalog->topics());
+        } catch (FlatFileException $e) {
+            return $this->json->error($response, $e->getMessage(), 500);
+        }
+    }
+
+    public function importStockImage(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $data = json_decode((string) $request->getBody(), true);
+        if (!is_array($data)) {
+            $data = [];
+        }
+
+        $topic = trim((string) ($data['topic'] ?? ''));
+        $folder = trim((string) ($data['folder'] ?? ''));
+
+        try {
+            $media = $this->stockImageImporter->import($topic, $folder);
+
+            return $this->json->success(
+                $response,
+                $media->jsonSerialize(),
+                201,
+                Lang::get('stock_imported', [], 'media')
+            );
+        } catch (FlatFileException $e) {
+            return $this->json->error($response, $e->getMessage(), 400);
+        }
+    }
+
+    public function createFolder(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $data = json_decode((string) $request->getBody(), true);
+        if (!is_array($data)) {
+            return $this->json->error($response, Lang::get('folder_required', [], 'media'), 400);
+        }
+
+        $folder = trim((string) ($data['folder'] ?? ''));
+        if ($folder === '') {
+            return $this->json->error($response, Lang::get('folder_required', [], 'media'), 400);
+        }
+
+        try {
+            $this->mediaRepository->createFolder($folder);
+
+            return $this->json->success(
+                $response,
+                ['folder' => $folder],
+                201,
+                Lang::get('folder_created', [], 'media')
+            );
+        } catch (FlatFileException $e) {
+            return $this->json->error($response, $e->getMessage(), 400);
+        }
+    }
+
+    public function bulkDeleteMedia(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $data = json_decode((string) $request->getBody(), true);
+        if (!is_array($data) || !isset($data['paths']) || !is_array($data['paths'])) {
+            return $this->json->error($response, Lang::get('paths_required', [], 'media'), 400);
+        }
+
+        $paths = array_values(array_filter(
+            array_map(static fn ($path): string => is_string($path) ? $path : '', $data['paths']),
+            static fn (string $path): bool => $path !== ''
+        ));
+
+        if ($paths === []) {
+            return $this->json->error($response, Lang::get('paths_required', [], 'media'), 400);
+        }
+
+        $deleted = $this->mediaRepository->bulkDelete($paths);
+
+        return $this->json->success(
+            $response,
+            ['deleted' => $deleted],
+            200,
+            Lang::get('bulk_deleted', [], 'media')
+        );
     }
 
     public function uploadMedia(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -52,13 +150,15 @@ class MediaController
 
         $parsedBody = $request->getParsedBody();
         $altText = is_array($parsedBody) ? (string) ($parsedBody['altText'] ?? '') : '';
+        $folder = is_array($parsedBody) ? (string) ($parsedBody['folder'] ?? '') : '';
 
         try {
             $media = $this->mediaRepository->saveUpload(
                 $file->getClientFilename() ?? 'upload.bin',
                 (string) $file->getStream(),
                 $file->getClientMediaType() ?? 'application/octet-stream',
-                $altText
+                $altText,
+                $folder
             );
 
             return $this->json->success($response, $media->jsonSerialize(), 201);
@@ -86,6 +186,10 @@ class MediaController
 
         if (array_key_exists('altText', $data)) {
             $media->setAltText((string) $data['altText']);
+        }
+
+        if (array_key_exists('title', $data)) {
+            $media->setTitle((string) $data['title']);
         }
 
         try {

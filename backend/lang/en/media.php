@@ -9,4 +9,10 @@ return [
     'deleted' => 'Media file deleted',
     'updated' => 'Media file updated',
     'invalid_type' => 'Unsupported file type',
+    'folder_required' => 'Folder name is required',
+    'folder_created' => 'Folder created',
+    'paths_required' => 'Paths list is required',
+    'bulk_deleted' => 'Selected media files deleted',
+    'stock_imported' => 'Stock image imported into the library',
+    'stock_disabled' => 'Stock image import is disabled in settings',
 ];

@@ -20,6 +20,8 @@ class MediaFile implements JsonSerializable
     private string $mimeType;
     private int $uploadedAt;
     private string $altText = '';
+    private string $folder = '';
+    private string $title = '';
 
     public function __construct()
     {
@@ -109,6 +111,28 @@ class MediaFile implements JsonSerializable
         return $this;
     }
 
+    public function getFolder(): string
+    {
+        return $this->folder;
+    }
+
+    public function setFolder(string $folder): self
+    {
+        $this->folder = $folder;
+        return $this;
+    }
+
+    public function getTitle(): string
+    {
+        return $this->title;
+    }
+
+    public function setTitle(string $title): self
+    {
+        $this->title = $title;
+        return $this;
+    }
+
     public function getUploadedAtDateTime(): DateTimeImmutable
     {
         return new DateTimeImmutable('@' . $this->uploadedAt);
@@ -143,6 +167,8 @@ class MediaFile implements JsonSerializable
             'mimeType' => $this->mimeType,
             'uploadedAt' => $this->uploadedAt,
             'altText' => $this->altText,
+            'folder' => $this->folder,
+            'title' => $this->title,
         ];
     }
 }

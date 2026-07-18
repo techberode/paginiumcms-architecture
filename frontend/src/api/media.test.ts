@@ -31,6 +31,8 @@ describe('media API helpers', () => {
       mimeType: 'image/png',
       uploadedAt: 0,
       altText: '',
+      folder: '',
+      title: '',
     };
     const pdf: MediaFile = { ...image, mimeType: 'application/pdf' };
 

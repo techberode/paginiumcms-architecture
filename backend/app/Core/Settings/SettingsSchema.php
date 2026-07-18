@@ -163,6 +163,15 @@ final class SettingsSchema
                     ['key' => 'twitterCard', 'type' => 'enum', 'label' => 'Twitter card typ', 'default' => 'summary_large_image', 'options' => ['summary', 'summary_large_image'], 'rules' => ['required', 'in:summary,summary_large_image']],
                 ],
             ],
+            'media' => [
+                'label' => 'Media / DAM',
+                'fields' => [
+                    ['key' => 'allowedMimeTypes', 'type' => 'text', 'label' => 'Povolené MIME typy', 'default' => 'image/jpeg,image/png,image/gif,image/webp,image/svg+xml,application/pdf', 'rules' => ['required', 'string', 'max:2000'], 'help' => 'Oddeľte čiarkou. Ovplyvňuje upload v Media Library.'],
+                    ['key' => 'maxUploadSizeKb', 'type' => 'int', 'label' => 'Max. veľkosť uploadu (KB)', 'default' => 5120, 'rules' => ['required', 'int', 'min:64', 'max:51200'], 'help' => '5120 KB = 5 MB.'],
+                    ['key' => 'stockImagesEnabled', 'type' => 'bool', 'label' => 'Povoliť stock knižnicu', 'default' => true, 'rules' => ['bool'], 'help' => 'Tlačidlo „Generovať z knižnice“ v Media Library.'],
+                    ['key' => 'stockImageTopic', 'type' => 'enum', 'label' => 'Téma stock obrázkov', 'default' => 'tech', 'options' => ['tech', 'business', 'food', 'travel', 'health', 'nature', 'general'], 'rules' => ['required', 'in:tech,business,food,travel,health,nature,general'], 'help' => 'Obrázky sa vyberajú podľa zamerania webu (IT, varenie, cestovanie…).'],
+                ],
+            ],
         ];
     }
 

@@ -8,6 +8,7 @@ use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Core\FlatFile\Models\MediaFile;
+use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
 use PaginiumCMS\Support\JsonHelper;
 
@@ -15,9 +16,11 @@ class MediaRepository implements MediaRepositoryInterface
 {
     private const MEDIA_DIR = 'media';
     private const REGISTRY = 'media/registry.json';
+    private const FOLDERS_INDEX = 'media/folders.json';
+    private const FOLDER_MARKER = '.paginium-folder';
 
-    /** @var array<int, string> */
-    private array $allowedMimeTypes = [
+    /** @var list<string> */
+    private const DEFAULT_MIME_TYPES = [
         'image/jpeg',
         'image/png',
         'image/gif',
@@ -28,13 +31,14 @@ class MediaRepository implements MediaRepositoryInterface
 
     public function __construct(
         private FileReaderInterface $reader,
-        private FileWriterInterface $writer
+        private FileWriterInterface $writer,
+        private SettingsRepositoryInterface $settings
     ) {
     }
 
     /**
      * @param array<int|string, mixed> $filters
-     * @return array<int|string, mixed>
+     * @return array<int, MediaFile>
      */
     public function findAll(array $filters = []): array
     {
@@ -64,19 +68,32 @@ class MediaRepository implements MediaRepositoryInterface
         return null;
     }
 
-    public function saveUpload(string $originalName, $contents, string $mimeType, string $altText = ''): MediaFile
-    {
-        if (!in_array($mimeType, $this->allowedMimeTypes, true)) {
+    public function saveUpload(
+        string $originalName,
+        $contents,
+        string $mimeType,
+        string $altText = '',
+        string $folder = ''
+    ): MediaFile {
+        if (!in_array($mimeType, $this->resolveAllowedMimeTypes(), true)) {
             throw new FlatFileException('Nepodporovaný typ súboru: ' . $mimeType);
         }
 
+        $folder = $this->normalizeFolder($folder);
         $safeName = $this->sanitizeFileName($originalName);
         $media = new MediaFile();
-        $relativePath = self::MEDIA_DIR . '/' . $media->getId() . '_' . $safeName;
+
+        $prefix = self::MEDIA_DIR . ($folder !== '' ? '/' . $folder : '');
+        $relativePath = $prefix . '/' . $media->getId() . '_' . $safeName;
 
         $binary = is_resource($contents) ? stream_get_contents($contents) : $contents;
         if (!is_string($binary) || $binary === '') {
             throw new FlatFileException('Prázdny alebo neplatný súbor');
+        }
+
+        $maxBytes = $this->resolveMaxUploadBytes();
+        if (strlen($binary) > $maxBytes) {
+            throw new FlatFileException('Súbor presahuje maximálnu povolenú veľkosť');
         }
 
         $this->writer->write($relativePath, $binary, true);
@@ -87,10 +104,12 @@ class MediaRepository implements MediaRepositoryInterface
         $media->setSizeBytes(strlen($binary));
         $media->setMimeType($mimeType);
         $media->setAltText($altText);
+        $media->setFolder($folder);
 
         $registry = $this->loadRegistry();
         $registry[] = $media->jsonSerialize();
         $this->saveRegistry($registry);
+        $this->writeSidecar($media);
 
         return $media;
     }
@@ -109,6 +128,11 @@ class MediaRepository implements MediaRepositoryInterface
                 $this->writer->delete($path, true);
             }
 
+            $sidecar = $this->sidecarPath($path);
+            if ($this->reader->exists($sidecar)) {
+                $this->writer->delete($sidecar, true);
+            }
+
             unset($registry[$index]);
             $found = true;
             break;
@@ -119,6 +143,26 @@ class MediaRepository implements MediaRepositoryInterface
         }
 
         $this->saveRegistry(array_values($registry));
+    }
+
+    public function bulkDelete(array $paths): int
+    {
+        $deleted = 0;
+
+        foreach ($paths as $path) {
+            if (!is_string($path) || $path === '') {
+                continue;
+            }
+
+            try {
+                $this->delete($path);
+                ++$deleted;
+            } catch (FlatFileException) {
+                // Skip missing paths in bulk operations.
+            }
+        }
+
+        return $deleted;
     }
 
     public function update(MediaFile $file): void
@@ -141,6 +185,50 @@ class MediaRepository implements MediaRepositoryInterface
         }
 
         $this->saveRegistry($registry);
+        $this->writeSidecar($file);
+    }
+
+    public function listFolders(): array
+    {
+        $folders = [''];
+
+        foreach ($this->loadRegistry() as $entry) {
+            $folder = (string) ($entry['folder'] ?? '');
+            if ($folder !== '' && !in_array($folder, $folders, true)) {
+                $folders[] = $folder;
+            }
+        }
+
+        foreach ($this->loadFolderIndex() as $folder) {
+            if ($folder !== '' && !in_array($folder, $folders, true)) {
+                $folders[] = $folder;
+            }
+        }
+
+        sort($folders);
+
+        return array_values(array_unique($folders));
+    }
+
+    public function createFolder(string $folder): void
+    {
+        $folder = $this->normalizeFolder($folder);
+        if ($folder === '') {
+            throw new FlatFileException('Neplatný názov priečinka');
+        }
+
+        $marker = self::MEDIA_DIR . '/' . $folder . '/' . self::FOLDER_MARKER;
+        if (!$this->reader->exists($marker)) {
+            $payload = JsonHelper::encode(['createdAt' => time()], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+            $this->writer->write($marker, $payload, true);
+        }
+
+        $folders = $this->loadFolderIndex();
+        if (!in_array($folder, $folders, true)) {
+            $folders[] = $folder;
+            sort($folders);
+            $this->saveFolderIndex($folders);
+        }
     }
 
     /**
@@ -180,7 +268,7 @@ class MediaRepository implements MediaRepositoryInterface
         $file = new MediaFile();
         $reflection = new \ReflectionClass($file);
 
-        foreach (['id', 'path', 'fileName', 'url', 'sizeBytes', 'mimeType', 'uploadedAt', 'altText'] as $property) {
+        foreach (['id', 'path', 'fileName', 'url', 'sizeBytes', 'mimeType', 'uploadedAt', 'altText', 'folder', 'title'] as $property) {
             if (!array_key_exists($property, $entry)) {
                 continue;
             }
@@ -189,7 +277,55 @@ class MediaRepository implements MediaRepositoryInterface
             $prop->setValue($file, $entry[$property]);
         }
 
+        $this->mergeSidecar($file);
+
         return $file;
+    }
+
+    private function mergeSidecar(MediaFile $file): void
+    {
+        $sidecar = $this->sidecarPath($file->getPath());
+        if (!$this->reader->exists($sidecar)) {
+            return;
+        }
+
+        try {
+            $content = $this->reader->read($sidecar);
+            $data = json_decode($content, true);
+            if (!is_array($data)) {
+                return;
+            }
+
+            if (array_key_exists('altText', $data)) {
+                $file->setAltText((string) $data['altText']);
+            }
+            if (array_key_exists('title', $data)) {
+                $file->setTitle((string) $data['title']);
+            }
+            if (array_key_exists('folder', $data)) {
+                $file->setFolder((string) $data['folder']);
+            }
+        } catch (FlatFileException) {
+            // Ignore corrupt sidecars; registry remains source of truth for file identity.
+        }
+    }
+
+    private function writeSidecar(MediaFile $file): void
+    {
+        $payload = [
+            'altText' => $file->getAltText(),
+            'title' => $file->getTitle(),
+            'folder' => $file->getFolder(),
+            'updatedAt' => time(),
+        ];
+
+        $json = JsonHelper::encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        $this->writer->write($this->sidecarPath($file->getPath()), $json, true);
+    }
+
+    private function sidecarPath(string $path): string
+    {
+        return $path . '.meta.json';
     }
 
     /**
@@ -199,6 +335,10 @@ class MediaRepository implements MediaRepositoryInterface
     {
         if (empty($filters)) {
             return true;
+        }
+
+        if (isset($filters['folder']) && $file->getFolder() !== (string) $filters['folder']) {
+            return false;
         }
 
         if (isset($filters['mimeType']) && $file->getMimeType() !== $filters['mimeType']) {
@@ -212,11 +352,82 @@ class MediaRepository implements MediaRepositoryInterface
         return true;
     }
 
+    /**
+     * @return list<string>
+     */
+    private function loadFolderIndex(): array
+    {
+        if (!$this->reader->exists(self::FOLDERS_INDEX)) {
+            return [];
+        }
+
+        try {
+            $content = $this->reader->read(self::FOLDERS_INDEX);
+            $data = json_decode($content, true);
+
+            if (!is_array($data)) {
+                return [];
+            }
+
+            return array_values(array_filter(
+                array_map(static fn ($folder): string => is_string($folder) ? trim($folder, '/') : '', $data),
+                static fn (string $folder): bool => $folder !== ''
+            ));
+        } catch (FlatFileException) {
+            return [];
+        }
+    }
+
+    /**
+     * @param list<string> $folders
+     */
+    private function saveFolderIndex(array $folders): void
+    {
+        $json = JsonHelper::encode(array_values($folders), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        $this->writer->write(self::FOLDERS_INDEX, $json, true);
+    }
+
     private function sanitizeFileName(string $name): string
     {
         $name = basename($name);
         $name = preg_replace('/[^a-zA-Z0-9._-]/', '-', $name) ?? 'upload.bin';
 
         return $name !== '' ? $name : 'upload.bin';
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function resolveAllowedMimeTypes(): array
+    {
+        $raw = (string) ($this->settings->group('media')['allowedMimeTypes'] ?? '');
+        if ($raw === '') {
+            return self::DEFAULT_MIME_TYPES;
+        }
+
+        $types = array_map('trim', explode(',', $raw));
+
+        return array_values(array_filter($types, static fn (string $type): bool => $type !== ''));
+    }
+
+    private function resolveMaxUploadBytes(): int
+    {
+        $maxKb = (int) ($this->settings->group('media')['maxUploadSizeKb'] ?? 5120);
+
+        return max(64, $maxKb) * 1024;
+    }
+
+    private function normalizeFolder(string $folder): string
+    {
+        $folder = trim(str_replace('\\', '/', $folder), '/');
+        if ($folder === '' || str_contains($folder, '..')) {
+            return '';
+        }
+
+        if (!preg_match('#^[a-zA-Z0-9][a-zA-Z0-9/_-]*$#', $folder)) {
+            throw new FlatFileException('Neplatná cesta priečinka');
+        }
+
+        return $folder;
     }
 }

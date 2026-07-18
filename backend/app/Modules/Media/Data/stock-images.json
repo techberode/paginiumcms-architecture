@@ -1,0 +1,242 @@
+{
+  "topics": {
+    "tech": {
+      "label": "Technológie / IT",
+      "images": [
+        {
+          "url": "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1200&q=80",
+          "fileName": "coding-setup.jpg",
+          "mimeType": "image/jpeg",
+          "altText": "Pracovná stanica programátora",
+          "title": "Coding workspace"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
+          "fileName": "macbook-dev.jpg",
+          "mimeType": "image/jpeg",
+          "altText": "Vývoj aplikácie na notebooku",
+          "title": "Developer laptop"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80",
+          "fileName": "analytics-dashboard.jpg",
+          "mimeType": "image/jpeg",
+          "altText": "Analytické grafy a štatistiky",
+          "title": "Analytics dashboard"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80",
+          "fileName": "cyber-security.jpg",
+          "mimeType": "image/jpeg",
+          "altText": "Kybernetická bezpečnosť a kód",
+          "title": "Cyber security"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1516321318423-f06f70259b51?auto=format&fit=crop&w=1200&q=80",
+          "fileName": "dev-team.jpg",
+          "mimeType": "image/jpeg",
+          "altText": "Vývojársky tím pri spolupráci",
+          "title": "Development team"
+        }
+      ]
+    },
+    "business": {
+      "label": "Business / Firemný web",
+      "images": [
+        {
+          "url": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80",
+          "fileName": "team-meeting.jpg",
+          "mimeType": "image/jpeg",
+          "altText": "Tímová spolupráca v kancelárii",
+          "title": "Team collaboration"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80",
+          "fileName": "business-analytics.jpg",
+          "mimeType": "image/jpeg",
+          "altText": "Business analytika na obrazovke",
+          "title": "Business analytics"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1200&q=80",
+          "fileName": "office-discussion.jpg",
+          "mimeType": "image/jpeg",
+          "altText": "Diskusia v modernom open-space",
+          "title": "Office discussion"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1553877522-43269d4ea984?auto=format&fit=crop&w=1200&q=80",
+          "fileName": "presentation.jpg",
+          "mimeType": "image/jpeg",
+          "altText": "Prezentácia pred investorom",
+          "title": "Business presentation"
+        }
+      ]
+    },
+    "food": {
+      "label": "Varenie / Gastronómia",
+      "images": [
+        {
+          "url": "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1200&q=80",
+          "fileName": "fresh-produce.jpg",
+          "mimeType": "image/jpeg",
+          "altText": "Čerstvá zelenina na trhu",
+          "title": "Fresh produce"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=1200&q=80",
+          "fileName": "cooking-kitchen.jpg",
+          "mimeType": "image/jpeg",
+          "altText": "Príprava jedla v kuchyni",
+          "title": "Home cooking"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80",
+          "fileName": "gourmet-plate.jpg",
+          "mimeType": "image/jpeg",
+          "altText": "Gourmet tanier na stole",
+          "title": "Gourmet plate"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1200&q=80",
+          "fileName": "restaurant-table.jpg",
+          "mimeType": "image/jpeg",
+          "altText": "Stôl v reštaurácii",
+          "title": "Restaurant dining"
+        }
+      ]
+    },
+    "travel": {
+      "label": "Cestovanie / Blog",
+      "images": [
+        {
+          "url": "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1200&q=80",
+          "fileName": "travel-map.jpg",
+          "mimeType": "image/jpeg",
+          "altText": "Mapa a plánovanie cesty",
+          "title": "Travel planning"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1200&q=80",
+          "fileName": "road-trip.jpg",
+          "mimeType": "image/jpeg",
+          "altText": "Cesta autom krajinou",
+          "title": "Road trip"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=1200&q=80",
+          "fileName": "lake-mountains.jpg",
+          "mimeType": "image/jpeg",
+          "altText": "Jazero a hory pri východe slnka",
+          "title": "Mountain lake"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1200&q=80",
+          "fileName": "scenic-landscape.jpg",
+          "mimeType": "image/jpeg",
+          "altText": "Panoramatická krajina",
+          "title": "Scenic landscape"
+        }
+      ]
+    },
+    "health": {
+      "label": "Zdravie / Fitness",
+      "images": [
+        {
+          "url": "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=1200&q=80",
+          "fileName": "fitness-workout.jpg",
+          "mimeType": "image/jpeg",
+          "altText": "Tréning vo fitness centre",
+          "title": "Fitness workout"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1498837167922-ddd27525cd47?auto=format&fit=crop&w=1200&q=80",
+          "fileName": "healthy-food.jpg",
+          "mimeType": "image/jpeg",
+          "altText": "Zdravé jedlo na tanieri",
+          "title": "Healthy meal"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=1200&q=80",
+          "fileName": "yoga-meditation.jpg",
+          "mimeType": "image/jpeg",
+          "altText": "Jóga a meditácia",
+          "title": "Yoga and wellness"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1200&q=80",
+          "fileName": "gym-training.jpg",
+          "mimeType": "image/jpeg",
+          "altText": "Silový tréning v posilňovni",
+          "title": "Gym training"
+        }
+      ]
+    },
+    "nature": {
+      "label": "Príroda / Outdoor",
+      "images": [
+        {
+          "url": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1200&q=80",
+          "fileName": "forest-path.jpg",
+          "mimeType": "image/jpeg",
+          "altText": "Lesná cesta v slnečnom svetle",
+          "title": "Forest path"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1200&q=80",
+          "fileName": "tropical-beach.jpg",
+          "mimeType": "image/jpeg",
+          "altText": "Tropická pláž a more",
+          "title": "Tropical beach"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1426604966848-d7dd85f06693?auto=format&fit=crop&w=1200&q=80",
+          "fileName": "mountain-view.jpg",
+          "mimeType": "image/jpeg",
+          "altText": "Výhľad na horské masívy",
+          "title": "Mountain view"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1200&q=80",
+          "fileName": "misty-valley.jpg",
+          "mimeType": "image/jpeg",
+          "altText": "Ranná hmla nad údolím",
+          "title": "Misty valley"
+        }
+      ]
+    },
+    "general": {
+      "label": "Všeobecné / Neutrálne",
+      "images": [
+        {
+          "url": "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1200&q=80",
+          "fileName": "abstract-tech.jpg",
+          "mimeType": "image/jpeg",
+          "altText": "Abstraktný technologický motív",
+          "title": "Abstract technology"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=80",
+          "fileName": "digital-globe.jpg",
+          "mimeType": "image/jpeg",
+          "altText": "Digitálny svet a dáta",
+          "title": "Digital world"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80",
+          "fileName": "creative-workspace.jpg",
+          "mimeType": "image/jpeg",
+          "altText": "Kreatívne pracovné prostredie",
+          "title": "Creative workspace"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1200&q=80",
+          "fileName": "teamwork.jpg",
+          "mimeType": "image/jpeg",
+          "altText": "Tímová spolupráca pri notebookoch",
+          "title": "Teamwork"
+        }
+      ]
+    }
+  }
+}

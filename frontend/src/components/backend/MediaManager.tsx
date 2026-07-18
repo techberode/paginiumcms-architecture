@@ -2,6 +2,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Copy,
+  FolderPlus,
   Loader2,
   Trash2,
   Upload,
@@ -9,25 +10,46 @@ import {
   Pencil,
   Check,
   X,
+  Folder,
+  ChevronRight,
+  Zap,
+  Expand,
 } from 'lucide-react';
 import { useToast } from '../../hooks/useToast';
+import { getSettings } from '../../api/settings';
 import {
+  bulkDeleteMedia,
+  createMediaFolder,
   deleteMedia,
   formatMediaSize,
+  importStockImage,
   isImageMedia,
   listMedia,
+  listMediaFolders,
+  listStockImageTopics,
   MediaFile,
   resolveMediaUrl,
-  updateMediaAlt,
+  StockImageTopic,
+  updateMediaMetadata,
   uploadMedia,
 } from '../../api/media';
+import {
+  MediaPreviewLightbox,
+  MediaPreviewMode,
+} from './MediaPreviewLightbox';
 
 type TypeFilter = 'all' | 'image';
+
+function folderLabel(folder: string): string {
+  return folder === '' ? 'All media' : folder;
+}
 
 export const MediaManager: React.FC = () => {
   const toast = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [items, setItems] = useState<MediaFile[]>([]);
+  const [folders, setFolders] = useState<string[]>(['']);
+  const [currentFolder, setCurrentFolder] = useState('');
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
@@ -35,20 +57,46 @@ export const MediaManager: React.FC = () => {
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
   const [editingPath, setEditingPath] = useState<string | null>(null);
   const [editAlt, setEditAlt] = useState('');
+  const [editTitle, setEditTitle] = useState('');
+  const [selectedPaths, setSelectedPaths] = useState<string[]>([]);
+  const [stockTopics, setStockTopics] = useState<StockImageTopic[]>([]);
+  const [stockTopic, setStockTopic] = useState('tech');
+  const [stockImporting, setStockImporting] = useState(false);
+  const [previewFile, setPreviewFile] = useState<MediaFile | null>(null);
+  const [previewMode, setPreviewMode] = useState<MediaPreviewMode>('fit');
+
+  useEffect(() => {
+    void (async () => {
+      const [topics, settings] = await Promise.all([listStockImageTopics(), getSettings()]);
+      if (topics.length > 0) {
+        setStockTopics(topics);
+      }
+      const configured = String(settings?.values?.media?.stockImageTopic ?? 'tech');
+      setStockTopic(configured);
+    })();
+  }, []);
 
   const loadMedia = useCallback(async () => {
     setLoading(true);
     try {
-      const filters = typeFilter === 'image' ? { type: 'image' as const } : {};
-      const files = await listMedia(filters);
+      const filters =
+        typeFilter === 'image'
+          ? { type: 'image' as const, folder: currentFolder }
+          : { folder: currentFolder };
+      const [files, folderList] = await Promise.all([
+        listMedia(filters),
+        listMediaFolders(),
+      ]);
       setItems(files);
+      setFolders(folderList.length > 0 ? folderList : ['']);
+      setSelectedPaths((prev) => prev.filter((path) => files.some((file) => file.path === path)));
     } catch (error) {
       toast.error('Failed to load media library.');
       console.error(error);
     } finally {
       setLoading(false);
     }
-  }, [typeFilter]);
+  }, [currentFolder, typeFilter]);
 
   useEffect(() => {
     void loadMedia();
@@ -64,7 +112,7 @@ export const MediaManager: React.FC = () => {
     let successCount = 0;
 
     for (const file of list) {
-      const result = await uploadMedia(file);
+      const result = await uploadMedia(file, '', currentFolder);
       if (result.ok) {
         successCount += 1;
       } else {
@@ -80,6 +128,64 @@ export const MediaManager: React.FC = () => {
     }
 
     setUploading(false);
+  };
+
+  const handleStockImport = async () => {
+    setStockImporting(true);
+    const result = await importStockImage(stockTopic, currentFolder);
+    if (result.ok) {
+      const label = stockTopics.find((topic) => topic.id === stockTopic)?.label ?? stockTopic;
+      toast.success(`Stock image imported (${label}).`);
+      await loadMedia();
+    } else {
+      toast.error(result.error);
+    }
+    setStockImporting(false);
+  };
+
+  const handleCreateFolder = async () => {
+    const base = currentFolder === '' ? '' : `${currentFolder}/`;
+    const name = window.prompt('New folder name (letters, numbers, dash, underscore):');
+    if (!name) {
+      return;
+    }
+
+    const folder = `${base}${name.trim()}`.replace(/^\/+/, '');
+    const ok = await createMediaFolder(folder);
+    if (ok) {
+      toast.success('Folder created.');
+      setCurrentFolder(folder);
+      await loadMedia();
+    } else {
+      toast.error('Failed to create folder.');
+    }
+  };
+
+  const toggleSelected = (path: string) => {
+    setSelectedPaths((prev) =>
+      prev.includes(path) ? prev.filter((item) => item !== path) : [...prev, path]
+    );
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedPaths.length === 0) {
+      return;
+    }
+
+    if (
+      !confirm(`Delete ${selectedPaths.length} selected file(s)? This cannot be undone.`)
+    ) {
+      return;
+    }
+
+    const deleted = await bulkDeleteMedia(selectedPaths);
+    if (deleted > 0) {
+      toast.success(`${deleted} file(s) deleted.`);
+      setSelectedPaths([]);
+      await loadMedia();
+    } else {
+      toast.error('Failed to delete selected files.');
+    }
   };
 
   const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -107,6 +213,43 @@ export const MediaManager: React.FC = () => {
     }
   };
 
+  const filteredItems = items.filter((item) => {
+    const q = search.toLowerCase();
+    return (
+      item.fileName.toLowerCase().includes(q) ||
+      item.altText.toLowerCase().includes(q) ||
+      (item.title ?? '').toLowerCase().includes(q) ||
+      item.mimeType.toLowerCase().includes(q)
+    );
+  });
+
+  const openPreview = (file: MediaFile, mode: MediaPreviewMode = 'fit') => {
+    if (!isImageMedia(file)) {
+      window.open(resolveMediaUrl(file.url), '_blank', 'noopener,noreferrer');
+      return;
+    }
+    setPreviewMode(mode);
+    setPreviewFile(file);
+  };
+
+  const closePreview = () => setPreviewFile(null);
+
+  const previewIndex = previewFile
+    ? filteredItems.findIndex((item) => item.path === previewFile.path)
+    : -1;
+
+  const showPreviousPreview = () => {
+    if (previewIndex > 0) {
+      setPreviewFile(filteredItems[previewIndex - 1]);
+    }
+  };
+
+  const showNextPreview = () => {
+    if (previewIndex >= 0 && previewIndex < filteredItems.length - 1) {
+      setPreviewFile(filteredItems[previewIndex + 1]);
+    }
+  };
+
   const handleDelete = async (file: MediaFile) => {
     if (!confirm(`Delete "${file.fileName}"? This cannot be undone.`)) {
       return;
@@ -121,36 +264,42 @@ export const MediaManager: React.FC = () => {
     }
   };
 
-  const startEditAlt = (file: MediaFile) => {
+  const startEditMeta = (file: MediaFile) => {
     setEditingPath(file.path);
     setEditAlt(file.altText);
+    setEditTitle(file.title ?? '');
   };
 
-  const cancelEditAlt = () => {
+  const cancelEditMeta = () => {
     setEditingPath(null);
     setEditAlt('');
+    setEditTitle('');
   };
 
-  const saveEditAlt = async (path: string) => {
-    const ok = await updateMediaAlt(path, editAlt);
+  const saveEditMeta = async (path: string) => {
+    const ok = await updateMediaMetadata(path, { altText: editAlt, title: editTitle });
     if (ok) {
-      toast.success('Alt text updated.');
+      toast.success('Metadata updated.');
       setEditingPath(null);
       setEditAlt('');
+      setEditTitle('');
       await loadMedia();
     } else {
-      toast.error('Failed to update alt text.');
+      toast.error('Failed to update metadata.');
     }
   };
 
-  const filteredItems = items.filter((item) => {
-    const q = search.toLowerCase();
-    return (
-      item.fileName.toLowerCase().includes(q) ||
-      item.altText.toLowerCase().includes(q) ||
-      item.mimeType.toLowerCase().includes(q)
-    );
-  });
+  const childFolders = folders.filter(
+    (folder) =>
+      folder !== '' &&
+      (currentFolder === ''
+        ? !folder.includes('/')
+        : folder.startsWith(`${currentFolder}/`) &&
+          folder.slice(currentFolder.length + 1).split('/').length === 1)
+  );
+
+  const breadcrumbParts =
+    currentFolder === '' ? [] : currentFolder.split('/').filter(Boolean);
 
   return (
     <div className="space-y-6">
@@ -158,27 +307,75 @@ export const MediaManager: React.FC = () => {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Media Library</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Upload, browse, and manage site assets.
+            Upload, browse folders, and manage site assets.
           </p>
         </div>
-        <button
-          type="button"
-          className="btn btn-primary"
-          disabled={uploading}
-          onClick={() => fileInputRef.current?.click()}
-        >
-          {uploading ? (
+        <div className="flex flex-wrap gap-2">
+          {selectedPaths.length > 0 && (
+            <button type="button" className="btn btn-danger" onClick={() => void handleBulkDelete()}>
+              <Trash2 className="w-4 h-4 inline mr-2" />
+              Delete selected ({selectedPaths.length})
+            </button>
+          )}
+          <button type="button" className="btn btn-secondary" onClick={() => void handleCreateFolder()}>
+            <FolderPlus className="w-4 h-4 inline mr-2" />
+            New folder
+          </button>
+          {stockTopics.length > 0 && (
             <>
-              <Loader2 className="w-4 h-4 animate-spin inline mr-2" />
-              Uploading…
-            </>
-          ) : (
-            <>
-              <Upload className="w-4 h-4 inline mr-2" />
-              Upload files
+              <select
+                value={stockTopic}
+                onChange={(e) => setStockTopic(e.target.value)}
+                className="form-input w-auto"
+                aria-label="Stock image topic"
+                title="Topic for generated stock images"
+              >
+                {stockTopics.map((topic) => (
+                  <option key={topic.id} value={topic.id}>
+                    {topic.label} ({topic.count})
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                disabled={stockImporting || uploading}
+                onClick={() => void handleStockImport()}
+                title="Import a random stock image matching the site topic"
+              >
+                {stockImporting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin inline mr-2" />
+                    Generating…
+                  </>
+                ) : (
+                  <>
+                    <Zap className="w-4 h-4 inline mr-2" />
+                    Generovať z knižnice
+                  </>
+                )}
+              </button>
             </>
           )}
-        </button>
+          <button
+            type="button"
+            className="btn btn-primary"
+            disabled={uploading}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {uploading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin inline mr-2" />
+                Uploading…
+              </>
+            ) : (
+              <>
+                <Upload className="w-4 h-4 inline mr-2" />
+                Upload files
+              </>
+            )}
+          </button>
+        </div>
         <input
           ref={fileInputRef}
           type="file"
@@ -188,6 +385,48 @@ export const MediaManager: React.FC = () => {
           onChange={handleFileInputChange}
         />
       </div>
+
+      <nav className="flex flex-wrap items-center gap-1 text-sm text-gray-600 dark:text-gray-300">
+        <button
+          type="button"
+          className={`hover:text-indigo-600 ${currentFolder === '' ? 'font-semibold text-indigo-600' : ''}`}
+          onClick={() => setCurrentFolder('')}
+        >
+          All media
+        </button>
+        {breadcrumbParts.map((part, index) => {
+          const path = breadcrumbParts.slice(0, index + 1).join('/');
+          const isLast = index === breadcrumbParts.length - 1;
+          return (
+            <span key={path} className="flex items-center gap-1">
+              <ChevronRight className="w-4 h-4 text-gray-400" />
+              <button
+                type="button"
+                className={`hover:text-indigo-600 ${isLast ? 'font-semibold text-indigo-600' : ''}`}
+                onClick={() => setCurrentFolder(path)}
+              >
+                {part}
+              </button>
+            </span>
+          );
+        })}
+      </nav>
+
+      {childFolders.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          {childFolders.map((folder) => (
+            <button
+              key={folder}
+              type="button"
+              className="card card-body flex items-center gap-3 text-left hover:border-indigo-400 transition-colors"
+              onClick={() => setCurrentFolder(folder)}
+            >
+              <Folder className="w-8 h-8 text-indigo-500 shrink-0" />
+              <span className="font-medium text-sm truncate">{folder.split('/').pop()}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       <div
         role="button"
@@ -217,7 +456,7 @@ export const MediaManager: React.FC = () => {
             Drag & drop files here, or click to browse
           </p>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            JPEG, PNG, GIF, WebP, SVG, PDF
+            Upload to: {folderLabel(currentFolder)}
           </p>
         </div>
       </div>
@@ -228,7 +467,7 @@ export const MediaManager: React.FC = () => {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name, alt text, or type…"
+            placeholder="Search by name, title, alt text, or type…"
             className="form-input"
           />
         </div>
@@ -249,7 +488,7 @@ export const MediaManager: React.FC = () => {
       ) : filteredItems.length === 0 ? (
         <div className="card">
           <div className="card-body text-center py-12 text-gray-500 dark:text-gray-400">
-            No media files found.
+            No media files in {folderLabel(currentFolder)}.
           </div>
         </div>
       ) : (
@@ -258,64 +497,115 @@ export const MediaManager: React.FC = () => {
             <MediaCard
               key={file.id}
               file={file}
+              selected={selectedPaths.includes(file.path)}
+              onToggleSelect={() => toggleSelected(file.path)}
               editing={editingPath === file.path}
               editAlt={editAlt}
+              editTitle={editTitle}
               onEditAltChange={setEditAlt}
-              onStartEdit={() => startEditAlt(file)}
-              onCancelEdit={cancelEditAlt}
-              onSaveEdit={() => saveEditAlt(file.path)}
+              onEditTitleChange={setEditTitle}
+              onStartEdit={() => startEditMeta(file)}
+              onCancelEdit={cancelEditMeta}
+              onSaveEdit={() => saveEditMeta(file.path)}
               onCopyUrl={() => handleCopyUrl(file)}
+              onPreview={() => openPreview(file)}
+              onPreviewNative={() => openPreview(file, 'native')}
               onDelete={() => handleDelete(file)}
             />
           ))}
         </div>
       )}
+
+      <MediaPreviewLightbox
+        file={previewFile}
+        mode={previewMode}
+        onClose={closePreview}
+        onModeChange={setPreviewMode}
+        onPrevious={showPreviousPreview}
+        onNext={showNextPreview}
+        hasPrevious={previewIndex > 0}
+        hasNext={previewIndex >= 0 && previewIndex < filteredItems.length - 1}
+      />
     </div>
   );
 };
 
 interface MediaCardProps {
   file: MediaFile;
+  selected: boolean;
+  onToggleSelect: () => void;
   editing: boolean;
   editAlt: string;
+  editTitle: string;
   onEditAltChange: (value: string) => void;
+  onEditTitleChange: (value: string) => void;
   onStartEdit: () => void;
   onCancelEdit: () => void;
   onSaveEdit: () => void;
   onCopyUrl: () => void;
+  onPreview: () => void;
+  onPreviewNative: () => void;
   onDelete: () => void;
 }
 
 const MediaCard: React.FC<MediaCardProps> = ({
   file,
+  selected,
+  onToggleSelect,
   editing,
   editAlt,
+  editTitle,
   onEditAltChange,
+  onEditTitleChange,
   onStartEdit,
   onCancelEdit,
   onSaveEdit,
   onCopyUrl,
+  onPreview,
+  onPreviewNative,
   onDelete,
 }) => {
   const previewUrl = resolveMediaUrl(file.url);
   const isImage = isImageMedia(file);
 
   return (
-    <div className="card overflow-hidden flex flex-col">
-      <div className="aspect-video bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden">
-        {isImage ? (
-          <img
-            src={previewUrl}
-            alt={file.altText || file.fileName}
-            className="w-full h-full object-cover"
-            loading="lazy"
+    <div className={`card overflow-hidden flex flex-col ${selected ? 'ring-2 ring-indigo-500' : ''}`}>
+      <div className="aspect-video bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden relative">
+        <label className="absolute top-2 left-2 z-10 bg-white/90 dark:bg-gray-900/90 rounded p-1 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={onToggleSelect}
+            aria-label={`Select ${file.fileName}`}
+            className="rounded border-gray-300"
           />
+        </label>
+        {isImage ? (
+          <button
+            type="button"
+            className="w-full h-full group/preview relative"
+            onClick={onPreview}
+            aria-label={`Preview ${file.fileName}`}
+          >
+            <img
+              src={previewUrl}
+              alt={file.altText || file.fileName}
+              className="w-full h-full object-cover"
+              loading="lazy"
+            />
+            <span className="absolute inset-0 bg-black/0 group-hover/preview:bg-black/30 transition-colors flex items-center justify-center opacity-0 group-hover/preview:opacity-100">
+              <Expand className="w-8 h-8 text-white drop-shadow" />
+            </span>
+          </button>
         ) : (
           <FileText className="w-12 h-12 text-gray-400" />
         )}
       </div>
       <div className="card-body p-4 flex-1 flex flex-col gap-2">
         <p className="font-medium text-sm text-gray-900 dark:text-white truncate" title={file.fileName}>
+          {file.title || file.fileName}
+        </p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 truncate" title={file.fileName}>
           {file.fileName}
         </p>
         <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -324,6 +614,14 @@ const MediaCard: React.FC<MediaCardProps> = ({
 
         {editing ? (
           <div className="space-y-2">
+            <input
+              type="text"
+              value={editTitle}
+              onChange={(e) => onEditTitleChange(e.target.value)}
+              placeholder="Title"
+              className="form-input text-sm"
+              aria-label="Title"
+            />
             <input
               type="text"
               value={editAlt}
@@ -348,11 +646,31 @@ const MediaCard: React.FC<MediaCardProps> = ({
         )}
 
         <div className="flex gap-2 mt-auto pt-2">
+          {!editing && isImage && (
+            <>
+              <button
+                type="button"
+                className="btn btn-secondary text-xs px-2 py-1"
+                title="Preview (fit to screen)"
+                onClick={onPreview}
+              >
+                <Expand className="w-3 h-3" />
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary text-xs px-2 py-1"
+                title="Preview at native resolution"
+                onClick={onPreviewNative}
+              >
+                1:1
+              </button>
+            </>
+          )}
           {!editing && (
             <button
               type="button"
               className="btn btn-secondary text-xs px-2 py-1"
-              title="Edit alt text"
+              title="Edit metadata"
               onClick={onStartEdit}
             >
               <Pencil className="w-3 h-3" />

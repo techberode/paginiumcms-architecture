@@ -5,19 +5,36 @@ import { MediaManager } from './MediaManager';
 
 const mocks = vi.hoisted(() => ({
   listMedia: vi.fn(),
+  listMediaFolders: vi.fn(),
+  importStockImage: vi.fn(),
+  listStockImageTopics: vi.fn(),
   uploadMedia: vi.fn(),
   deleteMedia: vi.fn(),
-  updateMediaAlt: vi.fn(),
+  bulkDeleteMedia: vi.fn(),
+  createMediaFolder: vi.fn(),
+  updateMediaMetadata: vi.fn(),
 }));
 
 vi.mock('../../api/media', () => ({
   listMedia: mocks.listMedia,
+  listMediaFolders: mocks.listMediaFolders,
+  listStockImageTopics: mocks.listStockImageTopics,
+  importStockImage: mocks.importStockImage,
   uploadMedia: mocks.uploadMedia,
   deleteMedia: mocks.deleteMedia,
-  updateMediaAlt: mocks.updateMediaAlt,
+  bulkDeleteMedia: mocks.bulkDeleteMedia,
+  createMediaFolder: mocks.createMediaFolder,
+  updateMediaMetadata: mocks.updateMediaMetadata,
+  updateMediaAlt: mocks.updateMediaMetadata,
   resolveMediaUrl: (url: string) => `http://localhost:8080${url}`,
   formatMediaSize: (bytes: number) => `${bytes} B`,
   isImageMedia: (file: { mimeType: string }) => file.mimeType.startsWith('image/'),
+}));
+
+vi.mock('../../api/settings', () => ({
+  getSettings: vi.fn().mockResolvedValue({
+    values: { media: { stockImageTopic: 'tech' } },
+  }),
 }));
 
 vi.mock('../../hooks/useToast', () => ({
@@ -39,47 +56,71 @@ const sampleFile = {
   mimeType: 'image/png',
   uploadedAt: 1_700_000_000,
   altText: 'Hero banner',
+  folder: '',
+  title: 'Hero',
 };
 
 describe('MediaManager', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.listMedia.mockResolvedValue([sampleFile]);
+    mocks.listMediaFolders.mockResolvedValue(['', 'campaigns']);
+    mocks.listStockImageTopics.mockResolvedValue([
+      { id: 'tech', label: 'Technológie / IT', count: 5 },
+      { id: 'food', label: 'Varenie', count: 4 },
+    ]);
+    mocks.importStockImage.mockResolvedValue({ ok: true, media: sampleFile });
     mocks.uploadMedia.mockResolvedValue({ ok: true, media: sampleFile });
     mocks.deleteMedia.mockResolvedValue(true);
-    mocks.updateMediaAlt.mockResolvedValue(true);
+    mocks.bulkDeleteMedia.mockResolvedValue(1);
+    mocks.createMediaFolder.mockResolvedValue(true);
+    mocks.updateMediaMetadata.mockResolvedValue(true);
     vi.stubGlobal('confirm', vi.fn(() => true));
+    vi.stubGlobal('prompt', vi.fn(() => 'new-folder'));
   });
 
   it('renders media grid after load', async () => {
     render(<MediaManager />);
 
-    expect(await screen.findByText('hero.png')).toBeInTheDocument();
+    expect(await screen.findByText('Hero')).toBeInTheDocument();
+    expect(screen.getByText('hero.png')).toBeInTheDocument();
     expect(screen.getByText(/Alt: Hero banner/)).toBeInTheDocument();
     expect(mocks.listMedia).toHaveBeenCalled();
+    expect(mocks.listMediaFolders).toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: /Generovať z knižnice/i })).toBeInTheDocument();
   });
 
   it('shows empty state when no files', async () => {
     mocks.listMedia.mockResolvedValue([]);
     render(<MediaManager />);
 
-    expect(await screen.findByText('No media files found.')).toBeInTheDocument();
+    expect(await screen.findByText(/No media files in All media/)).toBeInTheDocument();
   });
 
   it('filters items by search query', async () => {
     mocks.listMedia.mockResolvedValue([
       sampleFile,
-      { ...sampleFile, id: 'media_2', fileName: 'logo.svg', altText: '' },
+      { ...sampleFile, id: 'media_2', fileName: 'logo.svg', altText: '', title: '' },
     ]);
 
     render(<MediaManager />);
-    expect(await screen.findByText('hero.png')).toBeInTheDocument();
+    expect(await screen.findByText('Hero')).toBeInTheDocument();
+    expect(screen.getByText('hero.png')).toBeInTheDocument();
 
     fireEvent.change(screen.getByPlaceholderText(/Search by name/), {
       target: { value: 'logo' },
     });
 
-    expect(screen.queryByText('hero.png')).not.toBeInTheDocument();
-    expect(screen.getByText('logo.svg')).toBeInTheDocument();
+    expect(screen.queryByText('Hero')).not.toBeInTheDocument();
+    expect(screen.getAllByText('logo.svg').length).toBeGreaterThan(0);
+  });
+
+  it('opens folder when child folder card is clicked', async () => {
+    render(<MediaManager />);
+    expect(await screen.findByText('campaigns')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('campaigns'));
+
+    expect(mocks.listMedia).toHaveBeenCalledWith(expect.objectContaining({ folder: 'campaigns' }));
   });
 });

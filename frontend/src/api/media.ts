@@ -1,5 +1,5 @@
 // frontend/src/api/media.ts
-// === Media API (Iteration 8) ===
+// === Media API (Iteration 8 + 24 DAM) ===
 // Typed calls to backend /api/media/*. Backend is the single source of truth.
 import apiClient from './client';
 import { resolveMediaUrl as resolveMediaUrlFromBase } from '../utils/apiBaseUrl';
@@ -13,11 +13,14 @@ export interface MediaFile {
   mimeType: string;
   uploadedAt: number;
   altText: string;
+  folder: string;
+  title: string;
 }
 
 export interface ListMediaFilters {
   type?: 'image';
   mimeType?: string;
+  folder?: string;
 }
 
 export type UploadMediaResult =
@@ -45,7 +48,7 @@ export function isImageMedia(file: MediaFile): boolean {
 }
 
 /**
- * List media files with optional filters (`type=image`, `mimeType=...`).
+ * List media files with optional filters (`type=image`, `mimeType=...`, `folder=...`).
  */
 export async function listMedia(filters: ListMediaFilters = {}): Promise<MediaFile[]> {
   const params = new URLSearchParams();
@@ -55,6 +58,9 @@ export async function listMedia(filters: ListMediaFilters = {}): Promise<MediaFi
   if (filters.mimeType) {
     params.set('mimeType', filters.mimeType);
   }
+  if (filters.folder !== undefined) {
+    params.set('folder', filters.folder);
+  }
 
   const query = params.toString();
   const url = query ? `/api/media?${query}` : '/api/media';
@@ -63,13 +69,30 @@ export async function listMedia(filters: ListMediaFilters = {}): Promise<MediaFi
   return res.success && Array.isArray(res.data) ? res.data : [];
 }
 
+/** List DAM folder paths (empty string = root). */
+export async function listMediaFolders(): Promise<string[]> {
+  const res = await apiClient.get<string[]>('/api/media/folders');
+  return res.success && Array.isArray(res.data) ? res.data : [''];
+}
+
+/** Create a nested folder path (e.g. `campaigns/2026`). */
+export async function createMediaFolder(folder: string): Promise<boolean> {
+  const res = await apiClient.post<{ folder: string }>('/api/media/folders', { folder });
+  return res.success;
+}
+
 /**
- * Upload a file via multipart/form-data (`file`, optional `altText`).
+ * Upload a file via multipart/form-data (`file`, optional `altText`, optional `folder`).
  */
-export async function uploadMedia(file: File, altText = ''): Promise<UploadMediaResult> {
+export async function uploadMedia(
+  file: File,
+  altText = '',
+  folder = ''
+): Promise<UploadMediaResult> {
   const form = new FormData();
   form.append('file', file);
   form.append('altText', altText);
+  form.append('folder', folder);
 
   const res = await apiClient.post<MediaFile>('/api/media/upload', form, {
     headers: { 'Content-Type': 'multipart/form-data' },
@@ -83,19 +106,70 @@ export async function uploadMedia(file: File, altText = ''): Promise<UploadMedia
 }
 
 /**
- * Update media metadata (currently alt text only).
+ * Update media metadata (alt text, title).
  */
-export async function updateMediaAlt(path: string, altText: string): Promise<boolean> {
+export async function updateMediaMetadata(
+  path: string,
+  metadata: { altText?: string; title?: string }
+): Promise<boolean> {
   const res = await apiClient.patch<MediaFile>(
     `/api/media/${encodeURIComponent(path)}`,
-    { altText }
+    metadata
   );
 
   return res.success;
+}
+
+/** Backward-compatible alias for alt-only updates. */
+export async function updateMediaAlt(path: string, altText: string): Promise<boolean> {
+  return updateMediaMetadata(path, { altText });
 }
 
 /** Delete a media file by its storage path. */
 export async function deleteMedia(path: string): Promise<boolean> {
   const res = await apiClient.delete(`/api/media/${encodeURIComponent(path)}`);
   return res.success;
+}
+
+/** Bulk delete media files by storage paths. */
+export async function bulkDeleteMedia(paths: string[]): Promise<number> {
+  if (paths.length === 0) {
+    return 0;
+  }
+
+  const res = await apiClient.post<{ deleted: number }>('/api/media/bulk-delete', { paths });
+  return res.success && typeof res.data?.deleted === 'number' ? res.data.deleted : 0;
+}
+
+export interface StockImageTopic {
+  id: string;
+  label: string;
+  count: number;
+}
+
+/** Available stock image topics (flat-file catalog). */
+export async function listStockImageTopics(): Promise<StockImageTopic[]> {
+  const res = await apiClient.get<StockImageTopic[]>('/api/media/stock-topics');
+  return res.success && Array.isArray(res.data) ? res.data : [];
+}
+
+export type ImportStockImageResult =
+  | { ok: true; media: MediaFile }
+  | { ok: false; error: string };
+
+/**
+ * Import a random stock image from the topic-aware catalog into Media Library.
+ * Topic defaults to admin setting media.stockImageTopic when omitted.
+ */
+export async function importStockImage(
+  topic = '',
+  folder = ''
+): Promise<ImportStockImageResult> {
+  const res = await apiClient.post<MediaFile>('/api/media/stock-import', { topic, folder });
+
+  if (res.success && res.data) {
+    return { ok: true, media: res.data };
+  }
+
+  return { ok: false, error: res.error ?? 'Stock import failed.' };
 }

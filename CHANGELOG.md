@@ -6,6 +6,46 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [2.0.13] – 2026-07-18
+
+### Iteration 26 – Media preview lightbox
+
+#### Frontend
+- Add `MediaPreviewLightbox` — Fit (viewport) and 1:1 (native pixel) preview modes
+- Media Library: click thumbnail, Expand / 1:1 buttons, prev/next in filtered grid
+- Show natural dimensions, MIME, file size in lightbox header
+
+#### Tests
+- `MediaPreviewLightbox.test.tsx`
+
+#### Docs
+- `ITERATION_26.md`, `ITERATION_25.md` (setup wizard deferred), `ITERATION_BACKLOG.md` (It.27+)
+
+---
+
+## [2.0.12] – 2026-07-18
+
+### Iteration 24 – Full DAM v1 + stock library
+
+#### Backend
+- Folder-aware media storage with `media/folders.json` index and `.paginium-folder` markers
+- `.meta.json` sidecar per asset (altText, title, folder)
+- `GET/POST /api/media/folders`, `POST /api/media/bulk-delete`
+- Settings group `media` (`allowedMimeTypes`, `maxUploadSizeKb`, `stockImageTopic`, `stockImagesEnabled`)
+- Stock image catalog `stock-images.json` + `StockImageImporter` (topic-aware Unsplash import)
+- `GET /api/media/stock-topics`, `POST /api/media/stock-import`
+
+#### Frontend
+- Media Library folder navigation (breadcrumb + folder cards)
+- Bulk select/delete, title + alt metadata edit
+- Stock topic select + **Generovať z knižnice**
+- Extended `api/media.ts` (folders, bulk, metadata, stock)
+
+#### Tests
+- Extended `MediaRepositoryTest`, `MediaControllerTest`, `StockImageCatalogTest`, `StockImageImporterTest`, `MediaManager.test.tsx`
+
+---
+
 ## [2.0.11] – 2026-07-17
 
 ### Iteration 23 – SEO meta engine

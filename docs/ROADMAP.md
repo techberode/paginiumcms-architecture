@@ -4,7 +4,7 @@
 
 Legenda: ✅ hotové · 🚧 rozpracované · ⏳ plánované · 🔴 kritická priorita jadra
 
-**Aktuálna verzia:** 2.0.11 · **Posledná iterácia:** [23](ITERATION_23.md) ✅
+**Aktuálna verzia:** 2.0.13 · **Posledná iterácia:** [26](ITERATION_26.md) ✅
 
 | Iterácia | Názov | Priorita |
 |----------|-------|----------|
@@ -12,8 +12,12 @@ Legenda: ✅ hotové · 🚧 rozpracované · ⏳ plánované · 🔴 kritická 
 | 20 | Core hardening & produkcia | ✅ |
 | 21 | API kontrakt & testovanie | ✅ |
 | **22** | **Ops finish & verejné feedy** | **✅** |
+| **24** | **Full DAM v1 + stock knižnica** | **✅** |
+| **26** | **Media preview lightbox** | **✅** |
+| 25 | Setup wizard (profil webu) | ⏳ odložené |
+| 27+ | [Backlog modulov](ITERATION_BACKLOG.md) | ⏳ |
 | 6–7 | Notifikácie, dashboard | 🟡 ďalej |
-| 8–10 | DAM, SEO, feedy | 🟢 (feeds → It. 22) |
+| 8–10 | DAM, SEO, feedy | 🟢 |
 | 11–16 | SSO, plugins, Monaco | 🔵 |
 | 17–18 | API scaffold, i18n | priebežne / po jadre |
 
@@ -156,11 +160,12 @@ Základ pre všetky admin nastavenia (SMTP, notifikácie, SEO, feedy v ďalšíc
 - Panel zámkov (`GET /api/locks`) a konfliktov (`GET /api/admin/conflicts`) + Health metriky.
 - Dokončenie Analytics (`AnalyticsManager/Reporter/RealtimeTracker/Middleware`), reporty návštevnosti, realtime, notifikácie cez konektor.
 
-## Iterácia 8 – Media manager / DAM (FE) + editory + developer unlock UI 🟡
+## Iterácia 8 – Media manager / DAM (FE) + editory + developer unlock UI 🟢
 - ✅ FE `MediaManager` (upload/grid/altText/delete) + route `/media` nad `/api/media`.
 - ✅ Prepínač Markdown / WYSIWYG v `MarkdownEditor` + `WysiwygEditor` + `MediaPickerModal`.
 - ✅ Developer unlock UI (`DeveloperUnlockGate` → `/api/admin/developer/unlock`, TOTP/dev-token).
-- ⏳ **Plný DAM:** viacúrovňové priečinky, `.meta.json` sidecar, hromadné operácie, zamykanie assetov.
+- ✅ **Plný DAM v1** ([Iterácia 24](ITERATION_24.md)): priečinky, `.meta.json` sidecar, hromadné mazanie, settings `media`, stock knižnica.
+- ✅ **Náhľad obrázkov** ([Iterácia 26](ITERATION_26.md)): lightbox Fit / 1:1, natívne rozlíšenie.
 - ⏳ Monaco editor namiesto textarea v Code Editori (plný stack → It. 16).
 
 ## Iterácia 9 – SEO: automatické tagy + rozšírené nastavenia ⏳ 🟢
