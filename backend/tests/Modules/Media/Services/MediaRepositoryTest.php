@@ -8,6 +8,7 @@ use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Core\FlatFile\Services\FileReader;
 use PaginiumCMS\Core\FlatFile\Services\FileValidator;
 use PaginiumCMS\Core\FlatFile\Services\FileWriter;
+use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Modules\Media\Services\MediaRepository;
 use PHPUnit\Framework\TestCase;
 use org\bovigo\vfs\vfsStream;
@@ -28,7 +29,13 @@ class MediaRepositoryTest extends TestCase
         $reader = new FileReader($validator);
         $writer = new FileWriter($validator);
 
-        $this->repository = new MediaRepository($reader, $writer);
+        $settings = $this->createMock(SettingsRepositoryInterface::class);
+        $settings->method('group')->with('media')->willReturn([
+            'allowedMimeTypes' => 'image/jpeg,image/png,image/gif,image/webp,image/svg+xml,application/pdf',
+            'maxUploadSizeKb' => 5120,
+        ]);
+
+        $this->repository = new MediaRepository($reader, $writer, $settings);
     }
 
     public function testFindAllReturnsEmptyWhenRegistryMissing(): void
@@ -49,12 +56,27 @@ class MediaRepositoryTest extends TestCase
         $this->assertSame('photo.png', $media->getFileName());
         $this->assertSame('image/png', $media->getMimeType());
         $this->assertSame('Test alt', $media->getAltText());
+        $this->assertSame('', $media->getFolder());
         $this->assertTrue($media->isImage());
         $this->assertStringStartsWith('media/', $media->getPath());
 
         $all = $this->repository->findAll();
         $this->assertCount(1, $all);
         $this->assertSame($media->getId(), $all[0]->getId());
+    }
+
+    public function testSaveUploadIntoFolder(): void
+    {
+        $this->repository->createFolder('campaigns');
+
+        $media = $this->repository->saveUpload('hero.png', 'png-bytes', 'image/png', '', 'campaigns');
+
+        $this->assertSame('campaigns', $media->getFolder());
+        $this->assertStringStartsWith('media/campaigns/', $media->getPath());
+
+        $filtered = $this->repository->findAll(['folder' => 'campaigns']);
+        $this->assertCount(1, $filtered);
+        $this->assertSame($media->getId(), $filtered[0]->getId());
     }
 
     public function testFindByPathReturnsSavedMedia(): void
@@ -77,19 +99,21 @@ class MediaRepositoryTest extends TestCase
         $this->assertTrue($images[0]->isImage());
     }
 
-    public function testUpdateAltText(): void
+    public function testUpdateMetadataWritesSidecar(): void
     {
         $media = $this->repository->saveUpload('icon.png', 'png-bytes', 'image/png');
         $media->setAltText('Updated alt');
+        $media->setTitle('Updated title');
 
         $this->repository->update($media);
 
         $found = $this->repository->findByPath($media->getPath());
         $this->assertNotNull($found);
         $this->assertSame('Updated alt', $found->getAltText());
+        $this->assertSame('Updated title', $found->getTitle());
     }
 
-    public function testDeleteRemovesFileAndRegistryEntry(): void
+    public function testDeleteRemovesFileRegistryAndSidecar(): void
     {
         $media = $this->repository->saveUpload('remove.png', 'png-bytes', 'image/png');
         $path = $media->getPath();
@@ -98,6 +122,28 @@ class MediaRepositoryTest extends TestCase
 
         $this->assertNull($this->repository->findByPath($path));
         $this->assertSame([], $this->repository->findAll());
+    }
+
+    public function testBulkDeleteRemovesMultipleFiles(): void
+    {
+        $first = $this->repository->saveUpload('one.png', 'png', 'image/png');
+        $second = $this->repository->saveUpload('two.png', 'png', 'image/png');
+
+        $deleted = $this->repository->bulkDelete([$first->getPath(), $second->getPath(), 'media/missing.png']);
+
+        $this->assertSame(2, $deleted);
+        $this->assertSame([], $this->repository->findAll());
+    }
+
+    public function testListFoldersIncludesRootAndCreatedFolder(): void
+    {
+        $this->repository->createFolder('assets/icons');
+        $this->repository->saveUpload('logo.png', 'png', 'image/png', '', 'assets/icons');
+
+        $folders = $this->repository->listFolders();
+
+        $this->assertContains('', $folders);
+        $this->assertContains('assets/icons', $folders);
     }
 
     public function testDeleteMissingThrows(): void
@@ -110,5 +156,11 @@ class MediaRepositoryTest extends TestCase
     {
         $this->expectException(FlatFileException::class);
         $this->repository->saveUpload('notes.txt', 'hello', 'text/plain');
+    }
+
+    public function testCreateFolderRejectsInvalidName(): void
+    {
+        $this->expectException(FlatFileException::class);
+        $this->repository->createFolder('../escape');
     }
 }

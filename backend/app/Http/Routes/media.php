@@ -19,12 +19,17 @@ return function (App $app): void {
 
     $app->group('/api/media', function (RouteCollectorProxy $group) use ($controller) {
         $group->get('', [$controller, 'listMedia']);
+        $group->get('/folders', [$controller, 'listFolders']);
+        $group->get('/stock-topics', [$controller, 'listStockTopics']);
     })
         ->add(new RoleMiddleware($authz, ['EDITOR', 'ADMIN', 'SUPER_ADMIN']))
         ->add($auth);
 
     $app->group('/api/media', function (RouteCollectorProxy $group) use ($controller) {
+        $group->post('/folders', [$controller, 'createFolder']);
         $group->post('/upload', [$controller, 'uploadMedia']);
+        $group->post('/bulk-delete', [$controller, 'bulkDeleteMedia']);
+        $group->post('/stock-import', [$controller, 'importStockImage']);
         $group->patch('/{path:.+}', [$controller, 'updateMedia']);
     })
         ->add(new PermissionMiddleware($authz, 'media:upload'))

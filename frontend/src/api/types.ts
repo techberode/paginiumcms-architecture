@@ -173,6 +173,8 @@ export interface MediaFile {
   mimeType: string;
   uploadedAt: number;
   altText: string;
+  folder?: string;
+  title?: string;
 }
 
 export interface NavigationItem {

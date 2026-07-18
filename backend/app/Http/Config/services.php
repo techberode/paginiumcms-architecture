@@ -104,6 +104,8 @@ use PaginiumCMS\Modules\Navigation\Contracts\NavigationRepositoryInterface;
 use PaginiumCMS\Modules\Navigation\Services\NavigationRepository;
 use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
 use PaginiumCMS\Modules\Media\Services\MediaRepository;
+use PaginiumCMS\Modules\Media\Services\StockImageCatalog;
+use PaginiumCMS\Modules\Media\Services\StockImageImporter;
 use PaginiumCMS\Modules\Security\Contracts\AuthenticationInterface;
 use PaginiumCMS\Modules\Security\Contracts\PasswordPolicyInterface;
 use PaginiumCMS\Modules\Security\Contracts\TwoFactorInterface;
@@ -208,7 +210,17 @@ return [
     MediaRepositoryInterface::class => create(MediaRepository::class)
         ->constructor(
             get(FileReaderInterface::class),
-            get(FileWriterInterface::class)
+            get(FileWriterInterface::class),
+            get(SettingsRepositoryInterface::class)
+        ),
+
+    StockImageCatalog::class => create(StockImageCatalog::class),
+
+    StockImageImporter::class => create(StockImageImporter::class)
+        ->constructor(
+            get(MediaRepositoryInterface::class),
+            get(SettingsRepositoryInterface::class),
+            get(StockImageCatalog::class)
         ),
 
     NavigationRepositoryInterface::class => create(NavigationRepository::class)
@@ -338,6 +350,8 @@ return [
     MediaController::class => create(MediaController::class)
         ->constructor(
             get(MediaRepositoryInterface::class),
+            get(StockImageCatalog::class),
+            get(StockImageImporter::class),
             get(JsonResponder::class)
         ),
 
