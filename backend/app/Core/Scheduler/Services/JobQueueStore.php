@@ -79,12 +79,22 @@ final class JobQueueStore
     public function snapshot(): array
     {
         $items = $this->load()['items'] ?? [];
+        if (!is_array($items)) {
+            return [];
+        }
 
-        return is_array($items) ? $items : [];
+        $snapshot = [];
+        foreach ($items as $item) {
+            if (is_array($item)) {
+                $snapshot[] = $item;
+            }
+        }
+
+        return $snapshot;
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<int|string, mixed>
      */
     private function load(): array
     {
@@ -95,7 +105,7 @@ final class JobQueueStore
         try {
             $decoded = JsonHelper::decode($this->reader->read(self::QUEUE));
 
-            return is_array($decoded) ? $decoded : ['items' => []];
+            return isset($decoded['items']) && is_array($decoded['items']) ? $decoded : ['items' => []];
         } catch (\Throwable) {
             return ['items' => []];
         }

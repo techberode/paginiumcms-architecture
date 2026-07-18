@@ -65,7 +65,7 @@ class Tracker implements TrackerInterface
     }
 
     /**
-     * @return array<int|string, mixed>
+     * @return list<array<string, mixed>>
      */
     public function getVisits(?string $date = null, int $limit = 100): array
     {
@@ -77,7 +77,7 @@ class Tracker implements TrackerInterface
 
         $data = JsonHelper::decode($this->reader->read($relativePath));
 
-        return $data !== [] ? array_slice($data, -$limit) : [];
+        return $data !== [] ? array_values(array_slice($data, -$limit)) : [];
     }
 
     /**

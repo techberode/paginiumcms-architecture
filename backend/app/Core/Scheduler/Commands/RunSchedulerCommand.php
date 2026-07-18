@@ -28,9 +28,9 @@ final class RunSchedulerCommand extends Command
     {
         $result = $this->runner->runDue();
 
-        $output->writeln(sprintf('<info>Executed %d job(s).</info>', (int) ($result['executed'] ?? 0)));
+        $output->writeln(sprintf('<info>Executed %d job(s).</info>', $result['executed']));
 
-        foreach ($result['results'] ?? [] as $entry) {
+        foreach ($result['results'] as $entry) {
             $jobId = (string) ($entry['job_id'] ?? '?');
             $success = (bool) ($entry['success'] ?? false);
             $message = (string) ($entry['message'] ?? '');

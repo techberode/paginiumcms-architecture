@@ -54,7 +54,8 @@ class User implements JsonSerializable
             return $this->username;
         }
 
-        $local = explode('@', $this->email)[0] ?? 'user';
+        $parts = explode('@', $this->email);
+        $local = $parts[0];
 
         return strtolower((string) preg_replace('/[^a-z0-9_-]/', '', $local) ?: 'user');
     }
@@ -211,8 +212,10 @@ class User implements JsonSerializable
 
     /**
      * {@inheritDoc}
- * @return array<int|string, mixed>
- */public function jsonSerialize(): array
+     *
+     * @return array<string, mixed>
+     */
+    public function jsonSerialize(): array
     {
         return [
             'id' => $this->id,

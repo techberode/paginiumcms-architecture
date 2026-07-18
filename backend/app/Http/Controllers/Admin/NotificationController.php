@@ -74,7 +74,7 @@ final class NotificationController
 
         $result = $this->reportScheduler->runIfDue($force);
 
-        $sent = (bool) ($result['sent'] ?? false);
+        $sent = $result['sent'];
         $message = $sent ? 'Monitoring report sent' : $this->reportFailureMessage($result);
 
         return $this->json->respond($response, [

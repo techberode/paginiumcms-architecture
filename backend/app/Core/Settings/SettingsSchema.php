@@ -198,8 +198,9 @@ final class SettingsSchema
     /**
      * Predvolené hodnoty po skupinách.
      *
-     * @return array<string, array<int|string, mixed>>
- */public static function defaults(): array
+     * @return array<string, array<string, mixed>>
+     */
+    public static function defaults(): array
     {
         $defaults = [];
         foreach (self::groups() as $group => $definition) {

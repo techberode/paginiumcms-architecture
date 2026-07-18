@@ -353,8 +353,8 @@ final class MonitoringReportBuilder
 
         $rows = '';
         foreach ($referers as $item) {
-            $ref = (string) ($item['referer'] ?? 'direct');
-            $lines[] = sprintf('%s – %d', $ref, (int) ($item['visits'] ?? 0));
+            $ref = (string) $item['referer'];
+            $lines[] = sprintf('%s – %d', $ref, $item['visits']);
             $rows .= sprintf(
                 '<tr>'
                 . '<td style="padding:8px 10px;border-bottom:1px solid #1e293b;color:%s;font-size:12px;word-break:break-all;">%s</td>'
@@ -362,7 +362,7 @@ final class MonitoringReportBuilder
                 . '</tr>',
                 self::TEXT,
                 $this->e($ref),
-                (int) ($item['visits'] ?? 0)
+                $item['visits']
             );
         }
         $lines[] = '';

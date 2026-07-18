@@ -72,7 +72,7 @@ final class JobRegistryStore
             $jobs[] = $this->normalize($job, null);
         }
 
-        $this->persist(['jobs' => array_values($jobs)]);
+        $this->persist(['jobs' => $jobs]);
 
         return $this->find($id) ?? $job;
     }
@@ -103,7 +103,7 @@ final class JobRegistryStore
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<int|string, mixed>
      */
     private function load(): array
     {
@@ -114,7 +114,7 @@ final class JobRegistryStore
         try {
             $decoded = JsonHelper::decode($this->reader->read(self::REGISTRY));
 
-            return is_array($decoded) && isset($decoded['jobs']) ? $decoded : $this->seedDefaults();
+            return is_array($decoded['jobs'] ?? null) ? $decoded : $this->seedDefaults();
         } catch (\Throwable) {
             return $this->seedDefaults();
         }

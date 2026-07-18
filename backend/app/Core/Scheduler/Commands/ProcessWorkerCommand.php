@@ -31,9 +31,9 @@ final class ProcessWorkerCommand extends Command
         $limit = max(1, (int) $input->getOption('limit'));
         $result = $this->worker->process($limit);
 
-        $output->writeln(sprintf('<info>Processed %d queued job(s).</info>', (int) ($result['processed'] ?? 0)));
+        $output->writeln(sprintf('<info>Processed %d queued job(s).</info>', $result['processed']));
 
-        foreach ($result['results'] ?? [] as $entry) {
+        foreach ($result['results'] as $entry) {
             $jobId = (string) ($entry['job_id'] ?? '?');
             $message = (string) ($entry['message'] ?? '');
             $output->writeln(sprintf('  · %s: %s', $jobId, $message));

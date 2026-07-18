@@ -101,11 +101,18 @@ final class SchedulerStateStore
 
         try {
             $decoded = JsonHelper::decode($this->reader->read(self::REGISTRY));
-
-            return is_array($decoded) ? $decoded : [];
         } catch (\Throwable) {
             return [];
         }
+
+        $state = [];
+        foreach ($decoded as $key => $value) {
+            if (is_string($key)) {
+                $state[$key] = $value;
+            }
+        }
+
+        return $state;
     }
 
     /**

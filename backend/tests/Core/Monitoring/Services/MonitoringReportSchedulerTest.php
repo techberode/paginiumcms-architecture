@@ -37,7 +37,7 @@ final class MonitoringReportSchedulerTest extends TestCase
     {
         $scheduler = $this->makeScheduler(['reportsEnabled' => false]);
 
-        $this->assertSame(['sent' => false, 'reason' => 'not_due'], $scheduler->runIfDue());
+        $this->assertSame(['sent' => false, 'connector' => '', 'reason' => 'not_due'], $scheduler->runIfDue());
     }
 
     public function testRunIfDueForceUsesNotifier(): void

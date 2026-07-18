@@ -19,6 +19,7 @@ use PaginiumCMS\Core\AuditTrail\Services\AuditTrailService;
 use PaginiumCMS\Core\Monitoring\Services\MonitoringReportScheduler;
 use PaginiumCMS\Core\Monitoring\Services\MonitoringScheduler;
 use PaginiumCMS\Core\Monitoring\Services\SchedulerStateStore;
+use PaginiumCMS\Core\Notification\NotificationService;
 use PaginiumCMS\Core\Notification\Services\IncidentNotifier;
 use PaginiumCMS\Core\Notification\Services\NotificationFactory;
 use PaginiumCMS\Core\Cache\CacheManager;
