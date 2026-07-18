@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useApi } from '../../hooks/useApi';
 import { useToast } from '../../hooks/useToast';
 import { FileTree } from './FileTree';
 import { EditorToolbar } from './EditorToolbar';
@@ -8,6 +7,7 @@ import { MonacoCodeEditor, type MonacoCodeEditorHandle } from './MonacoCodeEdito
 import { FileInfo } from '../../api/types';
 import { codeEditorApi } from '../../api/codeEditor';
 import { CodeEditorSafetyBanner } from './CodeEditorSafetyBanner';
+import { CodeEditorFileActions } from './CodeEditorFileActions';
 import './CodeEditor.css';
 
 interface CodeEditorProps {
@@ -30,7 +30,6 @@ const CodeEditorContent: React.FC<CodeEditorProps> = ({ initialPath = '' }) => {
   const [language, setLanguage] = useState<string>('plaintext');
   const [wordWrap, setWordWrap] = useState(false);
   const monacoRef = useRef<MonacoCodeEditorHandle>(null);
-  const { get, post } = useApi();
   const toast = useToast();
 
   useEffect(() => {
@@ -64,22 +63,19 @@ const CodeEditorContent: React.FC<CodeEditorProps> = ({ initialPath = '' }) => {
     setLoadingFile(true);
     try {
       setError(null);
-      const response = await get<{ content?: string; language?: string }>(
-        `/api/admin/code-editor/file?path=${encodeURIComponent(path)}`
-      );
-      if (response.success && response.data) {
-        const nextContent = response.data.content || '';
-        setContent(nextContent);
-        setOriginalContent(nextContent);
-        setLanguage(response.data.language || 'plaintext');
+      const data = await codeEditorApi.getFile(path);
+      if (data) {
+        setContent(data.content || '');
+        setOriginalContent(data.content || '');
+        setLanguage(data.language || 'plaintext');
         setIsDirty(false);
       } else {
-        setError(response.error || 'Failed to load file');
+        setError('Nepodarilo sa načítať súbor');
       }
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to load file';
+      const message = err instanceof Error ? err.message : 'Nepodarilo sa načítať súbor';
       setError(message);
-      toast.error('Failed to load file');
+      toast.error('Nepodarilo sa načítať súbor');
       console.error(err);
     } finally {
       setLoadingFile(false);
@@ -99,29 +95,23 @@ const CodeEditorContent: React.FC<CodeEditorProps> = ({ initialPath = '' }) => {
     setSuccess(null);
 
     try {
-      const response = await post('/api/admin/code-editor/save', {
-        path: currentFile,
-        content,
-      });
+      const result = await codeEditorApi.saveFile(currentFile, content);
 
-      if (response.success) {
+      if (result.success) {
         setOriginalContent(content);
         setIsDirty(false);
-        setSuccess('File saved successfully!');
-        toast.success('File saved successfully!');
+        setSuccess('Súbor uložený');
+        toast.success('Súbor uložený');
         setTimeout(() => setSuccess(null), 3000);
       } else {
-        const policyErrors = response.errors
-          ? Object.values(response.errors).flat().join('; ')
-          : '';
-        const message = policyErrors || response.error || 'Failed to save file';
+        const message = result.error || 'Uloženie zlyhalo';
         setError(message);
         toast.error(message);
       }
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to save file';
+      const message = err instanceof Error ? err.message : 'Uloženie zlyhalo';
       setError(message);
-      toast.error('Failed to save file');
+      toast.error('Uloženie zlyhalo');
     } finally {
       setSaving(false);
     }
@@ -221,6 +211,28 @@ const CodeEditorContent: React.FC<CodeEditorProps> = ({ initialPath = '' }) => {
         </div>
 
         <CodeEditorSafetyBanner />
+
+        <CodeEditorFileActions
+          currentFile={currentFile}
+          allowedRoots={allowedRoots}
+          isDirty={isDirty}
+          onFileCreated={(path) => {
+            void loadFiles();
+            setCurrentFile(path);
+          }}
+          onFileDeleted={() => {
+            setCurrentFile('');
+            setContent('');
+            setOriginalContent('');
+            setIsDirty(false);
+            void loadFiles();
+          }}
+          onBackupRestored={(restored) => {
+            setContent(restored);
+            setOriginalContent(restored);
+            setIsDirty(false);
+          }}
+        />
 
         {error && (
           <div className="mx-4 mt-2 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg text-sm">

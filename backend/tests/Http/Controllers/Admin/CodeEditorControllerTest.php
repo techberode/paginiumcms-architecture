@@ -115,6 +115,42 @@ final class CodeEditorControllerTest extends TestCase
         $this->assertNotEmpty($data['errors']['security'] ?? []);
     }
 
+    public function testCreateDeleteAndRestoreFileFlow(): void
+    {
+        $this->loginAsAdminUser();
+        $this->unlockDeveloperGate();
+
+        $path = 'backend/app/Modules/CodeEditorFlowTest_' . uniqid() . '.php';
+
+        $createRequest = $this->createJsonRequest('POST', '/api/admin/code-editor/file', [
+            'path' => $path,
+            'content' => '<?php echo "flow-v1";',
+        ]);
+        $createResponse = $this->handleRequest($createRequest);
+        $this->assertSame(201, $createResponse->getStatusCode());
+
+        $saveRequest = $this->createJsonRequest('POST', '/api/admin/code-editor/save', [
+            'path' => $path,
+            'content' => '<?php echo "flow-v2";',
+        ]);
+        $this->assertSame(200, $this->handleRequest($saveRequest)->getStatusCode());
+
+        $backupsRequest = $this->createJsonRequest('GET', '/api/admin/code-editor/backups?path=' . rawurlencode($path));
+        $backupsData = $this->getJsonResponse($this->handleRequest($backupsRequest));
+        $this->assertTrue($backupsData['success']);
+        $this->assertNotEmpty($backupsData['data']);
+
+        $restoreRequest = $this->createJsonRequest('POST', '/api/admin/code-editor/restore', [
+            'path' => $path,
+            'backup_file' => $backupsData['data'][0],
+        ]);
+        $restoreResponse = $this->handleRequest($restoreRequest);
+        $this->assertSame(200, $restoreResponse->getStatusCode());
+
+        $deleteRequest = $this->createJsonRequest('DELETE', '/api/admin/code-editor/file?path=' . rawurlencode($path));
+        $this->assertSame(200, $this->handleRequest($deleteRequest)->getStatusCode());
+    }
+
     private function unlockDeveloperGate(): void
     {
         putenv('APP_DEBUG=true');

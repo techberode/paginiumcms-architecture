@@ -15,6 +15,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | Users admin UI refresh | **2.0.19** | [below](#2019--2026-07-18) |
 | It.30 – Content editory, cache fix, admin zoznamy | **2.0.20** | [below](#2020--2026-07-18) |
 | Code Editor, 2FA UX, developer unlock fixes | **2.0.21** | [below](#2021--2026-07-18) |
+| It.16 – Code Editor create/delete/restore | **2.0.22** | [below](#2022--2026-07-18) |
+
+---
+
+## [2.0.22] – 2026-07-18
+
+### Code Editor — Iteration 16 (create / delete / restore)
+
+#### Backend
+- `CodeEditorManager`: `createFile()`, `deleteFile()`, `restoreBackup()`
+- `FileBackup::resolveBackupByBasename()` — bezpečné mapovanie zálohy na cestu
+- Routes: `POST /file`, `DELETE /file`, `POST /restore` (gated + policy + syntax)
+
+#### Frontend
+- `CodeEditorFileActions` — Nový súbor, Zmazať súbor, obnova zo zálohy
+- `codeEditor.ts` — typované API pre create / delete / restore
+
+#### Docs
+- [docs/ITERATION_16.md](docs/ITERATION_16.md) — stav hotový (plugin editor čaká na It. 15)
+- [docs/user/CODE_EDITOR.md](docs/user/CODE_EDITOR.md) — create/delete/restore sekcie
+
+#### Tests
+- `CodeEditorManagerTest::testCreateDeleteAndRestoreFile`
+- `CodeEditorControllerTest::testCreateDeleteAndRestoreFileFlow`
 
 ---
 

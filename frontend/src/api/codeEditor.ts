@@ -10,7 +10,6 @@ export const codeEditorApi = {
     return response.data?.directories ?? [];
   },
 
-  // Získanie zoznamu súborov (prázdne / all = všetky povolené korene)
   getFiles: async (directory?: string): Promise<FileInfo[]> => {
     const response = await apiClient.get<FileInfo[]>('/api/admin/code-editor/files', {
       params: { directory: directory ?? 'all' },
@@ -18,60 +17,57 @@ export const codeEditorApi = {
     return response.data || [];
   },
 
-  // Získanie obsahu súboru
-  getFile: async (path: string): Promise<CodeEditorFile> => {
+  getFile: async (path: string): Promise<CodeEditorFile | null> => {
     const response = await apiClient.get<CodeEditorFile>('/api/admin/code-editor/file', {
       params: { path },
     });
-    return response.data as CodeEditorFile;
+    if (!response.success || !response.data) {
+      return null;
+    }
+    return {
+      ...response.data,
+      content: response.data.content ?? '',
+      path: response.data.path ?? path,
+      language: response.data.language ?? 'plaintext',
+    };
   },
 
-  // Uloženie súboru
-  saveFile: async (path: string, content: string, message?: string): Promise<{ success: boolean }> => {
+  saveFile: async (path: string, content: string): Promise<{ success: boolean; error?: string }> => {
     const response = await apiClient.post('/api/admin/code-editor/save', {
       path,
       content,
-      message: message || 'File updated via Code Editor',
+      message: 'File updated via Code Editor',
     });
-    return response.data as { success: boolean };
+    return { success: Boolean(response.success), error: response.error };
   },
 
-  // Získanie záloh súboru
   getBackups: async (path: string): Promise<string[]> => {
     const response = await apiClient.get<string[]>('/api/admin/code-editor/backups', {
       params: { path },
     });
-    return response.data || [];
+    return response.data ?? [];
   },
 
-  // Obnova zálohy
-  restoreBackup: async (path: string, backupFile: string): Promise<{ success: boolean }> => {
-    const response = await apiClient.post('/api/admin/code-editor/restore', {
+  restoreBackup: async (path: string, backupFile: string): Promise<string | null> => {
+    const response = await apiClient.post<{ content?: string }>('/api/admin/code-editor/restore', {
       path,
       backup_file: backupFile,
     });
-    return response.data as { success: boolean };
+    if (!response.success) {
+      return null;
+    }
+    return response.data?.content ?? null;
   },
 
-  // Vymazanie súboru
-  deleteFile: async (path: string): Promise<{ success: boolean }> => {
-    const response = await apiClient.delete(`/api/admin/code-editor/file`, {
+  deleteFile: async (path: string): Promise<boolean> => {
+    const response = await apiClient.delete('/api/admin/code-editor/file', {
       params: { path },
     });
-    return response.data as { success: boolean };
+    return Boolean(response.success);
   },
 
-  // Vytvorenie adresára
-  createDirectory: async (path: string): Promise<{ success: boolean }> => {
-    const response = await apiClient.post('/api/admin/code-editor/directory', { path });
-    return response.data as { success: boolean };
-  },
-
-  // Získanie informácií o súbore
-  getFileInfo: async (path: string): Promise<FileInfo> => {
-    const response = await apiClient.get<FileInfo>('/api/admin/code-editor/info', {
-      params: { path },
-    });
-    return response.data as FileInfo;
+  createFile: async (path: string, content: string): Promise<boolean> => {
+    const response = await apiClient.post('/api/admin/code-editor/file', { path, content });
+    return Boolean(response.success);
   },
 };

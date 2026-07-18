@@ -37,8 +37,11 @@ return function (App $app): void {
         $group->get('/directories', [$controller, 'listDirectories']);
         $group->get('/files', [$controller, 'listFiles']);
         $group->get('/file', [$controller, 'getFile']);
+        $group->post('/file', [$controller, 'createFile']);
+        $group->delete('/file', [$controller, 'deleteFile']);
         $group->post('/save', [$controller, 'saveFile']);
         $group->get('/backups', [$controller, 'getBackups']);
+        $group->post('/restore', [$controller, 'restoreBackup']);
     })->add(new RoleMiddleware($container->get(AuthorizationInterface::class), ['ADMIN', 'SUPER_ADMIN']))
         ->add($container->get(TwoFactorMiddleware::class))
         ->add($container->get(AuthMiddleware::class));

@@ -96,6 +96,25 @@ final class CodeEditorManagerTest extends TestCase
         $manager->listFiles('backend/app/Core');
     }
 
+    public function testCreateDeleteAndRestoreFile(): void
+    {
+        $manager = $this->makeManager();
+        $path = 'backend/app/Modules/Demo/new.php';
+
+        $manager->createFile($path, '<?php echo "v1";');
+        $this->assertStringContainsString('v1', $manager->readFile($path));
+
+        $manager->writeFile($path, '<?php echo "v2";');
+        $backups = $manager->getBackups($path);
+        $this->assertNotEmpty($backups);
+
+        $manager->restoreBackup($path, $backups[0]);
+        $this->assertStringContainsString('v1', $manager->readFile($path));
+
+        $manager->deleteFile($path);
+        $this->assertFalse(file_exists($this->projectRoot . '/' . $path));
+    }
+
     private function makeManager(): CodeEditorManager
     {
         $validator = new FileValidator($this->projectRoot);

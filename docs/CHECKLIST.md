@@ -96,12 +96,15 @@ This document is the single source of truth for what exists in the backend API, 
 
 | History/compare/restore | `/api/admin/versions/*` | ✅ | `DiffViewer` only; `VersionHistory` not routed |
 
-### Admin – Code Editor (6 routes) 🔒 🛠
+### Admin – Code Editor (9 routes) 🔒 🛠
 
 | Method | Path | Status | FE wired |
 |--------|------|--------|----------|
 | GET | `/directories`, `/files`, `/file`, `/backups` | ✅ | `CodeEditor` (strom všetkých povolených koreňov) |
 | POST | `/save` | ✅ + policy 422 | `CodeEditor` + confirm Save |
+| POST | `/file` | ✅ create | `CodeEditorFileActions` — Nový súbor |
+| DELETE | `/file` | ✅ + backup before delete | `CodeEditorFileActions` — Zmazať |
+| POST | `/restore` | ✅ | `CodeEditorFileActions` — obnova zo zálohy |
 
 Používateľská príručka: [user/CODE_EDITOR.md](user/CODE_EDITOR.md)
 

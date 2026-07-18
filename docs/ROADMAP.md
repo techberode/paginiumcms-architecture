@@ -29,7 +29,7 @@ Legenda: ✅ hotové · 🚧 rozpracované · ⏳ plánované · 🔴 kritická 
 | 30+ | [Backlog modulov](ITERATION_BACKLOG.md) | ⏳ |
 | 6–7 | Notifikácie, dashboard | ✅ It.6 · ✅ It.7 |
 | 8–10 | DAM, SEO, feedy | 🟢 |
-| 11–16 | SSO, plugins, Monaco | 🔵 |
+| 11–16 | SSO, plugins, Monaco | 🔵 · It.16 ✅ (plugin editor → It.15) |
 | 17–18 | API scaffold, i18n | priebežne / po jadre |
 
 ---
@@ -189,7 +189,7 @@ Hotové v **2.0.1** — detail [ITERATION_6.md](ITERATION_6.md).
 - ✅ Developer unlock UI (`DeveloperUnlockGate` → `/api/admin/developer/unlock`, TOTP/dev-token).
 - ✅ **Plný DAM v1** ([Iterácia 24](ITERATION_24.md)): priečinky, `.meta.json` sidecar, hromadné mazanie, settings `media`, stock knižnica.
 - ✅ **Náhľad obrázkov** ([Iterácia 26](ITERATION_26.md)): lightbox Fit / 1:1, natívne rozlíšenie.
-- ⏳ Monaco editor namiesto textarea v Code Editori — ✅ od **2.0.21** (`MonacoCodeEditor.tsx`); plný stack (create/delete, témy) → It. 16.
+- ✅ Monaco editor v Code Editore — od **2.0.21** (`MonacoCodeEditor.tsx`); create/delete/restore od **2.0.22** (It. 16).
 - 📖 Príručka: [user/CODE_EDITOR.md](user/CODE_EDITOR.md) — unlock/lock, whitelist adresárov, bezpečnosť.
 
 ## Iterácia 9 – Prototype port (nav, comments, contact, GitHub) ✅
@@ -230,9 +230,10 @@ Hotové v **2.0.1** — detail [ITERATION_6.md](ITERATION_6.md).
 - `PluginManager`: install/import/enable/disable, flat-file `data/plugins.json`.
 - Validácia importu cez `CodePolicyEngine`; `HookManager` do DI.
 
-## Iterácia 16 – CodeEditor plný stack (moduly, témy, doplnky) ⏳ 🟡
-- Monaco editor, Developer unlock UI, CMS témy (`resources/views/themes/`).
-- Edit modulov/tém/doplnkov len po prechode politiky kódu; create/delete, backup restore.
+## Iterácia 16 – CodeEditor plný stack (moduly, témy, doplnky) ✅ 🟢
+- ✅ Monaco editor, Developer unlock UI, CMS témy (`resources/views/themes/`).
+- ✅ Edit modulov/tém po prechode politiky kódu; create/delete, backup restore (**2.0.22**).
+- ⏳ Edit doplnkov cez `PluginManager` — čaká na It. 15.
 
 ## Iterácia 18 – Lokalizácia admin rozhrania (i18n) ⏳ 🟡
 
