@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Controllers\Auth;
 
 use PaginiumCMS\Http\Support\JsonResponder;
+use PaginiumCMS\Modules\Security\Contracts\AuthenticationInterface;
 use PaginiumCMS\Modules\Security\Contracts\TwoFactorInterface;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
@@ -16,6 +17,7 @@ class TwoFactorController
     public function __construct(
         private TwoFactorInterface $twoFactor,
         private UserRepository $userRepository,
+        private AuthenticationInterface $auth,
         private JsonResponder $json
     ) {
     }
@@ -42,6 +44,7 @@ class TwoFactorController
             $secret = $this->twoFactor->enableTwoFactor($freshUser);
             $qrCode = $this->twoFactor->getQRCode($secret, $freshUser->getEmail());
             $updatedUser = $this->userRepository->findByEmail($freshUser->getEmail());
+            $this->auth->refreshCurrentUserFromStorage();
 
             return $this->json->respond($response, [
                 'success' => true,
@@ -76,6 +79,7 @@ class TwoFactorController
 
         try {
             $this->twoFactor->disableTwoFactor($freshUser);
+            $this->auth->refreshCurrentUserFromStorage();
 
             return $this->json->respond($response, [
                 'success' => true,
@@ -112,6 +116,8 @@ class TwoFactorController
             if (!$isValid) {
                 return $this->json->error($response, 'Neplatný TOTP kód', 400);
             }
+
+            $this->auth->refreshCurrentUserFromStorage();
 
             return $this->json->respond($response, [
                 'success' => true,
@@ -206,10 +212,12 @@ class TwoFactorController
                 return $this->json->error($response, 'Neplatný TOTP kód', 400);
             }
 
+            $refreshed = $this->auth->refreshCurrentUserFromStorage();
+
             return $this->json->respond($response, [
                 'success' => true,
                 'message' => 'TOTP kód bol úspešne overený',
-                'user' => $freshUser->jsonSerialize(),
+                'user' => ($refreshed ?? $freshUser)->jsonSerialize(),
             ]);
         } catch (\Exception $e) {
             return $this->json->error($response, $e->getMessage(), 400);

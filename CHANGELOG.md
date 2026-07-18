@@ -14,6 +14,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.29 – Cron planner + Job Queue | **2.0.18** | [below](#2018--2026-07-18) |
 | Users admin UI refresh | **2.0.19** | [below](#2019--2026-07-18) |
 | It.30 – Content editory, cache fix, admin zoznamy | **2.0.20** | [below](#2020--2026-07-18) |
+| Code Editor, 2FA UX, developer unlock fixes | **2.0.21** | [below](#2021--2026-07-18) |
+
+---
+
+## [2.0.21] – 2026-07-18
+
+### Code Editor & Developer Mode
+
+#### Backend
+- Developer unlock: fresh user from DB after 2FA setup (fixes 403 with stale session)
+- `DeveloperModeGate`: `APP_ENV=development` enables feature on LAN without explicit `DEVELOPER_MODE`
+- Code editor: `GET /directories`, `listAllAllowedFiles()`, whitelist-only file tree
+- Session sync after 2FA enable/verify/disable (`refreshCurrentUserFromStorage`)
+- Clearer developer unlock error messages
+
+#### Frontend
+- Monaco Code Editor (It.8/16)
+- Account security page `/account/security` — 2FA QR setup (Google Authenticator)
+- Code Editor: all allowed directories tree, safety banner, Save confirm, **Zamknúť editor** (lock)
+- Developer unlock UI: Slovak errors, env hint for LAN backend
+
+#### Docs
+- [docs/user/CODE_EDITOR.md](docs/user/CODE_EDITOR.md) — user guide
+- [docs/user/DEVELOPER_MODE.md](docs/user/DEVELOPER_MODE.md) — gate & dev tokens
+- CLI: `backend/bin/cli-env.php` for dev-token scripts without `.env`
+
+#### Tests
+- `DeveloperModeGateTest`, `TwoFactorSettings.test.tsx`, `buildFileTree.test.ts`, code editor controller tests
 
 ---
 

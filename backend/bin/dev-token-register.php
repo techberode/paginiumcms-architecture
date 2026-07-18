@@ -11,13 +11,15 @@ declare(strict_types=1);
  */
 
 require __DIR__ . '/../../vendor/autoload.php';
+require __DIR__ . '/cli-env.php';
 
 use PaginiumCMS\Core\Developer\DevTokenGenerator;
 use PaginiumCMS\Core\Developer\DevTokenRegistry;
 
-$secret = getenv('DEV_UNLOCK_SECRET') ?: '';
+$secret = paginium_dev_unlock_secret();
 if ($secret === '') {
     fwrite(STDERR, "Chýba DEV_UNLOCK_SECRET v prostredí.\n");
+    fwrite(STDERR, "Nastav v .env (viď .env.example) alebo: export DEV_UNLOCK_SECRET=\"...\"\n");
     exit(1);
 }
 

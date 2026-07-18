@@ -33,6 +33,14 @@ class SessionManager
     }
 
     /**
+     * Aktualizuje serializovaného používateľa bez regenerácie session ID.
+     */
+    public function updateUser(User $user): void
+    {
+        $_SESSION[self::SESSION_KEY] = serialize($user);
+    }
+
+    /**
      * Získa používateľa zo session.
      *
      * @return User|null Prihlásený používateľ alebo null.

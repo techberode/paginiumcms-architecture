@@ -56,6 +56,47 @@ final class CodeEditorControllerTest extends TestCase
         }
     }
 
+    public function testListDirectoriesReturnsAllowedRoots(): void
+    {
+        $this->loginAsAdminUser();
+        $this->unlockDeveloperGate();
+
+        $request = $this->createJsonRequest('GET', '/api/admin/code-editor/directories');
+        $response = $this->handleRequest($request);
+        $data = $this->getJsonResponse($response);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertTrue($data['success']);
+        $this->assertContains('backend/app/Modules', $data['data']['directories']);
+        $this->assertContains('backend/config', $data['data']['directories']);
+    }
+
+    public function testListAllFilesUsesAllowedRootsOnly(): void
+    {
+        $this->loginAsAdminUser();
+        $this->unlockDeveloperGate();
+
+        $request = $this->createJsonRequest('GET', '/api/admin/code-editor/files?directory=all');
+        $response = $this->handleRequest($request);
+        $data = $this->getJsonResponse($response);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertTrue($data['success']);
+        $this->assertSame('all', $data['directory']);
+        $this->assertIsArray($data['directories']);
+        foreach ($data['data'] as $file) {
+            $path = (string) $file['path'];
+            $allowed = false;
+            foreach ($data['directories'] as $root) {
+                if (str_starts_with($path, (string) $root)) {
+                    $allowed = true;
+                    break;
+                }
+            }
+            $this->assertTrue($allowed, 'Unexpected path outside allowed roots: ' . $path);
+        }
+    }
+
     public function testSaveFileRejectsPolicyViolation(): void
     {
         $this->loginAsAdminUser();

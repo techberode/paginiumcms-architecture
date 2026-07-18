@@ -48,6 +48,35 @@ final class CodeEditorManager implements CodeEditorInterface
         return $this->allowedPaths[0];
     }
 
+    /**
+     * @return list<string>
+     */
+    public function getAllowedDirectories(): array
+    {
+        return $this->allowedPaths;
+    }
+
+    /**
+     * Rekurzívne načíta všetky súbory zo striktne povolených koreňov.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function listAllAllowedFiles(): array
+    {
+        $merged = [];
+
+        foreach ($this->allowedPaths as $directory) {
+            foreach ($this->listFiles($directory) as $file) {
+                $merged[(string) $file['path']] = $file;
+            }
+        }
+
+        $files = array_values($merged);
+        usort($files, static fn (array $a, array $b): int => strcmp((string) $a['path'], (string) $b['path']));
+
+        return $files;
+    }
+
     public function canEdit(string $path): bool
     {
         $normalized = $this->normalizeRelativePath($path);
@@ -118,10 +147,20 @@ final class CodeEditorManager implements CodeEditorInterface
     /**
      * @return list<array<int|string, mixed>>
  * @return array<int|string, mixed>
- */public function listFiles(string $directory): array
+ */    public function listFiles(string $directory): array
     {
-        if ($directory === '') {
-            $directory = $this->getDefaultDirectory();
+        if ($directory === '' || $directory === 'all' || $directory === '*') {
+            return $this->listAllAllowedFiles();
+        }
+
+        if (!$this->canEdit($directory)) {
+            throw new RuntimeException('Access to path is denied');
+        }
+
+        $normalized = (string) $this->normalizeRelativePath($directory);
+        $candidate = $this->projectRoot . '/' . $normalized;
+        if (!is_dir($candidate)) {
+            return [];
         }
 
         $fullPath = $this->resolveExistingPath($directory, allowDirectory: true);

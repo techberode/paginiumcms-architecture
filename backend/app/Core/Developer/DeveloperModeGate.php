@@ -6,6 +6,7 @@ namespace PaginiumCMS\Core\Developer;
 
 use PaginiumCMS\Modules\Security\Contracts\TwoFactorInterface;
 use PaginiumCMS\Modules\Security\Models\User;
+use PaginiumCMS\Modules\Security\Services\UserRepository;
 
 /**
  * Brána Developer Mode – predvolene ZAMKNUTÝ.
@@ -26,16 +27,27 @@ class DeveloperModeGate
     public function __construct(
         private DevTokenGenerator $tokenGenerator,
         private DevTokenRegistry $tokenRegistry,
+        private UserRepository $userRepository,
         private int $unlockTtlSeconds = self::DEFAULT_TTL
     ) {
     }
 
     /**
      * Či je dev mode vôbec povolený v konfigurácii (env).
+     *
+     * Rovnaká logika ako v services.php (DEV_UNLOCK_SECRET) a bootstrap CORS –
+     * pri APP_ENV=development/local bez .env na LAN teste stále povolí odomknutie (TOTP/token).
      */
     public function isFeatureAvailable(): bool
     {
-        return getenv('DEVELOPER_MODE') === 'true' || getenv('APP_DEBUG') === 'true';
+        if ($this->envIsTrue('DEVELOPER_MODE') || $this->envIsTrue('APP_DEBUG')) {
+            return true;
+        }
+
+        $appEnv = (string) (getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? 'development'));
+        $localEnvs = ['testing', 'test', 'development', 'local'];
+
+        return in_array($appEnv, $localEnvs, true);
     }
 
     public function isUnlocked(): bool
@@ -60,11 +72,12 @@ class DeveloperModeGate
             return false;
         }
 
-        if (!$user->isTwoFactorEnabled()) {
+        $freshUser = $this->userRepository->findByEmail($user->getEmail());
+        if ($freshUser === null || !$freshUser->isTwoFactorEnabled()) {
             return false;
         }
 
-        if (!$twoFactor->verifyCode($user, $code)) {
+        if (!$twoFactor->verifyCode($freshUser, $code)) {
             return false;
         }
 
@@ -117,5 +130,15 @@ class DeveloperModeGate
     {
         $_SESSION[self::SESSION_KEY] = time() + $this->unlockTtlSeconds;
         $_SESSION[self::SESSION_METHOD] = $method;
+    }
+
+    private function envIsTrue(string $key): bool
+    {
+        $raw = getenv($key);
+        if ($raw === false || $raw === '') {
+            $raw = $_ENV[$key] ?? '';
+        }
+
+        return filter_var($raw, FILTER_VALIDATE_BOOLEAN) || $raw === 'true';
     }
 }

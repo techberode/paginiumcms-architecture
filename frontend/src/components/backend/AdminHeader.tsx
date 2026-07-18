@@ -20,6 +20,7 @@ const TAB_LABELS: Record<string, string> = {
   audit: 'Audit Trail',
   notifications: 'Notifikácie a Monitoring',
   users: 'Správa Používateľov',
+  account: 'Bezpečnosť účtu',
   settings: 'Systémové Nastavenia',
 };
 

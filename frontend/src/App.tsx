@@ -12,6 +12,7 @@ import { PagesManager } from './components/backend/PagesManager';
 import { MarkdownEditor } from './components/backend/MarkdownEditor';
 import { BackupManager } from './components/backend/BackupManager';
 import { SettingsView } from './components/backend/SettingsView';
+import { AccountSecurityView } from './components/backend/AccountSecurityView';
 import { UsersManager } from './components/backend/UsersManager';
 import { NotificationsOverview } from './components/backend/NotificationsOverview';
 import { SchedulerView } from './components/backend/SchedulerView';
@@ -136,6 +137,7 @@ function App() {
         <Route path="/notifications" element={<NotificationsOverview />} />
         <Route path="/scheduler" element={<SchedulerView />} />
         <Route path="/settings" element={<SettingsView />} />
+        <Route path="/account/security" element={<AccountSecurityView />} />
         <Route path="/users" element={<UsersManager />} />
         <Route path="/developer/logs" element={<DeveloperLogsViewer />} />
       </Route>

@@ -96,19 +96,21 @@ This document is the single source of truth for what exists in the backend API, 
 
 | History/compare/restore | `/api/admin/versions/*` | ✅ | `DiffViewer` only; `VersionHistory` not routed |
 
-### Admin – Code Editor (4 routes) 🔒 🛠
+### Admin – Code Editor (6 routes) 🔒 🛠
 
 | Method | Path | Status | FE wired |
 |--------|------|--------|----------|
-| GET | `/files`, `/file`, `/backups` | ✅ | `CodeEditor` |
-| POST | `/save` | ✅ + policy 422 | `CodeEditor` |
+| GET | `/directories`, `/files`, `/file`, `/backups` | ✅ | `CodeEditor` (strom všetkých povolených koreňov) |
+| POST | `/save` | ✅ + policy 422 | `CodeEditor` + confirm Save |
+
+Používateľská príručka: [user/CODE_EDITOR.md](user/CODE_EDITOR.md)
 
 ### Admin – Developer (4 routes) 🔒
 
 | Method | Path | Status | FE wired |
 |--------|------|--------|----------|
 | GET | `/status` | ✅ | `DeveloperUnlockGate` |
-| POST | `/unlock`, `/lock` | ✅ | `DeveloperUnlockGate` |
+| POST | `/unlock`, `/lock` | ✅ | `DeveloperUnlockGate` + **Zamknúť editor** v Code Editori |
 | GET | `/logs` | ✅ | ⛔ no dedicated FE page |
 
 ### Admin – Analytics (3 routes) 🔒
@@ -161,7 +163,7 @@ This document is the single source of truth for what exists in the backend API, 
 | `/pages/:slug` | `MarkdownEditor` | full content + locks + drafts | ✅ | `edit_article.png` |
 | `/articles` | `PagesManager` | articles | ✅ | `paginium_blog.png` (public) |
 | `/articles/:slug` | `MarkdownEditor` | articles | ✅ | `versioning_article.png` |
-| `/code-editor` | `CodeEditor` + gate | code-editor + developer | ✅ 🟡 UI basic | — |
+| `/code-editor` | `CodeEditor` + gate | code-editor + developer | ✅ lock + safety banner | [CODE_EDITOR.md](user/CODE_EDITOR.md) |
 | `/backups` | `BackupManager` | backups | ✅ | `backup.png` |
 | `/audit` | `AuditTrail` | audit stats/export | ✅ | part of `administration.png` |
 | `/audit/content/:id` | `AuditTrail` | — | 🟡 no `useParams` | — |
@@ -194,7 +196,7 @@ This document is the single source of truth for what exists in the backend API, 
 | Health checks | ✅ | ✅ panel | — |
 | Code policy + editor | ✅ | ✅ | CodePolicyEngine, SecurityScanner, CodeEditor HTTP |
 | Developer unlock gate | ✅ | ✅ | DeveloperControllerTest, DeveloperUnlockGate Vitest |
-| Code editor (Monaco) | — | ⛔ textarea only | — |
+| Code editor (Monaco) | — | ✅ `MonacoCodeEditor` v `/code-editor` | Vitest `monacoLanguage.test.ts` |
 | WYSIWYG (TipTap) | — | ⛔ orphan component | — |
 | Media manager | ✅ API | ✅ `MediaManager` | `/media` |
 | Public site theme | backend views | ⛔ separate from admin SPA | `paginium_home.png` etc. |

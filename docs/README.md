@@ -187,7 +187,7 @@ POST /api/admin/developer/unlock  { "totp_code": "123456" }
 GET  /api/admin/developer/logs    # requires unlocked dev mode
 ```
 
-See [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md).
+See [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md) and [user/CODE_EDITOR.md](user/CODE_EDITOR.md).
 
 ---
 
@@ -207,6 +207,8 @@ See [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md).
 | [developer/DEVELOPMENT.md](developer/DEVELOPMENT.md) | Contributor workflow |
 | [deploy/DEV.md](deploy/DEV.md) | Local dev stack |
 | [deploy/NGINX_API.md](deploy/NGINX_API.md) | Production nginx |
+| [user/CODE_EDITOR.md](user/CODE_EDITOR.md) | Code Editor — unlock, lock, bezpečnosť, povolené adresáre |
+| [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md) | Developer Mode gate, dev tokeny CLI |
 
 ### Iteration docs (`docs/ITERATION_*.md`)
 

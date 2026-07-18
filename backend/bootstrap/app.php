@@ -323,6 +323,7 @@ $containerBuilder->addDefinitions([
         return new TwoFactorController(
             $container->get(TwoFactorInterface::class),
             $container->get(UserRepository::class),
+            $container->get(AuthenticationInterface::class),
             $container->get(JsonResponder::class)
         );
     },

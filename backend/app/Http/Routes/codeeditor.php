@@ -34,6 +34,7 @@ return function (App $app): void {
     $app->group('/api/admin/code-editor', function (RouteCollectorProxy $group) use ($container) {
         $controller = $container->get(CodeEditorController::class);
 
+        $group->get('/directories', [$controller, 'listDirectories']);
         $group->get('/files', [$controller, 'listFiles']);
         $group->get('/file', [$controller, 'getFile']);
         $group->post('/save', [$controller, 'saveFile']);

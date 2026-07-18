@@ -23,6 +23,7 @@ use PaginiumCMS\Core\FlatFile\Services\FileWriter;
 use PaginiumCMS\Core\Logging\Contracts\LoggerInterface;
 use PaginiumCMS\Core\Settings\Services\SettingsRepository;
 use PaginiumCMS\Core\Validation\Validator;
+use PaginiumCMS\Modules\Security\Services\UserRepository;
 use PHPUnit\Framework\TestCase;
 
 final class CodeEditorManagerTest extends TestCase
@@ -34,7 +35,9 @@ final class CodeEditorManagerTest extends TestCase
         parent::setUp();
         $this->projectRoot = sys_get_temp_dir() . '/paginium_editor_' . uniqid();
         mkdir($this->projectRoot . '/backend/app/Modules/Demo', 0777, true);
+        mkdir($this->projectRoot . '/backend/config', 0777, true);
         file_put_contents($this->projectRoot . '/backend/app/Modules/Demo/sample.php', '<?php echo "ok";');
+        file_put_contents($this->projectRoot . '/backend/config/app.php', '<?php return [];');
         chdir($this->projectRoot);
     }
 
@@ -68,6 +71,31 @@ final class CodeEditorManagerTest extends TestCase
         $this->assertArrayHasKey('extension', $files[0]);
     }
 
+    public function testListAllAllowedFilesMergesAllowedRootsOnly(): void
+    {
+        $manager = $this->makeManager();
+
+        $files = $manager->listAllAllowedFiles();
+        $paths = array_column($files, 'path');
+
+        $this->assertContains('backend/app/Modules/Demo/sample.php', $paths);
+        $this->assertContains('backend/config/app.php', $paths);
+        $this->assertSame($manager->getAllowedDirectories(), [
+            'backend/app/Modules',
+            'backend/app/Http/Extensions',
+            'backend/resources/views/themes',
+            'backend/config',
+        ]);
+    }
+
+    public function testListFilesRejectsForbiddenDirectory(): void
+    {
+        $manager = $this->makeManager();
+
+        $this->expectException(\RuntimeException::class);
+        $manager->listFiles('backend/app/Core');
+    }
+
     private function makeManager(): CodeEditorManager
     {
         $validator = new FileValidator($this->projectRoot);
@@ -79,12 +107,13 @@ final class CodeEditorManagerTest extends TestCase
         );
 
         $policy = new CodePolicyEngine($settings, new SyntaxChecker(), new SecurityScanner());
+        $userRepo = new UserRepository(new FileReader($validator), new FileWriter($validator), 'users');
         $logger = new CodeEditorLogger(
             $this->noopLogger(),
             new DeveloperMode(
                 new ConfigManager(),
                 new EventDispatcher(),
-                new DeveloperModeGate(new DevTokenGenerator('test-secret'), new DevTokenRegistry()),
+                new DeveloperModeGate(new DevTokenGenerator('test-secret'), new DevTokenRegistry(), $userRepo),
                 new DeveloperLogger()
             )
         );

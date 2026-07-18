@@ -3,10 +3,17 @@ import apiClient from './client';
 import { FileInfo, CodeEditorFile } from './types';
 
 export const codeEditorApi = {
-  // Získanie zoznamu súborov
+  getAllowedDirectories: async (): Promise<string[]> => {
+    const response = await apiClient.get<{ directories?: string[] }>(
+      '/api/admin/code-editor/directories'
+    );
+    return response.data?.directories ?? [];
+  },
+
+  // Získanie zoznamu súborov (prázdne / all = všetky povolené korene)
   getFiles: async (directory?: string): Promise<FileInfo[]> => {
     const response = await apiClient.get<FileInfo[]>('/api/admin/code-editor/files', {
-      params: { directory: directory || '' },
+      params: { directory: directory ?? 'all' },
     });
     return response.data || [];
   },
