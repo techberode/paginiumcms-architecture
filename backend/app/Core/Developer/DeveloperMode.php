@@ -50,7 +50,19 @@ class DeveloperMode
 
     public static function isFeatureFlagEnabled(): bool
     {
-        return getenv('DEVELOPER_MODE') === 'true' || getenv('APP_DEBUG') === 'true';
+        $developerMode = getenv('DEVELOPER_MODE') ?: ($_ENV['DEVELOPER_MODE'] ?? '');
+        if ($developerMode === 'true' || filter_var($developerMode, FILTER_VALIDATE_BOOLEAN)) {
+            return true;
+        }
+
+        $appDebug = getenv('APP_DEBUG') ?: ($_ENV['APP_DEBUG'] ?? '');
+        if ($appDebug === 'true' || filter_var($appDebug, FILTER_VALIDATE_BOOLEAN)) {
+            return true;
+        }
+
+        $appEnv = (string) (getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? 'development'));
+
+        return in_array($appEnv, ['testing', 'test', 'development', 'local'], true);
     }
 
     /** @deprecated Použite isFeatureFlagEnabled() */

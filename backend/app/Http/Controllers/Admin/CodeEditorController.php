@@ -28,15 +28,25 @@ class CodeEditorController
 
         try {
             $files = $this->editor->listFiles($directory);
+            $listedDirectory = $directory !== '' ? $directory : 'all';
 
             return $this->json->respond($response, [
                 'success' => true,
                 'data' => $files,
-                'directory' => $directory !== '' ? $directory : $this->editor->getDefaultDirectory(),
+                'directory' => $listedDirectory,
+                'directories' => $this->editor->getAllowedDirectories(),
             ]);
         } catch (\Throwable $e) {
             return $this->respondThrowable($response, $e);
         }
+    }
+
+    public function listDirectories(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        return $this->json->success($response, [
+            'directories' => $this->editor->getAllowedDirectories(),
+            'default' => $this->editor->getDefaultDirectory(),
+        ]);
     }
 
     public function getFile(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface

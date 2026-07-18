@@ -327,7 +327,8 @@ return [
     DeveloperModeGate::class => create(DeveloperModeGate::class)
         ->constructor(
             get(DevTokenGenerator::class),
-            get(DevTokenRegistry::class)
+            get(DevTokenRegistry::class),
+            get(UserRepository::class)
         ),
     DeveloperLogger::class => create(DeveloperLogger::class),
     DeveloperModeMiddleware::class => create(DeveloperModeMiddleware::class)
@@ -515,6 +516,8 @@ return [
             get(DeveloperMode::class),
             get(DeveloperLogger::class),
             get(TwoFactorInterface::class),
+            get(UserRepository::class),
+            get(AuthenticationInterface::class),
             get(JsonResponder::class)
         ),
     TrashService::class => create(TrashService::class)

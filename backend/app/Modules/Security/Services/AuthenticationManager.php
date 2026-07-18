@@ -73,6 +73,25 @@ class AuthenticationManager implements AuthenticationInterface
         return $this->session->getUser();
     }
 
+    public function refreshCurrentUserFromStorage(): ?User
+    {
+        $current = $this->session->getUser();
+        if ($current === null) {
+            return null;
+        }
+
+        $fresh = $this->userRepository->findByEmail($current->getEmail());
+        if ($fresh === null) {
+            $this->session->clearUser();
+
+            return null;
+        }
+
+        $this->session->updateUser($fresh);
+
+        return $fresh;
+    }
+
     public function isAuthenticated(): bool
     {
         return $this->session->isAuthenticated();

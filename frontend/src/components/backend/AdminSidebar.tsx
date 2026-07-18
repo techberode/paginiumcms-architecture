@@ -14,6 +14,7 @@ import {
   Database,
   Users,
   Shield,
+  ShieldCheck,
   Bell,
   GitBranch,
   MessageSquare,
@@ -83,6 +84,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
     { id: 'notifications', label: 'Notifikácie', href: '/notifications', icon: Bell },
     { id: 'scheduler', label: 'Plánovač', href: '/scheduler', icon: CalendarClock, adminOnly: true },
     { id: 'users', label: 'Používatelia', href: '/users', icon: Users, adminOnly: true },
+    { id: 'account-security', label: 'Bezpečnosť účtu', href: '/account/security', icon: ShieldCheck },
     { id: 'settings', label: 'Nastavenia', href: '/settings', icon: Settings },
   ].filter((item) => !item.adminOnly || isAdmin);
 

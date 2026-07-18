@@ -1,72 +1,98 @@
-// frontend/src/components/CodeEditor/CodeEditor.tsx
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { useToast } from '../../hooks/useToast';
 import { FileTree } from './FileTree';
 import { EditorToolbar } from './EditorToolbar';
-import { DeveloperUnlockGate } from './DeveloperUnlockGate';
+import { DeveloperUnlockGate, useDeveloperUnlockGate } from './DeveloperUnlockGate';
+import { MonacoCodeEditor, type MonacoCodeEditorHandle } from './MonacoCodeEditor';
 import { FileInfo } from '../../api/types';
+import { codeEditorApi } from '../../api/codeEditor';
+import { CodeEditorSafetyBanner } from './CodeEditorSafetyBanner';
+import './CodeEditor.css';
 
 interface CodeEditorProps {
   initialPath?: string;
 }
 
-export const CodeEditor: React.FC<CodeEditorProps> = ({ initialPath = '' }) => {
+const CodeEditorContent: React.FC<CodeEditorProps> = ({ initialPath = '' }) => {
+  const { lock, locking } = useDeveloperUnlockGate();
   const [files, setFiles] = useState<FileInfo[]>([]);
+  const [allowedRoots, setAllowedRoots] = useState<string[]>([]);
+  const [loadingFiles, setLoadingFiles] = useState(true);
   const [currentFile, setCurrentFile] = useState<string>(initialPath);
   const [content, setContent] = useState<string>('');
   const [originalContent, setOriginalContent] = useState<string>('');
   const [saving, setSaving] = useState(false);
+  const [loadingFile, setLoadingFile] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [language, setLanguage] = useState<string>('text');
-  const { get, post, del } = useApi();
+  const [language, setLanguage] = useState<string>('plaintext');
+  const [wordWrap, setWordWrap] = useState(false);
+  const monacoRef = useRef<MonacoCodeEditorHandle>(null);
+  const { get, post } = useApi();
   const toast = useToast();
 
   useEffect(() => {
-    loadFiles();
+    void loadFiles();
   }, []);
 
   useEffect(() => {
     if (currentFile) {
-      loadFile(currentFile);
+      void loadFile(currentFile);
     }
   }, [currentFile]);
 
   const loadFiles = async () => {
+    setLoadingFiles(true);
     try {
-      const response = await get<FileInfo[]>('/api/admin/code-editor/files?directory=backend/app/Modules');
-      if (response.success) {
-        setFiles(response.data || []);
-      }
+      const [roots, allFiles] = await Promise.all([
+        codeEditorApi.getAllowedDirectories(),
+        codeEditorApi.getFiles('all'),
+      ]);
+      setAllowedRoots(roots);
+      setFiles(allFiles);
     } catch (err) {
-      toast.error('Failed to load files');
+      toast.error('Nepodarilo sa načítať súbory');
       console.error(err);
+    } finally {
+      setLoadingFiles(false);
     }
   };
 
   const loadFile = async (path: string) => {
+    setLoadingFile(true);
     try {
       setError(null);
-      const response = await get<any>(`/api/admin/code-editor/file?path=${encodeURIComponent(path)}`);
+      const response = await get<{ content?: string; language?: string }>(
+        `/api/admin/code-editor/file?path=${encodeURIComponent(path)}`
+      );
       if (response.success && response.data) {
-        setContent(response.data.content || '');
-        setOriginalContent(response.data.content || '');
-        setLanguage(response.data.language || 'text');
+        const nextContent = response.data.content || '';
+        setContent(nextContent);
+        setOriginalContent(nextContent);
+        setLanguage(response.data.language || 'plaintext');
         setIsDirty(false);
       } else {
         setError(response.error || 'Failed to load file');
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to load file');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to load file';
+      setError(message);
       toast.error('Failed to load file');
       console.error(err);
+    } finally {
+      setLoadingFile(false);
     }
   };
 
   const handleSave = async () => {
     if (!currentFile || !isDirty) return;
+
+    const ok = window.confirm(
+      `Uložiť zmeny do súboru?\n\n${currentFile}\n\nChybný PHP kód môže znefunkčniť CMS. Pokračovať?`
+    );
+    if (!ok) return;
 
     setSaving(true);
     setError(null);
@@ -75,9 +101,9 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ initialPath = '' }) => {
     try {
       const response = await post('/api/admin/code-editor/save', {
         path: currentFile,
-        content: content,
+        content,
       });
-      
+
       if (response.success) {
         setOriginalContent(content);
         setIsDirty(false);
@@ -92,8 +118,9 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ initialPath = '' }) => {
         setError(message);
         toast.error(message);
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to save file');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to save file';
+      setError(message);
       toast.error('Failed to save file');
     } finally {
       setSaving(false);
@@ -106,6 +133,9 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ initialPath = '' }) => {
   };
 
   const handleFileSelect = (path: string) => {
+    if (path === currentFile) {
+      return;
+    }
     setCurrentFile(path);
   };
 
@@ -115,119 +145,160 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ initialPath = '' }) => {
     toast.info('Changes reverted');
   };
 
+  const handleLockEditor = async () => {
+    if (isDirty) {
+      const ok = window.confirm(
+        'Máte neuložené zmeny. Naozaj chcete zamknúť Code Editor bez uloženia?'
+      );
+      if (!ok) return;
+    } else {
+      const ok = window.confirm(
+        'Zamknúť Code Editor? Na ďalšie úpravy kódu budete musieť znova zadať TOTP kód.'
+      );
+      if (!ok) return;
+    }
+
+    await lock();
+  };
+
+  const lineCount = content === '' ? 1 : content.split('\n').length;
+
   return (
-    <DeveloperUnlockGate>
-    <div className="flex flex-col h-full bg-white dark:bg-gray-800 rounded-lg shadow">
-      {/* Header */}
-      <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between flex-wrap gap-2">
-        <div className="flex items-center gap-3">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Code Editor
-          </h2>
-          {currentFile && (
-            <span className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-[300px]">
-              {currentFile}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          {isDirty && (
-            <span className="text-sm text-yellow-600 dark:text-yellow-400">
-              Unsaved changes
-            </span>
-          )}
-          <button
-            onClick={handleRevert}
-            disabled={!isDirty}
-            className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Revert
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={!isDirty || saving}
-            className="px-4 py-1.5 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            {saving ? (
-              <>
-                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-                Saving...
-              </>
-            ) : (
-              'Save'
+      <div className="code-editor-container">
+        <div className="code-editor-header">
+          <div className="flex items-center gap-3 min-w-0">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white shrink-0">
+              Code Editor
+            </h2>
+            {currentFile && (
+              <span className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-[300px]">
+                {currentFile}
+              </span>
             )}
-          </button>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            {isDirty && (
+              <span className="text-sm text-yellow-600 dark:text-yellow-400">
+                Unsaved changes
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={() => void handleLockEditor()}
+              disabled={locking}
+              className="px-3 py-1.5 text-sm border border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded disabled:opacity-50"
+              title="Zamknúť Code Editor (vyžaduje znova TOTP)"
+            >
+              {locking ? 'Zamykam…' : 'Zamknúť editor'}
+            </button>
+            <button
+              type="button"
+              onClick={handleRevert}
+              disabled={!isDirty}
+              className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Revert
+            </button>
+            <button
+              type="button"
+              onClick={() => void handleSave()}
+              disabled={!isDirty || saving}
+              className="px-4 py-1.5 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {saving ? (
+                <>
+                  <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Saving...
+                </>
+              ) : (
+                'Save'
+              )}
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* Error/Success messages */}
-      {error && (
-        <div className="mx-4 mt-2 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg text-sm">
-          ❌ {error}
-        </div>
-      )}
-      {success && (
-        <div className="mx-4 mt-2 p-3 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-lg text-sm">
-          ✅ {success}
-        </div>
-      )}
+        <CodeEditorSafetyBanner />
 
-      {/* Editor body */}
-      <div className="flex flex-1 min-h-[500px]">
-        {/* File tree - hidden on mobile */}
-        <div className="hidden md:block w-64 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
-          <FileTree
-            files={files}
-            currentFile={currentFile}
-            onFileSelect={handleFileSelect}
-          />
-        </div>
+        {error && (
+          <div className="mx-4 mt-2 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
+        {success && (
+          <div className="mx-4 mt-2 p-3 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-lg text-sm">
+            {success}
+          </div>
+        )}
 
-        {/* Editor */}
-        <div className="flex-1 flex flex-col min-h-[500px]">
-          <EditorToolbar
-            language={language}
-            onLanguageChange={setLanguage}
-            onFormat={() => {}}
-          />
-          
-          <div className="flex-1 relative">
-            <textarea
-              value={content}
-              onChange={(e) => handleContentChange(e.target.value)}
-              className="w-full h-full p-4 font-mono text-sm bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 resize-none focus:outline-none"
-              spellCheck={false}
-              placeholder="// Edit your code here..."
+        <div className="code-editor-body">
+          <div className="file-tree hidden md:block">
+            {loadingFiles ? (
+              <div className="p-4 text-sm text-gray-500">Načítavam strom súborov…</div>
+            ) : (
+              <FileTree
+                files={files}
+                roots={allowedRoots}
+                currentFile={currentFile}
+                onFileSelect={handleFileSelect}
+              />
+            )}
+          </div>
+
+          <div className="flex-1 flex flex-col min-h-[500px]">
+            <EditorToolbar
+              language={language}
+              onLanguageChange={setLanguage}
+              onFormat={() => monacoRef.current?.formatDocument()}
+              wordWrap={wordWrap}
+              onWordWrapToggle={() => setWordWrap((prev) => !prev)}
             />
-            <div className="absolute bottom-2 right-2 text-xs text-gray-400 dark:text-gray-500">
-              {content.split('\n').length} lines
+
+            <div className="flex-1 relative min-h-[400px]">
+              <MonacoCodeEditor
+                ref={monacoRef}
+                value={content}
+                onChange={handleContentChange}
+                language={language}
+                path={currentFile}
+                wordWrap={wordWrap}
+                loading={loadingFile}
+              />
+              {!loadingFile && (
+                <div className="code-editor-status">
+                  {lineCount} lines
+                </div>
+              )}
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Mobile file browser */}
-      <div className="block md:hidden border-t border-gray-200 dark:border-gray-700">
-        <details className="group">
-          <summary className="px-4 py-2 text-sm font-medium cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
-            📁 Files
-          </summary>
-          <div className="p-2 max-h-64 overflow-y-auto">
-            <FileTree
-              files={files}
-              currentFile={currentFile}
-              onFileSelect={handleFileSelect}
-              compact
-            />
-          </div>
-        </details>
+        <div className="block md:hidden border-t border-gray-200 dark:border-gray-700">
+          <details className="group">
+            <summary className="px-4 py-2 text-sm font-medium cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
+              Files
+            </summary>
+            <div className="p-2 max-h-64 overflow-y-auto">
+              <FileTree
+                files={files}
+                roots={allowedRoots}
+                currentFile={currentFile}
+                onFileSelect={handleFileSelect}
+                compact
+              />
+            </div>
+          </details>
+        </div>
       </div>
-    </div>
-    </DeveloperUnlockGate>
   );
 };
+
+export const CodeEditor: React.FC<CodeEditorProps> = (props) => (
+  <DeveloperUnlockGate>
+    <CodeEditorContent {...props} />
+  </DeveloperUnlockGate>
+);
 
 export default CodeEditor;

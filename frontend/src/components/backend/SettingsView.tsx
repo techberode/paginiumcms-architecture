@@ -1,5 +1,7 @@
 // frontend/src/components/backend/SettingsView.tsx
 import React, { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { ShieldCheck } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -12,7 +14,6 @@ import {
 } from '../../api/settings';
 import { useToast } from '../../hooks/useToast';
 import { useSettings } from '../../hooks/useSettings';
-import { TwoFactorSettings } from '../auth/TwoFactorSettings';
 import { zodFromRules } from '../../validation/zodFromRules';
 import { applyApiValidationErrors } from '../../validation/mapApiErrors';
 
@@ -143,7 +144,22 @@ export const SettingsView: React.FC = () => {
         </form>
       )}
 
-      <TwoFactorSettings />
+      <div className="card">
+        <div className="card-body flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <ShieldCheck className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5" />
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Dvojfaktorové overenie (2FA)</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Nastavenie QR kódu a TOTP autentifikátora je v samostatnej sekcii bezpečnosti účtu.
+              </p>
+            </div>
+          </div>
+          <Link to="/account/security" className="btn btn-secondary shrink-0">
+            Prejsť na bezpečnosť účtu
+          </Link>
+        </div>
+      </div>
     </div>
   );
 };

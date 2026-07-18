@@ -1,6 +1,7 @@
 // frontend/src/components/CodeEditor/DeveloperUnlockGate.test.tsx
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { DeveloperUnlockGate } from './DeveloperUnlockGate';
 import * as developerApi from '../../api/developer';
 
@@ -17,7 +18,16 @@ vi.mock('../../hooks/useToast', () => ({
 vi.mock('../../api/developer', () => ({
   getDeveloperStatus: vi.fn(),
   unlockDeveloperMode: vi.fn(),
+  lockDeveloperMode: vi.fn(),
 }));
+
+function renderGate(children: React.ReactNode = <div>Editor content</div>) {
+  return render(
+    <MemoryRouter>
+      <DeveloperUnlockGate>{children}</DeveloperUnlockGate>
+    </MemoryRouter>
+  );
+}
 
 describe('DeveloperUnlockGate', () => {
   beforeEach(() => {
@@ -30,13 +40,9 @@ describe('DeveloperUnlockGate', () => {
       unlocked: false,
     });
 
-    render(
-      <DeveloperUnlockGate>
-        <div>Editor content</div>
-      </DeveloperUnlockGate>
-    );
+    renderGate();
 
-    expect(await screen.findByText('Developer Mode required')).toBeInTheDocument();
+    expect(await screen.findByText(/Odomknutie Developer Mode/i)).toBeInTheDocument();
     expect(screen.queryByText('Editor content')).not.toBeInTheDocument();
   });
 
@@ -46,11 +52,7 @@ describe('DeveloperUnlockGate', () => {
       unlocked: true,
     });
 
-    render(
-      <DeveloperUnlockGate>
-        <div>Editor content</div>
-      </DeveloperUnlockGate>
-    );
+    renderGate();
 
     expect(await screen.findByText('Editor content')).toBeInTheDocument();
   });
@@ -60,24 +62,30 @@ describe('DeveloperUnlockGate', () => {
       feature_available: true,
       unlocked: false,
     });
-    vi.mocked(developerApi.unlockDeveloperMode).mockResolvedValue(true);
+    vi.mocked(developerApi.unlockDeveloperMode).mockResolvedValue({ success: true });
 
-    render(
-      <DeveloperUnlockGate>
-        <div>Editor content</div>
-      </DeveloperUnlockGate>
-    );
+    renderGate();
 
-    await screen.findByText('Developer Mode required');
-    fireEvent.change(screen.getByPlaceholderText('Dev token (optional)'), {
+    await screen.findByText(/Odomknutie Developer Mode/i);
+    fireEvent.change(screen.getByPlaceholderText('Dev token (voliteľné)'), {
       target: { value: 'pagdev_test.token' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Unlock Developer Mode' }));
+    fireEvent.click(screen.getByRole('button', { name: /Odomknúť Developer Mode/i }));
 
-    expect(await screen.findByText('Editor content')).toBeInTheDocument();
     expect(developerApi.unlockDeveloperMode).toHaveBeenCalledWith({
       totp_code: undefined,
       token: 'pagdev_test.token',
     });
+  });
+
+  it('shows config hint when developer mode feature is disabled', async () => {
+    vi.mocked(developerApi.getDeveloperStatus).mockResolvedValue({
+      feature_available: false,
+      unlocked: false,
+    });
+
+    renderGate();
+
+    expect(await screen.findByText(/Developer Mode nie je povolený/i)).toBeInTheDocument();
   });
 });

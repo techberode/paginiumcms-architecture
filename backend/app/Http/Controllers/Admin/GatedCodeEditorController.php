@@ -34,6 +34,15 @@ class GatedCodeEditorController extends CodeEditorController
         return parent::listFiles($request, $response);
     }
 
+    public function listDirectories(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        if ($denied = $this->gateDenied()) {
+            return $denied;
+        }
+
+        return parent::listDirectories($request, $response);
+    }
+
     public function getFile(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         if ($denied = $this->gateDenied()) {

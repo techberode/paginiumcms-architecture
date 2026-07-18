@@ -35,6 +35,11 @@ interface AuthenticationInterface
     public function getCurrentUser(): ?User;
 
     /**
+     * Obnoví session používateľa z úložiska (napr. po zmene 2FA).
+     */
+    public function refreshCurrentUserFromStorage(): ?User;
+
+    /**
      * Overí, či je používateľ prihlásený.
      *
      * @return bool TRUE ak je prihlásený.

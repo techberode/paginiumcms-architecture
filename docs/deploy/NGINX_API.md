@@ -118,11 +118,16 @@ After deploy, clear site cookies and hard-refresh before testing login.
 
 ```env
 APP_ENV=development
+APP_DEBUG=true
 APP_URL=http://192.168.10.26:8081
+DEVELOPER_MODE=true
+DEV_UNLOCK_SECRET=change-me-local-dev-secret
 # optional explicit list (wildcards below cover LAN when APP_ENV != production)
 CORS_ALLOWED_ORIGINS=http://192.168.10.26:8081,http://192.168.10.26:3025
 TRUSTED_PROXIES=127.0.0.1,::1,192.168.10.26
 ```
+
+**Developer Mode / Code Editor:** `DEVELOPER_MODE=true` (or `APP_DEBUG=true`, or `APP_ENV=development`) must be set on the **PHP backend** host (`192.168.10.20:8080`), not only on the nginx SPA host. Without it, `/api/admin/developer/unlock` returns 403 before TOTP is checked. Restart PHP/Docker after editing `.env`.
 
 When `APP_ENV` is not `production`, backend also allows CORS from `http://192.168.*`, `http://localhost:*` (Vite **:3025**), etc.
 

@@ -60,13 +60,16 @@ Removed: `MediaPlaceholder.tsx` (stub replaced by real manager).
 
 ## Out of scope (future)
 
-- Full DAM: nested folders, `.meta.json` sidecar, bulk move/delete
+- Full DAM: nested folders, `.meta.json` sidecar, bulk move/delete — ✅ delivered in It.24
 - Asset locking integration (Iteration 1)
-- WYSIWYG / Monaco picker integration
-- Developer unlock UI polish
+- Developer unlock UI polish — ✅ `DeveloperUnlockGate`
 
-## Next (Iteration 9+)
+## Code Editor (Monaco) — completed post-2.0.20
 
-- Demo module API routes (`DEMO_MODE`)
-- WYSIWYG editor in MarkdownEditor
-- RSS/sitemap feeds
+| File | Role |
+|------|------|
+| `src/components/CodeEditor/MonacoCodeEditor.tsx` | Monaco wrapper (`@monaco-editor/react`), theme sync, format + wrap |
+| `src/components/CodeEditor/CodeEditor.tsx` | Replaces textarea; developer-gated file edit |
+| `src/utils/monacoLanguage.ts` | Backend language → Monaco id mapping |
+
+See also [ITERATION_16.md](ITERATION_16.md) for remaining full-stack items (FileTree hierarchy, create/delete, themes).

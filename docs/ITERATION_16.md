@@ -1,7 +1,7 @@
 # Iteration 16 – Code Editor Full Stack (Monaco, Themes, Plugins)
 
-**Status:** Partial  
-**Version:** 2.0.4+ (Monaco dependency present; full stack pending)
+**Status:** Partial (Monaco core ✅)  
+**Version:** 2.0.21 target for Monaco UI; full stack pending
 
 ## Summary
 
@@ -10,6 +10,7 @@ Replace textarea with Monaco in Code Editor, CMS theme editing under `resources/
 ## Done ✅
 
 - `@monaco-editor/react` in frontend dependencies
+- **`MonacoCodeEditor`** — full editor in `CodeEditor.tsx` (replaces textarea), dark/light theme, format + word wrap
 - `DeveloperUnlockGate` (Iteration 8 / 14)
 - `CodeEditorManager` + policy layer (Iteration 14)
 - Allowed paths: `Http/Extensions`, `Modules`, `resources/views/themes`
@@ -18,7 +19,6 @@ Replace textarea with Monaco in Code Editor, CMS theme editing under `resources/
 
 | Item | Description |
 |------|-------------|
-| Monaco integration | Full editor in `CodeEditor.tsx` (replace textarea) |
 | FileTree | Hierarchical tree aligned with `listFiles` API |
 | Create/delete files | API + UI with backup restore |
 | Theme editor | Edit PHP/HTML theme files in admin |
@@ -27,7 +27,7 @@ Replace textarea with Monaco in Code Editor, CMS theme editing under `resources/
 ## Dependencies
 
 - ✅ Iteration 14 – code policy
-- ✅ Iteration 8 – developer unlock UI
+- ✅ Iteration 8 – developer unlock UI + Monaco editor
 - ⏳ Iteration 15 – plugin runtime
 
 ## Related docs

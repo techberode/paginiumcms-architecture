@@ -189,7 +189,8 @@ Hotové v **2.0.1** — detail [ITERATION_6.md](ITERATION_6.md).
 - ✅ Developer unlock UI (`DeveloperUnlockGate` → `/api/admin/developer/unlock`, TOTP/dev-token).
 - ✅ **Plný DAM v1** ([Iterácia 24](ITERATION_24.md)): priečinky, `.meta.json` sidecar, hromadné mazanie, settings `media`, stock knižnica.
 - ✅ **Náhľad obrázkov** ([Iterácia 26](ITERATION_26.md)): lightbox Fit / 1:1, natívne rozlíšenie.
-- ⏳ Monaco editor namiesto textarea v Code Editori (plný stack → It. 16).
+- ⏳ Monaco editor namiesto textarea v Code Editori — ✅ od **2.0.21** (`MonacoCodeEditor.tsx`); plný stack (create/delete, témy) → It. 16.
+- 📖 Príručka: [user/CODE_EDITOR.md](user/CODE_EDITOR.md) — unlock/lock, whitelist adresárov, bezpečnosť.
 
 ## Iterácia 9 – Prototype port (nav, comments, contact, GitHub) ✅
 

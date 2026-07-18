@@ -8,8 +8,10 @@ use PaginiumCMS\Core\Developer\DeveloperMode;
 use PaginiumCMS\Core\Developer\DeveloperModeGate;
 use PaginiumCMS\Core\Developer\Services\DeveloperLogger;
 use PaginiumCMS\Http\Support\JsonResponder;
+use PaginiumCMS\Modules\Security\Contracts\AuthenticationInterface;
 use PaginiumCMS\Modules\Security\Contracts\TwoFactorInterface;
 use PaginiumCMS\Modules\Security\Models\User;
+use PaginiumCMS\Modules\Security\Services\UserRepository;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -20,6 +22,8 @@ class DeveloperController
         private DeveloperMode $developerMode,
         private DeveloperLogger $developerLogger,
         private TwoFactorInterface $twoFactor,
+        private UserRepository $userRepository,
+        private AuthenticationInterface $auth,
         private JsonResponder $json
     ) {
     }
@@ -34,24 +38,57 @@ class DeveloperController
 
     public function unlock(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
+        if (!$this->gate->isFeatureAvailable()) {
+            return $this->json->error(
+                $response,
+                'Developer Mode nie je povolený v konfigurácii. Nastavte DEVELOPER_MODE=true alebo APP_DEBUG=true v .env.',
+                403
+            );
+        }
+
         $data = json_decode((string) $request->getBody(), true) ?: [];
-        $user = $request->getAttribute('user');
+        $sessionUser = $request->getAttribute('user');
 
         if (!empty($data['token'])) {
             $ok = $this->gate->unlockWithToken((string) $data['token']);
-        } elseif (!empty($data['totp_code']) && $user instanceof User) {
-            $ok = $this->gate->unlockWithTotp($user, (string) $data['totp_code'], $this->twoFactor);
+            if (!$ok) {
+                return $this->json->error(
+                    $response,
+                    'Neplatný alebo expirovaný dev token. Vygenerujte a zaregistrujte ho cez backend/bin/dev-token.php.',
+                    403
+                );
+            }
+        } elseif (!empty($data['totp_code']) && $sessionUser instanceof User) {
+            $freshUser = $this->userRepository->findByEmail($sessionUser->getEmail());
+            if ($freshUser === null) {
+                return $this->json->error($response, 'Používateľ nebol nájdený', 404);
+            }
+
+            if (!$freshUser->isTwoFactorEnabled()) {
+                return $this->json->error(
+                    $response,
+                    'Pre odomknutie musíte mať aktivovanú a overenú 2FA v sekcii Bezpečnosť účtu.',
+                    403
+                );
+            }
+
+            $ok = $this->gate->unlockWithTotp($sessionUser, (string) $data['totp_code'], $this->twoFactor);
+            if (!$ok) {
+                return $this->json->error(
+                    $response,
+                    'Neplatný TOTP kód. Použite aktuálny 6-miestny kód z Google Authenticator (alebo inej TOTP aplikácie).',
+                    403
+                );
+            }
+
+            $this->auth->refreshCurrentUserFromStorage();
         } else {
             return $this->json->error($response, 'Poskytnite token alebo totp_code (admin s 2FA)', 400);
         }
 
-        if (!$ok) {
-            return $this->json->error($response, 'Odomknutie zlyhalo – neplatný token alebo TOTP', 403);
-        }
-
         $this->developerMode->logEvent('gate', 'Developer Mode unlocked', [
             'method' => $this->gate->getUnlockMethod(),
-            'user' => $user instanceof User ? $user->getEmail() : 'token',
+            'user' => $sessionUser instanceof User ? $sessionUser->getEmail() : 'token',
         ]);
 
         return $this->json->success($response, $this->gate->getStatus());
