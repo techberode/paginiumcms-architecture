@@ -219,10 +219,7 @@ class ContentRepository implements ContentRepositoryInterface
     public function count(string $type, array $filters = []): int
     {
         $directory = $type === 'article' ? 'blog' : 'pages';
-        $files = array_merge(
-            $this->reader->listFiles($directory, '*.md'),
-            $this->reader->listFiles($directory, '*.json')
-        );
+        $files = $this->listContentFiles($directory);
 
         if ($filters === []) {
             return count($files);
@@ -256,6 +253,25 @@ class ContentRepository implements ContentRepositoryInterface
     }
 
     /**
+     * Vylistuje obsahové súbory (*.md, *.json) v adresári.
+     * Neexistujúci adresár (napr. ešte nevytvorený `content/blog`) znamená prázdny
+     * zoznam – čítanie obsahu nesmie hádzať 500, keď typ obsahu zatiaľ nemá žiadne položky.
+     *
+     * @return array<int|string, mixed>
+     */
+    private function listContentFiles(string $directory): array
+    {
+        try {
+            return array_merge(
+                $this->reader->listFiles($directory, '*.md'),
+                $this->reader->listFiles($directory, '*.json')
+            );
+        } catch (FileNotFoundException) {
+            return [];
+        }
+    }
+
+    /**
      * @return array{items: array<int, Content>, total: int}
      */
     private function findPaginated(string $type, PaginationQuery $query): array
@@ -280,10 +296,7 @@ class ContentRepository implements ContentRepositoryInterface
      */
     private function findAll(string $directory, array $filters = []): array
     {
-        $files = array_merge(
-            $this->reader->listFiles($directory, '*.md'),
-            $this->reader->listFiles($directory, '*.json')
-        );
+        $files = $this->listContentFiles($directory);
 
         $results = [];
 
@@ -320,10 +333,7 @@ class ContentRepository implements ContentRepositoryInterface
     private function findBySlugScanningDisk(string $slug, string $type): ?Content
     {
         $directory = $type === 'article' ? 'blog' : 'pages';
-        $files = array_merge(
-            $this->reader->listFiles($directory, '*.md'),
-            $this->reader->listFiles($directory, '*.json')
-        );
+        $files = $this->listContentFiles($directory);
 
         foreach ($files as $file) {
             $fullPath = $this->normalizeDirectoryPath($directory, $file);
