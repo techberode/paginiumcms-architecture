@@ -88,7 +88,7 @@ Dark theme (`#070b14`), Slovak section titles:
 6. Systémové informácie (PaginiumCMS health checks)
 7. PaginiumCMS flat-file counts
 
-**Not included** (host-level metrics – future server agent / It.29): uptime, CPU, RAM, `df`, Docker list, SSH failures, mail queue, top processes.
+**Not included** (host-level metrics – planned **It.46** server agent): uptime, CPU, RAM, `df`, Docker list, SSH failures, mail queue, top processes. See [ITERATION_46.md](ITERATION_46.md).
 
 ## Frontend
 

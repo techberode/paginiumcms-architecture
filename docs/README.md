@@ -40,6 +40,8 @@ PaginiumCMS keeps the Core intentionally minimal, secure, and fast. It moves sta
 |-----|---------|
 | **43** | **Advanced search (FE + BE)** — command palette, quick jumps in admin & public site |
 | **44** | **Filters & sorting (admin + FE)** — shared filter bar, URL-synced query params |
+| **45** | **Redis (optional)** — shared cache/queue when scaling to multiple PHP workers |
+| **46** | **Server metrics agent** — CPU/RAM/disk/Docker for monitoring reports (extends It.7) |
 
 Full backlog: [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) · Main map: [ROADMAP.md](ROADMAP.md)
 
@@ -222,7 +224,7 @@ See [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md).
 | 27 | [ITERATION_27.md](ITERATION_27.md) | ✅ Admin view modes + SEO panel |
 | 28 | [ITERATION_28.md](ITERATION_28.md) | ✅ Bulk actions |
 | 29 | [ITERATION_29.md](ITERATION_29.md) | ✅ Cron planner + job queue |
-| 43–44 | [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) | ⏳ Advanced search, filters & sorting |
+| 43–46 | [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) | ⏳ Search, filters, Redis, metrics agent |
 
 ---
 

@@ -88,5 +88,6 @@ Group **`scheduler`** in SettingsSchema:
 
 ## Out of scope (future)
 
-- Redis queue, trash auto-purge, content auto-publish handlers
-- Server metrics agent (see It.7 notes)
+- Trash auto-purge, content auto-publish handlers
+- Redis queue backend → [It.45](ITERATION_45.md)
+- Server metrics agent → [It.46](ITERATION_46.md) (was noted under It.7)
