@@ -350,6 +350,7 @@ return [
     MediaController::class => create(MediaController::class)
         ->constructor(
             get(MediaRepositoryInterface::class),
+            get(FileReaderInterface::class),
             get(StockImageCatalog::class),
             get(StockImageImporter::class),
             get(JsonResponder::class)

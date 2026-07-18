@@ -20,10 +20,34 @@ export function resolveApiBaseUrl(): string {
   return 'http://localhost:8080';
 }
 
+/** Build same-origin URL for static storage paths (nginx proxies /storage/). */
+export function resolveStorageUrl(url: string): string {
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+
+  return url.startsWith('/') ? url : `/${url}`;
+}
+
+/** Authenticated admin preview URL — same origin, session cookies sent with <img>. */
+export function resolveAdminMediaFileUrl(path: string): string {
+  const encoded = path
+    .split('/')
+    .filter((segment) => segment.length > 0)
+    .map((segment) => encodeURIComponent(segment))
+    .join('/');
+
+  return `/api/media/file/${encoded}`;
+}
+
 /** Build absolute URL for static media paths returned by the backend. */
 export function resolveMediaUrl(url: string): string {
   if (url.startsWith('http://') || url.startsWith('https://')) {
     return url;
+  }
+
+  if (url.startsWith('/storage/') || url.startsWith('/api/media/file/')) {
+    return resolveStorageUrl(url);
   }
 
   const base = resolveApiBaseUrl();

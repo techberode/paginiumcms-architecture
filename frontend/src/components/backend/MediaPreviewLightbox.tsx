@@ -1,7 +1,7 @@
 // frontend/src/components/backend/MediaPreviewLightbox.tsx
 import React, { useCallback, useEffect, useState } from 'react';
 import { Maximize2, Minimize2, X, ChevronLeft, ChevronRight } from 'lucide-react';
-import { formatMediaSize, MediaFile, resolveMediaUrl } from '../../api/media';
+import { formatMediaSize, MediaFile, resolveAdminMediaPreviewUrl, resolvePublicMediaUrl } from '../../api/media';
 
 export type MediaPreviewMode = 'fit' | 'native';
 
@@ -33,11 +33,14 @@ export const MediaPreviewLightbox: React.FC<MediaPreviewLightboxProps> = ({
 }) => {
   const [dimensions, setDimensions] = useState<ImageDimensions | null>(null);
   const [loading, setLoading] = useState(true);
+  const [previewSrc, setPreviewSrc] = useState('');
 
-  const previewUrl = file ? resolveMediaUrl(file.url) : '';
+  const previewUrl = file ? resolveAdminMediaPreviewUrl(file.path) : '';
+  const fallbackUrl = file ? resolvePublicMediaUrl(file.url) : '';
 
   useEffect(() => {
     if (!file) {
+      setPreviewSrc('');
       setDimensions(null);
       setLoading(true);
       return;
@@ -45,7 +48,8 @@ export const MediaPreviewLightbox: React.FC<MediaPreviewLightboxProps> = ({
 
     setLoading(true);
     setDimensions(null);
-  }, [file?.id, file?.path]);
+    setPreviewSrc(resolveAdminMediaPreviewUrl(file.path));
+  }, [file?.id, file?.path, file?.url]);
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
@@ -173,7 +177,7 @@ export const MediaPreviewLightbox: React.FC<MediaPreviewLightboxProps> = ({
         )}
 
         <img
-          src={previewUrl}
+          src={previewSrc || previewUrl}
           alt={file.altText || file.fileName}
           className={
             mode === 'fit'
@@ -187,7 +191,14 @@ export const MediaPreviewLightbox: React.FC<MediaPreviewLightboxProps> = ({
             setDimensions({ width: img.naturalWidth, height: img.naturalHeight });
             setLoading(false);
           }}
-          onError={() => setLoading(false)}
+          onError={() => {
+            if (previewSrc !== fallbackUrl && fallbackUrl) {
+              setPreviewSrc(fallbackUrl);
+              setLoading(true);
+              return;
+            }
+            setLoading(false);
+          }}
         />
 
         {hasNext && onNext && (

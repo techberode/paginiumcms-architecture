@@ -6,7 +6,7 @@
         {
           "url": "inline://general-sample.jpg",
           "inlineBase64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
-          "fileName": "general-sample.jpg",
+          "fileName": "general-sample.png",
           "mimeType": "image/png",
           "altText": "Test stock alt",
           "title": "Test stock title"
@@ -19,7 +19,7 @@
         {
           "url": "inline://food-sample.jpg",
           "inlineBase64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
-          "fileName": "food-sample.jpg",
+          "fileName": "food-sample.png",
           "mimeType": "image/png",
           "altText": "Food alt",
           "title": "Food title"

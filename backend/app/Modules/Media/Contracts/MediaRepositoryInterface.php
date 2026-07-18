@@ -53,4 +53,19 @@ interface MediaRepositoryInterface
      * @throws FlatFileException
      */
     public function createFolder(string $folder): void;
+
+    /**
+     * @return list<string>
+     */
+    public function resolveAllowedMimeTypes(): array;
+
+    /**
+     * @return array{
+     *     mimeTypes: list<string>,
+     *     extensions: list<string>,
+     *     accept: string,
+     *     previewableMimeTypes: list<string>
+     * }
+     */
+    public function formatsPayload(): array;
 }

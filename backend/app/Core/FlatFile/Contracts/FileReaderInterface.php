@@ -25,6 +25,15 @@ interface FileReaderInterface
     public function read(string $relativePath): string;
 
     /**
+     * Načíta binárny obsah súboru bez UTF-8 normalizácie.
+     *
+     * @param string $relativePath Relatívna cesta k súboru.
+     * @return string Binárny obsah súboru.
+     * @throws FileNotFoundException Ak súbor neexistuje.
+     */
+    public function readBinary(string $relativePath): string;
+
+    /**
      * Zistí, či súbor existuje.
      *
      * @param string $relativePath Relatívna cesta k súboru.

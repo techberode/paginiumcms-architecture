@@ -40,6 +40,27 @@ class FileReader implements FileReaderInterface
         return utf8_normalize($content);
     }
 
+    public function readBinary(string $relativePath): string
+    {
+        $absolutePath = $this->validator->getAbsolutePath($relativePath);
+
+        if (!file_exists($absolutePath) || !is_file($absolutePath)) {
+            throw new FileNotFoundException($relativePath);
+        }
+
+        if (!is_readable($absolutePath)) {
+            throw new FlatFileException(sprintf('Súbor nie je čitateľný: %s', $relativePath));
+        }
+
+        $content = file_get_contents($absolutePath);
+
+        if ($content === false) {
+            throw new FlatFileException(sprintf('Nepodarilo sa načítať súbor: %s', $relativePath));
+        }
+
+        return $content;
+    }
+
     public function exists(string $relativePath): bool
     {
         return $this->validator->fileExists($relativePath);

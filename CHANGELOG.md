@@ -6,6 +6,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [2.0.14] – 2026-07-18
+
+### Hotfix – Media preview display and strict format validation
+
+#### Backend
+- Add `FileWriter::writeBinary()` and `FileReader::readBinary()` — stop UTF-8 normalization corrupting JPEG/PNG uploads
+- Add `MediaFormats` — strict MIME, extension, and magic-byte validation for allowed media types
+- Add `GET /api/media/formats` and `GET /api/media/file/{path}` for admin same-origin image serving
+- `MediaRepository::saveUpload()` uses binary I/O and `MediaFormats::validate()`
+
+#### Frontend
+- Admin thumbnails/lightbox use `/api/media/file/{path}` (same-origin); public embeds use `/storage/...`
+- Load upload `accept` from `/api/media/formats`; fallback to `/storage/` on image load error
+- Fix `MediaPickerModal` preview URLs and missing `useEffect` import
+
+#### Tests
+- `MediaFormatsTest`; extended `MediaRepositoryTest`, `MediaControllerTest`, `FileWriterTest`, Vitest URL helpers
+
+#### Docs
+- `ITERATION_26.md` Part 4 (hotfix notes; re-upload legacy media after deploy)
+
+---
+
 ## [2.0.13] – 2026-07-18
 
 ### Iteration 26 – Media preview lightbox

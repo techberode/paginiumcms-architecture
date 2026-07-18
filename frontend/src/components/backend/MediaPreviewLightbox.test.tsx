@@ -5,7 +5,8 @@ import { MediaPreviewLightbox } from './MediaPreviewLightbox';
 import type { MediaFile } from '../../api/media';
 
 vi.mock('../../api/media', () => ({
-  resolveMediaUrl: (url: string) => `http://localhost:8080${url}`,
+  resolveAdminMediaPreviewUrl: (path: string) => `/api/media/file/${path}`,
+  resolvePublicMediaUrl: (url: string) => url,
   formatMediaSize: (bytes: number) => `${bytes} B`,
 }));
 

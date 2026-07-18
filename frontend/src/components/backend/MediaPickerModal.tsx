@@ -1,7 +1,12 @@
 // frontend/src/components/backend/MediaPickerModal.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
-import { listMedia, MediaFile, resolveMediaUrl } from '../../api/media';
+import {
+  listMedia,
+  MediaFile,
+  resolveAdminMediaPreviewUrl,
+  resolvePublicMediaUrl,
+} from '../../api/media';
 
 interface MediaPickerModalProps {
   open: boolean;
@@ -47,13 +52,18 @@ export const MediaPickerModal: React.FC<MediaPickerModalProps> = ({ open, onClos
                   type="button"
                   className="border rounded-lg overflow-hidden hover:ring-2 hover:ring-indigo-500 text-left"
                   onClick={() => {
-                    onSelect(resolveMediaUrl(file.url), file.altText || file.fileName);
+                    const relative = resolvePublicMediaUrl(file.url);
+                    const embedUrl =
+                      typeof window !== 'undefined' && window.location?.origin
+                        ? `${window.location.origin}${relative}`
+                        : relative;
+                    onSelect(embedUrl, file.altText || file.fileName);
                     onClose();
                   }}
                 >
                   <div className="aspect-video bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
                     <img
-                      src={resolveMediaUrl(file.url)}
+                      src={resolveAdminMediaPreviewUrl(file.path)}
                       alt={file.altText || file.fileName}
                       className="w-full h-full object-cover"
                     />

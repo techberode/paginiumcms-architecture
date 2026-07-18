@@ -24,11 +24,15 @@ import {
   formatMediaSize,
   importStockImage,
   isImageMedia,
+  isPreviewableMedia,
   listMedia,
   listMediaFolders,
+  listMediaFormats,
   listStockImageTopics,
   MediaFile,
+  resolveAdminMediaPreviewUrl,
   resolveMediaUrl,
+  resolvePublicMediaUrl,
   StockImageTopic,
   updateMediaMetadata,
   uploadMedia,
@@ -64,15 +68,27 @@ export const MediaManager: React.FC = () => {
   const [stockImporting, setStockImporting] = useState(false);
   const [previewFile, setPreviewFile] = useState<MediaFile | null>(null);
   const [previewMode, setPreviewMode] = useState<MediaPreviewMode>('fit');
+  const [uploadAccept, setUploadAccept] = useState(
+    'image/jpeg,image/png,image/gif,image/webp,image/svg+xml,application/pdf'
+  );
+  const [previewableMimeTypes, setPreviewableMimeTypes] = useState<string[]>([]);
 
   useEffect(() => {
     void (async () => {
-      const [topics, settings] = await Promise.all([listStockImageTopics(), getSettings()]);
+      const [topics, settings, formats] = await Promise.all([
+        listStockImageTopics(),
+        getSettings(),
+        listMediaFormats(),
+      ]);
       if (topics.length > 0) {
         setStockTopics(topics);
       }
       const configured = String(settings?.values?.media?.stockImageTopic ?? 'tech');
       setStockTopic(configured);
+      if (formats.accept) {
+        setUploadAccept(formats.accept);
+      }
+      setPreviewableMimeTypes(formats.previewableMimeTypes);
     })();
   }, []);
 
@@ -204,7 +220,11 @@ export const MediaManager: React.FC = () => {
   };
 
   const handleCopyUrl = async (file: MediaFile) => {
-    const url = resolveMediaUrl(file.url);
+    const relative = resolvePublicMediaUrl(file.url);
+    const url =
+      typeof window !== 'undefined' && window.location?.origin
+        ? `${window.location.origin}${relative}`
+        : relative;
     try {
       await navigator.clipboard.writeText(url);
       toast.success('URL copied to clipboard.');
@@ -224,8 +244,8 @@ export const MediaManager: React.FC = () => {
   });
 
   const openPreview = (file: MediaFile, mode: MediaPreviewMode = 'fit') => {
-    if (!isImageMedia(file)) {
-      window.open(resolveMediaUrl(file.url), '_blank', 'noopener,noreferrer');
+    if (!isPreviewableMedia(file, previewableMimeTypes)) {
+      window.open(resolvePublicMediaUrl(file.url), '_blank', 'noopener,noreferrer');
       return;
     }
     setPreviewMode(mode);
@@ -380,7 +400,7 @@ export const MediaManager: React.FC = () => {
           ref={fileInputRef}
           type="file"
           multiple
-          accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml,application/pdf"
+          accept={uploadAccept}
           className="hidden"
           onChange={handleFileInputChange}
         />
@@ -565,8 +585,14 @@ const MediaCard: React.FC<MediaCardProps> = ({
   onPreviewNative,
   onDelete,
 }) => {
-  const previewUrl = resolveMediaUrl(file.url);
+  const previewUrl = resolveAdminMediaPreviewUrl(file.path);
+  const fallbackUrl = resolvePublicMediaUrl(file.url);
+  const [thumbnailSrc, setThumbnailSrc] = useState(previewUrl);
   const isImage = isImageMedia(file);
+
+  useEffect(() => {
+    setThumbnailSrc(resolveAdminMediaPreviewUrl(file.path));
+  }, [file.path]);
 
   return (
     <div className={`card overflow-hidden flex flex-col ${selected ? 'ring-2 ring-indigo-500' : ''}`}>
@@ -588,10 +614,15 @@ const MediaCard: React.FC<MediaCardProps> = ({
             aria-label={`Preview ${file.fileName}`}
           >
             <img
-              src={previewUrl}
+              src={thumbnailSrc}
               alt={file.altText || file.fileName}
               className="w-full h-full object-cover"
               loading="lazy"
+              onError={() => {
+                if (thumbnailSrc !== fallbackUrl) {
+                  setThumbnailSrc(fallbackUrl);
+                }
+              }}
             />
             <span className="absolute inset-0 bg-black/0 group-hover/preview:bg-black/30 transition-colors flex items-center justify-center opacity-0 group-hover/preview:opacity-100">
               <Expand className="w-8 h-8 text-white drop-shadow" />

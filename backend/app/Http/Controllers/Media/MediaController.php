@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Media;
 
+use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
@@ -18,10 +19,46 @@ class MediaController
 {
     public function __construct(
         private MediaRepositoryInterface $mediaRepository,
+        private FileReaderInterface $fileReader,
         private StockImageCatalog $stockImageCatalog,
         private StockImageImporter $stockImageImporter,
         private JsonResponder $json
     ) {
+    }
+
+    public function listFormats(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        return $this->json->success($response, $this->mediaRepository->formatsPayload());
+    }
+
+    /**
+     * @param array<int|string, mixed> $args
+     */
+    public function serveFile(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $path = urldecode((string) ($args['path'] ?? ''));
+        if ($path === '' || str_contains($path, '..')) {
+            return $response->withStatus(404);
+        }
+
+        $media = $this->mediaRepository->findByPath($path);
+        if ($media === null || !$this->fileReader->exists($path)) {
+            return $response->withStatus(404);
+        }
+
+        try {
+            $binary = $this->fileReader->readBinary($path);
+        } catch (FlatFileException) {
+            return $response->withStatus(404);
+        }
+
+        $response->getBody()->write($binary);
+
+        return $response
+            ->withHeader('Content-Type', $media->getMimeType())
+            ->withHeader('Content-Length', (string) strlen($binary))
+            ->withHeader('Cache-Control', 'private, max-age=3600')
+            ->withHeader('Content-Disposition', 'inline; filename="' . addslashes($media->getFileName()) . '"');
     }
 
     public function listMedia(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface

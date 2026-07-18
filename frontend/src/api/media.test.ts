@@ -1,13 +1,17 @@
 // frontend/src/api/media.test.ts
 import { describe, it, expect } from 'vitest';
-import { formatMediaSize, isImageMedia, resolveMediaUrl } from './media';
+import { formatMediaSize, isImageMedia, isPreviewableMedia, resolveAdminMediaPreviewUrl, resolveMediaUrl } from './media';
 import type { MediaFile } from './media';
 
 describe('media API helpers', () => {
-  it('resolveMediaUrl prepends API base for relative paths', () => {
-    expect(resolveMediaUrl('/storage/app/content/media/x.png')).toMatch(
-      /\/storage\/app\/content\/media\/x\.png$/
+  it('resolveMediaUrl uses same-origin for storage paths', () => {
+    expect(resolveMediaUrl('/storage/app/content/media/x.png')).toBe(
+      '/storage/app/content/media/x.png'
     );
+  });
+
+  it('resolveAdminMediaPreviewUrl builds authenticated file route', () => {
+    expect(resolveAdminMediaPreviewUrl('media/x.png')).toBe('/api/media/file/media/x.png');
   });
 
   it('resolveMediaUrl leaves absolute URLs unchanged', () => {
@@ -38,5 +42,7 @@ describe('media API helpers', () => {
 
     expect(isImageMedia(image)).toBe(true);
     expect(isImageMedia(pdf)).toBe(false);
+    expect(isPreviewableMedia(image, ['image/png'])).toBe(true);
+    expect(isPreviewableMedia(pdf, ['image/png'])).toBe(false);
   });
 });
