@@ -8,6 +8,7 @@ use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\Validation\ValidationException;
 use PaginiumCMS\Core\Validation\Validator;
+use PaginiumCMS\Http\Support\BulkBatchResult;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Comments\Contracts\CommentsRepositoryInterface;
 use PaginiumCMS\Modules\Comments\Models\Comment;
@@ -181,6 +182,94 @@ class CommentsController
         }
 
         return $this->json->success($response, null, 200, Lang::get('deleted', [], 'comments'));
+    }
+
+    public function bulkUpdateStatus(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $data = json_decode((string) $request->getBody(), true);
+        if (!is_array($data)) {
+            return $this->json->error($response, Lang::get('invalid_payload', [], 'comments'), 400);
+        }
+
+        $ids = $this->normalizeIds($data['ids'] ?? null);
+        $status = (string) ($data['status'] ?? '');
+
+        if ($ids === []) {
+            return $this->json->error($response, Lang::get('ids_required', [], 'comments'), 400);
+        }
+
+        if (!in_array($status, [Comment::STATUS_PENDING, Comment::STATUS_APPROVED, Comment::STATUS_REJECTED], true)) {
+            return $this->json->error($response, Lang::get('invalid_status', [], 'comments'), 422);
+        }
+
+        $batch = new BulkBatchResult();
+        foreach ($ids as $id) {
+            $comment = $this->commentsRepository->findById($id);
+            if ($comment === null) {
+                $batch->addFailure($id, Lang::get('not_found', [], 'comments'));
+
+                continue;
+            }
+
+            try {
+                $comment->setStatus($status);
+                $this->commentsRepository->update($comment);
+                $batch->addSuccess($id);
+            } catch (FlatFileException $e) {
+                $batch->addFailure($id, $e->getMessage());
+            }
+        }
+
+        return $this->json->success(
+            $response,
+            $batch->toArray(),
+            200,
+            Lang::get('bulk_updated', [], 'comments')
+        );
+    }
+
+    public function bulkDelete(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $ids = $this->normalizeIds(
+            (json_decode((string) $request->getBody(), true) ?: [])['ids'] ?? null
+        );
+
+        if ($ids === []) {
+            return $this->json->error($response, Lang::get('ids_required', [], 'comments'), 400);
+        }
+
+        $batch = new BulkBatchResult();
+        foreach ($ids as $id) {
+            try {
+                $this->commentsRepository->delete($id);
+                $batch->addSuccess($id);
+            } catch (FlatFileException $e) {
+                $batch->addFailure($id, Lang::get('not_found', [], 'comments'));
+            }
+        }
+
+        return $this->json->success(
+            $response,
+            $batch->toArray(),
+            200,
+            Lang::get('bulk_deleted', [], 'comments')
+        );
+    }
+
+    /**
+     * @param mixed $value
+     * @return list<string>
+     */
+    private function normalizeIds(mixed $value): array
+    {
+        if (!is_array($value)) {
+            return [];
+        }
+
+        return array_values(array_filter(
+            array_map(static fn ($id): string => is_string($id) ? trim($id) : '', $value),
+            static fn (string $id): bool => $id !== ''
+        ));
     }
 
     /**

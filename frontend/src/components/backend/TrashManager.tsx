@@ -3,6 +3,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ArchiveRestore, Loader2, Trash2 } from 'lucide-react';
 import { trashApi, type TrashItem } from '../../api/trash';
 import { useToast } from '../../hooks/useToast';
+import { useBulkSelection } from '../../hooks/useBulkSelection';
+import { BulkActionBar } from './BulkActionBar';
+import { summarizeBulkResult } from '../../types/bulk';
 
 function formatBytes(size: number): string {
   if (size < 1024) {
@@ -26,6 +29,7 @@ export const TrashManager: React.FC = () => {
   const [items, setItems] = useState<TrashItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [restoringId, setRestoringId] = useState<string | null>(null);
+  const [bulkRestoring, setBulkRestoring] = useState(false);
   const toast = useToast();
 
   const loadItems = useCallback(async () => {
@@ -37,13 +41,17 @@ export const TrashManager: React.FC = () => {
     } finally {
       setLoading(false);
     }
-    // toast ref is stable for the component lifetime
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     void loadItems();
   }, [loadItems]);
+
+  const bulkSelection = useBulkSelection(
+    items.map((item) => item.id),
+    items.length
+  );
 
   const handleRestore = async (item: TrashItem) => {
     if (!confirm(`Obnoviť „${item.originalPath}"?`)) {
@@ -66,6 +74,29 @@ export const TrashManager: React.FC = () => {
     }
   };
 
+  const handleBulkRestore = async () => {
+    if (bulkSelection.count === 0) {
+      return;
+    }
+    if (!confirm(`Obnoviť ${bulkSelection.count} položiek z koša?`)) {
+      return;
+    }
+
+    setBulkRestoring(true);
+    try {
+      const result = await trashApi.bulkRestore(bulkSelection.selectedIds);
+      if (result) {
+        toast.success(summarizeBulkResult(result));
+        bulkSelection.clear();
+        await loadItems();
+      } else {
+        toast.error('Hromadná obnova zlyhala');
+      }
+    } finally {
+      setBulkRestoring(false);
+    }
+  };
+
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
       <div className="flex items-center gap-3">
@@ -79,6 +110,21 @@ export const TrashManager: React.FC = () => {
           </p>
         </div>
       </div>
+
+      <BulkActionBar
+        count={bulkSelection.count}
+        itemLabel="položiek vybraných"
+        onClear={bulkSelection.clear}
+        actions={[
+          {
+            id: 'restore',
+            label: 'Obnoviť vybrané',
+            variant: 'primary',
+            disabled: bulkRestoring,
+            onClick: () => void handleBulkRestore(),
+          },
+        ]}
+      />
 
       {loading ? (
         <div className="flex items-center gap-2 text-slate-500 py-12 justify-center">
@@ -94,6 +140,14 @@ export const TrashManager: React.FC = () => {
           <table className="w-full text-sm">
             <thead className="bg-slate-50 dark:bg-slate-800/50 text-left text-slate-600 dark:text-slate-400">
               <tr>
+                <th className="px-4 py-3 font-medium w-10">
+                  <input
+                    type="checkbox"
+                    checked={bulkSelection.allSelected && items.length > 0}
+                    onChange={bulkSelection.toggleAll}
+                    aria-label="Vybrať všetko"
+                  />
+                </th>
                 <th className="px-4 py-3 font-medium">Pôvodná cesta</th>
                 <th className="px-4 py-3 font-medium">Zmazané</th>
                 <th className="px-4 py-3 font-medium">Veľkosť</th>
@@ -103,6 +157,14 @@ export const TrashManager: React.FC = () => {
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {items.map((item) => (
                 <tr key={item.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/30">
+                  <td className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={bulkSelection.isSelected(item.id)}
+                      onChange={() => bulkSelection.toggle(item.id)}
+                      aria-label={`Vybrať ${item.originalPath}`}
+                    />
+                  </td>
                   <td className="px-4 py-3 font-mono text-xs text-slate-800 dark:text-slate-200">
                     {item.originalPath}
                   </td>

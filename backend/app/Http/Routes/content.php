@@ -66,8 +66,15 @@ return function (App $app): void {
 
     $app->group('/api/pages', function (RouteCollectorProxy $group) use ($controller) {
         $group->delete('/{slug}', [$controller, 'deletePage']);
+        $group->post('/bulk-delete', [$controller, 'bulkDeletePages']);
     })
         ->add(new PermissionMiddleware($authz, 'content:delete'))
+        ->add($auth);
+
+    $app->group('/api/pages', function (RouteCollectorProxy $group) use ($controller) {
+        $group->patch('/bulk-status', [$controller, 'bulkUpdatePageStatus']);
+    })
+        ->add(new PermissionMiddleware($authz, 'content:edit'))
         ->add($auth);
 
     $app->group('/api/articles', function (RouteCollectorProxy $group) use ($controller) {
@@ -85,7 +92,14 @@ return function (App $app): void {
 
     $app->group('/api/articles', function (RouteCollectorProxy $group) use ($controller) {
         $group->delete('/{slug}', [$controller, 'deleteArticle']);
+        $group->post('/bulk-delete', [$controller, 'bulkDeleteArticles']);
     })
         ->add(new PermissionMiddleware($authz, 'content:delete'))
+        ->add($auth);
+
+    $app->group('/api/articles', function (RouteCollectorProxy $group) use ($controller) {
+        $group->patch('/bulk-status', [$controller, 'bulkUpdateArticleStatus']);
+    })
+        ->add(new PermissionMiddleware($authz, 'content:edit'))
         ->add($auth);
 };

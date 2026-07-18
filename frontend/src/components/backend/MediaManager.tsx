@@ -42,9 +42,11 @@ import {
   MediaPreviewMode,
 } from './MediaPreviewLightbox';
 import { AdminViewModeToggle } from './AdminViewModeToggle';
+import { BulkActionBar } from './BulkActionBar';
 import { MediaMetadataModal } from './MediaMetadataModal';
 import { SeoHealthBadge } from './SeoHealthBadge';
 import { useAdminViewMode } from '../../hooks/useAdminViewMode';
+import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { evaluateMediaSeo } from '../../utils/seoHealth';
 
 type TypeFilter = 'all' | 'image';
@@ -69,7 +71,6 @@ export const MediaManager: React.FC = () => {
   const [editAlt, setEditAlt] = useState('');
   const [editTitle, setEditTitle] = useState('');
   const [savingMeta, setSavingMeta] = useState(false);
-  const [selectedPaths, setSelectedPaths] = useState<string[]>([]);
   const [stockTopics, setStockTopics] = useState<StockImageTopic[]>([]);
   const [stockTopic, setStockTopic] = useState('tech');
   const [stockImporting, setStockImporting] = useState(false);
@@ -114,7 +115,6 @@ export const MediaManager: React.FC = () => {
       ]);
       setItems(files);
       setFolders(folderList.length > 0 ? folderList : ['']);
-      setSelectedPaths((prev) => prev.filter((path) => files.some((file) => file.path === path)));
     } catch (error) {
       toast.error('Failed to load media library.');
       console.error(error);
@@ -186,33 +186,6 @@ export const MediaManager: React.FC = () => {
     }
   };
 
-  const toggleSelected = (path: string) => {
-    setSelectedPaths((prev) =>
-      prev.includes(path) ? prev.filter((item) => item !== path) : [...prev, path]
-    );
-  };
-
-  const handleBulkDelete = async () => {
-    if (selectedPaths.length === 0) {
-      return;
-    }
-
-    if (
-      !confirm(`Delete ${selectedPaths.length} selected file(s)? This cannot be undone.`)
-    ) {
-      return;
-    }
-
-    const deleted = await bulkDeleteMedia(selectedPaths);
-    if (deleted > 0) {
-      toast.success(`${deleted} file(s) deleted.`);
-      setSelectedPaths([]);
-      await loadMedia();
-    } else {
-      toast.error('Failed to delete selected files.');
-    }
-  };
-
   const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       void handleUploadFiles(event.target.files);
@@ -260,6 +233,32 @@ export const MediaManager: React.FC = () => {
 
     return true;
   });
+
+  const bulkSelection = useBulkSelection(
+    filteredItems.map((file) => file.path),
+    `${currentFolder}:${typeFilter}:${search}:${seoIssuesOnly}`
+  );
+
+  const handleBulkDelete = async () => {
+    if (bulkSelection.count === 0) {
+      return;
+    }
+
+    if (
+      !confirm(`Delete ${bulkSelection.count} selected file(s)? This cannot be undone.`)
+    ) {
+      return;
+    }
+
+    const deleted = await bulkDeleteMedia(bulkSelection.selectedIds);
+    if (deleted > 0) {
+      toast.success(`${deleted} file(s) deleted.`);
+      bulkSelection.clear();
+      await loadMedia();
+    } else {
+      toast.error('Failed to delete selected files.');
+    }
+  };
 
   const openPreview = (file: MediaFile, mode: MediaPreviewMode = 'fit') => {
     if (!isPreviewableMedia(file, previewableMimeTypes)) {
@@ -359,12 +358,6 @@ export const MediaManager: React.FC = () => {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          {selectedPaths.length > 0 && (
-            <button type="button" className="btn btn-danger" onClick={() => void handleBulkDelete()}>
-              <Trash2 className="w-4 h-4 inline mr-2" />
-              Delete selected ({selectedPaths.length})
-            </button>
-          )}
           <button type="button" className="btn btn-secondary" onClick={() => void handleCreateFolder()}>
             <FolderPlus className="w-4 h-4 inline mr-2" />
             New folder
@@ -539,6 +532,20 @@ export const MediaManager: React.FC = () => {
         </label>
       </div>
 
+      <BulkActionBar
+        count={bulkSelection.count}
+        itemLabel="files selected"
+        onClear={bulkSelection.clear}
+        actions={[
+          {
+            id: 'delete',
+            label: 'Delete selected',
+            variant: 'danger',
+            onClick: () => void handleBulkDelete(),
+          },
+        ]}
+      />
+
       {loading ? (
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600" />
@@ -555,8 +562,8 @@ export const MediaManager: React.FC = () => {
             <MediaCard
               key={file.id}
               file={file}
-              selected={selectedPaths.includes(file.path)}
-              onToggleSelect={() => toggleSelected(file.path)}
+              selected={bulkSelection.isSelected(file.path)}
+              onToggleSelect={() => bulkSelection.toggle(file.path)}
               editing={editingPath === file.path}
               editAlt={editAlt}
               editTitle={editTitle}
@@ -576,8 +583,10 @@ export const MediaManager: React.FC = () => {
         <MediaListTable
           files={filteredItems}
           showThumbnail={viewMode === 'list-preview'}
-          selectedPaths={selectedPaths}
-          onToggleSelect={toggleSelected}
+          selectedPaths={bulkSelection.selectedIds}
+          allSelected={bulkSelection.allSelected}
+          onToggleSelect={bulkSelection.toggle}
+          onToggleSelectAll={bulkSelection.toggleAll}
           onCopyUrl={handleCopyUrl}
           onPreview={openPreview}
           onDelete={handleDelete}
@@ -801,7 +810,9 @@ interface MediaListTableProps {
   files: MediaFile[];
   showThumbnail: boolean;
   selectedPaths: string[];
+  allSelected: boolean;
   onToggleSelect: (path: string) => void;
+  onToggleSelectAll: () => void;
   onCopyUrl: (file: MediaFile) => void;
   onPreview: (file: MediaFile) => void;
   onDelete: (file: MediaFile) => void;
@@ -812,7 +823,9 @@ const MediaListTable: React.FC<MediaListTableProps> = ({
   files,
   showThumbnail,
   selectedPaths,
+  allSelected,
   onToggleSelect,
+  onToggleSelectAll,
   onCopyUrl,
   onPreview,
   onDelete,
@@ -823,7 +836,14 @@ const MediaListTable: React.FC<MediaListTableProps> = ({
       <table className="table min-w-[720px]">
         <thead>
           <tr>
-            <th className="w-10" />
+            <th className="w-10">
+              <input
+                type="checkbox"
+                checked={allSelected && files.length > 0}
+                onChange={onToggleSelectAll}
+                aria-label="Select all visible files"
+              />
+            </th>
             {showThumbnail && <th className="w-24">Preview</th>}
             <th>Name</th>
             <th>Type</th>

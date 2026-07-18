@@ -7,6 +7,7 @@ namespace PaginiumCMS\Http\Controllers\Admin;
 use PaginiumCMS\Core\Validation\ValidationException;
 use PaginiumCMS\Core\Validation\ValidationRules;
 use PaginiumCMS\Core\Validation\Validator;
+use PaginiumCMS\Http\Support\BulkBatchResult;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
 use PaginiumCMS\Modules\Security\Contracts\PasswordPolicyInterface;
@@ -192,6 +193,53 @@ final class UserController
         $this->users->delete($targetId);
 
         return $this->json->success($response, null, 200, 'Používateľ zmazaný');
+    }
+
+    public function bulkDestroy(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $data = $this->parseJsonBody($request);
+        $ids = isset($data['ids']) && is_array($data['ids'])
+            ? array_values(array_filter(
+                array_map(static fn ($id): string => is_string($id) ? trim($id) : '', $data['ids']),
+                static fn (string $id): bool => $id !== ''
+            ))
+            : [];
+
+        if ($ids === []) {
+            return $this->json->error($response, 'Vyžaduje sa aspoň jedno ID', 400);
+        }
+
+        $actor = $request->getAttribute('user');
+        if (!$actor instanceof User) {
+            return $this->json->error($response, 'Neprihlásený používateľ', 401);
+        }
+
+        $batch = new BulkBatchResult();
+        foreach ($ids as $targetId) {
+            if ($actor->getId() === $targetId) {
+                $batch->addFailure($targetId, 'Nemôžete zmazať vlastný účet');
+
+                continue;
+            }
+
+            $target = $this->resolveUser($targetId);
+            if ($target === null) {
+                $batch->addFailure($targetId, 'Používateľ neexistuje');
+
+                continue;
+            }
+
+            if ($target->isSuperAdmin() && $this->countSuperAdmins() <= 1) {
+                $batch->addFailure($targetId, 'Nemôžete zmazať posledného super administrátora');
+
+                continue;
+            }
+
+            $this->users->delete($targetId);
+            $batch->addSuccess($targetId);
+        }
+
+        return $this->json->success($response, $batch->toArray(), 200, 'Hromadné mazanie dokončené');
     }
 
     private function resolveUser(string $id): ?User

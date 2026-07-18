@@ -72,4 +72,48 @@ class TrashControllerTest extends TestCase
         $this->assertEquals(404, $response->getStatusCode());
         $this->assertFalse($data['success']);
     }
+
+    public function testBulkRestoreReturnsBatchSummary(): void
+    {
+        $login = $this->loginAsAdminUser();
+        $this->assertEquals(200, $login['response']->getStatusCode());
+
+        $repo = $this->app->getContainer()->get(ContentRepositoryInterface::class);
+        $slug = 'bulk-trash-' . uniqid();
+        $page = new Page();
+        $page->setSlug($slug);
+        $page->setFrontMatter([
+            'title' => 'Bulk trash',
+            'slug' => $slug,
+            'status' => 'draft',
+        ]);
+        $page->setContent("# Trash bulk\n");
+        $repo->save($page);
+
+        $delete = $this->createJsonRequest('DELETE', '/api/pages/' . $slug);
+        $this->assertSame(200, $this->handleRequest($delete)->getStatusCode());
+
+        $list = $this->getJsonResponse($this->handleRequest($this->createJsonRequest('GET', '/api/admin/trash')));
+        $item = null;
+        foreach ($list['data'] as $entry) {
+            if (str_contains((string) ($entry['originalPath'] ?? ''), $slug)) {
+                $item = $entry;
+                break;
+            }
+        }
+        $this->assertNotNull($item);
+
+        $bulk = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/admin/trash/bulk-restore', [
+                'ids' => [$item['id'], 'missing-id'],
+            ])
+        );
+        $bulkData = $this->getJsonResponse($bulk);
+
+        $this->assertSame(200, $bulk->getStatusCode());
+        $this->assertTrue($bulkData['success']);
+        $this->assertSame(2, $bulkData['data']['processed']);
+        $this->assertSame(1, $bulkData['data']['succeeded']);
+        $this->assertSame(1, $bulkData['data']['failed']);
+    }
 }

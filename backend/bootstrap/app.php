@@ -533,7 +533,11 @@ $app->group('/api/admin', function (RouteCollectorProxy $group) use ($container)
 
     $group->get('/backups', [$backupController, 'listBackups']);
     $group->post('/backups', [$backupController, 'createBackup']);
+    $group->post('/backups/import', [$backupController, 'importBackup']);
+    $group->post('/backups/bulk-delete', [$backupController, 'bulkDeleteBackups']);
+    $group->post('/backups/bulk-restore', [$backupController, 'bulkRestoreBackups']);
     $group->get('/backups/{id}/download', [$backupController, 'downloadBackup']);
+    $group->get('/backups/{id}/verify', [$backupController, 'verifyBackup']);
     $group->post('/backups/{id}/restore', [$backupController, 'restoreBackup']);
     $group->delete('/backups/{id}', [$backupController, 'deleteBackup']);
 })->add(new RoleMiddleware($container->get(AuthorizationInterface::class), ['ADMIN', 'SUPER_ADMIN']))

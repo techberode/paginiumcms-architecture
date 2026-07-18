@@ -72,4 +72,24 @@ export const contentApi = {
     const res = await apiClient.delete(`${endpoint(type)}/${encodeURIComponent(slug)}`);
     return Boolean(res.success);
   },
+
+  bulkDelete: async (type: ContentType, slugs: string[]) => {
+    const res = await apiClient.post<import('../types/bulk').BulkBatchResult>(
+      `${endpoint(type)}/bulk-delete`,
+      { slugs }
+    );
+    return res.success && res.data ? res.data : null;
+  },
+
+  bulkUpdateStatus: async (
+    type: ContentType,
+    slugs: string[],
+    status: 'draft' | 'published' | 'archived'
+  ) => {
+    const res = await apiClient.patch<import('../types/bulk').BulkBatchResult>(
+      `${endpoint(type)}/bulk-status`,
+      { slugs, status }
+    );
+    return res.success && res.data ? res.data : null;
+  },
 };

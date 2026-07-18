@@ -29,6 +29,7 @@ return function (App $app): void {
         $controller = $container->get(UserController::class);
 
         $group->get('', [$controller, 'index']);
+        $group->post('/bulk-delete', [$controller, 'bulkDestroy']);
         $group->get('/{id}', [$controller, 'show']);
         $group->post('', [$controller, 'store']);
         $group->put('/{id}', [$controller, 'update']);

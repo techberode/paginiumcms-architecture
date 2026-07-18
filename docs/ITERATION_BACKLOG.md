@@ -1,11 +1,11 @@
 # PaginiumCMS – Backlog iterácií (27+)
 
-> Plánované moduly a rozšírenia po **Iterácii 27 (2.0.15)**.  
+> Plánované moduly a rozšírenia po **Iterácii 28 (2.0.16)**.  
 > Legenda: ⏳ plánované · 🟡 stredná priorita · 🔵 nižšia · 🔴 kritická
 
-**Aktuálne hotové:** It.1–24 ✅ · It.26 ✅ · **It.27 ✅ (2.0.15)** · It.25 ⏳ (setup wizard — odložené)
+**Aktuálne hotové:** It.1–24 ✅ · It.26–28 ✅ · It.25 ⏳ (setup wizard — odložené)
 
-**Ďalšia iterácia:** [It.28 – Bulk actions](ITERATION_BACKLOG.md#it-28--bulk-actions-platform)
+**Ďalšia iterácia:** [It.29 – Job Queue](ITERATION_BACKLOG.md#iterácia-29--job-queue--background-worker-)
 
 ---
 
@@ -16,8 +16,8 @@
 | 25 | TBD | [Setup wizard](ITERATION_25.md) | 🟡 | Odložené — téma cez Settings |
 | 26 | 2.0.14 | [Media preview + binárny hotfix](ITERATION_26.md) | ✅ | Lightbox + strict formats |
 | **27** | **2.0.15** | **[Admin view modes + SEO panel](ITERATION_27.md)** | **✅** | List / list+preview / grid + SEO UX + metadata modal |
-| **28** | TBD | **Bulk actions (platform)** | **🟡 ďalšia** | Hromadné akcie naprieč adminom |
-| **29** | TBD | **Job Queue / Background Worker** | 🔵 | Dlhé úlohy mimo requestu |
+| **28** | **2.0.16** | **[Bulk actions platform](ITERATION_28.md)** | **✅** | Shared bulk bar + batch APIs |
+| **29** | TBD | **Job Queue / Background Worker** | **🟡 ďalšia** | Dlhé úlohy mimo requestu |
 | **30** | TBD | **Contextual Actions** | 🟡 | Akcie podľa kontextu (content, media, user) |
 | **31** | TBD | **Live Preview** | 🟡 | Náhľad stránky/článku pred publikovaním |
 | **32** | TBD | **React chunking + PHP OPcache** | 🔵 | Výkon FE/BE |
@@ -32,25 +32,19 @@
 
 ---
 
-## Iterácia 27 – Admin view modes + SEO panel ⏳ **← next**
+## Iterácia 27 – Admin view modes + SEO panel ✅
 
 Display modes in admin SPA and SEO metadata workflow. **Full spec (English):** [ITERATION_27.md](ITERATION_27.md)
 
-- **View modes:** `list` · `list-preview` · `preview` (grid) — Media, Articles, Pages
-- **SEO panel:** alt, tags, meta description, OG image, robots, canonical
-- **SEO health:** badge + filter for missing fields in lists
-- Builds on `SeoMetaBuilder` (It.23) and DAM sidecar (It.24)
-
 ---
 
-## Iterácia 28 – Bulk actions (platform) ⏳
+## Iterácia 28 – Bulk actions (platform) ✅
 
-Hromadné operácie nad viacerými entitami v administrácii (nie len Media Library).
+Hromadné operácie nad viacerými entitami. **Full spec:** [ITERATION_28.md](ITERATION_28.md)
 
-- Unified `BulkActionBar` pattern (content, users, trash, comments)
-- Backend batch endpointy s ACL
-- **Media bulk delete** už existuje (It.24) — zovšeobecniť
-- Bulk SEO patch (doplnenie meta polí) — naviazané na It.27
+- Unified `BulkActionBar` + `useBulkSelection`
+- Content / trash / comments batch endpoints
+- Media bulk delete refactored to shared UI
 
 ---
 
@@ -160,7 +154,7 @@ Jednotný alebo per-sekcia správca súborov (blog/media, pages/assets, …).
 ## Odporúčané poradie implementácie
 
 ```
-It.27/2.0.15 ✅ → It.28 (bulk actions) ← ďalšia
+It.28/2.0.16 ✅ → It.29 (job queue) ← ďalšia
                 → It.36 (pagination) → It.38 (feature flags)
                 → It.39 (komentáre) → It.37 (inline FE edit)
                 → It.33 (analytics) → It.34 (system overview)

@@ -6,7 +6,39 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
-## [2.0.15] – 2026-07-18
+## [2.0.16] – 2026-07-18
+
+### Iteration 28 – Bulk actions platform
+
+#### Frontend
+- Add `useBulkSelection` + `BulkActionBar` — shared multi-select pattern
+- **MediaManager** — refactor to shared bulk bar + select-all in list table
+- **Pages / Articles** — bulk publish, draft, archive, delete
+- **Trash** — bulk restore
+- **Comments** — bulk approve, reject, delete
+- **Users** — bulk delete with selection guard (not self)
+- **Backups** — bulk restore/delete, import ZIP, SHA-256 column, verify + download with hash header
+
+#### Backend
+- Add `BulkBatchResult` — `{ processed, succeeded, failed, results[] }` contract
+- Content: `POST/PATCH /api/{pages|articles}/bulk-*`
+- Trash: `POST /api/admin/trash/bulk-restore`
+- Comments: `POST /api/admin/comments/bulk-*`
+- Users: `POST /api/admin/users/bulk-delete`
+- Backups: import, bulk delete/restore, `GET .../verify`, SHA-256 on create + metadata fix (id hydration)
+
+#### Tests
+- PHPUnit: `BulkBatchResultTest`, content/trash bulk, backup verify path
+- Vitest: `useBulkSelection.test.ts`
+
+#### Docs
+- [ITERATION_28.md](docs/ITERATION_28.md) — includes backup import/hash scope (extends It.20 backup ops)
+
+#### Deferred (post 2.0.16)
+- Bulk SEO patch
+- Messages bulk mark-read
+
+---
 
 ### Iteration 27 – Admin view modes + SEO metadata panel
 

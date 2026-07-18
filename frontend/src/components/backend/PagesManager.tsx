@@ -5,8 +5,12 @@ import { useToast } from '../../hooks/useToast';
 import { Link } from 'react-router-dom';
 import type { PaginationMeta } from '../../api/client';
 import { AdminViewModeToggle } from './AdminViewModeToggle';
+import { BulkActionBar } from './BulkActionBar';
 import { SeoHealthBadge } from './SeoHealthBadge';
 import { useAdminViewMode } from '../../hooks/useAdminViewMode';
+import { useBulkSelection } from '../../hooks/useBulkSelection';
+import { contentApi } from '../../api/content';
+import { summarizeBulkResult } from '../../types/bulk';
 import { evaluateContentSeo } from '../../utils/seoHealth';
 import { resolveAdminMediaPreviewUrl, resolvePublicMediaUrl } from '../../api/media';
 
@@ -159,6 +163,42 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
     }) !== 'ok';
   });
 
+  const bulkSelection = useBulkSelection(
+    visibleItems.map((item) => item.slug),
+    `${type}:${page}:${debouncedSearch}:${statusFilter}:${seoIssuesOnly}`
+  );
+
+  const handleBulkDelete = async () => {
+    if (bulkSelection.count === 0) {
+      return;
+    }
+    if (!confirm(`Delete ${bulkSelection.count} selected ${type}?`)) {
+      return;
+    }
+    const result = await contentApi.bulkDelete(type, bulkSelection.selectedIds);
+    if (result) {
+      toast.success(summarizeBulkResult(result));
+      bulkSelection.clear();
+      await loadItems();
+    } else {
+      toast.error('Bulk delete failed.');
+    }
+  };
+
+  const handleBulkStatus = async (status: ContentItem['status']) => {
+    if (bulkSelection.count === 0) {
+      return;
+    }
+    const result = await contentApi.bulkUpdateStatus(type, bulkSelection.selectedIds, status);
+    if (result) {
+      toast.success(summarizeBulkResult(result));
+      bulkSelection.clear();
+      await loadItems();
+    } else {
+      toast.error('Bulk status update failed.');
+    }
+  };
+
   if (loading && items.length === 0) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -208,6 +248,18 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
         </label>
       </div>
 
+      <BulkActionBar
+        count={bulkSelection.count}
+        itemLabel={`${type} selected`}
+        onClear={bulkSelection.clear}
+        actions={[
+          { id: 'publish', label: 'Publish', variant: 'primary', onClick: () => void handleBulkStatus('published') },
+          { id: 'draft', label: 'Draft', variant: 'secondary', onClick: () => void handleBulkStatus('draft') },
+          { id: 'archive', label: 'Archive', variant: 'secondary', onClick: () => void handleBulkStatus('archived') },
+          { id: 'delete', label: 'Delete', variant: 'danger', onClick: () => void handleBulkDelete() },
+        ]}
+      />
+
       {visibleItems.length === 0 ? (
         <div className="card">
           <div className="card-body text-center py-8 text-gray-500 dark:text-gray-400">
@@ -225,8 +277,17 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
               tags: item.tags,
             });
             return (
-              <div key={item.id} className="card overflow-hidden flex flex-col">
-                <div className="aspect-video bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden">
+              <div key={item.id} className={`card overflow-hidden flex flex-col ${bulkSelection.isSelected(item.slug) ? 'ring-2 ring-indigo-500' : ''}`}>
+                <div className="aspect-video bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden relative">
+                  <label className="absolute top-2 left-2 z-10 bg-white/90 dark:bg-gray-900/90 rounded p-1 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={bulkSelection.isSelected(item.slug)}
+                      onChange={() => bulkSelection.toggle(item.slug)}
+                      aria-label={`Select ${item.title}`}
+                      className="rounded border-gray-300"
+                    />
+                  </label>
                   {preview ? (
                     <img src={preview} alt="" className="w-full h-full object-cover" />
                   ) : (
@@ -264,6 +325,14 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
               <table className="table">
                 <thead>
                   <tr>
+                    <th className="w-10">
+                      <input
+                        type="checkbox"
+                        checked={bulkSelection.allSelected && visibleItems.length > 0}
+                        onChange={bulkSelection.toggleAll}
+                        aria-label="Select all visible items"
+                      />
+                    </th>
                     {viewMode === 'list-preview' && <th className="w-24">Preview</th>}
                     <th>Title</th>
                     <th>Slug</th>
@@ -284,6 +353,14 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                     });
                     return (
                       <tr key={item.id}>
+                        <td>
+                          <input
+                            type="checkbox"
+                            checked={bulkSelection.isSelected(item.slug)}
+                            onChange={() => bulkSelection.toggle(item.slug)}
+                            aria-label={`Select ${item.title}`}
+                          />
+                        </td>
                         {viewMode === 'list-preview' && (
                           <td>
                             {preview ? (

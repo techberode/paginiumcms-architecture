@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Tests\Http\Controllers\Content;
 
+use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
+use PaginiumCMS\Core\FlatFile\Models\Page;
 use PaginiumCMS\Tests\Http\TestCase;
 
 class ContentControllerTest extends TestCase
@@ -74,5 +76,59 @@ class ContentControllerTest extends TestCase
         $this->assertSame(200, $response->getStatusCode());
         $this->assertTrue($data['success']);
         $this->assertIsArray($data['data']);
+    }
+
+    public function testBulkDeletePagesRequiresAuth(): void
+    {
+        $response = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/pages/bulk-delete', ['slugs' => ['test-slug']])
+        );
+
+        $this->assertSame(401, $response->getStatusCode());
+    }
+
+    public function testBulkDeleteAndBulkStatusPages(): void
+    {
+        $login = $this->loginAsAdminUser();
+        $this->assertSame(200, $login['response']->getStatusCode());
+
+        $repo = $this->app->getContainer()->get(ContentRepositoryInterface::class);
+        $slugA = 'bulk-a-' . uniqid();
+        $slugB = 'bulk-b-' . uniqid();
+
+        foreach ([$slugA, $slugB] as $slug) {
+            $page = new Page();
+            $page->setSlug($slug);
+            $page->setFrontMatter([
+                'title' => 'Bulk ' . $slug,
+                'slug' => $slug,
+                'status' => 'draft',
+            ]);
+            $page->setContent("# Bulk\n");
+            $repo->save($page);
+        }
+
+        $statusResponse = $this->handleRequest(
+            $this->createJsonRequest('PATCH', '/api/pages/bulk-status', [
+                'slugs' => [$slugA, $slugB],
+                'status' => 'published',
+            ])
+        );
+        $statusData = $this->getJsonResponse($statusResponse);
+
+        $this->assertSame(200, $statusResponse->getStatusCode());
+        $this->assertTrue($statusData['success']);
+        $this->assertSame(2, $statusData['data']['succeeded']);
+
+        $deleteResponse = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/pages/bulk-delete', [
+                'slugs' => [$slugA, $slugB],
+            ])
+        );
+        $deleteData = $this->getJsonResponse($deleteResponse);
+
+        $this->assertSame(200, $deleteResponse->getStatusCode());
+        $this->assertTrue($deleteData['success']);
+        $this->assertSame(2, $deleteData['data']['succeeded']);
     }
 }

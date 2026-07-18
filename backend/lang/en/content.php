@@ -14,4 +14,7 @@ return [
     'invalid_status' => 'Invalid content status',
     'invalid_type' => 'Invalid content type (allowed: page, article)',
     'save_failed' => 'Failed to save content',
+    'slugs_required' => 'At least one slug is required',
+    'bulk_deleted' => 'Bulk delete completed',
+    'bulk_status_updated' => 'Bulk status update completed',
 ];

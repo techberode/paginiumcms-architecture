@@ -16,6 +16,7 @@ use PaginiumCMS\Core\FlatFile\Services\ContentRevision;
 use PaginiumCMS\Core\Cache\ContentCacheService;
 use PaginiumCMS\Core\Versioning\Services\ContentVersioningService;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
+use PaginiumCMS\Http\Support\BulkBatchResult;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Http\Support\PaginationMeta;
 use PaginiumCMS\Http\Support\PaginationQuery;
@@ -127,9 +128,29 @@ class ContentController
     }
 
     /** @param array<string, string> $args
- */public function updateArticleStatus(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+ */    public function updateArticleStatus(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         return $this->updateStatus($request, $response, $args['slug'] ?? '', 'article');
+    }
+
+    public function bulkDeletePages(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        return $this->bulkDeleteContent($request, $response, 'page');
+    }
+
+    public function bulkDeleteArticles(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        return $this->bulkDeleteContent($request, $response, 'article');
+    }
+
+    public function bulkUpdatePageStatus(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        return $this->bulkUpdateContentStatus($request, $response, 'page');
+    }
+
+    public function bulkUpdateArticleStatus(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        return $this->bulkUpdateContentStatus($request, $response, 'article');
     }
 
     private function createContent(ServerRequestInterface $request, ResponseInterface $response, string $type): ResponseInterface
@@ -264,6 +285,101 @@ class ContentController
         } catch (FlatFileException $e) {
             return $this->json->error($response, $e->getMessage(), 500);
         }
+    }
+
+    private function bulkDeleteContent(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        string $type
+    ): ResponseInterface {
+        $slugs = $this->parseStringArrayBody($request, 'slugs');
+        if ($slugs === []) {
+            return $this->json->error($response, Lang::get('slugs_required', [], 'content'), 400);
+        }
+
+        $batch = new BulkBatchResult();
+        foreach ($slugs as $slug) {
+            $content = $this->repository->findBySlug($slug, $type);
+            if ($content === null) {
+                $batch->addFailure($slug, Lang::get('not_found', [], 'content'));
+
+                continue;
+            }
+
+            try {
+                try {
+                    $this->versioning->recordChange($content, $type, 'delete', $this->resolveUser($request));
+                } catch (\Throwable) {
+                    // Best-effort versioning on bulk delete.
+                }
+
+                $this->repository->delete($content);
+                if ($type === 'page') {
+                    $this->contentCache->invalidatePage($slug);
+                } else {
+                    $this->contentCache->invalidateArticle($slug);
+                }
+                $batch->addSuccess($slug);
+            } catch (FlatFileException $e) {
+                $batch->addFailure($slug, $e->getMessage());
+            }
+        }
+
+        return $this->json->success(
+            $response,
+            $batch->toArray(),
+            200,
+            Lang::get('bulk_deleted', [], 'content')
+        );
+    }
+
+    private function bulkUpdateContentStatus(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        string $type
+    ): ResponseInterface {
+        $data = $this->parseJsonBody($request);
+        $slugs = $this->normalizeStringList($data['slugs'] ?? null);
+        $status = (string) ($data['status'] ?? '');
+
+        if ($slugs === []) {
+            return $this->json->error($response, Lang::get('slugs_required', [], 'content'), 400);
+        }
+
+        if (!in_array($status, $this->validStatuses, true)) {
+            return $this->json->error($response, Lang::get('invalid_status', [], 'content'), 400);
+        }
+
+        $batch = new BulkBatchResult();
+        foreach ($slugs as $slug) {
+            $content = $this->repository->findBySlug($slug, $type);
+            if ($content === null) {
+                $batch->addFailure($slug, Lang::get('not_found', [], 'content'));
+
+                continue;
+            }
+
+            try {
+                $content->setStatus($status);
+                $this->repository->save($content);
+                $this->versioning->recordChange($content, $type, 'status', $this->resolveUser($request));
+                if ($type === 'page') {
+                    $this->contentCache->invalidatePage($slug);
+                } else {
+                    $this->contentCache->invalidateArticle($slug);
+                }
+                $batch->addSuccess($slug);
+            } catch (FlatFileException $e) {
+                $batch->addFailure($slug, $e->getMessage());
+            }
+        }
+
+        return $this->json->success(
+            $response,
+            $batch->toArray(),
+            200,
+            Lang::get('bulk_status_updated', [], 'content')
+        );
     }
 
     private function updateStatus(
@@ -428,7 +544,7 @@ class ContentController
 
     /**
      * @return array<int|string, mixed>
- */private function parseJsonBody(ServerRequestInterface $request): array
+ */    private function parseJsonBody(ServerRequestInterface $request): array
     {
         $data = json_decode((string) $request->getBody(), true);
 
@@ -436,8 +552,34 @@ class ContentController
     }
 
     /**
+     * @return list<string>
+     */
+    private function parseStringArrayBody(ServerRequestInterface $request, string $field): array
+    {
+        $data = $this->parseJsonBody($request);
+
+        return $this->normalizeStringList($data[$field] ?? null);
+    }
+
+    /**
+     * @param mixed $value
+     * @return list<string>
+     */
+    private function normalizeStringList(mixed $value): array
+    {
+        if (!is_array($value)) {
+            return [];
+        }
+
+        return array_values(array_filter(
+            array_map(static fn ($item): string => is_string($item) ? trim($item) : '', $value),
+            static fn (string $item): bool => $item !== ''
+        ));
+    }
+
+    /**
      * @param array<int|string, mixed> $data
- */private function validatePayload(array $data, bool $requireSlug): ?string
+     */private function validatePayload(array $data, bool $requireSlug): ?string
     {
         if (empty($data['title'])) {
             return Lang::get('title_required', [], 'content');

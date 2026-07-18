@@ -90,6 +90,7 @@ class BackupManager implements BackupInterface
         $metadata->setFilePath($fullPath);
         $metadata->setSize($size);
         $metadata->setStatus('completed');
+        $metadata->setSha256(hash_file('sha256', $fullPath) ?: '');
 
         // Uloženie metadát
         $this->saveMetadata($metadata);
@@ -135,12 +136,7 @@ class BackupManager implements BackupInterface
                     continue;
                 }
 
-                $metadata = new BackupMetadata();
-                $metadata->setName($data['name'] ?? '');
-                $metadata->setSize($data['size'] ?? 0);
-                $metadata->setFilePath($data['filePath'] ?? '');
-                $metadata->setStatus($data['status'] ?? 'completed');
-                $backups[] = $metadata;
+                $backups[] = $this->hydrateMetadata($data);
             } catch (\Exception) {
                 continue;
             }
@@ -167,14 +163,7 @@ class BackupManager implements BackupInterface
                 return null;
             }
 
-            $metadata = new BackupMetadata();
-            $metadata->setName($data['name'] ?? '');
-            // createdAt sa nastavuje v __construct
-            // $metadata->setCreatedAt($data['createdAt'] ?? date('Y-m-d H:i:s'));
-            $metadata->setSize($data['size'] ?? 0);
-            $metadata->setFilePath($data['filePath'] ?? '');
-            $metadata->setStatus($data['status'] ?? 'completed');
-            return $metadata;
+            return $this->hydrateMetadata($data);
         } catch (\Exception) {
             return null;
         }
@@ -245,6 +234,83 @@ class BackupManager implements BackupInterface
         $this->removeDirectory($tempDir);
 
         return true;
+    }
+
+    public function registerArchive(string $filePath, string $name): BackupMetadata
+    {
+        if (!file_exists($filePath)) {
+            throw new \RuntimeException('Súbor neexistuje: ' . $filePath);
+        }
+
+        $zip = new \ZipArchive();
+        if ($zip->open($filePath) !== true) {
+            throw new \RuntimeException('Neplatný ZIP archív');
+        }
+        $zip->close();
+
+        if (!is_dir($this->backupPath)) {
+            mkdir($this->backupPath, 0755, true);
+        }
+
+        $metadata = new BackupMetadata();
+        $metadata->setName($name);
+        $metadata->setIncludes(['content', 'config', 'data']);
+
+        $timestamp = date('Y-m-d_H-i-s');
+        $filename = $timestamp . '_import_' . $this->sanitizeName($name) . '.zip';
+        $destination = $this->backupPath . '/' . $filename;
+
+        if (!copy($filePath, $destination)) {
+            throw new \RuntimeException('Nepodarilo sa uložiť importovaný archív');
+        }
+
+        $size = (int) filesize($destination);
+        $metadata->setFilePath($destination);
+        $metadata->setSize($size);
+        $metadata->setStatus('completed');
+        $metadata->setSha256(hash_file('sha256', $destination) ?: '');
+        $this->saveMetadata($metadata);
+
+        return $metadata;
+    }
+
+    /**
+     * @return array{valid: bool, expected: string, actual: ?string, reason?: string}
+     */
+    public function verifyIntegrity(string $backupId): array
+    {
+        $metadata = $this->getBackup($backupId);
+        if ($metadata === null) {
+            throw new \RuntimeException('Záloha nebola nájdená');
+        }
+
+        $expected = $metadata->getSha256();
+        $path = $metadata->getFilePath();
+        if (!is_file($path)) {
+            return [
+                'valid' => false,
+                'expected' => $expected,
+                'actual' => null,
+                'reason' => 'file_missing',
+            ];
+        }
+
+        if ($expected === '') {
+            return [
+                'valid' => true,
+                'expected' => '',
+                'actual' => hash_file('sha256', $path) ?: '',
+                'reason' => 'legacy_without_hash',
+            ];
+        }
+
+        $actual = hash_file('sha256', $path) ?: '';
+
+        return [
+            'valid' => hash_equals($expected, $actual),
+            'expected' => $expected,
+            'actual' => $actual,
+        ];
     }
 
     public function scheduleBackup(string $interval, int $keep = 7): void
@@ -411,6 +477,30 @@ class BackupManager implements BackupInterface
     {
         $path = $this->backupPath . '/' . $metadata->getId() . '.json';
         file_put_contents($path, JsonHelper::encode($metadata->jsonSerialize()));
+    }
+
+    /**
+     * @param array<int|string, mixed> $data
+     */
+    private function hydrateMetadata(array $data): BackupMetadata
+    {
+        $metadata = new BackupMetadata();
+        if (!empty($data['id'])) {
+            $metadata->setId((string) $data['id']);
+        }
+        $metadata->setName((string) ($data['name'] ?? ''));
+        if (!empty($data['createdAt'])) {
+            $metadata->setCreatedAt((string) $data['createdAt']);
+        }
+        $metadata->setSize((int) ($data['size'] ?? 0));
+        $metadata->setFilePath((string) ($data['filePath'] ?? ''));
+        $metadata->setStatus((string) ($data['status'] ?? 'completed'));
+        if (!empty($data['includes']) && is_array($data['includes'])) {
+            $metadata->setIncludes($data['includes']);
+        }
+        $metadata->setSha256((string) ($data['sha256'] ?? ''));
+
+        return $metadata;
     }
 
     private function isExcluded(string $path): bool

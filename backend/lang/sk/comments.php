@@ -12,4 +12,7 @@ return [
     'deleted' => 'Komentár bol vymazaný',
     'disabled' => 'Komentáre sú vypnuté',
     'validation_failed' => 'Validácia zlyhala',
+    'ids_required' => 'Vyžaduje sa aspoň jedno ID komentára',
+    'bulk_updated' => 'Hromadná aktualizácia komentárov dokončená',
+    'bulk_deleted' => 'Hromadné mazanie komentárov dokončené',
 ];

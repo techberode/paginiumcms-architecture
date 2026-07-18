@@ -17,6 +17,7 @@ class BackupMetadata implements JsonSerializable
     private array $includes;
     private string $version;
     private string $status;
+    private string $sha256 = '';
 
     public function __construct()
     {
@@ -35,6 +36,13 @@ class BackupMetadata implements JsonSerializable
         return $this->id;
     }
 
+    public function setId(string $id): self
+    {
+        $this->id = $id;
+
+        return $this;
+    }
+
     public function getName(): string
     {
         return $this->name;
@@ -49,6 +57,13 @@ class BackupMetadata implements JsonSerializable
     public function getCreatedAt(): string
     {
         return $this->createdAt;
+    }
+
+    public function setCreatedAt(string $createdAt): self
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
     }
 
     public function getSize(): int
@@ -106,6 +121,18 @@ class BackupMetadata implements JsonSerializable
         return $this;
     }
 
+    public function getSha256(): string
+    {
+        return $this->sha256;
+    }
+
+    public function setSha256(string $sha256): self
+    {
+        $this->sha256 = $sha256;
+
+        return $this;
+    }
+
     public function isCompleted(): bool
     {
         return $this->status === 'completed';
@@ -143,6 +170,7 @@ class BackupMetadata implements JsonSerializable
             'includes' => $this->includes,
             'version' => $this->version,
             'status' => $this->status,
+            'sha256' => $this->sha256,
         ];
     }
 }
