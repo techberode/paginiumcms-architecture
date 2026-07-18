@@ -184,8 +184,28 @@ class AuthController
             return $this->json->error($response, 'Email je povinný', 400);
         }
 
+        // Anti-enumeration: odpoveď je vždy rovnaká bez ohľadu na to,
+        // či účet existuje. Token sa nikdy nevracia v produkcii.
+        $genericMessage = 'If the account exists, a reset link was sent by email.';
+        $appEnv = getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? '');
+        $isDev = $appEnv === 'development' || $appEnv === 'testing';
+
         try {
             $token = $this->auth->resetPassword($data['email']);
+        } catch (\Throwable $e) {
+            // Neexistujúci účet ani iná chyba nesmie prezradiť stav účtu.
+            $this->securityLogger->logSuspiciousActivity(
+                'auth.password_reset_unknown',
+                'Reset requested for non-existent or invalid account'
+            );
+
+            return $this->json->respond($response, [
+                'success' => true,
+                'message' => $genericMessage,
+            ]);
+        }
+
+        try {
             $user = $this->userRepository->findByEmail($data['email']);
 
             $smtp = $this->settings->group('smtp');
@@ -207,32 +227,20 @@ class AuthController
                     $body,
                     ['html' => $body, 'event' => 'auth.password_reset']
                 );
-
-                $payload = [
-                    'success' => true,
-                    'message' => 'If the account exists, a reset link was sent by email.',
-                ];
-                $appEnv = getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? '');
-                if ($appEnv === 'development' || $appEnv === 'testing') {
-                    $payload['token'] = $token;
-                }
-
-                return $this->json->respond($response, $payload);
             }
-
-            $payload = [
-                'success' => true,
-                'message' => 'Reset token generated (SMTP not configured)',
-            ];
-            $appEnv = getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? '');
-            if ($appEnv === 'development' || $appEnv === 'testing') {
-                $payload['token'] = $token;
-            }
-
-            return $this->json->respond($response, $payload);
-        } catch (\Exception $e) {
-            return $this->json->error($response, $e->getMessage(), 400);
+        } catch (\Throwable) {
+            // Zlyhanie odoslania e-mailu nesmie zmeniť odpoveď (anti-enumeration).
         }
+
+        $payload = [
+            'success' => true,
+            'message' => $genericMessage,
+        ];
+        if ($isDev) {
+            $payload['token'] = $token;
+        }
+
+        return $this->json->respond($response, $payload);
     }
 
     /**

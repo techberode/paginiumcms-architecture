@@ -31,7 +31,6 @@ import {
   listStockImageTopics,
   MediaFile,
   resolveAdminMediaPreviewUrl,
-  resolveMediaUrl,
   resolvePublicMediaUrl,
   StockImageTopic,
   updateMediaMetadata,

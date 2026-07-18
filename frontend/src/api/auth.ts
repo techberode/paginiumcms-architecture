@@ -17,7 +17,7 @@ export const authApi = {
       data
     );
     if (res.success && res.user) {
-      return { success: true, user: res.user, requiresTwoFactor: Boolean(res.requires_two_factor) };
+      return { success: true, user: res.user as User, requiresTwoFactor: Boolean(res.requires_two_factor) };
     }
     return { success: false, error: res.error || 'Prihlásenie zlyhalo' };
   },
@@ -25,7 +25,7 @@ export const authApi = {
   register: async (data: RegisterRequest): Promise<LoginResult> => {
     const res = await apiClient.post<{ user?: User }>('/api/auth/register', data);
     if (res.success && res.user) {
-      return { success: true, user: res.user };
+      return { success: true, user: res.user as User };
     }
     return { success: false, error: res.error || 'Registrácia zlyhala' };
   },
@@ -37,7 +37,7 @@ export const authApi = {
 
   getCurrentUser: async (): Promise<User | null> => {
     const res = await apiClient.get<{ user?: User }>('/api/auth/me');
-    return res.user ?? res.data?.user ?? null;
+    return (res.user as User | undefined) ?? res.data?.user ?? null;
   },
 
   changePassword: async (oldPassword: string, newPassword: string): Promise<boolean> => {
@@ -78,7 +78,7 @@ export const authApi = {
         '/api/auth/2fa/enable'
       );
       if (res.secret && res.qr_code) {
-        return { secret: res.secret, qr_code: res.qr_code, provisioning_uri: res.provisioning_uri };
+        return { secret: res.secret, qr_code: res.qr_code, provisioning_uri: res.provisioning_uri ?? '' };
       }
       return res.data ?? null;
     },
@@ -104,7 +104,7 @@ export const authApi = {
     getQrCode: async (): Promise<{ qr_code: string; provisioning_uri: string } | null> => {
       const res = await apiClient.get<{ qr_code: string; provisioning_uri: string }>('/api/auth/2fa/qr-code');
       if (res.qr_code) {
-        return { qr_code: res.qr_code, provisioning_uri: res.provisioning_uri };
+        return { qr_code: res.qr_code, provisioning_uri: res.provisioning_uri ?? '' };
       }
       return res.data ?? null;
     },
@@ -112,7 +112,7 @@ export const authApi = {
     verifyLogin: async (code: string): Promise<LoginResult> => {
       const res = await apiClient.post<{ user?: User }>('/api/auth/2fa/verify-login', { code });
       if (res.success && res.user) {
-        return { success: true, user: res.user };
+        return { success: true, user: res.user as User };
       }
       return { success: false, error: res.error || 'Neplatný TOTP kód' };
     },

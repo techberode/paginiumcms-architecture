@@ -69,7 +69,7 @@ function applyStringRules(rules: string[]): z.ZodTypeAny {
 
 function applyIntRules(rules: string[]): z.ZodTypeAny {
   const required = rules.includes('required');
-  let schema: z.ZodNumber = z.coerce.number().int('Musí byť celé číslo.');
+  let schema = z.coerce.number().int('Musí byť celé číslo.');
 
   for (const rule of rules) {
     if (rule.startsWith('min:')) {

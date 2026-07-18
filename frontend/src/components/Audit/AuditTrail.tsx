@@ -185,7 +185,7 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({ contentId, userId }) => 
                   <div key={date} className="flex-1 flex flex-col items-center">
                     <div 
                       className="w-full bg-indigo-500 dark:bg-indigo-400 rounded-t"
-                      style={{ height: `${Math.min((count / 10) * 100, 100)}%` }}
+                      style={{ height: `${Math.min((Number(count) / 10) * 100, 100)}%` }}
                     />
                     <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                       {format(new Date(date), 'dd.MM')}

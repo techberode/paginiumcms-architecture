@@ -215,35 +215,53 @@ class UserRepository
         return $user;
     }
 
+    /**
+     * SHA-256 hash resetovacieho tokenu (v úložisku nikdy neukladáme plaintext).
+     */
+    private function hashResetToken(string $token): string
+    {
+        return hash('sha256', $token);
+    }
+
     public function saveResetToken(User $user, string $token): void
     {
         $data = $this->extract($user);
-        $data['resetToken'] = $token;
+        // Ukladáme iba hash – ak dôjde k úniku súborov, token nie je použiteľný.
+        $data['resetTokenHash'] = $this->hashResetToken($token);
         $data['resetTokenExpires'] = time() + 86400; // 24 hodín
+        unset($data['resetToken']); // migrácia zo staršieho plaintext formátu
 
         $path = $this->storagePath . '/' . $user->getId() . '.json';
         $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-        
+
         if ($json === false) {
             throw new \RuntimeException('Nepodarilo sa serializovať dáta');
         }
-        
+
         $this->writer->write($path, $json);
     }
 
     public function findByResetToken(string $token): ?User
     {
         $files = $this->getAllUserFiles();
+        $tokenHash = $this->hashResetToken($token);
 
         foreach ($files as $file) {
             try {
                 $content = $this->reader->read($this->storagePath . '/' . basename($file));
                 $data = json_decode($content, true);
 
-                if (isset($data['resetToken']) && $data['resetToken'] === $token) {
-                    if (isset($data['resetTokenExpires']) && $data['resetTokenExpires'] > time()) {
-                        return $this->hydrate($data);
-                    }
+                if (!is_array($data)) {
+                    continue;
+                }
+
+                $storedHash = isset($data['resetTokenHash']) ? (string) $data['resetTokenHash'] : '';
+                if ($storedHash === '' || !hash_equals($storedHash, $tokenHash)) {
+                    continue;
+                }
+
+                if (isset($data['resetTokenExpires']) && $data['resetTokenExpires'] > time()) {
+                    return $this->hydrate($data);
                 }
             } catch (FlatFileException) {
                 continue;
@@ -256,16 +274,17 @@ class UserRepository
     public function clearResetToken(User $user): void
     {
         $data = $this->extract($user);
-        unset($data['resetToken']);
+        unset($data['resetToken']); // staršie inštalácie
+        unset($data['resetTokenHash']);
         unset($data['resetTokenExpires']);
 
         $path = $this->storagePath . '/' . $user->getId() . '.json';
         $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-        
+
         if ($json === false) {
             throw new \RuntimeException('Nepodarilo sa serializovať dáta');
         }
-        
+
         $this->writer->write($path, $json);
     }
 

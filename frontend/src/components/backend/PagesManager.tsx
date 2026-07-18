@@ -84,7 +84,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [seoIssuesOnly, setSeoIssuesOnly] = useState(false);
   const [page, setPage] = useState(1);
-  const { get, del } = useApi();
+  const { get, delete: del } = useApi();
   const toast = useToast();
   const { settings } = useSettingsContext();
   const isMobile = useMediaQuery('(max-width: 767px)');
@@ -95,6 +95,8 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
   const endpoint = type === 'articles' ? '/api/articles' : '/api/pages';
   const routeBase = type === 'articles' ? 'articles' : 'pages';
   const label = type === 'articles' ? 'Články' : 'Podstránky';
+  // contentEditorMeta pracuje s jednotným tvarom ('page' | 'article').
+  const previewType = type === 'articles' ? 'article' : 'page';
   const itemLabel = type === 'articles' ? 'článok' : 'podstránku';
 
   useEffect(() => {
@@ -337,7 +339,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                 selected={bulkSelection.isSelected(item.slug)}
                 onToggleSelect={() => bulkSelection.toggle(item.slug)}
                 onDelete={() => void handleDelete(item.slug)}
-                previewUrl={resolvePreviewPath(type, item.slug)}
+                previewUrl={resolvePreviewPath(previewType, item.slug)}
               />
             );
           })}
@@ -413,9 +415,9 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                             >
                               Upraviť
                             </Link>
-                            {resolvePreviewPath(type, item.slug) && (
+                            {resolvePreviewPath(previewType, item.slug) && (
                               <Link
-                                to={resolvePreviewPath(type, item.slug)!}
+                                to={resolvePreviewPath(previewType, item.slug)!}
                                 target="_blank"
                                 className="btn btn-secondary text-xs px-3 py-1 hide-mobile"
                               >

@@ -14,7 +14,10 @@ const mocks = vi.hoisted(() => ({
   bulkDeleteMedia: vi.fn(),
   createMediaFolder: vi.fn(),
   updateMediaMetadata: vi.fn(),
-  useAdminViewMode: vi.fn(() => ({ mode: 'preview' as const, setMode: vi.fn() })),
+  useAdminViewMode: vi.fn(() => ({
+    mode: 'preview' as 'list' | 'list-preview' | 'preview',
+    setMode: vi.fn(),
+  })),
 }));
 
 vi.mock('../../hooks/useAdminViewMode', () => ({

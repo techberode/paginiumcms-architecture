@@ -1,6 +1,6 @@
 // frontend/src/api/notifications.ts
 // === Notifications API (Iteration 6–7) ===
-import apiClient from './client';
+import apiClient, { type ApiResponse } from './client';
 
 export interface ConnectorStatus {
   name: string;

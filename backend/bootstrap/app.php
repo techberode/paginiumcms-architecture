@@ -179,7 +179,8 @@ $containerBuilder->addDefinitions([
         return new SecurityMiddleware([
             'hsts_max_age' => 31536000,
             'csp_default' => "default-src 'self'",
-            'csp_script' => "script-src 'self' 'unsafe-inline'",
+            // Bez 'unsafe-inline' pre skripty – Vite build používa len externé moduly.
+            'csp_script' => "script-src 'self'",
             'csp_style' => "style-src 'self' 'unsafe-inline'",
             'csp_img' => "img-src 'self' data: https:",
             'csp_font' => "font-src 'self' data:",

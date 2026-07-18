@@ -54,11 +54,29 @@ class MediaController
 
         $response->getBody()->write($binary);
 
-        return $response
-            ->withHeader('Content-Type', $media->getMimeType())
+        $mimeType = $media->getMimeType();
+
+        // Anti-XSS: SVG (a akýkoľvek ne-rasterový/aktívny obsah) sa nikdy neservíruje
+        // inline v same-origin kontexte, inak by vložený <script> spustil stored XSS.
+        // Vynútime stiahnutie + CSP sandbox + nosniff.
+        $isActiveMime = $mimeType === 'image/svg+xml'
+            || str_contains($mimeType, 'html')
+            || str_contains($mimeType, 'xml');
+
+        $disposition = $isActiveMime ? 'attachment' : 'inline';
+
+        $response = $response
+            ->withHeader('Content-Type', $mimeType)
             ->withHeader('Content-Length', (string) strlen($binary))
+            ->withHeader('X-Content-Type-Options', 'nosniff')
             ->withHeader('Cache-Control', 'private, max-age=3600')
-            ->withHeader('Content-Disposition', 'inline; filename="' . addslashes($media->getFileName()) . '"');
+            ->withHeader('Content-Disposition', $disposition . '; filename="' . addslashes($media->getFileName()) . '"');
+
+        if ($isActiveMime) {
+            $response = $response->withHeader('Content-Security-Policy', 'sandbox; default-src \'none\'');
+        }
+
+        return $response;
     }
 
     public function listMedia(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface

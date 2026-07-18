@@ -3,6 +3,8 @@ import { enCore } from './core/en';
 import { skCore } from './core/sk';
 import { DEFAULT_LOCALE, type Locale, type MessageTree } from './types';
 
+export type { Locale, MessageTree, MessageValue } from './types';
+
 const coreCatalog: Record<Locale, MessageTree> = {
   sk: skCore,
   en: enCore,

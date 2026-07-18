@@ -90,11 +90,16 @@ class UserRepositoryTest extends TestCase
         $token = 'reset_token_1234567890abcdef';
         $this->repository->saveResetToken($user, $token);
 
-        // Priamo skontrolujeme, či súbor obsahuje token
+        // Súbor smie obsahovať iba hash tokenu, nikdy plaintext.
         $filePath = $this->root . '/data/users/' . $user->getId() . '.json';
         $this->assertFileExists($filePath);
         $userData = FileHelper::readJson($filePath);
-        $this->assertEquals($token, $userData['resetToken'], 'Token nebol uložený v súbore');
+        $this->assertArrayNotHasKey('resetToken', $userData, 'Plaintext token nesmie byť v súbore');
+        $this->assertSame(
+            hash('sha256', $token),
+            $userData['resetTokenHash'] ?? null,
+            'Hash tokenu nebol uložený v súbore'
+        );
 
         $found = $this->repository->findByResetToken($token);
         $this->assertNotNull($found, 'Používateľ sa nenašiel podľa reset tokenu');
@@ -127,6 +132,7 @@ class UserRepositoryTest extends TestCase
         $filePath = $this->root . '/data/users/' . $user->getId() . '.json';
         $userData = FileHelper::readJson($filePath);
         $this->assertArrayNotHasKey('resetToken', $userData);
+        $this->assertArrayNotHasKey('resetTokenHash', $userData);
         $this->assertArrayNotHasKey('resetTokenExpires', $userData);
     }
 
@@ -146,7 +152,7 @@ class UserRepositoryTest extends TestCase
             'passwordHash' => $user->getPasswordHash(),
             'roles' => $user->getRoles(),
             'name' => $user->getName(),
-            'resetToken' => $token,
+            'resetTokenHash' => hash('sha256', $token),
             'resetTokenExpires' => time() - 3600, // 1 hodina dozadu
             'twoFactorEnabled' => false,
             'twoFactorSecret' => null,

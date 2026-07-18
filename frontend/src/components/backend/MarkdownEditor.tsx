@@ -62,7 +62,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
   const [conflict, setConflict] = useState<ConflictState | null>(null);
   const [pendingDraftAt, setPendingDraftAt] = useState<number | null>(null);
   const [editorMode, setEditorMode] = useState<EditorMode>('markdown');
-  const [contentFormat, setContentFormat] = useState<ContentFormat>('markdown');
+  const [, setContentFormat] = useState<ContentFormat>('markdown');
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
   const [seoOpen, setSeoOpen] = useState(false);
   const [navigationItems, setNavigationItems] = useState<Awaited<ReturnType<typeof getNavigation>>>([]);

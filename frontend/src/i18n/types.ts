@@ -5,4 +5,6 @@ export const DEFAULT_LOCALE: Locale = 'sk';
 export const SUPPORTED_LOCALES: Locale[] = ['sk', 'en'];
 
 export type MessageValue = string | MessageTree;
-export type MessageTree = Record<string, MessageValue>;
+export interface MessageTree {
+  [key: string]: MessageValue;
+}
