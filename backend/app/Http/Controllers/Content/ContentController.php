@@ -336,6 +336,48 @@ class ContentController
                 $content->setTags($data['tags']);
             }
         }
+
+        $this->applySeoFrontMatter($content, $data);
+    }
+
+    /**
+     * @param array<int|string, mixed> $data
+     */
+    private function applySeoFrontMatter(Content $content, array $data): void
+    {
+        $frontMatter = $content->getFrontMatter();
+
+        if (array_key_exists('seoTitle', $data)) {
+            $frontMatter['seoTitle'] = trim((string) $data['seoTitle']);
+        }
+
+        if (array_key_exists('seoDescription', $data)) {
+            $frontMatter['seoDescription'] = trim((string) $data['seoDescription']);
+        } elseif (array_key_exists('description', $data)) {
+            $content->setDescription((string) $data['description']);
+        }
+
+        if (array_key_exists('canonical', $data)) {
+            $frontMatter['canonical'] = trim((string) $data['canonical']);
+        }
+
+        if (array_key_exists('ogImage', $data)) {
+            $image = trim((string) $data['ogImage']);
+            $frontMatter['seoImage'] = $image;
+            if ($content instanceof Article && $image !== '') {
+                $content->setFeaturedImage($image);
+            }
+        }
+
+        if (array_key_exists('noIndex', $data)) {
+            $frontMatter['noIndex'] = (bool) $data['noIndex'];
+        }
+
+        if ($content instanceof Page && !empty($data['tags']) && is_array($data['tags'])) {
+            $content->setTags($data['tags']);
+        }
+
+        $content->setFrontMatter($frontMatter);
     }
 
     /**
@@ -374,6 +416,12 @@ class ContentController
             $payload['excerpt'] = $content->getExcerpt();
             $payload['readingTime'] = $content->getReadingTime();
         }
+
+        $payload['seoTitle'] = (string) ($frontMatter['seoTitle'] ?? $frontMatter['metaTitle'] ?? '');
+        $payload['seoDescription'] = (string) ($frontMatter['seoDescription'] ?? $frontMatter['description'] ?? '');
+        $payload['canonical'] = (string) ($frontMatter['canonical'] ?? '');
+        $payload['ogImage'] = (string) ($frontMatter['seoImage'] ?? $frontMatter['ogImage'] ?? $payload['featuredImage'] ?? '');
+        $payload['noIndex'] = ($frontMatter['noIndex'] ?? $frontMatter['noindex'] ?? false) === true;
 
         return $payload;
     }

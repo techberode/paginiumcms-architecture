@@ -20,6 +20,7 @@ import { WysiwygEditor } from './WysiwygEditor';
 import { MediaPickerModal } from './MediaPickerModal';
 import { VersionHistory } from '../CodeEditor/VersionHistory';
 import { useSettingsContext } from '../../context/SettingsContext';
+import { SeoMetadataPanel, type SeoFormValues } from './SeoMetadataPanel';
 
 interface MarkdownEditorProps {
   type?: ContentType;
@@ -55,6 +56,15 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
   const [pendingDraftAt, setPendingDraftAt] = useState<number | null>(null);
   const [editorMode, setEditorMode] = useState<'markdown' | 'wysiwyg'>('markdown');
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
+  const [panelTab, setPanelTab] = useState<'content' | 'seo'>('content');
+  const [seo, setSeo] = useState<SeoFormValues>({
+    seoTitle: '',
+    seoDescription: '',
+    canonical: '',
+    ogImage: '',
+    noIndex: false,
+    tags: '',
+  });
 
   const { get, post, put } = useApi();
   const toast = useToast();
@@ -93,6 +103,23 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         setBaseContent(response.data.content || '');
         setStatus(response.data.status || 'draft');
         setBaseRevision(response.data.revision || '');
+        const fm = response.data.frontMatter ?? {};
+        setSeo({
+          seoTitle: String(response.data.seoTitle ?? fm.seoTitle ?? fm.metaTitle ?? ''),
+          seoDescription: String(
+            response.data.seoDescription ?? fm.seoDescription ?? fm.description ?? ''
+          ),
+          canonical: String(response.data.canonical ?? fm.canonical ?? ''),
+          ogImage: String(
+            response.data.ogImage ?? response.data.featuredImage ?? fm.seoImage ?? ''
+          ),
+          noIndex: Boolean(response.data.noIndex ?? fm.noIndex ?? fm.noindex ?? false),
+          tags: Array.isArray(response.data.tags)
+            ? response.data.tags.join(', ')
+            : Array.isArray(fm.tags)
+              ? fm.tags.map(String).join(', ')
+              : '',
+        });
       }
 
       // Ak existuje neuložený koncept, ponúkneme jeho obnovenie.
@@ -151,6 +178,15 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
           slug: isNew ? title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-') : slug,
           message: commitMessage.trim(),
           baseRevision: forceRevision ?? baseRevision,
+          seoTitle: seo.seoTitle.trim(),
+          seoDescription: seo.seoDescription.trim(),
+          canonical: seo.canonical.trim(),
+          ogImage: seo.ogImage.trim(),
+          noIndex: seo.noIndex,
+          tags: seo.tags
+            .split(',')
+            .map((tag) => tag.trim())
+            .filter(Boolean),
         };
 
         const response = isNew ? await post<any>(endpoint, data) : await put<any>(`${endpoint}/${slug}`, data);
@@ -203,7 +239,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         setSaving(false);
       }
     },
-    [title, content, status, commitMessage, baseRevision, baseContent, isNew, slug, endpoint, type, get, post, put] // eslint-disable-line react-hooks/exhaustive-deps
+    [title, content, status, commitMessage, baseRevision, baseContent, isNew, slug, endpoint, type, seo, post, put] // eslint-disable-line react-hooks/exhaustive-deps
   );
 
   // === Blok: Riešenie konfliktu (ConflictResolver) ===
@@ -280,6 +316,32 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
 
       <div className="card">
         <div className="card-body space-y-4">
+          <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700 pb-2">
+            <button
+              type="button"
+              className={`text-sm px-3 py-1 rounded ${panelTab === 'content' ? 'bg-indigo-600 text-white' : 'text-gray-600 dark:text-gray-300'}`}
+              onClick={() => setPanelTab('content')}
+            >
+              Content
+            </button>
+            <button
+              type="button"
+              className={`text-sm px-3 py-1 rounded ${panelTab === 'seo' ? 'bg-indigo-600 text-white' : 'text-gray-600 dark:text-gray-300'}`}
+              onClick={() => setPanelTab('seo')}
+            >
+              SEO
+            </button>
+          </div>
+
+          {panelTab === 'seo' ? (
+            <SeoMetadataPanel
+              values={seo}
+              onChange={setSeo}
+              disabled={!canEdit}
+              showTags={type === 'article'}
+            />
+          ) : (
+            <>
           <div className="form-group">
             <label className="form-label">Titulok</label>
             <input
@@ -371,6 +433,8 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
           </div>
 
           {!isNew && <div className="text-sm text-gray-500 dark:text-gray-400">Slug: /{type}s/{slug}</div>}
+            </>
+          )}
         </div>
       </div>
 

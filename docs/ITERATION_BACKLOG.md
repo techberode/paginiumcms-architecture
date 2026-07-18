@@ -1,11 +1,11 @@
 # PaginiumCMS – Backlog iterácií (27+)
 
-> Plánované moduly a rozšírenia po **Iterácii 26 / hotfix 2.0.14**.  
+> Plánované moduly a rozšírenia po **Iterácii 27 (2.0.15)**.  
 > Legenda: ⏳ plánované · 🟡 stredná priorita · 🔵 nižšia · 🔴 kritická
 
-**Aktuálne hotové:** It.1–24 ✅ · It.26 ✅ (2.0.13–2.0.14) · It.25 ⏳ (setup wizard — odložené)
+**Aktuálne hotové:** It.1–24 ✅ · It.26 ✅ · **It.27 ✅ (2.0.15)** · It.25 ⏳ (setup wizard — odložené)
 
-**Ďalšia iterácia:** [It.27 – Admin view modes + SEO panel](ITERATION_27.md)
+**Ďalšia iterácia:** [It.28 – Bulk actions](ITERATION_BACKLOG.md#it-28--bulk-actions-platform)
 
 ---
 
@@ -15,8 +15,8 @@
 |-----|--------|-------|----------|----------|
 | 25 | TBD | [Setup wizard](ITERATION_25.md) | 🟡 | Odložené — téma cez Settings |
 | 26 | 2.0.14 | [Media preview + binárny hotfix](ITERATION_26.md) | ✅ | Lightbox + strict formats |
-| **27** | TBD | **[Admin view modes + SEO panel](ITERATION_27.md)** | **🟡 ďalšia** | List / list+preview / grid + SEO UX |
-| **28** | TBD | **Bulk actions (platform)** | 🟡 | Hromadné akcie naprieč adminom |
+| **27** | **2.0.15** | **[Admin view modes + SEO panel](ITERATION_27.md)** | **✅** | List / list+preview / grid + SEO UX + metadata modal |
+| **28** | TBD | **Bulk actions (platform)** | **🟡 ďalšia** | Hromadné akcie naprieč adminom |
 | **29** | TBD | **Job Queue / Background Worker** | 🔵 | Dlhé úlohy mimo requestu |
 | **30** | TBD | **Contextual Actions** | 🟡 | Akcie podľa kontextu (content, media, user) |
 | **31** | TBD | **Live Preview** | 🟡 | Náhľad stránky/článku pred publikovaním |
@@ -160,7 +160,7 @@ Jednotný alebo per-sekcia správca súborov (blog/media, pages/assets, …).
 ## Odporúčané poradie implementácie
 
 ```
-It.26/2.0.14 ✅ → It.27 (view modes + SEO panel) ← ďalšia
+It.27/2.0.15 ✅ → It.28 (bulk actions) ← ďalšia
                 → It.36 (pagination) → It.38 (feature flags)
                 → It.39 (komentáre) → It.37 (inline FE edit)
                 → It.33 (analytics) → It.34 (system overview)

@@ -1,7 +1,7 @@
 # Iteration 27 – Admin View Modes + SEO Metadata Panel
 
-**Status:** Planned (next iteration after 2.0.14)  
-**Version:** TBD (target 2.0.15)  
+**Status:** Complete  
+**Version:** 2.0.15  
 **Release track:** Admin UX — list layouts + SEO workflow
 
 ## Summary
@@ -19,17 +19,17 @@ It.23 (SeoMetaBuilder — public head tags) ────────────
 
 | # | Deliverable | Status |
 |---|-------------|--------|
-| 1 | `AdminViewMode` — `list` \| `list-preview` \| `preview` + persistence (localStorage) | ⏳ |
-| 2 | **Media Library** — mode toggle (unify existing grid with table + compact gallery) | ⏳ |
-| 3 | **Articles / Pages** (`PagesManager`) — three modes instead of table-only | ⏳ |
-| 4 | **SEO metadata panel** — sidebar or tab in editor + inline on media cards | ⏳ |
-| 5 | **SEO health badges** in lists (missing alt, description, tags, OG) | ⏳ |
-| 6 | Backend — front matter / sidecar fields + validation + optional audit API | ⏳ |
-| 7 | Tests (Vitest + PHPUnit) + docs | ⏳ |
+| 1 | `AdminViewMode` — `list` \| `list-preview` \| `preview` + persistence (localStorage) | ✅ |
+| 2 | **Media Library** — mode toggle (unify existing grid with table + compact gallery) | ✅ |
+| 3 | **Articles / Pages** (`PagesManager`) — three modes instead of table-only | ✅ |
+| 4 | **SEO metadata panel** — sidebar or tab in editor + inline on media cards | ✅ |
+| 5 | **SEO health badges** in lists (missing alt, description, tags, OG) | ✅ |
+| 6 | Backend — front matter / sidecar fields + validation + optional audit API | ✅ (fields) / ⏳ (`GET /api/content/seo-audit` deferred) |
+| 7 | Tests (Vitest + PHPUnit) + docs | ✅ (Vitest; audit API PHPUnit deferred) |
 
 ---
 
-## Part 1 – Admin view modes (`AdminViewMode`) ⏳
+## Part 1 – Admin view modes (`AdminViewMode`) ✅
 
 **Goal:** Editors choose how to browse content — same control on `/media`, `/articles`, `/pages`.
 
@@ -60,7 +60,7 @@ Optional later: sync preference to user settings API (see It.38 feature flags / 
 
 ---
 
-## Part 2 – SEO metadata panel ⏳
+## Part 2 – SEO metadata panel ✅
 
 **Backend already exists (It.23):** `SeoMetaBuilder`, `GET /api/seo/{type}/{slug}`, settings group `seo`.
 
@@ -82,8 +82,9 @@ Optional later: sync preference to user settings API (see It.38 feature flags / 
 
 1. **`SeoMetadataPanel.tsx`** — form with character hints (title ~60, description ~160 recommended)
 2. **`MarkdownEditor`** — “SEO” tab or side drawer
-3. **`MediaManager`** — extend alt/title edit + optional asset tags/caption in sidecar
-4. **`SeoHealthBadge.tsx`** — status: OK / warning / missing
+3. **`MediaManager`** — alt/title edit; **list / list-preview** open `MediaMetadataModal` (responsive dialog, no table overlap); **preview grid** keeps inline edit on cards
+4. **`MediaMetadataModal.tsx`** — title + alt textarea, image preview, live SEO badge, Escape / backdrop close
+5. **`SeoHealthBadge.tsx`** — status: OK / warning / missing
 
 ### List-level SEO overview
 
@@ -99,14 +100,14 @@ In **list** and **list-preview** modes, show column or badge:
 
 ---
 
-## Part 3 – Backend extensions ⏳
+## Part 3 – Backend extensions ✅ (audit API deferred)
 
 | Area | Change |
 |------|--------|
 | Content front matter | Document + validate `metaDescription`, `ogImage`, `robots`, `canonical`, `seoTitle` |
 | Media sidecar | Optional `tags[]`, `caption`, `seoDescription` |
 | `MediaRepository` / `ContentRepository` | PATCH fields; optional bulk SEO export (CSV/JSON) |
-| `GET /api/content/seo-audit` | List items with missing fields (MVP audit endpoint) |
+| `GET /api/content/seo-audit` | List items with missing fields — **deferred** to backlog |
 
 **Rule:** Reuse `SeoMetaBuilder` — no duplicate SEO logic; only persist fields in flat-file and expose in admin forms.
 
@@ -131,7 +132,8 @@ In **list** and **list-preview** modes, show column or badge:
 3. Article editor → SEO panel → save → `GET /api/seo/article/{slug}` returns updated values.
 4. Media without alt → warning badge in grid.
 5. Filter “SEO issues” → only incomplete items shown.
-6. PHPUnit: front matter validation; Vitest: `AdminViewModeToggle`, `SeoHealthBadge`.
+6. Media list mode → pencil opens modal → save → table updates without column overlap.
+7. PHPUnit: front matter validation (deferred); Vitest: `AdminViewModeToggle`, `SeoHealthBadge`, `MediaMetadataModal` flow via `MediaManager`.
 
 ---
 

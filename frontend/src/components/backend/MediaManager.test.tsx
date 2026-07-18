@@ -14,6 +14,11 @@ const mocks = vi.hoisted(() => ({
   bulkDeleteMedia: vi.fn(),
   createMediaFolder: vi.fn(),
   updateMediaMetadata: vi.fn(),
+  useAdminViewMode: vi.fn(() => ({ mode: 'preview' as const, setMode: vi.fn() })),
+}));
+
+vi.mock('../../hooks/useAdminViewMode', () => ({
+  useAdminViewMode: mocks.useAdminViewMode,
 }));
 
 vi.mock('../../api/media', () => ({
@@ -68,6 +73,7 @@ const sampleFile = {
 describe('MediaManager', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.useAdminViewMode.mockReturnValue({ mode: 'preview', setMode: vi.fn() });
     mocks.listMedia.mockResolvedValue([sampleFile]);
     mocks.listMediaFolders.mockResolvedValue(['', 'campaigns']);
     mocks.listStockImageTopics.mockResolvedValue([
@@ -133,5 +139,24 @@ describe('MediaManager', () => {
     fireEvent.click(screen.getByText('campaigns'));
 
     expect(mocks.listMedia).toHaveBeenCalledWith(expect.objectContaining({ folder: 'campaigns' }));
+  });
+
+  it('saves metadata edits in list view mode via modal', async () => {
+    mocks.useAdminViewMode.mockReturnValue({ mode: 'list', setMode: vi.fn() });
+
+    render(<MediaManager />);
+    expect(await screen.findByText('Hero')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit metadata' }));
+    expect(screen.getByRole('dialog', { name: /Edit metadata/i })).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Updated title' } });
+    fireEvent.change(screen.getByLabelText(/Alt text/i), { target: { value: 'Updated alt' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
+
+    expect(mocks.updateMediaMetadata).toHaveBeenCalledWith('media/media_1_hero.png', {
+      altText: 'Updated alt',
+      title: 'Updated title',
+    });
   });
 });

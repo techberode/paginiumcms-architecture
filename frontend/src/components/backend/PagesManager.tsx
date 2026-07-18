@@ -4,8 +4,13 @@ import { useApi } from '../../hooks/useApi';
 import { useToast } from '../../hooks/useToast';
 import { Link } from 'react-router-dom';
 import type { PaginationMeta } from '../../api/client';
+import { AdminViewModeToggle } from './AdminViewModeToggle';
+import { SeoHealthBadge } from './SeoHealthBadge';
+import { useAdminViewMode } from '../../hooks/useAdminViewMode';
+import { evaluateContentSeo } from '../../utils/seoHealth';
+import { resolveAdminMediaPreviewUrl, resolvePublicMediaUrl } from '../../api/media';
 
-interface Page {
+interface ContentItem {
   id: string;
   title: string;
   slug: string;
@@ -13,6 +18,10 @@ interface Page {
   author: string;
   createdAt: string;
   updatedAt: string;
+  frontMatter?: Record<string, unknown>;
+  featuredImage?: string;
+  tags?: string[];
+  ogImage?: string;
 }
 
 interface PagesManagerProps {
@@ -26,18 +35,49 @@ const DEFAULT_META: PaginationMeta = {
   total_pages: 0,
 };
 
+function previewImageForItem(item: ContentItem): string {
+  const fm = item.frontMatter ?? {};
+  const raw = item.ogImage
+    ?? item.featuredImage
+    ?? (typeof fm.seoImage === 'string' ? fm.seoImage : '')
+    ?? (typeof fm.featuredImage === 'string' ? fm.featuredImage : '');
+
+  if (!raw || typeof raw !== 'string') {
+    return '';
+  }
+
+  if (raw.startsWith('http://') || raw.startsWith('https://') || raw.startsWith('/api/')) {
+    return raw;
+  }
+
+  if (raw.startsWith('/storage/')) {
+    return resolvePublicMediaUrl(raw);
+  }
+
+  if (raw.startsWith('media/')) {
+    return resolveAdminMediaPreviewUrl(raw);
+  }
+
+  return raw;
+}
+
 export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) => {
-  const [items, setItems] = useState<Page[]>([]);
+  const [items, setItems] = useState<ContentItem[]>([]);
   const [meta, setMeta] = useState<PaginationMeta>(DEFAULT_META);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [seoIssuesOnly, setSeoIssuesOnly] = useState(false);
   const [page, setPage] = useState(1);
   const { get, del } = useApi();
   const toast = useToast();
+  const section = type === 'articles' ? 'articles' : 'pages';
+  const { mode: viewMode, setMode: setViewMode } = useAdminViewMode(section, 'list');
 
   const endpoint = type === 'articles' ? '/api/articles' : '/api/pages';
+  const routeBase = type === 'articles' ? 'articles' : 'pages';
+  const label = type === 'articles' ? 'Articles' : 'Pages';
 
   useEffect(() => {
     const timer = window.setTimeout(() => setDebouncedSearch(search.trim()), 300);
@@ -62,7 +102,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
         params.set('status', statusFilter);
       }
 
-      const response = await get<Page[]>(`${endpoint}?${params.toString()}`);
+      const response = await get<ContentItem[]>(`${endpoint}?${params.toString()}`);
       if (response.success) {
         setItems(response.data || []);
         setMeta(response.meta ?? { ...DEFAULT_META, page });
@@ -107,10 +147,22 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
     return `badge ${classes[status as keyof typeof classes] || 'badge-info'}`;
   };
 
+  const visibleItems = items.filter((item) => {
+    if (!seoIssuesOnly) {
+      return true;
+    }
+    return evaluateContentSeo({
+      status: item.status,
+      frontMatter: item.frontMatter,
+      featuredImage: item.featuredImage,
+      tags: item.tags,
+    }) !== 'ok';
+  });
+
   if (loading && items.length === 0) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600" />
       </div>
     );
   }
@@ -118,21 +170,19 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center flex-wrap gap-4">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white capitalize">
-          {type === 'articles' ? 'Articles' : 'Pages'}
-        </h1>
-        <Link to={`/${type}/new`} className="btn btn-primary">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{label}</h1>
+        <Link to={`/${routeBase}/new`} className="btn btn-primary">
           + Create New
         </Link>
       </div>
 
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-wrap gap-4 items-center">
         <div className="flex-1 min-w-[200px]">
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder={`Search ${type}...`}
+            placeholder={`Search ${type}…`}
             className="form-input"
           />
         </div>
@@ -146,75 +196,151 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
           <option value="draft">Draft</option>
           <option value="archived">Archived</option>
         </select>
+        <AdminViewModeToggle mode={viewMode} onChange={setViewMode} />
+        <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap">
+          <input
+            type="checkbox"
+            checked={seoIssuesOnly}
+            onChange={(e) => setSeoIssuesOnly(e.target.checked)}
+            className="rounded border-gray-300"
+          />
+          SEO issues only
+        </label>
       </div>
 
-      <div className="card">
-        <div className="card-body p-0">
-          {items.length === 0 ? (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-              No {type} found
-            </div>
-          ) : (
+      {visibleItems.length === 0 ? (
+        <div className="card">
+          <div className="card-body text-center py-8 text-gray-500 dark:text-gray-400">
+            No {type} found
+          </div>
+        </div>
+      ) : viewMode === 'preview' ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {visibleItems.map((item) => {
+            const preview = previewImageForItem(item);
+            const seoLevel = evaluateContentSeo({
+              status: item.status,
+              frontMatter: item.frontMatter,
+              featuredImage: item.featuredImage,
+              tags: item.tags,
+            });
+            return (
+              <div key={item.id} className="card overflow-hidden flex flex-col">
+                <div className="aspect-video bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden">
+                  {preview ? (
+                    <img src={preview} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-sm text-gray-400">No preview image</span>
+                  )}
+                </div>
+                <div className="card-body space-y-2 flex-1 flex flex-col">
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="font-medium truncate">{item.title}</p>
+                    <SeoHealthBadge level={seoLevel} />
+                  </div>
+                  <p className="text-xs text-gray-500 truncate">/{item.slug}</p>
+                  <span className={getStatusBadge(item.status)}>{item.status}</span>
+                  <div className="flex gap-2 mt-auto pt-2">
+                    <Link to={`/${routeBase}/${item.slug}`} className="btn btn-secondary text-xs px-3 py-1">
+                      Edit
+                    </Link>
+                    <button
+                      type="button"
+                      className="btn btn-danger text-xs px-3 py-1"
+                      onClick={() => void handleDelete(item.slug)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="card">
+          <div className="card-body p-0">
             <div className="table-container">
               <table className="table">
                 <thead>
                   <tr>
+                    {viewMode === 'list-preview' && <th className="w-24">Preview</th>}
                     <th>Title</th>
                     <th>Slug</th>
                     <th>Status</th>
-                    <th>Author</th>
+                    <th>SEO</th>
                     <th>Updated</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {items.map((item) => (
-                    <tr key={item.id}>
-                      <td className="font-medium">{item.title}</td>
-                      <td className="text-gray-500 dark:text-gray-400">{item.slug}</td>
-                      <td>
-                        <span className={getStatusBadge(item.status)}>{item.status}</span>
-                      </td>
-                      <td>{item.author || 'Unknown'}</td>
-                      <td className="text-sm text-gray-500 dark:text-gray-400">
-                        {new Date(item.updatedAt).toLocaleDateString()}
-                      </td>
-                      <td>
-                        <div className="flex gap-2">
-                          <Link
-                            to={`/${type}/${item.slug}`}
-                            className="btn btn-secondary text-xs px-3 py-1"
-                          >
-                            Edit
-                          </Link>
-                          <Link
-                            to={`/preview/${item.slug}`}
-                            target="_blank"
-                            className="btn btn-secondary text-xs px-3 py-1"
-                          >
-                            View
-                          </Link>
-                          <button
-                            onClick={() => handleDelete(item.slug)}
-                            className="btn btn-danger text-xs px-3 py-1"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                  {visibleItems.map((item) => {
+                    const preview = previewImageForItem(item);
+                    const seoLevel = evaluateContentSeo({
+                      status: item.status,
+                      frontMatter: item.frontMatter,
+                      featuredImage: item.featuredImage,
+                      tags: item.tags,
+                    });
+                    return (
+                      <tr key={item.id}>
+                        {viewMode === 'list-preview' && (
+                          <td>
+                            {preview ? (
+                              <img src={preview} alt="" className="w-16 h-12 object-cover rounded bg-gray-100" />
+                            ) : (
+                              <span className="text-xs text-gray-400">—</span>
+                            )}
+                          </td>
+                        )}
+                        <td className="font-medium">{item.title}</td>
+                        <td className="text-gray-500 dark:text-gray-400">{item.slug}</td>
+                        <td>
+                          <span className={getStatusBadge(item.status)}>{item.status}</span>
+                        </td>
+                        <td>
+                          <SeoHealthBadge level={seoLevel} />
+                        </td>
+                        <td className="text-sm text-gray-500 dark:text-gray-400">
+                          {new Date(item.updatedAt).toLocaleDateString()}
+                        </td>
+                        <td>
+                          <div className="flex gap-2">
+                            <Link
+                              to={`/${routeBase}/${item.slug}`}
+                              className="btn btn-secondary text-xs px-3 py-1"
+                            >
+                              Edit
+                            </Link>
+                            <Link
+                              to={`/preview/${item.slug}`}
+                              target="_blank"
+                              className="btn btn-secondary text-xs px-3 py-1"
+                            >
+                              View
+                            </Link>
+                            <button
+                              onClick={() => void handleDelete(item.slug)}
+                              className="btn btn-danger text-xs px-3 py-1"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      )}
 
       {meta.total_pages > 1 && (
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            {meta.total} záznamov · strana {meta.page} / {meta.total_pages}
+            {meta.total} records · page {meta.page} / {meta.total_pages}
           </p>
           <div className="flex gap-2">
             <button
@@ -223,7 +349,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
               disabled={page <= 1 || loading}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
             >
-              Predchádzajúca
+              Previous
             </button>
             <button
               type="button"
@@ -231,7 +357,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
               disabled={page >= meta.total_pages || loading}
               onClick={() => setPage((p) => p + 1)}
             >
-              Ďalšia
+              Next
             </button>
           </div>
         </div>
