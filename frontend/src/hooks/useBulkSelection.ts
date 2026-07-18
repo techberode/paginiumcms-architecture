@@ -18,11 +18,13 @@ export function useBulkSelection(
 ): UseBulkSelectionResult {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  const visibleSet = useMemo(() => new Set(visibleIds), [visibleIds]);
+  // Stabilizácia podľa obsahu – nová referencia poľa s rovnakými id nesmie spúšťať loop.
+  const visibleKey = visibleIds.join('\0');
+  const visibleSet = useMemo(() => new Set(visibleIds), [visibleKey]);
 
   useEffect(() => {
     setSelectedIds((prev) => prev.filter((id) => visibleSet.has(id)));
-  }, [visibleSet, resetKey]);
+  }, [visibleKey, resetKey, visibleSet]);
 
   const toggle = useCallback((id: string) => {
     setSelectedIds((prev) =>

@@ -18,7 +18,7 @@ final class DebugController
     public function clientEvent(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         if (!DebugEventLogger::isEnabled()) {
-            return $this->json->error($response, 'Debug logging disabled', 404);
+            return $response->withStatus(204);
         }
 
         $payload = $this->parseJsonBody($request);

@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Controllers\Admin;
 
 use PaginiumCMS\Core\Analytics\Services\Reporter;
+use PaginiumCMS\Core\Monitoring\Services\MonitoringReportScheduler;
+use PaginiumCMS\Core\Monitoring\Services\MonitoringScheduler;
+use PaginiumCMS\Core\Monitoring\Services\SchedulerStateStore;
 use PaginiumCMS\Core\Notification\NotificationService;
 use PaginiumCMS\Core\Notification\Services\NotificationFactory;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
@@ -13,7 +16,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
- * Admin notification overview and test-send (Iteration 6).
+ * Admin notification overview, scheduled reports and test-send (Iteration 6–7).
  */
 final class NotificationController
 {
@@ -21,6 +24,9 @@ final class NotificationController
         private SettingsRepositoryInterface $settings,
         private NotificationService $notifications,
         private Reporter $reporter,
+        private MonitoringReportScheduler $reportScheduler,
+        private MonitoringScheduler $monitoringScheduler,
+        private SchedulerStateStore $state,
         private JsonResponder $json
     ) {
     }
@@ -37,7 +43,68 @@ final class NotificationController
             'alerts_enabled' => (bool) ($monitoring['alertsEnabled'] ?? false),
             'analytics' => $this->reporter->getOverview('today'),
             'top_pages' => $this->reporter->getTopPages(5, 'today'),
+            'schedule' => $this->reportScheduler->schedulePreview(),
+            'log_incidents' => [
+                'notify_errors' => (bool) ($monitoring['notifyLogErrors'] ?? true),
+                'notify_warnings' => (bool) ($monitoring['notifyLogWarnings'] ?? false),
+                'connector' => (string) ($monitoring['logIncidentConnector'] ?? 'all'),
+            ],
         ]);
+    }
+
+    public function schedule(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $monitoring = $this->settings->group('monitoring');
+
+        return $this->json->success($response, [
+            'schedule' => $this->reportScheduler->schedulePreview(),
+            'log_incidents' => [
+                'notify_errors' => (bool) ($monitoring['notifyLogErrors'] ?? true),
+                'notify_warnings' => (bool) ($monitoring['notifyLogWarnings'] ?? false),
+                'connector' => (string) ($monitoring['logIncidentConnector'] ?? 'all'),
+            ],
+            'state' => $this->state->snapshot(),
+        ]);
+    }
+
+    public function sendReport(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $payload = json_decode((string) $request->getBody(), true);
+        $force = is_array($payload) && (bool) ($payload['force'] ?? false);
+
+        $result = $this->reportScheduler->runIfDue($force);
+
+        $sent = (bool) ($result['sent'] ?? false);
+        $message = $sent ? 'Monitoring report sent' : $this->reportFailureMessage($result);
+
+        return $this->json->respond($response, [
+            'success' => $sent,
+            'message' => $message,
+            'result' => $result,
+        ], $sent ? 200 : 422);
+    }
+
+    /**
+     * @param array<string, mixed> $result
+     */
+    private function reportFailureMessage(array $result): string
+    {
+        return match ((string) ($result['reason'] ?? '')) {
+            'delivery_failed' => 'Connector failed to deliver the report. Check SMTP credentials and server reachability.',
+            'connector_inactive' => 'Selected report connector is not enabled. Enable it under Settings → Connectors.',
+            'no_connectors' => 'No notification connectors are enabled.',
+            'missing_recipient' => 'Set Monitoring → alert email or General → admin email.',
+            'disabled' => 'Scheduled reports are disabled in Settings → Monitoring.',
+            'not_due' => 'Report is not due yet.',
+            default => 'Failed to send monitoring report.',
+        };
+    }
+
+    public function runSchedule(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $result = $this->monitoringScheduler->runIfDue();
+
+        return $this->json->success($response, $result);
     }
 
     public function testSend(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface

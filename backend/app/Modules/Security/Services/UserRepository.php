@@ -78,15 +78,19 @@ class UserRepository
             try {
                 $content = $this->reader->read($this->storagePath . '/' . basename($file));
                 $data = json_decode($content, true);
-                if ($data) {
-                    $users[] = $this->hydrate($data);
+                if (!is_array($data) || !isset($data['id'], $data['email'])) {
+                    continue;
                 }
+                if (!is_string($data['id']) || !is_string($data['email']) || $data['id'] === '' || $data['email'] === '') {
+                    continue;
+                }
+                $users[] = $this->hydrate($data);
             } catch (FlatFileException) {
                 continue;
             }
         }
 
-        return $users;
+        return $this->dedupeById($users);
     }
 
     public function save(User $user): void
@@ -123,15 +127,33 @@ class UserRepository
     }
 
     /**
+     * @param list<User> $users
+     * @return list<User>
+     */
+    private function dedupeById(array $users): array
+    {
+        $byId = [];
+        foreach ($users as $user) {
+            $byId[$user->getId()] = $user;
+        }
+
+        return array_values($byId);
+    }
+
+    /**
      * @return array<int|string, mixed>
      */
     private function getAllUserFiles(): array
     {
         try {
             $files = $this->reader->listFiles($this->storagePath, '*.json');
-            return array_map(function($file) {
-                return basename($file);
-            }, $files);
+            $files = array_filter(
+                $files,
+                static fn (string $file): bool => str_ends_with($file, '.json')
+                    && !str_contains($file, '.backup.')
+            );
+
+            return array_map(static fn (string $file): string => basename($file), $files);
         } catch (FlatFileException) {
             return [];
         }

@@ -64,7 +64,7 @@ final class MediaFormats
         sort($previewable);
 
         return [
-            'mimeTypes' => array_values($allowedMimeTypes),
+            'mimeTypes' => $allowedMimeTypes,
             'extensions' => array_values(array_unique($extensions)),
             'accept' => implode(',', $allowedMimeTypes),
             'previewableMimeTypes' => array_values(array_unique($previewable)),
@@ -88,6 +88,9 @@ final class MediaFormats
         return isset(self::FORMATS[$mimeType]) && self::FORMATS[$mimeType]['previewable'];
     }
 
+    /**
+     * @param list<string> $allowedMimeTypes
+     */
     public static function buildAcceptHeader(array $allowedMimeTypes): string
     {
         return implode(',', array_values(array_filter(

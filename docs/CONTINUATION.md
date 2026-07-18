@@ -33,11 +33,12 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 
 ---
 
-## Iteration 7 – DONE (2026-07-15)
+## Iteration 7 – DONE (2026-07-18, v2.0.17)
 
-- **Dashboard:** locks panel, conflicts panel, health metrics, analytics chart + realtime visitors
-- **API:** `GET /api/admin/dashboard/overview`, `GET /api/admin/health/*`, `GET /api/admin/analytics/realtime`
-- **RealtimeTracker** implemented; Health module wired to DI and routes
+- **Monitoring:** scheduled reports (hour/day/week), dark HTML email, log incident scanner
+- **CLI:** `monitoring:run-schedule` + hosting cron (combine with `backup:run-schedule`)
+- **API:** `POST /api/admin/notifications/report/send`, `/schedule/run`
+- **FE:** `/notifications` schedule card + manual send
 - See `docs/ITERATION_7.md`
 
 ---

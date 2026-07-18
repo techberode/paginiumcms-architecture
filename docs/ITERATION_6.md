@@ -64,3 +64,42 @@ Iteration 6 wires notification connectors, visit analytics, incident monitoring,
 ## Next (Iteration 7+)
 
 - Media manager FE, Developer Mode unlock UI, RSS/sitemap feeds, plugin system
+
+---
+
+## Rýchly štart (SK) – konfigurácia na serveri
+
+It.6 je **implementované v kóde** (verzia 2.0.1+). Na tvojom hoste (`:8081`) treba len nastaviť a overiť:
+
+### 1. SMTP (reset hesla, e-mailové alerty)
+
+Admin → **Nastavenia** → skupina **SMTP**:
+- `enabled` = zap
+- `host`, `port`, `encryption` (tls/ssl)
+- `username`, `password`
+- `fromEmail`, `fromName`
+
+### 2. Konektory (voliteľné)
+
+Admin → **Nastavenia** → **Notification connectors**:
+- Zapni `emailEnabled` (vyžaduje SMTP)
+- Alebo ntfy / Discord / Telegram / webhook podľa potreby
+
+### 3. Monitoring (incident alerty)
+
+Skupina **Monitoring**:
+- `alertsEnabled` = zap
+- `alertEmail` = fallback adresa (ak konektor zlyhá)
+
+### 4. Toast v admin UI
+
+Skupina **Toast notifications**:
+- pozícia (`top-right`, …), trvanie, debug mód
+
+### 5. Overenie
+
+1. `/notifications` → **Test** pri zapnutom konektore
+2. `/forgot-password` → skontroluj doručenie mailu
+3. Zapni toast debug → akcia v admin by mala logovať do konzoly
+
+**Súvisiace:** [SETTINGS.md](architecture/SETTINGS.md) · incidenty → [ISSUES.md](ISSUES.md)

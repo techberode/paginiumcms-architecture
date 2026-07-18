@@ -176,16 +176,18 @@ final class LoginAttemptTracker
                 static fn (mixed $ts): bool => is_int($ts) && $ts > ($now - $windowSeconds)
             ));
 
-            if (count($recent) >= $maxAttempts) {
-                $oldest = min($recent);
-                $retryAfter = max(1, ($oldest + $windowSeconds) - $now);
-
-                return [
-                    'locked' => true,
-                    'retryAfter' => $retryAfter,
-                    'reason' => str_starts_with($key, 'ip:') ? 'ip' : 'email',
-                ];
+            if ($recent === [] || count($recent) < $maxAttempts) {
+                continue;
             }
+
+            $oldest = min($recent);
+            $retryAfter = max(1, ($oldest + $windowSeconds) - $now);
+
+            return [
+                'locked' => true,
+                'retryAfter' => $retryAfter,
+                'reason' => str_starts_with($key, 'ip:') ? 'ip' : 'email',
+            ];
         }
 
         return ['locked' => false, 'retryAfter' => 0, 'reason' => null];

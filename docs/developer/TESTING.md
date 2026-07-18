@@ -1,6 +1,6 @@
 # Testovanie – PaginiumCMS
 
-> Posledná aktualizácia: 2.0.9 · **502 PHPUnit testov**, PHPStan level 8
+> Posledná aktualizácia: 2.0.17 · **550+ PHPUnit testov**, PHPStan level 8, **107 Vitest testov**
 
 ## Spustenie
 
@@ -80,6 +80,7 @@ Bootstrap aplikácie pre HTTP testy: `backend/tests/Http/TestCase.php` — nač�
 | Guest comments toggle | `Http/Controllers/Comments/CommentsControllerTest.php` |
 | `BackupScheduler` | `Core/Backup/Services/BackupSchedulerTest.php` |
 | `runScheduledBackupIfDue` | `Core/Backup/Services/BackupManagerTest.php` |
+| Monitoring reports / log scan (It.7) | `Core/Monitoring/Services/*Test.php` |
 | Trash meta sidecar | `Core/FlatFile/Services/FileWriterTest.php` |
 
 ## Preskočené testy (15)
@@ -104,3 +105,19 @@ cd frontend && npm ci && npm test && npm run build
 ```
 
 Po It. 21: pridať `newman run docs/api/PaginiumCMS.postman_collection.json`.
+
+## Známe incidenty a regresie (2026-07-18)
+
+Detailný zoznam symptómov, príčin a opráv: **[ISSUES.md](../ISSUES.md)**.
+
+| Problém | Test / overenie | Stav |
+|---------|----------------|------|
+| Vitest worker crash (`useBulkSelection` loop) | `npm test` – 102/102 | ✅ Opravené |
+| PHPStan 15 chýb | `phpstan analyse backend --level=8` | ✅ Opravené |
+| Debug `client-event` 404 | Konzola po redeploy, alebo `curl -X POST …/api/debug/client-event` → 204 | ✅ Opravené |
+| Phantom users / backup v `data/users/` | `UserRepositoryTest::testFindAllIgnoresBackupFilesAndInvalidRecords` | ✅ Hardening |
+| `navigation.json.backup.*` hromadenie | `FileWriterTest` + max 5 backupov na súbor | ✅ Retencia |
+| `GET /api/pages` 500 na serveri | PHPUnit OK – skontrolovať server log + index obsahu | 🔍 Env |
+| Settings `/settings` crash | `zodFromRules` – `.max` on optional | ✅ Opravené |
+
+**Node:** CI používa Node 22. Lokálne odporúčané `nvm use 22` pred `npm test`.

@@ -5,7 +5,9 @@
 
 **Aktuálne hotové:** It.1–24 ✅ · It.26–28 ✅ · It.25 ⏳ (setup wizard — odložené)
 
-**Ďalšia iterácia:** [It.29 – Job Queue](ITERATION_BACKLOG.md#iterácia-29--job-queue--background-worker-)
+**Ďalšia iterácia:** [It.29 – Cron planner + Job Queue](ITERATION_BACKLOG.md#iterácia-29--cron-planner--job-queue--background-worker-)
+
+**Incidenty a opravy:** [ISSUES.md](ISSUES.md)
 
 ---
 
@@ -17,7 +19,9 @@
 | 26 | 2.0.14 | [Media preview + binárny hotfix](ITERATION_26.md) | ✅ | Lightbox + strict formats |
 | **27** | **2.0.15** | **[Admin view modes + SEO panel](ITERATION_27.md)** | **✅** | List / list+preview / grid + SEO UX + metadata modal |
 | **28** | **2.0.16** | **[Bulk actions platform](ITERATION_28.md)** | **✅** | Shared bulk bar + batch APIs |
-| **29** | TBD | **Job Queue / Background Worker** | **🟡 ďalšia** | Dlhé úlohy mimo requestu |
+| **29** | TBD | **Cron planner + Job Queue** | **🟡 ďalšia** | Plánované akcie: obsah, trash, backups, notifikácie, users, komentáre |
+| **41** | TBD | **Email OTP schvaľovanie** | **🟡** | Registrácia (USER), komentáre/príspevky (EDITOR) – zap/vyp v admin |
+| **42** | TBD | **Admin počty položiek** | **🟡** | Badge počty: články, stránky, media, komentáre, správy, zálohy, kôš, users |
 | **30** | TBD | **Contextual Actions** | 🟡 | Akcie podľa kontextu (content, media, user) |
 | **31** | TBD | **Live Preview** | 🟡 | Náhľad stránky/článku pred publikovaním |
 | **32** | TBD | **React chunking + PHP OPcache** | 🔵 | Výkon FE/BE |
@@ -48,11 +52,68 @@ Hromadné operácie nad viacerými entitami. **Full spec:** [ITERATION_28.md](IT
 
 ---
 
-## Iterácia 29 – Job Queue / Background Worker ⏳
+## Iterácia 29 – Cron planner + Job Queue / Background Worker ⏳
 
-- Flat-file alebo Redis fronta úloh
-- Worker CLI / cron: stock import batch, backup, index rebuild
-- Status API pre admin (`GET /api/jobs/{id}`)
+Plánovač (Cron) pre **plánované spúšťanie akcií** mimo HTTP requestu:
+
+| Doména | Príklady úloh |
+|--------|----------------|
+| Obsah | auto-publish draft, archivácia starých článkov |
+| Kôš | permanent delete po retention |
+| Zálohy | plánovaný export + rotácia |
+| Notifikácie | digest e-mail, queue flush |
+| Používatelia | deaktivácia neaktívnych, cleanup tokenov |
+| Komentáre | auto-moderácia, spam cleanup |
+
+**Backend:**
+- Flat-file alebo Redis fronta úloh + `CronSchedule` v Settings
+- Worker CLI (`php bin/worker.php`) + systémový cron / Docker `ofelia`
+- Admin UI: CRUD plánov, posledný beh, log
+- Status API: `GET /api/admin/jobs`, `GET /api/admin/jobs/{id}`
+
+**Frontend:**
+- Admin sekcia „Plánovač“ – zap/vyp jednotlivých jobov, CRON výraz, náhľad ďalšieho behu
+
+---
+
+## Iterácia 41 – Email OTP schvaľovanie ⏳
+
+Automatizované schvaľovanie jednorazovým kódom na e-mail (všetko **zapínateľné v administrácii**):
+
+| Tok | Rola | Popis |
+|-----|------|--------|
+| Registrácia | USER (striktne) | Nový účet až po OTP z mailu |
+| Komentár | EDITOR | Schválenie komentára cez kontrolný kód mailom |
+| Nový príspevok | EDITOR | Publikácia až po OTP schválení editorom |
+
+**Backend:**
+- Settings skupina `workflows.*` – `enabled`, TTL kódu, šablóny mailov
+- Flat-file register `data/otp-pending.json` alebo per-entity token
+- Napojenie na `NotificationService` / SMTP z It.6
+
+**Frontend:**
+- Admin prepínače v Settings
+- Verejný register flow + editor modals pre OTP
+
+---
+
+## Iterácia 42 – Admin počty položiek ⏳
+
+Zobrazenie **počtu položiek** v administrácii (sidebar, nadpisy zoznamov, dashboard KPI):
+
+| Modul | Zdroj |
+|-------|--------|
+| Články / stránky | content index / paginated `total` |
+| Media | `MediaRepository::count()` |
+| Komentáre | comments registry |
+| Správy | messages inbox |
+| Zálohy | `BackupManager` |
+| Kôš | `TrashService` |
+| Používatelia | `UserRepository::findAll()` |
+
+**Backend:** `GET /api/admin/counts` – jeden agregovaný endpoint  
+**Frontend:** Settings `ui.showListCounts` – globálne zap/vyp badge  
+**Naviazané:** oprava `DashboardView` user count (ISS-007) ✅
 
 ---
 
@@ -154,12 +215,13 @@ Jednotný alebo per-sekcia správca súborov (blog/media, pages/assets, …).
 ## Odporúčané poradie implementácie
 
 ```
-It.28/2.0.16 ✅ → It.29 (job queue) ← ďalšia
+It.28/2.0.16 ✅ → It.29 (cron + job queue) ← ďalšia
+                → It.42 (počty v admin) → It.41 (email OTP workflows)
                 → It.36 (pagination) → It.38 (feature flags)
                 → It.39 (komentáre) → It.37 (inline FE edit)
                 → It.33 (analytics) → It.34 (system overview)
                 → It.35 (inspector) → It.40 (section FileManager)
-                → It.28 (bulk platform) → It.29 (jobs) → It.30 (contextual) → It.31 (live preview)
+                → It.30 (contextual) → It.31 (live preview)
                 → It.32 (performance)
 ```
 
@@ -168,6 +230,7 @@ It.28/2.0.16 ✅ → It.29 (job queue) ← ďalšia
 ## Súvisiace dokumenty
 
 - [ROADMAP.md](ROADMAP.md) — hlavná mapa It.1–24
-- [ITERATION_27.md](ITERATION_27.md) — **ďalšia iterácia**
+- [ISSUES.md](ISSUES.md) — incidenty a opravy (2026-07-18)
+- [ITERATION_27.md](ITERATION_27.md) — admin view modes
 - [ITERATION_24.md](ITERATION_24.md) — DAM v1 + stock knižnica
 - [ITERATION_26.md](ITERATION_26.md) — media lightbox + 2.0.14 hotfix

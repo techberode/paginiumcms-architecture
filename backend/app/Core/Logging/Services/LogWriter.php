@@ -113,6 +113,34 @@ class LogWriter implements LogWriterInterface
         return $deleted;
     }
 
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public function readSince(string $since, int $limit = 200): array
+    {
+        $sinceTs = strtotime($since);
+        if ($sinceTs === false) {
+            return [];
+        }
+
+        $matched = [];
+        foreach ($this->readAll() as $entry) {
+            if (!is_array($entry)) {
+                continue;
+            }
+            $ts = strtotime((string) ($entry['timestamp'] ?? ''));
+            if ($ts === false || $ts <= $sinceTs) {
+                continue;
+            }
+            $matched[] = $entry;
+            if (count($matched) >= $limit) {
+                break;
+            }
+        }
+
+        return $matched;
+    }
+
     private function logFilePath(string $filename): string
     {
         return $this->storagePath . '/' . ltrim($filename, '/');

@@ -40,4 +40,11 @@ interface LogWriterInterface
      * Vymaže staré logovacie položky.
      */
     public function clearOld(int $days = 30): int;
+
+    /**
+     * Entries with timestamp strictly after $since (Y-m-d H:i:s).
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function readSince(string $since, int $limit = 200): array;
 }

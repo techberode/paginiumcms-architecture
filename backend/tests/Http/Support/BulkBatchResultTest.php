@@ -23,6 +23,7 @@ class BulkBatchResultTest extends TestCase
         $this->assertSame(1, $payload['failed']);
         $this->assertCount(3, $payload['results']);
         $this->assertFalse($payload['results'][2]['ok']);
+        $this->assertArrayHasKey('error', $payload['results'][2]);
         $this->assertSame('Not found', $payload['results'][2]['error']);
     }
 }

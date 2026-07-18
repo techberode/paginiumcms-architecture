@@ -157,7 +157,7 @@ export const UsersManager: React.FC = () => {
   const deletableUsers = users.filter((user) => user.id !== currentUser?.id);
   const bulkSelection = useBulkSelection(
     deletableUsers.map((user) => user.id),
-    users.length
+    users.map((user) => user.id).join('\0')
   );
 
   const handleBulkDelete = async () => {

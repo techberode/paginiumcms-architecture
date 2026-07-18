@@ -6,6 +6,39 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [2.0.17] – 2026-07-18
+
+### Iteration 7 – Scheduled monitoring reports + log incidents
+
+#### Backend
+- Add `Core/Monitoring/*` — `MonitoringReportScheduler`, `MonitoringReportBuilder`, `LogIncidentScanner`, `MonitoringScheduler`, `SchedulerStateStore`
+- Add `monitoring:run-schedule` CLI command; wire DI in `bootstrap/app.php`
+- Extend `SettingsSchema` monitoring group (report interval/time, connectors, log incident toggles)
+- Extend `Reporter` — `getTopIpStats()`, `getTopArticles()`, week aggregation for analytics
+- Extend `IncidentNotifier::notifyViaConnectorDetailed()` with preflight reasons (`connector_inactive`, `missing_recipient`, …)
+- Extend `LogWriter::readSince()` for incident scanner
+- Admin API: `GET /schedule`, `POST /report/send`, `POST /schedule/run`
+- Dark HTML monitoring email (Slovak sections: IP stats, top pages/articles/referrers, health, flat-file)
+
+#### Frontend
+- `/notifications` — scheduled reports card, manual send, cron simulation, delivery blockers hint
+- `api/notifications.ts` — report send + schedule run with error reasons
+
+#### Fixes (same release)
+- `bin/console` — Symfony 8 `addCommand()` instead of `add()`
+- Notification report API — `message` + `result.reason` on 422
+- Settings crash — `zodFromRules` optional `.max()` (ISS-009)
+- Debug route 404, phantom users, backup retention (see ISSUES.md)
+
+#### Tests
+- PHPUnit: 7 new monitoring tests under `Core/Monitoring/Services/`
+- Vitest: 107/107
+
+#### Docs
+- [ITERATION_7.md](docs/ITERATION_7.md), ROADMAP It.7 ✅, TESTING.md, DEV.md cron
+
+---
+
 ## [2.0.16] – 2026-07-18
 
 ### Iteration 28 – Bulk actions platform

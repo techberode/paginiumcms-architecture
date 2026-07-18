@@ -52,10 +52,10 @@ export const DashboardView: React.FC = () => {
       ]);
 
       setStats({
-        totalPages: pagesRes.success ? (pagesRes.data?.length || 0) : 0,
-        totalArticles: articlesRes.success ? (articlesRes.data?.length || 0) : 0,
-        totalUsers: usersRes.success ? (usersRes.data?.length || 0) : 0,
-        totalBackups: backupsRes.success ? (backupsRes.data?.length || 0) : 0,
+        totalPages: pagesRes.success ? (Array.isArray(pagesRes.data) ? pagesRes.data.length : 0) : 0,
+        totalArticles: articlesRes.success ? (Array.isArray(articlesRes.data) ? articlesRes.data.length : 0) : 0,
+        totalUsers: usersRes.success && usersRes.data?.users ? usersRes.data.users.length : 0,
+        totalBackups: backupsRes.success ? (Array.isArray(backupsRes.data) ? backupsRes.data.length : 0) : 0,
         recentActivity: auditRes.success ? (auditRes.data?.recent_events || []) : [],
       });
       setOverview(monitoring);

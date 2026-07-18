@@ -180,4 +180,33 @@ class UserRepositoryTest extends TestCase
         $this->assertEquals('Updated Name', $found->getName());
         $this->assertEquals(['ADMIN'], $found->getRoles());
     }
+
+    public function testFindAllIgnoresBackupFilesAndInvalidRecords(): void
+    {
+        $this->createUserFile('user_real', [
+            'id' => 'user_real',
+            'email' => 'real@example.com',
+            'passwordHash' => password_hash('StrongP@ssw0rd123!', PASSWORD_ARGON2ID),
+            'roles' => ['USER'],
+            'name' => 'Real User',
+            'twoFactorEnabled' => false,
+            'twoFactorSecret' => null,
+            'createdAt' => time(),
+            'updatedAt' => time(),
+        ]);
+
+        file_put_contents(
+            $this->root . '/data/users/user_real.json.backup.20260718_120000',
+            json_encode(['id' => 'user_backup', 'email' => 'backup@example.com'])
+        );
+
+        $this->createUserFile('user_invalid', [
+            'name' => 'No id or email',
+        ]);
+
+        $all = $this->repository->findAll();
+
+        $this->assertCount(1, $all);
+        $this->assertSame('real@example.com', $all[0]->getEmail());
+    }
 }
