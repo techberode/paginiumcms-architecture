@@ -249,7 +249,7 @@ It.5 Používatelia + roly, 2FA vynútenie + UI, kalenie auth (HttpOnly session)
 It.6 Notifikácie: reálne SMTP, konektory (ntfy/Discord/Telegram/webhook), toast konfigurácia.
 It.7 Admin dashboard: zámky + konflikty + Health + API Tracker/Analytics.
 It.8 Media manager / DAM (FE) + editory (WYSIWYG/Monaco) + developer unlock UI.
-It.9 SEO: automatické tagy + rozšírené SEO nastavenia v admine.
+It.9 prototype port (nav, comments, contact): see [ITERATION_9.md](ITERATION_9.md). SEO public meta: It.23 ✅. Admin SEO UX: It.27 ⏳.
 It.10 XML Feeds (RSS/sitemap) + admin nastavenia.
 It.11 SSO + jemnozrnné ACL + bezpečnostný audit log.
 It.12 Blueprint/Schema engine (po schválení návrhu).

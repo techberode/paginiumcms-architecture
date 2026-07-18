@@ -4,7 +4,7 @@
 
 Legenda: ✅ hotové · 🚧 rozpracované · ⏳ plánované · 🔴 kritická priorita jadra
 
-**Aktuálna verzia:** 2.0.13 · **Posledná iterácia:** [26](ITERATION_26.md) ✅
+**Aktuálna verzia:** 2.0.14 · **Posledná iterácia:** [26](ITERATION_26.md) ✅ · **Ďalšia:** [27 – view modes + SEO](ITERATION_27.md) ⏳
 
 | Iterácia | Názov | Priorita |
 |----------|-------|----------|
@@ -13,9 +13,10 @@ Legenda: ✅ hotové · 🚧 rozpracované · ⏳ plánované · 🔴 kritická 
 | 21 | API kontrakt & testovanie | ✅ |
 | **22** | **Ops finish & verejné feedy** | **✅** |
 | **24** | **Full DAM v1 + stock knižnica** | **✅** |
-| **26** | **Media preview lightbox** | **✅** |
+| **26** | **Media preview lightbox + 2.0.14 hotfix** | **✅** |
+| **27** | **Admin view modes + SEO panel** | **⏳ ďalšia** |
 | 25 | Setup wizard (profil webu) | ⏳ odložené |
-| 27+ | [Backlog modulov](ITERATION_BACKLOG.md) | ⏳ |
+| 28+ | [Backlog modulov](ITERATION_BACKLOG.md) | ⏳ |
 | 6–7 | Notifikácie, dashboard | 🟡 ďalej |
 | 8–10 | DAM, SEO, feedy | 🟢 |
 | 11–16 | SSO, plugins, Monaco | 🔵 |
@@ -168,9 +169,13 @@ Základ pre všetky admin nastavenia (SMTP, notifikácie, SEO, feedy v ďalšíc
 - ✅ **Náhľad obrázkov** ([Iterácia 26](ITERATION_26.md)): lightbox Fit / 1:1, natívne rozlíšenie.
 - ⏳ Monaco editor namiesto textarea v Code Editori (plný stack → It. 16).
 
-## Iterácia 9 – SEO: automatické tagy + rozšírené nastavenia ⏳ 🟢
-- `Core/Seo/*` – automatické meta description, canonical, Open Graph, Twitter Card, JSON-LD z obsahu/front matter.
-- Admin sekcia „SEO“ – predvolené šablóny title/description, default social image, robots, prepínače; prepojenie na sitemap/feedy.
+## Iterácia 9 – Prototype port (nav, comments, contact, GitHub) ✅
+
+**Stav:** hotové v **2.0.5** — detail [ITERATION_9.md](ITERATION_9.md) (English).
+
+- Navigation, Comments, Contact/Messages, GitHub admin API — port z `prototype/backend/` na `/api/*`
+- FE: `NavigationManager`, `CommentsManager`, `MessagesViewer`, `GitHubSyncPanel`, public wiring
+- **SEO meta engine** nie je It.9 — doručené v **[Iterácii 23](ITERATION_23.md)** ✅; admin SEO UX → **[Iterácia 27](ITERATION_27.md)** ⏳
 
 ## Iterácia 10 – XML Feeds (RSS/sitemap) 🚧
 
@@ -400,9 +405,9 @@ SMTP end-to-end → reset hesla e-mailom → konektory → toast perzistencia
 Analytics dokončenie → dashboard reporty → API tracker
 ```
 
-### Fáza 5 – Obsah & médiá (It. 8–9, plný DAM + SEO)
+### Fáza 5 – Obsah & médiá (It. 8–9, 23–24, 26–27)
 ```
-Plný DAM → SEO engine (It. 9)
+It.8 Media FE → It.9 prototype port → It.24 DAM → It.23 SEO engine → It.26/2.0.14 preview hotfix → It.27 admin SEO UX
 Monaco editor (It. 16) môže ísť paralelne s It. 8 ak je developer gate hotový
 ```
 *(RSS/sitemap presunuté do It. 22)*
