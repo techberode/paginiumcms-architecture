@@ -382,6 +382,11 @@ if (is_array($loggingServices)) {
     }
 }
 
+$monitoringServices = require __DIR__ . '/../app/Core/Monitoring/Config/services.php';
+if (is_array($monitoringServices)) {
+    $containerBuilder->addDefinitions($monitoringServices);
+}
+
 // ============================================
 // 10b. NAČÍTANIE DI VÄZIEB PRE HTTP VRSTVU (nové API endpointy, oddelené
 // od jadra - Content, Media, ...). PRIDANÉ pri oprave auditu 12.7.2026,

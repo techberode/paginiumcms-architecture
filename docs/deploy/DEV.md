@@ -60,6 +60,13 @@ cd frontend && npm run build
 ```bash
 php backend/bin/console audit:run
 php backend/bin/console backup:run-schedule   # cron: checks schedule.json
+php backend/bin/console monitoring:run-schedule   # cron: reports + log incidents (It.7)
+```
+
+Combined crontab example (every minute):
+
+```bash
+* * * * * cd /path/to/paginiumcms && php backend/bin/console backup:run-schedule && php backend/bin/console monitoring:run-schedule
 ```
 
 ## 5. Integration smoke (BE)

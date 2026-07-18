@@ -7,43 +7,86 @@ function isEmpty(value: unknown): boolean {
   return value === null || value === undefined || value === '';
 }
 
-function applyStringRules(base: z.ZodTypeAny, rules: string[]): z.ZodTypeAny {
-  let schema = base;
+function parseInRule(param: string | undefined): [string, ...string[]] | null {
+  const options = (param ?? '').split(',').map((v) => v.trim()).filter(Boolean);
+  if (options.length === 0) {
+    return null;
+  }
+
+  return [options[0], ...options.slice(1)];
+}
+
+function wrapOptional(schema: z.ZodTypeAny, required: boolean): z.ZodTypeAny {
+  if (required) {
+    return schema.refine((v) => !isEmpty(v), { message: 'Pole je povinné.' });
+  }
+
+  return z.union([z.literal(''), schema]).optional();
+}
+
+function applyStringRules(rules: string[]): z.ZodTypeAny {
+  const required = rules.includes('required');
+
+  const inRule = rules.find((r) => r.startsWith('in:'));
+  if (inRule) {
+    const enumValues = parseInRule(inRule.split(':', 2)[1]);
+    if (enumValues) {
+      return wrapOptional(
+        z.enum(enumValues, { message: 'Neprípustná hodnota.' }),
+        required
+      );
+    }
+  }
+
+  let schema = z.string();
 
   for (const rule of rules) {
     const [name, param] = rule.split(':', 2);
 
     switch (name) {
+      case 'string':
       case 'required':
-        schema = schema.refine((v) => !isEmpty(v), { message: 'Pole je povinné.' });
         break;
       case 'email':
-        schema = z.string().email('Neplatný e-mail.');
+        schema = schema.email('Neplatný e-mail.');
         break;
       case 'url':
-        schema = z.string().url('Neplatná URL.');
+        schema = schema.url('Neplatná URL.');
         break;
       case 'min':
-        schema = (schema as z.ZodString).min(Number(param), `Minimálne ${param} znakov.`);
+        schema = schema.min(Number(param), `Minimálne ${param} znakov.`);
         break;
       case 'max':
-        schema = (schema as z.ZodString).max(Number(param), `Maximálne ${param} znakov.`);
+        schema = schema.max(Number(param), `Maximálne ${param} znakov.`);
         break;
-      case 'in': {
-        const options = (param ?? '').split(',').filter(Boolean);
-        if (options.length > 0) {
-          schema = z.enum([options[0], ...options.slice(1)] as [string, ...string[]], {
-            message: 'Neprípustná hodnota.',
-          });
-        }
-        break;
-      }
       default:
         break;
     }
   }
 
-  return schema;
+  return wrapOptional(schema, required);
+}
+
+function applyIntRules(rules: string[]): z.ZodTypeAny {
+  const required = rules.includes('required');
+  let schema: z.ZodNumber = z.coerce.number().int('Musí byť celé číslo.');
+
+  for (const rule of rules) {
+    if (rule.startsWith('min:')) {
+      schema = schema.min(Number(rule.split(':')[1]));
+    }
+    if (rule.startsWith('max:')) {
+      schema = schema.max(Number(rule.split(':')[1]));
+    }
+  }
+
+  if (required) {
+    return schema.refine((v) => v !== null && v !== undefined && !Number.isNaN(v), {
+      message: 'Pole je povinné.',
+    });
+  }
+
+  return schema.optional();
 }
 
 function fieldSchema(rules: string[]): z.ZodTypeAny {
@@ -52,32 +95,10 @@ function fieldSchema(rules: string[]): z.ZodTypeAny {
   }
 
   if (rules.includes('int')) {
-    let schema: z.ZodTypeAny = z.coerce.number().int('Musí byť celé číslo.');
-    for (const rule of rules) {
-      if (rule.startsWith('min:')) {
-        schema = (schema as z.ZodNumber).min(Number(rule.split(':')[1]));
-      }
-      if (rule.startsWith('max:')) {
-        schema = (schema as z.ZodNumber).max(Number(rule.split(':')[1]));
-      }
-    }
-    if (rules.includes('required')) {
-      schema = schema.refine((v) => v !== null && v !== undefined && v !== '', {
-        message: 'Pole je povinné.',
-      });
-    }
-    return schema;
+    return applyIntRules(rules);
   }
 
-  let schema: z.ZodTypeAny = z.union([z.string(), z.number(), z.boolean()]).optional();
-
-  if (rules.includes('required')) {
-    schema = applyStringRules(z.string(), rules);
-  } else {
-    schema = applyStringRules(z.string().optional(), rules.filter((r) => r !== 'required'));
-  }
-
-  return schema;
+  return applyStringRules(rules);
 }
 
 /** Build Zod object schema from backend rule map (same keys as validate()). */

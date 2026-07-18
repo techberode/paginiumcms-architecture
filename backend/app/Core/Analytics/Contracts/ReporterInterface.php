@@ -38,4 +38,21 @@ interface ReporterInterface
      * Získa denné štatistiky pre graf.
  * @return array<int|string, mixed>
  */public function getDailyChart(int $days = 30): array;
+
+    /**
+     * Získa top IP adresy.
+     * @return array<int|string, mixed>
+     */
+    public function getTopIpStats(int $limit = 15, string $period = 'today'): array;
+
+    /**
+     * Získa top články (heuristika podľa URI).
+     * @return array<int|string, mixed>
+     */
+    public function getTopArticles(int $limit = 10, string $period = 'today'): array;
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getAggregatedOverview(string $interval = 'day'): array;
 }

@@ -16,9 +16,13 @@ Legenda: ✅ hotové · 🚧 rozpracované · ⏳ plánované · 🔴 kritická 
 | **26** | **Media preview lightbox + 2.0.14 hotfix** | **✅** |
 | **27** | **Admin view modes + SEO panel** | **✅** |
 | **28** | **Bulk actions platform** | **✅** |
+| **6** | **Notifikácie (SMTP, konektory, toast)** | **✅** |
+| 29 | Cron planner + Job Queue | ⏳ ďalšia |
+| 41 | Email OTP schvaľovanie (registrácia, komentáre, príspevky) | ⏳ |
+| 42 | Admin počty položiek (sidebar / zoznamy) | ⏳ |
 | 25 | Setup wizard (profil webu) | ⏳ odložené |
-| 29+ | [Backlog modulov](ITERATION_BACKLOG.md) | ⏳ ďalšia |
-| 6–7 | Notifikácie, dashboard | 🟡 ďalej |
+| 30+ | [Backlog modulov](ITERATION_BACKLOG.md) | ⏳ |
+| 6–7 | Notifikácie, dashboard | ✅ It.6 · ✅ It.7 |
 | 8–10 | DAM, SEO, feedy | 🟢 |
 | 11–16 | SSO, plugins, Monaco | 🔵 |
 | 17–18 | API scaffold, i18n | priebežne / po jadre |
@@ -153,14 +157,26 @@ Základ pre všetky admin nastavenia (SMTP, notifikácie, SEO, feedy v ďalšíc
 - 2FA vynútenie (`TwoFactorMiddleware` na `/api/admin/*`) + FE UI (setup/QR/login prompt).
 - Kalenie auth: HttpOnly session cookie, odstránený mŕtvy Bearer kód z `api/client.ts`.
 
-## Iterácia 6 – Notifikácie: SMTP + konektory + toast ⏳ 🟡
-- Reálne SMTP (mailer) z nastavení, `NotificationService` do DI, reset hesla e-mailom.
-- Konektory: ntfy, Discord, Telegram, webhook – konfigurácia + aktivácia v admine.
-- Toast: pozícia, zap/vyp, **debug mód**, perzistencia v nastaveniach.
+## Iterácia 6 – Notifikácie: SMTP + konektory + toast ✅
 
-## Iterácia 7 – Admin dashboard + monitoring + API Tracker ⏳ 🟡
+Hotové v **2.0.1** — detail [ITERATION_6.md](ITERATION_6.md).
+
+- Reálne SMTP (`SmtpTransport`) z nastavení skupiny `smtp`
+- Konektory: email, ntfy, Discord, Telegram, webhook — skupina `connectors` + test v `/notifications`
+- Toast: pozícia, zap/vyp, debug mód — skupina `notifications`, FE `NotificationContext`
+- Reset hesla e-mailom, incident alerty (`IncidentNotifier`)
+
+## Iterácia 7 – Admin dashboard + monitoring + API Tracker ✅
+
+**Stav:** hotové v **2.0.17** — detail [ITERATION_7.md](ITERATION_7.md).
+
 - Panel zámkov (`GET /api/locks`) a konfliktov (`GET /api/admin/conflicts`) + Health metriky.
-- Dokončenie Analytics (`AnalyticsManager/Reporter/RealtimeTracker/Middleware`), reporty návštevnosti, realtime, notifikácie cez konektor.
+- Analytics (`AnalyticsManager/Reporter/RealtimeTracker/Middleware`), reporty návštevnosti, realtime.
+- **Plánované monitoring reporty:** interval hodina/deň/týždeň, presný čas odoslania, konektor (email/ntfy/Discord/Telegram/webhook/all).
+- **Obsah reportu:** analytics, flat-file štatistiky (pages/articles/users/backups/trash/locks/conflicts), celkové zdravie systému.
+- **Log incidenty:** automatické notifikácie pri ERROR/WARNING v app logu cez zvolený konektor.
+- CLI: `php backend/bin/console monitoring:run-schedule` (crontab každú minútu).
+- FE: `/notifications` – prehľad plánu, manuálne odoslanie reportu, simulácia cronu.
 
 ## Iterácia 8 – Media manager / DAM (FE) + editory + developer unlock UI 🟢
 - ✅ FE `MediaManager` (upload/grid/altText/delete) + route `/media` nad `/api/media`.

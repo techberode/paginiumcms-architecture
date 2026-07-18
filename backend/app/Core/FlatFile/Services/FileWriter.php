@@ -186,6 +186,28 @@ class FileWriter implements FileWriterInterface
         if (!copy($absolutePath, $backupPath)) {
             throw new FlatFileException(sprintf('Nepodarilo sa vytvoriť záložnú kópiu: %s', $relativePath));
         }
+
+        $this->pruneBackups($absolutePath, 5);
+    }
+
+    private function pruneBackups(string $absolutePath, int $keep): void
+    {
+        $dir = dirname($absolutePath);
+        $base = basename($absolutePath);
+        $pattern = $dir . DIRECTORY_SEPARATOR . $base . '.backup.*';
+        $backups = glob($pattern) ?: [];
+
+        if (count($backups) <= $keep) {
+            return;
+        }
+
+        usort($backups, static fn (string $a, string $b): int => (int) filemtime($b) <=> (int) filemtime($a));
+
+        foreach (array_slice($backups, $keep) as $oldBackup) {
+            if (is_file($oldBackup)) {
+                @unlink($oldBackup);
+            }
+        }
     }
 
     public function getBasePath(): string

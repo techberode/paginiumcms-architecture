@@ -23,7 +23,15 @@ export function isDebugEnabled(): boolean {
   return import.meta.env.VITE_DEBUG === 'true' || import.meta.env.DEV;
 }
 
+/** Backend log len keď je explicitne zapnutý VITE_DEBUG (nie automaticky v prod builde). */
+export function shouldSendDebugToBackend(): boolean {
+  return import.meta.env.VITE_DEBUG === 'true';
+}
+
 function sendToBackend(event: string, context: Record<string, unknown>): void {
+  if (!shouldSendDebugToBackend()) {
+    return;
+  }
   const apiUrl = String(context.url ?? '');
   if (apiUrl.includes(DEBUG_ENDPOINT)) {
     return;

@@ -23,6 +23,9 @@ return function (App $app): void {
         $controller = $container->get(NotificationController::class);
 
         $group->get('/overview', [$controller, 'overview']);
+        $group->get('/schedule', [$controller, 'schedule']);
+        $group->post('/report/send', [$controller, 'sendReport']);
+        $group->post('/schedule/run', [$controller, 'runSchedule']);
         $group->post('/test', [$controller, 'testSend']);
     })
         ->add(new RoleMiddleware($container->get(AuthorizationInterface::class), ['ADMIN', 'SUPER_ADMIN']))

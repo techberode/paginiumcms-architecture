@@ -25,7 +25,8 @@ describe('debugLog', () => {
     expect(isDebugEnabled()).toBe(true);
   });
 
-  it('logs startup event to console and API', () => {
+  it('logs startup event to console and API when VITE_DEBUG is true', () => {
+    vi.stubEnv('VITE_DEBUG', 'true');
     logFrontendStartup();
 
     expect(console.debug).toHaveBeenCalled();
@@ -35,7 +36,16 @@ describe('debugLog', () => {
     );
   });
 
+  it('logs to console only without backend POST when VITE_DEBUG is unset', () => {
+    vi.stubEnv('VITE_DEBUG', '');
+    logFrontendStartup();
+
+    expect(console.debug).toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
   it('debugLogProvider prefixes provider name', () => {
+    vi.stubEnv('VITE_DEBUG', 'true');
     debugLogProvider('auth', 'test', { ok: true });
 
     const [, options] = vi.mocked(fetch).mock.calls.at(-1)!;
@@ -44,6 +54,7 @@ describe('debugLog', () => {
   });
 
   it('debugLogApi marks sensitive auth paths', () => {
+    vi.stubEnv('VITE_DEBUG', 'true');
     debugLogApi('request', 'post', '/api/auth/login', { data: { password: 'secret' } });
 
     const [, options] = vi.mocked(fetch).mock.calls.at(-1)!;

@@ -135,12 +135,15 @@ class MediaRepository implements MediaRepositoryInterface
         $this->saveRegistry(array_values($registry));
     }
 
+    /**
+     * @param list<string> $paths
+     */
     public function bulkDelete(array $paths): int
     {
         $deleted = 0;
 
         foreach ($paths as $path) {
-            if (!is_string($path) || $path === '') {
+            if ($path === '') {
                 continue;
             }
 
@@ -373,7 +376,7 @@ class MediaRepository implements MediaRepositoryInterface
      */
     private function saveFolderIndex(array $folders): void
     {
-        $json = JsonHelper::encode(array_values($folders), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        $json = JsonHelper::encode($folders, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
         $this->writer->write(self::FOLDERS_INDEX, $json, true);
     }
 

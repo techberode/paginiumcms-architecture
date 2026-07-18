@@ -16,7 +16,9 @@ use PaginiumCMS\Core\Health\Services\Checkers\SecurityChecker;
 use PaginiumCMS\Core\Health\Services\Checkers\StorageChecker;
 use PaginiumCMS\Core\Health\Services\Checkers\SystemChecker;
 use PaginiumCMS\Core\AuditTrail\Services\AuditTrailService;
-use PaginiumCMS\Core\Notification\NotificationService;
+use PaginiumCMS\Core\Monitoring\Services\MonitoringReportScheduler;
+use PaginiumCMS\Core\Monitoring\Services\MonitoringScheduler;
+use PaginiumCMS\Core\Monitoring\Services\SchedulerStateStore;
 use PaginiumCMS\Core\Notification\Services\IncidentNotifier;
 use PaginiumCMS\Core\Notification\Services\NotificationFactory;
 use PaginiumCMS\Core\Cache\CacheManager;
@@ -466,6 +468,9 @@ return [
             get(SettingsRepositoryInterface::class),
             get(NotificationService::class),
             get(ReporterInterface::class),
+            get(MonitoringReportScheduler::class),
+            get(MonitoringScheduler::class),
+            get(SchedulerStateStore::class),
             get(JsonResponder::class)
         ),
 

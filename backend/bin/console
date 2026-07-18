@@ -6,6 +6,7 @@ declare(strict_types=1);
 use Symfony\Component\Console\Application;
 use PaginiumCMS\Modules\Audit\Commands\RunAuditCommand;
 use PaginiumCMS\Core\Backup\Commands\RunBackupScheduleCommand;
+use PaginiumCMS\Core\Monitoring\Commands\RunMonitoringScheduleCommand;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
@@ -13,6 +14,7 @@ $app = require_once __DIR__ . '/../bootstrap/app.php';
 $container = $app->getContainer();
 
 $application = new Application('PaginiumCMS', '2.0');
-$application->add($container->get(RunAuditCommand::class));
-$application->add($container->get(RunBackupScheduleCommand::class));
+$application->addCommand($container->get(RunAuditCommand::class));
+$application->addCommand($container->get(RunBackupScheduleCommand::class));
+$application->addCommand($container->get(RunMonitoringScheduleCommand::class));
 $application->run();

@@ -81,8 +81,8 @@ final class SeoMetaBuilder
     }
 
     /**
-     * @param array<string, mixed> $seo
-     * @param array<string, mixed> $frontMatter
+     * @param array<int|string, mixed> $seo
+     * @param array<int|string, mixed> $frontMatter
      */
     private function resolveTitle(Content $content, string $siteName, array $seo, array $frontMatter): string
     {
@@ -98,8 +98,8 @@ final class SeoMetaBuilder
     }
 
     /**
-     * @param array<string, mixed> $seo
-     * @param array<string, mixed> $frontMatter
+     * @param array<int|string, mixed> $seo
+     * @param array<int|string, mixed> $frontMatter
      */
     private function resolveDescription(Content $content, array $seo, array $frontMatter): string
     {
@@ -124,7 +124,7 @@ final class SeoMetaBuilder
     }
 
     /**
-     * @param array<string, mixed> $frontMatter
+     * @param array<int|string, mixed> $frontMatter
      */
     private function resolveCanonical(string $siteUrl, string $type, string $slug, array $frontMatter): string
     {
@@ -145,8 +145,8 @@ final class SeoMetaBuilder
     }
 
     /**
-     * @param array<string, mixed> $seo
-     * @param array<string, mixed> $frontMatter
+     * @param array<int|string, mixed> $seo
+     * @param array<int|string, mixed> $frontMatter
      */
     private function resolveImage(string $siteUrl, array $seo, array $frontMatter): string
     {
@@ -161,8 +161,8 @@ final class SeoMetaBuilder
     }
 
     /**
-     * @param array<string, mixed> $seo
-     * @param array<string, mixed> $frontMatter
+     * @param array<int|string, mixed> $seo
+     * @param array<int|string, mixed> $frontMatter
      */
     private function resolveRobots(array $seo, array $frontMatter): string
     {

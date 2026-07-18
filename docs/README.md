@@ -31,13 +31,14 @@ PaginiumCMS keeps the Core intentionally minimal, secure, and fast. It moves sta
 | **API contract** | ✅ It. 21 | JsonResponder everywhere, MSW, Newman CI, RHF+Zod |
 | **PHPUnit** | ✅ **503+ passing** | PHPStan level 8 (0 errors) |
 | **Frontend** | ✅ It. 21 | MSW, typed clients, settings form validation |
-| **Next iteration** | 🟡 It. 6–7 | Notifications polish, dashboard |
+| **Next iteration** | 🟡 It. 29 | Cron planner + job queue |
 
 ### Recent releases
 
 | Version | Focus |
 |---------|--------|
-| **2.0.8** | Core hardening — RBAC, maintenance, `/storage`, trash API, backup cron, FE preview |
+| **2.0.17** | It.7 — scheduled monitoring reports, HTML email, log incidents, cron CLI |
+| **2.0.16** | It.28 — bulk actions platform |
 | **2.0.7** | FlatFile index, pagination, search API |
 | **2.0.6** | PHPStan L8, 453+ tests, security & i18n foundation |
 
