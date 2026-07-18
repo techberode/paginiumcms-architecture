@@ -24,6 +24,7 @@
 
 - **Markdown + WYSIWYG** editory s prepínaním režimov a `contentFormat` vo front matter
 - **ContentEditorShell** – layout podľa prototypu (metadata, menu kontext, SEO, footer)
+- **SeoMetadataPanel** – od **2.0.23**: výber OG/náhľadu cez `MediaPickerModal`; blog karty cez `contentPreviewImage`
 - **AdminListToolbar** – zdieľaný toolbar pre zoznamy (Pages, Media)
 - **PagesManager** – SK labely, mobilné karty, `itemsPerPage` z nastavení, náhľad článkov `/blog/{slug}`
 - **Responzivita** – `hide-mobile` / `hide-tablet`, mobilné karty pod 768 px

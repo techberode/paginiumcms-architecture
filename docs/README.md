@@ -208,6 +208,7 @@ See [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md) and [user/CODE_EDITOR.md](u
 | [deploy/DEV.md](deploy/DEV.md) | Local dev stack |
 | [deploy/NGINX_API.md](deploy/NGINX_API.md) | Production nginx |
 | [user/CODE_EDITOR.md](user/CODE_EDITOR.md) | Code Editor — unlock, lock, bezpečnosť, povolené adresáre |
+| [user/CONTENT_EDITOR.md](user/CONTENT_EDITOR.md) | Editor podstránok/článkov — SEO, náhľad z médií, blog |
 | [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md) | Developer Mode gate, dev tokeny CLI |
 
 ### Iteration docs (`docs/ITERATION_*.md`)

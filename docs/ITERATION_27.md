@@ -80,7 +80,7 @@ Optional later: sync preference to user settings API (see It.38 feature flags / 
 
 ### UI deliverables
 
-1. **`SeoMetadataPanel.tsx`** — form with character hints (title ~60, description ~160 recommended)
+1. **`SeoMetadataPanel.tsx`** — form with character hints (title ~60, description ~160 recommended); **Vybrať z médií** for OG/thumbnail (2.0.23)
 2. **`MarkdownEditor`** — “SEO” tab or side drawer
 3. **`MediaManager`** — alt/title edit; **list / list-preview** open `MediaMetadataModal` (responsive dialog, no table overlap); **preview grid** keeps inline edit on cards
 4. **`MediaMetadataModal.tsx`** — title + alt textarea, image preview, live SEO badge, Escape / backdrop close
