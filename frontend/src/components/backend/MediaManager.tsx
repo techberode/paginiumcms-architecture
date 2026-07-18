@@ -41,7 +41,7 @@ import {
   MediaPreviewLightbox,
   MediaPreviewMode,
 } from './MediaPreviewLightbox';
-import { AdminViewModeToggle } from './AdminViewModeToggle';
+import { AdminListToolbar } from './AdminListToolbar';
 import { BulkActionBar } from './BulkActionBar';
 import { MediaMetadataModal } from './MediaMetadataModal';
 import { SeoHealthBadge } from './SeoHealthBadge';
@@ -503,43 +503,37 @@ export const MediaManager: React.FC = () => {
       </div>
 
       <div className="flex flex-wrap gap-4">
-        <div className="flex-1 min-w-[200px]">
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name, title, alt text, or type…"
-            className="form-input"
-          />
-        </div>
-        <select
-          value={typeFilter}
-          onChange={(e) => setTypeFilter(e.target.value as TypeFilter)}
-          className="form-input w-auto"
+        <AdminListToolbar
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Hľadať podľa názvu, titulku, alt textu alebo typu…"
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          showViewToggle
+          seoIssuesOnly={seoIssuesOnly}
+          onSeoIssuesOnlyChange={setSeoIssuesOnly}
+          showSeoFilter
         >
-          <option value="all">All files</option>
-          <option value="image">Images only</option>
-        </select>
-        <AdminViewModeToggle mode={viewMode} onChange={setViewMode} />
-        <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap">
-          <input
-            type="checkbox"
-            checked={seoIssuesOnly}
-            onChange={(e) => setSeoIssuesOnly(e.target.checked)}
-            className="rounded border-gray-300"
-          />
-          SEO issues only
-        </label>
+          <select
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value as TypeFilter)}
+            className="form-input w-full sm:w-auto sm:min-w-[140px]"
+            aria-label="Filter typu súboru"
+          >
+            <option value="all">Všetky súbory</option>
+            <option value="image">Len obrázky</option>
+          </select>
+        </AdminListToolbar>
       </div>
 
       <BulkActionBar
         count={bulkSelection.count}
-        itemLabel="files selected"
+        itemLabel="vybraných súborov"
         onClear={bulkSelection.clear}
         actions={[
           {
             id: 'delete',
-            label: 'Delete selected',
+            label: 'Zmazať vybrané',
             variant: 'danger',
             onClick: () => void handleBulkDelete(),
           },
@@ -553,7 +547,7 @@ export const MediaManager: React.FC = () => {
       ) : filteredItems.length === 0 ? (
         <div className="card">
           <div className="card-body text-center py-12 text-gray-500 dark:text-gray-400">
-            No media files in {folderLabel(currentFolder)}.
+            V priečinku {folderLabel(currentFolder)} nie sú žiadne súbory.
           </div>
         </div>
       ) : viewMode === 'preview' ? (

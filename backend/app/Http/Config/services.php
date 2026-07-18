@@ -23,6 +23,7 @@ use PaginiumCMS\Core\Notification\Services\IncidentNotifier;
 use PaginiumCMS\Core\Notification\Services\NotificationFactory;
 use PaginiumCMS\Core\Cache\CacheManager;
 use PaginiumCMS\Core\Cache\ContentCacheService;
+use PaginiumCMS\Core\Cache\Commands\PurgeContentCacheCommand;
 use PaginiumCMS\Core\CodeEditor\Services\CodeEditorManager;
 use PaginiumCMS\Core\CodeEditor\Services\CodeEditorLogger;
 use PaginiumCMS\Core\CodePolicy\Contracts\CodePolicyEngineInterface;
@@ -415,7 +416,8 @@ return [
     IncidentNotifier::class => create(IncidentNotifier::class)
         ->constructor(
             get(SettingsRepositoryInterface::class),
-            get(NotificationService::class)
+            get(NotificationService::class),
+            get(CacheManager::class)
         ),
     AnalyticsManager::class => create(AnalyticsManager::class)
         ->constructor(
@@ -537,12 +539,10 @@ return [
         ->constructor(get(FeedGenerator::class), get(SitemapGenerator::class)),
     SeoMetaBuilder::class => create(SeoMetaBuilder::class)
         ->constructor(get(SettingsRepositoryInterface::class)),
-    SeoController::class => create(SeoController::class)
+    PurgeContentCacheCommand::class => create(PurgeContentCacheCommand::class)
         ->constructor(
-            get(ContentRepositoryInterface::class),
             get(ContentCacheService::class),
-            get(SeoMetaBuilder::class),
-            get(AuthenticationInterface::class),
-            get(JsonResponder::class)
+            get(ContentIndexService::class),
+            get(ContentRepositoryInterface::class)
         ),
 ];

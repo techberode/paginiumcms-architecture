@@ -62,7 +62,9 @@ class CacheManager
         }
 
         $value = $callback();
-        $this->set($key, $value, $ttl);
+        if ($value !== null) {
+            $this->set($key, $value, $ttl);
+        }
 
         return $value;
     }
@@ -91,7 +93,9 @@ class CacheManager
                 return $cached;
             }
             $value = $callback();
-            $this->set($key, $value, $ttl);
+            if ($value !== null) {
+                $this->set($key, $value, $ttl);
+            }
 
             return $value;
         } finally {

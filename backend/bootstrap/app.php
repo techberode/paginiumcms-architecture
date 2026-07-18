@@ -51,6 +51,7 @@ use PaginiumCMS\Core\Backup\Services\BackupScheduler;
 use PaginiumCMS\Core\Backup\Commands\RunBackupScheduleCommand;
 use PaginiumCMS\Core\Logging\Services\Logger;
 use PaginiumCMS\Core\Logging\Contracts\LoggerInterface;
+use PaginiumCMS\Core\Notification\Services\IncidentNotifier;
 use PaginiumCMS\Core\Security\SecurityLogger;
 use PaginiumCMS\Core\Security\Services\LoginAttemptTracker;
 use PaginiumCMS\Core\Logging\Services\DebugEventLogger;
@@ -151,6 +152,7 @@ $containerBuilder->addDefinitions([
         return new SecurityLogger(
             $container->get(LoggerInterface::class),
             $container->get(LoginAttemptTracker::class),
+            $container->get(IncidentNotifier::class),
             [
                 'log_failed_logins' => true,
                 'log_successful_logins' => true,
@@ -311,7 +313,6 @@ $containerBuilder->addDefinitions([
             $container->get(UserRepository::class),
             $container->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class),
             $container->get(\PaginiumCMS\Core\Notification\NotificationService::class),
-            $container->get(\PaginiumCMS\Core\Notification\Services\IncidentNotifier::class),
             $container->get(LoginAttemptTracker::class),
             $container->get(SecurityLogger::class),
             $container->get(JsonResponder::class)

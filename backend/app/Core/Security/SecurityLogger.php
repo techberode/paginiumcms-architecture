@@ -6,6 +6,7 @@ namespace PaginiumCMS\Core\Security;
 
 use PaginiumCMS\Core\Logging\Contracts\LoggerInterface;
 use PaginiumCMS\Core\Logging\Models\LogSeverity;
+use PaginiumCMS\Core\Notification\Services\IncidentNotifier;
 use PaginiumCMS\Core\Security\Services\LoginAttemptTracker;
 
 /**
@@ -23,6 +24,7 @@ final class SecurityLogger
     public function __construct(
         LoggerInterface $logger,
         private ?LoginAttemptTracker $loginAttempts = null,
+        private ?IncidentNotifier $incidentNotifier = null,
         array $config = []
     ) {
         $this->logger = $logger;
@@ -170,6 +172,8 @@ final class SecurityLogger
                 'timestamp' => date('Y-m-d H:i:s'),
                 'type' => 'brute_force_lockout',
             ]);
+
+            $this->incidentNotifier?->notifyLoginLockout($email, $ip);
         }
     }
 

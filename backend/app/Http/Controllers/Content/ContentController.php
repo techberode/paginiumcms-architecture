@@ -52,17 +52,24 @@ class ContentController
  */public function getPage(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $slug = $args['slug'] ?? '';
-        $page = $this->contentCache->rememberPage($slug, fn () => $this->repository->findBySlug($slug, 'page'));
+        $payload = $this->contentCache->rememberPage($slug, function () use ($slug): ?array {
+            $page = $this->repository->findBySlug($slug, 'page');
+            if ($page === null) {
+                return null;
+            }
 
-        if ($page === null) {
+            return $this->serializeContent($page, 'page');
+        });
+
+        if (!is_array($payload)) {
             return $this->json->error($response, Lang::get('not_found', [], 'content'), 404);
         }
 
-        if (!$this->canViewContent($request, $page)) {
+        if (!$this->canViewPayload($request, $payload)) {
             return $this->json->error($response, Lang::get('not_found', [], 'content'), 404);
         }
 
-        return $this->json->success($response, $this->serializeContent($page, 'page'));
+        return $this->json->success($response, $payload);
     }
 
     public function createPage(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -97,17 +104,24 @@ class ContentController
  */public function getArticle(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $slug = $args['slug'] ?? '';
-        $article = $this->contentCache->rememberArticle($slug, fn () => $this->repository->findBySlug($slug, 'article'));
+        $payload = $this->contentCache->rememberArticle($slug, function () use ($slug): ?array {
+            $article = $this->repository->findBySlug($slug, 'article');
+            if ($article === null) {
+                return null;
+            }
 
-        if ($article === null) {
+            return $this->serializeContent($article, 'article');
+        });
+
+        if (!is_array($payload)) {
             return $this->json->error($response, Lang::get('not_found', [], 'content'), 404);
         }
 
-        if (!$this->canViewContent($request, $article)) {
+        if (!$this->canViewPayload($request, $payload)) {
             return $this->json->error($response, Lang::get('not_found', [], 'content'), 404);
         }
 
-        return $this->json->success($response, $this->serializeContent($article, 'article'));
+        return $this->json->success($response, $payload);
     }
 
     public function createArticle(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -489,6 +503,10 @@ class ContentController
             $frontMatter['noIndex'] = (bool) $data['noIndex'];
         }
 
+        if (!empty($data['contentFormat']) && in_array($data['contentFormat'], ['markdown', 'html'], true)) {
+            $frontMatter['contentFormat'] = (string) $data['contentFormat'];
+        }
+
         if ($content instanceof Page && !empty($data['tags']) && is_array($data['tags'])) {
             $content->setTags($data['tags']);
         }
@@ -518,6 +536,7 @@ class ContentController
             'updatedAt' => $frontMatter['updatedAt'] ?? $modifiedAt,
             'path' => $content->getPath(),
             'type' => $type,
+            'contentFormat' => $frontMatter['contentFormat'] ?? (str_starts_with(trim($content->getContent()), '<') ? 'html' : 'markdown'),
             // Revízny odtlačok pre optimistické zamykanie – klient ho pošle späť ako `baseRevision`.
             'revision' => $this->revision->forContent($content),
         ];
@@ -627,18 +646,18 @@ class ContentController
         if (!$this->isPaginationRequested($request)) {
             $filters = $this->extractFilters($request);
             $cacheKey = array_merge($filters, ['legacy' => true]);
-            $loader = fn () => $type === 'article'
-                ? $this->repository->findAllArticles($filters)
-                : $this->repository->findAllPages($filters);
+            $loader = fn () => $this->serializeContentList(
+                $type === 'article'
+                    ? $this->repository->findAllArticles($filters)
+                    : $this->repository->findAllPages($filters),
+                $type
+            );
 
             $items = $type === 'article'
                 ? $this->contentCache->rememberArticleList($cacheKey, $loader)
                 : $this->contentCache->rememberPageList($cacheKey, $loader);
 
-            return $this->json->success(
-                $response,
-                array_map(fn (Content $item) => $this->serializeContent($item, $type), $items)
-            );
+            return $this->json->success($response, $items);
         }
 
         $cachePayload = [
@@ -649,9 +668,16 @@ class ContentController
             'filters' => $query->filters,
         ];
 
-        $loader = fn () => $type === 'article'
-            ? $this->repository->findArticlesPaginated($query)
-            : $this->repository->findPagesPaginated($query);
+        $loader = function () use ($type, $query): array {
+            $result = $type === 'article'
+                ? $this->repository->findArticlesPaginated($query)
+                : $this->repository->findPagesPaginated($query);
+
+            return [
+                'items' => $this->serializeContentList($result['items'], $type),
+                'total' => $result['total'],
+            ];
+        };
 
         $result = $type === 'article'
             ? $this->contentCache->rememberArticleListPaginated($cachePayload, $loader)
@@ -659,11 +685,7 @@ class ContentController
 
         $meta = new PaginationMeta($query->page, $query->perPage, $result['total']);
 
-        return $this->json->paginated(
-            $response,
-            array_map(fn (Content $item) => $this->serializeContent($item, $type), $result['items']),
-            $meta
-        );
+        return $this->json->paginated($response, $result['items'], $meta);
     }
 
     private function isPaginationRequested(ServerRequestInterface $request): bool
@@ -699,11 +721,31 @@ class ContentController
 
     private function canViewContent(ServerRequestInterface $request, Content $content): bool
     {
+        return $this->canViewPayload($request, ['status' => $content->getStatus()]);
+    }
+
+    /**
+     * @param array<int|string, mixed> $payload
+     */
+    private function canViewPayload(ServerRequestInterface $request, array $payload): bool
+    {
         if ($this->isAuthenticated($request)) {
             return true;
         }
 
-        return $content->getStatus() === 'published';
+        return ($payload['status'] ?? '') === 'published';
+    }
+
+    /**
+     * @param array<int, Content> $items
+     * @return list<array<int|string, mixed>>
+     */
+    private function serializeContentList(array $items, string $type): array
+    {
+        return array_values(array_map(
+            fn (Content $item) => $this->serializeContent($item, $type),
+            $items
+        ));
     }
 
     private function resolveUser(ServerRequestInterface $request): ?User

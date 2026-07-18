@@ -4,15 +4,19 @@ import { useApi } from '../../hooks/useApi';
 import { useToast } from '../../hooks/useToast';
 import { Link } from 'react-router-dom';
 import type { PaginationMeta } from '../../api/client';
-import { AdminViewModeToggle } from './AdminViewModeToggle';
+import { AdminListToolbar } from './AdminListToolbar';
+import { ContentListMobileCard } from './ContentListMobileCard';
 import { BulkActionBar } from './BulkActionBar';
 import { SeoHealthBadge } from './SeoHealthBadge';
 import { useAdminViewMode } from '../../hooks/useAdminViewMode';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
+import { useMediaQuery } from '../../hooks/useMediaQuery';
+import { useSettingsContext } from '../../context/SettingsContext';
 import { contentApi } from '../../api/content';
 import { summarizeBulkResult } from '../../types/bulk';
 import { evaluateContentSeo } from '../../utils/seoHealth';
 import { resolveAdminMediaPreviewUrl, resolvePublicMediaUrl } from '../../api/media';
+import { resolvePreviewPath } from '../../utils/contentEditorMeta';
 
 interface ContentItem {
   id: string;
@@ -65,6 +69,12 @@ function previewImageForItem(item: ContentItem): string {
   return raw;
 }
 
+const STATUS_LABELS: Record<ContentItem['status'], string> = {
+  published: 'Publikované',
+  draft: 'Koncept',
+  archived: 'Archivované',
+};
+
 export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) => {
   const [items, setItems] = useState<ContentItem[]>([]);
   const [meta, setMeta] = useState<PaginationMeta>(DEFAULT_META);
@@ -76,12 +86,16 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
   const [page, setPage] = useState(1);
   const { get, del } = useApi();
   const toast = useToast();
+  const { settings } = useSettingsContext();
+  const isMobile = useMediaQuery('(max-width: 767px)');
+  const itemsPerPage = Math.max(5, Math.min(100, Number(settings.content?.itemsPerPage ?? 20)));
   const section = type === 'articles' ? 'articles' : 'pages';
   const { mode: viewMode, setMode: setViewMode } = useAdminViewMode(section, 'list');
 
   const endpoint = type === 'articles' ? '/api/articles' : '/api/pages';
   const routeBase = type === 'articles' ? 'articles' : 'pages';
-  const label = type === 'articles' ? 'Articles' : 'Pages';
+  const label = type === 'articles' ? 'Články' : 'Podstránky';
+  const itemLabel = type === 'articles' ? 'článok' : 'podstránku';
 
   useEffect(() => {
     const timer = window.setTimeout(() => setDebouncedSearch(search.trim()), 300);
@@ -97,7 +111,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
     try {
       const params = new URLSearchParams({
         page: String(page),
-        per_page: '20',
+        per_page: String(itemsPerPage),
       });
       if (debouncedSearch.length >= 2) {
         params.set('search', debouncedSearch);
@@ -112,32 +126,32 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
         setMeta(response.meta ?? { ...DEFAULT_META, page });
       }
     } catch (error) {
-      toast.error(`Failed to load ${type}`);
+      toast.error(`Nepodarilo sa načítať ${type === 'articles' ? 'články' : 'podstránky'}`);
       console.error(error);
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, endpoint, get, page, statusFilter, toast, type]);
+  }, [debouncedSearch, endpoint, get, itemsPerPage, page, statusFilter, toast, type]);
 
   useEffect(() => {
     void loadItems();
   }, [loadItems]);
 
   const handleDelete = async (slug: string) => {
-    if (!confirm(`Are you sure you want to delete this ${type.slice(0, -1)}?`)) {
+    if (!confirm(`Naozaj chcete zmazať túto ${itemLabel}?`)) {
       return;
     }
 
     try {
       const response = await del(`${endpoint}/${slug}`);
       if (response.success) {
-        toast.success(`${type.slice(0, -1)} deleted successfully`);
+        toast.success(`${itemLabel} bol zmazaný`);
         await loadItems();
       } else {
-        toast.error(response.error || `Failed to delete ${type.slice(0, -1)}`);
+        toast.error(response.error || `Nepodarilo sa zmazať ${itemLabel}`);
       }
     } catch (error) {
-      toast.error(`Failed to delete ${type.slice(0, -1)}`);
+      toast.error(`Nepodarilo sa zmazať ${itemLabel}`);
       console.error(error);
     }
   };
@@ -172,7 +186,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
     if (bulkSelection.count === 0) {
       return;
     }
-    if (!confirm(`Delete ${bulkSelection.count} selected ${type}?`)) {
+    if (!confirm(`Zmazať ${bulkSelection.count} vybraných položiek?`)) {
       return;
     }
     const result = await contentApi.bulkDelete(type, bulkSelection.selectedIds);
@@ -181,7 +195,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
       bulkSelection.clear();
       await loadItems();
     } else {
-      toast.error('Bulk delete failed.');
+      toast.error('Hromadné mazanie zlyhalo.');
     }
   };
 
@@ -195,7 +209,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
       bulkSelection.clear();
       await loadItems();
     } else {
-      toast.error('Bulk status update failed.');
+      toast.error('Hromadná zmena stavu zlyhala.');
     }
   };
 
@@ -211,59 +225,41 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
     <div className="space-y-6">
       <div className="flex justify-between items-center flex-wrap gap-4">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{label}</h1>
-        <Link to={`/${routeBase}/new`} className="btn btn-primary">
-          + Create New
+        <Link to={`/${routeBase}/new`} className="btn btn-primary w-full sm:w-auto justify-center">
+          + Nová položka
         </Link>
       </div>
 
-      <div className="flex flex-wrap gap-4 items-center">
-        <div className="flex-1 min-w-[200px]">
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={`Search ${type}…`}
-            className="form-input"
-          />
-        </div>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="form-input w-auto"
-        >
-          <option value="all">All Status</option>
-          <option value="published">Published</option>
-          <option value="draft">Draft</option>
-          <option value="archived">Archived</option>
-        </select>
-        <AdminViewModeToggle mode={viewMode} onChange={setViewMode} />
-        <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap">
-          <input
-            type="checkbox"
-            checked={seoIssuesOnly}
-            onChange={(e) => setSeoIssuesOnly(e.target.checked)}
-            className="rounded border-gray-300"
-          />
-          SEO issues only
-        </label>
-      </div>
+      <AdminListToolbar
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder={`Hľadať ${type === 'articles' ? 'články' : 'podstránky'}…`}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        showViewToggle
+        seoIssuesOnly={seoIssuesOnly}
+        onSeoIssuesOnlyChange={setSeoIssuesOnly}
+        showSeoFilter
+      />
 
       <BulkActionBar
         count={bulkSelection.count}
-        itemLabel={`${type} selected`}
+        itemLabel="vybraných položiek"
         onClear={bulkSelection.clear}
         actions={[
-          { id: 'publish', label: 'Publish', variant: 'primary', onClick: () => void handleBulkStatus('published') },
-          { id: 'draft', label: 'Draft', variant: 'secondary', onClick: () => void handleBulkStatus('draft') },
-          { id: 'archive', label: 'Archive', variant: 'secondary', onClick: () => void handleBulkStatus('archived') },
-          { id: 'delete', label: 'Delete', variant: 'danger', onClick: () => void handleBulkDelete() },
+          { id: 'publish', label: 'Publikovať', variant: 'primary', onClick: () => void handleBulkStatus('published') },
+          { id: 'draft', label: 'Koncept', variant: 'secondary', onClick: () => void handleBulkStatus('draft') },
+          { id: 'archive', label: 'Archivovať', variant: 'secondary', onClick: () => void handleBulkStatus('archived') },
+          { id: 'delete', label: 'Zmazať', variant: 'danger', onClick: () => void handleBulkDelete() },
         ]}
       />
 
       {visibleItems.length === 0 ? (
         <div className="card">
           <div className="card-body text-center py-8 text-gray-500 dark:text-gray-400">
-            No {type} found
+            Nenašli sa žiadne {type === 'articles' ? 'články' : 'podstránky'}
           </div>
         </div>
       ) : viewMode === 'preview' ? (
@@ -300,21 +296,49 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                     <SeoHealthBadge level={seoLevel} />
                   </div>
                   <p className="text-xs text-gray-500 truncate">/{item.slug}</p>
-                  <span className={getStatusBadge(item.status)}>{item.status}</span>
+                  <span className={getStatusBadge(item.status)}>{STATUS_LABELS[item.status] ?? item.status}</span>
                   <div className="flex gap-2 mt-auto pt-2">
                     <Link to={`/${routeBase}/${item.slug}`} className="btn btn-secondary text-xs px-3 py-1">
-                      Edit
+                      Upraviť
                     </Link>
                     <button
                       type="button"
                       className="btn btn-danger text-xs px-3 py-1"
                       onClick={() => void handleDelete(item.slug)}
                     >
-                      Delete
+                      Zmazať
                     </button>
                   </div>
                 </div>
               </div>
+            );
+          })}
+        </div>
+      ) : isMobile ? (
+        <div className="space-y-3">
+          {visibleItems.map((item) => {
+            const seoLevel = evaluateContentSeo({
+              status: item.status,
+              frontMatter: item.frontMatter,
+              featuredImage: item.featuredImage,
+              tags: item.tags,
+            });
+            return (
+              <ContentListMobileCard
+                key={item.id}
+                title={item.title}
+                slug={item.slug}
+                status={item.status}
+                statusBadgeClass={getStatusBadge(item.status)}
+                statusLabel={STATUS_LABELS[item.status] ?? item.status}
+                seoLevel={seoLevel}
+                updatedAt={item.updatedAt}
+                routeBase={routeBase}
+                selected={bulkSelection.isSelected(item.slug)}
+                onToggleSelect={() => bulkSelection.toggle(item.slug)}
+                onDelete={() => void handleDelete(item.slug)}
+                previewUrl={resolvePreviewPath(type, item.slug)}
+              />
             );
           })}
         </div>
@@ -333,13 +357,13 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                         aria-label="Select all visible items"
                       />
                     </th>
-                    {viewMode === 'list-preview' && <th className="w-24">Preview</th>}
-                    <th>Title</th>
-                    <th>Slug</th>
-                    <th>Status</th>
+                    {viewMode === 'list-preview' && <th className="w-24 hide-mobile">Náhľad</th>}
+                    <th>Názov</th>
+                    <th className="hide-mobile">Slug</th>
+                    <th>Stav</th>
                     <th>SEO</th>
-                    <th>Updated</th>
-                    <th>Actions</th>
+                    <th className="hide-tablet">Upravené</th>
+                    <th>Akcie</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -362,7 +386,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                           />
                         </td>
                         {viewMode === 'list-preview' && (
-                          <td>
+                          <td className="hide-mobile">
                             {preview ? (
                               <img src={preview} alt="" className="w-16 h-12 object-cover rounded bg-gray-100" />
                             ) : (
@@ -370,37 +394,39 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                             )}
                           </td>
                         )}
-                        <td className="font-medium">{item.title}</td>
-                        <td className="text-gray-500 dark:text-gray-400">{item.slug}</td>
+                        <td className="font-medium max-w-[240px] truncate">{item.title}</td>
+                        <td className="text-gray-500 dark:text-gray-400 hide-mobile max-w-[180px] truncate">{item.slug}</td>
                         <td>
-                          <span className={getStatusBadge(item.status)}>{item.status}</span>
+                          <span className={getStatusBadge(item.status)}>{STATUS_LABELS[item.status] ?? item.status}</span>
                         </td>
                         <td>
                           <SeoHealthBadge level={seoLevel} />
                         </td>
-                        <td className="text-sm text-gray-500 dark:text-gray-400">
-                          {new Date(item.updatedAt).toLocaleDateString()}
+                        <td className="text-sm text-gray-500 dark:text-gray-400 hide-tablet">
+                          {new Date(item.updatedAt).toLocaleDateString('sk-SK')}
                         </td>
                         <td>
-                          <div className="flex gap-2">
+                          <div className="flex flex-wrap gap-2">
                             <Link
                               to={`/${routeBase}/${item.slug}`}
                               className="btn btn-secondary text-xs px-3 py-1"
                             >
-                              Edit
+                              Upraviť
                             </Link>
-                            <Link
-                              to={`/preview/${item.slug}`}
-                              target="_blank"
-                              className="btn btn-secondary text-xs px-3 py-1"
-                            >
-                              View
-                            </Link>
+                            {resolvePreviewPath(type, item.slug) && (
+                              <Link
+                                to={resolvePreviewPath(type, item.slug)!}
+                                target="_blank"
+                                className="btn btn-secondary text-xs px-3 py-1 hide-mobile"
+                              >
+                                Náhľad
+                              </Link>
+                            )}
                             <button
                               onClick={() => void handleDelete(item.slug)}
                               className="btn btn-danger text-xs px-3 py-1"
                             >
-                              Delete
+                              Zmazať
                             </button>
                           </div>
                         </td>
@@ -417,24 +443,24 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
       {meta.total_pages > 1 && (
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            {meta.total} records · page {meta.page} / {meta.total_pages}
+            {meta.total} záznamov · strana {meta.page} / {meta.total_pages}
           </p>
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full sm:w-auto">
             <button
               type="button"
-              className="btn btn-secondary text-sm"
+              className="btn btn-secondary text-sm flex-1 sm:flex-none"
               disabled={page <= 1 || loading}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
             >
-              Previous
+              Predošlá
             </button>
             <button
               type="button"
-              className="btn btn-secondary text-sm"
+              className="btn btn-secondary text-sm flex-1 sm:flex-none"
               disabled={page >= meta.total_pages || loading}
               onClick={() => setPage((p) => p + 1)}
             >
-              Next
+              Ďalšia
             </button>
           </div>
         </div>

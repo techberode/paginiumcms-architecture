@@ -118,4 +118,14 @@ class ContentCacheService
         $this->bumpListGeneration('pages');
         $this->bumpListGeneration('articles');
     }
+
+    /**
+     * Kompletná invalidácia cache obsahu (po deployi alebo oprave cache bugov).
+     */
+    public function purgeAll(): void
+    {
+        $this->invalidatePage();
+        $this->invalidateArticle();
+        $this->invalidateSearch();
+    }
 }

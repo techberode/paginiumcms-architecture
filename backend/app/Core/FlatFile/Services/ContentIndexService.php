@@ -161,7 +161,42 @@ final class ContentIndexService
     {
         if (!$this->reader->exists($this->indexFile)) {
             $this->rebuild($repository);
+
+            return;
         }
+
+        $items = $this->readIndexItemsFromDisk();
+        if ($items !== []) {
+            return;
+        }
+
+        if ($repository->count('page') + $repository->count('article') > 0) {
+            $this->rebuild($repository);
+        }
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function readIndexItemsFromDisk(): array
+    {
+        if (!is_readable($this->absolutePath)) {
+            return [];
+        }
+
+        $raw = file_get_contents($this->absolutePath);
+        if ($raw === false || trim($raw) === '') {
+            return [];
+        }
+
+        $decoded = json_decode($raw, true);
+        if (!is_array($decoded)) {
+            return [];
+        }
+
+        $items = $decoded['items'] ?? [];
+
+        return is_array($items) ? array_values(array_filter($items, 'is_array')) : [];
     }
 
     /**

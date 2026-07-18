@@ -16,25 +16,31 @@ It.24 (DAM grid) → It.26 (lightbox preview)
 
 ## Scope
 
-| # | Deliverable | Status |
-|---|-------------|--------|
-| 1 | `MediaPreviewLightbox.tsx` — modal, Fit / 1:1, metadata | ✅ |
-| 2 | Integrácia v `MediaManager` — klik na thumbnail, tlačidlá Expand / 1:1 | ✅ |
-| 3 | Zobrazenie `naturalWidth × naturalHeight` po načítaní | ✅ |
-| 4 | Prev/Next v rámci filtrovaného zoznamu | ✅ |
-| 5 | PDF/ne-obrázky → otvorenie v novom okne | ✅ |
-| 6 | Vitest (`MediaPreviewLightbox.test.tsx`) | ✅ |
+
+| #   | Deliverable                                                            | Status |
+| --- | ---------------------------------------------------------------------- | ------ |
+| 1   | `MediaPreviewLightbox.tsx` — modal, Fit / 1:1, metadata                | ✅      |
+| 2   | Integrácia v `MediaManager` — klik na thumbnail, tlačidlá Expand / 1:1 | ✅      |
+| 3   | Zobrazenie `naturalWidth × naturalHeight` po načítaní                  | ✅      |
+| 4   | Prev/Next v rámci filtrovaného zoznamu                                 | ✅      |
+| 5   | PDF/ne-obrázky → otvorenie v novom okne                                | ✅      |
+| 6   | Vitest (`MediaPreviewLightbox.test.tsx`)                               | ✅      |
+
 
 ---
+
+
 
 ## Part 1 – Komponent `MediaPreviewLightbox` ✅
 
 **Súbor:** `frontend/src/components/backend/MediaPreviewLightbox.tsx`
 
-| Režim | Správanie |
-|-------|-----------|
-| **Fit** | `object-contain`, max výška `calc(100vh - 8rem)` — celý obrázok viditeľný |
+
+| Režim            | Správanie                                                                                      |
+| ---------------- | ---------------------------------------------------------------------------------------------- |
+| **Fit**          | `object-contain`, max výška `calc(100vh - 8rem)` — celý obrázok viditeľný                      |
 | **1:1 (native)** | CSS `width/height` = `naturalWidth/Height` px — skutočné rozlíšenie, kontajner `overflow-auto` |
+
 
 **Ovládanie:**
 
@@ -47,6 +53,8 @@ It.24 (DAM grid) → It.26 (lightbox preview)
 
 ---
 
+
+
 ## Part 2 – MediaManager integrácia ✅
 
 **Súbor:** `frontend/src/components/backend/MediaManager.tsx`
@@ -58,15 +66,21 @@ It.24 (DAM grid) → It.26 (lightbox preview)
 
 ---
 
+
+
 ## Part 3 – Čo nie je v scope (budúce iterácie)
 
-| Feature | Iterácia |
-|---------|----------|
-| Generovanie thumbnailov (backend resize) | DAM rozšírenie / It.8+ |
-| Zoom/pan (pinch) | Voliteľné UX v It.26+ |
-| Lightbox v `MediaPickerModal` (editor) | It.30 Live Preview / editor |
+
+| Feature                                  | Iterácia                    |
+| ---------------------------------------- | --------------------------- |
+| Generovanie thumbnailov (backend resize) | DAM rozšírenie / It.8+      |
+| Zoom/pan (pinch)                         | Voliteľné UX v It.26+       |
+| Lightbox v `MediaPickerModal` (editor)   | It.30 Live Preview / editor |
+
 
 ---
+
+
 
 ## Test plan
 
@@ -78,30 +92,36 @@ It.24 (DAM grid) → It.26 (lightbox preview)
 
 ---
 
+
+
 ## Deploy
 
 Frontend + backend (`paginium-deploy`). Po nasadení **zmazať a znovu nahrať** médiá uploadnuté pred 2.0.14 (binárne súbory mohli byť poškodené UTF-8 normalizáciou).
 
 ---
 
+
+
 ## Part 4 – Hotfix 2.0.14: zobrazenie náhľadov + striktné formáty ✅
 
 **Problém:** Náhľady v Media Library ani lightbox nefungovali. Príčiny:
 
-1. **`FileWriter::write()`** volal `utf8_normalize()` aj na binárne uploady → poškodené PNG/JPEG na disku.
-2. **`resolveMediaUrl()`** skladala absolútnu URL na API host (`VITE_API_URL` / `:8080`), zatiaľ čo admin SPA beží na nginx (`:8081`) → `<img src>` mimo same-origin / CSP.
+1. `FileWriter::write()` volal `utf8_normalize()` aj na binárne uploady → poškodené PNG/JPEG na disku.
+2. `resolveMediaUrl()` skladala absolútnu URL na API host (`VITE_API_URL` / `:8080`), zatiaľ čo admin SPA beží na nginx (`:8081`) → `<img src>` mimo same-origin / CSP.
 
 **Riešenie:**
 
-| Vrstva | Zmena |
-|--------|--------|
-| **Backend I/O** | `FileWriter::writeBinary()`, `FileReader::readBinary()` — bez UTF-8 normalizácie |
-| **Validácia** | `MediaFormats.php` — MIME + prípona + magic bytes (JPEG, PNG, GIF, WebP, SVG, PDF) |
-| **API** | `GET /api/media/formats`, `GET /api/media/file/{path}` — autentifikované servovanie |
-| **Frontend URL** | Admin náhľady: `/api/media/file/...` (same-origin); verejné embedy: `/storage/...` |
-| **UI** | `accept` z API; fallback `/storage/` pri `onError`; `MediaPickerModal` rovnaká logika |
 
-**Povolené formáty (default, riadené `Settings → Media → allowedMimeTypes`):**
+| Vrstva           | Zmena                                                                                 |
+| ---------------- | ------------------------------------------------------------------------------------- |
+| **Backend I/O**  | `FileWriter::writeBinary()`, `FileReader::readBinary()` — bez UTF-8 normalizácie      |
+| **Validácia**    | `MediaFormats.php` — MIME + prípona + magic bytes (JPEG, PNG, GIF, WebP, SVG, PDF)    |
+| **API**          | `GET /api/media/formats`, `GET /api/media/file/{path}` — autentifikované servovanie   |
+| **Frontend URL** | Admin náhľady: `/api/media/file/...` (same-origin); verejné embedy: `/storage/...`    |
+| **UI**           | `accept` z API; fallback `/storage/` pri `onError`; `MediaPickerModal` rovnaká logika |
+
+
+**Povolené formáty (default, riadené** `Settings → Media → allowedMimeTypes`**):**
 
 - `image/jpeg`, `image/png`, `image/gif`, `image/webp`, `image/svg+xml`, `application/pdf`
 - Náhľad/lightbox: raster + SVG; PDF len ikona / otvorenie v novom okne
