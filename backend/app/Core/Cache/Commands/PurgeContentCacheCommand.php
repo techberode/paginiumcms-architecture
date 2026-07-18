@@ -17,7 +17,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 final class PurgeContentCacheCommand extends Command
 {
-    protected static $defaultName = 'content:cache-purge';
+    protected static string $defaultName = 'content:cache-purge';
 
     public function __construct(
         private ContentCacheService $contentCache,

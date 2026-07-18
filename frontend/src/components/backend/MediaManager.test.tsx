@@ -1,6 +1,6 @@
 // frontend/src/components/backend/MediaManager.test.tsx
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { MediaManager } from './MediaManager';
 
 const mocks = vi.hoisted(() => ({
@@ -109,9 +109,10 @@ describe('MediaManager', () => {
 
   it('shows empty state when no files', async () => {
     mocks.listMedia.mockResolvedValue([]);
+    mocks.listMediaFolders.mockResolvedValue(['']);
     render(<MediaManager />);
 
-    expect(await screen.findByText(/No media files in All media/)).toBeInTheDocument();
+    expect(await screen.findByText(/nie sú žiadne súbory/)).toBeInTheDocument();
   });
 
   it('filters items by search query', async () => {
@@ -124,7 +125,7 @@ describe('MediaManager', () => {
     expect(await screen.findByText('Hero')).toBeInTheDocument();
     expect(screen.getByText('hero.png')).toBeInTheDocument();
 
-    fireEvent.change(screen.getByPlaceholderText(/Search by name/), {
+    fireEvent.change(screen.getByPlaceholderText(/Hľadať podľa názvu/), {
       target: { value: 'logo' },
     });
 
@@ -148,10 +149,13 @@ describe('MediaManager', () => {
     expect(await screen.findByText('Hero')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Edit metadata' }));
-    expect(screen.getByRole('dialog', { name: /Edit metadata/i })).toBeInTheDocument();
+    const dialog = screen.getByRole('dialog', { name: /Edit metadata/i });
+    expect(dialog).toBeInTheDocument();
 
-    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Updated title' } });
-    fireEvent.change(screen.getByLabelText(/Alt text/i), { target: { value: 'Updated alt' } });
+    fireEvent.change(within(dialog).getByLabelText('Title'), { target: { value: 'Updated title' } });
+    fireEvent.change(within(dialog).getByLabelText(/Alt text \/ description/i), {
+      target: { value: 'Updated alt' },
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
 
     expect(mocks.updateMediaMetadata).toHaveBeenCalledWith('media/media_1_hero.png', {
