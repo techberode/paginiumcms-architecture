@@ -387,6 +387,11 @@ if (is_array($monitoringServices)) {
     $containerBuilder->addDefinitions($monitoringServices);
 }
 
+$schedulerServices = require __DIR__ . '/../app/Core/Scheduler/Config/services.php';
+if (is_array($schedulerServices)) {
+    $containerBuilder->addDefinitions($schedulerServices);
+}
+
 // ============================================
 // 10b. NAČÍTANIE DI VÄZIEB PRE HTTP VRSTVU (nové API endpointy, oddelené
 // od jadra - Content, Media, ...). PRIDANÉ pri oprave auditu 12.7.2026,
@@ -545,6 +550,8 @@ $app->group('/api/admin', function (RouteCollectorProxy $group) use ($container)
     $group->get('/backups/{id}/verify', [$backupController, 'verifyBackup']);
     $group->post('/backups/{id}/restore', [$backupController, 'restoreBackup']);
     $group->delete('/backups/{id}', [$backupController, 'deleteBackup']);
+    $group->get('/backups/schedule', [$backupController, 'getSchedule']);
+    $group->post('/backups/schedule', [$backupController, 'scheduleBackup']);
 })->add(new RoleMiddleware($container->get(AuthorizationInterface::class), ['ADMIN', 'SUPER_ADMIN']))
     ->add($container->get(TwoFactorMiddleware::class))
     ->add($container->get(AuthMiddleware::class));

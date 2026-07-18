@@ -1,6 +1,6 @@
 # Testovanie – PaginiumCMS
 
-> Posledná aktualizácia: 2.0.17 · **550+ PHPUnit testov**, PHPStan level 8, **107 Vitest testov**
+> Posledná aktualizácia: 2.0.18 · **550+ PHPUnit testov**, PHPStan level 8, **107 Vitest testov**
 
 ## Spustenie
 

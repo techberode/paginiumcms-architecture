@@ -18,10 +18,10 @@ final class MonitoringScheduler
     /**
      * @return array{report: array<string, mixed>, logs: array<string, mixed>}
      */
-    public function runIfDue(): array
+    public function runIfDue(bool $forceReport = false): array
     {
         return [
-            'report' => $this->reports->runIfDue(),
+            'report' => $this->reports->runIfDue($forceReport),
             'logs' => $this->logScanner->scan(),
         ];
     }

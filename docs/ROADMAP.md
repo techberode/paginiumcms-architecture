@@ -4,7 +4,7 @@
 
 Legenda: ✅ hotové · 🚧 rozpracované · ⏳ plánované · 🔴 kritická priorita jadra
 
-**Aktuálna verzia:** 2.0.16 · **Posledná iterácia:** [28](ITERATION_28.md) ✅ · **Ďalšia:** [29+ backlog](ITERATION_BACKLOG.md) ⏳
+**Aktuálna verzia:** 2.0.18 · **Posledná iterácia:** [29](ITERATION_29.md) ✅ · **Ďalšia:** [41+ backlog](ITERATION_BACKLOG.md) ⏳
 
 | Iterácia | Názov | Priorita |
 |----------|-------|----------|
@@ -17,9 +17,11 @@ Legenda: ✅ hotové · 🚧 rozpracované · ⏳ plánované · 🔴 kritická 
 | **27** | **Admin view modes + SEO panel** | **✅** |
 | **28** | **Bulk actions platform** | **✅** |
 | **6** | **Notifikácie (SMTP, konektory, toast)** | **✅** |
-| 29 | Cron planner + Job Queue | ⏳ ďalšia |
+| 29 | Cron planner + Job Queue | ✅ [ITERATION_29.md](ITERATION_29.md) |
 | 41 | Email OTP schvaľovanie (registrácia, komentáre, príspevky) | ⏳ |
 | 42 | Admin počty položiek (sidebar / zoznamy) | ⏳ |
+| **43** | **Pokročilé vyhľadávanie (FE + BE, rýchle skoky v kontexte)** | **⏳** |
+| **44** | **Filtre a zoradenia (admin + verejný FE)** | **⏳** |
 | 25 | Setup wizard (profil webu) | ⏳ odložené |
 | 30+ | [Backlog modulov](ITERATION_BACKLOG.md) | ⏳ |
 | 6–7 | Notifikácie, dashboard | ✅ It.6 · ✅ It.7 |

@@ -10,6 +10,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 |-----------|---------|-----------|
 | It.6 – Notifications, SMTP, analytics, auth UI | **2.0.1** | [below](#201--2026-07-15) |
 | It.7 – Scheduled monitoring reports + log incidents | **2.0.17** | [below](#2017--2026-07-18) |
+| It.29 – Cron planner + Job Queue | **2.0.18** | [below](#2018--2026-07-18) |
+
+---
+
+## [2.0.18] – 2026-07-18
+
+### Iteration 29 – Cron planner + Job Queue
+
+#### Backend
+- Add `Core/Scheduler/*` — flat-file registry, run history, queue, `CronExpressionEvaluator`, handlers for backup + monitoring
+- CLI: `scheduler:run`, `worker:process` (legacy `backup:run-schedule` / `monitoring:run-schedule` kept)
+- Admin API: `GET/POST/PUT/DELETE /api/admin/jobs`, run + queue process
+- Settings group `scheduler` (master switch, retain runs)
+- Fix missing `GET/POST /api/admin/backups/schedule` for BackupManager UI
+
+#### Frontend
+- `/scheduler` — Plánovač: job list, CRON edit, run now, cron simulation
+- `api/jobs.ts`, sidebar entry
+
+#### Tests
+- PHPUnit: `CronExpressionEvaluatorTest`, `ScheduledJobRunnerTest`
 
 ---
 
