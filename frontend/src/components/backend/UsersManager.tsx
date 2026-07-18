@@ -7,6 +7,7 @@ import {
   createUser,
   updateUser,
   deleteUser,
+  bulkDeleteUsers,
   USER_ROLES,
   UserRole,
   CreateUserPayload,
@@ -15,6 +16,9 @@ import { validate, validatePasswordPolicy, ValidationErrors } from '../../utils/
 import { getValidationRulesFor } from '../../api/validation';
 import { useToast } from '../../hooks/useToast';
 import { useAuth } from '../../hooks/useAuth';
+import { useBulkSelection } from '../../hooks/useBulkSelection';
+import { BulkActionBar } from './BulkActionBar';
+import { summarizeBulkResult } from '../../types/bulk';
 
 const emptyForm: CreateUserPayload = {
   email: '',
@@ -150,6 +154,29 @@ export const UsersManager: React.FC = () => {
     }
   };
 
+  const deletableUsers = users.filter((user) => user.id !== currentUser?.id);
+  const bulkSelection = useBulkSelection(
+    deletableUsers.map((user) => user.id),
+    users.length
+  );
+
+  const handleBulkDelete = async () => {
+    if (bulkSelection.count === 0) {
+      return;
+    }
+    if (!confirm(`Zmazať ${bulkSelection.count} vybraných používateľov?`)) {
+      return;
+    }
+    const result = await bulkDeleteUsers(bulkSelection.selectedIds);
+    if (result) {
+      success(summarizeBulkResult(result));
+      bulkSelection.clear();
+      await load();
+    } else {
+      toastError('Hromadné mazanie zlyhalo');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center py-16">
@@ -220,10 +247,32 @@ export const UsersManager: React.FC = () => {
         </div>
       </div>
 
+      <BulkActionBar
+        count={bulkSelection.count}
+        itemLabel="používateľov vybraných"
+        onClear={bulkSelection.clear}
+        actions={[
+          {
+            id: 'delete',
+            label: 'Zmazať vybraných',
+            variant: 'danger',
+            onClick: () => void handleBulkDelete(),
+          },
+        ]}
+      />
+
       <div className="card overflow-x-auto">
         <table className="min-w-full text-sm">
           <thead>
             <tr className="border-b dark:border-gray-700 text-left">
+              <th className="p-3 w-10">
+                <input
+                  type="checkbox"
+                  checked={bulkSelection.allSelected && deletableUsers.length > 0}
+                  onChange={bulkSelection.toggleAll}
+                  aria-label="Vybrať všetkých"
+                />
+              </th>
               <th className="p-3">E-mail</th>
               <th className="p-3">Meno</th>
               <th className="p-3">Rola</th>
@@ -234,6 +283,16 @@ export const UsersManager: React.FC = () => {
           <tbody>
             {users.map((u) => (
               <tr key={u.id} className="border-b dark:border-gray-800">
+                <td className="p-3">
+                  {currentUser?.id !== u.id ? (
+                    <input
+                      type="checkbox"
+                      checked={bulkSelection.isSelected(u.id)}
+                      onChange={() => bulkSelection.toggle(u.id)}
+                      aria-label={`Vybrať ${u.email}`}
+                    />
+                  ) : null}
+                </td>
                 <td className="p-3">{u.email}</td>
                 <td className="p-3">{u.name}</td>
                 <td className="p-3">{u.roles.join(', ')}</td>

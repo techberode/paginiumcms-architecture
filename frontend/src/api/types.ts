@@ -62,6 +62,14 @@ export interface Backup {
   filePath: string;
   status: 'in_progress' | 'completed' | 'failed';
   includes: string[];
+  sha256?: string;
+}
+
+export interface BackupVerifyResult {
+  valid: boolean;
+  expected: string;
+  actual: string | null;
+  reason?: string;
 }
 
 export interface Version {

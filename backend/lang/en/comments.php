@@ -12,4 +12,7 @@ return [
     'deleted' => 'Comment deleted',
     'disabled' => 'Comments are disabled',
     'validation_failed' => 'Validation failed',
+    'ids_required' => 'At least one comment id is required',
+    'bulk_updated' => 'Bulk comment update completed',
+    'bulk_deleted' => 'Bulk comment delete completed',
 ];

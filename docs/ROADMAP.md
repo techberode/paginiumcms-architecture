@@ -4,7 +4,7 @@
 
 Legenda: ✅ hotové · 🚧 rozpracované · ⏳ plánované · 🔴 kritická priorita jadra
 
-**Aktuálna verzia:** 2.0.15 · **Posledná iterácia:** [27](ITERATION_27.md) ✅ · **Ďalšia:** [28+ backlog](ITERATION_BACKLOG.md) ⏳
+**Aktuálna verzia:** 2.0.16 · **Posledná iterácia:** [28](ITERATION_28.md) ✅ · **Ďalšia:** [29+ backlog](ITERATION_BACKLOG.md) ⏳
 
 | Iterácia | Názov | Priorita |
 |----------|-------|----------|
@@ -15,8 +15,9 @@ Legenda: ✅ hotové · 🚧 rozpracované · ⏳ plánované · 🔴 kritická 
 | **24** | **Full DAM v1 + stock knižnica** | **✅** |
 | **26** | **Media preview lightbox + 2.0.14 hotfix** | **✅** |
 | **27** | **Admin view modes + SEO panel** | **✅** |
+| **28** | **Bulk actions platform** | **✅** |
 | 25 | Setup wizard (profil webu) | ⏳ odložené |
-| 28+ | [Backlog modulov](ITERATION_BACKLOG.md) | ⏳ ďalšia |
+| 29+ | [Backlog modulov](ITERATION_BACKLOG.md) | ⏳ ďalšia |
 | 6–7 | Notifikácie, dashboard | 🟡 ďalej |
 | 8–10 | DAM, SEO, feedy | 🟢 |
 | 11–16 | SSO, plugins, Monaco | 🔵 |
@@ -351,6 +352,25 @@ Základ pre všetky admin nastavenia (SMTP, notifikácie, SEO, feedy v ďalšíc
 
 **Odložené:**
 - `GET /api/content/seo-audit` — backlog
+
+---
+
+## Iterácia 28 – Bulk actions platform ✅
+
+**Stav (release 2.0.16):** hotové — zdieľaný bulk UI, batch API pre content/trash/comments/users/backups. Detail: [ITERATION_28.md](ITERATION_28.md).
+
+**Hotové ✅:**
+- `useBulkSelection` + `BulkActionBar`
+- Bulk delete/status (pages, articles), trash restore, comments, **users**, **backups**
+- Backup: **import ZIP**, **SHA-256** metadata + verify endpoint + download header
+
+**Súvisí s It.20:** backup ops (cron, trash) — import/hash doplnené v It.28, nie samostatná iterácia.
+
+---
+
+## Iterácia 28 – Bulk actions (platform) ✅
+
+**Stav (release 2.0.16):** hotové — zdieľaný bulk UI + batch API pre content, trash, comments. Detail: [ITERATION_28.md](ITERATION_28.md).
 
 ---
 

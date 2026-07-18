@@ -42,4 +42,9 @@ export async function deleteUser(id: string): Promise<ApiResponse<unknown>> {
   return apiClient.delete(`/api/admin/users/${encodeURIComponent(id)}`);
 }
 
+export async function bulkDeleteUsers(ids: string[]): Promise<import('../types/bulk').BulkBatchResult | null> {
+  const res = await apiClient.post<import('../types/bulk').BulkBatchResult>('/api/admin/users/bulk-delete', { ids });
+  return res.success && res.data ? res.data : null;
+}
+
 export const USER_ROLES: UserRole[] = ['USER', 'EDITOR', 'ADMIN', 'SUPER_ADMIN'];

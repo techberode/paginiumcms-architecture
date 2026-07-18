@@ -14,4 +14,7 @@ return [
     'invalid_status' => 'Neplatný stav obsahu',
     'invalid_type' => 'Neplatný typ obsahu (povolené: page, article)',
     'save_failed' => 'Nepodarilo sa uložiť obsah',
+    'slugs_required' => 'Vyžaduje sa aspoň jeden slug',
+    'bulk_deleted' => 'Hromadné mazanie dokončené',
+    'bulk_status_updated' => 'Hromadná zmena stavu dokončená',
 ];

@@ -65,6 +65,16 @@ interface BackupInterface
     public function importBackup(string $filePath): bool;
 
     /**
+     * Registers an uploaded ZIP archive in the backup library (does not restore content).
+     */
+    public function registerArchive(string $filePath, string $name): BackupMetadata;
+
+    /**
+     * @return array{valid: bool, expected: string, actual: ?string, reason?: string}
+     */
+    public function verifyIntegrity(string $backupId): array;
+
+    /**
      * Naplánuje automatické zálohovanie.
      *
      * @param string $interval Interval (daily, weekly, monthly).

@@ -74,4 +74,28 @@ class BackupControllerTest extends TestCase
         $this->assertEquals(200, $deleteResponse->getStatusCode());
         $this->assertTrue($deleteData['success']);
     }
+
+    public function testVerifyBackupHashAfterCreate(): void
+    {
+        $userData = $this->loginAsAdminUser();
+        $this->assertEquals(200, $userData['response']->getStatusCode());
+
+        $createRequest = $this->createJsonRequest('POST', '/api/admin/backups', [
+            'name' => 'Hash Test Backup',
+        ]);
+        $createResponse = $this->handleRequest($createRequest);
+        $createData = $this->getJsonResponse($createResponse);
+        $backupId = $createData['data']['id'] ?? null;
+
+        $this->assertNotNull($backupId);
+        $this->assertNotSame('', $createData['data']['sha256'] ?? '');
+
+        $verifyRequest = $this->createJsonRequest('GET', "/api/admin/backups/{$backupId}/verify");
+        $verifyResponse = $this->handleRequest($verifyRequest);
+        $verifyData = $this->getJsonResponse($verifyResponse);
+
+        $this->assertEquals(200, $verifyResponse->getStatusCode());
+        $this->assertTrue($verifyData['success']);
+        $this->assertTrue($verifyData['data']['valid']);
+    }
 }

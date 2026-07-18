@@ -1,5 +1,6 @@
 // frontend/src/api/comments.ts
 import apiClient from './client';
+import type { BulkBatchResult } from '../types/bulk';
 
 export type CommentStatus = 'pending' | 'approved' | 'rejected';
 
@@ -61,4 +62,17 @@ export async function updateCommentStatus(
 export async function deleteComment(id: string): Promise<boolean> {
   const res = await apiClient.delete(`/api/admin/comments/${encodeURIComponent(id)}`);
   return res.success;
+}
+
+export async function bulkUpdateCommentStatus(
+  ids: string[],
+  status: CommentStatus
+): Promise<BulkBatchResult | null> {
+  const res = await apiClient.post<BulkBatchResult>('/api/admin/comments/bulk-status', { ids, status });
+  return res.success && res.data ? res.data : null;
+}
+
+export async function bulkDeleteComments(ids: string[]): Promise<BulkBatchResult | null> {
+  const res = await apiClient.post<BulkBatchResult>('/api/admin/comments/bulk-delete', { ids });
+  return res.success && res.data ? res.data : null;
 }

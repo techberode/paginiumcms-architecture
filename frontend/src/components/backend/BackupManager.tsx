@@ -1,43 +1,44 @@
 // frontend/src/components/backend/BackupManager.tsx
-import React, { useState, useEffect } from 'react';
-import { useApi } from '../../hooks/useApi';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { ShieldCheck, Upload } from 'lucide-react';
+import { backupApi } from '../../api/backup';
+import type { Backup } from '../../api/types';
 import { useToast } from '../../hooks/useToast';
-
-interface Backup {
-  id: string;
-  name: string;
-  createdAt: string;
-  size: number;
-  sizeFormatted: string;
-  status: 'in_progress' | 'completed' | 'failed';
-  includes: string[];
-}
+import { useBulkSelection } from '../../hooks/useBulkSelection';
+import { BulkActionBar } from './BulkActionBar';
+import { summarizeBulkResult } from '../../types/bulk';
 
 export const BackupManager: React.FC = () => {
   const [backups, setBackups] = useState<Backup[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [verifyingId, setVerifyingId] = useState<string | null>(null);
   const [backupName, setBackupName] = useState('');
-  const { get, post, del } = useApi();
+  const [importName, setImportName] = useState('');
+  const importInputRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
 
-  useEffect(() => {
-    loadBackups();
-  }, []);
-
-  const loadBackups = async () => {
+  const loadBackups = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await get<Backup[]>('/api/admin/backups');
-      if (response.success) {
-        setBackups(response.data || []);
-      }
-    } catch (error) {
+      setBackups(await backupApi.getAll());
+    } catch {
       toast.error('Failed to load backups');
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    void loadBackups();
+  }, [loadBackups]);
+
+  const completedBackups = backups.filter((backup) => backup.status === 'completed');
+  const bulkSelection = useBulkSelection(
+    completedBackups.map((backup) => backup.id),
+    backups.length
+  );
 
   const handleCreateBackup = async () => {
     if (!backupName.trim()) {
@@ -47,83 +48,134 @@ export const BackupManager: React.FC = () => {
 
     setCreating(true);
     try {
-      const response = await post<Backup>('/api/admin/backups', {
-        name: backupName,
-        includes: ['content', 'config', 'data'],
-      });
-      
-      if (response.success) {
+      const created = await backupApi.create(backupName.trim());
+      if (created) {
         toast.success('Backup created successfully');
         setBackupName('');
         await loadBackups();
       } else {
-        toast.error(response.error || 'Failed to create backup');
+        toast.error('Failed to create backup');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to create backup');
     } finally {
       setCreating(false);
     }
   };
 
-  const handleDeleteBackup = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this backup?')) {
-      return;
-    }
-
+  const handleImportBackup = async (file: File) => {
+    setImporting(true);
     try {
-      const response = await del(`/api/admin/backups/${id}`);
-      if (response.success) {
-        toast.success('Backup deleted successfully');
+      const imported = await backupApi.importArchive(file, importName.trim() || undefined);
+      if (imported) {
+        toast.success('Backup imported into library');
+        setImportName('');
         await loadBackups();
       } else {
-        toast.error(response.error || 'Failed to delete backup');
+        toast.error('Failed to import backup');
       }
-    } catch (error) {
-      toast.error('Failed to delete backup');
+    } catch {
+      toast.error('Failed to import backup');
+    } finally {
+      setImporting(false);
+      if (importInputRef.current) {
+        importInputRef.current.value = '';
+      }
     }
   };
 
-  const handleDownloadBackup = async (id: string, name: string) => {
+  const handleVerifyBackup = async (backup: Backup) => {
+    setVerifyingId(backup.id);
     try {
-      const response = await get<Blob>(`/api/admin/backups/${id}/download`, {
-        responseType: 'blob',
-      });
-      
-      if (response.success && response.data) {
-        const blob = response.data as Blob;
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${name}.zip`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-        toast.success('Backup downloaded successfully');
-      } else {
-        toast.error('Failed to download backup');
+      const result = await backupApi.verify(backup.id);
+      if (!result) {
+        toast.error('Hash verification failed');
+        return;
       }
-    } catch (error) {
+      if (result.reason === 'legacy_without_hash') {
+        toast.info(`Legacy backup — current SHA-256: ${result.actual?.slice(0, 12)}…`);
+        return;
+      }
+      if (result.valid) {
+        toast.success('SHA-256 hash OK');
+      } else {
+        toast.error('SHA-256 mismatch — backup file may be corrupted');
+      }
+    } finally {
+      setVerifyingId(null);
+    }
+  };
+
+  const handleDownloadBackup = async (backup: Backup) => {
+    const result = await backupApi.download(backup.id, backup.name);
+    if (result.ok) {
+      toast.success(
+        result.sha256
+          ? `Downloaded — SHA-256: ${result.sha256.slice(0, 12)}…`
+          : 'Backup downloaded successfully'
+      );
+    } else {
       toast.error('Failed to download backup');
     }
   };
 
   const handleRestoreBackup = async (id: string) => {
-    if (!confirm('Are you sure you want to restore this backup? This will overwrite current content.')) {
+    if (!confirm('Restore this backup? Current content will be overwritten.')) {
       return;
     }
-
-    try {
-      const response = await post(`/api/admin/backups/${id}/restore`);
-      if (response.success) {
-        toast.success('Backup restored successfully');
-        await loadBackups();
-      } else {
-        toast.error(response.error || 'Failed to restore backup');
-      }
-    } catch (error) {
+    const ok = await backupApi.restore(id);
+    if (ok) {
+      toast.success('Backup restored successfully');
+      await loadBackups();
+    } else {
       toast.error('Failed to restore backup');
+    }
+  };
+
+  const handleDeleteBackup = async (id: string) => {
+    if (!confirm('Delete this backup?')) {
+      return;
+    }
+    const ok = await backupApi.delete(id);
+    if (ok) {
+      toast.success('Backup deleted');
+      await loadBackups();
+    } else {
+      toast.error('Failed to delete backup');
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (bulkSelection.count === 0) {
+      return;
+    }
+    if (!confirm(`Delete ${bulkSelection.count} selected backup(s)?`)) {
+      return;
+    }
+    const result = await backupApi.bulkDelete(bulkSelection.selectedIds);
+    if (result) {
+      toast.success(summarizeBulkResult(result));
+      bulkSelection.clear();
+      await loadBackups();
+    } else {
+      toast.error('Bulk delete failed');
+    }
+  };
+
+  const handleBulkRestore = async () => {
+    if (bulkSelection.count === 0) {
+      return;
+    }
+    if (!confirm(`Restore ${bulkSelection.count} backup(s)? Current content will be overwritten.`)) {
+      return;
+    }
+    const result = await backupApi.bulkRestore(bulkSelection.selectedIds);
+    if (result) {
+      toast.success(summarizeBulkResult(result));
+      bulkSelection.clear();
+      await loadBackups();
+    } else {
+      toast.error('Bulk restore failed');
     }
   };
 
@@ -139,41 +191,101 @@ export const BackupManager: React.FC = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600" />
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center flex-wrap gap-4">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Backup Manager</h1>
       </div>
 
-      {/* Create Backup */}
-      <div className="card">
-        <div className="card-header">Create New Backup</div>
-        <div className="card-body">
-          <div className="flex gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="card">
+          <div className="card-header">Create New Backup</div>
+          <div className="card-body">
+            <div className="flex gap-4 flex-wrap">
+              <input
+                type="text"
+                value={backupName}
+                onChange={(e) => setBackupName(e.target.value)}
+                placeholder="Enter backup name..."
+                className="form-input flex-1 min-w-[200px]"
+              />
+              <button
+                type="button"
+                onClick={() => void handleCreateBackup()}
+                disabled={creating}
+                className="btn btn-primary"
+              >
+                {creating ? 'Creating...' : 'Create Backup'}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="card-header">Import Backup ZIP</div>
+          <div className="card-body space-y-3">
             <input
               type="text"
-              value={backupName}
-              onChange={(e) => setBackupName(e.target.value)}
-              placeholder="Enter backup name..."
-              className="form-input flex-1"
+              value={importName}
+              onChange={(e) => setImportName(e.target.value)}
+              placeholder="Optional display name..."
+              className="form-input w-full"
             />
-            <button
-              onClick={handleCreateBackup}
-              disabled={creating}
-              className="btn btn-primary"
-            >
-              {creating ? 'Creating...' : 'Create Backup'}
-            </button>
+            <div className="flex gap-3 flex-wrap items-center">
+              <input
+                ref={importInputRef}
+                type="file"
+                accept=".zip,application/zip"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    void handleImportBackup(file);
+                  }
+                }}
+              />
+              <button
+                type="button"
+                className="btn btn-secondary"
+                disabled={importing}
+                onClick={() => importInputRef.current?.click()}
+              >
+                <Upload className="w-4 h-4 inline mr-2" />
+                {importing ? 'Importing...' : 'Choose ZIP file'}
+              </button>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Registers archive in library — does not restore content until you click Restore.
+              </p>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Backup List */}
+      <BulkActionBar
+        count={bulkSelection.count}
+        itemLabel="backups selected"
+        onClear={bulkSelection.clear}
+        actions={[
+          {
+            id: 'restore',
+            label: 'Restore selected',
+            variant: 'primary',
+            onClick: () => void handleBulkRestore(),
+          },
+          {
+            id: 'delete',
+            label: 'Delete selected',
+            variant: 'danger',
+            onClick: () => void handleBulkDelete(),
+          },
+        ]}
+      />
+
       <div className="card">
         <div className="card-header">
           <span>Backups</span>
@@ -184,54 +296,81 @@ export const BackupManager: React.FC = () => {
         <div className="card-body p-0">
           {backups.length === 0 ? (
             <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-              No backups found. Create your first backup!
+              No backups found. Create or import your first backup.
             </div>
           ) : (
             <div className="table-container">
-              <table className="table">
+              <table className="table min-w-[960px]">
                 <thead>
                   <tr>
+                    <th className="w-10">
+                      <input
+                        type="checkbox"
+                        checked={bulkSelection.allSelected && completedBackups.length > 0}
+                        onChange={bulkSelection.toggleAll}
+                        aria-label="Select all completed backups"
+                      />
+                    </th>
                     <th>Name</th>
                     <th>Created</th>
                     <th>Size</th>
+                    <th>SHA-256</th>
                     <th>Status</th>
-                    <th>Includes</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {backups.map((backup) => (
                     <tr key={backup.id}>
+                      <td>
+                        <input
+                          type="checkbox"
+                          checked={bulkSelection.isSelected(backup.id)}
+                          disabled={backup.status !== 'completed'}
+                          onChange={() => bulkSelection.toggle(backup.id)}
+                          aria-label={`Select ${backup.name}`}
+                        />
+                      </td>
                       <td className="font-medium">{backup.name}</td>
                       <td>{new Date(backup.createdAt).toLocaleString()}</td>
                       <td>{backup.sizeFormatted}</td>
-                      <td>
-                        <span className={getStatusBadge(backup.status)}>
-                          {backup.status}
-                        </span>
+                      <td className="font-mono text-xs max-w-[140px] truncate" title={backup.sha256 || '—'}>
+                        {backup.sha256 ? `${backup.sha256.slice(0, 12)}…` : '—'}
                       </td>
                       <td>
-                        <span className="text-sm text-gray-500 dark:text-gray-400">
-                          {backup.includes.join(', ')}
-                        </span>
+                        <span className={getStatusBadge(backup.status)}>{backup.status}</span>
                       </td>
                       <td>
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-1">
                           <button
-                            onClick={() => handleDownloadBackup(backup.id, backup.name)}
-                            className="btn btn-secondary text-xs px-3 py-1"
+                            type="button"
+                            onClick={() => void handleDownloadBackup(backup)}
+                            className="btn btn-secondary text-xs px-2 py-1"
+                            disabled={backup.status !== 'completed'}
                           >
                             Download
                           </button>
                           <button
-                            onClick={() => handleRestoreBackup(backup.id)}
-                            className="btn btn-success text-xs px-3 py-1"
+                            type="button"
+                            onClick={() => void handleVerifyBackup(backup)}
+                            className="btn btn-secondary text-xs px-2 py-1"
+                            disabled={backup.status !== 'completed' || verifyingId === backup.id}
+                            title="Verify SHA-256 hash"
+                          >
+                            <ShieldCheck className="w-3 h-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void handleRestoreBackup(backup.id)}
+                            className="btn btn-success text-xs px-2 py-1"
+                            disabled={backup.status !== 'completed'}
                           >
                             Restore
                           </button>
                           <button
-                            onClick={() => handleDeleteBackup(backup.id)}
-                            className="btn btn-danger text-xs px-3 py-1"
+                            type="button"
+                            onClick={() => void handleDeleteBackup(backup.id)}
+                            className="btn btn-danger text-xs px-2 py-1"
                           >
                             Delete
                           </button>

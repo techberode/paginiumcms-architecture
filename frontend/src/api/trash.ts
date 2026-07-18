@@ -1,5 +1,6 @@
 // frontend/src/api/trash.ts
 import apiClient from './client';
+import type { BulkBatchResult } from '../types/bulk';
 
 export interface TrashItem {
   id: string;
@@ -21,6 +22,11 @@ export const trashApi = {
 
   restore: async (id: string): Promise<TrashRestoreResult | null> => {
     const response = await apiClient.post<TrashRestoreResult>(`/api/admin/trash/${id}/restore`);
+    return response.success && response.data ? response.data : null;
+  },
+
+  bulkRestore: async (ids: string[]): Promise<BulkBatchResult | null> => {
+    const response = await apiClient.post<BulkBatchResult>('/api/admin/trash/bulk-restore', { ids });
     return response.success && response.data ? response.data : null;
   },
 };
