@@ -58,6 +58,13 @@ frontend type/lint safety net.
 
 ### Fixed
 
+- **CI backend suite (12 order-dependent failures on a clean checkout).**
+  `ContentRepository` now treats a missing content directory (e.g. an
+  as-yet-uncreated `content/blog`) as an empty list instead of letting
+  `FileReader::listFiles` throw `FileNotFoundException`, which caused `GET
+  /api/articles` (and dependent trash/flow tests) to return HTTP 500/404 whenever
+  a content type had no items yet. Verified with a fresh clone: full PHPUnit suite
+  passes (569 tests, 0 failures, 15 skips) regardless of test order.
 - Resolved 38 pre-existing TypeScript errors surfaced by the newly enabled
   `type-check` (untyped `import.meta.env`, missing `turndown` module declaration,
   ambiguous duplicate type re-exports in `src/api/index.ts`, `useApi().delete` vs
