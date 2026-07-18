@@ -27,4 +27,11 @@ interface CodeEditorInterface
      * @return array<int|string, mixed>
      */
     public function getFileInfo(string $path): array;
+    /**
+     * @return list<string>
+     */
+    public function getBackups(string $path): array;
+    public function createFile(string $path, string $content): bool;
+    public function deleteFile(string $path): bool;
+    public function restoreBackup(string $path, string $backupBasename): bool;
 }

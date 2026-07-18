@@ -1,37 +1,56 @@
 # Iteration 16 – Code Editor Full Stack (Monaco, Themes, Plugins)
 
-**Status:** Partial (Monaco core ✅)  
-**Version:** 2.0.21 target for Monaco UI; full stack pending
+**Status:** Complete (core stack) — plugin bundle editor blocked on It. 15  
+**Version:** 2.0.22
 
 ## Summary
 
-Replace textarea with Monaco in Code Editor, CMS theme editing under `resources/views/themes/`, and create/delete/restore flows gated by code policy and developer unlock.
+Monaco-based Code Editor with whitelist paths, developer unlock, file tree, create/delete, backup restore, and safety UX.
 
 ## Done ✅
 
-- `@monaco-editor/react` in frontend dependencies
-- **`MonacoCodeEditor`** — full editor in `CodeEditor.tsx` (replaces textarea), dark/light theme, format + word wrap
-- `DeveloperUnlockGate` (Iteration 8 / 14)
-- `CodeEditorManager` + policy layer (Iteration 14)
-- Allowed paths: `Http/Extensions`, `Modules`, `resources/views/themes`
+| Item | Description |
+|------|-------------|
+| Monaco editor | `MonacoCodeEditor` — format, word wrap, theme sync |
+| Developer gate | TOTP / dev token unlock + **Zamknúť editor** |
+| File tree | All allowed roots, hierarchical `FileTree` |
+| Save flow | Code policy + syntax check + pre-save backup |
+| Create file | `POST /api/admin/code-editor/file` + UI „Nový súbor“ |
+| Delete file | `DELETE /api/admin/code-editor/file` + backup before delete |
+| Restore backup | `POST /api/admin/code-editor/restore` + UI zoznam záloh |
+| Safety UX | Banner, Save confirm, lock confirm |
+| Docs | [user/CODE_EDITOR.md](user/CODE_EDITOR.md) |
 
-## Remaining ⏳
+## Allowed paths (whitelist)
+
+- `backend/app/Modules`
+- `backend/app/Http/Extensions`
+- `backend/resources/views/themes`
+- `backend/config`
+
+## Remaining ⏳ (It. 15 dependency)
 
 | Item | Description |
 |------|-------------|
-| FileTree | Hierarchical tree aligned with `listFiles` API |
-| Create/delete files | API + UI with backup restore |
-| Theme editor | Edit PHP/HTML theme files in admin |
-| Plugin editor | Edit extension bundles (depends on It. 15) |
+| Plugin bundle editor | Edit extension packages via `PluginManager` (It. 15) |
+
+## API routes
+
+| Method | Path |
+|--------|------|
+| GET | `/directories`, `/files`, `/file`, `/backups` |
+| POST | `/file` (create), `/save`, `/restore` |
+| DELETE | `/file` |
 
 ## Dependencies
 
 - ✅ Iteration 14 – code policy
-- ✅ Iteration 8 – developer unlock UI + Monaco editor
-- ⏳ Iteration 15 – plugin runtime
+- ✅ Iteration 8 – developer unlock UI + Monaco
+- ⏳ Iteration 15 – plugin runtime (for plugin editor only)
 
 ## Related docs
 
+- [user/CODE_EDITOR.md](user/CODE_EDITOR.md)
 - [ITERATION_14.md](ITERATION_14.md)
 - [ITERATION_8.md](ITERATION_8.md)
 

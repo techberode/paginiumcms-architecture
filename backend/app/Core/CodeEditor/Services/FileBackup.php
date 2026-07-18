@@ -51,14 +51,27 @@ final class FileBackup
 
     public function restore(string $path, string $backupFile): bool
     {
-        $backupReal = realpath($backupFile);
-        $backupRoot = realpath($this->backupPath);
-        if ($backupReal === false || $backupRoot === false || !str_starts_with($backupReal, $backupRoot)) {
+        $resolved = $this->resolveBackupByBasename($path, basename($backupFile));
+        if ($resolved === null) {
             return false;
         }
 
         $fullPath = $this->projectRoot . '/' . ltrim($path, '/');
 
-        return copy($backupFile, $fullPath);
+        return copy($resolved, $fullPath);
+    }
+
+    public function resolveBackupByBasename(string $path, string $basename): ?string
+    {
+        $basename = basename(str_replace('\\', '/', $basename));
+        $expectedPrefix = md5($path) . '_';
+
+        if (!str_starts_with($basename, $expectedPrefix) || !str_ends_with($basename, '.bak')) {
+            return null;
+        }
+
+        $full = $this->backupPath . '/' . $basename;
+
+        return is_file($full) ? $full : null;
     }
 }

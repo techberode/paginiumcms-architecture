@@ -130,7 +130,22 @@ Pri otvorení sa načítajú **všetky existujúce súbory** z povolených kore�
 
 1. **Admin → Zálohy** — obnov celý snapshot CMS  
 2. **Zálohy súborov Code Editora** — `storage/backups/code/` (hash cesty + timestamp)  
-3. **Git revert** na serveri (ak používaš git deploy)
+3. **Obnova v editore** — pri otvorenom súbore zvoľ zálohu v paneli **Súbor / zálohy** a klikni **Obnoviť** (pred obnovou sa vytvorí záloha aktuálneho obsahu)  
+4. **Git revert** na serveri (ak používaš git deploy)
+
+---
+
+## Vytvorenie a zmazanie súboru
+
+Panel **Súbor / zálohy** (pod stromom súborov):
+
+| Akcia | Popis |
+|-------|--------|
+| **Nový súbor** | Zadaj cestu v povolenom koreni (napr. `backend/app/Modules/MojModul/Service.php`). Súbor sa vytvorí s PHP šablónou. |
+| **Zmazať súbor** | Vyžaduje potvrdenie. Pred zmazaním sa uloží záloha do `storage/backups/code/`. |
+| **Obnoviť** | Zoznam záloh pre aktuálny súbor; obnova prepíše editor (Save ešte treba potvrdiť). |
+
+Cesta musí byť v [whiteliste](#povolené-adresáre-whitelist). Zakázané segmenty (`Core`, `bootstrap`, `vendor`) API odmietne.
 
 ---
 
@@ -145,6 +160,9 @@ Pri otvorení sa načítajú **všetky existujúce súbory** z povolených kore�
 | GET | `/api/admin/code-editor/files?directory=all` | Všetky súbory z whitelistu |
 | GET | `/api/admin/code-editor/file?path=…` | Obsah súboru |
 | POST | `/api/admin/code-editor/save` | `{ "path", "content" }` |
+| POST | `/api/admin/code-editor/file` | `{ "path", "content?" }` — vytvorenie |
+| DELETE | `/api/admin/code-editor/file?path=…` | zmazanie (+ záloha) |
+| POST | `/api/admin/code-editor/restore` | `{ "path", "backup_file" }` |
 
 Všetky code-editor routy vyžadujú: auth + 2FA session + **odomknutý** Developer Mode.
 
@@ -158,6 +176,7 @@ Všetky code-editor routy vyžadujú: auth + 2FA session + **odomknutý** Develo
 | `frontend/src/components/CodeEditor/DeveloperUnlockGate.tsx` | Unlock / lock brána |
 | `frontend/src/components/CodeEditor/CodeEditorSafetyBanner.tsx` | Varovný banner |
 | `frontend/src/components/CodeEditor/FileTree.tsx` | Strom povolených súborov |
+| `frontend/src/components/CodeEditor/CodeEditorFileActions.tsx` | Nový / zmazať / obnova zálohy |
 | `frontend/src/components/CodeEditor/MonacoCodeEditor.tsx` | Monaco editor |
 | `frontend/src/api/developer.ts` | unlock / lock API |
 | `frontend/src/api/codeEditor.ts` | files / save API |

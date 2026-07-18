@@ -70,6 +70,33 @@ class GatedCodeEditorController extends CodeEditorController
         return parent::getBackups($request, $response);
     }
 
+    public function createFile(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        if ($denied = $this->gateDenied()) {
+            return $denied;
+        }
+
+        return parent::createFile($request, $response);
+    }
+
+    public function deleteFile(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        if ($denied = $this->gateDenied()) {
+            return $denied;
+        }
+
+        return parent::deleteFile($request, $response);
+    }
+
+    public function restoreBackup(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        if ($denied = $this->gateDenied()) {
+            return $denied;
+        }
+
+        return parent::restoreBackup($request, $response);
+    }
+
     private function gateDenied(): ?ResponseInterface
     {
         if (!$this->gate->isFeatureAvailable()) {

@@ -213,9 +213,57 @@ final class CodeEditorManager implements CodeEditorInterface
         return array_map('basename', $this->backup->getBackups($path));
     }
 
+    public function createFile(string $path, string $content = ''): bool
+    {
+        $normalized = $this->normalizeRelativePath($path);
+        if ($normalized === null || !$this->canEdit($normalized)) {
+            throw new RuntimeException('Access to path is denied');
+        }
+
+        $fullPath = $this->projectRoot . '/' . $normalized;
+        if (file_exists($fullPath)) {
+            throw new RuntimeException('File already exists');
+        }
+
+        return $this->writeFile($normalized, $content);
+    }
+
+    public function deleteFile(string $path): bool
+    {
+        $fullPath = $this->resolveExistingPath($path);
+        $this->backup->create($path);
+
+        if (!unlink($fullPath)) {
+            throw new RuntimeException('Failed to delete file');
+        }
+
+        $this->logger->logFileChange($path, 'delete', []);
+
+        return true;
+    }
+
+    public function restoreBackup(string $path, string $backupBasename): bool
+    {
+        if (!$this->canEdit($path)) {
+            throw new RuntimeException('Access to file is denied');
+        }
+
+        $backupPath = $this->backup->resolveBackupByBasename($path, $backupBasename);
+        if ($backupPath === null) {
+            throw new RuntimeException('Backup not found');
+        }
+
+        $content = file_get_contents($backupPath);
+        if ($content === false) {
+            throw new RuntimeException('Unable to read backup file');
+        }
+
+        return $this->writeFile($path, $content);
+    }
+
     /**
      * @return array<int|string, mixed>
- */private function buildFileInfo(string $relativePath, string $fullPath): array
+     */private function buildFileInfo(string $relativePath, string $fullPath): array
     {
         $extension = pathinfo($relativePath, PATHINFO_EXTENSION);
 
