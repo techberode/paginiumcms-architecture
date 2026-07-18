@@ -39,6 +39,7 @@ PaginiumCMS keeps the Core intentionally minimal, secure, and fast. It moves sta
 |---------|--------|
 | **2.0.17** | It.7 — scheduled monitoring reports, HTML email, log incidents, cron CLI |
 | **2.0.16** | It.28 — bulk actions platform |
+| **2.0.1** | It.6 — SMTP, notification connectors, analytics, auth UI, toast settings |
 | **2.0.7** | FlatFile index, pagination, search API |
 | **2.0.6** | PHPStan L8, 453+ tests, security & i18n foundation |
 
