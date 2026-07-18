@@ -11,6 +11,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.6 – Notifications, SMTP, analytics, auth UI | **2.0.1** | [below](#201--2026-07-15) |
 | It.7 – Scheduled monitoring reports + log incidents | **2.0.17** | [below](#2017--2026-07-18) |
 | It.29 – Cron planner + Job Queue | **2.0.18** | [below](#2018--2026-07-18) |
+| Users admin UI refresh | **2.0.19** | [below](#2019--2026-07-18) |
+
+---
+
+## [2.0.19] – 2026-07-18
+
+### Admin user management UI refresh
+
+#### Backend
+- User fields: `username`, `active`; admin detail exposes `twoFactorSecret`
+- Settings `security.requireTwoFactorStaff` — enforce 2FA for EDITOR/ADMIN/SUPER_ADMIN
+- Block login for inactive accounts
+- `GET /api/admin/users` returns meta; `GET /api/admin/users/{id}` returns enforcement flags
+
+#### Frontend
+- `/users` form aligned with admin mockup: username, status, role labels, password toggle, 2FA section with secret display
+
+#### Docs
+- [ITERATION_5.md](docs/ITERATION_5.md) — admin form field map
 
 ---
 

@@ -1,6 +1,6 @@
 # 🏛️ PaginiumCMS
 
-> **Version:** 2.0.18  
+> **Version:** 2.0.19  
 > **Last updated:** 18 July 2026  
 > Modern, modular, Headless Flat-File Content Management System powered by Slim Framework (PHP) & React.
 
@@ -47,6 +47,7 @@ Full backlog: [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) · Main map: [ROADMAP
 
 | Version | Focus |
 |---------|--------|
+| **2.0.19** | Admin user management UI — username, account status, 2FA secret, system enforcement |
 | **2.0.18** | It.29 — cron planner, job queue, `/scheduler`, unified CLI |
 | **2.0.17** | It.7 — scheduled monitoring reports, HTML email, log incidents |
 | **2.0.16** | It.28 — bulk actions platform |

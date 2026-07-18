@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Admin;
 
+use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\Validation\ValidationException;
 use PaginiumCMS\Core\Validation\ValidationRules;
 use PaginiumCMS\Core\Validation\Validator;
@@ -19,7 +20,7 @@ use RuntimeException;
 
 /**
  * === Controller: UserController (Admin) ===
- * CRUD správa používateľov a rolí (Iterácia 5).
+ * CRUD správa používateľov a rolí (Iterácia 5, UI refresh 2.0.18).
  */
 final class UserController
 {
@@ -31,8 +32,16 @@ final class UserController
         AuthorizationInterface::ROLE_SUPER_ADMIN,
     ];
 
+    /** @var list<string> */
+    private const STAFF_ROLES = [
+        AuthorizationInterface::ROLE_EDITOR,
+        AuthorizationInterface::ROLE_ADMIN,
+        AuthorizationInterface::ROLE_SUPER_ADMIN,
+    ];
+
     public function __construct(
         private UserRepository $users,
+        private SettingsRepositoryInterface $settings,
         private Validator $validator,
         private PasswordPolicyInterface $passwordPolicy,
         private JsonResponder $json
@@ -46,7 +55,12 @@ final class UserController
             $this->users->findAll()
         );
 
-        return $this->json->success($response, ['users' => $list]);
+        return $this->json->success($response, [
+            'users' => $list,
+            'meta' => [
+                'require_two_factor_staff' => $this->requireTwoFactorStaff(),
+            ],
+        ]);
     }
 
     /**
@@ -59,7 +73,13 @@ final class UserController
             return $this->json->error($response, 'Používateľ neexistuje', 404);
         }
 
-        return $this->json->success($response, ['user' => $user->jsonSerialize()]);
+        return $this->json->success($response, [
+            'user' => $user->toAdminDetail(true),
+            'meta' => [
+                'two_factor_enforced' => $this->isTwoFactorEnforcedFor($user),
+                'require_two_factor_staff' => $this->requireTwoFactorStaff(),
+            ],
+        ]);
     }
 
     public function store(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -77,6 +97,11 @@ final class UserController
             return $this->json->error($response, 'E-mail už existuje', 409);
         }
 
+        $username = strtolower(trim((string) ($validated['username'] ?? '')));
+        if ($this->users->existsByUsername($username)) {
+            return $this->json->error($response, 'Používateľské meno už existuje', 409);
+        }
+
         $password = (string) ($payload['password'] ?? '');
         if ($password === '') {
             throw new ValidationException(['password' => ['Heslo je povinné pri vytváraní používateľa.']]);
@@ -91,16 +116,25 @@ final class UserController
 
         $user = new User();
         $user->setEmail($validated['email']);
+        $user->setUsername($username);
         $user->setName($validated['name']);
         $user->setRoles([(string) $validated['role']]);
+        $user->setActive((bool) ($payload['active'] ?? true));
         $user->setPassword($password);
+
+        if ($this->isTwoFactorEnforcedFor($user)) {
+            $user->setTwoFactorEnabled(true);
+        } elseif (isset($payload['twoFactorEnabled'])) {
+            $user->setTwoFactorEnabled((bool) $payload['twoFactorEnabled']);
+        }
+
         $user->setUpdatedAt(time());
 
         $this->users->save($user);
 
         return $this->json->success(
             $response,
-            ['user' => $user->jsonSerialize()],
+            ['user' => $user->toAdminDetail(true)],
             201,
             'Používateľ vytvorený'
         );
@@ -119,12 +153,14 @@ final class UserController
 
         $rules = [
             'email' => ['email', 'max:255'],
+            'username' => ['string', 'min:2', 'max:64', 'slug'],
             'name' => ['string', 'min:2', 'max:120'],
             'role' => ['in:USER,EDITOR,ADMIN,SUPER_ADMIN'],
+            'active' => ['bool'],
         ];
 
         $validated = $this->validator->validate(
-            array_intersect_key($payload, array_flip(['email', 'name', 'role'])),
+            array_intersect_key($payload, array_flip(['email', 'username', 'name', 'role', 'active'])),
             $rules
         );
 
@@ -135,6 +171,14 @@ final class UserController
             $user->setEmail($validated['email']);
         }
 
+        if (isset($validated['username'])) {
+            $username = strtolower(trim((string) $validated['username']));
+            if ($this->users->existsByUsername($username, $user->getId())) {
+                return $this->json->error($response, 'Používateľské meno už existuje', 409);
+            }
+            $user->setUsername($username);
+        }
+
         if (isset($validated['name'])) {
             $user->setName($validated['name']);
         }
@@ -142,6 +186,16 @@ final class UserController
         if (isset($validated['role'])) {
             $this->assertValidRole((string) $validated['role']);
             $user->setRoles([(string) $validated['role']]);
+        }
+
+        if (array_key_exists('active', $validated)) {
+            $user->setActive((bool) $validated['active']);
+        }
+
+        if ($this->isTwoFactorEnforcedFor($user)) {
+            $user->setTwoFactorEnabled(true);
+        } elseif (isset($payload['twoFactorEnabled'])) {
+            $user->setTwoFactorEnabled((bool) $payload['twoFactorEnabled']);
         }
 
         if (isset($payload['password']) && $payload['password'] !== '') {
@@ -159,7 +213,7 @@ final class UserController
 
         return $this->json->success(
             $response,
-            ['user' => $user->jsonSerialize()],
+            ['user' => $user->toAdminDetail(true)],
             200,
             'Používateľ aktualizovaný'
         );
@@ -256,6 +310,28 @@ final class UserController
         if (!in_array($role, self::ALLOWED_ROLES, true)) {
             throw new ValidationException(['role' => ['Neprípustná rola.']]);
         }
+    }
+
+    private function requireTwoFactorStaff(): bool
+    {
+        $security = $this->settings->group('security');
+
+        return (bool) ($security['requireTwoFactorStaff'] ?? true);
+    }
+
+    private function isTwoFactorEnforcedFor(User $user): bool
+    {
+        if (!$this->requireTwoFactorStaff()) {
+            return false;
+        }
+
+        foreach (self::STAFF_ROLES as $role) {
+            if ($user->hasRole($role)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function countSuperAdmins(): int

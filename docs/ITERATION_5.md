@@ -28,9 +28,24 @@ Login/register responses put `user` at root level — documented in [API_CONTRAC
 |------|------|
 | `src/api/auth.ts` | Login, register, logout, 2FA, password reset |
 | `src/api/users.ts` | Admin user CRUD |
-| `src/components/backend/UsersManager.tsx` | User management UI |
+| `src/components/backend/UsersManager.tsx` | User management UI (2.0.18 refresh) |
 | `src/context/AuthContext.tsx` | Session state |
 | `src/api/client.ts` | `withCredentials: true`; Bearer code removed |
+
+### Admin user form (2.0.18)
+
+| Field | API field | Notes |
+|-------|-----------|-------|
+| Používateľské meno | `username` | Unique slug, auto-derived from e-mail |
+| Zobrazované meno | `name` | Display name |
+| E-mail | `email` | Login identifier |
+| Heslo | `password` | Optional on edit |
+| Rola | `role` | USER / EDITOR / ADMIN / SUPER_ADMIN |
+| Stav účtu | `active` | Inactive users cannot log in |
+| 2FA | `twoFactorEnabled` | Locked when `security.requireTwoFactorStaff` applies to staff roles |
+| 2FA Secret | `twoFactorSecret` | Returned on `GET /api/admin/users/{id}` only |
+
+Settings: **Bezpečnosť → Vynútiť 2FA pre editorov a adminov** (`requireTwoFactorStaff`).
 
 ## Tests
 

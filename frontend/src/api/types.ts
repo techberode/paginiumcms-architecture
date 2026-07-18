@@ -2,9 +2,13 @@
 export interface User {
   id: string;
   email: string;
+  username?: string;
   name: string;
   roles: string[];
+  active?: boolean;
   twoFactorEnabled: boolean;
+  twoFactorSecret?: string;
+  twoFactorVerifiedAt?: number | null;
   createdAt: number;
   updatedAt: number;
 }

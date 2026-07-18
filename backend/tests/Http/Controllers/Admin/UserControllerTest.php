@@ -36,7 +36,18 @@ class UserControllerTest extends TestCase
 
         $validator = new FileValidator($this->baseDir . '/data');
         $this->repo = new UserRepository(new FileReader($validator), new FileWriter($validator), 'users');
-        $this->controller = new UserController($this->repo, new Validator(), new PasswordPolicy(), new JsonResponder());
+        $this->controller = new UserController(
+            $this->repo,
+            new \PaginiumCMS\Core\Settings\Services\SettingsRepository(
+                new FileReader(new FileValidator($this->baseDir . '/data')),
+                new FileWriter(new FileValidator($this->baseDir . '/data')),
+                new Validator(),
+                $this->baseDir . '/data/settings.json'
+            ),
+            new Validator(),
+            new PasswordPolicy(),
+            new JsonResponder()
+        );
     }
 
     protected function tearDown(): void
@@ -69,6 +80,7 @@ class UserControllerTest extends TestCase
             ->createServerRequest('POST', '/api/admin/users')
             ->withBody($this->streamJson([
                 'email' => 'new@test.sk',
+                'username' => 'newuser',
                 'name' => 'Nový',
                 'role' => 'EDITOR',
                 'password' => 'SecurePass1!',
