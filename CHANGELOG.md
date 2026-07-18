@@ -4,6 +4,13 @@ All notable changes to PaginiumCMS are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+### Iteration → release index
+
+| Iteration | Release | Changelog |
+|-----------|---------|-----------|
+| It.6 – Notifications, SMTP, analytics, auth UI | **2.0.1** | [below](#201--2026-07-15) |
+| It.7 – Scheduled monitoring reports + log incidents | **2.0.17** | [below](#2017--2026-07-18) |
+
 ---
 
 ## [2.0.17] – 2026-07-18
@@ -36,6 +43,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 #### Docs
 - [ITERATION_7.md](docs/ITERATION_7.md), ROADMAP It.7 ✅, TESTING.md, DEV.md cron
+- Builds on **It.6** (notifications/SMTP/analytics) shipped in [2.0.1](#201--2026-07-15)
 
 ---
 
@@ -413,28 +421,46 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Iteration 6 – Notifications, analytics, auth UI
 
-#### Backend
-- Extend `SettingsSchema` with `smtp`, `notifications`, `connectors`, and `monitoring` groups
-- Add `SmtpTransport`, `NotificationFactory`, `IncidentNotifier`, and channel adapters (email, ntfy, Discord, Telegram, webhook)
-- Add `NotificationController` (`GET /api/admin/notifications/overview`, `POST /api/admin/notifications/test`)
-- Implement `Reporter`, `AnalyticsManager`, `AnalyticsMiddleware`, and `AnalyticsController`
-- Wire notification and analytics services in DI (`services.php`, `bootstrap/app.php`)
-- Password reset sends email when SMTP is configured; demo token only in `development`/`testing` without SMTP
-- Failed login and audit security events trigger `IncidentNotifier`
-- Mask password fields in admin settings API responses; ignore masked values on save
-- Expose toast settings via `GET /api/settings/public`
+#### Backend – settings schema
+- Add groups `smtp`, `notifications`, `connectors`, `monitoring` in `SettingsSchema`
+- SMTP: host, port, encryption, credentials, from address
+- Connectors: email, ntfy, Discord, Telegram, webhook (settings-driven enable)
+- Monitoring: incident alerts, severity filter, failed-login / security notifications, traffic spike threshold
+- Toast: enabled, position, duration, debug mode (exposed via `GET /api/settings/public`)
+- Mask password fields in admin settings API; ignore masked placeholders on save
+
+#### Backend – notification stack
+- Add `SmtpTransport` (TLS/SSL, AUTH LOGIN), `NotificationFactory`, `IncidentNotifier`
+- Channel adapters: `EmailAdapter`, `NtfyAdapter`, `DiscordAdapter`, `TelegramAdapter`, `WebhookAdapter`
+- Add `NotificationController` — `GET /api/admin/notifications/overview`, `POST /api/admin/notifications/test`
+- Wire `NotificationService` + adapters in `Http/Config/services.php`
+- `AuditTrailService::logSecurityEvent()` forwards to `IncidentNotifier`
+- Failed login triggers incident alert when monitoring enabled
+- Password reset email via SMTP when configured; demo reset token only in dev/testing without SMTP
+
+#### Backend – analytics
+- Implement `Reporter`, `AnalyticsManager`, `RealtimeTracker`, `GeoIPService`, `DeviceDetector`
+- Add `AnalyticsMiddleware` on public routes (skip API/admin paths)
+- Add `AnalyticsController` — overview, chart, top pages/referrers
+- Flat-file visit storage under analytics registry
+
+#### Backend – auth integration
+- `AuthController` receives settings, notifications, incident notifier for reset mail + alerts
 
 #### Frontend
-- Add `NotificationsOverview` at `/notifications` with connector status and visit stats
+- Add `/notifications` — `NotificationsOverview` (connectors, test send, visit stats, link to Settings)
 - Add `api/notifications.ts`, `api/analytics.ts`
-- Toast UI driven by settings (enabled, position, duration, debug mode)
+- Toast UI from `NotificationContext` + public settings (`toastEnabled`, position, duration, debug)
 - Auth UI: `RegisterModal`, `ForgotPasswordModal`, `ResetPasswordModal`, `ChangePasswordModal`
-- `SettingsView` supports `password` field type
+- `SettingsView` — `password` field type for SMTP/connector secrets
 
-#### Tests & docs
-- Add `NotificationFactoryTest`, `IncidentNotifierTest`, `notificationSettings.test.ts`
-- Rewrite `docs/architecture/SETTINGS.md` in English; add `docs/ITERATION_6.md`
-- `.cursorrules`: documentation and commit messages must be in English
+#### Tests
+- PHPUnit: `NotificationFactoryTest`, `IncidentNotifierTest`; updated `AuthControllerTest` (reset password)
+- Vitest: `notificationSettings.test.ts`
+
+#### Docs
+- [ITERATION_6.md](docs/ITERATION_6.md), [SETTINGS.md](docs/architecture/SETTINGS.md) (English rewrite)
+- ROADMAP It.6 ✅
 
 ---
 
