@@ -116,6 +116,21 @@ class UserRepository
         return $this->findByEmail($email) !== null;
     }
 
+    public function existsByUsername(string $username, ?string $exceptUserId = null): bool
+    {
+        $needle = strtolower(trim($username));
+        foreach ($this->findAll() as $user) {
+            if ($exceptUserId !== null && $user->getId() === $exceptUserId) {
+                continue;
+            }
+            if ($user->getUsername() === $needle) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function delete(string $id): void
     {
         $path = $this->storagePath . '/' . $id . '.json';
@@ -180,6 +195,10 @@ class UserRepository
                 $user->setRoles($value);
             } elseif ($key === 'name') {
                 $user->setName($value);
+            } elseif ($key === 'username') {
+                $user->setUsername((string) $value);
+            } elseif ($key === 'active') {
+                $user->setActive((bool) $value);
             } elseif ($key === 'twoFactorEnabled') {
                 $user->setTwoFactorEnabled($value);
             } elseif ($key === 'twoFactorSecret') {
@@ -258,9 +277,11 @@ class UserRepository
         return [
             'id' => $user->getId(),
             'email' => $user->getEmail(),
+            'username' => $user->getUsername(),
             'passwordHash' => $user->getPasswordHash(),
             'roles' => $user->getRoles(),
             'name' => $user->getName(),
+            'active' => $user->isActive(),
             'twoFactorEnabled' => $user->isTwoFactorEnabled(),
             'twoFactorSecret' => $user->getTwoFactorSecret(),
             'createdAt' => $user->getCreatedAt(),

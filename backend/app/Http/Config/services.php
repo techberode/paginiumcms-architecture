@@ -169,6 +169,7 @@ return [
     UserController::class => create(UserController::class)
         ->constructor(
             get(UserRepository::class),
+            get(SettingsRepositoryInterface::class),
             get(Validator::class),
             get(PasswordPolicyInterface::class),
             get(JsonResponder::class)

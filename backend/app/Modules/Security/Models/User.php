@@ -13,10 +13,12 @@ class User implements JsonSerializable
 {
     private string $id;
     private string $email;
+    private string $username = '';
     private string $passwordHash;
     /** @var array<int|string, mixed> */
     private array $roles = [];
     private string $name = '';
+    private bool $active = true;
     private bool $twoFactorEnabled = false;
     private ?string $twoFactorSecret = null;
     private ?int $twoFactorVerifiedAt = null;
@@ -43,6 +45,34 @@ class User implements JsonSerializable
     public function setEmail(string $email): self
     {
         $this->email = $email;
+        return $this;
+    }
+
+    public function getUsername(): string
+    {
+        if ($this->username !== '') {
+            return $this->username;
+        }
+
+        $local = explode('@', $this->email)[0] ?? 'user';
+
+        return strtolower((string) preg_replace('/[^a-z0-9_-]/', '', $local) ?: 'user');
+    }
+
+    public function setUsername(string $username): self
+    {
+        $this->username = strtolower(trim($username));
+        return $this;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->active;
+    }
+
+    public function setActive(bool $active): self
+    {
+        $this->active = $active;
         return $this;
     }
 
@@ -187,11 +217,30 @@ class User implements JsonSerializable
         return [
             'id' => $this->id,
             'email' => $this->email,
+            'username' => $this->getUsername(),
             'name' => $this->name,
             'roles' => $this->roles,
+            'active' => $this->active,
             'twoFactorEnabled' => $this->twoFactorEnabled,
             'createdAt' => $this->createdAt,
             'updatedAt' => $this->updatedAt,
         ];
+    }
+
+    /**
+     * Admin detail view – includes optional 2FA secret for support.
+     *
+     * @return array<string, mixed>
+     */
+    public function toAdminDetail(bool $includeSecret = false): array
+    {
+        $data = $this->jsonSerialize();
+        $data['twoFactorVerifiedAt'] = $this->twoFactorVerifiedAt;
+
+        if ($includeSecret && $this->twoFactorSecret !== null && $this->twoFactorSecret !== '') {
+            $data['twoFactorSecret'] = $this->twoFactorSecret;
+        }
+
+        return $data;
     }
 }

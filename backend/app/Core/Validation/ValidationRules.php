@@ -62,6 +62,7 @@ final class ValidationRules
                 'label' => 'Používateľ',
                 'rules' => [
                     'email' => ['required', 'email', 'max:255'],
+                    'username' => ['required', 'string', 'min:2', 'max:64', 'slug'],
                     'name' => ['required', 'string', 'min:2', 'max:120'],
                     'role' => ['required', 'in:USER,EDITOR,ADMIN,SUPER_ADMIN'],
                 ],

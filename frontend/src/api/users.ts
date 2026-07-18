@@ -1,6 +1,5 @@
 // frontend/src/api/users.ts
 // === Users API (Iterácia 5, admin) ===
-// CRUD správa používateľov – ZÁKON API↔FE: každý endpoint má typovaný klient.
 import apiClient, { ApiResponse } from './client';
 import { User } from './types';
 
@@ -8,26 +7,50 @@ export type UserRole = 'USER' | 'EDITOR' | 'ADMIN' | 'SUPER_ADMIN';
 
 export interface CreateUserPayload {
   email: string;
+  username: string;
   name: string;
   role: UserRole;
   password: string;
+  active?: boolean;
+  twoFactorEnabled?: boolean;
 }
 
 export interface UpdateUserPayload {
   email?: string;
+  username?: string;
   name?: string;
   role?: UserRole;
   password?: string;
+  active?: boolean;
+  twoFactorEnabled?: boolean;
 }
 
-export async function listUsers(): Promise<User[]> {
-  const res = await apiClient.get<{ users: User[] }>('/api/admin/users');
-  return res.success && res.data?.users ? res.data.users : [];
+export interface UsersListResponse {
+  users: User[];
+  meta?: {
+    require_two_factor_staff?: boolean;
+  };
 }
 
-export async function getUser(id: string): Promise<User | null> {
-  const res = await apiClient.get<{ user: User }>(`/api/admin/users/${encodeURIComponent(id)}`);
-  return res.success && res.data?.user ? res.data.user : null;
+export interface UserDetailResponse {
+  user: User;
+  meta?: {
+    two_factor_enforced?: boolean;
+    require_two_factor_staff?: boolean;
+  };
+}
+
+export async function listUsers(): Promise<UsersListResponse> {
+  const res = await apiClient.get<UsersListResponse>('/api/admin/users');
+  if (res.success && res.data) {
+    return res.data;
+  }
+  return { users: [] };
+}
+
+export async function getUser(id: string): Promise<UserDetailResponse | null> {
+  const res = await apiClient.get<UserDetailResponse>(`/api/admin/users/${encodeURIComponent(id)}`);
+  return res.success && res.data ? res.data : null;
 }
 
 export async function createUser(payload: CreateUserPayload): Promise<ApiResponse<{ user: User }>> {
@@ -48,3 +71,19 @@ export async function bulkDeleteUsers(ids: string[]): Promise<import('../types/b
 }
 
 export const USER_ROLES: UserRole[] = ['USER', 'EDITOR', 'ADMIN', 'SUPER_ADMIN'];
+
+export const USER_ROLE_LABELS: Record<UserRole, string> = {
+  USER: '👤 Používateľ – základný prístup',
+  EDITOR: '✏️ Editor – správa obsahu',
+  ADMIN: '👑 Administrátor – plný prístup',
+  SUPER_ADMIN: '🛡️ Super administrátor',
+};
+
+export function isStaffRole(role: UserRole): boolean {
+  return role === 'EDITOR' || role === 'ADMIN' || role === 'SUPER_ADMIN';
+}
+
+export function deriveUsername(email: string): string {
+  const local = email.split('@')[0] ?? 'user';
+  return local.toLowerCase().replace(/[^a-z0-9_-]/g, '') || 'user';
+}

@@ -51,6 +51,10 @@ class AuthenticationManager implements AuthenticationInterface
             throw new AuthenticationException('Neplatný email alebo heslo');
         }
 
+        if (!$user->isActive()) {
+            throw new AuthenticationException('Účet je deaktivovaný');
+        }
+
         $this->session->setUser($user);
         // Nové prihlásenie vždy vyžaduje čerstvé TOTP overenie (ak je 2FA zapnutá).
         $this->session->clearTotpVerified();
