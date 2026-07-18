@@ -8,13 +8,23 @@ import {
   resolvePublicMediaUrl,
 } from '../../api/media';
 
+export type MediaPickerUrlFormat = 'absolute' | 'storage';
+
 interface MediaPickerModalProps {
   open: boolean;
   onClose: () => void;
   onSelect: (url: string, altText: string) => void;
+  title?: string;
+  urlFormat?: MediaPickerUrlFormat;
 }
 
-export const MediaPickerModal: React.FC<MediaPickerModalProps> = ({ open, onClose, onSelect }) => {
+export const MediaPickerModal: React.FC<MediaPickerModalProps> = ({
+  open,
+  onClose,
+  onSelect,
+  title = 'Insert from Media Library',
+  urlFormat = 'absolute',
+}) => {
   const [items, setItems] = useState<MediaFile[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -32,7 +42,7 @@ export const MediaPickerModal: React.FC<MediaPickerModalProps> = ({ open, onClos
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
       <div className="card w-full max-w-3xl max-h-[80vh] flex flex-col">
         <div className="card-body border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-          <h3 className="font-bold text-gray-900 dark:text-white">Insert from Media Library</h3>
+          <h3 className="font-bold text-gray-900 dark:text-white">{title}</h3>
           <button type="button" className="btn btn-secondary text-xs px-2 py-1" onClick={onClose}>
             <X className="w-4 h-4" />
           </button>
@@ -53,11 +63,13 @@ export const MediaPickerModal: React.FC<MediaPickerModalProps> = ({ open, onClos
                   className="border rounded-lg overflow-hidden hover:ring-2 hover:ring-indigo-500 text-left"
                   onClick={() => {
                     const relative = resolvePublicMediaUrl(file.url);
-                    const embedUrl =
-                      typeof window !== 'undefined' && window.location?.origin
-                        ? `${window.location.origin}${relative}`
-                        : relative;
-                    onSelect(embedUrl, file.altText || file.fileName);
+                    const selectedUrl =
+                      urlFormat === 'storage'
+                        ? relative
+                        : typeof window !== 'undefined' && window.location?.origin
+                          ? `${window.location.origin}${relative}`
+                          : relative;
+                    onSelect(selectedUrl, file.altText || file.fileName);
                     onClose();
                   }}
                 >
