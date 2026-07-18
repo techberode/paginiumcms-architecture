@@ -1,5 +1,8 @@
 // frontend/src/components/backend/SeoMetadataPanel.tsx
-import React from 'react';
+import React, { useState } from 'react';
+import { FolderOpen, X } from 'lucide-react';
+import { resolveAdminMediaPreviewUrl, resolvePublicMediaUrl } from '../../api/media';
+import { MediaPickerModal } from './MediaPickerModal';
 
 export interface SeoFormValues {
   seoTitle: string;
@@ -18,6 +21,27 @@ export interface SeoMetadataPanelProps {
   compact?: boolean;
 }
 
+function seoImagePreviewSrc(url: string): string {
+  const raw = url.trim();
+  if (!raw) {
+    return '';
+  }
+
+  if (raw.startsWith('http://') || raw.startsWith('https://') || raw.startsWith('/api/')) {
+    return raw;
+  }
+
+  if (raw.startsWith('/storage/')) {
+    return resolvePublicMediaUrl(raw);
+  }
+
+  if (raw.startsWith('media/')) {
+    return resolveAdminMediaPreviewUrl(raw);
+  }
+
+  return raw;
+}
+
 export const SeoMetadataPanel: React.FC<SeoMetadataPanelProps> = ({
   values,
   onChange,
@@ -25,7 +49,9 @@ export const SeoMetadataPanel: React.FC<SeoMetadataPanelProps> = ({
   showTags = false,
   compact = false,
 }) => {
+  const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
   const patch = (partial: Partial<SeoFormValues>) => onChange({ ...values, ...partial });
+  const previewSrc = seoImagePreviewSrc(values.ogImage);
 
   return (
     <div className="space-y-4">
@@ -70,14 +96,52 @@ export const SeoMetadataPanel: React.FC<SeoMetadataPanelProps> = ({
 
       <div className="form-group">
         <label className="form-label">OG / náhľadový obrázok</label>
-        <input
-          type="url"
-          value={values.ogImage}
-          onChange={(e) => patch({ ogImage: e.target.value })}
-          disabled={disabled}
-          className="form-input"
-          placeholder="/storage/app/content/media/… alebo https://…"
-        />
+        <div className="flex flex-wrap gap-2">
+          <input
+            type="url"
+            value={values.ogImage}
+            onChange={(e) => patch({ ogImage: e.target.value })}
+            disabled={disabled}
+            className="form-input min-w-0 flex-1"
+            placeholder="/storage/app/content/media/… alebo https://…"
+          />
+          <button
+            type="button"
+            className="btn btn-secondary inline-flex items-center gap-2 whitespace-nowrap text-sm"
+            disabled={disabled}
+            onClick={() => setMediaPickerOpen(true)}
+          >
+            <FolderOpen className="h-4 w-4" />
+            Vybrať z médií
+          </button>
+          {values.ogImage.trim() !== '' && (
+            <button
+              type="button"
+              className="btn btn-secondary px-2"
+              disabled={disabled}
+              title="Odstrániť náhľad"
+              aria-label="Odstrániť náhľad"
+              onClick={() => patch({ ogImage: '' })}
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+        {previewSrc !== '' && (
+          <div className="mt-3 overflow-hidden rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900/40">
+            <img
+              src={previewSrc}
+              alt="Náhľad OG obrázka"
+              className="max-h-40 w-full object-cover"
+              onError={(event) => {
+                event.currentTarget.style.display = 'none';
+              }}
+            />
+          </div>
+        )}
+        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+          Použije sa pre sociálne siete{showTags ? ' a ako náhľad článku v zozname' : ''}.
+        </p>
       </div>
 
       <div className="form-group">
@@ -116,6 +180,16 @@ export const SeoMetadataPanel: React.FC<SeoMetadataPanelProps> = ({
         />
         Skryť pred vyhľadávačmi (noindex)
       </label>
+
+      <MediaPickerModal
+        open={mediaPickerOpen}
+        onClose={() => setMediaPickerOpen(false)}
+        title="Vybrať náhľadový obrázok"
+        urlFormat="storage"
+        onSelect={(url) => {
+          patch({ ogImage: url });
+        }}
+      />
     </div>
   );
 };

@@ -11,7 +11,13 @@ class Article extends Content
 {
     public function getFeaturedImage(): string
     {
-        return $this->frontMatter['featuredImage'] ?? '';
+        $image = $this->frontMatter['featuredImage']
+            ?? $this->frontMatter['featured_image']
+            ?? $this->frontMatter['seoImage']
+            ?? $this->frontMatter['ogImage']
+            ?? '';
+
+        return is_string($image) ? $image : '';
     }
 
     public function setFeaturedImage(string $url): self

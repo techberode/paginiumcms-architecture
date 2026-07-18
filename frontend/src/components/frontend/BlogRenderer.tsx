@@ -16,6 +16,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
 } from 'lucide-react';
+import { resolveContentPreviewImage } from '../../utils/contentPreviewImage';
 
 export const BlogRenderer: React.FC = () => {
   const { slug } = useParams<{ slug?: string }>();
@@ -70,7 +71,7 @@ export const BlogRenderer: React.FC = () => {
   if (activeArticle) {
     const date = String(activeArticle.frontMatter?.date ?? activeArticle.createdAt);
     const author = activeArticle.author || String(activeArticle.frontMatter?.author ?? 'Redakcia');
-    const image = activeArticle.featuredImage || String(activeArticle.frontMatter?.featuredImage ?? '');
+    const image = resolveContentPreviewImage(activeArticle);
     const authorBio =
       activeArticle.excerpt || String(activeArticle.frontMatter?.description ?? '');
 
@@ -195,7 +196,7 @@ export const BlogRenderer: React.FC = () => {
           {paginatedArticles.map((article) => {
             const date = String(article.frontMatter?.date ?? article.createdAt);
             const author = article.author || String(article.frontMatter?.author ?? 'Redakcia');
-            const image = article.featuredImage || String(article.frontMatter?.featuredImage ?? '');
+            const image = resolveContentPreviewImage(article);
             const desc = article.excerpt || String(article.frontMatter?.description ?? '');
 
             return (

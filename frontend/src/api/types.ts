@@ -52,6 +52,7 @@ export interface Page {
 
 export interface Article extends Page {
   featuredImage: string;
+  ogImage?: string;
   tags: string[];
   excerpt: string;
   readingTime: number;
