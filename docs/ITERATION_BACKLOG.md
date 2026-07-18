@@ -24,6 +24,8 @@
 | **42** | TBD | **Admin počty položiek** | **🟡** | Badge počty: články, stránky, media, komentáre, správy, zálohy, kôš, users |
 | **43** | TBD | **Pokročilé vyhľadávanie (FE + BE)** | **🟡** | Command-palette / quick jump v admin aj verejnom webe |
 | **44** | TBD | **Filtre a zoradenia (admin + FE)** | **🟡** | Zoznamy: status, typ, dátum, abeceda; zdieľané query parametre |
+| **45** | TBD | **[Redis – voliteľná infra](ITERATION_45.md)** | **🔵** | Cache, queue, rate-limit — až pri multi-worker / škálovaní |
+| **46** | TBD | **[Server metrics agent](ITERATION_46.md)** | **🟡** | CPU/RAM/disk/Docker → It.7 report + dashboard |
 | **30** | TBD | **Contextual Actions** | 🟡 | Akcie podľa kontextu (content, media, user) |
 | **31** | TBD | **Live Preview** | 🟡 | Náhľad stránky/článku pred publikovaním |
 | **32** | TBD | **React chunking + PHP OPcache** | 🔵 | Výkon FE/BE |
@@ -232,6 +234,30 @@ Konzistentné filtrovanie a sort naprieč zoznamami.
 
 ---
 
+## Iterácia 45 – Redis (voliteľná infra vrstva) ⏳
+
+Flat-file ostáva zdroj pravdy; Redis = zdieľaná cache / queue / rate-limit pre viac workerov.
+
+**Full spec:** [ITERATION_45.md](ITERATION_45.md)
+
+- `RedisDriver` v `ChainedDriver` (Memory → Redis → File)
+- Voliteľný `JobQueueStore` backend, Settings `redis.*`
+- **Kedy:** 2+ PHP repliky, contention na flat-file queue, nie pre single-node MVP
+
+---
+
+## Iterácia 46 – Server metrics agent ⏳
+
+Doplnenie It.7 reportov o **host metriky** (uptime, CPU, RAM, disk, Docker).
+
+**Full spec:** [ITERATION_46.md](ITERATION_46.md)
+
+- Cron agent → `data/metrics/host-latest.json`
+- Ingest API + sekcia v HTML monitoring reporte
+- Dashboard widget (naviazané na It.34)
+
+---
+
 ## Odporúčané poradie implementácie
 
 ```
@@ -240,10 +266,10 @@ It.28/2.0.16 ✅ → It.29/2.0.18 ✅ → It.41 (email OTP) ← ďalšia
                 → It.43 (advanced search / quick jump) → It.44 (filtre + sort)
                 → It.36 (pagination) → It.38 (feature flags)
                 → It.39 (komentáre) → It.37 (inline FE edit)
-                → It.33 (analytics) → It.34 (system overview)
+                → It.33 (analytics) → It.34 (system overview) → It.46 (host metrics agent)
                 → It.35 (inspector) → It.40 (section FileManager)
                 → It.30 (contextual) → It.31 (live preview)
-                → It.32 (performance)
+                → It.32 (performance) → It.45 (Redis — keď multi-worker / scale)
 ```
 
 ---
@@ -255,3 +281,5 @@ It.28/2.0.16 ✅ → It.29/2.0.18 ✅ → It.41 (email OTP) ← ďalšia
 - [ITERATION_27.md](ITERATION_27.md) — admin view modes
 - [ITERATION_24.md](ITERATION_24.md) — DAM v1 + stock knižnica
 - [ITERATION_26.md](ITERATION_26.md) — media lightbox + 2.0.14 hotfix
+- [ITERATION_45.md](ITERATION_45.md) — Redis (voliteľná infra)
+- [ITERATION_46.md](ITERATION_46.md) — server metrics agent
