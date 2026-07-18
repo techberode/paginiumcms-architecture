@@ -1,7 +1,7 @@
 # 🏛️ PaginiumCMS
 
-> **Version:** 2.0.9  
-> **Last updated:** 17 July 2026  
+> **Version:** 2.0.18  
+> **Last updated:** 18 July 2026  
 > Modern, modular, Headless Flat-File Content Management System powered by Slim Framework (PHP) & React.
 
 ---
@@ -27,21 +27,31 @@ PaginiumCMS keeps the Core intentionally minimal, secure, and fast. It moves sta
 | **Authorization (RBAC)** | ✅ It. 20 | `PermissionMiddleware` on content/media writes; `RoleMiddleware` on admin |
 | **Content API** | ✅ It. 19–20 | Index, pagination, search, published filter, versioning |
 | **Media API** | ✅ Functional | `/api/media/*` + public `GET /storage/...` |
-| **Core hardening** | ✅ It. 20 | Maintenance mode, trash restore, backup cron CLI |
+| **Job scheduler** | ✅ It. 29 | Flat-file registry, `scheduler:run`, admin `/scheduler` |
+| **Monitoring** | ✅ It. 7 | Scheduled reports, log incidents, HTML email, cron CLI |
 | **API contract** | ✅ It. 21 | JsonResponder everywhere, MSW, Newman CI, RHF+Zod |
-| **PHPUnit** | ✅ **503+ passing** | PHPStan level 8 (0 errors) |
-| **Frontend** | ✅ It. 21 | MSW, typed clients, settings form validation |
-| **Next iteration** | 🟡 It. 29 | Cron planner + job queue |
+| **PHPUnit** | ✅ **550+ passing** | PHPStan level 8 (0 errors) |
+| **Frontend** | ✅ It. 21+ | MSW, typed clients, settings form validation, bulk actions |
+| **Next iteration** | 🟡 It. 41 | Email OTP workflows — see [backlog](ITERATION_BACKLOG.md) |
+
+### Planned (roadmap)
+
+| It. | Feature |
+|-----|---------|
+| **43** | **Advanced search (FE + BE)** — command palette, quick jumps in admin & public site |
+| **44** | **Filters & sorting (admin + FE)** — shared filter bar, URL-synced query params |
+
+Full backlog: [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) · Main map: [ROADMAP.md](ROADMAP.md)
 
 ### Recent releases
 
 | Version | Focus |
 |---------|--------|
-| **2.0.17** | It.7 — scheduled monitoring reports, HTML email, log incidents, cron CLI |
+| **2.0.18** | It.29 — cron planner, job queue, `/scheduler`, unified CLI |
+| **2.0.17** | It.7 — scheduled monitoring reports, HTML email, log incidents |
 | **2.0.16** | It.28 — bulk actions platform |
-| **2.0.1** | It.6 — SMTP, notification connectors, analytics, auth UI, toast settings |
-| **2.0.7** | FlatFile index, pagination, search API |
-| **2.0.6** | PHPStan L8, 453+ tests, security & i18n foundation |
+| **2.0.15** | It.27 — admin view modes + SEO panel |
+| **2.0.1** | It.6 — SMTP, notification connectors, analytics, auth UI |
 
 ### Tech stack
 
@@ -63,13 +73,14 @@ graph TD
     MW --> Core[Core: FlatFile, Cache, Settings, Versioning]
     Core --> Storage[(storage/app/content)]
     API --> Modules[Modules: Security, Media, Comments, …]
+    Scheduler[scheduler:run CLI] --> Core
 ```
 
 ### System layers
 
 1. **Presentation:** React admin + public site (`frontend/src/`)
 2. **API:** Slim routes in `backend/app/Http/Routes/*.php` (auto-discovered)
-3. **Core:** FlatFile engine, cache, settings schema, backup, audit
+3. **Core:** FlatFile engine, cache, settings schema, backup, audit, job scheduler
 4. **Modules:** Security (auth/RBAC), Media, Comments, Navigation, …
 5. **Storage:** Markdown/JSON content, media, trash, settings, users
 
@@ -81,16 +92,16 @@ graph TD
 paginiumcms-architecture/
 ├── backend/
 │   ├── app/
-│   │   ├── Core/           # FlatFile, Cache, Backup, Versioning, Settings, …
+│   │   ├── Core/           # FlatFile, Cache, Backup, Scheduler, Settings, …
 │   │   ├── Http/           # Controllers, Middleware, Routes, Config/services.php
 │   │   ├── Modules/        # Security, Media, Comments, Audit, …
 │   │   └── Support/        # Lang, JsonHelper
 │   ├── bootstrap/          # app.php (single bootstrap entry)
-│   ├── bin/console         # audit:run, backup:run-schedule
+│   ├── bin/console         # audit:run, scheduler:run, worker:process, …
 │   ├── lang/               # sk/en translations
 │   ├── public/             # index.php → bootstrap/app.php
 │   ├── storage/            # content, cache, logs, backups
-│   └── tests/              # 488 PHPUnit tests
+│   └── tests/              # PHPUnit suite
 ├── frontend/               # React admin + public site
 ├── docs/                   # Architecture, roadmap, deploy guides
 ├── vendor/                 # Composer (project root)
@@ -106,8 +117,9 @@ paginiumcms-architecture/
 |-------|--------|--------|
 | Auth | `/api/auth/*` | Mixed; register can be disabled via settings |
 | Content | `/api/pages`, `/api/articles` | GET public (published filter); write = auth + permission |
-| Search | `/api/search?q=` | Public, published only |
+| Search | `/api/search?q=` | Public, published only (It.43: advanced / scoped search) |
 | Media | `/api/media/*` | EDITOR+ role; files at `/storage/app/content/media/...` |
+| Jobs | `/api/admin/jobs/*` | ADMIN — cron registry, run history |
 | Static files | `/storage/{path}` | Public (path traversal blocked) |
 | Settings | `/api/settings/public`, `/api/admin/settings/*` | Public slice / ADMIN |
 | Trash | `/api/admin/trash/*` | EDITOR+ — list & restore soft-deleted content |
@@ -155,14 +167,15 @@ cd frontend && npm install && npm run dev
 
 See [deploy/DEV.md](deploy/DEV.md) for full local stack instructions.
 
-### Backup cron (production)
+### Cron (production)
 
 ```bash
-# crontab example — hourly check
-0 * * * * cd /path/to/project && php backend/bin/console backup:run-schedule
+# Unified scheduler — every minute
+* * * * * cd /path/to/paginiumcms && php backend/bin/console scheduler:run && php backend/bin/console worker:process
 ```
 
-Schedule is stored in `backend/storage/backups/schedule.json` (create via admin backup API or `BackupManager::scheduleBackup()`).
+Legacy: `backup:run-schedule`, `monitoring:run-schedule` (still supported).  
+See [ITERATION_29.md](ITERATION_29.md) and [deploy/DEV.md](deploy/DEV.md).
 
 ### Developer Mode unlock (admin)
 
@@ -179,7 +192,8 @@ See [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md).
 
 | Document | Purpose |
 |----------|---------|
-| [ROADMAP.md](ROADMAP.md) | Iterations 1–21, priorities, implementation phases |
+| [ROADMAP.md](ROADMAP.md) | Iterations 1–29+, priorities, implementation phases |
+| [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) | It.30+ backlog (search, filters, OTP, …) |
 | [CHANGELOG.md](../CHANGELOG.md) | Release notes |
 | [architecture/ARCHITECTURE.md](architecture/ARCHITECTURE.md) | Deep architecture spec |
 | [architecture/API_CONTRACT.md](architecture/API_CONTRACT.md) | JSON response envelopes (200/422/409/meta) |
@@ -201,30 +215,20 @@ See [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md).
 | 4 | [ITERATION_4.md](ITERATION_4.md) | ✅ Settings & validation |
 | 5 | [ITERATION_5.md](ITERATION_5.md) | ✅ Users & auth |
 | 6 | [ITERATION_6.md](ITERATION_6.md) | ✅ Notifications & analytics |
-| 7 | [ITERATION_7.md](ITERATION_7.md) | ✅ Dashboard & monitoring |
-| 8 | [ITERATION_8.md](ITERATION_8.md) | ✅ Media manager FE |
-| 9 | [ITERATION_9.md](ITERATION_9.md) | ✅ Prototype port (nav, comments, contact, GitHub) |
-| 10 | [ITERATION_10.md](ITERATION_10.md) | 🚧 RSS & sitemap → [It. 22](ITERATION_22.md) |
-| 11 | [ITERATION_11.md](ITERATION_11.md) | ⏳ SSO & ACL |
-| 12 | [ITERATION_12.md](ITERATION_12.md) | ⏳ Blueprint engine |
-| 13 | [ITERATION_13.md](ITERATION_13.md) | ⏳ Demo module |
-| 14 | [ITERATION_14.md](ITERATION_14.md) | ✅ Code policy |
-| 15 | [ITERATION_15.md](ITERATION_15.md) | ⏳ Plugin runtime |
-| 16 | [ITERATION_16.md](ITERATION_16.md) | 🟡 Monaco / full editor |
-| 17 | [ITERATION_17.md](ITERATION_17.md) | 🟡 API↔FE scaffold |
-| 18 | [ITERATION_18.md](ITERATION_18.md) | 🟡 i18n UI migration |
-| 19 | [ITERATION_19.md](ITERATION_19.md) | ✅ Index & pagination |
-| 20 | [ITERATION_20.md](ITERATION_20.md) | ✅ Core hardening |
-| 21 | [ITERATION_21.md](ITERATION_21.md) | ✅ API contract & MSW |
-| 22 | [ITERATION_22.md](ITERATION_22.md) | ✅ Trash UI, lockout, RSS/sitemap |
-| 23 | [ITERATION_23.md](ITERATION_23.md) | ✅ SEO meta engine |
-| 27 | [ITERATION_27.md](ITERATION_27.md) | ⏳ Admin view modes + SEO panel (next) |
+| 7 | [ITERATION_7.md](ITERATION_7.md) | ✅ Monitoring reports & log incidents |
+| 8–9 | [ITERATION_8.md](ITERATION_8.md) … [ITERATION_9.md](ITERATION_9.md) | ✅ Media, prototype port |
+| 19–22 | [ITERATION_19.md](ITERATION_19.md) … [ITERATION_22.md](ITERATION_22.md) | ✅ Index, hardening, contract, ops |
+| 27 | [ITERATION_27.md](ITERATION_27.md) | ✅ Admin view modes + SEO panel |
+| 28 | [ITERATION_28.md](ITERATION_28.md) | ✅ Bulk actions |
+| 29 | [ITERATION_29.md](ITERATION_29.md) | ✅ Cron planner + job queue |
+| 43–44 | [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) | ⏳ Advanced search, filters & sorting |
 
 ---
 
 ## ⚠️ Known Limitations
 
-* **It. 23 (2.0.11):** ✅ Complete — see [ITERATION_23.md](ITERATION_23.md)
+* **Basic search only** — It.43 will add scoped quick-jump search (admin palette + public instant search)
+* **List filters/sort** — partial via API pagination; full admin + FE filter bar planned in It.44
 * **Backup create tests** skipped under vfsStream (ZipArchive); schedule/cron logic tested on real temp dirs
 
 ---

@@ -208,6 +208,29 @@ class BackupController
         return $this->json->success($response, $batch->toArray(), 200, 'Hromadná obnova dokončená');
     }
 
+    public function getSchedule(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        return $this->json->success($response, $this->backup->getScheduleInfo());
+    }
+
+    public function scheduleBackup(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $data = json_decode((string) $request->getBody(), true);
+        if (!is_array($data)) {
+            return $this->json->error($response, 'Invalid JSON body', 400);
+        }
+
+        $interval = (string) ($data['interval'] ?? '');
+        if (!in_array($interval, ['daily', 'weekly', 'monthly'], true)) {
+            return $this->json->error($response, 'Interval must be daily, weekly or monthly', 422);
+        }
+
+        $keep = max(1, min(365, (int) ($data['keep'] ?? 7)));
+        $this->backup->scheduleBackup($interval, $keep);
+
+        return $this->json->success($response, $this->backup->getScheduleInfo(), 200, 'Backup schedule saved');
+    }
+
     /**
      * @return list<string>
      */

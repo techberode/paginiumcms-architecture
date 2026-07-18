@@ -20,6 +20,7 @@ import {
   Mail,
   HardDrive,
   Trash2,
+  CalendarClock,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
@@ -80,6 +81,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
     { id: 'trash', label: 'Kôš', href: '/trash', icon: Trash2, adminOnly: true },
     { id: 'audit', label: 'Audit Trail', href: '/audit', icon: History },
     { id: 'notifications', label: 'Notifikácie', href: '/notifications', icon: Bell },
+    { id: 'scheduler', label: 'Plánovač', href: '/scheduler', icon: CalendarClock, adminOnly: true },
     { id: 'users', label: 'Používatelia', href: '/users', icon: Users, adminOnly: true },
     { id: 'settings', label: 'Nastavenia', href: '/settings', icon: Settings },
   ].filter((item) => !item.adminOnly || isAdmin);

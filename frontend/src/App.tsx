@@ -14,6 +14,7 @@ import { BackupManager } from './components/backend/BackupManager';
 import { SettingsView } from './components/backend/SettingsView';
 import { UsersManager } from './components/backend/UsersManager';
 import { NotificationsOverview } from './components/backend/NotificationsOverview';
+import { SchedulerView } from './components/backend/SchedulerView';
 import { MediaManager } from './components/backend/MediaManager';
 import { NavigationManager } from './components/backend/NavigationManager';
 import { CommentsManager } from './components/backend/CommentsManager';
@@ -133,6 +134,7 @@ function App() {
         <Route path="/audit/content/:contentId" element={<AuditTrail />} />
         <Route path="/audit/user/:userId" element={<AuditTrail />} />
         <Route path="/notifications" element={<NotificationsOverview />} />
+        <Route path="/scheduler" element={<SchedulerView />} />
         <Route path="/settings" element={<SettingsView />} />
         <Route path="/users" element={<UsersManager />} />
         <Route path="/developer/logs" element={<DeveloperLogsViewer />} />
