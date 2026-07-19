@@ -127,17 +127,31 @@ export const PublicSiteLayout: React.FC = () => {
       return;
     }
 
-    const href = `${window.location.origin}/feed.xml`;
-    let link = document.querySelector<HTMLLinkElement>('link[data-paginium-feed="rss"]');
-    if (!link) {
-      link = document.createElement('link');
-      link.rel = 'alternate';
-      link.type = 'application/rss+xml';
-      link.dataset.paginiumFeed = 'rss';
-      document.head.appendChild(link);
+    const origin = window.location.origin;
+
+    const rssHref = `${origin}/feed.xml`;
+    let rssLink = document.querySelector<HTMLLinkElement>('link[data-paginium-feed="rss"]');
+    if (!rssLink) {
+      rssLink = document.createElement('link');
+      rssLink.rel = 'alternate';
+      rssLink.type = 'application/rss+xml';
+      rssLink.dataset.paginiumFeed = 'rss';
+      document.head.appendChild(rssLink);
     }
-    link.href = href;
-    link.title = `${siteName} RSS`;
+    rssLink.href = rssHref;
+    rssLink.title = `${siteName} RSS`;
+
+    const sitemapHref = `${origin}/sitemap.xml`;
+    let sitemapLink = document.querySelector<HTMLLinkElement>('link[data-paginium-feed="sitemap"]');
+    if (!sitemapLink) {
+      sitemapLink = document.createElement('link');
+      sitemapLink.rel = 'sitemap';
+      sitemapLink.type = 'application/xml';
+      sitemapLink.dataset.paginiumFeed = 'sitemap';
+      document.head.appendChild(sitemapLink);
+    }
+    sitemapLink.href = sitemapHref;
+    sitemapLink.title = `${siteName} Sitemap`;
   }, [settings?.feeds, siteName]);
 
   return (

@@ -12,6 +12,7 @@ namespace PaginiumCMS\Core\Cache;
  * - content.articles.list.{filterHash}
  * - content.page.{slug}
  * - content.article.{slug}
+ * - content.feeds.{rss|sitemap|robots}.{gen}
  *
  * Po každom zápise zavolaj invalidate* – žiadne globálne clear().
  */
@@ -19,6 +20,7 @@ class ContentCacheService
 {
     private const TTL_LIST = 300;
     private const TTL_ITEM = 600;
+    private const TTL_FEED = 300;
 
     public function __construct(private CacheManager $cache)
     {
@@ -79,6 +81,7 @@ class ContentCacheService
         if ($slug !== null) {
             $this->cache->delete('content.page.' . $slug);
         }
+        $this->invalidateFeeds();
     }
 
     public function invalidateArticle(?string $slug = null): void
@@ -87,6 +90,7 @@ class ContentCacheService
         if ($slug !== null) {
             $this->cache->delete('content.article.' . $slug);
         }
+        $this->invalidateFeeds();
     }
 
     /**
@@ -119,6 +123,42 @@ class ContentCacheService
         $this->bumpListGeneration('articles');
     }
 
+    public function rememberFeedRss(callable $loader): string
+    {
+        $key = 'content.feeds.rss.' . $this->feedGeneration();
+
+        return (string) $this->cache->rememberLocked($key, $loader, self::TTL_FEED);
+    }
+
+    public function rememberFeedSitemap(callable $loader): string
+    {
+        $key = 'content.feeds.sitemap.' . $this->feedGeneration();
+
+        return (string) $this->cache->rememberLocked($key, $loader, self::TTL_FEED);
+    }
+
+    public function rememberFeedRobots(callable $loader): string
+    {
+        $key = 'content.feeds.robots.' . $this->feedGeneration();
+
+        return (string) $this->cache->rememberLocked($key, $loader, self::TTL_FEED);
+    }
+
+    public function invalidateFeeds(): void
+    {
+        $this->bumpFeedGeneration();
+    }
+
+    private function feedGeneration(): int
+    {
+        return (int) $this->cache->get('content.feeds.gen', 0);
+    }
+
+    private function bumpFeedGeneration(): void
+    {
+        $this->cache->increment('content.feeds.gen', 1);
+    }
+
     /**
      * Kompletná invalidácia cache obsahu (po deployi alebo oprave cache bugov).
      */
@@ -127,5 +167,6 @@ class ContentCacheService
         $this->invalidatePage();
         $this->invalidateArticle();
         $this->invalidateSearch();
+        $this->invalidateFeeds();
     }
 }

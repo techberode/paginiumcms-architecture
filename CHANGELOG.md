@@ -66,8 +66,16 @@ Advanced admin/public search (It.43), test storage isolation, and `run-all-tests
 - `ContentIndexService::search()` — optional `$publishedOnly` for admin draft search
 - `SiteSearchModal` API client — explicit `scope=public`
 
+### Added (It.10 polish — RSS/sitemap discoverability)
+
+- **`GET /robots.txt`** — `Sitemap:` directive when feeds enabled
+- **`ContentCacheService`** — cached RSS/sitemap/robots XML (TTL 300s); invalidates on content publish
+- **`RobotsTxtGenerator`** + public `<link rel="sitemap">` in `PublicSiteLayout`
+- Postman smoke folder **Public Feeds**; nginx/vite proxy for `/robots.txt`
+
 ### Fixed
 
+- **ISS-023** — flaky `SearchControllerTest::testAdminSearchIncludesDraftPages` (deterministic token + slug in front matter)
 - **ISS-013** — private ntfy topics no longer fail silently when token/Basic auth is required.
 - Test suite: `TestStorageCleaner` index format, `ContentDiagnoseCommandTest` `--fix`, PHPStan in `test-artifacts.php`
 

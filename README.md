@@ -32,7 +32,7 @@ cd frontend && VITE_MSW=true npm run dev
 | Auth + 2FA + RBAC | ✅ Session, TOTP, `PermissionMiddleware` |
 | Content + index | ✅ It.19–20 — pagination, search, trash, published filter |
 | Media (FE + DAM) | ✅ It.8 + It.24 — `MediaManager`, picker, WYSIWYG, folders |
-| SEO + feeds | ✅ It.23 SEO meta (2.0.11) · 🟡 It.10 RSS/sitemap (BE hotové, polish pred It.11) |
+| SEO + feeds | ✅ It.23 SEO meta (2.0.11) · It.10 RSS/sitemap/robots |
 | Scheduler + monitoring | ✅ It.7, It.29 — cron planner, reports, `/scheduler` |
 | WAF + structured logs | ✅ It.50 — 2.0.26 |
 | PHPUnit | ✅ **607 testov** (15 skipped) |
@@ -40,8 +40,7 @@ cd frontend && VITE_MSW=true npm run dev
 
 ### Ďalší krok
 
-1. **It.10 polish** — cache feedov, `robots.txt`, sitemap v `<head>`, Newman smoke  
-2. **It.11** — SSO + jemnozrnné ACL + audit log (až po It.10)
+**It.11** — SSO + jemnozrnné ACL + audit log ([ITERATION_11.md](docs/ITERATION_11.md))
 
 Detail: [docs/ROADMAP.md](docs/ROADMAP.md) · [docs/CONTINUATION.md](docs/CONTINUATION.md)
 

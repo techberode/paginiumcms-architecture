@@ -21,7 +21,9 @@ Canonical JSON shapes: `{ success, data?, error?, errors?, meta? }`. Auth endpoi
 | POST | `/api/comments` | Submit comment (guest if allowed) |
 | POST | `/api/contact` | Contact form |
 | GET | `/api/seo/{type}/{slug}` | Public SEO meta |
-| GET | `/api/feeds/{type}` | RSS/Atom feeds |
+| GET | `/feed.xml` | RSS 2.0 (published articles) — [It.10](../ITERATION_10.md) |
+| GET | `/sitemap.xml` | XML sitemap (published pages + articles) |
+| GET | `/robots.txt` | Crawler rules + `Sitemap:` when feeds enabled |
 | POST | `/api/auth/login` | Login (legacy envelope) |
 | POST | `/api/auth/register` | Register (+ OTP verify if enabled) |
 | POST | `/api/auth/reset-password` | Password reset request |

@@ -32,7 +32,7 @@ PaginiumCMS keeps the Core intentionally minimal, secure, and fast. It moves sta
 | **API contract** | ✅ It. 21 | JsonResponder everywhere, MSW, Newman CI, RHF+Zod |
 | **PHPUnit** | ✅ **599 passing** (15 skipped) | PHPStan level 8 (0 errors) |
 | **Frontend** | ✅ It.43 unreleased | Command palette `Ctrl+K`, MSW, typed clients, public site |
-| **Next focus** | 🟡 **It.10 → It.11** | Feeds polish (cache, robots.txt) pred SSO/ACL; potom It.44 filtre |
+| **Next focus** | ⏳ **It.11** | SSO + fine-grained ACL + audit log |
 
 ### Planned (roadmap)
 
@@ -44,7 +44,7 @@ PaginiumCMS keeps the Core intentionally minimal, secure, and fast. It moves sta
 
 Recently shipped / unreleased: **It.43** advanced search ([ITERATION_43.md](ITERATION_43.md), Unreleased) · **It.23** SEO meta ([ITERATION_23.md](ITERATION_23.md), 2.0.11) · **It.8** media FE ([ITERATION_8.md](ITERATION_8.md), 2.0.4)
 
-**It.10 (RSS/sitemap):** backend + admin nastavenia ✅ (2.0.10 / [ITERATION_22.md](ITERATION_22.md)); zostáva polish pred [It.11](ITERATION_11.md) — viď [ITERATION_10.md](ITERATION_10.md#remaining-before-it11).
+**It.10 (RSS/sitemap):** ✅ [ITERATION_10.md](ITERATION_10.md) — feeds, sitemap, robots.txt, cache, Postman smoke.
 
 Full backlog: [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) · Main map: [ROADMAP.md](ROADMAP.md)
 
@@ -127,7 +127,7 @@ paginiumcms-architecture/
 | Search | `/api/search?q=&scope=admin\|public&types=` | Public published; admin palette (It.43 — [Unreleased](CHANGELOG.md#unreleased)) |
 | SEO meta | `/api/seo/{type}/{slug}` | Public head tags (It.23 — [2.0.11](CHANGELOG.md#2011--2026-07-17)) |
 | Media | `/api/media/*` | EDITOR+ role; FE `MediaManager` (It.8) + DAM folders (It.24) |
-| Feeds | `/feed.xml`, `/sitemap.xml` | Public RSS + sitemap (It.10 — settings group `feeds`) |
+| Feeds | `/feed.xml`, `/sitemap.xml`, `/robots.txt` | Public RSS + sitemap + crawler rules (It.10) |
 | Jobs | `/api/admin/jobs/*` | ADMIN — cron registry, run history |
 | Static files | `/storage/{path}` | Public (path traversal blocked) |
 | Settings | `/api/settings/public`, `/api/admin/settings/*` | Public slice / ADMIN |
@@ -230,7 +230,7 @@ See [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md) and [user/CODE_EDITOR.md](u
 | 7 | [ITERATION_7.md](ITERATION_7.md) | ✅ Monitoring reports & log incidents |
 | **8** | **[ITERATION_8.md](ITERATION_8.md)** | ✅ **Media manager FE** (upload, picker, WYSIWYG, 2.0.4) |
 | 9 | [ITERATION_9.md](ITERATION_9.md) | ✅ Prototype port (nav, comments, contact) |
-| 10 | [ITERATION_10.md](ITERATION_10.md) | 🟡 **RSS/sitemap** — BE ✅ 2.0.10; polish pred It.11 |
+| 10 | [ITERATION_10.md](ITERATION_10.md) | ✅ **RSS/sitemap/robots** + cache |
 | 11 | [ITERATION_11.md](ITERATION_11.md) | ⏳ SSO + fine-grained ACL + audit log |
 | 19–22 | [ITERATION_19.md](ITERATION_19.md) … [ITERATION_22.md](ITERATION_22.md) | ✅ Index, hardening, contract, ops + feeds ship |
 | **23** | **[ITERATION_23.md](ITERATION_23.md)** | ✅ **SEO meta engine** (public `<head>` tags, 2.0.11) |
@@ -245,7 +245,6 @@ See [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md) and [user/CODE_EDITOR.md](u
 
 ## ⚠️ Known Limitations
 
-* **It.10 feeds polish** — `ContentCacheService` pre XML, `robots.txt`, sitemap link v `<head>`, Newman smoke
 * **List filters/sort** — partial via API pagination; full admin + FE filter bar planned in It.44
 * **Backup create tests** skipped under vfsStream (ZipArchive); schedule/cron logic tested on real temp dirs
 

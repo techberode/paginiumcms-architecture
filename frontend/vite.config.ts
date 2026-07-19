@@ -29,6 +29,11 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
+      '/robots.txt': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
   preview: {
@@ -50,6 +55,11 @@ export default defineConfig({
         secure: false,
       },
       '/sitemap.xml': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/robots.txt': {
         target: 'http://localhost:8080',
         changeOrigin: true,
         secure: false,

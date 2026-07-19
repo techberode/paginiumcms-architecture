@@ -24,4 +24,16 @@ final class FeedControllerTest extends TestCase
         $this->assertStringContainsString('application/xml', $sitemapResponse->getHeaderLine('Content-Type'));
         $this->assertStringContainsString('<urlset', (string) $sitemapResponse->getBody());
     }
+
+    public function testRobotsRouteReturnsPlainTextWithSitemap(): void
+    {
+        $request = $this->createJsonRequest('GET', '/robots.txt');
+        $response = $this->handleRequest($request);
+
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertStringContainsString('text/plain', $response->getHeaderLine('Content-Type'));
+        $body = (string) $response->getBody();
+        $this->assertStringContainsString('User-agent: *', $body);
+        $this->assertStringContainsString('Sitemap:', $body);
+    }
 }

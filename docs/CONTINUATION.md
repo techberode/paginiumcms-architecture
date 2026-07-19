@@ -93,7 +93,7 @@ Legenda: ✅ DONE · 🟡 PARTIAL (existuje časť, treba dokončiť/prepojiť) 
 | G | **SMTP nastavenia v administrácii** | 🟡 | `NotificationService` + `EmailAdapter` existujú, ale `EmailAdapter` používa iba `mail()` (bez SMTP), nie je v DI, reset hesla neposiela e-mail. **Settings engine hotový** – It. 6 pridá SMTP skupinu do schémy. |
 | H | **Konektory ntfy / Discord / Telegram / …** | ⛔ | Žiadny kód/adaptéry/konfigurácia. |
 | I | **Toast: zap/vyp, pozícia, debug mód** | 🟡 | `NotificationContext` + `useToast` fungujú (fix top-right, len `duration`). Chýba prepínanie, pozícia, debug mód, perzistencia. |
-| J | **.XML Feeds (RSS/sitemap) + nastavenia** | 🟡 | **It.10** — `FeedGenerator`, `GET /feed.xml` / `sitemap.xml`, settings `feeds`, RSS `<link>` v `PublicSiteLayout` ✅ (2.0.10). Zostáva: cache XML, `robots.txt`, sitemap v head, Newman smoke. |
+| J | **.XML Feeds (RSS/sitemap) + nastavenia** | ✅ | **It.10** — `FeedGenerator`, `/feed.xml`, `/sitemap.xml`, `/robots.txt`, settings `feeds`, cache + head links ([ITERATION_10.md](ITERATION_10.md)). |
 | K | **Demo modul (izolované MOCK dáta)** | ⛔ | Neexistuje; staré mocky odstránené. |
 | L | **API Tracker + reporty návštevnosti + notifikácie** | ✅ | It.7 — `AnalyticsManager`, reporty, middleware, dashboard. |
 | M | **Jednotný Error Handler** | ✅ | `ApiErrorHandler` + Slim error middleware v `bootstrap/app.php`; 404 catch-all zjednotený; 422 s `errors` mapou. |
@@ -251,7 +251,7 @@ It.6 Notifikácie: reálne SMTP, konektory (ntfy/Discord/Telegram/webhook), toas
 It.7 Admin dashboard: zámky + konflikty + Health + API Tracker/Analytics.
 It.8 Media manager FE + WYSIWYG + picker — ✅ ([ITERATION_8.md](ITERATION_8.md), 2.0.4; DAM It.24).
 It.9 prototype port (nav, comments, contact): see [ITERATION_9.md](ITERATION_9.md). SEO public meta: It.23 ✅. Admin SEO UX: It.27 ✅ (2.0.15).
-It.10 XML Feeds — 🟡 BE + admin settings ✅ (2.0.10); polish (cache, robots.txt) pred It.11.
+It.10 XML Feeds — ✅ ([ITERATION_10.md](ITERATION_10.md), 2.0.10 + polish Unreleased).
 It.11 SSO + jemnozrnné ACL + bezpečnostný audit log — ⏳ ([ITERATION_11.md](ITERATION_11.md)).
 It.12 Blueprint/Schema engine (po schválení návrhu).
 It.13 Demo modul s izolovanými MOCK dátami.
