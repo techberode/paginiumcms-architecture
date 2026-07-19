@@ -1,6 +1,6 @@
 // frontend/src/App.tsx
 import React from 'react';
-import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { ResponsiveLayout } from './components/layout/ResponsiveLayout';
 import {
   PublicSiteLayout,
@@ -50,18 +50,34 @@ function LoadingScreen() {
 }
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, pendingTwoFactor } = useAuth();
-  if (!user || pendingTwoFactor) {
+  const { user, pendingTwoFactor, twoFactorSetupPending } = useAuth();
+  const location = useLocation();
+
+  if (!user) {
     return <Navigate to="/login" replace />;
   }
+
+  if (pendingTwoFactor && twoFactorSetupPending) {
+    if (location.pathname !== '/account/security') {
+      return <Navigate to="/account/security" replace state={{ setup2fa: true }} />;
+    }
+    return <>{children}</>;
+  }
+
+  if (pendingTwoFactor) {
+    return <Navigate to="/login" replace />;
+  }
+
   return <>{children}</>;
 }
 
 function GuestRoute({ children }: { children: React.ReactNode }) {
-  const { user, pendingTwoFactor } = useAuth();
+  const { user, pendingTwoFactor, twoFactorSetupPending } = useAuth();
+
   if (user && !pendingTwoFactor) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={twoFactorSetupPending ? '/account/security' : '/dashboard'} replace />;
   }
+
   return <>{children}</>;
 }
 

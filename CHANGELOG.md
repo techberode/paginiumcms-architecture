@@ -23,6 +23,48 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.10 polish, It.11 SSO/ACL, It.41–43 search/OTP | **2.0.27** | [below](#2027--2026-07-19) |
 | It.12 Blueprint + It.13 Demo sandbox v2 + PHILOSOPHY | **2.0.28** | [below](#2028--2026-07-19) |
 | Session hardening, cache admin, auth/login incidents | **2.0.29** | [below](#2029--2026-07-19) |
+| 2FA setup/login fixes, dev TOTP toggle, CI hotfix | **2.0.30** | [below](#2030--2026-07-19) |
+
+---
+
+## [2.0.30] – 2026-07-19
+
+2FA setup vs login TOTP, staff user deadlock, auth UX without hard reload.
+Incident log: [ISS-030–ISS-035](docs/ISSUES.md) (extends ISS-029).
+
+### Added
+
+- **`TwoFactorPolicy`** + **`TWO_FACTOR_REQUIRED`** env — vypnutie TOTP v dev (`APP_ENV=development|local|testing` only; production always enforces)
+- **`GET /api/auth/2fa/status`** → `setup_pending` (first-time QR setup vs login TOTP)
+- Admin banner + **`ProtectedRoute`** redirect to `/account/security` during setup
+- Auth events: `paginium:totp-required`, `paginium:auth-expired` (no full-page 401 redirect)
+
+### Fixed
+
+- **ISS-030** — QR disappears after enable; setup confused with login TOTP step
+- **ISS-031** — staff user created with `twoFactorEnabled=true` but no secret (deadlock)
+- **ISS-032** — `twoFactorVerifiedAt` not persisted in `UserRepository` JSON
+- **ISS-033** — `client.ts` `window.location.href='/login'` on 401 (double password login)
+- **ISS-029** (follow-up) — login loop when 2FA enforced on new users
+- **ISS-035** — PHPStan dead `??` on `ClientIpResolver::$parts[0]` (post-2.0.29 CI hotfix)
+
+### Changed
+
+- `UserController` — enforced staff 2FA no longer auto-sets `twoFactorEnabled` without secret
+- `TwoFactorController::enable()` — allows provisioning until first successful verify
+- `AuthController::login` — `requires_two_factor` only when `twoFactorVerifiedAt !== null`
+- `TwoFactorMiddleware` — bypass TOTP gate during setup (`verifiedAt === null`)
+- `LoginModal` — explicit navigate after login/TOTP verify
+- [DEV.md](docs/deploy/DEV.md) — `TWO_FACTOR_REQUIRED=false` troubleshooting row
+
+### Ops — dev `.env` (optional)
+
+```env
+APP_ENV=development
+TWO_FACTOR_REQUIRED=false
+```
+
+**Broken user recovery** (before deploy): reset `twoFactorEnabled` / `twoFactorSecret` / `twoFactorVerifiedAt` in user JSON, or use `/account/security` after fix deploy.
 
 ---
 

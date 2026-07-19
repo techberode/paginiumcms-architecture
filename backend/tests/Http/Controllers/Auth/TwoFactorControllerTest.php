@@ -44,6 +44,31 @@ class TwoFactorControllerTest extends TestCase
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertFalse($data['enabled']);
         $this->assertFalse($data['verified']);
+        $this->assertFalse($data['setup_pending']);
+    }
+
+    public function testSetupPendingAfterEnableBeforeVerify(): void
+    {
+        $userData = $this->createTestUser();
+        $loginResult = $this->loginTestUser($userData['email'], $userData['password']);
+        $this->assertEquals(200, $loginResult['response']->getStatusCode());
+
+        $enableResponse = $this->handleRequest($this->createJsonRequest('POST', '/api/auth/2fa/enable'));
+        $this->assertEquals(200, $enableResponse->getStatusCode());
+
+        $statusResponse = $this->handleRequest($this->createJsonRequest('GET', '/api/auth/2fa/status'));
+        $status = $this->getJsonResponse($statusResponse);
+
+        $this->assertTrue($status['enabled']);
+        $this->assertFalse($status['verified']);
+        $this->assertTrue($status['setup_pending']);
+
+        $logoutResponse = $this->handleRequest($this->createJsonRequest('POST', '/api/auth/logout'));
+        $this->assertEquals(200, $logoutResponse->getStatusCode());
+
+        $loginAgain = $this->loginTestUser($userData['email'], $userData['password']);
+        $this->assertEquals(200, $loginAgain['response']->getStatusCode());
+        $this->assertArrayNotHasKey('requires_two_factor', $loginAgain['data']);
     }
 
     public function testEnableAndVerifyTwoFactor(): void

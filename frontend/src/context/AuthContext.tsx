@@ -16,6 +16,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   pendingTwoFactor: boolean;
+  twoFactorSetupPending: boolean;
   login: (email: string, password: string) => Promise<LoginOutcome>;
   verifyTwoFactorLogin: (code: string) => Promise<boolean>;
   logout: () => Promise<void>;
@@ -32,6 +33,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [pendingTwoFactor, setPendingTwoFactor] = useState(false);
+  const [twoFactorSetupPending, setTwoFactorSetupPending] = useState(false);
 
   const refreshUser = useCallback(async () => {
     debugLogProvider('auth', 'refresh.start');
@@ -43,15 +45,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(probe.user);
     if (probe.user?.twoFactorEnabled) {
       const status = await authApi.twoFactor.getStatus();
-      setPendingTwoFactor(!status.verified);
+      setTwoFactorSetupPending(status.setupPending);
+      // Login TOTP step only after user completed setup at least once.
+      setPendingTwoFactor(!status.verified && !status.setupPending);
       debugLogProvider('auth', 'refresh.done', {
         authenticated: true,
         twoFactorEnabled: true,
         twoFactorVerified: status.verified,
+        twoFactorSetupPending: status.setupPending,
         userId: probe.user.id,
       });
     } else {
       setPendingTwoFactor(false);
+      setTwoFactorSetupPending(false);
       debugLogProvider('auth', 'refresh.done', {
         authenticated: Boolean(probe.user),
         twoFactorEnabled: false,
@@ -69,6 +75,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         debugLogProvider('auth', 'bootstrap.done', { loading: false });
       }
     })();
+  }, [refreshUser]);
+
+  useEffect(() => {
+    const onTotpRequired = () => {
+      setPendingTwoFactor(true);
+    };
+    const onAuthExpired = () => {
+      void refreshUser();
+    };
+
+    window.addEventListener('paginium:totp-required', onTotpRequired);
+    window.addEventListener('paginium:auth-expired', onAuthExpired);
+
+    return () => {
+      window.removeEventListener('paginium:totp-required', onTotpRequired);
+      window.removeEventListener('paginium:auth-expired', onAuthExpired);
+    };
   }, [refreshUser]);
 
   // Keep session alive during long admin edits (heartbeat alone may not run on /new routes).
@@ -100,10 +123,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           };
         }
         setUser(probe.user);
+        if (probe.user.twoFactorEnabled) {
+          const status = await authApi.twoFactor.getStatus();
+          setTwoFactorSetupPending(status.setupPending);
+          setPendingTwoFactor(!status.verified && !status.setupPending);
+        } else {
+          setPendingTwoFactor(false);
+          setTwoFactorSetupPending(false);
+        }
       } else {
         setUser(result.user);
+        setPendingTwoFactor(true);
+        setTwoFactorSetupPending(false);
       }
-      setPendingTwoFactor(Boolean(result.requiresTwoFactor));
       debugLogProvider('auth', 'login.success', {
         userId: result.user.id,
         requiresTwoFactor: Boolean(result.requiresTwoFactor),
@@ -133,6 +165,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await authApi.logout();
     setUser(null);
     setPendingTwoFactor(false);
+    setTwoFactorSetupPending(false);
     debugLogProvider('auth', 'logout.done');
   }, [user?.id]);
 
@@ -168,6 +201,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         loading,
         pendingTwoFactor,
+        twoFactorSetupPending,
         login,
         verifyTwoFactorLogin,
         logout,

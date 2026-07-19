@@ -1,6 +1,6 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-19 · verzia **2.0.29**
+> Posledná aktualizácia: 2026-07-19 · verzia **2.0.30**
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
 
@@ -43,7 +43,13 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-026 | Zámena `SESSION_USE_STRICT_MODE` ↔ `SESSION_STRICT`     | Stredná (ops)         | ✅ Dokumentované (2.0.29)                |
 | ISS-027 | Debug log: falošné login 401 z PHPUnit                  | Nízka (diagnostika)   | ✅ Opravené (2.0.29)                     |
 | ISS-028 | `npm run build:prod` — JSX chyba v `SettingsView`       | Vysoká (deploy)       | ✅ Opravené (2.0.29)                     |
-| ISS-029 | Login loop — krátke prihlásenie, potom späť na `/login` | Vysoká                | ✅ Opravené (2.0.29)                     |
+| ISS-029 | Login loop — krátke prihlásenie, potom späť na `/login` | Vysoká                | ✅ 2.0.29 session; **2.0.30** 2FA loop |
+| ISS-030 | 2FA setup — QR zmizne, presmeruje na TOTP login          | Vysoká                | ✅ Opravené (2.0.30)                     |
+| ISS-031 | Nový staff user: `twoFactorEnabled` bez secretu         | Kritická              | ✅ Opravené (2.0.30)                     |
+| ISS-032 | `twoFactorVerifiedAt` sa neukladalo do user JSON        | Vysoká                | ✅ Opravené (2.0.30)                     |
+| ISS-033 | FE 401 → `window.location /login` (dvojitý login)       | Vysoká                | ✅ Opravené (2.0.30)                     |
+| ISS-034 | Dev: žiadny prepínač TOTP v `.env`                      | Stredná (DX)          | ✅ Opravené (2.0.30)                     |
+| ISS-035 | PHPStan: `ClientIpResolver` mŕtvy `??` fallback         | Nízka (CI)            | ✅ Opravené (2.0.29 hotfix)              |
 
 
 
@@ -713,7 +719,9 @@ SettingsView.tsx:162
 
 **Príčiny:** Rovnaká rodina ako ISS-025 — session cookie sa neudrží medzi requestmi (proxy, IP binding, expirácia) alebo 401 redirect z FE.
 
-**Implementované riešenie:** Súhrn ISS-025 + `AuthController` po logine overí `isAuthenticated()` (inak 500 namiesto falošného úspechu); `authApi.probeSession()` rozlišuje expirovanú session vs sieťovú chybu.
+**Implementované riešenie (2.0.29):** Súhrn ISS-025 + `AuthController` po logine overí `isAuthenticated()`; `authApi.probeSession()` rozlišuje expirovanú session vs sieťovú chybu.
+
+**Doplnenie (2.0.30):** Ak loop pretrvával pri **2FA / nových používateľoch**, pozri **ISS-030–ISS-034** (setup vs login TOTP, user bez secretu, FE hard redirect).
 
 **Diagnostika (DevTools → Network):**
 
@@ -722,6 +730,106 @@ SettingsView.tsx:162
 3. Pri páde: ktorý request vráti **401**? (me, settings, content…)
 
 **Lockout:** Ak 429/401 po viacerých pokusoch → `php backend/bin/console security:clear-lockouts`.
+
+---
+
+## ISS-030 – 2FA setup: QR kód zmizne → TOTP login
+
+**Symptóm:** Po kliknutí „Začať nastavenie 2FA“ sa na `/account/security` na chvíľu zobrazí QR, potom okamžitý preskok na login obrazovku s požiadavkou **TOTP kódu** (bez možnosti naskenovať QR).
+
+**Príčina:** Frontend po `enable()` volal `refreshUser()`, ktorý pri `twoFactorEnabled && !verified` nastavil `pendingTwoFactor=true` — rovnaký stav ako pri **login TOTP**, nie pri **prvom nastavení**. `ProtectedRoute` presmeroval na `/login`.
+
+**Implementované riešenie:**
+
+- API `/api/auth/2fa/status` → pole `setup_pending` (`enabled && verifiedAt === null`).
+- `AuthContext`: `pendingTwoFactor` len ak user **už raz dokončil** setup (`verifiedAt !== null`).
+- `TwoFactorMiddleware` + `AuthController::login` — TOTP až po prvom úspešnom overení QR (nie počas setupu).
+- `TwoFactorSettings` — po enable nevolá `refreshUser()` (QR ostáva).
+- `ProtectedRoute` — pri setup presmeruje na `/account/security`, nie `/login`.
+- Banner v admin layoute: „Dokončite nastavenie 2FA“.
+
+**Overenie:** Login → `/account/security` → Enable → QR zostane → scan → verify → dashboard bez presmerovania na login TOTP.
+
+---
+
+## ISS-031 – Nový staff user: 2FA zapnuté bez tajného kľúča
+
+**Symptóm:** Admin vytvorí používateľa s vynúteným 2FA. Prihlásenie heslom → hneď TOTP krok, ale autentifikátor nemá čo skenovať. `POST /api/auth/2fa/enable` vráti **400** „2FA je už aktivovaná“.
+
+**Príčina:** `UserController` pri `requireTwoFactorStaff` nastavil `twoFactorEnabled=true` **bez** generovania `twoFactorSecret`.
+
+**Implementované riešenie:**
+
+- Pri vytvorení/úprave staff usera sa **neprepína** `twoFactorEnabled` automaticky — flag vznikne až pri `POST /api/auth/2fa/enable`.
+- `TwoFactorController::enable()` povolí reprovisioning, kým `twoFactorVerifiedAt === null`.
+
+**Núdzová oprava existujúceho účtu** (na disku pred deployom):
+
+```json
+"twoFactorEnabled": false,
+"twoFactorSecret": null,
+"twoFactorVerifiedAt": null
+```
+
+v `backend/storage/app/users/<id>.json`, potom re-login → `/account/security`.
+
+---
+
+## ISS-032 – `twoFactorVerifiedAt` sa neukladalo
+
+**Symptóm:** Po úspešnom overení QR funguje session, ale po **odhlásení / novom login-e** systém stále správa 2FA ako nedokončenú alebo vyžaduje TOTP nesprávne.
+
+**Príčina:** `UserRepository::extract()` / `hydrate()` neobsahovali pole `twoFactorVerifiedAt` — timestamp sa stratil pri každom `save()`.
+
+**Implementované riešenie:** Pole pridané do serializácie flat-file user JSON.
+
+**Overenie:** Po verify 2FA → logout → login → `requires_two_factor: true` (TOTP krok), nie setup QR.
+
+---
+
+## ISS-033 – Frontend 401 hard redirect (dvojitý login)
+
+**Symptóm:** Po úspešnom prihlásení krátky flash dashboardu, potom návrat na login — používateľ musí zadať **heslo znova** (full page reload).
+
+**Príčina:** Axios interceptor pri 401 volal `window.location.href = '/login'`. Pri 2FA alebo transientnom 401 to zahodilo React stav a cookie kontext.
+
+**Implementované riešenie:**
+
+- Odstránený hard redirect.
+- Custom eventy `paginium:totp-required` / `paginium:auth-expired` → `AuthContext` nastaví `pendingTwoFactor` alebo zavolá `refreshUser()`.
+- React Router (`ProtectedRoute`) rieši navigáciu bez reloadu.
+
+---
+
+## ISS-034 – Dev: ovládanie TOTP cez `.env`
+
+**Symptóm:** Počas vývoja/LAN testu je TOTP nepraktické; v `.env` nebol prepínač.
+
+**Implementované riešenie:** `TwoFactorPolicy` + `.env`:
+
+```env
+APP_ENV=development
+TWO_FACTOR_REQUIRED=false
+```
+
+Platí len v `development|local|testing` — na **produkcii** (`APP_ENV=production`) sa 2FA vždy vyžaduje.
+
+**Alternatíva bez `.env`:** Nastavenia → Bezpečnosť → vypnúť „Vynútiť 2FA pre editorov a adminov“.
+
+---
+
+## ISS-035 – PHPStan: ClientIpResolver mŕtvy null coalesce
+
+**Symptóm:** CI job „PHPStan level 8“ padá:
+
+```
+Offset 0 on non-empty-list<string> on left side of ?? always exists
+ClientIpResolver.php — $parts[0] ?? $remoteAddr
+```
+
+**Príčina:** `explode()` vždy vráti neprázdne pole; `?? $remoteAddr` je mŕtvy kód. Neplatná IP sa rieši cez `filter_var()` na ďalšom riadku.
+
+**Implementované riešenie:** `$clientIp = $parts[0];` (commit hotfix po 2.0.29).
 
 ---
 
@@ -740,8 +848,8 @@ SettingsView.tsx:162
 
 ## Súvisiace dokumenty
 
-- [CHANGELOG.md](../CHANGELOG.md) — release 2.0.29 (session hardening, cache admin, ISS-023–029)
-- [RELEASE.md](developer/RELEASE.md) — copy-paste pre GitHub release 2.0.29
+- [CHANGELOG.md](../CHANGELOG.md) — release 2.0.30 (2FA setup/login fixes, ISS-030–035)
+- [RELEASE.md](developer/RELEASE.md) — copy-paste pre GitHub release 2.0.30
 - [TESTING.md](developer/TESTING.md) – ako spúšťať testy a regresiu
 - [ROADMAP.md](ROADMAP.md) – plánované iterácie (It.41+, It.47–49)
 - [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) – It.29+ detail
