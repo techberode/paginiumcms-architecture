@@ -62,6 +62,14 @@ use PaginiumCMS\Core\Feeds\Services\FeedGenerator;
 use PaginiumCMS\Core\Feeds\Services\SitemapGenerator;
 use PaginiumCMS\Core\Seo\Services\SeoMetaBuilder;
 use PaginiumCMS\Core\Security\Services\LoginAttemptTracker;
+use PaginiumCMS\Core\Security\Firewall\FirewallBanStore;
+use PaginiumCMS\Core\Security\Firewall\FirewallIncidentLogger;
+use PaginiumCMS\Core\Security\Firewall\FirewallScenarioRegistry;
+use PaginiumCMS\Core\Security\Firewall\FirewallScanner;
+use PaginiumCMS\Core\Security\Firewall\FirewallService;
+use PaginiumCMS\Core\Logging\Services\ApplicationLogReader;
+use PaginiumCMS\Core\Logging\Services\AccessLogService;
+use PaginiumCMS\Core\Logging\Contracts\LogWriterInterface;
 use PaginiumCMS\Core\FlatFile\Services\ContentRevision;
 use PaginiumCMS\Core\FlatFile\Services\FrontMatterParser;
 use PaginiumCMS\Core\FlatFile\Services\MarkdownContentParser;
@@ -87,6 +95,8 @@ use PaginiumCMS\Http\Controllers\Admin\DeveloperController;
 use PaginiumCMS\Http\Controllers\Admin\GatedCodeEditorController;
 use PaginiumCMS\Http\Controllers\Admin\SettingsController;
 use PaginiumCMS\Http\Controllers\Admin\TrashController;
+use PaginiumCMS\Http\Controllers\Admin\FirewallController;
+use PaginiumCMS\Http\Controllers\Admin\LogController;
 use PaginiumCMS\Http\Controllers\Feeds\FeedController;
 use PaginiumCMS\Http\Controllers\Seo\SeoController;
 use PaginiumCMS\Http\Controllers\Admin\VersionController;
@@ -185,7 +195,8 @@ return [
             get(MessageRepositoryInterface::class),
             get(BackupInterface::class),
             get(TrashService::class),
-            get(UserRepository::class)
+            get(UserRepository::class),
+            get(FirewallService::class)
         ),
 
     CountsController::class => create(CountsController::class)
@@ -482,6 +493,7 @@ return [
             get(HealthCheckManager::class),
             get(ReporterInterface::class),
             get(RealtimeTracker::class),
+            get(ApplicationLogReader::class),
             get(JsonResponder::class)
         ),
 
@@ -571,6 +583,52 @@ return [
         ->constructor(
             get(FileReaderInterface::class),
             get(SettingsRepositoryInterface::class)
+        ),
+    FirewallScenarioRegistry::class => create(FirewallScenarioRegistry::class),
+    FirewallScanner::class => create(FirewallScanner::class)
+        ->constructor(get(FirewallScenarioRegistry::class)),
+    FirewallBanStore::class => create(FirewallBanStore::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(SettingsRepositoryInterface::class)
+        ),
+    FirewallIncidentLogger::class => create(FirewallIncidentLogger::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(SettingsRepositoryInterface::class)
+        ),
+    FirewallService::class => create(FirewallService::class)
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(FirewallScanner::class),
+            get(FirewallBanStore::class),
+            get(FirewallIncidentLogger::class)
+        ),
+    FirewallController::class => create(FirewallController::class)
+        ->constructor(
+            get(FirewallService::class),
+            get(JsonResponder::class)
+        ),
+    ApplicationLogReader::class => function (): ApplicationLogReader {
+        $base = __DIR__ . '/../../../storage/logs';
+
+        return new ApplicationLogReader([
+            'app' => $base . '/app',
+            'audit' => $base . '/audit',
+            'event' => $base . '/event',
+            'user' => $base . '/user',
+        ]);
+    },
+    AccessLogService::class => create(AccessLogService::class)
+        ->constructor(
+            get(LogWriterInterface::class),
+            get(SettingsRepositoryInterface::class)
+        ),
+    LogController::class => create(LogController::class)
+        ->constructor(
+            get(ApplicationLogReader::class),
+            get(AccessLogService::class),
+            get(JsonResponder::class)
         ),
     FeedGenerator::class => create(FeedGenerator::class)
         ->constructor(get(ContentIndexService::class), get(SettingsRepositoryInterface::class)),

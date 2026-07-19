@@ -21,7 +21,7 @@ Legenda: ✅ hotové · 🚧 rozpracované · ⏳ plánované · 🔴 kritická 
 | 29       | Cron planner + Job Queue                                      | ✅ [ITERATION_29.md](ITERATION_29.md) |
 | 30       | Content editory + cache fix + admin zoznamy                   | ✅ [ITERATION_30.md](ITERATION_30.md) |
 | 42       | Admin sidebar counts + list controls                      | ✅                                    |
-| **50**   | **[In-App Micro Firewall (WAF)](ITERATION_50.md)**       | **⏳ 🔴 produkcia**                   |
+| **50**   | **[In-App Micro Firewall (WAF)](ITERATION_50.md)**       | **✅ 2.0.26**                   |
 | **43**   | **Pokročilé vyhľadávanie (FE + BE, rýchle skoky v kontexte)** | **⏳**                                |
 | **44**   | **Filtre a zoradenia (admin + verejný FE)**                   | **⏳**                                |
 | **45**   | **[Redis driver detail](ITERATION_45.md)**                    | **🔵 → It.49**                       |

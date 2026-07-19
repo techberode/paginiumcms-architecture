@@ -10,6 +10,7 @@ export interface AdminCounts {
   messages?: number;
   trash?: number;
   users?: number;
+  firewall_jails?: number;
 }
 
 export async function getAdminCounts(): Promise<AdminCounts | null> {

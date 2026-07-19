@@ -24,6 +24,10 @@ export interface DashboardOverview {
     chart: ChartPoint[];
     realtime: RealtimeSnapshot;
   };
+  logs?: {
+    hours: number;
+    by_severity: Partial<Record<'debug' | 'info' | 'warning' | 'error' | 'critical', number>>;
+  };
 }
 
 export async function getDashboardOverview(): Promise<DashboardOverview | null> {

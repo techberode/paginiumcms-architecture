@@ -9,6 +9,7 @@ use PaginiumCMS\Core\Analytics\Services\RealtimeTracker;
 use PaginiumCMS\Core\Conflict\Contracts\ConflictLoggerInterface;
 use PaginiumCMS\Core\Conflict\Models\ConflictRecord;
 use PaginiumCMS\Core\Health\Services\HealthCheckManager;
+use PaginiumCMS\Core\Logging\Services\ApplicationLogReader;
 use PaginiumCMS\Core\Locking\Contracts\LockManagerInterface;
 use PaginiumCMS\Http\Support\JsonResponder;
 use Psr\Http\Message\ResponseInterface;
@@ -25,6 +26,7 @@ final class DashboardController
         private HealthCheckManager $health,
         private ReporterInterface $reporter,
         private RealtimeTracker $realtime,
+        private ApplicationLogReader $logReader,
         private JsonResponder $json
     ) {
     }
@@ -53,6 +55,10 @@ final class DashboardController
                 'overview' => $this->reporter->getOverview('today'),
                 'chart' => $this->reporter->getDailyChart(14),
                 'realtime' => $this->realtime->getSnapshot(),
+            ],
+            'logs' => [
+                'hours' => 24,
+                'by_severity' => $this->logReader->severityStats(24),
             ],
         ]);
     }

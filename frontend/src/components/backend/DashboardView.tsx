@@ -17,6 +17,7 @@ import { AnalyticsChart } from '../dashboard/AnalyticsChart';
 import { LocksPanel } from '../dashboard/LocksPanel';
 import { ConflictsPanel } from '../dashboard/ConflictsPanel';
 import { HealthPanel } from '../dashboard/HealthPanel';
+import { LogsPanel } from '../dashboard/LogsPanel';
 
 interface ContentStats {
   totalPages: number;
@@ -203,6 +204,11 @@ export const DashboardView: React.FC = () => {
           loading={loading}
         />
       </div>
+
+      <LogsPanel
+        bySeverity={overview?.logs?.by_severity ?? {}}
+        hours={overview?.logs?.hours ?? 24}
+      />
 
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
         <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">

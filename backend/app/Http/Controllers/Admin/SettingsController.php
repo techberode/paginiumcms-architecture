@@ -120,6 +120,9 @@ final class SettingsController
                 'requireApproval' => (bool) ($all['comments']['requireApproval'] ?? true),
                 'allowGuestComments' => (bool) ($all['comments']['allowGuestComments'] ?? true),
             ],
+            'firewall' => [
+                'enabled' => (bool) ($all['firewall']['enabled'] ?? true),
+            ],
         ]);
     }
 

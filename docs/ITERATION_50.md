@@ -1,7 +1,7 @@
 # Iteration 50 – In-App Micro Firewall (interný WAF)
 
-**Status:** ⏳ Planned  
-**Version target:** TBD  
+**Status:** ✅ Complete  
+**Version target:** 2.0.26  
 **Priority:** 🔴 produkčná bezpečnosť (po It.20 Core hardening)
 
 > Cieľ: ľahký WAF priamo v PHP — detekcia probe/SQLi/traversal, dočasný jail IP, eskalácia na trvalý ban, admin dashboard v Reacte.  
@@ -189,9 +189,9 @@ Nový modul **Bezpečnosť → Firewall** (`FirewallManager.tsx`):
 
 ## Definition of Done
 
-- [ ] `FirewallMiddleware` v stacku, vypínateľný v Settings
-- [ ] Min. 5 built-in scenárov (wp, env, traversal, sql probe, bad UA)
-- [ ] Jail + permanent eskalácia s flat-file registerom
-- [ ] Admin API + React prehľad + Unban/Whitelist
-- [ ] PHPUnit + PHPStan L8
-- [ ] Dokumentácia `docs/user/FIREWALL.md`
+- [x] `FirewallMiddleware` v stacku, vypínateľný v Settings
+- [x] Min. 5 built-in scenárov (wp, env, traversal, sql probe, bad UA)
+- [x] Jail + permanent eskalácia s flat-file registerom
+- [x] Admin API + React prehľad + Unban/Whitelist
+- [x] PHPUnit + PHPStan L8
+- [x] Dokumentácia `docs/user/FIREWALL.md`
