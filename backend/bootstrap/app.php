@@ -53,6 +53,8 @@ use PaginiumCMS\Core\Backup\Contracts\BackupInterface;
 use PaginiumCMS\Core\Backup\Services\BackupScheduler;
 use PaginiumCMS\Core\Backup\Commands\RunBackupScheduleCommand;
 use PaginiumCMS\Modules\Demo\Commands\RunDemoResetCommand;
+use PaginiumCMS\Modules\Security\Commands\ClearLoginLockoutsCommand;
+use PaginiumCMS\Modules\Demo\Services\DemoLoginGuard;
 use PaginiumCMS\Modules\Demo\Services\DemoMode;
 use PaginiumCMS\Modules\Demo\Services\DemoResetScheduler;
 use PaginiumCMS\Modules\Demo\Services\DemoStorageService;
@@ -291,10 +293,12 @@ $containerBuilder->addDefinitions([
     // ============================================
 
     SessionManager::class => function () {
-        if (class_exists('\PaginiumCMS\Core\Security\SecureSessionManager')) {
-            return new \PaginiumCMS\Core\Security\SecureSessionManager();
+        static $instance = null;
+        if ($instance === null) {
+            $instance = new \PaginiumCMS\Core\Security\SecureSessionManager();
         }
-        return new SessionManager();
+
+        return $instance;
     },
 
     // ============================================
@@ -370,7 +374,8 @@ $containerBuilder->addDefinitions([
             $container->get(LoginAttemptTracker::class),
             $container->get(SecurityLogger::class),
             $container->get(OtpWorkflowService::class),
-            $container->get(JsonResponder::class)
+            $container->get(JsonResponder::class),
+            $container->get(DemoLoginGuard::class)
         );
     },
 
@@ -432,6 +437,13 @@ $containerBuilder->addDefinitions([
 
     RunDemoResetCommand::class => function ($container) {
         return new RunDemoResetCommand($container->get(DemoResetScheduler::class));
+    },
+
+    ClearLoginLockoutsCommand::class => function ($container) {
+        return new ClearLoginLockoutsCommand(
+            $container->get(LoginAttemptTracker::class),
+            $container->get(CacheManager::class)
+        );
     },
 
 ]);

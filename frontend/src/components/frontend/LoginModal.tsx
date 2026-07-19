@@ -138,7 +138,7 @@ export const LoginModal: React.FC = () => {
                 Vyplniť demo údaje
               </button>
               <p className="text-xs mt-2 text-amber-800/80 dark:text-amber-200/70">
-                Toto je trenažér — zmeny sa periodicky resetujú.
+                Produkčné účty tu nefungujú — platí len demo účet. Zmeny sa periodicky resetujú.
               </p>
             </div>
           )}

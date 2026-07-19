@@ -29,6 +29,7 @@ use PaginiumCMS\Core\Notification\Services\NotificationFactory;
 use PaginiumCMS\Core\Cache\CacheManager;
 use PaginiumCMS\Core\Cache\ContentCacheService;
 use PaginiumCMS\Core\Cache\Commands\PurgeContentCacheCommand;
+use PaginiumCMS\Core\Cache\Services\CacheAdminService;
 use PaginiumCMS\Core\FlatFile\Commands\ContentDiagnoseCommand;
 use PaginiumCMS\Core\CodeEditor\Services\CodeEditorManager;
 use PaginiumCMS\Core\CodeEditor\Services\CodeEditorLogger;
@@ -89,6 +90,7 @@ use PaginiumCMS\Core\Validation\Validator;
 use PaginiumCMS\Core\Versioning\Services\ContentVersioningService;
 use PaginiumCMS\Core\Workflow\Services\OtpWorkflowService;
 use PaginiumCMS\Core\Versioning\Services\EnhancedVersionManager;
+use PaginiumCMS\Http\Controllers\Admin\CacheController;
 use PaginiumCMS\Http\Controllers\Admin\AnalyticsController;
 use PaginiumCMS\Http\Controllers\Admin\AuditTrailController;
 use PaginiumCMS\Http\Controllers\Admin\DashboardController;
@@ -140,6 +142,7 @@ use PaginiumCMS\Modules\Media\Services\StockImageImporter;
 use PaginiumCMS\Modules\Demo\Contracts\DemoDataProviderInterface;
 use PaginiumCMS\Modules\Demo\Commands\RunDemoResetCommand;
 use PaginiumCMS\Modules\Demo\Services\DemoDataProvider;
+use PaginiumCMS\Modules\Demo\Services\DemoLoginGuard;
 use PaginiumCMS\Modules\Demo\Services\DemoMode;
 use PaginiumCMS\Modules\Demo\Services\DemoResetScheduler;
 use PaginiumCMS\Modules\Demo\Services\DemoStorageService;
@@ -282,6 +285,20 @@ return [
     // Content cache (ChainedDriver via bootstrap CacheManager)
     ContentCacheService::class => create(ContentCacheService::class)
         ->constructor(get(CacheManager::class)),
+
+    CacheAdminService::class => create(CacheAdminService::class)
+        ->constructor(
+            get(CacheManager::class),
+            get(ContentCacheService::class),
+            dirname(__DIR__, 3) . '/storage/cache'
+        ),
+
+    CacheController::class => create(CacheController::class)
+        ->constructor(
+            get(CacheAdminService::class),
+            get(SecurityLogger::class),
+            get(JsonResponder::class)
+        ),
 
     // Media module
     MediaRepositoryInterface::class => create(MediaRepository::class)
@@ -731,6 +748,8 @@ return [
             get(JsonResponder::class)
         ),
     DemoMode::class => create(DemoMode::class),
+    DemoLoginGuard::class => create(DemoLoginGuard::class)
+        ->constructor(get(DemoMode::class)),
     DemoStorageService::class => create(DemoStorageService::class)
         ->constructor(get(DemoMode::class), get(FileReaderInterface::class)),
     DemoDataProviderInterface::class => create(DemoDataProvider::class)

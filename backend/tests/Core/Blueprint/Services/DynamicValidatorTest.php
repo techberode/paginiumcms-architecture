@@ -52,4 +52,24 @@ final class DynamicValidatorTest extends TestCase
             'status' => 'draft',
         ]);
     }
+
+    public function testNormalizesLegacyTemplateValueToDefault(): void
+    {
+        vfsStream::setup('root');
+
+        $reader = $this->createMock(FileReaderInterface::class);
+        $reader->method('getBasePath')->willReturn(vfsStream::url('root'));
+
+        $repo = new BlueprintRepository($reader);
+        $validator = new DynamicValidator($repo, new Validator());
+
+        $validated = $validator->validate('page', [
+            'title' => 'Legacy',
+            'slug' => 'legacy-page',
+            'status' => 'published',
+            'template' => 'legacy-page',
+        ]);
+
+        $this->assertSame('default', $validated['template']);
+    }
 }

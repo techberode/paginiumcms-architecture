@@ -14,6 +14,11 @@ final class DebugEventLogger
 
     public static function isEnabled(): bool
     {
+        $appEnv = getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? 'development');
+        if ($appEnv === 'testing') {
+            return false;
+        }
+
         return filter_var(
             getenv('APP_DEBUG') ?: ($_ENV['APP_DEBUG'] ?? false),
             FILTER_VALIDATE_BOOLEAN

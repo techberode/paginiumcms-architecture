@@ -1,6 +1,6 @@
 # PaginiumCMS
 
-> **Verzia:** 2.0.28 · **Posledná aktualizácia:** júl 2026  
+> **Verzia:** 2.0.29 · **Posledná aktualizácia:** júl 2026  
 > **Unreleased:** It.14 Code policy — [CHANGELOG](CHANGELOG.md#unreleased)
 
 Headless flat-file CMS — PHP 8.5 backend (Slim 4) + React admin SPA.
@@ -26,12 +26,12 @@ cd frontend && npm install && npm run dev
 cd frontend && VITE_MSW=true npm run dev
 ```
 
-## Aktuálny stav (2.0.28)
+## Aktuálny stav (2.0.29)
 
 | Oblasť | Stav |
 |--------|------|
 | Backend API | ✅ Slim 4, auto-discovery routes, JsonResponder, PHPStan L8 |
-| Auth + 2FA + RBAC | ✅ Session, TOTP, `PermissionMiddleware` |
+| Auth + 2FA + RBAC | ✅ Session hardening (2.0.29), TOTP, `PermissionMiddleware` |
 | Content + index | ✅ It.19–20 — pagination, search, trash, published filter |
 | Media (FE + DAM) | ✅ It.8 + It.24 — `MediaManager`, picker, WYSIWYG, folders |
 | SEO + feeds | ✅ It.23 SEO meta (2.0.11) · It.10 RSS/sitemap/robots |
@@ -40,6 +40,7 @@ cd frontend && VITE_MSW=true npm run dev
 | SSO + path ACL + security audit | ✅ It.11 — **2.0.27** |
 | Blueprint / schema engine | ✅ It.12 — **2.0.28** |
 | Demo sandbox (demo.paginiumcms.com) | ✅ It.13 v2 — **2.0.28**, nie zákaznícky balík |
+| Session + cache admin (LAN deploy) | ✅ **2.0.29** — ISS-024–029 |
 | Advanced search + OTP workflows | ✅ It.41–43 — **2.0.27** |
 | PHPUnit | ✅ **631 testov** (15 skipped) |
 | Frontend | ✅ Admin SPA, public site, demo login UI, Ctrl+K search |

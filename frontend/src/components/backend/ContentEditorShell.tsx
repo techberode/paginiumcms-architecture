@@ -20,6 +20,16 @@ import {
   type ArticleCommentsSettings,
 } from './ArticleCommentsPanel';
 
+const PAGE_TEMPLATE_OPTIONS = [
+  { value: 'default', label: 'Predvolená' },
+  { value: 'home', label: 'Domov (hero)' },
+  { value: 'about', label: 'O nás' },
+  { value: 'contact', label: 'Kontakt' },
+  { value: 'landing', label: 'Landing' },
+  { value: 'services', label: 'Služby' },
+  { value: 'blog', label: 'Blog' },
+] as const;
+
 interface ContentEditorShellProps {
   type: ContentType;
   isNew: boolean;
@@ -205,14 +215,18 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
             {type === 'page' && (
               <div className="form-group">
                 <label className="form-label">Šablóna</label>
-                <input
-                  type="text"
-                  value={template}
+                <select
+                  value={template || 'default'}
                   onChange={(e) => onTemplateChange(e.target.value)}
                   disabled={!canEdit}
                   className="form-input font-mono text-sm"
-                  placeholder="home"
-                />
+                >
+                  {PAGE_TEMPLATE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
               </div>
             )}
 

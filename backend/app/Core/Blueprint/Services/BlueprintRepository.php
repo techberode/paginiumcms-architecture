@@ -206,8 +206,8 @@ final class BlueprintRepository
                         'key' => 'template',
                         'type' => 'select',
                         'label' => 'Šablóna',
-                        'options' => ['default', 'contact', 'landing'],
-                        'rules' => ['string', 'in:default,contact,landing'],
+                        'options' => ['default', 'home', 'about', 'contact', 'landing', 'services', 'blog'],
+                        'rules' => ['string', 'in:default,home,about,contact,landing,services,blog'],
                         'default' => 'default',
                     ])->toArray(),
                     FieldDefinition::fromArray([

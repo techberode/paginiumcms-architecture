@@ -236,6 +236,22 @@ final class SecurityLogger
         );
     }
 
+    /**
+     * @param array<string, mixed> $result
+     */
+    public function logCachePurge(User $user, string $scope, array $result): void
+    {
+        $this->securityAudit?->append(
+            'cache_purge',
+            LogSeverity::INFO,
+            sprintf('Manual cache purge: %s', $scope),
+            $user->getId(),
+            $user->getEmail(),
+            null,
+            ['scope' => $scope, 'result' => $result]
+        );
+    }
+
     public function logSsoLogin(User $user, string $provider, string $ip): void
     {
         $this->loginAttempts?->clearSuccess($ip, $user->getEmail());

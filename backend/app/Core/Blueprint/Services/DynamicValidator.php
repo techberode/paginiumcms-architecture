@@ -31,6 +31,7 @@ final class DynamicValidator
         }
 
         $blueprint = $this->blueprints->get($type);
+        $data = $this->normalizeSelectValues($blueprint, $data);
 
         $validated = $this->validator->validate($data, $this->rulesFromBlueprint($blueprint));
 
@@ -67,6 +68,43 @@ final class DynamicValidator
         }
 
         return $rules;
+    }
+
+    /**
+     * Maps legacy/unknown select values to blueprint default (e.g. old editor used slug as template).
+     *
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
+    private function normalizeSelectValues(Blueprint $blueprint, array $data): array
+    {
+        foreach ($blueprint->fields as $field) {
+            if ($field->type !== 'select' || $field->options === [] || !array_key_exists($field->key, $data)) {
+                continue;
+            }
+
+            $value = $data[$field->key];
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+            $stringValue = (string) $value;
+            if (in_array($stringValue, $field->options, true)) {
+                continue;
+            }
+
+            $fallback = $field->default;
+            if (is_string($fallback) && in_array($fallback, $field->options, true)) {
+                $data[$field->key] = $fallback;
+                continue;
+            }
+
+            if (in_array('default', $field->options, true)) {
+                $data[$field->key] = 'default';
+            }
+        }
+
+        return $data;
     }
 
     /**

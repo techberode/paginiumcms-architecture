@@ -97,7 +97,26 @@ export const authApi = {
 
   getCurrentUser: async (): Promise<User | null> => {
     const res = await apiClient.get<{ user?: User }>('/api/auth/me');
+    if (res.status === 401) {
+      return null;
+    }
+    if (!res.success) {
+      return null;
+    }
     return (res.user as User | undefined) ?? res.data?.user ?? null;
+  },
+
+  /** Na rozlíšenie expirovanej session vs. dočasnej chyby siete. */
+  probeSession: async (): Promise<{ user: User | null; expired: boolean }> => {
+    const res = await apiClient.get<{ user?: User }>('/api/auth/me');
+    if (res.status === 401) {
+      return { user: null, expired: true };
+    }
+    if (!res.success) {
+      return { user: null, expired: false };
+    }
+    const user = (res.user as User | undefined) ?? res.data?.user ?? null;
+    return { user, expired: false };
   },
 
   changePassword: async (oldPassword: string, newPassword: string): Promise<boolean> => {

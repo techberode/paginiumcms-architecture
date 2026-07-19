@@ -26,6 +26,7 @@ class MaintenanceModeMiddleware implements MiddlewareInterface
         '/api/health',
         '/api/test',
         '/api/settings/public',
+        '/api/debug/',
         '/storage/',
     ];
 

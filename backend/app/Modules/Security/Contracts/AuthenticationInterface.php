@@ -47,6 +47,11 @@ interface AuthenticationInterface
     public function isAuthenticated(): bool;
 
     /**
+     * Predĺži server-side session pri aktívnej práci (no-op ak nie je prihlásený).
+     */
+    public function touchSession(): void;
+
+    /**
      * Zmení heslo používateľa.
      *
      * @param User $user Používateľ.

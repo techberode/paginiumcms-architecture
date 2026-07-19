@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Middleware;
 
-use PaginiumCMS\Modules\Security\Services\AuthenticationManager;
+use PaginiumCMS\Modules\Security\Contracts\AuthenticationInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -17,11 +17,9 @@ use PaginiumCMS\Support\JsonHelper;
  */
 class AuthMiddleware implements MiddlewareInterface
 {
-    private AuthenticationManager $auth;
-
-    public function __construct(AuthenticationManager $auth)
-    {
-        $this->auth = $auth;
+    public function __construct(
+        private AuthenticationInterface $auth
+    ) {
     }
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
@@ -36,6 +34,8 @@ class AuthMiddleware implements MiddlewareInterface
                 ->withStatus(401)
                 ->withHeader('Content-Type', 'application/json');
         }
+
+        $this->auth->touchSession();
 
         return $handler->handle($request->withAttribute('user', $this->auth->getCurrentUser()));
     }

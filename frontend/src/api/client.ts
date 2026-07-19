@@ -102,9 +102,13 @@ class ApiClient {
 
         if (error.response?.status === 401) {
           const requestUrl = String(error.config?.url ?? '');
+          const payload = error.response?.data as ApiResponse | undefined;
           const skipRedirect =
             requestUrl.includes('/api/auth/me') ||
-            requestUrl.includes('/api/settings/public');
+            requestUrl.includes('/api/settings/public') ||
+            requestUrl.includes('/api/locks/') ||
+            requestUrl.includes('/api/drafts/') ||
+            payload?.requires_two_factor === true;
 
           if (!skipRedirect) {
             const adminPrefixes = [
