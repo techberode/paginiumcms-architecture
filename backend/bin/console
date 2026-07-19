@@ -10,6 +10,7 @@ use PaginiumCMS\Core\Monitoring\Commands\RunMonitoringScheduleCommand;
 use PaginiumCMS\Core\Scheduler\Commands\ProcessWorkerCommand;
 use PaginiumCMS\Core\Scheduler\Commands\RunSchedulerCommand;
 use PaginiumCMS\Core\Cache\Commands\PurgeContentCacheCommand;
+use PaginiumCMS\Core\FlatFile\Commands\ContentDiagnoseCommand;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
@@ -23,4 +24,5 @@ $application->addCommand($container->get(RunMonitoringScheduleCommand::class));
 $application->addCommand($container->get(RunSchedulerCommand::class));
 $application->addCommand($container->get(ProcessWorkerCommand::class));
 $application->addCommand($container->get(PurgeContentCacheCommand::class));
+$application->addCommand($container->get(ContentDiagnoseCommand::class));
 $application->run();
