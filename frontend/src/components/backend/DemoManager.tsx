@@ -50,8 +50,8 @@ export const DemoManager: React.FC = () => {
       <div className="flex items-center gap-3">
         <FlaskConical className="text-amber-500" />
         <div>
-          <h1 className="text-2xl font-black">Demo modul</h1>
-          <p className="text-sm text-slate-500">Izolované úložisko pre školenia a sandbox</p>
+          <h1 className="text-2xl font-black">Demo sandbox</h1>
+          <p className="text-sm text-slate-500">Predvádzacie vozidlo — iba demo.paginiumcms.com</p>
         </div>
       </div>
 
@@ -69,6 +69,21 @@ export const DemoManager: React.FC = () => {
         <p>
           <span className="font-bold">Súbory v demo:</span> {status?.file_count ?? 0}
         </p>
+        {status?.last_reset_at && (
+          <p>
+            <span className="font-bold">Posledný reset:</span> {status.last_reset_at}
+          </p>
+        )}
+        {typeof status?.auto_reset_minutes === 'number' && (
+          <p>
+            <span className="font-bold">Auto-reset:</span> každých {status.auto_reset_minutes} min
+          </p>
+        )}
+        {status?.credentials && (
+          <p className="font-mono text-xs bg-slate-100 dark:bg-slate-800 p-2 rounded-lg">
+            {status.credentials.email} / {status.credentials.password}
+          </p>
+        )}
       </div>
 
       <button

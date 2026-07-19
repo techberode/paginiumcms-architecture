@@ -74,6 +74,10 @@ backend/storage/app/content/blog/
 backend/storage/app/content/media/
 backend/storage/app/content/trash/
 
+# Demo sandbox runtime (seeded on boot when DEMO_MODE=true)
+backend/storage/app/demo/*
+!backend/storage/app/demo/.gitkeep
+
 # Misplaced runtime logs under app/ (should use backend/storage/logs/)
 backend/app/storage/
 

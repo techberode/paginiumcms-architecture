@@ -1,5 +1,7 @@
 # PaginiumCMS – Continuation context & implementation plan
 
+> **Poslanie projektu:** 100 % open source, bez poplatkov, učenie full-stack — nie predaj CMS. → [PHILOSOPHY.md](PHILOSOPHY.md)
+
 > **Language note:** Project documentation is being migrated to English (see `.cursorrules`).  
 > For per-iteration details see **`docs/ITERATION_{N}.md`** (1–43). Full index in [`docs/README.md`](README.md#documentation-index).
 
@@ -94,7 +96,7 @@ Legenda: ✅ DONE · 🟡 PARTIAL (existuje časť, treba dokončiť/prepojiť) 
 | H | **Konektory ntfy / Discord / Telegram / …** | ⛔ | Žiadny kód/adaptéry/konfigurácia. |
 | I | **Toast: zap/vyp, pozícia, debug mód** | 🟡 | `NotificationContext` + `useToast` fungujú (fix top-right, len `duration`). Chýba prepínanie, pozícia, debug mód, perzistencia. |
 | J | **.XML Feeds (RSS/sitemap) + nastavenia** | ✅ | **It.10** — `FeedGenerator`, `/feed.xml`, `/sitemap.xml`, `/robots.txt`, settings `feeds`, cache + head links ([ITERATION_10.md](ITERATION_10.md)). |
-| K | **Demo modul (izolované MOCK dáta)** | ⛔ | Neexistuje; staré mocky odstránené. |
+| K | **Demo sandbox (iba demo.paginiumcms.com)** | ✅ | v1+v2 — full try CMS, auto-reset, demo login ([ITERATION_13.md](ITERATION_13.md), 2.0.28). |
 | L | **API Tracker + reporty návštevnosti + notifikácie** | ✅ | It.7 — `AnalyticsManager`, reporty, middleware, dashboard. |
 | M | **Jednotný Error Handler** | ✅ | `ApiErrorHandler` + Slim error middleware v `bootstrap/app.php`; 404 catch-all zjednotený; 422 s `errors` mapou. |
 | N | **Blueprint / Schema Engine** | ✅ | **It.12** — `BlueprintRepository`, `DynamicValidator`, admin `/blueprints`. Integrácia do content save ⏳. |
@@ -177,8 +179,10 @@ od ktorých závisí väčšina ostatných funkcií, a aby každá iterácia pri
 ### Iterácia 12 – Blueprint / Schema Engine 🔴 (vysoká)
 - **Blueprints (N):** flat-file definície typov obsahu a polí (`data/blueprints/*.json`), `Core/Blueprint/*` (typy polí, validácia proti schéme, prepojenie na zdieľanú validáciu z It. 4), dynamické admin formuláre na FE. Veľká architektonická zmena – aplikovať po schválení návrhu.
 
-### Iterácia 13 – Demo modul (izolované MOCK dáta) 🟡 (stredná)
-- **Demo (K):** samostatný base-path úložiska (napr. `storage/app/demo/`) a `DEMO_MODE` prepínač, poskytovateľ MOCK dát, ktorý **nikdy** nezapisuje do reálneho obsahu; garancia integrity (read-only mosty, oddelené DI väzby).
+### Iterácia 13 – Demo sandbox (iba demo.paginiumcms.com) 🟡
+- **Nie je feature balík** — len vlastná try-inštancia (`demo.paginiumcms.com`), zákaznícka produkcia `DEMO_MODE=false`.
+- **v1 ✅:** izolované `storage/app/demo/`, reset API, banner, `/demo`.
+- **v2 ⏳:** prepnutie celého CMS na demo strom, auto-reset, demo login, odkaz z hlavnej domény.
 
 ### Iterácia 14 – Politika kódu + oprava CodeEditor základov 🔵 (vyššia) — *závisí od It. 4, D*
 - **Politika kódu (W):** `Core/CodePolicy/*` (alebo `Http/CodePolicy/`) – `CodePolicyEngine`: syntax (`SyntaxChecker` rozšírený) + security scan (zakázané PHP konštrukty) + kompatibilita (whitelist namespaces/súborov). Konfigurácia v `settings.json` skupina `codePolicy`. HTTP 422 pri zlyhaní.
@@ -254,7 +258,7 @@ It.9 prototype port (nav, comments, contact): see [ITERATION_9.md](ITERATION_9.m
 It.10 XML Feeds — ✅ ([ITERATION_10.md](ITERATION_10.md), 2.0.10 + polish Unreleased).
 It.11 SSO + jemnozrnné ACL + bezpečnostný audit log — ✅ ([ITERATION_11.md](ITERATION_11.md), Unreleased).
 It.12 Blueprint/Schema engine — ✅ ([ITERATION_12.md](ITERATION_12.md), Unreleased).
-It.13 Demo modul — ✅ ([ITERATION_13.md](ITERATION_13.md), Unreleased).
+It.13 Demo sandbox (iba demo.paginiumcms.com) — ✅ ([ITERATION_13.md](ITERATION_13.md), 2.0.28).
 It.14 Politika kódu (CodePolicyEngine) + oprava CodeEditor path/FE kontraktu.
 It.15 Externé doplnky mimo Core: PluginManager, install/import, HookManager DI.
 It.16 CodeEditor plný stack: moduly/témy/doplnky editovateľné s policy gate.

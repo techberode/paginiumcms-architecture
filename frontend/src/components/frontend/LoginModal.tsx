@@ -15,6 +15,7 @@ import {
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
 import { securityApi, type SsoProvider } from '../../api/security';
+import { useSettingsContext } from '../../context/SettingsContext';
 
 export const LoginModal: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -26,6 +27,8 @@ export const LoginModal: React.FC = () => {
   const [ssoProviders, setSsoProviders] = useState<SsoProvider[]>([]);
   const { login, verifyTwoFactorLogin, pendingTwoFactor, user } = useAuth();
   const toast = useToast();
+  const { settings } = useSettingsContext();
+  const demoCredentials = settings.demo?.enabled ? settings.demo.credentials : null;
 
   useEffect(() => {
     void (async () => {
@@ -118,6 +121,27 @@ export const LoginModal: React.FC = () => {
         </div>
 
         <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/10 p-8">
+          {demoCredentials && step === 'credentials' && (
+            <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/40 p-4 text-sm text-amber-900 dark:text-amber-100">
+              <p className="font-bold mb-2">Demo prihlasovacie údaje</p>
+              <p className="font-mono text-xs mb-3">
+                {demoCredentials.email} / {demoCredentials.password}
+              </p>
+              <button
+                type="button"
+                className="w-full py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold"
+                onClick={() => {
+                  setEmail(demoCredentials.email);
+                  setPassword(demoCredentials.password);
+                }}
+              >
+                Vyplniť demo údaje
+              </button>
+              <p className="text-xs mt-2 text-amber-800/80 dark:text-amber-200/70">
+                Toto je trenažér — zmeny sa periodicky resetujú.
+              </p>
+            </div>
+          )}
           {step === 'credentials' ? (
             <form className="space-y-5" onSubmit={handleCredentials}>
               <div>

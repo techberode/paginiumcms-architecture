@@ -1,9 +1,11 @@
 # PaginiumCMS
 
-> **Verzia:** 2.0.27 · **Posledná aktualizácia:** júl 2026  
-> **Unreleased:** It.12–13 Blueprint + Demo — [CHANGELOG](CHANGELOG.md#unreleased)
+> **Verzia:** 2.0.28 · **Posledná aktualizácia:** júl 2026  
+> **Unreleased:** It.14 Code policy — [CHANGELOG](CHANGELOG.md#unreleased)
 
 Headless flat-file CMS — PHP 8.5 backend (Slim 4) + React admin SPA.
+
+**Filozofia:** 100 % open source, bez poplatkov, nikdy ako platené riesenie — [docs/PHILOSOPHY.md](docs/PHILOSOPHY.md)
 
 **Kompletná dokumentácia:** [`docs/README.md`](docs/README.md)
 
@@ -24,7 +26,7 @@ cd frontend && npm install && npm run dev
 cd frontend && VITE_MSW=true npm run dev
 ```
 
-## Aktuálny stav (2.0.27)
+## Aktuálny stav (2.0.28)
 
 | Oblasť | Stav |
 |--------|------|
@@ -36,11 +38,11 @@ cd frontend && VITE_MSW=true npm run dev
 | Scheduler + monitoring | ✅ It.7, It.29 — cron planner, reports, `/scheduler` |
 | WAF + structured logs | ✅ It.50 — 2.0.26 |
 | SSO + path ACL + security audit | ✅ It.11 — **2.0.27** |
-| Blueprint / schema engine | ✅ It.12 (Unreleased) |
-| Demo module (sandbox) | ✅ It.13 (Unreleased) |
+| Blueprint / schema engine | ✅ It.12 — **2.0.28** |
+| Demo sandbox (demo.paginiumcms.com) | ✅ It.13 v2 — **2.0.28**, nie zákaznícky balík |
 | Advanced search + OTP workflows | ✅ It.41–43 — **2.0.27** |
-| PHPUnit | ✅ **614 testov** (15 skipped) |
-| Frontend | ✅ Admin SPA, public site, Monaco Code Editor, Ctrl+K search (Unreleased) |
+| PHPUnit | ✅ **631 testov** (15 skipped) |
+| Frontend | ✅ Admin SPA, public site, demo login UI, Ctrl+K search |
 
 ### Ďalší krok
 
@@ -51,6 +53,7 @@ Detail: [docs/ROADMAP.md](docs/ROADMAP.md) · [docs/CONTINUATION.md](docs/CONTIN
 ## Kľúčové dokumenty
 
 - [Architektúra & stav projektu](docs/README.md)
+- **[Filozofia & dôvod vzniku](docs/PHILOSOPHY.md)**
 - [API kontrakt (JSON obaly)](docs/architecture/API_CONTRACT.md)
 - [Roadmap](docs/ROADMAP.md)
 - [Changelog](CHANGELOG.md)

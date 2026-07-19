@@ -7,6 +7,9 @@ export interface DemoStatus {
   content_path: string;
   file_count: number;
   seeded: boolean;
+  auto_reset_minutes?: number;
+  last_reset_at?: string | null;
+  credentials?: { email: string; password: string } | null;
 }
 
 export const demoApi = {
