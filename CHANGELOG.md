@@ -20,13 +20,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | Post-audit security hardening + QA cleanup + roadmap It.47–49 | **2.0.24** | [below](#2024--2026-07-19) |
 | Admin inbox UX, list controls, comments/nav per-content | **2.0.25** | [below](#2025--2026-07-19) |
 | It.50 WAF + structured logging + admin Logy | **2.0.26** | [below](#2026--2026-07-19) |
-| It.43 Advanced search + test cleanup | **Unreleased** | [Unreleased](#unreleased) |
+| It.10 polish, It.11 SSO/ACL, It.41–43 search/OTP | **2.0.27** | [below](#2027--2026-07-19) |
 
 ---
 
 ## [Unreleased]
 
-Advanced admin/public search (It.43), SSO + ACL + security audit (It.11), test storage isolation, and `run-all-tests.zsh` cleanup pipeline.
+_Pending changes after 2.0.27._
+
+---
+
+## [2.0.27] – 2026-07-19
+
+Enterprise security (It.11), advanced search (It.43), workflow OTP (It.41), admin sidebar counts (It.42), connector auth (It.47), and RSS/sitemap polish (It.10).
 
 ### Added (It.11 — SSO, path ACL, security audit)
 

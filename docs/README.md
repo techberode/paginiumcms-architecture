@@ -1,6 +1,6 @@
 # 🏛️ PaginiumCMS
 
-> **Version:** 2.0.26 (Unreleased: It.41–43, test cleanup — see [CHANGELOG](../CHANGELOG.md#unreleased))  
+> **Version:** 2.0.27 (Unreleased: It.12 — see [CHANGELOG](../CHANGELOG.md#unreleased))  
 > **Last updated:** 19 July 2026  
 > Modern, modular, Headless Flat-File Content Management System powered by Slim Framework (PHP) & React.
 
@@ -231,7 +231,7 @@ See [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md) and [user/CODE_EDITOR.md](u
 | **8** | **[ITERATION_8.md](ITERATION_8.md)** | ✅ **Media manager FE** (upload, picker, WYSIWYG, 2.0.4) |
 | 9 | [ITERATION_9.md](ITERATION_9.md) | ✅ Prototype port (nav, comments, contact) |
 | 10 | [ITERATION_10.md](ITERATION_10.md) | ✅ **RSS/sitemap/robots** + cache |
-| 11 | [ITERATION_11.md](ITERATION_11.md) | ✅ **SSO + ACL + security audit** (Unreleased) |
+| 11 | [ITERATION_11.md](ITERATION_11.md) | ✅ **SSO + ACL + security audit** (2.0.27) |
 | 19–22 | [ITERATION_19.md](ITERATION_19.md) … [ITERATION_22.md](ITERATION_22.md) | ✅ Index, hardening, contract, ops + feeds ship |
 | **23** | **[ITERATION_23.md](ITERATION_23.md)** | ✅ **SEO meta engine** (public `<head>` tags, 2.0.11) |
 | 27 | [ITERATION_27.md](ITERATION_27.md) | ✅ Admin view modes + SEO panel |

@@ -1,7 +1,7 @@
 # PaginiumCMS
 
-> **Verzia:** 2.0.26 · **Posledná aktualizácia:** júl 2026  
-> **Unreleased:** It.11 (SSO, ACL, security audit) + It.41–43 — [CHANGELOG](CHANGELOG.md#unreleased)
+> **Verzia:** 2.0.27 · **Posledná aktualizácia:** júl 2026  
+> **Unreleased:** It.12 Blueprint engine — [CHANGELOG](CHANGELOG.md#unreleased)
 
 Headless flat-file CMS — PHP 8.5 backend (Slim 4) + React admin SPA.
 
@@ -24,7 +24,7 @@ cd frontend && npm install && npm run dev
 cd frontend && VITE_MSW=true npm run dev
 ```
 
-## Aktuálny stav (2.0.26)
+## Aktuálny stav (2.0.27)
 
 | Oblasť | Stav |
 |--------|------|
@@ -35,7 +35,8 @@ cd frontend && VITE_MSW=true npm run dev
 | SEO + feeds | ✅ It.23 SEO meta (2.0.11) · It.10 RSS/sitemap/robots |
 | Scheduler + monitoring | ✅ It.7, It.29 — cron planner, reports, `/scheduler` |
 | WAF + structured logs | ✅ It.50 — 2.0.26 |
-| SSO + path ACL + security audit | ✅ It.11 (Unreleased) |
+| SSO + path ACL + security audit | ✅ It.11 — **2.0.27** |
+| Advanced search + OTP workflows | ✅ It.41–43 — **2.0.27** |
 | PHPUnit | ✅ **614 testov** (15 skipped) |
 | Frontend | ✅ Admin SPA, public site, Monaco Code Editor, Ctrl+K search (Unreleased) |
 
