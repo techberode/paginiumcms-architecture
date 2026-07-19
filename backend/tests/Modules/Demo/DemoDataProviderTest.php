@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Tests\Modules\Demo;
 
 use PaginiumCMS\Modules\Demo\Services\DemoDataProvider;
+use PaginiumCMS\Modules\Demo\Services\DemoMode;
 use PHPUnit\Framework\TestCase;
 
 final class DemoDataProviderTest extends TestCase
@@ -32,7 +33,7 @@ final class DemoDataProviderTest extends TestCase
         putenv('DEMO_MODE=false');
         $_ENV['DEMO_MODE'] = 'false';
 
-        $provider = new DemoDataProvider();
+        $provider = new DemoDataProvider(new DemoMode());
 
         $this->assertFalse($provider->isEnabled());
         $this->assertSame([], $provider->comments());
@@ -45,7 +46,7 @@ final class DemoDataProviderTest extends TestCase
         putenv('DEMO_MODE=true');
         $_ENV['DEMO_MODE'] = 'true';
 
-        $provider = new DemoDataProvider();
+        $provider = new DemoDataProvider(new DemoMode());
 
         $this->assertTrue($provider->isEnabled());
         $this->assertNotEmpty($provider->comments());
@@ -58,7 +59,7 @@ final class DemoDataProviderTest extends TestCase
         putenv('DEMO_MODE=true');
         $_ENV['DEMO_MODE'] = 'true';
 
-        $provider = new DemoDataProvider();
+        $provider = new DemoDataProvider(new DemoMode());
         $filtered = $provider->comments('uvod-do-flatfile');
 
         $this->assertCount(1, $filtered);

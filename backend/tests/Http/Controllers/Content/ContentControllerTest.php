@@ -149,4 +149,20 @@ class ContentControllerTest extends TestCase
         $this->assertTrue($deleteData['success']);
         $this->assertSame(2, $deleteData['data']['succeeded']);
     }
+
+    public function testCreatePageRejectsInvalidSlugViaBlueprint(): void
+    {
+        $this->loginAsAdminUser();
+
+        $response = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/pages', [
+                'title' => 'Bad slug page',
+                'slug' => 'Invalid Slug!',
+                'status' => 'draft',
+                'content' => 'Test',
+            ])
+        );
+
+        $this->assertSame(400, $response->getStatusCode());
+    }
 }

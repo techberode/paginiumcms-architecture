@@ -13,7 +13,9 @@ use PaginiumCMS\Core\FlatFile\Models\Article;
 use PaginiumCMS\Core\FlatFile\Models\Content;
 use PaginiumCMS\Core\FlatFile\Models\Page;
 use PaginiumCMS\Core\FlatFile\Services\ContentRevision;
+use PaginiumCMS\Core\Blueprint\Services\DynamicValidator;
 use PaginiumCMS\Core\Cache\ContentCacheService;
+use PaginiumCMS\Core\Validation\ValidationException;
 use PaginiumCMS\Core\Versioning\Services\ContentVersioningService;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\Workflow\Services\OtpWorkflowService;
@@ -41,7 +43,8 @@ class ContentController
         private JsonResponder $json,
         private SettingsRepositoryInterface $settings,
         private AuthenticationInterface $auth,
-        private OtpWorkflowService $otpWorkflow
+        private OtpWorkflowService $otpWorkflow,
+        private DynamicValidator $dynamicValidator
     ) {
     }
 
@@ -172,7 +175,7 @@ class ContentController
     private function createContent(ServerRequestInterface $request, ResponseInterface $response, string $type): ResponseInterface
     {
         $data = $this->parseJsonBody($request);
-        $validation = $this->validatePayload($data, true);
+        $validation = $this->validatePayload($data, $type, true);
 
         if ($validation !== null) {
             return $this->json->error($response, $validation, 400);
@@ -245,7 +248,7 @@ class ContentController
         }
 
         $data = $this->parseJsonBody($request);
-        $validation = $this->validatePayload($data, false);
+        $validation = $this->validatePayload($data, $type, false);
 
         if ($validation !== null) {
             return $this->json->error($response, $validation, 400);
@@ -698,8 +701,16 @@ class ContentController
 
     /**
      * @param array<int|string, mixed> $data
-     */private function validatePayload(array $data, bool $requireSlug): ?string
+     */private function validatePayload(array $data, string $type, bool $requireSlug): ?string
     {
+        try {
+            $this->dynamicValidator->validate($type, $this->normalizeValidationData($data));
+        } catch (ValidationException $e) {
+            $messages = $e->getFlatMessages();
+
+            return $messages[0] ?? Lang::get('invalid_status', [], 'content');
+        }
+
         if (empty($data['title'])) {
             return Lang::get('title_required', [], 'content');
         }
@@ -713,6 +724,20 @@ class ContentController
         }
 
         return null;
+    }
+
+    /**
+     * @param array<int|string, mixed> $data
+     * @return array<string, mixed>
+     */
+    private function normalizeValidationData(array $data): array
+    {
+        $normalized = [];
+        foreach ($data as $key => $value) {
+            $normalized[(string) $key] = $value;
+        }
+
+        return $normalized;
     }
 
     /**

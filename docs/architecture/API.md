@@ -120,6 +120,7 @@ Canonical JSON shapes: `{ success, data?, error?, errors?, meta? }`. Auth endpoi
 | Logs | `frontend/src/api/logs.ts` |
 | Security (audit, ACL, SSO) | `frontend/src/api/security.ts` |
 | Blueprints | `frontend/src/api/blueprint.ts` |
+| Demo | `frontend/src/api/demo.ts` |
 | Workflows (OTP) | `frontend/src/api/workflows.ts` |
 | Barrel | `frontend/src/api/index.ts` |
 
@@ -150,6 +151,15 @@ Storage: `data/security/audit_events.json`, `data/security/acl.json`.
 | `DELETE` | `/api/admin/blueprints/{type}` | Custom types only |
 
 Storage: `data/blueprints/{type}.json`.
+
+### Demo (It.13)
+
+| Method | Route | Notes |
+|--------|-------|-------|
+| `GET` | `/api/admin/demo/status` | DEMO_MODE, paths, file count |
+| `POST` | `/api/admin/demo/reset` | SUPER_ADMIN; re-seed `storage/app/demo/` |
+
+Public settings: `demo.enabled`.
 
 ---
 

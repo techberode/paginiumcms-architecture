@@ -6,18 +6,21 @@ namespace PaginiumCMS\Modules\Demo\Services;
 
 use PaginiumCMS\Modules\Demo\Contracts\DemoDataProviderInterface;
 use PaginiumCMS\Modules\Demo\Data\DemoFixtures;
+use PaginiumCMS\Modules\Demo\Services\DemoMode;
 
 /**
  * Poskytovateľ izolovaných MOCK dát. Aktívny len pri DEMO_MODE=true.
  */
 final class DemoDataProvider implements DemoDataProviderInterface
 {
+    public function __construct(
+        private DemoMode $demoMode
+    ) {
+    }
+
     public function isEnabled(): bool
     {
-        return filter_var(
-            getenv('DEMO_MODE') ?: ($_ENV['DEMO_MODE'] ?? false),
-            FILTER_VALIDATE_BOOLEAN
-        );
+        return $this->demoMode->isEnabled();
     }
 
     /**
@@ -36,7 +39,7 @@ final class DemoDataProvider implements DemoDataProviderInterface
 
         return array_values(array_filter(
             $all,
-            static fn (array $c): bool => ($c['article_slug'] ?? '') === $articleSlug
+            static fn (array $c): bool => $c['article_slug'] === $articleSlug
         ));
     }
 

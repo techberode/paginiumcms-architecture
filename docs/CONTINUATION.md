@@ -254,7 +254,7 @@ It.9 prototype port (nav, comments, contact): see [ITERATION_9.md](ITERATION_9.m
 It.10 XML Feeds — ✅ ([ITERATION_10.md](ITERATION_10.md), 2.0.10 + polish Unreleased).
 It.11 SSO + jemnozrnné ACL + bezpečnostný audit log — ✅ ([ITERATION_11.md](ITERATION_11.md), Unreleased).
 It.12 Blueprint/Schema engine — ✅ ([ITERATION_12.md](ITERATION_12.md), Unreleased).
-It.13 Demo modul s izolovanými MOCK dátami.
+It.13 Demo modul — ✅ ([ITERATION_13.md](ITERATION_13.md), Unreleased).
 It.14 Politika kódu (CodePolicyEngine) + oprava CodeEditor path/FE kontraktu.
 It.15 Externé doplnky mimo Core: PluginManager, install/import, HookManager DI.
 It.16 CodeEditor plný stack: moduly/témy/doplnky editovateľné s policy gate.

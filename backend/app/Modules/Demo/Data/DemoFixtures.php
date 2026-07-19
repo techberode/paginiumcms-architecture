@@ -12,8 +12,8 @@ final class DemoFixtures
 {
     /**
      * @return list<array{id: string, author: string, text: string, date: string, article_slug: string}>
- * @return array<int|string, mixed>
- */public static function sampleComments(): array
+     */
+    public static function sampleComments(): array
     {
         return [
             [
@@ -35,8 +35,8 @@ final class DemoFixtures
 
     /**
      * @return list<array{id: string, name: string, email: string, subject: string, message: string, created_at: string}>
- * @return array<int|string, mixed>
- */public static function sampleContactMessages(): array
+     */
+    public static function sampleContactMessages(): array
     {
         return [
             [
@@ -52,8 +52,8 @@ final class DemoFixtures
 
     /**
      * @return list<array{id: string, email: string, subscribed_at: string}>
- * @return array<int|string, mixed>
- */public static function sampleNewsletterSubscribers(): array
+     */
+    public static function sampleNewsletterSubscribers(): array
     {
         return [
             [
@@ -65,9 +65,62 @@ final class DemoFixtures
     }
 
     /**
+     * @return array<string, string>
+     */
+    public static function seedFiles(): array
+    {
+        return [
+            'pages/home.md' => <<<'MD'
+---
+title: Demo domov
+slug: home
+status: published
+template: default
+---
+
+# Vitajte v Demo režime
+
+Tento obsah žije len v `storage/app/demo/` a nemení produkčné súbory.
+MD,
+            'pages/about.md' => <<<'MD'
+---
+title: O demo module
+slug: about
+status: published
+template: default
+---
+
+PaginiumCMS demo modul slúži na školenia a sandbox testy.
+MD,
+            'articles/uvod-do-flatfile.md' => <<<'MD'
+---
+title: Úvod do FlatFile
+slug: uvod-do-flatfile
+status: published
+excerpt: Prečo flat-file CMS šetrí infraštruktúru.
+published_at: 2026-07-01T09:00:00+02:00
+---
+
+Flat-file architektúra umožňuje verzovať obsah cez Git bez SQL migrácií.
+MD,
+            'articles/git-workflow.md' => <<<'MD'
+---
+title: Git workflow pre obsah
+slug: git-workflow
+status: published
+excerpt: Ako publikovať obsah cez pull requesty.
+published_at: 2026-07-02T11:00:00+02:00
+---
+
+Každá zmena obsahu môže prejsť review rovnako ako kód aplikácie.
+MD,
+        ];
+    }
+
+    /**
      * @return array{storage_path: string, description: string}
- * @return array<int|string, mixed>
- */public static function meta(): array
+     */
+    public static function meta(): array
     {
         return [
             'storage_path' => 'storage/app/demo',
