@@ -1,7 +1,7 @@
 # PaginiumCMS – Continuation context & implementation plan
 
 > **Language note:** Project documentation is being migrated to English (see `.cursorrules`).  
-> For per-iteration details see **`docs/ITERATION_{N}.md`** (1–22). Full index in [`docs/README.md`](README.md#documentation-index).
+> For per-iteration details see **`docs/ITERATION_{N}.md`** (1–43). Full index in [`docs/README.md`](README.md#documentation-index).
 
 > For Iteration 6 details see [`docs/ITERATION_6.md`](ITERATION_6.md).
 
@@ -102,7 +102,7 @@ Legenda: ✅ DONE · 🟡 PARTIAL (existuje časť, treba dokončiť/prepojiť) 
 | P | **Media manager / DAM** | 🟡 | Backend kompletný (`Modules/Media/*`, `MediaController`, `media.php`: list/upload/patch/delete). Chýba FE (route, `MediaManager`, `api/media.ts`) a **plný DAM**: viacúrovňové priečinky, `.meta.json` sidecar, hromadné operácie, zamykanie assetov. |
 | Q | **Nastavenia (settings) úložisko** | ✅ | `SettingsRepository`, `SettingsSchema`, `data/settings.json`, `SettingsController`, FE `SettingsView` + `SettingsContext`, `GET /api/settings/public`. **Odomknuté pre It. 6+ (SMTP, toast, SEO, feedy).** |
 | R | **Priebežné pridávanie API + FE prepojení** | 🟡 | Priebežná úloha naprieč iteráciami. |
-| S | **Automatické SEO tagy + rozšírené SEO nastavenia** | ⛔ | Žiadne generovanie meta/OG/Twitter/canonical/JSON-LD z obsahu ani admin SEO nastavenia (predvolené šablóny title/description, social image). |
+| S | **Automatické SEO tagy + rozšírené SEO nastavenia** | ✅ | **It.23** — `SeoMetaBuilder`, `GET /api/seo/{type}/{slug}`, FE `useSeoMeta` ([ITERATION_23.md](ITERATION_23.md), 2.0.11). Admin SEO panel → **It.27** ✅. |
 | T | **SSO (SAML / OAuth)** | ⛔ | Iba lokálne prihlásenie; žiadny SAML/OAuth provider ani flat-file konfigurácia. |
 | U | **Jemnozrnné ACL (na úrovni súborov/priečinkov)** | ⛔ | Existuje len RBAC podľa rolí (`AuthorizationManager`, `RoleMiddleware`); žiadne per-súbor/per-priečinok ACL (JSON). |
 | V | **Bezpečnostný audit log (+ CSV export)** | 🟡 | Modul `Modules/Audit/*` + `AuditTrailController` + `audittrail.php` existujú; overiť/dotiahnuť pokrytie akcií (login, úpravy, ACL) a CSV export, plus FE prehľad. |
@@ -269,4 +269,4 @@ Radikálne zmeny (Blueprint, SSO, Plugin runtime, zmena auth) najprv navrhni a p
 
 ---
 
-*Aktualizované po Iterácii 4 + rozšírení plánu (doplnky, politika kódu, ZÁKONY). Podrobnosti: `SETTINGS.md`, `STORAGE.md`, `API.md`, `VERSIONING.md`, `ROADMAP.md`, `PLUGINS.md`.*
+*Aktualizované po Iterácii 43 (Unreleased) + SEO It.23. Podrobnosti: `SETTINGS.md`, `STORAGE.md`, `API.md`, `ITERATION_23.md`, `ITERATION_43.md`, `ROADMAP.md`, `PLUGINS.md`.*

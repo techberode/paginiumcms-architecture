@@ -49,13 +49,41 @@ Query: `?page=1&per_page=20&status=published&search=blog&sort=-updatedAt`
 - Unauthenticated requests: only `published` items (list + single slug).
 - Authenticated session (cookie): all statuses visible.
 
-## Search endpoint
+## Search endpoint (It.19 + It.43)
 
-`GET /api/search?q=home&type=page|article&limit=20`
+### Public (default)
+
+`GET /api/search?q=home&scope=public&type=page|article&limit=20`
 
 - Minimum query length: 2 characters.
 - Returns only **published** content from index.
-- Empty/short query → `{ "success": true, "data": [] }`.
+- Response: flat array in `data` (backward compatible).
+
+### Admin command palette (It.43 — Unreleased)
+
+`GET /api/search?q=set&scope=admin&types=page,article,media,route&limit=8`
+
+- Requires authenticated session (admin/editor).
+- Includes drafts, media registry, static admin routes.
+- Response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "query": "set",
+    "scope": "admin",
+    "results": [ { "type": "route", "title": "Nastavenia", "adminPath": "/settings", ... } ],
+    "counts": { "page": 0, "article": 0, "media": 0, "route": 1 }
+  }
+}
+```
+
+Frontend: **Ctrl+K** in admin — see [ITERATION_43.md](../ITERATION_43.md).
+
+### Public search example
+
+Empty/short query → `{ "success": true, "data": [] }`.
 
 ```json
 {
@@ -74,6 +102,10 @@ Query: `?page=1&per_page=20&status=published&search=blog&sort=-updatedAt`
   ]
 }
 ```
+
+## SEO meta (It.23 — release 2.0.11)
+
+Public `<head>` tags via `GET /api/seo/{type}/{slug}` — see [ITERATION_23.md](../ITERATION_23.md).
 
 ## Content storage format
 
@@ -122,7 +154,7 @@ Admin panel v editore článku; verejné API rešpektuje len published + policy.
 | API | Client | UI |
 |-----|--------|-----|
 | Paginated lists | `content.ts` / `useApi` | `PagesManager` |
-| Search | `api/search.ts` | `SiteSearchModal` |
+| Search | `api/search.ts` | `SiteSearchModal`, `AdminCommandPalette` (Ctrl+K) |
 | Drafts | `drafts.ts` | `MarkdownEditor`, `useAutoSave` |
 | Locks | `locks.ts` | `useContentLock` |
 | Versions | `versions.ts` | `VersionHistory` v editore |

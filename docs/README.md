@@ -1,7 +1,7 @@
 # 🏛️ PaginiumCMS
 
-> **Version:** 2.0.19  
-> **Last updated:** 18 July 2026  
+> **Version:** 2.0.26 (Unreleased: It.41–43, test cleanup — see [CHANGELOG](../CHANGELOG.md#unreleased))  
+> **Last updated:** 19 July 2026  
 > Modern, modular, Headless Flat-File Content Management System powered by Slim Framework (PHP) & React.
 
 ---
@@ -30,18 +30,19 @@ PaginiumCMS keeps the Core intentionally minimal, secure, and fast. It moves sta
 | **Job scheduler** | ✅ It. 29 | Flat-file registry, `scheduler:run`, admin `/scheduler` |
 | **Monitoring** | ✅ It. 7 | Scheduled reports, log incidents, HTML email, cron CLI |
 | **API contract** | ✅ It. 21 | JsonResponder everywhere, MSW, Newman CI, RHF+Zod |
-| **PHPUnit** | ✅ **550+ passing** | PHPStan level 8 (0 errors) |
-| **Frontend** | ✅ It. 21+ | MSW, typed clients, settings form validation, bulk actions |
+| **PHPUnit** | ✅ **599 passing** (15 skipped) | PHPStan level 8 (0 errors) |
+| **Frontend** | ✅ It.43 unreleased | Command palette `Ctrl+K`, MSW, typed clients |
 | **Next iteration** | 🟡 It. 44 | Filters & sort — see [backlog](ITERATION_BACKLOG.md) |
 
 ### Planned (roadmap)
 
 | It. | Feature |
 |-----|---------|
-| **43** | **Advanced search (FE + BE)** — command palette, quick jumps in admin & public site |
 | **44** | **Filters & sorting (admin + FE)** — shared filter bar, URL-synced query params |
 | **45** | **Redis (optional)** — shared cache/queue when scaling to multiple PHP workers |
 | **46** | **Server metrics agent** — CPU/RAM/disk/Docker for monitoring reports (extends It.7) |
+
+Recently shipped / unreleased: **It.43** advanced search ([ITERATION_43.md](ITERATION_43.md), Unreleased) · **It.23** SEO meta ([ITERATION_23.md](ITERATION_23.md), 2.0.11)
 
 Full backlog: [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) · Main map: [ROADMAP.md](ROADMAP.md)
 
@@ -49,6 +50,7 @@ Full backlog: [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) · Main map: [ROADMAP
 
 | Version | Focus |
 |---------|--------|
+| **2.0.26** | It.50 — WAF, structured logging, admin Logy |
 | **2.0.19** | Admin user management UI — username, account status, 2FA secret, system enforcement |
 | **2.0.18** | It.29 — cron planner, job queue, `/scheduler`, unified CLI |
 | **2.0.17** | It.7 — scheduled monitoring reports, HTML email, log incidents |
@@ -120,7 +122,8 @@ paginiumcms-architecture/
 |-------|--------|--------|
 | Auth | `/api/auth/*` | Mixed; register can be disabled via settings |
 | Content | `/api/pages`, `/api/articles` | GET public (published filter); write = auth + permission |
-| Search | `/api/search?q=&scope=admin\|public&types=` | Public published only; admin palette (It.43 ✅) |
+| Search | `/api/search?q=&scope=admin\|public&types=` | Public published; admin palette (It.43 — [Unreleased](CHANGELOG.md#unreleased)) |
+| SEO meta | `/api/seo/{type}/{slug}` | Public head tags (It.23 — [2.0.11](CHANGELOG.md#2011--2026-07-17)) |
 | Media | `/api/media/*` | EDITOR+ role; files at `/storage/app/content/media/...` |
 | Jobs | `/api/admin/jobs/*` | ADMIN — cron registry, run history |
 | Static files | `/storage/{path}` | Public (path traversal blocked) |
@@ -224,16 +227,18 @@ See [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md) and [user/CODE_EDITOR.md](u
 | 7 | [ITERATION_7.md](ITERATION_7.md) | ✅ Monitoring reports & log incidents |
 | 8–9 | [ITERATION_8.md](ITERATION_8.md) … [ITERATION_9.md](ITERATION_9.md) | ✅ Media, prototype port |
 | 19–22 | [ITERATION_19.md](ITERATION_19.md) … [ITERATION_22.md](ITERATION_22.md) | ✅ Index, hardening, contract, ops |
+| **23** | **[ITERATION_23.md](ITERATION_23.md)** | ✅ **SEO meta engine** (public `<head>` tags, 2.0.11) |
 | 27 | [ITERATION_27.md](ITERATION_27.md) | ✅ Admin view modes + SEO panel |
 | 28 | [ITERATION_28.md](ITERATION_28.md) | ✅ Bulk actions |
 | 29 | [ITERATION_29.md](ITERATION_29.md) | ✅ Cron planner + job queue |
-| 43–49 | [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) | ⏳ Search, filters, Redis/cache, metrics, notifications auth, static web |
+| **43** | **[ITERATION_43.md](ITERATION_43.md)** | ✅ **Advanced search** (Unreleased) |
+| 41–42, 47 | [ITERATION_41.md](ITERATION_41.md) … [ITERATION_47.md](ITERATION_47.md) | ✅ OTP / counts / connector auth (Unreleased) |
+| 44–49 | [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) | ⏳ Filters, Redis, metrics, static web |
 
 ---
 
 ## ⚠️ Known Limitations
 
-* **Basic search only** — It.43 will add scoped quick-jump search (admin palette + public instant search)
 * **List filters/sort** — partial via API pagination; full admin + FE filter bar planned in It.44
 * **Backup create tests** skipped under vfsStream (ZipArchive); schedule/cron logic tested on real temp dirs
 

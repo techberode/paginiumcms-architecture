@@ -15,7 +15,7 @@ Canonical JSON shapes: `{ success, data?, error?, errors?, meta? }`. Auth endpoi
 | GET | `/api/pages/{slug}` | Single page (published only if unauthenticated) |
 | GET | `/api/articles` | List articles (pagination) |
 | GET | `/api/articles/{slug}` | Single article |
-| GET | `/api/search?q=` | Fulltext search (min 2 chars, published) |
+| GET | `/api/search?q=&scope=public\|admin&types=` | Search — public: published content; admin: palette (auth) — [It.43](../ITERATION_43.md) |
 | GET | `/api/navigation` | Public navigation tree |
 | GET | `/api/comments` | Approved comments |
 | POST | `/api/comments` | Submit comment (guest if allowed) |
