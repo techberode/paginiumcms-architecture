@@ -28,7 +28,7 @@ final class ClientIpResolver
         }
 
         $parts = array_map('trim', explode(',', $forwardedFor));
-        $clientIp = $parts[0] ?? $remoteAddr;
+        $clientIp = $parts[0];
 
         return filter_var($clientIp, FILTER_VALIDATE_IP) ? $clientIp : $remoteAddr;
     }
