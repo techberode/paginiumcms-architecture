@@ -119,6 +119,7 @@ Canonical JSON shapes: `{ success, data?, error?, errors?, meta? }`. Auth endpoi
 | Firewall | `frontend/src/api/firewall.ts` |
 | Logs | `frontend/src/api/logs.ts` |
 | Security (audit, ACL, SSO) | `frontend/src/api/security.ts` |
+| Blueprints | `frontend/src/api/blueprint.ts` |
 | Workflows (OTP) | `frontend/src/api/workflows.ts` |
 | Barrel | `frontend/src/api/index.ts` |
 
@@ -137,6 +138,18 @@ Dev mocks: `VITE_MSW=true npm run dev` → `frontend/src/mocks/handlers.ts`
 | `PUT` | `/api/admin/security/acl` | `{ enabled, rules[] }` |
 
 Storage: `data/security/audit_events.json`, `data/security/acl.json`.
+
+### Blueprints (It.12)
+
+| Method | Route | Notes |
+|--------|-------|-------|
+| `GET` | `/api/admin/blueprints` | List type summaries |
+| `GET` | `/api/admin/blueprints/{type}` | Full schema |
+| `PUT` | `/api/admin/blueprints/{type}` | Save schema |
+| `POST` | `/api/admin/blueprints/{type}/validate` | Validate sample payload |
+| `DELETE` | `/api/admin/blueprints/{type}` | Custom types only |
+
+Storage: `data/blueprints/{type}.json`.
 
 ---
 

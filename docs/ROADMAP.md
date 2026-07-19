@@ -262,9 +262,11 @@ Hotové v **2.0.1** — detail [ITERATION_6.md](ITERATION_6.md).
 
 
 
-## Iterácia 12 – Blueprint / Schema Engine ⏳ 🔴
+## Iterácia 12 – Blueprint / Schema Engine ✅ 🔴
 
-- Flat-file definície typov obsahu a polí, dynamická validácia a admin formuláre (po schválení návrhu).
+- ✅ Flat-file blueprinty `data/blueprints/{type}.json`, built-in `page` + `article`.
+- ✅ `DynamicValidator` + admin API/UI (`/blueprints`, `DynamicForm`).
+- ⏳ Plná integrácia do `ContentController` save — backlog.
 
 
 
