@@ -25,7 +25,7 @@ return function (App $app): void {
         $group->post('/bulk-delete', [$controller, 'bulkDelete']);
         $group->put('/{id}', [$controller, 'update']);
         $group->delete('/{id}', [$controller, 'delete']);
-    })->add(new RoleMiddleware($container->get(AuthorizationInterface::class), ['ADMIN', 'SUPER_ADMIN']))
+    })->add(new RoleMiddleware($container->get(AuthorizationInterface::class), ['EDITOR', 'ADMIN', 'SUPER_ADMIN']))
         ->add($container->get(TwoFactorMiddleware::class))
         ->add($auth);
 };

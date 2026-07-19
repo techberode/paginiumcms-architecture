@@ -13,6 +13,7 @@ import {
 import { useToast } from '../../hooks/useToast';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { BulkActionBar } from './BulkActionBar';
+import { OtpConfirmModal } from './OtpConfirmModal';
 import { summarizeBulkResult } from '../../types/bulk';
 
 export const CommentsManager: React.FC = () => {
@@ -20,6 +21,9 @@ export const CommentsManager: React.FC = () => {
   const [items, setItems] = useState<Comment[]>([]);
   const [filter, setFilter] = useState<CommentStatus | 'all'>('all');
   const [loading, setLoading] = useState(true);
+  const [otpChallenge, setOtpChallenge] = useState<{ id: string; commentId: string; debugCode?: string } | null>(
+    null
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -45,12 +49,20 @@ export const CommentsManager: React.FC = () => {
   );
 
   const setStatus = async (id: string, status: CommentStatus) => {
-    const ok = await updateCommentStatus(id, status);
-    if (ok) {
+    const result = await updateCommentStatus(id, status);
+    if (result.ok && 'requiresOtp' in result && result.requiresOtp) {
+      setOtpChallenge({ id: result.challengeId, commentId: id, debugCode: result.debugCode });
+      showSuccess('Verification code sent to your email');
+      if (result.debugCode) {
+        showError(`Dev OTP: ${result.debugCode}`);
+      }
+      return;
+    }
+    if (result.ok) {
       showSuccess('Comment updated.');
       await load();
     } else {
-      showError('Update failed.');
+      showError(result.error || 'Update failed.');
     }
   };
 
@@ -181,6 +193,16 @@ export const CommentsManager: React.FC = () => {
           ))}
         </div>
       )}
+
+      <OtpConfirmModal
+        open={otpChallenge !== null}
+        title="Approve comment"
+        description="Enter the verification code sent to your email to approve this comment."
+        challengeId={otpChallenge?.id ?? ''}
+        debugCode={otpChallenge?.debugCode}
+        onClose={() => setOtpChallenge(null)}
+        onVerified={load}
+      />
     </div>
   );
 };

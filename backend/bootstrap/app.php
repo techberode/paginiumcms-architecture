@@ -184,7 +184,10 @@ $containerBuilder->addDefinitions([
             $container->get(OtpChallengeStore::class),
             $container->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class),
             $container->get(\PaginiumCMS\Core\Notification\NotificationService::class),
-            $container->get(UserRepository::class)
+            $container->get(UserRepository::class),
+            $container->get(\PaginiumCMS\Modules\Comments\Contracts\CommentsRepositoryInterface::class),
+            $container->get(\PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface::class),
+            $container->get(\PaginiumCMS\Core\Versioning\Services\ContentVersioningService::class)
         );
     },
 

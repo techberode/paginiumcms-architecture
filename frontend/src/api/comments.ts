@@ -54,9 +54,25 @@ export async function listAdminComments(filters?: {
 export async function updateCommentStatus(
   id: string,
   status: CommentStatus
-): Promise<boolean> {
-  const res = await apiClient.put(`/api/admin/comments/${encodeURIComponent(id)}`, { status });
-  return res.success;
+): Promise<
+  | { ok: true; comment: Comment }
+  | { ok: true; requiresOtp: true; challengeId: string; debugCode?: string }
+  | { ok: false; error?: string }
+> {
+  const res = await apiClient.put<Comment>(`/api/admin/comments/${encodeURIComponent(id)}`, { status });
+  if (res.success && (res as Record<string, unknown>).requires_otp) {
+    const body = res as Record<string, unknown>;
+    return {
+      ok: true,
+      requiresOtp: true,
+      challengeId: String(body.challenge_id ?? ''),
+      debugCode: typeof body.debug_code === 'string' ? body.debug_code : undefined,
+    };
+  }
+  if (res.success && res.data) {
+    return { ok: true, comment: res.data as Comment };
+  }
+  return { ok: false, error: res.error || 'Update failed' };
 }
 
 export async function deleteComment(id: string): Promise<boolean> {

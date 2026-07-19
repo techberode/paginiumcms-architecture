@@ -94,8 +94,10 @@ planned iterations **It.47–It.49**. Full test log `alltests_190726_0808.log`: 
 - Settings group `workflows`: registration/comment/publish OTP toggles, TTL, max attempts.
 - `OtpChallengeStore` + `OtpWorkflowService` — flat-file OTP challenges.
 - `POST /api/auth/register/verify-otp`, `POST /api/auth/register/resend-otp`; register returns `202` + `requires_otp` when enabled.
+- `POST /api/admin/workflows/otp/verify`, `POST /api/admin/workflows/otp/resend` — editor comment approve + content publish OTP.
+- Comment approve / content save-to-publish return `202` + `requires_otp` when workflow toggles are on.
 - Public settings: `workflows.registrationOtpEnabled`, `general.allowRegistration`.
-- Frontend `RegisterModal` two-step OTP flow.
+- Frontend: `RegisterModal`, `OtpConfirmModal`, `CommentsManager`, `MarkdownEditor` publish OTP flow.
 
 ### Added (It.47 — notification connector auth)
 

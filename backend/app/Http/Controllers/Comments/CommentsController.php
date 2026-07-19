@@ -8,10 +8,12 @@ use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\Validation\ValidationException;
 use PaginiumCMS\Core\Validation\Validator;
+use PaginiumCMS\Core\Workflow\Services\OtpWorkflowService;
 use PaginiumCMS\Http\Support\BulkBatchResult;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Comments\Contracts\CommentsRepositoryInterface;
 use PaginiumCMS\Modules\Comments\Models\Comment;
+use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Support\Lang;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -22,6 +24,7 @@ class CommentsController
         private CommentsRepositoryInterface $commentsRepository,
         private SettingsRepositoryInterface $settingsRepository,
         private Validator $validator,
+        private OtpWorkflowService $otpWorkflow,
         private JsonResponder $json
     ) {
     }
@@ -146,6 +149,33 @@ class CommentsController
             if (!in_array($status, [Comment::STATUS_PENDING, Comment::STATUS_APPROVED, Comment::STATUS_REJECTED], true)) {
                 return $this->json->error($response, Lang::get('invalid_status', [], 'comments'), 422);
             }
+
+            if (
+                $status === Comment::STATUS_APPROVED
+                && $comment->getStatus() !== Comment::STATUS_APPROVED
+                && $this->otpWorkflow->isCommentApprovalOtpEnabled()
+            ) {
+                $editor = $request->getAttribute('user');
+                if (!$editor instanceof User) {
+                    return $this->json->error($response, 'Neprihlásený používateľ', 401);
+                }
+
+                try {
+                    $otp = $this->otpWorkflow->startCommentApproval($editor, $id);
+
+                    return $this->json->respond($response, [
+                        'success' => true,
+                        'requires_otp' => true,
+                        'message' => 'Overovací kód bol odoslaný na email',
+                        'challenge_id' => $otp['challenge_id'],
+                        'expires_at' => $otp['expires_at'],
+                        'debug_code' => $otp['debug_code'] ?? null,
+                    ], 202);
+                } catch (\Exception $e) {
+                    return $this->json->error($response, $e->getMessage(), 400);
+                }
+            }
+
             $comment->setStatus($status);
         }
 

@@ -13,6 +13,10 @@ export interface ApiResponse<T = any> {
   user?: unknown;
   token?: string;
   requires_two_factor?: boolean;
+  requires_otp?: boolean;
+  challenge_id?: string;
+  expires_at?: number;
+  debug_code?: string;
   enabled?: boolean;
   verified?: boolean;
   secret?: string;

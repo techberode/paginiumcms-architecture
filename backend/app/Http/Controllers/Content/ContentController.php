@@ -16,6 +16,7 @@ use PaginiumCMS\Core\FlatFile\Services\ContentRevision;
 use PaginiumCMS\Core\Cache\ContentCacheService;
 use PaginiumCMS\Core\Versioning\Services\ContentVersioningService;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
+use PaginiumCMS\Core\Workflow\Services\OtpWorkflowService;
 use PaginiumCMS\Http\Support\BulkBatchResult;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Http\Support\PaginationMeta;
@@ -39,7 +40,8 @@ class ContentController
         private ConflictLoggerInterface $conflicts,
         private JsonResponder $json,
         private SettingsRepositoryInterface $settings,
-        private AuthenticationInterface $auth
+        private AuthenticationInterface $auth,
+        private OtpWorkflowService $otpWorkflow
     ) {
     }
 
@@ -187,6 +189,29 @@ class ContentController
 
         try {
             $content = $this->buildContent($type, $data);
+            $targetStatus = (string) ($data['status'] ?? 'draft');
+            if ($targetStatus === 'published' && $this->otpWorkflow->isPublishApprovalOtpEnabled()) {
+                $user = $this->resolveUser($request);
+                if ($user === null) {
+                    return $this->json->error($response, 'Neprihlásený používateľ', 401);
+                }
+
+                $content->setStatus('draft');
+                $this->repository->save($content);
+                $otp = $this->otpWorkflow->startPublishApproval($user, $type, $content->getSlug(), $targetStatus);
+
+                return $this->json->respond($response, [
+                    'success' => true,
+                    'requires_otp' => true,
+                    'message' => 'Overovací kód bol odoslaný na email',
+                    'challenge_id' => $otp['challenge_id'],
+                    'expires_at' => $otp['expires_at'],
+                    'debug_code' => $otp['debug_code'] ?? null,
+                    'slug' => $content->getSlug(),
+                    'content_type' => $type,
+                ], 202);
+            }
+
             $this->repository->save($content);
             $this->versioning->recordChange(
                 $content,
@@ -251,6 +276,35 @@ class ContentController
             if ($newSlug !== $slug) {
                 $this->repository->delete($existing, true);
                 $existing->setPath('');
+            }
+
+            $targetStatus = (string) ($data['status'] ?? $existing->getStatus());
+            if (
+                $targetStatus === 'published'
+                && $existing->getStatus() !== 'published'
+                && $this->otpWorkflow->isPublishApprovalOtpEnabled()
+            ) {
+                $user = $this->resolveUser($request);
+                if ($user === null) {
+                    return $this->json->error($response, 'Neprihlásený používateľ', 401);
+                }
+
+                $this->applyPayload($existing, $data, $newSlug);
+                $existing->setStatus('draft');
+                $this->repository->save($existing);
+
+                $otp = $this->otpWorkflow->startPublishApproval($user, $type, $newSlug, 'published');
+
+                return $this->json->respond($response, [
+                    'success' => true,
+                    'requires_otp' => true,
+                    'message' => 'Overovací kód bol odoslaný na email',
+                    'challenge_id' => $otp['challenge_id'],
+                    'expires_at' => $otp['expires_at'],
+                    'debug_code' => $otp['debug_code'] ?? null,
+                    'slug' => $newSlug,
+                    'content_type' => $type,
+                ], 202);
             }
 
             $this->applyPayload($existing, $data, $newSlug);
@@ -413,6 +467,34 @@ class ContentController
 
         if (!in_array($status, $this->validStatuses, true)) {
             return $this->json->error($response, Lang::get('invalid_status', [], 'content'), 400);
+        }
+
+        if (
+            $status === 'published'
+            && $content->getStatus() !== 'published'
+            && $this->otpWorkflow->isPublishApprovalOtpEnabled()
+        ) {
+            $user = $this->resolveUser($request);
+            if ($user === null) {
+                return $this->json->error($response, 'Neprihlásený používateľ', 401);
+            }
+
+            try {
+                $otp = $this->otpWorkflow->startPublishApproval($user, $type, $slug, $status);
+
+                return $this->json->respond($response, [
+                    'success' => true,
+                    'requires_otp' => true,
+                    'message' => 'Overovací kód bol odoslaný na email',
+                    'challenge_id' => $otp['challenge_id'],
+                    'expires_at' => $otp['expires_at'],
+                    'debug_code' => $otp['debug_code'] ?? null,
+                    'slug' => $slug,
+                    'content_type' => $type,
+                ], 202);
+            } catch (\Exception $e) {
+                return $this->json->error($response, $e->getMessage(), 400);
+            }
         }
 
         try {

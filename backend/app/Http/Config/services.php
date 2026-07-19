@@ -71,6 +71,7 @@ use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\Settings\Services\SettingsRepository;
 use PaginiumCMS\Core\Validation\Validator;
 use PaginiumCMS\Core\Versioning\Services\ContentVersioningService;
+use PaginiumCMS\Core\Workflow\Services\OtpWorkflowService;
 use PaginiumCMS\Core\Versioning\Services\EnhancedVersionManager;
 use PaginiumCMS\Http\Controllers\Admin\AnalyticsController;
 use PaginiumCMS\Http\Controllers\Admin\AuditTrailController;
@@ -87,6 +88,7 @@ use PaginiumCMS\Http\Controllers\Admin\TrashController;
 use PaginiumCMS\Http\Controllers\Feeds\FeedController;
 use PaginiumCMS\Http\Controllers\Seo\SeoController;
 use PaginiumCMS\Http\Controllers\Admin\VersionController;
+use PaginiumCMS\Http\Controllers\Admin\WorkflowController;
 use PaginiumCMS\Http\Controllers\Admin\ConflictController;
 use PaginiumCMS\Http\Controllers\Admin\UserController;
 use PaginiumCMS\Http\Controllers\Validation\ValidationController;
@@ -162,6 +164,12 @@ return [
     SettingsController::class => create(SettingsController::class)
         ->constructor(
             get(SettingsRepositoryInterface::class),
+            get(JsonResponder::class)
+        ),
+
+    WorkflowController::class => create(WorkflowController::class)
+        ->constructor(
+            get(OtpWorkflowService::class),
             get(JsonResponder::class)
         ),
 
@@ -249,6 +257,7 @@ return [
             get(CommentsRepositoryInterface::class),
             get(SettingsRepositoryInterface::class),
             get(Validator::class),
+            get(OtpWorkflowService::class),
             get(JsonResponder::class)
         ),
 
@@ -345,7 +354,8 @@ return [
             get(ConflictLoggerInterface::class),
             get(JsonResponder::class),
             get(SettingsRepositoryInterface::class),
-            get(AuthenticationInterface::class)
+            get(AuthenticationInterface::class),
+            get(OtpWorkflowService::class)
         ),
     SearchController::class => create(SearchController::class)
         ->constructor(

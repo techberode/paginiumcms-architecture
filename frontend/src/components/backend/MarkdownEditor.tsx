@@ -15,6 +15,8 @@ import { MediaPickerModal } from './MediaPickerModal';
 import { VersionHistory } from '../CodeEditor/VersionHistory';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { ContentEditorShell } from './ContentEditorShell';
+import { OtpConfirmModal } from './OtpConfirmModal';
+import { extractOtpPending } from '../../api/workflows';
 import { type SeoFormValues } from './SeoMetadataPanel';
 import {
   type ContentFormat,
@@ -65,6 +67,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
   const [, setContentFormat] = useState<ContentFormat>('markdown');
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
   const [seoOpen, setSeoOpen] = useState(false);
+  const [publishOtp, setPublishOtp] = useState<{ challengeId: string; debugCode?: string } | null>(null);
   const [navigationItems, setNavigationItems] = useState<Awaited<ReturnType<typeof getNavigation>>>([]);
   const wysiwygRef = useRef<WysiwygEditorHandle>(null);
   const [seo, setSeo] = useState<SeoFormValues>({
@@ -242,6 +245,20 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         const response = isNew
           ? await post<any>(endpoint, data)
           : await put<any>(`${endpoint}/${slug}`, data);
+
+        const otpPending = extractOtpPending(response as Record<string, unknown>);
+        if (otpPending) {
+          setPublishOtp({ challengeId: otpPending.challengeId, debugCode: otpPending.debugCode });
+          toast.info('Overovací kód pre publikáciu bol odoslaný na email');
+          if (otpPending.debugCode) {
+            toast.warning(`Dev OTP: ${otpPending.debugCode}`);
+          }
+          const responseSlug = (response as Record<string, unknown>).slug;
+          if (isNew && typeof responseSlug === 'string' && responseSlug !== '') {
+            navigate(`/${type === 'article' ? 'articles' : 'pages'}/${responseSlug}`);
+          }
+          return;
+        }
 
         if (response.success) {
           setConflict(null);
@@ -477,6 +494,19 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
           </div>
         </div>
       )}
+
+      <OtpConfirmModal
+        open={publishOtp !== null}
+        title="Confirm publish"
+        description="Enter the verification code sent to your email to publish this content."
+        challengeId={publishOtp?.challengeId ?? ''}
+        debugCode={publishOtp?.debugCode}
+        onClose={() => setPublishOtp(null)}
+        onVerified={() => {
+          setStatus('published');
+          toast.success('Obsah bol publikovaný');
+        }}
+      />
     </div>
   );
 };
