@@ -8,6 +8,7 @@ use PaginiumCMS\Core\Notification\NotificationService;
 use PaginiumCMS\Core\Security\SecurityLogger;
 use PaginiumCMS\Core\Security\Services\LoginAttemptTracker;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
+use PaginiumCMS\Core\Workflow\Services\OtpWorkflowService;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Security\Contracts\AuthenticationInterface;
 use PaginiumCMS\Modules\Security\Contracts\CsrfProtectionInterface;
@@ -31,6 +32,7 @@ class AuthController
         private NotificationService $notifications,
         private LoginAttemptTracker $loginAttempts,
         private SecurityLogger $securityLogger,
+        private OtpWorkflowService $otpWorkflow,
         private JsonResponder $json
     ) {
     }
@@ -119,15 +121,32 @@ class AuthController
         try {
             $this->passwordPolicy->requireValid($data['password']);
 
-            $existingUser = $this->userRepository->findByEmail($data['email']);
+            $email = (string) $data['email'];
+            $password = (string) $data['password'];
+            $name = (string) $data['name'];
+
+            $existingUser = $this->userRepository->findByEmail($email);
             if ($existingUser !== null) {
                 return $this->json->error($response, 'Používateľ s týmto emailom už existuje', 409);
             }
 
+            if ($this->otpWorkflow->isRegistrationOtpEnabled()) {
+                $otp = $this->otpWorkflow->startRegistration($email, $name, $password);
+
+                return $this->json->respond($response, [
+                    'success' => true,
+                    'requires_otp' => true,
+                    'message' => 'Overovací kód bol odoslaný na email',
+                    'challenge_id' => $otp['challenge_id'],
+                    'expires_at' => $otp['expires_at'],
+                    'debug_code' => $otp['debug_code'] ?? null,
+                ], 202);
+            }
+
             $user = new User();
-            $user->setEmail($data['email']);
-            $user->setPassword($data['password']);
-            $user->setName($data['name']);
+            $user->setEmail($email);
+            $user->setPassword($password);
+            $user->setName($name);
             $user->setRoles(['USER']);
 
             $this->userRepository->save($user);
@@ -137,6 +156,71 @@ class AuthController
                 'message' => 'Registrácia prebehla úspešne',
                 'user' => $user->jsonSerialize(),
             ], 201);
+        } catch (\Exception $e) {
+            $status = str_contains($e->getMessage(), 'už existuje') ? 409 : 400;
+
+            return $this->json->error($response, $e->getMessage(), $status);
+        }
+    }
+
+    /**
+     * POST /api/auth/register/verify-otp
+     * Dokončenie registrácie po overení e-mailového OTP kódu.
+     */
+    public function verifyRegisterOtp(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $data = json_decode((string) $request->getBody(), true);
+
+        if (!isset($data['challenge_id']) || !isset($data['code'])) {
+            return $this->json->error($response, 'challenge_id a code sú povinné', 400);
+        }
+
+        if (!$this->otpWorkflow->isRegistrationOtpEnabled()) {
+            return $this->json->error($response, 'OTP registrácia nie je zapnutá', 403);
+        }
+
+        try {
+            $result = $this->otpWorkflow->verifyRegistration(
+                (string) $data['challenge_id'],
+                (string) $data['code']
+            );
+
+            return $this->json->respond($response, [
+                'success' => true,
+                'message' => 'Registrácia prebehla úspešne',
+                'user' => $result['user'],
+            ], 201);
+        } catch (\Exception $e) {
+            return $this->json->error($response, $e->getMessage(), 400);
+        }
+    }
+
+    /**
+     * POST /api/auth/register/resend-otp
+     * Opätovné odoslanie registračného OTP kódu.
+     */
+    public function resendRegisterOtp(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $data = json_decode((string) $request->getBody(), true);
+
+        if (!isset($data['challenge_id'])) {
+            return $this->json->error($response, 'challenge_id je povinný', 400);
+        }
+
+        if (!$this->otpWorkflow->isRegistrationOtpEnabled()) {
+            return $this->json->error($response, 'OTP registrácia nie je zapnutá', 403);
+        }
+
+        try {
+            $result = $this->otpWorkflow->resendRegistration((string) $data['challenge_id']);
+
+            return $this->json->respond($response, [
+                'success' => true,
+                'message' => 'Nový overovací kód bol odoslaný',
+                'challenge_id' => $result['challenge_id'],
+                'expires_at' => $result['expires_at'],
+                'debug_code' => $result['debug_code'] ?? null,
+            ]);
         } catch (\Exception $e) {
             return $this->json->error($response, $e->getMessage(), 400);
         }

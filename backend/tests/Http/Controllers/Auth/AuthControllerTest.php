@@ -69,6 +69,55 @@ class AuthControllerTest extends TestCase
         $this->assertStringContainsString('Heslo nespĺňa požiadavky', $data['error']);
     }
 
+    public function testRegisterWithOtpEnabled(): void
+    {
+        putenv('APP_ENV=testing');
+        $_ENV['APP_ENV'] = 'testing';
+
+        $settings = $this->app->getContainer()->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class);
+        $settings->setGroup('workflows', [
+            'registrationOtpEnabled' => true,
+            'otpTtlMinutes' => 15,
+            'otpMaxAttempts' => 5,
+        ]);
+
+        $email = 'otp_reg_' . uniqid() . '@example.com';
+        $password = 'StrongP@ssw0rd123!';
+        $name = 'OTP Register User';
+
+        $registerRequest = $this->createJsonRequest('POST', '/api/auth/register', [
+            'email' => $email,
+            'password' => $password,
+            'name' => $name,
+        ]);
+        $registerResponse = $this->handleRequest($registerRequest);
+        $registerData = $this->getJsonResponse($registerResponse);
+
+        $this->assertEquals(202, $registerResponse->getStatusCode());
+        $this->assertTrue($registerData['requires_otp']);
+        $this->assertNotEmpty($registerData['challenge_id']);
+        $this->assertArrayHasKey('debug_code', $registerData);
+
+        $verifyRequest = $this->createJsonRequest('POST', '/api/auth/register/verify-otp', [
+            'challenge_id' => $registerData['challenge_id'],
+            'code' => $registerData['debug_code'],
+        ]);
+        $verifyResponse = $this->handleRequest($verifyRequest);
+        $verifyData = $this->getJsonResponse($verifyResponse);
+
+        $this->assertEquals(201, $verifyResponse->getStatusCode());
+        $this->assertTrue($verifyData['success']);
+        $this->assertEquals($email, $verifyData['user']['email']);
+        $this->assertEquals($name, $verifyData['user']['name']);
+
+        $loginRequest = $this->createJsonRequest('POST', '/api/auth/login', [
+            'email' => $email,
+            'password' => $password,
+        ]);
+        $loginResponse = $this->handleRequest($loginRequest);
+        $this->assertEquals(200, $loginResponse->getStatusCode());
+    }
+
     public function testLoginSuccess(): void
     {
         $userData = $this->createTestUser();

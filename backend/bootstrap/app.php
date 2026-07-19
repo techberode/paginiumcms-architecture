@@ -54,6 +54,8 @@ use PaginiumCMS\Core\Logging\Contracts\LoggerInterface;
 use PaginiumCMS\Core\Notification\Services\IncidentNotifier;
 use PaginiumCMS\Core\Security\SecurityLogger;
 use PaginiumCMS\Core\Security\Services\LoginAttemptTracker;
+use PaginiumCMS\Core\Workflow\Services\OtpChallengeStore;
+use PaginiumCMS\Core\Workflow\Services\OtpWorkflowService;
 use PaginiumCMS\Core\Logging\Services\DebugEventLogger;
 use PaginiumCMS\Http\Middleware\DebugRequestMiddleware;
 
@@ -168,6 +170,21 @@ $containerBuilder->addDefinitions([
         return new LoginAttemptTracker(
             $container->get(FileReaderInterface::class),
             $container->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class)
+        );
+    },
+
+    OtpChallengeStore::class => function ($container) {
+        return new OtpChallengeStore(
+            $container->get(FileReaderInterface::class)
+        );
+    },
+
+    OtpWorkflowService::class => function ($container) {
+        return new OtpWorkflowService(
+            $container->get(OtpChallengeStore::class),
+            $container->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class),
+            $container->get(\PaginiumCMS\Core\Notification\NotificationService::class),
+            $container->get(UserRepository::class)
         );
     },
 
@@ -316,6 +333,7 @@ $containerBuilder->addDefinitions([
             $container->get(\PaginiumCMS\Core\Notification\NotificationService::class),
             $container->get(LoginAttemptTracker::class),
             $container->get(SecurityLogger::class),
+            $container->get(OtpWorkflowService::class),
             $container->get(JsonResponder::class)
         );
     },
@@ -517,6 +535,8 @@ $app->group('/api/auth', function (RouteCollectorProxy $group) use ($container) 
     $twoFactorController = $container->get(TwoFactorController::class);
 
     $group->post('/register', [$authController, 'register']);
+    $group->post('/register/verify-otp', [$authController, 'verifyRegisterOtp']);
+    $group->post('/register/resend-otp', [$authController, 'resendRegisterOtp']);
 
     $group->post('/login', [$authController, 'login'])
     ->add($container->get(LoginRateLimitMiddleware::class));
