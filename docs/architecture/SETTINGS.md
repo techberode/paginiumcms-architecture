@@ -11,6 +11,7 @@
 - File: `backend/storage/app/content/data/settings.json`
 - Only **overrides** from `SettingsSchema` defaults are persisted
 - Concurrency: `flock(LOCK_EX)` in `SettingsRepository`
+- **PHPUnit / HTTP integračné testy** (`APP_ENV=testing`): používajú **`data/settings.testing.json`** — produkčný `settings.json` (SMTP, heslá, …) sa počas testov nečíta ani nezapisuje. Pozri `docs/developer/TESTING.md`.
 
 ### Endpoints
 

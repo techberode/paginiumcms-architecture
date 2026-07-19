@@ -8,16 +8,6 @@ use PaginiumCMS\Tests\Http\TestCase;
 
 class OtpWorkflowServiceTest extends TestCase
 {
-    protected function tearDown(): void
-    {
-        $storePath = __DIR__ . '/../../../storage/app/content/data/otp-challenges.json';
-        if (is_file($storePath)) {
-            @unlink($storePath);
-        }
-
-        parent::tearDown();
-    }
-
     public function testRegistrationOtpFlowWithDebugCode(): void
     {
         putenv('APP_ENV=testing');

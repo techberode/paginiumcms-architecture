@@ -80,6 +80,7 @@ use PaginiumCMS\Core\Locking\Services\LockManager;
 use PaginiumCMS\Core\Logging\Contracts\LoggerInterface;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\Settings\Services\SettingsRepository;
+use PaginiumCMS\Core\Search\Services\AdvancedSearchService;
 use PaginiumCMS\Core\Validation\Validator;
 use PaginiumCMS\Core\Versioning\Services\ContentVersioningService;
 use PaginiumCMS\Core\Workflow\Services\OtpWorkflowService;
@@ -168,14 +169,20 @@ return [
     // Zdieľaný validator (bezstavový) – používa ho SettingsRepository aj ďalšie moduly.
     Validator::class => create(Validator::class),
 
-    // Flat-file úložisko nastavení (data/settings.json) – ukladá iba odchýlky od predvolieb.
-    SettingsRepositoryInterface::class => create(SettingsRepository::class)
-        ->constructor(
-            get(FileReaderInterface::class),
-            get(FileWriterInterface::class),
-            get(Validator::class),
-            'data/settings.json'
-        ),
+    // Flat-file úložisko nastavení – produkcia: data/settings.json; PHPUnit/HTTP testy: data/settings.testing.json
+    SettingsRepositoryInterface::class => function ($container) {
+        $appEnv = (string) (getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? 'development'));
+        $settingsFile = in_array($appEnv, ['testing', 'test'], true)
+            ? 'data/settings.testing.json'
+            : 'data/settings.json';
+
+        return new SettingsRepository(
+            $container->get(FileReaderInterface::class),
+            $container->get(FileWriterInterface::class),
+            $container->get(Validator::class),
+            $settingsFile
+        );
+    },
     SettingsController::class => create(SettingsController::class)
         ->constructor(
             get(SettingsRepositoryInterface::class),
@@ -396,10 +403,16 @@ return [
             get(AuthenticationInterface::class),
             get(OtpWorkflowService::class)
         ),
+    AdvancedSearchService::class => create(AdvancedSearchService::class)
+        ->constructor(
+            get(ContentIndexService::class),
+            get(\PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface::class)
+        ),
     SearchController::class => create(SearchController::class)
         ->constructor(
             get(ContentIndexService::class),
             get(ContentRepositoryInterface::class),
+            get(AdvancedSearchService::class),
             get(JsonResponder::class)
         ),
     MediaController::class => create(MediaController::class)

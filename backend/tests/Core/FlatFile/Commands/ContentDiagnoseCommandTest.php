@@ -18,6 +18,11 @@ final class ContentDiagnoseCommandTest extends TestCase
         $application->addCommand($command);
 
         $tester = new CommandTester($application->find('content:diagnose'));
+
+        // Po predchádzajúcich integračných testoch môže index obsahovať sirotá — rebuild pred assertom.
+        $fixExit = $tester->execute(['--fix' => true]);
+        $this->assertSame(0, $fixExit, $tester->getDisplay());
+
         $exitCode = $tester->execute([]);
 
         $this->assertSame(0, $exitCode);

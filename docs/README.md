@@ -32,7 +32,7 @@ PaginiumCMS keeps the Core intentionally minimal, secure, and fast. It moves sta
 | **API contract** | ✅ It. 21 | JsonResponder everywhere, MSW, Newman CI, RHF+Zod |
 | **PHPUnit** | ✅ **550+ passing** | PHPStan level 8 (0 errors) |
 | **Frontend** | ✅ It. 21+ | MSW, typed clients, settings form validation, bulk actions |
-| **Next iteration** | 🟡 It. 43 | Advanced search — see [backlog](ITERATION_BACKLOG.md) |
+| **Next iteration** | 🟡 It. 44 | Filters & sort — see [backlog](ITERATION_BACKLOG.md) |
 
 ### Planned (roadmap)
 
@@ -120,7 +120,7 @@ paginiumcms-architecture/
 |-------|--------|--------|
 | Auth | `/api/auth/*` | Mixed; register can be disabled via settings |
 | Content | `/api/pages`, `/api/articles` | GET public (published filter); write = auth + permission |
-| Search | `/api/search?q=` | Public, published only (It.43: advanced / scoped search) |
+| Search | `/api/search?q=&scope=admin\|public&types=` | Public published only; admin palette (It.43 ✅) |
 | Media | `/api/media/*` | EDITOR+ role; files at `/storage/app/content/media/...` |
 | Jobs | `/api/admin/jobs/*` | ADMIN — cron registry, run history |
 | Static files | `/storage/{path}` | Public (path traversal blocked) |

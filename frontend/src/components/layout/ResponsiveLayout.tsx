@@ -5,6 +5,7 @@ import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { ChangePasswordModal } from '../auth/ChangePasswordModal';
 import { AdminSidebar } from '../backend/AdminSidebar';
 import { AdminHeader } from '../backend/AdminHeader';
+import { AdminCommandPalette } from '../backend/AdminCommandPalette';
 
 interface ResponsiveLayoutProps {
   children: React.ReactNode;
@@ -14,6 +15,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const location = useLocation();
   const isMobile = useMediaQuery('(max-width: 1023px)');
 
@@ -26,6 +28,18 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) 
       setMobileMenuOpen(false);
     }
   }, [isMobile]);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        setCommandPaletteOpen(true);
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
 
   const publicSiteUrl =
     import.meta.env.VITE_PUBLIC_URL ||
@@ -61,6 +75,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) 
       </div>
 
       <ChangePasswordModal open={changePasswordOpen} onClose={() => setChangePasswordOpen(false)} />
+      <AdminCommandPalette isOpen={commandPaletteOpen} onClose={() => setCommandPaletteOpen(false)} />
     </div>
   );
 };
