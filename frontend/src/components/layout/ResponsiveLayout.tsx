@@ -6,6 +6,7 @@ import { ChangePasswordModal } from '../auth/ChangePasswordModal';
 import { AdminSidebar } from '../backend/AdminSidebar';
 import { AdminHeader } from '../backend/AdminHeader';
 import { AdminCommandPalette } from '../backend/AdminCommandPalette';
+import { DemoModeBanner } from '../backend/DemoModeBanner';
 
 interface ResponsiveLayoutProps {
   children: React.ReactNode;
@@ -69,6 +70,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) 
           onOpenMobileMenu={() => setMobileMenuOpen(true)}
           onOpenChangePassword={() => setChangePasswordOpen(true)}
         />
+        <DemoModeBanner />
         <main className="p-6 sm:p-8 max-w-7xl mx-auto w-full flex-1 animate-fadeIn">
           {children}
         </main>

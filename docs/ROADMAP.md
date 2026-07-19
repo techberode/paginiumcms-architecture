@@ -266,13 +266,16 @@ Hotové v **2.0.1** — detail [ITERATION_6.md](ITERATION_6.md).
 
 - ✅ Flat-file blueprinty `data/blueprints/{type}.json`, built-in `page` + `article`.
 - ✅ `DynamicValidator` + admin API/UI (`/blueprints`, `DynamicForm`).
-- ⏳ Plná integrácia do `ContentController` save — backlog.
+- ✅ Validácia `ContentController` save cez blueprint.
 
 
 
-## Iterácia 13 – Demo modul (izolované MOCK dáta) ⏳ 🟡
+## Iterácia 13 – Demo modul (izolované MOCK dáta) ✅ 🟡
 
-- Oddelený base-path + `DEMO_MODE`, MOCK dáta bez zásahu do reálneho obsahu (garancia integrity).
+- ✅ `DEMO_MODE` + oddelené úložisko `storage/app/demo/`.
+- ✅ Seed/reset API (`DemoStorageService`), SUPER_ADMIN reset.
+- ✅ Admin banner + `/demo` UI; verejné `demo.enabled`.
+- ⏳ Demo extensions cez plugin runtime — čaká na It. 15.
 
 
 

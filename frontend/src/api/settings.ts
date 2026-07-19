@@ -84,6 +84,9 @@ export interface PublicSettings {
     requireApproval?: boolean;
     allowGuestComments?: boolean;
   };
+  demo?: {
+    enabled?: boolean;
+  };
 }
 
 export async function getPublicSettings(): Promise<PublicSettings | null> {

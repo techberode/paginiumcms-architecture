@@ -97,6 +97,7 @@ use PaginiumCMS\Http\Controllers\Admin\GitHubController;
 use PaginiumCMS\Http\Controllers\Admin\MessageController;
 use PaginiumCMS\Http\Controllers\Admin\NotificationController;
 use PaginiumCMS\Http\Controllers\Admin\CodeEditorController;
+use PaginiumCMS\Http\Controllers\Admin\DemoController;
 use PaginiumCMS\Http\Controllers\Admin\DeveloperController;
 use PaginiumCMS\Http\Controllers\Admin\GatedCodeEditorController;
 use PaginiumCMS\Http\Controllers\Admin\BlueprintController;
@@ -136,6 +137,10 @@ use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
 use PaginiumCMS\Modules\Media\Services\MediaRepository;
 use PaginiumCMS\Modules\Media\Services\StockImageCatalog;
 use PaginiumCMS\Modules\Media\Services\StockImageImporter;
+use PaginiumCMS\Modules\Demo\Contracts\DemoDataProviderInterface;
+use PaginiumCMS\Modules\Demo\Services\DemoDataProvider;
+use PaginiumCMS\Modules\Demo\Services\DemoMode;
+use PaginiumCMS\Modules\Demo\Services\DemoStorageService;
 use PaginiumCMS\Modules\Security\Services\AclRepository;
 use PaginiumCMS\Modules\Security\Services\AuthorizationManager;
 use PaginiumCMS\Modules\Security\Services\OAuthSsoService;
@@ -417,7 +422,8 @@ return [
             get(JsonResponder::class),
             get(SettingsRepositoryInterface::class),
             get(AuthenticationInterface::class),
-            get(OtpWorkflowService::class)
+            get(OtpWorkflowService::class),
+            get(DynamicValidator::class)
         ),
     AdvancedSearchService::class => create(AdvancedSearchService::class)
         ->constructor(
@@ -721,4 +727,11 @@ return [
             get(DynamicValidator::class),
             get(JsonResponder::class)
         ),
+    DemoMode::class => create(DemoMode::class),
+    DemoStorageService::class => create(DemoStorageService::class)
+        ->constructor(get(DemoMode::class), get(FileReaderInterface::class)),
+    DemoDataProviderInterface::class => create(DemoDataProvider::class)
+        ->constructor(get(DemoMode::class)),
+    DemoController::class => create(DemoController::class)
+        ->constructor(get(DemoStorageService::class), get(JsonResponder::class)),
 ];

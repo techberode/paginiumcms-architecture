@@ -15,10 +15,11 @@ Flat-file definitions of content types and fields, driving dynamic validation an
 | Built-in `page` + `article` defaults | ✅ |
 | Field types: text, textarea, markdown, slug, select, bool, number, email, url, media, datetime | ✅ |
 | `DynamicValidator` → shared `Validator` (It.4) | ✅ |
+| **`ContentController` save validation via blueprint** | ✅ |
 | Admin API `GET/PUT /api/admin/blueprints/*` | ✅ |
 | `POST /api/admin/blueprints/{type}/validate` | ✅ |
 | Admin UI `/blueprints` + `DynamicForm` preview | ✅ |
-| PHPUnit repository, validator, controller smoke | ✅ |
+| PHPUnit repository, validator, controller, content smoke | ✅ |
 
 ## Backend
 
@@ -29,6 +30,7 @@ Core/Blueprint/Services/BlueprintRepository.php
 Core/Blueprint/Services/DynamicValidator.php
 Http/Controllers/Admin/BlueprintController.php
 Http/Routes/blueprints.php
+Http/Controllers/Content/ContentController.php   # validatePayload → DynamicValidator
 ```
 
 | Route | Notes |
@@ -50,7 +52,6 @@ Storage: `data/blueprints/{type}.json` (falls back to built-in defaults for `pag
 ## Out of scope (v1)
 
 - YAML blueprints (JSON only)
-- Wiring `DynamicValidator` into every `ContentController` save (validate endpoint ready)
 - Public/custom content types beyond admin-defined JSON files
 
 ## Dependencies (met)

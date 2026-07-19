@@ -126,6 +126,9 @@ final class SettingsController
             'sso' => [
                 'enabled' => (bool) ($all['sso']['enabled'] ?? false),
             ],
+            'demo' => [
+                'enabled' => filter_var(getenv('DEMO_MODE') ?: ($_ENV['DEMO_MODE'] ?? false), FILTER_VALIDATE_BOOLEAN),
+            ],
             'comments' => [
                 'enabled' => (bool) ($all['comments']['enabled'] ?? true),
                 'requireApproval' => (bool) ($all['comments']['requireApproval'] ?? true),

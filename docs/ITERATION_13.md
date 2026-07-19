@@ -1,41 +1,67 @@
 # Iteration 13 – Demo Module (Isolated Mock Data)
 
-**Status:** Planned  
+**Status:** ✅ Complete (Unreleased)  
 **Version:** —
 
 ## Summary
 
 Isolated demo environment with `DEMO_MODE` and separate storage path so training/sandbox never touches production content.
 
-## Goals
+## Delivered
 
-| Deliverable | Description |
-|-------------|-------------|
-| `DEMO_MODE` | Env flag switches base path + read-only guards |
-| Separate storage | e.g. `storage/app/demo/` or vfs overlay |
-| Demo data provider | `Modules/Demo/` – seed pages, articles, media |
-| Reset API | Admin `POST /api/admin/demo/reset` (SUPER_ADMIN only) |
-| UI banner | “Demo mode” indicator in admin shell |
+| Deliverable | Status |
+|-------------|--------|
+| `DEMO_MODE` env flag | ✅ |
+| `DemoMode` + `DemoStorageService` | ✅ |
+| Separate storage `storage/app/demo/` | ✅ |
+| Seed pages + articles (`DemoFixtures::seedFiles()`) | ✅ |
+| MOCK comments/messages/newsletter via `DemoDataProvider` | ✅ |
+| `GET /api/admin/demo/status` | ✅ |
+| `POST /api/admin/demo/reset` (SUPER_ADMIN only) | ✅ |
+| Public settings `demo.enabled` | ✅ |
+| Admin banner + `/demo` manager UI | ✅ |
+| PHPUnit isolation + controller smoke | ✅ |
 
-## Existing code
+## Backend
 
-- `Modules/Demo/Contracts/DemoDataProviderInterface.php` – scaffold present
-- Extend with full provider + route isolation
+```
+Modules/Demo/Services/DemoMode.php
+Modules/Demo/Services/DemoStorageService.php
+Modules/Demo/Services/DemoDataProvider.php
+Modules/Demo/Data/DemoFixtures.php
+Http/Controllers/Admin/DemoController.php
+Http/Routes/demo.php
+```
 
-## Dependencies
+| Route | Auth | Notes |
+|-------|------|-------|
+| `GET /api/admin/demo/status` | ADMIN + 2FA | enabled, paths, file_count |
+| `POST /api/admin/demo/reset` | SUPER_ADMIN + 2FA | Re-seed demo files |
+
+**Activation:** `export DEMO_MODE=true` before starting PHP.
+
+## Frontend
+
+- `frontend/src/api/demo.ts`
+- `DemoModeBanner` in admin shell (when `demo.enabled`)
+- `DemoManager` at `/demo` — status + reset
+
+## Tests
+
+| Suite | File |
+|-------|------|
+| PHPUnit | `DemoStorageServiceTest` — demo writes never touch content path |
+| PHPUnit | `DemoControllerTest`, `DemoDataProviderTest` |
+
+## Dependencies (met)
 
 - ✅ Iteration 19 – content repository abstraction
-- ⏳ Iteration 15 – plugin paths (optional demo extensions)
-
-## Tests (planned)
-
-- Demo writes never appear in production path
-- Reset restores seed snapshot
 
 ## Related docs
 
 - [ROADMAP.md](ROADMAP.md) – Iteration 13
+- [Modules/Demo/README.md](../backend/app/Modules/Demo/README.md)
 
 ## Next
 
-→ [Iteration 14](ITERATION_14.md) – Code policy (already documented)
+→ [Iteration 14](ITERATION_14.md) – Code policy engine

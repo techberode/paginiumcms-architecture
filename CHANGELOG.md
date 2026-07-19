@@ -22,12 +22,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.50 WAF + structured logging + admin Logy | **2.0.26** | [below](#2026--2026-07-19) |
 | It.10 polish, It.11 SSO/ACL, It.41–43 search/OTP | **2.0.27** | [below](#2027--2026-07-19) |
 | It.12 Blueprint / schema engine | **Unreleased** | [Unreleased](#unreleased) |
+| It.13 Demo module (isolated mock data) | **Unreleased** | [Unreleased](#unreleased) |
 
 ---
 
 ## [Unreleased]
 
 It.12 Blueprint / Schema Engine.
+
+### Added (It.12 polish — content save validation)
+
+- `ContentController::validatePayload()` → `DynamicValidator` for `page` / `article`
+
+### Added (It.13 — Demo module)
+
+- **`DemoMode`** + **`DemoStorageService`** — isolated `storage/app/demo/`, seed reset
+- **`GET /api/admin/demo/status`**, **`POST /api/admin/demo/reset`** (SUPER_ADMIN)
+- Public settings **`demo.enabled`**; admin banner + **`/demo`** manager
+- **`DemoFixtures::seedFiles()`** — demo pages/articles; MOCK comments/messages
+- Docs: [ITERATION_13.md](docs/ITERATION_13.md)
 
 ### Added (It.12 — Blueprint engine)
 

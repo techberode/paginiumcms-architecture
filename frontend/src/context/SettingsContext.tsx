@@ -36,6 +36,9 @@ const DEFAULT_PUBLIC: PublicSettings = {
     requireApproval: true,
     allowGuestComments: true,
   },
+  demo: {
+    enabled: false,
+  },
 };
 
 interface SettingsContextType {

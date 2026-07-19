@@ -1,7 +1,7 @@
 # PaginiumCMS
 
 > **Verzia:** 2.0.27 · **Posledná aktualizácia:** júl 2026  
-> **Unreleased:** It.12 Blueprint engine — [CHANGELOG](CHANGELOG.md#unreleased)
+> **Unreleased:** It.12–13 Blueprint + Demo — [CHANGELOG](CHANGELOG.md#unreleased)
 
 Headless flat-file CMS — PHP 8.5 backend (Slim 4) + React admin SPA.
 
@@ -37,13 +37,14 @@ cd frontend && VITE_MSW=true npm run dev
 | WAF + structured logs | ✅ It.50 — 2.0.26 |
 | SSO + path ACL + security audit | ✅ It.11 — **2.0.27** |
 | Blueprint / schema engine | ✅ It.12 (Unreleased) |
+| Demo module (sandbox) | ✅ It.13 (Unreleased) |
 | Advanced search + OTP workflows | ✅ It.41–43 — **2.0.27** |
 | PHPUnit | ✅ **614 testov** (15 skipped) |
 | Frontend | ✅ Admin SPA, public site, Monaco Code Editor, Ctrl+K search (Unreleased) |
 
 ### Ďalší krok
 
-**It.13** — Demo modul ([ITERATION_13.md](docs/ITERATION_13.md))
+**It.14** — Code policy engine ([ITERATION_14.md](docs/ITERATION_14.md))
 
 Detail: [docs/ROADMAP.md](docs/ROADMAP.md) · [docs/CONTINUATION.md](docs/CONTINUATION.md)
 
