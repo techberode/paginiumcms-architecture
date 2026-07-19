@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Tests\Http;
 
+use PaginiumCMS\Core\Cache\CacheManager;
+use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
 use PaginiumCMS\Support\JsonHelper;
@@ -25,7 +27,12 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
+        putenv('APP_ENV=testing');
+        $_ENV['APP_ENV'] = 'testing';
+
         $this->clearRateLimitCache();
+        $this->clearLoginAttemptStore();
+        $this->clearOtpChallengeStore();
 
         if (session_status() === PHP_SESSION_ACTIVE) {
             session_destroy();
@@ -35,13 +42,54 @@ abstract class TestCase extends BaseTestCase
 
         $this->app = require __DIR__ . '/../../bootstrap/app.php';
         $this->currentUser = null;
+
+        $this->resetPersistedTestSettings();
+        $this->clearApplicationCache();
+    }
+
+    private function resetPersistedTestSettings(): void
+    {
+        $settings = $this->app->getContainer()->get(SettingsRepositoryInterface::class);
+
+        $settings->setGroup('general', array_merge($settings->group('general'), [
+            'maintenanceMode' => false,
+        ]));
+
+        $settings->setGroup('workflows', array_merge($settings->group('workflows'), [
+            'registrationOtpEnabled' => false,
+            'commentApprovalOtpEnabled' => false,
+            'publishApprovalOtpEnabled' => false,
+        ]));
+    }
+
+    private function clearApplicationCache(): void
+    {
+        $this->app->getContainer()->get(CacheManager::class)->clear();
+    }
+
+    private function clearOtpChallengeStore(): void
+    {
+        $path = __DIR__ . '/../../storage/app/content/data/otp-challenges.json';
+        if (is_file($path)) {
+            @unlink($path);
+        }
+    }
+
+    private function clearLoginAttemptStore(): void
+    {
+        $path = __DIR__ . '/../../storage/app/content/data/security/login_attempts.json';
+        if (is_file($path)) {
+            @unlink($path);
+        }
     }
 
     private function clearRateLimitCache(): void
     {
         $cachePath = __DIR__ . '/../../storage/cache';
-        foreach (glob($cachePath . '/*.cache') ?: [] as $file) {
-            @unlink($file);
+        foreach (glob($cachePath . '/*') ?: [] as $file) {
+            if (is_file($file)) {
+                @unlink($file);
+            }
         }
     }
 

@@ -15,7 +15,7 @@ class Comment implements JsonSerializable
     private string $id;
     private string $articleSlug;
     private string $author;
-    private string $email;
+    private string $email = '';
     private string $content;
     private string $status = self::STATUS_PENDING;
     private string $createdAt;

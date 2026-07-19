@@ -82,8 +82,11 @@ final class SettingsRepository implements SettingsRepositoryInterface
         // Prijmeme len polia definované v schéme (ochrana pred pretečením neznámych kľúčov).
         $filtered = array_intersect_key($values, $rules);
 
+        // Validujeme iba odoslané polia – setGroup je čiastočná aktualizácia (merge s existujúcimi).
+        $filteredRules = array_intersect_key($rules, $filtered);
+
         // Vyhodí ValidationException (→ 422 cez jednotný Error Handler).
-        $validated = $this->validator->validate($filtered, $rules);
+        $validated = $this->validator->validate($filtered, $filteredRules);
 
         $this->withLockedOverrides(function (array &$overrides) use ($group, $validated): void {
             $current = $overrides[$group] ?? [];
