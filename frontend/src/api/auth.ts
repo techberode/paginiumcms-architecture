@@ -176,10 +176,11 @@ export const authApi = {
       const res = await apiClient.get<{ enabled: boolean; verified: boolean; setup_pending?: boolean }>(
         '/api/auth/2fa/status'
       );
+      const payload = res.data ?? res;
       return {
-        enabled: Boolean(res.enabled ?? res.data?.enabled),
-        verified: Boolean(res.verified ?? res.data?.verified),
-        setupPending: Boolean(res.setup_pending ?? res.data?.setup_pending),
+        enabled: Boolean(payload.enabled),
+        verified: Boolean(payload.verified),
+        setupPending: Boolean(payload.setup_pending),
       };
     },
 
