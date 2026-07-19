@@ -134,7 +134,10 @@ describe('ApiClient security', () => {
     expect(config.headers['X-CSRF-TOKEN']).toBeUndefined();
   });
 
-  it('redirects to login on 401 only for admin routes', async () => {
+  it('dispatches auth-expired on 401 for protected API routes without hard redirect', async () => {
+    const authExpired = vi.fn();
+    window.addEventListener('paginium:auth-expired', authExpired);
+
     await loadClientModule();
     const interceptor = axiosState.getResponseErrorInterceptor();
     expect(interceptor).not.toBeNull();
@@ -147,10 +150,46 @@ describe('ApiClient security', () => {
     } as AxiosError;
 
     await expect(interceptor!(error)).rejects.toBe(error);
-    expect(location.href).toBe('/login');
+    expect(authExpired).toHaveBeenCalledTimes(1);
+    expect(location.href).toBe('');
+
+    window.removeEventListener('paginium:auth-expired', authExpired);
   });
 
-  it('does not redirect on public auth probe endpoints', async () => {
+  it('dispatches totp-required when 401 payload requires two-factor login', async () => {
+    const totpRequired = vi.fn();
+    const authExpired = vi.fn();
+    window.addEventListener('paginium:totp-required', totpRequired);
+    window.addEventListener('paginium:auth-expired', authExpired);
+
+    await loadClientModule();
+    const interceptor = axiosState.getResponseErrorInterceptor();
+
+    const error = {
+      isAxiosError: true,
+      message: 'Unauthorized',
+      response: {
+        status: 401,
+        data: { success: false, error: 'TOTP required', requires_two_factor: true },
+      },
+      config: { url: '/api/content/pages', method: 'get' },
+    } as AxiosError;
+
+    await expect(interceptor!(error)).rejects.toBe(error);
+    expect(totpRequired).toHaveBeenCalledTimes(1);
+    expect(authExpired).not.toHaveBeenCalled();
+    expect(location.href).toBe('');
+
+    window.removeEventListener('paginium:totp-required', totpRequired);
+    window.removeEventListener('paginium:auth-expired', authExpired);
+  });
+
+  it('does not dispatch auth events on public auth probe endpoints', async () => {
+    const authExpired = vi.fn();
+    const totpRequired = vi.fn();
+    window.addEventListener('paginium:auth-expired', authExpired);
+    window.addEventListener('paginium:totp-required', totpRequired);
+
     location.href = '';
     location.pathname = '/dashboard';
     await loadClientModule();
@@ -164,10 +203,18 @@ describe('ApiClient security', () => {
     } as AxiosError;
 
     await expect(interceptor!(error)).rejects.toBe(error);
+    expect(authExpired).not.toHaveBeenCalled();
+    expect(totpRequired).not.toHaveBeenCalled();
     expect(location.href).toBe('');
+
+    window.removeEventListener('paginium:auth-expired', authExpired);
+    window.removeEventListener('paginium:totp-required', totpRequired);
   });
 
-  it('does not redirect on public pages', async () => {
+  it('does not hard-redirect on 401 regardless of frontend pathname', async () => {
+    const authExpired = vi.fn();
+    window.addEventListener('paginium:auth-expired', authExpired);
+
     location.pathname = '/blog';
     location.href = '';
     await loadClientModule();
@@ -182,5 +229,8 @@ describe('ApiClient security', () => {
 
     await expect(interceptor!(error)).rejects.toBe(error);
     expect(location.href).toBe('');
+    expect(authExpired).toHaveBeenCalledTimes(1);
+
+    window.removeEventListener('paginium:auth-expired', authExpired);
   });
 });

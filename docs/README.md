@@ -1,6 +1,6 @@
 # 🏛️ PaginiumCMS
 
-> **Version:** 2.0.30 · **Last updated:** 19 July 2026  
+> **Version:** 2.0.30 · **Last updated:** 20 July 2026  
 > Modern, modular, Headless Flat-File Content Management System powered by Slim Framework (PHP) & React.
 
 ---
