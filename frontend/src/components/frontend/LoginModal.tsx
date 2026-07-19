@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
+import { securityApi, type SsoProvider } from '../../api/security';
 
 export const LoginModal: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -22,8 +23,18 @@ export const LoginModal: React.FC = () => {
   const [step, setStep] = useState<'credentials' | 'totp'>('credentials');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [ssoProviders, setSsoProviders] = useState<SsoProvider[]>([]);
   const { login, verifyTwoFactorLogin, pendingTwoFactor, user } = useAuth();
   const toast = useToast();
+
+  useEffect(() => {
+    void (async () => {
+      const data = await securityApi.listSsoProviders();
+      if (data.enabled) {
+        setSsoProviders(data.providers);
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     if (pendingTwoFactor && user) {
@@ -48,6 +59,21 @@ export const LoginModal: React.FC = () => {
       } else {
         toast.error(outcome.error || 'Neplatný e-mail alebo heslo');
       }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSso = async (providerId: string) => {
+    setLoading(true);
+    try {
+      const redirectUri = `${window.location.origin}/api/auth/sso/${encodeURIComponent(providerId)}/callback`;
+      const start = await securityApi.startSso(providerId, redirectUri);
+      if (start?.authorizationUrl) {
+        window.location.href = start.authorizationUrl;
+        return;
+      }
+      toast.error('SSO nie je nakonfigurované');
     } finally {
       setLoading(false);
     }
@@ -151,6 +177,25 @@ export const LoginModal: React.FC = () => {
                   Vytvoriť účet
                 </Link>
               </div>
+
+              {ssoProviders.length > 0 && (
+                <div className="pt-4 border-t border-slate-200 dark:border-slate-700 space-y-2">
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400 text-center">
+                    Alebo SSO
+                  </p>
+                  {ssoProviders.map((provider) => (
+                    <button
+                      key={provider.id}
+                      type="button"
+                      disabled={loading}
+                      onClick={() => void handleSso(provider.id)}
+                      className="w-full py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800"
+                    >
+                      Prihlásiť cez {provider.name}
+                    </button>
+                  ))}
+                </div>
+              )}
             </form>
           ) : (
             <form className="space-y-5" onSubmit={handleTotp}>

@@ -26,7 +26,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-Advanced admin/public search (It.43), test storage isolation, and `run-all-tests.zsh` cleanup pipeline.
+Advanced admin/public search (It.43), SSO + ACL + security audit (It.11), test storage isolation, and `run-all-tests.zsh` cleanup pipeline.
+
+### Added (It.11 — SSO, path ACL, security audit)
+
+- **`OAuthSsoService`** — GitHub + generic OAuth2 (curl); auto-provision users with `sso.defaultRole`
+- **`GET /api/auth/sso/providers`**, `/start`, `/callback`; public `sso.enabled` in settings
+- Settings group **`sso`** (GitHub + generic OAuth fields)
+- **`AclRepository`** + **`PathAclService`** — flat-file `data/security/acl.json`, glob path rules on RBAC
+- **`GET/PUT /api/admin/security/acl`**; admin **`/security/acl`**
+- **`SecurityAuditStore`** — `data/security/audit_events.json`; failed login, permission denied, settings/ACL/SSO events
+- **`GET /api/admin/security/audit`** + CSV export; admin **`/security/audit`**
+- Frontend: `frontend/src/api/security.ts`, `LoginModal` SSO buttons, `SecurityAuditManager`, `AclManager`
+- Docs: [ITERATION_11.md](docs/ITERATION_11.md)
 
 ### Added
 

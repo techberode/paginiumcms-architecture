@@ -21,6 +21,7 @@ use PaginiumCMS\Modules\Security\Services\AuthenticationManager;
 use PaginiumCMS\Modules\Security\Services\AuthorizationManager;
 use PaginiumCMS\Modules\Security\Services\CsrfProtectionManager;
 use PaginiumCMS\Modules\Security\Services\PasswordPolicy;
+use PaginiumCMS\Modules\Security\Services\SecurityAuditStore;
 use PaginiumCMS\Modules\Security\Services\SessionManager;
 use PaginiumCMS\Modules\Security\Services\TOTPGenerator;
 use PaginiumCMS\Modules\Security\Services\QRCodeGenerator;
@@ -157,6 +158,7 @@ $containerBuilder->addDefinitions([
             $container->get(LoggerInterface::class),
             $container->get(LoginAttemptTracker::class),
             $container->get(IncidentNotifier::class),
+            $container->get(SecurityAuditStore::class),
             [
                 'log_failed_logins' => true,
                 'log_successful_logins' => true,
@@ -173,6 +175,10 @@ $containerBuilder->addDefinitions([
             $container->get(FileReaderInterface::class),
             $container->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class)
         );
+    },
+
+    SecurityAuditStore::class => function ($container) {
+        return new SecurityAuditStore($container->get(FileReaderInterface::class));
     },
 
     OtpChallengeStore::class => function ($container) {
@@ -313,8 +319,10 @@ $containerBuilder->addDefinitions([
         );
     },
 
-    AuthorizationInterface::class => function () {
-        return new AuthorizationManager();
+    AuthorizationInterface::class => function ($container) {
+        return new AuthorizationManager(
+            $container->get(SecurityAuditStore::class)
+        );
     },
 
     CsrfProtectionInterface::class => function ($container) {

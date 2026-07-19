@@ -16,8 +16,9 @@ class AuthorizationManager implements AuthorizationInterface
     /** @var array<string, array<int, string>> Mapovanie rolí na oprávnenia */
     private array $rolePermissions = [];
 
-    public function __construct()
-    {
+    public function __construct(
+        private ?SecurityAuditStore $securityAudit = null
+    ) {
         // Predvolené mapovanie rolí na oprávnenia
         $this->rolePermissions = [
             self::ROLE_SUPER_ADMIN => ['*'],
@@ -113,6 +114,13 @@ class AuthorizationManager implements AuthorizationInterface
     {
         if (!$this->hasRole($user, $roles)) {
             $roleList = is_array($roles) ? implode(', ', $roles) : $roles;
+            $this->securityAudit?->append(
+                'role_denied',
+                'WARNING',
+                sprintf('Required role denied: %s', $roleList),
+                $user->getId(),
+                $user->getEmail()
+            );
             throw new AuthorizationException(sprintf('Vyžaduje sa rola: %s', $roleList));
         }
     }
@@ -120,6 +128,15 @@ class AuthorizationManager implements AuthorizationInterface
     public function requirePermission(User $user, string $permission): void
     {
         if (!$this->hasPermission($user, $permission)) {
+            $this->securityAudit?->append(
+                'permission_denied',
+                'WARNING',
+                sprintf('Permission denied: %s', $permission),
+                $user->getId(),
+                $user->getEmail(),
+                null,
+                ['permission' => $permission]
+            );
             throw new AuthorizationException(sprintf('Nedostatočné oprávnenie: %s', $permission));
         }
     }

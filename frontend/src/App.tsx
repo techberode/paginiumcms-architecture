@@ -35,6 +35,8 @@ import { DeveloperLogsViewer } from './components/backend/DeveloperLogsViewer';
 import { TrashManager } from './components/backend/TrashManager';
 import { FirewallManager } from './components/backend/FirewallManager';
 import { LogsManager } from './components/backend/LogsManager';
+import { SecurityAuditManager } from './components/backend/SecurityAuditManager';
+import { AclManager } from './components/backend/AclManager';
 import { debugLog } from './utils/debugLog';
 
 function LoadingScreen() {
@@ -138,6 +140,8 @@ function App() {
         <Route path="/audit" element={<AuditTrail />} />
         <Route path="/audit/content/:contentId" element={<AuditTrail />} />
         <Route path="/audit/user/:userId" element={<AuditTrail />} />
+        <Route path="/security/audit" element={<SecurityAuditManager />} />
+        <Route path="/security/acl" element={<AclManager />} />
         <Route path="/notifications" element={<NotificationsOverview />} />
         <Route path="/scheduler" element={<SchedulerView />} />
         <Route path="/settings" element={<SettingsView />} />

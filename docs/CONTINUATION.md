@@ -103,9 +103,9 @@ Legenda: ✅ DONE · 🟡 PARTIAL (existuje časť, treba dokončiť/prepojiť) 
 | Q | **Nastavenia (settings) úložisko** | ✅ | `SettingsRepository`, `SettingsSchema`, `data/settings.json`, `SettingsController`, FE `SettingsView` + `SettingsContext`, `GET /api/settings/public`. **Odomknuté pre It. 6+ (SMTP, toast, SEO, feedy).** |
 | R | **Priebežné pridávanie API + FE prepojení** | 🟡 | Priebežná úloha naprieč iteráciami. |
 | S | **Automatické SEO tagy + rozšírené SEO nastavenia** | ✅ | **It.23** — `SeoMetaBuilder`, `GET /api/seo/{type}/{slug}`, FE `useSeoMeta` ([ITERATION_23.md](ITERATION_23.md), 2.0.11). Admin SEO panel → **It.27** ✅. |
-| T | **SSO (SAML / OAuth)** | ⛔ | Iba lokálne prihlásenie; žiadny SAML/OAuth provider ani flat-file konfigurácia. |
-| U | **Jemnozrnné ACL (na úrovni súborov/priečinkov)** | ⛔ | Existuje len RBAC podľa rolí (`AuthorizationManager`, `RoleMiddleware`); žiadne per-súbor/per-priečinok ACL (JSON). |
-| V | **Bezpečnostný audit log (+ CSV export)** | 🟡 | Modul `Modules/Audit/*` + `AuditTrailController` + `audittrail.php` existujú; overiť/dotiahnuť pokrytie akcií (login, úpravy, ACL) a CSV export, plus FE prehľad. |
+| T | **SSO (SAML / OAuth)** | ✅ | **It.11** — OAuth2 GitHub + generic (`OAuthSsoService`, settings `sso`, `/api/auth/sso/*`). SAML mimo v1. |
+| U | **Jemnozrnné ACL (na úrovni súborov/priečinkov)** | ✅ | **It.11** — `AclRepository`, `PathAclService`, `data/security/acl.json`, admin `/security/acl`. |
+| V | **Bezpečnostný audit log (+ CSV export)** | ✅ | **It.11** — `SecurityAuditStore`, `SecurityLogger` integrácia, `/api/admin/security/audit`, FE `/security/audit`. Pôvodný `Modules/Audit` ostáva pre content audit trail. |
 | W | **Politika validácie a kompatibility kódu (CodeEditor)** | 🟡 | `SyntaxChecker` (PHP `php -l`, JSON, YAML; JS/CSS vždy OK), `CodeEditorManager` allow/deny paths – **path resolution rozbitá**. Chýba security policy (zakázané konštrukty: `eval`, `exec`, …), JS/CSS lint, centrálna policy v `settings.json`, FE validácia pred save. |
 | X | **Moduly / Témy / Funkcionality editovateľné v CodeEditori** | 🟡 | Backend: `GatedCodeEditorController`, Developer gate, deklarované cesty. FE: **Monaco editor** ✅; chýba hierarchický FileTree, create/delete/restore, opravené cesty k `themes/`. |
 | Y | **Systém doplnkov: vytvorenie / inštalácia / import** | ⛔ | `HookManager` + `EventDispatcher` existujú (len testy), **žiadny** `PluginManager`, manifest (`plugin.json`), API install/import/enable/disable, admin UI. Import musí prejsť politikou kódu (W). |
@@ -252,7 +252,7 @@ It.7 Admin dashboard: zámky + konflikty + Health + API Tracker/Analytics.
 It.8 Media manager FE + WYSIWYG + picker — ✅ ([ITERATION_8.md](ITERATION_8.md), 2.0.4; DAM It.24).
 It.9 prototype port (nav, comments, contact): see [ITERATION_9.md](ITERATION_9.md). SEO public meta: It.23 ✅. Admin SEO UX: It.27 ✅ (2.0.15).
 It.10 XML Feeds — ✅ ([ITERATION_10.md](ITERATION_10.md), 2.0.10 + polish Unreleased).
-It.11 SSO + jemnozrnné ACL + bezpečnostný audit log — ⏳ ([ITERATION_11.md](ITERATION_11.md)).
+It.11 SSO + jemnozrnné ACL + bezpečnostný audit log — ✅ ([ITERATION_11.md](ITERATION_11.md), Unreleased).
 It.12 Blueprint/Schema engine (po schválení návrhu).
 It.13 Demo modul s izolovanými MOCK dátami.
 It.14 Politika kódu (CodePolicyEngine) + oprava CodeEditor path/FE kontraktu.
