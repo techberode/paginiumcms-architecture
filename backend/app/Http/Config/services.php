@@ -27,6 +27,7 @@ use PaginiumCMS\Core\Notification\Services\NotificationFactory;
 use PaginiumCMS\Core\Cache\CacheManager;
 use PaginiumCMS\Core\Cache\ContentCacheService;
 use PaginiumCMS\Core\Cache\Commands\PurgeContentCacheCommand;
+use PaginiumCMS\Core\FlatFile\Commands\ContentDiagnoseCommand;
 use PaginiumCMS\Core\CodeEditor\Services\CodeEditorManager;
 use PaginiumCMS\Core\CodeEditor\Services\CodeEditorLogger;
 use PaginiumCMS\Core\CodePolicy\Contracts\CodePolicyEngineInterface;
@@ -643,5 +644,12 @@ return [
             get(ContentCacheService::class),
             get(ContentIndexService::class),
             get(ContentRepositoryInterface::class)
+        ),
+    ContentDiagnoseCommand::class => create(ContentDiagnoseCommand::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(ContentRepositoryInterface::class),
+            get(ContentIndexService::class),
+            get(ContentCacheService::class)
         ),
 ];

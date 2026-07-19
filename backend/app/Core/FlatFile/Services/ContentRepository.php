@@ -70,6 +70,8 @@ class ContentRepository implements ContentRepositoryInterface
             return $object;
         } catch (FileNotFoundException) {
             return null;
+        } catch (FlatFileException) {
+            return null;
         }
     }
 

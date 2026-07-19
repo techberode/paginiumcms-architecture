@@ -144,6 +144,11 @@ class FileReader implements FileReaderInterface
             return $file !== '.' && $file !== '..';
         });
 
+        // Rotované zálohy FileWriter (home.md.backup.20260718_…) nie sú obsah.
+        $files = array_filter($files, static function ($file): bool {
+            return !str_contains((string) $file, '.backup.');
+        });
+
         // Aplikujeme pattern filter
         if ($pattern !== '*') {
             // Konvertujeme pattern na regulárny výraz

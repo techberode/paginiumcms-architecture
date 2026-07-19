@@ -837,10 +837,18 @@ class ContentController
      */
     private function serializeContentList(array $items, string $type): array
     {
-        return array_values(array_map(
-            fn (Content $item) => $this->serializeContent($item, $type),
-            $items
-        ));
+        $result = [];
+
+        foreach ($items as $item) {
+            try {
+                $result[] = $this->serializeContent($item, $type);
+            } catch (\Throwable) {
+                // Skip corrupt entries instead of failing the whole list (ISS-002).
+                continue;
+            }
+        }
+
+        return $result;
     }
 
     private function resolveUser(ServerRequestInterface $request): ?User
