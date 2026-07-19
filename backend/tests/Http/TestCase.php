@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Tests\Http;
 
-use PaginiumCMS\Core\Cache\CacheManager;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
@@ -30,13 +29,6 @@ abstract class TestCase extends BaseTestCase
         putenv('APP_ENV=testing');
         $_ENV['APP_ENV'] = 'testing';
 
-        $this->clearRateLimitCache();
-        $this->clearLoginAttemptStore();
-        $this->clearFirewallStore();
-        $this->clearOtpChallengeStore();
-
-        $this->clearTrashStore();
-
         if (session_status() === PHP_SESSION_ACTIVE) {
             session_destroy();
         }
@@ -46,11 +38,10 @@ abstract class TestCase extends BaseTestCase
         $this->app = require __DIR__ . '/../../bootstrap/app.php';
         $this->currentUser = null;
 
-        $this->resetPersistedTestSettings();
-        $this->clearApplicationCache();
+        $this->applyTestSettingsOverrides();
     }
 
-    private function resetPersistedTestSettings(): void
+    private function applyTestSettingsOverrides(): void
     {
         $settings = $this->app->getContainer()->get(SettingsRepositoryInterface::class);
 
@@ -65,70 +56,12 @@ abstract class TestCase extends BaseTestCase
         ]));
     }
 
-    private function clearApplicationCache(): void
-    {
-        $this->app->getContainer()->get(CacheManager::class)->clear();
-    }
-
-    private function clearOtpChallengeStore(): void
-    {
-        $path = __DIR__ . '/../../storage/app/content/data/otp-challenges.json';
-        if (is_file($path)) {
-            @unlink($path);
-        }
-    }
-
-    private function clearTrashStore(): void
-    {
-        $dir = __DIR__ . '/../../storage/app/content/trash';
-        if (!is_dir($dir)) {
-            return;
-        }
-
-        foreach (glob($dir . '/*') ?: [] as $file) {
-            if (is_file($file)) {
-                @unlink($file);
-            }
-        }
-    }
-
-    private function clearLoginAttemptStore(): void
-    {
-        $path = __DIR__ . '/../../storage/app/content/data/security/login_attempts.json';
-        if (is_file($path)) {
-            @unlink($path);
-        }
-    }
-
-    private function clearFirewallStore(): void
-    {
-        $dir = __DIR__ . '/../../storage/app/content/data/security/firewall';
-        if (!is_dir($dir)) {
-            return;
-        }
-
-        foreach (glob($dir . '/*') ?: [] as $file) {
-            if (is_file($file)) {
-                @unlink($file);
-            }
-        }
-    }
-
-    private function clearRateLimitCache(): void
-    {
-        $cachePath = __DIR__ . '/../../storage/cache';
-        foreach (glob($cachePath . '/*') ?: [] as $file) {
-            if (is_file($file)) {
-                @unlink($file);
-            }
-        }
-    }
-
     protected function tearDown(): void
     {
         if (session_status() === PHP_SESSION_ACTIVE) {
             session_destroy();
         }
+
         parent::tearDown();
     }
 

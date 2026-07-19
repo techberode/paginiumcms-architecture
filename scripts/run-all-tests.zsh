@@ -29,12 +29,46 @@ fi
 
 PROJECT_ROOT=$PWD
 TOTAL_STEPS=11
+CLEANUP_STEP=12
 
 typeset -a FAILED_STEPS
 typeset -A STEP_EXIT STEP_STATS STEP_ERRORS
 
+PROGRESS_BAR_WIDTH=28
+PROGRESS_ENABLED=1
+[[ -n "${PAGINIUMCMS_NO_PROGRESS:-}" || ! -t 2 ]] && PROGRESS_ENABLED=0
+
 strip_ansi() {
   sed 's/\x1b\[[0-9;]*m//g; s/\x1b\][^\x07]*\x07//g'
+}
+
+# Progress bar po dokončení kroku (stderr — neprekrýva live výstup testov).
+render_step_progress() {
+  local done=$1
+  local total=$2
+  local label="$3"
+  local state=${4:-running}
+
+  (( PROGRESS_ENABLED )) || return 0
+
+  local pct=0 filled=0 i bar="" icon="⏳"
+  (( total > 0 )) && pct=$(( done * 100 / total ))
+  (( total > 0 )) && filled=$(( done * PROGRESS_BAR_WIDTH / total ))
+
+  for (( i = 1; i <= PROGRESS_BAR_WIDTH; i++ )); do
+    if (( i <= filled )); then
+      bar+="#"
+    else
+      bar+="-"
+    fi
+  done
+
+  case "$state" in
+    ok) icon="✅" ;;
+    fail) icon="❌" ;;
+  esac
+
+  print -u2 "[${bar}] ${done}/${total} (${pct}%) ${icon} ${label}"
 }
 
 # Vráti jednoriadkový súhrn metrik (Passed / Failed / Errors / Skipped / Warnings).
@@ -68,12 +102,12 @@ extract_stats() {
         stats="OK | errors: 0"
       else
         local err_count
-        err_count=$(print -r -- "$out" | grep -E '^\[ERROR\] Found [0-9]+ errors' | tail -1 | sed 's/^\[ERROR\] Found //; s/ errors.*//')
+        err_count=$(print -r -- "$out" | grep -E '\[ERROR\] Found [0-9]+ errors?' | tail -1 | sed -E 's/.*Found ([0-9]+) errors?.*/\1/')
         stats="Failed | errors: ${err_count:-?}"
       fi
       ;;
 
-    *Vitest*|*MSW*)
+    *Vitest*|*MSW*|*bezpečnostné*)
       local tf tests_line
       tf=$(print -r -- "$out" | grep -E 'Test Files' | tail -1 | sed 's/^[[:space:]]*//')
       tests_line=$(print -r -- "$out" | grep -E '^[[:space:]]*Tests[[:space:]]' | tail -1 | sed 's/^[[:space:]]*//')
@@ -86,7 +120,7 @@ extract_stats() {
       [[ -z "$stats" ]] && stats=$(print -r -- "$out" | grep -Ei 'error|warning' | tail -1)
       ;;
 
-    *TypeScript*)
+    *type-check*)
       local err_count
       err_count=$(print -r -- "$out" | grep -cE 'error TS[0-9]+' || true)
       if (( err_count == 0 )); then
@@ -114,15 +148,13 @@ extract_stats() {
       fi
       ;;
 
-    *Diagnose*)
+    *diagnose*)
       if print -r -- "$out" | grep -q 'Content storage looks healthy'; then
         local index_entries orphans unreadable pages
         index_entries=$(print -r -- "$out" | sed -n 's/.*Index entries[[:space:]]*\([0-9][0-9]*\).*/\1/p' | tail -1)
         pages=$(print -r -- "$out" | sed -n 's/.*Pages on disk[[:space:]]*\([0-9][0-9]*\).*/\1/p' | tail -1)
-        articles=$(print -r -- "$out" | sed -n 's/.*Articles on disk[[:space:]]*\([0-9][0-9]*\).*/\1/p' | tail -1)
         orphans=$(print -r -- "$out" | sed -n 's/.*Index orphans (missing file)[[:space:]]*\([0-9][0-9]*\).*/\1/p' | tail -1)
         unreadable=$(print -r -- "$out" | sed -n 's/.*Unreadable content files[[:space:]]*\([0-9][0-9]*\).*/\1/p' | tail -1)
-        backups=$(print -r -- "$out" | sed -n 's/.*Backup files in content dirs[[:space:]]*\([0-9][0-9]*\).*/\1/p' | tail -1)
         stats="OK | index: ${index_entries:-?} | pages: ${pages:-?} | orphans: ${orphans:-0} | unreadable: ${unreadable:-0}"
       else
         local issue_count
@@ -140,97 +172,163 @@ extract_stats() {
   print -r -- "$stats"
 }
 
-# Vytiahne konkrétne bloky chýb pre zlyhaný krok.
-extract_error_blocks() {
+# Vytiahne stručný zoznam: cesta (+ riadok) + popis chyby / failure / skip.
+extract_error_summary() {
   local label="$1"
   local file="$2"
-  local blocks=""
+  local lines=""
 
   case "$label" in
     *PHPUnit*)
-      blocks=$(awk '
-        /^There (was|were) [0-9]+ (failure|error)/ { show=1 }
-        /^FAILURES|^ERRORS|^OK, but/ { show=1 }
-        show { print }
-        /^Tests: / && show { print; exit }
+      lines=$(awk '
+        / ✘ / {
+          if (name != "") emit()
+          name=$0
+          sub(/^.* ✘ /, "", name)
+          gsub(/^[[:space:]]+|[[:space:]]+$/, "", name)
+          msg=""
+          loc=""
+          next
+        }
+        /├/ {
+          line=$0
+          sub(/^.*├[[:space:]]*/, "", line)
+          if (line ~ /Failed asserting|Exception:|Error:|TypeError:/) msg=line
+          next
+        }
+        /│/ && /\.php:[0-9]+/ {
+          if (match($0, /(\/[^[:space:]]+\.php:[0-9]+)/, a)) loc=a[1]
+          else if (match($0, /([A-Za-z0-9_./-]+\.php:[0-9]+)/, a)) loc=a[1]
+          next
+        }
+        /┴/ { if (name != "") emit(); next }
+        /^[0-9]+\) / {
+          if (name != "") emit()
+          name=$0; sub(/^[0-9]+\) /, "", name)
+          msg=""; loc=""
+          next
+        }
+        /^Failed asserting|^Exception:|^Error:|^TypeError:/ {
+          if (msg == "") msg=$0
+          next
+        }
+        /^\/.*\.php:[0-9]+$/ { loc=$0; next }
+        /^(FAILURES|ERRORS)!/ { if (name != "") emit(); exit }
+        function emit() {
+          if (loc != "") print loc " — " name " — " msg
+          else if (msg != "") print name " — " msg
+          else print name
+          name=""; msg=""; loc=""
+        }
+        END { if (name != "") emit() }
       ' "$file")
-      if [[ -z "${blocks//[[:space:]]/}" ]]; then
-        blocks=$(grep -E -A 12 ' ✘ |^[0-9]+\) ' "$file" | head -80)
+      if [[ -z "${lines//[[:space:]]/}" ]]; then
+        lines=$(grep -E '^Tests: ' "$file" | tail -1 | sed 's/^/SUMMARY — /')
       fi
       ;;
 
     *PHPStan*)
-      blocks=$(grep -E -A 25 ' ------ ' "$file" | head -120)
-      if [[ -z "${blocks//[[:space:]]/}" ]]; then
-        blocks=$(print -r -- "$(grep -E '\[ERROR\]|Line' "$file" | tail -30)")
-      fi
-      ;;
-
-    *Vitest*|*MSW*)
-      blocks=$(awk '
-        /^ FAIL / { show=1; buf=$0 ORS; next }
-        show {
-          if ($0 ~ /^⎯/ || $0 ~ /^ Test Files /) { print buf; show=0; buf="" }
-          else { buf=buf $0 ORS }
-        }
-        END { if (buf!="") print buf }
-      ' "$file")
-      if [[ -z "${blocks//[[:space:]]/}" ]]; then
-        blocks=$(grep -E -A 15 '^ FAIL |AssertionError|TestingLibraryElementError|Error:' "$file" | head -100)
-      fi
-      ;;
-
-    *ESLint*|*TypeScript*)
-      blocks=$(awk '
-        /^\// { if (file && has) print buf; file=$0; buf=$0 ORS; has=0; next }
-        /error|warning|problems/ { buf=buf $0 ORS; has=1 }
-        END { if (file && has) print buf }
-      ' "$file")
-      ;;
-
-    *Diagnose*)
-      blocks=$(awk '
-        /^Issues/ { show=1; print; next }
-        show && /^ \* / { print; next }
-        /^Problems detected/ { print; show=0 }
-        /Unreadable content files|Index orphans|Backup files in content dirs/ {
-          if (match($0, /[[:space:]][1-9][0-9]*[[:space:]]*$/)) print
+      lines=$(awk '
+        /^  Line   / { path=$0; sub(/^  Line   /, "", path); next }
+        /^  [0-9]+     / {
+          line=$0
+          sub(/^  /, "", line)
+          split(line, parts, /[[:space:]]+/, seps)
+          n=parts[1]
+          msg=line
+          sub(/^[0-9]+[[:space:]]+/, "", msg)
+          print path ":" n " — " msg
         }
       ' "$file")
-      if [[ -z "${blocks//[[:space:]]/}" ]]; then
-        blocks=$(grep -E -A 12 'Issues|Problems detected|\[WARNING\]' "$file" | tail -25)
+      if [[ -z "${lines//[[:space:]]/}" ]]; then
+        lines=$(grep -E '^\[ERROR\]|\.php' "$file" | tail -15)
       fi
+      ;;
+
+    *Vitest*|*MSW*|*bezpečnostné*)
+      lines=$(awk '
+        /^ FAIL / { test=$0; sub(/^ FAIL  /, ""); msg=""; loc=""; next }
+        /^AssertionError:|^Error:|^TypeError:|^TestingLibraryElementError:/ { msg=$0; next }
+        /❯/ {
+          loc=$0
+          sub(/^.*❯[[:space:]]*/, "", loc)
+          if (test != "" && loc != "") {
+            if (msg != "") print loc " — " test " — " msg
+            else print loc " — " test
+            test=""; msg=""; loc=""
+          }
+          next
+        }
+        /^ Test Files / && test != "" {
+          if (loc != "") print loc " — " test " — " msg
+          else print test " — " msg
+          test=""
+        }
+      ' "$file")
+      if [[ -z "${lines//[[:space:]]/}" ]]; then
+        lines=$(grep -E '^ FAIL |\.tsx?:[0-9]+' "$file" | head -20)
+      fi
+      ;;
+
+    *ESLint*)
+      lines=$(awk '
+        /^\/|^\\.\\./ {
+          if (file != "" && detail != "") print file " — " detail
+          file=$0; detail=""; next
+        }
+        /^[[:space:]]+[0-9]+:[0-9]+[[:space:]]+(error|warning)/ {
+          detail=$0; gsub(/^[[:space:]]+/, "", detail)
+        }
+        END { if (file != "" && detail != "") print file " — " detail }
+      ' "$file")
+      ;;
+
+    *type-check*)
+      lines=$(grep -E '\.(tsx?|ts)\([0-9]+,[0-9]+\): error TS' "$file" | head -30)
+      ;;
+
+    *diagnose*)
+      lines=$(grep -E '^ \\* |Problems detected|Unreadable content files|Index orphans' "$file" | sed 's/^[[:space:]]*\\* /ISSUE — /')
+      ;;
+
+    *Composer*|*NPM*|*build*)
+      lines=$(grep -Ei 'advisor|vulnerabilit|error|failed|critical' "$file" | grep -viE '^npm notice' | tail -15)
       ;;
 
     *)
-      blocks=$(grep -E -i 'error|failed|failure|critical|ERRORS|FAILURES' "$file" | tail -25)
+      lines=$(grep -Ei '\\.(php|tsx?|ts|js):[0-9]+|error TS|Failed asserting|FAIL ' "$file" | tail -20)
       ;;
   esac
 
-  if [[ -z "${blocks//[[:space:]]/}" ]]; then
-    blocks=$(tail -20 "$file")
+  if [[ -z "${lines//[[:space:]]/}" ]]; then
+    lines=$(grep -Ei 'error|failed|failure' "$file" | tail -10 | sed 's/^[[:space:]]*//')
   fi
 
-  print -r -- "$blocks"
+  print -r -- "$lines"
 }
 
 run_step() {
   local num="$1"
   local label="$2"
   local cmd="$3"
-  local tmp_out
+  local tmp_out start_ts elapsed
+  typeset -a _pipe
   tmp_out=$(mktemp)
+  start_ts=$SECONDS
 
   print "==================================================" | tee -a "$LOG_FILE"
   print "⚙️ ${num}/${TOTAL_STEPS} ${label}" | tee -a "$LOG_FILE"
   print "----------------" >> "$LOG_FILE"
 
+  # Live výstup do terminálu aj logu (ako pôvodný skript).
   (
     cd "$PROJECT_ROOT" || exit 127
     eval "$cmd"
-  ) 2>&1 | tee -a "$LOG_FILE" | tee "$tmp_out" >/dev/null
+  ) 2>&1 | tee -a "$LOG_FILE" | tee "$tmp_out"
 
-  local rc=${pipestatus[1]:-1}
+  _pipe=("${pipestatus[@]}")
+  local rc=${_pipe[1]:-1}
+
   local raw_output clean_output stats
   raw_output=$(<"$tmp_out")
   clean_output=$(print -r -- "$raw_output" | strip_ansi)
@@ -240,20 +338,58 @@ run_step() {
   STEP_STATS[$label]="$stats"
   STEP_EXIT[$label]=$rc
 
+  if [[ "$label" == *PHPUnit* ]] && print -r -- "$stats" | grep -qE 'Failed: [1-9]|Errors: [1-9]'; then
+    rc=1
+    STEP_EXIT[$label]=1
+  fi
+
+  elapsed=$(( SECONDS - start_ts ))
+
   if (( rc != 0 )); then
     FAILED_STEPS+=("${num}/${TOTAL_STEPS} ${label} (exit ${rc})")
-    STEP_ERRORS[$label]=$(extract_error_blocks "$label" "$tmp_out")
-    print "❌ ZLYHALO: ${label} (exit ${rc}) | ${stats}" | tee -a "$LOG_FILE"
+    STEP_ERRORS[$label]=$(extract_error_summary "$label" "$tmp_out")
+    print "❌ ZLYHALO: ${label} (exit ${rc}, ${elapsed}s) | ${stats}" | tee -a "$LOG_FILE"
+    render_step_progress "$num" "$TOTAL_STEPS" "${label} | ${stats} (${elapsed}s)" fail
   else
-    print "✅ OK: ${label} | ${stats}" | tee -a "$LOG_FILE"
+    print "✅ OK: ${label} (${elapsed}s) | ${stats}" | tee -a "$LOG_FILE"
+    render_step_progress "$num" "$TOTAL_STEPS" "${label} | ${stats} (${elapsed}s)" ok
   fi
 
   rm -f "$tmp_out"
 }
 
+run_test_storage_cleanup() {
+  local report start_ts elapsed stats rc=0
+  start_ts=$SECONDS
+
+  print "" | tee -a "$LOG_FILE"
+  print "==================================================" | tee -a "$LOG_FILE"
+  print "⚙️ ${CLEANUP_STEP}/${CLEANUP_STEP} Cleanup test artefaktov (iba generické / @example.com)" | tee -a "$LOG_FILE"
+  print "----------------" >> "$LOG_FILE"
+
+  report=$(cd "$PROJECT_ROOT" && php backend/bin/test-artifacts.php --purge 2>&1) || rc=$?
+  print -r -- "$report" | tee -a "$LOG_FILE"
+
+  elapsed=$(( SECONDS - start_ts ))
+  stats=$(print -r -- "$report" | grep -E 'Po cleanup|test_users|Reálne účty' | head -3 | tr '\n' ' ' | sed 's/[[:space:]]*$//')
+  [[ -z "$stats" ]] && stats="purge completed"
+
+  if (( rc != 0 )); then
+    print "❌ ZLYHALO: Cleanup test artefaktov (exit ${rc}, ${elapsed}s)" | tee -a "$LOG_FILE"
+    render_step_progress "$CLEANUP_STEP" "$CLEANUP_STEP" "Cleanup | ${stats} (${elapsed}s)" fail
+    FAILED_STEPS+=("${CLEANUP_STEP}/${CLEANUP_STEP} Cleanup test artefaktov (exit ${rc})")
+    return $rc
+  fi
+
+  print "✅ OK: Cleanup test artefaktov (${elapsed}s) | ${stats}" | tee -a "$LOG_FILE"
+  render_step_progress "$CLEANUP_STEP" "$CLEANUP_STEP" "Cleanup | ${stats} (${elapsed}s)" ok
+  print "==================================================" | tee -a "$LOG_FILE"
+}
+
 print "🚀 Spúšťam kompletnú sadu testov PaginiumCMS..."
 print "📂 Projekt: ${PROJECT_ROOT}"
 print "📂 Log: ${LOG_FILE}"
+print ""
 
 {
   print "=================================================="
@@ -347,7 +483,7 @@ else
 
   print "" | tee -a "$LOG_FILE"
   print "==================================================" | tee -a "$LOG_FILE"
-  print "🔍 DETAILNÉ BLOKY CHÝB" | tee -a "$LOG_FILE"
+  print "🔍 KONKRÉTNE CHYBY (cesta + popis)" | tee -a "$LOG_FILE"
   print "==================================================" | tee -a "$LOG_FILE"
 
   for label in ${(k)STEP_ERRORS}; do
@@ -360,7 +496,11 @@ else
   done
 fi
 
-print "==================================================" | tee -a "$LOG_FILE"
+# ==================================================
+# CLEANUP — až po všetkých 11 testovacích krokoch
+# ==================================================
+run_test_storage_cleanup
+
 print ""
 print "👉 Log: file://${LOG_FILE}"
 

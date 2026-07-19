@@ -117,13 +117,14 @@ final class ContentIndexService
     /**
      * @return list<ContentIndexEntry>
      */
-    public function search(string $q, ?string $type = null, int $limit = 20): array
+    public function search(string $q, ?string $type = null, int $limit = 20, bool $publishedOnly = true): array
     {
         if (mb_strlen(trim($q)) < PaginationQuery::MIN_SEARCH_LENGTH) {
             return [];
         }
 
-        $query = new PaginationQuery(1, min(100, max(1, $limit)), trim($q), '-updatedAt', ['status' => 'published']);
+        $filters = $publishedOnly ? ['status' => 'published'] : [];
+        $query = new PaginationQuery(1, min(100, max(1, $limit)), trim($q), '-updatedAt', $filters);
 
         if ($type === 'page' || $type === 'article') {
             $result = $this->query($type, $query);
