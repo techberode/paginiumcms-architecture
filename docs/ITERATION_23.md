@@ -87,6 +87,8 @@ No nginx changes required — SEO uses existing `/api/*` proxy. After deploy, ve
 
 ## Related
 
-- [ITERATION_22.md](ITERATION_22.md) — feeds/sitemap
-- [ROADMAP.md](ROADMAP.md) — iteration map (It.9 = prototype port; SEO = It.23 + admin UX It.27)
-- [CHANGELOG.md](../CHANGELOG.md) — `[2.0.11]` on release
+- [ITERATION_22.md](ITERATION_22.md) — feeds/sitemap (discoverability)
+- [ITERATION_27.md](ITERATION_27.md) — admin SEO panel (builds on this backend)
+- [ROADMAP.md](ROADMAP.md) — iteration map (It.9 = prototype port; SEO engine = It.23)
+- [architecture/CONTENT_API.md](architecture/CONTENT_API.md) — `/api/seo`, search
+- [CHANGELOG.md](../CHANGELOG.md) — `[2.0.11]` release notes

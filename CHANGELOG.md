@@ -20,11 +20,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | Post-audit security hardening + QA cleanup + roadmap It.47–49 | **2.0.24** | [below](#2024--2026-07-19) |
 | Admin inbox UX, list controls, comments/nav per-content | **2.0.25** | [below](#2025--2026-07-19) |
 | It.50 WAF + structured logging + admin Logy | **2.0.26** | [below](#2026--2026-07-19) |
-| It.43 Advanced search + test cleanup hardening | **2.0.27** | [below](#2027--2026-07-19) |
+| It.43 Advanced search + test cleanup | **Unreleased** | [Unreleased](#unreleased) |
 
 ---
 
-## [2.0.27] – 2026-07-19
+## [Unreleased]
 
 Advanced admin/public search (It.43), test storage isolation, and `run-all-tests.zsh` cleanup pipeline.
 
@@ -37,10 +37,39 @@ Advanced admin/public search (It.43), test storage isolation, and `run-all-tests
 - **`run-all-tests.zsh`:** live output, post-step progress, step 12 cleanup, PHPStan error count fix
 - Docs: [ITERATION_43.md](docs/ITERATION_43.md), expanded [TESTING.md](docs/developer/TESTING.md)
 
+### Added (It.42 — admin sidebar counts)
+
+- `AdminCountsService` + `GET /api/admin/counts` (role-aware aggregates).
+- Settings `ui.showListCounts` toggle; public settings expose `ui.showListCounts`.
+- `useAdminCounts` hook; `AdminSidebar` badges from backend counts.
+
+### Added (It.41 — registration email OTP)
+
+- Settings group `workflows`: registration/comment/publish OTP toggles, TTL, max attempts.
+- `OtpChallengeStore` + `OtpWorkflowService` — flat-file OTP challenges.
+- `POST /api/auth/register/verify-otp`, `POST /api/auth/register/resend-otp`; register returns `202` + `requires_otp` when enabled.
+- `POST /api/admin/workflows/otp/verify`, `POST /api/admin/workflows/otp/resend` — editor comment approve + content publish OTP.
+- Comment approve / content save-to-publish return `202` + `requires_otp` when workflow toggles are on.
+- Public settings: `workflows.registrationOtpEnabled`, `general.allowRegistration`.
+- Frontend: `RegisterModal`, `OtpConfirmModal`, `CommentsManager`, `MarkdownEditor` publish OTP flow.
+
+### Added (It.47 — notification connector auth)
+
+- Settings `connectors`: `ntfyAuthMode`, `ntfyAccessToken`, `ntfyUsername`, `ntfyPassword`, `webhookAuthHeader`.
+- `NtfyAdapter` Bearer/Basic auth headers; `WebhookAdapter` configurable secret header.
+- `POST /api/admin/notifications/test-connector` — credential validation + delivery test.
+- Connector overview fields: `configured`, `authenticated`, `auth_mode`.
+- Admin `/notifications`: Auth OK / Chýba auth badges, **Verify auth** button.
+
 ### Changed
 
 - `ContentIndexService::search()` — optional `$publishedOnly` for admin draft search
 - `SiteSearchModal` API client — explicit `scope=public`
+
+### Fixed
+
+- **ISS-013** — private ntfy topics no longer fail silently when token/Basic auth is required.
+- Test suite: `TestStorageCleaner` index format, `ContentDiagnoseCommandTest` `--fix`, PHPStan in `test-artifacts.php`
 
 ---
 
@@ -170,38 +199,6 @@ planned iterations **It.47–It.49**. Full test log `alltests_190726_0808.log`: 
 
 - Backend: PHPStan L8 clean, PHPUnit 569 passing (15 skips).
 - Frontend: Vitest 130, MSW 4, `type-check` OK, lint 0 errors / ≤65 warnings, build OK.
-
----
-
-## [Unreleased]
-
-### Added (It.42 — admin sidebar counts)
-
-- `AdminCountsService` + `GET /api/admin/counts` (role-aware aggregates).
-- Settings `ui.showListCounts` toggle; public settings expose `ui.showListCounts`.
-- `useAdminCounts` hook; `AdminSidebar` badges from backend counts.
-
-### Added (It.41 — registration email OTP)
-
-- Settings group `workflows`: registration/comment/publish OTP toggles, TTL, max attempts.
-- `OtpChallengeStore` + `OtpWorkflowService` — flat-file OTP challenges.
-- `POST /api/auth/register/verify-otp`, `POST /api/auth/register/resend-otp`; register returns `202` + `requires_otp` when enabled.
-- `POST /api/admin/workflows/otp/verify`, `POST /api/admin/workflows/otp/resend` — editor comment approve + content publish OTP.
-- Comment approve / content save-to-publish return `202` + `requires_otp` when workflow toggles are on.
-- Public settings: `workflows.registrationOtpEnabled`, `general.allowRegistration`.
-- Frontend: `RegisterModal`, `OtpConfirmModal`, `CommentsManager`, `MarkdownEditor` publish OTP flow.
-
-### Added (It.47 — notification connector auth)
-
-- Settings `connectors`: `ntfyAuthMode`, `ntfyAccessToken`, `ntfyUsername`, `ntfyPassword`, `webhookAuthHeader`.
-- `NtfyAdapter` Bearer/Basic auth headers; `WebhookAdapter` configurable secret header.
-- `POST /api/admin/notifications/test-connector` — credential validation + delivery test.
-- Connector overview fields: `configured`, `authenticated`, `auth_mode`.
-- Admin `/notifications`: Auth OK / Chýba auth badges, **Verify auth** button.
-
-### Fixed
-
-- **ISS-013** — private ntfy topics no longer fail silently when token/Basic auth is required.
 
 ---
 

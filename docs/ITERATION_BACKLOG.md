@@ -22,7 +22,7 @@
 | **29** | **2.0.18** | **[Cron planner + Job Queue](ITERATION_29.md)** | **✅** | Registry + CLI + `/scheduler` |
 | **41** | TBD | **Email OTP schvaľovanie** | **✅** | Registrácia, komentáre, publikácia – zap/vyp v admin |
 | **42** | TBD | **Admin počty položiek** | **✅** | Sidebar badges cez `/api/admin/counts` |
-| **43** | **2.0.27** | **Pokročilé vyhľadávanie (FE + BE)** | **✅** | Command palette `Ctrl+K`, scoped `/api/search` |
+| **43** | **Unreleased** | **Pokročilé vyhľadávanie (FE + BE)** | **✅** | Command palette `Ctrl+K`, scoped `/api/search` — [ITERATION_43.md](ITERATION_43.md) |
 | **44** | TBD | **Filtre a zoradenia (admin + FE)** | **🟡** | Zoznamy: status, typ, dátum, abeceda; zdieľané query parametre |
 | **45** | TBD | **[Redis – voliteľná infra](ITERATION_45.md)** | **🔵** | Absorbované do **It.49** |
 | **46** | TBD | **[Server metrics agent](ITERATION_46.md)** | **🟡** | CPU/RAM/disk/Docker → It.7 report + dashboard |
