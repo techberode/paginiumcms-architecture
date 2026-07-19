@@ -70,6 +70,10 @@ class AuthenticationManager implements AuthenticationInterface
 
     public function getCurrentUser(): ?User
     {
+        if (!$this->session->ensureValid()) {
+            return null;
+        }
+
         return $this->session->getUser();
     }
 
@@ -94,7 +98,16 @@ class AuthenticationManager implements AuthenticationInterface
 
     public function isAuthenticated(): bool
     {
+        if (!$this->session->ensureValid()) {
+            return false;
+        }
+
         return $this->session->isAuthenticated();
+    }
+
+    public function touchSession(): void
+    {
+        $this->session->touch();
     }
 
     public function changePassword(User $user, string $oldPassword, string $newPassword): void

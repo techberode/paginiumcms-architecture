@@ -105,6 +105,21 @@ class SessionManager
     }
 
     /**
+     * Overí integritu session (no-op v základnej triede).
+     */
+    public function ensureValid(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Predĺži server-side session pri aktívnej práci (no-op v základnej triede).
+     */
+    public function touch(): void
+    {
+    }
+
+    /**
      * Regeneruje ID session.
      */
     public function regenerate(): void

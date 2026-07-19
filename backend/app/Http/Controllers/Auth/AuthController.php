@@ -10,6 +10,7 @@ use PaginiumCMS\Core\Security\Services\LoginAttemptTracker;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\Workflow\Services\OtpWorkflowService;
 use PaginiumCMS\Http\Support\JsonResponder;
+use PaginiumCMS\Modules\Demo\Services\DemoLoginGuard;
 use PaginiumCMS\Modules\Security\Contracts\AuthenticationInterface;
 use PaginiumCMS\Modules\Security\Contracts\CsrfProtectionInterface;
 use PaginiumCMS\Modules\Security\Contracts\PasswordPolicyInterface;
@@ -33,7 +34,8 @@ class AuthController
         private LoginAttemptTracker $loginAttempts,
         private SecurityLogger $securityLogger,
         private OtpWorkflowService $otpWorkflow,
-        private JsonResponder $json
+        private JsonResponder $json,
+        private DemoLoginGuard $demoLoginGuard
     ) {
     }
 
@@ -52,6 +54,11 @@ class AuthController
         $email = (string) $data['email'];
         $ip = (string) ($request->getServerParams()['REMOTE_ADDR'] ?? 'unknown');
 
+        $blocked = $this->demoLoginGuard->blockedLoginMessage($email);
+        if ($blocked !== null) {
+            return $this->json->error($response, $blocked, 401);
+        }
+
         $lockStatus = $this->loginAttempts->status($ip, $email);
         if ($lockStatus['locked']) {
             $minutes = (int) ceil($lockStatus['retryAfter'] / 60);
@@ -65,6 +72,14 @@ class AuthController
 
         try {
             $user = $this->auth->login($email, (string) $data['password']);
+
+            if (!$this->auth->isAuthenticated()) {
+                return $this->json->error(
+                    $response,
+                    'Prihlásenie prebehlo, ale session sa nepodarilo uložiť. Skontrolujte SESSION_* v .env a reštart PHP.',
+                    500
+                );
+            }
 
             $this->securityLogger->recordSuccessfulLogin($user->getId(), $email, $ip);
 
@@ -83,7 +98,9 @@ class AuthController
         } catch (\Exception $e) {
             $this->securityLogger->recordFailedLogin($ip, $email);
 
-            return $this->json->error($response, $e->getMessage(), 401);
+            $message = $this->demoLoginGuard->failedLoginMessage($email, $e->getMessage());
+
+            return $this->json->error($response, $message, 401);
         }
     }
 

@@ -107,6 +107,13 @@ final class LoginAttemptTracker
         });
     }
 
+    public function clearAll(): void
+    {
+        $this->withLockedStore(function (array &$store): void {
+            $store = ['attempts' => []];
+        });
+    }
+
     /**
      * @return list<string>
      */

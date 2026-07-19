@@ -22,6 +22,59 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.50 WAF + structured logging + admin Logy | **2.0.26** | [below](#2026--2026-07-19) |
 | It.10 polish, It.11 SSO/ACL, It.41–43 search/OTP | **2.0.27** | [below](#2027--2026-07-19) |
 | It.12 Blueprint + It.13 Demo sandbox v2 + PHILOSOPHY | **2.0.28** | [below](#2028--2026-07-19) |
+| Session hardening, cache admin, auth/login incidents | **2.0.29** | [below](#2029--2026-07-19) |
+
+---
+
+## [2.0.29] – 2026-07-19
+
+Session stability (LAN/proxy), admin cache purge, auth hardening, deploy/build fixes.
+Incident log: [ISS-023–ISS-029](docs/ISSUES.md).
+
+### Added
+
+- **`SecureSessionManager`** + **`ClientIpResolver`** — singleton session, lazy `ensureValid()`, IP binding off by default (`SESSION_STRICT=false`), trusted proxy support
+- **`AuthenticationManager::touchSession()`** — session refresh on every authenticated request; wired from `AuthMiddleware`
+- **Admin cache panel:** `CacheAdminService`, `CacheController`, `GET/POST /api/admin/cache/*`, `CacheManagerPanel` in Settings (`scope`: `content` | `all`)
+- **CLI:** `php backend/bin/console security:clear-lockouts` — reset login lockout after failed attempts
+- **`DemoLoginGuard`** — demo credentials accepted only when `DEMO_MODE=true` (production isolation)
+- **Frontend auth:** `probeSession()` distinguishes expired session vs network error; keepalive every 4 min in `AuthContext`
+- **`DebugEventLogger`** — no writes when `APP_ENV=testing` (PHPUnit no longer pollutes debug log)
+
+### Fixed
+
+- **ISS-024** — `AuthMiddleware` constructor mismatch → HTTP 500 on all auth-protected routes
+- **ISS-025** — auto logout during editing/save (session lifetime, multiple managers, aggressive 401 redirect)
+- **ISS-026** — documented `SESSION_USE_STRICT_MODE` (PHP ini) vs `SESSION_STRICT` (IP binding)
+- **ISS-027** — debug log showed fake `POST /api/auth/login` 401 from PHPUnit (`sapi=cli`, `app_env=testing`)
+- **ISS-028** — `SettingsView.tsx` broken JSX blocked `npm run build:prod`
+- **ISS-029** — login loop after brief dashboard access; post-login `isAuthenticated()` guard in `AuthController`
+- **ISS-023** — flaky `SearchControllerTest::testAdminSearchIncludesDraftPages` (deterministic search token + slug in front matter)
+- **`MaintenanceModeMiddleware`** — allow `/api/debug/` during maintenance (client debug events)
+
+### Changed
+
+- `bootstrap/app.php` — `SessionManager` registered as singleton; always `SecureSessionManager`
+- `bootstrap/session.php` — dev default 8 h lifetime, `session.cookie_path=/`, env comments
+- `frontend/src/api/client.ts` — skip 401 → `/login` for `/api/auth/me`, locks, drafts, `requires_two_factor`
+- `.env.example` — session variable documentation; [DEV.md](docs/deploy/DEV.md) troubleshooting table extended
+
+### Ops (recommended LAN `.env` on PHP host)
+
+```env
+SESSION_LIFETIME=28800
+SESSION_STRICT=false
+SESSION_USE_STRICT_MODE=true
+TRUSTED_PROXIES=127.0.0.1,::1,192.168.10.26
+```
+
+After deploy: restart PHP, clear browser cookies, re-login.
+
+---
+
+## [Unreleased]
+
+*(Next: It.14 — Code policy engine)*
 
 ---
 
@@ -58,12 +111,6 @@ It.12 Blueprint engine, It.13 Demo sandbox v2, project philosophy docs.
 
 - **[PHILOSOPHY.md](docs/PHILOSOPHY.md)** — open source, no fees, why project exists
 - [ITERATION_12.md](docs/ITERATION_12.md), [ITERATION_13.md](docs/ITERATION_13.md) updated
-
----
-
-## [Unreleased]
-
-*(Next: It.14 — Code policy engine)*
 
 ---
 
@@ -130,7 +177,7 @@ Enterprise security (It.11), advanced search (It.43), workflow OTP (It.41), admi
 
 ### Fixed
 
-- **ISS-023** — flaky `SearchControllerTest::testAdminSearchIncludesDraftPages` (deterministic token + slug in front matter)
+- **ISS-023** — flaky `SearchControllerTest::testAdminSearchIncludesDraftPages` (deterministic token + slug in front matter) — fixed in **2.0.29**
 - **ISS-013** — private ntfy topics no longer fail silently when token/Basic auth is required.
 - Test suite: `TestStorageCleaner` index format, `ContentDiagnoseCommandTest` `--fix`, PHPStan in `test-artifacts.php`
 

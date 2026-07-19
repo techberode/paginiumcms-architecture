@@ -151,7 +151,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         setBaseContent(raw);
         setTitle(response.data.title || '');
         setEditSlug(loadedSlug);
-        setTemplate(String(response.data.template ?? fm.template ?? loadedSlug));
+        setTemplate(String(response.data.template ?? fm.template ?? 'default'));
         setStoragePath(
           resolveStoragePath(type, loadedSlug, String(response.data.path ?? ''), storageFormat)
         );

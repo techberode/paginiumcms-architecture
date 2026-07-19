@@ -32,7 +32,7 @@ Izolované demo prostredie s `DEMO_MODE`. **v2:** celý CMS (obsah, users, setti
 | **Full snapshot seed** (pages, articles, index, user, settings, nav) | ✅ v2 |
 | **Auto-reset cron** `demo:reset-if-due` | ✅ v2 |
 | **Dlhá session** `SESSION_LIFETIME` | ✅ v2 |
-| **Demo credentials** on `/login` + public settings | ✅ v2 |
+| **Demo login guard** | ✅ jasné hlášky pri zámene demo/produkčného účtu |
 | **Marketing link** footer → demo.paginiumcms.com | ✅ v2 |
 | Separate storage `storage/app/demo/` | ✅ |
 | Seed pages + articles (`DemoFixtures::seedFiles()`) | ✅ |

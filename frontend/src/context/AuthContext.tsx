@@ -35,23 +35,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshUser = useCallback(async () => {
     debugLogProvider('auth', 'refresh.start');
-    const userData = await authApi.getCurrentUser();
-    setUser(userData);
-    if (userData?.twoFactorEnabled) {
+    const probe = await authApi.probeSession();
+    if (!probe.expired && probe.user === null) {
+      debugLogProvider('auth', 'refresh.transient_error');
+      return;
+    }
+    setUser(probe.user);
+    if (probe.user?.twoFactorEnabled) {
       const status = await authApi.twoFactor.getStatus();
       setPendingTwoFactor(!status.verified);
       debugLogProvider('auth', 'refresh.done', {
         authenticated: true,
         twoFactorEnabled: true,
         twoFactorVerified: status.verified,
-        userId: userData.id,
+        userId: probe.user.id,
       });
     } else {
       setPendingTwoFactor(false);
       debugLogProvider('auth', 'refresh.done', {
-        authenticated: Boolean(userData),
+        authenticated: Boolean(probe.user),
         twoFactorEnabled: false,
-        userId: userData?.id ?? null,
+        userId: probe.user?.id ?? null,
       });
     }
   }, []);
@@ -67,11 +71,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     })();
   }, [refreshUser]);
 
+  // Keep session alive during long admin edits (heartbeat alone may not run on /new routes).
+  useEffect(() => {
+    if (!user || pendingTwoFactor) {
+      return;
+    }
+
+    const keepAliveMs = 4 * 60 * 1000;
+    const timer = window.setInterval(() => {
+      void refreshUser();
+    }, keepAliveMs);
+
+    return () => window.clearInterval(timer);
+  }, [user, pendingTwoFactor, refreshUser]);
+
   const login = useCallback(async (email: string, password: string): Promise<LoginOutcome> => {
     debugLogProvider('auth', 'login.attempt', { email });
     const result: LoginResult = await authApi.login({ email, password });
     if (result.success && result.user) {
-      setUser(result.user);
+      if (!result.requiresTwoFactor) {
+        const probe = await authApi.probeSession();
+        if (probe.expired || !probe.user) {
+          debugLogProvider('auth', 'login.session_missing', { email });
+          return {
+            success: false,
+            error:
+              'Prihlásenie prebehlo, ale prehliadač neuložil session cookie. Skontrolujte .env (SESSION_LIFETIME, SESSION_STRICT=false) a či API ide cez rovnakú doménu (nginx /api proxy).',
+          };
+        }
+        setUser(probe.user);
+      } else {
+        setUser(result.user);
+      }
       setPendingTwoFactor(Boolean(result.requiresTwoFactor));
       debugLogProvider('auth', 'login.success', {
         userId: result.user.id,
@@ -86,7 +117,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const verifyTwoFactorLogin = useCallback(async (code: string): Promise<boolean> => {
     const result = await authApi.twoFactor.verifyLogin(code);
     if (result.success && result.user) {
-      setUser(result.user);
+      const probe = await authApi.probeSession();
+      if (probe.expired || !probe.user) {
+        return false;
+      }
+      setUser(probe.user);
       setPendingTwoFactor(false);
       return true;
     }

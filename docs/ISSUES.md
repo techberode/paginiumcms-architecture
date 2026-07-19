@@ -1,6 +1,6 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-19 · verzia **2.0.26**
+> Posledná aktualizácia: 2026-07-19 · verzia **2.0.29**
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
 
@@ -37,7 +37,13 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-020 | ESLint 68 warnings → prekročenie `--max-warnings 65`    | Stredná (CI)          | ✅ Opravené (2.0.26)                     |
 | ISS-021 | PHPStan `function.alreadyNarrowedType` v log readeri    | Stredná (CI)          | ✅ Opravené (2.0.26)                     |
 | ISS-022 | Vitest `MediaManager.test.tsx` — krehké textové asercie | Stredná (CI)          | ✅ Opravené (2.0.26)                     |
-| ISS-023 | PHPUnit `SearchControllerTest` — flaky admin draft search | Stredná (CI)          | ✅ Opravené (Unreleased)                 |
+| ISS-023 | PHPUnit `SearchControllerTest` — flaky admin draft search | Stredná (CI)          | ✅ Opravené (2.0.29)                     |
+| ISS-024 | `AuthMiddleware` → 500 na auth trasách                  | Kritická              | ✅ Opravené (2.0.29)                     |
+| ISS-025 | Odhlásenie počas editácie / pri uložení                 | Vysoká                | ✅ Opravené (2.0.29)                     |
+| ISS-026 | Zámena `SESSION_USE_STRICT_MODE` ↔ `SESSION_STRICT`     | Stredná (ops)         | ✅ Dokumentované (2.0.29)                |
+| ISS-027 | Debug log: falošné login 401 z PHPUnit                  | Nízka (diagnostika)   | ✅ Opravené (2.0.29)                     |
+| ISS-028 | `npm run build:prod` — JSX chyba v `SettingsView`       | Vysoká (deploy)       | ✅ Opravené (2.0.29)                     |
+| ISS-029 | Login loop — krátke prihlásenie, potom späť na `/login` | Vysoká                | ✅ Opravené (2.0.29)                     |
 
 
 
@@ -596,6 +602,129 @@ Failed asserting that an array contains 'seo-test-<uniqid>'.
 
 ---
 
+## ISS-024 – AuthMiddleware → 500 na auth trasách
+
+**Symptóm:** Po deployi padajú chránené endpointy (**500**), napr. `POST /api/admin/settings/monitoring`, `POST /api/debug/client-event`. PHP log:
+
+```
+AuthMiddleware::__construct(): Argument #2 ($session) must be of type SessionManager, AuthenticationInterface given
+```
+
+**Príčina:** Do `AuthMiddleware` bol pridaný druhý parameter (`SessionManager`), ale DI v `bootstrap/app.php` stále injektoval len `AuthenticationInterface`. Každý request cez auth middleware spadol ešte pred controllerom.
+
+**Implementované riešenie:**
+
+- `touchSession()` presunuté do `AuthenticationManager` (implementácia `AuthenticationInterface`).
+- `AuthMiddleware` zostáva s **jedným** argumentom — kompatibilné s existujúcim DI.
+
+**Overenie:** PHPUnit `AuthControllerTest` + manuálne volanie chránenej trasy po prihlásení → **200**, nie 500.
+
+---
+
+## ISS-025 – Odhlásenie počas editácie / pri uložení
+
+**Symptóm:** Používateľ sa prihlási, začne editovať článok alebo nastavenia a po uložení (alebo po chvíli) ho frontend presmeruje na `/login`. Nie je to nečinnosť — deje sa to pri aktívnej práci.
+
+**Príčiny (kombinácia):**
+
+1. **Krátka session** — `SESSION_LIFETIME=120` (kód vynucuje minimum 300 s, stále príliš málo na CMS).
+2. **Viacero inštancií session** — viac `SessionManager` objektov v jednom requeste mohlo session zničiť alebo neobnoviť.
+3. **IP binding za nginx** — `SESSION_STRICT=true` + proxy mení vnímanú IP → `ensureValid()` zruší session.
+4. **Frontend** — axios interceptor pri **každom** 401 okamžite presmeruje na `/login` (aj pri lock/draft/2FA).
+
+**Implementované riešenie:**
+
+- **`SecureSessionManager`** — singleton v DI, lazy `ensureValid()`, IP cez `ClientIpResolver` + `TRUSTED_PROXIES`.
+- **`AuthenticationManager::touchSession()`** — volané z `AuthMiddleware` pri každom auth requeste.
+- **`bootstrap/session.php`** — dev default 8 h, `session.cookie_path=/`, komentáre k env premenným.
+- **Frontend:** `AuthContext` keepalive každé 4 min (`probeSession`), `client.ts` nepresmeruje pri `/api/auth/me`, locks, drafts, `requires_two_factor`.
+
+**Ops odporúčanie (LAN `.26` → `.20`):**
+
+```env
+SESSION_LIFETIME=28800
+SESSION_STRICT=false
+SESSION_USE_STRICT_MODE=true
+TRUSTED_PROXIES=127.0.0.1,::1,192.168.10.26
+```
+
+Reštart PHP, vymazať cookies, znova prihlásiť.
+
+**Overenie:** Network tab — po `POST /api/auth/login` (200 + `Set-Cookie`) nasleduje `GET /api/auth/me` (200); pri save ostáva session.
+
+---
+
+## ISS-026 – Zámena SESSION_USE_STRICT_MODE ↔ SESSION_STRICT
+
+**Symptóm:** Admin nastavil `SESSION_USE_STRICT_MODE=false` v `.env` a očakával vypnutie „strict session“, no stále dochádzalo k odhláseniu.
+
+**Príčina:** Dve **rôzne** premenné:
+
+| Premenná | Čo riadi |
+|----------|----------|
+| `SESSION_USE_STRICT_MODE` | PHP ini `session.use_strict_mode` (odmietnutie neplatného session ID) |
+| `SESSION_STRICT` | Paginium **IP/UA binding** v `SecureSessionManager` |
+
+**Implementované riešenie:** Komentáre v `.env.example`, tabuľka v [DEV.md](deploy/DEV.md#troubleshooting), default `SESSION_STRICT=false`.
+
+**Overenie:** Pri LAN deployi s proxy nechať `SESSION_STRICT=false`; IP binding zapínať len pri známej stabilnej IP topológii.
+
+---
+
+## ISS-027 – Debug log: falošné login 401 z PHPUnit
+
+**Symptóm:** V `storage/logs/debug/*.log` desiatky riadkov:
+
+```json
+{"event":"http.request","context":{"method":"POST","path":"/api/auth/login"}}
+{"event":"http.response","context":{"status":401,...}}
+```
+
+Vyzerá to ako opakované zlyhané prihlásenie v prehliadači.
+
+**Príčina:** PHPUnit HTTP testy bežia s `APP_ENV=testing` a `sapi=cli`. `DebugEventLogger` zapisoval aj test suite (lockout testy volajú login s nesprávnym heslom).
+
+**Implementované riešenie:** `DebugEventLogger::isEnabled()` vracia `false`, keď `APP_ENV=testing`.
+
+**Overenie:** Po `./vendor/bin/phpunit` sa do debug logu nepridávajú nové riadky (pri zapnutom `APP_DEBUG` v dev).
+
+---
+
+## ISS-028 – Frontend build: JSX v SettingsView
+
+**Symptóm:** `npm run build:prod` zlyhá:
+
+```
+Adjacent JSX elements must be wrapped in an enclosing tag.
+SettingsView.tsx:162
+```
+
+**Príčina:** Pri pridávaní `CacheManagerPanel` sa rozbila JSX štruktúra karty 2FA (predčasné `</div>`, `Link` mimo karty).
+
+**Implementované riešenie:** Opravená štruktúra karty 2FA (`card-body` + tlačidlo v jednom bloku).
+
+**Overenie:** `cd frontend && npm run build:prod` → OK, `verify-dist-api-url: OK`.
+
+---
+
+## ISS-029 – Login loop (krátke prihlásenie → späť na login)
+
+**Symptóm:** Prihlásenie prejde, dashboard sa na chvíľu zobrazí, potom okamžitý návrat na `/login`. Debug log môže ukazovať 401 na `/api/auth/me` alebo chránených trasách.
+
+**Príčiny:** Rovnaká rodina ako ISS-025 — session cookie sa neudrží medzi requestmi (proxy, IP binding, expirácia) alebo 401 redirect z FE.
+
+**Implementované riešenie:** Súhrn ISS-025 + `AuthController` po logine overí `isAuthenticated()` (inak 500 namiesto falošného úspechu); `authApi.probeSession()` rozlišuje expirovanú session vs sieťovú chybu.
+
+**Diagnostika (DevTools → Network):**
+
+1. `POST /api/auth/login` → **200** + `Set-Cookie: PHPSESSID`
+2. `GET /api/auth/me` → **200** (nie 401)
+3. Pri páde: ktorý request vráti **401**? (me, settings, content…)
+
+**Lockout:** Ak 429/401 po viacerých pokusoch → `php backend/bin/console security:clear-lockouts`.
+
+---
+
 ## Externé / irelevantné hlášky
 
 
@@ -611,7 +740,8 @@ Failed asserting that an array contains 'seo-test-<uniqid>'.
 
 ## Súvisiace dokumenty
 
-- [CHANGELOG.md](../CHANGELOG.md) — release 2.0.26 (WAF, logging, CI fixes ISS-020–022)
+- [CHANGELOG.md](../CHANGELOG.md) — release 2.0.29 (session hardening, cache admin, ISS-023–029)
+- [RELEASE.md](developer/RELEASE.md) — copy-paste pre GitHub release 2.0.29
 - [TESTING.md](developer/TESTING.md) – ako spúšťať testy a regresiu
 - [ROADMAP.md](ROADMAP.md) – plánované iterácie (It.41+, It.47–49)
 - [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) – It.29+ detail
