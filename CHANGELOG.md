@@ -89,6 +89,12 @@ planned iterations **It.47–It.49**. Full test log `alltests_190726_0808.log`: 
 
 ## [Unreleased]
 
+### Added (It.42 — admin sidebar counts)
+
+- `AdminCountsService` + `GET /api/admin/counts` (role-aware aggregates).
+- Settings `ui.showListCounts` toggle; public settings expose `ui.showListCounts`.
+- `useAdminCounts` hook; `AdminSidebar` badges from backend counts.
+
 ### Added (It.41 — registration email OTP)
 
 - Settings group `workflows`: registration/comment/publish OTP toggles, TTL, max attempts.

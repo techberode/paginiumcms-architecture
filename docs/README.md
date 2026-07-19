@@ -32,7 +32,7 @@ PaginiumCMS keeps the Core intentionally minimal, secure, and fast. It moves sta
 | **API contract** | ✅ It. 21 | JsonResponder everywhere, MSW, Newman CI, RHF+Zod |
 | **PHPUnit** | ✅ **550+ passing** | PHPStan level 8 (0 errors) |
 | **Frontend** | ✅ It. 21+ | MSW, typed clients, settings form validation, bulk actions |
-| **Next iteration** | 🟡 It. 42 | Admin counts — see [backlog](ITERATION_BACKLOG.md) |
+| **Next iteration** | 🟡 It. 43 | Advanced search — see [backlog](ITERATION_BACKLOG.md) |
 
 ### Planned (roadmap)
 

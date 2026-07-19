@@ -59,6 +59,13 @@ export interface PublicSettings {
     siteDescription?: string;
     language: string;
     maintenanceMode: boolean;
+    allowRegistration?: boolean;
+  };
+  workflows?: {
+    registrationOtpEnabled?: boolean;
+  };
+  ui?: {
+    showListCounts?: boolean;
   };
   content: Record<string, unknown>;
   editor: Record<string, unknown>;

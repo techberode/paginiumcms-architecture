@@ -1,5 +1,5 @@
 // frontend/src/components/backend/AdminSidebar.tsx
-import React, { useEffect } from 'react';
+import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-import { useContent } from '../../hooks/useContent';
+import { useAdminCounts } from '../../hooks/useAdminCounts';
 
 interface AdminSidebarProps {
   collapsed: boolean;
@@ -50,9 +50,26 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   onMobileClose,
 }) => {
   const { user } = useAuth();
-  const { pages, articles, refresh } = useContent();
+  const { counts, showListCounts } = useAdminCounts();
   const location = useLocation();
   const isAdmin = user?.roles?.some((r) => r === 'ADMIN' || r === 'SUPER_ADMIN') ?? false;
+
+  const countFor = (id: string): number | undefined => {
+    if (!showListCounts || !counts) {
+      return undefined;
+    }
+    const map: Record<string, number | undefined> = {
+      pages: counts.pages,
+      articles: counts.articles,
+      media: counts.media,
+      comments: counts.comments,
+      messages: counts.messages,
+      backups: counts.backups,
+      trash: counts.trash,
+      users: counts.users,
+    };
+    return map[id];
+  };
 
   const isItemActive = (href: string): boolean => {
     if (href === '/dashboard') {
@@ -61,29 +78,25 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
     return location.pathname === href || location.pathname.startsWith(`${href}/`);
   };
 
-  useEffect(() => {
-    void refresh();
-  }, [refresh]);
-
   const displayName = user?.name || 'User';
   const roleLabel = user?.roles?.[0] || 'editor';
 
   const menuItems: MenuItem[] = [
     { id: 'dashboard', label: 'Prehľad', href: '/dashboard', icon: LayoutDashboard },
-    { id: 'pages', label: 'Podstránky', href: '/pages', icon: FileText, count: pages.length },
-    { id: 'articles', label: 'Články (Blog)', href: '/articles', icon: BookOpen, count: articles.length },
-    { id: 'media', label: 'Médiá', href: '/media', icon: ImageIcon },
+    { id: 'pages', label: 'Podstránky', href: '/pages', icon: FileText, count: countFor('pages') },
+    { id: 'articles', label: 'Články (Blog)', href: '/articles', icon: BookOpen, count: countFor('articles') },
+    { id: 'media', label: 'Médiá', href: '/media', icon: ImageIcon, count: countFor('media') },
     { id: 'navigation', label: 'Navigácia', href: '/navigation', icon: Database },
-    { id: 'comments', label: 'Komentáre', href: '/comments', icon: MessageSquare, adminOnly: true },
-    { id: 'messages', label: 'Správy', href: '/messages', icon: Mail, adminOnly: true },
+    { id: 'comments', label: 'Komentáre', href: '/comments', icon: MessageSquare, adminOnly: true, count: countFor('comments') },
+    { id: 'messages', label: 'Správy', href: '/messages', icon: Mail, adminOnly: true, count: countFor('messages') },
     { id: 'github', label: 'GitHub', href: '/github', icon: GitBranch, adminOnly: true },
     { id: 'code-editor', label: 'Code Editor', href: '/code-editor', icon: Code },
-    { id: 'backups', label: 'Zálohy', href: '/backups', icon: HardDrive },
-    { id: 'trash', label: 'Kôš', href: '/trash', icon: Trash2, adminOnly: true },
+    { id: 'backups', label: 'Zálohy', href: '/backups', icon: HardDrive, count: countFor('backups') },
+    { id: 'trash', label: 'Kôš', href: '/trash', icon: Trash2, adminOnly: true, count: countFor('trash') },
     { id: 'audit', label: 'Audit Trail', href: '/audit', icon: History },
     { id: 'notifications', label: 'Notifikácie', href: '/notifications', icon: Bell },
     { id: 'scheduler', label: 'Plánovač', href: '/scheduler', icon: CalendarClock, adminOnly: true },
-    { id: 'users', label: 'Používatelia', href: '/users', icon: Users, adminOnly: true },
+    { id: 'users', label: 'Používatelia', href: '/users', icon: Users, adminOnly: true, count: countFor('users') },
     { id: 'account-security', label: 'Bezpečnosť účtu', href: '/account/security', icon: ShieldCheck },
     { id: 'settings', label: 'Nastavenia', href: '/settings', icon: Settings },
   ].filter((item) => !item.adminOnly || isAdmin);
