@@ -25,7 +25,35 @@
 - **React:** Používaj moderné funkcionálne komponenty, správne ošetrenie asynchrónnych dopytov (Loading, Success, Error stavy) a striktne dodržuj pravidlo, že backend je jediný zdroj pravdy (Single Source of Truth).
 - **Chyby:** Pri analýze chýb sa prioritne zameraj na prepojenie domina (napr. či funkcia volaná v Controlleri reálne existuje v Manageri/Službe a či má skript správne práva `chmod +x`).
 
-## 🌐 Lokalizácia (i18n) – zákon CMS
+## ✅ Iteration gate (povinné po každej iterácii)
+
+Po **každej dokončenej iterácii** (pred commitom/pushom) spusti kontrolu **validácie, čistoty a integrity** — nielen unit testov. Cieľ: pri rastúcom objeme kódu **nerozbiť existujúce funkčné bloky** (API kontrakt, DI, routes, Settings schema ↔ služby, FE typy ↔ BE odpovede).
+
+### Príkaz (z koreňa repa)
+
+```bash
+./scripts/iteration-gate.sh
+```
+
+### Čo gate kontroluje
+
+| Krok | Nástroj | Účel |
+|------|---------|------|
+| 1 | `php -l` | Syntaxia zmenených (alebo core) PHP súborov |
+| 2 | PHPStan L8 | Statická analýza typov a null-safety |
+| 3 | PHPUnit | Regresia existujúceho správania |
+| 4 | `tsc --noEmit` + ESLint | FE typy a lint baseline (`--max-warnings 65`) |
+| 5 | Wiring grep | Route ↔ controller, Settings schema ↔ factory, zjavné kontraktové diery |
+
+### Manuálna integrita (AI + vývojár — vždy pred commitom)
+
+- **Domino:** Controller volá existujúcu službu s rovnakým podpisom; nová route je v `Http/Routes/` a prejde auto-discovery.
+- **Settings:** Nové kľúče v `SettingsSchema.php` + použitie v `NotificationFactory` / príslušnej službe; password polia nikdy v logu.
+- **API kontrakt:** FE `src/api/*.ts` typy zodpovedajú JSON tvaru z `JsonResponder`; breaking zmena → CHANGELOG + ISSUES ak treba.
+- **Spätná kompatibilita:** Chýbajúce nové settings kľúče musia mať **default** v kóde (`?? 'none'`), nie tichý fail.
+- **Dokumentácia:** `CHANGELOG.md` + `docs/ISSUES.md` (verejné); `AUDIT_REPORT.md` zostáva **lokálny/gitignored** pre audit prehľad.
+
+Ak gate alebo manuálna kontrola zlyhá — **necommituj**, oprav regresiu alebo zúž rozsah iterácie.
 - **Predvolený jazyk:** slovenčina (`sk`). **Dostupné:** `sk`, `en`.
 - **Backend:** jeden PHP súbor na modul a locale → `backend/lang/{locale}/{module}.php`; volanie `Lang::get('key', [], 'module')`; pluginy registrujú cestu cez `Lang::addPath()`.
 - **Frontend:** jadrový katalóg `frontend/src/i18n/core/{sk,en}.ts`; každý admin modul má vlastný blok v `frontend/src/i18n/modules/{module}/` a registruje ho cez `registerModuleMessages()`; v komponentoch `useI18n().t('module.key')`.

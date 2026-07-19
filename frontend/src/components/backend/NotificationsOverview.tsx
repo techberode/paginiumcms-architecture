@@ -6,9 +6,11 @@ import { Settings } from 'lucide-react';
 import {
   getNotificationOverview,
   sendTestNotification,
+  testNotificationConnector,
   sendMonitoringReport,
   runMonitoringSchedule,
   NotificationOverview,
+  type ConnectorStatus,
 } from '../../api/notifications';
 import { useToast } from '../../hooks/useToast';
 
@@ -16,6 +18,7 @@ export const NotificationsOverview: React.FC = () => {
   const [data, setData] = useState<NotificationOverview | null>(null);
   const [loading, setLoading] = useState(true);
   const [testing, setTesting] = useState<string | null>(null);
+  const [testingAuth, setTestingAuth] = useState<string | null>(null);
   const [sendingReport, setSendingReport] = useState(false);
   const [runningSchedule, setRunningSchedule] = useState(false);
   const { success, error: toastError } = useToast();
@@ -46,6 +49,42 @@ export const NotificationsOverview: React.FC = () => {
     } finally {
       setTesting(null);
     }
+  };
+
+  const handleTestAuth = async (connector: string) => {
+    setTestingAuth(connector);
+    try {
+      const result = await testNotificationConnector(connector, data?.fallback_email);
+      if (result.success) {
+        success(result.message || 'Connector auth OK');
+        await load();
+      } else {
+        toastError(result.error || result.message || 'Connector auth test failed');
+      }
+    } finally {
+      setTestingAuth(null);
+    }
+  };
+
+  const authBadge = (connector: ConnectorStatus) => {
+    if (!connector.configured) {
+      return null;
+    }
+    if (connector.authenticated === false) {
+      return (
+        <span className="ml-2 text-xs font-medium text-amber-700 dark:text-amber-300">
+          Chýba auth
+        </span>
+      );
+    }
+    if (connector.authenticated) {
+      return (
+        <span className="ml-2 text-xs font-medium text-green-700 dark:text-green-400">
+          Auth OK
+        </span>
+      );
+    }
+    return null;
   };
 
   const handleSendReport = async () => {
@@ -242,25 +281,41 @@ export const NotificationsOverview: React.FC = () => {
             </p>
             <ul className="space-y-2">
               {data.connectors.map((c) => (
-                <li key={c.name} className="flex items-center justify-between gap-3">
-                  <span>
+                <li key={c.name} className="flex items-center justify-between gap-3 flex-wrap">
+                  <span className="min-w-0">
                     <span
                       className={`inline-block w-2 h-2 rounded-full mr-2 ${
-                        c.enabled ? 'bg-green-500' : 'bg-gray-300'
+                        c.enabled ? 'bg-green-500' : c.configured ? 'bg-amber-400' : 'bg-gray-300'
                       }`}
                     />
                     {c.label}
+                    {authBadge(c)}
+                    {c.name === 'ntfy' && c.auth_mode && c.auth_mode !== 'none' && (
+                      <span className="ml-1 text-xs text-gray-400">({c.auth_mode})</span>
+                    )}
                   </span>
-                  {c.enabled && (
-                    <button
-                      type="button"
-                      className="text-sm text-indigo-600 hover:underline disabled:opacity-50"
-                      disabled={testing === c.name}
-                      onClick={() => void handleTest(c.name)}
-                    >
-                      {testing === c.name ? 'Sending…' : 'Test'}
-                    </button>
-                  )}
+                  <span className="flex items-center gap-2 shrink-0">
+                    {c.configured && c.authenticated === false && (
+                      <button
+                        type="button"
+                        className="text-sm text-amber-700 dark:text-amber-300 hover:underline disabled:opacity-50"
+                        disabled={testingAuth === c.name}
+                        onClick={() => void handleTestAuth(c.name)}
+                      >
+                        {testingAuth === c.name ? 'Checking…' : 'Verify auth'}
+                      </button>
+                    )}
+                    {c.enabled && (
+                      <button
+                        type="button"
+                        className="text-sm text-indigo-600 hover:underline disabled:opacity-50"
+                        disabled={testing === c.name}
+                        onClick={() => void handleTest(c.name)}
+                      >
+                        {testing === c.name ? 'Sending…' : 'Test'}
+                      </button>
+                    )}
+                  </span>
                 </li>
               ))}
             </ul>

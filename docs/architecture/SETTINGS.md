@@ -31,7 +31,7 @@
 | `editor` | defaultEditor, spellcheck, tabSize |
 | `smtp` | SMTP transport (host, port, TLS, credentials, from address) |
 | `notifications` | Toast UI: enabled, position, duration, debug mode |
-| `connectors` | Email, ntfy, Discord, Telegram, webhook toggles and config |
+| `connectors` | Email, ntfy, Discord, Telegram, webhook toggles and config (+ ntfy auth token/Basic, webhook auth header — It.47) |
 | `monitoring` | Incident alerts, fallback email, failed-login/security/traffic-spike rules |
 
 ### Frontend
@@ -52,8 +52,9 @@
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/admin/notifications/overview` | Active connectors, fallback email, visit stats, top pages |
+| `GET` | `/api/admin/notifications/overview` | Active connectors (with auth status), fallback email, visit stats, top pages |
 | `POST` | `/api/admin/notifications/test` | Send test message via one enabled adapter |
+| `POST` | `/api/admin/notifications/test-connector` | Validate connector credentials + optional delivery test (It.47) |
 | `GET` | `/api/admin/analytics/overview` | Visits, page views, referers, devices (`?period=today`) |
 | `GET` | `/api/admin/analytics/chart` | Daily chart (`?days=30`) |
 

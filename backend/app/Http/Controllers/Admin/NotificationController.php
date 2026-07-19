@@ -140,4 +140,59 @@ final class NotificationController
             'message' => $ok ? 'Test notification sent' : 'Failed to send test notification',
         ], $ok ? 200 : 502);
     }
+
+    public function testConnector(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $payload = json_decode((string) $request->getBody(), true);
+        if (!is_array($payload)) {
+            return $this->json->error($response, 'Invalid JSON body', 400);
+        }
+
+        $connector = (string) ($payload['connector'] ?? '');
+        if ($connector === '') {
+            return $this->json->error($response, 'Connector is required', 400);
+        }
+
+        $allowed = ['email', 'ntfy', 'discord', 'telegram', 'webhook'];
+        if (!in_array($connector, $allowed, true)) {
+            return $this->json->error($response, 'Unknown connector', 400);
+        }
+
+        $smtp = $this->settings->group('smtp');
+        $connectors = $this->settings->group('connectors');
+        $authError = NotificationFactory::connectorAuthError($connector, $connectors, $smtp);
+        if ($authError !== null) {
+            return $this->json->respond($response, [
+                'success' => false,
+                'message' => $authError,
+                'authenticated' => false,
+            ], 422);
+        }
+
+        if (!in_array($connector, $this->notifications->getAdapters(), true)) {
+            return $this->json->respond($response, [
+                'success' => false,
+                'message' => 'Connector is configured but not active — save settings and retry.',
+                'authenticated' => true,
+            ], 422);
+        }
+
+        $general = $this->settings->group('general');
+        $monitoring = $this->settings->group('monitoring');
+        $to = (string) ($payload['to'] ?? $monitoring['alertEmail'] ?? $general['adminEmail'] ?? '');
+
+        $ok = $this->notifications->send(
+            $connector,
+            $to,
+            'PaginiumCMS connector test',
+            'Connector authentication and delivery test from PaginiumCMS admin.',
+            ['event' => 'connector_test', 'severity' => 'info']
+        );
+
+        return $this->json->respond($response, [
+            'success' => $ok,
+            'message' => $ok ? 'Connector test succeeded' : 'Connector test failed — check server URL, topic, and credentials.',
+            'authenticated' => true,
+        ], $ok ? 200 : 502);
+    }
 }

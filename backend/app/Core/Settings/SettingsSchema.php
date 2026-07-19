@@ -95,6 +95,10 @@ final class SettingsSchema
                     ['key' => 'ntfyEnabled', 'type' => 'bool', 'label' => 'Enable ntfy', 'default' => false, 'rules' => ['bool']],
                     ['key' => 'ntfyServer', 'type' => 'url', 'label' => 'ntfy server URL', 'default' => 'https://ntfy.sh', 'rules' => ['url', 'max:255']],
                     ['key' => 'ntfyTopic', 'type' => 'string', 'label' => 'ntfy topic', 'default' => '', 'rules' => ['string', 'max:120']],
+                    ['key' => 'ntfyAuthMode', 'type' => 'enum', 'label' => 'ntfy authentication', 'default' => 'none', 'options' => ['none', 'token', 'basic'], 'rules' => ['required', 'in:none,token,basic'], 'help' => 'Use token for ntfy.sh ACL topics or Basic for self-hosted instances.'],
+                    ['key' => 'ntfyAccessToken', 'type' => 'password', 'label' => 'ntfy access token', 'default' => '', 'rules' => ['string', 'max:512']],
+                    ['key' => 'ntfyUsername', 'type' => 'string', 'label' => 'ntfy username (Basic auth)', 'default' => '', 'rules' => ['string', 'max:120']],
+                    ['key' => 'ntfyPassword', 'type' => 'password', 'label' => 'ntfy password (Basic auth)', 'default' => '', 'rules' => ['string', 'max:255']],
                     ['key' => 'discordEnabled', 'type' => 'bool', 'label' => 'Enable Discord webhook', 'default' => false, 'rules' => ['bool']],
                     ['key' => 'discordWebhookUrl', 'type' => 'url', 'label' => 'Discord webhook URL', 'default' => '', 'rules' => ['url', 'max:512']],
                     ['key' => 'telegramEnabled', 'type' => 'bool', 'label' => 'Enable Telegram bot', 'default' => false, 'rules' => ['bool']],
@@ -103,6 +107,7 @@ final class SettingsSchema
                     ['key' => 'webhookEnabled', 'type' => 'bool', 'label' => 'Enable generic webhook', 'default' => false, 'rules' => ['bool']],
                     ['key' => 'webhookUrl', 'type' => 'url', 'label' => 'Webhook URL', 'default' => '', 'rules' => ['url', 'max:512']],
                     ['key' => 'webhookSecret', 'type' => 'password', 'label' => 'Webhook secret (optional)', 'default' => '', 'rules' => ['string', 'max:255']],
+                    ['key' => 'webhookAuthHeader', 'type' => 'string', 'label' => 'Webhook auth header name', 'default' => 'X-Webhook-Secret', 'rules' => ['string', 'max:120'], 'help' => 'HTTP header used to send webhookSecret when set.'],
                 ],
             ],
             'monitoring' => [

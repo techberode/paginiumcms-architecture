@@ -26,7 +26,7 @@
 | **44** | TBD | **Filtre a zoradenia (admin + FE)** | **🟡** | Zoznamy: status, typ, dátum, abeceda; zdieľané query parametre |
 | **45** | TBD | **[Redis – voliteľná infra](ITERATION_45.md)** | **🔵** | Absorbované do **It.49** |
 | **46** | TBD | **[Server metrics agent](ITERATION_46.md)** | **🟡** | CPU/RAM/disk/Docker → It.7 report + dashboard |
-| **47** | TBD | **[Notification connector auth](ITERATION_47.md)** | **🟡** | ntfy token/Basic + test per konektor |
+| **47** | TBD | **[Notification connector auth](ITERATION_47.md)** | **✅** | ntfy Bearer/Basic + test-connector |
 | **48** | TBD | **[PHP templates + static/dynamic web](ITERATION_48.md)** | **🟡** | Front matter šablóny, JSON/INI meta, static HTML |
 | **49** | TBD | **[Unified cache layer](ITERATION_49.md)** | **🟡** | File + Redis prepínač podľa hostingu (rýchlosť/bezpečnosť) |
 | **30** | TBD | **Contextual Actions** | 🟡 | Akcie podľa kontextu (content, media, user) |

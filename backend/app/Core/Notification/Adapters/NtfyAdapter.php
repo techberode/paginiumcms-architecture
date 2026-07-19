@@ -8,8 +8,28 @@ class NtfyAdapter implements AdapterInterface
 {
     public function __construct(
         private string $server,
-        private string $topic
+        private string $topic,
+        private string $authMode = 'none',
+        private string $accessToken = '',
+        private string $username = '',
+        private string $password = ''
     ) {
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function buildAuthHeaders(): array
+    {
+        return match ($this->authMode) {
+            'token' => $this->accessToken !== ''
+                ? ['Authorization: Bearer ' . $this->accessToken]
+                : [],
+            'basic' => $this->username !== '' && $this->password !== ''
+                ? ['Authorization: Basic ' . base64_encode($this->username . ':' . $this->password)]
+                : [],
+            default => [],
+        };
     }
 
     /**
@@ -21,12 +41,12 @@ class NtfyAdapter implements AdapterInterface
         $priority = $options['priority'] ?? 'default';
         $tags = $options['tags'] ?? 'paginiumcms';
 
-        $headers = [
+        $headers = array_merge($this->buildAuthHeaders(), [
             'Title: ' . $subject,
             'Priority: ' . $priority,
             'Tags: ' . $tags,
             'Content-Type: text/plain; charset=utf-8',
-        ];
+        ]);
 
         $context = stream_context_create([
             'http' => [

@@ -40,8 +40,9 @@ final class NotificationFactoryTest extends TestCase
             'port' => 587,
             'encryption' => 'tls',
             'fromEmail' => 'cms@example.com',
+            'fromName' => 'PaginiumCMS',
         ]);
-        $repo->setGroup('connectors', ['emailEnabled' => true]);
+        $repo->setGroup('connectors', ['emailEnabled' => true, 'ntfyAuthMode' => 'none']);
 
         $service = NotificationFactory::create($repo);
 
@@ -59,6 +60,75 @@ final class NotificationFactoryTest extends TestCase
         $this->assertContains('discord', $names);
         $this->assertContains('telegram', $names);
         $this->assertContains('webhook', $names);
+    }
+
+    public function testNtfyRequiresTokenWhenAuthModeToken(): void
+    {
+        $repo = $this->makeRepo();
+        $repo->setGroup('connectors', [
+            'ntfyEnabled' => true,
+            'ntfyTopic' => 'alerts',
+            'ntfyAuthMode' => 'token',
+            'ntfyAccessToken' => '',
+        ]);
+
+        $service = NotificationFactory::create($repo);
+        $this->assertNotContains('ntfy', $service->getAdapters());
+
+        $overview = NotificationFactory::connectorOverview($repo);
+        $ntfy = $this->connectorByName($overview, 'ntfy');
+        $this->assertTrue($ntfy['configured']);
+        $this->assertFalse($ntfy['authenticated']);
+        $this->assertFalse($ntfy['enabled']);
+    }
+
+    public function testNtfyAdapterRegisteredWithBearerToken(): void
+    {
+        $repo = $this->makeRepo();
+        $repo->setGroup('connectors', [
+            'ntfyEnabled' => true,
+            'ntfyTopic' => 'alerts',
+            'ntfyAuthMode' => 'token',
+            'ntfyAccessToken' => 'tk_test_abc',
+        ]);
+
+        $service = NotificationFactory::create($repo);
+        $this->assertContains('ntfy', $service->getAdapters());
+
+        $overview = NotificationFactory::connectorOverview($repo);
+        $ntfy = $this->connectorByName($overview, 'ntfy');
+        $this->assertTrue($ntfy['authenticated']);
+        $this->assertTrue($ntfy['enabled']);
+        $this->assertSame('token', $ntfy['auth_mode']);
+    }
+
+    public function testConnectorAuthErrorForMissingNtfyToken(): void
+    {
+        $connectors = [
+            'ntfyEnabled' => true,
+            'ntfyTopic' => 'alerts',
+            'ntfyAuthMode' => 'token',
+            'ntfyAccessToken' => '',
+        ];
+
+        $message = NotificationFactory::connectorAuthError('ntfy', $connectors);
+        $this->assertNotNull($message);
+        $this->assertStringContainsString('access token', strtolower($message));
+    }
+
+    /**
+     * @param list<array<string, mixed>> $overview
+     * @return array<string, mixed>
+     */
+    private function connectorByName(array $overview, string $name): array
+    {
+        foreach ($overview as $row) {
+            if (($row['name'] ?? '') === $name) {
+                return $row;
+            }
+        }
+
+        $this->fail('Connector not found: ' . $name);
     }
 
     private function makeRepo(): SettingsRepository
