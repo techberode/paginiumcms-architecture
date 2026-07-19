@@ -56,6 +56,9 @@ export interface Article extends Page {
   tags: string[];
   excerpt: string;
   readingTime: number;
+  commentsEnabled?: boolean;
+  commentsRequireApproval?: boolean | null;
+  commentsAllowGuests?: boolean | null;
 }
 
 export interface Backup {

@@ -20,6 +20,10 @@ return function (App $app): void {
     $app->group('/api/admin/trash', function (RouteCollectorProxy $group) use ($controller) {
         $group->get('', [$controller, 'list']);
         $group->post('/bulk-restore', [$controller, 'bulkRestore']);
+        $group->post('/bulk-purge', [$controller, 'bulkPurge']);
+        $group->post('/bulk-backup', [$controller, 'bulkBackup']);
+        $group->post('/empty', [$controller, 'emptyTrash']);
+        $group->get('/backups/{filename}/download', [$controller, 'downloadBackup']);
         $group->post('/{id}/restore', [$controller, 'restore']);
     })
         ->add(new RoleMiddleware($authz, ['EDITOR', 'ADMIN', 'SUPER_ADMIN']))

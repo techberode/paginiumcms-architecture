@@ -95,6 +95,7 @@ final class SettingsController
             ],
             'ui' => [
                 'showListCounts' => (bool) ($all['ui']['showListCounts'] ?? true),
+                'adminListPageSize' => (int) ($all['ui']['adminListPageSize'] ?? 20),
             ],
             'content' => $all['content'] ?? [],
             'editor' => $all['editor'] ?? [],
@@ -113,6 +114,11 @@ final class SettingsController
             ],
             'feeds' => [
                 'enabled' => (bool) ($all['feeds']['enabled'] ?? true),
+            ],
+            'comments' => [
+                'enabled' => (bool) ($all['comments']['enabled'] ?? true),
+                'requireApproval' => (bool) ($all['comments']['requireApproval'] ?? true),
+                'allowGuestComments' => (bool) ($all['comments']['allowGuestComments'] ?? true),
             ],
         ]);
     }

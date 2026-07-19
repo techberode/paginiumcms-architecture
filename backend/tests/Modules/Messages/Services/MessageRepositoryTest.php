@@ -33,11 +33,19 @@ class MessageRepositoryTest extends TestCase
     {
         $message = new ContactMessage('John Doe', 'john@example.com', 'Hello from contact form');
         $message->setSubject('Support');
+        $message->setPriority(ContactMessage::PRIORITY_HIGH);
+        $message->markProcessed(true);
         $this->repository->save($message);
 
         $found = $this->repository->findById($message->getId());
         $this->assertNotNull($found);
         $this->assertSame('Support', $found->getSubject());
+        $this->assertSame(ContactMessage::PRIORITY_HIGH, $found->getPriority());
+        $this->assertTrue($found->isProcessed());
+
+        $serialized = $found->jsonSerialize();
+        $this->assertArrayHasKey('isArchived', $serialized);
+        $this->assertArrayHasKey('priority', $serialized);
 
         $all = $this->repository->findAll();
         $this->assertCount(1, $all);

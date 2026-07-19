@@ -547,6 +547,21 @@ class ContentController
             if (!empty($data['tags']) && is_array($data['tags'])) {
                 $content->setTags($data['tags']);
             }
+            if (array_key_exists('commentsEnabled', $data)) {
+                $content->setCommentsEnabled((bool) $data['commentsEnabled']);
+            }
+            if (array_key_exists('commentsRequireApproval', $data)) {
+                $override = $data['commentsRequireApproval'];
+                $content->setCommentsRequireApproval(
+                    $override === null ? null : (bool) $override
+                );
+            }
+            if (array_key_exists('commentsAllowGuests', $data)) {
+                $override = $data['commentsAllowGuests'];
+                $content->setCommentsAllowGuests(
+                    $override === null ? null : (bool) $override
+                );
+            }
         }
 
         $this->applySeoFrontMatter($content, $data);
@@ -632,6 +647,9 @@ class ContentController
             $payload['tags'] = $content->getTags();
             $payload['excerpt'] = $content->getExcerpt();
             $payload['readingTime'] = $content->getReadingTime();
+            $payload['commentsEnabled'] = $content->getCommentsEnabled();
+            $payload['commentsRequireApproval'] = $content->getCommentsRequireApproval();
+            $payload['commentsAllowGuests'] = $content->getCommentsAllowGuests();
         }
 
         $payload['seoTitle'] = (string) ($frontMatter['seoTitle'] ?? $frontMatter['metaTitle'] ?? '');

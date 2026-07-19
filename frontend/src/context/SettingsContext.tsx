@@ -29,6 +29,12 @@ const DEFAULT_PUBLIC: PublicSettings = {
   },
   ui: {
     showListCounts: true,
+    adminListPageSize: 20,
+  },
+  comments: {
+    enabled: true,
+    requireApproval: true,
+    allowGuestComments: true,
   },
 };
 

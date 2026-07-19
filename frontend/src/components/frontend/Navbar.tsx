@@ -1,13 +1,123 @@
 // frontend/src/components/frontend/Navbar.tsx
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Search, Shield, Menu, X, Rocket } from 'lucide-react';
-import { usePublicSite } from '../../context/PublicSiteContext';
+import { ChevronDown, Search, Shield, Menu, X, Rocket } from 'lucide-react';
+import { usePublicSite, type PublicNavItem } from '../../context/PublicSiteContext';
 import { useAuth } from '../../hooks/useAuth';
 
 interface NavbarProps {
   onOpenSearch: () => void;
 }
+
+const NavLinkButton: React.FC<{
+  item: PublicNavItem;
+  active: boolean;
+  onNavigate: (path: string) => void;
+  className?: string;
+}> = ({ item, active, onNavigate, className = '' }) => (
+  <button
+    type="button"
+    onClick={() => onNavigate(item.path)}
+    className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer ${className} ${
+      active
+        ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50'
+        : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
+    }`}
+  >
+    {item.label}
+  </button>
+);
+
+const DesktopNavItem: React.FC<{
+  item: PublicNavItem;
+  isPathActive: (path: string) => boolean;
+  onNavigate: (path: string) => void;
+}> = ({ item, isPathActive, onNavigate }) => {
+  const [open, setOpen] = useState(false);
+  const hasChildren = (item.children?.length ?? 0) > 0;
+  const active = isPathActive(item.path) || item.children?.some((child) => isPathActive(child.path));
+
+  if (!hasChildren) {
+    return <NavLinkButton item={item} active={active} onNavigate={onNavigate} />;
+  }
+
+  return (
+    <div className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
+      <button
+        type="button"
+        className={`inline-flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+          active
+            ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50'
+            : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
+        }`}
+        onClick={() => onNavigate(item.path)}
+      >
+        {item.label}
+        <ChevronDown className="w-4 h-4" />
+      </button>
+      {open ? (
+        <div className="absolute left-0 top-full pt-2 min-w-[200px] z-50">
+          <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl py-2">
+            {item.children?.map((child) => (
+              <div key={child.id}>
+                <button
+                  type="button"
+                  className="block w-full text-left px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
+                  onClick={() => onNavigate(child.path)}
+                >
+                  {child.label}
+                </button>
+                {child.children?.map((grand) => (
+                  <button
+                    key={grand.id}
+                    type="button"
+                    className="block w-full text-left pl-7 pr-4 py-1.5 text-xs text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
+                    onClick={() => onNavigate(grand.path)}
+                  >
+                    {grand.label}
+                  </button>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+};
+
+const MobileNavItems: React.FC<{
+  items: PublicNavItem[];
+  depth?: number;
+  isPathActive: (path: string) => boolean;
+  onNavigate: (path: string) => void;
+}> = ({ items, depth = 0, isPathActive, onNavigate }) => (
+  <>
+    {items.map((item) => (
+      <div key={item.id} style={{ marginLeft: `${depth * 0.75}rem` }}>
+        <button
+          type="button"
+          onClick={() => onNavigate(item.path)}
+          className={`w-full p-3 rounded-xl text-base font-bold text-left ${
+            isPathActive(item.path)
+              ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400'
+              : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
+          }`}
+        >
+          {item.label}
+        </button>
+        {item.children && item.children.length > 0 ? (
+          <MobileNavItems
+            items={item.children}
+            depth={depth + 1}
+            isPathActive={isPathActive}
+            onNavigate={onNavigate}
+          />
+        ) : null}
+      </div>
+    ))}
+  </>
+);
 
 export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
   const { navigation, siteTitle } = usePublicSite();
@@ -24,6 +134,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
   };
 
   const sortedNav = [...navigation].sort((a, b) => a.order - b.order);
+
+  const handleNavigate = (path: string) => {
+    navigate(path);
+    setMobileMenuOpen(false);
+  };
 
   return (
     <header className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 sticky top-0 z-40 transition-colors">
@@ -47,23 +162,14 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
         </button>
 
         <nav className="hidden md:flex items-center gap-1">
-          {sortedNav.map((item) => {
-            const active = isPathActive(item.path);
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => navigate(item.path)}
-                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
-                  active
-                    ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50'
-                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
-                }`}
-              >
-                {item.label}
-              </button>
-            );
-          })}
+          {sortedNav.map((item) => (
+            <DesktopNavItem
+              key={item.id}
+              item={item}
+              isPathActive={isPathActive}
+              onNavigate={handleNavigate}
+            />
+          ))}
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-3">
@@ -106,29 +212,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
         </div>
       </div>
 
-      {mobileMenuOpen && (
+      {mobileMenuOpen ? (
         <div className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-6 shadow-xl animate-fadeIn">
           <div className="flex flex-col gap-2">
-            {sortedNav.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => {
-                  navigate(item.path);
-                  setMobileMenuOpen(false);
-                }}
-                className={`p-3 rounded-xl text-base font-bold text-left ${
-                  isPathActive(item.path)
-                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400'
-                    : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
+            <MobileNavItems items={sortedNav} isPathActive={isPathActive} onNavigate={handleNavigate} />
           </div>
         </div>
-      )}
+      ) : null}
     </header>
   );
 };

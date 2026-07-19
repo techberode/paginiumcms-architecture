@@ -6,11 +6,16 @@ import { Article, Page } from '../api/types';
 import { useSettingsContext } from './SettingsContext';
 import { debugLogProvider } from '../utils/debugLog';
 
+import { buildNavigationTree, mapNavigationTreeToPublic } from '../utils/navigationTree';
+import type { NavigationItem } from '../api/navigation';
+
 export interface PublicNavItem {
   id: string;
   label: string;
   path: string;
   order: number;
+  parentId?: string | null;
+  children?: PublicNavItem[];
 }
 
 interface PublicSiteContextType {
@@ -56,7 +61,7 @@ export const PublicSiteProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const { settings } = useSettingsContext();
   const [pages, setPages] = useState<Page[]>([]);
   const [articles, setArticles] = useState<Article[]>([]);
-  const [navigationItems, setNavigationItems] = useState<PublicNavItem[]>(CORE_NAV);
+  const [navigationItems, setNavigationItems] = useState<NavigationItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
@@ -116,16 +121,9 @@ export const PublicSiteProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const general = settings.general as Record<string, unknown>;
   const navigation = useMemo(() => {
     if (navigationItems.length > 0) {
-      return [...navigationItems]
-        .sort((a, b) => a.order - b.order)
-        .map((item) => ({
-          id: item.id,
-          label: item.label,
-          path: item.path,
-          order: item.order,
-        }));
+      return mapNavigationTreeToPublic(buildNavigationTree(navigationItems));
     }
-    return buildNavigation(pages);
+    return buildNavigation(pages).map((item) => ({ ...item, children: [] }));
   }, [navigationItems, pages]);
 
   const value = useMemo(

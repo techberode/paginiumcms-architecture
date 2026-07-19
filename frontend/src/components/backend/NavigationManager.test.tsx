@@ -33,18 +33,18 @@ describe('NavigationManager', () => {
     ]);
   });
 
-  it('loads navigation once and renders items', async () => {
+  it('loads navigation once and renders editable items', async () => {
     render(<NavigationManager />);
 
-    expect(await screen.findByText('Home')).toBeInTheDocument();
-    expect(screen.getByText('/blog')).toBeInTheDocument();
+    expect(await screen.findByDisplayValue('Home')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('/blog')).toBeInTheDocument();
     expect(mocks.getNavigation).toHaveBeenCalledTimes(1);
   });
 
   it('does not refetch in a loop after initial load', async () => {
     render(<NavigationManager />);
 
-    await screen.findByText('Home');
+    await screen.findByDisplayValue('Home');
     const initialCalls = mocks.getNavigation.mock.calls.length;
     expect(initialCalls).toBe(1);
 

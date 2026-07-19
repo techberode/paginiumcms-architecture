@@ -29,6 +29,7 @@
 | **47** | TBD | **[Notification connector auth](ITERATION_47.md)** | **✅** | ntfy Bearer/Basic + test-connector |
 | **48** | TBD | **[PHP templates + static/dynamic web](ITERATION_48.md)** | **🟡** | Front matter šablóny, JSON/INI meta, static HTML |
 | **49** | TBD | **[Unified cache layer](ITERATION_49.md)** | **🟡** | File + Redis prepínač podľa hostingu (rýchlosť/bezpečnosť) |
+| **50** | TBD | **[In-App Micro Firewall (WAF)](ITERATION_50.md)** | **🔴** | Detekcia, jail, permanent ban, admin dashboard |
 | **30** | TBD | **Contextual Actions** | 🟡 | Akcie podľa kontextu (content, media, user) |
 | **31** | TBD | **Live Preview** | 🟡 | Náhľad stránky/článku pred publikovaním |
 | **32** | TBD | **React chunking + PHP OPcache** | 🔵 | Výkon FE/BE |
@@ -189,6 +190,9 @@ Všetky voliteľné FE funkcie zapínateľné v administrácii.
 - Schválenie komentára rolou (EDITOR vs ADMIN)
 - `comments.allowGuestComments` — už v schéme, dorobiť FE + enforcement
 - Front-end formulár pre hostí s CAPTCHA (voliteľne)
+- **Kontaktný formulár (rozšírenie):** pevné predmety (`Všeobecný dotaz`, `Technická podpora`, …) + voľba „Vlastný predmet“; voliteľná **priorita** správy (`low` / `normal` / `high` / `urgent`) — backend model `ContactMessage` už pripravený (It.42+ inbox UX)
+
+**Dokumentácia:** [CONTENT_COMMENTS_NAV.md](CONTENT_COMMENTS_NAV.md) — per-article komentáre, globálne schvaľovanie, nested menu (3 úrovne).
 
 ---
 
@@ -293,6 +297,26 @@ Doplnenie It.7 reportov o **host metriky** (uptime, CPU, RAM, disk, Docker).
 
 ---
 
+## Iterácia 50 – In-App Micro Firewall (interný WAF) ⏳
+
+Ľahký WAF v PHP — bez externého ModSecurity, plne integrovaný s flat-file CMS a React adminom.
+
+**Full spec:** [ITERATION_50.md](ITERATION_50.md)
+
+| Fáza | Popis |
+|------|--------|
+| **A – Detekcia** | Scenáre (regex) na URI / UA / query — wp-admin probe, `.env`, traversal, SQL probe |
+| **B – Jail** | Dočasný IP ban (15 min), incident log, okamžitý 403 |
+| **C – Permanent** | Eskalácia po opakovaných jailoch → trvalý ban |
+
+**Úložisko:** default flat-file JSON (`data/security/firewall/`), scenáre v `config/firewall_scenarios.php` (OPcache). SQLite voliteľne neskôr.
+
+**Admin:** `GET /api/admin/firewall/*`, React modul Unban / Whitelist / incidenty, Settings `firewall.enabled`.
+
+**Nadväznosť:** dopĺňa `RateLimitMiddleware` + `LoginAttemptTracker`, nenahrádza ich.
+
+---
+
 ## Odporúčané poradie implementácie
 
 ```
@@ -306,7 +330,8 @@ It.28/2.0.16 ✅ → It.29/2.0.18 ✅ → It.41 (email OTP) ← ďalšia
                 → It.35 (inspector) → It.40 (section FileManager)
                 → It.48 (static templates + dynamic/static web toggle)
                 → It.30 (contextual) → It.31 (live preview)
-                → It.32 (performance) → It.49 (unified cache: file + Redis)
+                → It.32 (performance)                 → It.49 (unified cache: file + Redis)
+                → It.50 (micro firewall / WAF — produkčná ochrana)
 ```
 
 ---
@@ -323,3 +348,4 @@ It.28/2.0.16 ✅ → It.29/2.0.18 ✅ → It.41 (email OTP) ← ďalšia
 - [ITERATION_47.md](ITERATION_47.md) — notification connector auth
 - [ITERATION_48.md](ITERATION_48.md) — PHP templates + static/dynamic web
 - [ITERATION_49.md](ITERATION_49.md) — unified cache layer
+- [ITERATION_50.md](ITERATION_50.md) — in-app micro firewall (WAF)

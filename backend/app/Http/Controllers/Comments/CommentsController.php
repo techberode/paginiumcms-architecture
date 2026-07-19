@@ -13,6 +13,7 @@ use PaginiumCMS\Http\Support\BulkBatchResult;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Comments\Contracts\CommentsRepositoryInterface;
 use PaginiumCMS\Modules\Comments\Models\Comment;
+use PaginiumCMS\Modules\Comments\Services\CommentPolicyResolver;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Support\Lang;
 use Psr\Http\Message\ResponseInterface;
@@ -23,6 +24,7 @@ class CommentsController
     public function __construct(
         private CommentsRepositoryInterface $commentsRepository,
         private SettingsRepositoryInterface $settingsRepository,
+        private CommentPolicyResolver $commentPolicy,
         private Validator $validator,
         private OtpWorkflowService $otpWorkflow,
         private JsonResponder $json
@@ -76,19 +78,25 @@ class CommentsController
             return $this->json->error($response, Lang::get('disabled', [], 'comments'), 403);
         }
 
+        $articleSlug = (string) $validated['articleSlug'];
+        $policy = $this->commentPolicy->resolveForArticle($articleSlug);
+        if (!$policy['enabled']) {
+            return $this->json->error($response, Lang::get('disabled_for_article', [], 'comments'), 403);
+        }
+
         $user = $request->getAttribute('user');
-        if ($user === null && ($settings['allowGuestComments'] ?? true) === false) {
-            return $this->json->error($response, 'Anonymné komentáre sú vypnuté', 403);
+        if ($user === null && !$policy['allowGuestComments']) {
+            return $this->json->error($response, 'Anonymné komentáre sú pre tento článok vypnuté', 403);
         }
 
         $comment = new Comment(
-            (string) $validated['articleSlug'],
+            $articleSlug,
             (string) $validated['author'],
             (string) $validated['content']
         );
         $comment->setEmail((string) ($validated['email'] ?? ''));
 
-        if (($settings['requireApproval'] ?? true) === false) {
+        if (!$policy['requireApproval']) {
             $comment->setStatus(Comment::STATUS_APPROVED);
         }
 
@@ -177,6 +185,14 @@ class CommentsController
             }
 
             $comment->setStatus($status);
+        }
+
+        if (array_key_exists('isRead', $data)) {
+            $comment->markRead((bool) $data['isRead']);
+        }
+
+        if (array_key_exists('isArchived', $data)) {
+            $comment->markArchived((bool) $data['isArchived']);
         }
 
         if (isset($data['content'])) {
@@ -283,6 +299,57 @@ class CommentsController
             $batch->toArray(),
             200,
             Lang::get('bulk_deleted', [], 'comments')
+        );
+    }
+
+    public function bulkWorkflow(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $data = json_decode((string) $request->getBody(), true);
+        if (!is_array($data)) {
+            return $this->json->error($response, Lang::get('invalid_payload', [], 'comments'), 400);
+        }
+
+        $ids = $this->normalizeIds($data['ids'] ?? null);
+        $action = (string) ($data['action'] ?? '');
+
+        if ($ids === []) {
+            return $this->json->error($response, Lang::get('ids_required', [], 'comments'), 400);
+        }
+
+        if (!in_array($action, ['read', 'processed', 'archive'], true)) {
+            return $this->json->error($response, Lang::get('invalid_action', [], 'comments'), 422);
+        }
+
+        $batch = new BulkBatchResult();
+        foreach ($ids as $id) {
+            $comment = $this->commentsRepository->findById($id);
+            if ($comment === null) {
+                $batch->addFailure($id, Lang::get('not_found', [], 'comments'));
+
+                continue;
+            }
+
+            try {
+                if ($action === 'read') {
+                    $comment->markRead(true);
+                } elseif ($action === 'processed') {
+                    $comment->setStatus(Comment::STATUS_APPROVED)->markRead(true);
+                } elseif ($action === 'archive') {
+                    $comment->markArchived(true);
+                }
+
+                $this->commentsRepository->update($comment);
+                $batch->addSuccess($id);
+            } catch (FlatFileException $e) {
+                $batch->addFailure($id, $e->getMessage());
+            }
+        }
+
+        return $this->json->success(
+            $response,
+            $batch->toArray(),
+            200,
+            Lang::get('bulk_updated', [], 'comments')
         );
     }
 

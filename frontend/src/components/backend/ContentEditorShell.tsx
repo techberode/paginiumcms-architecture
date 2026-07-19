@@ -15,6 +15,10 @@ import type { NavigationItem } from '../../api/navigation';
 import type { EditorMode } from '../../utils/contentEditor';
 import { countContentStats } from '../../utils/contentEditorMeta';
 import { SeoMetadataPanel, type SeoFormValues } from './SeoMetadataPanel';
+import {
+  ArticleCommentsPanel,
+  type ArticleCommentsSettings,
+} from './ArticleCommentsPanel';
 
 interface ContentEditorShellProps {
   type: ContentType;
@@ -46,6 +50,10 @@ interface ContentEditorShellProps {
   onSave: () => void;
   children: React.ReactNode;
   footerExtra?: React.ReactNode;
+  articleComments?: ArticleCommentsSettings;
+  onArticleCommentsChange?: (value: ArticleCommentsSettings) => void;
+  globalCommentsRequireApproval?: boolean;
+  globalCommentsAllowGuests?: boolean;
 }
 
 const STATUS_LABELS: Record<ContentEditorShellProps['status'], string> = {
@@ -84,6 +92,10 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
   onSave,
   children,
   footerExtra,
+  articleComments,
+  onArticleCommentsChange,
+  globalCommentsRequireApproval = true,
+  globalCommentsAllowGuests = true,
 }) => {
   const stats = countContentStats(content);
   const typeLabel = type === 'article' ? 'článok' : 'stránku';
@@ -275,6 +287,16 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
               </div>
             )}
           </div>
+
+          {type === 'article' && articleComments && onArticleCommentsChange ? (
+            <ArticleCommentsPanel
+              value={articleComments}
+              onChange={onArticleCommentsChange}
+              disabled={!canEdit}
+              globalRequireApproval={globalCommentsRequireApproval}
+              globalAllowGuests={globalCommentsAllowGuests}
+            />
+          ) : null}
 
           <div>{children}</div>
 

@@ -106,6 +106,7 @@ use PaginiumCMS\Http\Controllers\Locking\LockController;
 use PaginiumCMS\Http\Controllers\Media\MediaController;
 use PaginiumCMS\Http\Middleware\DeveloperModeMiddleware;
 use PaginiumCMS\Modules\Comments\Contracts\CommentsRepositoryInterface;
+use PaginiumCMS\Modules\Comments\Services\CommentPolicyResolver;
 use PaginiumCMS\Modules\Comments\Services\CommentsRepository;
 use PaginiumCMS\Modules\Messages\Contracts\MessageRepositoryInterface;
 use PaginiumCMS\Modules\Messages\Services\MessageRepository;
@@ -272,10 +273,16 @@ return [
             get(FileReaderInterface::class),
             get(FileWriterInterface::class)
         ),
+    CommentPolicyResolver::class => create(CommentPolicyResolver::class)
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(ContentRepositoryInterface::class)
+        ),
     CommentsController::class => create(CommentsController::class)
         ->constructor(
             get(CommentsRepositoryInterface::class),
             get(SettingsRepositoryInterface::class),
+            get(CommentPolicyResolver::class),
             get(Validator::class),
             get(OtpWorkflowService::class),
             get(JsonResponder::class)

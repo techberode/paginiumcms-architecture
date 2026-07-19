@@ -19,6 +19,13 @@ import { OtpConfirmModal } from './OtpConfirmModal';
 import { extractOtpPending } from '../../api/workflows';
 import { type SeoFormValues } from './SeoMetadataPanel';
 import {
+  ArticleCommentsPanel,
+  DEFAULT_ARTICLE_COMMENTS_SETTINGS,
+  triStateFromApi,
+  triStateToApi,
+  type ArticleCommentsSettings,
+} from './ArticleCommentsPanel';
+import {
   type ContentFormat,
   type EditorMode,
   convertForModeSwitch,
@@ -78,6 +85,9 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
     noIndex: false,
     tags: '',
   });
+  const [articleComments, setArticleComments] = useState<ArticleCommentsSettings>(
+    DEFAULT_ARTICLE_COMMENTS_SETTINGS
+  );
 
   const { get, post, put } = useApi();
   const toast = useToast();
@@ -164,6 +174,13 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
               ? fm.tags.map(String).join(', ')
               : '',
         });
+        if (type === 'article') {
+          setArticleComments({
+            commentsEnabled: response.data.commentsEnabled !== false,
+            commentsRequireApproval: triStateFromApi(response.data.commentsRequireApproval),
+            commentsAllowGuests: triStateFromApi(response.data.commentsAllowGuests),
+          });
+        }
       }
 
       if (slug) {
@@ -240,6 +257,12 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
 
         if (type === 'page' && template.trim()) {
           data.template = template.trim();
+        }
+
+        if (type === 'article') {
+          data.commentsEnabled = articleComments.commentsEnabled;
+          data.commentsRequireApproval = triStateToApi(articleComments.commentsRequireApproval);
+          data.commentsAllowGuests = triStateToApi(articleComments.commentsAllowGuests);
         }
 
         const response = isNew
@@ -331,6 +354,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
       seo,
       editorMode,
       storageFormat,
+      articleComments,
       post,
       put,
       navigate,
@@ -438,6 +462,10 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         onEditorModeChange={switchEditorMode}
         onCancel={() => navigate(type === 'article' ? '/articles' : '/pages')}
         onSave={() => void handleSave()}
+        articleComments={type === 'article' ? articleComments : undefined}
+        onArticleCommentsChange={type === 'article' ? setArticleComments : undefined}
+        globalCommentsRequireApproval={settings.comments?.requireApproval !== false}
+        globalCommentsAllowGuests={settings.comments?.allowGuestComments !== false}
         footerExtra={
           <div className="form-group">
             <label className="form-label">Popis zmeny (voliteľné)</label>

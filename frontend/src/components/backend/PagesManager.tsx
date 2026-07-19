@@ -5,13 +5,16 @@ import { useToast } from '../../hooks/useToast';
 import { Link } from 'react-router-dom';
 import type { PaginationMeta } from '../../api/client';
 import { AdminListToolbar } from './AdminListToolbar';
+import { AdminListPagination } from './AdminListPagination';
 import { ContentListMobileCard } from './ContentListMobileCard';
 import { BulkActionBar } from './BulkActionBar';
 import { SeoHealthBadge } from './SeoHealthBadge';
 import { useAdminViewMode } from '../../hooks/useAdminViewMode';
+import { useAdminListPageSize } from '../../hooks/useAdminListPageSize';
+import { useColumnSort } from '../../hooks/useColumnSort';
+import { SortableTableHeader } from './SortableTableHeader';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
-import { useSettingsContext } from '../../context/SettingsContext';
 import { contentApi } from '../../api/content';
 import { summarizeBulkResult } from '../../types/bulk';
 import { evaluateContentSeo } from '../../utils/seoHealth';
@@ -84,12 +87,12 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [seoIssuesOnly, setSeoIssuesOnly] = useState(false);
   const [page, setPage] = useState(1);
+  const { sortField, sortDirection, handleSort } = useColumnSort('updatedAt', 'desc');
+  const section = type === 'articles' ? 'articles' : 'pages';
+  const [pageSize, setPageSize] = useAdminListPageSize(section);
   const { get, delete: del } = useApi();
   const toast = useToast();
-  const { settings } = useSettingsContext();
   const isMobile = useMediaQuery('(max-width: 767px)');
-  const itemsPerPage = Math.max(5, Math.min(100, Number(settings.content?.itemsPerPage ?? 20)));
-  const section = type === 'articles' ? 'articles' : 'pages';
   const { mode: viewMode, setMode: setViewMode } = useAdminViewMode(section, 'list');
 
   const endpoint = type === 'articles' ? '/api/articles' : '/api/pages';
@@ -106,14 +109,15 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
 
   useEffect(() => {
     setPage(1);
-  }, [type, debouncedSearch, statusFilter]);
+  }, [type, debouncedSearch, statusFilter, sortField, sortDirection, pageSize]);
 
   const loadItems = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams({
         page: String(page),
-        per_page: String(itemsPerPage),
+        per_page: String(pageSize),
+        sort: `${sortDirection === 'desc' ? '-' : ''}${sortField}`,
       });
       if (debouncedSearch.length >= 2) {
         params.set('search', debouncedSearch);
@@ -133,7 +137,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, endpoint, get, itemsPerPage, page, statusFilter, toast, type]);
+  }, [debouncedSearch, endpoint, get, page, pageSize, sortDirection, sortField, statusFilter, toast, type]);
 
   useEffect(() => {
     void loadItems();
@@ -244,6 +248,9 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
         seoIssuesOnly={seoIssuesOnly}
         onSeoIssuesOnlyChange={setSeoIssuesOnly}
         showSeoFilter
+        pageSize={pageSize}
+        onPageSizeChange={setPageSize}
+        pageSizeOptions={[5, 10, 20, 50]}
       />
 
       <BulkActionBar
@@ -348,7 +355,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
         <div className="card">
           <div className="card-body p-0">
             <div className="table-container">
-              <table className="table">
+              <table className="table w-full">
                 <thead>
                   <tr>
                     <th className="w-10">
@@ -360,11 +367,37 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                       />
                     </th>
                     {viewMode === 'list-preview' && <th className="w-24 hide-mobile">Náhľad</th>}
-                    <th>Názov</th>
-                    <th className="hide-mobile">Slug</th>
-                    <th>Stav</th>
+                    <SortableTableHeader
+                      label="Názov"
+                      field="title"
+                      activeField={sortField}
+                      direction={sortDirection}
+                      onSort={handleSort}
+                    />
+                    <SortableTableHeader
+                      label="Slug"
+                      field="slug"
+                      activeField={sortField}
+                      direction={sortDirection}
+                      onSort={handleSort}
+                      thClassName="hide-mobile"
+                    />
+                    <SortableTableHeader
+                      label="Stav"
+                      field="status"
+                      activeField={sortField}
+                      direction={sortDirection}
+                      onSort={handleSort}
+                    />
                     <th>SEO</th>
-                    <th className="hide-tablet">Upravené</th>
+                    <SortableTableHeader
+                      label="Upravené"
+                      field="updatedAt"
+                      activeField={sortField}
+                      direction={sortDirection}
+                      onSort={handleSort}
+                      thClassName="hide-tablet"
+                    />
                     <th>Akcie</th>
                   </tr>
                 </thead>
@@ -442,31 +475,14 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
         </div>
       )}
 
-      {meta.total_pages > 1 && (
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            {meta.total} záznamov · strana {meta.page} / {meta.total_pages}
-          </p>
-          <div className="flex gap-2 w-full sm:w-auto">
-            <button
-              type="button"
-              className="btn btn-secondary text-sm flex-1 sm:flex-none"
-              disabled={page <= 1 || loading}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-            >
-              Predošlá
-            </button>
-            <button
-              type="button"
-              className="btn btn-secondary text-sm flex-1 sm:flex-none"
-              disabled={page >= meta.total_pages || loading}
-              onClick={() => setPage((p) => p + 1)}
-            >
-              Ďalšia
-            </button>
-          </div>
-        </div>
-      )}
+      <AdminListPagination
+        page={meta.page}
+        totalPages={Math.max(meta.total_pages, 1)}
+        total={meta.total}
+        pageSize={pageSize}
+        loading={loading}
+        onPageChange={setPage}
+      />
     </div>
   );
 };

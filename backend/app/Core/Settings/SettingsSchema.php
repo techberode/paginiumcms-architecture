@@ -151,12 +151,12 @@ final class SettingsSchema
                 ],
             ],
             'comments' => [
-                'label' => 'Comments',
+                'label' => 'Komentáre',
                 'fields' => [
-                    ['key' => 'enabled', 'type' => 'bool', 'label' => 'Enable comments', 'default' => true, 'rules' => ['bool']],
-                    ['key' => 'requireApproval', 'type' => 'bool', 'label' => 'Require admin approval', 'default' => true, 'rules' => ['bool']],
-                    ['key' => 'allowGuestComments', 'type' => 'bool', 'label' => 'Allow guest comments', 'default' => true, 'rules' => ['bool']],
-                    ['key' => 'maxLength', 'type' => 'int', 'label' => 'Max comment length', 'default' => 2000, 'rules' => ['required', 'int', 'min:50', 'max:5000']],
+                    ['key' => 'enabled', 'type' => 'bool', 'label' => 'Povoliť komentáre globálne', 'default' => true, 'rules' => ['bool'], 'help' => 'Vypnutím sa skryje formulár na celom webe (okrem článkov s vlastným prepínačom).'],
+                    ['key' => 'requireApproval', 'type' => 'bool', 'label' => 'Globálne vyžadovať schválenie', 'default' => true, 'rules' => ['bool'], 'help' => 'Nové komentáre čakajú na schválenie v administrácii. Dá sa prepísať pri jednotlivom článku.'],
+                    ['key' => 'allowGuestComments', 'type' => 'bool', 'label' => 'Povoliť komentáre od hostí', 'default' => true, 'rules' => ['bool'], 'help' => 'Neprihlásení návštevníci môžu pridávať komentáre. Dá sa prepísať pri jednotlivom článku.'],
+                    ['key' => 'maxLength', 'type' => 'int', 'label' => 'Max. dĺžka komentára', 'default' => 2000, 'rules' => ['required', 'int', 'min:50', 'max:5000']],
                 ],
             ],
             'workflows' => [
@@ -173,6 +173,7 @@ final class SettingsSchema
                 'label' => 'Admin UI',
                 'fields' => [
                     ['key' => 'showListCounts', 'type' => 'bool', 'label' => 'Zobraziť počty v sidebari', 'default' => true, 'rules' => ['bool'], 'help' => 'Badge s počtom položiek pri moduloch v administrácii (Iterácia 42).'],
+                    ['key' => 'adminListPageSize', 'type' => 'int', 'label' => 'Položiek na stránku (admin)', 'default' => 20, 'rules' => ['required', 'int', 'min:5', 'max:100'], 'help' => 'Predvolený počet riadkov v admin zoznamoch (Media, Kôš, komentáre…).'],
                 ],
             ],
             'security' => [
