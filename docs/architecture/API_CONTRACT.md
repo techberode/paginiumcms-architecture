@@ -1,6 +1,6 @@
 # PaginiumCMS – API Response Contract
 
-> **Version:** 2.0.9 · **Iteration:** 21  
+> **Version:** 2.0.26 · **Iteration:** 50 (WAF) + logging  
 > Jednotný tvar JSON odpovedí pre backend aj frontend (`api/client.ts`).
 
 ---
@@ -125,6 +125,33 @@ Auth endpointy (`POST /api/auth/login`, register, 2FA) používajú `JsonRespond
 
 Frontend `ApiResponse` podporuje oba tvary (spätne kompatibilné).
 
+### 2.7 OTP pending (200 s `requires_otp`)
+
+Citlivé mutácie (publish článku, schválenie komentára, …) môžu vrátiť **200** s OTP výzvou namiesto okamžitého úspechu:
+
+```json
+{
+  "success": true,
+  "requires_otp": true,
+  "challenge_id": "otp_abc123",
+  "message": "Overenie OTP je potrebné"
+}
+```
+
+Frontend volá `POST /api/workflows/otp/verify` s `{ challenge_id, code }`.  
+V `development`/`testing` môže odpoveď obsahovať `debug_code`.
+
+### 2.8 WAF block (403 — mimo JSON kontraktu)
+
+`FirewallMiddleware` pri jail/ban/scenári vracia **HTTP 403** bez štandardného `{ success, error }` obalu:
+
+| Režim (`firewall.jailMode`) | Telo |
+|-----------------------------|------|
+| `empty` / `tarpit` | prázdne (`text/plain`) |
+| `message` | `Access denied` |
+
+Klienti nesmú predpokladať JSON na každej 403 — WAF beží pred routingom.
+
 ---
 
 ## 3. Stránkovanie (Iterácia 19)
@@ -156,7 +183,7 @@ Request: `?page=1&per_page=20&search=&status=`
 | 201 | Vytvorené | `{ success: true, data, message? }` |
 | 400 | Zlý request | `{ success: false, error }` |
 | 401 | Neautentifikovaný | `{ success: false, error }` |
-| 403 | Zakázané (RBAC) | `{ success: false, error }` |
+| 403 | Zakázané (RBAC) alebo **WAF jail** | JSON `{ success: false, error }` **alebo** plain 403 (§2.8) |
 | 404 | Nenájdené | `{ success: false, error }` |
 | 409 | Konflikt (obsah/zámok) | `{ success: false, error, conflict\|lock }` |
 | 422 | Validácia | `{ success: false, error, errors }` |
@@ -209,4 +236,4 @@ Všetky HTTP controllery používajú `JsonResponder`. Auth endpointy používaj
 
 - [API.md](./API.md) – zoznam endpointov
 - [CONTENT_API.md](./CONTENT_API.md) – content CRUD + soft-delete
-- [CORE_HARDENING.md](./CORE_HARDENING.md) – RBAC, maintenance, trash
+- [CORE_HARDENING.md](./CORE_HARDENING.md) – RBAC, maintenance, trash, WAF
