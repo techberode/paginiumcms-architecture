@@ -1,10 +1,10 @@
 # PaginiumCMS – API, Frontend & Feature Checklist
 
-**Last updated:** 2026-07-15 (after Iterations 7 & 14)  
-**Version:** 2.0.3  
-**Prototype reference:** `screenshots/` (14 PNG mockups from Jun 2026)
+**Last updated:** 2026-07-19 (release **2.0.26**)  
+**Version:** 2.0.26  
+**Architecture docs:** [architecture/](architecture/) · CI incidents: [ISSUES.md](ISSUES.md) ISS-015–022
 
-This document is the single source of truth for what exists in the backend API, what the React admin SPA actually uses, and how it compares to the first UI prototype.
+Single source of truth: čo existuje v backend API, čo React admin SPA používa, stav oproti pôvodnému prototypu (`screenshots/`).
 
 ---
 
@@ -20,164 +20,114 @@ This document is the single source of truth for what exists in the backend API, 
 
 ---
 
-## 1. Backend API inventory (~91 routes)
+## 1. Backend API inventory (~30 route files)
 
-### Auth – `/api/auth` (14 routes)
+Auth routes sú **inline** v `backend/bootstrap/app.php` (`/api/auth/*`). Ostatné v `backend/app/Http/Routes/*.php`.
+
+### Auth – `/api/auth` (~18 routes)
 
 | Method | Path | Status | FE wired |
 |--------|------|--------|----------|
-| POST | `/register` | ✅ | `RegisterModal` |
+| POST | `/register`, `/register/verify-otp`, `/register/resend-otp` | ✅ | `RegisterModal` |
 | POST | `/login` | ✅ | `LoginModal` |
-| POST | `/logout` | ✅ | `ResponsiveLayout` |
-| POST | `/reset-password` | ✅ | `ForgotPasswordModal` |
-| POST | `/verify-reset-token` | ✅ | `ResetPasswordModal` |
+| POST | `/logout` | ✅ | layout |
+| POST | `/reset-password`, `/verify-reset-token` | ✅ | password modals |
 | POST | `/change-password` | ✅ | `ChangePasswordModal` |
 | GET | `/me` | ✅ | `AuthContext` |
 | GET | `/csrf-token` | ✅ | `api/client.ts` |
-| POST | `/2fa/enable` | ✅ | `TwoFactorSettings` |
-| POST | `/2fa/disable` | ✅ | `TwoFactorSettings` |
-| POST | `/2fa/verify` | ✅ | `TwoFactorSettings` |
-| GET | `/2fa/qr-code` | ✅ | `TwoFactorSettings` |
-| GET | `/2fa/status` | ✅ | `AuthContext` |
-| POST | `/2fa/verify-login` | ✅ | `LoginModal` |
+| POST | `/2fa/*` | ✅ | `TwoFactorSettings`, login |
+| GET | `/2fa/status`, `/2fa/qr-code` | ✅ | `AuthContext` |
 
-### Content – `/api/pages`, `/api/articles` (12 routes)
+### Content – `/api/pages`, `/api/articles`
 
-| Method | Path | Status | FE wired |
-|--------|------|--------|----------|
-| GET | `/api/pages` | ✅ | `PagesManager`, `DashboardView` |
-| GET | `/api/pages/{slug}` | ✅ | `MarkdownEditor` |
-| POST/PUT/PATCH/DELETE | pages CRUD | ✅ | `MarkdownEditor` |
-| GET | `/api/articles` | ✅ | `PagesManager` |
-| GET | `/api/articles/{slug}` | ✅ | `MarkdownEditor` |
-| POST/PUT/PATCH/DELETE | articles CRUD | ✅ | `MarkdownEditor` |
+| CRUD + search + publish | ✅ | `PagesManager`, `MarkdownEditor` |
+| OTP publish workflow | ✅ | `workflows.ts` |
 
-Používateľská príručka: [user/CONTENT_EDITOR.md](user/CONTENT_EDITOR.md)
+Pozri [architecture/CONTENT_API.md](architecture/CONTENT_API.md).
 
-### Drafts – `/api/drafts` (3 routes)
+### Media – `/api/media` (~14 routes)
 
-| Method | Path | Status | FE wired |
-|--------|------|--------|----------|
-| GET/PUT/DELETE | `/api/drafts/{type}/{slug}` | ✅ | `useAutoSave`, `MarkdownEditor` |
+| List/upload/folders/stock/bulk | ✅ | `MediaManager` (`/media`) |
 
-### Media – `/api/media` (4 routes)
+### Admin – nové / rozšírené (2.0.25–2.0.26)
 
-| Method | Path | Status | FE wired |
-|--------|------|--------|----------|
-| GET/POST/PATCH/DELETE | `/api/media/*` | ✅ backend | ⛔ no `/media` route in FE |
+| Area | Routes | FE |
+|------|--------|-----|
+| Trash | `/api/admin/trash/*` | ✅ `TrashManager` |
+| Firewall | `/api/admin/firewall/*` | ✅ `FirewallManager` |
+| Logs | `/api/admin/logs/*` | ✅ `LogsManager` |
+| Counts | `/api/admin/counts` | ✅ sidebar badges |
+| Messages | `/api/admin/messages/*` + bulk | ✅ `MessagesViewer` |
+| Comments mod | `/api/admin/comments/*` + bulk | ✅ `CommentsManager` |
+| Navigation | `/api/admin/navigation` | ✅ `NavigationManager` |
+| Jobs / scheduler | `/api/admin/jobs/*` | ✅ `SchedulerView` |
+| Workflows OTP | `/api/workflows/otp/*` | ✅ publish / comments |
+| GitHub sync | `/api/admin/github/*` | ✅ `GitHubSyncPanel` |
+| Feeds / SEO | `/api/feeds/*`, `/api/seo/*` | ✅ public site |
 
-### Locking – `/api/locks` (5 routes)
+### Core admin (existujúce)
 
-| Method | Path | Status | FE wired |
-|--------|------|--------|----------|
-| POST | `/acquire`, `/heartbeat`, `/release` | ✅ | `useContentLock` |
-| GET/DELETE | admin list + force-release | ✅ | `LocksPanel`, `DashboardView` |
+| Area | Status | FE |
+|------|--------|-----|
+| Settings | ✅ 🔒 | `SettingsView` |
+| Users | ✅ 🔒 | `UsersManager` |
+| Backups | ✅ 🔒 | `BackupManager` |
+| Versions | ✅ 🔒 | `VersionHistory` v editore |
+| Code editor | ✅ 🔒 🛠 | `CodeEditor` |
+| Developer | ✅ 🔒 | unlock gate + `/developer/logs` |
+| Audit | ✅ 🔒 | `AuditTrail` |
+| Analytics / Dashboard | ✅ 🔒 | `DashboardView` |
+| Health | ✅ 🔒 | `HealthPanel` |
+| Notifications | ✅ 🔒 | `NotificationsOverview` |
+| Conflicts | ✅ 🔒 | `ConflictsPanel` |
+| Drafts / Locks | ✅ | editor |
 
-### Validation – `/api/validation` (2 routes)
-
-| Method | Path | Status | FE wired |
-|--------|------|--------|----------|
-| GET | `/rules`, `/rules/{context}` | ✅ | `UsersManager`, `utils/validation` |
-
-### Settings (5 routes)
-
-| Method | Path | Status | FE wired |
-|--------|------|--------|----------|
-| GET | `/api/settings/public` | ✅ | `SettingsContext` (toast) |
-| GET/PUT/DELETE | `/api/admin/settings/*` | ✅ 🔒 | `SettingsView` |
-
-### Admin – Users (5 routes) 🔒
-
-| CRUD | `/api/admin/users` | ✅ | `UsersManager` |
-
-### Admin – Backups (5 routes) 🔒
-
-| CRUD + restore | `/api/admin/backups` | ✅ | `BackupManager` |
-
-### Admin – Versions (6 routes) 🔒
-
-| History/compare/restore | `/api/admin/versions/*` | ✅ | `DiffViewer` only; `VersionHistory` not routed |
-
-### Admin – Code Editor (9 routes) 🔒 🛠
-
-| Method | Path | Status | FE wired |
-|--------|------|--------|----------|
-| GET | `/directories`, `/files`, `/file`, `/backups` | ✅ | `CodeEditor` (strom všetkých povolených koreňov) |
-| POST | `/save` | ✅ + policy 422 | `CodeEditor` + confirm Save |
-| POST | `/file` | ✅ create | `CodeEditorFileActions` — Nový súbor |
-| DELETE | `/file` | ✅ + backup before delete | `CodeEditorFileActions` — Zmazať |
-| POST | `/restore` | ✅ | `CodeEditorFileActions` — obnova zo zálohy |
-
-Používateľská príručka: [user/CODE_EDITOR.md](user/CODE_EDITOR.md)
-
-### Admin – Developer (4 routes) 🔒
-
-| Method | Path | Status | FE wired |
-|--------|------|--------|----------|
-| GET | `/status` | ✅ | `DeveloperUnlockGate` |
-| POST | `/unlock`, `/lock` | ✅ | `DeveloperUnlockGate` + **Zamknúť editor** v Code Editori |
-| GET | `/logs` | ✅ | ⛔ no dedicated FE page |
-
-### Admin – Analytics (3 routes) 🔒
-
-| overview/chart/realtime | `/api/admin/analytics/*` | ✅ | via `DashboardView` overview |
-
-### Admin – Dashboard (1 route) 🔒
-
-| GET | `/overview` | ✅ | `DashboardView` |
-
-### Admin – Health (3 routes) 🔒
-
-| index/checks/{name} | `/api/admin/health/*` | ✅ | via dashboard `HealthPanel` |
-
-### Admin – Notifications (2 routes) 🔒
-
-| overview + test send | `/api/admin/notifications/*` | ✅ | `NotificationsOverview` |
-
-### Admin – Conflicts (2 routes) 🔒
-
-| list + clear | `/api/admin/conflicts` | ✅ | `ConflictsPanel` (display); clear API unused in FE |
-
-### Admin – Audit (5 routes) 🔒
-
-| content/user/stats/export/log | `/api/admin/audit/*` | ✅ | `AuditTrail` (stats + export); sub-routes partial |
-
-### System
-
-| GET | `/`, `/api/health`, `/favicon.ico` | ✅ | public health only |
+Kompletný zoznam: [architecture/API.md](architecture/API.md).
 
 ---
 
 ## 2. Frontend route checklist
 
-### Auth routes (unauthenticated)
+### Auth (unauthenticated)
 
-| Route | Component | Status | Prototype match |
-|-------|-----------|--------|-----------------|
-| `/login` | `LoginModal` | ✅ | `screenshots/login.png` |
-| `/register` | `RegisterModal` | ✅ | — |
-| `/forgot-password` | `ForgotPasswordModal` | ✅ | — |
-| `/reset-password` | `ResetPasswordModal` | ✅ | — |
+| Route | Component | Status |
+|-------|-----------|--------|
+| `/login` | `LoginModal` | ✅ |
+| `/register` | `RegisterModal` | ✅ |
+| `/forgot-password`, `/reset-password` | modals | ✅ |
 
-### Admin routes (authenticated)
+### Admin (authenticated + role guard)
 
-| Route | Component | APIs used | Status | Prototype |
-|-------|-----------|-----------|--------|-----------|
-| `/dashboard` | `DashboardView` | dashboard, pages, articles, users, backups, audit | ✅ | `dashboard.png` |
-| `/pages` | `PagesManager` | pages list/delete | ✅ | part of `administration.png` |
-| `/pages/:slug` | `MarkdownEditor` | full content + locks + drafts | ✅ | `edit_article.png` |
-| `/articles` | `PagesManager` | articles | ✅ | `paginium_blog.png` (public) |
-| `/articles/:slug` | `MarkdownEditor` | articles + SEO media picker | ✅ | `versioning_article.png` |
-| `/code-editor` | `CodeEditor` + gate | code-editor + developer | ✅ lock + safety banner | [CODE_EDITOR.md](user/CODE_EDITOR.md) |
-| `/backups` | `BackupManager` | backups | ✅ | `backup.png` |
-| `/audit` | `AuditTrail` | audit stats/export | ✅ | part of `administration.png` |
-| `/audit/content/:id` | `AuditTrail` | — | 🟡 no `useParams` | — |
-| `/audit/user/:id` | `AuditTrail` | — | 🟡 no `useParams` | — |
-| `/notifications` | `NotificationsOverview` | notifications + analytics slice | ✅ | — |
-| `/settings` | `SettingsView` | settings + 2FA | ✅ | `system_settings.png`, `seo.png` |
-| `/users` | `UsersManager` | users + validation | ✅ | `users.png` |
-| `/media` | — | — | ⛔ nav link only | — |
-| `/preview/:slug` | — | — | ⛔ linked from PagesManager | public pages in `paginium_*.png` |
+| Route | Component | Status |
+|-------|-----------|--------|
+| `/dashboard` | `DashboardView` | ✅ |
+| `/pages`, `/pages/:slug` | `PagesManager`, `MarkdownEditor` | ✅ |
+| `/articles`, `/articles/:slug` | same | ✅ |
+| `/media` | `MediaManager` | ✅ |
+| `/navigation` | `NavigationManager` | ✅ |
+| `/comments` | `CommentsManager` | ✅ |
+| `/messages` | `MessagesViewer` | ✅ |
+| `/github` | `GitHubSyncPanel` | ✅ |
+| `/code-editor` | `CodeEditor` + dev gate | ✅ |
+| `/backups` | `BackupManager` | ✅ |
+| `/trash` | `TrashManager` | ✅ |
+| `/firewall` | `FirewallManager` | ✅ |
+| `/logs` | `LogsManager` | ✅ |
+| `/audit`, `/audit/content/:id`, `/audit/user/:id` | `AuditTrail` | ✅ |
+| `/notifications` | `NotificationsOverview` | ✅ |
+| `/scheduler` | `SchedulerView` | ✅ |
+| `/settings` | `SettingsView` | ✅ |
+| `/account/security` | `AccountSecurityView` | ✅ |
+| `/users` | `UsersManager` | ✅ |
+| `/developer/logs` | `DeveloperLogsViewer` | ✅ |
+
+### Public site (same SPA)
+
+| Route | Component | Status |
+|-------|-----------|--------|
+| `/` | homepage | ✅ `PublicSiteContext` |
+| `/:slug` | `PublicSlugPage` | ✅ |
+| `/blog`, `/blog/:slug` | `BlogRenderer` | ✅ |
 
 ---
 
@@ -185,27 +135,26 @@ Používateľská príručka: [user/CODE_EDITOR.md](user/CODE_EDITOR.md)
 
 | Feature | Backend | Frontend UI | Tests |
 |---------|---------|-------------|-------|
-| Session auth + CSRF | ✅ | ✅ | AuthController, Vitest auth flows |
-| 2FA TOTP | ✅ | ✅ | TwoFactorController, TwoFactorManager |
-| Content CRUD (pages/articles) | ✅ | ✅ | Content tests |
-| Auto-save drafts | ✅ | ✅ | drafts API |
-| Content locking | ✅ | ✅ | LockManager, locks API |
-| 3-way merge / conflicts | ✅ | ✅ | merge3, ConflictResolver |
-| Settings engine (schema forms) | ✅ | ✅ | Settings tests |
+| Session auth + CSRF | ✅ | ✅ | AuthController, Vitest |
+| 2FA TOTP | ✅ | ✅ | TwoFactorController |
+| Content CRUD + SEO | ✅ | ✅ | ContentControllerTest |
+| Auto-save drafts | ✅ | ✅ | DraftManager |
+| Content locking | ✅ | ✅ | LockManager |
+| 3-way merge / conflicts | ✅ | ✅ | ConflictResolver |
+| Settings (schema forms) | ✅ | ✅ | SettingsRepository |
 | User management + RBAC | ✅ | ✅ | UserController |
-| Backups CRUD + restore | ✅ | ✅ | BackupControllerTest |
-| Version history / diff | ✅ | 🟡 component exists, not routed | VersionManager tests |
-| Notifications + SMTP | ✅ | ✅ | NotificationFactoryTest |
-| Analytics + realtime | ✅ | ✅ dashboard | RealtimeTrackerTest, AnalyticsControllerTest |
-| Dashboard monitoring | ✅ | ✅ | DashboardControllerTest, panel Vitest |
-| Health checks | ✅ | ✅ panel | — |
-| Code policy + editor | ✅ | ✅ | CodePolicyEngine, SecurityScanner, CodeEditor HTTP |
-| Developer unlock gate | ✅ | ✅ | DeveloperControllerTest, DeveloperUnlockGate Vitest |
-| Code editor (Monaco) | — | ✅ `MonacoCodeEditor` v `/code-editor` | Vitest `monacoLanguage.test.ts` |
-| WYSIWYG (TipTap) | — | ⛔ orphan component | — |
-| Media manager | ✅ API | ✅ `MediaManager` | `/media` |
-| Public site theme | backend views | ⛔ separate from admin SPA | `paginium_home.png` etc. |
-| SEO admin UI | settings groups | 🟡 in SettingsView | `seo_site.png` |
+| Backups + restore | ✅ | ✅ | BackupControllerTest |
+| Version history / diff | ✅ | ✅ in editor | VersionManager |
+| Media DAM + stock | ✅ | ✅ | MediaController, MediaManager.test |
+| Trash / soft-delete | ✅ | ✅ | TrashController |
+| WAF (It.50) | ✅ | ✅ `/firewall` | Firewall*Test |
+| HTTP + app logging | ✅ | ✅ `/logs` | LogControllerTest |
+| Notifications (SMTP, ntfy) | ✅ | ✅ | NtfyAdapterTest |
+| Analytics + dashboard | ✅ | ✅ | DashboardControllerTest |
+| OTP workflow | ✅ | ✅ | OtpWorkflowServiceTest |
+| Code policy + editor | ✅ | ✅ 🛠 | CodeEditorControllerTest |
+| Public theme rendering | ✅ API | ✅ React public routes | Vitest public components |
+| PluginManager | ⛔ | ⛔ | It.15 backlog |
 
 ---
 
@@ -213,95 +162,73 @@ Používateľská príručka: [user/CODE_EDITOR.md](user/CODE_EDITOR.md)
 
 | Module | Used in UI | Notes |
 |--------|------------|-------|
-| `client.ts` | ✅ all | Axios + CSRF |
-| `auth.ts` | ✅ | Full auth surface |
-| `dashboard.ts` | ✅ | Iteration 7 |
-| `analytics.ts` | 🟡 | Via dashboard only |
-| `notifications.ts` | ✅ | |
+| `client.ts` | ✅ all | Axios + CSRF + 422/409 |
+| `auth.ts` | ✅ | |
+| `content.ts`, `drafts.ts`, `locks.ts` | ✅ | editor |
+| `media.ts` | ✅ | `MediaManager` |
 | `settings.ts` | ✅ | |
-| `users.ts` | ✅ | |
-| `validation.ts` | ✅ | |
-| `drafts.ts` | ✅ | |
-| `locks.ts` | ✅ | |
-| `developer.ts` | ✅ | Iteration 14 |
-| `conflicts.ts` | 🟡 | Types only in panel |
-| `health.ts` | 🟡 | Via dashboard |
-| `codeEditor.ts` | ⛔ | CodeEditor uses raw `useApi` |
-| `backup.ts` | ⛔ | BackupManager uses raw `useApi` |
-| `audit.ts` | ⛔ | AuditTrail uses raw `useApi` |
-| `version.ts` / `versions.ts` | 🟡 | DiffViewer only |
-| `index.ts` | ⛔ | Broken barrel imports |
+| `users.ts`, `validation.ts` | ✅ | |
+| `firewall.ts` | ✅ | It.50 |
+| `logs.ts` | ✅ | 2.0.26 |
+| `workflows.ts` | ✅ | OTP |
+| `dashboard.ts`, `analytics.ts` | ✅ | |
+| `notifications.ts` | ✅ | |
+| `developer.ts` | ✅ | |
+| `conflicts.ts`, `health.ts` | 🟡 | dashboard panels |
+| `codeEditor.ts`, `backup.ts`, `audit.ts` | 🟡 | some screens use raw `useApi` |
 
 ---
 
-## 5. Prototype vs current UI (`screenshots/`)
+## 5. Middleware stack (backend)
 
-| Screenshot | Target in prototype | Current SPA status |
-|------------|---------------------|-------------------|
-| `login.png` | Login screen | ✅ `LoginModal` – layout may differ |
-| `dashboard.png` | Admin dashboard | ✅ rebuilt with charts + panels |
-| `administration.png` | Admin hub | 🟡 split across routes |
-| `users.png` | User management | ✅ `UsersManager` |
-| `backup.png` | Backup manager | ✅ `BackupManager` |
-| `system_settings.png` | System settings | ✅ schema-driven `SettingsView` |
-| `seo.png` / `seo_site.png` | SEO settings | 🟡 settings groups, no dedicated page |
-| `edit_article.png` | Article editor | ✅ `MarkdownEditor` (not WYSIWYG) |
-| `versioning_article.png` | Version sidebar | 🟡 `VersionHistory` not mounted |
-| `paginium_home.png` | Public homepage | ⛔ public theme, not admin SPA |
-| `paginium_about.png` | Public about | ⛔ |
-| `paginium_blog.png` | Public blog | ⛔ |
-| `paginium_contact.png` | Public contact | ⛔ |
+Poradie v `bootstrap/app.php`: CORS → Security → Maintenance → Locale → **Firewall** → RateLimit → Analytics → routes → **RequestLogging**.
 
-| Prototype CSS ported | `paginiumcms1/src/index.css` → `frontend/src/index.css` | prose, TipTap, fonts, animations |
+Detail: [architecture/BACKEND.md](architecture/BACKEND.md), [architecture/CORE_HARDENING.md](architecture/CORE_HARDENING.md).
 
 ---
 
-## 6. Test coverage (new modules – Iterations 7 & 14)
+## 6. Test coverage (CI baseline)
 
-### PHPUnit
+| Suite | Počet | Príkaz |
+|-------|-------|--------|
+| PHPUnit | **599** (15 skipped) | `./vendor/bin/phpunit` |
+| PHPStan L8 | 0 errors | `./vendor/bin/phpstan analyse backend --level=8` |
+| Vitest | **135** (36 files) | `cd frontend && npm test` |
+| ESLint | 57 warnings (limit 65) | `npm run lint` |
+| Type-check | strict | `npm run type-check` |
 
-| Test | Module |
-|------|--------|
-| `RealtimeTrackerTest` | Analytics realtime |
-| `DashboardControllerTest` | Dashboard overview API |
-| `AnalyticsControllerTest` | Realtime endpoint |
-| `CodePolicyEngineTest` | Policy engine |
-| `SecurityScannerTest` | PHP security scan |
-| `SyntaxCheckerTest` | Syntax validation |
-| `CodeEditorManagerTest` | Path resolution + listing |
-| `CodeEditorControllerTest` | HTTP gate + 422 policy |
-| `DeveloperControllerTest` | Status + token unlock |
-
-### Vitest
-
-| Test | Module |
-|------|--------|
-| `AnalyticsChart.test.tsx` | Dashboard chart |
-| `HealthPanel.test.tsx` | Health widget |
-| `LocksPanel.test.tsx` | Locks widget |
-| `DeveloperUnlockGate.test.tsx` | Dev unlock UI |
+CI: `.github/workflows/ci.yml`. Posledné opravy: ISS-020 (ESLint), ISS-021 (PHPStan), ISS-022 (MediaManager Vitest).
 
 ---
 
-## 7. Known gaps (next iterations)
+## 7. Known gaps (backlog)
 
-1. **Iteration 8 (partial):** WYSIWYG, Monaco picker, full DAM folders
-2. **Iteration 15:** PluginManager on `Http/Extensions`
-3. **Audit sub-routes:** wire `useParams` in `AuditTrail`
-4. **Version UI:** mount `VersionHistory` in editor sidebar
-5. **API cleanup:** use typed modules instead of raw `useApi`; fix `api/index.ts`
-6. **Public site:** theme rendering from `backend/resources/views/themes/`
+1. **PluginManager** on `Http/Extensions` (It.15)
+2. **CSRF globálne middleware** — odložené (ISS-012); SameSite=Lax dnes
+3. **API cleanup** — jednotné typed moduly namiesto raw `useApi` v niektorých screenoch
+4. **ESLint tech debt** — 57/65 warnings (`no-explicit-any`, ISS-011)
+5. **HTTPS v produkcii** — heslo polia varovanie (ISS-008)
+6. **Postman/Newman** smoke v CI — voliteľné (`docs/api/`)
 
 ---
 
-## 8. Quick verification commands
+## 8. Quick verification
 
 ```bash
-# Backend (from repo root)
+# Backend (repo root)
+./vendor/bin/phpstan analyse backend --level=8
 ./vendor/bin/phpunit
 
 # Frontend
-cd frontend && npm test
+cd frontend && npm run lint && npm run type-check && npm test
 ```
 
-Expected after Iteration 14 test pass: **PHPUnit 405**, **Vitest 37**.
+---
+
+## Súvisiace dokumenty
+
+- [architecture/API.md](architecture/API.md) · [API_CONTRACT.md](architecture/API_CONTRACT.md)
+- [architecture/BACKEND.md](architecture/BACKEND.md) · [CORE.md](architecture/CORE.md)
+- [user/FIREWALL.md](user/FIREWALL.md) · [user/LOGGING.md](user/LOGGING.md)
+- [developer/TESTING.md](developer/TESTING.md)
+- [CHANGELOG.md](../CHANGELOG.md) — 2.0.26

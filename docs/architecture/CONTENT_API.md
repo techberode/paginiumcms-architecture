@@ -1,7 +1,8 @@
-# Content API – Pagination & Search (Iteration 19)
+# Content API – Pagination & Search (Iteration 19+)
 
-> Version 2.0.8 · Flat-file index at `data/index/content.json`  
-> **Security & write access (It. 20):** see [CORE_HARDENING.md](./CORE_HARDENING.md)
+> **Version:** 2.0.26 · Flat-file index at `data/index/content.json`  
+> **Security & write access (It. 20):** [CORE_HARDENING.md](./CORE_HARDENING.md)  
+> **OTP publish (It. 41+):** citlivé mutácie môžu vrátiť `requires_otp` — [API_CONTRACT.md](./API_CONTRACT.md) §2.7
 
 ## List endpoints
 
@@ -106,6 +107,12 @@ Public SEO meta: `GET /api/seo/{type}/{slug}` via `SeoMetaBuilder` (uses `seoIma
 
 Admin UX: [user/CONTENT_EDITOR.md](../user/CONTENT_EDITOR.md).
 
+## Per-article comment policy (2.0.25)
+
+Článok môže prepísať globálne nastavenia komentárov cez front matter / JSON polia (`commentsEnabled`, `commentsModeration`, …).  
+Rozhodovanie: `CommentPolicyResolver` — globálne `comments.*` + override z článku.  
+Admin panel v editore článku; verejné API rešpektuje len published + policy.
+
 ## Soft delete (trash)
 
 `DELETE /api/pages/{slug}` and `DELETE /api/articles/{slug}` move files to `content/trash/` with a `.meta.json` sidecar (not permanent delete). Restore via admin trash API — see [CORE_HARDENING.md](./CORE_HARDENING.md).
@@ -114,6 +121,10 @@ Admin UX: [user/CONTENT_EDITOR.md](../user/CONTENT_EDITOR.md).
 
 | API | Client | UI |
 |-----|--------|-----|
-| Paginated lists | `useApi().get()` | `PagesManager` |
+| Paginated lists | `content.ts` / `useApi` | `PagesManager` |
 | Search | `api/search.ts` | `SiteSearchModal` |
+| Drafts | `drafts.ts` | `MarkdownEditor`, `useAutoSave` |
+| Locks | `locks.ts` | `useContentLock` |
+| Versions | `versions.ts` | `VersionHistory` v editore |
+| OTP publish | `workflows.ts` | `MarkdownEditor` |
 | Types | `PaginationMeta` on `ApiResponse` | — |
