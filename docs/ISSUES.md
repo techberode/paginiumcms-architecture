@@ -1,8 +1,12 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-18 · verzia **2.0.16+**
+> Posledná aktualizácia: 2026-07-19 · verzia **2.0.24+**
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
+
+> **Audit report:** Súbor `AUDIT_REPORT.md` v koreni repozitára je **gitignored** a slúži len
+> ako lokálny prehľad auditov (nie je verejný). Otvorené nálezy a stav opráv sleduj tu a v
+> [CHANGELOG.md](../CHANGELOG.md#2024--2026-07-19).
 
 ---
 
@@ -19,6 +23,11 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-007 | Dashboard nesprávny počet používateľov | Nízka | ✅ Opravené |
 | ISS-008 | HTTP heslo polia (login/users) | Info | ⏳ HTTPS v produkcii |
 | ISS-009 | `/settings` crash `n.max is not a function` | Vysoká | ✅ Opravené |
+| ISS-010 | Vitest stderr: `act(...)` + Router future flags | Nízka (CI šum) | ✅ Opravené (2.0.24) |
+| ISS-011 | ESLint 65 warnings (`any`, hook deps) | Nízka (tech. dlh) | ⏳ Baseline 65, postupné čistenie |
+| ISS-012 | CSRF middleware nezapojený (audit S3) | Stredná | ⏳ Odložené — SameSite=Lax |
+| ISS-013 | ntfy bez auth — privátne topicy zlyhajú | Stredná | ⏳ It.47 |
+| ISS-014 | CORS dev wildcardy pri zlej `APP_ENV` (audit S6) | Nízka | ⏳ Overiť deploy |
 
 ---
 
@@ -193,6 +202,65 @@ Potom otvor **`https://192.168.10.26:8443/settings`** – varovanie pri heslách
 
 ---
 
+## ISS-010 – Vitest stderr: `act(...)` a Router future flags
+
+**Symptóm:** Pri `npm test` testy prechádzali, ale stderr obsahoval desiatky warningov:
+`An update to … was not wrapped in act(...)` a React Router v7 future flag hints.
+
+**Príčina:** `fireEvent` bez `waitFor` v `DeveloperUnlockGate.test.tsx` a `MediaManager.test.tsx`;
+`MemoryRouter` bez `future={{ v7_startTransition, v7_relativeSplatPath }}`.
+
+**Oprava (2.0.24, `b9a740f`):**
+- `frontend/src/test/renderWithRouter.tsx` — spoločný wrapper s future flags.
+- Testy prepísané na `fastUser` (`userEvent`) + `waitFor`.
+
+**Overenie:** `npm test` — 130 testov OK, stderr čistý.
+
+---
+
+## ISS-011 – ESLint 65 warnings (technický dlh)
+
+**Symptóm:** `npm run lint` — 0 errors, **65 warnings** (hlavne `no-explicit-any` v `client.ts` /
+`useApi.ts`, `react-hooks/exhaustive-deps`, `react-refresh/only-export-components`).
+
+**Stav:** Baseline zmrazený `--max-warnings 65` v CI — nové warningy spôsobia fail.
+
+**Plán:** Postupné znižovanie od API vrstvy; cieľ ≤50 v ďalšej iterácii.
+
+---
+
+## ISS-012 – CSRF middleware (audit nález S3)
+
+**Symptóm:** `CsrfProtectionManager` existuje, ale mutačné routy nemajú globálny CSRF middleware.
+
+**Mitigácia dnes:** Session cookie `SameSite=Lax`; token endpoint pre SPA.
+
+**Prečo odložené:** Aktuálny token je single-use — globálne vynútenie rozbije SPA a PHPUnit flow.
+
+**Plán:** Koordinovaný rollout (FE token refresh + BE middleware + testy) — samostatná iterácia.
+
+---
+
+## ISS-013 – ntfy bez autentifikácie (privátne topicy)
+
+**Symptóm:** `NtfyAdapter` posiela POST bez `Authorization` — zlyhá na ACL topic / self-hosted ntfy.
+
+**Stav:** Verejný topic na `ntfy.sh` funguje; privátne nie.
+
+**Plán:** [It.47](ITERATION_47.md) — `ntfyAuthMode`, Bearer token, Basic auth, test per konektor.
+
+---
+
+## ISS-014 – CORS dev wildcardy (audit nález S6)
+
+**Symptóm:** Mimo produkcie CORS povoľuje `localhost:*`, `192.168.*`, `10.*`, `172.*` s `credentials: true`.
+
+**Riziko:** Ak server beží s `APP_ENV` ≠ `production`, širšie CORS ostáva aktívne.
+
+**Odporúčanie:** Pri nasadení na `mail.webland.fun` explicitne `APP_ENV=production`; overiť v health/deploy checkliste.
+
+---
+
 ## Externé / irelevantné hlášky
 
 | Hláška | Zdroj |
@@ -204,6 +272,8 @@ Potom otvor **`https://192.168.10.26:8443/settings`** – varovanie pri heslách
 
 ## Súvisiace dokumenty
 
+- [CHANGELOG.md](../CHANGELOG.md) — release 2.0.24 (post-audit hardening + QA)
 - [TESTING.md](developer/TESTING.md) – ako spúšťať testy a regresiu
-- [ROADMAP.md](ROADMAP.md) – plánované iterácie (Cron, schvaľovanie mailom, počty položiek)
+- [ROADMAP.md](ROADMAP.md) – plánované iterácie (It.41+, It.47–49)
 - [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) – It.29+ detail
+- [ITERATION_47.md](ITERATION_47.md) – notification connector auth (ISS-013)
