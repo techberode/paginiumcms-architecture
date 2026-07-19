@@ -1,12 +1,16 @@
 // frontend/src/components/frontend/Footer.tsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Rocket, ShieldCheck, Zap, Mail, Heart } from 'lucide-react';
+import { Rocket, ShieldCheck, Zap, Heart, ExternalLink } from 'lucide-react';
 import { usePublicSite } from '../../context/PublicSiteContext';
+import { useSettingsContext } from '../../context/SettingsContext';
 
 export const Footer: React.FC = () => {
   const { navigation, siteTitle, siteTagline, footerText } = usePublicSite();
+  const { settings } = useSettingsContext();
   const navigate = useNavigate();
+  const demoUrl = settings.demo?.url ?? 'https://demo.paginiumcms.com';
+  const isDemoInstance = settings.demo?.enabled === true;
 
   const sortedNav = [...navigation].sort((a, b) => a.order - b.order);
 
@@ -61,14 +65,27 @@ export const Footer: React.FC = () => {
           </div>
 
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200 mb-4 flex items-center gap-2">
-              <Mail className="w-4 h-4 text-indigo-400" />
-              <span>Newsletter</span>
-            </h4>
-            <p className="text-sm text-slate-500 leading-relaxed">
-              Odberateľský zoznam ešte nie je napojený na API. Ukážkové dáta sú dostupné v Demo module
-              pri <code className="text-indigo-400">DEMO_MODE=true</code>.
-            </p>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200 mb-4">Vyskúšajte CMS</h4>
+            {isDemoInstance ? (
+              <p className="text-sm text-slate-500 leading-relaxed">
+                Ste na demo inštancii. Po skúške sa prostredie resetuje pre ďalších návštevníkov.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-sm text-slate-500 leading-relaxed">
+                  Open-source flat-file CMS — vyskúšajte admin aj verejný web bez inštalácie.
+                </p>
+                <a
+                  href={demoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-400 hover:text-indigo-300"
+                >
+                  demo.paginiumcms.com
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
+            )}
           </div>
         </div>
 

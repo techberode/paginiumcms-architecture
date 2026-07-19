@@ -52,6 +52,10 @@ use PaginiumCMS\Core\Backup\Services\BackupManager;
 use PaginiumCMS\Core\Backup\Contracts\BackupInterface;
 use PaginiumCMS\Core\Backup\Services\BackupScheduler;
 use PaginiumCMS\Core\Backup\Commands\RunBackupScheduleCommand;
+use PaginiumCMS\Modules\Demo\Commands\RunDemoResetCommand;
+use PaginiumCMS\Modules\Demo\Services\DemoMode;
+use PaginiumCMS\Modules\Demo\Services\DemoResetScheduler;
+use PaginiumCMS\Modules\Demo\Services\DemoStorageService;
 use PaginiumCMS\Core\Logging\Services\Logger;
 use PaginiumCMS\Core\Logging\Contracts\LoggerInterface;
 use PaginiumCMS\Core\Notification\Services\IncidentNotifier;
@@ -67,9 +71,14 @@ require_once __DIR__ . '/utf8.php';
 require_once __DIR__ . '/../../vendor/autoload.php';
 
 // ---------- .env (voliteľné, lokálny vývoj) ----------
-$envPath = dirname(__DIR__, 2);
-if (is_file($envPath . '/.env') && class_exists(\Dotenv\Dotenv::class)) {
-    \Dotenv\Dotenv::createUnsafeImmutable($envPath)->safeLoad();
+$projectRoot = dirname(__DIR__, 2);
+$backendRoot = dirname(__DIR__);
+if (class_exists(\Dotenv\Dotenv::class)) {
+    if (is_file($projectRoot . '/.env')) {
+        \Dotenv\Dotenv::createUnsafeImmutable($projectRoot)->safeLoad();
+    } elseif (is_file($backendRoot . '/.env')) {
+        \Dotenv\Dotenv::createUnsafeImmutable($backendRoot)->safeLoad();
+    }
 }
 
 // ---------- SESSION BEZPEČNOSŤ ----------
@@ -87,7 +96,7 @@ $containerBuilder->addDefinitions([
     // ============================================
 
     FileValidator::class => function () {
-        return new FileValidator(__DIR__ . '/../storage/app/content');
+        return new FileValidator(DemoMode::resolveContentBasePath(__DIR__ . '/../storage/app'));
     },
 
     FileReaderInterface::class => function ($container) {
@@ -395,7 +404,7 @@ $containerBuilder->addDefinitions([
             $container->get(FileReaderInterface::class),
                                  $container->get(FileWriterInterface::class),
                                  __DIR__ . '/../storage/backups',
-                                 __DIR__ . '/../storage/app/content'
+                                 DemoMode::resolveContentBasePath(__DIR__ . '/../storage/app')
         );
     },
 
@@ -412,6 +421,17 @@ $containerBuilder->addDefinitions([
 
     RunBackupScheduleCommand::class => function ($container) {
         return new RunBackupScheduleCommand($container->get(BackupScheduler::class));
+    },
+
+    DemoResetScheduler::class => function ($container) {
+        return new DemoResetScheduler(
+            $container->get(DemoMode::class),
+            $container->get(DemoStorageService::class)
+        );
+    },
+
+    RunDemoResetCommand::class => function ($container) {
+        return new RunDemoResetCommand($container->get(DemoResetScheduler::class));
     },
 
 ]);
@@ -747,5 +767,7 @@ if (DebugEventLogger::isEnabled()) {
         'sapi' => PHP_SAPI,
     ]);
 }
+
+$container->get(DemoStorageService::class)->ensureSeeded();
 
 return $app;

@@ -46,12 +46,12 @@ final class DemoStorageServiceTest extends TestCase
         ]);
 
         $reader = $this->createMock(FileReaderInterface::class);
-        $reader->method('getBasePath')->willReturn(vfsStream::url('root/storage/app/content'));
+        $reader->method('getBasePath')->willReturn(vfsStream::url('root/storage/app/demo'));
 
         $service = new DemoStorageService(new DemoMode(), $reader);
         $result = $service->reset();
 
-        $this->assertSame(4, $result['written']);
+        $this->assertSame(8, $result['written']);
         $this->assertFileExists(vfsStream::url('root/storage/app/demo/pages/home.md'));
         $this->assertFileExists(vfsStream::url('root/storage/app/content/pages/real-page.md'));
         $this->assertStringContainsString('real-page.md', vfsStream::url('root/storage/app/content/pages/real-page.md'));

@@ -1,7 +1,6 @@
 # 🏛️ PaginiumCMS
 
-> **Version:** 2.0.27 (Unreleased: It.12 — see [CHANGELOG](../CHANGELOG.md#unreleased))  
-> **Last updated:** 19 July 2026  
+> **Version:** 2.0.28 · **Last updated:** 19 July 2026  
 > Modern, modular, Headless Flat-File Content Management System powered by Slim Framework (PHP) & React.
 
 ---
@@ -10,11 +9,15 @@
 
 PaginiumCMS keeps the Core intentionally minimal, secure, and fast. It moves standard features into standalone modules, putting developer experience and content ownership first.
 
+**Why it exists:** a small key into the world of full-stack web development — learn by reading and running real code, not by buying a black box. **Full open source, no fees, never sold as a paid product.** → [PHILOSOPHY.md](PHILOSOPHY.md) (canonical, SK)
+
+* **Open & Free Forever:** 100 % open source; must not be offered as a paid solution or paywalled “Pro” edition.
 * **Simplicity First:** Features must deliver high value without adding unnecessary complexity.
 * **Flat-File First:** Content belongs to files (`.md`, `.json`). Databases are optional.
 * **API First:** Every admin action is accessible via the REST API.
 * **Security by Design:** Authentication, authorization, and validation are baked into the core.
 * **Modular Design:** Core handles infrastructure. Features live in Modules + HTTP layer.
+* **Demo = showcase only:** `demo.paginiumcms.com` is a test-drive (predvádzacie vozidlo), not part of the customer bundle — see [ITERATION_13.md](ITERATION_13.md).
 
 ---
 
@@ -201,6 +204,7 @@ See [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md) and [user/CODE_EDITOR.md](u
 
 | Document | Purpose |
 |----------|---------|
+| **[PHILOSOPHY.md](PHILOSOPHY.md)** | **Prečo projekt existuje — open source, bez poplatkov, smerovanie** |
 | [ROADMAP.md](ROADMAP.md) | Iterations 1–29+, priorities, implementation phases |
 | [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) | It.30+ backlog (search, filters, OTP, …) |
 | [CHANGELOG.md](../CHANGELOG.md) | Release notes |
@@ -233,7 +237,7 @@ See [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md) and [user/CODE_EDITOR.md](u
 | 10 | [ITERATION_10.md](ITERATION_10.md) | ✅ **RSS/sitemap/robots** + cache |
 | 11 | [ITERATION_11.md](ITERATION_11.md) | ✅ **SSO + ACL + security audit** (2.0.27) |
 | 12 | [ITERATION_12.md](ITERATION_12.md) | ✅ **Blueprint engine** (Unreleased) |
-| 13 | [ITERATION_13.md](ITERATION_13.md) | ✅ **Demo module** (Unreleased) |
+| 13 | [ITERATION_13.md](ITERATION_13.md) | 🟡 **Demo sandbox** (iba demo.paginiumcms.com, nie zákaznícky balík) |
 | 19–22 | [ITERATION_19.md](ITERATION_19.md) … [ITERATION_22.md](ITERATION_22.md) | ✅ Index, hardening, contract, ops + feeds ship |
 | **23** | **[ITERATION_23.md](ITERATION_23.md)** | ✅ **SEO meta engine** (public `<head>` tags, 2.0.11) |
 | 27 | [ITERATION_27.md](ITERATION_27.md) | ✅ Admin view modes + SEO panel |

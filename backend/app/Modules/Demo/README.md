@@ -1,31 +1,54 @@
 # Demo modul (Iterácia 13)
 
-Izolované MOCK dáta pre testovanie a ukážky. **Nikdy nezapisujú do produkčného obsahu** (`storage/app/content/`).
+**Len pre hosting `demo.paginiumcms.com` — nie pre zákaznícku produkciu.**
 
-## Aktivácia
+Predstav si to ako **predvádzacie auto v showroome**: nie je na predaj, ale môžeš si na ňom odviezť celú trasu (admin, články, verejný web). Po skúške sa vráti do výchozieho stavu — ďalší návštevník dostane čistú jazdu.
+
+Izolované úložisko na to, aby návštevník mohol **naplno vyskúšať CMS** bez zásahu do reálnych dát. Zákaznícke inštalácie PaginiumCMS tento modul **nepoužívajú** (`DEMO_MODE=false`).
+
+## Kde beží
+
+| Prostredie | `DEMO_MODE` |
+|------------|-------------|
+| `paginiumcms.com` (marketing + docs) | `false` |
+| `demo.paginiumcms.com` (try CMS) | `true` |
+| Zákaznícka produkcia | `false` |
+
+## Aktivácia (iba demo inštancia)
+
+1. Do `.env` (koreň projektu **alebo** `backend/.env`):
 
 ```bash
-export DEMO_MODE=true
+DEMO_MODE=true
+APP_URL=https://demo.paginiumcms.com
+VITE_PUBLIC_URL=https://demo.paginiumcms.com
 ```
 
-## Úložisko
+2. **Reštartuj PHP** (Docker / `php -S`).
+
+3. Over: `/demo` → `DEMO_MODE: zapnutý`, banner v admin shell.
+
+4. Seed (SUPER_ADMIN): `/demo` → **Reset demo seed**.
+
+## Úložisko (v2)
 
 | Cesta | Účel |
 |-------|------|
-| `storage/app/demo/` | Seed stránky/články (resetovateľné) |
-| `Data/DemoFixtures.php` | MOCK komentáre, správy, newsletter |
+| `storage/app/demo/` | **Celý CMS** pri `DEMO_MODE=true` (obsah, users, settings) |
+| `storage/app/content/` | Produkčný obsah — na demo inštancii sa **nepoužíva** |
 
-## API
+## Cron auto-reset
 
-- `GET /api/admin/demo/status`
-- `POST /api/admin/demo/reset` — len **SUPER_ADMIN**, len keď `DEMO_MODE=true`
+```bash
+*/15 * * * * cd /path/to/project && php backend/bin/console demo:reset-if-due
+```
 
-## Frontend
+Env: `DEMO_AUTO_RESET_MINUTES=60`, `SESSION_LIFETIME=14400`
 
-- Banner v admin shell (`demo.enabled` z `/api/settings/public`)
-- `/demo` — DemoManager (stav + reset)
+## Demo účet
 
-## Použitie
+| E-mail | Heslo |
+|--------|-------|
+| `demo@paginiumcms.com` | `Demo123!` |
 
-`DemoDataProvider` vracia read-only MOCK dáta len keď `DEMO_MODE=true`.  
-`DemoStorageService::reset()` zapisuje len do `storage/app/demo/`.
+Detail: [ITERATION_13.md](../../../docs/ITERATION_13.md) · Release **2.0.28**

@@ -138,8 +138,10 @@ use PaginiumCMS\Modules\Media\Services\MediaRepository;
 use PaginiumCMS\Modules\Media\Services\StockImageCatalog;
 use PaginiumCMS\Modules\Media\Services\StockImageImporter;
 use PaginiumCMS\Modules\Demo\Contracts\DemoDataProviderInterface;
+use PaginiumCMS\Modules\Demo\Commands\RunDemoResetCommand;
 use PaginiumCMS\Modules\Demo\Services\DemoDataProvider;
 use PaginiumCMS\Modules\Demo\Services\DemoMode;
+use PaginiumCMS\Modules\Demo\Services\DemoResetScheduler;
 use PaginiumCMS\Modules\Demo\Services\DemoStorageService;
 use PaginiumCMS\Modules\Security\Services\AclRepository;
 use PaginiumCMS\Modules\Security\Services\AuthorizationManager;
@@ -207,7 +209,8 @@ return [
         ->constructor(
             get(SettingsRepositoryInterface::class),
             get(JsonResponder::class),
-            get(SecurityLogger::class)
+            get(SecurityLogger::class),
+            get(DemoMode::class)
         ),
 
     WorkflowController::class => create(WorkflowController::class)
@@ -734,4 +737,8 @@ return [
         ->constructor(get(DemoMode::class)),
     DemoController::class => create(DemoController::class)
         ->constructor(get(DemoStorageService::class), get(JsonResponder::class)),
+    DemoResetScheduler::class => create(DemoResetScheduler::class)
+        ->constructor(get(DemoMode::class), get(DemoStorageService::class)),
+    RunDemoResetCommand::class => create(RunDemoResetCommand::class)
+        ->constructor(get(DemoResetScheduler::class)),
 ];

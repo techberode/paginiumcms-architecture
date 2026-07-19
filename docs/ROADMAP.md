@@ -2,6 +2,8 @@
 
 > Flat-File architektúra. Žiadna databáza. Všetok stav je v JSON / Markdown / asset súboroch na disku.
 
+**Poslanie projektu:** open source, bez poplatkov, učenie full-stack vývoja — nie predaj CMS ako služby. → [PHILOSOPHY.md](PHILOSOPHY.md)
+
 Legenda: ✅ hotové · 🚧 rozpracované · ⏳ plánované · 🔴 kritická priorita jadra
 
 **Aktuálna verzia:** 2.0.25 · **Posledná iterácia:** [42+](ITERATION_BACKLOG.md) ✅ · **Ďalšia:** [43+ backlog](ITERATION_BACKLOG.md) ⏳
@@ -270,12 +272,13 @@ Hotové v **2.0.1** — detail [ITERATION_6.md](ITERATION_6.md).
 
 
 
-## Iterácia 13 – Demo modul (izolované MOCK dáta) ✅ 🟡
+## Iterácia 13 – Demo sandbox (iba demo.paginiumcms.com) ✅
 
-- ✅ `DEMO_MODE` + oddelené úložisko `storage/app/demo/`.
-- ✅ Seed/reset API (`DemoStorageService`), SUPER_ADMIN reset.
-- ✅ Admin banner + `/demo` UI; verejné `demo.enabled`.
-- ⏳ Demo extensions cez plugin runtime — čaká na It. 15.
+**Nie je súčasť zákazníckeho balíka** — modul existuje len pre vlastnú try-inštanciu na subdoméne.
+
+- ✅ v1 + v2: `DEMO_MODE`, celý CMS z `storage/app/demo/`, full seed, auto-reset cron, demo login, footer link.
+- ❌ Zákaznícka produkcia: `DEMO_MODE=false`, demo routes/UI neaktívne.
+- Release **2.0.28** — [ITERATION_13.md](ITERATION_13.md)
 
 
 

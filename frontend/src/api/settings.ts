@@ -86,6 +86,12 @@ export interface PublicSettings {
   };
   demo?: {
     enabled?: boolean;
+    url?: string;
+    autoResetMinutes?: number;
+    credentials?: {
+      email: string;
+      password: string;
+    } | null;
   };
 }
 

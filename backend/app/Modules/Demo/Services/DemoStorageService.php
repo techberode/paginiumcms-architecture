@@ -10,18 +10,28 @@ use RuntimeException;
 
 /**
  * Isolated demo flat-file storage under `storage/app/demo/` (Iteration 13).
+ * When DEMO_MODE is on, FileValidator already points at the demo tree — reset re-seeds the live CMS data.
  */
 final class DemoStorageService
 {
+    private const LAST_RESET_FILE = '.meta/last-reset.json';
+
     private string $demoBasePath;
-    private string $contentBasePath;
+    private string $productionBasePath;
 
     public function __construct(
         private DemoMode $demoMode,
         FileReaderInterface $reader
     ) {
-        $this->contentBasePath = rtrim($reader->getBasePath(), '/');
-        $this->demoBasePath = dirname($this->contentBasePath) . '/demo';
+        $activeBasePath = rtrim($reader->getBasePath(), '/');
+
+        if ($this->demoMode->isEnabled()) {
+            $this->demoBasePath = $activeBasePath;
+            $this->productionBasePath = dirname($activeBasePath) . '/content';
+        } else {
+            $this->productionBasePath = $activeBasePath;
+            $this->demoBasePath = dirname($activeBasePath) . '/demo';
+        }
     }
 
     public function isEnabled(): bool
@@ -36,22 +46,48 @@ final class DemoStorageService
 
     public function contentBasePath(): string
     {
-        return $this->contentBasePath;
+        return $this->productionBasePath;
     }
 
     /**
-     * @return array{enabled: bool, storage_path: string, content_path: string, file_count: int, seeded: bool}
+     * Seed demo snapshot on first boot when empty (skipped in APP_ENV=testing).
+     */
+    public function ensureSeeded(): void
+    {
+        if (!$this->demoMode->isEnabled()) {
+            return;
+        }
+
+        $status = getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? 'development');
+        if ($status === 'testing') {
+            return;
+        }
+
+        if ($this->needsSeed()) {
+            $this->reset();
+        }
+    }
+
+    /**
+     * @return array{enabled: bool, storage_path: string, content_path: string, file_count: int, seeded: bool, auto_reset_minutes: int, last_reset_at: ?string, credentials: ?array{email: string, password: string}}
      */
     public function status(): array
     {
         $files = $this->listDemoFiles();
+        $lastReset = $this->readLastResetTimestamp();
 
         return [
             'enabled' => $this->demoMode->isEnabled(),
             'storage_path' => $this->demoBasePath,
-            'content_path' => $this->contentBasePath,
+            'content_path' => $this->productionBasePath,
             'file_count' => count($files),
             'seeded' => $files !== [],
+            'auto_reset_minutes' => $this->demoMode->autoResetMinutes(),
+            'last_reset_at' => $lastReset !== null ? date('c', $lastReset) : null,
+            'credentials' => $this->demoMode->isEnabled() ? [
+                'email' => DemoFixtures::ADMIN_EMAIL,
+                'password' => DemoFixtures::ADMIN_PASSWORD,
+            ] : null,
         ];
     }
 
@@ -73,10 +109,20 @@ final class DemoStorageService
             ++$written;
         }
 
+        $this->writeDemoFile('data/users/' . DemoFixtures::ADMIN_USER_ID . '.json', DemoFixtures::adminUserJson());
+        ++$written;
+
+        $this->writeLastResetTimestamp(time());
+
         return [
             'written' => $written,
             'storage_path' => $this->demoBasePath,
         ];
+    }
+
+    public function getLastResetTimestamp(): ?int
+    {
+        return $this->readLastResetTimestamp();
     }
 
     /**
@@ -109,7 +155,7 @@ final class DemoStorageService
     public function assertIsolatedFromProduction(): void
     {
         $demoReal = realpath($this->demoBasePath) ?: $this->demoBasePath;
-        $contentReal = realpath($this->contentBasePath) ?: $this->contentBasePath;
+        $contentReal = realpath($this->productionBasePath) ?: $this->productionBasePath;
 
         if ($demoReal === $contentReal) {
             throw new RuntimeException('Demo storage must not overlap production content path');
@@ -118,6 +164,17 @@ final class DemoStorageService
         if (str_starts_with($demoReal, $contentReal . '/') || str_starts_with($contentReal, $demoReal . '/')) {
             throw new RuntimeException('Demo storage path must be isolated from production content');
         }
+    }
+
+    private function needsSeed(): bool
+    {
+        if (!is_dir($this->demoBasePath)) {
+            return true;
+        }
+
+        $userFile = $this->demoBasePath . '/data/users/' . DemoFixtures::ADMIN_USER_ID . '.json';
+
+        return !is_file($userFile) || $this->listDemoFiles() === [];
     }
 
     private function clearDemoDirectory(): void
@@ -162,5 +219,33 @@ final class DemoStorageService
         if (file_put_contents($absolutePath, $contents) === false) {
             throw new RuntimeException('Cannot write demo file: ' . $absolutePath);
         }
+    }
+
+    private function writeLastResetTimestamp(int $timestamp): void
+    {
+        $payload = json_encode(['reset_at' => $timestamp], JSON_THROW_ON_ERROR);
+        $this->writeDemoFile(self::LAST_RESET_FILE, $payload);
+    }
+
+    private function readLastResetTimestamp(): ?int
+    {
+        $path = $this->demoBasePath . '/' . self::LAST_RESET_FILE;
+        if (!is_file($path)) {
+            return null;
+        }
+
+        $raw = file_get_contents($path);
+        if ($raw === false) {
+            return null;
+        }
+
+        try {
+            /** @var array{reset_at?: int|float|string} $data */
+            $data = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException) {
+            return null;
+        }
+
+        return isset($data['reset_at']) ? (int) $data['reset_at'] : null;
     }
 }

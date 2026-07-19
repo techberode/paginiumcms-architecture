@@ -37,8 +37,18 @@ if (session_status() === PHP_SESSION_NONE) {
     ini_set('session.use_only_cookies', '1');
 
     // ---------- ŽIVOTNOSŤ SESSION ----------
-    ini_set('session.gc_maxlifetime', '1440'); // 24 minút
-    ini_set('session.cookie_lifetime', '1440');
+    $sessionLifetime = 1440;
+    if (class_exists(\PaginiumCMS\Modules\Demo\Services\DemoMode::class)) {
+        $sessionLifetime = (new \PaginiumCMS\Modules\Demo\Services\DemoMode())->sessionLifetimeSeconds();
+    } else {
+        $rawLifetime = getenv('SESSION_LIFETIME') ?: ($_ENV['SESSION_LIFETIME'] ?? null);
+        if ($rawLifetime !== null && $rawLifetime !== '') {
+            $sessionLifetime = max(300, (int) $rawLifetime);
+        }
+    }
+
+    ini_set('session.gc_maxlifetime', (string) $sessionLifetime);
+    ini_set('session.cookie_lifetime', (string) $sessionLifetime);
     ini_set('session.gc_probability', '1');
     ini_set('session.gc_divisor', '100');
 

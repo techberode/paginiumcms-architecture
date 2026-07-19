@@ -9,6 +9,8 @@ use PaginiumCMS\Core\Security\SecurityLogger;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\Settings\SettingsSchema;
 use PaginiumCMS\Http\Support\JsonResponder;
+use PaginiumCMS\Modules\Demo\Data\DemoFixtures;
+use PaginiumCMS\Modules\Demo\Services\DemoMode;
 use PaginiumCMS\Modules\Security\Models\User;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -30,7 +32,8 @@ final class SettingsController
     public function __construct(
         private SettingsRepositoryInterface $settings,
         private JsonResponder $json,
-        private SecurityLogger $securityLogger
+        private SecurityLogger $securityLogger,
+        private DemoMode $demoMode
     ) {
     }
 
@@ -127,7 +130,13 @@ final class SettingsController
                 'enabled' => (bool) ($all['sso']['enabled'] ?? false),
             ],
             'demo' => [
-                'enabled' => filter_var(getenv('DEMO_MODE') ?: ($_ENV['DEMO_MODE'] ?? false), FILTER_VALIDATE_BOOLEAN),
+                'enabled' => $this->demoMode->isEnabled(),
+                'url' => $this->demoMode->publicDemoUrl(),
+                'autoResetMinutes' => $this->demoMode->autoResetMinutes(),
+                'credentials' => $this->demoMode->isEnabled() ? [
+                    'email' => DemoFixtures::ADMIN_EMAIL,
+                    'password' => DemoFixtures::ADMIN_PASSWORD,
+                ] : null,
             ],
             'comments' => [
                 'enabled' => (bool) ($all['comments']['enabled'] ?? true),
