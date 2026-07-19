@@ -55,30 +55,35 @@ final class SearchControllerTest extends TestCase
         $this->assertSame(200, $login['response']->getStatusCode());
 
         $repo = $this->app->getContainer()->get(ContentRepositoryInterface::class);
-        $slug = 'seo-test-' . uniqid();
+
+        $slug = 'seo-draft-page-test';
+        $searchToken = 'draftpalettekeyword';
         $page = new Page();
-        $page->setSlug($slug);
-        $title = 'SEO Draft Palette ' . uniqid();
         $page->setFrontMatter([
-            'title' => $title,
+            'slug' => $slug,
+            'title' => 'SEO ' . $searchToken,
             'status' => 'draft',
         ]);
-        $page->setContent('# draft search target');
+        $page->setContent('# draft search target ' . $searchToken);
         $repo->save($page);
 
         $index = $this->app->getContainer()->get(ContentIndexService::class);
         $index->rebuild($repo);
 
         $response = $this->handleRequest(
-            $this->createJsonRequest('GET', '/api/search?q=' . rawurlencode($slug) . '&scope=admin&types=page')
+            $this->createJsonRequest('GET', '/api/search?q=' . rawurlencode($searchToken) . '&scope=admin&types=page')
         );
         $data = $this->getJsonResponse($response);
 
         $this->assertSame(200, $response->getStatusCode());
         $this->assertTrue($data['success']);
+
+        $results = $data['data']['results'] ?? [];
+        $this->assertNotEmpty($results, 'Expected at least one admin page search result for draft content.');
+
         $slugs = array_map(
             static fn (array $row): string => (string) ($row['slug'] ?? ''),
-            $data['data']['results'] ?? []
+            $results
         );
         $this->assertContains($slug, $slugs);
     }

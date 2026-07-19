@@ -1,7 +1,7 @@
 # Iteration 10 – XML Feeds (RSS & Sitemap)
 
-**Status:** ✅ Implemented (delivered in **2.0.10** via [Iteration 22](ITERATION_22.md))  
-**Release:** 2.0.10
+**Status:** 🟡 **Core shipped** (2.0.10 via [Iteration 22](ITERATION_22.md)); polish pending before It.11  
+**Release:** 2.0.10 (backend); remaining items → Unreleased polish
 
 ## Summary
 
@@ -15,7 +15,17 @@ Public RSS feed and XML sitemap generated from the flat-file content index, with
 | Sitemap `GET /sitemap.xml` | ✅ |
 | Settings group `feeds` (title, description, limits, include pages/articles) | ✅ |
 | Public `<link rel="alternate">` in site layout | ✅ |
-| File cache for generated XML (`ContentCacheService`) | ✅ |
+| File cache for generated XML (`ContentCacheService`) | ⏳ | Planned in It.22; not wired in `FeedController` yet |
+
+## Remaining before It.11 {#remaining-before-it11}
+
+| Gap | Status | Notes |
+|-----|--------|-------|
+| `ContentCacheService` for RSS/sitemap XML | ⏳ | `FeedController` regenerates on every request |
+| `GET /robots.txt` with `Sitemap:` directive | ⏳ | Crawler discoverability |
+| Sitemap link in public `<head>` | ⏳ | RSS alternate exists in `PublicSiteLayout` |
+| Cache invalidation on content publish | ⏳ | Hook into `ContentCacheService::invalidate*` |
+| Newman smoke for `/feed.xml` + `/sitemap.xml` | ⏳ | See [ITERATION_22.md](ITERATION_22.md) |
 
 ## Backend (as shipped)
 
@@ -42,6 +52,6 @@ Http/Routes/feeds.php
 - [ROADMAP.md](ROADMAP.md) – Iteration 10
 - [CHANGELOG.md](../CHANGELOG.md) – `[2.0.10]`
 
-## Next (historical)
+## Next
 
-→ [Iteration 11](ITERATION_11.md) – SSO and fine-grained ACL
+→ **Finish remaining items above**, then [Iteration 11](ITERATION_11.md) – SSO and fine-grained ACL

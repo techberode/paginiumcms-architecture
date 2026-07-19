@@ -87,19 +87,19 @@ Legenda: ✅ DONE · 🟡 PARTIAL (existuje časť, treba dokončiť/prepojiť) 
 | A | **Rozšírená správa používateľov + roly** | ✅ | `UserController`, `users.php`, FE `UsersManager` + `api/users.ts`. RBAC cez `RoleMiddleware`. |
 | B | **Bezpečné JWT / HttpOnly cookie auth** | ✅ | PHP session + HttpOnly cookie (`SessionManager`, `AuthMiddleware`). Bearer token odstránený z FE. `SecureSessionManager` zostáva voliteľný dlh. |
 | C | **2FA / TOTP** | ✅ | `TwoFactorManager`, `TwoFactorController`, `TwoFactorMiddleware` na admin routách, FE setup + login flow. |
-| D | **Developer mód + zamknutý CodeEditor** | 🟡 | Backend hotový (`DeveloperModeGate`, unlock cez TOTP/dev-token). FE unlock gate v Code Editor (It.14). Ďalší polish v It.8. |
-| E | **Editory (Code/Markdown/WYSIWYG) + admin nastavenia** | 🟡 | Markdown + WYSIWYG integrované (It.30); CodeEditor s **Monaco** + developer gate; hierarchický FileTree / create-delete → It.16. |
+| D | **Developer mód + zamknutý CodeEditor** | ✅ | Backend + FE unlock gate; Monaco editor; create/delete/restore (It.16, 2.0.22). |
+| E | **Editory (Code/Markdown/WYSIWYG) + admin nastavenia** | ✅ | Markdown + WYSIWYG + `MediaPickerModal` (It.8/30); Monaco Code Editor (It.16). |
 | F | **Validácia na dvoch úrovniach (zdieľané pravidlá)** | ✅ | `Validator`, `ValidationRules`, `ValidationException`, `GET /api/validation/rules`, FE `utils/validation.ts` + `validatePasswordPolicy`. |
 | G | **SMTP nastavenia v administrácii** | 🟡 | `NotificationService` + `EmailAdapter` existujú, ale `EmailAdapter` používa iba `mail()` (bez SMTP), nie je v DI, reset hesla neposiela e-mail. **Settings engine hotový** – It. 6 pridá SMTP skupinu do schémy. |
 | H | **Konektory ntfy / Discord / Telegram / …** | ⛔ | Žiadny kód/adaptéry/konfigurácia. |
 | I | **Toast: zap/vyp, pozícia, debug mód** | 🟡 | `NotificationContext` + `useToast` fungujú (fix top-right, len `duration`). Chýba prepínanie, pozícia, debug mód, perzistencia. |
-| J | **.XML Feeds (RSS/sitemap) + nastavenia** | ⛔ | Žiadny generátor/route/nastavenia. |
+| J | **.XML Feeds (RSS/sitemap) + nastavenia** | 🟡 | **It.10** — `FeedGenerator`, `GET /feed.xml` / `sitemap.xml`, settings `feeds`, RSS `<link>` v `PublicSiteLayout` ✅ (2.0.10). Zostáva: cache XML, `robots.txt`, sitemap v head, Newman smoke. |
 | K | **Demo modul (izolované MOCK dáta)** | ⛔ | Neexistuje; staré mocky odstránené. |
-| L | **API Tracker + reporty návštevnosti + notifikácie** | 🟡 | `Analytics/*`: `Tracker`, `DeviceDetector`, `GeoIPService`, modely hotové. `AnalyticsManager`, `Reporter`, `RealtimeTracker`, `AnalyticsMiddleware` sú **prázdne stuby**. Bez API/route/dashboardu. |
+| L | **API Tracker + reporty návštevnosti + notifikácie** | ✅ | It.7 — `AnalyticsManager`, reporty, middleware, dashboard. |
 | M | **Jednotný Error Handler** | ✅ | `ApiErrorHandler` + Slim error middleware v `bootstrap/app.php`; 404 catch-all zjednotený; 422 s `errors` mapou. |
 | N | **Blueprint / Schema Engine** | ⛔ | Iba hardcoded `Page`/`Article`; žiadny systém definície typov/polí. |
 | O | **In-Memory Cache + agresívna cache** | ✅ | Hotové (viď §1); dorobiť `deleteByPrefix()`. |
-| P | **Media manager / DAM** | 🟡 | Backend kompletný (`Modules/Media/*`, `MediaController`, `media.php`: list/upload/patch/delete). Chýba FE (route, `MediaManager`, `api/media.ts`) a **plný DAM**: viacúrovňové priečinky, `.meta.json` sidecar, hromadné operácie, zamykanie assetov. |
+| P | **Media manager / DAM** | ✅ | Backend + FE `MediaManager` (It.8); plný DAM v1 — priečinky, sidecar, bulk (It.24). |
 | Q | **Nastavenia (settings) úložisko** | ✅ | `SettingsRepository`, `SettingsSchema`, `data/settings.json`, `SettingsController`, FE `SettingsView` + `SettingsContext`, `GET /api/settings/public`. **Odomknuté pre It. 6+ (SMTP, toast, SEO, feedy).** |
 | R | **Priebežné pridávanie API + FE prepojení** | 🟡 | Priebežná úloha naprieč iteráciami. |
 | S | **Automatické SEO tagy + rozšírené SEO nastavenia** | ✅ | **It.23** — `SeoMetaBuilder`, `GET /api/seo/{type}/{slug}`, FE `useSeoMeta` ([ITERATION_23.md](ITERATION_23.md), 2.0.11). Admin SEO panel → **It.27** ✅. |
@@ -249,10 +249,10 @@ PLÁN (docs/CONTINUATION.md §3), poradie podľa náročnosti/závislostí:
 It.5 Používatelia + roly, 2FA vynútenie + UI, kalenie auth (HttpOnly session).
 It.6 Notifikácie: reálne SMTP, konektory (ntfy/Discord/Telegram/webhook), toast konfigurácia.
 It.7 Admin dashboard: zámky + konflikty + Health + API Tracker/Analytics.
-It.8 Media manager / DAM (FE) + editory (WYSIWYG/Monaco) + developer unlock UI.
+It.8 Media manager FE + WYSIWYG + picker — ✅ ([ITERATION_8.md](ITERATION_8.md), 2.0.4; DAM It.24).
 It.9 prototype port (nav, comments, contact): see [ITERATION_9.md](ITERATION_9.md). SEO public meta: It.23 ✅. Admin SEO UX: It.27 ✅ (2.0.15).
-It.10 XML Feeds (RSS/sitemap) + admin nastavenia.
-It.11 SSO + jemnozrnné ACL + bezpečnostný audit log.
+It.10 XML Feeds — 🟡 BE + admin settings ✅ (2.0.10); polish (cache, robots.txt) pred It.11.
+It.11 SSO + jemnozrnné ACL + bezpečnostný audit log — ⏳ ([ITERATION_11.md](ITERATION_11.md)).
 It.12 Blueprint/Schema engine (po schválení návrhu).
 It.13 Demo modul s izolovanými MOCK dátami.
 It.14 Politika kódu (CodePolicyEngine) + oprava CodeEditor path/FE kontraktu.
