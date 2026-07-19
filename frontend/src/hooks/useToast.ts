@@ -13,7 +13,7 @@ export const useToast = () => {
       warning: notification.warning,
       info: notification.info,
     }),
-    [notification.success, notification.error, notification.warning, notification.info]
+    [notification]
   );
 };
 

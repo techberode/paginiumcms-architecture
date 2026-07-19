@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useToast } from '../../hooks/useToast';
 import { FileTree } from './FileTree';
 import { EditorToolbar } from './EditorToolbar';
@@ -32,17 +32,7 @@ const CodeEditorContent: React.FC<CodeEditorProps> = ({ initialPath = '' }) => {
   const monacoRef = useRef<MonacoCodeEditorHandle>(null);
   const toast = useToast();
 
-  useEffect(() => {
-    void loadFiles();
-  }, []);
-
-  useEffect(() => {
-    if (currentFile) {
-      void loadFile(currentFile);
-    }
-  }, [currentFile]);
-
-  const loadFiles = async () => {
+  const loadFiles = useCallback(async () => {
     setLoadingFiles(true);
     try {
       const [roots, allFiles] = await Promise.all([
@@ -57,9 +47,9 @@ const CodeEditorContent: React.FC<CodeEditorProps> = ({ initialPath = '' }) => {
     } finally {
       setLoadingFiles(false);
     }
-  };
+  }, [toast]);
 
-  const loadFile = async (path: string) => {
+  const loadFile = useCallback(async (path: string) => {
     setLoadingFile(true);
     try {
       setError(null);
@@ -80,7 +70,17 @@ const CodeEditorContent: React.FC<CodeEditorProps> = ({ initialPath = '' }) => {
     } finally {
       setLoadingFile(false);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    void loadFiles();
+  }, [loadFiles]);
+
+  useEffect(() => {
+    if (currentFile) {
+      void loadFile(currentFile);
+    }
+  }, [currentFile, loadFile]);
 
   const handleSave = async () => {
     if (!currentFile || !isDirty) return;

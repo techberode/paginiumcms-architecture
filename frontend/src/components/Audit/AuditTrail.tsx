@@ -1,5 +1,5 @@
 // frontend/src/components/Audit/AuditTrail.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { useToast } from '../../hooks/useToast';
 import { formatDistanceToNow, format } from 'date-fns';
@@ -18,17 +18,7 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({ contentId, userId }) => 
   const { get } = useApi();
   const toast = useToast();
 
-  useEffect(() => {
-    if (contentId) {
-      loadContentAudit();
-    } else if (userId) {
-      loadUserAudit();
-    } else {
-      loadStats();
-    }
-  }, [contentId, userId]);
-
-  const loadContentAudit = async () => {
+  const loadContentAudit = useCallback(async () => {
     setLoading(true);
     try {
       const response = await get<any>(`/api/admin/audit/content/${contentId}`);
@@ -42,9 +32,9 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({ contentId, userId }) => 
     } finally {
       setLoading(false);
     }
-  };
+  }, [contentId, get, toast]);
 
-  const loadUserAudit = async () => {
+  const loadUserAudit = useCallback(async () => {
     setLoading(true);
     try {
       const response = await get<any>(`/api/admin/audit/user/${userId}`);
@@ -57,9 +47,9 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({ contentId, userId }) => 
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId, get, toast]);
 
-  const loadStats = async () => {
+  const loadStats = useCallback(async () => {
     setLoading(true);
     try {
       const response = await get<any>('/api/admin/audit/stats');
@@ -73,7 +63,17 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({ contentId, userId }) => 
     } finally {
       setLoading(false);
     }
-  };
+  }, [get, toast]);
+
+  useEffect(() => {
+    if (contentId) {
+      void loadContentAudit();
+    } else if (userId) {
+      void loadUserAudit();
+    } else {
+      void loadStats();
+    }
+  }, [contentId, userId, loadContentAudit, loadUserAudit, loadStats]);
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {

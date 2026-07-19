@@ -49,7 +49,7 @@ export const MediaPreviewLightbox: React.FC<MediaPreviewLightboxProps> = ({
     setLoading(true);
     setDimensions(null);
     setPreviewSrc(resolveAdminMediaPreviewUrl(file.path));
-  }, [file?.id, file?.path, file?.url]);
+  }, [file]);
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
