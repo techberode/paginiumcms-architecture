@@ -89,6 +89,11 @@ if grep -R "verify-otp" backend/bootstrap/app.php >/dev/null 2>&1; then
     || fail "Route verify-otp without AuthController::verifyRegisterOtp"
 fi
 
+if grep -R "workflows/otp" backend/app/Http/Routes/ >/dev/null 2>&1; then
+  grep -q "function verifyOtp" backend/app/Http/Controllers/Admin/WorkflowController.php \
+    || fail "Route workflows/otp without WorkflowController::verifyOtp"
+fi
+
 ok "Basic wiring checks passed"
 
 echo

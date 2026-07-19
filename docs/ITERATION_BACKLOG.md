@@ -20,8 +20,8 @@
 | **27** | **2.0.15** | **[Admin view modes + SEO panel](ITERATION_27.md)** | **✅** | List / list+preview / grid + SEO UX + metadata modal |
 | **28** | **2.0.16** | **[Bulk actions platform](ITERATION_28.md)** | **✅** | Shared bulk bar + batch APIs |
 | **29** | **2.0.18** | **[Cron planner + Job Queue](ITERATION_29.md)** | **✅** | Registry + CLI + `/scheduler` |
-| **41** | TBD | **Email OTP schvaľovanie** | **🟡 ďalšia** | Registrácia (USER), komentáre/príspevky (EDITOR) – zap/vyp v admin |
-| **42** | TBD | **Admin počty položiek** | **🟡** | Badge počty: články, stránky, media, komentáre, správy, zálohy, kôš, users |
+| **41** | TBD | **Email OTP schvaľovanie** | **✅** | Registrácia, komentáre, publikácia – zap/vyp v admin |
+| **42** | TBD | **Admin počty položiek** | **🟡 ďalšia** | Badge počty: články, stránky, media, komentáre, správy, zálohy, kôš, users |
 | **43** | TBD | **Pokročilé vyhľadávanie (FE + BE)** | **🟡** | Command-palette / quick jump v admin aj verejnom webe |
 | **44** | TBD | **Filtre a zoradenia (admin + FE)** | **🟡** | Zoznamy: status, typ, dátum, abeceda; zdieľané query parametre |
 | **45** | TBD | **[Redis – voliteľná infra](ITERATION_45.md)** | **🔵** | Absorbované do **It.49** |
@@ -69,19 +69,21 @@ Plánovač pre **plánované spúšťanie akcií** mimo HTTP requestu. **Full sp
 
 ---
 
-## Iterácia 41 – Email OTP schvaľovanie ✅ (registrácia)
+## Iterácia 41 – Email OTP schvaľovanie ✅
 
 Automatizované schvaľovanie jednorazovým kódom na e-mail (všetko **zapínateľné v administrácii**):
 
 | Tok | Rola | Popis | Stav |
 |-----|------|--------|------|
-| Registrácia | USER (striktne) | Nový účet až po OTP z mailu | ✅ |
-| Komentár | EDITOR | Schválenie komentára cez kontrolný kód mailom | ⏳ fáza 2 |
-| Nový príspevok | EDITOR | Publikácia až po OTP schválení editorom | ⏳ fáza 2 |
+| Registrácia | USER | Nový účet až po OTP z mailu | ✅ |
+| Komentár | EDITOR+ | Schválenie komentára cez kontrolný kód mailom | ✅ |
+| Nový príspevok | EDITOR+ | Publikácia až po OTP schválení editorom | ✅ |
 
-**Backend:** `workflows.*`, `OtpChallengeStore`, `OtpWorkflowService`, auth routes — viz [ITERATION_41.md](ITERATION_41.md)
+**Backend:** `workflows.*`, `OtpChallengeStore`, `OtpWorkflowService`, auth + admin workflow routes — viz [ITERATION_41.md](ITERATION_41.md)
 
-**Frontend:** RegisterModal OTP krok; admin prepínače v Settings
+**Frontend:** RegisterModal, `OtpConfirmModal`, CommentsManager, MarkdownEditor publish flow
+
+**Poznámka:** hromadné schválenie komentárov OTP nevyžaduje (single-action only).
 
 ---
 

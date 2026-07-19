@@ -74,4 +74,49 @@ class CommentsControllerTest extends TestCase
             'allowGuestComments' => true,
         ]));
     }
+
+    public function testApproveCommentWithOtpEnabled(): void
+    {
+        putenv('APP_ENV=testing');
+        $_ENV['APP_ENV'] = 'testing';
+
+        $settings = $this->app->getContainer()->get(SettingsRepositoryInterface::class);
+        $settings->setGroup('workflows', ['commentApprovalOtpEnabled' => true]);
+
+        $articleSlug = 'otp-comment-' . uniqid('', true);
+        $submitRequest = $this->createJsonRequest('POST', '/api/comments', [
+            'articleSlug' => $articleSlug,
+            'author' => 'Reader',
+            'email' => 'reader@example.com',
+            'content' => 'Approve me with OTP',
+        ]);
+        $submitResponse = $this->handleRequest($submitRequest);
+        $submitData = $this->getJsonResponse($submitResponse);
+        $commentId = $submitData['data']['id'] ?? null;
+        $this->assertNotNull($commentId);
+
+        $login = $this->loginAsAdminUser();
+        $this->assertEquals(200, $login['response']->getStatusCode());
+
+        $approveRequest = $this->createJsonRequest('PUT', '/api/admin/comments/' . $commentId, [
+            'status' => Comment::STATUS_APPROVED,
+        ]);
+        $approveResponse = $this->handleRequest($approveRequest);
+        $approveData = $this->getJsonResponse($approveResponse);
+
+        $this->assertEquals(202, $approveResponse->getStatusCode());
+        $this->assertTrue($approveData['requires_otp']);
+        $this->assertArrayHasKey('debug_code', $approveData);
+
+        $verifyRequest = $this->createJsonRequest('POST', '/api/admin/workflows/otp/verify', [
+            'challenge_id' => $approveData['challenge_id'],
+            'code' => $approveData['debug_code'],
+        ]);
+        $verifyResponse = $this->handleRequest($verifyRequest);
+        $verifyData = $this->getJsonResponse($verifyResponse);
+
+        $this->assertEquals(200, $verifyResponse->getStatusCode());
+        $this->assertTrue($verifyData['success']);
+        $this->assertSame(Comment::STATUS_APPROVED, $verifyData['comment']['status'] ?? null);
+    }
 }
