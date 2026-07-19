@@ -37,6 +37,7 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-020 | ESLint 68 warnings → prekročenie `--max-warnings 65`    | Stredná (CI)          | ✅ Opravené (2.0.26)                     |
 | ISS-021 | PHPStan `function.alreadyNarrowedType` v log readeri    | Stredná (CI)          | ✅ Opravené (2.0.26)                     |
 | ISS-022 | Vitest `MediaManager.test.tsx` — krehké textové asercie | Stredná (CI)          | ✅ Opravené (2.0.26)                     |
+| ISS-023 | PHPUnit `SearchControllerTest` — flaky admin draft search | Stredná (CI)          | ✅ Opravené (Unreleased)                 |
 
 
 
@@ -49,7 +50,7 @@ Workflow: `[.github/workflows/ci.yml](../.github/workflows/ci.yml)`
 | CI job     | Step                 | Symptóm                                                         | Issue                              |
 | ---------- | -------------------- | --------------------------------------------------------------- | ---------------------------------- |
 | `backend`  | PHPStan level 8      | Analýza zlyhá (verzia PHP, `match`, `fopen`, `is_array`)        | ISS-016, ISS-017, ISS-018, ISS-021 |
-| `backend`  | PHPUnit              | 429 Too Many Requests, 503 maintenance, flaky OTP               | ISS-015                            |
+| `backend`  | PHPUnit              | 429 Too Many Requests, 503 maintenance, flaky OTP, flaky search test | ISS-015, ISS-023                   |
 | `frontend` | `npm run type-check` | TS2352 / TS6133 / TS2322                                        | ISS-019                            |
 | `frontend` | `npm run lint`       | Prekročenie `--max-warnings 65` (`react-hooks/exhaustive-deps`) | ISS-020                            |
 | `frontend` | `npm test`           | Worker crash, `act(...)` stderr, `MediaManager` text asserts    | ISS-005, ISS-010, ISS-022          |
@@ -570,7 +571,30 @@ ponechané (položka je `mixed`)
 
 ---
 
+## ISS-023 – PHPUnit: flaky admin draft search
 
+**CI job:** `backend` → step **PHPUnit**
+
+**Symptóm:** Občasné zlyhanie `SearchControllerTest::testAdminSearchIncludesDraftPages`:
+
+```
+Failed asserting that an array contains 'seo-test-<uniqid>'.
+```
+
+**Príčiny:**
+
+1. **Nestabilný dotaz** — test hľadal podľa `uniqid()` slug-u; index matchuje title/slug/excerpt/tags, nie náhodné slug suffixy vždy konzistentne.
+2. **Stratený slug vo front matter** — `setSlug()` pred `setFrontMatter([...])` sa prepísal; index mal title, ale prázdny slug.
+
+**Implementované riešenie:**
+
+- Deterministický `searchToken` (`draftpalettekeyword`) v dotaze aj v title/body.
+- Slug v `setFrontMatter(['slug' => $slug, ...])` (vzor ako `TrashControllerTest`).
+- Commit `3fd8323`.
+
+**Overenie:** `./vendor/bin/phpunit backend/tests/Http/Controllers/Content/SearchControllerTest.php` — 4/4 OK.
+
+---
 
 ## Externé / irelevantné hlášky
 

@@ -60,6 +60,7 @@ use PaginiumCMS\Core\FlatFile\Services\JsonContentStorage;
 use PaginiumCMS\Core\FlatFile\Services\MarkdownContentStorage;
 use PaginiumCMS\Core\FlatFile\Services\TrashService;
 use PaginiumCMS\Core\Feeds\Services\FeedGenerator;
+use PaginiumCMS\Core\Feeds\Services\RobotsTxtGenerator;
 use PaginiumCMS\Core\Feeds\Services\SitemapGenerator;
 use PaginiumCMS\Core\Seo\Services\SeoMetaBuilder;
 use PaginiumCMS\Core\Security\Services\LoginAttemptTracker;
@@ -648,8 +649,15 @@ return [
         ->constructor(get(ContentIndexService::class), get(SettingsRepositoryInterface::class)),
     SitemapGenerator::class => create(SitemapGenerator::class)
         ->constructor(get(ContentIndexService::class), get(SettingsRepositoryInterface::class)),
+    RobotsTxtGenerator::class => create(RobotsTxtGenerator::class)
+        ->constructor(get(SettingsRepositoryInterface::class)),
     FeedController::class => create(FeedController::class)
-        ->constructor(get(FeedGenerator::class), get(SitemapGenerator::class)),
+        ->constructor(
+            get(FeedGenerator::class),
+            get(SitemapGenerator::class),
+            get(RobotsTxtGenerator::class),
+            get(ContentCacheService::class)
+        ),
     SeoMetaBuilder::class => create(SeoMetaBuilder::class)
         ->constructor(get(SettingsRepositoryInterface::class)),
     PurgeContentCacheCommand::class => create(PurgeContentCacheCommand::class)

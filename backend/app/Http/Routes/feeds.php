@@ -12,4 +12,5 @@ return function (App $app): void {
 
     $app->get('/feed.xml', [$controller, 'rss']);
     $app->get('/sitemap.xml', [$controller, 'sitemap']);
+    $app->get('/robots.txt', [$controller, 'robots']);
 };

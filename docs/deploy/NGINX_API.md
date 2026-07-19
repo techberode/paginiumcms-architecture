@@ -47,6 +47,10 @@ server {
         proxy_pass http://127.0.0.1:8080/sitemap.xml;
     }
 
+    location = /robots.txt {
+        proxy_pass http://127.0.0.1:8080/robots.txt;
+    }
+
     # SPA fallback (must be AFTER /api and feed routes)
     location / {
         try_files $uri $uri/ /index.html;

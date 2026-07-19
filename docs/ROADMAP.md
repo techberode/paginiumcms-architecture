@@ -20,8 +20,8 @@ Legenda: ✅ hotové · 🚧 rozpracované · ⏳ plánované · 🔴 kritická 
 | **6**    | **Notifikácie (SMTP, konektory, toast)**                      | **✅**                                |
 | 29       | Cron planner + Job Queue                                      | ✅ [ITERATION_29.md](ITERATION_29.md) |
 | 30       | Content editory + cache fix + admin zoznamy                   | ✅ [ITERATION_30.md](ITERATION_30.md) |
-| 42       | Admin sidebar counts + list controls                      | ✅                                    |
-| **50**   | **[In-App Micro Firewall (WAF)](ITERATION_50.md)**       | **✅ 2.0.26**                   |
+| 42       | Admin sidebar counts + list controls                          | ✅                                    |
+| **50**   | **[In-App Micro Firewall (WAF)](ITERATION_50.md)**            | **✅ 2.0.26**                         |
 | **43**   | **Pokročilé vyhľadávanie (FE + BE, rýchle skoky v kontexte)** | **⏳**                                |
 | **44**   | **Filtre a zoradenia (admin + verejný FE)**                   | **⏳**                                |
 | **45**   | **[Redis driver detail](ITERATION_45.md)**                    | **🔵 → It.49**                       |
@@ -221,7 +221,7 @@ Hotové v **2.0.1** — detail [ITERATION_6.md](ITERATION_6.md).
 
 
 
-## Iterácia 8 – Media manager / DAM (FE) + editory + developer unlock UI 🟢
+## Iterácia 8 – Media manager / DAM (FE) + editory + developer unlock UI ✅
 
 - ✅ FE `MediaManager` (upload/grid/altText/delete) + route `/media` nad `/api/media`.
 - ✅ Prepínač Markdown / WYSIWYG v `MarkdownEditor` + `WysiwygEditor` + `MediaPickerModal`.
@@ -243,13 +243,13 @@ Hotové v **2.0.1** — detail [ITERATION_6.md](ITERATION_6.md).
 
 
 
-## Iterácia 10 – XML Feeds (RSS/sitemap) ✅
+## Iterácia 10 – XML Feeds (RSS/sitemap/robots) ✅
 
-**Stav (release 2.0.10):** hotové — RSS + sitemap + settings `feeds.`*. Doručené v [Iterácii 22](ITERATION_22.md); pôvodný návrh: [ITERATION_10.md](ITERATION_10.md).
+**Stav:** hotové — RSS + sitemap + robots.txt + cache + head links. Detail: [ITERATION_10.md](ITERATION_10.md) (core v [Iterácii 22](ITERATION_22.md), 2.0.10).
 
-- `GET /feed.xml`, `GET /sitemap.xml` z publikovaného content indexu
-- Admin skupina `feeds` v nastaveniach; verejný `<link rel="alternate">`
-- Voliteľná cache cez `ContentCacheService`
+- `GET /feed.xml`, `GET /sitemap.xml`, `GET /robots.txt`
+- Admin skupina `feeds`; verejný RSS + sitemap v `<head>`
+- `ContentCacheService` pre generované XML (TTL 300s, invalidácia pri publish)
 
 
 
