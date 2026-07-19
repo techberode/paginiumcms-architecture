@@ -15,7 +15,7 @@ vi.mock('../../api/auth', () => ({
 }));
 
 vi.mock('../../hooks/useAuth', () => ({
-  useAuth: () => ({ refreshUser: vi.fn() }),
+  useAuth: () => ({ user: null, updateUser: vi.fn(), refreshUser: vi.fn() }),
 }));
 
 vi.mock('../../hooks/useToast', () => ({
@@ -34,7 +34,11 @@ describe('TwoFactorSettings', () => {
   });
 
   it('shows setup button when 2FA is disabled', async () => {
-    vi.mocked(authApi.twoFactor.getStatus).mockResolvedValue({ enabled: false, verified: false });
+    vi.mocked(authApi.twoFactor.getStatus).mockResolvedValue({
+      enabled: false,
+      verified: false,
+      setupPending: false,
+    });
 
     render(<TwoFactorSettings />);
 
@@ -42,7 +46,11 @@ describe('TwoFactorSettings', () => {
   });
 
   it('loads QR when enabled but not verified', async () => {
-    vi.mocked(authApi.twoFactor.getStatus).mockResolvedValue({ enabled: true, verified: false });
+    vi.mocked(authApi.twoFactor.getStatus).mockResolvedValue({
+      enabled: true,
+      verified: false,
+      setupPending: false,
+    });
     vi.mocked(authApi.twoFactor.getQrCode).mockResolvedValue({
       qr_code: 'data:image/svg+xml;base64,PHN2Zy8+',
       provisioning_uri: 'otpauth://totp/test',

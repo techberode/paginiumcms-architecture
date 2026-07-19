@@ -15,7 +15,7 @@ const COMPATIBLE_APPS = [
 ];
 
 export const TwoFactorSettings: React.FC = () => {
-  const { refreshUser } = useAuth();
+  const { user, updateUser, refreshUser } = useAuth();
   const toast = useToast();
   const [enabled, setEnabled] = useState(false);
   const [verified, setVerified] = useState(false);
@@ -62,7 +62,9 @@ export const TwoFactorSettings: React.FC = () => {
         setEnabled(true);
         setVerified(false);
         toast.info('Naskenujte QR kód v autentifikátore a zadajte overovací kód');
-        setUser((prev) => (prev ? { ...prev, twoFactorEnabled: true } : prev));
+        if (user) {
+          updateUser({ ...user, twoFactorEnabled: true });
+        }
       } else {
         toast.error('Nepodarilo sa aktivovať 2FA');
       }

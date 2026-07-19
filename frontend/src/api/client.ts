@@ -19,6 +19,7 @@ export interface ApiResponse<T = any> {
   debug_code?: string;
   enabled?: boolean;
   verified?: boolean;
+  setup_pending?: boolean;
   secret?: string;
   qr_code?: string;
   provisioning_uri?: string;
