@@ -27,7 +27,7 @@ export const GitHubSyncPanel: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [showError]);
 
   useEffect(() => {
     void load();

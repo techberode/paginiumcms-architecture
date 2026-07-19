@@ -139,7 +139,7 @@ export const PublicSiteProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       getPageBySlug,
       getArticleBySlug,
     }),
-    [pages, articles, loading, navigation, navigationItems, general, refresh, getPageBySlug, getArticleBySlug]
+    [pages, articles, loading, navigation, general, refresh, getPageBySlug, getArticleBySlug]
   );
 
   return <PublicSiteContext.Provider value={value}>{children}</PublicSiteContext.Provider>;

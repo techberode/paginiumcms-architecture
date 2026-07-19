@@ -128,7 +128,7 @@ export const MediaManager: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentFolder, typeFilter]);
+  }, [currentFolder, typeFilter, toast]);
 
   useEffect(() => {
     void loadMedia();

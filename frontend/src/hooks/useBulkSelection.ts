@@ -20,6 +20,7 @@ export function useBulkSelection(
 
   // Stabilizácia podľa obsahu – nová referencia poľa s rovnakými id nesmie spúšťať loop.
   const visibleKey = visibleIds.join('\0');
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- visibleKey stabilizuje obsah visibleIds
   const visibleSet = useMemo(() => new Set(visibleIds), [visibleKey]);
 
   useEffect(() => {

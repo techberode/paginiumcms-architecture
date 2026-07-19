@@ -1,5 +1,5 @@
 // frontend/src/components/CodeEditor/VersionHistory.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { formatDistanceToNow } from 'date-fns';
 import { DiffViewer } from '../versioning/DiffViewer';
@@ -17,11 +17,7 @@ export const VersionHistory: React.FC<VersionHistoryProps> = ({ contentId, onRes
   const [showDiff, setShowDiff] = useState(false);
   const { get, post, delete: del } = useApi();
 
-  useEffect(() => {
-    loadHistory();
-  }, [contentId]);
-
-  const loadHistory = async () => {
+  const loadHistory = useCallback(async () => {
     setLoading(true);
     try {
       const response = await get(`/api/admin/versions/${contentId}`);
@@ -31,7 +27,11 @@ export const VersionHistory: React.FC<VersionHistoryProps> = ({ contentId, onRes
     } finally {
       setLoading(false);
     }
-  };
+  }, [contentId, get]);
+
+  useEffect(() => {
+    void loadHistory();
+  }, [loadHistory]);
 
   const handleRestore = async (version: number) => {
     if (!confirm(`Are you sure you want to restore version ${version}?`)) {

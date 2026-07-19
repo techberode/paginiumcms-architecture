@@ -122,9 +122,6 @@ final class ApplicationLogReader
             }
 
             foreach ($this->readDirectory($directory) as $entry) {
-                if (!is_array($entry)) {
-                    continue;
-                }
                 $entry['source'] = $sourceId;
                 $all[] = $entry;
             }
@@ -164,9 +161,6 @@ final class ApplicationLogReader
             }
 
             $decoded = JsonHelper::decode($raw);
-            if (!is_array($decoded)) {
-                continue;
-            }
 
             foreach ($decoded as $entry) {
                 if (is_array($entry)) {

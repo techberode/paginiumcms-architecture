@@ -1,5 +1,5 @@
 // frontend/src/components/backend/SettingsView.tsx
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ShieldCheck } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -44,16 +44,12 @@ export const SettingsView: React.FC = () => {
   });
 
   useEffect(() => {
-    void load();
-  }, []);
-
-  useEffect(() => {
     if (activeGroup && values[activeGroup]) {
       reset(values[activeGroup]);
     }
   }, [activeGroup, values, reset]);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const payload = await getSettings();
@@ -67,7 +63,11 @@ export const SettingsView: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toastError]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   const onSubmit = async (formValues: Record<string, unknown>) => {
     if (!activeGroup) return;
