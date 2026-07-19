@@ -1,8 +1,10 @@
 # Iteration 45 – Redis (voliteľná infra vrstva)
 
-**Status:** ⏳ Planned  
+**Status:** ⏳ Planned — **implementácia v [Iteration 49](ITERATION_49.md)**  
 **Version target:** TBD  
 **Priority:** 🔵 — až pri škálovaní alebo viacerých PHP workeroch
+
+> Tento dokument popisuje **Redis driver a integračné body**. Produktová vrstva (admin prepínač, auto-detekcia hostingu, fallback) je v **[ITERATION_49.md](ITERATION_49.md)**.
 
 ## Prečo (a kedy) Redis
 
@@ -81,6 +83,7 @@ Env: `REDIS_URL=redis://redis:6379/0`
 ## Súvisiace
 
 - [ITERATION_29.md](ITERATION_29.md) — job queue (dnes flat-file)
+- [ITERATION_49.md](ITERATION_49.md) — unified cache layer (admin + auto mode)
 - [ITERATION_46.md](ITERATION_46.md) — host metrics (nezávislé od Redis)
 
 ## Out of scope

@@ -1,7 +1,8 @@
 // frontend/src/components/backend/MediaManager.test.tsx
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, within } from '@testing-library/react';
+import { render, screen, within, waitFor } from '@testing-library/react';
 import { MediaManager } from './MediaManager';
+import { fastUser } from '../../test/userEvent';
 
 const mocks = vi.hoisted(() => ({
   listMedia: vi.fn(),
@@ -128,11 +129,11 @@ describe('MediaManager', () => {
     expect(await screen.findByText('Hero')).toBeInTheDocument();
     expect(screen.getByText('hero.png')).toBeInTheDocument();
 
-    fireEvent.change(screen.getByPlaceholderText(/Hľadať podľa názvu/), {
-      target: { value: 'logo' },
-    });
+    await fastUser.type(screen.getByPlaceholderText(/Hľadať podľa názvu/), 'logo');
 
-    expect(screen.queryByText('Hero')).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByText('Hero')).not.toBeInTheDocument();
+    });
     expect(screen.getAllByText('logo.svg').length).toBeGreaterThan(0);
   });
 
@@ -140,9 +141,11 @@ describe('MediaManager', () => {
     render(<MediaManager />);
     expect(await screen.findByText('campaigns')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByText('campaigns'));
+    await fastUser.click(screen.getByText('campaigns'));
 
-    expect(mocks.listMedia).toHaveBeenCalledWith(expect.objectContaining({ folder: 'campaigns' }));
+    await waitFor(() => {
+      expect(mocks.listMedia).toHaveBeenCalledWith(expect.objectContaining({ folder: 'campaigns' }));
+    });
   });
 
   it('saves metadata edits in list view mode via modal', async () => {
@@ -151,19 +154,21 @@ describe('MediaManager', () => {
     render(<MediaManager />);
     expect(await screen.findByText('Hero')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Edit metadata' }));
-    const dialog = screen.getByRole('dialog', { name: /Edit metadata/i });
+    await fastUser.click(screen.getByRole('button', { name: 'Edit metadata' }));
+    const dialog = await screen.findByRole('dialog', { name: /Edit metadata/i });
     expect(dialog).toBeInTheDocument();
 
-    fireEvent.change(within(dialog).getByLabelText('Title'), { target: { value: 'Updated title' } });
-    fireEvent.change(within(dialog).getByLabelText(/Alt text \/ description/i), {
-      target: { value: 'Updated alt' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
+    await fastUser.clear(within(dialog).getByLabelText('Title'));
+    await fastUser.type(within(dialog).getByLabelText('Title'), 'Updated title');
+    await fastUser.clear(within(dialog).getByLabelText(/Alt text \/ description/i));
+    await fastUser.type(within(dialog).getByLabelText(/Alt text \/ description/i), 'Updated alt');
+    await fastUser.click(screen.getByRole('button', { name: 'Save changes' }));
 
-    expect(mocks.updateMediaMetadata).toHaveBeenCalledWith('media/media_1_hero.png', {
-      altText: 'Updated alt',
-      title: 'Updated title',
+    await waitFor(() => {
+      expect(mocks.updateMediaMetadata).toHaveBeenCalledWith('media/media_1_hero.png', {
+        altText: 'Updated alt',
+        title: 'Updated title',
+      });
     });
   });
 });

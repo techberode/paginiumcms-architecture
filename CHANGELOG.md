@@ -89,6 +89,15 @@ frontend type/lint safety net.
 - Frontend: Vitest 130 passing, MSW suite 4 passing, `type-check` and `lint` clean,
   production build succeeds with no inline scripts (compatible with the tightened CSP).
 
+### Changed (2026-07-19)
+
+- Vitest: Router v7 `future` flags v test wrapperi; `userEvent` + `waitFor` namiesto
+  raw `fireEvent` — odstránené stderr `act(...)` a future flag warnings.
+- ESLint: `--max-warnings 65` v `npm run lint` — nové warningy failnú CI.
+- `AUDIT_REPORT.md` aktualizovaný na stav po `ff0a987` / `8490387`.
+- Roadmap: **It.47** (notification auth), **It.48** (static templates), **It.49**
+  (unified cache) — viď `docs/ITERATION_47.md` … `ITERATION_49.md`.
+
 ---
 
 ## [2.0.23] – 2026-07-18

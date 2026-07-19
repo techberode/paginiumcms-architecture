@@ -1,9 +1,10 @@
 // frontend/src/components/CodeEditor/DeveloperUnlockGate.test.tsx
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { screen, waitFor } from '@testing-library/react';
 import { DeveloperUnlockGate } from './DeveloperUnlockGate';
 import * as developerApi from '../../api/developer';
+import { renderWithRouter } from '../../test/renderWithRouter';
+import { fastUser } from '../../test/userEvent';
 
 vi.mock('../../hooks/useToast', () => ({
   useToast: () => ({
@@ -22,11 +23,7 @@ vi.mock('../../api/developer', () => ({
 }));
 
 function renderGate(children: React.ReactNode = <div>Editor content</div>) {
-  return render(
-    <MemoryRouter>
-      <DeveloperUnlockGate>{children}</DeveloperUnlockGate>
-    </MemoryRouter>
-  );
+  return renderWithRouter(<DeveloperUnlockGate>{children}</DeveloperUnlockGate>);
 }
 
 describe('DeveloperUnlockGate', () => {
@@ -65,16 +62,17 @@ describe('DeveloperUnlockGate', () => {
     vi.mocked(developerApi.unlockDeveloperMode).mockResolvedValue({ success: true });
 
     renderGate();
+    const user = fastUser;
 
     await screen.findByText(/Odomknutie Developer Mode/i);
-    fireEvent.change(screen.getByPlaceholderText('Dev token (voliteľné)'), {
-      target: { value: 'pagdev_test.token' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: /Odomknúť Developer Mode/i }));
+    await user.type(screen.getByPlaceholderText('Dev token (voliteľné)'), 'pagdev_test.token');
+    await user.click(screen.getByRole('button', { name: /Odomknúť Developer Mode/i }));
 
-    expect(developerApi.unlockDeveloperMode).toHaveBeenCalledWith({
-      totp_code: undefined,
-      token: 'pagdev_test.token',
+    await waitFor(() => {
+      expect(developerApi.unlockDeveloperMode).toHaveBeenCalledWith({
+        totp_code: undefined,
+        token: 'pagdev_test.token',
+      });
     });
   });
 
