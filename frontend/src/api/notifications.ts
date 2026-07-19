@@ -6,6 +6,9 @@ export interface ConnectorStatus {
   name: string;
   label: string;
   enabled: boolean;
+  configured?: boolean;
+  authenticated?: boolean;
+  auth_mode?: string | null;
 }
 
 export interface AnalyticsOverview {
@@ -68,6 +71,23 @@ export async function sendTestNotification(
     success: Boolean(res.success),
     message: res.message,
     error: res.error,
+  };
+}
+
+export async function testNotificationConnector(
+  connector: string,
+  to?: string
+): Promise<{ success: boolean; message?: string; error?: string; authenticated?: boolean }> {
+  const res = await apiClient.post<{ authenticated?: boolean }>(
+    '/api/admin/notifications/test-connector',
+    { connector, to }
+  );
+  const body = res as ApiResponse & { authenticated?: boolean };
+  return {
+    success: Boolean(res.success),
+    message: res.message,
+    error: res.error || res.message,
+    authenticated: body.authenticated,
   };
 }
 

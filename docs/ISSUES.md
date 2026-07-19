@@ -26,7 +26,7 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-010 | Vitest stderr: `act(...)` + Router future flags | Nízka (CI šum) | ✅ Opravené (2.0.24) |
 | ISS-011 | ESLint 65 warnings (`any`, hook deps) | Nízka (tech. dlh) | ⏳ Baseline 65, postupné čistenie |
 | ISS-012 | CSRF middleware nezapojený (audit S3) | Stredná | ⏳ Odložené — SameSite=Lax |
-| ISS-013 | ntfy bez auth — privátne topicy zlyhajú | Stredná | ⏳ It.47 |
+| ISS-013 | ntfy bez auth — privátne topicy zlyhajú | Stredná | ✅ It.47 (Bearer/Basic + test-connector) |
 | ISS-014 | CORS dev wildcardy pri zlej `APP_ENV` (audit S6) | Nízka | ⏳ Overiť deploy |
 
 ---
@@ -243,11 +243,15 @@ Potom otvor **`https://192.168.10.26:8443/settings`** – varovanie pri heslách
 
 ## ISS-013 – ntfy bez autentifikácie (privátne topicy)
 
-**Symptóm:** `NtfyAdapter` posiela POST bez `Authorization` — zlyhá na ACL topic / self-hosted ntfy.
+**Symptóm:** `NtfyAdapter` posielal POST bez `Authorization` — zlyhá na ACL topic / self-hosted ntfy.
 
-**Stav:** Verejný topic na `ntfy.sh` funguje; privátne nie.
+**Oprava (It.47):**
+- Settings: `ntfyAuthMode` (`none` | `token` | `basic`), `ntfyAccessToken`, `ntfyUsername`, `ntfyPassword`
+- `NtfyAdapter::buildAuthHeaders()` — Bearer alebo Basic
+- `POST /api/admin/notifications/test-connector` — validácia + test odoslania
+- Admin `/notifications` — badge Auth OK / Chýba auth, tlačidlo Verify auth
 
-**Plán:** [It.47](ITERATION_47.md) — `ntfyAuthMode`, Bearer token, Basic auth, test per konektor.
+**Overenie:** PHPUnit `NtfyAdapterTest`, `NotificationFactoryTest`; Settings → Connectors → ntfy token → Verify auth.
 
 ---
 

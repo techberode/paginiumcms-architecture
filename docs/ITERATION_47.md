@@ -1,7 +1,7 @@
 # Iteration 47 – Notification connector credentials
 
-**Status:** ⏳ Planned  
-**Version target:** TBD  
+**Status:** ✅ Implemented (Unreleased)  
+**Version target:** 2.0.25 (planned)  
 **Priority:** 🟡 — po It.41 (OTP workflows používajú rovnaké konektory)
 
 ## Problém dnes

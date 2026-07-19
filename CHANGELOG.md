@@ -89,7 +89,17 @@ planned iterations **It.47–It.49**. Full test log `alltests_190726_0808.log`: 
 
 ## [Unreleased]
 
-_(Nothing pending beyond main @ 2.0.24.)_
+### Added (It.47 — notification connector auth)
+
+- Settings `connectors`: `ntfyAuthMode`, `ntfyAccessToken`, `ntfyUsername`, `ntfyPassword`, `webhookAuthHeader`.
+- `NtfyAdapter` Bearer/Basic auth headers; `WebhookAdapter` configurable secret header.
+- `POST /api/admin/notifications/test-connector` — credential validation + delivery test.
+- Connector overview fields: `configured`, `authenticated`, `auth_mode`.
+- Admin `/notifications`: Auth OK / Chýba auth badges, **Verify auth** button.
+
+### Fixed
+
+- **ISS-013** — private ntfy topics no longer fail silently when token/Basic auth is required.
 
 ---
 

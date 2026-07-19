@@ -45,6 +45,14 @@ Dev mocks: `VITE_MSW=true npm run dev` v `frontend/`.
 
 Workflow `.github/workflows/ci.yml` — PHPUnit, PHPStan, Vitest, Newman smoke (public endpoints).
 
+### Iteration gate (po každej iterácii, pred commitom)
+
+```bash
+./scripts/iteration-gate.sh
+```
+
+See `.cursorrules` § Iteration gate and `scripts/iteration-gate.sh` for the full checklist (syntax, PHPStan, PHPUnit, tsc, ESLint, wiring integrity).
+
 ```bash
 ./scripts/run-api-smoke.sh   # lokálne (backend na :8080)
 ```

@@ -8,7 +8,8 @@ class WebhookAdapter implements AdapterInterface
 {
     public function __construct(
         private string $url,
-        private string $secret = ''
+        private string $secret = '',
+        private string $authHeader = 'X-Webhook-Secret'
     ) {
     }
 
@@ -33,6 +34,8 @@ class WebhookAdapter implements AdapterInterface
 
         $headers = ['Content-Type: application/json'];
         if ($this->secret !== '') {
+            $headerName = trim($this->authHeader) !== '' ? trim($this->authHeader) : 'X-Webhook-Secret';
+            $headers[] = $headerName . ': ' . $this->secret;
             $headers[] = 'X-Paginium-Signature: ' . hash_hmac('sha256', $payload, $this->secret);
         }
 

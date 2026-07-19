@@ -27,6 +27,7 @@ return function (App $app): void {
         $group->post('/report/send', [$controller, 'sendReport']);
         $group->post('/schedule/run', [$controller, 'runSchedule']);
         $group->post('/test', [$controller, 'testSend']);
+        $group->post('/test-connector', [$controller, 'testConnector']);
     })
         ->add(new RoleMiddleware($container->get(AuthorizationInterface::class), ['ADMIN', 'SUPER_ADMIN']))
         ->add($container->get(TwoFactorMiddleware::class))
