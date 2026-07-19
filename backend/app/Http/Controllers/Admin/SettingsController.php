@@ -88,6 +88,10 @@ final class SettingsController
                 'siteDescription' => (string) ($all['general']['siteDescription'] ?? ''),
                 'language' => $all['general']['language'] ?? 'sk',
                 'maintenanceMode' => (bool) ($all['general']['maintenanceMode'] ?? false),
+                'allowRegistration' => (bool) ($all['general']['allowRegistration'] ?? true),
+            ],
+            'workflows' => [
+                'registrationOtpEnabled' => (bool) ($all['workflows']['registrationOtpEnabled'] ?? false),
             ],
             'content' => $all['content'] ?? [],
             'editor' => $all['editor'] ?? [],

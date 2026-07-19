@@ -69,24 +69,19 @@ Plánovač pre **plánované spúšťanie akcií** mimo HTTP requestu. **Full sp
 
 ---
 
-## Iterácia 41 – Email OTP schvaľovanie ⏳
+## Iterácia 41 – Email OTP schvaľovanie ✅ (registrácia)
 
 Automatizované schvaľovanie jednorazovým kódom na e-mail (všetko **zapínateľné v administrácii**):
 
-| Tok | Rola | Popis |
-|-----|------|--------|
-| Registrácia | USER (striktne) | Nový účet až po OTP z mailu |
-| Komentár | EDITOR | Schválenie komentára cez kontrolný kód mailom |
-| Nový príspevok | EDITOR | Publikácia až po OTP schválení editorom |
+| Tok | Rola | Popis | Stav |
+|-----|------|--------|------|
+| Registrácia | USER (striktne) | Nový účet až po OTP z mailu | ✅ |
+| Komentár | EDITOR | Schválenie komentára cez kontrolný kód mailom | ⏳ fáza 2 |
+| Nový príspevok | EDITOR | Publikácia až po OTP schválení editorom | ⏳ fáza 2 |
 
-**Backend:**
-- Settings skupina `workflows.*` – `enabled`, TTL kódu, šablóny mailov
-- Flat-file register `data/otp-pending.json` alebo per-entity token
-- Napojenie na `NotificationService` / SMTP z It.6
+**Backend:** `workflows.*`, `OtpChallengeStore`, `OtpWorkflowService`, auth routes — viz [ITERATION_41.md](ITERATION_41.md)
 
-**Frontend:**
-- Admin prepínače v Settings
-- Verejný register flow + editor modals pre OTP
+**Frontend:** RegisterModal OTP krok; admin prepínače v Settings
 
 ---
 

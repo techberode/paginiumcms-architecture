@@ -10,6 +10,16 @@ export interface LoginResult {
   error?: string;
 }
 
+export interface RegisterResult {
+  success: boolean;
+  user?: User;
+  requiresOtp?: boolean;
+  challengeId?: string;
+  expiresAt?: number;
+  debugCode?: string;
+  error?: string;
+}
+
 export const authApi = {
   login: async (data: LoginRequest): Promise<LoginResult> => {
     const res = await apiClient.post<LoginResult & { requires_two_factor?: boolean; user?: User }>(
@@ -22,12 +32,62 @@ export const authApi = {
     return { success: false, error: res.error || 'Prihlásenie zlyhalo' };
   },
 
-  register: async (data: RegisterRequest): Promise<LoginResult> => {
-    const res = await apiClient.post<{ user?: User }>('/api/auth/register', data);
+  register: async (data: RegisterRequest): Promise<RegisterResult> => {
+    const res = await apiClient.post<{
+      user?: User;
+      requires_otp?: boolean;
+      challenge_id?: string;
+      expires_at?: number;
+      debug_code?: string;
+    }>('/api/auth/register', data);
+
+    if (res.success && res.requires_otp) {
+      return {
+        success: true,
+        requiresOtp: true,
+        challengeId: res.challenge_id,
+        expiresAt: res.expires_at,
+        debugCode: res.debug_code,
+      };
+    }
+
     if (res.success && res.user) {
       return { success: true, user: res.user as User };
     }
+
     return { success: false, error: res.error || 'Registrácia zlyhala' };
+  },
+
+  verifyRegisterOtp: async (challengeId: string, code: string): Promise<RegisterResult> => {
+    const res = await apiClient.post<{ user?: User }>('/api/auth/register/verify-otp', {
+      challenge_id: challengeId,
+      code,
+    });
+
+    if (res.success && res.user) {
+      return { success: true, user: res.user as User };
+    }
+
+    return { success: false, error: res.error || 'Overenie kódu zlyhalo' };
+  },
+
+  resendRegisterOtp: async (challengeId: string): Promise<RegisterResult> => {
+    const res = await apiClient.post<{ challenge_id?: string; expires_at?: number; debug_code?: string }>(
+      '/api/auth/register/resend-otp',
+      { challenge_id: challengeId }
+    );
+
+    if (res.success) {
+      return {
+        success: true,
+        requiresOtp: true,
+        challengeId: res.challenge_id ?? challengeId,
+        expiresAt: res.expires_at,
+        debugCode: res.debug_code,
+      };
+    }
+
+    return { success: false, error: res.error || 'Odoslanie kódu zlyhalo' };
   },
 
   logout: async (): Promise<boolean> => {

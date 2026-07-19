@@ -19,7 +19,7 @@ Legenda: ✅ hotové · 🚧 rozpracované · ⏳ plánované · 🔴 kritická 
 | **6** | **Notifikácie (SMTP, konektory, toast)** | **✅** |
 | 29 | Cron planner + Job Queue | ✅ [ITERATION_29.md](ITERATION_29.md) |
 | 30 | Content editory + cache fix + admin zoznamy | ✅ [ITERATION_30.md](ITERATION_30.md) |
-| 41 | Email OTP schvaľovanie (registrácia, komentáre, príspevky) | ⏳ |
+| 41 | Email OTP — registrácia (komentár/publish fáza 2) | ✅ |
 | 42 | Admin počty položiek (sidebar / zoznamy) | ⏳ |
 | **43** | **Pokročilé vyhľadávanie (FE + BE, rýchle skoky v kontexte)** | **⏳** |
 | **44** | **Filtre a zoradenia (admin + verejný FE)** | **⏳** |

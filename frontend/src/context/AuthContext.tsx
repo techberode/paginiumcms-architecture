@@ -3,7 +3,7 @@
 // Session autentifikácia cez HttpOnly cookie. Podpora 2FA „polovičného“ login stavu.
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { User } from '../api/types';
-import { authApi, LoginResult } from '../api/auth';
+import { authApi, LoginResult, RegisterResult } from '../api/auth';
 import { debugLogProvider } from '../utils/debugLog';
 
 export interface LoginOutcome {
@@ -19,7 +19,9 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<LoginOutcome>;
   verifyTwoFactorLogin: (code: string) => Promise<boolean>;
   logout: () => Promise<void>;
-  register: (email: string, password: string, name: string) => Promise<boolean>;
+  register: (email: string, password: string, name: string) => Promise<RegisterResult>;
+  verifyRegisterOtp: (challengeId: string, code: string) => Promise<RegisterResult>;
+  resendRegisterOtp: (challengeId: string) => Promise<RegisterResult>;
   updateUser: (user: User) => void;
   refreshUser: () => Promise<void>;
 }
@@ -99,14 +101,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     debugLogProvider('auth', 'logout.done');
   }, [user?.id]);
 
-  const register = useCallback(async (email: string, password: string, name: string): Promise<boolean> => {
+  const register = useCallback(async (email: string, password: string, name: string): Promise<RegisterResult> => {
     const result = await authApi.register({ email, password, name });
     if (result.success && result.user) {
       setUser(result.user);
       setPendingTwoFactor(false);
-      return true;
     }
-    return false;
+    return result;
+  }, []);
+
+  const verifyRegisterOtp = useCallback(async (challengeId: string, code: string): Promise<RegisterResult> => {
+    const result = await authApi.verifyRegisterOtp(challengeId, code);
+    if (result.success && result.user) {
+      setUser(result.user);
+      setPendingTwoFactor(false);
+    }
+    return result;
+  }, []);
+
+  const resendRegisterOtp = useCallback(async (challengeId: string): Promise<RegisterResult> => {
+    return authApi.resendRegisterOtp(challengeId);
   }, []);
 
   const updateUser = useCallback((updatedUser: User) => {
@@ -123,6 +137,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         verifyTwoFactorLogin,
         logout,
         register,
+        verifyRegisterOtp,
+        resendRegisterOtp,
         updateUser,
         refreshUser,
       }}

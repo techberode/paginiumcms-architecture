@@ -89,6 +89,14 @@ planned iterations **It.47–It.49**. Full test log `alltests_190726_0808.log`: 
 
 ## [Unreleased]
 
+### Added (It.41 — registration email OTP)
+
+- Settings group `workflows`: registration/comment/publish OTP toggles, TTL, max attempts.
+- `OtpChallengeStore` + `OtpWorkflowService` — flat-file OTP challenges.
+- `POST /api/auth/register/verify-otp`, `POST /api/auth/register/resend-otp`; register returns `202` + `requires_otp` when enabled.
+- Public settings: `workflows.registrationOtpEnabled`, `general.allowRegistration`.
+- Frontend `RegisterModal` two-step OTP flow.
+
 ### Added (It.47 — notification connector auth)
 
 - Settings `connectors`: `ntfyAuthMode`, `ntfyAccessToken`, `ntfyUsername`, `ntfyPassword`, `webhookAuthHeader`.

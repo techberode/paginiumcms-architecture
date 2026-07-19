@@ -159,6 +159,16 @@ final class SettingsSchema
                     ['key' => 'maxLength', 'type' => 'int', 'label' => 'Max comment length', 'default' => 2000, 'rules' => ['required', 'int', 'min:50', 'max:5000']],
                 ],
             ],
+            'workflows' => [
+                'label' => 'Workflow OTP',
+                'fields' => [
+                    ['key' => 'registrationOtpEnabled', 'type' => 'bool', 'label' => 'OTP pri registrácii', 'default' => false, 'rules' => ['bool'], 'help' => 'Nový účet vznikne až po overení e-mailového kódu (Iterácia 41).'],
+                    ['key' => 'commentApprovalOtpEnabled', 'type' => 'bool', 'label' => 'OTP pri schválení komentára', 'default' => false, 'rules' => ['bool'], 'help' => 'Editor musí potvrdiť schválenie komentára kódom z mailu.'],
+                    ['key' => 'publishApprovalOtpEnabled', 'type' => 'bool', 'label' => 'OTP pri publikácii', 'default' => false, 'rules' => ['bool'], 'help' => 'Editor musí potvrdiť publikáciu príspevku kódom z mailu.'],
+                    ['key' => 'otpTtlMinutes', 'type' => 'int', 'label' => 'Platnosť OTP kódu (min)', 'default' => 15, 'rules' => ['required', 'int', 'min:5', 'max:120']],
+                    ['key' => 'otpMaxAttempts', 'type' => 'int', 'label' => 'Max. pokusov OTP', 'default' => 5, 'rules' => ['required', 'int', 'min:3', 'max:10']],
+                ],
+            ],
             'security' => [
                 'label' => 'Bezpečnosť',
                 'fields' => [
