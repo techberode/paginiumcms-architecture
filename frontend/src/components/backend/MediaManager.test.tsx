@@ -19,6 +19,13 @@ const mocks = vi.hoisted(() => ({
     mode: 'preview' as 'list' | 'list-preview' | 'preview',
     setMode: vi.fn(),
   })),
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+    warning: vi.fn(),
+    info: vi.fn(),
+    toast: {},
+  },
 }));
 
 vi.mock('../../hooks/useAdminViewMode', () => ({
@@ -52,13 +59,7 @@ vi.mock('../../api/settings', () => ({
 }));
 
 vi.mock('../../hooks/useToast', () => ({
-  useToast: () => ({
-    success: vi.fn(),
-    error: vi.fn(),
-    warning: vi.fn(),
-    info: vi.fn(),
-    toast: {},
-  }),
+  useToast: () => mocks.toast,
 }));
 
 vi.mock('../../hooks/useAdminListPageSize', () => ({
@@ -107,9 +108,8 @@ describe('MediaManager', () => {
   it('renders media grid after load', async () => {
     render(<MediaManager />);
 
-    expect(await screen.findByText('Hero')).toBeInTheDocument();
-    expect(screen.getByText('hero.png')).toBeInTheDocument();
-    expect(screen.getByText(/Alt: Hero banner/)).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /Preview hero\.png/i })).toBeInTheDocument();
+    expect(screen.getByText(/Alt:\s*Hero banner/i)).toBeInTheDocument();
     expect(mocks.listMedia).toHaveBeenCalled();
     expect(mocks.listMediaFolders).toHaveBeenCalled();
     expect(screen.getByRole('button', { name: /Generovať z knižnice/i })).toBeInTheDocument();
@@ -130,13 +130,12 @@ describe('MediaManager', () => {
     ]);
 
     render(<MediaManager />);
-    expect(await screen.findByText('Hero')).toBeInTheDocument();
-    expect(screen.getByText('hero.png')).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /Preview hero\.png/i })).toBeInTheDocument();
 
     await fastUser.type(screen.getByPlaceholderText(/Hľadať podľa názvu/), 'logo');
 
     await waitFor(() => {
-      expect(screen.queryByText('Hero')).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Preview hero\.png/i })).not.toBeInTheDocument();
     });
     expect(screen.getAllByText('logo.svg').length).toBeGreaterThan(0);
   });
@@ -156,7 +155,7 @@ describe('MediaManager', () => {
     mocks.useAdminViewMode.mockReturnValue({ mode: 'list', setMode: vi.fn() });
 
     render(<MediaManager />);
-    expect(await screen.findByText('Hero')).toBeInTheDocument();
+    expect(await screen.findByRole('checkbox', { name: /Select hero\.png/i })).toBeInTheDocument();
 
     await fastUser.click(screen.getByRole('button', { name: 'Edit metadata' }));
     const dialog = await screen.findByRole('dialog', { name: /Edit metadata/i });

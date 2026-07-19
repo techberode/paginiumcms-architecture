@@ -41,9 +41,16 @@ Interný WAF (It.50), production HTTP logging, admin Logy modul, CI incident doc
 
 - Dashboard overview obsahuje `logs.by_severity` pre panel Logy.
 
+### Fixed
+
+- CI ESLint: `react-hooks/exhaustive-deps` — hook deps v `useToast`, CodeEditor, AuditTrail, MediaManager, … (ISS-020).
+- CI PHPStan: redundantné `is_array()` v `ApplicationLogReader` (ISS-021).
+- CI Vitest: `MediaManager.test.tsx` — role-based asercie + stabilný `useToast` mock (ISS-022).
+
 ### Tests
 
 - Firewall + LogController PHPUnit; PHPStan L8; frontend type-check.
+- `MediaManager.test.tsx` — 5/5 (ISS-022).
 
 ---
 

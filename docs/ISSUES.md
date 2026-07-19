@@ -1,6 +1,6 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-19 · verzia **2.0.25+**
+> Posledná aktualizácia: 2026-07-19 · verzia **2.0.26**
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
 
@@ -24,7 +24,7 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-008 | HTTP heslo polia (login/users) | Info | ⏳ HTTPS v produkcii |
 | ISS-009 | `/settings` crash `n.max is not a function` | Vysoká | ✅ Opravené |
 | ISS-010 | Vitest stderr: `act(...)` + Router future flags | Nízka (CI šum) | ✅ Opravené (2.0.24) |
-| ISS-011 | ESLint 65 warnings (`any`, hook deps) | Nízka (tech. dlh) | ⏳ Baseline 65, postupné čistenie |
+| ISS-011 | ESLint warnings (`any`, react-refresh) | Nízka (tech. dlh) | ⏳ 57/65 baseline, postupné čistenie |
 | ISS-012 | CSRF middleware nezapojený (audit S3) | Stredná | ⏳ Odložené — SameSite=Lax |
 | ISS-013 | ntfy bez auth — privátne topicy zlyhajú | Stredná | ✅ It.47 (Bearer/Basic + test-connector) |
 | ISS-014 | CORS dev wildcardy pri zlej `APP_ENV` (audit S6) | Nízka | ⏳ Overiť deploy |
@@ -33,8 +33,9 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-017 | PHPStan `match.alwaysTrue` v bulk controlleroch | Stredná (CI) | ✅ Opravené (2.0.25) |
 | ISS-018 | PHPStan `fopen` resource v `TrashController` | Stredná (CI) | ✅ Opravené (2.0.25) |
 | ISS-019 | `tsc --noEmit` strict TypeScript chyby | Stredná (CI) | ✅ Opravené (2.0.25) |
-
----
+| ISS-020 | ESLint 68 warnings → prekročenie `--max-warnings 65` | Stredná (CI) | ✅ Opravené (2.0.26) |
+| ISS-021 | PHPStan `function.alreadyNarrowedType` v log readeri | Stredná (CI) | ✅ Opravené (2.0.26) |
+| ISS-022 | Vitest `MediaManager.test.tsx` — krehké textové asercie | Stredná (CI) | ✅ Opravené (2.0.26) |
 
 ## CI failures (GitHub Actions)
 
@@ -42,10 +43,11 @@ Workflow: [`.github/workflows/ci.yml`](../.github/workflows/ci.yml)
 
 | CI job | Step | Symptóm | Issue |
 |--------|------|---------|-------|
-| `backend` | PHPStan level 8 | Analýza zlyhá (verzia PHP, `match`, `fopen`) | ISS-016, ISS-017, ISS-018 |
+| `backend` | PHPStan level 8 | Analýza zlyhá (verzia PHP, `match`, `fopen`, `is_array`) | ISS-016, ISS-017, ISS-018, ISS-021 |
 | `backend` | PHPUnit | 429 Too Many Requests, 503 maintenance, flaky OTP | ISS-015 |
 | `frontend` | `npm run type-check` | TS2352 / TS6133 / TS2322 | ISS-019 |
-| `frontend` | `npm test` | Worker crash, `act(...)` stderr | ISS-005, ISS-010 |
+| `frontend` | `npm run lint` | Prekročenie `--max-warnings 65` (`react-hooks/exhaustive-deps`) | ISS-020 |
+| `frontend` | `npm test` | Worker crash, `act(...)` stderr, `MediaManager` text asserts | ISS-005, ISS-010, ISS-022 |
 | `backend` | PHPStan (historicky) | 15 typových chýb | ISS-006 |
 
 Každý záznam nižšie obsahuje **popis chyby**, **navrhované riešenie** a **implementované riešenie**.
@@ -239,12 +241,13 @@ Potom otvor **`https://192.168.10.26:8443/settings`** – varovanie pri heslách
 
 ---
 
-## ISS-011 – ESLint 65 warnings (technický dlh)
+## ISS-011 – ESLint warnings (technický dlh)
 
-**Symptóm:** `npm run lint` — 0 errors, **65 warnings** (hlavne `no-explicit-any` v `client.ts` /
-`useApi.ts`, `react-hooks/exhaustive-deps`, `react-refresh/only-export-components`).
+**Symptóm:** `npm run lint` — 0 errors, warnings hlavne `@typescript-eslint/no-explicit-any`
+(`client.ts`, `useApi.ts`) a `react-refresh/only-export-components`.
 
-**Stav:** Baseline zmrazený `--max-warnings 65` v CI — nové warningy spôsobia fail.
+**Stav:** Baseline `--max-warnings 65` v CI — prekročenie spôsobí fail (pozri ISS-020).
+Po oprave hook deps (2.0.26): **57 warnings** — rezerva 8 slotov do limitu.
 
 **Plán:** Postupné znižovanie od API vrstvy; cieľ ≤50 v ďalšej iterácii.
 
@@ -392,6 +395,78 @@ if ($handle === false) {
 
 ---
 
+## ISS-020 – ESLint: prekročenie `--max-warnings 65`
+
+**CI job:** `frontend` → step **ESLint** (`npm run lint`)
+
+**Symptóm:** CI padalo s exit code 1 pri **68 warnings** (limit v `package.json`: `--max-warnings 65`).
+Konkrétny trigger v logu: `react-hooks/exhaustive-deps` — `useMemo` v `useToast.ts` bez
+závislosti `notification`; ďalšie hook deps v komponentoch po release 2.0.26 (SettingsView,
+CodeEditor, AuditTrail, MediaManager, …).
+
+**Navrhované riešenie:**
+1. Doplniť chýbajúce závislosti v `useMemo` / `useEffect` / `useCallback` (preferované)
+2. Alebo stabilizovať referencie cez primitívy / `useCallback` namiesto inline loaderov
+3. Neznižovať limit v CI bez vedomej zmeny politiky (errors fail, baseline warnings)
+
+**Implementované riešenie** (`d24f0e0`):
+- `useToast.ts` — `[notification]` v `useMemo`
+- `SettingsView`, `CodeEditor`, `VersionHistory`, `AuditTrail` — loadery cez `useCallback`, effects s plnými deps
+- `MediaManager`, `GitHubSyncPanel`, `MediaPreviewLightbox`, `PublicSiteContext`, `useBulkSelection` — opravené / zdokumentované deps
+
+**Overenie:** `cd frontend && npm run lint` — **57 warnings**, exit 0; `react-hooks/exhaustive-deps` = 0.
+
+---
+
+## ISS-021 – PHPStan: redundantné `is_array()` v ApplicationLogReader
+
+**CI job:** `backend` → step **PHPStan level 8**
+
+**Symptóm:** PHPStan `function.alreadyNarrowedType` — 2 chyby v
+`ApplicationLogReader.php`:
+- riadok 125: `is_array($entry)` pri `$entry` už typovanom ako `array<string, mixed>` z `readDirectory()`
+- riadok 167: `is_array($decoded)` pri `JsonHelper::decode()` s návratovým typom `array<int|string, mixed>`
+
+**Navrhované riešenie:** Odstrániť redundantné guardy; runtime validáciu nechať len tam, kde je
+premenná typovaná ako `mixed` (napr. položky v dekódovanom JSON poli).
+
+**Implementované riešenie** (`d24f0e0`):
+- `loadAll()` — priamy zápis `$entry['source']` bez `is_array($entry)`
+- `readDirectory()` — po `JsonHelper::decode()` priamo `foreach`; `is_array($entry)` v slučke
+  ponechané (položka je `mixed`)
+
+**Overenie:** `./vendor/bin/phpstan analyse backend --level=8` — 0 chýb.
+
+---
+
+## ISS-022 – Vitest: `MediaManager.test.tsx` krehké asercie
+
+**CI job:** `frontend` → step **Vitest** (`npm test`)
+
+**Symptóm:** 3 testy padali s `toBeInTheDocument()` timeoutom:
+- `renders media grid after load` — `findByText('Hero')`
+- `filters items by search query` — `findByText('Hero')` / `queryByText('Hero')`
+- `saves metadata edits in list view mode via modal` — `findByText('Hero')`
+
+**Príčiny:**
+1. **Krehké textové asercie** — `Hero`, `hero.png`, `Alt: Hero banner` sa v `MediaManager` vykresľujú
+   na viacerých miestach / režimoch (`MediaCard` vs `MediaListTable`), text môže byť skrátený alebo duplicitný.
+2. **Nestabilný mock `useToast`** — po ISS-020 (`toast` v `loadMedia` deps) mock vracal nový objekt
+   pri každom renderi → nekonečný reload → spinner, obsah sa nikdy neobjavil v teste.
+
+**Navrhované riešenie:**
+1. Assertovať cez stabilné **role/label** selektory (`Preview hero.png`, `Select hero.png`, dialog)
+2. V test mockoch vracať **hoisted stabilnú** referenciu pre `useToast` (rovnako ako pri iných hook mockoch)
+
+**Implementované riešenie:**
+- `MediaManager.test.tsx` — `findByRole('button', { name: /Preview hero\.png/i })` v preview režime;
+  `findByRole('checkbox', { name: /Select hero\.png/i })` v list režime; filter test cez `queryByRole`
+- `mocks.toast` hoisted — stabilná referencia pre `useToast` mock
+
+**Overenie:** `cd frontend && npm test -- src/components/backend/MediaManager.test.tsx` — 5/5 OK.
+
+---
+
 ## Externé / irelevantné hlášky
 
 | Hláška | Zdroj |
@@ -403,7 +478,7 @@ if ($handle === false) {
 
 ## Súvisiace dokumenty
 
-- [CHANGELOG.md](../CHANGELOG.md) — release 2.0.25 (admin inbox + CI fixes ISS-015–019)
+- [CHANGELOG.md](../CHANGELOG.md) — release 2.0.26 (WAF, logging, CI fixes ISS-020–022)
 - [TESTING.md](developer/TESTING.md) – ako spúšťať testy a regresiu
 - [ROADMAP.md](ROADMAP.md) – plánované iterácie (It.41+, It.47–49)
 - [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) – It.29+ detail

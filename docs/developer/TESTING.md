@@ -117,7 +117,7 @@ Po It. 21: pridať `newman run docs/api/PaginiumCMS.postman_collection.json`.
 ## Známe incidenty a regresie (2026-07-18+)
 
 Detailný zoznam symptómov, príčin a opráv: **[ISSUES.md](../ISSUES.md)**.  
-CI zlyhania (GitHub Actions): sekcia **CI failures** + **ISS-015–019** (2.0.25).
+CI zlyhania (GitHub Actions): sekcia **CI failures** + **ISS-015–022** (2.0.25–2.0.26).
 
 | Problém | Test / overenie | Stav |
 |---------|----------------|------|
@@ -126,6 +126,9 @@ CI zlyhania (GitHub Actions): sekcia **CI failures** + **ISS-015–019** (2.0.25
 | PHPStan bulk `match.alwaysTrue` | PHPStan L8 | ✅ ISS-017 |
 | PHPStan `TrashController` fopen | PHPStan L8 | ✅ ISS-018 |
 | FE `tsc --noEmit` strict errors | `npm run type-check` | ✅ ISS-019 |
+| ESLint prekročenie `--max-warnings 65` | `npm run lint` | ✅ ISS-020 |
+| PHPStan redundantné `is_array()` v log readeri | `phpstan analyse backend --level=8` | ✅ ISS-021 |
+| Vitest `MediaManager` krehké text asserts | `npm test -- MediaManager.test.tsx` | ✅ ISS-022 |
 | Vitest worker crash (`useBulkSelection` loop) | `npm test` – 102/102 | ✅ ISS-005 |
 | PHPStan 15 chýb (historicky) | `phpstan analyse backend --level=8` | ✅ ISS-006 |
 | Debug `client-event` 404 | Konzola po redeploy, alebo `curl -X POST …/api/debug/client-event` → 204 | ✅ ISS-001 |
