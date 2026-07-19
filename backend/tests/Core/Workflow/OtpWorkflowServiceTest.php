@@ -10,7 +10,7 @@ class OtpWorkflowServiceTest extends TestCase
 {
     protected function tearDown(): void
     {
-        $storePath = __DIR__ . '/../../../storage/app/data/otp-challenges.json';
+        $storePath = __DIR__ . '/../../../storage/app/content/data/otp-challenges.json';
         if (is_file($storePath)) {
             @unlink($storePath);
         }

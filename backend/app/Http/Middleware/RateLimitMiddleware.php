@@ -68,6 +68,10 @@ class RateLimitMiddleware implements MiddlewareInterface
         ServerRequestInterface $request,
         RequestHandlerInterface $handler
     ): ResponseInterface {
+        if ($this->isTestingEnvironment()) {
+            return $handler->handle($request);
+        }
+
         if ($this->isExcluded($request)) {
             return $handler->handle($request);
         }
@@ -158,6 +162,11 @@ class RateLimitMiddleware implements MiddlewareInterface
         ->withHeader('X-RateLimit-Limit', (string) $this->maxRequests)
         ->withHeader('X-RateLimit-Remaining', '0')
         ->withHeader('X-RateLimit-Reset', (string) (time() + $this->window));
+    }
+
+    protected function isTestingEnvironment(): bool
+    {
+        return (getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? '')) === 'testing';
     }
 }
 

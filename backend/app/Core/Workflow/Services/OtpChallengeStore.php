@@ -52,12 +52,57 @@ final class OtpChallengeStore
      */
     public function find(string $id): ?array
     {
-        return $this->withLockedStore(function (array $store) use ($id): ?array {
+        $found = null;
+
+        $this->withLockedStore(function (array $store) use ($id, &$found): array {
             $this->pruneExpired($store);
             $challenge = $store['challenges'][$id] ?? null;
+            $found = is_array($challenge) ? $this->normalizeChallenge($challenge) : null;
 
-            return is_array($challenge) ? $challenge : null;
+            return $store;
         });
+
+        return $found;
+    }
+
+    /**
+     * @param array<string, mixed> $challenge
+     * @return ChallengeRecord|null
+     */
+    private function normalizeChallenge(array $challenge): ?array
+    {
+        foreach (['id', 'flow', 'email', 'code_hash', 'expires_at', 'attempts', 'created_at'] as $key) {
+            if (!isset($challenge[$key])) {
+                return null;
+            }
+        }
+
+        if (!isset($challenge['payload']) || !is_array($challenge['payload'])) {
+            return null;
+        }
+
+        if (
+            !is_string($challenge['id'])
+            || !is_string($challenge['flow'])
+            || !is_string($challenge['email'])
+            || !is_string($challenge['code_hash'])
+            || !is_int($challenge['expires_at'])
+            || !is_int($challenge['attempts'])
+            || !is_int($challenge['created_at'])
+        ) {
+            return null;
+        }
+
+        return [
+            'id' => $challenge['id'],
+            'flow' => $challenge['flow'],
+            'email' => $challenge['email'],
+            'code_hash' => $challenge['code_hash'],
+            'payload' => $challenge['payload'],
+            'expires_at' => $challenge['expires_at'],
+            'attempts' => $challenge['attempts'],
+            'created_at' => $challenge['created_at'],
+        ];
     }
 
     public function delete(string $id): void
@@ -99,6 +144,10 @@ final class OtpChallengeStore
             }
 
             $result = $callback($store);
+
+            if (is_array($result) && isset($result['challenges'])) {
+                $store = $result;
+            }
 
             ftruncate($handle, 0);
             rewind($handle);
