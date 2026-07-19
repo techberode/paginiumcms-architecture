@@ -21,12 +21,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | Admin inbox UX, list controls, comments/nav per-content | **2.0.25** | [below](#2025--2026-07-19) |
 | It.50 WAF + structured logging + admin Logy | **2.0.26** | [below](#2026--2026-07-19) |
 | It.10 polish, It.11 SSO/ACL, It.41–43 search/OTP | **2.0.27** | [below](#2027--2026-07-19) |
+| It.12 Blueprint / schema engine | **Unreleased** | [Unreleased](#unreleased) |
 
 ---
 
 ## [Unreleased]
 
-_Pending changes after 2.0.27._
+It.12 Blueprint / Schema Engine.
+
+### Added (It.12 — Blueprint engine)
+
+- **`BlueprintRepository`** — flat-file `data/blueprints/{type}.json`; built-in `page` + `article` defaults
+- **`DynamicValidator`** — blueprint field rules → shared `Validator`
+- **`GET/PUT/DELETE /api/admin/blueprints/*`**, `POST …/validate`
+- Admin **`/blueprints`**, `DynamicForm` preview, `frontend/src/api/blueprint.ts`
+- Docs: [ITERATION_12.md](docs/ITERATION_12.md)
 
 ---
 

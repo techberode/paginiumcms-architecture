@@ -32,7 +32,7 @@ PaginiumCMS keeps the Core intentionally minimal, secure, and fast. It moves sta
 | **API contract** | ✅ It. 21 | JsonResponder everywhere, MSW, Newman CI, RHF+Zod |
 | **PHPUnit** | ✅ **614 passing** (15 skipped) | PHPStan level 8 (0 errors) |
 | **Frontend** | ✅ It.43 unreleased | Command palette `Ctrl+K`, MSW, typed clients, public site |
-| **Next focus** | ⏳ **It.12** | Blueprint / Schema Engine |
+| **Next focus** | ⏳ **It.13** | Demo module (isolated mock data) |
 
 ### Planned (roadmap)
 
@@ -232,6 +232,7 @@ See [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md) and [user/CODE_EDITOR.md](u
 | 9 | [ITERATION_9.md](ITERATION_9.md) | ✅ Prototype port (nav, comments, contact) |
 | 10 | [ITERATION_10.md](ITERATION_10.md) | ✅ **RSS/sitemap/robots** + cache |
 | 11 | [ITERATION_11.md](ITERATION_11.md) | ✅ **SSO + ACL + security audit** (2.0.27) |
+| 12 | [ITERATION_12.md](ITERATION_12.md) | ✅ **Blueprint engine** (Unreleased) |
 | 19–22 | [ITERATION_19.md](ITERATION_19.md) … [ITERATION_22.md](ITERATION_22.md) | ✅ Index, hardening, contract, ops + feeds ship |
 | **23** | **[ITERATION_23.md](ITERATION_23.md)** | ✅ **SEO meta engine** (public `<head>` tags, 2.0.11) |
 | 27 | [ITERATION_27.md](ITERATION_27.md) | ✅ Admin view modes + SEO panel |

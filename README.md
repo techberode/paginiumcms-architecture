@@ -36,13 +36,14 @@ cd frontend && VITE_MSW=true npm run dev
 | Scheduler + monitoring | ✅ It.7, It.29 — cron planner, reports, `/scheduler` |
 | WAF + structured logs | ✅ It.50 — 2.0.26 |
 | SSO + path ACL + security audit | ✅ It.11 — **2.0.27** |
+| Blueprint / schema engine | ✅ It.12 (Unreleased) |
 | Advanced search + OTP workflows | ✅ It.41–43 — **2.0.27** |
 | PHPUnit | ✅ **614 testov** (15 skipped) |
 | Frontend | ✅ Admin SPA, public site, Monaco Code Editor, Ctrl+K search (Unreleased) |
 
 ### Ďalší krok
 
-**It.12** — Blueprint / Schema Engine ([ITERATION_12.md](docs/ITERATION_12.md))
+**It.13** — Demo modul ([ITERATION_13.md](docs/ITERATION_13.md))
 
 Detail: [docs/ROADMAP.md](docs/ROADMAP.md) · [docs/CONTINUATION.md](docs/CONTINUATION.md)
 

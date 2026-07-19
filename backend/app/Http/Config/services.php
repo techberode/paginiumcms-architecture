@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use PaginiumCMS\Core\Admin\Services\AdminCountsService;
 use PaginiumCMS\Core\Analytics\Contracts\ReporterInterface;
+use PaginiumCMS\Core\Blueprint\Services\BlueprintRepository;
+use PaginiumCMS\Core\Blueprint\Services\DynamicValidator;
 use PaginiumCMS\Core\Backup\Contracts\BackupInterface;
 use PaginiumCMS\Core\Analytics\Contracts\TrackerInterface;
 use PaginiumCMS\Core\Analytics\Middleware\AnalyticsMiddleware;
@@ -97,6 +99,7 @@ use PaginiumCMS\Http\Controllers\Admin\NotificationController;
 use PaginiumCMS\Http\Controllers\Admin\CodeEditorController;
 use PaginiumCMS\Http\Controllers\Admin\DeveloperController;
 use PaginiumCMS\Http\Controllers\Admin\GatedCodeEditorController;
+use PaginiumCMS\Http\Controllers\Admin\BlueprintController;
 use PaginiumCMS\Http\Controllers\Admin\AclController;
 use PaginiumCMS\Http\Controllers\Admin\SecurityAuditController;
 use PaginiumCMS\Http\Controllers\Admin\SettingsController;
@@ -706,6 +709,16 @@ return [
             get(OAuthSsoService::class),
             get(SettingsRepositoryInterface::class),
             get(SecurityLogger::class),
+            get(JsonResponder::class)
+        ),
+    BlueprintRepository::class => create(BlueprintRepository::class)
+        ->constructor(get(FileReaderInterface::class)),
+    DynamicValidator::class => create(DynamicValidator::class)
+        ->constructor(get(BlueprintRepository::class), get(Validator::class)),
+    BlueprintController::class => create(BlueprintController::class)
+        ->constructor(
+            get(BlueprintRepository::class),
+            get(DynamicValidator::class),
             get(JsonResponder::class)
         ),
 ];

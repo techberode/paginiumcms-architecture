@@ -97,7 +97,7 @@ Legenda: ✅ DONE · 🟡 PARTIAL (existuje časť, treba dokončiť/prepojiť) 
 | K | **Demo modul (izolované MOCK dáta)** | ⛔ | Neexistuje; staré mocky odstránené. |
 | L | **API Tracker + reporty návštevnosti + notifikácie** | ✅ | It.7 — `AnalyticsManager`, reporty, middleware, dashboard. |
 | M | **Jednotný Error Handler** | ✅ | `ApiErrorHandler` + Slim error middleware v `bootstrap/app.php`; 404 catch-all zjednotený; 422 s `errors` mapou. |
-| N | **Blueprint / Schema Engine** | ⛔ | Iba hardcoded `Page`/`Article`; žiadny systém definície typov/polí. |
+| N | **Blueprint / Schema Engine** | ✅ | **It.12** — `BlueprintRepository`, `DynamicValidator`, admin `/blueprints`. Integrácia do content save ⏳. |
 | O | **In-Memory Cache + agresívna cache** | ✅ | Hotové (viď §1); dorobiť `deleteByPrefix()`. |
 | P | **Media manager / DAM** | ✅ | Backend + FE `MediaManager` (It.8); plný DAM v1 — priečinky, sidecar, bulk (It.24). |
 | Q | **Nastavenia (settings) úložisko** | ✅ | `SettingsRepository`, `SettingsSchema`, `data/settings.json`, `SettingsController`, FE `SettingsView` + `SettingsContext`, `GET /api/settings/public`. **Odomknuté pre It. 6+ (SMTP, toast, SEO, feedy).** |
@@ -253,7 +253,7 @@ It.8 Media manager FE + WYSIWYG + picker — ✅ ([ITERATION_8.md](ITERATION_8.m
 It.9 prototype port (nav, comments, contact): see [ITERATION_9.md](ITERATION_9.md). SEO public meta: It.23 ✅. Admin SEO UX: It.27 ✅ (2.0.15).
 It.10 XML Feeds — ✅ ([ITERATION_10.md](ITERATION_10.md), 2.0.10 + polish Unreleased).
 It.11 SSO + jemnozrnné ACL + bezpečnostný audit log — ✅ ([ITERATION_11.md](ITERATION_11.md), Unreleased).
-It.12 Blueprint/Schema engine (po schválení návrhu).
+It.12 Blueprint/Schema engine — ✅ ([ITERATION_12.md](ITERATION_12.md), Unreleased).
 It.13 Demo modul s izolovanými MOCK dátami.
 It.14 Politika kódu (CodePolicyEngine) + oprava CodeEditor path/FE kontraktu.
 It.15 Externé doplnky mimo Core: PluginManager, install/import, HookManager DI.
