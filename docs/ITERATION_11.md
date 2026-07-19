@@ -1,7 +1,7 @@
 # Iteration 11 – SSO, Fine-Grained ACL & Security Audit Log
 
-**Status:** ✅ Complete (Unreleased)  
-**Version:** — (enterprise phase, ships with `[Unreleased]`)
+**Status:** ✅ Complete  
+**Release:** 2.0.27
 
 ## Summary
 
@@ -97,7 +97,7 @@ Public settings expose `sso.enabled` only (no secrets).
 
 - [ROADMAP.md](ROADMAP.md) – Iteration 11
 - [architecture/API.md](architecture/API.md) – security endpoints
-- [CHANGELOG.md](../CHANGELOG.md) – `[Unreleased]` It.11 section
+- [CHANGELOG.md](../CHANGELOG.md) – `[2.0.27]`
 
 ## Next
 
