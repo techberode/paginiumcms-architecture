@@ -237,6 +237,24 @@ final class SettingsSchema
                     ['key' => 'stockImageTopic', 'type' => 'enum', 'label' => 'Téma stock obrázkov', 'default' => 'tech', 'options' => ['tech', 'business', 'food', 'travel', 'health', 'nature', 'general'], 'rules' => ['required', 'in:tech,business,food,travel,health,nature,general'], 'help' => 'Obrázky sa vyberajú podľa zamerania webu (IT, varenie, cestovanie…).'],
                 ],
             ],
+            'sso' => [
+                'label' => 'SSO / OAuth',
+                'fields' => [
+                    ['key' => 'enabled', 'type' => 'bool', 'label' => 'Povoliť SSO prihlásenie', 'default' => false, 'rules' => ['bool']],
+                    ['key' => 'defaultRole', 'type' => 'enum', 'label' => 'Predvolená rola (nový účet)', 'default' => 'EDITOR', 'options' => ['USER', 'EDITOR', 'ADMIN'], 'rules' => ['required', 'in:USER,EDITOR,ADMIN']],
+                    ['key' => 'githubEnabled', 'type' => 'bool', 'label' => 'GitHub OAuth', 'default' => false, 'rules' => ['bool']],
+                    ['key' => 'githubClientId', 'type' => 'string', 'label' => 'GitHub Client ID', 'default' => '', 'rules' => ['string', 'max:255']],
+                    ['key' => 'githubClientSecret', 'type' => 'password', 'label' => 'GitHub Client Secret', 'default' => '', 'rules' => ['string', 'max:255']],
+                    ['key' => 'genericEnabled', 'type' => 'bool', 'label' => 'Generic OAuth2', 'default' => false, 'rules' => ['bool']],
+                    ['key' => 'genericName', 'type' => 'string', 'label' => 'Generic provider name', 'default' => 'OAuth', 'rules' => ['string', 'max:64']],
+                    ['key' => 'genericClientId', 'type' => 'string', 'label' => 'Generic Client ID', 'default' => '', 'rules' => ['string', 'max:255']],
+                    ['key' => 'genericClientSecret', 'type' => 'password', 'label' => 'Generic Client Secret', 'default' => '', 'rules' => ['string', 'max:255']],
+                    ['key' => 'genericAuthorizeUrl', 'type' => 'url', 'label' => 'Authorize URL', 'default' => '', 'rules' => ['url', 'max:512']],
+                    ['key' => 'genericTokenUrl', 'type' => 'url', 'label' => 'Token URL', 'default' => '', 'rules' => ['url', 'max:512']],
+                    ['key' => 'genericUserInfoUrl', 'type' => 'url', 'label' => 'UserInfo URL', 'default' => '', 'rules' => ['url', 'max:512']],
+                    ['key' => 'genericScope', 'type' => 'string', 'label' => 'OAuth scope', 'default' => 'openid email profile', 'rules' => ['string', 'max:255']],
+                ],
+            ],
         ];
     }
 

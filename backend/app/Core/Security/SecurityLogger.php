@@ -8,6 +8,8 @@ use PaginiumCMS\Core\Logging\Contracts\LoggerInterface;
 use PaginiumCMS\Core\Logging\Models\LogSeverity;
 use PaginiumCMS\Core\Notification\Services\IncidentNotifier;
 use PaginiumCMS\Core\Security\Services\LoginAttemptTracker;
+use PaginiumCMS\Modules\Security\Models\User;
+use PaginiumCMS\Modules\Security\Services\SecurityAuditStore;
 
 /**
  * Špecializovaný logger pre bezpečnostné udalosti.
@@ -25,6 +27,7 @@ final class SecurityLogger
         LoggerInterface $logger,
         private ?LoginAttemptTracker $loginAttempts = null,
         private ?IncidentNotifier $incidentNotifier = null,
+        private ?SecurityAuditStore $securityAudit = null,
         array $config = []
     ) {
         $this->logger = $logger;
@@ -55,6 +58,16 @@ final class SecurityLogger
             'type' => 'failed_login',
         ]);
 
+        $this->securityAudit?->append(
+            'failed_login',
+            LogSeverity::WARNING,
+            'Failed login attempt',
+            null,
+            $email,
+            $ip,
+            ['user_agent' => $userAgent ?? $_SERVER['HTTP_USER_AGENT'] ?? 'unknown']
+        );
+
         // Alert pri opakovaných pokusoch
         if ($this->config['alert_on_brute_force']) {
             $this->checkBruteForceAttempt($ip, $email);
@@ -77,6 +90,15 @@ final class SecurityLogger
             'timestamp' => date('Y-m-d H:i:s'),
             'type' => 'successful_login',
         ]);
+
+        $this->securityAudit?->append(
+            'successful_login',
+            LogSeverity::INFO,
+            'Successful login',
+            $userId,
+            $email,
+            $ip
+        );
     }
 
     /**
@@ -186,6 +208,56 @@ final class SecurityLogger
     {
         $this->loginAttempts?->clearSuccess($ip, $email);
         $this->logSuccessfulLogin($userId, $email, $ip);
+    }
+
+    public function logPermissionDenied(User $user, string $permission, ?string $path = null): void
+    {
+        $this->securityAudit?->append(
+            'permission_denied',
+            LogSeverity::WARNING,
+            sprintf('Permission denied: %s', $permission),
+            $user->getId(),
+            $user->getEmail(),
+            null,
+            ['permission' => $permission, 'path' => $path]
+        );
+    }
+
+    public function logSettingsChange(User $user, string $group): void
+    {
+        $this->securityAudit?->append(
+            'settings_change',
+            LogSeverity::INFO,
+            sprintf('Settings group updated: %s', $group),
+            $user->getId(),
+            $user->getEmail(),
+            null,
+            ['group' => $group]
+        );
+    }
+
+    public function logSsoLogin(User $user, string $provider, string $ip): void
+    {
+        $this->loginAttempts?->clearSuccess($ip, $user->getEmail());
+
+        $this->logger->info('Security: SSO login', [
+            'user_id' => $user->getId(),
+            'email' => $user->getEmail(),
+            'provider' => $provider,
+            'ip' => $ip,
+            'timestamp' => date('Y-m-d H:i:s'),
+            'type' => 'sso_login',
+        ]);
+
+        $this->securityAudit?->append(
+            'sso_login',
+            LogSeverity::INFO,
+            sprintf('SSO login via %s', $provider),
+            $user->getId(),
+            $user->getEmail(),
+            $ip,
+            ['provider' => $provider]
+        );
     }
 
     /**

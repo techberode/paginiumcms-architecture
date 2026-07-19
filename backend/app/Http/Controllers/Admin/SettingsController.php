@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Controllers\Admin;
 
 use InvalidArgumentException;
+use PaginiumCMS\Core\Security\SecurityLogger;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\Settings\SettingsSchema;
 use PaginiumCMS\Http\Support\JsonResponder;
+use PaginiumCMS\Modules\Security\Models\User;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -27,7 +29,8 @@ final class SettingsController
 {
     public function __construct(
         private SettingsRepositoryInterface $settings,
-        private JsonResponder $json
+        private JsonResponder $json,
+        private SecurityLogger $securityLogger
     ) {
     }
 
@@ -69,6 +72,11 @@ final class SettingsController
             $values = $this->settings->setGroup($group, $payload);
         } catch (InvalidArgumentException $e) {
             return $this->json->error($response, $e->getMessage(), 404);
+        }
+
+        $user = $request->getAttribute('user');
+        if ($user instanceof User) {
+            $this->securityLogger->logSettingsChange($user, $group);
         }
 
         return $this->json->success($response, ['values' => $values], 200, 'Nastavenia uložené');
@@ -114,6 +122,9 @@ final class SettingsController
             ],
             'feeds' => [
                 'enabled' => (bool) ($all['feeds']['enabled'] ?? true),
+            ],
+            'sso' => [
+                'enabled' => (bool) ($all['sso']['enabled'] ?? false),
             ],
             'comments' => [
                 'enabled' => (bool) ($all['comments']['enabled'] ?? true),

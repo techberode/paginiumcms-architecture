@@ -1,46 +1,103 @@
 # Iteration 11 – SSO, Fine-Grained ACL & Security Audit Log
 
-**Status:** Planned  
-**Version:** — (enterprise phase)
+**Status:** ✅ Complete (Unreleased)  
+**Version:** — (enterprise phase, ships with `[Unreleased]`)
 
 ## Summary
 
-Single sign-on (SAML/OAuth), file-level ACL beyond role-based permissions, and a complete security audit trail with admin UI and CSV export.
+OAuth2 single sign-on (GitHub + generic provider), path-level ACL layered on RBAC, and a dedicated security audit log with admin UI and CSV export. SAML is **not** in v1 scope.
 
-## Goals
+## Delivered
 
-| Area | Scope |
-|------|-------|
-| SSO | SAML/OAuth providers, flat-file config, role mapping |
-| ACL | Per-path permissions in JSON; extend `AuthorizationManager` |
-| Audit | Full `Modules/Audit` coverage: actions, CSV export, FE overview |
-| Security log | Failed logins, permission denials, settings changes |
+| Deliverable | Status |
+|-------------|--------|
+| OAuth2 SSO — GitHub + generic provider | ✅ |
+| Settings group `sso` (flat-file via `SettingsRepository`) | ✅ |
+| `GET /api/auth/sso/providers`, `/start`, `/callback` | ✅ |
+| SSO buttons on public login modal | ✅ |
+| Path ACL — `data/security/acl.json` + glob rules | ✅ |
+| `GET/PUT /api/admin/security/acl` | ✅ |
+| Admin ACL editor (`/security/acl`) | ✅ |
+| Security audit store — `data/security/audit_events.json` | ✅ |
+| `GET /api/admin/security/audit` + CSV export | ✅ |
+| Admin audit viewer (`/security/audit`) | ✅ |
+| `SecurityLogger` → audit events (login, permission, settings, SSO) | ✅ |
+| PHPUnit smoke for ACL, audit, SSO providers | ✅ |
 
-## Proposed backend
+## Backend
 
 ```
-Modules/Security/Services/SsoProvider.php
-Modules/Security/Services/AclRepository.php
-Modules/Audit/ – extend existing engine + export
+Modules/Security/Services/OAuthSsoService.php      # GitHub + generic OAuth2 (curl)
+Modules/Security/Services/AclRepository.php        # data/security/acl.json
+Modules/Security/Services/PathAclService.php       # glob match on content paths
+Modules/Security/Services/SecurityAuditStore.php   # data/security/audit_events.json
+Core/Security/SecurityLogger.php                   # append to SecurityAuditStore
+Http/Controllers/Auth/SsoController.php
+Http/Controllers/Admin/AclController.php
+Http/Controllers/Admin/SecurityAuditController.php
 Http/Routes/sso.php
+Http/Routes/security.php
 ```
 
-## Proposed frontend
+### API routes
 
-- SSO login buttons on `/login`
-- ACL editor in admin (path → role/permission matrix)
-- Audit log viewer with filters + CSV download
+| Method | Route | Auth | FE client |
+|--------|-------|------|-----------|
+| `GET` | `/api/auth/sso/providers` | public | `securityApi.listSsoProviders()` |
+| `GET` | `/api/auth/sso/{provider}/start` | public | `securityApi.startSso()` |
+| `GET` | `/api/auth/sso/{provider}/callback` | public | redirect handler |
+| `GET` | `/api/admin/security/audit` | ADMIN+2FA | `securityApi.listAudit()` |
+| `GET` | `/api/admin/security/audit/export` | ADMIN+2FA | `securityApi.exportAuditCsv()` |
+| `GET` | `/api/admin/security/acl` | ADMIN+2FA | `securityApi.getAcl()` |
+| `PUT` | `/api/admin/security/acl` | ADMIN+2FA | `securityApi.saveAcl()` |
 
-## Dependencies
+### ACL semantics
+
+- ACL is **opt-in**: `enabled: false` → all paths allowed (RBAC only).
+- When enabled, only paths matching a rule are restricted; unmatched paths stay open.
+- Rules use glob prefix (`content/pages/finance/*`); roles or permissions on the rule must match.
+- `SUPER_ADMIN` bypasses path ACL.
+
+### SSO settings (`sso` group)
+
+- `enabled`, `defaultRole` (new auto-provisioned users)
+- GitHub: `githubEnabled`, `githubClientId`, `githubClientSecret`
+- Generic OAuth2: `genericEnabled`, URLs, scope, client credentials
+
+Public settings expose `sso.enabled` only (no secrets).
+
+## Frontend
+
+- `frontend/src/api/security.ts` — typed audit/ACL/SSO client
+- `SecurityAuditManager.tsx` — `/security/audit` (filters, CSV download)
+- `AclManager.tsx` — `/security/acl` (enable toggle, rule matrix)
+- `LoginModal.tsx` — SSO provider buttons when enabled
+- `AdminSidebar.tsx` — Bezpeč. audit + ACL pravidlá links
+
+## Tests
+
+| Suite | File |
+|-------|------|
+| PHPUnit | `PathAclServiceTest` — role match / deny on restricted path |
+| PHPUnit | `SecurityAuditControllerTest` — auth + admin list |
+| PHPUnit | `SsoControllerTest` — providers envelope |
+
+## Out of scope (v1)
+
+- SAML provider
+- Wiring `PathAclService` into every content mutation (service ready; hook in next pass if needed)
+
+## Dependencies (met)
 
 - ✅ Iteration 5 – auth foundation
 - ✅ Iteration 20 – RBAC on mutations
-- ⏳ Iteration 21 – stable API contract for audit endpoints
+- ✅ Iteration 21 – JsonResponder API contract
 
 ## Related docs
 
 - [ROADMAP.md](ROADMAP.md) – Iteration 11
-- [CORE_HARDENING.md](architecture/CORE_HARDENING.md) – current RBAC model
+- [architecture/API.md](architecture/API.md) – security endpoints
+- [CHANGELOG.md](../CHANGELOG.md) – `[Unreleased]` It.11 section
 
 ## Next
 

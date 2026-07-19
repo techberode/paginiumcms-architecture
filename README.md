@@ -1,7 +1,7 @@
 # PaginiumCMS
 
 > **Verzia:** 2.0.26 · **Posledná aktualizácia:** júl 2026  
-> **Unreleased:** It.41–43 (OTP, sidebar counts, advanced search) — [CHANGELOG](CHANGELOG.md#unreleased)
+> **Unreleased:** It.11 (SSO, ACL, security audit) + It.41–43 — [CHANGELOG](CHANGELOG.md#unreleased)
 
 Headless flat-file CMS — PHP 8.5 backend (Slim 4) + React admin SPA.
 
@@ -35,12 +35,13 @@ cd frontend && VITE_MSW=true npm run dev
 | SEO + feeds | ✅ It.23 SEO meta (2.0.11) · It.10 RSS/sitemap/robots |
 | Scheduler + monitoring | ✅ It.7, It.29 — cron planner, reports, `/scheduler` |
 | WAF + structured logs | ✅ It.50 — 2.0.26 |
-| PHPUnit | ✅ **607 testov** (15 skipped) |
+| SSO + path ACL + security audit | ✅ It.11 (Unreleased) |
+| PHPUnit | ✅ **614 testov** (15 skipped) |
 | Frontend | ✅ Admin SPA, public site, Monaco Code Editor, Ctrl+K search (Unreleased) |
 
 ### Ďalší krok
 
-**It.11** — SSO + jemnozrnné ACL + audit log ([ITERATION_11.md](docs/ITERATION_11.md))
+**It.12** — Blueprint / Schema Engine ([ITERATION_12.md](docs/ITERATION_12.md))
 
 Detail: [docs/ROADMAP.md](docs/ROADMAP.md) · [docs/CONTINUATION.md](docs/CONTINUATION.md)
 

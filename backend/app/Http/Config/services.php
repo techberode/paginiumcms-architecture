@@ -63,6 +63,7 @@ use PaginiumCMS\Core\Feeds\Services\FeedGenerator;
 use PaginiumCMS\Core\Feeds\Services\RobotsTxtGenerator;
 use PaginiumCMS\Core\Feeds\Services\SitemapGenerator;
 use PaginiumCMS\Core\Seo\Services\SeoMetaBuilder;
+use PaginiumCMS\Core\Security\SecurityLogger;
 use PaginiumCMS\Core\Security\Services\LoginAttemptTracker;
 use PaginiumCMS\Core\Security\Firewall\FirewallBanStore;
 use PaginiumCMS\Core\Security\Firewall\FirewallIncidentLogger;
@@ -96,7 +97,10 @@ use PaginiumCMS\Http\Controllers\Admin\NotificationController;
 use PaginiumCMS\Http\Controllers\Admin\CodeEditorController;
 use PaginiumCMS\Http\Controllers\Admin\DeveloperController;
 use PaginiumCMS\Http\Controllers\Admin\GatedCodeEditorController;
+use PaginiumCMS\Http\Controllers\Admin\AclController;
+use PaginiumCMS\Http\Controllers\Admin\SecurityAuditController;
 use PaginiumCMS\Http\Controllers\Admin\SettingsController;
+use PaginiumCMS\Http\Controllers\Auth\SsoController;
 use PaginiumCMS\Http\Controllers\Admin\TrashController;
 use PaginiumCMS\Http\Controllers\Admin\FirewallController;
 use PaginiumCMS\Http\Controllers\Admin\LogController;
@@ -129,7 +133,14 @@ use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
 use PaginiumCMS\Modules\Media\Services\MediaRepository;
 use PaginiumCMS\Modules\Media\Services\StockImageCatalog;
 use PaginiumCMS\Modules\Media\Services\StockImageImporter;
+use PaginiumCMS\Modules\Security\Services\AclRepository;
+use PaginiumCMS\Modules\Security\Services\AuthorizationManager;
+use PaginiumCMS\Modules\Security\Services\OAuthSsoService;
+use PaginiumCMS\Modules\Security\Services\PathAclService;
+use PaginiumCMS\Modules\Security\Services\SecurityAuditStore;
+use PaginiumCMS\Modules\Security\Services\SessionManager;
 use PaginiumCMS\Modules\Security\Contracts\AuthenticationInterface;
+use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
 use PaginiumCMS\Modules\Security\Contracts\PasswordPolicyInterface;
 use PaginiumCMS\Modules\Security\Contracts\TwoFactorInterface;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
@@ -187,7 +198,8 @@ return [
     SettingsController::class => create(SettingsController::class)
         ->constructor(
             get(SettingsRepositoryInterface::class),
-            get(JsonResponder::class)
+            get(JsonResponder::class),
+            get(SecurityLogger::class)
         ),
 
     WorkflowController::class => create(WorkflowController::class)
@@ -672,5 +684,28 @@ return [
             get(ContentRepositoryInterface::class),
             get(ContentIndexService::class),
             get(ContentCacheService::class)
+        ),
+    SecurityAuditStore::class => create(SecurityAuditStore::class)
+        ->constructor(get(FileReaderInterface::class)),
+    AclRepository::class => create(AclRepository::class)
+        ->constructor(get(FileReaderInterface::class)),
+    PathAclService::class => create(PathAclService::class)
+        ->constructor(get(AclRepository::class), get(AuthorizationInterface::class)),
+    OAuthSsoService::class => create(OAuthSsoService::class)
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(UserRepository::class),
+            get(SessionManager::class)
+        ),
+    SecurityAuditController::class => create(SecurityAuditController::class)
+        ->constructor(get(SecurityAuditStore::class), get(JsonResponder::class)),
+    AclController::class => create(AclController::class)
+        ->constructor(get(AclRepository::class), get(SecurityLogger::class), get(JsonResponder::class)),
+    SsoController::class => create(SsoController::class)
+        ->constructor(
+            get(OAuthSsoService::class),
+            get(SettingsRepositoryInterface::class),
+            get(SecurityLogger::class),
+            get(JsonResponder::class)
         ),
 ];

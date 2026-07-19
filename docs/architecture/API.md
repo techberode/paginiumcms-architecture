@@ -118,10 +118,25 @@ Canonical JSON shapes: `{ success, data?, error?, errors?, meta? }`. Auth endpoi
 | Settings | `frontend/src/api/settings.ts` |
 | Firewall | `frontend/src/api/firewall.ts` |
 | Logs | `frontend/src/api/logs.ts` |
+| Security (audit, ACL, SSO) | `frontend/src/api/security.ts` |
 | Workflows (OTP) | `frontend/src/api/workflows.ts` |
 | Barrel | `frontend/src/api/index.ts` |
 
 Dev mocks: `VITE_MSW=true npm run dev` → `frontend/src/mocks/handlers.ts`
+
+### Security (It.11)
+
+| Method | Route | Notes |
+|--------|-------|-------|
+| `GET` | `/api/auth/sso/providers` | Public; enabled providers only |
+| `GET` | `/api/auth/sso/{provider}/start` | Redirect to IdP |
+| `GET` | `/api/auth/sso/{provider}/callback` | OAuth callback → session |
+| `GET` | `/api/admin/security/audit` | ADMIN + 2FA; query `type`, `severity`, `limit` |
+| `GET` | `/api/admin/security/audit/export` | CSV download |
+| `GET` | `/api/admin/security/acl` | Current ACL rules |
+| `PUT` | `/api/admin/security/acl` | `{ enabled, rules[] }` |
+
+Storage: `data/security/audit_events.json`, `data/security/acl.json`.
 
 ---
 
