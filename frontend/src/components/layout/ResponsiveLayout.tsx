@@ -1,7 +1,8 @@
 // frontend/src/components/layout/ResponsiveLayout.tsx
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
+import { useAuth } from '../../hooks/useAuth';
 import { ChangePasswordModal } from '../auth/ChangePasswordModal';
 import { AdminSidebar } from '../backend/AdminSidebar';
 import { AdminHeader } from '../backend/AdminHeader';
@@ -19,6 +20,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) 
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const location = useLocation();
   const isMobile = useMediaQuery('(max-width: 1023px)');
+  const { twoFactorSetupPending } = useAuth();
 
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -71,6 +73,15 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) 
           onOpenChangePassword={() => setChangePasswordOpen(true)}
         />
         <DemoModeBanner />
+        {twoFactorSetupPending && location.pathname !== '/account/security' && (
+          <div className="mx-6 sm:mx-8 mt-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-100">
+            Dokončite nastavenie 2FA — naskenujte QR kód a zadajte overovací kód v{' '}
+            <Link to="/account/security" className="font-semibold underline">
+              bezpečnosti účtu
+            </Link>
+            .
+          </div>
+        )}
         <main className="p-6 sm:p-8 max-w-7xl mx-auto w-full flex-1 animate-fadeIn">
           {children}
         </main>

@@ -203,6 +203,8 @@ class UserRepository
                 $user->setTwoFactorEnabled($value);
             } elseif ($key === 'twoFactorSecret') {
                 $user->setTwoFactorSecret($value);
+            } elseif ($key === 'twoFactorVerifiedAt') {
+                $user->setTwoFactorVerifiedAt($value !== null ? (int) $value : null);
             } elseif ($key === 'createdAt') {
                 $property = $reflection->getProperty('createdAt');
                 $property->setValue($user, $value);
@@ -303,6 +305,7 @@ class UserRepository
             'active' => $user->isActive(),
             'twoFactorEnabled' => $user->isTwoFactorEnabled(),
             'twoFactorSecret' => $user->getTwoFactorSecret(),
+            'twoFactorVerifiedAt' => $user->getTwoFactorVerifiedAt(),
             'createdAt' => $user->getCreatedAt(),
             'updatedAt' => $user->getUpdatedAt(),
         ];

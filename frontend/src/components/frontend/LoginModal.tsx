@@ -1,6 +1,6 @@
 // frontend/src/components/frontend/LoginModal.tsx
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Shield,
   Mail,
@@ -25,7 +25,8 @@ export const LoginModal: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [ssoProviders, setSsoProviders] = useState<SsoProvider[]>([]);
-  const { login, verifyTwoFactorLogin, pendingTwoFactor, user } = useAuth();
+  const { login, verifyTwoFactorLogin, pendingTwoFactor, twoFactorSetupPending, user } = useAuth();
+  const navigate = useNavigate();
   const toast = useToast();
   const { settings } = useSettingsContext();
   const demoCredentials = settings.demo?.enabled ? settings.demo.credentials : null;
@@ -40,10 +41,10 @@ export const LoginModal: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (pendingTwoFactor && user) {
+    if (pendingTwoFactor && user && !twoFactorSetupPending) {
       setStep('totp');
     }
-  }, [pendingTwoFactor, user]);
+  }, [pendingTwoFactor, twoFactorSetupPending, user]);
 
   const handleCredentials = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,6 +60,7 @@ export const LoginModal: React.FC = () => {
         toast.info('Zadajte TOTP kód z autentifikátora');
       } else if (outcome.success) {
         toast.success('Prihlásenie úspešné');
+        navigate('/dashboard', { replace: true });
       } else {
         toast.error(outcome.error || 'Neplatný e-mail alebo heslo');
       }
@@ -93,6 +95,7 @@ export const LoginModal: React.FC = () => {
       const ok = await verifyTwoFactorLogin(totpCode.trim());
       if (ok) {
         toast.success('2FA overenie úspešné');
+        navigate('/dashboard', { replace: true });
       } else {
         toast.error('Neplatný TOTP kód');
       }

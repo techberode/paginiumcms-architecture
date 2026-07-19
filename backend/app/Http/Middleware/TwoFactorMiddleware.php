@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Middleware;
 
+use PaginiumCMS\Core\Security\TwoFactorPolicy;
 use PaginiumCMS\Modules\Security\Contracts\TwoFactorInterface;
 use PaginiumCMS\Modules\Security\Models\User;
 use Psr\Http\Message\ResponseInterface;
@@ -50,7 +51,16 @@ class TwoFactorMiddleware implements MiddlewareInterface
             return $this->jsonError('Neprihlásený používateľ', 401);
         }
 
+        if (!TwoFactorPolicy::isRequired()) {
+            return $handler->handle($request);
+        }
+
         if (!$user->isTwoFactorEnabled()) {
+            return $handler->handle($request);
+        }
+
+        // First-time setup (QR scan) — not the same as login TOTP challenge.
+        if ($user->getTwoFactorVerifiedAt() === null) {
             return $handler->handle($request);
         }
 

@@ -36,7 +36,7 @@ class TwoFactorController
             return $this->json->error($response, 'Používateľ nebol nájdený', 404);
         }
 
-        if ($freshUser->isTwoFactorEnabled()) {
+        if ($freshUser->isTwoFactorEnabled() && $freshUser->getTwoFactorVerifiedAt() !== null) {
             return $this->json->error($response, '2FA je už aktivovaná', 400);
         }
 
@@ -182,6 +182,7 @@ class TwoFactorController
         return $this->json->respond($response, [
             'enabled' => $freshUser->isTwoFactorEnabled(),
             'verified' => $this->twoFactor->isTotpVerified(),
+            'setup_pending' => $freshUser->isTwoFactorEnabled() && $freshUser->getTwoFactorVerifiedAt() === null,
         ]);
     }
 

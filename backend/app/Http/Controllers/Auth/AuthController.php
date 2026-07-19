@@ -6,6 +6,7 @@ namespace PaginiumCMS\Http\Controllers\Auth;
 
 use PaginiumCMS\Core\Notification\NotificationService;
 use PaginiumCMS\Core\Security\SecurityLogger;
+use PaginiumCMS\Core\Security\TwoFactorPolicy;
 use PaginiumCMS\Core\Security\Services\LoginAttemptTracker;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\Workflow\Services\OtpWorkflowService;
@@ -83,7 +84,11 @@ class AuthController
 
             $this->securityLogger->recordSuccessfulLogin($user->getId(), $email, $ip);
 
-            if ($user->isTwoFactorEnabled()) {
+            if (
+                TwoFactorPolicy::isRequired()
+                && $user->isTwoFactorEnabled()
+                && $user->getTwoFactorVerifiedAt() !== null
+            ) {
                 return $this->json->respond($response, [
                     'success' => true,
                     'requires_two_factor' => true,

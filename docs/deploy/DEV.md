@@ -93,6 +93,7 @@ Combined crontab example (every minute):
 | API returns HTML in browser | Use Vite dev server (3025), not `file://` or static `dist/` without nginx |
 | 401 on admin after login | Check session cookies; proxy must forward credentials |
 | Odhlásenie počas editácie / pri uložení | Reštart PHP po deployi. `.env`: `SESSION_LIFETIME=28800`, `SESSION_STRICT=false`. `SESSION_USE_STRICT_MODE` ≠ `SESSION_STRICT` (prvé = PHP ini, druhé = IP binding). Minimum lifetime v kóde je 300 s. |
+| TOTP/2FA počas vývoja obmedzuje | `.env`: `TWO_FACTOR_REQUIRED=false` (platí len pri `APP_ENV=development|local|testing`, nie na produkcii). Reštart PHP. |
 | Media images 404 | Ensure backend serves `/storage/...` or nginx alias; Vite proxy includes `/storage` |
 | 503 on public API | Check `general.maintenanceMode` in settings |
 | 429 „Príliš veľa požiadaviek“ / login lockout | `php backend/bin/console security:clear-lockouts` on PHP server |

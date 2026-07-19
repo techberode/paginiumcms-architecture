@@ -172,11 +172,14 @@ export const authApi = {
       return Boolean(res.success);
     },
 
-    getStatus: async (): Promise<{ enabled: boolean; verified: boolean }> => {
-      const res = await apiClient.get<{ enabled: boolean; verified: boolean }>('/api/auth/2fa/status');
+    getStatus: async (): Promise<{ enabled: boolean; verified: boolean; setupPending: boolean }> => {
+      const res = await apiClient.get<{ enabled: boolean; verified: boolean; setup_pending?: boolean }>(
+        '/api/auth/2fa/status'
+      );
       return {
         enabled: Boolean(res.enabled ?? res.data?.enabled),
         verified: Boolean(res.verified ?? res.data?.verified),
+        setupPending: Boolean(res.setup_pending ?? res.data?.setup_pending),
       };
     },
 

@@ -62,7 +62,7 @@ export const TwoFactorSettings: React.FC = () => {
         setEnabled(true);
         setVerified(false);
         toast.info('Naskenujte QR kód v autentifikátore a zadajte overovací kód');
-        await refreshUser();
+        setUser((prev) => (prev ? { ...prev, twoFactorEnabled: true } : prev));
       } else {
         toast.error('Nepodarilo sa aktivovať 2FA');
       }

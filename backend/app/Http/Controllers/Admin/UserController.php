@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Controllers\Admin;
 
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
+use PaginiumCMS\Core\Security\TwoFactorPolicy;
 use PaginiumCMS\Core\Validation\ValidationException;
 use PaginiumCMS\Core\Validation\ValidationRules;
 use PaginiumCMS\Core\Validation\Validator;
@@ -123,7 +124,7 @@ final class UserController
         $user->setPassword($password);
 
         if ($this->isTwoFactorEnforcedFor($user)) {
-            $user->setTwoFactorEnabled(true);
+            // Vynútené 2FA ≠ automaticky twoFactorEnabled — secret vznikne až pri /account/security.
         } elseif (isset($payload['twoFactorEnabled'])) {
             $user->setTwoFactorEnabled((bool) $payload['twoFactorEnabled']);
         }
@@ -193,7 +194,9 @@ final class UserController
         }
 
         if ($this->isTwoFactorEnforcedFor($user)) {
-            $user->setTwoFactorEnabled(true);
+            if (isset($payload['twoFactorEnabled']) && !(bool) $payload['twoFactorEnabled']) {
+                // Staff nemôže vypnúť 2FA, ak je už aktivovaná — ignoruj pokus o disable.
+            }
         } elseif (isset($payload['twoFactorEnabled'])) {
             $user->setTwoFactorEnabled((bool) $payload['twoFactorEnabled']);
         }
@@ -314,6 +317,10 @@ final class UserController
 
     private function requireTwoFactorStaff(): bool
     {
+        if (!TwoFactorPolicy::isRequired()) {
+            return false;
+        }
+
         $security = $this->settings->group('security');
 
         return (bool) ($security['requireTwoFactorStaff'] ?? true);

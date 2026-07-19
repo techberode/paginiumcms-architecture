@@ -103,36 +103,16 @@ class ApiClient {
         if (error.response?.status === 401) {
           const requestUrl = String(error.config?.url ?? '');
           const payload = error.response?.data as ApiResponse | undefined;
-          const skipRedirect =
-            requestUrl.includes('/api/auth/me') ||
-            requestUrl.includes('/api/settings/public') ||
-            requestUrl.includes('/api/locks/') ||
-            requestUrl.includes('/api/drafts/') ||
-            payload?.requires_two_factor === true;
 
-          if (!skipRedirect) {
-            const adminPrefixes = [
-              '/dashboard',
-              '/pages',
-              '/articles',
-              '/media',
-              '/navigation',
-              '/comments',
-              '/messages',
-              '/github',
-              '/code-editor',
-              '/backups',
-              '/audit',
-              '/notifications',
-              '/settings',
-              '/users',
-            ];
-            const onAdminPage = adminPrefixes.some((prefix) =>
-              window.location.pathname.startsWith(prefix)
-            );
-            if (onAdminPage) {
-              window.location.href = '/login';
-            }
+          if (payload?.requires_two_factor === true) {
+            window.dispatchEvent(new CustomEvent('paginium:totp-required'));
+          } else if (
+            !requestUrl.includes('/api/auth/me') &&
+            !requestUrl.includes('/api/auth/login') &&
+            !requestUrl.includes('/api/auth/2fa/') &&
+            !requestUrl.includes('/api/settings/public')
+          ) {
+            window.dispatchEvent(new CustomEvent('paginium:auth-expired'));
           }
         }
         return Promise.reject(error);
