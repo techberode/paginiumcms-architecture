@@ -10,6 +10,7 @@ use PaginiumCMS\Core\FlatFile\Services\TrashService;
 use PaginiumCMS\Modules\Comments\Contracts\CommentsRepositoryInterface;
 use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
 use PaginiumCMS\Modules\Messages\Contracts\MessageRepositoryInterface;
+use PaginiumCMS\Core\Security\Firewall\FirewallService;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
 
@@ -25,7 +26,8 @@ final class AdminCountsService
         private MessageRepositoryInterface $messages,
         private BackupInterface $backups,
         private TrashService $trash,
-        private UserRepository $users
+        private UserRepository $users,
+        private FirewallService $firewall
     ) {
     }
 
@@ -46,6 +48,7 @@ final class AdminCountsService
             $counts['messages'] = count($this->messages->findAll());
             $counts['trash'] = count($this->trash->listItems());
             $counts['users'] = count($this->users->findAll());
+            $counts['firewall_jails'] = $this->firewall->countActiveJails();
         }
 
         return $counts;

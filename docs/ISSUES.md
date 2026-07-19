@@ -1,6 +1,6 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-19 · verzia **2.0.24+**
+> Posledná aktualizácia: 2026-07-19 · verzia **2.0.25+**
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
 
@@ -28,6 +28,27 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-012 | CSRF middleware nezapojený (audit S3) | Stredná | ⏳ Odložené — SameSite=Lax |
 | ISS-013 | ntfy bez auth — privátne topicy zlyhajú | Stredná | ✅ It.47 (Bearer/Basic + test-connector) |
 | ISS-014 | CORS dev wildcardy pri zlej `APP_ENV` (audit S6) | Nízka | ⏳ Overiť deploy |
+| ISS-015 | PHPUnit → 429 / 503 / OTP persistencia | Stredná (CI) | ✅ Opravené (2.0.25) |
+| ISS-016 | PHPStan `phpVersion` vs `composer.json` | Stredná (CI) | ✅ Opravené (2.0.25) |
+| ISS-017 | PHPStan `match.alwaysTrue` v bulk controlleroch | Stredná (CI) | ✅ Opravené (2.0.25) |
+| ISS-018 | PHPStan `fopen` resource v `TrashController` | Stredná (CI) | ✅ Opravené (2.0.25) |
+| ISS-019 | `tsc --noEmit` strict TypeScript chyby | Stredná (CI) | ✅ Opravené (2.0.25) |
+
+---
+
+## CI failures (GitHub Actions)
+
+Workflow: [`.github/workflows/ci.yml`](../.github/workflows/ci.yml)
+
+| CI job | Step | Symptóm | Issue |
+|--------|------|---------|-------|
+| `backend` | PHPStan level 8 | Analýza zlyhá (verzia PHP, `match`, `fopen`) | ISS-016, ISS-017, ISS-018 |
+| `backend` | PHPUnit | 429 Too Many Requests, 503 maintenance, flaky OTP | ISS-015 |
+| `frontend` | `npm run type-check` | TS2352 / TS6133 / TS2322 | ISS-019 |
+| `frontend` | `npm test` | Worker crash, `act(...)` stderr | ISS-005, ISS-010 |
+| `backend` | PHPStan (historicky) | 15 typových chýb | ISS-006 |
+
+Každý záznam nižšie obsahuje **popis chyby**, **navrhované riešenie** a **implementované riešenie**.
 
 ---
 
@@ -265,6 +286,112 @@ Potom otvor **`https://192.168.10.26:8443/settings`** – varovanie pri heslách
 
 ---
 
+## ISS-015 – PHPUnit: rate limit, maintenance a OTP persistencia
+
+**CI job:** `backend` → step **PHPUnit**
+
+**Symptóm:** Náhodné / opakované zlyhania integračných testov:
+- HTTP **429** (rate limit) pri sérii requestov v jednom teste
+- HTTP **503** (maintenance mode) ak predchádzajúci test nechal `maintenanceMode=true` v `settings.json`
+- OTP workflow testy padali kvôli neúplnému zápisu do `otp-challenges.json` alebo zdieľanej persistencii medzi testami
+
+**Navrhované riešenie:**
+1. V `APP_ENV=testing` obísť globálny rate limit (rovnako ako pre login limiter)
+2. V `TestCase::setUp()` resetovať kritické settings skupiny a mazať OTP / cache stores
+3. `SettingsRepository::setGroup()` validovať len odoslané polia, nie celú schému pri čiastočnom update
+
+**Implementované riešenie** (`f54361d`):
+- `RateLimitMiddleware` — early return pri `APP_ENV=testing`
+- `TestCase` — `resetPersistedTestSettings()`, `clearOtpChallengeStore()`, `clearRateLimitCache()`, `clearApplicationCache()`
+- `OtpChallengeStore` — spoľahlivejší zápis cez flock
+- `SettingsRepository` — partial group update bez false-positive validácie
+
+**Overenie:** `./vendor/bin/phpunit` — 587 testov OK, opakovateľné behy bez 429/503.
+
+---
+
+## ISS-016 – PHPStan: nezhoda `phpVersion` s Composer
+
+**CI job:** `backend` → step **PHPStan level 8**
+
+**Symptóm:** PHPStan padal alebo hlásil nekompatibilné správanie; v `phpstan.neon` bolo `phpVersion: 80500`, zatiaľ čo `composer.json` vyžaduje `"php": "^8.4"` (minimálna podporovaná verzia 8.4, nie 8.5).
+
+**Navrhované riešenie:** Zosúladiť PHPStan target s Composer floor — nastaviť `phpVersion: 80400`, aby analýza zodpovedala najstaršej podporovanej verzii v produkcii/CI.
+
+**Implementované riešenie** (`d5c2660`):
+- `phpstan.neon` — `phpVersion: 80500` → `80400`
+
+**Overenie:** `./vendor/bin/phpstan analyse backend --level=8` — 0 chýb.
+
+---
+
+## ISS-017 – PHPStan: `match.alwaysTrue` v bulk akciách
+
+**CI job:** `backend` → step **PHPStan level 8**
+
+**Symptóm:** PHPStan hlásil `match.alwaysTrue` v nových bulk metódach:
+- `MessageController::bulkAction()` — vetva `match ($action)` mala nerealizovateľné vetvy (pred `$action` už prebehla validácia `in_array(...)`)
+- `CommentsController::bulkAction()` — rovnaký pattern
+
+**Navrhované riešenie:** Nahradiť `match` explicitným `if / elseif` reťazcom po validácii `$action`, alebo presunúť `match` pred validáciu s default vetvou. Preferované: `if / elseif` — čitateľnejšie pri zúženom type po guard clause.
+
+**Implementované riešenie** (`d5c2660`):
+- `MessageController::bulkAction()` — `read` / `processed` / `archive` / `delete` cez `if / elseif`
+- `CommentsController::bulkAction()` — rovnaký refactor
+
+**Overenie:** PHPStan L8 čistý; bulk API testované cez admin inbox UX (Správy / Komentáre).
+
+---
+
+## ISS-018 – PHPStan: `TrashController::downloadBackup` a `fopen`
+
+**CI job:** `backend` → step **PHPStan level 8**
+
+**Symptóm:** PHPStan `argument.type` — `Stream` konštruktor očakáva `resource`, ale `fopen(...)` môže vrátiť `false`; chýbala ochrana pred zlyhaním otvorenia súboru.
+
+**Navrhované riešenie:** Skontrolovať návratovú hodnotu `fopen`; pri `false` vrátiť JSON chybu 500 namiesto pasovania do `Stream`.
+
+**Implementované riešenie** (`d5c2660`):
+```php
+$handle = fopen($path, 'rb');
+if ($handle === false) {
+    return $this->json->error($response, 'Nepodarilo sa otvoriť zálohu', 500);
+}
+```
+
+**Overenie:** PHPStan L8; `TrashControllerTest` pokrýva download flow.
+
+---
+
+## ISS-019 – Frontend CI: `tsc --noEmit` strict errors
+
+**CI job:** `frontend` → step **TypeScript type-check** (`npm run type-check`)
+
+**Symptóm:** Po release 2.0.25 CI padalo na strict TypeScript:
+
+| Súbor | Chyba | Správa |
+|-------|-------|--------|
+| `api/comments.ts` | TS2352 | Nebezpečný cast `res as Record<string, unknown>` pri OTP vetve |
+| `api/workflows.ts` | TS2352 | Priamy cast odpovede POST `/workflows/otp/verify` |
+| `MarkdownEditor.tsx` | TS2352 | Cast publish odpovede na `Record<string, unknown>` |
+| `BackupManager.tsx` | TS6133 | Nepoužitá premenná `completedBackups` |
+| `Navbar.tsx` | TS2322 | `active` môže byť `boolean \| undefined`, komponent vyžaduje `boolean` |
+
+**Navrhované riešenie:**
+- OTP a workflow odpovede zužiť cez `as unknown as { ... }` + runtime `typeof` guardy
+- Odstrániť mŕtvy kód; pre optional chain doplniť `?? false`
+
+**Implementované riešenie** (`5398b48`):
+- `comments.ts` — `body` cez `unknown`, `requires_otp === true`, `challenge_id` len ak `string`
+- `workflows.ts` — typed intermediate object, `Comment` import, `parseOtpPending(res as unknown as ...)`
+- `MarkdownEditor.tsx` — `response as unknown as Record<string, unknown>` pre `extractOtpPending`
+- `BackupManager.tsx` — odstránená nepoužitá `completedBackups`
+- `Navbar.tsx` — `?? false` na `active` boolean
+
+**Overenie:** `cd frontend && npm run type-check` — exit 0; CI frontend job green.
+
+---
+
 ## Externé / irelevantné hlášky
 
 | Hláška | Zdroj |
@@ -276,7 +403,7 @@ Potom otvor **`https://192.168.10.26:8443/settings`** – varovanie pri heslách
 
 ## Súvisiace dokumenty
 
-- [CHANGELOG.md](../CHANGELOG.md) — release 2.0.24 (post-audit hardening + QA)
+- [CHANGELOG.md](../CHANGELOG.md) — release 2.0.25 (admin inbox + CI fixes ISS-015–019)
 - [TESTING.md](developer/TESTING.md) – ako spúšťať testy a regresiu
 - [ROADMAP.md](ROADMAP.md) – plánované iterácie (It.41+, It.47–49)
 - [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) – It.29+ detail

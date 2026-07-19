@@ -32,6 +32,7 @@ abstract class TestCase extends BaseTestCase
 
         $this->clearRateLimitCache();
         $this->clearLoginAttemptStore();
+        $this->clearFirewallStore();
         $this->clearOtpChallengeStore();
 
         $this->clearTrashStore();
@@ -96,6 +97,20 @@ abstract class TestCase extends BaseTestCase
         $path = __DIR__ . '/../../storage/app/content/data/security/login_attempts.json';
         if (is_file($path)) {
             @unlink($path);
+        }
+    }
+
+    private function clearFirewallStore(): void
+    {
+        $dir = __DIR__ . '/../../storage/app/content/data/security/firewall';
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        foreach (glob($dir . '/*') ?: [] as $file) {
+            if (is_file($file)) {
+                @unlink($file);
+            }
         }
     }
 

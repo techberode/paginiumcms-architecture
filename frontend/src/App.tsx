@@ -33,6 +33,8 @@ import { AdminRoleGuard } from './components/auth/AdminRoleGuard';
 import { PreviewPage } from './components/backend/PreviewPage';
 import { DeveloperLogsViewer } from './components/backend/DeveloperLogsViewer';
 import { TrashManager } from './components/backend/TrashManager';
+import { FirewallManager } from './components/backend/FirewallManager';
+import { LogsManager } from './components/backend/LogsManager';
 import { debugLog } from './utils/debugLog';
 
 function LoadingScreen() {
@@ -131,6 +133,8 @@ function App() {
         <Route path="/code-editor/*" element={<CodeEditor />} />
         <Route path="/backups" element={<BackupManager />} />
         <Route path="/trash" element={<TrashManager />} />
+        <Route path="/firewall" element={<FirewallManager />} />
+        <Route path="/logs" element={<LogsManager />} />
         <Route path="/audit" element={<AuditTrail />} />
         <Route path="/audit/content/:contentId" element={<AuditTrail />} />
         <Route path="/audit/user/:userId" element={<AuditTrail />} />

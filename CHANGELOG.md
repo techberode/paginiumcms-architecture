@@ -19,6 +19,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | Content SEO media picker + blog preview fix | **2.0.23** | [below](#2023--2026-07-18) |
 | Post-audit security hardening + QA cleanup + roadmap It.47–49 | **2.0.24** | [below](#2024--2026-07-19) |
 | Admin inbox UX, list controls, comments/nav per-content | **2.0.25** | [below](#2025--2026-07-19) |
+| It.50 WAF + structured logging + admin Logy | **2.0.26** | [below](#2026--2026-07-19) |
+
+---
+
+## [2.0.26] – 2026-07-19
+
+Interný WAF (It.50), production HTTP logging, admin Logy modul, CI incident docs (ISS-015–019).
+
+### Added
+
+- **WAF (It.50):** `FirewallMiddleware`, 5 built-in scenárov, jail/permanent ban, admin `/firewall`,
+  settings skupina `firewall`, `docs/user/FIREWALL.md`.
+- **Structured logging:** `RequestLoggingMiddleware` — každý endpoint s timestamp + IP;
+  `ApplicationLogReader` agreguje app/audit/event/user logy.
+- **Admin Logy:** `/logs`, dashboard panel severity (24 h), `GET/POST /api/admin/logs/*`.
+- **Settings:** skupina `logging` (requestLogging, minSeverity, retentionDays, slowRequestMs).
+- **CI docs:** ISS-015–019 v `docs/ISSUES.md` (PHPStan, PHPUnit, TypeScript CI fixes).
+
+### Changed
+
+- Dashboard overview obsahuje `logs.by_severity` pre panel Logy.
+
+### Tests
+
+- Firewall + LogController PHPUnit; PHPStan L8; frontend type-check.
 
 ---
 

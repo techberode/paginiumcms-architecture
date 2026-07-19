@@ -13,6 +13,8 @@ use PaginiumCMS\Http\Middleware\RateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\LoginRateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\LocaleMiddleware;
 use PaginiumCMS\Http\Middleware\MaintenanceModeMiddleware;
+use PaginiumCMS\Http\Middleware\FirewallMiddleware;
+use PaginiumCMS\Http\Middleware\RequestLoggingMiddleware;
 
 // ---------- PÔVODNÉ IMPORTY ----------
 use PaginiumCMS\Modules\Security\Services\AuthenticationManager;
@@ -244,6 +246,20 @@ $containerBuilder->addDefinitions([
             excludedIps: $isTesting ? ['127.0.0.1', '::1'] : [],
             // Ak beží ZA nginx reverse proxy (LAN: .26 → PHP .20), pridajte IP nginx hosta.
     trustedProxies: array_filter(explode(',', (string)($_ENV['TRUSTED_PROXIES'] ?? '127.0.0.1,::1,192.168.10.26')))
+        );
+    },
+
+    FirewallMiddleware::class => function ($container) {
+        return new FirewallMiddleware(
+            $container->get(\PaginiumCMS\Core\Security\Firewall\FirewallService::class),
+            trustedProxies: array_filter(explode(',', (string)($_ENV['TRUSTED_PROXIES'] ?? '127.0.0.1,::1,192.168.10.26')))
+        );
+    },
+
+    RequestLoggingMiddleware::class => function ($container) {
+        return new RequestLoggingMiddleware(
+            $container->get(\PaginiumCMS\Core\Logging\Services\AccessLogService::class),
+            trustedProxies: array_filter(explode(',', (string)($_ENV['TRUSTED_PROXIES'] ?? '127.0.0.1,::1,192.168.10.26')))
         );
     },
 
@@ -525,6 +541,7 @@ $app->add(new CorsMiddleware($corsOptions));
 $app->add($container->get(SecurityMiddleware::class));
 $app->add($container->get(MaintenanceModeMiddleware::class));
 $app->add($container->get(LocaleMiddleware::class));
+$app->add($container->get(FirewallMiddleware::class));
 $app->add($container->get(RateLimitMiddleware::class));
 $app->add($container->get(AnalyticsMiddleware::class));
 
@@ -709,6 +726,8 @@ $app->options('/{routes:.+}', function ($request, $response, $args) {
 if (DebugEventLogger::isEnabled()) {
     $app->add(new DebugRequestMiddleware());
 }
+
+$app->add($container->get(RequestLoggingMiddleware::class));
 
 if (DebugEventLogger::isEnabled()) {
     $routeFiles = glob(__DIR__ . '/../app/Http/Routes/*.php') ?: [];

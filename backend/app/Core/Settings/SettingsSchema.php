@@ -184,6 +184,29 @@ final class SettingsSchema
                     ['key' => 'requireTwoFactorStaff', 'type' => 'bool', 'label' => 'Vynútiť 2FA pre editorov a adminov', 'default' => true, 'rules' => ['bool'], 'help' => 'Pri zapnutí nie je možné vypnúť 2FA pre roly EDITOR, ADMIN a SUPER_ADMIN.'],
                 ],
             ],
+            'firewall' => [
+                'label' => 'Firewall (WAF)',
+                'fields' => [
+                    ['key' => 'enabled', 'type' => 'bool', 'label' => 'Zapnúť firewall', 'default' => true, 'rules' => ['bool'], 'help' => 'Interný WAF skenuje URI, query a User-Agent pred spracovaním požiadavky.'],
+                    ['key' => 'jailMinutes', 'type' => 'int', 'label' => 'Dĺžka jail (min)', 'default' => 15, 'rules' => ['required', 'int', 'min:1', 'max:1440'], 'help' => 'Dočasná blokácia IP po prekročení prahu incidentov.'],
+                    ['key' => 'maxRetries', 'type' => 'int', 'label' => 'Incidentov pred jail', 'default' => 3, 'rules' => ['required', 'int', 'min:1', 'max:20'], 'help' => 'Počet porušení v okne pred dočasným banom.'],
+                    ['key' => 'permanentThreshold', 'type' => 'int', 'label' => 'Prah trvalého banu', 'default' => 3, 'rules' => ['required', 'int', 'min:1', 'max:20'], 'help' => 'Počet jail cyklov pred trvalou blokáciou IP.'],
+                    ['key' => 'jailMode', 'type' => 'enum', 'label' => 'Jail odpoveď', 'default' => 'forbidden', 'options' => ['forbidden', 'empty', 'tarpit'], 'rules' => ['required', 'in:forbidden,empty,tarpit'], 'help' => 'Režim HTTP odpovede pre zablokované IP. Tarpit spomaľuje botov (max 2 s).'],
+                    ['key' => 'tarpitSeconds', 'type' => 'int', 'label' => 'Tarpit oneskorenie (s)', 'default' => 0, 'rules' => ['int', 'min:0', 'max:2'], 'help' => 'Platí len pri jailMode=tarpit. Neodporúčame >2 s (FPM worker).'],
+                    ['key' => 'logRetention', 'type' => 'int', 'label' => 'Max. incidentov v logu', 'default' => 500, 'rules' => ['required', 'int', 'min:50', 'max:5000']],
+                ],
+            ],
+            'logging' => [
+                'label' => 'Logy',
+                'fields' => [
+                    ['key' => 'enabled', 'type' => 'bool', 'label' => 'Zapnúť logovanie', 'default' => true, 'rules' => ['bool'], 'help' => 'Master prepínač structured logov (app, audit, event, user).'],
+                    ['key' => 'requestLogging', 'type' => 'bool', 'label' => 'Logovať HTTP requesty', 'default' => true, 'rules' => ['bool'], 'help' => 'Každý API endpoint → záznam s timestamp, IP, status, duration.'],
+                    ['key' => 'minSeverity', 'type' => 'enum', 'label' => 'Min. úroveň zápisu', 'default' => 'debug', 'options' => ['debug', 'info', 'warning', 'error', 'critical'], 'rules' => ['required', 'in:debug,info,warning,error,critical'], 'help' => 'Nižšie úrovne sa neukladajú (HTTP access log).'],
+                    ['key' => 'retentionDays', 'type' => 'int', 'label' => 'Retencia logov (dni)', 'default' => 30, 'rules' => ['required', 'int', 'min:1', 'max:365'], 'help' => 'Staršie denné súbory sa vymažú (purge v admin Logy).'],
+                    ['key' => 'slowRequestMs', 'type' => 'int', 'label' => 'Pomalý request (ms)', 'default' => 2000, 'rules' => ['required', 'int', 'min:100', 'max:60000'], 'help' => 'Requesty nad tento limit sa logujú ako WARNING.'],
+                    ['key' => 'logAuthEndpoints', 'type' => 'bool', 'label' => 'Logovať auth endpointy', 'default' => false, 'rules' => ['bool'], 'help' => 'Login/register cesty — bez tela, len metadata (IP, status).'],
+                ],
+            ],
             'feeds' => [
                 'label' => 'RSS & Sitemap',
                 'fields' => [

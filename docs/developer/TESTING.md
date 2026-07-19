@@ -114,18 +114,24 @@ cd frontend && npm ci && npm test && npm run build
 
 Po It. 21: pridať `newman run docs/api/PaginiumCMS.postman_collection.json`.
 
-## Známe incidenty a regresie (2026-07-18)
+## Známe incidenty a regresie (2026-07-18+)
 
-Detailný zoznam symptómov, príčin a opráv: **[ISSUES.md](../ISSUES.md)**.
+Detailný zoznam symptómov, príčin a opráv: **[ISSUES.md](../ISSUES.md)**.  
+CI zlyhania (GitHub Actions): sekcia **CI failures** + **ISS-015–019** (2.0.25).
 
 | Problém | Test / overenie | Stav |
 |---------|----------------|------|
-| Vitest worker crash (`useBulkSelection` loop) | `npm test` – 102/102 | ✅ Opravené |
-| PHPStan 15 chýb | `phpstan analyse backend --level=8` | ✅ Opravené |
-| Debug `client-event` 404 | Konzola po redeploy, alebo `curl -X POST …/api/debug/client-event` → 204 | ✅ Opravené |
-| Phantom users / backup v `data/users/` | `UserRepositoryTest::testFindAllIgnoresBackupFilesAndInvalidRecords` | ✅ Hardening |
-| `navigation.json.backup.*` hromadenie | `FileWriterTest` + max 5 backupov na súbor | ✅ Retencia |
-| `GET /api/pages` 500 na serveri | PHPUnit OK – skontrolovať server log + index obsahu | 🔍 Env |
-| Settings `/settings` crash | `zodFromRules` – `.max` on optional | ✅ Opravené |
+| PHPUnit 429 / 503 / OTP persistencia | `./vendor/bin/phpunit` opakovane | ✅ ISS-015 |
+| PHPStan `phpVersion` vs Composer ^8.4 | `phpstan analyse backend --level=8` | ✅ ISS-016 |
+| PHPStan bulk `match.alwaysTrue` | PHPStan L8 | ✅ ISS-017 |
+| PHPStan `TrashController` fopen | PHPStan L8 | ✅ ISS-018 |
+| FE `tsc --noEmit` strict errors | `npm run type-check` | ✅ ISS-019 |
+| Vitest worker crash (`useBulkSelection` loop) | `npm test` – 102/102 | ✅ ISS-005 |
+| PHPStan 15 chýb (historicky) | `phpstan analyse backend --level=8` | ✅ ISS-006 |
+| Debug `client-event` 404 | Konzola po redeploy, alebo `curl -X POST …/api/debug/client-event` → 204 | ✅ ISS-001 |
+| Phantom users / backup v `data/users/` | `UserRepositoryTest::testFindAllIgnoresBackupFilesAndInvalidRecords` | ✅ ISS-003 |
+| `navigation.json.backup.*` hromadenie | `FileWriterTest` + max 5 backupov na súbor | ✅ ISS-004 |
+| `GET /api/pages` 500 na serveri | PHPUnit OK – skontrolovať server log + index obsahu | 🔍 ISS-002 |
+| Settings `/settings` crash | `zodFromRules` – `.max` on optional | ✅ ISS-009 |
 
 **Node:** CI používa Node 22. Lokálne odporúčané `nvm use 22` pred `npm test`.
