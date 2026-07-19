@@ -69,11 +69,19 @@ describe('comments API', () => {
     expect(items).toHaveLength(1);
   });
 
-  it('updateCommentStatus and deleteComment return boolean', async () => {
-    mocks.put.mockResolvedValue({ success: true });
+  it('updateCommentStatus and deleteComment return expected shapes', async () => {
+    const comment = {
+      id: 'c1',
+      articleSlug: 'post-a',
+      author: 'Jane',
+      content: 'Nice post',
+      status: 'approved' as const,
+      createdAt: '2026-01-01',
+    };
+    mocks.put.mockResolvedValue({ success: true, data: comment });
     mocks.delete.mockResolvedValue({ success: true });
 
-    expect(await updateCommentStatus('c1', 'approved')).toBe(true);
+    expect(await updateCommentStatus('c1', 'approved')).toEqual({ ok: true, comment });
     expect(await deleteComment('c1')).toBe(true);
   });
 });

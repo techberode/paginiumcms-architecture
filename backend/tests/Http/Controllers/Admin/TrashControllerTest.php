@@ -116,4 +116,51 @@ class TrashControllerTest extends TestCase
         $this->assertSame(1, $bulkData['data']['succeeded']);
         $this->assertSame(1, $bulkData['data']['failed']);
     }
+
+    public function testBulkPurgeAndEmptyTrash(): void
+    {
+        $login = $this->loginAsAdminUser();
+        $this->assertEquals(200, $login['response']->getStatusCode());
+
+        $repo = $this->app->getContainer()->get(ContentRepositoryInterface::class);
+        $slug = 'purge-trash-' . uniqid();
+        $page = new Page();
+        $page->setSlug($slug);
+        $page->setFrontMatter([
+            'title' => 'Purge trash',
+            'slug' => $slug,
+            'status' => 'draft',
+        ]);
+        $page->setContent("# Purge\n");
+        $repo->save($page);
+
+        $delete = $this->createJsonRequest('DELETE', '/api/pages/' . $slug);
+        $this->assertSame(200, $this->handleRequest($delete)->getStatusCode());
+
+        $list = $this->getJsonResponse($this->handleRequest($this->createJsonRequest('GET', '/api/admin/trash')));
+        $this->assertTrue($list['success'] ?? false);
+        $item = null;
+        foreach ($list['data'] ?? [] as $entry) {
+            if (str_contains((string) ($entry['originalPath'] ?? ''), $slug)) {
+                $item = $entry;
+                break;
+            }
+        }
+        $this->assertNotNull($item);
+
+        $purge = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/admin/trash/bulk-purge', [
+                'ids' => [$item['id']],
+            ])
+        );
+        $purgeData = $this->getJsonResponse($purge);
+        $this->assertSame(200, $purge->getStatusCode());
+        $this->assertTrue($purgeData['success']);
+        $this->assertSame(1, $purgeData['data']['succeeded']);
+
+        $empty = $this->handleRequest($this->createJsonRequest('POST', '/api/admin/trash/empty'));
+        $emptyData = $this->getJsonResponse($empty);
+        $this->assertSame(200, $empty->getStatusCode());
+        $this->assertTrue($emptyData['success']);
+    }
 }

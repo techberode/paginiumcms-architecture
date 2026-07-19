@@ -19,7 +19,7 @@ parameters:
         - backend/storage/*
         - backend/public/*
 
-    phpVersion: 80500
+    phpVersion: 80400
 
     ignoreErrors:
         # Legacy routes folder removed; public debug scripts excluded above.

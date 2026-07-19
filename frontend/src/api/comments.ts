@@ -13,6 +13,8 @@ export interface Comment {
   status: CommentStatus;
   createdAt: string;
   approvedAt?: string | null;
+  isRead?: boolean;
+  isArchived?: boolean;
 }
 
 export interface AdminCommentsResponse {
@@ -91,4 +93,22 @@ export async function bulkUpdateCommentStatus(
 export async function bulkDeleteComments(ids: string[]): Promise<BulkBatchResult | null> {
   const res = await apiClient.post<BulkBatchResult>('/api/admin/comments/bulk-delete', { ids });
   return res.success && res.data ? res.data : null;
+}
+
+export type CommentBulkWorkflowAction = 'read' | 'processed' | 'archive';
+
+export async function bulkCommentWorkflow(
+  ids: string[],
+  action: CommentBulkWorkflowAction
+): Promise<BulkBatchResult | null> {
+  const res = await apiClient.post<BulkBatchResult>('/api/admin/comments/bulk-workflow', { ids, action });
+  return res.success && res.data ? res.data : null;
+}
+
+export async function updateCommentFlags(
+  id: string,
+  patch: { isRead?: boolean; isArchived?: boolean }
+): Promise<Comment | null> {
+  const res = await apiClient.put<Comment>(`/api/admin/comments/${encodeURIComponent(id)}`, patch);
+  return res.success && res.data ? (res.data as Comment) : null;
 }

@@ -18,7 +18,8 @@ return function (App $app): void {
 
     $app->group('/api/admin/messages', function (RouteCollectorProxy $group) use ($controller) {
         $group->get('', [$controller, 'listMessages']);
-        $group->patch('/{id}', [$controller, 'markRead']);
+        $group->post('/bulk', [$controller, 'bulkAction']);
+        $group->patch('/{id}', [$controller, 'updateMessage']);
         $group->delete('/{id}', [$controller, 'deleteMessage']);
     })->add(new RoleMiddleware($container->get(AuthorizationInterface::class), ['ADMIN', 'SUPER_ADMIN']))
         ->add($container->get(TwoFactorMiddleware::class))

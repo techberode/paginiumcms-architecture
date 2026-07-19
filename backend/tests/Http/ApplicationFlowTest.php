@@ -52,6 +52,18 @@ class ApplicationFlowTest extends TestCase
         $this->assertEquals(200, $list->getStatusCode());
         $this->assertTrue($listData['success']);
         $this->assertGreaterThanOrEqual(1, $listData['data']['count']);
+
+        $messageId = $submitData['data']['id'];
+        $bulk = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/admin/messages/bulk', [
+                'ids' => [$messageId],
+                'action' => 'read',
+            ])
+        );
+        $bulkData = $this->getJsonResponse($bulk);
+        $this->assertEquals(200, $bulk->getStatusCode());
+        $this->assertTrue($bulkData['success']);
+        $this->assertSame(1, $bulkData['data']['succeeded']);
     }
 
     public function testCommentModerationFlow(): void
@@ -88,6 +100,17 @@ class ApplicationFlowTest extends TestCase
         $approveData = $this->getJsonResponse($approve);
         $this->assertEquals(200, $approve->getStatusCode());
         $this->assertTrue($approveData['success']);
+
+        $bulk = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/admin/comments/bulk-workflow', [
+                'ids' => [$commentId],
+                'action' => 'read',
+            ])
+        );
+        $bulkData = $this->getJsonResponse($bulk);
+        $this->assertEquals(200, $bulk->getStatusCode());
+        $this->assertTrue($bulkData['success']);
+        $this->assertSame(1, $bulkData['data']['succeeded']);
     }
 
     public function testAdminNavigationUpdateFlow(): void

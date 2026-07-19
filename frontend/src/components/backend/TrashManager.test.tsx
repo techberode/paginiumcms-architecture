@@ -25,6 +25,10 @@ vi.mock('../../hooks/useToast', () => ({
   }),
 }));
 
+vi.mock('../../hooks/useAdminListPageSize', () => ({
+  useAdminListPageSize: () => [20, vi.fn()],
+}));
+
 const sampleItem = {
   id: 'trash_abc',
   originalPath: 'pages/home.md',

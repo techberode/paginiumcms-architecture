@@ -34,6 +34,8 @@ abstract class TestCase extends BaseTestCase
         $this->clearLoginAttemptStore();
         $this->clearOtpChallengeStore();
 
+        $this->clearTrashStore();
+
         if (session_status() === PHP_SESSION_ACTIVE) {
             session_destroy();
         }
@@ -72,6 +74,20 @@ abstract class TestCase extends BaseTestCase
         $path = __DIR__ . '/../../storage/app/content/data/otp-challenges.json';
         if (is_file($path)) {
             @unlink($path);
+        }
+    }
+
+    private function clearTrashStore(): void
+    {
+        $dir = __DIR__ . '/../../storage/app/content/trash';
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        foreach (glob($dir . '/*') ?: [] as $file) {
+            if (is_file($file)) {
+                @unlink($file);
+            }
         }
     }
 

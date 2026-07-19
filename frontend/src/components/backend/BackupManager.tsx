@@ -1,11 +1,17 @@
 // frontend/src/components/backend/BackupManager.tsx
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ShieldCheck, Upload } from 'lucide-react';
 import { backupApi } from '../../api/backup';
 import type { Backup } from '../../api/types';
 import { useToast } from '../../hooks/useToast';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
+import { useAdminListPageSize } from '../../hooks/useAdminListPageSize';
+import { useColumnSort } from '../../hooks/useColumnSort';
 import { BulkActionBar } from './BulkActionBar';
+import { AdminListToolbar } from './AdminListToolbar';
+import { AdminListPagination } from './AdminListPagination';
+import { SortableTableHeader } from './SortableTableHeader';
+import { applyClientListView } from '../../utils/clientListView';
 import { summarizeBulkResult } from '../../types/bulk';
 
 export const BackupManager: React.FC = () => {
@@ -18,6 +24,10 @@ export const BackupManager: React.FC = () => {
   const [importName, setImportName] = useState('');
   const importInputRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useAdminListPageSize('backups');
+  const { sortField, sortDirection, handleSort } = useColumnSort('createdAt', 'desc');
 
   const loadBackups = useCallback(async () => {
     setLoading(true);
@@ -34,10 +44,34 @@ export const BackupManager: React.FC = () => {
     void loadBackups();
   }, [loadBackups]);
 
+  useEffect(() => {
+    setPage(1);
+  }, [search, sortField, sortDirection, pageSize]);
+
+  const listView = useMemo(
+    () =>
+      applyClientListView(backups, {
+        search,
+        searchText: (backup) => `${backup.name} ${backup.status} ${backup.sha256 ?? ''}`,
+        sortField,
+        sortDirection,
+        sortFields: [
+          { value: 'name', label: 'Názov', getValue: (backup) => backup.name },
+          { value: 'createdAt', label: 'Dátum', getValue: (backup) => backup.createdAt },
+          { value: 'size', label: 'Veľkosť', getValue: (backup) => backup.size },
+          { value: 'status', label: 'Stav', getValue: (backup) => backup.status },
+        ],
+        page,
+        pageSize,
+      }),
+    [backups, page, pageSize, search, sortDirection, sortField]
+  );
+
   const completedBackups = backups.filter((backup) => backup.status === 'completed');
+  const pagedBackups = listView.items;
   const bulkSelection = useBulkSelection(
-    completedBackups.map((backup) => backup.id),
-    backups.length
+    pagedBackups.filter((b) => b.status === 'completed').map((backup) => backup.id),
+    `${page}:${search}:${sortField}:${sortDirection}:${pageSize}`
   );
 
   const handleCreateBackup = async () => {
@@ -286,41 +320,81 @@ export const BackupManager: React.FC = () => {
         ]}
       />
 
-      <div className="card">
+      <AdminListToolbar
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Hľadať zálohy podľa názvu alebo stavu…"
+        pageSize={pageSize}
+        onPageSizeChange={setPageSize}
+        pageSizeOptions={[5, 10, 20, 50]}
+      />
+
+      <div className="card w-full">
         <div className="card-header">
           <span>Backups</span>
           <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
-            {backups.length} backups
+            {listView.total} záloh
           </span>
         </div>
         <div className="card-body p-0">
-          {backups.length === 0 ? (
+          {listView.total === 0 ? (
             <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-              No backups found. Create or import your first backup.
+              {backups.length === 0
+                ? 'No backups found. Create or import your first backup.'
+                : 'Nenašli sa žiadne zálohy pre filter.'}
             </div>
           ) : (
-            <div className="table-container">
-              <table className="table min-w-[960px]">
-                <thead>
-                  <tr>
-                    <th className="w-10">
-                      <input
-                        type="checkbox"
-                        checked={bulkSelection.allSelected && completedBackups.length > 0}
-                        onChange={bulkSelection.toggleAll}
-                        aria-label="Select all completed backups"
+            <>
+              <div className="table-container w-full">
+                <table className="table w-full">
+                  <thead>
+                    <tr>
+                      <th className="w-10">
+                        <input
+                          type="checkbox"
+                          checked={
+                            bulkSelection.allSelected &&
+                            pagedBackups.filter((b) => b.status === 'completed').length > 0
+                          }
+                          onChange={bulkSelection.toggleAll}
+                          aria-label="Select all completed backups on page"
+                        />
+                      </th>
+                      <SortableTableHeader
+                        label="Name"
+                        field="name"
+                        activeField={sortField}
+                        direction={sortDirection}
+                        onSort={handleSort}
                       />
-                    </th>
-                    <th>Name</th>
-                    <th>Created</th>
-                    <th>Size</th>
-                    <th>SHA-256</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {backups.map((backup) => (
+                      <SortableTableHeader
+                        label="Created"
+                        field="createdAt"
+                        activeField={sortField}
+                        direction={sortDirection}
+                        onSort={handleSort}
+                        thClassName="hide-mobile"
+                      />
+                      <SortableTableHeader
+                        label="Size"
+                        field="size"
+                        activeField={sortField}
+                        direction={sortDirection}
+                        onSort={handleSort}
+                      />
+                      <th className="hide-tablet">SHA-256</th>
+                      <SortableTableHeader
+                        label="Status"
+                        field="status"
+                        activeField={sortField}
+                        direction={sortDirection}
+                        onSort={handleSort}
+                      />
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pagedBackups.map((backup) => (
                     <tr key={backup.id}>
                       <td>
                         <input
@@ -381,6 +455,18 @@ export const BackupManager: React.FC = () => {
                 </tbody>
               </table>
             </div>
+              <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-800">
+                <AdminListPagination
+                  page={listView.page}
+                  totalPages={listView.totalPages}
+                  total={listView.total}
+                  pageSize={pageSize}
+                  loading={loading}
+                  onPageChange={setPage}
+                  itemLabel="záloh"
+                />
+              </div>
+            </>
           )}
         </div>
       </div>

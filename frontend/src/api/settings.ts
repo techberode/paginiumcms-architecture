@@ -66,6 +66,7 @@ export interface PublicSettings {
   };
   ui?: {
     showListCounts?: boolean;
+    adminListPageSize?: number;
   };
   content: Record<string, unknown>;
   editor: Record<string, unknown>;
@@ -78,6 +79,11 @@ export interface PublicSettings {
   feeds?: {
     enabled?: boolean;
   } & Record<string, unknown>;
+  comments?: {
+    enabled?: boolean;
+    requireApproval?: boolean;
+    allowGuestComments?: boolean;
+  };
 }
 
 export async function getPublicSettings(): Promise<PublicSettings | null> {

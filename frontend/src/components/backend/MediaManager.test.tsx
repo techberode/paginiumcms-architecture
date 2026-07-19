@@ -61,6 +61,10 @@ vi.mock('../../hooks/useToast', () => ({
   }),
 }));
 
+vi.mock('../../hooks/useAdminListPageSize', () => ({
+  useAdminListPageSize: () => [20, vi.fn()],
+}));
+
 const sampleFile = {
   id: 'media_1',
   path: 'media/media_1_hero.png',

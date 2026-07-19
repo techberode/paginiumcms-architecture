@@ -18,6 +18,39 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.16 – Code Editor create/delete/restore | **2.0.22** | [below](#2022--2026-07-18) |
 | Content SEO media picker + blog preview fix | **2.0.23** | [below](#2023--2026-07-18) |
 | Post-audit security hardening + QA cleanup + roadmap It.47–49 | **2.0.24** | [below](#2024--2026-07-19) |
+| Admin inbox UX, list controls, comments/nav per-content | **2.0.25** | [below](#2025--2026-07-19) |
+
+---
+
+## [2.0.25] – 2026-07-19
+
+Admin list UX (It.42+), Gmail-style inbox pre Správy/Komentáre, per-article comment policy,
+viacúrovňové menu a PHP 8.4 kompatibilita v PHPStan.
+
+### Added
+
+- **Admin list platform:** `AdminListPagination`, `SortableTableHeader`, `useColumnSort`,
+  `clientListView` — stránkovanie a zoradenie v hlavičkách (Media, Články, Backups, Kôš).
+- **Inbox UI:** `AdminInboxList` — Gmail-like zoznam so zebra riadkami, rozklikom, bulk akciami
+  (Správy, Komentáre).
+- **Správy:** priorita, workflow (`isRead` / `isProcessed` / `isArchived`), bulk API
+  `POST /api/admin/messages/bulk`.
+- **Komentáre:** `isRead` / `isArchived`, bulk workflow `POST /api/admin/comments/bulk-workflow`.
+- **Kôš:** bulk purge/backup, „Vysypať kôš“, download zálohy.
+- **Per-article komentáre:** panel v editore článku + `CommentPolicyResolver` (globálne + override).
+- **Menu:** admin editor s inline editáciou a submenu do 3 úrovní; verejný `Navbar` s dropdownom.
+- **Docs:** [CONTENT_COMMENTS_NAV.md](docs/CONTENT_COMMENTS_NAV.md), [ITERATION_50.md](docs/ITERATION_50.md) (WAF spec).
+
+### Changed
+
+- Globálne nastavenia komentárov — slovenské labely v `SettingsSchema`; verejný výrez `comments.*`
+  v `GET /api/settings/public`.
+- PHPStan `phpVersion` zladený s `composer.json` minimum (**8.4**, bolo 8.5).
+
+### Fixed
+
+- PHPStan L8: match arms v bulk controlleroch, `fopen()` guard v `TrashController::downloadBackup`.
+- PHPUnit izolácia trash store + resilientné načítanie položiek kôša.
 
 ---
 

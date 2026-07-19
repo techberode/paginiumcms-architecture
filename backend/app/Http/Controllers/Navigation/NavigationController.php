@@ -42,6 +42,10 @@ class NavigationController
 
         try {
             $navigation = $this->buildNavigation($itemsPayload);
+            $depthError = $this->validateMaxDepth($navigation, 3);
+            if ($depthError !== null) {
+                return $this->json->error($response, $depthError, 422);
+            }
             $this->navigationRepository->save($navigation);
 
             return $this->json->success(
@@ -96,5 +100,27 @@ class NavigationController
         }
 
         return new Navigation($items);
+    }
+
+    private function validateMaxDepth(Navigation $navigation, int $maxLevels): ?string
+    {
+        foreach ($navigation->getItems() as $item) {
+            $depth = $this->itemDepth($navigation, $item->getId(), 1);
+            if ($depth > $maxLevels) {
+                return Lang::get('max_depth_exceeded', [], 'navigation');
+            }
+        }
+
+        return null;
+    }
+
+    private function itemDepth(Navigation $navigation, string $itemId, int $depth): int
+    {
+        $item = $navigation->getItemById($itemId);
+        if ($item === null || $item->getParentId() === null) {
+            return $depth;
+        }
+
+        return $this->itemDepth($navigation, $item->getParentId(), $depth + 1);
     }
 }

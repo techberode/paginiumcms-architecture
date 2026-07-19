@@ -1,8 +1,26 @@
 // frontend/src/components/backend/NavigationManager.tsx
-import React, { useCallback, useEffect, useState } from 'react';
-import { Navigation, Plus, Trash2, ArrowUp, ArrowDown, Save } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Navigation, Plus, Trash2, ArrowUp, ArrowDown, Save, CornerDownRight } from 'lucide-react';
 import { getNavigation, NavigationItem, updateNavigation } from '../../api/navigation';
 import { useToast } from '../../hooks/useToast';
+import {
+  NAVIGATION_MAX_DEPTH,
+  buildNavigationTree,
+  collectDescendantIds,
+  flattenNavigationTree,
+  getNavigationDepth,
+  normalizeNavigationOrders,
+  reorderSibling,
+} from '../../utils/navigationTree';
+
+const createItem = (label: string, path: string, parentId: string | null, order: number): NavigationItem => ({
+  id: `nav_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+  label,
+  path,
+  order,
+  target: '_self',
+  parentId,
+});
 
 export const NavigationManager: React.FC = () => {
   const { error: showError, success: showSuccess } = useToast();
@@ -16,49 +34,74 @@ export const NavigationManager: React.FC = () => {
     setLoading(true);
     try {
       const nav = await getNavigation();
-      setItems([...nav].sort((a, b) => a.order - b.order));
+      setItems(normalizeNavigationOrders(nav));
     } catch {
-      showError('Failed to load navigation.');
+      showError('Nepodarilo sa načítať menu.');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [showError]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      const saved = await updateNavigation(items.map((item, index) => ({ ...item, order: index })));
-      setItems(saved);
-      showSuccess('Navigation saved.');
-    } catch {
-      showError('Failed to save navigation.');
-    } finally {
-      setSaving(false);
-    }
+  const tree = useMemo(() => buildNavigationTree(items), [items]);
+  const flatTree = useMemo(() => flattenNavigationTree(tree), [tree]);
+
+  const updateItem = (id: string, patch: Partial<NavigationItem>) => {
+    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, ...patch } : item)));
   };
 
-  const addItem = (e: React.FormEvent) => {
+  const removeItem = (id: string) => {
+    const descendants = collectDescendantIds(items, id);
+    const removeIds = new Set([id, ...descendants]);
+    setItems((prev) => normalizeNavigationOrders(prev.filter((item) => !removeIds.has(item.id))));
+  };
+
+  const addRootItem = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newLabel.trim() || !newPath.trim()) return;
+    if (!newLabel.trim() || !newPath.trim()) {
+      return;
+    }
     const path = newPath.startsWith('/') || newPath.startsWith('http') ? newPath : `/${newPath}`;
-    setItems((prev) => [
-      ...prev,
-      { id: `nav_${Date.now()}`, label: newLabel.trim(), path, order: prev.length, target: '_self' },
-    ]);
+    setItems((prev) =>
+      normalizeNavigationOrders([
+        ...prev,
+        createItem(newLabel.trim(), path, null, prev.length),
+      ])
+    );
     setNewLabel('');
     setNewPath('');
   };
 
-  const move = (index: number, direction: 'up' | 'down') => {
-    const target = direction === 'up' ? index - 1 : index + 1;
-    if (target < 0 || target >= items.length) return;
-    const copy = [...items];
-    [copy[index], copy[target]] = [copy[target], copy[index]];
-    setItems(copy);
+  const addChildItem = (parentId: string) => {
+    const depth = getNavigationDepth(items, parentId);
+    if (depth >= NAVIGATION_MAX_DEPTH) {
+      showError(`Maximálne ${NAVIGATION_MAX_DEPTH} úrovne menu.`);
+      return;
+    }
+
+    setItems((prev) =>
+      normalizeNavigationOrders([
+        ...prev,
+        createItem('Nová položka', '/', parentId, prev.length),
+      ])
+    );
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const payload = normalizeNavigationOrders(items);
+      const saved = await updateNavigation(payload);
+      setItems(normalizeNavigationOrders(saved));
+      showSuccess('Menu bolo uložené.');
+    } catch {
+      showError('Uloženie menu zlyhalo.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (loading) {
@@ -70,61 +113,114 @@ export const NavigationManager: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full max-w-none">
       <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <Navigation className="w-6 h-6 text-indigo-500" />
-            Navigation
+            Menu
           </h1>
-          <p className="text-sm text-gray-500 mt-1">Stored in <code>data/navigation.json</code></p>
+          <p className="text-sm text-gray-500 mt-1">
+            Úrovne: hlavné menu → submenu → submenu (max. {NAVIGATION_MAX_DEPTH}). Uložené v{' '}
+            <code>data/navigation.json</code>
+          </p>
         </div>
         <button type="button" className="btn btn-primary" disabled={saving} onClick={() => void handleSave()}>
           <Save className="w-4 h-4 inline mr-2" />
-          {saving ? 'Saving…' : 'Save menu'}
+          {saving ? 'Ukladám…' : 'Uložiť menu'}
         </button>
       </div>
 
       <div className="card">
         <div className="card-body space-y-3">
-          {items.map((item, index) => (
-            <div key={item.id} className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-              <span className="text-xs font-bold w-6 text-center">{index + 1}</span>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium truncate">{item.label}</p>
-                <p className="text-xs text-gray-500 truncate">{item.path}</p>
-              </div>
-              <button type="button" className="btn btn-secondary text-xs px-2 py-1" onClick={() => move(index, 'up')}>
-                <ArrowUp className="w-3 h-3" />
-              </button>
-              <button type="button" className="btn btn-secondary text-xs px-2 py-1" onClick={() => move(index, 'down')}>
-                <ArrowDown className="w-3 h-3" />
-              </button>
-              <button
-                type="button"
-                className="btn btn-danger text-xs px-2 py-1"
-                onClick={() => setItems((prev) => prev.filter((i) => i.id !== item.id))}
+          {flatTree.length === 0 ? (
+            <p className="text-sm text-gray-500 text-center py-8">Zatiaľ žiadne položky menu.</p>
+          ) : (
+            flatTree.map((node) => (
+              <div
+                key={node.id}
+                className="flex flex-col lg:flex-row lg:items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700"
+                style={{ marginLeft: `${(node.depth - 1) * 1.25}rem` }}
               >
-                <Trash2 className="w-3 h-3" />
-              </button>
-            </div>
-          ))}
+                <div className="flex items-center gap-2 shrink-0 text-xs text-gray-400 min-w-[72px]">
+                  <CornerDownRight className="w-3 h-3" />
+                  Úroveň {node.depth}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 flex-1 min-w-0">
+                  <input
+                    className="form-input"
+                    value={node.label}
+                    onChange={(e) => updateItem(node.id, { label: e.target.value })}
+                    placeholder="Názov"
+                    aria-label="Názov položky"
+                  />
+                  <input
+                    className="form-input font-mono text-sm"
+                    value={node.path}
+                    onChange={(e) => updateItem(node.id, { path: e.target.value })}
+                    placeholder="/cesta"
+                    aria-label="Cesta"
+                  />
+                </div>
+
+                <div className="flex flex-wrap gap-2 shrink-0">
+                  {node.depth < NAVIGATION_MAX_DEPTH ? (
+                    <button
+                      type="button"
+                      className="btn btn-secondary text-xs px-2 py-1"
+                      onClick={() => addChildItem(node.id)}
+                    >
+                      <Plus className="w-3 h-3 inline mr-1" />
+                      Submenu
+                    </button>
+                  ) : null}
+                  <button
+                    type="button"
+                    className="btn btn-secondary text-xs px-2 py-1"
+                    onClick={() => setItems((prev) => reorderSibling(prev, node.id, 'up'))}
+                  >
+                    <ArrowUp className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-secondary text-xs px-2 py-1"
+                    onClick={() => setItems((prev) => reorderSibling(prev, node.id, 'down'))}
+                  >
+                    <ArrowDown className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-danger text-xs px-2 py-1"
+                    onClick={() => removeItem(node.id)}
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
-      <form onSubmit={addItem} className="card">
+      <form onSubmit={addRootItem} className="card">
         <div className="card-body flex flex-wrap gap-3 items-end">
           <div className="flex-1 min-w-[140px]">
-            <label className="form-label">Label</label>
+            <label className="form-label">Nová položka (hlavné menu)</label>
             <input className="form-input" value={newLabel} onChange={(e) => setNewLabel(e.target.value)} />
           </div>
           <div className="flex-1 min-w-[140px]">
-            <label className="form-label">Path</label>
-            <input className="form-input" value={newPath} onChange={(e) => setNewPath(e.target.value)} placeholder="/about" />
+            <label className="form-label">Cesta</label>
+            <input
+              className="form-input"
+              value={newPath}
+              onChange={(e) => setNewPath(e.target.value)}
+              placeholder="/about"
+            />
           </div>
           <button type="submit" className="btn btn-secondary">
             <Plus className="w-4 h-4 inline mr-1" />
-            Add
+            Pridať
           </button>
         </div>
       </form>

@@ -41,11 +41,16 @@ import {
   MediaPreviewMode,
 } from './MediaPreviewLightbox';
 import { AdminListToolbar } from './AdminListToolbar';
+import { AdminListPagination } from './AdminListPagination';
 import { BulkActionBar } from './BulkActionBar';
 import { MediaMetadataModal } from './MediaMetadataModal';
 import { SeoHealthBadge } from './SeoHealthBadge';
 import { useAdminViewMode } from '../../hooks/useAdminViewMode';
+import { useAdminListPageSize } from '../../hooks/useAdminListPageSize';
+import { useColumnSort } from '../../hooks/useColumnSort';
+import { SortableTableHeader } from './SortableTableHeader';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
+import { applyClientListView } from '../../utils/clientListView';
 import { evaluateMediaSeo } from '../../utils/seoHealth';
 
 type TypeFilter = 'all' | 'image';
@@ -80,6 +85,9 @@ export const MediaManager: React.FC = () => {
   );
   const [previewableMimeTypes, setPreviewableMimeTypes] = useState<string[]>([]);
   const [seoIssuesOnly, setSeoIssuesOnly] = useState(false);
+  const { sortField, sortDirection, handleSort } = useColumnSort('uploadedAt', 'desc');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useAdminListPageSize('media');
   const { mode: viewMode, setMode: setViewMode } = useAdminViewMode('media', 'preview');
 
   useEffect(() => {
@@ -215,17 +223,6 @@ export const MediaManager: React.FC = () => {
   };
 
   const filteredItems = items.filter((item) => {
-    const q = search.toLowerCase();
-    const matchesSearch =
-      item.fileName.toLowerCase().includes(q) ||
-      item.altText.toLowerCase().includes(q) ||
-      (item.title ?? '').toLowerCase().includes(q) ||
-      item.mimeType.toLowerCase().includes(q);
-
-    if (!matchesSearch) {
-      return false;
-    }
-
     if (seoIssuesOnly && evaluateMediaSeo(item) === 'ok') {
       return false;
     }
@@ -233,9 +230,49 @@ export const MediaManager: React.FC = () => {
     return true;
   });
 
+  useEffect(() => {
+    setPage(1);
+  }, [search, typeFilter, currentFolder, seoIssuesOnly, sortField, sortDirection, pageSize]);
+
+  const listView = applyClientListView(filteredItems, {
+    search,
+    searchText: (item) =>
+      `${item.fileName} ${item.title ?? ''} ${item.altText ?? ''} ${item.mimeType}`,
+    sortField,
+    sortDirection,
+    sortFields: [
+      { value: 'fileName', label: 'Názov', getValue: (item) => item.fileName },
+      { value: 'title', label: 'Titulok', getValue: (item) => item.title || item.altText || '' },
+      { value: 'mimeType', label: 'Typ', getValue: (item) => item.mimeType },
+      { value: 'size', label: 'Veľkosť', getValue: (item) => item.sizeBytes },
+      { value: 'uploadedAt', label: 'Dátum', getValue: (item) => item.uploadedAt },
+    ],
+    page,
+    pageSize,
+  });
+
+  const pagedItems = listView.items;
+
+  const navigableItems = applyClientListView(filteredItems, {
+    search,
+    searchText: (item) =>
+      `${item.fileName} ${item.title ?? ''} ${item.altText ?? ''} ${item.mimeType}`,
+    sortField,
+    sortDirection,
+    sortFields: [
+      { value: 'fileName', label: 'Názov', getValue: (item) => item.fileName },
+      { value: 'title', label: 'Titulok', getValue: (item) => item.title || item.altText || '' },
+      { value: 'mimeType', label: 'Typ', getValue: (item) => item.mimeType },
+      { value: 'size', label: 'Veľkosť', getValue: (item) => item.sizeBytes },
+      { value: 'uploadedAt', label: 'Dátum', getValue: (item) => item.uploadedAt },
+    ],
+    page: 1,
+    pageSize: Math.max(filteredItems.length, 1),
+  }).items;
+
   const bulkSelection = useBulkSelection(
-    filteredItems.map((file) => file.path),
-    `${currentFolder}:${typeFilter}:${search}:${seoIssuesOnly}`
+    pagedItems.map((file) => file.path),
+    `${currentFolder}:${typeFilter}:${search}:${seoIssuesOnly}:${sortField}:${sortDirection}:${page}:${pageSize}`
   );
 
   const handleBulkDelete = async () => {
@@ -271,18 +308,18 @@ export const MediaManager: React.FC = () => {
   const closePreview = () => setPreviewFile(null);
 
   const previewIndex = previewFile
-    ? filteredItems.findIndex((item) => item.path === previewFile.path)
+    ? navigableItems.findIndex((item) => item.path === previewFile.path)
     : -1;
 
   const showPreviousPreview = () => {
     if (previewIndex > 0) {
-      setPreviewFile(filteredItems[previewIndex - 1]);
+      setPreviewFile(navigableItems[previewIndex - 1]);
     }
   };
 
   const showNextPreview = () => {
-    if (previewIndex >= 0 && previewIndex < filteredItems.length - 1) {
-      setPreviewFile(filteredItems[previewIndex + 1]);
+    if (previewIndex >= 0 && previewIndex < navigableItems.length - 1) {
+      setPreviewFile(navigableItems[previewIndex + 1]);
     }
   };
 
@@ -501,7 +538,7 @@ export const MediaManager: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-4">
+      <div className="w-full">
         <AdminListToolbar
           search={search}
           onSearchChange={setSearch}
@@ -512,11 +549,13 @@ export const MediaManager: React.FC = () => {
           seoIssuesOnly={seoIssuesOnly}
           onSeoIssuesOnlyChange={setSeoIssuesOnly}
           showSeoFilter
+          pageSize={pageSize}
+          onPageSizeChange={setPageSize}
         >
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value as TypeFilter)}
-            className="form-input w-full sm:w-auto sm:min-w-[140px]"
+            className="form-input w-full sm:min-w-[140px]"
             aria-label="Filter typu súboru"
           >
             <option value="all">Všetky súbory</option>
@@ -543,7 +582,7 @@ export const MediaManager: React.FC = () => {
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600" />
         </div>
-      ) : filteredItems.length === 0 ? (
+      ) : listView.total === 0 ? (
         <div className="card">
           <div className="card-body text-center py-12 text-gray-500 dark:text-gray-400">
             V priečinku {folderLabel(currentFolder)} nie sú žiadne súbory.
@@ -551,7 +590,7 @@ export const MediaManager: React.FC = () => {
         </div>
       ) : viewMode === 'preview' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filteredItems.map((file) => (
+          {pagedItems.map((file) => (
             <MediaCard
               key={file.id}
               file={file}
@@ -574,7 +613,7 @@ export const MediaManager: React.FC = () => {
         </div>
       ) : (
         <MediaListTable
-          files={filteredItems}
+          files={pagedItems}
           showThumbnail={viewMode === 'list-preview'}
           selectedPaths={bulkSelection.selectedIds}
           allSelected={bulkSelection.allSelected}
@@ -584,6 +623,21 @@ export const MediaManager: React.FC = () => {
           onPreview={openPreview}
           onDelete={handleDelete}
           onStartEdit={startEditMeta}
+          sortField={sortField}
+          sortDirection={sortDirection}
+          onSort={handleSort}
+        />
+      )}
+
+      {listView.total > 0 && (
+        <AdminListPagination
+          page={listView.page}
+          totalPages={listView.totalPages}
+          total={listView.total}
+          pageSize={pageSize}
+          loading={loading}
+          onPageChange={setPage}
+          itemLabel="súborov"
         />
       )}
 
@@ -611,7 +665,7 @@ export const MediaManager: React.FC = () => {
         onPrevious={showPreviousPreview}
         onNext={showNextPreview}
         hasPrevious={previewIndex > 0}
-        hasNext={previewIndex >= 0 && previewIndex < filteredItems.length - 1}
+        hasNext={previewIndex >= 0 && previewIndex < navigableItems.length - 1}
       />
     </div>
   );
@@ -810,6 +864,9 @@ interface MediaListTableProps {
   onPreview: (file: MediaFile) => void;
   onDelete: (file: MediaFile) => void;
   onStartEdit: (file: MediaFile) => void;
+  sortField: string;
+  sortDirection: 'asc' | 'desc';
+  onSort: (field: string) => void;
 }
 
 const MediaListTable: React.FC<MediaListTableProps> = ({
@@ -823,10 +880,13 @@ const MediaListTable: React.FC<MediaListTableProps> = ({
   onPreview,
   onDelete,
   onStartEdit,
+  sortField,
+  sortDirection,
+  onSort,
 }) => (
-  <div className="card">
-    <div className="card-body p-0 table-container">
-      <table className="table min-w-[720px]">
+  <div className="card w-full">
+    <div className="card-body p-0 table-container w-full">
+      <table className="table w-full min-w-0">
         <thead>
           <tr>
             <th className="w-10">
@@ -837,12 +897,31 @@ const MediaListTable: React.FC<MediaListTableProps> = ({
                 aria-label="Select all visible files"
               />
             </th>
-            {showThumbnail && <th className="w-24">Preview</th>}
-            <th>Name</th>
-            <th>Type</th>
-            <th>Size</th>
+            {showThumbnail && <th className="w-24 hide-mobile">Preview</th>}
+            <SortableTableHeader
+              label="Name"
+              field="fileName"
+              activeField={sortField}
+              direction={sortDirection}
+              onSort={onSort}
+            />
+            <SortableTableHeader
+              label="Type"
+              field="mimeType"
+              activeField={sortField}
+              direction={sortDirection}
+              onSort={onSort}
+              thClassName="hide-mobile"
+            />
+            <SortableTableHeader
+              label="Size"
+              field="size"
+              activeField={sortField}
+              direction={sortDirection}
+              onSort={onSort}
+            />
             <th>SEO</th>
-            <th>Actions</th>
+            <th className="w-[120px]">Actions</th>
           </tr>
         </thead>
         <tbody>

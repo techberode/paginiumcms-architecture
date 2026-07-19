@@ -75,6 +75,17 @@ export const BlogRenderer: React.FC = () => {
     const authorBio =
       activeArticle.excerpt || String(activeArticle.frontMatter?.description ?? '');
 
+    const globalCommentsEnabled = settings.comments?.enabled !== false;
+    const articleCommentsEnabled = activeArticle.commentsEnabled !== false;
+    const commentsEnabled = globalCommentsEnabled && articleCommentsEnabled;
+
+    const globalRequireApproval = settings.comments?.requireApproval !== false;
+    const globalAllowGuests = settings.comments?.allowGuestComments !== false;
+    const requireApproval =
+      activeArticle.commentsRequireApproval ?? globalRequireApproval;
+    const allowGuests =
+      activeArticle.commentsAllowGuests ?? globalAllowGuests;
+
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-24 transition-colors">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
@@ -141,7 +152,12 @@ export const BlogRenderer: React.FC = () => {
             </div>
           )}
 
-          <ArticleComments articleSlug={activeArticle.slug} />
+          <ArticleComments
+            articleSlug={activeArticle.slug}
+            enabled={commentsEnabled}
+            allowGuests={allowGuests}
+            requireApproval={requireApproval}
+          />
         </main>
       </div>
     );

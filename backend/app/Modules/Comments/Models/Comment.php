@@ -20,6 +20,8 @@ class Comment implements JsonSerializable
     private string $status = self::STATUS_PENDING;
     private string $createdAt;
     private ?string $approvedAt = null;
+    private bool $isRead = false;
+    private bool $isArchived = false;
 
     public function __construct(string $articleSlug, string $author, string $content)
     {
@@ -86,6 +88,28 @@ class Comment implements JsonSerializable
         return $this->approvedAt;
     }
 
+    public function isRead(): bool
+    {
+        return $this->isRead;
+    }
+
+    public function markRead(bool $isRead = true): self
+    {
+        $this->isRead = $isRead;
+        return $this;
+    }
+
+    public function isArchived(): bool
+    {
+        return $this->isArchived;
+    }
+
+    public function markArchived(bool $isArchived = true): self
+    {
+        $this->isArchived = $isArchived;
+        return $this;
+    }
+
     /**
      * @param array<int|string, mixed> $entry
  */public static function fromArray(array $entry): self
@@ -97,7 +121,7 @@ class Comment implements JsonSerializable
         );
 
         $reflection = new \ReflectionClass($comment);
-        foreach (['id', 'email', 'status', 'createdAt', 'approvedAt'] as $property) {
+        foreach (['id', 'email', 'status', 'createdAt', 'approvedAt', 'isRead', 'isArchived'] as $property) {
             if (!array_key_exists($property, $entry)) {
                 continue;
             }
@@ -123,6 +147,8 @@ class Comment implements JsonSerializable
             'status' => $this->status,
             'createdAt' => $this->createdAt,
             'approvedAt' => $this->approvedAt,
+            'isRead' => $this->isRead,
+            'isArchived' => $this->isArchived,
         ];
     }
 }

@@ -50,4 +50,58 @@ class Article extends Content
 
         return $text . '…';
     }
+
+    public function getCommentsEnabled(): bool
+    {
+        $value = $this->frontMatter['commentsEnabled'] ?? true;
+
+        return $value !== false;
+    }
+
+    public function setCommentsEnabled(bool $enabled): self
+    {
+        $this->frontMatter['commentsEnabled'] = $enabled;
+
+        return $this;
+    }
+
+    public function getCommentsRequireApproval(): ?bool
+    {
+        if (!array_key_exists('commentsRequireApproval', $this->frontMatter)) {
+            return null;
+        }
+
+        return (bool) $this->frontMatter['commentsRequireApproval'];
+    }
+
+    public function setCommentsRequireApproval(?bool $value): self
+    {
+        if ($value === null) {
+            unset($this->frontMatter['commentsRequireApproval']);
+        } else {
+            $this->frontMatter['commentsRequireApproval'] = $value;
+        }
+
+        return $this;
+    }
+
+    public function getCommentsAllowGuests(): ?bool
+    {
+        if (!array_key_exists('commentsAllowGuests', $this->frontMatter)) {
+            return null;
+        }
+
+        return (bool) $this->frontMatter['commentsAllowGuests'];
+    }
+
+    public function setCommentsAllowGuests(?bool $value): self
+    {
+        if ($value === null) {
+            unset($this->frontMatter['commentsAllowGuests']);
+        } else {
+            $this->frontMatter['commentsAllowGuests'] = $value;
+        }
+
+        return $this;
+    }
 }

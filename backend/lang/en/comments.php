@@ -11,8 +11,10 @@ return [
     'updated' => 'Comment updated',
     'deleted' => 'Comment deleted',
     'disabled' => 'Comments are disabled',
+    'disabled_for_article' => 'Comments are disabled for this article',
     'validation_failed' => 'Validation failed',
     'ids_required' => 'At least one comment id is required',
     'bulk_updated' => 'Bulk comment update completed',
     'bulk_deleted' => 'Bulk comment delete completed',
+    'invalid_action' => 'Invalid bulk action',
 ];
