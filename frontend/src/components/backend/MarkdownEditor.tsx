@@ -19,7 +19,6 @@ import { OtpConfirmModal } from './OtpConfirmModal';
 import { extractOtpPending } from '../../api/workflows';
 import { type SeoFormValues } from './SeoMetadataPanel';
 import {
-  ArticleCommentsPanel,
   DEFAULT_ARTICLE_COMMENTS_SETTINGS,
   triStateFromApi,
   triStateToApi,
@@ -269,14 +268,15 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
           ? await post<any>(endpoint, data)
           : await put<any>(`${endpoint}/${slug}`, data);
 
-        const otpPending = extractOtpPending(response as Record<string, unknown>);
+        const responseObj = response as unknown as Record<string, unknown>;
+        const otpPending = extractOtpPending(responseObj);
         if (otpPending) {
           setPublishOtp({ challengeId: otpPending.challengeId, debugCode: otpPending.debugCode });
           toast.info('Overovací kód pre publikáciu bol odoslaný na email');
           if (otpPending.debugCode) {
             toast.warning(`Dev OTP: ${otpPending.debugCode}`);
           }
-          const responseSlug = (response as Record<string, unknown>).slug;
+          const responseSlug = responseObj.slug;
           if (isNew && typeof responseSlug === 'string' && responseSlug !== '') {
             navigate(`/${type === 'article' ? 'articles' : 'pages'}/${responseSlug}`);
           }

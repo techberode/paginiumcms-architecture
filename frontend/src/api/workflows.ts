@@ -1,5 +1,6 @@
 // frontend/src/api/workflows.ts
 import apiClient from './client';
+import type { Comment } from './comments';
 
 export interface OtpPendingResult {
   ok: true;
@@ -11,7 +12,7 @@ export interface OtpPendingResult {
 
 export interface OtpVerifiedComment {
   ok: true;
-  comment: import('./comments').Comment;
+  comment: Comment;
 }
 
 export interface OtpVerifiedPublish {
@@ -45,26 +46,38 @@ export function extractOtpPending(res: Record<string, unknown>): OtpPendingResul
 }
 
 export async function verifyWorkflowOtp(challengeId: string, code: string): Promise<WorkflowOtpVerifyResult> {
-  const res = (await apiClient.post<Record<string, unknown>>('/api/admin/workflows/otp/verify', {
+  const resRaw = await apiClient.post<Record<string, unknown>>('/api/admin/workflows/otp/verify', {
     challenge_id: challengeId,
     code,
-  })) as Record<string, unknown>;
+  });
+  const res = resRaw as unknown as {
+    success?: boolean;
+    error?: unknown;
+    comment?: unknown;
+    slug?: unknown;
+    content_type?: unknown;
+    status?: unknown;
+    title?: unknown;
+  };
 
   if (!res.success) {
-    return { ok: false, error: (res.error as string | undefined) || 'Overenie kódu zlyhalo' };
+    return {
+      ok: false,
+      error: (typeof res.error === 'string' ? res.error : undefined) || 'Overenie kódu zlyhalo',
+    };
   }
 
   if (res.comment && typeof res.comment === 'object') {
-    return { ok: true, comment: res.comment as import('./comments').Comment };
+    return { ok: true, comment: res.comment as Comment };
   }
 
   if (typeof res.slug === 'string' && typeof res.content_type === 'string') {
     return {
       ok: true,
-      contentType: String(res.content_type),
-      slug: String(res.slug),
-      status: String(res.status ?? 'published'),
-      title: String(res.title ?? ''),
+      contentType: res.content_type,
+      slug: res.slug,
+      status: typeof res.status === 'string' ? res.status : 'published',
+      title: typeof res.title === 'string' ? res.title : '',
     };
   }
 
@@ -78,7 +91,7 @@ export async function resendWorkflowOtp(
     challenge_id: challengeId,
   });
 
-  const pending = parseOtpPending(res as Record<string, unknown>);
+  const pending = parseOtpPending(res as unknown as Record<string, unknown>);
   if (pending) {
     return pending;
   }
