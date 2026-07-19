@@ -62,12 +62,19 @@ export async function updateCommentStatus(
   | { ok: false; error?: string }
 > {
   const res = await apiClient.put<Comment>(`/api/admin/comments/${encodeURIComponent(id)}`, { status });
-  if (res.success && (res as Record<string, unknown>).requires_otp) {
-    const body = res as Record<string, unknown>;
+
+  const body = res as unknown as {
+    success?: boolean;
+    requires_otp?: boolean;
+    challenge_id?: unknown;
+    debug_code?: unknown;
+  };
+
+  if (res.success && body.requires_otp === true) {
     return {
       ok: true,
       requiresOtp: true,
-      challengeId: String(body.challenge_id ?? ''),
+      challengeId: typeof body.challenge_id === 'string' ? body.challenge_id : '',
       debugCode: typeof body.debug_code === 'string' ? body.debug_code : undefined,
     };
   }

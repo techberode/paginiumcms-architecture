@@ -67,7 +67,6 @@ export const BackupManager: React.FC = () => {
     [backups, page, pageSize, search, sortDirection, sortField]
   );
 
-  const completedBackups = backups.filter((backup) => backup.status === 'completed');
   const pagedBackups = listView.items;
   const bulkSelection = useBulkSelection(
     pagedBackups.filter((b) => b.status === 'completed').map((backup) => backup.id),

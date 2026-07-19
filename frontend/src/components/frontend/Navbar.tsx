@@ -35,7 +35,9 @@ const DesktopNavItem: React.FC<{
 }> = ({ item, isPathActive, onNavigate }) => {
   const [open, setOpen] = useState(false);
   const hasChildren = (item.children?.length ?? 0) > 0;
-  const active = isPathActive(item.path) || item.children?.some((child) => isPathActive(child.path));
+  const active =
+    isPathActive(item.path) ||
+    (item.children?.some((child) => isPathActive(child.path)) ?? false);
 
   if (!hasChildren) {
     return <NavLinkButton item={item} active={active} onNavigate={onNavigate} />;
