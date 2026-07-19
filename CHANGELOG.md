@@ -30,7 +30,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [2.0.30] – 2026-07-19
 
 2FA setup vs login TOTP, staff user deadlock, auth UX without hard reload.
-Incident log: [ISS-030–ISS-035](docs/ISSUES.md) (extends ISS-029).
+Incident log: [ISS-030–ISS-036](docs/ISSUES.md) (extends ISS-029).
 
 ### Added
 
@@ -47,6 +47,11 @@ Incident log: [ISS-030–ISS-035](docs/ISSUES.md) (extends ISS-029).
 - **ISS-033** — `client.ts` `window.location.href='/login'` on 401 (double password login)
 - **ISS-029** (follow-up) — login loop when 2FA enforced on new users
 - **ISS-035** — PHPStan dead `??` on `ClientIpResolver::$parts[0]` (post-2.0.29 CI hotfix)
+- **ISS-036** — FE type-check after 2.0.30: `setup_pending` API unwrap, `setUser` → `updateUser`, test fixtures (`3fbc595`)
+
+### Hotfix (2026-07-20)
+
+- Commit **`3fbc595`** — CI green on `main` after 2.0.30 deploy; no runtime behavior change beyond correct auth state update during 2FA enable
 
 ### Changed
 

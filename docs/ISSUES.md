@@ -1,6 +1,6 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-19 · verzia **2.0.30**
+> Posledná aktualizácia: 2026-07-20 · verzia **2.0.30** (hotfix `3fbc595`)
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
 
@@ -50,6 +50,7 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-033 | FE 401 → `window.location /login` (dvojitý login)       | Vysoká                | ✅ Opravené (2.0.30)                     |
 | ISS-034 | Dev: žiadny prepínač TOTP v `.env`                      | Stredná (DX)          | ✅ Opravené (2.0.30)                     |
 | ISS-035 | PHPStan: `ClientIpResolver` mŕtvy `??` fallback         | Nízka (CI)            | ✅ Opravené (2.0.29 hotfix)              |
+| ISS-036 | FE type-check: 2FA `setup_pending` / `setUser` (CI)     | Stredná (CI)          | ✅ Opravené (2.0.30 hotfix `3fbc595`)    |
 
 
 
@@ -63,7 +64,7 @@ Workflow: `[.github/workflows/ci.yml](../.github/workflows/ci.yml)`
 | ---------- | -------------------- | --------------------------------------------------------------- | ---------------------------------- |
 | `backend`  | PHPStan level 8      | Analýza zlyhá (verzia PHP, `match`, `fopen`, `is_array`)        | ISS-016, ISS-017, ISS-018, ISS-021 |
 | `backend`  | PHPUnit              | 429 Too Many Requests, 503 maintenance, flaky OTP, flaky search test | ISS-015, ISS-023                   |
-| `frontend` | `npm run type-check` | TS2352 / TS6133 / TS2322                                        | ISS-019                            |
+| `frontend` | `npm run type-check` | TS2352 / TS6133 / TS2322 / 2FA DTO shape (`setup_pending`, `setUser`) | ISS-019, ISS-036                   |
 | `frontend` | `npm run lint`       | Prekročenie `--max-warnings 65` (`react-hooks/exhaustive-deps`) | ISS-020                            |
 | `frontend` | `npm test`           | Worker crash, `act(...)` stderr, `MediaManager` text asserts    | ISS-005, ISS-010, ISS-022          |
 | `backend`  | PHPStan (historicky) | 15 typových chýb                                                | ISS-006                            |
@@ -833,6 +834,39 @@ ClientIpResolver.php — $parts[0] ?? $remoteAddr
 
 ---
 
+## ISS-036 – Frontend type-check: 2FA API shape + `setUser` (CI)
+
+**Symptóm:** Po pushi release **2.0.30** (`f5061e6`) CI job **frontend → TypeScript type-check** padá:
+
+```
+src/api/auth.ts(182,35) — setup_pending does not exist on ApiResponse<…>
+src/components/auth/TwoFactorSettings.tsx(65,9) — Cannot find name 'setUser'
+src/components/auth/TwoFactorSettings.test.tsx — mock missing setupPending
+```
+
+**CI run:** [actions/runs/29705295632](https://github.com/techberode/paginiumcms-architecture/actions/runs/29705295632) · job `88241154494` · ref `f5061e6`.
+
+**Príčina:**
+
+1. **`getStatus()`** čítalo `res.setup_pending` priamo z `ApiResponse`, hoci generické pole `setup_pending` patrí do `data` (alebo flat payloadu z backendu) — typová nezhoda po pridaní `setup_pending` do 2FA status endpointu.
+2. **`TwoFactorSettings`** volalo `setUser()` bez importu z auth kontextu (malé byť `updateUser` z `useAuth()`).
+3. **Testy** neobsahovali povinné `setupPending` v mock odpovedi `getStatus()`.
+
+**Implementované riešenie (hotfix `3fbc595`):**
+
+| Súbor | Zmena |
+| ----- | ----- |
+| `frontend/src/api/auth.ts` | `const payload = res.data ?? res`; mapovanie `setup_pending` → `setupPending` |
+| `frontend/src/api/client.ts` | `setup_pending?: boolean` na `ApiResponse` (flat backend odpovede) |
+| `frontend/src/components/auth/TwoFactorSettings.tsx` | `updateUser({ ...user, twoFactorEnabled: true })` namiesto `setUser` |
+| `frontend/src/components/auth/TwoFactorSettings.test.tsx` | mocky + `updateUser` v `useAuth` |
+
+**Konvencia:** backend/API DTO = `setup_pending`; frontend doména = `setupPending` (konverzia len v `auth.ts`).
+
+**Overenie:** `cd frontend && npm run type-check && npm test -- --run src/components/auth/TwoFactorSettings.test.tsx` — exit 0.
+
+---
+
 ## Externé / irelevantné hlášky
 
 
@@ -848,7 +882,7 @@ ClientIpResolver.php — $parts[0] ?? $remoteAddr
 
 ## Súvisiace dokumenty
 
-- [CHANGELOG.md](../CHANGELOG.md) — release 2.0.30 (2FA setup/login fixes, ISS-030–035)
+- [CHANGELOG.md](../CHANGELOG.md) — release 2.0.30 (2FA setup/login fixes, ISS-030–ISS-036)
 - [RELEASE.md](developer/RELEASE.md) — copy-paste pre GitHub release 2.0.30
 - [TESTING.md](developer/TESTING.md) – ako spúšťať testy a regresiu
 - [ROADMAP.md](ROADMAP.md) – plánované iterácie (It.41+, It.47–49)

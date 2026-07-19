@@ -1,6 +1,6 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.0.30** · 2026-07-19  
+> Posledná verzia: **2.0.30** · 2026-07-20 (hotfix `3fbc595`)  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release. Samotný release/tag zatiaľ nevytváraj, kým nie je schválený deploy.
 
 ---
@@ -33,6 +33,8 @@ curl -s http://192.168.10.26:8081/api/health | jq .
 3. Nový staff user → login → `/account/security` → QR → verify
 4. Existujúci „rozbitý“ user: opraviť JSON alebo reset 2FA polí (ISS-031)
 
+**Post-release hotfix (2026-07-20):** ak CI padlo na `type-check` po `f5061e6`, pull **`3fbc595`** (ISS-036). Žiadna zmena `.env` — len frontend typy + `updateUser` v 2FA settings.
+
 ---
 
 ## GitHub Release — copy-paste (2.0.30)
@@ -50,7 +52,7 @@ curl -s http://192.168.10.26:8081/api/health | jq .
 ```markdown
 ## Summary
 
-Release **2.0.30** opravuje kritické 2FA UX chyby: QR kód zmizne počas setupu, nový staff user dostane TOTP bez secretu, a frontend hard-reload spôsoboval „dvojitý login“. Pridáva dev prepínač `TWO_FACTOR_REQUIRED=false`. Incidenty: [docs/ISSUES.md](docs/ISSUES.md) (ISS-030–ISS-035).
+Release **2.0.30** opravuje kritické 2FA UX chyby: QR kód zmizne počas setupu, nový staff user dostane TOTP bez secretu, a frontend hard-reload spôsoboval „dvojitý login“. Pridáva dev prepínač `TWO_FACTOR_REQUIRED=false`. Incidenty: [docs/ISSUES.md](docs/ISSUES.md) (ISS-030–ISS-036).
 
 ## Added
 
@@ -69,6 +71,7 @@ Release **2.0.30** opravuje kritické 2FA UX chyby: QR kód zmizne počas setupu
 | ISS-033 | 401 → hard redirect caused double password login |
 | ISS-029 | Login loop follow-up for 2FA / new users |
 | ISS-035 | PHPStan ClientIpResolver dead `??` (CI hotfix) |
+| ISS-036 | FE type-check: 2FA `setup_pending` unwrap + `updateUser` (post-2.0.30 CI hotfix `3fbc595`) |
 
 ## Ops — dev `.env` (optional)
 
@@ -109,6 +112,18 @@ Release 2.0.30: fix 2FA setup/login loop and add dev TOTP toggle.
 Fixes ISS-030–ISS-035 (QR setup vs login TOTP, staff user without secret,
 twoFactorVerifiedAt persistence, FE 401 hard redirect). Adds TWO_FACTOR_REQUIRED env.
 ```
+
+---
+
+## Hotfix commit message (2.0.30 post-release, ISS-036)
+
+```
+fix(frontend): resolve 2FA TypeScript CI errors on main.
+
+Map setup_pending in auth API layer, use updateUser in TwoFactorSettings, and align test fixtures.
+```
+
+Commit: **`3fbc595`** · pushed to `main` 2026-07-20.
 
 ---
 
