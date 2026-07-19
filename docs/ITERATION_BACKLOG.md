@@ -24,8 +24,11 @@
 | **42** | TBD | **Admin počty položiek** | **🟡** | Badge počty: články, stránky, media, komentáre, správy, zálohy, kôš, users |
 | **43** | TBD | **Pokročilé vyhľadávanie (FE + BE)** | **🟡** | Command-palette / quick jump v admin aj verejnom webe |
 | **44** | TBD | **Filtre a zoradenia (admin + FE)** | **🟡** | Zoznamy: status, typ, dátum, abeceda; zdieľané query parametre |
-| **45** | TBD | **[Redis – voliteľná infra](ITERATION_45.md)** | **🔵** | Cache, queue, rate-limit — až pri multi-worker / škálovaní |
+| **45** | TBD | **[Redis – voliteľná infra](ITERATION_45.md)** | **🔵** | Absorbované do **It.49** |
 | **46** | TBD | **[Server metrics agent](ITERATION_46.md)** | **🟡** | CPU/RAM/disk/Docker → It.7 report + dashboard |
+| **47** | TBD | **[Notification connector auth](ITERATION_47.md)** | **🟡** | ntfy token/Basic + test per konektor |
+| **48** | TBD | **[PHP templates + static/dynamic web](ITERATION_48.md)** | **🟡** | Front matter šablóny, JSON/INI meta, static HTML |
+| **49** | TBD | **[Unified cache layer](ITERATION_49.md)** | **🟡** | File + Redis prepínač podľa hostingu (rýchlosť/bezpečnosť) |
 | **30** | TBD | **Contextual Actions** | 🟡 | Akcie podľa kontextu (content, media, user) |
 | **31** | TBD | **Live Preview** | 🟡 | Náhľad stránky/článku pred publikovaním |
 | **32** | TBD | **React chunking + PHP OPcache** | 🔵 | Výkon FE/BE |
@@ -238,11 +241,47 @@ Konzistentné filtrovanie a sort naprieč zoznamami.
 
 Flat-file ostáva zdroj pravdy; Redis = zdieľaná cache / queue / rate-limit pre viac workerov.
 
-**Full spec:** [ITERATION_45.md](ITERATION_45.md)
+**Full spec:** [ITERATION_45.md](ITERATION_45.md) · **Implementácia:** [ITERATION_49.md](ITERATION_49.md) (unified cache + admin prepínač)
 
 - `RedisDriver` v `ChainedDriver` (Memory → Redis → File)
 - Voliteľný `JobQueueStore` backend, Settings `redis.*`
 - **Kedy:** 2+ PHP repliky, contention na flat-file queue, nie pre single-node MVP
+
+---
+
+## Iterácia 47 – Notification connector auth ⏳
+
+Privátne ntfy topicy a self-hosted inštancie vyžadujú **Bearer token** alebo **Basic auth**. Dnes `NtfyAdapter` posiela bez credentials.
+
+**Full spec:** [ITERATION_47.md](ITERATION_47.md)
+
+- Settings: `ntfyAuthMode`, `ntfyAccessToken`, `ntfyUsername`/`ntfyPassword`
+- `POST /api/admin/notifications/test-connector` per channel
+- Rovnaký pattern pre webhook custom auth header ak treba
+
+---
+
+## Iterácia 48 – PHP frontmatter templates & static/dynamic web ⏳
+
+Vlastné šablóny cez **PHP + front matter** (nie Twig), metadata **YAML / JSON / INI**, generovanie **statického HTML**, prepínač **dynamic vs static** verejného webu.
+
+**Full spec:** [ITERATION_48.md](ITERATION_48.md)
+
+- `PhpTemplateRenderer`, `StaticSiteGenerator`, rebuild jobs (It.29)
+- Admin: render mode, template editor, stale static badge
+- Oba režimy: SPA (dynamic) + `storage/static/` (static)
+
+---
+
+## Iterácia 49 – Unified cache layer ⏳
+
+**File + Redis** s prepínačom `auto|file|redis|memory` podľa hostingu a system probe. Zachováva rýchlosť, bezpečnosť, spolahlivosť (fallback keď Redis down).
+
+**Full spec:** [ITERATION_49.md](ITERATION_49.md) · zahŕňa rozsah It.45
+
+- `CacheDriverFactory`, `CacheCapabilityProbe`, Settings `cache.*`
+- Admin UI + HealthChecker rozšírenie
+- Queue / rate-limit / lock voliteľne na Redis
 
 ---
 
@@ -264,12 +303,14 @@ Doplnenie It.7 reportov o **host metriky** (uptime, CPU, RAM, disk, Docker).
 It.28/2.0.16 ✅ → It.29/2.0.18 ✅ → It.41 (email OTP) ← ďalšia
                 → It.42 (počty v admin)
                 → It.43 (advanced search / quick jump) → It.44 (filtre + sort)
+                → It.47 (notification auth — ntfy token) — paralelne s It.41 ak treba ntfy OTP
                 → It.36 (pagination) → It.38 (feature flags)
                 → It.39 (komentáre) → It.37 (inline FE edit)
                 → It.33 (analytics) → It.34 (system overview) → It.46 (host metrics agent)
                 → It.35 (inspector) → It.40 (section FileManager)
+                → It.48 (static templates + dynamic/static web toggle)
                 → It.30 (contextual) → It.31 (live preview)
-                → It.32 (performance) → It.45 (Redis — keď multi-worker / scale)
+                → It.32 (performance) → It.49 (unified cache: file + Redis)
 ```
 
 ---
@@ -281,5 +322,8 @@ It.28/2.0.16 ✅ → It.29/2.0.18 ✅ → It.41 (email OTP) ← ďalšia
 - [ITERATION_27.md](ITERATION_27.md) — admin view modes
 - [ITERATION_24.md](ITERATION_24.md) — DAM v1 + stock knižnica
 - [ITERATION_26.md](ITERATION_26.md) — media lightbox + 2.0.14 hotfix
-- [ITERATION_45.md](ITERATION_45.md) — Redis (voliteľná infra)
+- [ITERATION_45.md](ITERATION_45.md) — Redis driver (detail)
 - [ITERATION_46.md](ITERATION_46.md) — server metrics agent
+- [ITERATION_47.md](ITERATION_47.md) — notification connector auth
+- [ITERATION_48.md](ITERATION_48.md) — PHP templates + static/dynamic web
+- [ITERATION_49.md](ITERATION_49.md) — unified cache layer

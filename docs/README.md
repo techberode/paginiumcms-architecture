@@ -227,7 +227,7 @@ See [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md) and [user/CODE_EDITOR.md](u
 | 27 | [ITERATION_27.md](ITERATION_27.md) | ✅ Admin view modes + SEO panel |
 | 28 | [ITERATION_28.md](ITERATION_28.md) | ✅ Bulk actions |
 | 29 | [ITERATION_29.md](ITERATION_29.md) | ✅ Cron planner + job queue |
-| 43–46 | [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) | ⏳ Search, filters, Redis, metrics agent |
+| 43–49 | [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) | ⏳ Search, filters, Redis/cache, metrics, notifications auth, static web |
 
 ---
 

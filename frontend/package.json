@@ -15,7 +15,7 @@
     "test:security": "vitest run src/security src/api/client.security.test.ts src/utils/debugLog.test.ts",
     "test:msw": "vitest run src/mocks/handlers.test.ts",
     "audit:security": "npm audit --audit-level=moderate",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 65",
     "lint:fix": "eslint . --ext ts,tsx --fix",
     "format": "prettier --write 'src/**/*.{ts,tsx,css}'",
     "type-check": "tsc --noEmit"
