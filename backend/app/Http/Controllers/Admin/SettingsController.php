@@ -93,6 +93,9 @@ final class SettingsController
             'workflows' => [
                 'registrationOtpEnabled' => (bool) ($all['workflows']['registrationOtpEnabled'] ?? false),
             ],
+            'ui' => [
+                'showListCounts' => (bool) ($all['ui']['showListCounts'] ?? true),
+            ],
             'content' => $all['content'] ?? [],
             'editor' => $all['editor'] ?? [],
             'notifications' => [

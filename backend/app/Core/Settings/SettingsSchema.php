@@ -169,6 +169,12 @@ final class SettingsSchema
                     ['key' => 'otpMaxAttempts', 'type' => 'int', 'label' => 'Max. pokusov OTP', 'default' => 5, 'rules' => ['required', 'int', 'min:3', 'max:10']],
                 ],
             ],
+            'ui' => [
+                'label' => 'Admin UI',
+                'fields' => [
+                    ['key' => 'showListCounts', 'type' => 'bool', 'label' => 'Zobraziť počty v sidebari', 'default' => true, 'rules' => ['bool'], 'help' => 'Badge s počtom položiek pri moduloch v administrácii (Iterácia 42).'],
+                ],
+            ],
             'security' => [
                 'label' => 'Bezpečnosť',
                 'fields' => [

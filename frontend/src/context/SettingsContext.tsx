@@ -27,6 +27,9 @@ const DEFAULT_PUBLIC: PublicSettings = {
     toastDuration: 3000,
     toastDebugMode: false,
   },
+  ui: {
+    showListCounts: true,
+  },
 };
 
 interface SettingsContextType {

@@ -79,7 +79,7 @@ if grep -R "test-connector" backend/app/Http/Routes/ >/dev/null 2>&1; then
 fi
 
 # Settings schema keys used in factory should exist in schema file (sample)
-for key in ntfyAuthMode ntfyAccessToken webhookAuthHeader registrationOtpEnabled otpTtlMinutes; do
+for key in ntfyAuthMode ntfyAccessToken webhookAuthHeader registrationOtpEnabled otpTtlMinutes showListCounts; do
   grep -q "'$key'" backend/app/Core/Settings/SettingsSchema.php \
     || fail "SettingsSchema missing key: $key"
 done

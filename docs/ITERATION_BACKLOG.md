@@ -21,8 +21,8 @@
 | **28** | **2.0.16** | **[Bulk actions platform](ITERATION_28.md)** | **✅** | Shared bulk bar + batch APIs |
 | **29** | **2.0.18** | **[Cron planner + Job Queue](ITERATION_29.md)** | **✅** | Registry + CLI + `/scheduler` |
 | **41** | TBD | **Email OTP schvaľovanie** | **✅** | Registrácia, komentáre, publikácia – zap/vyp v admin |
-| **42** | TBD | **Admin počty položiek** | **🟡 ďalšia** | Badge počty: články, stránky, media, komentáre, správy, zálohy, kôš, users |
-| **43** | TBD | **Pokročilé vyhľadávanie (FE + BE)** | **🟡** | Command-palette / quick jump v admin aj verejnom webe |
+| **42** | TBD | **Admin počty položiek** | **✅** | Sidebar badges cez `/api/admin/counts` |
+| **43** | TBD | **Pokročilé vyhľadávanie (FE + BE)** | **🟡 ďalšia** | Command-palette / quick jump v admin aj verejnom webe |
 | **44** | TBD | **Filtre a zoradenia (admin + FE)** | **🟡** | Zoznamy: status, typ, dátum, abeceda; zdieľané query parametre |
 | **45** | TBD | **[Redis – voliteľná infra](ITERATION_45.md)** | **🔵** | Absorbované do **It.49** |
 | **46** | TBD | **[Server metrics agent](ITERATION_46.md)** | **🟡** | CPU/RAM/disk/Docker → It.7 report + dashboard |
@@ -87,23 +87,22 @@ Automatizované schvaľovanie jednorazovým kódom na e-mail (všetko **zapínat
 
 ---
 
-## Iterácia 42 – Admin počty položiek ⏳
+## Iterácia 42 – Admin počty položiek ✅
 
-Zobrazenie **počtu položiek** v administrácii (sidebar, nadpisy zoznamov, dashboard KPI):
+Zobrazenie **počtu položiek** v administrácii (sidebar badge):
 
-| Modul | Zdroj |
-|-------|--------|
-| Články / stránky | content index / paginated `total` |
-| Media | `MediaRepository::count()` |
-| Komentáre | comments registry |
-| Správy | messages inbox |
-| Zálohy | `BackupManager` |
-| Kôš | `TrashService` |
-| Používatelia | `UserRepository::findAll()` |
+| Modul | Pole v `/api/admin/counts` |
+|-------|----------------------------|
+| Články / stránky | `articles`, `pages` |
+| Media | `media` |
+| Komentáre | `comments` (admin) |
+| Správy | `messages` (admin) |
+| Zálohy | `backups` |
+| Kôš | `trash` (admin) |
+| Používatelia | `users` (admin) |
 
-**Backend:** `GET /api/admin/counts` – jeden agregovaný endpoint  
-**Frontend:** Settings `ui.showListCounts` – globálne zap/vyp badge  
-**Naviazané:** oprava `DashboardView` user count (ISS-007) ✅
+**Backend:** `AdminCountsService`, `GET /api/admin/counts` — viz [ITERATION_42.md](ITERATION_42.md)  
+**Frontend:** `useAdminCounts`, `AdminSidebar` badges, Settings `ui.showListCounts`
 
 ---
 

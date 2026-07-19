@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use PaginiumCMS\Core\Admin\Services\AdminCountsService;
 use PaginiumCMS\Core\Analytics\Contracts\ReporterInterface;
+use PaginiumCMS\Core\Backup\Contracts\BackupInterface;
 use PaginiumCMS\Core\Analytics\Contracts\TrackerInterface;
 use PaginiumCMS\Core\Analytics\Middleware\AnalyticsMiddleware;
 use PaginiumCMS\Core\Analytics\Services\AnalyticsManager;
@@ -90,6 +92,7 @@ use PaginiumCMS\Http\Controllers\Seo\SeoController;
 use PaginiumCMS\Http\Controllers\Admin\VersionController;
 use PaginiumCMS\Http\Controllers\Admin\WorkflowController;
 use PaginiumCMS\Http\Controllers\Admin\ConflictController;
+use PaginiumCMS\Http\Controllers\Admin\CountsController;
 use PaginiumCMS\Http\Controllers\Admin\UserController;
 use PaginiumCMS\Http\Controllers\Validation\ValidationController;
 use PaginiumCMS\Http\Controllers\Comments\CommentsController;
@@ -170,6 +173,23 @@ return [
     WorkflowController::class => create(WorkflowController::class)
         ->constructor(
             get(OtpWorkflowService::class),
+            get(JsonResponder::class)
+        ),
+
+    AdminCountsService::class => create(AdminCountsService::class)
+        ->constructor(
+            get(ContentRepositoryInterface::class),
+            get(MediaRepositoryInterface::class),
+            get(CommentsRepositoryInterface::class),
+            get(MessageRepositoryInterface::class),
+            get(BackupInterface::class),
+            get(TrashService::class),
+            get(UserRepository::class)
+        ),
+
+    CountsController::class => create(CountsController::class)
+        ->constructor(
+            get(AdminCountsService::class),
             get(JsonResponder::class)
         ),
 
