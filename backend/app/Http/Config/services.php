@@ -550,6 +550,7 @@ return [
             get(ReporterInterface::class),
             get(RealtimeTracker::class),
             get(ApplicationLogReader::class),
+            get(AdminCountsService::class),
             get(JsonResponder::class)
         ),
 

@@ -10,6 +10,7 @@ use PaginiumCMS\Core\FlatFile\Services\TrashService;
 use PaginiumCMS\Modules\Comments\Contracts\CommentsRepositoryInterface;
 use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
 use PaginiumCMS\Modules\Messages\Contracts\MessageRepositoryInterface;
+use PaginiumCMS\Modules\Messages\Models\ContactMessage;
 use PaginiumCMS\Core\Security\Firewall\FirewallService;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
@@ -44,8 +45,13 @@ final class AdminCountsService
         ];
 
         if ($this->viewerIsAdmin($viewer)) {
+            $messages = $this->messages->findAll();
             $counts['comments'] = count($this->comments->findAll());
-            $counts['messages'] = count($this->messages->findAll());
+            $counts['messages'] = count($messages);
+            $counts['messages_unread'] = count(array_filter(
+                $messages,
+                static fn (ContactMessage $message): bool => !$message->isRead() && !$message->isArchived()
+            ));
             $counts['trash'] = count($this->trash->listItems());
             $counts['users'] = count($this->users->findAll());
             $counts['firewall_jails'] = $this->firewall->countActiveJails();

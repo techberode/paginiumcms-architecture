@@ -1,7 +1,65 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.0.32** · 2026-07-20  
+> Posledná verzia: **2.0.34** · 2026-07-20  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release. Samotný release/tag zatiaľ nevytváraj, kým nie je schválený deploy.
+
+---
+
+## 2.0.34 — pred release kontrola
+
+```bash
+./scripts/iteration-gate.sh
+```
+
+**Po deployi:**
+
+1. Admin **Prehľad** → riadok KPI: neprečítané správy, médiá, voľné miesto
+2. Klik **Neprečítané správy** → `/messages`
+3. Panel **Prehľad aktivít** → „Celý audit trail →“
+4. Network: `GET /api/admin/dashboard/overview` obsahuje `counts` a `storage`
+
+---
+
+## GitHub Release — copy-paste (2.0.34)
+
+**Title:**
+
+```
+2.0.34 — It.52a Dashboard KPI and overview API
+```
+
+**Tag:** `v2.0.34` · **Target:** `main`
+
+**Body (skopíruj celé):**
+
+```markdown
+## Summary
+
+Release **2.0.34** ships **Iteration 52a**: admin dashboard KPI row (unread messages, media count, disk free space), enriched `/api/admin/dashboard/overview`, and audit activity deep link.
+
+Detail: [docs/ITERATION_52.md](docs/ITERATION_52.md)
+
+## Added
+
+- Dashboard overview API: `counts` (+ `messages_unread`) and `storage.free_space`
+- KPI cards on `/dashboard` with links to Messages and Media
+- Activity panel footer link to full audit trail
+
+## Changed
+
+- `AdminCountsService` aggregates unread inbox messages for admins
+- CI/process docs: ISS-037, `.cursorrules` test-before-push rule
+
+## Test plan
+
+- [ ] Dashboard loads KPI row without errors
+- [ ] Unread messages count matches admin inbox
+- [ ] `./scripts/iteration-gate.sh` green
+
+## Full changelog
+
+[CHANGELOG.md#2034--2026-07-20](CHANGELOG.md#2034--2026-07-20)
+```
 
 ---
 

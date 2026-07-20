@@ -1,7 +1,7 @@
 # Iteration 52 – Dashboard v2, kontakt & firemné údaje
 
-**Status:** ⏳ plánované  
-**Verzia:** 2.0.34+ (plánované)  
+**Status:** 🚧 rozpracované — **It.52a ✅ (2.0.34)** · It.52b ⏳ · It.52c ⏳  
+**Verzia:** 2.0.34 (52a) · 2.0.35+ (52b/c plánované)  
 **Nadväzuje na:** [It.51](ITERATION_51.md)
 
 ## Cieľ
@@ -12,9 +12,9 @@ Admin dashboard ako na mockupe: **prehľad aktivít**, **Flat-File strom**, **ko
 
 | Položka | Iterácia | Stav |
 |---------|----------|------|
-| Audit log panel (formátované udalosti) | It.52a | 🟡 |
-| Flat-File štruktúra (pages / blog / config / media) | It.52a | 🟡 |
-| KPI: neprečítané správy / médiá / veľkosť disku | It.52a | ⏳ |
+| Audit log panel (formátované udalosti) | It.52a | ✅ |
+| Flat-File štruktúra (pages / blog / config / media) | It.52a | ✅ |
+| KPI: neprečítané správy / médiá / veľkosť disku | It.52a | ✅ |
 | **Kontakt — predvolené predmety** (`contact.subjects`) | It.52b | 🟡 |
 | Voľba „Vlastný predmet“ (`contact.allowCustomSubject`) | It.52b | 🟡 |
 | **Firemné údaje — editovateľná šablóna** (IČO, adresa, …) | It.52c | ⏳ |
@@ -31,6 +31,16 @@ Admin dashboard ako na mockupe: **prehľad aktivít**, **Flat-File strom**, **ko
 ## Google Maps
 
 Zapojenie až po **It.48** (PHP šablóny / contact template) alebo samostatný slice **It.52c** — embed URL z nastavení, nie hardcoded iframe.
+
+## API (It.52a)
+
+`GET /api/admin/dashboard/overview` rozšírené o:
+
+| Pole | Popis |
+|------|--------|
+| `counts` | Rovnaké počty ako `/api/admin/counts` (+ `messages_unread` pre admin) |
+| `storage.free_space` | Ľudsky čitateľná veľkosť z health checku `storage` |
+| `storage.free_space_bytes` | Raw bajty voľného miesta |
 
 ## Súvisiace
 
