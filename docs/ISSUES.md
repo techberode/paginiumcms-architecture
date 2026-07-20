@@ -1,6 +1,6 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-20 · verzia **2.0.40** (CI hotfix ISS-041)
+> Posledná aktualizácia: 2026-07-20 · verzia **2.0.43** (It.55 + ISS-042)
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
 
@@ -56,6 +56,8 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-039 | PHPUnit `LogWriterTest`: vfs + corrupt JSON (CI)      | Stredná (CI)          | ✅ Opravené (`54b013c`)                  |
 | ISS-040 | Corrupt access log → `JsonException` → API 500        | Kritická (prod)       | ✅ Opravené (`743e922`)                  |
 | ISS-041 | FE type-check: nepoužitý `refetch` v `PagesManager` (CI) | Nízka (CI)         | ✅ Opravené (hotfix 2.0.40)              |
+| ISS-042 | Dvojitý login — 1. pokus padne, 2. prejde (probe `/me`) | Vysoká (auth UX)      | ✅ Opravené (**2.0.43**)                 |
+| ISS-043 | Vitest `editorToolbar` — globálny `screen` vs. profil   | Nízka (CI)            | ✅ Opravené (2.0.42 It.54)           |
 
 
 
@@ -74,6 +76,7 @@ Workflow: `[.github/workflows/ci.yml](../.github/workflows/ci.yml)`
 | `backend`  | PHPUnit (prod)       | `JsonException` v access log → 500 na všetkých API               | ISS-040                            |
 | `frontend` | `npm run type-check` | TS6133 — nepoužitý import `React` v `SettingsView.test.tsx` | ISS-037                   |
 | `frontend` | `npm run type-check` | TS6133 — nepoužitý `refetch` v `PagesManager.tsx` (It.53) | ISS-041                      |
+| `frontend` | `npm test`           | Vitest — `screen` nájde toolbar z druhého renderu (It.54) | ISS-043                      |
 | `frontend` | `npm run type-check` | TS2352 / TS6133 / TS2322 / 2FA DTO shape (`setup_pending`, `setUser`) | ISS-019, ISS-036                   |
 | `frontend` | `npm run lint`       | Prekročenie `--max-warnings 65` (`react-hooks/exhaustive-deps`) | ISS-020                            |
 | `frontend` | `npm test`           | Worker crash, `act(...)` stderr, `MediaManager` text asserts    | ISS-005, ISS-010, ISS-022          |
@@ -1045,6 +1048,39 @@ const { data: listData, isLoading } = useAdminListQuery({ ... })
 
 ---
 
+## ISS-042 – Dvojitý login (1. pokus zlyhá, 2. prejde)
+
+**Symptóm:** Po zadaní správneho hesla prvý pokus zlyhá (toast chyby alebo návrat na login). Druhý pokus s rovnakými údajmi prejde. V DevTools opakované `GET /api/auth/me` → **401** hneď po `POST /api/auth/login` → **200**.
+
+**Príčiny (dve rodiny):**
+
+1. **Race podmienka (FE):** `AuthContext` po úspešnom `login` okamžite volal `probeSession()` → `/api/auth/me`. Cookie zo `Set-Cookie` ešte nemusí byť v prehliadači → falošné „session chýba“.
+2. **Cross-origin dev (ops):** FE na `localhost:5173` + API priamo na `192.168.10.26:8081` (CORS + cookies cross-site). Štandardný dev: **`http://localhost:3025`**, `VITE_API_URL=` prázdne, Vite proxy `/api` → `:8080`.
+
+**Implementované riešenie (FE, release 2.0.42):**
+
+- `authApi.probeSessionWithRetry()` — krátke opakované volania `/me` po logine.
+- `AuthContext.login()` — dôvera odpovedi `POST /login` (BE overí `isAuthenticated()`); `/me` len synchronizuje stav.
+- Rovnaký retry pre `verifyTwoFactorLogin()`.
+
+**Overenie:** `npm run dev` → **localhost:3025**; jeden login → dashboard. Network: `/api/*` na **3025**, nie priamo IP:8081.
+
+**Súvisí s:** ISS-029, ISS-033.
+
+---
+
+## ISS-043 – Vitest: toolbar test — globálny `screen` (It.54)
+
+**Symptóm:** `editorToolbar.test.tsx` padá — `expect(screen.queryByTitle('Obrázok')).not.toBeInTheDocument()` aj pre minimal profil.
+
+**Príčina:** Dva rendery (minimal + developer) v jednom DOM; `screen` našiel tlačidlo z developer toolbaru.
+
+**Implementované riešenie (2.0.41 `8526c19`):** `within(minimalRoot)` / `within(developerRoot)`.
+
+**Overenie:** `npm test -- src/components/backend/editorToolbar.test.tsx` — exit 0.
+
+---
+
 ## Externé / irelevantné hlášky
 
 
@@ -1060,8 +1096,8 @@ const { data: listData, isLoading } = useAdminListQuery({ ... })
 
 ## Súvisiace dokumenty
 
-- [CHANGELOG.md](../CHANGELOG.md) — release 2.0.39 (It.53) + hotfix ISS-041 (2.0.40)
-- [RELEASE.md](developer/RELEASE.md) — copy-paste pre GitHub release 2.0.40
+- [CHANGELOG.md](../CHANGELOG.md) — release 2.0.42 (It.55 + ISS-042)
+- [RELEASE.md](developer/RELEASE.md) — copy-paste pre GitHub release 2.0.42
 - [ITERATION_44.md](ITERATION_44.md) — It.44d index filtre (ISS-038)
 - [TESTING.md](developer/TESTING.md) – ako spúšťať testy a regresiu
 - [ROADMAP.md](ROADMAP.md) – plánované iterácie (It.41+, It.47–49)

@@ -605,7 +605,7 @@ class ContentController
             $frontMatter['noIndex'] = (bool) $data['noIndex'];
         }
 
-        if (!empty($data['contentFormat']) && in_array($data['contentFormat'], ['markdown', 'html'], true)) {
+        if (!empty($data['contentFormat']) && in_array($data['contentFormat'], ['markdown', 'html', 'tiptap_json'], true)) {
             $frontMatter['contentFormat'] = (string) $data['contentFormat'];
         }
 

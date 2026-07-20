@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useImperativeHandle, useMemo } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from 'react';
 import { useEditor, EditorContent, type Extensions } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Link } from '@tiptap/extension-link';
@@ -11,6 +11,11 @@ import { TableRow } from '@tiptap/extension-table-row';
 import { TableCell } from '@tiptap/extension-table-cell';
 import { TableHeader } from '@tiptap/extension-table-header';
 import {
+  type ContentFormat,
+  looksLikeTiptapJson,
+  parseTiptapDocument,
+} from '../../utils/contentEditor';
+import {
   profileAllows,
   type EditorProfileDefinition,
 } from '../../utils/editorProfiles';
@@ -19,13 +24,16 @@ export interface WysiwygEditorHandle {
   insertImage: (url: string, alt?: string) => void;
   insertLink: (url: string, label?: string) => void;
   focus: () => void;
+  getHtml: () => string;
 }
 
 interface WysiwygEditorProps {
   value: string;
+  storedFormat?: ContentFormat;
   onChange: (value: string) => void;
   readOnly?: boolean;
   onPickMedia?: () => void;
+  onUploadImage?: (file: File) => Promise<{ url: string; alt?: string } | null>;
   profile: EditorProfileDefinition;
   onBlockedAction?: (message: string) => void;
 }
@@ -102,21 +110,54 @@ function containsDisallowedHtml(html: string, profile: EditorProfileDefinition):
   return null;
 }
 
+function editorContentFromValue(value: string, storedFormat?: ContentFormat) {
+  if (storedFormat === 'tiptap_json' || looksLikeTiptapJson(value)) {
+    return parseTiptapDocument(value);
+  }
+
+  return value;
+}
+
+function serializeEditorValue(editor: NonNullable<ReturnType<typeof useEditor>>): string {
+  return JSON.stringify(editor.getJSON());
+}
+
 export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>(function WysiwygEditor(
-  { value, onChange, readOnly = false, onPickMedia, profile, onBlockedAction },
+  {
+    value,
+    storedFormat,
+    onChange,
+    readOnly = false,
+    onPickMedia,
+    onUploadImage,
+    profile,
+    onBlockedAction,
+  },
   ref
 ) {
   const extensions = useMemo(() => buildExtensions(profile), [profile]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadHandlerRef = useRef<(file: File) => Promise<void>>(async () => undefined);
 
   const editor = useEditor({
     extensions,
-    content: value,
+    content: editorContentFromValue(value, storedFormat),
     editable: !readOnly,
     onUpdate: ({ editor: ed }) => {
-      onChange(ed.getHTML());
+      onChange(serializeEditorValue(ed));
     },
     editorProps: {
       handlePaste: (_view, event) => {
+        const files = event.clipboardData?.files;
+        if (files && files.length > 0 && onUploadImage) {
+          const image = Array.from(files).find((file) => file.type.startsWith('image/'));
+          if (image) {
+            event.preventDefault();
+            void uploadHandlerRef.current(image);
+            return true;
+          }
+        }
+
         const html = event.clipboardData?.getData('text/html') ?? '';
         if (!html) {
           return false;
@@ -129,8 +170,36 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
         }
         return false;
       },
+      handleDrop: (_view, event) => {
+        const files = event.dataTransfer?.files;
+        if (!files || files.length === 0 || !onUploadImage) {
+          return false;
+        }
+        const image = Array.from(files).find((file) => file.type.startsWith('image/'));
+        if (!image) {
+          return false;
+        }
+        event.preventDefault();
+        void uploadHandlerRef.current(image);
+        return true;
+      },
     },
   });
+
+  uploadHandlerRef.current = async (file: File) => {
+    if (!profileAllows(profile, 'image')) {
+      onBlockedAction?.('Profil editora nepovoľuje obrázky.');
+      return;
+    }
+    if (!onUploadImage || !editor) {
+      onBlockedAction?.('Upload obrázkov nie je dostupný.');
+      return;
+    }
+    const uploaded = await onUploadImage(file);
+    if (uploaded?.url) {
+      editor.chain().focus().setImage({ src: uploaded.url, alt: uploaded.alt ?? file.name }).run();
+    }
+  };
 
   useImperativeHandle(ref, () => ({
     insertImage: (url: string, alt = 'image') => {
@@ -154,15 +223,16 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
     focus: () => {
       editor?.chain().focus().run();
     },
+    getHtml: () => editor?.getHTML() ?? '',
   }));
 
   useEffect(() => {
     if (!editor) return;
-    const current = editor.getHTML();
+    const current = serializeEditorValue(editor);
     if (value !== current) {
-      editor.commands.setContent(value, { emitUpdate: false });
+      editor.commands.setContent(editorContentFromValue(value, storedFormat), { emitUpdate: false });
     }
-  }, [value, editor]);
+  }, [value, storedFormat, editor]);
 
   useEffect(() => {
     if (!editor) return;
@@ -180,6 +250,19 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
 
   return (
     <div className="border rounded-2xl overflow-hidden dark:border-slate-700 bg-white dark:bg-slate-950">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          if (file) {
+            void uploadHandlerRef.current(file);
+          }
+          event.target.value = '';
+        }}
+      />
       <div className="flex flex-wrap items-center gap-0.5 bg-slate-50 dark:bg-slate-900 px-3 py-2 border-b dark:border-slate-700">
         {profileAllows(profile, 'bold') && (
           <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className={btn(editor.isActive('bold'))}>
@@ -266,20 +349,21 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
           </>
         )}
         {profileAllows(profile, 'image') && (
-          <button
-            type="button"
-            onClick={() => {
-              if (onPickMedia) {
-                onPickMedia();
-                return;
-              }
-              const url = window.prompt('URL obrázka');
-              if (url) editor.chain().focus().setImage({ src: url }).run();
-            }}
-            className={btn(false)}
-          >
-            🖼️
-          </button>
+          <>
+            <button
+              type="button"
+              onClick={() => {
+                if (onPickMedia) {
+                  onPickMedia();
+                  return;
+                }
+                fileInputRef.current?.click();
+              }}
+              className={btn(false)}
+            >
+              🖼️
+            </button>
+          </>
         )}
         {profileAllows(profile, 'table') && (
           <button

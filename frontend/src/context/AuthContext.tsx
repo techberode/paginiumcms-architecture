@@ -113,17 +113,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const result: LoginResult = await authApi.login({ email, password });
     if (result.success && result.user) {
       if (!result.requiresTwoFactor) {
-        const probe = await authApi.probeSession();
-        if (probe.expired || !probe.user) {
-          debugLogProvider('auth', 'login.session_missing', { email });
-          return {
-            success: false,
-            error:
-              'Prihlásenie prebehlo, ale prehliadač neuložil session cookie. Skontrolujte .env (SESSION_LIFETIME, SESSION_STRICT=false) a či API ide cez rovnakú doménu (nginx /api proxy).',
-          };
+        const probe = await authApi.probeSessionWithRetry();
+        const activeUser = probe.user ?? result.user;
+        setUser(activeUser);
+        if (!probe.user && probe.expired) {
+          debugLogProvider('auth', 'login.session_probe_delayed', { email });
         }
-        setUser(probe.user);
-        if (probe.user.twoFactorEnabled) {
+        if (activeUser.twoFactorEnabled) {
           const status = await authApi.twoFactor.getStatus();
           setTwoFactorSetupPending(status.setupPending);
           setPendingTwoFactor(!status.verified && !status.setupPending);
@@ -149,11 +145,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const verifyTwoFactorLogin = useCallback(async (code: string): Promise<boolean> => {
     const result = await authApi.twoFactor.verifyLogin(code);
     if (result.success && result.user) {
-      const probe = await authApi.probeSession();
-      if (probe.expired || !probe.user) {
+      setUser(result.user);
+      const probe = await authApi.probeSessionWithRetry();
+      if (probe.expired && !probe.user) {
         return false;
       }
-      setUser(probe.user);
+      if (probe.user) {
+        setUser(probe.user);
+      }
       setPendingTwoFactor(false);
       return true;
     }

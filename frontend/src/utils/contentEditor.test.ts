@@ -4,6 +4,7 @@ import {
   htmlToMarkdown,
   inferContentFormat,
   looksLikeHtml,
+  looksLikeTiptapJson,
   markdownToHtml,
   storagePayloadFromEditor,
   wrapSelection,
@@ -13,6 +14,11 @@ describe('contentEditor', () => {
   it('detects html content', () => {
     expect(looksLikeHtml('<p>Hello</p>')).toBe(true);
     expect(looksLikeHtml('# Hello')).toBe(false);
+  });
+
+  it('detects tiptap json content', () => {
+    expect(looksLikeTiptapJson('{"type":"doc","content":[]}')).toBe(true);
+    expect(looksLikeTiptapJson('<p>x</p>')).toBe(false);
   });
 
   it('converts markdown to html', () => {
@@ -35,6 +41,7 @@ describe('contentEditor', () => {
 
   it('infers format from front matter', () => {
     expect(inferContentFormat('plain', 'html')).toBe('html');
+    expect(inferContentFormat('{"type":"doc"}', 'tiptap_json')).toBe('tiptap_json');
   });
 
   it('builds storage payload by mode', () => {
@@ -42,7 +49,10 @@ describe('contentEditor', () => {
       content: '# x',
       contentFormat: 'markdown',
     });
-    expect(storagePayloadFromEditor('<p>x</p>', 'wysiwyg').contentFormat).toBe('html');
+    expect(storagePayloadFromEditor('{"type":"doc","content":[]}', 'wysiwyg')).toEqual({
+      content: '{"type":"doc","content":[]}',
+      contentFormat: 'tiptap_json',
+    });
   });
 
   it('wraps selection for toolbar', () => {

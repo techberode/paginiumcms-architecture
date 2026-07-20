@@ -34,11 +34,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.15 — External plugins & runtime | **2.0.38** | [below](#2038--2026-07-20) |
 | It.53 — Smooth SPA reload & admin navigation | **2.0.39** | [below](#2039--2026-07-20) |
 | CI hotfix — unused `refetch` in PagesManager | **2.0.40** | [below](#2040--2026-07-20) |
-| It.54 — Modular editor profiles (MD + WYSIWYG) | **2.0.41** | [below](#2041--2026-07-20) |
+| It.54 — Modular editor profiles (MD + WYSIWYG) | **2.0.42** | [below](#2042--2026-07-20) |
+| It.55 — Tiptap JSON storage + editor image upload | **2.0.43** | [below](#2043--2026-07-20) |
 
 ---
 
-## [2.0.41] – 2026-07-20
+## [2.0.43] – 2026-07-20
+
+**Iteration 55** — Tiptap JSON flat-file storage, HTML render cache, editor image upload.  
+Includes **ISS-042** login session retry hotfix.  
+Detail: [ITERATION_55.md](docs/ITERATION_55.md).
+
+### Added
+
+- **`TiptapHtmlRenderer`**, **`ContentBodyRenderer`** — JSON → sanitized HTML; markdown/html passthrough
+- **`contentFormat: tiptap_json`** on content save/load (pages + articles)
+- **`JsonContentStorage`** — persists cached `html` field on save
+- **WYSIWYG** — Tiptap JSON round-trip (`getJSON` / `setContent`); paste/drop/file image upload to DAM
+- **`authApi.probeSessionWithRetry()`** — reliable session after login (ISS-042)
+
+### Changed
+
+- WYSIWYG default storage format: `tiptap_json` (legacy `html` still accepted)
+- `MarkdownParser` / public content uses `ContentBodyRenderer` for unified HTML output
+
+### Tests
+
+- `TiptapHtmlRendererTest`, `ContentBodyRendererTest`, `EditorContentValidatorTest` (Tiptap nodes)
+- `contentEditor.test.ts` — `tiptap_json` detection and storage payload
+
+---
+
+## [2.0.42] – 2026-07-20
 
 **Iteration 54** — modular Markdown & WYSIWYG editor profiles.  
 Detail: [ITERATION_54.md](docs/ITERATION_54.md).

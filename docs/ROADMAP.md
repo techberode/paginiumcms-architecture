@@ -6,7 +6,7 @@
 
 Legenda: ✅ hotové · 🚧 rozpracované · ⏳ plánované · 🔴 kritická priorita jadra
 
-**Aktuálna verzia:** 2.0.41 · **Posledná iterácia:** [It.54](ITERATION_54.md) ✅ · **Ďalšia:** [It.55](ITERATION_55.md)
+**Aktuálna verzia:** 2.0.43 · **Posledná iterácia:** [It.55](ITERATION_55.md) ✅ · **Ďalšia:** [It.56](ITERATION_56.md)
 
 
 | Iterácia | Názov                                                         | Priorita                             |

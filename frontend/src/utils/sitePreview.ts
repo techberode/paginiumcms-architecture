@@ -25,13 +25,14 @@ export function buildSitePreviewDraft(
   const rawContent = data.content || '';
   const format = String(data.contentFormat ?? fm.contentFormat ?? 'markdown');
   const isHtml = format === 'html';
+  const isTiptap = format === 'tiptap_json';
 
   return {
     type: type === 'article' ? 'article' : 'page',
     title: String(data.title ?? ''),
     slug: String(data.slug ?? ''),
     template: String(data.template ?? fm.template ?? 'default'),
-    content: isHtml ? '' : rawContent,
+    content: isHtml || isTiptap ? '' : rawContent,
     html: isHtml ? rawContent : data.html,
     author: String(data.author ?? fm.author ?? 'Redakcia'),
     tags: Array.isArray(data.tags)

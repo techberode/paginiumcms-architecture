@@ -1,20 +1,33 @@
 # Iteration 55 – Tiptap JSON storage & media upload
 
-**Status:** ⏳ Planned (implementation **after It.15**, after It.54)  
-**Wave:** Post-15 Editor & UX  
-**Priority:** 🔴 High
+**Status:** ✅ Complete  
+**Version:** **2.0.43**
 
 ## Summary
 
-Persist WYSIWYG documents as **structured JSON** in flat-file storage (alongside or instead of Markdown), validate on PHP, and render **static HTML** for visitors. Image upload from Tiptap goes directly into the **Flat-File media** tree (`uploads/` / `MediaRepository`).
+WYSIWYG documents persist as **structured Tiptap JSON** (`contentFormat: tiptap_json`) in flat-file storage. PHP validates node types against editor profiles, renders sanitized HTML for public views, and caches `html` on JSON records. Image paste/drop/upload in the editor lands in DAM via existing `/api/media/upload`.
+
+## Deliverables
+
+| Area | Change | Status |
+|------|--------|--------|
+| Backend | `TiptapHtmlRenderer`, `ContentBodyRenderer` | ✅ |
+| Storage | `JsonContentStorage` — cached `html` on save | ✅ |
+| Validation | `EditorContentValidator::validateTiptapJson()` | ✅ |
+| API | `contentFormat: tiptap_json` on pages/articles | ✅ |
+| Frontend | WYSIWYG saves JSON via `getJSON()` / `setContent()` | ✅ |
+| Upload | Paste, drop, file picker → `uploadMedia(..., 'editor')` | ✅ |
+| Preview | Site preview uses rendered HTML (live WYSIWYG or API cache) | ✅ |
+| Auth fix | ISS-042 — `probeSessionWithRetry` after login | ✅ |
+| Tests | PHPUnit renderer/validator/body + Vitest `contentEditor` | ✅ |
 
 ## Flat-file model
 
 | Field | Location | Format |
 |-------|----------|--------|
-| `bodyFormat` | front matter | `markdown` \| `tiptap_json` |
-| `body` | content file | MD string **or** JSON string |
-| `bodyHtml` | optional cache | pre-rendered HTML for public speed |
+| `contentFormat` | front matter / JSON record | `markdown` \| `html` \| **`tiptap_json`** |
+| `content` / `body` | content file | MD string **or** JSON string |
+| `html` | JSON record cache | pre-rendered HTML for public speed |
 
 Example front matter:
 
@@ -23,51 +36,47 @@ Example front matter:
 title: Novinka
 editorProfile: blog
 editorMode: wysiwyg
-bodyFormat: tiptap_json
+contentFormat: tiptap_json
 ---
 ```
-
-Body file may store JSON in `.json` content records or escaped block in `.md` — decision in implementation (prefer existing dual storage from It.19).
 
 ## Backend pipeline
 
 ```
-POST /api/content/... 
-  → EditorContentValidator (schema per profile)
-  → ContentRepository::save()
-  → optional HtmlRenderer::fromTiptapJson() → bodyHtml cache
+POST/PUT /api/pages|articles
+  → EditorContentValidator (profile + Tiptap node walk)
+  → ContentRepository / JsonContentStorage
+  → ContentBodyRenderer → TiptapHtmlRenderer → cached html
 ```
 
-| Endpoint | Purpose |
-|----------|---------|
-| `POST /api/admin/media/upload` (existing) | Tiptap image handler target |
-| `POST /api/admin/editor/upload-image` | Optional thin wrapper with alt/folder defaults |
+Public read returns `html` for `tiptap_json` records (same as markdown path).
 
-## Public rendering
+## Frontend
 
-- **Dynamic SPA:** hydrate from `bodyHtml` or client-side Tiptap read-only (prefer HTML cache)
-- **Static (It.48):** rebuild includes rendered HTML in static export
+- `storagePayloadFromEditor()` — WYSIWYG → `tiptap_json` (legacy raw HTML still supported)
+- `WysiwygEditor` — JSON round-trip, `storedFormat`, paste/drop upload hook
+- `MarkdownEditor` — wires upload + preview HTML from live editor
 
 ## Security
 
-- JSON schema whitelist (node types, attrs) — mirror It.54 profiles
-- No `script`, `iframe` unless profile explicitly allows embeds
-- Sanitize URLs in `link` and `image` nodes
-
-## Dependencies
-
-- ⛔ [It.15](ITERATION_15.md)
-- ⛔ [It.54](ITERATION_54.md) — profiles & extension set
-- ✅ [It.24](ITERATION_24.md) — MediaRepository / DAM
-- 🟡 [It.48](ITERATION_48.md) — static HTML export (optional integration)
+- JSON node whitelist mirrors It.54 profile capabilities
+- `TiptapHtmlRenderer` strips unsafe URLs (`javascript:`, etc.)
+- No `script` / `iframe` nodes
 
 ## Acceptance criteria
 
-- [ ] Save/load round-trip: Tiptap JSON ↔ disk ↔ public HTML
-- [ ] Image paste/upload lands in `content/media/` with correct MIME checks
-- [ ] Invalid JSON node rejected with 422 + field errors
-- [ ] PHPUnit: validator + round-trip integration test
-- [ ] No regression for pure Markdown articles
+- [x] Save/load round-trip: Tiptap JSON ↔ disk ↔ public HTML
+- [x] Image paste/upload lands in media tree (`editor/` folder default)
+- [x] Invalid / disallowed JSON node rejected with 400
+- [x] PHPUnit: validator + renderer + ContentBodyRenderer
+- [x] No regression for pure Markdown articles
+- [x] `./scripts/iteration-gate.sh` green
+
+## Related
+
+- [ITERATION_54.md](ITERATION_54.md) — editor profiles
+- [ITERATION_24.md](ITERATION_24.md) — MediaRepository / DAM
+- [ISSUES.md](ISSUES.md) — ISS-042 login retry
 
 ## Next
 
