@@ -32,6 +32,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.52 — Dashboard v2, contact & company (complete) | **2.0.36** | [below](#2036--2026-07-20) |
 | It.44d — Content API filters + server-side public blog | **2.0.37** | [below](#2037--2026-07-20) |
 | It.15 — External plugins & runtime | **2.0.38** | [below](#2038--2026-07-20) |
+| It.53 — Smooth SPA reload & admin navigation | **2.0.39** | [below](#2039--2026-07-20) |
+
+---
+
+## [2.0.39] – 2026-07-20
+
+**Iteration 53** — smooth admin SPA navigation (React Query cache, scroll restoration, skeletons).  
+Detail: [ITERATION_53.md](docs/ITERATION_53.md).
+
+### Added
+
+- `@tanstack/react-query` wiring: `queryClient`, `useAdminListQuery`, `queryKeys`
+- `AdminPageSkeleton`, `AdminListSkeleton` loading UX
+- Cached queries for dashboard, content lists, extensions, admin counts
+- Admin scroll-to-top on route change in `ResponsiveLayout`
+- Route transition timing in `DebugRouteTracker`
+
+### Changed
+
+- `MarkdownEditor` version restore refetches content instead of `window.location.reload()`
+- `ArticleComments` login link uses React Router `<Link>`
+- `SettingsContext.reload()` keeps previous settings visible while refreshing
+
+### Tests
+
+- `adminRouteTransitions.test.tsx`, `ResponsiveLayout.test.tsx`
 
 ---
 

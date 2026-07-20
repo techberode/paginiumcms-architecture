@@ -1,28 +1,23 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Puzzle, RefreshCw, Trash2, Upload } from 'lucide-react';
 import { extensionsApi, ExtensionRecord } from '../../api/extensions';
+import { queryKeys } from '../../api/queryKeys';
+import { useAdminListQuery } from '../../hooks/useAdminListQuery';
 import { useToast } from '../../hooks/useToast';
+import { AdminListSkeleton } from '../ui/AdminListSkeleton';
 
 export const ExtensionsManager: React.FC = () => {
-  const [items, setItems] = useState<ExtensionRecord[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [importing, setImporting] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const importInputRef = useRef<HTMLInputElement>(null);
   const { success, error: toastError } = useToast();
 
-  const load = async () => {
-    setLoading(true);
-    try {
-      setItems(await extensionsApi.list());
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    void load();
-  }, []);
+  const { data: items = [], isLoading, isFetching, refetch } = useAdminListQuery<ExtensionRecord[]>({
+    queryKey: queryKeys.extensions.list,
+    queryFn: () => extensionsApi.list(),
+  });
 
   const handleImport = async (file: File) => {
     setImporting(true);
@@ -30,7 +25,7 @@ export const ExtensionsManager: React.FC = () => {
       const imported = await extensionsApi.importArchive(file);
       if (imported) {
         success(`Rozšírenie ${imported.name} bolo importované`);
-        await load();
+        await queryClient.invalidateQueries({ queryKey: queryKeys.extensions.list });
       } else {
         toastError('Import zlyhal – skontroluj ZIP a politiku kódu');
       }
@@ -51,7 +46,7 @@ export const ExtensionsManager: React.FC = () => {
 
       if (response.success) {
         success(item.enabled ? `${item.name} vypnuté` : `${item.name} zapnuté`);
-        await load();
+        await queryClient.invalidateQueries({ queryKey: queryKeys.extensions.list });
       } else {
         toastError(response.error ?? 'Operácia zlyhala');
       }
@@ -70,7 +65,7 @@ export const ExtensionsManager: React.FC = () => {
       const response = await extensionsApi.uninstall(item.id);
       if (response.success) {
         success(`${item.name} odinštalované`);
-        await load();
+        await queryClient.invalidateQueries({ queryKey: queryKeys.extensions.list });
       } else {
         toastError(response.error ?? 'Odinštalovanie zlyhalo');
       }
@@ -114,15 +109,20 @@ export const ExtensionsManager: React.FC = () => {
             <Upload className="h-4 w-4" />
             {importing ? 'Importujem…' : 'Import ZIP'}
           </button>
-          <button type="button" className="btn btn-secondary inline-flex items-center gap-2" onClick={() => void load()}>
+          <button
+            type="button"
+            className="btn btn-secondary inline-flex items-center gap-2"
+            disabled={isFetching}
+            onClick={() => void refetch()}
+          >
             <RefreshCw className="h-4 w-4" />
             Obnoviť
           </button>
         </div>
       </div>
 
-      {loading ? (
-        <p className="text-sm text-gray-500">Načítavam rozšírenia…</p>
+      {isLoading && items.length === 0 ? (
+        <AdminListSkeleton rows={4} />
       ) : items.length === 0 ? (
         <div className="rounded-lg border border-dashed p-8 text-center text-sm text-gray-500">
           Žiadne rozšírenia. Importuj ZIP balík s <code>plugin.json</code>.
@@ -144,7 +144,9 @@ export const ExtensionsManager: React.FC = () => {
                       <span className="rounded bg-amber-100 px-2 py-1 text-amber-800">Chýba na disku</span>
                     ) : null}
                     {item.hasRoutes ? <span className="rounded bg-blue-100 px-2 py-1 text-blue-800">Routes</span> : null}
-                    {item.hasFrontend ? <span className="rounded bg-purple-100 px-2 py-1 text-purple-800">Frontend</span> : null}
+                    {item.hasFrontend ? (
+                      <span className="rounded bg-purple-100 px-2 py-1 text-purple-800">Frontend</span>
+                    ) : null}
                   </div>
                 </div>
 

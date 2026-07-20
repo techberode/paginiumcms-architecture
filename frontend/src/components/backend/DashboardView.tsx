@@ -1,5 +1,5 @@
 // frontend/src/components/backend/DashboardView.tsx
-import React, { useCallback, useEffect, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import {
   FileText,
@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import { useApi } from '../../hooks/useApi';
 import { useToast } from '../../hooks/useToast';
+import { useAdminListQuery } from '../../hooks/useAdminListQuery';
+import { queryKeys } from '../../api/queryKeys';
 import { getDashboardOverview, DashboardOverview } from '../../api/dashboard';
 import { AnalyticsChart } from '../dashboard/AnalyticsChart';
 import { LocksPanel } from '../dashboard/LocksPanel';
@@ -23,6 +25,7 @@ import { HealthPanel } from '../dashboard/HealthPanel';
 import { LogsPanel } from '../dashboard/LogsPanel';
 import { DashboardActivityPanel } from '../dashboard/DashboardActivityPanel';
 import { DashboardFlatFilePanel } from '../dashboard/DashboardFlatFilePanel';
+import { AdminPageSkeleton } from '../ui/AdminPageSkeleton';
 
 interface ContentStats {
   totalPages: number;
@@ -33,57 +36,76 @@ interface ContentStats {
   recentActivity: Array<Record<string, unknown>>;
 }
 
+interface DashboardData {
+  stats: ContentStats;
+  overview: DashboardOverview | null;
+}
+
 export const DashboardView: React.FC = () => {
-  const [stats, setStats] = useState<ContentStats>({
+  const { get } = useApi();
+  const toast = useToast();
+
+  const { data, isLoading, isFetching, refetch } = useAdminListQuery<DashboardData>({
+    queryKey: queryKeys.dashboard.stats,
+    queryFn: async () => {
+      try {
+        const [pagesRes, articlesRes, mediaRes, usersRes, backupsRes, auditRes, monitoring] =
+          await Promise.all([
+            get('/api/pages'),
+            get('/api/articles'),
+            get('/api/media'),
+            get('/api/admin/users'),
+            get('/api/admin/backups'),
+            get('/api/admin/audit/stats'),
+            getDashboardOverview(),
+          ]);
+
+        return {
+          stats: {
+            totalPages: pagesRes.success ? (Array.isArray(pagesRes.data) ? pagesRes.data.length : 0) : 0,
+            totalArticles: articlesRes.success
+              ? Array.isArray(articlesRes.data)
+                ? articlesRes.data.length
+                : 0
+              : 0,
+            totalMedia: mediaRes.success ? (Array.isArray(mediaRes.data) ? mediaRes.data.length : 0) : 0,
+            totalUsers:
+              usersRes.success && usersRes.data?.users ? usersRes.data.users.length : 0,
+            totalBackups: backupsRes.success
+              ? Array.isArray(backupsRes.data)
+                ? backupsRes.data.length
+                : 0
+              : 0,
+            recentActivity: auditRes.success ? auditRes.data?.recent_events || [] : [],
+          },
+          overview: monitoring,
+        };
+      } catch (error) {
+        toast.error('Failed to load dashboard data');
+        console.error(error);
+        throw error;
+      }
+    },
+  });
+
+  const loading = isLoading && !data;
+  const stats = data?.stats ?? {
     totalPages: 0,
     totalArticles: 0,
     totalMedia: 0,
     totalUsers: 0,
     totalBackups: 0,
     recentActivity: [],
-  });
-  const [overview, setOverview] = useState<DashboardOverview | null>(null);
-  const [loading, setLoading] = useState(true);
-  const { get } = useApi();
-  const toast = useToast();
-
-  const loadDashboardData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [pagesRes, articlesRes, mediaRes, usersRes, backupsRes, auditRes, monitoring] = await Promise.all([
-        get('/api/pages'),
-        get('/api/articles'),
-        get('/api/media'),
-        get('/api/admin/users'),
-        get('/api/admin/backups'),
-        get('/api/admin/audit/stats'),
-        getDashboardOverview(),
-      ]);
-
-      setStats({
-        totalPages: pagesRes.success ? (Array.isArray(pagesRes.data) ? pagesRes.data.length : 0) : 0,
-        totalArticles: articlesRes.success ? (Array.isArray(articlesRes.data) ? articlesRes.data.length : 0) : 0,
-        totalMedia: mediaRes.success ? (Array.isArray(mediaRes.data) ? mediaRes.data.length : 0) : 0,
-        totalUsers: usersRes.success && usersRes.data?.users ? usersRes.data.users.length : 0,
-        totalBackups: backupsRes.success ? (Array.isArray(backupsRes.data) ? backupsRes.data.length : 0) : 0,
-        recentActivity: auditRes.success ? (auditRes.data?.recent_events || []) : [],
-      });
-      setOverview(monitoring);
-    } catch (error) {
-      toast.error('Failed to load dashboard data');
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  }, [get, toast]);
-
-  useEffect(() => {
-    void loadDashboardData();
-  }, [loadDashboardData]);
+  };
+  const overview = data?.overview ?? null;
 
   const analytics = overview?.analytics;
   const counts = overview?.counts;
   const storageFree = overview?.storage?.free_space;
+
+  if (loading) {
+    return <AdminPageSkeleton />;
+  }
 
   const kpiCards = [
     { title: 'Stránky', value: stats.totalPages, icon: FileText, to: '/pages', color: 'indigo' },
@@ -126,10 +148,11 @@ export const DashboardView: React.FC = () => {
             </Link>
             <button
               type="button"
-              onClick={() => void loadDashboardData()}
-              className="bg-slate-800/80 hover:bg-slate-800 text-slate-200 font-bold px-5 py-3.5 rounded-2xl border border-slate-700 transition-all text-sm"
+              onClick={() => void refetch()}
+              disabled={isFetching}
+              className="bg-slate-800/80 hover:bg-slate-800 text-slate-200 font-bold px-5 py-3.5 rounded-2xl border border-slate-700 transition-all text-sm disabled:opacity-60"
             >
-              Obnoviť dáta
+              {isFetching ? 'Obnovujem…' : 'Obnoviť dáta'}
             </button>
           </div>
         </div>
@@ -152,7 +175,7 @@ export const DashboardView: React.FC = () => {
               </div>
               <div>
                 <div className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-                  {loading ? '…' : card.value}
+                  {card.value}
                 </div>
                 <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mt-1">
                   {card.title}
@@ -172,7 +195,7 @@ export const DashboardView: React.FC = () => {
             <div>
               <p className="text-xs font-bold uppercase text-slate-500">Neprečítané správy</p>
               <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
-                {loading ? '…' : (counts?.messages_unread ?? 0)}
+                {counts?.messages_unread ?? 0}
               </p>
             </div>
             <Mail className="w-8 h-8 text-indigo-500 group-hover:scale-110 transition-transform" />
@@ -186,7 +209,7 @@ export const DashboardView: React.FC = () => {
             <div>
               <p className="text-xs font-bold uppercase text-slate-500">Médiá</p>
               <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
-                {loading ? '…' : (counts?.media ?? stats.totalMedia)}
+                {counts?.media ?? stats.totalMedia}
               </p>
             </div>
             <ImageIcon className="w-8 h-8 text-emerald-500 group-hover:scale-110 transition-transform" />
@@ -197,7 +220,7 @@ export const DashboardView: React.FC = () => {
             <div>
               <p className="text-xs font-bold uppercase text-slate-500">Voľné miesto na disku</p>
               <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
-                {loading ? '…' : (storageFree ?? '—')}
+                {storageFree ?? '—'}
               </p>
             </div>
             <Database className="w-8 h-8 text-amber-500" />
@@ -209,31 +232,31 @@ export const DashboardView: React.FC = () => {
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
           <p className="text-xs font-bold uppercase text-slate-500">Realtime návštevníci</p>
           <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
-            {loading ? '…' : (analytics?.realtime.active_visitors ?? 0)}
+            {analytics?.realtime.active_visitors ?? 0}
           </p>
         </div>
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
           <p className="text-xs font-bold uppercase text-slate-500">Aktívne zámky</p>
           <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
-            {loading ? '…' : (overview?.locks_count ?? 0)}
+            {overview?.locks_count ?? 0}
           </p>
         </div>
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
           <p className="text-xs font-bold uppercase text-slate-500">Konflikty</p>
           <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
-            {loading ? '…' : (overview?.conflicts_count ?? 0)}
+            {overview?.conflicts_count ?? 0}
           </p>
         </div>
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
           <p className="text-xs font-bold uppercase text-slate-500">Stav systému</p>
           <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 capitalize">
-            {loading ? '…' : (overview?.health?.status ?? 'unknown')}
+            {overview?.health?.status ?? 'unknown'}
           </p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <HealthPanel health={overview?.health ?? null} loading={loading} />
+        <HealthPanel health={overview?.health ?? null} loading={false} />
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Návštevy (14 dní)</h2>
@@ -241,20 +264,20 @@ export const DashboardView: React.FC = () => {
               Analytika
             </Link>
           </div>
-          <AnalyticsChart data={analytics?.chart ?? []} loading={loading} />
+          <AnalyticsChart data={analytics?.chart ?? []} loading={false} />
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <LocksPanel
           locks={overview?.locks ?? []}
-          loading={loading}
-          onRefresh={() => void loadDashboardData()}
+          loading={false}
+          onRefresh={() => void refetch()}
         />
         <ConflictsPanel
           conflicts={overview?.conflicts ?? []}
           totalCount={overview?.conflicts_count ?? 0}
-          loading={loading}
+          loading={false}
         />
       </div>
 
@@ -265,14 +288,14 @@ export const DashboardView: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2">
-          <DashboardActivityPanel events={stats.recentActivity} loading={loading} />
+          <DashboardActivityPanel events={stats.recentActivity} loading={false} />
         </div>
         <DashboardFlatFilePanel
           pages={stats.totalPages}
           articles={stats.totalArticles}
           media={stats.totalMedia}
           backups={stats.totalBackups}
-          loading={loading}
+          loading={false}
         />
       </div>
     </div>

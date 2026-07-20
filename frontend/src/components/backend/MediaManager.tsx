@@ -45,6 +45,7 @@ import {
 import { AdminListToolbar } from './AdminListToolbar';
 import { AdminListPagination } from './AdminListPagination';
 import { BulkActionBar } from './BulkActionBar';
+import { AdminListSkeleton } from '../ui/AdminListSkeleton';
 import { MediaMetadataModal } from './MediaMetadataModal';
 import { SeoHealthBadge } from './SeoHealthBadge';
 import { useAdminViewMode } from '../../hooks/useAdminViewMode';
@@ -602,9 +603,7 @@ export const MediaManager: React.FC = () => {
       />
 
       {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600" />
-        </div>
+        <AdminListSkeleton rows={8} />
       ) : listView.total === 0 ? (
         <div className="card">
           <div className="card-body text-center py-12 text-gray-500 dark:text-gray-400">

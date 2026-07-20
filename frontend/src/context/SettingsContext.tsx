@@ -2,7 +2,7 @@
 // === SettingsContext (Iterácia 4) ===
 // Globálny prístup k efektívnym nastaveniam CMS. Načíta verejný výrez z
 // GET /api/settings/public; admin môže volať reload() po uložení v SettingsView.
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { getPublicSettings, PublicSettings } from '../api/settings';
 import { useAuth } from '../hooks/useAuth';
 import { debugLogProvider } from '../utils/debugLog';
@@ -75,9 +75,12 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const { user } = useAuth();
   const [settings, setSettings] = useState<PublicSettings>(DEFAULT_PUBLIC);
   const [loading, setLoading] = useState(true);
+  const hasLoadedRef = useRef(false);
 
   const reload = useCallback(async () => {
-    setLoading(true);
+    if (!hasLoadedRef.current) {
+      setLoading(true);
+    }
     debugLogProvider('settings', 'reload.start', { hasUser: Boolean(user) });
     try {
       const payload = await getPublicSettings();
@@ -100,6 +103,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         usedFallback: !user,
       });
     } finally {
+      hasLoadedRef.current = true;
       setLoading(false);
     }
   }, [user]);

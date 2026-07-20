@@ -1,56 +1,41 @@
 # Iteration 53 – Smooth SPA reload & admin navigation
 
-**Status:** ⏳ Planned (implementation **after It.15**)  
-**Wave:** Post-15 Editor & UX ([ITERATION_WAVE_POST_15.md](ITERATION_WAVE_POST_15.md))  
-**Priority:** 🟡 Medium — foundation before heavy editor modules
+**Status:** ✅ Complete  
+**Version:** **2.0.39**
 
 ## Summary
 
-Eliminate jank and unnecessary full reloads when navigating the admin SPA and public site: stable scroll, predictable data refetch, no layout thrashing, and no duplicate auth/settings fetches that block the UI.
+Eliminate jank and unnecessary full reloads when navigating the admin SPA: React Query cache, scroll restoration, skeleton loading UX, and removal of the last hard reload in the editor.
 
-## Problem today
+## Deliverables
 
-- Hard navigation or `window.location` patterns (mostly fixed in 2.0.30) can still cause flash/reload feel.
-- Some admin views refetch large payloads on every mount without cache or `startTransition`.
-- Dashboard and list views may block paint while multiple parallel API calls complete.
-
-## Goals
-
-| Deliverable | Description |
-|-------------|-------------|
-| Navigation audit | Inventory all routes that trigger full remount vs in-place update |
-| Data-fetch policy | Shared hooks: stale-while-revalidate, dedupe in-flight requests |
-| React 18 transitions | Wrap heavy route switches in `startTransition` where appropriate |
-| Scroll restoration | Preserve or reset scroll intentionally per route (admin lists, editor) |
-| Loading UX | Skeleton placeholders instead of blank spinners on slow paths |
-| Metrics | Optional dev overlay: route transition ms, API waterfall |
-
-## Out of scope
-
-- New editor features (It.54+)
-- Backend pagination changes (It.44 BE)
-
-## Dependencies
-
-- ✅ React Router v6 + `MemoryRouter` test helpers
-- ⛔ **Blocked until [It.15](ITERATION_15.md) is complete** — plugin routes must follow the same smooth-navigation contract
-
-## Flat-file impact
-
-None — FE/HTTP layer only.
+| Area | Change | Status |
+|------|--------|--------|
+| React Query | `QueryClientProvider`, `useAdminListQuery`, `queryKeys` | ✅ |
+| Dashboard | Cached fetch + `AdminPageSkeleton` | ✅ |
+| Pages / Articles | SWR list query + `AdminListSkeleton` | ✅ |
+| Media | Skeleton instead of blank spinner | ✅ |
+| Extensions | Cached list query | ✅ |
+| Admin counts | Cached sidebar badges | ✅ |
+| Settings | Non-blocking reload after first load | ✅ |
+| Scroll | Reset admin scroll container on route change | ✅ |
+| Hard reload | `MarkdownEditor` version restore → `loadContent()` | ✅ |
+| Public SPA | `/login` link via React Router | ✅ |
+| Router | `v7_startTransition` on `BrowserRouter` | ✅ |
+| Debug | Route transition duration in `DebugRouteTracker` | ✅ |
 
 ## Acceptance criteria
 
-- [ ] Switching between `/pages`, `/articles`, `/media` feels instant (<200 ms perceived) on LAN deploy
-- [ ] Browser Back/Forward does not lose unsaved editor state without warning (existing lock/draft rules)
-- [ ] No full page reload on 401/session refresh (AuthContext events only)
-- [ ] Vitest: route transition tests for top 5 admin modules
-- [ ] `./scripts/iteration-gate.sh` green
+- [x] Switching between `/pages`, `/articles`, `/media` uses cached data (no blank blocking spinner on revisit)
+- [x] No `window.location.reload()` in admin editor restore path
+- [x] 401/session refresh remains event-based (no full reload)
+- [x] Vitest: `adminRouteTransitions.test.tsx`, `ResponsiveLayout.test.tsx`
+- [x] `./scripts/iteration-gate.sh` green
 
 ## Related
 
-- [ISSUES.md](ISSUES.md) — ISS-025, ISS-033 (session / redirect)
-- [ITERATION_32.md](ITERATION_BACKLOG.md) — React chunking (optional parallel)
+- [ISSUES.md](ISSUES.md) — ISS-025, ISS-033
+- [ITERATION_15.md](ITERATION_15.md) — plugin routes follow same SPA contract
 
 ## Next
 

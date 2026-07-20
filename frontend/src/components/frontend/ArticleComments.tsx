@@ -1,5 +1,6 @@
 // frontend/src/components/frontend/ArticleComments.tsx
 import React, { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Comment, listPublicComments, submitComment } from '../../api/comments';
 import { useToast } from '../../hooks/useToast';
 import { useAuth } from '../../hooks/useAuth';
@@ -128,9 +129,9 @@ export const ArticleComments: React.FC<ArticleCommentsProps> = ({
       ) : (
         <p className="text-sm text-slate-500">
           Komentáre môžu pridávať len prihlásení používatelia.{' '}
-          <a href="/login" className="text-indigo-600 hover:underline">
+          <Link to="/login" className="text-indigo-600 hover:underline">
             Prihlásiť sa
-          </a>
+          </Link>
         </p>
       )}
     </section>

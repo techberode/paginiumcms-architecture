@@ -96,16 +96,17 @@ function AdminShell() {
 
 function App() {
   const { loading, user, pendingTwoFactor } = useAuth();
+  const location = useLocation();
 
   React.useEffect(() => {
     if (!loading) {
       debugLog('app.shell.ready', {
         authenticated: Boolean(user),
         pendingTwoFactor,
-        path: window.location.pathname,
+        path: location.pathname,
       });
     }
-  }, [loading, user, pendingTwoFactor]);
+  }, [loading, user, pendingTwoFactor, location.pathname]);
 
   if (loading) {
     return <LoadingScreen />;
