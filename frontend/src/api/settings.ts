@@ -67,6 +67,7 @@ export interface PublicSettings {
   ui?: {
     showListCounts?: boolean;
     adminListPageSize?: number;
+    openLinksInNewTab?: boolean;
   };
   content: Record<string, unknown>;
   editor: Record<string, unknown>;

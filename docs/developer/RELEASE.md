@@ -1,7 +1,87 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.0.30** · 2026-07-20 (hotfix `3fbc595`)  
+> Posledná verzia: **2.0.31** · 2026-07-20  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release. Samotný release/tag zatiaľ nevytváraj, kým nie je schválený deploy.
+
+---
+
+## 2.0.31 — pred release kontrola
+
+```bash
+# Backend
+./vendor/bin/phpstan analyse backend --level=8
+./vendor/bin/phpunit
+
+# Frontend
+cd frontend && npm run type-check && npm run lint && npm test && npm run build:prod
+```
+
+**Po deployi:**
+
+1. **Nastavenia → Obsah** → `Článkov na stránku (blog)` = napr. `6` → `/blog` pagination
+2. **Nastavenia → Admin UI** → `Otvárať náhľady… v novej karte` (default vypnuté)
+3. Admin **Články** → filtruj + skopíruj URL → refresh (query params ostávajú)
+4. Detail článku → **Predchádzajúci / Ďalší** bez návratu na zoznam
+
+---
+
+## GitHub Release — copy-paste (2.0.31)
+
+**Title:**
+
+```
+2.0.31 — It.44 blog pagination, admin URL filters, link target setting
+```
+
+**Tag:** `v2.0.31` · **Target:** `main`
+
+**Body (skopíruj celé):**
+
+```markdown
+## Summary
+
+Release **2.0.31** delivers **Iteration 44** (public blog + admin list UX): settings-driven blog pagination, article prev/next navigation, admin list filters synced to URL, and a toggle for opening previews/external links in a new tab (default: same tab).
+
+Detail: [docs/ITERATION_44.md](docs/ITERATION_44.md)
+
+## Added
+
+- **`content.blogItemsPerPage`** (default 6) — public blog list pagination
+- **Public blog:** `/blog?page=&tag=&sort=` URL sync, sort (newest/oldest/title), prev/next article nav
+- **`ui.openLinksInNewTab`** — optional new-tab for previews, “Go to website”, media, footer demo link
+- **`AdminListFilterBar`** + **`useAdminListQueryParams`** — pages/articles admin lists: `?q=&status=&sort=&page=&seo=1`
+- Vitest: `blogArticles.test.ts`, `linkTarget.test.ts`
+
+## Changed
+
+- Blog list reads `blogItemsPerPage` from settings (not hardcoded 6)
+- Preview links no longer force `_blank` unless setting enabled
+- PagesManager: “Clear filters” + shareable filter URLs
+
+## Test plan
+
+- [ ] Set blog items per page to 6 → `/blog` shows pagination with 7+ articles
+- [ ] Open article → prev/next navigates without returning to list
+- [ ] Admin articles: filter + copy URL → reload preserves filters
+- [ ] Toggle `openLinksInNewTab` → preview opens same tab vs new tab
+- [ ] `./vendor/bin/phpstan analyse backend --level=8` green
+- [ ] `./vendor/bin/phpunit` green
+- [ ] `cd frontend && npm run type-check && npm test && npm run build:prod` green
+
+## Full changelog
+
+[CHANGELOG.md#2031--2026-07-20](CHANGELOG.md#2031--2026-07-20)
+```
+
+---
+
+## Git commit message (optional)
+
+```
+Release 2.0.31: It.44 blog pagination, admin URL filters, and link target setting.
+
+Adds blogItemsPerPage, public blog prev/next, admin list URL sync, and ui.openLinksInNewTab toggle.
+```
 
 ---
 

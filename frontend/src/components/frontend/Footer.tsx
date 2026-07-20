@@ -4,11 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import { Rocket, ShieldCheck, Zap, Heart, ExternalLink } from 'lucide-react';
 import { usePublicSite } from '../../context/PublicSiteContext';
 import { useSettingsContext } from '../../context/SettingsContext';
+import { linkTargetProps } from '../../utils/linkTarget';
+import { useOpenLinksInNewTab } from '../../hooks/useOpenLinksInNewTab';
 
 export const Footer: React.FC = () => {
   const { navigation, siteTitle, siteTagline, footerText } = usePublicSite();
   const { settings } = useSettingsContext();
   const navigate = useNavigate();
+  const openInNewTab = useOpenLinksInNewTab();
   const demoUrl = settings.demo?.url ?? 'https://demo.paginiumcms.com';
   const isDemoInstance = settings.demo?.enabled === true;
 
@@ -77,8 +80,7 @@ export const Footer: React.FC = () => {
                 </p>
                 <a
                   href={demoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  {...linkTargetProps(openInNewTab)}
                   className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-400 hover:text-indigo-300"
                 >
                   demo.paginiumcms.com

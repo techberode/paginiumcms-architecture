@@ -23,6 +23,8 @@ export interface AdminListToolbarProps {
   pageSize?: number;
   onPageSizeChange?: (value: number) => void;
   pageSizeOptions?: readonly number[];
+  onResetFilters?: () => void;
+  showResetFilters?: boolean;
   children?: React.ReactNode;
 }
 
@@ -51,6 +53,8 @@ export const AdminListToolbar: React.FC<AdminListToolbarProps> = ({
   pageSize,
   onPageSizeChange,
   pageSizeOptions = DEFAULT_PAGE_SIZE_OPTIONS,
+  onResetFilters,
+  showResetFilters = false,
   children,
 }) => (
   <div className="w-full space-y-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/40 p-3 sm:p-4">
@@ -117,6 +121,16 @@ export const AdminListToolbar: React.FC<AdminListToolbarProps> = ({
             />
             Len SEO problémy
           </label>
+        )}
+
+        {showResetFilters && onResetFilters && (
+          <button
+            type="button"
+            onClick={onResetFilters}
+            className="btn btn-secondary text-xs px-3 py-1.5 shrink-0"
+          >
+            Vymazať filtre
+          </button>
         )}
       </div>
     </div>

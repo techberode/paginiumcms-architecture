@@ -23,7 +23,7 @@
 | **41** | TBD | **Email OTP schvaľovanie** | **✅** | Registrácia, komentáre, publikácia – zap/vyp v admin |
 | **42** | TBD | **Admin počty položiek** | **✅** | Sidebar badges cez `/api/admin/counts` |
 | **43** | **Unreleased** | **Pokročilé vyhľadávanie (FE + BE)** | **✅** | Command palette `Ctrl+K`, scoped `/api/search` — [ITERATION_43.md](ITERATION_43.md) |
-| **44** | TBD | **Filtre a zoradenia (admin + FE)** | **🟡** | Zoznamy: status, typ, dátum, abeceda; zdieľané query parametre |
+| **44** | TBD | **Filtre, blog pagination, prev/next** | **🟡 It.44a ✅** | [ITERATION_44.md](ITERATION_44.md) — verejný blog hotový; admin FilterBar ⏳ |
 | **45** | TBD | **[Redis – voliteľná infra](ITERATION_45.md)** | **🔵** | Absorbované do **It.49** |
 | **46** | TBD | **[Server metrics agent](ITERATION_46.md)** | **🟡** | CPU/RAM/disk/Docker → It.7 report + dashboard |
 | **47** | TBD | **[Notification connector auth](ITERATION_47.md)** | **✅** | ntfy Bearer/Basic + test-connector |
@@ -220,20 +220,20 @@ Rýchle skoky v kontexte — nad rámec základného `GET /api/search?q=`.
 
 ---
 
-## Iterácia 44 – Filtre a zoradenia (admin + FE) ⏳
+## Iterácia 44 – Filtre, zoradenia & verejný blog ⏳
 
-Konzistentné filtrovanie a sort naprieč zoznamami.
+Konzistentné filtrovanie a sort naprieč zoznamami. **Prvá dodávka (It.44a):** verejný blog — [ITERATION_44.md](ITERATION_44.md).
 
-| Modul | Filtre (príklady) | Zoradenie |
-|-------|-------------------|-----------|
-| Články / stránky | status, autor, dátum, SEO issue | updated, title, published |
-| Media | typ, folder, dátum | name, size, created |
-| Komentáre | schválené / pending | date, author |
-| Admin zoznamy | full-text + facet | ASC/DESC per stĺpec |
-| Verejný blog | kategória / tag (ak existuje) | newest, oldest, title |
-
-**Backend:** rozšírenie index API — `filter[status]=`, `sort=-updated_at` (zdieľaný kontrakt s It.19).  
-**Frontend:** reusable `FilterBar` + URL sync (`?sort=&filter=`) pre admin aj verejný web.
+| Modul | Stav |
+|-------|------|
+| Verejný blog – pagination zo settings | ✅ `content.blogItemsPerPage` |
+| Verejný blog – URL sync | ✅ `?page=&tag=&sort=` |
+| Verejný blog – prev/next článok | ✅ |
+| Verejný blog – sort dropdown | ✅ newest / oldest / title |
+| Admin FilterBar + URL sync (pages/articles) | ✅ It.44b |
+| `ui.openLinksInNewTab` setting | ✅ default false (same tab) |
+| Admin FilterBar + URL sync (media, comments) | ⏳ It.44c |
+| Backend `filter[tag]`, author, date | ⏳ It.44b |
 
 ---
 

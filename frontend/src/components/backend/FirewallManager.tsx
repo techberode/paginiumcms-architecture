@@ -10,6 +10,8 @@ import {
   ShieldCheck,
   Trash2,
 } from 'lucide-react';
+import { useOpenLinksInNewTab } from '../../hooks/useOpenLinksInNewTab';
+import { linkTargetProps } from '../../utils/linkTarget';
 import {
   firewallApi,
   type FirewallBan,
@@ -44,6 +46,7 @@ function formatExpiry(ban: FirewallBan): string {
 
 export const FirewallManager: React.FC = () => {
   const toast = useToast();
+  const openInNewTab = useOpenLinksInNewTab();
   const [tab, setTab] = useState<TabId>('incidents');
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<FirewallStats | null>(null);
@@ -471,7 +474,11 @@ export const FirewallManager: React.FC = () => {
 
         <p className="text-xs text-slate-400">
           Podrobná dokumentácia:{' '}
-          <a href="/docs/user/FIREWALL.md" className="text-indigo-600 hover:underline" target="_blank" rel="noreferrer">
+          <a
+            href="/docs/user/FIREWALL.md"
+            className="text-indigo-600 hover:underline"
+            {...linkTargetProps(openInNewTab)}
+          >
             docs/user/FIREWALL.md
           </a>
         </p>

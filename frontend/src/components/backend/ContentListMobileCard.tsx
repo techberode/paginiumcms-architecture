@@ -2,6 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { SeoHealthBadge } from './SeoHealthBadge';
 import type { SeoHealthLevel } from '../../utils/seoHealth';
+import { useOpenLinksInNewTab } from '../../hooks/useOpenLinksInNewTab';
+import { linkTargetProps } from '../../utils/linkTarget';
 
 export interface ContentListMobileCardProps {
   title: string;
@@ -30,7 +32,10 @@ export const ContentListMobileCard: React.FC<ContentListMobileCardProps> = ({
   onToggleSelect,
   onDelete,
   previewUrl,
-}) => (
+}) => {
+  const openInNewTab = useOpenLinksInNewTab();
+
+  return (
   <div
     className={`rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900 ${
       selected ? 'ring-2 ring-indigo-500' : ''
@@ -59,7 +64,11 @@ export const ContentListMobileCard: React.FC<ContentListMobileCardProps> = ({
             Upraviť
           </Link>
           {previewUrl && (
-            <Link to={previewUrl} target="_blank" className="btn btn-secondary text-xs px-3 py-1">
+            <Link
+              to={previewUrl}
+              {...linkTargetProps(openInNewTab)}
+              className="btn btn-secondary text-xs px-3 py-1"
+            >
               Náhľad
             </Link>
           )}
@@ -70,6 +79,7 @@ export const ContentListMobileCard: React.FC<ContentListMobileCardProps> = ({
       </div>
     </div>
   </div>
-);
+  );
+};
 
 export default ContentListMobileCard;

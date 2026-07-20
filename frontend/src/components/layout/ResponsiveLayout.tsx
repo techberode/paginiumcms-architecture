@@ -8,6 +8,8 @@ import { AdminSidebar } from '../backend/AdminSidebar';
 import { AdminHeader } from '../backend/AdminHeader';
 import { AdminCommandPalette } from '../backend/AdminCommandPalette';
 import { DemoModeBanner } from '../backend/DemoModeBanner';
+import { useOpenLinksInNewTab } from '../../hooks/useOpenLinksInNewTab';
+import { openExternalUrl } from '../../utils/linkTarget';
 
 interface ResponsiveLayoutProps {
   children: React.ReactNode;
@@ -21,6 +23,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) 
   const location = useLocation();
   const isMobile = useMediaQuery('(max-width: 1023px)');
   const { twoFactorSetupPending } = useAuth();
+  const openInNewTab = useOpenLinksInNewTab();
 
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -68,7 +71,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) 
 
       <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
         <AdminHeader
-          onGoToWebsite={() => window.open(publicSiteUrl, '_blank', 'noopener,noreferrer')}
+          onGoToWebsite={() => openExternalUrl(publicSiteUrl, openInNewTab)}
           onOpenMobileMenu={() => setMobileMenuOpen(true)}
           onOpenChangePassword={() => setChangePasswordOpen(true)}
         />

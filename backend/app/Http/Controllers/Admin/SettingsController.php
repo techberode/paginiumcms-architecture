@@ -107,6 +107,7 @@ final class SettingsController
             'ui' => [
                 'showListCounts' => (bool) ($all['ui']['showListCounts'] ?? true),
                 'adminListPageSize' => (int) ($all['ui']['adminListPageSize'] ?? 20),
+                'openLinksInNewTab' => (bool) ($all['ui']['openLinksInNewTab'] ?? false),
             ],
             'content' => $all['content'] ?? [],
             'editor' => $all['editor'] ?? [],

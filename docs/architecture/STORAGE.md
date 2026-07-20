@@ -150,7 +150,7 @@ Ukladajú sa iba zmenené polia – budúce úpravy predvolieb sa prejavia bez m
 | Skupina | Príklady polí |
 |---|---|
 | `general` | siteName, siteUrl, adminEmail, language, timezone, maintenanceMode |
-| `content` | itemsPerPage, defaultStatus, autoSaveInterval, lockTtl |
+| `content` | itemsPerPage, blogItemsPerPage, defaultStatus, autoSaveInterval, lockTtl |
 | `editor` | defaultEditor, spellcheck, tabSize |
 
 **Súbežnosť:** `flock(LOCK_EX)` nad celým cyklom načítaj→uprav→zapíš (`SettingsRepository::withLockedOverrides`).

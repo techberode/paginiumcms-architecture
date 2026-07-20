@@ -19,6 +19,8 @@ import {
   ArticleCommentsPanel,
   type ArticleCommentsSettings,
 } from './ArticleCommentsPanel';
+import { useOpenLinksInNewTab } from '../../hooks/useOpenLinksInNewTab';
+import { linkTargetProps } from '../../utils/linkTarget';
 
 const PAGE_TEMPLATE_OPTIONS = [
   { value: 'default', label: 'Predvolená' },
@@ -108,6 +110,7 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
   globalCommentsAllowGuests = true,
 }) => {
   const stats = countContentStats(content);
+  const openInNewTab = useOpenLinksInNewTab();
   const typeLabel = type === 'article' ? 'článok' : 'stránku';
   const listPath = type === 'article' ? '/articles' : '/pages';
   const previewPath = type === 'page' && !isNew && editSlug ? `/preview/${editSlug}` : null;
@@ -150,7 +153,7 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
             {previewPath && (
               <Link
                 to={previewPath}
-                target="_blank"
+                {...linkTargetProps(openInNewTab)}
                 className="inline-flex items-center justify-center rounded-xl border border-slate-200 p-2 text-slate-500 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-900"
                 title="Náhľad na webe"
               >

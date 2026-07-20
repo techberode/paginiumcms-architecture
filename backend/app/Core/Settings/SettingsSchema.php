@@ -51,7 +51,8 @@ final class SettingsSchema
             'content' => [
                 'label' => 'Obsah',
                 'fields' => [
-                    ['key' => 'itemsPerPage', 'type' => 'int', 'label' => 'Položiek na stránku', 'default' => 20, 'rules' => ['required', 'int', 'min:1', 'max:100']],
+                    ['key' => 'itemsPerPage', 'type' => 'int', 'label' => 'Položiek na stránku (admin)', 'default' => 20, 'rules' => ['required', 'int', 'min:1', 'max:100'], 'help' => 'Admin zoznamy stránok a článkov.'],
+                    ['key' => 'blogItemsPerPage', 'type' => 'int', 'label' => 'Článkov na stránku (blog)', 'default' => 6, 'rules' => ['required', 'int', 'min:1', 'max:100'], 'help' => 'Verejný zoznam článkov – stránkovanie sa zobrazí, keď je viac článkov.'],
                     ['key' => 'storageFormat', 'type' => 'enum', 'label' => 'Formát úložiska obsahu', 'default' => 'md', 'options' => ['md', 'json'], 'rules' => ['required', 'in:md,json'], 'help' => 'md = YAML front matter + Markdown; json = čistý JSON súbor (Iterácia 19).'],
                     ['key' => 'defaultStatus', 'type' => 'enum', 'label' => 'Predvolený stav obsahu', 'default' => 'draft', 'options' => ['draft', 'published'], 'rules' => ['required', 'in:draft,published']],
                     ['key' => 'autoSaveInterval', 'type' => 'int', 'label' => 'Interval auto-save (s)', 'default' => 60, 'rules' => ['required', 'int', 'min:10', 'max:600'], 'help' => 'Ako často sa ukladá koncept (Iterácia 2).'],
@@ -174,6 +175,7 @@ final class SettingsSchema
                 'fields' => [
                     ['key' => 'showListCounts', 'type' => 'bool', 'label' => 'Zobraziť počty v sidebari', 'default' => true, 'rules' => ['bool'], 'help' => 'Badge s počtom položiek pri moduloch v administrácii (Iterácia 42).'],
                     ['key' => 'adminListPageSize', 'type' => 'int', 'label' => 'Položiek na stránku (admin)', 'default' => 20, 'rules' => ['required', 'int', 'min:5', 'max:100'], 'help' => 'Predvolený počet riadkov v admin zoznamoch (Media, Kôš, komentáre…).'],
+                    ['key' => 'openLinksInNewTab', 'type' => 'bool', 'label' => 'Otvárať náhľady a externé odkazy v novej karte', 'default' => false, 'rules' => ['bool'], 'help' => 'Platí pre náhľad obsahu, prechod na verejný web z adminu, media download a externé odkazy vo footeri. Vypnuté = rovnaká karta / SPA navigácia.'],
                 ],
             ],
             'security' => [
