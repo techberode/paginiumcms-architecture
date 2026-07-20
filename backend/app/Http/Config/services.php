@@ -58,6 +58,8 @@ use PaginiumCMS\Core\Conflict\Contracts\ConflictLoggerInterface;
 use PaginiumCMS\Core\Conflict\Services\ConflictLogger;
 use PaginiumCMS\Core\Drafts\Contracts\DraftManagerInterface;
 use PaginiumCMS\Core\Drafts\Services\DraftManager;
+use PaginiumCMS\Core\Editor\Services\EditorContentValidator;
+use PaginiumCMS\Core\Editor\Services\EditorProfileService;
 use PaginiumCMS\Core\FlatFile\Services\ContentRepository;
 use PaginiumCMS\Core\FlatFile\Services\ContentIndexService;
 use PaginiumCMS\Core\FlatFile\Services\JsonContentStorage;
@@ -220,7 +222,8 @@ return [
             get(SettingsRepositoryInterface::class),
             get(JsonResponder::class),
             get(SecurityLogger::class),
-            get(DemoMode::class)
+            get(DemoMode::class),
+            get(EditorProfileService::class)
         ),
 
     WorkflowController::class => create(WorkflowController::class)
@@ -438,6 +441,11 @@ return [
     DeveloperModeMiddleware::class => create(DeveloperModeMiddleware::class)
         ->constructor(get(DeveloperModeGate::class)),
 
+    EditorProfileService::class => create(EditorProfileService::class)
+        ->constructor(get(SettingsRepositoryInterface::class)),
+    EditorContentValidator::class => create(EditorContentValidator::class)
+        ->constructor(get(EditorProfileService::class)),
+
     // HTTP controllers
     ContentController::class => create(ContentController::class)
         ->constructor(
@@ -450,7 +458,8 @@ return [
             get(SettingsRepositoryInterface::class),
             get(AuthenticationInterface::class),
             get(OtpWorkflowService::class),
-            get(DynamicValidator::class)
+            get(DynamicValidator::class),
+            get(EditorContentValidator::class)
         ),
     AdvancedSearchService::class => create(AdvancedSearchService::class)
         ->constructor(

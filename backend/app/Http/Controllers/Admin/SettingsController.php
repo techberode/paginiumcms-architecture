@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use PaginiumCMS\Core\Security\SecurityLogger;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\Settings\SettingsSchema;
+use PaginiumCMS\Core\Editor\Services\EditorProfileService;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Demo\Data\DemoFixtures;
 use PaginiumCMS\Modules\Demo\Services\DemoMode;
@@ -33,7 +34,8 @@ final class SettingsController
         private SettingsRepositoryInterface $settings,
         private JsonResponder $json,
         private SecurityLogger $securityLogger,
-        private DemoMode $demoMode
+        private DemoMode $demoMode,
+        private EditorProfileService $editorProfiles
     ) {
     }
 
@@ -110,7 +112,9 @@ final class SettingsController
                 'openLinksInNewTab' => (bool) ($all['ui']['openLinksInNewTab'] ?? false),
             ],
             'content' => $all['content'] ?? [],
-            'editor' => $all['editor'] ?? [],
+            'editor' => array_merge($all['editor'] ?? [], [
+                'profiles' => $this->editorProfiles->listProfilesForApi(),
+            ]),
             'notifications' => [
                 'toastEnabled' => (bool) ($all['notifications']['toastEnabled'] ?? true),
                 'toastPosition' => (string) ($all['notifications']['toastPosition'] ?? 'top-right'),

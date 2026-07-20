@@ -35,6 +35,11 @@ import {
   valueForEditorMode,
 } from '../../utils/contentEditor';
 import {
+  getEditorProfile,
+  resolveDefaultProfileId,
+  type EditorProfileId,
+} from '../../utils/editorProfiles';
+import {
   findNavigationMatches,
   resolvePublicPath,
   resolveStoragePath,
@@ -72,6 +77,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
   const [conflict, setConflict] = useState<ConflictState | null>(null);
   const [pendingDraftAt, setPendingDraftAt] = useState<number | null>(null);
   const [editorMode, setEditorMode] = useState<EditorMode>('markdown');
+  const [editorProfile, setEditorProfile] = useState<EditorProfileId>('company');
   const [, setContentFormat] = useState<ContentFormat>('markdown');
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
   const [seoOpen, setSeoOpen] = useState(false);
@@ -109,10 +115,24 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
     enabled: !isNew && canEdit,
   });
 
+  const editorProfileDefinition = useMemo(
+    () => getEditorProfile(editorProfile),
+    [editorProfile]
+  );
+
   useEffect(() => {
-    const preferred: EditorMode = settings.editor?.defaultEditor === 'wysiwyg' ? 'wysiwyg' : 'markdown';
-    setEditorMode(preferred);
-  }, [settings.editor?.defaultEditor]);
+    if (isNew) {
+      const preferred: EditorMode =
+        settings.editor?.defaultEditor === 'wysiwyg' ? 'wysiwyg' : 'markdown';
+      setEditorMode(preferred);
+    }
+  }, [isNew, settings.editor?.defaultEditor]);
+
+  useEffect(() => {
+    if (isNew) {
+      setEditorProfile(resolveDefaultProfileId(type, settings.editor as Record<string, unknown>));
+    }
+  }, [isNew, type, settings.editor?.defaultProfilePage, settings.editor?.defaultProfileArticle]);
 
   useEffect(() => {
     void getNavigation().then(setNavigationItems).catch(() => setNavigationItems([]));
@@ -147,13 +167,22 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         const raw = response.data.content || '';
         const fm = response.data.frontMatter ?? {};
         const format = inferContentFormat(raw, response.data.contentFormat ?? fm.contentFormat);
+        const loadedModeRaw = String(response.data.editorMode ?? fm.editorMode ?? '');
         const preferred: EditorMode =
           settings.editor?.defaultEditor === 'wysiwyg' ? 'wysiwyg' : 'markdown';
+        const loadedMode: EditorMode =
+          loadedModeRaw === 'wysiwyg' || loadedModeRaw === 'markdown' ? loadedModeRaw : preferred;
         const loadedSlug = String(response.data.slug ?? slug ?? '');
+        const loadedProfileRaw = String(response.data.editorProfile ?? fm.editorProfile ?? '');
 
         setContentFormat(format);
-        setEditorMode(preferred);
-        setContent(valueForEditorMode(raw, format, preferred));
+        setEditorMode(loadedMode);
+        setEditorProfile(
+          loadedProfileRaw !== ''
+            ? getEditorProfile(loadedProfileRaw).id
+            : resolveDefaultProfileId(type, settings.editor as Record<string, unknown>)
+        );
+        setContent(valueForEditorMode(raw, format, loadedMode));
         setBaseContent(raw);
         setTitle(response.data.title || '');
         setEditSlug(loadedSlug);
@@ -260,6 +289,8 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
             .split(',')
             .map((tag) => tag.trim())
             .filter(Boolean),
+          editorProfile,
+          editorMode,
         };
 
         if (type === 'page' && template.trim()) {
@@ -361,6 +392,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
       type,
       seo,
       editorMode,
+      editorProfile,
       storageFormat,
       articleComments,
       post,
@@ -480,6 +512,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         template={template}
         content={content}
         editorMode={editorMode}
+        editorProfile={editorProfile}
         seo={seo}
         storagePath={resolvedStoragePath}
         publicPath={publicPath}
@@ -500,6 +533,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         onSeoChange={setSeo}
         onSeoOpenChange={setSeoOpen}
         onEditorModeChange={switchEditorMode}
+        onEditorProfileChange={setEditorProfile}
         onCancel={() => navigate(type === 'article' ? '/articles' : '/pages')}
         onSave={() => void handleSave()}
         onOpenPreview={() => setPreviewOpen(true)}
@@ -528,6 +562,8 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
             onChange={setContent}
             readOnly={!canEdit}
             onPickMedia={() => setMediaPickerOpen(true)}
+            profile={editorProfileDefinition}
+            onBlockedAction={(message) => toast.warning(message)}
           />
         ) : (
           <MarkdownContentEditor
@@ -537,6 +573,8 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
             spellCheck={Boolean(settings.editor?.spellcheck ?? true)}
             tabSize={Number(settings.editor?.tabSize ?? 2)}
             onPickMedia={() => setMediaPickerOpen(true)}
+            profile={editorProfileDefinition}
+            onBlockedAction={(message) => toast.warning(message)}
           />
         )}
 

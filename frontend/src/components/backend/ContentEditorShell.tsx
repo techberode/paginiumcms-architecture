@@ -13,6 +13,8 @@ import {
 import type { ContentType } from '../../api/drafts';
 import type { NavigationItem } from '../../api/navigation';
 import type { EditorMode } from '../../utils/contentEditor';
+import type { EditorProfileId } from '../../utils/editorProfiles';
+import { EditorProfilePicker } from './EditorProfilePicker';
 import { countContentStats } from '../../utils/contentEditorMeta';
 import { SeoMetadataPanel, type SeoFormValues } from './SeoMetadataPanel';
 import {
@@ -42,6 +44,7 @@ interface ContentEditorShellProps {
   template: string;
   content: string;
   editorMode: EditorMode;
+  editorProfile: EditorProfileId;
   seo: SeoFormValues;
   storagePath: string;
   publicPath: string;
@@ -59,6 +62,7 @@ interface ContentEditorShellProps {
   onSeoChange: (values: SeoFormValues) => void;
   onSeoOpenChange: (open: boolean) => void;
   onEditorModeChange: (mode: EditorMode) => void;
+  onEditorProfileChange: (profileId: EditorProfileId) => void;
   onCancel: () => void;
   onSave: () => void;
   onOpenPreview?: () => void;
@@ -85,6 +89,7 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
   template,
   content,
   editorMode,
+  editorProfile,
   seo,
   storagePath,
   publicPath,
@@ -102,6 +107,7 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
   onSeoChange,
   onSeoOpenChange,
   onEditorModeChange,
+  onEditorProfileChange,
   onCancel,
   onSave,
   onOpenPreview,
@@ -337,7 +343,14 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
             />
           ) : null}
 
-          <div>{children}</div>
+          <div className="space-y-3">
+            <EditorProfilePicker
+              value={editorProfile}
+              onChange={onEditorProfileChange}
+              disabled={!canEdit}
+            />
+            <div>{children}</div>
+          </div>
 
           {footerExtra}
         </div>

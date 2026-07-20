@@ -15,6 +15,7 @@ use PaginiumCMS\Core\FlatFile\Models\Page;
 use PaginiumCMS\Core\FlatFile\Services\ContentRevision;
 use PaginiumCMS\Core\Blueprint\Services\DynamicValidator;
 use PaginiumCMS\Core\Cache\ContentCacheService;
+use PaginiumCMS\Core\Editor\Services\EditorContentValidator;
 use PaginiumCMS\Core\Validation\ValidationException;
 use PaginiumCMS\Core\Versioning\Services\ContentVersioningService;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
@@ -44,7 +45,8 @@ class ContentController
         private SettingsRepositoryInterface $settings,
         private AuthenticationInterface $auth,
         private OtpWorkflowService $otpWorkflow,
-        private DynamicValidator $dynamicValidator
+        private DynamicValidator $dynamicValidator,
+        private EditorContentValidator $editorContentValidator
     ) {
     }
 
@@ -607,6 +609,14 @@ class ContentController
             $frontMatter['contentFormat'] = (string) $data['contentFormat'];
         }
 
+        if (!empty($data['editorProfile']) && is_string($data['editorProfile'])) {
+            $frontMatter['editorProfile'] = trim($data['editorProfile']);
+        }
+
+        if (!empty($data['editorMode']) && in_array($data['editorMode'], ['markdown', 'wysiwyg'], true)) {
+            $frontMatter['editorMode'] = (string) $data['editorMode'];
+        }
+
         if ($content instanceof Page && !empty($data['tags']) && is_array($data['tags'])) {
             $content->setTags($data['tags']);
         }
@@ -660,6 +670,8 @@ class ContentController
         $payload['canonical'] = (string) ($frontMatter['canonical'] ?? '');
         $payload['ogImage'] = (string) ($frontMatter['seoImage'] ?? $frontMatter['ogImage'] ?? $payload['featuredImage'] ?? '');
         $payload['noIndex'] = ($frontMatter['noIndex'] ?? $frontMatter['noindex'] ?? false) === true;
+        $payload['editorProfile'] = (string) ($frontMatter['editorProfile'] ?? '');
+        $payload['editorMode'] = (string) ($frontMatter['editorMode'] ?? '');
 
         return $payload;
     }
@@ -721,6 +733,14 @@ class ContentController
 
         if (!empty($data['status']) && !in_array($data['status'], $this->validStatuses, true)) {
             return Lang::get('invalid_status', [], 'content');
+        }
+
+        $profileError = $this->editorContentValidator->validate(
+            $type,
+            $this->normalizeValidationData($data)
+        );
+        if ($profileError !== null) {
+            return $profileError;
         }
 
         return null;

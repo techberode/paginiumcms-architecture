@@ -64,6 +64,8 @@ final class SettingsSchema
                 'label' => 'Editor',
                 'fields' => [
                     ['key' => 'defaultEditor', 'type' => 'enum', 'label' => 'Predvolený editor', 'default' => 'markdown', 'options' => ['markdown', 'wysiwyg'], 'rules' => ['required', 'in:markdown,wysiwyg']],
+                    ['key' => 'defaultProfilePage', 'type' => 'enum', 'label' => 'Predvolený profil (stránky)', 'default' => 'company', 'options' => ['company', 'blog', 'minimal', 'developer'], 'rules' => ['required', 'in:company,blog,minimal,developer'], 'help' => 'Modulárny toolbar pre stránky (Iterácia 54).'],
+                    ['key' => 'defaultProfileArticle', 'type' => 'enum', 'label' => 'Predvolený profil (články)', 'default' => 'blog', 'options' => ['company', 'blog', 'minimal', 'developer'], 'rules' => ['required', 'in:company,blog,minimal,developer'], 'help' => 'Modulárny toolbar pre články (Iterácia 54).'],
                     ['key' => 'spellcheck', 'type' => 'bool', 'label' => 'Kontrola pravopisu', 'default' => true, 'rules' => ['bool']],
                     ['key' => 'tabSize', 'type' => 'int', 'label' => 'Veľkosť tabulátora', 'default' => 2, 'rules' => ['required', 'int', 'min:2', 'max:8']],
                 ],
