@@ -41,4 +41,5 @@ frontend/src/extensions/{id}/       ← React plugin UI
 
 ## Next
 
-→ [Iteration 16](ITERATION_16.md) – full Code Editor stack + themes
+→ [Iteration 16](ITERATION_16.md) – full Code Editor stack + themes  
+→ **After It.15 ships:** [Post-15 wave It.53–58](ITERATION_WAVE_POST_15.md) (editor profiles, navigation, layout builder)
