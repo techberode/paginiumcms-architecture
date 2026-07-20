@@ -16,6 +16,7 @@ import { AccountSecurityView } from './components/backend/AccountSecurityView';
 import { UsersManager } from './components/backend/UsersManager';
 import { NotificationsOverview } from './components/backend/NotificationsOverview';
 import { SchedulerView } from './components/backend/SchedulerView';
+import { ExtensionsManager } from './components/backend/ExtensionsManager';
 import { MediaManager } from './components/backend/MediaManager';
 import { NavigationManager } from './components/backend/NavigationManager';
 import { CommentsManager } from './components/backend/CommentsManager';
@@ -161,6 +162,7 @@ function App() {
         <Route path="/security/audit" element={<SecurityAuditManager />} />
         <Route path="/security/acl" element={<AclManager />} />
         <Route path="/blueprints" element={<BlueprintManager />} />
+        <Route path="/extensions" element={<ExtensionsManager />} />
         <Route path="/demo" element={<DemoManager />} />
         <Route path="/notifications" element={<NotificationsOverview />} />
         <Route path="/scheduler" element={<SchedulerView />} />

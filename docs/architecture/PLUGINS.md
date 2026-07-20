@@ -52,11 +52,14 @@ Zlyhanie → HTTP 422, žiadny zápis na disk.
 
 | Oblasť | Stav |
 |---|---|
-| `HookManager` | Existuje, nie je v DI, nie je volaný z produkcie |
-| `PluginManager` | **Chýba** |
-| `backend/app/Http/Extensions/` | **Chýba** |
-| `data/plugins.json` registry | **Chýba** |
-| CodeEditor edit plugins | Deklarované v allow paths, cesty rozbité |
+| `HookManager` | ✅ V DI, boot pri enabled extensions |
+| `PluginManager` | ✅ `Http/Extensions/Services/PluginManager` |
+| `backend/app/Http/Extensions/` | ✅ Runtime + imported `{id}/` |
+| `data/plugins.json` registry | ✅ Flock-protected flat-file |
+| Import ZIP + policy | ✅ `POST /api/admin/extensions/import` |
+| Extension routes | ✅ Auto-load pre enabled (`Http/Routes/extensions/{id}.php`) |
+| Admin UI | ✅ `/extensions` — `ExtensionsManager` |
+| FE dynamic loader | ✅ `frontend/src/extensions/loader.ts` |
 | CMS témy | **Chýba** (len admin dark/light v `ThemeContext`) |
 
 ---

@@ -5,8 +5,9 @@
 
 **Aktuálne hotové:** It.1–24 ✅ · It.26–28 ✅ · It.25 ⏳ (setup wizard — odložené)
 
-**Ďalšia iterácia:** [It.15](ITERATION_15.md) ⏳ (gate pre It.53–58)  
-**Po It.15 (plánované, bez implementácie):** [It.53–58 Editor & UX wave](ITERATION_WAVE_POST_15.md) ⛔
+**Ďalšia iterácia:** [It.53](ITERATION_53.md) (post-15 editor wave)  
+**Gate It.15:** ✅ [It.15 External plugins](ITERATION_15.md) — **2.0.38**  
+**Editor wave:** [It.53–58](ITERATION_WAVE_POST_15.md)
 
 **Incidenty a opravy:** [ISSUES.md](ISSUES.md)
 
@@ -28,13 +29,13 @@
 | **45** | TBD | **[Redis – voliteľná infra](ITERATION_45.md)** | **🔵** | Absorbované do **It.49** |
 | **51** | **2.0.32** | **[Live preview + tagy + blog štítky](ITERATION_51.md)** | **✅** | SitePreviewModal, reading time, date badges |
 | **52** | **2.0.36** | **[Dashboard v2 + kontakt](ITERATION_52.md)** | **✅** | It.52a–c complete |
-| **53** | TBD | **[Smooth SPA reload](ITERATION_53.md)** | **🟡** | ⛔ po It.15 |
+| **53** | TBD | **[Smooth SPA reload](ITERATION_53.md)** | **🟡** | Post-15 wave |
 | **54** | TBD | **[Modular MD + WYSIWYG profiles](ITERATION_54.md)** | **🔴** | ⛔ po It.15 · Tiptap |
 | **55** | TBD | **[Tiptap JSON + media upload](ITERATION_55.md)** | **🔴** | ⛔ It.15 + It.54 |
 | **56** | TBD | **[Rich navigation items](ITERATION_56.md)** | **🟡** | ⛔ po It.15 |
 | **57** | TBD | **[Auto tags & description](ITERATION_57.md)** | **🟡** | ⛔ po It.15 |
 | **58** | TBD | **[Page layout builder + color schemes](ITERATION_58.md)** | **🟡** | ⛔ po It.15 · layout + 5 presetov, preview, light/dark/system |
-| 15 | TBD | **[External plugins](ITERATION_15.md)** | **🔴** | **Blokátor pre It.53–58** |
+| **15** | **2.0.38** | **[External plugins](ITERATION_15.md)** | **✅** | Import ZIP, registry, hooks, routes, admin UI |
 | **47** | TBD | **[Notification connector auth](ITERATION_47.md)** | **✅** | ntfy Bearer/Basic + test-connector |
 | **48** | TBD | **[PHP templates + static/dynamic web](ITERATION_48.md)** | **🟡** | Front matter šablóny, JSON/INI meta, static HTML |
 | **49** | TBD | **[Unified cache layer](ITERATION_49.md)** | **🟡** | File + Redis prepínač podľa hostingu (rýchlosť/bezpečnosť) |

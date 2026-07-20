@@ -27,6 +27,7 @@ import {
   HardDrive,
   Trash2,
   CalendarClock,
+  Puzzle,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
@@ -104,6 +105,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
     { id: 'security-audit', label: 'Bezpeč. audit', href: '/security/audit', icon: ShieldAlert, adminOnly: true },
     { id: 'security-acl', label: 'ACL pravidlá', href: '/security/acl', icon: Lock, adminOnly: true },
     { id: 'blueprints', label: 'Blueprinty', href: '/blueprints', icon: Layers, adminOnly: true },
+    { id: 'extensions', label: 'Rozšírenia', href: '/extensions', icon: Puzzle, adminOnly: true },
     { id: 'demo', label: 'Demo modul', href: '/demo', icon: FlaskConical, adminOnly: true },
     { id: 'notifications', label: 'Notifikácie', href: '/notifications', icon: Bell },
     { id: 'scheduler', label: 'Plánovač', href: '/scheduler', icon: CalendarClock, adminOnly: true },

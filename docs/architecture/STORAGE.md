@@ -28,8 +28,29 @@ backend/storage/app/content/
     │   └── article/  #   {slug}.json
     ├── conflicts.json # log konfliktov obsahu (Iterácia 3)
     ├── settings.json  # odchýlky od predvolených nastavení CMS (Iterácia 4)
+    ├── plugins.json    # register externých doplnkov (Iterácia 15)
     └── locks.json    # register zámkov (Iterácia 1)
 ```
+
+## Register doplnkov – `data/plugins.json`
+
+Iterácia 15 — runtime stav nainštalovaných extensions (manifest je v `Http/Extensions/{id}/plugin.json`).
+
+**Formát:** objekt mapovaný podľa `id`:
+
+```json
+{
+  "hello-widget": {
+    "id": "hello-widget",
+    "enabled": false,
+    "installedAt": "2026-07-20T10:00:00+00:00"
+  }
+}
+```
+
+Zápis pod `flock(LOCK_EX)` cez `PluginRegistry`.
+
+---
 
 ## Register zámkov – `data/locks.json`
 

@@ -31,6 +31,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.52b — Contact form subjects (tests + contract) | **2.0.35** | [below](#2035--2026-07-20) |
 | It.52 — Dashboard v2, contact & company (complete) | **2.0.36** | [below](#2036--2026-07-20) |
 | It.44d — Content API filters + server-side public blog | **2.0.37** | [below](#2037--2026-07-20) |
+| It.15 — External plugins & runtime | **2.0.38** | [below](#2038--2026-07-20) |
+
+---
+
+## [2.0.38] – 2026-07-20
+
+**Iteration 15** — externé doplnky mimo Core (import, registry, hooks, routes, admin UI).  
+Detail: [ITERATION_15.md](docs/ITERATION_15.md).
+
+### Added
+
+- `PluginRegistry`, `PluginImporter`, `PluginPolicyScanner`, `PluginManager` under `Http/Extensions/`
+- Flat-file registry `data/plugins.json` with flock
+- Admin API: `GET/POST /api/admin/extensions`, enable/disable/uninstall
+- ZIP import with `CodePolicyEngine` directory scan (422 on violation)
+- Bootstrap: `bootEnabledExtensions()` + load `Http/Routes/extensions/{id}.php` for enabled plugins
+- `HookManager` registered in DI
+- Frontend: `extensionsApi`, `ExtensionsManager` at `/extensions`, `extensions/loader.ts`
+- Tests: PHPUnit + Vitest loader
+
+### Fixed
+
+- `FileHelper::read()` — guard for missing/unreadable files (ISS-039 hardening)
 
 ---
 

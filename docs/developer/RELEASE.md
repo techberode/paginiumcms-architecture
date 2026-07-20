@@ -1,7 +1,22 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.0.37** · 2026-07-20  
+> Posledná verzia: **2.0.38** · 2026-07-20  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release. Samotný release/tag zatiaľ nevytváraj, kým nie je schválený deploy.
+
+---
+
+## 2.0.38 — pred release kontrola
+
+```bash
+./scripts/iteration-gate.sh
+```
+
+**Po deployi:**
+
+1. Admin **Rozšírenia** → `/extensions` — zoznam je prázdny alebo zobrazuje nainštalované doplnky
+2. Import ZIP s `plugin.json` → 201, položka v zozname (disabled)
+3. Zapnutie doplnku → `PUT …/enable` → 200; po reštarte API načíta hooks + routes
+4. Network: `GET /api/admin/extensions` → `{ extensions: [...] }`
 
 ---
 
@@ -34,6 +49,48 @@
 4. Network: `GET /api/admin/dashboard/overview` obsahuje `counts` a `storage`
 
 ---
+
+---
+
+## GitHub Release — copy-paste (2.0.38)
+
+**Title:**
+
+```
+2.0.38 — It.15: external plugins & extension runtime
+```
+
+**Tag:** `v2.0.38` · **Target:** `main`
+
+**Body:**
+
+```markdown
+## Summary
+
+Iteration 15 delivers the **external plugin system** outside Core: ZIP import with code policy, flat-file registry, HookManager integration, enabled extension routes, and admin UI at `/extensions`.
+
+## Highlights
+
+- **Backend:** `PluginManager`, `PluginImporter`, `PluginPolicyScanner`, `data/plugins.json`
+- **API:** `GET/POST /api/admin/extensions`, enable/disable/uninstall
+- **Security:** every imported file passes `CodePolicyEngine` (422 on violation)
+- **Bootstrap:** enabled plugins register hooks + load `Http/Routes/extensions/{id}.php`
+- **Frontend:** `ExtensionsManager`, `extensionsApi`, dynamic `extensions/loader.ts`
+- **Fix:** `FileHelper::read()` guard (ISS-039)
+
+## Test plan
+
+- [ ] `./scripts/iteration-gate.sh` green
+- [ ] Admin `/extensions` — list, import ZIP, enable/disable
+- [ ] Invalid ZIP (eval in PHP) → 422 policy errors
+- [ ] After enable + PHP restart, extension routes respond
+
+## Docs
+
+- [ITERATION_15.md](docs/ITERATION_15.md)
+- [PLUGINS.md](docs/architecture/PLUGINS.md)
+- [API.md](docs/architecture/API.md) — Extensions section
+```
 
 ---
 

@@ -154,7 +154,7 @@ Kompletný zoznam: [architecture/API.md](architecture/API.md).
 | OTP workflow | ✅ | ✅ | OtpWorkflowServiceTest |
 | Code policy + editor | ✅ | ✅ 🛠 | CodeEditorControllerTest |
 | Public theme rendering | ✅ API | ✅ React public routes | Vitest public components |
-| PluginManager | ⛔ | ⛔ | It.15 backlog |
+| PluginManager | ✅ | ✅ | It.15 — 2.0.38 |
 
 ---
 
