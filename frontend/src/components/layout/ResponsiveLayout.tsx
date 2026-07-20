@@ -1,5 +1,5 @@
 // frontend/src/components/layout/ResponsiveLayout.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { useAuth } from '../../hooks/useAuth';
@@ -21,12 +21,14 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) 
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const location = useLocation();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const isMobile = useMediaQuery('(max-width: 1023px)');
   const { twoFactorSetupPending } = useAuth();
   const openInNewTab = useOpenLinksInNewTab();
 
   useEffect(() => {
     setMobileMenuOpen(false);
+    scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'auto' });
   }, [location.pathname]);
 
   useEffect(() => {
@@ -69,7 +71,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) 
         />
       )}
 
-      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
+      <div ref={scrollContainerRef} className="flex-1 flex flex-col min-w-0 overflow-y-auto">
         <AdminHeader
           onGoToWebsite={() => openExternalUrl(publicSiteUrl, openInNewTab)}
           onOpenMobileMenu={() => setMobileMenuOpen(true)}

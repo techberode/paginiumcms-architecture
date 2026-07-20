@@ -1,7 +1,59 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.0.38** · 2026-07-20  
+> Posledná verzia: **2.0.39** · 2026-07-20  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release. Samotný release/tag zatiaľ nevytváraj, kým nie je schválený deploy.
+
+---
+
+## 2.0.39 — pred release kontrola
+
+```bash
+./scripts/iteration-gate.sh
+```
+
+**Po deployi:**
+
+1. Admin `/dashboard` → `/pages` → `/media` — druhá návšteva bez dlhého spinneru (cache)
+2. Scroll pri prepnutí route skočí hore
+3. Editor → história verzií → obnoviť — **bez** full page reload
+4. Verejný článok → login link — SPA navigácia na `/login`
+
+---
+
+## GitHub Release — copy-paste (2.0.39)
+
+**Title:**
+
+```
+2.0.39 — It.53: smooth SPA reload & admin navigation
+```
+
+**Tag:** `v2.0.39` · **Target:** `main`
+
+**Body:**
+
+```markdown
+## Summary
+
+Iteration 53 removes admin navigation jank: React Query stale-while-revalidate, scroll restoration, skeleton loaders, and the last editor hard reload.
+
+## Highlights
+
+- **React Query:** dashboard, content lists, extensions, sidebar counts
+- **UX:** `AdminPageSkeleton`, `AdminListSkeleton`, scroll reset on route change
+- **Fix:** version restore in editor refetches content (no `location.reload`)
+- **Router:** `v7_startTransition`, public login via `<Link>`
+
+## Test plan
+
+- [ ] `./scripts/iteration-gate.sh` green
+- [ ] `/pages` ↔ `/media` ↔ `/articles` feels instant on revisit
+- [ ] Version restore in editor without full reload
+
+## Docs
+
+- [ITERATION_53.md](docs/ITERATION_53.md)
+```
 
 ---
 

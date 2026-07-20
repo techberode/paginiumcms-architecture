@@ -559,7 +559,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
             <h2 className="text-lg font-bold">História verzií</h2>
           </div>
           <div className="card-body">
-            <VersionHistory contentId={slug} onRestore={() => window.location.reload()} />
+            <VersionHistory contentId={slug} onRestore={() => void loadContent()} />
           </div>
         </div>
       )}

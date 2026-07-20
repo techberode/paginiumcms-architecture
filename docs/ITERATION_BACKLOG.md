@@ -5,9 +5,8 @@
 
 **Aktuálne hotové:** It.1–24 ✅ · It.26–28 ✅ · It.25 ⏳ (setup wizard — odložené)
 
-**Ďalšia iterácia:** [It.53](ITERATION_53.md) (post-15 editor wave)  
-**Gate It.15:** ✅ [It.15 External plugins](ITERATION_15.md) — **2.0.38**  
-**Editor wave:** [It.53–58](ITERATION_WAVE_POST_15.md)
+**Ďalšia iterácia:** [It.54](ITERATION_54.md) (modular editor profiles)  
+**Posledná:** [It.53 Smooth SPA reload](ITERATION_53.md) — **2.0.39**
 
 **Incidenty a opravy:** [ISSUES.md](ISSUES.md)
 
@@ -29,7 +28,7 @@
 | **45** | TBD | **[Redis – voliteľná infra](ITERATION_45.md)** | **🔵** | Absorbované do **It.49** |
 | **51** | **2.0.32** | **[Live preview + tagy + blog štítky](ITERATION_51.md)** | **✅** | SitePreviewModal, reading time, date badges |
 | **52** | **2.0.36** | **[Dashboard v2 + kontakt](ITERATION_52.md)** | **✅** | It.52a–c complete |
-| **53** | TBD | **[Smooth SPA reload](ITERATION_53.md)** | **🟡** | Post-15 wave |
+| **53** | **2.0.39** | **[Smooth SPA reload](ITERATION_53.md)** | **✅** | React Query cache, scroll restore, skeletons |
 | **54** | TBD | **[Modular MD + WYSIWYG profiles](ITERATION_54.md)** | **🔴** | ⛔ po It.15 · Tiptap |
 | **55** | TBD | **[Tiptap JSON + media upload](ITERATION_55.md)** | **🔴** | ⛔ It.15 + It.54 |
 | **56** | TBD | **[Rich navigation items](ITERATION_56.md)** | **🟡** | ⛔ po It.15 |

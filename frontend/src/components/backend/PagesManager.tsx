@@ -1,7 +1,10 @@
 // frontend/src/components/backend/PagesManager.tsx
 import React, { useCallback, useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useApi } from '../../hooks/useApi';
 import { useToast } from '../../hooks/useToast';
+import { useAdminListQuery } from '../../hooks/useAdminListQuery';
+import { queryKeys } from '../../api/queryKeys';
 import { Link } from 'react-router-dom';
 import type { PaginationMeta } from '../../api/client';
 import { AdminListFilterBar } from './AdminListFilterBar';
@@ -22,6 +25,7 @@ import { summarizeBulkResult } from '../../types/bulk';
 import { evaluateContentSeo } from '../../utils/seoHealth';
 import { resolveAdminMediaPreviewUrl, resolvePublicMediaUrl } from '../../api/media';
 import type { ContentType } from '../../api/drafts';
+import { AdminListSkeleton } from '../ui/AdminListSkeleton';
 
 interface ContentItem {
   id: string;
@@ -81,9 +85,7 @@ const STATUS_LABELS: Record<ContentItem['status'], string> = {
 };
 
 export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) => {
-  const [items, setItems] = useState<ContentItem[]>([]);
-  const [meta, setMeta] = useState<PaginationMeta>(DEFAULT_META);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const {
     page,
     search,
@@ -147,9 +149,18 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
     [endpoint, get, previewType, toast]
   );
 
-  const loadItems = useCallback(async () => {
-    setLoading(true);
-    try {
+  const listQueryKey = queryKeys.content.list(type, {
+    page,
+    pageSize,
+    search: debouncedSearch,
+    status: statusFilter,
+    sortField,
+    sortDirection,
+  });
+
+  const { data: listData, isLoading, refetch } = useAdminListQuery({
+    queryKey: listQueryKey,
+    queryFn: async () => {
       const params = new URLSearchParams({
         page: String(page),
         per_page: String(pageSize),
@@ -163,21 +174,23 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
       }
 
       const response = await get<ContentItem[]>(`${endpoint}?${params.toString()}`);
-      if (response.success) {
-        setItems(response.data || []);
-        setMeta(response.meta ?? { ...DEFAULT_META, page });
+      if (!response.success) {
+        throw new Error(`Nepodarilo sa načítať ${type === 'articles' ? 'články' : 'podstránky'}`);
       }
-    } catch (error) {
-      toast.error(`Nepodarilo sa načítať ${type === 'articles' ? 'články' : 'podstránky'}`);
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  }, [debouncedSearch, endpoint, get, page, pageSize, sortDirection, sortField, statusFilter, toast, type]);
 
-  useEffect(() => {
-    void loadItems();
-  }, [loadItems]);
+      return {
+        items: response.data || [],
+        meta: response.meta ?? { ...DEFAULT_META, page },
+      };
+    },
+  });
+
+  const items = listData?.items ?? [];
+  const meta = listData?.meta ?? DEFAULT_META;
+  const loading = isLoading && !listData;
+
+  const invalidateList = () =>
+    queryClient.invalidateQueries({ queryKey: ['admin', 'content', type, 'list'] });
 
   const handleDelete = async (slug: string) => {
     if (!confirm(`Naozaj chcete zmazať túto ${itemLabel}?`)) {
@@ -188,7 +201,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
       const response = await del(`${endpoint}/${slug}`);
       if (response.success) {
         toast.success(`${itemLabel} bol zmazaný`);
-        await loadItems();
+        await invalidateList();
       } else {
         toast.error(response.error || `Nepodarilo sa zmazať ${itemLabel}`);
       }
@@ -235,7 +248,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
     if (result) {
       toast.success(summarizeBulkResult(result));
       bulkSelection.clear();
-      await loadItems();
+      await invalidateList();
     } else {
       toast.error('Hromadné mazanie zlyhalo.');
     }
@@ -249,18 +262,14 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
     if (result) {
       toast.success(summarizeBulkResult(result));
       bulkSelection.clear();
-      await loadItems();
+      await invalidateList();
     } else {
       toast.error('Hromadná zmena stavu zlyhala.');
     }
   };
 
-  if (loading && items.length === 0) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600" />
-      </div>
-    );
+  if (loading) {
+    return <AdminListSkeleton rows={8} />;
   }
 
   return (
