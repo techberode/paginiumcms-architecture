@@ -46,6 +46,7 @@ use PaginiumCMS\Core\Developer\DevTokenGenerator;
 use PaginiumCMS\Core\Developer\DevTokenRegistry;
 use PaginiumCMS\Core\Developer\Services\DeveloperLogger;
 use PaginiumCMS\Core\Event\EventDispatcher;
+use PaginiumCMS\Core\Hook\HookManager;
 use PaginiumCMS\Core\GitHub\Services\GitHubService;
 use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
@@ -102,6 +103,7 @@ use PaginiumCMS\Http\Controllers\Admin\CodeEditorController;
 use PaginiumCMS\Http\Controllers\Admin\DemoController;
 use PaginiumCMS\Http\Controllers\Admin\DeveloperController;
 use PaginiumCMS\Http\Controllers\Admin\GatedCodeEditorController;
+use PaginiumCMS\Http\Controllers\Admin\ExtensionsController;
 use PaginiumCMS\Http\Controllers\Admin\BlueprintController;
 use PaginiumCMS\Http\Controllers\Admin\AclController;
 use PaginiumCMS\Http\Controllers\Admin\SecurityAuditController;
@@ -124,6 +126,11 @@ use PaginiumCMS\Http\Controllers\Navigation\NavigationController;
 use PaginiumCMS\Http\Controllers\Content\ContentController;
 use PaginiumCMS\Http\Controllers\Content\DraftController;
 use PaginiumCMS\Http\Controllers\Content\SearchController;
+use PaginiumCMS\Http\Extensions\Contracts\PluginManagerInterface;
+use PaginiumCMS\Http\Extensions\Services\PluginImporter;
+use PaginiumCMS\Http\Extensions\Services\PluginManager;
+use PaginiumCMS\Http\Extensions\Services\PluginPolicyScanner;
+use PaginiumCMS\Http\Extensions\Services\PluginRegistry;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Http\Controllers\Locking\LockController;
 use PaginiumCMS\Http\Controllers\Media\MediaController;
@@ -469,6 +476,35 @@ return [
     // Code editor / versioning / audit (auto-discovered admin routes)
     ConfigManager::class => create(ConfigManager::class),
     EventDispatcher::class => create(EventDispatcher::class),
+    HookManager::class => create(HookManager::class),
+    PluginPolicyScanner::class => create(PluginPolicyScanner::class)
+        ->constructor(get(CodePolicyEngineInterface::class)),
+    PluginRegistry::class => create(PluginRegistry::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class),
+            'data/plugins.json'
+        ),
+    PluginImporter::class => create(PluginImporter::class)
+        ->constructor(
+            get(PluginRegistry::class),
+            get(PluginPolicyScanner::class),
+            dirname(__DIR__, 2) . '/Extensions',
+            dirname(__DIR__, 2) . '/Routes/extensions',
+            dirname(__DIR__, 4) . '/frontend/src/extensions',
+            dirname(__DIR__, 4)
+        ),
+    PluginManagerInterface::class => create(PluginManager::class)
+        ->constructor(
+            get(PluginRegistry::class),
+            get(PluginImporter::class),
+            get(HookManager::class),
+            dirname(__DIR__, 2) . '/Extensions',
+            dirname(__DIR__, 2) . '/Routes/extensions',
+            dirname(__DIR__, 4) . '/frontend/src/extensions'
+        ),
+    ExtensionsController::class => create(ExtensionsController::class)
+        ->constructor(get(PluginManagerInterface::class), get(JsonResponder::class)),
     DeveloperMode::class => create(DeveloperMode::class)
         ->constructor(
             get(ConfigManager::class),

@@ -25,6 +25,7 @@ export * from './search';
 export * from './dashboard';
 export * from './analytics';
 export * from './developer';
+export * from './extensions';
 export * from './notifications';
 export * from './github';
 export * from './versions';

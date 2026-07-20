@@ -1,6 +1,6 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-20 · verzia **2.0.33** (fix `64cc894`)
+> Posledná aktualizácia: 2026-07-20 · verzia **2.0.37** (fix `54b013c`)
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
 
@@ -52,6 +52,9 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-035 | PHPStan: `ClientIpResolver` mŕtvy `??` fallback         | Nízka (CI)            | ✅ Opravené (2.0.29 hotfix)              |
 | ISS-036 | FE type-check: 2FA `setup_pending` / `setUser` (CI)     | Stredná (CI)          | ✅ Opravené (2.0.30 hotfix `3fbc595`)    |
 | ISS-037 | FE type-check: nepoužitý `React` import v teste (CI)  | Nízka (CI)            | ✅ Opravené (hotfix `64cc894`)           |
+| ISS-038 | PHPUnit It.44d: index filtre tag/date (CI)            | Stredná (CI)          | ✅ Opravené (`54b013c`)                  |
+| ISS-039 | PHPUnit `LogWriterTest`: vfs + corrupt JSON (CI)      | Stredná (CI)          | ✅ Opravené (`54b013c`)                  |
+| ISS-040 | Corrupt access log → `JsonException` → API 500        | Kritická (prod)       | ✅ Opravené (`743e922`)                  |
 
 
 
@@ -65,6 +68,9 @@ Workflow: `[.github/workflows/ci.yml](../.github/workflows/ci.yml)`
 | ---------- | -------------------- | --------------------------------------------------------------- | ---------------------------------- |
 | `backend`  | PHPStan level 8      | Analýza zlyhá (verzia PHP, `match`, `fopen`, `is_array`)        | ISS-016, ISS-017, ISS-018, ISS-021 |
 | `backend`  | PHPUnit              | 429 Too Many Requests, 503 maintenance, flaky OTP, flaky search test | ISS-015, ISS-023                   |
+| `backend`  | PHPUnit              | `ContentRepositoryTest` — date/tag filter, distinct tags (It.44d) | ISS-038                            |
+| `backend`  | PHPUnit              | `LogWriterTest` — chýbajúci súbor na vfs, corrupt recovery       | ISS-039                            |
+| `backend`  | PHPUnit (prod)       | `JsonException` v access log → 500 na všetkých API               | ISS-040                            |
 | `frontend` | `npm run type-check` | TS6133 — nepoužitý import `React` v `SettingsView.test.tsx` | ISS-037                   |
 | `frontend` | `npm run type-check` | TS2352 / TS6133 / TS2322 / 2FA DTO shape (`setup_pending`, `setUser`) | ISS-019, ISS-036                   |
 | `frontend` | `npm run lint`       | Prekročenie `--max-warnings 65` (`react-hooks/exhaustive-deps`) | ISS-020                            |
@@ -887,6 +893,130 @@ src/components/backend/SettingsView.test.tsx(4,1): error TS6133: 'React' is decl
 
 ---
 
+## ISS-038 – PHPUnit It.44d: index filtre tag / author / date (CI)
+
+**Symptóm:** Po pushi It.44d (`743e922` / `05a4800`) CI job **backend → PHPUnit** padá v `ContentRepositoryTest.php`:
+
+| Test | Riadok | Chyba |
+|------|--------|-------|
+| `testFindArticlesPaginatedFiltersByTagAuthorAndDate` | 172 | `Failed asserting that 0 is identical to 1` (date range filter) |
+| `testListDistinctTagsAndCountIndexed` | 181 | Očakávané `['news', 'php']`, skutočné `['hidden', 'news', 'php']` |
+
+**Príčiny:**
+
+1. **Date filter** — Symfony YAML parsuje `date: 2024-02-10` ako **unix timestamp (`int`)**, nie string ani `DateTime`. `ContentIndexEntry::normalizeIndexedDate()` ignoroval integer → `createdAt` spadol na `modifiedAt` (dnešný dátum) a mimo rozsahu `date_from` / `date_to`.
+2. **Distinct tags** — `listDistinctTags()` a `countIndexed()` volali `applyIndexFilters()` **bez filtra `status`** → tag `hidden` z draft článku sa počítal medzi publikované.
+
+**Navrhované riešenie:**
+
+- Normalizovať dátumy konzistentne na `Y-m-d` pri indexovaní aj filtrovaní (`DateTimeInterface`, `int` timestamp, string).
+- Aplikovať `status` (a ostatné filtre) rovnako v `query()`, `listDistinctTags()` a `countIndexed()`.
+- Tagy normalizovať cez spoločný helper (trim, prázdne vyhodiť).
+
+**Implementované riešenie (`54b013c`):**
+
+- `ContentIndexEntry::normalizeIndexedDate()` — podpora `DateTimeInterface`, `int`/`float` timestamp, ISO string.
+- `ContentIndexEntry::normalizeTags()` — array aj reťazec (`news, php` / `[news, php]`).
+- `ContentIndexService::applyIndexFilters()` — filter `status` + dátum cez `normalizeIndexedDate()` na `createdAt`.
+
+**Súbory:** `ContentIndexEntry.php`, `ContentIndexService.php`, testy v `ContentRepositoryTest.php`.
+
+**Overenie:**
+
+```bash
+php vendor/bin/phpunit --filter ContentRepositoryTest::testFindArticlesPaginatedFiltersByTagAuthorAndDate
+php vendor/bin/phpunit --filter ContentRepositoryTest::testListDistinctTagsAndCountIndexed
+```
+
+---
+
+## ISS-039 – PHPUnit `LogWriterTest`: vfs súbor + corrupt JSON (CI)
+
+**Symptóm:** CI na commite `743e922` — `LogWriterTest.php`:
+
+| Test | Riadok | Chyba |
+|------|--------|-------|
+| `testWrite` | 44 | `Failed asserting that file "vfs://storage/logs/app/YYYY-MM-DD.json" exists` |
+| `testWriteMultipleEntries` | 60 | rovnaké |
+| `testWriteRecoversFromCorruptLogFile` | 68/77 | `RuntimeException` / warning z `FileHelper.php:36` (`file_get_contents` na neexistujúci súbor) |
+
+**Príčiny:**
+
+1. **`flock(LOCK_EX)` na `vfsStream`** — zápis cez `fopen('c+')` + zámok zlyhá alebo nevytvorí súbor v PHPUnit vfs.
+2. **`realpath()` na `vfs://`** — cesta sa rozbila pred zápisom.
+3. **Salvage corrupt JSON** — binary search predpokladal monotónny JSON prefix; pri useknutom poli to vrátilo `[]`.
+4. **`FileHelper::read()`** — volanie `file_get_contents` bez kontroly existencie súboru → warning v testoch.
+
+**Navrhované riešenie:**
+
+- Pred zápisom vytvoriť parent adresár (`mkdir` rekurzívne).
+- Na vfs testoch obísť `flock` a použiť priamy `readLogFile` + `writeLogFile`.
+- Pri corrupt JSON skenovať od konca k poslednému `]` a dekódovať platný prefix.
+- V `FileHelper::read()` vrátiť `''` ak súbor neexistuje (nepadať na warning).
+
+**Implementované riešenie (`54b013c`):**
+
+- `LogWriter` — vetva `vfs://` bez `flock`; produkcia ostáva s `flock(LOCK_EX)`.
+- `LogWriter::salvageCorruptLogPayload()` — scan posledného `]` namiesto binary search.
+- `LogWriter::ensureStorageDirectory()` pred zápisom.
+- `LogWriter::readLogFile()` — guard na `is_file` + prázdna odpoveď.
+- Test `testWriteRecoversFromCorruptLogFile` — bez `glob()` na vfs (vfsStream nepodporuje spoľahlivo).
+
+**Poznámka:** Guard v `FileHelper::read()` aplikovaný — pri chýbajúcom/nečitateľnom súbore vráti `''` bez PHP warning.
+
+**Súbory:** `LogWriter.php`, `LogWriterTest.php`.
+
+**Overenie:** `php vendor/bin/phpunit --filter LogWriterTest`
+
+---
+
+## ISS-040 – Corrupt HTTP access log → globálne API 500 (produkcia)
+
+**Symptóm:** Po nasadení `743e922` verejný web a admin konzola — **všetky** requesty `500`:
+
+```
+GET /api/seo/page/home 500
+GET /api/settings/public 500
+GET /api/auth/me 500
+POST /api/debug/client-event 500
+```
+
+PHP log:
+
+```
+Uncaught JsonException: Syntax error
+  FileHelper.php:18 (JsonHelper::decode)
+  LogWriter.php → AccessLogService → RequestLoggingMiddleware
+```
+
+**Príčina:** Súbor `backend/app/storage/logs/app/YYYY-MM-DD.json` mal **useknutý/neplatný JSON** (~4 MB, platný prefix + garbage suffix). Každý HTTP request volal middleware, ktorý pri zápise logu **čítal corrupt súbor** → `JsonException` → 500 na celej aplikácii.
+
+**Navrhované riešenie:**
+
+- `LogWriter` — atomic write s `flock`, pri corrupt JSON salvage + backup (`.corrupt-*`).
+- `RequestLoggingMiddleware` — logging nikdy nesmie shodiť response (try/catch okolo `logRequest`).
+
+**Implementované riešenie (`743e922`, doplnené `54b013c`):**
+
+- `LogWriter::decodeLogPayload()` — backup corrupt súboru, salvage platného prefixu, pokračovanie s prázdnym/zachráneným poľom.
+- `RequestLoggingMiddleware::safeLogRequest()` — chyba logovania sa nepropaguje.
+- Salvage algoritmus vylepšený v `54b013c` (scan `]`, pozri ISS-039).
+
+**Okamžitá náprava na serveri (ak API stále padá):**
+
+```bash
+mv backend/app/storage/logs/app/$(date +%Y-%m-%d).json \
+   backend/app/storage/logs/app/$(date +%Y-%m-%d).json.bak
+echo '[]' > backend/app/storage/logs/app/$(date +%Y-%m-%d).json
+git pull   # 743e922 + 54b013c
+```
+
+**Súbory:** `LogWriter.php`, `RequestLoggingMiddleware.php`.
+
+**Overenie:** `./scripts/iteration-gate.sh` + manuálne `/api/settings/public` → 200.
+
+---
+
 ## Externé / irelevantné hlášky
 
 
@@ -902,8 +1032,9 @@ src/components/backend/SettingsView.test.tsx(4,1): error TS6133: 'React' is decl
 
 ## Súvisiace dokumenty
 
-- [CHANGELOG.md](../CHANGELOG.md) — release 2.0.33 (admin deep links) + hotfix ISS-037
-- [RELEASE.md](developer/RELEASE.md) — copy-paste pre GitHub release 2.0.30
+- [CHANGELOG.md](../CHANGELOG.md) — release 2.0.37 (It.44d) + hotfixy ISS-038–ISS-040
+- [RELEASE.md](developer/RELEASE.md) — copy-paste pre GitHub release 2.0.37
+- [ITERATION_44.md](ITERATION_44.md) — It.44d index filtre (ISS-038)
 - [TESTING.md](developer/TESTING.md) – ako spúšťať testy a regresiu
 - [ROADMAP.md](ROADMAP.md) – plánované iterácie (It.41+, It.47–49)
 - [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) – It.29+ detail

@@ -1,11 +1,11 @@
 # Post–Iteration 15 wave: Editor, navigation & layout
 
-**Status:** ⏳ Planned — **no implementation until [It.15](ITERATION_15.md) is ✅**  
-**Current release:** 2.0.37 · Last shipped: [It.44d](ITERATION_44.md)
+**Status:** ⏳ Planned — **It.15 gate ✅ (2.0.38)** — wave may start  
+**Current release:** 2.0.38 · Last shipped: [It.15](ITERATION_15.md)
 
 ## Gate rule
 
-> **Do not start It.53–58 until `PluginManager` and extension runtime (It.15) are merged and released.**
+> **It.53–58 may start now that `PluginManager` and extension runtime (It.15) are shipped in 2.0.38.**
 
 Reason: modular editor extensions (`code_blocks`, custom Tiptap nodes) and optional layout blocks depend on the plugin law (`Http/Extensions/{id}/`, FE dynamic import).
 

@@ -705,6 +705,33 @@ foreach ($routeFiles as $routeFile) {
     }
 }
 
+// ---------- ENABLED EXTENSION ROUTES (It.15) ----------
+$pluginManager = $container->get(\PaginiumCMS\Http\Extensions\Contracts\PluginManagerInterface::class);
+$pluginManager->bootEnabledExtensions();
+
+$enabledExtensionIds = array_fill_keys($pluginManager->getEnabledIds(), true);
+$extensionRouteFiles = glob(__DIR__ . '/../app/Http/Routes/extensions/*.php');
+if ($extensionRouteFiles === false) {
+    $extensionRouteFiles = [];
+}
+
+foreach ($extensionRouteFiles as $routeFile) {
+    $extensionId = basename($routeFile, '.php');
+    if (!isset($enabledExtensionIds[$extensionId])) {
+        continue;
+    }
+
+    $register = require $routeFile;
+    if (is_callable($register)) {
+        $register($app);
+        if (DebugEventLogger::isEnabled()) {
+            DebugEventLogger::log('backend', 'routes.extension.loaded', [
+                'extension' => $extensionId,
+            ]);
+        }
+    }
+}
+
 // ---------- FAVICON ----------
 $app->get('/favicon.ico', function ($request, $response) {
     return $response->withStatus(204);

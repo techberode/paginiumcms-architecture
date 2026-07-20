@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace PaginiumCMS\Support;
 
 use JsonException;
-use RuntimeException;
 
 final class JsonHelper
 {
@@ -33,12 +32,13 @@ final class FileHelper
 {
     public static function read(string $path): string
     {
-        $content = file_get_contents($path);
-        if ($content === false) {
-            throw new RuntimeException("Unable to read file: {$path}");
+        if (!is_file($path) || !is_readable($path)) {
+            return '';
         }
 
-        return $content;
+        $content = @file_get_contents($path);
+
+        return $content === false ? '' : $content;
     }
 
     /**

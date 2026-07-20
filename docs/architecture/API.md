@@ -152,6 +152,20 @@ Storage: `data/security/audit_events.json`, `data/security/acl.json`.
 
 Storage: `data/blueprints/{type}.json`.
 
+### Extensions / plugins (It.15)
+
+| Method | Route | Notes |
+|--------|-------|-------|
+| `GET` | `/api/admin/extensions` | List manifests + registry state |
+| `POST` | `/api/admin/extensions/import` | Multipart ZIP (`file`); policy scan → 422 |
+| `PUT` | `/api/admin/extensions/{id}/enable` | Enable + register hooks |
+| `PUT` | `/api/admin/extensions/{id}/disable` | Disable + unregister hooks |
+| `DELETE` | `/api/admin/extensions/{id}` | Uninstall registry + files |
+
+Storage: `data/plugins.json`; code under `Http/Extensions/{id}/`; routes `Http/Routes/extensions/{id}.php` (enabled only at bootstrap).
+
+Frontend: `frontend/src/api/extensions.ts`, admin `/extensions`, dynamic bundles `frontend/src/extensions/{id}/`.
+
 ### Demo (It.13)
 
 | Method | Route | Notes |
