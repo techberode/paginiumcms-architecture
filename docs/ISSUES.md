@@ -1,6 +1,6 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-20 · verzia **2.0.37** (fix `54b013c`)
+> Posledná aktualizácia: 2026-07-20 · verzia **2.0.40** (CI hotfix ISS-041)
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
 
@@ -55,6 +55,7 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-038 | PHPUnit It.44d: index filtre tag/date (CI)            | Stredná (CI)          | ✅ Opravené (`54b013c`)                  |
 | ISS-039 | PHPUnit `LogWriterTest`: vfs + corrupt JSON (CI)      | Stredná (CI)          | ✅ Opravené (`54b013c`)                  |
 | ISS-040 | Corrupt access log → `JsonException` → API 500        | Kritická (prod)       | ✅ Opravené (`743e922`)                  |
+| ISS-041 | FE type-check: nepoužitý `refetch` v `PagesManager` (CI) | Nízka (CI)         | ✅ Opravené (hotfix 2.0.40)              |
 
 
 
@@ -72,6 +73,7 @@ Workflow: `[.github/workflows/ci.yml](../.github/workflows/ci.yml)`
 | `backend`  | PHPUnit              | `LogWriterTest` — chýbajúci súbor na vfs, corrupt recovery       | ISS-039                            |
 | `backend`  | PHPUnit (prod)       | `JsonException` v access log → 500 na všetkých API               | ISS-040                            |
 | `frontend` | `npm run type-check` | TS6133 — nepoužitý import `React` v `SettingsView.test.tsx` | ISS-037                   |
+| `frontend` | `npm run type-check` | TS6133 — nepoužitý `refetch` v `PagesManager.tsx` (It.53) | ISS-041                      |
 | `frontend` | `npm run type-check` | TS2352 / TS6133 / TS2322 / 2FA DTO shape (`setup_pending`, `setUser`) | ISS-019, ISS-036                   |
 | `frontend` | `npm run lint`       | Prekročenie `--max-warnings 65` (`react-hooks/exhaustive-deps`) | ISS-020                            |
 | `frontend` | `npm test`           | Worker crash, `act(...)` stderr, `MediaManager` text asserts    | ISS-005, ISS-010, ISS-022          |
@@ -1017,6 +1019,32 @@ git pull   # 743e922 + 54b013c
 
 ---
 
+## ISS-041 – Frontend type-check: nepoužitý `refetch` v PagesManager (CI)
+
+**Symptóm:** Po pushi It.53 (`9101377`) CI job **frontend → TypeScript type-check** padá:
+
+```
+src/components/backend/PagesManager.tsx(161,38): error TS6133: 'refetch' is declared but its value is never read.
+```
+
+**Príčina:** Migrácia zoznamu stránok na `useAdminListQuery` deštrukturovala `refetch`, ale invalidácia cache už prebieha cez `queryClient.invalidateQueries()` v mutáciách — `refetch` sa nikde nevolal. Strict `noUnusedLocals` v `tsc --noEmit` build odmietne nepoužitú väzbu.
+
+**Implementované riešenie (hotfix 2.0.40):**
+
+- Odstránený `refetch` z deštrukturovania v `PagesManager.tsx` (~riadok 161):
+
+```ts
+// pred
+const { data: listData, isLoading, refetch } = useAdminListQuery({ ... })
+
+// po
+const { data: listData, isLoading } = useAdminListQuery({ ... })
+```
+
+**Overenie:** `cd frontend && npm run type-check` — exit 0.
+
+---
+
 ## Externé / irelevantné hlášky
 
 
@@ -1032,8 +1060,8 @@ git pull   # 743e922 + 54b013c
 
 ## Súvisiace dokumenty
 
-- [CHANGELOG.md](../CHANGELOG.md) — release 2.0.37 (It.44d) + hotfixy ISS-038–ISS-040
-- [RELEASE.md](developer/RELEASE.md) — copy-paste pre GitHub release 2.0.37
+- [CHANGELOG.md](../CHANGELOG.md) — release 2.0.39 (It.53) + hotfix ISS-041 (2.0.40)
+- [RELEASE.md](developer/RELEASE.md) — copy-paste pre GitHub release 2.0.40
 - [ITERATION_44.md](ITERATION_44.md) — It.44d index filtre (ISS-038)
 - [TESTING.md](developer/TESTING.md) – ako spúšťať testy a regresiu
 - [ROADMAP.md](ROADMAP.md) – plánované iterácie (It.41+, It.47–49)

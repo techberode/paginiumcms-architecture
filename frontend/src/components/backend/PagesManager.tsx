@@ -158,7 +158,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
     sortDirection,
   });
 
-  const { data: listData, isLoading, refetch } = useAdminListQuery({
+  const { data: listData, isLoading } = useAdminListQuery({
     queryKey: listQueryKey,
     queryFn: async () => {
       const params = new URLSearchParams({

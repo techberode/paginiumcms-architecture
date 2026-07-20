@@ -1,7 +1,56 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.0.39** · 2026-07-20  
+> Posledná verzia: **2.0.40** · 2026-07-20  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release. Samotný release/tag zatiaľ nevytváraj, kým nie je schválený deploy.
+
+---
+
+## 2.0.40 — pred release kontrola
+
+```bash
+cd frontend && npm run type-check
+./scripts/iteration-gate.sh
+```
+
+**Po deployi:**
+
+1. CI **frontend → type-check** zelený (žiadny TS6133 na `PagesManager.tsx`)
+2. Admin `/pages` — zoznam, filtre, mutácie stále fungujú (cache invalidácia cez React Query)
+
+---
+
+## GitHub Release — copy-paste (2.0.40)
+
+**Title:**
+
+```
+2.0.40 — CI hotfix: unused refetch in PagesManager
+```
+
+**Tag:** `v2.0.40` · **Target:** `main`
+
+**Body:**
+
+```markdown
+## Summary
+
+Hotfix for CI type-check failure introduced in 2.0.39 (It.53 React Query migration).
+
+## Fixed
+
+- **TS6133** — removed unused `refetch` from `useAdminListQuery` in `PagesManager.tsx`
+- List mutations still refresh data via `queryClient.invalidateQueries()`
+
+## Test plan
+
+- [ ] `cd frontend && npm run type-check` — exit 0
+- [ ] `./scripts/iteration-gate.sh` green
+- [ ] Admin `/pages` — create/edit/delete still updates the list
+
+## Docs
+
+- [ISSUES.md — ISS-041](../ISSUES.md#iss-041--frontend-type-check-nepoužitý-refetch-v-pagesmanager-ci)
+```
 
 ---
 
