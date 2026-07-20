@@ -12,6 +12,10 @@ import {
   Quote,
 } from 'lucide-react';
 import { markdownToHtml, wrapSelection, insertAtCursor } from '../../utils/contentEditor';
+import {
+  profileAllows,
+  type EditorProfileDefinition,
+} from '../../utils/editorProfiles';
 
 interface MarkdownContentEditorProps {
   value: string;
@@ -20,6 +24,8 @@ interface MarkdownContentEditorProps {
   spellCheck?: boolean;
   tabSize?: number;
   onPickMedia?: () => void;
+  profile: EditorProfileDefinition;
+  onBlockedAction?: (message: string) => void;
 }
 
 type PreviewMode = 'edit' | 'split' | 'preview';
@@ -31,6 +37,8 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
   spellCheck = true,
   tabSize = 2,
   onPickMedia,
+  profile,
+  onBlockedAction,
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [previewMode, setPreviewMode] = useState<PreviewMode>('split');
@@ -71,51 +79,60 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
     <div className="border rounded-2xl overflow-hidden dark:border-slate-700 bg-white dark:bg-slate-950">
       <div className="flex flex-wrap items-center justify-between gap-2 bg-slate-50 dark:bg-slate-900 px-3 py-2 border-b dark:border-slate-700">
         <div className="flex flex-wrap items-center gap-0.5">
-          {toolbarButton('Tučné', <Bold size={16} />, () =>
-            applyEdit((text, start, end) => wrapSelection(text, start, end, '**', '**', 'text'))
-          )}
-          {toolbarButton('Kurzíva', <Italic size={16} />, () =>
-            applyEdit((text, start, end) => wrapSelection(text, start, end, '*', '*', 'text'))
-          )}
-          {toolbarButton('Nadpis H2', <Heading2 size={16} />, () =>
-            applyEdit((text, start, end) => {
-              const lineStart = text.lastIndexOf('\n', start - 1) + 1;
-              return {
-                next: `${text.slice(0, lineStart)}## ${text.slice(lineStart, end)}${text.slice(end)}`,
-                cursor: end + 3,
-              };
-            })
-          )}
-          {toolbarButton('Odkaz', <LinkIcon size={16} />, () => {
-            const url = window.prompt('URL odkazu');
-            if (!url) return;
-            applyEdit((text, start, end) =>
-              wrapSelection(text, start, end, '[', `](${url})`, 'text')
-            );
-          })}
-          {toolbarButton('Obrázok', <ImageIcon size={16} />, () => {
-            if (onPickMedia) {
-              onPickMedia();
-              return;
-            }
-            const url = window.prompt('URL obrázka');
-            if (!url) return;
-            applyEdit((text, start, end) =>
-              insertAtCursor(text, start, end, `\n\n![obrázok](${url})\n`)
-            );
-          })}
-          {toolbarButton('Zoznam', <List size={16} />, () =>
-            applyEdit((text, start, end) => insertAtCursor(text, start, end, '\n- položka\n'))
-          )}
-          {toolbarButton('Číslovaný zoznam', <ListOrdered size={16} />, () =>
-            applyEdit((text, start, end) => insertAtCursor(text, start, end, '\n1. položka\n'))
-          )}
-          {toolbarButton('Citácia', <Quote size={16} />, () =>
-            applyEdit((text, start, end) => insertAtCursor(text, start, end, '\n> citát\n'))
-          )}
-          {toolbarButton('Kód', <Code size={16} />, () =>
-            applyEdit((text, start, end) => wrapSelection(text, start, end, '`', '`', 'code'))
-          )}
+          {profileAllows(profile, 'bold') &&
+            toolbarButton('Tučné', <Bold size={16} />, () =>
+              applyEdit((text, start, end) => wrapSelection(text, start, end, '**', '**', 'text'))
+            )}
+          {profileAllows(profile, 'italic') &&
+            toolbarButton('Kurzíva', <Italic size={16} />, () =>
+              applyEdit((text, start, end) => wrapSelection(text, start, end, '*', '*', 'text'))
+            )}
+          {profileAllows(profile, 'heading') &&
+            toolbarButton('Nadpis H2', <Heading2 size={16} />, () =>
+              applyEdit((text, start, end) => {
+                const lineStart = text.lastIndexOf('\n', start - 1) + 1;
+                return {
+                  next: `${text.slice(0, lineStart)}## ${text.slice(lineStart, end)}${text.slice(end)}`,
+                  cursor: end + 3,
+                };
+              })
+            )}
+          {profileAllows(profile, 'link') &&
+            toolbarButton('Odkaz', <LinkIcon size={16} />, () => {
+              const url = window.prompt('URL odkazu');
+              if (!url) return;
+              applyEdit((text, start, end) =>
+                wrapSelection(text, start, end, '[', `](${url})`, 'text')
+              );
+            })}
+          {profileAllows(profile, 'image') &&
+            toolbarButton('Obrázok', <ImageIcon size={16} />, () => {
+              if (onPickMedia) {
+                onPickMedia();
+                return;
+              }
+              const url = window.prompt('URL obrázka');
+              if (!url) return;
+              applyEdit((text, start, end) =>
+                insertAtCursor(text, start, end, `\n\n![obrázok](${url})\n`)
+              );
+            })}
+          {profileAllows(profile, 'bulletList') &&
+            toolbarButton('Zoznam', <List size={16} />, () =>
+              applyEdit((text, start, end) => insertAtCursor(text, start, end, '\n- položka\n'))
+            )}
+          {profileAllows(profile, 'orderedList') &&
+            toolbarButton('Číslovaný zoznam', <ListOrdered size={16} />, () =>
+              applyEdit((text, start, end) => insertAtCursor(text, start, end, '\n1. položka\n'))
+            )}
+          {profileAllows(profile, 'blockquote') &&
+            toolbarButton('Citácia', <Quote size={16} />, () =>
+              applyEdit((text, start, end) => insertAtCursor(text, start, end, '\n> citát\n'))
+            )}
+          {profileAllows(profile, 'code') &&
+            toolbarButton('Kód', <Code size={16} />, () =>
+              applyEdit((text, start, end) => wrapSelection(text, start, end, '`', '`', 'code'))
+            )}
         </div>
 
         <div className="flex gap-1 text-xs">
@@ -146,6 +163,13 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
             ref={textareaRef}
             value={value}
             onChange={(e) => onChange(e.target.value)}
+            onPaste={(event) => {
+              const pasted = event.clipboardData.getData('text/plain');
+              if (/<[a-z][^>]*>/i.test(pasted)) {
+                event.preventDefault();
+                onBlockedAction?.('Profil editora nepovoľuje vloženie raw HTML.');
+              }
+            }}
             disabled={readOnly}
             spellCheck={spellCheck}
             className="w-full h-full min-h-[420px] resize-y p-4 font-mono text-sm bg-transparent outline-none border-0 border-r dark:border-slate-800"

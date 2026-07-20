@@ -1,5 +1,5 @@
-import { forwardRef, useEffect, useImperativeHandle } from 'react';
-import { useEditor, EditorContent } from '@tiptap/react';
+import { forwardRef, useEffect, useImperativeHandle, useMemo } from 'react';
+import { useEditor, EditorContent, type Extensions } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Link } from '@tiptap/extension-link';
 import { Image } from '@tiptap/extension-image';
@@ -10,6 +10,10 @@ import { Table } from '@tiptap/extension-table';
 import { TableRow } from '@tiptap/extension-table-row';
 import { TableCell } from '@tiptap/extension-table-cell';
 import { TableHeader } from '@tiptap/extension-table-header';
+import {
+  profileAllows,
+  type EditorProfileDefinition,
+} from '../../utils/editorProfiles';
 
 export interface WysiwygEditorHandle {
   insertImage: (url: string, alt?: string) => void;
@@ -22,48 +26,125 @@ interface WysiwygEditorProps {
   onChange: (value: string) => void;
   readOnly?: boolean;
   onPickMedia?: () => void;
+  profile: EditorProfileDefinition;
+  onBlockedAction?: (message: string) => void;
 }
 
-export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>(function WysiwygEditor(
-  { value, onChange, readOnly = false, onPickMedia },
-  ref
-) {
-  const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        heading: {
-          levels: [1, 2, 3, 4, 5, 6],
-        },
-      }),
+function buildExtensions(profile: EditorProfileDefinition): Extensions {
+  const extensions: Extensions = [
+    StarterKit.configure({
+      heading: profileAllows(profile, 'heading')
+        ? { levels: [1, 2, 3] as const }
+        : false,
+      bulletList: profileAllows(profile, 'bulletList') ? {} : false,
+      orderedList: profileAllows(profile, 'orderedList') ? {} : false,
+      blockquote: profileAllows(profile, 'blockquote') ? {} : false,
+      codeBlock: profileAllows(profile, 'codeBlock') ? {} : false,
+      code: profileAllows(profile, 'code') ? {} : false,
+      horizontalRule: profileAllows(profile, 'horizontalRule') ? {} : false,
+      strike: profileAllows(profile, 'strike') ? {} : false,
+      bold: profileAllows(profile, 'bold') ? {} : false,
+      italic: profileAllows(profile, 'italic') ? {} : false,
+    }),
+  ];
+
+  if (profileAllows(profile, 'link')) {
+    extensions.push(
       Link.configure({
         openOnClick: false,
         HTMLAttributes: { rel: 'noopener noreferrer' },
-      }),
+      })
+    );
+  }
+
+  if (profileAllows(profile, 'image')) {
+    extensions.push(
       Image.configure({
         HTMLAttributes: { class: 'max-w-full h-auto rounded-lg' },
-      }),
-      Underline,
-      TextStyle,
-      Color,
-      Table.configure({
-        resizable: true,
-      }),
+      })
+    );
+  }
+
+  if (profileAllows(profile, 'underline')) {
+    extensions.push(Underline);
+  }
+
+  if (profileAllows(profile, 'color')) {
+    extensions.push(TextStyle, Color);
+  }
+
+  if (profileAllows(profile, 'table')) {
+    extensions.push(
+      Table.configure({ resizable: true }),
       TableRow,
       TableCell,
-      TableHeader,
-    ],
+      TableHeader
+    );
+  }
+
+  return extensions;
+}
+
+function containsDisallowedHtml(html: string, profile: EditorProfileDefinition): string | null {
+  const lower = html.toLowerCase();
+  if (!profileAllows(profile, 'image') && lower.includes('<img')) {
+    return 'Profil editora nepovoľuje obrázky.';
+  }
+  if (!profileAllows(profile, 'table') && lower.includes('<table')) {
+    return 'Profil editora nepovoľuje tabuľky.';
+  }
+  if (!profileAllows(profile, 'codeBlock') && (lower.includes('<pre') || lower.includes('<code'))) {
+    return 'Profil editora nepovoľuje bloky kódu.';
+  }
+  if (lower.includes('<iframe') || lower.includes('<script')) {
+    return 'Profil editora nepovoľuje vložené skripty alebo iframe.';
+  }
+  return null;
+}
+
+export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>(function WysiwygEditor(
+  { value, onChange, readOnly = false, onPickMedia, profile, onBlockedAction },
+  ref
+) {
+  const extensions = useMemo(() => buildExtensions(profile), [profile]);
+
+  const editor = useEditor({
+    extensions,
     content: value,
     editable: !readOnly,
     onUpdate: ({ editor: ed }) => {
       onChange(ed.getHTML());
     },
+    editorProps: {
+      handlePaste: (_view, event) => {
+        const html = event.clipboardData?.getData('text/html') ?? '';
+        if (!html) {
+          return false;
+        }
+        const blocked = containsDisallowedHtml(html, profile);
+        if (blocked) {
+          event.preventDefault();
+          onBlockedAction?.(blocked);
+          return true;
+        }
+        return false;
+      },
+    },
   });
 
   useImperativeHandle(ref, () => ({
     insertImage: (url: string, alt = 'image') => {
+      if (!profileAllows(profile, 'image')) {
+        onBlockedAction?.('Profil editora nepovoľuje obrázky.');
+        return;
+      }
       editor?.chain().focus().setImage({ src: url, alt }).run();
     },
     insertLink: (url: string, label?: string) => {
+      if (!profileAllows(profile, 'link')) {
+        onBlockedAction?.('Profil editora nepovoľuje odkazy.');
+        return;
+      }
       if (label) {
         editor?.chain().focus().insertContent(`<a href="${url}">${label}</a>`).run();
         return;
@@ -100,77 +181,115 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
   return (
     <div className="border rounded-2xl overflow-hidden dark:border-slate-700 bg-white dark:bg-slate-950">
       <div className="flex flex-wrap items-center gap-0.5 bg-slate-50 dark:bg-slate-900 px-3 py-2 border-b dark:border-slate-700">
-        <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className={btn(editor.isActive('bold'))}>
-          <strong>B</strong>
-        </button>
-        <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} className={btn(editor.isActive('italic'))}>
-          <em>I</em>
-        </button>
-        <button type="button" onClick={() => editor.chain().focus().toggleUnderline().run()} className={btn(editor.isActive('underline'))}>
-          <u>U</u>
-        </button>
-        <button type="button" onClick={() => editor.chain().focus().toggleStrike().run()} className={btn(editor.isActive('strike'))}>
-          <s>S</s>
-        </button>
-        <span className="w-px h-6 bg-slate-300 dark:bg-slate-600 mx-1" />
-        {[1, 2, 3].map((level) => (
-          <button
-            key={level}
-            type="button"
-            onClick={() => editor.chain().focus().toggleHeading({ level: level as 1 | 2 | 3 }).run()}
-            className={btn(editor.isActive('heading', { level }))}
-          >
-            H{level}
+        {profileAllows(profile, 'bold') && (
+          <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className={btn(editor.isActive('bold'))}>
+            <strong>B</strong>
           </button>
-        ))}
-        <span className="w-px h-6 bg-slate-300 dark:bg-slate-600 mx-1" />
-        <button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()} className={btn(editor.isActive('bulletList'))}>
-          • List
-        </button>
-        <button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} className={btn(editor.isActive('orderedList'))}>
-          1. List
-        </button>
-        <button type="button" onClick={() => editor.chain().focus().toggleBlockquote().run()} className={btn(editor.isActive('blockquote'))}>
-          ❝
-        </button>
-        <button type="button" onClick={() => editor.chain().focus().toggleCodeBlock().run()} className={btn(editor.isActive('codeBlock'))}>
-          {'</>'}
-        </button>
-        <span className="w-px h-6 bg-slate-300 dark:bg-slate-600 mx-1" />
-        <button
-          type="button"
-          onClick={() => {
-            const url = window.prompt('URL odkazu');
-            if (url) editor.chain().focus().setLink({ href: url }).run();
-          }}
-          className={btn(editor.isActive('link'))}
-        >
-          🔗
-        </button>
-        <button type="button" onClick={() => editor.chain().focus().unsetLink().run()} className={btn(false)}>
-          🔗✕
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            if (onPickMedia) {
-              onPickMedia();
-              return;
-            }
-            const url = window.prompt('URL obrázka');
-            if (url) editor.chain().focus().setImage({ src: url }).run();
-          }}
-          className={btn(false)}
-        >
-          🖼️
-        </button>
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
-          className={btn(false)}
-        >
-          ⊞
-        </button>
+        )}
+        {profileAllows(profile, 'italic') && (
+          <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} className={btn(editor.isActive('italic'))}>
+            <em>I</em>
+          </button>
+        )}
+        {profileAllows(profile, 'underline') && (
+          <button type="button" onClick={() => editor.chain().focus().toggleUnderline().run()} className={btn(editor.isActive('underline'))}>
+            <u>U</u>
+          </button>
+        )}
+        {profileAllows(profile, 'strike') && (
+          <button type="button" onClick={() => editor.chain().focus().toggleStrike().run()} className={btn(editor.isActive('strike'))}>
+            <s>S</s>
+          </button>
+        )}
+        {(profileAllows(profile, 'bold') ||
+          profileAllows(profile, 'italic') ||
+          profileAllows(profile, 'underline') ||
+          profileAllows(profile, 'strike')) &&
+          profileAllows(profile, 'heading') && (
+            <span className="w-px h-6 bg-slate-300 dark:bg-slate-600 mx-1" />
+          )}
+        {profileAllows(profile, 'heading') &&
+          [1, 2, 3].map((level) => (
+            <button
+              key={level}
+              type="button"
+              onClick={() => editor.chain().focus().toggleHeading({ level: level as 1 | 2 | 3 }).run()}
+              className={btn(editor.isActive('heading', { level }))}
+            >
+              H{level}
+            </button>
+          ))}
+        {(profileAllows(profile, 'bulletList') ||
+          profileAllows(profile, 'orderedList') ||
+          profileAllows(profile, 'blockquote') ||
+          profileAllows(profile, 'codeBlock')) && (
+          <span className="w-px h-6 bg-slate-300 dark:bg-slate-600 mx-1" />
+        )}
+        {profileAllows(profile, 'bulletList') && (
+          <button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()} className={btn(editor.isActive('bulletList'))}>
+            • List
+          </button>
+        )}
+        {profileAllows(profile, 'orderedList') && (
+          <button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} className={btn(editor.isActive('orderedList'))}>
+            1. List
+          </button>
+        )}
+        {profileAllows(profile, 'blockquote') && (
+          <button type="button" onClick={() => editor.chain().focus().toggleBlockquote().run()} className={btn(editor.isActive('blockquote'))}>
+            ❝
+          </button>
+        )}
+        {profileAllows(profile, 'codeBlock') && (
+          <button type="button" onClick={() => editor.chain().focus().toggleCodeBlock().run()} className={btn(editor.isActive('codeBlock'))}>
+            {'</>'}
+          </button>
+        )}
+        {(profileAllows(profile, 'link') || profileAllows(profile, 'image') || profileAllows(profile, 'table')) && (
+          <span className="w-px h-6 bg-slate-300 dark:bg-slate-600 mx-1" />
+        )}
+        {profileAllows(profile, 'link') && (
+          <>
+            <button
+              type="button"
+              onClick={() => {
+                const url = window.prompt('URL odkazu');
+                if (url) editor.chain().focus().setLink({ href: url }).run();
+              }}
+              className={btn(editor.isActive('link'))}
+            >
+              🔗
+            </button>
+            <button type="button" onClick={() => editor.chain().focus().unsetLink().run()} className={btn(false)}>
+              🔗✕
+            </button>
+          </>
+        )}
+        {profileAllows(profile, 'image') && (
+          <button
+            type="button"
+            onClick={() => {
+              if (onPickMedia) {
+                onPickMedia();
+                return;
+              }
+              const url = window.prompt('URL obrázka');
+              if (url) editor.chain().focus().setImage({ src: url }).run();
+            }}
+            className={btn(false)}
+          >
+            🖼️
+          </button>
+        )}
+        {profileAllows(profile, 'table') && (
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+            className={btn(false)}
+          >
+            ⊞
+          </button>
+        )}
         <span className="w-px h-6 bg-slate-300 dark:bg-slate-600 mx-1" />
         <button type="button" onClick={() => editor.chain().focus().undo().run()} className={btn(false)}>
           ↩

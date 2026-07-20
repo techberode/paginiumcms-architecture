@@ -185,4 +185,26 @@ class ContentControllerTest extends TestCase
 
         $this->assertSame(400, $response->getStatusCode());
     }
+
+    public function testCreatePageRejectsDisallowedContentForProfile(): void
+    {
+        $this->loginAsAdminUser();
+
+        $slug = 'profile-test-' . uniqid();
+
+        $response = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/pages', [
+                'title' => 'Profile validation',
+                'slug' => $slug,
+                'status' => 'draft',
+                'content' => 'Hello ![x](/a.png)',
+                'contentFormat' => 'markdown',
+                'editorProfile' => 'minimal',
+            ])
+        );
+
+        $this->assertSame(400, $response->getStatusCode());
+        $data = $this->getJsonResponse($response);
+        $this->assertFalse($data['success']);
+    }
 }

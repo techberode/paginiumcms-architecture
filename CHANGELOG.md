@@ -34,6 +34,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.15 — External plugins & runtime | **2.0.38** | [below](#2038--2026-07-20) |
 | It.53 — Smooth SPA reload & admin navigation | **2.0.39** | [below](#2039--2026-07-20) |
 | CI hotfix — unused `refetch` in PagesManager | **2.0.40** | [below](#2040--2026-07-20) |
+| It.54 — Modular editor profiles (MD + WYSIWYG) | **2.0.41** | [below](#2041--2026-07-20) |
+
+---
+
+## [2.0.41] – 2026-07-20
+
+**Iteration 54** — modular Markdown & WYSIWYG editor profiles.  
+Detail: [ITERATION_54.md](docs/ITERATION_54.md).
+
+### Added
+
+- **`Core/Editor/`** — `EditorProfileService`, `EditorContentValidator`, built-in profiles (company, blog, minimal, developer)
+- Settings: `editor.defaultProfilePage`, `editor.defaultProfileArticle`
+- Public settings: `editor.profiles` capability DTOs
+- Front matter: `editorProfile`, `editorMode`
+- Frontend: `EditorProfilePicker`, profile-gated toolbars in Markdown + Tiptap editors
+
+### Fixed
+
+- Paste guard for disallowed HTML in profile-restricted editors
+
+### Tests
+
+- `EditorProfileServiceTest`, `EditorContentValidatorTest`, `ContentControllerTest` profile rejection
+- `editorProfiles.test.ts`, `editorToolbar.test.tsx`
 
 ---
 

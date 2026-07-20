@@ -1,7 +1,59 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.0.40** · 2026-07-20  
+> Posledná verzia: **2.0.41** · 2026-07-20  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release. Samotný release/tag zatiaľ nevytváraj, kým nie je schválený deploy.
+
+---
+
+## 2.0.41 — pred release kontrola
+
+```bash
+./scripts/iteration-gate.sh
+```
+
+**Po deployi:**
+
+1. Admin editor stránky/článku — prepínač **Profil editora** (Company / Blog / Minimal / Developer)
+2. **Minimal** — toolbar bez obrázkov; vloženie `![img]()` pri uložení → 400
+3. **Developer** — plný toolbar vrátane tabuliek a code blockov
+4. Prepínanie profilu mení toolbar **bez** reload stránky
+
+---
+
+## GitHub Release — copy-paste (2.0.41)
+
+**Title:**
+
+```
+2.0.41 — It.54: modular editor profiles (MD + WYSIWYG)
+```
+
+**Tag:** `v2.0.41` · **Target:** `main`
+
+**Body:**
+
+```markdown
+## Summary
+
+Iteration 54 adds editor profiles that control which Markdown/WYSIWYG toolbar actions and Tiptap extensions are available per page or article.
+
+## Highlights
+
+- **Profiles:** company, blog, minimal, developer
+- **Settings:** default profile per pages/articles
+- **Validation:** backend rejects disallowed blocks on save
+- **UX:** profile picker in content editor; paste guard with toast
+
+## Test plan
+
+- [ ] `./scripts/iteration-gate.sh` green
+- [ ] Switch profiles in page editor — toolbar updates instantly
+- [ ] Save image markdown on minimal profile → API 400
+
+## Docs
+
+- [ITERATION_54.md](docs/ITERATION_54.md)
+```
 
 ---
 
