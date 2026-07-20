@@ -5,7 +5,8 @@
 
 **Aktuálne hotové:** It.1–24 ✅ · It.26–28 ✅ · It.25 ⏳ (setup wizard — odložené)
 
-**Ďalšia iterácia:** [It.41 – Email OTP schvaľovanie](ITERATION_BACKLOG.md#iterácia-41--email-otp-schvaľovanie-)
+**Ďalšia iterácia:** [It.44 BE](ITERATION_44.md) / [It.15](ITERATION_15.md) ⏳  
+**Po It.15 (plánované, bez implementácie):** [It.53–58 Editor & UX wave](ITERATION_WAVE_POST_15.md) ⛔
 
 **Incidenty a opravy:** [ISSUES.md](ISSUES.md)
 
@@ -27,6 +28,13 @@
 | **45** | TBD | **[Redis – voliteľná infra](ITERATION_45.md)** | **🔵** | Absorbované do **It.49** |
 | **51** | **2.0.32** | **[Live preview + tagy + blog štítky](ITERATION_51.md)** | **✅** | SitePreviewModal, reading time, date badges |
 | **52** | **2.0.36** | **[Dashboard v2 + kontakt](ITERATION_52.md)** | **✅** | It.52a–c complete |
+| **53** | TBD | **[Smooth SPA reload](ITERATION_53.md)** | **🟡** | ⛔ po It.15 |
+| **54** | TBD | **[Modular MD + WYSIWYG profiles](ITERATION_54.md)** | **🔴** | ⛔ po It.15 · Tiptap |
+| **55** | TBD | **[Tiptap JSON + media upload](ITERATION_55.md)** | **🔴** | ⛔ It.15 + It.54 |
+| **56** | TBD | **[Rich navigation items](ITERATION_56.md)** | **🟡** | ⛔ po It.15 |
+| **57** | TBD | **[Auto tags & description](ITERATION_57.md)** | **🟡** | ⛔ po It.15 |
+| **58** | TBD | **[Page layout builder](ITERATION_58.md)** | **🟡** | ⛔ po It.15 · najväčší slice |
+| 15 | TBD | **[External plugins](ITERATION_15.md)** | **🔴** | **Blokátor pre It.53–58** |
 | **47** | TBD | **[Notification connector auth](ITERATION_47.md)** | **✅** | ntfy Bearer/Basic + test-connector |
 | **48** | TBD | **[PHP templates + static/dynamic web](ITERATION_48.md)** | **🟡** | Front matter šablóny, JSON/INI meta, static HTML |
 | **49** | TBD | **[Unified cache layer](ITERATION_49.md)** | **🟡** | File + Redis prepínač podľa hostingu (rýchlosť/bezpečnosť) |
@@ -318,22 +326,36 @@ Doplnenie It.7 reportov o **host metriky** (uptime, CPU, RAM, disk, Docker).
 
 ---
 
+## Post–It.15 wave (It.53–58) ⛔ plánované
+
+Implementácia **až po dokončení It.15**. Prehľad: [ITERATION_WAVE_POST_15.md](ITERATION_WAVE_POST_15.md).
+
+| It. | Téma |
+|-----|------|
+| 53 | Plynulý reload SPA |
+| 54 | Modulárny Markdown + WYSIWYG (profily) |
+| 55 | Tiptap JSON → flat-file + upload obrázkov |
+| 56 | Menu: popis, ikona, hover náhľad |
+| 57 | Generátor tagov a popisu |
+| 58 | Layout builder (5 šablón, bloky) |
+
+---
+
 ## Odporúčané poradie implementácie
 
 ```
-It.28/2.0.16 ✅ → It.29/2.0.18 ✅ → It.41 (email OTP) ← ďalšia
-                → It.42 (počty v admin)
-                → It.43 (advanced search / quick jump) → It.44 (filtre + sort)
-                → It.47 (notification auth — ntfy token) — paralelne s It.41 ak treba ntfy OTP
-                → It.36 (pagination) → It.38 (feature flags)
-                → It.39 (komentáre) → It.37 (inline FE edit)
-                → It.33 (analytics) → It.34 (system overview) → It.46 (host metrics agent)
-                → It.35 (inspector) → It.40 (section FileManager)
-                → It.48 (static templates + dynamic/static web toggle)
-                → It.30 (contextual) → It.31 (live preview)
-                → It.32 (performance)                 → It.49 (unified cache: file + Redis)
-                → It.50 (micro firewall / WAF — produkčná ochrana)
+… existujúce vetvy …
+                → It.44 BE (blog filters) — paralelne s It.15
+                → It.15 (PluginManager) ← BLOKÁTOR pre editor wave
+                → [WAVE POST-15 — ITERATION_WAVE_POST_15.md]
+                    It.53 (smooth reload)
+                    → It.54 → It.55 (modular editor + Tiptap storage)
+                    → It.56 (rich menu) — môže paralelne po It.53
+                    → It.57 (meta generators)
+                    → It.58 (layout builder)
 ```
+
+⛔ **It.53–58: iba dokumentácia v repozitári — implementácia až po dokončení It.15.**
 
 ---
 
@@ -350,3 +372,5 @@ It.28/2.0.16 ✅ → It.29/2.0.18 ✅ → It.41 (email OTP) ← ďalšia
 - [ITERATION_48.md](ITERATION_48.md) — PHP templates + static/dynamic web
 - [ITERATION_49.md](ITERATION_49.md) — unified cache layer
 - [ITERATION_50.md](ITERATION_50.md) — in-app micro firewall (WAF)
+- [ITERATION_WAVE_POST_15.md](ITERATION_WAVE_POST_15.md) — It.53–58 editor & UX (after It.15)
+- [ITERATION_53.md](ITERATION_53.md) … [ITERATION_58.md](ITERATION_58.md) — wave detail specs
