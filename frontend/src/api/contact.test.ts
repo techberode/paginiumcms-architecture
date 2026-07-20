@@ -27,12 +27,14 @@ describe('contact API', () => {
     const result = await submitContactForm({
       name: 'Jane',
       email: 'jane@example.com',
+      subject: 'Technická podpora',
       message: 'Hello from the contact form.',
     });
 
     expect(mocks.post).toHaveBeenCalledWith('/api/contact', {
       name: 'Jane',
       email: 'jane@example.com',
+      subject: 'Technická podpora',
       message: 'Hello from the contact form.',
     });
     expect(result).toEqual({ ok: true, id: 'msg_123', message: 'Thank you' });

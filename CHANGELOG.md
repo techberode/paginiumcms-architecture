@@ -28,6 +28,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.44c URL sync, preview modal, reading time | **2.0.32** | [below](#2032--2026-07-20) |
 | Admin deep links (settings group, audit routes, Ctrl+K catalog) | **2.0.33** | [below](#2033--2026-07-20) |
 | It.52a — Dashboard KPI + overview API | **2.0.34** | [below](#2034--2026-07-20) |
+| It.52b — Contact form subjects (tests + contract) | **2.0.35** | [below](#2035--2026-07-20) |
+
+---
+
+## [2.0.35] – 2026-07-20
+
+**Iteration 52b** — Kontaktný formulár: predvolené predmety a test coverage.
+Detail: [ITERATION_52.md](docs/ITERATION_52.md).
+
+### Added
+
+- Vitest: `contactSubjects.test.ts`, `ContactForm.test.tsx` — subjects from `settings.contact`
+- PHPUnit: public settings contract asserts `contact.subjects` + `allowCustomSubject`
+
+### Note
+
+Funkčnosť `contact.*` settings bola zavedená v **2.0.32**; tento release formalizuje It.52b testmi a API kontraktom.
 
 ---
 
