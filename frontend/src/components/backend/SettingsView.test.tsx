@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import { Route, Routes, useSearchParams } from 'react-router-dom';
-import React from 'react';
 import { SettingsView } from './SettingsView';
 import { renderWithRouter } from '../../test/renderWithRouter';
 import { fastUser } from '../../test/userEvent';
