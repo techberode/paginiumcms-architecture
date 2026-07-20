@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\FlatFile\Models;
 
+use DateTimeInterface;
+
 /**
  * Záznam v flat-file content indexe (Iterácia 19).
  *
@@ -48,16 +50,19 @@ final class ContentIndexEntry
 
         $tags = [];
         if ($content instanceof Article) {
-            $tags = array_values(array_map('strval', $content->getTags()));
+            $tags = self::normalizeTags($content->getTags());
         }
 
         if ($excerpt === '' && $content instanceof Article) {
             $excerpt = $content->getExcerpt(160);
         }
 
-        $createdAt = is_string($frontMatter['createdAt'] ?? null) ? $frontMatter['createdAt'] : $modifiedAt;
-        if ($content instanceof Article && is_string($frontMatter['date'] ?? null)) {
-            $createdAt = $frontMatter['date'];
+        $createdAt = self::normalizeIndexedDate($frontMatter['createdAt'] ?? null) ?? $modifiedAt;
+        if ($content instanceof Article) {
+            $articleDate = self::normalizeIndexedDate($frontMatter['date'] ?? null);
+            if ($articleDate !== null) {
+                $createdAt = $articleDate;
+            }
         }
 
         return new self(
@@ -80,14 +85,7 @@ final class ContentIndexEntry
     public static function fromArray(array $data): self
     {
         $rawTags = $data['tags'] ?? [];
-        $tags = [];
-        if (is_array($rawTags)) {
-            foreach ($rawTags as $tag) {
-                if (is_string($tag) || is_int($tag)) {
-                    $tags[] = (string) $tag;
-                }
-            }
-        }
+        $tags = self::normalizeTags($rawTags);
 
         return new self(
             slug: (string) ($data['slug'] ?? ''),
@@ -137,5 +135,58 @@ final class ContentIndexEntry
             'updatedAt' => $this->updatedAt,
             'path' => $this->path,
         ];
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function normalizeTags(mixed $raw): array
+    {
+        if (is_array($raw)) {
+            $tags = $raw;
+        } elseif (is_string($raw)) {
+            $value = trim($raw);
+            $value = trim($value, '[]');
+            $tags = $value === '' ? [] : (preg_split('/\s*,\s*/', $value) ?: []);
+        } else {
+            return [];
+        }
+
+        $normalized = [];
+        foreach ($tags as $tag) {
+            if (!is_string($tag) && !is_int($tag)) {
+                continue;
+            }
+            $text = trim((string) $tag);
+            if ($text !== '') {
+                $normalized[] = $text;
+            }
+        }
+
+        return array_values(array_unique($normalized));
+    }
+
+    public static function normalizeIndexedDate(mixed $value): ?string
+    {
+        if ($value instanceof DateTimeInterface) {
+            return $value->format('Y-m-d');
+        }
+
+        if (is_int($value) || is_float($value)) {
+            return date('Y-m-d', (int) $value);
+        }
+
+        if (!is_string($value) || trim($value) === '') {
+            return null;
+        }
+
+        $trimmed = trim($value);
+        if (preg_match('/^\d{4}-\d{2}-\d{2}/', $trimmed) === 1) {
+            return substr($trimmed, 0, 10);
+        }
+
+        $timestamp = strtotime($trimmed);
+
+        return $timestamp !== false ? date('Y-m-d', $timestamp) : null;
     }
 }
