@@ -53,6 +53,7 @@ final class SettingsSchema
                 'fields' => [
                     ['key' => 'itemsPerPage', 'type' => 'int', 'label' => 'Položiek na stránku (admin)', 'default' => 20, 'rules' => ['required', 'int', 'min:1', 'max:100'], 'help' => 'Admin zoznamy stránok a článkov.'],
                     ['key' => 'blogItemsPerPage', 'type' => 'int', 'label' => 'Článkov na stránku (blog)', 'default' => 6, 'rules' => ['required', 'int', 'min:1', 'max:100'], 'help' => 'Verejný zoznam článkov – stránkovanie sa zobrazí, keď je viac článkov.'],
+                    ['key' => 'showReadingTime', 'type' => 'bool', 'label' => 'Zobraziť odhadovaný čas čítania', 'default' => true, 'rules' => ['bool'], 'help' => 'Na blog kartách a detaile článku (počítané z dĺžky textu).'],
                     ['key' => 'storageFormat', 'type' => 'enum', 'label' => 'Formát úložiska obsahu', 'default' => 'md', 'options' => ['md', 'json'], 'rules' => ['required', 'in:md,json'], 'help' => 'md = YAML front matter + Markdown; json = čistý JSON súbor (Iterácia 19).'],
                     ['key' => 'defaultStatus', 'type' => 'enum', 'label' => 'Predvolený stav obsahu', 'default' => 'draft', 'options' => ['draft', 'published'], 'rules' => ['required', 'in:draft,published']],
                     ['key' => 'autoSaveInterval', 'type' => 'int', 'label' => 'Interval auto-save (s)', 'default' => 60, 'rules' => ['required', 'int', 'min:10', 'max:600'], 'help' => 'Ako často sa ukladá koncept (Iterácia 2).'],
@@ -158,6 +159,13 @@ final class SettingsSchema
                     ['key' => 'requireApproval', 'type' => 'bool', 'label' => 'Globálne vyžadovať schválenie', 'default' => true, 'rules' => ['bool'], 'help' => 'Nové komentáre čakajú na schválenie v administrácii. Dá sa prepísať pri jednotlivom článku.'],
                     ['key' => 'allowGuestComments', 'type' => 'bool', 'label' => 'Povoliť komentáre od hostí', 'default' => true, 'rules' => ['bool'], 'help' => 'Neprihlásení návštevníci môžu pridávať komentáre. Dá sa prepísať pri jednotlivom článku.'],
                     ['key' => 'maxLength', 'type' => 'int', 'label' => 'Max. dĺžka komentára', 'default' => 2000, 'rules' => ['required', 'int', 'min:50', 'max:5000']],
+                ],
+            ],
+            'contact' => [
+                'label' => 'Kontaktný formulár',
+                'fields' => [
+                    ['key' => 'subjects', 'type' => 'text', 'label' => 'Predvolené predmety správ', 'default' => "Všeobecný dotaz\nTechnická podpora\nObchodná spolupráca\nInformácie o produkte", 'rules' => ['required', 'string', 'max:2000'], 'help' => 'Jeden predmet na riadok — zobrazí sa vo verejnom kontaktnom formulári.'],
+                    ['key' => 'allowCustomSubject', 'type' => 'bool', 'label' => 'Povoliť vlastný predmet', 'default' => true, 'rules' => ['bool'], 'help' => 'Návštevník môže zvoliť „Vlastný predmet“ a napísať vlastný text.'],
                 ],
             ],
             'workflows' => [

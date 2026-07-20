@@ -200,3 +200,79 @@ export function useAdminListQueryParams(
     resetFilters,
   };
 }
+
+export type MediaTypeFilter = 'all' | 'image';
+
+export interface MediaListQueryState extends AdminListQueryState {
+  folder: string;
+  typeFilter: MediaTypeFilter;
+}
+
+export interface MediaListQueryActions extends AdminListQueryActions {
+  setFolder: (folder: string) => void;
+  setTypeFilter: (value: MediaTypeFilter) => void;
+}
+
+/** Admin media list: base query params + `folder` and `type=image`. */
+export function useMediaListQueryParams(
+  defaultSortField: string,
+  defaultSortDirection: SortDirection = 'desc'
+): MediaListQueryState & MediaListQueryActions {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const base = useAdminListQueryParams(defaultSortField, defaultSortDirection);
+
+  const folder = searchParams.get('folder') ?? '';
+  const typeFilter: MediaTypeFilter = searchParams.get('type') === 'image' ? 'image' : 'all';
+
+  const patchMediaParams = useCallback(
+    (patch: { folder?: string; type?: MediaTypeFilter; resetPage?: boolean }) => {
+      const next = new URLSearchParams(searchParams);
+
+      if (patch.folder !== undefined) {
+        const normalized = patch.folder.trim();
+        if (normalized === '') {
+          next.delete('folder');
+        } else {
+          next.set('folder', normalized);
+        }
+      }
+
+      if (patch.type !== undefined) {
+        if (patch.type === 'image') {
+          next.set('type', 'image');
+        } else {
+          next.delete('type');
+        }
+      }
+
+      if (patch.resetPage !== false) {
+        next.delete('page');
+      }
+
+      setSearchParams(next, { replace: true });
+    },
+    [searchParams, setSearchParams]
+  );
+
+  const setFolder = useCallback(
+    (value: string) => {
+      patchMediaParams({ folder: value });
+    },
+    [patchMediaParams]
+  );
+
+  const setTypeFilter = useCallback(
+    (value: MediaTypeFilter) => {
+      patchMediaParams({ type: value });
+    },
+    [patchMediaParams]
+  );
+
+  return {
+    ...base,
+    folder,
+    typeFilter,
+    setFolder,
+    setTypeFilter,
+  };
+}

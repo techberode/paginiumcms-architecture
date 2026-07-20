@@ -23,9 +23,10 @@
 | **41** | TBD | **Email OTP schvaľovanie** | **✅** | Registrácia, komentáre, publikácia – zap/vyp v admin |
 | **42** | TBD | **Admin počty položiek** | **✅** | Sidebar badges cez `/api/admin/counts` |
 | **43** | **Unreleased** | **Pokročilé vyhľadávanie (FE + BE)** | **✅** | Command palette `Ctrl+K`, scoped `/api/search` — [ITERATION_43.md](ITERATION_43.md) |
-| **44** | TBD | **Filtre, blog pagination, prev/next** | **🟡 It.44a ✅** | [ITERATION_44.md](ITERATION_44.md) — verejný blog hotový; admin FilterBar ⏳ |
+| **44** | **2.0.32** | **Filtre, blog pagination, prev/next** | **✅ FE** | [ITERATION_44.md](ITERATION_44.md) — It.44c hotové; BE filtre ⏳ |
 | **45** | TBD | **[Redis – voliteľná infra](ITERATION_45.md)** | **🔵** | Absorbované do **It.49** |
-| **46** | TBD | **[Server metrics agent](ITERATION_46.md)** | **🟡** | CPU/RAM/disk/Docker → It.7 report + dashboard |
+| **51** | **2.0.32** | **[Live preview + tagy + blog štítky](ITERATION_51.md)** | **✅** | SitePreviewModal, reading time, date badges |
+| **52** | TBD | **[Dashboard v2 + kontakt](ITERATION_52.md)** | **🟡** | Aktivity, Flat-File strom, contact subjects (čiastočne) |
 | **47** | TBD | **[Notification connector auth](ITERATION_47.md)** | **✅** | ntfy Bearer/Basic + test-connector |
 | **48** | TBD | **[PHP templates + static/dynamic web](ITERATION_48.md)** | **🟡** | Front matter šablóny, JSON/INI meta, static HTML |
 | **49** | TBD | **[Unified cache layer](ITERATION_49.md)** | **🟡** | File + Redis prepínač podľa hostingu (rýchlosť/bezpečnosť) |
@@ -232,8 +233,8 @@ Konzistentné filtrovanie a sort naprieč zoznamami. **Prvá dodávka (It.44a):*
 | Verejný blog – sort dropdown | ✅ newest / oldest / title |
 | Admin FilterBar + URL sync (pages/articles) | ✅ It.44b |
 | `ui.openLinksInNewTab` setting | ✅ default false (same tab) |
-| Admin FilterBar + URL sync (media, comments) | ⏳ It.44c |
-| Backend `filter[tag]`, author, date | ⏳ It.44b |
+| Admin FilterBar + URL sync (media, comments, trash) | ✅ It.44c |
+| Backend `filter[tag]`, author, date | ⏳ It.44 backend |
 
 ---
 

@@ -25,6 +25,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | Session hardening, cache admin, auth/login incidents | **2.0.29** | [below](#2029--2026-07-19) |
 | 2FA setup/login fixes, dev TOTP toggle, CI hotfix | **2.0.30** | [below](#2030--2026-07-19) |
 | It.44 blog pagination, admin filters, link target setting | **2.0.31** | [below](#2031--2026-07-20) |
+| It.44c URL sync, preview modal, reading time | **2.0.32** | [below](#2032--2026-07-20) |
+
+---
+
+## [2.0.32] – 2026-07-20
+
+Iteration 44c (FE) + It.51 preview UX + blog reading time.
+Detail: [ITERATION_44.md](docs/ITERATION_44.md) · [ITERATION_51.md](docs/ITERATION_51.md).
+
+### Added
+
+- **It.44c:** URL sync for **MediaManager**, **CommentsManager**, **TrashManager** (`useMediaListQueryParams`, `useAdminListQueryParams`)
+- **`SitePreviewModal`** — full-page preview with Navbar/Footer; scale 100 % / 75 % / 50 % / fullscreen
+- Preview from **MarkdownEditor** and **PagesManager** list actions
+- **`content.showReadingTime`** — toggle estimated reading time on public blog (default on)
+- **`contact.subjects`** / **`contact.allowCustomSubject`** — contact form subject presets (It.52b slice)
+- Dashboard activity + Flat-File structure panels (It.52a slice)
+- **`ArticleTagsEditor`**, date badges (`contentDates`), Vitest coverage
+
+### Changed
+
+- Blog list/detail: created/updated labels, „Čítať celý článok“ CTA, optional reading time badge
+- Admin list **Náhľad** uses in-app modal (loads full content via API)
+
+### Tests
+
+- `sitePreview.test.ts`, `readingTime.test.ts`, `useAdminListQueryParams.test.tsx`, `SitePreviewModal.test.tsx`
 
 ---
 

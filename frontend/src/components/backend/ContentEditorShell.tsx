@@ -20,6 +20,7 @@ import {
   type ArticleCommentsSettings,
 } from './ArticleCommentsPanel';
 import { useOpenLinksInNewTab } from '../../hooks/useOpenLinksInNewTab';
+import { ArticleTagsEditor } from './ArticleTagsEditor';
 import { linkTargetProps } from '../../utils/linkTarget';
 
 const PAGE_TEMPLATE_OPTIONS = [
@@ -60,6 +61,7 @@ interface ContentEditorShellProps {
   onEditorModeChange: (mode: EditorMode) => void;
   onCancel: () => void;
   onSave: () => void;
+  onOpenPreview?: () => void;
   children: React.ReactNode;
   footerExtra?: React.ReactNode;
   articleComments?: ArticleCommentsSettings;
@@ -102,6 +104,7 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
   onEditorModeChange,
   onCancel,
   onSave,
+  onOpenPreview,
   children,
   footerExtra,
   articleComments,
@@ -150,6 +153,17 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
               <Sparkles size={14} />
               WYSIWYG
             </button>
+            {onOpenPreview && (
+              <button
+                type="button"
+                onClick={onOpenPreview}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 dark:border-indigo-900 dark:bg-indigo-950/60 dark:text-indigo-200"
+                title="Náhľad celej stránky (header + obsah + footer)"
+              >
+                <Eye size={14} />
+                Náhľad
+              </button>
+            )}
             {previewPath && (
               <Link
                 to={previewPath}
@@ -282,6 +296,14 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
               </Link>
             </div>
           </div>
+
+          {type === 'article' && (
+            <ArticleTagsEditor
+              value={seo.tags}
+              onChange={(tags) => onSeoChange({ ...seo, tags })}
+              disabled={!canEdit}
+            />
+          )}
 
           <div className="rounded-xl border border-slate-200 dark:border-slate-800">
             <button

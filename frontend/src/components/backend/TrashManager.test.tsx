@@ -1,7 +1,8 @@
 // frontend/src/components/backend/TrashManager.test.tsx
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { TrashManager } from './TrashManager';
+import { renderWithRouter } from '../../test/renderWithRouter';
 
 const mocks = vi.hoisted(() => ({
   list: vi.fn(),
@@ -46,7 +47,7 @@ describe('TrashManager', () => {
   });
 
   it('renders trash items after load', async () => {
-    render(<TrashManager />);
+    renderWithRouter(<TrashManager />);
 
     expect(await screen.findByText('pages/home.md')).toBeInTheDocument();
     expect(mocks.list).toHaveBeenCalled();
@@ -54,13 +55,13 @@ describe('TrashManager', () => {
 
   it('shows empty state when trash is empty', async () => {
     mocks.list.mockResolvedValue([]);
-    render(<TrashManager />);
+    renderWithRouter(<TrashManager />);
 
     expect(await screen.findByText('Kôš je prázdny.')).toBeInTheDocument();
   });
 
   it('calls restore API on button click', async () => {
-    render(<TrashManager />);
+    renderWithRouter(<TrashManager />);
 
     const button = await screen.findByRole('button', { name: /Obnoviť/i });
     fireEvent.click(button);

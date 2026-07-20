@@ -5,7 +5,7 @@ import { trashApi, type TrashItem } from '../../api/trash';
 import { useToast } from '../../hooks/useToast';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { useAdminListPageSize } from '../../hooks/useAdminListPageSize';
-import { useColumnSort } from '../../hooks/useColumnSort';
+import { useAdminListQueryParams } from '../../hooks/useAdminListQueryParams';
 import { SortableTableHeader } from './SortableTableHeader';
 import { BulkActionBar } from './BulkActionBar';
 import { AdminListToolbar } from './AdminListToolbar';
@@ -36,10 +36,22 @@ export const TrashManager: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [restoringId, setRestoringId] = useState<string | null>(null);
   const [bulkBusy, setBulkBusy] = useState(false);
-  const [search, setSearch] = useState('');
-  const { sortField, sortDirection, handleSort } = useColumnSort('deletedAt', 'desc');
-  const [page, setPage] = useState(1);
+  const {
+    page,
+    search,
+    sortField,
+    sortDirection,
+    handleSort,
+    setSearch,
+    setPage,
+    resetFilters,
+  } = useAdminListQueryParams('deletedAt', 'desc');
   const [pageSize, setPageSize] = useAdminListPageSize('trash');
+  const hasActiveFilters =
+    search.trim().length >= 2 ||
+    sortField !== 'deletedAt' ||
+    sortDirection !== 'desc' ||
+    page > 1;
   const toast = useToast();
 
   const loadItems = useCallback(async () => {
@@ -60,7 +72,7 @@ export const TrashManager: React.FC = () => {
 
   useEffect(() => {
     setPage(1);
-  }, [search, sortField, sortDirection, pageSize]);
+  }, [pageSize, setPage]);
 
   const listView = useMemo(
     () =>
@@ -228,6 +240,8 @@ export const TrashManager: React.FC = () => {
         searchPlaceholder="Hľadať podľa cesty, názvu alebo dátumu…"
         pageSize={pageSize}
         onPageSizeChange={setPageSize}
+        onResetFilters={resetFilters}
+        showResetFilters={hasActiveFilters}
       />
 
       <BulkActionBar

@@ -144,6 +144,10 @@ final class SettingsController
                 'requireApproval' => (bool) ($all['comments']['requireApproval'] ?? true),
                 'allowGuestComments' => (bool) ($all['comments']['allowGuestComments'] ?? true),
             ],
+            'contact' => [
+                'subjects' => (string) ($all['contact']['subjects'] ?? "Všeobecný dotaz\nTechnická podpora\nObchodná spolupráca\nInformácie o produkte"),
+                'allowCustomSubject' => (bool) ($all['contact']['allowCustomSubject'] ?? true),
+            ],
             'firewall' => [
                 'enabled' => (bool) ($all['firewall']['enabled'] ?? true),
             ],

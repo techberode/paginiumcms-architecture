@@ -7,6 +7,7 @@ import { MarkdownRenderer } from '../common/MarkdownRenderer';
 import { ArticleComments } from './ArticleComments';
 import {
   Calendar,
+  Clock,
   User,
   Tag,
   BookOpen,
@@ -25,6 +26,8 @@ import {
   sortPublishedArticles,
   type BlogSort,
 } from '../../utils/blogArticles';
+import { formatContentDateLabels } from '../../utils/contentDates';
+import { formatReadingTime, resolveShowReadingTime } from '../../utils/readingTime';
 
 const SORT_OPTIONS: { value: BlogSort; label: string }[] = [
   { value: 'newest', label: 'Najnovšie' },
@@ -40,6 +43,7 @@ export const BlogRenderer: React.FC = () => {
   const { settings } = useSettingsContext();
 
   const itemsPerPage = resolveBlogItemsPerPage(settings.content);
+  const showReadingTime = resolveShowReadingTime(settings.content);
   const selectedTag = searchParams.get('tag');
   const sort = parseBlogSort(searchParams.get('sort'));
   const currentPage = Math.max(1, Number.parseInt(searchParams.get('page') ?? '1', 10) || 1);
@@ -125,11 +129,15 @@ export const BlogRenderer: React.FC = () => {
   }, [slug, currentPage, totalPages, searchParams, setSearchParams]);
 
   if (activeArticle) {
-    const date = String(activeArticle.frontMatter?.date ?? activeArticle.createdAt);
     const author = activeArticle.author || String(activeArticle.frontMatter?.author ?? 'Redakcia');
     const image = resolveContentPreviewImage(activeArticle);
     const authorBio =
       activeArticle.excerpt || String(activeArticle.frontMatter?.description ?? '');
+    const dates = formatContentDateLabels({
+      createdAt: activeArticle.createdAt,
+      updatedAt: activeArticle.updatedAt,
+      frontMatterDate: activeArticle.frontMatter?.date,
+    });
 
     const globalCommentsEnabled = settings.comments?.enabled !== false;
     const articleCommentsEnabled = activeArticle.commentsEnabled !== false;
@@ -179,9 +187,26 @@ export const BlogRenderer: React.FC = () => {
                 <div>Autor redakcie Paginium</div>
               </div>
             </div>
-            <div className="flex items-center gap-1.5 ml-auto">
+            <div className="flex items-center gap-1.5 ml-auto flex-wrap justify-end">
               <Calendar className="w-4 h-4 text-slate-400" />
-              <span>{new Date(date).toLocaleDateString('sk-SK')}</span>
+              <span title={dates.primaryTitle}>{dates.primary}</span>
+              {dates.secondary && (
+                <>
+                  <span className="text-slate-300">•</span>
+                  <span className="rounded-full bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 text-amber-700 dark:text-amber-300 font-bold" title={dates.secondaryTitle}>
+                    {dates.secondary}
+                  </span>
+                </>
+              )}
+              {showReadingTime && activeArticle.readingTime > 0 && (
+                <>
+                  <span className="text-slate-300">•</span>
+                  <span className="inline-flex items-center gap-1 font-semibold">
+                    <Clock className="w-4 h-4" />
+                    {formatReadingTime(activeArticle.readingTime)}
+                  </span>
+                </>
+              )}
             </div>
           </div>
           {image && (
@@ -331,10 +356,14 @@ export const BlogRenderer: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {paginatedArticles.map((article) => {
-            const date = String(article.frontMatter?.date ?? article.createdAt);
             const author = article.author || String(article.frontMatter?.author ?? 'Redakcia');
             const image = resolveContentPreviewImage(article);
             const desc = article.excerpt || String(article.frontMatter?.description ?? '');
+            const dates = formatContentDateLabels({
+              createdAt: article.createdAt,
+              updatedAt: article.updatedAt,
+              frontMatterDate: article.frontMatter?.date,
+            });
 
             return (
               <button
@@ -364,16 +393,26 @@ export const BlogRenderer: React.FC = () => {
                 </div>
                 <div className="p-8 flex-1 flex flex-col justify-between">
                   <div>
-                    <div className="flex items-center gap-3 text-xs text-slate-400 mb-3 font-medium">
-                      <span className="flex items-center gap-1">
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 mb-3 font-medium">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-slate-50 dark:bg-slate-800/80 px-2.5 py-1" title={dates.primaryTitle}>
                         <Calendar className="w-3.5 h-3.5 text-indigo-500" />
-                        {new Date(date).toLocaleDateString('sk-SK')}
+                        {dates.primary}
                       </span>
-                      <span>•</span>
-                      <span className="flex items-center gap-1">
+                      {dates.secondary && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 text-amber-700 dark:text-amber-300 font-bold" title={dates.secondaryTitle}>
+                          Upravené {dates.secondary}
+                        </span>
+                      )}
+                      <span className="inline-flex items-center gap-1">
                         <User className="w-3.5 h-3.5" />
                         {author}
                       </span>
+                      {showReadingTime && article.readingTime > 0 && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 dark:bg-indigo-950/40 px-2.5 py-1 text-indigo-700 dark:text-indigo-300 font-bold">
+                          <Clock className="w-3.5 h-3.5" />
+                          {formatReadingTime(article.readingTime)}
+                        </span>
+                      )}
                     </div>
                     <h3 className="text-xl font-extrabold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-snug tracking-tight">
                       {article.title}
