@@ -4,14 +4,15 @@ import { useApi } from '../../hooks/useApi';
 import { useToast } from '../../hooks/useToast';
 import { Link } from 'react-router-dom';
 import type { PaginationMeta } from '../../api/client';
-import { AdminListToolbar } from './AdminListToolbar';
+import { AdminListFilterBar } from './AdminListFilterBar';
 import { AdminListPagination } from './AdminListPagination';
 import { ContentListMobileCard } from './ContentListMobileCard';
 import { BulkActionBar } from './BulkActionBar';
 import { SeoHealthBadge } from './SeoHealthBadge';
 import { useAdminViewMode } from '../../hooks/useAdminViewMode';
 import { useAdminListPageSize } from '../../hooks/useAdminListPageSize';
-import { useColumnSort } from '../../hooks/useColumnSort';
+import { useAdminListQueryParams } from '../../hooks/useAdminListQueryParams';
+import { useOpenLinksInNewTab } from '../../hooks/useOpenLinksInNewTab';
 import { SortableTableHeader } from './SortableTableHeader';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
@@ -20,6 +21,7 @@ import { summarizeBulkResult } from '../../types/bulk';
 import { evaluateContentSeo } from '../../utils/seoHealth';
 import { resolveAdminMediaPreviewUrl, resolvePublicMediaUrl } from '../../api/media';
 import { resolvePreviewPath } from '../../utils/contentEditorMeta';
+import { linkTargetProps } from '../../utils/linkTarget';
 
 interface ContentItem {
   id: string;
@@ -82,14 +84,24 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
   const [items, setItems] = useState<ContentItem[]>([]);
   const [meta, setMeta] = useState<PaginationMeta>(DEFAULT_META);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [seoIssuesOnly, setSeoIssuesOnly] = useState(false);
-  const [page, setPage] = useState(1);
-  const { sortField, sortDirection, handleSort } = useColumnSort('updatedAt', 'desc');
+  const {
+    page,
+    search,
+    debouncedSearch,
+    statusFilter,
+    seoIssuesOnly,
+    sortField,
+    sortDirection,
+    handleSort,
+    setSearch,
+    setPage,
+    setStatusFilter,
+    setSeoIssuesOnly,
+    resetFilters,
+  } = useAdminListQueryParams('updatedAt', 'desc');
   const section = type === 'articles' ? 'articles' : 'pages';
   const [pageSize, setPageSize] = useAdminListPageSize(section);
+  const openInNewTab = useOpenLinksInNewTab();
   const { get, delete: del } = useApi();
   const toast = useToast();
   const isMobile = useMediaQuery('(max-width: 767px)');
@@ -101,15 +113,17 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
   // contentEditorMeta pracuje s jednotným tvarom ('page' | 'article').
   const previewType = type === 'articles' ? 'article' : 'page';
   const itemLabel = type === 'articles' ? 'článok' : 'podstránku';
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => setDebouncedSearch(search.trim()), 300);
-    return () => window.clearTimeout(timer);
-  }, [search]);
+  const hasActiveFilters =
+    debouncedSearch.length >= 2 ||
+    statusFilter !== 'all' ||
+    seoIssuesOnly ||
+    sortField !== 'updatedAt' ||
+    sortDirection !== 'desc' ||
+    page > 1;
 
   useEffect(() => {
     setPage(1);
-  }, [type, debouncedSearch, statusFilter, sortField, sortDirection, pageSize]);
+  }, [type, pageSize, setPage]);
 
   const loadItems = useCallback(async () => {
     setLoading(true);
@@ -236,7 +250,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
         </Link>
       </div>
 
-      <AdminListToolbar
+      <AdminListFilterBar
         search={search}
         onSearchChange={setSearch}
         searchPlaceholder={`Hľadať ${type === 'articles' ? 'články' : 'podstránky'}…`}
@@ -251,6 +265,8 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
         pageSize={pageSize}
         onPageSizeChange={setPageSize}
         pageSizeOptions={[5, 10, 20, 50]}
+        showResetFilters={hasActiveFilters}
+        onResetFilters={resetFilters}
       />
 
       <BulkActionBar
@@ -451,7 +467,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                             {resolvePreviewPath(previewType, item.slug) && (
                               <Link
                                 to={resolvePreviewPath(previewType, item.slug)!}
-                                target="_blank"
+                                {...linkTargetProps(openInNewTab)}
                                 className="btn btn-secondary text-xs px-3 py-1 hide-mobile"
                               >
                                 Náhľad

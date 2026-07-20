@@ -1,6 +1,6 @@
 // frontend/src/components/frontend/BlogRenderer.tsx
-import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useEffect, useMemo } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { usePublicSite } from '../../context/PublicSiteContext';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { MarkdownRenderer } from '../common/MarkdownRenderer';
@@ -17,56 +17,112 @@ import {
   ChevronsRight,
 } from 'lucide-react';
 import { resolveContentPreviewImage } from '../../utils/contentPreviewImage';
+import {
+  buildBlogListPath,
+  getAdjacentArticles,
+  parseBlogSort,
+  resolveBlogItemsPerPage,
+  sortPublishedArticles,
+  type BlogSort,
+} from '../../utils/blogArticles';
+
+const SORT_OPTIONS: { value: BlogSort; label: string }[] = [
+  { value: 'newest', label: 'Najnovšie' },
+  { value: 'oldest', label: 'Najstaršie' },
+  { value: 'title', label: 'Podľa názvu (A–Z)' },
+];
 
 export const BlogRenderer: React.FC = () => {
   const { slug } = useParams<{ slug?: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { articles } = usePublicSite();
   const { settings } = useSettingsContext();
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
 
-  const itemsPerPage = Number(settings.content?.itemsPerPage ?? 6);
+  const itemsPerPage = resolveBlogItemsPerPage(settings.content);
+  const selectedTag = searchParams.get('tag');
+  const sort = parseBlogSort(searchParams.get('sort'));
+  const currentPage = Math.max(1, Number.parseInt(searchParams.get('page') ?? '1', 10) || 1);
 
   const publishedArticles = useMemo(
-    () =>
-      [...articles].sort(
-        (a, b) =>
-          new Date(String(b.frontMatter?.date ?? b.createdAt)).getTime() -
-          new Date(String(a.frontMatter?.date ?? a.createdAt)).getTime()
-      ),
-    [articles]
+    () => sortPublishedArticles(articles.filter((article) => article.status === 'published'), sort),
+    [articles, sort]
   );
 
   const allTags = useMemo(() => {
     const tagsSet = new Set<string>();
-    publishedArticles.forEach((art) => art.tags?.forEach((t) => tagsSet.add(t)));
-    return Array.from(tagsSet);
+    publishedArticles.forEach((article) => article.tags?.forEach((tag) => tagsSet.add(tag)));
+    return Array.from(tagsSet).sort((a, b) => a.localeCompare(b, 'sk'));
   }, [publishedArticles]);
 
   const activeArticle = useMemo(() => {
     if (!slug) {
       return null;
     }
-    return publishedArticles.find((art) => art.slug === slug) ?? null;
+    return publishedArticles.find((article) => article.slug === slug) ?? null;
   }, [slug, publishedArticles]);
 
   const filteredArticles = selectedTag
-    ? publishedArticles.filter((art) => art.tags?.includes(selectedTag))
+    ? publishedArticles.filter((article) => article.tags?.includes(selectedTag))
     : publishedArticles;
 
-  const paginatedArticles = useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage;
-    return filteredArticles.slice(start, start + itemsPerPage);
-  }, [filteredArticles, currentPage, itemsPerPage]);
-
   const totalPages = Math.max(1, Math.ceil(filteredArticles.length / itemsPerPage));
-  const hasPrev = currentPage > 1;
-  const hasNext = currentPage < totalPages;
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedArticles = useMemo(() => {
+    const start = (safePage - 1) * itemsPerPage;
+    return filteredArticles.slice(start, start + itemsPerPage);
+  }, [filteredArticles, safePage, itemsPerPage]);
+
+  const hasPrev = safePage > 1;
+  const hasNext = safePage < totalPages;
+  const listPath = buildBlogListPath({ page: safePage, tag: selectedTag, sort });
+
+  const updateListParams = (patch: { page?: number; tag?: string | null; sort?: BlogSort }) => {
+    const next = new URLSearchParams(searchParams);
+    const nextPage = patch.page ?? safePage;
+    const nextTag = patch.tag !== undefined ? patch.tag : selectedTag;
+    const nextSort = patch.sort ?? sort;
+
+    if (nextPage <= 1) {
+      next.delete('page');
+    } else {
+      next.set('page', String(nextPage));
+    }
+
+    if (nextTag) {
+      next.set('tag', nextTag);
+    } else {
+      next.delete('tag');
+    }
+
+    if (nextSort === 'newest') {
+      next.delete('sort');
+    } else {
+      next.set('sort', nextSort);
+    }
+
+    setSearchParams(next, { replace: true });
+  };
+
+  const { prev: prevArticle, next: nextArticle } = useMemo(() => {
+    if (!activeArticle) {
+      return { prev: null, next: null };
+    }
+    return getAdjacentArticles(publishedArticles, activeArticle.slug);
+  }, [activeArticle, publishedArticles]);
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [selectedTag]);
+    if (slug || currentPage <= totalPages) {
+      return;
+    }
+    const next = new URLSearchParams(searchParams);
+    if (totalPages <= 1) {
+      next.delete('page');
+    } else {
+      next.set('page', String(totalPages));
+    }
+    setSearchParams(next, { replace: true });
+  }, [slug, currentPage, totalPages, searchParams, setSearchParams]);
 
   if (activeArticle) {
     const date = String(activeArticle.frontMatter?.date ?? activeArticle.createdAt);
@@ -91,7 +147,7 @@ export const BlogRenderer: React.FC = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
           <button
             type="button"
-            onClick={() => navigate('/blog')}
+            onClick={() => navigate(listPath)}
             className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer mb-6"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -101,12 +157,12 @@ export const BlogRenderer: React.FC = () => {
 
         <header className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-wrap items-center gap-2 mb-4">
-            {activeArticle.tags?.map((t) => (
+            {activeArticle.tags?.map((tag) => (
               <span
-                key={t}
+                key={tag}
                 className="text-xs bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-extrabold px-3 py-1 rounded-lg flex items-center gap-1"
               >
-                <Tag className="w-3 h-3" /> {t}
+                <Tag className="w-3 h-3" /> {tag}
               </span>
             ))}
           </div>
@@ -140,6 +196,44 @@ export const BlogRenderer: React.FC = () => {
             <MarkdownRenderer content={activeArticle.content} html={activeArticle.html} />
           </div>
 
+          {(prevArticle || nextArticle) && (
+            <nav
+              className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4"
+              aria-label="Navigácia medzi článkami"
+            >
+              {prevArticle ? (
+                <button
+                  type="button"
+                  onClick={() => navigate(`/blog/${prevArticle.slug}`)}
+                  className="text-left rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors group"
+                >
+                  <span className="text-xs font-bold uppercase tracking-wide text-slate-400 flex items-center gap-1">
+                    <ChevronLeft className="w-4 h-4" /> Predchádzajúci
+                  </span>
+                  <span className="mt-2 block text-sm font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 line-clamp-2">
+                    {prevArticle.title}
+                  </span>
+                </button>
+              ) : (
+                <div />
+              )}
+              {nextArticle ? (
+                <button
+                  type="button"
+                  onClick={() => navigate(`/blog/${nextArticle.slug}`)}
+                  className="text-right rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors group sm:col-start-2"
+                >
+                  <span className="text-xs font-bold uppercase tracking-wide text-slate-400 flex items-center justify-end gap-1">
+                    Ďalší <ChevronRight className="w-4 h-4" />
+                  </span>
+                  <span className="mt-2 block text-sm font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 line-clamp-2">
+                    {nextArticle.title}
+                  </span>
+                </button>
+              ) : null}
+            </nav>
+          )}
+
           {authorBio && (
             <div className="mt-12 bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/60 rounded-3xl p-6 sm:p-8 flex items-center gap-6">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-extrabold text-2xl shrink-0 shadow-lg shadow-indigo-500/25">
@@ -163,6 +257,9 @@ export const BlogRenderer: React.FC = () => {
     );
   }
 
+  const rangeStart = filteredArticles.length === 0 ? 0 : (safePage - 1) * itemsPerPage + 1;
+  const rangeEnd = Math.min(safePage * itemsPerPage, filteredArticles.length);
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-28 transition-colors">
       <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 pt-16 pb-20">
@@ -179,7 +276,7 @@ export const BlogRenderer: React.FC = () => {
           <div className="mt-8 flex flex-wrap justify-center gap-2">
             <button
               type="button"
-              onClick={() => setSelectedTag(null)}
+              onClick={() => updateListParams({ page: 1, tag: null })}
               className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
                 selectedTag === null
                   ? 'bg-indigo-600 text-white shadow-md'
@@ -188,26 +285,50 @@ export const BlogRenderer: React.FC = () => {
             >
               Všetky články ({publishedArticles.length})
             </button>
-            {allTags.map((t) => (
+            {allTags.map((tag) => (
               <button
-                key={t}
+                key={tag}
                 type="button"
-                onClick={() => setSelectedTag(selectedTag === t ? null : t)}
+                onClick={() => updateListParams({ page: 1, tag: selectedTag === tag ? null : tag })}
                 className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  selectedTag === t
+                  selectedTag === tag
                     ? 'bg-indigo-600 text-white shadow-md'
                     : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'
                 }`}
               >
                 <Tag className="w-3 h-3" />
-                <span>{t}</span>
+                <span>{tag}</span>
               </button>
             ))}
+          </div>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <label htmlFor="blog-sort" className="text-xs font-bold text-slate-500 uppercase tracking-wide">
+              Zoradiť
+            </label>
+            <select
+              id="blog-sort"
+              value={sort}
+              onChange={(event) => updateListParams({ page: 1, sort: parseBlogSort(event.target.value) })}
+              className="form-select text-sm rounded-xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900"
+            >
+              {SORT_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </div>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16">
+        {filteredArticles.length > 0 && (
+          <p className="text-center text-xs font-semibold text-slate-500 dark:text-slate-400 mb-8">
+            Zobrazené {rangeStart}–{rangeEnd} z {filteredArticles.length} článkov
+            {totalPages > 1 ? ` · strana ${safePage} / ${totalPages}` : ''}
+          </p>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {paginatedArticles.map((article) => {
             const date = String(article.frontMatter?.date ?? article.createdAt);
@@ -231,12 +352,12 @@ export const BlogRenderer: React.FC = () => {
                     />
                   )}
                   <div className="absolute top-4 left-4 flex flex-wrap gap-1">
-                    {article.tags?.slice(0, 2).map((t) => (
+                    {article.tags?.slice(0, 2).map((tag) => (
                       <span
-                        key={t}
+                        key={tag}
                         className="bg-slate-900/90 backdrop-blur-md text-white text-[11px] font-bold px-2.5 py-1 rounded-lg"
                       >
-                        {t}
+                        {tag}
                       </span>
                     ))}
                   </div>
@@ -276,7 +397,7 @@ export const BlogRenderer: React.FC = () => {
             <h3 className="text-2xl font-bold">Nenašli sa žiadne články</h3>
             <button
               type="button"
-              onClick={() => setSelectedTag(null)}
+              onClick={() => updateListParams({ page: 1, tag: null })}
               className="mt-6 bg-indigo-600 text-white font-bold px-6 py-2.5 rounded-xl text-sm"
             >
               Zobraziť všetky
@@ -288,47 +409,52 @@ export const BlogRenderer: React.FC = () => {
           <div className="flex items-center justify-center gap-3 mt-16">
             <button
               type="button"
-              onClick={() => setCurrentPage(1)}
+              onClick={() => updateListParams({ page: 1 })}
               disabled={!hasPrev}
               className="p-2.5 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              aria-label="Prvá strana"
             >
               <ChevronsLeft className="w-5 h-5" />
             </button>
             <button
               type="button"
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              onClick={() => updateListParams({ page: safePage - 1 })}
               disabled={!hasPrev}
               className="p-2.5 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              aria-label="Predchádzajúca strana"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
               <button
                 key={page}
                 type="button"
-                onClick={() => setCurrentPage(page)}
+                onClick={() => updateListParams({ page })}
                 className={`w-10 h-10 rounded-xl text-xs font-bold transition-all ${
-                  page === currentPage
+                  page === safePage
                     ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/25'
                     : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
+                aria-current={page === safePage ? 'page' : undefined}
               >
                 {page}
               </button>
             ))}
             <button
               type="button"
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              onClick={() => updateListParams({ page: safePage + 1 })}
               disabled={!hasNext}
               className="p-2.5 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              aria-label="Ďalšia strana"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
             <button
               type="button"
-              onClick={() => setCurrentPage(totalPages)}
+              onClick={() => updateListParams({ page: totalPages })}
               disabled={!hasNext}
               className="p-2.5 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              aria-label="Posledná strana"
             >
               <ChevronsRight className="w-5 h-5" />
             </button>

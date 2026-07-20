@@ -16,6 +16,8 @@ import {
   Expand,
 } from 'lucide-react';
 import { useToast } from '../../hooks/useToast';
+import { useOpenLinksInNewTab } from '../../hooks/useOpenLinksInNewTab';
+import { openExternalUrl } from '../../utils/linkTarget';
 import { getSettings } from '../../api/settings';
 import {
   bulkDeleteMedia,
@@ -61,6 +63,7 @@ function folderLabel(folder: string): string {
 
 export const MediaManager: React.FC = () => {
   const toast = useToast();
+  const openInNewTab = useOpenLinksInNewTab();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [items, setItems] = useState<MediaFile[]>([]);
   const [folders, setFolders] = useState<string[]>(['']);
@@ -298,7 +301,7 @@ export const MediaManager: React.FC = () => {
 
   const openPreview = (file: MediaFile, mode: MediaPreviewMode = 'fit') => {
     if (!isPreviewableMedia(file, previewableMimeTypes)) {
-      window.open(resolvePublicMediaUrl(file.url), '_blank', 'noopener,noreferrer');
+      openExternalUrl(resolvePublicMediaUrl(file.url), openInNewTab);
       return;
     }
     setPreviewMode(mode);

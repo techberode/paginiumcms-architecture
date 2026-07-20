@@ -24,6 +24,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.12 Blueprint + It.13 Demo sandbox v2 + PHILOSOPHY | **2.0.28** | [below](#2028--2026-07-19) |
 | Session hardening, cache admin, auth/login incidents | **2.0.29** | [below](#2029--2026-07-19) |
 | 2FA setup/login fixes, dev TOTP toggle, CI hotfix | **2.0.30** | [below](#2030--2026-07-19) |
+| It.44 blog pagination, admin filters, link target setting | **2.0.31** | [below](#2031--2026-07-20) |
+
+---
+
+## [2.0.31] – 2026-07-20
+
+Iteration 44 — public blog pagination, admin list URL filters, optional new-tab links.
+Detail: [ITERATION_44.md](docs/ITERATION_44.md).
+
+### Added
+
+- **`content.blogItemsPerPage`** — verejný blog (default 6), oddelené od admin `itemsPerPage`
+- **Public blog:** URL sync (`/blog?page=&tag=&sort=`), sort dropdown, prev/next článok bez návratu na zoznam
+- **`ui.openLinksInNewTab`** — prepínač náhľadov / externých odkazov (default **false** = rovnaká karta)
+- **`AdminListFilterBar`** + **`useAdminListQueryParams`** — URL sync admin zoznamov (`?q=&status=&sort=&page=&seo=1`)
+- Utils: `blogArticles.ts`, `linkTarget.ts`, `useOpenLinksInNewTab`
+
+### Changed
+
+- **`BlogRenderer`** — paginácia zo settings, zdieľané sort poradie pre prev/next
+- **`PagesManager`** — filtre v URL, tlačidlo „Vymazať filtre“
+- Preview / media / footer / admin header — rešpektujú `openLinksInNewTab` namiesto natvrdo `_blank`
+
+### Tests
+
+- `blogArticles.test.ts`, `linkTarget.test.ts` (Vitest)
 
 ---
 

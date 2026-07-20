@@ -12,6 +12,7 @@ const DEFAULT_PUBLIC: PublicSettings = {
   general: { siteName: 'PaginiumCMS', language: 'sk', maintenanceMode: false },
   content: {
     itemsPerPage: 20,
+    blogItemsPerPage: 6,
     defaultStatus: 'draft',
     autoSaveInterval: 60,
     lockTtl: 300,
@@ -30,6 +31,7 @@ const DEFAULT_PUBLIC: PublicSettings = {
   ui: {
     showListCounts: true,
     adminListPageSize: 20,
+    openLinksInNewTab: false,
   },
   comments: {
     enabled: true,
@@ -49,7 +51,7 @@ interface SettingsContextType {
   reload: () => Promise<void>;
 }
 
-const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
+export const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();

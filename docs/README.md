@@ -1,6 +1,6 @@
 # 🏛️ PaginiumCMS
 
-> **Version:** 2.0.30 · **Last updated:** 20 July 2026  
+> **Version:** 2.0.31 · **Last updated:** 20 July 2026  
 > Modern, modular, Headless Flat-File Content Management System powered by Slim Framework (PHP) & React.
 
 ---
@@ -33,15 +33,15 @@ PaginiumCMS keeps the Core intentionally minimal, secure, and fast. It moves sta
 | **Job scheduler** | ✅ It. 29 | Flat-file registry, `scheduler:run`, admin `/scheduler` |
 | **Monitoring** | ✅ It. 7 | Scheduled reports, log incidents, HTML email, cron CLI |
 | **API contract** | ✅ It. 21 | JsonResponder everywhere, MSW, Newman CI, RHF+Zod |
-| **PHPUnit** | ✅ **614 passing** (15 skipped) | PHPStan level 8 (0 errors) |
-| **Frontend** | ✅ It.43 unreleased | Command palette `Ctrl+K`, MSW, typed clients, public site |
-| **Next focus** | ⏳ **It.14** | Code policy + CodeEditor fixes |
+| **PHPUnit** | ✅ **653 passing** (15 skipped) | PHPStan level 8 (0 errors) |
+| **Frontend** | ✅ It.44 (2.0.31) | Blog pagination, admin URL filters, command palette |
+| **Next focus** | ⏳ **It.44c** | Media/comments URL sync; backend filter facets |
 
 ### Planned (roadmap)
 
 | It. | Feature |
 |-----|---------|
-| **44** | **Filters & sorting (admin + FE)** — shared filter bar, URL-synced query params |
+| **44** | **Filters & sorting (admin + FE)** — blog pagination, prev/next, URL sync |
 | **45** | **Redis (optional)** — shared cache/queue when scaling to multiple PHP workers |
 | **46** | **Server metrics agent** — CPU/RAM/disk/Docker for monitoring reports (extends It.7) |
 

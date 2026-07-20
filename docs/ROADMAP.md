@@ -6,7 +6,7 @@
 
 Legenda: ✅ hotové · 🚧 rozpracované · ⏳ plánované · 🔴 kritická priorita jadra
 
-**Aktuálna verzia:** 2.0.25 · **Posledná iterácia:** [42+](ITERATION_BACKLOG.md) ✅ · **Ďalšia:** [43+ backlog](ITERATION_BACKLOG.md) ⏳
+**Aktuálna verzia:** 2.0.31 · **Posledná iterácia:** [It.44](ITERATION_44.md) ✅ · **Ďalšia:** [44c / 46+ backlog](ITERATION_BACKLOG.md) ⏳
 
 
 | Iterácia | Názov                                                         | Priorita                             |
@@ -25,7 +25,7 @@ Legenda: ✅ hotové · 🚧 rozpracované · ⏳ plánované · 🔴 kritická 
 | 42       | Admin sidebar counts + list controls                          | ✅                                    |
 | **50**   | **[In-App Micro Firewall (WAF)](ITERATION_50.md)**            | **✅ 2.0.26**                         |
 | **43**   | **Pokročilé vyhľadávanie (FE + BE, rýchle skoky v kontexte)** | **⏳**                                |
-| **44**   | **Filtre a zoradenia (admin + verejný FE)**                   | **⏳**                                |
+| **44**   | **Filtre, blog pagination, admin URL sync**                     | **✅ 2.0.31** ([ITERATION_44.md](ITERATION_44.md)) |
 | **45**   | **[Redis driver detail](ITERATION_45.md)**                    | **🔵 → It.49**                       |
 | **46**   | **[Server metrics agent](ITERATION_46.md)**                   | **⏳ doplnok It.7**                   |
 | **47**   | **[Notification connector auth](ITERATION_47.md)**            | **⏳ ntfy token / test**              |
@@ -282,7 +282,7 @@ Hotové v **2.0.1** — detail [ITERATION_6.md](ITERATION_6.md).
 
 
 
-## Iterácia 14 – Politika kódu + oprava CodeEditor základov ⏳ 🔵
+## Iterácia 14 – Politika kódu + oprava CodeEditor základov ✅ 🔵
 
 - `CodePolicyEngine` (syntax + security scan + kompatibilita), rozšírený `SyntaxChecker`.
 - Oprava `CodeEditorManager` path resolution, zapojenie `CodeEditorLogger`.

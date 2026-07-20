@@ -28,7 +28,7 @@
 | Group | Purpose |
 |---|---|
 | `general` | siteName, siteUrl, adminEmail, language, timezone, maintenanceMode |
-| `content` | itemsPerPage, defaultStatus, autoSaveInterval, lockTtl |
+| `content` | itemsPerPage, blogItemsPerPage, defaultStatus, autoSaveInterval, lockTtl |
 | `editor` | defaultEditor, spellcheck, tabSize |
 | `smtp` | SMTP transport (host, port, TLS, credentials, from address) |
 | `notifications` | Toast UI: enabled, position, duration, debug mode |
