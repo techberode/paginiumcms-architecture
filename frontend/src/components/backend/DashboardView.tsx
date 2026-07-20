@@ -18,10 +18,13 @@ import { LocksPanel } from '../dashboard/LocksPanel';
 import { ConflictsPanel } from '../dashboard/ConflictsPanel';
 import { HealthPanel } from '../dashboard/HealthPanel';
 import { LogsPanel } from '../dashboard/LogsPanel';
+import { DashboardActivityPanel } from '../dashboard/DashboardActivityPanel';
+import { DashboardFlatFilePanel } from '../dashboard/DashboardFlatFilePanel';
 
 interface ContentStats {
   totalPages: number;
   totalArticles: number;
+  totalMedia: number;
   totalUsers: number;
   totalBackups: number;
   recentActivity: Array<Record<string, unknown>>;
@@ -31,6 +34,7 @@ export const DashboardView: React.FC = () => {
   const [stats, setStats] = useState<ContentStats>({
     totalPages: 0,
     totalArticles: 0,
+    totalMedia: 0,
     totalUsers: 0,
     totalBackups: 0,
     recentActivity: [],
@@ -43,9 +47,10 @@ export const DashboardView: React.FC = () => {
   const loadDashboardData = useCallback(async () => {
     setLoading(true);
     try {
-      const [pagesRes, articlesRes, usersRes, backupsRes, auditRes, monitoring] = await Promise.all([
+      const [pagesRes, articlesRes, mediaRes, usersRes, backupsRes, auditRes, monitoring] = await Promise.all([
         get('/api/pages'),
         get('/api/articles'),
+        get('/api/media'),
         get('/api/admin/users'),
         get('/api/admin/backups'),
         get('/api/admin/audit/stats'),
@@ -55,6 +60,7 @@ export const DashboardView: React.FC = () => {
       setStats({
         totalPages: pagesRes.success ? (Array.isArray(pagesRes.data) ? pagesRes.data.length : 0) : 0,
         totalArticles: articlesRes.success ? (Array.isArray(articlesRes.data) ? articlesRes.data.length : 0) : 0,
+        totalMedia: mediaRes.success ? (Array.isArray(mediaRes.data) ? mediaRes.data.length : 0) : 0,
         totalUsers: usersRes.success && usersRes.data?.users ? usersRes.data.users.length : 0,
         totalBackups: backupsRes.success ? (Array.isArray(backupsRes.data) ? backupsRes.data.length : 0) : 0,
         recentActivity: auditRes.success ? (auditRes.data?.recent_events || []) : [],
@@ -210,27 +216,17 @@ export const DashboardView: React.FC = () => {
         hours={overview?.logs?.hours ?? 24}
       />
 
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
-        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Posledná aktivita</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2">
+          <DashboardActivityPanel events={stats.recentActivity} loading={loading} />
         </div>
-        <div className="p-6">
-          {loading ? (
-            <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
-            </div>
-          ) : stats.recentActivity.length === 0 ? (
-            <p className="text-center text-slate-500 py-8">Žiadna nedávna aktivita</p>
-          ) : (
-            <div className="divide-y divide-slate-100 dark:divide-slate-800">
-              {stats.recentActivity.slice(0, 10).map((event, index) => (
-                <div key={index} className="py-2 text-sm text-slate-700 dark:text-slate-200">
-                  {(event as { log?: { message?: string } }).log?.message || 'Unknown action'}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <DashboardFlatFilePanel
+          pages={stats.totalPages}
+          articles={stats.totalArticles}
+          media={stats.totalMedia}
+          backups={stats.totalBackups}
+          loading={loading}
+        />
       </div>
     </div>
   );

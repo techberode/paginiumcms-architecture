@@ -1,7 +1,90 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.0.31** · 2026-07-20  
+> Posledná verzia: **2.0.32** · 2026-07-20  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release. Samotný release/tag zatiaľ nevytváraj, kým nie je schválený deploy.
+
+---
+
+## 2.0.32 — pred release kontrola
+
+```bash
+# Backend
+./vendor/bin/phpstan analyse backend --level=8
+./vendor/bin/phpunit
+
+# Frontend
+cd frontend && npm run type-check && npm run lint && npm test && npm run build:prod
+```
+
+**Po deployi:**
+
+1. Admin **Články/Stránky** → **Náhľad** → skús 100 % / **75 %** / 50 % / celá obrazovka
+2. Editor → **Náhľad** (header + footer v modale)
+3. **Nastavenia → Obsah** → `Zobraziť odhadovaný čas čítania` (on/off)
+4. `/blog` → karty s „Čítať celý článok“ + minútami čítania
+5. Admin **Média/Komentáre/Kôš** → filter URL → refresh
+
+---
+
+## GitHub Release — copy-paste (2.0.32)
+
+**Title:**
+
+```
+2.0.32 — It.44c admin URL sync, full-page preview, reading time
+```
+
+**Tag:** `v2.0.32` · **Target:** `main`
+
+**Body (skopíruj celé):**
+
+```markdown
+## Summary
+
+Release **2.0.32** completes **Iteration 44 (FE)** and ships **It.51** preview UX: admin URL sync for media/comments/trash, full-page preview modal (editor + lists) with proportional scale, blog reading time toggle, and date badges.
+
+Detail: [docs/ITERATION_44.md](docs/ITERATION_44.md) · [docs/ITERATION_51.md](docs/ITERATION_51.md)
+
+## Added
+
+- **It.44c:** `useMediaListQueryParams` — Media/Comments/Trash admin lists sync filters to URL
+- **`SitePreviewModal`** — Navbar + content + Footer; scales **100 % / 75 % / 50 % / fullscreen**
+- Preview from **editor** and **PagesManager** (pages + articles list)
+- **`content.showReadingTime`** — toggle estimated reading time on public blog
+- **`contact.subjects`** + **`contact.allowCustomSubject`** — configurable contact form subjects
+- Dashboard: activity panel + Flat-File structure overview (It.52a slice)
+- Utils/tests: `sitePreview`, `readingTime`, `contentDates`, `useAdminListQueryParams`
+
+## Changed
+
+- Blog cards: created/updated date badges, „Čítať celý článok“ CTA, optional reading time
+- List **Náhľad** opens in-app modal instead of navigating away (when `openLinksInNewTab` off)
+
+## Test plan
+
+- [ ] Admin Media → folder + filter → copy URL → reload preserves state
+- [ ] Pages/Articles list → **Náhľad** → 75 % visibly narrower than 100 %
+- [ ] Editor → **Náhľad** → full chrome visible
+- [ ] Settings → disable reading time → blog hides minutes
+- [ ] Contact page → subject dropdown from settings
+- [ ] `./vendor/bin/phpstan analyse backend --level=8` green
+- [ ] `./vendor/bin/phpunit` green
+- [ ] `cd frontend && npm test && npm run build:prod` green
+
+## Full changelog
+
+[CHANGELOG.md#2032--2026-07-20](CHANGELOG.md#2032--2026-07-20)
+```
+
+---
+
+## Git commit message (optional)
+
+```
+Release 2.0.32: It.44c URL sync, full-page preview, and blog reading time.
+
+Adds media/comments/trash URL filters, SitePreviewModal with proportional scale, and content.showReadingTime setting.
+```
 
 ---
 

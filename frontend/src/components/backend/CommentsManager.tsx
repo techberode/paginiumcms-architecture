@@ -20,7 +20,7 @@ import {
 import { useToast } from '../../hooks/useToast';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { useAdminListPageSize } from '../../hooks/useAdminListPageSize';
-import { useColumnSort } from '../../hooks/useColumnSort';
+import { useAdminListQueryParams } from '../../hooks/useAdminListQueryParams';
 import { AdminListSortBar } from './SortableTableHeader';
 import { BulkActionBar } from './BulkActionBar';
 import { AdminListToolbar } from './AdminListToolbar';
@@ -57,11 +57,25 @@ const truncate = (text: string, max = 90): string =>
 export const CommentsManager: React.FC = () => {
   const { error: showError, success: showSuccess } = useToast();
   const [items, setItems] = useState<Comment[]>([]);
-  const [filter, setFilter] = useState<CommentStatus | 'all'>('all');
-  const [search, setSearch] = useState('');
-  const { sortField, sortDirection, handleSort } = useColumnSort('createdAt', 'desc');
-  const [page, setPage] = useState(1);
+  const {
+    page,
+    search,
+    statusFilter: filter,
+    sortField,
+    sortDirection,
+    handleSort,
+    setSearch,
+    setPage,
+    setStatusFilter: setFilter,
+    resetFilters,
+  } = useAdminListQueryParams('createdAt', 'desc');
   const [pageSize, setPageSize] = useAdminListPageSize('comments');
+  const hasActiveFilters =
+    search.trim().length >= 2 ||
+    filter !== 'all' ||
+    sortField !== 'createdAt' ||
+    sortDirection !== 'desc' ||
+    page > 1;
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [otpChallenge, setOtpChallenge] = useState<{ id: string; commentId: string; debugCode?: string } | null>(
@@ -71,7 +85,9 @@ export const CommentsManager: React.FC = () => {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const comments = await listAdminComments(filter === 'all' ? undefined : { status: filter });
+      const comments = await listAdminComments(
+        filter === 'all' ? undefined : { status: filter as CommentStatus }
+      );
       setItems(comments);
     } catch {
       showError('Nepodarilo sa načítať komentáre.');
@@ -86,7 +102,7 @@ export const CommentsManager: React.FC = () => {
 
   useEffect(() => {
     setPage(1);
-  }, [filter, search, sortField, sortDirection, pageSize]);
+  }, [pageSize, setPage]);
 
   const listView = useMemo(
     () =>
@@ -214,6 +230,8 @@ export const CommentsManager: React.FC = () => {
         pageSize={pageSize}
         onPageSizeChange={setPageSize}
         pageSizeOptions={[5, 10, 20, 50]}
+        onResetFilters={resetFilters}
+        showResetFilters={hasActiveFilters}
       />
 
       <AdminListSortBar

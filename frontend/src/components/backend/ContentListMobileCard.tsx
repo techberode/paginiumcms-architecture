@@ -2,8 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { SeoHealthBadge } from './SeoHealthBadge';
 import type { SeoHealthLevel } from '../../utils/seoHealth';
-import { useOpenLinksInNewTab } from '../../hooks/useOpenLinksInNewTab';
-import { linkTargetProps } from '../../utils/linkTarget';
 
 export interface ContentListMobileCardProps {
   title: string;
@@ -17,7 +15,8 @@ export interface ContentListMobileCardProps {
   selected: boolean;
   onToggleSelect: () => void;
   onDelete: () => void;
-  previewUrl?: string;
+  onPreview?: () => void;
+  previewLoading?: boolean;
 }
 
 export const ContentListMobileCard: React.FC<ContentListMobileCardProps> = ({
@@ -31,11 +30,9 @@ export const ContentListMobileCard: React.FC<ContentListMobileCardProps> = ({
   selected,
   onToggleSelect,
   onDelete,
-  previewUrl,
-}) => {
-  const openInNewTab = useOpenLinksInNewTab();
-
-  return (
+  onPreview,
+  previewLoading = false,
+}) => (
   <div
     className={`rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900 ${
       selected ? 'ring-2 ring-indigo-500' : ''
@@ -63,14 +60,15 @@ export const ContentListMobileCard: React.FC<ContentListMobileCardProps> = ({
           <Link to={`/${routeBase}/${slug}`} className="btn btn-secondary text-xs px-3 py-1">
             Upraviť
           </Link>
-          {previewUrl && (
-            <Link
-              to={previewUrl}
-              {...linkTargetProps(openInNewTab)}
+          {onPreview && (
+            <button
+              type="button"
               className="btn btn-secondary text-xs px-3 py-1"
+              disabled={previewLoading}
+              onClick={onPreview}
             >
-              Náhľad
-            </Link>
+              {previewLoading ? '…' : 'Náhľad'}
+            </button>
           )}
           <button type="button" onClick={onDelete} className="btn btn-danger text-xs px-3 py-1">
             Zmazať
@@ -79,7 +77,6 @@ export const ContentListMobileCard: React.FC<ContentListMobileCardProps> = ({
       </div>
     </div>
   </div>
-  );
-};
+);
 
 export default ContentListMobileCard;

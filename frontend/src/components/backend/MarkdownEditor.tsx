@@ -14,7 +14,9 @@ import { MarkdownContentEditor } from './MarkdownContentEditor';
 import { MediaPickerModal } from './MediaPickerModal';
 import { VersionHistory } from '../CodeEditor/VersionHistory';
 import { useSettingsContext } from '../../context/SettingsContext';
+import { useAuth } from '../../hooks/useAuth';
 import { ContentEditorShell } from './ContentEditorShell';
+import { SitePreviewModal } from './SitePreviewModal';
 import { OtpConfirmModal } from './OtpConfirmModal';
 import { extractOtpPending } from '../../api/workflows';
 import { type SeoFormValues } from './SeoMetadataPanel';
@@ -87,10 +89,14 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
   const [articleComments, setArticleComments] = useState<ArticleCommentsSettings>(
     DEFAULT_ARTICLE_COMMENTS_SETTINGS
   );
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [loadedCreatedAt, setLoadedCreatedAt] = useState<string | undefined>();
+  const [loadedUpdatedAt, setLoadedUpdatedAt] = useState<string | undefined>();
 
   const { get, post, put } = useApi();
   const toast = useToast();
   const { settings } = useSettingsContext();
+  const { user } = useAuth();
   const isNew = slug === 'new' || !slug;
   const endpoint = type === 'article' ? '/api/articles' : '/api/pages';
   const resourceId = useMemo(() => `${type}:${slug ?? ''}`, [type, slug]);
@@ -156,6 +162,8 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
           resolveStoragePath(type, loadedSlug, String(response.data.path ?? ''), storageFormat)
         );
         setStatus(response.data.status || 'draft');
+        setLoadedCreatedAt(String(response.data.createdAt ?? ''));
+        setLoadedUpdatedAt(String(response.data.updatedAt ?? ''));
         setBaseRevision(response.data.revision || '');
         setSeo({
           seoTitle: String(response.data.seoTitle ?? fm.seoTitle ?? fm.metaTitle ?? ''),
@@ -382,6 +390,38 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
     [navigationItems, type, editSlug, slug]
   );
 
+  const previewDraft = useMemo(() => {
+    const stored = storagePayloadFromEditor(content, editorMode);
+    return {
+      type,
+      title,
+      slug: editSlug || slugifyTitle(title) || 'preview',
+      template,
+      content: stored.contentFormat === 'html' ? '' : stored.content,
+      html: stored.contentFormat === 'html' ? stored.content : undefined,
+      author: user?.name || 'Redakcia',
+      tags: seo.tags
+        .split(',')
+        .map((tag) => tag.trim())
+        .filter(Boolean),
+      seoDescription: seo.seoDescription,
+      createdAt: loadedCreatedAt,
+      updatedAt: loadedUpdatedAt,
+    };
+  }, [
+    content,
+    editSlug,
+    editorMode,
+    loadedCreatedAt,
+    loadedUpdatedAt,
+    seo.seoDescription,
+    seo.tags,
+    template,
+    title,
+    type,
+    user?.name,
+  ]);
+
   const autoSaveLabel =
     autoSave.status === 'saving'
       ? 'Ukladám koncept…'
@@ -462,6 +502,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         onEditorModeChange={switchEditorMode}
         onCancel={() => navigate(type === 'article' ? '/articles' : '/pages')}
         onSave={() => void handleSave()}
+        onOpenPreview={() => setPreviewOpen(true)}
         articleComments={type === 'article' ? articleComments : undefined}
         onArticleCommentsChange={type === 'article' ? setArticleComments : undefined}
         globalCommentsRequireApproval={settings.comments?.requireApproval !== false}
@@ -522,6 +563,12 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
           </div>
         </div>
       )}
+
+      <SitePreviewModal
+        open={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        draft={previewDraft}
+      />
 
       <OtpConfirmModal
         open={publishOtp !== null}

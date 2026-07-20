@@ -7,6 +7,7 @@ import { useAuth } from '../../hooks/useAuth';
 
 interface NavbarProps {
   onOpenSearch: () => void;
+  previewMode?: boolean;
 }
 
 const NavLinkButton: React.FC<{
@@ -121,7 +122,7 @@ const MobileNavItems: React.FC<{
   </>
 );
 
-export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
+export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, previewMode = false }) => {
   const { navigation, siteTitle } = usePublicSite();
   const { user } = useAuth();
   const location = useLocation();
@@ -144,6 +145,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
 
   return (
     <header className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 sticky top-0 z-40 transition-colors">
+      {previewMode && (
+        <div className="bg-amber-500 text-amber-950 text-center text-[11px] font-bold py-1">
+          Náhľad — navigácia je neaktívna
+        </div>
+      )}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         <button
           type="button"

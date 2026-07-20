@@ -12,7 +12,8 @@ import { SeoHealthBadge } from './SeoHealthBadge';
 import { useAdminViewMode } from '../../hooks/useAdminViewMode';
 import { useAdminListPageSize } from '../../hooks/useAdminListPageSize';
 import { useAdminListQueryParams } from '../../hooks/useAdminListQueryParams';
-import { useOpenLinksInNewTab } from '../../hooks/useOpenLinksInNewTab';
+import { SitePreviewModal } from './SitePreviewModal';
+import { buildSitePreviewDraft } from '../../utils/sitePreview';
 import { SortableTableHeader } from './SortableTableHeader';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
@@ -20,8 +21,7 @@ import { contentApi } from '../../api/content';
 import { summarizeBulkResult } from '../../types/bulk';
 import { evaluateContentSeo } from '../../utils/seoHealth';
 import { resolveAdminMediaPreviewUrl, resolvePublicMediaUrl } from '../../api/media';
-import { resolvePreviewPath } from '../../utils/contentEditorMeta';
-import { linkTargetProps } from '../../utils/linkTarget';
+import type { ContentType } from '../../api/drafts';
 
 interface ContentItem {
   id: string;
@@ -101,7 +101,9 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
   } = useAdminListQueryParams('updatedAt', 'desc');
   const section = type === 'articles' ? 'articles' : 'pages';
   const [pageSize, setPageSize] = useAdminListPageSize(section);
-  const openInNewTab = useOpenLinksInNewTab();
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewDraft, setPreviewDraft] = useState<ReturnType<typeof buildSitePreviewDraft> | null>(null);
+  const [previewLoadingSlug, setPreviewLoadingSlug] = useState<string | null>(null);
   const { get, delete: del } = useApi();
   const toast = useToast();
   const isMobile = useMediaQuery('(max-width: 767px)');
@@ -124,6 +126,26 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
   useEffect(() => {
     setPage(1);
   }, [type, pageSize, setPage]);
+
+  const openListPreview = useCallback(
+    async (item: ContentItem) => {
+      setPreviewLoadingSlug(item.slug);
+      try {
+        const response = await get<ContentItem>(`${endpoint}/${item.slug}`);
+        if (response.success && response.data) {
+          setPreviewDraft(buildSitePreviewDraft(previewType as ContentType, response.data));
+          setPreviewOpen(true);
+        } else {
+          toast.error('Nepodarilo sa načítať obsah pre náhľad.');
+        }
+      } catch {
+        toast.error('Nepodarilo sa načítať obsah pre náhľad.');
+      } finally {
+        setPreviewLoadingSlug(null);
+      }
+    },
+    [endpoint, get, previewType, toast]
+  );
 
   const loadItems = useCallback(async () => {
     setLoading(true);
@@ -328,6 +350,14 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                     </Link>
                     <button
                       type="button"
+                      className="btn btn-secondary text-xs px-3 py-1"
+                      disabled={previewLoadingSlug === item.slug}
+                      onClick={() => void openListPreview(item)}
+                    >
+                      {previewLoadingSlug === item.slug ? '…' : 'Náhľad'}
+                    </button>
+                    <button
+                      type="button"
                       className="btn btn-danger text-xs px-3 py-1"
                       onClick={() => void handleDelete(item.slug)}
                     >
@@ -362,7 +392,8 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                 selected={bulkSelection.isSelected(item.slug)}
                 onToggleSelect={() => bulkSelection.toggle(item.slug)}
                 onDelete={() => void handleDelete(item.slug)}
-                previewUrl={resolvePreviewPath(previewType, item.slug)}
+                onPreview={() => void openListPreview(item)}
+                previewLoading={previewLoadingSlug === item.slug}
               />
             );
           })}
@@ -464,15 +495,14 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                             >
                               Upraviť
                             </Link>
-                            {resolvePreviewPath(previewType, item.slug) && (
-                              <Link
-                                to={resolvePreviewPath(previewType, item.slug)!}
-                                {...linkTargetProps(openInNewTab)}
-                                className="btn btn-secondary text-xs px-3 py-1 hide-mobile"
-                              >
-                                Náhľad
-                              </Link>
-                            )}
+                            <button
+                              type="button"
+                              className="btn btn-secondary text-xs px-3 py-1 hide-mobile"
+                              disabled={previewLoadingSlug === item.slug}
+                              onClick={() => void openListPreview(item)}
+                            >
+                              {previewLoadingSlug === item.slug ? '…' : 'Náhľad'}
+                            </button>
                             <button
                               onClick={() => void handleDelete(item.slug)}
                               className="btn btn-danger text-xs px-3 py-1"
@@ -498,6 +528,12 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
         pageSize={pageSize}
         loading={loading}
         onPageChange={setPage}
+      />
+
+      <SitePreviewModal
+        open={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        draft={previewDraft}
       />
     </div>
   );

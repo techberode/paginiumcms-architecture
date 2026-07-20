@@ -85,6 +85,10 @@ export interface PublicSettings {
     requireApproval?: boolean;
     allowGuestComments?: boolean;
   };
+  contact?: {
+    subjects?: string;
+    allowCustomSubject?: boolean;
+  };
   demo?: {
     enabled?: boolean;
     url?: string;

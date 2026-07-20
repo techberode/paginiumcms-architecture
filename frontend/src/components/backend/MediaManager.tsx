@@ -49,7 +49,7 @@ import { MediaMetadataModal } from './MediaMetadataModal';
 import { SeoHealthBadge } from './SeoHealthBadge';
 import { useAdminViewMode } from '../../hooks/useAdminViewMode';
 import { useAdminListPageSize } from '../../hooks/useAdminListPageSize';
-import { useColumnSort } from '../../hooks/useColumnSort';
+import { useMediaListQueryParams } from '../../hooks/useAdminListQueryParams';
 import { SortableTableHeader } from './SortableTableHeader';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { applyClientListView } from '../../utils/clientListView';
@@ -67,12 +67,25 @@ export const MediaManager: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [items, setItems] = useState<MediaFile[]>([]);
   const [folders, setFolders] = useState<string[]>(['']);
-  const [currentFolder, setCurrentFolder] = useState('');
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
-  const [search, setSearch] = useState('');
-  const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
+  const {
+    page,
+    search,
+    seoIssuesOnly,
+    sortField,
+    sortDirection,
+    handleSort,
+    setSearch,
+    setPage,
+    setSeoIssuesOnly,
+    resetFilters,
+    folder: currentFolder,
+    typeFilter,
+    setFolder: setCurrentFolder,
+    setTypeFilter,
+  } = useMediaListQueryParams('uploadedAt', 'desc');
   const [editingPath, setEditingPath] = useState<string | null>(null);
   const [editingFile, setEditingFile] = useState<MediaFile | null>(null);
   const [editAlt, setEditAlt] = useState('');
@@ -87,11 +100,16 @@ export const MediaManager: React.FC = () => {
     'image/jpeg,image/png,image/gif,image/webp,image/svg+xml,application/pdf'
   );
   const [previewableMimeTypes, setPreviewableMimeTypes] = useState<string[]>([]);
-  const [seoIssuesOnly, setSeoIssuesOnly] = useState(false);
-  const { sortField, sortDirection, handleSort } = useColumnSort('uploadedAt', 'desc');
-  const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useAdminListPageSize('media');
   const { mode: viewMode, setMode: setViewMode } = useAdminViewMode('media', 'preview');
+  const hasActiveFilters =
+    search.trim().length >= 2 ||
+    seoIssuesOnly ||
+    typeFilter !== 'all' ||
+    currentFolder !== '' ||
+    sortField !== 'uploadedAt' ||
+    sortDirection !== 'desc' ||
+    page > 1;
 
   useEffect(() => {
     void (async () => {
@@ -235,7 +253,7 @@ export const MediaManager: React.FC = () => {
 
   useEffect(() => {
     setPage(1);
-  }, [search, typeFilter, currentFolder, seoIssuesOnly, sortField, sortDirection, pageSize]);
+  }, [pageSize, setPage]);
 
   const listView = applyClientListView(filteredItems, {
     search,
@@ -554,6 +572,8 @@ export const MediaManager: React.FC = () => {
           showSeoFilter
           pageSize={pageSize}
           onPageSizeChange={setPageSize}
+          onResetFilters={resetFilters}
+          showResetFilters={hasActiveFilters}
         >
           <select
             value={typeFilter}

@@ -13,6 +13,7 @@ const DEFAULT_PUBLIC: PublicSettings = {
   content: {
     itemsPerPage: 20,
     blogItemsPerPage: 6,
+    showReadingTime: true,
     defaultStatus: 'draft',
     autoSaveInterval: 60,
     lockTtl: 300,
@@ -37,6 +38,10 @@ const DEFAULT_PUBLIC: PublicSettings = {
     enabled: true,
     requireApproval: true,
     allowGuestComments: true,
+  },
+  contact: {
+    subjects: 'Všeobecný dotaz\nTechnická podpora\nObchodná spolupráca\nInformácie o produkte',
+    allowCustomSubject: true,
   },
   demo: {
     enabled: false,

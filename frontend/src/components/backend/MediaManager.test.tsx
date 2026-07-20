@@ -1,8 +1,9 @@
 // frontend/src/components/backend/MediaManager.test.tsx
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, within, waitFor } from '@testing-library/react';
+import { screen, within, waitFor } from '@testing-library/react';
 import { MediaManager } from './MediaManager';
 import { fastUser } from '../../test/userEvent';
+import { renderWithRouter } from '../../test/renderWithRouter';
 
 const mocks = vi.hoisted(() => ({
   listMedia: vi.fn(),
@@ -106,7 +107,7 @@ describe('MediaManager', () => {
   });
 
   it('renders media grid after load', async () => {
-    render(<MediaManager />);
+    renderWithRouter(<MediaManager />);
 
     expect(await screen.findByRole('button', { name: /Preview hero\.png/i })).toBeInTheDocument();
     expect(screen.getByText(/Alt:\s*Hero banner/i)).toBeInTheDocument();
@@ -118,7 +119,7 @@ describe('MediaManager', () => {
   it('shows empty state when no files', async () => {
     mocks.listMedia.mockResolvedValue([]);
     mocks.listMediaFolders.mockResolvedValue(['']);
-    render(<MediaManager />);
+    renderWithRouter(<MediaManager />);
 
     expect(await screen.findByText(/nie sú žiadne súbory/)).toBeInTheDocument();
   });
@@ -129,7 +130,7 @@ describe('MediaManager', () => {
       { ...sampleFile, id: 'media_2', fileName: 'logo.svg', altText: '', title: '' },
     ]);
 
-    render(<MediaManager />);
+    renderWithRouter(<MediaManager />);
     expect(await screen.findByRole('button', { name: /Preview hero\.png/i })).toBeInTheDocument();
 
     await fastUser.type(screen.getByPlaceholderText(/Hľadať podľa názvu/), 'logo');
@@ -141,7 +142,7 @@ describe('MediaManager', () => {
   });
 
   it('opens folder when child folder card is clicked', async () => {
-    render(<MediaManager />);
+    renderWithRouter(<MediaManager />);
     expect(await screen.findByText('campaigns')).toBeInTheDocument();
 
     await fastUser.click(screen.getByText('campaigns'));
@@ -154,7 +155,7 @@ describe('MediaManager', () => {
   it('saves metadata edits in list view mode via modal', async () => {
     mocks.useAdminViewMode.mockReturnValue({ mode: 'list', setMode: vi.fn() });
 
-    render(<MediaManager />);
+    renderWithRouter(<MediaManager />);
     expect(await screen.findByRole('checkbox', { name: /Select hero\.png/i })).toBeInTheDocument();
 
     await fastUser.click(screen.getByRole('button', { name: 'Edit metadata' }));
