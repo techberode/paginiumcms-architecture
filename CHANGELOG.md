@@ -33,6 +33,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.44d — Content API filters + server-side public blog | **2.0.37** | [below](#2037--2026-07-20) |
 | It.15 — External plugins & runtime | **2.0.38** | [below](#2038--2026-07-20) |
 | It.53 — Smooth SPA reload & admin navigation | **2.0.39** | [below](#2039--2026-07-20) |
+| CI hotfix — unused `refetch` in PagesManager | **2.0.40** | [below](#2040--2026-07-20) |
+
+---
+
+## [2.0.40] – 2026-07-20
+
+CI hotfix after **2.0.39** — frontend type-check (`TS6133`).
+
+### Fixed
+
+- **`PagesManager.tsx`** — remove unused `refetch` from `useAdminListQuery` destructuring (mutations already invalidate via React Query)
+- **`docs/ISSUES.md`** — ISS-041
 
 ---
 
