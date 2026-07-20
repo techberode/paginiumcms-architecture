@@ -1,6 +1,6 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.0.35** · 2026-07-20  
+> Posledná verzia: **2.0.36** · 2026-07-20  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release. Samotný release/tag zatiaľ nevytváraj, kým nie je schválený deploy.
 
 ---
@@ -17,6 +17,44 @@
 2. Klik **Neprečítané správy** → `/messages`
 3. Panel **Prehľad aktivít** → „Celý audit trail →“
 4. Network: `GET /api/admin/dashboard/overview` obsahuje `counts` a `storage`
+
+---
+
+## GitHub Release — copy-paste (2.0.36)
+
+**Title:**
+
+```
+2.0.36 — It.52 complete: company info and Google Maps on contact page
+```
+
+**Tag:** `v2.0.36` · **Target:** `main`
+
+**Body:**
+
+```markdown
+## Summary
+
+Release **2.0.36** completes **Iteration 52**: editable company details in Settings, public contact page company panel, and safe Google Maps embed.
+
+Detail: [docs/ITERATION_52.md](docs/ITERATION_52.md)
+
+## Added
+
+- Settings → **Firemné údaje** (`company.*`)
+- Contact page: company info block + optional map iframe
+- `isSafeMapEmbedUrl` whitelist for Google Maps embed only
+
+## Test plan
+
+- [ ] Settings → Firemné údaje → fill IČO, address, map URL
+- [ ] Public `/contact` shows company panel + map
+- [ ] `./scripts/iteration-gate.sh` green
+
+## Full changelog
+
+[CHANGELOG.md#2036--2026-07-20](CHANGELOG.md#2036--2026-07-20)
+```
 
 ---
 

@@ -168,6 +168,22 @@ final class SettingsSchema
                     ['key' => 'allowCustomSubject', 'type' => 'bool', 'label' => 'Povoliť vlastný predmet', 'default' => true, 'rules' => ['bool'], 'help' => 'Návštevník môže zvoliť „Vlastný predmet“ a napísať vlastný text.'],
                 ],
             ],
+            'company' => [
+                'label' => 'Firemné údaje',
+                'fields' => [
+                    ['key' => 'showOnContactPage', 'type' => 'bool', 'label' => 'Zobraziť blok na kontaktnej stránke', 'default' => true, 'rules' => ['bool']],
+                    ['key' => 'name', 'type' => 'string', 'label' => 'Názov firmy', 'default' => '', 'rules' => ['string', 'max:200']],
+                    ['key' => 'legalName', 'type' => 'string', 'label' => 'Právna forma / obchodné meno', 'default' => '', 'rules' => ['string', 'max:200']],
+                    ['key' => 'ico', 'type' => 'string', 'label' => 'IČO', 'default' => '', 'rules' => ['string', 'max:20']],
+                    ['key' => 'dic', 'type' => 'string', 'label' => 'DIČ', 'default' => '', 'rules' => ['string', 'max:20']],
+                    ['key' => 'icDph', 'type' => 'string', 'label' => 'IČ DPH', 'default' => '', 'rules' => ['string', 'max:20']],
+                    ['key' => 'address', 'type' => 'text', 'label' => 'Adresa', 'default' => '', 'rules' => ['string', 'max:500']],
+                    ['key' => 'email', 'type' => 'email', 'label' => 'Kontaktný e-mail', 'default' => '', 'rules' => ['email', 'max:200']],
+                    ['key' => 'phone', 'type' => 'string', 'label' => 'Telefón', 'default' => '', 'rules' => ['string', 'max:40']],
+                    ['key' => 'website', 'type' => 'url', 'label' => 'Web', 'default' => '', 'rules' => ['url', 'max:500']],
+                    ['key' => 'mapEmbedUrl', 'type' => 'url', 'label' => 'Google Maps embed URL', 'default' => '', 'rules' => ['url', 'max:2000'], 'help' => 'Google Maps → Zdieľať → Vložiť mapu (hodnota src z iframe).'],
+                ],
+            ],
             'workflows' => [
                 'label' => 'Workflow OTP',
                 'fields' => [

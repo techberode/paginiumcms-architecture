@@ -26,7 +26,7 @@
 | **44** | **2.0.32** | **Filtre, blog pagination, prev/next** | **✅ FE** | [ITERATION_44.md](ITERATION_44.md) — It.44c hotové; BE filtre ⏳ |
 | **45** | TBD | **[Redis – voliteľná infra](ITERATION_45.md)** | **🔵** | Absorbované do **It.49** |
 | **51** | **2.0.32** | **[Live preview + tagy + blog štítky](ITERATION_51.md)** | **✅** | SitePreviewModal, reading time, date badges |
-| **52** | **2.0.34** | **[Dashboard v2 + kontakt](ITERATION_52.md)** | **🚧** | It.52a ✅ · It.52b/c ⏳ |
+| **52** | **2.0.36** | **[Dashboard v2 + kontakt](ITERATION_52.md)** | **✅** | It.52a–c complete |
 | **47** | TBD | **[Notification connector auth](ITERATION_47.md)** | **✅** | ntfy Bearer/Basic + test-connector |
 | **48** | TBD | **[PHP templates + static/dynamic web](ITERATION_48.md)** | **🟡** | Front matter šablóny, JSON/INI meta, static HTML |
 | **49** | TBD | **[Unified cache layer](ITERATION_49.md)** | **🟡** | File + Redis prepínač podľa hostingu (rýchlosť/bezpečnosť) |

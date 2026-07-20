@@ -29,6 +29,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | Admin deep links (settings group, audit routes, Ctrl+K catalog) | **2.0.33** | [below](#2033--2026-07-20) |
 | It.52a — Dashboard KPI + overview API | **2.0.34** | [below](#2034--2026-07-20) |
 | It.52b — Contact form subjects (tests + contract) | **2.0.35** | [below](#2035--2026-07-20) |
+| It.52 — Dashboard v2, contact & company (complete) | **2.0.36** | [below](#2036--2026-07-20) |
+
+---
+
+## [2.0.36] – 2026-07-20
+
+**Iteration 52 complete** — firemné údaje + mapa na kontaktnej stránke.
+Detail: [ITERATION_52.md](docs/ITERATION_52.md).
+
+### Added
+
+- Settings group **`company`** — name, IČO, DIČ, adresa, kontakty, `mapEmbedUrl`
+- **`GET /api/settings/public`** → blok `company`
+- **`CompanyInfoPanel`** + **`CompanyMapEmbed`** on contact page (`PageRenderer`)
+- **`isSafeMapEmbedUrl`** — len `https://www.google.com/maps/embed…`
+- Vitest + PHPUnit contract tests
 
 ---
 
