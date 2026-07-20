@@ -79,7 +79,7 @@ final class ContentIndexService
                 ));
             }
 
-            $entries = $this->applyIndexFilters($entries, $query->filters);
+            $entries = $this->applyIndexFilters($entries, $query->filters, false);
 
             if ($query->search !== '' && mb_strlen($query->search) >= PaginationQuery::MIN_SEARCH_LENGTH) {
                 $needle = mb_strtolower($query->search);
@@ -295,8 +295,16 @@ final class ContentIndexService
      * @param array<string, string> $filters
      * @return list<ContentIndexEntry>
      */
-    private function applyIndexFilters(array $entries, array $filters): array
+    private function applyIndexFilters(array $entries, array $filters, bool $applyStatus = true): array
     {
+        if ($applyStatus && !empty($filters['status'])) {
+            $status = $filters['status'];
+            $entries = array_values(array_filter(
+                $entries,
+                static fn (ContentIndexEntry $e): bool => $e->status === $status
+            ));
+        }
+
         if (!empty($filters['tag'])) {
             $needle = mb_strtolower($filters['tag']);
             $entries = array_values(array_filter(
@@ -328,7 +336,10 @@ final class ContentIndexService
             $entries = array_values(array_filter(
                 $entries,
                 static function (ContentIndexEntry $e) use ($dateFrom, $dateTo): bool {
-                    $entryDate = substr($e->createdAt, 0, 10);
+                    $entryDate = ContentIndexEntry::normalizeIndexedDate($e->createdAt) ?? '';
+                    if ($entryDate === '') {
+                        return false;
+                    }
                     if ($dateFrom !== null && $entryDate < $dateFrom) {
                         return false;
                     }

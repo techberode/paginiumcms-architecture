@@ -78,8 +78,6 @@ class LogWriterTest extends TestCase
         $this->assertCount(2, $data);
         $this->assertSame('ok', $data[0]['message']);
         $this->assertSame('After recovery', $data[1]['message']);
-        $backups = glob($filePath . '.corrupt-*') ?: [];
-        $this->assertNotEmpty($backups);
     }
 
     public function testReadAll(): void

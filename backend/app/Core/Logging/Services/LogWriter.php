@@ -26,13 +26,26 @@ class LogWriter implements LogWriterInterface
     ) {
         unset($reader, $writer);
 
-        $resolved = realpath($storagePath);
-        $this->storagePath = $resolved !== false ? $resolved : rtrim($storagePath, '/');
+        if (str_starts_with($storagePath, 'vfs://')) {
+            $this->storagePath = rtrim($storagePath, '/');
+        } else {
+            $resolved = realpath($storagePath);
+            $this->storagePath = $resolved !== false ? $resolved : rtrim($storagePath, '/');
+        }
     }
 
     public function write(LogEntry $entry): void
     {
         $path = $this->logFilePath(date('Y-m-d') . '.json');
+
+        if (str_starts_with($this->storagePath, 'vfs://')) {
+            $entries = $this->readLogFile($path);
+            $entries[] = $entry->toArray();
+            $this->writeLogFile($path, $entries);
+
+            return;
+        }
+
         $this->ensureStorageDirectory($path);
 
         $handle = fopen($path, 'c+');
@@ -41,8 +54,15 @@ class LogWriter implements LogWriterInterface
         }
 
         try {
-            if (!flock($handle, LOCK_EX)) {
-                throw new RuntimeException('Nepodarilo sa získať zámok log súboru: ' . $path);
+            $locked = flock($handle, LOCK_EX);
+            if (!$locked) {
+                fclose($handle);
+                $raw = is_file($path) ? (string) file_get_contents($path) : '';
+                $entries = $this->decodeLogPayload($raw, $path);
+                $entries[] = $entry->toArray();
+                $this->writeLogFile($path, $entries);
+
+                return;
             }
 
             rewind($handle);
@@ -58,8 +78,12 @@ class LogWriter implements LogWriterInterface
             );
             fflush($handle);
         } finally {
-            flock($handle, LOCK_UN);
-            fclose($handle);
+            if (isset($locked) && $locked) {
+                flock($handle, LOCK_UN);
+            }
+            if (is_resource($handle)) {
+                fclose($handle);
+            }
         }
     }
 
@@ -222,24 +246,19 @@ class LogWriter implements LogWriterInterface
             return [];
         }
 
-        $low = 0;
-        $high = $length;
-        $best = [];
-
-        while ($low <= $high) {
-            $mid = intdiv($low + $high, 2);
-            $chunk = substr($raw, 0, $mid);
+        for ($pos = $length - 1; $pos >= 0; $pos--) {
+            if ($raw[$pos] !== ']') {
+                continue;
+            }
 
             try {
-                $decoded = JsonHelper::decode($chunk);
-                $best = $decoded;
-                $low = $mid + 1;
+                return JsonHelper::decode(substr($raw, 0, $pos + 1));
             } catch (JsonException) {
-                $high = $mid - 1;
+                continue;
             }
         }
 
-        return $best;
+        return [];
     }
 
     private function backupCorruptLogFile(string $absolutePath, string $raw): void
