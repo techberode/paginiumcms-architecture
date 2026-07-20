@@ -12,6 +12,7 @@ import {
 } from '../../api/logs';
 import { useToast } from '../../hooks/useToast';
 import { AdminListToolbar } from './AdminListToolbar';
+import { settingsGroupPath } from '../../utils/adminDeepLinks';
 
 const SEVERITIES: LogSeverity[] = ['debug', 'info', 'warning', 'error', 'critical'];
 
@@ -53,6 +54,13 @@ export const LogsManager: React.FC = () => {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    const fromUrl = searchParams.get('severity');
+    const nextSeverity =
+      fromUrl && SEVERITIES.includes(fromUrl as LogSeverity) ? (fromUrl as LogSeverity) : '';
+    setSeverity((prev) => (prev === nextSeverity ? prev : nextSeverity));
+  }, [searchParams]);
 
   useEffect(() => {
     if (severity) {
@@ -97,8 +105,7 @@ export const LogsManager: React.FC = () => {
           </div>
           <div className="flex flex-wrap gap-2">
             <Link
-              to="/settings"
-              state={{ group: 'logging' }}
+              to={settingsGroupPath('logging')}
               className="inline-flex items-center gap-2 text-sm font-bold text-indigo-600 hover:text-indigo-800"
             >
               Nastavenia logov

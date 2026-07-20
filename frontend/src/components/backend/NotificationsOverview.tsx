@@ -13,6 +13,7 @@ import {
   type ConnectorStatus,
 } from '../../api/notifications';
 import { useToast } from '../../hooks/useToast';
+import { settingsGroupPath } from '../../utils/adminDeepLinks';
 
 export const NotificationsOverview: React.FC = () => {
   const [data, setData] = useState<NotificationOverview | null>(null);
@@ -169,7 +170,7 @@ export const NotificationsOverview: React.FC = () => {
       <div className="flex justify-between items-center flex-wrap gap-3">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Notifications</h1>
         <div className="flex gap-2">
-          <Link to="/settings" className="btn btn-secondary inline-flex items-center gap-2">
+          <Link to={settingsGroupPath('smtp')} className="btn btn-secondary inline-flex items-center gap-2">
             <Settings className="w-4 h-4" />
             SMTP &amp; konektory
           </Link>

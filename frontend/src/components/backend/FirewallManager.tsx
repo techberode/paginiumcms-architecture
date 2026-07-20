@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useOpenLinksInNewTab } from '../../hooks/useOpenLinksInNewTab';
 import { linkTargetProps } from '../../utils/linkTarget';
+import { settingsGroupPath } from '../../utils/adminDeepLinks';
 import {
   firewallApi,
   type FirewallBan,
@@ -234,8 +235,7 @@ export const FirewallManager: React.FC = () => {
             </p>
           </div>
           <Link
-            to="/settings"
-            state={{ group: 'firewall' }}
+            to={settingsGroupPath('firewall')}
             className="inline-flex items-center gap-2 text-sm font-bold text-indigo-600 hover:text-indigo-800"
           >
             Nastavenia firewallu

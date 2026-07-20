@@ -1,5 +1,6 @@
 // frontend/src/components/Audit/AuditTrail.tsx
 import React, { useState, useEffect, useCallback } from 'react';
+import { useParams } from 'react-router-dom';
 import { useApi } from '../../hooks/useApi';
 import { useToast } from '../../hooks/useToast';
 import { formatDistanceToNow, format } from 'date-fns';
@@ -10,7 +11,13 @@ interface AuditTrailProps {
   userId?: string;
 }
 
-export const AuditTrail: React.FC<AuditTrailProps> = ({ contentId, userId }) => {
+export const AuditTrail: React.FC<AuditTrailProps> = ({ contentId: contentIdProp, userId: userIdProp }) => {
+  const { contentId: routeContentId, userId: routeUserId } = useParams<{
+    contentId?: string;
+    userId?: string;
+  }>();
+  const contentId = contentIdProp ?? routeContentId;
+  const userId = userIdProp ?? routeUserId;
   const [events, setEvents] = useState<any[]>([]);
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
