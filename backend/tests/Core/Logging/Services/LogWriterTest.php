@@ -65,6 +65,23 @@ class LogWriterTest extends TestCase
         $this->assertEquals('Message 2', $data[1]['message']);
     }
 
+    public function testWriteRecoversFromCorruptLogFile(): void
+    {
+        $date = date('Y-m-d');
+        $filePath = $this->logDir . '/' . $date . '.json';
+        file_put_contents($filePath, '[{"message":"ok"}]broken-tail');
+
+        $entry = new LogEntry(LogSeverity::INFO, 'test', 'After recovery');
+        $this->logWriter->write($entry);
+
+        $data = FileHelper::readJson($filePath);
+        $this->assertCount(2, $data);
+        $this->assertSame('ok', $data[0]['message']);
+        $this->assertSame('After recovery', $data[1]['message']);
+        $backups = glob($filePath . '.corrupt-*') ?: [];
+        $this->assertNotEmpty($backups);
+    }
+
     public function testReadAll(): void
     {
         $this->markTestSkipped('vfsStream nepodporuje glob() správne pre LogWriter.');
