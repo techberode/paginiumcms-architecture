@@ -1,6 +1,6 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.0.34** · 2026-07-20  
+> Posledná verzia: **2.0.35** · 2026-07-20  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release. Samotný release/tag zatiaľ nevytváraj, kým nie je schválený deploy.
 
 ---
@@ -17,6 +17,45 @@
 2. Klik **Neprečítané správy** → `/messages`
 3. Panel **Prehľad aktivít** → „Celý audit trail →“
 4. Network: `GET /api/admin/dashboard/overview` obsahuje `counts` a `storage`
+
+---
+
+## GitHub Release — copy-paste (2.0.35)
+
+**Title:**
+
+```
+2.0.35 — It.52b contact form subjects (tests & API contract)
+```
+
+**Tag:** `v2.0.35` · **Target:** `main`
+
+**Body:**
+
+```markdown
+## Summary
+
+Release **2.0.35** completes **Iteration 52b** verification: configurable contact subjects (`contact.subjects`, `contact.allowCustomSubject`) with FE/BE tests and public settings contract.
+
+Feature shipped in 2.0.32; this release adds regression tests.
+
+Detail: [docs/ITERATION_52.md](docs/ITERATION_52.md)
+
+## Added
+
+- `contactSubjects` + `ContactForm` Vitest coverage
+- PHPUnit public settings shape asserts `contact` block
+
+## Test plan
+
+- [ ] `/contact` page → subject dropdown from Settings → Kontakt
+- [ ] Disable custom subject → „Vlastný predmet“ hidden
+- [ ] `./scripts/iteration-gate.sh` green
+
+## Full changelog
+
+[CHANGELOG.md#2035--2026-07-20](CHANGELOG.md#2035--2026-07-20)
+```
 
 ---
 

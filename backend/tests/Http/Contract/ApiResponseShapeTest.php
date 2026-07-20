@@ -86,6 +86,9 @@ final class ApiResponseShapeTest extends TestCase
         $this->assertTrue($data['success']);
         $this->assertArrayHasKey('data', $data);
         $this->assertIsArray($data['data']);
+        $this->assertArrayHasKey('contact', $data['data']);
+        $this->assertArrayHasKey('subjects', $data['data']['contact']);
+        $this->assertArrayHasKey('allowCustomSubject', $data['data']['contact']);
     }
 
     public function testValidationRulesShape(): void
