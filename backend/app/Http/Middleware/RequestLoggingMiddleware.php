@@ -42,7 +42,7 @@ final class RequestLoggingMiddleware implements MiddlewareInterface
         try {
             $response = $handler->handle($request);
         } catch (\Throwable $e) {
-            $this->accessLog->logRequest(
+            $this->safeLogRequest(
                 $ip,
                 $method,
                 $path,
@@ -57,7 +57,7 @@ final class RequestLoggingMiddleware implements MiddlewareInterface
             throw $e;
         }
 
-        $this->accessLog->logRequest(
+        $this->safeLogRequest(
             $ip,
             $method,
             $path,
@@ -111,5 +111,24 @@ final class RequestLoggingMiddleware implements MiddlewareInterface
     private function isTestingEnvironment(): bool
     {
         return getenv('APP_ENV') === 'testing' || ($_ENV['APP_ENV'] ?? '') === 'testing';
+    }
+
+    /**
+     * @param array<string, mixed> $context
+     */
+    private function safeLogRequest(
+        string $ip,
+        string $method,
+        string $path,
+        int $status,
+        float $durationMs,
+        ?string $userId = null,
+        array $context = []
+    ): void {
+        try {
+            $this->accessLog->logRequest($ip, $method, $path, $status, $durationMs, $userId, $context);
+        } catch (\Throwable) {
+            // Logging must never take down API responses (corrupt log file, disk full, …).
+        }
     }
 }

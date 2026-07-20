@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\Logging\Services;
 
+use JsonException;
 use PaginiumCMS\Core\Logging\Contracts\LogWriterInterface;
 use PaginiumCMS\Core\Logging\Models\LogEntry;
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
 use PaginiumCMS\Support\JsonHelper;
+use RuntimeException;
 
 /**
  * Zápis logov mimo content FileValidator — priamy filesystem I/O.
@@ -31,9 +33,34 @@ class LogWriter implements LogWriterInterface
     public function write(LogEntry $entry): void
     {
         $path = $this->logFilePath(date('Y-m-d') . '.json');
-        $entries = $this->readLogFile($path);
-        $entries[] = $entry->toArray();
-        $this->writeLogFile($path, $entries);
+        $this->ensureStorageDirectory($path);
+
+        $handle = fopen($path, 'c+');
+        if ($handle === false) {
+            throw new RuntimeException('Nepodarilo sa otvoriť log súbor: ' . $path);
+        }
+
+        try {
+            if (!flock($handle, LOCK_EX)) {
+                throw new RuntimeException('Nepodarilo sa získať zámok log súboru: ' . $path);
+            }
+
+            rewind($handle);
+            $raw = stream_get_contents($handle);
+            $entries = $this->decodeLogPayload(is_string($raw) ? $raw : '', $path);
+            $entries[] = $entry->toArray();
+
+            ftruncate($handle, 0);
+            rewind($handle);
+            fwrite(
+                $handle,
+                JsonHelper::encode($entries, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+            );
+            fflush($handle);
+        } finally {
+            flock($handle, LOCK_UN);
+            fclose($handle);
+        }
     }
 
     /**
@@ -155,9 +182,76 @@ class LogWriter implements LogWriterInterface
             return [];
         }
 
-        $decoded = JsonHelper::decode((string) file_get_contents($absolutePath));
+        $raw = file_get_contents($absolutePath);
+        if ($raw === false || trim($raw) === '') {
+            return [];
+        }
 
-        return $decoded;
+        return $this->decodeLogPayload($raw, $absolutePath);
+    }
+
+    /**
+     * @return array<int|string, mixed>
+     */
+    private function decodeLogPayload(string $raw, string $absolutePath): array
+    {
+        try {
+            return JsonHelper::decode($raw);
+        } catch (JsonException) {
+            $salvaged = $this->salvageCorruptLogPayload($raw);
+            if ($salvaged !== []) {
+                $this->backupCorruptLogFile($absolutePath, $raw);
+                $this->writeLogFile($absolutePath, $salvaged);
+
+                return $salvaged;
+            }
+
+            $this->backupCorruptLogFile($absolutePath, $raw);
+
+            return [];
+        }
+    }
+
+    /**
+     * @return array<int|string, mixed>
+     */
+    private function salvageCorruptLogPayload(string $raw): array
+    {
+        $length = strlen($raw);
+        if ($length === 0) {
+            return [];
+        }
+
+        $low = 0;
+        $high = $length;
+        $best = [];
+
+        while ($low <= $high) {
+            $mid = intdiv($low + $high, 2);
+            $chunk = substr($raw, 0, $mid);
+
+            try {
+                $decoded = JsonHelper::decode($chunk);
+                $best = $decoded;
+                $low = $mid + 1;
+            } catch (JsonException) {
+                $high = $mid - 1;
+            }
+        }
+
+        return $best;
+    }
+
+    private function backupCorruptLogFile(string $absolutePath, string $raw): void
+    {
+        $backupPath = $absolutePath . '.corrupt-' . date('Ymd-His');
+        if (@file_put_contents($backupPath, $raw) === false) {
+            return;
+        }
+
+        if (is_file($absolutePath)) {
+            @unlink($absolutePath);
+        }
     }
 
     /**
@@ -165,15 +259,20 @@ class LogWriter implements LogWriterInterface
      */
     private function writeLogFile(string $absolutePath, array $entries): void
     {
-        $dir = dirname($absolutePath);
-        if (!is_dir($dir)) {
-            mkdir($dir, 0755, true);
-        }
+        $this->ensureStorageDirectory($absolutePath);
 
         file_put_contents(
             $absolutePath,
             JsonHelper::encode($entries, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
         );
+    }
+
+    private function ensureStorageDirectory(string $absolutePath): void
+    {
+        $dir = dirname($absolutePath);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
     }
 
     /**
