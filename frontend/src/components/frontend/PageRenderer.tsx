@@ -3,6 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Page } from '../../api/types';
 import { ContactForm } from './ContactForm';
+import { CompanyInfoPanel, CompanyMapEmbed } from './CompanyInfoPanel';
 import { MarkdownRenderer } from '../common/MarkdownRenderer';
 import { Calendar, User, FileText, ArrowRight } from 'lucide-react';
 
@@ -108,8 +109,12 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page }) => {
         </div>
 
         {isContact && (
-          <div className="mt-12">
-            <ContactForm />
+          <div className="mt-12 space-y-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+              <CompanyInfoPanel />
+              <ContactForm />
+            </div>
+            <CompanyMapEmbed />
           </div>
         )}
 

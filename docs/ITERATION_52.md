@@ -1,7 +1,7 @@
 # Iteration 52 – Dashboard v2, kontakt & firemné údaje
 
-**Status:** 🚧 rozpracované — **It.52a ✅ (2.0.34)** · **It.52b ✅ (2.0.35)** · It.52c ⏳  
-**Verzia:** 2.0.35 (52b) · 2.0.36+ (52c plánované)  
+**Status:** ✅ Complete (It.52a–c)  
+**Verzia:** **2.0.36**  
 **Nadväzuje na:** [It.51](ITERATION_51.md)
 
 ## Cieľ
@@ -17,8 +17,8 @@ Admin dashboard ako na mockupe: **prehľad aktivít**, **Flat-File strom**, **ko
 | KPI: neprečítané správy / médiá / veľkosť disku | It.52a | ✅ |
 | **Kontakt — predvolené predmety** (`contact.subjects`) | It.52b | ✅ (2.0.35) |
 | Voľba „Vlastný predmet“ (`contact.allowCustomSubject`) | It.52b | ✅ (2.0.35) |
-| **Firemné údaje — editovateľná šablóna** (IČO, adresa, …) | It.52c | ⏳ |
-| **Google Map embed** na kontaktnej stránke | It.52c + **It.48** | ⏳ |
+| **Firemné údaje — editovateľná šablóna** (IČO, adresa, …) | It.52c | ✅ (2.0.36) |
+| **Google Map embed** na kontaktnej stránke | It.52c | ✅ (2.0.36) |
 
 ## Nastavenia (návrh)
 
@@ -26,11 +26,11 @@ Admin dashboard ako na mockupe: **prehľad aktivít**, **Flat-File strom**, **ko
 |------|---------|--------|
 | `contact.subjects` | Kontakt | Text — jeden predmet na riadok |
 | `contact.allowCustomSubject` | Kontakt | bool — povoliť voľný text |
-| `company.name`, `company.address`, … | Firemné údaje | It.52c — verejný výrez cez `publicSettings` |
+| `company.mapEmbedUrl` | Firemné údaje | Google Maps embed `src` (len `https://www.google.com/maps/embed…`) |
 
-## Google Maps
+## Verejný výrez (`GET /api/settings/public`)
 
-Zapojenie až po **It.48** (PHP šablóny / contact template) alebo samostatný slice **It.52c** — embed URL z nastavení, nie hardcoded iframe.
+Skupina **`company`** — rovnaké kľúče ako v admin schéme; frontend zobrazí panel na `/contact`, ak `showOnContactPage` a aspoň jedno pole je vyplnené.
 
 ## API (It.52a)
 

@@ -89,6 +89,19 @@ export interface PublicSettings {
     subjects?: string;
     allowCustomSubject?: boolean;
   };
+  company?: {
+    showOnContactPage?: boolean;
+    name?: string;
+    legalName?: string;
+    ico?: string;
+    dic?: string;
+    icDph?: string;
+    address?: string;
+    email?: string;
+    phone?: string;
+    website?: string;
+    mapEmbedUrl?: string;
+  };
   demo?: {
     enabled?: boolean;
     url?: string;
