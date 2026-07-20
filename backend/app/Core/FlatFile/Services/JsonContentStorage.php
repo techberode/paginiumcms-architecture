@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Core\FlatFile\Services;
 
 use PaginiumCMS\Core\FlatFile\Contracts\ContentStorageInterface;
-use PaginiumCMS\Core\FlatFile\Contracts\MarkdownContentParserInterface;
+use PaginiumCMS\Core\Editor\Services\ContentBodyRenderer;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Support\JsonHelper;
 
@@ -31,7 +31,7 @@ final class JsonContentStorage implements ContentStorageInterface
     /** @var list<string> */
     private array $reservedKeys = ['content', 'html'];
 
-    public function __construct(private MarkdownContentParserInterface $contentParser)
+    public function __construct(private ContentBodyRenderer $bodyRenderer)
     {
     }
 
@@ -61,12 +61,17 @@ final class JsonContentStorage implements ContentStorageInterface
         }
 
         $content = (string) ($decoded['content'] ?? '');
+        $cachedHtml = isset($decoded['html']) ? (string) $decoded['html'] : null;
         unset($decoded['content'], $decoded['html']);
+        $contentFormat = $this->bodyRenderer->normalizeContentFormat(
+            $decoded['contentFormat'] ?? null,
+            $content
+        );
 
         return [
             'frontMatter' => $decoded,
             'content' => $content,
-            'html' => $this->contentParser->parse($content),
+            'html' => $this->bodyRenderer->resolveHtml($content, $contentFormat, $cachedHtml),
         ];
     }
 
@@ -79,7 +84,12 @@ final class JsonContentStorage implements ContentStorageInterface
         foreach ($this->reservedKeys as $key) {
             unset($payload[$key]);
         }
+        $contentFormat = $this->bodyRenderer->normalizeContentFormat(
+            $frontMatter['contentFormat'] ?? null,
+            $content
+        );
         $payload['content'] = $content;
+        $payload['html'] = $this->bodyRenderer->resolveHtml($content, $contentFormat);
 
         return JsonHelper::encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }

@@ -1,7 +1,63 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.0.41** · 2026-07-20  
+> Posledná verzia: **2.0.42** · 2026-07-20  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release. Samotný release/tag zatiaľ nevytváraj, kým nie je schválený deploy.
+
+---
+
+## 2.0.42 — pred release kontrola
+
+```bash
+./scripts/iteration-gate.sh
+```
+
+**Po deployi:**
+
+1. Admin editor — prepnúť na **WYSIWYG**, uložiť stránku → `contentFormat: tiptap_json` v API odpovedi
+2. Verejný náhľad / frontend — obsah renderovaný z `html` cache
+3. Vložiť obrázok (paste / drop / 🖼️) → súbor v DAM, URL v dokumente
+4. **Minimal** profil — Tiptap `image` node pri uložení → 400
+5. Login na **localhost:3025** — jeden pokus, bez dvojitého logu (ISS-042)
+
+---
+
+## GitHub Release — copy-paste (2.0.42)
+
+**Title:**
+
+```
+2.0.42 — It.55: Tiptap JSON storage + editor image upload
+```
+
+**Tag:** `v2.0.42` · **Target:** `main`
+
+**Body:**
+
+```markdown
+## Summary
+
+Iteration 55 persists WYSIWYG content as structured Tiptap JSON, renders sanitized HTML on the backend, and wires image paste/drop/upload into the existing media DAM. Includes ISS-042 login session retry fix.
+
+## Highlights
+
+- **`contentFormat: tiptap_json`** — save/load round-trip with cached `html`
+- **`TiptapHtmlRenderer` + `ContentBodyRenderer`** — public HTML from JSON
+- **Profile-aware validation** — Tiptap node walk (It.54 profiles)
+- **Editor upload** — paste, drop, file picker → `/api/media/upload`
+- **ISS-042** — `probeSessionWithRetry` after login
+
+## Test plan
+
+- [ ] `./scripts/iteration-gate.sh` green
+- [ ] WYSIWYG save → reload → same content
+- [ ] Image upload from editor → visible on public page
+- [ ] Markdown-only articles unchanged
+- [ ] Single login on localhost:3025
+
+## Docs
+
+- [ITERATION_55.md](docs/ITERATION_55.md)
+```
 
 ---
 

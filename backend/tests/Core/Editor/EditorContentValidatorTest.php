@@ -77,4 +77,46 @@ final class EditorContentValidatorTest extends TestCase
 
         $this->assertNull($error);
     }
+
+    public function testMinimalProfileRejectsTiptapImage(): void
+    {
+        $json = json_encode([
+            'type' => 'doc',
+            'content' => [[
+                'type' => 'image',
+                'attrs' => ['src' => '/img.png', 'alt' => 'x'],
+            ]],
+        ], JSON_THROW_ON_ERROR);
+
+        $error = $this->validator->validate('page', [
+            'content' => $json,
+            'contentFormat' => 'tiptap_json',
+            'editorProfile' => 'minimal',
+        ]);
+
+        $this->assertSame('Profil editora nepovoľuje obrázky.', $error);
+    }
+
+    public function testBlogProfileAllowsTiptapParagraph(): void
+    {
+        $json = json_encode([
+            'type' => 'doc',
+            'content' => [[
+                'type' => 'paragraph',
+                'content' => [[
+                    'type' => 'text',
+                    'text' => 'Hello',
+                    'marks' => [['type' => 'bold']],
+                ]],
+            ]],
+        ], JSON_THROW_ON_ERROR);
+
+        $error = $this->validator->validate('article', [
+            'content' => $json,
+            'contentFormat' => 'tiptap_json',
+            'editorProfile' => 'blog',
+        ]);
+
+        $this->assertNull($error);
+    }
 }

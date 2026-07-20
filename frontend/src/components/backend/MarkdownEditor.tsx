@@ -9,6 +9,7 @@ import { ConflictResolver } from '../versioning/ConflictResolver';
 import { merge3, assembleMerged } from '../../utils/merge3';
 import { loadDraft, discardDraft, type ContentType } from '../../api/drafts';
 import { getNavigation } from '../../api/navigation';
+import { uploadMedia, resolvePublicMediaUrl } from '../../api/media';
 import { WysiwygEditor, WysiwygEditorHandle } from './WysiwygEditor';
 import { MarkdownContentEditor } from './MarkdownContentEditor';
 import { MediaPickerModal } from './MediaPickerModal';
@@ -32,6 +33,7 @@ import {
   convertForModeSwitch,
   inferContentFormat,
   storagePayloadFromEditor,
+  markdownToHtml,
   valueForEditorMode,
 } from '../../utils/contentEditor';
 import {
@@ -78,7 +80,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
   const [pendingDraftAt, setPendingDraftAt] = useState<number | null>(null);
   const [editorMode, setEditorMode] = useState<EditorMode>('markdown');
   const [editorProfile, setEditorProfile] = useState<EditorProfileId>('company');
-  const [, setContentFormat] = useState<ContentFormat>('markdown');
+  const [contentFormat, setContentFormat] = useState<ContentFormat>('markdown');
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
   const [seoOpen, setSeoOpen] = useState(false);
   const [publishOtp, setPublishOtp] = useState<{ challengeId: string; debugCode?: string } | null>(null);
@@ -96,6 +98,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
     DEFAULT_ARTICLE_COMMENTS_SETTINGS
   );
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewHtml, setPreviewHtml] = useState<string | undefined>();
   const [loadedCreatedAt, setLoadedCreatedAt] = useState<string | undefined>();
   const [loadedUpdatedAt, setLoadedUpdatedAt] = useState<string | undefined>();
 
@@ -125,6 +128,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
       const preferred: EditorMode =
         settings.editor?.defaultEditor === 'wysiwyg' ? 'wysiwyg' : 'markdown';
       setEditorMode(preferred);
+      setContentFormat(preferred === 'wysiwyg' ? 'tiptap_json' : 'markdown');
     }
   }, [isNew, settings.editor?.defaultEditor]);
 
@@ -148,9 +152,25 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
     if (mode === editorMode) return;
     const converted = convertForModeSwitch(content, editorMode, mode);
     setContent(converted);
-    setContentFormat(mode === 'wysiwyg' ? 'html' : 'markdown');
+    setContentFormat(mode === 'wysiwyg' ? 'tiptap_json' : 'markdown');
     setEditorMode(mode);
   };
+
+  const handleEditorImageUpload = useCallback(
+    async (file: File): Promise<{ url: string; alt?: string } | null> => {
+      const result = await uploadMedia(file, file.name, 'editor');
+      if (!result.ok) {
+        toast.error(result.error);
+        return null;
+      }
+
+      return {
+        url: resolvePublicMediaUrl(result.media.url),
+        alt: result.media.altText || file.name,
+      };
+    },
+    [toast]
+  );
 
   useEffect(() => {
     if (!isNew && slug) {
@@ -424,13 +444,21 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
 
   const previewDraft = useMemo(() => {
     const stored = storagePayloadFromEditor(content, editorMode);
+    const html =
+      previewHtml ??
+      (stored.contentFormat === 'html'
+        ? stored.content
+        : editorMode === 'wysiwyg'
+          ? undefined
+          : markdownToHtml(content));
+
     return {
       type,
       title,
       slug: editSlug || slugifyTitle(title) || 'preview',
       template,
-      content: stored.contentFormat === 'html' ? '' : stored.content,
-      html: stored.contentFormat === 'html' ? stored.content : undefined,
+      content: stored.contentFormat === 'html' || stored.contentFormat === 'tiptap_json' ? '' : stored.content,
+      html,
       author: user?.name || 'Redakcia',
       tags: seo.tags
         .split(',')
@@ -446,6 +474,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
     editorMode,
     loadedCreatedAt,
     loadedUpdatedAt,
+    previewHtml,
     seo.seoDescription,
     seo.tags,
     template,
@@ -536,7 +565,14 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         onEditorProfileChange={setEditorProfile}
         onCancel={() => navigate(type === 'article' ? '/articles' : '/pages')}
         onSave={() => void handleSave()}
-        onOpenPreview={() => setPreviewOpen(true)}
+        onOpenPreview={() => {
+          setPreviewHtml(
+            editorMode === 'wysiwyg'
+              ? wysiwygRef.current?.getHtml()
+              : markdownToHtml(content)
+          );
+          setPreviewOpen(true);
+        }}
         articleComments={type === 'article' ? articleComments : undefined}
         onArticleCommentsChange={type === 'article' ? setArticleComments : undefined}
         globalCommentsRequireApproval={settings.comments?.requireApproval !== false}
@@ -559,9 +595,11 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
           <WysiwygEditor
             ref={wysiwygRef}
             value={content}
+            storedFormat={contentFormat}
             onChange={setContent}
             readOnly={!canEdit}
             onPickMedia={() => setMediaPickerOpen(true)}
+            onUploadImage={handleEditorImageUpload}
             profile={editorProfileDefinition}
             onBlockedAction={(message) => toast.warning(message)}
           />

@@ -5,8 +5,8 @@
 
 **Aktuálne hotové:** It.1–24 ✅ · It.26–28 ✅ · It.25 ⏳ (setup wizard — odložené)
 
-**Ďalšia iterácia:** [It.55](ITERATION_55.md) (Tiptap JSON + media upload)  
-**Posledná:** [It.53 Smooth SPA reload](ITERATION_53.md) — **2.0.39**
+**Ďalšia iterácia:** [It.56](ITERATION_56.md) (rich navigation menu items)  
+**Posledná:** [It.55 Tiptap JSON + upload](ITERATION_55.md) — **2.0.43**
 
 **Incidenty a opravy:** [ISSUES.md](ISSUES.md)
 
@@ -29,8 +29,8 @@
 | **51** | **2.0.32** | **[Live preview + tagy + blog štítky](ITERATION_51.md)** | **✅** | SitePreviewModal, reading time, date badges |
 | **52** | **2.0.36** | **[Dashboard v2 + kontakt](ITERATION_52.md)** | **✅** | It.52a–c complete |
 | **53** | **2.0.39** | **[Smooth SPA reload](ITERATION_53.md)** | **✅** | React Query cache, scroll restore, skeletons |
-| **54** | **2.0.41** | **[Modular MD + WYSIWYG profiles](ITERATION_54.md)** | **🔴** | ✅ It.15 · Tiptap |
-| **55** | TBD | **[Tiptap JSON + media upload](ITERATION_55.md)** | **🔴** | ⛔ It.15 + It.54 |
+| **54** | **2.0.42** | **[Modular MD + WYSIWYG profiles](ITERATION_54.md)** | **✅** | It.15 · Tiptap |
+| **55** | **2.0.43** | **[Tiptap JSON + media upload](ITERATION_55.md)** | **✅** | WYSIWYG JSON + BE render + upload |
 | **56** | TBD | **[Rich navigation items](ITERATION_56.md)** | **🟡** | ⛔ po It.15 |
 | **57** | TBD | **[Auto tags & description](ITERATION_57.md)** | **🟡** | ⛔ po It.15 |
 | **58** | TBD | **[Page layout builder + color schemes](ITERATION_58.md)** | **🟡** | ⛔ po It.15 · layout + 5 presetov, preview, light/dark/system |

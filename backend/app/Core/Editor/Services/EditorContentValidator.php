@@ -39,13 +39,15 @@ final class EditorContentValidator
         ]));
 
         $format = (string) ($payload['contentFormat'] ?? $frontMatter['contentFormat'] ?? 'markdown');
-        if (!in_array($format, ['markdown', 'html'], true)) {
+        if (!in_array($format, ['markdown', 'html', 'tiptap_json'], true)) {
             $format = str_starts_with(trim($content), '<') ? 'html' : 'markdown';
         }
 
-        return $format === 'html'
-            ? $this->validateHtml($content, $profile->capabilities)
-            : $this->validateMarkdown($content, $profile->capabilities);
+        return match ($format) {
+            'html' => $this->validateHtml($content, $profile->capabilities),
+            'tiptap_json' => $this->validateTiptapJson($content, $profile->capabilities),
+            default => $this->validateMarkdown($content, $profile->capabilities),
+        };
     }
 
     private function validateMarkdown(string $content, EditorCapabilities $caps): ?string
@@ -147,6 +149,76 @@ final class EditorContentValidator
 
         if (str_contains($lower, '<iframe') || str_contains($lower, '<script')) {
             return 'Profil editora nepovoľuje vložené skripty alebo iframe.';
+        }
+
+        return null;
+    }
+
+    private function validateTiptapJson(string $content, EditorCapabilities $caps): ?string
+    {
+        $decoded = json_decode($content, true);
+        if (!is_array($decoded)) {
+            return 'Neplatný Tiptap JSON dokument.';
+        }
+
+        if (($decoded['type'] ?? '') !== 'doc') {
+            return 'Tiptap JSON musí mať koreň typu doc.';
+        }
+
+        return $this->validateTiptapNode($decoded, $caps);
+    }
+
+    /**
+     * @param array<string, mixed> $node
+     */
+    private function validateTiptapNode(array $node, EditorCapabilities $caps): ?string
+    {
+        $type = (string) ($node['type'] ?? '');
+
+        $error = match ($type) {
+            'image' => $caps->allows('image') ? null : 'Profil editora nepovoľuje obrázky.',
+            'table', 'tableRow', 'tableHeader', 'tableCell' => $caps->allows('table') ? null : 'Profil editora nepovoľuje tabuľky.',
+            'codeBlock' => $caps->allows('codeBlock') ? null : 'Profil editora nepovoľuje bloky kódu.',
+            'heading' => $caps->allows('heading') ? null : 'Profil editora nepovoľuje nadpisy.',
+            'bulletList', 'listItem' => $caps->allows('bulletList') ? null : 'Profil editora nepovoľuje odrážkové zoznamy.',
+            'orderedList' => $caps->allows('orderedList') ? null : 'Profil editora nepovoľuje číslované zoznamy.',
+            'blockquote' => $caps->allows('blockquote') ? null : 'Profil editora nepovoľuje citácie.',
+            'horizontalRule' => $caps->allows('horizontalRule') ? null : 'Profil editora nepovoľuje horizontálne čiary.',
+            default => null,
+        };
+
+        if ($error !== null) {
+            return $error;
+        }
+
+        if ($type === 'text' && is_array($node['marks'] ?? null)) {
+            foreach ($node['marks'] as $mark) {
+                if (!is_array($mark)) {
+                    continue;
+                }
+                $markType = (string) ($mark['type'] ?? '');
+                if ($markType === 'link' && !$caps->allows('link')) {
+                    return 'Profil editora nepovoľuje odkazy.';
+                }
+                if ($markType === 'code' && !$caps->allows('code')) {
+                    return 'Profil editora nepovoľuje inline kód.';
+                }
+            }
+        }
+
+        $children = $node['content'] ?? [];
+        if (!is_array($children)) {
+            return null;
+        }
+
+        foreach ($children as $child) {
+            if (!is_array($child)) {
+                continue;
+            }
+            $childError = $this->validateTiptapNode($child, $caps);
+            if ($childError !== null) {
+                return $childError;
+            }
         }
 
         return null;

@@ -1,6 +1,6 @@
 # PaginiumCMS – API Reference
 
-> **Version:** 2.0.26 · **Contract:** [API_CONTRACT.md](API_CONTRACT.md)
+> **Version:** 2.0.43 · **Contract:** [API_CONTRACT.md](API_CONTRACT.md)
 
 Canonical JSON shapes: `{ success, data?, error?, errors?, meta? }`. Auth endpoints use a **legacy flat envelope** (`user` at root) — see API_CONTRACT §2.6. WAF blocks may return plain **403** — see §2.8.
 
@@ -105,6 +105,19 @@ Canonical JSON shapes: `{ success, data?, error?, errors?, meta? }`. Auth endpoi
 ```json
 { "success": false, "error": "…", "conflict": { } }
 ```
+
+### Content write payload (It.55)
+
+`POST/PUT /api/pages`, `/api/articles` accept:
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `content` | string | Markdown, HTML, or Tiptap JSON string |
+| `contentFormat` | `markdown` \| `html` \| `tiptap_json` | Default inferred from body |
+| `editorProfile` | string | It.54 profile id (company, blog, minimal, developer) |
+| `editorMode` | `markdown` \| `wysiwyg` | UI hint persisted in front matter |
+
+Read responses include rendered `html` for public display when `contentFormat` is `markdown` or `tiptap_json`.
 
 ---
 

@@ -119,6 +119,29 @@ export const authApi = {
     return { user, expired: false };
   },
 
+  /**
+   * Cookie zo Set-Cookie pri login-e nemusí byť okamžite v ďalšom XHR (race).
+   * Krátke retry odstraňuje falošné „2× prihlásenie“.
+   */
+  probeSessionWithRetry: async (
+    maxAttempts = 4,
+    delayMs = 80
+  ): Promise<{ user: User | null; expired: boolean }> => {
+    let last: { user: User | null; expired: boolean } = { user: null, expired: false };
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      last = await authApi.probeSession();
+      if (last.user) {
+        return last;
+      }
+      if (attempt < maxAttempts - 1) {
+        await new Promise((resolve) => window.setTimeout(resolve, delayMs * (attempt + 1)));
+      }
+    }
+
+    return last;
+  },
+
   changePassword: async (oldPassword: string, newPassword: string): Promise<boolean> => {
     const res = await apiClient.post('/api/auth/change-password', {
       old_password: oldPassword,

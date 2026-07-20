@@ -60,6 +60,8 @@ use PaginiumCMS\Core\Drafts\Contracts\DraftManagerInterface;
 use PaginiumCMS\Core\Drafts\Services\DraftManager;
 use PaginiumCMS\Core\Editor\Services\EditorContentValidator;
 use PaginiumCMS\Core\Editor\Services\EditorProfileService;
+use PaginiumCMS\Core\Editor\Services\TiptapHtmlRenderer;
+use PaginiumCMS\Core\Editor\Services\ContentBodyRenderer;
 use PaginiumCMS\Core\FlatFile\Services\ContentRepository;
 use PaginiumCMS\Core\FlatFile\Services\ContentIndexService;
 use PaginiumCMS\Core\FlatFile\Services\JsonContentStorage;
@@ -174,15 +176,21 @@ return [
     // FlatFile content stack
     FrontMatterParserInterface::class => create(FrontMatterParser::class),
     MarkdownContentParserInterface::class => create(MarkdownContentParser::class),
+    TiptapHtmlRenderer::class => create(TiptapHtmlRenderer::class),
+    ContentBodyRenderer::class => create(ContentBodyRenderer::class)
+        ->constructor(
+            get(MarkdownContentParserInterface::class),
+            get(TiptapHtmlRenderer::class)
+        ),
     MarkdownParserInterface::class => create(MarkdownParser::class)
         ->constructor(
             get(FrontMatterParserInterface::class),
-            get(MarkdownContentParserInterface::class)
+            get(ContentBodyRenderer::class)
         ),
     MarkdownContentStorage::class => create(MarkdownContentStorage::class)
         ->constructor(get(MarkdownParserInterface::class)),
     JsonContentStorage::class => create(JsonContentStorage::class)
-        ->constructor(get(MarkdownContentParserInterface::class)),
+        ->constructor(get(ContentBodyRenderer::class)),
     ContentIndexService::class => create(ContentIndexService::class)
         ->constructor(
             get(FileReaderInterface::class),

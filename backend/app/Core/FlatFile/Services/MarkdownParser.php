@@ -6,7 +6,7 @@ namespace PaginiumCMS\Core\FlatFile\Services;
 
 use PaginiumCMS\Core\FlatFile\Contracts\MarkdownParserInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FrontMatterParserInterface;
-use PaginiumCMS\Core\FlatFile\Contracts\MarkdownContentParserInterface;
+use PaginiumCMS\Core\Editor\Services\ContentBodyRenderer;
 
 /**
  * Kompletný parser pre Markdown súbory s Front Matter.
@@ -16,14 +16,14 @@ use PaginiumCMS\Core\FlatFile\Contracts\MarkdownContentParserInterface;
 class MarkdownParser implements MarkdownParserInterface
 {
     private FrontMatterParserInterface $frontMatterParser;
-    private MarkdownContentParserInterface $contentParser;
+    private ContentBodyRenderer $bodyRenderer;
 
     public function __construct(
         FrontMatterParserInterface $frontMatterParser,
-        MarkdownContentParserInterface $contentParser
+        ContentBodyRenderer $bodyRenderer
     ) {
         $this->frontMatterParser = $frontMatterParser;
-        $this->contentParser = $contentParser;
+        $this->bodyRenderer = $bodyRenderer;
     }
 
     /**
@@ -33,11 +33,15 @@ class MarkdownParser implements MarkdownParserInterface
     {
         $frontMatter = $this->frontMatterParser->parse($content);
         $markdown = $this->frontMatterParser->extractContent($content);
+        $contentFormat = $this->bodyRenderer->normalizeContentFormat(
+            $frontMatter['contentFormat'] ?? null,
+            $markdown
+        );
 
         return [
             'frontMatter' => $frontMatter,
             'content' => $markdown,
-            'html' => $this->contentParser->parse($markdown),
+            'html' => $this->bodyRenderer->resolveHtml($markdown, $contentFormat),
         ];
     }
 
@@ -71,6 +75,6 @@ class MarkdownParser implements MarkdownParserInterface
      */
     public function toHtml(string $markdown): string
     {
-        return $this->contentParser->parse($markdown);
+        return $this->bodyRenderer->resolveHtml($markdown, 'markdown');
     }
 }

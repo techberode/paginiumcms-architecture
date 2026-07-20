@@ -6,7 +6,7 @@ marked.setOptions({
   breaks: true,
 });
 
-export type ContentFormat = 'markdown' | 'html';
+export type ContentFormat = 'markdown' | 'html' | 'tiptap_json';
 export type EditorMode = 'markdown' | 'wysiwyg';
 
 let turndown: TurndownService | null = null;
@@ -32,12 +32,46 @@ export function looksLikeHtml(content: string): boolean {
   return /<\/?[a-z][\s\S]*>/i.test(trimmed);
 }
 
+export function looksLikeTiptapJson(content: string): boolean {
+  const trimmed = content.trim();
+  if (!trimmed.startsWith('{')) {
+    return false;
+  }
+
+  try {
+    const parsed = JSON.parse(trimmed) as { type?: string };
+    return parsed.type === 'doc';
+  } catch {
+    return false;
+  }
+}
+
 export function inferContentFormat(content: string, frontMatterFormat?: unknown): ContentFormat {
-  if (frontMatterFormat === 'html' || frontMatterFormat === 'markdown') {
+  if (
+    frontMatterFormat === 'html' ||
+    frontMatterFormat === 'markdown' ||
+    frontMatterFormat === 'tiptap_json'
+  ) {
     return frontMatterFormat;
   }
 
+  if (looksLikeTiptapJson(content)) {
+    return 'tiptap_json';
+  }
+
   return looksLikeHtml(content) ? 'html' : 'markdown';
+}
+
+export function parseTiptapDocument(value: string): Record<string, unknown> | string {
+  if (!looksLikeTiptapJson(value)) {
+    return value;
+  }
+
+  try {
+    return JSON.parse(value) as Record<string, unknown>;
+  } catch {
+    return value;
+  }
 }
 
 export function markdownToHtml(markdown: string): string {
@@ -62,10 +96,22 @@ export function valueForEditorMode(
   mode: EditorMode
 ): string {
   if (mode === 'wysiwyg') {
-    return storedFormat === 'html' ? rawContent : markdownToHtml(rawContent);
+    if (storedFormat === 'tiptap_json' || storedFormat === 'html') {
+      return rawContent;
+    }
+
+    return markdownToHtml(rawContent);
   }
 
-  return storedFormat === 'html' ? htmlToMarkdown(rawContent) : rawContent;
+  if (storedFormat === 'html') {
+    return htmlToMarkdown(rawContent);
+  }
+
+  if (storedFormat === 'tiptap_json') {
+    return htmlToMarkdown(rawContent);
+  }
+
+  return rawContent;
 }
 
 export function convertForModeSwitch(
@@ -78,7 +124,15 @@ export function convertForModeSwitch(
   }
 
   if (to === 'wysiwyg') {
-    return looksLikeHtml(currentValue) ? currentValue : markdownToHtml(currentValue);
+    if (looksLikeTiptapJson(currentValue) || looksLikeHtml(currentValue)) {
+      return currentValue;
+    }
+
+    return markdownToHtml(currentValue);
+  }
+
+  if (looksLikeTiptapJson(currentValue)) {
+    return currentValue;
   }
 
   return looksLikeHtml(currentValue) ? htmlToMarkdown(currentValue) : currentValue;
@@ -88,9 +142,17 @@ export function storagePayloadFromEditor(
   editorValue: string,
   mode: EditorMode
 ): { content: string; contentFormat: ContentFormat } {
+  if (mode === 'wysiwyg') {
+    if (looksLikeHtml(editorValue) && !looksLikeTiptapJson(editorValue)) {
+      return { content: editorValue, contentFormat: 'html' };
+    }
+
+    return { content: editorValue, contentFormat: 'tiptap_json' };
+  }
+
   return {
     content: editorValue,
-    contentFormat: mode === 'wysiwyg' ? 'html' : 'markdown',
+    contentFormat: 'markdown',
   };
 }
 
