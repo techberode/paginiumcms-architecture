@@ -38,6 +38,8 @@ export interface PaginationMeta {
   per_page: number;
   total: number;
   total_pages: number;
+  tags?: string[];
+  total_published?: number;
 }
 
 export interface PaginatedResponse<T> extends ApiResponse<T[]> {

@@ -38,12 +38,59 @@ final class PaginationQuery
         $search = trim((string) ($params['search'] ?? $params['q'] ?? ''));
         $sort = trim((string) ($params['sort'] ?? '-updatedAt'));
 
+        return new self($page, $perPage, $search, $sort, self::extractFilters($params));
+    }
+
+    /**
+     * @param array<string, mixed> $params
+     * @return array<string, string>
+     */
+    public static function extractFilters(array $params): array
+    {
         $filters = [];
+
         if (!empty($params['status'])) {
             $filters['status'] = (string) $params['status'];
         }
 
-        return new self($page, $perPage, $search, $sort, $filters);
+        $tag = self::readFilterValue($params, 'tag');
+        if ($tag !== '') {
+            $filters['tag'] = $tag;
+        }
+
+        $author = self::readFilterValue($params, 'author');
+        if ($author !== '') {
+            $filters['author'] = $author;
+        }
+
+        $dateFrom = self::readFilterValue($params, 'date_from');
+        if ($dateFrom !== '') {
+            $filters['date_from'] = $dateFrom;
+        }
+
+        $dateTo = self::readFilterValue($params, 'date_to');
+        if ($dateTo !== '') {
+            $filters['date_to'] = $dateTo;
+        }
+
+        return $filters;
+    }
+
+    /**
+     * @param array<string, mixed> $params
+     */
+    private static function readFilterValue(array $params, string $key): string
+    {
+        $nested = $params['filter'] ?? null;
+        if (is_array($nested) && !empty($nested[$key])) {
+            return trim((string) $nested[$key]);
+        }
+
+        if (!empty($params[$key])) {
+            return trim((string) $params[$key]);
+        }
+
+        return '';
     }
 
     public function cacheKeySuffix(): string

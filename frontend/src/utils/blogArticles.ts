@@ -2,6 +2,18 @@ import type { Article } from '../api/types';
 
 export type BlogSort = 'newest' | 'oldest' | 'title';
 
+export function blogSortToApiSort(sort: BlogSort): string {
+  switch (sort) {
+    case 'oldest':
+      return 'createdAt';
+    case 'title':
+      return 'title';
+    case 'newest':
+    default:
+      return '-createdAt';
+  }
+}
+
 export function parseBlogSort(value: string | null): BlogSort {
   if (value === 'oldest' || value === 'title') {
     return value;

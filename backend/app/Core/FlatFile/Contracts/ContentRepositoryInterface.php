@@ -86,4 +86,15 @@ interface ContentRepositoryInterface
      * @return array{items: array<int, Article>, total: int}
      */
     public function findArticlesPaginated(PaginationQuery $query): array;
+
+    /**
+     * @param array<string, string> $filters
+     * @return list<string>
+     */
+    public function listDistinctTags(string $type, array $filters = []): array;
+
+    /**
+     * @param array<string, string> $filters
+     */
+    public function countIndexed(string $type, array $filters = []): int;
 }

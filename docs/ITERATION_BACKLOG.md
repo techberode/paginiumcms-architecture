@@ -5,7 +5,7 @@
 
 **Aktuálne hotové:** It.1–24 ✅ · It.26–28 ✅ · It.25 ⏳ (setup wizard — odložené)
 
-**Ďalšia iterácia:** [It.44 BE](ITERATION_44.md) / [It.15](ITERATION_15.md) ⏳  
+**Ďalšia iterácia:** [It.15](ITERATION_15.md) ⏳ (gate pre It.53–58)  
 **Po It.15 (plánované, bez implementácie):** [It.53–58 Editor & UX wave](ITERATION_WAVE_POST_15.md) ⛔
 
 **Incidenty a opravy:** [ISSUES.md](ISSUES.md)
@@ -24,7 +24,7 @@
 | **41** | TBD | **Email OTP schvaľovanie** | **✅** | Registrácia, komentáre, publikácia – zap/vyp v admin |
 | **42** | TBD | **Admin počty položiek** | **✅** | Sidebar badges cez `/api/admin/counts` |
 | **43** | **Unreleased** | **Pokročilé vyhľadávanie (FE + BE)** | **✅** | Command palette `Ctrl+K`, scoped `/api/search` — [ITERATION_43.md](ITERATION_43.md) |
-| **44** | **2.0.32** | **Filtre, blog pagination, prev/next** | **✅ FE** | [ITERATION_44.md](ITERATION_44.md) — It.44c hotové; BE filtre ⏳ |
+| **44** | **2.0.37** | **Filtre, blog pagination, prev/next** | **✅** | [ITERATION_44.md](ITERATION_44.md) — complete (FE + BE) |
 | **45** | TBD | **[Redis – voliteľná infra](ITERATION_45.md)** | **🔵** | Absorbované do **It.49** |
 | **51** | **2.0.32** | **[Live preview + tagy + blog štítky](ITERATION_51.md)** | **✅** | SitePreviewModal, reading time, date badges |
 | **52** | **2.0.36** | **[Dashboard v2 + kontakt](ITERATION_52.md)** | **✅** | It.52a–c complete |
@@ -33,7 +33,7 @@
 | **55** | TBD | **[Tiptap JSON + media upload](ITERATION_55.md)** | **🔴** | ⛔ It.15 + It.54 |
 | **56** | TBD | **[Rich navigation items](ITERATION_56.md)** | **🟡** | ⛔ po It.15 |
 | **57** | TBD | **[Auto tags & description](ITERATION_57.md)** | **🟡** | ⛔ po It.15 |
-| **58** | TBD | **[Page layout builder](ITERATION_58.md)** | **🟡** | ⛔ po It.15 · najväčší slice |
+| **58** | TBD | **[Page layout builder + color schemes](ITERATION_58.md)** | **🟡** | ⛔ po It.15 · layout + 5 presetov, preview, light/dark/system |
 | 15 | TBD | **[External plugins](ITERATION_15.md)** | **🔴** | **Blokátor pre It.53–58** |
 | **47** | TBD | **[Notification connector auth](ITERATION_47.md)** | **✅** | ntfy Bearer/Basic + test-connector |
 | **48** | TBD | **[PHP templates + static/dynamic web](ITERATION_48.md)** | **🟡** | Front matter šablóny, JSON/INI meta, static HTML |
@@ -242,7 +242,8 @@ Konzistentné filtrovanie a sort naprieč zoznamami. **Prvá dodávka (It.44a):*
 | Admin FilterBar + URL sync (pages/articles) | ✅ It.44b |
 | `ui.openLinksInNewTab` setting | ✅ default false (same tab) |
 | Admin FilterBar + URL sync (media, comments, trash) | ✅ It.44c |
-| Backend `filter[tag]`, author, date | ⏳ It.44 backend |
+| Backend `filter[tag]`, author, date | ✅ It.44d (2.0.37) |
+| Server-side public blog API | ✅ It.44d |
 
 ---
 
@@ -337,7 +338,7 @@ Implementácia **až po dokončení It.15**. Prehľad: [ITERATION_WAVE_POST_15.m
 | 55 | Tiptap JSON → flat-file + upload obrázkov |
 | 56 | Menu: popis, ikona, hover náhľad |
 | 57 | Generátor tagov a popisu |
-| 58 | Layout builder (5 šablón, bloky) |
+| 58 | Layout builder (5 šablón, bloky) + farebné schémy & appearance |
 
 ---
 

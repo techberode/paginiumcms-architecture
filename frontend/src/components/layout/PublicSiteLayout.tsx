@@ -101,6 +101,9 @@ export const PublicSiteLayout: React.FC = () => {
       if (article) {
         return { type: 'article', slug: article.slug, title: article.title };
       }
+      if (articleSlug) {
+        return { type: 'article', slug: articleSlug, title: articleSlug };
+      }
     }
     if (pathname === '/') {
       const home = getPageBySlug('home') ?? getPageBySlug('index');

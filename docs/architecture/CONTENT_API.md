@@ -21,7 +21,9 @@ No `page` or `per_page` query param → returns full array without `meta`.
 
 ### Paginated mode
 
-Query: `?page=1&per_page=20&status=published&search=blog&sort=-updatedAt`
+Query: `?page=1&per_page=20&status=published&search=blog&sort=-updatedAt&tag=news&author=John&date_from=2026-01-01&date_to=2026-12-31`
+
+Alternatíva pre filtre: `filter[tag]=news`, `filter[author]=John`, `filter[date_from]=…`
 
 ```json
 {
@@ -31,7 +33,9 @@ Query: `?page=1&per_page=20&status=published&search=blog&sort=-updatedAt`
     "page": 1,
     "per_page": 20,
     "total": 143,
-    "total_pages": 8
+    "total_pages": 8,
+    "tags": ["news", "php"],
+    "total_published": 143
   }
 }
 ```
@@ -41,8 +45,11 @@ Query: `?page=1&per_page=20&status=published&search=blog&sort=-updatedAt`
 | `page` | 1 | min 1 |
 | `per_page` / `perPage` | from `content.itemsPerPage` (20) | max 100 |
 | `status` | — | `draft`, `published`, `archived` |
+| `tag` / `filter[tag]` | — | exact tag match (articles) |
+| `author` / `filter[author]` | — | author substring |
+| `date_from` / `date_to` | — | ISO date, filters `createdAt` / FM `date` |
 | `search` | — | min 2 chars, matches title/slug/excerpt/tags |
-| `sort` | `-updatedAt` | prefix `-` = descending |
+| `sort` | `-updatedAt` | prefix `-` = descending; blog: `-createdAt`, `createdAt`, `title` |
 
 ### Public access rules
 

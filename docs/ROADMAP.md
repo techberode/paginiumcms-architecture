@@ -6,7 +6,7 @@
 
 Legenda: ✅ hotové · 🚧 rozpracované · ⏳ plánované · 🔴 kritická priorita jadra
 
-**Aktuálna verzia:** 2.0.36 · **Posledná iterácia:** [It.52](ITERATION_52.md) ✅ · **Ďalšia:** [It.44 BE](ITERATION_44.md) / [It.15](ITERATION_15.md) ⏳ · **Potom:** [It.53–58 wave](ITERATION_WAVE_POST_15.md) ⛔ až po It.15
+**Aktuálna verzia:** 2.0.37 · **Posledná iterácia:** [It.44](ITERATION_44.md) ✅ · **Ďalšia:** [It.15](ITERATION_15.md) ⏳ · **Potom:** [It.53–58 wave](ITERATION_WAVE_POST_15.md) ⛔ až po It.15
 
 
 | Iterácia | Názov                                                         | Priorita                             |
@@ -25,7 +25,7 @@ Legenda: ✅ hotové · 🚧 rozpracované · ⏳ plánované · 🔴 kritická 
 | 42       | Admin sidebar counts + list controls                          | ✅                                    |
 | **50**   | **[In-App Micro Firewall (WAF)](ITERATION_50.md)**            | **✅ 2.0.26**                         |
 | **43**   | **Pokročilé vyhľadávanie (FE + BE, rýchle skoky v kontexte)** | **⏳**                                |
-| **44**   | **Filtre, blog pagination, admin URL sync**                     | **✅ 2.0.31** ([ITERATION_44.md](ITERATION_44.md)) |
+| **44**   | **Filtre, blog pagination, admin URL sync + BE**                | **✅ 2.0.37** ([ITERATION_44.md](ITERATION_44.md)) |
 | **45**   | **[Redis driver detail](ITERATION_45.md)**                    | **🔵 → It.49**                       |
 | **46**   | **[Server metrics agent](ITERATION_46.md)**                   | **⏳ doplnok It.7**                   |
 | **47**   | **[Notification connector auth](ITERATION_47.md)**            | **⏳ ntfy token / test**              |

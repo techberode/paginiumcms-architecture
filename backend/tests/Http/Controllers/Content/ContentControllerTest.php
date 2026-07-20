@@ -68,6 +68,26 @@ class ContentControllerTest extends TestCase
         }
     }
 
+    public function testPublicListArticlesPaginatedIncludesTagMeta(): void
+    {
+        $response = $this->handleRequest(
+            $this->createJsonRequest('GET', '/api/articles?page=1&per_page=10&tag=news')
+        );
+        $data = $this->getJsonResponse($response);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertTrue($data['success']);
+        $this->assertArrayHasKey('meta', $data);
+        $this->assertArrayHasKey('tags', $data['meta']);
+        $this->assertArrayHasKey('total_published', $data['meta']);
+        $this->assertIsArray($data['meta']['tags']);
+
+        foreach ($data['data'] as $item) {
+            $this->assertSame('published', $item['status'] ?? null);
+            $this->assertContains('news', $item['tags'] ?? []);
+        }
+    }
+
     public function testPublicGetUnknownPageReturns404(): void
     {
         $public = $this->handleRequest(

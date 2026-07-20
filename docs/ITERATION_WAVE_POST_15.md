@@ -1,7 +1,7 @@
 # Post–Iteration 15 wave: Editor, navigation & layout
 
 **Status:** ⏳ Planned — **no implementation until [It.15](ITERATION_15.md) is ✅**  
-**Current release:** 2.0.36 · Last shipped: [It.52](ITERATION_52.md)
+**Current release:** 2.0.37 · Last shipped: [It.44d](ITERATION_44.md)
 
 ## Gate rule
 
@@ -23,7 +23,7 @@ It.15 PluginManager ✅ (prerequisite)
     │
     ├── It.57  Auto tags & description generator
     │
-    └── It.58  Page layout builder (5 templates, header/footer/body blocks)
+    └── It.58  Page layout builder (5 templates) + color schemes & appearance
 ```
 
 ## Iteration index
@@ -58,6 +58,7 @@ Each iteration: `./scripts/iteration-gate.sh` → docs → release C&P (per `.cu
 | Popis + ikona/obrázok menu, hover náhľad | It.56 |
 | Generátor tagov a popisu z obsahu | It.57 |
 | Editor vzhľadu / bloky ako Joomla (bez porušenia flat-file) | It.58 |
+| Predvolené farebné schémy + náhľad + light/dark/system | It.58 |
 
 ## Related backlog items
 

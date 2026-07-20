@@ -30,6 +30,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.52a — Dashboard KPI + overview API | **2.0.34** | [below](#2034--2026-07-20) |
 | It.52b — Contact form subjects (tests + contract) | **2.0.35** | [below](#2035--2026-07-20) |
 | It.52 — Dashboard v2, contact & company (complete) | **2.0.36** | [below](#2036--2026-07-20) |
+| It.44d — Content API filters + server-side public blog | **2.0.37** | [below](#2037--2026-07-20) |
+
+---
+
+## [2.0.37] – 2026-07-20
+
+**Iteration 44d** — backend filtre a server-side verejný blog.
+Detail: [ITERATION_44.md](docs/ITERATION_44.md).
+
+### Added
+
+- Content index filters: `tag`, `author`, `date_from` / `date_to` (`filter[…]` aj flat query)
+- Paginated `GET /api/articles` meta: `tags[]`, `total_published`
+- `BlogRenderer` — list/detail cez API; `PublicSiteContext` už nenačítava všetky články pri boote
+- `blogSortToApiSort()` — mapovanie `newest` / `oldest` / `title` → API `sort`
+
+### Fixed
+
+- Content index `createdAt` pre články preferuje front matter `date` (zhoda s blog sortom)
 
 ---
 
