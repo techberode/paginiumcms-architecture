@@ -36,6 +36,11 @@ final class AdminRouteCatalog
             ['id' => 'users', 'title' => 'Používatelia', 'path' => '/users', 'keywords' => 'users pouzivatelia accounts', 'adminOnly' => true],
             ['id' => 'account-security', 'title' => 'Bezpečnosť účtu', 'path' => '/account/security', 'keywords' => '2fa password security', 'adminOnly' => false],
             ['id' => 'settings', 'title' => 'Nastavenia', 'path' => '/settings', 'keywords' => 'settings nastavenia smtp config', 'adminOnly' => false],
+            ['id' => 'security-audit', 'title' => 'Bezpeč. audit', 'path' => '/security/audit', 'keywords' => 'security audit bezpecnost', 'adminOnly' => true],
+            ['id' => 'security-acl', 'title' => 'ACL pravidlá', 'path' => '/security/acl', 'keywords' => 'acl pravidla permissions', 'adminOnly' => true],
+            ['id' => 'blueprints', 'title' => 'Blueprinty', 'path' => '/blueprints', 'keywords' => 'blueprints sablony', 'adminOnly' => true],
+            ['id' => 'demo', 'title' => 'Demo modul', 'path' => '/demo', 'keywords' => 'demo modul test', 'adminOnly' => true],
+            ['id' => 'developer-logs', 'title' => 'Developer logy', 'path' => '/developer/logs', 'keywords' => 'developer logs debug', 'adminOnly' => true],
         ];
     }
 }

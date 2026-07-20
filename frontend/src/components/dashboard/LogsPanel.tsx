@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { ScrollText } from 'lucide-react';
 import type { LogSeverity } from '../../api/logs';
 import { LOG_SEVERITY_COLORS, LOG_SEVERITY_LABELS } from '../../api/logs';
+import { logsSeverityPath } from '../../utils/adminDeepLinks';
 
 interface LogsPanelProps {
   bySeverity: Partial<Record<LogSeverity, number>>;
@@ -35,7 +36,7 @@ export const LogsPanel: React.FC<LogsPanelProps> = ({ bySeverity, hours = 24 }) 
           {ORDER.map((severity) => (
             <Link
               key={severity}
-              to={`/logs?severity=${severity}`}
+              to={logsSeverityPath(severity)}
               className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${LOG_SEVERITY_COLORS[severity]}`}
             >
               {LOG_SEVERITY_LABELS[severity]}

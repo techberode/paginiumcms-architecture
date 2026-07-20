@@ -40,10 +40,13 @@
 | File | Role |
 |---|---|
 | `api/settings.ts` | Typed admin + public settings API |
-| `components/backend/SettingsView.tsx` | Schema-driven admin form (supports `password` fields) |
+| `components/backend/SettingsView.tsx` | Schema-driven admin form (supports `password` fields); deep link `?group=` |
+| `utils/adminDeepLinks.ts` | Shareable admin paths (`settingsGroupPath`, …) |
 | `context/SettingsContext.tsx` | Global effective settings |
 | `context/NotificationContext.tsx` | Toast UI driven by `notifications` public settings |
 | `hooks/useToast.ts` | Shortcut for toast helpers |
+
+Deep links: [ADMIN_DEEP_LINKS.md](./ADMIN_DEEP_LINKS.md) (`/settings?group=logging`, audit content/user routes, log severity filters).
 
 ---
 

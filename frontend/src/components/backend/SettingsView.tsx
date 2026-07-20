@@ -1,6 +1,6 @@
 // frontend/src/components/backend/SettingsView.tsx
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -17,7 +17,22 @@ import { zodFromRules } from '../../validation/zodFromRules';
 import { applyApiValidationErrors } from '../../validation/mapApiErrors';
 import { CacheManagerPanel } from './CacheManagerPanel';
 
+function resolveRequestedSettingsGroup(
+  searchParams: URLSearchParams,
+  locationState: unknown
+): string {
+  const fromQuery = searchParams.get('group')?.trim() ?? '';
+  if (fromQuery) {
+    return fromQuery;
+  }
+
+  const fromState = (locationState as { group?: string } | null)?.group?.trim() ?? '';
+  return fromState;
+}
+
 export const SettingsView: React.FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
   const [schema, setSchema] = useState<SettingsSchema>({});
   const [values, setValues] = useState<SettingsValues>({});
   const [activeGroup, setActiveGroup] = useState<string>('');
@@ -56,7 +71,6 @@ export const SettingsView: React.FC = () => {
       if (payload) {
         setSchema(payload.schema);
         setValues(payload.values);
-        setActiveGroup((prev) => prev || Object.keys(payload.schema)[0] || '');
       } else {
         toastError('Nepodarilo sa načítať nastavenia');
       }
@@ -68,6 +82,27 @@ export const SettingsView: React.FC = () => {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    const groupKeys = Object.keys(schema);
+    if (!groupKeys.length) {
+      return;
+    }
+
+    const requested = resolveRequestedSettingsGroup(searchParams, location.state);
+    const nextGroup = requested && schema[requested] ? requested : groupKeys[0];
+
+    setActiveGroup((prev) => (prev === nextGroup ? prev : nextGroup));
+
+    if (nextGroup && searchParams.get('group') !== nextGroup) {
+      setSearchParams({ group: nextGroup }, { replace: true });
+    }
+  }, [location.state, schema, searchParams, setSearchParams]);
+
+  const selectGroup = (key: string) => {
+    setActiveGroup(key);
+    setSearchParams({ group: key }, { replace: true });
+  };
 
   const onSubmit = async (formValues: Record<string, unknown>) => {
     if (!activeGroup) return;
@@ -117,7 +152,7 @@ export const SettingsView: React.FC = () => {
           <button
             key={key}
             type="button"
-            onClick={() => setActiveGroup(key)}
+            onClick={() => selectGroup(key)}
             className={`px-4 py-2 -mb-px text-sm font-medium border-b-2 transition-colors ${
               activeGroup === key
                 ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'

@@ -26,6 +26,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | 2FA setup/login fixes, dev TOTP toggle, CI hotfix | **2.0.30** | [below](#2030--2026-07-19) |
 | It.44 blog pagination, admin filters, link target setting | **2.0.31** | [below](#2031--2026-07-20) |
 | It.44c URL sync, preview modal, reading time | **2.0.32** | [below](#2032--2026-07-20) |
+| Admin deep links (settings group, audit routes, Ctrl+K catalog) | **2.0.33** | [below](#2033--2026-07-20) |
+
+---
+
+## [2.0.33] – 2026-07-20
+
+Admin anchor / deep link fixes — FE↔BE alignment.
+Detail: [ADMIN_DEEP_LINKS.md](docs/architecture/ADMIN_DEEP_LINKS.md).
+
+### Fixed
+
+- **`AuditTrail`** — `/audit/content/:contentId` and `/audit/user/:userId` now read route params via `useParams()` (API was never called before)
+- **`SettingsView`** — respects `/settings?group={key}` and legacy `location.state.group`; syncs URL when switching tabs
+- **`LogsManager`** — bidirectional sync for `?severity=` (dashboard chips + browser navigation)
+- Cross-module links updated to shareable query URLs (Logs, Firewall, Scheduler, Notifications dashboard)
+
+### Added
+
+- **`frontend/src/utils/adminDeepLinks.ts`** — path helpers + unit tests
+- **`AdminRouteCatalog`** — missing sidebar routes: `/security/audit`, `/security/acl`, `/blueprints`, `/demo`, `/developer/logs`
+- Vitest: `SettingsView.test.tsx`, `AuditTrail.test.tsx`
 
 ---
 

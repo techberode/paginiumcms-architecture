@@ -13,6 +13,7 @@ import {
   ScheduledJob,
 } from '../../api/jobs';
 import { useToast } from '../../hooks/useToast';
+import { settingsGroupPath } from '../../utils/adminDeepLinks';
 
 export const SchedulerView: React.FC = () => {
   const [data, setData] = useState<JobsOverview | null>(null);
@@ -135,7 +136,7 @@ export const SchedulerView: React.FC = () => {
             </p>
           </div>
           <Link
-            to="/settings"
+            to={settingsGroupPath('scheduler')}
             className="inline-flex items-center gap-2 text-sm text-indigo-600 font-semibold hover:underline"
           >
             <Settings size={16} />
