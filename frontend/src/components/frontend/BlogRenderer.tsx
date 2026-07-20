@@ -1,8 +1,9 @@
 // frontend/src/components/frontend/BlogRenderer.tsx
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { usePublicSite } from '../../context/PublicSiteContext';
 import { useSettingsContext } from '../../context/SettingsContext';
+import apiClient, { type PaginationMeta } from '../../api/client';
+import { Article } from '../../api/types';
 import { MarkdownRenderer } from '../common/MarkdownRenderer';
 import { ArticleComments } from './ArticleComments';
 import {
@@ -20,10 +21,10 @@ import {
 import { resolveContentPreviewImage } from '../../utils/contentPreviewImage';
 import {
   buildBlogListPath,
+  blogSortToApiSort,
   getAdjacentArticles,
   parseBlogSort,
   resolveBlogItemsPerPage,
-  sortPublishedArticles,
   type BlogSort,
 } from '../../utils/blogArticles';
 import { formatContentDateLabels } from '../../utils/contentDates';
@@ -39,7 +40,6 @@ export const BlogRenderer: React.FC = () => {
   const { slug } = useParams<{ slug?: string }>();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { articles } = usePublicSite();
   const { settings } = useSettingsContext();
 
   const itemsPerPage = resolveBlogItemsPerPage(settings.content);
@@ -48,34 +48,117 @@ export const BlogRenderer: React.FC = () => {
   const sort = parseBlogSort(searchParams.get('sort'));
   const currentPage = Math.max(1, Number.parseInt(searchParams.get('page') ?? '1', 10) || 1);
 
-  const publishedArticles = useMemo(
-    () => sortPublishedArticles(articles.filter((article) => article.status === 'published'), sort),
-    [articles, sort]
-  );
+  const [listArticles, setListArticles] = useState<Article[]>([]);
+  const [listMeta, setListMeta] = useState<PaginationMeta | null>(null);
+  const [listLoading, setListLoading] = useState(false);
+  const [activeArticle, setActiveArticle] = useState<Article | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [navArticles, setNavArticles] = useState<Article[]>([]);
 
-  const allTags = useMemo(() => {
-    const tagsSet = new Set<string>();
-    publishedArticles.forEach((article) => article.tags?.forEach((tag) => tagsSet.add(tag)));
-    return Array.from(tagsSet).sort((a, b) => a.localeCompare(b, 'sk'));
-  }, [publishedArticles]);
-
-  const activeArticle = useMemo(() => {
-    if (!slug) {
-      return null;
+  useEffect(() => {
+    if (slug) {
+      return;
     }
-    return publishedArticles.find((article) => article.slug === slug) ?? null;
-  }, [slug, publishedArticles]);
 
-  const filteredArticles = selectedTag
-    ? publishedArticles.filter((article) => article.tags?.includes(selectedTag))
-    : publishedArticles;
+    let cancelled = false;
+    const loadList = async () => {
+      setListLoading(true);
+      try {
+        const params = new URLSearchParams({
+          page: String(currentPage),
+          per_page: String(itemsPerPage),
+          sort: blogSortToApiSort(sort),
+        });
+        if (selectedTag) {
+          params.set('tag', selectedTag);
+        }
 
-  const totalPages = Math.max(1, Math.ceil(filteredArticles.length / itemsPerPage));
-  const safePage = Math.min(currentPage, totalPages);
-  const paginatedArticles = useMemo(() => {
-    const start = (safePage - 1) * itemsPerPage;
-    return filteredArticles.slice(start, start + itemsPerPage);
-  }, [filteredArticles, safePage, itemsPerPage]);
+        const response = await apiClient.get<Article[]>(`/api/articles?${params.toString()}`);
+        if (cancelled) {
+          return;
+        }
+        if (response.success) {
+          setListArticles(response.data ?? []);
+          setListMeta(response.meta ?? null);
+        } else {
+          setListArticles([]);
+          setListMeta(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setListLoading(false);
+        }
+      }
+    };
+
+    void loadList();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [slug, currentPage, itemsPerPage, selectedTag, sort]);
+
+  useEffect(() => {
+    if (!slug) {
+      setActiveArticle(null);
+      return;
+    }
+
+    let cancelled = false;
+    const loadDetail = async () => {
+      setDetailLoading(true);
+      try {
+        const response = await apiClient.get<Article>(`/api/articles/${encodeURIComponent(slug)}`);
+        if (cancelled) {
+          return;
+        }
+        setActiveArticle(response.success ? (response.data ?? null) : null);
+      } finally {
+        if (!cancelled) {
+          setDetailLoading(false);
+        }
+      }
+    };
+
+    void loadDetail();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [slug]);
+
+  useEffect(() => {
+    if (!slug) {
+      setNavArticles([]);
+      return;
+    }
+
+    let cancelled = false;
+    const loadNav = async () => {
+      const params = new URLSearchParams({
+        page: '1',
+        per_page: '100',
+        sort: blogSortToApiSort(sort),
+      });
+      const response = await apiClient.get<Article[]>(`/api/articles?${params.toString()}`);
+      if (!cancelled && response.success) {
+        setNavArticles(response.data ?? []);
+      }
+    };
+
+    void loadNav();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [slug, sort]);
+
+  const allTags = listMeta?.tags ?? [];
+  const totalPublished = listMeta?.total_published ?? listMeta?.total ?? 0;
+  const filteredTotal = listMeta?.total ?? 0;
+  const totalPages = listMeta?.total_pages ?? 1;
+  const safePage = Math.min(currentPage, Math.max(1, totalPages));
+  const paginatedArticles = listArticles;
 
   const hasPrev = safePage > 1;
   const hasNext = safePage < totalPages;
@@ -112,8 +195,8 @@ export const BlogRenderer: React.FC = () => {
     if (!activeArticle) {
       return { prev: null, next: null };
     }
-    return getAdjacentArticles(publishedArticles, activeArticle.slug);
-  }, [activeArticle, publishedArticles]);
+    return getAdjacentArticles(navArticles, activeArticle.slug);
+  }, [activeArticle, navArticles]);
 
   useEffect(() => {
     if (slug || currentPage <= totalPages) {
@@ -127,6 +210,30 @@ export const BlogRenderer: React.FC = () => {
     }
     setSearchParams(next, { replace: true });
   }, [slug, currentPage, totalPages, searchParams, setSearchParams]);
+
+  if (slug && detailLoading) {
+    return (
+      <div className="min-h-[50vh] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600" />
+      </div>
+    );
+  }
+
+  if (slug && !detailLoading && !activeArticle) {
+    return (
+      <div className="min-h-[50vh] flex flex-col items-center justify-center px-4 text-center">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">404</h1>
+        <p className="mt-2 text-slate-500">Článok neexistuje alebo nie je publikovaný.</p>
+        <button
+          type="button"
+          onClick={() => navigate('/blog')}
+          className="mt-6 bg-indigo-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold"
+        >
+          Späť na blog
+        </button>
+      </div>
+    );
+  }
 
   if (activeArticle) {
     const author = activeArticle.author || String(activeArticle.frontMatter?.author ?? 'Redakcia');
@@ -282,8 +389,16 @@ export const BlogRenderer: React.FC = () => {
     );
   }
 
-  const rangeStart = filteredArticles.length === 0 ? 0 : (safePage - 1) * itemsPerPage + 1;
-  const rangeEnd = Math.min(safePage * itemsPerPage, filteredArticles.length);
+  const rangeStart = filteredTotal === 0 ? 0 : (safePage - 1) * itemsPerPage + 1;
+  const rangeEnd = Math.min(safePage * itemsPerPage, filteredTotal);
+
+  if (listLoading && listArticles.length === 0) {
+    return (
+      <div className="min-h-[50vh] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-28 transition-colors">
@@ -308,7 +423,7 @@ export const BlogRenderer: React.FC = () => {
                   : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'
               }`}
             >
-              Všetky články ({publishedArticles.length})
+              Všetky články ({totalPublished})
             </button>
             {allTags.map((tag) => (
               <button
@@ -347,9 +462,9 @@ export const BlogRenderer: React.FC = () => {
       </div>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16">
-        {filteredArticles.length > 0 && (
+        {filteredTotal > 0 && (
           <p className="text-center text-xs font-semibold text-slate-500 dark:text-slate-400 mb-8">
-            Zobrazené {rangeStart}–{rangeEnd} z {filteredArticles.length} článkov
+            Zobrazené {rangeStart}–{rangeEnd} z {filteredTotal} článkov
             {totalPages > 1 ? ` · strana ${safePage} / ${totalPages}` : ''}
           </p>
         )}
@@ -431,7 +546,7 @@ export const BlogRenderer: React.FC = () => {
           })}
         </div>
 
-        {filteredArticles.length === 0 && (
+        {filteredTotal === 0 && !listLoading && (
           <div className="bg-white dark:bg-slate-900 rounded-3xl p-16 text-center border border-slate-200 dark:border-slate-800">
             <h3 className="text-2xl font-bold">Nenašli sa žiadne články</h3>
             <button

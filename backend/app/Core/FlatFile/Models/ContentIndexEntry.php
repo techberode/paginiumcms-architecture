@@ -55,6 +55,11 @@ final class ContentIndexEntry
             $excerpt = $content->getExcerpt(160);
         }
 
+        $createdAt = is_string($frontMatter['createdAt'] ?? null) ? $frontMatter['createdAt'] : $modifiedAt;
+        if ($content instanceof Article && is_string($frontMatter['date'] ?? null)) {
+            $createdAt = $frontMatter['date'];
+        }
+
         return new self(
             slug: $content->getSlug(),
             type: $type,
@@ -65,7 +70,7 @@ final class ContentIndexEntry
             excerpt: $excerpt,
             tags: $tags,
             updatedAt: is_string($frontMatter['updatedAt'] ?? null) ? $frontMatter['updatedAt'] : $modifiedAt,
-            createdAt: is_string($frontMatter['createdAt'] ?? null) ? $frontMatter['createdAt'] : $modifiedAt,
+            createdAt: $createdAt,
         );
     }
 

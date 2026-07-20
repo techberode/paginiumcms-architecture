@@ -1,7 +1,7 @@
 # Iteration 44 – Filters, sorting & public blog pagination
 
-**Status:** ✅ Complete (It.44a–c FE) · backend filters ⏳  
-**Version:** 2.0.32
+**Status:** ✅ Complete (It.44a–c FE + It.44d BE)  
+**Version:** 2.0.37
 
 ## Summary
 
@@ -14,7 +14,7 @@ It.44 adds consistent filtering and sorting across admin and public lists. The f
 | `content.blogItemsPerPage` | Settings field (default **6**) — separate from admin `itemsPerPage` |
 | List pagination | Active when published articles > `blogItemsPerPage` |
 | URL sync | `/blog?page=&tag=&sort=` (`newest` \| `oldest` \| `title`) |
-| Tag filter | Client-side facet buttons, synced to `?tag=` |
+| Tag filter | Server-side facet buttons (`meta.tags`), synced to `?tag=` |
 | Sort dropdown | Newest / oldest / title on public blog |
 | Article prev/next | Navigate between articles in global sort order |
 | Utils | `frontend/src/utils/blogArticles.ts` + Vitest |
@@ -57,18 +57,35 @@ Configure in **Admin → Nastavenia → Obsah** and **Admin UI**.
 | **CommentsManager** | `?q=&status=&sort=&page=` + „Vymazať filtre“ |
 | **TrashManager** | `?q=&sort=&page=` + „Vymazať filtre“ |
 
-## Remaining (It.44 backend)
+## Done (backend — Iteration 44d)
 
-| Item | Status |
-|------|--------|
-| Backend `filter[tag]`, `filter[author]`, date range | ⏳ |
-| Server-side public blog fetch (`GET /api/articles?page=`) | ⏳ |
+| Item | Description |
+|------|-------------|
+| `filter[tag]` / `?tag=` | Exact tag match (case-insensitive) on content index |
+| `filter[author]` / `?author=` | Author substring filter |
+| `date_from` / `date_to` | Filter by article `createdAt` / front matter `date` (YYYY-MM-DD) |
+| Public blog API | `GET /api/articles?page=&per_page=&tag=&sort=` — server-side list |
+| Response meta | `tags[]`, `total_published` on paginated article lists |
+| FE `BlogRenderer` | List + detail fetch from API; bootstrap bez full `/api/articles` |
+
+## Remaining
+
+_None — It.44 complete._
 
 ## Tests
 
 ```bash
+./scripts/iteration-gate.sh
 cd frontend && npm test -- --run src/utils/blogArticles.test.ts
+cd backend && vendor/bin/phpunit --filter 'ContentRepositoryTest|ContentControllerTest'
 ```
+
+| Test | Súbor / oblasť |
+|------|----------------|
+| Tag / author / date index filters | `ContentRepositoryTest` |
+| Public paginated articles + meta | `ContentControllerTest` |
+| `blogSortToApiSort` | `blogArticles.test.ts` |
+| CONTENT_API params | `docs/architecture/CONTENT_API.md` |
 
 ## Related docs
 
@@ -78,4 +95,4 @@ cd frontend && npm test -- --run src/utils/blogArticles.test.ts
 
 ## Next
 
-→ It.44 backend (`filter[tag]`, server-side blog) or It.32 performance (summary API for public bootstrap)
+→ It.15 PluginManager (gate pre It.53–58) alebo It.32 performance (public bootstrap summary API)

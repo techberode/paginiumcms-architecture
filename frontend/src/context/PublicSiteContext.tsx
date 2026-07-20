@@ -68,21 +68,15 @@ export const PublicSiteProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     setLoading(true);
     debugLogProvider('publicSite', 'refresh.start');
     try {
-      const [pagesRes, articlesRes, navItems] = await Promise.all([
+      const [pagesRes, navItems] = await Promise.all([
         apiClient.get<Page[]>('/api/pages'),
-        apiClient.get<Article[]>('/api/articles'),
         getNavigation(),
       ]);
       const publishedPages = pagesRes.success ? (pagesRes.data || []).filter((p) => p.status === 'published') : [];
-      const publishedArticles = articlesRes.success
-        ? (articlesRes.data || []).filter((a) => a.status === 'published')
-        : [];
       if (pagesRes.success) {
         setPages(publishedPages);
       }
-      if (articlesRes.success) {
-        setArticles(publishedArticles);
-      }
+      setArticles([]);
       if (navItems.length > 0) {
         setNavigationItems(navItems);
       } else {
@@ -90,10 +84,10 @@ export const PublicSiteProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       }
       debugLogProvider('publicSite', 'refresh.done', {
         pages: publishedPages.length,
-        articles: publishedArticles.length,
+        articles: 0,
         nav: navItems.length,
         pagesOk: pagesRes.success,
-        articlesOk: articlesRes.success,
+        articlesOk: true,
       });
     } catch (error) {
       debugLogProvider('publicSite', 'refresh.error', {

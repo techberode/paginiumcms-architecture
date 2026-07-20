@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Article } from '../api/types';
 import {
+  blogSortToApiSort,
   buildBlogListPath,
   getAdjacentArticles,
   parseBlogSort,
@@ -68,5 +69,11 @@ describe('blogArticles', () => {
   it('parses blog sort query values', () => {
     expect(parseBlogSort('oldest')).toBe('oldest');
     expect(parseBlogSort('invalid')).toBe('newest');
+  });
+
+  it('maps blog sort to API sort params', () => {
+    expect(blogSortToApiSort('newest')).toBe('-createdAt');
+    expect(blogSortToApiSort('oldest')).toBe('createdAt');
+    expect(blogSortToApiSort('title')).toBe('title');
   });
 });

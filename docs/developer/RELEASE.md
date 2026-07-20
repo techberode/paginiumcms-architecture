@@ -1,7 +1,22 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.0.36** · 2026-07-20  
+> Posledná verzia: **2.0.37** · 2026-07-20  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release. Samotný release/tag zatiaľ nevytváraj, kým nie je schválený deploy.
+
+---
+
+## 2.0.37 — pred release kontrola
+
+```bash
+./scripts/iteration-gate.sh
+```
+
+**Po deployi:**
+
+1. Verejný **`/blog`** → Network: `GET /api/articles?page=1&per_page=6` (nie legacy full list)
+2. **`/blog?page=2&tag=…&sort=oldest`** — meta obsahuje `total`, `tags`, `total_published`
+3. Detail článku **`/blog/{slug}`** — `GET /api/articles/{slug}`; prev/next funguje
+4. Admin zoznam článkov — paginácia stále OK (`?page=1&per_page=20`)
 
 ---
 
@@ -17,6 +32,46 @@
 2. Klik **Neprečítané správy** → `/messages`
 3. Panel **Prehľad aktivít** → „Celý audit trail →“
 4. Network: `GET /api/admin/dashboard/overview` obsahuje `counts` a `storage`
+
+---
+
+---
+
+## GitHub Release — copy-paste (2.0.37)
+
+**Title:**
+
+```
+2.0.37 — It.44d: content API filters and server-side public blog
+```
+
+**Tag:** `v2.0.37` · **Target:** `main`
+
+**Body:**
+
+```markdown
+## Summary
+
+Release **2.0.37** completes **Iteration 44 (backend)**: index filters for tag, author, and date range, plus server-side paginated public blog fetch.
+
+Detail: [docs/ITERATION_44.md](docs/ITERATION_44.md)
+
+## Added
+
+- `GET /api/articles?page=&tag=&sort=` with `filter[author]`, `date_from` / `date_to`
+- Response meta: `tags[]`, `total_published`
+- Public blog list/detail loaded from API (no full article bootstrap)
+
+## Test plan
+
+- [ ] `/blog?page=2&tag=…&sort=oldest` — Network shows paginated `/api/articles`
+- [ ] Admin articles list can use `filter[tag]` when wired
+- [ ] `./scripts/iteration-gate.sh` green
+
+## Full changelog
+
+[CHANGELOG.md#2037--2026-07-20](CHANGELOG.md#2037--2026-07-20)
+```
 
 ---
 

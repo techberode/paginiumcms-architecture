@@ -79,6 +79,8 @@ final class ContentIndexService
                 ));
             }
 
+            $entries = $this->applyIndexFilters($entries, $query->filters);
+
             if ($query->search !== '' && mb_strlen($query->search) >= PaginationQuery::MIN_SEARCH_LENGTH) {
                 $needle = mb_strtolower($query->search);
                 $entries = array_values(array_filter(
@@ -139,6 +141,61 @@ final class ContentIndexService
         usort($merged, static fn (ContentIndexEntry $a, ContentIndexEntry $b): int => strcmp($b->updatedAt, $a->updatedAt));
 
         return array_slice($merged, 0, min(100, max(1, $limit)));
+    }
+
+    /**
+     * @param array<string, string> $filters
+     * @return list<string>
+     */
+    public function listDistinctTags(string $type, array $filters = []): array
+    {
+        return $this->withLockedIndex(function (array &$items) use ($type, $filters): array {
+            $entries = array_map(
+                fn (array $row): ContentIndexEntry => ContentIndexEntry::fromArray($row),
+                $items
+            );
+
+            $entries = array_values(array_filter(
+                $entries,
+                static fn (ContentIndexEntry $e): bool => $e->type === $type
+            ));
+
+            $entries = $this->applyIndexFilters($entries, $filters);
+
+            $tags = [];
+            foreach ($entries as $entry) {
+                foreach ($entry->tags as $tag) {
+                    $tags[$tag] = true;
+                }
+            }
+
+            $unique = array_keys($tags);
+            sort($unique, SORT_NATURAL | SORT_FLAG_CASE);
+
+            return $unique;
+        });
+    }
+
+    /**
+     * @param array<string, string> $filters
+     */
+    public function countMatching(string $type, array $filters = []): int
+    {
+        return $this->withLockedIndex(function (array &$items) use ($type, $filters): int {
+            $entries = array_map(
+                fn (array $row): ContentIndexEntry => ContentIndexEntry::fromArray($row),
+                $items
+            );
+
+            $entries = array_values(array_filter(
+                $entries,
+                static fn (ContentIndexEntry $e): bool => $e->type === $type
+            ));
+
+            $entries = $this->applyIndexFilters($entries, $filters);
+
+            return count($entries);
+        });
     }
 
     public function rebuild(ContentRepositoryInterface $repository): void
@@ -231,6 +288,79 @@ final class ContentIndexService
         });
 
         return $entries;
+    }
+
+    /**
+     * @param list<ContentIndexEntry> $entries
+     * @param array<string, string> $filters
+     * @return list<ContentIndexEntry>
+     */
+    private function applyIndexFilters(array $entries, array $filters): array
+    {
+        if (!empty($filters['tag'])) {
+            $needle = mb_strtolower($filters['tag']);
+            $entries = array_values(array_filter(
+                $entries,
+                static function (ContentIndexEntry $e) use ($needle): bool {
+                    foreach ($e->tags as $tag) {
+                        if (mb_strtolower($tag) === $needle) {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                }
+            ));
+        }
+
+        if (!empty($filters['author'])) {
+            $needle = mb_strtolower($filters['author']);
+            $entries = array_values(array_filter(
+                $entries,
+                static fn (ContentIndexEntry $e): bool => str_contains(mb_strtolower($e->author), $needle)
+            ));
+        }
+
+        $dateFrom = $this->normalizeFilterDate($filters['date_from'] ?? null);
+        $dateTo = $this->normalizeFilterDate($filters['date_to'] ?? null);
+
+        if ($dateFrom !== null || $dateTo !== null) {
+            $entries = array_values(array_filter(
+                $entries,
+                static function (ContentIndexEntry $e) use ($dateFrom, $dateTo): bool {
+                    $entryDate = substr($e->createdAt, 0, 10);
+                    if ($dateFrom !== null && $entryDate < $dateFrom) {
+                        return false;
+                    }
+                    if ($dateTo !== null && $entryDate > $dateTo) {
+                        return false;
+                    }
+
+                    return true;
+                }
+            ));
+        }
+
+        return $entries;
+    }
+
+    private function normalizeFilterDate(?string $value): ?string
+    {
+        if ($value === null || trim($value) === '') {
+            return null;
+        }
+
+        $value = trim($value);
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value) === 1) {
+            return $value;
+        }
+
+        $timestamp = strtotime($value);
+        if ($timestamp === false) {
+            return null;
+        }
+
+        return date('Y-m-d', $timestamp);
     }
 
     /**

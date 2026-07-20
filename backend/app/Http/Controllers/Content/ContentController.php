@@ -808,7 +808,22 @@ class ContentController
             ? $this->contentCache->rememberArticleListPaginated($cachePayload, $loader)
             : $this->contentCache->rememberPageListPaginated($cachePayload, $loader);
 
-        $meta = new PaginationMeta($query->page, $query->perPage, $result['total']);
+        $metaExtra = [];
+        if ($type === 'article') {
+            $facetFilters = $query->filters;
+            unset($facetFilters['tag'], $facetFilters['author'], $facetFilters['date_from'], $facetFilters['date_to']);
+
+            if (!$this->isAuthenticated($request)) {
+                $facetFilters['status'] = 'published';
+            }
+
+            $metaExtra['tags'] = $this->repository->listDistinctTags('article', $facetFilters);
+            if (!$this->isAuthenticated($request)) {
+                $metaExtra['total_published'] = $this->repository->countIndexed('article', $facetFilters);
+            }
+        }
+
+        $meta = new PaginationMeta($query->page, $query->perPage, $result['total'], $metaExtra);
 
         return $this->json->paginated($response, $result['items'], $meta);
     }

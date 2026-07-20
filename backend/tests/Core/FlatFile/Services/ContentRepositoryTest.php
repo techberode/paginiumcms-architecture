@@ -37,7 +37,9 @@ class ContentRepositoryTest extends TestCase
                     'draft-page.md' => "---\ntitle: Draft\nslug: draft-page\nstatus: draft\n---\n# Draft",
                 ],
                 'blog' => [
-                    '2024-01-01-test.md' => "---\ntitle: Test Article\nslug: test-article\nstatus: published\nauthor: John\n---\n# Test Content",
+                    '2024-01-01-test.md' => "---\ntitle: Test Article\nslug: test-article\nstatus: published\nauthor: John\ntags: [news, php]\ndate: 2024-01-15\n---\n# Test Content",
+                    '2024-02-01-other.md' => "---\ntitle: Other Article\nslug: other-article\nstatus: published\nauthor: Jane\ntags: [news]\ndate: 2024-02-10\n---\n# Other",
+                    '2024-03-01-draft.md' => "---\ntitle: Draft Article\nslug: draft-article\nstatus: draft\nauthor: John\ntags: [hidden]\ndate: 2024-03-01\n---\n# Draft",
                 ],
             ],
         ];
@@ -138,12 +140,45 @@ class ContentRepositoryTest extends TestCase
     public function testFindAllArticles(): void
     {
         $articles = $this->repository->findAllArticles();
-        $this->assertCount(1, $articles);
-        $this->assertSame('Test Article', $articles[0]->getTitle());
+        $this->assertCount(3, $articles);
+        $slugs = array_map(static fn (Article $article): string => $article->getSlug(), $articles);
+        $this->assertContains('test-article', $slugs);
     }
 
     public function testCountPages(): void
     {
         $this->assertSame(3, $this->repository->count('page'));
+    }
+
+    public function testFindArticlesPaginatedFiltersByTagAuthorAndDate(): void
+    {
+        $this->index->rebuild($this->repository);
+
+        $tagQuery = new PaginationQuery(1, 10, '', '-createdAt', ['status' => 'published', 'tag' => 'news']);
+        $tagResult = $this->repository->findArticlesPaginated($tagQuery);
+        $this->assertSame(2, $tagResult['total']);
+
+        $authorQuery = new PaginationQuery(1, 10, '', '-createdAt', ['status' => 'published', 'author' => 'Jane']);
+        $authorResult = $this->repository->findArticlesPaginated($authorQuery);
+        $this->assertSame(1, $authorResult['total']);
+        $this->assertSame('other-article', $authorResult['items'][0]->getSlug());
+
+        $dateQuery = new PaginationQuery(1, 10, '', '-createdAt', [
+            'status' => 'published',
+            'date_from' => '2024-02-01',
+            'date_to' => '2024-02-28',
+        ]);
+        $dateResult = $this->repository->findArticlesPaginated($dateQuery);
+        $this->assertSame(1, $dateResult['total']);
+        $this->assertSame('other-article', $dateResult['items'][0]->getSlug());
+    }
+
+    public function testListDistinctTagsAndCountIndexed(): void
+    {
+        $this->index->rebuild($this->repository);
+
+        $tags = $this->repository->listDistinctTags('article', ['status' => 'published']);
+        $this->assertSame(['news', 'php'], $tags);
+        $this->assertSame(2, $this->repository->countIndexed('article', ['status' => 'published']));
     }
 }

@@ -11,15 +11,21 @@ namespace PaginiumCMS\Http\Support;
  *     page: int,
  *     per_page: int,
  *     total: int,
- *     total_pages: int
+ *     total_pages: int,
+ *     tags?: list<string>,
+ *     total_published?: int
  * }
  */
 final class PaginationMeta
 {
+    /**
+     * @param array<string, mixed> $extra
+     */
     public function __construct(
         public readonly int $page,
         public readonly int $perPage,
-        public readonly int $total
+        public readonly int $total,
+        public readonly array $extra = []
     ) {
     }
 
@@ -37,11 +43,11 @@ final class PaginationMeta
      */
     public function toArray(): array
     {
-        return [
+        return array_merge([
             'page' => $this->page,
             'per_page' => $this->perPage,
             'total' => $this->total,
             'total_pages' => $this->totalPages(),
-        ];
+        ], $this->extra);
     }
 }
