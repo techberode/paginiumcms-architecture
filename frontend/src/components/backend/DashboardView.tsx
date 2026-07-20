@@ -9,6 +9,9 @@ import {
   PlusCircle,
   Sparkles,
   ArrowUpRight,
+  Mail,
+  Image as ImageIcon,
+  Database,
 } from 'lucide-react';
 import { useApi } from '../../hooks/useApi';
 import { useToast } from '../../hooks/useToast';
@@ -79,6 +82,8 @@ export const DashboardView: React.FC = () => {
   }, [loadDashboardData]);
 
   const analytics = overview?.analytics;
+  const counts = overview?.counts;
+  const storageFree = overview?.storage?.free_space;
 
   const kpiCards = [
     { title: 'Stránky', value: stats.totalPages, icon: FileText, to: '/pages', color: 'indigo' },
@@ -156,6 +161,48 @@ export const DashboardView: React.FC = () => {
             </Link>
           );
         })}
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Link
+          to="/messages"
+          className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 hover:border-indigo-500/50 transition-all group"
+        >
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold uppercase text-slate-500">Neprečítané správy</p>
+              <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
+                {loading ? '…' : (counts?.messages_unread ?? 0)}
+              </p>
+            </div>
+            <Mail className="w-8 h-8 text-indigo-500 group-hover:scale-110 transition-transform" />
+          </div>
+        </Link>
+        <Link
+          to="/media"
+          className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 hover:border-indigo-500/50 transition-all group"
+        >
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold uppercase text-slate-500">Médiá</p>
+              <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
+                {loading ? '…' : (counts?.media ?? stats.totalMedia)}
+              </p>
+            </div>
+            <ImageIcon className="w-8 h-8 text-emerald-500 group-hover:scale-110 transition-transform" />
+          </div>
+        </Link>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold uppercase text-slate-500">Voľné miesto na disku</p>
+              <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
+                {loading ? '…' : (storageFree ?? '—')}
+              </p>
+            </div>
+            <Database className="w-8 h-8 text-amber-500" />
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

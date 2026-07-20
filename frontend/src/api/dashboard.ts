@@ -28,6 +28,23 @@ export interface DashboardOverview {
     hours: number;
     by_severity: Partial<Record<'debug' | 'info' | 'warning' | 'error' | 'critical', number>>;
   };
+  counts?: Partial<Record<
+    | 'pages'
+    | 'articles'
+    | 'media'
+    | 'backups'
+    | 'comments'
+    | 'messages'
+    | 'messages_unread'
+    | 'trash'
+    | 'users'
+    | 'firewall_jails',
+    number
+  >>;
+  storage?: {
+    free_space?: string | null;
+    free_space_bytes?: number | null;
+  };
 }
 
 export async function getDashboardOverview(): Promise<DashboardOverview | null> {

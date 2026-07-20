@@ -27,6 +27,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.44 blog pagination, admin filters, link target setting | **2.0.31** | [below](#2031--2026-07-20) |
 | It.44c URL sync, preview modal, reading time | **2.0.32** | [below](#2032--2026-07-20) |
 | Admin deep links (settings group, audit routes, Ctrl+K catalog) | **2.0.33** | [below](#2033--2026-07-20) |
+| It.52a — Dashboard KPI + overview API | **2.0.34** | [below](#2034--2026-07-20) |
+
+---
+
+## [2.0.34] – 2026-07-20
+
+**Iteration 52a** — Dashboard v2 KPI row and enriched overview API.
+Detail: [ITERATION_52.md](docs/ITERATION_52.md).
+
+### Added
+
+- **`GET /api/admin/dashboard/overview`** — `counts` (incl. `messages_unread`) and `storage.free_space` from health check
+- Dashboard KPI row: neprečítané správy → `/messages`, médiá → `/media`, voľné miesto na disku
+- **`DashboardActivityPanel`** — odkaz „Celý audit trail →“ na `/audit`
+- **`AdminCountsService`** — `messages_unread` for admin sidebar counts API
+
+### Changed
+
+- **`docs/ISSUES.md`** — ISS-037 (CI type-check hotfix)
+- **`.cursorrules`** — povinné testy pred commit & push
 
 ---
 

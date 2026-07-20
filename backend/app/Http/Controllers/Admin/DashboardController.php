@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Admin;
 
+use PaginiumCMS\Core\Admin\Services\AdminCountsService;
 use PaginiumCMS\Core\Analytics\Contracts\ReporterInterface;
 use PaginiumCMS\Core\Analytics\Services\RealtimeTracker;
 use PaginiumCMS\Core\Conflict\Contracts\ConflictLoggerInterface;
@@ -12,6 +13,7 @@ use PaginiumCMS\Core\Health\Services\HealthCheckManager;
 use PaginiumCMS\Core\Logging\Services\ApplicationLogReader;
 use PaginiumCMS\Core\Locking\Contracts\LockManagerInterface;
 use PaginiumCMS\Http\Support\JsonResponder;
+use PaginiumCMS\Modules\Security\Models\User;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -27,12 +29,15 @@ final class DashboardController
         private ReporterInterface $reporter,
         private RealtimeTracker $realtime,
         private ApplicationLogReader $logReader,
+        private AdminCountsService $counts,
         private JsonResponder $json
     ) {
     }
 
     public function overview(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
+        $viewer = $request->getAttribute('user');
+        $user = $viewer instanceof User ? $viewer : null;
         $locks = array_map(
             static fn ($lock) => $lock->jsonSerialize(),
             $this->locks->getAllLocks()
@@ -44,13 +49,16 @@ final class DashboardController
         );
 
         $healthReport = $this->health->run();
+        $healthPayload = $this->normalizeHealthReport($healthReport->toArray());
 
         return $this->json->success($response, [
             'locks' => $locks,
             'locks_count' => count($locks),
             'conflicts' => $conflicts,
             'conflicts_count' => count($this->conflicts->getRecent(100)),
-            'health' => $this->normalizeHealthReport($healthReport->toArray()),
+            'health' => $healthPayload,
+            'counts' => $this->counts->collect($user),
+            'storage' => $this->extractStorageSummary($healthPayload),
             'analytics' => [
                 'overview' => $this->reporter->getOverview('today'),
                 'chart' => $this->reporter->getDailyChart(14),
@@ -82,5 +90,42 @@ final class DashboardController
         }, $report['checks']);
 
         return $report;
+    }
+
+    /**
+     * @param array<int|string, mixed> $healthReport
+     * @return array{free_space: ?string, free_space_bytes: ?int}
+     */
+    private function extractStorageSummary(array $healthReport): array
+    {
+        $checks = $healthReport['checks'] ?? [];
+        if (!is_array($checks)) {
+            return ['free_space' => null, 'free_space_bytes' => null];
+        }
+
+        foreach ($checks as $check) {
+            if (!is_array($check)) {
+                continue;
+            }
+
+            $name = (string) ($check['name'] ?? $check['check'] ?? '');
+            if ($name !== 'storage') {
+                continue;
+            }
+
+            $data = $check['data'] ?? [];
+            if (!is_array($data)) {
+                break;
+            }
+
+            $bytes = $data['free_space_bytes'] ?? null;
+
+            return [
+                'free_space' => isset($data['free_space']) ? (string) $data['free_space'] : null,
+                'free_space_bytes' => is_numeric($bytes) ? (int) $bytes : null,
+            ];
+        }
+
+        return ['free_space' => null, 'free_space_bytes' => null];
     }
 }

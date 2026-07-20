@@ -25,6 +25,26 @@
 - **React:** Používaj moderné funkcionálne komponenty, správne ošetrenie asynchrónnych dopytov (Loading, Success, Error stavy) a striktne dodržuj pravidlo, že backend je jediný zdroj pravdy (Single Source of Truth).
 - **Chyby:** Pri analýze chýb sa prioritne zameraj na prepojenie domina (napr. či funkcia volaná v Controlleri reálne existuje v Manageri/Službe a či má skript správne práva `chmod +x`).
 
+## 🚨 Commit & Push — VŽDY testy pred pushom (povinné)
+
+**!!! VŽDY PRED COMMIT & PUSH VYKONAŤ TESTY A OPRAVIŤ NEDOSTATKY !!!**
+
+Toto pravidlo platí **vždy** — aj pri malom hotfixe, aj pri „rýchlom“ C&P. **Nikdy** necommituj a nepushuj, kým gate/testy neprejdú.
+
+### Postup (povinný poriadok)
+
+1. **Spusti kontrolu** — z koreňa repa: `./scripts/iteration-gate.sh`  
+   (alebo ekvivalent: PHPUnit + `npm run type-check` + `npm run lint` + `npm test` + PHPStan)
+2. **Oprav všetky zlyhania** — syntax, PHPStan, PHPUnit, `tsc`, ESLint, Vitest; žiadne „pushneme a CI to opraví“.
+3. **Až potom** `git commit` → `git push`.
+4. Ak CI po pushi padne — **nový fix commit** (nie amend na remote), znova krok 1–3.
+
+### Čo sa považuje za nedostatok (musí byť 0 pred pushom)
+
+- PHPStan L8 chyby · PHPUnit fail · FE `tsc --noEmit` (TS6133, TS2322, …) · ESLint nad baseline · Vitest fail · zjavná regresia wiring/API kontraktu
+
+Ak gate zlyhá — **necommituj**, oprav regresiu alebo zúž rozsah zmeny.
+
 ## ✅ Iteration gate (povinné po každej iterácii)
 
 Po **každej dokončenej iterácii** (pred commitom/pushom) spusti kontrolu **validácie, čistoty a integrity** — nielen unit testov. Cieľ: pri rastúcom objeme kódu **nerozbiť existujúce funkčné bloky** (API kontrakt, DI, routes, Settings schema ↔ služby, FE typy ↔ BE odpovede).

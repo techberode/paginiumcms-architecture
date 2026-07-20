@@ -33,5 +33,9 @@ final class DashboardControllerTest extends TestCase
         $this->assertArrayHasKey('overview', $data['data']['analytics']);
         $this->assertArrayHasKey('chart', $data['data']['analytics']);
         $this->assertArrayHasKey('realtime', $data['data']['analytics']);
+        $this->assertArrayHasKey('counts', $data['data']);
+        $this->assertArrayHasKey('storage', $data['data']);
+        $this->assertArrayHasKey('pages', $data['data']['counts']);
+        $this->assertArrayHasKey('media', $data['data']['counts']);
     }
 }

@@ -1,6 +1,6 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-20 · verzia **2.0.30** (hotfix `3fbc595`)
+> Posledná aktualizácia: 2026-07-20 · verzia **2.0.33** (fix `64cc894`)
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
 
@@ -51,6 +51,7 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-034 | Dev: žiadny prepínač TOTP v `.env`                      | Stredná (DX)          | ✅ Opravené (2.0.30)                     |
 | ISS-035 | PHPStan: `ClientIpResolver` mŕtvy `??` fallback         | Nízka (CI)            | ✅ Opravené (2.0.29 hotfix)              |
 | ISS-036 | FE type-check: 2FA `setup_pending` / `setUser` (CI)     | Stredná (CI)          | ✅ Opravené (2.0.30 hotfix `3fbc595`)    |
+| ISS-037 | FE type-check: nepoužitý `React` import v teste (CI)  | Nízka (CI)            | ✅ Opravené (hotfix `64cc894`)           |
 
 
 
@@ -64,6 +65,7 @@ Workflow: `[.github/workflows/ci.yml](../.github/workflows/ci.yml)`
 | ---------- | -------------------- | --------------------------------------------------------------- | ---------------------------------- |
 | `backend`  | PHPStan level 8      | Analýza zlyhá (verzia PHP, `match`, `fopen`, `is_array`)        | ISS-016, ISS-017, ISS-018, ISS-021 |
 | `backend`  | PHPUnit              | 429 Too Many Requests, 503 maintenance, flaky OTP, flaky search test | ISS-015, ISS-023                   |
+| `frontend` | `npm run type-check` | TS6133 — nepoužitý import `React` v `SettingsView.test.tsx` | ISS-037                   |
 | `frontend` | `npm run type-check` | TS2352 / TS6133 / TS2322 / 2FA DTO shape (`setup_pending`, `setUser`) | ISS-019, ISS-036                   |
 | `frontend` | `npm run lint`       | Prekročenie `--max-warnings 65` (`react-hooks/exhaustive-deps`) | ISS-020                            |
 | `frontend` | `npm test`           | Worker crash, `act(...)` stderr, `MediaManager` text asserts    | ISS-005, ISS-010, ISS-022          |
@@ -867,6 +869,24 @@ src/components/auth/TwoFactorSettings.test.tsx — mock missing setupPending
 
 ---
 
+## ISS-037 – Frontend type-check: nepoužitý React import v teste (CI)
+
+**Symptóm:** Po pushi fixu admin deep linkov (`fbb574b`) CI job **frontend → TypeScript type-check** padá:
+
+```
+src/components/backend/SettingsView.test.tsx(4,1): error TS6133: 'React' is declared but its value is never read.
+```
+
+**Príčina:** Nový test `SettingsView.test.tsx` importoval `React` kvôli JSX, ale projekt používa moderný JSX transform (`react-jsx`) — import nie je potrebný a strict `noUnusedLocals` ho odmietne.
+
+**Implementované riešenie (hotfix `64cc894`):**
+
+- Odstránený riadok `import React from 'react';` z `SettingsView.test.tsx`.
+
+**Overenie:** `cd frontend && npm run type-check` — exit 0.
+
+---
+
 ## Externé / irelevantné hlášky
 
 
@@ -882,7 +902,7 @@ src/components/auth/TwoFactorSettings.test.tsx — mock missing setupPending
 
 ## Súvisiace dokumenty
 
-- [CHANGELOG.md](../CHANGELOG.md) — release 2.0.30 (2FA setup/login fixes, ISS-030–ISS-036)
+- [CHANGELOG.md](../CHANGELOG.md) — release 2.0.33 (admin deep links) + hotfix ISS-037
 - [RELEASE.md](developer/RELEASE.md) — copy-paste pre GitHub release 2.0.30
 - [TESTING.md](developer/TESTING.md) – ako spúšťať testy a regresiu
 - [ROADMAP.md](ROADMAP.md) – plánované iterácie (It.41+, It.47–49)

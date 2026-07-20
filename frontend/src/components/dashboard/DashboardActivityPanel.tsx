@@ -1,5 +1,6 @@
 import React from 'react';
 import { Activity, Clock3 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface AuditEvent {
   log?: {
@@ -68,6 +69,13 @@ export const DashboardActivityPanel: React.FC<DashboardActivityPanelProps> = ({
               )}
             </div>
           ))}
+        </div>
+      )}
+      {!loading && events.length > 0 && (
+        <div className="px-6 pb-5">
+          <Link to="/audit" className="text-sm font-bold text-indigo-600 hover:text-indigo-800 dark:text-indigo-400">
+            Celý audit trail →
+          </Link>
         </div>
       )}
     </div>
