@@ -158,7 +158,7 @@ describe('MediaManager', () => {
     renderWithRouter(<MediaManager />);
     expect(await screen.findByRole('checkbox', { name: /Select hero\.png/i })).toBeInTheDocument();
 
-    await fastUser.click(screen.getByRole('button', { name: 'Edit metadata' }));
+    await fastUser.click(screen.getByRole('button', { name: 'Upraviť metadáta' }));
     const dialog = await screen.findByRole('dialog', { name: /Edit metadata/i });
     expect(dialog).toBeInTheDocument();
 

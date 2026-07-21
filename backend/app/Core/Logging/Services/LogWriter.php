@@ -219,6 +219,10 @@ class LogWriter implements LogWriterInterface
      */
     private function decodeLogPayload(string $raw, string $absolutePath): array
     {
+        if (trim($raw) === '') {
+            return [];
+        }
+
         try {
             return JsonHelper::decode($raw);
         } catch (JsonException) {
@@ -263,6 +267,14 @@ class LogWriter implements LogWriterInterface
 
     private function backupCorruptLogFile(string $absolutePath, string $raw): void
     {
+        if (trim($raw) === '') {
+            if (is_file($absolutePath)) {
+                @unlink($absolutePath);
+            }
+
+            return;
+        }
+
         $backupPath = $absolutePath . '.corrupt-' . date('Ymd-His');
         if (@file_put_contents($backupPath, $raw) === false) {
             return;

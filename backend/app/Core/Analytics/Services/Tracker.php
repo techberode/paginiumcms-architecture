@@ -132,7 +132,15 @@ class Tracker implements TrackerInterface
             $visits = JsonHelper::decode($this->reader->read($relativePath));
         }
 
-        $visits[] = $visit->toArray();
+        $visitData = $visit->toArray();
+        $location = $this->geoIP->getLocation($visit->getIp());
+        $deviceInfo = (new DeviceDetector($visit->getUserAgent() ?? ''))->getAll();
+        $visitData['deviceType'] = $deviceInfo['deviceType'];
+        $visitData['browser'] = $deviceInfo['browser'];
+        $visitData['country'] = $location ? $location->getCountry() : 'Unknown';
+        $visitData['city'] = $location ? $location->getCity() : null;
+
+        $visits[] = $visitData;
         if (count($visits) > 10000) {
             $visits = array_slice($visits, -10000);
         }

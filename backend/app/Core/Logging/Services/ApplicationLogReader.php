@@ -36,11 +36,14 @@ final class ApplicationLogReader
     ): array {
         $entries = $this->loadAll($source);
 
-        if ($severity !== null && $severity !== '' && LogSeverity::isValid($severity)) {
-            $entries = array_values(array_filter(
-                $entries,
-                static fn (array $entry): bool => ($entry['severity'] ?? '') === $severity
-            ));
+        if ($severity !== null && $severity !== '') {
+            $severityUpper = strtoupper($severity);
+            if (LogSeverity::isValid($severityUpper)) {
+                $entries = array_values(array_filter(
+                    $entries,
+                    static fn (array $entry): bool => strtoupper((string) ($entry['severity'] ?? '')) === $severityUpper
+                ));
+            }
         }
 
         if ($category !== null && $category !== '') {
@@ -92,13 +95,19 @@ final class ApplicationLogReader
                 continue;
             }
 
-            $severity = (string) ($entry['severity'] ?? '');
+            $severity = strtoupper((string) ($entry['severity'] ?? ''));
             if (isset($stats[$severity])) {
                 ++$stats[$severity];
             }
         }
 
-        return $stats;
+        return [
+            'debug' => $stats[LogSeverity::DEBUG],
+            'info' => $stats[LogSeverity::INFO],
+            'warning' => $stats[LogSeverity::WARNING],
+            'error' => $stats[LogSeverity::ERROR],
+            'critical' => $stats[LogSeverity::CRITICAL],
+        ];
     }
 
     /**
@@ -160,7 +169,11 @@ final class ApplicationLogReader
                 continue;
             }
 
-            $decoded = JsonHelper::decode($raw);
+            try {
+                $decoded = JsonHelper::decode($raw);
+            } catch (\JsonException) {
+                continue;
+            }
 
             foreach ($decoded as $entry) {
                 if (is_array($entry)) {

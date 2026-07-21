@@ -12,6 +12,7 @@ import {
   Mail,
   Image as ImageIcon,
   Database,
+  Settings,
 } from 'lucide-react';
 import { useApi } from '../../hooks/useApi';
 import { useToast } from '../../hooks/useToast';
@@ -24,8 +25,9 @@ import { ConflictsPanel } from '../dashboard/ConflictsPanel';
 import { HealthPanel } from '../dashboard/HealthPanel';
 import { LogsPanel } from '../dashboard/LogsPanel';
 import { DashboardActivityPanel } from '../dashboard/DashboardActivityPanel';
-import { DashboardFlatFilePanel } from '../dashboard/DashboardFlatFilePanel';
+import { DashboardDiskStructurePanel } from '../dashboard/DashboardDiskStructurePanel';
 import { AdminPageSkeleton } from '../ui/AdminPageSkeleton';
+import { useI18n } from '../../context/I18nContext';
 
 interface ContentStats {
   totalPages: number;
@@ -44,6 +46,7 @@ interface DashboardData {
 export const DashboardView: React.FC = () => {
   const { get } = useApi();
   const toast = useToast();
+  const { t } = useI18n();
 
   const { data, isLoading, isFetching, refetch } = useAdminListQuery<DashboardData>({
     queryKey: queryKeys.dashboard.stats,
@@ -81,7 +84,7 @@ export const DashboardView: React.FC = () => {
           overview: monitoring,
         };
       } catch (error) {
-        toast.error('Failed to load dashboard data');
+        toast.error(t('dashboard.toast.loadFailed'));
         console.error(error);
         throw error;
       }
@@ -102,21 +105,23 @@ export const DashboardView: React.FC = () => {
   const analytics = overview?.analytics;
   const counts = overview?.counts;
   const storageFree = overview?.storage?.free_space;
+  const contentStorage = overview?.storage?.content;
 
   if (loading) {
     return <AdminPageSkeleton />;
   }
 
   const kpiCards = [
-    { title: 'Stránky', value: stats.totalPages, icon: FileText, to: '/pages', color: 'indigo' },
-    { title: 'Články', value: stats.totalArticles, icon: BookOpen, to: '/articles', color: 'emerald' },
-    { title: 'Používatelia', value: stats.totalUsers, icon: Users, to: '/users', color: 'violet' },
-    { title: 'Zálohy', value: stats.totalBackups, icon: HardDrive, to: '/backups', color: 'amber' },
+    { id: 'pages', title: t('dashboard.kpi.pages'), value: stats.totalPages, icon: FileText, to: '/pages', color: 'indigo' },
+    { id: 'articles', title: t('dashboard.kpi.articles'), value: stats.totalArticles, icon: BookOpen, to: '/articles', color: 'emerald' },
+    { id: 'users', title: t('dashboard.kpi.users'), value: stats.totalUsers, icon: Users, to: '/users', color: 'violet' },
+    { id: 'backups', title: t('dashboard.kpi.backups'), value: stats.totalBackups, icon: HardDrive, to: '/backups', color: 'amber' },
     {
-      title: 'Návštevy dnes',
+      id: 'visits',
+      title: t('dashboard.kpi.visitsToday'),
       value: analytics?.overview.visits ?? 0,
       icon: ArrowUpRight,
-      to: '/notifications',
+      to: '/analytics',
       color: 'cyan',
     },
   ];
@@ -129,13 +134,13 @@ export const DashboardView: React.FC = () => {
           <div className="max-w-xl">
             <div className="inline-flex items-center gap-2 bg-indigo-500/20 text-indigo-300 font-extrabold text-xs px-3 py-1 rounded-full mb-4 border border-indigo-500/30">
               <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-              <span>PaginiumCMS • FlatFile Architektúra</span>
+              <span>{t('dashboard.hero.badge')}</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight">
-              Vitajte v Riadiacom Centre
+              {t('dashboard.hero.title')}
             </h2>
             <p className="mt-3 text-indigo-100 text-sm sm:text-base leading-relaxed">
-              Monitoring, zdravie systému a správa obsahu z jedného miesta.
+              {t('dashboard.hero.subtitle')}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -144,7 +149,7 @@ export const DashboardView: React.FC = () => {
               className="bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold px-6 py-3.5 rounded-2xl shadow-lg shadow-indigo-600/30 transition-all flex items-center gap-2 text-sm"
             >
               <PlusCircle className="w-4 h-4" />
-              <span>Nový príspevok</span>
+              <span>{t('dashboard.hero.newPost')}</span>
             </Link>
             <button
               type="button"
@@ -152,7 +157,7 @@ export const DashboardView: React.FC = () => {
               disabled={isFetching}
               className="bg-slate-800/80 hover:bg-slate-800 text-slate-200 font-bold px-5 py-3.5 rounded-2xl border border-slate-700 transition-all text-sm disabled:opacity-60"
             >
-              {isFetching ? 'Obnovujem…' : 'Obnoviť dáta'}
+              {isFetching ? t('dashboard.hero.refreshing') : t('dashboard.hero.refresh')}
             </button>
           </div>
         </div>
@@ -163,7 +168,7 @@ export const DashboardView: React.FC = () => {
           const Icon = card.icon;
           return (
             <Link
-              key={card.title}
+              key={card.id}
               to={card.to}
               className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-xl hover:border-indigo-500/50 transition-all group flex flex-col justify-between"
             >
@@ -193,7 +198,7 @@ export const DashboardView: React.FC = () => {
         >
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-bold uppercase text-slate-500">Neprečítané správy</p>
+              <p className="text-xs font-bold uppercase text-slate-500">{t('dashboard.stats.unreadMessages')}</p>
               <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
                 {counts?.messages_unread ?? 0}
               </p>
@@ -207,7 +212,7 @@ export const DashboardView: React.FC = () => {
         >
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-bold uppercase text-slate-500">Médiá</p>
+              <p className="text-xs font-bold uppercase text-slate-500">{t('dashboard.stats.media')}</p>
               <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
                 {counts?.media ?? stats.totalMedia}
               </p>
@@ -218,7 +223,7 @@ export const DashboardView: React.FC = () => {
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-bold uppercase text-slate-500">Voľné miesto na disku</p>
+              <p className="text-xs font-bold uppercase text-slate-500">{t('dashboard.stats.diskFree')}</p>
               <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
                 {storageFree ?? '—'}
               </p>
@@ -230,25 +235,25 @@ export const DashboardView: React.FC = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
-          <p className="text-xs font-bold uppercase text-slate-500">Realtime návštevníci</p>
+          <p className="text-xs font-bold uppercase text-slate-500">{t('dashboard.stats.realtimeVisitors')}</p>
           <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
             {analytics?.realtime.active_visitors ?? 0}
           </p>
         </div>
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
-          <p className="text-xs font-bold uppercase text-slate-500">Aktívne zámky</p>
+          <p className="text-xs font-bold uppercase text-slate-500">{t('dashboard.stats.activeLocks')}</p>
           <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
             {overview?.locks_count ?? 0}
           </p>
         </div>
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
-          <p className="text-xs font-bold uppercase text-slate-500">Konflikty</p>
+          <p className="text-xs font-bold uppercase text-slate-500">{t('dashboard.stats.conflicts')}</p>
           <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
             {overview?.conflicts_count ?? 0}
           </p>
         </div>
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
-          <p className="text-xs font-bold uppercase text-slate-500">Stav systému</p>
+          <p className="text-xs font-bold uppercase text-slate-500">{t('dashboard.stats.systemStatus')}</p>
           <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 capitalize">
             {overview?.health?.status ?? 'unknown'}
           </p>
@@ -259,9 +264,9 @@ export const DashboardView: React.FC = () => {
         <HealthPanel health={overview?.health ?? null} loading={false} />
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Návštevy (14 dní)</h2>
-            <Link to="/notifications" className="text-sm text-indigo-600 hover:underline">
-              Analytika
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">{t('dashboard.chart.title')}</h2>
+            <Link to="/analytics" className="text-sm text-indigo-600 hover:underline">
+              {t('dashboard.chart.analyticsLink')}
             </Link>
           </div>
           <AnalyticsChart data={analytics?.chart ?? []} loading={false} />
@@ -286,15 +291,42 @@ export const DashboardView: React.FC = () => {
         hours={overview?.logs?.hours ?? 24}
       />
 
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        {[
+          { to: '/pages', label: t('dashboard.quickLinks.pages'), icon: FileText },
+          { to: '/articles', label: t('dashboard.quickLinks.articles'), icon: BookOpen },
+          { to: '/users', label: t('dashboard.quickLinks.users'), icon: Users },
+          { to: '/settings', label: t('dashboard.quickLinks.settings'), icon: Settings },
+        ].map((link) => {
+          const Icon = link.icon;
+          return (
+            <Link
+              key={link.to}
+              to={link.to}
+              className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-5 hover:border-indigo-500/50 hover:shadow-lg transition-all group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 p-3 text-indigo-600 group-hover:scale-110 transition-transform">
+                  <Icon className="w-5 h-5" />
+                </div>
+                <span className="font-bold text-slate-900 dark:text-white">{link.label}</span>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2">
           <DashboardActivityPanel events={stats.recentActivity} loading={false} />
         </div>
-        <DashboardFlatFilePanel
-          pages={stats.totalPages}
-          articles={stats.totalArticles}
-          media={stats.totalMedia}
-          backups={stats.totalBackups}
+        <DashboardDiskStructurePanel
+          pages={contentStorage?.pages ?? stats.totalPages}
+          articles={contentStorage?.articles ?? stats.totalArticles}
+          media={contentStorage?.media ?? stats.totalMedia}
+          users={contentStorage?.users ?? stats.totalUsers}
+          totalHuman={contentStorage?.total_human}
+          documentCount={contentStorage?.document_count}
           loading={false}
         />
       </div>

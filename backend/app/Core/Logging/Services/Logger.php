@@ -86,6 +86,15 @@ class Logger implements LoggerInterface
         $this->writer->write($entry);
     }
 
+    public function writeEntry(LogEntry $entry): void
+    {
+        if ($entry->getIp() === null && isset($_SERVER['REMOTE_ADDR'])) {
+            $entry->setIp((string) $_SERVER['REMOTE_ADDR']);
+        }
+
+        $this->writer->write($entry);
+    }
+
     /**
      * @return array<int|string, mixed>
      */

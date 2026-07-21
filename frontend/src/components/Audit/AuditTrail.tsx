@@ -5,6 +5,7 @@ import { useApi } from '../../hooks/useApi';
 import { useToast } from '../../hooks/useToast';
 import { formatDistanceToNow, format } from 'date-fns';
 import { sk } from 'date-fns/locale';
+import { formatAuditEventActor, formatAuditEventMessage } from '../../utils/formatAuditEvent';
 
 interface AuditTrailProps {
   contentId?: string;
@@ -213,20 +214,26 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({ contentId: contentIdProp
               No audit events found
             </p>
           ) : (
-            events.map((event, index) => (
+            events.map((event, index) => {
+              const logRecord = (event.log ?? event) as Record<string, unknown>;
+              const displayMessage = formatAuditEventMessage(logRecord);
+              const displayActor = formatAuditEventActor(logRecord);
+              const action = (logRecord.context as { action?: string } | undefined)?.action ?? 'unknown';
+
+              return (
               <div
                 key={index}
                 className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
-                <span className="text-xl mt-0.5">{getActionIcon(event.log?.context?.action)}</span>
+                <span className="text-xl mt-0.5">{getActionIcon(action)}</span>
                 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-medium text-sm">
-                      {event.log?.context?.action || 'Unknown'}
+                    <span className="font-medium text-sm capitalize">
+                      {action}
                     </span>
-                    <span className={`px-2 py-0.5 text-xs rounded-full ${getSeverityColor(event.log?.severity || 'INFO')}`}>
-                      {event.log?.severity || 'INFO'}
+                    <span className={`px-2 py-0.5 text-xs rounded-full ${getSeverityColor((logRecord.severity as string) || 'INFO')}`}>
+                      {(logRecord.severity as string) || 'INFO'}
                     </span>
                     {event.version && (
                       <span className="px-2 py-0.5 text-xs bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400 rounded-full">
@@ -236,15 +243,12 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({ contentId: contentIdProp
                   </div>
                   
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    {event.log?.message || 'No message'}
+                    {displayMessage}
                   </p>
                   
                   <div className="flex items-center gap-4 mt-1 text-xs text-gray-500 dark:text-gray-400">
                     <span>
-                      {event.user?.name || event.log?.context?.user?.name || 'System'}
-                    </span>
-                    <span>
-                      {event.user?.email || event.log?.context?.user?.email || ''}
+                      {displayActor}
                     </span>
                     <span>
                       {formatDistanceToNow(new Date(event.timestamp), { addSuffix: true, locale: sk })}
@@ -261,7 +265,8 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({ contentId: contentIdProp
                   {format(new Date(event.timestamp), 'HH:mm:ss')}
                 </span>
               </div>
-            ))
+            );
+            })
           )}
         </div>
       </div>

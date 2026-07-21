@@ -55,15 +55,15 @@ import { SortableTableHeader } from './SortableTableHeader';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { applyClientListView } from '../../utils/clientListView';
 import { evaluateMediaSeo } from '../../utils/seoHealth';
+import { useI18n } from '../../context/I18nContext';
 
 type TypeFilter = 'all' | 'image';
 
-function folderLabel(folder: string): string {
-  return folder === '' ? 'All media' : folder;
-}
-
 export const MediaManager: React.FC = () => {
   const toast = useToast();
+  const { t } = useI18n();
+  const folderLabel = (folder: string): string =>
+    folder === '' ? t('media.folder.all') : folder;
   const openInNewTab = useOpenLinksInNewTab();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [items, setItems] = useState<MediaFile[]>([]);
@@ -145,7 +145,7 @@ export const MediaManager: React.FC = () => {
       setItems(files);
       setFolders(folderList.length > 0 ? folderList : ['']);
     } catch (error) {
-      toast.error('Failed to load media library.');
+      toast.error(t('media.toast.loadFailed'));
       console.error(error);
     } finally {
       setLoading(false);
@@ -170,13 +170,15 @@ export const MediaManager: React.FC = () => {
       if (result.ok) {
         successCount += 1;
       } else {
-        toast.error(`${file.name}: ${result.error}`);
+        toast.error(t('media.toast.uploadFailed', { name: file.name, error: result.error ?? '' }));
       }
     }
 
     if (successCount > 0) {
       toast.success(
-        successCount === 1 ? 'File uploaded successfully.' : `${successCount} files uploaded.`
+        successCount === 1
+          ? t('media.toast.uploadOne')
+          : t('media.toast.uploadMany', { count: String(successCount) })
       );
       await loadMedia();
     }
@@ -189,17 +191,17 @@ export const MediaManager: React.FC = () => {
     const result = await importStockImage(stockTopic, currentFolder);
     if (result.ok) {
       const label = stockTopics.find((topic) => topic.id === stockTopic)?.label ?? stockTopic;
-      toast.success(`Stock image imported (${label}).`);
+      toast.success(t('media.toast.stockImported', { label }));
       await loadMedia();
     } else {
-      toast.error(result.error);
+      toast.error(result.error ?? t('media.toast.stockFailed'));
     }
     setStockImporting(false);
   };
 
   const handleCreateFolder = async () => {
     const base = currentFolder === '' ? '' : `${currentFolder}/`;
-    const name = window.prompt('New folder name (letters, numbers, dash, underscore):');
+    const name = window.prompt(t('media.folderPrompt'));
     if (!name) {
       return;
     }
@@ -207,11 +209,11 @@ export const MediaManager: React.FC = () => {
     const folder = `${base}${name.trim()}`.replace(/^\/+/, '');
     const ok = await createMediaFolder(folder);
     if (ok) {
-      toast.success('Folder created.');
+      toast.success(t('media.toast.folderCreated'));
       setCurrentFolder(folder);
       await loadMedia();
     } else {
-      toast.error('Failed to create folder.');
+      toast.error(t('media.toast.folderFailed'));
     }
   };
 
@@ -238,9 +240,9 @@ export const MediaManager: React.FC = () => {
         : relative;
     try {
       await navigator.clipboard.writeText(url);
-      toast.success('URL copied to clipboard.');
+      toast.success(t('media.toast.urlCopied'));
     } catch {
-      toast.error('Could not copy URL.');
+      toast.error(t('media.toast.urlCopyFailed'));
     }
   };
 
@@ -263,11 +265,11 @@ export const MediaManager: React.FC = () => {
     sortField,
     sortDirection,
     sortFields: [
-      { value: 'fileName', label: 'Názov', getValue: (item) => item.fileName },
-      { value: 'title', label: 'Titulok', getValue: (item) => item.title || item.altText || '' },
-      { value: 'mimeType', label: 'Typ', getValue: (item) => item.mimeType },
-      { value: 'size', label: 'Veľkosť', getValue: (item) => item.sizeBytes },
-      { value: 'uploadedAt', label: 'Dátum', getValue: (item) => item.uploadedAt },
+      { value: 'fileName', label: t('media.table.name'), getValue: (item) => item.fileName },
+      { value: 'title', label: t('media.table.title'), getValue: (item) => item.title || item.altText || '' },
+      { value: 'mimeType', label: t('media.table.type'), getValue: (item) => item.mimeType },
+      { value: 'size', label: t('media.table.size'), getValue: (item) => item.sizeBytes },
+      { value: 'uploadedAt', label: t('media.table.date'), getValue: (item) => item.uploadedAt },
     ],
     page,
     pageSize,
@@ -282,11 +284,11 @@ export const MediaManager: React.FC = () => {
     sortField,
     sortDirection,
     sortFields: [
-      { value: 'fileName', label: 'Názov', getValue: (item) => item.fileName },
-      { value: 'title', label: 'Titulok', getValue: (item) => item.title || item.altText || '' },
-      { value: 'mimeType', label: 'Typ', getValue: (item) => item.mimeType },
-      { value: 'size', label: 'Veľkosť', getValue: (item) => item.sizeBytes },
-      { value: 'uploadedAt', label: 'Dátum', getValue: (item) => item.uploadedAt },
+      { value: 'fileName', label: t('media.table.name'), getValue: (item) => item.fileName },
+      { value: 'title', label: t('media.table.title'), getValue: (item) => item.title || item.altText || '' },
+      { value: 'mimeType', label: t('media.table.type'), getValue: (item) => item.mimeType },
+      { value: 'size', label: t('media.table.size'), getValue: (item) => item.sizeBytes },
+      { value: 'uploadedAt', label: t('media.table.date'), getValue: (item) => item.uploadedAt },
     ],
     page: 1,
     pageSize: Math.max(filteredItems.length, 1),
@@ -303,18 +305,18 @@ export const MediaManager: React.FC = () => {
     }
 
     if (
-      !confirm(`Delete ${bulkSelection.count} selected file(s)? This cannot be undone.`)
+      !confirm(t('media.confirm.deleteBulk', { count: String(bulkSelection.count) }))
     ) {
       return;
     }
 
     const deleted = await bulkDeleteMedia(bulkSelection.selectedIds);
     if (deleted > 0) {
-      toast.success(`${deleted} file(s) deleted.`);
+      toast.success(t('media.toast.bulkDeleted', { count: String(deleted) }));
       bulkSelection.clear();
       await loadMedia();
     } else {
-      toast.error('Failed to delete selected files.');
+      toast.error(t('media.toast.bulkDeleteFailed'));
     }
   };
 
@@ -346,16 +348,16 @@ export const MediaManager: React.FC = () => {
   };
 
   const handleDelete = async (file: MediaFile) => {
-    if (!confirm(`Delete "${file.fileName}"? This cannot be undone.`)) {
+    if (!confirm(t('media.confirm.deleteOne', { name: file.fileName }))) {
       return;
     }
 
     const ok = await deleteMedia(file.path);
     if (ok) {
-      toast.success('Media deleted.');
+      toast.success(t('media.toast.deleted'));
       await loadMedia();
     } else {
-      toast.error('Failed to delete media.');
+      toast.error(t('media.toast.deleteFailed'));
     }
   };
 
@@ -383,11 +385,11 @@ export const MediaManager: React.FC = () => {
     try {
       const ok = await updateMediaMetadata(path, { altText: editAlt, title: editTitle });
       if (ok) {
-        toast.success('Metadata updated.');
+        toast.success(t('media.toast.metaUpdated'));
         cancelEditMeta();
         await loadMedia();
       } else {
-        toast.error('Failed to update metadata.');
+        toast.error(t('media.toast.metaFailed'));
       }
     } finally {
       setSavingMeta(false);
@@ -410,15 +412,15 @@ export const MediaManager: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Media Library</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('media.page.title')}</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Upload, browse folders, and manage site assets.
+            {t('media.page.subtitle')}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button type="button" className="btn btn-secondary" onClick={() => void handleCreateFolder()}>
             <FolderPlus className="w-4 h-4 inline mr-2" />
-            New folder
+            {t('media.actions.newFolder')}
           </button>
           {stockTopics.length > 0 && (
             <>
@@ -426,8 +428,8 @@ export const MediaManager: React.FC = () => {
                 value={stockTopic}
                 onChange={(e) => setStockTopic(e.target.value)}
                 className="form-input w-auto"
-                aria-label="Stock image topic"
-                title="Topic for generated stock images"
+                aria-label={t('media.stock.topicLabel')}
+                title={t('media.stock.topicTitle')}
               >
                 {stockTopics.map((topic) => (
                   <option key={topic.id} value={topic.id}>
@@ -440,17 +442,17 @@ export const MediaManager: React.FC = () => {
                 className="btn btn-secondary"
                 disabled={stockImporting || uploading}
                 onClick={() => void handleStockImport()}
-                title="Import a random stock image matching the site topic"
+                title={t('media.stock.importTitle')}
               >
                 {stockImporting ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin inline mr-2" />
-                    Generating…
+                    {t('media.actions.generating')}
                   </>
                 ) : (
                   <>
                     <Zap className="w-4 h-4 inline mr-2" />
-                    Generovať z knižnice
+                    {t('media.actions.generateStock')}
                   </>
                 )}
               </button>
@@ -465,12 +467,12 @@ export const MediaManager: React.FC = () => {
             {uploading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin inline mr-2" />
-                Uploading…
+                {t('media.actions.uploading')}
               </>
             ) : (
               <>
                 <Upload className="w-4 h-4 inline mr-2" />
-                Upload files
+                {t('media.actions.upload')}
               </>
             )}
           </button>
@@ -491,7 +493,7 @@ export const MediaManager: React.FC = () => {
           className={`hover:text-indigo-600 ${currentFolder === '' ? 'font-semibold text-indigo-600' : ''}`}
           onClick={() => setCurrentFolder('')}
         >
-          All media
+          {t('media.folder.all')}
         </button>
         {breadcrumbParts.map((part, index) => {
           const path = breadcrumbParts.slice(0, index + 1).join('/');
@@ -552,10 +554,10 @@ export const MediaManager: React.FC = () => {
         <div className="card-body text-center py-10">
           <Upload className="w-10 h-10 mx-auto text-indigo-500 mb-3" />
           <p className="font-medium text-gray-900 dark:text-white">
-            Drag & drop files here, or click to browse
+            {t('media.dropzone.title')}
           </p>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Upload to: {folderLabel(currentFolder)}
+            {t('media.dropzone.uploadTo', { folder: folderLabel(currentFolder) })}
           </p>
         </div>
       </div>
@@ -564,7 +566,7 @@ export const MediaManager: React.FC = () => {
         <AdminListToolbar
           search={search}
           onSearchChange={setSearch}
-          searchPlaceholder="Hľadať podľa názvu, titulku, alt textu alebo typu…"
+          searchPlaceholder={t('media.search.placeholder')}
           viewMode={viewMode}
           onViewModeChange={setViewMode}
           showViewToggle
@@ -580,22 +582,22 @@ export const MediaManager: React.FC = () => {
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value as TypeFilter)}
             className="form-input w-full sm:min-w-[140px]"
-            aria-label="Filter typu súboru"
+            aria-label={t('media.filter.typeLabel')}
           >
-            <option value="all">Všetky súbory</option>
-            <option value="image">Len obrázky</option>
+            <option value="all">{t('media.filter.all')}</option>
+            <option value="image">{t('media.filter.images')}</option>
           </select>
         </AdminListToolbar>
       </div>
 
       <BulkActionBar
         count={bulkSelection.count}
-        itemLabel="vybraných súborov"
+        itemLabel={t('media.bulk.itemLabel')}
         onClear={bulkSelection.clear}
         actions={[
           {
             id: 'delete',
-            label: 'Zmazať vybrané',
+            label: t('media.bulk.delete'),
             variant: 'danger',
             onClick: () => void handleBulkDelete(),
           },
@@ -728,6 +730,7 @@ const MediaCard: React.FC<MediaCardProps> = ({
   onPreviewNative,
   onDelete,
 }) => {
+  const { t } = useI18n();
   const previewUrl = resolveAdminMediaPreviewUrl(file.path);
   const fallbackUrl = resolvePublicMediaUrl(file.url);
   const [thumbnailSrc, setThumbnailSrc] = useState(previewUrl);
@@ -793,17 +796,17 @@ const MediaCard: React.FC<MediaCardProps> = ({
               type="text"
               value={editTitle}
               onChange={(e) => onEditTitleChange(e.target.value)}
-              placeholder="Title"
+              placeholder={t('media.meta.titlePlaceholder')}
               className="form-input text-sm"
-              aria-label="Title"
+              aria-label={t('media.meta.titlePlaceholder')}
             />
             <input
               type="text"
               value={editAlt}
               onChange={(e) => onEditAltChange(e.target.value)}
-              placeholder="Alt text"
+              placeholder={t('media.meta.altPlaceholder')}
               className="form-input text-sm"
-              aria-label="Alt text"
+              aria-label={t('media.meta.altPlaceholder')}
             />
             <div className="flex gap-2">
               <button type="button" className="btn btn-primary text-xs px-2 py-1" onClick={onSaveEdit}>
@@ -815,8 +818,8 @@ const MediaCard: React.FC<MediaCardProps> = ({
             </div>
           </div>
         ) : (
-          <p className="text-xs text-gray-500 dark:text-gray-400 truncate" title={file.altText || 'No alt text'}>
-            {file.altText ? `Alt: ${file.altText}` : 'No alt text'}
+          <p className="text-xs text-gray-500 dark:text-gray-400 truncate" title={file.altText || t('media.meta.noAlt')}>
+            {file.altText ? t('media.meta.altPrefix', { text: file.altText }) : t('media.meta.noAlt')}
           </p>
         )}
 
@@ -826,7 +829,7 @@ const MediaCard: React.FC<MediaCardProps> = ({
               <button
                 type="button"
                 className="btn btn-secondary text-xs px-2 py-1"
-                title="Preview (fit to screen)"
+                title={t('media.actions.previewFit')}
                 onClick={onPreview}
               >
                 <Expand className="w-3 h-3" />
@@ -834,7 +837,7 @@ const MediaCard: React.FC<MediaCardProps> = ({
               <button
                 type="button"
                 className="btn btn-secondary text-xs px-2 py-1"
-                title="Preview at native resolution"
+                title={t('media.actions.previewNative')}
                 onClick={onPreviewNative}
               >
                 1:1
@@ -845,7 +848,7 @@ const MediaCard: React.FC<MediaCardProps> = ({
             <button
               type="button"
               className="btn btn-secondary text-xs px-2 py-1"
-              title="Edit metadata"
+              title={t('media.actions.editMeta')}
               onClick={onStartEdit}
             >
               <Pencil className="w-3 h-3" />
@@ -854,7 +857,7 @@ const MediaCard: React.FC<MediaCardProps> = ({
           <button
             type="button"
             className="btn btn-secondary text-xs px-2 py-1"
-            title="Copy URL"
+            title={t('media.actions.copyUrl')}
             onClick={onCopyUrl}
           >
             <Copy className="w-3 h-3" />
@@ -862,7 +865,7 @@ const MediaCard: React.FC<MediaCardProps> = ({
           <button
             type="button"
             className="btn btn-danger text-xs px-2 py-1 ml-auto"
-            title="Delete"
+            title={t('media.actions.delete')}
             onClick={onDelete}
           >
             <Trash2 className="w-3 h-3" />
@@ -905,7 +908,10 @@ const MediaListTable: React.FC<MediaListTableProps> = ({
   sortField,
   sortDirection,
   onSort,
-}) => (
+}) => {
+  const { t } = useI18n();
+
+  return (
   <div className="card w-full">
     <div className="card-body p-0 table-container w-full">
       <table className="table w-full min-w-0">
@@ -916,19 +922,19 @@ const MediaListTable: React.FC<MediaListTableProps> = ({
                 type="checkbox"
                 checked={allSelected && files.length > 0}
                 onChange={onToggleSelectAll}
-                aria-label="Select all visible files"
+                aria-label={t('media.table.selectAll')}
               />
             </th>
-            {showThumbnail && <th className="w-24 hide-mobile">Preview</th>}
+            {showThumbnail && <th className="w-24 hide-mobile">{t('media.table.preview')}</th>}
             <SortableTableHeader
-              label="Name"
+              label={t('media.table.name')}
               field="fileName"
               activeField={sortField}
               direction={sortDirection}
               onSort={onSort}
             />
             <SortableTableHeader
-              label="Type"
+              label={t('media.table.type')}
               field="mimeType"
               activeField={sortField}
               direction={sortDirection}
@@ -936,14 +942,14 @@ const MediaListTable: React.FC<MediaListTableProps> = ({
               thClassName="hide-mobile"
             />
             <SortableTableHeader
-              label="Size"
+              label={t('media.table.size')}
               field="size"
               activeField={sortField}
               direction={sortDirection}
               onSort={onSort}
             />
-            <th>SEO</th>
-            <th className="w-[120px]">Actions</th>
+            <th>{t('media.table.seo')}</th>
+            <th className="w-[120px]">{t('media.table.actions')}</th>
           </tr>
         </thead>
         <tbody>
@@ -996,7 +1002,7 @@ const MediaListTable: React.FC<MediaListTableProps> = ({
                     <button
                       type="button"
                       className="btn btn-secondary text-xs px-2 py-1"
-                      title="Edit metadata"
+                      title={t('media.actions.editMeta')}
                       onClick={() => onStartEdit(file)}
                     >
                       <Pencil className="w-3 h-3" />
@@ -1016,4 +1022,5 @@ const MediaListTable: React.FC<MediaListTableProps> = ({
       </table>
     </div>
   </div>
-);
+  );
+};

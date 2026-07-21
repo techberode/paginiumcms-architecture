@@ -281,7 +281,18 @@ export const settingsEn: MessageTree = {
       },
       "backgroundImageUrl": {
         "label": "Background image URL",
-        "help": "Absolute URL or /media/… path shown behind the auth card."
+        "help": "Absolute URL or /storage/… path shown behind the auth card. Pick from media library or upload from disk."
+      },
+      "backgroundPicker": {
+        "pickFromMedia": "Pick from media",
+        "uploadLocal": "Upload from disk",
+        "uploading": "Uploading…",
+        "remove": "Remove background",
+        "previewAlt": "Login background preview",
+        "mediaModalTitle": "Select login background",
+        "uploadAlt": "Login page background",
+        "uploadFailed": "Background upload failed.",
+        "invalidType": "Only image types allowed by uploadSecurity settings."
       },
       "infoBullets": {
         "label": "Info bullet points",
@@ -377,6 +388,10 @@ export const settingsEn: MessageTree = {
       },
       "robotsDefault": {
         "label": "Robots (default)"
+      },
+      "allowSearchIndexing": {
+        "label": "Allow search engine indexing",
+        "help": "When disabled, robots.txt uses Disallow: / and meta tags use noindex (except pages with explicit noIndex)."
       },
       "twitterCard": {
         "label": "Twitter card type"

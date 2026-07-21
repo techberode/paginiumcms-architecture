@@ -20,6 +20,7 @@ class AuditTrailService
     private EnhancedVersionManager $versionManager;
     private UserRepository $userRepository;
     private ?IncidentNotifier $incidentNotifier;
+    private AuditMessageFormatter $messageFormatter;
     /** @var array<int|string, mixed> */
     private array $sessionContext = [];
     /** @var array<int|string, mixed> */
@@ -36,6 +37,7 @@ class AuditTrailService
         $this->versionManager = $versionManager;
         $this->userRepository = $userRepository;
         $this->incidentNotifier = $incidentNotifier;
+        $this->messageFormatter = new AuditMessageFormatter();
         
         $this->initializeSessionContext();
     }
@@ -100,21 +102,25 @@ class AuditTrailService
             : null;
 
         // Zaznamenanie audit logu
+        $auditMetadata = array_merge([
+            'version' => $version->getVersion(),
+            'content_type' => $contentType,
+            'message' => $message,
+            'previous_version' => $previousVersion ? $previousVersion->getVersion() : null,
+            'diff' => $version->getDiff(),
+            'change_summary' => $this->summarizeDiff($version->getDiff()),
+            'content_size' => strlen($content),
+            'front_matter_size' => strlen($frontMatter),
+            'content_slug' => $contentId,
+        ], $metadata);
+        $auditMetadata = $this->enrichContentMetadata($frontMatter, $auditMetadata);
+
         $this->logAuditEvent(
             'content_change',
             $contentId,
             $action,
             $user,
-            array_merge([
-                'version' => $version->getVersion(),
-                'content_type' => $contentType,
-                'message' => $message,
-                'previous_version' => $previousVersion ? $previousVersion->getVersion() : null,
-                'diff' => $version->getDiff(),
-                'change_summary' => $this->summarizeDiff($version->getDiff()),
-                'content_size' => strlen($content),
-                'front_matter_size' => strlen($frontMatter)
-            ], $metadata)
+            $auditMetadata
         );
 
         // Uloženie do bufferu pre batch spracovanie
@@ -237,23 +243,23 @@ class AuditTrailService
                 'metadata' => $metadata,
                 'severity' => $severity,
                 'timestamp' => date('Y-m-d H:i:s'),
-                'audit_id' => uniqid('audit_', true)
+                'audit_id' => uniqid('audit_', true),
+                'summary' => $this->messageFormatter->format($category, $action, $target, $user, $metadata),
             ]
         );
 
-        $message = sprintf(
-            '[%s] %s: %s on %s by %s',
-            strtoupper($category),
-            strtoupper($action),
-            $target,
-            $user ? $user->getEmail() : 'system',
-            date('Y-m-d H:i:s')
-        );
+        $message = (string) $context['summary'];
 
         $entry = new LogEntry($severity, 'audit_' . $category, $message);
         $entry->setContext($context);
+        if ($user !== null) {
+            $entry->setUserId($user->getId());
+        }
+        if (isset($_SERVER['REMOTE_ADDR'])) {
+            $entry->setIp((string) $_SERVER['REMOTE_ADDR']);
+        }
 
-        $this->logger->log($severity, $message, $context);
+        $this->logger->writeEntry($entry);
 
         // Ak je buffering zapnutý, uložíme do bufferu
         if ($this->isBuffering) {
@@ -276,8 +282,12 @@ class AuditTrailService
         $versions = $this->versionManager->getVersions($contentId);
         
         // Získanie logov
-        $logs = $this->logger->getEntriesByCategory('audit_content_change', 1000);
-        
+        $logs = array_filter(
+            $this->logger->getLastEntries(5000),
+            fn (array $log): bool => $this->isAuditEntry($log)
+                && ($log['context']['category'] ?? '') === 'content_change'
+        );
+
         // Filtrovanie logov pre konkrétny obsah
         $contentLogs = array_filter($logs, function($log) use ($contentId) {
             return isset($log['context']['target']) && $log['context']['target'] === $contentId;
@@ -351,10 +361,11 @@ class AuditTrailService
             'timeline' => []
         ];
 
-        $logs = $this->logger->getLastEntries(1000);
+        $logs = $this->logger->getLastEntries(5000);
+        $matchedEvents = [];
 
         foreach ($logs as $log) {
-            if (strpos($log['category'] ?? '', 'audit_') !== 0) {
+            if (!$this->isAuditEntry($log)) {
                 continue;
             }
 
@@ -367,20 +378,22 @@ class AuditTrailService
                         break;
                     }
                 }
-                if ($skip) continue;
+                if ($skip) {
+                    continue;
+                }
             }
 
             $stats['total_events']++;
-            
-            $category = str_replace('audit_', '', $log['category'] ?? 'unknown');
+
+            $category = $this->resolveAuditCategory($log);
             $stats['by_category'][$category] = ($stats['by_category'][$category] ?? 0) + 1;
-            
+
             $action = $log['context']['action'] ?? 'unknown';
             $stats['by_action'][$action] = ($stats['by_action'][$action] ?? 0) + 1;
-            
+
             $severity = $log['severity'] ?? 'INFO';
             $stats['by_severity'][$severity] = ($stats['by_severity'][$severity] ?? 0) + 1;
-            
+
             if (isset($log['context']['user']['email'])) {
                 $email = $log['context']['user']['email'];
                 $stats['by_user'][$email] = ($stats['by_user'][$email] ?? 0) + 1;
@@ -390,11 +403,21 @@ class AuditTrailService
             $date = date('Y-m-d', strtotime($log['timestamp'] ?? 'now'));
             $stats['timeline'][$date] = ($stats['timeline'][$date] ?? 0) + 1;
 
-            // Recent events
-            if (count($stats['recent_events']) < 20) {
-                $stats['recent_events'][] = $log;
-            }
+            $matchedEvents[] = $log;
         }
+
+        usort($matchedEvents, static function (array $a, array $b): int {
+            $timeA = strtotime((string) ($a['timestamp'] ?? '1970-01-01'));
+            $timeB = strtotime((string) ($b['timestamp'] ?? '1970-01-01'));
+
+            return ($timeB ?: 0) <=> ($timeA ?: 0);
+        });
+
+        $recentEvents = array_slice($matchedEvents, 0, 20);
+        foreach ($recentEvents as $index => $event) {
+            $recentEvents[$index]['display_message'] = $this->messageFormatter->formatFromLog($event);
+        }
+        $stats['recent_events'] = $recentEvents;
 
         // Zoradenie timeline
         ksort($stats['timeline']);
@@ -414,7 +437,7 @@ class AuditTrailService
         $csv = "Timestamp,Category,Action,Target,User,Email,Severity,Message\n";
 
         foreach ($logs as $log) {
-            if (strpos($log['category'] ?? '', 'audit_') !== 0) {
+            if (!$this->isAuditEntry($log)) {
                 continue;
             }
 
@@ -422,7 +445,7 @@ class AuditTrailService
             $csv .= sprintf(
                 "%s,%s,%s,%s,%s,%s,%s,\"%s\"\n",
                 $log['timestamp'] ?? '',
-                str_replace('audit_', '', $log['category'] ?? ''),
+                $this->resolveAuditCategory($log),
                 $context['action'] ?? '',
                 $context['target'] ?? '',
                 $context['user']['name'] ?? 'system',
@@ -489,25 +512,92 @@ class AuditTrailService
     }
 
     /**
+     * @param array<int|string, mixed> $log
+     */
+    private function isAuditEntry(array $log): bool
+    {
+        $category = (string) ($log['category'] ?? '');
+        if (str_starts_with($category, 'audit_')) {
+            return true;
+        }
+
+        $contextCategory = $log['context']['category'] ?? null;
+        if (is_string($contextCategory) && in_array($contextCategory, [
+            'content_change',
+            'content_access',
+            'admin_action',
+            'security',
+        ], true)) {
+            return true;
+        }
+
+        $message = (string) ($log['message'] ?? '');
+
+        return preg_match('/\[(CONTENT_CHANGE|CONTENT_ACCESS|ADMIN_ACTION|SECURITY)\]/', $message) === 1;
+    }
+
+    /**
+     * @param array<int|string, mixed> $log
+     */
+    private function resolveAuditCategory(array $log): string
+    {
+        $category = (string) ($log['category'] ?? '');
+        if (str_starts_with($category, 'audit_')) {
+            return str_replace('audit_', '', $category);
+        }
+
+        $contextCategory = $log['context']['category'] ?? null;
+        if (is_string($contextCategory) && $contextCategory !== '') {
+            return $contextCategory;
+        }
+
+        if (preg_match('/\[(CONTENT_CHANGE|CONTENT_ACCESS|ADMIN_ACTION|SECURITY)\]/', (string) ($log['message'] ?? ''), $matches) === 1) {
+            return strtolower($matches[1]);
+        }
+
+        return 'unknown';
+    }
+
+    /**
+     * @param array<int|string, mixed> $metadata
+     * @return array<int|string, mixed>
+     */
+    private function enrichContentMetadata(string $frontMatter, array $metadata): array
+    {
+        $title = trim((string) ($metadata['content_title'] ?? ''));
+        if ($title === '' && preg_match('/^title:\s*(.+)$/m', $frontMatter, $matches) === 1) {
+            $metadata['content_title'] = trim(trim($matches[1]), " \t\"'");
+        }
+
+        if (!isset($metadata['content_status']) || !is_string($metadata['content_status'])) {
+            if (preg_match('/^status:\s*(\w+)/m', $frontMatter, $matches) === 1) {
+                $metadata['content_status'] = strtolower($matches[1]);
+            }
+        }
+
+        return $metadata;
+    }
+
+    /**
      * @param array<int|string, mixed> $diff
      */
     private function summarizeDiff(?array $diff): string
     {
         if (!$diff) {
-            return 'No changes';
+            return 'Bez zmien';
         }
 
         $summary = [];
         if (isset($diff['additions']) && $diff['additions'] > 0) {
-            $summary[] = $diff['additions'] . ' added';
+            $summary[] = $diff['additions'] . ' pridaných';
         }
         if (isset($diff['deletions']) && $diff['deletions'] > 0) {
-            $summary[] = $diff['deletions'] . ' removed';
+            $summary[] = $diff['deletions'] . ' odstránených';
         }
         if (isset($diff['modifications']) && $diff['modifications'] > 0) {
-            $summary[] = $diff['modifications'] . ' modified';
+            $summary[] = $diff['modifications'] . ' upravených';
         }
 
-        return empty($summary) ? 'No significant changes' : implode(', ', $summary);
+        return empty($summary) ? 'Bez významných zmien' : implode(', ', $summary);
     }
 }

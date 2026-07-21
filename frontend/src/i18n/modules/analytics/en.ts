@@ -1,0 +1,43 @@
+import type { MessageTree } from '../../types';
+
+export const analyticsEn: MessageTree = {
+  badge: 'Analytics',
+  title: 'Analytics',
+  subtitle: 'Traffic statistics and user behaviour',
+  refresh: 'Refresh',
+  trendPlaceholder: '0%',
+  toast: {
+    loadFailed: 'Failed to load analytics',
+  },
+  period: {
+    '7': '7 days',
+    '14': '14 days',
+    '30': '30 days',
+  },
+  kpi: {
+    pageViews: 'Page views',
+    uniqueVisitors: 'Unique visitors',
+    avgDuration: 'Avg. time on page',
+    bounceRate: 'Bounce rate',
+  },
+  tabs: {
+    overview: 'Overview',
+    pages: 'Pages',
+    sources: 'Sources',
+    devices: 'Devices',
+    geo: 'Geography',
+  },
+  sections: {
+    dailyViews: 'Daily views for the last :days days',
+    topPages: 'Top pages',
+    topArticles: 'Top articles',
+    devices: 'Devices',
+    browsers: 'Browsers',
+  },
+  devices: {
+    desktop: 'Desktop',
+    mobile: 'Mobile',
+    tablet: 'Tablet',
+    unknown: 'Unknown',
+  },
+};

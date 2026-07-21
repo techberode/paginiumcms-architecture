@@ -80,6 +80,26 @@ class LogWriterTest extends TestCase
         $this->assertSame('After recovery', $data[1]['message']);
     }
 
+    public function testWriteToFreshEmptyDailyFileDoesNotCreateCorruptBackup(): void
+    {
+        $date = date('Y-m-d');
+        $filePath = $this->logDir . '/' . $date . '.json';
+        touch($filePath);
+
+        $entry = new LogEntry(LogSeverity::INFO, 'test', 'First entry today');
+        $this->logWriter->write($entry);
+
+        $this->assertFileExists($filePath);
+        $this->assertGreaterThan(0, filesize($filePath));
+
+        $corruptFiles = glob($filePath . '.corrupt-*') ?: [];
+        $this->assertSame([], $corruptFiles);
+
+        $data = FileHelper::readJson($filePath);
+        $this->assertCount(1, $data);
+        $this->assertSame('First entry today', $data[0]['message']);
+    }
+
     public function testReadAll(): void
     {
         $this->markTestSkipped('vfsStream nepodporuje glob() správne pre LogWriter.');

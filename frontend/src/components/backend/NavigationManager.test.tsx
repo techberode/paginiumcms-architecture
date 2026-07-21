@@ -1,7 +1,8 @@
 // frontend/src/components/backend/NavigationManager.test.tsx
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import { NavigationManager } from './NavigationManager';
+import { renderWithRouter } from '../../test/renderWithRouter';
 
 const mocks = vi.hoisted(() => ({
   getNavigation: vi.fn(),
@@ -34,7 +35,7 @@ describe('NavigationManager', () => {
   });
 
   it('loads navigation once and renders editable items', async () => {
-    render(<NavigationManager />);
+    renderWithRouter(<NavigationManager />);
 
     expect(await screen.findByDisplayValue('Home')).toBeInTheDocument();
     expect(screen.getByDisplayValue('/blog')).toBeInTheDocument();
@@ -42,7 +43,7 @@ describe('NavigationManager', () => {
   });
 
   it('does not refetch in a loop after initial load', async () => {
-    render(<NavigationManager />);
+    renderWithRouter(<NavigationManager />);
 
     await screen.findByDisplayValue('Home');
     const initialCalls = mocks.getNavigation.mock.calls.length;

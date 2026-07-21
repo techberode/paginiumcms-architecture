@@ -44,6 +44,15 @@ export interface DashboardOverview {
   storage?: {
     free_space?: string | null;
     free_space_bytes?: number | null;
+    content?: {
+      total_bytes: number;
+      total_human: string;
+      document_count: number;
+      pages: number;
+      articles: number;
+      media: number;
+      users: number;
+    };
   };
 }
 

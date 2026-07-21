@@ -5,11 +5,29 @@ import apiClient from './client';
 export interface AnalyticsOverview {
   period: string;
   date: string;
+  days?: number;
   visits: number;
   page_views: number;
   unique_visitors: number;
   bounce_rate: number;
+  avg_duration_seconds?: number;
   realtime_visitors: number;
+}
+
+export interface TopArticle {
+  uri: string;
+  views: number;
+  title: string;
+}
+
+export interface BrowserStat {
+  browser: string;
+  visits: number;
+}
+
+export interface GeoStat {
+  country: string;
+  visits: number;
 }
 
 export interface TopPage {
@@ -32,8 +50,11 @@ export interface DeviceStats {
 export interface AnalyticsPayload {
   overview: AnalyticsOverview;
   top_pages: TopPage[];
+  top_articles?: TopArticle[];
   top_referers: TopReferer[];
   devices: DeviceStats;
+  browsers?: BrowserStat[];
+  geo?: GeoStat[];
 }
 
 export interface ChartPoint {

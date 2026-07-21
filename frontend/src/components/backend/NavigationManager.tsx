@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Navigation, Plus, Trash2, ArrowUp, ArrowDown, Save, CornerDownRight } from 'lucide-react';
 import { getNavigation, NavigationItem, updateNavigation } from '../../api/navigation';
 import { useToast } from '../../hooks/useToast';
+import { useI18n } from '../../context/I18nContext';
 import {
   NAVIGATION_MAX_DEPTH,
   buildNavigationTree,
@@ -24,6 +25,7 @@ const createItem = (label: string, path: string, parentId: string | null, order:
 
 export const NavigationManager: React.FC = () => {
   const { error: showError, success: showSuccess } = useToast();
+  const { t } = useI18n();
   const [items, setItems] = useState<NavigationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -36,11 +38,11 @@ export const NavigationManager: React.FC = () => {
       const nav = await getNavigation();
       setItems(normalizeNavigationOrders(nav));
     } catch {
-      showError('Nepodarilo sa načítať menu.');
+      showError(t('navigation.toast.loadFailed'));
     } finally {
       setLoading(false);
     }
-  }, [showError]);
+  }, [showError, t]);
 
   useEffect(() => {
     void load();
@@ -78,14 +80,14 @@ export const NavigationManager: React.FC = () => {
   const addChildItem = (parentId: string) => {
     const depth = getNavigationDepth(items, parentId);
     if (depth >= NAVIGATION_MAX_DEPTH) {
-      showError(`Maximálne ${NAVIGATION_MAX_DEPTH} úrovne menu.`);
+      showError(t('navigation.toast.maxDepth', { depth: String(NAVIGATION_MAX_DEPTH) }));
       return;
     }
 
     setItems((prev) =>
       normalizeNavigationOrders([
         ...prev,
-        createItem('Nová položka', '/', parentId, prev.length),
+        createItem(t('navigation.defaults.newItemLabel'), '/', parentId, prev.length),
       ])
     );
   };
@@ -96,9 +98,9 @@ export const NavigationManager: React.FC = () => {
       const payload = normalizeNavigationOrders(items);
       const saved = await updateNavigation(payload);
       setItems(normalizeNavigationOrders(saved));
-      showSuccess('Menu bolo uložené.');
+      showSuccess(t('navigation.toast.saved'));
     } catch {
-      showError('Uloženie menu zlyhalo.');
+      showError(t('navigation.toast.saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -118,23 +120,22 @@ export const NavigationManager: React.FC = () => {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <Navigation className="w-6 h-6 text-indigo-500" />
-            Menu
+            {t('navigation.page.title')}
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            Úrovne: hlavné menu → submenu → submenu (max. {NAVIGATION_MAX_DEPTH}). Uložené v{' '}
-            <code>data/navigation.json</code>
+            {t('navigation.page.subtitle', { depth: String(NAVIGATION_MAX_DEPTH) })}
           </p>
         </div>
         <button type="button" className="btn btn-primary" disabled={saving} onClick={() => void handleSave()}>
           <Save className="w-4 h-4 inline mr-2" />
-          {saving ? 'Ukladám…' : 'Uložiť menu'}
+          {saving ? t('navigation.actions.saving') : t('navigation.actions.save')}
         </button>
       </div>
 
       <div className="card">
         <div className="card-body space-y-3">
           {flatTree.length === 0 ? (
-            <p className="text-sm text-gray-500 text-center py-8">Zatiaľ žiadne položky menu.</p>
+            <p className="text-sm text-gray-500 text-center py-8">{t('navigation.empty')}</p>
           ) : (
             flatTree.map((node) => (
               <div
@@ -144,7 +145,7 @@ export const NavigationManager: React.FC = () => {
               >
                 <div className="flex items-center gap-2 shrink-0 text-xs text-gray-400 min-w-[72px]">
                   <CornerDownRight className="w-3 h-3" />
-                  Úroveň {node.depth}
+                  {t('navigation.level', { depth: String(node.depth) })}
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 flex-1 min-w-0">
@@ -152,15 +153,15 @@ export const NavigationManager: React.FC = () => {
                     className="form-input"
                     value={node.label}
                     onChange={(e) => updateItem(node.id, { label: e.target.value })}
-                    placeholder="Názov"
-                    aria-label="Názov položky"
+                    placeholder={t('navigation.fields.labelPlaceholder')}
+                    aria-label={t('navigation.fields.label')}
                   />
                   <input
                     className="form-input font-mono text-sm"
                     value={node.path}
                     onChange={(e) => updateItem(node.id, { path: e.target.value })}
-                    placeholder="/cesta"
-                    aria-label="Cesta"
+                    placeholder={t('navigation.fields.pathPlaceholder')}
+                    aria-label={t('navigation.fields.path')}
                   />
                 </div>
 
@@ -172,7 +173,7 @@ export const NavigationManager: React.FC = () => {
                       onClick={() => addChildItem(node.id)}
                     >
                       <Plus className="w-3 h-3 inline mr-1" />
-                      Submenu
+                      {t('navigation.actions.submenu')}
                     </button>
                   ) : null}
                   <button
@@ -206,21 +207,21 @@ export const NavigationManager: React.FC = () => {
       <form onSubmit={addRootItem} className="card">
         <div className="card-body flex flex-wrap gap-3 items-end">
           <div className="flex-1 min-w-[140px]">
-            <label className="form-label">Nová položka (hlavné menu)</label>
+            <label className="form-label">{t('navigation.actions.newRootLabel')}</label>
             <input className="form-input" value={newLabel} onChange={(e) => setNewLabel(e.target.value)} />
           </div>
           <div className="flex-1 min-w-[140px]">
-            <label className="form-label">Cesta</label>
+            <label className="form-label">{t('navigation.fields.path')}</label>
             <input
               className="form-input"
               value={newPath}
               onChange={(e) => setNewPath(e.target.value)}
-              placeholder="/about"
+              placeholder={t('navigation.fields.pathPlaceholderNew')}
             />
           </div>
           <button type="submit" className="btn btn-secondary">
             <Plus className="w-4 h-4 inline mr-1" />
-            Pridať
+            {t('navigation.actions.add')}
           </button>
         </div>
       </form>

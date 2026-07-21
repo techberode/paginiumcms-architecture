@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use PaginiumCMS\Core\Logging\LogStoragePaths;
 use PaginiumCMS\Core\Logging\Services\Logger;
 use PaginiumCMS\Core\Logging\Services\LogWriter;
 use PaginiumCMS\Core\Logging\Services\AuditLogger;
@@ -21,7 +22,7 @@ return [
         ->constructor(
             get(FileReaderInterface::class),
             get(FileWriterInterface::class),
-            __DIR__ . '/../../../storage/logs/app'
+            LogStoragePaths::app()
         ),
 
     // Main Logger
@@ -40,7 +41,7 @@ return [
                         ->constructor(
                             get(FileReaderInterface::class),
                             get(FileWriterInterface::class),
-                            __DIR__ . '/../../../storage/logs/audit'
+                            LogStoragePaths::audit()
                         ),
                     'audit'
                 )
@@ -55,7 +56,7 @@ return [
                         ->constructor(
                             get(FileReaderInterface::class),
                             get(FileWriterInterface::class),
-                            __DIR__ . '/../../../storage/logs/user'
+                            LogStoragePaths::user()
                         ),
                     'user'
                 )
@@ -70,7 +71,7 @@ return [
                         ->constructor(
                             get(FileReaderInterface::class),
                             get(FileWriterInterface::class),
-                            __DIR__ . '/../../../storage/logs/event'
+                            LogStoragePaths::event()
                         ),
                     'event'
                 )

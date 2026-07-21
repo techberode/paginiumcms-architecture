@@ -170,6 +170,10 @@ final class SeoMetaBuilder
             return 'noindex,nofollow';
         }
 
+        if (($seo['allowSearchIndexing'] ?? true) === false) {
+            return 'noindex,nofollow';
+        }
+
         return (string) ($seo['robotsDefault'] ?? 'index,follow');
     }
 

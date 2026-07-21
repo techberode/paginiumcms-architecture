@@ -21,17 +21,26 @@ final class Reporter implements ReporterInterface
      */
     public function getOverview(string $period = 'today'): array
     {
+        $days = $this->resolvePeriodDays($period);
+        if ($days > 1) {
+            return $this->getAggregatedOverviewForDays($days, $period);
+        }
+
         $date = $this->resolveDate($period);
         $stats = $this->tracker->getDailyStats($date);
         $realtime = $this->tracker->getRealtimeVisitors();
+        $visits = $this->tracker->getVisits($date, 10000);
+        $avgDuration = $this->averageDuration($visits);
 
         return [
             'period' => $period,
             'date' => $date,
+            'days' => 1,
             'visits' => (int) ($stats['visits'] ?? 0),
             'page_views' => (int) ($stats['page_views'] ?? 0),
-            'unique_visitors' => (int) ($stats['unique_visitors'] ?? 0),
+            'unique_visitors' => $this->countUniqueVisitors($visits),
             'bounce_rate' => (float) ($stats['bounce_rate'] ?? 0),
+            'avg_duration_seconds' => $avgDuration,
             'realtime_visitors' => count($realtime),
         ];
     }
@@ -98,6 +107,30 @@ final class Reporter implements ReporterInterface
     }
 
     /**
+     * @return list<array{browser: string, visits: int}>
+     */
+    public function getBrowserStats(string $period = 'today'): array
+    {
+        $visits = $this->collectVisitsForPeriod($period, 2000);
+        $counts = [];
+        foreach ($visits as $visit) {
+            $browser = trim((string) ($visit['browser'] ?? 'Unknown'));
+            if ($browser === '') {
+                $browser = 'Unknown';
+            }
+            $counts[$browser] = ($counts[$browser] ?? 0) + 1;
+        }
+        arsort($counts);
+
+        $top = [];
+        foreach ($counts as $browser => $count) {
+            $top[] = ['browser' => $browser, 'visits' => $count];
+        }
+
+        return $top;
+    }
+
+    /**
      * @return list<array{country: string, visits: int}>
      */
     public function getGeoStats(string $period = 'today'): array
@@ -147,7 +180,7 @@ final class Reporter implements ReporterInterface
             $pageViews = 0;
             $unique = 0;
             for ($i = 0; $i < 7; $i++) {
-                $date = date('Y-m-d', strtotime('-' . $i . ' days'));
+                $date = $this->dateDaysAgo($i);
                 $stats = $this->tracker->getDailyStats($date);
                 $visits += (int) ($stats['visits'] ?? 0);
                 $pageViews += (int) ($stats['page_views'] ?? 0);
@@ -247,10 +280,21 @@ final class Reporter implements ReporterInterface
      */
     private function collectVisitsForPeriod(string $period, int $limitPerDay = 5000): array
     {
+        $days = $this->resolvePeriodDays($period);
+        if ($days > 1) {
+            $all = [];
+            for ($i = 0; $i < $days; $i++) {
+                $date = $this->dateDaysAgo($i);
+                $all = [...$all, ...$this->tracker->getVisits($date, $limitPerDay)];
+            }
+
+            return $all;
+        }
+
         if ($period === 'week') {
             $all = [];
             for ($i = 0; $i < 7; $i++) {
-                $date = date('Y-m-d', strtotime('-' . $i . ' days'));
+                $date = $this->dateDaysAgo($i);
                 $all = [...$all, ...$this->tracker->getVisits($date, $limitPerDay)];
             }
 
@@ -279,12 +323,89 @@ final class Reporter implements ReporterInterface
         return ucwords(str_replace(['-', '_'], ' ', $slug));
     }
 
+    private function dateDaysAgo(int $offset): string
+    {
+        $timestamp = strtotime(sprintf('-%d days', $offset));
+
+        return date('Y-m-d', $timestamp ?: time());
+    }
+
     private function resolveDate(string $period): string
     {
         return match ($period) {
-            'yesterday' => date('Y-m-d', strtotime('-1 day')),
-            'week' => date('Y-m-d'),
+            'yesterday' => $this->dateDaysAgo(1),
             default => date('Y-m-d'),
         };
+    }
+
+    private function resolvePeriodDays(string $period): int
+    {
+        return match ($period) {
+            'week', '7d', '7' => 7,
+            '14d', '14' => 14,
+            '30d', '30' => 30,
+            default => preg_match('/^(\d+)d?$/', $period, $matches) === 1
+                ? max(1, min(90, (int) $matches[1]))
+                : 1,
+        };
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function getAggregatedOverviewForDays(int $days, string $periodLabel): array
+    {
+        $visits = [];
+        for ($i = 0; $i < $days; $i++) {
+            $date = $this->dateDaysAgo($i);
+            $visits = [...$visits, ...$this->tracker->getVisits($date, 10000)];
+        }
+
+        return [
+            'period' => $periodLabel,
+            'date' => date('Y-m-d'),
+            'days' => $days,
+            'visits' => count($visits),
+            'page_views' => count($visits),
+            'unique_visitors' => $this->countUniqueVisitors($visits),
+            'bounce_rate' => 0.0,
+            'avg_duration_seconds' => $this->averageDuration($visits),
+            'realtime_visitors' => count($this->tracker->getRealtimeVisitors()),
+        ];
+    }
+
+    /**
+     * @param list<array<string, mixed>> $visits
+     */
+    private function countUniqueVisitors(array $visits): int
+    {
+        $ids = [];
+        foreach ($visits as $visit) {
+            $id = (string) ($visit['visitorId'] ?? '');
+            if ($id !== '') {
+                $ids[$id] = true;
+            }
+        }
+
+        return count($ids);
+    }
+
+    /**
+     * @param list<array<string, mixed>> $visits
+     */
+    private function averageDuration(array $visits): int
+    {
+        $total = 0;
+        $count = 0;
+        foreach ($visits as $visit) {
+            $duration = (int) ($visit['duration'] ?? 0);
+            if ($duration <= 0) {
+                continue;
+            }
+            $total += $duration;
+            ++$count;
+        }
+
+        return $count > 0 ? (int) round($total / $count) : 0;
     }
 }
