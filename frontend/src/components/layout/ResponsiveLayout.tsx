@@ -15,8 +15,15 @@ interface ResponsiveLayoutProps {
   children: React.ReactNode;
 }
 
+const SIDEBAR_COLLAPSED_KEY = 'paginium.admin.sidebarCollapsed';
+
 export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) => {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+    return window.localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === '1';
+  });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
@@ -25,6 +32,10 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) 
   const isMobile = useMediaQuery('(max-width: 1023px)');
   const { twoFactorSetupPending } = useAuth();
   const openInNewTab = useOpenLinksInNewTab();
+
+  useEffect(() => {
+    window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, sidebarCollapsed ? '1' : '0');
+  }, [sidebarCollapsed]);
 
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -76,6 +87,8 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) 
           onGoToWebsite={() => openExternalUrl(publicSiteUrl, openInNewTab)}
           onOpenMobileMenu={() => setMobileMenuOpen(true)}
           onOpenChangePassword={() => setChangePasswordOpen(true)}
+          sidebarCollapsed={sidebarCollapsed}
+          onToggleSidebar={() => setSidebarCollapsed((value) => !value)}
         />
         <DemoModeBanner />
         {twoFactorSetupPending && location.pathname !== '/account/security' && (

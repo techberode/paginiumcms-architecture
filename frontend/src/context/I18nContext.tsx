@@ -25,6 +25,22 @@ export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 };
 
+/** Test-only provider without SettingsContext dependency. */
+export const TestI18nProvider: React.FC<{
+  children: React.ReactNode;
+  locale?: Locale;
+}> = ({ children, locale = 'sk' }) => {
+  const value = useMemo<I18nContextValue>(
+    () => ({
+      locale,
+      t: (key, params) => translate(locale, key, params),
+    }),
+    [locale]
+  );
+
+  return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
+};
+
 export function useI18n(): I18nContextValue {
   const ctx = useContext(I18nContext);
   if (!ctx) {

@@ -60,12 +60,12 @@ describe('SettingsView deep links', () => {
   });
 
   it('opens the requested settings group from ?group=', async () => {
-    renderSettings('/settings?group=logging');
+    renderSettings('/settings?category=system&group=logging');
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Logging' })).toHaveClass('border-indigo-600');
+      expect(screen.getByRole('button', { name: 'Logy' })).toHaveClass('border-indigo-600');
     });
-    expect(screen.getByLabelText('Retention days')).toBeInTheDocument();
+    expect(screen.getByLabelText('Retencia logov (dni)')).toBeInTheDocument();
   });
 
   it('syncs ?group= when switching tabs', async () => {
@@ -78,17 +78,17 @@ describe('SettingsView deep links', () => {
         </Routes>
         <SearchParamsProbe onChange={(value) => { latestSearch = value; }} />
       </>,
-      { routerProps: { initialEntries: ['/settings?group=general'] } }
+      { routerProps: { initialEntries: ['/settings?category=system&group=general'] } }
     );
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'General' })).toHaveClass('border-indigo-600');
+      expect(screen.getByRole('button', { name: 'Všeobecné' })).toHaveClass('border-indigo-600');
     });
 
-    await fastUser.click(screen.getByRole('button', { name: 'Logging' }));
+    await fastUser.click(screen.getByRole('button', { name: 'Logy' }));
 
     await waitFor(() => {
-      expect(latestSearch).toBe('group=logging');
+      expect(latestSearch).toBe('category=system&group=logging');
     });
   });
 });

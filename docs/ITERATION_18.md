@@ -1,7 +1,7 @@
 # Iteration 18 – Admin UI Localization (i18n)
 
-**Status:** Partial  
-**Version:** 2.0.6+ (foundation); full UI migration pending
+**Status:** ✅ Shipped (2.0.44) · It.18a–d complete  
+**Version:** 2.0.44
 
 ## Summary
 
@@ -22,15 +22,27 @@ Migrate all admin UI strings from hardcoded Slovak to `useI18n()`, with backend 
 
 | Path | Role |
 |------|------|
-| `src/i18n/core/{sk,en}.ts` | Core admin catalog |
+| `src/i18n/core/{sk,en}.ts` | Core admin catalog (`common.*`) |
+| `src/i18n/modules/admin/{sk,en}.ts` | **It.18a** — sidebar + header (`admin.nav.*`, `admin.header.*`) |
+| `src/i18n/modules/list/{sk,en}.ts` | **It.18b** — shared list toolbar, pagination, bulk bar, view modes |
+| `src/i18n/modules/content/{sk,en}.ts` | **It.18b** — pages/articles manager (`PagesManager`) |
+| `src/i18n/modules/settings/{sk,en}.ts` | **It.18c** — settings UI, groups, field labels, cache panel |
+| `src/i18n/modules/settings/helpers.ts` | Translate group/field/enum with API fallback |
+| `src/i18n/registerModules.ts` | Registers module catalogs at app boot |
 | `registerModuleMessages()` | Per-module blocks under `src/i18n/modules/` |
 | `I18nProvider` + `useI18n().t()` | Locale from `SettingsContext` |
-| `src/i18n/index.test.ts` | Core catalog tests |
+| `AdminSidebar.tsx`, `AdminHeader.tsx` | Migrated to `useI18n()` (It.18a) |
+| `PagesManager.tsx` + list components | Migrated to `useI18n()` (It.18b) |
+| `SettingsView.tsx`, `CacheManagerPanel.tsx` | Migrated to `useI18n()` (It.18c) |
+| `src/i18n/modules/translations/{sk,en}.ts` | **It.18d** — translation editor UI |
+| `TranslationEditor.tsx` + `/translations` route | Light Monaco editor for lang files (It.18d) |
+| `TranslationFileManager` + `/api/admin/translations/*` | Backend/FE catalog read/write, Admin+2FA only |
+| Module tests under `src/i18n/modules/*/` | Catalog parity + translate smoke tests |
 
 ## Remaining ⏳
 
-- Migrate all admin components from hardcoded strings → `useI18n()`
-- FE module files: media, navigation, users, settings, dashboard, …
+- Migrate remaining admin components → `useI18n()` + matching `src/i18n/modules/{module}/`
+- FE modules: media, navigation, users, dashboard, …
 - Plugin i18n: `Http/Extensions/{id}/lang/` + `frontend/src/extensions/{id}/i18n/`
 - Public site (`PublicSite`) – separate or shared catalog
 - Optional: `GET /api/i18n/{locale}` for dynamic loading

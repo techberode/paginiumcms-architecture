@@ -1,0 +1,93 @@
+import {
+  LayoutDashboard,
+  FileText,
+  BookOpen,
+  Image as ImageIcon,
+  Database,
+  MessageSquare,
+  Mail,
+  Settings,
+  Code,
+  History,
+  Users,
+  ScrollText,
+  Shield,
+  ShieldAlert,
+  ShieldCheck,
+  Lock,
+  Layers,
+  FlaskConical,
+  Bell,
+  GitBranch,
+  HardDrive,
+  Trash2,
+  CalendarClock,
+  Puzzle,
+  Languages,
+} from 'lucide-react';
+import type { AdminNavSectionDef } from './adminNavTypes';
+
+/** Paginium admin nav — sekcie s podpoložkami (inšpirované Grav, vlastná štruktúra). */
+export const ADMIN_NAV_SECTIONS: AdminNavSectionDef[] = [
+  {
+    id: 'workspace',
+    labelKey: 'admin.sections.workspace',
+    items: [
+      { id: 'dashboard', labelKey: 'admin.nav.dashboard', href: '/dashboard', icon: LayoutDashboard },
+      { id: 'pages', labelKey: 'admin.nav.pages', href: '/pages', icon: FileText },
+      { id: 'articles', labelKey: 'admin.nav.articles', href: '/articles', icon: BookOpen },
+      { id: 'media', labelKey: 'admin.nav.media', href: '/media', icon: ImageIcon },
+      { id: 'navigation', labelKey: 'admin.nav.navigation', href: '/navigation', icon: Database },
+    ],
+  },
+  {
+    id: 'inbox',
+    labelKey: 'admin.sections.inbox',
+    items: [
+      { id: 'comments', labelKey: 'admin.nav.comments', href: '/comments', icon: MessageSquare, adminOnly: true },
+      { id: 'messages', labelKey: 'admin.nav.messages', href: '/messages', icon: Mail, adminOnly: true },
+    ],
+  },
+  {
+    id: 'platform',
+    labelKey: 'admin.sections.platform',
+    items: [
+      { id: 'settings', labelKey: 'admin.nav.settings', href: '/settings', icon: Settings },
+      { id: 'translations', labelKey: 'admin.nav.translations', href: '/translations', icon: Languages, adminOnly: true },
+      { id: 'users', labelKey: 'admin.nav.users', href: '/users', icon: Users, adminOnly: true },
+      { id: 'notifications', labelKey: 'admin.nav.notifications', href: '/notifications', icon: Bell },
+      { id: 'scheduler', labelKey: 'admin.nav.scheduler', href: '/scheduler', icon: CalendarClock, adminOnly: true },
+      { id: 'account-security', labelKey: 'admin.nav.accountSecurity', href: '/account/security', icon: ShieldCheck },
+    ],
+  },
+  {
+    id: 'build',
+    labelKey: 'admin.sections.build',
+    items: [
+      { id: 'code-editor', labelKey: 'admin.nav.codeEditor', href: '/code-editor', icon: Code },
+      { id: 'blueprints', labelKey: 'admin.nav.blueprints', href: '/blueprints', icon: Layers, adminOnly: true },
+      { id: 'extensions', labelKey: 'admin.nav.extensions', href: '/extensions', icon: Puzzle, adminOnly: true },
+      { id: 'demo', labelKey: 'admin.nav.demo', href: '/demo', icon: FlaskConical, adminOnly: true },
+    ],
+  },
+  {
+    id: 'security',
+    labelKey: 'admin.sections.security',
+    items: [
+      { id: 'firewall', labelKey: 'admin.nav.firewall', href: '/firewall', icon: Shield, adminOnly: true },
+      { id: 'logs', labelKey: 'admin.nav.logs', href: '/logs', icon: ScrollText, adminOnly: true },
+      { id: 'audit', labelKey: 'admin.nav.audit', href: '/audit', icon: History },
+      { id: 'security-audit', labelKey: 'admin.nav.securityAudit', href: '/security/audit', icon: ShieldAlert, adminOnly: true },
+      { id: 'security-acl', labelKey: 'admin.nav.securityAcl', href: '/security/acl', icon: Lock, adminOnly: true },
+    ],
+  },
+  {
+    id: 'operations',
+    labelKey: 'admin.sections.operations',
+    items: [
+      { id: 'backups', labelKey: 'admin.nav.backups', href: '/backups', icon: HardDrive },
+      { id: 'trash', labelKey: 'admin.nav.trash', href: '/trash', icon: Trash2, adminOnly: true },
+      { id: 'github', labelKey: 'admin.nav.github', href: '/github', icon: GitBranch, adminOnly: true },
+    ],
+  },
+];
