@@ -1270,8 +1270,8 @@ public function __construct(
 
 ## Súvisiace dokumenty
 
-- [CHANGELOG.md](../CHANGELOG.md) — release 2.0.42 (It.55 + ISS-042)
-- [RELEASE.md](developer/RELEASE.md) — copy-paste pre GitHub release 2.0.42
+- [developer/RELEASE.md](developer/RELEASE.md) — C&P 2.0.46
+- [CHANGELOG.md](../CHANGELOG.md) — 2.0.46
 - [ITERATION_44.md](ITERATION_44.md) — It.44d index filtre (ISS-038)
 - [TESTING.md](developer/TESTING.md) – ako spúšťať testy a regresiu
 - [ROADMAP.md](ROADMAP.md) – plánované iterácie (It.41+, It.47–49)

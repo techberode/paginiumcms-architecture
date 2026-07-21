@@ -1,7 +1,7 @@
 # Iteration 18 – Admin UI Localization (i18n)
 
-**Status:** ✅ Shipped (2.0.44) · It.18a–d complete  
-**Version:** 2.0.44
+**Status:** ✅ Shipped (2.0.44) · It.18a–d complete · **It.18e ✅ (2.0.46)**  
+**Version:** 2.0.44 · **2.0.46** (It.18e media/navigation/dashboard)
 
 ## Summary
 
@@ -39,13 +39,23 @@ Migrate all admin UI strings from hardcoded Slovak to `useI18n()`, with backend 
 | `TranslationFileManager` + `/api/admin/translations/*` | Backend/FE catalog read/write, Admin+2FA only |
 | Module tests under `src/i18n/modules/*/` | Catalog parity + translate smoke tests |
 
+### It.18e ✅ (2.0.46)
+
+| Path | Role |
+|------|------|
+| `src/i18n/modules/media/{sk,en}.ts` | **MediaManager** — actions, filters, stock, metadata |
+| `src/i18n/modules/navigation/{sk,en}.ts` | **NavigationManager** — labels, toasts, form copy |
+| `src/i18n/modules/dashboard/{sk,en}.ts` | **DashboardView** — KPI, hero, stats, quick links, disk panel |
+| `MediaManager.tsx`, `NavigationManager.tsx`, `DashboardView.tsx` | Migrated to `useI18n()` |
+| `NavigationManager.test.tsx`, `MediaManager.test.tsx` | `TestI18nProvider` + SK label assertions |
+
 ## Remaining ⏳
 
-- Migrate remaining admin components → `useI18n()` + matching `src/i18n/modules/{module}/`
-- FE modules: media ✅, navigation ✅, dashboard ✅ (**users ✅ It.18e** · 2.0.45)
+- Migrate remaining admin components → `useI18n()` (comments, messages, audit, backups…)
 - Plugin i18n: `Http/Extensions/{id}/lang/` + `frontend/src/extensions/{id}/i18n/`
 - Public site (`PublicSite`) – separate or shared catalog
 - Optional: `GET /api/i18n/{locale}` for dynamic loading
+- Settings `general.language` enum from `SupportedLocalesRegistry`
 
 ## i18n law
 
@@ -64,4 +74,4 @@ Migrate all admin UI strings from hardcoded Slovak to `useI18n()`, with backend 
 
 ## Next
 
-→ [Iteration 19](ITERATION_19.md) – FlatFile index & pagination
+→ [Iteration 19](ITERATION_19.md) · [Iteration 20](ITERATION_20.md)

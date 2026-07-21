@@ -3,7 +3,7 @@
 > Posledná verzia: **2.0.46** · 2026-07-21  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release. Samotný release/tag zatiaľ nevytváraj, kým nie je schválený deploy.
 
-> **Poznámka k verziám:** Commity `4367d19` (It.55) a `8526c19` (It.54) mali v správe nesprávne číslo (`2.0.42` / `2.0.41`). Oficiálne tagy podľa CHANGELOG: **v2.0.42** → `8526c19`, **v2.0.43** → `4367d19`, **v2.0.44** → `199877a`, **v2.0.45** → `f3ed5bc`, **v2.0.46** → *(commit po merge — pozri git log)*.
+> **Poznámka k verziám:** … **v2.0.45** → `f3ed5bc`, **v2.0.46** → `a16c15d` (+ docs/test fix `HEAD`).
 
 ---
 
@@ -11,18 +11,21 @@
 
 ```bash
 ./scripts/iteration-gate.sh
-# alebo lokálny alltests skript → log bez exit 1 na PHPUnit/PHPStan
+# alebo lokálny alltests skript → log bez exit 1 na PHPUnit/PHPStan/Vitest
 ```
 
 **Po deployi:**
 
-1. **Dashboard aktivita** — po úprave článku/stránky sa v Prehľade zobrazí SK správa s titulkom obsahu (nie len slug)
-2. **Audit trail** — `/audit` rovnaký formát; legacy záznamy sa formátujú cez FE utilitu
-3. **Logy** — `/logs` zobrazuje čitateľné správy (`display_message`), nie surový JSON; dnešný denný súbor sa vytvára normálne
-4. **Sidebar** — **Prehľad** pripnutý priamo pod user blokom (mimo scroll sekcie)
-5. **Nastavenia → Stránka → Prihlásenie a registrácia** — pozadie: vybrať z médií, nahrať z disku, náhľad; overiť na `/login`
+1. **It.18e i18n** — `/media`, `/navigation`, `/dashboard` v SK/EN podľa `general.language`
+2. **Analytika** — `/analytics` KPI, graf, taby Stránky/Zdroje/Zariadenia/Geografia
+3. **Dashboard** — rýchle odkazy + disková štruktúra (KB/MB celkového obsahu)
+4. **Audit aktivita** — SK správy s titulkom článku/stránky (nie len slug)
+5. **Logy** — `/logs` čitateľné `display_message`; dnešný denný súbor OK
+6. **Login pozadie** — Nastavenia → Prihlásenie: médiá + upload z disku
+7. **SEO indexovanie** — Nastavenia → SEO → vypnúť → `/robots.txt` = `Disallow: /`
+8. **Sidebar** — Prehľad + Analytika pod user blokom
 
-**Opravy v tomto release (ISS-046 … ISS-050):** pozri [ISSUES.md](../ISSUES.md).
+**Opravy:** ISS-046 … ISS-050 · [ISSUES.md](../ISSUES.md)
 
 ---
 
@@ -31,50 +34,69 @@
 **Title:**
 
 ```
-2.0.46 — Audit activity, readable logs, login background picker (ISS-046–050)
+2.0.46 — It.18e i18n, analytics UI, dashboard disk, audit/logs fixes (ISS-046–050)
 ```
 
-**Tag:** `v2.0.46` · **Target:** `main` · **Commit:** `a16c15d`
+**Tag:** `v2.0.46` · **Target:** `main` · **Commit:** `a16c15d` *(+ docs/test fix commit ak nasleduje)*
 
 **Body:**
 
 ```markdown
 ## Summary
 
-Fixes dashboard audit activity, human-readable audit/application logs, and empty Logs admin section. Adds login background image picker (media library + local upload) in Settings. Pins Dashboard nav item under the user block.
+Ships **It.18e** (media, navigation, dashboard i18n), **It.20** (analytics page, dashboard quick links + disk size, robots indexing toggle), and **audit/logs hotfixes** ISS-046–050. Adds login background picker with media library upload.
 
-## Highlights
+## It.18e — Admin i18n
 
-- **Audit activity (ISS-046–048):** `AuditMessageFormatter` — SK messages with content title; `Logger::writeEntry()` preserves `audit_*` category; FE `formatAuditEvent.ts`
-- **LogWriter (ISS-049):** empty daily file no longer treated as corrupt (752 orphan `.corrupt-*` backups)
-- **Logs UI (ISS-050):** unified `LogStoragePaths`; lowercase severity stats; `ApplicationLogMessageFormatter` + `display_message`
-- **Login settings:** `LoginBackgroundImagePicker` — pick from media, upload from disk, preview; `useAuthBranding` resolves `/storage/` paths
-- **Admin nav:** Dashboard pinned below user profile (no scroll to find Prehľad)
+- `src/i18n/modules/media/*` → **MediaManager**
+- `src/i18n/modules/navigation/*` → **NavigationManager**
+- `src/i18n/modules/dashboard/*` → **DashboardView**
+- Vitest: `TestI18nProvider` in navigation tests; SK labels in media tests
 
-## Fixes
+## It.20 — Analytics & dashboard
 
-| ID | Symptóm | Oprava |
-|----|---------|--------|
-| ISS-046 | Audit written as category `app` | `Logger::writeEntry()` in `AuditTrailService` |
-| ISS-047 | Dashboard activity empty | Legacy `isAuditEntry()` detection in stats |
-| ISS-048 | Unreadable audit messages | `AuditMessageFormatter` + FE formatter |
-| ISS-049 | Today's log file missing | `LogWriter::decodeLogPayload()` — empty ≠ corrupt |
-| ISS-050 | Logs section empty | `LogStoragePaths` + severity case fix |
-| — | Login background URL-only | `LoginBackgroundImagePicker` in Settings |
+- **`/analytics`** — KPI cards (page views, unique visitors, avg time, bounce rate)
+- Period filter **7 / 14 / 30 days**; tabs: Overview, Pages, Sources, Devices, Geography
+- Visit records enriched with **device, browser, GeoIP country**
+- Dashboard **quick links** (Pages, Articles, Users, Settings)
+- **Disk structure panel** — counts + total flat-file size (`ContentStorageStatsService`)
+- **`seo.allowSearchIndexing`** — toggles `robots.txt` Allow/Disallow + global meta robots
+
+## Audit & logs (ISS-046–050)
+
+| ID | Fix |
+|----|-----|
+| ISS-046 | Audit category `audit_*` no longer overwritten as `app` |
+| ISS-047 | Dashboard activity panel shows legacy + new audit events |
+| ISS-048 | SK audit messages with content title (`AuditMessageFormatter`) |
+| ISS-049 | Empty daily log file no longer treated as corrupt |
+| ISS-050 | Logs UI reads correct path + lowercase severity stats |
+| — | Login background picker (media + local upload) |
+
+## Other fixes
+
+- Login background picker i18n key path (`settings.fields.login.backgroundPicker.*`)
+- `RobotsTxtGeneratorTest` — mock `seo` group for `allowSearchIndexing`
+- PHPStan annotations on log formatters
 
 ## Test plan
 
-- [ ] `./scripts/iteration-gate.sh` green (PHPUnit 0 failed, PHPStan 0 errors)
-- [ ] Edit article → Dashboard shows SK activity with title
-- [ ] `/audit` and dashboard panel show formatted messages
-- [ ] `/logs` lists entries with readable text; today's file exists after any request
-- [ ] Settings → login → pick/upload background → visible on `/login`
-- [ ] Sidebar: Prehľad visible under user block without scrolling
+- [ ] `./scripts/iteration-gate.sh` green (PHPUnit 0 errors, PHPStan 0, Vitest 203+)
+- [ ] Switch admin language SK/EN → media, navigation, dashboard labels change
+- [ ] `/analytics` — KPI, chart, all tabs load
+- [ ] `/dashboard` — quick links + disk panel with total size
+- [ ] Edit content → dashboard activity shows SK title
+- [ ] `/logs` readable messages; `/audit` formatted events
+- [ ] Settings → login → upload background → visible on `/login`
+- [ ] Settings → SEO → disable indexing → `/robots.txt` has `Disallow: /`
 
 ## Docs
 
-- [ITERATION_19.md](docs/ITERATION_19.md)
+- [ITERATION_18.md](docs/ITERATION_18.md) — It.18e
+- [ITERATION_19.md](docs/ITERATION_19.md) — auth + audit
+- [ITERATION_20.md](docs/ITERATION_20.md) — analytics + disk + robots
 - [ISSUES.md](docs/ISSUES.md) — ISS-046 … ISS-050
+- [CHANGELOG.md](CHANGELOG.md) — 2.0.46
 ```
 
 ---
