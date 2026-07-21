@@ -1,6 +1,6 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-20 · verzia **2.0.43** (It.55 + ISS-042)
+> Posledná aktualizácia: 2026-07-21 · verzia **2.0.45** (It.19b–19d + ISS-044/045)
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
 
@@ -58,6 +58,8 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-041 | FE type-check: nepoužitý `refetch` v `PagesManager` (CI) | Nízka (CI)         | ✅ Opravené (hotfix 2.0.40)              |
 | ISS-042 | Dvojitý login — 1. pokus padne, 2. prejde (probe `/me`) | Vysoká (auth UX)      | ✅ Opravené (**2.0.43**)                 |
 | ISS-043 | Vitest `editorToolbar` — globálny `screen` vs. profil   | Nízka (CI)            | ✅ Opravené (2.0.42 It.54)           |
+| ISS-044 | `services.php:301` parse error → API 500                | Kritická              | ✅ Opravené (**2.0.45**)             |
+| ISS-045 | `LocaleScaffoldService::$projectRoot` — PHPStan + PHPUnit | Stredná (CI)          | ✅ Opravené (**2.0.45**)             |
 
 
 
@@ -69,7 +71,8 @@ Workflow: `[.github/workflows/ci.yml](../.github/workflows/ci.yml)`
 
 | CI job     | Step                 | Symptóm                                                         | Issue                              |
 | ---------- | -------------------- | --------------------------------------------------------------- | ---------------------------------- |
-| `backend`  | PHPStan level 8      | Analýza zlyhá (verzia PHP, `match`, `fopen`, `is_array`)        | ISS-016, ISS-017, ISS-018, ISS-021 |
+| `backend`  | PHPStan level 8      | `LocaleScaffoldService::$projectRoot` undefined (7×)            | ISS-045                            |
+| `backend`  | PHP bootstrap        | `services.php:301` parse error → all API 500                    | ISS-044                            |
 | `backend`  | PHPUnit              | 429 Too Many Requests, 503 maintenance, flaky OTP, flaky search test | ISS-015, ISS-023                   |
 | `backend`  | PHPUnit              | `ContentRepositoryTest` — date/tag filter, distinct tags (It.44d) | ISS-038                            |
 | `backend`  | PHPUnit              | `LogWriterTest` — chýbajúci súbor na vfs, corrupt recovery       | ISS-039                            |
@@ -1078,6 +1081,46 @@ const { data: listData, isLoading } = useAdminListQuery({ ... })
 **Implementované riešenie (2.0.41 `8526c19`):** `within(minimalRoot)` / `within(developerRoot)`.
 
 **Overenie:** `npm test -- src/components/backend/editorToolbar.test.tsx` — exit 0.
+
+---
+
+## ISS-044 – `services.php` parse error (API 500)
+
+**Symptóm:** Po úprave `ValidationController` DI backend nenačíta — `PHP Parse error: unexpected token "->", expecting "]"` v `backend/app/Http/Config/services.php` na riadku **301**. Všetky API volania (vrátane `POST /api/debug/client-event`) → **500**.
+
+**Príčina:** Pri nahradení `ValidationController` registrácie closure zostal orphan riadok z pôvodného `create()` chainu:
+
+```php
+    },
+        ->constructor(get(JsonResponder::class)),
+```
+
+**Implementované riešenie (2.0.45):** Odstránený duplicitný riadok; `ValidationController` injektuje `JsonResponder` + `PasswordPolicyInterface` cez closure.
+
+**Overenie:** `php -l backend/app/Http/Config/services.php` — no syntax errors; API odpovedá 200.
+
+---
+
+## ISS-045 – `LocaleScaffoldService::$projectRoot` (PHPStan + PHPUnit)
+
+**Symptóm:** `alltests` — PHPUnit **exit 1** napriek `689 passed, 0 failed`; PHPStan **7 chýb** na `LocaleScaffoldService.php` (riadky 18, 53, 54, 83, 85, 101, 119). PHPUnit warning: `Creation of dynamic property ... $projectRoot is deprecated`.
+
+**Príčina:** Konštruktor priraďoval `$this->projectRoot` bez deklarácie triednej vlastnosti (PHP 8.2+ deprecated dynamic properties; PHPStan level 8).
+
+**Implementované riešenie (2.0.45):**
+
+```php
+private string $projectRoot;
+
+public function __construct(
+    private SupportedLocalesRegistry $locales,
+    ?string $projectRoot = null,
+) {
+    $this->projectRoot = rtrim($projectRoot ?? dirname(__DIR__, 5), '/');
+}
+```
+
+**Overenie:** `./scripts/iteration-gate.sh` — PHPUnit exit 0, PHPStan 0 errors on `LocaleScaffoldService`.
 
 ---
 

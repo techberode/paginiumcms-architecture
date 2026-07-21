@@ -25,7 +25,18 @@ import {
   Puzzle,
   Languages,
 } from 'lucide-react';
-import type { AdminNavSectionDef } from './adminNavTypes';
+import type { AdminNavItemDef, AdminNavSectionDef } from './adminNavTypes';
+
+/** Predvolená admin landing route po prihlásení. */
+export const ADMIN_DEFAULT_ROUTE = '/dashboard';
+
+/** Hlavná položka mimo kategórií — úvodný dashboard. */
+export const ADMIN_NAV_PRIMARY_ITEM: AdminNavItemDef = {
+  id: 'dashboard',
+  labelKey: 'admin.nav.dashboard',
+  href: ADMIN_DEFAULT_ROUTE,
+  icon: LayoutDashboard,
+};
 
 /** Paginium admin nav — sekcie s podpoložkami (inšpirované Grav, vlastná štruktúra). */
 export const ADMIN_NAV_SECTIONS: AdminNavSectionDef[] = [
@@ -33,7 +44,6 @@ export const ADMIN_NAV_SECTIONS: AdminNavSectionDef[] = [
     id: 'workspace',
     labelKey: 'admin.sections.workspace',
     items: [
-      { id: 'dashboard', labelKey: 'admin.nav.dashboard', href: '/dashboard', icon: LayoutDashboard },
       { id: 'pages', labelKey: 'admin.nav.pages', href: '/pages', icon: FileText },
       { id: 'articles', labelKey: 'admin.nav.articles', href: '/articles', icon: BookOpen },
       { id: 'media', labelKey: 'admin.nav.media', href: '/media', icon: ImageIcon },

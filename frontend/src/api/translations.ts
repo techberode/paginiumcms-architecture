@@ -4,7 +4,7 @@ import apiClient from './client';
 export interface TranslationCatalogFile {
   path: string;
   source: 'backend' | 'frontend';
-  locale: 'sk' | 'en';
+  locale: string;
   module: string;
   name: string;
   size: number;
@@ -13,8 +13,15 @@ export interface TranslationCatalogFile {
   language: string;
 }
 
+export interface TranslationLocaleDef {
+  code: string;
+  label: string;
+  builtin?: boolean;
+}
+
 export interface TranslationCatalog {
   sources: Array<{ id: string; label: string; locales: string[] }>;
+  locales?: TranslationLocaleDef[];
   files: TranslationCatalogFile[];
 }
 
@@ -98,5 +105,22 @@ export const translationsApi = {
       return null;
     }
     return response.data?.content ?? null;
+  },
+
+  createLocale: async (
+    code: string,
+    label: string,
+    copyFrom = 'sk'
+  ): Promise<{ success: boolean; error?: string; catalog?: TranslationCatalog }> => {
+    const response = await apiClient.post<{ catalog?: TranslationCatalog }>('/api/admin/translations/locales', {
+      code,
+      label,
+      copy_from: copyFrom,
+    });
+    return {
+      success: Boolean(response.success),
+      error: response.error,
+      catalog: (response.data as { catalog?: TranslationCatalog } | undefined)?.catalog,
+    };
   },
 };

@@ -150,4 +150,39 @@ final class TranslationController
             return $this->json->error($response, $e->getMessage(), 500);
         }
     }
+
+    public function listLocales(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        try {
+            return $this->json->success($response, [
+                'locales' => $this->translations->listLocales(),
+            ]);
+        } catch (\Throwable $e) {
+            return $this->json->error($response, $e->getMessage(), 500);
+        }
+    }
+
+    public function createLocale(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $data = json_decode((string) $request->getBody(), true);
+        if (!is_array($data)) {
+            return $this->json->error($response, 'Invalid JSON body', 400);
+        }
+
+        $code = strtolower(trim((string) ($data['code'] ?? '')));
+        $label = trim((string) ($data['label'] ?? ''));
+        $copyFrom = strtolower(trim((string) ($data['copy_from'] ?? 'sk')));
+
+        if ($code === '') {
+            return $this->json->error($response, 'Locale code is required', 400);
+        }
+
+        try {
+            $result = $this->translations->createLocale($code, $label, $copyFrom);
+
+            return $this->json->success($response, $result, 201, 'Locale created');
+        } catch (\Throwable $e) {
+            return $this->json->error($response, $e->getMessage(), 400);
+        }
+    }
 }

@@ -96,11 +96,27 @@ final class ValidationRules
     }
 
     /**
+     * @return PasswordPolicyMeta
+     */
+    public static function passwordPolicyFrom(\PaginiumCMS\Modules\Security\Contracts\PasswordPolicyInterface $policy): array
+    {
+        return [
+            'minLength' => $policy->getMinLength(),
+            'maxLength' => $policy->getMaxLength(),
+            'requireUppercase' => $policy->requiresUppercase(),
+            'requireLowercase' => $policy->requiresLowercase(),
+            'requireNumbers' => $policy->requiresNumbers(),
+            'requireSpecialChars' => $policy->requiresSpecialChars(),
+        ];
+    }
+
+    /**
+     * @param PasswordPolicyMeta|null $policy
      * @return list<string>
      */
-    public static function validatePasswordPolicy(string $password): array
+    public static function validatePasswordPolicy(string $password, ?array $policy = null): array
     {
-        $policy = self::passwordPolicy();
+        $policy ??= self::passwordPolicy();
         $errors = [];
 
         if (strlen($password) < $policy['minLength']) {

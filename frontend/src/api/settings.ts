@@ -111,6 +111,20 @@ export interface PublicSettings {
       password: string;
     } | null;
   };
+  login?: {
+    pageTitle?: string;
+    pageDescription?: string;
+    backgroundImageUrl?: string;
+    infoBullets?: string;
+  };
+  security?: {
+    passwordMinLength?: number;
+    passwordMaxLength?: number;
+    passwordRequireUppercase?: boolean;
+    passwordRequireLowercase?: boolean;
+    passwordRequireNumbers?: boolean;
+    passwordRequireSpecialChars?: boolean;
+  };
 }
 
 export async function getPublicSettings(): Promise<PublicSettings | null> {

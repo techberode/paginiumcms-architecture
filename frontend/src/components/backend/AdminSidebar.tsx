@@ -11,7 +11,11 @@ import {
 import { useAuth } from '../../hooks/useAuth';
 import { useAdminCounts } from '../../hooks/useAdminCounts';
 import { useI18n } from '../../context/I18nContext';
-import { ADMIN_NAV_SECTIONS } from '../../config/adminNavSections';
+import {
+  ADMIN_DEFAULT_ROUTE,
+  ADMIN_NAV_PRIMARY_ITEM,
+  ADMIN_NAV_SECTIONS,
+} from '../../config/adminNavSections';
 import type { AdminNavItemDef } from '../../config/adminNavTypes';
 
 interface AdminSidebarProps {
@@ -55,8 +59,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   };
 
   const isItemActive = (href: string): boolean => {
-    if (href === '/dashboard') {
-      return location.pathname === '/dashboard';
+    if (href === ADMIN_DEFAULT_ROUTE) {
+      return location.pathname === ADMIN_DEFAULT_ROUTE;
     }
     return location.pathname === href || location.pathname.startsWith(`${href}/`);
   };
@@ -148,6 +152,10 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
         )}
 
         <nav className="p-2 space-y-2 mt-1 overflow-y-auto flex-1">
+          <div className="space-y-0.5">
+            {renderItem(ADMIN_NAV_PRIMARY_ITEM)}
+          </div>
+          {!collapsed && <div className="mx-2 border-t border-slate-800/80" aria-hidden="true" />}
           {visibleSections.map((section) => {
             const sectionOpen = collapsed || openSections[section.id] !== false;
             const sectionActive = section.items.some((item) => isItemActive(item.href));

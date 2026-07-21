@@ -21,6 +21,7 @@ use PaginiumCMS\Modules\Security\Services\AuthenticationManager;
 use PaginiumCMS\Modules\Security\Services\AuthorizationManager;
 use PaginiumCMS\Modules\Security\Services\CsrfProtectionManager;
 use PaginiumCMS\Modules\Security\Services\PasswordPolicy;
+use PaginiumCMS\Modules\Security\Services\SettingsBackedPasswordPolicy;
 use PaginiumCMS\Modules\Security\Services\SecurityAuditStore;
 use PaginiumCMS\Modules\Security\Services\SessionManager;
 use PaginiumCMS\Modules\Security\Services\TOTPGenerator;
@@ -234,7 +235,8 @@ $containerBuilder->addDefinitions([
 
     LocaleMiddleware::class => function ($container) {
         return new LocaleMiddleware(
-            $container->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class)
+            $container->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class),
+            $container->get(\PaginiumCMS\Core\I18n\Services\SupportedLocalesRegistry::class)
         );
     },
 
@@ -305,14 +307,9 @@ $containerBuilder->addDefinitions([
     // 7. SECURITY CORE
     // ============================================
 
-    PasswordPolicyInterface::class => function () {
-        return new PasswordPolicy(
-            minLength: 8,
-            maxLength: 72,
-            requireUppercase: true,
-            requireLowercase: true,
-            requireNumbers: true,
-            requireSpecialChars: true
+    PasswordPolicyInterface::class => function ($container) {
+        return new SettingsBackedPasswordPolicy(
+            $container->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class)
         );
     },
 

@@ -1,9 +1,85 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.0.44** · 2026-07-21  
+> Posledná verzia: **2.0.45** · 2026-07-21  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release. Samotný release/tag zatiaľ nevytváraj, kým nie je schválený deploy.
 
-> **Poznámka k verziám:** Commity `4367d19` (It.55) a `8526c19` (It.54) mali v správe nesprávne číslo (`2.0.42` / `2.0.41`). Oficiálne tagy podľa CHANGELOG: **v2.0.42** → `8526c19`, **v2.0.43** → `4367d19`, **v2.0.44** → `199877a`.
+> **Poznámka k verziám:** Commity `4367d19` (It.55) a `8526c19` (It.54) mali v správe nesprávne číslo (`2.0.42` / `2.0.41`). Oficiálne tagy podľa CHANGELOG: **v2.0.42** → `8526c19`, **v2.0.43** → `4367d19`, **v2.0.44** → `199877a`, **v2.0.45** → *(commit po merge — pozri git log)*.
+
+---
+
+## 2.0.45 — pred release kontrola
+
+```bash
+./scripts/iteration-gate.sh
+# alebo lokálny alltests skript → log bez exit 1 na PHPUnit/PHPStan
+```
+
+**Po deployi:**
+
+1. **Dashboard** — po prihlásení landing `/dashboard`; sidebar: Dashboard samostatne navrchu (mimo kategórií)
+2. **Prihlásenie** — veľký dvojpanel (info vľavo, formulár vpravo); vlastný nadpis/popis/pozadie z **Nastavenia → Web → Prihlásenie a registrácia**
+3. **Registrácia** — formulár vľavo, info panel vpravo (animácia); live checklist politiky hesla
+4. **TOTP krok** — 6 samostatných polí pri 2FA prihlásení
+5. **Politika hesla** — **Nastavenia → Bezpečnosť → Bezpečnosť** (min/max dĺžka, A–Z, a–z, 0–9, špeciálny znak) → overiť na `/register` a reset hesla
+6. **Preklady / používatelia** — nová jazyková mutácia (`/translations`); avatar používateľa (`/users`)
+7. **Upload / obsah** — `uploadSecurity` a `contentSecurity` nastavenia reálne aplikované pri uploade a renderi HTML
+
+**Hotfixy v tomto release (ISS-044, ISS-045):** pozri [ISSUES.md](../ISSUES.md).
+
+---
+
+## GitHub Release — copy-paste (2.0.45)
+
+**Title:**
+
+```
+2.0.45 — It.19b–19c security runtime, auth UX, password policy, avatars & locales
+```
+
+**Tag:** `v2.0.45` · **Target:** `main` · **Commit:** *(doplň po `git log -1`)*
+
+**Body:**
+
+```markdown
+## Summary
+
+Completes Iteration 19b (security settings wired to runtime), 19c (custom locales + user avatars), and a major auth/login UX refresh. Dashboard is a standalone sidebar entry and default post-login route. Password policy is configurable in admin settings.
+
+Includes hotfixes ISS-044 (services.php parse error) and ISS-045 (LocaleScaffoldService `$projectRoot` / PHPStan + PHPUnit deprecations).
+
+## Highlights
+
+- **Security runtime (It.19b):** `UploadSecurityValidator` → media upload; `ContentSecuritySanitizer` → HTML render; Monaco policy markers; `AdminHintCard`
+- **Auth UX:** `AuthShell` — large dual-panel login/register; custom title, description, background image; animated layout swap on register; styled TOTP input
+- **Password policy (admin):** min/max length, uppercase/lowercase/digits/special chars — `SettingsBackedPasswordPolicy` + `/api/validation/rules/password`
+- **Login settings:** new `login` schema group (page title, description, background URL, info bullets)
+- **Dashboard nav:** primary item outside categories; `ADMIN_DEFAULT_ROUTE`
+- **Locales (It.19c):** `SupportedLocalesRegistry`, scaffold new locale, Translation editor UI
+- **Users:** avatar upload/remove API, `UserAvatarPicker`, SuperAdmin role guards
+- **It.18e (partial):** `users` i18n module + `UsersManager` on `useI18n()`
+
+## Hotfixes
+
+| ID | Symptóm | Oprava |
+|----|---------|--------|
+| ISS-044 | PHP parse error `services.php:301` — API 500 | Odstránený orphan riadok `->constructor(...)` po `ValidationController` closure |
+| ISS-045 | PHPUnit exit 1 + PHPStan 7× `$projectRoot` undefined | Deklarovaná `private string $projectRoot` v `LocaleScaffoldService` |
+
+## Test plan
+
+- [ ] `./scripts/iteration-gate.sh` green (PHPUnit 0 failed, PHPStan 0 errors)
+- [ ] Login → dashboard; sidebar Dashboard top-level (not under Workspace)
+- [ ] Settings → login group → custom background/title visible on `/login`
+- [ ] Settings → security password rules → reflected on register form hints
+- [ ] 2FA login → TOTP 6-box UI
+- [ ] Translation editor → create locale; Users → upload avatar
+- [ ] Upload blocked file types respect `uploadSecurity` settings
+
+## Docs
+
+- [ITERATION_19.md](docs/ITERATION_19.md)
+- [ISSUES.md](docs/ISSUES.md) — ISS-044, ISS-045
+```
 
 ---
 

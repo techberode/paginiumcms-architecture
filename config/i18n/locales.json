@@ -1,0 +1,6 @@
+{
+  "locales": [
+    { "code": "sk", "label": "Slovenčina", "builtin": true },
+    { "code": "en", "label": "English", "builtin": true }
+  ]
+}

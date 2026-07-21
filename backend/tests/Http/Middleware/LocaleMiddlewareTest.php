@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Tests\Http\Middleware;
 
+use PaginiumCMS\Core\I18n\Services\LocaleScaffoldService;
+use PaginiumCMS\Core\I18n\Services\SupportedLocalesRegistry;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Http\Middleware\LocaleMiddleware;
 use PaginiumCMS\Support\Lang;
@@ -26,7 +28,7 @@ final class LocaleMiddlewareTest extends TestCase
         $settings = $this->createMock(SettingsRepositoryInterface::class);
         $settings->method('get')->with('general.language', 'sk')->willReturn('en');
 
-        $middleware = new LocaleMiddleware($settings);
+        $middleware = new LocaleMiddleware($settings, new SupportedLocalesRegistry());
         $request = (new ServerRequestFactory())->createServerRequest('GET', '/api/content/pages');
         $response = (new ResponseFactory())->createResponse(200);
 
@@ -46,7 +48,7 @@ final class LocaleMiddlewareTest extends TestCase
         $settings = $this->createMock(SettingsRepositoryInterface::class);
         $settings->method('get')->willReturn('xx');
 
-        $middleware = new LocaleMiddleware($settings);
+        $middleware = new LocaleMiddleware($settings, new SupportedLocalesRegistry());
         $request = (new ServerRequestFactory())
             ->createServerRequest('GET', '/api/content/pages')
             ->withHeader('Accept-Language', 'en-US,en;q=0.9');

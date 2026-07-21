@@ -37,6 +37,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.54 — Modular editor profiles (MD + WYSIWYG) | **2.0.42** | [below](#2042--2026-07-20) |
 | It.55 — Tiptap JSON storage + editor image upload | **2.0.43** | [below](#2043--2026-07-20) |
 | It.18 — Admin UI i18n + translation editor | **2.0.44** | [below](#2044--2026-07-21) |
+| It.19b–19d — Security runtime, auth UX, password policy | **2.0.45** | [below](#2045--2026-07-21) |
+
+---
+
+## [2.0.45] – 2026-07-21
+
+**Iteration 19b** — Security settings wired to upload and HTML render.  
+**Iteration 19c** — Custom locales scaffold + user avatars.  
+**Iteration 19d** — Auth shell UX, login branding settings, admin password policy.  
+Includes **ISS-044** (services.php parse) and **ISS-045** (LocaleScaffoldService property).  
+Detail: [ITERATION_19.md](docs/ITERATION_19.md) · [ISSUES.md](docs/ISSUES.md).
+
+### Added
+
+- **Security runtime:** `UploadSecurityValidator` on media upload; `ContentSecuritySanitizer` on `ContentBodyRenderer`
+- **Auth UX:** `AuthShell`, dual-panel login/register, custom background/title/description, `TotpCodeInput`
+- **Settings:** `login` group; password policy fields in `security` group
+- **Password policy:** `SettingsBackedPasswordPolicy` + dynamic `/api/validation/rules/password`
+- **Dashboard nav:** standalone primary item; `ADMIN_DEFAULT_ROUTE` after login
+- **Locales:** `SupportedLocalesRegistry`, `LocaleScaffoldService`, create-locale API/UI
+- **Users:** avatar upload/remove, SuperAdmin guards, `users` i18n module (It.18e partial)
+- **Translation editor:** Monaco policy markers; `AdminHintCard` hints
+
+### Fixed
+
+- **ISS-044:** Removed orphan `->constructor` line in `Http/Config/services.php` (parse error → API 500)
+- **ISS-045:** Declared `$projectRoot` on `LocaleScaffoldService` (PHPStan 7 errors, PHPUnit exit 1 on deprecations)
 
 ---
 

@@ -29,6 +29,7 @@ export interface UsersListResponse {
   users: User[];
   meta?: {
     require_two_factor_staff?: boolean;
+    actor_is_super_admin?: boolean;
   };
 }
 
@@ -37,6 +38,7 @@ export interface UserDetailResponse {
   meta?: {
     two_factor_enforced?: boolean;
     require_two_factor_staff?: boolean;
+    actor_is_super_admin?: boolean;
   };
 }
 
@@ -70,13 +72,26 @@ export async function bulkDeleteUsers(ids: string[]): Promise<import('../types/b
   return res.success && res.data ? res.data : null;
 }
 
+export async function uploadUserAvatar(id: string, file: File): Promise<ApiResponse<{ user: User }>> {
+  const form = new FormData();
+  form.append('avatar', file);
+
+  return apiClient.post<{ user: User }>(`/api/admin/users/${encodeURIComponent(id)}/avatar`, form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+}
+
+export async function removeUserAvatar(id: string): Promise<ApiResponse<{ user: User }>> {
+  return apiClient.delete<{ user: User }>(`/api/admin/users/${encodeURIComponent(id)}/avatar`);
+}
+
 export const USER_ROLES: UserRole[] = ['USER', 'EDITOR', 'ADMIN', 'SUPER_ADMIN'];
 
 export const USER_ROLE_LABELS: Record<UserRole, string> = {
-  USER: '👤 Používateľ – základný prístup',
-  EDITOR: '✏️ Editor – správa obsahu',
-  ADMIN: '👑 Administrátor – plný prístup',
-  SUPER_ADMIN: '🛡️ Super administrátor',
+  USER: 'USER',
+  EDITOR: 'EDITOR',
+  ADMIN: 'ADMIN',
+  SUPER_ADMIN: 'SUPER_ADMIN',
 };
 
 export function isStaffRole(role: UserRole): boolean {

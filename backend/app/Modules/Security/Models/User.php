@@ -18,6 +18,7 @@ class User implements JsonSerializable
     /** @var array<int|string, mixed> */
     private array $roles = [];
     private string $name = '';
+    private ?string $avatarUrl = null;
     private bool $active = true;
     private bool $twoFactorEnabled = false;
     private ?string $twoFactorSecret = null;
@@ -146,6 +147,18 @@ class User implements JsonSerializable
         return $this;
     }
 
+    public function getAvatarUrl(): ?string
+    {
+        return $this->avatarUrl;
+    }
+
+    public function setAvatarUrl(?string $avatarUrl): self
+    {
+        $this->avatarUrl = $avatarUrl !== null && trim($avatarUrl) !== '' ? trim($avatarUrl) : null;
+
+        return $this;
+    }
+
     public function isTwoFactorEnabled(): bool
     {
         return $this->twoFactorEnabled;
@@ -222,6 +235,7 @@ class User implements JsonSerializable
             'email' => $this->email,
             'username' => $this->getUsername(),
             'name' => $this->name,
+            'avatarUrl' => $this->avatarUrl,
             'roles' => $this->roles,
             'active' => $this->active,
             'twoFactorEnabled' => $this->twoFactorEnabled,

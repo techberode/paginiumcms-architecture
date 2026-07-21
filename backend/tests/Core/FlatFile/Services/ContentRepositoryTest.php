@@ -16,6 +16,7 @@ use PaginiumCMS\Core\FlatFile\Services\MarkdownContentStorage;
 use PaginiumCMS\Core\FlatFile\Services\MarkdownParser;
 use PaginiumCMS\Core\Editor\Services\ContentBodyRenderer;
 use PaginiumCMS\Core\Editor\Services\TiptapHtmlRenderer;
+use PaginiumCMS\Core\Security\Services\ContentSecuritySanitizer;
 use PaginiumCMS\Core\FlatFile\Models\Page;
 use PaginiumCMS\Core\FlatFile\Models\Article;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
@@ -54,14 +55,19 @@ class ContentRepositoryTest extends TestCase
         $writer = new FileWriter($validator);
         $frontMatterParser = new FrontMatterParser();
         $contentParser = new MarkdownContentParser();
-        $bodyRenderer = new ContentBodyRenderer($contentParser, new TiptapHtmlRenderer());
+        $settings = $this->createMock(SettingsRepositoryInterface::class);
+        $settings->method('get')->willReturnCallback(static fn (string $key, mixed $default = null): mixed => $default);
+        $settings->method('group')->willReturn(['sanitizeHtmlOnSave' => false]);
+
+        $bodyRenderer = new ContentBodyRenderer(
+            $contentParser,
+            new TiptapHtmlRenderer(),
+            new ContentSecuritySanitizer($settings)
+        );
         $markdownParser = new MarkdownParser($frontMatterParser, $bodyRenderer);
         $markdownStorage = new MarkdownContentStorage($markdownParser);
         $jsonStorage = new JsonContentStorage($bodyRenderer);
         $this->index = new ContentIndexService($reader, 'data/index/content.json');
-
-        $settings = $this->createMock(SettingsRepositoryInterface::class);
-        $settings->method('get')->willReturnCallback(static fn (string $key, mixed $default = null): mixed => $default);
 
         $this->repository = new ContentRepository(
             $reader,

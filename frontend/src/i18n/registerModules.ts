@@ -11,6 +11,8 @@ import { settingsEn } from './modules/settings/en';
 import { settingsSk } from './modules/settings/sk';
 import { translationsEn } from './modules/translations/en';
 import { translationsSk } from './modules/translations/sk';
+import { usersEn } from './modules/users/en';
+import { usersSk } from './modules/users/sk';
 
 export function registerAllI18nModules(): void {
   registerModuleMessages('sk', 'admin', adminSk);
@@ -23,6 +25,8 @@ export function registerAllI18nModules(): void {
   registerModuleMessages('en', 'settings', settingsEn);
   registerModuleMessages('sk', 'translations', translationsSk);
   registerModuleMessages('en', 'translations', translationsEn);
+  registerModuleMessages('sk', 'users', usersSk);
+  registerModuleMessages('en', 'users', usersEn);
 }
 
 registerAllI18nModules();

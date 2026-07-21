@@ -6,6 +6,8 @@ namespace PaginiumCMS\Tests\Core\I18n;
 
 use PaginiumCMS\Core\CodeEditor\Services\FileBackup;
 use PaginiumCMS\Core\CodeEditor\Services\SyntaxChecker;
+use PaginiumCMS\Core\I18n\Services\LocaleScaffoldService;
+use PaginiumCMS\Core\I18n\Services\SupportedLocalesRegistry;
 use PaginiumCMS\Core\I18n\Services\TranslationFileManager;
 use PaginiumCMS\Core\I18n\Services\TranslationPolicyValidator;
 use PHPUnit\Framework\TestCase;
@@ -17,9 +19,14 @@ final class TranslationFileManagerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $root = dirname(__DIR__, 4);
+        $locales = new SupportedLocalesRegistry($root);
         $this->manager = new TranslationFileManager(
             new TranslationPolicyValidator(new SyntaxChecker()),
-            new FileBackup(dirname(__DIR__, 4))
+            $locales,
+            new LocaleScaffoldService($locales, $root),
+            new FileBackup($root),
+            $root
         );
     }
 

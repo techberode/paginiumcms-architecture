@@ -7,14 +7,24 @@ namespace PaginiumCMS\Tests\Core\Editor;
 use PaginiumCMS\Core\Editor\Services\ContentBodyRenderer;
 use PaginiumCMS\Core\Editor\Services\TiptapHtmlRenderer;
 use PaginiumCMS\Core\FlatFile\Contracts\MarkdownContentParserInterface;
+use PaginiumCMS\Core\Security\Services\ContentSecuritySanitizer;
 use PHPUnit\Framework\TestCase;
 
 final class ContentBodyRendererTest extends TestCase
 {
+    private function renderer(MarkdownContentParserInterface $markdown): ContentBodyRenderer
+    {
+        $settings = $this->createMock(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class);
+        $settings->method('group')->willReturn(['sanitizeHtmlOnSave' => false]);
+        $sanitizer = new ContentSecuritySanitizer($settings);
+
+        return new ContentBodyRenderer($markdown, new TiptapHtmlRenderer(), $sanitizer);
+    }
+
     public function testUsesCachedHtmlForTiptapJson(): void
     {
         $markdown = $this->createMock(MarkdownContentParserInterface::class);
-        $renderer = new ContentBodyRenderer($markdown, new TiptapHtmlRenderer());
+        $renderer = $this->renderer($markdown);
 
         $html = $renderer->resolveHtml(
             '{"type":"doc","content":[]}',
@@ -28,7 +38,7 @@ final class ContentBodyRendererTest extends TestCase
     public function testRendersTiptapJsonWhenCacheMissing(): void
     {
         $markdown = $this->createMock(MarkdownContentParserInterface::class);
-        $renderer = new ContentBodyRenderer($markdown, new TiptapHtmlRenderer());
+        $renderer = $this->renderer($markdown);
 
         $json = json_encode([
             'type' => 'doc',
@@ -49,7 +59,7 @@ final class ContentBodyRendererTest extends TestCase
     public function testNormalizesTiptapJsonFromBody(): void
     {
         $markdown = $this->createMock(MarkdownContentParserInterface::class);
-        $renderer = new ContentBodyRenderer($markdown, new TiptapHtmlRenderer());
+        $renderer = $this->renderer($markdown);
 
         $format = $renderer->normalizeContentFormat(
             null,
@@ -67,7 +77,7 @@ final class ContentBodyRendererTest extends TestCase
             ->with('**bold**')
             ->willReturn('<p><strong>bold</strong></p>');
 
-        $renderer = new ContentBodyRenderer($markdown, new TiptapHtmlRenderer());
+        $renderer = $this->renderer($markdown);
 
         $html = $renderer->resolveHtml('**bold**', 'markdown', null);
 

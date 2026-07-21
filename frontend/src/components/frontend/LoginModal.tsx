@@ -2,20 +2,22 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  Shield,
   Mail,
   Lock,
   Eye,
   EyeOff,
   ArrowRight,
-  Smartphone,
   Loader2,
-  Sparkles,
+  ShieldCheck,
+  Fingerprint,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
 import { securityApi, type SsoProvider } from '../../api/security';
 import { useSettingsContext } from '../../context/SettingsContext';
+import { ADMIN_DEFAULT_ROUTE } from '../../config/adminNavSections';
+import { AuthShell, authButtonClass, authInputClass, authLabelClass } from '../auth/AuthShell';
+import { TotpCodeInput } from '../auth/TotpCodeInput';
 
 export const LoginModal: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -30,6 +32,7 @@ export const LoginModal: React.FC = () => {
   const toast = useToast();
   const { settings } = useSettingsContext();
   const demoCredentials = settings.demo?.enabled ? settings.demo.credentials : null;
+  const allowRegistration = settings.general.allowRegistration !== false;
 
   useEffect(() => {
     void (async () => {
@@ -60,7 +63,7 @@ export const LoginModal: React.FC = () => {
         toast.info('Zadajte TOTP kód z autentifikátora');
       } else if (outcome.success) {
         toast.success('Prihlásenie úspešné');
-        navigate('/dashboard', { replace: true });
+        navigate(ADMIN_DEFAULT_ROUTE, { replace: true });
       } else {
         toast.error(outcome.error || 'Neplatný e-mail alebo heslo');
       }
@@ -86,8 +89,8 @@ export const LoginModal: React.FC = () => {
 
   const handleTotp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!totpCode.trim()) {
-      toast.warning('Zadajte TOTP kód');
+    if (totpCode.trim().length < 6) {
+      toast.warning('Zadajte 6-miestny TOTP kód');
       return;
     }
     setLoading(true);
@@ -95,7 +98,7 @@ export const LoginModal: React.FC = () => {
       const ok = await verifyTwoFactorLogin(totpCode.trim());
       if (ok) {
         toast.success('2FA overenie úspešné');
-        navigate('/dashboard', { replace: true });
+        navigate(ADMIN_DEFAULT_ROUTE, { replace: true });
       } else {
         toast.error('Neplatný TOTP kód');
       }
@@ -104,28 +107,33 @@ export const LoginModal: React.FC = () => {
     }
   };
 
+  const footerLinks = (
+    <div className="flex justify-between text-sm pt-1">
+      <Link to="/forgot-password" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
+        Zabudnuté heslo?
+      </Link>
+      {allowRegistration && (
+        <Link to="/register" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
+          Vytvoriť účet
+        </Link>
+      )}
+    </div>
+  );
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 px-4 py-12 relative overflow-hidden">
-      <div className="absolute inset-0 opacity-30 pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-indigo-500/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-10 right-10 w-96 h-96 bg-violet-500/15 rounded-full blur-3xl" />
-      </div>
-
-      <div className="relative w-full max-w-md animate-scaleUp">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-xl shadow-indigo-500/30 mb-4">
-            <Shield className="w-8 h-8" />
-          </div>
-          <h1 className="text-3xl font-black text-white tracking-tight">PaginiumCMS</h1>
-          <p className="mt-2 text-sm text-indigo-200/80 flex items-center justify-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5" />
-            {step === 'totp' ? 'Dvojfaktorové overenie' : 'Prihlásenie do administrácie'}
-          </p>
-        </div>
-
-        <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/10 p-8">
-          {demoCredentials && step === 'credentials' && (
-            <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/40 p-4 text-sm text-amber-900 dark:text-amber-100">
+    <AuthShell
+      variant={step === 'totp' ? 'totp' : 'login'}
+      formTitle={step === 'totp' ? 'Dvojfaktorové overenie' : 'Prihlásenie'}
+      formSubtitle={
+        step === 'totp'
+          ? 'Zadajte 6-miestny kód z autentifikačnej aplikácie.'
+          : 'Prihláste sa do administrácie vášho webu.'
+      }
+    >
+      {step === 'credentials' ? (
+        <form className="space-y-5" onSubmit={handleCredentials}>
+          {demoCredentials && (
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/40 p-4 text-sm text-amber-900 dark:text-amber-100">
               <p className="font-bold mb-2">Demo prihlasovacie údaje</p>
               <p className="font-mono text-xs mb-3">
                 {demoCredentials.email} / {demoCredentials.password}
@@ -140,138 +148,107 @@ export const LoginModal: React.FC = () => {
               >
                 Vyplniť demo údaje
               </button>
-              <p className="text-xs mt-2 text-amber-800/80 dark:text-amber-200/70">
-                Produkčné účty tu nefungujú — platí len demo účet. Zmeny sa periodicky resetujú.
-              </p>
             </div>
           )}
-          {step === 'credentials' ? (
-            <form className="space-y-5" onSubmit={handleCredentials}>
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                  E-mail
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:border-indigo-500"
-                    placeholder="admin@example.com"
-                    autoComplete="email"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                  Heslo
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-10 pr-11 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:border-indigo-500"
-                    placeholder="••••••••"
-                    autoComplete="current-password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/25 transition-all disabled:opacity-60"
-              >
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
-                <span>{loading ? 'Prihlasujem…' : 'Prihlásiť sa'}</span>
-              </button>
-              <div className="flex justify-between text-sm pt-1">
-                <Link to="/forgot-password" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
-                  Zabudnuté heslo?
-                </Link>
-                <Link to="/register" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
-                  Vytvoriť účet
-                </Link>
-              </div>
 
-              {ssoProviders.length > 0 && (
-                <div className="pt-4 border-t border-slate-200 dark:border-slate-700 space-y-2">
-                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400 text-center">
-                    Alebo SSO
-                  </p>
-                  {ssoProviders.map((provider) => (
-                    <button
-                      key={provider.id}
-                      type="button"
-                      disabled={loading}
-                      onClick={() => void handleSso(provider.id)}
-                      className="w-full py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800"
-                    >
-                      Prihlásiť cez {provider.name}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </form>
-          ) : (
-            <form className="space-y-5" onSubmit={handleTotp}>
-              <div className="text-center mb-2">
-                <div className="inline-flex p-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400">
-                  <Smartphone className="w-6 h-6" />
-                </div>
-              </div>
+          <div>
+            <label className={authLabelClass}>E-mail</label>
+            <div className="relative">
+              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                maxLength={6}
+                type="email"
                 required
-                value={totpCode}
-                onChange={(e) => setTotpCode(e.target.value)}
-                className="w-full px-4 py-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-center text-2xl tracking-[0.5em] font-mono focus:outline-none focus:border-indigo-500"
-                placeholder="000000"
-                autoComplete="one-time-code"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={authInputClass}
+                placeholder="admin@example.com"
+                autoComplete="email"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className={authLabelClass}>Heslo</label>
+            <div className="relative">
+              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={`${authInputClass} pr-11`}
+                placeholder="••••••••"
+                autoComplete="current-password"
               />
               <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 disabled:opacity-60"
-              >
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                <span>{loading ? 'Overujem…' : 'Overiť kód'}</span>
-              </button>
-              <button
                 type="button"
-                className="w-full text-sm text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-                onClick={() => {
-                  setStep('credentials');
-                  setTotpCode('');
-                }}
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
               >
-                Späť na prihlásenie
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
-            </form>
-          )}
-        </div>
+            </div>
+          </div>
 
-        <p className="text-center mt-6 text-xs text-indigo-300/60">
-          <Link to="/" className="hover:text-indigo-200 transition-colors">
-            ← Späť na verejný web
-          </Link>
-        </p>
-      </div>
-    </div>
+          <button type="submit" disabled={loading} className={authButtonClass}>
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
+            <span>{loading ? 'Prihlasujem…' : 'Prihlásiť sa'}</span>
+          </button>
+
+          {footerLinks}
+
+          {ssoProviders.length > 0 && (
+            <div className="pt-4 border-t border-slate-200 dark:border-slate-700 space-y-2">
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-400 text-center">Alebo SSO</p>
+              {ssoProviders.map((provider) => (
+                <button
+                  key={provider.id}
+                  type="button"
+                  disabled={loading}
+                  onClick={() => void handleSso(provider.id)}
+                  className="w-full py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800"
+                >
+                  Prihlásiť cez {provider.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </form>
+      ) : (
+        <form className="space-y-6" onSubmit={handleTotp}>
+          <div className="rounded-2xl border border-indigo-200/80 dark:border-indigo-800/60 bg-gradient-to-br from-indigo-50 to-violet-50 dark:from-indigo-950/40 dark:to-violet-950/30 p-6 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white dark:bg-slate-900 shadow-lg shadow-indigo-500/20 mb-4">
+              <Fingerprint className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+            </div>
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 flex items-center justify-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-emerald-500" />
+              Overenie cez autentifikátor
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+              Otvorte Google Authenticator, Authy alebo inú TOTP aplikáciu.
+            </p>
+          </div>
+
+          <TotpCodeInput value={totpCode} onChange={setTotpCode} disabled={loading} />
+
+          <button type="submit" disabled={loading || totpCode.length < 6} className={authButtonClass}>
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+            <span>{loading ? 'Overujem…' : 'Overiť a pokračovať'}</span>
+          </button>
+
+          <button
+            type="button"
+            className="w-full text-sm text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+            onClick={() => {
+              setStep('credentials');
+              setTotpCode('');
+            }}
+          >
+            Späť na prihlásenie
+          </button>
+        </form>
+      )}
+    </AuthShell>
   );
 };
 

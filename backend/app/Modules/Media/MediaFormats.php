@@ -102,8 +102,13 @@ final class MediaFormats
     /**
      * @param list<string> $allowedMimeTypes
      */
-    public static function validate(string $filename, string $bytes, string $declaredMime, array $allowedMimeTypes): string
-    {
+    public static function validate(
+        string $filename,
+        string $bytes,
+        string $declaredMime,
+        array $allowedMimeTypes,
+        bool $verifyContent = true
+    ): string {
         $declaredMime = strtolower(trim($declaredMime));
 
         if (!in_array($declaredMime, $allowedMimeTypes, true)) {
@@ -119,7 +124,7 @@ final class MediaFormats
             throw new FlatFileException('Prípona súboru nezodpovedá povolenému typu');
         }
 
-        if (!self::contentMatchesMime($bytes, $declaredMime)) {
+        if ($verifyContent && !self::contentMatchesMime($bytes, $declaredMime)) {
             throw new FlatFileException('Obsah súboru nezodpovedá deklarovanému typu');
         }
 

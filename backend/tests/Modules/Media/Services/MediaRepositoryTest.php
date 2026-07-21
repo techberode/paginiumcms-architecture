@@ -8,6 +8,7 @@ use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Core\FlatFile\Services\FileReader;
 use PaginiumCMS\Core\FlatFile\Services\FileValidator;
 use PaginiumCMS\Core\FlatFile\Services\FileWriter;
+use PaginiumCMS\Core\Security\Services\UploadSecurityValidator;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Modules\Media\Services\MediaRepository;
 use PHPUnit\Framework\TestCase;
@@ -45,12 +46,19 @@ class MediaRepositoryTest extends TestCase
         $writer = new FileWriter($validator);
 
         $settings = $this->createMock(SettingsRepositoryInterface::class);
-        $settings->method('group')->with('media')->willReturn([
-            'allowedMimeTypes' => 'image/jpeg,image/png,image/gif,image/webp,image/svg+xml,application/pdf',
-            'maxUploadSizeKb' => 5120,
-        ]);
+        $settings->method('group')->willReturnCallback(function (string $group): array {
+            if ($group === 'media') {
+                return [
+                    'allowedMimeTypes' => 'image/jpeg,image/png,image/gif,image/webp,image/svg+xml,application/pdf',
+                    'maxUploadSizeKb' => 5120,
+                ];
+            }
 
-        $this->repository = new MediaRepository($reader, $writer, $settings);
+            return [];
+        });
+
+        $uploadSecurity = new UploadSecurityValidator($settings);
+        $this->repository = new MediaRepository($reader, $writer, $settings, $uploadSecurity);
     }
 
     public function testFindAllReturnsEmptyWhenRegistryMissing(): void
@@ -171,6 +179,12 @@ class MediaRepositoryTest extends TestCase
     {
         $this->expectException(FlatFileException::class);
         $this->repository->delete('media/missing.png');
+    }
+
+    public function testSaveUploadRejectsDoubleExtension(): void
+    {
+        $this->expectException(FlatFileException::class);
+        $this->repository->saveUpload('shell.php.png', $this->pngBytes(), 'image/png');
     }
 
     public function testSaveUploadRejectsInvalidContent(): void

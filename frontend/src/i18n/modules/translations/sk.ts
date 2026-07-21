@@ -15,6 +15,13 @@ export const translationsSk: MessageTree = {
     label: 'Jazyk',
     sk: 'Slovenčina',
     en: 'English',
+    addTitle: 'Nová jazyková mutácia',
+    codePlaceholder: 'Kód (napr. de)',
+    labelPlaceholder: 'Názov (napr. Deutsch)',
+    create: 'Vytvoriť mutáciu',
+    createSuccess: 'Jazyk :code bol vytvorený',
+    createFailed: 'Vytvorenie jazyka zlyhalo',
+    createMissing: 'Vyplňte kód aj názov jazyka',
   },
   module: {
     label: 'Modul',
@@ -65,5 +72,8 @@ export const translationsSk: MessageTree = {
     frontendReload:
       'Po úprave frontendových prekladov obnovte stránku, aby sa zmeny prejavili v administrácii.',
     backendImmediate: 'Backend preklady sa prejavia pri ďalšom API volaní.',
+    policyTitle: 'Politika ukladania',
+    policyBody:
+      'Súbor sa najprv uloží do stagingu, prejde kontrolou syntaxe a až potom prepíše originál. Pri chybe zostane pôvodný súbor a vytvorí sa kópia .err.',
   },
 };

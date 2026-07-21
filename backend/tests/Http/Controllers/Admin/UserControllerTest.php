@@ -13,6 +13,7 @@ use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Security\Contracts\PasswordPolicyInterface;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Modules\Security\Services\PasswordPolicy;
+use PaginiumCMS\Modules\Security\Services\UserAvatarService;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
 use PHPUnit\Framework\TestCase;
 use Slim\Psr7\Factory\ResponseFactory;
@@ -38,6 +39,7 @@ class UserControllerTest extends TestCase
         $this->repo = new UserRepository(new FileReader($validator), new FileWriter($validator), 'users');
         $this->controller = new UserController(
             $this->repo,
+            new UserAvatarService($this->createMock(\PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface::class)),
             new \PaginiumCMS\Core\Settings\Services\SettingsRepository(
                 new FileReader(new FileValidator($this->baseDir . '/data')),
                 new FileWriter(new FileValidator($this->baseDir . '/data')),

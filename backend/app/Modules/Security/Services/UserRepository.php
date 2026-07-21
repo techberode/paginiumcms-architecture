@@ -195,6 +195,8 @@ class UserRepository
                 $user->setRoles($value);
             } elseif ($key === 'name') {
                 $user->setName($value);
+            } elseif ($key === 'avatarUrl') {
+                $user->setAvatarUrl(is_string($value) ? $value : null);
             } elseif ($key === 'username') {
                 $user->setUsername((string) $value);
             } elseif ($key === 'active') {
@@ -302,6 +304,7 @@ class UserRepository
             'passwordHash' => $user->getPasswordHash(),
             'roles' => $user->getRoles(),
             'name' => $user->getName(),
+            'avatarUrl' => $user->getAvatarUrl(),
             'active' => $user->isActive(),
             'twoFactorEnabled' => $user->isTwoFactorEnabled(),
             'twoFactorSecret' => $user->getTwoFactorSecret(),

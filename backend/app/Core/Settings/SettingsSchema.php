@@ -204,12 +204,27 @@ final class SettingsSchema
                     ['key' => 'openLinksInNewTab', 'type' => 'bool', 'label' => 'Otvárať náhľady a externé odkazy v novej karte', 'default' => false, 'rules' => ['bool'], 'help' => 'Platí pre náhľad obsahu, prechod na verejný web z adminu, media download a externé odkazy vo footeri. Vypnuté = rovnaká karta / SPA navigácia.'],
                 ],
             ],
+            'login' => [
+                'label' => 'Prihlásenie a registrácia',
+                'fields' => [
+                    ['key' => 'pageTitle', 'type' => 'string', 'label' => 'Nadpis prihlasovacej stránky', 'default' => '', 'rules' => ['string', 'max:120'], 'help' => 'Prázdne = použije sa názov stránky z Všeobecných.'],
+                    ['key' => 'pageDescription', 'type' => 'text', 'label' => 'Popis prihlasovacej stránky', 'default' => '', 'rules' => ['string', 'max:500'], 'help' => 'Krátky text v informačnom paneli prihlásenia/registrácie.'],
+                    ['key' => 'backgroundImageUrl', 'type' => 'url', 'label' => 'URL obrázka pozadia', 'default' => '', 'rules' => ['string', 'max:512'], 'help' => 'Absolútna URL alebo cesta /media/… — zobrazí sa za prihlasovacím formulárom.'],
+                    ['key' => 'infoBullets', 'type' => 'text', 'label' => 'Informačné body', 'default' => "Bezpečné prihlásenie do administrácie\nSpráva stránok, článkov a médií\nFlat-file úložisko bez SQL databázy", 'rules' => ['string', 'max:2000'], 'help' => 'Jeden riadok = jeden bod v informačnom paneli.'],
+                ],
+            ],
             'security' => [
                 'label' => 'Bezpečnosť',
                 'fields' => [
                     ['key' => 'maxLoginAttempts', 'type' => 'int', 'label' => 'Max. neúspešných prihlásení', 'default' => 5, 'rules' => ['required', 'int', 'min:3', 'max:20'], 'help' => 'Po prekročení sa účet/IP dočasne zablokuje.'],
                     ['key' => 'lockoutMinutes', 'type' => 'int', 'label' => 'Dĺžka blokácie (min)', 'default' => 15, 'rules' => ['required', 'int', 'min:1', 'max:1440']],
                     ['key' => 'requireTwoFactorStaff', 'type' => 'bool', 'label' => 'Vynútiť 2FA pre editorov a adminov', 'default' => true, 'rules' => ['bool'], 'help' => 'Pri zapnutí nie je možné vypnúť 2FA pre roly EDITOR, ADMIN a SUPER_ADMIN.'],
+                    ['key' => 'passwordMinLength', 'type' => 'int', 'label' => 'Min. dĺžka hesla', 'default' => 8, 'rules' => ['required', 'int', 'min:4', 'max:128'], 'help' => 'Platí pre registráciu, zmenu hesla a admin vytvorenie používateľa.'],
+                    ['key' => 'passwordMaxLength', 'type' => 'int', 'label' => 'Max. dĺžka hesla', 'default' => 72, 'rules' => ['required', 'int', 'min:8', 'max:128']],
+                    ['key' => 'passwordRequireUppercase', 'type' => 'bool', 'label' => 'Vyžadovať veľké písmeno (A–Z)', 'default' => true, 'rules' => ['bool']],
+                    ['key' => 'passwordRequireLowercase', 'type' => 'bool', 'label' => 'Vyžadovať malé písmeno (a–z)', 'default' => true, 'rules' => ['bool']],
+                    ['key' => 'passwordRequireNumbers', 'type' => 'bool', 'label' => 'Vyžadovať číslicu (0–9)', 'default' => true, 'rules' => ['bool']],
+                    ['key' => 'passwordRequireSpecialChars', 'type' => 'bool', 'label' => 'Vyžadovať špeciálny znak', 'default' => true, 'rules' => ['bool'], 'help' => 'Napr. ! @ # $ % & *'],
                 ],
             ],
             'contentSecurity' => [

@@ -14,15 +14,14 @@ use RuntimeException;
  */
 final class TranslationFileManager implements TranslationFileManagerInterface
 {
-    /** @var list<string> */
-    private array $locales = ['sk', 'en'];
-
     private string $projectRoot;
     private string $stagingDir;
     private string $rejectedDir;
 
     public function __construct(
         private TranslationPolicyValidator $policy,
+        private SupportedLocalesRegistry $locales,
+        private LocaleScaffoldService $scaffold,
         private FileBackup $backup,
         ?string $projectRoot = null
     ) {
@@ -40,8 +39,9 @@ final class TranslationFileManager implements TranslationFileManagerInterface
     public function listCatalog(): array
     {
         $files = [];
+        $localeCodes = $this->locales->codes();
 
-        foreach ($this->locales as $locale) {
+        foreach ($localeCodes as $locale) {
             $langDir = $this->projectRoot . '/backend/lang/' . $locale;
             if (is_dir($langDir)) {
                 foreach (glob($langDir . '/*.php') ?: [] as $absolute) {
@@ -92,10 +92,31 @@ final class TranslationFileManager implements TranslationFileManagerInterface
 
         return [
             'sources' => [
-                ['id' => 'backend', 'label' => 'Backend (API)', 'locales' => $this->locales],
-                ['id' => 'frontend', 'label' => 'Frontend (Admin UI)', 'locales' => $this->locales],
+                ['id' => 'backend', 'label' => 'Backend (API)', 'locales' => $localeCodes],
+                ['id' => 'frontend', 'label' => 'Frontend (Admin UI)', 'locales' => $localeCodes],
             ],
+            'locales' => $this->locales->all(),
             'files' => $files,
+        ];
+    }
+
+    public function listLocales(): array
+    {
+        return $this->locales->all();
+    }
+
+    /**
+     * @return array{locale: array<string, mixed>, files: list<string>, catalog: array<string, mixed>}
+     */
+    public function createLocale(string $code, string $label, string $copyFrom = 'sk'): array
+    {
+        $files = $this->scaffold->scaffold($code, $copyFrom);
+        $locale = $this->locales->add($code, $label);
+
+        return [
+            'locale' => $locale,
+            'files' => $files,
+            'catalog' => $this->listCatalog(),
         ];
     }
 
@@ -106,15 +127,20 @@ final class TranslationFileManager implements TranslationFileManagerInterface
             return false;
         }
 
-        if (preg_match('#^backend/lang/(sk|en)/[a-z0-9_-]+\.php$#', $normalized) === 1) {
+        $pattern = $this->locales->localePattern();
+        if ($pattern === '') {
+            return false;
+        }
+
+        if (preg_match('#^backend/lang/(' . $pattern . ')/[a-z0-9_-]+\.php$#', $normalized) === 1) {
             return true;
         }
 
-        if (preg_match('#^frontend/src/i18n/core/(sk|en)\.ts$#', $normalized) === 1) {
+        if (preg_match('#^frontend/src/i18n/core/(' . $pattern . ')\.ts$#', $normalized) === 1) {
             return true;
         }
 
-        return preg_match('#^frontend/src/i18n/modules/[a-z0-9_-]+/(sk|en)\.ts$#', $normalized) === 1;
+        return preg_match('#^frontend/src/i18n/modules/[a-z0-9_-]+/(' . $pattern . ')\.ts$#', $normalized) === 1;
     }
 
     public function readFile(string $path): string

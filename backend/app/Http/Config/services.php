@@ -47,6 +47,8 @@ use PaginiumCMS\Core\Developer\DevTokenRegistry;
 use PaginiumCMS\Core\Developer\Services\DeveloperLogger;
 use PaginiumCMS\Core\Event\EventDispatcher;
 use PaginiumCMS\Core\I18n\Contracts\TranslationFileManagerInterface;
+use PaginiumCMS\Core\I18n\Services\LocaleScaffoldService;
+use PaginiumCMS\Core\I18n\Services\SupportedLocalesRegistry;
 use PaginiumCMS\Core\I18n\Services\TranslationFileManager;
 use PaginiumCMS\Core\I18n\Services\TranslationPolicyValidator;
 use PaginiumCMS\Core\GitHub\Services\GitHubService;
@@ -75,7 +77,9 @@ use PaginiumCMS\Core\Feeds\Services\RobotsTxtGenerator;
 use PaginiumCMS\Core\Feeds\Services\SitemapGenerator;
 use PaginiumCMS\Core\Seo\Services\SeoMetaBuilder;
 use PaginiumCMS\Core\Security\SecurityLogger;
+use PaginiumCMS\Core\Security\Services\ContentSecuritySanitizer;
 use PaginiumCMS\Core\Security\Services\LoginAttemptTracker;
+use PaginiumCMS\Core\Security\Services\UploadSecurityValidator;
 use PaginiumCMS\Core\Security\Firewall\FirewallBanStore;
 use PaginiumCMS\Core\Security\Firewall\FirewallIncidentLogger;
 use PaginiumCMS\Core\Security\Firewall\FirewallScenarioRegistry;
@@ -171,6 +175,7 @@ use PaginiumCMS\Modules\Security\Contracts\AuthenticationInterface;
 use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
 use PaginiumCMS\Modules\Security\Contracts\PasswordPolicyInterface;
 use PaginiumCMS\Modules\Security\Contracts\TwoFactorInterface;
+use PaginiumCMS\Modules\Security\Services\UserAvatarService;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
 
 use function DI\create;
@@ -181,10 +186,15 @@ return [
     FrontMatterParserInterface::class => create(FrontMatterParser::class),
     MarkdownContentParserInterface::class => create(MarkdownContentParser::class),
     TiptapHtmlRenderer::class => create(TiptapHtmlRenderer::class),
+    ContentSecuritySanitizer::class => create(ContentSecuritySanitizer::class)
+        ->constructor(get(SettingsRepositoryInterface::class)),
+    UploadSecurityValidator::class => create(UploadSecurityValidator::class)
+        ->constructor(get(SettingsRepositoryInterface::class)),
     ContentBodyRenderer::class => create(ContentBodyRenderer::class)
         ->constructor(
             get(MarkdownContentParserInterface::class),
-            get(TiptapHtmlRenderer::class)
+            get(TiptapHtmlRenderer::class),
+            get(ContentSecuritySanitizer::class)
         ),
     MarkdownParserInterface::class => create(MarkdownParser::class)
         ->constructor(
@@ -241,8 +251,15 @@ return [
     TranslationFileManagerInterface::class => create(TranslationFileManager::class)
         ->constructor(
             get(TranslationPolicyValidator::class),
+            get(SupportedLocalesRegistry::class),
+            get(LocaleScaffoldService::class),
             get(FileBackup::class)
         ),
+    SupportedLocalesRegistry::class => create(SupportedLocalesRegistry::class),
+    LocaleScaffoldService::class => create(LocaleScaffoldService::class)
+        ->constructor(get(SupportedLocalesRegistry::class)),
+    UserAvatarService::class => create(UserAvatarService::class)
+        ->constructor(get(MediaRepositoryInterface::class)),
     TranslationPolicyValidator::class => create(TranslationPolicyValidator::class)
         ->constructor(get(SyntaxChecker::class)),
     TranslationController::class => create(TranslationController::class)
@@ -275,12 +292,17 @@ return [
             get(JsonResponder::class)
         ),
 
-    ValidationController::class => create(ValidationController::class)
-        ->constructor(get(JsonResponder::class)),
+    ValidationController::class => function ($container) {
+        return new ValidationController(
+            $container->get(JsonResponder::class),
+            $container->get(PasswordPolicyInterface::class)
+        );
+    },
 
     UserController::class => create(UserController::class)
         ->constructor(
             get(UserRepository::class),
+            get(UserAvatarService::class),
             get(SettingsRepositoryInterface::class),
             get(Validator::class),
             get(PasswordPolicyInterface::class),
@@ -340,7 +362,8 @@ return [
         ->constructor(
             get(FileReaderInterface::class),
             get(FileWriterInterface::class),
-            get(SettingsRepositoryInterface::class)
+            get(SettingsRepositoryInterface::class),
+            get(UploadSecurityValidator::class)
         ),
 
     StockImageCatalog::class => create(StockImageCatalog::class),
