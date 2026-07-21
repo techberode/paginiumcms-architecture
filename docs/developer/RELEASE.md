@@ -34,7 +34,7 @@
 2.0.46 — Audit activity, readable logs, login background picker (ISS-046–050)
 ```
 
-**Tag:** `v2.0.46` · **Target:** `main` · **Commit:** *(doplniť po commite)*
+**Tag:** `v2.0.46` · **Target:** `main` · **Commit:** `a16c15d`
 
 **Body:**
 
