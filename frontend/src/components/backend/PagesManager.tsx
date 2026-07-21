@@ -26,6 +26,7 @@ import { evaluateContentSeo } from '../../utils/seoHealth';
 import { resolveAdminMediaPreviewUrl, resolvePublicMediaUrl } from '../../api/media';
 import type { ContentType } from '../../api/drafts';
 import { AdminListSkeleton } from '../ui/AdminListSkeleton';
+import { useI18n } from '../../context/I18nContext';
 
 interface ContentItem {
   id: string;
@@ -78,13 +79,14 @@ function previewImageForItem(item: ContentItem): string {
   return raw;
 }
 
-const STATUS_LABELS: Record<ContentItem['status'], string> = {
-  published: 'Publikované',
-  draft: 'Koncept',
-  archived: 'Archivované',
+const STATUS_BADGE_CLASS: Record<ContentItem['status'], string> = {
+  published: 'badge-success',
+  draft: 'badge-warning',
+  archived: 'badge-danger',
 };
 
 export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) => {
+  const { t, locale } = useI18n();
   const queryClient = useQueryClient();
   const {
     page,
@@ -113,10 +115,17 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
 
   const endpoint = type === 'articles' ? '/api/articles' : '/api/pages';
   const routeBase = type === 'articles' ? 'articles' : 'pages';
-  const label = type === 'articles' ? 'Články' : 'Podstránky';
-  // contentEditorMeta pracuje s jednotným tvarom ('page' | 'article').
+  const contentScope = type === 'articles' ? 'articles' : 'pages';
+  const label = t(`content.${contentScope}.title`);
   const previewType = type === 'articles' ? 'article' : 'page';
-  const itemLabel = type === 'articles' ? 'článok' : 'podstránku';
+  const itemLabel = t(`content.${contentScope}.itemAccusative`);
+  const dateLocale = locale === 'en' ? 'en-GB' : 'sk-SK';
+
+  const statusLabel = (status: ContentItem['status']): string => {
+    const key = `list.status.${status}`;
+    const translated = t(key);
+    return translated !== key ? translated : status;
+  };
   const hasActiveFilters =
     debouncedSearch.length >= 2 ||
     statusFilter !== 'all' ||
@@ -138,15 +147,15 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
           setPreviewDraft(buildSitePreviewDraft(previewType as ContentType, response.data));
           setPreviewOpen(true);
         } else {
-          toast.error('Nepodarilo sa načítať obsah pre náhľad.');
+          toast.error(t('content.preview.loadFailed'));
         }
       } catch {
-        toast.error('Nepodarilo sa načítať obsah pre náhľad.');
+        toast.error(t('content.preview.loadFailed'));
       } finally {
         setPreviewLoadingSlug(null);
       }
     },
-    [endpoint, get, previewType, toast]
+    [endpoint, get, previewType, t, toast]
   );
 
   const listQueryKey = queryKeys.content.list(type, {
@@ -175,7 +184,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
 
       const response = await get<ContentItem[]>(`${endpoint}?${params.toString()}`);
       if (!response.success) {
-        throw new Error(`Nepodarilo sa načítať ${type === 'articles' ? 'články' : 'podstránky'}`);
+        throw new Error(t(`content.${contentScope}.loadError`));
       }
 
       return {
@@ -193,30 +202,26 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
     queryClient.invalidateQueries({ queryKey: ['admin', 'content', type, 'list'] });
 
   const handleDelete = async (slug: string) => {
-    if (!confirm(`Naozaj chcete zmazať túto ${itemLabel}?`)) {
+    if (!confirm(t('content.confirm.deleteOne', { item: itemLabel }))) {
       return;
     }
 
     try {
       const response = await del(`${endpoint}/${slug}`);
       if (response.success) {
-        toast.success(`${itemLabel} bol zmazaný`);
+        toast.success(t('content.toast.deleted', { item: itemLabel }));
         await invalidateList();
       } else {
-        toast.error(response.error || `Nepodarilo sa zmazať ${itemLabel}`);
+        toast.error(response.error || t('content.toast.deleteFailed', { item: itemLabel }));
       }
     } catch (error) {
-      toast.error(`Nepodarilo sa zmazať ${itemLabel}`);
+      toast.error(t('content.toast.deleteFailed', { item: itemLabel }));
       console.error(error);
     }
   };
 
   const getStatusBadge = (status: string) => {
-    const classes = {
-      published: 'badge-success',
-      draft: 'badge-warning',
-      archived: 'badge-danger',
-    };
+    const classes = STATUS_BADGE_CLASS;
     return `badge ${classes[status as keyof typeof classes] || 'badge-info'}`;
   };
 
@@ -241,7 +246,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
     if (bulkSelection.count === 0) {
       return;
     }
-    if (!confirm(`Zmazať ${bulkSelection.count} vybraných položiek?`)) {
+    if (!confirm(t('content.confirm.bulkDelete', { count: bulkSelection.count }))) {
       return;
     }
     const result = await contentApi.bulkDelete(type, bulkSelection.selectedIds);
@@ -250,7 +255,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
       bulkSelection.clear();
       await invalidateList();
     } else {
-      toast.error('Hromadné mazanie zlyhalo.');
+      toast.error(t('content.bulk.deleteFailed'));
     }
   };
 
@@ -264,7 +269,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
       bulkSelection.clear();
       await invalidateList();
     } else {
-      toast.error('Hromadná zmena stavu zlyhala.');
+      toast.error(t('content.bulk.statusFailed'));
     }
   };
 
@@ -277,14 +282,14 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
       <div className="flex justify-between items-center flex-wrap gap-4">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{label}</h1>
         <Link to={`/${routeBase}/new`} className="btn btn-primary w-full sm:w-auto justify-center">
-          + Nová položka
+          + {t('content.newItem')}
         </Link>
       </div>
 
       <AdminListFilterBar
         search={search}
         onSearchChange={setSearch}
-        searchPlaceholder={`Hľadať ${type === 'articles' ? 'články' : 'podstránky'}…`}
+        searchPlaceholder={t(`content.${contentScope}.searchPlaceholder`)}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
         viewMode={viewMode}
@@ -302,20 +307,19 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
 
       <BulkActionBar
         count={bulkSelection.count}
-        itemLabel="vybraných položiek"
         onClear={bulkSelection.clear}
         actions={[
-          { id: 'publish', label: 'Publikovať', variant: 'primary', onClick: () => void handleBulkStatus('published') },
-          { id: 'draft', label: 'Koncept', variant: 'secondary', onClick: () => void handleBulkStatus('draft') },
-          { id: 'archive', label: 'Archivovať', variant: 'secondary', onClick: () => void handleBulkStatus('archived') },
-          { id: 'delete', label: 'Zmazať', variant: 'danger', onClick: () => void handleBulkDelete() },
+          { id: 'publish', label: t('content.bulk.publish'), variant: 'primary', onClick: () => void handleBulkStatus('published') },
+          { id: 'draft', label: t('content.bulk.draft'), variant: 'secondary', onClick: () => void handleBulkStatus('draft') },
+          { id: 'archive', label: t('content.bulk.archive'), variant: 'secondary', onClick: () => void handleBulkStatus('archived') },
+          { id: 'delete', label: t('content.bulk.delete'), variant: 'danger', onClick: () => void handleBulkDelete() },
         ]}
       />
 
       {visibleItems.length === 0 ? (
         <div className="card">
           <div className="card-body text-center py-8 text-gray-500 dark:text-gray-400">
-            Nenašli sa žiadne {type === 'articles' ? 'články' : 'podstránky'}
+            {t(`content.${contentScope}.empty`)}
           </div>
         </div>
       ) : viewMode === 'preview' ? (
@@ -336,14 +340,14 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                       type="checkbox"
                       checked={bulkSelection.isSelected(item.slug)}
                       onChange={() => bulkSelection.toggle(item.slug)}
-                      aria-label={`Select ${item.title}`}
+                      aria-label={t('list.select.item', { title: item.title })}
                       className="rounded border-gray-300"
                     />
                   </label>
                   {preview ? (
                     <img src={preview} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-sm text-gray-400">No preview image</span>
+                    <span className="text-sm text-gray-400">{t('list.noPreviewImage')}</span>
                   )}
                 </div>
                 <div className="card-body space-y-2 flex-1 flex flex-col">
@@ -352,10 +356,10 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                     <SeoHealthBadge level={seoLevel} />
                   </div>
                   <p className="text-xs text-gray-500 truncate">/{item.slug}</p>
-                  <span className={getStatusBadge(item.status)}>{STATUS_LABELS[item.status] ?? item.status}</span>
+                  <span className={getStatusBadge(item.status)}>{statusLabel(item.status)}</span>
                   <div className="flex gap-2 mt-auto pt-2">
                     <Link to={`/${routeBase}/${item.slug}`} className="btn btn-secondary text-xs px-3 py-1">
-                      Upraviť
+                      {t('list.actions.edit')}
                     </Link>
                     <button
                       type="button"
@@ -363,14 +367,14 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                       disabled={previewLoadingSlug === item.slug}
                       onClick={() => void openListPreview(item)}
                     >
-                      {previewLoadingSlug === item.slug ? '…' : 'Náhľad'}
+                      {previewLoadingSlug === item.slug ? t('list.actions.previewLoading') : t('list.actions.preview')}
                     </button>
                     <button
                       type="button"
                       className="btn btn-danger text-xs px-3 py-1"
                       onClick={() => void handleDelete(item.slug)}
                     >
-                      Zmazať
+                      {t('list.actions.delete')}
                     </button>
                   </div>
                 </div>
@@ -394,7 +398,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                 slug={item.slug}
                 status={item.status}
                 statusBadgeClass={getStatusBadge(item.status)}
-                statusLabel={STATUS_LABELS[item.status] ?? item.status}
+                statusLabel={statusLabel(item.status as ContentItem['status'])}
                 seoLevel={seoLevel}
                 updatedAt={item.updatedAt}
                 routeBase={routeBase}
@@ -419,19 +423,19 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                         type="checkbox"
                         checked={bulkSelection.allSelected && visibleItems.length > 0}
                         onChange={bulkSelection.toggleAll}
-                        aria-label="Select all visible items"
+                        aria-label={t('list.select.allVisible')}
                       />
                     </th>
-                    {viewMode === 'list-preview' && <th className="w-24 hide-mobile">Náhľad</th>}
+                    {viewMode === 'list-preview' && <th className="w-24 hide-mobile">{t('content.table.preview')}</th>}
                     <SortableTableHeader
-                      label="Názov"
+                      label={t('content.table.title')}
                       field="title"
                       activeField={sortField}
                       direction={sortDirection}
                       onSort={handleSort}
                     />
                     <SortableTableHeader
-                      label="Slug"
+                      label={t('content.table.slug')}
                       field="slug"
                       activeField={sortField}
                       direction={sortDirection}
@@ -439,22 +443,22 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                       thClassName="hide-mobile"
                     />
                     <SortableTableHeader
-                      label="Stav"
+                      label={t('content.table.status')}
                       field="status"
                       activeField={sortField}
                       direction={sortDirection}
                       onSort={handleSort}
                     />
-                    <th>SEO</th>
+                    <th>{t('content.table.seo')}</th>
                     <SortableTableHeader
-                      label="Upravené"
+                      label={t('content.table.updated')}
                       field="updatedAt"
                       activeField={sortField}
                       direction={sortDirection}
                       onSort={handleSort}
                       thClassName="hide-tablet"
                     />
-                    <th>Akcie</th>
+                    <th>{t('content.table.actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -473,7 +477,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                             type="checkbox"
                             checked={bulkSelection.isSelected(item.slug)}
                             onChange={() => bulkSelection.toggle(item.slug)}
-                            aria-label={`Select ${item.title}`}
+                            aria-label={t('list.select.item', { title: item.title })}
                           />
                         </td>
                         {viewMode === 'list-preview' && (
@@ -488,13 +492,13 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                         <td className="font-medium max-w-[240px] truncate">{item.title}</td>
                         <td className="text-gray-500 dark:text-gray-400 hide-mobile max-w-[180px] truncate">{item.slug}</td>
                         <td>
-                          <span className={getStatusBadge(item.status)}>{STATUS_LABELS[item.status] ?? item.status}</span>
+                          <span className={getStatusBadge(item.status)}>{statusLabel(item.status)}</span>
                         </td>
                         <td>
                           <SeoHealthBadge level={seoLevel} />
                         </td>
                         <td className="text-sm text-gray-500 dark:text-gray-400 hide-tablet">
-                          {new Date(item.updatedAt).toLocaleDateString('sk-SK')}
+                          {new Date(item.updatedAt).toLocaleDateString(dateLocale)}
                         </td>
                         <td>
                           <div className="flex flex-wrap gap-2">
@@ -502,7 +506,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                               to={`/${routeBase}/${item.slug}`}
                               className="btn btn-secondary text-xs px-3 py-1"
                             >
-                              Upraviť
+                              {t('list.actions.edit')}
                             </Link>
                             <button
                               type="button"
@@ -510,13 +514,13 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                               disabled={previewLoadingSlug === item.slug}
                               onClick={() => void openListPreview(item)}
                             >
-                              {previewLoadingSlug === item.slug ? '…' : 'Náhľad'}
+                              {previewLoadingSlug === item.slug ? t('list.actions.previewLoading') : t('list.actions.preview')}
                             </button>
                             <button
                               onClick={() => void handleDelete(item.slug)}
                               className="btn btn-danger text-xs px-3 py-1"
                             >
-                              Zmazať
+                              {t('list.actions.delete')}
                             </button>
                           </div>
                         </td>

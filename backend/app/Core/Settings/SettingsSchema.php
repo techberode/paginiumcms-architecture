@@ -212,6 +212,27 @@ final class SettingsSchema
                     ['key' => 'requireTwoFactorStaff', 'type' => 'bool', 'label' => 'Vynútiť 2FA pre editorov a adminov', 'default' => true, 'rules' => ['bool'], 'help' => 'Pri zapnutí nie je možné vypnúť 2FA pre roly EDITOR, ADMIN a SUPER_ADMIN.'],
                 ],
             ],
+            'contentSecurity' => [
+                'label' => 'Bezpečnosť obsahu (XML/HTML)',
+                'fields' => [
+                    ['key' => 'sanitizeHtmlOnSave', 'type' => 'bool', 'label' => 'Sanitizovať HTML pri ukladaní', 'default' => true, 'rules' => ['bool'], 'help' => 'Odstráni nebezpečné tagy a atribúty z HTML/Tiptap výstupu.'],
+                    ['key' => 'stripExternalEntities', 'type' => 'bool', 'label' => 'Blokovať externé XML entity', 'default' => true, 'rules' => ['bool'], 'help' => 'XXE ochrana pri parsovaní XML/SVG obsahu.'],
+                    ['key' => 'allowSvgInline', 'type' => 'bool', 'label' => 'Povoliť inline SVG v obsahu', 'default' => false, 'rules' => ['bool'], 'help' => 'SVG môže obsahovať skript — odporúčame vypnuté.'],
+                    ['key' => 'allowScriptTags', 'type' => 'bool', 'label' => 'Povoliť <script> v obsahu', 'default' => false, 'rules' => ['bool'], 'help' => 'Len pre dôveryhodných editorov; default off.'],
+                    ['key' => 'allowedHtmlTags', 'type' => 'text', 'label' => 'Povolené HTML tagy', 'default' => 'p,h1,h2,h3,h4,ul,ol,li,a,strong,em,blockquote,code,pre,img,table,thead,tbody,tr,th,td', 'rules' => ['required', 'string', 'max:2000'], 'help' => 'Čiarkou oddelený whitelist tagov.'],
+                ],
+            ],
+            'uploadSecurity' => [
+                'label' => 'Bezpečnosť uploadu',
+                'fields' => [
+                    ['key' => 'scanMagicBytes', 'type' => 'bool', 'label' => 'Kontrolovať magic bytes súboru', 'default' => true, 'rules' => ['bool'], 'help' => 'Porovná hlavičku súboru s deklarovaným MIME typom.'],
+                    ['key' => 'blockDoubleExtensions', 'type' => 'bool', 'label' => 'Blokovať dvojité prípony', 'default' => true, 'rules' => ['bool'], 'help' => 'Napr. shell.php.jpg — bežný upload útok.'],
+                    ['key' => 'blockExecutables', 'type' => 'bool', 'label' => 'Blokovať spustiteľné prípony', 'default' => true, 'rules' => ['bool'], 'help' => 'php, exe, sh, bat, cmd, js v upload zložke.'],
+                    ['key' => 'allowedExtensions', 'type' => 'text', 'label' => 'Povolené prípony', 'default' => 'jpg,jpeg,png,gif,webp,svg,pdf,md,txt', 'rules' => ['required', 'string', 'max:1000'], 'help' => 'Bez bodky, oddelené čiarkou.'],
+                    ['key' => 'maxUploadSizeKb', 'type' => 'int', 'label' => 'Max. veľkosť uploadu (KB)', 'default' => 5120, 'rules' => ['required', 'int', 'min:64', 'max:51200'], 'help' => '5120 KB = 5 MB.'],
+                    ['key' => 'allowedMimeTypes', 'type' => 'text', 'label' => 'Povolené MIME typy', 'default' => 'image/jpeg,image/png,image/gif,image/webp,image/svg+xml,application/pdf', 'rules' => ['required', 'string', 'max:2000'], 'help' => 'Oddeľte čiarkou.'],
+                ],
+            ],
             'firewall' => [
                 'label' => 'Firewall (WAF)',
                 'fields' => [

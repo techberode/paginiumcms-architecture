@@ -15,6 +15,7 @@ import App from './App';
 import './index.css';
 import { logFrontendStartup } from './utils/debugLog';
 import { DebugRouteTracker } from './components/debug/DebugRouteTracker';
+import './i18n/registerModules';
 
 logFrontendStartup();
 

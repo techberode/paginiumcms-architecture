@@ -36,6 +36,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | CI hotfix — unused `refetch` in PagesManager | **2.0.40** | [below](#2040--2026-07-20) |
 | It.54 — Modular editor profiles (MD + WYSIWYG) | **2.0.42** | [below](#2042--2026-07-20) |
 | It.55 — Tiptap JSON storage + editor image upload | **2.0.43** | [below](#2043--2026-07-20) |
+| It.18 — Admin UI i18n + translation editor | **2.0.44** | [below](#2044--2026-07-21) |
+
+---
+
+## [2.0.44] – 2026-07-21
+
+**Iteration 18** — Admin UI localization (i18n modules, translation editor).  
+**Iteration 19a** — Grouped sidebar, settings categories, translation save policy.  
+Includes **HookManager DI hotfix** (146 PHPUnit errors).  
+Detail: [ITERATION_18.md](docs/ITERATION_18.md) · [ITERATION_19.md](docs/ITERATION_19.md).
+
+### Added
+
+- **i18n:** `useI18n()` modules — admin, list, content, settings, translations
+- **Translation editor:** `/translations` — light Monaco editor for `backend/lang` + `frontend/src/i18n`
+- **Translation API:** `/api/admin/translations/*` (Admin + 2FA, no Developer Mode)
+- **Translation policy:** staging save, rejected `.err` copies, sequential policy errors in UI
+- **Settings UX:** category menu (System / Site / Media / Security)
+- **Schema:** `contentSecurity`, `uploadSecurity` groups
+- **Admin nav:** 6 collapsible sidebar sections + header collapse toggle
+
+### Fixed
+
+- Missing `use PaginiumCMS\Core\Hook\HookManager` in `services.php` (extensions bootstrap)
+- Vitest: `TestI18nProvider` in test harness (MediaManager, TrashManager, SettingsView)
+
+### Tests
+
+- FE i18n modules + `TranslationFileManagerTest` + `TranslationControllerTest`
+- PHPUnit 693 OK · PHPStan level 8 OK
 
 ---
 

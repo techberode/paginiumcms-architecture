@@ -46,8 +46,11 @@ use PaginiumCMS\Core\Developer\DevTokenGenerator;
 use PaginiumCMS\Core\Developer\DevTokenRegistry;
 use PaginiumCMS\Core\Developer\Services\DeveloperLogger;
 use PaginiumCMS\Core\Event\EventDispatcher;
-use PaginiumCMS\Core\Hook\HookManager;
+use PaginiumCMS\Core\I18n\Contracts\TranslationFileManagerInterface;
+use PaginiumCMS\Core\I18n\Services\TranslationFileManager;
+use PaginiumCMS\Core\I18n\Services\TranslationPolicyValidator;
 use PaginiumCMS\Core\GitHub\Services\GitHubService;
+use PaginiumCMS\Core\Hook\HookManager;
 use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
@@ -112,6 +115,7 @@ use PaginiumCMS\Http\Controllers\Admin\BlueprintController;
 use PaginiumCMS\Http\Controllers\Admin\AclController;
 use PaginiumCMS\Http\Controllers\Admin\SecurityAuditController;
 use PaginiumCMS\Http\Controllers\Admin\SettingsController;
+use PaginiumCMS\Http\Controllers\Admin\TranslationController;
 use PaginiumCMS\Http\Controllers\Auth\SsoController;
 use PaginiumCMS\Http\Controllers\Admin\TrashController;
 use PaginiumCMS\Http\Controllers\Admin\FirewallController;
@@ -232,6 +236,19 @@ return [
             get(SecurityLogger::class),
             get(DemoMode::class),
             get(EditorProfileService::class)
+        ),
+
+    TranslationFileManagerInterface::class => create(TranslationFileManager::class)
+        ->constructor(
+            get(TranslationPolicyValidator::class),
+            get(FileBackup::class)
+        ),
+    TranslationPolicyValidator::class => create(TranslationPolicyValidator::class)
+        ->constructor(get(SyntaxChecker::class)),
+    TranslationController::class => create(TranslationController::class)
+        ->constructor(
+            get(TranslationFileManagerInterface::class),
+            get(JsonResponder::class)
         ),
 
     WorkflowController::class => create(WorkflowController::class)

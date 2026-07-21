@@ -1,6 +1,7 @@
 // frontend/src/test/renderWithRouter.tsx
 import { render, type RenderOptions } from '@testing-library/react';
 import { MemoryRouter, type MemoryRouterProps } from 'react-router-dom';
+import { TestI18nProvider } from '../context/I18nContext';
 
 const routerFuture: MemoryRouterProps['future'] = {
   v7_startTransition: true,
@@ -18,9 +19,11 @@ export function renderWithRouter(
   return render(ui, {
     ...options,
     wrapper: ({ children }) => (
-      <MemoryRouter future={routerFuture} {...routerProps}>
-        {children}
-      </MemoryRouter>
+      <TestI18nProvider>
+        <MemoryRouter future={routerFuture} {...routerProps}>
+          {children}
+        </MemoryRouter>
+      </TestI18nProvider>
     ),
   });
 }

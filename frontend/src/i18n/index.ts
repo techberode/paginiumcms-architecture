@@ -55,10 +55,12 @@ function applyParams(message: string, params?: Record<string, string | number>):
     return message;
   }
 
-  return Object.entries(params).reduce(
-    (result, [name, value]) => result.replaceAll(`:${name}`, String(value)),
-    message
-  );
+  return Object.entries(params)
+    .sort(([left], [right]) => right.length - left.length)
+    .reduce(
+      (result, [name, value]) => result.replaceAll(`:${name}`, String(value)),
+      message
+    );
 }
 
 /**

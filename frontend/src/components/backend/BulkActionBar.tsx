@@ -1,6 +1,7 @@
 // frontend/src/components/backend/BulkActionBar.tsx
 import React from 'react';
 import { X } from 'lucide-react';
+import { useI18n } from '../../context/I18nContext';
 
 export interface BulkActionDefinition {
   id: string;
@@ -19,10 +20,13 @@ interface BulkActionBarProps {
 
 export const BulkActionBar: React.FC<BulkActionBarProps> = ({
   count,
-  itemLabel = 'selected',
+  itemLabel,
   onClear,
   actions,
 }) => {
+  const { t } = useI18n();
+  const resolvedItemLabel = itemLabel ?? t('list.bulk.selectedItems');
+
   if (count <= 0) {
     return null;
   }
@@ -30,7 +34,7 @@ export const BulkActionBar: React.FC<BulkActionBarProps> = ({
   return (
     <div className="sticky top-0 z-20 flex flex-wrap items-center gap-3 rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/40 px-4 py-3">
       <p className="text-sm font-medium text-indigo-900 dark:text-indigo-100">
-        {count} {itemLabel}
+        {count} {resolvedItemLabel}
       </p>
       <div className="flex flex-wrap gap-2">
         {actions.map((action) => (
@@ -55,7 +59,7 @@ export const BulkActionBar: React.FC<BulkActionBarProps> = ({
         type="button"
         className="btn btn-secondary text-xs px-2 py-1 ml-auto"
         onClick={onClear}
-        aria-label="Clear selection"
+        aria-label={t('list.bulk.clearSelection')}
       >
         <X className="w-3 h-3" />
       </button>

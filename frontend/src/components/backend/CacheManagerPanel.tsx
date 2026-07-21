@@ -3,8 +3,10 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Database, RefreshCw, Trash2 } from 'lucide-react';
 import { getCacheStats, purgeCache, type CacheStats } from '../../api/cache';
 import { useToast } from '../../hooks/useToast';
+import { useI18n } from '../../context/I18nContext';
 
 export const CacheManagerPanel: React.FC = () => {
+  const { t } = useI18n();
   const [stats, setStats] = useState<CacheStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [purging, setPurging] = useState<'content' | 'all' | null>(null);
@@ -25,8 +27,9 @@ export const CacheManagerPanel: React.FC = () => {
   }, [load]);
 
   const handlePurge = async (scope: 'content' | 'all') => {
-    const label = scope === 'all' ? 'celú cache' : 'cache obsahu (stránky, články, feedy)';
-    if (!window.confirm(`Naozaj chcete vymazať ${label}?`)) {
+    const confirmMessage =
+      scope === 'all' ? t('settings.cache.confirmAll') : t('settings.cache.confirmContent');
+    if (!window.confirm(confirmMessage)) {
       return;
     }
 
@@ -34,10 +37,10 @@ export const CacheManagerPanel: React.FC = () => {
     try {
       const res = await purgeCache(scope);
       if (res.success && res.data) {
-        toast.success(res.message || 'Cache vymazaná');
+        toast.success(res.message || t('settings.cache.purged'));
         await load();
       } else {
-        toast.error(res.error || 'Vymazanie cache zlyhalo');
+        toast.error(res.error || t('settings.cache.purgeFailed'));
       }
     } finally {
       setPurging(null);
@@ -51,10 +54,11 @@ export const CacheManagerPanel: React.FC = () => {
           <div className="flex items-start gap-3">
             <Database className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5" />
             <div>
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Cache systému</h3>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+                {t('settings.cache.title')}
+              </h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                Manuálne vymazanie cache po deployi alebo keď verejný web zobrazuje starý obsah.
-                Odporúčané: najprv „Cache obsahu“.
+                {t('settings.cache.description')}
               </p>
             </div>
           </div>
@@ -65,33 +69,33 @@ export const CacheManagerPanel: React.FC = () => {
             className="btn btn-secondary shrink-0 inline-flex items-center gap-2"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            Obnoviť stav
+            {t('settings.cache.refresh')}
           </button>
         </div>
 
         {loading && !stats ? (
-          <div className="text-sm text-gray-500 dark:text-gray-400">Načítavam stav cache…</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">{t('settings.cache.loading')}</div>
         ) : stats ? (
           <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
             <div className="rounded-lg bg-gray-50 dark:bg-slate-800/60 px-3 py-2">
-              <dt className="text-gray-500 dark:text-gray-400">Súbory na disku</dt>
+              <dt className="text-gray-500 dark:text-gray-400">{t('settings.cache.fileEntries')}</dt>
               <dd className="font-semibold text-gray-900 dark:text-white">{stats.file_entries}</dd>
             </div>
             <div className="rounded-lg bg-gray-50 dark:bg-slate-800/60 px-3 py-2">
-              <dt className="text-gray-500 dark:text-gray-400">Generácia stránok</dt>
+              <dt className="text-gray-500 dark:text-gray-400">{t('settings.cache.pagesGeneration')}</dt>
               <dd className="font-semibold text-gray-900 dark:text-white">{stats.generations.pages}</dd>
             </div>
             <div className="rounded-lg bg-gray-50 dark:bg-slate-800/60 px-3 py-2">
-              <dt className="text-gray-500 dark:text-gray-400">Generácia článkov</dt>
+              <dt className="text-gray-500 dark:text-gray-400">{t('settings.cache.articlesGeneration')}</dt>
               <dd className="font-semibold text-gray-900 dark:text-white">{stats.generations.articles}</dd>
             </div>
             <div className="rounded-lg bg-gray-50 dark:bg-slate-800/60 px-3 py-2">
-              <dt className="text-gray-500 dark:text-gray-400">Generácia feedov</dt>
+              <dt className="text-gray-500 dark:text-gray-400">{t('settings.cache.feedsGeneration')}</dt>
               <dd className="font-semibold text-gray-900 dark:text-white">{stats.generations.feeds}</dd>
             </div>
           </dl>
         ) : (
-          <div className="text-sm text-amber-700 dark:text-amber-300">Nepodarilo sa načítať stav cache.</div>
+          <div className="text-sm text-amber-700 dark:text-amber-300">{t('settings.cache.loadFailed')}</div>
         )}
 
         <div className="flex flex-wrap gap-2 pt-1">
@@ -102,7 +106,7 @@ export const CacheManagerPanel: React.FC = () => {
             className="btn btn-primary inline-flex items-center gap-2"
           >
             <Trash2 className="w-4 h-4" />
-            {purging === 'content' ? 'Mažem…' : 'Vymazať cache obsahu'}
+            {purging === 'content' ? t('settings.cache.purging') : t('settings.cache.purgeContent')}
           </button>
           <button
             type="button"
@@ -111,7 +115,7 @@ export const CacheManagerPanel: React.FC = () => {
             className="btn btn-secondary inline-flex items-center gap-2"
           >
             <Trash2 className="w-4 h-4" />
-            {purging === 'all' ? 'Mažem…' : 'Vymazať celú cache'}
+            {purging === 'all' ? t('settings.cache.purging') : t('settings.cache.purgeAll')}
           </button>
         </div>
       </div>

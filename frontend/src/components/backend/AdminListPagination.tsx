@@ -1,4 +1,5 @@
 import React from 'react';
+import { useI18n } from '../../context/I18nContext';
 
 export interface AdminListPaginationProps {
   page: number;
@@ -17,12 +18,15 @@ export const AdminListPagination: React.FC<AdminListPaginationProps> = ({
   pageSize,
   loading = false,
   onPageChange,
-  itemLabel = 'záznamov',
+  itemLabel,
 }) => {
+  const { t } = useI18n();
+  const recordsLabel = itemLabel ?? t('list.pagination.records');
+
   if (total <= pageSize && totalPages <= 1) {
     return (
       <p className="text-sm text-gray-500 dark:text-gray-400">
-        {total} {itemLabel}
+        {total} {recordsLabel}
       </p>
     );
   }
@@ -30,7 +34,7 @@ export const AdminListPagination: React.FC<AdminListPaginationProps> = ({
   return (
     <div className="flex items-center justify-between gap-4 flex-wrap">
       <p className="text-sm text-gray-500 dark:text-gray-400">
-        {total} {itemLabel} · strana {page} / {totalPages}
+        {t('list.pagination.pageOf', { total, page, totalPages })}
       </p>
       <div className="flex gap-2 w-full sm:w-auto">
         <button
@@ -39,7 +43,7 @@ export const AdminListPagination: React.FC<AdminListPaginationProps> = ({
           disabled={page <= 1 || loading}
           onClick={() => onPageChange(Math.max(1, page - 1))}
         >
-          Predošlá
+          {t('list.pagination.previous')}
         </button>
         <button
           type="button"
@@ -47,7 +51,7 @@ export const AdminListPagination: React.FC<AdminListPaginationProps> = ({
           disabled={page >= totalPages || loading}
           onClick={() => onPageChange(page + 1)}
         >
-          Ďalšia
+          {t('list.pagination.next')}
         </button>
       </div>
     </div>
