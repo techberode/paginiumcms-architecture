@@ -3,7 +3,7 @@
 > Posledná verzia: **2.0.46** · 2026-07-21  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release. Samotný release/tag zatiaľ nevytváraj, kým nie je schválený deploy.
 
-> **Poznámka k verziám:** … **v2.0.45** → `f3ed5bc`, **v2.0.46** → `a16c15d` (+ docs/test fix `HEAD`).
+> **Poznámka k verziám:** Commity `4367d19` (It.55) a `8526c19` (It.54) mali v správe nesprávne číslo (`2.0.42` / `2.0.41`). Oficiálne tagy podľa CHANGELOG: **v2.0.42** → `8526c19`, **v2.0.43** → `4367d19`, **v2.0.44** → `199877a`, **v2.0.45** → `f3ed5bc`, **v2.0.46** → `637fef4` (release commit; feature body v `a16c15d`).
 
 ---
 
@@ -37,7 +37,7 @@
 2.0.46 — It.18e i18n, analytics UI, dashboard disk, audit/logs fixes (ISS-046–050)
 ```
 
-**Tag:** `v2.0.46` · **Target:** `main` · **Commit:** `a16c15d` *(+ docs/test fix commit ak nasleduje)*
+**Tag:** `v2.0.46` · **Target:** `main` · **Commit:** `637fef4`
 
 **Body:**
 
