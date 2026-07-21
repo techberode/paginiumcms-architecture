@@ -42,6 +42,7 @@ import { AclManager } from './components/backend/AclManager';
 import { BlueprintManager } from './components/backend/BlueprintManager';
 import { DemoManager } from './components/backend/DemoManager';
 import { debugLog } from './utils/debugLog';
+import { ADMIN_DEFAULT_ROUTE } from './config/adminNavSections';
 
 function LoadingScreen() {
   return (
@@ -77,7 +78,7 @@ function GuestRoute({ children }: { children: React.ReactNode }) {
   const { user, pendingTwoFactor, twoFactorSetupPending } = useAuth();
 
   if (user && !pendingTwoFactor) {
-    return <Navigate to={twoFactorSetupPending ? '/account/security' : '/dashboard'} replace />;
+    return <Navigate to={twoFactorSetupPending ? '/account/security' : ADMIN_DEFAULT_ROUTE} replace />;
   }
 
   return <>{children}</>;

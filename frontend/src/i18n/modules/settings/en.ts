@@ -76,6 +76,12 @@ export const settingsEn: MessageTree = {
     "contentSecurity": "Content security (XML/HTML)",
     "uploadSecurity": "Upload security"
   },
+  "hints": {
+    "security": {
+      "title": "Security groups",
+      "body": "Content and Upload settings apply when HTML is rendered and when files are uploaded to the media library. Keep sanitization and magic-byte checks enabled unless you have a specific reason."
+    }
+  },
   "fields": {
     "general": {
       "siteName": {
@@ -242,6 +248,44 @@ export const settingsEn: MessageTree = {
       "requireTwoFactorStaff": {
         "label": "Require 2FA for editors and admins",
         "help": "When enabled, 2FA cannot be disabled for EDITOR, ADMIN and SUPER_ADMIN roles."
+      },
+      "passwordMinLength": {
+        "label": "Minimum password length",
+        "help": "Applies to registration, password change and admin user creation."
+      },
+      "passwordMaxLength": {
+        "label": "Maximum password length"
+      },
+      "passwordRequireUppercase": {
+        "label": "Require uppercase letter (A–Z)"
+      },
+      "passwordRequireLowercase": {
+        "label": "Require lowercase letter (a–z)"
+      },
+      "passwordRequireNumbers": {
+        "label": "Require digit (0–9)"
+      },
+      "passwordRequireSpecialChars": {
+        "label": "Require special character",
+        "help": "e.g. ! @ # $ % & *"
+      }
+    },
+    "login": {
+      "pageTitle": {
+        "label": "Login page title",
+        "help": "Empty = uses site name from General settings."
+      },
+      "pageDescription": {
+        "label": "Login page description",
+        "help": "Short text in the login/registration info panel."
+      },
+      "backgroundImageUrl": {
+        "label": "Background image URL",
+        "help": "Absolute URL or /media/… path shown behind the auth card."
+      },
+      "infoBullets": {
+        "label": "Info bullet points",
+        "help": "One line = one bullet in the side panel."
       }
     },
     "firewall": {

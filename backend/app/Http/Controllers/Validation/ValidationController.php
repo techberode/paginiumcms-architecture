@@ -6,6 +6,7 @@ namespace PaginiumCMS\Http\Controllers\Validation;
 
 use PaginiumCMS\Core\Validation\ValidationRules;
 use PaginiumCMS\Http\Support\JsonResponder;
+use PaginiumCMS\Modules\Security\Contracts\PasswordPolicyInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -18,13 +19,15 @@ use Psr\Http\Message\ServerRequestInterface;
  */
 final class ValidationController
 {
-    public function __construct(private JsonResponder $json)
-    {
+    public function __construct(
+        private JsonResponder $json,
+        private PasswordPolicyInterface $passwordPolicy
+    ) {
     }
 
     public function index(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        return $this->json->success($response, ValidationRules::all());
+        return $this->json->success($response, $this->allRules());
     }
 
     /**
@@ -33,12 +36,36 @@ final class ValidationController
     public function show(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $context = (string) ($args['context'] ?? '');
-        $rules = ValidationRules::for($context);
+        $rules = $this->allRules()[$context] ?? null;
 
         if ($rules === null) {
             return $this->json->error($response, 'Neznámy validačný kontext', 404);
         }
 
         return $this->json->success($response, $rules);
+    }
+
+    /**
+     * @return array<string, array<string, mixed>>
+     */
+    private function allRules(): array
+    {
+        $all = ValidationRules::all();
+        $policy = ValidationRules::passwordPolicyFrom($this->passwordPolicy);
+        $all['password']['policy'] = $policy;
+        $all['password']['rules']['password'] = [
+            'required',
+            'string',
+            sprintf('min:%d', $policy['minLength']),
+            sprintf('max:%d', $policy['maxLength']),
+        ];
+        $all['password']['rules']['passwordConfirm'] = [
+            'required',
+            'string',
+            sprintf('min:%d', $policy['minLength']),
+            sprintf('max:%d', $policy['maxLength']),
+        ];
+
+        return $all;
     }
 }

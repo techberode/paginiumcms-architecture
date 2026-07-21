@@ -73,8 +73,14 @@ export const settingsSk: MessageTree = {
     "seo": "SEO",
     "media": "Media / DAM",
     "sso": "SSO / OAuth",
-    "contentSecurity": "Content security (XML/HTML)",
-    "uploadSecurity": "Upload security"
+    "contentSecurity": "Bezpečnosť obsahu (XML/HTML)",
+    "uploadSecurity": "Bezpečnosť uploadu"
+  },
+  "hints": {
+    "security": {
+      "title": "Bezpečnostné skupiny",
+      "body": "Nastavenia Obsah a Upload sa uplatňujú pri renderovaní HTML a pri každom upload do knižnice médií. Odporúčame nechať sanitizáciu a magic bytes zapnuté."
+    }
   },
   "fields": {
     "general": {
@@ -446,6 +452,44 @@ export const settingsSk: MessageTree = {
       "requireTwoFactorStaff": {
         "label": "Vynútiť 2FA pre editorov a adminov",
         "help": "Pri zapnutí nie je možné vypnúť 2FA pre roly EDITOR, ADMIN a SUPER_ADMIN."
+      },
+      "passwordMinLength": {
+        "label": "Min. dĺžka hesla",
+        "help": "Platí pre registráciu, zmenu hesla a admin vytvorenie používateľa."
+      },
+      "passwordMaxLength": {
+        "label": "Max. dĺžka hesla"
+      },
+      "passwordRequireUppercase": {
+        "label": "Vyžadovať veľké písmeno (A–Z)"
+      },
+      "passwordRequireLowercase": {
+        "label": "Vyžadovať malé písmeno (a–z)"
+      },
+      "passwordRequireNumbers": {
+        "label": "Vyžadovať číslicu (0–9)"
+      },
+      "passwordRequireSpecialChars": {
+        "label": "Vyžadovať špeciálny znak",
+        "help": "Napr. ! @ # $ % & *"
+      }
+    },
+    "login": {
+      "pageTitle": {
+        "label": "Nadpis prihlasovacej stránky",
+        "help": "Prázdne = použije sa názov stránky z Všeobecných."
+      },
+      "pageDescription": {
+        "label": "Popis prihlasovacej stránky",
+        "help": "Krátky text v informačnom paneli prihlásenia/registrácie."
+      },
+      "backgroundImageUrl": {
+        "label": "URL obrázka pozadia",
+        "help": "Absolútna URL alebo cesta /media/… — zobrazí sa za prihlasovacím formulárom."
+      },
+      "infoBullets": {
+        "label": "Informačné body",
+        "help": "Jeden riadok = jeden bod v informačnom paneli."
       }
     },
     "firewall": {

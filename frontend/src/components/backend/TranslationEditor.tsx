@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Languages, RotateCcw, Save, RefreshCw } from 'lucide-react';
-import { MonacoCodeEditor, type MonacoCodeEditorHandle } from '../CodeEditor/MonacoCodeEditor';
+import { MonacoCodeEditor, type MonacoCodeEditorHandle, type MonacoEditorMarker } from '../CodeEditor/MonacoCodeEditor';
 import {
   translationsApi,
   type TranslationCatalogFile,
@@ -8,9 +8,9 @@ import {
 } from '../../api/translations';
 import { useToast } from '../../hooks/useToast';
 import { useI18n } from '../../context/I18nContext';
+import { AdminHintCard } from './AdminHintCard';
 
 type SourceId = 'backend' | 'frontend';
-type LocaleId = 'sk' | 'en';
 
 function formatBytes(size: number): string {
   if (size < 1024) {
@@ -30,8 +30,15 @@ export const TranslationEditor: React.FC = () => {
 
   const [loadingCatalog, setLoadingCatalog] = useState(true);
   const [files, setFiles] = useState<TranslationCatalogFile[]>([]);
+  const [localeOptions, setLocaleOptions] = useState<Array<{ code: string; label: string }>>([
+    { code: 'sk', label: 'SK' },
+    { code: 'en', label: 'EN' },
+  ]);
   const [source, setSource] = useState<SourceId>('frontend');
-  const [locale, setLocale] = useState<LocaleId>('sk');
+  const [locale, setLocale] = useState('sk');
+  const [newLocaleCode, setNewLocaleCode] = useState('');
+  const [newLocaleLabel, setNewLocaleLabel] = useState('');
+  const [creatingLocale, setCreatingLocale] = useState(false);
   const [module, setModule] = useState('');
   const [currentPath, setCurrentPath] = useState('');
   const [content, setContent] = useState('');
@@ -47,6 +54,19 @@ export const TranslationEditor: React.FC = () => {
   const [rejectedPath, setRejectedPath] = useState<string | null>(null);
 
   const activePolicyError = policyErrors[policyErrorIndex] ?? null;
+
+  const editorMarkers = useMemo<MonacoEditorMarker[]>(() => {
+    if (!activePolicyError?.line) {
+      return [];
+    }
+
+    return [
+      {
+        line: activePolicyError.line,
+        message: activePolicyError.message,
+      },
+    ];
+  }, [activePolicyError]);
 
   const isDirty = content !== originalContent;
 
@@ -69,6 +89,13 @@ export const TranslationEditor: React.FC = () => {
     try {
       const catalog = await translationsApi.getCatalog();
       setFiles(catalog.files);
+      if (catalog.locales && catalog.locales.length > 0) {
+        setLocaleOptions(catalog.locales.map((entry) => ({ code: entry.code, label: entry.label })));
+      } else if (catalog.sources[0]?.locales) {
+        setLocaleOptions(
+          catalog.sources[0].locales.map((code) => ({ code, label: code.toUpperCase() }))
+        );
+      }
     } catch (error) {
       toast.error(t('translations.toast.loadCatalogFailed'));
       console.error(error);
@@ -76,6 +103,37 @@ export const TranslationEditor: React.FC = () => {
       setLoadingCatalog(false);
     }
   }, [t, toast]);
+
+  const handleCreateLocale = async () => {
+    const code = newLocaleCode.trim().toLowerCase();
+    const label = newLocaleLabel.trim();
+    if (!code || !label) {
+      toast.error(t('translations.locale.createMissing'));
+      return;
+    }
+
+    setCreatingLocale(true);
+    try {
+      const result = await translationsApi.createLocale(code, label, locale);
+      if (!result.success || !result.catalog) {
+        toast.error(result.error || t('translations.locale.createFailed'));
+        return;
+      }
+      setFiles(result.catalog.files);
+      if (result.catalog.locales) {
+        setLocaleOptions(result.catalog.locales.map((entry) => ({ code: entry.code, label: entry.label })));
+      }
+      setLocale(code);
+      setNewLocaleCode('');
+      setNewLocaleLabel('');
+      toast.success(t('translations.locale.createSuccess', { code }));
+    } catch (error) {
+      toast.error(t('translations.locale.createFailed'));
+      console.error(error);
+    } finally {
+      setCreatingLocale(false);
+    }
+  };
 
   const loadFile = useCallback(
     async (path: string) => {
@@ -287,21 +345,48 @@ export const TranslationEditor: React.FC = () => {
               {t('translations.locale.label')}
             </label>
             <div className="grid grid-cols-2 gap-2">
-              {(['sk', 'en'] as const).map((value) => (
+              {localeOptions.map((option) => (
                 <button
-                  key={value}
+                  key={option.code}
                   type="button"
-                  onClick={() => setLocale(value)}
+                  onClick={() => setLocale(option.code)}
                   className={`px-3 py-2 rounded-xl text-sm font-semibold ${
-                    locale === value
+                    locale === option.code
                       ? 'bg-indigo-600 text-white'
                       : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200'
                   }`}
+                  title={option.label}
                 >
-                  {t(`translations.locale.${value}`)}
+                  {option.code.toUpperCase()}
                 </button>
               ))}
             </div>
+          </div>
+
+          <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-3 space-y-2">
+            <div className="text-xs font-bold uppercase tracking-wide text-slate-500">
+              {t('translations.locale.addTitle')}
+            </div>
+            <input
+              value={newLocaleCode}
+              onChange={(event) => setNewLocaleCode(event.target.value)}
+              placeholder={t('translations.locale.codePlaceholder')}
+              className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 text-sm"
+            />
+            <input
+              value={newLocaleLabel}
+              onChange={(event) => setNewLocaleLabel(event.target.value)}
+              placeholder={t('translations.locale.labelPlaceholder')}
+              className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 text-sm"
+            />
+            <button
+              type="button"
+              disabled={creatingLocale}
+              onClick={() => void handleCreateLocale()}
+              className="w-full px-3 py-2 rounded-lg bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-sm font-semibold disabled:opacity-50"
+            >
+              {creatingLocale ? t('common.loading') : t('translations.locale.create')}
+            </button>
           </div>
 
           <div>
@@ -375,6 +460,10 @@ export const TranslationEditor: React.FC = () => {
               ? t('translations.hint.frontendReload')
               : t('translations.hint.backendImmediate')}
           </p>
+
+          <AdminHintCard tone="info" title={t('translations.hint.policyTitle')}>
+            {t('translations.hint.policyBody')}
+          </AdminHintCard>
 
           {source === 'frontend' && (
             <button
@@ -451,6 +540,8 @@ export const TranslationEditor: React.FC = () => {
                 path={currentPath}
                 wordWrap={wordWrap}
                 loading={loadingFile}
+                markers={editorMarkers}
+                markerOwner="translation-policy"
               />
             ) : (
               <div className="flex h-full items-center justify-center text-sm text-slate-500 px-6 text-center">

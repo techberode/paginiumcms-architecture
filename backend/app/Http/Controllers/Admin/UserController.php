@@ -14,9 +14,11 @@ use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
 use PaginiumCMS\Modules\Security\Contracts\PasswordPolicyInterface;
 use PaginiumCMS\Modules\Security\Models\User;
+use PaginiumCMS\Modules\Security\Services\UserAvatarService;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\UploadedFileInterface;
 use RuntimeException;
 
 /**
@@ -42,6 +44,7 @@ final class UserController
 
     public function __construct(
         private UserRepository $users,
+        private UserAvatarService $avatars,
         private SettingsRepositoryInterface $settings,
         private Validator $validator,
         private PasswordPolicyInterface $passwordPolicy,
@@ -51,6 +54,7 @@ final class UserController
 
     public function index(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
+        $actor = $this->resolveActor($request);
         $list = array_map(
             static fn (User $user): array => $user->jsonSerialize(),
             $this->users->findAll()
@@ -60,6 +64,7 @@ final class UserController
             'users' => $list,
             'meta' => [
                 'require_two_factor_staff' => $this->requireTwoFactorStaff(),
+                'actor_is_super_admin' => $actor?->isSuperAdmin() ?? false,
             ],
         ]);
     }
@@ -74,11 +79,14 @@ final class UserController
             return $this->json->error($response, 'Používateľ neexistuje', 404);
         }
 
+        $actor = $this->resolveActor($request);
+
         return $this->json->success($response, [
-            'user' => $user->toAdminDetail(true),
+            'user' => $user->toAdminDetail($actor?->isSuperAdmin() ?? false),
             'meta' => [
                 'two_factor_enforced' => $this->isTwoFactorEnforcedFor($user),
                 'require_two_factor_staff' => $this->requireTwoFactorStaff(),
+                'actor_is_super_admin' => $actor?->isSuperAdmin() ?? false,
             ],
         ]);
     }
@@ -92,6 +100,7 @@ final class UserController
         }
 
         $validated = $this->validator->validate($payload, $rules['rules']);
+        $this->assertCanAssignRole($request, (string) $validated['role']);
         $this->assertValidRole((string) $validated['role']);
 
         if ($this->users->existsByEmail($validated['email'])) {
@@ -108,7 +117,10 @@ final class UserController
             throw new ValidationException(['password' => ['Heslo je povinné pri vytváraní používateľa.']]);
         }
 
-        $policyErrors = ValidationRules::validatePasswordPolicy($password);
+        $policyErrors = ValidationRules::validatePasswordPolicy(
+            $password,
+            ValidationRules::passwordPolicyFrom($this->passwordPolicy)
+        );
         if ($policyErrors !== []) {
             throw new ValidationException(['password' => $policyErrors]);
         }
@@ -133,9 +145,11 @@ final class UserController
 
         $this->users->save($user);
 
+        $actor = $this->resolveActor($request);
+
         return $this->json->success(
             $response,
-            ['user' => $user->toAdminDetail(true)],
+            ['user' => $user->toAdminDetail($actor?->isSuperAdmin() ?? false)],
             201,
             'Používateľ vytvorený'
         );
@@ -185,6 +199,7 @@ final class UserController
         }
 
         if (isset($validated['role'])) {
+            $this->assertCanAssignRole($request, (string) $validated['role']);
             $this->assertValidRole((string) $validated['role']);
             $user->setRoles([(string) $validated['role']]);
         }
@@ -203,7 +218,10 @@ final class UserController
 
         if (isset($payload['password']) && $payload['password'] !== '') {
             $password = (string) $payload['password'];
-            $policyErrors = ValidationRules::validatePasswordPolicy($password);
+            $policyErrors = ValidationRules::validatePasswordPolicy(
+            $password,
+            ValidationRules::passwordPolicyFrom($this->passwordPolicy)
+        );
             if ($policyErrors !== []) {
                 throw new ValidationException(['password' => $policyErrors]);
             }
@@ -214,9 +232,11 @@ final class UserController
         $user->setUpdatedAt(time());
         $this->users->save($user);
 
+        $actor = $this->resolveActor($request);
+
         return $this->json->success(
             $response,
-            ['user' => $user->toAdminDetail(true)],
+            ['user' => $user->toAdminDetail($actor?->isSuperAdmin() ?? false)],
             200,
             'Používateľ aktualizovaný'
         );
@@ -297,6 +317,79 @@ final class UserController
         }
 
         return $this->json->success($response, $batch->toArray(), 200, 'Hromadné mazanie dokončené');
+    }
+
+    /**
+     * @param array<string, string> $args
+     */
+    public function uploadAvatar(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $user = $this->resolveUser((string) ($args['id'] ?? ''));
+        if ($user === null) {
+            return $this->json->error($response, 'Používateľ neexistuje', 404);
+        }
+
+        $uploadedFiles = $request->getUploadedFiles();
+        $file = $uploadedFiles['avatar'] ?? $uploadedFiles['file'] ?? null;
+        if (!$file instanceof UploadedFileInterface || $file->getError() !== UPLOAD_ERR_OK) {
+            return $this->json->error($response, 'Súbor avataru je povinný', 400);
+        }
+
+        try {
+            $url = $this->avatars->assignFromUpload(
+                $user,
+                $file->getClientFilename() ?? 'avatar.png',
+                (string) $file->getStream(),
+                $file->getClientMediaType() ?? 'application/octet-stream'
+            );
+            $user->setAvatarUrl($url);
+            $user->setUpdatedAt(time());
+            $this->users->save($user);
+
+            return $this->json->success($response, [
+                'user' => $user->jsonSerialize(),
+            ], 200, 'Avatar bol aktualizovaný');
+        } catch (\Throwable $e) {
+            return $this->json->error($response, $e->getMessage(), 400);
+        }
+    }
+
+    /**
+     * @param array<string, string> $args
+     */
+    public function removeAvatar(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $user = $this->resolveUser((string) ($args['id'] ?? ''));
+        if ($user === null) {
+            return $this->json->error($response, 'Používateľ neexistuje', 404);
+        }
+
+        $this->avatars->remove($user);
+        $user->setUpdatedAt(time());
+        $this->users->save($user);
+
+        return $this->json->success($response, [
+            'user' => $user->jsonSerialize(),
+        ], 200, 'Avatar bol odstránený');
+    }
+
+    private function resolveActor(ServerRequestInterface $request): ?User
+    {
+        $actor = $request->getAttribute('user');
+
+        return $actor instanceof User ? $actor : null;
+    }
+
+    private function assertCanAssignRole(ServerRequestInterface $request, string $role): void
+    {
+        if ($role !== AuthorizationInterface::ROLE_SUPER_ADMIN) {
+            return;
+        }
+
+        $actor = $this->resolveActor($request);
+        if ($actor === null || !$actor->isSuperAdmin()) {
+            throw new ValidationException(['role' => ['Rolu super administrátora môže priradiť len super administrátor.']]);
+        }
     }
 
     private function resolveUser(string $id): ?User

@@ -29,6 +29,7 @@ import {
   type SettingsCategoryId,
 } from '../../i18n/modules/settings/categories';
 import { CacheManagerPanel } from './CacheManagerPanel';
+import { AdminHintCard } from './AdminHintCard';
 
 function resolveRequestedSettingsGroup(
   searchParams: URLSearchParams,
@@ -236,6 +237,12 @@ export const SettingsView: React.FC = () => {
               </button>
             ))}
           </div>
+
+          {activeCategory === 'security' && (
+            <AdminHintCard tone="warning" title={t('settings.hints.security.title')}>
+              {t('settings.hints.security.body')}
+            </AdminHintCard>
+          )}
 
           {group && (
             <form onSubmit={handleSubmit(onSubmit)} className="card">

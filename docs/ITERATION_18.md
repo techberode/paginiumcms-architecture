@@ -42,7 +42,7 @@ Migrate all admin UI strings from hardcoded Slovak to `useI18n()`, with backend 
 ## Remaining ⏳
 
 - Migrate remaining admin components → `useI18n()` + matching `src/i18n/modules/{module}/`
-- FE modules: media, navigation, users, dashboard, …
+- FE modules: media, navigation, dashboard, … (**users ✅ It.18e**)
 - Plugin i18n: `Http/Extensions/{id}/lang/` + `frontend/src/extensions/{id}/i18n/`
 - Public site (`PublicSite`) – separate or shared catalog
 - Optional: `GET /api/i18n/{locale}` for dynamic loading

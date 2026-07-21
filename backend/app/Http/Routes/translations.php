@@ -33,6 +33,8 @@ return function (App $app): void {
         $group->post('/validate', [$controller, 'validateFile']);
         $group->get('/backups', [$controller, 'getBackups']);
         $group->post('/restore', [$controller, 'restoreBackup']);
+        $group->get('/locales', [$controller, 'listLocales']);
+        $group->post('/locales', [$controller, 'createLocale']);
     })->add(new RoleMiddleware($container->get(AuthorizationInterface::class), ['ADMIN', 'SUPER_ADMIN']))
         ->add($container->get(TwoFactorMiddleware::class))
         ->add($container->get(AuthMiddleware::class));

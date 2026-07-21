@@ -15,6 +15,13 @@ export const translationsEn: MessageTree = {
     label: 'Language',
     sk: 'Slovak',
     en: 'English',
+    addTitle: 'New language variant',
+    codePlaceholder: 'Code (e.g. de)',
+    labelPlaceholder: 'Label (e.g. Deutsch)',
+    create: 'Create locale',
+    createSuccess: 'Locale :code created',
+    createFailed: 'Failed to create locale',
+    createMissing: 'Enter both code and label',
   },
   module: {
     label: 'Module',
@@ -64,5 +71,8 @@ export const translationsEn: MessageTree = {
   hint: {
     frontendReload: 'After editing frontend translations, reload the page to apply changes in admin.',
     backendImmediate: 'Backend translations apply on the next API request.',
+    policyTitle: 'Save policy',
+    policyBody:
+      'Files are staged and validated before the original is replaced. On failure the original stays intact and a rejected .err copy is stored.',
   },
 };

@@ -1,6 +1,6 @@
 // frontend/src/components/backend/UsersManager.tsx
 // === Správa používateľov (Iterácia 5, UI refresh 2.0.18) ===
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Users,
   Pencil,
@@ -19,8 +19,9 @@ import {
   deleteUser,
   getUser,
   bulkDeleteUsers,
+  uploadUserAvatar,
+  removeUserAvatar,
   USER_ROLES,
-  USER_ROLE_LABELS,
   UserRole,
   CreateUserPayload,
   isStaffRole,
@@ -30,8 +31,11 @@ import { validate, validatePasswordPolicy, ValidationErrors } from '../../utils/
 import { getValidationRulesFor } from '../../api/validation';
 import { useToast } from '../../hooks/useToast';
 import { useAuth } from '../../hooks/useAuth';
+import { useI18n } from '../../context/I18nContext';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { BulkActionBar } from './BulkActionBar';
+import { AdminHintCard } from './AdminHintCard';
+import { UserAvatarPicker } from './UserAvatarPicker';
 import { summarizeBulkResult } from '../../types/bulk';
 
 type FormState = CreateUserPayload & {
@@ -51,11 +55,14 @@ const emptyForm = (): FormState => ({
 });
 
 export const UsersManager: React.FC = () => {
+  const { t } = useI18n();
   const [users, setUsers] = useState<User[]>([]);
   const [requireTwoFactorStaff, setRequireTwoFactorStaff] = useState(true);
+  const [actorIsSuperAdmin, setActorIsSuperAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingAvatarUrl, setEditingAvatarUrl] = useState<string | null>(null);
   const [twoFactorEnforced, setTwoFactorEnforced] = useState(false);
   const [twoFactorSecret, setTwoFactorSecret] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -78,6 +85,7 @@ export const UsersManager: React.FC = () => {
       const data = await listUsers();
       setUsers(data.users);
       setRequireTwoFactorStaff(data.meta?.require_two_factor_staff ?? true);
+      setActorIsSuperAdmin(data.meta?.actor_is_super_admin ?? false);
     } finally {
       setLoading(false);
     }
@@ -86,6 +94,7 @@ export const UsersManager: React.FC = () => {
   const resetForm = () => {
     setForm(emptyForm());
     setEditingId(null);
+    setEditingAvatarUrl(null);
     setTwoFactorEnforced(false);
     setTwoFactorSecret(null);
     setShowPassword(false);
@@ -123,7 +132,7 @@ export const UsersManager: React.FC = () => {
 
   const handleSave = async () => {
     if (!validateForm()) {
-      toastError('Skontrolujte formulár');
+      toastError(t('users.toast.formInvalid'));
       return;
     }
 
@@ -141,26 +150,26 @@ export const UsersManager: React.FC = () => {
           ...(form.password ? { password: form.password } : {}),
         });
         if (res.success) {
-          success('Používateľ aktualizovaný');
+          success(t('users.toast.updated'));
           resetForm();
           await load();
         } else if (res.errors) {
           setErrors(res.errors);
-          toastError(res.error || 'Validácia zlyhala');
+          toastError(res.error || t('users.toast.saveFailed'));
         } else {
-          toastError(res.error || 'Uloženie zlyhalo');
+          toastError(res.error || t('users.toast.saveFailed'));
         }
       } else {
         const res = await createUser(form);
         if (res.success) {
-          success('Používateľ vytvorený');
+          success(t('users.toast.created'));
           resetForm();
           await load();
         } else if (res.errors) {
           setErrors(res.errors);
-          toastError(res.error || 'Validácia zlyhala');
+          toastError(res.error || t('users.toast.createFailed'));
         } else {
-          toastError(res.error || 'Vytvorenie zlyhalo');
+          toastError(res.error || t('users.toast.createFailed'));
         }
       }
     } finally {
@@ -170,6 +179,7 @@ export const UsersManager: React.FC = () => {
 
   const handleEdit = async (user: User) => {
     setEditingId(user.id);
+    setEditingAvatarUrl(user.avatarUrl ?? null);
     setForm({
       email: user.email,
       username: user.username ?? deriveUsername(user.email),
@@ -196,15 +206,23 @@ export const UsersManager: React.FC = () => {
   };
 
   const handleDelete = async (user: User) => {
-    if (!confirm(`Zmazať používateľa ${user.email}?`)) return;
+    if (!confirm(t('users.confirm.delete', { email: user.email }))) return;
     const res = await deleteUser(user.id);
     if (res.success) {
-      success('Používateľ zmazaný');
+      success(t('users.toast.deleted'));
       await load();
     } else {
-      toastError(res.error || 'Zmazanie zlyhalo');
+      toastError(res.error || t('users.toast.deleteFailed'));
     }
   };
+
+  const availableRoles = useMemo(
+    () =>
+      actorIsSuperAdmin
+        ? USER_ROLES
+        : USER_ROLES.filter((role) => role !== 'SUPER_ADMIN'),
+    [actorIsSuperAdmin]
+  );
 
   const handleRoleChange = (role: UserRole) => {
     const enforced = requireTwoFactorStaff && isStaffRole(role);
@@ -224,14 +242,14 @@ export const UsersManager: React.FC = () => {
 
   const handleBulkDelete = async () => {
     if (bulkSelection.count === 0) return;
-    if (!confirm(`Zmazať ${bulkSelection.count} vybraných používateľov?`)) return;
+    if (!confirm(t('users.confirm.bulkDelete', { count: String(bulkSelection.count) }))) return;
     const result = await bulkDeleteUsers(bulkSelection.selectedIds);
     if (result) {
       success(summarizeBulkResult(result));
       bulkSelection.clear();
       await load();
     } else {
-      toastError('Hromadné mazanie zlyhalo');
+      toastError(t('users.toast.bulkFailed'));
     }
   };
 
@@ -253,24 +271,56 @@ export const UsersManager: React.FC = () => {
           <span className="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-violet-100 text-violet-600 dark:bg-violet-950 dark:text-violet-300">
             <Users size={22} />
           </span>
-          Správa používateľov
+          {t('users.page.title')}
         </h1>
-        <p className="text-sm text-slate-500 mt-2 max-w-2xl">
-          Spravujte prístupové účty, role a zabezpečenie používateľov systému.
-        </p>
+        <p className="text-sm text-slate-500 mt-2 max-w-2xl">{t('users.page.subtitle')}</p>
+        {actorIsSuperAdmin && (
+          <div className="mt-4">
+            <AdminHintCard tone="info" title={t('users.superAdmin.badge')}>
+              {t('users.superAdmin.hint')}
+            </AdminHintCard>
+          </div>
+        )}
       </header>
 
       <section className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
           <Pencil size={18} className="text-indigo-500" />
           <h2 className="font-bold text-slate-900 dark:text-white">
-            {editingId ? 'Upraviť používateľa' : 'Nový používateľ'}
+            {editingId ? t('users.form.editTitle') : t('users.form.createTitle')}
           </h2>
         </div>
 
         <div className="p-6 space-y-6">
+          {editingId && (
+            <UserAvatarPicker
+              name={form.name || form.email}
+              avatarUrl={editingAvatarUrl}
+              onUpload={async (file) => {
+                const res = await uploadUserAvatar(editingId, file);
+                if (!res.success || !res.data?.user) {
+                  toastError(res.error || t('users.avatar.failed'));
+                  return;
+                }
+                setEditingAvatarUrl(res.data.user.avatarUrl ?? null);
+                success(t('users.avatar.success'));
+                await load();
+              }}
+              onRemove={async () => {
+                const res = await removeUserAvatar(editingId);
+                if (!res.success) {
+                  toastError(res.error || t('users.avatar.failed'));
+                  return;
+                }
+                setEditingAvatarUrl(null);
+                success(t('users.avatar.removed'));
+                await load();
+              }}
+            />
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <Field label="Používateľské meno *" error={errors.username?.[0]}>
+            <Field label={t('users.form.username')} error={errors.username?.[0]}>
               <input
                 className={inputClass(Boolean(errors.username))}
                 value={form.username}
@@ -283,7 +333,7 @@ export const UsersManager: React.FC = () => {
               />
             </Field>
 
-            <Field label="Zobrazované meno *" error={errors.name?.[0]}>
+            <Field label={t('users.form.displayName')} error={errors.name?.[0]}>
               <input
                 className={inputClass(Boolean(errors.name))}
                 value={form.name}
@@ -291,7 +341,7 @@ export const UsersManager: React.FC = () => {
               />
             </Field>
 
-            <Field label="E-mailová adresa *" error={errors.email?.[0]}>
+            <Field label={t('users.form.email')} error={errors.email?.[0]}>
               <div className="relative">
                 <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
@@ -304,14 +354,14 @@ export const UsersManager: React.FC = () => {
             </Field>
 
             <Field
-              label={editingId ? 'Nové heslo (nepovinné)' : 'Heslo *'}
+              label={editingId ? t('users.form.passwordNew') : t('users.form.passwordRequired')}
               error={errors.password?.[0]}
             >
               <div className="relative">
                 <KeyRound size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  placeholder={editingId ? 'Ponechajte prázdne pre zachovanie' : ''}
+                  placeholder={editingId ? t('users.form.passwordPlaceholder') : ''}
                   className={`${inputClass(Boolean(errors.password))} pl-10 pr-10`}
                   value={form.password ?? ''}
                   onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
@@ -320,35 +370,35 @@ export const UsersManager: React.FC = () => {
                   type="button"
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                   onClick={() => setShowPassword((v) => !v)}
-                  aria-label={showPassword ? 'Skryť heslo' : 'Zobraziť heslo'}
+                  aria-label={showPassword ? t('users.form.hidePassword') : t('users.form.showPassword')}
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </Field>
 
-            <Field label="Rola používateľa">
+            <Field label={t('users.form.role')}>
               <select
                 className={inputClass(false)}
                 value={form.role}
                 onChange={(e) => handleRoleChange(e.target.value as UserRole)}
               >
-                {USER_ROLES.map((r) => (
+                {availableRoles.map((r) => (
                   <option key={r} value={r}>
-                    {USER_ROLE_LABELS[r]}
+                    {t(`users.roles.${r}`)}
                   </option>
                 ))}
               </select>
             </Field>
 
-            <Field label="Stav účtu">
+            <Field label={t('users.form.status')}>
               <select
                 className={inputClass(false)}
                 value={form.active ? 'active' : 'inactive'}
                 onChange={(e) => setForm((f) => ({ ...f, active: e.target.value === 'active' }))}
               >
-                <option value="active">✅ Aktívny</option>
-                <option value="inactive">⏸️ Neaktívny</option>
+                <option value="active">{t('users.form.statusActive')}</option>
+                <option value="inactive">{t('users.form.statusInactive')}</option>
               </select>
             </Field>
           </div>
@@ -365,22 +415,20 @@ export const UsersManager: React.FC = () => {
               <span>
                 <span className="font-semibold text-slate-900 dark:text-white flex items-center gap-2 flex-wrap">
                   <Shield size={16} className="text-indigo-500" />
-                  Dvojfaktorové overenie (2FA)
+                  {t('users.form.twoFactor')}
                   {enforced && (
-                    <span className="text-xs font-bold text-rose-600">(Vynútené systémom)</span>
+                    <span className="text-xs font-bold text-rose-600">{t('users.form.twoFactorEnforced')}</span>
                   )}
                 </span>
-                <span className="block text-sm text-slate-500 mt-1">
-                  Vyžadovať overovací kód pri prihlásení
-                </span>
+                <span className="block text-sm text-slate-500 mt-1">{t('users.form.twoFactorHint')}</span>
               </span>
             </label>
 
-            {editingId && twoFactorSecret && form.twoFactorEnabled && (
+            {editingId && twoFactorSecret && form.twoFactorEnabled && actorIsSuperAdmin && (
               <div className="flex items-center gap-3 rounded-xl bg-sky-50 dark:bg-sky-950/40 border border-sky-100 dark:border-sky-900 px-4 py-3 text-sm">
                 <KeyRound size={18} className="text-sky-600 shrink-0" />
                 <span className="text-slate-600 dark:text-slate-300">
-                  Aktuálny tajný kód (Secret):{' '}
+                  {t('users.form.secretLabel')}{' '}
                   <code className="ml-1 px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-sky-100 dark:border-sky-800 font-mono text-slate-900 dark:text-white">
                     {twoFactorSecret}
                   </code>
@@ -397,7 +445,7 @@ export const UsersManager: React.FC = () => {
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white text-sm font-bold shadow-lg shadow-indigo-500/20 disabled:opacity-50"
             >
               <Check size={16} />
-              {saving ? 'Ukladám…' : editingId ? 'Uložiť zmeny' : 'Vytvoriť používateľa'}
+              {saving ? t('users.form.saving') : editingId ? t('users.form.save') : t('users.form.create')}
             </button>
             {editingId && (
               <button
@@ -405,7 +453,7 @@ export const UsersManager: React.FC = () => {
                 onClick={resetForm}
                 className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300"
               >
-                Zrušiť
+                {t('users.form.cancel')}
               </button>
             )}
           </div>
@@ -414,12 +462,12 @@ export const UsersManager: React.FC = () => {
 
       <BulkActionBar
         count={bulkSelection.count}
-        itemLabel="používateľov vybraných"
+        itemLabel={t('users.bulk.itemLabel')}
         onClear={bulkSelection.clear}
         actions={[
           {
             id: 'delete',
-            label: 'Zmazať vybraných',
+            label: t('users.bulk.delete'),
             variant: 'danger',
             onClick: () => void handleBulkDelete(),
           },
@@ -435,15 +483,15 @@ export const UsersManager: React.FC = () => {
                   type="checkbox"
                   checked={bulkSelection.allSelected && deletableUsers.length > 0}
                   onChange={bulkSelection.toggleAll}
-                  aria-label="Vybrať všetkých"
+                  aria-label={t('users.table.selectAll')}
                 />
               </th>
-              <th className="p-4">Používateľ</th>
-              <th className="p-4">E-mail</th>
-              <th className="p-4">Rola</th>
-              <th className="p-4">Stav</th>
-              <th className="p-4">2FA</th>
-              <th className="p-4">Akcie</th>
+              <th className="p-4">{t('users.table.user')}</th>
+              <th className="p-4">{t('users.table.email')}</th>
+              <th className="p-4">{t('users.table.role')}</th>
+              <th className="p-4">{t('users.table.status')}</th>
+              <th className="p-4">{t('users.table.twoFactor')}</th>
+              <th className="p-4">{t('users.table.actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -455,31 +503,42 @@ export const UsersManager: React.FC = () => {
                       type="checkbox"
                       checked={bulkSelection.isSelected(u.id)}
                       onChange={() => bulkSelection.toggle(u.id)}
-                      aria-label={`Vybrať ${u.email}`}
+                      aria-label={t('users.table.selectUser', { email: u.email })}
                     />
                   ) : null}
                 </td>
                 <td className="p-4">
-                  <div className="font-semibold text-slate-900 dark:text-white">{u.name}</div>
-                  <div className="text-xs font-mono text-slate-400">{u.username ?? deriveUsername(u.email)}</div>
+                  <div className="flex items-center gap-3">
+                    {u.avatarUrl ? (
+                      <img src={u.avatarUrl} alt={u.name} className="h-10 w-10 rounded-xl object-cover" />
+                    ) : (
+                      <div className="h-10 w-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
+                        <Users size={16} />
+                      </div>
+                    )}
+                    <div>
+                      <div className="font-semibold text-slate-900 dark:text-white">{u.name}</div>
+                      <div className="text-xs font-mono text-slate-400">{u.username ?? deriveUsername(u.email)}</div>
+                    </div>
+                  </div>
                 </td>
                 <td className="p-4">{u.email}</td>
-                <td className="p-4">{u.roles[0]}</td>
+                <td className="p-4">{t(`users.roles.${u.roles[0] as UserRole}`)}</td>
                 <td className="p-4">
                   {(u.active ?? true) ? (
-                    <span className="text-emerald-600 font-medium">Aktívny</span>
+                    <span className="text-emerald-600 font-medium">{t('users.table.active')}</span>
                   ) : (
-                    <span className="text-amber-600 font-medium">Neaktívny</span>
+                    <span className="text-amber-600 font-medium">{t('users.table.inactive')}</span>
                   )}
                 </td>
-                <td className="p-4">{u.twoFactorEnabled ? 'Zapnuté' : 'Vypnuté'}</td>
+                <td className="p-4">{u.twoFactorEnabled ? t('users.table.twoFactorOn') : t('users.table.twoFactorOff')}</td>
                 <td className="p-4 space-x-3">
                   <button
                     type="button"
                     onClick={() => void handleEdit(u)}
                     className="text-indigo-600 font-semibold hover:underline"
                   >
-                    Upraviť
+                    {t('users.table.edit')}
                   </button>
                   {currentUser?.id !== u.id && (
                     <button
@@ -487,7 +546,7 @@ export const UsersManager: React.FC = () => {
                       onClick={() => void handleDelete(u)}
                       className="text-rose-600 font-semibold hover:underline"
                     >
-                      Zmazať
+                      {t('users.table.delete')}
                     </button>
                   )}
                 </td>

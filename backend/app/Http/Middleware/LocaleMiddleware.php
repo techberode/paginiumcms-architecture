@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Middleware;
 
+use PaginiumCMS\Core\I18n\Services\SupportedLocalesRegistry;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Support\Lang;
 use Psr\Http\Message\ResponseInterface;
@@ -16,10 +17,9 @@ use Psr\Http\Server\RequestHandlerInterface;
  */
 final class LocaleMiddleware implements MiddlewareInterface
 {
-    private const SUPPORTED = ['sk', 'en'];
-
     public function __construct(
-        private readonly SettingsRepositoryInterface $settings
+        private readonly SettingsRepositoryInterface $settings,
+        private readonly SupportedLocalesRegistry $locales
     ) {
     }
 
@@ -27,6 +27,7 @@ final class LocaleMiddleware implements MiddlewareInterface
         ServerRequestInterface $request,
         RequestHandlerInterface $handler
     ): ResponseInterface {
+        Lang::setSupportedLocales($this->locales->codes());
         Lang::setLocale($this->resolveLocale($request));
 
         return $handler->handle($request);
@@ -55,6 +56,6 @@ final class LocaleMiddleware implements MiddlewareInterface
 
     private function isSupported(string $locale): bool
     {
-        return in_array($locale, self::SUPPORTED, true);
+        return $this->locales->isSupported($locale);
     }
 }

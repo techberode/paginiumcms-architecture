@@ -9,6 +9,7 @@ export interface User {
   twoFactorEnabled: boolean;
   twoFactorSecret?: string;
   twoFactorVerifiedAt?: number | null;
+  avatarUrl?: string | null;
   createdAt: number;
   updatedAt: number;
 }

@@ -33,6 +33,16 @@ interface TranslationFileManagerInterface
     public function restoreBackup(string $path, string $backupBasename): bool;
 
     /**
+     * @return list<array{code: string, label: string, builtin?: bool}>
+     */
+    public function listLocales(): array;
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function createLocale(string $code, string $label, string $copyFrom = 'sk'): array;
+
+    /**
      * @return list<array{code: string, message: string, line?: int, hint?: string}>
      */
     public function validateContent(string $path, string $content): array;

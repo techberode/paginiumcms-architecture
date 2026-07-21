@@ -134,6 +134,20 @@ final class SettingsController
             'sso' => [
                 'enabled' => (bool) ($all['sso']['enabled'] ?? false),
             ],
+            'login' => [
+                'pageTitle' => (string) ($all['login']['pageTitle'] ?? ''),
+                'pageDescription' => (string) ($all['login']['pageDescription'] ?? ''),
+                'backgroundImageUrl' => (string) ($all['login']['backgroundImageUrl'] ?? ''),
+                'infoBullets' => (string) ($all['login']['infoBullets'] ?? ''),
+            ],
+            'security' => [
+                'passwordMinLength' => (int) ($all['security']['passwordMinLength'] ?? 8),
+                'passwordMaxLength' => (int) ($all['security']['passwordMaxLength'] ?? 72),
+                'passwordRequireUppercase' => (bool) ($all['security']['passwordRequireUppercase'] ?? true),
+                'passwordRequireLowercase' => (bool) ($all['security']['passwordRequireLowercase'] ?? true),
+                'passwordRequireNumbers' => (bool) ($all['security']['passwordRequireNumbers'] ?? true),
+                'passwordRequireSpecialChars' => (bool) ($all['security']['passwordRequireSpecialChars'] ?? true),
+            ],
             'demo' => [
                 'enabled' => $this->demoMode->isEnabled(),
                 'url' => $this->demoMode->publicDemoUrl(),

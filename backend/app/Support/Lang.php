@@ -18,9 +18,28 @@ class Lang
     /** @var list<string> */
     private static array $extraPaths = [];
 
+    /** @var list<string> */
+    private static array $supportedLocales = ['sk', 'en'];
+
+    /**
+     * @param list<string> $locales
+     */
+    public static function setSupportedLocales(array $locales): void
+    {
+        $filtered = array_values(array_filter(
+            array_map(static fn ($locale): string => strtolower(trim((string) $locale)), $locales),
+            static fn (string $locale): bool => $locale !== ''
+        ));
+
+        if ($filtered !== []) {
+            self::$supportedLocales = $filtered;
+        }
+    }
+
     public static function setLocale(string $locale): void
     {
-        self::$locale = in_array($locale, ['sk', 'en'], true) ? $locale : 'sk';
+        $locale = strtolower(trim($locale));
+        self::$locale = in_array($locale, self::$supportedLocales, true) ? $locale : 'sk';
     }
 
     public static function getLocale(): string

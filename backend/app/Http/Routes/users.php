@@ -34,6 +34,8 @@ return function (App $app): void {
         $group->post('', [$controller, 'store']);
         $group->put('/{id}', [$controller, 'update']);
         $group->delete('/{id}', [$controller, 'destroy']);
+        $group->post('/{id}/avatar', [$controller, 'uploadAvatar']);
+        $group->delete('/{id}/avatar', [$controller, 'removeAvatar']);
     })
         ->add(new RoleMiddleware($container->get(AuthorizationInterface::class), ['ADMIN', 'SUPER_ADMIN']))
         ->add($container->get(TwoFactorMiddleware::class))
