@@ -1,11 +1,74 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.0.42** · 2026-07-20  
+> Posledná verzia: **2.0.44** · 2026-07-21  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release. Samotný release/tag zatiaľ nevytváraj, kým nie je schválený deploy.
+
+> **Poznámka k verziám:** Commity `4367d19` (It.55) a `8526c19` (It.54) mali v správe nesprávne číslo (`2.0.42` / `2.0.41`). Oficiálne tagy podľa CHANGELOG: **v2.0.42** → `8526c19`, **v2.0.43** → `4367d19`, **v2.0.44** → `199877a`.
 
 ---
 
-## 2.0.42 — pred release kontrola
+## 2.0.44 — pred release kontrola
+
+```bash
+./scripts/iteration-gate.sh
+```
+
+**Po deployi:**
+
+1. Admin — prepnúť jazyk v nastaveniach (SK/EN) → sidebar, header, zoznamy stránok sa preložia
+2. **Preklady** (`/translations`) — otvoriť `frontend/src/i18n/modules/admin/sk.ts`, uložiť → staging + validácia
+3. Zámerná syntaktická chyba v preklade → `.err` kópia v `storage/translations/rejected/`, toast s prvou chybou
+4. **Nastavenia** — ľavé menu kategórií: System / Site / Media / Security; URL `?category=security&group=contentSecurity`
+5. Sidebar — zbalenie panelu (header toggle), sekcie Workspace / Inbox / Platform / …
+6. `./vendor/bin/phpunit` — bez chýb DI (HookManager import)
+
+---
+
+## GitHub Release — copy-paste (2.0.44)
+
+**Title:**
+
+```
+2.0.44 — It.18 i18n + translation editor, It.19a admin UX
+```
+
+**Tag:** `v2.0.44` · **Target:** `main` · **Commit:** `199877a`
+
+**Body:**
+
+```markdown
+## Summary
+
+Iteration 18 migrates admin UI to modular i18n (`useI18n()`) and adds a translation editor for backend lang files and frontend i18n modules. Iteration 19a delivers grouped admin navigation, settings categories, translation save policy (staging + rejected `.err` copies), and security settings schema groups.
+
+Includes HookManager DI hotfix (146 PHPUnit errors) and Vitest `TestI18nProvider` harness fix.
+
+## Highlights
+
+- **i18n modules:** admin, list, content, settings, translations
+- **Translation editor:** `/translations` + `/api/admin/translations/*` (Admin + 2FA)
+- **Save policy:** staging → validate → promote; sequential policy toasts
+- **Settings UX:** System / Site / Media / Security category menu
+- **Schema:** `contentSecurity`, `uploadSecurity` groups (UI; runtime wiring in It.19b)
+- **Admin nav:** 6 collapsible sidebar sections + header collapse toggle
+
+## Test plan
+
+- [ ] `./scripts/iteration-gate.sh` green
+- [ ] Switch admin language SK ↔ EN — sidebar and lists update
+- [ ] Translation editor — valid save promotes; invalid save leaves original + `.err` copy
+- [ ] Settings categories and URL `?category=&group=` deep links
+- [ ] Sidebar collapse persists after reload
+
+## Docs
+
+- [ITERATION_18.md](docs/ITERATION_18.md)
+- [ITERATION_19.md](docs/ITERATION_19.md)
+```
+
+---
+
+## 2.0.43 — pred release kontrola
 
 ```bash
 ./scripts/iteration-gate.sh
@@ -21,15 +84,15 @@
 
 ---
 
-## GitHub Release — copy-paste (2.0.42)
+## GitHub Release — copy-paste (2.0.43)
 
 **Title:**
 
 ```
-2.0.42 — It.55: Tiptap JSON storage + editor image upload
+2.0.43 — It.55: Tiptap JSON storage + editor image upload
 ```
 
-**Tag:** `v2.0.42` · **Target:** `main`
+**Tag:** `v2.0.43` · **Target:** `main` · **Commit:** `4367d19` *(git commit message: „Release 2.0.42“)*
 
 **Body:**
 
@@ -61,7 +124,59 @@ Iteration 55 persists WYSIWYG content as structured Tiptap JSON, renders sanitiz
 
 ---
 
-## 2.0.41 — pred release kontrola
+## 2.0.42 — pred release kontrola
+
+```bash
+./scripts/iteration-gate.sh
+```
+
+**Po deployi:**
+
+1. Admin editor stránky/článku — prepínač **Profil editora** (Company / Blog / Minimal / Developer)
+2. **Minimal** — toolbar bez obrázkov; vloženie `![img]()` pri uložení → 400
+3. **Developer** — plný toolbar vrátane tabuliek a code blockov
+4. Prepínanie profilu mení toolbar **bez** reload stránky
+
+---
+
+## GitHub Release — copy-paste (2.0.42)
+
+**Title:**
+
+```
+2.0.42 — It.54: modular editor profiles (MD + WYSIWYG)
+```
+
+**Tag:** `v2.0.42` · **Target:** `main` · **Commit:** `8526c19` *(git commit message: „Release 2.0.41“)*
+
+**Body:**
+
+```markdown
+## Summary
+
+Iteration 54 adds editor profiles that control which Markdown/WYSIWYG toolbar actions and Tiptap extensions are available per page or article.
+
+## Highlights
+
+- **Profiles:** company, blog, minimal, developer
+- **Settings:** default profile per pages/articles
+- **Validation:** backend rejects disallowed blocks on save
+- **UX:** profile picker in content editor; paste guard with toast
+
+## Test plan
+
+- [ ] `./scripts/iteration-gate.sh` green
+- [ ] Switch profiles in page editor — toolbar updates instantly
+- [ ] Save image markdown on minimal profile → API 400
+
+## Docs
+
+- [ITERATION_54.md](docs/ITERATION_54.md)
+```
+
+---
+
+## 2.0.41 — pred release kontrola (legacy commit label)
 
 ```bash
 ./scripts/iteration-gate.sh
