@@ -6,7 +6,7 @@
 
 Legenda: ✅ hotové · 🚧 rozpracované · ⏳ plánované · 🔴 kritická priorita jadra
 
-**Aktuálna verzia:** 2.0.45 ✅ · **Rozpracované:** It.18e (i18n zvyšok adminu)
+**Aktuálna verzia:** 2.0.46 ✅ · **Ďalej:** It.18 zvyšok adminu (comments, messages…)
 
 
 | Iterácia | Názov                                                         | Priorita                             |

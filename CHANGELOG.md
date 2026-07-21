@@ -443,21 +443,33 @@ After deploy: restart PHP, clear browser cookies, re-login.
 
 ## [2.0.46] – 2026-07-21
 
-Audit activity, readable application logs, login background picker. Hotfixes ISS-046 through ISS-050.
+It.18e (i18n media/navigation/dashboard), It.20 (analytics + dashboard disk + robots indexing), audit/logs fixes (ISS-046–050), login background picker.
 
-### Added
+### Added — It.18e (i18n)
 
-- **`LoginBackgroundImagePicker`** — Settings → login group: media library picker, local disk upload, preview, remove
+- **`src/i18n/modules/media/{sk,en}.ts`** — MediaManager actions, filters, stock, metadata labels
+- **`src/i18n/modules/navigation/{sk,en}.ts`** — NavigationManager UI copy
+- **`src/i18n/modules/dashboard/{sk,en}.ts`** — Dashboard KPI, hero, stats, quick links, disk panel
+- **`MediaManager.tsx`**, **`NavigationManager.tsx`**, **`DashboardView.tsx`** — migrated to `useI18n()`
+
+### Added — It.20 (analytics & dashboard)
+
 - **`AnalyticsView`** — `/analytics` with KPI cards, 7/14/30-day filter, tabs (Overview, Pages, Sources, Devices, Geography)
-- **`DashboardDiskStructurePanel`** — disk structure counts + total content size on dashboard
+- **`DashboardDiskStructurePanel`** — disk structure counts + total content size
 - Dashboard **quick links** — Pages, Articles, Users, Settings
-- **`seo.allowSearchIndexing`** — admin toggle for robots.txt + global meta robots
 - **`ContentStorageStatsService`** — CMS storage footprint for dashboard API
+- **`seo.allowSearchIndexing`** — admin toggle for `robots.txt` + global meta robots
+- Analytics API: visit enrichment (device/browser/geo), `browsers`, `geo`, `top_articles` in overview
+- Admin sidebar: **Analytika** pinned under user block (next to Prehľad)
+
+### Added — audit, logs, login (2.0.46)
+
+- **`LoginBackgroundImagePicker`** — Settings → login: media library + local upload + preview
 - **`AuditMessageFormatter`** — Slovak audit summaries with content title + diff stats
-- **`ApplicationLogMessageFormatter`** — human-readable `display_message` for `/logs` (http_access, auth, etc.)
-- **`LogStoragePaths`** — single canonical path `backend/app/storage/logs/*` for writer and reader
-- **FE:** `formatAuditEvent.ts`, `formatApplicationLog.ts`; dashboard activity + LogsManager use formatted text
-- **Admin sidebar:** Dashboard (Prehľad) pinned under user block
+- **`ApplicationLogMessageFormatter`** — human-readable `display_message` for `/logs`
+- **`LogStoragePaths`** — single canonical path `backend/app/storage/logs/*`
+- **FE:** `formatAuditEvent.ts`, `formatApplicationLog.ts`; dashboard activity + LogsManager
+- **`src/i18n/modules/analytics/{sk,en}.ts`** — analytics page copy
 
 ### Fixed
 
@@ -466,12 +478,18 @@ Audit activity, readable application logs, login background picker. Hotfixes ISS
 - **ISS-048:** Audit messages unreadable — SK formatter + content title in versioning metadata
 - **ISS-049:** Empty daily log file treated as corrupt — hundreds of `.corrupt-*` orphans (`LogWriter`)
 - **ISS-050:** Logs UI empty — reader used wrong directory + severity case mismatch
-- **Analytics API:** visit enrichment (device/browser/geo), `browsers` + `geo` + `top_articles` in overview
+- **Login background i18n:** picker buttons used wrong key path (`settings.fields.login.backgroundPicker.*`)
 - **`Tracker::saveVisit()`** — persists device/browser/country on each visit record
+- **PHPUnit:** `RobotsTxtGeneratorTest` — mock `seo` group after `allowSearchIndexing` setting
+- **Vitest:** `NavigationManager.test` — `TestI18nProvider`; `MediaManager.test` — SK labels
+- **PHPStan:** `AuditMessageFormatter`, `ApplicationLogMessageFormatter` annotations
 
 ### Docs
 
-- [ITERATION_19.md](docs/ITERATION_19.md), [ISSUES.md](docs/ISSUES.md) ISS-046–050
+- [ITERATION_18.md](docs/ITERATION_18.md) — It.18e
+- [ITERATION_19.md](docs/ITERATION_19.md) — audit + login
+- [ITERATION_20.md](docs/ITERATION_20.md) — analytics + disk + robots
+- [ISSUES.md](docs/ISSUES.md) — ISS-046 … ISS-050
 
 ---
 

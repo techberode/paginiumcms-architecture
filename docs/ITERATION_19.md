@@ -1,7 +1,7 @@
 # Iteration 19 – Admin UX, security runtime & auth
 
-**Status:** 🚧 In progress (It.18e remainder)  
-**Version:** 2.0.45 ✅ · **2.0.46** (audit activity + login background) · next: It.18e finish
+**Status:** ✅ Shipped (2.0.46)  
+**Version:** 2.0.45 ✅ · **2.0.46** ✅ (It.18e + It.20 + ISS-046–050)
 
 ## Summary
 
@@ -121,9 +121,36 @@ Grouped admin navigation and translation policy (19a); wire security schema to r
 
 ---
 
+## Done ✅ (It.18e · 2.0.46)
+
+| Change | Detail |
+|--------|--------|
+| Media i18n | `src/i18n/modules/media/*` + `MediaManager` on `useI18n()` |
+| Navigation i18n | `src/i18n/modules/navigation/*` + `NavigationManager` on `useI18n()` |
+| Dashboard i18n | `src/i18n/modules/dashboard/*` + `DashboardView` on `useI18n()` |
+| Tests | `NavigationManager.test` — `TestI18nProvider`; `MediaManager.test` — SK button labels |
+
+→ Detail: [ITERATION_18.md](ITERATION_18.md#it18e--2046)
+
+---
+
+## Done ✅ (It.20 · 2.0.46)
+
+| Change | Detail |
+|--------|--------|
+| `/analytics` | KPI karty, filter 7/14/30 dní, taby Prehľad/Stránky/Zdroje/Zariadenia/Geografia |
+| Analytics API | Visit enrichment (device/browser/geo), `browsers`, `geo`, `top_articles` |
+| Dashboard | Rýchle odkazy (Stránky, Články, Používatelia, Nastavenia) + disková štruktúra |
+| `ContentStorageStatsService` | Celková veľkosť flat-file obsahu v dashboard API |
+| `seo.allowSearchIndexing` | Zapnutie/vypnutie indexovania (`robots.txt` + meta tagy) |
+
+→ Detail: [ITERATION_20.md](ITERATION_20.md)
+
+---
+
 ## Remaining ⏳
 
-- Migrate remaining admin screens to i18n (media, dashboard, navigation…)
+- Migrate remaining admin screens to i18n (comments, messages, audit, backups…)
 - Dynamic FE locale loading without dev-server restart (optional `import.meta.glob` expansion)
 - Settings `general.language` enum from registry
 - SSO callback page — zdieľať `AuthShell` (voliteľné)

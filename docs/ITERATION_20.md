@@ -43,6 +43,7 @@
 
 ## Súvisiace
 
+- [ITERATION_18.md](ITERATION_18.md) — It.18e (media/navigation/dashboard i18n)
 - [ITERATION_19.md](ITERATION_19.md) — audit activity + login background
 - [ISSUES.md](ISSUES.md) — ISS-046 … ISS-050
 - [developer/RELEASE.md](developer/RELEASE.md) — C&P 2.0.46
