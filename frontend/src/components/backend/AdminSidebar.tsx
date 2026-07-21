@@ -13,6 +13,7 @@ import { useAdminCounts } from '../../hooks/useAdminCounts';
 import { useI18n } from '../../context/I18nContext';
 import {
   ADMIN_DEFAULT_ROUTE,
+  ADMIN_NAV_ANALYTICS_ITEM,
   ADMIN_NAV_PRIMARY_ITEM,
   ADMIN_NAV_SECTIONS,
 } from '../../config/adminNavSections';
@@ -151,11 +152,12 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           </div>
         )}
 
-        <nav className="p-2 space-y-2 mt-1 overflow-y-auto flex-1">
-          <div className="space-y-0.5">
-            {renderItem(ADMIN_NAV_PRIMARY_ITEM)}
-          </div>
-          {!collapsed && <div className="mx-2 border-t border-slate-800/80" aria-hidden="true" />}
+        <div className={`shrink-0 border-b border-slate-800/50 ${collapsed ? 'px-2 py-2' : 'px-2 py-2'}`}>
+          {renderItem(ADMIN_NAV_PRIMARY_ITEM)}
+          {(!ADMIN_NAV_ANALYTICS_ITEM.adminOnly || isAdmin) && renderItem(ADMIN_NAV_ANALYTICS_ITEM)}
+        </div>
+
+        <nav className="p-2 space-y-2 overflow-y-auto flex-1 min-h-0">
           {visibleSections.map((section) => {
             const sectionOpen = collapsed || openSections[section.id] !== false;
             const sectionActive = section.items.some((item) => isItemActive(item.href));

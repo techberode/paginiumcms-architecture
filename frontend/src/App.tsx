@@ -8,6 +8,7 @@ import {
   PublicSlugPage,
 } from './components/layout/PublicSiteLayout';
 import { DashboardView } from './components/backend/DashboardView';
+import { AnalyticsView } from './components/backend/AnalyticsView';
 import { PagesManager } from './components/backend/PagesManager';
 import { MarkdownEditor } from './components/backend/MarkdownEditor';
 import { BackupManager } from './components/backend/BackupManager';
@@ -144,6 +145,7 @@ function App() {
 
       <Route element={<AdminShell />}>
         <Route path="/dashboard" element={<DashboardView />} />
+        <Route path="/analytics" element={<AnalyticsView />} />
         <Route path="/pages" element={<PagesManager type="pages" />} />
         <Route path="/pages/:slug" element={<MarkdownEditor type="page" />} />
         <Route path="/articles" element={<PagesManager type="articles" />} />

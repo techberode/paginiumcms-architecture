@@ -48,7 +48,8 @@ class ContentVersioningService
             $content->getContent(),
             $frontMatterYaml,
             $user,
-            $message !== '' ? $message : ucfirst($action) . ' ' . $type . ': ' . $contentId
+            $message !== '' ? $message : ucfirst($action) . ' ' . $type . ': ' . $contentId,
+            $this->buildContentAuditMetadata($content, $contentId)
         );
 
         if ($type === 'article') {
@@ -100,5 +101,21 @@ class ContentVersioningService
         );
 
         return true;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildContentAuditMetadata(Content $content, string $contentId): array
+    {
+        $frontMatter = $content->getFrontMatter();
+        $title = trim($content->getTitle());
+        $status = $frontMatter['status'] ?? null;
+
+        return [
+            'content_title' => $title,
+            'content_slug' => $contentId,
+            'content_status' => is_string($status) ? $status : null,
+        ];
     }
 }

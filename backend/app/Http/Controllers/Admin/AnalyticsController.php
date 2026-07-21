@@ -29,8 +29,11 @@ final class AnalyticsController
         return $this->json->success($response, [
             'overview' => $this->reporter->getOverview((string) $period),
             'top_pages' => $this->reporter->getTopPages(10, (string) $period),
+            'top_articles' => $this->reporter->getTopArticles(10, (string) $period),
             'top_referers' => $this->reporter->getTopReferers(10, (string) $period),
             'devices' => $this->reporter->getDeviceStats((string) $period),
+            'browsers' => $this->reporter->getBrowserStats((string) $period),
+            'geo' => $this->reporter->getGeoStats((string) $period),
         ]);
     }
 

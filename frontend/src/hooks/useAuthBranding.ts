@@ -1,6 +1,7 @@
 // frontend/src/hooks/useAuthBranding.ts
 import { useMemo } from 'react';
 import type { CSSProperties } from 'react';
+import { resolveAdminMediaPreviewUrl, resolvePublicMediaUrl } from '../api/media';
 import { useSettingsContext } from '../context/SettingsContext';
 
 const DEFAULT_BULLETS = [
@@ -23,6 +24,12 @@ function resolveBackgroundUrl(raw: string | undefined): string {
   }
   if (/^https?:\/\//i.test(value) || value.startsWith('data:')) {
     return value;
+  }
+  if (value.startsWith('/storage/')) {
+    return resolvePublicMediaUrl(value);
+  }
+  if (value.startsWith('media/')) {
+    return resolveAdminMediaPreviewUrl(value);
   }
   if (value.startsWith('/')) {
     return `${typeof window !== 'undefined' ? window.location.origin : ''}${value}`;

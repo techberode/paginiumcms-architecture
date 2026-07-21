@@ -38,6 +38,11 @@ interface ReporterInterface
     public function getDeviceStats(string $period = 'today'): array;
 
     /**
+     * @return list<array{browser: string, visits: int}>
+     */
+    public function getBrowserStats(string $period = 'today'): array;
+
+    /**
      * Získa geo štatistiky.
      *
      * @return list<array{country: string, visits: int}>

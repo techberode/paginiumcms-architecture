@@ -4,6 +4,7 @@ import type { MessageTree } from '../../types';
 export const adminSk: MessageTree = {
   nav: {
     dashboard: 'Prehľad',
+    analytics: 'Analytika',
     pages: 'Podstránky',
     articles: 'Články (Blog)',
     media: 'Médiá',

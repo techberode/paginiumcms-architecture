@@ -173,6 +173,10 @@ final class CodeEditorManagerTest extends TestCase
             {
             }
 
+            public function writeEntry(\PaginiumCMS\Core\Logging\Models\LogEntry $entry): void
+            {
+            }
+
             public function getLastEntries(int $limit = 100): array
             {
                 return [];

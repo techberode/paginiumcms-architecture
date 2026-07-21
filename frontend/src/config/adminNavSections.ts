@@ -24,6 +24,7 @@ import {
   CalendarClock,
   Puzzle,
   Languages,
+  BarChart3,
 } from 'lucide-react';
 import type { AdminNavItemDef, AdminNavSectionDef } from './adminNavTypes';
 
@@ -36,6 +37,15 @@ export const ADMIN_NAV_PRIMARY_ITEM: AdminNavItemDef = {
   labelKey: 'admin.nav.dashboard',
   href: ADMIN_DEFAULT_ROUTE,
   icon: LayoutDashboard,
+};
+
+/** Samostatná analytika — mimo kategórií, hneď pod Prehľadom. */
+export const ADMIN_NAV_ANALYTICS_ITEM: AdminNavItemDef = {
+  id: 'analytics',
+  labelKey: 'admin.nav.analytics',
+  href: '/analytics',
+  icon: BarChart3,
+  adminOnly: true,
 };
 
 /** Paginium admin nav — sekcie s podpoložkami (inšpirované Grav, vlastná štruktúra). */

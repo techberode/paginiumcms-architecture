@@ -1,56 +1,48 @@
-# Iteration 20 – Core Hardening & Production Readiness
+# Iteration 20 — Analytika, dashboard disk, robots indexing
 
-**Status:** Complete (remaining items moved to It. 22)  
-**Version:** 2.0.8
+**Version:** 2.0.46  
+**Status:** ✅ Done  
+**Date:** 2026-07-21
 
-## Summary
+## Ciele
 
-Production security and operations: RBAC on mutations, public media serving, maintenance mode, trash restore, backup cron, and frontend preview/role guard.
+1. Samostatná admin stránka **Analytika** (KPI karty, taby: Prehľad / Stránky / Zdroje / Zariadenia / Geografia)
+2. Rozšírenie **Dashboardu** — rýchle odkazy + disková štruktúra s veľkosťou obsahu
+3. **SEO:** zapínanie/vypínanie indexovania (`robots.txt` + meta tagy)
 
-## Backend – done ✅
+## Backend
 
-| Feature | Implementation |
-|---------|----------------|
-| RBAC | `PermissionMiddleware` on content/media writes |
-| `:manage` alias | `AuthorizationManager` – ADMIN covers domain permissions |
-| Media serving | `GET /storage/{path}` + Vite/nginx proxy |
-| Maintenance | `MaintenanceModeMiddleware` + `general.maintenanceMode` |
-| Registration toggle | `general.allowRegistration` → 403 on register |
-| Guest comments | `comments.allowGuestComments` enforced |
-| Session fixation | `session_regenerate_id()` in `SessionManager::setUser()` |
-| Trash API | `GET /api/admin/trash`, `POST /api/admin/trash/{id}/restore` |
-| Soft-delete meta | `.meta.json` sidecar on trash move |
-| Backup cron | `bin/console backup:run-schedule` + `BackupScheduler` |
+| Súbor | Zmena |
+|-------|--------|
+| `Tracker.php` | Visit záznamy obohatené o `deviceType`, `browser`, `country`, `city` |
+| `Reporter.php` | Periódy 7/14/30 dní, `getBrowserStats()`, lepší `unique_visitors` |
+| `AnalyticsController.php` | API vracia `geo`, `browsers`, `top_articles` |
+| `ContentStorageStatsService.php` | Veľkosť flat-file obsahu pre dashboard |
+| `DashboardController.php` | `storage.content` blok |
+| `SettingsSchema.php` | `seo.allowSearchIndexing` |
+| `RobotsTxtGenerator.php` | `Disallow: /` pri vypnutom indexovaní |
+| `SeoMetaBuilder.php` | Globálny `noindex` pri vypnutom indexovaní |
 
-## Frontend – done ✅
+## Frontend
 
-| Feature | Route / component |
-|---------|-------------------|
-| Unpublished preview | `/preview/:slug` |
-| Role guard | `AdminRoleGuard` – USER → public site |
-| Document title | Public site from page title + site name |
-| Version history in editor | `VersionHistory` in `MarkdownEditor` |
-| Developer logs | `/developer/logs` → `DeveloperLogsViewer` |
+| Súbor | Zmena |
+|-------|--------|
+| `AnalyticsView.tsx` | Nová stránka `/analytics` |
+| `DashboardView.tsx` | Rýchle odkazy, disk panel, link na analytiku |
+| `DashboardDiskStructurePanel.tsx` | UI podľa mockupu |
+| `AdminSidebar.tsx` | Položka Analytika pod Prehľadom |
+| `LoginBackgroundImagePicker.tsx` | Upload pozadia prihlásenia (It.19 doplnok) |
+| i18n moduly `analytics`, rozšírené `dashboard`, `settings` |
 
-## Remaining → moved to Iteration 22
+## Overenie
 
-- Brute-force lockout per email/IP (`SecurityLogger` extension) → [ITERATION_22.md](ITERATION_22.md)
-- Trash admin UI in React → ✅ done in It. 22
-- (Done in 2.0.8 patch) Full HTTP tests for trash restore
+- [ ] `/analytics` — KPI, graf, taby Stránky/Zdroje/Zariadenia/Geografia
+- [ ] `/dashboard` — 4 rýchle odkazy + disková štruktúra s KB/MB
+- [ ] Nastavenia → SEO → vypnúť indexovanie → `/robots.txt` = `Disallow: /`
+- [ ] Verejný web meta `noindex` (okrem stránok s vlastným noIndex)
 
-## Tests (2.0.8)
+## Súvisiace
 
-- `CoreHardeningTest`, `PermissionMiddlewareTest`, `MaintenanceModeMiddlewareTest`
-- `TrashServiceTest`, `TrashControllerTest`, `StorageControllerTest`
-- `BackupSchedulerTest`, `BackupManagerTest`, `CommentsControllerTest`
-- `AuthorizationManagerManagePermissionTest`, `FileWriterTest` (meta sidecar)
-
-## Related docs
-
-- [CORE_HARDENING.md](architecture/CORE_HARDENING.md) – detailed reference
-- [CHANGELOG.md](../CHANGELOG.md) – [2.0.8]
-
-## Next
-
-→ [Iteration 21](ITERATION_21.md) – API contract & automated testing  
-→ [Iteration 22](ITERATION_22.md) – trash UI, brute-force, RSS/sitemap
+- [ITERATION_19.md](ITERATION_19.md) — audit activity + login background
+- [ISSUES.md](ISSUES.md) — ISS-046 … ISS-050
+- [developer/RELEASE.md](developer/RELEASE.md) — C&P 2.0.46

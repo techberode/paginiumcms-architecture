@@ -1,9 +1,81 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.0.45** · 2026-07-21  
+> Posledná verzia: **2.0.46** · 2026-07-21  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release. Samotný release/tag zatiaľ nevytváraj, kým nie je schválený deploy.
 
-> **Poznámka k verziám:** Commity `4367d19` (It.55) a `8526c19` (It.54) mali v správe nesprávne číslo (`2.0.42` / `2.0.41`). Oficiálne tagy podľa CHANGELOG: **v2.0.42** → `8526c19`, **v2.0.43** → `4367d19`, **v2.0.44** → `199877a`, **v2.0.45** → *(commit po merge — pozri git log)*.
+> **Poznámka k verziám:** Commity `4367d19` (It.55) a `8526c19` (It.54) mali v správe nesprávne číslo (`2.0.42` / `2.0.41`). Oficiálne tagy podľa CHANGELOG: **v2.0.42** → `8526c19`, **v2.0.43** → `4367d19`, **v2.0.44** → `199877a`, **v2.0.45** → `f3ed5bc`, **v2.0.46** → *(commit po merge — pozri git log)*.
+
+---
+
+## 2.0.46 — pred release kontrola
+
+```bash
+./scripts/iteration-gate.sh
+# alebo lokálny alltests skript → log bez exit 1 na PHPUnit/PHPStan
+```
+
+**Po deployi:**
+
+1. **Dashboard aktivita** — po úprave článku/stránky sa v Prehľade zobrazí SK správa s titulkom obsahu (nie len slug)
+2. **Audit trail** — `/audit` rovnaký formát; legacy záznamy sa formátujú cez FE utilitu
+3. **Logy** — `/logs` zobrazuje čitateľné správy (`display_message`), nie surový JSON; dnešný denný súbor sa vytvára normálne
+4. **Sidebar** — **Prehľad** pripnutý priamo pod user blokom (mimo scroll sekcie)
+5. **Nastavenia → Stránka → Prihlásenie a registrácia** — pozadie: vybrať z médií, nahrať z disku, náhľad; overiť na `/login`
+
+**Opravy v tomto release (ISS-046 … ISS-050):** pozri [ISSUES.md](../ISSUES.md).
+
+---
+
+## GitHub Release — copy-paste (2.0.46)
+
+**Title:**
+
+```
+2.0.46 — Audit activity, readable logs, login background picker (ISS-046–050)
+```
+
+**Tag:** `v2.0.46` · **Target:** `main` · **Commit:** *(doplniť po commite)*
+
+**Body:**
+
+```markdown
+## Summary
+
+Fixes dashboard audit activity, human-readable audit/application logs, and empty Logs admin section. Adds login background image picker (media library + local upload) in Settings. Pins Dashboard nav item under the user block.
+
+## Highlights
+
+- **Audit activity (ISS-046–048):** `AuditMessageFormatter` — SK messages with content title; `Logger::writeEntry()` preserves `audit_*` category; FE `formatAuditEvent.ts`
+- **LogWriter (ISS-049):** empty daily file no longer treated as corrupt (752 orphan `.corrupt-*` backups)
+- **Logs UI (ISS-050):** unified `LogStoragePaths`; lowercase severity stats; `ApplicationLogMessageFormatter` + `display_message`
+- **Login settings:** `LoginBackgroundImagePicker` — pick from media, upload from disk, preview; `useAuthBranding` resolves `/storage/` paths
+- **Admin nav:** Dashboard pinned below user profile (no scroll to find Prehľad)
+
+## Fixes
+
+| ID | Symptóm | Oprava |
+|----|---------|--------|
+| ISS-046 | Audit written as category `app` | `Logger::writeEntry()` in `AuditTrailService` |
+| ISS-047 | Dashboard activity empty | Legacy `isAuditEntry()` detection in stats |
+| ISS-048 | Unreadable audit messages | `AuditMessageFormatter` + FE formatter |
+| ISS-049 | Today's log file missing | `LogWriter::decodeLogPayload()` — empty ≠ corrupt |
+| ISS-050 | Logs section empty | `LogStoragePaths` + severity case fix |
+| — | Login background URL-only | `LoginBackgroundImagePicker` in Settings |
+
+## Test plan
+
+- [ ] `./scripts/iteration-gate.sh` green (PHPUnit 0 failed, PHPStan 0 errors)
+- [ ] Edit article → Dashboard shows SK activity with title
+- [ ] `/audit` and dashboard panel show formatted messages
+- [ ] `/logs` lists entries with readable text; today's file exists after any request
+- [ ] Settings → login → pick/upload background → visible on `/login`
+- [ ] Sidebar: Prehľad visible under user block without scrolling
+
+## Docs
+
+- [ITERATION_19.md](docs/ITERATION_19.md)
+- [ISSUES.md](docs/ISSUES.md) — ISS-046 … ISS-050
+```
 
 ---
 
@@ -36,7 +108,7 @@
 2.0.45 — It.19b–19c security runtime, auth UX, password policy, avatars & locales
 ```
 
-**Tag:** `v2.0.45` · **Target:** `main` · **Commit:** *(doplň po `git log -1`)*
+**Tag:** `v2.0.45` · **Target:** `main` · **Commit:** `f3ed5bc`
 
 **Body:**
 

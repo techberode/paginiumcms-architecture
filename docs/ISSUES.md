@@ -1,6 +1,6 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-21 · verzia **2.0.45** (It.19b–19d + ISS-044/045)
+> Posledná aktualizácia: 2026-07-21 · verzia **2.0.46** (audit activity + login background picker + ISS-046–050)
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
 
@@ -60,6 +60,12 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-043 | Vitest `editorToolbar` — globálny `screen` vs. profil   | Nízka (CI)            | ✅ Opravené (2.0.42 It.54)           |
 | ISS-044 | `services.php:301` parse error → API 500                | Kritická              | ✅ Opravené (**2.0.45**)             |
 | ISS-045 | `LocaleScaffoldService::$projectRoot` — PHPStan + PHPUnit | Stredná (CI)          | ✅ Opravené (**2.0.45**)             |
+| ISS-046 | Audit udalosti sa zapisovali ako kategória `app`        | Vysoká (audit)        | ✅ Opravené (**2.0.46**)             |
+| ISS-047 | Dashboard „Prehľad aktivít“ prázdny                     | Vysoká (admin UX)     | ✅ Opravené (**2.0.46**)             |
+| ISS-048 | Audit správy nečitateľné (zlý formát + EN text)         | Stredná (audit UX)    | ✅ Opravené (**2.0.46**)             |
+| ISS-049 | Korumpovaný denný log `2026-07-21.json`                 | Stredná (ops)         | ✅ Opravené (**2.0.46**)             |
+| ISS-050 | Sekcia Logy prázdna — nesprávna cesta log readera       | Vysoká (admin UX)     | ✅ Opravené (**2.0.46**)             |
+| —       | Login pozadie — len URL pole (bez uploadu/médií)          | Stredná (admin UX)    | ✅ Opravené (**2.0.46**)             |
 
 
 
@@ -1121,6 +1127,131 @@ public function __construct(
 ```
 
 **Overenie:** `./scripts/iteration-gate.sh` — PHPUnit exit 0, PHPStan 0 errors on `LocaleScaffoldService`.
+
+---
+
+## ISS-046 – Audit udalosti sa zapisovali ako kategória `app`
+
+**Symptóm:** Uloženie stránky/článku vytvorilo verziu, ale v audit štatistikách chýbala udalosť. V `storage/logs/app/*.json` boli záznamy s `[CONTENT_CHANGE]`, no pole `category` bolo **`app`**, nie `audit_content_change`.
+
+**Príčina:** `AuditTrailService::logAuditEvent()` vytvoril `LogEntry` s kategóriou `audit_*`, ale volal `$this->logger->log()`, ktoré vždy prepísalo kategóriu na default **`app`** z DI (`LoggerInterface`).
+
+**Implementované riešenie (2.0.46):**
+
+- `LoggerInterface::writeEntry(LogEntry)` — zapíše položku so zachovanou kategóriou
+- `AuditTrailService` volá `writeEntry()` namiesto `log()`
+
+**Overenie:** Nový zápis obsahu má v logu `category: audit_content_change`.
+
+**Súvisí s:** ISS-047.
+
+---
+
+## ISS-047 – Dashboard „Prehľad aktivít“ prázdny
+
+**Symptóm:** Panel na `/dashboard` zobrazoval „Zatiaľ žiadne udalosti v audit logu“, hoci obsah sa ukladal a verzie vznikali.
+
+**Príčina (dvojitá):**
+
+1. `getAuditStats()` filtroval len záznamy s `category` začínajúcou na `audit_*` → legacy záznamy (ISS-046) boli neviditeľné.
+2. Frontend volal správne `GET /api/admin/audit/stats`, ale `recent_events` prišlo prázdne.
+
+**Implementované riešenie (2.0.46):**
+
+- `AuditTrailService::isAuditEntry()` — rozpozná aj legacy záznamy (`context.category`, `[CONTENT_CHANGE]` v message)
+- `getAuditStats()` skenuje 5000 posledných záznamov, zoradí `recent_events` podľa času
+- API dopĺňa `display_message` pre každú udalosť
+
+**Overenie:** Po reštarte BE dashboard zobrazí udalosti (min. z 20.7.).
+
+**Poznámka:** Endpoint je len pre **ADMIN / SUPER_ADMIN** — EDITOR dostane 403 a panel ostane prázdny (zámer).
+
+**Súvisí s:** ISS-046, ISS-048.
+
+---
+
+## ISS-048 – Audit správy nečitateľné (zlý formát)
+
+**Symptóm:** V dashboarde a `/audit` sa zobrazovalo napr. `[CONTENT_CHANGE] UPDATE: blog on maxxim@webland.fun by 2026-07-20 20:44:47` — nejasné, kto čo urobil.
+
+**Príčina:**
+
+1. `sprintf` v `logAuditEvent()` mal zamenené argumenty (`target` vs. email vs. timestamp).
+2. Správy boli anglické, strojové; chýbal ľudský popis akcie (typ obsahu, verzia, zhrnutie diffu).
+
+**Implementované riešenie (2.0.46):**
+
+- Nový `AuditMessageFormatter` — SK texty typu: *„Maxxim upravil článok ‚blog‘ (verzia 12) · 3 pridaných“*
+- Do `context.summary` sa ukladá finálna správa; `message` v logu = rovnaký text
+- `summarizeDiff()` vracia SK („pridaných / odstránených / upravených“)
+- FE utilita `formatAuditEvent.ts` — formátuje legacy aj nové záznamy v dashboarde a audit traile
+
+**Overenie:** PHPUnit `AuditMessageFormatterTest`; Vitest `formatAuditEvent.test.ts`.
+
+---
+
+## ISS-049 – Korumpovaný denný log `2026-07-21.json`
+
+**Symptóm:** V `backend/app/storage/logs/app/` chýba platný súbor pre 21.7.; stovky prázdnych `.corrupt-*` backupov (752×). Nové udalosti z dnešného dňa sa nezapisujú — v dashboarde sú len záznamy zo včera.
+
+**Príčina:** Bug v `LogWriter::decodeLogPayload()` — pri **prázdnom** dennom súbore (nový deň, `fopen c+`) sa volal `JsonHelper::decode('')`, čo hodí výnimku. Kód to vyhodnotil ako „corrupt“, vytvoril `.corrupt-*` backup a **zmazal** hlavný súbor. Každý ďalší HTTP request cyklus zopakoval → stovky prázdných corrupt súborov, žiadny perzistentný denný log.
+
+**Implementované riešenie (2.0.46):**
+
+- `decodeLogPayload()` — prázdny/whitespace payload = `[]` (nie corrupt)
+- `backupCorruptLogFile()` — pri prázdnom raw len zmazať orphan súbor, **nevytvárať** `.corrupt-*`
+- PHPUnit `testWriteToFreshEmptyDailyFileDoesNotCreateCorruptBackup`
+
+**Po deployi:**
+
+1. Reštart backendu (Docker/PHP).
+2. Ľubovoľná akcia (login, uloženie stránky) vytvorí `2026-07-21.json`.
+3. Voliteľne zmazať staré prázdne backupy: `rm backend/app/storage/logs/app/2026-07-21.json.corrupt-*`
+
+**Overenie:** `./vendor/bin/phpunit backend/tests/Core/Logging/Services/LogWriterTest.php`
+
+**Súvisí s:** ISS-046, ISS-047.
+
+---
+
+## ISS-050 – Sekcia Logy prázdna (ApplicationLogReader)
+
+**Symptóm:** `/logs` aj dashboard panel „Logy (24 h)“ zobrazujú **0 záznamov** / „Žiadne záznamy“, hoci `backend/app/storage/logs/app/` obsahuje veľké JSON súbory.
+
+**Príčina (dvojitá):**
+
+1. **Nesprávna cesta** — `ApplicationLogReader` v `Http/Config/services.php` čítal z `backend/storage/logs/` (adresár **`app/` neexistuje**). Zápis cez `LogWriter` išiel do `backend/app/storage/logs/app/`.
+2. **Severity mismatch** — logy majú `INFO` (uppercase), frontend filtre a KPI očakávajú `info` (lowercase) → štatistiky vždy 0; filter `/logs?severity=info` vracal 400.
+
+**Implementované riešenie (2.0.46):**
+
+- Nový `LogStoragePaths` — jednotná cesta `backend/app/storage/logs/*` pre writer aj reader
+- `ApplicationLogReader::severityStats()` vracia lowercase kľúče (`info`, `error`, …)
+- Filter severity case-insensitive; `LogController` akceptuje `info` aj `INFO`
+- Reader ignoruje poškodené JSON súbory (nepadne celé API)
+
+**Overenie:** `./vendor/bin/phpunit backend/tests/Core/Logging/ApplicationLogReaderTest.php`
+
+**Súvisí s:** ISS-049.
+
+---
+
+## Login pozadie — upload z médií / disku (2.0.46)
+
+**Symptóm:** V **Nastavenia → Stránka → Prihlásenie a registrácia** bolo pole `backgroundImageUrl` len textové URL — administrátor nemohol vybrať obrázok z knižnice médií ani nahrať súbor z lokálneho disku.
+
+**Implementované riešenie (2.0.46):**
+
+- Nový FE komponent `LoginBackgroundImagePicker` — URL pole + **Vybrať z médií** (`MediaPickerModal`, `urlFormat: storage`) + **Nahrať z disku** (`POST /api/media/upload`)
+- Náhľad pozadia priamo v nastaveniach; tlačidlo odstránenia
+- `useAuthBranding` — správne rozlíšenie `/storage/…` a `media/…` ciest pre CSS pozadie na `/login` a `/register`
+- i18n SK/EN pre picker; help text v `SettingsSchema`
+
+**Poznámka (2.0.46 fix):** Tlačidlá zobrazovali surové kľúče `settings.login.backgroundPicker.*` — správna cesta je `settings.fields.login.backgroundPicker.*` (modul `settings` → vetva `fields.login`).
+
+**Overenie:** Nastavenia → login skupina → vybrať/nahrať obrázok → uložiť → overiť na `/login`. Vitest: `LoginBackgroundImagePicker.test.tsx`, `settings.test.ts`.
+
+**Súvisí s:** It.19 auth UX (2.0.45), `uploadSecurity` validácia typu súboru pri lokálnom uploade.
 
 ---
 

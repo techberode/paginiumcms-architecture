@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Controllers\Admin;
 
 use PaginiumCMS\Core\Admin\Services\AdminCountsService;
+use PaginiumCMS\Core\Admin\Services\ContentStorageStatsService;
 use PaginiumCMS\Core\Analytics\Contracts\ReporterInterface;
 use PaginiumCMS\Core\Analytics\Services\RealtimeTracker;
 use PaginiumCMS\Core\Conflict\Contracts\ConflictLoggerInterface;
@@ -30,6 +31,7 @@ final class DashboardController
         private RealtimeTracker $realtime,
         private ApplicationLogReader $logReader,
         private AdminCountsService $counts,
+        private ContentStorageStatsService $contentStorageStats,
         private JsonResponder $json
     ) {
     }
@@ -50,6 +52,7 @@ final class DashboardController
 
         $healthReport = $this->health->run();
         $healthPayload = $this->normalizeHealthReport($healthReport->toArray());
+        $counts = $this->counts->collect($user);
 
         return $this->json->success($response, [
             'locks' => $locks,
@@ -57,8 +60,16 @@ final class DashboardController
             'conflicts' => $conflicts,
             'conflicts_count' => count($this->conflicts->getRecent(100)),
             'health' => $healthPayload,
-            'counts' => $this->counts->collect($user),
-            'storage' => $this->extractStorageSummary($healthPayload),
+            'counts' => $counts,
+            'storage' => [
+                ...$this->extractStorageSummary($healthPayload),
+                'content' => $this->contentStorageStats->summarize(
+                    (int) ($counts['pages'] ?? 0),
+                    (int) ($counts['articles'] ?? 0),
+                    (int) ($counts['media'] ?? 0),
+                    (int) ($counts['users'] ?? 0)
+                ),
+            ],
             'analytics' => [
                 'overview' => $this->reporter->getOverview('today'),
                 'chart' => $this->reporter->getDailyChart(14),

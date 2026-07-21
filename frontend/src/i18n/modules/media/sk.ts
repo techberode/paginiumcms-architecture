@@ -1,0 +1,84 @@
+import type { MessageTree } from '../../types';
+
+export const mediaSk: MessageTree = {
+  page: {
+    title: 'Knižnica médií',
+    subtitle: 'Nahrávanie, priečinky a správa súborov webu.',
+  },
+  folder: {
+    all: 'Všetky médiá',
+  },
+  actions: {
+    newFolder: 'Nový priečinok',
+    upload: 'Nahrať súbory',
+    uploading: 'Nahrávam…',
+    generateStock: 'Generovať z knižnice',
+    generating: 'Generujem…',
+    copyUrl: 'Kopírovať URL',
+    delete: 'Zmazať',
+    editMeta: 'Upraviť metadáta',
+    previewFit: 'Náhľad (prispôsobiť obrazovke)',
+    previewNative: 'Náhľad v natívnom rozlíšení',
+  },
+  dropzone: {
+    title: 'Presuňte súbory sem alebo kliknite pre výber',
+    uploadTo: 'Nahrať do: :folder',
+  },
+  search: {
+    placeholder: 'Hľadať podľa názvu, titulku, alt textu alebo typu…',
+  },
+  filter: {
+    typeLabel: 'Filter typu súboru',
+    all: 'Všetky súbory',
+    images: 'Len obrázky',
+  },
+  stock: {
+    topicLabel: 'Téma stock obrázka',
+    topicTitle: 'Téma pre generované stock obrázky',
+    importTitle: 'Import náhodného stock obrázka podľa témy webu',
+  },
+  folderPrompt: 'Názov nového priečinka (písmená, čísla, pomlčka, podčiarkovník):',
+  table: {
+    name: 'Názov',
+    title: 'Titulok',
+    type: 'Typ',
+    size: 'Veľkosť',
+    date: 'Dátum',
+    selectAll: 'Vybrať všetky viditeľné súbory',
+    preview: 'Náhľad',
+    actions: 'Akcie',
+    seo: 'SEO',
+  },
+  meta: {
+    titlePlaceholder: 'Titulok',
+    altPlaceholder: 'Alt text',
+    noAlt: 'Bez alt textu',
+    altPrefix: 'Alt: :text',
+  },
+  bulk: {
+    itemLabel: 'vybraných súborov',
+    delete: 'Zmazať vybrané',
+  },
+  confirm: {
+    deleteOne: 'Zmazať „:name“? Táto akcia je nevratná.',
+    deleteBulk: 'Zmazať :count vybraných súborov? Táto akcia je nevratná.',
+  },
+  toast: {
+    loadFailed: 'Nepodarilo sa načítať knižnicu médií.',
+    uploadOne: 'Súbor bol nahraný.',
+    uploadMany: ':count súborov bolo nahraných.',
+    uploadFailed: ':name: :error',
+    stockImported: 'Stock obrázok importovaný (:label).',
+    stockFailed: 'Import stock obrázka zlyhal',
+    folderCreated: 'Priečinok bol vytvorený.',
+    folderFailed: 'Nepodarilo sa vytvoriť priečinok.',
+    urlCopied: 'URL skopírovaná do schránky.',
+    urlCopyFailed: 'URL sa nepodarilo skopírovať.',
+    bulkDeleted: ':count súbor(ov) zmazaných.',
+    bulkDeleteFailed: 'Zmazanie vybraných súborov zlyhalo.',
+    deleted: 'Súbor bol zmazaný.',
+    deleteFailed: 'Zmazanie súboru zlyhalo.',
+    metaUpdated: 'Metadáta boli aktualizované.',
+    metaFailed: 'Aktualizácia metadát zlyhala.',
+  },
+};

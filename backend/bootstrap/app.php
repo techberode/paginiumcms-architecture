@@ -60,6 +60,7 @@ use PaginiumCMS\Modules\Demo\Services\DemoMode;
 use PaginiumCMS\Modules\Demo\Services\DemoResetScheduler;
 use PaginiumCMS\Modules\Demo\Services\DemoStorageService;
 use PaginiumCMS\Core\Logging\Services\Logger;
+use PaginiumCMS\Core\Logging\LogStoragePaths;
 use PaginiumCMS\Core\Logging\Contracts\LoggerInterface;
 use PaginiumCMS\Core\Notification\Services\IncidentNotifier;
 use PaginiumCMS\Core\Security\SecurityLogger;
@@ -155,8 +156,8 @@ $containerBuilder->addDefinitions([
     LoggerInterface::class => function ($container) {
         $writer = new \PaginiumCMS\Core\Logging\Services\LogWriter(
             $container->get(FileReaderInterface::class),
-                                                                   $container->get(FileWriterInterface::class),
-                                                                   __DIR__ . '/../storage/logs/app'
+            $container->get(FileWriterInterface::class),
+            LogStoragePaths::app()
         );
         return new Logger($writer, 'app');
     },

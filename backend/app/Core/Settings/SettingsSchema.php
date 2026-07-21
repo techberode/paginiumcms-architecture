@@ -209,7 +209,7 @@ final class SettingsSchema
                 'fields' => [
                     ['key' => 'pageTitle', 'type' => 'string', 'label' => 'Nadpis prihlasovacej stránky', 'default' => '', 'rules' => ['string', 'max:120'], 'help' => 'Prázdne = použije sa názov stránky z Všeobecných.'],
                     ['key' => 'pageDescription', 'type' => 'text', 'label' => 'Popis prihlasovacej stránky', 'default' => '', 'rules' => ['string', 'max:500'], 'help' => 'Krátky text v informačnom paneli prihlásenia/registrácie.'],
-                    ['key' => 'backgroundImageUrl', 'type' => 'url', 'label' => 'URL obrázka pozadia', 'default' => '', 'rules' => ['string', 'max:512'], 'help' => 'Absolútna URL alebo cesta /media/… — zobrazí sa za prihlasovacím formulárom.'],
+                    ['key' => 'backgroundImageUrl', 'type' => 'url', 'label' => 'URL obrázka pozadia', 'default' => '', 'rules' => ['string', 'max:512'], 'help' => 'Absolútna URL alebo cesta /storage/… — zobrazí sa za prihlasovacím formulárom. V administrácii je možné vybrať z médií alebo nahrať súbor z disku.'],
                     ['key' => 'infoBullets', 'type' => 'text', 'label' => 'Informačné body', 'default' => "Bezpečné prihlásenie do administrácie\nSpráva stránok, článkov a médií\nFlat-file úložisko bez SQL databázy", 'rules' => ['string', 'max:2000'], 'help' => 'Jeden riadok = jeden bod v informačnom paneli.'],
                 ],
             ],
@@ -289,6 +289,7 @@ final class SettingsSchema
                     ['key' => 'defaultDescription', 'type' => 'text', 'label' => 'Predvolený meta popis', 'default' => '', 'rules' => ['string', 'max:300']],
                     ['key' => 'defaultImage', 'type' => 'url', 'label' => 'Predvolený OG obrázok (URL)', 'default' => '', 'rules' => ['url', 'max:512']],
                     ['key' => 'robotsDefault', 'type' => 'string', 'label' => 'Robots (predvolene)', 'default' => 'index,follow', 'rules' => ['required', 'string', 'max:64']],
+                    ['key' => 'allowSearchIndexing', 'type' => 'bool', 'label' => 'Povoliť indexovanie vyhľadávačmi', 'default' => true, 'rules' => ['bool'], 'help' => 'Vypnuté = robots.txt obsahuje Disallow: / a meta tagy noindex (okrem stránok s vlastným noIndex).'],
                     ['key' => 'twitterCard', 'type' => 'enum', 'label' => 'Twitter card typ', 'default' => 'summary_large_image', 'options' => ['summary', 'summary_large_image'], 'rules' => ['required', 'in:summary,summary_large_image']],
                 ],
             ],

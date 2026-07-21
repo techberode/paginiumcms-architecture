@@ -6,6 +6,7 @@ namespace PaginiumCMS\Http\Controllers\Admin;
 
 use PaginiumCMS\Core\Logging\Models\LogSeverity;
 use PaginiumCMS\Core\Logging\Services\AccessLogService;
+use PaginiumCMS\Core\Logging\Services\ApplicationLogMessageFormatter;
 use PaginiumCMS\Core\Logging\Services\ApplicationLogReader;
 use PaginiumCMS\Http\Support\JsonResponder;
 use Psr\Http\Message\ResponseInterface;
@@ -15,6 +16,7 @@ final class LogController
 {
     public function __construct(
         private ApplicationLogReader $logReader,
+        private ApplicationLogMessageFormatter $logFormatter,
         private AccessLogService $accessLog,
         private JsonResponder $json
     ) {
@@ -49,11 +51,17 @@ final class LogController
         $category = isset($params['category']) ? (string) $params['category'] : null;
         $search = isset($params['search']) ? (string) $params['search'] : null;
 
-        if ($severity !== null && $severity !== '' && !LogSeverity::isValid($severity)) {
-            return $this->json->error($response, 'Neplatná severity', 400);
+        if ($severity !== null && $severity !== '') {
+            $severity = strtoupper($severity);
+            if (!LogSeverity::isValid($severity)) {
+                return $this->json->error($response, 'Neplatná severity', 400);
+            }
         }
 
-        $items = $this->logReader->query($severity, $source, $category, $search, $limit, $offset);
+        $items = array_map(
+            fn (array $item): array => $this->logFormatter->enrich($item),
+            $this->logReader->query($severity, $source, $category, $search, $limit, $offset)
+        );
 
         return $this->json->success($response, [
             'items' => $items,

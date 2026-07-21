@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use PaginiumCMS\Core\Admin\Services\AdminCountsService;
+use PaginiumCMS\Core\Admin\Services\ContentStorageStatsService;
 use PaginiumCMS\Core\Analytics\Contracts\ReporterInterface;
 use PaginiumCMS\Core\Blueprint\Services\BlueprintRepository;
 use PaginiumCMS\Core\Blueprint\Services\DynamicValidator;
@@ -85,6 +86,8 @@ use PaginiumCMS\Core\Security\Firewall\FirewallIncidentLogger;
 use PaginiumCMS\Core\Security\Firewall\FirewallScenarioRegistry;
 use PaginiumCMS\Core\Security\Firewall\FirewallScanner;
 use PaginiumCMS\Core\Security\Firewall\FirewallService;
+use PaginiumCMS\Core\Logging\LogStoragePaths;
+use PaginiumCMS\Core\Logging\Services\ApplicationLogMessageFormatter;
 use PaginiumCMS\Core\Logging\Services\ApplicationLogReader;
 use PaginiumCMS\Core\Logging\Services\AccessLogService;
 use PaginiumCMS\Core\Logging\Contracts\LogWriterInterface;
@@ -285,6 +288,8 @@ return [
             get(UserRepository::class),
             get(FirewallService::class)
         ),
+    ContentStorageStatsService::class => create(ContentStorageStatsService::class)
+        ->constructor(get(FileReaderInterface::class)),
 
     CountsController::class => create(CountsController::class)
         ->constructor(
@@ -644,6 +649,7 @@ return [
             get(RealtimeTracker::class),
             get(ApplicationLogReader::class),
             get(AdminCountsService::class),
+            get(ContentStorageStatsService::class),
             get(JsonResponder::class)
         ),
 
@@ -760,15 +766,9 @@ return [
             get(JsonResponder::class)
         ),
     ApplicationLogReader::class => function (): ApplicationLogReader {
-        $base = __DIR__ . '/../../../storage/logs';
-
-        return new ApplicationLogReader([
-            'app' => $base . '/app',
-            'audit' => $base . '/audit',
-            'event' => $base . '/event',
-            'user' => $base . '/user',
-        ]);
+        return new ApplicationLogReader(LogStoragePaths::readerSources());
     },
+    ApplicationLogMessageFormatter::class => create(ApplicationLogMessageFormatter::class),
     AccessLogService::class => create(AccessLogService::class)
         ->constructor(
             get(LogWriterInterface::class),
@@ -777,6 +777,7 @@ return [
     LogController::class => create(LogController::class)
         ->constructor(
             get(ApplicationLogReader::class),
+            get(ApplicationLogMessageFormatter::class),
             get(AccessLogService::class),
             get(JsonResponder::class)
         ),

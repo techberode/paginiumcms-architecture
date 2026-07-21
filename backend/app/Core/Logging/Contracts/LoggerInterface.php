@@ -32,6 +32,12 @@ interface LoggerInterface
      * @param array<int|string, mixed> $context
      */
     public function log(string $severity, string $message, array $context = []): void;
+
+    /**
+     * Zapíše hotovú položku logu (audit trail používa vlastnú kategóriu audit_*).
+     */
+    public function writeEntry(LogEntry $entry): void;
+
     /**
      * @return array<int|string, mixed>
      */

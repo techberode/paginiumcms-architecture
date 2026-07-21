@@ -485,7 +485,18 @@ export const settingsSk: MessageTree = {
       },
       "backgroundImageUrl": {
         "label": "URL obrázka pozadia",
-        "help": "Absolútna URL alebo cesta /media/… — zobrazí sa za prihlasovacím formulárom."
+        "help": "Absolútna URL alebo cesta /storage/… — zobrazí sa za prihlasovacím formulárom. Môžete vybrať z médií alebo nahrať súbor z disku."
+      },
+      "backgroundPicker": {
+        "pickFromMedia": "Vybrať z médií",
+        "uploadLocal": "Nahrať z disku",
+        "uploading": "Nahrávam…",
+        "remove": "Odstrániť pozadie",
+        "previewAlt": "Náhľad pozadia prihlásenia",
+        "mediaModalTitle": "Vybrať pozadie prihlásenia",
+        "uploadAlt": "Pozadie prihlasovacej stránky",
+        "uploadFailed": "Nahratie pozadia zlyhalo.",
+        "invalidType": "Povolené sú len obrázky podľa nastavenia uploadSecurity."
       },
       "infoBullets": {
         "label": "Informačné body",
@@ -581,6 +592,10 @@ export const settingsSk: MessageTree = {
       },
       "robotsDefault": {
         "label": "Robots (predvolene)"
+      },
+      "allowSearchIndexing": {
+        "label": "Povoliť indexovanie vyhľadávačmi",
+        "help": "Vypnuté = robots.txt obsahuje Disallow: / a meta tagy noindex (okrem stránok s vlastným noIndex)."
       },
       "twitterCard": {
         "label": "Twitter card typ"

@@ -30,6 +30,7 @@ import {
 } from '../../i18n/modules/settings/categories';
 import { CacheManagerPanel } from './CacheManagerPanel';
 import { AdminHintCard } from './AdminHintCard';
+import { LoginBackgroundImagePicker } from './LoginBackgroundImagePicker';
 
 function resolveRequestedSettingsGroup(
   searchParams: URLSearchParams,
@@ -79,6 +80,8 @@ export const SettingsView: React.FC = () => {
     handleSubmit,
     reset,
     setError,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<Record<string, unknown>>({
     resolver: zodResolver(zodSchema),
@@ -253,6 +256,8 @@ export const SettingsView: React.FC = () => {
                     groupKey={activeGroup}
                     field={field}
                     register={register}
+                    watch={watch}
+                    setValue={setValue}
                     error={errors[field.key]?.message as string | undefined}
                   />
                 ))}
@@ -287,15 +292,33 @@ interface RowProps {
   groupKey: string;
   field: SettingField;
   register: ReturnType<typeof useForm>['register'];
+  watch: ReturnType<typeof useForm>['watch'];
+  setValue: ReturnType<typeof useForm>['setValue'];
   error?: string;
 }
 
-const SettingFieldRow: React.FC<RowProps> = ({ groupKey, field, register, error }) => {
+const SettingFieldRow: React.FC<RowProps> = ({ groupKey, field, register, watch, setValue, error }) => {
   const { t } = useI18n();
   const inputId = `setting-${field.key}`;
   const errorClass = error ? 'border-red-500 focus:ring-red-500' : '';
   const label = translateSettingFieldLabel(t, groupKey, field.key, field.label);
   const help = translateSettingFieldHelp(t, groupKey, field.key, field.help);
+
+  if (groupKey === 'login' && field.key === 'backgroundImageUrl') {
+    const currentValue = String(watch(field.key) ?? '');
+
+    return (
+      <LoginBackgroundImagePicker
+        value={currentValue}
+        onChange={(url) =>
+          setValue(field.key, url, { shouldDirty: true, shouldValidate: true })
+        }
+        label={label}
+        help={help}
+        error={error}
+      />
+    );
+  }
 
   return (
     <div>

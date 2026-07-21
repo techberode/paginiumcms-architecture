@@ -19,19 +19,22 @@ final class RobotsTxtGenerator
     public function generate(): string
     {
         $feeds = $this->settings->group('feeds');
+        $seo = $this->settings->group('seo');
         $general = $this->settings->group('general');
         $siteUrl = rtrim((string) ($general['siteUrl'] ?? ''), '/');
         if ($siteUrl === '') {
             $siteUrl = 'http://localhost:3025';
         }
 
+        $allowIndexing = ($seo['allowSearchIndexing'] ?? true) !== false;
+
         $lines = [
             'User-agent: *',
-            'Allow: /',
+            $allowIndexing ? 'Allow: /' : 'Disallow: /',
             '',
         ];
 
-        if (($feeds['enabled'] ?? true) !== false) {
+        if ($allowIndexing && ($feeds['enabled'] ?? true) !== false) {
             $lines[] = 'Sitemap: ' . $siteUrl . '/sitemap.xml';
         }
 

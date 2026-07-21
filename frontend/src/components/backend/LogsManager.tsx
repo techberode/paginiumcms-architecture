@@ -13,6 +13,7 @@ import {
 import { useToast } from '../../hooks/useToast';
 import { AdminListToolbar } from './AdminListToolbar';
 import { settingsGroupPath } from '../../utils/adminDeepLinks';
+import { formatApplicationLogMessage, shouldShowLogContext } from '../../utils/formatApplicationLog';
 
 const SEVERITIES: LogSeverity[] = ['debug', 'info', 'warning', 'error', 'critical'];
 
@@ -213,8 +214,8 @@ export const LogsManager: React.FC = () => {
                       <td className="px-4 py-3 text-xs">{entry.category}</td>
                       <td className="px-4 py-3 text-xs font-mono">{entry.ip ?? '—'}</td>
                       <td className="px-4 py-3">
-                        <div className="font-medium text-slate-800">{entry.message}</div>
-                        {entry.context && Object.keys(entry.context).length > 0 && (
+                        <div className="font-medium text-slate-800">{formatApplicationLogMessage(entry)}</div>
+                        {shouldShowLogContext(entry) && entry.context && (
                           <pre className="mt-1 text-[10px] text-slate-500 whitespace-pre-wrap break-all max-w-xl">
                             {JSON.stringify(entry.context, null, 2)}
                           </pre>

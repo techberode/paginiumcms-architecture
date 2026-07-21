@@ -1,40 +1,15 @@
 import React from 'react';
-import { Activity, Clock3 } from 'lucide-react';
+import { Activity, Clock3, UserRound } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
-interface AuditEvent {
-  log?: {
-    message?: string;
-    created_at?: string;
-    timestamp?: string | number;
-  };
-  action?: string;
-  created_at?: string;
-}
+import {
+  formatAuditEventActor,
+  formatAuditEventMessage,
+  formatAuditEventTimestamp,
+} from '../../utils/formatAuditEvent';
 
 export interface DashboardActivityPanelProps {
   events: Array<Record<string, unknown>>;
   loading?: boolean;
-}
-
-function eventMessage(event: Record<string, unknown>): string {
-  const audit = event as AuditEvent;
-  return audit.log?.message || audit.action || 'Systémová udalosť';
-}
-
-function eventTime(event: Record<string, unknown>): string {
-  const audit = event as AuditEvent;
-  const raw = audit.log?.created_at ?? audit.log?.timestamp ?? audit.created_at;
-  if (raw === undefined || raw === null || raw === '') {
-    return '';
-  }
-
-  const date = typeof raw === 'number' ? new Date(raw * 1000) : new Date(String(raw));
-  if (Number.isNaN(date.getTime())) {
-    return String(raw);
-  }
-
-  return date.toLocaleString('sk-SK');
 }
 
 export const DashboardActivityPanel: React.FC<DashboardActivityPanelProps> = ({
@@ -55,20 +30,35 @@ export const DashboardActivityPanel: React.FC<DashboardActivityPanelProps> = ({
         <p className="text-center text-slate-500 py-8">Zatiaľ žiadne udalosti v audit logu.</p>
       ) : (
         <div className="space-y-3">
-          {events.slice(0, 8).map((event, index) => (
-            <div
-              key={index}
-              className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950/40 px-4 py-3"
-            >
-              <p className="text-sm text-slate-800 dark:text-slate-100">{eventMessage(event)}</p>
-              {eventTime(event) && (
-                <p className="mt-1 inline-flex items-center gap-1 text-xs text-slate-500">
-                  <Clock3 className="w-3.5 h-3.5" />
-                  {eventTime(event)}
-                </p>
-              )}
-            </div>
-          ))}
+          {events.slice(0, 8).map((event, index) => {
+            const auditEvent = event as Record<string, unknown>;
+            const message = formatAuditEventMessage(auditEvent);
+            const actor = formatAuditEventActor(auditEvent);
+            const time = formatAuditEventTimestamp(auditEvent);
+
+            return (
+              <div
+                key={index}
+                className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950/40 px-4 py-3"
+              >
+                <p className="text-sm text-slate-800 dark:text-slate-100">{message}</p>
+                <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-slate-500">
+                  {actor && (
+                    <span className="inline-flex items-center gap-1">
+                      <UserRound className="w-3.5 h-3.5" />
+                      {actor}
+                    </span>
+                  )}
+                  {time && (
+                    <span className="inline-flex items-center gap-1">
+                      <Clock3 className="w-3.5 h-3.5" />
+                      {time}
+                    </span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
       {!loading && events.length > 0 && (

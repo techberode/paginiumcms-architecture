@@ -441,6 +441,40 @@ After deploy: restart PHP, clear browser cookies, re-login.
 
 ---
 
+## [2.0.46] – 2026-07-21
+
+Audit activity, readable application logs, login background picker. Hotfixes ISS-046 through ISS-050.
+
+### Added
+
+- **`LoginBackgroundImagePicker`** — Settings → login group: media library picker, local disk upload, preview, remove
+- **`AnalyticsView`** — `/analytics` with KPI cards, 7/14/30-day filter, tabs (Overview, Pages, Sources, Devices, Geography)
+- **`DashboardDiskStructurePanel`** — disk structure counts + total content size on dashboard
+- Dashboard **quick links** — Pages, Articles, Users, Settings
+- **`seo.allowSearchIndexing`** — admin toggle for robots.txt + global meta robots
+- **`ContentStorageStatsService`** — CMS storage footprint for dashboard API
+- **`AuditMessageFormatter`** — Slovak audit summaries with content title + diff stats
+- **`ApplicationLogMessageFormatter`** — human-readable `display_message` for `/logs` (http_access, auth, etc.)
+- **`LogStoragePaths`** — single canonical path `backend/app/storage/logs/*` for writer and reader
+- **FE:** `formatAuditEvent.ts`, `formatApplicationLog.ts`; dashboard activity + LogsManager use formatted text
+- **Admin sidebar:** Dashboard (Prehľad) pinned under user block
+
+### Fixed
+
+- **ISS-046:** Audit events no longer overwritten as category `app` (`Logger::writeEntry`)
+- **ISS-047:** Dashboard activity panel empty — legacy audit detection in stats API
+- **ISS-048:** Audit messages unreadable — SK formatter + content title in versioning metadata
+- **ISS-049:** Empty daily log file treated as corrupt — hundreds of `.corrupt-*` orphans (`LogWriter`)
+- **ISS-050:** Logs UI empty — reader used wrong directory + severity case mismatch
+- **Analytics API:** visit enrichment (device/browser/geo), `browsers` + `geo` + `top_articles` in overview
+- **`Tracker::saveVisit()`** — persists device/browser/country on each visit record
+
+### Docs
+
+- [ITERATION_19.md](docs/ITERATION_19.md), [ISSUES.md](docs/ISSUES.md) ISS-046–050
+
+---
+
 ## [2.0.28] – 2026-07-19
 
 It.12 Blueprint engine, It.13 Demo sandbox v2, project philosophy docs.

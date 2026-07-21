@@ -1,7 +1,7 @@
 # Iteration 19 – Admin UX, security runtime & auth
 
 **Status:** 🚧 In progress (It.18e remainder)  
-**Version:** 2.0.45 (unreleased)
+**Version:** 2.0.45 ✅ · **2.0.46** (audit activity + login background) · next: It.18e finish
 
 ## Summary
 
@@ -105,12 +105,27 @@ Grouped admin navigation and translation policy (19a); wire security schema to r
 
 ---
 
+## Done ✅ (audit activity · 2.0.46)
+
+| Change | Detail |
+|--------|--------|
+| [ISS-046](ISSUES.md#iss-046--audit-udalosti-sa-zapisovali-ako-kategória-app) | `Logger::writeEntry()` — audit kategória `audit_*` sa už neprepíše na `app` |
+| [ISS-047](ISSUES.md#iss-047--dashboard-prehľad-aktivít-prázdny) | `isAuditEntry()` + legacy detekcia — dashboard zobrazí existujúce udalosti |
+| [ISS-048](ISSUES.md#iss-048--audit-správy-nečitateľné-zlý-formát) | `AuditMessageFormatter` — SK správy typu „Maxxim upravil článok ‚blog‘ (verzia 12)“ |
+| FE | `formatAuditEvent.ts` — dashboard + `/audit` zobrazujú `display_message` / `summary` |
+| [ISS-049](ISSUES.md#iss-049--korumpovaný-denný-log-2026-07-21json) | Prázdny denný log sa cyklicky mazal ako corrupt | `LogWriter` — empty payload ≠ corrupt |
+| [ISS-050](ISSUES.md#iss-050--sekcia-logy-prázdna-applicationlogreader) | Logy UI prázdna — reader iná cesta ako writer | `LogStoragePaths` + lowercase severity |
+| Login background picker | Nastavenia login — len URL pole | `LoginBackgroundImagePicker` — médiá + lokálny upload + náhľad; fix i18n cesty `settings.fields.login.backgroundPicker.*` |
+| Application logs UX | Raw JSON v `/logs` | `ApplicationLogMessageFormatter` + `display_message` |
+| Admin nav | Prehľad schovaný v scroll sekcii | `AdminSidebar` — pinned pod user blokom |
+
+---
+
 ## Remaining ⏳
 
 - Migrate remaining admin screens to i18n (media, dashboard, navigation…)
 - Dynamic FE locale loading without dev-server restart (optional `import.meta.glob` expansion)
 - Settings `general.language` enum from registry
-- Login background — upload via Media manager (dnes len URL pole)
 - SSO callback page — zdieľať `AuthShell` (voliteľné)
 
 ---
@@ -118,6 +133,6 @@ Grouped admin navigation and translation policy (19a); wire security schema to r
 ## Related
 
 - [ITERATION_18.md](ITERATION_18.md) — i18n foundation
-- [ISSUES.md](ISSUES.md) — ISS-044, ISS-045
-- [developer/RELEASE.md](developer/RELEASE.md) — C&P 2.0.45
+- [ISSUES.md](ISSUES.md) — ISS-044 … ISS-050 + login background
+- [developer/RELEASE.md](developer/RELEASE.md) — C&P 2.0.45 / 2.0.46
 - [ROADMAP.md](ROADMAP.md)

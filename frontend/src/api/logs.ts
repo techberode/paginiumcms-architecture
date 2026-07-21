@@ -9,6 +9,7 @@ export interface LogEntry {
   severity: LogSeverity;
   category: string;
   message: string;
+  display_message?: string;
   userId?: string | null;
   ip?: string | null;
   context?: Record<string, unknown> | null;

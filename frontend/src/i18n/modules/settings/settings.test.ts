@@ -21,6 +21,15 @@ describe('settings i18n module', () => {
     expect(translate('en', 'settings.groups.general')).toBe('General');
     expect(translate('en', 'settings.fields.general.language.label')).toBe('Admin language');
     expect(translate('en', 'settings.enum.language.sk')).toBe('Slovak');
+    expect(translate('sk', 'settings.fields.login.backgroundPicker.pickFromMedia')).toBe(
+      'Vybrať z médií'
+    );
+    expect(translate('sk', 'settings.fields.login.backgroundPicker.uploadLocal')).toBe(
+      'Nahrať z disku'
+    );
+    expect(translate('en', 'settings.fields.login.backgroundPicker.pickFromMedia')).toBe(
+      'Pick from media'
+    );
   });
 
   it('falls back to schema labels when translation key is missing', () => {

@@ -4,6 +4,7 @@ import type { MessageTree } from '../../types';
 export const adminEn: MessageTree = {
   nav: {
     dashboard: 'Dashboard',
+    analytics: 'Analytics',
     pages: 'Pages',
     articles: 'Articles (Blog)',
     media: 'Media',
