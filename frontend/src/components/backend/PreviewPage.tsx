@@ -4,10 +4,12 @@ import { useParams, Link } from 'react-router-dom';
 import { useApi } from '../../hooks/useApi';
 import { PageRenderer } from '../frontend/PageRenderer';
 import type { Page } from '../../api/types';
+import { useI18n } from '../../context/I18nContext';
 
 export const PreviewPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const { get } = useApi();
+  const { t } = useI18n();
   const [page, setPage] = useState<Page | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -30,7 +32,7 @@ export const PreviewPage: React.FC = () => {
         }
       } catch {
         if (!cancelled) {
-          setError('Stránku sa nepodarilo načítať (skontrolujte prihlásenie a slug).');
+          setError(t('editor.previewPage.loadError'));
         }
       } finally {
         if (!cancelled) {
@@ -42,7 +44,7 @@ export const PreviewPage: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [slug, get]);
+  }, [slug, get, t]);
 
   if (loading) {
     return (
@@ -55,9 +57,9 @@ export const PreviewPage: React.FC = () => {
   if (error || !page) {
     return (
       <div className="p-8 text-center">
-        <p className="text-slate-500">{error ?? 'Stránka nenájdená'}</p>
+        <p className="text-slate-500">{error ?? t('editor.previewPage.notFound')}</p>
         <Link to="/pages" className="mt-4 inline-block text-indigo-600 font-semibold">
-          ← Späť na zoznam
+          {t('editor.previewPage.backToList')}
         </Link>
       </div>
     );
@@ -67,10 +69,11 @@ export const PreviewPage: React.FC = () => {
     <div>
       <div className="bg-amber-50 dark:bg-amber-950/40 border-b border-amber-200 dark:border-amber-800 px-4 py-2 text-sm text-amber-900 dark:text-amber-100 flex items-center justify-between">
         <span>
-          Náhľad · stav: <strong>{page.status ?? 'draft'}</strong>
+          {t('editor.previewPage.bannerLabel')}{' '}
+          <strong>{page.status ?? 'draft'}</strong>
         </span>
         <Link to={`/pages/${slug}`} className="font-semibold underline">
-          Upraviť
+          {t('editor.previewPage.edit')}
         </Link>
       </div>
       <PageRenderer page={page} />

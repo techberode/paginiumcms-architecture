@@ -251,7 +251,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
     }
     const result = await contentApi.bulkDelete(type, bulkSelection.selectedIds);
     if (result) {
-      toast.success(summarizeBulkResult(result));
+      toast.success(summarizeBulkResult(result, t));
       bulkSelection.clear();
       await invalidateList();
     } else {
@@ -265,7 +265,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
     }
     const result = await contentApi.bulkUpdateStatus(type, bulkSelection.selectedIds, status);
     if (result) {
-      toast.success(summarizeBulkResult(result));
+      toast.success(summarizeBulkResult(result, t));
       bulkSelection.clear();
       await invalidateList();
     } else {

@@ -27,6 +27,12 @@ describe('settings i18n module', () => {
     expect(translate('sk', 'settings.fields.login.backgroundPicker.uploadLocal')).toBe(
       'Nahrať z disku'
     );
+    expect(translate('en', 'settings.fields.workflows.registrationOtpEnabled.label')).toBe(
+      'OTP on registration'
+    );
+    expect(translate('en', 'settings.fields.workflows.otpTtlMinutes.label')).toBe(
+      'OTP code validity (min)'
+    );
     expect(translate('en', 'settings.fields.login.backgroundPicker.pickFromMedia')).toBe(
       'Pick from media'
     );

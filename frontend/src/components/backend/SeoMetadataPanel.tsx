@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { FolderOpen, X } from 'lucide-react';
 import { resolveAdminMediaPreviewUrl, resolvePublicMediaUrl } from '../../api/media';
 import { MediaPickerModal } from './MediaPickerModal';
+import { useI18n } from '../../context/I18nContext';
 
 export interface SeoFormValues {
   seoTitle: string;
@@ -49,21 +50,18 @@ export const SeoMetadataPanel: React.FC<SeoMetadataPanelProps> = ({
   showTags = false,
   compact = false,
 }) => {
+  const { t } = useI18n();
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
   const patch = (partial: Partial<SeoFormValues>) => onChange({ ...values, ...partial });
   const previewSrc = seoImagePreviewSrc(values.ogImage);
 
   return (
     <div className="space-y-4">
-      {!compact && (
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Tieto polia napájame na verejné SEO meta tagy. Ak SEO titulok necháte prázdny, použije sa názov stránky.
-        </p>
-      )}
+      {!compact && <p className="text-sm text-gray-500 dark:text-gray-400">{t('editor.seo.intro')}</p>}
 
       <div className="form-group">
         <label className="form-label flex justify-between">
-          <span>SEO titulok</span>
+          <span>{t('editor.seo.seoTitle')}</span>
           <span className="text-xs font-normal text-gray-400">{values.seoTitle.length}/60</span>
         </label>
         <input
@@ -72,7 +70,7 @@ export const SeoMetadataPanel: React.FC<SeoMetadataPanelProps> = ({
           onChange={(e) => patch({ seoTitle: e.target.value })}
           disabled={disabled}
           className="form-input"
-          placeholder="Alternatívny titulok vo vyhľadávaní"
+          placeholder={t('editor.seo.seoTitlePlaceholder')}
           maxLength={120}
         />
       </div>
@@ -80,7 +78,7 @@ export const SeoMetadataPanel: React.FC<SeoMetadataPanelProps> = ({
       {!compact && (
         <div className="form-group">
           <label className="form-label flex justify-between">
-            <span>Meta popis</span>
+            <span>{t('editor.seo.metaDescription')}</span>
             <span className="text-xs font-normal text-gray-400">{values.seoDescription.length}/160</span>
           </label>
           <textarea
@@ -88,14 +86,14 @@ export const SeoMetadataPanel: React.FC<SeoMetadataPanelProps> = ({
             onChange={(e) => patch({ seoDescription: e.target.value })}
             disabled={disabled}
             className="form-input min-h-[88px]"
-            placeholder="Krátky súhrn pre vyhľadávače a sociálne siete"
+            placeholder={t('editor.seo.metaDescriptionPlaceholder')}
             maxLength={300}
           />
         </div>
       )}
 
       <div className="form-group">
-        <label className="form-label">OG / náhľadový obrázok</label>
+        <label className="form-label">{t('editor.seo.ogImage')}</label>
         <div className="flex flex-wrap gap-2">
           <input
             type="url"
@@ -103,7 +101,7 @@ export const SeoMetadataPanel: React.FC<SeoMetadataPanelProps> = ({
             onChange={(e) => patch({ ogImage: e.target.value })}
             disabled={disabled}
             className="form-input min-w-0 flex-1"
-            placeholder="/storage/app/content/media/… alebo https://…"
+            placeholder={t('editor.seo.ogImagePlaceholder')}
           />
           <button
             type="button"
@@ -112,15 +110,15 @@ export const SeoMetadataPanel: React.FC<SeoMetadataPanelProps> = ({
             onClick={() => setMediaPickerOpen(true)}
           >
             <FolderOpen className="h-4 w-4" />
-            Vybrať z médií
+            {t('editor.seo.pickFromMedia')}
           </button>
           {values.ogImage.trim() !== '' && (
             <button
               type="button"
               className="btn btn-secondary px-2"
               disabled={disabled}
-              title="Odstrániť náhľad"
-              aria-label="Odstrániť náhľad"
+              title={t('editor.seo.removePreview')}
+              aria-label={t('editor.seo.removePreview')}
               onClick={() => patch({ ogImage: '' })}
             >
               <X className="h-4 w-4" />
@@ -131,7 +129,7 @@ export const SeoMetadataPanel: React.FC<SeoMetadataPanelProps> = ({
           <div className="mt-3 overflow-hidden rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900/40">
             <img
               src={previewSrc}
-              alt="Náhľad OG obrázka"
+              alt={t('editor.seo.ogPreviewAlt')}
               className="max-h-40 w-full object-cover"
               onError={(event) => {
                 event.currentTarget.style.display = 'none';
@@ -140,32 +138,32 @@ export const SeoMetadataPanel: React.FC<SeoMetadataPanelProps> = ({
           </div>
         )}
         <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-          Použije sa pre sociálne siete{showTags ? ' a ako náhľad článku v zozname' : ''}.
+          {showTags ? t('editor.seo.ogHintArticle') : t('editor.seo.ogHint')}
         </p>
       </div>
 
       <div className="form-group">
-        <label className="form-label">Kanonická URL (voliteľné)</label>
+        <label className="form-label">{t('editor.seo.canonical')}</label>
         <input
           type="url"
           value={values.canonical}
           onChange={(e) => patch({ canonical: e.target.value })}
           disabled={disabled}
           className="form-input"
-          placeholder="Prázdne = automatická kanonická URL"
+          placeholder={t('editor.seo.canonicalPlaceholder')}
         />
       </div>
 
       {showTags && (
         <div className="form-group">
-          <label className="form-label">Tagy (oddelené čiarkou)</label>
+          <label className="form-label">{t('editor.seo.tags')}</label>
           <input
             type="text"
             value={values.tags}
             onChange={(e) => patch({ tags: e.target.value })}
             disabled={disabled}
             className="form-input"
-            placeholder="tech, cms, flat-file"
+            placeholder={t('editor.seo.tagsPlaceholder')}
           />
         </div>
       )}
@@ -178,13 +176,13 @@ export const SeoMetadataPanel: React.FC<SeoMetadataPanelProps> = ({
           disabled={disabled}
           className="rounded border-gray-300"
         />
-        Skryť pred vyhľadávačmi (noindex)
+        {t('editor.seo.noIndex')}
       </label>
 
       <MediaPickerModal
         open={mediaPickerOpen}
         onClose={() => setMediaPickerOpen(false)}
-        title="Vybrať náhľadový obrázok"
+        title={t('editor.seo.pickImageTitle')}
         urlFormat="storage"
         onSelect={(url) => {
           patch({ ogImage: url });

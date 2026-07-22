@@ -2,6 +2,7 @@
 import React from 'react';
 import { ContentLock, forceReleaseLock } from '../../api/locks';
 import { useToast } from '../../hooks/useToast';
+import { useI18n } from '../../context/I18nContext';
 
 interface LocksPanelProps {
   locks: ContentLock[];
@@ -11,14 +12,16 @@ interface LocksPanelProps {
 
 export const LocksPanel: React.FC<LocksPanelProps> = ({ locks, loading, onRefresh }) => {
   const toast = useToast();
+  const { t, locale } = useI18n();
+  const dateLocale = locale === 'en' ? 'en-US' : 'sk-SK';
 
   const handleForceRelease = async (resourceId: string) => {
     const ok = await forceReleaseLock(resourceId);
     if (ok) {
-      toast.success('Lock released');
+      toast.success(t('dashboard.panels.locks.released'));
       onRefresh();
     } else {
-      toast.error('Failed to release lock');
+      toast.error(t('dashboard.panels.locks.releaseFailed'));
     }
   };
 
@@ -26,8 +29,12 @@ export const LocksPanel: React.FC<LocksPanelProps> = ({ locks, loading, onRefres
     <div className="card">
       <div className="card-body">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Active locks</h2>
-          <span className="text-sm text-gray-500">{locks.length} active</span>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+            {t('dashboard.panels.locks.title')}
+          </h2>
+          <span className="text-sm text-gray-500">
+            {t('dashboard.panels.locks.activeCount', { count: String(locks.length) })}
+          </span>
         </div>
 
         {loading ? (
@@ -35,7 +42,7 @@ export const LocksPanel: React.FC<LocksPanelProps> = ({ locks, loading, onRefres
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600" />
           </div>
         ) : locks.length === 0 ? (
-          <p className="text-sm text-gray-500 dark:text-gray-400">No active content locks.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{t('dashboard.panels.locks.empty')}</p>
         ) : (
           <ul className="space-y-2">
             {locks.map((lock) => (
@@ -46,7 +53,8 @@ export const LocksPanel: React.FC<LocksPanelProps> = ({ locks, loading, onRefres
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{lock.resourceId}</p>
                   <p className="text-xs text-gray-500">
-                    {lock.lockedByName} · expires {new Date(lock.expiresAt * 1000).toLocaleTimeString()}
+                    {lock.lockedByName} · {t('dashboard.panels.locks.expires')}{' '}
+                    {new Date(lock.expiresAt * 1000).toLocaleTimeString(dateLocale)}
                   </p>
                 </div>
                 <button
@@ -54,7 +62,7 @@ export const LocksPanel: React.FC<LocksPanelProps> = ({ locks, loading, onRefres
                   className="text-xs text-red-600 hover:underline shrink-0"
                   onClick={() => void handleForceRelease(lock.resourceId)}
                 >
-                  Release
+                  {t('dashboard.panels.locks.release')}
                 </button>
               </li>
             ))}

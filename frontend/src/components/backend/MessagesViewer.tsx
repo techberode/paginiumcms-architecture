@@ -27,15 +27,23 @@ import {
   AdminInboxListHeader,
   AdminInboxRow,
 } from './AdminInboxList';
-import { inboxPriorityBadgeClass, inboxPriorityLabel } from '../../utils/adminInboxPriority';
+import { inboxPriorityBadgeClass } from '../../utils/adminInboxPriority';
 import { applyClientListView } from '../../utils/clientListView';
 import { messagePriorityWeight } from '../../constants/messageSubjects';
 import { summarizeBulkResult } from '../../types/bulk';
+import { useI18n } from '../../context/I18nContext';
 
 const truncate = (text: string, max = 90): string =>
   text.length <= max ? text : `${text.slice(0, max).trim()}…`;
 
 export const MessagesViewer: React.FC = () => {
+  const { t, locale } = useI18n();
+  const dateLocale = locale === 'en' ? 'en-US' : 'sk-SK';
+  const priorityLabel = (priority: string): string => {
+    const key = `messages.priority.${priority}` as const;
+    const translated = t(key);
+    return translated !== key ? translated : t('messages.priority.normal');
+  };
   const { error: showError, success: showSuccess } = useToast();
   const [items, setItems] = useState<ContactMessage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,11 +58,11 @@ export const MessagesViewer: React.FC = () => {
     try {
       setItems(await listMessages());
     } catch {
-      showError('Nepodarilo sa načítať správy.');
+      showError(t('messages.toast.loadFailed'));
     } finally {
       setLoading(false);
     }
-  }, [showError]);
+  }, [showError, t]);
 
   useEffect(() => {
     void load();
@@ -73,20 +81,20 @@ export const MessagesViewer: React.FC = () => {
         sortField,
         sortDirection,
         sortFields: [
-          { value: 'subject', label: 'Predmet', getValue: (msg) => msg.subject },
+          { value: 'subject', label: t('messages.table.subject'), getValue: (msg) => msg.subject },
           {
             value: 'priority',
-            label: 'Priorita',
+            label: t('messages.table.priority'),
             getValue: (msg) => messagePriorityWeight(msg.priority),
           },
-          { value: 'name', label: 'Meno', getValue: (msg) => msg.name },
-          { value: 'createdAt', label: 'Dátum', getValue: (msg) => msg.createdAt },
-          { value: 'isRead', label: 'Stav', getValue: (msg) => (msg.isRead ? 1 : 0) },
+          { value: 'name', label: t('messages.table.name'), getValue: (msg) => msg.name },
+          { value: 'createdAt', label: t('messages.table.date'), getValue: (msg) => msg.createdAt },
+          { value: 'isRead', label: t('messages.table.state'), getValue: (msg) => (msg.isRead ? 1 : 0) },
         ],
         page,
         pageSize,
       }),
-    [items, page, pageSize, search, sortDirection, sortField]
+    [items, page, pageSize, search, sortDirection, sortField, t]
   );
 
   const bulkSelection = useBulkSelection(
@@ -104,16 +112,16 @@ export const MessagesViewer: React.FC = () => {
     if (bulkSelection.count === 0) {
       return;
     }
-    if (action === 'delete' && !confirm(`Vymazať ${bulkSelection.count} označených správ?`)) {
+    if (action === 'delete' && !confirm(t('messages.confirm.bulkDelete', { count: String(bulkSelection.count) }))) {
       return;
     }
     const result = await bulkMessageAction(bulkSelection.selectedIds, action);
     if (result) {
-      showSuccess(summarizeBulkResult(result));
+      showSuccess(summarizeBulkResult(result, t));
       bulkSelection.clear();
       await load();
     } else {
-      showError('Hromadná akcia zlyhala.');
+      showError(t('messages.toast.bulkFailed'));
     }
   };
 
@@ -125,11 +133,11 @@ export const MessagesViewer: React.FC = () => {
   };
 
   const removeOne = async (id: string) => {
-    if (!confirm('Vymazať túto správu?')) {
+    if (!confirm(t('messages.confirm.deleteOne'))) {
       return;
     }
     if (await deleteMessage(id)) {
-      showSuccess('Správa zmazaná.');
+      showSuccess(t('messages.toast.deleted'));
       if (expandedId === id) {
         setExpandedId(null);
       }
@@ -142,15 +150,15 @@ export const MessagesViewer: React.FC = () => {
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <Mail className="w-6 h-6 text-violet-500" />
-          Správy ({listView.total})
+          {t('messages.page.title')} ({listView.total})
         </h1>
-        <p className="text-sm text-gray-500 mt-1">Neprečítané: {unread}</p>
+        <p className="text-sm text-gray-500 mt-1">{t('messages.page.unread', { count: String(unread) })}</p>
       </div>
 
       <AdminListToolbar
         search={search}
         onSearchChange={setSearch}
-        searchPlaceholder="Hľadať podľa mena, e-mailu alebo predmetu…"
+        searchPlaceholder={t('messages.search.placeholder')}
         pageSize={pageSize}
         onPageSizeChange={setPageSize}
         pageSizeOptions={[5, 10, 20, 50]}
@@ -158,11 +166,11 @@ export const MessagesViewer: React.FC = () => {
 
       <AdminListSortBar
         columns={[
-          { field: 'priority', label: 'Priorita' },
-          { field: 'subject', label: 'Predmet' },
-          { field: 'name', label: 'Meno' },
-          { field: 'createdAt', label: 'Dátum' },
-          { field: 'isRead', label: 'Stav' },
+          { field: 'priority', label: t('messages.table.priority') },
+          { field: 'subject', label: t('messages.table.subject') },
+          { field: 'name', label: t('messages.table.name') },
+          { field: 'createdAt', label: t('messages.table.date') },
+          { field: 'isRead', label: t('messages.table.state') },
         ]}
         activeField={sortField}
         direction={sortDirection}
@@ -171,13 +179,13 @@ export const MessagesViewer: React.FC = () => {
 
       <BulkActionBar
         count={bulkSelection.count}
-        itemLabel="označených správ"
+        itemLabel={t('messages.bulk.itemLabel')}
         onClear={bulkSelection.clear}
         actions={[
-          { id: 'read', label: 'Prečítané', variant: 'secondary', onClick: () => void handleBulk('read') },
-          { id: 'processed', label: 'Vybavené', variant: 'primary', onClick: () => void handleBulk('processed') },
-          { id: 'archive', label: 'Archivovať', variant: 'secondary', onClick: () => void handleBulk('archive') },
-          { id: 'delete', label: 'Vymazať označené', variant: 'danger', onClick: () => void handleBulk('delete') },
+          { id: 'read', label: t('messages.bulk.read'), variant: 'secondary', onClick: () => void handleBulk('read') },
+          { id: 'processed', label: t('messages.bulk.processed'), variant: 'primary', onClick: () => void handleBulk('processed') },
+          { id: 'archive', label: t('messages.bulk.archive'), variant: 'secondary', onClick: () => void handleBulk('archive') },
+          { id: 'delete', label: t('messages.bulk.delete'), variant: 'danger', onClick: () => void handleBulk('delete') },
         ]}
       />
 
@@ -187,7 +195,7 @@ export const MessagesViewer: React.FC = () => {
         </div>
       ) : listView.total === 0 ? (
         <div className="card card-body text-center text-gray-500 py-12">
-          {items.length === 0 ? 'Zatiaľ žiadne správy.' : 'Nenašli sa žiadne správy pre filter.'}
+          {items.length === 0 ? t('messages.empty.none') : t('messages.empty.filter')}
         </div>
       ) : (
         <>
@@ -214,16 +222,16 @@ export const MessagesViewer: React.FC = () => {
                           {msg.name}
                         </span>
                         <span className={`text-xs ${inboxPriorityBadgeClass(msg.priority)}`}>
-                          {inboxPriorityLabel(msg.priority)}
+                          {priorityLabel(msg.priority)}
                         </span>
                         {msg.isProcessed ? (
                           <span className="badge bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300 text-xs">
-                            Vybavené
+                            {t('messages.status.processed')}
                           </span>
                         ) : null}
                         {msg.isArchived ? (
                           <span className="badge bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 text-xs">
-                            Archivované
+                            {t('messages.status.archived')}
                           </span>
                         ) : null}
                       </div>
@@ -235,7 +243,7 @@ export const MessagesViewer: React.FC = () => {
                       ) : null}
                     </div>
                     <div className="text-xs text-gray-500 shrink-0 sm:text-right">
-                      {new Date(msg.createdAt).toLocaleString('sk-SK')}
+                      {new Date(msg.createdAt).toLocaleString(dateLocale)}
                     </div>
                   </div>
                 }
@@ -243,7 +251,7 @@ export const MessagesViewer: React.FC = () => {
                   <div className="space-y-3 text-sm">
                     <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
                       <span>{msg.email}</span>
-                      {msg.ip ? <span>IP: {msg.ip}</span> : null}
+                      {msg.ip ? <span>{t('messages.detail.ip', { ip: msg.ip })}</span> : null}
                     </div>
                     <p className="font-medium text-gray-900 dark:text-white">{msg.subject}</p>
                     <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{msg.message}</p>
@@ -251,24 +259,24 @@ export const MessagesViewer: React.FC = () => {
                       {!msg.isRead ? (
                         <button type="button" className="btn btn-secondary text-xs px-2 py-1" onClick={() => void markOne(msg, { isRead: true })}>
                           <Eye className="w-3 h-3 inline mr-1" />
-                          Prečítané
+                          {t('messages.actions.read')}
                         </button>
                       ) : null}
                       {!msg.isProcessed ? (
                         <button type="button" className="btn btn-primary text-xs px-2 py-1" onClick={() => void markOne(msg, { isProcessed: true, isRead: true })}>
                           <CheckCircle2 className="w-3 h-3 inline mr-1" />
-                          Vybavené
+                          {t('messages.actions.processed')}
                         </button>
                       ) : null}
                       {!msg.isArchived ? (
                         <button type="button" className="btn btn-secondary text-xs px-2 py-1" onClick={() => void markOne(msg, { isArchived: true })}>
                           <Archive className="w-3 h-3 inline mr-1" />
-                          Archivovať
+                          {t('messages.actions.archive')}
                         </button>
                       ) : null}
                       <button type="button" className="btn btn-danger text-xs px-2 py-1 ml-auto" onClick={() => void removeOne(msg.id)}>
                         <Trash2 className="w-3 h-3 inline mr-1" />
-                        Vymazať
+                        {t('messages.actions.delete')}
                       </button>
                     </div>
                   </div>
@@ -284,7 +292,7 @@ export const MessagesViewer: React.FC = () => {
             pageSize={pageSize}
             loading={loading}
             onPageChange={setPage}
-            itemLabel="správ"
+            itemLabel={t('messages.pagination.itemLabel')}
           />
         </>
       )}

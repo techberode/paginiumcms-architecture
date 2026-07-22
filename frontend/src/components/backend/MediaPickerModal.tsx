@@ -7,6 +7,7 @@ import {
   resolveAdminMediaPreviewUrl,
   resolvePublicMediaUrl,
 } from '../../api/media';
+import { useI18n } from '../../context/I18nContext';
 
 export type MediaPickerUrlFormat = 'absolute' | 'storage';
 
@@ -22,9 +23,11 @@ export const MediaPickerModal: React.FC<MediaPickerModalProps> = ({
   open,
   onClose,
   onSelect,
-  title = 'Insert from Media Library',
+  title,
   urlFormat = 'absolute',
 }) => {
+  const { t } = useI18n();
+  const resolvedTitle = title ?? t('editor.mediaPicker.defaultTitle');
   const [items, setItems] = useState<MediaFile[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -42,7 +45,7 @@ export const MediaPickerModal: React.FC<MediaPickerModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
       <div className="card w-full max-w-3xl max-h-[80vh] flex flex-col">
         <div className="card-body border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-          <h3 className="font-bold text-gray-900 dark:text-white">{title}</h3>
+          <h3 className="font-bold text-gray-900 dark:text-white">{resolvedTitle}</h3>
           <button type="button" className="btn btn-secondary text-xs px-2 py-1" onClick={onClose}>
             <X className="w-4 h-4" />
           </button>
@@ -53,7 +56,7 @@ export const MediaPickerModal: React.FC<MediaPickerModalProps> = ({
               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600" />
             </div>
           ) : items.length === 0 ? (
-            <p className="text-center text-gray-500 py-8">No images in media library.</p>
+            <p className="text-center text-gray-500 py-8">{t('editor.mediaPicker.empty')}</p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {items.map((file) => (

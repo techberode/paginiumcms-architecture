@@ -10,6 +10,7 @@ import {
 } from '../../api/media';
 import { SeoHealthBadge } from './SeoHealthBadge';
 import { evaluateMediaSeo } from '../../utils/seoHealth';
+import { useI18n } from '../../context/I18nContext';
 
 interface MediaMetadataModalProps {
   open: boolean;
@@ -34,6 +35,7 @@ export const MediaMetadataModal: React.FC<MediaMetadataModalProps> = ({
   onSave,
   onClose,
 }) => {
+  const { t } = useI18n();
   const [previewSrc, setPreviewSrc] = useState('');
 
   useEffect(() => {
@@ -85,7 +87,7 @@ export const MediaMetadataModal: React.FC<MediaMetadataModalProps> = ({
         <div className="flex items-start justify-between gap-3 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 py-4">
           <div className="min-w-0">
             <h2 id="media-metadata-title" className="text-lg font-semibold text-gray-900 dark:text-white">
-              Edit metadata
+              {t('editor.mediaMeta.title')}
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400 truncate mt-1" title={file.fileName}>
               {file.fileName}
@@ -95,7 +97,7 @@ export const MediaMetadataModal: React.FC<MediaMetadataModalProps> = ({
             type="button"
             className="btn btn-secondary text-xs px-2 py-1 shrink-0"
             onClick={onClose}
-            aria-label="Close"
+            aria-label={t('editor.mediaMeta.close')}
           >
             <X className="w-4 h-4" />
           </button>
@@ -126,14 +128,14 @@ export const MediaMetadataModal: React.FC<MediaMetadataModalProps> = ({
 
           <div className="form-group mb-0">
             <label htmlFor="media-edit-title" className="form-label">
-              Title
+              {t('editor.mediaMeta.titleLabel')}
             </label>
             <input
               id="media-edit-title"
               type="text"
               value={title}
               onChange={(event) => onTitleChange(event.target.value)}
-              placeholder="Display title"
+              placeholder={t('editor.mediaMeta.titlePlaceholder')}
               className="form-input w-full"
               autoFocus
             />
@@ -141,13 +143,13 @@ export const MediaMetadataModal: React.FC<MediaMetadataModalProps> = ({
 
           <div className="form-group mb-0">
             <label htmlFor="media-edit-alt" className="form-label">
-              Alt text / description
+              {t('editor.mediaMeta.altLabel')}
             </label>
             <textarea
               id="media-edit-alt"
               value={altText}
               onChange={(event) => onAltChange(event.target.value)}
-              placeholder="Describe the image for accessibility and SEO"
+              placeholder={t('editor.mediaMeta.altPlaceholder')}
               className="form-input w-full min-h-[88px] resize-y"
               rows={3}
             />
@@ -155,10 +157,10 @@ export const MediaMetadataModal: React.FC<MediaMetadataModalProps> = ({
 
           <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-2">
             <button type="button" className="btn btn-secondary w-full sm:w-auto" onClick={onClose} disabled={saving}>
-              Cancel
+              {t('editor.mediaMeta.cancel')}
             </button>
             <button type="submit" className="btn btn-primary w-full sm:w-auto" disabled={saving}>
-              {saving ? 'Saving…' : 'Save changes'}
+              {saving ? t('editor.mediaMeta.saving') : t('editor.mediaMeta.save')}
             </button>
           </div>
         </form>

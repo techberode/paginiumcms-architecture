@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ExternalLink,
@@ -22,16 +22,9 @@ import type { ArticleCommentsSettings } from '../../utils/articleCommentsSetting
 import { useOpenLinksInNewTab } from '../../hooks/useOpenLinksInNewTab';
 import { ArticleTagsEditor } from './ArticleTagsEditor';
 import { linkTargetProps } from '../../utils/linkTarget';
+import { useI18n } from '../../context/I18nContext';
 
-const PAGE_TEMPLATE_OPTIONS = [
-  { value: 'default', label: 'Predvolená' },
-  { value: 'home', label: 'Domov (hero)' },
-  { value: 'about', label: 'O nás' },
-  { value: 'contact', label: 'Kontakt' },
-  { value: 'landing', label: 'Landing' },
-  { value: 'services', label: 'Služby' },
-  { value: 'blog', label: 'Blog' },
-] as const;
+const PAGE_TEMPLATE_VALUES = ['default', 'home', 'about', 'contact', 'landing', 'services', 'blog'] as const;
 
 interface ContentEditorShellProps {
   type: ContentType;
@@ -72,12 +65,6 @@ interface ContentEditorShellProps {
   globalCommentsAllowGuests?: boolean;
 }
 
-const STATUS_LABELS: Record<ContentEditorShellProps['status'], string> = {
-  draft: 'Koncept',
-  published: 'Publikované',
-  archived: 'Archivované',
-};
-
 export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
   type,
   isNew,
@@ -116,13 +103,30 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
   globalCommentsRequireApproval = true,
   globalCommentsAllowGuests = true,
 }) => {
+  const { t } = useI18n();
   const stats = countContentStats(content);
   const openInNewTab = useOpenLinksInNewTab();
-  const typeLabel = type === 'article' ? 'článok' : 'stránku';
   const listPath = type === 'article' ? '/articles' : '/pages';
   const previewPath = type === 'page' && !isNew && editSlug ? `/preview/${editSlug}` : null;
   const contextLabel =
-    navigationMatches[0]?.label || title.trim() || editSlug || 'Nová položka';
+    navigationMatches[0]?.label || title.trim() || editSlug || t('editor.shell.newItem');
+
+  const heading = isNew
+    ? type === 'article'
+      ? t('editor.shell.createArticle')
+      : t('editor.shell.createPage')
+    : type === 'article'
+      ? t('editor.shell.editArticle')
+      : t('editor.shell.editPage');
+
+  const statusLabels = useMemo(
+    () => ({
+      draft: t('editor.shell.statusLabels.draft'),
+      published: t('editor.shell.statusLabels.published'),
+      archived: t('editor.shell.statusLabels.archived'),
+    }),
+    [t]
+  );
 
   return (
     <div className="mx-auto w-full max-w-7xl">
@@ -130,9 +134,7 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
         <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-200 px-5 py-4 dark:border-slate-800">
           <div className="min-w-0 space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-                {isNew ? `Vytvoriť ${typeLabel}` : `Upraviť ${typeLabel}`}
-              </h1>
+              <h1 className="text-xl font-bold text-slate-900 dark:text-white">{heading}</h1>
               <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-200">
                 {type === 'page' ? <Home size={12} /> : <Link2 size={12} />}
                 {contextLabel}
@@ -155,17 +157,17 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
               onClick={() => onEditorModeChange(editorMode === 'wysiwyg' ? 'markdown' : 'wysiwyg')}
             >
               <Sparkles size={14} />
-              WYSIWYG
+              {t('editor.shell.wysiwyg')}
             </button>
             {onOpenPreview && (
               <button
                 type="button"
                 onClick={onOpenPreview}
                 className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 dark:border-indigo-900 dark:bg-indigo-950/60 dark:text-indigo-200"
-                title="Náhľad celej stránky (header + obsah + footer)"
+                title={t('editor.shell.previewTitle')}
               >
                 <Eye size={14} />
-                Náhľad
+                {t('editor.shell.preview')}
               </button>
             )}
             {previewPath && (
@@ -173,7 +175,7 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
                 to={previewPath}
                 {...linkTargetProps(openInNewTab)}
                 className="inline-flex items-center justify-center rounded-xl border border-slate-200 p-2 text-slate-500 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-900"
-                title="Náhľad na webe"
+                title={t('editor.shell.previewWebTitle')}
               >
                 <Eye size={16} />
               </Link>
@@ -181,7 +183,7 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
             <Link
               to={listPath}
               className="inline-flex items-center justify-center rounded-xl border border-slate-200 p-2 text-slate-500 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-900"
-              title="Zavrieť"
+              title={t('editor.shell.close')}
             >
               <X size={16} />
             </Link>
@@ -191,19 +193,19 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
         <div className="space-y-5 px-5 py-5">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="form-group md:col-span-2">
-              <label className="form-label">Názov</label>
+              <label className="form-label">{t('editor.shell.title')}</label>
               <input
                 type="text"
                 value={title}
                 onChange={(e) => onTitleChange(e.target.value)}
                 disabled={!canEdit}
                 className="form-input"
-                placeholder="Titulok stránky alebo článku"
+                placeholder={t('editor.shell.titlePlaceholder')}
               />
             </div>
 
             <div className="form-group">
-              <label className="form-label">Slug</label>
+              <label className="form-label">{t('editor.shell.slug')}</label>
               <input
                 type="text"
                 value={editSlug}
@@ -212,20 +214,18 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
                 className="form-input font-mono text-sm"
                 placeholder="home"
               />
-              {!isNew && (
-                <p className="mt-1 text-xs text-slate-400">Slug sa po vytvorení nemení (URL ostáva stabilná).</p>
-              )}
+              {!isNew && <p className="mt-1 text-xs text-slate-400">{t('editor.shell.slugHint')}</p>}
             </div>
 
             <div className="form-group">
-              <label className="form-label">Stav</label>
+              <label className="form-label">{t('editor.shell.status')}</label>
               <select
                 value={status}
                 onChange={(e) => onStatusChange(e.target.value as ContentEditorShellProps['status'])}
                 disabled={!canEdit}
                 className="form-input"
               >
-                {Object.entries(STATUS_LABELS).map(([value, label]) => (
+                {Object.entries(statusLabels).map(([value, label]) => (
                   <option key={value} value={value}>
                     {label}
                   </option>
@@ -235,16 +235,16 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
 
             {type === 'page' && (
               <div className="form-group">
-                <label className="form-label">Šablóna</label>
+                <label className="form-label">{t('editor.shell.template')}</label>
                 <select
                   value={template || 'default'}
                   onChange={(e) => onTemplateChange(e.target.value)}
                   disabled={!canEdit}
                   className="form-input font-mono text-sm"
                 >
-                  {PAGE_TEMPLATE_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
+                  {PAGE_TEMPLATE_VALUES.map((value) => (
+                    <option key={value} value={value}>
+                      {t(`editor.shell.templates.${value}`)}
                     </option>
                   ))}
                 </select>
@@ -253,7 +253,7 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
 
             <div className={`form-group ${type === 'page' ? '' : 'md:col-span-2'}`}>
               <label className="form-label flex justify-between">
-                <span>Popis</span>
+                <span>{t('editor.shell.description')}</span>
                 <span className="text-xs font-normal text-slate-400">{seo.seoDescription.length}/160</span>
               </label>
               <textarea
@@ -261,7 +261,7 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
                 onChange={(e) => onDescriptionChange(e.target.value)}
                 disabled={!canEdit}
                 className="form-input min-h-[72px]"
-                placeholder="Krátky popis pre vyhľadávače a sociálne siete"
+                placeholder={t('editor.shell.descriptionPlaceholder')}
                 maxLength={300}
               />
             </div>
@@ -270,15 +270,15 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
           <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="space-y-2 text-sm">
-                <p className="font-semibold text-slate-800 dark:text-slate-100">Kam smeruje táto položka</p>
+                <p className="font-semibold text-slate-800 dark:text-slate-100">{t('editor.shell.routingTitle')}</p>
                 <p className="flex flex-wrap items-center gap-2 text-slate-600 dark:text-slate-300">
                   <ExternalLink size={14} />
-                  <span>Verejná URL:</span>
+                  <span>{t('editor.shell.publicUrl')}</span>
                   <code className="rounded bg-white px-2 py-0.5 text-xs dark:bg-slate-950">{publicPath}</code>
                 </p>
                 <p className="flex flex-wrap items-center gap-2 text-slate-600 dark:text-slate-300">
                   <Menu size={14} />
-                  <span>Položka menu:</span>
+                  <span>{t('editor.shell.menuItem')}</span>
                   {navigationMatches.length > 0 ? (
                     navigationMatches.map((item) => (
                       <span
@@ -290,13 +290,13 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
                     ))
                   ) : (
                     <span className="text-slate-500">
-                      Zatiaľ nie je v menu. Použite cestu <code>{publicPath}</code>.
+                      {t('editor.shell.notInMenu', { path: publicPath })}
                     </span>
                   )}
                 </p>
               </div>
               <Link to="/navigation" className="btn btn-secondary text-xs whitespace-nowrap">
-                Upraviť menu
+                {t('editor.shell.editMenu')}
               </Link>
             </div>
           </div>
@@ -315,8 +315,10 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
               className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold text-slate-800 dark:text-slate-100"
               onClick={() => onSeoOpenChange(!seoOpen)}
             >
-              <span>SEO nastavenia</span>
-              <span className="text-xs font-normal text-slate-400">{seoOpen ? 'Skryť' : 'Zobraziť'}</span>
+              <span>{t('editor.shell.seoSettings')}</span>
+              <span className="text-xs font-normal text-slate-400">
+                {seoOpen ? t('editor.shell.hide') : t('editor.shell.show')}
+              </span>
             </button>
             {seoOpen && (
               <div className="border-t border-slate-200 px-4 py-4 dark:border-slate-800">
@@ -355,11 +357,11 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
 
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-5 py-4 dark:border-slate-800">
           <p className="text-xs text-slate-400">
-            {stats.characters} znakov • {stats.lines} riadkov
+            {t('editor.shell.stats', { characters: stats.characters, lines: stats.lines })}
           </p>
           <div className="flex gap-2">
             <button type="button" className="btn btn-secondary" onClick={onCancel}>
-              Zrušiť
+              {t('editor.shell.cancel')}
             </button>
             <button
               type="button"
@@ -368,7 +370,7 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
               onClick={onSave}
             >
               <Save size={16} />
-              {saving ? 'Ukladám…' : 'Uložiť'}
+              {saving ? t('editor.shell.saving') : t('editor.shell.save')}
             </button>
           </div>
         </div>

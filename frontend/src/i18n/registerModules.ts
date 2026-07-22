@@ -21,6 +21,20 @@ import { mediaEn } from './modules/media/en';
 import { mediaSk } from './modules/media/sk';
 import { analyticsEn } from './modules/analytics/en';
 import { analyticsSk } from './modules/analytics/sk';
+import { commentsEn } from './modules/comments/en';
+import { commentsSk } from './modules/comments/sk';
+import { messagesEn } from './modules/messages/en';
+import { messagesSk } from './modules/messages/sk';
+import { backupsEn } from './modules/backups/en';
+import { backupsSk } from './modules/backups/sk';
+import { trashEn } from './modules/trash/en';
+import { trashSk } from './modules/trash/sk';
+import { logsEn } from './modules/logs/en';
+import { logsSk } from './modules/logs/sk';
+import { platformEn } from './modules/platform/en';
+import { platformSk } from './modules/platform/sk';
+import { editorEn } from './modules/editor/en';
+import { editorSk } from './modules/editor/sk';
 
 export function registerAllI18nModules(): void {
   registerModuleMessages('sk', 'admin', adminSk);
@@ -43,6 +57,20 @@ export function registerAllI18nModules(): void {
   registerModuleMessages('en', 'media', mediaEn);
   registerModuleMessages('sk', 'analytics', analyticsSk);
   registerModuleMessages('en', 'analytics', analyticsEn);
+  registerModuleMessages('sk', 'comments', commentsSk);
+  registerModuleMessages('en', 'comments', commentsEn);
+  registerModuleMessages('sk', 'messages', messagesSk);
+  registerModuleMessages('en', 'messages', messagesEn);
+  registerModuleMessages('sk', 'backups', backupsSk);
+  registerModuleMessages('en', 'backups', backupsEn);
+  registerModuleMessages('sk', 'trash', trashSk);
+  registerModuleMessages('en', 'trash', trashEn);
+  registerModuleMessages('sk', 'logs', logsSk);
+  registerModuleMessages('en', 'logs', logsEn);
+  registerModuleMessages('sk', 'platform', platformSk);
+  registerModuleMessages('en', 'platform', platformEn);
+  registerModuleMessages('sk', 'editor', editorSk);
+  registerModuleMessages('en', 'editor', editorEn);
 }
 
 registerAllI18nModules();

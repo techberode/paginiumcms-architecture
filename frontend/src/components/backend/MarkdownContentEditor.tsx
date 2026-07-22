@@ -16,6 +16,7 @@ import {
   profileAllows,
   type EditorProfileDefinition,
 } from '../../utils/editorProfiles';
+import { useI18n } from '../../context/I18nContext';
 
 interface MarkdownContentEditorProps {
   value: string;
@@ -40,6 +41,7 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
   profile,
   onBlockedAction,
 }) => {
+  const { t } = useI18n();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [previewMode, setPreviewMode] = useState<PreviewMode>('split');
 
@@ -80,15 +82,15 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
       <div className="flex flex-wrap items-center justify-between gap-2 bg-slate-50 dark:bg-slate-900 px-3 py-2 border-b dark:border-slate-700">
         <div className="flex flex-wrap items-center gap-0.5">
           {profileAllows(profile, 'bold') &&
-            toolbarButton('Tučné', <Bold size={16} />, () =>
+            toolbarButton(t('editor.markdownContent.toolbar.bold'), <Bold size={16} />, () =>
               applyEdit((text, start, end) => wrapSelection(text, start, end, '**', '**', 'text'))
             )}
           {profileAllows(profile, 'italic') &&
-            toolbarButton('Kurzíva', <Italic size={16} />, () =>
+            toolbarButton(t('editor.markdownContent.toolbar.italic'), <Italic size={16} />, () =>
               applyEdit((text, start, end) => wrapSelection(text, start, end, '*', '*', 'text'))
             )}
           {profileAllows(profile, 'heading') &&
-            toolbarButton('Nadpis H2', <Heading2 size={16} />, () =>
+            toolbarButton(t('editor.markdownContent.toolbar.heading'), <Heading2 size={16} />, () =>
               applyEdit((text, start, end) => {
                 const lineStart = text.lastIndexOf('\n', start - 1) + 1;
                 return {
@@ -98,39 +100,65 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
               })
             )}
           {profileAllows(profile, 'link') &&
-            toolbarButton('Odkaz', <LinkIcon size={16} />, () => {
-              const url = window.prompt('URL odkazu');
+            toolbarButton(t('editor.markdownContent.toolbar.link'), <LinkIcon size={16} />, () => {
+              const url = window.prompt(t('editor.markdownContent.prompts.linkUrl'));
               if (!url) return;
               applyEdit((text, start, end) =>
                 wrapSelection(text, start, end, '[', `](${url})`, 'text')
               );
             })}
           {profileAllows(profile, 'image') &&
-            toolbarButton('Obrázok', <ImageIcon size={16} />, () => {
+            toolbarButton(t('editor.markdownContent.toolbar.image'), <ImageIcon size={16} />, () => {
               if (onPickMedia) {
                 onPickMedia();
                 return;
               }
-              const url = window.prompt('URL obrázka');
+              const url = window.prompt(t('editor.markdownContent.prompts.imageUrl'));
               if (!url) return;
               applyEdit((text, start, end) =>
-                insertAtCursor(text, start, end, `\n\n![obrázok](${url})\n`)
+                insertAtCursor(
+                  text,
+                  start,
+                  end,
+                  `\n\n![${t('editor.markdownContent.insert.imageAlt')}](${url})\n`
+                )
               );
             })}
           {profileAllows(profile, 'bulletList') &&
-            toolbarButton('Zoznam', <List size={16} />, () =>
-              applyEdit((text, start, end) => insertAtCursor(text, start, end, '\n- položka\n'))
+            toolbarButton(t('editor.markdownContent.toolbar.bulletList'), <List size={16} />, () =>
+              applyEdit((text, start, end) =>
+                insertAtCursor(
+                  text,
+                  start,
+                  end,
+                  `\n- ${t('editor.markdownContent.insert.listItem')}\n`
+                )
+              )
             )}
           {profileAllows(profile, 'orderedList') &&
-            toolbarButton('Číslovaný zoznam', <ListOrdered size={16} />, () =>
-              applyEdit((text, start, end) => insertAtCursor(text, start, end, '\n1. položka\n'))
+            toolbarButton(t('editor.markdownContent.toolbar.orderedList'), <ListOrdered size={16} />, () =>
+              applyEdit((text, start, end) =>
+                insertAtCursor(
+                  text,
+                  start,
+                  end,
+                  `\n1. ${t('editor.markdownContent.insert.listItem')}\n`
+                )
+              )
             )}
           {profileAllows(profile, 'blockquote') &&
-            toolbarButton('Citácia', <Quote size={16} />, () =>
-              applyEdit((text, start, end) => insertAtCursor(text, start, end, '\n> citát\n'))
+            toolbarButton(t('editor.markdownContent.toolbar.blockquote'), <Quote size={16} />, () =>
+              applyEdit((text, start, end) =>
+                insertAtCursor(
+                  text,
+                  start,
+                  end,
+                  `\n> ${t('editor.markdownContent.insert.quote')}\n`
+                )
+              )
             )}
           {profileAllows(profile, 'code') &&
-            toolbarButton('Kód', <Code size={16} />, () =>
+            toolbarButton(t('editor.markdownContent.toolbar.code'), <Code size={16} />, () =>
               applyEdit((text, start, end) => wrapSelection(text, start, end, '`', '`', 'code'))
             )}
         </div>
@@ -147,7 +175,7 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
                   : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800'
               }`}
             >
-              {mode === 'edit' ? 'Edit' : mode === 'split' ? 'Split' : 'Preview'}
+              {t(`editor.markdownContent.modes.${mode}`)}
             </button>
           ))}
         </div>
@@ -167,14 +195,14 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
               const pasted = event.clipboardData.getData('text/plain');
               if (/<[a-z][^>]*>/i.test(pasted)) {
                 event.preventDefault();
-                onBlockedAction?.('Profil editora nepovoľuje vloženie raw HTML.');
+                onBlockedAction?.(t('editor.markdownContent.blockedHtmlPaste'));
               }
             }}
             disabled={readOnly}
             spellCheck={spellCheck}
             className="w-full h-full min-h-[420px] resize-y p-4 font-mono text-sm bg-transparent outline-none border-0 border-r dark:border-slate-800"
             style={{ tabSize }}
-            placeholder="Píšte v Markdown… (# nadpis, **tučné**, [odkaz](url))"
+            placeholder={t('editor.markdownContent.placeholder')}
           />
         )}
 
@@ -182,7 +210,7 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
           <div className="p-4 overflow-y-auto bg-slate-50/70 dark:bg-slate-900/40">
             <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-slate-400 mb-3">
               <Eye size={14} />
-              Náhľad
+              {t('editor.markdownContent.previewLabel')}
             </div>
             {value.trim() ? (
               <div
@@ -190,7 +218,7 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
                 dangerouslySetInnerHTML={{ __html: previewHtml }}
               />
             ) : (
-              <p className="text-sm text-slate-400">Náhľad sa zobrazí po napísaní obsahu.</p>
+              <p className="text-sm text-slate-400">{t('editor.markdownContent.previewEmpty')}</p>
             )}
           </div>
         )}

@@ -24,30 +24,40 @@ import { useColumnSort } from '../../hooks/useColumnSort';
 import { SortableTableHeader } from './SortableTableHeader';
 import { AdminListToolbar } from './AdminListToolbar';
 import { applyClientListView } from '../../utils/clientListView';
+import { useI18n } from '../../context/I18nContext';
 
 type TabId = 'incidents' | 'bans' | 'whitelist';
 
-function formatDate(value: string): string {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-  return date.toLocaleString('sk-SK');
-}
-
-function formatExpiry(ban: FirewallBan): string {
-  if (ban.permanent) {
-    return 'Trvalý';
-  }
-  if (ban.expires_at === null) {
-    return '—';
-  }
-  return formatDate(new Date(ban.expires_at * 1000).toISOString());
-}
-
 export const FirewallManager: React.FC = () => {
+  const { t, locale } = useI18n();
   const toast = useToast();
   const openInNewTab = useOpenLinksInNewTab();
+  const dateLocale = locale === 'en' ? 'en-US' : 'sk-SK';
+
+  const formatDate = useCallback(
+    (value: string): string => {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) {
+        return value;
+      }
+      return date.toLocaleString(dateLocale);
+    },
+    [dateLocale]
+  );
+
+  const formatExpiry = useCallback(
+    (ban: FirewallBan): string => {
+      if (ban.permanent) {
+        return t('platform.firewall.permanent');
+      }
+      if (ban.expires_at === null) {
+        return '—';
+      }
+      return formatDate(new Date(ban.expires_at * 1000).toISOString());
+    },
+    [formatDate, t]
+  );
+
   const [tab, setTab] = useState<TabId>('incidents');
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<FirewallStats | null>(null);
@@ -74,12 +84,12 @@ export const FirewallManager: React.FC = () => {
       setBans(bansData);
       setWhitelist(whitelistData);
     } catch {
-      toast.error('Nepodarilo sa načítať firewall');
+      toast.error(t('platform.firewall.toast.loadFailed'));
     } finally {
       setLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void loadAll();
@@ -94,14 +104,14 @@ export const FirewallManager: React.FC = () => {
         sortField,
         sortDirection,
         sortFields: [
-          { value: 'created_at', label: 'Čas', getValue: (item) => item.created_at },
-          { value: 'ip', label: 'IP', getValue: (item) => item.ip },
-          { value: 'scenario', label: 'Scenár', getValue: (item) => item.scenario },
+          { value: 'created_at', label: t('platform.firewall.columns.time'), getValue: (item) => item.created_at },
+          { value: 'ip', label: t('platform.firewall.columns.ip'), getValue: (item) => item.ip },
+          { value: 'scenario', label: t('platform.firewall.columns.scenario'), getValue: (item) => item.scenario },
         ],
         page: 1,
         pageSize: 100,
       }),
-    [incidents, search, sortDirection, sortField]
+    [incidents, search, sortDirection, sortField, formatDate, t]
   );
 
   const banView = useMemo(
@@ -113,14 +123,18 @@ export const FirewallManager: React.FC = () => {
         sortField,
         sortDirection,
         sortFields: [
-          { value: 'ip', label: 'IP', getValue: (item) => item.ip },
-          { value: 'updated_at', label: 'Aktualizované', getValue: (item) => item.updated_at },
-          { value: 'score', label: 'Skóre', getValue: (item) => item.score },
+          { value: 'ip', label: t('platform.firewall.columns.ip'), getValue: (item) => item.ip },
+          {
+            value: 'updated_at',
+            label: t('platform.firewall.columns.updated'),
+            getValue: (item) => item.updated_at,
+          },
+          { value: 'score', label: t('platform.firewall.columns.score'), getValue: (item) => item.score },
         ],
         page: 1,
         pageSize: 100,
       }),
-    [bans, search, sortDirection, sortField]
+    [bans, search, sortDirection, sortField, formatExpiry, t]
   );
 
   const whitelistView = useMemo(
@@ -132,25 +146,25 @@ export const FirewallManager: React.FC = () => {
           searchText: (item) => item.ip,
           sortField: 'ip',
           sortDirection: 'asc',
-          sortFields: [{ value: 'ip', label: 'IP', getValue: (item) => item.ip }],
+          sortFields: [{ value: 'ip', label: t('platform.firewall.columns.ip'), getValue: (item) => item.ip }],
           page: 1,
           pageSize: 100,
         }
       ),
-    [whitelist, search]
+    [whitelist, search, t]
   );
 
   const handleUnban = async (ip: string) => {
-    if (!confirm(`Odblokovať IP ${ip}?`)) {
+    if (!confirm(t('platform.firewall.toast.unbanConfirm', { ip }))) {
       return;
     }
     setBusyIp(ip);
     try {
       if (await firewallApi.unban(ip)) {
-        toast.success(`IP ${ip} odblokovaná`);
+        toast.success(t('platform.firewall.toast.unbanSuccess', { ip }));
         await loadAll();
       } else {
-        toast.error('Unban zlyhal');
+        toast.error(t('platform.firewall.toast.unbanFailed'));
       }
     } finally {
       setBusyIp(null);
@@ -160,18 +174,22 @@ export const FirewallManager: React.FC = () => {
   const handleManualBan = async () => {
     const ip = newIp.trim();
     if (!ip) {
-      toast.error('Zadajte IP adresu');
+      toast.error(t('platform.firewall.toast.ipRequired'));
       return;
     }
     setBusyIp(ip);
     try {
       const ban = await firewallApi.createBan(ip, permanentBan);
       if (ban) {
-        toast.success(permanentBan ? `Trvalý ban pre ${ip}` : `Dočasný jail pre ${ip}`);
+        toast.success(
+          permanentBan
+            ? t('platform.firewall.toast.permanentBanSuccess', { ip })
+            : t('platform.firewall.toast.tempBanSuccess', { ip })
+        );
         setNewIp('');
         await loadAll();
       } else {
-        toast.error('Ban zlyhal');
+        toast.error(t('platform.firewall.toast.banFailed'));
       }
     } finally {
       setBusyIp(null);
@@ -181,17 +199,17 @@ export const FirewallManager: React.FC = () => {
   const handleAddWhitelist = async () => {
     const ip = newIp.trim();
     if (!ip) {
-      toast.error('Zadajte IP adresu');
+      toast.error(t('platform.firewall.toast.ipRequired'));
       return;
     }
     setBusyIp(ip);
     try {
       if (await firewallApi.addWhitelist(ip)) {
-        toast.success(`${ip} pridaná na whitelist`);
+        toast.success(t('platform.firewall.toast.whitelistAdded', { ip }));
         setNewIp('');
         await loadAll();
       } else {
-        toast.error('Whitelist zlyhal');
+        toast.error(t('platform.firewall.toast.whitelistFailed'));
       }
     } finally {
       setBusyIp(null);
@@ -199,16 +217,16 @@ export const FirewallManager: React.FC = () => {
   };
 
   const handleRemoveWhitelist = async (ip: string) => {
-    if (!confirm(`Odstrániť ${ip} z whitelistu?`)) {
+    if (!confirm(t('platform.firewall.toast.whitelistRemoveConfirm', { ip }))) {
       return;
     }
     setBusyIp(ip);
     try {
       if (await firewallApi.removeWhitelist(ip)) {
-        toast.success(`${ip} odstránená z whitelistu`);
+        toast.success(t('platform.firewall.toast.whitelistRemoved', { ip }));
         await loadAll();
       } else {
-        toast.error('Odstránenie zlyhalo');
+        toast.error(t('platform.firewall.toast.removeFailed'));
       }
     } finally {
       setBusyIp(null);
@@ -216,9 +234,9 @@ export const FirewallManager: React.FC = () => {
   };
 
   const tabs: { id: TabId; label: string; icon: React.ElementType }[] = [
-    { id: 'incidents', label: 'Incidenty', icon: ShieldAlert },
-    { id: 'bans', label: 'Bany', icon: Ban },
-    { id: 'whitelist', label: 'Whitelist', icon: ShieldCheck },
+    { id: 'incidents', label: t('platform.firewall.tabs.incidents'), icon: ShieldAlert },
+    { id: 'bans', label: t('platform.firewall.tabs.bans'), icon: Ban },
+    { id: 'whitelist', label: t('platform.firewall.tabs.whitelist'), icon: ShieldCheck },
   ];
 
   return (
@@ -228,17 +246,15 @@ export const FirewallManager: React.FC = () => {
           <div>
             <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
               <Shield className="w-7 h-7 text-indigo-600" />
-              Firewall (WAF)
+              {t('platform.firewall.title')}
             </h1>
-            <p className="text-sm text-slate-500 mt-1">
-              Interná ochrana pred probe útokmi, traversal a podozrivými botmi.
-            </p>
+            <p className="text-sm text-slate-500 mt-1">{t('platform.firewall.subtitle')}</p>
           </div>
           <Link
             to={settingsGroupPath('firewall')}
             className="inline-flex items-center gap-2 text-sm font-bold text-indigo-600 hover:text-indigo-800"
           >
-            Nastavenia firewallu
+            {t('platform.firewall.settingsLink')}
             <ExternalLink className="w-4 h-4" />
           </Link>
         </div>
@@ -246,10 +262,10 @@ export const FirewallManager: React.FC = () => {
         {stats && (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { label: 'Aktívne jaily', value: stats.active_jails },
-              { label: 'Trvalé bany', value: stats.permanent_bans },
-              { label: 'Incidenty (24 h)', value: stats.incidents_24h },
-              { label: 'Whitelist', value: stats.whitelist_count },
+              { label: t('platform.firewall.stats.activeJails'), value: stats.active_jails },
+              { label: t('platform.firewall.stats.permanentBans'), value: stats.permanent_bans },
+              { label: t('platform.firewall.stats.incidents24h'), value: stats.incidents_24h },
+              { label: t('platform.firewall.stats.whitelist'), value: stats.whitelist_count },
             ].map((card) => (
               <div
                 key={card.label}
@@ -284,7 +300,11 @@ export const FirewallManager: React.FC = () => {
           </div>
 
           <div className="p-4 border-b border-slate-100">
-            <AdminListToolbar search={search} onSearchChange={setSearch} searchPlaceholder="Hľadať…" />
+            <AdminListToolbar
+              search={search}
+              onSearchChange={setSearch}
+              searchPlaceholder={t('platform.firewall.searchPlaceholder')}
+            />
           </div>
 
           <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row gap-3">
@@ -292,7 +312,7 @@ export const FirewallManager: React.FC = () => {
               type="text"
               value={newIp}
               onChange={(e) => setNewIp(e.target.value)}
-              placeholder="IP adresa (napr. 203.0.113.10)"
+              placeholder={t('platform.firewall.ipPlaceholder')}
               className="flex-1 rounded-xl border border-slate-200 px-4 py-2 text-sm"
             />
             {tab === 'bans' && (
@@ -302,7 +322,7 @@ export const FirewallManager: React.FC = () => {
                   checked={permanentBan}
                   onChange={(e) => setPermanentBan(e.target.checked)}
                 />
-                Trvalý ban
+                {t('platform.firewall.permanentBan')}
               </label>
             )}
             <button
@@ -311,7 +331,7 @@ export const FirewallManager: React.FC = () => {
               onClick={() => void (tab === 'whitelist' ? handleAddWhitelist() : handleManualBan())}
               className="px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 disabled:opacity-50 cursor-pointer"
             >
-              {tab === 'whitelist' ? 'Pridať na whitelist' : 'Zablokovať IP'}
+              {tab === 'whitelist' ? t('platform.firewall.addWhitelist') : t('platform.firewall.blockIp')}
             </button>
           </div>
 
@@ -326,28 +346,32 @@ export const FirewallManager: React.FC = () => {
                   <thead>
                     <tr className="border-b border-slate-100 bg-slate-50/80">
                       <SortableTableHeader
-                        label="Čas"
+                        label={t('platform.firewall.columns.time')}
                         field="created_at"
                         activeField={sortField}
                         direction={sortDirection}
                         onSort={handleSort}
                       />
                       <SortableTableHeader
-                        label="IP"
+                        label={t('platform.firewall.columns.ip')}
                         field="ip"
                         activeField={sortField}
                         direction={sortDirection}
                         onSort={handleSort}
                       />
                       <SortableTableHeader
-                        label="Scenár"
+                        label={t('platform.firewall.columns.scenario')}
                         field="scenario"
                         activeField={sortField}
                         direction={sortDirection}
                         onSort={handleSort}
                       />
-                      <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">URI</th>
-                      <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">User-Agent</th>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">
+                        {t('platform.firewall.columns.uri')}
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">
+                        {t('platform.firewall.columns.userAgent')}
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -377,22 +401,28 @@ export const FirewallManager: React.FC = () => {
                   <thead>
                     <tr className="border-b border-slate-100 bg-slate-50/80">
                       <SortableTableHeader
-                        label="IP"
+                        label={t('platform.firewall.columns.ip')}
                         field="ip"
                         activeField={sortField}
                         direction={sortDirection}
                         onSort={handleSort}
                       />
-                      <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">Dôvod</th>
-                      <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">Platnosť</th>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">
+                        {t('platform.firewall.columns.reason')}
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">
+                        {t('platform.firewall.columns.validity')}
+                      </th>
                       <SortableTableHeader
-                        label="Skóre"
+                        label={t('platform.firewall.columns.score')}
                         field="score"
                         activeField={sortField}
                         direction={sortDirection}
                         onSort={handleSort}
                       />
-                      <th className="px-4 py-3 text-right text-xs font-bold text-slate-500">Akcie</th>
+                      <th className="px-4 py-3 text-right text-xs font-bold text-slate-500">
+                        {t('platform.firewall.columns.actions')}
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -412,7 +442,7 @@ export const FirewallManager: React.FC = () => {
                               {formatExpiry(item)}
                             </span>
                           ) : (
-                            <span className="text-slate-400 text-xs">Expirovaný</span>
+                            <span className="text-slate-400 text-xs">{t('platform.firewall.expired')}</span>
                           )}
                         </td>
                         <td className="px-4 py-3">{item.score}</td>
@@ -425,7 +455,7 @@ export const FirewallManager: React.FC = () => {
                               className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-bold text-indigo-600 hover:bg-indigo-50 cursor-pointer disabled:opacity-50"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
-                              Unban
+                              {t('platform.firewall.unban')}
                             </button>
                           )}
                         </td>
@@ -439,8 +469,12 @@ export const FirewallManager: React.FC = () => {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-slate-100 bg-slate-50/80">
-                      <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">IP</th>
-                      <th className="px-4 py-3 text-right text-xs font-bold text-slate-500">Akcie</th>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">
+                        {t('platform.firewall.columns.ip')}
+                      </th>
+                      <th className="px-4 py-3 text-right text-xs font-bold text-slate-500">
+                        {t('platform.firewall.columns.actions')}
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -454,7 +488,7 @@ export const FirewallManager: React.FC = () => {
                             onClick={() => void handleRemoveWhitelist(item.ip)}
                             className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-bold text-red-600 hover:bg-red-50 cursor-pointer disabled:opacity-50"
                           >
-                            Odstrániť
+                            {t('platform.firewall.remove')}
                           </button>
                         </td>
                       </tr>
@@ -466,14 +500,14 @@ export const FirewallManager: React.FC = () => {
               {((tab === 'incidents' && incidentView.items.length === 0) ||
                 (tab === 'bans' && banView.items.length === 0) ||
                 (tab === 'whitelist' && whitelistView.items.length === 0)) && (
-                <div className="p-12 text-center text-slate-400 text-sm">Žiadne záznamy</div>
+                <div className="p-12 text-center text-slate-400 text-sm">{t('platform.firewall.empty')}</div>
               )}
             </div>
           )}
         </div>
 
         <p className="text-xs text-slate-400">
-          Podrobná dokumentácia:{' '}
+          {t('platform.firewall.docsHint')}{' '}
           <a
             href="/docs/user/FIREWALL.md"
             className="text-indigo-600 hover:underline"

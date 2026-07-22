@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import type { SortDirection } from '../../hooks/useColumnSort';
+import { useI18n } from '../../context/I18nContext';
 
 export interface SortableHeaderProps {
   label: string;
@@ -19,14 +20,20 @@ export const SortableHeaderButton: React.FC<SortableHeaderProps> = ({
   onSort,
   className = '',
 }) => {
+  const { t } = useI18n();
   const active = activeField === field;
+  const directionLabel = direction === 'asc' ? t('list.sort.ascending') : t('list.sort.descending');
 
   return (
     <button
       type="button"
       className={`inline-flex items-center gap-1.5 text-left font-medium text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors ${className}`}
       onClick={() => onSort(field)}
-      aria-label={`Zoradiť podľa ${label}${active ? ` (${direction === 'asc' ? 'vzostupne' : 'zostupne'})` : ''}`}
+      aria-label={
+        active
+          ? `${t('list.sort.sortByAria', { label })} (${directionLabel})`
+          : t('list.sort.sortByAria', { label })
+      }
     >
       <span>{label}</span>
       <span className="inline-flex flex-col shrink-0 leading-none">
@@ -65,9 +72,12 @@ export const AdminListSortBar: React.FC<AdminListSortBarProps> = ({
   activeField,
   direction,
   onSort,
-}) => (
+}) => {
+  const { t } = useI18n();
+
+  return (
   <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm">
-    <span className="text-gray-500 dark:text-gray-400 shrink-0">Zoradiť:</span>
+    <span className="text-gray-500 dark:text-gray-400 shrink-0">{t('list.sort.label')}</span>
     {columns.map((column) => (
       <SortableHeaderButton
         key={column.field}
@@ -80,4 +90,5 @@ export const AdminListSortBar: React.FC<AdminListSortBarProps> = ({
       />
     ))}
   </div>
-);
+  );
+};

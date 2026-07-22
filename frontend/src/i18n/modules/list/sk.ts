@@ -25,6 +25,18 @@ export const listSk: MessageTree = {
   bulk: {
     selectedItems: 'vybraných položiek',
     clearSelection: 'Zrušiť výber',
+    allSucceeded: ':count položiek aktualizovaných',
+    partialResult: ':succeeded úspešných, :failed zlyhalo',
+  },
+  inbox: {
+    selectAllOnPage: 'Vybrať všetky na stránke',
+    selectItem: 'Vybrať položku',
+  },
+  sort: {
+    label: 'Zoradiť:',
+    sortByAria: 'Zoradiť podľa :label',
+    ascending: 'vzostupne',
+    descending: 'zostupne',
   },
   viewMode: {
     ariaLabel: 'Režim zobrazenia',

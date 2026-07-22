@@ -1,8 +1,8 @@
 // frontend/src/components/backend/AdminCommandPalette.test.tsx
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { screen, fireEvent } from '@testing-library/react';
 import { AdminCommandPalette } from './AdminCommandPalette';
+import { renderWithRouter } from '../../test/renderWithRouter';
 
 const mockNavigate = vi.fn();
 
@@ -38,21 +38,13 @@ describe('AdminCommandPalette', () => {
   });
 
   it('renders search input when open', () => {
-    render(
-      <MemoryRouter>
-        <AdminCommandPalette isOpen onClose={() => undefined} />
-      </MemoryRouter>
-    );
+    renderWithRouter(<AdminCommandPalette isOpen onClose={() => undefined} />);
 
     expect(screen.getByPlaceholderText(/Ctrl\+K/i)).toBeInTheDocument();
   });
 
   it('navigates on result click after search', async () => {
-    render(
-      <MemoryRouter>
-        <AdminCommandPalette isOpen onClose={() => undefined} />
-      </MemoryRouter>
-    );
+    renderWithRouter(<AdminCommandPalette isOpen onClose={() => undefined} />);
 
     fireEvent.change(screen.getByPlaceholderText(/Ctrl\+K/i), { target: { value: 'set' } });
 

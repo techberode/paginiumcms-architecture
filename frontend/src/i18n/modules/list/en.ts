@@ -25,6 +25,18 @@ export const listEn: MessageTree = {
   bulk: {
     selectedItems: 'selected items',
     clearSelection: 'Clear selection',
+    allSucceeded: ':count item(s) updated',
+    partialResult: ':succeeded succeeded, :failed failed',
+  },
+  inbox: {
+    selectAllOnPage: 'Select all on page',
+    selectItem: 'Select item',
+  },
+  sort: {
+    label: 'Sort:',
+    sortByAria: 'Sort by :label',
+    ascending: 'ascending',
+    descending: 'descending',
   },
   viewMode: {
     ariaLabel: 'View mode',

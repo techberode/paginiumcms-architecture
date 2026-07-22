@@ -13,9 +13,14 @@ export interface BulkBatchResult {
   results: BulkBatchItemResult[];
 }
 
-export function summarizeBulkResult(result: BulkBatchResult): string {
+type BulkTranslate = (key: string, params?: Record<string, string>) => string;
+
+export function summarizeBulkResult(result: BulkBatchResult, t: BulkTranslate): string {
   if (result.failed === 0) {
-    return `${result.succeeded} item(s) updated`;
+    return t('list.bulk.allSucceeded', { count: String(result.succeeded) });
   }
-  return `${result.succeeded} succeeded, ${result.failed} failed`;
+  return t('list.bulk.partialResult', {
+    succeeded: String(result.succeeded),
+    failed: String(result.failed),
+  });
 }

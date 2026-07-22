@@ -14,8 +14,10 @@ import {
 } from '../../api/notifications';
 import { useToast } from '../../hooks/useToast';
 import { settingsGroupPath } from '../../utils/adminDeepLinks';
+import { useI18n } from '../../context/I18nContext';
 
 export const NotificationsOverview: React.FC = () => {
+  const { t } = useI18n();
   const [data, setData] = useState<NotificationOverview | null>(null);
   const [loading, setLoading] = useState(true);
   const [testing, setTesting] = useState<string | null>(null);
@@ -43,9 +45,9 @@ export const NotificationsOverview: React.FC = () => {
     try {
       const result = await sendTestNotification(adapter, data?.fallback_email);
       if (result.success) {
-        success(result.message || 'Test notification sent');
+        success(result.message || t('platform.notifications.toast.testSent'));
       } else {
-        toastError(result.error || 'Test failed');
+        toastError(result.error || t('platform.notifications.toast.testFailed'));
       }
     } finally {
       setTesting(null);
@@ -57,10 +59,10 @@ export const NotificationsOverview: React.FC = () => {
     try {
       const result = await testNotificationConnector(connector, data?.fallback_email);
       if (result.success) {
-        success(result.message || 'Connector auth OK');
+        success(result.message || t('platform.notifications.toast.authOk'));
         await load();
       } else {
-        toastError(result.error || result.message || 'Connector auth test failed');
+        toastError(result.error || result.message || t('platform.notifications.toast.authFailed'));
       }
     } finally {
       setTestingAuth(null);
@@ -74,14 +76,14 @@ export const NotificationsOverview: React.FC = () => {
     if (connector.authenticated === false) {
       return (
         <span className="ml-2 text-xs font-medium text-amber-700 dark:text-amber-300">
-          Chýba auth
+          {t('platform.notifications.authMissing')}
         </span>
       );
     }
     if (connector.authenticated) {
       return (
         <span className="ml-2 text-xs font-medium text-green-700 dark:text-green-400">
-          Auth OK
+          {t('platform.notifications.authOk')}
         </span>
       );
     }
@@ -93,14 +95,14 @@ export const NotificationsOverview: React.FC = () => {
     try {
       const result = await sendMonitoringReport(true);
       if (result.success) {
-        success('Monitoring report odoslaný');
+        success(t('platform.notifications.toast.reportSent'));
         await load();
       } else {
         const detail =
           result.error ||
           (typeof result.result?.reason === 'string'
-            ? `Dôvod: ${result.result.reason}`
-            : 'Report sa nepodarilo odoslať');
+            ? t('platform.notifications.toast.reason', { reason: result.result.reason })
+            : t('platform.notifications.toast.reportFailed'));
         toastError(detail);
       }
     } finally {
@@ -117,14 +119,14 @@ export const NotificationsOverview: React.FC = () => {
   if (data?.schedule) {
     if (reportConnector !== 'all' && !data.connectors.some((c) => c.name === reportConnector && c.enabled)) {
       reportBlockers.push(
-        `Konektor „${reportConnector}“ nie je zapnutý – Settings → Connectors (SMTP & konektory).`
+        t('platform.notifications.blockers.connectorDisabled', { connector: reportConnector })
       );
     }
     if (reportConnector === 'all' && data.active_adapters.length === 0) {
-      reportBlockers.push('Nie je zapnutý žiadny konektor.');
+      reportBlockers.push(t('platform.notifications.blockers.noConnector'));
     }
     if (needsEmailRecipient && !hasRecipient) {
-      reportBlockers.push('Chýba alert email (Monitoring) alebo admin email (General).');
+      reportBlockers.push(t('platform.notifications.blockers.missingEmail'));
     }
   }
 
@@ -133,10 +135,10 @@ export const NotificationsOverview: React.FC = () => {
     try {
       const result = await runMonitoringSchedule();
       if (result) {
-        success('Cron simulácia dokončená');
+        success(t('platform.notifications.toast.cronDone'));
         await load();
       } else {
-        toastError('Spustenie plánovača zlyhalo');
+        toastError(t('platform.notifications.toast.scheduleFailed'));
       }
     } finally {
       setRunningSchedule(false);
@@ -144,9 +146,9 @@ export const NotificationsOverview: React.FC = () => {
   };
 
   const intervalLabel = (interval?: string) => {
-    if (interval === 'hour') return 'hodina';
-    if (interval === 'week') return 'týždeň';
-    return 'deň';
+    if (interval === 'hour') return t('platform.notifications.intervalHour');
+    if (interval === 'week') return t('platform.notifications.intervalWeek');
+    return t('platform.notifications.intervalDay');
   };
 
   if (loading) {
@@ -160,7 +162,7 @@ export const NotificationsOverview: React.FC = () => {
   if (!data) {
     return (
       <div className="card">
-        <div className="card-body text-center text-gray-500">Failed to load notification overview.</div>
+        <div className="card-body text-center text-gray-500">{t('platform.notifications.loadFailed')}</div>
       </div>
     );
   }
@@ -168,14 +170,14 @@ export const NotificationsOverview: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center flex-wrap gap-3">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Notifications</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('platform.notifications.title')}</h1>
         <div className="flex gap-2">
           <Link to={settingsGroupPath('smtp')} className="btn btn-secondary inline-flex items-center gap-2">
             <Settings className="w-4 h-4" />
-            SMTP &amp; konektory
+            {t('platform.notifications.smtpLink')}
           </Link>
           <button onClick={() => void load()} className="btn btn-secondary">
-            Refresh
+            {t('platform.notifications.refresh')}
           </button>
         </div>
       </div>
@@ -184,7 +186,7 @@ export const NotificationsOverview: React.FC = () => {
         <div className="card">
           <div className="card-body">
             <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
-              <h2 className="text-lg font-semibold">Plánované reporty (It.7)</h2>
+              <h2 className="text-lg font-semibold">{t('platform.notifications.scheduledReports')}</h2>
               <div className="flex gap-2">
                 <button
                   type="button"
@@ -192,7 +194,7 @@ export const NotificationsOverview: React.FC = () => {
                   disabled={sendingReport}
                   onClick={() => void handleSendReport()}
                 >
-                  {sendingReport ? 'Odosielam…' : 'Odoslať report teraz'}
+                  {sendingReport ? t('platform.notifications.sending') : t('platform.notifications.sendReport')}
                 </button>
                 <button
                   type="button"
@@ -200,58 +202,64 @@ export const NotificationsOverview: React.FC = () => {
                   disabled={runningSchedule}
                   onClick={() => void handleRunSchedule()}
                 >
-                  {runningSchedule ? 'Beží…' : 'Simulovať cron'}
+                  {runningSchedule ? t('platform.notifications.running') : t('platform.notifications.simulateCron')}
                 </button>
               </div>
             </div>
             <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
               <div>
-                <dt className="text-gray-500">Stav</dt>
+                <dt className="text-gray-500">{t('platform.notifications.status')}</dt>
                 <dd className="font-medium">
-                  {data.schedule.enabled ? 'Zapnuté' : 'Vypnuté'}
+                  {data.schedule.enabled ? t('platform.notifications.enabled') : t('platform.notifications.disabled')}
                   {!data.schedule.enabled && (
                     <span className="block text-xs font-normal text-gray-400 mt-0.5">
-                      Cron neposiela; „Odoslať teraz“ funguje aj pri Vypnuté.
+                      {t('platform.notifications.disabledHint')}
                     </span>
                   )}
                 </dd>
               </div>
               <div>
-                <dt className="text-gray-500">Interval</dt>
+                <dt className="text-gray-500">{t('platform.notifications.interval')}</dt>
                 <dd className="font-medium capitalize">{intervalLabel(data.schedule.interval)}</dd>
               </div>
               <div>
-                <dt className="text-gray-500">Čas odoslania</dt>
+                <dt className="text-gray-500">{t('platform.notifications.sendTime')}</dt>
                 <dd className="font-medium">
                   {data.schedule.interval === 'hour'
-                    ? `minúta :${String(data.schedule.minute ?? 0).padStart(2, '0')}`
+                    ? t('platform.notifications.minutePrefix', {
+                        minute: String(data.schedule.minute ?? 0).padStart(2, '0'),
+                      })
                     : data.schedule.time}
                   {data.schedule.interval === 'week' ? ` · ${data.schedule.weekday}` : ''}
                 </dd>
               </div>
               <div>
-                <dt className="text-gray-500">Konektor</dt>
+                <dt className="text-gray-500">{t('platform.notifications.connector')}</dt>
                 <dd className="font-medium">{data.schedule.connector}</dd>
               </div>
               <div>
-                <dt className="text-gray-500">Posledný report</dt>
+                <dt className="text-gray-500">{t('platform.notifications.lastReport')}</dt>
                 <dd className="font-medium">{data.schedule.last_sent_at || '—'}</dd>
               </div>
               <div>
-                <dt className="text-gray-500">Due now</dt>
-                <dd className="font-medium">{data.schedule.due_now ? 'Áno' : 'Nie'}</dd>
+                <dt className="text-gray-500">{t('platform.notifications.dueNow')}</dt>
+                <dd className="font-medium">
+                  {data.schedule.due_now ? t('platform.notifications.yes') : t('platform.notifications.no')}
+                </dd>
               </div>
             </dl>
             {data.log_incidents && (
               <p className="text-sm text-gray-500 mt-4">
-                Log incidenty: ERROR {data.log_incidents.notify_errors ? '✓' : '✗'} · WARNING{' '}
-                {data.log_incidents.notify_warnings ? '✓' : '✗'} · konektor{' '}
-                {data.log_incidents.connector}
+                {t('platform.notifications.logIncidents', {
+                  errors: data.log_incidents.notify_errors ? '✓' : '✗',
+                  warnings: data.log_incidents.notify_warnings ? '✓' : '✗',
+                  connector: data.log_incidents.connector,
+                })}
               </p>
             )}
             {reportBlockers.length > 0 && (
               <div className="mt-4 rounded-md border border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-700 px-3 py-2 text-sm text-amber-900 dark:text-amber-200">
-                <p className="font-medium mb-1">Pred odoslaním reportu treba:</p>
+                <p className="font-medium mb-1">{t('platform.notifications.beforeReport')}</p>
                 <ul className="list-disc list-inside space-y-1">
                   {reportBlockers.map((msg) => (
                     <li key={msg}>{msg}</li>
@@ -260,14 +268,9 @@ export const NotificationsOverview: React.FC = () => {
               </div>
             )}
             {reportConnector === 'email' && emailConnectorActive && hasRecipient && (
-              <p className="text-xs text-gray-500 mt-3">
-                Ak stále 422: v sekcii Connectors otestuj Email – rovnaké SMTP musí prejsť aj pre report.
-              </p>
+              <p className="text-xs text-gray-500 mt-3">{t('platform.notifications.email422Hint')}</p>
             )}
-            <p className="text-xs text-gray-400 mt-2">
-              Cron: <code className="font-mono">php backend/bin/console monitoring:run-schedule</code>{' '}
-              (každú minútu). Nastavenia v Settings → Monitoring.
-            </p>
+            <p className="text-xs text-gray-400 mt-2">{t('platform.notifications.cronHint')}</p>
           </div>
         </div>
       )}
@@ -275,10 +278,15 @@ export const NotificationsOverview: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="card">
           <div className="card-body">
-            <h2 className="text-lg font-semibold mb-3">Connectors</h2>
+            <h2 className="text-lg font-semibold mb-3">{t('platform.notifications.connectors')}</h2>
             <p className="text-sm text-gray-500 mb-4">
-              Alerts: {data.alerts_enabled ? 'enabled' : 'disabled'} · Fallback:{' '}
-              {data.fallback_email || 'not set'}
+              {t('platform.notifications.alertsEnabled', {
+                status: data.alerts_enabled
+                  ? t('platform.notifications.alertsOn')
+                  : t('platform.notifications.alertsOff'),
+              })}{' '}
+              · {t('platform.notifications.fallback')}{' '}
+              {data.fallback_email || t('platform.notifications.fallbackNotSet')}
             </p>
             <ul className="space-y-2">
               {data.connectors.map((c) => (
@@ -303,7 +311,9 @@ export const NotificationsOverview: React.FC = () => {
                         disabled={testingAuth === c.name}
                         onClick={() => void handleTestAuth(c.name)}
                       >
-                        {testingAuth === c.name ? 'Checking…' : 'Verify auth'}
+                        {testingAuth === c.name
+                          ? t('platform.notifications.checking')
+                          : t('platform.notifications.verifyAuth')}
                       </button>
                     )}
                     {c.enabled && (
@@ -313,7 +323,7 @@ export const NotificationsOverview: React.FC = () => {
                         disabled={testing === c.name}
                         onClick={() => void handleTest(c.name)}
                       >
-                        {testing === c.name ? 'Sending…' : 'Test'}
+                        {testing === c.name ? t('platform.notifications.sendingTest') : t('platform.notifications.test')}
                       </button>
                     )}
                   </span>
@@ -325,22 +335,22 @@ export const NotificationsOverview: React.FC = () => {
 
         <div className="card">
           <div className="card-body">
-            <h2 className="text-lg font-semibold mb-3">Visit overview (today)</h2>
+            <h2 className="text-lg font-semibold mb-3">{t('platform.notifications.visitOverview')}</h2>
             <dl className="grid grid-cols-2 gap-3 text-sm">
               <div>
-                <dt className="text-gray-500">Visits</dt>
+                <dt className="text-gray-500">{t('platform.notifications.visits')}</dt>
                 <dd className="text-xl font-semibold">{data.analytics.visits}</dd>
               </div>
               <div>
-                <dt className="text-gray-500">Page views</dt>
+                <dt className="text-gray-500">{t('platform.notifications.pageViews')}</dt>
                 <dd className="text-xl font-semibold">{data.analytics.page_views}</dd>
               </div>
               <div>
-                <dt className="text-gray-500">Unique visitors</dt>
+                <dt className="text-gray-500">{t('platform.notifications.uniqueVisitors')}</dt>
                 <dd className="text-xl font-semibold">{data.analytics.unique_visitors}</dd>
               </div>
               <div>
-                <dt className="text-gray-500">Realtime</dt>
+                <dt className="text-gray-500">{t('platform.notifications.realtime')}</dt>
                 <dd className="text-xl font-semibold">{data.analytics.realtime_visitors}</dd>
               </div>
             </dl>
@@ -350,15 +360,15 @@ export const NotificationsOverview: React.FC = () => {
 
       <div className="card">
         <div className="card-body">
-          <h2 className="text-lg font-semibold mb-3">Top pages (today)</h2>
+          <h2 className="text-lg font-semibold mb-3">{t('platform.notifications.topPages')}</h2>
           {data.top_pages.length === 0 ? (
-            <p className="text-sm text-gray-500">No page views recorded yet.</p>
+            <p className="text-sm text-gray-500">{t('platform.notifications.noPageViews')}</p>
           ) : (
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-gray-500 border-b dark:border-gray-700">
-                  <th className="py-2">Path</th>
-                  <th className="py-2 text-right">Views</th>
+                  <th className="py-2">{t('platform.notifications.path')}</th>
+                  <th className="py-2 text-right">{t('platform.notifications.views')}</th>
                 </tr>
               </thead>
               <tbody>

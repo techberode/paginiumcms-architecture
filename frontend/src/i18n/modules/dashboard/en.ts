@@ -47,4 +47,37 @@ export const dashboardEn: MessageTree = {
   toast: {
     loadFailed: 'Failed to load dashboard data',
   },
+  panels: {
+    locks: {
+      title: 'Active locks',
+      activeCount: ':count active',
+      empty: 'No active content locks.',
+      expires: 'expires',
+      release: 'Release',
+      released: 'Lock released',
+      releaseFailed: 'Failed to release lock',
+    },
+    conflicts: {
+      title: 'Recent conflicts',
+      loggedCount: ':count logged',
+      empty: 'No content conflicts recorded.',
+      openAudit: 'Open audit trail',
+    },
+    health: {
+      title: 'System health',
+      pass: 'Pass',
+      warn: 'Warn',
+      fail: 'Fail',
+      total: 'Total',
+    },
+    logs: {
+      title: 'Logs (:hours h)',
+      open: 'Open logs →',
+    },
+    activity: {
+      title: 'Activity overview',
+      empty: 'No audit events yet.',
+      openAudit: 'Full audit trail →',
+    },
+  },
 };

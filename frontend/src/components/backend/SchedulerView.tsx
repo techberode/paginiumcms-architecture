@@ -14,8 +14,10 @@ import {
 } from '../../api/jobs';
 import { useToast } from '../../hooks/useToast';
 import { settingsGroupPath } from '../../utils/adminDeepLinks';
+import { useI18n } from '../../context/I18nContext';
 
 export const SchedulerView: React.FC = () => {
+  const { t } = useI18n();
   const [data, setData] = useState<JobsOverview | null>(null);
   const [loading, setLoading] = useState(true);
   const [runningId, setRunningId] = useState<string | null>(null);
@@ -39,20 +41,20 @@ export const SchedulerView: React.FC = () => {
   const toggleJob = async (job: ScheduledJob) => {
     const updated = await updateJob(job.id, { enabled: !job.enabled });
     if (updated) {
-      success(job.enabled ? 'Job vypnutý' : 'Job zapnutý');
+      success(job.enabled ? t('platform.scheduler.toast.jobDisabled') : t('platform.scheduler.toast.jobEnabled'));
       await load();
     } else {
-      toastError('Nepodarilo sa uložiť job');
+      toastError(t('platform.scheduler.toast.saveFailed'));
     }
   };
 
   const saveCron = async (job: ScheduledJob, cron: string) => {
     const updated = await updateJob(job.id, { cron });
     if (updated) {
-      success('CRON uložený');
+      success(t('platform.scheduler.toast.cronSaved'));
       await load();
     } else {
-      toastError('Neplatný CRON výraz');
+      toastError(t('platform.scheduler.toast.invalidCron'));
     }
   };
 
@@ -61,10 +63,10 @@ export const SchedulerView: React.FC = () => {
     try {
       const result = await runJob(job.id, { force_report: forceReport });
       if (result?.result?.success || result?.queued) {
-        success(result.result?.message || 'Job spustený');
+        success(result.result?.message || t('platform.scheduler.toast.jobStarted'));
         await load();
       } else {
-        toastError(result?.result?.message || 'Job zlyhal');
+        toastError(result?.result?.message || t('platform.scheduler.toast.jobFailed'));
       }
     } finally {
       setRunningId(null);
@@ -76,7 +78,7 @@ export const SchedulerView: React.FC = () => {
     try {
       const due = await runDueJobs();
       await processJobQueue(10);
-      success(`Cron sim: ${due?.executed ?? 0} job(ov)`);
+      success(t('platform.scheduler.toast.cronSim', { count: due?.executed ?? 0 }));
       await load();
     } finally {
       setSimulating(false);
@@ -97,11 +99,9 @@ export const SchedulerView: React.FC = () => {
         <div>
           <h1 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
             <CalendarClock className="text-indigo-500" size={28} />
-            Plánovač
+            {t('platform.scheduler.title')}
           </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Centrálny cron registry – zálohy, monitoring a ďalšie joby mimo HTTP.
-          </p>
+          <p className="text-sm text-slate-500 mt-1">{t('platform.scheduler.subtitle')}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button
@@ -110,7 +110,7 @@ export const SchedulerView: React.FC = () => {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold"
           >
             <RefreshCw size={16} />
-            Obnoviť
+            {t('platform.scheduler.refresh')}
           </button>
           <button
             type="button"
@@ -119,7 +119,7 @@ export const SchedulerView: React.FC = () => {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold disabled:opacity-50"
           >
             <Play size={16} />
-            {simulating ? 'Simulujem…' : 'Simulovať cron'}
+            {simulating ? t('platform.scheduler.simulating') : t('platform.scheduler.simulateCron')}
           </button>
         </div>
       </header>
@@ -127,11 +127,13 @@ export const SchedulerView: React.FC = () => {
       <section className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Master switch</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+              {t('platform.scheduler.masterSwitch')}
+            </p>
             <p className="text-sm font-medium">
-              Plánovač:{' '}
+              {t('platform.scheduler.schedulerLabel')}{' '}
               <span className={data?.enabled ? 'text-emerald-600' : 'text-amber-600'}>
-                {data?.enabled ? 'Zapnutý' : 'Vypnutý'}
+                {data?.enabled ? t('platform.scheduler.enabled') : t('platform.scheduler.disabled')}
               </span>
             </p>
           </div>
@@ -140,7 +142,7 @@ export const SchedulerView: React.FC = () => {
             className="inline-flex items-center gap-2 text-sm text-indigo-600 font-semibold hover:underline"
           >
             <Settings size={16} />
-            Settings → Job scheduler
+            {t('platform.scheduler.settingsLink')}
           </Link>
         </div>
         {data?.cron_hint && (
@@ -151,7 +153,9 @@ export const SchedulerView: React.FC = () => {
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Registrované joby</h2>
+        <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">
+          {t('platform.scheduler.registeredJobs')}
+        </h2>
         {(data?.jobs ?? []).map((job) => (
           <JobCard
             key={job.id}
@@ -169,7 +173,9 @@ export const SchedulerView: React.FC = () => {
       {(data?.recent_runs?.length ?? 0) > 0 && (
         <section className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
           <div className="px-5 py-3 bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500">Posledné behy</h2>
+            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500">
+              {t('platform.scheduler.recentRuns')}
+            </h2>
           </div>
           <ul className="divide-y divide-slate-100 dark:divide-slate-800 max-h-64 overflow-y-auto">
             {data?.recent_runs.map((run) => (
@@ -207,6 +213,7 @@ function JobCard({
   onRun: () => void;
   onForceReport: () => void;
 }) {
+  const { t } = useI18n();
   const [cronDraft, setCronDraft] = useState(job.cron);
 
   useEffect(() => {
@@ -223,13 +230,15 @@ function JobCard({
         </div>
         <label className="inline-flex items-center gap-2 cursor-pointer">
           <input type="checkbox" checked={job.enabled} onChange={onToggle} className="rounded" />
-          <span className="text-sm font-semibold">{job.enabled ? 'Zapnuté' : 'Vypnuté'}</span>
+          <span className="text-sm font-semibold">
+            {job.enabled ? t('platform.scheduler.jobEnabled') : t('platform.scheduler.jobDisabled')}
+          </span>
         </label>
       </div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
         <div>
-          <p className="text-xs text-slate-400 uppercase font-bold">CRON</p>
+          <p className="text-xs text-slate-400 uppercase font-bold">{t('platform.scheduler.cron')}</p>
           <input
             value={cronDraft}
             onChange={(e) => setCronDraft(e.target.value)}
@@ -242,16 +251,18 @@ function JobCard({
           />
         </div>
         <div>
-          <p className="text-xs text-slate-400 uppercase font-bold">Ďalší beh</p>
+          <p className="text-xs text-slate-400 uppercase font-bold">{t('platform.scheduler.nextRun')}</p>
           <p className="mt-1 font-medium">{job.next_run ?? '—'}</p>
         </div>
         <div>
-          <p className="text-xs text-slate-400 uppercase font-bold">Posledný beh</p>
+          <p className="text-xs text-slate-400 uppercase font-bold">{t('platform.scheduler.lastRun')}</p>
           <p className="mt-1 font-medium">{job.last_run_at?.slice(0, 19) ?? '—'}</p>
         </div>
         <div>
-          <p className="text-xs text-slate-400 uppercase font-bold">Due now</p>
-          <p className="mt-1 font-medium">{job.due_now ? 'Áno' : 'Nie'}</p>
+          <p className="text-xs text-slate-400 uppercase font-bold">{t('platform.scheduler.dueNow')}</p>
+          <p className="mt-1 font-medium">
+            {job.due_now ? t('platform.scheduler.yes') : t('platform.scheduler.no')}
+          </p>
         </div>
       </div>
 
@@ -262,7 +273,7 @@ function JobCard({
           onClick={onRun}
           className="px-3 py-1.5 rounded-lg bg-slate-900 dark:bg-indigo-600 text-white text-xs font-bold disabled:opacity-50"
         >
-          {running ? 'Beží…' : 'Spustiť teraz'}
+          {running ? t('platform.scheduler.running') : t('platform.scheduler.runNow')}
         </button>
         {job.handler === 'monitoring.pipeline' && (
           <button
@@ -271,11 +282,11 @@ function JobCard({
             onClick={onForceReport}
             className="px-3 py-1.5 rounded-lg border border-indigo-300 text-indigo-700 dark:text-indigo-300 text-xs font-bold disabled:opacity-50"
           >
-            Vynútiť report
+            {t('platform.scheduler.forceReport')}
           </button>
         )}
         {job.system && (
-          <span className="text-xs text-slate-400 self-center">Systémový job</span>
+          <span className="text-xs text-slate-400 self-center">{t('platform.scheduler.systemJob')}</span>
         )}
       </div>
     </article>

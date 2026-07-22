@@ -245,7 +245,7 @@ export const UsersManager: React.FC = () => {
     if (!confirm(t('users.confirm.bulkDelete', { count: String(bulkSelection.count) }))) return;
     const result = await bulkDeleteUsers(bulkSelection.selectedIds);
     if (result) {
-      success(summarizeBulkResult(result));
+      success(summarizeBulkResult(result, t));
       bulkSelection.clear();
       await load();
     } else {

@@ -5,7 +5,6 @@ import { ExternalLink, Loader2, ScrollText, Trash2 } from 'lucide-react';
 import {
   logsApi,
   LOG_SEVERITY_COLORS,
-  LOG_SEVERITY_LABELS,
   type LogEntry,
   type LogSeverity,
   type LogStats,
@@ -14,10 +13,12 @@ import { useToast } from '../../hooks/useToast';
 import { AdminListToolbar } from './AdminListToolbar';
 import { settingsGroupPath } from '../../utils/adminDeepLinks';
 import { formatApplicationLogMessage, shouldShowLogContext } from '../../utils/formatApplicationLog';
+import { useI18n } from '../../context/I18nContext';
 
 const SEVERITIES: LogSeverity[] = ['debug', 'info', 'warning', 'error', 'critical'];
 
 export const LogsManager: React.FC = () => {
+  const { t } = useI18n();
   const toast = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
@@ -45,12 +46,12 @@ export const LogsManager: React.FC = () => {
       setStats(statsData);
       setItems(listData?.items ?? []);
     } catch {
-      toast.error('Nepodarilo sa načítať logy');
+      toast.error(t('logs.toast.loadFailed'));
     } finally {
       setLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, severity, source]);
+  }, [search, severity, source, t]);
 
   useEffect(() => {
     void load();
@@ -72,17 +73,17 @@ export const LogsManager: React.FC = () => {
   }, [severity, setSearchParams]);
 
   const handlePurge = async () => {
-    if (!confirm('Vymazať log súbory staršie ako retentionDays z Nastavení?')) {
+    if (!confirm(t('logs.confirm.purge'))) {
       return;
     }
     setPurging(true);
     try {
       const removed = await logsApi.purge();
       if (removed !== null) {
-        toast.success(`Odstránených ${removed} starých log súborov`);
+        toast.success(t('logs.toast.purgeSuccess', { count: String(removed) }));
         await load();
       } else {
-        toast.error('Purge zlyhal');
+        toast.error(t('logs.toast.purgeFailed'));
       }
     } finally {
       setPurging(false);
@@ -98,10 +99,10 @@ export const LogsManager: React.FC = () => {
           <div>
             <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
               <ScrollText className="w-7 h-7 text-indigo-600" />
-              Logy
+              {t('logs.page.title')}
             </h1>
             <p className="text-sm text-slate-500 mt-1">
-              Structured logy (app, audit, event, user) — timestamp a IP na každom zázname.
+              {t('logs.page.subtitle')}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -109,7 +110,7 @@ export const LogsManager: React.FC = () => {
               to={settingsGroupPath('logging')}
               className="inline-flex items-center gap-2 text-sm font-bold text-indigo-600 hover:text-indigo-800"
             >
-              Nastavenia logov
+              {t('logs.actions.settings')}
               <ExternalLink className="w-4 h-4" />
             </Link>
             <button
@@ -119,7 +120,7 @@ export const LogsManager: React.FC = () => {
               className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-300 disabled:opacity-50 cursor-pointer"
             >
               <Trash2 className="w-4 h-4" />
-              Purge starých
+              {t('logs.actions.purge')}
             </button>
           </div>
         </div>
@@ -138,12 +139,12 @@ export const LogsManager: React.FC = () => {
                 }`}
               >
                 <div className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${LOG_SEVERITY_COLORS[level]}`}>
-                  {LOG_SEVERITY_LABELS[level]}
+                  {t(`logs.severity.${level}`)}
                 </div>
                 <div className="text-2xl font-black text-slate-900 mt-2">
                   {stats.by_severity[level] ?? 0}
                 </div>
-                <div className="text-[10px] text-slate-400 uppercase">24 h</div>
+                <div className="text-[10px] text-slate-400 uppercase">{t('logs.stats.window')}</div>
               </button>
             ))}
           </div>
@@ -151,9 +152,9 @@ export const LogsManager: React.FC = () => {
 
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="p-4 border-b border-slate-100 space-y-3">
-            <AdminListToolbar search={search} onSearchChange={setSearch} searchPlaceholder="Hľadať v logoch…" />
+            <AdminListToolbar search={search} onSearchChange={setSearch} searchPlaceholder={t('logs.search.placeholder')} />
             <div className="flex flex-wrap gap-2 items-center">
-              <span className="text-xs text-slate-500 font-bold">Zdroj:</span>
+              <span className="text-xs text-slate-500 font-bold">{t('logs.source.label')}</span>
               <button
                 type="button"
                 onClick={() => setSource('')}
@@ -161,7 +162,7 @@ export const LogsManager: React.FC = () => {
                   source === '' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'
                 }`}
               >
-                Všetky
+                {t('logs.source.all')}
               </button>
               {sources.map((src) => (
                 <button
@@ -187,12 +188,12 @@ export const LogsManager: React.FC = () => {
               <table className="w-full text-sm">
                 <thead className="sticky top-0 bg-slate-50 z-10">
                   <tr className="border-b border-slate-100">
-                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">Čas</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">Úroveň</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">Zdroj</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">Kategória</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">IP</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">Správa</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">{t('logs.table.time')}</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">{t('logs.table.level')}</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">{t('logs.table.source')}</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">{t('logs.table.category')}</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">{t('logs.table.ip')}</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">{t('logs.table.message')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -207,7 +208,7 @@ export const LogsManager: React.FC = () => {
                             LOG_SEVERITY_COLORS[entry.severity] ?? LOG_SEVERITY_COLORS.info
                           }`}
                         >
-                          {entry.severity}
+                          {t(`logs.severity.${entry.severity}` as 'logs.severity.info')}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-xs font-mono">{entry.source ?? 'app'}</td>
@@ -226,7 +227,7 @@ export const LogsManager: React.FC = () => {
                 </tbody>
               </table>
               {items.length === 0 && (
-                <div className="p-12 text-center text-slate-400 text-sm">Žiadne záznamy</div>
+                <div className="p-12 text-center text-slate-400 text-sm">{t('logs.empty.none')}</div>
               )}
             </div>
           )}

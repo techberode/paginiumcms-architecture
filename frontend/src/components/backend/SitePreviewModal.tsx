@@ -9,6 +9,7 @@ import { resolveContentPreviewImage } from '../../utils/contentPreviewImage';
 import { formatContentDateLabels } from '../../utils/contentDates';
 import { markdownToHtml } from '../../utils/contentEditor';
 import { previewFrameMaxWidth } from '../../utils/sitePreview';
+import { useI18n } from '../../context/I18nContext';
 
 export type SitePreviewScale = 'fullscreen' | '100' | '75' | '50';
 
@@ -32,23 +33,23 @@ export interface SitePreviewModalProps {
   draft: SitePreviewDraft | null;
 }
 
-const SCALE_OPTIONS: { value: SitePreviewScale; label: string }[] = [
-  { value: 'fullscreen', label: 'Celá obrazovka' },
-  { value: '100', label: '100 %' },
-  { value: '75', label: '75 %' },
-  { value: '50', label: '50 %' },
-];
+const SCALE_VALUES: SitePreviewScale[] = ['fullscreen', '100', '75', '50'];
 
-function buildPreviewPage(draft: SitePreviewDraft, html: string): Page {
+function buildPreviewPage(
+  draft: SitePreviewDraft,
+  html: string,
+  untitled: string,
+  defaultAuthor: string
+): Page {
   const now = new Date().toISOString();
   return {
     id: `preview-${draft.slug || 'draft'}`,
-    title: draft.title || 'Bez názvu',
+    title: draft.title || untitled,
     slug: draft.slug || 'preview',
     content: draft.content,
     html,
     status: 'published',
-    author: draft.author || 'Redakcia',
+    author: draft.author || defaultAuthor,
     createdAt: draft.createdAt || now,
     updatedAt: draft.updatedAt || now,
     template: draft.template || 'default',
@@ -59,8 +60,13 @@ function buildPreviewPage(draft: SitePreviewDraft, html: string): Page {
   };
 }
 
-function buildPreviewArticle(draft: SitePreviewDraft, html: string): Article {
-  const page = buildPreviewPage(draft, html);
+function buildPreviewArticle(
+  draft: SitePreviewDraft,
+  html: string,
+  untitled: string,
+  defaultAuthor: string
+): Article {
+  const page = buildPreviewPage(draft, html, untitled, defaultAuthor);
   return {
     ...page,
     featuredImage: '',
@@ -70,9 +76,12 @@ function buildPreviewArticle(draft: SitePreviewDraft, html: string): Article {
   };
 }
 
-const ArticlePreviewBody: React.FC<{ article: Article }> = ({ article }) => {
+const ArticlePreviewBody: React.FC<{ article: Article; defaultAuthor: string }> = ({
+  article,
+  defaultAuthor,
+}) => {
   const image = resolveContentPreviewImage(article);
-  const author = article.author || 'Redakcia';
+  const author = article.author || defaultAuthor;
   const dates = formatContentDateLabels({
     createdAt: article.createdAt,
     updatedAt: article.updatedAt,
@@ -125,7 +134,10 @@ const ArticlePreviewBody: React.FC<{ article: Article }> = ({ article }) => {
 };
 
 export const SitePreviewModal: React.FC<SitePreviewModalProps> = ({ open, onClose, draft }) => {
+  const { t } = useI18n();
   const [scale, setScale] = useState<SitePreviewScale>('100');
+  const untitled = t('editor.sitePreview.untitled');
+  const defaultAuthor = t('editor.sitePreview.defaultAuthor');
 
   const previewHtml = useMemo(() => {
     if (!draft) {
@@ -143,36 +155,43 @@ export const SitePreviewModal: React.FC<SitePreviewModalProps> = ({ open, onClos
 
   const isFullscreen = scale === 'fullscreen';
   const frameMaxWidth = previewFrameMaxWidth(scale);
+  const displayTitle = draft.title || untitled;
+  const contentTypeLabel =
+    draft.type === 'article' ? t('editor.sitePreview.typeArticle') : t('editor.sitePreview.typePage');
 
   return (
     <div className="fixed inset-0 z-[100] flex flex-col bg-slate-950/80 backdrop-blur-sm">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 bg-slate-900 px-4 py-3 text-white">
         <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-indigo-300">Náhľad stránky</p>
+          <p className="text-xs font-bold uppercase tracking-wider text-indigo-300">
+            {t('editor.sitePreview.title')}
+          </p>
           <p className="text-sm font-semibold truncate max-w-[60vw]">
-            {draft.title || 'Bez názvu'} · {draft.type === 'article' ? 'článok' : 'stránka'}
+            {displayTitle} · {contentTypeLabel}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {SCALE_OPTIONS.map((option) => (
+          {SCALE_VALUES.map((value) => (
             <button
-              key={option.value}
+              key={value}
               type="button"
-              onClick={() => setScale(option.value)}
+              onClick={() => setScale(value)}
               className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${
-                scale === option.value
+                scale === value
                   ? 'bg-indigo-600 text-white'
                   : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
               }`}
             >
-              {option.label}
+              {t(`editor.sitePreview.scale.${value}`)}
             </button>
           ))}
           <button
             type="button"
             onClick={() => setScale(isFullscreen ? '100' : 'fullscreen')}
             className="rounded-lg bg-slate-800 p-2 text-slate-200 hover:bg-slate-700"
-            title={isFullscreen ? 'Obmedziť šírku' : 'Celá obrazovka'}
+            title={
+              isFullscreen ? t('editor.sitePreview.constrainWidth') : t('editor.sitePreview.fullscreen')
+            }
           >
             {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
           </button>
@@ -180,7 +199,7 @@ export const SitePreviewModal: React.FC<SitePreviewModalProps> = ({ open, onClos
             type="button"
             onClick={onClose}
             className="rounded-lg bg-slate-800 p-2 text-slate-200 hover:bg-red-600"
-            title="Zavrieť náhľad"
+            title={t('editor.sitePreview.close')}
           >
             <X size={16} />
           </button>
@@ -203,9 +222,12 @@ export const SitePreviewModal: React.FC<SitePreviewModalProps> = ({ open, onClos
           </div>
           <div className="pointer-events-none select-none">
             {draft.type === 'page' ? (
-              <PageRenderer page={buildPreviewPage(draft, previewHtml)} />
+              <PageRenderer page={buildPreviewPage(draft, previewHtml, untitled, defaultAuthor)} />
             ) : (
-              <ArticlePreviewBody article={buildPreviewArticle(draft, previewHtml)} />
+              <ArticlePreviewBody
+                article={buildPreviewArticle(draft, previewHtml, untitled, defaultAuthor)}
+                defaultAuthor={defaultAuthor}
+              />
             )}
           </div>
           <div className="pointer-events-none select-none">

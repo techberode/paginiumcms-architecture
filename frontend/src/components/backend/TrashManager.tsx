@@ -12,6 +12,7 @@ import { AdminListToolbar } from './AdminListToolbar';
 import { AdminListPagination } from './AdminListPagination';
 import { applyClientListView } from '../../utils/clientListView';
 import { summarizeBulkResult } from '../../types/bulk';
+import { useI18n } from '../../context/I18nContext';
 
 function formatBytes(size: number): string {
   if (size < 1024) {
@@ -23,15 +24,16 @@ function formatBytes(size: number): string {
   return `${(size / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function formatDeletedAt(value: string): string {
+function formatDeletedAt(value: string, locale: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
     return value;
   }
-  return date.toLocaleString('sk-SK');
+  return date.toLocaleString(locale === 'en' ? 'en-US' : 'sk-SK');
 }
 
 export const TrashManager: React.FC = () => {
+  const { t, locale } = useI18n();
   const [items, setItems] = useState<TrashItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [restoringId, setRestoringId] = useState<string | null>(null);
@@ -59,12 +61,12 @@ export const TrashManager: React.FC = () => {
     try {
       setItems(await trashApi.list());
     } catch {
-      toast.error('Nepodarilo sa načítať kôš');
+      toast.error(t('trash.toast.loadFailed'));
     } finally {
       setLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void loadItems();
@@ -79,18 +81,18 @@ export const TrashManager: React.FC = () => {
       applyClientListView(items, {
         search,
         searchText: (item) =>
-          `${item.originalPath} ${item.filename} ${formatDeletedAt(item.deletedAt)} ${formatBytes(item.size)}`,
+          `${item.originalPath} ${item.filename} ${formatDeletedAt(item.deletedAt, locale)} ${formatBytes(item.size)}`,
         sortField,
         sortDirection,
         sortFields: [
-          { value: 'path', label: 'Cesta', getValue: (item) => item.originalPath },
-          { value: 'deletedAt', label: 'Dátum', getValue: (item) => item.deletedAt },
-          { value: 'size', label: 'Veľkosť', getValue: (item) => item.size },
+          { value: 'path', label: t('trash.sort.path'), getValue: (item) => item.originalPath },
+          { value: 'deletedAt', label: t('trash.sort.deletedAt'), getValue: (item) => item.deletedAt },
+          { value: 'size', label: t('trash.sort.size'), getValue: (item) => item.size },
         ],
         page,
         pageSize,
       }),
-    [items, page, pageSize, search, sortDirection, sortField]
+    [items, page, pageSize, search, sortDirection, sortField, locale, t]
   );
 
   const bulkSelection = useBulkSelection(
@@ -99,7 +101,7 @@ export const TrashManager: React.FC = () => {
   );
 
   const handleRestore = async (item: TrashItem) => {
-    if (!confirm(`Obnoviť „${item.originalPath}"?`)) {
+    if (!confirm(t('trash.confirm.restoreOne', { path: item.originalPath }))) {
       return;
     }
 
@@ -107,13 +109,13 @@ export const TrashManager: React.FC = () => {
     try {
       const result = await trashApi.restore(item.id);
       if (result) {
-        toast.success(`Obnovené: ${result.originalPath}`);
+        toast.success(t('trash.toast.restored', { path: result.originalPath }));
         await loadItems();
       } else {
-        toast.error('Obnova zlyhala');
+        toast.error(t('trash.toast.restoreFailed'));
       }
     } catch {
-      toast.error('Obnova zlyhala');
+      toast.error(t('trash.toast.restoreFailed'));
     } finally {
       setRestoringId(null);
     }
@@ -123,7 +125,7 @@ export const TrashManager: React.FC = () => {
     if (bulkSelection.count === 0) {
       return;
     }
-    if (!confirm(`Obnoviť ${bulkSelection.count} položiek z koša?`)) {
+    if (!confirm(t('trash.confirm.bulkRestore', { count: String(bulkSelection.count) }))) {
       return;
     }
 
@@ -131,11 +133,11 @@ export const TrashManager: React.FC = () => {
     try {
       const result = await trashApi.bulkRestore(bulkSelection.selectedIds);
       if (result) {
-        toast.success(summarizeBulkResult(result));
+        toast.success(summarizeBulkResult(result, t));
         bulkSelection.clear();
         await loadItems();
       } else {
-        toast.error('Hromadná obnova zlyhala');
+        toast.error(t('trash.toast.bulkRestoreFailed'));
       }
     } finally {
       setBulkBusy(false);
@@ -146,7 +148,7 @@ export const TrashManager: React.FC = () => {
     if (bulkSelection.count === 0) {
       return;
     }
-    if (!confirm(`Natrvalo zmazať ${bulkSelection.count} položiek? Túto akciu nemožno vrátiť.`)) {
+    if (!confirm(t('trash.confirm.bulkPurge', { count: String(bulkSelection.count) }))) {
       return;
     }
 
@@ -154,11 +156,11 @@ export const TrashManager: React.FC = () => {
     try {
       const result = await trashApi.bulkPurge(bulkSelection.selectedIds);
       if (result) {
-        toast.success(summarizeBulkResult(result));
+        toast.success(summarizeBulkResult(result, t));
         bulkSelection.clear();
         await loadItems();
       } else {
-        toast.error('Trvalé mazanie zlyhalo');
+        toast.error(t('trash.toast.bulkPurgeFailed'));
       }
     } finally {
       setBulkBusy(false);
@@ -174,13 +176,13 @@ export const TrashManager: React.FC = () => {
     try {
       const result = await trashApi.bulkBackup(bulkSelection.selectedIds);
       if (result) {
-        toast.success(`Záloha vytvorená (${result.count} položiek)`);
+        toast.success(t('trash.toast.backupCreated', { count: String(result.count) }));
         const downloaded = await trashApi.downloadBackup(result.downloadUrl, result.filename);
         if (!downloaded) {
-          toast.warning('Záloha bola vytvorená, ale stiahnutie zlyhalo.');
+          toast.warning(t('trash.toast.backupDownloadFailed'));
         }
       } else {
-        toast.error('Záloha koša zlyhala');
+        toast.error(t('trash.toast.backupFailed'));
       }
     } finally {
       setBulkBusy(false);
@@ -191,7 +193,7 @@ export const TrashManager: React.FC = () => {
     if (items.length === 0) {
       return;
     }
-    if (!confirm(`Vysypať celý kôš (${items.length} položiek)? Položky sa natrvalo zmažú.`)) {
+    if (!confirm(t('trash.confirm.empty', { count: String(items.length) }))) {
       return;
     }
 
@@ -199,11 +201,15 @@ export const TrashManager: React.FC = () => {
     try {
       const removed = await trashApi.emptyTrash();
       if (removed !== null) {
-        toast.success(removed > 0 ? `Kôš vyprázdnený (${removed} položiek)` : 'Kôš je prázdny');
+        toast.success(
+          removed > 0
+            ? t('trash.toast.emptied', { count: String(removed) })
+            : t('trash.toast.alreadyEmpty')
+        );
         bulkSelection.clear();
         await loadItems();
       } else {
-        toast.error('Vysypanie koša zlyhalo');
+        toast.error(t('trash.toast.emptyFailed'));
       }
     } finally {
       setBulkBusy(false);
@@ -218,9 +224,9 @@ export const TrashManager: React.FC = () => {
             <Trash2 className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Kôš</h1>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{t('trash.page.title')}</h1>
             <p className="text-sm text-slate-500 dark:text-slate-400">
-              Soft-delete obsah — obnova presunie súbor späť na pôvodné miesto.
+              {t('trash.page.subtitle')}
             </p>
           </div>
         </div>
@@ -230,14 +236,14 @@ export const TrashManager: React.FC = () => {
           disabled={bulkBusy || items.length === 0}
           onClick={() => void handleEmptyTrash()}
         >
-          Vysypať kôš
+          {t('trash.actions.empty')}
         </button>
       </div>
 
       <AdminListToolbar
         search={search}
         onSearchChange={setSearch}
-        searchPlaceholder="Hľadať podľa cesty, názvu alebo dátumu…"
+        searchPlaceholder={t('trash.search.placeholder')}
         pageSize={pageSize}
         onPageSizeChange={setPageSize}
         onResetFilters={resetFilters}
@@ -246,26 +252,26 @@ export const TrashManager: React.FC = () => {
 
       <BulkActionBar
         count={bulkSelection.count}
-        itemLabel="položiek vybraných"
+        itemLabel={t('trash.bulk.itemLabel')}
         onClear={bulkSelection.clear}
         actions={[
           {
             id: 'restore',
-            label: 'Obnoviť',
+            label: t('trash.bulk.restore'),
             variant: 'primary',
             disabled: bulkBusy,
             onClick: () => void handleBulkRestore(),
           },
           {
             id: 'backup',
-            label: 'Zálohovať',
+            label: t('trash.bulk.backup'),
             variant: 'secondary',
             disabled: bulkBusy,
             onClick: () => void handleBulkBackup(),
           },
           {
             id: 'purge',
-            label: 'Zmazať natrvalo',
+            label: t('trash.bulk.purge'),
             variant: 'danger',
             disabled: bulkBusy,
             onClick: () => void handleBulkPurge(),
@@ -276,11 +282,11 @@ export const TrashManager: React.FC = () => {
       {loading ? (
         <div className="flex items-center gap-2 text-slate-500 py-12 justify-center">
           <Loader2 className="w-5 h-5 animate-spin" />
-          Načítavam…
+          {t('trash.loading')}
         </div>
       ) : listView.total === 0 ? (
         <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-12 text-center text-slate-500">
-          {items.length === 0 ? 'Kôš je prázdny.' : 'Nenašli sa žiadne položky pre aktuálny filter.'}
+          {items.length === 0 ? t('trash.empty.none') : t('trash.empty.filter')}
         </div>
       ) : (
         <>
@@ -293,11 +299,11 @@ export const TrashManager: React.FC = () => {
                       type="checkbox"
                       checked={bulkSelection.allSelected && listView.items.length > 0}
                       onChange={bulkSelection.toggleAll}
-                      aria-label="Vybrať všetko"
+                      aria-label={t('trash.table.selectAll')}
                     />
                   </th>
                   <SortableTableHeader
-                    label="Pôvodná cesta"
+                    label={t('trash.table.path')}
                     field="path"
                     activeField={sortField}
                     direction={sortDirection}
@@ -305,7 +311,7 @@ export const TrashManager: React.FC = () => {
                     thClassName="px-4 py-3"
                   />
                   <SortableTableHeader
-                    label="Zmazané"
+                    label={t('trash.table.deletedAt')}
                     field="deletedAt"
                     activeField={sortField}
                     direction={sortDirection}
@@ -313,14 +319,14 @@ export const TrashManager: React.FC = () => {
                     thClassName="px-4 py-3 hide-mobile"
                   />
                   <SortableTableHeader
-                    label="Veľkosť"
+                    label={t('trash.table.size')}
                     field="size"
                     activeField={sortField}
                     direction={sortDirection}
                     onSort={handleSort}
                     thClassName="px-4 py-3"
                   />
-                  <th className="px-4 py-3 font-medium text-right">Akcia</th>
+                  <th className="px-4 py-3 font-medium text-right">{t('trash.table.action')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -331,14 +337,14 @@ export const TrashManager: React.FC = () => {
                         type="checkbox"
                         checked={bulkSelection.isSelected(item.id)}
                         onChange={() => bulkSelection.toggle(item.id)}
-                        aria-label={`Vybrať ${item.originalPath}`}
+                        aria-label={t('trash.table.selectOne', { path: item.originalPath })}
                       />
                     </td>
                     <td className="px-4 py-3 font-mono text-xs text-slate-800 dark:text-slate-200">
                       {item.originalPath}
                     </td>
                     <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
-                      {formatDeletedAt(item.deletedAt)}
+                      {formatDeletedAt(item.deletedAt, locale)}
                     </td>
                     <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
                       {formatBytes(item.size)}
@@ -355,7 +361,7 @@ export const TrashManager: React.FC = () => {
                         ) : (
                           <ArchiveRestore className="w-3.5 h-3.5" />
                         )}
-                        Obnoviť
+                        {t('trash.actions.restore')}
                       </button>
                     </td>
                   </tr>
@@ -371,7 +377,7 @@ export const TrashManager: React.FC = () => {
             pageSize={pageSize}
             loading={loading}
             onPageChange={setPage}
-            itemLabel="položiek"
+            itemLabel={t('trash.pagination.itemLabel')}
           />
         </>
       )}
