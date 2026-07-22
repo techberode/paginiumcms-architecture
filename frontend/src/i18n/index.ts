@@ -77,7 +77,8 @@ export function translate(
   const group = rest.length > 0 ? namespace : 'common';
   const lookupKey = rest.length > 0 ? itemKey : key;
 
-  const moduleMessage = resolve(moduleCatalog[locale][group] ?? {}, lookupKey);
+  const localeCatalog = moduleCatalog[locale] ?? moduleCatalog[DEFAULT_LOCALE] ?? {};
+  const moduleMessage = resolve(localeCatalog[group] ?? {}, lookupKey);
   if (moduleMessage) {
     return applyParams(moduleMessage, params);
   }

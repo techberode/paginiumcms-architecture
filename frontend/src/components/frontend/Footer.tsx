@@ -4,12 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import { Rocket, ShieldCheck, Zap, Heart, ExternalLink } from 'lucide-react';
 import { usePublicSite } from '../../context/PublicSiteContext';
 import { useSettingsContext } from '../../context/SettingsContext';
+import { useI18n } from '../../context/I18nContext';
 import { linkTargetProps } from '../../utils/linkTarget';
 import { useOpenLinksInNewTab } from '../../hooks/useOpenLinksInNewTab';
 
 export const Footer: React.FC = () => {
   const { navigation, siteTitle, siteTagline, footerText } = usePublicSite();
   const { settings } = useSettingsContext();
+  const { t } = useI18n();
   const navigate = useNavigate();
   const openInNewTab = useOpenLinksInNewTab();
   const demoUrl = settings.demo?.url ?? 'https://demo.paginiumcms.com';
@@ -31,13 +33,13 @@ export const Footer: React.FC = () => {
             <p className="text-sm text-slate-400 leading-relaxed">{siteTagline}</p>
             <div className="mt-6">
               <span className="inline-flex items-center gap-1 text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-full font-semibold">
-                <ShieldCheck className="w-3.5 h-3.5" /> Secure FlatFile
+                <ShieldCheck className="w-3.5 h-3.5" /> {t('public.footer.secureBadge')}
               </span>
             </div>
           </div>
 
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200 mb-4">Rýchle odkazy</h4>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200 mb-4">{t('public.footer.quickLinks')}</h4>
             <ul className="space-y-2.5">
               {sortedNav.map((item) => (
                 <li key={item.id}>
@@ -54,29 +56,29 @@ export const Footer: React.FC = () => {
           </div>
 
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200 mb-4">Architektúra</h4>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200 mb-4">{t('public.footer.architectureTitle')}</h4>
             <ul className="space-y-3 text-sm text-slate-400">
               <li className="flex items-center gap-2">
                 <Zap className="w-4 h-4 text-indigo-400 shrink-0" />
-                <span>Flat-file storage bez SQL</span>
+                <span>{t('public.footer.architectureFlatFile')}</span>
               </li>
               <li className="flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>Session auth + 2FA admin</span>
+                <span>{t('public.footer.architectureAuth')}</span>
               </li>
             </ul>
           </div>
 
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200 mb-4">Vyskúšajte CMS</h4>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200 mb-4">{t('public.footer.tryCmsTitle')}</h4>
             {isDemoInstance ? (
               <p className="text-sm text-slate-500 leading-relaxed">
-                Ste na demo inštancii. Po skúške sa prostredie resetuje pre ďalších návštevníkov.
+                {t('public.footer.demoInstanceBody')}
               </p>
             ) : (
               <div className="space-y-3">
                 <p className="text-sm text-slate-500 leading-relaxed">
-                  Open-source flat-file CMS — vyskúšajte admin aj verejný web bez inštalácie.
+                  {t('public.footer.tryCmsBody')}
                 </p>
                 <a
                   href={demoUrl}
@@ -94,9 +96,9 @@ export const Footer: React.FC = () => {
         <div className="mt-12 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <div>{footerText}</div>
           <div className="flex items-center gap-1">
-            <span>Navrhnuté s</span>
+            <span>{t('public.footer.madeWith')}</span>
             <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />
-            <span>pre tvorcov obsahu</span>
+            <span>{t('public.footer.forCreators')}</span>
           </div>
         </div>
       </div>

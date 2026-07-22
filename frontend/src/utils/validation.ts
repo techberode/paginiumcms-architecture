@@ -6,6 +6,8 @@
 // FE dá okamžitú spätnú väzbu, BE ostáva jediný zdroj pravdy (a jeho 422
 // odpoveď so `errors` mapou má rovnaký tvar ako výstup `validate()` tu).
 
+import { DEFAULT_LOCALE, translate, type Locale } from '../i18n';
+
 export type Rule = string; // napr. 'required', 'min:2', 'in:sk,en'
 
 export type RuleMap = Record<string, Rule[]>;
@@ -157,26 +159,30 @@ export const DEFAULT_PASSWORD_POLICY: PasswordPolicy = {
  * Overí heslo podľa politiky (doplnok k validate() – veľké/malé písmeno, číslo, …).
  * Vracia zoznam chybových správ; prázdne pole = OK.
  */
-export function validatePasswordPolicy(password: string, policy: PasswordPolicy = DEFAULT_PASSWORD_POLICY): string[] {
+export function validatePasswordPolicy(
+  password: string,
+  policy: PasswordPolicy = DEFAULT_PASSWORD_POLICY,
+  locale: Locale = DEFAULT_LOCALE
+): string[] {
   const errors: string[] = [];
 
   if (password.length < policy.minLength) {
-    errors.push(`Heslo musí mať aspoň ${policy.minLength} znakov.`);
+    errors.push(translate(locale, 'public.auth.password.validation.minLength', { minLength: policy.minLength }));
   }
   if (password.length > policy.maxLength) {
-    errors.push(`Heslo môže mať maximálne ${policy.maxLength} znakov.`);
+    errors.push(translate(locale, 'public.auth.password.validation.maxLength', { maxLength: policy.maxLength }));
   }
   if (policy.requireUppercase && !/[A-Z]/.test(password)) {
-    errors.push('Heslo musí obsahovať aspoň jedno veľké písmeno.');
+    errors.push(translate(locale, 'public.auth.password.validation.uppercase'));
   }
   if (policy.requireLowercase && !/[a-z]/.test(password)) {
-    errors.push('Heslo musí obsahovať aspoň jedno malé písmeno.');
+    errors.push(translate(locale, 'public.auth.password.validation.lowercase'));
   }
   if (policy.requireNumbers && !/[0-9]/.test(password)) {
-    errors.push('Heslo musí obsahovať aspoň jednu číslicu.');
+    errors.push(translate(locale, 'public.auth.password.validation.number'));
   }
   if (policy.requireSpecialChars && !/[^a-zA-Z0-9]/.test(password)) {
-    errors.push('Heslo musí obsahovať aspoň jeden špeciálny znak.');
+    errors.push(translate(locale, 'public.auth.password.validation.special'));
   }
 
   return errors;

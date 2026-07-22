@@ -1,6 +1,6 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-22 · verzia **2.0.49** (wave 5b audit locale / ISS-061)
+> Posledná aktualizácia: 2026-07-22 · verzia **2.0.50** (wave 5c public site i18n / ISS-062)
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
 
@@ -77,6 +77,7 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-059 | Vitest — `useI18n()` bez `I18nProvider` v unit testoch (CI @ `f0a885c`) | Nízka (CI) | ✅ Opravené — `renderWithProviders` (**2.0.47**) |
 | ISS-060 | `settings/en.ts` workflows — SK copy-paste v EN katalógu (OTP labely) | Stredná (i18n UX) | ✅ Opravené (**2.0.47** / `f0a885c`) |
 | ISS-061 | Audit správy v EN admin locale zostávali po slovensky | Stredná (i18n UX) | ✅ Opravené (**2.0.49**) |
+| ISS-062 | Verejný web mal hardcoded SK aj pri EN admin locale | Stredná (i18n UX) | ✅ Opravené (**2.0.50**) |
 
 
 
@@ -1534,6 +1535,28 @@ Spustené z komponentov, ktoré boli migrované na `useI18n()` v It.18f, ale uni
 **Súbory:** `audit.php` (lang), `AuditMessageFormatter.php`, `AuditTrailService.php`, `EnhancedVersionManager.php`, `formatAuditEvent.ts`, `AuditTrail.tsx`, `DashboardActivityPanel.tsx`, `i18n/modules/audit/*`.
 
 **Súvisí s:** It.18, ISS-048 (audit formatter), wave 5b [CONTINUATION.md](CONTINUATION.md).
+
+---
+
+## ISS-062 – Verejný web hardcoded SK pri EN locale — VYRIEŠENÉ
+
+**Symptóm:** Pri **`Nastavenia → Všeobecné → Jazyk = English`** zostal verejný web (navbar, blog, footer, login/register modals, contact form) po slovensky, zatiaľ čo admin UI bol anglický.
+
+**Príčina:** ~120 hardcoded SK reťazcov v `frontend/src/components/frontend/*`, auth modals, `PublicSiteContext`, `contentDates.ts`, `readingTime.ts`, `validatePasswordPolicy()`.
+
+**Implementované riešenie (2.0.50 / wave 5c):**
+
+- `frontend/src/i18n/modules/public/{sk,en}.ts` — katalóg `public.*` (~120 kľúčov)
+- 18+ komponentov → `useI18n().t('public.*')`
+- `formatContentDateLabels()` / `formatReadingTime()` — parameter `locale`
+- `validatePasswordPolicy()` — `public.auth.password.validation.*`
+- Vitest **217/217** OK; `public.test.ts` SK/EN parity
+
+**Overenie:** Settings → EN → `/`, `/blog`, `/login` anglicky; SK späť po prepnutí jazyka.
+
+**Súbory:** `i18n/modules/public/*`, `BlogRenderer.tsx`, `Navbar.tsx`, `LoginModal.tsx`, auth modals, `PublicSiteContext.tsx`, `contentDates.ts`, `readingTime.ts`.
+
+**Súvisí s:** It.18, wave 5c [CONTINUATION.md](CONTINUATION.md).
 
 ---
 

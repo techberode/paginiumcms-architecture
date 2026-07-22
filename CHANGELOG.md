@@ -40,13 +40,42 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.18f — Ops + platform/editor i18n (Beta gate) | **2.0.47** | [below](#2047--2026-07-22) |
 | Security audit hardening (A1–S10, ISS-052–058) | **2.0.48** | [below](#2048--2026-07-22) |
 | Audit locale (formatAuditEvent / wave 5b) | **2.0.49** | [below](#2049--2026-07-22) |
+| Public site i18n (wave 5c) | **2.0.50** | [below](#2050--2026-07-22) |
 | It.19b–19d — Security runtime, auth UX, password policy | **2.0.45** | [below](#2045--2026-07-21) |
 
 ---
 
 ## [Unreleased]
 
-*(Next: public site i18n · It.15 emitters)*
+*(Next: It.15 hook emitters · wave 5d)*
+
+---
+
+## [2.0.50] – 2026-07-22
+
+**Wave 5c** — Public site UI follows admin locale (`general.language`).  
+Detail: [ITERATION_18.md](docs/ITERATION_18.md) · [ISSUES.md](docs/ISSUES.md) ISS-062.
+
+### Added
+
+- **`frontend/src/i18n/modules/public/{sk,en}.ts`** — ~120 keys: nav, footer, blog, search, contact, company, comments, auth modals, CMS bar
+- **`frontend/src/i18n/modules/public/public.test.ts`** — catalog parity + translate smoke
+
+### Changed
+
+- **Public frontend** — `BlogRenderer`, `PageRenderer`, `Navbar`, `Footer`, `ContactForm`, `SiteSearchModal`, `ArticleComments`, `CompanyInfoPanel`, `CMSBar`, `PublicSiteLayout` → `useI18n().t('public.*')`
+- **Auth on public site** — `LoginModal`, `RegisterModal`, `ForgotPasswordModal`, `ResetPasswordModal`, `AuthShell`, `PasswordPolicyHints`, `TotpCodeInput`, `useAuthBranding` → `public.auth.*`
+- **`PublicSiteContext`** — localized core nav (`Domov`/`Blog`), footer copyright, site tagline defaults
+- **`formatContentDateLabels()` / `formatReadingTime()`** — accept `locale`; date formatting uses `sk-SK` / `en-US`
+- **`validatePasswordPolicy()`** — localized error messages via `public.auth.password.validation.*`
+
+### Fixed
+
+- Public site stayed Slovak when admin language was English (ISS-062)
+
+### Tests
+
+- Vitest: `public.test.ts`, updated `contentDates.test.ts`, `readingTime.test.ts` — **217/217** OK
 
 ---
 

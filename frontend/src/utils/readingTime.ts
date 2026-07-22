@@ -1,10 +1,12 @@
-/** Formats reading time for Slovak UI. */
-export function formatReadingTime(minutes: number): string {
+import { DEFAULT_LOCALE, translate, type Locale } from '../i18n';
+
+/** Formats reading time for public UI. */
+export function formatReadingTime(minutes: number, locale: Locale = DEFAULT_LOCALE): string {
   const safe = Number.isFinite(minutes) && minutes > 0 ? Math.round(minutes) : 1;
   if (safe === 1) {
-    return '1 min čítania';
+    return translate(locale, 'public.blog.readingTime.one');
   }
-  return `${safe} min čítania`;
+  return translate(locale, 'public.blog.readingTime.other', { count: safe });
 }
 
 export function resolveShowReadingTime(contentSettings: Record<string, unknown> | undefined): boolean {

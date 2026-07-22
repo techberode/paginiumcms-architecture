@@ -6,25 +6,28 @@ import { ContactForm } from './ContactForm';
 import { CompanyInfoPanel, CompanyMapEmbed } from './CompanyInfoPanel';
 import { MarkdownRenderer } from '../common/MarkdownRenderer';
 import { Calendar, User, FileText, ArrowRight } from 'lucide-react';
+import { useI18n } from '../../context/I18nContext';
 
 interface PageRendererProps {
   page: Page;
 }
 
-function pageMeta(page: Page) {
+function pageMeta(page: Page, defaultAuthor: string) {
   const fm = page.frontMatter ?? {};
   return {
     template: String(page.template ?? fm.template ?? ''),
     description: String(fm.description ?? ''),
     featuredImage: String(fm.featuredImage ?? fm.featured_image ?? ''),
     date: String(fm.date ?? page.createdAt),
-    author: String(page.author ?? fm.author ?? 'Redakcia'),
+    author: String(page.author ?? fm.author ?? defaultAuthor),
   };
 }
 
 export const PageRenderer: React.FC<PageRendererProps> = ({ page }) => {
+  const { t, locale } = useI18n();
+  const dateLocale = locale === 'en' ? 'en-US' : 'sk-SK';
   const navigate = useNavigate();
-  const meta = pageMeta(page);
+  const meta = pageMeta(page, t('public.defaults.editorial'));
   const isHome = meta.template === 'home' || page.slug === 'home';
   const isContact = meta.template === 'contact' || page.slug === 'contact';
   const isServices = meta.template === 'services' || page.slug === 'sluzby' || page.slug === 'services';
@@ -36,13 +39,13 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page }) => {
         <div className="relative overflow-hidden bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-900 text-white pt-20 pb-28 border-b border-slate-800">
           <div className="absolute inset-0 z-0 opacity-20">
             {meta.featuredImage && (
-              <img src={meta.featuredImage} alt="Paginium Hero" className="w-full h-full object-cover" />
+              <img src={meta.featuredImage} alt={t('public.page.hero.imageAlt')} className="w-full h-full object-cover" />
             )}
             <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm" />
           </div>
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/20 text-indigo-300 font-bold text-xs mb-8 border border-indigo-500/30 backdrop-blur-md">
-              <span>PaginiumCMS FlatFile</span>
+              <span>{t('public.page.hero.badge')}</span>
             </div>
             <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight leading-tight max-w-4xl mx-auto">
               {page.title}
@@ -56,7 +59,7 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page }) => {
                 onClick={() => navigate('/blog')}
                 className="bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold px-8 py-4 rounded-2xl shadow-xl shadow-indigo-600/30 flex items-center gap-2 transition-all cursor-pointer text-base group"
               >
-                <span>Preskúmať Blog</span>
+                <span>{t('public.page.hero.exploreBlog')}</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </button>
               <button
@@ -64,7 +67,7 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page }) => {
                 onClick={() => navigate('/about')}
                 className="bg-slate-800/80 hover:bg-slate-800 text-slate-100 font-bold px-8 py-4 rounded-2xl border border-slate-700 backdrop-blur-md transition-all cursor-pointer text-base"
               >
-                O nás
+                {t('public.page.hero.aboutUs')}
               </button>
             </div>
           </div>
@@ -75,12 +78,12 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page }) => {
             <div className="flex items-center gap-3 text-xs text-slate-500 font-semibold mb-3">
               <span className="flex items-center gap-1 text-indigo-600 dark:text-indigo-400">
                 <FileText className="w-4 h-4" />
-                {meta.template ? meta.template.toUpperCase() : 'STRÁNKA'}
+                {meta.template ? meta.template.toUpperCase() : t('public.page.meta.pageLabel')}
               </span>
               <span>•</span>
               <span className="flex items-center gap-1">
                 <Calendar className="w-3.5 h-3.5" />
-                {new Date(meta.date).toLocaleDateString('sk-SK')}
+                {new Date(meta.date).toLocaleDateString(dateLocale)}
               </span>
               <span>•</span>
               <span className="flex items-center gap-1">
@@ -120,16 +123,14 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page }) => {
 
         {isServices && (
           <div className="mt-12 bg-gradient-to-r from-indigo-900 to-violet-900 rounded-3xl p-8 sm:p-12 text-white shadow-xl text-center">
-            <h3 className="text-2xl font-black">Potrebujete riešenie na mieru?</h3>
-            <p className="mt-3 text-indigo-200 max-w-xl mx-auto text-sm">
-              Sme pripravení priniesť vám na mieru navrhnutý redakčný FlatFile systém.
-            </p>
+            <h3 className="text-2xl font-black">{t('public.page.services.ctaTitle')}</h3>
+            <p className="mt-3 text-indigo-200 max-w-xl mx-auto text-sm">{t('public.page.services.ctaBody')}</p>
             <button
               type="button"
               onClick={() => navigate('/contact')}
               className="mt-6 bg-white hover:bg-indigo-50 text-indigo-950 font-extrabold px-8 py-3.5 rounded-xl shadow transition-all cursor-pointer text-sm"
             >
-              Dohodnúť si bezplatnú konzultáciu
+              {t('public.page.services.ctaButton')}
             </button>
           </div>
         )}

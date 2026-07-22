@@ -1,7 +1,7 @@
 # Iteration 18 – Admin UI Localization (i18n)
 
-**Status:** ✅ Shipped · It.18a–d **2.0.44** · It.18e **2.0.46** · **It.18f ✅ Beta gate (2.0.47)** · **Audit locale ✅ (2.0.49 / ISS-061)**  
-**Version:** 2.0.44 · 2.0.46 · **2.0.47** · **2.0.49**
+**Status:** ✅ Shipped · It.18a–d **2.0.44** · It.18e **2.0.46** · **It.18f ✅ Beta gate (2.0.47)** · **Audit locale ✅ (2.0.49 / ISS-061)** · **Public site i18n ✅ (2.0.50 / ISS-062)**  
+**Version:** 2.0.44 · 2.0.46 · **2.0.47** · **2.0.49** · **2.0.50**
 
 ## Summary
 
@@ -70,6 +70,18 @@ Migrate all admin UI strings from hardcoded Slovak to `useI18n()`, with backend 
 
 **ISS-061 (fixed in 2.0.49):** Audit správy v EN admin locale zostávali po slovensky — `AuditMessageFormatter` + `formatFromLog()` re-lokalizácia.
 
+### Wave 5c ✅ (2.0.50 / ISS-062)
+
+| Path | Role |
+|------|------|
+| `src/i18n/modules/public/{sk,en}.ts` | Public site catalog — nav, blog, search, contact, auth, footer (~120 keys) |
+| `src/i18n/modules/public/public.test.ts` | SK/EN key parity |
+| `BlogRenderer.tsx`, `PageRenderer.tsx`, `Navbar.tsx`, `Footer.tsx`, … | Public chrome → `useI18n()` |
+| `LoginModal.tsx`, auth modals, `AuthShell`, `PasswordPolicyHints` | Public auth flow → `public.auth.*` |
+| `contentDates.ts`, `readingTime.ts`, `validatePasswordPolicy()` | Locale-aware helpers |
+
+**ISS-062 (fixed in 2.0.50):** Verejný web mal hardcoded SK aj pri EN admin locale.
+
 ### Test harness (ISS-059, CI hotfix)
 
 | Path | Role |
@@ -83,7 +95,6 @@ Migrate all admin UI strings from hardcoded Slovak to `useI18n()`, with backend 
 **CI failure @ `f0a885c`:** `useI18n must be used within I18nProvider` — 6 Vitest suites. Detail: [ISSUES.md](ISSUES.md) ISS-059.
 
 ## Remaining ⏳ (post-Beta)
-- Public site (`PublicSite`) – separate catalog
 - Plugin i18n: `Http/Extensions/{id}/lang/` + `frontend/src/extensions/{id}/i18n/`
 - Optional: `GET /api/i18n/{locale}` for dynamic loading
 - Settings `general.language` enum from `SupportedLocalesRegistry`

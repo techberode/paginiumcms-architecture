@@ -3,11 +3,13 @@ import { MessageSquare, Send, Loader2 } from 'lucide-react';
 import { submitContactForm } from '../../api/contact';
 import { useToast } from '../../hooks/useToast';
 import { useSettingsContext } from '../../context/SettingsContext';
+import { useI18n } from '../../context/I18nContext';
 import { parseContactSubjects } from '../../utils/contactSubjects';
 
 const CUSTOM_SUBJECT_VALUE = '__custom__';
 
 export const ContactForm: React.FC = () => {
+  const { t } = useI18n();
   const toast = useToast();
   const { settings } = useSettingsContext();
   const subjects = useMemo(
@@ -30,7 +32,7 @@ export const ContactForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!resolvedSubject) {
-      toast.error('Vyberte alebo zadajte predmet správy.');
+      toast.error(t('public.contact.toast.subjectRequired'));
       return;
     }
 
@@ -40,7 +42,7 @@ export const ContactForm: React.FC = () => {
 
     if (result.ok) {
       setSent(true);
-      toast.success(result.message ?? 'Správa bola odoslaná.');
+      toast.success(result.message ?? t('public.contact.toast.sent'));
       setName('');
       setEmail('');
       setSubjectChoice(subjects[0] ?? '');
@@ -54,10 +56,10 @@ export const ContactForm: React.FC = () => {
   if (sent) {
     return (
       <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-8 text-center">
-        <p className="text-lg font-bold text-slate-900 dark:text-white">Ďakujeme!</p>
-        <p className="text-sm text-slate-500 mt-2">Správu sme prijali a čoskoro sa ozveme.</p>
+        <p className="text-lg font-bold text-slate-900 dark:text-white">{t('public.contact.success.title')}</p>
+        <p className="text-sm text-slate-500 mt-2">{t('public.contact.success.body')}</p>
         <button type="button" className="btn btn-secondary mt-4" onClick={() => setSent(false)}>
-          Odoslať ďalšiu správu
+          {t('public.contact.success.sendAnother')}
         </button>
       </div>
     );
@@ -73,19 +75,33 @@ export const ContactForm: React.FC = () => {
           <MessageSquare className="w-6 h-6" />
         </div>
         <div>
-          <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">Kontaktný formulár</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400">Správy sa ukladajú do admin inboxu.</p>
+          <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">{t('public.contact.title')}</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400">{t('public.contact.subtitle')}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <input className="form-input" required minLength={2} placeholder="Vaše meno" value={name} onChange={(e) => setName(e.target.value)} />
-        <input className="form-input" required type="email" placeholder="E-mail" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <input
+          className="form-input"
+          required
+          minLength={2}
+          placeholder={t('public.contact.fields.name')}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <input
+          className="form-input"
+          required
+          type="email"
+          placeholder={t('public.contact.fields.email')}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
       </div>
 
       <div className="space-y-2">
         <label className="form-label" htmlFor="contact-subject">
-          Predmet
+          {t('public.contact.fields.subject')}
         </label>
         <select
           id="contact-subject"
@@ -98,14 +114,16 @@ export const ContactForm: React.FC = () => {
               {subject}
             </option>
           ))}
-          {allowCustomSubject && <option value={CUSTOM_SUBJECT_VALUE}>Vlastný predmet…</option>}
+          {allowCustomSubject && (
+            <option value={CUSTOM_SUBJECT_VALUE}>{t('public.contact.fields.customSubjectOption')}</option>
+          )}
         </select>
         {subjectChoice === CUSTOM_SUBJECT_VALUE && (
           <input
             className="form-input"
             required
             minLength={3}
-            placeholder="Vlastný predmet správy"
+            placeholder={t('public.contact.fields.customSubjectPlaceholder')}
             value={customSubject}
             onChange={(e) => setCustomSubject(e.target.value)}
           />
@@ -116,13 +134,13 @@ export const ContactForm: React.FC = () => {
         className="form-input min-h-[140px]"
         required
         minLength={10}
-        placeholder="Vaša správa…"
+        placeholder={t('public.contact.fields.messagePlaceholder')}
         value={message}
         onChange={(e) => setMessage(e.target.value)}
       />
       <button type="submit" className="btn btn-primary w-full sm:w-auto" disabled={sending}>
         {sending ? <Loader2 className="w-4 h-4 animate-spin inline mr-2" /> : <Send className="w-4 h-4 inline mr-2" />}
-        Odoslať správu
+        {t('public.contact.submit')}
       </button>
     </form>
   );

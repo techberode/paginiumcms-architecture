@@ -3,6 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Edit3, PlusCircle, LayoutDashboard, LogOut, Database } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { useI18n } from '../../context/I18nContext';
 
 export interface CMSBarDoc {
   type: 'page' | 'article';
@@ -17,6 +18,7 @@ interface CMSBarProps {
 export const CMSBar: React.FC<CMSBarProps> = ({ currentDoc }) => {
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const { t } = useI18n();
 
   const handleEditCurrent = () => {
     if (!currentDoc) {
@@ -31,9 +33,9 @@ export const CMSBar: React.FC<CMSBarProps> = ({ currentDoc }) => {
       <div className="flex items-center gap-3">
         <span className="flex items-center gap-1.5 bg-indigo-500/20 text-indigo-400 px-2.5 py-1 rounded-full font-bold">
           <Database className="w-3.5 h-3.5" />
-          Paginium FlatFile Engine
+          {t('public.cmsBar.badge')}
         </span>
-        <span className="hidden sm:inline text-slate-400">Režim živej správy</span>
+        <span className="hidden sm:inline text-slate-400">{t('public.cmsBar.liveMode')}</span>
       </div>
 
       <div className="flex items-center gap-2">
@@ -44,7 +46,7 @@ export const CMSBar: React.FC<CMSBarProps> = ({ currentDoc }) => {
             className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1 rounded-lg shadow-sm transition-colors cursor-pointer font-semibold"
           >
             <Edit3 className="w-3.5 h-3.5" />
-            Upraviť {currentDoc.type === 'page' ? 'stránku' : 'článok'}
+            {currentDoc.type === 'page' ? t('public.cmsBar.editPage') : t('public.cmsBar.editArticle')}
           </button>
         )}
 
@@ -54,7 +56,7 @@ export const CMSBar: React.FC<CMSBarProps> = ({ currentDoc }) => {
           className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1 rounded-lg border border-slate-700 transition-colors cursor-pointer"
         >
           <PlusCircle className="w-3.5 h-3.5 text-emerald-400" />
-          Nový článok
+          {t('public.cmsBar.newArticle')}
         </button>
 
         <button
@@ -63,13 +65,13 @@ export const CMSBar: React.FC<CMSBarProps> = ({ currentDoc }) => {
           className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1 rounded-lg border border-slate-700 transition-colors cursor-pointer"
         >
           <LayoutDashboard className="w-3.5 h-3.5 text-indigo-400" />
-          Administrácia
+          {t('public.cmsBar.administration')}
         </button>
 
         <button
           type="button"
           onClick={() => void logout()}
-          title="Odhlásiť sa"
+          title={t('public.cmsBar.logout')}
           className="text-slate-400 hover:text-rose-400 p-1.5 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer ml-1"
         >
           <LogOut className="w-4 h-4" />

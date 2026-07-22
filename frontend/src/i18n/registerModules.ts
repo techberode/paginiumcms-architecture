@@ -37,6 +37,8 @@ import { editorEn } from './modules/editor/en';
 import { editorSk } from './modules/editor/sk';
 import { auditEn } from './modules/audit/en';
 import { auditSk } from './modules/audit/sk';
+import { publicEn } from './modules/public/en';
+import { publicSk } from './modules/public/sk';
 
 export function registerAllI18nModules(): void {
   registerModuleMessages('sk', 'admin', adminSk);
@@ -75,6 +77,8 @@ export function registerAllI18nModules(): void {
   registerModuleMessages('en', 'editor', editorEn);
   registerModuleMessages('sk', 'audit', auditSk);
   registerModuleMessages('en', 'audit', auditEn);
+  registerModuleMessages('sk', 'public', publicSk);
+  registerModuleMessages('en', 'public', publicEn);
 }
 
 registerAllI18nModules();

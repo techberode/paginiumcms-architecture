@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useSettingsContext } from '../../context/SettingsContext';
+import { useI18n } from '../../context/I18nContext';
 import apiClient, { type PaginationMeta } from '../../api/client';
 import { Article } from '../../api/types';
 import { MarkdownRenderer } from '../common/MarkdownRenderer';
@@ -30,13 +31,17 @@ import {
 import { formatContentDateLabels } from '../../utils/contentDates';
 import { formatReadingTime, resolveShowReadingTime } from '../../utils/readingTime';
 
-const SORT_OPTIONS: { value: BlogSort; label: string }[] = [
-  { value: 'newest', label: 'Najnovšie' },
-  { value: 'oldest', label: 'Najstaršie' },
-  { value: 'title', label: 'Podľa názvu (A–Z)' },
-];
-
 export const BlogRenderer: React.FC = () => {
+  const { t, locale } = useI18n();
+  const sortOptions = useMemo(
+    () =>
+      [
+        { value: 'newest' as const, label: t('public.blog.sort.newest') },
+        { value: 'oldest' as const, label: t('public.blog.sort.oldest') },
+        { value: 'title' as const, label: t('public.blog.sort.title') },
+      ] satisfies { value: BlogSort; label: string }[],
+    [t]
+  );
   const { slug } = useParams<{ slug?: string }>();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -222,29 +227,32 @@ export const BlogRenderer: React.FC = () => {
   if (slug && !detailLoading && !activeArticle) {
     return (
       <div className="min-h-[50vh] flex flex-col items-center justify-center px-4 text-center">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">404</h1>
-        <p className="mt-2 text-slate-500">Článok neexistuje alebo nie je publikovaný.</p>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{t('public.errors.notFoundCode')}</h1>
+        <p className="mt-2 text-slate-500">{t('public.blog.errors.articleNotFound')}</p>
         <button
           type="button"
           onClick={() => navigate('/blog')}
           className="mt-6 bg-indigo-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold"
         >
-          Späť na blog
+          {t('public.blog.backToBlog')}
         </button>
       </div>
     );
   }
 
   if (activeArticle) {
-    const author = activeArticle.author || String(activeArticle.frontMatter?.author ?? 'Redakcia');
+    const author = activeArticle.author || String(activeArticle.frontMatter?.author ?? t('public.defaults.editorial'));
     const image = resolveContentPreviewImage(activeArticle);
     const authorBio =
       activeArticle.excerpt || String(activeArticle.frontMatter?.description ?? '');
-    const dates = formatContentDateLabels({
-      createdAt: activeArticle.createdAt,
-      updatedAt: activeArticle.updatedAt,
-      frontMatterDate: activeArticle.frontMatter?.date as string | number | undefined,
-    });
+    const dates = formatContentDateLabels(
+      {
+        createdAt: activeArticle.createdAt,
+        updatedAt: activeArticle.updatedAt,
+        frontMatterDate: activeArticle.frontMatter?.date as string | number | undefined,
+      },
+      locale
+    );
 
     const globalCommentsEnabled = settings.comments?.enabled !== false;
     const articleCommentsEnabled = activeArticle.commentsEnabled !== false;
@@ -266,7 +274,7 @@ export const BlogRenderer: React.FC = () => {
             className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer mb-6"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Späť na prehľad článkov</span>
+            <span>{t('public.blog.backToList')}</span>
           </button>
         </div>
 
@@ -291,7 +299,7 @@ export const BlogRenderer: React.FC = () => {
               </div>
               <div>
                 <div className="font-bold text-slate-800 dark:text-slate-200">{author}</div>
-                <div>Autor redakcie Paginium</div>
+                <div>{t('public.blog.editorialAuthor')}</div>
               </div>
             </div>
             <div className="flex items-center gap-1.5 ml-auto flex-wrap justify-end">
@@ -310,7 +318,7 @@ export const BlogRenderer: React.FC = () => {
                   <span className="text-slate-300">•</span>
                   <span className="inline-flex items-center gap-1 font-semibold">
                     <Clock className="w-4 h-4" />
-                    {formatReadingTime(activeArticle.readingTime)}
+                    {formatReadingTime(activeArticle.readingTime, locale)}
                   </span>
                 </>
               )}
@@ -331,7 +339,7 @@ export const BlogRenderer: React.FC = () => {
           {(prevArticle || nextArticle) && (
             <nav
               className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4"
-              aria-label="Navigácia medzi článkami"
+              aria-label={t('public.blog.articleNav.ariaLabel')}
             >
               {prevArticle ? (
                 <button
@@ -340,7 +348,7 @@ export const BlogRenderer: React.FC = () => {
                   className="text-left rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors group"
                 >
                   <span className="text-xs font-bold uppercase tracking-wide text-slate-400 flex items-center gap-1">
-                    <ChevronLeft className="w-4 h-4" /> Predchádzajúci
+                    <ChevronLeft className="w-4 h-4" /> {t('public.blog.articleNav.previous')}
                   </span>
                   <span className="mt-2 block text-sm font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 line-clamp-2">
                     {prevArticle.title}
@@ -356,7 +364,7 @@ export const BlogRenderer: React.FC = () => {
                   className="text-right rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors group sm:col-start-2"
                 >
                   <span className="text-xs font-bold uppercase tracking-wide text-slate-400 flex items-center justify-end gap-1">
-                    Ďalší <ChevronRight className="w-4 h-4" />
+                    {t('public.blog.articleNav.next')} <ChevronRight className="w-4 h-4" />
                   </span>
                   <span className="mt-2 block text-sm font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 line-clamp-2">
                     {nextArticle.title}
@@ -372,7 +380,9 @@ export const BlogRenderer: React.FC = () => {
                 {author.charAt(0)}
               </div>
               <div>
-                <h4 className="font-bold text-lg text-slate-900 dark:text-white">O autorovi: {author}</h4>
+                <h4 className="font-bold text-lg text-slate-900 dark:text-white">
+                  {t('public.blog.aboutAuthor', { author })}
+                </h4>
                 <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1">{authorBio}</p>
               </div>
             </div>
@@ -408,10 +418,10 @@ export const BlogRenderer: React.FC = () => {
             <BookOpen className="w-6 h-6" />
           </div>
           <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-slate-900 dark:text-white">
-            Magazín &amp; Novinky
+            {t('public.blog.list.title')}
           </h1>
           <p className="mt-4 text-base sm:text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-            Články z FlatFile Markdown repozitára.
+            {t('public.blog.list.subtitle')}
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-2">
             <button
@@ -423,7 +433,7 @@ export const BlogRenderer: React.FC = () => {
                   : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'
               }`}
             >
-              Všetky články ({totalPublished})
+              {t('public.blog.list.allArticles', { count: totalPublished })}
             </button>
             {allTags.map((tag) => (
               <button
@@ -443,7 +453,7 @@ export const BlogRenderer: React.FC = () => {
           </div>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <label htmlFor="blog-sort" className="text-xs font-bold text-slate-500 uppercase tracking-wide">
-              Zoradiť
+              {t('public.blog.list.sortLabel')}
             </label>
             <select
               id="blog-sort"
@@ -451,7 +461,7 @@ export const BlogRenderer: React.FC = () => {
               onChange={(event) => updateListParams({ page: 1, sort: parseBlogSort(event.target.value) })}
               className="form-select text-sm rounded-xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900"
             >
-              {SORT_OPTIONS.map((option) => (
+              {sortOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
@@ -464,21 +474,24 @@ export const BlogRenderer: React.FC = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16">
         {filteredTotal > 0 && (
           <p className="text-center text-xs font-semibold text-slate-500 dark:text-slate-400 mb-8">
-            Zobrazené {rangeStart}–{rangeEnd} z {filteredTotal} článkov
-            {totalPages > 1 ? ` · strana ${safePage} / ${totalPages}` : ''}
+            {t('public.blog.list.range', { start: rangeStart, end: rangeEnd, total: filteredTotal })}
+            {totalPages > 1 ? t('public.blog.list.pageOf', { page: safePage, totalPages }) : ''}
           </p>
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {paginatedArticles.map((article) => {
-            const author = article.author || String(article.frontMatter?.author ?? 'Redakcia');
+            const author = article.author || String(article.frontMatter?.author ?? t('public.defaults.editorial'));
             const image = resolveContentPreviewImage(article);
             const desc = article.excerpt || String(article.frontMatter?.description ?? '');
-            const dates = formatContentDateLabels({
-              createdAt: article.createdAt,
-              updatedAt: article.updatedAt,
-              frontMatterDate: article.frontMatter?.date as string | number | undefined,
-            });
+            const dates = formatContentDateLabels(
+              {
+                createdAt: article.createdAt,
+                updatedAt: article.updatedAt,
+                frontMatterDate: article.frontMatter?.date as string | number | undefined,
+              },
+              locale
+            );
 
             return (
               <button
@@ -515,7 +528,7 @@ export const BlogRenderer: React.FC = () => {
                       </span>
                       {dates.secondary && (
                         <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 text-amber-700 dark:text-amber-300 font-bold" title={dates.secondaryTitle}>
-                          Upravené {dates.secondary}
+                          {t('public.blog.list.updated', { date: dates.secondary })}
                         </span>
                       )}
                       <span className="inline-flex items-center gap-1">
@@ -525,7 +538,7 @@ export const BlogRenderer: React.FC = () => {
                       {showReadingTime && article.readingTime > 0 && (
                         <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 dark:bg-indigo-950/40 px-2.5 py-1 text-indigo-700 dark:text-indigo-300 font-bold">
                           <Clock className="w-3.5 h-3.5" />
-                          {formatReadingTime(article.readingTime)}
+                          {formatReadingTime(article.readingTime, locale)}
                         </span>
                       )}
                     </div>
@@ -537,7 +550,7 @@ export const BlogRenderer: React.FC = () => {
                     </p>
                   </div>
                   <div className="mt-8 pt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs font-bold text-indigo-600 dark:text-indigo-400">
-                    <span>Čítať celý článok</span>
+                    <span>{t('public.blog.list.readMore')}</span>
                     <span className="group-hover:translate-x-1 transition-transform">→</span>
                   </div>
                 </div>
@@ -548,13 +561,13 @@ export const BlogRenderer: React.FC = () => {
 
         {filteredTotal === 0 && !listLoading && (
           <div className="bg-white dark:bg-slate-900 rounded-3xl p-16 text-center border border-slate-200 dark:border-slate-800">
-            <h3 className="text-2xl font-bold">Nenašli sa žiadne články</h3>
+            <h3 className="text-2xl font-bold">{t('public.blog.list.emptyTitle')}</h3>
             <button
               type="button"
               onClick={() => updateListParams({ page: 1, tag: null })}
               className="mt-6 bg-indigo-600 text-white font-bold px-6 py-2.5 rounded-xl text-sm"
             >
-              Zobraziť všetky
+              {t('public.blog.list.showAll')}
             </button>
           </div>
         )}
@@ -566,7 +579,7 @@ export const BlogRenderer: React.FC = () => {
               onClick={() => updateListParams({ page: 1 })}
               disabled={!hasPrev}
               className="p-2.5 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-              aria-label="Prvá strana"
+              aria-label={t('public.blog.pagination.first')}
             >
               <ChevronsLeft className="w-5 h-5" />
             </button>
@@ -575,7 +588,7 @@ export const BlogRenderer: React.FC = () => {
               onClick={() => updateListParams({ page: safePage - 1 })}
               disabled={!hasPrev}
               className="p-2.5 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-              aria-label="Predchádzajúca strana"
+              aria-label={t('public.blog.pagination.previous')}
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
@@ -599,7 +612,7 @@ export const BlogRenderer: React.FC = () => {
               onClick={() => updateListParams({ page: safePage + 1 })}
               disabled={!hasNext}
               className="p-2.5 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-              aria-label="Ďalšia strana"
+              aria-label={t('public.blog.pagination.next')}
             >
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -608,7 +621,7 @@ export const BlogRenderer: React.FC = () => {
               onClick={() => updateListParams({ page: totalPages })}
               disabled={!hasNext}
               className="p-2.5 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-              aria-label="Posledná strana"
+              aria-label={t('public.blog.pagination.last')}
             >
               <ChevronsRight className="w-5 h-5" />
             </button>

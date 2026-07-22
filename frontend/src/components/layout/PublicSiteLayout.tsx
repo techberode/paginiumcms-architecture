@@ -8,6 +8,7 @@ import { SiteSearchModal } from '../frontend/SiteSearchModal';
 import { PageRenderer } from '../frontend/PageRenderer';
 import { usePublicSite } from '../../context/PublicSiteContext';
 import { useSettingsContext } from '../../context/SettingsContext';
+import { useI18n } from '../../context/I18nContext';
 import { useAuth } from '../../hooks/useAuth';
 import { useSeoMeta } from '../../hooks/useSeoMeta';
 
@@ -26,6 +27,7 @@ const ADMIN_PREFIXES = [
 ];
 
 export function PublicHomePage() {
+  const { t } = useI18n();
   const { getPageBySlug, loading } = usePublicSite();
   const home = getPageBySlug('home') ?? getPageBySlug('index');
 
@@ -41,7 +43,7 @@ export function PublicHomePage() {
     return (
       <div className="min-h-[50vh] flex flex-col items-center justify-center px-4 text-center">
         <h1 className="text-3xl font-black text-slate-900 dark:text-white">PaginiumCMS</h1>
-        <p className="mt-3 text-slate-500">Zatiaľ nie je publikovaná domovská stránka (slug: home).</p>
+        <p className="mt-3 text-slate-500">{t('public.layout.noHomePage')}</p>
       </div>
     );
   }
@@ -50,6 +52,7 @@ export function PublicHomePage() {
 }
 
 export function PublicSlugPage() {
+  const { t } = useI18n();
   const { slug } = useParams<{ slug: string }>();
   const { getPageBySlug, loading } = usePublicSite();
   const navigate = useNavigate();
@@ -67,14 +70,14 @@ export function PublicSlugPage() {
   if (!page) {
     return (
       <div className="min-h-[50vh] flex flex-col items-center justify-center px-4 text-center">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">404</h1>
-        <p className="mt-2 text-slate-500">Stránka &quot;{slug}&quot; neexistuje.</p>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{t('public.errors.notFoundCode')}</h1>
+        <p className="mt-2 text-slate-500">{t('public.errors.pageNotFound', { slug: slug ?? '' })}</p>
         <button
           type="button"
           onClick={() => navigate('/')}
           className="mt-6 bg-indigo-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold"
         >
-          Domov
+          {t('public.nav.home')}
         </button>
       </div>
     );
@@ -84,6 +87,7 @@ export function PublicSlugPage() {
 }
 
 export const PublicSiteLayout: React.FC = () => {
+  const { t } = useI18n();
   const [searchOpen, setSearchOpen] = useState(false);
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -142,7 +146,7 @@ export const PublicSiteLayout: React.FC = () => {
       document.head.appendChild(rssLink);
     }
     rssLink.href = rssHref;
-    rssLink.title = `${siteName} RSS`;
+    rssLink.title = t('public.meta.rssTitle', { siteName });
 
     const sitemapHref = `${origin}/sitemap.xml`;
     let sitemapLink = document.querySelector<HTMLLinkElement>('link[data-paginium-feed="sitemap"]');
@@ -154,8 +158,8 @@ export const PublicSiteLayout: React.FC = () => {
       document.head.appendChild(sitemapLink);
     }
     sitemapLink.href = sitemapHref;
-    sitemapLink.title = `${siteName} Sitemap`;
-  }, [settings?.feeds, siteName]);
+    sitemapLink.title = t('public.meta.sitemapTitle', { siteName });
+  }, [settings?.feeds, siteName, t]);
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors">
