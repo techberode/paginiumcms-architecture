@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { render, within } from '@testing-library/react';
+import { within } from '@testing-library/react';
+import { renderWithProviders } from '../../test/renderWithProviders';
 import { MarkdownContentEditor } from './MarkdownContentEditor';
 import { getEditorProfile } from '../../utils/editorProfiles';
 
 describe('MarkdownContentEditor toolbar profiles', () => {
   it('renders fewer formatting buttons for minimal profile', () => {
-    const { container: minimalRoot } = render(
+    const { container: minimalRoot } = renderWithProviders(
       <MarkdownContentEditor
         value=""
         onChange={() => undefined}
@@ -13,7 +14,7 @@ describe('MarkdownContentEditor toolbar profiles', () => {
       />
     );
 
-    const { container: developerRoot } = render(
+    const { container: developerRoot } = renderWithProviders(
       <MarkdownContentEditor
         value=""
         onChange={() => undefined}

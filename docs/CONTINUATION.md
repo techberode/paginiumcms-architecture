@@ -16,20 +16,21 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 
 ---
 
-## Aktuálny plán (2026-07-21) — pred verejnou betou
+## Aktuálny plán (2026-07-22) — pred verejnou betou
 
-**Rozhodnutie:** Public Beta / externé testovanie **zatiaľ nie** — najprv dokončiť všetko základné, čo je nutné pre stabilnú internú inštaláciu.
+**Rozhodnutie:** Public Beta až po It.18f + infra checklistu.
 
 | Priorita | Úloha | Stav |
 |----------|--------|------|
-| 1 | **Release 2.0.46** — tag `637fef4`, gate zelená, C&P v `RELEASE.md` | ✅ kód + docs |
-| 2 | **Celkový audit** — `iteration-gate` + `audit:run` + `content:diagnose` + manuálny checklist | ⏳ |
-| 3 | **README** sync na 2.0.46 | ⏳ |
-| 4 | **`docs/INSTALL.md`** — manuálna inštalácia (PHP/nginx/.env) | ⏳ |
-| 5 | **i18n zvyšok adminu** (comments, messages, audit…) — It.18 remainder | ⏳ |
-| 6 | **Public Beta 1** — GitHub release von, testeri | 🔒 až po 1–5 |
+| 1 | **RECOMMENDATIONS Fáza 1** — composer scripts, CI audit, ESLint | ✅ |
+| 2 | **RECOMMENDATIONS Fáza 2** — Docker, `first-run.sh`, LOCAL_SETUP | ✅ (lokálne, C&P pending) |
+| 3 | **Používateľská príručka** — `docs/user/*` (inštalácia → admin) | ✅ |
+| 4 | **It.18f i18n** — comments, messages, backups, trash, logs + platform/editor | ✅ **2.0.47** (`f0a885c`) |
+| 4b | **CI hotfix ISS-059** — Vitest `renderWithProviders` | ✅ lokálne (pending C&P) |
+| 5 | **Beta infra checklist** — gate, `content:diagnose`, README sync, release balík | ⏳ **ĎALŠIA** |
+| 6 | **Public Beta 1** — GitHub release, testeri | 🔒 až po 4–5 |
 
-Detail release: [ITERATION_18.md](ITERATION_18.md) · [ITERATION_19.md](ITERATION_19.md) · [ITERATION_20.md](ITERATION_20.md) · [developer/RELEASE.md](developer/RELEASE.md)
+Detail: [ITERATION_18.md](ITERATION_18.md) · [user/README.md](user/README.md) · [developer/LOCAL_SETUP.md](developer/LOCAL_SETUP.md)
 
 > 🔐 **Bezpečnostný baseline (POVINNÉ pri každej novej funkcii/module):** záväzné vzory
 > z doterajších opráv (AuthZ/CSRF na endpointoch, at-rest šifrovanie tajomstiev cez

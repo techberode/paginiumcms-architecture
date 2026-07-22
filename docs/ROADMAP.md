@@ -8,7 +8,9 @@ Legenda: ✅ hotové · 🚧 rozpracované · ⏳ plánované · 🔴 kritická 
 
 **DevOps (RECOMMENDATIONS Fáza 1, 2026-07-22):** ✅ composer scripts (`test`, `stan`, `cs`, `gate`), CI security audit, Dependabot, PHP ^8.5, ESLint 0 warnings.
 
-**Aktuálna verzia:** 2.0.46 ✅ · **Ďalej:** RECOMMENDATIONS Fáza 2 (Docker) + It.43 vyhľadávanie
+**Reprodukovateľné prostredie (RECOMMENDATIONS Fáza 2, 2026-07-22):** ✅ `docker-compose.yml`, `scripts/first-run.sh`, `docs/developer/LOCAL_SETUP.md`.
+
+**Aktuálna verzia:** 2.0.46 ✅ · **Ďalej:** Fáza 3 (FlatFile atomické zápisy) alebo It.43 vyhľadávanie
 
 
 | Iterácia | Názov                                                         | Priorita                             |
@@ -310,29 +312,29 @@ Hotové v **2.0.1** — detail [ITERATION_6.md](ITERATION_6.md).
 
 
 
-## Iterácia 18 – Lokalizácia admin rozhrania (i18n) ⏳ 🟡
+## Iterácia 18 – Lokalizácia admin rozhrania (i18n) ✅
 
-**Stav dnes:** backend čiastočne hotový, frontend základ pridaný, migrácia UI nie.
+**Stav (release 2.0.47):** It.18a–f hotové — admin UI cez `useI18n()`, translation editor, Beta gate splnený.  
+Detail: [ITERATION_18.md](ITERATION_18.md) · CI hotfix ISS-059 v [ISSUES.md](ISSUES.md).
 
-**Backend (čiastočne ✅):**
+**Backend ✅:**
 
 - `Support/Lang.php` – prekladač, default `sk`, fallback na SK, `Lang::addPath()` pre pluginy
 - `backend/lang/{sk|en}/{module}.php` – moduly: content, comments, contact, media, messages, navigation, github
 - `LocaleMiddleware` – locale z `general.language` + `Accept-Language`
 - `SettingsSchema` – pole `general.language` (`sk` | `en`)
 
-**Frontend (základ ✅, migrácia ⏳):**
+**Frontend ✅ (It.18a–f):**
 
 - `src/i18n/core/{sk,en}.ts` – jadrový katalóg administrácie
-- `registerModuleMessages()` – každý modul importuje vlastný blok (`src/i18n/modules/{module}/`)
-- `I18nProvider` + `useI18n().t('common.save')` – locale z `SettingsContext`
+- Modulové katalógy: admin, list, content, settings, translations, media, navigation, dashboard, comments, messages, backups, trash, logs, **platform**, **editor**
+- `I18nProvider` + `useI18n().t()` – locale z `SettingsContext`
+- `/translations` — Monaco editor pre katalógy (Admin + 2FA)
 
-**Zostáva (Iterácia 18):**
+**Zostáva (post-Beta):**
 
-- Migrovať všetky admin komponenty z hardcoded SK reťazcov na `useI18n()`
-- Pridať FE modulové súbory (media, navigation, users, settings, …)
+- Verejný web (PublicSite) – samostatný katalóg
 - Plugin/theme/extension loader: `Http/Extensions/{id}/lang/{locale}/*.php` + `frontend/src/extensions/{id}/i18n/`
-- Verejný web (PublicSite) – samostatný katalóg alebo zdieľaný core
 - API endpoint `GET /api/i18n/{locale}` pre dynamické načítanie (voliteľné)
 
 **Zákon i18n:** 1 súbor na modul a jazyk; jadro má core katalóg; doplnky nikdy neprepisujú core kľúče.

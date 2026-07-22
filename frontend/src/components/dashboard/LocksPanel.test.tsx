@@ -1,6 +1,7 @@
 // frontend/src/components/dashboard/LocksPanel.test.tsx
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
+import { renderWithProviders } from '../../test/renderWithProviders';
 import { LocksPanel } from './LocksPanel';
 
 vi.mock('../../hooks/useToast', () => ({
@@ -15,12 +16,12 @@ vi.mock('../../hooks/useToast', () => ({
 
 describe('LocksPanel', () => {
   it('renders empty state', () => {
-    render(<LocksPanel locks={[]} onRefresh={vi.fn()} />);
-    expect(screen.getByText('No active content locks.')).toBeInTheDocument();
+    renderWithProviders(<LocksPanel locks={[]} onRefresh={vi.fn()} />);
+    expect(screen.getByText('Žiadne aktívne zámky obsahu.')).toBeInTheDocument();
   });
 
   it('lists active locks', () => {
-    render(
+    renderWithProviders(
       <LocksPanel
         locks={[
           {
