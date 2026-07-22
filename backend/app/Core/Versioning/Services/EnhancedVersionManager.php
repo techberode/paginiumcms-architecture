@@ -13,6 +13,7 @@ use PaginiumCMS\Core\CodeEditor\Services\CodeEditorLogger;
 use PaginiumCMS\Core\CodeEditor\Services\DiffGenerator;
 use PaginiumCMS\Support\FileHelper;
 use PaginiumCMS\Support\JsonHelper;
+use PaginiumCMS\Support\Lang;
 
 class EnhancedVersionManager implements VersionableInterface
 {
@@ -431,21 +432,23 @@ class EnhancedVersionManager implements VersionableInterface
     private function summarizeDiff(?array $diff): string
     {
         if (!$diff) {
-            return 'No changes';
+            return Lang::get('diff.no_changes', [], 'audit');
         }
 
         $summary = [];
-        
+
         if (isset($diff['additions']) && $diff['additions'] > 0) {
-            $summary[] = $diff['additions'] . ' added';
+            $summary[] = Lang::get('diff.added', ['count' => (string) $diff['additions']], 'audit');
         }
         if (isset($diff['deletions']) && $diff['deletions'] > 0) {
-            $summary[] = $diff['deletions'] . ' removed';
+            $summary[] = Lang::get('diff.removed', ['count' => (string) $diff['deletions']], 'audit');
         }
         if (isset($diff['modifications']) && $diff['modifications'] > 0) {
-            $summary[] = $diff['modifications'] . ' modified';
+            $summary[] = Lang::get('diff.modified', ['count' => (string) $diff['modifications']], 'audit');
         }
 
-        return empty($summary) ? 'No significant changes' : implode(', ', $summary);
+        return $summary === []
+            ? Lang::get('diff.no_significant', [], 'audit')
+            : implode(', ', $summary);
     }
 }

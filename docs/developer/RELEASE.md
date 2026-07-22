@@ -1,19 +1,84 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.0.48** · 2026-07-22 · tag **`v2.0.48`** (po schválení deploy)  
+> Posledná verzia: **2.0.49** · 2026-07-22 · tag **`v2.0.49`**  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release.
 
-> **Poznámka k verziám:** … **v2.0.47** → `e1fdead` · **v2.0.48** → (release commit po tag).
+> **Poznámka k verziám:** … **v2.0.47** → `e1fdead` · **v2.0.48** → `a32c002` · **v2.0.49** → `b215efc`.
 
 ### Kontinuita verzií (nepreskakovať)
 
 | Verzia | Git tag | Release commit | Stav |
 |--------|---------|----------------|------|
-| 2.0.46 | `v2.0.46` | `637fef4` | ✅ tagged |
 | 2.0.47 | `v2.0.47` | `e1fdead` | ✅ tagged |
-| **2.0.48** | **`v2.0.48`** | **`545efb5`** | ✅ tagged |
+| 2.0.48 | `v2.0.48` | `a32c002` | ✅ tagged |
+| **2.0.49** | **`v2.0.49`** | **`b215efc`** | ✅ tagged |
 
-**Pravidlo:** Ďalší release musí byť **`v2.0.49`**, nie skok. Pred každým novým číslom: `git tag -l 'v2.0.4*' | sort -V`.
+**Pravidlo:** Ďalší release musí byť **`v2.0.50`**, nie skok. Pred každým novým číslom: `git tag -l 'v2.0.4*' | sort -V`.
+
+---
+
+## 2.0.49 — pred release kontrola
+
+```bash
+./scripts/iteration-gate.sh
+# Vitest: npm test -- --run  → 210/210
+```
+
+**Po deployi:**
+
+1. **Nastavenia → Všeobecné → Jazyk = English**
+2. **Dashboard → Prehľad aktivít** — audit správy po anglicky (nie „Maxxim upravil článok…“)
+3. **`/audit`** — content/user trail zobrazuje `display_message` z API v EN
+4. **Legacy logy** — staré SK `context.summary` sa pri read preformátujú podľa locale
+
+**Opravy:** ISS-061 · [ISSUES.md](../ISSUES.md)
+
+---
+
+## GitHub Release — copy-paste (2.0.49)
+
+**Title:**
+
+```
+2.0.49 — Audit messages follow admin locale (ISS-061 / wave 5b)
+```
+
+**Tag:** `v2.0.49` · **Target:** `main` · **Commit:** `b215efc`
+
+**Body:**
+
+```markdown
+## Summary
+
+Audit trail and dashboard activity messages now follow **`general.language`** (SK/EN). Fixes mixed Slovak audit text when admin UI is set to English.
+
+## Added
+
+- `backend/lang/{sk,en}/audit.php` — audit message catalog
+- `frontend/src/i18n/modules/audit/{sk,en}.ts` — FE fallback labels
+
+## Changed
+
+- `AuditMessageFormatter` uses `Lang::get()`; `formatFromLog()` re-formats from context (ignores persisted SK summary when structured data exists)
+- `AuditTrailService` enriches all read paths with `display_message`; CSV export localized
+- `formatAuditEvent.ts` — thin client preferring API `display_message`
+
+## Fixed
+
+- **ISS-061:** EN admin locale showed Slovak audit messages in dashboard activity and audit trail
+
+## Test plan
+
+- [ ] `./scripts/iteration-gate.sh` green (PHPStan L8 + Vitest 210/210)
+- [ ] Settings → English → edit content → dashboard activity shows EN message
+- [ ] `/audit` content trail — EN labels for legacy events
+
+## Docs
+
+- [CHANGELOG.md](CHANGELOG.md) — 2.0.49
+- [ISSUES.md](docs/ISSUES.md) — ISS-061
+- [ITERATION_18.md](docs/ITERATION_18.md)
+```
 
 ---
 

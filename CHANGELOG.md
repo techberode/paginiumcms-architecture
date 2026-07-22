@@ -39,13 +39,42 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.18 — Admin UI i18n + translation editor | **2.0.44** | [below](#2044--2026-07-21) |
 | It.18f — Ops + platform/editor i18n (Beta gate) | **2.0.47** | [below](#2047--2026-07-22) |
 | Security audit hardening (A1–S10, ISS-052–058) | **2.0.48** | [below](#2048--2026-07-22) |
+| Audit locale (formatAuditEvent / wave 5b) | **2.0.49** | [below](#2049--2026-07-22) |
 | It.19b–19d — Security runtime, auth UX, password policy | **2.0.45** | [below](#2045--2026-07-21) |
 
 ---
 
 ## [Unreleased]
 
-*(Next: formatAuditEvent locale · public site i18n · It.15 emitters)*
+*(Next: public site i18n · It.15 emitters)*
+
+---
+
+## [2.0.49] – 2026-07-22
+
+**Wave 5b** — Audit messages follow admin locale (`general.language`).  
+Detail: [ITERATION_18.md](docs/ITERATION_18.md) · [ISSUES.md](docs/ISSUES.md).
+
+### Added
+
+- **`backend/lang/{sk,en}/audit.php`** — audit message catalog (actions, content types, diff counts, admin/security templates)
+- **`frontend/src/i18n/modules/audit/{sk,en}.ts`** — FE fallback labels (`system`, `system_event`)
+
+### Changed
+
+- **`AuditMessageFormatter`** — uses `Lang::get()`; `formatFromLog()` re-formats from structured context instead of returning persisted SK `context.summary`
+- **`AuditTrailService`** — `buildDiffMetadata()` stores numeric diff counts; all audit read paths enrich `display_message`; CSV export uses localized formatter
+- **`EnhancedVersionManager::summarizeDiff()`** — locale-aware via `Lang`
+- **`formatAuditEvent.ts`** — thin client: prefers API `display_message`; locale-aware timestamp fallback
+
+### Fixed
+
+- EN admin locale showed Slovak audit text in dashboard activity and audit trail (legacy persisted summaries + FE duplicate SK formatter)
+
+### Tests
+
+- PHPUnit: `AuditMessageFormatterTest` — SK + EN locale, reformat ignoring stored summary
+- Vitest: `formatAuditEvent.test.ts` — API `display_message` priority
 
 ---
 

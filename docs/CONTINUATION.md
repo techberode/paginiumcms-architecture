@@ -31,9 +31,9 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 | 4b | **CI hotfix ISS-059** — Vitest `renderWithProviders` | ✅ na `main` |
 | 4c | **GitHub Release `v2.0.47`** | ✅ tag `v2.0.47` na `e1fdead` (GH Release manuálne — `gh auth login`) |
 | **5** | **Pre-Beta kvalita** — postupne, každá vlna = release + CI green | ⏳ **AKTUÁLNA FÁZA** |
-| 5a | Security release **2.0.48** (CHANGELOG formalizácia) | ✅ tag `v2.0.48` (`545efb5`) |
-| 5b | **formatAuditEvent** — EN admin locale pre audit správy | ⏳ |
-| 5c | **Public site i18n** — `public/{sk,en}` katalóg + komponenty | ⏳ |
+| 5a | Security release **2.0.48** | ✅ tag `v2.0.48` |
+| 5b | **formatAuditEvent locale** — audit messages follow admin language | ✅ **2.0.49** |
+| 5c | **Public site i18n** — `public/{sk,en}` katalóg + komponenty | ⏳ **ĎALŠIA** |
 | 5d | **It.15 doplnenie** — hook emitters, referenčný plugin, docs sync | ⏳ |
 | 5e | **It.17 MVP** — CONTRIBUTING, api barrel, lint | ⏳ |
 | 5f | **Docker + user docs** commit (Fáza 2, pending C&P) | ⏳ |

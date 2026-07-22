@@ -17,7 +17,7 @@ export const DashboardActivityPanel: React.FC<DashboardActivityPanelProps> = ({
   events,
   loading = false,
 }) => {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
 
   return (
     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
@@ -38,9 +38,9 @@ export const DashboardActivityPanel: React.FC<DashboardActivityPanelProps> = ({
           <div className="space-y-3">
             {events.slice(0, 8).map((event, index) => {
               const auditEvent = event as Record<string, unknown>;
-              const message = formatAuditEventMessage(auditEvent);
-              const actor = formatAuditEventActor(auditEvent);
-              const time = formatAuditEventTimestamp(auditEvent);
+              const message = formatAuditEventMessage(auditEvent, locale);
+              const actor = formatAuditEventActor(auditEvent, locale);
+              const time = formatAuditEventTimestamp(auditEvent, locale);
 
               return (
                 <div

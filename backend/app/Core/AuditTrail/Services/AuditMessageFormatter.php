@@ -5,34 +5,13 @@ declare(strict_types=1);
 namespace PaginiumCMS\Core\AuditTrail\Services;
 
 use PaginiumCMS\Modules\Security\Models\User;
+use PaginiumCMS\Support\Lang;
 
 /**
- * Ľudsky čitateľné audit správy (zápis + spätné formátovanie starých logov).
+ * Human-readable audit messages (write + re-format legacy logs using current locale).
  */
 final class AuditMessageFormatter
 {
-    /** @var array<string, string> */
-    private const ACTION_VERBS = [
-        'create' => 'vytvoril',
-        'update' => 'upravil',
-        'delete' => 'zmazal',
-        'restore' => 'obnovil',
-        'status' => 'zmenil stav',
-        'read' => 'zobrazil',
-        'login' => 'sa prihlásil',
-        'logout' => 'sa odhlásil',
-        'backup' => 'zálohoval',
-        'restore_backup' => 'obnovil zo zálohy',
-    ];
-
-    /** @var array<string, string> */
-    private const CONTENT_TYPES = [
-        'page' => 'stránku',
-        'article' => 'článok',
-        'pages' => 'stránku',
-        'articles' => 'článok',
-    ];
-
     /**
      * @param array<int|string, mixed> $metadata
      */
@@ -58,9 +37,24 @@ final class AuditMessageFormatter
     public function formatFromLog(array $log): string
     {
         $context = is_array($log['context'] ?? null) ? $log['context'] : [];
-        $summary = $context['summary'] ?? null;
-        if (is_string($summary) && trim($summary) !== '') {
-            return $summary;
+        $metadata = is_array($context['metadata'] ?? null) ? $context['metadata'] : [];
+        $category = (string) ($context['category'] ?? $this->resolveCategoryFromLog($log));
+        $action = strtolower(trim((string) ($context['action'] ?? '')));
+        $target = trim((string) ($context['target'] ?? ''));
+        $userContext = is_array($context['user'] ?? null) ? $context['user'] : [];
+        $actor = $this->resolveActorName(
+            isset($userContext['name']) ? (string) $userContext['name'] : null,
+            isset($userContext['email']) ? (string) $userContext['email'] : null
+        );
+
+        if ($category !== '' && $category !== 'unknown' && $action !== '' && $action !== 'unknown') {
+            return $this->formatWithActor(
+                $category,
+                $action,
+                $target !== '' ? $target : $this->t('unknown_target'),
+                $actor,
+                $metadata
+            );
         }
 
         $display = $log['display_message'] ?? null;
@@ -68,22 +62,9 @@ final class AuditMessageFormatter
             return $display;
         }
 
-        $metadata = is_array($context['metadata'] ?? null) ? $context['metadata'] : [];
-        $category = (string) ($context['category'] ?? $this->resolveCategoryFromLog($log));
-        $action = strtolower((string) ($context['action'] ?? 'unknown'));
-        $target = (string) ($context['target'] ?? 'neznámy cieľ');
-        $userContext = is_array($context['user'] ?? null) ? $context['user'] : [];
-        $actor = $this->resolveActorName(
-            isset($userContext['name']) ? (string) $userContext['name'] : null,
-            isset($userContext['email']) ? (string) $userContext['email'] : null
-        );
-
-        if (in_array($category, ['content_change', 'content_access'], true)) {
-            return $this->formatWithActor($category, $action, $target, $actor, $metadata);
-        }
-
-        if ($category !== '' && $category !== 'unknown') {
-            return $this->formatWithActor($category, $action, $target, $actor, $metadata);
+        $summary = $context['summary'] ?? null;
+        if (is_string($summary) && trim($summary) !== '') {
+            return $summary;
         }
 
         $legacyMessage = trim((string) ($log['message'] ?? ''));
@@ -91,7 +72,7 @@ final class AuditMessageFormatter
             return $this->humanizeLegacyMessage($legacyMessage, $actor, $metadata);
         }
 
-        return 'Systémová udalosť';
+        return $this->t('system_event');
     }
 
     /**
@@ -109,19 +90,21 @@ final class AuditMessageFormatter
         return match ($category) {
             'content_change' => $this->formatContentChange($actor, $normalizedAction, $target, $metadata),
             'content_access' => $this->formatContentAccess($actor, $normalizedAction, $target, $metadata),
-            'admin_action' => sprintf(
-                '%s vykonal administrátorskú akciu „%s“ na „%s“',
-                $actor,
-                $normalizedAction,
-                $target
-            ),
-            'security' => sprintf(
-                'Bezpečnostná udalosť „%s“ na „%s“ (%s)',
-                $normalizedAction,
-                $target,
-                $actor
-            ),
-            default => sprintf('%s — %s: „%s“', $actor, strtoupper($normalizedAction), $target),
+            'admin_action' => $this->t('admin_action', [
+                'actor' => $actor,
+                'action' => $normalizedAction,
+                'target' => $target,
+            ]),
+            'security' => $this->t('security', [
+                'action' => $normalizedAction,
+                'target' => $target,
+                'actor' => $actor,
+            ]),
+            default => $this->t('default', [
+                'actor' => $actor,
+                'action' => strtoupper($normalizedAction),
+                'target' => $target,
+            ]),
         };
     }
 
@@ -131,15 +114,15 @@ final class AuditMessageFormatter
     private function formatContentChange(string $actor, string $action, string $target, array $metadata): string
     {
         $contentType = strtolower((string) ($metadata['content_type'] ?? 'page'));
-        $typeLabel = self::CONTENT_TYPES[$contentType] ?? 'obsah';
-        $verb = self::ACTION_VERBS[$action] ?? $action;
+        $typeLabel = $this->t('content_types.' . $contentType, [], $this->t('content_default_type'));
+        $verb = $this->t('actions.' . $action, [], $action);
         $contentLabel = $this->resolveContentLabel($target, $metadata);
 
         $parts = [sprintf('%s %s %s %s', $actor, $verb, $typeLabel, $contentLabel)];
 
         $version = $metadata['version'] ?? null;
         if (is_int($version) || (is_string($version) && $version !== '')) {
-            $parts[] = sprintf('(verzia %s)', (string) $version);
+            $parts[] = $this->t('version', ['version' => (string) $version]);
         }
 
         if ($action === 'status') {
@@ -162,9 +145,9 @@ final class AuditMessageFormatter
      */
     private function formatContentAccess(string $actor, string $action, string $target, array $metadata): string
     {
-        $contentType = strtolower((string) ($metadata['content_type'] ?? 'obsah'));
-        $typeLabel = self::CONTENT_TYPES[$contentType] ?? $contentType;
-        $verb = self::ACTION_VERBS[$action] ?? 'pristúpil k';
+        $contentType = strtolower((string) ($metadata['content_type'] ?? 'content'));
+        $typeLabel = $this->t('content_types.' . $contentType, [], $contentType);
+        $verb = $this->t('actions.' . $action, [], $this->t('access_default_verb'));
 
         return sprintf(
             '%s %s %s %s',
@@ -196,12 +179,14 @@ final class AuditMessageFormatter
 
     private function translateStatus(string $status): string
     {
-        return match (strtolower(trim($status))) {
-            'draft' => 'koncept',
-            'published' => 'publikovaný',
-            'archived' => 'archivovaný',
-            default => $status,
-        };
+        $normalized = strtolower(trim($status));
+        if ($normalized === '') {
+            return '';
+        }
+
+        $translated = $this->t('status.' . $normalized, [], '');
+
+        return $translated !== 'status.' . $normalized ? $translated : $status;
     }
 
     /**
@@ -209,9 +194,9 @@ final class AuditMessageFormatter
      */
     private function resolveDetail(array $metadata): string
     {
-        $changeSummary = trim((string) ($metadata['change_summary'] ?? ''));
-        if ($changeSummary !== '' && $changeSummary !== 'No changes' && $changeSummary !== 'No significant changes') {
-            return $this->translateChangeSummary($changeSummary);
+        $changeSummary = $this->formatChangeSummary($metadata);
+        if ($changeSummary !== '') {
+            return $changeSummary;
         }
 
         $message = trim((string) ($metadata['message'] ?? ''));
@@ -226,13 +211,95 @@ final class AuditMessageFormatter
         return $message;
     }
 
-    private function translateChangeSummary(string $summary): string
+    /**
+     * @param array<int|string, mixed> $metadata
+     */
+    public function formatChangeSummary(array $metadata): string
     {
-        return str_replace(
-            [' added', ' removed', ' modified', 'No changes', 'No significant changes'],
-            [' pridaných', ' odstránených', ' upravených', 'Bez zmien', 'Bez významných zmien'],
-            $summary
-        );
+        $additions = $metadata['diff_additions'] ?? null;
+        $deletions = $metadata['diff_deletions'] ?? null;
+        $modifications = $metadata['diff_modifications'] ?? null;
+
+        if ($additions !== null || $deletions !== null || $modifications !== null) {
+            return $this->summarizeDiffCounts(
+                (int) ($additions ?? 0),
+                (int) ($deletions ?? 0),
+                (int) ($modifications ?? 0)
+            );
+        }
+
+        $stored = trim((string) ($metadata['change_summary'] ?? ''));
+        if ($stored === '') {
+            return '';
+        }
+
+        if (in_array($stored, ['No changes', 'No significant changes', 'Bez zmien', 'Bez významných zmien'], true)) {
+            return $stored === 'No changes' || $stored === 'Bez zmien'
+                ? $this->t('diff.no_changes')
+                : $this->t('diff.no_significant');
+        }
+
+        if (preg_match_all('/(\d+)\s+(added|removed|modified|pridaných|odstránených|upravených)/i', $stored, $matches, PREG_SET_ORDER) === 0) {
+            return $stored;
+        }
+
+        $add = 0;
+        $del = 0;
+        $mod = 0;
+        foreach ($matches as $match) {
+            $count = (int) $match[1];
+            $label = strtolower($match[2]);
+            if (str_contains($label, 'add') || str_contains($label, 'pridan')) {
+                $add = $count;
+            } elseif (str_contains($label, 'remov') || str_contains($label, 'odstr')) {
+                $del = $count;
+            } elseif (str_contains($label, 'mod') || str_contains($label, 'uprav')) {
+                $mod = $count;
+            }
+        }
+
+        return $this->summarizeDiffCounts($add, $del, $mod);
+    }
+
+    public function summarizeDiffCounts(int $additions, int $deletions, int $modifications): string
+    {
+        if ($additions === 0 && $deletions === 0 && $modifications === 0) {
+            return $this->t('diff.no_significant');
+        }
+
+        $parts = [];
+        if ($additions > 0) {
+            $parts[] = $this->t('diff.added', ['count' => (string) $additions]);
+        }
+        if ($deletions > 0) {
+            $parts[] = $this->t('diff.removed', ['count' => (string) $deletions]);
+        }
+        if ($modifications > 0) {
+            $parts[] = $this->t('diff.modified', ['count' => (string) $modifications]);
+        }
+
+        return implode(', ', $parts);
+    }
+
+    /**
+     * @param array<int|string, mixed> $diff
+     *
+     * @return array{diff_additions: int, diff_deletions: int, diff_modifications: int, change_summary: string}
+     */
+    public function buildDiffMetadata(?array $diff): array
+    {
+        $additions = (int) ($diff['additions'] ?? 0);
+        $deletions = (int) ($diff['deletions'] ?? 0);
+        $modifications = (int) ($diff['modifications'] ?? 0);
+
+        return [
+            'diff_additions' => $additions,
+            'diff_deletions' => $deletions,
+            'diff_modifications' => $modifications,
+            'change_summary' => $diff === null
+                ? $this->t('diff.no_changes')
+                : $this->summarizeDiffCounts($additions, $deletions, $modifications),
+        ];
     }
 
     /**
@@ -285,16 +352,29 @@ final class AuditMessageFormatter
             return $email;
         }
 
-        return 'Systém';
+        return $this->t('system');
     }
 
     private function quote(string $value): string
     {
         $trimmed = trim($value);
         if ($trimmed === '') {
-            return '„(prázdne)“';
+            return '„' . $this->t('empty') . '“';
         }
 
         return '„' . $trimmed . '“';
+    }
+
+    /**
+     * @param array<string, string> $replace
+     */
+    private function t(string $key, array $replace = [], string $fallback = ''): string
+    {
+        $message = Lang::get($key, $replace, 'audit');
+        if ($message === $key && $fallback !== '') {
+            return $fallback;
+        }
+
+        return $message;
     }
 }

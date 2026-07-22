@@ -219,8 +219,8 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({ contentId: contentIdProp
           ) : (
             events.map((event, index) => {
               const logRecord = (event.log ?? event) as Record<string, unknown>;
-              const displayMessage = formatAuditEventMessage(logRecord);
-              const displayActor = formatAuditEventActor(logRecord);
+              const displayMessage = formatAuditEventMessage(logRecord, locale);
+              const displayActor = formatAuditEventActor(logRecord, locale);
               const action = (logRecord.context as { action?: string } | undefined)?.action ?? 'unknown';
 
               return (

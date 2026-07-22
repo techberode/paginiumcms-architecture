@@ -1,0 +1,38 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'system' => 'System',
+    'system_event' => 'System event',
+    'empty' => '(empty)',
+    'unknown_target' => 'unknown target',
+    'access_default_verb' => 'accessed',
+    'content_default_type' => 'content',
+    'actions.create' => 'created',
+    'actions.update' => 'updated',
+    'actions.delete' => 'deleted',
+    'actions.restore' => 'restored',
+    'actions.status' => 'changed status of',
+    'actions.read' => 'viewed',
+    'actions.login' => 'signed in',
+    'actions.logout' => 'signed out',
+    'actions.backup' => 'backed up',
+    'actions.restore_backup' => 'restored from backup',
+    'content_types.page' => 'page',
+    'content_types.article' => 'article',
+    'content_types.pages' => 'page',
+    'content_types.articles' => 'article',
+    'status.draft' => 'draft',
+    'status.published' => 'published',
+    'status.archived' => 'archived',
+    'diff.no_changes' => 'No changes',
+    'diff.no_significant' => 'No significant changes',
+    'diff.added' => ':count added',
+    'diff.removed' => ':count removed',
+    'diff.modified' => ':count modified',
+    'version' => '(version :version)',
+    'admin_action' => ':actor performed admin action “:action” on “:target”',
+    'security' => 'Security event “:action” on “:target” (:actor)',
+    'default' => ':actor — :action: :target',
+];

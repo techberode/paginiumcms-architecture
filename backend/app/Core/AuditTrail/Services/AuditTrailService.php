@@ -108,7 +108,7 @@ class AuditTrailService
             'message' => $message,
             'previous_version' => $previousVersion ? $previousVersion->getVersion() : null,
             'diff' => $version->getDiff(),
-            'change_summary' => $this->summarizeDiff($version->getDiff()),
+            ...$this->messageFormatter->buildDiffMetadata($version->getDiff()),
             'content_size' => strlen($content),
             'front_matter_size' => strlen($frontMatter),
             'content_slug' => $contentId,
@@ -301,10 +301,11 @@ class AuditTrailService
             });
             
             $versionData = $version->toArray();
+            $versionLogEntry = !empty($versionLog) ? array_shift($versionLog) : null;
             $auditLogs[] = [
                 'type' => 'version',
                 'version' => $versionData,
-                'log' => !empty($versionLog) ? array_shift($versionLog) : null,
+                'log' => is_array($versionLogEntry) ? $this->enrichAuditLogEntry($versionLogEntry) : null,
                 'timestamp' => $version->getCreatedAt(),
                 'user' => $this->getUserInfo($version->getCreatedBy())
             ];
@@ -315,7 +316,7 @@ class AuditTrailService
             if (!isset($log['context']['metadata']['version'])) {
                 $auditLogs[] = [
                     'type' => 'access',
-                    'log' => $log,
+                    'log' => $this->enrichAuditLogEntry($log),
                     'timestamp' => $log['timestamp'] ?? date('Y-m-d H:i:s'),
                     'user' => $log['context']['user'] ?? null
                 ];
@@ -342,7 +343,10 @@ class AuditTrailService
                    $log['context']['user']['id'] === $userId;
         });
 
-        return array_slice($userLogs, 0, $limit);
+        return array_map(
+            fn (array $log): array => $this->enrichAuditLogEntry($log),
+            array_slice(array_values($userLogs), 0, $limit)
+        );
     }
 
     /**
@@ -451,7 +455,7 @@ class AuditTrailService
                 $context['user']['name'] ?? 'system',
                 $context['user']['email'] ?? '',
                 $log['severity'] ?? 'INFO',
-                str_replace('"', '""', $log['message'] ?? '')
+                str_replace('"', '""', $this->messageFormatter->formatFromLog($log))
             );
         }
 
@@ -538,6 +542,18 @@ class AuditTrailService
 
     /**
      * @param array<int|string, mixed> $log
+     *
+     * @return array<int|string, mixed>
+     */
+    private function enrichAuditLogEntry(array $log): array
+    {
+        $log['display_message'] = $this->messageFormatter->formatFromLog($log);
+
+        return $log;
+    }
+
+    /**
+     * @param array<int|string, mixed> $log
      */
     private function resolveAuditCategory(array $log): string
     {
@@ -576,28 +592,5 @@ class AuditTrailService
         }
 
         return $metadata;
-    }
-
-    /**
-     * @param array<int|string, mixed> $diff
-     */
-    private function summarizeDiff(?array $diff): string
-    {
-        if (!$diff) {
-            return 'Bez zmien';
-        }
-
-        $summary = [];
-        if (isset($diff['additions']) && $diff['additions'] > 0) {
-            $summary[] = $diff['additions'] . ' pridaných';
-        }
-        if (isset($diff['deletions']) && $diff['deletions'] > 0) {
-            $summary[] = $diff['deletions'] . ' odstránených';
-        }
-        if (isset($diff['modifications']) && $diff['modifications'] > 0) {
-            $summary[] = $diff['modifications'] . ' upravených';
-        }
-
-        return empty($summary) ? 'Bez významných zmien' : implode(', ', $summary);
     }
 }
