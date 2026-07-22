@@ -18,7 +18,7 @@ Súvisiace dokumenty: `docs/architecture/PLUGINS.md`, `docs/CONTINUATION.md` (Z�
 
 | Pravidlo | Požiadavka |
 |---|---|
-| Verzia | PHP 8.4+ (projekt cieli 8.5), `declare(strict_types=1);` v každom súbore |
+| Verzia | PHP 8.5+ (projekt cieli 8.5), `declare(strict_types=1);` v každom súbore |
 | Typovanie | Plné type hints, PHPStan **level 8**, 0 chýb v CI |
 | Namespaces | `PaginiumCMS\{Core\|Http\|Modules\|…}\…` – absolútne cesty k súborom v kóde |
 | Štruktúra | Jadro v `backend/app/Core/`, HTTP v `backend/app/Http/`, doména v `backend/app/Modules/` |

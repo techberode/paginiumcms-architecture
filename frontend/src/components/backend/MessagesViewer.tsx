@@ -26,9 +26,8 @@ import {
   AdminInboxList,
   AdminInboxListHeader,
   AdminInboxRow,
-  inboxPriorityBadgeClass,
-  inboxPriorityLabel,
 } from './AdminInboxList';
+import { inboxPriorityBadgeClass, inboxPriorityLabel } from '../../utils/adminInboxPriority';
 import { applyClientListView } from '../../utils/clientListView';
 import { messagePriorityWeight } from '../../constants/messageSubjects';
 import { summarizeBulkResult } from '../../types/bulk';

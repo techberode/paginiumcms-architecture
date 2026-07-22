@@ -3,7 +3,7 @@
     "description": "PaginiumCMS Core - FlatFile Engine",
     "type": "project",
     "require": {
-        "php": "^8.4",
+        "php": "^8.5",
         "symfony/yaml": "^7.0",
         "league/commonmark": "^2.0",
         "spomky-labs/otphp": "^11.0",
@@ -41,5 +41,11 @@
         }
     },
     "minimum-stability": "stable",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "scripts": {
+        "test": "@php vendor/bin/phpunit --colors=never",
+        "stan": "@php vendor/bin/phpstan analyse --memory-limit=512M --no-progress",
+        "cs": "bash -c 'set -e; find backend/app backend/bootstrap -name \"*.php\" -type f -print0 | xargs -0 -n1 php -l >/dev/null'",
+        "gate": "bash scripts/iteration-gate.sh"
+    }
 }

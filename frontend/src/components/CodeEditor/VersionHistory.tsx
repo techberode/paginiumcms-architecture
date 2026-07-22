@@ -3,6 +3,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { formatDistanceToNow } from 'date-fns';
 import { DiffViewer } from '../versioning/DiffViewer';
+import type { Version } from '../../api/types';
+import type { VersionComparison } from '../../api/versions';
 
 interface VersionHistoryProps {
   contentId: string;
@@ -10,18 +12,18 @@ interface VersionHistoryProps {
 }
 
 export const VersionHistory: React.FC<VersionHistoryProps> = ({ contentId, onRestore }) => {
-  const [versions, setVersions] = useState<any[]>([]);
+  const [versions, setVersions] = useState<Version[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedVersions, setSelectedVersions] = useState<[number, number] | null>(null);
-  const [diffData, setDiffData] = useState<any>(null);
+  const [diffData, setDiffData] = useState<VersionComparison | null>(null);
   const [showDiff, setShowDiff] = useState(false);
   const { get, post, delete: del } = useApi();
 
   const loadHistory = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await get(`/api/admin/versions/${contentId}`);
-      setVersions(response.data.versions || []);
+      const response = await get<{ versions: Version[] }>(`/api/admin/versions/${contentId}`);
+      setVersions(response.data?.versions || []);
     } catch (error) {
       console.error('Failed to load version history:', error);
     } finally {
@@ -57,14 +59,16 @@ export const VersionHistory: React.FC<VersionHistoryProps> = ({ contentId, onRes
     
     const [v1, v2] = selectedVersions;
     try {
-      const response = await get(`/api/admin/versions/compare`, {
+      const response = await get<VersionComparison>(`/api/admin/versions/compare`, {
         params: {
           content_id: contentId,
           version1: v1,
           version2: v2
         }
       });
-      setDiffData(response.data);
+      if (response.data) {
+        setDiffData(response.data);
+      }
       setShowDiff(true);
     } catch (error) {
       console.error('Failed to compare versions:', error);
@@ -127,10 +131,10 @@ export const VersionHistory: React.FC<VersionHistoryProps> = ({ contentId, onRes
                       v{version.version}
                     </span>
                     <span className="text-sm text-gray-600 dark:text-gray-400">
-                      {formatDistanceToNow(new Date(version.created_at), { addSuffix: true })}
+                      {formatDistanceToNow(new Date(version.createdAt || ''), { addSuffix: true })}
                     </span>
                     <span className="text-sm text-gray-500 dark:text-gray-400">
-                      by {version.created_by || 'unknown'}
+                      by {version.createdBy || 'unknown'}
                     </span>
                     {version.message && (
                       <span className="text-sm text-gray-600 dark:text-gray-400 italic">

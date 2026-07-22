@@ -6,6 +6,7 @@ import { useToast } from '../../hooks/useToast';
 import { formatDistanceToNow, format } from 'date-fns';
 import { sk } from 'date-fns/locale';
 import { formatAuditEventActor, formatAuditEventMessage } from '../../utils/formatAuditEvent';
+import type { AuditEvent, AuditStats } from '../../api/types';
 
 interface AuditTrailProps {
   contentId?: string;
@@ -19,8 +20,8 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({ contentId: contentIdProp
   }>();
   const contentId = contentIdProp ?? routeContentId;
   const userId = userIdProp ?? routeUserId;
-  const [events, setEvents] = useState<any[]>([]);
-  const [stats, setStats] = useState<any>(null);
+  const [events, setEvents] = useState<AuditEvent[]>([]);
+  const [stats, setStats] = useState<AuditStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [showStats, setShowStats] = useState(false);
   const { get } = useApi();
@@ -29,10 +30,10 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({ contentId: contentIdProp
   const loadContentAudit = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await get<any>(`/api/admin/audit/content/${contentId}`);
+      const response = await get<{ events?: AuditEvent[]; stats?: AuditStats }>(`/api/admin/audit/content/${contentId}`);
       if (response.success) {
         setEvents(response.data?.events || []);
-        setStats(response.data?.stats);
+        setStats(response.data?.stats ?? null);
       }
     } catch (error) {
       toast.error('Failed to load audit trail');
@@ -45,7 +46,7 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({ contentId: contentIdProp
   const loadUserAudit = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await get<any>(`/api/admin/audit/user/${userId}`);
+      const response = await get<{ events?: AuditEvent[] }>(`/api/admin/audit/user/${userId}`);
       if (response.success) {
         setEvents(response.data?.events || []);
       }
@@ -60,9 +61,9 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({ contentId: contentIdProp
   const loadStats = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await get<any>('/api/admin/audit/stats');
+      const response = await get<AuditStats>('/api/admin/audit/stats');
       if (response.success) {
-        setStats(response.data);
+        setStats(response.data ?? null);
         setEvents(response.data?.recent_events || []);
       }
     } catch (error) {
@@ -109,7 +110,7 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({ contentId: contentIdProp
 
   const handleExport = async () => {
     try {
-      const response = await get<any>('/api/admin/audit/export', {
+      const response = await get<Blob>('/api/admin/audit/export', {
         responseType: 'blob',
       });
       if (response.success && response.data) {

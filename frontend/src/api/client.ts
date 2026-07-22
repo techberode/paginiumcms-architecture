@@ -3,7 +3,7 @@ import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } f
 import { debugLogApi } from '../utils/debugLog';
 import { resolveApiBaseUrl } from '../utils/apiBaseUrl';
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
@@ -186,7 +186,7 @@ class ApiClient {
   }
 
   // GET request
-  public async get<T = any>(
+  public async get<T = unknown>(
     url: string,
     config?: AxiosRequestConfig
   ): Promise<ApiResponse<T>> {
@@ -194,40 +194,40 @@ class ApiClient {
       const response: AxiosResponse<ApiResponse<T>> = await this.client.get(url, config);
       return response.data;
     } catch (error) {
-      return this.handleError(error);
+      return this.handleError<T>(error);
     }
   }
 
   // POST request
-  public async post<T = any>(
+  public async post<T = unknown>(
     url: string,
-    data?: any,
+    data?: unknown,
     config?: AxiosRequestConfig
   ): Promise<ApiResponse<T>> {
     try {
       const response: AxiosResponse<ApiResponse<T>> = await this.client.post(url, data, config);
       return response.data;
     } catch (error) {
-      return this.handleError(error);
+      return this.handleError<T>(error);
     }
   }
 
   // PUT request
-  public async put<T = any>(
+  public async put<T = unknown>(
     url: string,
-    data?: any,
+    data?: unknown,
     config?: AxiosRequestConfig
   ): Promise<ApiResponse<T>> {
     try {
       const response: AxiosResponse<ApiResponse<T>> = await this.client.put(url, data, config);
       return response.data;
     } catch (error) {
-      return this.handleError(error);
+      return this.handleError<T>(error);
     }
   }
 
   // DELETE request
-  public async delete<T = any>(
+  public async delete<T = unknown>(
     url: string,
     config?: AxiosRequestConfig
   ): Promise<ApiResponse<T>> {
@@ -235,27 +235,27 @@ class ApiClient {
       const response: AxiosResponse<ApiResponse<T>> = await this.client.delete(url, config);
       return response.data;
     } catch (error) {
-      return this.handleError(error);
+      return this.handleError<T>(error);
     }
   }
 
   // PATCH request
-  public async patch<T = any>(
+  public async patch<T = unknown>(
     url: string,
-    data?: any,
+    data?: unknown,
     config?: AxiosRequestConfig
   ): Promise<ApiResponse<T>> {
     try {
       const response: AxiosResponse<ApiResponse<T>> = await this.client.patch(url, data, config);
       return response.data;
     } catch (error) {
-      return this.handleError(error);
+      return this.handleError<T>(error);
     }
   }
 
-  private handleError(error: any): ApiResponse {
+  private handleError<T = unknown>(error: unknown): ApiResponse<T> {
     if (axios.isAxiosError(error)) {
-      const response = error.response?.data as ApiResponse;
+      const response = (error.response?.data ?? {}) as ApiResponse<T>;
       // Zachováme aj prípadné doplnkové polia z chybovej odpovede (napr. `lock` pri 409 konflikte),
       // aby ich volajúci (napr. locking API) vedel spracovať. Rozšírenie je spätne kompatibilné.
       return {
@@ -268,7 +268,7 @@ class ApiClient {
     }
     return {
       success: false,
-      error: error?.message || 'Unknown error occurred',
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
     };
   }
 }

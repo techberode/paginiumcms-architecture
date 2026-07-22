@@ -42,7 +42,7 @@ export interface Page {
   title: string;
   slug: string;
   content: string;
-  frontMatter: Record<string, any>;
+  frontMatter: Record<string, unknown>;
   html: string;
   status: 'draft' | 'published' | 'archived';
   author: string;
@@ -97,7 +97,7 @@ export interface Version {
     modifications: number;
     content: string;
     summary: string;
-    lines: any[];
+    lines: unknown[];
   } | null;
 }
 
@@ -111,7 +111,7 @@ export interface AuditEvent {
     severity: string;
     message: string;
     timestamp: string;
-    context: Record<string, any>;
+    context: Record<string, unknown>;
   };
   timestamp: string;
   user: {
@@ -127,7 +127,7 @@ export interface HealthCheck {
   group: string;
   status: 'pass' | 'fail' | 'warn' | 'skip';
   message: string;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
   duration: number;
   timestamp: string;
 }

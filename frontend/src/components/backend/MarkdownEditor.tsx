@@ -26,7 +26,7 @@ import {
   triStateFromApi,
   triStateToApi,
   type ArticleCommentsSettings,
-} from './ArticleCommentsPanel';
+} from '../../utils/articleCommentsSettings';
 import {
   type ContentFormat,
   type EditorMode,
@@ -47,6 +47,10 @@ import {
   resolveStoragePath,
   slugifyTitle,
 } from '../../utils/contentEditorMeta';
+import {
+  type ContentEditorLoadData,
+  type ContentSaveResponse,
+} from '../../utils/contentEditorApi';
 
 interface MarkdownEditorProps {
   type?: ContentType;
@@ -136,7 +140,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
     if (isNew) {
       setEditorProfile(resolveDefaultProfileId(type, settings.editor as Record<string, unknown>));
     }
-  }, [isNew, type, settings.editor?.defaultProfilePage, settings.editor?.defaultProfileArticle]);
+  }, [isNew, type, settings.editor]);
 
   useEffect(() => {
     void getNavigation().then(setNavigationItems).catch(() => setNavigationItems([]));
@@ -182,7 +186,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
   const loadContent = async () => {
     setLoading(true);
     try {
-      const response = await get<any>(`${endpoint}/${slug}`);
+      const response = await get<ContentEditorLoadData>(`${endpoint}/${slug}`);
       if (response.success && response.data) {
         const raw = response.data.content || '';
         const fm = response.data.frontMatter ?? {};
@@ -324,8 +328,8 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         }
 
         const response = isNew
-          ? await post<any>(endpoint, data)
-          : await put<any>(`${endpoint}/${slug}`, data);
+          ? await post<ContentSaveResponse>(endpoint, data)
+          : await put<ContentSaveResponse>(`${endpoint}/${slug}`, data);
 
         const responseObj = response as unknown as Record<string, unknown>;
         const otpPending = extractOtpPending(responseObj);

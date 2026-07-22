@@ -17,10 +17,8 @@ import type { EditorProfileId } from '../../utils/editorProfiles';
 import { EditorProfilePicker } from './EditorProfilePicker';
 import { countContentStats } from '../../utils/contentEditorMeta';
 import { SeoMetadataPanel, type SeoFormValues } from './SeoMetadataPanel';
-import {
-  ArticleCommentsPanel,
-  type ArticleCommentsSettings,
-} from './ArticleCommentsPanel';
+import { ArticleCommentsPanel } from './ArticleCommentsPanel';
+import type { ArticleCommentsSettings } from '../../utils/articleCommentsSettings';
 import { useOpenLinksInNewTab } from '../../hooks/useOpenLinksInNewTab';
 import { ArticleTagsEditor } from './ArticleTagsEditor';
 import { linkTargetProps } from '../../utils/linkTarget';

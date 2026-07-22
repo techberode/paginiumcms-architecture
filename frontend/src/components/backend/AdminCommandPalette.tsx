@@ -1,5 +1,5 @@
 // frontend/src/components/backend/AdminCommandPalette.tsx
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Search,
@@ -71,8 +71,13 @@ export const AdminCommandPalette: React.FC<AdminCommandPaletteProps> = ({ isOpen
   const [results, setResults] = useState<AdminSearchResultItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [recent, setRecent] = useState<AdminSearchResultItem[]>([]);
 
-  const recent = useMemo(() => loadRecent(), [isOpen]);
+  useEffect(() => {
+    if (isOpen) {
+      setRecent(loadRecent());
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) {

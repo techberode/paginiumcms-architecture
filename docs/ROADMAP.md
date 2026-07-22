@@ -6,7 +6,9 @@
 
 Legenda: ✅ hotové · 🚧 rozpracované · ⏳ plánované · 🔴 kritická priorita jadra
 
-**Aktuálna verzia:** 2.0.46 ✅ · **Ďalej:** It.18 zvyšok adminu (comments, messages…)
+**DevOps (RECOMMENDATIONS Fáza 1, 2026-07-22):** ✅ composer scripts (`test`, `stan`, `cs`, `gate`), CI security audit, Dependabot, PHP ^8.5, ESLint 0 warnings.
+
+**Aktuálna verzia:** 2.0.46 ✅ · **Ďalej:** RECOMMENDATIONS Fáza 2 (Docker) + It.43 vyhľadávanie
 
 
 | Iterácia | Názov                                                         | Priorita                             |
