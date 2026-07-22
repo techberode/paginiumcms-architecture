@@ -23,13 +23,25 @@ final class SecurityScanner
 
         $forbidden = array_map('strtolower', $forbiddenFunctions);
 
+        // Jazykové konštrukty (nie sú T_STRING) → mapujeme token typ na kľúčové slovo.
+        $constructTokens = [
+            T_EVAL => 'eval',
+            T_INCLUDE => 'include',
+            T_INCLUDE_ONCE => 'include_once',
+            T_REQUIRE => 'require',
+            T_REQUIRE_ONCE => 'require_once',
+        ];
+
         foreach ($tokens as $index => $token) {
             if (!is_array($token)) {
                 continue;
             }
 
-            if ($token[0] === T_EVAL && in_array('eval', $forbidden, true)) {
-                $violations[] = 'Forbidden PHP function: eval';
+            if (isset($constructTokens[$token[0]])) {
+                $keyword = $constructTokens[$token[0]];
+                if (in_array($keyword, $forbidden, true)) {
+                    $violations[] = 'Forbidden PHP construct: ' . $keyword;
+                }
                 continue;
             }
 

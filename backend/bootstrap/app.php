@@ -771,17 +771,24 @@ $errorMiddleware->setDefaultErrorHandler(
     new \PaginiumCMS\Http\Support\ApiErrorHandler($app->getResponseFactory())
 );
 
-// Pridanie CORS Middleware pre lokálny vývoj
-$app->add(function ($request, $handler) {
-    $response = $handler->handle($request);
+// Pridanie CORS Middleware IBA pre lokálny vývoj.
+// Audit 2026-07-22: táto natvrdo zadaná closure predtým VŽDY nastavovala
+// Allow-Origin: http://localhost:5173 + credentials:true, aj v produkcii, kde
+// kolidovala s Tuupola CorsMiddleware. Gatujeme ju len na ne-produkčné prostredie;
+// v produkcii CORS rieši výhradne konfigurovaný CorsMiddleware vyššie.
+$appEnvCors = (string) (getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? 'development'));
+if ($appEnvCors !== 'production') {
+    $app->add(function ($request, $handler) {
+        $response = $handler->handle($request);
 
-    // Tieto hlavičky dovolia Reactu bezpečne čítať API odpovede
-    return $response
-    ->withHeader('Access-Control-Allow-Origin', 'http://localhost:5173')
-    ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization, X-CSRF-Token')
-    ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS')
-    ->withHeader('Access-Control-Allow-Credentials', 'true'); // Dôležité pre cookies/session
-});
+        // Tieto hlavičky dovolia Reactu bezpečne čítať API odpovede
+        return $response
+        ->withHeader('Access-Control-Allow-Origin', 'http://localhost:5173')
+        ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization, X-CSRF-Token')
+        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS')
+        ->withHeader('Access-Control-Allow-Credentials', 'true'); // Dôležité pre cookies/session
+    });
+}
 
 // Ošetrenie predbežných OPTIONS požiadaviek, ktoré prehliadač automaticky posiela
 $app->options('/{routes:.+}', function ($request, $response, $args) {

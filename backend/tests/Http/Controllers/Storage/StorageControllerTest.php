@@ -50,6 +50,26 @@ class StorageControllerTest extends TestCase
         $this->assertSame(404, $response->getStatusCode());
     }
 
+    public function testServeRejectsNonPublicDataFile(): void
+    {
+        // Regression (audit 2026-07-22): flat-file dáta mimo media podstromu
+        // nesmú byť servírované, aj keď fyzicky existujú a nie sú traversal.
+        mkdir($this->storageRoot . '/app/content/data/users', 0755, true);
+        $relative = 'app/content/data/users/admin.json';
+        file_put_contents(
+            $this->storageRoot . '/' . $relative,
+            '{"passwordHash":"$argon2id$secret","twoFactorSecret":"TOTPSEED"}'
+        );
+
+        $request = (new ServerRequestFactory())->createServerRequest('GET', '/storage/' . $relative);
+        $response = (new ResponseFactory())->createResponse();
+
+        $response = $this->controller->serve($request, $response, ['path' => $relative]);
+
+        $this->assertSame(404, $response->getStatusCode());
+        $this->assertStringNotContainsString('twoFactorSecret', (string) $response->getBody());
+    }
+
     public function testServeMissingFileReturns404(): void
     {
         $request = (new ServerRequestFactory())->createServerRequest('GET', '/storage/missing.txt');
