@@ -38,98 +38,44 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.55 — Tiptap JSON storage + editor image upload | **2.0.43** | [below](#2043--2026-07-20) |
 | It.18 — Admin UI i18n + translation editor | **2.0.44** | [below](#2044--2026-07-21) |
 | It.18f — Ops + platform/editor i18n (Beta gate) | **2.0.47** | [below](#2047--2026-07-22) |
+| Security audit hardening (A1–S10, ISS-052–058) | **2.0.48** | [below](#2048--2026-07-22) |
 | It.19b–19d — Security runtime, auth UX, password policy | **2.0.45** | [below](#2045--2026-07-21) |
 
 ---
 
 ## [Unreleased]
 
+*(Next: formatAuditEvent locale · public site i18n · It.15 emitters)*
+
+---
+
+## [2.0.48] – 2026-07-22
+
+**Security audit hardening** — at-rest encryption, log sanitization, SSRF guard, Path ACL wiring, WAF POST body scan, UserRepository index, OTP rate limits.  
+Kód už bol na `main` pred 2.0.47; tento release formalizuje CHANGELOG + tag.  
+Detail: [ISSUES.md](docs/ISSUES.md) — ISS-012, ISS-052 … ISS-058 · [RELEASE.md](docs/developer/RELEASE.md).
+
 ### Security
-- **At-rest secret encryption (audit A1).** New `EncryptionService` (authenticated
-  symmetric encryption via a 32-byte key derived from `APP_KEY`) transparently
-  encrypts sensitive flat-file secrets: user `twoFactorSecret` (TOTP seed) and
-  settings `password`-type fields (SMTP password, ntfy token/password, Telegram
-  bot token, webhook secret, SSO client secrets). Prefers libsodium
-  `crypto_secretbox` (`enc:s1:`) with an OpenSSL **AES-256-GCM** fallback
-  (`enc:g1:`) for builds without `ext-sodium`.
-  - Transparent migration: plaintext values are read unchanged; only new writes
-    are encrypted (no migration script). Idempotent, non-deterministic ciphertext.
-  - Fail-safe rollout: an invalid or placeholder `APP_KEY` disables encryption
-    (values stay plaintext) and it activates once a real key is set. The known
-    `base64:xxxx…` placeholder is explicitly rejected.
-  - A real `APP_KEY` is now generated in `backend/.env`. **Note:** the key is
-    per-environment and must never change after data is encrypted (lost key =
-    lost secrets → 2FA lockout).
-- **`data/` confirmed outside web-root (audit A2).** Docroot is `backend/public/`;
-  flat-file data lives in `backend/storage/app/content/data/` (a sibling, not under
-  the docroot) and is only reachable via the media-only `/storage/` allow-list. No
-  physical move required. Hardened `backend/storage/.htaccess` with Apache 2.4
-  `Require all denied` and documented the nginx equivalent.
-- Files: `backend/app/Core/Security/Services/EncryptionService.php` (new),
-  `backend/app/Modules/Security/Services/UserRepository.php`,
-  `backend/app/Core/Settings/Services/SettingsRepository.php`,
-  `backend/app/Core/Settings/SettingsSchema.php`, `backend/bootstrap/app.php`,
-  `backend/app/Http/Config/services.php`, `backend/storage/.htaccess`.
-- Tests: `EncryptionServiceTest` plus at-rest cases in `UserRepositoryTest` and
-  `SettingsRepositoryTest` (PHPUnit 741 tests, PHPStan L8 clean).
-- **Log-injection sanitization (audit C11).** New `LogSanitizer` collapses runs
-  of control characters (`\x00–\x1F`, `\x7F`, incl. CR/LF) into a single space.
-  Applied to user-controlled fields entering log sinks (`AccessLogService` path/
-  query/user_agent, `FirewallIncidentLogger` uri/user_agent, `SecurityLogger`
-  User-Agent) and to the security-audit **CSV export** (previously only escaped
-  `"`, so embedded newlines could break rows). Legitimate multi-line core
-  messages are left untouched.
-- **SSRF guard for admin-configurable outbound URLs (audit C14).** New
-  `OutboundUrlGuard` enforces (in production) `https://` only, rejects userinfo
-  in the URL, and blocks hosts resolving to private/reserved ranges (loopback,
-  link-local cloud metadata `169.254.169.254`, `10/8`, `172.16/12`,
-  `192.168/16`, IPv6 `::1`), fail-closed on unresolvable hosts. Wired into
-  generic OAuth token/userinfo fetches (`OAuthSsoService`) and the ntfy/webhook/
-  Discord notification adapters. Relaxed in dev/test so local SSO/ntfy works.
-- Files: `backend/app/Support/LogSanitizer.php` (new),
-  `backend/app/Core/Security/Services/OutboundUrlGuard.php` (new),
-  `AccessLogService.php`, `FirewallIncidentLogger.php`, `SecurityAuditStore.php`,
-  `SecurityLogger.php`, `OAuthSsoService.php`, `NtfyAdapter.php`,
-  `WebhookAdapter.php`, `DiscordAdapter.php`.
-- Tests: `LogSanitizerTest`, `OutboundUrlGuardTest` (PHPUnit 759 tests, PHPStan
-  L8 clean).
-- **Path ACL enforcement (audit S9 / ISS-055).** `PathAclService` rules from
-  `data/security/acl.json` now apply to content CRUD/list, drafts, and media
-  mutations. New `ContentPathAclGuard`; `normalizeStoragePath()` maps flat-file
-  paths (`pages/foo.md`, `media/x.jpg`) to the admin glob convention
-  (`content/pages/foo`). Opt-in (`enabled: false` → unchanged behaviour); read
-  deny returns 404, write deny returns 403.
-- Files: `ContentPathAclGuard.php`, `PathAclService.php`, `ContentController.php`,
-  `DraftController.php`, `MediaController.php`, `Http/Config/services.php`.
-- Tests: `PathAclServiceTest` (storage normalization + disabled ACL + permissions),
-  `ContentPathAclGuardTest`, `PathAclIntegrationTest` (HTTP: content/draft/media deny + SUPER_ADMIN bypass).
-- **WAF POST/JSON body scanning (audit S-WAFBODY / ISS-056).** Mutujúce requesty
-  skenujú JSON/urlencoded telo (max 64 KiB) pre SQLi, traversal, env probe a
-  dangerous URL schemes. Content editor routes are exempt; multipart uploads skipped.
-  Setting `firewall.scanRequestBody` (default true). New scenarios `sql_probe_body`,
-  `ssrf_probe_body`; `path_traversal`/`env_probe` include `body` target.
-- Files: `FirewallRequestBodyReader.php`, `FirewallBodyScanPolicy.php`,
-  `FirewallScanner.php`, `FirewallMiddleware.php`, `FirewallService.php`,
-  `config/firewall_scenarios.php`, `SettingsSchema.php`.
-- Tests: `FirewallBodyScanPolicyTest`, `FirewallRequestBodyReaderTest`, extended
-  `FirewallScannerTest`, `FirewallMiddlewareTest`.
-- **UserRepository index/cache (audit PERF-USERREPO / ISS-057).** New
-  `UserIndexService` maintains `data/index/users.json` with O(1) maps for email,
-  username, user ID, and reset-token hash lookups. `UserRepository` no longer
-  scans all user JSON files on every auth/2FA/reset call; index rebuilds lazily
-  from disk and stays in sync on save/delete/reset-token mutations. Atomic writes
-  via `flock(LOCK_EX)` (same pattern as `ContentIndexService`).
-- Files: `UserIndexService.php` (new), `UserRepository.php`, `bootstrap/app.php`,
-  `Modules/Security/Config/services.php`.
-- Tests: `UserIndexServiceTest` + existing `UserRepositoryTest` regression suite.
-- **OTP dedicated rate limits (audit S10 / ISS-058).** New
-  `OtpStartRateLimitMiddleware`, `OtpVerifyRateLimitMiddleware`, and
-  `OtpResendRateLimitMiddleware` with per-email/per-challenge limits (stricter
-  than the global 60/min gate). `OtpWorkflowService` no longer resets verify
-  `attempts` on resend; `resend_count` capped (default 3 per challenge).
-- Files: `OtpRateLimitMiddleware.php`, `OtpVerify/Resend/StartRateLimitMiddleware.php`,
-  `OtpWorkflowService.php`, `OtpChallengeStore.php`, `bootstrap/app.php`, `workflows.php`.
-- Tests: `OtpRateLimitMiddlewareTest`, extended `OtpWorkflowServiceTest`.
+
+- **At-rest secret encryption (audit A1 / ISS-052).** `EncryptionService` — libsodium `enc:s1:` + OpenSSL AES-256-GCM fallback; transparent migration for `twoFactorSecret` and settings password fields.
+- **`data/` outside web-root (audit A2).** Docroot `backend/public/`; hardened `backend/storage/.htaccess`.
+- **Log-injection sanitization (audit C11 / ISS-053).** `LogSanitizer` on access logs, firewall incidents, security logger, audit CSV export.
+- **SSRF guard (audit C14 / ISS-054).** `OutboundUrlGuard` on OAuth, ntfy, webhook, Discord adapters.
+- **Path ACL enforcement (audit S9 / ISS-055).** `ContentPathAclGuard` on content CRUD, drafts, media mutations.
+- **WAF POST/JSON body scanning (audit S-WAFBODY / ISS-056).** `FirewallRequestBodyReader` + body scan policy; editor routes exempt.
+- **UserRepository index (audit PERF-USERREPO / ISS-057).** `UserIndexService` → O(1) auth lookups via `data/index/users.json`.
+- **OTP dedicated rate limits (audit S10 / ISS-058).** `Otp*RateLimitMiddleware`; resend no longer resets verify attempts.
+
+### Fixed
+
+- **ISS-012:** CSRF middleware wired globally; FE bootstrap + self-healing token refresh.
+
+### Tests
+
+- PHPUnit extended (Encryption, LogSanitizer, OutboundUrlGuard, Path ACL, WAF body, UserIndex, OTP rate-limit, CSRF).
+- PHPStan L8 clean.
+
+---
 
 ## [2.0.47] – 2026-07-22
 
@@ -552,14 +498,6 @@ TRUSTED_PROXIES=127.0.0.1,::1,192.168.10.26
 ```
 
 After deploy: restart PHP, clear browser cookies, re-login.
-
----
-
-## [Unreleased]
-
-*(Next: It.14 — Code policy engine · Beta infra checklist)*
-
-Security work-in-progress remains documented in the top **[Unreleased](#unreleased)** block above `[2.0.47]`.
 
 ---
 

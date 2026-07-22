@@ -1,19 +1,88 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.0.47** · 2026-07-22 · tag **`v2.0.47`** (release commit na `main`)  
-> Tento súbor obsahuje **copy-paste** bloky pre GitHub Release. Samotný release/tag zatiaľ nevytváraj, kým nie je schválený deploy.
+> Posledná verzia: **2.0.48** · 2026-07-22 · tag **`v2.0.48`** (po schválení deploy)  
+> Tento súbor obsahuje **copy-paste** bloky pre GitHub Release.
 
-> **Poznámka k verziám:** Commity `4367d19` (It.55) a `8526c19` (It.54) mali v správe nesprávne číslo (`2.0.42` / `2.0.41`). Oficiálne tagy podľa CHANGELOG: **v2.0.42** → `8526c19`, **v2.0.43** → `4367d19`, **v2.0.44** → `199877a`, **v2.0.45** → `f3ed5bc`, **v2.0.46** → `637fef4`, **v2.0.47** → `881c80d` (release docs; feature `f0a885c` + CI fix `390b392`).
+> **Poznámka k verziám:** … **v2.0.47** → `e1fdead` · **v2.0.48** → (release commit po tag).
 
 ### Kontinuita verzií (nepreskakovať)
 
 | Verzia | Git tag | Release commit | Stav |
 |--------|---------|----------------|------|
 | 2.0.46 | `v2.0.46` | `637fef4` | ✅ tagged |
-| **2.0.47** | **`v2.0.47`** | **`881c80d`** | ✅ tagged |
-| 2.0.48 | — | — | ⏳ Security [Unreleased] → next |
+| 2.0.47 | `v2.0.47` | `e1fdead` | ✅ tagged |
+| **2.0.48** | **`v2.0.48`** | **`545efb5`** | ✅ tagged |
 
-**Pravidlo:** Ďalší release musí byť **`v2.0.48`**, nie skok na `.49` ani späť. Pred každým novým číslom: `git tag -l 'v2.0.4*' | sort -V` a overiť, že predchádzajúca verzia má tag + GitHub Release.
+**Pravidlo:** Ďalší release musí byť **`v2.0.49`**, nie skok. Pred každým novým číslom: `git tag -l 'v2.0.4*' | sort -V`.
+
+---
+
+## 2.0.48 — pred release kontrola
+
+```bash
+./scripts/iteration-gate.sh
+# Overiť APP_KEY na serveri (EncryptionService) — po nastavení sa nové tajomstvá šifrujú
+```
+
+**Po deployi:**
+
+1. **Encryption (ISS-052)** — nový SMTP/2FA secret sa ukladá encrypted; starý plaintext stále čitateľný
+2. **CSRF (ISS-012)** — mutujúce API vyžadujú `X-CSRF-TOKEN`; login/register exempt
+3. **Path ACL (ISS-055)** — ak `acl.json enabled: true`, deny na content/media/drafts
+4. **WAF body (ISS-056)** — POST JSON sken; editor routes exempt
+5. **OTP rate limit (ISS-058)** — resend neobnoví verify pokusy
+
+**Opravy:** ISS-012 · ISS-052 … ISS-058 · [ISSUES.md](../ISSUES.md)
+
+---
+
+## GitHub Release — copy-paste (2.0.48)
+
+**Title:**
+
+```
+2.0.48 — Security audit hardening (encryption, CSRF, ACL, WAF body, ISS-052–058)
+```
+
+**Tag:** `v2.0.48` · **Target:** `main`
+
+**Body:**
+
+```markdown
+## Summary
+
+Formal release for **security audit hardening** already on `main`: at-rest encryption, CSRF enforcement, log sanitization, SSRF guard, Path ACL wiring, WAF POST body scan, UserRepository index, OTP rate limits.
+
+## Security
+
+| ID | Feature |
+|----|---------|
+| ISS-052 | `EncryptionService` — TOTP seed + settings secrets at rest |
+| ISS-053 | `LogSanitizer` — control char collapse in logs + CSV |
+| ISS-054 | `OutboundUrlGuard` — SSRF protection on outbound URLs |
+| ISS-055 | `ContentPathAclGuard` — ACL on content/drafts/media |
+| ISS-056 | WAF POST/JSON body scanning (editor exempt) |
+| ISS-057 | `UserIndexService` — O(1) auth lookups |
+| ISS-058 | OTP dedicated rate limits + resend hardening |
+| ISS-012 | CSRF middleware + FE token bootstrap |
+
+## Deploy notes
+
+- Set real **`APP_KEY`** before relying on encryption; never rotate after secrets encrypted.
+- Path ACL is opt-in (`acl.json` → `enabled: false` by default).
+
+## Test plan
+
+- [ ] `./scripts/iteration-gate.sh` green
+- [ ] Login → mutating request without CSRF → 403; with token → OK
+- [ ] Save settings password field → encrypted on disk
+- [ ] OTP resend 4× → blocked; verify attempts not reset
+
+## Docs
+
+- [CHANGELOG.md](CHANGELOG.md) — 2.0.48
+- [ISSUES.md](docs/ISSUES.md) — ISS-012, ISS-052 … ISS-058
+```
 
 ---
 
@@ -51,7 +120,7 @@
 2.0.47 — It.18f admin i18n Beta gate + Vitest I18nProvider fix (ISS-059–060)
 ```
 
-**Tag:** `v2.0.47` · **Target:** `main` · **Commit:** `881c80d`
+**Tag:** `v2.0.47` · **Target:** `main` · **Commit:** `e1fdead`
 
 **Body:**
 
