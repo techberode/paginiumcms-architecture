@@ -29,7 +29,7 @@ final class PathAclService
             return true;
         }
 
-        $path = $this->normalizePath($path);
+        $path = $this->normalizeStoragePath($path);
         if ($path === '') {
             return true;
         }
@@ -88,6 +88,32 @@ final class PathAclService
         }
     }
 
+    /**
+     * Normalizes flat-file relative paths for ACL glob matching.
+     *
+     * Storage paths (`pages/foo.md`, `media/x.jpg`) are mapped to the admin
+     * convention (`content/pages/foo`, `content/media/x`).
+     */
+    public function normalizeStoragePath(string $path): string
+    {
+        $path = $this->normalizePath($path);
+        if ($path === '') {
+            return '';
+        }
+
+        $path = preg_replace(
+            '/\.(md|json|html?|jpe?g|png|gif|webp|svg|pdf|mp4|webm|avif|ico|txt|csv)$/i',
+            '',
+            $path
+        ) ?? $path;
+
+        if (!str_starts_with($path, 'content/')) {
+            $path = 'content/' . $path;
+        }
+
+        return $path;
+    }
+
     private function normalizePath(string $path): string
     {
         $path = trim(str_replace('\\', '/', $path), '/');
@@ -97,7 +123,7 @@ final class PathAclService
 
     private function pathMatches(string $path, string $pattern): bool
     {
-        $pattern = trim(str_replace('\\', '/', $pattern), '/');
+        $pattern = $this->normalizeStoragePath($pattern);
         if ($pattern === '') {
             return false;
         }

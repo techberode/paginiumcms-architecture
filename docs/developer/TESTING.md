@@ -4,15 +4,19 @@
 
 ## Rýchly prehľad — čo kedy spustiť
 
-| Situácia | Príkaz | Trvanie (orientačne) |
-|----------|--------|----------------------|
-| **Pred commitom / po iterácii** | `./scripts/iteration-gate.sh` | ~2–5 min |
-| **Kompletná lokálna sada (BE + FE + SCA + diagnose)** | `./scripts/run-all-tests.zsh` | ~15–25 min |
-| **Len backend** | `./vendor/bin/phpunit` + PHPStan | ~1–2 min |
-| **Len frontend** | `cd frontend && npm test && npm run type-check && npm run lint` | ~2–5 min |
-| **CI mirror (GitHub Actions)** | pozri `.github/workflows/ci.yml` | — |
+
+| Situácia                                              | Príkaz                                                          | Trvanie (orientačne) |
+| ----------------------------------------------------- | --------------------------------------------------------------- | -------------------- |
+| **Pred commitom / po iterácii**                       | `./scripts/iteration-gate.sh`                                   | ~2–5 min             |
+| **Kompletná lokálna sada (BE + FE + SCA + diagnose)** | `./scripts/run-all-tests.zsh`                                   | ~15–25 min           |
+| **Len backend**                                       | `./vendor/bin/phpunit` + PHPStan                                | ~1–2 min             |
+| **Len frontend**                                      | `cd frontend && npm test && npm run type-check && npm run lint` | ~2–5 min             |
+| **CI mirror (GitHub Actions)**                        | pozri `.github/workflows/ci.yml`                                | —                    |
+
 
 ---
+
+
 
 ## Kompletná testovacia procedúra (`run-all-tests.zsh`)
 
@@ -25,12 +29,14 @@ Automatický skript spustí **11 testovacích krokov** + **záverečný cleanup*
 
 1. Spustené z **ľubovoľného podadresára** projektu (skript sám nájde koreň podľa `vendor/bin/phpunit`).
 2. Nainštalované závislosti:
-   ```bash
+  ```bash
    composer install
    cd frontend && npm ci   # alebo npm install
-   ```
+  ```
 3. **Node 22** (rovnako ako CI): `nvm use 22` pred frontend krokmi.
 4. Pre krok 11 (`content:diagnose`) musí existovať `backend/storage/app/content` s indexom — typicky po prvom behu aplikácie alebo deployi.
+
+
 
 ### Postup použitia (krok za krokom)
 
@@ -58,24 +64,26 @@ xdg-open "$(ls -t ${PAGINIUMCMS_TEST_LOG_DIR:-$HOME/projects/paginiumcms_tests}/
 
 ### Čo skript spúšťa (11 krokov)
 
-| # | Krok | Príkaz (zjednodušene) | Metriky v súhrne |
-|---|------|------------------------|------------------|
-| 1 | PHPUnit (backend) | `vendor/bin/phpunit --colors=always` | Passed / Failed / Errors / Skipped |
-| 2 | PHPStan L8 | `phpstan analyse backend --level=8` | OK alebo počet errors |
-| 3 | Composer Audit | `composer audit` | advisories / OK |
-| 4 | Vitest (funkčné) | `cd frontend && CI=true npm test` | Test Files + Tests |
-| 5 | Bezpečnostné FE testy | `npm run test:security` | Test Files + Tests |
-| 6 | TypeScript | `npm run type-check` | počet TS errors |
-| 7 | ESLint | `npm run lint` | problems (errors/warnings) |
-| 8 | Vitest MSW | `npm run test:msw` | Test Files + Tests |
-| 9 | Produkčný build | `npm run build:prod` | build OK / failed |
-| 10 | NPM Audit | `npm run audit:security` | vulnerabilities |
-| 11 | Content diagnose (ISS-002) | `php backend/bin/console content:diagnose` | index / pages / orphans / unreadable |
-| 12 | **Cleanup test artefaktov** | `php backend/bin/test-artifacts.php --purge` | počty users/trash/media/pages pred/po |
+
+| #   | Krok                        | Príkaz (zjednodušene)                        | Metriky v súhrne                      |
+| --- | --------------------------- | -------------------------------------------- | ------------------------------------- |
+| 1   | PHPUnit (backend)           | `vendor/bin/phpunit --colors=always`         | Passed / Failed / Errors / Skipped    |
+| 2   | PHPStan L8                  | `phpstan analyse backend --level=8`          | OK alebo počet errors                 |
+| 3   | Composer Audit              | `composer audit`                             | advisories / OK                       |
+| 4   | Vitest (funkčné)            | `cd frontend && CI=true npm test`            | Test Files + Tests                    |
+| 5   | Bezpečnostné FE testy       | `npm run test:security`                      | Test Files + Tests                    |
+| 6   | TypeScript                  | `npm run type-check`                         | počet TS errors                       |
+| 7   | ESLint                      | `npm run lint`                               | problems (errors/warnings)            |
+| 8   | Vitest MSW                  | `npm run test:msw`                           | Test Files + Tests                    |
+| 9   | Produkčný build             | `npm run build:prod`                         | build OK / failed                     |
+| 10  | NPM Audit                   | `npm run audit:security`                     | vulnerabilities                       |
+| 11  | Content diagnose (ISS-002)  | `php backend/bin/console content:diagnose`   | index / pages / orphans / unreadable  |
+| 12  | **Cleanup test artefaktov** | `php backend/bin/test-artifacts.php --purge` | počty users/trash/media/pages pred/po |
+
 
 Krok 11 beží **bez** `--fix` — len kontrola flat-file úložiska. Oprava indexu/cache: `php backend/bin/console content:diagnose --fix`.
 
-Krok **12** beží **až po súhrne** krokov 1–11 — vymaže iba generické test dáta (`*@example.com`, `bulk-*`, `seo-test-*`, …), nie reálne účty ani produkčné stránky.
+Krok **12** beží **až po súhrne** krokov 1–11 — vymaže iba generické test dáta (`*@example.com`, `bulk-`*, `seo-test-*`, …), nie reálne účty ani produkčné stránky.
 
 ### Ukladanie logov do iného adresára
 
@@ -163,17 +171,21 @@ Rovnaký princíp platí pre PHPUnit (testdox `✔/✘`), PHPStan, ESLint atď.
 
 ### Rozdiel oproti `iteration-gate.sh`
 
-| | `run-all-tests.zsh` | `iteration-gate.sh` |
-|--|---------------------|---------------------|
-| Účel | Plná regresná + bezpečnostná sada + content diagnose | Rýchla brána pred commitom |
-| Composer/NPM audit | áno | nie |
-| Produkčný build | áno | nie |
-| PHP syntax scan | nie | áno (changed files) |
-| Wiring integrity | nie | áno |
-| Log do súboru | áno (s timestamp) | nie |
-| Odporúčanie | pred release / veľká zmena | po každej iterácii |
+
+|                    | `run-all-tests.zsh`                                  | `iteration-gate.sh`        |
+| ------------------ | ---------------------------------------------------- | -------------------------- |
+| Účel               | Plná regresná + bezpečnostná sada + content diagnose | Rýchla brána pred commitom |
+| Composer/NPM audit | áno                                                  | nie                        |
+| Produkčný build    | áno                                                  | nie                        |
+| PHP syntax scan    | nie                                                  | áno (changed files)        |
+| Wiring integrity   | nie                                                  | áno                        |
+| Log do súboru      | áno (s timestamp)                                    | nie                        |
+| Odporúčanie        | pred release / veľká zmena                           | po každej iterácii         |
+
 
 ---
+
+
 
 ## Spustenie jednotlivých nástrojov (manuálne)
 
@@ -197,17 +209,29 @@ cd frontend && npm run test:msw
 php backend/bin/console content:diagnose
 php backend/bin/console content:diagnose --fix    # purge cache + rebuild index
 php backend/bin/console content:diagnose --json   # strojový výstup
+
+# ACL Testy
+
+vendor/bin/phpunit backend/tests/Modules/Security/Services/PathAclServiceTest.php \
+  backend/tests/Modules/Security/Services/ContentPathAclGuardTest.php \
+  backend/tests/Http/Controllers/Security/PathAclIntegrationTest.php
 ```
+
+
 
 ## Iterácia 21 – API kontrakt
 
-| Komponent | Test / artefakt |
-|-----------|-----------------|
-| `JsonResponder` | `Http/Support/JsonResponderTest.php` |
-| HTTP response shapes | `Http/Contract/ApiResponseShapeTest.php` |
-| MSW handlery | `frontend/src/mocks/handlers.test.ts` |
-| Postman smoke | `docs/api/PaginiumCMS.postman_collection.json` |
-| Kontrakt docs | `docs/architecture/API_CONTRACT.md` |
+
+| Komponent            | Test / artefakt                                |
+| -------------------- | ---------------------------------------------- |
+| `JsonResponder`      | `Http/Support/JsonResponderTest.php`           |
+| HTTP response shapes | `Http/Contract/ApiResponseShapeTest.php`       |
+| MSW handlery         | `frontend/src/mocks/handlers.test.ts`          |
+| Postman smoke        | `docs/api/PaginiumCMS.postman_collection.json` |
+| Kontrakt docs        | `docs/architecture/API_CONTRACT.md`            |
+
+
+
 
 ### Postman / Newman (voliteľné)
 
@@ -235,6 +259,8 @@ See `.cursorrules` § Iteration gate and `scripts/iteration-gate.sh` for the ful
 ./scripts/run-api-smoke.sh   # lokálne (backend na :8080)
 ```
 
+
+
 ## Štruktúra backend testov
 
 ```text
@@ -254,20 +280,24 @@ Bootstrap aplikácie pre HTTP testy: `backend/tests/Http/TestCase.php` — nač�
 
 ## Iterácia 20 – pokrytie core hardening
 
-| Komponent | Test súbor |
-|-----------|--------------|
-| `PermissionMiddleware` | `Http/Middleware/PermissionMiddlewareTest.php` |
-| `MaintenanceModeMiddleware` | `Http/Middleware/MaintenanceModeMiddlewareTest.php` |
-| `StorageController` | `Http/Controllers/Storage/StorageControllerTest.php` |
-| `TrashService` | `Core/FlatFile/Services/TrashServiceTest.php` |
-| `TrashController` | `Http/Controllers/Admin/TrashControllerTest.php` |
-| `AuthorizationManager :manage` | `Modules/Security/AuthorizationManagerManagePermissionTest.php` |
-| RBAC, maintenance, registration, storage | `Http/Controllers/CoreHardeningTest.php` |
-| Guest comments toggle | `Http/Controllers/Comments/CommentsControllerTest.php` |
-| `BackupScheduler` | `Core/Backup/Services/BackupSchedulerTest.php` |
-| `runScheduledBackupIfDue` | `Core/Backup/Services/BackupManagerTest.php` |
-| Monitoring reports / log scan (It.7) | `Core/Monitoring/Services/*Test.php` |
-| Trash meta sidecar | `Core/FlatFile/Services/FileWriterTest.php` |
+
+| Komponent                                | Test súbor                                                      |
+| ---------------------------------------- | --------------------------------------------------------------- |
+| `PermissionMiddleware`                   | `Http/Middleware/PermissionMiddlewareTest.php`                  |
+| `MaintenanceModeMiddleware`              | `Http/Middleware/MaintenanceModeMiddlewareTest.php`             |
+| `StorageController`                      | `Http/Controllers/Storage/StorageControllerTest.php`            |
+| `TrashService`                           | `Core/FlatFile/Services/TrashServiceTest.php`                   |
+| `TrashController`                        | `Http/Controllers/Admin/TrashControllerTest.php`                |
+| `AuthorizationManager :manage`           | `Modules/Security/AuthorizationManagerManagePermissionTest.php` |
+| RBAC, maintenance, registration, storage | `Http/Controllers/CoreHardeningTest.php`                        |
+| Guest comments toggle                    | `Http/Controllers/Comments/CommentsControllerTest.php`          |
+| `BackupScheduler`                        | `Core/Backup/Services/BackupSchedulerTest.php`                  |
+| `runScheduledBackupIfDue`                | `Core/Backup/Services/BackupManagerTest.php`                    |
+| Monitoring reports / log scan (It.7)     | `Core/Monitoring/Services/*Test.php`                            |
+| Trash meta sidecar                       | `Core/FlatFile/Services/FileWriterTest.php`                     |
+
+
+
 
 ## Preskočené testy (15)
 
@@ -275,43 +305,49 @@ Väčšinou závislosť na **ZipArchive + vfsStream** (create/restore backup) al
 
 ## Pravidlá pre nové testy
 
-1. **Unit** — izolované služby s `vfsStream` alebo mockmi (`Core/*`).
+1. **Unit** — izolované služby s `vfsStream` alebo mockmi (`Core/`*).
 2. **HTTP** — dedičstvo od `PaginiumCMS\Tests\Http\TestCase`, reálne routy.
 3. **Settings v testoch** — `SettingsRepository::setGroup()` s merge existujúcich hodnôt skupiny (validácia schémy).
 4. **RBAC** — USER = 403 na mutácie; EDITOR/ADMIN = povolené.
 5. Každá iterácia končí: PHPUnit green + PHPStan L8 + záznam v CHANGELOG.
 
+
+
 ### Automatické čistenie storage po testoch
 
-Integračné HTTP testy zapisujú do `backend/storage/`. **`TestStorageCleaner`** sa volá **iba na konci** `./scripts/run-all-tests.zsh` (krok 12). Produkčné `data/settings.json` (SMTP, mail, workflows…) sa **nikdy nečíta ani nezapisuje** počas testov — PHPUnit používa `data/settings.testing.json` (`APP_ENV=testing`).
+Integračné HTTP testy zapisujú do `backend/storage/`. `TestStorageCleaner` sa volá **iba na konci** `./scripts/run-all-tests.zsh` (krok 12). Produkčné `data/settings.json` (SMTP, mail, workflows…) sa **nikdy nečíta ani nezapisuje** počas testov — PHPUnit používa `data/settings.testing.json` (`APP_ENV=testing`).
 
 **Maže sa (iba testovacie artefakty):**
 
-| Oblasť | Čo sa vymaže |
-|--------|----------------|
-| Používatelia | `data/users/*` s e-mailom `*@example.com` + backupy |
-| Obsah | stránky so slug prefixom `bulk-`, `trash-test-`, `seo-test-`, `otp-page-`, … |
-| Media | súbory s test názvom (`test-upload.*`, `hardening-test.*`, …) + záznam v registry |
-| Správy | kontaktný formulár len s `@example.com` |
-| Komentáre | iba záznamy s `@example.com` v `comments.json` |
-| Koš | iba položky s test slug prefixom |
-| Ephemeral | cache, OTP, login attempts, firewall |
-| Test nastavenia | `data/settings.testing.json` (nie produkčné `settings.json`) |
-| Code editor test | `app/Modules/CodeEditorFlowTest_*.php`, `.bak` v `backups/code` |
+
+| Oblasť           | Čo sa vymaže                                                                      |
+| ---------------- | --------------------------------------------------------------------------------- |
+| Používatelia     | `data/users/*` s e-mailom `*@example.com` + backupy                               |
+| Obsah            | stránky so slug prefixom `bulk-`, `trash-test-`, `seo-test-`, `otp-page-`, …      |
+| Media            | súbory s test názvom (`test-upload.*`, `hardening-test.*`, …) + záznam v registry |
+| Správy           | kontaktný formulár len s `@example.com`                                           |
+| Komentáre        | iba záznamy s `@example.com` v `comments.json`                                    |
+| Koš              | iba položky s test slug prefixom                                                  |
+| Ephemeral        | cache, OTP, login attempts, firewall                                              |
+| Test nastavenia  | `data/settings.testing.json` (nie produkčné `settings.json`)                      |
+| Code editor test | `app/Modules/CodeEditorFlowTest_*.php`, `.bak` v `backups/code`                   |
+
 
 **Nezmaže sa (produkčné dáta):**
 
-| Oblasť | Prečo ostáva |
-|--------|----------------|
+
+| Oblasť                       | Prečo ostáva                                                               |
+| ---------------------------- | -------------------------------------------------------------------------- |
 | **SMTP a všetky nastavenia** | `data/settings.json` sa **nemení** — testy píšu do `settings.testing.json` |
-| Navigácia | `data/navigation.json` sa **nemaže** |
-| Reálne komentáre | ostávajú záznamy mimo `@example.com` |
-| Produkčné médiá | ostávajú uploady mimo test názvov |
-| Zálohy CMS | `storage/backups/*` (okrem code editor `.bak`) |
-| Logy aplikácie | `storage/logs/**` |
-| Dev tokeny | `dev/registered_tokens.json` |
-| Reálne správy | kontakty s reálnym e-mailom |
-| Účty / stránky | mimo test konvencií (`@example.com`, test slugy) |
+| Navigácia                    | `data/navigation.json` sa **nemaže**                                       |
+| Reálne komentáre             | ostávajú záznamy mimo `@example.com`                                       |
+| Produkčné médiá              | ostávajú uploady mimo test názvov                                          |
+| Zálohy CMS                   | `storage/backups/*` (okrem code editor `.bak`)                             |
+| Logy aplikácie               | `storage/logs/**`                                                          |
+| Dev tokeny                   | `dev/registered_tokens.json`                                               |
+| Reálne správy                | kontakty s reálnym e-mailom                                                |
+| Účty / stránky               | mimo test konvencií (`@example.com`, test slugy)                           |
+
 
 **Diagnostika:** detail zlyhaní ostáva v PHPUnit výstupe / `run-all-tests.zsh` logu (`~/projects/paginiumcms_tests/`), nie v `storage/logs/` po testoch.
 
@@ -328,7 +364,7 @@ php backend/bin/test-artifacts.php --purge  # ľudsky čitateľný report
 php -r "require 'vendor/autoload.php'; PaginiumCMS\Tests\Support\TestStorageCleaner::purgeAll();"
 ```
 
-**Ak `content:diagnose` / PHPUnit hlási poškodený index** (napr. po staršom cleanupe): rebuild z disku:
+**Ak** `content:diagnose` **/ PHPUnit hlási poškodený index** (napr. po staršom cleanupe): rebuild z disku:
 
 ```bash
 php backend/bin/console content:diagnose --fix
@@ -345,7 +381,7 @@ composer install --no-interaction
 cd frontend && npm ci && npm test && npm run build
 ```
 
-Lokálny ekvivalent CI + audit + diagnose: **`./scripts/run-all-tests.zsh`** (pozri sekciu vyššie).
+Lokálny ekvivalent CI + audit + diagnose: `./scripts/run-all-tests.zsh` (pozri sekciu vyššie).
 
 Po It. 21: pridať `newman run docs/api/PaginiumCMS.postman_collection.json`.
 
@@ -354,22 +390,24 @@ Po It. 21: pridať `newman run docs/api/PaginiumCMS.postman_collection.json`.
 Detailný zoznam symptómov, príčin a opráv: **[ISSUES.md](../ISSUES.md)**.  
 CI zlyhania (GitHub Actions): sekcia **CI failures** + **ISS-015–022** (2.0.25–2.0.26).
 
-| Problém | Test / overenie | Stav |
-|---------|----------------|------|
-| PHPUnit 429 / 503 / OTP persistencia | `./vendor/bin/phpunit` opakovane | ✅ ISS-015 |
-| PHPStan `phpVersion` vs Composer ^8.4 | `phpstan analyse backend --level=8` | ✅ ISS-016 |
-| PHPStan bulk `match.alwaysTrue` | PHPStan L8 | ✅ ISS-017 |
-| PHPStan `TrashController` fopen | PHPStan L8 | ✅ ISS-018 |
-| FE `tsc --noEmit` strict errors | `npm run type-check` | ✅ ISS-019 |
-| ESLint prekročenie `--max-warnings 65` | `npm run lint` | ✅ ISS-020 |
-| PHPStan redundantné `is_array()` v log readeri | `phpstan analyse backend --level=8` | ✅ ISS-021 |
-| Vitest `MediaManager` krehké text asserts | `npm test -- MediaManager.test.tsx` | ✅ ISS-022 |
-| Vitest worker crash (`useBulkSelection` loop) | `npm test` – 102/102 | ✅ ISS-005 |
-| PHPStan 15 chýb (historicky) | `phpstan analyse backend --level=8` | ✅ ISS-006 |
-| Debug `client-event` 404 | Konzola po redeploy, alebo `curl -X POST …/api/debug/client-event` → 204 | ✅ ISS-001 |
-| Phantom users / backup v `data/users/` | `UserRepositoryTest::testFindAllIgnoresBackupFilesAndInvalidRecords` | ✅ ISS-003 |
-| `navigation.json.backup.*` hromadenie | `FileWriterTest` + max 5 backupov na súbor | ✅ ISS-004 |
-| `GET /api/pages` 500 na serveri | `php backend/bin/console content:diagnose` + `./scripts/run-all-tests.zsh` krok 11 | ✅ ISS-002 |
-| Settings `/settings` crash | `zodFromRules` – `.max` on optional | ✅ ISS-009 |
+
+| Problém                                        | Test / overenie                                                                    | Stav      |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------- | --------- |
+| PHPUnit 429 / 503 / OTP persistencia           | `./vendor/bin/phpunit` opakovane                                                   | ✅ ISS-015 |
+| PHPStan `phpVersion` vs Composer ^8.4          | `phpstan analyse backend --level=8`                                                | ✅ ISS-016 |
+| PHPStan bulk `match.alwaysTrue`                | PHPStan L8                                                                         | ✅ ISS-017 |
+| PHPStan `TrashController` fopen                | PHPStan L8                                                                         | ✅ ISS-018 |
+| FE `tsc --noEmit` strict errors                | `npm run type-check`                                                               | ✅ ISS-019 |
+| ESLint prekročenie `--max-warnings 65`         | `npm run lint`                                                                     | ✅ ISS-020 |
+| PHPStan redundantné `is_array()` v log readeri | `phpstan analyse backend --level=8`                                                | ✅ ISS-021 |
+| Vitest `MediaManager` krehké text asserts      | `npm test -- MediaManager.test.tsx`                                                | ✅ ISS-022 |
+| Vitest worker crash (`useBulkSelection` loop)  | `npm test` – 102/102                                                               | ✅ ISS-005 |
+| PHPStan 15 chýb (historicky)                   | `phpstan analyse backend --level=8`                                                | ✅ ISS-006 |
+| Debug `client-event` 404                       | Konzola po redeploy, alebo `curl -X POST …/api/debug/client-event` → 204           | ✅ ISS-001 |
+| Phantom users / backup v `data/users/`         | `UserRepositoryTest::testFindAllIgnoresBackupFilesAndInvalidRecords`               | ✅ ISS-003 |
+| `navigation.json.backup.*` hromadenie          | `FileWriterTest` + max 5 backupov na súbor                                         | ✅ ISS-004 |
+| `GET /api/pages` 500 na serveri                | `php backend/bin/console content:diagnose` + `./scripts/run-all-tests.zsh` krok 11 | ✅ ISS-002 |
+| Settings `/settings` crash                     | `zodFromRules` – `.max` on optional                                                | ✅ ISS-009 |
+
 
 **Node:** CI používa Node 22. Lokálne odporúčané `nvm use 22` pred `npm test`.

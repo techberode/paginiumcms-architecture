@@ -25,7 +25,9 @@ use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Http\Support\PaginationMeta;
 use PaginiumCMS\Http\Support\PaginationQuery;
 use PaginiumCMS\Modules\Security\Contracts\AuthenticationInterface;
+use PaginiumCMS\Modules\Security\Exception\AuthorizationException;
 use PaginiumCMS\Modules\Security\Models\User;
+use PaginiumCMS\Modules\Security\Services\ContentPathAclGuard;
 use PaginiumCMS\Support\Lang;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -46,7 +48,8 @@ class ContentController
         private AuthenticationInterface $auth,
         private OtpWorkflowService $otpWorkflow,
         private DynamicValidator $dynamicValidator,
-        private EditorContentValidator $editorContentValidator
+        private EditorContentValidator $editorContentValidator,
+        private ContentPathAclGuard $pathAcl
     ) {
     }
 
@@ -192,6 +195,16 @@ class ContentController
             );
         }
 
+        $aclDenied = $this->denyWriteUnlessPathAllowed(
+            $request,
+            $response,
+            $this->pathAcl->contentPathFromSlug($type, $slug),
+            'content:create'
+        );
+        if ($aclDenied !== null) {
+            return $aclDenied;
+        }
+
         try {
             $content = $this->buildContent($type, $data);
             $targetStatus = (string) ($data['status'] ?? 'draft');
@@ -249,6 +262,16 @@ class ContentController
             return $this->json->error($response, Lang::get('not_found', [], 'content'), 404);
         }
 
+        $aclDenied = $this->denyWriteUnlessPathAllowed(
+            $request,
+            $response,
+            $existing->getPath() !== '' ? $existing->getPath() : $this->pathAcl->contentPathFromSlug($type, $slug),
+            'content:edit'
+        );
+        if ($aclDenied !== null) {
+            return $aclDenied;
+        }
+
         $data = $this->parseJsonBody($request);
         $validation = $this->validatePayload($data, $type, false);
 
@@ -275,6 +298,18 @@ class ContentController
                 Lang::get('slug_exists', ['slug' => $newSlug], 'content'),
                 409
             );
+        }
+
+        if ($newSlug !== $slug) {
+            $targetDenied = $this->denyWriteUnlessPathAllowed(
+                $request,
+                $response,
+                $this->pathAcl->contentPathFromSlug($type, $newSlug),
+                'content:edit'
+            );
+            if ($targetDenied !== null) {
+                return $targetDenied;
+            }
         }
 
         try {
@@ -345,6 +380,16 @@ class ContentController
             return $this->json->error($response, Lang::get('not_found', [], 'content'), 404);
         }
 
+        $aclDenied = $this->denyWriteUnlessPathAllowed(
+            $request,
+            $response,
+            $content->getPath() !== '' ? $content->getPath() : $this->pathAcl->contentPathFromSlug($type, $slug),
+            'content:delete'
+        );
+        if ($aclDenied !== null) {
+            return $aclDenied;
+        }
+
         try {
             $this->versioning->recordChange($content, $type, 'delete', $this->resolveUser($request));
         } catch (\Throwable) {
@@ -375,6 +420,16 @@ class ContentController
             $content = $this->repository->findBySlug($slug, $type);
             if ($content === null) {
                 $batch->addFailure($slug, Lang::get('not_found', [], 'content'));
+
+                continue;
+            }
+
+            if (!$this->pathAcl->canAccess(
+                $this->resolveUser($request),
+                $content->getPath() !== '' ? $content->getPath() : $this->pathAcl->contentPathFromSlug($type, $slug),
+                'content:delete'
+            )) {
+                $batch->addFailure($slug, 'ACL denied for path');
 
                 continue;
             }
@@ -432,6 +487,16 @@ class ContentController
                 continue;
             }
 
+            if (!$this->pathAcl->canAccess(
+                $this->resolveUser($request),
+                $content->getPath() !== '' ? $content->getPath() : $this->pathAcl->contentPathFromSlug($type, $slug),
+                'content:edit'
+            )) {
+                $batch->addFailure($slug, 'ACL denied for path');
+
+                continue;
+            }
+
             try {
                 $content->setStatus($status);
                 $this->repository->save($content);
@@ -465,6 +530,16 @@ class ContentController
 
         if ($content === null) {
             return $this->json->error($response, Lang::get('not_found', [], 'content'), 404);
+        }
+
+        $aclDenied = $this->denyWriteUnlessPathAllowed(
+            $request,
+            $response,
+            $content->getPath() !== '' ? $content->getPath() : $this->pathAcl->contentPathFromSlug($type, $slug),
+            'content:edit'
+        );
+        if ($aclDenied !== null) {
+            return $aclDenied;
         }
 
         $data = $this->parseJsonBody($request);
@@ -792,9 +867,13 @@ class ContentController
             $filters = $this->extractFilters($request);
             $cacheKey = array_merge($filters, ['legacy' => true]);
             $loader = fn () => $this->serializeContentList(
-                $type === 'article'
-                    ? $this->repository->findAllArticles($filters)
-                    : $this->repository->findAllPages($filters),
+                $this->filterContentByAcl(
+                    $request,
+                    $type === 'article'
+                        ? $this->repository->findAllArticles($filters)
+                        : $this->repository->findAllPages($filters),
+                    $type
+                ),
                 $type
             );
 
@@ -813,13 +892,15 @@ class ContentController
             'filters' => $query->filters,
         ];
 
-        $loader = function () use ($type, $query): array {
+        $loader = function () use ($type, $query, $request): array {
             $result = $type === 'article'
                 ? $this->repository->findArticlesPaginated($query)
                 : $this->repository->findPagesPaginated($query);
 
+            $items = $this->filterContentByAcl($request, $result['items'], $type);
+
             return [
-                'items' => $this->serializeContentList($result['items'], $type),
+                'items' => $this->serializeContentList($items, $type),
                 'total' => $result['total'],
             ];
         };
@@ -884,6 +965,19 @@ class ContentController
      */
     private function canViewPayload(ServerRequestInterface $request, array $payload): bool
     {
+        $path = (string) ($payload['path'] ?? '');
+        if ($path === '') {
+            $type = (string) ($payload['type'] ?? 'page');
+            $slug = (string) ($payload['slug'] ?? $payload['id'] ?? '');
+            if ($slug !== '') {
+                $path = $this->pathAcl->contentPathFromSlug($type, $slug);
+            }
+        }
+
+        if ($path !== '' && !$this->pathAcl->canAccess($this->resolveUser($request), $path)) {
+            return false;
+        }
+
         if ($this->isAuthenticated($request)) {
             return true;
         }
@@ -973,4 +1067,37 @@ class ContentController
         return is_string($message) ? trim($message) : '';
     }
 
+    /**
+     * @param array<int, Content> $items
+     * @return array<int, Content>
+     */
+    private function filterContentByAcl(ServerRequestInterface $request, array $items, string $type): array
+    {
+        return array_values(array_filter(
+            $items,
+            function (Content $item) use ($request, $type): bool {
+                $path = $item->getPath();
+                if ($path === '') {
+                    $path = $this->pathAcl->contentPathFromSlug($type, $item->getSlug());
+                }
+
+                return $this->pathAcl->canAccess($this->resolveUser($request), $path);
+            }
+        ));
+    }
+
+    private function denyWriteUnlessPathAllowed(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        string $storagePath,
+        string $permission
+    ): ?ResponseInterface {
+        try {
+            $this->pathAcl->requireAccess($this->resolveUser($request), $storagePath, $permission);
+        } catch (AuthorizationException $e) {
+            return $this->json->error($response, $e->getMessage(), 403);
+        }
+
+        return null;
+    }
 }

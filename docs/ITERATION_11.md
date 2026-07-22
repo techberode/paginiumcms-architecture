@@ -85,7 +85,7 @@ Public settings expose `sso.enabled` only (no secrets).
 ## Out of scope (v1)
 
 - SAML provider
-- Wiring `PathAclService` into every content mutation (service ready; hook in next pass if needed)
+- Wiring `PathAclService` into every content mutation — ✅ **ISS-055** (`ContentPathAclGuard`, `PathAclIntegrationTest`)
 
 ## Dependencies (met)
 

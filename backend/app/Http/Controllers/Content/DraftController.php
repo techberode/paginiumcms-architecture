@@ -6,7 +6,9 @@ namespace PaginiumCMS\Http\Controllers\Content;
 
 use PaginiumCMS\Core\Drafts\Contracts\DraftManagerInterface;
 use PaginiumCMS\Http\Support\JsonResponder;
+use PaginiumCMS\Modules\Security\Exception\AuthorizationException;
 use PaginiumCMS\Modules\Security\Models\User;
+use PaginiumCMS\Modules\Security\Services\ContentPathAclGuard;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -22,7 +24,8 @@ final class DraftController
 {
     public function __construct(
         private DraftManagerInterface $drafts,
-        private JsonResponder $json
+        private JsonResponder $json,
+        private ContentPathAclGuard $pathAcl
     ) {
     }
 
@@ -38,6 +41,12 @@ final class DraftController
 
         $type = (string) ($args['type'] ?? 'page');
         $slug = (string) ($args['slug'] ?? '');
+
+        $denied = $this->denyUnlessPathAllowed($request, $response, $type, $slug, 'content:edit');
+        if ($denied !== null) {
+            return $denied;
+        }
+
         $payload = $this->parseJsonBody($request);
 
         $draft = $this->drafts->save($type, $slug, $payload, $user->getId());
@@ -52,6 +61,14 @@ final class DraftController
     {
         $type = (string) ($args['type'] ?? 'page');
         $slug = (string) ($args['slug'] ?? '');
+
+        if (!$this->pathAcl->canAccess(
+            $this->resolveUser($request),
+            $this->pathAcl->contentPathFromSlug($type, $slug),
+            'content:edit'
+        )) {
+            return $this->json->error($response, 'Koncept neexistuje', 404);
+        }
 
         $draft = $this->drafts->get($type, $slug);
 
@@ -69,6 +86,11 @@ final class DraftController
     {
         $type = (string) ($args['type'] ?? 'page');
         $slug = (string) ($args['slug'] ?? '');
+
+        $denied = $this->denyUnlessPathAllowed($request, $response, $type, $slug, 'content:edit');
+        if ($denied !== null) {
+            return $denied;
+        }
 
         $this->drafts->discard($type, $slug);
 
@@ -90,5 +112,25 @@ final class DraftController
         $data = json_decode((string) $request->getBody(), true);
 
         return is_array($data) ? $data : [];
+    }
+
+    private function denyUnlessPathAllowed(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        string $type,
+        string $slug,
+        string $permission
+    ): ?ResponseInterface {
+        try {
+            $this->pathAcl->requireAccess(
+                $this->resolveUser($request),
+                $this->pathAcl->contentPathFromSlug($type, $slug),
+                $permission
+            );
+        } catch (AuthorizationException $e) {
+            return $this->json->error($response, $e->getMessage(), 403);
+        }
+
+        return null;
     }
 }
