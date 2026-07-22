@@ -1,9 +1,93 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.0.46** · 2026-07-21  
+> Posledná verzia: **2.0.47** · 2026-07-22 · tag **`v2.0.47`** (release commit na `main`)  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release. Samotný release/tag zatiaľ nevytváraj, kým nie je schválený deploy.
 
-> **Poznámka k verziám:** Commity `4367d19` (It.55) a `8526c19` (It.54) mali v správe nesprávne číslo (`2.0.42` / `2.0.41`). Oficiálne tagy podľa CHANGELOG: **v2.0.42** → `8526c19`, **v2.0.43** → `4367d19`, **v2.0.44** → `199877a`, **v2.0.45** → `f3ed5bc`, **v2.0.46** → `637fef4` (release commit; feature body v `a16c15d`).
+> **Poznámka k verziám:** Commity `4367d19` (It.55) a `8526c19` (It.54) mali v správe nesprávne číslo (`2.0.42` / `2.0.41`). Oficiálne tagy podľa CHANGELOG: **v2.0.42** → `8526c19`, **v2.0.43** → `4367d19`, **v2.0.44** → `199877a`, **v2.0.45** → `f3ed5bc`, **v2.0.46** → `637fef4`, **v2.0.47** → `390b392` (feature `f0a885c` + CI fix ISS-059).
+
+### Kontinuita verzií (nepreskakovať)
+
+| Verzia | Git tag | Release commit | Stav |
+|--------|---------|----------------|------|
+| 2.0.46 | `v2.0.46` | `637fef4` | ✅ tagged |
+| **2.0.47** | **`v2.0.47`** | **`390b392`** | ⚠️ **CHANGELOG + kód na `main`, tag chýba** |
+| 2.0.48 | — | — | 🔒 až po `v2.0.47` (Security [Unreleased]) |
+
+**Pravidlo:** Ďalší release musí byť **`v2.0.48`**, nie skok na `.49` ani späť. Pred každým novým číslom: `git tag -l 'v2.0.4*' | sort -V` a overiť, že predchádzajúca verzia má tag + GitHub Release.
+
+---
+
+## 2.0.47 — pred release kontrola
+
+```bash
+./scripts/iteration-gate.sh
+# Vitest: npm test -- --run  → 210/210
+```
+
+**Commity na `main`:**
+
+| Commit | Obsah |
+|--------|--------|
+| `f0a885c` | It.18f — ops/platform/editor i18n, Beta gate, ISS-060 (settings EN workflows) |
+| `390b392` | ISS-059 — `renderWithProviders`, Vitest CI green |
+
+**Po deployi:**
+
+1. **It.18f i18n** — `/comments`, `/messages`, `/backups`, `/trash`, `/logs`, editor, firewall, scheduler, command palette v SK/EN
+2. **Settings EN** — Nastavenia → Workflows / OTP polia po anglicky (ISS-060)
+3. **CI / testy** — Vitest 210/210; komponenty s `useI18n()` obalené v `TestI18nProvider`
+4. **Dashboard panely** — Health, Locks, Conflicts, Activity — preložené podľa `general.language`
+5. **Media metadata modal** — SK/EN labely (`Upraviť metadáta`, `Titulok`, …)
+
+**Opravy:** ISS-059 · ISS-060 · [ISSUES.md](../ISSUES.md)
+
+---
+
+## GitHub Release — copy-paste (2.0.47)
+
+**Title:**
+
+```
+2.0.47 — It.18f admin i18n Beta gate + Vitest I18nProvider fix (ISS-059–060)
+```
+
+**Tag:** `v2.0.47` · **Target:** `main` · **Commit:** `390b392`
+
+**Body:**
+
+```markdown
+## Summary
+
+Completes **It.18f** (Beta gate): ops modules, platform UI, content editor, and dashboard panels migrated to `useI18n()`. Fixes **ISS-059** (Vitest without `I18nProvider`) and **ISS-060** (English settings catalog had Slovak OTP copy).
+
+## It.18f — Admin i18n (Beta gate)
+
+- New catalogs: `comments`, `messages`, `backups`, `trash`, `logs`, **platform**, **editor**
+- ~40 components → `useI18n()` (firewall, scheduler, extensions, editor shell, SEO, media modals, dashboard panels, …)
+- Catalog tests: `ops18f.test.ts`, `platform.test.ts`, `editor.test.ts`
+
+## Fixed
+
+| ID | Fix |
+|----|-----|
+| ISS-059 | Vitest — `renderWithProviders` + `TestI18nProvider`; 6 suites green |
+| ISS-060 | `settings/en.ts` workflows — removed SK copy-paste in EN catalog |
+| — | `summarizeBulkResult(t, …)` — bulk toasts via i18n |
+
+## Test plan
+
+- [ ] `./scripts/iteration-gate.sh` green (Vitest **210/210**)
+- [ ] Admin SK/EN → comments, messages, backups, trash, logs, editor toolbars
+- [ ] Settings → English → Workflows OTP labels in English
+- [ ] `/dashboard` — Health, Locks, Activity panels localized
+- [ ] Media → edit metadata modal — labels match locale
+
+## Docs
+
+- [ITERATION_18.md](docs/ITERATION_18.md) — It.18f
+- [ISSUES.md](docs/ISSUES.md) — ISS-059, ISS-060
+- [CHANGELOG.md](CHANGELOG.md) — 2.0.47
+```
 
 ---
 

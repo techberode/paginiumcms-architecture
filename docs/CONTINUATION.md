@@ -18,19 +18,31 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 
 ## Aktuálny plán (2026-07-22) — pred verejnou betou
 
-**Rozhodnutie:** Public Beta až po It.18f + infra checklistu.
+**Rozhodnutie (2026-07-22):** Public Beta **nesúri**. Priorita je **doladenie a funkčnosť** — ak treba týždeň (alebo viac), Beta počká. Žiadny hard deadline; testeri až keď sme s kvalitou spokojní.
+
+**Rozhodnutie (skôr):** Public Beta až po It.18f + pre-Beta vlnách + infra checklistu.
 
 | Priorita | Úloha | Stav |
 |----------|--------|------|
 | 1 | **RECOMMENDATIONS Fáza 1** — composer scripts, CI audit, ESLint | ✅ |
 | 2 | **RECOMMENDATIONS Fáza 2** — Docker, `first-run.sh`, LOCAL_SETUP | ✅ (lokálne, C&P pending) |
 | 3 | **Používateľská príručka** — `docs/user/*` (inštalácia → admin) | ✅ |
-| 4 | **It.18f i18n** — comments, messages, backups, trash, logs + platform/editor | ✅ **2.0.47** (`f0a885c`) |
-| 4b | **CI hotfix ISS-059** — Vitest `renderWithProviders` | ✅ lokálne (pending C&P) |
-| 5 | **Beta infra checklist** — gate, `content:diagnose`, README sync, release balík | ⏳ **ĎALŠIA** |
-| 6 | **Public Beta 1** — GitHub release, testeri | 🔒 až po 4–5 |
+| 4 | **It.18f i18n** — comments, messages, backups, trash, logs + platform/editor | ✅ **2.0.47** (`f0a885c` + `390b392`) |
+| 4b | **CI hotfix ISS-059** — Vitest `renderWithProviders` | ✅ na `main` |
+| 4c | **GitHub Release `v2.0.47`** | ⏳ keď schválený deploy (RELEASE.md ready) |
+| **5** | **Pre-Beta kvalita** — postupne, každá vlna = release + CI green | ⏳ **AKTUÁLNA FÁZA** |
+| 5a | Security release **2.0.48** (CHANGELOG [Unreleased] → tag) | ⏳ |
+| 5b | **formatAuditEvent** — EN admin locale pre audit správy | ⏳ |
+| 5c | **Public site i18n** — `public/{sk,en}` katalóg + komponenty | ⏳ |
+| 5d | **It.15 doplnenie** — hook emitters, referenčný plugin, docs sync | ⏳ |
+| 5e | **It.17 MVP** — CONTRIBUTING, api barrel, lint | ⏳ |
+| 5f | **Docker + user docs** commit (Fáza 2, pending C&P) | ⏳ |
+| 6 | **Beta infra checklist** — gate, `content:diagnose`, README sync | ⏳ po 5a–5f |
+| 7 | **Public Beta 1** — GitHub release, testeri | 🔒 **až keď sme ready** (týždeň+ OK) |
 
-Detail: [ITERATION_18.md](ITERATION_18.md) · [user/README.md](user/README.md) · [developer/LOCAL_SETUP.md](developer/LOCAL_SETUP.md)
+**Princíp práce:** jedna vlna = jeden release tag = zelené CI = manuálny smoke test. Neskákať verzie (`v2.0.47` pred `v2.0.48`).
+
+Detail: [ITERATION_18.md](ITERATION_18.md) · [RELEASE.md](developer/RELEASE.md) · [user/README.md](user/README.md)
 
 > 🔐 **Bezpečnostný baseline (POVINNÉ pri každej novej funkcii/module):** záväzné vzory
 > z doterajších opráv (AuthZ/CSRF na endpointoch, at-rest šifrovanie tajomstiev cez

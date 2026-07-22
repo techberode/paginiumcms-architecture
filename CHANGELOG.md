@@ -135,8 +135,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 **Iteration 18f** — Beta gate i18n (ops + platform + editor).  
 **CI hotfix** — Vitest `I18nProvider` wrapper (ISS-059).  
-Commit **`f0a885c`** (It.18f) · CI fix lokálne (pending C&P).  
-Detail: [ITERATION_18.md](docs/ITERATION_18.md) · [ISSUES.md](docs/ISSUES.md).
+Commits **`f0a885c`** (It.18f) + **`390b392`** (ISS-059, release commit).  
+Detail: [ITERATION_18.md](docs/ITERATION_18.md) · [ISSUES.md](docs/ISSUES.md) · [RELEASE.md](docs/developer/RELEASE.md).
 
 ### Added — It.18f (Beta gate)
 
