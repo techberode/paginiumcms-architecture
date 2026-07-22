@@ -3,6 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Shield, Sparkles, CheckCircle2 } from 'lucide-react';
 import { useAuthBranding } from '../../hooks/useAuthBranding';
+import { useI18n } from '../../context/I18nContext';
 
 export type AuthShellVariant = 'login' | 'register' | 'forgot' | 'reset' | 'totp';
 
@@ -30,6 +31,7 @@ export const AuthShell: React.FC<AuthShellProps> = ({
   children,
   footer,
 }) => {
+  const { t } = useI18n();
   const branding = useAuthBranding();
   const infoLeft = infoPanelOnLeft(variant);
   const largeForm = formIsLarge(variant);
@@ -62,7 +64,7 @@ export const AuthShell: React.FC<AuthShellProps> = ({
         </ul>
         <p className="text-xs text-indigo-200/70 flex items-center gap-1.5 pt-2">
           <Sparkles className="w-3.5 h-3.5" />
-          PaginiumCMS — flat-file content management
+          {t('public.auth.shell.tagline')}
         </p>
       </div>
     </div>
@@ -87,7 +89,7 @@ export const AuthShell: React.FC<AuthShellProps> = ({
         {footer}
         <p className="text-center mt-8 text-xs text-slate-400">
           <Link to="/" className="hover:text-indigo-500 transition-colors">
-            ← Späť na verejný web
+            {t('public.auth.shell.backToSite')}
           </Link>
         </p>
       </div>

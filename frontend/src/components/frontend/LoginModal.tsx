@@ -15,6 +15,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
 import { securityApi, type SsoProvider } from '../../api/security';
 import { useSettingsContext } from '../../context/SettingsContext';
+import { useI18n } from '../../context/I18nContext';
 import { ADMIN_DEFAULT_ROUTE } from '../../config/adminNavSections';
 import { AuthShell, authButtonClass, authInputClass, authLabelClass } from '../auth/AuthShell';
 import { TotpCodeInput } from '../auth/TotpCodeInput';
@@ -30,6 +31,7 @@ export const LoginModal: React.FC = () => {
   const { login, verifyTwoFactorLogin, pendingTwoFactor, twoFactorSetupPending, user } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
+  const { t } = useI18n();
   const { settings } = useSettingsContext();
   const demoCredentials = settings.demo?.enabled ? settings.demo.credentials : null;
   const allowRegistration = settings.general.allowRegistration !== false;
@@ -52,7 +54,7 @@ export const LoginModal: React.FC = () => {
   const handleCredentials = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
-      toast.warning('Vyplňte e-mail a heslo');
+      toast.warning(t('public.auth.login.toast.credentialsRequired'));
       return;
     }
     setLoading(true);
@@ -60,12 +62,12 @@ export const LoginModal: React.FC = () => {
       const outcome = await login(email, password);
       if (outcome.success && outcome.requiresTwoFactor) {
         setStep('totp');
-        toast.info('Zadajte TOTP kód z autentifikátora');
+        toast.info(t('public.auth.login.toast.totpRequired'));
       } else if (outcome.success) {
-        toast.success('Prihlásenie úspešné');
+        toast.success(t('public.auth.login.toast.success'));
         navigate(ADMIN_DEFAULT_ROUTE, { replace: true });
       } else {
-        toast.error(outcome.error || 'Neplatný e-mail alebo heslo');
+        toast.error(outcome.error || t('public.auth.login.toast.invalidCredentials'));
       }
     } finally {
       setLoading(false);
@@ -81,7 +83,7 @@ export const LoginModal: React.FC = () => {
         window.location.href = start.authorizationUrl;
         return;
       }
-      toast.error('SSO nie je nakonfigurované');
+      toast.error(t('public.auth.login.toast.ssoNotConfigured'));
     } finally {
       setLoading(false);
     }
@@ -90,17 +92,17 @@ export const LoginModal: React.FC = () => {
   const handleTotp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (totpCode.trim().length < 6) {
-      toast.warning('Zadajte 6-miestny TOTP kód');
+      toast.warning(t('public.auth.login.toast.totpCodeRequired'));
       return;
     }
     setLoading(true);
     try {
       const ok = await verifyTwoFactorLogin(totpCode.trim());
       if (ok) {
-        toast.success('2FA overenie úspešné');
+        toast.success(t('public.auth.login.toast.twoFactorSuccess'));
         navigate(ADMIN_DEFAULT_ROUTE, { replace: true });
       } else {
-        toast.error('Neplatný TOTP kód');
+        toast.error(t('public.auth.login.toast.totpInvalid'));
       }
     } finally {
       setLoading(false);
@@ -110,11 +112,11 @@ export const LoginModal: React.FC = () => {
   const footerLinks = (
     <div className="flex justify-between text-sm pt-1">
       <Link to="/forgot-password" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
-        Zabudnuté heslo?
+        {t('public.auth.login.forgotPassword')}
       </Link>
       {allowRegistration && (
         <Link to="/register" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
-          Vytvoriť účet
+          {t('public.auth.login.createAccount')}
         </Link>
       )}
     </div>
@@ -123,18 +125,18 @@ export const LoginModal: React.FC = () => {
   return (
     <AuthShell
       variant={step === 'totp' ? 'totp' : 'login'}
-      formTitle={step === 'totp' ? 'Dvojfaktorové overenie' : 'Prihlásenie'}
+      formTitle={step === 'totp' ? t('public.auth.login.totp.title') : t('public.auth.login.title')}
       formSubtitle={
         step === 'totp'
-          ? 'Zadajte 6-miestny kód z autentifikačnej aplikácie.'
-          : 'Prihláste sa do administrácie vášho webu.'
+          ? t('public.auth.login.totp.subtitle')
+          : t('public.auth.login.subtitle')
       }
     >
       {step === 'credentials' ? (
         <form className="space-y-5" onSubmit={handleCredentials}>
           {demoCredentials && (
             <div className="rounded-2xl border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/40 p-4 text-sm text-amber-900 dark:text-amber-100">
-              <p className="font-bold mb-2">Demo prihlasovacie údaje</p>
+              <p className="font-bold mb-2">{t('public.auth.login.demo.title')}</p>
               <p className="font-mono text-xs mb-3">
                 {demoCredentials.email} / {demoCredentials.password}
               </p>
@@ -146,13 +148,13 @@ export const LoginModal: React.FC = () => {
                   setPassword(demoCredentials.password);
                 }}
               >
-                Vyplniť demo údaje
+                {t('public.auth.login.demo.fillButton')}
               </button>
             </div>
           )}
 
           <div>
-            <label className={authLabelClass}>E-mail</label>
+            <label className={authLabelClass}>{t('public.auth.common.email')}</label>
             <div className="relative">
               <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
@@ -161,14 +163,14 @@ export const LoginModal: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className={authInputClass}
-                placeholder="admin@example.com"
+                placeholder={t('public.auth.common.emailPlaceholder')}
                 autoComplete="email"
               />
             </div>
           </div>
 
           <div>
-            <label className={authLabelClass}>Heslo</label>
+            <label className={authLabelClass}>{t('public.auth.common.password')}</label>
             <div className="relative">
               <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
@@ -177,7 +179,7 @@ export const LoginModal: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className={`${authInputClass} pr-11`}
-                placeholder="••••••••"
+                placeholder={t('public.auth.common.passwordPlaceholder')}
                 autoComplete="current-password"
               />
               <button
@@ -192,14 +194,14 @@ export const LoginModal: React.FC = () => {
 
           <button type="submit" disabled={loading} className={authButtonClass}>
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
-            <span>{loading ? 'Prihlasujem…' : 'Prihlásiť sa'}</span>
+            <span>{loading ? t('public.auth.login.submitting') : t('public.auth.common.signIn')}</span>
           </button>
 
           {footerLinks}
 
           {ssoProviders.length > 0 && (
             <div className="pt-4 border-t border-slate-200 dark:border-slate-700 space-y-2">
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-400 text-center">Alebo SSO</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-400 text-center">{t('public.auth.login.ssoDivider')}</p>
               {ssoProviders.map((provider) => (
                 <button
                   key={provider.id}
@@ -208,7 +210,7 @@ export const LoginModal: React.FC = () => {
                   onClick={() => void handleSso(provider.id)}
                   className="w-full py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800"
                 >
-                  Prihlásiť cez {provider.name}
+                  {t('public.auth.login.ssoButton', { provider: provider.name })}
                 </button>
               ))}
             </div>
@@ -222,10 +224,10 @@ export const LoginModal: React.FC = () => {
             </div>
             <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 flex items-center justify-center gap-2">
               <ShieldCheck className="w-4 h-4 text-emerald-500" />
-              Overenie cez autentifikátor
+              {t('public.auth.login.totp.panelTitle')}
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-              Otvorte Google Authenticator, Authy alebo inú TOTP aplikáciu.
+              {t('public.auth.login.totp.panelHint')}
             </p>
           </div>
 
@@ -233,7 +235,7 @@ export const LoginModal: React.FC = () => {
 
           <button type="submit" disabled={loading || totpCode.length < 6} className={authButtonClass}>
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-            <span>{loading ? 'Overujem…' : 'Overiť a pokračovať'}</span>
+            <span>{loading ? t('public.auth.common.verifying') : t('public.auth.login.totp.verify')}</span>
           </button>
 
           <button
@@ -244,7 +246,7 @@ export const LoginModal: React.FC = () => {
               setTotpCode('');
             }}
           >
-            Späť na prihlásenie
+            {t('public.auth.common.backToLogin')}
           </button>
         </form>
       )}

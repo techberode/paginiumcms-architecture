@@ -3,12 +3,7 @@ import { useMemo } from 'react';
 import type { CSSProperties } from 'react';
 import { resolveAdminMediaPreviewUrl, resolvePublicMediaUrl } from '../api/media';
 import { useSettingsContext } from '../context/SettingsContext';
-
-const DEFAULT_BULLETS = [
-  'Bezpečné prihlásenie do administrácie',
-  'Správa stránok, článkov a médií',
-  'Flat-file úložisko bez SQL databázy',
-];
+import { useI18n } from '../context/I18nContext';
 
 export interface AuthBranding {
   title: string;
@@ -39,14 +34,18 @@ function resolveBackgroundUrl(raw: string | undefined): string {
 
 export function useAuthBranding(): AuthBranding {
   const { settings } = useSettingsContext();
+  const { t } = useI18n();
 
   return useMemo(() => {
     const login = settings.login;
-    const title = (login?.pageTitle ?? '').trim() || settings.general.siteName || 'PaginiumCMS';
+    const title =
+      (login?.pageTitle ?? '').trim() ||
+      settings.general.siteName ||
+      t('public.defaults.siteName');
     const description =
       (login?.pageDescription ?? '').trim() ||
       settings.general.siteDescription ||
-      'Správa obsahu a nastavení vášho webu na jednom mieste.';
+      t('public.auth.branding.defaultDescription');
 
     const bullets = (login?.infoBullets ?? '')
       .split('\n')
@@ -62,11 +61,17 @@ export function useAuthBranding(): AuthBranding {
         }
       : {};
 
+    const defaultBullets = [
+      t('public.auth.branding.defaultBullets.secureLogin'),
+      t('public.auth.branding.defaultBullets.contentManagement'),
+      t('public.auth.branding.defaultBullets.flatFile'),
+    ];
+
     return {
       title,
       description,
-      bullets: bullets.length > 0 ? bullets : DEFAULT_BULLETS,
+      bullets: bullets.length > 0 ? bullets : defaultBullets,
       backgroundStyle,
     };
-  }, [settings]);
+  }, [settings, t]);
 }

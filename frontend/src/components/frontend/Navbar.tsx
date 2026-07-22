@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { ChevronDown, Search, Shield, Menu, X, Rocket } from 'lucide-react';
 import { usePublicSite, type PublicNavItem } from '../../context/PublicSiteContext';
 import { useAuth } from '../../hooks/useAuth';
+import { useI18n } from '../../context/I18nContext';
 
 interface NavbarProps {
   onOpenSearch: () => void;
@@ -125,6 +126,7 @@ const MobileNavItems: React.FC<{
 export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, previewMode = false }) => {
   const { navigation, siteTitle } = usePublicSite();
   const { user } = useAuth();
+  const { t } = useI18n();
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -147,7 +149,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, previewMode = fals
     <header className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 sticky top-0 z-40 transition-colors">
       {previewMode && (
         <div className="bg-amber-500 text-amber-950 text-center text-[11px] font-bold py-1">
-          Náhľad — navigácia je neaktívna
+          {t('public.nav.previewBanner')}
         </div>
       )}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
@@ -164,7 +166,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, previewMode = fals
               {siteTitle}
             </span>
             <span className="hidden sm:block text-[10px] font-semibold tracking-wider text-indigo-500 uppercase">
-              FlatFile Architecture
+              {t('public.nav.architectureTagline')}
             </span>
           </div>
         </button>
@@ -187,7 +189,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, previewMode = fals
             className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
           >
             <Search className="w-4 h-4 text-indigo-500" />
-            <span className="hidden sm:inline text-slate-500 dark:text-slate-400 font-normal">Hľadať…</span>
+            <span className="hidden sm:inline text-slate-500 dark:text-slate-400 font-normal">{t('public.nav.search')}</span>
           </button>
 
           {user ? (
@@ -197,7 +199,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, previewMode = fals
               className="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg shadow-indigo-500/25 transition-all cursor-pointer"
             >
               <Shield className="w-4 h-4" />
-              <span className="hidden sm:inline">Paginium Admin</span>
+              <span className="hidden sm:inline">{t('public.nav.adminButton')}</span>
             </button>
           ) : (
             <button
@@ -206,7 +208,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, previewMode = fals
               className="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer"
             >
               <Shield className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Prihlásiť</span>
+              <span className="hidden sm:inline">{t('public.nav.loginButton')}</span>
             </button>
           )}
 

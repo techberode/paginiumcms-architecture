@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Search, FileText, BookOpen, Calendar, Tag, ChevronRight, X } from 'lucide-react';
 import { usePublicSite } from '../../context/PublicSiteContext';
+import { useI18n } from '../../context/I18nContext';
 import { searchContent, SearchResultItem } from '../../api/search';
 import { Article, Page } from '../../api/types';
 
@@ -48,6 +49,8 @@ function articleSnippet(article: Article, q: string): string {
 }
 
 export const SiteSearchModal: React.FC<SiteSearchModalProps> = ({ isOpen, onClose, onSelectRoute }) => {
+  const { t, locale } = useI18n();
+  const dateLocale = locale === 'en' ? 'en-US' : 'sk-SK';
   const { pages, articles } = usePublicSite();
   const [query, setQuery] = useState('');
   const [apiResults, setApiResults] = useState<SearchResultItem[]>([]);
@@ -165,7 +168,7 @@ export const SiteSearchModal: React.FC<SiteSearchModalProps> = ({ isOpen, onClos
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Hľadať v článkoch, podstránkach alebo tagoch (min. 2 znaky)..."
+            placeholder={t('public.search.placeholder')}
             className="flex-1 bg-transparent text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none text-base sm:text-lg"
           />
           <button
@@ -180,13 +183,13 @@ export const SiteSearchModal: React.FC<SiteSearchModalProps> = ({ isOpen, onClos
         <div className="max-h-[60vh] overflow-y-auto p-3 divide-y divide-slate-100 dark:divide-slate-800/60">
           {searchResults.length === 0 && query.length >= 2 && !searchLoading && (
             <div className="py-12 text-center text-slate-500 dark:text-slate-400">
-              <p className="text-base font-medium">Nenašli sa žiadne FlatFile záznamy pre &quot;{query}&quot;</p>
+              <p className="text-base font-medium">{t('public.search.noResults', { query })}</p>
             </div>
           )}
 
           {searchResults.length === 0 && query.length < 2 && (
             <div className="py-8 text-center text-slate-400 dark:text-slate-500 text-xs sm:text-sm">
-              Zadajte aspoň 2 znaky pre okamžité FlatFile vyhľadávanie.
+              {t('public.search.minCharsHint')}
             </div>
           )}
 
@@ -210,11 +213,11 @@ export const SiteSearchModal: React.FC<SiteSearchModalProps> = ({ isOpen, onClos
                     }`}
                   >
                     {item.type === 'page' ? <FileText className="w-2.5 h-2.5" /> : <BookOpen className="w-2.5 h-2.5" />}
-                    {item.type === 'page' ? 'Stránka' : 'Blog'}
+                    {item.type === 'page' ? t('public.search.typePage') : t('public.search.typeArticle')}
                   </span>
                   <span className="text-xs text-slate-400 flex items-center gap-1">
                     <Calendar className="w-3 h-3" />
-                    {new Date(item.date).toLocaleDateString('sk-SK')}
+                    {new Date(item.date).toLocaleDateString(dateLocale)}
                   </span>
                 </div>
                 <h4 className="text-base font-semibold text-slate-900 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
@@ -241,9 +244,11 @@ export const SiteSearchModal: React.FC<SiteSearchModalProps> = ({ isOpen, onClos
         </div>
 
         <div className="bg-slate-50 dark:bg-slate-800/80 px-5 py-3 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between">
-          <span>Výsledky z publikovaného FlatFile obsahu</span>
+          <span>{t('public.search.footerSource')}</span>
           <span className="font-semibold text-indigo-600 dark:text-indigo-400">
-            {searchLoading ? 'Hľadám…' : `${searchResults.length} záznamov`}
+            {searchLoading
+              ? t('public.search.searching')
+              : t('public.search.resultCount', { count: searchResults.length })}
           </span>
         </div>
       </div>

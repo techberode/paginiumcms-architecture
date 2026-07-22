@@ -5,6 +5,7 @@ import { getNavigation } from '../api/navigation';
 import { Article, Page } from '../api/types';
 import { useSettingsContext } from './SettingsContext';
 import { debugLogProvider } from '../utils/debugLog';
+import { normalizeLocale, translate } from '../i18n';
 
 import { buildNavigationTree, mapNavigationTreeToPublic } from '../utils/navigationTree';
 import type { NavigationItem } from '../api/navigation';
@@ -33,18 +34,28 @@ interface PublicSiteContextType {
 
 const PublicSiteContext = createContext<PublicSiteContextType | undefined>(undefined);
 
-const CORE_NAV: PublicNavItem[] = [
-  { id: 'home', label: 'Domov', path: '/', order: 1 },
-  { id: 'blog', label: 'Blog', path: '/blog', order: 2 },
-];
+const CORE_NAV_IDS = [
+  { id: 'home', key: 'public.nav.home', path: '/', order: 1 },
+  { id: 'blog', key: 'public.nav.blog', path: '/blog', order: 2 },
+] as const;
 
-function buildNavigation(pages: Page[]): PublicNavItem[] {
-  const items: PublicNavItem[] = [...CORE_NAV];
+function buildCoreNav(locale: ReturnType<typeof normalizeLocale>): PublicNavItem[] {
+  return CORE_NAV_IDS.map((item) => ({
+    id: item.id,
+    label: translate(locale, item.key),
+    path: item.path,
+    order: item.order,
+  }));
+}
+
+function buildNavigation(pages: Page[], locale: ReturnType<typeof normalizeLocale>): PublicNavItem[] {
+  const items: PublicNavItem[] = buildCoreNav(locale);
   const reserved = new Set(['home', 'index', 'blog']);
+  const localeTag = locale === 'en' ? 'en' : 'sk';
 
   pages
     .filter((page) => !reserved.has(page.slug))
-    .sort((a, b) => a.title.localeCompare(b.title, 'sk'))
+    .sort((a, b) => a.title.localeCompare(b.title, localeTag))
     .forEach((page, index) => {
       items.push({
         id: page.id,
@@ -80,7 +91,7 @@ export const PublicSiteProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       if (navItems.length > 0) {
         setNavigationItems(navItems);
       } else {
-        setNavigationItems(buildNavigation(publishedPages));
+        setNavigationItems([]);
       }
       debugLogProvider('publicSite', 'refresh.done', {
         pages: publishedPages.length,
@@ -96,7 +107,7 @@ export const PublicSiteProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [settings.general?.language]);
 
   useEffect(() => {
     void refresh();
@@ -113,12 +124,15 @@ export const PublicSiteProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   );
 
   const general = settings.general as Record<string, unknown>;
+  const locale = normalizeLocale(general?.language);
+  const siteName = String(general?.siteName ?? translate(locale, 'public.defaults.siteName'));
+
   const navigation = useMemo(() => {
     if (navigationItems.length > 0) {
       return mapNavigationTreeToPublic(buildNavigationTree(navigationItems));
     }
-    return buildNavigation(pages).map((item) => ({ ...item, children: [] }));
-  }, [navigationItems, pages]);
+    return buildNavigation(pages, locale).map((item) => ({ ...item, children: [] }));
+  }, [navigationItems, pages, locale]);
 
   const value = useMemo(
     () => ({
@@ -126,14 +140,17 @@ export const PublicSiteProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       articles,
       loading,
       navigation,
-      siteTitle: String(general.siteName ?? 'PaginiumCMS'),
-      siteTagline: String(general.siteDescription ?? 'FlatFile CMS'),
-      footerText: `© ${new Date().getFullYear()} ${String(general.siteName ?? 'PaginiumCMS')}`,
+      siteTitle: siteName,
+      siteTagline: String(general?.siteDescription ?? translate(locale, 'public.defaults.siteTagline')),
+      footerText: translate(locale, 'public.footer.copyright', {
+        year: new Date().getFullYear(),
+        siteName,
+      }),
       refresh,
       getPageBySlug,
       getArticleBySlug,
     }),
-    [pages, articles, loading, navigation, general, refresh, getPageBySlug, getArticleBySlug]
+    [pages, articles, loading, navigation, general, locale, siteName, refresh, getPageBySlug, getArticleBySlug]
   );
 
   return <PublicSiteContext.Provider value={value}>{children}</PublicSiteContext.Provider>;

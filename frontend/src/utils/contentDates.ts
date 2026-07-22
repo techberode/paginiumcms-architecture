@@ -1,3 +1,5 @@
+import { DEFAULT_LOCALE, translate, type Locale } from '../i18n';
+
 export interface ContentDateLabels {
   primary: string;
   secondary?: string;
@@ -19,8 +21,12 @@ function parseContentDate(value: string | number | undefined): Date | null {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
-function formatSkDate(date: Date): string {
-  return date.toLocaleDateString('sk-SK', {
+function localeTag(locale: Locale): string {
+  return locale === 'en' ? 'en-US' : 'sk-SK';
+}
+
+function formatLocaleDate(date: Date, locale: Locale): string {
+  return date.toLocaleDateString(localeTag(locale), {
     day: 'numeric',
     month: 'numeric',
     year: 'numeric',
@@ -28,35 +34,40 @@ function formatSkDate(date: Date): string {
 }
 
 /** Builds primary/secondary date labels for blog cards and article headers. */
-export function formatContentDateLabels(input: {
-  createdAt?: string | number;
-  updatedAt?: string | number;
-  frontMatterDate?: string | number;
-}): ContentDateLabels {
+export function formatContentDateLabels(
+  input: {
+    createdAt?: string | number;
+    updatedAt?: string | number;
+    frontMatterDate?: string | number;
+  },
+  locale: Locale = DEFAULT_LOCALE
+): ContentDateLabels {
   const created = parseContentDate(input.frontMatterDate ?? input.createdAt);
   const updated = parseContentDate(input.updatedAt);
 
   if (!created && !updated) {
     return {
       primary: '—',
-      primaryTitle: 'Dátum',
+      primaryTitle: translate(locale, 'public.blog.dates.date'),
     };
   }
 
   const primaryDate = created ?? updated!;
-  const primary = formatSkDate(primaryDate);
+  const primary = formatLocaleDate(primaryDate, locale);
 
   if (updated && created && updated.getTime() - created.getTime() > 60_000) {
     return {
       primary,
-      secondary: formatSkDate(updated),
-      primaryTitle: 'Vytvorené',
-      secondaryTitle: 'Upravené',
+      secondary: formatLocaleDate(updated, locale),
+      primaryTitle: translate(locale, 'public.blog.dates.created'),
+      secondaryTitle: translate(locale, 'public.blog.dates.updated'),
     };
   }
 
   return {
     primary,
-    primaryTitle: created ? 'Vytvorené' : 'Dátum',
+    primaryTitle: created
+      ? translate(locale, 'public.blog.dates.created')
+      : translate(locale, 'public.blog.dates.date'),
   };
 }

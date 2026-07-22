@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Mail, Loader2, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { authApi } from '../../api/auth';
 import { useToast } from '../../hooks/useToast';
+import { useI18n } from '../../context/I18nContext';
 import { AuthShell, authButtonClass, authInputClass, authLabelClass } from './AuthShell';
 
 export const ForgotPasswordModal: React.FC = () => {
@@ -11,11 +12,12 @@ export const ForgotPasswordModal: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const toast = useToast();
+  const { t } = useI18n();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) {
-      toast.warning('Zadajte e-mail');
+      toast.warning(t('public.auth.forgot.toast.emailRequired'));
       return;
     }
 
@@ -25,13 +27,13 @@ export const ForgotPasswordModal: React.FC = () => {
       if (result.success) {
         setSent(true);
         if (result.token) {
-          toast.info('SMTP nie je nakonfigurované — token nájdete v konzole (dev).');
+          toast.info(t('public.auth.forgot.toast.smtpDev'));
           console.debug('[PaginiumCMS] Reset token (dev only):', result.token);
         } else {
-          toast.success('Ak účet existuje, bol odoslaný e-mail s odkazom.');
+          toast.success(t('public.auth.forgot.toast.sentGeneric'));
         }
       } else {
-        toast.error('Požiadavku sa nepodarilo odoslať');
+        toast.error(t('public.auth.forgot.toast.sendFailed'));
       }
     } finally {
       setLoading(false);
@@ -41,11 +43,11 @@ export const ForgotPasswordModal: React.FC = () => {
   return (
     <AuthShell
       variant="forgot"
-      formTitle="Obnovenie hesla"
+      formTitle={t('public.auth.forgot.title')}
       formSubtitle={
         sent
-          ? 'Skontrolujte doručenú poštu a postupujte podľa inštrukcií v e-maile.'
-          : 'Zadajte e-mail účtu — pošleme vám odkaz na nastavenie nového hesla.'
+          ? t('public.auth.forgot.subtitleSent')
+          : t('public.auth.forgot.subtitleForm')
       }
     >
       {sent ? (
@@ -54,16 +56,16 @@ export const ForgotPasswordModal: React.FC = () => {
             <CheckCircle2 className="w-8 h-8" />
           </div>
           <p className="text-sm text-slate-600 dark:text-slate-300">
-            Ak účet s adresou <strong>{email}</strong> existuje, bol odoslaný reset e-mail.
+            {t('public.auth.forgot.confirmBody', { email })}
           </p>
           <Link to="/login" className={authButtonClass}>
-            Späť na prihlásenie
+            {t('public.auth.common.backToLogin')}
           </Link>
         </div>
       ) : (
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
-            <label className={authLabelClass}>E-mail</label>
+            <label className={authLabelClass}>{t('public.auth.common.email')}</label>
             <div className="relative">
               <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
@@ -72,18 +74,18 @@ export const ForgotPasswordModal: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className={authInputClass}
-                placeholder="admin@example.com"
+                placeholder={t('public.auth.common.emailPlaceholder')}
                 autoComplete="email"
               />
             </div>
           </div>
           <button type="submit" disabled={loading} className={authButtonClass}>
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
-            <span>{loading ? 'Odosielam…' : 'Odoslať reset odkaz'}</span>
+            <span>{loading ? t('public.auth.forgot.submitting') : t('public.auth.forgot.submit')}</span>
           </button>
           <p className="text-center text-sm text-slate-500">
             <Link to="/login" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
-              Späť na prihlásenie
+              {t('public.auth.common.backToLogin')}
             </Link>
           </p>
         </form>

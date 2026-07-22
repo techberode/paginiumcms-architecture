@@ -1,9 +1,9 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.0.49** · 2026-07-22 · tag **`v2.0.49`**  
+> Posledná verzia: **2.0.50** · 2026-07-22 · tag **`v2.0.50`**  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release.
 
-> **Poznámka k verziám:** … **v2.0.47** → `e1fdead` · **v2.0.48** → `a32c002` · **v2.0.49** → `1ac58cf`.
+> **Poznámka k verziám:** … **v2.0.47** → `e1fdead` · **v2.0.48** → `a32c002` · **v2.0.49** → `1ac58cf` · **2.0.50** → *(pending commit)*.
 
 ### Kontinuita verzií (nepreskakovať)
 
@@ -11,9 +11,65 @@
 |--------|---------|----------------|------|
 | 2.0.47 | `v2.0.47` | `e1fdead` | ✅ tagged |
 | 2.0.48 | `v2.0.48` | `a32c002` | ✅ tagged |
-| **2.0.49** | **`v2.0.49`** | **`1ac58cf`** | ✅ tagged |
+| 2.0.49 | `v2.0.49` | `1ac58cf` | ✅ tagged |
+| **2.0.50** | **`v2.0.50`** | ***(pending)*** | ⏳ release |
 
-**Pravidlo:** Ďalší release musí byť **`v2.0.50`**, nie skok. Pred každým novým číslom: `git tag -l 'v2.0.4*' | sort -V`.
+**Pravidlo:** Ďalší release musí byť **`v2.0.51`**, nie skok. Pred každým novým číslom: `git tag -l 'v2.0.5*' | sort -V`.
+
+---
+
+## 2.0.50 — pred release kontrola
+
+```bash
+./scripts/iteration-gate.sh
+# Vitest: npm test -- --run  → 217/217
+```
+
+**Po deployi:**
+
+1. **Nastavenia → Všeobecné → Jazyk = English**
+2. **Verejný web** (`/`, `/blog`, `/login`) — UI po anglicky (navbar, footer, blog list, auth modals)
+3. **Jazyk = Slovenčina** — SK copy späť (Domov, Prihlásiť, Magazín & Novinky, …)
+4. **Kontakt** — formulár labely sledujú locale (`Predmet` / `Subject`)
+
+---
+
+## GitHub Release — copy-paste (2.0.50)
+
+**Title:**
+
+```
+2.0.50 — Public site i18n (ISS-062 / wave 5c)
+```
+
+**Tag:** `v2.0.50` · **Target:** `main` · **Commit:** *(fill after commit)*
+
+**Body:**
+
+```markdown
+## Summary
+
+Public site UI (blog, nav, footer, contact, search, auth modals) follows `general.language` — same as admin.
+
+## Highlights
+
+- New `public/{sk,en}` i18n module (~120 keys)
+- Migrated 18+ public components to `useI18n().t('public.*')`
+- Locale-aware dates (`contentDates`) and reading time labels
+- Localized password policy hints/validation on register & reset flows
+
+## Verify
+
+1. Settings → General → Language = English
+2. Open `/`, `/blog`, `/login` — English chrome
+3. Switch back to SK — Slovak labels return
+
+## Docs
+
+- [CHANGELOG.md](CHANGELOG.md) — 2.0.50
+- [ITERATION_18.md](docs/ITERATION_18.md) — wave 5c
+- [ISSUES.md](docs/ISSUES.md) — ISS-062
+```
 
 ---
 

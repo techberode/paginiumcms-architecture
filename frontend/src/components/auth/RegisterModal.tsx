@@ -5,6 +5,7 @@ import { Mail, Lock, User, Eye, EyeOff, Loader2, ArrowRight } from 'lucide-react
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
 import { useSettingsContext } from '../../context/SettingsContext';
+import { useI18n } from '../../context/I18nContext';
 import { usePasswordPolicy } from '../../hooks/usePasswordPolicy';
 import { validatePasswordPolicy } from '../../utils/validation';
 import { AuthShell, authButtonClass, authInputClass, authLabelClass } from './AuthShell';
@@ -24,6 +25,7 @@ export const RegisterModal: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const { register, verifyRegisterOtp, resendRegisterOtp } = useAuth();
   const toast = useToast();
+  const { t, locale } = useI18n();
   const { settings } = useSettingsContext();
   const passwordPolicy = usePasswordPolicy();
   const allowRegistration = settings.general.allowRegistration !== false;
@@ -31,11 +33,11 @@ export const RegisterModal: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email || !password) {
-      toast.warning('Vyplňte všetky povinné polia');
+      toast.warning(t('public.auth.register.toast.fillRequired'));
       return;
     }
 
-    const policyErrors = validatePasswordPolicy(password, passwordPolicy);
+    const policyErrors = validatePasswordPolicy(password, passwordPolicy, locale);
     if (policyErrors.length > 0) {
       toast.error(policyErrors[0]);
       return;
@@ -47,16 +49,16 @@ export const RegisterModal: React.FC = () => {
       if (result.success && result.requiresOtp && result.challengeId) {
         setChallengeId(result.challengeId);
         setStep('otp');
-        toast.info('Overovací kód bol odoslaný na e-mail');
+        toast.info(t('public.auth.register.toast.otpSent'));
         if (result.debugCode) {
-          toast.warning(`Dev OTP: ${result.debugCode}`);
+          toast.warning(t('public.auth.register.toast.devOtp', { code: result.debugCode }));
         }
         return;
       }
       if (result.success) {
-        toast.success('Registrácia úspešná — môžete sa prihlásiť');
+        toast.success(t('public.auth.register.toast.success'));
       } else {
-        toast.error(result.error || 'Registrácia zlyhala');
+        toast.error(result.error || t('public.auth.register.toast.failed'));
       }
     } finally {
       setLoading(false);
@@ -66,7 +68,7 @@ export const RegisterModal: React.FC = () => {
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (otpCode.trim().length < 6) {
-      toast.warning('Zadajte 6-miestny overovací kód');
+      toast.warning(t('public.auth.register.toast.otpRequired'));
       return;
     }
 
@@ -74,9 +76,9 @@ export const RegisterModal: React.FC = () => {
     try {
       const result = await verifyRegisterOtp(challengeId, otpCode.trim());
       if (result.success) {
-        toast.success('Registrácia úspešná — môžete sa prihlásiť');
+        toast.success(t('public.auth.register.toast.success'));
       } else {
-        toast.error(result.error || 'Neplatný overovací kód');
+        toast.error(result.error || t('public.auth.register.toast.otpInvalid'));
       }
     } finally {
       setLoading(false);
@@ -95,12 +97,12 @@ export const RegisterModal: React.FC = () => {
         if (result.challengeId) {
           setChallengeId(result.challengeId);
         }
-        toast.info('Nový overovací kód bol odoslaný');
+        toast.info(t('public.auth.register.toast.otpResent'));
         if (result.debugCode) {
-          toast.warning(`Dev OTP: ${result.debugCode}`);
+          toast.warning(t('public.auth.register.toast.devOtp', { code: result.debugCode }));
         }
       } else {
-        toast.error(result.error || 'Kód sa nepodarilo znovu odoslať');
+        toast.error(result.error || t('public.auth.register.toast.resendFailed'));
       }
     } finally {
       setLoading(false);
@@ -109,12 +111,16 @@ export const RegisterModal: React.FC = () => {
 
   if (!allowRegistration) {
     return (
-      <AuthShell variant="register" formTitle="Registrácia vypnutá" formSubtitle="Administrátor zakázal vytváranie nových účtov.">
+      <AuthShell
+        variant="register"
+        formTitle={t('public.auth.register.disabled.title')}
+        formSubtitle={t('public.auth.register.disabled.subtitle')}
+      >
         <p className="text-sm text-slate-600 dark:text-slate-300">
-          Ak potrebujete prístup, kontaktujte správcu webu.
+          {t('public.auth.register.disabled.body')}
         </p>
         <Link to="/login" className={`${authButtonClass} mt-6 text-center`}>
-          Späť na prihlásenie
+          {t('public.auth.common.backToLogin')}
         </Link>
       </AuthShell>
     );
@@ -123,18 +129,18 @@ export const RegisterModal: React.FC = () => {
   return (
     <AuthShell
       variant="register"
-      formTitle={step === 'otp' ? 'Overenie e-mailu' : 'Vytvorenie účtu'}
+      formTitle={step === 'otp' ? t('public.auth.register.otp.title') : t('public.auth.register.form.title')}
       formSubtitle={
         step === 'otp'
-          ? `Zadajte kód odoslaný na ${email}`
-          : 'Vyplňte povinné polia a vytvorte si prístup do administrácie.'
+          ? t('public.auth.register.otp.subtitle', { email })
+          : t('public.auth.register.form.subtitle')
       }
     >
       {step === 'form' ? (
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
             <label className={authLabelClass}>
-              Celé meno <span className="text-rose-500">*</span>
+              {t('public.auth.register.fields.fullName')} <span className="text-rose-500">*</span>
             </label>
             <div className="relative">
               <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -144,7 +150,7 @@ export const RegisterModal: React.FC = () => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className={authInputClass}
-                placeholder="Ján Novák"
+                placeholder={t('public.auth.register.placeholders.fullName')}
                 autoComplete="name"
               />
             </div>
@@ -152,7 +158,7 @@ export const RegisterModal: React.FC = () => {
 
           <div>
             <label className={authLabelClass}>
-              E-mail <span className="text-rose-500">*</span>
+              {t('public.auth.common.email')} <span className="text-rose-500">*</span>
             </label>
             <div className="relative">
               <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -162,7 +168,7 @@ export const RegisterModal: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className={authInputClass}
-                placeholder="jan@example.com"
+                placeholder={t('public.auth.register.placeholders.email')}
                 autoComplete="email"
               />
             </div>
@@ -170,7 +176,7 @@ export const RegisterModal: React.FC = () => {
 
           <div>
             <label className={authLabelClass}>
-              Heslo <span className="text-rose-500">*</span>
+              {t('public.auth.common.password')} <span className="text-rose-500">*</span>
             </label>
             <div className="relative">
               <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -180,7 +186,7 @@ export const RegisterModal: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className={`${authInputClass} pr-11`}
-                placeholder="••••••••"
+                placeholder={t('public.auth.common.passwordPlaceholder')}
                 autoComplete="new-password"
               />
               <button
@@ -197,13 +203,13 @@ export const RegisterModal: React.FC = () => {
 
           <button type="submit" disabled={loading} className={authButtonClass}>
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
-            <span>{loading ? 'Registrujem…' : 'Vytvoriť účet'}</span>
+            <span>{loading ? t('public.auth.register.submitting') : t('public.auth.register.submit')}</span>
           </button>
 
           <p className="text-center text-sm text-slate-500">
-            Už máte účet?{' '}
+            {t('public.auth.register.hasAccount')}{' '}
             <Link to="/login" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
-              Prihlásiť sa
+              {t('public.auth.common.signIn')}
             </Link>
           </p>
         </form>
@@ -212,7 +218,7 @@ export const RegisterModal: React.FC = () => {
           <TotpCodeInput value={otpCode} onChange={setOtpCode} disabled={loading} />
           <button type="submit" disabled={loading || otpCode.length < 6} className={authButtonClass}>
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-            <span>{loading ? 'Overujem…' : 'Overiť a dokončiť registráciu'}</span>
+            <span>{loading ? t('public.auth.common.verifying') : t('public.auth.register.otp.verify')}</span>
           </button>
           <button
             type="button"
@@ -220,7 +226,7 @@ export const RegisterModal: React.FC = () => {
             onClick={() => void handleResend()}
             className="w-full py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800"
           >
-            Znovu odoslať kód
+            {t('public.auth.register.otp.resend')}
           </button>
           <button
             type="button"
@@ -231,7 +237,7 @@ export const RegisterModal: React.FC = () => {
             }}
             className="w-full text-sm text-slate-500 hover:underline"
           >
-            Späť na registračný formulár
+            {t('public.auth.register.otp.backToForm')}
           </button>
         </form>
       )}

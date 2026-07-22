@@ -1,5 +1,6 @@
 // frontend/src/components/auth/TotpCodeInput.tsx
 import React, { useCallback, useRef } from 'react';
+import { useI18n } from '../../context/I18nContext';
 
 interface TotpCodeInputProps {
   value: string;
@@ -16,6 +17,7 @@ export const TotpCodeInput: React.FC<TotpCodeInputProps> = ({
   disabled = false,
   autoFocus = true,
 }) => {
+  const { t } = useI18n();
   const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
   const digits = value.padEnd(DIGIT_COUNT, ' ').slice(0, DIGIT_COUNT).split('');
 
@@ -89,7 +91,7 @@ export const TotpCodeInput: React.FC<TotpCodeInputProps> = ({
             focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 focus:scale-105
             ${digit.trim() ? 'border-indigo-400 shadow-md shadow-indigo-500/15' : 'border-slate-200 dark:border-slate-700'}
           `}
-          aria-label={`TOTP číslica ${index + 1}`}
+          aria-label={t('public.auth.totp.digitAria', { index: index + 1 })}
         />
       ))}
     </div>

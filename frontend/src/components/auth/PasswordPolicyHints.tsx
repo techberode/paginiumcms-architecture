@@ -2,6 +2,7 @@
 import React, { useMemo } from 'react';
 import { Check, X } from 'lucide-react';
 import type { PasswordPolicyMeta } from '../../api/validation';
+import { useI18n } from '../../context/I18nContext';
 
 interface PasswordPolicyHintsProps {
   password: string;
@@ -20,11 +21,13 @@ export const PasswordPolicyHints: React.FC<PasswordPolicyHintsProps> = ({
   policy,
   compact = false,
 }) => {
+  const { t } = useI18n();
+
   const hints = useMemo((): HintRow[] => {
     const rows: HintRow[] = [
       {
         id: 'length',
-        label: `Minimálne ${policy.minLength} znakov`,
+        label: t('public.auth.password.minLength', { minLength: policy.minLength }),
         satisfied: password.length >= policy.minLength && password.length <= policy.maxLength,
       },
     ];
@@ -32,34 +35,34 @@ export const PasswordPolicyHints: React.FC<PasswordPolicyHintsProps> = ({
     if (policy.requireUppercase) {
       rows.push({
         id: 'upper',
-        label: 'Veľké písmeno (A–Z)',
+        label: t('public.auth.password.uppercase'),
         satisfied: /[A-Z]/.test(password),
       });
     }
     if (policy.requireLowercase) {
       rows.push({
         id: 'lower',
-        label: 'Malé písmeno (a–z)',
+        label: t('public.auth.password.lowercase'),
         satisfied: /[a-z]/.test(password),
       });
     }
     if (policy.requireNumbers) {
       rows.push({
         id: 'number',
-        label: 'Číslica (0–9)',
+        label: t('public.auth.password.number'),
         satisfied: /[0-9]/.test(password),
       });
     }
     if (policy.requireSpecialChars) {
       rows.push({
         id: 'special',
-        label: 'Špeciálny znak (!@#$…)',
+        label: t('public.auth.password.special'),
         satisfied: /[^a-zA-Z0-9]/.test(password),
       });
     }
 
     return rows;
-  }, [password, policy]);
+  }, [password, policy, t]);
 
   return (
     <div
@@ -68,7 +71,7 @@ export const PasswordPolicyHints: React.FC<PasswordPolicyHintsProps> = ({
       }`}
     >
       <p className={`font-bold text-slate-600 dark:text-slate-300 ${compact ? 'text-[10px] uppercase tracking-wider' : 'text-xs uppercase tracking-wider'}`}>
-        Požiadavky na heslo
+        {t('public.auth.password.title')}
       </p>
       <ul className={compact ? 'space-y-1' : 'space-y-1.5'}>
         {hints.map((hint) => (
