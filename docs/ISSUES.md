@@ -1,6 +1,6 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-22 · verzia **2.0.46** (security_fix hardening + ISS-051 boot hotfix)
+> Posledná aktualizácia: 2026-07-22 · verzia **2.0.46** (security_fix hardening + ISS-051 boot hotfix + ISS-012 CSRF enforcement)
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
 
@@ -26,7 +26,7 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-009 | `/settings` crash `n.max is not a function`             | Vysoká                | ✅ Opravené                              |
 | ISS-010 | Vitest stderr: `act(...)` + Router future flags         | Nízka (CI šum)        | ✅ Opravené (2.0.24)                     |
 | ISS-011 | ESLint warnings (`any`, react-refresh)                  | Nízka (tech. dlh)     | ⏳ 57/65 baseline, postupné čistenie     |
-| ISS-012 | CSRF middleware nezapojený (audit S3)                   | Stredná               | ⏳ Odložené — SameSite=Lax               |
+| ISS-012 | CSRF middleware nezapojený (audit S3)                   | Stredná               | ✅ Opravené — `CsrfMiddleware` (synchronizer-token) |
 | ISS-013 | ntfy bez auth — privátne topicy zlyhajú                 | Stredná               | ✅ It.47 (Bearer/Basic + test-connector) |
 | ISS-014 | CORS dev wildcardy pri zlej `APP_ENV` (audit S6)        | Nízka                 | ⏳ Overiť deploy                         |
 | ISS-015 | PHPUnit → 429 / 503 / OTP persistencia                  | Stredná (CI)          | ✅ Opravené (2.0.25)                     |
@@ -1276,6 +1276,30 @@ výnimka pri konštrukcii služby zhodila celý boot kontajnera — teda aj HTTP
 - PHPStan L8 → 0 chýb; PHPUnit → 720 testov / 0 fail.
 
 **Súbor:** `backend/app/Http/Config/services.php`. **Súvisí s:** audit S13 (`AUDIT_REPORT.md`, `SECURITY_ISSUES.md`).
+
+---
+
+## ISS-012 – CSRF middleware nezapojený (audit S3) — VYRIEŠENÉ
+
+**Symptóm / riziko:** `CsrfProtectionManager` existoval a bol testovaný, ale **nebol nikde zapojený** — žiadny `CsrfMiddleware`, backend `X-CSRF-TOKEN` nevalidoval. Jediná ochrana bola `SameSite=Lax` cookie. Navyše FE `authApi.getCsrfToken()` bol definovaný, ale **nikde sa nevolal** → token sa reálne ani neposielal.
+
+**Implementované riešenie (synchronizer-token, SPA-kompatibilné):**
+
+- **`backend/app/Http/Middleware/CsrfMiddleware.php`** (nový) — vynucuje token na mutujúcich metódach (`POST/PUT/PATCH/DELETE`):
+  - Token z hlavičky `X-CSRF-TOKEN` sa porovnáva so session tokenom cez `hash_equals` (nie jednorazovo → SPA ho používa opakovane).
+  - **Exempt** (prefix): `/api/auth/login`, `/api/auth/register`, `/api/auth/reset-password`, `/api/auth/verify-reset-token`, `/api/auth/csrf-token`, `/api/auth/sso`, `/api/contact`, `/api/comments`, `/api/debug/client-event` (pre-auth alebo anonymné akcie bez privilégií).
+  - `APP_ENV=testing` → no-op (ako WAF); logika pokrytá dedikovanými testami.
+  - Chýbajúci/neplatný token → `403 { code: "csrf_invalid" }`.
+- **Zapojenie:** globálny stack v `bootstrap/app.php` (za `FirewallMiddleware`).
+- **Frontend:**
+  - `AuthContext` bootstrap vopred načíta token (`authApi.getCsrfToken()`) → prvý mutujúci request neskončí na 403.
+  - `client.ts` — **self-healing**: pri `403 { code: "csrf_invalid" }` raz dofetchne čerstvý token a zopakuje pôvodný request. Nový `refreshCsrfToken()`.
+
+**Prečo je to bezpečné:** cross-site útočník nedokáže prečítať token (SOP + CORS na `/csrf-token`) ani nastaviť custom hlavičku bez schváleného preflightu.
+
+**Overenie:** PHPStan L8 0 chýb; PHPUnit **726** testov / 0 fail (`CsrfMiddlewareTest` – 6 testov); FE `tsc` clean, ESLint 0 errors, `client.security.test.ts` OK.
+
+**Súbory:** `backend/app/Http/Middleware/CsrfMiddleware.php`, `backend/bootstrap/app.php`, `frontend/src/api/client.ts`, `frontend/src/context/AuthContext.tsx`. **Súvisí s:** audit S3 (`AUDIT_REPORT.md`, `SECURITY_ISSUES.md`).
 
 ---
 

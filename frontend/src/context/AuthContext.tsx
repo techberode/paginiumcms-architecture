@@ -69,6 +69,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     (async () => {
       try {
+        // Priprav CSRF token vopred, aby prvý mutujúci request neskončil
+        // na 403 (server vynucuje synchronizer-token — audit S3 / ISS-012).
+        await authApi.getCsrfToken();
         await refreshUser();
       } finally {
         setLoading(false);

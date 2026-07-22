@@ -14,6 +14,7 @@ use PaginiumCMS\Http\Middleware\LoginRateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\LocaleMiddleware;
 use PaginiumCMS\Http\Middleware\MaintenanceModeMiddleware;
 use PaginiumCMS\Http\Middleware\FirewallMiddleware;
+use PaginiumCMS\Http\Middleware\CsrfMiddleware;
 use PaginiumCMS\Http\Middleware\RequestLoggingMiddleware;
 
 // ---------- PÔVODNÉ IMPORTY ----------
@@ -580,6 +581,9 @@ $app->add($container->get(SecurityMiddleware::class));
 $app->add($container->get(MaintenanceModeMiddleware::class));
 $app->add($container->get(LocaleMiddleware::class));
 $app->add($container->get(FirewallMiddleware::class));
+// CSRF (audit S3 / ISS-012): vynucuje synchronizer-token na mutujúcich
+// requestoch. V testing prostredí je no-op (viď CsrfMiddleware).
+$app->add(new CsrfMiddleware($container->get(CsrfProtectionInterface::class)));
 $app->add($container->get(RateLimitMiddleware::class));
 $app->add($container->get(AnalyticsMiddleware::class));
 
