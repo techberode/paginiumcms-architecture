@@ -166,7 +166,7 @@ Nový modul **Bezpečnosť → Firewall** (`FirewallManager.tsx`):
 
 | Riziko | Mitigácia |
 |--------|-----------|
-| False positive na legitímny obsah | scan **nie** na POST body editora; len URI/auth |
+| False positive na legitímny obsah | scan **nie** na POST body editora (`/api/pages`, `/api/articles`, drafts, code-editor); len URI/auth/contact |
 | Regex `SELECT` v URL článku | scenáre len na probe paths + query, nie `/api/pages/*` body |
 | Tarpit blokuje FPM worker | default OFF; max 2 s ak zapnuté |
 | Zdieľaná IP (NAT) | whitelist pre office IP; vyšší `maxRetries` |

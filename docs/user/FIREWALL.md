@@ -150,7 +150,7 @@ Testy (`APP_ENV=testing`) firewall automaticky obchádzajú.
 
 | Modul                  | Čo rieši                      | Čo neerieši      |
 | ---------------------- | ----------------------------- | ---------------- |
-| **Firewall (It.50)**   | Probe URI, traversal, jail IP | Obsah POST body  |
+| **Firewall (It.50)**   | Probe URI, traversal, jail IP, POST/JSON body (non-editor) | Multipart upload body, content editor API |
 | **Rate limit**         | Počet requestov/min           | Scenáre útokov   |
 | **Login lockout**      | Brute-force prihlásenie       | `wp-admin` probe |
 | **SecurityMiddleware** | CSP, HSTS hlavičky            | Blok IP          |

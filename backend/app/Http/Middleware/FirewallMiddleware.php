@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Middleware;
 
+use PaginiumCMS\Core\Security\Firewall\FirewallBodyScanPolicy;
+use PaginiumCMS\Core\Security\Firewall\FirewallRequestBodyReader;
 use PaginiumCMS\Core\Security\Firewall\FirewallService;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -24,6 +26,8 @@ final class FirewallMiddleware implements MiddlewareInterface
      */
     public function __construct(
         private FirewallService $firewall,
+        private FirewallRequestBodyReader $bodyReader = new FirewallRequestBodyReader(),
+        private FirewallBodyScanPolicy $bodyScanPolicy = new FirewallBodyScanPolicy(),
         array $trustedProxies = []
     ) {
         $this->trustedProxies = $trustedProxies;
@@ -45,7 +49,21 @@ final class FirewallMiddleware implements MiddlewareInterface
         $queryString = $request->getUri()->getQuery();
         $userAgent = $request->getHeaderLine('User-Agent');
 
-        $match = $this->firewall->inspectRequest($ip, $uriPath, $queryString, $userAgent);
+        $scanBody = $this->bodyScanPolicy->shouldScan(
+            $request->getMethod(),
+            $uriPath,
+            $this->firewall->scanRequestBodyEnabled()
+        );
+        $requestBody = $scanBody ? $this->bodyReader->read($request) : null;
+
+        $match = $this->firewall->inspectRequest(
+            $ip,
+            $uriPath,
+            $queryString,
+            $userAgent,
+            $requestBody,
+            $scanBody
+        );
         if ($match !== null) {
             return $this->createJailResponse();
         }

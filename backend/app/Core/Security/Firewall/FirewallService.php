@@ -43,13 +43,19 @@ final class FirewallService
     /**
      * @return array<string, mixed>|null Matched scenario when violation recorded.
      */
-    public function inspectRequest(string $ip, string $uriPath, string $queryString, string $userAgent): ?array
-    {
+    public function inspectRequest(
+        string $ip,
+        string $uriPath,
+        string $queryString,
+        string $userAgent,
+        ?string $requestBody = null,
+        bool $scanBody = true
+    ): ?array {
         if (!$this->isEnabled() || $this->banStore->isWhitelisted($ip)) {
             return null;
         }
 
-        $scenario = $this->scanner->scan($uriPath, $queryString, $userAgent);
+        $scenario = $this->scanner->scan($uriPath, $queryString, $userAgent, $requestBody, $scanBody);
         if ($scenario === null) {
             return null;
         }
@@ -58,6 +64,7 @@ final class FirewallService
         $this->incidentLogger->log($ip, $scenarioId, [
             'uri' => $uriPath . ($queryString !== '' ? '?' . $queryString : ''),
             'user_agent' => $userAgent,
+            'body_scanned' => $scanBody && $requestBody !== null && $requestBody !== '',
         ]);
         $this->banStore->recordViolation($ip, $scenarioId);
 
@@ -153,5 +160,12 @@ final class FirewallService
             'jailMode' => (string) ($firewall['jailMode'] ?? 'forbidden'),
             'tarpitSeconds' => max(0, min(2, (int) ($firewall['tarpitSeconds'] ?? 0))),
         ];
+    }
+
+    public function scanRequestBodyEnabled(): bool
+    {
+        $firewall = $this->settings->group('firewall');
+
+        return ($firewall['scanRequestBody'] ?? true) === true;
     }
 }

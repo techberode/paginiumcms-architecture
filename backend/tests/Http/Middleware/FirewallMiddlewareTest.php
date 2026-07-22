@@ -116,6 +116,43 @@ final class FirewallMiddlewareTest extends TestCase
         $this->assertSame(403, $response->getStatusCode());
     }
 
+    public function testSqlInjectionInPostBodyReturns403(): void
+    {
+        $middleware = new FirewallMiddleware($this->firewall);
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/api/auth/login', ['REMOTE_ADDR' => '203.0.113.2'])
+            ->withHeader('User-Agent', 'Mozilla/5.0')
+            ->withHeader('Content-Type', 'application/json')
+            ->withBody((new \Slim\Psr7\Factory\StreamFactory())->createStream(
+                '{"email":"x","password":"secret OR 1=1"}'
+            ));
+
+        $handler = $this->createMock(RequestHandlerInterface::class);
+        $handler->expects($this->never())->method('handle');
+
+        $response = $middleware->process($request, $handler);
+        $this->assertSame(403, $response->getStatusCode());
+    }
+
+    public function testContentEditorPostBodyIsNotScanned(): void
+    {
+        $middleware = new FirewallMiddleware($this->firewall);
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/api/pages', ['REMOTE_ADDR' => '203.0.113.3'])
+            ->withHeader('User-Agent', 'Mozilla/5.0')
+            ->withHeader('Content-Type', 'application/json')
+            ->withBody((new \Slim\Psr7\Factory\StreamFactory())->createStream(
+                '{"title":"SQL","slug":"sql-demo","content":"SELECT * FROM users","status":"draft"}'
+            ));
+
+        $expected = $this->createMock(ResponseInterface::class);
+        $handler = $this->createMock(RequestHandlerInterface::class);
+        $handler->expects($this->once())->method('handle')->willReturn($expected);
+
+        $response = $middleware->process($request, $handler);
+        $this->assertSame($expected, $response);
+    }
+
     private function removeDir(string $dir): void
     {
         if (!is_dir($dir)) {

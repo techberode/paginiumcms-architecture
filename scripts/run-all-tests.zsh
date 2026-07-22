@@ -486,6 +486,17 @@ run_step 15 "PHPUnit path ACL (PathAclService/Guard/Integration)" \
      backend/tests/Http/Controllers/Security/PathAclIntegrationTest.php'
 
 # ==================================================
+# WAF POST BODY SCANNING (audit S-WAFBODY / ISS-056)
+# ==================================================
+
+run_step 16 "PHPUnit WAF POST body (FirewallScanner/Middleware/Policy)" \
+  'vendor/bin/phpunit --colors=always \
+     backend/tests/Core/Security/Firewall/FirewallScannerTest.php \
+     backend/tests/Core/Security/Firewall/FirewallBodyScanPolicyTest.php \
+     backend/tests/Core/Security/Firewall/FirewallRequestBodyReaderTest.php \
+     backend/tests/Http/Middleware/FirewallMiddlewareTest.php'
+
+# ==================================================
 # ZÁVEREČNÝ SÚHRN
 # ==================================================
 print ""
@@ -509,6 +520,7 @@ labels=(
   "PHPUnit at-rest encryption (EncryptionService/User/Settings)"
   "PHPUnit log-injection + SSRF guard (LogSanitizer/OutboundUrlGuard)"
   "PHPUnit path ACL (PathAclService/Guard/Integration)"
+  "PHPUnit WAF POST body (FirewallScanner/Middleware/Policy)"
 )
 
 i=1
