@@ -10,7 +10,7 @@
 | Verzia | Git tag | Release commit | Stav |
 |--------|---------|----------------|------|
 | 2.0.46 | `v2.0.46` | `637fef4` | ✅ tagged |
-| **2.0.47** | **`v2.0.47`** | **`187f17a`** | ✅ tagged (code `390b392` + release docs) |
+| **2.0.47** | **`v2.0.47`** | **`5abab77`** | ✅ tagged (code `390b392` + release docs) |
 | 2.0.48 | — | — | ⏳ Security [Unreleased] → next |
 
 **Pravidlo:** Ďalší release musí byť **`v2.0.48`**, nie skok na `.49` ani späť. Pred každým novým číslom: `git tag -l 'v2.0.4*' | sort -V` a overiť, že predchádzajúca verzia má tag + GitHub Release.
