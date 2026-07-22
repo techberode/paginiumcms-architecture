@@ -37,6 +37,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.54 — Modular editor profiles (MD + WYSIWYG) | **2.0.42** | [below](#2042--2026-07-20) |
 | It.55 — Tiptap JSON storage + editor image upload | **2.0.43** | [below](#2043--2026-07-20) |
 | It.18 — Admin UI i18n + translation editor | **2.0.44** | [below](#2044--2026-07-21) |
+| It.18f — Ops + platform/editor i18n (Beta gate) | **2.0.47** | [below](#2047--2026-07-22) |
 | It.19b–19d — Security runtime, auth UX, password policy | **2.0.45** | [below](#2045--2026-07-21) |
 
 ---
@@ -129,6 +130,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Files: `OtpRateLimitMiddleware.php`, `OtpVerify/Resend/StartRateLimitMiddleware.php`,
   `OtpWorkflowService.php`, `OtpChallengeStore.php`, `bootstrap/app.php`, `workflows.php`.
 - Tests: `OtpRateLimitMiddlewareTest`, extended `OtpWorkflowServiceTest`.
+
+## [2.0.47] – 2026-07-22
+
+**Iteration 18f** — Beta gate i18n (ops + platform + editor).  
+**CI hotfix** — Vitest `I18nProvider` wrapper (ISS-059).  
+Commit **`f0a885c`** (It.18f) · CI fix lokálne (pending C&P).  
+Detail: [ITERATION_18.md](docs/ITERATION_18.md) · [ISSUES.md](docs/ISSUES.md).
+
+### Added — It.18f (Beta gate)
+
+- **`src/i18n/modules/{comments,messages,backups,trash,logs}/{sk,en}.ts`** — inbox & ops moduly (CommentsManager, MessagesViewer, BackupManager, TrashManager, LogsManager)
+- **`src/i18n/modules/platform/{sk,en}.ts`** — firewall, scheduler, extensions, demo, ACL, GitHub sync, notifications overview, security audit, blueprint, account security, command palette
+- **`src/i18n/modules/editor/{sk,en}.ts`** — ContentEditorShell, Markdown/WYSIWYG toolbars, SEO panel, tags, site preview, media picker/lightbox/metadata
+- **`src/i18n/modules/dashboard/{sk,en}.ts`** — rozšírené o HealthPanel, LocksPanel, ConflictsPanel, LogsPanel, DashboardActivityPanel
+- **`src/i18n/core/{sk,en}.ts`** — spoločné reťazce (`summarizeBulkResult`, OTP modal, inbox list)
+- **~40 admin komponentov** — migrácia z hardcoded SK/EN na `useI18n()` (admin jazyk cez Nastavenia → Všeobecné → Jazyk)
+- **`ops18f.test.ts`**, **`platform.test.ts`**, **`editor.test.ts`** — catalog parity smoke tests
+
+### Fixed
+
+- **ISS-060:** `settings/en.ts` — sekcia `workflows` obsahovala skopírovaný slovenský text (OTP polia v EN admin rozhraní zostávali po slovensky)
+- **`summarizeBulkResult(t, …)`** — bulk toast správy prechádzajú cez i18n namiesto hardcoded SK
+- **ISS-059 (CI Vitest):** po migrácii na `useI18n()` testy volali `render()` bez providera → `Error: useI18n must be used within I18nProvider` (`I18nContext.tsx:47`). Postihnuté komponenty: `MediaPreviewLightbox`, `SitePreviewModal`, `MarkdownContentEditor`, `HealthPanel`, `LocksPanel`; `MediaManager` — anglické asercie dialógu pri locale `sk`
+- **`src/test/renderWithProviders.tsx`** — zdieľaný wrapper s `TestI18nProvider` (default `sk`, voliteľné `{ locale: 'en' }`); `renderWithRouter.tsx` deleguje naň + `MemoryRouter`
+- Aktualizované testy: `MediaPreviewLightbox.test.tsx`, `SitePreviewModal.test.tsx`, `editorToolbar.test.tsx`, `HealthPanel.test.tsx`, `LocksPanel.test.tsx`, `MediaManager.test.tsx`
+
+### Tests
+
+- Vitest **210/210** OK (`npm test -- --run`) po ISS-059 fixe
+- CI ref: `.github/workflows/ci.yml` @ `f0a885c` (6 failing suites pred fixom)
 
 ## [2.0.45] – 2026-07-21
 
@@ -526,7 +557,9 @@ After deploy: restart PHP, clear browser cookies, re-login.
 
 ## [Unreleased]
 
-*(Next: It.14 — Code policy engine)*
+*(Next: It.14 — Code policy engine · Beta infra checklist)*
+
+Security work-in-progress remains documented in the top **[Unreleased](#unreleased)** block above `[2.0.47]`.
 
 ---
 

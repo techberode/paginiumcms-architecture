@@ -1,6 +1,6 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-22 · verzia **2.0.46** (security_fix hardening + ISS-051 boot hotfix + ISS-012 CSRF enforcement + ISS-052 at-rest šifrovanie + ISS-053 log sanitizácia + ISS-054 SSRF guard + ISS-055 Path ACL wiring + ISS-056 WAF POST body + ISS-057 UserRepository index + ISS-058 OTP rate-limit)
+> Posledná aktualizácia: 2026-07-22 · verzia **2.0.47** (It.18f Beta gate + ISS-059 CI Vitest + ISS-060 settings EN catalog)
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
 
@@ -74,6 +74,8 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-056 | WAF skenuje len URI/query/UA, nie POST/JSON telo (audit S-WAFBODY)    | Stredná (bezpečnosť)     | ✅ Opravené — body scan + editor exempt         |
 | ISS-057 | `UserRepository::findByEmail/findById` O(n) scan všetkých JSON (audit PERF-USERREPO) | Nízka (výkon) | ✅ Opravené — `UserIndexService` + `data/index/users.json` |
 | ISS-058 | OTP bez dedikovaného rate-limitu + resend resetuje pokusy (audit S10) | Stredná (bezpečnosť) | ✅ Opravené — `Otp*RateLimitMiddleware` + `resend_count` |
+| ISS-059 | Vitest — `useI18n()` bez `I18nProvider` v unit testoch (CI @ `f0a885c`) | Nízka (CI) | ✅ Opravené — `renderWithProviders` (**2.0.47**) |
+| ISS-060 | `settings/en.ts` workflows — SK copy-paste v EN katalógu (OTP labely) | Stredná (i18n UX) | ✅ Opravené (**2.0.47** / `f0a885c`) |
 
 
 
@@ -94,6 +96,7 @@ Workflow: `[.github/workflows/ci.yml](../.github/workflows/ci.yml)`
 | `frontend` | `npm run type-check` | TS6133 — nepoužitý import `React` v `SettingsView.test.tsx`           | ISS-037                   |
 | `frontend` | `npm run type-check` | TS6133 — nepoužitý `refetch` v `PagesManager.tsx` (It.53)             | ISS-041                   |
 | `frontend` | `npm test`           | Vitest — `screen` nájde toolbar z druhého renderu (It.54)             | ISS-043                   |
+| `frontend` | `npm test` (CI)      | `useI18n must be used within I18nProvider` — 6 suites @ `f0a885c`   | ISS-059                   |
 | `frontend` | `npm run type-check` | TS2352 / TS6133 / TS2322 / 2FA DTO shape (`setup_pending`, `setUser`) | ISS-019, ISS-036          |
 | `frontend` | `npm run lint`       | Prekročenie `--max-warnings 65` (`react-hooks/exhaustive-deps`)       | ISS-020                   |
 | `frontend` | `npm test`           | Worker crash, `act(...)` stderr, `MediaManager` text asserts          | ISS-005, ISS-010, ISS-022 |
@@ -1451,7 +1454,60 @@ výnimka pri konštrukcii služby zhodila celý boot kontajnera — teda aj HTTP
 
 ---
 
+## ISS-059 – Vitest: `useI18n()` bez `I18nProvider` (CI @ `f0a885c`) — VYRIEŠENÉ
 
+**Symptóm / CI log:**
+
+```
+Error: useI18n must be used within I18nProvider
+  at src/context/I18nContext.tsx:47
+```
+
+Spustené z komponentov, ktoré boli migrované na `useI18n()` v It.18f, ale unit testy stále používali surový `render()` z `@testing-library/react`:
+
+| Test súbor | Komponent |
+|------------|-----------|
+| `MediaPreviewLightbox.test.tsx` | `MediaPreviewLightbox.tsx:35` |
+| `SitePreviewModal.test.tsx` | `SitePreviewModal.tsx:137` |
+| `editorToolbar.test.tsx` | `MarkdownContentEditor.tsx:44` |
+| `HealthPanel.test.tsx` | `HealthPanel.tsx:18` |
+| `LocksPanel.test.tsx` | `LocksPanel.tsx:15` |
+
+**Druhá chyba (MediaManager.test.tsx):** `Unable to find role="dialog" and name /Edit metadata/i` — test očakával anglické labely, ale `renderWithRouter` už používal `TestI18nProvider` s locale `sk` (`Upraviť metadáta`, `Titulok`, `Uložiť zmeny`).
+
+**Implementované riešenie (2.0.47):**
+
+- Nový `frontend/src/test/renderWithProviders.tsx` — wrapper s `TestI18nProvider` (default `sk`, voliteľné `{ locale: 'en' }`)
+- `renderWithRouter.tsx` refaktor — deleguje na `renderWithProviders` + `MemoryRouter`
+- 6 test súborov prepnutých z `render()` na `renderWithProviders()` / SK asercie
+- `MediaManager.test.tsx` — `findByRole('dialog')` bez hardcoded EN názvu; labely podľa `editor.mediaMeta.*` SK katalógu
+
+**Overenie:** `npm test -- --run` → **210/210** OK. CI ref: `.github/workflows/ci.yml` @ commit `f0a885c787e2234f8c117921e75e42b555bfe5a5`.
+
+**Súbory:** `renderWithProviders.tsx` (nový), `renderWithRouter.tsx`, `MediaPreviewLightbox.test.tsx`, `SitePreviewModal.test.tsx`, `editorToolbar.test.tsx`, `HealthPanel.test.tsx`, `LocksPanel.test.tsx`, `MediaManager.test.tsx`.
+
+**Súvisí s:** It.18f i18n migrácia, ISS-022 (MediaManager test pattern).
+
+---
+
+## ISS-060 – Settings EN katalóg: SK copy-paste v `workflows` — VYRIEŠENÉ
+
+**Symptóm:** Pri prepnutí admin jazyka na **English** (`Nastavenia → Všeobecné → Jazyk`) zostali v sekcii **Workflows / OTP** slovenské labely a popisy. Používateľ videl zmiešané SK/EN bloky v inak anglickom admin rozhraní.
+
+**Príčina:** `frontend/src/i18n/modules/settings/en.ts` — sekcia `workflows` obsahovala skopírovaný slovenský text namiesto anglického prekladu.
+
+**Implementované riešenie (2.0.47 / commit `f0a885c`):**
+
+- Opravené EN reťazce v `settings/en.ts` (`workflows.*`, OTP polia)
+- `SettingsView` používa `translateSettingFieldLabel(t, …)` — pri chýbajúcom EN kľúči fallback na SK z `SettingsSchema.php`; oprava katalógu odstráni zmiešaný UI
+
+**Overenie:** Manuálne — Settings → English → Workflows sekcia plne EN; `settings.test.ts` catalog parity.
+
+**Súbory:** `frontend/src/i18n/modules/settings/en.ts`, `SettingsView.tsx` (bez zmeny logiky — fix v katalógu).
+
+**Súvisí s:** It.18c, It.18f.
+
+---
 
 ## ISS-012 – CSRF middleware nezapojený (audit S3) — VYRIEŠENÉ
 

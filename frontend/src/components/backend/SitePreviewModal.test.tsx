@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
+import { renderWithProviders } from '../../test/renderWithProviders';
 import { SitePreviewModal } from './SitePreviewModal';
 
 vi.mock('../frontend/Navbar', () => ({
@@ -16,7 +17,7 @@ vi.mock('../frontend/PageRenderer', () => ({
 
 describe('SitePreviewModal', () => {
   it('renders page preview with chrome', () => {
-    render(
+    renderWithProviders(
       <SitePreviewModal
         open
         onClose={() => undefined}
@@ -36,7 +37,7 @@ describe('SitePreviewModal', () => {
   });
 
   it('returns null when closed', () => {
-    const { container } = render(
+    const { container } = renderWithProviders(
       <SitePreviewModal open={false} onClose={() => undefined} draft={null} />
     );
     expect(container).toBeEmptyDOMElement();

@@ -159,14 +159,14 @@ describe('MediaManager', () => {
     expect(await screen.findByRole('checkbox', { name: /Select hero\.png/i })).toBeInTheDocument();
 
     await fastUser.click(screen.getByRole('button', { name: 'Upraviť metadáta' }));
-    const dialog = await screen.findByRole('dialog', { name: /Edit metadata/i });
+    const dialog = await screen.findByRole('dialog');
     expect(dialog).toBeInTheDocument();
 
-    await fastUser.clear(within(dialog).getByLabelText('Title'));
-    await fastUser.type(within(dialog).getByLabelText('Title'), 'Updated title');
-    await fastUser.clear(within(dialog).getByLabelText(/Alt text \/ description/i));
-    await fastUser.type(within(dialog).getByLabelText(/Alt text \/ description/i), 'Updated alt');
-    await fastUser.click(screen.getByRole('button', { name: 'Save changes' }));
+    await fastUser.clear(within(dialog).getByLabelText('Titulok'));
+    await fastUser.type(within(dialog).getByLabelText('Titulok'), 'Updated title');
+    await fastUser.clear(within(dialog).getByLabelText(/Alt text \/ popis/i));
+    await fastUser.type(within(dialog).getByLabelText(/Alt text \/ popis/i), 'Updated alt');
+    await fastUser.click(screen.getByRole('button', { name: 'Uložiť zmeny' }));
 
     await waitFor(() => {
       expect(mocks.updateMediaMetadata).toHaveBeenCalledWith('media/media_1_hero.png', {

@@ -1,16 +1,17 @@
 // frontend/src/components/dashboard/HealthPanel.test.tsx
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
+import { renderWithProviders } from '../../test/renderWithProviders';
 import { HealthPanel } from './HealthPanel';
 
 describe('HealthPanel', () => {
   it('shows loading spinner without data', () => {
-    render(<HealthPanel health={null} loading />);
-    expect(screen.getByText('System health')).toBeInTheDocument();
+    renderWithProviders(<HealthPanel health={null} loading />);
+    expect(screen.getByText('Zdravie systému')).toBeInTheDocument();
   });
 
   it('renders health summary counts', () => {
-    render(
+    renderWithProviders(
       <HealthPanel
         health={{
           id: 'health-1',
@@ -22,7 +23,7 @@ describe('HealthPanel', () => {
       />
     );
 
-    expect(screen.getByText('Pass')).toBeInTheDocument();
+    expect(screen.getByText('OK')).toBeInTheDocument();
     expect(screen.getByText('5')).toBeInTheDocument();
     expect(screen.getByText('1')).toBeInTheDocument();
   });

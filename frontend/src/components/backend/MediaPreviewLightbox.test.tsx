@@ -1,6 +1,7 @@
 // frontend/src/components/backend/MediaPreviewLightbox.test.tsx
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { screen, fireEvent } from '@testing-library/react';
+import { renderWithProviders } from '../../test/renderWithProviders';
 import { MediaPreviewLightbox } from './MediaPreviewLightbox';
 import type { MediaFile } from '../../api/media';
 
@@ -43,7 +44,7 @@ describe('MediaPreviewLightbox', () => {
   });
 
   it('renders nothing when file is null', () => {
-    const { container } = render(
+    const { container } = renderWithProviders(
       <MediaPreviewLightbox
         file={null}
         mode="fit"
@@ -56,7 +57,7 @@ describe('MediaPreviewLightbox', () => {
   });
 
   it('opens dialog with file metadata and preview image', async () => {
-    render(
+    renderWithProviders(
       <MediaPreviewLightbox
         file={sampleFile}
         mode="fit"
@@ -77,7 +78,7 @@ describe('MediaPreviewLightbox', () => {
 
   it('calls onClose when backdrop is clicked', () => {
     const onClose = vi.fn();
-    render(
+    renderWithProviders(
       <MediaPreviewLightbox
         file={sampleFile}
         mode="fit"
@@ -92,7 +93,7 @@ describe('MediaPreviewLightbox', () => {
 
   it('switches to native mode', () => {
     const onModeChange = vi.fn();
-    render(
+    renderWithProviders(
       <MediaPreviewLightbox
         file={sampleFile}
         mode="fit"
