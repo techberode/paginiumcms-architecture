@@ -26,6 +26,24 @@ final class CodePolicyEngine implements CodePolicyEngineInterface
         'create_function',
     ];
 
+    /**
+     * Prísnejší zoznam pre extension/plugin kód (untrusted ZIP import).
+     * Tu zakazujeme aj RCE primitíva, ktoré sú v jadre CMS legitímne
+     * (include/require pri bootstrappingu, unserialize v session storage),
+     * ale v pluginoch predstavujú priamu cestu k spusteniu ľubovoľného kódu.
+     */
+    private const EXTENSION_FORBIDDEN = [
+        'unserialize',
+        'call_user_func',
+        'call_user_func_array',
+        'include',
+        'include_once',
+        'require',
+        'require_once',
+    ];
+
+    private const EXTENSION_PATH_MARKER = 'backend/app/Http/Extensions/';
+
     public function __construct(
         private SettingsRepositoryInterface $settings,
         private SyntaxChecker $syntaxChecker,
@@ -54,11 +72,18 @@ final class CodePolicyEngine implements CodePolicyEngineInterface
         $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
         if ($extension === 'php') {
             $forbidden = $this->parseForbiddenList((string) ($policy['forbiddenPhpFunctions'] ?? ''));
+
+            // Extension/plugin kód (untrusted) dostáva prísnejší zoznam.
+            $isExtensionPath = str_contains(str_replace('\\', '/', $path), self::EXTENSION_PATH_MARKER);
+            if ($isExtensionPath) {
+                $forbidden = array_values(array_unique(array_merge($forbidden, self::EXTENSION_FORBIDDEN)));
+            }
+
             foreach ($this->securityScanner->scanPhp($content, $forbidden) as $violation) {
                 $errors['security'][] = $violation;
             }
 
-            if ((bool) ($policy['strictMode'] ?? false) && str_contains($path, 'backend/app/Http/Extensions/')) {
+            if ((bool) ($policy['strictMode'] ?? false) && str_contains($path, self::EXTENSION_PATH_MARKER)) {
                 if (!preg_match('/namespace\s+PaginiumCMS\\\\Http\\\\Extensions\\\\[A-Za-z0-9_]+;/', $content)) {
                     $errors['compatibility'][] = 'Extension PHP files must declare namespace PaginiumCMS\\Http\\Extensions\\{id}';
                 }

@@ -471,13 +471,19 @@ return [
 
         if ($secret === '') {
             $appEnv = (string) (getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? 'development'));
-            $appDebug = filter_var(
-                getenv('APP_DEBUG') ?: ($_ENV['APP_DEBUG'] ?? 'true'),
-                FILTER_VALIDATE_BOOLEAN
-            );
             $localEnvs = ['testing', 'test', 'development', 'local'];
 
-            if (in_array($appEnv, $localEnvs, true) || $appDebug) {
+            // Fail-closed (audit 2026-07-22): predvídateľný fallback secret sa
+            // použije IBA v explicitných lokálnych/testovacích prostrediach.
+            // Predtým stačil APP_DEBUG=true (default!) → riziko v produkcii.
+            //
+            // Mimo lokál/test necháme secret PRÁZDNY. DevTokenGenerator je
+            // fail-closed pri použití (isConfigured()===false → generate()
+            // vyhodí, validate()/verifyStructure() vrátia „nie je nastavený"),
+            // takže dev-unlock je bezpečne vypnutý a NIE je predvídateľný.
+            // Nevyhadzujeme výnimku vo factory – rozbila by boot kontajnera
+            // (developer routy resolvujú generator už pri registrácii).
+            if (in_array($appEnv, $localEnvs, true)) {
                 $secret = 'paginium-local-dev-unlock-secret';
             }
         }

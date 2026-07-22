@@ -565,6 +565,21 @@ final class OtpWorkflowService
     {
         $env = getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? 'production');
 
-        return in_array($env, ['development', 'testing'], true);
+        // Automatizované testy potrebujú kód v odpovedi.
+        if ($env === 'testing' || $env === 'test') {
+            return true;
+        }
+
+        // Vo vývoji NIKDY implicitne – vyžaduje explicitný OTP_DEBUG=true,
+        // aby zle nakonfigurovaný staging (APP_ENV=development) neunikal OTP
+        // cez HTTP. V produkcii sa kód nevracia nikdy.
+        if ($env === 'development') {
+            return filter_var(
+                getenv('OTP_DEBUG') ?: ($_ENV['OTP_DEBUG'] ?? false),
+                FILTER_VALIDATE_BOOLEAN
+            );
+        }
+
+        return false;
     }
 }

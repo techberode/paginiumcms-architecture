@@ -88,12 +88,48 @@ final class PluginImporter
             throw new RuntimeException('Unable to open ZIP archive.');
         }
 
+        // Zip-Slip ochrana: pred extrakciou overíme, že žiadny entry nevystúpi
+        // z cieľového adresára (žiadne '..', absolútne cesty, ani null-bajty).
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $entryName = (string) $zip->getNameIndex($i);
+            if (!$this->isSafeZipEntry($entryName)) {
+                $zip->close();
+                throw new RuntimeException('Unsafe ZIP entry rejected: ' . $entryName);
+            }
+        }
+
         if (!$zip->extractTo($destination)) {
             $zip->close();
             throw new RuntimeException('Unable to extract ZIP archive.');
         }
 
         $zip->close();
+    }
+
+    /**
+     * Odmietne entry názvy, ktoré by mohli spôsobiť Zip-Slip.
+     */
+    private function isSafeZipEntry(string $entryName): bool
+    {
+        if ($entryName === '' || str_contains($entryName, "\0")) {
+            return false;
+        }
+
+        $normalized = str_replace('\\', '/', $entryName);
+
+        // Absolútne cesty (unix aj Windows) sú zakázané.
+        if (str_starts_with($normalized, '/') || preg_match('#^[a-zA-Z]:/#', $normalized) === 1) {
+            return false;
+        }
+
+        // Akýkoľvek segment '..' je zakázaný.
+        foreach (explode('/', $normalized) as $segment) {
+            if ($segment === '..') {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

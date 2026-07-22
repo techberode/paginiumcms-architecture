@@ -125,6 +125,38 @@ PHP,
         $this->importer->importZip($zipPath);
     }
 
+    public function testImportRejectsIncludeConstructInExtension(): void
+    {
+        // Regression (audit 2026-07-22): include/require v extension kóde = RCE.
+        $zipPath = $this->createZip([
+            'evil-widget/plugin.json' => JsonHelper::encode([
+                'id' => 'evil-widget',
+                'name' => 'Evil Widget',
+                'version' => '1.0.0',
+            ]),
+            'evil-widget/src/Loader.php' => '<?php $x = $_GET["f"]; include $x;',
+        ]);
+
+        $this->expectException(CodePolicyViolationException::class);
+        $this->importer->importZip($zipPath);
+    }
+
+    public function testImportRejectsZipSlipEntry(): void
+    {
+        // Regression (audit 2026-07-22): Zip-Slip – entry vystupujúci z cieľa.
+        $zipPath = $this->createZip([
+            'ok-widget/plugin.json' => JsonHelper::encode([
+                'id' => 'ok-widget',
+                'name' => 'OK Widget',
+                'version' => '1.0.0',
+            ]),
+            '../../../../etc/pag_zip_slip.txt' => 'pwned',
+        ]);
+
+        $this->expectException(\RuntimeException::class);
+        $this->importer->importZip($zipPath);
+    }
+
     /**
      * @param array<string, string> $files
      */

@@ -28,8 +28,8 @@ if [[ ! -f vendor/bin/phpunit ]]; then
 fi
 
 PROJECT_ROOT=$PWD
-TOTAL_STEPS=11
-CLEANUP_STEP=12
+TOTAL_STEPS=12
+CLEANUP_STEP=13
 
 typeset -a FAILED_STEPS
 typeset -A STEP_EXIT STEP_STATS STEP_ERRORS
@@ -441,6 +441,19 @@ run_step 11 "Content diagnose (backend/bin/console)" \
   'php backend/bin/console content:diagnose'
 
 # ==================================================
+# BEZPEČNOSTNÉ REGRESNÉ TESTY (audit 2026-07-22)
+# Cielený re-run PHPUnit na security-critical suite: /storage lockdown,
+# SSO redirect binding, plugin policy + Zip-Slip, core hardening.
+# ==================================================
+
+run_step 12 "PHPUnit security regression (storage/SSO/plugin/hardening)" \
+  'vendor/bin/phpunit --colors=always \
+     backend/tests/Http/Controllers/Storage/StorageControllerTest.php \
+     backend/tests/Http/Controllers/Auth/SsoControllerTest.php \
+     backend/tests/Http/Extensions/PluginImporterTest.php \
+     backend/tests/Http/Controllers/CoreHardeningTest.php'
+
+# ==================================================
 # ZÁVEREČNÝ SÚHRN
 # ==================================================
 print ""
@@ -460,6 +473,7 @@ labels=(
   "Produkčný build (+ verify-dist-api-url)"
   "NPM Audit (bezpečnosť frontend závislostí)"
   "Content diagnose (backend/bin/console)"
+  "PHPUnit security regression (storage/SSO/plugin/hardening)"
 )
 
 i=1

@@ -84,8 +84,18 @@ final class OAuthSsoService
             throw new AuthenticationException('SSO state missing');
         }
 
-        if (($sessionState['provider'] ?? '') !== $providerId || ($sessionState['state'] ?? '') !== $state) {
+        // Timing-safe porovnanie provider + state (anti CSRF/state fixation).
+        if (
+            !hash_equals((string) ($sessionState['provider'] ?? ''), $providerId)
+            || !hash_equals((string) ($sessionState['state'] ?? ''), $state)
+        ) {
             throw new AuthenticationException('Invalid SSO state');
+        }
+
+        // redirect_uri MUSÍ zodpovedať tomu, s ktorým sa flow začal – inak by
+        // útočník mohol podstrčiť vlastné redirect_uri do výmeny kódu za token.
+        if (!hash_equals((string) ($sessionState['redirect_uri'] ?? ''), $redirectUri)) {
+            throw new AuthenticationException('Invalid SSO redirect URI');
         }
 
         if ((int) ($sessionState['expires'] ?? 0) < time()) {
@@ -244,10 +254,13 @@ final class OAuthSsoService
 
     private function provisionUser(string $email, string $name): User
     {
+        // Bezpečný default: JIT-provisionovaný SSO účet dostáva najnižšiu rolu
+        // (USER). Privilegované roly (ADMIN/SUPER_ADMIN) sa nikdy neprideľujú
+        // automaticky z IdP – povýšenie musí spraviť admin manuálne.
         $sso = $this->settings->group('sso');
-        $role = strtoupper((string) ($sso['defaultRole'] ?? 'EDITOR'));
-        if (!in_array($role, ['USER', 'EDITOR', 'ADMIN', 'SUPER_ADMIN'], true)) {
-            $role = 'EDITOR';
+        $role = strtoupper((string) ($sso['defaultRole'] ?? 'USER'));
+        if (!in_array($role, ['USER', 'EDITOR'], true)) {
+            $role = 'USER';
         }
 
         $user = new User();
