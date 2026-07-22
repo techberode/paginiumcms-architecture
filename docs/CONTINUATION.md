@@ -31,6 +31,13 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 
 Detail release: [ITERATION_18.md](ITERATION_18.md) · [ITERATION_19.md](ITERATION_19.md) · [ITERATION_20.md](ITERATION_20.md) · [developer/RELEASE.md](developer/RELEASE.md)
 
+> 🔐 **Bezpečnostný baseline (POVINNÉ pri každej novej funkcii/module):** záväzné vzory
+> z doterajších opráv (AuthZ/CSRF na endpointoch, at-rest šifrovanie tajomstiev cez
+> `EncryptionService`/`SettingsSchema` `password`, SSRF cez `OutboundUrlGuard`, log/CSV
+> sanitizácia cez `LogSanitizer`, path-traversal/Zip-Slip, media allow-list) sú
+> zapísané v koreňovom **`.cursorrules`** → sekcia „🔐 Bezpečnostný baseline“.
+> Incident log: `SECURITY_ISSUES.md` (lokálny) + `docs/ISSUES.md` (ISS-012, 051–054).
+
 ---
 
 ## Iteration 6 – DONE (2026-07-15)

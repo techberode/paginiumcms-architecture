@@ -84,3 +84,36 @@ Ak gate alebo manuálna kontrola zlyhá — **necommituj**, oprav regresiu alebo
 - **Dokumentácia:** Všetka projektová dokumentácia v `docs/` písať v **angličtine**. Pri úpravách existujúcich slovenských dokumentov ich postupne prepracovať do angličtiny.
 - **Commity:** Všetky commit správy a popisy PR v **angličtine** (kompletný popis zmien, nových nastavení a API).
 - **Kódové komentáre:** Preferuj angličtinu pre nové komentáre a docbloky; existujúce slovenské komentáre nemeníš bez dôvodu.
+
+## 🔐 Bezpečnostný baseline (POVINNÉ pri KAŽDEJ novej funkcii/module BE/FE)
+
+> Toto sú **záväzné vzory** z doterajších bezpečnostných opráv (audity 2026-07-18→22).
+> Každá nová funkcia/modul/endpoint/plugin ich musí dodržať. Detailný incident log:
+> `SECURITY_ISSUES.md` (lokálny/gitignored) + `docs/ISSUES.md` (ISS-012, 051–054).
+> Ak nová funkcia niektorý bod poruší → **necommituj**, doplň ochranu + regresný test.
+
+### Backend — pri každom novom endpointe / službe
+
+- **AuthN/AuthZ:** Každá **mutujúca** `/api/*` trasa má `AuthMiddleware` **+** `PermissionMiddleware('modul:akcia')` (nie len prihlásenie). Verejné/pre-auth výnimky sú **vedomé**. Vzor: `Http/Routes/drafts.php`, `locking.php`.
+- **CSRF:** Mutujúce metódy (POST/PUT/PATCH/DELETE) chráni globálny `CsrfMiddleware` (synchronizer-token, `hash_equals`). Nový **pre-auth/anonymný** endpoint pridaj vedome do `EXEMPT_PREFIXES`. FE posiela `X-CSRF-TOKEN`.
+- **Tajomstvá at-rest:** Nové citlivé pole **nikdy plaintext** do flat-file. User-secret → `EncryptionService::encryptNullable()` v repozitári; settings-secret → v `SettingsSchema` daj `'type' => 'password'` (šifruje sa automaticky cez `SettingsRepository` + `secretKeys()`). Dešifruje sa transparentne (`enc:` prefix).
+- **SSRF:** Každé **odchádzajúce** HTTP na admin/user-konfigurovateľnú URL (`file_get_contents`, cURL, stream) najprv cez `OutboundUrlGuard::fromEnv()->assertAllowed($url)` (alebo `isAllowed()` fail-safe). Vzor: `OAuthSsoService`, ntfy/webhook/Discord adaptéry.
+- **Log/CSV injection:** User-controlled hodnoty (query/User-Agent/URI/Referer/e-mail) do logov/auditu/CSV vždy cez `LogSanitizer::value()` / `::context()`. Vzor: `AccessLogService`, `FirewallIncidentLogger`, `SecurityAuditStore::exportCsv`.
+- **Path traversal:** Cesty len relatívne pod base; `realpath()` + `str_starts_with($real, $base.DIRECTORY_SEPARATOR)`; odmietaj `..`, null-byty, absolútne cesty (`FileValidator`). ZIP importy = Zip-Slip check pre každý entry.
+- **Verejné servírovanie súborov:** Servíruj **len allow-listnuté media** podstromy; `data/`, `logs/`, `backups/`, `dev/`, `cache/` **nikdy** web-reachable → 404. Aktívny obsah (SVG/HTML/XML) len `Content-Disposition: attachment` + `nosniff` + `Content-Security-Policy: sandbox`. Vzor: `StorageController`, `MediaController`.
+- **Enumeration / timing:** Auth odpovede generické (login/reset „If the account exists…“). Tajomstvá/tokeny porovnávaj `hash_equals`; reset/verify tokeny ukladaj len ako **SHA-256 hash**, nikdy plaintext.
+- **Plugin/extension kód:** Musí prejsť `CodePolicyEngine` (`EXTENSION_FORBIDDEN`: `eval/exec/include/require/unserialize/call_user_func*`). Rozšírenia nemajú prístup k `data/`.
+- **Env / fail-closed:** Žiadne tajomstvá do gitu. `APP_KEY` je per-prostredie (aktivuje at-rest šifrovanie). Debug/dev-unlock/OTP-debug funkcie len v `development`/`testing`, v produkcii vypnuté a **nepredvídateľné** (žiadny fallback secret).
+- **Hlavičky/CSP:** `script-src` bez `'unsafe-inline'`; `nosniff`, `X-Frame-Options: DENY`, HSTS.
+
+### Frontend — pri každom novom module/komponente
+
+- **Single source of truth:** Backend je jediný zdroj pravdy. CSRF token fetchni pri bootstrape (`AuthContext`), posielaj `X-CSRF-TOKEN`, self-heal na `403 csrf_invalid`.
+- **XSS:** Žiadny nesanitizovaný `dangerouslySetInnerHTML`; user HTML len cez sanitizér. Media len z allow-listnutých URL (`resolvePublicMediaUrl`).
+- **Kvalita:** Loading/Success/Error stavy; `tsc --noEmit` clean; ESLint pod baseline.
+
+### Pred commitom (viď „Commit & Push“ vyššie)
+
+- Nová bezpečnostná zmena = **regresný test** + pridať do `scripts/run-all-tests.zsh`.
+- Gate zelený: PHPStan L8 + PHPUnit + FE `tsc`/ESLint/Vitest.
+- Dokumentuj: `SECURITY_ISSUES.md` (privátne) + `docs/ISSUES.md` + `CHANGELOG.md`.
