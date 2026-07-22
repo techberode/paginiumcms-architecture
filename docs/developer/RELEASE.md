@@ -3,7 +3,7 @@
 > Posledná verzia: **2.0.49** · 2026-07-22 · tag **`v2.0.49`**  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release.
 
-> **Poznámka k verziám:** … **v2.0.47** → `e1fdead` · **v2.0.48** → `a32c002` · **v2.0.49** → `b215efc`.
+> **Poznámka k verziám:** … **v2.0.47** → `e1fdead` · **v2.0.48** → `a32c002` · **v2.0.49** → `1ac58cf`.
 
 ### Kontinuita verzií (nepreskakovať)
 
@@ -11,7 +11,7 @@
 |--------|---------|----------------|------|
 | 2.0.47 | `v2.0.47` | `e1fdead` | ✅ tagged |
 | 2.0.48 | `v2.0.48` | `a32c002` | ✅ tagged |
-| **2.0.49** | **`v2.0.49`** | **`b215efc`** | ✅ tagged |
+| **2.0.49** | **`v2.0.49`** | **`1ac58cf`** | ✅ tagged |
 
 **Pravidlo:** Ďalší release musí byť **`v2.0.50`**, nie skok. Pred každým novým číslom: `git tag -l 'v2.0.4*' | sort -V`.
 
@@ -43,7 +43,7 @@
 2.0.49 — Audit messages follow admin locale (ISS-061 / wave 5b)
 ```
 
-**Tag:** `v2.0.49` · **Target:** `main` · **Commit:** `b215efc`
+**Tag:** `v2.0.49` · **Target:** `main` · **Commit:** `1ac58cf`
 
 **Body:**
 
