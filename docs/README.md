@@ -177,7 +177,7 @@ cd frontend && npm install && npm run dev
 # → http://localhost:3025 (proxies /api and /storage to :8080)
 ```
 
-See [deploy/DEV.md](deploy/DEV.md) for full local stack instructions.
+See [developer/LOCAL_SETUP.md](developer/LOCAL_SETUP.md) for Docker + `first-run.sh`, or [deploy/DEV.md](deploy/DEV.md) for the classic two-terminal flow.
 
 ### Cron (production)
 
@@ -215,8 +215,13 @@ See [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md) and [user/CODE_EDITOR.md](u
 | [architecture/STORAGE.md](architecture/STORAGE.md) | Flat-file layout |
 | [developer/TESTING.md](developer/TESTING.md) | PHPUnit, PHPStan, test layout |
 | [developer/DEVELOPMENT.md](developer/DEVELOPMENT.md) | Contributor workflow |
-| [deploy/DEV.md](deploy/DEV.md) | Local dev stack |
+| [developer/LOCAL_SETUP.md](developer/LOCAL_SETUP.md) | Docker Compose, first-run, native dev |
+| [deploy/DEV.md](deploy/DEV.md) | Local dev stack (Vite + PHP built-in server) |
 | [deploy/NGINX_API.md](deploy/NGINX_API.md) | Production nginx |
+| **[user/README.md](user/README.md)** | **Príručka používateľa — od inštalácie po admin (SK)** |
+| [user/INSTALLATION.md](user/INSTALLATION.md) | Inštalácia + beta balík |
+| [user/FIRST_STEPS.md](user/FIRST_STEPS.md) | Prihlásenie, 2FA, prvý obsah |
+| [user/ADMIN_GUIDE.md](user/ADMIN_GUIDE.md) | Kompletná administrácia CMS |
 | [user/CODE_EDITOR.md](user/CODE_EDITOR.md) | Code Editor — unlock, lock, bezpečnosť, povolené adresáre |
 | [user/CONTENT_EDITOR.md](user/CONTENT_EDITOR.md) | Editor podstránok/článkov — SEO, náhľad z médií, blog |
 | [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md) | Developer Mode gate, dev tokeny CLI |

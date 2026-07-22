@@ -1,0 +1,17 @@
+.git
+.github
+node_modules
+frontend/node_modules
+frontend/dist
+vendor
+backend/storage/cache
+backend/storage/logs
+backend/storage/backups
+backend/storage/dev
+backend/storage/app/content/data
+backend/storage/app/content/pages
+backend/storage/app/content/blog
+backend/storage/app/content/media
+backend/storage/app/content/trash
+*.md
+!docs/developer/LOCAL_SETUP.md

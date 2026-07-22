@@ -1,6 +1,6 @@
 # Local development – PaginiumCMS
 
-Run the app as a full stack on your machine (no nginx required).
+See [developer/LOCAL_SETUP.md](../developer/LOCAL_SETUP.md) for Docker Compose + `first-run.sh`, or continue below for the classic two-terminal flow.
 
 ## 1. Backend (PHP 8.5+)
 
