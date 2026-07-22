@@ -17,8 +17,13 @@ final class FirewallScanner
     /**
      * @return array<string, mixed>|null Matched scenario or null when clean.
      */
-    public function scan(string $uriPath, string $queryString, string $userAgent): ?array
-    {
+    public function scan(
+        string $uriPath,
+        string $queryString,
+        string $userAgent,
+        ?string $requestBody = null,
+        bool $scanBody = true
+    ): ?array {
         foreach ($this->registry->activeScenarios() as $scenario) {
             $pattern = (string) ($scenario['pattern'] ?? '');
             if ($pattern === '') {
@@ -35,11 +40,19 @@ final class FirewallScanner
                     continue;
                 }
 
-                $haystack = match ($target) {
-                    'user_agent' => $userAgent,
-                    'query' => $queryString,
-                    default => $uriPath,
-                };
+                if ($target === 'body') {
+                    if (!$scanBody || $requestBody === null || $requestBody === '') {
+                        continue;
+                    }
+
+                    $haystack = $requestBody;
+                } else {
+                    $haystack = match ($target) {
+                        'user_agent' => $userAgent,
+                        'query' => $queryString,
+                        default => $uriPath,
+                    };
+                }
 
                 if (@preg_match($pattern, $haystack) === 1) {
                     return $scenario;

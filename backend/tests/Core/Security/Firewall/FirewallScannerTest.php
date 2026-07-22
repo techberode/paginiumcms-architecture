@@ -54,6 +54,51 @@ final class FirewallScannerTest extends TestCase
         $this->assertNotNull($match);
         $this->assertSame('bad_bot_ua', $match['id'] ?? null);
     }
+
+    public function testDetectsSqlInjectionInRequestBody(): void
+    {
+        $body = '{"email":"admin@test.com","password":"x OR 1=1"}';
+        $match = $this->scanner->scan('/api/auth/login', '', 'Mozilla/5.0', $body, true);
+
+        $this->assertNotNull($match);
+        $this->assertSame('sql_probe_body', $match['id'] ?? null);
+    }
+
+    public function testDetectsPathTraversalInRequestBody(): void
+    {
+        $body = '{"path":"../../etc/passwd"}';
+        $match = $this->scanner->scan('/api/media/file', '', 'Mozilla/5.0', $body, true);
+
+        $this->assertNotNull($match);
+        $this->assertSame('path_traversal', $match['id'] ?? null);
+    }
+
+    public function testDetectsSsrfSchemeInRequestBody(): void
+    {
+        $body = '{"webhookUrl":"file:///etc/passwd"}';
+        $match = $this->scanner->scan('/api/admin/settings', '', 'Mozilla/5.0', $body, true);
+
+        $this->assertNotNull($match);
+        $this->assertSame('ssrf_probe_body', $match['id'] ?? null);
+    }
+
+    public function testSkipsBodyTargetsWhenScanBodyDisabled(): void
+    {
+        $body = '{"password":"x OR 1=1"}';
+        $match = $this->scanner->scan('/api/auth/login', '', 'Mozilla/5.0', $body, false);
+
+        $this->assertNull($match);
+    }
+
+    public function testDoesNotScanBodyOnContentEditorPathWhenMiddlewarePolicyExempt(): void
+    {
+        $policy = new \PaginiumCMS\Core\Security\Firewall\FirewallBodyScanPolicy();
+        $this->assertFalse($policy->shouldScan('POST', '/api/pages', true));
+
+        $body = '# Tutorial\n\n```sql\nSELECT * FROM users\n```';
+        $match = $this->scanner->scan('/api/pages', '', 'Mozilla/5.0', $body, false);
+        $this->assertNull($match);
+    }
 }
 
 final class FirewallBanStoreTest extends TestCase

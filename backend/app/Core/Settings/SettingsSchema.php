@@ -251,7 +251,8 @@ final class SettingsSchema
             'firewall' => [
                 'label' => 'Firewall (WAF)',
                 'fields' => [
-                    ['key' => 'enabled', 'type' => 'bool', 'label' => 'Zapnúť firewall', 'default' => true, 'rules' => ['bool'], 'help' => 'Interný WAF skenuje URI, query a User-Agent pred spracovaním požiadavky.'],
+                    ['key' => 'enabled', 'type' => 'bool', 'label' => 'Zapnúť firewall', 'default' => true, 'rules' => ['bool'], 'help' => 'Interný WAF skenuje URI, query, User-Agent a (voliteľne) POST/JSON telo pred spracovaním požiadavky.'],
+                    ['key' => 'scanRequestBody', 'type' => 'bool', 'label' => 'Skenuj POST/JSON telo', 'default' => true, 'rules' => ['bool'], 'help' => 'Mutujúce requesty (okrem editorov obsahu a multipart uploadov). Editor API (/api/pages, /api/articles, drafts, code-editor) je vyňaté kvôli false positive.'],
                     ['key' => 'jailMinutes', 'type' => 'int', 'label' => 'Dĺžka jail (min)', 'default' => 15, 'rules' => ['required', 'int', 'min:1', 'max:1440'], 'help' => 'Dočasná blokácia IP po prekročení prahu incidentov.'],
                     ['key' => 'maxRetries', 'type' => 'int', 'label' => 'Incidentov pred jail', 'default' => 3, 'rules' => ['required', 'int', 'min:1', 'max:20'], 'help' => 'Počet porušení v okne pred dočasným banom.'],
                     ['key' => 'permanentThreshold', 'type' => 'int', 'label' => 'Prah trvalého banu', 'default' => 3, 'rules' => ['required', 'int', 'min:1', 'max:20'], 'help' => 'Počet jail cyklov pred trvalou blokáciou IP.'],

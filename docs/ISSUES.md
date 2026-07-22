@@ -1,6 +1,6 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-22 · verzia **2.0.46** (security_fix hardening + ISS-051 boot hotfix + ISS-012 CSRF enforcement + ISS-052 at-rest šifrovanie + ISS-053 log sanitizácia + ISS-054 SSRF guard + ISS-055 Path ACL wiring)
+> Posledná aktualizácia: 2026-07-22 · verzia **2.0.46** (security_fix hardening + ISS-051 boot hotfix + ISS-012 CSRF enforcement + ISS-052 at-rest šifrovanie + ISS-053 log sanitizácia + ISS-054 SSRF guard + ISS-055 Path ACL wiring + ISS-056 WAF POST body)
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
 
@@ -71,6 +71,7 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-053 | Log/CSV injection cez `\r\n` v query/User-Agent (audit C11)          | Nízka-Stred (bezpečnosť) | ✅ Opravené — `LogSanitizer`                   |
 | ISS-054 | SSRF cez admin-konfigurovateľné URL (OAuth/ntfy/webhook, audit C14)  | Nízka-Stred (bezpečnosť) | ✅ Opravené — `OutboundUrlGuard`               |
 | ISS-055 | Path ACL implementované, ale nezapojené do content/media (audit S9)   | Stredná (bezpečnosť)     | ✅ Opravené — `ContentPathAclGuard`            |
+| ISS-056 | WAF skenuje len URI/query/UA, nie POST/JSON telo (audit S-WAFBODY)    | Stredná (bezpečnosť)     | ✅ Opravené — body scan + editor exempt         |
 
 
 
@@ -1397,6 +1398,21 @@ výnimka pri konštrukcii služby zhodila celý boot kontajnera — teda aj HTTP
 **Implementované riešenie:** `ContentPathAclGuard` + `PathAclService::normalizeStoragePath()` (mapuje `pages/foo.md` → `content/pages/foo` pre glob pravidlá z admin UI). Zapojené do `ContentController`, `DraftController`, `MediaController`. Opt-in (`enabled: false` → bez zmeny správania); read deny → 404, write deny → 403.
 
 **Overenie:** PHPUnit `PathAclServiceTest`, `ContentPathAclGuardTest`, `PathAclIntegrationTest` (17 scenárov spolu).
+
+---
+
+## ISS-056 – WAF neskenuje POST/JSON telo (audit S-WAFBODY) — VYRIEŠENÉ
+
+**Symptóm / riziko:** `FirewallMiddleware` kontroloval len URI, query string a User-Agent. SQLi/traversal/SSRF payloady v JSON tele (login, contact, settings webhook URL…) prešli bez matchu.
+
+**Implementované riešenie:**
+
+- `FirewallRequestBodyReader` — bounded snapshot (max 64 KiB), skip `multipart/form-data`, rewind stream.
+- `FirewallBodyScanPolicy` — skenuje POST/PUT/PATCH/DELETE okrem editor API (`/api/pages`, `/api/articles`, `/api/drafts`, `/api/admin/code-editor`) kvôli false positive na markdown/SQL ukážkach.
+- Nové scenáre: `sql_probe_body`, `ssrf_probe_body`; `path_traversal` + `env_probe` rozšírené o target `body`.
+- Settings: `firewall.scanRequestBody` (default `true`). `APP_ENV=testing` stále bypassuje celý WAF.
+
+**Overenie:** PHPUnit `FirewallScannerTest`, `FirewallBodyScanPolicyTest`, `FirewallRequestBodyReaderTest`, `FirewallMiddlewareTest` (+ body scenáre).
 
 ---
 

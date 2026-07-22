@@ -102,6 +102,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   `DraftController.php`, `MediaController.php`, `Http/Config/services.php`.
 - Tests: `PathAclServiceTest` (storage normalization + disabled ACL + permissions),
   `ContentPathAclGuardTest`, `PathAclIntegrationTest` (HTTP: content/draft/media deny + SUPER_ADMIN bypass).
+- **WAF POST/JSON body scanning (audit S-WAFBODY / ISS-056).** Mutujúce requesty
+  skenujú JSON/urlencoded telo (max 64 KiB) pre SQLi, traversal, env probe a
+  dangerous URL schemes. Content editor routes are exempt; multipart uploads skipped.
+  Setting `firewall.scanRequestBody` (default true). New scenarios `sql_probe_body`,
+  `ssrf_probe_body`; `path_traversal`/`env_probe` include `body` target.
+- Files: `FirewallRequestBodyReader.php`, `FirewallBodyScanPolicy.php`,
+  `FirewallScanner.php`, `FirewallMiddleware.php`, `FirewallService.php`,
+  `config/firewall_scenarios.php`, `SettingsSchema.php`.
+- Tests: `FirewallBodyScanPolicyTest`, `FirewallRequestBodyReaderTest`, extended
+  `FirewallScannerTest`, `FirewallMiddlewareTest`.
 
 ## [2.0.45] – 2026-07-21
 
