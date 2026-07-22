@@ -10,6 +10,7 @@ use PaginiumCMS\Core\Notification\Services\IncidentNotifier;
 use PaginiumCMS\Core\Security\Services\LoginAttemptTracker;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Modules\Security\Services\SecurityAuditStore;
+use PaginiumCMS\Support\LogSanitizer;
 
 /**
  * Špecializovaný logger pre bezpečnostné udalosti.
@@ -50,10 +51,13 @@ final class SecurityLogger
             return;
         }
 
+        // Anti log-injection (C11): User-Agent je útočníkom kontrolovaný.
+        $ua = LogSanitizer::value((string) ($userAgent ?? $_SERVER['HTTP_USER_AGENT'] ?? 'unknown'), 256);
+
         $this->logger->warning('Security: Failed login attempt', [
             'email' => $email,
             'ip' => $ip,
-            'user_agent' => $userAgent ?? $_SERVER['HTTP_USER_AGENT'] ?? 'unknown',
+            'user_agent' => $ua,
             'timestamp' => date('Y-m-d H:i:s'),
             'type' => 'failed_login',
         ]);
@@ -65,7 +69,7 @@ final class SecurityLogger
             null,
             $email,
             $ip,
-            ['user_agent' => $userAgent ?? $_SERVER['HTTP_USER_AGENT'] ?? 'unknown']
+            ['user_agent' => $ua]
         );
 
         // Alert pri opakovaných pokusoch

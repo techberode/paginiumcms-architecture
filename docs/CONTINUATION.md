@@ -16,6 +16,23 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 
 ---
 
+## Aktuálny plán (2026-07-21) — pred verejnou betou
+
+**Rozhodnutie:** Public Beta / externé testovanie **zatiaľ nie** — najprv dokončiť všetko základné, čo je nutné pre stabilnú internú inštaláciu.
+
+| Priorita | Úloha | Stav |
+|----------|--------|------|
+| 1 | **Release 2.0.46** — tag `637fef4`, gate zelená, C&P v `RELEASE.md` | ✅ kód + docs |
+| 2 | **Celkový audit** — `iteration-gate` + `audit:run` + `content:diagnose` + manuálny checklist | ⏳ |
+| 3 | **README** sync na 2.0.46 | ⏳ |
+| 4 | **`docs/INSTALL.md`** — manuálna inštalácia (PHP/nginx/.env) | ⏳ |
+| 5 | **i18n zvyšok adminu** (comments, messages, audit…) — It.18 remainder | ⏳ |
+| 6 | **Public Beta 1** — GitHub release von, testeri | 🔒 až po 1–5 |
+
+Detail release: [ITERATION_18.md](ITERATION_18.md) · [ITERATION_19.md](ITERATION_19.md) · [ITERATION_20.md](ITERATION_20.md) · [developer/RELEASE.md](developer/RELEASE.md)
+
+---
+
 ## Iteration 6 – DONE (2026-07-15)
 
 - **Notifications:** SMTP settings, connectors (email/ntfy/Discord/Telegram/webhook), incident alerts, admin overview API + FE

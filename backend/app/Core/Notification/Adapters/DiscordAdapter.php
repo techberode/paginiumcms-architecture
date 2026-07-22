@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\Notification\Adapters;
 
+use PaginiumCMS\Core\Security\Services\OutboundUrlGuard;
+
 class DiscordAdapter implements AdapterInterface
 {
     public function __construct(private string $webhookUrl)
@@ -15,6 +17,11 @@ class DiscordAdapter implements AdapterInterface
      */
     public function send(string $to, string $subject, string $message, array $options = []): bool
     {
+        // SSRF guard (C14): Discord webhook URL je admin-konfigurovateľná.
+        if (!OutboundUrlGuard::fromEnv()->isAllowed($this->webhookUrl)) {
+            return false;
+        }
+
         $content = '**' . $subject . "**\n" . $message;
         if ($to !== '') {
             $content = '@' . $to . ' ' . $content;

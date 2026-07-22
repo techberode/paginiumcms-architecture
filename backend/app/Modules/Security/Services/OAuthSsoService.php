@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Modules\Security\Services;
 
+use PaginiumCMS\Core\Security\Services\OutboundUrlGuard;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Modules\Security\Exception\AuthenticationException;
 use PaginiumCMS\Modules\Security\Models\User;
@@ -279,6 +280,10 @@ final class OAuthSsoService
      */
     private function httpPostForm(string $url, array $fields, array $headers = []): string
     {
+        // SSRF guard (C14): token_url je admin-konfigurovateľný → nesmie mieriť
+        // na interné/privátne služby ani ne-HTTPS ciele (v produkcii).
+        OutboundUrlGuard::fromEnv()->assertAllowed($url);
+
         $context = stream_context_create([
             'http' => [
                 'method' => 'POST',
@@ -302,6 +307,9 @@ final class OAuthSsoService
      */
     private function httpGet(string $url, array $headers = []): string
     {
+        // SSRF guard (C14): userinfo_url je admin-konfigurovateľný.
+        OutboundUrlGuard::fromEnv()->assertAllowed($url);
+
         $context = stream_context_create([
             'http' => [
                 'method' => 'GET',
