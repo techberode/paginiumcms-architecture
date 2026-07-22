@@ -1,10 +1,22 @@
 # ============================================
 # PAGINIUMCMS - STORAGE OCHRANA
 # ============================================
+# POZNÁMKA: Docroot MUSÍ byť backend/public/. storage/ (vrátane data/ s
+# používateľmi, settings.json, logs/, backups/) je mimo docrootu a NIKDY sa
+# nemá servírovať web serverom priamo. Toto .htaccess je len defense-in-depth
+# pre prípad chybnej konfigurácie Apache (docroot omylom nad public/).
+# Nginx ekvivalent: `location ~ ^/storage/ { deny all; }` (viď SECURITY_ISSUES.md).
 
-# Úplný zákaz prístupu
-Order Deny,Allow
-Deny from all
+# Apache 2.4+ (mod_authz_core) – úplný zákaz.
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+
+# Apache 2.2 (mod_access_compat) – spätná kompatibilita.
+<IfModule mod_access_compat.c>
+    Order Deny,Allow
+    Deny from all
+</IfModule>
 
 # Povolenie prístupu len pre PHP súbory (nie je potrebné)
 # <FilesMatch "\.(php)$">

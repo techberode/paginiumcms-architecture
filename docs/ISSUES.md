@@ -1,6 +1,6 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-22 · verzia **2.0.46** (security_fix hardening + ISS-051 boot hotfix + ISS-012 CSRF enforcement)
+> Posledná aktualizácia: 2026-07-22 · verzia **2.0.46** (security_fix hardening + ISS-051 boot hotfix + ISS-012 CSRF enforcement + ISS-052 at-rest šifrovanie)
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
 
@@ -13,60 +13,61 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 ## Prehľad
 
 
-| ID      | Symptóm                                                 | Závažnosť             | Stav                                    |
-| ------- | ------------------------------------------------------- | --------------------- | --------------------------------------- |
-| ISS-001 | `POST /api/debug/client-event` → 404                    | Nízka (šum v konzole) | ✅ Opravené                              |
-| ISS-002 | `GET /api/pages` → 500 na dashboarde                    | Vysoká                | ✅ Intermittent — diagnose + hardening   |
-| ISS-003 | „Noví používatelia“ každú chvíľu                        | Stredná               | ✅ Hardening BE                          |
-| ISS-004 | Hromadenie `navigation.json.backup.*`                   | Nízka                 | ✅ Retencia záloh                        |
-| ISS-005 | Vitest worker crash / visnutie                          | Stredná (CI)          | ✅ Opravené                              |
-| ISS-006 | PHPStan 15 chýb                                         | Stredná (CI)          | ✅ Opravené                              |
-| ISS-007 | Dashboard nesprávny počet používateľov                  | Nízka                 | ✅ Opravené                              |
-| ISS-008 | HTTP heslo polia (login/users)                          | Info                  | ⏳ HTTPS v produkcii                     |
-| ISS-009 | `/settings` crash `n.max is not a function`             | Vysoká                | ✅ Opravené                              |
-| ISS-010 | Vitest stderr: `act(...)` + Router future flags         | Nízka (CI šum)        | ✅ Opravené (2.0.24)                     |
-| ISS-011 | ESLint warnings (`any`, react-refresh)                  | Nízka (tech. dlh)     | ⏳ 57/65 baseline, postupné čistenie     |
-| ISS-012 | CSRF middleware nezapojený (audit S3)                   | Stredná               | ✅ Opravené — `CsrfMiddleware` (synchronizer-token) |
-| ISS-013 | ntfy bez auth — privátne topicy zlyhajú                 | Stredná               | ✅ It.47 (Bearer/Basic + test-connector) |
-| ISS-014 | CORS dev wildcardy pri zlej `APP_ENV` (audit S6)        | Nízka                 | ⏳ Overiť deploy                         |
-| ISS-015 | PHPUnit → 429 / 503 / OTP persistencia                  | Stredná (CI)          | ✅ Opravené (2.0.25)                     |
-| ISS-016 | PHPStan `phpVersion` vs `composer.json`                 | Stredná (CI)          | ✅ Opravené (2.0.25)                     |
-| ISS-017 | PHPStan `match.alwaysTrue` v bulk controlleroch         | Stredná (CI)          | ✅ Opravené (2.0.25)                     |
-| ISS-018 | PHPStan `fopen` resource v `TrashController`            | Stredná (CI)          | ✅ Opravené (2.0.25)                     |
-| ISS-019 | `tsc --noEmit` strict TypeScript chyby                  | Stredná (CI)          | ✅ Opravené (2.0.25)                     |
-| ISS-020 | ESLint 68 warnings → prekročenie `--max-warnings 65`    | Stredná (CI)          | ✅ Opravené (2.0.26)                     |
-| ISS-021 | PHPStan `function.alreadyNarrowedType` v log readeri    | Stredná (CI)          | ✅ Opravené (2.0.26)                     |
-| ISS-022 | Vitest `MediaManager.test.tsx` — krehké textové asercie | Stredná (CI)          | ✅ Opravené (2.0.26)                     |
-| ISS-023 | PHPUnit `SearchControllerTest` — flaky admin draft search | Stredná (CI)          | ✅ Opravené (2.0.29)                     |
-| ISS-024 | `AuthMiddleware` → 500 na auth trasách                  | Kritická              | ✅ Opravené (2.0.29)                     |
-| ISS-025 | Odhlásenie počas editácie / pri uložení                 | Vysoká                | ✅ Opravené (2.0.29)                     |
-| ISS-026 | Zámena `SESSION_USE_STRICT_MODE` ↔ `SESSION_STRICT`     | Stredná (ops)         | ✅ Dokumentované (2.0.29)                |
-| ISS-027 | Debug log: falošné login 401 z PHPUnit                  | Nízka (diagnostika)   | ✅ Opravené (2.0.29)                     |
-| ISS-028 | `npm run build:prod` — JSX chyba v `SettingsView`       | Vysoká (deploy)       | ✅ Opravené (2.0.29)                     |
-| ISS-029 | Login loop — krátke prihlásenie, potom späť na `/login` | Vysoká                | ✅ 2.0.29 session; **2.0.30** 2FA loop |
-| ISS-030 | 2FA setup — QR zmizne, presmeruje na TOTP login          | Vysoká                | ✅ Opravené (2.0.30)                     |
-| ISS-031 | Nový staff user: `twoFactorEnabled` bez secretu         | Kritická              | ✅ Opravené (2.0.30)                     |
-| ISS-032 | `twoFactorVerifiedAt` sa neukladalo do user JSON        | Vysoká                | ✅ Opravené (2.0.30)                     |
-| ISS-033 | FE 401 → `window.location /login` (dvojitý login)       | Vysoká                | ✅ Opravené (2.0.30)                     |
-| ISS-034 | Dev: žiadny prepínač TOTP v `.env`                      | Stredná (DX)          | ✅ Opravené (2.0.30)                     |
-| ISS-035 | PHPStan: `ClientIpResolver` mŕtvy `??` fallback         | Nízka (CI)            | ✅ Opravené (2.0.29 hotfix)              |
-| ISS-036 | FE type-check: 2FA `setup_pending` / `setUser` (CI)     | Stredná (CI)          | ✅ Opravené (2.0.30 hotfix `3fbc595`)    |
-| ISS-037 | FE type-check: nepoužitý `React` import v teste (CI)  | Nízka (CI)            | ✅ Opravené (hotfix `64cc894`)           |
-| ISS-038 | PHPUnit It.44d: index filtre tag/date (CI)            | Stredná (CI)          | ✅ Opravené (`54b013c`)                  |
-| ISS-039 | PHPUnit `LogWriterTest`: vfs + corrupt JSON (CI)      | Stredná (CI)          | ✅ Opravené (`54b013c`)                  |
-| ISS-040 | Corrupt access log → `JsonException` → API 500        | Kritická (prod)       | ✅ Opravené (`743e922`)                  |
-| ISS-041 | FE type-check: nepoužitý `refetch` v `PagesManager` (CI) | Nízka (CI)         | ✅ Opravené (hotfix 2.0.40)              |
-| ISS-042 | Dvojitý login — 1. pokus padne, 2. prejde (probe `/me`) | Vysoká (auth UX)      | ✅ Opravené (**2.0.43**)                 |
-| ISS-043 | Vitest `editorToolbar` — globálny `screen` vs. profil   | Nízka (CI)            | ✅ Opravené (2.0.42 It.54)           |
-| ISS-044 | `services.php:301` parse error → API 500                | Kritická              | ✅ Opravené (**2.0.45**)             |
-| ISS-045 | `LocaleScaffoldService::$projectRoot` — PHPStan + PHPUnit | Stredná (CI)          | ✅ Opravené (**2.0.45**)             |
-| ISS-046 | Audit udalosti sa zapisovali ako kategória `app`        | Vysoká (audit)        | ✅ Opravené (**2.0.46**)             |
-| ISS-047 | Dashboard „Prehľad aktivít“ prázdny                     | Vysoká (admin UX)     | ✅ Opravené (**2.0.46**)             |
-| ISS-048 | Audit správy nečitateľné (zlý formát + EN text)         | Stredná (audit UX)    | ✅ Opravené (**2.0.46**)             |
-| ISS-049 | Korumpovaný denný log `2026-07-21.json`                 | Stredná (ops)         | ✅ Opravené (**2.0.46**)             |
-| ISS-050 | Sekcia Logy prázdna — nesprávna cesta log readera       | Vysoká (admin UX)     | ✅ Opravené (**2.0.46**)             |
-| —       | Login pozadie — len URL pole (bez uploadu/médií)          | Stredná (admin UX)    | ✅ Opravené (**2.0.46**)             |
-| ISS-051 | Boot crash — `DevTokenGenerator` výnimka pri `APP_ENV=production` | Kritická (boot/CLI)   | ✅ Opravené (security_fix hotfix)   |
+| ID      | Symptóm                                                               | Závažnosť             | Stav                                               |
+| ------- | --------------------------------------------------------------------- | --------------------- | -------------------------------------------------- |
+| ISS-001 | `POST /api/debug/client-event` → 404                                  | Nízka (šum v konzole) | ✅ Opravené                                         |
+| ISS-002 | `GET /api/pages` → 500 na dashboarde                                  | Vysoká                | ✅ Intermittent — diagnose + hardening              |
+| ISS-003 | „Noví používatelia“ každú chvíľu                                      | Stredná               | ✅ Hardening BE                                     |
+| ISS-004 | Hromadenie `navigation.json.backup.*`                                 | Nízka                 | ✅ Retencia záloh                                   |
+| ISS-005 | Vitest worker crash / visnutie                                        | Stredná (CI)          | ✅ Opravené                                         |
+| ISS-006 | PHPStan 15 chýb                                                       | Stredná (CI)          | ✅ Opravené                                         |
+| ISS-007 | Dashboard nesprávny počet používateľov                                | Nízka                 | ✅ Opravené                                         |
+| ISS-008 | HTTP heslo polia (login/users)                                        | Info                  | ⏳ HTTPS v produkcii                                |
+| ISS-009 | `/settings` crash `n.max is not a function`                           | Vysoká                | ✅ Opravené                                         |
+| ISS-010 | Vitest stderr: `act(...)` + Router future flags                       | Nízka (CI šum)        | ✅ Opravené (2.0.24)                                |
+| ISS-011 | ESLint warnings (`any`, react-refresh)                                | Nízka (tech. dlh)     | ⏳ 57/65 baseline, postupné čistenie                |
+| ISS-012 | CSRF middleware nezapojený (audit S3)                                 | Stredná               | ✅ Opravené — `CsrfMiddleware` (synchronizer-token) |
+| ISS-013 | ntfy bez auth — privátne topicy zlyhajú                               | Stredná               | ✅ It.47 (Bearer/Basic + test-connector)            |
+| ISS-014 | CORS dev wildcardy pri zlej `APP_ENV` (audit S6)                      | Nízka                 | ⏳ Overiť deploy                                    |
+| ISS-015 | PHPUnit → 429 / 503 / OTP persistencia                                | Stredná (CI)          | ✅ Opravené (2.0.25)                                |
+| ISS-016 | PHPStan `phpVersion` vs `composer.json`                               | Stredná (CI)          | ✅ Opravené (2.0.25)                                |
+| ISS-017 | PHPStan `match.alwaysTrue` v bulk controlleroch                       | Stredná (CI)          | ✅ Opravené (2.0.25)                                |
+| ISS-018 | PHPStan `fopen` resource v `TrashController`                          | Stredná (CI)          | ✅ Opravené (2.0.25)                                |
+| ISS-019 | `tsc --noEmit` strict TypeScript chyby                                | Stredná (CI)          | ✅ Opravené (2.0.25)                                |
+| ISS-020 | ESLint 68 warnings → prekročenie `--max-warnings 65`                  | Stredná (CI)          | ✅ Opravené (2.0.26)                                |
+| ISS-021 | PHPStan `function.alreadyNarrowedType` v log readeri                  | Stredná (CI)          | ✅ Opravené (2.0.26)                                |
+| ISS-022 | Vitest `MediaManager.test.tsx` — krehké textové asercie               | Stredná (CI)          | ✅ Opravené (2.0.26)                                |
+| ISS-023 | PHPUnit `SearchControllerTest` — flaky admin draft search             | Stredná (CI)          | ✅ Opravené (2.0.29)                                |
+| ISS-024 | `AuthMiddleware` → 500 na auth trasách                                | Kritická              | ✅ Opravené (2.0.29)                                |
+| ISS-025 | Odhlásenie počas editácie / pri uložení                               | Vysoká                | ✅ Opravené (2.0.29)                                |
+| ISS-026 | Zámena `SESSION_USE_STRICT_MODE` ↔ `SESSION_STRICT`                   | Stredná (ops)         | ✅ Dokumentované (2.0.29)                           |
+| ISS-027 | Debug log: falošné login 401 z PHPUnit                                | Nízka (diagnostika)   | ✅ Opravené (2.0.29)                                |
+| ISS-028 | `npm run build:prod` — JSX chyba v `SettingsView`                     | Vysoká (deploy)       | ✅ Opravené (2.0.29)                                |
+| ISS-029 | Login loop — krátke prihlásenie, potom späť na `/login`               | Vysoká                | ✅ 2.0.29 session; **2.0.30** 2FA loop              |
+| ISS-030 | 2FA setup — QR zmizne, presmeruje na TOTP login                       | Vysoká                | ✅ Opravené (2.0.30)                                |
+| ISS-031 | Nový staff user: `twoFactorEnabled` bez secretu                       | Kritická              | ✅ Opravené (2.0.30)                                |
+| ISS-032 | `twoFactorVerifiedAt` sa neukladalo do user JSON                      | Vysoká                | ✅ Opravené (2.0.30)                                |
+| ISS-033 | FE 401 → `window.location /login` (dvojitý login)                     | Vysoká                | ✅ Opravené (2.0.30)                                |
+| ISS-034 | Dev: žiadny prepínač TOTP v `.env`                                    | Stredná (DX)          | ✅ Opravené (2.0.30)                                |
+| ISS-035 | PHPStan: `ClientIpResolver` mŕtvy `??` fallback                       | Nízka (CI)            | ✅ Opravené (2.0.29 hotfix)                         |
+| ISS-036 | FE type-check: 2FA `setup_pending` / `setUser` (CI)                   | Stredná (CI)          | ✅ Opravené (2.0.30 hotfix `3fbc595`)               |
+| ISS-037 | FE type-check: nepoužitý `React` import v teste (CI)                  | Nízka (CI)            | ✅ Opravené (hotfix `64cc894`)                      |
+| ISS-038 | PHPUnit It.44d: index filtre tag/date (CI)                            | Stredná (CI)          | ✅ Opravené (`54b013c`)                             |
+| ISS-039 | PHPUnit `LogWriterTest`: vfs + corrupt JSON (CI)                      | Stredná (CI)          | ✅ Opravené (`54b013c`)                             |
+| ISS-040 | Corrupt access log → `JsonException` → API 500                        | Kritická (prod)       | ✅ Opravené (`743e922`)                             |
+| ISS-041 | FE type-check: nepoužitý `refetch` v `PagesManager` (CI)              | Nízka (CI)            | ✅ Opravené (hotfix 2.0.40)                         |
+| ISS-042 | Dvojitý login — 1. pokus padne, 2. prejde (probe `/me`)               | Vysoká (auth UX)      | ✅ Opravené (**2.0.43**)                            |
+| ISS-043 | Vitest `editorToolbar` — globálny `screen` vs. profil                 | Nízka (CI)            | ✅ Opravené (2.0.42 It.54)                          |
+| ISS-044 | `services.php:301` parse error → API 500                              | Kritická              | ✅ Opravené (**2.0.45**)                            |
+| ISS-045 | `LocaleScaffoldService::$projectRoot` — PHPStan + PHPUnit             | Stredná (CI)          | ✅ Opravené (**2.0.45**)                            |
+| ISS-046 | Audit udalosti sa zapisovali ako kategória `app`                      | Vysoká (audit)        | ✅ Opravené (**2.0.46**)                            |
+| ISS-047 | Dashboard „Prehľad aktivít“ prázdny                                   | Vysoká (admin UX)     | ✅ Opravené (**2.0.46**)                            |
+| ISS-048 | Audit správy nečitateľné (zlý formát + EN text)                       | Stredná (audit UX)    | ✅ Opravené (**2.0.46**)                            |
+| ISS-049 | Korumpovaný denný log `2026-07-21.json`                               | Stredná (ops)         | ✅ Opravené (**2.0.46**)                            |
+| ISS-050 | Sekcia Logy prázdna — nesprávna cesta log readera                     | Vysoká (admin UX)     | ✅ Opravené (**2.0.46**)                            |
+| —       | Login pozadie — len URL pole (bez uploadu/médií)                      | Stredná (admin UX)    | ✅ Opravené (**2.0.46**)                            |
+| ISS-051 | Boot crash — `DevTokenGenerator` výnimka pri `APP_ENV=production`     | Kritická (boot/CLI)   | ✅ Opravené (security_fix hotfix)                   |
+| ISS-052 | Tajomstvá (TOTP seed, SMTP/SSO/ntfy) v plaintexte na disku (audit A1) | Stredná (bezpečnosť)  | ✅ Opravené — `EncryptionService` + `APP_KEY`       |
 
 
 
@@ -76,21 +77,21 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 Workflow: `[.github/workflows/ci.yml](../.github/workflows/ci.yml)`
 
 
-| CI job     | Step                 | Symptóm                                                         | Issue                              |
-| ---------- | -------------------- | --------------------------------------------------------------- | ---------------------------------- |
-| `backend`  | PHPStan level 8      | `LocaleScaffoldService::$projectRoot` undefined (7×)            | ISS-045                            |
-| `backend`  | PHP bootstrap        | `services.php:301` parse error → all API 500                    | ISS-044                            |
-| `backend`  | PHPUnit              | 429 Too Many Requests, 503 maintenance, flaky OTP, flaky search test | ISS-015, ISS-023                   |
-| `backend`  | PHPUnit              | `ContentRepositoryTest` — date/tag filter, distinct tags (It.44d) | ISS-038                            |
-| `backend`  | PHPUnit              | `LogWriterTest` — chýbajúci súbor na vfs, corrupt recovery       | ISS-039                            |
-| `backend`  | PHPUnit (prod)       | `JsonException` v access log → 500 na všetkých API               | ISS-040                            |
-| `frontend` | `npm run type-check` | TS6133 — nepoužitý import `React` v `SettingsView.test.tsx` | ISS-037                   |
-| `frontend` | `npm run type-check` | TS6133 — nepoužitý `refetch` v `PagesManager.tsx` (It.53) | ISS-041                      |
-| `frontend` | `npm test`           | Vitest — `screen` nájde toolbar z druhého renderu (It.54) | ISS-043                      |
-| `frontend` | `npm run type-check` | TS2352 / TS6133 / TS2322 / 2FA DTO shape (`setup_pending`, `setUser`) | ISS-019, ISS-036                   |
-| `frontend` | `npm run lint`       | Prekročenie `--max-warnings 65` (`react-hooks/exhaustive-deps`) | ISS-020                            |
-| `frontend` | `npm test`           | Worker crash, `act(...)` stderr, `MediaManager` text asserts    | ISS-005, ISS-010, ISS-022          |
-| `backend`  | PHPStan (historicky) | 15 typových chýb                                                | ISS-006                            |
+| CI job     | Step                 | Symptóm                                                               | Issue                     |
+| ---------- | -------------------- | --------------------------------------------------------------------- | ------------------------- |
+| `backend`  | PHPStan level 8      | `LocaleScaffoldService::$projectRoot` undefined (7×)                  | ISS-045                   |
+| `backend`  | PHP bootstrap        | `services.php:301` parse error → all API 500                          | ISS-044                   |
+| `backend`  | PHPUnit              | 429 Too Many Requests, 503 maintenance, flaky OTP, flaky search test  | ISS-015, ISS-023          |
+| `backend`  | PHPUnit              | `ContentRepositoryTest` — date/tag filter, distinct tags (It.44d)     | ISS-038                   |
+| `backend`  | PHPUnit              | `LogWriterTest` — chýbajúci súbor na vfs, corrupt recovery            | ISS-039                   |
+| `backend`  | PHPUnit (prod)       | `JsonException` v access log → 500 na všetkých API                    | ISS-040                   |
+| `frontend` | `npm run type-check` | TS6133 — nepoužitý import `React` v `SettingsView.test.tsx`           | ISS-037                   |
+| `frontend` | `npm run type-check` | TS6133 — nepoužitý `refetch` v `PagesManager.tsx` (It.53)             | ISS-041                   |
+| `frontend` | `npm test`           | Vitest — `screen` nájde toolbar z druhého renderu (It.54)             | ISS-043                   |
+| `frontend` | `npm run type-check` | TS2352 / TS6133 / TS2322 / 2FA DTO shape (`setup_pending`, `setUser`) | ISS-019, ISS-036          |
+| `frontend` | `npm run lint`       | Prekročenie `--max-warnings 65` (`react-hooks/exhaustive-deps`)       | ISS-020                   |
+| `frontend` | `npm test`           | Worker crash, `act(...)` stderr, `MediaManager` text asserts          | ISS-005, ISS-010, ISS-022 |
+| `backend`  | PHPStan (historicky) | 15 typových chýb                                                      | ISS-006                   |
 
 
 Každý záznam nižšie obsahuje **popis chyby**, **navrhované riešenie** a **implementované riešenie**.
@@ -386,7 +387,7 @@ Po oprave hook deps (2.0.26): **57 warnings** — rezerva 8 slotov do limitu.
 
 ## ISS-014 – CORS dev wildcardy (audit nález S6)
 
-**Symptóm:** Mimo produkcie CORS povoľuje `localhost:`*, `192.168.*`, `10.*`, `172.*` s `credentials: true`.
+**Symptóm:** Mimo produkcie CORS povoľuje `localhost:`*, `192.168.`*, `10.*`, `172.*` s `credentials: true`.
 
 **Riziko:** Ak server beží s `APP_ENV` ≠ `production`, širšie CORS ostáva aktívne.
 
@@ -495,13 +496,13 @@ if ($handle === false) {
 **Symptóm:** Po release 2.0.25 CI padalo na strict TypeScript:
 
 
-| Súbor                | Chyba  | Správa                                                                |
-| -------------------- | ------ | --------------------------------------------------------------------- |
-| `api/comments.ts`    | TS2352 | Nebezpečný cast `res as Record<string, unknown>` pri OTP vetve        |
-| `api/workflows.ts`   | TS2352 | Priamy cast odpovede POST `/workflows/otp/verify`                     |
-| `MarkdownEditor.tsx` | TS2352 | Cast publish odpovede na `Record<string, unknown>`                    |
-| `BackupManager.tsx`  | TS6133 | Nepoužitá premenná `completedBackups`                                 |
-| `Navbar.tsx`         | TS2322 | `active` môže byť `boolean | undefined`, komponent vyžaduje `boolean` |
+| Súbor                | Chyba  | Správa                                                         |
+| -------------------- | ------ | -------------------------------------------------------------- |
+| `api/comments.ts`    | TS2352 | Nebezpečný cast `res as Record<string, unknown>` pri OTP vetve |
+| `api/workflows.ts`   | TS2352 | Priamy cast odpovede POST `/workflows/otp/verify`              |
+| `MarkdownEditor.tsx` | TS2352 | Cast publish odpovede na `Record<string, unknown>`             |
+| `BackupManager.tsx`  | TS6133 | Nepoužitá premenná `completedBackups`                          |
+| `Navbar.tsx`         | TS2322 | `active` môže byť `boolean                                     |
 
 
 **Navrhované riešenie:**
@@ -607,6 +608,8 @@ ponechané (položka je `mixed`)
 
 ---
 
+
+
 ## ISS-023 – PHPUnit: flaky admin draft search
 
 **CI job:** `backend` → step **PHPUnit**
@@ -632,6 +635,8 @@ Failed asserting that an array contains 'seo-test-<uniqid>'.
 
 ---
 
+
+
 ## ISS-024 – AuthMiddleware → 500 na auth trasách
 
 **Symptóm:** Po deployi padajú chránené endpointy (**500**), napr. `POST /api/admin/settings/monitoring`, `POST /api/debug/client-event`. PHP log:
@@ -651,6 +656,8 @@ AuthMiddleware::__construct(): Argument #2 ($session) must be of type SessionMan
 
 ---
 
+
+
 ## ISS-025 – Odhlásenie počas editácie / pri uložení
 
 **Symptóm:** Používateľ sa prihlási, začne editovať článok alebo nastavenia a po uložení (alebo po chvíli) ho frontend presmeruje na `/login`. Nie je to nečinnosť — deje sa to pri aktívnej práci.
@@ -664,12 +671,12 @@ AuthMiddleware::__construct(): Argument #2 ($session) must be of type SessionMan
 
 **Implementované riešenie:**
 
-- **`SecureSessionManager`** — singleton v DI, lazy `ensureValid()`, IP cez `ClientIpResolver` + `TRUSTED_PROXIES`.
-- **`AuthenticationManager::touchSession()`** — volané z `AuthMiddleware` pri každom auth requeste.
-- **`bootstrap/session.php`** — dev default 8 h, `session.cookie_path=/`, komentáre k env premenným.
+- `SecureSessionManager` — singleton v DI, lazy `ensureValid()`, IP cez `ClientIpResolver` + `TRUSTED_PROXIES`.
+- `AuthenticationManager::touchSession()` — volané z `AuthMiddleware` pri každom auth requeste.
+- `bootstrap/session.php` — dev default 8 h, `session.cookie_path=/`, komentáre k env premenným.
 - **Frontend:** `AuthContext` keepalive každé 4 min (`probeSession`), `client.ts` nepresmeruje pri `/api/auth/me`, locks, drafts, `requires_two_factor`.
 
-**Ops odporúčanie (LAN `.26` → `.20`):**
+**Ops odporúčanie (LAN** `.26` **→** `.20`**):**
 
 ```env
 SESSION_LIFETIME=28800
@@ -684,22 +691,28 @@ Reštart PHP, vymazať cookies, znova prihlásiť.
 
 ---
 
+
+
 ## ISS-026 – Zámena SESSION_USE_STRICT_MODE ↔ SESSION_STRICT
 
 **Symptóm:** Admin nastavil `SESSION_USE_STRICT_MODE=false` v `.env` a očakával vypnutie „strict session“, no stále dochádzalo k odhláseniu.
 
 **Príčina:** Dve **rôzne** premenné:
 
-| Premenná | Čo riadi |
-|----------|----------|
+
+| Premenná                  | Čo riadi                                                              |
+| ------------------------- | --------------------------------------------------------------------- |
 | `SESSION_USE_STRICT_MODE` | PHP ini `session.use_strict_mode` (odmietnutie neplatného session ID) |
-| `SESSION_STRICT` | Paginium **IP/UA binding** v `SecureSessionManager` |
+| `SESSION_STRICT`          | Paginium **IP/UA binding** v `SecureSessionManager`                   |
+
 
 **Implementované riešenie:** Komentáre v `.env.example`, tabuľka v [DEV.md](deploy/DEV.md#troubleshooting), default `SESSION_STRICT=false`.
 
 **Overenie:** Pri LAN deployi s proxy nechať `SESSION_STRICT=false`; IP binding zapínať len pri známej stabilnej IP topológii.
 
 ---
+
+
 
 ## ISS-027 – Debug log: falošné login 401 z PHPUnit
 
@@ -720,6 +733,8 @@ Vyzerá to ako opakované zlyhané prihlásenie v prehliadači.
 
 ---
 
+
+
 ## ISS-028 – Frontend build: JSX v SettingsView
 
 **Symptóm:** `npm run build:prod` zlyhá:
@@ -736,6 +751,8 @@ SettingsView.tsx:162
 **Overenie:** `cd frontend && npm run build:prod` → OK, `verify-dist-api-url: OK`.
 
 ---
+
+
 
 ## ISS-029 – Login loop (krátke prihlásenie → späť na login)
 
@@ -757,6 +774,8 @@ SettingsView.tsx:162
 
 ---
 
+
+
 ## ISS-030 – 2FA setup: QR kód zmizne → TOTP login
 
 **Symptóm:** Po kliknutí „Začať nastavenie 2FA“ sa na `/account/security` na chvíľu zobrazí QR, potom okamžitý preskok na login obrazovku s požiadavkou **TOTP kódu** (bez možnosti naskenovať QR).
@@ -775,6 +794,8 @@ SettingsView.tsx:162
 **Overenie:** Login → `/account/security` → Enable → QR zostane → scan → verify → dashboard bez presmerovania na login TOTP.
 
 ---
+
+
 
 ## ISS-031 – Nový staff user: 2FA zapnuté bez tajného kľúča
 
@@ -799,6 +820,8 @@ v `backend/storage/app/users/<id>.json`, potom re-login → `/account/security`.
 
 ---
 
+
+
 ## ISS-032 – `twoFactorVerifiedAt` sa neukladalo
 
 **Symptóm:** Po úspešnom overení QR funguje session, ale po **odhlásení / novom login-e** systém stále správa 2FA ako nedokončenú alebo vyžaduje TOTP nesprávne.
@@ -810,6 +833,8 @@ v `backend/storage/app/users/<id>.json`, potom re-login → `/account/security`.
 **Overenie:** Po verify 2FA → logout → login → `requires_two_factor: true` (TOTP krok), nie setup QR.
 
 ---
+
+
 
 ## ISS-033 – Frontend 401 hard redirect (dvojitý login)
 
@@ -825,6 +850,8 @@ v `backend/storage/app/users/<id>.json`, potom re-login → `/account/security`.
 
 ---
 
+
+
 ## ISS-034 – Dev: ovládanie TOTP cez `.env`
 
 **Symptóm:** Počas vývoja/LAN testu je TOTP nepraktické; v `.env` nebol prepínač.
@@ -838,9 +865,11 @@ TWO_FACTOR_REQUIRED=false
 
 Platí len v `development|local|testing` — na **produkcii** (`APP_ENV=production`) sa 2FA vždy vyžaduje.
 
-**Alternatíva bez `.env`:** Nastavenia → Bezpečnosť → vypnúť „Vynútiť 2FA pre editorov a adminov“.
+**Alternatíva bez** `.env`**:** Nastavenia → Bezpečnosť → vypnúť „Vynútiť 2FA pre editorov a adminov“.
 
 ---
+
+
 
 ## ISS-035 – PHPStan: ClientIpResolver mŕtvy null coalesce
 
@@ -857,6 +886,8 @@ ClientIpResolver.php — $parts[0] ?? $remoteAddr
 
 ---
 
+
+
 ## ISS-036 – Frontend type-check: 2FA API shape + `setUser` (CI)
 
 **Symptóm:** Po pushi release **2.0.30** (`f5061e6`) CI job **frontend → TypeScript type-check** padá:
@@ -871,24 +902,28 @@ src/components/auth/TwoFactorSettings.test.tsx — mock missing setupPending
 
 **Príčina:**
 
-1. **`getStatus()`** čítalo `res.setup_pending` priamo z `ApiResponse`, hoci generické pole `setup_pending` patrí do `data` (alebo flat payloadu z backendu) — typová nezhoda po pridaní `setup_pending` do 2FA status endpointu.
-2. **`TwoFactorSettings`** volalo `setUser()` bez importu z auth kontextu (malé byť `updateUser` z `useAuth()`).
+1. `getStatus()` čítalo `res.setup_pending` priamo z `ApiResponse`, hoci generické pole `setup_pending` patrí do `data` (alebo flat payloadu z backendu) — typová nezhoda po pridaní `setup_pending` do 2FA status endpointu.
+2. `TwoFactorSettings` volalo `setUser()` bez importu z auth kontextu (malé byť `updateUser` z `useAuth()`).
 3. **Testy** neobsahovali povinné `setupPending` v mock odpovedi `getStatus()`.
 
-**Implementované riešenie (hotfix `3fbc595`):**
+**Implementované riešenie (hotfix** `3fbc595`**):**
 
-| Súbor | Zmena |
-| ----- | ----- |
-| `frontend/src/api/auth.ts` | `const payload = res.data ?? res`; mapovanie `setup_pending` → `setupPending` |
-| `frontend/src/api/client.ts` | `setup_pending?: boolean` na `ApiResponse` (flat backend odpovede) |
-| `frontend/src/components/auth/TwoFactorSettings.tsx` | `updateUser({ ...user, twoFactorEnabled: true })` namiesto `setUser` |
-| `frontend/src/components/auth/TwoFactorSettings.test.tsx` | mocky + `updateUser` v `useAuth` |
+
+| Súbor                                                     | Zmena                                                                         |
+| --------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `frontend/src/api/auth.ts`                                | `const payload = res.data ?? res`; mapovanie `setup_pending` → `setupPending` |
+| `frontend/src/api/client.ts`                              | `setup_pending?: boolean` na `ApiResponse` (flat backend odpovede)            |
+| `frontend/src/components/auth/TwoFactorSettings.tsx`      | `updateUser({ ...user, twoFactorEnabled: true })` namiesto `setUser`          |
+| `frontend/src/components/auth/TwoFactorSettings.test.tsx` | mocky + `updateUser` v `useAuth`                                              |
+
 
 **Konvencia:** backend/API DTO = `setup_pending`; frontend doména = `setupPending` (konverzia len v `auth.ts`).
 
 **Overenie:** `cd frontend && npm run type-check && npm test -- --run src/components/auth/TwoFactorSettings.test.tsx` — exit 0.
 
 ---
+
+
 
 ## ISS-037 – Frontend type-check: nepoužitý React import v teste (CI)
 
@@ -900,7 +935,7 @@ src/components/backend/SettingsView.test.tsx(4,1): error TS6133: 'React' is decl
 
 **Príčina:** Nový test `SettingsView.test.tsx` importoval `React` kvôli JSX, ale projekt používa moderný JSX transform (`react-jsx`) — import nie je potrebný a strict `noUnusedLocals` ho odmietne.
 
-**Implementované riešenie (hotfix `64cc894`):**
+**Implementované riešenie (hotfix** `64cc894`**):**
 
 - Odstránený riadok `import React from 'react';` z `SettingsView.test.tsx`.
 
@@ -908,19 +943,23 @@ src/components/backend/SettingsView.test.tsx(4,1): error TS6133: 'React' is decl
 
 ---
 
+
+
 ## ISS-038 – PHPUnit It.44d: index filtre tag / author / date (CI)
 
 **Symptóm:** Po pushi It.44d (`743e922` / `05a4800`) CI job **backend → PHPUnit** padá v `ContentRepositoryTest.php`:
 
-| Test | Riadok | Chyba |
-|------|--------|-------|
-| `testFindArticlesPaginatedFiltersByTagAuthorAndDate` | 172 | `Failed asserting that 0 is identical to 1` (date range filter) |
-| `testListDistinctTagsAndCountIndexed` | 181 | Očakávané `['news', 'php']`, skutočné `['hidden', 'news', 'php']` |
+
+| Test                                                 | Riadok | Chyba                                                             |
+| ---------------------------------------------------- | ------ | ----------------------------------------------------------------- |
+| `testFindArticlesPaginatedFiltersByTagAuthorAndDate` | 172    | `Failed asserting that 0 is identical to 1` (date range filter)   |
+| `testListDistinctTagsAndCountIndexed`                | 181    | Očakávané `['news', 'php']`, skutočné `['hidden', 'news', 'php']` |
+
 
 **Príčiny:**
 
-1. **Date filter** — Symfony YAML parsuje `date: 2024-02-10` ako **unix timestamp (`int`)**, nie string ani `DateTime`. `ContentIndexEntry::normalizeIndexedDate()` ignoroval integer → `createdAt` spadol na `modifiedAt` (dnešný dátum) a mimo rozsahu `date_from` / `date_to`.
-2. **Distinct tags** — `listDistinctTags()` a `countIndexed()` volali `applyIndexFilters()` **bez filtra `status`** → tag `hidden` z draft článku sa počítal medzi publikované.
+1. **Date filter** — Symfony YAML parsuje `date: 2024-02-10` ako **unix timestamp (**`int`**)**, nie string ani `DateTime`. `ContentIndexEntry::normalizeIndexedDate()` ignoroval integer → `createdAt` spadol na `modifiedAt` (dnešný dátum) a mimo rozsahu `date_from` / `date_to`.
+2. **Distinct tags** — `listDistinctTags()` a `countIndexed()` volali `applyIndexFilters()` **bez filtra** `status` → tag `hidden` z draft článku sa počítal medzi publikované.
 
 **Navrhované riešenie:**
 
@@ -928,7 +967,7 @@ src/components/backend/SettingsView.test.tsx(4,1): error TS6133: 'React' is decl
 - Aplikovať `status` (a ostatné filtre) rovnako v `query()`, `listDistinctTags()` a `countIndexed()`.
 - Tagy normalizovať cez spoločný helper (trim, prázdne vyhodiť).
 
-**Implementované riešenie (`54b013c`):**
+**Implementované riešenie (**`54b013c`**):**
 
 - `ContentIndexEntry::normalizeIndexedDate()` — podpora `DateTimeInterface`, `int`/`float` timestamp, ISO string.
 - `ContentIndexEntry::normalizeTags()` — array aj reťazec (`news, php` / `[news, php]`).
@@ -945,22 +984,26 @@ php vendor/bin/phpunit --filter ContentRepositoryTest::testListDistinctTagsAndCo
 
 ---
 
+
+
 ## ISS-039 – PHPUnit `LogWriterTest`: vfs súbor + corrupt JSON (CI)
 
 **Symptóm:** CI na commite `743e922` — `LogWriterTest.php`:
 
-| Test | Riadok | Chyba |
-|------|--------|-------|
-| `testWrite` | 44 | `Failed asserting that file "vfs://storage/logs/app/YYYY-MM-DD.json" exists` |
-| `testWriteMultipleEntries` | 60 | rovnaké |
-| `testWriteRecoversFromCorruptLogFile` | 68/77 | `RuntimeException` / warning z `FileHelper.php:36` (`file_get_contents` na neexistujúci súbor) |
+
+| Test                                  | Riadok | Chyba                                                                                          |
+| ------------------------------------- | ------ | ---------------------------------------------------------------------------------------------- |
+| `testWrite`                           | 44     | `Failed asserting that file "vfs://storage/logs/app/YYYY-MM-DD.json" exists`                   |
+| `testWriteMultipleEntries`            | 60     | rovnaké                                                                                        |
+| `testWriteRecoversFromCorruptLogFile` | 68/77  | `RuntimeException` / warning z `FileHelper.php:36` (`file_get_contents` na neexistujúci súbor) |
+
 
 **Príčiny:**
 
-1. **`flock(LOCK_EX)` na `vfsStream`** — zápis cez `fopen('c+')` + zámok zlyhá alebo nevytvorí súbor v PHPUnit vfs.
-2. **`realpath()` na `vfs://`** — cesta sa rozbila pred zápisom.
+1. `flock(LOCK_EX)` **na** `vfsStream` — zápis cez `fopen('c+')` + zámok zlyhá alebo nevytvorí súbor v PHPUnit vfs.
+2. `realpath()` **na** `vfs://` — cesta sa rozbila pred zápisom.
 3. **Salvage corrupt JSON** — binary search predpokladal monotónny JSON prefix; pri useknutom poli to vrátilo `[]`.
-4. **`FileHelper::read()`** — volanie `file_get_contents` bez kontroly existencie súboru → warning v testoch.
+4. `FileHelper::read()` — volanie `file_get_contents` bez kontroly existencie súboru → warning v testoch.
 
 **Navrhované riešenie:**
 
@@ -969,7 +1012,7 @@ php vendor/bin/phpunit --filter ContentRepositoryTest::testListDistinctTagsAndCo
 - Pri corrupt JSON skenovať od konca k poslednému `]` a dekódovať platný prefix.
 - V `FileHelper::read()` vrátiť `''` ak súbor neexistuje (nepadať na warning).
 
-**Implementované riešenie (`54b013c`):**
+**Implementované riešenie (**`54b013c`**):**
 
 - `LogWriter` — vetva `vfs://` bez `flock`; produkcia ostáva s `flock(LOCK_EX)`.
 - `LogWriter::salvageCorruptLogPayload()` — scan posledného `]` namiesto binary search.
@@ -984,6 +1027,8 @@ php vendor/bin/phpunit --filter ContentRepositoryTest::testListDistinctTagsAndCo
 **Overenie:** `php vendor/bin/phpunit --filter LogWriterTest`
 
 ---
+
+
 
 ## ISS-040 – Corrupt HTTP access log → globálne API 500 (produkcia)
 
@@ -1011,7 +1056,7 @@ Uncaught JsonException: Syntax error
 - `LogWriter` — atomic write s `flock`, pri corrupt JSON salvage + backup (`.corrupt-*`).
 - `RequestLoggingMiddleware` — logging nikdy nesmie shodiť response (try/catch okolo `logRequest`).
 
-**Implementované riešenie (`743e922`, doplnené `54b013c`):**
+**Implementované riešenie (**`743e922`**, doplnené** `54b013c`**):**
 
 - `LogWriter::decodeLogPayload()` — backup corrupt súboru, salvage platného prefixu, pokračovanie s prázdnym/zachráneným poľom.
 - `RequestLoggingMiddleware::safeLogRequest()` — chyba logovania sa nepropaguje.
@@ -1031,6 +1076,8 @@ git pull   # 743e922 + 54b013c
 **Overenie:** `./scripts/iteration-gate.sh` + manuálne `/api/settings/public` → 200.
 
 ---
+
+
 
 ## ISS-041 – Frontend type-check: nepoužitý `refetch` v PagesManager (CI)
 
@@ -1058,6 +1105,8 @@ const { data: listData, isLoading } = useAdminListQuery({ ... })
 
 ---
 
+
+
 ## ISS-042 – Dvojitý login (1. pokus zlyhá, 2. prejde)
 
 **Symptóm:** Po zadaní správneho hesla prvý pokus zlyhá (toast chyby alebo návrat na login). Druhý pokus s rovnakými údajmi prejde. V DevTools opakované `GET /api/auth/me` → **401** hneď po `POST /api/auth/login` → **200**.
@@ -1065,7 +1114,7 @@ const { data: listData, isLoading } = useAdminListQuery({ ... })
 **Príčiny (dve rodiny):**
 
 1. **Race podmienka (FE):** `AuthContext` po úspešnom `login` okamžite volal `probeSession()` → `/api/auth/me`. Cookie zo `Set-Cookie` ešte nemusí byť v prehliadači → falošné „session chýba“.
-2. **Cross-origin dev (ops):** FE na `localhost:5173` + API priamo na `192.168.10.26:8081` (CORS + cookies cross-site). Štandardný dev: **`http://localhost:3025`**, `VITE_API_URL=` prázdne, Vite proxy `/api` → `:8080`.
+2. **Cross-origin dev (ops):** FE na `localhost:5173` + API priamo na `192.168.10.26:8081` (CORS + cookies cross-site). Štandardný dev: `http://localhost:3025`, `VITE_API_URL=` prázdne, Vite proxy `/api` → `:8080`.
 
 **Implementované riešenie (FE, release 2.0.42):**
 
@@ -1073,11 +1122,13 @@ const { data: listData, isLoading } = useAdminListQuery({ ... })
 - `AuthContext.login()` — dôvera odpovedi `POST /login` (BE overí `isAuthenticated()`); `/me` len synchronizuje stav.
 - Rovnaký retry pre `verifyTwoFactorLogin()`.
 
-**Overenie:** `npm run dev` → **localhost:3025**; jeden login → dashboard. Network: `/api/*` na **3025**, nie priamo IP:8081.
+**Overenie:** `npm run dev` → **localhost:3025**; jeden login → dashboard. Network: `/api/`* na **3025**, nie priamo IP:8081.
 
 **Súvisí s:** ISS-029, ISS-033.
 
 ---
+
+
 
 ## ISS-043 – Vitest: toolbar test — globálny `screen` (It.54)
 
@@ -1085,11 +1136,13 @@ const { data: listData, isLoading } = useAdminListQuery({ ... })
 
 **Príčina:** Dva rendery (minimal + developer) v jednom DOM; `screen` našiel tlačidlo z developer toolbaru.
 
-**Implementované riešenie (2.0.41 `8526c19`):** `within(minimalRoot)` / `within(developerRoot)`.
+**Implementované riešenie (2.0.41** `8526c19`**):** `within(minimalRoot)` / `within(developerRoot)`.
 
 **Overenie:** `npm test -- src/components/backend/editorToolbar.test.tsx` — exit 0.
 
 ---
+
+
 
 ## ISS-044 – `services.php` parse error (API 500)
 
@@ -1107,6 +1160,8 @@ const { data: listData, isLoading } = useAdminListQuery({ ... })
 **Overenie:** `php -l backend/app/Http/Config/services.php` — no syntax errors; API odpovedá 200.
 
 ---
+
+
 
 ## ISS-045 – `LocaleScaffoldService::$projectRoot` (PHPStan + PHPUnit)
 
@@ -1131,11 +1186,13 @@ public function __construct(
 
 ---
 
+
+
 ## ISS-046 – Audit udalosti sa zapisovali ako kategória `app`
 
-**Symptóm:** Uloženie stránky/článku vytvorilo verziu, ale v audit štatistikách chýbala udalosť. V `storage/logs/app/*.json` boli záznamy s `[CONTENT_CHANGE]`, no pole `category` bolo **`app`**, nie `audit_content_change`.
+**Symptóm:** Uloženie stránky/článku vytvorilo verziu, ale v audit štatistikách chýbala udalosť. V `storage/logs/app/*.json` boli záznamy s `[CONTENT_CHANGE]`, no pole `category` bolo `app`, nie `audit_content_change`.
 
-**Príčina:** `AuditTrailService::logAuditEvent()` vytvoril `LogEntry` s kategóriou `audit_*`, ale volal `$this->logger->log()`, ktoré vždy prepísalo kategóriu na default **`app`** z DI (`LoggerInterface`).
+**Príčina:** `AuditTrailService::logAuditEvent()` vytvoril `LogEntry` s kategóriou `audit_`*, ale volal `$this->logger->log()`, ktoré vždy prepísalo kategóriu na default `app` z DI (`LoggerInterface`).
 
 **Implementované riešenie (2.0.46):**
 
@@ -1147,6 +1204,8 @@ public function __construct(
 **Súvisí s:** ISS-047.
 
 ---
+
+
 
 ## ISS-047 – Dashboard „Prehľad aktivít“ prázdny
 
@@ -1171,6 +1230,8 @@ public function __construct(
 
 ---
 
+
+
 ## ISS-048 – Audit správy nečitateľné (zlý formát)
 
 **Symptóm:** V dashboarde a `/audit` sa zobrazovalo napr. `[CONTENT_CHANGE] UPDATE: blog on maxxim@webland.fun by 2026-07-20 20:44:47` — nejasné, kto čo urobil.
@@ -1191,16 +1252,18 @@ public function __construct(
 
 ---
 
+
+
 ## ISS-049 – Korumpovaný denný log `2026-07-21.json`
 
-**Symptóm:** V `backend/app/storage/logs/app/` chýba platný súbor pre 21.7.; stovky prázdnych `.corrupt-*` backupov (752×). Nové udalosti z dnešného dňa sa nezapisujú — v dashboarde sú len záznamy zo včera.
+**Symptóm:** V `backend/app/storage/logs/app/` chýba platný súbor pre 21.7.; stovky prázdnych `.corrupt-`* backupov (752×). Nové udalosti z dnešného dňa sa nezapisujú — v dashboarde sú len záznamy zo včera.
 
-**Príčina:** Bug v `LogWriter::decodeLogPayload()` — pri **prázdnom** dennom súbore (nový deň, `fopen c+`) sa volal `JsonHelper::decode('')`, čo hodí výnimku. Kód to vyhodnotil ako „corrupt“, vytvoril `.corrupt-*` backup a **zmazal** hlavný súbor. Každý ďalší HTTP request cyklus zopakoval → stovky prázdných corrupt súborov, žiadny perzistentný denný log.
+**Príčina:** Bug v `LogWriter::decodeLogPayload()` — pri **prázdnom** dennom súbore (nový deň, `fopen c+`) sa volal `JsonHelper::decode('')`, čo hodí výnimku. Kód to vyhodnotil ako „corrupt“, vytvoril `.corrupt-`* backup a **zmazal** hlavný súbor. Každý ďalší HTTP request cyklus zopakoval → stovky prázdných corrupt súborov, žiadny perzistentný denný log.
 
 **Implementované riešenie (2.0.46):**
 
 - `decodeLogPayload()` — prázdny/whitespace payload = `[]` (nie corrupt)
-- `backupCorruptLogFile()` — pri prázdnom raw len zmazať orphan súbor, **nevytvárať** `.corrupt-*`
+- `backupCorruptLogFile()` — pri prázdnom raw len zmazať orphan súbor, **nevytvárať** `.corrupt-`*
 - PHPUnit `testWriteToFreshEmptyDailyFileDoesNotCreateCorruptBackup`
 
 **Po deployi:**
@@ -1215,13 +1278,15 @@ public function __construct(
 
 ---
 
+
+
 ## ISS-050 – Sekcia Logy prázdna (ApplicationLogReader)
 
 **Symptóm:** `/logs` aj dashboard panel „Logy (24 h)“ zobrazujú **0 záznamov** / „Žiadne záznamy“, hoci `backend/app/storage/logs/app/` obsahuje veľké JSON súbory.
 
 **Príčina (dvojitá):**
 
-1. **Nesprávna cesta** — `ApplicationLogReader` v `Http/Config/services.php` čítal z `backend/storage/logs/` (adresár **`app/` neexistuje**). Zápis cez `LogWriter` išiel do `backend/app/storage/logs/app/`.
+1. **Nesprávna cesta** — `ApplicationLogReader` v `Http/Config/services.php` čítal z `backend/storage/logs/` (adresár `app/` **neexistuje**). Zápis cez `LogWriter` išiel do `backend/app/storage/logs/app/`.
 2. **Severity mismatch** — logy majú `INFO` (uppercase), frontend filtre a KPI očakávajú `info` (lowercase) → štatistiky vždy 0; filter `/logs?severity=info` vracal 400.
 
 **Implementované riešenie (2.0.46):**
@@ -1236,6 +1301,8 @@ public function __construct(
 **Súvisí s:** ISS-049.
 
 ---
+
+
 
 ## ISS-051 – Boot crash: `DevTokenGenerator` výnimka pri `APP_ENV=production`
 
@@ -1279,13 +1346,36 @@ výnimka pri konštrukcii služby zhodila celý boot kontajnera — teda aj HTTP
 
 ---
 
+
+
+## ISS-052 – Šifrovanie tajomstiev „at-rest" (audit A1) — VYRIEŠENÉ
+
+**Symptóm / riziko:** Citlivé tajomstvá boli vo flat-file úložisku uložené v **plaintexte**: `twoFactorSecret` (TOTP seed) v `data/users/*.json` a settings secrety (`smtp.password`, `connectors.ntfyAccessToken`/`ntfyPassword`, `telegramBotToken`, `webhookSecret`, SSO `*ClientSecret`) v `data/settings.json`. Pri úniku súborov (záloha, zlé práva, iná zraniteľnosť) → priame prevzatie 2FA a únik notifikačných/SSO/SMTP credentials.
+
+**Implementované riešenie:**
+
+- Nový `EncryptionService` (`backend/app/Core/Security/Services/EncryptionService.php`) — autentifikované symetrické šifrovanie s 32-bajtovým kľúčom odvodeným z `APP_KEY`. Preferuje **libsodium** `crypto_secretbox` (prefix `enc:s1:`), fallback **OpenSSL AES-256-GCM** (`enc:g1:`) pre PHP buildy bez `ext-sodium`.
+- `UserRepository` šifruje/dešifruje `twoFactorSecret`; `SettingsRepository` šifruje polia typu `password` (`SettingsSchema::secretKeys()`) na zápise a dešifruje na čítaní.
+- **Transparentná migrácia:** plaintext hodnoty sa čítajú nezmenené; šifrujú sa len nové zápisy (bez migračného skriptu). Ciphertext je non-deterministický, `encrypt()` idempotentné.
+- **Fail-safe rollout:** neplatný/placeholder `APP_KEY` (napr. `base64:xxxx…`) → šifrovanie vypnuté (plaintext). Aktivuje sa nastavením reálneho kľúča; placeholder je explicitne odmietnutý.
+
+⚠️ **Ops upozornenie:** `APP_KEY` je **per-prostredie** a po zašifrovaní dát ho **nikdy nemeň** (strata kľúča = strata tajomstiev → 2FA lockout). V produkcii nastav vlastný silný kľúč. Existujúce plaintext tajomstvá sa zašifrujú pri najbližšom uložení (napr. re-save nastavení / re-setup 2FA).
+
+**Overenie:** PHPStan L8 → 0 chýb; PHPUnit → **741** testov / 0 fail (+`EncryptionServiceTest` a at-rest testy v `UserRepositoryTest`/`SettingsRepositoryTest`).
+
+**Súbory:** `EncryptionService.php` (nový), `UserRepository.php`, `SettingsRepository.php`, `SettingsSchema.php`, `backend/bootstrap/app.php`, `backend/app/Http/Config/services.php`, `backend/storage/.htaccess`, `backend/.env`. **Súvisí s:** audit A1/A2, C-STORAGE (`SECURITY_ISSUES.md`).
+
+---
+
+
+
 ## ISS-012 – CSRF middleware nezapojený (audit S3) — VYRIEŠENÉ
 
 **Symptóm / riziko:** `CsrfProtectionManager` existoval a bol testovaný, ale **nebol nikde zapojený** — žiadny `CsrfMiddleware`, backend `X-CSRF-TOKEN` nevalidoval. Jediná ochrana bola `SameSite=Lax` cookie. Navyše FE `authApi.getCsrfToken()` bol definovaný, ale **nikde sa nevolal** → token sa reálne ani neposielal.
 
 **Implementované riešenie (synchronizer-token, SPA-kompatibilné):**
 
-- **`backend/app/Http/Middleware/CsrfMiddleware.php`** (nový) — vynucuje token na mutujúcich metódach (`POST/PUT/PATCH/DELETE`):
+- `backend/app/Http/Middleware/CsrfMiddleware.php` (nový) — vynucuje token na mutujúcich metódach (`POST/PUT/PATCH/DELETE`):
   - Token z hlavičky `X-CSRF-TOKEN` sa porovnáva so session tokenom cez `hash_equals` (nie jednorazovo → SPA ho používa opakovane).
   - **Exempt** (prefix): `/api/auth/login`, `/api/auth/register`, `/api/auth/reset-password`, `/api/auth/verify-reset-token`, `/api/auth/csrf-token`, `/api/auth/sso`, `/api/contact`, `/api/comments`, `/api/debug/client-event` (pre-auth alebo anonymné akcie bez privilégií).
   - `APP_ENV=testing` → no-op (ako WAF); logika pokrytá dedikovanými testami.
@@ -1303,6 +1393,8 @@ výnimka pri konštrukcii služby zhodila celý boot kontajnera — teda aj HTTP
 
 ---
 
+
+
 ## Login pozadie — upload z médií / disku (2.0.46)
 
 **Symptóm:** V **Nastavenia → Stránka → Prihlásenie a registrácia** bolo pole `backgroundImageUrl` len textové URL — administrátor nemohol vybrať obrázok z knižnice médií ani nahrať súbor z lokálneho disku.
@@ -1314,13 +1406,15 @@ výnimka pri konštrukcii služby zhodila celý boot kontajnera — teda aj HTTP
 - `useAuthBranding` — správne rozlíšenie `/storage/…` a `media/…` ciest pre CSS pozadie na `/login` a `/register`
 - i18n SK/EN pre picker; help text v `SettingsSchema`
 
-**Poznámka (2.0.46 fix):** Tlačidlá zobrazovali surové kľúče `settings.login.backgroundPicker.*` — správna cesta je `settings.fields.login.backgroundPicker.*` (modul `settings` → vetva `fields.login`).
+**Poznámka (2.0.46 fix):** Tlačidlá zobrazovali surové kľúče `settings.login.backgroundPicker.`* — správna cesta je `settings.fields.login.backgroundPicker.*` (modul `settings` → vetva `fields.login`).
 
 **Overenie:** Nastavenia → login skupina → vybrať/nahrať obrázok → uložiť → overiť na `/login`. Vitest: `LoginBackgroundImagePicker.test.tsx`, `settings.test.ts`.
 
 **Súvisí s:** It.19 auth UX (2.0.45), `uploadSecurity` validácia typu súboru pri lokálnom uploade.
 
 ---
+
+
 
 ## Externé / irelevantné hlášky
 

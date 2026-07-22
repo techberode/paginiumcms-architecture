@@ -7,6 +7,7 @@ namespace PaginiumCMS\Core\Settings\Services;
 use InvalidArgumentException;
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
+use PaginiumCMS\Core\Security\Services\EncryptionService;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\Settings\SettingsSchema;
 use PaginiumCMS\Core\Validation\Validator;
@@ -32,7 +33,8 @@ final class SettingsRepository implements SettingsRepositoryInterface
         private FileReaderInterface $reader,
         private FileWriterInterface $writer,
         private Validator $validator,
-        private string $file = 'data/settings.json'
+        private string $file = 'data/settings.json',
+        private ?EncryptionService $encryption = null
     ) {
         $this->absolutePath = rtrim($this->reader->getBasePath(), '/') . '/' . ltrim($this->file, '/');
     }
@@ -88,6 +90,10 @@ final class SettingsRepository implements SettingsRepositoryInterface
         // Vyhodí ValidationException (→ 422 cez jednotný Error Handler).
         $validated = $this->validator->validate($filtered, $filteredRules);
 
+        // Šifrovanie tajomstiev „at-rest" (audit A1) – citlivé polia (typ
+        // password) sa do settings.json ukladajú zašifrované. Idempotentné.
+        $validated = $this->encryptSecrets($group, $validated);
+
         $this->withLockedOverrides(function (array &$overrides) use ($group, $validated): void {
             $current = $overrides[$group] ?? [];
             $overrides[$group] = array_merge($current, $validated);
@@ -142,7 +148,7 @@ final class SettingsRepository implements SettingsRepositoryInterface
             return [];
         }
 
-        return is_array($decoded) ? $this->normalizeOverrides($decoded) : [];
+        return is_array($decoded) ? $this->decryptOverrides($this->normalizeOverrides($decoded)) : [];
     }
 
     /**
@@ -241,5 +247,53 @@ final class SettingsRepository implements SettingsRepositoryInterface
         if ($dir !== '' && $dir !== '.') {
             $this->writer->createDirectory($dir);
         }
+    }
+
+    // === Blok: Šifrovanie tajomstiev „at-rest" (audit A1) ===
+
+    /**
+     * Zašifruje citlivé (password) polia v jednej skupine pred zápisom.
+     *
+     * @param array<int|string, mixed> $values
+     * @return array<int|string, mixed>
+     */
+    private function encryptSecrets(string $group, array $values): array
+    {
+        if ($this->encryption === null) {
+            return $values;
+        }
+
+        foreach (SettingsSchema::secretKeys()[$group] ?? [] as $key) {
+            if (isset($values[$key]) && is_string($values[$key]) && $values[$key] !== '') {
+                $values[$key] = $this->encryption->encrypt($values[$key]);
+            }
+        }
+
+        return $values;
+    }
+
+    /**
+     * Dešifruje citlivé polia vo všetkých skupinách po načítaní z disku.
+     * Transparentné pre plaintext hodnoty (staršie inštalácie).
+     *
+     * @param array<string, array<string, mixed>> $overrides
+     * @return array<string, array<string, mixed>>
+     */
+    private function decryptOverrides(array $overrides): array
+    {
+        if ($this->encryption === null) {
+            return $overrides;
+        }
+
+        $secretKeys = SettingsSchema::secretKeys();
+        foreach ($overrides as $group => $fields) {
+            foreach ($secretKeys[$group] ?? [] as $key) {
+                if (isset($fields[$key]) && is_string($fields[$key]) && $fields[$key] !== '') {
+                    $overrides[$group][$key] = $this->encryption->decrypt($fields[$key]);
+                }
+            }
+        }
+
+        return $overrides;
     }
 }

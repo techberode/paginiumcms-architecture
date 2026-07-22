@@ -65,6 +65,7 @@ use PaginiumCMS\Core\Logging\LogStoragePaths;
 use PaginiumCMS\Core\Logging\Contracts\LoggerInterface;
 use PaginiumCMS\Core\Notification\Services\IncidentNotifier;
 use PaginiumCMS\Core\Security\SecurityLogger;
+use PaginiumCMS\Core\Security\Services\EncryptionService;
 use PaginiumCMS\Core\Security\Services\LoginAttemptTracker;
 use PaginiumCMS\Core\Workflow\Services\OtpChallengeStore;
 use PaginiumCMS\Core\Workflow\Services\OtpWorkflowService;
@@ -315,11 +316,21 @@ $containerBuilder->addDefinitions([
         );
     },
 
+    // Šifrovanie tajomstiev „at-rest" (audit A1). Kľúč sa odvodí z APP_KEY;
+    // ak nie je platný 32-bajtový kľúč, služba je vypnutá (plaintext) a
+    // aktivuje sa nastavením reálneho APP_KEY – bez migračného skriptu.
+    EncryptionService::class => function () {
+        $appKey = getenv('APP_KEY') ?: ($_ENV['APP_KEY'] ?? null);
+
+        return new EncryptionService(is_string($appKey) ? $appKey : null);
+    },
+
     UserRepository::class => function ($container) {
         return new UserRepository(
             $container->get(FileReaderInterface::class),
                                   $container->get(FileWriterInterface::class),
-                                  'data/users'
+                                  'data/users',
+                                  $container->get(EncryptionService::class)
         );
     },
 

@@ -239,7 +239,8 @@ return [
             $container->get(FileReaderInterface::class),
             $container->get(FileWriterInterface::class),
             $container->get(Validator::class),
-            $settingsFile
+            $settingsFile,
+            $container->get(\PaginiumCMS\Core\Security\Services\EncryptionService::class)
         );
     },
     SettingsController::class => create(SettingsController::class)

@@ -41,6 +41,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [Unreleased]
+
+### Security
+- **At-rest secret encryption (audit A1).** New `EncryptionService` (authenticated
+  symmetric encryption via a 32-byte key derived from `APP_KEY`) transparently
+  encrypts sensitive flat-file secrets: user `twoFactorSecret` (TOTP seed) and
+  settings `password`-type fields (SMTP password, ntfy token/password, Telegram
+  bot token, webhook secret, SSO client secrets). Prefers libsodium
+  `crypto_secretbox` (`enc:s1:`) with an OpenSSL **AES-256-GCM** fallback
+  (`enc:g1:`) for builds without `ext-sodium`.
+  - Transparent migration: plaintext values are read unchanged; only new writes
+    are encrypted (no migration script). Idempotent, non-deterministic ciphertext.
+  - Fail-safe rollout: an invalid or placeholder `APP_KEY` disables encryption
+    (values stay plaintext) and it activates once a real key is set. The known
+    `base64:xxxx…` placeholder is explicitly rejected.
+  - A real `APP_KEY` is now generated in `backend/.env`. **Note:** the key is
+    per-environment and must never change after data is encrypted (lost key =
+    lost secrets → 2FA lockout).
+- **`data/` confirmed outside web-root (audit A2).** Docroot is `backend/public/`;
+  flat-file data lives in `backend/storage/app/content/data/` (a sibling, not under
+  the docroot) and is only reachable via the media-only `/storage/` allow-list. No
+  physical move required. Hardened `backend/storage/.htaccess` with Apache 2.4
+  `Require all denied` and documented the nginx equivalent.
+- Files: `backend/app/Core/Security/Services/EncryptionService.php` (new),
+  `backend/app/Modules/Security/Services/UserRepository.php`,
+  `backend/app/Core/Settings/Services/SettingsRepository.php`,
+  `backend/app/Core/Settings/SettingsSchema.php`, `backend/bootstrap/app.php`,
+  `backend/app/Http/Config/services.php`, `backend/storage/.htaccess`.
+- Tests: `EncryptionServiceTest` plus at-rest cases in `UserRepositoryTest` and
+  `SettingsRepositoryTest` (PHPUnit 741 tests, PHPStan L8 clean).
+
 ## [2.0.45] – 2026-07-21
 
 **Iteration 19b** — Security settings wired to upload and HTML render.  
