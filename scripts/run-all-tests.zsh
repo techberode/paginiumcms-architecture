@@ -28,8 +28,8 @@ if [[ ! -f vendor/bin/phpunit ]]; then
 fi
 
 PROJECT_ROOT=$PWD
-TOTAL_STEPS=12
-CLEANUP_STEP=13
+TOTAL_STEPS=13
+CLEANUP_STEP=14
 
 typeset -a FAILED_STEPS
 typeset -A STEP_EXIT STEP_STATS STEP_ERRORS
@@ -454,6 +454,17 @@ run_step 12 "PHPUnit security regression (storage/SSO/plugin/hardening)" \
      backend/tests/Http/Controllers/CoreHardeningTest.php'
 
 # ==================================================
+# ŠIFROVANIE TAJOMSTIEV AT-REST (audit A1)
+# EncryptionService (libsodium/OpenSSL) + šifrovaný TOTP seed a settings secrety.
+# ==================================================
+
+run_step 13 "PHPUnit at-rest encryption (EncryptionService/User/Settings)" \
+  'vendor/bin/phpunit --colors=always \
+     backend/tests/Core/Security/Services/EncryptionServiceTest.php \
+     backend/tests/Modules/Security/Services/UserRepositoryTest.php \
+     backend/tests/Core/Settings/SettingsRepositoryTest.php'
+
+# ==================================================
 # ZÁVEREČNÝ SÚHRN
 # ==================================================
 print ""
@@ -474,6 +485,7 @@ labels=(
   "NPM Audit (bezpečnosť frontend závislostí)"
   "Content diagnose (backend/bin/console)"
   "PHPUnit security regression (storage/SSO/plugin/hardening)"
+  "PHPUnit at-rest encryption (EncryptionService/User/Settings)"
 )
 
 i=1

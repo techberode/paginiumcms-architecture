@@ -7,6 +7,7 @@ namespace PaginiumCMS\Tests\Core\Settings;
 use PaginiumCMS\Core\FlatFile\Services\FileReader;
 use PaginiumCMS\Core\FlatFile\Services\FileValidator;
 use PaginiumCMS\Core\FlatFile\Services\FileWriter;
+use PaginiumCMS\Core\Security\Services\EncryptionService;
 use PaginiumCMS\Core\Settings\Services\SettingsRepository;
 use PaginiumCMS\Core\Validation\ValidationException;
 use PaginiumCMS\Core\Validation\Validator;
@@ -120,7 +121,37 @@ class SettingsRepositoryTest extends TestCase
         $this->assertSame('PaginiumCMS', $this->repo->get('general.siteName'));
     }
 
-    private function makeRepo(): SettingsRepository
+    public function testSecretFieldsAreEncryptedAtRest(): void
+    {
+        // Audit A1: citlivé polia (typ password) sa do settings.json ukladajú
+        // zašifrované, no cez repository sa čítajú v plaintexte (transparentne).
+        $encryption = new EncryptionService('base64:BGtLQwdzAE7ajivCghMa98DyudMghYZEkXKw5PJ/aUE=');
+        $repo = $this->makeRepo($encryption);
+
+        $repo->setGroup('smtp', ['password' => 'super-smtp-secret']);
+
+        $raw = (string) file_get_contents($this->baseDir . '/data/settings.json');
+        $this->assertStringNotContainsString('super-smtp-secret', $raw, 'Plaintext secret nesmie byť na disku');
+        $this->assertStringContainsString('enc:', $raw, 'Secret má byť zašifrovaný');
+
+        // Nová inštancia (nad tým istým súborom) musí vrátiť plaintext.
+        $fresh = $this->makeRepo($encryption);
+        $this->assertSame('super-smtp-secret', $fresh->get('smtp.password'));
+    }
+
+    public function testNonSecretFieldsRemainPlaintext(): void
+    {
+        $encryption = new EncryptionService('base64:BGtLQwdzAE7ajivCghMa98DyudMghYZEkXKw5PJ/aUE=');
+        $repo = $this->makeRepo($encryption);
+
+        $repo->setGroup('general', ['siteName' => 'Verejný názov', 'language' => 'en', 'timezone' => 'UTC']);
+
+        $raw = (string) file_get_contents($this->baseDir . '/data/settings.json');
+        // Nešifrované pole ostáva čitateľné (nie je citlivé).
+        $this->assertStringContainsString('Verejný názov', $raw);
+    }
+
+    private function makeRepo(?EncryptionService $encryption = null): SettingsRepository
     {
         $validator = new FileValidator($this->baseDir);
 
@@ -128,7 +159,8 @@ class SettingsRepositoryTest extends TestCase
             new FileReader($validator),
             new FileWriter($validator),
             new Validator(),
-            'data/settings.json'
+            'data/settings.json',
+            $encryption
         );
     }
 

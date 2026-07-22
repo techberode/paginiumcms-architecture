@@ -8,6 +8,7 @@ use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
+use PaginiumCMS\Core\Security\Services\EncryptionService;
 use PaginiumCMS\Support\JsonHelper;
 
 class UserRepository
@@ -15,15 +16,18 @@ class UserRepository
     private FileReaderInterface $reader;
     private FileWriterInterface $writer;
     private string $storagePath;
+    private ?EncryptionService $encryption;
 
     public function __construct(
         FileReaderInterface $reader,
         FileWriterInterface $writer,
-        string $storagePath = 'data/users'
+        string $storagePath = 'data/users',
+        ?EncryptionService $encryption = null
     ) {
         $this->reader = $reader;
         $this->writer = $writer;
         $this->storagePath = $storagePath;
+        $this->encryption = $encryption;
     }
 
     public function findByEmail(string $email): ?User
@@ -204,7 +208,14 @@ class UserRepository
             } elseif ($key === 'twoFactorEnabled') {
                 $user->setTwoFactorEnabled($value);
             } elseif ($key === 'twoFactorSecret') {
-                $user->setTwoFactorSecret($value);
+                // Dešifrovanie „at-rest" (audit A1). Transparentné pre plaintext
+                // (staršie inštalácie) – EncryptionService vráti hodnotu bez
+                // prefixu `enc:v1:` nezmenenú.
+                $secret = is_string($value) ? $value : null;
+                if ($secret !== null && $this->encryption !== null) {
+                    $secret = $this->encryption->decryptNullable($secret);
+                }
+                $user->setTwoFactorSecret($secret);
             } elseif ($key === 'twoFactorVerifiedAt') {
                 $user->setTwoFactorVerifiedAt($value !== null ? (int) $value : null);
             } elseif ($key === 'createdAt') {
@@ -307,7 +318,12 @@ class UserRepository
             'avatarUrl' => $user->getAvatarUrl(),
             'active' => $user->isActive(),
             'twoFactorEnabled' => $user->isTwoFactorEnabled(),
-            'twoFactorSecret' => $user->getTwoFactorSecret(),
+            // Šifrovanie TOTP seedu „at-rest" (audit A1). Ak EncryptionService
+            // nie je nastavený alebo nemá kľúč, uloží sa plaintext (fail-open
+            // rollout – aktivuje sa nastavením platného APP_KEY).
+            'twoFactorSecret' => $this->encryption !== null
+                ? $this->encryption->encryptNullable($user->getTwoFactorSecret())
+                : $user->getTwoFactorSecret(),
             'twoFactorVerifiedAt' => $user->getTwoFactorVerifiedAt(),
             'createdAt' => $user->getCreatedAt(),
             'updatedAt' => $user->getUpdatedAt(),

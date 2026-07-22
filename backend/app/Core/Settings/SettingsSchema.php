@@ -358,4 +358,32 @@ final class SettingsSchema
     {
         return isset(self::groups()[$group]);
     }
+
+    /**
+     * Mapa citlivých polí (typ `password`) na šifrovanie „at-rest".
+     * Kľúč = skupina, hodnota = zoznam názvov polí, ktoré treba šifrovať.
+     *
+     * @return array<string, list<string>>
+     */
+    public static function secretKeys(): array
+    {
+        $secrets = [];
+        foreach (self::groups() as $group => $definition) {
+            foreach ($definition['fields'] as $field) {
+                if ($field['type'] === 'password') {
+                    $secrets[$group][] = (string) $field['key'];
+                }
+            }
+        }
+
+        return $secrets;
+    }
+
+    /**
+     * Je pole v danej skupine citlivé (typ `password`)?
+     */
+    public static function isSecretField(string $group, string $key): bool
+    {
+        return in_array($key, self::secretKeys()[$group] ?? [], true);
+    }
 }

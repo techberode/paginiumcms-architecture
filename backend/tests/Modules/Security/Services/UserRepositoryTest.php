@@ -6,6 +6,7 @@ namespace PaginiumCMS\Tests\Modules\Security\Services;
 
 use PaginiumCMS\Modules\Security\Services\UserRepository;
 use PaginiumCMS\Modules\Security\Models\User;
+use PaginiumCMS\Core\Security\Services\EncryptionService;
 use PaginiumCMS\Core\FlatFile\Services\FileReader;
 use PaginiumCMS\Core\FlatFile\Services\FileWriter;
 use PaginiumCMS\Core\FlatFile\Services\FileValidator;
@@ -185,6 +186,58 @@ class UserRepositoryTest extends TestCase
         $this->assertNotNull($found, 'Používateľ sa nenašiel po aktualizácii');
         $this->assertEquals('Updated Name', $found->getName());
         $this->assertEquals(['ADMIN'], $found->getRoles());
+    }
+
+    public function testTwoFactorSecretIsEncryptedAtRest(): void
+    {
+        // Audit A1: pri nastavenom EncryptionService sa TOTP seed ukladá
+        // zašifrovaný, no do aplikácie sa číta v plaintexte (transparentne).
+        $encryption = new EncryptionService('base64:BGtLQwdzAE7ajivCghMa98DyudMghYZEkXKw5PJ/aUE=');
+        $repository = new UserRepository($this->reader, $this->writer, 'users', $encryption);
+
+        $user = new User();
+        $user->setEmail('2fa@example.com');
+        $user->setPassword('StrongP@ssw0rd123!');
+        $user->setTwoFactorEnabled(true);
+        $user->setTwoFactorSecret('JBSWY3DPEHPK3PXP');
+
+        $repository->save($user);
+
+        // Na disku NESMIE byť plaintext seed – iba enc: ciphertext.
+        $filePath = $this->root . '/data/users/' . $user->getId() . '.json';
+        $stored = FileHelper::readJson($filePath);
+        $this->assertIsString($stored['twoFactorSecret'] ?? null);
+        $this->assertStringStartsWith('enc:', $stored['twoFactorSecret']);
+        $this->assertStringNotContainsString('JBSWY3DPEHPK3PXP', (string) file_get_contents($filePath));
+
+        // Čítanie vráti pôvodný plaintext seed.
+        $found = $repository->findByEmail('2fa@example.com');
+        $this->assertNotNull($found);
+        $this->assertSame('JBSWY3DPEHPK3PXP', $found->getTwoFactorSecret());
+    }
+
+    public function testTwoFactorSecretPlaintextIsReadTransparently(): void
+    {
+        // Migrácia: staršie inštalácie majú plaintext seed → musí sa načítať.
+        $encryption = new EncryptionService('base64:BGtLQwdzAE7ajivCghMa98DyudMghYZEkXKw5PJ/aUE=');
+        $repository = new UserRepository($this->reader, $this->writer, 'users', $encryption);
+
+        $this->createUserFile('legacy_2fa', [
+            'id' => 'legacy_2fa',
+            'email' => 'legacy@example.com',
+            'passwordHash' => password_hash('StrongP@ssw0rd123!', PASSWORD_ARGON2ID),
+            'roles' => ['USER'],
+            'name' => 'Legacy',
+            'twoFactorEnabled' => true,
+            'twoFactorSecret' => 'PLAINTEXTSEED123',
+            'twoFactorVerifiedAt' => null,
+            'createdAt' => time(),
+            'updatedAt' => time(),
+        ]);
+
+        $found = $repository->findById('legacy_2fa');
+        $this->assertNotNull($found);
+        $this->assertSame('PLAINTEXTSEED123', $found->getTwoFactorSecret());
     }
 
     public function testFindAllIgnoresBackupFilesAndInvalidRecords(): void
