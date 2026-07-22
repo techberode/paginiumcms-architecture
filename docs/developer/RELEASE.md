@@ -3,14 +3,14 @@
 > Posledná verzia: **2.0.47** · 2026-07-22 · tag **`v2.0.47`** (release commit na `main`)  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release. Samotný release/tag zatiaľ nevytváraj, kým nie je schválený deploy.
 
-> **Poznámka k verziám:** Commity `4367d19` (It.55) a `8526c19` (It.54) mali v správe nesprávne číslo (`2.0.42` / `2.0.41`). Oficiálne tagy podľa CHANGELOG: **v2.0.42** → `8526c19`, **v2.0.43** → `4367d19`, **v2.0.44** → `199877a`, **v2.0.45** → `f3ed5bc`, **v2.0.46** → `637fef4`, **v2.0.47** → `187f17a` (release docs; feature `f0a885c` + CI fix `390b392`).
+> **Poznámka k verziám:** Commity `4367d19` (It.55) a `8526c19` (It.54) mali v správe nesprávne číslo (`2.0.42` / `2.0.41`). Oficiálne tagy podľa CHANGELOG: **v2.0.42** → `8526c19`, **v2.0.43** → `4367d19`, **v2.0.44** → `199877a`, **v2.0.45** → `f3ed5bc`, **v2.0.46** → `637fef4`, **v2.0.47** → `881c80d` (release docs; feature `f0a885c` + CI fix `390b392`).
 
 ### Kontinuita verzií (nepreskakovať)
 
 | Verzia | Git tag | Release commit | Stav |
 |--------|---------|----------------|------|
 | 2.0.46 | `v2.0.46` | `637fef4` | ✅ tagged |
-| **2.0.47** | **`v2.0.47`** | **`5abab77`** | ✅ tagged (code `390b392` + release docs) |
+| **2.0.47** | **`v2.0.47`** | **`881c80d`** | ✅ tagged |
 | 2.0.48 | — | — | ⏳ Security [Unreleased] → next |
 
 **Pravidlo:** Ďalší release musí byť **`v2.0.48`**, nie skok na `.49` ani späť. Pred každým novým číslom: `git tag -l 'v2.0.4*' | sort -V` a overiť, že predchádzajúca verzia má tag + GitHub Release.
@@ -51,7 +51,7 @@
 2.0.47 — It.18f admin i18n Beta gate + Vitest I18nProvider fix (ISS-059–060)
 ```
 
-**Tag:** `v2.0.47` · **Target:** `main` · **Commit:** `187f17a`
+**Tag:** `v2.0.47` · **Target:** `main` · **Commit:** `881c80d`
 
 **Body:**
 
