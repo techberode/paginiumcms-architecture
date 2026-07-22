@@ -76,7 +76,7 @@ const ArticlePreviewBody: React.FC<{ article: Article }> = ({ article }) => {
   const dates = formatContentDateLabels({
     createdAt: article.createdAt,
     updatedAt: article.updatedAt,
-    frontMatterDate: article.frontMatter?.date,
+    frontMatterDate: article.frontMatter?.date as string | number | undefined,
   });
 
   return (

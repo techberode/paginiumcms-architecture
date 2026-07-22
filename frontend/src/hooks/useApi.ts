@@ -1,8 +1,9 @@
 // frontend/src/hooks/useApi.ts
 import { useState, useCallback } from 'react';
+import type { AxiosRequestConfig } from 'axios';
 import apiClient, { ApiResponse } from '../api/client';
 
-export function useApi<T = any>() {
+export function useApi<T = unknown>() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<T | null>(null);
@@ -11,8 +12,8 @@ export function useApi<T = any>() {
     async <R = T>(
       method: 'get' | 'post' | 'put' | 'delete' | 'patch',
       url: string,
-      payload?: any,
-      config?: any
+      payload?: unknown,
+      config?: AxiosRequestConfig
     ): Promise<ApiResponse<R>> => {
       setLoading(true);
       setError(null);
@@ -43,8 +44,8 @@ export function useApi<T = any>() {
           setError(response.error || 'An error occurred');
         }
         return response;
-      } catch (err: any) {
-        const errorMessage = err.message || 'An error occurred';
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : 'An error occurred';
         setError(errorMessage);
         return {
           success: false,
@@ -58,36 +59,36 @@ export function useApi<T = any>() {
   );
 
   const get = useCallback(
-    <R = T>(url: string, config?: any): Promise<ApiResponse<R>> => {
+    <R = T>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<R>> => {
       return request<R>('get', url, undefined, config);
     },
     [request]
   );
 
   const post = useCallback(
-    <R = T>(url: string, data?: any, config?: any): Promise<ApiResponse<R>> => {
-      return request<R>('post', url, data, config);
+    <R = T>(url: string, body?: unknown, config?: AxiosRequestConfig): Promise<ApiResponse<R>> => {
+      return request<R>('post', url, body, config);
     },
     [request]
   );
 
   const put = useCallback(
-    <R = T>(url: string, data?: any, config?: any): Promise<ApiResponse<R>> => {
-      return request<R>('put', url, data, config);
+    <R = T>(url: string, body?: unknown, config?: AxiosRequestConfig): Promise<ApiResponse<R>> => {
+      return request<R>('put', url, body, config);
     },
     [request]
   );
 
   const del = useCallback(
-    <R = T>(url: string, config?: any): Promise<ApiResponse<R>> => {
+    <R = T>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<R>> => {
       return request<R>('delete', url, undefined, config);
     },
     [request]
   );
 
   const patch = useCallback(
-    <R = T>(url: string, data?: any, config?: any): Promise<ApiResponse<R>> => {
-      return request<R>('patch', url, data, config);
+    <R = T>(url: string, body?: unknown, config?: AxiosRequestConfig): Promise<ApiResponse<R>> => {
+      return request<R>('patch', url, body, config);
     },
     [request]
   );

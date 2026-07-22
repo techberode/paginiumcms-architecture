@@ -243,7 +243,7 @@ export const BlogRenderer: React.FC = () => {
     const dates = formatContentDateLabels({
       createdAt: activeArticle.createdAt,
       updatedAt: activeArticle.updatedAt,
-      frontMatterDate: activeArticle.frontMatter?.date,
+      frontMatterDate: activeArticle.frontMatter?.date as string | number | undefined,
     });
 
     const globalCommentsEnabled = settings.comments?.enabled !== false;
@@ -477,7 +477,7 @@ export const BlogRenderer: React.FC = () => {
             const dates = formatContentDateLabels({
               createdAt: article.createdAt,
               updatedAt: article.updatedAt,
-              frontMatterDate: article.frontMatter?.date,
+              frontMatterDate: article.frontMatter?.date as string | number | undefined,
             });
 
             return (

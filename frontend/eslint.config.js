@@ -42,6 +42,13 @@ export default [
     },
   },
   {
+    // React context súbory exportujú Provider + hook — legitímny pattern, nie chyba.
+    files: ['src/context/**/*.{ts,tsx}'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
+  {
     files: ['**/*.{test,spec}.{ts,tsx}', 'src/test/**', 'src/mocks/**'],
     languageOptions: {
       globals: {

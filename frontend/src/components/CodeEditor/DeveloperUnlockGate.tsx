@@ -1,25 +1,12 @@
 // frontend/src/components/CodeEditor/DeveloperUnlockGate.tsx
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ShieldCheck } from 'lucide-react';
 import { getDeveloperStatus, lockDeveloperMode, unlockDeveloperMode } from '../../api/developer';
 import { useToast } from '../../hooks/useToast';
-
-interface DeveloperUnlockGateContextValue {
-  lock: () => Promise<boolean>;
-  isUnlocked: boolean;
-  locking: boolean;
-}
-
-const DeveloperUnlockGateContext = createContext<DeveloperUnlockGateContextValue | null>(null);
-
-export function useDeveloperUnlockGate(): DeveloperUnlockGateContextValue {
-  const ctx = useContext(DeveloperUnlockGateContext);
-  if (!ctx) {
-    throw new Error('useDeveloperUnlockGate must be used within DeveloperUnlockGate');
-  }
-  return ctx;
-}
+import {
+  DeveloperUnlockGateContext,
+} from './useDeveloperUnlockGate';
 
 interface DeveloperUnlockGateProps {
   children: React.ReactNode;

@@ -1,5 +1,5 @@
 // frontend/src/components/backend/BlueprintManager.tsx
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Layers, Plus, Save, Trash2 } from 'lucide-react';
 import {
   blueprintApi,
@@ -28,13 +28,13 @@ export const BlueprintManager: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const toast = useToast();
 
-  const loadList = async () => {
+  const loadList = useCallback(async () => {
     const list = await blueprintApi.list();
     setSummaries(list);
     if (list.length > 0 && !list.some((item) => item.type === activeType)) {
       setActiveType(list[0].type);
     }
-  };
+  }, [activeType]);
 
   const loadBlueprint = async (type: string) => {
     setLoading(true);
@@ -55,7 +55,7 @@ export const BlueprintManager: React.FC = () => {
 
   useEffect(() => {
     void loadList();
-  }, []);
+  }, [loadList]);
 
   useEffect(() => {
     if (activeType) {

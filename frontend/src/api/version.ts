@@ -2,6 +2,21 @@
 import apiClient from './client';
 import { Version } from './types';
 
+export interface VersionCompareResult {
+  version1: { number: number; timestamp: string; author: string };
+  version2: { number: number; timestamp: string; author: string };
+  diff: Version['diff'];
+  summary: string;
+}
+
+export interface VersionStatsResult {
+  total_versions: number;
+  total_content_items: number;
+  by_type: Record<string, number>;
+  recent_versions: Version[];
+  largest_files: Array<{ content_id: string; version: number; size: number; type: string }>;
+}
+
 export const versionApi = {
   // Získanie histórie verzií
   getHistory: async (contentId: string): Promise<Version[]> => {
@@ -29,32 +44,21 @@ export const versionApi = {
     contentId: string,
     version1: number,
     version2: number
-  ): Promise<{
-    version1: { number: number; timestamp: string; author: string };
-    version2: { number: number; timestamp: string; author: string };
-    diff: any;
-    summary: string;
-  }> => {
-    const response = await apiClient.get('/api/admin/versions/compare', {
+  ): Promise<VersionCompareResult> => {
+    const response = await apiClient.get<VersionCompareResult>('/api/admin/versions/compare', {
       params: {
         content_id: contentId,
         version1,
         version2,
       },
     });
-    return response.data as any;
+    return response.data as VersionCompareResult;
   },
 
   // Získanie štatistík
-  getStats: async (): Promise<{
-    total_versions: number;
-    total_content_items: number;
-    by_type: Record<string, number>;
-    recent_versions: Version[];
-    largest_files: Array<{ content_id: string; version: number; size: number; type: string }>;
-  }> => {
-    const response = await apiClient.get('/api/admin/versions/stats');
-    return response.data as any;
+  getStats: async (): Promise<VersionStatsResult> => {
+    const response = await apiClient.get<VersionStatsResult>('/api/admin/versions/stats');
+    return response.data as VersionStatsResult;
   },
 
   // Vyčistenie starých verzií

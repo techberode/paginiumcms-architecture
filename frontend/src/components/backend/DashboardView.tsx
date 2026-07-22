@@ -57,9 +57,9 @@ export const DashboardView: React.FC = () => {
             get('/api/pages'),
             get('/api/articles'),
             get('/api/media'),
-            get('/api/admin/users'),
-            get('/api/admin/backups'),
-            get('/api/admin/audit/stats'),
+            get<{ users: Array<{ id: string }> }>('/api/admin/users'),
+            get<unknown[]>('/api/admin/backups'),
+            get<{ recent_events?: Array<Record<string, unknown>> }>('/api/admin/audit/stats'),
             getDashboardOverview(),
           ]);
 
