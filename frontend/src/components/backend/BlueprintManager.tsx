@@ -9,17 +9,10 @@ import {
 } from '../../api/blueprint';
 import { DynamicForm } from '../blueprint/DynamicForm';
 import { useToast } from '../../hooks/useToast';
-
-const emptyField = (): BlueprintField => ({
-  key: 'field_key',
-  type: 'text',
-  label: 'Nové pole',
-  rules: ['string'],
-  options: [],
-  help: '',
-});
+import { useI18n } from '../../context/I18nContext';
 
 export const BlueprintManager: React.FC = () => {
+  const { t } = useI18n();
   const [summaries, setSummaries] = useState<BlueprintSummary[]>([]);
   const [activeType, setActiveType] = useState('page');
   const [blueprint, setBlueprint] = useState<BlueprintDefinition | null>(null);
@@ -27,6 +20,15 @@ export const BlueprintManager: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const toast = useToast();
+
+  const emptyField = (): BlueprintField => ({
+    key: 'field_key',
+    type: 'text',
+    label: t('platform.blueprint.newFieldLabel'),
+    rules: ['string'],
+    options: [],
+    help: '',
+  });
 
   const loadList = useCallback(async () => {
     const list = await blueprintApi.list();
@@ -74,10 +76,10 @@ export const BlueprintManager: React.FC = () => {
       });
       if (saved) {
         setBlueprint(saved);
-        toast.success('Blueprint uložený');
+        toast.success(t('platform.blueprint.toast.saved'));
         await loadList();
       } else {
-        toast.error('Uloženie zlyhalo');
+        toast.error(t('platform.blueprint.toast.saveFailed'));
       }
     } finally {
       setSaving(false);
@@ -88,9 +90,9 @@ export const BlueprintManager: React.FC = () => {
     if (!blueprint) return;
     const result = await blueprintApi.validate(blueprint.type, previewValues);
     if (result?.valid) {
-      toast.success('Ukážkové dáta prešli validáciou');
+      toast.success(t('platform.blueprint.toast.validationOk'));
     } else {
-      toast.error('Validácia zlyhala');
+      toast.error(t('platform.blueprint.toast.validationFailed'));
     }
   };
 
@@ -120,7 +122,7 @@ export const BlueprintManager: React.FC = () => {
   );
 
   if (loading && !blueprint) {
-    return <div className="p-8 text-slate-500">Načítavam blueprinty…</div>;
+    return <div className="p-8 text-slate-500">{t('platform.blueprint.loading')}</div>;
   }
 
   return (
@@ -128,8 +130,8 @@ export const BlueprintManager: React.FC = () => {
       <div className="flex items-center gap-3">
         <Layers className="text-indigo-500" />
         <div>
-          <h1 className="text-2xl font-black">Blueprint engine</h1>
-          <p className="text-sm text-slate-500">Flat-file definície typov obsahu a polí</p>
+          <h1 className="text-2xl font-black">{t('platform.blueprint.title')}</h1>
+          <p className="text-sm text-slate-500">{t('platform.blueprint.subtitle')}</p>
         </div>
       </div>
 
@@ -154,14 +156,14 @@ export const BlueprintManager: React.FC = () => {
         <div className="grid lg:grid-cols-2 gap-6">
           <section className="rounded-2xl border border-slate-200 dark:border-slate-700 p-5 space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="font-bold">Schéma polí</h2>
+              <h2 className="font-bold">{t('platform.blueprint.fieldSchema')}</h2>
               <button
                 type="button"
                 onClick={addField}
                 disabled={blueprint.system}
                 className="inline-flex items-center gap-1 text-sm font-bold text-indigo-600 disabled:opacity-40"
               >
-                <Plus size={16} /> Pole
+                <Plus size={16} /> {t('platform.blueprint.addField')}
               </button>
             </div>
 
@@ -198,7 +200,7 @@ export const BlueprintManager: React.FC = () => {
                       rules: e.target.value.split(',').map((rule) => rule.trim()).filter(Boolean),
                     })
                   }
-                  placeholder="required, string, max:255"
+                  placeholder={t('platform.blueprint.rulesPlaceholder')}
                 />
                 {!blueprint.system && (
                   <button
@@ -206,7 +208,7 @@ export const BlueprintManager: React.FC = () => {
                     onClick={() => removeField(index)}
                     className="md:col-span-2 inline-flex items-center gap-1 text-xs text-red-500"
                   >
-                    <Trash2 size={14} /> Odstrániť pole
+                    <Trash2 size={14} /> {t('platform.blueprint.removeField')}
                   </button>
                 )}
               </div>
@@ -218,19 +220,19 @@ export const BlueprintManager: React.FC = () => {
               onClick={() => void handleSave()}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white font-bold"
             >
-              <Save size={16} /> Uložiť blueprint
+              <Save size={16} /> {t('platform.blueprint.save')}
             </button>
           </section>
 
           <section className="rounded-2xl border border-slate-200 dark:border-slate-700 p-5 space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="font-bold">Náhľad formulára</h2>
+              <h2 className="font-bold">{t('platform.blueprint.formPreview')}</h2>
               <button
                 type="button"
                 onClick={() => void handleValidatePreview()}
                 className="text-sm font-bold text-indigo-600"
               >
-                Otestovať validáciu
+                {t('platform.blueprint.testValidation')}
               </button>
             </div>
             <DynamicForm

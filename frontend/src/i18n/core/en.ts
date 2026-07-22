@@ -12,6 +12,16 @@ export const enCore: MessageTree = {
     error: 'Error',
     success: 'Done',
   },
+  otp: {
+    codeRequired: 'Enter the verification code',
+    confirmed: 'Action confirmed',
+    invalidCode: 'Invalid verification code',
+    resent: 'New verification code sent',
+    resendFailed: 'Could not resend code',
+    verifying: 'Verifying…',
+    confirm: 'Confirm',
+    resend: 'Resend',
+  },
   nav: {
     dashboard: 'Dashboard',
     pages: 'Pages',

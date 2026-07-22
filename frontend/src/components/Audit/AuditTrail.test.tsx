@@ -41,7 +41,7 @@ describe('AuditTrail deep links', () => {
       expect(mocks.get).toHaveBeenCalledWith('/api/admin/audit/content/page-home');
     });
 
-    expect(await screen.findByText('Content Audit Trail')).toBeInTheDocument();
+    expect(await screen.findByText('Audit trail obsahu')).toBeInTheDocument();
     expect(await screen.findByText('Updated page')).toBeInTheDocument();
   });
 
@@ -57,6 +57,6 @@ describe('AuditTrail deep links', () => {
       expect(mocks.get).toHaveBeenCalledWith('/api/admin/audit/user/editor-1');
     });
 
-    expect(await screen.findByText('User Audit Trail')).toBeInTheDocument();
+    expect(await screen.findByText('Audit trail používateľa')).toBeInTheDocument();
   });
 });

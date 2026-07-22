@@ -4,9 +4,10 @@ import { useParams } from 'react-router-dom';
 import { useApi } from '../../hooks/useApi';
 import { useToast } from '../../hooks/useToast';
 import { formatDistanceToNow, format } from 'date-fns';
-import { sk } from 'date-fns/locale';
+import { sk, enUS } from 'date-fns/locale';
 import { formatAuditEventActor, formatAuditEventMessage } from '../../utils/formatAuditEvent';
 import type { AuditEvent, AuditStats } from '../../api/types';
+import { useI18n } from '../../context/I18nContext';
 
 interface AuditTrailProps {
   contentId?: string;
@@ -14,6 +15,8 @@ interface AuditTrailProps {
 }
 
 export const AuditTrail: React.FC<AuditTrailProps> = ({ contentId: contentIdProp, userId: userIdProp }) => {
+  const { t, locale } = useI18n();
+  const dateFnsLocale = locale === 'en' ? enUS : sk;
   const { contentId: routeContentId, userId: routeUserId } = useParams<{
     contentId?: string;
     userId?: string;
@@ -36,12 +39,12 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({ contentId: contentIdProp
         setStats(response.data?.stats ?? null);
       }
     } catch (error) {
-      toast.error('Failed to load audit trail');
+      toast.error(t('platform.auditTrail.toast.loadContentFailed'));
       console.error(error);
     } finally {
       setLoading(false);
     }
-  }, [contentId, get, toast]);
+  }, [contentId, get, toast, t]);
 
   const loadUserAudit = useCallback(async () => {
     setLoading(true);
@@ -51,12 +54,12 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({ contentId: contentIdProp
         setEvents(response.data?.events || []);
       }
     } catch (error) {
-      toast.error('Failed to load user audit');
+      toast.error(t('platform.auditTrail.toast.loadUserFailed'));
       console.error(error);
     } finally {
       setLoading(false);
     }
-  }, [userId, get, toast]);
+  }, [userId, get, toast, t]);
 
   const loadStats = useCallback(async () => {
     setLoading(true);
@@ -67,12 +70,12 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({ contentId: contentIdProp
         setEvents(response.data?.recent_events || []);
       }
     } catch (error) {
-      toast.error('Failed to load audit stats');
+      toast.error(t('platform.auditTrail.toast.loadStatsFailed'));
       console.error(error);
     } finally {
       setLoading(false);
     }
-  }, [get, toast]);
+  }, [get, toast, t]);
 
   useEffect(() => {
     if (contentId) {
@@ -123,13 +126,19 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({ contentId: contentIdProp
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
-        toast.success('Audit exported successfully');
+        toast.success(t('platform.auditTrail.toast.exportSuccess'));
       }
     } catch (error) {
-      toast.error('Failed to export audit');
+      toast.error(t('platform.auditTrail.toast.exportFailed'));
       console.error(error);
     }
   };
+
+  const title = contentId
+    ? t('platform.auditTrail.contentTitle')
+    : userId
+      ? t('platform.auditTrail.userTitle')
+      : t('platform.auditTrail.title');
 
   if (loading) {
     return (
@@ -142,57 +151,53 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({ contentId: contentIdProp
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
       <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center flex-wrap gap-2">
-        <h3 className="text-lg font-semibold">
-          {contentId ? 'Content Audit Trail' : userId ? 'User Audit Trail' : 'Audit Trail'}
-        </h3>
+        <h3 className="text-lg font-semibold">{title}</h3>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowStats(!showStats)}
             className="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
           >
-            {showStats ? 'Hide Stats' : 'Show Stats'}
+            {showStats ? t('platform.auditTrail.hideStats') : t('platform.auditTrail.showStats')}
           </button>
           <button
             onClick={handleExport}
             className="px-3 py-1 text-sm bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400 rounded hover:bg-green-200 dark:hover:bg-green-800"
           >
-            Export CSV
+            {t('platform.auditTrail.exportCsv')}
           </button>
         </div>
       </div>
 
-      {/* Stats */}
       {showStats && stats && (
         <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">Total Events</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">{t('platform.auditTrail.totalEvents')}</div>
               <div className="text-2xl font-bold">{stats.total_events || 0}</div>
             </div>
             <div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">Categories</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">{t('platform.auditTrail.categories')}</div>
               <div className="text-2xl font-bold">{Object.keys(stats.by_category || {}).length}</div>
             </div>
             <div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">Unique Users</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">{t('platform.auditTrail.uniqueUsers')}</div>
               <div className="text-2xl font-bold">{Object.keys(stats.by_user || {}).length}</div>
             </div>
             <div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">Errors</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">{t('platform.auditTrail.errors')}</div>
               <div className="text-2xl font-bold text-red-600">
                 {(stats.by_severity?.ERROR || 0) + (stats.by_severity?.CRITICAL || 0)}
               </div>
             </div>
           </div>
 
-          {/* Timeline */}
           {stats.timeline && (
             <div className="mt-4">
-              <div className="text-sm font-medium mb-2">Activity Timeline (Last 7 Days)</div>
+              <div className="text-sm font-medium mb-2">{t('platform.auditTrail.timeline')}</div>
               <div className="flex items-end h-16 gap-1">
                 {Object.entries(stats.timeline).slice(-7).map(([date, count]) => (
                   <div key={date} className="flex-1 flex flex-col items-center">
-                    <div 
+                    <div
                       className="w-full bg-indigo-500 dark:bg-indigo-400 rounded-t"
                       style={{ height: `${Math.min((Number(count) / 10) * 100, 100)}%` }}
                     />
@@ -207,13 +212,10 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({ contentId: contentIdProp
         </div>
       )}
 
-      {/* Events list */}
       <div className="p-4">
         <div className="space-y-2 max-h-96 overflow-y-auto">
           {events.length === 0 ? (
-            <p className="text-gray-500 dark:text-gray-400 text-center py-8">
-              No audit events found
-            </p>
+            <p className="text-gray-500 dark:text-gray-400 text-center py-8">{t('platform.auditTrail.empty')}</p>
           ) : (
             events.map((event, index) => {
               const logRecord = (event.log ?? event) as Record<string, unknown>;
@@ -227,7 +229,7 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({ contentId: contentIdProp
                 className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
                 <span className="text-xl mt-0.5">{getActionIcon(action)}</span>
-                
+
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-medium text-sm capitalize">
@@ -242,21 +244,23 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({ contentId: contentIdProp
                       </span>
                     )}
                   </div>
-                  
+
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                     {displayMessage}
                   </p>
-                  
+
                   <div className="flex items-center gap-4 mt-1 text-xs text-gray-500 dark:text-gray-400">
                     <span>
                       {displayActor}
                     </span>
                     <span>
-                      {formatDistanceToNow(new Date(event.timestamp), { addSuffix: true, locale: sk })}
+                      {formatDistanceToNow(new Date(event.timestamp), { addSuffix: true, locale: dateFnsLocale })}
                     </span>
                     {event.version && (
                       <span>
-                        Size: {event.version.content?.length || 0} chars
+                        {t('platform.auditTrail.sizeChars', {
+                          count: event.version.content?.length || 0,
+                        })}
                       </span>
                     )}
                   </div>

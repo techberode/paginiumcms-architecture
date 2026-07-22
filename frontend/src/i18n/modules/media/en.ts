@@ -59,6 +59,26 @@ export const mediaEn: MessageTree = {
     itemLabel: 'selected files',
     delete: 'Delete selected',
   },
+  pagination: {
+    itemLabel: 'files',
+  },
+  seo: {
+    ok: 'SEO OK',
+    warning: 'SEO warning',
+    critical: 'SEO issue',
+  },
+  lightbox: {
+    fitTitle: 'Fit to viewport (preserve aspect ratio)',
+    fitLabel: 'Fit',
+    nativeTitle: 'Native pixel dimensions (scroll if larger than screen)',
+    nativeLabel: '1:1',
+    close: 'Close preview',
+    previous: 'Previous image',
+    next: 'Next image',
+    hintFit: 'Fit mode — full image visible, aspect ratio preserved.',
+    hintNative: '1:1 mode — displayed at native pixel size (scroll if needed).',
+    pressEsc: 'Press Esc to close.',
+  },
   confirm: {
     deleteOne: 'Delete ":name"? This cannot be undone.',
     deleteBulk: 'Delete :count selected file(s)? This cannot be undone.',

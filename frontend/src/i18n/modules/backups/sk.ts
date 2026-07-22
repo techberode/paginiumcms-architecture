@@ -1,0 +1,85 @@
+import type { MessageTree } from '../../types';
+
+export const backupsSk: MessageTree = {
+  page: {
+    title: 'Správa záloh',
+    listTitle: 'Zálohy',
+    listCount: ':count záloh',
+  },
+  create: {
+    title: 'Vytvoriť zálohu',
+    placeholder: 'Názov zálohy…',
+    button: 'Vytvoriť zálohu',
+    creating: 'Vytváram…',
+  },
+  import: {
+    title: 'Importovať ZIP zálohu',
+    placeholder: 'Voliteľný zobrazovaný názov…',
+    button: 'Vybrať ZIP súbor',
+    importing: 'Importujem…',
+    hint: 'Archív sa zaregistruje v knižnici — obsah sa neobnoví, kým nekliknete Obnoviť.',
+  },
+  search: {
+    placeholder: 'Hľadať zálohy podľa názvu alebo stavu…',
+  },
+  table: {
+    name: 'Názov',
+    created: 'Vytvorené',
+    size: 'Veľkosť',
+    hash: 'SHA-256',
+    status: 'Stav',
+    actions: 'Akcie',
+    selectAll: 'Vybrať všetky dokončené zálohy na stránke',
+    selectOne: 'Vybrať :name',
+  },
+  status: {
+    completed: 'Dokončená',
+    failed: 'Zlyhala',
+    in_progress: 'Prebieha',
+  },
+  actions: {
+    download: 'Stiahnuť',
+    verify: 'Overiť SHA-256 hash',
+    restore: 'Obnoviť',
+    delete: 'Vymazať',
+  },
+  bulk: {
+    itemLabel: 'vybraných záloh',
+    restore: 'Obnoviť vybrané',
+    delete: 'Vymazať vybrané',
+  },
+  pagination: {
+    itemLabel: 'záloh',
+  },
+  empty: {
+    none: 'Zatiaľ žiadne zálohy. Vytvorte alebo importujte prvú zálohu.',
+    filter: 'Nenašli sa žiadne zálohy pre filter.',
+  },
+  confirm: {
+    restoreOne: 'Obnoviť túto zálohu? Aktuálny obsah bude prepísaný.',
+    deleteOne: 'Vymazať túto zálohu?',
+    bulkRestore: 'Obnoviť :count vybraných záloh? Aktuálny obsah bude prepísaný.',
+    bulkDelete: 'Vymazať :count vybraných záloh?',
+  },
+  toast: {
+    loadFailed: 'Nepodarilo sa načítať zálohy.',
+    nameRequired: 'Zadajte názov zálohy.',
+    createSuccess: 'Záloha bola vytvorená.',
+    createFailed: 'Vytvorenie zálohy zlyhalo.',
+    importSuccess: 'Záloha importovaná do knižnice.',
+    importFailed: 'Import zálohy zlyhal.',
+    verifyFailed: 'Overenie hash zlyhalo.',
+    verifyLegacy: 'Legacy záloha — aktuálny SHA-256: :hash…',
+    verifyOk: 'SHA-256 hash je v poriadku.',
+    verifyMismatch: 'SHA-256 nesedí — súbor zálohy môže byť poškodený.',
+    downloadSuccess: 'Záloha stiahnutá.',
+    downloadSuccessHash: 'Stiahnuté — SHA-256: :hash…',
+    downloadFailed: 'Sťahovanie zálohy zlyhalo.',
+    restoreSuccess: 'Záloha bola obnovená.',
+    restoreFailed: 'Obnova zálohy zlyhala.',
+    deleteSuccess: 'Záloha vymazaná.',
+    deleteFailed: 'Mazanie zálohy zlyhalo.',
+    bulkDeleteFailed: 'Hromadné mazanie zlyhalo.',
+    bulkRestoreFailed: 'Hromadná obnova zlyhala.',
+  },
+};

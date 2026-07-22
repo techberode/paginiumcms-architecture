@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Lock, Plus, Save, Trash2 } from 'lucide-react';
 import { securityApi, type AclRule } from '../../api/security';
 import { useToast } from '../../hooks/useToast';
+import { useI18n } from '../../context/I18nContext';
 
 const emptyRule = (): AclRule => ({
   id: `acl_${Date.now()}`,
@@ -13,6 +14,7 @@ const emptyRule = (): AclRule => ({
 });
 
 export const AclManager: React.FC = () => {
+  const { t } = useI18n();
   const [enabled, setEnabled] = useState(false);
   const [rules, setRules] = useState<AclRule[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,9 +40,9 @@ export const AclManager: React.FC = () => {
       const saved = await securityApi.saveAcl({ enabled, rules });
       if (saved) {
         setRules(saved.rules);
-        toast.success('ACL pravidlá uložené');
+        toast.success(t('platform.acl.toast.saved'));
       } else {
-        toast.error('Uloženie zlyhalo');
+        toast.error(t('platform.acl.toast.saveFailed'));
       }
     } finally {
       setSaving(false);
@@ -48,7 +50,7 @@ export const AclManager: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="p-6 text-slate-500">Načítavam ACL…</div>;
+    return <div className="p-6 text-slate-500">{t('platform.acl.loading')}</div>;
   }
 
   return (
@@ -56,14 +58,14 @@ export const AclManager: React.FC = () => {
       <div>
         <h1 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
           <Lock className="w-7 h-7 text-indigo-500" />
-          Jemnozrnné ACL
+          {t('platform.acl.title')}
         </h1>
-        <p className="text-sm text-slate-500 mt-1">Pravidlá podľa cesty k obsahu (glob s *).</p>
+        <p className="text-sm text-slate-500 mt-1">{t('platform.acl.subtitle')}</p>
       </div>
 
       <label className="inline-flex items-center gap-2 text-sm font-semibold">
         <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />
-        Povoliť path ACL
+        {t('platform.acl.enablePathAcl')}
       </label>
 
       <div className="space-y-4">
@@ -71,7 +73,7 @@ export const AclManager: React.FC = () => {
           <div key={rule.id} className="rounded-2xl border border-slate-200 dark:border-slate-800 p-4 space-y-3">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <label className="block text-xs font-bold uppercase text-slate-500">
-                Cesta
+                {t('platform.acl.path')}
                 <input
                   className="mt-1 w-full rounded-xl border px-3 py-2 text-sm dark:bg-slate-900"
                   value={rule.path}
@@ -83,7 +85,7 @@ export const AclManager: React.FC = () => {
                 />
               </label>
               <label className="block text-xs font-bold uppercase text-slate-500">
-                Role (čiarkou)
+                {t('platform.acl.roles')}
                 <input
                   className="mt-1 w-full rounded-xl border px-3 py-2 text-sm dark:bg-slate-900"
                   value={rule.roles.join(', ')}
@@ -109,7 +111,7 @@ export const AclManager: React.FC = () => {
                     setRules(next);
                   }}
                 />
-                Aktívne
+                {t('platform.acl.active')}
               </label>
               <button
                 type="button"
@@ -117,7 +119,7 @@ export const AclManager: React.FC = () => {
                 className="text-rose-500 text-sm inline-flex items-center gap-1"
               >
                 <Trash2 className="w-4 h-4" />
-                Odstrániť
+                {t('platform.acl.remove')}
               </button>
             </div>
           </div>
@@ -131,7 +133,7 @@ export const AclManager: React.FC = () => {
           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-bold"
         >
           <Plus className="w-4 h-4" />
-          Pridať pravidlo
+          {t('platform.acl.addRule')}
         </button>
         <button
           type="button"
@@ -140,7 +142,7 @@ export const AclManager: React.FC = () => {
           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-bold disabled:opacity-60"
         >
           <Save className="w-4 h-4" />
-          Uložiť
+          {t('platform.acl.save')}
         </button>
       </div>
     </div>

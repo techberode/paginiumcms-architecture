@@ -217,7 +217,7 @@ export const SettingsView: React.FC = () => {
                 }`}
               >
                 <div className="text-sm font-bold">{t(category.labelKey)}</div>
-                <div className="text-xs opacity-70 mt-1">{groups.length} skupín</div>
+                <div className="text-xs opacity-70 mt-1">{t('settings.page.groupCount', { count: String(groups.length) })}</div>
               </button>
             );
           })}

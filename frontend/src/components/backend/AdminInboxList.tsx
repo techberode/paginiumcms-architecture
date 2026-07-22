@@ -1,6 +1,7 @@
 // frontend/src/components/backend/AdminInboxList.tsx
 import React from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
+import { useI18n } from '../../context/I18nContext';
 
 export interface AdminInboxListProps {
   children: React.ReactNode;
@@ -21,19 +22,24 @@ interface AdminInboxListHeaderProps {
 export const AdminInboxListHeader: React.FC<AdminInboxListHeaderProps> = ({
   allSelected,
   onToggleAll,
-  label = 'Vybrať všetky na stránke',
-}) => (
+  label,
+}) => {
+  const { t } = useI18n();
+  const resolvedLabel = label ?? t('list.inbox.selectAllOnPage');
+
+  return (
   <div className="flex items-center gap-3 px-4 py-2.5 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
     <input
       type="checkbox"
       checked={allSelected}
       onChange={onToggleAll}
-      aria-label={label}
+      aria-label={resolvedLabel}
       className="rounded border-gray-300 dark:border-gray-600"
     />
-    <span className="text-xs text-gray-500 dark:text-gray-400">{label}</span>
+    <span className="text-xs text-gray-500 dark:text-gray-400">{resolvedLabel}</span>
   </div>
-);
+  );
+};
 
 export interface AdminInboxRowProps {
   id: string;
@@ -60,6 +66,7 @@ export const AdminInboxRow: React.FC<AdminInboxRowProps> = ({
   detail,
   actions,
 }) => {
+  const { t } = useI18n();
   const stripe =
     index % 2 === 0
       ? 'bg-white dark:bg-gray-900/20'
@@ -78,7 +85,7 @@ export const AdminInboxRow: React.FC<AdminInboxRowProps> = ({
             checked={selected}
             onChange={() => onToggleSelect(id)}
             onClick={(e) => e.stopPropagation()}
-            aria-label="Vybrať položku"
+            aria-label={t('list.inbox.selectItem')}
             className="rounded border-gray-300 dark:border-gray-600 mt-1"
           />
         </div>

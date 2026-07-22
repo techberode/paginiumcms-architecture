@@ -2,6 +2,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Maximize2, Minimize2, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatMediaSize, MediaFile, resolveAdminMediaPreviewUrl, resolvePublicMediaUrl } from '../../api/media';
+import { useI18n } from '../../context/I18nContext';
 
 export type MediaPreviewMode = 'fit' | 'native';
 
@@ -31,6 +32,7 @@ export const MediaPreviewLightbox: React.FC<MediaPreviewLightboxProps> = ({
   hasPrevious = false,
   hasNext = false,
 }) => {
+  const { t } = useI18n();
   const [dimensions, setDimensions] = useState<ImageDimensions | null>(null);
   const [loading, setLoading] = useState(true);
   const [previewSrc, setPreviewSrc] = useState('');
@@ -128,25 +130,25 @@ export const MediaPreviewLightbox: React.FC<MediaPreviewLightboxProps> = ({
             type="button"
             className={`btn btn-secondary text-xs px-3 py-1.5 ${mode === 'fit' ? 'ring-2 ring-indigo-400' : ''}`}
             onClick={() => onModeChange('fit')}
-            title="Fit to viewport (preserve aspect ratio)"
+            title={t('media.lightbox.fitTitle')}
           >
             <Minimize2 className="w-3 h-3 inline mr-1" />
-            Fit
+            {t('media.lightbox.fitLabel')}
           </button>
           <button
             type="button"
             className={`btn btn-secondary text-xs px-3 py-1.5 ${mode === 'native' ? 'ring-2 ring-indigo-400' : ''}`}
             onClick={() => onModeChange('native')}
-            title="Native pixel dimensions (scroll if larger than screen)"
+            title={t('media.lightbox.nativeTitle')}
           >
             <Maximize2 className="w-3 h-3 inline mr-1" />
-            1:1
+            {t('media.lightbox.nativeLabel')}
           </button>
           <button
             type="button"
             className="btn btn-secondary text-xs px-3 py-1.5"
             onClick={onClose}
-            aria-label="Close preview"
+            aria-label={t('media.lightbox.close')}
           >
             <X className="w-4 h-4" />
           </button>
@@ -164,7 +166,7 @@ export const MediaPreviewLightbox: React.FC<MediaPreviewLightboxProps> = ({
             type="button"
             className="absolute left-4 z-10 btn btn-secondary p-2 rounded-full"
             onClick={onPrevious}
-            aria-label="Previous image"
+            aria-label={t('media.lightbox.previous')}
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
@@ -206,7 +208,7 @@ export const MediaPreviewLightbox: React.FC<MediaPreviewLightboxProps> = ({
             type="button"
             className="absolute right-4 z-10 btn btn-secondary p-2 rounded-full"
             onClick={onNext}
-            aria-label="Next image"
+            aria-label={t('media.lightbox.next')}
           >
             <ChevronRight className="w-5 h-5" />
           </button>
@@ -217,11 +219,8 @@ export const MediaPreviewLightbox: React.FC<MediaPreviewLightboxProps> = ({
         className="px-4 py-2 text-center text-xs text-gray-400 bg-black/60 border-t border-white/10"
         onClick={(e) => e.stopPropagation()}
       >
-        {mode === 'fit'
-          ? 'Fit mode — full image visible, aspect ratio preserved.'
-          : '1:1 mode — displayed at native pixel size (scroll if needed).'}
-        {' '}
-        Press Esc to close.
+        {mode === 'fit' ? t('media.lightbox.hintFit') : t('media.lightbox.hintNative')}{' '}
+        {t('media.lightbox.pressEsc')}
       </div>
     </div>
   );

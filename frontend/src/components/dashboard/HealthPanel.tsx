@@ -1,6 +1,7 @@
 // frontend/src/components/dashboard/HealthPanel.tsx
 import React from 'react';
 import { HealthReport } from '../../api/types';
+import { useI18n } from '../../context/I18nContext';
 
 interface HealthPanelProps {
   health: HealthReport | null;
@@ -14,11 +15,15 @@ const statusColor: Record<string, string> = {
 };
 
 export const HealthPanel: React.FC<HealthPanelProps> = ({ health, loading }) => {
+  const { t } = useI18n();
+
   return (
     <div className="card">
       <div className="card-body">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">System health</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+            {t('dashboard.panels.health.title')}
+          </h2>
           {health && (
             <span className={`text-sm font-medium uppercase ${statusColor[health.status] ?? 'text-gray-500'}`}>
               {health.status}
@@ -34,19 +39,19 @@ export const HealthPanel: React.FC<HealthPanelProps> = ({ health, loading }) => 
           <>
             <dl className="grid grid-cols-4 gap-2 text-center mb-4">
               <div>
-                <dt className="text-xs text-gray-500">Pass</dt>
+                <dt className="text-xs text-gray-500">{t('dashboard.panels.health.pass')}</dt>
                 <dd className="text-lg font-semibold text-green-600">{health.summary.pass}</dd>
               </div>
               <div>
-                <dt className="text-xs text-gray-500">Warn</dt>
+                <dt className="text-xs text-gray-500">{t('dashboard.panels.health.warn')}</dt>
                 <dd className="text-lg font-semibold text-yellow-600">{health.summary.warn}</dd>
               </div>
               <div>
-                <dt className="text-xs text-gray-500">Fail</dt>
+                <dt className="text-xs text-gray-500">{t('dashboard.panels.health.fail')}</dt>
                 <dd className="text-lg font-semibold text-red-600">{health.summary.fail}</dd>
               </div>
               <div>
-                <dt className="text-xs text-gray-500">Total</dt>
+                <dt className="text-xs text-gray-500">{t('dashboard.panels.health.total')}</dt>
                 <dd className="text-lg font-semibold">{health.summary.total}</dd>
               </div>
             </dl>

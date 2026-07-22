@@ -2,8 +2,11 @@
 import React from 'react';
 import { ShieldCheck } from 'lucide-react';
 import { TwoFactorSettings } from '../auth/TwoFactorSettings';
+import { useI18n } from '../../context/I18nContext';
 
 export const AccountSecurityView: React.FC = () => {
+  const { t } = useI18n();
+
   return (
     <div className="space-y-6 max-w-3xl">
       <div className="rounded-2xl border border-indigo-100 dark:border-indigo-900/40 bg-gradient-to-br from-indigo-50/80 to-white dark:from-indigo-950/30 dark:to-slate-900 p-6">
@@ -12,10 +15,11 @@ export const AccountSecurityView: React.FC = () => {
             <ShieldCheck className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Bezpečnosť účtu</h2>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+              {t('platform.accountSecurity.title')}
+            </h2>
             <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
-              Nastavte dvojfaktorové overenie (TOTP) cez Google Authenticator, Authy alebo inú kompatibilnú
-              aplikáciu. Po aktivácii budete pri prihlásení zadávať 6-miestny kód z telefónu.
+              {t('platform.accountSecurity.description')}
             </p>
           </div>
         </div>

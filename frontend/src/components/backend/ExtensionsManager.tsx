@@ -6,8 +6,10 @@ import { queryKeys } from '../../api/queryKeys';
 import { useAdminListQuery } from '../../hooks/useAdminListQuery';
 import { useToast } from '../../hooks/useToast';
 import { AdminListSkeleton } from '../ui/AdminListSkeleton';
+import { useI18n } from '../../context/I18nContext';
 
 export const ExtensionsManager: React.FC = () => {
+  const { t } = useI18n();
   const queryClient = useQueryClient();
   const [importing, setImporting] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -24,10 +26,10 @@ export const ExtensionsManager: React.FC = () => {
     try {
       const imported = await extensionsApi.importArchive(file);
       if (imported) {
-        success(`Rozšírenie ${imported.name} bolo importované`);
+        success(t('platform.extensions.toast.imported', { name: imported.name }));
         await queryClient.invalidateQueries({ queryKey: queryKeys.extensions.list });
       } else {
-        toastError('Import zlyhal – skontroluj ZIP a politiku kódu');
+        toastError(t('platform.extensions.toast.importFailed'));
       }
     } finally {
       setImporting(false);
@@ -45,10 +47,14 @@ export const ExtensionsManager: React.FC = () => {
         : await extensionsApi.enable(item.id);
 
       if (response.success) {
-        success(item.enabled ? `${item.name} vypnuté` : `${item.name} zapnuté`);
+        success(
+          item.enabled
+            ? t('platform.extensions.toast.disabled', { name: item.name })
+            : t('platform.extensions.toast.enabled', { name: item.name })
+        );
         await queryClient.invalidateQueries({ queryKey: queryKeys.extensions.list });
       } else {
-        toastError(response.error ?? 'Operácia zlyhala');
+        toastError(response.error ?? t('platform.extensions.toast.operationFailed'));
       }
     } finally {
       setBusyId(null);
@@ -56,7 +62,7 @@ export const ExtensionsManager: React.FC = () => {
   };
 
   const handleUninstall = async (item: ExtensionRecord) => {
-    if (!window.confirm(`Odinštalovať rozšírenie „${item.name}“? Súbory sa vymažú z disku.`)) {
+    if (!window.confirm(t('platform.extensions.toast.uninstallConfirm', { name: item.name }))) {
       return;
     }
 
@@ -64,10 +70,10 @@ export const ExtensionsManager: React.FC = () => {
     try {
       const response = await extensionsApi.uninstall(item.id);
       if (response.success) {
-        success(`${item.name} odinštalované`);
+        success(t('platform.extensions.toast.uninstalled', { name: item.name }));
         await queryClient.invalidateQueries({ queryKey: queryKeys.extensions.list });
       } else {
-        toastError(response.error ?? 'Odinštalovanie zlyhalo');
+        toastError(response.error ?? t('platform.extensions.toast.uninstallFailed'));
       }
     } finally {
       setBusyId(null);
@@ -80,11 +86,9 @@ export const ExtensionsManager: React.FC = () => {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Puzzle className="h-7 w-7" />
-            Rozšírenia
+            {t('platform.extensions.title')}
           </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Externé doplnky mimo Core — import ZIP, aktivácia hookov a routes.
-          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('platform.extensions.subtitle')}</p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -107,7 +111,7 @@ export const ExtensionsManager: React.FC = () => {
             onClick={() => importInputRef.current?.click()}
           >
             <Upload className="h-4 w-4" />
-            {importing ? 'Importujem…' : 'Import ZIP'}
+            {importing ? t('platform.extensions.importing') : t('platform.extensions.importZip')}
           </button>
           <button
             type="button"
@@ -116,7 +120,7 @@ export const ExtensionsManager: React.FC = () => {
             onClick={() => void refetch()}
           >
             <RefreshCw className="h-4 w-4" />
-            Obnoviť
+            {t('platform.extensions.refresh')}
           </button>
         </div>
       </div>
@@ -125,7 +129,7 @@ export const ExtensionsManager: React.FC = () => {
         <AdminListSkeleton rows={4} />
       ) : items.length === 0 ? (
         <div className="rounded-lg border border-dashed p-8 text-center text-sm text-gray-500">
-          Žiadne rozšírenia. Importuj ZIP balík s <code>plugin.json</code>.
+          {t('platform.extensions.empty')}
         </div>
       ) : (
         <div className="grid gap-4">
@@ -141,11 +145,19 @@ export const ExtensionsManager: React.FC = () => {
                   {item.description ? <p className="mt-2 text-sm">{item.description}</p> : null}
                   <div className="mt-2 flex flex-wrap gap-2 text-xs">
                     {!item.present ? (
-                      <span className="rounded bg-amber-100 px-2 py-1 text-amber-800">Chýba na disku</span>
+                      <span className="rounded bg-amber-100 px-2 py-1 text-amber-800">
+                        {t('platform.extensions.missingOnDisk')}
+                      </span>
                     ) : null}
-                    {item.hasRoutes ? <span className="rounded bg-blue-100 px-2 py-1 text-blue-800">Routes</span> : null}
+                    {item.hasRoutes ? (
+                      <span className="rounded bg-blue-100 px-2 py-1 text-blue-800">
+                        {t('platform.extensions.routes')}
+                      </span>
+                    ) : null}
                     {item.hasFrontend ? (
-                      <span className="rounded bg-purple-100 px-2 py-1 text-purple-800">Frontend</span>
+                      <span className="rounded bg-purple-100 px-2 py-1 text-purple-800">
+                        {t('platform.extensions.frontend')}
+                      </span>
                     ) : null}
                   </div>
                 </div>
@@ -159,7 +171,9 @@ export const ExtensionsManager: React.FC = () => {
                       onChange={() => void toggleExtension(item)}
                       className="rounded"
                     />
-                    <span className="text-sm font-semibold">{item.enabled ? 'Zapnuté' : 'Vypnuté'}</span>
+                    <span className="text-sm font-semibold">
+                      {item.enabled ? t('platform.extensions.enabled') : t('platform.extensions.disabled')}
+                    </span>
                   </label>
                   <button
                     type="button"
@@ -168,7 +182,7 @@ export const ExtensionsManager: React.FC = () => {
                     onClick={() => void handleUninstall(item)}
                   >
                     <Trash2 className="h-4 w-4" />
-                    Odinštalovať
+                    {t('platform.extensions.uninstall')}
                   </button>
                 </div>
               </div>

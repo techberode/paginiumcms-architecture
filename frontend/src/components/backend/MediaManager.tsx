@@ -661,7 +661,7 @@ export const MediaManager: React.FC = () => {
           pageSize={pageSize}
           loading={loading}
           onPageChange={setPage}
-          itemLabel="súborov"
+          itemLabel={t('media.pagination.itemLabel')}
         />
       )}
 

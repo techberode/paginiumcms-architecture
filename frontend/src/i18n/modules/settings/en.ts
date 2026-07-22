@@ -8,7 +8,8 @@ export const settingsEn: MessageTree = {
     "loadFailed": "Failed to load settings",
     "saved": "Settings saved",
     "validationFailed": "Validation failed",
-    "saveFailed": "Save failed"
+    "saveFailed": "Save failed",
+    "groupCount": ":count groups"
   },
   "twoFactor": {
     "title": "Two-factor authentication (2FA)",
@@ -619,7 +620,7 @@ export const settingsEn: MessageTree = {
     "scheduler": {
       "enabled": {
         "label": "Enable job scheduler",
-        "help": "Master switch for scheduler:run CLI. Individual jobs can still be toggled in Plánovač."
+        "help": "Master switch for scheduler:run CLI. Individual jobs can still be toggled in Scheduler."
       },
       "retainRuns": {
         "label": "Retain run history entries"
@@ -642,22 +643,22 @@ export const settingsEn: MessageTree = {
     },
     "workflows": {
       "registrationOtpEnabled": {
-        "label": "OTP pri registrácii",
-        "help": "Nový účet vznikne až po overení e-mailového kódu (Iterácia 41)."
+        "label": "OTP on registration",
+        "help": "New accounts are created only after email code verification (Iteration 41)."
       },
       "commentApprovalOtpEnabled": {
-        "label": "OTP pri schválení komentára",
-        "help": "Editor musí potvrdiť schválenie komentára kódom z mailu."
+        "label": "OTP for comment approval",
+        "help": "Editors must confirm comment approval with a code from email."
       },
       "publishApprovalOtpEnabled": {
-        "label": "OTP pri publikácii",
-        "help": "Editor musí potvrdiť publikáciu príspevku kódom z mailu."
+        "label": "OTP for publishing",
+        "help": "Editors must confirm publishing with a code from email."
       },
       "otpTtlMinutes": {
-        "label": "Platnosť OTP kódu (min)"
+        "label": "OTP code validity (min)"
       },
       "otpMaxAttempts": {
-        "label": "Max. pokusov OTP"
+        "label": "Max OTP attempts"
       }
     }
   },

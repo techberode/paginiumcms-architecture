@@ -33,12 +33,7 @@ import {
 import { OtpConfirmModal } from './OtpConfirmModal';
 import { applyClientListView } from '../../utils/clientListView';
 import { summarizeBulkResult } from '../../types/bulk';
-
-const STATUS_LABELS: Record<CommentStatus, string> = {
-  pending: 'Čaká',
-  approved: 'Schválené',
-  rejected: 'Zamietnuté',
-};
+import { useI18n } from '../../context/I18nContext';
 
 const statusBadgeClass = (status: CommentStatus): string => {
   switch (status) {
@@ -55,6 +50,9 @@ const truncate = (text: string, max = 90): string =>
   text.length <= max ? text : `${text.slice(0, max).trim()}…`;
 
 export const CommentsManager: React.FC = () => {
+  const { t, locale } = useI18n();
+  const dateLocale = locale === 'en' ? 'en-US' : 'sk-SK';
+  const statusLabel = (status: CommentStatus): string => t(`comments.status.${status}`);
   const { error: showError, success: showSuccess } = useToast();
   const [items, setItems] = useState<Comment[]>([]);
   const {
@@ -90,11 +88,11 @@ export const CommentsManager: React.FC = () => {
       );
       setItems(comments);
     } catch {
-      showError('Nepodarilo sa načítať komentáre.');
+      showError(t('comments.toast.loadFailed'));
     } finally {
       setLoading(false);
     }
-  }, [filter, showError]);
+  }, [filter, showError, t]);
 
   useEffect(() => {
     void load();
@@ -113,16 +111,16 @@ export const CommentsManager: React.FC = () => {
         sortField,
         sortDirection,
         sortFields: [
-          { value: 'author', label: 'Autor', getValue: (comment) => comment.author },
-          { value: 'articleSlug', label: 'Článok', getValue: (comment) => comment.articleSlug },
-          { value: 'status', label: 'Stav', getValue: (comment) => comment.status },
-          { value: 'createdAt', label: 'Dátum', getValue: (comment) => comment.createdAt },
-          { value: 'isRead', label: 'Prečítané', getValue: (comment) => (comment.isRead ? 1 : 0) },
+          { value: 'author', label: t('comments.table.author'), getValue: (comment) => comment.author },
+          { value: 'articleSlug', label: t('comments.table.article'), getValue: (comment) => comment.articleSlug },
+          { value: 'status', label: t('comments.table.status'), getValue: (comment) => comment.status },
+          { value: 'createdAt', label: t('comments.table.date'), getValue: (comment) => comment.createdAt },
+          { value: 'isRead', label: t('comments.table.read'), getValue: (comment) => (comment.isRead ? 1 : 0) },
         ],
         page,
         pageSize,
       }),
-    [items, page, pageSize, search, sortDirection, sortField]
+    [items, page, pageSize, search, sortDirection, sortField, t]
   );
 
   const bulkSelection = useBulkSelection(
@@ -142,11 +140,11 @@ export const CommentsManager: React.FC = () => {
     }
     const result = await bulkCommentWorkflow(bulkSelection.selectedIds, action);
     if (result) {
-      showSuccess(summarizeBulkResult(result));
+      showSuccess(summarizeBulkResult(result, t));
       bulkSelection.clear();
       await load();
     } else {
-      showError('Hromadná akcia zlyhala.');
+      showError(t('comments.toast.bulkFailed'));
     }
   };
 
@@ -154,16 +152,16 @@ export const CommentsManager: React.FC = () => {
     if (bulkSelection.count === 0) {
       return;
     }
-    if (!confirm(`Vymazať ${bulkSelection.count} označených komentárov?`)) {
+    if (!confirm(t('comments.confirm.bulkDelete', { count: String(bulkSelection.count) }))) {
       return;
     }
     const result = await bulkDeleteComments(bulkSelection.selectedIds);
     if (result) {
-      showSuccess(summarizeBulkResult(result));
+      showSuccess(summarizeBulkResult(result, t));
       bulkSelection.clear();
       await load();
     } else {
-      showError('Hromadné mazanie zlyhalo.');
+      showError(t('comments.toast.bulkDeleteFailed'));
     }
   };
 
@@ -171,17 +169,17 @@ export const CommentsManager: React.FC = () => {
     const result = await updateCommentStatus(id, 'approved');
     if (result.ok && 'requiresOtp' in result && result.requiresOtp) {
       setOtpChallenge({ id: result.challengeId, commentId: id, debugCode: result.debugCode });
-      showSuccess('Overovací kód bol odoslaný na e-mail.');
+      showSuccess(t('comments.toast.otpSent'));
       if (result.debugCode) {
         showError(`Dev OTP: ${result.debugCode}`);
       }
       return;
     }
     if (result.ok) {
-      showSuccess('Komentár schválený.');
+      showSuccess(t('comments.toast.approved'));
       await load();
     } else {
-      showError(result.error || 'Aktualizácia zlyhala.');
+      showError(result.error || t('comments.toast.updateFailed'));
     }
   };
 
@@ -193,11 +191,11 @@ export const CommentsManager: React.FC = () => {
   };
 
   const removeOne = async (id: string) => {
-    if (!confirm('Vymazať tento komentár?')) {
+    if (!confirm(t('comments.confirm.deleteOne'))) {
       return;
     }
     if (await deleteComment(id)) {
-      showSuccess('Komentár vymazaný.');
+      showSuccess(t('comments.toast.deleted'));
       if (expandedId === id) {
         setExpandedId(null);
       }
@@ -210,22 +208,22 @@ export const CommentsManager: React.FC = () => {
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <MessageSquare className="w-6 h-6 text-indigo-500" />
-          Komentáre ({listView.total})
+          {t('comments.page.title')} ({listView.total})
         </h1>
-        <p className="text-sm text-gray-500 mt-1">Neprečítané: {unread}</p>
+        <p className="text-sm text-gray-500 mt-1">{t('comments.page.unread', { count: String(unread) })}</p>
       </div>
 
       <AdminListToolbar
         search={search}
         onSearchChange={setSearch}
-        searchPlaceholder="Hľadať podľa autora, textu alebo článku…"
+        searchPlaceholder={t('comments.search.placeholder')}
         statusFilter={filter}
         onStatusFilterChange={(value) => setFilter(value as CommentStatus | 'all')}
         statusOptions={[
-          { value: 'all', label: 'Všetky' },
-          { value: 'pending', label: 'Čakajúce' },
-          { value: 'approved', label: 'Schválené' },
-          { value: 'rejected', label: 'Zamietnuté' },
+          { value: 'all', label: t('comments.filter.all') },
+          { value: 'pending', label: t('comments.filter.pending') },
+          { value: 'approved', label: t('comments.filter.approved') },
+          { value: 'rejected', label: t('comments.filter.rejected') },
         ]}
         pageSize={pageSize}
         onPageSizeChange={setPageSize}
@@ -236,11 +234,11 @@ export const CommentsManager: React.FC = () => {
 
       <AdminListSortBar
         columns={[
-          { field: 'author', label: 'Autor' },
-          { field: 'articleSlug', label: 'Článok' },
-          { field: 'status', label: 'Stav' },
-          { field: 'createdAt', label: 'Dátum' },
-          { field: 'isRead', label: 'Prečítané' },
+          { field: 'author', label: t('comments.table.author') },
+          { field: 'articleSlug', label: t('comments.table.article') },
+          { field: 'status', label: t('comments.table.status') },
+          { field: 'createdAt', label: t('comments.table.date') },
+          { field: 'isRead', label: t('comments.table.read') },
         ]}
         activeField={sortField}
         direction={sortDirection}
@@ -249,13 +247,13 @@ export const CommentsManager: React.FC = () => {
 
       <BulkActionBar
         count={bulkSelection.count}
-        itemLabel="označených komentárov"
+        itemLabel={t('comments.bulk.itemLabel')}
         onClear={bulkSelection.clear}
         actions={[
-          { id: 'read', label: 'Prečítané', variant: 'secondary', onClick: () => void handleBulkWorkflow('read') },
-          { id: 'processed', label: 'Vybavené', variant: 'primary', onClick: () => void handleBulkWorkflow('processed') },
-          { id: 'archive', label: 'Archivovať', variant: 'secondary', onClick: () => void handleBulkWorkflow('archive') },
-          { id: 'delete', label: 'Vymazať označené', variant: 'danger', onClick: () => void handleBulkDelete() },
+          { id: 'read', label: t('comments.bulk.read'), variant: 'secondary', onClick: () => void handleBulkWorkflow('read') },
+          { id: 'processed', label: t('comments.bulk.processed'), variant: 'primary', onClick: () => void handleBulkWorkflow('processed') },
+          { id: 'archive', label: t('comments.bulk.archive'), variant: 'secondary', onClick: () => void handleBulkWorkflow('archive') },
+          { id: 'delete', label: t('comments.bulk.delete'), variant: 'danger', onClick: () => void handleBulkDelete() },
         ]}
       />
 
@@ -264,7 +262,7 @@ export const CommentsManager: React.FC = () => {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600" />
         </div>
       ) : listView.total === 0 ? (
-        <div className="card card-body text-center text-gray-500 py-12">Žiadne komentáre.</div>
+        <div className="card card-body text-center text-gray-500 py-12">{t('comments.empty.none')}</div>
       ) : (
         <>
           <AdminInboxList>
@@ -290,11 +288,11 @@ export const CommentsManager: React.FC = () => {
                           {comment.author}
                         </span>
                         <span className={`text-xs ${statusBadgeClass(comment.status)}`}>
-                          {STATUS_LABELS[comment.status]}
+                          {statusLabel(comment.status)}
                         </span>
                         {comment.isArchived ? (
                           <span className="badge bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 text-xs">
-                            Archivované
+                            {t('comments.status.archived')}
                           </span>
                         ) : null}
                       </div>
@@ -306,14 +304,14 @@ export const CommentsManager: React.FC = () => {
                       ) : null}
                     </div>
                     <div className="text-xs text-gray-500 shrink-0 sm:text-right">
-                      {new Date(comment.createdAt).toLocaleString('sk-SK')}
+                      {new Date(comment.createdAt).toLocaleString(dateLocale)}
                     </div>
                   </div>
                 }
                 detail={
                   <div className="space-y-3 text-sm">
                     <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
-                      <span>Článok: {comment.articleSlug}</span>
+                      <span>{t('comments.detail.article', { slug: comment.articleSlug })}</span>
                       {comment.email ? <span>{comment.email}</span> : null}
                     </div>
                     <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{comment.content}</p>
@@ -321,24 +319,24 @@ export const CommentsManager: React.FC = () => {
                       {!comment.isRead ? (
                         <button type="button" className="btn btn-secondary text-xs px-2 py-1" onClick={() => void markOne(comment, { isRead: true })}>
                           <Eye className="w-3 h-3 inline mr-1" />
-                          Prečítané
+                          {t('comments.actions.read')}
                         </button>
                       ) : null}
                       {comment.status !== 'approved' ? (
                         <button type="button" className="btn btn-primary text-xs px-2 py-1" onClick={() => void approveOne(comment.id)}>
                           <CheckCircle2 className="w-3 h-3 inline mr-1" />
-                          Vybavené
+                          {t('comments.actions.processed')}
                         </button>
                       ) : null}
                       {!comment.isArchived ? (
                         <button type="button" className="btn btn-secondary text-xs px-2 py-1" onClick={() => void markOne(comment, { isArchived: true })}>
                           <Archive className="w-3 h-3 inline mr-1" />
-                          Archivovať
+                          {t('comments.actions.archive')}
                         </button>
                       ) : null}
                       <button type="button" className="btn btn-danger text-xs px-2 py-1 ml-auto" onClick={() => void removeOne(comment.id)}>
                         <Trash2 className="w-3 h-3 inline mr-1" />
-                        Vymazať
+                        {t('comments.actions.delete')}
                       </button>
                     </div>
                   </div>
@@ -354,15 +352,15 @@ export const CommentsManager: React.FC = () => {
             pageSize={pageSize}
             loading={loading}
             onPageChange={setPage}
-            itemLabel="komentárov"
+            itemLabel={t('comments.pagination.itemLabel')}
           />
         </>
       )}
 
       <OtpConfirmModal
         open={otpChallenge !== null}
-        title="Schválenie komentára"
-        description="Zadajte overovací kód z e-mailu pre schválenie komentára."
+        title={t('comments.otp.title')}
+        description={t('comments.otp.description')}
         challengeId={otpChallenge?.id ?? ''}
         debugCode={otpChallenge?.debugCode}
         onClose={() => setOtpChallenge(null)}

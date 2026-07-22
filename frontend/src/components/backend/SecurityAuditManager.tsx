@@ -3,8 +3,19 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Download, ShieldAlert } from 'lucide-react';
 import { securityApi, type SecurityAuditEvent } from '../../api/security';
 import { useToast } from '../../hooks/useToast';
+import { useI18n } from '../../context/I18nContext';
+
+const TYPE_KEYS = [
+  'failed_login',
+  'successful_login',
+  'sso_login',
+  'permission_denied',
+  'role_denied',
+  'settings_change',
+] as const;
 
 export const SecurityAuditManager: React.FC = () => {
+  const { t } = useI18n();
   const [events, setEvents] = useState<SecurityAuditEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState('');
@@ -19,11 +30,11 @@ export const SecurityAuditManager: React.FC = () => {
       });
       setEvents(data.events);
     } catch {
-      toast.error('Nepodarilo sa načítať bezpečnostný audit');
+      toast.error(t('platform.securityAudit.toast.loadFailed'));
     } finally {
       setLoading(false);
     }
-  }, [typeFilter, toast]);
+  }, [typeFilter, toast, t]);
 
   useEffect(() => {
     void load();
@@ -39,7 +50,7 @@ export const SecurityAuditManager: React.FC = () => {
       a.click();
       URL.revokeObjectURL(url);
     } catch {
-      toast.error('Export zlyhal');
+      toast.error(t('platform.securityAudit.toast.exportFailed'));
     }
   };
 
@@ -49,9 +60,9 @@ export const SecurityAuditManager: React.FC = () => {
         <div>
           <h1 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
             <ShieldAlert className="w-7 h-7 text-rose-500" />
-            Bezpečnostný audit
+            {t('platform.securityAudit.title')}
           </h1>
-          <p className="text-sm text-slate-500 mt-1">Prihlásenia, zamietnuté oprávnenia, zmeny nastavení, SSO.</p>
+          <p className="text-sm text-slate-500 mt-1">{t('platform.securityAudit.subtitle')}</p>
         </div>
         <button
           type="button"
@@ -59,7 +70,7 @@ export const SecurityAuditManager: React.FC = () => {
           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-bold"
         >
           <Download className="w-4 h-4" />
-          Export CSV
+          {t('platform.securityAudit.exportCsv')}
         </button>
       </div>
 
@@ -69,28 +80,27 @@ export const SecurityAuditManager: React.FC = () => {
           onChange={(e) => setTypeFilter(e.target.value)}
           className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
         >
-          <option value="">Všetky typy</option>
-          <option value="failed_login">Neúspešné prihlásenie</option>
-          <option value="successful_login">Úspešné prihlásenie</option>
-          <option value="sso_login">SSO prihlásenie</option>
-          <option value="permission_denied">Zamietnuté oprávnenie</option>
-          <option value="role_denied">Zamietnutá rola</option>
-          <option value="settings_change">Zmena nastavení</option>
+          <option value="">{t('platform.securityAudit.allTypes')}</option>
+          {TYPE_KEYS.map((typeKey) => (
+            <option key={typeKey} value={typeKey}>
+              {t(`platform.securityAudit.types.${typeKey}`)}
+            </option>
+          ))}
         </select>
       </div>
 
       {loading ? (
-        <div className="py-12 text-center text-slate-500">Načítavam…</div>
+        <div className="py-12 text-center text-slate-500">{t('platform.securityAudit.loading')}</div>
       ) : (
         <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">
           <table className="min-w-full text-sm">
             <thead className="bg-slate-50 dark:bg-slate-900/80 text-left">
               <tr>
-                <th className="px-4 py-3">Čas</th>
-                <th className="px-4 py-3">Typ</th>
-                <th className="px-4 py-3">Správa</th>
-                <th className="px-4 py-3">Používateľ</th>
-                <th className="px-4 py-3">IP</th>
+                <th className="px-4 py-3">{t('platform.securityAudit.columns.time')}</th>
+                <th className="px-4 py-3">{t('platform.securityAudit.columns.type')}</th>
+                <th className="px-4 py-3">{t('platform.securityAudit.columns.message')}</th>
+                <th className="px-4 py-3">{t('platform.securityAudit.columns.user')}</th>
+                <th className="px-4 py-3">{t('platform.securityAudit.columns.ip')}</th>
               </tr>
             </thead>
             <tbody>
@@ -106,7 +116,7 @@ export const SecurityAuditManager: React.FC = () => {
               {events.length === 0 && (
                 <tr>
                   <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
-                    Žiadne záznamy
+                    {t('platform.securityAudit.empty')}
                   </td>
                 </tr>
               )}

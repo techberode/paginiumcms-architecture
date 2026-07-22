@@ -11,6 +11,7 @@ import {
   CornerDownLeft,
 } from 'lucide-react';
 import { searchAdmin, AdminSearchResultItem } from '../../api/search';
+import { useI18n } from '../../context/I18nContext';
 
 const RECENT_KEY = 'paginium_admin_search_recent';
 const MAX_RECENT = 8;
@@ -52,26 +53,27 @@ function typeIcon(type: AdminSearchResultItem['type']) {
   }
 }
 
-function typeLabel(type: AdminSearchResultItem['type']): string {
-  switch (type) {
-    case 'article':
-      return 'Článok';
-    case 'media':
-      return 'Médium';
-    case 'route':
-      return 'Modul';
-    default:
-      return 'Stránka';
-  }
-}
-
 export const AdminCommandPalette: React.FC<AdminCommandPaletteProps> = ({ isOpen, onClose }) => {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<AdminSearchResultItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [recent, setRecent] = useState<AdminSearchResultItem[]>([]);
+
+  const typeLabel = (type: AdminSearchResultItem['type']): string => {
+    switch (type) {
+      case 'article':
+        return t('platform.commandPalette.types.article');
+      case 'media':
+        return t('platform.commandPalette.types.media');
+      case 'route':
+        return t('platform.commandPalette.types.route');
+      default:
+        return t('platform.commandPalette.types.page');
+    }
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -180,7 +182,7 @@ export const AdminCommandPalette: React.FC<AdminCommandPaletteProps> = ({ isOpen
         onClick={(event) => event.stopPropagation()}
         role="dialog"
         aria-modal="true"
-        aria-label="Rýchle vyhľadávanie"
+        aria-label={t('platform.commandPalette.ariaLabel')}
       >
         <div className="flex items-center px-5 py-4 border-b border-slate-100 dark:border-slate-800 gap-3">
           <Search className="w-5 h-5 text-indigo-500" />
@@ -189,14 +191,14 @@ export const AdminCommandPalette: React.FC<AdminCommandPaletteProps> = ({ isOpen
             autoFocus
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Hľadať stránky, médiá, moduly… (Ctrl+K)"
+            placeholder={t('platform.commandPalette.placeholder')}
             className="flex-1 bg-transparent text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none text-base"
           />
           <button
             type="button"
             onClick={onClose}
             className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg"
-            aria-label="Zavrieť"
+            aria-label={t('platform.commandPalette.close')}
           >
             <X className="w-5 h-5" />
           </button>
@@ -205,13 +207,13 @@ export const AdminCommandPalette: React.FC<AdminCommandPaletteProps> = ({ isOpen
         <div className="max-h-[55vh] overflow-y-auto p-2">
           {query.trim().length < 2 && recent.length > 0 && (
             <div className="px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-              Posledné skoky
+              {t('platform.commandPalette.recent')}
             </div>
           )}
 
           {query.trim().length >= 2 && !loading && visibleItems.length === 0 && (
             <div className="py-10 text-center text-slate-500 dark:text-slate-400 text-sm">
-              Nenašli sa výsledky pre „{query.trim()}“
+              {t('platform.commandPalette.noResults', { query: query.trim() })}
             </div>
           )}
 
@@ -249,8 +251,12 @@ export const AdminCommandPalette: React.FC<AdminCommandPaletteProps> = ({ isOpen
         </div>
 
         <div className="px-5 py-3 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 flex items-center justify-between">
-          <span>↑↓ navigácia · Enter skok · Esc zavrieť</span>
-          <span>{loading ? 'Hľadám…' : `${visibleItems.length} položiek`}</span>
+          <span>{t('platform.commandPalette.footer')}</span>
+          <span>
+            {loading
+              ? t('platform.commandPalette.searching')
+              : t('platform.commandPalette.itemCount', { count: visibleItems.length })}
+          </span>
         </div>
       </div>
     </div>

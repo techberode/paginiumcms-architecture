@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { resendWorkflowOtp, verifyWorkflowOtp } from '../../api/workflows';
 import { useToast } from '../../hooks/useToast';
+import { useI18n } from '../../context/I18nContext';
 
 interface OtpConfirmModalProps {
   open: boolean;
@@ -25,6 +26,7 @@ export const OtpConfirmModal: React.FC<OtpConfirmModalProps> = ({
   const [code, setCode] = useState(debugCode ?? '');
   const [loading, setLoading] = useState(false);
   const toast = useToast();
+  const { t } = useI18n();
 
   if (!open) {
     return null;
@@ -33,7 +35,7 @@ export const OtpConfirmModal: React.FC<OtpConfirmModalProps> = ({
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!code.trim()) {
-      toast.warning('Enter the verification code');
+      toast.warning(t('common.otp.codeRequired'));
       return;
     }
 
@@ -41,11 +43,11 @@ export const OtpConfirmModal: React.FC<OtpConfirmModalProps> = ({
     try {
       const result = await verifyWorkflowOtp(challengeId, code.trim());
       if (result.ok) {
-        toast.success('Action confirmed');
+        toast.success(t('common.otp.confirmed'));
         await onVerified();
         onClose();
       } else {
-        toast.error(result.error || 'Invalid verification code');
+        toast.error(result.error || t('common.otp.invalidCode'));
       }
     } finally {
       setLoading(false);
@@ -57,13 +59,13 @@ export const OtpConfirmModal: React.FC<OtpConfirmModalProps> = ({
     try {
       const result = await resendWorkflowOtp(challengeId);
       if (result.ok && result.requiresOtp) {
-        toast.info('New verification code sent');
+        toast.info(t('common.otp.resent'));
         if (result.debugCode) {
           setCode(result.debugCode);
           toast.warning(`Dev OTP: ${result.debugCode}`);
         }
       } else if (!result.ok) {
-        toast.error(result.error || 'Could not resend code');
+        toast.error(result.error || t('common.otp.resendFailed'));
       }
     } finally {
       setLoading(false);
@@ -93,14 +95,14 @@ export const OtpConfirmModal: React.FC<OtpConfirmModalProps> = ({
             />
             <div className="flex gap-2">
               <button type="submit" disabled={loading} className="btn btn-primary flex-1">
-                {loading ? 'Verifying…' : 'Confirm'}
+                {loading ? t('common.otp.verifying') : t('common.otp.confirm')}
               </button>
               <button type="button" disabled={loading} onClick={() => void handleResend()} className="btn btn-secondary">
-                Resend
+                {t('common.otp.resend')}
               </button>
             </div>
             <button type="button" disabled={loading} onClick={onClose} className="w-full text-sm text-gray-500 hover:underline">
-              Cancel
+              {t('common.cancel')}
             </button>
           </form>
         </div>

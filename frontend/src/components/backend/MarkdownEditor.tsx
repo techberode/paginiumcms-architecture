@@ -51,6 +51,7 @@ import {
   type ContentEditorLoadData,
   type ContentSaveResponse,
 } from '../../utils/contentEditorApi';
+import { useI18n } from '../../context/I18nContext';
 
 interface MarkdownEditorProps {
   type?: ContentType;
@@ -108,6 +109,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
 
   const { get, post, put } = useApi();
   const toast = useToast();
+  const { t } = useI18n();
   const { settings } = useSettingsContext();
   const { user } = useAuth();
   const isNew = slug === 'new' || !slug;
@@ -250,7 +252,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         }
       }
     } catch (error) {
-      toast.error('Nepodarilo sa načítať obsah');
+      toast.error(t('editor.markdown.toast.loadFailed'));
       console.error(error);
     } finally {
       setLoading(false);
@@ -266,7 +268,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
       setContentFormat(format);
       setContent(valueForEditorMode(draft.content, format, editorMode));
       setStatus((draft.status as typeof status) || 'draft');
-      toast.info('Koncept bol obnovený');
+      toast.info(t('editor.markdown.toast.draftRestored'));
     }
     setPendingDraftAt(null);
   };
@@ -281,7 +283,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
   const handleSave = useCallback(
     async (forceRevision?: string, contentOverride?: string) => {
       if (!title.trim()) {
-        toast.warning('Zadajte prosím názov');
+        toast.warning(t('editor.markdown.toast.titleRequired'));
         return;
       }
 
@@ -290,7 +292,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
       const nextSlug = isNew ? slugifyTitle(editSlug || title) : slug;
 
       if (isNew && !nextSlug) {
-        toast.warning('Slug nemôže byť prázdny');
+        toast.warning(t('editor.markdown.toast.slugRequired'));
         return;
       }
 
@@ -335,9 +337,9 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         const otpPending = extractOtpPending(responseObj);
         if (otpPending) {
           setPublishOtp({ challengeId: otpPending.challengeId, debugCode: otpPending.debugCode });
-          toast.info('Overovací kód pre publikáciu bol odoslaný na email');
+          toast.info(t('editor.markdown.toast.otpSent'));
           if (otpPending.debugCode) {
-            toast.warning(`Dev OTP: ${otpPending.debugCode}`);
+            toast.warning(t('editor.markdown.toast.devOtp', { code: otpPending.debugCode }));
           }
           const responseSlug = responseObj.slug;
           if (isNew && typeof responseSlug === 'string' && responseSlug !== '') {
@@ -370,7 +372,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
           if (!isNew && slug) {
             await discardDraft(type, slug);
           }
-          toast.success('Obsah bol uložený');
+          toast.success(t('editor.markdown.toast.saved'));
           if (isNew && response.data?.slug) {
             navigate(`/${type === 'article' ? 'articles' : 'pages'}/${response.data.slug}`);
           }
@@ -380,7 +382,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
 
           if (merge.clean) {
             const merged = assembleMerged(merge, {});
-            toast.info('Zmeny boli automaticky zlúčené so serverovou verziou.');
+            toast.info(t('editor.markdown.toast.autoMerged'));
             await handleSave(c.serverRevision, merged);
           } else {
             setConflict({
@@ -389,13 +391,13 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
               theirs: c.serverContent,
               serverRevision: c.serverRevision,
             });
-            toast.error(`Konflikt (${merge.conflictCount}) – vyriešte ho prosím manuálne.`);
+            toast.error(t('editor.markdown.toast.conflict', { count: merge.conflictCount }));
           }
         } else {
-          toast.error(response.error || 'Uloženie zlyhalo');
+          toast.error(response.error || t('editor.markdown.toast.saveFailed'));
         }
       } catch (error) {
-        toast.error('Uloženie zlyhalo');
+        toast.error(t('editor.markdown.toast.saveFailed'));
         console.error(error);
       } finally {
         setSaving(false);
@@ -423,6 +425,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
       put,
       navigate,
       toast,
+      t,
     ]
   );
 
@@ -435,7 +438,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
 
   const cancelConflict = (): void => {
     setConflict(null);
-    toast.info('Riešenie konfliktu zrušené. Vaše zmeny ostali neuložené.');
+    toast.info(t('editor.markdown.toast.conflictCancelled'));
   };
 
   const publicPath = resolvePublicPath(type, editSlug || slug || '');
@@ -463,7 +466,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
       template,
       content: stored.contentFormat === 'html' || stored.contentFormat === 'tiptap_json' ? '' : stored.content,
       html,
-      author: user?.name || 'Redakcia',
+      author: user?.name || t('editor.markdown.defaultAuthor'),
       tags: seo.tags
         .split(',')
         .map((tag) => tag.trim())
@@ -485,15 +488,16 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
     title,
     type,
     user?.name,
+    t,
   ]);
 
   const autoSaveLabel =
     autoSave.status === 'saving'
-      ? 'Ukladám koncept…'
+      ? t('editor.markdown.autoSave.saving')
       : autoSave.status === 'saved'
-        ? 'Koncept uložený'
+        ? t('editor.markdown.autoSave.saved')
         : autoSave.status === 'error'
-          ? 'Koncept sa nepodarilo uložiť'
+          ? t('editor.markdown.autoSave.error')
           : '';
 
   if (loading) {
@@ -508,19 +512,19 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
     <div className="space-y-6">
       {pendingDraftAt && (
         <div className="mx-auto max-w-7xl flex items-center justify-between rounded-xl bg-blue-50 dark:bg-blue-900/30 px-4 py-3 text-sm text-blue-800 dark:text-blue-200">
-          <span>Našiel sa neuložený koncept. Chcete ho obnoviť?</span>
+          <span>{t('editor.markdown.draftBanner.message')}</span>
           <span className="flex gap-2">
             <button
               onClick={() => void restoreDraft()}
               className="rounded bg-blue-600 px-3 py-1 text-white hover:bg-blue-700"
             >
-              Obnoviť
+              {t('editor.markdown.draftBanner.restore')}
             </button>
             <button
               onClick={() => void dismissDraft()}
               className="rounded px-3 py-1 hover:bg-blue-100 dark:hover:bg-blue-800"
             >
-              Zahodiť
+              {t('editor.markdown.draftBanner.dismiss')}
             </button>
           </span>
         </div>
@@ -583,14 +587,14 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         globalCommentsAllowGuests={settings.comments?.allowGuestComments !== false}
         footerExtra={
           <div className="form-group">
-            <label className="form-label">Popis zmeny (voliteľné)</label>
+            <label className="form-label">{t('editor.markdown.commitMessage.label')}</label>
             <input
               type="text"
               value={commitMessage}
               onChange={(e) => setCommitMessage(e.target.value)}
               disabled={!canEdit}
               className="form-input"
-              placeholder="Napr. Aktualizácia úvodného odseku…"
+              placeholder={t('editor.markdown.commitMessage.placeholder')}
             />
           </div>
         }
@@ -636,7 +640,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
       {!isNew && slug && (
         <div className="mx-auto max-w-7xl card">
           <div className="card-header">
-            <h2 className="text-lg font-bold">História verzií</h2>
+            <h2 className="text-lg font-bold">{t('editor.markdown.versionHistory')}</h2>
           </div>
           <div className="card-body">
             <VersionHistory contentId={slug} onRestore={() => void loadContent()} />
@@ -652,14 +656,14 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
 
       <OtpConfirmModal
         open={publishOtp !== null}
-        title="Confirm publish"
-        description="Enter the verification code sent to your email to publish this content."
+        title={t('editor.markdown.otpPublish.title')}
+        description={t('editor.markdown.otpPublish.description')}
         challengeId={publishOtp?.challengeId ?? ''}
         debugCode={publishOtp?.debugCode}
         onClose={() => setPublishOtp(null)}
         onVerified={() => {
           setStatus('published');
-          toast.success('Obsah bol publikovaný');
+          toast.success(t('editor.markdown.toast.published'));
         }}
       />
     </div>

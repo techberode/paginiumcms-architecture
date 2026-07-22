@@ -19,6 +19,9 @@ import {
   profileAllows,
   type EditorProfileDefinition,
 } from '../../utils/editorProfiles';
+import { useI18n } from '../../context/I18nContext';
+
+type WysiwygBlockedReason = 'images' | 'tables' | 'codeBlock' | 'scripts' | 'links' | 'uploadUnavailable';
 
 export interface WysiwygEditorHandle {
   insertImage: (url: string, alt?: string) => void;
@@ -93,19 +96,19 @@ function buildExtensions(profile: EditorProfileDefinition): Extensions {
   return extensions;
 }
 
-function containsDisallowedHtml(html: string, profile: EditorProfileDefinition): string | null {
+function detectBlockedHtml(html: string, profile: EditorProfileDefinition): WysiwygBlockedReason | null {
   const lower = html.toLowerCase();
   if (!profileAllows(profile, 'image') && lower.includes('<img')) {
-    return 'Profil editora nepovoľuje obrázky.';
+    return 'images';
   }
   if (!profileAllows(profile, 'table') && lower.includes('<table')) {
-    return 'Profil editora nepovoľuje tabuľky.';
+    return 'tables';
   }
   if (!profileAllows(profile, 'codeBlock') && (lower.includes('<pre') || lower.includes('<code'))) {
-    return 'Profil editora nepovoľuje bloky kódu.';
+    return 'codeBlock';
   }
   if (lower.includes('<iframe') || lower.includes('<script')) {
-    return 'Profil editora nepovoľuje vložené skripty alebo iframe.';
+    return 'scripts';
   }
   return null;
 }
@@ -135,6 +138,8 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
   },
   ref
 ) {
+  const { t } = useI18n();
+  const blockedMessage = (reason: WysiwygBlockedReason) => t(`editor.wysiwyg.blocked.${reason}`);
   const extensions = useMemo(() => buildExtensions(profile), [profile]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadHandlerRef = useRef<(file: File) => Promise<void>>(async () => undefined);
@@ -162,10 +167,10 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
         if (!html) {
           return false;
         }
-        const blocked = containsDisallowedHtml(html, profile);
+        const blocked = detectBlockedHtml(html, profile);
         if (blocked) {
           event.preventDefault();
-          onBlockedAction?.(blocked);
+          onBlockedAction?.(blockedMessage(blocked));
           return true;
         }
         return false;
@@ -188,11 +193,11 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
 
   uploadHandlerRef.current = async (file: File) => {
     if (!profileAllows(profile, 'image')) {
-      onBlockedAction?.('Profil editora nepovoľuje obrázky.');
+      onBlockedAction?.(blockedMessage('images'));
       return;
     }
     if (!onUploadImage || !editor) {
-      onBlockedAction?.('Upload obrázkov nie je dostupný.');
+      onBlockedAction?.(blockedMessage('uploadUnavailable'));
       return;
     }
     const uploaded = await onUploadImage(file);
@@ -202,16 +207,16 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
   };
 
   useImperativeHandle(ref, () => ({
-    insertImage: (url: string, alt = 'image') => {
+    insertImage: (url: string, alt = t('editor.wysiwyg.defaultImageAlt')) => {
       if (!profileAllows(profile, 'image')) {
-        onBlockedAction?.('Profil editora nepovoľuje obrázky.');
+        onBlockedAction?.(blockedMessage('images'));
         return;
       }
       editor?.chain().focus().setImage({ src: url, alt }).run();
     },
     insertLink: (url: string, label?: string) => {
       if (!profileAllows(profile, 'link')) {
-        onBlockedAction?.('Profil editora nepovoľuje odkazy.');
+        onBlockedAction?.(blockedMessage('links'));
         return;
       }
       if (label) {
@@ -240,7 +245,7 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
   }, [editor, readOnly]);
 
   if (!editor) {
-    return <div className="p-4 text-gray-500">Načítavanie editora…</div>;
+    return <div className="p-4 text-gray-500">{t('editor.wysiwyg.loading')}</div>;
   }
 
   const btn = (active: boolean) =>
@@ -336,7 +341,7 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
             <button
               type="button"
               onClick={() => {
-                const url = window.prompt('URL odkazu');
+                const url = window.prompt(t('editor.wysiwyg.prompts.linkUrl'));
                 if (url) editor.chain().focus().setLink({ href: url }).run();
               }}
               className={btn(editor.isActive('link'))}

@@ -59,6 +59,26 @@ export const mediaSk: MessageTree = {
     itemLabel: 'vybraných súborov',
     delete: 'Zmazať vybrané',
   },
+  pagination: {
+    itemLabel: 'súborov',
+  },
+  seo: {
+    ok: 'SEO OK',
+    warning: 'SEO varovanie',
+    critical: 'SEO problém',
+  },
+  lightbox: {
+    fitTitle: 'Prispôsobiť obrazovke (zachovať pomer strán)',
+    fitLabel: 'Prispôsobiť',
+    nativeTitle: 'Natívne rozlíšenie (scroll ak je väčší)',
+    nativeLabel: '1:1',
+    close: 'Zavrieť náhľad',
+    previous: 'Predchádzajúci obrázok',
+    next: 'Ďalší obrázok',
+    hintFit: 'Režim prispôsobenia — celý obrázok viditeľný, pomer strán zachovaný.',
+    hintNative: 'Režim 1:1 — zobrazené v natívnom rozlíšení (scroll ak treba).',
+    pressEsc: 'Stlačte Esc pre zatvorenie.',
+  },
   confirm: {
     deleteOne: 'Zmazať „:name“? Táto akcia je nevratná.',
     deleteBulk: 'Zmazať :count vybraných súborov? Táto akcia je nevratná.',

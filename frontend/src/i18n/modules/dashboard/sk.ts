@@ -47,4 +47,37 @@ export const dashboardSk: MessageTree = {
   toast: {
     loadFailed: 'Nepodarilo sa načítať dashboard',
   },
+  panels: {
+    locks: {
+      title: 'Aktívne zámky',
+      activeCount: ':count aktívnych',
+      empty: 'Žiadne aktívne zámky obsahu.',
+      expires: 'expiruje',
+      release: 'Uvoľniť',
+      released: 'Zámok uvoľnený',
+      releaseFailed: 'Nepodarilo sa uvoľniť zámok',
+    },
+    conflicts: {
+      title: 'Nedávne konflikty',
+      loggedCount: ':count záznamov',
+      empty: 'Žiadne konflikty obsahu.',
+      openAudit: 'Otvoriť audit trail',
+    },
+    health: {
+      title: 'Zdravie systému',
+      pass: 'OK',
+      warn: 'Varovanie',
+      fail: 'Zlyhanie',
+      total: 'Spolu',
+    },
+    logs: {
+      title: 'Logy (:hours h)',
+      open: 'Otvoriť logy →',
+    },
+    activity: {
+      title: 'Prehľad aktivít',
+      empty: 'Zatiaľ žiadne udalosti v audit logu.',
+      openAudit: 'Celý audit trail →',
+    },
+  },
 };

@@ -1,6 +1,6 @@
 # Iteration 18 – Admin UI Localization (i18n)
 
-**Status:** ✅ Shipped (2.0.44) · It.18a–d complete · **It.18e ✅ (2.0.46)**  
+**Status:** ✅ Shipped (2.0.44) · It.18a–d complete · **It.18e ✅ (2.0.46)** · **It.18f ✅ (Beta gate)**  
 **Version:** 2.0.44 · **2.0.46** (It.18e media/navigation/dashboard)
 
 ## Summary
@@ -49,14 +49,25 @@ Migrate all admin UI strings from hardcoded Slovak to `useI18n()`, with backend 
 | `MediaManager.tsx`, `NavigationManager.tsx`, `DashboardView.tsx` | Migrated to `useI18n()` |
 | `NavigationManager.test.tsx`, `MediaManager.test.tsx` | `TestI18nProvider` + SK label assertions |
 
-## Remaining ⏳
+### It.18f ✅ (Beta gate)
 
-- Migrate remaining admin components → `useI18n()` (comments, messages, audit, backups…)
+| Path | Role |
+|------|------|
+| `src/i18n/modules/comments/{sk,en}.ts` | **CommentsManager** — inbox, bulk, OTP |
+| `src/i18n/modules/messages/{sk,en}.ts` | **MessagesViewer** — priority, bulk, status |
+| `src/i18n/modules/backups/{sk,en}.ts` | **BackupManager** — create/import/restore |
+| `src/i18n/modules/trash/{sk,en}.ts` | **TrashManager** — restore, purge, empty |
+| `src/i18n/modules/logs/{sk,en}.ts` | **LogsManager** — severity, source, purge |
+| `CommentsManager.tsx`, `MessagesViewer.tsx`, `BackupManager.tsx`, `TrashManager.tsx`, `LogsManager.tsx` | Migrated to `useI18n()` |
+| `src/i18n/modules/ops18f/ops18f.test.ts` | Catalog parity smoke tests |
+
+## Remaining ⏳ (post-Beta)
+- Editor obsahu (`ContentEditorShell`, `MarkdownEditor`, `SeoMetadataPanel`) — veľký objem, mimo Beta gate
+- Audit panely, firewall UI zvyšok, scheduler, notifications overview
 - Plugin i18n: `Http/Extensions/{id}/lang/` + `frontend/src/extensions/{id}/i18n/`
-- Public site (`PublicSite`) – separate or shared catalog
+- Public site (`PublicSite`) – separate catalog
 - Optional: `GET /api/i18n/{locale}` for dynamic loading
 - Settings `general.language` enum from `SupportedLocalesRegistry`
-
 ## i18n law
 
 1. One file per module and language

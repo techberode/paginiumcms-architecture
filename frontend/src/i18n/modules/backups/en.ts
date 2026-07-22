@@ -1,0 +1,85 @@
+import type { MessageTree } from '../../types';
+
+export const backupsEn: MessageTree = {
+  page: {
+    title: 'Backup Manager',
+    listTitle: 'Backups',
+    listCount: ':count backups',
+  },
+  create: {
+    title: 'Create New Backup',
+    placeholder: 'Enter backup name…',
+    button: 'Create Backup',
+    creating: 'Creating…',
+  },
+  import: {
+    title: 'Import Backup ZIP',
+    placeholder: 'Optional display name…',
+    button: 'Choose ZIP file',
+    importing: 'Importing…',
+    hint: 'Registers archive in library — does not restore content until you click Restore.',
+  },
+  search: {
+    placeholder: 'Search backups by name or status…',
+  },
+  table: {
+    name: 'Name',
+    created: 'Created',
+    size: 'Size',
+    hash: 'SHA-256',
+    status: 'Status',
+    actions: 'Actions',
+    selectAll: 'Select all completed backups on page',
+    selectOne: 'Select :name',
+  },
+  status: {
+    completed: 'Completed',
+    failed: 'Failed',
+    in_progress: 'In progress',
+  },
+  actions: {
+    download: 'Download',
+    verify: 'Verify SHA-256 hash',
+    restore: 'Restore',
+    delete: 'Delete',
+  },
+  bulk: {
+    itemLabel: 'backups selected',
+    restore: 'Restore selected',
+    delete: 'Delete selected',
+  },
+  pagination: {
+    itemLabel: 'backups',
+  },
+  empty: {
+    none: 'No backups found. Create or import your first backup.',
+    filter: 'No backups match the current filter.',
+  },
+  confirm: {
+    restoreOne: 'Restore this backup? Current content will be overwritten.',
+    deleteOne: 'Delete this backup?',
+    bulkRestore: 'Restore :count selected backup(s)? Current content will be overwritten.',
+    bulkDelete: 'Delete :count selected backup(s)?',
+  },
+  toast: {
+    loadFailed: 'Failed to load backups.',
+    nameRequired: 'Please enter a backup name.',
+    createSuccess: 'Backup created successfully.',
+    createFailed: 'Failed to create backup.',
+    importSuccess: 'Backup imported into library.',
+    importFailed: 'Failed to import backup.',
+    verifyFailed: 'Hash verification failed.',
+    verifyLegacy: 'Legacy backup — current SHA-256: :hash…',
+    verifyOk: 'SHA-256 hash OK.',
+    verifyMismatch: 'SHA-256 mismatch — backup file may be corrupted.',
+    downloadSuccess: 'Backup downloaded successfully.',
+    downloadSuccessHash: 'Downloaded — SHA-256: :hash…',
+    downloadFailed: 'Failed to download backup.',
+    restoreSuccess: 'Backup restored successfully.',
+    restoreFailed: 'Failed to restore backup.',
+    deleteSuccess: 'Backup deleted.',
+    deleteFailed: 'Failed to delete backup.',
+    bulkDeleteFailed: 'Bulk delete failed.',
+    bulkRestoreFailed: 'Bulk restore failed.',
+  },
+};

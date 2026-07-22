@@ -4,8 +4,10 @@ import { FlaskConical, RefreshCw } from 'lucide-react';
 import { demoApi, type DemoStatus } from '../../api/demo';
 import { useToast } from '../../hooks/useToast';
 import { useAuth } from '../../hooks/useAuth';
+import { useI18n } from '../../context/I18nContext';
 
 export const DemoManager: React.FC = () => {
+  const { t } = useI18n();
   const [status, setStatus] = useState<DemoStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [resetting, setResetting] = useState(false);
@@ -31,10 +33,10 @@ export const DemoManager: React.FC = () => {
     try {
       const result = await demoApi.reset();
       if (result) {
-        toast.success(`Demo reset: ${result.written} súborov`);
+        toast.success(t('platform.demo.toast.resetSuccess', { count: result.written }));
         await load();
       } else {
-        toast.error('Reset zlyhal (vyžaduje SUPER_ADMIN + DEMO_MODE=true)');
+        toast.error(t('platform.demo.toast.resetFailed'));
       }
     } finally {
       setResetting(false);
@@ -42,7 +44,7 @@ export const DemoManager: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="p-8 text-slate-500">Načítavam demo stav…</div>;
+    return <div className="p-8 text-slate-500">{t('platform.demo.loading')}</div>;
   }
 
   return (
@@ -50,33 +52,34 @@ export const DemoManager: React.FC = () => {
       <div className="flex items-center gap-3">
         <FlaskConical className="text-amber-500" />
         <div>
-          <h1 className="text-2xl font-black">Demo sandbox</h1>
-          <p className="text-sm text-slate-500">Predvádzacie vozidlo — iba demo.paginiumcms.com</p>
+          <h1 className="text-2xl font-black">{t('platform.demo.title')}</h1>
+          <p className="text-sm text-slate-500">{t('platform.demo.subtitle')}</p>
         </div>
       </div>
 
       <div className="rounded-2xl border border-slate-200 dark:border-slate-700 p-5 space-y-3 text-sm">
         <p>
-          <span className="font-bold">DEMO_MODE:</span>{' '}
-          {status?.enabled ? 'zapnutý' : 'vypnutý'}
+          <span className="font-bold">{t('platform.demo.demoMode')}</span>{' '}
+          {status?.enabled ? t('platform.demo.enabled') : t('platform.demo.disabled')}
         </p>
         <p>
-          <span className="font-bold">Úložisko:</span> {status?.storage_path}
+          <span className="font-bold">{t('platform.demo.storage')}</span> {status?.storage_path}
         </p>
         <p>
-          <span className="font-bold">Produkčný obsah:</span> {status?.content_path}
+          <span className="font-bold">{t('platform.demo.content')}</span> {status?.content_path}
         </p>
         <p>
-          <span className="font-bold">Súbory v demo:</span> {status?.file_count ?? 0}
+          <span className="font-bold">{t('platform.demo.files')}</span> {status?.file_count ?? 0}
         </p>
         {status?.last_reset_at && (
           <p>
-            <span className="font-bold">Posledný reset:</span> {status.last_reset_at}
+            <span className="font-bold">{t('platform.demo.lastReset')}</span> {status.last_reset_at}
           </p>
         )}
         {typeof status?.auto_reset_minutes === 'number' && (
           <p>
-            <span className="font-bold">Auto-reset:</span> každých {status.auto_reset_minutes} min
+            <span className="font-bold">{t('platform.demo.autoReset')}</span>{' '}
+            {t('platform.demo.autoResetMinutes', { minutes: status.auto_reset_minutes })}
           </p>
         )}
         {status?.credentials && (
@@ -92,12 +95,10 @@ export const DemoManager: React.FC = () => {
         onClick={() => void handleReset()}
         className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500 text-amber-950 font-bold disabled:opacity-40"
       >
-        <RefreshCw size={16} /> Reset demo seed
+        <RefreshCw size={16} /> {t('platform.demo.resetSeed')}
       </button>
 
-      {!status?.enabled && (
-        <p className="text-xs text-slate-500">Nastav `DEMO_MODE=true` v prostredí servera.</p>
-      )}
+      {!status?.enabled && <p className="text-xs text-slate-500">{t('platform.demo.envHint')}</p>}
     </div>
   );
 };

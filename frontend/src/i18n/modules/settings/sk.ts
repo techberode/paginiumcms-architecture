@@ -8,7 +8,8 @@ export const settingsSk: MessageTree = {
     "loadFailed": "Nepodarilo sa načítať nastavenia",
     "saved": "Nastavenia uložené",
     "validationFailed": "Validácia zlyhala",
-    "saveFailed": "Uloženie zlyhalo"
+    "saveFailed": "Uloženie zlyhalo",
+    "groupCount": ":count skupín"
   },
   "twoFactor": {
     "title": "Dvojfaktorové overenie (2FA)",
@@ -323,7 +324,7 @@ export const settingsSk: MessageTree = {
     "scheduler": {
       "enabled": {
         "label": "Enable job scheduler",
-        "help": "Master switch for scheduler:run CLI. Individual jobs can still be toggled in Plánovač."
+        "help": "Hlavný vypínač pre scheduler:run CLI. Jednotlivé joby sa dajú stále prepínať v Plánovači."
       },
       "retainRuns": {
         "label": "Retain run history entries"
