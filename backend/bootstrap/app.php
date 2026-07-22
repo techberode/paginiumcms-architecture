@@ -28,6 +28,7 @@ use PaginiumCMS\Modules\Security\Services\SessionManager;
 use PaginiumCMS\Modules\Security\Services\TOTPGenerator;
 use PaginiumCMS\Modules\Security\Services\QRCodeGenerator;
 use PaginiumCMS\Modules\Security\Services\TwoFactorManager;
+use PaginiumCMS\Modules\Security\Services\UserIndexService;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
 use PaginiumCMS\Modules\Security\Contracts\AuthenticationInterface;
 use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
@@ -325,12 +326,20 @@ $containerBuilder->addDefinitions([
         return new EncryptionService(is_string($appKey) ? $appKey : null);
     },
 
+    UserIndexService::class => function ($container) {
+        return new UserIndexService(
+            $container->get(FileReaderInterface::class),
+            'data/index/users.json'
+        );
+    },
+
     UserRepository::class => function ($container) {
         return new UserRepository(
             $container->get(FileReaderInterface::class),
-                                  $container->get(FileWriterInterface::class),
-                                  'data/users',
-                                  $container->get(EncryptionService::class)
+            $container->get(FileWriterInterface::class),
+            'data/users',
+            $container->get(EncryptionService::class),
+            $container->get(UserIndexService::class)
         );
     },
 

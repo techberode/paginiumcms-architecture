@@ -405,6 +405,7 @@ CI zlyhania (GitHub Actions): sekcia **CI failures** + **ISS-015–022** (2.0.25
 | PHPStan 15 chýb (historicky)                   | `phpstan analyse backend --level=8`                                                | ✅ ISS-006 |
 | Debug `client-event` 404                       | Konzola po redeploy, alebo `curl -X POST …/api/debug/client-event` → 204           | ✅ ISS-001 |
 | Phantom users / backup v `data/users/`         | `UserRepositoryTest::testFindAllIgnoresBackupFilesAndInvalidRecords`               | ✅ ISS-003 |
+| User lookup O(n) scan všetkých JSON            | `UserIndexServiceTest` + `UserRepositoryTest` (`run-all-tests.zsh` krok 17)        | ✅ ISS-057 |
 | `navigation.json.backup.*` hromadenie          | `FileWriterTest` + max 5 backupov na súbor                                         | ✅ ISS-004 |
 | `GET /api/pages` 500 na serveri                | `php backend/bin/console content:diagnose` + `./scripts/run-all-tests.zsh` krok 11 | ✅ ISS-002 |
 | Settings `/settings` crash                     | `zodFromRules` – `.max` on optional                                                | ✅ ISS-009 |

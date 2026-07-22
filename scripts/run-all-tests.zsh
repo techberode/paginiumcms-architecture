@@ -28,8 +28,8 @@ if [[ ! -f vendor/bin/phpunit ]]; then
 fi
 
 PROJECT_ROOT=$PWD
-TOTAL_STEPS=14
-CLEANUP_STEP=15
+TOTAL_STEPS=17
+CLEANUP_STEP=18
 
 typeset -a FAILED_STEPS
 typeset -A STEP_EXIT STEP_STATS STEP_ERRORS
@@ -497,6 +497,16 @@ run_step 16 "PHPUnit WAF POST body (FirewallScanner/Middleware/Policy)" \
      backend/tests/Http/Middleware/FirewallMiddlewareTest.php'
 
 # ==================================================
+# USER REPOSITORY INDEX (audit PERF-USERREPO / ISS-057)
+# O(1) email/id/username/reset-token lookup via data/index/users.json
+# ==================================================
+
+run_step 17 "PHPUnit UserRepository index (UserIndexService + UserRepository)" \
+  'vendor/bin/phpunit --colors=always \
+     backend/tests/Modules/Security/Services/UserIndexServiceTest.php \
+     backend/tests/Modules/Security/Services/UserRepositoryTest.php'
+
+# ==================================================
 # ZÁVEREČNÝ SÚHRN
 # ==================================================
 print ""
@@ -521,6 +531,7 @@ labels=(
   "PHPUnit log-injection + SSRF guard (LogSanitizer/OutboundUrlGuard)"
   "PHPUnit path ACL (PathAclService/Guard/Integration)"
   "PHPUnit WAF POST body (FirewallScanner/Middleware/Policy)"
+  "PHPUnit UserRepository index (UserIndexService + UserRepository)"
 )
 
 i=1

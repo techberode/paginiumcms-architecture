@@ -1,6 +1,6 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-22 · verzia **2.0.46** (security_fix hardening + ISS-051 boot hotfix + ISS-012 CSRF enforcement + ISS-052 at-rest šifrovanie + ISS-053 log sanitizácia + ISS-054 SSRF guard + ISS-055 Path ACL wiring + ISS-056 WAF POST body)
+> Posledná aktualizácia: 2026-07-22 · verzia **2.0.46** (security_fix hardening + ISS-051 boot hotfix + ISS-012 CSRF enforcement + ISS-052 at-rest šifrovanie + ISS-053 log sanitizácia + ISS-054 SSRF guard + ISS-055 Path ACL wiring + ISS-056 WAF POST body + ISS-057 UserRepository index)
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
 
@@ -72,6 +72,7 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-054 | SSRF cez admin-konfigurovateľné URL (OAuth/ntfy/webhook, audit C14)  | Nízka-Stred (bezpečnosť) | ✅ Opravené — `OutboundUrlGuard`               |
 | ISS-055 | Path ACL implementované, ale nezapojené do content/media (audit S9)   | Stredná (bezpečnosť)     | ✅ Opravené — `ContentPathAclGuard`            |
 | ISS-056 | WAF skenuje len URI/query/UA, nie POST/JSON telo (audit S-WAFBODY)    | Stredná (bezpečnosť)     | ✅ Opravené — body scan + editor exempt         |
+| ISS-057 | `UserRepository::findByEmail/findById` O(n) scan všetkých JSON (audit PERF-USERREPO) | Nízka (výkon) | ✅ Opravené — `UserIndexService` + `data/index/users.json` |
 
 
 
@@ -1413,6 +1414,23 @@ výnimka pri konštrukcii služby zhodila celý boot kontajnera — teda aj HTTP
 - Settings: `firewall.scanRequestBody` (default `true`). `APP_ENV=testing` stále bypassuje celý WAF.
 
 **Overenie:** PHPUnit `FirewallScannerTest`, `FirewallBodyScanPolicyTest`, `FirewallRequestBodyReaderTest`, `FirewallMiddlewareTest` (+ body scenáre).
+
+---
+
+## ISS-057 – UserRepository O(n) lookup (audit PERF-USERREPO) — VYRIEŠENÉ
+
+**Symptóm / riziko:** `UserRepository::findByEmail()`, `findById()`, `findByResetToken()` a `existsByUsername()` pri každom volaní načítali a dekódovali **všetky** `data/users/*.json` súbory → O(n) I/O pri každom prihlásení, 2FA refreshi alebo reset hesla. Pri malom počte účtov zanedbateľné, pri raste inštancie zbytočná záťaž disku a latencia auth cesty.
+
+**Implementované riešenie:**
+
+- Nový `UserIndexService` — flat-file index v `data/index/users.json` (vzor ako `ContentIndexService`): mapy `by_email`, `by_username`, `by_id` + reset-token hash/expiry pre rýchly lookup.
+- Atomický zápis cez `flock(LOCK_EX)`; lazy `ensureBuilt()` pri prvom lookup (rebuild zo existujúcich JSON ak index chýba/prázdny).
+- `UserRepository` po každom `save`/`delete`/`saveResetToken`/`clearResetToken` synchronizuje index; lookup metódy čítajú **jeden** user súbor podľa ID z indexu.
+- DI: `UserIndexService` registrovaný v `bootstrap/app.php` a `Modules/Security/Config/services.php`.
+
+**Overenie:** PHPUnit `UserIndexServiceTest` (rebuild, ensureBuilt, upsert/remove, reset-token expiry, backup ignore) + existujúce `UserRepositoryTest` (regresia auth/2FA/reset). PHPStan L8 clean.
+
+**Súbory:** `UserIndexService.php` (nový), `UserRepository.php`, `bootstrap/app.php`, `Modules/Security/Config/services.php`, `scripts/run-all-tests.zsh` (krok 17).
 
 ---
 

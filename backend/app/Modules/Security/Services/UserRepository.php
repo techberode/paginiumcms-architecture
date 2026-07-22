@@ -17,57 +17,43 @@ class UserRepository
     private FileWriterInterface $writer;
     private string $storagePath;
     private ?EncryptionService $encryption;
+    private UserIndexService $index;
 
     public function __construct(
         FileReaderInterface $reader,
         FileWriterInterface $writer,
         string $storagePath = 'data/users',
-        ?EncryptionService $encryption = null
+        ?EncryptionService $encryption = null,
+        ?UserIndexService $index = null
     ) {
         $this->reader = $reader;
         $this->writer = $writer;
         $this->storagePath = $storagePath;
         $this->encryption = $encryption;
+        $this->index = $index ?? new UserIndexService($reader);
     }
 
     public function findByEmail(string $email): ?User
     {
-        $files = $this->getAllUserFiles();
+        $this->ensureIndex();
 
-        foreach ($files as $file) {
-            try {
-                $content = $this->reader->read($this->storagePath . '/' . basename($file));
-                $data = json_decode($content, true);
-
-                if (isset($data['email']) && $data['email'] === $email) {
-                    return $this->hydrate($data);
-                }
-            } catch (FlatFileException) {
-                continue;
-            }
+        $id = $this->index->resolveIdByEmail($email);
+        if ($id === null) {
+            return null;
         }
 
-        return null;
+        return $this->readUserById($id);
     }
 
     public function findById(string $id): ?User
     {
-        $files = $this->getAllUserFiles();
+        $this->ensureIndex();
 
-        foreach ($files as $file) {
-            try {
-                $content = $this->reader->read($this->storagePath . '/' . basename($file));
-                $data = json_decode($content, true);
-
-                if (isset($data['id']) && $data['id'] === $id) {
-                    return $this->hydrate($data);
-                }
-            } catch (FlatFileException) {
-                continue;
-            }
+        if (!$this->index->hasId($id) && !$this->userFileExists($id)) {
+            return null;
         }
 
-        return null;
+        return $this->readUserById($id);
     }
 
     /**
@@ -75,23 +61,15 @@ class UserRepository
      */
     public function findAll(): array
     {
-        $users = [];
-        $files = $this->getAllUserFiles();
+        $this->ensureIndex();
 
-        foreach ($files as $file) {
-            try {
-                $content = $this->reader->read($this->storagePath . '/' . basename($file));
-                $data = json_decode($content, true);
-                if (!is_array($data) || !isset($data['id'], $data['email'])) {
-                    continue;
-                }
-                if (!is_string($data['id']) || !is_string($data['email']) || $data['id'] === '' || $data['email'] === '') {
-                    continue;
-                }
-                $users[] = $this->hydrate($data);
-            } catch (FlatFileException) {
+        $users = [];
+        foreach ($this->index->listIds() as $id) {
+            $user = $this->readUserById($id);
+            if ($user === null) {
                 continue;
             }
+            $users[] = $user;
         }
 
         return $this->dedupeById($users);
@@ -108,31 +86,33 @@ class UserRepository
         $data = $this->extract($user);
         $path = $this->storagePath . '/' . $id . '.json';
         $this->writer->write($path, JsonHelper::encode($data, JSON_PRETTY_PRINT));
+        $this->syncIndexFromDisk($id);
     }
 
     public function exists(string $id): bool
     {
-        return $this->findById($id) !== null;
+        $this->ensureIndex();
+
+        return $this->index->hasId($id) || $this->userFileExists($id);
     }
 
     public function existsByEmail(string $email): bool
     {
-        return $this->findByEmail($email) !== null;
+        $this->ensureIndex();
+
+        return $this->index->resolveIdByEmail($email) !== null;
     }
 
     public function existsByUsername(string $username, ?string $exceptUserId = null): bool
     {
-        $needle = strtolower(trim($username));
-        foreach ($this->findAll() as $user) {
-            if ($exceptUserId !== null && $user->getId() === $exceptUserId) {
-                continue;
-            }
-            if ($user->getUsername() === $needle) {
-                return true;
-            }
+        $this->ensureIndex();
+
+        $id = $this->index->resolveIdByUsername($username);
+        if ($id === null) {
+            return false;
         }
 
-        return false;
+        return $exceptUserId === null || $id !== $exceptUserId;
     }
 
     public function delete(string $id): void
@@ -143,6 +123,8 @@ class UserRepository
         } catch (FlatFileException) {
             // Súbor už neexistuje, ignorujeme
         }
+
+        $this->index->remove($id);
     }
 
     /**
@@ -160,21 +142,102 @@ class UserRepository
     }
 
     /**
-     * @return array<int|string, mixed>
+     * SHA-256 hash resetovacieho tokenu (v úložisku nikdy neukladáme plaintext).
      */
-    private function getAllUserFiles(): array
+    private function hashResetToken(string $token): string
+    {
+        return hash('sha256', $token);
+    }
+
+    public function saveResetToken(User $user, string $token): void
+    {
+        $data = $this->extract($user);
+        // Ukladáme iba hash – ak dôjde k úniku súborov, token nie je použiteľný.
+        $data['resetTokenHash'] = $this->hashResetToken($token);
+        $data['resetTokenExpires'] = time() + 86400; // 24 hodín
+        unset($data['resetToken']); // migrácia zo staršieho plaintext formátu
+
+        $path = $this->storagePath . '/' . $user->getId() . '.json';
+        $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+
+        if ($json === false) {
+            throw new \RuntimeException('Nepodarilo sa serializovať dáta');
+        }
+
+        $this->writer->write($path, $json);
+        $this->syncIndexFromDisk($user->getId());
+    }
+
+    public function findByResetToken(string $token): ?User
+    {
+        $this->ensureIndex();
+
+        $tokenHash = $this->hashResetToken($token);
+        $id = $this->index->resolveIdByResetTokenHash($tokenHash, time());
+        if ($id === null) {
+            return null;
+        }
+
+        return $this->readUserById($id);
+    }
+
+    public function clearResetToken(User $user): void
+    {
+        $data = $this->extract($user);
+        unset($data['resetToken']); // staršie inštalácie
+        unset($data['resetTokenHash']);
+        unset($data['resetTokenExpires']);
+
+        $path = $this->storagePath . '/' . $user->getId() . '.json';
+        $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+
+        if ($json === false) {
+            throw new \RuntimeException('Nepodarilo sa serializovať dáta');
+        }
+
+        $this->writer->write($path, $json);
+        $this->syncIndexFromDisk($user->getId());
+    }
+
+    private function ensureIndex(): void
+    {
+        $this->index->ensureBuilt($this->storagePath);
+    }
+
+    private function userFileExists(string $id): bool
+    {
+        return $this->reader->exists($this->storagePath . '/' . $id . '.json');
+    }
+
+    private function readUserById(string $id): ?User
     {
         try {
-            $files = $this->reader->listFiles($this->storagePath, '*.json');
-            $files = array_filter(
-                $files,
-                static fn (string $file): bool => str_ends_with($file, '.json')
-                    && !str_contains($file, '.backup.')
-            );
+            $content = $this->reader->read($this->storagePath . '/' . $id . '.json');
+            $data = json_decode($content, true);
+            if (!is_array($data)) {
+                return null;
+            }
 
-            return array_map(static fn (string $file): string => basename($file), $files);
+            return $this->hydrate($data);
         } catch (FlatFileException) {
-            return [];
+            return null;
+        }
+    }
+
+    private function syncIndexFromDisk(string $id): void
+    {
+        try {
+            $content = $this->reader->read($this->storagePath . '/' . $id . '.json');
+            $data = json_decode($content, true);
+            if (!is_array($data)) {
+                $this->index->remove($id);
+
+                return;
+            }
+
+            $this->index->upsertFromRaw($data);
+        } catch (FlatFileException) {
+            $this->index->remove($id);
         }
     }
 
@@ -231,79 +294,6 @@ class UserRepository
     }
 
     /**
-     * SHA-256 hash resetovacieho tokenu (v úložisku nikdy neukladáme plaintext).
-     */
-    private function hashResetToken(string $token): string
-    {
-        return hash('sha256', $token);
-    }
-
-    public function saveResetToken(User $user, string $token): void
-    {
-        $data = $this->extract($user);
-        // Ukladáme iba hash – ak dôjde k úniku súborov, token nie je použiteľný.
-        $data['resetTokenHash'] = $this->hashResetToken($token);
-        $data['resetTokenExpires'] = time() + 86400; // 24 hodín
-        unset($data['resetToken']); // migrácia zo staršieho plaintext formátu
-
-        $path = $this->storagePath . '/' . $user->getId() . '.json';
-        $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-
-        if ($json === false) {
-            throw new \RuntimeException('Nepodarilo sa serializovať dáta');
-        }
-
-        $this->writer->write($path, $json);
-    }
-
-    public function findByResetToken(string $token): ?User
-    {
-        $files = $this->getAllUserFiles();
-        $tokenHash = $this->hashResetToken($token);
-
-        foreach ($files as $file) {
-            try {
-                $content = $this->reader->read($this->storagePath . '/' . basename($file));
-                $data = json_decode($content, true);
-
-                if (!is_array($data)) {
-                    continue;
-                }
-
-                $storedHash = isset($data['resetTokenHash']) ? (string) $data['resetTokenHash'] : '';
-                if ($storedHash === '' || !hash_equals($storedHash, $tokenHash)) {
-                    continue;
-                }
-
-                if (isset($data['resetTokenExpires']) && $data['resetTokenExpires'] > time()) {
-                    return $this->hydrate($data);
-                }
-            } catch (FlatFileException) {
-                continue;
-            }
-        }
-
-        return null;
-    }
-
-    public function clearResetToken(User $user): void
-    {
-        $data = $this->extract($user);
-        unset($data['resetToken']); // staršie inštalácie
-        unset($data['resetTokenHash']);
-        unset($data['resetTokenExpires']);
-
-        $path = $this->storagePath . '/' . $user->getId() . '.json';
-        $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-
-        if ($json === false) {
-            throw new \RuntimeException('Nepodarilo sa serializovať dáta');
-        }
-
-        $this->writer->write($path, $json);
-    }
-
-    /**
      * @return array<int|string, mixed>
      */
     private function extract(User $user): array
@@ -330,4 +320,3 @@ class UserRepository
         ];
     }
 }
-

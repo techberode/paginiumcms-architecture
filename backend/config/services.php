@@ -10,6 +10,7 @@ use PaginiumCMS\Modules\Security\Services\SessionManager;
 use PaginiumCMS\Modules\Security\Services\TOTPGenerator;
 use PaginiumCMS\Modules\Security\Services\QRCodeGenerator;
 use PaginiumCMS\Modules\Security\Services\TwoFactorManager;
+use PaginiumCMS\Modules\Security\Services\UserIndexService;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
 use PaginiumCMS\Modules\Security\Contracts\AuthenticationInterface;
 use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
@@ -43,11 +44,19 @@ return [
     PasswordPolicyInterface::class => create(PasswordPolicy::class)
         ->constructor(8, 72, true, true, true, true),
 
+    UserIndexService::class => create(UserIndexService::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            'data/index/users.json'
+        ),
+
     UserRepository::class => create(UserRepository::class)
         ->constructor(
             get(FileReaderInterface::class),
             get(FileWriterInterface::class),
-            'data/users'
+            'data/users',
+            get(\PaginiumCMS\Core\Security\Services\EncryptionService::class),
+            get(UserIndexService::class)
         ),
 
     AuthenticationInterface::class => create(AuthenticationManager::class)
