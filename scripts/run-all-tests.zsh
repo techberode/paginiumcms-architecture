@@ -475,6 +475,17 @@ run_step 14 "PHPUnit log-injection + SSRF guard (LogSanitizer/OutboundUrlGuard)"
      backend/tests/Core/Security/Services/OutboundUrlGuardTest.php'
 
 # ==================================================
+# PATH ACL ENFORCEMENT (audit S9 / ISS-055)
+# Unit + HTTP integration: content/draft/media deny, SUPER_ADMIN bypass.
+# ==================================================
+
+run_step 15 "PHPUnit path ACL (PathAclService/Guard/Integration)" \
+  'vendor/bin/phpunit --colors=always \
+     backend/tests/Modules/Security/Services/PathAclServiceTest.php \
+     backend/tests/Modules/Security/Services/ContentPathAclGuardTest.php \
+     backend/tests/Http/Controllers/Security/PathAclIntegrationTest.php'
+
+# ==================================================
 # ZÁVEREČNÝ SÚHRN
 # ==================================================
 print ""
@@ -497,6 +508,7 @@ labels=(
   "PHPUnit security regression (storage/SSO/plugin/hardening)"
   "PHPUnit at-rest encryption (EncryptionService/User/Settings)"
   "PHPUnit log-injection + SSRF guard (LogSanitizer/OutboundUrlGuard)"
+  "PHPUnit path ACL (PathAclService/Guard/Integration)"
 )
 
 i=1

@@ -171,6 +171,7 @@ use PaginiumCMS\Modules\Demo\Services\DemoStorageService;
 use PaginiumCMS\Modules\Security\Services\AclRepository;
 use PaginiumCMS\Modules\Security\Services\AuthorizationManager;
 use PaginiumCMS\Modules\Security\Services\OAuthSsoService;
+use PaginiumCMS\Modules\Security\Services\ContentPathAclGuard;
 use PaginiumCMS\Modules\Security\Services\PathAclService;
 use PaginiumCMS\Modules\Security\Services\SecurityAuditStore;
 use PaginiumCMS\Modules\Security\Services\SessionManager;
@@ -342,7 +343,8 @@ return [
     DraftController::class => create(DraftController::class)
         ->constructor(
             get(DraftManagerInterface::class),
-            get(JsonResponder::class)
+            get(JsonResponder::class),
+            get(ContentPathAclGuard::class)
         ),
 
     // Content cache (ChainedDriver via bootstrap CacheManager)
@@ -519,7 +521,8 @@ return [
             get(AuthenticationInterface::class),
             get(OtpWorkflowService::class),
             get(DynamicValidator::class),
-            get(EditorContentValidator::class)
+            get(EditorContentValidator::class),
+            get(ContentPathAclGuard::class)
         ),
     AdvancedSearchService::class => create(AdvancedSearchService::class)
         ->constructor(
@@ -539,7 +542,8 @@ return [
             get(FileReaderInterface::class),
             get(StockImageCatalog::class),
             get(StockImageImporter::class),
-            get(JsonResponder::class)
+            get(JsonResponder::class),
+            get(ContentPathAclGuard::class)
         ),
 
     // Code editor / versioning / audit (auto-discovered admin routes)
@@ -822,6 +826,8 @@ return [
         ->constructor(get(FileReaderInterface::class)),
     PathAclService::class => create(PathAclService::class)
         ->constructor(get(AclRepository::class), get(AuthorizationInterface::class)),
+    ContentPathAclGuard::class => create(ContentPathAclGuard::class)
+        ->constructor(get(PathAclService::class)),
     OAuthSsoService::class => create(OAuthSsoService::class)
         ->constructor(
             get(SettingsRepositoryInterface::class),

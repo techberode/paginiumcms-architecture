@@ -92,6 +92,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   `WebhookAdapter.php`, `DiscordAdapter.php`.
 - Tests: `LogSanitizerTest`, `OutboundUrlGuardTest` (PHPUnit 759 tests, PHPStan
   L8 clean).
+- **Path ACL enforcement (audit S9 / ISS-055).** `PathAclService` rules from
+  `data/security/acl.json` now apply to content CRUD/list, drafts, and media
+  mutations. New `ContentPathAclGuard`; `normalizeStoragePath()` maps flat-file
+  paths (`pages/foo.md`, `media/x.jpg`) to the admin glob convention
+  (`content/pages/foo`). Opt-in (`enabled: false` → unchanged behaviour); read
+  deny returns 404, write deny returns 403.
+- Files: `ContentPathAclGuard.php`, `PathAclService.php`, `ContentController.php`,
+  `DraftController.php`, `MediaController.php`, `Http/Config/services.php`.
+- Tests: `PathAclServiceTest` (storage normalization + disabled ACL + permissions),
+  `ContentPathAclGuardTest`, `PathAclIntegrationTest` (HTTP: content/draft/media deny + SUPER_ADMIN bypass).
 
 ## [2.0.45] – 2026-07-21
 

@@ -10,6 +10,9 @@ use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
 use PaginiumCMS\Modules\Media\Services\StockImageCatalog;
 use PaginiumCMS\Modules\Media\Services\StockImageImporter;
+use PaginiumCMS\Modules\Security\Exception\AuthorizationException;
+use PaginiumCMS\Modules\Security\Models\User;
+use PaginiumCMS\Modules\Security\Services\ContentPathAclGuard;
 use PaginiumCMS\Support\Lang;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -22,7 +25,8 @@ class MediaController
         private FileReaderInterface $fileReader,
         private StockImageCatalog $stockImageCatalog,
         private StockImageImporter $stockImageImporter,
-        private JsonResponder $json
+        private JsonResponder $json,
+        private ContentPathAclGuard $pathAcl
     ) {
     }
 
@@ -129,6 +133,11 @@ class MediaController
         $folder = trim((string) ($data['folder'] ?? ''));
 
         try {
+            $this->pathAcl->requireAccess(
+                $this->resolveUser($request),
+                $this->pathAcl->mediaFolderPath($folder),
+                'media:upload'
+            );
             $media = $this->stockImageImporter->import($topic, $folder);
 
             return $this->json->success(
@@ -139,6 +148,8 @@ class MediaController
             );
         } catch (FlatFileException $e) {
             return $this->json->error($response, $e->getMessage(), 400);
+        } catch (AuthorizationException $e) {
+            return $this->json->error($response, $e->getMessage(), 403);
         }
     }
 
@@ -155,6 +166,11 @@ class MediaController
         }
 
         try {
+            $this->pathAcl->requireAccess(
+                $this->resolveUser($request),
+                $this->pathAcl->mediaFolderPath($folder),
+                'media:upload'
+            );
             $this->mediaRepository->createFolder($folder);
 
             return $this->json->success(
@@ -165,6 +181,8 @@ class MediaController
             );
         } catch (FlatFileException $e) {
             return $this->json->error($response, $e->getMessage(), 400);
+        } catch (AuthorizationException $e) {
+            return $this->json->error($response, $e->getMessage(), 403);
         }
     }
 
@@ -182,6 +200,14 @@ class MediaController
 
         if ($paths === []) {
             return $this->json->error($response, Lang::get('paths_required', [], 'media'), 400);
+        }
+
+        foreach ($paths as $path) {
+            try {
+                $this->pathAcl->requireAccess($this->resolveUser($request), $path, 'media:delete');
+            } catch (AuthorizationException $e) {
+                return $this->json->error($response, $e->getMessage(), 403);
+            }
         }
 
         $deleted = $this->mediaRepository->bulkDelete($paths);
@@ -208,6 +234,11 @@ class MediaController
         $folder = is_array($parsedBody) ? (string) ($parsedBody['folder'] ?? '') : '';
 
         try {
+            $this->pathAcl->requireAccess(
+                $this->resolveUser($request),
+                $this->pathAcl->mediaFolderPath($folder),
+                'media:upload'
+            );
             $media = $this->mediaRepository->saveUpload(
                 $file->getClientFilename() ?? 'upload.bin',
                 (string) $file->getStream(),
@@ -219,6 +250,8 @@ class MediaController
             return $this->json->success($response, $media->jsonSerialize(), 201);
         } catch (FlatFileException $e) {
             return $this->json->error($response, $e->getMessage(), 400);
+        } catch (AuthorizationException $e) {
+            return $this->json->error($response, $e->getMessage(), 403);
         }
     }
 
@@ -232,6 +265,12 @@ class MediaController
 
         if ($media === null) {
             return $this->json->error($response, Lang::get('not_found', [], 'media'), 404);
+        }
+
+        try {
+            $this->pathAcl->requireAccess($this->resolveUser($request), $path, 'media:upload');
+        } catch (AuthorizationException $e) {
+            return $this->json->error($response, $e->getMessage(), 403);
         }
 
         $data = json_decode((string) $request->getBody(), true);
@@ -264,11 +303,21 @@ class MediaController
         $path = urldecode($args['path'] ?? '');
 
         try {
+            $this->pathAcl->requireAccess($this->resolveUser($request), $path, 'media:delete');
             $this->mediaRepository->delete($path);
 
             return $this->json->success($response, null, 200, Lang::get('deleted', [], 'media'));
+        } catch (AuthorizationException $e) {
+            return $this->json->error($response, $e->getMessage(), 403);
         } catch (FlatFileException $e) {
             return $this->json->error($response, Lang::get('not_found', [], 'media'), 404);
         }
+    }
+
+    private function resolveUser(ServerRequestInterface $request): ?User
+    {
+        $user = $request->getAttribute('user');
+
+        return $user instanceof User ? $user : null;
     }
 }

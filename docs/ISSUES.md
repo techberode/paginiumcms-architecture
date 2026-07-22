@@ -1,6 +1,6 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-22 · verzia **2.0.46** (security_fix hardening + ISS-051 boot hotfix + ISS-012 CSRF enforcement + ISS-052 at-rest šifrovanie + ISS-053 log sanitizácia + ISS-054 SSRF guard)
+> Posledná aktualizácia: 2026-07-22 · verzia **2.0.46** (security_fix hardening + ISS-051 boot hotfix + ISS-012 CSRF enforcement + ISS-052 at-rest šifrovanie + ISS-053 log sanitizácia + ISS-054 SSRF guard + ISS-055 Path ACL wiring)
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
 
@@ -70,6 +70,7 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-052 | Tajomstvá (TOTP seed, SMTP/SSO/ntfy) v plaintexte na disku (audit A1) | Stredná (bezpečnosť)  | ✅ Opravené — `EncryptionService` + `APP_KEY`       |
 | ISS-053 | Log/CSV injection cez `\r\n` v query/User-Agent (audit C11)          | Nízka-Stred (bezpečnosť) | ✅ Opravené — `LogSanitizer`                   |
 | ISS-054 | SSRF cez admin-konfigurovateľné URL (OAuth/ntfy/webhook, audit C14)  | Nízka-Stred (bezpečnosť) | ✅ Opravené — `OutboundUrlGuard`               |
+| ISS-055 | Path ACL implementované, ale nezapojené do content/media (audit S9)   | Stredná (bezpečnosť)     | ✅ Opravené — `ContentPathAclGuard`            |
 
 
 
@@ -1386,6 +1387,16 @@ výnimka pri konštrukcii služby zhodila celý boot kontajnera — teda aj HTTP
 **Implementované riešenie:** `OutboundUrlGuard` (`backend/app/Core/Security/Services/OutboundUrlGuard.php`) — v produkcii len `https://`, zákaz userinfo v URL, host → IP a odmietnutie privátnych/rezervovaných rozsahov (loopback, link-local metadata, `10/8`, `172.16/12`, `192.168/16`, IPv6 `::1`), fail-closed pri nerozlíšiteľnom hoste. V `testing`/`development`/`local` uvoľnený (http + privátne), aby fungoval lokálny SSO/ntfy. Zapojený v `OAuthSsoService` (`httpPostForm`/`httpGet`) a v ntfy/webhook/Discord adaptéroch (fail-safe → neodošle).
 
 **Overenie:** PHPStan L8 → 0 chýb; PHPUnit `OutboundUrlGuardTest` (11 prípadov). **Súbory:** `OutboundUrlGuard.php` (nový), `OAuthSsoService.php`, `NtfyAdapter.php`, `WebhookAdapter.php`, `DiscordAdapter.php`.
+
+---
+
+## ISS-055 – Path ACL nezapojené do content/media operácií (audit S9) — VYRIEŠENÉ
+
+**Symptóm / riziko:** `PathAclService` a admin UI `/security/acl` existovali od It.11, ale služba sa **nikde nevolala** — pravidlá v `data/security/acl.json` nemali vplyv na CRUD stránok/článkov, draftov ani médií.
+
+**Implementované riešenie:** `ContentPathAclGuard` + `PathAclService::normalizeStoragePath()` (mapuje `pages/foo.md` → `content/pages/foo` pre glob pravidlá z admin UI). Zapojené do `ContentController`, `DraftController`, `MediaController`. Opt-in (`enabled: false` → bez zmeny správania); read deny → 404, write deny → 403.
+
+**Overenie:** PHPUnit `PathAclServiceTest`, `ContentPathAclGuardTest`, `PathAclIntegrationTest` (17 scenárov spolu).
 
 ---
 
