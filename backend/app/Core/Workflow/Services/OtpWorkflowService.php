@@ -161,9 +161,10 @@ final class OtpWorkflowService
         $ttlMinutes = $this->otpTtlMinutes();
         $expiresAt = time() + ($ttlMinutes * 60);
 
+        $this->incrementResendCount($challenge);
+
         $challenge['code_hash'] = $this->hashCode($challengeId, $code);
         $challenge['expires_at'] = $expiresAt;
-        $challenge['attempts'] = 0;
         $this->store->save($challenge);
 
         $email = $challenge['email'];
@@ -447,9 +448,10 @@ final class OtpWorkflowService
         $ttlMinutes = $this->otpTtlMinutes();
         $expiresAt = time() + ($ttlMinutes * 60);
 
+        $this->incrementResendCount($challenge);
+
         $challenge['code_hash'] = $this->hashCode($challengeId, $code);
         $challenge['expires_at'] = $expiresAt;
-        $challenge['attempts'] = 0;
         $this->store->save($challenge);
 
         $sent = $this->sendCodeEmail(
@@ -526,6 +528,30 @@ final class OtpWorkflowService
             $this->store->save($challenge);
             throw new RuntimeException('Neplatný overovací kód');
         }
+    }
+
+    /**
+     * @param array{
+     *     id: string,
+     *     flow: string,
+     *     email: string,
+     *     code_hash: string,
+     *     payload: array<string, mixed>,
+     *     expires_at: int,
+     *     attempts: int,
+     *     created_at: int,
+     *     resend_count?: int
+     * } $challenge
+     */
+    private function incrementResendCount(array &$challenge): void
+    {
+        $maxResends = max(1, min(10, (int) ($this->settings->group('workflows')['otpMaxResends'] ?? 3)));
+        $resendCount = (int) ($challenge['resend_count'] ?? 0);
+        if ($resendCount >= $maxResends) {
+            throw new RuntimeException('Prekročený počet opätovných odoslaní kódu');
+        }
+
+        $challenge['resend_count'] = $resendCount + 1;
     }
 
     private function hashCode(string $challengeId, string $code): string

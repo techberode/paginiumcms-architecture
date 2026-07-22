@@ -1,6 +1,6 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-22 · verzia **2.0.46** (security_fix hardening + ISS-051 boot hotfix + ISS-012 CSRF enforcement + ISS-052 at-rest šifrovanie + ISS-053 log sanitizácia + ISS-054 SSRF guard + ISS-055 Path ACL wiring + ISS-056 WAF POST body + ISS-057 UserRepository index)
+> Posledná aktualizácia: 2026-07-22 · verzia **2.0.46** (security_fix hardening + ISS-051 boot hotfix + ISS-012 CSRF enforcement + ISS-052 at-rest šifrovanie + ISS-053 log sanitizácia + ISS-054 SSRF guard + ISS-055 Path ACL wiring + ISS-056 WAF POST body + ISS-057 UserRepository index + ISS-058 OTP rate-limit)
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
 
@@ -73,6 +73,7 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-055 | Path ACL implementované, ale nezapojené do content/media (audit S9)   | Stredná (bezpečnosť)     | ✅ Opravené — `ContentPathAclGuard`            |
 | ISS-056 | WAF skenuje len URI/query/UA, nie POST/JSON telo (audit S-WAFBODY)    | Stredná (bezpečnosť)     | ✅ Opravené — body scan + editor exempt         |
 | ISS-057 | `UserRepository::findByEmail/findById` O(n) scan všetkých JSON (audit PERF-USERREPO) | Nízka (výkon) | ✅ Opravené — `UserIndexService` + `data/index/users.json` |
+| ISS-058 | OTP bez dedikovaného rate-limitu + resend resetuje pokusy (audit S10) | Stredná (bezpečnosť) | ✅ Opravené — `Otp*RateLimitMiddleware` + `resend_count` |
 
 
 
@@ -1431,6 +1432,22 @@ výnimka pri konštrukcii služby zhodila celý boot kontajnera — teda aj HTTP
 **Overenie:** PHPUnit `UserIndexServiceTest` (rebuild, ensureBuilt, upsert/remove, reset-token expiry, backup ignore) + existujúce `UserRepositoryTest` (regresia auth/2FA/reset). PHPStan L8 clean.
 
 **Súbory:** `UserIndexService.php` (nový), `UserRepository.php`, `bootstrap/app.php`, `Modules/Security/Config/services.php`, `scripts/run-all-tests.zsh` (krok 17).
+
+---
+
+## ISS-058 – OTP bez dedikovaného rate-limitu (audit S10) — VYRIEŠENÉ
+
+**Symptóm / riziko:** OTP routy (`/api/auth/register*`, `/api/admin/workflows/otp/*`) mali len globálny limit 60/min — príliš voľný pre brute-force 6-miestneho kódu. `resendRegistration()`/`resendEditorChallenge()` navyše resetovali `attempts` na 0 → obídenie `otpMaxAttempts` opakovaným resendom.
+
+**Implementované riešenie:**
+
+- `OtpStartRateLimitMiddleware`, `OtpVerifyRateLimitMiddleware`, `OtpResendRateLimitMiddleware` — produkčné limity: start 5/h (email+IP), verify 10/15 min (challenge+IP), resend 3/h (challenge+IP).
+- Zapojené na auth OTP routy v `bootstrap/app.php` a admin workflow routy v `workflows.php`.
+- Service: `incrementResendCount()` — max 3 resend/challenge (nastaviteľné `otpMaxResends`), **bez resetu** `attempts` pri resend.
+
+**Overenie:** PHPUnit `OtpRateLimitMiddlewareTest` (3 scenáre) + rozšírené `OtpWorkflowServiceTest` (resend neobnoví pokusy, max resend count). PHPStan L8 clean.
+
+**Súbory:** `OtpRateLimitMiddleware.php`, `OtpVerifyRateLimitMiddleware.php`, `OtpResendRateLimitMiddleware.php`, `OtpStartRateLimitMiddleware.php`, `OtpWorkflowService.php`, `OtpChallengeStore.php`, `bootstrap/app.php`, `workflows.php`, `scripts/run-all-tests.zsh` (krok 18).
 
 ---
 

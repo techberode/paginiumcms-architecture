@@ -28,8 +28,8 @@ if [[ ! -f vendor/bin/phpunit ]]; then
 fi
 
 PROJECT_ROOT=$PWD
-TOTAL_STEPS=17
-CLEANUP_STEP=18
+TOTAL_STEPS=18
+CLEANUP_STEP=19
 
 typeset -a FAILED_STEPS
 typeset -A STEP_EXIT STEP_STATS STEP_ERRORS
@@ -507,6 +507,15 @@ run_step 17 "PHPUnit UserRepository index (UserIndexService + UserRepository)" \
      backend/tests/Modules/Security/Services/UserRepositoryTest.php'
 
 # ==================================================
+# OTP RATE LIMIT (audit S10 / ISS-058)
+# ==================================================
+
+run_step 18 "PHPUnit OTP rate limit (OtpRateLimitMiddleware + OtpWorkflowService)" \
+  'vendor/bin/phpunit --colors=always \
+     backend/tests/Http/Middleware/OtpRateLimitMiddlewareTest.php \
+     backend/tests/Core/Workflow/OtpWorkflowServiceTest.php'
+
+# ==================================================
 # ZÁVEREČNÝ SÚHRN
 # ==================================================
 print ""
@@ -532,6 +541,7 @@ labels=(
   "PHPUnit path ACL (PathAclService/Guard/Integration)"
   "PHPUnit WAF POST body (FirewallScanner/Middleware/Policy)"
   "PHPUnit UserRepository index (UserIndexService + UserRepository)"
+  "PHPUnit OTP rate limit (OtpRateLimitMiddleware + OtpWorkflowService)"
 )
 
 i=1

@@ -121,6 +121,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Files: `UserIndexService.php` (new), `UserRepository.php`, `bootstrap/app.php`,
   `Modules/Security/Config/services.php`.
 - Tests: `UserIndexServiceTest` + existing `UserRepositoryTest` regression suite.
+- **OTP dedicated rate limits (audit S10 / ISS-058).** New
+  `OtpStartRateLimitMiddleware`, `OtpVerifyRateLimitMiddleware`, and
+  `OtpResendRateLimitMiddleware` with per-email/per-challenge limits (stricter
+  than the global 60/min gate). `OtpWorkflowService` no longer resets verify
+  `attempts` on resend; `resend_count` capped (default 3 per challenge).
+- Files: `OtpRateLimitMiddleware.php`, `OtpVerify/Resend/StartRateLimitMiddleware.php`,
+  `OtpWorkflowService.php`, `OtpChallengeStore.php`, `bootstrap/app.php`, `workflows.php`.
+- Tests: `OtpRateLimitMiddlewareTest`, extended `OtpWorkflowServiceTest`.
 
 ## [2.0.45] – 2026-07-21
 
