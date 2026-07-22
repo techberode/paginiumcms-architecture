@@ -112,6 +112,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   `config/firewall_scenarios.php`, `SettingsSchema.php`.
 - Tests: `FirewallBodyScanPolicyTest`, `FirewallRequestBodyReaderTest`, extended
   `FirewallScannerTest`, `FirewallMiddlewareTest`.
+- **UserRepository index/cache (audit PERF-USERREPO / ISS-057).** New
+  `UserIndexService` maintains `data/index/users.json` with O(1) maps for email,
+  username, user ID, and reset-token hash lookups. `UserRepository` no longer
+  scans all user JSON files on every auth/2FA/reset call; index rebuilds lazily
+  from disk and stays in sync on save/delete/reset-token mutations. Atomic writes
+  via `flock(LOCK_EX)` (same pattern as `ContentIndexService`).
+- Files: `UserIndexService.php` (new), `UserRepository.php`, `bootstrap/app.php`,
+  `Modules/Security/Config/services.php`.
+- Tests: `UserIndexServiceTest` + existing `UserRepositoryTest` regression suite.
 
 ## [2.0.45] – 2026-07-21
 
