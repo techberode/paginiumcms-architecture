@@ -19,7 +19,8 @@ use RuntimeException;
  *     payload: array<string, mixed>,
  *     expires_at: int,
  *     attempts: int,
- *     created_at: int
+ *     created_at: int,
+ *     resend_count?: int
  * }
  */
 final class OtpChallengeStore
@@ -102,6 +103,7 @@ final class OtpChallengeStore
             'expires_at' => $challenge['expires_at'],
             'attempts' => $challenge['attempts'],
             'created_at' => $challenge['created_at'],
+            'resend_count' => isset($challenge['resend_count']) ? (int) $challenge['resend_count'] : 0,
         ];
     }
 

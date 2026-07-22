@@ -106,4 +106,70 @@ class OtpWorkflowServiceTest extends TestCase
         $this->assertNotNull($saved);
         $this->assertSame('published', $saved->getStatus());
     }
+
+    public function testResendDoesNotResetVerifyAttempts(): void
+    {
+        putenv('APP_ENV=testing');
+        $_ENV['APP_ENV'] = 'testing';
+
+        $settings = $this->app->getContainer()->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class);
+        $settings->setGroup('workflows', [
+            'registrationOtpEnabled' => true,
+            'otpMaxAttempts' => 3,
+            'otpMaxResends' => 3,
+        ]);
+
+        $service = $this->app->getContainer()->get(\PaginiumCMS\Core\Workflow\Services\OtpWorkflowService::class);
+        $email = 'otp_resend_' . uniqid() . '@example.com';
+        $started = $service->startRegistration($email, 'Resend User', 'StrongP@ssw0rd123!');
+
+        for ($i = 0; $i < 2; $i++) {
+            try {
+                $service->verifyRegistration($started['challenge_id'], '000000');
+                $this->fail('Expected invalid code exception');
+            } catch (\RuntimeException $e) {
+                $this->assertSame('Neplatný overovací kód', $e->getMessage());
+            }
+        }
+
+        $resent = $service->resendRegistration($started['challenge_id']);
+        $this->assertSame($started['challenge_id'], $resent['challenge_id']);
+
+        try {
+            $service->verifyRegistration($started['challenge_id'], '000000');
+            $this->fail('Expected invalid code exception');
+        } catch (\RuntimeException $e) {
+            $this->assertSame('Neplatný overovací kód', $e->getMessage());
+        }
+
+        try {
+            $service->verifyRegistration($started['challenge_id'], '000000');
+            $this->fail('Expected max attempts exception');
+        } catch (\RuntimeException $e) {
+            $this->assertSame('Prekročený počet pokusov — požiadajte o nový kód', $e->getMessage());
+        }
+    }
+
+    public function testResendRejectsAfterMaxResendCount(): void
+    {
+        putenv('APP_ENV=testing');
+        $_ENV['APP_ENV'] = 'testing';
+
+        $settings = $this->app->getContainer()->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class);
+        $settings->setGroup('workflows', [
+            'registrationOtpEnabled' => true,
+        ]);
+
+        $service = $this->app->getContainer()->get(\PaginiumCMS\Core\Workflow\Services\OtpWorkflowService::class);
+        $email = 'otp_max_resend_' . uniqid() . '@example.com';
+        $started = $service->startRegistration($email, 'Max Resend', 'StrongP@ssw0rd123!');
+
+        $service->resendRegistration($started['challenge_id']);
+        $service->resendRegistration($started['challenge_id']);
+        $service->resendRegistration($started['challenge_id']);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Prekročený počet opätovných odoslaní kódu');
+        $service->resendRegistration($started['challenge_id']);
+    }
 }

@@ -11,6 +11,9 @@ use Tuupola\Middleware\CorsMiddleware;
 use PaginiumCMS\Http\Middleware\SecurityMiddleware;
 use PaginiumCMS\Http\Middleware\RateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\LoginRateLimitMiddleware;
+use PaginiumCMS\Http\Middleware\OtpResendRateLimitMiddleware;
+use PaginiumCMS\Http\Middleware\OtpStartRateLimitMiddleware;
+use PaginiumCMS\Http\Middleware\OtpVerifyRateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\LocaleMiddleware;
 use PaginiumCMS\Http\Middleware\MaintenanceModeMiddleware;
 use PaginiumCMS\Http\Middleware\FirewallMiddleware;
@@ -291,6 +294,27 @@ $containerBuilder->addDefinitions([
             $container->get(CacheManager::class),
                                             // Ak beží ZA nginx reverse proxy (LAN: .26 → PHP .20), pridajte IP nginx hosta.
     trustedProxies: array_filter(explode(',', (string)($_ENV['TRUSTED_PROXIES'] ?? '127.0.0.1,::1,192.168.10.26')))
+        );
+    },
+
+    OtpVerifyRateLimitMiddleware::class => function ($container) {
+        return new OtpVerifyRateLimitMiddleware(
+            $container->get(CacheManager::class),
+            array_filter(explode(',', (string)($_ENV['TRUSTED_PROXIES'] ?? '127.0.0.1,::1,192.168.10.26')))
+        );
+    },
+
+    OtpResendRateLimitMiddleware::class => function ($container) {
+        return new OtpResendRateLimitMiddleware(
+            $container->get(CacheManager::class),
+            array_filter(explode(',', (string)($_ENV['TRUSTED_PROXIES'] ?? '127.0.0.1,::1,192.168.10.26')))
+        );
+    },
+
+    OtpStartRateLimitMiddleware::class => function ($container) {
+        return new OtpStartRateLimitMiddleware(
+            $container->get(CacheManager::class),
+            array_filter(explode(',', (string)($_ENV['TRUSTED_PROXIES'] ?? '127.0.0.1,::1,192.168.10.26')))
         );
     },
 
@@ -616,9 +640,12 @@ $app->group('/api/auth', function (RouteCollectorProxy $group) use ($container) 
     $authController = $container->get(AuthController::class);
     $twoFactorController = $container->get(TwoFactorController::class);
 
-    $group->post('/register', [$authController, 'register']);
-    $group->post('/register/verify-otp', [$authController, 'verifyRegisterOtp']);
-    $group->post('/register/resend-otp', [$authController, 'resendRegisterOtp']);
+    $group->post('/register', [$authController, 'register'])
+        ->add($container->get(OtpStartRateLimitMiddleware::class));
+    $group->post('/register/verify-otp', [$authController, 'verifyRegisterOtp'])
+        ->add($container->get(OtpVerifyRateLimitMiddleware::class));
+    $group->post('/register/resend-otp', [$authController, 'resendRegisterOtp'])
+        ->add($container->get(OtpResendRateLimitMiddleware::class));
 
     $group->post('/login', [$authController, 'login'])
     ->add($container->get(LoginRateLimitMiddleware::class));
