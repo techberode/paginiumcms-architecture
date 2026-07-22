@@ -29,9 +29,9 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 | 3 | **Používateľská príručka** — `docs/user/*` (inštalácia → admin) | ✅ |
 | 4 | **It.18f i18n** — comments, messages, backups, trash, logs + platform/editor | ✅ **2.0.47** (`f0a885c` + `390b392`) |
 | 4b | **CI hotfix ISS-059** — Vitest `renderWithProviders` | ✅ na `main` |
-| 4c | **GitHub Release `v2.0.47`** | ⏳ keď schválený deploy (RELEASE.md ready) |
+| 4c | **GitHub Release `v2.0.47`** | ✅ tag `v2.0.47` na `e1fdead` (GH Release manuálne — `gh auth login`) |
 | **5** | **Pre-Beta kvalita** — postupne, každá vlna = release + CI green | ⏳ **AKTUÁLNA FÁZA** |
-| 5a | Security release **2.0.48** (CHANGELOG [Unreleased] → tag) | ⏳ |
+| 5a | Security release **2.0.48** (CHANGELOG formalizácia) | ✅ tag `v2.0.48` (`545efb5`) |
 | 5b | **formatAuditEvent** — EN admin locale pre audit správy | ⏳ |
 | 5c | **Public site i18n** — `public/{sk,en}` katalóg + komponenty | ⏳ |
 | 5d | **It.15 doplnenie** — hook emitters, referenčný plugin, docs sync | ⏳ |
