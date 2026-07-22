@@ -28,8 +28,8 @@ if [[ ! -f vendor/bin/phpunit ]]; then
 fi
 
 PROJECT_ROOT=$PWD
-TOTAL_STEPS=13
-CLEANUP_STEP=14
+TOTAL_STEPS=14
+CLEANUP_STEP=15
 
 typeset -a FAILED_STEPS
 typeset -A STEP_EXIT STEP_STATS STEP_ERRORS
@@ -465,6 +465,16 @@ run_step 13 "PHPUnit at-rest encryption (EncryptionService/User/Settings)" \
      backend/tests/Core/Settings/SettingsRepositoryTest.php'
 
 # ==================================================
+# INPUT/OUTPUT HARDENING (audit C11 + C14)
+# Log injection sanitizácia + SSRF guard pre odchádzajúce URL.
+# ==================================================
+
+run_step 14 "PHPUnit log-injection + SSRF guard (LogSanitizer/OutboundUrlGuard)" \
+  'vendor/bin/phpunit --colors=always \
+     backend/tests/Support/LogSanitizerTest.php \
+     backend/tests/Core/Security/Services/OutboundUrlGuardTest.php'
+
+# ==================================================
 # ZÁVEREČNÝ SÚHRN
 # ==================================================
 print ""
@@ -486,6 +496,7 @@ labels=(
   "Content diagnose (backend/bin/console)"
   "PHPUnit security regression (storage/SSO/plugin/hardening)"
   "PHPUnit at-rest encryption (EncryptionService/User/Settings)"
+  "PHPUnit log-injection + SSRF guard (LogSanitizer/OutboundUrlGuard)"
 )
 
 i=1

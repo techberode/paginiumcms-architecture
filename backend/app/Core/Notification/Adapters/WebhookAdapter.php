@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\Notification\Adapters;
 
+use PaginiumCMS\Core\Security\Services\OutboundUrlGuard;
+
 class WebhookAdapter implements AdapterInterface
 {
     public function __construct(
@@ -18,6 +20,11 @@ class WebhookAdapter implements AdapterInterface
      */
     public function send(string $to, string $subject, string $message, array $options = []): bool
     {
+        // SSRF guard (C14): webhook URL je admin-konfigurovateľná.
+        if (!OutboundUrlGuard::fromEnv()->isAllowed($this->url)) {
+            return false;
+        }
+
         $payload = json_encode([
             'to' => $to,
             'subject' => $subject,

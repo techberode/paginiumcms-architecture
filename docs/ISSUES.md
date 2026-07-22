@@ -1,6 +1,6 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-22 · verzia **2.0.46** (security_fix hardening + ISS-051 boot hotfix + ISS-012 CSRF enforcement + ISS-052 at-rest šifrovanie)
+> Posledná aktualizácia: 2026-07-22 · verzia **2.0.46** (security_fix hardening + ISS-051 boot hotfix + ISS-012 CSRF enforcement + ISS-052 at-rest šifrovanie + ISS-053 log sanitizácia + ISS-054 SSRF guard)
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
 
@@ -68,6 +68,8 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | —       | Login pozadie — len URL pole (bez uploadu/médií)                      | Stredná (admin UX)    | ✅ Opravené (**2.0.46**)                            |
 | ISS-051 | Boot crash — `DevTokenGenerator` výnimka pri `APP_ENV=production`     | Kritická (boot/CLI)   | ✅ Opravené (security_fix hotfix)                   |
 | ISS-052 | Tajomstvá (TOTP seed, SMTP/SSO/ntfy) v plaintexte na disku (audit A1) | Stredná (bezpečnosť)  | ✅ Opravené — `EncryptionService` + `APP_KEY`       |
+| ISS-053 | Log/CSV injection cez `\r\n` v query/User-Agent (audit C11)          | Nízka-Stred (bezpečnosť) | ✅ Opravené — `LogSanitizer`                   |
+| ISS-054 | SSRF cez admin-konfigurovateľné URL (OAuth/ntfy/webhook, audit C14)  | Nízka-Stred (bezpečnosť) | ✅ Opravené — `OutboundUrlGuard`               |
 
 
 
@@ -1364,6 +1366,26 @@ výnimka pri konštrukcii služby zhodila celý boot kontajnera — teda aj HTTP
 **Overenie:** PHPStan L8 → 0 chýb; PHPUnit → **741** testov / 0 fail (+`EncryptionServiceTest` a at-rest testy v `UserRepositoryTest`/`SettingsRepositoryTest`).
 
 **Súbory:** `EncryptionService.php` (nový), `UserRepository.php`, `SettingsRepository.php`, `SettingsSchema.php`, `backend/bootstrap/app.php`, `backend/app/Http/Config/services.php`, `backend/storage/.htaccess`, `backend/.env`. **Súvisí s:** audit A1/A2, C-STORAGE (`SECURITY_ISSUES.md`).
+
+---
+
+## ISS-053 – Log / CSV injection cez control znaky (audit C11) — VYRIEŠENÉ
+
+**Symptóm / riziko:** User-controlled vstupy (query string, User-Agent, URI, Referer) sa zapisovali do logov/auditu bez odstránenia `\r\n`/control znakov. JSON logy CR/LF escapujú (fake-line injection do JSON nehrozí), ale zraniteľné ostávali: **CSV export** security auditu (embedded newline láme riadky), plaintext/terminálové zobrazenie a ne-JSON konzumenti (ANSI `\x1B`, DEL).
+
+**Implementované riešenie:** Zdieľaný `LogSanitizer` (`backend/app/Support/LogSanitizer.php`) — beh control znakov (`\x00–\x1F`, `\x7F`) → jedna medzera. Aplikovaný cielene na netrusted polia na vstupe do log sinkov (`AccessLogService`, `FirewallIncidentLogger`, `SecurityLogger`) a na `SecurityAuditStore::exportCsv()` (str_replace `"` **+** strip newlines). Legitímne viacriadkové správy jadra sa nekolabujú.
+
+**Overenie:** PHPStan L8 → 0 chýb; PHPUnit `LogSanitizerTest` (7 prípadov). **Súbory:** `LogSanitizer.php` (nový), `AccessLogService.php`, `FirewallIncidentLogger.php`, `SecurityAuditStore.php`, `SecurityLogger.php`.
+
+---
+
+## ISS-054 – SSRF cez admin-konfigurovateľné odchádzajúce URL (audit C14) — VYRIEŠENÉ
+
+**Symptóm / riziko:** Odchádzajúce HTTP volania na admin-konfigurovateľné URL (generic OAuth `token_url`/`userinfo_url`, ntfy server, webhook, Discord webhook) bežali cez `file_get_contents` bez SSRF ochrany → server sa dal prinútiť volať interné služby: cloud metadata (`169.254.169.254`), `localhost`, privátne rozsahy, ne-HTTPS ciele.
+
+**Implementované riešenie:** `OutboundUrlGuard` (`backend/app/Core/Security/Services/OutboundUrlGuard.php`) — v produkcii len `https://`, zákaz userinfo v URL, host → IP a odmietnutie privátnych/rezervovaných rozsahov (loopback, link-local metadata, `10/8`, `172.16/12`, `192.168/16`, IPv6 `::1`), fail-closed pri nerozlíšiteľnom hoste. V `testing`/`development`/`local` uvoľnený (http + privátne), aby fungoval lokálny SSO/ntfy. Zapojený v `OAuthSsoService` (`httpPostForm`/`httpGet`) a v ntfy/webhook/Discord adaptéroch (fail-safe → neodošle).
+
+**Overenie:** PHPStan L8 → 0 chýb; PHPUnit `OutboundUrlGuardTest` (11 prípadov). **Súbory:** `OutboundUrlGuard.php` (nový), `OAuthSsoService.php`, `NtfyAdapter.php`, `WebhookAdapter.php`, `DiscordAdapter.php`.
 
 ---
 

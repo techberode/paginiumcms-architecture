@@ -7,6 +7,7 @@ namespace PaginiumCMS\Core\Security\Firewall;
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Support\JsonHelper;
+use PaginiumCMS\Support\LogSanitizer;
 use RuntimeException;
 
 /**
@@ -30,12 +31,13 @@ final class FirewallIncidentLogger
      */
     public function log(string $ip, string $scenarioId, array $context = []): array
     {
+        // Anti log-injection (C11): uri a user_agent sú útočníkom kontrolované.
         $entry = [
             'id' => bin2hex(random_bytes(8)),
-            'ip' => $ip,
+            'ip' => LogSanitizer::value($ip, 64),
             'scenario' => $scenarioId,
-            'uri' => (string) ($context['uri'] ?? ''),
-            'user_agent' => (string) ($context['user_agent'] ?? ''),
+            'uri' => LogSanitizer::value((string) ($context['uri'] ?? ''), 2048),
+            'user_agent' => LogSanitizer::value((string) ($context['user_agent'] ?? ''), 256),
             'created_at' => gmdate('c'),
         ];
 

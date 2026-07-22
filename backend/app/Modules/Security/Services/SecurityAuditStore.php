@@ -6,6 +6,7 @@ namespace PaginiumCMS\Modules\Security\Services;
 
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Support\JsonHelper;
+use PaginiumCMS\Support\LogSanitizer;
 use RuntimeException;
 
 /**
@@ -121,7 +122,9 @@ final class SecurityAuditStore
 
         foreach ($events as $event) {
             $lines[] = implode(',', array_map(
-                static fn (string $value): string => '"' . str_replace('"', '""', $value) . '"',
+                // CSV injection (C11): okrem escapovania `"` musíme odstrániť aj
+                // CR/LF, inak by `message`/`email` s newline rozbili riadky CSV.
+                static fn (string $value): string => '"' . str_replace('"', '""', LogSanitizer::value($value)) . '"',
                 [
                     (string) ($event['id'] ?? ''),
                     (string) ($event['type'] ?? ''),

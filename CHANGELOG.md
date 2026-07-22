@@ -71,6 +71,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   `backend/app/Http/Config/services.php`, `backend/storage/.htaccess`.
 - Tests: `EncryptionServiceTest` plus at-rest cases in `UserRepositoryTest` and
   `SettingsRepositoryTest` (PHPUnit 741 tests, PHPStan L8 clean).
+- **Log-injection sanitization (audit C11).** New `LogSanitizer` collapses runs
+  of control characters (`\x00–\x1F`, `\x7F`, incl. CR/LF) into a single space.
+  Applied to user-controlled fields entering log sinks (`AccessLogService` path/
+  query/user_agent, `FirewallIncidentLogger` uri/user_agent, `SecurityLogger`
+  User-Agent) and to the security-audit **CSV export** (previously only escaped
+  `"`, so embedded newlines could break rows). Legitimate multi-line core
+  messages are left untouched.
+- **SSRF guard for admin-configurable outbound URLs (audit C14).** New
+  `OutboundUrlGuard` enforces (in production) `https://` only, rejects userinfo
+  in the URL, and blocks hosts resolving to private/reserved ranges (loopback,
+  link-local cloud metadata `169.254.169.254`, `10/8`, `172.16/12`,
+  `192.168/16`, IPv6 `::1`), fail-closed on unresolvable hosts. Wired into
+  generic OAuth token/userinfo fetches (`OAuthSsoService`) and the ntfy/webhook/
+  Discord notification adapters. Relaxed in dev/test so local SSO/ntfy works.
+- Files: `backend/app/Support/LogSanitizer.php` (new),
+  `backend/app/Core/Security/Services/OutboundUrlGuard.php` (new),
+  `AccessLogService.php`, `FirewallIncidentLogger.php`, `SecurityAuditStore.php`,
+  `SecurityLogger.php`, `OAuthSsoService.php`, `NtfyAdapter.php`,
+  `WebhookAdapter.php`, `DiscordAdapter.php`.
+- Tests: `LogSanitizerTest`, `OutboundUrlGuardTest` (PHPUnit 759 tests, PHPStan
+  L8 clean).
 
 ## [2.0.45] – 2026-07-21
 

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\Notification\Adapters;
 
+use PaginiumCMS\Core\Security\Services\OutboundUrlGuard;
+
 class NtfyAdapter implements AdapterInterface
 {
     public function __construct(
@@ -38,6 +40,12 @@ class NtfyAdapter implements AdapterInterface
     public function send(string $to, string $subject, string $message, array $options = []): bool
     {
         $url = rtrim($this->server, '/') . '/' . rawurlencode($this->topic);
+
+        // SSRF guard (C14): ntfy server je admin-konfigurovateľný.
+        if (!OutboundUrlGuard::fromEnv()->isAllowed($url)) {
+            return false;
+        }
+
         $priority = $options['priority'] ?? 'default';
         $tags = $options['tags'] ?? 'paginiumcms';
 

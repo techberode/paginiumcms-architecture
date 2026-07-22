@@ -8,6 +8,7 @@ use PaginiumCMS\Core\Logging\Contracts\LogWriterInterface;
 use PaginiumCMS\Core\Logging\Models\LogEntry;
 use PaginiumCMS\Core\Logging\Models\LogSeverity;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
+use PaginiumCMS\Support\LogSanitizer;
 
 /**
  * Writes structured HTTP access logs with timestamp + IP on every entry.
@@ -66,6 +67,10 @@ final class AccessLogService
             return;
         }
 
+        // Anti log-injection (C11): path a user-controlled kontext (query,
+        // user_agent, …) sa pred zápisom očistia od CR/LF a control znakov.
+        $path = LogSanitizer::value($path, 2048);
+
         $message = sprintf('%s %s %d', strtoupper($method), $path, $status);
         $entry = new LogEntry($severity, 'http_access', $message);
         $entry->setIp($ip);
@@ -80,7 +85,7 @@ final class AccessLogService
             'status' => $status,
             'duration_ms' => round($durationMs, 2),
             'timestamp_utc' => gmdate('c'),
-        ], $context));
+        ], LogSanitizer::context($context)));
 
         $this->writer->write($entry);
     }
