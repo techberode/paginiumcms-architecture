@@ -1,54 +1,39 @@
 import { describe, expect, it } from 'vitest';
+import '../i18n/registerModules';
 import { formatAuditEventActor, formatAuditEventMessage } from './formatAuditEvent';
 
 describe('formatAuditEvent', () => {
   it('prefers display_message from API', () => {
     expect(
       formatAuditEventMessage({
-        display_message: 'Maxxim upravil článok „blog“ (verzia 12)',
+        display_message: 'Admin updated article „blog“ (version 12)',
         message: '[CONTENT_CHANGE] UPDATE: blog',
       })
-    ).toBe('Maxxim upravil článok „blog“ (verzia 12)');
+    ).toBe('Admin updated article „blog“ (version 12)');
   });
 
-  it('formats article with title instead of slug only', () => {
+  it('prefers nested log display_message from API', () => {
     expect(
       formatAuditEventMessage({
-        context: {
-          category: 'content_change',
-          action: 'update',
-          target: 'blog',
-          user: { name: 'Admin', email: 'admin@example.com' },
-          metadata: {
-            content_type: 'article',
-            content_title: 'Ako sme stavali PaginiumCMS',
-            content_slug: 'blog',
-            version: 7,
-            change_summary: '8 pridaných, 1 odstránených',
-          },
+        log: {
+          display_message: 'Admin updated article „blog“ (version 7)',
         },
       })
-    ).toBe(
-      'Admin upravil článok „Ako sme stavali PaginiumCMS“ (blog) (verzia 7) · 8 pridaných, 1 odstránených'
-    );
+    ).toBe('Admin updated article „blog“ (version 7)');
   });
 
-  it('formats legacy audit log from context', () => {
+  it('falls back to stored summary when display_message missing', () => {
     expect(
       formatAuditEventMessage({
-        message: '[CONTENT_CHANGE] UPDATE: blog on maxxim@webland.fun by 2026-07-20 20:44:47',
         context: {
-          category: 'content_change',
-          action: 'update',
-          target: 'blog',
-          user: { name: 'Maxxim', email: 'maxxim@webland.fun' },
-          metadata: {
-            content_type: 'article',
-            version: 5,
-          },
+          summary: 'Maxxim upravil článok „blog“ (verzia 5)',
         },
       })
     ).toBe('Maxxim upravil článok „blog“ (verzia 5)');
+  });
+
+  it('uses English fallback label when nothing else is available', () => {
+    expect(formatAuditEventMessage({}, 'en')).toBe('System event');
   });
 
   it('resolves actor name', () => {

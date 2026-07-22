@@ -1,6 +1,6 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-22 · verzia **2.0.47** (It.18f Beta gate + ISS-059 CI Vitest + ISS-060 settings EN catalog)
+> Posledná aktualizácia: 2026-07-22 · verzia **2.0.49** (wave 5b audit locale / ISS-061)
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
 
@@ -76,6 +76,7 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-058 | OTP bez dedikovaného rate-limitu + resend resetuje pokusy (audit S10) | Stredná (bezpečnosť) | ✅ Opravené — `Otp*RateLimitMiddleware` + `resend_count` |
 | ISS-059 | Vitest — `useI18n()` bez `I18nProvider` v unit testoch (CI @ `f0a885c`) | Nízka (CI) | ✅ Opravené — `renderWithProviders` (**2.0.47**) |
 | ISS-060 | `settings/en.ts` workflows — SK copy-paste v EN katalógu (OTP labely) | Stredná (i18n UX) | ✅ Opravené (**2.0.47** / `f0a885c`) |
+| ISS-061 | Audit správy v EN admin locale zostávali po slovensky | Stredná (i18n UX) | ✅ Opravené (**2.0.49**) |
 
 
 
@@ -1506,6 +1507,33 @@ Spustené z komponentov, ktoré boli migrované na `useI18n()` v It.18f, ale uni
 **Súbory:** `frontend/src/i18n/modules/settings/en.ts`, `SettingsView.tsx` (bez zmeny logiky — fix v katalógu).
 
 **Súvisí s:** It.18c, It.18f.
+
+---
+
+## ISS-061 – Audit správy v EN admin locale zostávali po slovensky — VYRIEŠENÉ
+
+**Symptóm:** Pri **`Nastavenia → Všeobecné → Jazyk = English`** zostali audit správy v dashboard „Prehľad aktivít“ a v `/audit` po slovensky (napr. „Maxxim upravil článok…“), zatiaľ čo zvyšok admin UI bol anglický.
+
+**Príčina:**
+
+1. `AuditMessageFormatter` mal natvrdo SK slovníky; ignoroval `Lang::getLocale()`
+2. `formatFromLog()` vracal uložený SK `context.summary` pred re-formátovaním
+3. FE `formatAuditEvent.ts` duplikoval SK logiku namiesto `display_message` z API
+4. `getContentAuditTrail` / `getUserAuditTrail` neposielali `display_message`
+
+**Implementované riešenie (2.0.49 / wave 5b):**
+
+- `backend/lang/{sk,en}/audit.php` — katalóg akcií, typov obsahu, diff počtov
+- `AuditMessageFormatter` → `Lang::get()`; `formatFromLog()` preferuje re-formát z contextu
+- `AuditTrailService::buildDiffMetadata()` — numerické diff polia + enrich `display_message` na read cestách
+- `formatAuditEvent.ts` — tenký klient; `AuditTrail` + `DashboardActivityPanel` posielajú `locale`
+- PHPUnit `AuditMessageFormatterTest` — SK + EN; Vitest 210/210
+
+**Overenie:** Settings → EN → upraviť článok → dashboard activity EN text; PHPStan L8 clean (`enrichAuditLogEntry` return type fix).
+
+**Súbory:** `audit.php` (lang), `AuditMessageFormatter.php`, `AuditTrailService.php`, `EnhancedVersionManager.php`, `formatAuditEvent.ts`, `AuditTrail.tsx`, `DashboardActivityPanel.tsx`, `i18n/modules/audit/*`.
+
+**Súvisí s:** It.18, ISS-048 (audit formatter), wave 5b [CONTINUATION.md](CONTINUATION.md).
 
 ---
 

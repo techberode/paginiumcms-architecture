@@ -1,3 +1,6 @@
+import type { Locale } from '../i18n';
+import { translate } from '../i18n';
+
 export interface AuditEventLike {
   display_message?: string;
   message?: string;
@@ -9,162 +12,36 @@ export interface AuditEventLike {
     category?: string;
     timestamp?: string;
     user?: { name?: string; email?: string };
-    metadata?: {
-      message?: string;
-      content_type?: string;
-      content_title?: string;
-      content_slug?: string;
-      content_status?: string;
-      version?: number | string;
-      change_summary?: string;
-    };
+    metadata?: Record<string, unknown>;
   };
   log?: {
+    display_message?: string;
     message?: string;
     context?: AuditEventLike['context'];
   };
 }
 
-const ACTION_VERBS: Record<string, string> = {
-  create: 'vytvoril',
-  update: 'upravil',
-  delete: 'zmazal',
-  restore: 'obnovil',
-  status: 'zmenil stav',
-  read: 'zobrazil',
-};
-
-const CONTENT_TYPES: Record<string, string> = {
-  page: 'stránku',
-  article: 'článok',
-  pages: 'stránku',
-  articles: 'článok',
-};
-
-function actorName(context?: AuditEventLike['context']): string {
-  const name = context?.user?.name?.trim();
-  if (name) return name;
-  const email = context?.user?.email?.trim();
-  if (email) return email;
-  return 'Systém';
-}
-
-function quote(value: string): string {
-  const trimmed = value.trim();
-  return trimmed === '' ? '„(prázdne)“' : `„${trimmed}“`;
-}
-
-function translateChangeSummary(summary: string): string {
-  return summary
-    .replace(/ added/g, ' pridaných')
-    .replace(/ removed/g, ' odstránených')
-    .replace(/ modified/g, ' upravených')
-    .replace('No changes', 'Bez zmien')
-    .replace('No significant changes', 'Bez významných zmien');
-}
-
-function resolveDetail(metadata: NonNullable<AuditEventLike['context']>['metadata']): string {
-  const changeSummary = metadata?.change_summary?.trim();
-  if (changeSummary && changeSummary !== 'No changes' && changeSummary !== 'No significant changes') {
-    return translateChangeSummary(changeSummary);
+function pickDisplayMessage(event: AuditEventLike): string | undefined {
+  const direct = event.display_message?.trim();
+  if (direct) {
+    return direct;
   }
 
-  const message = metadata?.message?.trim();
-  if (!message) return '';
-  if (/^(Create|Update|Delete|Restore|Status)\s+(page|article):\s+/i.test(message)) {
-    return '';
-  }
-  return message;
-}
-
-function resolveContentLabel(target: string, metadata?: NonNullable<AuditEventLike['context']>['metadata']): string {
-  const title = metadata?.content_title?.trim() ?? '';
-  const slug = metadata?.content_slug?.trim() || target;
-
-  if (title !== '') {
-    if (slug !== '' && title.localeCompare(slug, undefined, { sensitivity: 'accent' }) !== 0) {
-      return `„${title}“ (${slug})`;
-    }
-    return quote(title);
+  const nested = event.log?.display_message?.trim();
+  if (nested) {
+    return nested;
   }
 
-  return quote(slug);
+  return undefined;
 }
 
-function translateStatus(status: string): string {
-  switch (status.toLowerCase()) {
-    case 'draft':
-      return 'koncept';
-    case 'published':
-      return 'publikovaný';
-    case 'archived':
-      return 'archivovaný';
-    default:
-      return status;
-  }
-}
-
-function formatContentChange(
-  actor: string,
-  action: string,
-  target: string,
-  metadata: NonNullable<AuditEventLike['context']>['metadata']
+export function formatAuditEventMessage(
+  event: AuditEventLike,
+  locale: Locale = 'sk'
 ): string {
-  const contentType = (metadata?.content_type ?? 'page').toLowerCase();
-  const typeLabel = CONTENT_TYPES[contentType] ?? 'obsah';
-  const verb = ACTION_VERBS[action] ?? action;
-  const parts = [`${actor} ${verb} ${typeLabel} ${resolveContentLabel(target, metadata)}`];
-
-  if (metadata?.version !== undefined && metadata.version !== '') {
-    parts.push(`(verzia ${metadata.version})`);
-  }
-
-  if (action === 'status' && metadata?.content_status) {
-    parts.push(`→ ${translateStatus(metadata.content_status)}`);
-  }
-
-  const detail = resolveDetail(metadata);
-  if (detail) {
-    parts.push(`· ${detail}`);
-  }
-
-  return parts.join(' ');
-}
-
-function formatFromContext(context: AuditEventLike['context']): string | null {
-  if (!context?.category || !context.action || !context.target) {
-    return null;
-  }
-
-  const actor = actorName(context);
-  const action = context.action.toLowerCase();
-  const metadata = context.metadata;
-
-  switch (context.category) {
-    case 'content_change':
-      return formatContentChange(actor, action, context.target, metadata);
-    case 'content_access': {
-      const typeLabel = CONTENT_TYPES[(metadata?.content_type ?? 'obsah').toLowerCase()] ?? metadata?.content_type ?? 'obsah';
-      const verb = ACTION_VERBS[action] ?? 'pristúpil k';
-      return `${actor} ${verb} ${typeLabel} ${resolveContentLabel(context.target, metadata)}`;
-    }
-    case 'admin_action':
-      return `${actor} vykonal administrátorskú akciu „${action}“ na „${context.target}“`;
-    case 'security':
-      return `Bezpečnostná udalosť „${action}“ na „${context.target}“ (${actor})`;
-    default:
-      return `${actor} — ${action.toUpperCase()}: ${quote(context.target)}`;
-  }
-}
-
-export function formatAuditEventMessage(event: AuditEventLike): string {
-  if (typeof event.display_message === 'string' && event.display_message.trim() !== '') {
-    return event.display_message;
-  }
-
-  const fromContext = formatFromContext(event.context ?? event.log?.context);
-  if (fromContext) {
-    return fromContext;
+  const fromApi = pickDisplayMessage(event);
+  if (fromApi) {
+    return fromApi;
   }
 
   const summary = event.context?.summary ?? event.log?.context?.summary;
@@ -180,14 +57,27 @@ export function formatAuditEventMessage(event: AuditEventLike): string {
     return event.log.message;
   }
 
-  return event.context?.action ?? event.log?.context?.action ?? 'Systémová udalosť';
+  return translate(locale, 'audit.system_event');
 }
 
-export function formatAuditEventActor(event: AuditEventLike): string {
-  return actorName(event.context ?? event.log?.context);
+export function formatAuditEventActor(event: AuditEventLike, locale: Locale = 'sk'): string {
+  const name = event.context?.user?.name?.trim() ?? event.log?.context?.user?.name?.trim();
+  if (name) {
+    return name;
+  }
+
+  const email = event.context?.user?.email?.trim() ?? event.log?.context?.user?.email?.trim();
+  if (email) {
+    return email;
+  }
+
+  return translate(locale, 'audit.system');
 }
 
-export function formatAuditEventTimestamp(event: AuditEventLike): string {
+export function formatAuditEventTimestamp(
+  event: AuditEventLike,
+  locale: Locale = 'sk'
+): string {
   const raw = event.timestamp ?? event.context?.timestamp ?? event.log?.context?.timestamp;
 
   if (raw === undefined || raw === null || raw === '') {
@@ -199,5 +89,5 @@ export function formatAuditEventTimestamp(event: AuditEventLike): string {
     return '';
   }
 
-  return date.toLocaleString('sk-SK');
+  return date.toLocaleString(locale === 'en' ? 'en-US' : 'sk-SK');
 }

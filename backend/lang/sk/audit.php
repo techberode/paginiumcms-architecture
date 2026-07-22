@@ -1,0 +1,38 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'system' => 'Systém',
+    'system_event' => 'Systémová udalosť',
+    'empty' => '(prázdne)',
+    'unknown_target' => 'neznámy cieľ',
+    'access_default_verb' => 'pristúpil k',
+    'content_default_type' => 'obsah',
+    'actions.create' => 'vytvoril',
+    'actions.update' => 'upravil',
+    'actions.delete' => 'zmazal',
+    'actions.restore' => 'obnovil',
+    'actions.status' => 'zmenil stav',
+    'actions.read' => 'zobrazil',
+    'actions.login' => 'sa prihlásil',
+    'actions.logout' => 'sa odhlásil',
+    'actions.backup' => 'zálohoval',
+    'actions.restore_backup' => 'obnovil zo zálohy',
+    'content_types.page' => 'stránku',
+    'content_types.article' => 'článok',
+    'content_types.pages' => 'stránku',
+    'content_types.articles' => 'článok',
+    'status.draft' => 'koncept',
+    'status.published' => 'publikovaný',
+    'status.archived' => 'archivovaný',
+    'diff.no_changes' => 'Bez zmien',
+    'diff.no_significant' => 'Bez významných zmien',
+    'diff.added' => ':count pridaných',
+    'diff.removed' => ':count odstránených',
+    'diff.modified' => ':count upravených',
+    'version' => '(verzia :version)',
+    'admin_action' => ':actor vykonal administrátorskú akciu „:action“ na „:target“',
+    'security' => 'Bezpečnostná udalosť „:action“ na „:target“ (:actor)',
+    'default' => ':actor — :action: :target',
+];

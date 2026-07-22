@@ -1,7 +1,7 @@
 # Iteration 18 – Admin UI Localization (i18n)
 
-**Status:** ✅ Shipped · It.18a–d **2.0.44** · It.18e **2.0.46** · **It.18f ✅ Beta gate (2.0.47)**  
-**Version:** 2.0.44 · 2.0.46 · **2.0.47** (It.18f + CI hotfix ISS-059)
+**Status:** ✅ Shipped · It.18a–d **2.0.44** · It.18e **2.0.46** · **It.18f ✅ Beta gate (2.0.47)** · **Audit locale ✅ (2.0.49 / ISS-061)**  
+**Version:** 2.0.44 · 2.0.46 · **2.0.47** · **2.0.49**
 
 ## Summary
 
@@ -68,6 +68,8 @@ Migrate all admin UI strings from hardcoded Slovak to `useI18n()`, with backend 
 
 **ISS-060 (fixed in 2.0.47):** `settings/en.ts` — sekcia `workflows` mala SK copy-paste; EN admin zobrazoval slovenské OTP labely.
 
+**ISS-061 (fixed in 2.0.49):** Audit správy v EN admin locale zostávali po slovensky — `AuditMessageFormatter` + `formatFromLog()` re-lokalizácia.
+
 ### Test harness (ISS-059, CI hotfix)
 
 | Path | Role |
@@ -82,8 +84,6 @@ Migrate all admin UI strings from hardcoded Slovak to `useI18n()`, with backend 
 
 ## Remaining ⏳ (post-Beta)
 - Public site (`PublicSite`) – separate catalog
-- Auth modals / register shell – outside admin i18n scope today
-- `formatAuditEvent.ts` — SK messages regardless of admin locale (backend formatter)
 - Plugin i18n: `Http/Extensions/{id}/lang/` + `frontend/src/extensions/{id}/i18n/`
 - Optional: `GET /api/i18n/{locale}` for dynamic loading
 - Settings `general.language` enum from `SupportedLocalesRegistry`
