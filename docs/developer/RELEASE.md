@@ -3,7 +3,7 @@
 > Posledná verzia: **2.0.50** · 2026-07-22 · tag **`v2.0.50`**  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release.
 
-> **Poznámka k verziám:** … **v2.0.47** → `e1fdead` · **v2.0.48** → `a32c002` · **v2.0.49** → `1ac58cf` · **2.0.50** → *(pending commit)*.
+> **Poznámka k verziám:** … **v2.0.47** → `e1fdead` · **v2.0.48** → `a32c002` · **v2.0.49** → `1ac58cf` · **2.0.50** → `67d77bb`.
 
 ### Kontinuita verzií (nepreskakovať)
 
@@ -12,7 +12,7 @@
 | 2.0.47 | `v2.0.47` | `e1fdead` | ✅ tagged |
 | 2.0.48 | `v2.0.48` | `a32c002` | ✅ tagged |
 | 2.0.49 | `v2.0.49` | `1ac58cf` | ✅ tagged |
-| **2.0.50** | **`v2.0.50`** | ***(pending)*** | ⏳ release |
+| **2.0.50** | **`v2.0.50`** | **`67d77bb`** | ✅ tagged |
 
 **Pravidlo:** Ďalší release musí byť **`v2.0.51`**, nie skok. Pred každým novým číslom: `git tag -l 'v2.0.5*' | sort -V`.
 
@@ -42,7 +42,7 @@
 2.0.50 — Public site i18n (ISS-062 / wave 5c)
 ```
 
-**Tag:** `v2.0.50` · **Target:** `main` · **Commit:** *(fill after commit)*
+**Tag:** `v2.0.50` · **Target:** `main` · **Commit:** `67d77bb`
 
 **Body:**
 
