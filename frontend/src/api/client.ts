@@ -95,13 +95,32 @@ class ApiClient {
         });
         return response;
       },
-      (error: AxiosError) => {
+      async (error: AxiosError) => {
         const url = String(error.config?.url ?? '');
         debugLogApi('error', String(error.config?.method ?? 'get'), url, {
           status: error.response?.status ?? null,
           message: error.message,
           apiError: (error.response?.data as ApiResponse | undefined)?.error ?? null,
         });
+
+        // Self-healing CSRF: server odmietol chýbajúci/neplatný token → raz
+        // dofetchni čerstvý token a zopakuj pôvodný request (max 1×).
+        const csrfPayload = error.response?.data as (ApiResponse & { code?: string }) | undefined;
+        const retryConfig = error.config as (typeof error.config & { _csrfRetried?: boolean }) | undefined;
+        if (
+          error.response?.status === 403 &&
+          csrfPayload?.code === 'csrf_invalid' &&
+          retryConfig &&
+          !retryConfig._csrfRetried
+        ) {
+          retryConfig._csrfRetried = true;
+          const fresh = await this.refreshCsrfToken();
+          if (fresh) {
+            retryConfig.headers = retryConfig.headers ?? {};
+            (retryConfig.headers as Record<string, string>)['X-CSRF-TOKEN'] = fresh;
+            return this.client.request(retryConfig);
+          }
+        }
 
         if (error.response?.status === 401) {
           const requestUrl = String(error.config?.url ?? '');
@@ -144,6 +163,26 @@ class ApiClient {
 
   public setCsrfToken(token: string): void {
     localStorage.setItem('csrf_token', token);
+  }
+
+  /**
+   * Vyžiada nový CSRF token zo servera a uloží ho.
+   * GET je bezpečná metóda → nespustí CSRF ochranu (žiadna slučka).
+   */
+  public async refreshCsrfToken(): Promise<string | null> {
+    try {
+      const res = await this.client.get('/api/auth/csrf-token', {
+        params: { key: 'default' },
+      });
+      const data = res.data as ApiResponse<{ token?: string }> | undefined;
+      const token = data?.token ?? data?.data?.token ?? null;
+      if (token) {
+        this.setCsrfToken(token);
+      }
+      return token;
+    } catch {
+      return null;
+    }
   }
 
   // GET request
