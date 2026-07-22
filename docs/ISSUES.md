@@ -1,6 +1,6 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-21 · verzia **2.0.46** (audit activity + login background picker + ISS-046–050)
+> Posledná aktualizácia: 2026-07-22 · verzia **2.0.46** (security_fix hardening + ISS-051 boot hotfix)
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
 
@@ -66,6 +66,7 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-049 | Korumpovaný denný log `2026-07-21.json`                 | Stredná (ops)         | ✅ Opravené (**2.0.46**)             |
 | ISS-050 | Sekcia Logy prázdna — nesprávna cesta log readera       | Vysoká (admin UX)     | ✅ Opravené (**2.0.46**)             |
 | —       | Login pozadie — len URL pole (bez uploadu/médií)          | Stredná (admin UX)    | ✅ Opravené (**2.0.46**)             |
+| ISS-051 | Boot crash — `DevTokenGenerator` výnimka pri `APP_ENV=production` | Kritická (boot/CLI)   | ✅ Opravené (security_fix hotfix)   |
 
 
 
@@ -1233,6 +1234,48 @@ public function __construct(
 **Overenie:** `./vendor/bin/phpunit backend/tests/Core/Logging/ApplicationLogReaderTest.php`
 
 **Súvisí s:** ISS-049.
+
+---
+
+## ISS-051 – Boot crash: `DevTokenGenerator` výnimka pri `APP_ENV=production`
+
+**Symptóm:** Po security hardeningu (audit 2026-07-22) prestal fungovať boot aplikácie na prostrediach s `APP_ENV=production` — celý DI kontajner spadol s:
+
+```
+Uncaught RuntimeException: DEV_UNLOCK_SECRET must be configured outside local development.
+  in backend/app/Http/Config/services.php:482
+```
+
+Prejavilo sa aj v teste `scripts/run-all-tests.zsh` krok 11:
+
+```
+[ Content diagnose (backend/bin/console) ]
+Stats: Failed | issues: 0
+ISSUE — thrown in .../backend/app/Http/Config/services.php
+```
+
+**Príčina:** Oprava S13 (dev-unlock secret fail-closed) hádzala `RuntimeException` **priamo v DI factory** `DevTokenGenerator::class`, keď bol `DEV_UNLOCK_SECRET` prázdny a `APP_ENV` nebol lokálny/testovací. Keďže:
+
+1. `backend/.env` má `APP_ENV=production`, a
+2. developer routy resolvujú `DevTokenGenerator` už **pri registrácii routov** (eager, `bootstrap/app.php`),
+
+výnimka pri konštrukcii služby zhodila celý boot kontajnera — teda aj HTTP API aj CLI (`php backend/bin/console content:diagnose`).
+
+**Implementované riešenie (security_fix hotfix):**
+
+- Factory **nehádže výnimku**. Mimo lokál/test prostredia necháva secret **prázdny**.
+- `DevTokenGenerator` je už fail-closed pri použití: `isConfigured() === false` → `generate()` vyhodí `InvalidArgumentException`, `validate()`/`verifyStructure()` vrátia „DEV_UNLOCK_SECRET nie je nastavený".
+- Výsledok: dev-unlock je v produkcii bezpečne **vypnutý** a **nie predvídateľný** (žiadny fallback secret), pričom boot nespadne.
+- Zámer S13 (žiadny predvídateľný fallback z čias `APP_DEBUG=true`) ostáva splnený.
+
+**Ops poznámka:** Pre povolenie dev-unlock na konkrétnom stroji nastav `APP_ENV=development` alebo doplň `DEV_UNLOCK_SECRET=...` do `backend/.env`.
+
+**Overenie:**
+
+- `php backend/bin/console content:diagnose` → `[OK] Content storage looks healthy.`
+- PHPStan L8 → 0 chýb; PHPUnit → 720 testov / 0 fail.
+
+**Súbor:** `backend/app/Http/Config/services.php`. **Súvisí s:** audit S13 (`AUDIT_REPORT.md`, `SECURITY_ISSUES.md`).
 
 ---
 
