@@ -3,7 +3,7 @@
 > Posledná verzia: **2.0.58** · 2026-07-23 · tag **`v2.0.58`** (po push)  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release.
 
-> **Poznámka k verziám:** … **2.0.57** → `e84b71f` · **2.0.58** → *(tento commit)*.
+> **Poznámka k verziám:** … **2.0.57** → `e84b71f` · **2.0.58** → `f53e71e`.
 
 ### Kontinuita verzií (nepreskakovať)
 
@@ -18,7 +18,7 @@
 | **2.0.55** | **`v2.0.55`** | **`d8c3437`** | ✅ tagged |
 | **2.0.56** | **`v2.0.56`** | **`0664ba3`** | ✅ tagged |
 | **2.0.57** | **`v2.0.57`** | **`e84b71f`** | ✅ tagged |
-| **2.0.58** | **`v2.0.58`** | *(pending)* | ⏳ tento release |
+| **2.0.58** | **`v2.0.58`** | **`f53e71e`** | ✅ tagged |
 
 **Pravidlo:** Ďalší release = **Public Beta 1** (`v2.1.0-beta.1` alebo **`v2.0.59`**). Pred tagom: [BETA_INFRA.md](BETA_INFRA.md).
 
@@ -61,7 +61,7 @@ git push origin v2.0.58
 **Body:**
 
 ```markdown
-**Tag:** `v2.0.58` · **Target:** `main` · **Commit:** *(fill after push)*
+**Tag:** `v2.0.58` · **Target:** `main` · **Commit:** `f53e71e`
 
 ### Summary
 
