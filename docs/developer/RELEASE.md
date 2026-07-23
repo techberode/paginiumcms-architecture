@@ -1,9 +1,9 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.1.0-beta.1** · 2026-07-23 · tag **`v2.1.0-beta.1`**  
+> Posledná verzia: **2.1.0-beta.2** · 2026-07-23 · tag **`v2.1.0-beta.2`**  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release.
 
-> **Poznámka k verziám:** **`2.0.58`** → `f53e71e` · **Public Beta 1** → `e3e0d82`.
+> **Poznámka k verziám:** **`2.0.58`** → `f53e71e` · **Public Beta 1** → `e3e0d82` · **Beta 1 Testing** → (tento commit).
 
 ### Kontinuita verzií (nepreskakovať)
 
@@ -19,9 +19,64 @@
 | **2.0.56** | **`v2.0.56`** | **`0664ba3`** | ✅ tagged |
 | **2.0.57** | **`v2.0.57`** | **`e84b71f`** | ✅ tagged |
 | **2.0.58** | **`v2.0.58`** | **`f53e71e`** | ✅ tagged |
-| **Public Beta 1** | **`v2.1.0-beta.1`** | **`e3e0d82`** | ✅ tagged (push pending) |
+| Public Beta 1 | **`v2.1.0-beta.1`** | **`e3e0d82`** | ✅ tagged |
+| **Beta 1 Testing** | **`v2.1.0-beta.2`** | **(tento commit)** | ⏳ pending |
 
-**Pravidlo:** Post-beta patchy — `2.0.59+` alebo `2.1.0-beta.2` podľa rozsahu.
+**Pravidlo:** Post-beta patchy — `2.0.59+` alebo `2.1.0-beta.N` podľa rozsahu.
+
+---
+
+## v2.1.0-beta.2 — Beta 1 Testing (pre-push security gate)
+
+```bash
+composer gate
+# alebo: ./scripts/iteration-gate.sh
+```
+
+### Commit
+
+```bash
+git add -A
+git commit -m "$(cat <<'EOF'
+release: v2.1.0-beta.2 — Beta 1 Testing (pre-push security gate).
+
+Audit trail CSV export: LogSanitizer on all cells (C11-AUDITTRAIL-CSV).
+Regresný AuditTrailServiceTest; AppVersion bump.
+EOF
+)"
+git tag v2.1.0-beta.2
+git push origin main
+git push origin v2.1.0-beta.2
+```
+
+---
+
+## GitHub Release — copy-paste (v2.1.0-beta.2)
+
+**Title:** `v2.1.0-beta.2 — Beta 1 Testing`
+
+**Body:**
+
+```markdown
+## Summary
+
+Pre-push security gate pred verejným testovaním Beta 1. Jediný blocking nález z auditu (Medium): audit trail CSV export bez `LogSanitizer`.
+
+## Fixed
+
+- **C11-AUDITTRAIL-CSV** — `AuditTrailService::exportAuditToCsv()` — všetky bunky cez `LogSanitizer::value()` + jednotné CSV quoting (rovnaký vzor ako `SecurityAuditStore`). Regresný test `AuditTrailServiceTest`.
+
+## Verification
+
+- PHPUnit full suite green
+- PHPStan level 8 = 0
+- `composer audit` + `npm audit --audit-level=high` = 0 CVE
+
+## Notes
+
+- Nadväzuje na **v2.1.0-beta.1** (Public Beta 1 docs). Toto je **bezpečnostný patch** pred pushom testerom.
+- Detail scope Beta 1: [PUBLIC_BETA1.md](docs/PUBLIC_BETA1.md)
+```
 
 ---
 

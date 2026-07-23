@@ -1,6 +1,6 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-23 · verzia **2.0.56** · ISS-063–076 · backlog It.59–61
+> Posledná aktualizácia: 2026-07-23 · verzia **2.1.0-beta.2** · ISS-063–077 · backlog It.59–61
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
 
@@ -94,6 +94,7 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-074 | PHPStan L8 po `accessControl` / branding (10 chýb) | Stredná (CI) | ✅ Opravené · **2.0.52** |
 | ISS-075 | PHPUnit fatal: `Cannot redeclare class HelloWidget\Hooks` (Wave 5d) | Stredná (CI) | ✅ Opravené · **2.0.54** |
 | ISS-076 | PHPUnit kaskáda po `passwordConfirm` — 21 failov (401/422/null) | Stredná (CI) | ✅ Opravené · **2.0.56** |
+| ISS-077 | Audit trail CSV export bez `LogSanitizer` (C11 medzera) | Stredná (security) | ✅ Opravené · **2.1.0-beta.2** |
 
 
 
@@ -1935,6 +1936,15 @@ Failed asserting that null is not null.
 
 ---
 
+## ISS-077 – Audit trail CSV export bez LogSanitizer — VYRIEŠENÉ (**2.1.0-beta.2**)
+
+**Symptóm:** Pre-beta audit našiel Medium nález: `AuditTrailService::exportAuditToCsv()` neaplikoval `LogSanitizer` na bunky CSV (na rozdiel od `SecurityAuditStore::exportCsv()` po C11). EDITOR+ mohol cez auditovaný obsah (`\r\n`, `=CMD()`) poškodiť export alebo spustiť formula injection v Excel/LibreOffice.
+
+**Riešenie:** Všetky bunky cez `LogSanitizer::value()` + jednotné CSV quoting. Regresný test `AuditTrailServiceTest::testExportAuditToCsvSanitizesAllCells()`.
+
+**Súvis:** lokálny `SECURITY_ISSUES.md` → `C11-AUDITTRAIL-CSV`.
+
+---
 
 
 ## Súvisiace dokumenty

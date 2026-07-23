@@ -49,6 +49,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | Wave 5f — Docker onboarding + user docs polish | **2.0.57** | [below](#2057--2026-07-23) |
 | Wave 6 — Beta infra gate (cron, BETA_INFRA, diagnose) | **2.0.58** | [below](#2058--2026-07-23) |
 | **Public Beta 1** | **`v2.1.0-beta.1`** | [below](#210-beta1--2026-07-23) |
+| Beta 1 Testing — pre-push security gate | **`v2.1.0-beta.2`** | [below](#210-beta2--2026-07-23) |
 | Wave 5d — It.15 hook emitters + extension policy | **2.0.54** | [below](#2054--2026-07-23) |
 | It.19b–19d — Security runtime, auth UX, password policy | **2.0.45** | [below](#2045--2026-07-21) |
 
@@ -57,6 +58,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 Post-beta backlog: It.56–61, It.25 setup wizard, ops cron on `.26`.
+
+---
+
+## [2.1.0-beta.2] – 2026-07-23
+
+**Beta 1 Testing** — pre-push security gate (audit CSV sanitization).
+
+### Fixed
+
+- **C11-AUDITTRAIL-CSV** — `AuditTrailService::exportAuditToCsv()` sanitizuje všetky bunky cez `LogSanitizer` (CSV injection / rozbité riadky pri `\r\n` v auditovanom obsahu). Regresný test `AuditTrailServiceTest`.
+
+### Changed
+
+- **`AppVersion`** → `2.1.0-beta.2`
 
 ---
 

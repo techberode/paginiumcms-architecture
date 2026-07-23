@@ -12,6 +12,7 @@ use PaginiumCMS\Core\Versioning\Services\EnhancedVersionManager;
 use PaginiumCMS\Core\Versioning\Models\Version;
 use PaginiumCMS\Core\Notification\Services\IncidentNotifier;
 use PaginiumCMS\Modules\Security\Models\User;
+use PaginiumCMS\Support\LogSanitizer;
 
 
 class AuditTrailService
@@ -446,17 +447,19 @@ class AuditTrailService
             }
 
             $context = $log['context'] ?? [];
-            $csv .= sprintf(
-                "%s,%s,%s,%s,%s,%s,%s,\"%s\"\n",
-                $log['timestamp'] ?? '',
-                $this->resolveAuditCategory($log),
-                $context['action'] ?? '',
-                $context['target'] ?? '',
-                $context['user']['name'] ?? 'system',
-                $context['user']['email'] ?? '',
-                $log['severity'] ?? 'INFO',
-                str_replace('"', '""', $this->messageFormatter->formatFromLog($log))
-            );
+            $csv .= implode(',', array_map(
+                static fn (string $value): string => '"' . str_replace('"', '""', LogSanitizer::value($value)) . '"',
+                [
+                    (string) ($log['timestamp'] ?? ''),
+                    $this->resolveAuditCategory($log),
+                    (string) ($context['action'] ?? ''),
+                    (string) ($context['target'] ?? ''),
+                    (string) ($context['user']['name'] ?? 'system'),
+                    (string) ($context['user']['email'] ?? ''),
+                    (string) ($log['severity'] ?? 'INFO'),
+                    $this->messageFormatter->formatFromLog($log),
+                ]
+            )) . "\n";
         }
 
         return $csv;
