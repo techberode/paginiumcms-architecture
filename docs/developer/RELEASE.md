@@ -3,7 +3,7 @@
 > Posledná verzia: **2.0.54** · 2026-07-23 · tag **`v2.0.54`** (po push)  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release.
 
-> **Poznámka k verziám:** … **2.0.52** → `9d930a1` · **2.0.53** → `aee1494` · **2.0.54** → *(doplň po commite)*.
+> **Poznámka k verziám:** … **2.0.52** → `9d930a1` · **2.0.53** → `aee1494` · **2.0.54** → `2338fe9`.
 
 ### Kontinuita verzií (nepreskakovať)
 
@@ -14,7 +14,7 @@
 | **2.0.51** | **`v2.0.51`** | **`d9b7171`** | ✅ tagged |
 | **2.0.52** | **`v2.0.52`** | **`9d930a1`** | ✅ tagged |
 | **2.0.53** | **`v2.0.53`** | **`aee1494`** | ✅ tagged |
-| **2.0.54** | **`v2.0.54`** | *(pending)* | ⏳ po push |
+| **2.0.54** | **`v2.0.54`** | **`2338fe9`** | ✅ tagged (push pending) |
 
 **Pravidlo:** Ďalší release musí byť **`v2.0.55`**, nie skok. Pred každým novým číslom: `git tag -l 'v2.0.5*' | sort -V`.
 
@@ -67,7 +67,7 @@ git push origin v2.0.54
 **Body:**
 
 ```markdown
-**Tag:** `v2.0.54` · **Target:** `main` · **Commit:** *(doplň)*
+**Tag:** `v2.0.54` · **Target:** `main` · **Commit:** `2338fe9`
 
 ### Summary
 
