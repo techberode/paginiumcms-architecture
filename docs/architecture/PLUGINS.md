@@ -59,7 +59,9 @@ Zlyhanie → HTTP 422, žiadny zápis na disk.
 | Import ZIP + policy | ✅ `POST /api/admin/extensions/import` |
 | Extension routes | ✅ Auto-load pre enabled (`Http/Routes/extensions/{id}.php`) |
 | Admin UI | ✅ `/extensions` — `ExtensionsManager` |
-| FE dynamic loader | ✅ `frontend/src/extensions/loader.ts` |
+| Hook emitters v Core | ✅ `HookEmitter` + `HookCatalog` (Wave 5d) |
+| Referenčný plugin | ✅ `hello-widget` v repozitári |
+| Extension code policy | ✅ `docs/developer/EXTENSION_CODE_POLICY.md` |
 | CMS témy | **Chýba** (len admin dark/light v `ThemeContext`) |
 
 ---

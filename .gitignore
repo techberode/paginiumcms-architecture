@@ -4,9 +4,10 @@
 ###############################################################################
 
 ###############################################################################
-# Private security incident log (NEVER commit) — local documentation only
+# Private local docs (NEVER commit) — personal ops / QA checklists only
 ###############################################################################
 SECURITY_ISSUES.md
+PRIVATE_OPS_CHECKLIST.md
 
 ###############################################################################
 # Composer

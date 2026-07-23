@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Extensions\Services;
 
+use PaginiumCMS\Core\Hook\HookCatalog;
 use PaginiumCMS\Core\Hook\HookManager;
+use PaginiumCMS\Core\Hook\Services\HookEmitter;
 use PaginiumCMS\Http\Extensions\Contracts\PluginManagerInterface;
 use PaginiumCMS\Http\Extensions\Models\PluginRecord;
 use PaginiumCMS\Support\JsonHelper;
@@ -24,6 +26,8 @@ final class PluginManager implements PluginManagerInterface
         private PluginRegistry $registry,
         private PluginImporter $importer,
         private HookManager $hookManager,
+        private HookEmitter $hookEmitter,
+        private ExtensionManifestValidator $manifestValidator,
         private string $extensionsRoot,
         private string $extensionRoutesRoot,
         private string $frontendExtensionsRoot,
@@ -47,6 +51,10 @@ final class PluginManager implements PluginManagerInterface
 
             $this->loadPluginClasses($id);
             $this->registerHooks($id, $manifest);
+            $this->hookEmitter->emit(HookCatalog::EXTENSION_BOOT, [
+                'id' => $id,
+                'manifest' => $manifest,
+            ]);
             $this->bootedIds[] = $id;
         }
     }
@@ -119,6 +127,8 @@ final class PluginManager implements PluginManagerInterface
             throw new RuntimeException('Extension not found: ' . $id);
         }
 
+        $this->manifestValidator->validate($manifest, $id);
+
         $existing = $this->registry->get($id);
         $installedAt = $existing?->installedAt !== '' && $existing !== null
             ? $existing->installedAt
@@ -127,7 +137,15 @@ final class PluginManager implements PluginManagerInterface
         $this->registry->upsert(new PluginRecord($id, true, $installedAt));
         $this->loadPluginClasses($id);
         $this->registerHooks($id, $manifest);
+        $this->hookEmitter->emit(HookCatalog::EXTENSION_ENABLED, [
+            'id' => $id,
+            'manifest' => $manifest,
+        ]);
         if (!in_array($id, $this->bootedIds, true)) {
+            $this->hookEmitter->emit(HookCatalog::EXTENSION_BOOT, [
+                'id' => $id,
+                'manifest' => $manifest,
+            ]);
             $this->bootedIds[] = $id;
         }
     }
@@ -140,6 +158,7 @@ final class PluginManager implements PluginManagerInterface
             throw new RuntimeException('Extension is not registered: ' . $id);
         }
 
+        $this->hookEmitter->emit(HookCatalog::EXTENSION_DISABLED, ['id' => $id]);
         $this->unregisterHooks($id);
         $this->registry->upsert(new PluginRecord($id, false, $existing->installedAt));
         $this->bootedIds = array_values(array_filter(
@@ -296,7 +315,11 @@ final class PluginManager implements PluginManagerInterface
         }
 
         foreach ($hooks as $hookName => $callable) {
-            if (!is_string($hookName) || !is_string($callable) || $callable === '') {
+            if (!is_string($hookName) || !HookCatalog::isRegistered($hookName)) {
+                continue;
+            }
+
+            if (!is_string($callable) || $callable === '') {
                 continue;
             }
 

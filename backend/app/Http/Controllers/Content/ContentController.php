@@ -16,6 +16,8 @@ use PaginiumCMS\Core\FlatFile\Services\ContentRevision;
 use PaginiumCMS\Core\Blueprint\Services\DynamicValidator;
 use PaginiumCMS\Core\Cache\ContentCacheService;
 use PaginiumCMS\Core\Editor\Services\EditorContentValidator;
+use PaginiumCMS\Core\Hook\HookCatalog;
+use PaginiumCMS\Core\Hook\Services\HookEmitter;
 use PaginiumCMS\Core\Validation\ValidationException;
 use PaginiumCMS\Core\Versioning\Services\ContentVersioningService;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
@@ -50,7 +52,8 @@ class ContentController
         private OtpWorkflowService $otpWorkflow,
         private DynamicValidator $dynamicValidator,
         private EditorContentValidator $editorContentValidator,
-        private ContentPathAclGuard $pathAcl
+        private ContentPathAclGuard $pathAcl,
+        private HookEmitter $hookEmitter
     ) {
     }
 
@@ -216,7 +219,9 @@ class ContentController
                 }
 
                 $content->setStatus('draft');
+                $this->emitContentHook(HookCatalog::CONTENT_BEFORE_SAVE, $content, $type, 'create', $user);
                 $this->repository->save($content);
+                $this->emitContentHook(HookCatalog::CONTENT_AFTER_SAVE, $content, $type, 'create', $user);
                 $otp = $this->otpWorkflow->startPublishApproval($user, $type, $content->getSlug(), $targetStatus);
 
                 return $this->json->respond($response, [
@@ -231,12 +236,15 @@ class ContentController
                 ], 202);
             }
 
+            $user = $this->resolveUser($request);
+            $this->emitContentHook(HookCatalog::CONTENT_BEFORE_SAVE, $content, $type, 'create', $user);
             $this->repository->save($content);
+            $this->emitContentHook(HookCatalog::CONTENT_AFTER_SAVE, $content, $type, 'create', $user);
             $this->versioning->recordChange(
                 $content,
                 $type,
                 'create',
-                $this->resolveUser($request),
+                $user,
                 $this->resolveCommitMessage($data)
             );
 
@@ -332,7 +340,9 @@ class ContentController
 
                 $this->applyPayload($existing, $data, $newSlug);
                 $existing->setStatus('draft');
+                $this->emitContentHook(HookCatalog::CONTENT_BEFORE_SAVE, $existing, $type, 'update', $user);
                 $this->repository->save($existing);
+                $this->emitContentHook(HookCatalog::CONTENT_AFTER_SAVE, $existing, $type, 'update', $user);
 
                 $otp = $this->otpWorkflow->startPublishApproval($user, $type, $newSlug, 'published');
 
@@ -349,12 +359,15 @@ class ContentController
             }
 
             $this->applyPayload($existing, $data, $newSlug);
+            $user = $this->resolveUser($request);
+            $this->emitContentHook(HookCatalog::CONTENT_BEFORE_SAVE, $existing, $type, 'update', $user);
             $this->repository->save($existing);
+            $this->emitContentHook(HookCatalog::CONTENT_AFTER_SAVE, $existing, $type, 'update', $user);
             $this->versioning->recordChange(
                 $existing,
                 $type,
                 'update',
-                $this->resolveUser($request),
+                $user,
                 $this->resolveCommitMessage($data)
             );
 
@@ -392,13 +405,15 @@ class ContentController
         }
 
         try {
-            $this->versioning->recordChange($content, $type, 'delete', $this->resolveUser($request));
+            $user = $this->resolveUser($request);
+            $this->versioning->recordChange($content, $type, 'delete', $user);
         } catch (\Throwable) {
             // Verzovanie pri delete je best-effort — obsah sa aj tak presunie do koša.
         }
 
         try {
             $this->repository->delete($content);
+            $this->emitContentHook(HookCatalog::CONTENT_AFTER_DELETE, $content, $type, 'delete', $this->resolveUser($request));
 
             return $this->json->success($response, null, 200, Lang::get('deleted', [], 'content'));
         } catch (FlatFileException $e) {
@@ -443,6 +458,7 @@ class ContentController
                 }
 
                 $this->repository->delete($content);
+                $this->emitContentHook(HookCatalog::CONTENT_AFTER_DELETE, $content, $type, 'delete', $this->resolveUser($request));
                 if ($type === 'page') {
                     $this->contentCache->invalidatePage($slug);
                 } else {
@@ -499,9 +515,23 @@ class ContentController
             }
 
             try {
+                $previousStatus = $content->getStatus();
                 $content->setStatus($status);
+                $user = $this->resolveUser($request);
+                $this->emitContentHook(HookCatalog::CONTENT_BEFORE_SAVE, $content, $type, 'status', $user);
                 $this->repository->save($content);
-                $this->versioning->recordChange($content, $type, 'status', $this->resolveUser($request));
+                $this->emitContentHook(HookCatalog::CONTENT_AFTER_SAVE, $content, $type, 'status', $user);
+                if ($previousStatus !== $status) {
+                    $this->emitContentHook(
+                        HookCatalog::CONTENT_AFTER_STATUS_CHANGE,
+                        $content,
+                        $type,
+                        'status',
+                        $user,
+                        $previousStatus
+                    );
+                }
+                $this->versioning->recordChange($content, $type, 'status', $user);
                 if ($type === 'page') {
                     $this->contentCache->invalidatePage($slug);
                 } else {
@@ -579,9 +609,23 @@ class ContentController
         }
 
         try {
+            $previousStatus = $content->getStatus();
             $content->setStatus($status);
+            $user = $this->resolveUser($request);
+            $this->emitContentHook(HookCatalog::CONTENT_BEFORE_SAVE, $content, $type, 'status', $user);
             $this->repository->save($content);
-            $this->versioning->recordChange($content, $type, 'status', $this->resolveUser($request));
+            $this->emitContentHook(HookCatalog::CONTENT_AFTER_SAVE, $content, $type, 'status', $user);
+            if ($previousStatus !== $status) {
+                $this->emitContentHook(
+                    HookCatalog::CONTENT_AFTER_STATUS_CHANGE,
+                    $content,
+                    $type,
+                    'status',
+                    $user,
+                    $previousStatus
+                );
+            }
+            $this->versioning->recordChange($content, $type, 'status', $user);
 
             return $this->json->success(
                 $response,
@@ -1081,6 +1125,29 @@ class ContentController
         }
 
         return $result;
+    }
+
+    private function emitContentHook(
+        string $hook,
+        Content $content,
+        string $type,
+        string $action,
+        ?User $user,
+        ?string $previousStatus = null
+    ): void {
+        $context = [
+            'type' => $type,
+            'slug' => $content->getSlug(),
+            'status' => $content->getStatus(),
+            'action' => $action,
+            'userId' => $user?->getId() ?? '',
+        ];
+
+        if ($previousStatus !== null) {
+            $context['previousStatus'] = $previousStatus;
+        }
+
+        $this->hookEmitter->emit($hook, $context);
     }
 
     private function resolveUser(ServerRequestInterface $request): ?User

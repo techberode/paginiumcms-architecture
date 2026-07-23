@@ -14,6 +14,7 @@ use PaginiumCMS\Core\FlatFile\Services\FileWriter;
 use PaginiumCMS\Core\Hook\HookManager;
 use PaginiumCMS\Core\Settings\Services\SettingsRepository;
 use PaginiumCMS\Core\Validation\Validator;
+use PaginiumCMS\Http\Extensions\Services\ExtensionManifestValidator;
 use PaginiumCMS\Http\Extensions\Services\PluginImporter;
 use PaginiumCMS\Http\Extensions\Services\PluginManager;
 use PaginiumCMS\Http\Extensions\Services\PluginPolicyScanner;
@@ -52,6 +53,7 @@ final class PluginImporterTest extends TestCase
         $this->importer = new PluginImporter(
             $registry,
             $scanner,
+            new ExtensionManifestValidator(),
             $this->extensionsRoot,
             $this->routesRoot,
             $this->frontendRoot,

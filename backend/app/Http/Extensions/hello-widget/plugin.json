@@ -1,0 +1,14 @@
+{
+  "id": "hello-widget",
+  "name": "Hello Widget",
+  "version": "1.0.0",
+  "description": "Reference extension for hook subscription, routes, and frontend entry (Wave 5d).",
+  "author": "PaginiumCMS",
+  "minCmsVersion": "2.0.38",
+  "hooks": {
+    "extension.boot": "PaginiumCMS\\Http\\Extensions\\HelloWidget\\Hooks::onBoot",
+    "content.after_save": "PaginiumCMS\\Http\\Extensions\\HelloWidget\\Hooks::onContentAfterSave"
+  },
+  "routes": true,
+  "frontend": true
+}

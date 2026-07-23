@@ -54,6 +54,7 @@ use PaginiumCMS\Core\I18n\Services\TranslationFileManager;
 use PaginiumCMS\Core\I18n\Services\TranslationPolicyValidator;
 use PaginiumCMS\Core\GitHub\Services\GitHubService;
 use PaginiumCMS\Core\Hook\HookManager;
+use PaginiumCMS\Core\Hook\Services\HookEmitter;
 use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
@@ -143,6 +144,7 @@ use PaginiumCMS\Http\Controllers\Content\ContentController;
 use PaginiumCMS\Http\Controllers\Content\DraftController;
 use PaginiumCMS\Http\Controllers\Content\SearchController;
 use PaginiumCMS\Http\Extensions\Contracts\PluginManagerInterface;
+use PaginiumCMS\Http\Extensions\Services\ExtensionManifestValidator;
 use PaginiumCMS\Http\Extensions\Services\PluginImporter;
 use PaginiumCMS\Http\Extensions\Services\PluginManager;
 use PaginiumCMS\Http\Extensions\Services\PluginPolicyScanner;
@@ -541,7 +543,8 @@ return [
             get(OtpWorkflowService::class),
             get(DynamicValidator::class),
             get(EditorContentValidator::class),
-            get(ContentPathAclGuard::class)
+            get(ContentPathAclGuard::class),
+            get(HookEmitter::class)
         ),
     AdvancedSearchService::class => create(AdvancedSearchService::class)
         ->constructor(
@@ -569,6 +572,9 @@ return [
     ConfigManager::class => create(ConfigManager::class),
     EventDispatcher::class => create(EventDispatcher::class),
     HookManager::class => create(HookManager::class),
+    HookEmitter::class => create(HookEmitter::class)
+        ->constructor(get(HookManager::class)),
+    ExtensionManifestValidator::class => create(ExtensionManifestValidator::class),
     PluginPolicyScanner::class => create(PluginPolicyScanner::class)
         ->constructor(get(CodePolicyEngineInterface::class)),
     PluginRegistry::class => create(PluginRegistry::class)
@@ -581,6 +587,7 @@ return [
         ->constructor(
             get(PluginRegistry::class),
             get(PluginPolicyScanner::class),
+            get(ExtensionManifestValidator::class),
             dirname(__DIR__, 2) . '/Extensions',
             dirname(__DIR__, 2) . '/Routes/extensions',
             dirname(__DIR__, 4) . '/frontend/src/extensions',
@@ -591,6 +598,8 @@ return [
             get(PluginRegistry::class),
             get(PluginImporter::class),
             get(HookManager::class),
+            get(HookEmitter::class),
+            get(ExtensionManifestValidator::class),
             dirname(__DIR__, 2) . '/Extensions',
             dirname(__DIR__, 2) . '/Routes/extensions',
             dirname(__DIR__, 4) . '/frontend/src/extensions'
@@ -734,7 +743,8 @@ return [
             get(ContentRepositoryInterface::class),
             get(ContentVersioningService::class),
             get(ContentCacheService::class),
-            get(\PaginiumCMS\Core\Workflow\Services\OtpWorkflowService::class)
+            get(\PaginiumCMS\Core\Workflow\Services\OtpWorkflowService::class),
+            get(HookEmitter::class)
         ),
     CodeEditorController::class => create(GatedCodeEditorController::class)
         ->constructor(

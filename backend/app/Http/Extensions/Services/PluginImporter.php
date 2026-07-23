@@ -18,6 +18,7 @@ final class PluginImporter
     public function __construct(
         private PluginRegistry $registry,
         private PluginPolicyScanner $policyScanner,
+        private ExtensionManifestValidator $manifestValidator,
         private string $extensionsRoot,
         private string $extensionRoutesRoot,
         private string $frontendExtensionsRoot,
@@ -50,7 +51,7 @@ final class PluginImporter
         try {
             $this->extractZip($zipPath, $tempDir);
             [$pluginRoot, $manifest] = $this->resolvePluginRoot($tempDir);
-            $id = $this->validateManifest($manifest, basename($pluginRoot));
+            $id = $this->manifestValidator->validate($manifest, basename($pluginRoot));
 
             $targetDir = $this->extensionsRoot . '/' . $id;
             if (is_dir($targetDir)) {
@@ -171,31 +172,6 @@ final class PluginImporter
         }
 
         return $decoded;
-    }
-
-    /**
-     * @param array<string, mixed> $manifest
-     */
-    private function validateManifest(array $manifest, string $folderName): string
-    {
-        $id = trim((string) ($manifest['id'] ?? $folderName));
-        if ($id === '') {
-            throw new RuntimeException('plugin.json must define id.');
-        }
-
-        if (!preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $id)) {
-            throw new RuntimeException('Extension id must be kebab-case.');
-        }
-
-        if (trim((string) ($manifest['name'] ?? '')) === '') {
-            throw new RuntimeException('plugin.json must define name.');
-        }
-
-        if (trim((string) ($manifest['version'] ?? '')) === '') {
-            throw new RuntimeException('plugin.json must define version.');
-        }
-
-        return $id;
     }
 
     /**
