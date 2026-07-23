@@ -3,7 +3,7 @@
 > Posledná verzia: **2.1.0-beta.1** · 2026-07-23 · tag **`v2.1.0-beta.1`**  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release.
 
-> **Poznámka k verziám:** **`2.0.58`** → `f53e71e` · **Public Beta 1** → *(tento commit)*.
+> **Poznámka k verziám:** **`2.0.58`** → `f53e71e` · **Public Beta 1** → `e3e0d82`.
 
 ### Kontinuita verzií (nepreskakovať)
 
@@ -19,7 +19,7 @@
 | **2.0.56** | **`v2.0.56`** | **`0664ba3`** | ✅ tagged |
 | **2.0.57** | **`v2.0.57`** | **`e84b71f`** | ✅ tagged |
 | **2.0.58** | **`v2.0.58`** | **`f53e71e`** | ✅ tagged |
-| **Public Beta 1** | **`v2.1.0-beta.1`** | *(pending)* | ⏳ tento release |
+| **Public Beta 1** | **`v2.1.0-beta.1`** | **`e3e0d82`** | ✅ tagged (push pending) |
 
 **Pravidlo:** Post-beta patchy — `2.0.59+` alebo `2.1.0-beta.2` podľa rozsahu.
 
