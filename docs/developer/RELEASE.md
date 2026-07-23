@@ -3,7 +3,7 @@
 > Posledná verzia: **2.0.51** · 2026-07-23 · tag **`v2.0.51`**  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release.
 
-> **Poznámka k verziám:** … **v2.0.47** → `e1fdead` · **v2.0.48** → `a32c002` · **v2.0.49** → `1ac58cf` · **2.0.50** → `67d77bb`.
+> **Poznámka k verziám:** … **v2.0.47** → `e1fdead` · **v2.0.48** → `a32c002` · **v2.0.49** → `1ac58cf` · **2.0.50** → `67d77bb` · **2.0.51** → `d9b7171`.
 
 ### Kontinuita verzií (nepreskakovať)
 
@@ -13,9 +13,9 @@
 | 2.0.48 | `v2.0.48` | `a32c002` | ✅ tagged |
 | 2.0.49 | `v2.0.49` | `1ac58cf` | ✅ tagged |
 | **2.0.50** | **`v2.0.50`** | **`67d77bb`** | ✅ tagged |
-| **2.0.51** | **`v2.0.51`** | *(fill after commit)* | ⏳ commit + tag |
+| **2.0.51** | **`v2.0.51`** | **`d9b7171`** | ✅ tagged |
 
-**Pravidlo:** Ďalší release musí byť **`v2.0.51`**, nie skok. Pred každým novým číslom: `git tag -l 'v2.0.5*' | sort -V`.
+**Pravidlo:** Ďalší release musí byť **`v2.0.52`**, nie skok. Pred každým novým číslom: `git tag -l 'v2.0.5*' | sort -V`.
 
 ---
 
@@ -65,7 +65,7 @@ git push origin v2.0.51
 **Body:**
 
 ```markdown
-**Tag:** `v2.0.51` · **Target:** `main` · **Commit:** *(fill after `git rev-parse HEAD`)*
+**Tag:** `v2.0.51` · **Target:** `main` · **Commit:** `d9b7171`
 
 ### Summary
 
@@ -95,200 +95,7 @@ Hotfix after **2.0.50**: safe date formatting, correct log timestamps (timezone 
 
 ---
 
-## 2.0.52 — Logy admin UX (ISS-071) · commit + tag **neskôr**
-
-> Bulk akcie, delete-all, stránkovanie s ručným page size. Commit až po **2.0.51** (alebo spolu v jednom deployi).
-
-```bash
-npm run type-check          # → 0 errors
-npm test -- --run           # → 226/226
-./vendor/bin/phpunit        # → 816 passed, 15 skipped
-```
-
-**Po deployi:**
-
-1. **Admin → Logy** — checkboxy, bulk **Archivovať** / **Vymazať**
-2. **Počet na stránku** — number input (1–500), stránkovanie dole
-3. Filter **Aktívne / Archivované / Všetky**
-4. **Vymazať všetko** — červené tlačidlo, potvrdenie, zmaže app+audit+event+user
-5. **Purge starých** — stále len retention podľa Nastavení
-
-### Commit (navrhovaný)
-
-```bash
-git add backend/app/Core/Logging/Services/ApplicationLogReader.php \
-  backend/app/Http/Controllers/Admin/LogController.php \
-  backend/app/Http/Routes/logs.php \
-  backend/tests/Core/Logging/ApplicationLogReaderTest.php \
-  backend/tests/Http/Controllers/Admin/LogControllerTest.php \
-  backend/tests/Http/Controllers/CoreHardeningTest.php \
-  frontend/src/api/logs.ts \
-  frontend/src/components/backend/LogsManager.tsx \
-  frontend/src/components/backend/AdminListToolbar.tsx \
-  frontend/src/i18n/modules/logs/sk.ts frontend/src/i18n/modules/logs/en.ts \
-  docs/user/LOGGING.md docs/CHECKLIST.md CHANGELOG.md docs/ISSUES.md docs/developer/RELEASE.md
-
-git commit -m "$(cat <<'EOF'
-feat(logs): bulk actions, delete-all, and manual page size (2.0.52 / ISS-071).
-
-EOF
-)"
-git tag v2.0.52
-git push origin HEAD
-git push origin v2.0.52
-```
-
----
-
-## GitHub Release — copy-paste (2.0.52)
-
-```
-2.0.52 — Logs admin bulk actions and pagination (ISS-071)
-
-**Tag:** `v2.0.52` · **Target:** `main` · **Commit:** *(fill after commit)*
-
-### Summary
-
-Admin **Logy** panel: bulk archive/delete selected entries, delete all logs across sources, paginated list with manual page size (1–500), and archived/active filter.
-
-### Added
-
-- Bulk **Archivovať** / **Vymazať** vybrané logy (`POST /api/admin/logs/bulk`)
-- **Vymazať všetko** — `POST /api/admin/logs/delete-all` (app, audit, event, user)
-- Stránkovanie s `total` z API + predch./ďalšia stránka
-- Ručné zadanie počtu záznamov na stránku (number input, nie fixný select)
-- Filter stavu: Aktívne / Archivované / Všetky
-- Archivácia = `archived: true` v JSON zázname (nie samostatný priečinok)
-
-### Tests
-
-- PHPUnit: `ApplicationLogReaderTest`, `LogControllerTest` (+4 scenáre)
-- Vitest: 226 passed · `tsc` clean
-- Full suite: **816** PHPUnit / **226** Vitest
-
-### Docs
-
-- [CHANGELOG.md](CHANGELOG.md) — 2.0.52
-- [docs/user/LOGGING.md](docs/user/LOGGING.md)
-- [docs/ISSUES.md](docs/ISSUES.md) ISS-071
-```
-
----
-
-## 2.0.51 — hotfix (ISS-063–070) · commit + tag **neskôr**
-
-> Kód opravený lokálne. Tento blok je pripravený na commit, tag a GitHub Release až pri ďalšom session.
-
-```bash
-# Po commitnutí zmien:
-npm run type-check          # → 0 errors
-npm test -- --run           # → 220+/220
-./vendor/bin/phpunit        # → 790+ passed
-./scripts/iteration-gate.sh # voliteľné
-```
-
-**Po deployi:**
-
-1. **`/pages/home`** (admin editor) — bez `RangeError`, história verzií OK
-2. **Verejný web search** — konzola bez `Invalid time value`
-3. **Nastavenia → Všeobecné** — výber pásma + DST prepínač; logy s aktuálnym časom
-4. **Header** — „Vymazať cache“ vedľa „Zobraziť web“
-5. **Logy** — code policy zamietnutie = WARNING, nie ERROR so stack trace
-6. CI — `tsc` + PHPUnit prejdú
-
-### Commit (navrhovaný)
-
-```bash
-git add frontend/src/i18n/index.ts \
-  frontend/src/utils/contentDates.ts frontend/src/utils/contentDates.test.ts \
-  frontend/src/utils/timezones.ts frontend/src/utils/timezones.test.ts \
-  frontend/src/utils/validation.ts frontend/src/validation/zodFromRules.ts \
-  frontend/src/hooks/useCachePurge.ts \
-  frontend/src/components/backend/AdminHeader.tsx \
-  frontend/src/components/backend/CacheManagerPanel.tsx \
-  frontend/src/components/backend/TimezoneSelect.tsx \
-  frontend/src/components/backend/SettingsView.tsx \
-  frontend/src/components/CodeEditor/VersionHistory.tsx \
-  frontend/src/components/Audit/AuditTrail.tsx \
-  frontend/src/components/backend/PagesManager.tsx \
-  frontend/src/components/locking/LockIndicator.tsx \
-  frontend/src/components/frontend/SiteSearchModal.tsx \
-  frontend/src/components/frontend/PageRenderer.tsx \
-  frontend/src/components/frontend/ArticleComments.tsx \
-  frontend/src/i18n/modules/admin/sk.ts frontend/src/i18n/modules/admin/en.ts \
-  frontend/src/i18n/modules/settings/sk.ts frontend/src/i18n/modules/settings/en.ts \
-  backend/app/Support/AppTimezone.php backend/bootstrap/timezone.php \
-  backend/app/Http/Middleware/LocaleMiddleware.php \
-  backend/app/Core/Settings/SettingsSchema.php \
-  backend/app/Core/Validation/Validator.php \
-  backend/app/Core/Scheduler/Services/CronExpressionEvaluator.php \
-  backend/app/Core/CodeEditor/Services/CodeEditorLogger.php \
-  backend/app/Core/CodeEditor/Services/CodeEditorManager.php \
-  backend/app/Core/Health/Services/Checkers/SystemChecker.php \
-  backend/app/Core/Monitoring/Services/MonitoringReportScheduler.php \
-  backend/tests/Support/AppTimezoneTest.php \
-  backend/tests/Http/Middleware/LocaleMiddlewareTest.php \
-  backend/tests/Core/Scheduler/Services/CronExpressionEvaluatorTest.php \
-  backend/tests/Core/Validation/ValidatorTest.php \
-  CHANGELOG.md docs/ISSUES.md docs/developer/RELEASE.md docs/ITERATION_18.md docs/CONTINUATION.md docs/architecture/SETTINGS.md
-
-git commit -m "$(cat <<'EOF'
-fix(ops): dates, timezone/DST, safe logging, cache header (2.0.51 / ISS-063–070).
-
-Harden invalid date formatting, apply site timezone, DST toggle, policy log level, admin cache purge in header.
-EOF
-)"
-
-git tag v2.0.51
-git push origin main
-git push origin v2.0.51
-```
-
----
-
-## GitHub Release — copy-paste (2.0.51)
-
-**Title:**
-
-```
-2.0.51 — Dates, timezone, and admin ops hotfix (ISS-063–070)
-```
-
-**Tag:** `v2.0.51` · **Target:** `main` · **Commit:** *(fill after commit)*
-
-**Body:**
-
-```markdown
-## Summary
-
-Hotfix after **2.0.50**: production crashes on invalid dates, log timestamps in wrong timezone, timezone/DST settings, cleaner code-policy logs, cache button in admin header.
-
-## Added
-
-- Searchable timezone picker + DST toggle in Settings → General
-- **Clear cache** button in admin top bar (next to API Mode / View website)
-
-## Fixed
-
-- **ISS-063** — `RangeError: Invalid time value` (VersionHistory + public site dates)
-- **ISS-064** — `tsc`: export `DEFAULT_LOCALE` from `i18n/index.ts`
-- **ISS-065** — Admin logs 2 hours behind (PHP timezone bootstrap)
-- **ISS-066–067** — PHPUnit cron + LocaleMiddleware tests
-- **ISS-068** — Code policy rejections logged as WARNING, not ERROR
-- **ISS-069–070** — Timezone picker + DST correction setting
-
-## Verify
-
-1. Edit existing page — no console crash
-2. Settings → timezone search + DST toggle
-3. Admin header → purge content cache
-4. Logs show correct local time after PHP restart
-
-## Docs
-
-- [CHANGELOG.md](CHANGELOG.md) — 2.0.51
-- [ISSUES.md](docs/ISSUES.md) — ISS-063 through ISS-070
-```
+> **Poznámka:** ISS-071 (logy bulk/pagination) bolo zlúčené do **2.0.51** — samostatný release **2.0.52** pre logy sa neplánuje. Ďalšie číslo: **2.0.52** až pri nových zmenách.
 
 ---
 
