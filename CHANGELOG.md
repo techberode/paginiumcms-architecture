@@ -44,6 +44,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | Ops hotfix: dates, timezone, maintenance, logs (ISS-063–071) | **2.0.51** | [below](#2051--2026-07-23) |
 | Branding, ACL v nastaveniach, CI fixes (ISS-072–074) | **2.0.52** | [below](#2052--2026-07-23) |
 | It.59 — Odložená publikácia (scheduled publish) | **2.0.53** | [below](#2053--2026-07-23) |
+| Wave 5e — It.17 API barrel + CONTRIBUTING | **2.0.55** | [below](#2055--2026-07-23) |
 | Wave 5d — It.15 hook emitters + extension policy | **2.0.54** | [below](#2054--2026-07-23) |
 | It.19b–19d — Security runtime, auth UX, password policy | **2.0.45** | [below](#2045--2026-07-21) |
 
@@ -51,7 +52,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-*(Ďalej: wave **5e** It.17 MVP · plánované It.60–61 — pozri [ITERATION_BACKLOG.md](docs/ITERATION_BACKLOG.md).)*
+*(Pred Public Beta 1: **FINAL_BETA1** — vlny 5f–7 + It.25 — lokálny plán `docs/FINAL_BETA1_ITERATION.md`, gitignored.)*
+
+---
+
+## [2.0.55] – 2026-07-23
+
+**Wave 5e — It.17 MVP** — CONTRIBUTING checklist, kompletný API barrel, CI lint.  
+Detail: [ITERATION_17E.md](docs/ITERATION_17E.md) · [CONTRIBUTING.md](docs/developer/CONTRIBUTING.md).
+
+### Added
+
+- **`docs/developer/CONTRIBUTING.md`** — ZÁKON API↔FE checklist, merge gate, barrel pravidlá
+- **`frontend/scripts/lint-api-barrel.mjs`** + **`npm run lint:api-barrel`** — vynucuje export všetkých API modulov a `api.*` klientov
+- CI krok v `.github/workflows/ci.yml` (frontend job)
+
+### Changed
+
+- **`frontend/src/api/index.ts`** — 39 modulov re-exportovaných; `api` namespace rozšírený o 16 `*Api` klientov
+- **`docs/ITERATION_17.md`** — MVP Wave 5e označené hotové
+- **`AppVersion`** → `2.0.55`
 
 ---
 

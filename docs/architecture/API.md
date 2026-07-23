@@ -135,7 +135,7 @@ Read responses include rendered `html` for public display when `contentFormat` i
 | Blueprints | `frontend/src/api/blueprint.ts` |
 | Demo | `frontend/src/api/demo.ts` |
 | Workflows (OTP) | `frontend/src/api/workflows.ts` |
-| Barrel | `frontend/src/api/index.ts` |
+| Barrel | `frontend/src/api/index.ts` — all modules + `npm run lint:api-barrel` (Wave 5e) |
 
 Dev mocks: `VITE_MSW=true npm run dev` → `frontend/src/mocks/handlers.ts`
 

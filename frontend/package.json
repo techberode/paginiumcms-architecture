@@ -16,6 +16,7 @@
     "test:msw": "vitest run src/mocks/handlers.test.ts",
     "audit:security": "npm audit --audit-level=moderate",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 65",
+    "lint:api-barrel": "node scripts/lint-api-barrel.mjs",
     "lint:fix": "eslint . --ext ts,tsx --fix",
     "format": "prettier --write 'src/**/*.{ts,tsx,css}'",
     "type-check": "tsc --noEmit"

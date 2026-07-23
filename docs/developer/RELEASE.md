@@ -1,9 +1,9 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.0.54** · 2026-07-23 · tag **`v2.0.54`** (po push)  
+> Posledná verzia: **2.0.55** · 2026-07-23 · tag **`v2.0.55`** (po push)  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release.
 
-> **Poznámka k verziám:** … **2.0.52** → `9d930a1` · **2.0.53** → `aee1494` · **2.0.54** → `2338fe9`.
+> **Poznámka k verziám:** … **2.0.53** → `aee1494` · **2.0.54** → `2338fe9` · **2.0.55** → *(doplň po commite)*.
 
 ### Kontinuita verzií (nepreskakovať)
 
@@ -14,9 +14,74 @@
 | **2.0.51** | **`v2.0.51`** | **`d9b7171`** | ✅ tagged |
 | **2.0.52** | **`v2.0.52`** | **`9d930a1`** | ✅ tagged |
 | **2.0.53** | **`v2.0.53`** | **`aee1494`** | ✅ tagged |
-| **2.0.54** | **`v2.0.54`** | **`2338fe9`** | ✅ tagged (push pending) |
+| **2.0.54** | **`v2.0.54`** | **`2338fe9`** | ✅ tagged |
+| **2.0.55** | **`v2.0.55`** | *(pending)* | ⏳ po push |
 
-**Pravidlo:** Ďalší release musí byť **`v2.0.55`**, nie skok. Pred každým novým číslom: `git tag -l 'v2.0.5*' | sort -V`.
+**Pravidlo:** Ďalší release musí byť **`v2.0.56`** (FINAL_BETA1 Fáza A), nie skok. Pred každým novým číslom: `git tag -l 'v2.0.5*' | sort -V`.
+
+---
+
+## 2.0.55 — Wave 5e API barrel + CONTRIBUTING (It.17 MVP)
+
+```bash
+cd frontend
+npm run type-check
+npm run lint:api-barrel
+npm test -- --run
+cd ..
+composer test && composer stan
+```
+
+**Po deployi:** nový endpoint → checklist v `docs/developer/CONTRIBUTING.md`; CI musí prejsť `lint:api-barrel`.
+
+### Commit
+
+```bash
+git add -A
+git commit -m "$(cat <<'EOF'
+release: 2.0.55 — Wave 5e CONTRIBUTING, API barrel lint, AppVersion bump.
+
+CONTRIBUTING.md, lint-api-barrel.mjs + CI step, full api/index.ts exports; FINAL_BETA1 plan gitignored locally.
+EOF
+)"
+git tag v2.0.55
+git push origin main
+git push origin v2.0.55
+```
+
+---
+
+## GitHub Release — copy-paste (2.0.55)
+
+**Title:**
+
+```
+2.0.55 — API barrel lint + CONTRIBUTING (Wave 5e / It.17 MVP)
+```
+
+**Body:**
+
+```markdown
+**Tag:** `v2.0.55` · **Target:** `main` · **Commit:** *(doplň)*
+
+### Summary
+
+After **2.0.54**: enforce **API↔FE law** for new work — full `api/index.ts` barrel, `npm run lint:api-barrel` in CI, contributor checklist.
+
+### Added
+
+- `docs/developer/CONTRIBUTING.md`
+- `frontend/scripts/lint-api-barrel.mjs` + CI step
+
+### Changed
+
+- `frontend/src/api/index.ts` — 39 modules, 16 `api.*` clients
+- `AppVersion` → 2.0.55
+
+### Docs
+
+- [ITERATION_17E.md](docs/ITERATION_17E.md) · [CONTRIBUTING.md](docs/developer/CONTRIBUTING.md)
+```
 
 ---
 
