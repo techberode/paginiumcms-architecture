@@ -119,7 +119,7 @@ Typický postup:
 3. `./scripts/first-run.sh`
 4. Nastaviť nginx podľa [NGINX_API.md](../deploy/NGINX_API.md)
 5. `npm run build:prod` v `frontend/` (alebo nahrať hotový `dist/` z CI)
-6. Nastaviť cron (voliteľné):
+6. Nastaviť cron — **povinné pre scheduled publish a nočné zálohy** ([CRON.md](../deploy/CRON.md)):
 
 ```bash
 * * * * * cd /var/www/paginiumcms && php backend/bin/console scheduler:run && php backend/bin/console worker:process

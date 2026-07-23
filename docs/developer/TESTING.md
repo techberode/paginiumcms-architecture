@@ -1,8 +1,19 @@
 # Testovanie – PaginiumCMS
 
-> Posledná aktualizácia: **Unreleased (2.0.52)** · **820 PHPUnit** testov (15 skipped), PHPStan level 8 (0 errors), Vitest podľa `frontend/package.json`
+> Posledná aktualizácia: **2.0.58 (Wave 6)** · **838 PHPUnit** testov (15 skipped), PHPStan level 8 (0 errors)
 
-## Rýchly prehľad — čo kedy spustiť
+## Beta release gate (Wave 6)
+
+Pred tagom **Public Beta 1** alebo každým minor release:
+
+```bash
+composer gate                              # = scripts/iteration-gate.sh (PHPUnit, PHPStan, tsc, lint, api-barrel)
+./scripts/run-all-tests.zsh                # plná sada vrátane content:diagnose
+```
+
+Checklist maintainera: [BETA_INFRA.md](./BETA_INFRA.md) · Cron na produkcii: [deploy/CRON.md](../deploy/CRON.md).
+
+---
 
 
 | Situácia                                              | Príkaz                                                          | Trvanie (orientačne) |

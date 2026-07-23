@@ -150,6 +150,8 @@ composer audit   # security audit
 
 Pri produkčnom build-e nechaj `VITE_API_URL` prázdne (same-origin `/api`).
 
+**Produkcia — cron:** [deploy/CRON.md](../deploy/CRON.md) · **Beta gate:** [BETA_INFRA.md](./BETA_INFRA.md).
+
 ---
 
 ## Časté problémy

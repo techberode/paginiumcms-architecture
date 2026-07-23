@@ -60,8 +60,12 @@ Detail rolí a oprávnení: [ADMIN_GUIDE.md § Roly](ADMIN_GUIDE.md#roly-a-oprá
 
 1. [ ] Inštalácia podľa [INSTALLATION.md](INSTALLATION.md)
 2. [ ] `./scripts/first-run.sh` + prihlásenie adminom
-3. [ ] Zapnutie 2FA v **Účet → Bezpečnosť**
-4. [ ] Vytvorenie testovacej stránky a článku
-5. [ ] Nahratie obrázka v **Médiá** a kontrola na verejnom webe
-6. [ ] Prehľad **Nastavenia → Stránka → Logo a favicon** ([BRANDING.md](BRANDING.md))
-7. [ ] Pri probléme: **Logy**, **Audit**, prípadne [ISSUES.md](../ISSUES.md) pre známe incidenty
+3. [ ] `curl …/api/health` → 200 · voliteľne `content:diagnose --fix`
+4. [ ] Zapnutie 2FA v **Účet → Bezpečnosť**
+5. [ ] Vytvorenie testovacej stránky a článku
+6. [ ] Nahratie obrázka v **Médiá** a kontrola na verejnom webe
+7. [ ] Prehľad **Nastavenia → Stránka → Logo a favicon** ([BRANDING.md](BRANDING.md))
+8. [ ] **Produkcia:** cron podľa [deploy/CRON.md](../deploy/CRON.md) (scheduled publish, backup, monitoring)
+9. [ ] Pri probléme: **Logy**, **Audit**, [ISSUES.md](../ISSUES.md)
+
+Maintainer gate pred betou: [developer/BETA_INFRA.md](../developer/BETA_INFRA.md).

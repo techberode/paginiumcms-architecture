@@ -39,7 +39,8 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 | 5e | **It.17 MVP** — CONTRIBUTING, api barrel, lint | ✅ **2.0.55** |
 | 5e+ | **Password confirm** — registrácia + admin users | ✅ **2.0.56** |
 | 5f | **Docker + user docs polish** — README, env vars, onboarding sync | ✅ **2.0.57** |
-| **FINAL_BETA1** | Vlny **6 + 7** + **It.25** — pred Public Beta 1 | ⏳ detail v **`FINAL_BETA1_ITERATION.md`** (lokálny, gitignored) |
+| 6 | **Beta infra gate** — cron docs, BETA_INFRA, diagnose, security baseline | ✅ **2.0.58** |
+| **FINAL_BETA1** | Vlna **7** + **It.25** — Public Beta 1 | ⏳ detail v **`FINAL_BETA1_ITERATION.md`** (lokálny, gitignored) |
 
 **Princíp práce:** jedna vlna = jeden release tag = zelené CI = manuálny smoke test. Neskákať verzie (`v2.0.47` pred `v2.0.48`).
 

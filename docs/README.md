@@ -230,6 +230,8 @@ See [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md) and [user/CODE_EDITOR.md](u
 | [developer/TESTING.md](developer/TESTING.md) | PHPUnit, PHPStan, test layout |
 | [developer/DEVELOPMENT.md](developer/DEVELOPMENT.md) | Contributor workflow |
 | [developer/LOCAL_SETUP.md](developer/LOCAL_SETUP.md) | Docker Compose, first-run, native dev |
+| [developer/BETA_INFRA.md](developer/BETA_INFRA.md) | Wave 6 — beta gate, cron, security baseline |
+| [deploy/CRON.md](deploy/CRON.md) | Production scheduler + worker crontab |
 | [deploy/DEV.md](deploy/DEV.md) | Local dev stack (Vite + PHP built-in server) |
 | [deploy/NGINX_API.md](deploy/NGINX_API.md) | Production nginx |
 | **[user/README.md](user/README.md)** | **Príručka používateľa — od inštalácie po admin (SK)** |
