@@ -1,6 +1,6 @@
 # Beta infra checklist (Wave 6)
 
-> **Release:** 2.0.58 · **Cieľ:** pripraviť infra a dokumentáciu pred **Public Beta 1** (Wave 7).  
+> **Release:** 2.1.0-beta.2 · **Cieľ:** Public Beta 1 + security review readiness  
 > Ops checklist na serveri: lokálny `PRIVATE_OPS_CHECKLIST.md` (gitignored).
 
 ---
@@ -76,11 +76,14 @@ Kompletný návod: [deploy/CRON.md](../deploy/CRON.md).
 | CSRF synchronizer token | ✅ | Middleware na mutáciách |
 | 2FA staff | ✅ | Produkcia vždy vyžaduje |
 | Password confirm | ✅ 2.0.56 | Register + admin users |
+| Audit CSV sanitization | ✅ 2.1.0-beta.2 | ISS-077 · audit trail export |
 | HTTPS | ⏳ ops | ISS-008 — transport na produkcii |
 | ESLint tech debt | ⏳ | ISS-011 — pod limitom CI |
 | CORS na produkcii | ⏳ ops | ISS-014 — overiť `APP_ENV=production` |
 
-Kritické ISS pre betu: **žiadne otvorené** (063–076 shipped). Zoznam: [ISSUES.md](../ISSUES.md).
+Kritické ISS pre betu: **žiadne otvorené** (063–077 shipped). Zoznam: [ISSUES.md](../ISSUES.md).
+
+**Security review balík:** [SECURITY_REVIEW.md](../SECURITY_REVIEW.md) · [SECURITY.md](../../SECURITY.md) · [developer/SECURITY.md](./SECURITY.md)
 
 ---
 
@@ -96,7 +99,7 @@ Neblokujú Public Beta 1 — dokumentované v [CONTINUATION.md](../CONTINUATION.
 
 ## Po Public Beta 1
 
-**Shipped:** `v2.1.0-beta.1` — [PUBLIC_BETA1.md](../PUBLIC_BETA1.md) · [BETA_TESTER.md](../user/BETA_TESTER.md)
+**Shipped:** `v2.1.0-beta.2` (odporúčané) · `v2.1.0-beta.1` (Wave 7 docs) — [PUBLIC_BETA1.md](../PUBLIC_BETA1.md) · [BETA_TESTER.md](../user/BETA_TESTER.md) · [SECURITY_REVIEW.md](../SECURITY_REVIEW.md)
 
 **Ops (mimo git):** cron na `.26` — [CRON.md](../deploy/CRON.md) · lokálny `PRIVATE_OPS_CHECKLIST.md`
 

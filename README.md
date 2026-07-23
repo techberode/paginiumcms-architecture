@@ -1,12 +1,12 @@
 # PaginiumCMS
 
-> **Verzia:** 2.1.0-beta.1 · **Public Beta 1** · júl 2026
+> **Verzia:** 2.1.0-beta.2 · **Public Beta 1** · júl 2026
 
 Headless flat-file CMS — PHP 8.5 backend (Slim 4) + React admin SPA (Vite 8).
 
 **Filozofia:** 100 % open source, bez poplatkov — [docs/PHILOSOPHY.md](docs/PHILOSOPHY.md)
 
-**Kompletná dokumentácia:** [`docs/README.md`](docs/README.md) · **Public Beta 1:** [`docs/PUBLIC_BETA1.md`](docs/PUBLIC_BETA1.md) · **Tester:** [`docs/user/BETA_TESTER.md`](docs/user/BETA_TESTER.md)
+**Kompletná dokumentácia:** [`docs/README.md`](docs/README.md) · **Public Beta 1:** [`docs/PUBLIC_BETA1.md`](docs/PUBLIC_BETA1.md) · **Tester:** [`docs/user/BETA_TESTER.md`](docs/user/BETA_TESTER.md) · **Security review:** [`docs/SECURITY_REVIEW.md`](docs/SECURITY_REVIEW.md)
 
 ---
 

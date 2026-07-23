@@ -24,6 +24,17 @@
 
 **Pravidlo:** Post-beta patchy — `2.0.59+` alebo `2.1.0-beta.N` podľa rozsahu.
 
+### GitHub Releases (beta publish)
+
+Po pushi tagov a security docs:
+
+```bash
+gh auth login   # ak ešte nie
+./scripts/create-github-releases.sh
+```
+
+Vytvorí (ak neexistujú) releases pre `v2.1.0-beta.1` a **`v2.1.0-beta.2`**. Testerom / security reviewerovi poslať **`v2.1.0-beta.2`** + [SECURITY_REVIEW.md](../SECURITY_REVIEW.md).
+
 ---
 
 ## v2.1.0-beta.2 — Beta 1 Testing (pre-push security gate)

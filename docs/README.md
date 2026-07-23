@@ -1,6 +1,6 @@
 # 🏛️ PaginiumCMS
 
-> **Version:** 2.1.0-beta.1 · **Last updated:** 23 July 2026  
+> **Version:** 2.1.0-beta.2 · **Last updated:** 23 July 2026  
 > Modern, modular, Headless Flat-File Content Management System powered by Slim Framework (PHP) & React.
 
 ---
@@ -33,7 +33,7 @@ PaginiumCMS keeps the Core intentionally minimal, secure, and fast. It moves sta
 | **Job scheduler** | ✅ It. 29 | Flat-file registry, `scheduler:run`, admin `/scheduler` |
 | **Monitoring** | ✅ It. 7 | Scheduled reports, log incidents, HTML email, cron CLI |
 | **API contract** | ✅ It. 21 | JsonResponder everywhere, MSW, Newman CI, RHF+Zod |
-| **PHPUnit** | ✅ **820 passing** (15 skipped) | PHPStan level 8 (0 errors) |
+| **PHPUnit** | ✅ **838+ passing** (15 skipped) | PHPStan level 8 (0 errors) |
 | **Frontend** | ✅ 2.0.51+ | i18n, branding, settings ACL panel |
 | **Next focus** | ⏳ **It.44c** | Media/comments URL sync; backend filter facets |
 
@@ -150,15 +150,21 @@ Routes in `backend/app/Http/Routes/*.php` are auto-loaded from `bootstrap/app.ph
 ## 🔒 Security Principles
 
 * **Session auth** with `session_regenerate_id()` on login (`SessionManager`)
-* **Argon2id** passwords via `PasswordPolicy`
+* **Argon2id** passwords via `PasswordPolicy` + **password confirm** on register/admin users (2.0.56)
 * **RBAC:** `RoleMiddleware` + `PermissionMiddleware` (`content:*`, `media:*`)
-* **Maintenance mode:** blocks public API; staff session exempt
+* **CSRF** synchronizer token on mutating API calls (`CsrfMiddleware` + FE `X-CSRF-TOKEN`)
+* **Encryption at-rest** for TOTP seeds and settings secrets (`APP_KEY` + `EncryptionService`)
+* **WAF** + structured logging + admin audit export (CSV sanitized — beta.2)
+* **SSRF guard** on admin-configured outbound URLs (`OutboundUrlGuard`)
+* **Path ACL** + storage allow-list for public media only
+* **Plugin policy** + Zip-Slip checks on extension import
 * **2FA:** TOTP via `TwoFactorManager`
-* **CSRF** token endpoint + validation
-* **Rate limiting:** global + login-specific
-* **Path traversal:** `FileValidator` + `StorageController` realpath check
+* **Rate limiting:** global + login + OTP-specific
+* **Maintenance mode:** blocks public API; staff session exempt
 * **Registration toggle:** `general.allowRegistration`
 * **Guest comments toggle:** `comments.allowGuestComments`
+
+**External review:** [SECURITY_REVIEW.md](SECURITY_REVIEW.md) · [developer/SECURITY.md](developer/SECURITY.md) · [SECURITY.md](../SECURITY.md)
 
 ---
 
@@ -236,6 +242,9 @@ See [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md) and [user/CODE_EDITOR.md](u
 | [deploy/NGINX_API.md](deploy/NGINX_API.md) | Production nginx |
 | **[user/README.md](user/README.md)** | **Príručka používateľa — od inštalácie po admin (SK)** |
 | **[PUBLIC_BETA1.md](PUBLIC_BETA1.md)** | **Public Beta 1 — scope, limitácie, feedback** |
+| **[SECURITY_REVIEW.md](SECURITY_REVIEW.md)** | **External security review guide (beta testers / auditors)** |
+| [developer/SECURITY.md](developer/SECURITY.md) | Security architecture reference |
+| [SECURITY.md](../SECURITY.md) | Vulnerability reporting policy (GitHub) |
 | [user/BETA_TESTER.md](user/BETA_TESTER.md) | Beta tester smoke checklist |
 | [user/INSTALLATION.md](user/INSTALLATION.md) | Inštalácia + beta balík |
 | [user/FIRST_STEPS.md](user/FIRST_STEPS.md) | Prihlásenie, 2FA, prvý obsah |

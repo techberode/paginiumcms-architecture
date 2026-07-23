@@ -1,6 +1,7 @@
 # Beta tester — stručný návod
 
-> Public Beta 1 · tag **`v2.1.0-beta.1`**
+> Public Beta 1 · tag **`v2.1.0-beta.2`** (odporúčané)  
+> Security review: [SECURITY_REVIEW.md](../SECURITY_REVIEW.md)
 
 ---
 
@@ -9,6 +10,7 @@
 - PHP **8.5+**, Node **22** (pre frontend dev/build)  
 - Odporúčané: Docker Compose alebo `./scripts/first-run.sh`  
 - **Nie** pre produkčné e-shopy s vysokou návštevnosťou — beta software  
+- Clone + checkout: `git checkout v2.1.0-beta.2`
 
 ---
 
@@ -28,6 +30,17 @@
 
 ---
 
+## Security reviewer (≈ 60 min extra)
+
+Ak máš skúsenosti s pentestom / AppSec:
+
+1. Prečítaj [SECURITY_REVIEW.md](../SECURITY_REVIEW.md)  
+2. Spusti lokálne `./scripts/iteration-gate.sh`  
+3. Prejdi **Suggested test checklist** v SECURITY_REVIEW (storage, CSRF, RBAC, plugin import)  
+4. Nálezy hlás podľa [SECURITY.md](../../SECURITY.md) — nie verejný Issue pre neopravené CVE
+
+---
+
 ## Čo netestovať ako „chybu“
 
 Pozri [PUBLIC_BETA1.md § Známe limitácie](../PUBLIC_BETA1.md#známe-limitácie-nie-sú-bugy-beta-1).
@@ -38,6 +51,6 @@ Pozri [PUBLIC_BETA1.md § Známe limitácie](../PUBLIC_BETA1.md#známe-limitáci
 
 1. Skontroluj [ISSUES.md](../ISSUES.md) — možno už známe  
 2. Otvor GitHub Issue s kroky reprodukcie  
-3. Prilož verziu `v2.1.0-beta.1`  
+3. Prilož verziu **`v2.1.0-beta.2`**
 
 Ďakujeme za testovanie.
