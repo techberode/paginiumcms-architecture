@@ -16,8 +16,9 @@ OAuth2 single sign-on (GitHub + generic provider), path-level ACL layered on RBA
 | `GET /api/auth/sso/providers`, `/start`, `/callback` | ✅ |
 | SSO buttons on public login modal | ✅ |
 | Path ACL — `data/security/acl.json` + glob rules | ✅ |
-| `GET/PUT /api/admin/security/acl` | ✅ |
-| Admin ACL editor (`/security/acl`) | ✅ |
+| `GET/PUT /api/admin/security/acl` | ✅ (legacy; **SUPER_ADMIN**; prefer settings `accessControl`) |
+| Admin ACL editor | ✅ → **Nastavenia → Oprávnenia rolí** (post-2.0.51; `/security/acl` redirect) |
+| Nastaviteľné RBAC mapovanie rolí | ✅ → `settings.accessControl` + `PermissionCatalog` |
 | Security audit store — `data/security/audit_events.json` | ✅ |
 | `GET /api/admin/security/audit` + CSV export | ✅ |
 | Admin audit viewer (`/security/audit`) | ✅ |
@@ -48,8 +49,9 @@ Http/Routes/security.php
 | `GET` | `/api/auth/sso/{provider}/callback` | public | redirect handler |
 | `GET` | `/api/admin/security/audit` | ADMIN+2FA | `securityApi.listAudit()` |
 | `GET` | `/api/admin/security/audit/export` | ADMIN+2FA | `securityApi.exportAuditCsv()` |
-| `GET` | `/api/admin/security/acl` | ADMIN+2FA | `securityApi.getAcl()` |
-| `PUT` | `/api/admin/security/acl` | ADMIN+2FA | `securityApi.saveAcl()` |
+| `GET` | `/api/admin/security/acl` | SUPER_ADMIN+2FA | `securityApi.getAcl()` (legacy) |
+| `PUT` | `/api/admin/security/acl` | SUPER_ADMIN+2FA | `securityApi.saveAcl()` (legacy) |
+| `PUT` | `/api/admin/settings/accessControl` | SUPER_ADMIN+2FA | Preferred: RBAC + Path ACL |
 
 ### ACL semantics
 
@@ -70,9 +72,9 @@ Public settings expose `sso.enabled` only (no secrets).
 
 - `frontend/src/api/security.ts` — typed audit/ACL/SSO client
 - `SecurityAuditManager.tsx` — `/security/audit` (filters, CSV download)
-- `AclManager.tsx` — `/security/acl` (enable toggle, rule matrix)
+- `AclManager.tsx` — legacy route `/security/acl` (redirect → Settings); UI: `AccessControlSettingsPanel.tsx` in Settings
 - `LoginModal.tsx` — SSO provider buttons when enabled
-- `AdminSidebar.tsx` — Bezpeč. audit + ACL pravidlá links
+- `AdminSidebar.tsx` — logo z `branding.logoUrl` (`SiteLogo`)
 
 ## Tests
 

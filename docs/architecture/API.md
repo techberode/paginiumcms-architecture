@@ -148,10 +148,12 @@ Dev mocks: `VITE_MSW=true npm run dev` → `frontend/src/mocks/handlers.ts`
 | `GET` | `/api/auth/sso/{provider}/callback` | OAuth callback → session |
 | `GET` | `/api/admin/security/audit` | ADMIN + 2FA; query `type`, `severity`, `limit` |
 | `GET` | `/api/admin/security/audit/export` | CSV download |
-| `GET` | `/api/admin/security/acl` | Current ACL rules |
-| `PUT` | `/api/admin/security/acl` | `{ enabled, rules[] }` |
+| `GET` | `/api/admin/security/acl` | Legacy: current ACL rules (**SUPER_ADMIN** only) |
+| `PUT` | `/api/admin/security/acl` | Legacy: `{ enabled, rules[] }` — prefer **PUT** `/api/admin/settings/accessControl` |
 
-Storage: `data/security/audit_events.json`, `data/security/acl.json`.
+**Preferred:** Path ACL + role permissions via settings group `accessControl` (see [ACCESS_CONTROL.md](../user/ACCESS_CONTROL.md)).
+
+Storage: `data/security/audit_events.json`, `data/security/acl.json` (synced from settings), `data/settings.json` → `accessControl`.
 
 ### Blueprints (It.12)
 

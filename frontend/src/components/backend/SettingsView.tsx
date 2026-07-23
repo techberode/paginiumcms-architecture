@@ -31,8 +31,11 @@ import {
 import { CacheManagerPanel } from './CacheManagerPanel';
 import { AdminHintCard } from './AdminHintCard';
 import { LoginBackgroundImagePicker } from './LoginBackgroundImagePicker';
+import { BrandingImagePicker } from './BrandingImagePicker';
+import { AccessControlSettingsPanel } from './AccessControlSettingsPanel';
 import { TimezoneSelect } from './TimezoneSelect';
 import { MaintenanceModeSelect } from './MaintenanceModeSelect';
+import { useAuth } from '../../hooks/useAuth';
 
 function resolveRequestedSettingsGroup(
   searchParams: URLSearchParams,
@@ -69,6 +72,9 @@ export const SettingsView: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const { success, error: toastError } = useToast();
   const { reload: reloadGlobalSettings } = useSettings();
+  const { user } = useAuth();
+  const [permissionsCatalog, setPermissionsCatalog] = useState<string[]>([]);
+  const isSuperAdmin = user?.roles?.includes('SUPER_ADMIN') ?? false;
 
   const group = activeGroup ? schema[activeGroup] : undefined;
   const groupRules = useMemo(
@@ -103,6 +109,7 @@ export const SettingsView: React.FC = () => {
       if (payload) {
         setSchema(payload.schema);
         setValues(payload.values);
+        setPermissionsCatalog(payload.meta?.permissions ?? []);
       } else {
         toastError(t('settings.page.loadFailed'));
       }
@@ -243,26 +250,40 @@ export const SettingsView: React.FC = () => {
             ))}
           </div>
 
-          {activeCategory === 'security' && (
+          {activeCategory === 'security' && activeGroup !== 'accessControl' && (
             <AdminHintCard tone="warning" title={t('settings.hints.security.title')}>
               {t('settings.hints.security.body')}
+            </AdminHintCard>
+          )}
+
+          {activeGroup === 'accessControl' && !isSuperAdmin && (
+            <AdminHintCard tone="warning" title={t('settings.accessControl.restrictedTitle')}>
+              {t('settings.accessControl.restrictedHint')}
             </AdminHintCard>
           )}
 
           {group && (
             <form onSubmit={handleSubmit(onSubmit)} className="card">
               <div className="card-body space-y-5">
-                {group.fields.map((field) => (
-                  <SettingFieldRow
-                    key={field.key}
-                    groupKey={activeGroup}
-                    field={field}
-                    register={register}
+                {activeGroup === 'accessControl' ? (
+                  <AccessControlSettingsPanel
+                    permissionsCatalog={permissionsCatalog}
                     watch={watch}
                     setValue={setValue}
-                    error={errors[field.key]?.message as string | undefined}
                   />
-                ))}
+                ) : (
+                  group.fields.map((field) => (
+                    <SettingFieldRow
+                      key={field.key}
+                      groupKey={activeGroup}
+                      field={field}
+                      register={register}
+                      watch={watch}
+                      setValue={setValue}
+                      error={errors[field.key]?.message as string | undefined}
+                    />
+                  ))
+                )}
               </div>
             </form>
           )}
@@ -305,6 +326,24 @@ const SettingFieldRow: React.FC<RowProps> = ({ groupKey, field, register, watch,
   const errorClass = error ? 'border-red-500 focus:ring-red-500' : '';
   const label = translateSettingFieldLabel(t, groupKey, field.key, field.label);
   const help = translateSettingFieldHelp(t, groupKey, field.key, field.help);
+
+  if (groupKey === 'branding' && (field.key === 'logoUrl' || field.key === 'faviconUrl')) {
+    const currentValue = String(watch(field.key) ?? '');
+
+    return (
+      <BrandingImagePicker
+        inputId={inputId}
+        value={currentValue}
+        onChange={(url) =>
+          setValue(field.key, url, { shouldDirty: true, shouldValidate: true })
+        }
+        label={label}
+        help={help}
+        error={error}
+        previewMode={field.key === 'faviconUrl' ? 'contain' : 'contain'}
+      />
+    );
+  }
 
   if (groupKey === 'login' && field.key === 'backgroundImageUrl') {
     const currentValue = String(watch(field.key) ?? '');

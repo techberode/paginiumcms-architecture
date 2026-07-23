@@ -47,7 +47,7 @@ V bočnom paneli (sidebar) sú sekcie:
 | **Schránka** | Komentáre, Správy (admin) |
 | **Platforma** | Nastavenia, Preklady, Používatelia, Notifikácie, Plánovač, Bezpečnosť účtu |
 | **Vývoj** | Code Editor, Blueprinty, Doplnky, Demo (SUPER_ADMIN) |
-| **Bezpečnosť** | Firewall, Logy, Audit, Bezpečnostný audit, ACL |
+| **Bezpečnosť** | Firewall, Logy, Audit, Bezpečnostný audit |
 | **Prevádzka** | Zálohy, Kôš, GitHub sync |
 
 Badge pri položkách = počet záznamov (dá sa vypnúť v nastaveniach).
@@ -58,15 +58,16 @@ Badge pri položkách = počet záznamov (dá sa vypnúť v nastaveniach).
 
 ### Krok A — Nastavenia webu
 
-**Admin → Nastavenia → Web** (`/settings`):
+**Admin → Nastavenia** (`/settings`):
 
-- názov stránky a tagline
-- jazyk admin rozhrania (SK/EN)
-- logo, favicon
-- registrácia hostí (povoliť / zakázať)
-- vzhľad prihlásenia (nadpis, pozadie z médií)
+| Skupina | Čo nastaviť |
+|---------|-------------|
+| **Všeobecné** | Názov stránky, jazyk adminu (SK/EN), registrácia |
+| **Logo a favicon** | Logo + ikona prehliadača → [BRANDING.md](BRANDING.md) |
+| **Prihlásenie** | Nadpis, pozadie pri login/registrácii |
+| **SEO** | Indexovanie, predvolené meta |
 
-**Nastavenia → SEO:** indexovanie (`robots.txt`), predvolené meta.
+**SUPER_ADMIN:** **Nastavenia → Bezpečnosť → Oprávnenia rolí** — RBAC a Path ACL → [ACCESS_CONTROL.md](ACCESS_CONTROL.md).
 
 ### Krok B — Prvá stránka
 

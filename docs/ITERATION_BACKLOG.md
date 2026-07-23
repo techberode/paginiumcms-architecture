@@ -5,8 +5,8 @@
 
 **Aktuálne hotové:** It.1–24 ✅ · It.26–28 ✅ · It.25 ⏳ (setup wizard — odložené)
 
-**Ďalšia iterácia:** [It.56](ITERATION_56.md) (rich navigation menu items)  
-**Posledná:** [It.55 Tiptap JSON + upload](ITERATION_55.md) — **2.0.43**
+**Ďalšia iterácia:** [It.59](ITERATION_59.md) (odložená publikácia) · potom It.56+  
+**Posledná shipped:** [It.55 Tiptap JSON + upload](ITERATION_55.md) — **2.0.43** · **Unreleased:** 2.0.52 (branding, ACL)
 
 **Incidenty a opravy:** [ISSUES.md](ISSUES.md)
 
@@ -34,6 +34,9 @@
 | **56** | TBD | **[Rich navigation items](ITERATION_56.md)** | **🟡** | ⛔ po It.15 |
 | **57** | TBD | **[Auto tags & description](ITERATION_57.md)** | **🟡** | ⛔ po It.15 |
 | **58** | TBD | **[Page layout builder + color schemes](ITERATION_58.md)** | **🟡** | ⛔ po It.15 · layout + 5 presetov, preview, light/dark/system |
+| **59** | TBD | **[Odložená publikácia — plánovač v editore](ITERATION_59.md)** | **🟡** | Kalendár v editore + admin filtre; job `content.scheduled_publish` (It.29) |
+| **60** | TBD | **[Vlastné komponenty editora](ITERATION_60.md)** | **🟡** | Nastavenia → Stránka → Editor; pluginy; nie rola USER |
+| **61** | TBD | **[Newsletter vo footeri](ITERATION_61.md)** | **🟡** | Rýchly odber + admin zap/vyp; ≠ maintenance newsletter |
 | **15** | **2.0.38** | **[External plugins](ITERATION_15.md)** | **✅** | Import ZIP, registry, hooks, routes, admin UI |
 | **47** | TBD | **[Notification connector auth](ITERATION_47.md)** | **✅** | ntfy Bearer/Basic + test-connector |
 | **48** | TBD | **[PHP templates + static/dynamic web](ITERATION_48.md)** | **🟡** | Front matter šablóny, JSON/INI meta, static HTML |
@@ -339,6 +342,33 @@ Implementácia **až po dokončení It.15**. Prehľad: [ITERATION_WAVE_POST_15.m
 | 56 | Menu: popis, ikona, hover náhľad |
 | 57 | Generátor tagov a popisu |
 | 58 | Layout builder (5 šablón, bloky) + farebné schémy & appearance |
+| 59 | Odložená publikácia — editor + kalendár + cron job |
+| 60 | Vlastné MD/WYSIWYG komponenty (settings + pluginy) |
+| 61 | Footer newsletter — odber + admin toggle |
+
+---
+
+## Iterácia 59 – Odložená publikácia ⏳
+
+Plánovač publikácie priamo v editore stránok/článkov; rozbalovací kalendár v editore a admin filtroch; backend handler na existujúcom job queue (It.29).
+
+**Full spec:** [ITERATION_59.md](ITERATION_59.md)
+
+---
+
+## Iterácia 60 – Vlastné komponenty editora ⏳
+
+Rozšírenie Markdown/WYSIWYG o custom bloky — inštalácia pluginom alebo **Nastavenia → Stránka → Editor**. Konfigurácia pre EDITOR/ADMIN/SUPER_ADMIN (nie USER).
+
+**Full spec:** [ITERATION_60.md](ITERATION_60.md) · nadväzuje na It.54 + It.15.
+
+---
+
+## Iterácia 61 – Newsletter vo footeri ⏳
+
+Rýchle prihlásenie na odber v pätičke verejného webu; zapnutie/vypnutie v administrácii. Oddelené od maintenance newsletter (2.0.51).
+
+**Full spec:** [ITERATION_61.md](ITERATION_61.md)
 
 ---
 
@@ -354,6 +384,9 @@ Implementácia **až po dokončení It.15**. Prehľad: [ITERATION_WAVE_POST_15.m
                     → It.56 (rich menu) — môže paralelne po It.53
                     → It.57 (meta generators)
                     → It.58 (layout builder)
+                    → It.59 (scheduled publish) — po It.29 job infra
+                    → It.60 (editor custom components) — po It.54/15
+                    → It.61 (footer newsletter) — môže paralelne s It.52 follow-ups
 ```
 
 ⛔ **It.53–58: iba dokumentácia v repozitári — implementácia až po dokončení It.15.**
@@ -375,3 +408,6 @@ Implementácia **až po dokončení It.15**. Prehľad: [ITERATION_WAVE_POST_15.m
 - [ITERATION_50.md](ITERATION_50.md) — in-app micro firewall (WAF)
 - [ITERATION_WAVE_POST_15.md](ITERATION_WAVE_POST_15.md) — It.53–58 editor & UX (after It.15)
 - [ITERATION_53.md](ITERATION_53.md) … [ITERATION_58.md](ITERATION_58.md) — wave detail specs
+- [ITERATION_59.md](ITERATION_59.md) — scheduled publish
+- [ITERATION_60.md](ITERATION_60.md) — custom editor components
+- [ITERATION_61.md](ITERATION_61.md) — footer newsletter

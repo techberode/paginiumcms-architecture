@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\Settings;
 
+use PaginiumCMS\Modules\Security\Models\User;
+
 /**
  * === Definícia: SettingsSchema ===
  * Jediný zdroj pravdy pre štruktúru nastavení CMS (Iterácia 4).
@@ -24,7 +26,7 @@ namespace PaginiumCMS\Core\Settings;
  *     help?: string,
  *     options?: list<string>
  * }
- * @phpstan-type SettingGroup array{label: string, fields: list<SettingField>}
+ * @phpstan-type SettingGroup array{label: string, fields: list<SettingField>, superAdminOnly?: bool}
  */
 final class SettingsSchema
 {
@@ -46,6 +48,13 @@ final class SettingsSchema
                     ['key' => 'timezone', 'type' => 'timezone', 'label' => 'Časové pásmo', 'default' => 'Europe/Bratislava', 'rules' => ['required', 'string', 'timezone'], 'help' => 'Platí pre logy, audit a naplánované reporty.'],
                     ['key' => 'timezoneDst', 'type' => 'bool', 'label' => 'Letný čas (DST)', 'default' => true, 'rules' => ['bool'], 'help' => 'Zapnuté = automatická korekcia letného času podľa zvoleného pásma. Vypnuté = stály zimný čas bez posunu.'],
                     ['key' => 'allowRegistration', 'type' => 'bool', 'label' => 'Povoliť registráciu', 'default' => true, 'rules' => ['bool'], 'help' => 'Vypnutím zablokujete POST /api/auth/register. Počas režimu údržby je registrácia vždy vypnutá.'],
+                ],
+            ],
+            'branding' => [
+                'label' => 'Logo a favicon',
+                'fields' => [
+                    ['key' => 'logoUrl', 'type' => 'url', 'label' => 'Logo stránky (URL)', 'default' => '', 'rules' => ['string', 'max:512'], 'help' => 'Zobrazí sa vo verejnom menu, administrácii a maintenance stránkach. Odporúčané PNG/SVG do 512 px šírky.'],
+                    ['key' => 'faviconUrl', 'type' => 'url', 'label' => 'Favicon (URL)', 'default' => '', 'rules' => ['string', 'max:512'], 'help' => 'Ikona v karte prehliadača. Odporúčané ICO, PNG alebo SVG (min. 32×32 px).'],
                 ],
             ],
             'content' => [
@@ -267,6 +276,17 @@ final class SettingsSchema
                     ['key' => 'allowedMimeTypes', 'type' => 'text', 'label' => 'Povolené MIME typy', 'default' => 'image/jpeg,image/png,image/gif,image/webp,image/svg+xml,application/pdf', 'rules' => ['required', 'string', 'max:2000'], 'help' => 'Oddeľte čiarkou.'],
                 ],
             ],
+            'accessControl' => [
+                'label' => 'Oprávnenia rolí',
+                'superAdminOnly' => true,
+                'fields' => [
+                    ['key' => 'pathAclEnabled', 'type' => 'bool', 'label' => 'Povoliť path ACL', 'default' => false, 'rules' => ['bool'], 'help' => 'Obmedzí prístup k vybraným cestám flat-file obsahu podľa rolí alebo oprávnení.'],
+                    ['key' => 'pathAclRulesJson', 'type' => 'text', 'label' => 'Path ACL pravidlá (JSON)', 'default' => '[]', 'rules' => ['string', 'max:50000'], 'help' => 'Spravované cez vizuálny editor v administrácii.'],
+                    ['key' => 'permissionsAdmin', 'type' => 'text', 'label' => 'Oprávnenia ADMIN', 'default' => 'user:manage,content:manage,media:manage,settings:manage,logs:view', 'rules' => ['required', 'string', 'max:5000']],
+                    ['key' => 'permissionsEditor', 'type' => 'text', 'label' => 'Oprávnenia EDITOR', 'default' => 'content:create,content:edit,content:delete,media:upload,media:delete', 'rules' => ['required', 'string', 'max:5000']],
+                    ['key' => 'permissionsUser', 'type' => 'text', 'label' => 'Oprávnenia USER', 'default' => 'content:view,profile:edit', 'rules' => ['required', 'string', 'max:5000']],
+                ],
+            ],
             'firewall' => [
                 'label' => 'Firewall (WAF)',
                 'fields' => [
@@ -377,6 +397,49 @@ final class SettingsSchema
     public static function hasGroup(string $group): bool
     {
         return isset(self::groups()[$group]);
+    }
+
+    public static function isSuperAdminOnly(string $group): bool
+    {
+        return (self::groups()[$group]['superAdminOnly'] ?? false) === true;
+    }
+
+    /**
+     * @param array<string, SettingGroup> $schema
+     * @return array<string, SettingGroup>
+     */
+    public static function filterSchemaForUser(array $schema, ?User $user): array
+    {
+        if ($user instanceof User && in_array('SUPER_ADMIN', $user->getRoles(), true)) {
+            return $schema;
+        }
+
+        foreach ($schema as $group => $definition) {
+            if (($definition['superAdminOnly'] ?? false) === true) {
+                unset($schema[$group]);
+            }
+        }
+
+        return $schema;
+    }
+
+    /**
+     * @param array<string, array<int|string, mixed>> $values
+     * @return array<string, array<int|string, mixed>>
+     */
+    public static function filterValuesForUser(array $values, ?User $user): array
+    {
+        if ($user instanceof User && in_array('SUPER_ADMIN', $user->getRoles(), true)) {
+            return $values;
+        }
+
+        foreach (array_keys($values) as $group) {
+            if (self::isSuperAdminOnly($group)) {
+                unset($values[$group]);
+            }
+        }
+
+        return $values;
     }
 
     /**

@@ -144,7 +144,7 @@ Legenda: ✅ DONE · 🟡 PARTIAL (existuje časť, treba dokončiť/prepojiť) 
 | R | **Priebežné pridávanie API + FE prepojení** | 🟡 | Priebežná úloha naprieč iteráciami. |
 | S | **Automatické SEO tagy + rozšírené SEO nastavenia** | ✅ | **It.23** — `SeoMetaBuilder`, `GET /api/seo/{type}/{slug}`, FE `useSeoMeta` ([ITERATION_23.md](ITERATION_23.md), 2.0.11). Admin SEO panel → **It.27** ✅. |
 | T | **SSO (SAML / OAuth)** | ✅ | **It.11** — OAuth2 GitHub + generic (`OAuthSsoService`, settings `sso`, `/api/auth/sso/*`). SAML mimo v1. |
-| U | **Jemnozrnné ACL (na úrovni súborov/priečinkov)** | ✅ | **It.11** — `AclRepository`, `PathAclService`, `data/security/acl.json`, admin `/security/acl`. |
+| U | **Jemnozrnné ACL (na úrovni súborov/priečinkov)** | ✅ | **It.11** — `PathAclService`, `data/security/acl.json`; admin **Nastavenia → Oprávnenia rolí** (post-2.0.51) |
 | V | **Bezpečnostný audit log (+ CSV export)** | ✅ | **It.11** — `SecurityAuditStore`, `SecurityLogger` integrácia, `/api/admin/security/audit`, FE `/security/audit`. Pôvodný `Modules/Audit` ostáva pre content audit trail. |
 | W | **Politika validácie a kompatibility kódu (CodeEditor)** | 🟡 | `SyntaxChecker` (PHP `php -l`, JSON, YAML; JS/CSS vždy OK), `CodeEditorManager` allow/deny paths – **path resolution rozbitá**. Chýba security policy (zakázané konštrukty: `eval`, `exec`, …), JS/CSS lint, centrálna policy v `settings.json`, FE validácia pred save. |
 | X | **Moduly / Témy / Funkcionality editovateľné v CodeEditori** | 🟡 | Backend: `GatedCodeEditorController`, Developer gate, deklarované cesty. FE: **Monaco editor** ✅; chýba hierarchický FileTree, create/delete/restore, opravené cesty k `themes/`. |

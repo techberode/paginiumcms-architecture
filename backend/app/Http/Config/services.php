@@ -169,6 +169,7 @@ use PaginiumCMS\Modules\Demo\Services\DemoMode;
 use PaginiumCMS\Modules\Demo\Services\DemoResetScheduler;
 use PaginiumCMS\Modules\Demo\Services\DemoStorageService;
 use PaginiumCMS\Modules\Security\Services\AclRepository;
+use PaginiumCMS\Modules\Security\Services\AccessControlSyncService;
 use PaginiumCMS\Modules\Security\Services\AuthorizationManager;
 use PaginiumCMS\Modules\Security\Services\OAuthSsoService;
 use PaginiumCMS\Modules\Security\Services\ContentPathAclGuard;
@@ -244,13 +245,17 @@ return [
             $container->get(\PaginiumCMS\Core\Security\Services\EncryptionService::class)
         );
     },
+    AccessControlSyncService::class => create(AccessControlSyncService::class)
+        ->constructor(get(AclRepository::class)),
     SettingsController::class => create(SettingsController::class)
         ->constructor(
             get(SettingsRepositoryInterface::class),
             get(JsonResponder::class),
             get(SecurityLogger::class),
             get(DemoMode::class),
-            get(EditorProfileService::class)
+            get(EditorProfileService::class),
+            get(AccessControlSyncService::class),
+            get(AuthorizationInterface::class)
         ),
 
     TranslationFileManagerInterface::class => create(TranslationFileManager::class)

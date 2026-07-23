@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Tests\Http;
 
+use PaginiumCMS\Core\Security\Services\LoginAttemptTracker;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
@@ -38,12 +39,18 @@ abstract class TestCase extends BaseTestCase
         $this->app = require __DIR__ . '/../../bootstrap/app.php';
         $this->currentUser = null;
 
+        $this->container()->get(LoginAttemptTracker::class)->clearAll();
         $this->applyTestSettingsOverrides();
+    }
+
+    protected function container(): ContainerInterface
+    {
+        return $this->app->getContainer();
     }
 
     private function applyTestSettingsOverrides(): void
     {
-        $settings = $this->app->getContainer()->get(SettingsRepositoryInterface::class);
+        $settings = $this->container()->get(SettingsRepositoryInterface::class);
 
         $settings->setGroup('maintenance', array_merge($settings->group('maintenance'), [
             'mode' => 'off',
@@ -162,7 +169,7 @@ abstract class TestCase extends BaseTestCase
     ): array {
         $userData = $this->createTestUser($email, $password, $name);
 
-        $container = $this->app->getContainer();
+        $container = $this->container();
 
         $repo = $container->get(UserRepository::class);
         $user = $repo->findByEmail($userData['email']);

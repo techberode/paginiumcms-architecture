@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { LogIn } from 'lucide-react';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { useI18n } from '../../context/I18nContext';
+import { SiteLogo } from '../branding/SiteLogo';
 
 interface MaintenanceShellProps {
   variant: 'coming_soon' | 'under_maintenance';
@@ -48,9 +49,13 @@ export const MaintenanceShell: React.FC<MaintenanceShellProps> = ({
 
       <div className="relative z-10 flex min-h-screen flex-col">
         <header className="flex items-center justify-between px-6 py-5 sm:px-10">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.35em] text-white/50">{siteName}</p>
-          </div>
+          <SiteLogo
+            showName
+            className="flex items-center gap-3"
+            imageClassName="h-10 w-auto max-w-[160px] object-contain"
+            fallbackClassName="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25 shrink-0"
+            nameClassName="text-sm font-black uppercase tracking-[0.2em] text-white/90 truncate"
+          />
           <Link
             to="/login"
             className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold backdrop-blur transition hover:bg-white/20"

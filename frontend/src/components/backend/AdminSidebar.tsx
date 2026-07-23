@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useAdminCounts } from '../../hooks/useAdminCounts';
+import { useSettings } from '../../hooks/useSettings';
 import { useI18n } from '../../context/I18nContext';
 import {
   ADMIN_DEFAULT_ROUTE,
@@ -18,6 +19,7 @@ import {
   ADMIN_NAV_SECTIONS,
 } from '../../config/adminNavSections';
 import type { AdminNavItemDef } from '../../config/adminNavTypes';
+import { SiteLogo } from '../branding/SiteLogo';
 
 interface AdminSidebarProps {
   collapsed: boolean;
@@ -34,6 +36,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
 }) => {
   const { t } = useI18n();
   const { user } = useAuth();
+  const { settings } = useSettings();
+  const siteName = String(settings?.general?.siteName ?? 'PaginiumCMS');
   const { counts, showListCounts } = useAdminCounts();
   const location = useLocation();
   const isAdmin = user?.roles?.some((r) => r === 'ADMIN' || r === 'SUPER_ADMIN') ?? false;
@@ -122,12 +126,15 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
     >
       <div className="min-h-0 flex flex-col">
         <div className="h-16 px-4 border-b border-slate-800 flex items-center gap-3 overflow-hidden shrink-0">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-indigo-500/25 shrink-0">
-            P
-          </div>
+          <SiteLogo
+            showName={false}
+            className="flex items-center gap-3 min-w-0"
+            imageClassName="h-10 w-auto max-w-[120px] object-contain shrink-0"
+            fallbackClassName="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-indigo-500/25 shrink-0"
+          />
           {!collapsed && (
             <div className="min-w-0">
-              <span className="font-black text-lg text-white block leading-none truncate">Paginium</span>
+              <span className="font-black text-lg text-white block leading-none truncate">{siteName}</span>
               <span className="text-[10px] font-extrabold text-indigo-400 uppercase tracking-wider block mt-1 truncate">
                 {t('admin.sidebar.brandSubtitle')}
               </span>

@@ -17,23 +17,29 @@
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| `GET` | `/api/settings/public` | logged-in | Public slice for the SPA (general, content, editor, notifications toast settings) |
-| `GET` | `/api/admin/settings` | ADMIN | Schema + effective values (password fields masked as `********`) |
-| `GET` | `/api/admin/settings/{group}` | ADMIN | Schema + values for one group |
-| `PUT` | `/api/admin/settings/{group}` | ADMIN | Validate + save group (masked passwords are ignored) |
+| `GET` | `/api/settings/public` | Anonymous / logged-in | Public slice: `general`, `branding`, `content`, `editor`, `maintenance`, `notifications`, … |
+| `GET` | `/api/admin/settings` | ADMIN | Schema + values; `accessControl` group + `meta.permissions` only for SUPER_ADMIN |
+| `GET` | `/api/admin/settings/{group}` | ADMIN | One group; `accessControl` → 403 unless SUPER_ADMIN |
+| `PUT` | `/api/admin/settings/{group}` | ADMIN | Validate + save; `accessControl` → 403 unless SUPER_ADMIN; reloads RBAC + syncs Path ACL |
 | `DELETE` | `/api/admin/settings` | ADMIN | Reset all groups to defaults |
 
-### Schema groups
+### Schema groups (výber)
 
-| Group | Purpose |
-|---|---|
-| `general` | siteName, siteUrl, adminEmail, language, timezone, timezoneDst, maintenanceMode |
-| `content` | itemsPerPage, blogItemsPerPage, defaultStatus, autoSaveInterval, lockTtl |
-| `editor` | defaultEditor, spellcheck, tabSize |
-| `smtp` | SMTP transport (host, port, TLS, credentials, from address) |
-| `notifications` | Toast UI: enabled, position, duration, debug mode |
-| `connectors` | Email, ntfy, Discord, Telegram, webhook toggles and config (+ ntfy auth token/Basic, webhook auth header — It.47) |
-| `monitoring` | Incident alerts, fallback email, failed-login/security/traffic-spike rules |
+| Group | Purpose | Who can edit |
+|---|---|---|
+| `general` | siteName, siteUrl, adminEmail, language, timezone, timezoneDst, allowRegistration | ADMIN+ |
+| `branding` | logoUrl, faviconUrl | ADMIN+ |
+| `accessControl` | permissionsAdmin/Editor/User, pathAclEnabled, pathAclRulesJson | **SUPER_ADMIN only** |
+| `content` | itemsPerPage, blogItemsPerPage, defaultStatus, autoSaveInterval, lockTtl | ADMIN+ |
+| `maintenance` | Coming Soon / Under Maintenance modes and templates | ADMIN+ |
+| `editor` | defaultEditor, spellcheck, tabSize | ADMIN+ |
+| `smtp` | SMTP transport | ADMIN+ |
+| `notifications` | Toast UI | ADMIN+ |
+| `connectors` | Email, ntfy, Discord, Telegram, webhook | ADMIN+ |
+| `monitoring` | Incident alerts, scheduled reports | ADMIN+ |
+| `security` | Password policy, 2FA staff requirement | ADMIN+ |
+| `firewall` | WAF settings slice | ADMIN+ |
+| `logging` | Log level, retention, auth endpoint logging | ADMIN+ |
 
 ### Frontend
 
@@ -46,7 +52,9 @@
 | `context/NotificationContext.tsx` | Toast UI driven by `notifications` public settings |
 | `hooks/useToast.ts` | Shortcut for toast helpers |
 
-Deep links: [ADMIN_DEEP_LINKS.md](./ADMIN_DEEP_LINKS.md) (`/settings?group=logging`, audit content/user routes, log severity filters).
+Deep links: [ADMIN_DEEP_LINKS.md](./ADMIN_DEEP_LINKS.md) (`/settings?group=logging`, `/settings?category=security&group=accessControl`, …).
+
+User guides: [BRANDING.md](../user/BRANDING.md), [ACCESS_CONTROL.md](../user/ACCESS_CONTROL.md).
 
 ---
 

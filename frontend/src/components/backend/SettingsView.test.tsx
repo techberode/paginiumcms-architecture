@@ -26,7 +26,11 @@ vi.mock('../../hooks/useToast', () => ({
 }));
 
 vi.mock('../../hooks/useSettings', () => ({
-  useSettings: () => ({ reload: mocks.reloadGlobalSettings }),
+  useSettings: () => ({ reload: mocks.reloadGlobalSettings, settings: { general: { siteName: 'Paginium' } } }),
+}));
+
+vi.mock('../../hooks/useAuth', () => ({
+  useAuth: () => ({ user: { roles: ['ADMIN'] } }),
 }));
 
 vi.mock('./CacheManagerPanel', () => ({

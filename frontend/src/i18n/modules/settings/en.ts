@@ -85,7 +85,33 @@ export const settingsEn: MessageTree = {
     "media": "Media / DAM",
     "sso": "SSO / OAuth",
     "contentSecurity": "Content security (XML/HTML)",
-    "uploadSecurity": "Upload security"
+    "uploadSecurity": "Upload security",
+    "branding": "Logo & favicon",
+    "accessControl": "Role permissions"
+  },
+  "accessControl": {
+    "superAdminTitle": "Super administrator only",
+    "superAdminHint": "Permission mapping for ADMIN, EDITOR, and USER roles plus path ACL rules can only be changed by SUPER_ADMIN. SUPER_ADMIN always has full access.",
+    "restrictedTitle": "Restricted access",
+    "restrictedHint": "This settings group is visible only to the super administrator.",
+    "rolesTitle": "Permissions by role",
+    "pathAclTitle": "Path ACL (content paths)",
+    "pathAclEnabled": "Enable path ACL",
+    "pathAclHint": "Restrict access to selected flat-file content paths (e.g. content/pages/restricted/*).",
+    "permissions": {
+      "user:manage": "Manage users",
+      "content:manage": "Manage all content",
+      "content:create": "Create content",
+      "content:edit": "Edit content",
+      "content:delete": "Delete content",
+      "content:view": "View content",
+      "media:manage": "Manage all media",
+      "media:upload": "Upload media",
+      "media:delete": "Delete media",
+      "settings:manage": "Manage settings",
+      "logs:view": "View logs",
+      "profile:edit": "Edit profile"
+    }
   },
   "hints": {
     "security": {
@@ -326,6 +352,27 @@ export const settingsEn: MessageTree = {
       "passwordRequireSpecialChars": {
         "label": "Require special character",
         "help": "e.g. ! @ # $ % & *"
+      }
+    },
+    "branding": {
+      "logoUrl": {
+        "label": "Site logo (URL)",
+        "help": "Shown in the public navbar, admin sidebar, and maintenance pages."
+      },
+      "faviconUrl": {
+        "label": "Favicon (URL)",
+        "help": "Browser tab icon. ICO, PNG or SVG recommended."
+      },
+      "imagePicker": {
+        "pickFromMedia": "Pick from media",
+        "uploadLocal": "Upload from disk",
+        "uploading": "Uploading…",
+        "remove": "Remove",
+        "previewAlt": "Preview",
+        "mediaModalTitle": "Select image",
+        "uploadAlt": "Branding upload",
+        "invalidType": "Unsupported file type",
+        "uploadFailed": "Upload failed"
       }
     },
     "login": {

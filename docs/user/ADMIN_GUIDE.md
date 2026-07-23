@@ -25,7 +25,7 @@
 | **USER** | ❌ | Registrácia, komentáre (ak povolené) |
 | **EDITOR** | ✅ | Stránky, články, médiá, navigácia, audit (čítanie), zálohy |
 | **ADMIN** | ✅ | + používatelia, nastavenia, firewall, logy, schránka, preklady |
-| **SUPER_ADMIN** | ✅ | + demo reset, ACL, extensions, blueprints, GitHub |
+| **SUPER_ADMIN** | ✅ | + demo reset, **oprávnenia rolí (Path ACL)**, extensions, blueprints, GitHub |
 
 **Pravidlo:** EDITOR vidí obsah; ADMIN spravuje platformu; SUPER_ADMIN spravuje aj bezpečnostné a vývojové nástroje.
 
@@ -121,15 +121,14 @@ Skupiny (záložky v UI):
 
 | Skupina | Čo nastavíš |
 |---------|-------------|
-| **Web** | Názov, jazyk adminu, logo, registrácia, login vzhľad |
-| **SEO** | Indexovanie, predvolené meta, sitemap |
-| **Komentáre** | Globálne pravidlá schvaľovania |
+| **Všeobecné** | Názov, jazyk, timezone, registrácia |
+| **Logo a favicon** | Logo webu + favicon (media picker) → [BRANDING.md](BRANDING.md) |
+| **Obsah / Editor / SEO** | Stránkovanie, editor, meta, feedy |
+| **Prihlásenie** | Vzhľad login/registrácie, pozadie |
 | **Bezpečnosť** | Politika hesiel, 2FA, upload/content security |
-| **Notifikácie** | SMTP, ntfy, webhook, incident pravidlá |
-| **Firewall** | WAF parametre (doplnok k modulu Firewall) |
-| **Logy** | Úroveň logovania, auth endpointy |
-| **Cache** | Vymazanie cache obsahu |
-| **Code policy** | Pravidlá pre Code Editor (budúcnosť) |
+| **Oprávnenia rolí** | *SUPER_ADMIN* — RBAC checkboxy + Path ACL → [ACCESS_CONTROL.md](ACCESS_CONTROL.md) |
+| **Notifikácie / Firewall / Logy** | SMTP, WAF, retention logov |
+| **Cache** | Vymazanie cache obsahu (panel v Systém) |
 
 Zmeny sa ukladajú do `data/settings.json` (flat-file). Citlivé polia (SMTP heslo) sú šifrované.
 
@@ -214,9 +213,18 @@ História zmien obsahu a akcií používateľov — export JSON.
 
 Spustenie audit engine (integrita, konfigurácia, výkon) — report v admin UI.
 
-### ACL cesty (`/security/acl`)
+### Oprávnenia rolí a Path ACL
 
-*SUPER_ADMIN* — obmedzenie prístupu k cestám v Code Editore / storage.
+*SUPER_ADMIN* — **Nastavenia → Bezpečnosť → Oprávnenia rolí** (`/settings?category=security&group=accessControl`).
+
+- Globálne oprávnenia pre roly ADMIN, EDITOR, USER (checkboxy)
+- Path ACL — obmedzenie prístupu k cestám stránok, článkov a médií (opt-in)
+
+Stará URL `/security/acl` presmeruje sem. Detail: [ACCESS_CONTROL.md](ACCESS_CONTROL.md).
+
+### Logo a favicon
+
+**Nastavenia → Stránka → Logo a favicon** — upload alebo výber z médií. Detail: [BRANDING.md](BRANDING.md).
 
 ---
 

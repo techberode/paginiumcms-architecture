@@ -31,7 +31,7 @@ export const SETTINGS_CATEGORIES: SettingsCategoryDef[] = [
     id: 'site',
     labelKey: 'settings.categories.site.label',
     descriptionKey: 'settings.categories.site.description',
-    groups: ['content', 'editor', 'seo', 'feeds', 'comments', 'contact', 'company', 'login'],
+    groups: ['branding', 'content', 'editor', 'seo', 'feeds', 'comments', 'contact', 'company', 'login'],
   },
   {
     id: 'media',
@@ -43,7 +43,7 @@ export const SETTINGS_CATEGORIES: SettingsCategoryDef[] = [
     id: 'security',
     labelKey: 'settings.categories.security.label',
     descriptionKey: 'settings.categories.security.description',
-    groups: ['security', 'firewall', 'sso', 'contentSecurity', 'uploadSecurity'],
+    groups: ['security', 'accessControl', 'firewall', 'sso', 'contentSecurity', 'uploadSecurity'],
   },
 ];
 

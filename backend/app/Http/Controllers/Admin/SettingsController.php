@@ -12,7 +12,10 @@ use PaginiumCMS\Core\Editor\Services\EditorProfileService;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Demo\Data\DemoFixtures;
 use PaginiumCMS\Modules\Demo\Services\DemoMode;
+use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
 use PaginiumCMS\Modules\Security\Models\User;
+use PaginiumCMS\Modules\Security\PermissionCatalog;
+use PaginiumCMS\Modules\Security\Services\AccessControlSyncService;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -35,15 +38,29 @@ final class SettingsController
         private JsonResponder $json,
         private SecurityLogger $securityLogger,
         private DemoMode $demoMode,
-        private EditorProfileService $editorProfiles
+        private EditorProfileService $editorProfiles,
+        private AccessControlSyncService $accessControlSync,
+        private AuthorizationInterface $authorization
     ) {
     }
 
     public function index(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
+        /** @var User|null $user */
+        $user = $request->getAttribute('user');
+        $schema = SettingsSchema::filterSchemaForUser(SettingsSchema::groups(), $user);
+        $values = SettingsSchema::filterValuesForUser(
+            $this->maskSensitiveValues($this->enrichAccessControlValues($this->settings->all())),
+            $user
+        );
+
         return $this->json->success($response, [
-            'schema' => SettingsSchema::groups(),
-            'values' => $this->maskSensitiveValues($this->settings->all()),
+            'schema' => $schema,
+            'values' => $values,
+            'meta' => [
+                'permissions' => PermissionCatalog::ALL,
+                'configurableRoles' => PermissionCatalog::configurableRoles(),
+            ],
         ]);
     }
 
@@ -58,9 +75,24 @@ final class SettingsController
             return $this->json->error($response, 'Neznáma skupina nastavení', 404);
         }
 
+        /** @var User|null $user */
+        $user = $request->getAttribute('user');
+        if (SettingsSchema::isSuperAdminOnly($group) && !$this->isSuperAdmin($user)) {
+            return $this->json->error($response, 'Len super administrátor môže zobraziť túto skupinu nastavení', 403);
+        }
+
+        $groupValues = $this->settings->group($group);
+        if ($group === 'accessControl') {
+            $groupValues = $this->mergeLegacyPathAcl($groupValues);
+        }
+
         return $this->json->success($response, [
             'schema' => SettingsSchema::groups()[$group],
-            'values' => $this->maskSensitiveValues([$group => $this->settings->group($group)])[$group] ?? [],
+            'values' => $this->maskSensitiveValues([$group => $groupValues])[$group] ?? [],
+            'meta' => $group === 'accessControl' ? [
+                'permissions' => PermissionCatalog::ALL,
+                'configurableRoles' => PermissionCatalog::configurableRoles(),
+            ] : null,
         ]);
     }
 
@@ -70,8 +102,27 @@ final class SettingsController
     public function update(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $group = (string) ($args['group'] ?? '');
+
+        if (!SettingsSchema::hasGroup($group)) {
+            return $this->json->error($response, 'Neznáma skupina nastavení', 404);
+        }
+
+        /** @var User|null $user */
+        $user = $request->getAttribute('user');
+        if (SettingsSchema::isSuperAdminOnly($group) && !$this->isSuperAdmin($user)) {
+            return $this->json->error($response, 'Len super administrátor môže meniť túto skupinu nastavení', 403);
+        }
+
         $payload = $this->parseJsonBody($request);
         $payload = $this->stripMaskedSecrets($group, $payload);
+
+        if ($group === 'accessControl') {
+            try {
+                $payload = $this->accessControlSync->normalizeAccessControlPayload($payload);
+            } catch (InvalidArgumentException $e) {
+                return $this->json->error($response, $e->getMessage(), 422);
+            }
+        }
 
         try {
             $values = $this->settings->setGroup($group, $payload);
@@ -79,7 +130,18 @@ final class SettingsController
             return $this->json->error($response, $e->getMessage(), 404);
         }
 
-        $user = $request->getAttribute('user');
+        if ($group === 'accessControl') {
+            try {
+                $this->accessControlSync->syncPathAclFromSettings($values);
+            } catch (InvalidArgumentException $e) {
+                return $this->json->error($response, $e->getMessage(), 422);
+            }
+
+            if ($this->authorization instanceof \PaginiumCMS\Modules\Security\Services\AuthorizationManager) {
+                $this->authorization->reloadFromSettings();
+            }
+        }
+
         if ($user instanceof User) {
             $this->securityLogger->logSettingsChange($user, $group);
         }
@@ -101,6 +163,10 @@ final class SettingsController
                 'siteDescription' => (string) ($all['general']['siteDescription'] ?? ''),
                 'language' => $all['general']['language'] ?? 'sk',
                 'allowRegistration' => (bool) ($all['general']['allowRegistration'] ?? true),
+            ],
+            'branding' => [
+                'logoUrl' => (string) ($all['branding']['logoUrl'] ?? ''),
+                'faviconUrl' => (string) ($all['branding']['faviconUrl'] ?? ''),
             ],
             'maintenance' => $this->publicMaintenanceSettings($all['maintenance'] ?? []),
             'workflows' => [
@@ -285,5 +351,47 @@ final class SettingsController
         }
 
         return $payload;
+    }
+
+    private function isSuperAdmin(?User $user): bool
+    {
+        return $user instanceof User && in_array('SUPER_ADMIN', $user->getRoles(), true);
+    }
+
+    /**
+     * @param array<string, array<string, mixed>> $values
+     * @return array<string, array<string, mixed>>
+     */
+    private function enrichAccessControlValues(array $values): array
+    {
+        if (!isset($values['accessControl'])) {
+            $values['accessControl'] = SettingsSchema::defaults()['accessControl'] ?? [];
+        }
+
+        $values['accessControl'] = $this->mergeLegacyPathAcl($values['accessControl']);
+
+        return $values;
+    }
+
+    /**
+     * @param array<string, mixed> $accessControl
+     * @return array<string, mixed>
+     */
+    private function mergeLegacyPathAcl(array $accessControl): array
+    {
+        $defaults = SettingsSchema::defaults()['accessControl'] ?? [];
+        $storedRules = (string) ($accessControl['pathAclRulesJson'] ?? '[]');
+        $defaultRules = (string) ($defaults['pathAclRulesJson'] ?? '[]');
+
+        if ($storedRules !== $defaultRules) {
+            return $accessControl;
+        }
+
+        $fromAcl = $this->accessControlSync->pathAclSettingsFromRepository();
+        if (($fromAcl['pathAclRulesJson'] ?? '[]') === '[]' && !($fromAcl['pathAclEnabled'] ?? false)) {
+            return $accessControl;
+        }
+
+        return array_merge($accessControl, $fromAcl);
     }
 }

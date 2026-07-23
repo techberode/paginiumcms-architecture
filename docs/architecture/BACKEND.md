@@ -114,14 +114,15 @@ Per-route middleware: `AuthMiddleware`, `RoleMiddleware`, `PermissionMiddleware`
 | Mechanizmus | Implementácia |
 |-------------|----------------|
 | Session auth | `SessionManager`, cookie + CSRF |
-| RBAC | `AuthorizationManager`, permissions v routách |
+| RBAC | `AuthorizationManager`, `PermissionMiddleware`; mapovanie rolí v `settings.accessControl` (SUPER_ADMIN only) |
+| Path ACL | `PathAclService`, `ContentPathAclGuard`; pravidlá v Nastaveniach → Oprávnenia rolí → sync `data/security/acl.json` |
 | 2FA | `TwoFactorMiddleware` na `/api/admin/*` |
 | WAF | `FirewallMiddleware` + `FirewallService` |
 | Rate limit | `RateLimitMiddleware`, login limiter |
 | Maintenance | `MaintenanceModeMiddleware` |
 | OTP workflow | Citlivé mutácie (publish, komentáre) |
 
-Detail: [CORE_HARDENING.md](./CORE_HARDENING.md), [user/FIREWALL.md](../user/FIREWALL.md).
+Detail: [CORE_HARDENING.md](./CORE_HARDENING.md), [user/FIREWALL.md](../user/FIREWALL.md), [user/ACCESS_CONTROL.md](../user/ACCESS_CONTROL.md), [user/BRANDING.md](../user/BRANDING.md).
 
 ---
 

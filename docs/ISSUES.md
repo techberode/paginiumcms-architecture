@@ -1,8 +1,10 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-23 · verzia **2.0.51** · ISS-063–071
+> Posledná aktualizácia: 2026-07-23 · verzia **2.0.52** · ISS-063–074 · backlog It.59–61
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
+
+> **Markdown preview (Cursor / VS Code):** Ak preview nejde, je prázdny alebo „rozbitý“ od určitého miesta, skontroluj **neuzavretú kurzívu** — vzor `` `niečo.`* `` (hviezdička hneď za backtickom) rozbije zvyšok súboru. Wildcard dávaj celý do backticks: `` `navigation.json.backup.*` ``. Súbor má ~1800 riadkov; pri pomalom preview použi vyhľadávanie (Ctrl+F) alebo prehľadovú tabuľku nižšie.
 
 > **Audit report:** Súbor `AUDIT_REPORT.md` v koreni repozitára je **gitignored** a slúži len
 > ako lokálny prehľad auditov (nie je verejný). Otvorené nálezy a stav opráv sleduj tu a v
@@ -87,6 +89,9 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-069 | Nastavenia: časové pásmo len voľný text | Stredná (admin UX) | ✅ **2.0.51** |
 | ISS-070 | Nastavenia: chýba prepínač **letného času (DST)** | Stredná (ops) | ✅ **2.0.51** |
 | ISS-071 | Logy: chýbajú bulk akcie, delete-all a stránkovanie | Stredná (admin UX) | ✅ Opravené · **2.0.51** |
+| ISS-072 | Security audit `/api/admin/security/audit` → 403 pre ADMIN | Stredná (regresia) | ✅ Opravené · **2.0.52** |
+| ISS-073 | PHPUnit: login testy → 429 namiesto 401 (lockout persistencia) | Stredná (CI) | ✅ Opravené · **2.0.52** |
+| ISS-074 | PHPStan L8 po `accessControl` / branding (10 chýb) | Stredná (CI) | ✅ Opravené · **2.0.52** |
 
 
 
@@ -98,6 +103,9 @@ Workflow: `[.github/workflows/ci.yml](../.github/workflows/ci.yml)`
 
 | CI job     | Step                 | Symptóm                                                               | Issue                     |
 | ---------- | -------------------- | --------------------------------------------------------------------- | ------------------------- |
+| `backend`  | PHPUnit              | Login error shape / AuthController → **429** namiesto 401 (lockout persistencia) | ISS-073          |
+| `backend`  | PHPUnit              | `SecurityAuditControllerTest` → 403 pre ADMIN | ISS-072          |
+| `backend`  | PHPStan level 8      | `accessControl` / `SettingsSchema` / `AccessControlSyncService` (10×) | ISS-074          |
 | `backend`  | PHPStan level 8      | `LocaleScaffoldService::$projectRoot` undefined (7×)                  | ISS-045                   |
 | `backend`  | PHP bootstrap        | `services.php:301` parse error → all API 500                          | ISS-044                   |
 | `backend`  | PHPUnit              | 429 Too Many Requests, 503 maintenance, flaky OTP, flaky search test  | ISS-015, ISS-023          |
@@ -237,7 +245,7 @@ find backend/storage/app/content/data/users -name '*.backup.*' -delete
 
 **Oprava:** `FileWriter::pruneBackups()` – ponechá posledných 5 backupov, staršie zmaže.
 
-**Poznámka:** Backup ≠ nový používateľ. Súbor `navigation.json.backup.`* je normálna rotácia, nie chyba navigácie.
+**Poznámka:** Backup ≠ nový používateľ. Súbor `navigation.json.backup.*` je normálna rotácia, nie chyba navigácie.
 
 ---
 
@@ -407,7 +415,7 @@ Po oprave hook deps (2.0.26): **57 warnings** — rezerva 8 slotov do limitu.
 
 ## ISS-014 – CORS dev wildcardy (audit nález S6)
 
-**Symptóm:** Mimo produkcie CORS povoľuje `localhost:`*, `192.168.`*, `10.*`, `172.*` s `credentials: true`.
+**Symptóm:** Mimo produkcie CORS povoľuje `localhost:*`, `192.168.*`, `10.*`, `172.*` s `credentials: true`.
 
 **Riziko:** Ak server beží s `APP_ENV` ≠ `production`, širšie CORS ostáva aktívne.
 
@@ -836,7 +844,7 @@ SettingsView.tsx:162
 "twoFactorVerifiedAt": null
 ```
 
-v `backend/storage/app/users/<id>.json`, potom re-login → `/account/security`.
+v `backend/storage/app/users/{id}.json`, potom re-login → `/account/security`.
 
 ---
 
@@ -1413,6 +1421,8 @@ výnimka pri konštrukcii služby zhodila celý boot kontajnera — teda aj HTTP
 
 **Implementované riešenie:** `ContentPathAclGuard` + `PathAclService::normalizeStoragePath()` (mapuje `pages/foo.md` → `content/pages/foo` pre glob pravidlá z admin UI). Zapojené do `ContentController`, `DraftController`, `MediaController`. Opt-in (`enabled: false` → bez zmeny správania); read deny → 404, write deny → 403.
 
+**Post-2.0.51:** Path ACL + nastaviteľné RBAC mapovanie rolí presunuté do **Nastavenia → Bezpečnosť → Oprávnenia rolí** (`accessControl`, len SUPER_ADMIN). UI `/security/acl` → redirect. Dokumentácia: [docs/user/ACCESS_CONTROL.md](user/ACCESS_CONTROL.md).
+
 **Overenie:** PHPUnit `PathAclServiceTest`, `ContentPathAclGuardTest`, `PathAclIntegrationTest` (17 scenárov spolu).
 
 ---
@@ -1757,7 +1767,7 @@ Error in file backend/app/Modules/PolicyTest.php: Code policy validation failed
 - `useAuthBranding` — správne rozlíšenie `/storage/…` a `media/…` ciest pre CSS pozadie na `/login` a `/register`
 - i18n SK/EN pre picker; help text v `SettingsSchema`
 
-**Poznámka (2.0.46 fix):** Tlačidlá zobrazovali surové kľúče `settings.login.backgroundPicker.`* — správna cesta je `settings.fields.login.backgroundPicker.*` (modul `settings` → vetva `fields.login`).
+**Poznámka (2.0.46 fix):** Tlačidlá zobrazovali surové kľúče `settings.login.backgroundPicker.*` — správna cesta je `settings.fields.login.backgroundPicker.*` (modul `settings` → vetva `fields.login`).
 
 **Overenie:** Nastavenia → login skupina → vybrať/nahrať obrázok → uložiť → overiť na `/login`. Vitest: `LoginBackgroundImagePicker.test.tsx`, `settings.test.ts`.
 
@@ -1782,6 +1792,59 @@ Error in file backend/app/Modules/PolicyTest.php: Code policy validation failed
 
 ---
 
+## ISS-072 – Security audit 403 pre ADMIN — VYRIEŠENÉ (**2.0.52**)
+
+**Symptóm:** `GET /api/admin/security/audit` vracal **403** pre rolu **ADMIN** (PHPUnit `SecurityAuditControllerTest`, admin audit v UI).
+
+**Príčina:** Po presune Path ACL do nastavení bola celá skupina `/api/admin/security/*` obmedzená na **SUPER_ADMIN** — vrátane audit endpointov, ktoré majú zostať dostupné pre ADMIN.
+
+**Implementované riešenie:** `backend/app/Http/Routes/security.php` — dve route skupiny:
+
+| Trasa | Role |
+|-------|------|
+| `GET /audit`, `GET /audit/export` | ADMIN, SUPER_ADMIN |
+| `GET/PUT /acl` | SUPER_ADMIN only (legacy; prefer settings `accessControl`) |
+
+**Overenie:** `./vendor/bin/phpunit --filter SecurityAuditControllerTest`
+
+---
+
+## ISS-073 – PHPUnit login → 429 namiesto 401 — VYRIEŠENÉ (**2.0.52**)
+
+**Symptóm:** V plnom behu suite padali testy očakávajúce **401** pri zlom hesle / neexistujúcom účte, ale dostávali **429**:
+
+- `ApiResponseShapeTest::testLoginErrorShape`
+- `AuthControllerTest::testLoginWithNonExistentEmail`
+
+**Príčina:** `LoginAttemptTracker` ukladá neúspešné pokusy do flat-file `data/security/login_attempts.json`. HTTP testy neposielajú `REMOTE_ADDR` → všetky zdieľajú IP kľúč `unknown`. Po ≥ `maxLoginAttempts` (default 5) sa IP zablokuje a `AuthController::login()` vráti **429** ešte pred overením hesla.
+
+**Implementované riešenie:** `backend/tests/Http/TestCase.php` — v `setUp()` po bootstrap volanie `LoginAttemptTracker::clearAll()` (izolácia medzi testami). Test `testLoginLockoutAfterRepeatedFailures` ostáva platný (lockout v rámci jedného testu s vlastnou IP).
+
+**Overenie:** `./vendor/bin/phpunit` — full suite **820** testov (15 skipped).
+
+**Súvisí s:** ISS-015 (historické 429 v CI), [TESTING.md](developer/TESTING.md).
+
+---
+
+## ISS-074 – PHPStan L8 po accessControl / branding — VYRIEŠENÉ (**2.0.52**)
+
+**Symptóm:** `./vendor/bin/phpstan analyse --level=8 backend/app` — **10 chýb** po pridaní skupiny `accessControl`, `AccessControlSyncService`, `PermissionCatalog`.
+
+**Opravy:**
+
+| Súbor | Zmena |
+|-------|--------|
+| `SettingsSchema.php` | `@phpstan-type SettingGroup` + voliteľné `superAdminOnly`; `filterValuesForUser()` akceptuje `array<int\|string, mixed>` |
+| `AccessControlSyncService.php` | validácia JSON pravidiel cez `array_is_list()` namiesto redundantného `is_array()` |
+| `PermissionCatalog.php` | return type `defaultAccessControlSettings()` → `array<string, bool\|string>` |
+| `Http/Config/services.php` | `use AccessControlSyncService` |
+
+**Overenie:** PHPStan L8 → **0 errors**; PHPUnit green.
+
+**Súvisí s:** ISS-055 (Path ACL v nastaveniach), [ACCESS_CONTROL.md](user/ACCESS_CONTROL.md).
+
+---
+
 ## Externé / irelevantné hlášky
 
 
@@ -1797,10 +1860,12 @@ Error in file backend/app/Modules/PolicyTest.php: Code policy validation failed
 
 ## Súvisiace dokumenty
 
-- [developer/RELEASE.md](developer/RELEASE.md) — C&P 2.0.46
-- [CHANGELOG.md](../CHANGELOG.md) — 2.0.46
+- [user/BRANDING.md](user/BRANDING.md) — logo a favicon (**2.0.52**)
+- [user/ACCESS_CONTROL.md](user/ACCESS_CONTROL.md) — RBAC + Path ACL v nastaveniach (**2.0.52**)
+- [developer/RELEASE.md](developer/RELEASE.md) — release **2.0.52**
+- [CHANGELOG.md](../CHANGELOG.md) — 2.0.52
+- [developer/TESTING.md](developer/TESTING.md) — PHPUnit izolácia (`LoginAttemptTracker`)
 - [ITERATION_44.md](ITERATION_44.md) — It.44d index filtre (ISS-038)
-- [TESTING.md](developer/TESTING.md) – ako spúšťať testy a regresiu
 - [ROADMAP.md](ROADMAP.md) – plánované iterácie (It.41+, It.47–49)
 - [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) – It.29+ detail
 - [ITERATION_47.md](ITERATION_47.md) – notification connector auth (ISS-013)

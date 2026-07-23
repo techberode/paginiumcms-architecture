@@ -39,7 +39,6 @@ import { TrashManager } from './components/backend/TrashManager';
 import { FirewallManager } from './components/backend/FirewallManager';
 import { LogsManager } from './components/backend/LogsManager';
 import { SecurityAuditManager } from './components/backend/SecurityAuditManager';
-import { AclManager } from './components/backend/AclManager';
 import { BlueprintManager } from './components/backend/BlueprintManager';
 import { DemoManager } from './components/backend/DemoManager';
 import { debugLog } from './utils/debugLog';
@@ -165,7 +164,7 @@ function App() {
         <Route path="/audit/content/:contentId" element={<AuditTrail />} />
         <Route path="/audit/user/:userId" element={<AuditTrail />} />
         <Route path="/security/audit" element={<SecurityAuditManager />} />
-        <Route path="/security/acl" element={<AclManager />} />
+        <Route path="/security/acl" element={<Navigate to="/settings?category=security&group=accessControl" replace />} />
         <Route path="/blueprints" element={<BlueprintManager />} />
         <Route path="/extensions" element={<ExtensionsManager />} />
         <Route path="/demo" element={<DemoManager />} />

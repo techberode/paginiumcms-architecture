@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace PaginiumCMS\Modules\Security\Services;
 
 use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
-use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Modules\Security\Exception\AuthorizationException;
+use PaginiumCMS\Modules\Security\Models\User;
+use PaginiumCMS\Modules\Security\PermissionCatalog;
+use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 
 /**
  * Implementácia správy autorizácie (RBAC).
@@ -17,21 +19,37 @@ class AuthorizationManager implements AuthorizationInterface
     private array $rolePermissions = [];
 
     public function __construct(
-        private ?SecurityAuditStore $securityAudit = null
+        private ?SecurityAuditStore $securityAudit = null,
+        private ?SettingsRepositoryInterface $settings = null
     ) {
-        // Predvolené mapovanie rolí na oprávnenia
-        $this->rolePermissions = [
-            self::ROLE_SUPER_ADMIN => ['*'],
-            self::ROLE_ADMIN => [
-                'user:manage', 'content:manage', 'media:manage', 'settings:manage', 'logs:view'
-            ],
-            self::ROLE_EDITOR => [
-                'content:create', 'content:edit', 'content:delete', 'media:upload', 'media:delete'
-            ],
-            self::ROLE_USER => [
-                'content:view', 'profile:edit'
-            ],
-        ];
+        $this->rolePermissions = PermissionCatalog::defaultRolePermissions();
+        $this->reloadFromSettings();
+    }
+
+    public function reloadFromSettings(): void
+    {
+        if ($this->settings === null) {
+            return;
+        }
+
+        $accessControl = $this->settings->group('accessControl');
+
+        foreach (PermissionCatalog::configurableRoles() as $role) {
+            $key = PermissionCatalog::settingsKeyForRole($role);
+            $encoded = (string) ($accessControl[$key] ?? '');
+
+            if ($encoded === '') {
+                continue;
+            }
+
+            $permissions = PermissionCatalog::normalizeList(
+                PermissionCatalog::decodePermissions($encoded)
+            );
+
+            if ($permissions !== []) {
+                $this->rolePermissions[$role] = $permissions;
+            }
+        }
     }
 
     public function hasRole(User $user, string|array $roles): bool
@@ -98,7 +116,7 @@ class AuthorizationManager implements AuthorizationInterface
 
     public function addRole(User $user, string $role): void
     {
-        if (!isset($this->rolePermissions[$role])) {
+        if (!isset($this->rolePermissions[$role]) && $role !== self::ROLE_SUPER_ADMIN) {
             throw new AuthorizationException(sprintf('Rola "%s" neexistuje', $role));
         }
 

@@ -85,7 +85,33 @@ export const settingsSk: MessageTree = {
     "media": "Media / DAM",
     "sso": "SSO / OAuth",
     "contentSecurity": "Bezpečnosť obsahu (XML/HTML)",
-    "uploadSecurity": "Bezpečnosť uploadu"
+    "uploadSecurity": "Bezpečnosť uploadu",
+    "branding": "Logo a favicon",
+    "accessControl": "Oprávnenia rolí"
+  },
+  "accessControl": {
+    "superAdminTitle": "Len pre super administrátora",
+    "superAdminHint": "Mapovanie oprávnení rolí ADMIN, EDITOR a USER a path ACL pravidlá môže meniť iba SUPER_ADMIN. SUPER_ADMIN má vždy plný prístup.",
+    "restrictedTitle": "Obmedzený prístup",
+    "restrictedHint": "Táto skupina nastavení je viditeľná len pre super administrátora.",
+    "rolesTitle": "Oprávnenia podľa rolí",
+    "pathAclTitle": "Path ACL (cesty obsahu)",
+    "pathAclEnabled": "Povoliť path ACL",
+    "pathAclHint": "Obmedzí prístup k vybraným cestám flat-file obsahu (napr. content/pages/restricted/*).",
+    "permissions": {
+      "user:manage": "Správa používateľov",
+      "content:manage": "Správa obsahu (všetko)",
+      "content:create": "Vytváranie obsahu",
+      "content:edit": "Úprava obsahu",
+      "content:delete": "Mazanie obsahu",
+      "content:view": "Zobrazenie obsahu",
+      "media:manage": "Správa médií (všetko)",
+      "media:upload": "Upload médií",
+      "media:delete": "Mazanie médií",
+      "settings:manage": "Správa nastavení",
+      "logs:view": "Prehliadanie logov",
+      "profile:edit": "Úprava profilu"
+    }
   },
   "hints": {
     "security": {
@@ -530,6 +556,27 @@ export const settingsSk: MessageTree = {
       "passwordRequireSpecialChars": {
         "label": "Vyžadovať špeciálny znak",
         "help": "Napr. ! @ # $ % & *"
+      }
+    },
+    "branding": {
+      "logoUrl": {
+        "label": "Logo stránky (URL)",
+        "help": "Zobrazí sa vo verejnom menu, administrácii a maintenance stránkach."
+      },
+      "faviconUrl": {
+        "label": "Favicon (URL)",
+        "help": "Ikona v karte prehliadača. Odporúčané ICO, PNG alebo SVG."
+      },
+      "imagePicker": {
+        "pickFromMedia": "Vybrať z médií",
+        "uploadLocal": "Nahrať z disku",
+        "uploading": "Nahrávam…",
+        "remove": "Odstrániť",
+        "previewAlt": "Náhľad",
+        "mediaModalTitle": "Vyberte obrázok",
+        "uploadAlt": "Branding upload",
+        "invalidType": "Nepodporovaný typ súboru",
+        "uploadFailed": "Upload zlyhal"
       }
     },
     "login": {
