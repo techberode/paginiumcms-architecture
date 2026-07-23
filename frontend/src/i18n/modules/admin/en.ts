@@ -42,6 +42,8 @@ export const adminEn: MessageTree = {
     engineBrand: 'Paginium Engine',
     fallbackTitle: 'Administration',
     apiMode: 'API Mode',
+    purgeCache: 'Clear cache',
+    purgeCacheTitle: 'Purge content cache (pages, articles, feeds)',
     viewWebsite: 'View website',
     changePassword: 'Change password',
     administrator: 'Administrator',

@@ -128,6 +128,23 @@ final class SettingsRepository implements SettingsRepositoryInterface
             }
         }
 
+        return $this->migrateLegacySettings($effective, $overrides);
+    }
+
+    /**
+     * @param array<string, array<string, mixed>> $effective
+     * @param array<string, array<string, mixed>> $overrides
+     * @return array<string, array<string, mixed>>
+     */
+    private function migrateLegacySettings(array $effective, array $overrides): array
+    {
+        $legacyMaintenance = ($overrides['general']['maintenanceMode'] ?? false) === true;
+        $currentMode = (string) ($effective['maintenance']['mode'] ?? 'off');
+
+        if ($legacyMaintenance && $currentMode === 'off' && !array_key_exists('mode', $overrides['maintenance'] ?? [])) {
+            $effective['maintenance']['mode'] = 'under_maintenance';
+        }
+
         return $effective;
     }
 

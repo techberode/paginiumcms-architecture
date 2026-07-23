@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { formatContentDateLabels } from './contentDates';
+import { formatContentDateLabels, formatDisplayDate, formatDisplayDateTime, formatRelativeTime } from './contentDates';
 import { registerAllI18nModules } from '../i18n/registerModules';
 
 describe('formatContentDateLabels', () => {
@@ -37,5 +37,23 @@ describe('formatContentDateLabels', () => {
     );
     expect(labels.primaryTitle).toBe('Created');
     expect(labels.secondaryTitle).toBe('Updated');
+  });
+
+  it('formatDisplayDate returns em dash for invalid values', () => {
+    expect(formatDisplayDate(undefined)).toBe('—');
+    expect(formatDisplayDate('undefined')).toBe('—');
+    expect(formatDisplayDate('not-a-date')).toBe('—');
+    expect(formatDisplayDate('2026-02-18')).toContain('2026');
+  });
+
+  it('formatDisplayDateTime returns em dash for invalid values', () => {
+    expect(formatDisplayDateTime(undefined)).toBe('—');
+    expect(formatDisplayDateTime('2026-02-18T12:00:00Z')).toContain('2026');
+  });
+
+  it('formatRelativeTime returns em dash for invalid values', () => {
+    expect(formatRelativeTime('')).toBe('—');
+    expect(formatRelativeTime(undefined)).toBe('—');
+    expect(formatRelativeTime('2020-01-01T12:00:00Z')).not.toBe('—');
   });
 });

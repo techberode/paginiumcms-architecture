@@ -50,6 +50,7 @@ final class LogController
         $source = isset($params['source']) ? (string) $params['source'] : null;
         $category = isset($params['category']) ? (string) $params['category'] : null;
         $search = isset($params['search']) ? (string) $params['search'] : null;
+        $archivedFilter = $this->resolveArchivedFilter((string) ($params['archived'] ?? 'active'));
 
         if ($severity !== null && $severity !== '') {
             $severity = strtoupper($severity);
@@ -58,15 +59,17 @@ final class LogController
             }
         }
 
+        $total = $this->logReader->count($severity, $source, $category, $search, $archivedFilter);
         $items = array_map(
             fn (array $item): array => $this->logFormatter->enrich($item),
-            $this->logReader->query($severity, $source, $category, $search, $limit, $offset)
+            $this->logReader->query($severity, $source, $category, $search, $limit, $offset, $archivedFilter)
         );
 
         return $this->json->success($response, [
             'items' => $items,
             'limit' => $limit,
             'offset' => $offset,
+            'total' => $total,
             'sources' => $this->logReader->availableSources(),
         ]);
     }
@@ -81,5 +84,72 @@ final class LogController
             200,
             'Staré logy boli vyčistené podľa retentionDays'
         );
+    }
+
+    public function bulkAction(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $data = json_decode((string) $request->getBody(), true);
+        if (!is_array($data)) {
+            return $this->json->error($response, 'Neplatné dáta požiadavky', 400);
+        }
+
+        $ids = $this->normalizeIds($data['ids'] ?? null);
+        $action = (string) ($data['action'] ?? '');
+
+        if ($ids === []) {
+            return $this->json->error($response, 'Vyberte aspoň jeden log', 400);
+        }
+
+        if (!in_array($action, ['delete', 'archive'], true)) {
+            return $this->json->error($response, 'Neplatná bulk akcia', 422);
+        }
+
+        $batch = $action === 'delete'
+            ? $this->logReader->deleteByIds($ids)
+            : $this->logReader->archiveByIds($ids);
+
+        return $this->json->success(
+            $response,
+            $batch->toArray(),
+            200,
+            $action === 'delete' ? 'Vybrané logy boli vymazané' : 'Vybrané logy boli archivované'
+        );
+    }
+
+    public function deleteAll(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $result = $this->logReader->deleteAll();
+
+        return $this->json->success(
+            $response,
+            $result,
+            200,
+            'Všetky logy boli vymazané'
+        );
+    }
+
+    private function resolveArchivedFilter(string $value): string
+    {
+        return match ($value) {
+            'archived', '1', 'true' => 'archived',
+            'all' => 'all',
+            default => 'active',
+        };
+    }
+
+    /**
+     * @param mixed $value
+     * @return list<string>
+     */
+    private function normalizeIds(mixed $value): array
+    {
+        if (!is_array($value)) {
+            return [];
+        }
+
+        return array_values(array_filter(
+            array_map(static fn ($id) => trim((string) $id), $value),
+            static fn (string $id) => $id !== ''
+        ));
     }
 }

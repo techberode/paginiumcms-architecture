@@ -41,13 +41,50 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | Security audit hardening (A1–S10, ISS-052–058) | **2.0.48** | [below](#2048--2026-07-22) |
 | Audit locale (formatAuditEvent / wave 5b) | **2.0.49** | [below](#2049--2026-07-22) |
 | Public site i18n (wave 5c) | **2.0.50** | [below](#2050--2026-07-22) |
+| Ops hotfix: dates, timezone, maintenance, logs (ISS-063–071) | **2.0.51** | [below](#2051--2026-07-23) |
 | It.19b–19d — Security runtime, auth UX, password policy | **2.0.45** | [below](#2045--2026-07-21) |
 
 ---
 
 ## [Unreleased]
 
-*(Next: It.15 hook emitters · wave 5d)*
+*(Ďalej: wave **5d** It.15 hook emitters.)*
+
+---
+
+## [2.0.51] – 2026-07-23
+
+**Hotfix + admin UX** — bezpečné dátumy, timezone/DST, dual maintenance, logy bulk/pagination.  
+Detail: [ISSUES.md](docs/ISSUES.md) ISS-063–071 · [RELEASE.md](docs/developer/RELEASE.md).
+
+### Added
+
+- **Admin header** — tlačidlo **Vymazať cache** (`useCachePurge` hook, zdieľané s panelom v Nastaveniach)
+- **Nastavenia → Všeobecné** — `TimezoneSelect` (IANA) + prepínač **Letný čas (DST)** (`timezoneDst`)
+- **Nastavenia → Režim údržby** — **Coming Soon** / **Under Maintenance** (vzájomne vylučujúce); editovateľné šablóny, newsletter, kontaktný formulár v režime údržby
+- **`ComingSoonPage` / `UnderMaintenancePage`** — full-screen verejné stránky s odkazom na prihlásenie; registrácia vypnutá počas režimu
+- **`POST /api/maintenance/newsletter`**, **`POST /api/maintenance/message`** — flat-file newsletter + správy do inboxu
+- **Logy (`/logs`)** — bulk **Archivovať** / **Vymazať**, **Vymazať všetko**, stránkovanie s `total`, ručný page size (1–500), filter Aktívne/Archivované
+- **`POST /api/admin/logs/bulk`**, **`POST /api/admin/logs/delete-all`**
+- **`contentDates.ts`**, **`AppTimezone`**, **`bootstrap/timezone.php`**
+
+### Fixed
+
+- **ISS-063** — `RangeError: Invalid time value` (admin `VersionHistory`, verejný web)
+- **ISS-064** — export `DEFAULT_LOCALE` z `i18n/index.ts`
+- **ISS-065** — logy/audit o 2 h dozadu (`APP_TIMEZONE` + `LocaleMiddleware`)
+- **ISS-066** — `CronExpressionEvaluator` timezone-safe same-minute
+- **ISS-067** — `LocaleMiddlewareTest` mock timezone
+- **ISS-068** — code policy rejection = WARNING (`code_editor_policy`), nie ERROR + stack
+- **ISS-069** — searchable timezone picker
+- **ISS-070** — DST toggle v nastaveniach
+
+### Changed
+
+- **`maintenanceMode` bool** → skupina **`maintenance.mode`**: `off` | `coming_soon` | `under_maintenance` (migrácia starého `true` → `under_maintenance`)
+- **`ApplicationLogReader`** — `count()`, `deleteByIds()`, `archiveByIds()`, `deleteAll()`; list API vracia `total`
+- **`MaintenanceModeMiddleware`** — číta `maintenance.mode`; povolené `/api/maintenance/*`
+- **`AuthController::register`** — blokované počas akéhokoľvek maintenance režimu
 
 ---
 

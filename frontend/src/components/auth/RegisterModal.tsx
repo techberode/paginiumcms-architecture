@@ -5,6 +5,7 @@ import { Mail, Lock, User, Eye, EyeOff, Loader2, ArrowRight } from 'lucide-react
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
 import { useSettingsContext } from '../../context/SettingsContext';
+import { isMaintenanceActive } from '../../api/maintenance';
 import { useI18n } from '../../context/I18nContext';
 import { usePasswordPolicy } from '../../hooks/usePasswordPolicy';
 import { validatePasswordPolicy } from '../../utils/validation';
@@ -28,7 +29,9 @@ export const RegisterModal: React.FC = () => {
   const { t, locale } = useI18n();
   const { settings } = useSettingsContext();
   const passwordPolicy = usePasswordPolicy();
-  const allowRegistration = settings.general.allowRegistration !== false;
+  const allowRegistration =
+    settings.general.allowRegistration !== false &&
+    !isMaintenanceActive(settings.maintenance?.mode);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

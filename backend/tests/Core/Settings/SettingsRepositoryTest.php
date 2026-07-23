@@ -44,7 +44,7 @@ class SettingsRepositoryTest extends TestCase
 
         $this->assertSame('PaginiumCMS', $all['general']['siteName']);
         $this->assertSame(20, $all['content']['itemsPerPage']);
-        $this->assertFalse($all['general']['maintenanceMode']);
+        $this->assertSame('off', $all['maintenance']['mode']);
     }
 
     public function testGetDotNotation(): void
@@ -149,6 +149,21 @@ class SettingsRepositoryTest extends TestCase
         $raw = (string) file_get_contents($this->baseDir . '/data/settings.json');
         // Nešifrované pole ostáva čitateľné (nie je citlivé).
         $this->assertStringContainsString('Verejný názov', $raw);
+    }
+
+    public function testLegacyMaintenanceModeMigratesToUnderMaintenance(): void
+    {
+        $settingsPath = $this->baseDir . '/data/settings.json';
+        if (!is_dir(dirname($settingsPath))) {
+            mkdir(dirname($settingsPath), 0777, true);
+        }
+
+        file_put_contents($settingsPath, json_encode([
+            'general' => ['maintenanceMode' => true],
+        ], JSON_THROW_ON_ERROR));
+
+        $fresh = $this->makeRepo();
+        $this->assertSame('under_maintenance', $fresh->get('maintenance.mode'));
     }
 
     private function makeRepo(?EncryptionService $encryption = null): SettingsRepository

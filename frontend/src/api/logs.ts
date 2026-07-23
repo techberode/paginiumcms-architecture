@@ -1,7 +1,9 @@
 // frontend/src/api/logs.ts
 import apiClient from './client';
+import type { BulkBatchResult } from '../types/bulk';
 
 export type LogSeverity = 'debug' | 'info' | 'warning' | 'error' | 'critical';
+export type LogArchivedFilter = 'active' | 'archived' | 'all';
 
 export interface LogEntry {
   id: string;
@@ -16,6 +18,8 @@ export interface LogEntry {
   file?: string | null;
   line?: number | null;
   source?: string;
+  archived?: boolean;
+  archivedAt?: string;
 }
 
 export interface LogStats {
@@ -29,6 +33,7 @@ export interface LogListResponse {
   items: LogEntry[];
   limit: number;
   offset: number;
+  total: number;
   sources: string[];
 }
 
@@ -45,6 +50,7 @@ export const logsApi = {
     source?: string;
     category?: string;
     search?: string;
+    archived?: LogArchivedFilter;
   } = {}): Promise<LogListResponse | null> => {
     const query = new URLSearchParams();
     if (params.limit) query.set('limit', String(params.limit));
@@ -53,6 +59,7 @@ export const logsApi = {
     if (params.source) query.set('source', params.source);
     if (params.category) query.set('category', params.category);
     if (params.search) query.set('search', params.search);
+    if (params.archived) query.set('archived', params.archived);
 
     const res = await apiClient.get<LogListResponse>(`/api/admin/logs?${query.toString()}`);
     return res.success && res.data ? res.data : null;
@@ -61,6 +68,18 @@ export const logsApi = {
   purge: async (): Promise<number | null> => {
     const res = await apiClient.post<{ removed_files: number }>('/api/admin/logs/purge');
     return res.success && res.data ? res.data.removed_files : null;
+  },
+
+  bulkAction: async (ids: string[], action: 'delete' | 'archive'): Promise<BulkBatchResult | null> => {
+    const res = await apiClient.post<BulkBatchResult>('/api/admin/logs/bulk', { ids, action });
+    return res.success && res.data ? res.data : null;
+  },
+
+  deleteAll: async (): Promise<{ deleted_files: number; deleted_entries: number } | null> => {
+    const res = await apiClient.post<{ deleted_files: number; deleted_entries: number }>(
+      '/api/admin/logs/delete-all'
+    );
+    return res.success && res.data ? res.data : null;
   },
 };
 

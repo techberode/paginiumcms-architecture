@@ -24,6 +24,9 @@ export interface AdminListToolbarProps {
   pageSize?: number;
   onPageSizeChange?: (value: number) => void;
   pageSizeOptions?: readonly number[];
+  pageSizeInputMode?: 'select' | 'number';
+  pageSizeMin?: number;
+  pageSizeMax?: number;
   onResetFilters?: () => void;
   showResetFilters?: boolean;
   children?: React.ReactNode;
@@ -47,6 +50,9 @@ export const AdminListToolbar: React.FC<AdminListToolbarProps> = ({
   pageSize,
   onPageSizeChange,
   pageSizeOptions = DEFAULT_PAGE_SIZE_OPTIONS,
+  pageSizeInputMode = 'select',
+  pageSizeMin = 5,
+  pageSizeMax = 100,
   onResetFilters,
   showResetFilters = false,
   children,
@@ -96,7 +102,27 @@ export const AdminListToolbar: React.FC<AdminListToolbarProps> = ({
 
       <div className="flex flex-col gap-3 xl:flex-row xl:flex-wrap xl:items-center">
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3 min-w-0">
-          {onPageSizeChange && pageSize !== undefined && (
+          {onPageSizeChange && pageSize !== undefined && pageSizeInputMode === 'number' && (
+            <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 shrink-0">
+              <span className="whitespace-nowrap">{t('list.toolbar.pageSizeAria')}</span>
+              <input
+                type="number"
+                min={pageSizeMin}
+                max={pageSizeMax}
+                value={pageSize}
+                onChange={(e) => {
+                  const parsed = Number(e.target.value);
+                  if (Number.isFinite(parsed)) {
+                    onPageSizeChange(Math.max(pageSizeMin, Math.min(pageSizeMax, parsed)));
+                  }
+                }}
+                className="form-input w-24"
+                aria-label={t('list.toolbar.pageSizeAria')}
+              />
+            </label>
+          )}
+
+          {onPageSizeChange && pageSize !== undefined && pageSizeInputMode === 'select' && (
             <select
               value={pageSize}
               onChange={(e) => onPageSizeChange(Number(e.target.value))}

@@ -8,6 +8,7 @@ use PaginiumCMS\Core\I18n\Services\LocaleScaffoldService;
 use PaginiumCMS\Core\I18n\Services\SupportedLocalesRegistry;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Http\Middleware\LocaleMiddleware;
+use PaginiumCMS\Support\AppTimezone;
 use PaginiumCMS\Support\Lang;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
@@ -26,7 +27,14 @@ final class LocaleMiddlewareTest extends TestCase
     public function testUsesConfiguredLanguageFromSettings(): void
     {
         $settings = $this->createMock(SettingsRepositoryInterface::class);
-        $settings->method('get')->with('general.language', 'sk')->willReturn('en');
+        $settings->method('get')->willReturnCallback(
+            static fn (string $key, mixed $default = null): mixed => match ($key) {
+                'general.language' => 'en',
+                'general.timezone' => 'Europe/Bratislava',
+                'general.timezoneDst' => true,
+                default => $default,
+            }
+        );
 
         $middleware = new LocaleMiddleware($settings, new SupportedLocalesRegistry());
         $request = (new ServerRequestFactory())->createServerRequest('GET', '/api/content/pages');
@@ -46,7 +54,14 @@ final class LocaleMiddlewareTest extends TestCase
     public function testFallsBackToAcceptLanguageHeader(): void
     {
         $settings = $this->createMock(SettingsRepositoryInterface::class);
-        $settings->method('get')->willReturn('xx');
+        $settings->method('get')->willReturnCallback(
+            static fn (string $key, mixed $default = null): mixed => match ($key) {
+                'general.language' => 'xx',
+                'general.timezone' => AppTimezone::fromEnvironment(),
+                'general.timezoneDst' => true,
+                default => $default,
+            }
+        );
 
         $middleware = new LocaleMiddleware($settings, new SupportedLocalesRegistry());
         $request = (new ServerRequestFactory())

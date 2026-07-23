@@ -5,6 +5,6 @@ return [
 'environment' => $_ENV['APP_ENV'] ?? 'production',
 'debug' => filter_var($_ENV['APP_DEBUG'] ?? false, FILTER_VALIDATE_BOOLEAN),
 'url' => $_ENV['APP_URL'] ?? 'http://localhost',
-'timezone' => 'Europe/Bratislava',
+'timezone' => $_ENV['APP_TIMEZONE'] ?? 'Europe/Bratislava',
 'charset' => 'UTF-8',
 ];

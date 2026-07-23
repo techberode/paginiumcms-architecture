@@ -27,7 +27,7 @@
 
 | Group | Purpose |
 |---|---|
-| `general` | siteName, siteUrl, adminEmail, language, timezone, maintenanceMode |
+| `general` | siteName, siteUrl, adminEmail, language, timezone, timezoneDst, maintenanceMode |
 | `content` | itemsPerPage, blogItemsPerPage, defaultStatus, autoSaveInterval, lockTtl |
 | `editor` | defaultEditor, spellcheck, tabSize |
 | `smtp` | SMTP transport (host, port, TLS, credentials, from address) |

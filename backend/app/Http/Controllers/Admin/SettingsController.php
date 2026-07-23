@@ -100,9 +100,9 @@ final class SettingsController
                 'siteName' => $all['general']['siteName'] ?? 'PaginiumCMS',
                 'siteDescription' => (string) ($all['general']['siteDescription'] ?? ''),
                 'language' => $all['general']['language'] ?? 'sk',
-                'maintenanceMode' => (bool) ($all['general']['maintenanceMode'] ?? false),
                 'allowRegistration' => (bool) ($all['general']['allowRegistration'] ?? true),
             ],
+            'maintenance' => $this->publicMaintenanceSettings($all['maintenance'] ?? []),
             'workflows' => [
                 'registrationOtpEnabled' => (bool) ($all['workflows']['registrationOtpEnabled'] ?? false),
             ],
@@ -239,6 +239,32 @@ final class SettingsController
         }
 
         return $values;
+    }
+
+    /**
+     * @param array<string, mixed> $maintenance
+     * @return array<string, mixed>
+     */
+    private function publicMaintenanceSettings(array $maintenance): array
+    {
+        $defaults = SettingsSchema::defaults()['maintenance'] ?? [];
+
+        return [
+            'mode' => (string) ($maintenance['mode'] ?? $defaults['mode'] ?? 'off'),
+            'heroImageUrl' => (string) ($maintenance['heroImageUrl'] ?? ''),
+            'newsletterEnabled' => (bool) ($maintenance['newsletterEnabled'] ?? true),
+            'newsletterHint' => (string) ($maintenance['newsletterHint'] ?? $defaults['newsletterHint'] ?? ''),
+            'comingSoonBadge' => (string) ($maintenance['comingSoonBadge'] ?? $defaults['comingSoonBadge'] ?? ''),
+            'comingSoonTitle' => (string) ($maintenance['comingSoonTitle'] ?? $defaults['comingSoonTitle'] ?? ''),
+            'comingSoonSubtitle' => (string) ($maintenance['comingSoonSubtitle'] ?? $defaults['comingSoonSubtitle'] ?? ''),
+            'comingSoonBody' => (string) ($maintenance['comingSoonBody'] ?? ''),
+            'maintenanceBadge' => (string) ($maintenance['maintenanceBadge'] ?? $defaults['maintenanceBadge'] ?? ''),
+            'maintenanceTitle' => (string) ($maintenance['maintenanceTitle'] ?? $defaults['maintenanceTitle'] ?? ''),
+            'maintenanceSubtitle' => (string) ($maintenance['maintenanceSubtitle'] ?? $defaults['maintenanceSubtitle'] ?? ''),
+            'maintenanceBody' => (string) ($maintenance['maintenanceBody'] ?? ''),
+            'maintenanceShowContactForm' => (bool) ($maintenance['maintenanceShowContactForm'] ?? true),
+            'maintenanceContactSubject' => (string) ($maintenance['maintenanceContactSubject'] ?? $defaults['maintenanceContactSubject'] ?? ''),
+        ];
     }
 
     /**

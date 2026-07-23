@@ -7,6 +7,7 @@ import { CompanyInfoPanel, CompanyMapEmbed } from './CompanyInfoPanel';
 import { MarkdownRenderer } from '../common/MarkdownRenderer';
 import { Calendar, User, FileText, ArrowRight } from 'lucide-react';
 import { useI18n } from '../../context/I18nContext';
+import { formatDisplayDate, resolveContentDate } from '../../utils/contentDates';
 
 interface PageRendererProps {
   page: Page;
@@ -18,14 +19,13 @@ function pageMeta(page: Page, defaultAuthor: string) {
     template: String(page.template ?? fm.template ?? ''),
     description: String(fm.description ?? ''),
     featuredImage: String(fm.featuredImage ?? fm.featured_image ?? ''),
-    date: String(fm.date ?? page.createdAt),
+    date: resolveContentDate(fm.date, page.createdAt),
     author: String(page.author ?? fm.author ?? defaultAuthor),
   };
 }
 
 export const PageRenderer: React.FC<PageRendererProps> = ({ page }) => {
   const { t, locale } = useI18n();
-  const dateLocale = locale === 'en' ? 'en-US' : 'sk-SK';
   const navigate = useNavigate();
   const meta = pageMeta(page, t('public.defaults.editorial'));
   const isHome = meta.template === 'home' || page.slug === 'home';
@@ -83,7 +83,7 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page }) => {
               <span>•</span>
               <span className="flex items-center gap-1">
                 <Calendar className="w-3.5 h-3.5" />
-                {new Date(meta.date).toLocaleDateString(dateLocale)}
+                {formatDisplayDate(meta.date, locale)}
               </span>
               <span>•</span>
               <span className="flex items-center gap-1">

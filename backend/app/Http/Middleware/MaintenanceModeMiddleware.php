@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Middleware;
 
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
+use PaginiumCMS\Core\Settings\MaintenanceMode;
 use PaginiumCMS\Modules\Security\Contracts\AuthenticationInterface;
 use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -26,6 +27,7 @@ class MaintenanceModeMiddleware implements MiddlewareInterface
         '/api/health',
         '/api/test',
         '/api/settings/public',
+        '/api/maintenance/',
         '/api/debug/',
         '/storage/',
     ];
@@ -39,8 +41,8 @@ class MaintenanceModeMiddleware implements MiddlewareInterface
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $general = $this->settings->group('general');
-        if (($general['maintenanceMode'] ?? false) !== true) {
+        $maintenance = $this->settings->group('maintenance');
+        if (!MaintenanceMode::isActive($maintenance)) {
             return $handler->handle($request);
         }
 
@@ -63,11 +65,17 @@ class MaintenanceModeMiddleware implements MiddlewareInterface
             }
         }
 
+        $mode = MaintenanceMode::resolve($maintenance);
+        $message = $mode === MaintenanceMode::COMING_SOON
+            ? 'Stránka sa pripravuje. Skúste to neskôr.'
+            : 'Systém je v režime údržby. Skúste to neskôr.';
+
         $response = new Response();
         $response->getBody()->write(JsonHelper::encode([
             'success' => false,
-            'error' => 'Systém je v režime údržby. Skúste to neskôr.',
+            'error' => $message,
             'maintenance' => true,
+            'maintenanceMode' => $mode,
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
         return $response

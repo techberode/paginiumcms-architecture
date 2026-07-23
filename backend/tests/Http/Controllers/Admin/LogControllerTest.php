@@ -4,10 +4,45 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Tests\Http\Controllers\Admin;
 
+use PaginiumCMS\Core\Logging\LogStoragePaths;
+use PaginiumCMS\Core\Logging\Models\LogSeverity;
+use PaginiumCMS\Support\JsonHelper;
 use PaginiumCMS\Tests\Http\TestCase;
 
 final class LogControllerTest extends TestCase
 {
+    private string $logFile;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $dir = LogStoragePaths::app();
+        if (!is_dir($dir)) {
+            mkdir($dir, 0777, true);
+        }
+
+        $this->logFile = $dir . '/' . date('Y-m-d') . '.json';
+        file_put_contents($this->logFile, JsonHelper::encode([
+            [
+                'id' => 'log_api_test',
+                'timestamp' => date('Y-m-d H:i:s'),
+                'severity' => LogSeverity::INFO,
+                'category' => 'test',
+                'message' => 'Log controller test entry',
+            ],
+        ]));
+    }
+
+    protected function tearDown(): void
+    {
+        if (is_file($this->logFile)) {
+            @unlink($this->logFile);
+        }
+
+        parent::tearDown();
+    }
+
     public function testStatsRequiresAdmin(): void
     {
         $request = $this->createJsonRequest('GET', '/api/admin/logs/stats');
@@ -35,5 +70,46 @@ final class LogControllerTest extends TestCase
         $this->assertEquals(200, $listResponse->getStatusCode());
         $this->assertTrue($listData['success']);
         $this->assertArrayHasKey('items', $listData['data']);
+        $this->assertArrayHasKey('total', $listData['data']);
+    }
+
+    public function testAdminCanBulkArchiveAndDeleteLogs(): void
+    {
+        $this->loginAsAdminUser();
+
+        $archiveRequest = $this->createJsonRequest('POST', '/api/admin/logs/bulk', [
+            'ids' => ['log_api_test'],
+            'action' => 'archive',
+        ]);
+        $archiveResponse = $this->handleRequest($archiveRequest);
+        $archiveData = $this->getJsonResponse($archiveResponse);
+
+        $this->assertEquals(200, $archiveResponse->getStatusCode());
+        $this->assertTrue($archiveData['success']);
+        $this->assertSame(1, $archiveData['data']['succeeded']);
+
+        $deleteRequest = $this->createJsonRequest('POST', '/api/admin/logs/bulk', [
+            'ids' => ['log_api_test'],
+            'action' => 'delete',
+        ]);
+        $deleteResponse = $this->handleRequest($deleteRequest);
+        $deleteData = $this->getJsonResponse($deleteResponse);
+
+        $this->assertEquals(200, $deleteResponse->getStatusCode());
+        $this->assertTrue($deleteData['success']);
+        $this->assertSame(1, $deleteData['data']['succeeded']);
+    }
+
+    public function testAdminCanDeleteAllLogs(): void
+    {
+        $this->loginAsAdminUser();
+
+        $request = $this->createJsonRequest('POST', '/api/admin/logs/delete-all');
+        $response = $this->handleRequest($request);
+        $data = $this->getJsonResponse($response);
+
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertTrue($data['success']);
+        $this->assertArrayHasKey('deleted_files', $data['data']);
     }
 }

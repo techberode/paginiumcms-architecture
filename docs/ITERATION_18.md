@@ -82,6 +82,8 @@ Migrate all admin UI strings from hardcoded Slovak to `useI18n()`, with backend 
 
 **ISS-062 (fixed in 2.0.50):** Verejný web mal hardcoded SK aj pri EN admin locale.
 
+**ISS-063–070 (hotfix 2.0.51 ⏳):** Po 2.0.50 — crash na neplatných dátumoch (admin `VersionHistory` + public), timezone/DST v nastaveniach, logy −2 h (UTC), code policy log level, PHPUnit opravy, cache tlačidlo v headeri. Detail: [ISSUES.md](ISSUES.md).
+
 ### Test harness (ISS-059, CI hotfix)
 
 | Path | Role |

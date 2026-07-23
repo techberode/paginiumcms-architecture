@@ -5,6 +5,7 @@ import { Comment, listPublicComments, submitComment } from '../../api/comments';
 import { useToast } from '../../hooks/useToast';
 import { useAuth } from '../../hooks/useAuth';
 import { useI18n } from '../../context/I18nContext';
+import { formatDisplayDateTime } from '../../utils/contentDates';
 
 interface ArticleCommentsProps {
   articleSlug: string;
@@ -20,7 +21,6 @@ export const ArticleComments: React.FC<ArticleCommentsProps> = ({
   requireApproval = true,
 }) => {
   const { t, locale } = useI18n();
-  const dateLocale = locale === 'en' ? 'en-US' : 'sk-SK';
   const toast = useToast();
   const { user } = useAuth();
   const [comments, setComments] = useState<Comment[]>([]);
@@ -88,7 +88,7 @@ export const ArticleComments: React.FC<ArticleCommentsProps> = ({
               className="rounded-2xl border border-slate-200 dark:border-slate-800 p-4 bg-white dark:bg-slate-900"
             >
               <p className="font-semibold text-sm">{c.author}</p>
-              <p className="text-xs text-slate-500 mb-2">{new Date(c.createdAt).toLocaleString(dateLocale)}</p>
+              <p className="text-xs text-slate-500 mb-2">{formatDisplayDateTime(c.createdAt, locale)}</p>
               <p className="text-sm text-slate-700 dark:text-slate-300">{c.content}</p>
             </div>
           ))}

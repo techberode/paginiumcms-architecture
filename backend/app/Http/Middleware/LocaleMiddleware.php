@@ -6,6 +6,7 @@ namespace PaginiumCMS\Http\Middleware;
 
 use PaginiumCMS\Core\I18n\Services\SupportedLocalesRegistry;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
+use PaginiumCMS\Support\AppTimezone;
 use PaginiumCMS\Support\Lang;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -27,6 +28,10 @@ final class LocaleMiddleware implements MiddlewareInterface
         ServerRequestInterface $request,
         RequestHandlerInterface $handler
     ): ResponseInterface {
+        $siteTimezone = (string) $this->settings->get('general.timezone', AppTimezone::fromEnvironment());
+        $dstEnabled = (bool) $this->settings->get('general.timezoneDst', true);
+        AppTimezone::applyWithDst($siteTimezone, $dstEnabled);
+
         Lang::setSupportedLocales($this->locales->codes());
         Lang::setLocale($this->resolveLocale($request));
 

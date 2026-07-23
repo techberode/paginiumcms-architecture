@@ -47,14 +47,15 @@ final class CronExpressionEvaluator
             return true;
         }
 
-        $last = strtotime($lastRunIso);
-        if ($last === false) {
+        try {
+            $lastRunAt = new \DateTimeImmutable($lastRunIso);
+        } catch (\Exception) {
             return true;
         }
 
         $at ??= new \DateTimeImmutable('now');
 
-        return $at->format('Y-m-d H:i') !== date('Y-m-d H:i', $last);
+        return $at->format('Y-m-d H:i') !== $lastRunAt->setTimezone($at->getTimezone())->format('Y-m-d H:i');
     }
 
     public function describeNextRun(string $expression, ?\DateTimeImmutable $from = null): ?string

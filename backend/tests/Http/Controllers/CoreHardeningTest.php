@@ -20,6 +20,15 @@ class CoreHardeningTest extends TestCase
         $settings->setGroup('general', array_merge($settings->group('general'), $patch));
     }
 
+    /**
+     * @param array<int|string, mixed> $patch
+     */
+    private function patchMaintenanceSettings(array $patch): void
+    {
+        $settings = $this->app->getContainer()->get(SettingsRepositoryInterface::class);
+        $settings->setGroup('maintenance', array_merge($settings->group('maintenance'), $patch));
+    }
+
     public function testUserRoleCannotCreatePage(): void
     {
         $userData = $this->createTestUser();
@@ -69,7 +78,7 @@ class CoreHardeningTest extends TestCase
 
     public function testMaintenanceModeBlocksPublicApi(): void
     {
-        $this->patchGeneralSettings(['maintenanceMode' => true]);
+        $this->patchMaintenanceSettings(['mode' => 'under_maintenance']);
 
         $request = $this->createJsonRequest('GET', '/api/pages');
         $response = $this->handleRequest($request);
@@ -78,19 +87,19 @@ class CoreHardeningTest extends TestCase
         $this->assertEquals(503, $response->getStatusCode());
         $this->assertTrue($data['maintenance'] ?? false);
 
-        $this->patchGeneralSettings(['maintenanceMode' => false]);
+        $this->patchMaintenanceSettings(['mode' => 'off']);
     }
 
     public function testMaintenanceModeAllowsHealthCheck(): void
     {
-        $this->patchGeneralSettings(['maintenanceMode' => true]);
+        $this->patchMaintenanceSettings(['mode' => 'under_maintenance']);
 
         $request = $this->createJsonRequest('GET', '/api/health');
         $response = $this->handleRequest($request);
 
         $this->assertEquals(200, $response->getStatusCode());
 
-        $this->patchGeneralSettings(['maintenanceMode' => false]);
+        $this->patchMaintenanceSettings(['mode' => 'off']);
     }
 
     public function testRegistrationDisabledBySetting(): void
@@ -111,6 +120,26 @@ class CoreHardeningTest extends TestCase
         $this->assertStringContainsString('vypnutá', (string) ($data['error'] ?? ''));
 
         $this->patchGeneralSettings(['allowRegistration' => true]);
+    }
+
+    public function testRegistrationDisabledDuringMaintenance(): void
+    {
+        $this->patchMaintenanceSettings(['mode' => 'under_maintenance']);
+
+        $request = $this->createJsonRequest('POST', '/api/auth/register', [
+            'email' => 'blocked_maint_' . uniqid() . '@example.com',
+            'password' => 'StrongP@ssw0rd123!',
+            'name' => 'Blocked User',
+        ]);
+
+        $response = $this->handleRequest($request);
+        $data = $this->getJsonResponse($response);
+
+        $this->assertEquals(403, $response->getStatusCode());
+        $this->assertFalse($data['success']);
+        $this->assertStringContainsString('údržby', (string) ($data['error'] ?? ''));
+
+        $this->patchMaintenanceSettings(['mode' => 'off']);
     }
 
     public function testStorageRouteServesFile(): void
@@ -158,14 +187,14 @@ class CoreHardeningTest extends TestCase
 
     public function testMaintenanceAllowsAuthenticatedEditor(): void
     {
-        $this->patchGeneralSettings(['maintenanceMode' => true]);
-
         $userData = $this->createTestUser();
         $repo = $this->app->getContainer()->get(UserRepository::class);
         $user = $repo->findByEmail($userData['email']);
         $this->assertNotNull($user);
         $user->setRoles(['EDITOR']);
         $repo->save($user);
+
+        $this->patchMaintenanceSettings(['mode' => 'under_maintenance']);
 
         $this->loginTestUser($userData['email'], $userData['password']);
         if ($this->currentUser instanceof User) {
@@ -177,6 +206,6 @@ class CoreHardeningTest extends TestCase
 
         $this->assertNotEquals(503, $response->getStatusCode());
 
-        $this->patchGeneralSettings(['maintenanceMode' => false]);
+        $this->patchMaintenanceSettings(['mode' => 'off']);
     }
 }

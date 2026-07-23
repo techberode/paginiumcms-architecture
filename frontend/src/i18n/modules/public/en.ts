@@ -330,4 +330,26 @@ export const publicEn: MessageTree = {
       },
     },
   },
+  maintenance: {
+    login: 'Sign in',
+    footer: ':siteName — public access is temporarily limited.',
+    newsletter: {
+      title: 'Newsletter',
+      hint: 'Subscribe and we will notify you as soon as we launch.',
+      placeholder: 'Your email',
+      submit: 'Subscribe',
+      emailRequired: 'Enter your email',
+      success: 'Thank you! You have been subscribed.',
+      failed: 'Could not process the newsletter subscription.',
+    },
+    contact: {
+      toggle: 'Send a message',
+      name: 'Name',
+      email: 'Email',
+      message: 'Message',
+      submit: 'Send message',
+      success: 'Your message has been sent. Thank you!',
+      failed: 'Could not send the message.',
+    },
+  },
 };

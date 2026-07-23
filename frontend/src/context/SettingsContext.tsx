@@ -9,7 +9,8 @@ import { debugLogProvider } from '../utils/debugLog';
 
 /** Predvolené hodnoty – fallback ak API zlyhá alebo používateľ nie je prihlásený. */
 const DEFAULT_PUBLIC: PublicSettings = {
-  general: { siteName: 'PaginiumCMS', language: 'sk', maintenanceMode: false },
+  general: { siteName: 'PaginiumCMS', language: 'sk' },
+  maintenance: { mode: 'off' },
   content: {
     itemsPerPage: 20,
     blogItemsPerPage: 6,

@@ -1,8 +1,9 @@
 // frontend/src/components/backend/AdminHeader.tsx
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Globe, LogOut, Shield, Zap, Key, Menu, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { Database, Globe, LogOut, Shield, Zap, Key, Menu, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { useCachePurge } from '../../hooks/useCachePurge';
 import { useI18n } from '../../context/I18nContext';
 
 interface AdminHeaderProps {
@@ -29,6 +30,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const { purge, isPurging } = useCachePurge();
   const tabId = resolveTabId(location.pathname);
   const tabTitleKey = `admin.header.tabs.${tabId}`;
   const tabLabel =
@@ -84,6 +86,19 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
           <Zap className="w-3.5 h-3.5 text-emerald-500 fill-emerald-500" />
           <span>{t('admin.header.apiMode')}</span>
         </span>
+
+        <button
+          type="button"
+          onClick={() => void purge('content')}
+          disabled={isPurging}
+          title={t('admin.header.purgeCacheTitle')}
+          className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-3 sm:px-4 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer disabled:opacity-60"
+        >
+          <Database className={`w-4 h-4 text-indigo-600 dark:text-indigo-400 ${isPurging ? 'animate-pulse' : ''}`} />
+          <span className="hidden sm:inline">
+            {isPurging ? t('settings.cache.purging') : t('admin.header.purgeCache')}
+          </span>
+        </button>
 
         <button
           type="button"

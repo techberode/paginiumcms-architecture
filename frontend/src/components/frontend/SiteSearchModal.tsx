@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Search, FileText, BookOpen, Calendar, Tag, ChevronRight, X } from 'lucide-react';
 import { usePublicSite } from '../../context/PublicSiteContext';
 import { useI18n } from '../../context/I18nContext';
+import { formatDisplayDate, resolveContentDate } from '../../utils/contentDates';
 import { searchContent, SearchResultItem } from '../../api/search';
 import { Article, Page } from '../../api/types';
 
@@ -17,7 +18,7 @@ interface SearchResult {
   title: string;
   path: string;
   type: 'page' | 'article';
-  date: string;
+  date?: string | number;
   tags?: string[];
   matchSnippet: string;
 }
@@ -50,7 +51,6 @@ function articleSnippet(article: Article, q: string): string {
 
 export const SiteSearchModal: React.FC<SiteSearchModalProps> = ({ isOpen, onClose, onSelectRoute }) => {
   const { t, locale } = useI18n();
-  const dateLocale = locale === 'en' ? 'en-US' : 'sk-SK';
   const { pages, articles } = usePublicSite();
   const [query, setQuery] = useState('');
   const [apiResults, setApiResults] = useState<SearchResultItem[]>([]);
@@ -102,7 +102,7 @@ export const SiteSearchModal: React.FC<SiteSearchModalProps> = ({ isOpen, onClos
           title: page.title,
           path,
           type: 'page',
-          date: String(page.frontMatter?.date ?? page.createdAt),
+          date: resolveContentDate(page.frontMatter?.date, page.createdAt),
           matchSnippet: pageSnippet(page, q),
         });
       }
@@ -119,7 +119,7 @@ export const SiteSearchModal: React.FC<SiteSearchModalProps> = ({ isOpen, onClos
           title: article.title,
           path: `/blog/${article.slug}`,
           type: 'article',
-          date: String(article.frontMatter?.date ?? article.createdAt),
+          date: resolveContentDate(article.frontMatter?.date, article.createdAt),
           tags: article.tags,
           matchSnippet: articleSnippet(article, q),
         });
@@ -217,7 +217,7 @@ export const SiteSearchModal: React.FC<SiteSearchModalProps> = ({ isOpen, onClos
                   </span>
                   <span className="text-xs text-slate-400 flex items-center gap-1">
                     <Calendar className="w-3 h-3" />
-                    {new Date(item.date).toLocaleDateString(dateLocale)}
+                    {formatDisplayDate(item.date, locale)}
                   </span>
                 </div>
                 <h4 className="text-base font-semibold text-slate-900 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">

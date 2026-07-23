@@ -1,16 +1,15 @@
 // frontend/src/components/backend/CacheManagerPanel.tsx
 import React, { useCallback, useEffect, useState } from 'react';
 import { Database, RefreshCw, Trash2 } from 'lucide-react';
-import { getCacheStats, purgeCache, type CacheStats } from '../../api/cache';
-import { useToast } from '../../hooks/useToast';
+import { getCacheStats, type CacheStats } from '../../api/cache';
+import { useCachePurge } from '../../hooks/useCachePurge';
 import { useI18n } from '../../context/I18nContext';
 
 export const CacheManagerPanel: React.FC = () => {
   const { t } = useI18n();
   const [stats, setStats] = useState<CacheStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [purging, setPurging] = useState<'content' | 'all' | null>(null);
-  const toast = useToast();
+  const { purge, purging } = useCachePurge();
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -27,23 +26,9 @@ export const CacheManagerPanel: React.FC = () => {
   }, [load]);
 
   const handlePurge = async (scope: 'content' | 'all') => {
-    const confirmMessage =
-      scope === 'all' ? t('settings.cache.confirmAll') : t('settings.cache.confirmContent');
-    if (!window.confirm(confirmMessage)) {
-      return;
-    }
-
-    setPurging(scope);
-    try {
-      const res = await purgeCache(scope);
-      if (res.success && res.data) {
-        toast.success(res.message || t('settings.cache.purged'));
-        await load();
-      } else {
-        toast.error(res.error || t('settings.cache.purgeFailed'));
-      }
-    } finally {
-      setPurging(null);
+    const ok = await purge(scope);
+    if (ok) {
+      await load();
     }
   };
 

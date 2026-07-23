@@ -15,6 +15,7 @@ export const SETTINGS_CATEGORIES: SettingsCategoryDef[] = [
     descriptionKey: 'settings.categories.system.description',
     groups: [
       'general',
+      'maintenance',
       'logging',
       'adminUi',
       'monitoring',

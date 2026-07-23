@@ -34,6 +34,7 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 | 5a | Security release **2.0.48** | ✅ tag `v2.0.48` |
 | 5b | **formatAuditEvent locale** — audit messages follow admin language | ✅ **2.0.49** |
 | 5c | **Public site i18n** — `public/{sk,en}` katalóg + komponenty | ✅ **2.0.50** |
+| 5c+ | **Hotfix 2.0.51** — ISS-063–070 (dátumy, timezone, DST, logy, cache header) | ⏳ kód lokálne, **commit neskôr** |
 | 5d | **It.15 doplnenie** — hook emitters, referenčný plugin, docs sync | ⏳ **ĎALŠIA** |
 | 5e | **It.17 MVP** — CONTRIBUTING, api barrel, lint | ⏳ |
 | 5f | **Docker + user docs** commit (Fáza 2, pending C&P) | ⏳ |

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { SeoHealthBadge } from './SeoHealthBadge';
 import type { SeoHealthLevel } from '../../utils/seoHealth';
 import { useI18n } from '../../context/I18nContext';
+import { formatDisplayDate } from '../../utils/contentDates';
 
 export interface ContentListMobileCardProps {
   title: string;
@@ -35,7 +36,6 @@ export const ContentListMobileCard: React.FC<ContentListMobileCardProps> = ({
   previewLoading = false,
 }) => {
   const { locale, t } = useI18n();
-  const dateLocale = locale === 'en' ? 'en-GB' : 'sk-SK';
 
   return (
     <div
@@ -59,7 +59,7 @@ export const ContentListMobileCard: React.FC<ContentListMobileCardProps> = ({
           <p className="text-xs text-gray-500 break-all">{slug}</p>
           <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
             <span className={statusBadgeClass}>{statusLabel}</span>
-            <span>{new Date(updatedAt).toLocaleDateString(dateLocale)}</span>
+            <span>{formatDisplayDate(updatedAt, locale)}</span>
           </div>
           <div className="flex flex-wrap gap-2 pt-1">
             <Link to={`/${routeBase}/${slug}`} className="btn btn-secondary text-xs px-3 py-1">
