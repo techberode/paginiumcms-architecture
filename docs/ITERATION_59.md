@@ -1,6 +1,6 @@
 # Iteration 59 – Odložená publikácia (plánovač v editore)
 
-**Status:** ⏳ Planned  
+**Status:** ✅ Shipped (**2.0.53**)  
 **Priorita:** 🟡 Stredná  
 **Nadväzuje na:** [It.29 Cron planner](ITERATION_29.md) ✅ · [It.54 Editor profiles](ITERATION_54.md) ✅ · content API
 
@@ -32,11 +32,11 @@ Editor stránok a článkov umožní **naplánovať publikáciu** (scheduled pub
 
 ## Acceptance criteria
 
-- [ ] Editor: výber dátumu/času + uloženie draftu so `scheduledAt`
-- [ ] CLI/cron: due obsah sa publikuje do 1 minúty od `scheduledAt`
-- [ ] Admin list: filter scheduled + zobrazenie dátumu
-- [ ] PHPUnit: job handler + API validácia
-- [ ] Vitest: date picker UX v editore
+- [x] Editor: výber dátumu/času + uloženie draftu so `scheduledAt`
+- [x] CLI/cron: due obsah sa publikuje do 1 minúty od `scheduledAt`
+- [x] Admin list: filter scheduled + zobrazenie dátumu
+- [x] PHPUnit: job handler + API validácia
+- [x] Vitest: date picker UX v editore
 
 ## Súvisiace
 

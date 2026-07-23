@@ -92,6 +92,7 @@ use PaginiumCMS\Core\Logging\Services\ApplicationLogReader;
 use PaginiumCMS\Core\Logging\Services\AccessLogService;
 use PaginiumCMS\Core\Logging\Contracts\LogWriterInterface;
 use PaginiumCMS\Core\FlatFile\Services\ContentRevision;
+use PaginiumCMS\Core\FlatFile\Services\ContentScheduledPublishService;
 use PaginiumCMS\Core\FlatFile\Services\FrontMatterParser;
 use PaginiumCMS\Core\FlatFile\Services\MarkdownContentParser;
 use PaginiumCMS\Core\FlatFile\Services\MarkdownParser;
@@ -727,6 +728,13 @@ return [
             get(ContentRepositoryInterface::class),
             get(FrontMatterParserInterface::class),
             get(ContentCacheService::class)
+        ),
+    ContentScheduledPublishService::class => create(ContentScheduledPublishService::class)
+        ->constructor(
+            get(ContentRepositoryInterface::class),
+            get(ContentVersioningService::class),
+            get(ContentCacheService::class),
+            get(\PaginiumCMS\Core\Workflow\Services\OtpWorkflowService::class)
         ),
     CodeEditorController::class => create(GatedCodeEditorController::class)
         ->constructor(

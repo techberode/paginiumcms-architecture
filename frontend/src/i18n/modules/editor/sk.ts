@@ -36,7 +36,10 @@ export const editorSk: MessageTree = {
       draft: 'Koncept',
       published: 'Publikované',
       archived: 'Archivované',
+      scheduled: 'Naplánované',
     },
+    scheduledAt: 'Publikovať o',
+    scheduledAtHint: 'Po uložení sa stav prepne na Naplánované. Cron publikuje obsah v zadanom čase.',
     templates: {
       default: 'Predvolená',
       home: 'Domov (hero)',

@@ -145,6 +145,15 @@ final class JobRegistryStore
                     'system' => true,
                     'payload' => [],
                 ],
+                [
+                    'id' => 'content-scheduled-publish',
+                    'name' => 'Scheduled content publish',
+                    'handler' => 'content.scheduled_publish',
+                    'cron' => '* * * * *',
+                    'enabled' => true,
+                    'system' => true,
+                    'payload' => [],
+                ],
             ],
         ];
     }

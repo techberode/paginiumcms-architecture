@@ -24,7 +24,9 @@ use PaginiumCMS\Core\Notification\NotificationService;
 use PaginiumCMS\Core\Notification\Services\IncidentNotifier;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
 use PaginiumCMS\Tests\Support\IncidentNotifierTestFactory;
+use PaginiumCMS\Core\FlatFile\Services\ContentScheduledPublishService;
 use PaginiumCMS\Core\Scheduler\Handlers\BackupScheduledHandler;
+use PaginiumCMS\Core\Scheduler\Handlers\ContentScheduledPublishHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\MonitoringPipelineHandler;
 use PaginiumCMS\Core\Scheduler\Services\CronExpressionEvaluator;
 use PaginiumCMS\Core\Scheduler\Services\JobHandlerRegistry;
@@ -72,9 +74,13 @@ final class ScheduledJobRunnerTest extends TestCase
 
         $backup ??= $this->createMock(BackupInterface::class);
 
+        $scheduledPublish = $this->createMock(ContentScheduledPublishService::class);
+        $scheduledPublish->method('publishDueItems')->willReturn(['published' => [], 'skipped' => []]);
+
         $handlers = new JobHandlerRegistry(
             new BackupScheduledHandler($backup),
-            new MonitoringPipelineHandler($this->buildMonitoringScheduler())
+            new MonitoringPipelineHandler($this->buildMonitoringScheduler()),
+            new ContentScheduledPublishHandler($scheduledPublish)
         );
 
         return new ScheduledJobRunner(

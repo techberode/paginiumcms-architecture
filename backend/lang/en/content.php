@@ -12,6 +12,8 @@ return [
     'deleted' => 'Content deleted successfully',
     'status_updated' => 'Content status updated',
     'invalid_status' => 'Invalid content status',
+    'scheduled_at_required' => 'Scheduled publish requires a date and time',
+    'invalid_scheduled_at' => 'Invalid scheduled publish date',
     'invalid_type' => 'Invalid content type (allowed: page, article)',
     'save_failed' => 'Failed to save content',
     'slugs_required' => 'At least one slug is required',

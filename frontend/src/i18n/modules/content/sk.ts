@@ -24,6 +24,7 @@ export const contentSk: MessageTree = {
     title: 'Názov',
     slug: 'Slug',
     status: 'Stav',
+    scheduledAt: 'Publikovať o',
     seo: 'SEO',
     updated: 'Upravené',
     actions: 'Akcie',

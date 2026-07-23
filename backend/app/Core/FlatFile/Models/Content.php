@@ -200,6 +200,42 @@ abstract class Content implements JsonSerializable
         return $this->getStatus() === 'archived';
     }
 
+    public function isScheduled(): bool
+    {
+        return $this->getStatus() === 'scheduled';
+    }
+
+    public function getScheduledAt(): ?DateTimeImmutable
+    {
+        if (empty($this->frontMatter['scheduledAt'])) {
+            return null;
+        }
+
+        try {
+            return new DateTimeImmutable((string) $this->frontMatter['scheduledAt']);
+        } catch (\Exception) {
+            return null;
+        }
+    }
+
+    public function setScheduledAt(?DateTimeImmutable $scheduledAt): self
+    {
+        if ($scheduledAt === null) {
+            unset($this->frontMatter['scheduledAt']);
+        } else {
+            $this->frontMatter['scheduledAt'] = $scheduledAt->format('c');
+        }
+
+        return $this;
+    }
+
+    public function clearSchedulingMetadata(): self
+    {
+        unset($this->frontMatter['scheduledAt'], $this->frontMatter['publishApprovedAt']);
+
+        return $this;
+    }
+
     /**
      * {@inheritDoc}
  * @return array<int|string, mixed>

@@ -7,6 +7,7 @@ export const listSk: MessageTree = {
     published: 'Publikované',
     draft: 'Koncept',
     archived: 'Archivované',
+    scheduled: 'Naplánované',
   },
   toolbar: {
     searchPlaceholder: 'Hľadať…',

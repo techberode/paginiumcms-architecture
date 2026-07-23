@@ -28,6 +28,7 @@ use PaginiumCMS\Modules\Security\Contracts\AuthenticationInterface;
 use PaginiumCMS\Modules\Security\Exception\AuthorizationException;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Modules\Security\Services\ContentPathAclGuard;
+use PaginiumCMS\Support\AppTimezone;
 use PaginiumCMS\Support\Lang;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -35,7 +36,7 @@ use Psr\Http\Message\ServerRequestInterface;
 class ContentController
 {
     /** @var array<int, string> */
-    private array $validStatuses = ['draft', 'published', 'archived'];
+    private array $validStatuses = ['draft', 'published', 'archived', 'scheduled'];
 
     public function __construct(
         private ContentRepositoryInterface $repository,
@@ -645,6 +646,7 @@ class ContentController
         }
 
         $this->applySeoFrontMatter($content, $data);
+        $this->applySchedulingFrontMatter($content, $data);
     }
 
     /**
@@ -700,6 +702,37 @@ class ContentController
     }
 
     /**
+     * @param array<int|string, mixed> $data
+     */
+    private function applySchedulingFrontMatter(Content $content, array $data): void
+    {
+        $frontMatter = $content->getFrontMatter();
+        $status = (string) ($data['status'] ?? $content->getStatus());
+
+        if (array_key_exists('scheduledAt', $data)) {
+            $raw = trim((string) $data['scheduledAt']);
+            if ($raw === '') {
+                unset($frontMatter['scheduledAt'], $frontMatter['publishApprovedAt']);
+            } else {
+                try {
+                    $scheduledAt = new \DateTimeImmutable($raw);
+                    $frontMatter['scheduledAt'] = $scheduledAt->format('c');
+                } catch (\Exception) {
+                    unset($frontMatter['scheduledAt'], $frontMatter['publishApprovedAt']);
+                }
+            }
+        }
+
+        if ($status === 'scheduled') {
+            $frontMatter['publishApprovedAt'] = AppTimezone::nowIso8601();
+        } elseif ($status !== 'published') {
+            unset($frontMatter['scheduledAt'], $frontMatter['publishApprovedAt']);
+        }
+
+        $content->setFrontMatter($frontMatter);
+    }
+
+    /**
      * @return array<int|string, mixed>
  */private function serializeContent(Content $content, string $type): array
     {
@@ -747,6 +780,8 @@ class ContentController
         $payload['noIndex'] = ($frontMatter['noIndex'] ?? $frontMatter['noindex'] ?? false) === true;
         $payload['editorProfile'] = (string) ($frontMatter['editorProfile'] ?? '');
         $payload['editorMode'] = (string) ($frontMatter['editorMode'] ?? '');
+        $scheduledAt = $content->getScheduledAt();
+        $payload['scheduledAt'] = $scheduledAt !== null ? $scheduledAt->format('c') : '';
 
         return $payload;
     }
@@ -810,6 +845,11 @@ class ContentController
             return Lang::get('invalid_status', [], 'content');
         }
 
+        $schedulingError = $this->validateSchedulingPayload($data);
+        if ($schedulingError !== null) {
+            return $schedulingError;
+        }
+
         $profileError = $this->editorContentValidator->validate(
             $type,
             $this->normalizeValidationData($data)
@@ -819,6 +859,44 @@ class ContentController
         }
 
         return null;
+    }
+
+    /**
+     * @param array<int|string, mixed> $data
+     */
+    private function validateSchedulingPayload(array $data): ?string
+    {
+        $status = (string) ($data['status'] ?? 'draft');
+
+        if ($status === 'scheduled') {
+            $scheduledAt = trim((string) ($data['scheduledAt'] ?? ''));
+            if ($scheduledAt === '') {
+                return Lang::get('scheduled_at_required', [], 'content');
+            }
+
+            if (!$this->isValidIsoDateTime($scheduledAt)) {
+                return Lang::get('invalid_scheduled_at', [], 'content');
+            }
+        }
+
+        if (array_key_exists('scheduledAt', $data) && trim((string) $data['scheduledAt']) !== '') {
+            if (!$this->isValidIsoDateTime((string) $data['scheduledAt'])) {
+                return Lang::get('invalid_scheduled_at', [], 'content');
+            }
+        }
+
+        return null;
+    }
+
+    private function isValidIsoDateTime(string $value): bool
+    {
+        try {
+            new \DateTimeImmutable(trim($value));
+
+            return true;
+        } catch (\Exception) {
+            return false;
+        }
     }
 
     /**
