@@ -106,40 +106,48 @@ class CoreHardeningTest extends TestCase
     {
         $this->patchGeneralSettings(['allowRegistration' => false]);
 
-        $request = $this->createJsonRequest('POST', '/api/auth/register', [
-            'email' => 'blocked_' . uniqid() . '@example.com',
-            'password' => 'StrongP@ssw0rd123!',
-            'name' => 'Blocked User',
-        ]);
+        try {
+            $password = 'StrongP@ssw0rd123!';
+            $request = $this->createJsonRequest('POST', '/api/auth/register', [
+                'email' => 'blocked_' . uniqid() . '@example.com',
+                'password' => $password,
+                'passwordConfirm' => $password,
+                'name' => 'Blocked User',
+            ]);
 
-        $response = $this->handleRequest($request);
-        $data = $this->getJsonResponse($response);
+            $response = $this->handleRequest($request);
+            $data = $this->getJsonResponse($response);
 
-        $this->assertEquals(403, $response->getStatusCode());
-        $this->assertFalse($data['success']);
-        $this->assertStringContainsString('vypnutá', (string) ($data['error'] ?? ''));
-
-        $this->patchGeneralSettings(['allowRegistration' => true]);
+            $this->assertEquals(403, $response->getStatusCode());
+            $this->assertFalse($data['success']);
+            $this->assertStringContainsString('vypnutá', (string) ($data['error'] ?? ''));
+        } finally {
+            $this->patchGeneralSettings(['allowRegistration' => true]);
+        }
     }
 
     public function testRegistrationDisabledDuringMaintenance(): void
     {
         $this->patchMaintenanceSettings(['mode' => 'under_maintenance']);
 
-        $request = $this->createJsonRequest('POST', '/api/auth/register', [
-            'email' => 'blocked_maint_' . uniqid() . '@example.com',
-            'password' => 'StrongP@ssw0rd123!',
-            'name' => 'Blocked User',
-        ]);
+        try {
+            $password = 'StrongP@ssw0rd123!';
+            $request = $this->createJsonRequest('POST', '/api/auth/register', [
+                'email' => 'blocked_maint_' . uniqid() . '@example.com',
+                'password' => $password,
+                'passwordConfirm' => $password,
+                'name' => 'Blocked User',
+            ]);
 
-        $response = $this->handleRequest($request);
-        $data = $this->getJsonResponse($response);
+            $response = $this->handleRequest($request);
+            $data = $this->getJsonResponse($response);
 
-        $this->assertEquals(403, $response->getStatusCode());
-        $this->assertFalse($data['success']);
-        $this->assertStringContainsString('údržby', (string) ($data['error'] ?? ''));
-
-        $this->patchMaintenanceSettings(['mode' => 'off']);
+            $this->assertEquals(403, $response->getStatusCode());
+            $this->assertFalse($data['success']);
+            $this->assertStringContainsString('údržby', (string) ($data['error'] ?? ''));
+        } finally {
+            $this->patchMaintenanceSettings(['mode' => 'off']);
+        }
     }
 
     public function testStorageRouteServesFile(): void
