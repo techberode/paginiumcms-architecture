@@ -10,9 +10,12 @@ use PaginiumCMS\Core\CodePolicy\Services\SecurityScanner;
 use PaginiumCMS\Core\FlatFile\Services\FileReader;
 use PaginiumCMS\Core\FlatFile\Services\FileValidator;
 use PaginiumCMS\Core\FlatFile\Services\FileWriter;
+use PaginiumCMS\Core\Hook\HookCatalog;
 use PaginiumCMS\Core\Hook\HookManager;
+use PaginiumCMS\Core\Hook\Services\HookEmitter;
 use PaginiumCMS\Core\Settings\Services\SettingsRepository;
 use PaginiumCMS\Core\Validation\Validator;
+use PaginiumCMS\Http\Extensions\Services\ExtensionManifestValidator;
 use PaginiumCMS\Http\Extensions\Services\PluginImporter;
 use PaginiumCMS\Http\Extensions\Services\PluginManager;
 use PaginiumCMS\Http\Extensions\Services\PluginPolicyScanner;
@@ -54,6 +57,7 @@ final class PluginManagerTest extends TestCase
         $importer = new PluginImporter(
             $registry,
             new PluginPolicyScanner($policy),
+            new ExtensionManifestValidator(),
             $this->extensionsRoot,
             $this->routesRoot,
             $this->frontendRoot,
@@ -61,10 +65,13 @@ final class PluginManagerTest extends TestCase
         );
 
         $this->hookManager = new HookManager();
+        $hookEmitter = new HookEmitter($this->hookManager);
         $this->manager = new PluginManager(
             $registry,
             $importer,
             $this->hookManager,
+            $hookEmitter,
+            new ExtensionManifestValidator(),
             $this->extensionsRoot,
             $this->routesRoot,
             $this->frontendRoot
@@ -96,35 +103,35 @@ final class PluginManagerTest extends TestCase
 
     public function testEnableRegistersHooksOnBoot(): void
     {
-        $this->writeManifest('hello-widget', [
-            'id' => 'hello-widget',
-            'name' => 'Hello Widget',
+        $this->writeManifest('ping-demo', [
+            'id' => 'ping-demo',
+            'name' => 'Ping Demo',
             'version' => '1.0.0',
             'hooks' => [
-                'test.ping' => 'PaginiumCMS\\Http\\Extensions\\HelloWidget\\Hooks::ping',
+                HookCatalog::EXTENSION_BOOT => 'PaginiumCMS\\Http\\Extensions\\PingDemo\\Hooks::ping',
             ],
         ]);
-        $this->writePhp('hello-widget/src/Hooks.php', <<<'PHP'
+        $this->writePhp('ping-demo/src/Hooks.php', <<<'PHP'
 <?php
 
 declare(strict_types=1);
 
-namespace PaginiumCMS\Http\Extensions\HelloWidget;
+namespace PaginiumCMS\Http\Extensions\PingDemo;
 
 final class Hooks
 {
-    public static function ping(): string
+    public static function ping(array $context): string
     {
         return 'pong';
     }
 }
 PHP);
 
-        $this->manager->enable('hello-widget');
+        $this->manager->enable('ping-demo');
         $this->manager->bootEnabledExtensions();
 
-        $this->assertTrue($this->hookManager->has('test.ping'));
-        $this->assertSame(['pong'], $this->hookManager->run('test.ping'));
+        $this->assertTrue($this->hookManager->has(HookCatalog::EXTENSION_BOOT));
+        $this->assertSame(['pong'], $this->hookManager->run(HookCatalog::EXTENSION_BOOT, [['id' => 'ping-demo']]));
     }
 
     public function testDisableTurnsOffEnabledFlag(): void

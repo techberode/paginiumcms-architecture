@@ -9,6 +9,8 @@ use PaginiumCMS\Core\Cache\ContentCacheService;
 use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Core\FlatFile\Models\Content;
+use PaginiumCMS\Core\Hook\HookCatalog;
+use PaginiumCMS\Core\Hook\Services\HookEmitter;
 use PaginiumCMS\Core\Versioning\Services\ContentVersioningService;
 use PaginiumCMS\Core\Workflow\Services\OtpWorkflowService;
 use PaginiumCMS\Support\AppTimezone;
@@ -22,7 +24,8 @@ class ContentScheduledPublishService
         private ContentRepositoryInterface $repository,
         private ContentVersioningService $versioning,
         private ContentCacheService $contentCache,
-        private OtpWorkflowService $otpWorkflow
+        private OtpWorkflowService $otpWorkflow,
+        private HookEmitter $hookEmitter
     ) {
     }
 
@@ -78,11 +81,17 @@ class ContentScheduledPublishService
         }
 
         try {
+            $scheduledAtIso = $scheduledAt->format('c');
             $content->setStatus('published');
             $content->clearSchedulingMetadata();
             $this->repository->save($content);
             $this->versioning->recordChange($content, $type, 'scheduled_publish');
             $this->invalidateCache($type, $content->getSlug());
+            $this->hookEmitter->emit(HookCatalog::CONTENT_AFTER_SCHEDULED_PUBLISH, [
+                'type' => $type,
+                'slug' => $content->getSlug(),
+                'scheduledAt' => $scheduledAtIso,
+            ]);
         } catch (FlatFileException $e) {
             return ['published' => false, 'reason' => 'save_failed'];
         }

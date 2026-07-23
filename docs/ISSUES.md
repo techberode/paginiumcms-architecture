@@ -1,6 +1,6 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-23 · verzia **2.0.52** · ISS-063–074 · backlog It.59–61
+> Posledná aktualizácia: 2026-07-23 · verzia **2.0.54** · ISS-063–075 · backlog It.59–61
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
 
@@ -92,6 +92,7 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-072 | Security audit `/api/admin/security/audit` → 403 pre ADMIN | Stredná (regresia) | ✅ Opravené · **2.0.52** |
 | ISS-073 | PHPUnit: login testy → 429 namiesto 401 (lockout persistencia) | Stredná (CI) | ✅ Opravené · **2.0.52** |
 | ISS-074 | PHPStan L8 po `accessControl` / branding (10 chýb) | Stredná (CI) | ✅ Opravené · **2.0.52** |
+| ISS-075 | PHPUnit fatal: `Cannot redeclare class HelloWidget\Hooks` (Wave 5d) | Stredná (CI) | ✅ Opravené · **2.0.54** |
 
 
 
@@ -103,6 +104,7 @@ Workflow: `[.github/workflows/ci.yml](../.github/workflows/ci.yml)`
 
 | CI job     | Step                 | Symptóm                                                               | Issue                     |
 | ---------- | -------------------- | --------------------------------------------------------------------- | ------------------------- |
+| `backend`  | PHPUnit              | `PluginManagerTest` + referenčný `hello-widget` → duplicate class fatal | ISS-075          |
 | `backend`  | PHPUnit              | Login error shape / AuthController → **429** namiesto 401 (lockout persistencia) | ISS-073          |
 | `backend`  | PHPUnit              | `SecurityAuditControllerTest` → 403 pre ADMIN | ISS-072          |
 | `backend`  | PHPStan level 8      | `accessControl` / `SettingsSchema` / `AccessControlSyncService` (10×) | ISS-074          |
@@ -1842,6 +1844,33 @@ Error in file backend/app/Modules/PolicyTest.php: Code policy validation failed
 **Overenie:** PHPStan L8 → **0 errors**; PHPUnit green.
 
 **Súvisí s:** ISS-055 (Path ACL v nastaveniach), [ACCESS_CONTROL.md](user/ACCESS_CONTROL.md).
+
+---
+
+## ISS-075 – PHPUnit fatal: duplicate `HelloWidget\Hooks` class — VYRIEŠENÉ (**2.0.54**)
+
+**Symptóm:** Po pridaní referenčného pluginu `hello-widget` do repozitára padol celý PHPUnit suite:
+
+```text
+PHP Fatal error: Cannot redeclare class PaginiumCMS\Http\Extensions\HelloWidget\Hooks
+(previously declared in …/backend/app/Http/Extensions/hello-widget/src/Hooks.php:10)
+in /tmp/pag_plugins_mgr_…/extensions/hello-widget/src/Hooks.php on line 7
+```
+
+**Príčina:** Wave **5d** pridala skutočný plugin `hello-widget` s triedou `HelloWidget\Hooks`. Test `PluginManagerTest::testEnableRegistersHooksOnBoot` vytváral **dočasný** plugin s rovnakým `id` a **rovnakým** PHP namespace. `PluginManager::loadPluginClasses()` volá `require_once` — prvá deklarácia zostala v pamäti (z `HelloWidgetReferencePluginTest` alebo z autoloadu), druhá z temp adresára spôsobila fatal error.
+
+**Oprava:**
+
+| Súbor | Zmena |
+|-------|--------|
+| `PluginManagerTest.php` | Test hook registrácie používa izolovaný plugin `ping-demo` + namespace `PaginiumCMS\Http\Extensions\PingDemo\Hooks` |
+| `EXTENSION_CODE_POLICY.md` | Pravidlo: test extension v PHPUnit **musí mať unikátny namespace**, ak existuje referenčný plugin v repozitári |
+
+**Overenie:** `./vendor/bin/phpunit` → **833 passed**, 15 skipped.
+
+**Prevencia:** Pri písaní extension testov nepoužívať rovnaký namespace ako bundled referenčný plugin; preferovať `ping-demo`, `temp-*` id v temp adresároch.
+
+**Súvisí s:** [ITERATION_15D.md](ITERATION_15D.md), [EXTENSION_CODE_POLICY.md](developer/EXTENSION_CODE_POLICY.md) §8.
 
 ---
 

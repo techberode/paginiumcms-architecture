@@ -1,9 +1,9 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.0.53** · 2026-07-23 · tag **`v2.0.53`** (po push)  
+> Posledná verzia: **2.0.54** · 2026-07-23 · tag **`v2.0.54`** (po push)  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release.
 
-> **Poznámka k verziám:** … **2.0.51** → `d9b7171` · **2.0.52** → `9d930a1` · **2.0.53** → `aee1494`.
+> **Poznámka k verziám:** … **2.0.52** → `9d930a1` · **2.0.53** → `aee1494` · **2.0.54** → *(doplň po commite)*.
 
 ### Kontinuita verzií (nepreskakovať)
 
@@ -13,9 +13,85 @@
 | **2.0.50** | **`v2.0.50`** | **`67d77bb`** | ✅ tagged |
 | **2.0.51** | **`v2.0.51`** | **`d9b7171`** | ✅ tagged |
 | **2.0.52** | **`v2.0.52`** | **`9d930a1`** | ✅ tagged |
-| **2.0.53** | **`v2.0.53`** | **`aee1494`** | ✅ tagged (push pending) |
+| **2.0.53** | **`v2.0.53`** | **`aee1494`** | ✅ tagged |
+| **2.0.54** | **`v2.0.54`** | *(pending)* | ⏳ po push |
 
-**Pravidlo:** Ďalší release musí byť **`v2.0.54`**, nie skok. Pred každým novým číslom: `git tag -l 'v2.0.5*' | sort -V`.
+**Pravidlo:** Ďalší release musí byť **`v2.0.55`**, nie skok. Pred každým novým číslom: `git tag -l 'v2.0.5*' | sort -V`.
+
+---
+
+## 2.0.54 — Wave 5d hook emitters + extension policy (It.15d)
+
+```bash
+npm run type-check          # → 0 errors
+npm test -- --run           # → green
+composer test               # → 833 passed, 15 skipped
+composer stan               # → 0 errors
+```
+
+**Po deployi:**
+
+1. Admin → **Extensions** → enable **hello-widget**
+2. `GET /api/extensions/hello-widget/ping` → `{ "success": true, "message": "pong" }`
+3. Uložiť stránku → hook `content.after_save` (referenčný plugin)
+
+**CI hotfix:** ISS-075 — `PluginManagerTest` nepoužíva namespace `HelloWidget\Hooks` (kolízia s referenčným pluginom).
+
+### Commit
+
+```bash
+git add -A
+git commit -m "$(cat <<'EOF'
+release: 2.0.54 — Wave 5d hook emitters, hello-widget reference, extension policy.
+
+HookCatalog, HookEmitter, Core content/extension hooks, ExtensionManifestValidator, EXTENSION_CODE_POLICY.md; ISS-075 PHPUnit namespace fix.
+EOF
+)"
+git tag v2.0.54
+git push origin main
+git push origin v2.0.54
+```
+
+*(Po commite doplň hash do tabuľky a GitHub Release body.)*
+
+---
+
+## GitHub Release — copy-paste (2.0.54)
+
+**Title:**
+
+```
+2.0.54 — Hook emitters + extension code policy (Wave 5d / It.15d)
+```
+
+**Body:**
+
+```markdown
+**Tag:** `v2.0.54` · **Target:** `main` · **Commit:** *(doplň)*
+
+### Summary
+
+After **2.0.53**: Core **emits** canonical hooks; extensions subscribe via `plugin.json`. Reference plugin **hello-widget**, full **Extension Code Policy** doc, manifest validation.
+
+### Added
+
+- `HookCatalog` + `HookEmitter` — content and extension lifecycle hooks
+- `ExtensionManifestValidator` + `AppVersion`
+- Reference plugin `hello-widget` + route `GET /api/extensions/hello-widget/ping`
+- `docs/developer/EXTENSION_CODE_POLICY.md`
+
+### Changed
+
+- `ContentController`, `ContentScheduledPublishService`, `PluginManager` — hook emitters
+
+### Fixed
+
+- **ISS-075** — PHPUnit fatal duplicate `HelloWidget\Hooks` (`PluginManagerTest` → `ping-demo`)
+
+### Docs
+
+- [ITERATION_15D.md](docs/ITERATION_15D.md) · [EXTENSION_CODE_POLICY.md](docs/developer/EXTENSION_CODE_POLICY.md) · [ISSUES.md](docs/ISSUES.md) ISS-075
+```
 
 ---
 

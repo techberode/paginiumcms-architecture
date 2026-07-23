@@ -9,6 +9,7 @@ use PaginiumCMS\Core\Cache\ContentCacheService;
 use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
 use PaginiumCMS\Core\FlatFile\Models\Page;
 use PaginiumCMS\Core\FlatFile\Services\ContentScheduledPublishService;
+use PaginiumCMS\Core\Hook\Services\HookEmitter;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\Versioning\Services\ContentVersioningService;
 use PaginiumCMS\Core\Workflow\Services\OtpWorkflowService;
@@ -105,7 +106,8 @@ final class ContentScheduledPublishServiceTest extends TestCase
             $repo,
             $this->app->getContainer()->get(ContentVersioningService::class),
             $this->app->getContainer()->get(ContentCacheService::class),
-            $this->app->getContainer()->get(OtpWorkflowService::class)
+            $this->app->getContainer()->get(OtpWorkflowService::class),
+            $this->app->getContainer()->get(HookEmitter::class)
         );
 
         $result = $service->publishDueItems(new DateTimeImmutable('now'));

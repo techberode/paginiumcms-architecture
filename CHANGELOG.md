@@ -44,13 +44,41 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | Ops hotfix: dates, timezone, maintenance, logs (ISS-063–071) | **2.0.51** | [below](#2051--2026-07-23) |
 | Branding, ACL v nastaveniach, CI fixes (ISS-072–074) | **2.0.52** | [below](#2052--2026-07-23) |
 | It.59 — Odložená publikácia (scheduled publish) | **2.0.53** | [below](#2053--2026-07-23) |
+| Wave 5d — It.15 hook emitters + extension policy | **2.0.54** | [below](#2054--2026-07-23) |
 | It.19b–19d — Security runtime, auth UX, password policy | **2.0.45** | [below](#2045--2026-07-21) |
 
 ---
 
 ## [Unreleased]
 
-*(Ďalej: wave **5d** It.15 hook emitters · plánované It.60–61 — pozri [ITERATION_BACKLOG.md](docs/ITERATION_BACKLOG.md).)*
+*(Ďalej: wave **5e** It.17 MVP · plánované It.60–61 — pozri [ITERATION_BACKLOG.md](docs/ITERATION_BACKLOG.md).)*
+
+---
+
+## [2.0.54] – 2026-07-23
+
+**Wave 5d — It.15 doplnenie** — Core hook emitters, referenčný plugin `hello-widget`, extension code policy.  
+Detail: [ITERATION_15D.md](docs/ITERATION_15D.md) · [EXTENSION_CODE_POLICY.md](docs/developer/EXTENSION_CODE_POLICY.md).
+
+### Added
+
+- **`HookCatalog`** + **`HookEmitter`** — kanonické hooky; Core emituje content a extension lifecycle udalosti
+- **`ExtensionManifestValidator`** — validácia `plugin.json` (id, semver, hooky z katalógu, `minCmsVersion`)
+- **`AppVersion`** — CMS semver pre extension compatibility
+- **Referenčný plugin `hello-widget`** — manifest, hook handlery, route `GET /api/extensions/hello-widget/ping`, FE stub
+- **`docs/developer/EXTENSION_CODE_POLICY.md`** — politika kódu pre externé pluginy/témy/moduly
+- PHPUnit: `HookEmitterTest`, `ExtensionManifestValidatorTest`, `HelloWidgetReferencePluginTest`
+
+### Changed
+
+- **`ContentController`** — emituje `content.before_save`, `content.after_save`, `content.after_delete`, `content.after_status_change`
+- **`ContentScheduledPublishService`** — emituje `content.after_scheduled_publish`
+- **`PluginManager`** — `extension.boot` / `enabled` / `disabled`; registrácia len hookov z katalógu
+- **`PluginImporter`** — manifest validácia cez `ExtensionManifestValidator`
+
+### Fixed
+
+- **ISS-075** — PHPUnit fatal pri duplicitnej triede `HelloWidget\Hooks` (`PluginManagerTest` → `ping-demo`)
 
 ---
 

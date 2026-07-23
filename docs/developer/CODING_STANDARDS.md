@@ -7,6 +7,8 @@ Tento dokument je **jediný zdroj pravdy** pre ľudské aj automatické kontroly
 Keď sa v Iterácii 14 implementuje `CodePolicyEngine`, tieto pravidlá sa vynucujú
 automaticky pred každým zápisom súboru (CodeEditor, import doplnku, scaffold).
 
+**Extensions (pluginy/témy/moduly):** detailná politika v [`EXTENSION_CODE_POLICY.md`](EXTENSION_CODE_POLICY.md).
+
 Súvisiace dokumenty: `docs/architecture/PLUGINS.md`, `docs/CONTINUATION.md` (ZÁKONY §2),
 `docs/developer/CONTRIBUTING.md`, `docs/architecture/SETTINGS.md` (skupina `codePolicy`).
 
