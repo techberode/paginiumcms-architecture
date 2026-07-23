@@ -132,7 +132,9 @@ class ApiClient {
             !requestUrl.includes('/api/auth/me') &&
             !requestUrl.includes('/api/auth/login') &&
             !requestUrl.includes('/api/auth/2fa/') &&
-            !requestUrl.includes('/api/settings/public')
+            !requestUrl.includes('/api/settings/public') &&
+            !requestUrl.includes('/api/locks') &&
+            !requestUrl.includes('/api/drafts')
           ) {
             window.dispatchEvent(new CustomEvent('paginium:auth-expired'));
           }

@@ -35,6 +35,7 @@ describe('TwoFactorSettings', () => {
 
   it('shows setup button when 2FA is disabled', async () => {
     vi.mocked(authApi.twoFactor.getStatus).mockResolvedValue({
+      ok: true,
       enabled: false,
       verified: false,
       setupPending: false,
@@ -47,6 +48,7 @@ describe('TwoFactorSettings', () => {
 
   it('loads QR when enabled but not verified', async () => {
     vi.mocked(authApi.twoFactor.getStatus).mockResolvedValue({
+      ok: true,
       enabled: true,
       verified: false,
       setupPending: false,

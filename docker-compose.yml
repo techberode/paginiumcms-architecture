@@ -43,8 +43,9 @@ services:
       - "3025:3025"
     volumes:
       - .:/var/www/html
-    environment:
-      VITE_API_URL: http://localhost:8080
+    # Prázdne → axios ide na rovnaký origin (:3025) cez Vite proxy; cookies fungujú.
+    # NIKDY http://localhost:8080 — cross-origin rozbije PHPSESSID (ISS-025).
+    environment: {}
     depends_on:
       nginx:
         condition: service_healthy
