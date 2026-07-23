@@ -1,6 +1,7 @@
 # Príručka používateľa PaginiumCMS
 
-> Kompletný návod pre beta testerov, editorov a administrátorov — od inštalácie po každodennú prácu s CMS.
+> Kompletný návod pre beta testerov, editorov a administrátorov — od inštalácie po každodennú prácu s CMS.  
+> **Public Beta 1:** [PUBLIC_BETA1.md](../PUBLIC_BETA1.md) · [BETA_TESTER.md](BETA_TESTER.md)
 
 ---
 
@@ -69,3 +70,5 @@ Detail rolí a oprávnení: [ADMIN_GUIDE.md § Roly](ADMIN_GUIDE.md#roly-a-oprá
 9. [ ] Pri probléme: **Logy**, **Audit**, [ISSUES.md](../ISSUES.md)
 
 Maintainer gate pred betou: [developer/BETA_INFRA.md](../developer/BETA_INFRA.md).
+
+**Verzia:** `v2.1.0-beta.1` · Známe limitácie: [PUBLIC_BETA1.md](../PUBLIC_BETA1.md#známe-limitácie-nie-sú-bugy-beta-1)

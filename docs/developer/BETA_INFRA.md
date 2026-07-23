@@ -94,6 +94,10 @@ Neblokujú Public Beta 1 — dokumentované v [CONTINUATION.md](../CONTINUATION.
 
 ---
 
-## Ďalší krok
+## Po Public Beta 1
 
-**Wave 7** — Public Beta 1 (`v2.1.0-beta.1` alebo `2.0.59`): GitHub Release, 3–5 testerov, overený [user/README.md](../user/README.md) checklist na čistom inštalle.
+**Shipped:** `v2.1.0-beta.1` — [PUBLIC_BETA1.md](../PUBLIC_BETA1.md) · [BETA_TESTER.md](../user/BETA_TESTER.md)
+
+**Ops (mimo git):** cron na `.26` — [CRON.md](../deploy/CRON.md) · lokálny `PRIVATE_OPS_CHECKLIST.md`
+
+**Post-beta vývoj:** It.56–61, It.25 — [CONTINUATION.md](../CONTINUATION.md)

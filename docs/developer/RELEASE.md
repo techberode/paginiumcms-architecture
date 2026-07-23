@@ -1,9 +1,9 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.0.58** · 2026-07-23 · tag **`v2.0.58`** (po push)  
+> Posledná verzia: **2.1.0-beta.1** · 2026-07-23 · tag **`v2.1.0-beta.1`**  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release.
 
-> **Poznámka k verziám:** … **2.0.57** → `e84b71f` · **2.0.58** → `f53e71e`.
+> **Poznámka k verziám:** **`2.0.58`** → `f53e71e` · **Public Beta 1** → *(tento commit)*.
 
 ### Kontinuita verzií (nepreskakovať)
 
@@ -19,8 +19,40 @@
 | **2.0.56** | **`v2.0.56`** | **`0664ba3`** | ✅ tagged |
 | **2.0.57** | **`v2.0.57`** | **`e84b71f`** | ✅ tagged |
 | **2.0.58** | **`v2.0.58`** | **`f53e71e`** | ✅ tagged |
+| **Public Beta 1** | **`v2.1.0-beta.1`** | *(pending)* | ⏳ tento release |
 
-**Pravidlo:** Ďalší release = **Public Beta 1** (`v2.1.0-beta.1` alebo **`v2.0.59`**). Pred tagom: [BETA_INFRA.md](BETA_INFRA.md).
+**Pravidlo:** Post-beta patchy — `2.0.59+` alebo `2.1.0-beta.2` podľa rozsahu.
+
+---
+
+## v2.1.0-beta.1 — Public Beta 1 (Wave 7)
+
+```bash
+composer gate
+```
+
+### Commit
+
+```bash
+git add -A
+git commit -m "$(cat <<'EOF'
+release: v2.1.0-beta.1 — Public Beta 1 (Wave 7).
+
+PUBLIC_BETA1 + BETA_TESTER docs, known limitations, AppVersion bump.
+EOF
+)"
+git tag v2.1.0-beta.1
+git push origin main
+git push origin v2.1.0-beta.1
+```
+
+---
+
+## GitHub Release — copy-paste (v2.1.0-beta.1)
+
+**Title:** `v2.1.0-beta.1 — Public Beta 1`
+
+**Body:** see [PUBLIC_BETA1.md](../PUBLIC_BETA1.md) · full template in git history of this file (Wave 7 block).
 
 ---
 

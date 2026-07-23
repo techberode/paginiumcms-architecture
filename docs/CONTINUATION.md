@@ -16,11 +16,11 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 
 ---
 
-## Aktuálny plán (2026-07-22) — pred verejnou betou
+## Aktuálny plán (2026-07-23) — Public Beta 1
 
-**Rozhodnutie (2026-07-22):** Public Beta **nesúri**. Priorita je **doladenie a funkčnosť** — ak treba týždeň (alebo viac), Beta počká. Žiadny hard deadline; testeri až keď sme s kvalitou spokojní.
+**Stav:** **`v2.1.0-beta.1`** shipped — vlny 5a–5f, 6, 7 dokončené. Testeri + feedback cez GitHub Issues.
 
-**Rozhodnutie (skôr):** Public Beta až po It.18f + pre-Beta vlnách + infra checklistu.
+**Rozhodnutie (2026-07-22):** Public Beta **nesúri** — spustené až po zelených vlnách 5f–6.
 
 | Priorita | Úloha | Stav |
 |----------|--------|------|
@@ -40,7 +40,8 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 | 5e+ | **Password confirm** — registrácia + admin users | ✅ **2.0.56** |
 | 5f | **Docker + user docs polish** — README, env vars, onboarding sync | ✅ **2.0.57** |
 | 6 | **Beta infra gate** — cron docs, BETA_INFRA, diagnose, security baseline | ✅ **2.0.58** |
-| **FINAL_BETA1** | Vlna **7** + **It.25** — Public Beta 1 | ⏳ detail v **`FINAL_BETA1_ITERATION.md`** (lokálny, gitignored) |
+| 7 | **Public Beta 1** — docs, known limits, tester path | ✅ **`v2.1.0-beta.1`** |
+| **Post-beta** | It.56–61, It.25, infra ops (cron .26) | ⏳ backlog |
 
 **Princíp práce:** jedna vlna = jeden release tag = zelené CI = manuálny smoke test. Neskákať verzie (`v2.0.47` pred `v2.0.48`).
 

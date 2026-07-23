@@ -48,6 +48,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | Auth — password confirmation (register + admin users) | **2.0.56** | [below](#2056--2026-07-23) |
 | Wave 5f — Docker onboarding + user docs polish | **2.0.57** | [below](#2057--2026-07-23) |
 | Wave 6 — Beta infra gate (cron, BETA_INFRA, diagnose) | **2.0.58** | [below](#2058--2026-07-23) |
+| **Public Beta 1** | **`v2.1.0-beta.1`** | [below](#210-beta1--2026-07-23) |
 | Wave 5d — It.15 hook emitters + extension policy | **2.0.54** | [below](#2054--2026-07-23) |
 | It.19b–19d — Security runtime, auth UX, password policy | **2.0.45** | [below](#2045--2026-07-21) |
 
@@ -55,7 +56,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-*(Pred Public Beta 1: **Wave 7** — lokálny plán `docs/FINAL_BETA1_ITERATION.md`, gitignored.)*
+Post-beta backlog: It.56–61, It.25 setup wizard, ops cron on `.26`.
+
+---
+
+## [2.1.0-beta.1] – 2026-07-23
+
+**Public Beta 1 (Wave 7)** — verejná beta pre testerov po vlnách 5f–6.  
+Detail: [PUBLIC_BETA1.md](docs/PUBLIC_BETA1.md) · [BETA_TESTER.md](docs/user/BETA_TESTER.md).
+
+### Added
+
+- **`docs/PUBLIC_BETA1.md`** — scope Beta 1, známe limitácie (It.56–61, It.25), feedback kanál
+- **`docs/user/BETA_TESTER.md`** — stručný checklist pre testerov (~30 min smoke)
+
+### Changed
+
+- Root **`README.md`**, **`CONTINUATION.md`**, **`user/README.md`**, **`BETA_INFRA.md`** — Public Beta 1 shipped
+- **`AppVersion`** → `2.1.0-beta.1`
 
 ---
 
