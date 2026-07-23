@@ -36,7 +36,10 @@ export const editorEn: MessageTree = {
       draft: 'Draft',
       published: 'Published',
       archived: 'Archived',
+      scheduled: 'Scheduled',
     },
+    scheduledAt: 'Publish at',
+    scheduledAtHint: 'Saving sets status to Scheduled. Cron publishes content at the chosen time.',
     templates: {
       default: 'Default',
       home: 'Home (hero)',

@@ -24,6 +24,7 @@ export const contentEn: MessageTree = {
     title: 'Title',
     slug: 'Slug',
     status: 'Status',
+    scheduledAt: 'Publish at',
     seo: 'SEO',
     updated: 'Updated',
     actions: 'Actions',

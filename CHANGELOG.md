@@ -43,13 +43,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | Public site i18n (wave 5c) | **2.0.50** | [below](#2050--2026-07-22) |
 | Ops hotfix: dates, timezone, maintenance, logs (ISS-063–071) | **2.0.51** | [below](#2051--2026-07-23) |
 | Branding, ACL v nastaveniach, CI fixes (ISS-072–074) | **2.0.52** | [below](#2052--2026-07-23) |
+| It.59 — Odložená publikácia (scheduled publish) | **2.0.53** | [below](#2053--2026-07-23) |
 | It.19b–19d — Security runtime, auth UX, password policy | **2.0.45** | [below](#2045--2026-07-21) |
 
 ---
 
 ## [Unreleased]
 
-*(Ďalej: wave **5d** It.15 hook emitters · plánované It.59–61 — pozri [ITERATION_BACKLOG.md](docs/ITERATION_BACKLOG.md).)*
+*(Ďalej: wave **5d** It.15 hook emitters · plánované It.60–61 — pozri [ITERATION_BACKLOG.md](docs/ITERATION_BACKLOG.md).)*
+
+---
+
+## [2.0.53] – 2026-07-23
+
+**It.59 — Odložená publikácia** — editor + cron job `content.scheduled_publish`, stav `scheduled`, admin filter.  
+Detail: [ITERATION_59.md](docs/ITERATION_59.md).
+
+### Added
+
+- **Editor** — pole „Publikovať o“ (`datetime-local`), stav **Naplánované**, front matter `scheduledAt` (ISO 8601)
+- **`ContentScheduledPublishService`** + handler **`content.scheduled_publish`** — job registry (cron každú minútu), idempotentný publish due položiek
+- **Admin zoznamy** — filter „Naplánované“, stĺpec s dátumom publikácie (PagesManager)
+- **API** — `status: scheduled`, validácia `scheduledAt`; verejné API scheduled skryje (404)
+- PHPUnit + Vitest pre scheduling flow
+
+### Changed
+
+- Blueprint `page` / `article` — stav `scheduled` + pole `scheduledAt`
+- Pri uložení scheduled sa nastaví `publishApprovedAt` (OTP job respektuje schválenie)
 
 ---
 

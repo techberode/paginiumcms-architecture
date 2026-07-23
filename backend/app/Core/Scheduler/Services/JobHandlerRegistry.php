@@ -6,6 +6,7 @@ namespace PaginiumCMS\Core\Scheduler\Services;
 
 use PaginiumCMS\Core\Scheduler\Contracts\JobHandlerInterface;
 use PaginiumCMS\Core\Scheduler\Handlers\BackupScheduledHandler;
+use PaginiumCMS\Core\Scheduler\Handlers\ContentScheduledPublishHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\MonitoringPipelineHandler;
 
 /**
@@ -15,7 +16,8 @@ final class JobHandlerRegistry
 {
     public function __construct(
         private BackupScheduledHandler $backup,
-        private MonitoringPipelineHandler $monitoring
+        private MonitoringPipelineHandler $monitoring,
+        private ContentScheduledPublishHandler $scheduledPublish
     ) {
     }
 
@@ -24,6 +26,7 @@ final class JobHandlerRegistry
         return match ($key) {
             'backup.scheduled' => $this->backup,
             'monitoring.pipeline' => $this->monitoring,
+            'content.scheduled_publish' => $this->scheduledPublish,
             default => null,
         };
     }
@@ -36,6 +39,7 @@ final class JobHandlerRegistry
         return [
             ['key' => $this->backup->key(), 'label' => $this->backup->label()],
             ['key' => $this->monitoring->key(), 'label' => $this->monitoring->label()],
+            ['key' => $this->scheduledPublish->key(), 'label' => $this->scheduledPublish->label()],
         ];
     }
 }

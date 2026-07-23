@@ -207,4 +207,69 @@ class ContentControllerTest extends TestCase
         $data = $this->getJsonResponse($response);
         $this->assertFalse($data['success']);
     }
+
+    public function testCreatePageWithScheduledStatusRequiresScheduledAt(): void
+    {
+        $this->loginAsAdminUser();
+        $slug = 'scheduled-test-' . uniqid('', true);
+
+        $response = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/pages', [
+                'title' => 'Scheduled page',
+                'slug' => $slug,
+                'status' => 'scheduled',
+                'content' => 'Scheduled body',
+            ])
+        );
+
+        $this->assertSame(400, $response->getStatusCode());
+    }
+
+    public function testCreatePageWithScheduledAtStoresScheduledStatus(): void
+    {
+        $this->loginAsAdminUser();
+        $slug = 'scheduled-save-' . uniqid('', true);
+        $scheduledAt = (new \DateTimeImmutable('+1 day'))->format('c');
+
+        $response = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/pages', [
+                'title' => 'Scheduled page',
+                'slug' => $slug,
+                'status' => 'scheduled',
+                'scheduledAt' => $scheduledAt,
+                'content' => 'Scheduled body',
+            ])
+        );
+        $data = $this->getJsonResponse($response);
+
+        $this->assertSame(201, $response->getStatusCode());
+        $this->assertTrue($data['success']);
+        $this->assertSame('scheduled', $data['data']['status'] ?? null);
+        $this->assertSame($scheduledAt, $data['data']['scheduledAt'] ?? null);
+    }
+
+    public function testPublicGetScheduledPageReturns404(): void
+    {
+        $this->loginAsAdminUser();
+        $slug = 'scheduled-hidden-' . uniqid('', true);
+        $scheduledAt = (new \DateTimeImmutable('+1 day'))->format('c');
+
+        $create = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/pages', [
+                'title' => 'Hidden scheduled',
+                'slug' => $slug,
+                'status' => 'scheduled',
+                'scheduledAt' => $scheduledAt,
+                'content' => 'Hidden',
+            ])
+        );
+        $this->assertSame(201, $create->getStatusCode());
+
+        $_SESSION = [];
+        $this->currentUser = null;
+        $public = $this->handleRequest(
+            $this->createJsonRequest('GET', '/api/pages/' . $slug)
+        );
+        $this->assertSame(404, $public->getStatusCode());
+    }
 }

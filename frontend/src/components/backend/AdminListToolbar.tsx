@@ -66,6 +66,7 @@ export const AdminListToolbar: React.FC<AdminListToolbarProps> = ({
         { value: 'published', label: t('list.status.published') },
         { value: 'draft', label: t('list.status.draft') },
         { value: 'archived', label: t('list.status.archived') },
+        { value: 'scheduled', label: t('list.status.scheduled') },
       ],
     [statusOptions, t]
   );

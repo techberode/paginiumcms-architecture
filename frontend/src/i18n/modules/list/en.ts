@@ -7,6 +7,7 @@ export const listEn: MessageTree = {
     published: 'Published',
     draft: 'Draft',
     archived: 'Archived',
+    scheduled: 'Scheduled',
   },
   toolbar: {
     searchPlaceholder: 'Search…',

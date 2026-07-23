@@ -20,6 +20,7 @@ describe('editor i18n module', () => {
       'Profil editora nepovoľuje obrázky.'
     );
     expect(translate('en', 'editor.sitePreview.title')).toBe('Page preview');
-    expect(translate('sk', 'editor.tags.add')).toBe('Pridať tag');
+    expect(translate('sk', 'editor.shell.statusLabels.scheduled')).toBe('Naplánované');
+    expect(translate('en', 'editor.shell.scheduledAt')).toBe('Publish at');
   });
 });

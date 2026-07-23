@@ -5,6 +5,7 @@ declare(strict_types=1);
 use PaginiumCMS\Core\Scheduler\Commands\ProcessWorkerCommand;
 use PaginiumCMS\Core\Scheduler\Commands\RunSchedulerCommand;
 use PaginiumCMS\Core\Scheduler\Handlers\BackupScheduledHandler;
+use PaginiumCMS\Core\Scheduler\Handlers\ContentScheduledPublishHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\MonitoringPipelineHandler;
 use PaginiumCMS\Core\Scheduler\Services\CronExpressionEvaluator;
 use PaginiumCMS\Core\Scheduler\Services\JobHandlerRegistry;
@@ -40,10 +41,13 @@ return [
         ->constructor(get(\PaginiumCMS\Core\Backup\Contracts\BackupInterface::class)),
     MonitoringPipelineHandler::class => create(MonitoringPipelineHandler::class)
         ->constructor(get(\PaginiumCMS\Core\Monitoring\Services\MonitoringScheduler::class)),
+    ContentScheduledPublishHandler::class => create(ContentScheduledPublishHandler::class)
+        ->constructor(get(\PaginiumCMS\Core\FlatFile\Services\ContentScheduledPublishService::class)),
     JobHandlerRegistry::class => create(JobHandlerRegistry::class)
         ->constructor(
             get(BackupScheduledHandler::class),
-            get(MonitoringPipelineHandler::class)
+            get(MonitoringPipelineHandler::class),
+            get(ContentScheduledPublishHandler::class)
         ),
     ScheduledJobRunner::class => create(ScheduledJobRunner::class)
         ->constructor(

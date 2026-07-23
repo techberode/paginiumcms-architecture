@@ -11,6 +11,7 @@ import {
   X,
 } from 'lucide-react';
 import type { ContentType } from '../../api/drafts';
+import type { ContentEditorStatus } from '../../utils/contentScheduling';
 import type { NavigationItem } from '../../api/navigation';
 import type { EditorMode } from '../../utils/contentEditor';
 import type { EditorProfileId } from '../../utils/editorProfiles';
@@ -31,7 +32,8 @@ interface ContentEditorShellProps {
   isNew: boolean;
   title: string;
   editSlug: string;
-  status: 'draft' | 'published' | 'archived';
+  status: ContentEditorStatus;
+  scheduledAt: string;
   template: string;
   content: string;
   editorMode: EditorMode;
@@ -47,7 +49,8 @@ interface ContentEditorShellProps {
   lockIndicator?: React.ReactNode;
   onTitleChange: (value: string) => void;
   onSlugChange: (value: string) => void;
-  onStatusChange: (value: 'draft' | 'published' | 'archived') => void;
+  onStatusChange: (value: ContentEditorStatus) => void;
+  onScheduledAtChange: (value: string) => void;
   onTemplateChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
   onSeoChange: (values: SeoFormValues) => void;
@@ -71,6 +74,7 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
   title,
   editSlug,
   status,
+  scheduledAt,
   template,
   content,
   editorMode,
@@ -87,6 +91,7 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
   onTitleChange,
   onSlugChange,
   onStatusChange,
+  onScheduledAtChange,
   onTemplateChange,
   onDescriptionChange,
   onSeoChange,
@@ -124,6 +129,7 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
       draft: t('editor.shell.statusLabels.draft'),
       published: t('editor.shell.statusLabels.published'),
       archived: t('editor.shell.statusLabels.archived'),
+      scheduled: t('editor.shell.statusLabels.scheduled'),
     }),
     [t]
   );
@@ -221,7 +227,7 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
               <label className="form-label">{t('editor.shell.status')}</label>
               <select
                 value={status}
-                onChange={(e) => onStatusChange(e.target.value as ContentEditorShellProps['status'])}
+                onChange={(e) => onStatusChange(e.target.value as ContentEditorStatus)}
                 disabled={!canEdit}
                 className="form-input"
               >
@@ -231,6 +237,18 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
                   </option>
                 ))}
               </select>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">{t('editor.shell.scheduledAt')}</label>
+              <input
+                type="datetime-local"
+                value={scheduledAt}
+                onChange={(e) => onScheduledAtChange(e.target.value)}
+                disabled={!canEdit}
+                className="form-input"
+              />
+              <p className="mt-1 text-xs text-slate-400">{t('editor.shell.scheduledAtHint')}</p>
             </div>
 
             {type === 'page' && (

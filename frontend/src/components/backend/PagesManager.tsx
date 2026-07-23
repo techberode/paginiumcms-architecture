@@ -33,7 +33,8 @@ interface ContentItem {
   id: string;
   title: string;
   slug: string;
-  status: 'draft' | 'published' | 'archived';
+  status: 'draft' | 'published' | 'archived' | 'scheduled';
+  scheduledAt?: string;
   author: string;
   createdAt: string;
   updatedAt: string;
@@ -84,6 +85,7 @@ const STATUS_BADGE_CLASS: Record<ContentItem['status'], string> = {
   published: 'badge-success',
   draft: 'badge-warning',
   archived: 'badge-danger',
+  scheduled: 'badge-info',
 };
 
 export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) => {
@@ -449,6 +451,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                       direction={sortDirection}
                       onSort={handleSort}
                     />
+                    <th className="hide-tablet">{t('content.table.scheduledAt')}</th>
                     <th>{t('content.table.seo')}</th>
                     <SortableTableHeader
                       label={t('content.table.updated')}
@@ -493,6 +496,14 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                         <td className="text-gray-500 dark:text-gray-400 hide-mobile max-w-[180px] truncate">{item.slug}</td>
                         <td>
                           <span className={getStatusBadge(item.status)}>{statusLabel(item.status)}</span>
+                        </td>
+                        <td className="text-sm text-gray-500 dark:text-gray-400 hide-tablet">
+                          {item.status === 'scheduled'
+                            ? formatDisplayDate(
+                                String(item.scheduledAt ?? item.frontMatter?.scheduledAt ?? ''),
+                                locale
+                              ) || '—'
+                            : '—'}
                         </td>
                         <td>
                           <SeoHealthBadge level={seoLevel} />

@@ -51,6 +51,11 @@ import {
   type ContentEditorLoadData,
   type ContentSaveResponse,
 } from '../../utils/contentEditorApi';
+import {
+  datetimeLocalToIso,
+  isoToDatetimeLocalValue,
+  type ContentEditorStatus,
+} from '../../utils/contentScheduling';
 import { useI18n } from '../../context/I18nContext';
 
 interface MarkdownEditorProps {
@@ -75,7 +80,8 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
   const [storagePath, setStoragePath] = useState('');
   const [content, setContent] = useState('');
   const [baseContent, setBaseContent] = useState('');
-  const [status, setStatus] = useState<'draft' | 'published' | 'archived'>('draft');
+  const [status, setStatus] = useState<ContentEditorStatus>('draft');
+  const [scheduledAt, setScheduledAt] = useState('');
   const [commitMessage, setCommitMessage] = useState('');
   const [baseRevision, setBaseRevision] = useState('');
   const [loading, setLoading] = useState(false);
@@ -216,7 +222,12 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         setStoragePath(
           resolveStoragePath(type, loadedSlug, String(response.data.path ?? ''), storageFormat)
         );
-        setStatus(response.data.status || 'draft');
+        setStatus((response.data.status as ContentEditorStatus) || 'draft');
+        setScheduledAt(
+          isoToDatetimeLocalValue(
+            String(response.data.scheduledAt ?? fm.scheduledAt ?? '')
+          )
+        );
         setLoadedCreatedAt(String(response.data.createdAt ?? ''));
         setLoadedUpdatedAt(String(response.data.updatedAt ?? ''));
         setBaseRevision(response.data.revision || '');
@@ -280,6 +291,25 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
     setPendingDraftAt(null);
   };
 
+  const handleStatusChange = (value: ContentEditorStatus) => {
+    setStatus(value);
+    if (value !== 'scheduled') {
+      setScheduledAt('');
+    }
+  };
+
+  const handleScheduledAtChange = (value: string) => {
+    setScheduledAt(value);
+    if (value) {
+      setStatus('scheduled');
+      return;
+    }
+
+    if (status === 'scheduled') {
+      setStatus('draft');
+    }
+  };
+
   const handleSave = useCallback(
     async (forceRevision?: string, contentOverride?: string) => {
       if (!title.trim()) {
@@ -318,6 +348,11 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
           editorProfile,
           editorMode,
         };
+
+        const scheduledIso = datetimeLocalToIso(scheduledAt);
+        if (scheduledIso) {
+          data.scheduledAt = scheduledIso;
+        }
 
         if (type === 'page' && template.trim()) {
           data.template = template.trim();
@@ -407,6 +442,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
       title,
       content,
       status,
+      scheduledAt,
       commitMessage,
       baseRevision,
       baseContent,
@@ -546,6 +582,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         title={title}
         editSlug={editSlug}
         status={status}
+        scheduledAt={scheduledAt}
         template={template}
         content={content}
         editorMode={editorMode}
@@ -564,7 +601,8 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
           setSlugTouched(true);
           setEditSlug(value);
         }}
-        onStatusChange={setStatus}
+        onStatusChange={handleStatusChange}
+        onScheduledAtChange={handleScheduledAtChange}
         onTemplateChange={setTemplate}
         onDescriptionChange={(value) => setSeo((prev) => ({ ...prev, seoDescription: value }))}
         onSeoChange={setSeo}

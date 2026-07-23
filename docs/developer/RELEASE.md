@@ -1,9 +1,9 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.0.52** · 2026-07-23 · tag **`v2.0.52`** (po push)  
+> Posledná verzia: **2.0.53** · 2026-07-23 · tag **`v2.0.53`** (po push)  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release.
 
-> **Poznámka k verziám:** … **2.0.49** → `1ac58cf` · **2.0.50** → `67d77bb` · **2.0.51** → `d9b7171` · **2.0.52** → *(commit po release push)*.
+> **Poznámka k verziám:** … **2.0.50** → `67d77bb` · **2.0.51** → `d9b7171` · **2.0.52** → `9d930a1` · **2.0.53** → *(commit po release push)*.
 
 ### Kontinuita verzií (nepreskakovať)
 
@@ -12,9 +12,88 @@
 | 2.0.49 | `v2.0.49` | `1ac58cf` | ✅ tagged |
 | **2.0.50** | **`v2.0.50`** | **`67d77bb`** | ✅ tagged |
 | **2.0.51** | **`v2.0.51`** | **`d9b7171`** | ✅ tagged |
-| **2.0.52** | **`v2.0.52`** | *(pending)* | ⏳ release |
+| **2.0.52** | **`v2.0.52`** | **`9d930a1`** | ✅ tagged |
+| **2.0.53** | **`v2.0.53`** | *(pending)* | ⏳ release |
 
-**Pravidlo:** Ďalší release musí byť **`v2.0.53`**, nie skok. Pred každým novým číslom: `git tag -l 'v2.0.5*' | sort -V`.
+**Pravidlo:** Ďalší release musí byť **`v2.0.54`**, nie skok. Pred každým novým číslom: `git tag -l 'v2.0.5*' | sort -V`.
+
+---
+
+## 2.0.53 — It.59 scheduled publish (editor + cron)
+
+```bash
+npm run type-check          # → 0 errors
+npm test -- --run           # → 228/228
+./vendor/bin/phpunit        # → 826 passed, 15 skipped
+./vendor/bin/phpstan analyse --level=8 backend/app backend/tests  # → 0 errors
+```
+
+**Po deployi (rebuild FE + reštart PHP + cron):**
+
+1. **Editor stránky/článku** — pole „Publikovať o“ → uložiť → stav **Naplánované**
+2. **Admin zoznam** — filter „Naplánované“ + stĺpec dátumu
+3. **Cron** — `php backend/bin/console scheduler:run` každú minútu (job `content-scheduled-publish`)
+4. Po `scheduledAt` sa obsah automaticky prepne na **Publikované** (do ~1 min)
+5. Verejný web — scheduled obsah **nie je** viditeľný (404)
+
+### Commit
+
+```bash
+git add -A
+git commit -m "$(cat <<'EOF'
+release: 2.0.53 — It.59 scheduled publish (editor + cron job).
+
+Editor datetime picker, status scheduled, ContentScheduledPublishService + content.scheduled_publish handler, admin list filter, PHPUnit/Vitest coverage.
+EOF
+)"
+git tag v2.0.53
+git push origin main
+git push origin v2.0.53
+```
+
+*(Po commite doplň hash do tabuľky a GitHub Release body.)*
+
+---
+
+## GitHub Release — copy-paste (2.0.53)
+
+**Title:**
+
+```
+2.0.53 — Scheduled publish (It.59): editor picker + cron job
+```
+
+**Body:**
+
+```markdown
+**Tag:** `v2.0.53` · **Target:** `main` · **Commit:** `<HASH>`
+
+### Summary
+
+After **2.0.52**: **scheduled publish** for pages and articles — pick date/time in the editor, content stays hidden until cron publishes it automatically via It.29 job queue.
+
+### Added
+
+- **Editor** — “Publish at” datetime picker, status **Scheduled**, `scheduledAt` in front matter
+- **`content.scheduled_publish`** job — runs every minute; `ContentScheduledPublishService` publishes due items
+- **Admin lists** — “Scheduled” status filter + publish date column
+- **API** — `status: scheduled` + `scheduledAt` validation; public API returns 404 for scheduled content
+- Tests: PHPUnit (service + API) · Vitest (scheduling utils + i18n)
+
+### Changed
+
+- Blueprint page/article — `scheduled` status + `scheduledAt` field
+- OTP-aware scheduled job — requires `publishApprovedAt` when publish OTP is enabled
+
+### Tests
+
+- PHPUnit: **826** passed (15 skipped) · Vitest: **228** · PHPStan L8: **0 errors**
+
+### Docs
+
+- [CHANGELOG.md](CHANGELOG.md) — 2.0.53
+- [docs/ITERATION_59.md](docs/ITERATION_59.md)
+```
 
 ---
 
