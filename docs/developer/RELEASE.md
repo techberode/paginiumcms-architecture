@@ -3,7 +3,7 @@
 > Posledná verzia: **2.0.56** · 2026-07-23 · tag **`v2.0.56`** (po push)  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release.
 
-> **Poznámka k verziám:** … **2.0.54** → `2338fe9` · **2.0.55** → `d8c3437` · **2.0.56** → *(tento commit)*.
+> **Poznámka k verziám:** … **2.0.55** → `d8c3437` · **2.0.56** → `f61e55d`.
 
 ### Kontinuita verzií (nepreskakovať)
 
@@ -16,7 +16,7 @@
 | **2.0.53** | **`v2.0.53`** | **`aee1494`** | ✅ tagged |
 | **2.0.54** | **`v2.0.54`** | **`2338fe9`** | ✅ tagged |
 | **2.0.55** | **`v2.0.55`** | **`d8c3437`** | ✅ tagged |
-| **2.0.56** | **`v2.0.56`** | *(pending)* | ⏳ tento release |
+| **2.0.56** | **`v2.0.56`** | **`f61e55d`** | ✅ tagged (push pending) |
 
 **Pravidlo:** Ďalší release musí byť **`v2.0.57`** (FINAL_BETA1 Fáza A / Wave 5f), nie skok. Pred každým novým číslom: `git tag -l 'v2.0.5*' | sort -V`.
 
@@ -60,7 +60,7 @@ git push origin v2.0.56
 **Body:**
 
 ```markdown
-**Tag:** `v2.0.56` · **Target:** `main` · **Commit:** *(fill after push)*
+**Tag:** `v2.0.56` · **Target:** `main` · **Commit:** `f61e55d`
 
 ### Summary
 
