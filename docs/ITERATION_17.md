@@ -1,7 +1,7 @@
 # Iteration 17 – API↔Frontend Scaffold Law
 
-**Status:** Partial  
-**Version:** 2.0.9 (barrel + `content.ts` fixed in It. 21)
+**Status:** Partial (MVP **Wave 5e** ✅ — CONTRIBUTING + barrel lint)  
+**Version:** 2.0.55 (5e) · barrel + `content.ts` fixed in It. 21 / 2.0.9
 
 ## Summary
 
@@ -18,6 +18,7 @@ endpoint → api/*.ts → component/route → API.md / API_CONTRACT.md
 - Typed modules: `auth.ts`, `media.ts`, `settings.ts`, `locks.ts`, `drafts.ts`, …
 - `backup.ts`, `audit.ts`, `codeEditor.ts` – admin API clients
 - **2.0.9:** `content.ts`, `user.ts`; fixed `api/index.ts` barrel
+- **Wave 5e (2.0.55):** full barrel exports, `CONTRIBUTING.md`, `npm run lint:api-barrel` + CI
 - [API_CONTRACT.md](architecture/API_CONTRACT.md) – response shapes
 
 ## Remaining ⏳
@@ -25,7 +26,8 @@ endpoint → api/*.ts → component/route → API.md / API_CONTRACT.md
 | Item | Description |
 |------|-------------|
 | Replace raw `useApi` | Migrate `PagesManager`, `DashboardView`, etc. to typed clients |
-| `CONTRIBUTING.md` | Checklist for new endpoints |
+| ~~`CONTRIBUTING.md`~~ | ✅ Wave 5e — [CONTRIBUTING.md](developer/CONTRIBUTING.md) |
+| ~~API barrel lint~~ | ✅ `npm run lint:api-barrel` + CI |
 | Code Editor wizard | “New extension” scaffold generator |
 | Full `API.md` refresh | Endpoint inventory at 2.0.9+ state |
 

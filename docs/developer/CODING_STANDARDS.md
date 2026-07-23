@@ -343,7 +343,7 @@ Odpoveď vždy v tvare jednotného Error Handlera:
 | **It. 14** | `CodePolicyEngine`, security scan, rozšírený `SyntaxChecker`, FE policy errors, `codePolicy` v settings |
 | **It. 15** | Validácia pri importe doplnku, `PluginManager` |
 | **It. 16** | Monaco + policy gate v UI, editácia modulov/tém |
-| **It. 17** | Scaffold vynucujúci ZÁKON 2, CI lint endpoint↔FE |
+| **It. 17** | Scaffold vynucujúci ZÁKON 2, CI lint endpoint↔FE | ✅ MVP Wave 5e — `lint:api-barrel` + [CONTRIBUTING.md](CONTRIBUTING.md) |
 
 ---
 

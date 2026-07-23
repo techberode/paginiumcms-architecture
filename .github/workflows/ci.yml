@@ -51,6 +51,8 @@ jobs:
         run: npm run type-check
       - name: ESLint
         run: npm run lint
+      - name: API barrel lint (It.17)
+        run: npm run lint:api-barrel
       - run: npm test
       - run: npm run test:msw
       - run: npm run build
