@@ -16,6 +16,15 @@ export const settingsSk: MessageTree = {
     "description": "Nastavenie QR kódu a TOTP autentifikátora je v samostatnej sekcii bezpečnosti účtu.",
     "link": "Prejsť na bezpečnosť účtu"
   },
+  "timezoneSelect": {
+    "placeholder": "Vyberte časové pásmo…",
+    "searchPlaceholder": "Hľadať mesto alebo pásmo…",
+    "noResults": "Nenašlo sa žiadne pásmo.",
+    "common": "Často používané",
+    "all": "Všetky pásma",
+    "dstActive": "Letný čas je v tomto pásme práve aktívny.",
+    "dstInactive": "Letný čas je v tomto pásme práve neaktívny."
+  },
   "cache": {
     "title": "Cache systému",
     "description": "Manuálne vymazanie cache po deployi alebo keď verejný web zobrazuje starý obsah. Odporúčané: najprv „Cache obsahu“.",
@@ -54,6 +63,7 @@ export const settingsSk: MessageTree = {
   },
   "groups": {
     "general": "Všeobecné",
+    "maintenance": "Režim údržby",
     "content": "Obsah",
     "editor": "Editor",
     "smtp": "Email / SMTP",
@@ -102,15 +112,62 @@ export const settingsSk: MessageTree = {
         "label": "Jazyk administrácie"
       },
       "timezone": {
-        "label": "Časové pásmo"
+        "label": "Časové pásmo",
+        "help": "Platí pre logy, audit a naplánované reporty."
       },
-      "maintenanceMode": {
-        "label": "Režim údržby",
-        "help": "Zablokuje verejný web okrem administrácie."
+      "timezoneDst": {
+        "label": "Letný čas (DST)",
+        "help": "Zapnuté = automatická korekcia letného času podľa zvoleného pásma. Vypnuté = stály zimný čas bez posunu."
       },
       "allowRegistration": {
         "label": "Povoliť registráciu",
-        "help": "Vypnutím zablokujete POST /api/auth/register."
+        "help": "Vypnutím zablokujete POST /api/auth/register. Počas režimu údržby je registrácia vždy vypnutá."
+      }
+    },
+    "maintenance": {
+      "mode": {
+        "label": "Aktívny režim",
+        "help": "Naraz môže byť zapnutý iba jeden režim."
+      },
+      "heroImageUrl": {
+        "label": "Pozadie (URL)",
+        "help": "Voliteľný obrázok na pozadí oboch stránok."
+      },
+      "newsletterEnabled": {
+        "label": "Povoliť newsletter"
+      },
+      "newsletterHint": {
+        "label": "Text newsletteru"
+      },
+      "comingSoonBadge": {
+        "label": "Coming Soon – odznak"
+      },
+      "comingSoonTitle": {
+        "label": "Coming Soon – nadpis"
+      },
+      "comingSoonSubtitle": {
+        "label": "Coming Soon – podnadpis"
+      },
+      "comingSoonBody": {
+        "label": "Coming Soon – telo"
+      },
+      "maintenanceBadge": {
+        "label": "Údržba – odznak"
+      },
+      "maintenanceTitle": {
+        "label": "Údržba – nadpis"
+      },
+      "maintenanceSubtitle": {
+        "label": "Údržba – podnadpis"
+      },
+      "maintenanceBody": {
+        "label": "Údržba – telo"
+      },
+      "maintenanceShowContactForm": {
+        "label": "Zobraziť kontaktný formulár"
+      },
+      "maintenanceContactSubject": {
+        "label": "Predmet správy z údržby"
       }
     },
     "content": {
@@ -666,6 +723,22 @@ export const settingsSk: MessageTree = {
     "language": {
       "sk": "Slovenčina",
       "en": "English"
+    }
+  },
+  "maintenance": {
+    "mode": {
+      "off": {
+        "title": "Vypnuté",
+        "description": "Verejný web beží normálne."
+      },
+      "comingSoon": {
+        "title": "Coming Soon",
+        "description": "Nová stránka pred spustením — teaser s newsletterom."
+      },
+      "underMaintenance": {
+        "title": "Under Maintenance",
+        "description": "Dočasná údržba existujúceho webu so správou pre návštevníkov."
+      }
     }
   }
 };

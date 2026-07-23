@@ -8,6 +8,7 @@ namespace PaginiumCMS\Core\CodeEditor\Services;
 use PaginiumCMS\Core\Logging\Contracts\LoggerInterface;
 use PaginiumCMS\Core\Logging\Models\LogEntry;
 use PaginiumCMS\Core\Logging\Models\LogSeverity;
+use PaginiumCMS\Core\CodePolicy\Exceptions\CodePolicyViolationException;
 use PaginiumCMS\Core\Developer\DeveloperMode;
 
 class CodeEditorLogger
@@ -93,6 +94,36 @@ class CodeEditorLogger
                 'path' => $path,
                 'changes' => $changes,
                 'summary' => $this->summarizeChanges($changes)
+            ]);
+        }
+    }
+
+    /**
+     * Zaznamená zamietnutie zápisu kvôli code policy (422) — nie systémovú chybu.
+     *
+     * @param array<int|string, mixed> $metadata
+     */
+    public function logPolicyRejection(string $path, CodePolicyViolationException $error, array $metadata = []): void
+    {
+        $entry = new LogEntry(
+            LogSeverity::WARNING,
+            'code_editor_policy',
+            sprintf('Code policy rejected save for %s', $path)
+        );
+
+        $entry->setContext(array_merge([
+            'path' => $path,
+            'errors' => $error->getErrors(),
+            'timestamp' => date('Y-m-d H:i:s'),
+            'session' => $this->sessionContext,
+        ], $metadata));
+
+        $this->logger->warning($entry->getMessage(), $entry->getContext() ?? []);
+
+        if ($this->developerMode->isActive()) {
+            $this->developerMode->logQuery('CODE_POLICY_REJECTED', [
+                'path' => $path,
+                'errors' => $error->getErrors(),
             ]);
         }
     }

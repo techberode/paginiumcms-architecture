@@ -1,6 +1,6 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-22 · verzia **2.0.50** (wave 5c public site i18n / ISS-062)
+> Posledná aktualizácia: 2026-07-23 · verzia **2.0.51** · ISS-063–071
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
 
@@ -78,6 +78,15 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-060 | `settings/en.ts` workflows — SK copy-paste v EN katalógu (OTP labely) | Stredná (i18n UX) | ✅ Opravené (**2.0.47** / `f0a885c`) |
 | ISS-061 | Audit správy v EN admin locale zostávali po slovensky | Stredná (i18n UX) | ✅ Opravené (**2.0.49**) |
 | ISS-062 | Verejný web mal hardcoded SK aj pri EN admin locale | Stredná (i18n UX) | ✅ Opravené (**2.0.50**) |
+| ISS-063 | Admin + verejný web: `RangeError: Invalid time value` (dátumy) | Vysoká (prod crash) | ✅ **2.0.51** |
+| ISS-064 | CI `tsc`: `DEFAULT_LOCALE` neexportovaný z `i18n/index.ts` | Nízka (CI) | ✅ **2.0.51** |
+| ISS-065 | Admin logy o **2 h dozadu** (PHP timezone UTC) | Stredná (ops) | ✅ **2.0.51** |
+| ISS-066 | PHPUnit: `CronExpressionEvaluator` same-minute + DST | Nízka (CI) | ✅ **2.0.51** |
+| ISS-067 | PHPUnit: `LocaleMiddlewareTest` mock po timezone middleware | Nízka (CI) | ✅ **2.0.51** |
+| ISS-068 | Code policy zamietnutie logované ako **ERROR** + stack trace | Stredná (logy) | ✅ **2.0.51** |
+| ISS-069 | Nastavenia: časové pásmo len voľný text | Stredná (admin UX) | ✅ **2.0.51** |
+| ISS-070 | Nastavenia: chýba prepínač **letného času (DST)** | Stredná (ops) | ✅ **2.0.51** |
+| ISS-071 | Logy: chýbajú bulk akcie, delete-all a stránkovanie | Stredná (admin UX) | ✅ Opravené · **2.0.51** |
 
 
 
@@ -1560,6 +1569,157 @@ Spustené z komponentov, ktoré boli migrované na `useI18n()` v It.18f, ale uni
 
 ---
 
+## ISS-063 – `RangeError: Invalid time value` (admin + verejný web) — OPRAVENÉ LOKÁLNE (release 2.0.51 ⏳)
+
+**Symptóm:** Po deployi **2.0.50** pád Reactu v konzole:
+
+```text
+RangeError: Invalid time value
+  at formatDistanceToNow … VersionHistory.tsx   ← admin /pages/:slug
+  at toLocaleDateString … SiteSearchModal       ← verejný web
+```
+
+Stránka sa nevykreslí; pri admin editore to vyzeralo aj ako „odhlásenie“ (remount shellu).
+
+**Príčina:**
+
+1. **Admin:** `VersionHistory` volal `formatDistanceToNow(new Date(version.createdAt || ''))` — prázdny `createdAt` → Invalid Date → výnimka
+2. **Verejný web:** `SiteSearchModal`, `PageRenderer`, `ArticleComments` — `new Date(undefined)` / `"undefined"` bez validácie
+3. Wave 5c pridala priame `toLocaleDateString()` na nevalidované API hodnoty
+
+**Implementované riešenie (lokálne → **2.0.51**):**
+
+- `contentDates.ts` — `formatDisplayDate()`, `formatDisplayDateTime()`, `formatRelativeTime()`, `resolveContentDate()`
+- `VersionHistory.tsx`, `AuditTrail.tsx`, `PagesManager.tsx`, `LockIndicator.tsx`, … — bezpečné helpery
+- Neplatný dátum → em dash `—` namiesto výnimky
+- Vitest: `contentDates.test.ts` rozšírené
+
+**Overenie:**
+
+1. `/pages/home` (existujúca stránka) — história verzií bez pádu
+2. Site search — konzola bez `Invalid time value`
+3. Stránka bez `createdAt` — zobrazí `—`
+
+**Súbory:** `contentDates.ts`, `VersionHistory.tsx`, `SiteSearchModal.tsx`, `PageRenderer.tsx`, …
+
+**Súvisí s:** ISS-062, wave 5c, [RELEASE.md](developer/RELEASE.md) **2.0.51**.
+
+---
+
+## ISS-064 – CI `tsc`: `DEFAULT_LOCALE` not exported — OPRAVENÉ LOKÁLNE (release 2.0.51 ⏳)
+
+**Symptóm:** GitHub Actions / lokálne `npm run type-check`:
+
+```text
+error TS2459: Module '"../i18n"' declares 'DEFAULT_LOCALE' locally, but it is not exported.
+  src/utils/contentDates.ts(1,10)
+  src/utils/readingTime.ts(1,10)
+  src/utils/validation.ts(9,10)
+```
+
+**Príčina:** Wave 5c pridala import `DEFAULT_LOCALE` z `../i18n` v utility súboroch, ale `frontend/src/i18n/index.ts` exportoval len typy, nie konštantu.
+
+**Implementované riešenie (lokálne → **2.0.51**):**
+
+```typescript
+export { DEFAULT_LOCALE, type Locale, type MessageTree, type MessageValue } from './types';
+```
+
+**Overenie:** `npm run type-check` → 0 errors.
+
+**Súbory:** `frontend/src/i18n/index.ts`.
+
+**Súvisí s:** ISS-062, wave 5c hotfix.
+
+---
+
+## ISS-065 – Admin logy o 2 hodiny dozadu (timezone) — OPRAVENÉ LOKÁLNE (2.0.51 ⏳)
+
+**Symptóm:** V administrácii (Logy, audit) čas záznamov o **2 h menej** než skutočný lokálny čas (SK leto = UTC+2). Nie je to NTP sync — ide o **časovú zónu PHP**.
+
+**Príčina:** `APP_TIMEZONE=Europe/Bratislava` v `.env` sa **neaplikovalo** pri boote. PHP bežalo v UTC; `date('Y-m-d H:i:s')` zapisovalo UTC do logov.
+
+**Implementované riešenie:**
+
+- `backend/bootstrap/timezone.php` — aplikuje `APP_TIMEZONE` hneď po `.env`
+- `LocaleMiddleware` — aplikuje `general.timezone` + `general.timezoneDst` z nastavení
+- `AppTimezone` helper; health check `system` vracia `php_timezone`, `php_time`, `utc_time`
+
+**Overenie:** Health panel → `php_timezone` = `Europe/Bratislava`, `php_time` sedí s hodinkami.
+
+**Súbory:** `AppTimezone.php`, `bootstrap/timezone.php`, `LocaleMiddleware.php`, `SystemChecker.php`.
+
+---
+
+## ISS-066 – PHPUnit CronExpressionEvaluator same-minute — OPRAVENÉ (2.0.51 ⏳)
+
+**Symptóm:** `./vendor/bin/phpunit` — `CronExpressionEvaluatorTest::testIsDueSinceLastRunSkipsSameMinute` failed (true !== false).
+
+**Príčina:** `isDueSinceLastRun()` porovnával `$at->format()` v lokálnej zóne a `date()` cez `strtotime()` v default PHP zone — pri `Europe/Bratislava` v php.ini nesúlad o 2 h.
+
+**Riešenie:** Parsovanie `lastRun` cez `DateTimeImmutable`, porovnanie v rovnakej zóne ako `$at`; testy s explicitným `UTC`.
+
+**Súbor:** `CronExpressionEvaluator.php`, `CronExpressionEvaluatorTest.php`.
+
+---
+
+## ISS-067 – PHPUnit LocaleMiddlewareTest — OPRAVENÉ (2.0.51 ⏳)
+
+**Symptóm:** `LocaleMiddlewareTest::testUsesConfiguredLanguageFromSettings` — mock očakával len `general.language`, middleware volá aj `general.timezone`.
+
+**Riešenie:** Mock cez `willReturnCallback()` pre `general.language`, `general.timezone`, `general.timezoneDst`.
+
+**Súbor:** `LocaleMiddlewareTest.php`.
+
+---
+
+## ISS-068 – Code policy v logoch ako ERROR — OPRAVENÉ (2.0.51 ⏳)
+
+**Symptóm:** V admin Logoch záznam:
+
+```text
+Error in file backend/app/Modules/PolicyTest.php: Code policy validation failed
+```
+
+(+ celý stack trace). Vzniká pri teste `CodeEditorControllerTest::testSaveFileRejectsPolicyViolation` (zámerné `eval("bad")`) ale aj pri reálnom zamietnutí save v editore.
+
+**Príčina:** `CodeEditorManager` volal `logError()` pre `CodePolicyViolationException` — očakávané 422, nie systémová chyba.
+
+**Riešenie:** Nové `logPolicyRejection()` — severity **WARNING**, kategória `code_editor_policy`, bez stack trace, len `errors` z policy.
+
+**Súbory:** `CodeEditorLogger.php`, `CodeEditorManager.php`.
+
+---
+
+## ISS-069 – Časové pásmo: vyhľadávateľný zoznam — OPRAVENÉ (2.0.51 ⏳)
+
+**Symptóm:** Nastavenia → Všeobecné → Časové pásmo bolo obyčajné textové pole (preklep → neplatná zóna).
+
+**Riešenie:**
+
+- Schéma: typ `timezone`, validácia `timezone` (IANA)
+- FE: `TimezoneSelect.tsx` — search + často používané pásma + offset v label
+- `utils/timezones.ts`, pravidlo v `Validator.php` + FE zrkadlo
+
+**Súbory:** `SettingsSchema.php`, `TimezoneSelect.tsx`, `timezones.ts`, `SettingsView.tsx`.
+
+---
+
+## ISS-070 – Letný čas (DST) v nastaveniach — OPRAVENÉ (2.0.51 ⏳)
+
+**Symptóm:** Chýbal prepínač letného času; admin nevedel, či CMS aplikuje DST korekciu.
+
+**Riešenie:**
+
+- Nové pole `general.timezoneDst` (bool, default **true**)
+- Zapnuté = IANA pásmo s automatickým DST (`Europe/Bratislava` → CET/CEST)
+- Vypnuté = fixný zimný offset (bez letného posunu)
+- UI: checkbox v nastaveniach + stav „Letný čas je aktívny/neaktívny“ pod výberom pásma
+
+**Súbory:** `SettingsSchema.php`, `AppTimezone.php`, `TimezoneSelect.tsx`, i18n `settings.*`.
+
+---
+
 ## ISS-012 – CSRF middleware nezapojený (audit S3) — VYRIEŠENÉ
 
 **Symptóm / riziko:** `CsrfProtectionManager` existoval a bol testovaný, ale **nebol nikde zapojený** — žiadny `CsrfMiddleware`, backend `X-CSRF-TOKEN` nevalidoval. Jediná ochrana bola `SameSite=Lax` cookie. Navyše FE `authApi.getCsrfToken()` bol definovaný, ale **nikde sa nevolal** → token sa reálne ani neposielal.
@@ -1605,7 +1765,22 @@ Spustené z komponentov, ktoré boli migrované na `useI18n()` v It.18f, ale uni
 
 ---
 
+## ISS-071 – Logy: bulk akcie, delete-all, stránkovanie — VYRIEŠENÉ (**2.0.51**)
 
+**Symptóm:** Admin **Logy** (`/logs`) zobrazoval max 200 záznamov bez stránkovania, bez výberu riadkov, bez ručného mazania/archivácie vybraných položiek ani kompletného vymazania.
+
+**Implementované riešenie (2.0.51):**
+
+- **FE `LogsManager`** — checkboxy, `BulkActionBar` (Archivovať / Vymazať), filter Aktívne/Archivované/Všetky, `AdminListPagination`, number input pre page size (1–500)
+- **BE** — `ApplicationLogReader`: `count()`, `deleteByIds()`, `archiveByIds()`, `deleteAll()`; list API vracia `total`
+- **API** — `POST /api/admin/logs/bulk`, `POST /api/admin/logs/delete-all`
+- **`AdminListToolbar`** — režim `pageSizeInputMode="number"` pre ručné zadanie
+
+**Overenie:** PHPUnit `ApplicationLogReaderTest` + `LogControllerTest`; Vitest 226/226; full PHPUnit 816 OK.
+
+**Súbory:** `ApplicationLogReader.php`, `LogController.php`, `logs.php`, `LogsManager.tsx`, `logs.ts`, `AdminListToolbar.tsx`.
+
+---
 
 ## Externé / irelevantné hlášky
 

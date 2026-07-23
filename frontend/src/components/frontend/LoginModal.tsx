@@ -15,6 +15,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
 import { securityApi, type SsoProvider } from '../../api/security';
 import { useSettingsContext } from '../../context/SettingsContext';
+import { isMaintenanceActive } from '../../api/maintenance';
 import { useI18n } from '../../context/I18nContext';
 import { ADMIN_DEFAULT_ROUTE } from '../../config/adminNavSections';
 import { AuthShell, authButtonClass, authInputClass, authLabelClass } from '../auth/AuthShell';
@@ -34,7 +35,8 @@ export const LoginModal: React.FC = () => {
   const { t } = useI18n();
   const { settings } = useSettingsContext();
   const demoCredentials = settings.demo?.enabled ? settings.demo.credentials : null;
-  const allowRegistration = settings.general.allowRegistration !== false;
+  const allowRegistration =
+    settings.general.allowRegistration !== false && !isMaintenanceActive(settings.maintenance?.mode);
 
   useEffect(() => {
     void (async () => {

@@ -7,6 +7,7 @@
 // odpoveď so `errors` mapou má rovnaký tvar ako výstup `validate()` tu).
 
 import { DEFAULT_LOCALE, translate, type Locale } from '../i18n';
+import { isValidTimezone } from './timezones';
 
 export type Rule = string; // napr. 'required', 'min:2', 'in:sk,en'
 
@@ -98,6 +99,10 @@ function applyRule(field: string, rule: Rule, value: unknown, rules: Rule[]): st
       return (param ?? '').split(',').includes(String(value))
         ? null
         : `Pole „${field}“ má neprípustnú hodnotu.`;
+    case 'timezone':
+      return isValidTimezone(String(value))
+        ? null
+        : `Pole „${field}“ musí byť platné IANA časové pásmo.`;
     default:
       return null;
   }

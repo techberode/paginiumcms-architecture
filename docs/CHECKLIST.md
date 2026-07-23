@@ -55,7 +55,7 @@ Pozri [architecture/CONTENT_API.md](architecture/CONTENT_API.md).
 |------|--------|-----|
 | Trash | `/api/admin/trash/*` | ✅ `TrashManager` |
 | Firewall | `/api/admin/firewall/*` | ✅ `FirewallManager` |
-| Logs | `/api/admin/logs/*` | ✅ `LogsManager` |
+| Logs | `/api/admin/logs/*` | ✅ `LogsManager` (bulk, pagination, delete-all) |
 | Counts | `/api/admin/counts` | ✅ sidebar badges |
 | Messages | `/api/admin/messages/*` + bulk | ✅ `MessagesViewer` |
 | Comments mod | `/api/admin/comments/*` + bulk | ✅ `CommentsManager` |

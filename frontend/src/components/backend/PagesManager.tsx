@@ -27,6 +27,7 @@ import { resolveAdminMediaPreviewUrl, resolvePublicMediaUrl } from '../../api/me
 import type { ContentType } from '../../api/drafts';
 import { AdminListSkeleton } from '../ui/AdminListSkeleton';
 import { useI18n } from '../../context/I18nContext';
+import { formatDisplayDate } from '../../utils/contentDates';
 
 interface ContentItem {
   id: string;
@@ -119,7 +120,6 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
   const label = t(`content.${contentScope}.title`);
   const previewType = type === 'articles' ? 'article' : 'page';
   const itemLabel = t(`content.${contentScope}.itemAccusative`);
-  const dateLocale = locale === 'en' ? 'en-GB' : 'sk-SK';
 
   const statusLabel = (status: ContentItem['status']): string => {
     const key = `list.status.${status}`;
@@ -498,7 +498,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                           <SeoHealthBadge level={seoLevel} />
                         </td>
                         <td className="text-sm text-gray-500 dark:text-gray-400 hide-tablet">
-                          {new Date(item.updatedAt).toLocaleDateString(dateLocale)}
+                          {formatDisplayDate(item.updatedAt, locale)}
                         </td>
                         <td>
                           <div className="flex flex-wrap gap-2">

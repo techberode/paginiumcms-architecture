@@ -6,6 +6,7 @@ namespace PaginiumCMS\Core\Health\Services\Checkers;
 
 use PaginiumCMS\Core\Health\Contracts\HealthCheckInterface;
 use PaginiumCMS\Core\Health\Models\HealthStatus;
+use PaginiumCMS\Support\AppTimezone;
 
 class SystemChecker implements HealthCheckInterface
 {
@@ -34,8 +35,10 @@ class SystemChecker implements HealthCheckInterface
         }
 
         // 3. Časová zóna
-        if (!ini_get('date.timezone')) {
-            $issues[] = 'Nastavte date.timezone v php.ini';
+        $activeTimezone = date_default_timezone_get();
+        $configuredTimezone = AppTimezone::fromEnvironment();
+        if (!ini_get('date.timezone') && $activeTimezone === 'UTC' && $configuredTimezone !== 'UTC') {
+            $issues[] = 'PHP beží v UTC — nastavte APP_TIMEZONE alebo date.timezone v php.ini';
         }
 
         $status = empty($issues) ? HealthStatus::STATUS_PASS : HealthStatus::STATUS_WARN;
@@ -46,6 +49,10 @@ class SystemChecker implements HealthCheckInterface
             'php_version' => $phpVersion,
             'required_version' => $requiredVersion,
             'extensions' => $requiredExtensions,
+            'php_timezone' => $activeTimezone,
+            'php_time' => date('Y-m-d H:i:s'),
+            'utc_time' => gmdate('Y-m-d H:i:s'),
+            'configured_timezone' => $configuredTimezone,
             'issues' => $issues,
         ]);
         $check->setDuration(microtime(true) - $start);

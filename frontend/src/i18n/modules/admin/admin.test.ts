@@ -56,5 +56,7 @@ describe('admin i18n module', () => {
     expect(translate('en', 'admin.nav.dashboard')).toBe('Dashboard');
     expect(translate('sk', 'admin.header.viewWebsite')).toBe('Zobraziť web');
     expect(translate('en', 'admin.header.viewWebsite')).toBe('View website');
+    expect(translate('sk', 'admin.header.purgeCache')).toBe('Vymazať cache');
+    expect(translate('en', 'admin.header.purgeCache')).toBe('Clear cache');
   });
 });

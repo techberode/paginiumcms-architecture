@@ -5,7 +5,16 @@
 // pridanie novej skupiny na backende nevyžaduje zmenu tohto klienta.
 import apiClient, { ApiResponse } from './client';
 
-export type SettingFieldType = 'string' | 'text' | 'int' | 'bool' | 'email' | 'url' | 'enum' | 'password';
+export type SettingFieldType =
+  | 'string'
+  | 'text'
+  | 'int'
+  | 'bool'
+  | 'email'
+  | 'url'
+  | 'enum'
+  | 'password'
+  | 'timezone';
 
 export interface SettingField {
   key: string;
@@ -58,9 +67,9 @@ export interface PublicSettings {
     siteName: string;
     siteDescription?: string;
     language: string;
-    maintenanceMode: boolean;
     allowRegistration?: boolean;
   };
+  maintenance?: import('./maintenance').MaintenanceSettings;
   workflows?: {
     registrationOtpEnabled?: boolean;
   };

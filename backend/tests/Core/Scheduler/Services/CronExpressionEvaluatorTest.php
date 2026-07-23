@@ -32,9 +32,18 @@ final class CronExpressionEvaluatorTest extends TestCase
 
     public function testIsDueSinceLastRunSkipsSameMinute(): void
     {
-        $at = new \DateTimeImmutable('2026-07-18 10:15:30');
+        $timezone = new \DateTimeZone('UTC');
+        $at = new \DateTimeImmutable('2026-07-18 10:15:30', $timezone);
         $lastRun = '2026-07-18T10:15:00+00:00';
         $this->assertFalse($this->evaluator->isDueSinceLastRun('* * * * *', $lastRun, $at));
+    }
+
+    public function testIsDueSinceLastRunRunsOnNextMinute(): void
+    {
+        $timezone = new \DateTimeZone('UTC');
+        $at = new \DateTimeImmutable('2026-07-18 10:16:00', $timezone);
+        $lastRun = '2026-07-18T10:15:00+00:00';
+        $this->assertTrue($this->evaluator->isDueSinceLastRun('* * * * *', $lastRun, $at));
     }
 
     public function testDescribeNextRunReturnsFutureTimestamp(): void

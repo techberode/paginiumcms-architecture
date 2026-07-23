@@ -31,6 +31,8 @@ import {
 import { CacheManagerPanel } from './CacheManagerPanel';
 import { AdminHintCard } from './AdminHintCard';
 import { LoginBackgroundImagePicker } from './LoginBackgroundImagePicker';
+import { TimezoneSelect } from './TimezoneSelect';
+import { MaintenanceModeSelect } from './MaintenanceModeSelect';
 
 function resolveRequestedSettingsGroup(
   searchParams: URLSearchParams,
@@ -312,6 +314,54 @@ const SettingFieldRow: React.FC<RowProps> = ({ groupKey, field, register, watch,
         value={currentValue}
         onChange={(url) =>
           setValue(field.key, url, { shouldDirty: true, shouldValidate: true })
+        }
+        label={label}
+        help={help}
+        error={error}
+      />
+    );
+  }
+
+  if (groupKey === 'maintenance' && field.key === 'heroImageUrl') {
+    const currentValue = String(watch(field.key) ?? '');
+
+    return (
+      <LoginBackgroundImagePicker
+        value={currentValue}
+        onChange={(url) =>
+          setValue(field.key, url, { shouldDirty: true, shouldValidate: true })
+        }
+        label={label}
+        help={help}
+        error={error}
+      />
+    );
+  }
+
+  if (groupKey === 'maintenance' && field.key === 'mode') {
+    const currentValue = String(watch(field.key) ?? 'off');
+
+    return (
+      <MaintenanceModeSelect
+        value={currentValue}
+        onChange={(mode) =>
+          setValue(field.key, mode, { shouldDirty: true, shouldValidate: true })
+        }
+        label={label}
+        help={help}
+        error={error}
+      />
+    );
+  }
+
+  if (field.type === 'timezone') {
+    const currentValue = String(watch(field.key) ?? '');
+
+    return (
+      <TimezoneSelect
+        value={currentValue}
+        onChange={(timezone) =>
+          setValue(field.key, timezone, { shouldDirty: true, shouldValidate: true })
         }
         label={label}
         help={help}

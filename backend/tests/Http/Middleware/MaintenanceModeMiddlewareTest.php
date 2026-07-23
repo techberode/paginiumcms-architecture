@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Tests\Http\Middleware;
 
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
+use PaginiumCMS\Core\Settings\MaintenanceMode;
 use PaginiumCMS\Http\Middleware\MaintenanceModeMiddleware;
 use PaginiumCMS\Modules\Security\Contracts\AuthenticationInterface;
 use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
@@ -18,7 +19,7 @@ final class MaintenanceModeMiddlewareTest extends TestCase
 {
     public function testPassesWhenMaintenanceDisabled(): void
     {
-        $middleware = $this->makeMiddleware(false, false, null);
+        $middleware = $this->makeMiddleware(MaintenanceMode::OFF, false, null);
         $request = (new ServerRequestFactory())->createServerRequest('GET', '/api/pages');
 
         $expected = (new ResponseFactory())->createResponse(200);
@@ -30,7 +31,7 @@ final class MaintenanceModeMiddlewareTest extends TestCase
 
     public function testBlocksPublicApiWhenMaintenanceEnabled(): void
     {
-        $middleware = $this->makeMiddleware(true, false, null);
+        $middleware = $this->makeMiddleware(MaintenanceMode::UNDER_MAINTENANCE, false, null);
         $request = (new ServerRequestFactory())->createServerRequest('GET', '/api/pages');
 
         $handler = $this->createMock(RequestHandlerInterface::class);
@@ -43,7 +44,7 @@ final class MaintenanceModeMiddlewareTest extends TestCase
 
     public function testAllowsHealthDuringMaintenance(): void
     {
-        $middleware = $this->makeMiddleware(true, false, null);
+        $middleware = $this->makeMiddleware(MaintenanceMode::UNDER_MAINTENANCE, false, null);
         $request = (new ServerRequestFactory())->createServerRequest('GET', '/api/health');
 
         $expected = (new ResponseFactory())->createResponse(200);
@@ -58,7 +59,7 @@ final class MaintenanceModeMiddlewareTest extends TestCase
         $editor = new User();
         $editor->setRoles(['EDITOR']);
 
-        $middleware = $this->makeMiddleware(true, true, $editor);
+        $middleware = $this->makeMiddleware(MaintenanceMode::COMING_SOON, true, $editor);
         $request = (new ServerRequestFactory())->createServerRequest('GET', '/api/pages');
 
         $expected = (new ResponseFactory())->createResponse(200);
@@ -68,10 +69,10 @@ final class MaintenanceModeMiddlewareTest extends TestCase
         $this->assertSame(200, $middleware->process($request, $handler)->getStatusCode());
     }
 
-    private function makeMiddleware(bool $maintenance, bool $authenticated, ?User $user): MaintenanceModeMiddleware
+    private function makeMiddleware(string $mode, bool $authenticated, ?User $user): MaintenanceModeMiddleware
     {
         $settings = $this->createMock(SettingsRepositoryInterface::class);
-        $settings->method('group')->with('general')->willReturn(['maintenanceMode' => $maintenance]);
+        $settings->method('group')->with('maintenance')->willReturn(['mode' => $mode]);
 
         $auth = $this->createMock(AuthenticationInterface::class);
         $auth->method('isAuthenticated')->willReturn($authenticated);

@@ -42,6 +42,8 @@ export const adminSk: MessageTree = {
     engineBrand: 'Paginium Engine',
     fallbackTitle: 'Administrácia',
     apiMode: 'API Režim',
+    purgeCache: 'Vymazať cache',
+    purgeCacheTitle: 'Vymazať cache obsahu (stránky, články, feedy)',
     viewWebsite: 'Zobraziť web',
     changePassword: 'Zmeniť heslo',
     administrator: 'Administrátor',

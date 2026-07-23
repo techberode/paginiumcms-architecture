@@ -2,6 +2,7 @@
 // Builds a Zod schema from backend ValidationRules (Iteration 21).
 import { z } from 'zod';
 import type { RuleMap } from '../utils/validation';
+import { isValidTimezone } from '../utils/timezones';
 
 function isEmpty(value: unknown): boolean {
   return value === null || value === undefined || value === '';
@@ -46,6 +47,11 @@ function applyStringRules(rules: string[]): z.ZodTypeAny {
     switch (name) {
       case 'string':
       case 'required':
+        break;
+      case 'timezone':
+        schema = schema.refine((value) => isValidTimezone(String(value)), {
+          message: 'Neplatné časové pásmo.',
+        });
         break;
       case 'email':
         schema = schema.email('Neplatný e-mail.');

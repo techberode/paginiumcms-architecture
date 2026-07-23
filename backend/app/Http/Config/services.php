@@ -425,6 +425,19 @@ return [
             get(Validator::class),
             get(JsonResponder::class)
         ),
+    PaginiumCMS\Modules\Newsletter\Contracts\NewsletterRepositoryInterface::class => create(PaginiumCMS\Modules\Newsletter\Services\NewsletterRepository::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class)
+        ),
+    PaginiumCMS\Http\Controllers\Maintenance\MaintenanceController::class => create(PaginiumCMS\Http\Controllers\Maintenance\MaintenanceController::class)
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(PaginiumCMS\Modules\Newsletter\Contracts\NewsletterRepositoryInterface::class),
+            get(MessageRepositoryInterface::class),
+            get(Validator::class),
+            get(JsonResponder::class)
+        ),
     MessageController::class => create(MessageController::class)
         ->constructor(
             get(MessageRepositoryInterface::class),

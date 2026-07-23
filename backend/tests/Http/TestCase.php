@@ -45,8 +45,8 @@ abstract class TestCase extends BaseTestCase
     {
         $settings = $this->app->getContainer()->get(SettingsRepositoryInterface::class);
 
-        $settings->setGroup('general', array_merge($settings->group('general'), [
-            'maintenanceMode' => false,
+        $settings->setGroup('maintenance', array_merge($settings->group('maintenance'), [
+            'mode' => 'off',
         ]));
 
         $settings->setGroup('workflows', array_merge($settings->group('workflows'), [

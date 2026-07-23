@@ -98,6 +98,18 @@ class ValidatorTest extends TestCase
         $this->assertSame('sk', $ok['lang']);
     }
 
+    public function testTimezoneRule(): void
+    {
+        $bad = $this->collectErrors(['timezone' => 'Not/A/Zone'], ['timezone' => ['required', 'timezone']]);
+        $this->assertArrayHasKey('timezone', $bad);
+
+        $ok = $this->validator->validate(
+            ['timezone' => 'Europe/Bratislava'],
+            ['timezone' => ['required', 'timezone']]
+        );
+        $this->assertSame('Europe/Bratislava', $ok['timezone']);
+    }
+
     public function testCollectsMultipleFieldErrors(): void
     {
         $errors = $this->collectErrors(

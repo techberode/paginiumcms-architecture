@@ -4,8 +4,8 @@
 // Napojený na hook useContentLock (heartbeat + auto-release rieši hook/backend).
 import React from 'react';
 import { Lock, Unlock, Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { sk } from 'date-fns/locale';
+import { useI18n } from '../../context/I18nContext';
+import { formatRelativeTime } from '../../utils/contentDates';
 import { useContentLock } from '../../hooks/useContentLock';
 
 interface LockIndicatorProps {
@@ -21,6 +21,7 @@ interface LockIndicatorProps {
  * Vizuálny badge stavu zámku. Loading / Success / Error stavy podľa .cursorrules.
  */
 export const LockIndicator: React.FC<LockIndicatorProps> = ({ resourceId, enabled = true, onLockChange }) => {
+  const { locale } = useI18n();
   const { status, lock, error, retry } = useContentLock(resourceId, enabled);
 
   // Oznámime rodičovi, či používateľ smie editovať (drží zámok).
@@ -29,7 +30,7 @@ export const LockIndicator: React.FC<LockIndicatorProps> = ({ resourceId, enable
   }, [status, onLockChange]);
 
   const relative = (ts?: number): string =>
-    ts ? formatDistanceToNow(new Date(ts * 1000), { addSuffix: true, locale: sk }) : '';
+    ts ? formatRelativeTime(ts, locale) : '';
 
   // === Blok: Vykreslenie podľa stavu ===
   switch (status) {

@@ -42,7 +42,9 @@ Auth cesty (`/api/auth/login`, …) sa **defaultne nelogujú** — zapnite v Nas
 | Detail + filtre | **Admin → Logy** (`/logs`) |
 | Nastavenia | **Nastavenia → Logy** |
 
-Filtrovanie: severity (debug/info/warning/error/critical), zdroj (app/audit/event/user), fulltext search.
+Filtrovanie: severity (debug/info/warning/error/critical), zdroj (app/audit/event/user), fulltext search, stav (aktívne/archivované), stránkovanie s ručným počtom záznamov na stránku (1–500).
+
+**Bulk akcie (2.0.52):** zaškrtnite riadky → **Archivovať** alebo **Vymazať**. **Vymazať všetko** zmaže všetky log súbory naraz (potvrdenie v dialógu). **Purge starých** stále používa `retentionDays` z nastavení.
 
 ## Nastavenia (skupina `logging`)
 
@@ -60,8 +62,10 @@ Filtrovanie: severity (debug/info/warning/error/critical), zdroj (app/audit/even
 | Metóda | Endpoint |
 |--------|----------|
 | GET | `/api/admin/logs/stats?hours=24` |
-| GET | `/api/admin/logs?severity=&source=&search=&limit=&offset=` |
+| GET | `/api/admin/logs?severity=&source=&search=&archived=&limit=&offset=` — odpoveď obsahuje `total` |
 | POST | `/api/admin/logs/purge` — vymaže súbory staršie ako `retentionDays` |
+| POST | `/api/admin/logs/bulk` — `{ "ids": ["log_…"], "action": "delete"|"archive" }` |
+| POST | `/api/admin/logs/delete-all` — vymaže všetky log súbory (všetky zdroje) |
 
 Role: **ADMIN+**, 2FA.
 

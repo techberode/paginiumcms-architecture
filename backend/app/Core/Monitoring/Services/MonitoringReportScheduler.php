@@ -39,7 +39,10 @@ final class MonitoringReportScheduler
         }
 
         $interval = (string) ($monitoring['reportInterval'] ?? 'day');
-        $timezone = (string) ($this->settings->group('general')['timezone'] ?? 'Europe/Bratislava');
+        $general = $this->settings->group('general');
+        $timezone = (string) ($general['timezone'] ?? 'Europe/Bratislava');
+        $dstEnabled = (bool) ($general['timezoneDst'] ?? true);
+        $timezone = \PaginiumCMS\Support\AppTimezone::resolveTimezone($timezone, $dstEnabled);
 
         try {
             $now = new \DateTimeImmutable('now', new \DateTimeZone($timezone));

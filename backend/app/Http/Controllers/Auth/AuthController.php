@@ -140,6 +140,11 @@ class AuthController
             return $this->json->error($response, 'Registrácia nových používateľov je vypnutá', 403);
         }
 
+        $maintenance = $this->settings->group('maintenance');
+        if (\PaginiumCMS\Core\Settings\MaintenanceMode::isActive($maintenance)) {
+            return $this->json->error($response, 'Registrácia je počas režimu údržby vypnutá', 403);
+        }
+
         try {
             $this->passwordPolicy->requireValid($data['password']);
 

@@ -1,7 +1,8 @@
 // frontend/src/components/CodeEditor/VersionHistory.tsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { useApi } from '../../hooks/useApi';
-import { formatDistanceToNow } from 'date-fns';
+import { useI18n } from '../../context/I18nContext';
+import { formatRelativeTime } from '../../utils/contentDates';
 import { DiffViewer } from '../versioning/DiffViewer';
 import type { Version } from '../../api/types';
 import type { VersionComparison } from '../../api/versions';
@@ -12,6 +13,7 @@ interface VersionHistoryProps {
 }
 
 export const VersionHistory: React.FC<VersionHistoryProps> = ({ contentId, onRestore }) => {
+  const { locale } = useI18n();
   const [versions, setVersions] = useState<Version[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedVersions, setSelectedVersions] = useState<[number, number] | null>(null);
@@ -131,7 +133,7 @@ export const VersionHistory: React.FC<VersionHistoryProps> = ({ contentId, onRes
                       v{version.version}
                     </span>
                     <span className="text-sm text-gray-600 dark:text-gray-400">
-                      {formatDistanceToNow(new Date(version.createdAt || ''), { addSuffix: true })}
+                      {formatRelativeTime(version.createdAt, locale)}
                     </span>
                     <span className="text-sm text-gray-500 dark:text-gray-400">
                       by {version.createdBy || 'unknown'}

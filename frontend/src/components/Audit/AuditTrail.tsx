@@ -3,9 +3,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { useApi } from '../../hooks/useApi';
 import { useToast } from '../../hooks/useToast';
-import { formatDistanceToNow, format } from 'date-fns';
-import { sk, enUS } from 'date-fns/locale';
+import { format } from 'date-fns';
 import { formatAuditEventActor, formatAuditEventMessage } from '../../utils/formatAuditEvent';
+import { formatDisplayClockTime, formatDisplayShortDate, formatRelativeTime } from '../../utils/contentDates';
 import type { AuditEvent, AuditStats } from '../../api/types';
 import { useI18n } from '../../context/I18nContext';
 
@@ -16,7 +16,6 @@ interface AuditTrailProps {
 
 export const AuditTrail: React.FC<AuditTrailProps> = ({ contentId: contentIdProp, userId: userIdProp }) => {
   const { t, locale } = useI18n();
-  const dateFnsLocale = locale === 'en' ? enUS : sk;
   const { contentId: routeContentId, userId: routeUserId } = useParams<{
     contentId?: string;
     userId?: string;
@@ -202,7 +201,7 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({ contentId: contentIdProp
                       style={{ height: `${Math.min((Number(count) / 10) * 100, 100)}%` }}
                     />
                     <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      {format(new Date(date), 'dd.MM')}
+                      {formatDisplayShortDate(date, locale)}
                     </span>
                   </div>
                 ))}
@@ -254,7 +253,7 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({ contentId: contentIdProp
                       {displayActor}
                     </span>
                     <span>
-                      {formatDistanceToNow(new Date(event.timestamp), { addSuffix: true, locale: dateFnsLocale })}
+                      {formatRelativeTime(event.timestamp, locale)}
                     </span>
                     {event.version && (
                       <span>
@@ -267,7 +266,7 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({ contentId: contentIdProp
                 </div>
 
                 <span className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap">
-                  {format(new Date(event.timestamp), 'HH:mm:ss')}
+                  {formatDisplayClockTime(event.timestamp, locale)}
                 </span>
               </div>
             );

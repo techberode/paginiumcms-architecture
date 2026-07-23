@@ -51,6 +51,7 @@ final class CsrfMiddleware implements MiddlewareInterface
         '/api/auth/csrf-token',
         '/api/auth/sso',
         '/api/contact',
+        '/api/maintenance',
         '/api/comments',
         '/api/debug/client-event',
     ];

@@ -80,13 +80,17 @@ const ArticlePreviewBody: React.FC<{ article: Article; defaultAuthor: string }> 
   article,
   defaultAuthor,
 }) => {
+  const { locale } = useI18n();
   const image = resolveContentPreviewImage(article);
   const author = article.author || defaultAuthor;
-  const dates = formatContentDateLabels({
-    createdAt: article.createdAt,
-    updatedAt: article.updatedAt,
-    frontMatterDate: article.frontMatter?.date as string | number | undefined,
-  });
+  const dates = formatContentDateLabels(
+    {
+      createdAt: article.createdAt,
+      updatedAt: article.updatedAt,
+      frontMatterDate: article.frontMatter?.date as string | number | undefined,
+    },
+    locale
+  );
 
   return (
     <div className="min-h-[50vh] bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-16">

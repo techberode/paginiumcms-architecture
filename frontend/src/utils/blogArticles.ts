@@ -1,4 +1,5 @@
 import type { Article } from '../api/types';
+import { contentDateToTimestamp, resolveContentDate } from './contentDates';
 
 export type BlogSort = 'newest' | 'oldest' | 'title';
 
@@ -22,7 +23,7 @@ export function parseBlogSort(value: string | null): BlogSort {
 }
 
 export function getArticleDate(article: Article): number {
-  return new Date(String(article.frontMatter?.date ?? article.createdAt)).getTime();
+  return contentDateToTimestamp(resolveContentDate(article.frontMatter?.date, article.createdAt));
 }
 
 export function sortPublishedArticles(articles: Article[], sort: BlogSort): Article[] {

@@ -11,6 +11,7 @@ import { useSettingsContext } from '../../context/SettingsContext';
 import { useI18n } from '../../context/I18nContext';
 import { useAuth } from '../../hooks/useAuth';
 import { useSeoMeta } from '../../hooks/useSeoMeta';
+import { MaintenanceGate } from '../maintenance/MaintenanceGate';
 
 const ADMIN_PREFIXES = [
   '/dashboard',
@@ -162,7 +163,8 @@ export const PublicSiteLayout: React.FC = () => {
   }, [settings?.feeds, siteName, t]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors">
+    <MaintenanceGate>
+      <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors">
       {showCmsBar && <CMSBar currentDoc={currentDoc} />}
       <Navbar onOpenSearch={() => setSearchOpen(true)} />
       <div className="flex-1">
@@ -174,7 +176,8 @@ export const PublicSiteLayout: React.FC = () => {
         onClose={() => setSearchOpen(false)}
         onSelectRoute={(path) => navigate(path)}
       />
-    </div>
+      </div>
+    </MaintenanceGate>
   );
 };
 

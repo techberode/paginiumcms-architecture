@@ -16,6 +16,15 @@ export const settingsEn: MessageTree = {
     "description": "QR code and TOTP authenticator setup lives in the account security section.",
     "link": "Go to account security"
   },
+  "timezoneSelect": {
+    "placeholder": "Select a timezone…",
+    "searchPlaceholder": "Search city or timezone…",
+    "noResults": "No timezone found.",
+    "common": "Common",
+    "all": "All timezones",
+    "dstActive": "Daylight saving time is currently active in this zone.",
+    "dstInactive": "Daylight saving time is currently inactive in this zone."
+  },
   "cache": {
     "title": "System cache",
     "description": "Manually purge cache after deploy or when the public site shows stale content. Recommended: start with “Content cache”.",
@@ -54,6 +63,7 @@ export const settingsEn: MessageTree = {
   },
   "groups": {
     "general": "General",
+    "maintenance": "Maintenance mode",
     "content": "Content",
     "editor": "Editor",
     "smtp": "Email / SMTP",
@@ -102,15 +112,62 @@ export const settingsEn: MessageTree = {
         "label": "Admin language"
       },
       "timezone": {
-        "label": "Timezone"
+        "label": "Timezone",
+        "help": "Used for logs, audit trail, and scheduled reports."
       },
-      "maintenanceMode": {
-        "label": "Maintenance mode",
-        "help": "Blocks the public site except admin access."
+      "timezoneDst": {
+        "label": "Daylight saving time (DST)",
+        "help": "Enabled = automatic DST correction for the selected timezone. Disabled = fixed standard (winter) offset."
       },
       "allowRegistration": {
         "label": "Allow registration",
-        "help": "When disabled, POST /api/auth/register is blocked."
+        "help": "When disabled, POST /api/auth/register is blocked. Registration is always disabled during maintenance modes."
+      }
+    },
+    "maintenance": {
+      "mode": {
+        "label": "Active mode",
+        "help": "Only one mode can be active at a time."
+      },
+      "heroImageUrl": {
+        "label": "Background image (URL)",
+        "help": "Optional background for both maintenance pages."
+      },
+      "newsletterEnabled": {
+        "label": "Enable newsletter"
+      },
+      "newsletterHint": {
+        "label": "Newsletter hint text"
+      },
+      "comingSoonBadge": {
+        "label": "Coming Soon – badge"
+      },
+      "comingSoonTitle": {
+        "label": "Coming Soon – title"
+      },
+      "comingSoonSubtitle": {
+        "label": "Coming Soon – subtitle"
+      },
+      "comingSoonBody": {
+        "label": "Coming Soon – body"
+      },
+      "maintenanceBadge": {
+        "label": "Maintenance – badge"
+      },
+      "maintenanceTitle": {
+        "label": "Maintenance – title"
+      },
+      "maintenanceSubtitle": {
+        "label": "Maintenance – subtitle"
+      },
+      "maintenanceBody": {
+        "label": "Maintenance – body"
+      },
+      "maintenanceShowContactForm": {
+        "label": "Show contact form"
+      },
+      "maintenanceContactSubject": {
+        "label": "Maintenance message subject"
       }
     },
     "content": {
@@ -666,6 +723,22 @@ export const settingsEn: MessageTree = {
     "language": {
       "sk": "Slovak",
       "en": "English"
+    }
+  },
+  "maintenance": {
+    "mode": {
+      "off": {
+        "title": "Off",
+        "description": "Public site runs normally."
+      },
+      "comingSoon": {
+        "title": "Coming Soon",
+        "description": "Pre-launch teaser page with newsletter signup."
+      },
+      "underMaintenance": {
+        "title": "Under Maintenance",
+        "description": "Temporary downtime page with visitor messaging."
+      }
     }
   }
 };

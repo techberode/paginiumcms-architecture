@@ -21,6 +21,8 @@ return function (App $app): void {
         $group->get('/stats', [$controller, 'stats']);
         $group->get('', [$controller, 'list']);
         $group->post('/purge', [$controller, 'purge']);
+        $group->post('/bulk', [$controller, 'bulkAction']);
+        $group->post('/delete-all', [$controller, 'deleteAll']);
     })
         ->add(new RoleMiddleware($authz, ['ADMIN', 'SUPER_ADMIN']))
         ->add($container->get(TwoFactorMiddleware::class))

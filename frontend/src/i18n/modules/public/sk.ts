@@ -330,4 +330,26 @@ export const publicSk: MessageTree = {
       },
     },
   },
+  maintenance: {
+    login: 'Prihlásiť sa',
+    footer: ':siteName — verejný prístup je dočasne obmedzený.',
+    newsletter: {
+      title: 'Newsletter',
+      hint: 'Prihláste sa na odber noviniek a dáme vám vedieť hneď po spustení.',
+      placeholder: 'Váš e-mail',
+      submit: 'Prihlásiť sa na odber',
+      emailRequired: 'Zadajte e-mail',
+      success: 'Ďakujeme! Boli ste prihlásení na odber.',
+      failed: 'Newsletter sa nepodarilo spracovať.',
+    },
+    contact: {
+      toggle: 'Odoslať správu',
+      name: 'Meno',
+      email: 'E-mail',
+      message: 'Správa',
+      submit: 'Odoslať správu',
+      success: 'Správa bola odoslaná. Ďakujeme!',
+      failed: 'Správu sa nepodarilo odoslať.',
+    },
+  },
 };

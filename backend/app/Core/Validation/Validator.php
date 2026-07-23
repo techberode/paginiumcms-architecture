@@ -25,6 +25,7 @@ namespace PaginiumCMS\Core\Validation;
  *   min:N               – min. dĺžka (reťazec) alebo min. hodnota (číslo)
  *   max:N               – max. dĺžka (reťazec) alebo max. hodnota (číslo)
  *   in:a,b,c            – hodnota musí byť z výpočtu
+ *   timezone            – platné IANA časové pásmo
  *
  * Vracia pretypované (koercované) hodnoty pre polia definované v pravidlách.
  */
@@ -104,6 +105,9 @@ final class Validator
             'min' => $this->checkMin($field, $value, (string) $param, $fieldRules),
             'max' => $this->checkMax($field, $value, (string) $param, $fieldRules),
             'in' => $this->checkIn($field, $value, (string) $param),
+            'timezone' => in_array((string) $value, timezone_identifiers_list(), true)
+                ? null
+                : "Pole „{$field}“ musí byť platné IANA časové pásmo.",
             default => null,
         };
     }
