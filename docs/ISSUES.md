@@ -1,6 +1,6 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-23 · verzia **2.0.54** · ISS-063–075 · backlog It.59–61
+> Posledná aktualizácia: 2026-07-23 · verzia **2.0.56** · ISS-063–076 · backlog It.59–61
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
 
@@ -93,6 +93,7 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-073 | PHPUnit: login testy → 429 namiesto 401 (lockout persistencia) | Stredná (CI) | ✅ Opravené · **2.0.52** |
 | ISS-074 | PHPStan L8 po `accessControl` / branding (10 chýb) | Stredná (CI) | ✅ Opravené · **2.0.52** |
 | ISS-075 | PHPUnit fatal: `Cannot redeclare class HelloWidget\Hooks` (Wave 5d) | Stredná (CI) | ✅ Opravené · **2.0.54** |
+| ISS-076 | PHPUnit kaskáda po `passwordConfirm` — 21 failov (401/422/null) | Stredná (CI) | ✅ Opravené · **2.0.56** |
 
 
 
@@ -105,6 +106,7 @@ Workflow: `[.github/workflows/ci.yml](../.github/workflows/ci.yml)`
 | CI job     | Step                 | Symptóm                                                               | Issue                     |
 | ---------- | -------------------- | --------------------------------------------------------------------- | ------------------------- |
 | `backend`  | PHPUnit              | `PluginManagerTest` + referenčný `hello-widget` → duplicate class fatal | ISS-075          |
+| `backend`  | PHPUnit              | Po `passwordConfirm` (2.0.56): `CoreHardeningTest` → kaskáda 401/422 v Media, Path ACL, OTP | ISS-076 |
 | `backend`  | PHPUnit              | Login error shape / AuthController → **429** namiesto 401 (lockout persistencia) | ISS-073          |
 | `backend`  | PHPUnit              | `SecurityAuditControllerTest` → 403 pre ADMIN | ISS-072          |
 | `backend`  | PHPStan level 8      | `accessControl` / `SettingsSchema` / `AccessControlSyncService` (10×) | ISS-074          |
@@ -1874,6 +1876,54 @@ in /tmp/pag_plugins_mgr_…/extensions/hello-widget/src/Hooks.php on line 7
 
 ---
 
+## ISS-076 – PHPUnit kaskáda po zavedení `passwordConfirm` — VYRIEŠENÉ (**2.0.56**)
+
+**Symptóm:** Po release **2.0.56** (povinné potvrdenie hesla pri registrácii a admin CRUD používateľov) padlo **21 PHPUnit testov** v niekoľkých suite naraz:
+
+| Suite | Príklad zlyhania |
+|-------|------------------|
+| `CoreHardeningTest` | Registrácia vypnutá → očakávané **403**, skutočné **422** |
+| `CoreHardeningTest` | `GET /api/media` ako USER → očakávané **403**, skutočné **401** |
+| `PathAclIntegrationTest` | `loginAsEditor()` → `findByEmail` **null** |
+| `MediaControllerTest` | `loginAsAdminUser()` → login **401**, media **401** |
+| `OtpWorkflowServiceTest` | `loginAsAdminUser()` → editor **null** |
+| Security regression gate | Rovnaká kaskáda od `createTestUser` |
+
+Typické hlášky:
+
+```text
+Failed asserting that 422 matches expected 403.
+Failed asserting that 401 matches expected 200.
+Failed asserting that null is not null.
+```
+
+**Príčina (reťazec):**
+
+1. **`AuthController::register`** od 2.0.56 volá `ValidationRules::validatePasswordConfirmation()` **pred** kontrolou `allowRegistration` a maintenance → chýbajúce `passwordConfirm` vráti **422**, nie **403**.
+2. Testy `testRegistrationDisabledBySetting` a `testRegistrationDisabledDuringMaintenance` v `CoreHardeningTest` posielali register **bez** `passwordConfirm`.
+3. Pri zlyhaní assertion sa **nevykonala obnova** nastavení (`allowRegistration => true`, `maintenance.mode => off`) — zostalo `allowRegistration = false`.
+4. Všetky nasledujúce testy volajúce `createTestUser()` / `loginAsAdminUser()` dostali registráciu **403** → login **401** → `currentUser` null → desiatky falošných failov v Media, Path ACL, OTP, Navigation.
+
+**Oprava:**
+
+| Súbor | Zmena |
+|-------|--------|
+| `CoreHardeningTest.php` | Register payloady doplnené o `passwordConfirm`; `try/finally` pre vždy obnoviť `general` / `maintenance` |
+| `TestCase.php` | `applyTestSettingsOverrides()` v `setUp` vynúti `allowRegistration => true` (izolácia medzi testami) |
+| `AuthControllerTest.php` | Už obsahoval `passwordConfirm` (referenčný pattern pre nové testy) |
+
+**Overenie:** `./vendor/bin/phpunit` → **838 passed**, 15 skipped (commit `0664ba3`).
+
+**Prevencia:**
+
+- Každý priamy `POST /api/auth/register` v PHPUnit musí posielať **`passwordConfirm`** zhodné s `password`.
+- Testy, ktoré dočasne menia `general.allowRegistration` alebo `maintenance.mode`, musia obnoviť stav v **`finally`** (nie len na konci metódy po assertion).
+- Pri pridávaní validácie **pred** business pravidlom (403 maintenance) aktualizovať aj testy, ktoré očakávajú konkrétny HTTP kód z business vrstvy.
+
+**Súvisí s:** [ITERATION_5.md](ITERATION_5.md#password-confirmation-2056), [CORE_HARDENING.md](architecture/CORE_HARDENING.md) §4, [CHANGELOG.md](../CHANGELOG.md#2056--2026-07-23), commit `0664ba3`.
+
+---
+
 ## Externé / irelevantné hlášky
 
 
@@ -1891,7 +1941,7 @@ in /tmp/pag_plugins_mgr_…/extensions/hello-widget/src/Hooks.php on line 7
 
 - [user/BRANDING.md](user/BRANDING.md) — logo a favicon (**2.0.52**)
 - [user/ACCESS_CONTROL.md](user/ACCESS_CONTROL.md) — RBAC + Path ACL v nastaveniach (**2.0.52**)
-- [developer/RELEASE.md](developer/RELEASE.md) — release **2.0.52**
+- [developer/RELEASE.md](developer/RELEASE.md) — release **2.0.52** · **2.0.56**
 - [CHANGELOG.md](../CHANGELOG.md) — 2.0.52
 - [developer/TESTING.md](developer/TESTING.md) — PHPUnit izolácia (`LoginAttemptTracker`)
 - [ITERATION_44.md](ITERATION_44.md) — It.44d index filtre (ISS-038)

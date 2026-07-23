@@ -70,6 +70,10 @@ Detail: [ITERATION_5.md](docs/ITERATION_5.md#password-confirmation-2056) · [COR
 - **FE** — `validatePasswordConfirmation()` v `utils/validation.ts`; i18n SK/EN (`passwordConfirm`, `passwordMismatch`)
 - PHPUnit + Vitest pre mismatch / required confirm
 
+### Fixed
+
+- **ISS-076** — PHPUnit kaskáda po `passwordConfirm`: `CoreHardeningTest` + `TestCase` izolácia (`0664ba3`)
+
 ### Changed
 
 - **`AppVersion`** → `2.0.56`
