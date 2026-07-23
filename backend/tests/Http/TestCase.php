@@ -56,6 +56,10 @@ abstract class TestCase extends BaseTestCase
             'mode' => 'off',
         ]));
 
+        $settings->setGroup('general', array_merge($settings->group('general'), [
+            'allowRegistration' => true,
+        ]));
+
         $settings->setGroup('workflows', array_merge($settings->group('workflows'), [
             'registrationOtpEnabled' => false,
             'commentApprovalOtpEnabled' => false,
