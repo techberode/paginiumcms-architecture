@@ -1,6 +1,6 @@
 # 🏛️ PaginiumCMS
 
-> **Version:** 2.0.52 · **Last updated:** 23 July 2026  
+> **Version:** 2.0.57 · **Last updated:** 23 July 2026  
 > Modern, modular, Headless Flat-File Content Management System powered by Slim Framework (PHP) & React.
 
 ---
@@ -164,6 +164,20 @@ Routes in `backend/app/Http/Routes/*.php` are auto-loaded from `bootstrap/app.ph
 
 ## 🚀 Getting Started
 
+**Recommended (Docker + first admin):**
+
+```bash
+git clone <repo> paginiumcms && cd paginiumcms
+chmod +x scripts/first-run.sh
+./scripts/first-run.sh
+docker compose up -d
+curl -s http://localhost:8080/api/health
+```
+
+Default admin: `admin@localhost` / `Admin123!ChangeMe` (override with `FIRST_ADMIN_*` env — see [LOCAL_SETUP.md](developer/LOCAL_SETUP.md)).
+
+**Classic two-terminal dev** (after `first-run`):
+
 ```bash
 composer install
 ./vendor/bin/phpunit --testdox
@@ -177,7 +191,7 @@ cd frontend && npm install && npm run dev
 # → http://localhost:3025 (proxies /api and /storage to :8080)
 ```
 
-See [developer/LOCAL_SETUP.md](developer/LOCAL_SETUP.md) for Docker + `first-run.sh`, or [deploy/DEV.md](deploy/DEV.md) for the classic two-terminal flow.
+See [developer/LOCAL_SETUP.md](developer/LOCAL_SETUP.md) for Docker profiles, env vars, and troubleshooting — or [deploy/DEV.md](deploy/DEV.md) for native-only flow.
 
 ### Cron (production)
 

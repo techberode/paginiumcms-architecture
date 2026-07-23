@@ -57,6 +57,26 @@ docker compose run --rm php bash scripts/first-run.sh
 
 ---
 
+## Premenné prostredia (first-run / bootstrap)
+
+| Premenná | Kde | Význam |
+|----------|-----|--------|
+| `FIRST_ADMIN_EMAIL` | shell env | Email prvého SUPER_ADMIN (default `admin@localhost`) |
+| `FIRST_ADMIN_PASSWORD` | shell env | Heslo — musí spĺňať password policy |
+| `FIRST_ADMIN_NAME` | shell env | Zobrazované meno (default `Administrator`) |
+| `INSTALL_FRONTEND=1` | shell env | Po first-run spustí `npm ci` vo `frontend/` |
+| `APP_KEY` | `.env` | Generuje first-run ak chýba — **nemeň** po nasadení so šifrovanými settings |
+| `APP_ENV` | `.env` | `development` lokálne, `production` na live |
+| `APP_DEBUG` | `.env` | `true` lokálne, **`false`** na produkcii |
+| `TWO_FACTOR_REQUIRED` | `.env` | `false` len dev; produkcia vždy vyžaduje 2FA pre staff |
+| `SESSION_LIFETIME` | `.env` | Odporúčané 7200–28800 s pri editácii |
+| `SESSION_STRICT` | `.env` | `false` za reverse proxy / LAN |
+| `DEMO_MODE` | `.env` | **`false`** na zákazníckej inštancii |
+
+Kompletný zoznam: `.env.example` · [user/INSTALLATION.md](../user/INSTALLATION.md) § `.env`.
+
+---
+
 ## Docker Compose
 
 | Služba | Port | Popis |

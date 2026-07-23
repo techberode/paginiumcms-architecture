@@ -46,6 +46,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.59 — Odložená publikácia (scheduled publish) | **2.0.53** | [below](#2053--2026-07-23) |
 | Wave 5e — It.17 API barrel + CONTRIBUTING | **2.0.55** | [below](#2055--2026-07-23) |
 | Auth — password confirmation (register + admin users) | **2.0.56** | [below](#2056--2026-07-23) |
+| Wave 5f — Docker onboarding + user docs polish | **2.0.57** | [below](#2057--2026-07-23) |
 | Wave 5d — It.15 hook emitters + extension policy | **2.0.54** | [below](#2054--2026-07-23) |
 | It.19b–19d — Security runtime, auth UX, password policy | **2.0.45** | [below](#2045--2026-07-21) |
 
@@ -53,7 +54,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-*(Pred Public Beta 1: **FINAL_BETA1** — vlny 5f–7 + It.25 — lokálny plán `docs/FINAL_BETA1_ITERATION.md`, gitignored.)*
+*(Pred Public Beta 1: **FINAL_BETA1** — vlny 6–7 + It.25 — lokálny plán `docs/FINAL_BETA1_ITERATION.md`, gitignored.)*
+
+---
+
+## [2.0.57] – 2026-07-23
+
+**Wave 5f — Docker + onboarding docs** — README sync, env vars, beta tester path.  
+Detail: [LOCAL_SETUP.md](docs/developer/LOCAL_SETUP.md) · [INSTALLATION.md](docs/user/INSTALLATION.md) · [CONTINUATION.md](docs/CONTINUATION.md).
+
+### Changed
+
+- **`README.md`** — first-run + Docker quick start, aktuálny stav 2.0.57, odkazy na user/dev docs
+- **`docs/README.md`** — Getting Started cez `scripts/first-run.sh`
+- **`docs/developer/LOCAL_SETUP.md`** — tabuľka env premenných (`FIRST_ADMIN_*`, `INSTALL_FRONTEND`, session)
+- **`docs/user/INSTALLATION.md`** — doplnené `FIRST_ADMIN_*` do `.env` tabuľky
+- **`.env.example`** — komentované `FIRST_ADMIN_*`
+- **`docs/CONTINUATION.md`** — Wave 5f ✅, sync stavov 5c+ / FINAL_BETA1
+- **`docs/CHECKLIST.md`** — verzia a PHPUnit/Vitest baseline
+- **`AppVersion`** → `2.0.57`
 
 ---
 

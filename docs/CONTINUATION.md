@@ -25,7 +25,7 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 | Priorita | Úloha | Stav |
 |----------|--------|------|
 | 1 | **RECOMMENDATIONS Fáza 1** — composer scripts, CI audit, ESLint | ✅ |
-| 2 | **RECOMMENDATIONS Fáza 2** — Docker, `first-run.sh`, LOCAL_SETUP | ✅ (lokálne, C&P pending) |
+| 2 | **RECOMMENDATIONS Fáza 2** — Docker, `first-run.sh`, LOCAL_SETUP | ✅ **2.0.57** (Wave 5f) |
 | 3 | **Používateľská príručka** — `docs/user/*` (inštalácia → admin) | ✅ |
 | 4 | **It.18f i18n** — comments, messages, backups, trash, logs + platform/editor | ✅ **2.0.47** (`f0a885c` + `390b392`) |
 | 4b | **CI hotfix ISS-059** — Vitest `renderWithProviders` | ✅ na `main` |
@@ -34,11 +34,12 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 | 5a | Security release **2.0.48** | ✅ tag `v2.0.48` |
 | 5b | **formatAuditEvent locale** — audit messages follow admin language | ✅ **2.0.49** |
 | 5c | **Public site i18n** — `public/{sk,en}` katalóg + komponenty | ✅ **2.0.50** |
-| 5c+ | **Hotfix 2.0.51** — ISS-063–070 (dátumy, timezone, DST, logy, cache header) | ⏳ kód lokálne, **commit neskôr** |
+| 5c+ | **Hotfix 2.0.51** — ISS-063–070 (dátumy, timezone, DST, logy, cache header) | ✅ **2.0.51** |
 | 5d | **It.15 doplnenie** — hook emitters, referenčný plugin, docs sync | ✅ **2.0.54** |
 | 5e | **It.17 MVP** — CONTRIBUTING, api barrel, lint | ✅ **2.0.55** |
 | 5e+ | **Password confirm** — registrácia + admin users | ✅ **2.0.56** |
-| **FINAL_BETA1** | Vlny **5f + 6 + 7** + **It.25** — pred Public Beta 1 | ⏳ detail v **`FINAL_BETA1_ITERATION.md`** (lokálny, gitignored) |
+| 5f | **Docker + user docs polish** — README, env vars, onboarding sync | ✅ **2.0.57** |
+| **FINAL_BETA1** | Vlny **6 + 7** + **It.25** — pred Public Beta 1 | ⏳ detail v **`FINAL_BETA1_ITERATION.md`** (lokálny, gitignored) |
 
 **Princíp práce:** jedna vlna = jeden release tag = zelené CI = manuálny smoke test. Neskákať verzie (`v2.0.47` pred `v2.0.48`).
 

@@ -1,65 +1,101 @@
 # PaginiumCMS
 
-> **Verzia:** 2.0.43 · **Posledná aktualizácia:** júl 2026  
-> **Posledná iterácia:** [It.55](docs/ITERATION_55.md) — Tiptap JSON + upload
+> **Verzia:** 2.0.57 · **Posledná aktualizácia:** júl 2026  
+> **Wave 5f:** Docker + first-run onboarding · pred Public Beta 1
 
-Headless flat-file CMS — PHP 8.5 backend (Slim 4) + React admin SPA.
+Headless flat-file CMS — PHP 8.5 backend (Slim 4) + React admin SPA (Vite 8).
 
-**Filozofia:** 100 % open source, bez poplatkov, nikdy ako platené riesenie — [docs/PHILOSOPHY.md](docs/PHILOSOPHY.md)
+**Filozofia:** 100 % open source, bez poplatkov — [docs/PHILOSOPHY.md](docs/PHILOSOPHY.md)
 
-**Kompletná dokumentácia:** [`docs/README.md`](docs/README.md)
+**Kompletná dokumentácia:** [`docs/README.md`](docs/README.md) · **Beta tester:** [`docs/user/README.md`](docs/user/README.md)
 
-## Rýchly štart
+---
+
+## Rýchly štart (odporúčané)
+
+Nový clone → pripravený admin → API bez 500:
 
 ```bash
-composer install
-./vendor/bin/phpunit
-./vendor/bin/phpstan analyse backend --level=8
-
-# Backend (port 8080)
-cd backend/public && php -S localhost:8080
-
-# Frontend (port 3025, proxy /api + /storage + /feed.xml + /sitemap.xml)
-cd frontend && npm install && npm run dev
-
-# Frontend bez backendu (MSW mocks)
-cd frontend && VITE_MSW=true npm run dev
+git clone <repo> paginiumcms && cd paginiumcms
+chmod +x scripts/first-run.sh
+./scripts/first-run.sh
+docker compose up -d
+curl -s http://localhost:8080/api/health
 ```
 
-## Aktuálny stav (2.0.43)
+**Predvolený admin** (len pri prázdnom `data/users/`):
+
+| Pole | Hodnota |
+|------|---------|
+| Email | `admin@localhost` |
+| Heslo | `Admin123!ChangeMe` |
+
+Vlastné údaje pred `first-run`:
+
+```bash
+export FIRST_ADMIN_EMAIL=you@example.com
+export FIRST_ADMIN_PASSWORD='YourStr0ngPass!'
+export FIRST_ADMIN_NAME='Your Name'
+./scripts/first-run.sh
+```
+
+**Frontend dev** (Vite proxy `/api` → `:8080`):
+
+```bash
+INSTALL_FRONTEND=1 ./scripts/first-run.sh   # voliteľné npm ci
+docker compose --profile dev up -d          # alebo: cd frontend && npm run dev
+# → http://localhost:3025
+```
+
+Detail: [docs/developer/LOCAL_SETUP.md](docs/developer/LOCAL_SETUP.md) · [docs/user/INSTALLATION.md](docs/user/INSTALLATION.md) · [docs/user/FIRST_STEPS.md](docs/user/FIRST_STEPS.md)
+
+---
+
+## Klasický vývoj (bez Dockeru)
+
+```bash
+./scripts/first-run.sh
+cd backend/public && php -S localhost:8080    # API :8080
+cd frontend && npm install && npm run dev     # SPA :3025
+```
+
+Quality gate:
+
+```bash
+composer test && composer stan
+cd frontend && npm run type-check && npm run lint && npm run lint:api-barrel && npm test
+```
+
+---
+
+## Aktuálny stav (2.0.57)
 
 | Oblasť | Stav |
 |--------|------|
-| Backend API | ✅ Slim 4, auto-discovery routes, JsonResponder, PHPStan L8 |
-| Auth + 2FA + RBAC | ✅ ISS-042 login retry v 2.0.43 |
-| Content + index | ✅ It.19–20 — pagination, search, trash, published filter |
-| Editor | ✅ It.54 profiles · **It.55 Tiptap JSON + upload** |
-| Media (FE + DAM) | ✅ It.8 + It.24 — `MediaManager`, picker, WYSIWYG, folders |
-| SEO + feeds | ✅ It.23 SEO meta (2.0.11) · It.10 RSS/sitemap/robots |
-| Scheduler + monitoring | ✅ It.7, It.29 — cron planner, reports, `/scheduler` |
-| WAF + structured logs | ✅ It.50 — 2.0.26 |
-| SSO + path ACL + security audit | ✅ It.11 — **2.0.27** |
-| Blueprint / schema engine | ✅ It.12 — **2.0.28** |
-| Demo sandbox (demo.paginiumcms.com) | ✅ It.13 v2 — **2.0.28**, nie zákaznícky balík |
-| Advanced search + OTP workflows | ✅ It.41–43 — **2.0.27** |
-| PHPUnit | ✅ editor + content pipeline tests |
-| Frontend | ✅ Admin SPA, WYSIWYG JSON storage, public site, Ctrl+K search |
+| Backend API | ✅ Slim 4, auto-discovery, JsonResponder, PHPStan L8 |
+| Auth + 2FA + RBAC + password confirm | ✅ 2.0.48–56 |
+| Admin + public i18n (SK/EN) | ✅ 2.0.47–50 |
+| Scheduled publish (It.59) | ✅ 2.0.53 · potrebuje cron `scheduler:run` |
+| External plugins + hook emitters | ✅ 2.0.38, 2.0.54 |
+| Docker + `first-run.sh` | ✅ Wave **5f** |
+| Public Beta 1 | ⏳ po vlnách 6–7 ([FINAL_BETA1](docs/CONTINUATION.md)) |
 
 ### Ďalší krok
 
-**It.56** — Rich navigation menu items ([ITERATION_56.md](docs/ITERATION_56.md))
+**Wave 6** — Beta infra checklist (cron docs, README sync, ops gate) → release **2.0.58**
 
-Detail: [docs/ROADMAP.md](docs/ROADMAP.md) · [docs/CONTINUATION.md](docs/CONTINUATION.md)
+Detail: [docs/CONTINUATION.md](docs/CONTINUATION.md) · [docs/ROADMAP.md](docs/ROADMAP.md)
+
+---
 
 ## Kľúčové dokumenty
 
-- [Architektúra & stav projektu](docs/README.md)
-- **[Filozofia & dôvod vzniku](docs/PHILOSOPHY.md)**
-- [API kontrakt (JSON obaly)](docs/architecture/API_CONTRACT.md)
-- [Roadmap](docs/ROADMAP.md)
-- [Changelog](CHANGELOG.md)
-- [Content API](docs/architecture/CONTENT_API.md)
-- [Core hardening](docs/architecture/CORE_HARDENING.md)
-- [Iterácie 8 / 10 / 11](docs/ITERATION_8.md) · [It.10 feeds](docs/ITERATION_10.md) · [It.11 SSO](docs/ITERATION_11.md)
-- [Lokálny vývoj](docs/deploy/DEV.md)
-- [Testovanie](docs/developer/TESTING.md)
+| Pre koho | Dokument |
+|----------|----------|
+| Beta tester / admin | [docs/user/README.md](docs/user/README.md) |
+| Inštalácia | [docs/user/INSTALLATION.md](docs/user/INSTALLATION.md) |
+| Vývojár (Docker) | [docs/developer/LOCAL_SETUP.md](docs/developer/LOCAL_SETUP.md) |
+| Prispievanie | [docs/developer/CONTRIBUTING.md](docs/developer/CONTRIBUTING.md) |
+| API kontrakt | [docs/architecture/API_CONTRACT.md](docs/architecture/API_CONTRACT.md) |
+| Release / C&P | [docs/developer/RELEASE.md](docs/developer/RELEASE.md) |
+| Changelog | [CHANGELOG.md](CHANGELOG.md) |
