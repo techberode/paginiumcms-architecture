@@ -45,14 +45,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(probe.user);
     if (probe.user?.twoFactorEnabled) {
       const status = await authApi.twoFactor.getStatus();
-      setTwoFactorSetupPending(status.setupPending);
-      // Login TOTP step only after user completed setup at least once.
-      setPendingTwoFactor(!status.verified && !status.setupPending);
+      // Pri transientnom zlyhaní /api/auth/2fa/status neprepínať stav — inak
+      // keepalive každé 4 min falošne nastaví pendingTwoFactor → redirect /login.
+      if (status.ok) {
+        setTwoFactorSetupPending(status.setupPending);
+        setPendingTwoFactor(!status.verified && !status.setupPending);
+      }
       debugLogProvider('auth', 'refresh.done', {
         authenticated: true,
         twoFactorEnabled: true,
-        twoFactorVerified: status.verified,
-        twoFactorSetupPending: status.setupPending,
+        twoFactorVerified: status.ok ? status.verified : undefined,
+        twoFactorSetupPending: status.ok ? status.setupPending : undefined,
+        twoFactorStatusOk: status.ok,
         userId: probe.user.id,
       });
     } else {
