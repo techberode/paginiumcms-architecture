@@ -47,6 +47,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | Wave 5e — It.17 API barrel + CONTRIBUTING | **2.0.55** | [below](#2055--2026-07-23) |
 | Auth — password confirmation (register + admin users) | **2.0.56** | [below](#2056--2026-07-23) |
 | Wave 5f — Docker onboarding + user docs polish | **2.0.57** | [below](#2057--2026-07-23) |
+| Wave 6 — Beta infra gate (cron, BETA_INFRA, diagnose) | **2.0.58** | [below](#2058--2026-07-23) |
 | Wave 5d — It.15 hook emitters + extension policy | **2.0.54** | [below](#2054--2026-07-23) |
 | It.19b–19d — Security runtime, auth UX, password policy | **2.0.45** | [below](#2045--2026-07-21) |
 
@@ -54,7 +55,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-*(Pred Public Beta 1: **FINAL_BETA1** — vlny 6–7 + It.25 — lokálny plán `docs/FINAL_BETA1_ITERATION.md`, gitignored.)*
+*(Pred Public Beta 1: **Wave 7** — lokálny plán `docs/FINAL_BETA1_ITERATION.md`, gitignored.)*
+
+---
+
+## [2.0.58] – 2026-07-23
+
+**Wave 6 — Beta infra checklist** — cron docs, maintainer gate, security baseline sync.  
+Detail: [BETA_INFRA.md](docs/developer/BETA_INFRA.md) · [deploy/CRON.md](docs/deploy/CRON.md).
+
+### Added
+
+- **`docs/deploy/CRON.md`** — produkčný crontab (`scheduler:run`, `worker:process`), job registry, troubleshooting
+- **`docs/developer/BETA_INFRA.md`** — quality gate, onboarding path, security baseline pre Beta 1
+
+### Changed
+
+- **`scripts/iteration-gate.sh`** — pridaný `npm run lint:api-barrel`
+- **`docs/user/README.md`** — rozšírený beta checklist (health, cron, BETA_INFRA odkaz)
+- **`docs/user/INSTALLATION.md`** — cron ako povinný pre scheduled publish
+- **`docs/deploy/DEV.md`**, **`TESTING.md`**, **`CONTINUATION.md`**, root **`README.md`** — Wave 6 sync
+- **`AppVersion`** → `2.0.58`
 
 ---
 

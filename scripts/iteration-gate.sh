@@ -68,6 +68,7 @@ echo
 echo "--- Frontend type-check + ESLint ---"
 (cd frontend && npm run type-check) && ok "tsc --noEmit clean"
 (cd frontend && npm run lint) && ok "ESLint within baseline"
+(cd frontend && npm run lint:api-barrel) && ok "API barrel lint clean"
 
 # 5) Integrity heuristics (grep-based, no external deps)
 echo

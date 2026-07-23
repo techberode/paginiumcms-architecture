@@ -9,7 +9,7 @@ namespace PaginiumCMS\Support;
  */
 final class AppVersion
 {
-    public const VERSION = '2.0.57';
+    public const VERSION = '2.0.58';
 
     public static function current(): string
     {

@@ -44,29 +44,30 @@ Open **http://localhost:3025**
 ## 3. Tests
 
 ```bash
-# Backend (488 tests, PHPStan L8)
-./vendor/bin/phpunit
-./vendor/bin/phpstan analyse backend --level=8
+composer test && composer stan
+composer gate    # iteration-gate.sh — pred release tagom
 
-# Frontend
-cd frontend && npm test
-
-# Production build check
-cd frontend && npm run build
+cd frontend && npm run type-check && npm run lint && npm run lint:api-barrel && npm test
 ```
+
+Plná sada: `./scripts/run-all-tests.zsh`
 
 ## 4. CLI commands
 
 ```bash
 php backend/bin/console audit:run
-php backend/bin/console backup:run-schedule   # cron: checks schedule.json
-php backend/bin/console monitoring:run-schedule   # cron: reports + log incidents (It.7)
+php backend/bin/console content:diagnose --fix
+php backend/bin/console scheduler:run      # preferovaný cron entrypoint
+php backend/bin/console worker:process
 ```
 
-Combined crontab example (every minute):
+**Produkcia cron:** [CRON.md](./CRON.md) — scheduled publish, backup, monitoring.
+
+Legacy (stále OK):
 
 ```bash
-* * * * * cd /path/to/paginiumcms && php backend/bin/console backup:run-schedule && php backend/bin/console monitoring:run-schedule
+php backend/bin/console backup:run-schedule
+php backend/bin/console monitoring:run-schedule
 ```
 
 ## 5. Integration smoke (BE)

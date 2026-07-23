@@ -1,9 +1,9 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.0.57** · 2026-07-23 · tag **`v2.0.57`** (po push)  
+> Posledná verzia: **2.0.58** · 2026-07-23 · tag **`v2.0.58`** (po push)  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release.
 
-> **Poznámka k verziám:** … **2.0.56** → `0664ba3` · **2.0.57** → `e84b71f`.
+> **Poznámka k verziám:** … **2.0.57** → `e84b71f` · **2.0.58** → *(tento commit)*.
 
 ### Kontinuita verzií (nepreskakovať)
 
@@ -18,8 +18,81 @@
 | **2.0.55** | **`v2.0.55`** | **`d8c3437`** | ✅ tagged |
 | **2.0.56** | **`v2.0.56`** | **`0664ba3`** | ✅ tagged |
 | **2.0.57** | **`v2.0.57`** | **`e84b71f`** | ✅ tagged |
+| **2.0.58** | **`v2.0.58`** | *(pending)* | ⏳ tento release |
 
-**Pravidlo:** Ďalší release musí byť **`v2.0.58`** (FINAL_BETA1 Fáza C / Wave 6), nie skok. Pred každým novým číslom: `git tag -l 'v2.0.5*' | sort -V`.
+**Pravidlo:** Ďalší release = **Public Beta 1** (`v2.1.0-beta.1` alebo **`v2.0.59`**). Pred tagom: [BETA_INFRA.md](BETA_INFRA.md).
+
+---
+
+## 2.0.58 — Wave 6 Beta infra gate
+
+```bash
+composer gate
+# alebo: composer test && composer stan && cd frontend && npm run type-check && npm run lint && npm run lint:api-barrel && npm test
+```
+
+**Acceptance:** dokumentovaný cron + beta checklist; `composer gate` green.
+
+### Commit
+
+```bash
+git add -A
+git commit -m "$(cat <<'EOF'
+release: 2.0.58 — Wave 6 beta infra gate (CRON, BETA_INFRA, iteration gate).
+
+Production cron docs, maintainer checklist, expanded beta tester path, lint:api-barrel in gate.
+EOF
+)"
+git tag v2.0.58
+git push origin main
+git push origin v2.0.58
+```
+
+---
+
+## GitHub Release — copy-paste (2.0.58)
+
+**Title:**
+
+```
+2.0.58 — Wave 6 Beta infra (CRON docs, BETA_INFRA gate, security baseline)
+```
+
+**Body:**
+
+```markdown
+**Tag:** `v2.0.58` · **Target:** `main` · **Commit:** *(fill after push)*
+
+### Summary
+
+Closes **FINAL_BETA1 Fáza C (Wave 6)**: production cron documentation, maintainer quality gate, security baseline audit for Public Beta 1.
+
+### Added
+
+- **docs/deploy/CRON.md** — `scheduler:run` + `worker:process`, job registry, troubleshooting
+- **docs/developer/BETA_INFRA.md** — pre-Beta checklist (gate, onboarding, ISS status)
+
+### Changed
+
+- **iteration-gate.sh** — `npm run lint:api-barrel`
+- **user/README.md** beta checklist — health, cron, BETA_INFRA link
+- **INSTALLATION.md** — cron required for scheduled publish
+- **TESTING.md**, **DEV.md**, **CONTINUATION.md**, root README
+- `AppVersion` → 2.0.58
+
+### Test plan
+
+- [ ] `composer gate` green
+- [ ] Read [CRON.md](docs/deploy/CRON.md) — crontab copy-paste OK for your host
+- [ ] [user/README.md](docs/user/README.md) beta checklist walkthrough
+- [ ] No open critical ISS for beta (see [BETA_INFRA.md](docs/developer/BETA_INFRA.md))
+
+### Docs
+
+- [BETA_INFRA.md](docs/developer/BETA_INFRA.md)
+- [CRON.md](docs/deploy/CRON.md)
+- [CHANGELOG.md](CHANGELOG.md) — 2.0.58
+```
 
 ---
 
