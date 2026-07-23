@@ -13,6 +13,7 @@ export const usersSk: MessageTree = {
     email: 'E-mailová adresa *',
     passwordNew: 'Nové heslo (nepovinné)',
     passwordRequired: 'Heslo *',
+    passwordConfirm: 'Potvrdenie hesla *',
     passwordPlaceholder: 'Ponechajte prázdne pre zachovanie',
     role: 'Rola používateľa',
     status: 'Stav účtu',
@@ -28,6 +29,9 @@ export const usersSk: MessageTree = {
     cancel: 'Zrušiť',
     showPassword: 'Zobraziť heslo',
     hidePassword: 'Skryť heslo',
+  },
+  validation: {
+    passwordRequired: 'Heslo je povinné pri vytváraní používateľa.',
   },
   avatar: {
     title: 'Profilový obrázok',

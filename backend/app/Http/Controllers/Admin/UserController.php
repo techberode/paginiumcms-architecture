@@ -117,6 +117,12 @@ final class UserController
             throw new ValidationException(['password' => ['Heslo je povinné pri vytváraní používateľa.']]);
         }
 
+        $passwordConfirm = (string) ($payload['passwordConfirm'] ?? $payload['password_confirm'] ?? '');
+        $confirmErrors = ValidationRules::validatePasswordConfirmation($password, $passwordConfirm);
+        if ($confirmErrors !== []) {
+            throw new ValidationException(['passwordConfirm' => $confirmErrors]);
+        }
+
         $policyErrors = ValidationRules::validatePasswordPolicy(
             $password,
             ValidationRules::passwordPolicyFrom($this->passwordPolicy)
@@ -218,6 +224,12 @@ final class UserController
 
         if (isset($payload['password']) && $payload['password'] !== '') {
             $password = (string) $payload['password'];
+            $passwordConfirm = (string) ($payload['passwordConfirm'] ?? $payload['password_confirm'] ?? '');
+            $confirmErrors = ValidationRules::validatePasswordConfirmation($password, $passwordConfirm);
+            if ($confirmErrors !== []) {
+                throw new ValidationException(['passwordConfirm' => $confirmErrors]);
+            }
+
             $policyErrors = ValidationRules::validatePasswordPolicy(
             $password,
             ValidationRules::passwordPolicyFrom($this->passwordPolicy)

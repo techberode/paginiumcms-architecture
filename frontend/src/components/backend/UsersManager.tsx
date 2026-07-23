@@ -27,11 +27,12 @@ import {
   isStaffRole,
   deriveUsername,
 } from '../../api/users';
-import { validate, validatePasswordPolicy, ValidationErrors } from '../../utils/validation';
+import { validate, validatePasswordPolicy, validatePasswordConfirmation, ValidationErrors } from '../../utils/validation';
 import { getValidationRulesFor } from '../../api/validation';
 import { useToast } from '../../hooks/useToast';
 import { useAuth } from '../../hooks/useAuth';
 import { useI18n } from '../../context/I18nContext';
+import { usePasswordPolicy } from '../../hooks/usePasswordPolicy';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { BulkActionBar } from './BulkActionBar';
 import { AdminHintCard } from './AdminHintCard';
@@ -40,6 +41,7 @@ import { summarizeBulkResult } from '../../types/bulk';
 
 type FormState = CreateUserPayload & {
   password?: string;
+  passwordConfirm?: string;
   active: boolean;
   twoFactorEnabled: boolean;
 };
@@ -50,12 +52,14 @@ const emptyForm = (): FormState => ({
   name: '',
   role: 'USER',
   password: '',
+  passwordConfirm: '',
   active: true,
   twoFactorEnabled: false,
 });
 
 export const UsersManager: React.FC = () => {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const passwordPolicy = usePasswordPolicy();
   const [users, setUsers] = useState<User[]>([]);
   const [requireTwoFactorStaff, setRequireTwoFactorStaff] = useState(true);
   const [actorIsSuperAdmin, setActorIsSuperAdmin] = useState(false);
@@ -118,11 +122,18 @@ export const UsersManager: React.FC = () => {
 
     if (!editingId || form.password) {
       const pw = form.password ?? '';
+      const pwConfirm = form.passwordConfirm ?? '';
       if (!editingId && !pw) {
-        allErrors.password = ['Heslo je povinné pri vytváraní používateľa.'];
+        allErrors.password = [t('users.validation.passwordRequired')];
       } else if (pw) {
-        const pwErrors = validatePasswordPolicy(pw);
-        if (pwErrors.length) allErrors.password = pwErrors;
+        const pwErrors = validatePasswordPolicy(pw, passwordPolicy, locale);
+        if (pwErrors.length) {
+          allErrors.password = pwErrors;
+        }
+        const confirmErrors = validatePasswordConfirmation(pw, pwConfirm, locale);
+        if (confirmErrors.length) {
+          allErrors.passwordConfirm = confirmErrors;
+        }
       }
     }
 
@@ -147,7 +158,7 @@ export const UsersManager: React.FC = () => {
           role: form.role as UserRole,
           active: form.active,
           twoFactorEnabled: form.twoFactorEnabled,
-          ...(form.password ? { password: form.password } : {}),
+          ...(form.password ? { password: form.password, passwordConfirm: form.passwordConfirm } : {}),
         });
         if (res.success) {
           success(t('users.toast.updated'));
@@ -186,6 +197,7 @@ export const UsersManager: React.FC = () => {
       name: user.name,
       role: (user.roles[0] as UserRole) || 'USER',
       password: '',
+      passwordConfirm: '',
       active: user.active ?? true,
       twoFactorEnabled: user.twoFactorEnabled,
     });
@@ -215,6 +227,8 @@ export const UsersManager: React.FC = () => {
       toastError(res.error || t('users.toast.deleteFailed'));
     }
   };
+
+  const needsPasswordConfirm = !editingId || Boolean(form.password?.trim());
 
   const availableRoles = useMemo(
     () =>
@@ -376,6 +390,21 @@ export const UsersManager: React.FC = () => {
                 </button>
               </div>
             </Field>
+
+            {needsPasswordConfirm ? (
+              <Field label={t('users.form.passwordConfirm')} error={errors.passwordConfirm?.[0]}>
+                <div className="relative">
+                  <KeyRound size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    className={`${inputClass(Boolean(errors.passwordConfirm))} pl-10`}
+                    value={form.passwordConfirm ?? ''}
+                    onChange={(e) => setForm((f) => ({ ...f, passwordConfirm: e.target.value }))}
+                    autoComplete="new-password"
+                  />
+                </div>
+              </Field>
+            ) : null}
 
             <Field label={t('users.form.role')}>
               <select

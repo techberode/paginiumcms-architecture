@@ -55,4 +55,23 @@ class ValidationRulesTest extends TestCase
 
         $this->assertNotEmpty($errors);
     }
+
+    public function testValidatePasswordConfirmationRequiresNonEmptyConfirm(): void
+    {
+        $errors = ValidationRules::validatePasswordConfirmation('Abcdef1!', '');
+
+        $this->assertSame(['Potvrdenie hesla je povinné.'], $errors);
+    }
+
+    public function testValidatePasswordConfirmationRejectsMismatch(): void
+    {
+        $errors = ValidationRules::validatePasswordConfirmation('Abcdef1!', 'Abcdef1?');
+
+        $this->assertSame(['Heslá sa nezhodujú.'], $errors);
+    }
+
+    public function testValidatePasswordConfirmationAcceptsMatch(): void
+    {
+        $this->assertSame([], ValidationRules::validatePasswordConfirmation('Abcdef1!', 'Abcdef1!'));
+    }
 }

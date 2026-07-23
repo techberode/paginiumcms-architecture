@@ -9,6 +9,7 @@ use PaginiumCMS\Core\Security\SecurityLogger;
 use PaginiumCMS\Core\Security\TwoFactorPolicy;
 use PaginiumCMS\Core\Security\Services\LoginAttemptTracker;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
+use PaginiumCMS\Core\Validation\ValidationRules;
 use PaginiumCMS\Core\Workflow\Services\OtpWorkflowService;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Demo\Services\DemoLoginGuard;
@@ -135,6 +136,13 @@ class AuthController
             return $this->json->error($response, 'Email, heslo a meno sú povinné', 400);
         }
 
+        $password = (string) $data['password'];
+        $passwordConfirm = (string) ($data['passwordConfirm'] ?? $data['password_confirm'] ?? '');
+        $confirmErrors = ValidationRules::validatePasswordConfirmation($password, $passwordConfirm);
+        if ($confirmErrors !== []) {
+            return $this->json->validation($response, $confirmErrors[0], ['passwordConfirm' => $confirmErrors]);
+        }
+
         $general = $this->settings->group('general');
         if (($general['allowRegistration'] ?? true) === false) {
             return $this->json->error($response, 'Registrácia nových používateľov je vypnutá', 403);
@@ -149,7 +157,6 @@ class AuthController
             $this->passwordPolicy->requireValid($data['password']);
 
             $email = (string) $data['email'];
-            $password = (string) $data['password'];
             $name = (string) $data['name'];
 
             $existingUser = $this->userRepository->findByEmail($email);

@@ -16,7 +16,7 @@ Flat-file settings with schema-driven admin UI, centralized JSON error handling,
 | `Http/Controllers/Admin/SettingsController.php` | CRUD + `publicSettings` + reset |
 | `Http/Routes/settings.php` | `/api/admin/settings/*`, `/api/settings/public` |
 | `Core/Validation/Validator.php` | Stateless validator |
-| `Core/Validation/ValidationRules.php` | Rule catalog (login, password, content, user) |
+| `Core/Validation/ValidationRules.php` | Rule catalog (login, password, content, user) + `validatePasswordConfirmation()` (2.0.56) |
 | `Http/Controllers/Validation/ValidationController.php` | `GET /api/validation/rules` |
 | `Http/Support/ApiErrorHandler.php` | Maps exceptions → `{ success: false, error, errors? }` |
 
@@ -43,7 +43,7 @@ Flat-file settings with schema-driven admin UI, centralized JSON error handling,
 ## Tests
 
 - `SettingsRepositoryTest`
-- `ValidatorTest`
+- `ValidatorTest`, `ValidationRulesTest` (policy + password confirmation)
 - `ApiErrorHandlerTest`
 - `validation.test.ts` (Vitest)
 

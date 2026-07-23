@@ -180,6 +180,9 @@ export const publicEn: MessageTree = {
     common: {
       email: 'Email',
       password: 'Password',
+      passwordConfirm: 'Confirm password',
+      passwordConfirmRequired: 'Password confirmation is required.',
+      passwordMismatch: 'Passwords do not match.',
       emailPlaceholder: 'admin@example.com',
       passwordPlaceholder: '••••••••',
       signIn: 'Sign in',

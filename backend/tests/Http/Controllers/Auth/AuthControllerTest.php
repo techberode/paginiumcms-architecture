@@ -17,6 +17,7 @@ class AuthControllerTest extends TestCase
         $request = $this->createJsonRequest('POST', '/api/auth/register', [
             'email' => $email,
             'password' => $password,
+            'passwordConfirm' => $password,
             'name' => $name,
         ]);
 
@@ -42,6 +43,7 @@ class AuthControllerTest extends TestCase
         $request = $this->createJsonRequest('POST', '/api/auth/register', [
             'email' => $userData['email'],
             'password' => 'AnotherP@ssw0rd123!',
+            'passwordConfirm' => 'AnotherP@ssw0rd123!',
             'name' => 'Another User',
         ]);
 
@@ -58,6 +60,7 @@ class AuthControllerTest extends TestCase
         $request = $this->createJsonRequest('POST', '/api/auth/register', [
             'email' => 'test@example.com',
             'password' => 'weak',
+            'passwordConfirm' => 'weak',
             'name' => 'Test User',
         ]);
 
@@ -67,6 +70,23 @@ class AuthControllerTest extends TestCase
         $this->assertEquals(400, $response->getStatusCode());
         $this->assertFalse($data['success']);
         $this->assertStringContainsString('Heslo nespĺňa požiadavky', $data['error']);
+    }
+
+    public function testRegisterRejectsMismatchedPasswordConfirmation(): void
+    {
+        $request = $this->createJsonRequest('POST', '/api/auth/register', [
+            'email' => 'mismatch_' . uniqid() . '@example.com',
+            'password' => 'StrongP@ssw0rd123!',
+            'passwordConfirm' => 'StrongP@ssw0rd123?',
+            'name' => 'Mismatch User',
+        ]);
+
+        $response = $this->handleRequest($request);
+        $data = $this->getJsonResponse($response);
+
+        $this->assertEquals(422, $response->getStatusCode());
+        $this->assertFalse($data['success']);
+        $this->assertStringContainsString('nezhodujú', (string) ($data['error'] ?? ''));
     }
 
     public function testRegisterWithOtpEnabled(): void
@@ -88,6 +108,7 @@ class AuthControllerTest extends TestCase
         $registerRequest = $this->createJsonRequest('POST', '/api/auth/register', [
             'email' => $email,
             'password' => $password,
+            'passwordConfirm' => $password,
             'name' => $name,
         ]);
         $registerResponse = $this->handleRequest($registerRequest);

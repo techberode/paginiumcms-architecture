@@ -299,6 +299,7 @@ Bootstrap aplikácie pre HTTP testy: `backend/tests/Http/TestCase.php` — nač�
 | `runScheduledBackupIfDue`                | `Core/Backup/Services/BackupManagerTest.php`                    |
 | Monitoring reports / log scan (It.7)     | `Core/Monitoring/Services/*Test.php`                            |
 | Trash meta sidecar                       | `Core/FlatFile/Services/FileWriterTest.php`                     |
+| `validatePasswordConfirmation` (2.0.56)  | `Core/Validation/ValidationRulesTest.php`, `AuthControllerTest`, `UserControllerTest`, `validation.test.ts` |
 
 
 

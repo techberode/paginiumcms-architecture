@@ -13,6 +13,7 @@ export const usersEn: MessageTree = {
     email: 'Email address *',
     passwordNew: 'New password (optional)',
     passwordRequired: 'Password *',
+    passwordConfirm: 'Confirm password *',
     passwordPlaceholder: 'Leave empty to keep current',
     role: 'User role',
     status: 'Account status',
@@ -28,6 +29,9 @@ export const usersEn: MessageTree = {
     cancel: 'Cancel',
     showPassword: 'Show password',
     hidePassword: 'Hide password',
+  },
+  validation: {
+    passwordRequired: 'Password is required when creating a user.',
   },
   avatar: {
     title: 'Profile photo',

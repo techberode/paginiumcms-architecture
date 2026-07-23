@@ -180,6 +180,9 @@ export const publicSk: MessageTree = {
     common: {
       email: 'E-mail',
       password: 'Heslo',
+      passwordConfirm: 'Potvrdenie hesla',
+      passwordConfirmRequired: 'Potvrdenie hesla je povinné.',
+      passwordMismatch: 'Heslá sa nezhodujú.',
       emailPlaceholder: 'admin@example.com',
       passwordPlaceholder: '••••••••',
       signIn: 'Prihlásiť sa',
