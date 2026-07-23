@@ -137,6 +137,9 @@ Skopíruj `.env.example` → `.env`. Minimálne skontroluj:
 | `APP_DEBUG` | `false` na produkcii |
 | `APP_URL` | Verejná URL backendu (napr. `https://cms.example.sk`) |
 | `APP_KEY` | Generuje `first-run.sh` — **nemeň** po nasadení so šifrovanými dátami |
+| `FIRST_ADMIN_EMAIL` | Voliteľné env pred `first-run` — email prvého admina (default `admin@localhost`) |
+| `FIRST_ADMIN_PASSWORD` | Voliteľné env pred `first-run` — heslo prvého admina |
+| `FIRST_ADMIN_NAME` | Voliteľné env pred `first-run` — zobrazované meno |
 | `SESSION_LIFETIME` | Dĺžka session (odporúčané 7200–28800 s) |
 | `TWO_FACTOR_REQUIRED` | `false` len pri dev; produkcia vždy vyžaduje 2FA pre staff |
 | `DEMO_MODE` | **`false`** na zákazníckej inštancii (demo len na demo.paginiumcms.com) |

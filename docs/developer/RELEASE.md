@@ -1,9 +1,9 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.0.56** · 2026-07-23 · tag **`v2.0.56`** (po push)  
+> Posledná verzia: **2.0.57** · 2026-07-23 · tag **`v2.0.57`** (po push)  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release.
 
-> **Poznámka k verziám:** … **2.0.55** → `d8c3437` · **2.0.56** → `0664ba3`.
+> **Poznámka k verziám:** … **2.0.56** → `0664ba3` · **2.0.57** → *(tento commit)*.
 
 ### Kontinuita verzií (nepreskakovať)
 
@@ -17,8 +17,79 @@
 | **2.0.54** | **`v2.0.54`** | **`2338fe9`** | ✅ tagged |
 | **2.0.55** | **`v2.0.55`** | **`d8c3437`** | ✅ tagged |
 | **2.0.56** | **`v2.0.56`** | **`0664ba3`** | ✅ tagged |
+| **2.0.57** | **`v2.0.57`** | *(pending)* | ⏳ tento release |
 
-**Pravidlo:** Ďalší release musí byť **`v2.0.57`** (FINAL_BETA1 Fáza A / Wave 5f), nie skok. Pred každým novým číslom: `git tag -l 'v2.0.5*' | sort -V`.
+**Pravidlo:** Ďalší release musí byť **`v2.0.58`** (FINAL_BETA1 Fáza C / Wave 6), nie skok. Pred každým novým číslom: `git tag -l 'v2.0.5*' | sort -V`.
+
+---
+
+## 2.0.57 — Wave 5f Docker onboarding + user docs
+
+```bash
+composer test && composer stan
+cd frontend && npm run type-check && npm test -- --run
+# Smoke: ./scripts/first-run.sh && docker compose up -d && curl -s http://localhost:8080/api/health
+```
+
+**Acceptance:** clone → `./scripts/first-run.sh` → login admin → dashboard bez 500.
+
+### Commit
+
+```bash
+git add -A
+git commit -m "$(cat <<'EOF'
+release: 2.0.57 — Wave 5f Docker onboarding and user docs sync.
+
+README first-run quick start, LOCAL_SETUP/INSTALLATION env tables, FIRST_ADMIN_* in .env.example, AppVersion bump.
+EOF
+)"
+git tag v2.0.57
+git push origin main
+git push origin v2.0.57
+```
+
+---
+
+## GitHub Release — copy-paste (2.0.57)
+
+**Title:**
+
+```
+2.0.57 — Wave 5f Docker onboarding + user docs (first-run path)
+```
+
+**Body:**
+
+```markdown
+**Tag:** `v2.0.57` · **Target:** `main` · **Commit:** *(fill after push)*
+
+### Summary
+
+Closes **FINAL_BETA1 Fáza A (Wave 5f)**: one documented path from git clone to working admin — `scripts/first-run.sh`, Docker Compose, env vars for first admin.
+
+### Changed
+
+- Root **README.md** — first-run quick start, links to user + developer docs
+- **docs/README.md** — Getting Started via first-run
+- **LOCAL_SETUP.md** / **INSTALLATION.md** — env var tables (`FIRST_ADMIN_*`, session, 2FA)
+- **`.env.example`** — documented bootstrap admin vars
+- **CONTINUATION.md**, **CHECKLIST.md** — Wave 5f shipped
+- `AppVersion` → 2.0.57
+
+### Test plan
+
+- [ ] Fresh clone → `./scripts/first-run.sh` → admin login → `/dashboard` OK
+- [ ] `docker compose up -d` → `GET /api/health` 200
+- [ ] `docker compose --profile dev up -d` → Vite :3025 proxies API
+- [ ] Beta path: [docs/user/README.md](docs/user/README.md) checklist
+
+### Docs
+
+- [LOCAL_SETUP.md](docs/developer/LOCAL_SETUP.md)
+- [INSTALLATION.md](docs/user/INSTALLATION.md)
+- [FIRST_STEPS.md](docs/user/FIRST_STEPS.md)
+- [CHANGELOG.md](CHANGELOG.md) — 2.0.57
+```
 
 ---
 

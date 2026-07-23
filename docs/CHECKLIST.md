@@ -1,7 +1,7 @@
 # PaginiumCMS – API, Frontend & Feature Checklist
 
-**Last updated:** 2026-07-19 (release **2.0.26**)  
-**Version:** 2.0.26  
+**Last updated:** 2026-07-23 (release **2.0.57**)  
+**Version:** 2.0.57  
 **Architecture docs:** [architecture/](architecture/) · CI incidents: [ISSUES.md](ISSUES.md) ISS-015–022
 
 Single source of truth: čo existuje v backend API, čo React admin SPA používa, stav oproti pôvodnému prototypu (`screenshots/`).
@@ -191,9 +191,9 @@ Detail: [architecture/BACKEND.md](architecture/BACKEND.md), [architecture/CORE_H
 
 | Suite | Počet | Príkaz |
 |-------|-------|--------|
-| PHPUnit | **599** (15 skipped) | `./vendor/bin/phpunit` |
+| PHPUnit | **838** (15 skipped) | `./vendor/bin/phpunit` |
 | PHPStan L8 | 0 errors | `./vendor/bin/phpstan analyse backend --level=8` |
-| Vitest | **135** (36 files) | `cd frontend && npm test` |
+| Vitest | **228+** | `cd frontend && npm test` |
 | ESLint | 57 warnings (limit 65) | `npm run lint` |
 | Type-check | strict | `npm run type-check` |
 
@@ -231,4 +231,4 @@ cd frontend && npm run lint && npm run type-check && npm test
 - [architecture/BACKEND.md](architecture/BACKEND.md) · [CORE.md](architecture/CORE.md)
 - [user/FIREWALL.md](user/FIREWALL.md) · [user/LOGGING.md](user/LOGGING.md)
 - [developer/TESTING.md](developer/TESTING.md)
-- [CHANGELOG.md](../CHANGELOG.md) — 2.0.26
+- [CHANGELOG.md](../CHANGELOG.md) — 2.0.57
