@@ -8,7 +8,7 @@ import { useSettingsContext } from '../../context/SettingsContext';
 import { isMaintenanceActive } from '../../api/maintenance';
 import { useI18n } from '../../context/I18nContext';
 import { usePasswordPolicy } from '../../hooks/usePasswordPolicy';
-import { validatePasswordPolicy } from '../../utils/validation';
+import { validatePasswordPolicy, validatePasswordConfirmation } from '../../utils/validation';
 import { AuthShell, authButtonClass, authInputClass, authLabelClass } from './AuthShell';
 import { PasswordPolicyHints } from './PasswordPolicyHints';
 import { TotpCodeInput } from './TotpCodeInput';
@@ -20,6 +20,7 @@ export const RegisterModal: React.FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [otpCode, setOtpCode] = useState('');
   const [challengeId, setChallengeId] = useState('');
@@ -35,8 +36,14 @@ export const RegisterModal: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !passwordConfirm) {
       toast.warning(t('public.auth.register.toast.fillRequired'));
+      return;
+    }
+
+    const confirmErrors = validatePasswordConfirmation(password, passwordConfirm, locale);
+    if (confirmErrors.length > 0) {
+      toast.error(confirmErrors[0]);
       return;
     }
 
@@ -48,7 +55,7 @@ export const RegisterModal: React.FC = () => {
 
     setLoading(true);
     try {
-      const result = await register(email, password, name);
+      const result = await register(email, password, name, passwordConfirm);
       if (result.success && result.requiresOtp && result.challengeId) {
         setChallengeId(result.challengeId);
         setStep('otp');
@@ -199,6 +206,24 @@ export const RegisterModal: React.FC = () => {
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
+            </div>
+          </div>
+
+          <div>
+            <label className={authLabelClass}>
+              {t('public.auth.common.passwordConfirm')} <span className="text-rose-500">*</span>
+            </label>
+            <div className="relative">
+              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                value={passwordConfirm}
+                onChange={(e) => setPasswordConfirm(e.target.value)}
+                className={authInputClass}
+                placeholder={t('public.auth.common.passwordPlaceholder')}
+                autoComplete="new-password"
+              />
             </div>
           </div>
 

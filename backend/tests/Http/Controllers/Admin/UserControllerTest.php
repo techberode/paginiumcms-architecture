@@ -86,12 +86,30 @@ class UserControllerTest extends TestCase
                 'name' => 'Nový',
                 'role' => 'EDITOR',
                 'password' => 'SecurePass1!',
+                'passwordConfirm' => 'SecurePass1!',
             ]));
 
         $response = $this->controller->store($request, (new ResponseFactory())->createResponse());
 
         $this->assertSame(201, $response->getStatusCode());
         $this->assertNotNull($this->repo->findByEmail('new@test.sk'));
+    }
+
+    public function testStoreRejectsMismatchedPasswordConfirmation(): void
+    {
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/api/admin/users')
+            ->withBody($this->streamJson([
+                'email' => 'new@test.sk',
+                'username' => 'newuser',
+                'name' => 'Nový',
+                'role' => 'EDITOR',
+                'password' => 'SecurePass1!',
+                'passwordConfirm' => 'SecurePass2!',
+            ]));
+
+        $this->expectException(\PaginiumCMS\Core\Validation\ValidationException::class);
+        $this->controller->store($request, (new ResponseFactory())->createResponse());
     }
 
     public function testDestroyPreventsSelfDelete(): void

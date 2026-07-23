@@ -20,7 +20,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<LoginOutcome>;
   verifyTwoFactorLogin: (code: string) => Promise<boolean>;
   logout: () => Promise<void>;
-  register: (email: string, password: string, name: string) => Promise<RegisterResult>;
+  register: (email: string, password: string, name: string, passwordConfirm?: string) => Promise<RegisterResult>;
   verifyRegisterOtp: (challengeId: string, code: string) => Promise<RegisterResult>;
   resendRegisterOtp: (challengeId: string) => Promise<RegisterResult>;
   updateUser: (user: User) => void;
@@ -171,8 +171,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     debugLogProvider('auth', 'logout.done');
   }, [user?.id]);
 
-  const register = useCallback(async (email: string, password: string, name: string): Promise<RegisterResult> => {
-    const result = await authApi.register({ email, password, name });
+  const register = useCallback(async (
+    email: string,
+    password: string,
+    name: string,
+    passwordConfirm?: string
+  ): Promise<RegisterResult> => {
+    const result = await authApi.register({ email, password, name, passwordConfirm });
     if (result.success && result.user) {
       setUser(result.user);
       setPendingTwoFactor(false);

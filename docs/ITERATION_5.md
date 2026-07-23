@@ -39,13 +39,25 @@ Login/register responses put `user` at root level — documented in [API_CONTRAC
 | Používateľské meno | `username` | Unique slug, auto-derived from e-mail |
 | Zobrazované meno | `name` | Display name |
 | E-mail | `email` | Login identifier |
-| Heslo | `password` | Optional on edit |
+| Heslo | `password` | Required on create; optional on edit |
+| Potvrdenie hesla | `passwordConfirm` | Required when `password` is set (create or edit) |
 | Rola | `role` | USER / EDITOR / ADMIN / SUPER_ADMIN |
 | Stav účtu | `active` | Inactive users cannot log in |
 | 2FA | `twoFactorEnabled` | Locked when `security.requireTwoFactorStaff` applies to staff roles |
 | 2FA Secret | `twoFactorSecret` | Returned on `GET /api/admin/users/{id}` only |
 
 Settings: **Bezpečnosť → Vynútiť 2FA pre editorov a adminov** (`requireTwoFactorStaff`).
+
+### Password confirmation (2.0.56)
+
+| Flow | API | FE |
+|------|-----|-----|
+| Registrácia | `POST /api/auth/register` — `password` + `passwordConfirm` (alias `password_confirm`) | `RegisterModal` — druhé pole, `validatePasswordConfirmation()` |
+| Admin create user | `POST /api/admin/users` | `UsersManager` — povinné obe polia |
+| Admin edit password | `PUT /api/admin/users/{id}` — len ak sa mení heslo | Potvrdenie sa zobrazí pri vyplnenom hesle |
+
+Backend: `ValidationRules::validatePasswordConfirmation()` pred password policy → HTTP **422** s `errors.passwordConfirm`.  
+Frontend: zdieľaná utilita `validatePasswordConfirmation()` + i18n `passwordMismatch` / `passwordConfirmRequired`.
 
 ## Tests
 

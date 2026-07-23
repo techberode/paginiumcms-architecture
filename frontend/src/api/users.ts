@@ -11,6 +11,7 @@ export interface CreateUserPayload {
   name: string;
   role: UserRole;
   password: string;
+  passwordConfirm?: string;
   active?: boolean;
   twoFactorEnabled?: boolean;
 }
@@ -21,6 +22,7 @@ export interface UpdateUserPayload {
   name?: string;
   role?: UserRole;
   password?: string;
+  passwordConfirm?: string;
   active?: boolean;
   twoFactorEnabled?: boolean;
 }

@@ -45,6 +45,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | Branding, ACL v nastaveniach, CI fixes (ISS-072–074) | **2.0.52** | [below](#2052--2026-07-23) |
 | It.59 — Odložená publikácia (scheduled publish) | **2.0.53** | [below](#2053--2026-07-23) |
 | Wave 5e — It.17 API barrel + CONTRIBUTING | **2.0.55** | [below](#2055--2026-07-23) |
+| Auth — password confirmation (register + admin users) | **2.0.56** | [below](#2056--2026-07-23) |
 | Wave 5d — It.15 hook emitters + extension policy | **2.0.54** | [below](#2054--2026-07-23) |
 | It.19b–19d — Security runtime, auth UX, password policy | **2.0.45** | [below](#2045--2026-07-21) |
 
@@ -53,6 +54,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 *(Pred Public Beta 1: **FINAL_BETA1** — vlny 5f–7 + It.25 — lokálny plán `docs/FINAL_BETA1_ITERATION.md`, gitignored.)*
+
+---
+
+## [2.0.56] – 2026-07-23
+
+**Auth validation** — dvojité zadanie hesla pri registrácii a správe používateľov v administrácii.  
+Detail: [ITERATION_5.md](docs/ITERATION_5.md#password-confirmation-2056) · [CORE_HARDENING.md](docs/architecture/CORE_HARDENING.md) §4.
+
+### Added
+
+- **`ValidationRules::validatePasswordConfirmation()`** — BE kontrola prázdneho potvrdenia a zhody hesiel
+- **Registrácia** — pole `passwordConfirm` / `password_confirm` v `RegisterModal` + `AuthController`
+- **Admin používatelia** — pole potvrdenia pri vytvorení a pri zmene hesla (`UsersManager`, `UserController`)
+- **FE** — `validatePasswordConfirmation()` v `utils/validation.ts`; i18n SK/EN (`passwordConfirm`, `passwordMismatch`)
+- PHPUnit + Vitest pre mismatch / required confirm
+
+### Changed
+
+- **`AppVersion`** → `2.0.56`
 
 ---
 

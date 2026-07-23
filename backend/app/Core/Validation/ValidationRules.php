@@ -140,4 +140,20 @@ final class ValidationRules
 
         return $errors;
     }
+
+    /**
+     * @return list<string>
+     */
+    public static function validatePasswordConfirmation(string $password, string $passwordConfirm): array
+    {
+        if (trim($passwordConfirm) === '') {
+            return ['Potvrdenie hesla je povinné.'];
+        }
+
+        if ($password !== $passwordConfirm) {
+            return ['Heslá sa nezhodujú.'];
+        }
+
+        return [];
+    }
 }

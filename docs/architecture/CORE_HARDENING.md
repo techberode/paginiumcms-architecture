@@ -53,6 +53,8 @@ Nastavenie `general.maintenanceMode = true`:
 ## 4. Registrácia a komentáre
 
 - `general.allowRegistration = false` → `POST /api/auth/register` → **403**
+- `POST /api/auth/register` vyžaduje **`passwordConfirm`** (alebo `password_confirm`) zhodné s `password` → inak **422**
+- Admin `POST /api/admin/users` a `PUT` pri zmene hesla — rovnaká kontrola (`ValidationRules::validatePasswordConfirmation`)
 - `comments.allowGuestComments = false` → neauth `POST /api/comments` → **403**
 - Per-article override: pozri [CONTENT_API.md](./CONTENT_API.md)
 

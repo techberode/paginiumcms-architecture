@@ -2,7 +2,7 @@
 // === Testy zdieľanej validácie (Iterácia 4) ===
 // Musia zodpovedať backendovému ValidatorTest.php – rovnaké pravidlá, rovnaká sémantika.
 import { describe, it, expect } from 'vitest';
-import { validate, firstError, validatePasswordPolicy } from './validation';
+import { validate, firstError, validatePasswordPolicy, validatePasswordConfirmation } from './validation';
 
 describe('validate', () => {
   it('prejde pri platných dátach', () => {
@@ -69,5 +69,19 @@ describe('validatePasswordPolicy', () => {
 
   it('odmietne slabé heslo', () => {
     expect(validatePasswordPolicy('weak').length).toBeGreaterThan(0);
+  });
+});
+
+describe('validatePasswordConfirmation', () => {
+  it('akceptuje zhodné heslo', () => {
+    expect(validatePasswordConfirmation('Abcdef1!', 'Abcdef1!')).toEqual([]);
+  });
+
+  it('odmietne nezhodu', () => {
+    expect(validatePasswordConfirmation('Abcdef1!', 'Abcdef1?').length).toBeGreaterThan(0);
+  });
+
+  it('odmietne prázdne potvrdenie', () => {
+    expect(validatePasswordConfirmation('Abcdef1!', '').length).toBeGreaterThan(0);
   });
 });

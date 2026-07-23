@@ -1,9 +1,9 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.0.55** · 2026-07-23 · tag **`v2.0.55`** (po push)  
+> Posledná verzia: **2.0.56** · 2026-07-23 · tag **`v2.0.56`** (po push)  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release.
 
-> **Poznámka k verziám:** … **2.0.54** → `2338fe9` · **2.0.55** → `d8c3437`.
+> **Poznámka k verziám:** … **2.0.54** → `2338fe9` · **2.0.55** → `d8c3437` · **2.0.56** → *(tento commit)*.
 
 ### Kontinuita verzií (nepreskakovať)
 
@@ -15,9 +15,76 @@
 | **2.0.52** | **`v2.0.52`** | **`9d930a1`** | ✅ tagged |
 | **2.0.53** | **`v2.0.53`** | **`aee1494`** | ✅ tagged |
 | **2.0.54** | **`v2.0.54`** | **`2338fe9`** | ✅ tagged |
-| **2.0.55** | **`v2.0.55`** | **`d8c3437`** | ✅ tagged (push pending) |
+| **2.0.55** | **`v2.0.55`** | **`d8c3437`** | ✅ tagged |
+| **2.0.56** | **`v2.0.56`** | *(pending)* | ⏳ tento release |
 
-**Pravidlo:** Ďalší release musí byť **`v2.0.56`** (FINAL_BETA1 Fáza A), nie skok. Pred každým novým číslom: `git tag -l 'v2.0.5*' | sort -V`.
+**Pravidlo:** Ďalší release musí byť **`v2.0.57`** (FINAL_BETA1 Fáza A / Wave 5f), nie skok. Pred každým novým číslom: `git tag -l 'v2.0.5*' | sort -V`.
+
+---
+
+## 2.0.56 — Password confirmation (register + admin users)
+
+```bash
+composer test && composer stan
+cd frontend && npm run type-check && npm test -- --run src/utils/validation.test.ts
+```
+
+**Po deployi:** registrácia a admin → Používatelia — obe polia hesla musia sedieť; mismatch → toast / 422.
+
+### Commit
+
+```bash
+git add -A
+git commit -m "$(cat <<'EOF'
+release: 2.0.56 — password confirmation on register and admin users.
+
+ValidationRules::validatePasswordConfirmation, RegisterModal + UsersManager UI,
+AuthController/UserController 422, i18n SK/EN, PHPUnit + Vitest.
+EOF
+)"
+git tag v2.0.56
+git push origin main
+git push origin v2.0.56
+```
+
+---
+
+## GitHub Release — copy-paste (2.0.56)
+
+**Title:**
+
+```
+2.0.56 — Password confirmation (register + admin user create/edit)
+```
+
+**Body:**
+
+```markdown
+**Tag:** `v2.0.56` · **Target:** `main` · **Commit:** *(fill after push)*
+
+### Summary
+
+Requires matching **password + passwordConfirm** on public registration and when admins create users or set a new password. Validates on FE (instant feedback) and BE (422).
+
+### Added
+
+- `ValidationRules::validatePasswordConfirmation()` — shared BE rule
+- `RegisterModal` — confirm password field + i18n
+- `UsersManager` — confirm field on create / password change on edit
+- Tests: `AuthControllerTest`, `UserControllerTest`, `ValidationRulesTest`, Vitest
+
+### Docs
+
+- [ITERATION_5.md](docs/ITERATION_5.md) · [CORE_HARDENING.md](docs/architecture/CORE_HARDENING.md) §4
+- [CHANGELOG.md](CHANGELOG.md) — 2.0.56
+
+### Test plan
+
+- [ ] Register with mismatched passwords → error toast, no account
+- [ ] Register with matching strong passwords → success (or OTP flow)
+- [ ] Admin → Users → create user — mismatch blocked client-side and via API
+- [ ] Admin → edit user → new password requires matching confirm
+```
 
 ---
 

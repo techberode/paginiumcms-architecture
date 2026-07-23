@@ -137,6 +137,7 @@ abstract class TestCase extends BaseTestCase
         $request = $this->createJsonRequest('POST', '/api/auth/register', [
             'email' => $email,
             'password' => $password,
+            'passwordConfirm' => $password,
             'name' => $name,
         ]);
 

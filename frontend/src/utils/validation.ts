@@ -192,3 +192,20 @@ export function validatePasswordPolicy(
 
   return errors;
 }
+
+/**
+ * Overí, že potvrdenie hesla zodpovedá heslu (registrácia, admin create, reset).
+ */
+export function validatePasswordConfirmation(
+  password: string,
+  passwordConfirm: string,
+  locale: Locale = DEFAULT_LOCALE
+): string[] {
+  if (passwordConfirm.trim() === '') {
+    return [translate(locale, 'public.auth.common.passwordConfirmRequired')];
+  }
+  if (password !== passwordConfirm) {
+    return [translate(locale, 'public.auth.common.passwordMismatch')];
+  }
+  return [];
+}
