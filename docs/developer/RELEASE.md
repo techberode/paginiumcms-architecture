@@ -73,7 +73,13 @@ Requires matching **password + passwordConfirm** on public registration and when
 - `UsersManager` — confirm field on create / password change on edit
 - Tests: `AuthControllerTest`, `UserControllerTest`, `ValidationRulesTest`, `CoreHardeningTest`, Vitest
 
+### Fixed
+
+- **ISS-076** — PHPUnit kaskáda (21 failov) po chýbajúcom `passwordConfirm` v `CoreHardeningTest` + neobnovené `allowRegistration`
+
 ### Docs
+
+- [ISSUES.md](docs/ISSUES.md) — ISS-076
 
 - [ITERATION_5.md](docs/ITERATION_5.md) · [CORE_HARDENING.md](docs/architecture/CORE_HARDENING.md) §4
 - [CHANGELOG.md](CHANGELOG.md) — 2.0.56
