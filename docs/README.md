@@ -1,6 +1,6 @@
 # 🏛️ PaginiumCMS
 
-> **Version:** 2.0.57 · **Last updated:** 23 July 2026  
+> **Version:** 2.1.0-beta.1 · **Last updated:** 23 July 2026  
 > Modern, modular, Headless Flat-File Content Management System powered by Slim Framework (PHP) & React.
 
 ---
@@ -235,6 +235,8 @@ See [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md) and [user/CODE_EDITOR.md](u
 | [deploy/DEV.md](deploy/DEV.md) | Local dev stack (Vite + PHP built-in server) |
 | [deploy/NGINX_API.md](deploy/NGINX_API.md) | Production nginx |
 | **[user/README.md](user/README.md)** | **Príručka používateľa — od inštalácie po admin (SK)** |
+| **[PUBLIC_BETA1.md](PUBLIC_BETA1.md)** | **Public Beta 1 — scope, limitácie, feedback** |
+| [user/BETA_TESTER.md](user/BETA_TESTER.md) | Beta tester smoke checklist |
 | [user/INSTALLATION.md](user/INSTALLATION.md) | Inštalácia + beta balík |
 | [user/FIRST_STEPS.md](user/FIRST_STEPS.md) | Prihlásenie, 2FA, prvý obsah |
 | [user/ADMIN_GUIDE.md](user/ADMIN_GUIDE.md) | Kompletná administrácia CMS |

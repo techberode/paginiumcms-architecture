@@ -1,13 +1,12 @@
 # PaginiumCMS
 
-> **Verzia:** 2.0.58 · **Posledná aktualizácia:** júl 2026  
-> **Wave 5f:** Docker + first-run onboarding · **Wave 6:** Beta infra gate
+> **Verzia:** 2.1.0-beta.1 · **Public Beta 1** · júl 2026
 
 Headless flat-file CMS — PHP 8.5 backend (Slim 4) + React admin SPA (Vite 8).
 
 **Filozofia:** 100 % open source, bez poplatkov — [docs/PHILOSOPHY.md](docs/PHILOSOPHY.md)
 
-**Kompletná dokumentácia:** [`docs/README.md`](docs/README.md) · **Beta tester:** [`docs/user/README.md`](docs/user/README.md)
+**Kompletná dokumentácia:** [`docs/README.md`](docs/README.md) · **Public Beta 1:** [`docs/PUBLIC_BETA1.md`](docs/PUBLIC_BETA1.md) · **Tester:** [`docs/user/BETA_TESTER.md`](docs/user/BETA_TESTER.md)
 
 ---
 
@@ -78,16 +77,12 @@ cd frontend && npm run type-check && npm run lint && npm run lint:api-barrel && 
 | Scheduled publish (It.59) | ✅ 2.0.53 · potrebuje cron `scheduler:run` |
 | External plugins + hook emitters | ✅ 2.0.38, 2.0.54 |
 | Docker + `first-run.sh` | ✅ Wave **5f** |
-| Beta infra docs + cron | ✅ Wave **6** |
-| Public Beta 1 | ⏳ Wave **7** ([BETA_INFRA.md](docs/developer/BETA_INFRA.md)) |
+| Beta infra docs + cron | ✅ Wave **6** (2.0.58) |
+| **Public Beta 1** | ✅ **`v2.1.0-beta.1`** |
 
 ### Ďalší krok
 
-**Wave 6** — Beta infra checklist (cron, gate, security baseline) → release **2.0.58**
-
-**Wave 7** — Public Beta 1 → `v2.1.0-beta.1` / **2.0.59**
-
-Detail: [docs/CONTINUATION.md](docs/CONTINUATION.md) · [docs/ROADMAP.md](docs/ROADMAP.md)
+Post-beta backlog: It.56–61, It.25 setup wizard — [PUBLIC_BETA1.md](docs/PUBLIC_BETA1.md)
 
 ---
 
