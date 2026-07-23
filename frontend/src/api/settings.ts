@@ -37,6 +37,10 @@ export type SettingsValues = Record<string, Record<string, unknown>>;
 export interface SettingsPayload {
   schema: SettingsSchema;
   values: SettingsValues;
+  meta?: {
+    permissions?: string[];
+    configurableRoles?: string[];
+  };
 }
 
 /**
@@ -68,6 +72,10 @@ export interface PublicSettings {
     siteDescription?: string;
     language: string;
     allowRegistration?: boolean;
+  };
+  branding?: {
+    logoUrl?: string;
+    faviconUrl?: string;
   };
   maintenance?: import('./maintenance').MaintenanceSettings;
   workflows?: {

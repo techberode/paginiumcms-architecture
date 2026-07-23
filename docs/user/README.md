@@ -22,6 +22,8 @@
 | Téma | Súbor |
 |------|--------|
 | Editor stránok a článkov (SEO, médiá, WYSIWYG) | [CONTENT_EDITOR.md](CONTENT_EDITOR.md) |
+| Logo a favicon | [BRANDING.md](BRANDING.md) |
+| Oprávnenia rolí a Path ACL | [ACCESS_CONTROL.md](ACCESS_CONTROL.md) |
 | Code Editor (úprava PHP/TS z adminu) | [CODE_EDITOR.md](CODE_EDITOR.md) |
 | Developer Mode (TOTP unlock) | [DEVELOPER_MODE.md](DEVELOPER_MODE.md) |
 | Firewall / WAF | [FIREWALL.md](FIREWALL.md) |
@@ -48,7 +50,7 @@
 | **USER** | ❌ Nie | Len verejný web (ak je registrovaný) |
 | **EDITOR** | ✅ Áno | Stránky, články, médiá, navigácia |
 | **ADMIN** | ✅ Rozšírený | + používatelia, nastavenia, firewall, zálohy |
-| **SUPER_ADMIN** | ✅ Plný | + demo reset, ACL, extensions, blueprints |
+| **SUPER_ADMIN** | ✅ Plný | + demo reset, oprávnenia rolí (Path ACL), extensions, blueprints |
 
 Detail rolí a oprávnení: [ADMIN_GUIDE.md § Roly](ADMIN_GUIDE.md#roly-a-oprávnenia).
 
@@ -61,5 +63,5 @@ Detail rolí a oprávnení: [ADMIN_GUIDE.md § Roly](ADMIN_GUIDE.md#roly-a-oprá
 3. [ ] Zapnutie 2FA v **Účet → Bezpečnosť**
 4. [ ] Vytvorenie testovacej stránky a článku
 5. [ ] Nahratie obrázka v **Médiá** a kontrola na verejnom webe
-6. [ ] Prehľad **Nastavenia → Web** (názov stránky, jazyk adminu)
+6. [ ] Prehľad **Nastavenia → Stránka → Logo a favicon** ([BRANDING.md](BRANDING.md))
 7. [ ] Pri probléme: **Logy**, **Audit**, prípadne [ISSUES.md](../ISSUES.md) pre známe incidenty

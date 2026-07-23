@@ -12,6 +12,7 @@ import { SettingsProvider } from './context/SettingsContext';
 import { I18nProvider } from './context/I18nContext';
 import { PublicSiteProvider } from './context/PublicSiteContext';
 import App from './App';
+import { SiteBrandingHead } from './components/branding/SiteBrandingHead';
 import './index.css';
 import { logFrontendStartup } from './utils/debugLog';
 import { DebugRouteTracker } from './components/debug/DebugRouteTracker';
@@ -33,6 +34,7 @@ async function bootstrap(): Promise<void> {
         <ThemeProvider>
           <AuthProvider>
             <SettingsProvider>
+              <SiteBrandingHead />
               <I18nProvider>
                 <PublicSiteProvider>
                   <NotificationProvider>

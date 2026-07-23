@@ -13,7 +13,13 @@ Dokument popisuje zdieľateľné URL v administrácii PaginiumCMS — prepojenie
 | Audit — používateľ | `/audit/user/{userId}` | `/audit/user/editor-1` |
 | Zoznamy (It.44) | query params | `/pages?q=foo&page=2`, `/media?folder=hero&type=image` |
 
-Skupiny nastavení zodpovedajú kľúčom v `SettingsSchema.php` (`general`, `smtp`, `connectors`, `scheduler`, `firewall`, `logging`, `codePolicy`, …).
+Skupiny nastavení zodpovedajú kľúčom v `SettingsSchema.php` (`general`, `branding`, `accessControl`, `smtp`, `connectors`, `scheduler`, `firewall`, `logging`, `codePolicy`, …).
+
+| Skupina | Deep link |
+|---------|-----------|
+| Oprávnenia rolí (SUPER_ADMIN) | `/settings?category=security&group=accessControl` |
+| Logo a favicon | `/settings?category=site&group=branding` |
+| Logy | `/settings?group=logging` |
 
 ## Frontend
 

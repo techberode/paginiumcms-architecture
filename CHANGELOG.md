@@ -42,13 +42,40 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | Audit locale (formatAuditEvent / wave 5b) | **2.0.49** | [below](#2049--2026-07-22) |
 | Public site i18n (wave 5c) | **2.0.50** | [below](#2050--2026-07-22) |
 | Ops hotfix: dates, timezone, maintenance, logs (ISS-063–071) | **2.0.51** | [below](#2051--2026-07-23) |
+| Branding, ACL v nastaveniach, CI fixes (ISS-072–074) | **2.0.52** | [below](#2052--2026-07-23) |
 | It.19b–19d — Security runtime, auth UX, password policy | **2.0.45** | [below](#2045--2026-07-21) |
 
 ---
 
 ## [Unreleased]
 
-*(Ďalej: wave **5d** It.15 hook emitters.)*
+*(Ďalej: wave **5d** It.15 hook emitters · plánované It.59–61 — pozri [ITERATION_BACKLOG.md](docs/ITERATION_BACKLOG.md).)*
+
+---
+
+## [2.0.52] – 2026-07-23
+
+**Branding + ACL v nastaveniach** — logo/favicon, RBAC a Path ACL pre SUPER_ADMIN, CI opravy (ISS-072–074).  
+Detail: [ISSUES.md](docs/ISSUES.md) ISS-055 post-update, ISS-072–074 · [BRANDING.md](docs/user/BRANDING.md) · [ACCESS_CONTROL.md](docs/user/ACCESS_CONTROL.md).
+
+### Added
+
+- **Nastavenia → Logo a favicon** — skupina `branding` (`logoUrl`, `faviconUrl`); media picker; verejné API + `SiteLogo` / `SiteBrandingHead`
+- **Nastavenia → Oprávnenia rolí** — skupina `accessControl` (SUPER_ADMIN only): checkboxy RBAC pre ADMIN/EDITOR/USER + Path ACL pravidlá; sync do `acl.json` a `AuthorizationManager`
+- Dokumentácia: [docs/user/BRANDING.md](docs/user/BRANDING.md), [docs/user/ACCESS_CONTROL.md](docs/user/ACCESS_CONTROL.md)
+- Backlog: [It.59](docs/ITERATION_59.md) scheduled publish, [It.60](docs/ITERATION_60.md) editor components, [It.61](docs/ITERATION_61.md) footer newsletter
+
+### Changed
+
+- Path ACL a mapovanie rolí presunuté z `/security/acl` do **Nastavenia → Bezpečnosť → Oprávnenia rolí**; položka ACL odstránená z admin sidebaru
+- `GET/PUT /api/admin/security/acl` — len **SUPER_ADMIN** (legacy API; preferované ukladanie cez settings)
+- `GET /api/admin/security/audit` — znovu **ADMIN** + **SUPER_ADMIN** (audit oddelený od ACL rout)
+
+### Fixed
+
+- **ISS-072** — security audit 403 pre ADMIN (split rout v `security.php`)
+- **ISS-073** — PHPUnit login testy flaky 429 (`LoginAttemptTracker::clearAll()` v `Http\TestCase::setUp`)
+- **ISS-074** — PHPStan L8 po `accessControl` / branding integrácii
 
 ---
 

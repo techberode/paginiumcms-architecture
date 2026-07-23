@@ -1,21 +1,106 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.0.51** · 2026-07-23 · tag **`v2.0.51`**  
+> Posledná verzia: **2.0.52** · 2026-07-23 · tag **`v2.0.52`** (po push)  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release.
 
-> **Poznámka k verziám:** … **v2.0.47** → `e1fdead` · **v2.0.48** → `a32c002` · **v2.0.49** → `1ac58cf` · **2.0.50** → `67d77bb` · **2.0.51** → `d9b7171`.
+> **Poznámka k verziám:** … **2.0.49** → `1ac58cf` · **2.0.50** → `67d77bb` · **2.0.51** → `d9b7171` · **2.0.52** → *(commit po release push)*.
 
 ### Kontinuita verzií (nepreskakovať)
 
 | Verzia | Git tag | Release commit | Stav |
 |--------|---------|----------------|------|
-| 2.0.47 | `v2.0.47` | `e1fdead` | ✅ tagged |
-| 2.0.48 | `v2.0.48` | `a32c002` | ✅ tagged |
 | 2.0.49 | `v2.0.49` | `1ac58cf` | ✅ tagged |
 | **2.0.50** | **`v2.0.50`** | **`67d77bb`** | ✅ tagged |
 | **2.0.51** | **`v2.0.51`** | **`d9b7171`** | ✅ tagged |
+| **2.0.52** | **`v2.0.52`** | *(pending)* | ⏳ release |
 
-**Pravidlo:** Ďalší release musí byť **`v2.0.52`**, nie skok. Pred každým novým číslom: `git tag -l 'v2.0.5*' | sort -V`.
+**Pravidlo:** Ďalší release musí byť **`v2.0.53`**, nie skok. Pred každým novým číslom: `git tag -l 'v2.0.5*' | sort -V`.
+
+---
+
+## 2.0.52 — branding, ACL v nastaveniach, CI (ISS-072–074)
+
+```bash
+npm run type-check          # → 0 errors
+npm test -- --run           # → 226/226
+./vendor/bin/phpunit        # → 820 passed, 15 skipped
+./vendor/bin/phpstan analyse --level=8 backend/app backend/tests  # → 0 errors
+```
+
+**Po deployi (rebuild FE + reštart PHP):**
+
+1. **Nastavenia → Stránka → Logo a favicon** — logo + favicon → Navbar, admin sidebar, favicon v prehliadači
+2. **SUPER_ADMIN → Nastavenia → Bezpečnosť → Oprávnenia rolí** — RBAC + Path ACL; uložiť → `data/security/acl.json`
+3. **ADMIN → Security audit** — `/api/admin/security/audit` → **200**
+4. **`/security/acl`** — redirect na settings `accessControl`
+5. Regresia: login, editácia obsahu, media
+
+### Commit
+
+```bash
+git add -A
+git commit -m "$(cat <<'EOF'
+release: 2.0.52 — branding, ACL in settings, CI fixes (ISS-072–074).
+
+Site logo/favicon settings, SUPER_ADMIN accessControl (RBAC + Path ACL), security audit route split, PHPUnit login lockout isolation, PHPStan L8 clean.
+EOF
+)"
+git tag v2.0.52
+git push origin main
+git push origin v2.0.52
+```
+
+*(Po commite doplň hash do tabuľky a GitHub Release body.)*
+
+---
+
+## GitHub Release — copy-paste (2.0.52)
+
+**Title:**
+
+```
+2.0.52 — Site branding, ACL in settings, and CI fixes (ISS-072–074)
+```
+
+**Body:**
+
+```markdown
+**Tag:** `v2.0.52` · **Target:** `main` · **Commit:** `<HASH>`
+
+### Summary
+
+After **2.0.51**: configurable **logo & favicon** in Settings, **role permissions + Path ACL** in Settings (SUPER_ADMIN only), legacy `/security/acl` redirect, security **audit** routes restored for ADMIN, PHPUnit/PHPStan CI fixes.
+
+### Added
+
+- **Settings → Site → Logo & favicon** — `branding.logoUrl`, `branding.faviconUrl`, media picker, public API, `SiteLogo` + favicon head
+- **Settings → Security → Role permissions** — `accessControl`: RBAC for ADMIN/EDITOR/USER + Path ACL; sync to `acl.json`
+- Docs: [BRANDING.md](docs/user/BRANDING.md), [ACCESS_CONTROL.md](docs/user/ACCESS_CONTROL.md)
+- Backlog: It.59 scheduled publish, It.60 editor components, It.61 footer newsletter
+
+### Changed
+
+- Path ACL + role mapping moved from `/security/acl` to **Settings**; sidebar ACL item removed
+- `GET/PUT /api/admin/security/acl` — **SUPER_ADMIN** only
+- `GET /api/admin/security/audit` (+ export) — **ADMIN** + **SUPER_ADMIN**
+
+### Fixed
+
+- **ISS-072** — security audit 403 for ADMIN
+- **ISS-073** — flaky PHPUnit login 429 (HTTP TestCase lockout reset)
+- **ISS-074** — PHPStan L8 after accessControl/branding
+
+### Tests
+
+- PHPUnit: **820** passed (15 skipped) · Vitest: **226** · PHPStan L8: **0 errors**
+
+### Docs
+
+- [CHANGELOG.md](CHANGELOG.md) — 2.0.52
+- [docs/ISSUES.md](docs/ISSUES.md) — ISS-072–074
+- [docs/user/BRANDING.md](docs/user/BRANDING.md)
+- [docs/user/ACCESS_CONTROL.md](docs/user/ACCESS_CONTROL.md)
+```
 
 ---
 
@@ -95,7 +180,7 @@ Hotfix after **2.0.50**: safe date formatting, correct log timestamps (timezone 
 
 ---
 
-> **Poznámka:** ISS-071 (logy bulk/pagination) bolo zlúčené do **2.0.51** — samostatný release **2.0.52** pre logy sa neplánuje. Ďalšie číslo: **2.0.52** až pri nových zmenách.
+> **Poznámka:** Ďalší tag **`v2.0.53`**. Plánované It.59–61 — [ITERATION_BACKLOG.md](../ITERATION_BACKLOG.md).
 
 ---
 

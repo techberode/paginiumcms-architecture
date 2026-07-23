@@ -1,6 +1,6 @@
 # Testovanie – PaginiumCMS
 
-> Posledná aktualizácia: 2.0.26 · **599 PHPUnit testov** (15 skipped), PHPStan level 8, **135 Vitest testov**
+> Posledná aktualizácia: **Unreleased (2.0.52)** · **820 PHPUnit** testov (15 skipped), PHPStan level 8 (0 errors), Vitest podľa `frontend/package.json`
 
 ## Rýchly prehľad — čo kedy spustiť
 
@@ -210,12 +210,16 @@ php backend/bin/console content:diagnose
 php backend/bin/console content:diagnose --fix    # purge cache + rebuild index
 php backend/bin/console content:diagnose --json   # strojový výstup
 
-# ACL Testy
+# ACL + access control testy
 
 vendor/bin/phpunit backend/tests/Modules/Security/Services/PathAclServiceTest.php \
   backend/tests/Modules/Security/Services/ContentPathAclGuardTest.php \
-  backend/tests/Http/Controllers/Security/PathAclIntegrationTest.php
+  backend/tests/Http/Controllers/Security/PathAclIntegrationTest.php \
+  backend/tests/Modules/Security/PermissionCatalogTest.php \
+  backend/tests/Modules/Security/Services/AuthorizationManagerSettingsReloadTest.php
 ```
+
+User docs: [ACCESS_CONTROL.md](../user/ACCESS_CONTROL.md), [BRANDING.md](../user/BRANDING.md).
 
 
 
@@ -276,7 +280,7 @@ backend/tests/
 └── Modules/                 # Security, Demo, …
 ```
 
-Bootstrap aplikácie pre HTTP testy: `backend/tests/Http/TestCase.php` — načíta reálny `bootstrap/app.php`, session, rate-limit cache reset.
+Bootstrap aplikácie pre HTTP testy: `backend/tests/Http/TestCase.php` — načíta reálny `bootstrap/app.php`, session reset, **`LoginAttemptTracker::clearAll()`** pred každým testom (inak zlyhané loginy z predchádzajúcich testov zablokujú IP `unknown` → HTTP **429** namiesto očakávaného **401**). Rate-limit middleware je v `APP_ENV=testing` no-op.
 
 ## Iterácia 20 – pokrytie core hardening
 
@@ -388,7 +392,7 @@ Po It. 21: pridať `newman run docs/api/PaginiumCMS.postman_collection.json`.
 ## Známe incidenty a regresie (2026-07-18+)
 
 Detailný zoznam symptómov, príčin a opráv: **[ISSUES.md](../ISSUES.md)**.  
-CI zlyhania (GitHub Actions): sekcia **CI failures** + **ISS-015–022** (2.0.25–2.0.26).
+CI zlyhania (GitHub Actions): sekcia **CI failures** + **ISS-015–022** (2.0.25–2.0.26), **ISS-072–074** (Unreleased / 2.0.52).
 
 
 | Problém                                        | Test / overenie                                                                    | Stav      |
@@ -409,6 +413,9 @@ CI zlyhania (GitHub Actions): sekcia **CI failures** + **ISS-015–022** (2.0.25
 | `navigation.json.backup.*` hromadenie          | `FileWriterTest` + max 5 backupov na súbor                                         | ✅ ISS-004 |
 | `GET /api/pages` 500 na serveri                | `php backend/bin/console content:diagnose` + `./scripts/run-all-tests.zsh` krok 11 | ✅ ISS-002 |
 | Settings `/settings` crash                     | `zodFromRules` – `.max` on optional                                                | ✅ ISS-009 |
+| Login testy → 429 namiesto 401 (full suite)  | `Http\TestCase::setUp` → `LoginAttemptTracker::clearAll()`                         | ✅ ISS-073 |
+| Security audit 403 pre ADMIN                 | `security.php` — audit rout oddelené od ACL                                        | ✅ ISS-072 |
+| PHPStan po `accessControl` / branding        | `phpstan analyse --level=8 backend/app`                                          | ✅ ISS-074 |
 
 
 **Node:** CI používa Node 22. Lokálne odporúčané `nvm use 22` pred `npm test`.

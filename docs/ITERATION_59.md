@@ -1,0 +1,45 @@
+# Iteration 59 – Odložená publikácia (plánovač v editore)
+
+**Status:** ⏳ Planned  
+**Priorita:** 🟡 Stredná  
+**Nadväzuje na:** [It.29 Cron planner](ITERATION_29.md) ✅ · [It.54 Editor profiles](ITERATION_54.md) ✅ · content API
+
+## Cieľ
+
+Editor stránok a článkov umožní **naplánovať publikáciu** (scheduled publish) — obsah zostane v stave `draft` / `scheduled` a v definovanom čase sa automaticky prepne na `published` cez job queue.
+
+## Rozsah
+
+| Oblasť | Popis |
+|--------|--------|
+| **Editor** | Pole „Publikovať o“ + date-time picker (rozbalovací kalendár) v `ContentEditorShell` / publish paneli |
+| **Front matter** | `scheduledAt` (ISO 8601), voliteľne `status: scheduled` |
+| **Admin zoznamy** | Filter / stĺpec „Naplánované“; kalendárny výber pri filtroch dátumu (PagesManager, blog) |
+| **Backend job** | Handler `content.scheduled_publish` v It.29 registry — skenuje index / front matter, publikuje due items |
+| **Notifikácia** | Voliteľne audit + email adminovi po auto-publish |
+
+## Technicky
+
+- Reuse `Scheduler` / `data/jobs/registry.json` (It.29), nie nový cron mimo existujúceho modelu.
+- Idempotentný publish (ak už `published`, skip).
+- Respektovať OTP publish approval ([It.41](ITERATION_41.md)) — scheduled job len ak schválené / OTP vypnuté.
+- Timezone: `AppTimezone` + DST z nastavení (2.0.51).
+
+## Mimo rozsahu (v1)
+
+- Odložené **unpublish** / archivácia.
+- Recurring publish (RSS-only cadence).
+
+## Acceptance criteria
+
+- [ ] Editor: výber dátumu/času + uloženie draftu so `scheduledAt`
+- [ ] CLI/cron: due obsah sa publikuje do 1 minúty od `scheduledAt`
+- [ ] Admin list: filter scheduled + zobrazenie dátumu
+- [ ] PHPUnit: job handler + API validácia
+- [ ] Vitest: date picker UX v editore
+
+## Súvisiace
+
+- [ITERATION_29.md](ITERATION_29.md) — job registry
+- [architecture/CONTENT_API.md](architecture/CONTENT_API.md)
+- [ROADMAP.md](ROADMAP.md)

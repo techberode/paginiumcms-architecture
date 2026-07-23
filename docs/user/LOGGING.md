@@ -44,7 +44,7 @@ Auth cesty (`/api/auth/login`, …) sa **defaultne nelogujú** — zapnite v Nas
 
 Filtrovanie: severity (debug/info/warning/error/critical), zdroj (app/audit/event/user), fulltext search, stav (aktívne/archivované), stránkovanie s ručným počtom záznamov na stránku (1–500).
 
-**Bulk akcie (2.0.52):** zaškrtnite riadky → **Archivovať** alebo **Vymazať**. **Vymazať všetko** zmaže všetky log súbory naraz (potvrdenie v dialógu). **Purge starých** stále používa `retentionDays` z nastavení.
+**Bulk akcie (2.0.51):** zaškrtnite riadky → **Archivovať** alebo **Vymazať**. **Vymazať všetko** zmaže všetky log súbory naraz (potvrdenie v dialógu). **Purge starých** stále používa `retentionDays` z nastavení.
 
 ## Nastavenia (skupina `logging`)
 

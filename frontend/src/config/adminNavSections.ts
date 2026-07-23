@@ -14,7 +14,6 @@ import {
   Shield,
   ShieldAlert,
   ShieldCheck,
-  Lock,
   Layers,
   FlaskConical,
   Bell,
@@ -98,7 +97,6 @@ export const ADMIN_NAV_SECTIONS: AdminNavSectionDef[] = [
       { id: 'logs', labelKey: 'admin.nav.logs', href: '/logs', icon: ScrollText, adminOnly: true },
       { id: 'audit', labelKey: 'admin.nav.audit', href: '/audit', icon: History },
       { id: 'security-audit', labelKey: 'admin.nav.securityAudit', href: '/security/audit', icon: ShieldAlert, adminOnly: true },
-      { id: 'security-acl', labelKey: 'admin.nav.securityAcl', href: '/security/acl', icon: Lock, adminOnly: true },
     ],
   },
   {

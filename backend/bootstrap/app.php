@@ -379,7 +379,8 @@ $containerBuilder->addDefinitions([
 
     AuthorizationInterface::class => function ($container) {
         return new AuthorizationManager(
-            $container->get(SecurityAuditStore::class)
+            $container->get(SecurityAuditStore::class),
+            $container->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class)
         );
     },
 

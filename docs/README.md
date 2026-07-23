@@ -1,6 +1,6 @@
 # 🏛️ PaginiumCMS
 
-> **Version:** 2.0.31 · **Last updated:** 20 July 2026  
+> **Version:** 2.0.52 · **Last updated:** 23 July 2026  
 > Modern, modular, Headless Flat-File Content Management System powered by Slim Framework (PHP) & React.
 
 ---
@@ -33,8 +33,8 @@ PaginiumCMS keeps the Core intentionally minimal, secure, and fast. It moves sta
 | **Job scheduler** | ✅ It. 29 | Flat-file registry, `scheduler:run`, admin `/scheduler` |
 | **Monitoring** | ✅ It. 7 | Scheduled reports, log incidents, HTML email, cron CLI |
 | **API contract** | ✅ It. 21 | JsonResponder everywhere, MSW, Newman CI, RHF+Zod |
-| **PHPUnit** | ✅ **653 passing** (15 skipped) | PHPStan level 8 (0 errors) |
-| **Frontend** | ✅ It.44 (2.0.31) | Blog pagination, admin URL filters, command palette |
+| **PHPUnit** | ✅ **820 passing** (15 skipped) | PHPStan level 8 (0 errors) |
+| **Frontend** | ✅ 2.0.51+ | i18n, branding, settings ACL panel |
 | **Next focus** | ⏳ **It.44c** | Media/comments URL sync; backend filter facets |
 
 ### Planned (roadmap)
@@ -45,7 +45,7 @@ PaginiumCMS keeps the Core intentionally minimal, secure, and fast. It moves sta
 | **45** | **Redis (optional)** — shared cache/queue when scaling to multiple PHP workers |
 | **46** | **Server metrics agent** — CPU/RAM/disk/Docker for monitoring reports (extends It.7) |
 
-Recently shipped / unreleased: **It.43** advanced search ([ITERATION_43.md](ITERATION_43.md), Unreleased) · **It.23** SEO meta ([ITERATION_23.md](ITERATION_23.md), 2.0.11) · **It.8** media FE ([ITERATION_8.md](ITERATION_8.md), 2.0.4)
+Recently shipped: **2.0.52** — [BRANDING.md](user/BRANDING.md), [ACCESS_CONTROL.md](user/ACCESS_CONTROL.md) · **2.0.51** — timezone, logy bulk · **It.43** — [ITERATION_43.md](ITERATION_43.md)
 
 **It.10 (RSS/sitemap):** ✅ [ITERATION_10.md](ITERATION_10.md) — feeds, sitemap, robots.txt, cache, Postman smoke.
 
@@ -222,6 +222,8 @@ See [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md) and [user/CODE_EDITOR.md](u
 | [user/INSTALLATION.md](user/INSTALLATION.md) | Inštalácia + beta balík |
 | [user/FIRST_STEPS.md](user/FIRST_STEPS.md) | Prihlásenie, 2FA, prvý obsah |
 | [user/ADMIN_GUIDE.md](user/ADMIN_GUIDE.md) | Kompletná administrácia CMS |
+| [user/BRANDING.md](user/BRANDING.md) | Logo a favicon |
+| [user/ACCESS_CONTROL.md](user/ACCESS_CONTROL.md) | Oprávnenia rolí a Path ACL |
 | [user/CODE_EDITOR.md](user/CODE_EDITOR.md) | Code Editor — unlock, lock, bezpečnosť, povolené adresáre |
 | [user/CONTENT_EDITOR.md](user/CONTENT_EDITOR.md) | Editor podstránok/článkov — SEO, náhľad z médií, blog |
 | [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md) | Developer Mode gate, dev tokeny CLI |

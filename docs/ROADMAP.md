@@ -262,7 +262,7 @@ Hotové v **2.0.1** — detail [ITERATION_6.md](ITERATION_6.md).
 ## Iterácia 11 – SSO + jemnozrnné ACL + bezpečnostný audit log ✅ 🔵
 
 - ✅ OAuth2 SSO (GitHub + generic) — settings `sso`, `/api/auth/sso/*`, FE login buttons.
-- ✅ Jemnozrnné ACL — `data/security/acl.json`, `PathAclService`, admin `/security/acl`.
+- ✅ Jemnozrnné ACL — `PathAclService`, sync `acl.json`; admin **Nastavenia → Oprávnenia rolí** (+ nastaviteľné RBAC)
 - ✅ Bezpečnostný audit log — `SecurityAuditStore`, CSV export, admin `/security/audit`.
 - ✅ Path ACL enforcement — `ContentPathAclGuard` wired into content/media/drafts (ISS-055).
 - ⏳ SAML — mimo v1.

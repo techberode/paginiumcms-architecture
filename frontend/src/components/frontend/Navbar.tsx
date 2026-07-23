@@ -1,10 +1,11 @@
 // frontend/src/components/frontend/Navbar.tsx
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ChevronDown, Search, Shield, Menu, X, Rocket } from 'lucide-react';
+import { ChevronDown, Search, Shield, Menu, X } from 'lucide-react';
 import { usePublicSite, type PublicNavItem } from '../../context/PublicSiteContext';
 import { useAuth } from '../../hooks/useAuth';
 import { useI18n } from '../../context/I18nContext';
+import { SiteLogo } from '../branding/SiteLogo';
 
 interface NavbarProps {
   onOpenSearch: () => void;
@@ -124,7 +125,7 @@ const MobileNavItems: React.FC<{
 );
 
 export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, previewMode = false }) => {
-  const { navigation, siteTitle } = usePublicSite();
+  const { navigation } = usePublicSite();
   const { user } = useAuth();
   const { t } = useI18n();
   const location = useLocation();
@@ -158,17 +159,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, previewMode = fals
           onClick={() => navigate('/')}
           className="flex items-center gap-3 cursor-pointer group"
         >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform">
-            <Rocket className="w-5 h-5 text-white" />
-          </div>
-          <div className="text-left">
-            <span className="font-extrabold text-xl tracking-tight text-slate-900 dark:text-white block">
-              {siteTitle}
-            </span>
-            <span className="hidden sm:block text-[10px] font-semibold tracking-wider text-indigo-500 uppercase">
-              {t('public.nav.architectureTagline')}
-            </span>
-          </div>
+          <SiteLogo
+            showName
+            className="flex items-center gap-3"
+            imageClassName="h-10 w-auto max-w-[160px] object-contain group-hover:scale-105 transition-transform"
+            fallbackClassName="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform shrink-0"
+            nameClassName="text-lg font-black tracking-tight text-slate-900 dark:text-white truncate"
+          />
         </button>
 
         <nav className="hidden md:flex items-center gap-1">
