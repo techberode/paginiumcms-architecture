@@ -32,8 +32,8 @@ final class ContentSecuritySanitizer
             $html = preg_replace('/<svg\b[^>]*>.*?<\/svg>/is', '', $html) ?? $html;
         }
 
-        $allowedTags = $this->buildAllowedTagString($cfg);
-        $sanitized = strip_tags($html, $allowedTags);
+        $allowedTagNames = $this->buildAllowedTagNames($cfg);
+        $sanitized = (new HtmlDomSanitizer())->sanitize($html, $allowedTagNames);
 
         if (!$this->isTruthy($cfg['allowScriptTags'] ?? false)) {
             $sanitized = preg_replace('/<script\b[^>]*>.*?<\/script>/is', '', $sanitized) ?? $sanitized;
@@ -44,8 +44,9 @@ final class ContentSecuritySanitizer
 
     /**
      * @param array<string, mixed> $cfg
+     * @return list<string>
      */
-    private function buildAllowedTagString(array $cfg): string
+    private function buildAllowedTagNames(array $cfg): array
     {
         $raw = (string) ($cfg['allowedHtmlTags'] ?? '');
         $tags = array_values(array_filter(
@@ -66,10 +67,13 @@ final class ContentSecuritySanitizer
         }
 
         if ($tags === []) {
-            return '<p><br><strong><em><ul><ol><li><a><img><blockquote><code><pre><h1><h2><h3><h4><table><thead><tbody><tr><th><td>';
+            return [
+                'p', 'br', 'strong', 'em', 'ul', 'ol', 'li', 'a', 'img', 'blockquote',
+                'code', 'pre', 'h1', 'h2', 'h3', 'h4', 'table', 'thead', 'tbody', 'tr', 'th', 'td',
+            ];
         }
 
-        return '<' . implode('><', $tags) . '>';
+        return $tags;
     }
 
     private function isTruthy(mixed $value): bool

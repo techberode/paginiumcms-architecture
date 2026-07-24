@@ -103,12 +103,27 @@ php backend/bin/console monitoring:run-schedule
 
 For production deploy with one host, see [NGINX_API.md](./NGINX_API.md).
 
-## LAN test server (192.168.10.x)
+## LAN test server
 
-Ready-made config for the split setup (SPA on `.26:8081`, PHP on `.20:8080`):
+Ready-made config for the split setup (SPA + PHP API proxy on one nginx host):
 
 - **File:** [`nginx-paginium-test.conf`](./nginx-paginium-test.conf)
 - **Deploy script:** [`../../scripts/deploy-frontend-lan.sh`](../../scripts/deploy-frontend-lan.sh)
+
+Deploy (no hardcoded host/user in repo — set your own):
+
+```bash
+DEPLOY_HOST=192.168.x.x DEPLOY_USER=yourName DEPLOY_SSH_PORT=22 ./scripts/deploy-frontend-lan.sh
+```
+
+Optional: `DEPLOY_SSH_HOST=homelab` (SSH config alias), `DEPLOY_HEALTH_URL`, `DEPLOY_PUBLIC_URL`.
+
+Read-only tunnel for external tester (no router port forward):
+
+```bash
+ssh -L 8081:localhost:8081 -p 49555 user@192.168.x.x
+# then open http://localhost:8081/
+```
 
 Quick install on the nginx host:
 
@@ -116,5 +131,5 @@ Quick install on the nginx host:
 sudo cp docs/deploy/nginx-paginium-test.conf /etc/nginx/sites-available/paginium-test
 sudo ln -sf /etc/nginx/sites-available/paginium-test /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl reload nginx
-curl -s http://192.168.10.26:8081/api/health
+curl -s http://YOUR_HOST:8081/api/health
 ```

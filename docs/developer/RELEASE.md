@@ -1,6 +1,6 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.1.0-beta.5** · 2026-07-24 · tag **`v2.1.0-beta.5`**  
+> Posledná verzia: **2.1.0-beta.6** · 2026-07-24 · tag **`v2.1.0-beta.6`**  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release.
 
 > **Poznámka k verziám:** **`2.0.58`** → `f53e71e` · **Public Beta 1** → `e3e0d82` · **Beta 1 Testing** → `c68e72b` · **Beta 1 patch (RR GHSA)** → *(commit po push)*.
@@ -23,7 +23,8 @@
 | **Beta 1 Testing** | **`v2.1.0-beta.2`** | **`c68e72b`** | ✅ tagged |
 | **Beta 1 patch (RR GHSA + CMS info)** | **`v2.1.0-beta.3`** | ✅ tagged |
 | **It.57 — Auto tags & meta description** | **`v2.1.0-beta.4`** | **`2091076`** | ✅ tagged |
-| **It.56 — Rich navigation + auth/session fixes** | **`v2.1.0-beta.5`** | *(this release)* | ⏳ tag po gate |
+| **It.56 — Rich navigation + auth/session fixes** | **`v2.1.0-beta.5`** | ✅ tagged |
+| **Security audit — XSS, Zip-Slip, deploy** | **`v2.1.0-beta.6`** | ⏳ tag po gate |
 
 **Pravidlo:** Post-beta patchy — `2.0.59+` alebo `2.1.0-beta.N` podľa rozsahu.
 
@@ -36,7 +37,68 @@ gh auth login   # ak ešte nie
 ./scripts/create-github-releases.sh
 ```
 
-Testerom / security reviewerovi poslať **`v2.1.0-beta.5`** + [SECURITY_REVIEW.md](../SECURITY_REVIEW.md).
+Testerom / security reviewerovi poslať **`v2.1.0-beta.6`** + [SECURITY_REVIEW.md](../SECURITY_REVIEW.md).
+
+---
+
+## v2.1.0-beta.6 — Security audit (ISS-086–088)
+
+```bash
+./scripts/iteration-gate.sh
+cd frontend && npm audit --audit-level=moderate
+composer audit
+```
+
+### Commit
+
+```bash
+git add -A
+git commit -m "$(cat <<'EOF'
+release: v2.1.0-beta.6 — security audit ISS-086/087/088.
+
+Stored XSS: HtmlDomSanitizer + DOMPurify defense-in-depth. Backup import ZipEntryGuard.
+Deploy script env-only host/user. PHPStan fix isSafeUri regex delimiter.
+EOF
+)"
+git tag v2.1.0-beta.6
+git push origin main
+git push origin v2.1.0-beta.6
+```
+
+---
+
+## GitHub Release — copy-paste (v2.1.0-beta.6)
+
+**Title:** `v2.1.0-beta.6 — Security audit (XSS, Zip-Slip, deploy)`
+
+**Body:**
+
+```markdown
+## Summary
+
+Externý security audit pred LAN testom — tri opravy + PHPStan fix.
+
+**Fixes:** ISS-086 (stored XSS), ISS-087 (deploy script hardcoded host/user), ISS-088 (backup Zip-Slip).
+
+## Security
+
+- Backend `HtmlDomSanitizer` — attribute allow-list, blocks `on*`, `javascript:` / `data:` URIs
+- Frontend DOMPurify before `dangerouslySetInnerHTML` (defense-in-depth)
+- `ZipEntryGuard` on backup import
+- Deploy: `DEPLOY_HOST=… DEPLOY_USER=… ./scripts/deploy-frontend-lan.sh`
+
+## Test plan
+
+- [ ] Uložiť článok s `<img onerror=…>` → atribút odstránený v API aj na webe
+- [ ] Backup import s `../` entry → odmietnuté
+- [ ] `./scripts/deploy-frontend-lan.sh` bez env → fail-fast s návodom
+- [ ] `composer stan` + `composer test` + `npm test`
+
+## Docs
+
+- [CHANGELOG.md](CHANGELOG.md#210-beta6--2026-07-24)
+- [ISSUES.md](docs/ISSUES.md) ISS-086–088
+```
 
 ---
 
