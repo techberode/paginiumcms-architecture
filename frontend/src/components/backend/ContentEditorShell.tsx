@@ -13,7 +13,7 @@ import {
 import type { ContentType } from '../../api/drafts';
 import type { ContentEditorStatus } from '../../utils/contentScheduling';
 import type { NavigationItem } from '../../api/navigation';
-import type { EditorMode } from '../../utils/contentEditor';
+import type { EditorMode, ContentFormat } from '../../utils/contentEditor';
 import type { EditorProfileId } from '../../utils/editorProfiles';
 import { EditorProfilePicker } from './EditorProfilePicker';
 import { countContentStats } from '../../utils/contentEditorMeta';
@@ -22,6 +22,7 @@ import { ArticleCommentsPanel } from './ArticleCommentsPanel';
 import type { ArticleCommentsSettings } from '../../utils/articleCommentsSettings';
 import { useOpenLinksInNewTab } from '../../hooks/useOpenLinksInNewTab';
 import { ArticleTagsEditor } from './ArticleTagsEditor';
+import { ContentMetaSuggestPanel } from './ContentMetaSuggestPanel';
 import { linkTargetProps } from '../../utils/linkTarget';
 import { useI18n } from '../../context/I18nContext';
 
@@ -36,6 +37,7 @@ interface ContentEditorShellProps {
   scheduledAt: string;
   template: string;
   content: string;
+  contentFormat: ContentFormat;
   editorMode: EditorMode;
   editorProfile: EditorProfileId;
   seo: SeoFormValues;
@@ -77,6 +79,7 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
   scheduledAt,
   template,
   content,
+  contentFormat,
   editorMode,
   editorProfile,
   seo,
@@ -284,6 +287,18 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
               />
             </div>
           </div>
+
+          <ContentMetaSuggestPanel
+            type={type}
+            title={title}
+            body={content}
+            bodyFormat={contentFormat}
+            tagsValue={seo.tags}
+            descriptionValue={seo.seoDescription}
+            disabled={!canEdit}
+            onApplyTags={(value) => onSeoChange({ ...seo, tags: value })}
+            onApplyDescription={onDescriptionChange}
+          />
 
           <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40">
             <div className="flex flex-wrap items-start justify-between gap-3">

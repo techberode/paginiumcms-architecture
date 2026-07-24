@@ -67,6 +67,10 @@ final class SettingsSchema
                     ['key' => 'defaultStatus', 'type' => 'enum', 'label' => 'Predvolený stav obsahu', 'default' => 'draft', 'options' => ['draft', 'published'], 'rules' => ['required', 'in:draft,published']],
                     ['key' => 'autoSaveInterval', 'type' => 'int', 'label' => 'Interval auto-save (s)', 'default' => 60, 'rules' => ['required', 'int', 'min:10', 'max:600'], 'help' => 'Ako často sa ukladá koncept (Iterácia 2).'],
                     ['key' => 'lockTtl', 'type' => 'int', 'label' => 'Platnosť zámku obsahu (s)', 'default' => 300, 'rules' => ['required', 'int', 'min:60', 'max:3600'], 'help' => 'Auto-release zámku po nečinnosti (Iterácia 1).'],
+                    ['key' => 'autoTagEnabled', 'type' => 'bool', 'label' => 'Navrhovanie tagov v editore', 'default' => true, 'rules' => ['bool'], 'help' => 'Povolí tlačidlo „Navrhnúť tagy“ v editore článkov (It.57).'],
+                    ['key' => 'autoTagMax', 'type' => 'int', 'label' => 'Max. počet navrhovaných tagov', 'default' => 8, 'rules' => ['required', 'int', 'min:3', 'max:20'], 'help' => 'Koľko tagov vráti generátor naraz.'],
+                    ['key' => 'autoDescriptionEnabled', 'type' => 'bool', 'label' => 'Generovanie meta popisu', 'default' => true, 'rules' => ['bool'], 'help' => 'Povolí tlačidlo „Generovať popis“ v editore (It.57).'],
+                    ['key' => 'autoDescriptionMaxLength', 'type' => 'int', 'label' => 'Max. dĺžka meta popisu (znaky)', 'default' => 155, 'rules' => ['required', 'int', 'min:80', 'max:320'], 'help' => 'Odporúčané 150–160 znakov pre SEO.'],
                 ],
             ],
             'editor' => [

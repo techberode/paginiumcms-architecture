@@ -9,6 +9,7 @@ use Tuupola\Middleware\CorsMiddleware;
 
 // ---------- BEZPEČNOSTNÉ MIDDLEWARE ----------
 use PaginiumCMS\Http\Middleware\SecurityMiddleware;
+use PaginiumCMS\Http\Middleware\ContentSuggestMetaRateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\RateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\LoginRateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\OtpResendRateLimitMiddleware;
@@ -315,6 +316,13 @@ $containerBuilder->addDefinitions([
 
     OtpStartRateLimitMiddleware::class => function ($container) {
         return new OtpStartRateLimitMiddleware(
+            $container->get(CacheManager::class),
+            array_filter(explode(',', (string)($_ENV['TRUSTED_PROXIES'] ?? '127.0.0.1,::1,192.168.10.26')))
+        );
+    },
+
+    ContentSuggestMetaRateLimitMiddleware::class => function ($container) {
+        return new ContentSuggestMetaRateLimitMiddleware(
             $container->get(CacheManager::class),
             array_filter(explode(',', (string)($_ENV['TRUSTED_PROXIES'] ?? '127.0.0.1,::1,192.168.10.26')))
         );

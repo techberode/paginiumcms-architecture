@@ -1,7 +1,6 @@
 # Iteration 57 – Auto tags & description generator
 
-**Status:** ⏳ Planned (implementation **after It.15**)  
-**Wave:** Post-15 Editor & UX  
+**Status:** ✅ Shipped (**v2.1.0-beta.4** target) · Wave Post-15 Editor & UX  
 **Priority:** 🟡 Medium
 
 ## Summary
@@ -47,11 +46,11 @@ Optional v2 (plugin via It.15): LLM provider hook — **never required for core*
 
 ## Acceptance criteria
 
-- [ ] Suggest tags returns sensible SK sample for blog post fixture
-- [ ] Generated description ≤ configured max length
-- [ ] Does not overwrite fields without explicit user click “Apply”
-- [ ] PHPUnit unit tests for generator (no network)
-- [ ] Works for Markdown articles today; WYSIWYG after It.55
+- [x] Suggest tags returns sensible SK sample for blog post fixture
+- [x] Generated description ≤ configured max length
+- [x] Does not overwrite fields without explicit user click “Apply”
+- [x] PHPUnit unit tests for generator (no network)
+- [x] Works for Markdown articles today; WYSIWYG after It.55
 
 ## Next
 

@@ -86,6 +86,23 @@ export const editorSk: MessageTree = {
     noIndex: 'Skryť pred vyhľadávačmi (noindex)',
     pickImageTitle: 'Vybrať náhľadový obrázok',
   },
+  metaSuggest: {
+    title: 'Návrh meta údajov',
+    hint: 'Pravidlový generátor z titulku a tela — nič sa neuloží bez tlačidla Použiť.',
+    suggestTags: 'Navrhnúť tagy',
+    suggestDescription: 'Generovať popis',
+    loading: 'Generujem…',
+    previewTags: 'Navrhované tagy',
+    previewDescription: 'Navrhovaný meta popis',
+    applyTags: 'Použiť tagy',
+    applyDescription: 'Použiť popis',
+    appliedTags: 'Tagy boli doplnené',
+    appliedDescription: 'Meta popis bol nastavený',
+    dismissPreview: 'Zavrieť náhľad',
+    replaceWarning: 'Existujúci popis bude nahradený.',
+    emptyBody: 'Zadaj aspoň titulok alebo obsah.',
+    error: 'Generovanie meta údajov zlyhalo.',
+  },
   markdown: {
     toast: {
       loadFailed: 'Nepodarilo sa načítať obsah',

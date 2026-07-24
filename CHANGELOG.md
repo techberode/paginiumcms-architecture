@@ -51,12 +51,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | **Public Beta 1** | **`v2.1.0-beta.1`** | [below](#210-beta1--2026-07-23) |
 | Beta 1 Testing — pre-push security gate | **`v2.1.0-beta.2`** | [below](#210-beta2--2026-07-23) |
 | Beta 1 patch — React Router GHSA + CMS info | **`v2.1.0-beta.3`** | [below](#210-beta3--2026-07-24) |
+| It.57 — Auto tags & meta description | **`v2.1.0-beta.4`** | [below](#210-beta4--2026-07-24) |
 | Wave 5d — It.15 hook emitters + extension policy | **2.0.54** | [below](#2054--2026-07-23) |
 | It.19b–19d — Security runtime, auth UX, password policy | **2.0.45** | [below](#2045--2026-07-21) |
 
 ---
 
 ## [Unreleased]
+
+---
+
+## [2.1.0-beta.4] – 2026-07-24
+
+**It.57** — Auto tags & meta description generator + bundled safe dependency updates.
+
+### Added
+
+- **It.57** — `POST /api/admin/content/suggest-meta`: deterministic tags + meta description from title/body (markdown, HTML, Tiptap JSON). Settings: `autoTagEnabled`, `autoTagMax`, `autoDescriptionEnabled`, `autoDescriptionMaxLength`. Editor panel **Navrhnúť meta** with rate limit (30/min).
+
+### Changed
+
+- **`AppVersion`** → `2.1.0-beta.4`
+- **`league/commonmark`**: 2.8.2 → 2.8.3 (Dependabot #6)
+- **Tiptap** extensions: 3.27.3 → **3.28.0** (all `@tiptap/*` together — fixes peer conflicts from #9/#11/#12)
+- **Frontend dev deps** (Dependabot #8): vite 8.1.5, happy-dom, postcss, typescript-eslint, eslint-plugin-react-refresh, @vitejs/plugin-react
+
+### Skipped (Dependabot)
+
+- **#7** symfony/yaml 8.x — major, constraint `^7.0`
+- **#10** eslint 10.x — major breaking
 
 ---
 

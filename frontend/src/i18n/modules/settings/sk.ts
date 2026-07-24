@@ -243,6 +243,22 @@ export const settingsSk: MessageTree = {
       "lockTtl": {
         "label": "Platnosť zámku obsahu (s)",
         "help": "Auto-release zámku po nečinnosti (Iterácia 1)."
+      },
+      "autoTagEnabled": {
+        "label": "Navrhovanie tagov v editore",
+        "help": "Povolí tlačidlo „Navrhnúť tagy“ v editore článkov (It.57)."
+      },
+      "autoTagMax": {
+        "label": "Max. počet navrhovaných tagov",
+        "help": "Koľko tagov vráti generátor naraz."
+      },
+      "autoDescriptionEnabled": {
+        "label": "Generovanie meta popisu",
+        "help": "Povolí tlačidlo „Generovať popis“ v editore (It.57)."
+      },
+      "autoDescriptionMaxLength": {
+        "label": "Max. dĺžka meta popisu (znaky)",
+        "help": "Odporúčané 150–160 znakov pre SEO."
       }
     },
     "editor": {
