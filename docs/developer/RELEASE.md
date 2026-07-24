@@ -1,6 +1,6 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.1.0-beta.3** · 2026-07-24 · tag **`v2.1.0-beta.3`**  
+> Posledná verzia: **2.1.0-beta.4** · 2026-07-24 · tag **`v2.1.0-beta.4`**  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release.
 
 > **Poznámka k verziám:** **`2.0.58`** → `f53e71e` · **Public Beta 1** → `e3e0d82` · **Beta 1 Testing** → `c68e72b` · **Beta 1 patch (RR GHSA)** → *(commit po push)*.
@@ -21,7 +21,8 @@
 | **2.0.58** | **`v2.0.58`** | **`f53e71e`** | ✅ tagged |
 | Public Beta 1 | **`v2.1.0-beta.1`** | **`e3e0d82`** | ✅ tagged |
 | **Beta 1 Testing** | **`v2.1.0-beta.2`** | **`c68e72b`** | ✅ tagged |
-| **Beta 1 patch (RR GHSA + CMS info)** | **`v2.1.0-beta.3`** | *(this release)* | ⏳ tag po gate |
+| **Beta 1 patch (RR GHSA + CMS info)** | **`v2.1.0-beta.3`** | ✅ tagged |
+| **It.57 — Auto tags & meta description** | **`v2.1.0-beta.4`** | *(this release)* | ⏳ tag po gate |
 
 **Pravidlo:** Post-beta patchy — `2.0.59+` alebo `2.1.0-beta.N` podľa rozsahu.
 
@@ -34,7 +35,63 @@ gh auth login   # ak ešte nie
 ./scripts/create-github-releases.sh
 ```
 
-Testerom / security reviewerovi poslať **`v2.1.0-beta.3`** + [SECURITY_REVIEW.md](../SECURITY_REVIEW.md).
+Testerom / security reviewerovi poslať **`v2.1.0-beta.4`** + [SECURITY_REVIEW.md](../SECURITY_REVIEW.md).
+
+---
+
+## v2.1.0-beta.4 — It.57 Auto tags & meta description
+
+```bash
+./scripts/iteration-gate.sh
+cd frontend && npm audit --audit-level=moderate
+composer audit
+```
+
+### Commit
+
+```bash
+git add -A
+git commit -m "$(cat <<'EOF'
+release: v2.1.0-beta.4 — It.57 auto tags & meta description.
+
+Suggest-meta API + editor panel. Bundled deps: commonmark 2.8.3, tiptap 3.28.0, dev tooling (#6/#8).
+EOF
+)"
+git tag v2.1.0-beta.4
+git push origin main
+git push origin v2.1.0-beta.4
+```
+
+---
+
+## GitHub Release — copy-paste (v2.1.0-beta.4)
+
+**Title:** `v2.1.0-beta.4 — It.57 Auto tags & meta description`
+
+**Body:**
+
+```markdown
+## Summary
+
+**It.57** — deterministic auto tags and meta description from content (markdown, HTML, Tiptap JSON). Editor panel **Navrhnúť meta** + settings toggles. Bundled safe dependency updates (Dependabot #6, #8; tiptap 3.28.0 all packages).
+
+## Added
+
+- `POST /api/admin/content/suggest-meta` — tags + description (rate limit 30/min)
+- Settings: auto tag / auto description toggles and limits
+- Editor: **ContentMetaSuggestPanel** in content editor shell
+
+## Changed
+
+- `league/commonmark` 2.8.2 → 2.8.3
+- All `@tiptap/*` 3.27.3 → 3.28.0 (fixes peer deps from split Dependabot PRs)
+- Frontend dev deps: vite, happy-dom, postcss, typescript-eslint, etc.
+
+## Verification
+
+- `./scripts/iteration-gate.sh`
+- `composer audit` + `npm audit --audit-level=moderate` = 0 CVE
+```
 
 ---
 

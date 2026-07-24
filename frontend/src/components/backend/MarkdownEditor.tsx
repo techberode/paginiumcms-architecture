@@ -585,6 +585,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         scheduledAt={scheduledAt}
         template={template}
         content={content}
+        contentFormat={contentFormat}
         editorMode={editorMode}
         editorProfile={editorProfile}
         seo={seo}

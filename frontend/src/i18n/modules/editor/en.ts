@@ -86,6 +86,23 @@ export const editorEn: MessageTree = {
     noIndex: 'Hide from search engines (noindex)',
     pickImageTitle: 'Pick preview image',
   },
+  metaSuggest: {
+    title: 'Meta suggestions',
+    hint: 'Rule-based generator from title and body — nothing is saved until you click Apply.',
+    suggestTags: 'Suggest tags',
+    suggestDescription: 'Generate description',
+    loading: 'Generating…',
+    previewTags: 'Suggested tags',
+    previewDescription: 'Suggested meta description',
+    applyTags: 'Apply tags',
+    applyDescription: 'Apply description',
+    appliedTags: 'Tags were added',
+    appliedDescription: 'Meta description was set',
+    dismissPreview: 'Dismiss preview',
+    replaceWarning: 'The existing description will be replaced.',
+    emptyBody: 'Enter at least a title or body content.',
+    error: 'Failed to generate meta suggestions.',
+  },
   markdown: {
     toast: {
       loadFailed: 'Failed to load content',

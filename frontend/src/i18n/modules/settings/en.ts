@@ -243,6 +243,22 @@ export const settingsEn: MessageTree = {
       "lockTtl": {
         "label": "Content lock TTL (s)",
         "help": "Auto-release lock after inactivity (Iteration 1)."
+      },
+      "autoTagEnabled": {
+        "label": "Tag suggestions in editor",
+        "help": "Enables “Suggest tags” in the article editor (It.57)."
+      },
+      "autoTagMax": {
+        "label": "Max suggested tags",
+        "help": "How many tags the generator returns at once."
+      },
+      "autoDescriptionEnabled": {
+        "label": "Meta description generator",
+        "help": "Enables “Generate description” in the editor (It.57)."
+      },
+      "autoDescriptionMaxLength": {
+        "label": "Max meta description length (chars)",
+        "help": "Recommended 150–160 characters for SEO."
       }
     },
     "editor": {

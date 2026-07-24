@@ -92,6 +92,7 @@ use PaginiumCMS\Core\Logging\Services\ApplicationLogMessageFormatter;
 use PaginiumCMS\Core\Logging\Services\ApplicationLogReader;
 use PaginiumCMS\Core\Logging\Services\AccessLogService;
 use PaginiumCMS\Core\Logging\Contracts\LogWriterInterface;
+use PaginiumCMS\Core\FlatFile\Services\ContentMetaGenerator;
 use PaginiumCMS\Core\FlatFile\Services\ContentRevision;
 use PaginiumCMS\Core\FlatFile\Services\ContentScheduledPublishService;
 use PaginiumCMS\Core\FlatFile\Services\FrontMatterParser;
@@ -141,6 +142,7 @@ use PaginiumCMS\Http\Controllers\Comments\CommentsController;
 use PaginiumCMS\Http\Controllers\Contact\ContactController;
 use PaginiumCMS\Http\Controllers\Navigation\NavigationController;
 use PaginiumCMS\Http\Controllers\Content\ContentController;
+use PaginiumCMS\Http\Controllers\Content\ContentMetaController;
 use PaginiumCMS\Http\Controllers\Content\DraftController;
 use PaginiumCMS\Http\Controllers\Content\SearchController;
 use PaginiumCMS\Http\Extensions\Contracts\PluginManagerInterface;
@@ -193,6 +195,8 @@ return [
     // FlatFile content stack
     FrontMatterParserInterface::class => create(FrontMatterParser::class),
     MarkdownContentParserInterface::class => create(MarkdownContentParser::class),
+    ContentMetaGenerator::class => create(ContentMetaGenerator::class)
+        ->constructor(get(MarkdownContentParserInterface::class)),
     TiptapHtmlRenderer::class => create(TiptapHtmlRenderer::class),
     ContentSecuritySanitizer::class => create(ContentSecuritySanitizer::class)
         ->constructor(get(SettingsRepositoryInterface::class)),
@@ -557,6 +561,12 @@ return [
             get(ContentIndexService::class),
             get(ContentRepositoryInterface::class),
             get(AdvancedSearchService::class),
+            get(JsonResponder::class)
+        ),
+    ContentMetaController::class => create(ContentMetaController::class)
+        ->constructor(
+            get(ContentMetaGenerator::class),
+            get(SettingsRepositoryInterface::class),
             get(JsonResponder::class)
         ),
     MediaController::class => create(MediaController::class)

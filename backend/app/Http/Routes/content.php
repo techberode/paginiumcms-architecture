@@ -8,6 +8,7 @@ declare(strict_types=1);
  */
 
 use PaginiumCMS\Http\Controllers\Content\ContentController;
+use PaginiumCMS\Http\Controllers\Content\ContentMetaController;
 use PaginiumCMS\Http\Controllers\Content\SearchController;
 use PaginiumCMS\Http\Middleware\AuthMiddleware;
 use PaginiumCMS\Http\Middleware\PermissionMiddleware;
@@ -20,6 +21,7 @@ use PaginiumCMS\Support\JsonHelper;
 return function (App $app): void {
     $container = RouteBootstrap::container($app);
     $controller = $container->get(ContentController::class);
+    $metaController = $container->get(ContentMetaController::class);
     $searchController = $container->get(SearchController::class);
     $auth = $container->get(AuthMiddleware::class);
     $authz = $container->get(AuthorizationInterface::class);
@@ -100,6 +102,11 @@ return function (App $app): void {
     $app->group('/api/articles', function (RouteCollectorProxy $group) use ($controller) {
         $group->patch('/bulk-status', [$controller, 'bulkUpdateArticleStatus']);
     })
+        ->add(new PermissionMiddleware($authz, 'content:edit'))
+        ->add($auth);
+
+    $app->post('/api/admin/content/suggest-meta', [$metaController, 'suggestMeta'])
+        ->add($container->get(\PaginiumCMS\Http\Middleware\ContentSuggestMetaRateLimitMiddleware::class))
         ->add(new PermissionMiddleware($authz, 'content:edit'))
         ->add($auth);
 };

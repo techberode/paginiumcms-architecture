@@ -17,6 +17,19 @@ function endpoint(type: ContentType): string {
   return type === 'articles' ? '/api/articles' : '/api/pages';
 }
 
+export interface SuggestMetaPayload {
+  type: 'page' | 'article';
+  title: string;
+  body: string;
+  bodyFormat: 'markdown' | 'html' | 'tiptap_json';
+  existingTags?: string[];
+}
+
+export interface SuggestMetaResponse {
+  tags: string[];
+  description: string;
+}
+
 export const contentApi = {
   list: async <T extends ContentItem = Page>(
     type: ContentType,
@@ -91,5 +104,13 @@ export const contentApi = {
       { slugs, status }
     );
     return res.success && res.data ? res.data : null;
+  },
+
+  suggestMeta: async (payload: SuggestMetaPayload): Promise<SuggestMetaResponse> => {
+    const res = await apiClient.post<SuggestMetaResponse>('/api/admin/content/suggest-meta', payload);
+    if (!res.success || !res.data) {
+      throw new Error('suggest_meta_failed');
+    }
+    return res.data;
   },
 };
