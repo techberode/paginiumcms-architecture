@@ -2,6 +2,7 @@
     "name": "paginiumcms/core",
     "description": "PaginiumCMS Core - FlatFile Engine",
     "type": "project",
+    "license": "MIT",
     "require": {
         "php": "^8.5",
         "symfony/yaml": "^7.0",

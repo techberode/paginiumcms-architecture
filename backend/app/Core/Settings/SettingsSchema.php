@@ -26,7 +26,7 @@ use PaginiumCMS\Modules\Security\Models\User;
  *     help?: string,
  *     options?: list<string>
  * }
- * @phpstan-type SettingGroup array{label: string, fields: list<SettingField>, superAdminOnly?: bool}
+ * @phpstan-type SettingGroup array{label: string, fields: list<SettingField>, superAdminOnly?: bool, informational?: bool}
  */
 final class SettingsSchema
 {
@@ -360,6 +360,11 @@ final class SettingsSchema
                     ['key' => 'genericScope', 'type' => 'string', 'label' => 'OAuth scope', 'default' => 'openid email profile', 'rules' => ['string', 'max:255']],
                 ],
             ],
+            'cmsInfo' => [
+                'label' => 'PaginiumCMS – info',
+                'informational' => true,
+                'fields' => [],
+            ],
         ];
     }
 
@@ -402,6 +407,11 @@ final class SettingsSchema
     public static function isSuperAdminOnly(string $group): bool
     {
         return (self::groups()[$group]['superAdminOnly'] ?? false) === true;
+    }
+
+    public static function isInformational(string $group): bool
+    {
+        return (self::groups()[$group]['informational'] ?? false) === true;
     }
 
     /**

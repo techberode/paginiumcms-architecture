@@ -29,6 +29,25 @@ export interface SettingField {
 export interface SettingGroup {
   label: string;
   fields: SettingField[];
+  informational?: boolean;
+}
+
+export interface CmsInfoMeta {
+  productName: string;
+  version: string;
+  license: string;
+  licenseUrl: string;
+  repositoryUrl: string;
+  documentationUrl: string;
+  philosophyUrl: string;
+  changelogUrl: string;
+  phpVersion: string;
+  stack: {
+    backend: string;
+    frontend: string;
+    storage: string;
+  };
+  locales: Array<{ code: string; label: string; builtin?: boolean }>;
 }
 
 export type SettingsSchema = Record<string, SettingGroup>;
@@ -40,6 +59,7 @@ export interface SettingsPayload {
   meta?: {
     permissions?: string[];
     configurableRoles?: string[];
+    cmsInfo?: CmsInfoMeta;
   };
 }
 

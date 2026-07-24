@@ -44,7 +44,7 @@
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-hook-form": "^7.81.0",
-    "react-router-dom": "^6.20.0",
+    "react-router-dom": "^7.18.1",
     "tailwind-merge": "^2.2.0",
     "turndown": "^7.2.4",
     "zod": "^4.4.3"

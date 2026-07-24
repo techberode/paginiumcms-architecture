@@ -87,7 +87,27 @@ export const settingsEn: MessageTree = {
     "contentSecurity": "Content security (XML/HTML)",
     "uploadSecurity": "Upload security",
     "branding": "Logo & favicon",
-    "accessControl": "Role permissions"
+    "accessControl": "Role permissions",
+    "cmsInfo": "PaginiumCMS – info"
+  },
+  "cmsInfo": {
+    "loadFailed": "Could not load CMS information.",
+    "tagline": "Headless flat-file CMS — open source, no fees.",
+    "version": "Version",
+    "phpVersion": "PHP runtime",
+    "licenseTitle": "License",
+    "licenseBody": "PaginiumCMS is distributed under the MIT open-source license. You may fork, modify, and deploy the code — it must not be offered as a paid product (see project philosophy).",
+    "licenseLink": "license text on GitHub",
+    "localesTitle": "Language versions",
+    "localesBody": "Built-in admin and public site languages. Add more locales in the translation module.",
+    "localeBuiltin": "built-in",
+    "stackTitle": "Technology stack",
+    "linksTitle": "Links",
+    "linkRepository": "GitHub repository",
+    "linkDocs": "Documentation",
+    "linkPhilosophy": "Project philosophy",
+    "linkChangelog": "Changelog (release history)",
+    "footer": "Version updates with each release tag. This section is read-only."
   },
   "accessControl": {
     "superAdminTitle": "Super administrator only",

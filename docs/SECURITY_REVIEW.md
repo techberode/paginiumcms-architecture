@@ -1,6 +1,6 @@
 # Security review guide (external auditors)
 
-> **Target release:** `v2.1.0-beta.2` · tag **`v2.1.0-beta.2`** · commit **`c68e72b`**  
+> **Target release:** `v2.1.0-beta.3` · tag **`v2.1.0-beta.3`** (recommended) · prior review baseline **`v2.1.0-beta.2`** · commit **`c68e72b`**  
 > **Audience:** security professionals reviewing PaginiumCMS before / during Public Beta 1.
 
 ---
@@ -10,7 +10,7 @@
 ```bash
 git clone https://github.com/techberode/paginiumcms-architecture.git
 cd paginiumcms-architecture
-git checkout v2.1.0-beta.2
+git checkout v2.1.0-beta.3
 chmod +x scripts/first-run.sh
 ./scripts/first-run.sh
 docker compose up -d
@@ -32,8 +32,10 @@ Override before first-run: `FIRST_ADMIN_EMAIL`, `FIRST_ADMIN_PASSWORD`, `FIRST_A
 ```bash
 ./scripts/iteration-gate.sh
 composer audit
-cd frontend && npm audit --audit-level=high
+cd frontend && npm audit --audit-level=moderate
 ```
+
+> **Note (beta.2):** Release **`v2.1.0-beta.2`** used `npm audit --audit-level=high` and reported 0 CVE. Three **moderate** React Router GHSA were published **after** that tag; fixed in **`v2.1.0-beta.3`** (ISS-078). Reviewers on beta.2 should read [Post-publication dependency disclosures](#post-publication-dependency-disclosures-after-v2110-beta2).
 
 ---
 
@@ -170,6 +172,7 @@ Review these **without** auth (CSRF exempt where noted):
 
 | ID | Topic | Notes |
 |----|-------|-------|
+| ISS-078 | React Router npm GHSA (post-beta.2) | ✅ Fixed **`v2.1.0-beta.3`** — see [below](#post-publication-dependency-disclosures-after-v2110-beta2) |
 | ISS-008 | HTTPS | Transport — ops responsibility on production |
 | ISS-011 | ESLint tech debt | CI baseline, not runtime security |
 | ISS-014 | CORS | Must set `APP_ENV=production` on prod |
@@ -177,6 +180,32 @@ Review these **without** auth (CSRF exempt where noted):
 | S-DEMOCREDS | Demo login hints | Only when demo mode enabled |
 
 Full public log: [ISSUES.md](ISSUES.md).
+
+---
+
+## Post-publication dependency disclosures (after v2.1.0-beta.2)
+
+These advisories were **not public** when **`v2.1.0-beta.2`** was tagged (2026-07-23). They appeared in `npm audit` only at **`--audit-level=moderate`**, after GitHub published GHSA entries.
+
+| When | Package (locked) | Finding | Status |
+|------|------------------|---------|--------|
+| Post-beta.2 | `react-router-dom@6.30.4` / `react-router@6.30.4` | 3× moderate — open redirect (×2), SSR `deserializeErrors()` | ✅ **`react-router-dom@7.18.1`** in **`v2.1.0-beta.3`** |
+
+### Advisory links (reviewer copy-paste)
+
+| GHSA | Title | URL |
+|------|-------|-----|
+| GHSA-wrjc-x8rr-h8h6 | Open redirect via backslash in `<Link>` and `useNavigate` (CVE-2025-68470 bypass) | https://github.com/advisories/GHSA-wrjc-x8rr-h8h6 |
+| GHSA-jjmj-jmhj-qwj2 | Open redirect leading to XSS (`react-router-dom`) | https://github.com/advisories/GHSA-jjmj-jmhj-qwj2 |
+| GHSA-337j-9hxr-rhxg | Arbitrary Constructor Injection via `deserializeErrors()` (SSR hydration) | https://github.com/advisories/GHSA-337j-9hxr-rhxg |
+
+**PaginiumCMS context:**
+
+- **Application type:** client-side SPA (`BrowserRouter` in `frontend/src/main.tsx`) — no React Router SSR hydration in Beta 1.
+- **Open redirect:** relevant only if untrusted strings reach `Link`/`navigate` `to` props; admin routes are static; public slugs come from CMS content (still sanitize user-authored links in content).
+- **Fix:** dependency bump only; API unchanged for our usage (`Routes`, `Link`, `useNavigate`, …).
+
+Public incident: **ISS-078** in [ISSUES.md](ISSUES.md).
 
 ---
 
@@ -201,6 +230,6 @@ Automated coverage: `backend/tests/Http/Middleware/CsrfMiddlewareTest.php`, `Out
 
 ## Reporting findings
 
-See root [SECURITY.md](../SECURITY.md) — **private** report first; reference version **`v2.1.0-beta.2`**.
+See root [SECURITY.md](../SECURITY.md) — **private** report first; reference version **`v2.1.0-beta.3`** (or **`v2.1.0-beta.2`** if reviewing the pre-patch baseline).
 
 Thank you for reviewing PaginiumCMS.

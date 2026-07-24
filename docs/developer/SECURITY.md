@@ -1,6 +1,6 @@
 # Security architecture — PaginiumCMS
 
-> **Release:** `v2.1.0-beta.2` · Maintainer reference + pointer for [SECURITY_REVIEW.md](../SECURITY_REVIEW.md).
+> **Release:** `v2.1.0-beta.3` · Maintainer reference + pointer for [SECURITY_REVIEW.md](../SECURITY_REVIEW.md).
 
 ---
 
@@ -168,9 +168,22 @@ Gated by TOTP + `DEV_UNLOCK_SECRET` (no predictable fallback in production). Rou
 ## Dependency & CI security
 
 - `composer audit` in CI
-- `npm audit --audit-level=high` in CI
+- `npm audit --audit-level=high` in CI (legacy gate — **moderate** FE advisories can slip through; see ISS-078)
+- **Maintainer pre-release:** also run `npm audit --audit-level=moderate` (required since post-beta.2 React Router GHSA)
 - PHPStan level 8 on `backend/app`
 - PHPUnit security regression suites (CSRF, Path ACL, plugins, encryption, OutboundUrlGuard)
+
+### Post-beta.2 npm disclosure (ISS-078)
+
+After tag **`v2.1.0-beta.2`**, GitHub published three **moderate** React Router advisories affecting `react-router-dom@6.30.4`. No 6.x patch exists; fix = **`react-router-dom@7.18.1`**.
+
+| GHSA | Summary | Link |
+|------|---------|------|
+| GHSA-wrjc-x8rr-h8h6 | Open redirect (backslash bypass, CVE-2025-68470) | https://github.com/advisories/GHSA-wrjc-x8rr-h8h6 |
+| GHSA-jjmj-jmhj-qwj2 | Open redirect → XSS | https://github.com/advisories/GHSA-jjmj-jmhj-qwj2 |
+| GHSA-337j-9hxr-rhxg | `deserializeErrors()` constructor injection (SSR) | https://github.com/advisories/GHSA-337j-9hxr-rhxg |
+
+PaginiumCMS Beta 1 is **SPA-only** — SSR hydration issue is informational. Fixed in **`v2.1.0-beta.3`**. Detail: [ISSUES.md](../ISSUES.md#iss-078--react-router-npm-advisories-post-beta2--vyriešené-2110-beta3) · [SECURITY_REVIEW.md](../SECURITY_REVIEW.md#post-publication-dependency-disclosures-after-v2110-beta2).
 
 ---
 

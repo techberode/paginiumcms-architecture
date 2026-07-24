@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Controllers\Admin;
 
 use InvalidArgumentException;
+use PaginiumCMS\Core\I18n\Services\SupportedLocalesRegistry;
 use PaginiumCMS\Core\Security\SecurityLogger;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\Settings\SettingsSchema;
@@ -16,6 +17,7 @@ use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Modules\Security\PermissionCatalog;
 use PaginiumCMS\Modules\Security\Services\AccessControlSyncService;
+use PaginiumCMS\Support\AppVersion;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -40,7 +42,8 @@ final class SettingsController
         private DemoMode $demoMode,
         private EditorProfileService $editorProfiles,
         private AccessControlSyncService $accessControlSync,
-        private AuthorizationInterface $authorization
+        private AuthorizationInterface $authorization,
+        private SupportedLocalesRegistry $localesRegistry
     ) {
     }
 
@@ -60,6 +63,7 @@ final class SettingsController
             'meta' => [
                 'permissions' => PermissionCatalog::ALL,
                 'configurableRoles' => PermissionCatalog::configurableRoles(),
+                'cmsInfo' => $this->buildCmsInfoMeta(),
             ],
         ]);
     }
@@ -111,6 +115,10 @@ final class SettingsController
         $user = $request->getAttribute('user');
         if (SettingsSchema::isSuperAdminOnly($group) && !$this->isSuperAdmin($user)) {
             return $this->json->error($response, 'Len super administrátor môže meniť túto skupinu nastavení', 403);
+        }
+
+        if (SettingsSchema::isInformational($group)) {
+            return $this->json->error($response, 'Táto skupina nastavení je len na čítanie', 403);
         }
 
         $payload = $this->parseJsonBody($request);
@@ -393,5 +401,43 @@ final class SettingsController
         }
 
         return array_merge($accessControl, $fromAcl);
+    }
+
+    /**
+     * @return array{
+     *     productName: string,
+     *     version: string,
+     *     license: string,
+     *     licenseUrl: string,
+     *     repositoryUrl: string,
+     *     documentationUrl: string,
+     *     philosophyUrl: string,
+     *     changelogUrl: string,
+     *     phpVersion: string,
+     *     stack: array{backend: string, frontend: string, storage: string},
+     *     locales: list<array{code: string, label: string, builtin?: bool}>
+     * }
+     */
+    private function buildCmsInfoMeta(): array
+    {
+        $repositoryUrl = 'https://github.com/techberode/paginiumcms-architecture';
+
+        return [
+            'productName' => 'PaginiumCMS',
+            'version' => AppVersion::current(),
+            'license' => 'MIT',
+            'licenseUrl' => $repositoryUrl . '/blob/main/LICENSE',
+            'repositoryUrl' => $repositoryUrl,
+            'documentationUrl' => $repositoryUrl . '/blob/main/docs/README.md',
+            'philosophyUrl' => $repositoryUrl . '/blob/main/docs/PHILOSOPHY.md',
+            'changelogUrl' => $repositoryUrl . '/blob/main/CHANGELOG.md',
+            'phpVersion' => PHP_VERSION,
+            'stack' => [
+                'backend' => 'PHP ' . PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . ' · Slim 4 · flat-file',
+                'frontend' => 'React · TypeScript · Vite 8',
+                'storage' => 'JSON / Markdown on disk (no SQL)',
+            ],
+            'locales' => $this->localesRegistry->all(),
+        ];
     }
 }

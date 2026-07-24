@@ -1,9 +1,9 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.1.0-beta.2** · 2026-07-23 · tag **`v2.1.0-beta.2`**  
+> Posledná verzia: **2.1.0-beta.3** · 2026-07-24 · tag **`v2.1.0-beta.3`**  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release.
 
-> **Poznámka k verziám:** **`2.0.58`** → `f53e71e` · **Public Beta 1** → `e3e0d82` · **Beta 1 Testing** → `c68e72b`.
+> **Poznámka k verziám:** **`2.0.58`** → `f53e71e` · **Public Beta 1** → `e3e0d82` · **Beta 1 Testing** → `c68e72b` · **Beta 1 patch (RR GHSA)** → *(commit po push)*.
 
 ### Kontinuita verzií (nepreskakovať)
 
@@ -21,6 +21,7 @@
 | **2.0.58** | **`v2.0.58`** | **`f53e71e`** | ✅ tagged |
 | Public Beta 1 | **`v2.1.0-beta.1`** | **`e3e0d82`** | ✅ tagged |
 | **Beta 1 Testing** | **`v2.1.0-beta.2`** | **`c68e72b`** | ✅ tagged |
+| **Beta 1 patch (RR GHSA + CMS info)** | **`v2.1.0-beta.3`** | *(this release)* | ⏳ tag po gate |
 
 **Pravidlo:** Post-beta patchy — `2.0.59+` alebo `2.1.0-beta.N` podľa rozsahu.
 
@@ -33,7 +34,79 @@ gh auth login   # ak ešte nie
 ./scripts/create-github-releases.sh
 ```
 
-Vytvorí (ak neexistujú) releases pre `v2.1.0-beta.1` a **`v2.1.0-beta.2`**. Testerom / security reviewerovi poslať **`v2.1.0-beta.2`** + [SECURITY_REVIEW.md](../SECURITY_REVIEW.md).
+Testerom / security reviewerovi poslať **`v2.1.0-beta.3`** + [SECURITY_REVIEW.md](../SECURITY_REVIEW.md).
+
+---
+
+## v2.1.0-beta.3 — Beta 1 patch (React Router GHSA + CMS info)
+
+```bash
+./scripts/iteration-gate.sh
+cd frontend && npm audit --audit-level=moderate
+composer audit
+```
+
+### Commit
+
+```bash
+git add -A
+git commit -m "$(cat <<'EOF'
+release: v2.1.0-beta.3 — React Router GHSA + CMS info panel.
+
+ISS-078: react-router-dom 6.30.4 → 7.18.1 (3× moderate GHSA after beta.2 tag).
+Settings: read-only PaginiumCMS – info (version, MIT, locales). SECURITY docs.
+EOF
+)"
+git tag v2.1.0-beta.3
+git push origin main
+git push origin v2.1.0-beta.3
+```
+
+---
+
+## GitHub Release — copy-paste (v2.1.0-beta.3)
+
+**Title:** `v2.1.0-beta.3 — Beta 1 patch (React Router + CMS info)`
+
+**Body:**
+
+```markdown
+## Summary
+
+Patch after **v2.1.0-beta.2**. Three **moderate** React Router npm advisories were published on GitHub **after** the beta.2 tag — not visible at `npm audit --audit-level=high`. Fixed by upgrading to `react-router-dom@7.18.1`. Also adds read-only **Settings → PaginiumCMS – info**.
+
+## Fixed — ISS-078 (dependency)
+
+| GHSA | Title |
+|------|-------|
+| [GHSA-wrjc-x8rr-h8h6](https://github.com/advisories/GHSA-wrjc-x8rr-h8h6) | Open redirect via backslash in `<Link>` / `useNavigate` (CVE-2025-68470 bypass) |
+| [GHSA-jjmj-jmhj-qwj2](https://github.com/advisories/GHSA-jjmj-jmhj-qwj2) | Open redirect leading to XSS |
+| [GHSA-337j-9hxr-rhxg](https://github.com/advisories/GHSA-337j-9hxr-rhxg) | Arbitrary constructor injection via `deserializeErrors()` (SSR hydration) |
+
+**PaginiumCMS note:** Beta 1 admin is SPA-only (`BrowserRouter`) — SSR hydration issue does not apply. Open redirect risk is low for static admin routes; still patched upstream.
+
+- `react-router-dom`: **6.30.4** → **7.18.1**
+- `npm audit --audit-level=moderate` → **0 vulnerabilities**
+
+## Added
+
+- **Settings → Systém → PaginiumCMS – info** — version, MIT license link, locales, stack, doc links
+- Root `LICENSE` (MIT)
+
+## Docs
+
+- [ISS-078](docs/ISSUES.md) · [SECURITY_REVIEW.md](docs/SECURITY_REVIEW.md#post-publication-dependency-disclosures-after-v2110-beta2)
+
+## Verification
+
+- `./scripts/iteration-gate.sh`
+- `composer audit` + `npm audit --audit-level=moderate` = 0 CVE
+
+## Notes
+
+- Supersedes **v2.1.0-beta.2** for testers and security review.
+- beta.2 release notes claimed `npm audit --audit-level=high` = 0 — still true; these were **moderate** and disclosed post-tag.
+```
 
 ---
 

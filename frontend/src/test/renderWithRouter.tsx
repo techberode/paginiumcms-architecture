@@ -2,13 +2,8 @@
 import { MemoryRouter, type MemoryRouterProps } from 'react-router-dom';
 import { renderWithProviders, type RenderWithProvidersOptions } from './renderWithProviders';
 
-const routerFuture: MemoryRouterProps['future'] = {
-  v7_startTransition: true,
-  v7_relativeSplatPath: true,
-};
-
 type RenderWithRouterOptions = RenderWithProvidersOptions & {
-  routerProps?: Omit<MemoryRouterProps, 'future' | 'children'>;
+  routerProps?: Omit<MemoryRouterProps, 'children'>;
 };
 
 export function renderWithRouter(
@@ -16,7 +11,7 @@ export function renderWithRouter(
   { routerProps, locale, ...options }: RenderWithRouterOptions = {}
 ) {
   return renderWithProviders(
-    <MemoryRouter future={routerFuture} {...routerProps}>
+    <MemoryRouter {...routerProps}>
       {ui}
     </MemoryRouter>,
     { locale, ...options }
