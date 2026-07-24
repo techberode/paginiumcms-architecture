@@ -8,6 +8,7 @@ use PaginiumCMS\Core\Backup\Contracts\BackupInterface;
 use PaginiumCMS\Core\Backup\Models\BackupMetadata;
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
+use PaginiumCMS\Core\Security\Services\ZipEntryGuard;
 use PaginiumCMS\Support\FileHelper;
 use PaginiumCMS\Support\JsonHelper;
 
@@ -210,6 +211,15 @@ class BackupManager implements BackupInterface
         $zip = new \ZipArchive();
         if ($zip->open($filePath) !== true) {
             throw new \RuntimeException('Nepodarilo sa otvoriť ZIP archív');
+        }
+
+        $zipGuard = new ZipEntryGuard();
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $entryName = (string) $zip->getNameIndex($i);
+            if (!$zipGuard->isSafeEntry($entryName)) {
+                $zip->close();
+                throw new \RuntimeException('Nebezpečný ZIP záznam odmietnutý: ' . $entryName);
+            }
         }
 
         // Extrahovanie do dočasného adresára

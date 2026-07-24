@@ -13,6 +13,7 @@ import {
   SquareCode,
 } from 'lucide-react';
 import { markdownToHtml, wrapSelection, insertAtCursor } from '../../utils/contentEditor';
+import { sanitizePublicHtml } from '../../utils/sanitizeHtml';
 import {
   profileAllows,
   type EditorProfileDefinition,
@@ -222,7 +223,7 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
             {value.trim() ? (
               <div
                 className="prose dark:prose-invert max-w-none prose-headings:scroll-mt-20"
-                dangerouslySetInnerHTML={{ __html: previewHtml }}
+                dangerouslySetInnerHTML={{ __html: sanitizePublicHtml(previewHtml) }}
               />
             ) : (
               <p className="text-sm text-slate-400">{t('editor.markdownContent.previewEmpty')}</p>

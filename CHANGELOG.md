@@ -53,12 +53,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | Beta 1 patch — React Router GHSA + CMS info | **`v2.1.0-beta.3`** | [below](#210-beta3--2026-07-24) |
 | It.57 — Auto tags & meta description | **`v2.1.0-beta.4`** | [below](#210-beta4--2026-07-24) |
 | It.56 — Rich navigation + session/auth fixes | **`v2.1.0-beta.5`** | [below](#210-beta5--2026-07-24) |
+| Security audit — XSS, backup Zip-Slip, deploy script | **`v2.1.0-beta.6`** | [below](#210-beta6--2026-07-24) |
 | Wave 5d — It.15 hook emitters + extension policy | **2.0.54** | [below](#2054--2026-07-23) |
 | It.19b–19d — Security runtime, auth UX, password policy | **2.0.45** | [below](#2045--2026-07-21) |
 
 ---
 
 ## [Unreleased]
+
+---
+
+## [2.1.0-beta.6] – 2026-07-24
+
+**Security audit** — stored XSS hardening, backup Zip-Slip guard, deploy script hygiene (ISS-086–088).
+
+### Fixed
+
+- **ISS-086** — Stored XSS: `strip_tags()` → `HtmlDomSanitizer` (attribute + URI scheme allow-list). FE `sanitizePublicHtml()` (DOMPurify) before `dangerouslySetInnerHTML`.
+- **ISS-088** — `BackupManager::importBackup()` — `ZipEntryGuard` pred `$zip->extractTo()` (Zip-Slip).
+- **ISS-087** — `deploy-frontend-lan.sh` — povinné `DEPLOY_HOST` / `DEPLOY_USER`, bez hardcoded IP/mena v repo.
+- **BUILD** — PHPStan L8: regex delimiter v `HtmlDomSanitizer::isSafeUri()` (`~` namiesto `#`).
+
+### Changed
+
+- **`AppVersion`** → `2.1.0-beta.6`
+- `docs/deploy/DEV.md` — príklad deploy + SSH tunnel pre readonly tester
 
 ---
 

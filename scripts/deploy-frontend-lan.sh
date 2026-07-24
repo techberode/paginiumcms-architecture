@@ -1,14 +1,25 @@
 #!/usr/bin/env bash
 # Deploy frontend dist to LAN nginx (same-origin API via /api proxy).
+#
+# Usage (no hardcoded host/user — set your own):
+#   DEPLOY_HOST=192.168.x.x DEPLOY_USER=yourName DEPLOY_SSH_PORT=22 ./scripts/deploy-frontend-lan.sh
+#
+# Optional:
+#   DEPLOY_SSH_HOST=homelab   # ~/.ssh/config alias (overrides HOST/PORT/USER)
+#   DEPLOY_PATH=/var/www/paginium-test/dist/
+#   DEPLOY_HEALTH_URL=http://192.168.x.x:8081/api/health
+#   DEPLOY_PUBLIC_URL=http://192.168.x.x:8081/
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT/frontend"
 
-HOST="${DEPLOY_HOST:-192.168.10.26}"
+HOST="${DEPLOY_HOST:192.168.10.26 (napr. export DEPLOY_HOST=192.168.x.x)}"
 PORT="${DEPLOY_SSH_PORT:-49555}"
-USER="${DEPLOY_USER:-marian}"
+USER="${DEPLOY_USER:marian}"
 REMOTE="${DEPLOY_PATH:-/var/www/paginium-test/dist/}"
+HEALTH_URL="${DEPLOY_HEALTH_URL:-http://${HOST}:8081/api/health}"
+PUBLIC_URL="${DEPLOY_PUBLIC_URL:-http://${HOST}:8081/}"
 # Použi ~/.ssh/config Host (napr. homelab) — rovnaký kľúč/user ako pri bežnom SSH
 SSH_HOST="${DEPLOY_SSH_HOST:-}"
 
@@ -39,7 +50,7 @@ if [[ "$JS" != "$REMOTE_JS" ]]; then
   exit 1
 fi
 
-echo "→ Health check"
-curl -sf "http://${HOST}:8081/api/health" | head -c 200
+echo "→ Health check: ${HEALTH_URL}"
+curl -sf "${HEALTH_URL}" | head -c 200
 echo ""
-echo "Done. Open http://${HOST}:8081/ and hard-refresh (Ctrl+Shift+R)."
+echo "Done. Open ${PUBLIC_URL} and hard-refresh (Ctrl+Shift+R)."

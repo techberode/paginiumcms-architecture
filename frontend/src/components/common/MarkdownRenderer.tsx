@@ -1,5 +1,6 @@
 // frontend/src/components/common/MarkdownRenderer.tsx
 import React from 'react';
+import { sanitizePublicHtml } from '../../utils/sanitizeHtml';
 
 interface MarkdownRendererProps {
   content: string;
@@ -16,7 +17,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
     return (
       <div
         className={className}
-        dangerouslySetInnerHTML={{ __html: html }}
+        dangerouslySetInnerHTML={{ __html: sanitizePublicHtml(html) }}
       />
     );
   }

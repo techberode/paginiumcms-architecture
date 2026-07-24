@@ -103,6 +103,9 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-083 | Dependabot #10: `eslint` 10.x — breaking flat config | Nízka (tech. dlh) | ⏳ Odložené — samostatný upgrade |
 | ISS-084 | Samovolné odhlásenie v Chrome (~24 min) — kaskáda 401 na `/me`, `/admin/counts`, … | Vysoká (auth UX) | ✅ Opravené · **2.1.0-beta.5** |
 | ISS-085 | Rich navigácia — Lucide ikona len rámček, popis neviditeľný na desktope | Stredná (admin/public UX) | ✅ Opravené · **2.1.0-beta.5** |
+| ISS-086 | Stored XSS — `strip_tags` nečistí atribúty (`onerror`, `javascript:`) | **Kritická (security)** | ✅ Opravené · **2.1.0-beta.6** |
+| ISS-087 | `deploy-frontend-lan.sh` — hardcoded host/user/port | Stredná (ops / hygiene) | ✅ Opravené · **2.1.0-beta.6** |
+| ISS-088 | Backup import — Zip-Slip pri `extractTo()` | Stredná (security) | ✅ Opravené · **2.1.0-beta.6** |
 
 
 
@@ -2113,12 +2116,47 @@ Call to an undefined method SettingsRepositoryInterface::getGroup()
 
 ---
 
+## ISS-086 – Stored XSS cez HTML obsah (audit) — VYRIEŠENÉ (**2.1.0-beta.6**)
+
+**Nález:** `ContentSecuritySanitizer::sanitizeHtml()` používal `strip_tags()` — odstránil zakázané tagy, ale **nečistil atribúty** na `<a>` / `<img>`. Payloady typu `onerror=`, `javascript:` v `href` prešli a renderovali sa cez `dangerouslySetInnerHTML` na verejných stránkach aj v admin preview.
+
+**Riešenie (defense-in-depth):**
+
+- Backend: `HtmlDomSanitizer` — allow-list tagov + atribútov, blok `on*`, `style`, `javascript:` / `data:` URI.
+- Frontend: `sanitizePublicHtml()` (DOMPurify) pred `dangerouslySetInnerHTML` v `MarkdownRenderer` a `MarkdownContentEditor`.
+
+**Súvis:** `ContentSecuritySanitizer.php` · `frontend/src/utils/sanitizeHtml.ts`
+
+---
+
+## ISS-087 – Deploy script hardcoded credentials — VYRIEŠENÉ (**2.1.0-beta.6**)
+
+**Nález:** `scripts/deploy-frontend-lan.sh` mal default `192.168.10.26`, `marian`, port `49555` v repozitári.
+
+**Riešenie:** Povinné `DEPLOY_HOST` + `DEPLOY_USER`, voliteľný `DEPLOY_SSH_PORT` (default 22). Health-check URL používa rovnaký `HOST` (pri `DEPLOY_SSH_HOST` alias nastav `DEPLOY_HEALTH_URL` / `DEPLOY_PUBLIC_URL`).
+
+```bash
+DEPLOY_HOST=192.168.x.x DEPLOY_USER=yourName DEPLOY_SSH_PORT=22 ./scripts/deploy-frontend-lan.sh
+```
+
+---
+
+## ISS-088 – Backup import Zip-Slip — VYRIEŠENÉ (**2.1.0-beta.6**)
+
+**Nález:** `BackupManager::importBackup()` volal `$zip->extractTo()` bez validácie názvov entries (na rozdiel od extension importu).
+
+**Riešenie:** `ZipEntryGuard::isSafeEntry()` pred extrakciou — odmietne `..`, absolútne cesty a Windows drive prefix.
+
+**Súvis:** ISS-086 audit · `SECURITY.md` Zip-Slip sekcia
+
+---
+
 ## Súvisiace dokumenty
 
 - [user/BRANDING.md](user/BRANDING.md) — logo a favicon (**2.0.52**)
 - [user/ACCESS_CONTROL.md](user/ACCESS_CONTROL.md) — RBAC + Path ACL v nastaveniach (**2.0.52**)
-- [developer/RELEASE.md](developer/RELEASE.md) — release **2.0.52** · **2.1.0-beta.5**
-- [CHANGELOG.md](../CHANGELOG.md) — 2.0.52 · **2.1.0-beta.5**
+- [developer/RELEASE.md](developer/RELEASE.md) — release **2.0.52** · **2.1.0-beta.6**
+- [CHANGELOG.md](../CHANGELOG.md) — 2.0.52 · **2.1.0-beta.6**
 - [ITERATION_54.md](ITERATION_54.md) — editor profiles (ISS-079)
 - [ITERATION_56.md](ITERATION_56.md) — rich navigation (ISS-085)
 - [ITERATION_57.md](ITERATION_57.md) — suggest-meta (ISS-080)
