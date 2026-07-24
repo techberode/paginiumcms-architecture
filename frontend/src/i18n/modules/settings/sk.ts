@@ -87,7 +87,27 @@ export const settingsSk: MessageTree = {
     "contentSecurity": "Bezpečnosť obsahu (XML/HTML)",
     "uploadSecurity": "Bezpečnosť uploadu",
     "branding": "Logo a favicon",
-    "accessControl": "Oprávnenia rolí"
+    "accessControl": "Oprávnenia rolí",
+    "cmsInfo": "PaginiumCMS – info"
+  },
+  "cmsInfo": {
+    "loadFailed": "Nepodarilo sa načítať informácie o CMS.",
+    "tagline": "Headless flat-file CMS — open source, bez poplatkov.",
+    "version": "Verzia",
+    "phpVersion": "PHP runtime",
+    "licenseTitle": "Licencia",
+    "licenseBody": "PaginiumCMS je distribuovaný pod open-source licenciou MIT. Môžeš kód forknúť, upravovať a nasadiť — nesmie sa ponúkať ako platený produkt (viď filozofiu projektu).",
+    "licenseLink": "text licencie na GitHub",
+    "localesTitle": "Jazykové verzie",
+    "localesBody": "Vstavané jazyky administrácie a verejného webu. Ďalšie locale pridávaš v module prekladov.",
+    "localeBuiltin": "vstavaný",
+    "stackTitle": "Technológie",
+    "linksTitle": "Odkazy",
+    "linkRepository": "GitHub repozitár",
+    "linkDocs": "Dokumentácia",
+    "linkPhilosophy": "Filozofia projektu",
+    "linkChangelog": "Changelog (história verzií)",
+    "footer": "Verzia sa aktualizuje pri release tagu. Táto sekcia je len na čítanie."
   },
   "accessControl": {
     "superAdminTitle": "Len pre super administrátora",

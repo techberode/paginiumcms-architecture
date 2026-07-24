@@ -1,6 +1,6 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-23 · verzia **2.1.0-beta.2** · ISS-063–077 · backlog It.59–61
+> Posledná aktualizácia: 2026-07-24 · verzia **2.1.0-beta.3** · ISS-063–078 · backlog It.59–61
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
 
@@ -95,6 +95,7 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-075 | PHPUnit fatal: `Cannot redeclare class HelloWidget\Hooks` (Wave 5d) | Stredná (CI) | ✅ Opravené · **2.0.54** |
 | ISS-076 | PHPUnit kaskáda po `passwordConfirm` — 21 failov (401/422/null) | Stredná (CI) | ✅ Opravené · **2.0.56** |
 | ISS-077 | Audit trail CSV export bez `LogSanitizer` (C11 medzera) | Stredná (security) | ✅ Opravené · **2.1.0-beta.2** |
+| ISS-078 | `react-router-dom@6.30.4` — 3× npm moderate (GHSA, po publikácii beta.2) | Stredná (dependency) | ✅ Opravené · **2.1.0-beta.3** |
 
 
 
@@ -124,6 +125,7 @@ Workflow: `[.github/workflows/ci.yml](../.github/workflows/ci.yml)`
 | `frontend` | `npm run type-check` | TS2352 / TS6133 / TS2322 / 2FA DTO shape (`setup_pending`, `setUser`) | ISS-019, ISS-036          |
 | `frontend` | `npm run lint`       | Prekročenie `--max-warnings 65` (`react-hooks/exhaustive-deps`)       | ISS-020                   |
 | `frontend` | `npm test`           | Worker crash, `act(...)` stderr, `MediaManager` text asserts          | ISS-005, ISS-010, ISS-022 |
+| `frontend` | `npm audit --audit-level=moderate` | `react-router-dom@6.30.4` — 3× moderate GHSA (po tagu beta.2) | ISS-078 |
 | `backend`  | PHPStan (historicky) | 15 typových chýb                                                      | ISS-006                   |
 
 
@@ -1946,6 +1948,36 @@ Failed asserting that null is not null.
 
 ---
 
+## ISS-078 – React Router npm advisories (post-beta.2) — VYRIEŠENÉ (**2.1.0-beta.3**)
+
+**Kontext:** Tag **`v2.1.0-beta.2`** (2026-07-23) prešiel pre-push gate s `npm audit --audit-level=high` → **0 CVE**. GitHub Security Advisories pre React Router boli **publikované až po tomto release**; pri `npm audit --audit-level=moderate` sa objavili **3 moderate** nálezy v transitívnom balíku `react-router@6.30.4` (via `react-router-dom@^6.20.0` → lock **6.30.4**). V vetve **6.x neexistuje patch** — oprava je až od **`react-router-dom@7.18.0`**.
+
+**Advisories (GitHub):**
+
+| ID | Názov | Závažnosť | Ovplyvnený rozsah | Odkaz |
+|----|-------|-----------|-------------------|-------|
+| GHSA-wrjc-x8rr-h8h6 | Open redirect cez backslash v `<Link>` / `useNavigate` (CVE-2025-68470 bypass) | Moderate | `react-router` ≥6.0.0 **<7.18.0** | https://github.com/advisories/GHSA-wrjc-x8rr-h8h6 |
+| GHSA-jjmj-jmhj-qwj2 | Open redirect → XSS (`react-router-dom`) | Moderate | `react-router-dom` ≥6.30.2 **≤6.30.4** | https://github.com/advisories/GHSA-jjmj-jmhj-qwj2 |
+| GHSA-337j-9hxr-rhxg | Arbitrary constructor injection cez `deserializeErrors()` (SSR hydration) | Moderate | `react-router` ≥6.4.0 **<7.18.0** | https://github.com/advisories/GHSA-337j-9hxr-rhxg |
+
+**Praktický dopad na PaginiumCMS (Beta 1):**
+
+| Advisory | SPA-only nasadenie | Poznámka |
+|----------|-------------------|----------|
+| Open redirect (×2) | Nízky–stredný | Vyžaduje navigáciu na nevalidovaný externý URL (typicky user-controlled `to`). Interné admin trasy sú fixné; verejný web používa `Link`/`navigate` na vlastné slugy. |
+| SSR `deserializeErrors()` | **Neuplatniteľné** | Admin SPA = `BrowserRouter`, **bez SSR hydration**. Riziko len pri budúcom SSR/Remix nasadení. |
+
+**Prečo sme to nevideli v beta.2:** CI aj release checklist používali `npm audit --audit-level=**high**`; tieto nálezy sú **moderate**. Nie je to regresia aplikačného auditu (C11), ale **oneskorené upstream GHSA** po tagu.
+
+**Riešenie:**
+
+- `frontend/package.json` — `react-router-dom`: **`^7.18.1`**
+- Odstránené v7 `future` flagy z `BrowserRouter` / `MemoryRouter` (v RR7 default)
+- Overenie: `npm audit --audit-level=moderate` → **0 vulnerabilities**; `tsc` + Vitest green
+
+**Súvis:** [SECURITY_REVIEW.md](SECURITY_REVIEW.md#post-publication-dependency-disclosures-after-v2110-beta2) · lokálny `SECURITY_ISSUES.md` → `C-RR-NPM-078`.
+
+---
 
 ## Súvisiace dokumenty
 

@@ -48,7 +48,7 @@ describe('admin route transitions (It.53)', () => {
 
     render(
       <QueryClientProvider client={queryClient}>
-        <MemoryRouter initialEntries={['/pages']} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <MemoryRouter initialEntries={['/pages']}>
           <Routes>
             <Route
               path="/*"

@@ -10,6 +10,7 @@ import {
   SettingsSchema,
   SettingsValues,
   SettingField,
+  type CmsInfoMeta,
 } from '../../api/settings';
 import { useToast } from '../../hooks/useToast';
 import { useSettings } from '../../hooks/useSettings';
@@ -33,6 +34,7 @@ import { AdminHintCard } from './AdminHintCard';
 import { LoginBackgroundImagePicker } from './LoginBackgroundImagePicker';
 import { BrandingImagePicker } from './BrandingImagePicker';
 import { AccessControlSettingsPanel } from './AccessControlSettingsPanel';
+import { CmsInfoSettingsPanel } from './CmsInfoSettingsPanel';
 import { TimezoneSelect } from './TimezoneSelect';
 import { MaintenanceModeSelect } from './MaintenanceModeSelect';
 import { useAuth } from '../../hooks/useAuth';
@@ -74,9 +76,11 @@ export const SettingsView: React.FC = () => {
   const { reload: reloadGlobalSettings } = useSettings();
   const { user } = useAuth();
   const [permissionsCatalog, setPermissionsCatalog] = useState<string[]>([]);
+  const [cmsInfoMeta, setCmsInfoMeta] = useState<CmsInfoMeta | null>(null);
   const isSuperAdmin = user?.roles?.includes('SUPER_ADMIN') ?? false;
 
   const group = activeGroup ? schema[activeGroup] : undefined;
+  const isReadOnlyGroup = activeGroup === 'cmsInfo' || group?.informational === true;
   const groupRules = useMemo(
     () => (group ? rulesFromSchema(group) : {}),
     [group]
@@ -110,6 +114,7 @@ export const SettingsView: React.FC = () => {
         setSchema(payload.schema);
         setValues(payload.values);
         setPermissionsCatalog(payload.meta?.permissions ?? []);
+        setCmsInfoMeta(payload.meta?.cmsInfo ?? null);
       } else {
         toastError(t('settings.page.loadFailed'));
       }
@@ -199,7 +204,7 @@ export const SettingsView: React.FC = () => {
         <button
           type="button"
           onClick={() => void handleSubmit(onSubmit)()}
-          disabled={isSubmitting}
+          disabled={isSubmitting || isReadOnlyGroup}
           className="btn btn-primary shrink-0"
         >
           {isSubmitting ? t('settings.page.saving') : t('settings.page.save')}
@@ -265,7 +270,9 @@ export const SettingsView: React.FC = () => {
           {group && (
             <form onSubmit={handleSubmit(onSubmit)} className="card">
               <div className="card-body space-y-5">
-                {activeGroup === 'accessControl' ? (
+                {activeGroup === 'cmsInfo' ? (
+                  <CmsInfoSettingsPanel meta={cmsInfoMeta} />
+                ) : activeGroup === 'accessControl' ? (
                   <AccessControlSettingsPanel
                     permissionsCatalog={permissionsCatalog}
                     watch={watch}

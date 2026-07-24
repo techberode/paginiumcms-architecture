@@ -50,6 +50,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | Wave 6 — Beta infra gate (cron, BETA_INFRA, diagnose) | **2.0.58** | [below](#2058--2026-07-23) |
 | **Public Beta 1** | **`v2.1.0-beta.1`** | [below](#210-beta1--2026-07-23) |
 | Beta 1 Testing — pre-push security gate | **`v2.1.0-beta.2`** | [below](#210-beta2--2026-07-23) |
+| Beta 1 patch — React Router GHSA + CMS info | **`v2.1.0-beta.3`** | [below](#210-beta3--2026-07-24) |
 | Wave 5d — It.15 hook emitters + extension policy | **2.0.54** | [below](#2054--2026-07-23) |
 | It.19b–19d — Security runtime, auth UX, password policy | **2.0.45** | [below](#2045--2026-07-21) |
 
@@ -57,7 +58,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-Post-beta backlog: It.56–61, It.25 setup wizard, ops cron on `.26`.
+---
+
+## [2.1.0-beta.3] – 2026-07-24
+
+**Beta 1 patch** — React Router npm GHSA (post-beta.2) + admin **PaginiumCMS – info** settings panel.
+
+### Fixed
+
+- **ISS-078 / C-RR-NPM-078** — `react-router-dom` **6.30.4** → **7.18.1** (3× moderate GHSA published after `v2.1.0-beta.2` tag). Advisories: [GHSA-wrjc-x8rr-h8h6](https://github.com/advisories/GHSA-wrjc-x8rr-h8h6), [GHSA-jjmj-jmhj-qwj2](https://github.com/advisories/GHSA-jjmj-jmhj-qwj2), [GHSA-337j-9hxr-rhxg](https://github.com/advisories/GHSA-337j-9hxr-rhxg). `npm audit --audit-level=moderate` → 0.
+
+### Added
+
+- **Settings → Systém → PaginiumCMS – info** — read-only panel: verzia, MIT licencia (+ GitHub odkaz), jazykové locale, stack, odkazy (repo, docs, changelog).
+- Root **`LICENSE`** (MIT) · `composer.json` `"license": "MIT"`.
+
+### Changed
+
+- **`AppVersion`** → `2.1.0-beta.3`
+- React Router v7: odstránené zastarané `future` flagy v `BrowserRouter` / test `MemoryRouter`.
+- Security docs: [SECURITY_REVIEW.md](docs/SECURITY_REVIEW.md), [ISSUES.md](docs/ISSUES.md#iss-078--react-router-npm-advisories-post-beta2--vyriešené-2110-beta3), [developer/SECURITY.md](docs/developer/SECURITY.md).
 
 ---
 

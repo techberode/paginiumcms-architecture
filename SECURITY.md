@@ -1,14 +1,15 @@
 # Security Policy
 
-PaginiumCMS is in **Public Beta** (`v2.1.0-beta.2`). We welcome responsible disclosure from security researchers and beta testers.
+PaginiumCMS is in **Public Beta** (`v2.1.0-beta.3`). We welcome responsible disclosure from security researchers and beta testers.
 
 ## Supported versions
 
 | Version | Supported |
 |---------|-----------|
-| `v2.1.0-beta.2` | ✅ Current (recommended for review) |
+| `v2.1.0-beta.3` | ✅ Current (recommended for review) — includes React Router GHSA fix (ISS-078) |
+| `v2.1.0-beta.2` | ⚠️ Superseded — missing `react-router-dom@7.18.1` (3× moderate npm GHSA published after tag) |
 | `v2.1.0-beta.1` | ⚠️ Superseded — missing audit-trail CSV sanitization fix |
-| `2.0.x` | Maintenance only — use beta.2 for security review |
+| `2.0.x` | Maintenance only — use beta.3 for security review |
 
 ## Reporting a vulnerability
 
@@ -26,7 +27,7 @@ We will acknowledge receipt and keep you updated on status.
 |----------|---------|
 | [docs/SECURITY_REVIEW.md](docs/SECURITY_REVIEW.md) | **External reviewer guide** — attack surface, endpoints, test plan |
 | [docs/developer/SECURITY.md](docs/developer/SECURITY.md) | Architecture — auth, CSRF, WAF, encryption, plugins |
-| [docs/ISSUES.md](docs/ISSUES.md) | Public incident log (ISS-001–077) |
+| [docs/ISSUES.md](docs/ISSUES.md) | Public incident log (ISS-001–078) |
 | [docs/PUBLIC_BETA1.md](docs/PUBLIC_BETA1.md) | Beta scope and known limitations |
 | [docs/architecture/CORE_HARDENING.md](docs/architecture/CORE_HARDENING.md) | RBAC, maintenance, storage |
 
@@ -39,7 +40,7 @@ We will acknowledge receipt and keep you updated on status.
 - Third-party hosting misconfiguration (missing HTTPS, exposed `.env`)
 - Social engineering
 - Denial-of-service at network edge without application flaw
-- Issues in dependencies already fixed in latest supported tag (check `composer audit` / `npm audit`)
+- Issues in dependencies already fixed in latest supported tag (check `composer audit` / `npm audit --audit-level=moderate`)
 
 ## Safe testing
 

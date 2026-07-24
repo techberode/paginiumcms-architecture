@@ -1,10 +1,11 @@
 # Public Beta 1 — PaginiumCMS
 
-> **Release:** `v2.1.0-beta.2` (Beta 1 Testing) · **Tag:** `v2.1.0-beta.2`  
-> **Dátum:** 2026-07-23 · **Stav:** verejná beta pre testerov a early adopters
+> **Release:** `v2.1.0-beta.3` (Beta 1 patch) · **Tag:** `v2.1.0-beta.3`  
+> **Dátum:** 2026-07-24 · **Stav:** verejná beta pre testerov a early adopters
 
-> Použi **`v2.1.0-beta.2`** — obsahuje pre-push security gate (audit CSV sanitization, ISS-077).  
-> `v2.1.0-beta.1` je len dokumentačný Wave 7 tag bez tohto patchu.
+> Použi **`v2.1.0-beta.3`** — obsahuje React Router npm fix (ISS-078) + PaginiumCMS info v nastaveniach.  
+> **`v2.1.0-beta.2`** — audit CSV (ISS-077), ale **3× moderate React Router GHSA** (publikované až po tagu).  
+> `v2.1.0-beta.1` je len dokumentačný Wave 7 tag bez ISS-077.
 
 ---
 
@@ -23,6 +24,7 @@ Flat-file CMS s admin SPA (React) a PHP 8.5 API — **bez SQL databázy**.
 | External plugins + hook emitters | ✅ |
 | Path ACL, branding | ✅ |
 | Pre-beta security gate (beta.2) | ✅ audit CSV + ISS-077 |
+| Post-beta npm patch (beta.3) | ✅ React Router GHSA + ISS-078 |
 
 ---
 
@@ -46,9 +48,9 @@ Ak reviewuješ bezpečnosť (napr. ako beta tester s cybersec skúsenosťami):
 | **[SECURITY_REVIEW.md](SECURITY_REVIEW.md)** | Attack surface, endpointy, test checklist |
 | [developer/SECURITY.md](developer/SECURITY.md) | Architektúra — CSRF, WAF, encryption, pluginy |
 | [SECURITY.md](../SECURITY.md) (root) | Reporting policy, supported versions |
-| [ISSUES.md](ISSUES.md) | Verejný incident log (ISS-001–077) |
+| [ISSUES.md](ISSUES.md) | Verejný incident log (ISS-001–078) |
 
-**Odporúčaný tag:** `git checkout v2.1.0-beta.2`
+**Odporúčaný tag:** `git checkout v2.1.0-beta.3`
 
 ---
 
@@ -81,7 +83,7 @@ Ops mimo kódu (dokumentované, nie blocker pre lokálny test):
 
 Pri hlásení problému uveď:
 
-- Verzia (**`v2.1.0-beta.2`**) a commit/tag  
+- Verzia (**`v2.1.0-beta.3`**) a commit/tag  
 - Kroky reprodukcie  
 - Očakávané vs. skutočné správanie  
 - Výstup z `php backend/bin/console content:diagnose` (ak ide o obsah/API)  
@@ -100,7 +102,8 @@ Známe opravené incidenty: [ISSUES.md](ISSUES.md).
 | Tag | Popis |
 |-----|--------|
 | `v2.1.0-beta.1` | Public Beta 1 — Wave 7 (docs, scope) |
-| **`v2.1.0-beta.2`** | **Beta 1 Testing** — odporúčané pre testerov a security review |
+| `v2.1.0-beta.2` | Beta 1 Testing — audit CSV (ISS-077) |
+| **`v2.1.0-beta.3`** | **Beta 1 patch** — odporúčané (React Router ISS-078 + CMS info) |
 
 ---
 

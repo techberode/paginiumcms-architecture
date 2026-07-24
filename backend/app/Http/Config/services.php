@@ -258,7 +258,8 @@ return [
             get(DemoMode::class),
             get(EditorProfileService::class),
             get(AccessControlSyncService::class),
-            get(AuthorizationInterface::class)
+            get(AuthorizationInterface::class),
+            get(SupportedLocalesRegistry::class)
         ),
 
     TranslationFileManagerInterface::class => create(TranslationFileManager::class)
