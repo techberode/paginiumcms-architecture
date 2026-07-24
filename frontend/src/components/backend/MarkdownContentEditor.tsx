@@ -10,6 +10,7 @@ import {
   List,
   ListOrdered,
   Quote,
+  SquareCode,
 } from 'lucide-react';
 import { markdownToHtml, wrapSelection, insertAtCursor } from '../../utils/contentEditor';
 import {
@@ -160,6 +161,12 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
           {profileAllows(profile, 'code') &&
             toolbarButton(t('editor.markdownContent.toolbar.code'), <Code size={16} />, () =>
               applyEdit((text, start, end) => wrapSelection(text, start, end, '`', '`', 'code'))
+            )}
+          {profileAllows(profile, 'codeBlock') &&
+            toolbarButton(t('editor.markdownContent.toolbar.codeBlock'), <SquareCode size={16} />, () =>
+              applyEdit((text, start, end) =>
+                wrapSelection(text, start, end, '```\n', '\n```', 'code')
+              )
             )}
         </div>
 

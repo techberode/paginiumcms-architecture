@@ -16,6 +16,12 @@ export interface PublicNavItem {
   path: string;
   order: number;
   parentId?: string | null;
+  description?: string;
+  iconType?: 'none' | 'lucide' | 'media';
+  iconValue?: string | null;
+  previewOnHover?: boolean;
+  previewScale?: number;
+  thumbnailSize?: 'sm' | 'md' | 'lg';
   children?: PublicNavItem[];
 }
 

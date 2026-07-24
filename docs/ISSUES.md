@@ -1,6 +1,6 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-24 · verzia **2.1.0-beta.3** · ISS-063–078 · backlog It.59–61
+> Posledná aktualizácia: 2026-07-24 · verzia **2.1.0-beta.5** · ISS-063–085 · backlog It.59–61
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
 
@@ -96,6 +96,13 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-076 | PHPUnit kaskáda po `passwordConfirm` — 21 failov (401/422/null) | Stredná (CI) | ✅ Opravené · **2.0.56** |
 | ISS-077 | Audit trail CSV export bez `LogSanitizer` (C11 medzera) | Stredná (security) | ✅ Opravené · **2.1.0-beta.2** |
 | ISS-078 | `react-router-dom@6.30.4` — 3× npm moderate (GHSA, po publikácii beta.2) | Stredná (dependency) | ✅ Opravené · **2.1.0-beta.3** |
+| ISS-079 | Profil **blog** — save zlyhá na existujúcom fenced code block (`` ``` ``) | Vysoká (admin UX) | ✅ Opravené · **2.1.0-beta.5** |
+| ISS-080 | PHPStan: `ContentMetaController` volá neexistujúce `getGroup()` | Stredná (CI) | ✅ Opravené · **2.1.0-beta.4** |
+| ISS-081 | Dependabot: čiastočný bump `@tiptap/*` → peer conflict + CI fail | Stredná (CI / deps) | ✅ Opravené · **2.1.0-beta.4** |
+| ISS-082 | Dependabot #7: `symfony/yaml` 8.x vs constraint `^7.0` | Nízka (tech. dlh) | ⏳ Odložené — major migrácia |
+| ISS-083 | Dependabot #10: `eslint` 10.x — breaking flat config | Nízka (tech. dlh) | ⏳ Odložené — samostatný upgrade |
+| ISS-084 | Samovolné odhlásenie v Chrome (~24 min) — kaskáda 401 na `/me`, `/admin/counts`, … | Vysoká (auth UX) | ✅ Opravené · **2.1.0-beta.5** |
+| ISS-085 | Rich navigácia — Lucide ikona len rámček, popis neviditeľný na desktope | Stredná (admin/public UX) | ✅ Opravené · **2.1.0-beta.5** |
 
 
 
@@ -126,6 +133,8 @@ Workflow: `[.github/workflows/ci.yml](../.github/workflows/ci.yml)`
 | `frontend` | `npm run lint`       | Prekročenie `--max-warnings 65` (`react-hooks/exhaustive-deps`)       | ISS-020                   |
 | `frontend` | `npm test`           | Worker crash, `act(...)` stderr, `MediaManager` text asserts          | ISS-005, ISS-010, ISS-022 |
 | `frontend` | `npm audit --audit-level=moderate` | `react-router-dom@6.30.4` — 3× moderate GHSA (po tagu beta.2) | ISS-078 |
+| `frontend` | `npm ci` / Vitest | Dependabot PR #9/#11/#12 — len 1× `@tiptap` bump → peer `@tiptap/core@3.28.0` conflict | ISS-081 |
+| `backend`  | PHPStan level 8      | `ContentMetaController` — `getGroup()` undefined (It.57 gate) | ISS-080 |
 | `backend`  | PHPStan (historicky) | 15 typových chýb                                                      | ISS-006                   |
 
 
@@ -1979,12 +1988,140 @@ Failed asserting that null is not null.
 
 ---
 
+## ISS-079 – Editor profil blog blokuje uloženie code blocku — VYRIEŠENÉ (**2.1.0-beta.5**)
+
+**Symptóm:** Článok s fenced code blockom (`` ```markdown … ``` ``) sa dal vytvoriť, ale pri **opätovnom editovaní a uložení** toast: *„Profil editora nepovoľuje bloky kódu."* (profil **blog**, It.54).
+
+**Príčina (dvojitá):**
+
+1. Profil **blog** mal v whiteliste **`code`** (inline), nie **`codeBlock`** (fenced `` ``` ``).
+2. `EditorContentValidator` (It.54) pri save kontroloval **celý obsah** proti capability whitelistu — nie len nové vloženie cez toolbar. Existujúci legitímny obsah sa pri editácii **nemohol uložiť**.
+
+**Prečo to nie je OK (design):** Profily majú riadiť **toolbar / paste guard** (UX), nie **cenzúru publikácie** existujúceho obsahu. Bezpečnosť rieši `ContentSecuritySanitizer` + zákaz `<script>` / raw HTML v Markdowne.
+
+**Riešenie (`v2.1.0-beta.5`):**
+
+- `EditorContentValidator` — z capability whitelistu na save ostáva len **security** (script/iframe, raw HTML tagy v MD); formátovanie (code block, tabuľka, …) sa pri save **neblokuje**.
+- Profil **blog** — pridaný **`codeBlock`** + tlačidlo **Blok kódu** v Markdown toolbar.
+- PHPUnit: `EditorContentValidatorTest` — nové scenáre (blog + `` ``` ``, security-only reject).
+
+**Follow-up:** [ITERATION_60.md](ITERATION_60.md) — nahradiť rigidné profily modulárnymi rozšíreniami editora v nastaveniach + RBAC.
+
+**Súvis:** It.54 · `EditorProfileService` · `editor.wysiwyg.blocked.codeBlock` (toast pri paste zostáva).
+
+---
+
+## ISS-080 – PHPStan: `ContentMetaController::getGroup()` — VYRIEŠENÉ (**2.1.0-beta.4**)
+
+**Symptóm:** `./scripts/iteration-gate.sh` / PHPStan L8 padol pri It.57 (`ContentMetaSuggestPanel` + `POST /api/admin/content/suggest-meta`):
+
+```text
+Call to an undefined method SettingsRepositoryInterface::getGroup()
+```
+
+**Príčina:** V `ContentMetaController.php` (riadok ~48) bol copy-paste názov metódy — rozhranie má **`group(string $key)`**, nie `getGroup()`.
+
+**Riešenie:** `$this->settings->group('content')` · commit **`2091076`** (`v2.1.0-beta.4`).
+
+**Súvis:** [ITERATION_57.md](ITERATION_57.md) · `SettingsRepositoryInterface`.
+
+---
+
+## ISS-081 – Dependabot: split `@tiptap/*` PR → npm peer conflict — VYRIEŠENÉ (**2.1.0-beta.4**)
+
+**Symptóm:** GitHub Dependabot PR **#9**, **#11**, **#12** (jednotlivé balíky `@tiptap/extension-*` 3.27.3 → 3.28.0) — CI **frontend** job red: `npm ci` / Vitest.
+
+**Príčina:** `@tiptap/extension-image@3.28.0` vyžaduje peer `@tiptap/core@3.28.0`, zatiaľ čo ostatné balíky v lockfile ostali na **3.27.3**. Čiastočný merge jedného PR bez synchronizácie **všetkých** `@tiptap/*` naraz → `ERESOLVE` peer dependency.
+
+**Riešenie (beta.4, commit `2091076`):**
+
+- V `frontend/package.json` naraz **všetky** `@tiptap/*` → `^3.28.0`.
+- Regenerácia `package-lock.json` (`rm package-lock.json && npm install` — starý lock držal 3.27.3).
+- Dependabot PR #9/#11/#12 zatvorené s komentárom „superseded by beta.4".
+- Bundled aj bezpečné PR **#6** (`league/commonmark` 2.8.3) a **#8** (frontend dev group).
+
+**Prevencia:** Pri Tiptap upgrade vždy bumpnúť **celú rodinu** balíkov v jednom commite; nespoliehať sa na izolované Dependabot PR pre peer-linked monorepo balíky.
+
+**Súvis:** Dependabot PR #6 ✅ · #8 ✅ · #7 ⏳ ISS-082 · #10 ⏳ ISS-083.
+
+---
+
+## ISS-082 – Dependabot: `symfony/yaml` 8.x (PR #7) — ODLOŽENÉ
+
+**Symptóm:** Dependabot navrhol `symfony/yaml` **7.4.14 → 8.1.1** (major). CI na PR prešlo, ale merge by porušil `composer.json` constraint **`^7.0`**.
+
+**Rozhodnutie:** PR **#7** zatvorené bez merge — samostatná migrácia Symfony YAML 8.x (breaking changes, overiť PHPUnit + YAML config loadery).
+
+**Stav:** ⏳ Tech. dlh · plánovať mimo beta patchov.
+
+---
+
+## ISS-083 – Dependabot: `eslint` 10.x (PR #10) — ODLOŽENÉ
+
+**Symptóm:** Dependabot navrhol `eslint` **9.39.5 → 10.7.0** (major). CI frontend padol (breaking config / pravidlá).
+
+**Rozhodnutie:** PR **#10** zatvorené bez merge — upgrade eslint 10 vyžaduje migráciu flat config + `@typescript-eslint` kompatibilitu mimo rýchleho Dependabot merge.
+
+**Stav:** ⏳ Tech. dlh · naviazať na ISS-011 (ESLint warnings baseline).
+
+---
+
+## ISS-084 – Samovolné odhlásenie v Chrome (kaskáda 401) — VYRIEŠENÉ (**2.1.0-beta.5**)
+
+**Symptóm:** Po ~20–30 min v admin paneli (Chrome) náhle redirect na `/login`. V logoch naraz:
+
+- `GET /api/auth/me` → 401
+- `GET /api/admin/counts` → 401
+- `GET /api/media` → 401
+- `GET /api/admin/users` → 401
+
+**Príčina:**
+
+1. **`DemoMode::sessionLifetimeSeconds()`** mal default **1440 s (24 min)** pre non-demo — `session.cookie_lifetime` sa nastaví raz pri login a **neobnovuje sa**.
+2. Keepalive (`refreshUser` každé 4 min) obnovoval server-side `$_SESSION`, ale **nie Max-Age cookie** v prehliadači → Chrome cookie zahodil → všetky API naraz 401.
+3. FE interceptor poslal viacnásobné `paginium:auth-expired` → logout.
+
+**Riešenie (`v2.1.0-beta.5`):**
+
+- Default session lifetime: **28800 s** (dev) / **7200 s** (prod) cez `DemoMode`.
+- `SessionManager::refreshCookieLifetime()` — sliding `Set-Cookie` pri `SecureSessionManager::touch()` (login + každý autentizovaný request cez `AuthMiddleware`).
+- FE: debounce `auth-expired` (2,5 s), single-flight `refreshUser()`.
+
+**Ops:** `.env` odporúčanie `SESSION_LIFETIME=28800`, `VITE_API_URL=` (same-origin), po deployi vymazať staré cookies.
+
+**Súvis:** ISS-025 · ISS-029 · ISS-042 · `backend/bootstrap/session.php`
+
+---
+
+## ISS-085 – Rich navigácia: prázdna ikona + chýbajúci popis — VYRIEŠENÉ (**2.1.0-beta.5**)
+
+**Symptóm:** V admin navigácii nastavená **Lucide ikona** — na webe len prázdny rámček (hover tooltip). **Popis položky** sa nezobrazil na desktop top-level linkoch (mobile OK).
+
+**Príčina:**
+
+1. `navigationRich.ts` mal **hardcoded mapu 7 ikon** + case-sensitive lookup → `Settings`, `Globe`, `home` atď. zlyhali.
+2. `navigationItemHasVisual()` vracalo true aj pri neexistujúcej ikone → prázdny bordered tooltip.
+3. `Navbar.tsx` renderoval popis len v dropdown deťoch, nie pri root linkoch.
+
+**Riešenie:**
+
+- Dynamický lookup cez `lucide-react` `icons` + normalizácia názvu (`book-open` → `BookOpen`).
+- `NavItemContent` — ikona + label + popis na desktop aj mobile.
+- Admin preview v `NavigationItemRichFields` zobrazuje Lucide ikonu.
+
+**Súvis:** [ITERATION_56.md](ITERATION_56.md)
+
+---
+
 ## Súvisiace dokumenty
 
 - [user/BRANDING.md](user/BRANDING.md) — logo a favicon (**2.0.52**)
 - [user/ACCESS_CONTROL.md](user/ACCESS_CONTROL.md) — RBAC + Path ACL v nastaveniach (**2.0.52**)
-- [developer/RELEASE.md](developer/RELEASE.md) — release **2.0.52** · **2.0.56**
-- [CHANGELOG.md](../CHANGELOG.md) — 2.0.52
+- [developer/RELEASE.md](developer/RELEASE.md) — release **2.0.52** · **2.1.0-beta.5**
+- [CHANGELOG.md](../CHANGELOG.md) — 2.0.52 · **2.1.0-beta.5**
+- [ITERATION_54.md](ITERATION_54.md) — editor profiles (ISS-079)
+- [ITERATION_56.md](ITERATION_56.md) — rich navigation (ISS-085)
+- [ITERATION_57.md](ITERATION_57.md) — suggest-meta (ISS-080)
 - [developer/TESTING.md](developer/TESTING.md) — PHPUnit izolácia (`LoginAttemptTracker`)
 - [ITERATION_44.md](ITERATION_44.md) — It.44d index filtre (ISS-038)
 - [ROADMAP.md](ROADMAP.md) – plánované iterácie (It.41+, It.47–49)

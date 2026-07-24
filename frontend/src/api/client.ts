@@ -55,6 +55,8 @@ export interface ApiError {
 class ApiClient {
   private client: AxiosInstance;
   private static instance: ApiClient;
+  private static authExpiredLastDispatchMs = 0;
+  private static readonly AUTH_EXPIRED_DEBOUNCE_MS = 2500;
 
   private constructor() {
     this.client = axios.create({
@@ -136,7 +138,11 @@ class ApiClient {
             !requestUrl.includes('/api/locks') &&
             !requestUrl.includes('/api/drafts')
           ) {
-            window.dispatchEvent(new CustomEvent('paginium:auth-expired'));
+            const now = Date.now();
+            if (now - ApiClient.authExpiredLastDispatchMs >= ApiClient.AUTH_EXPIRED_DEBOUNCE_MS) {
+              ApiClient.authExpiredLastDispatchMs = now;
+              window.dispatchEvent(new CustomEvent('paginium:auth-expired'));
+            }
           }
         }
         return Promise.reject(error);

@@ -52,12 +52,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | Beta 1 Testing — pre-push security gate | **`v2.1.0-beta.2`** | [below](#210-beta2--2026-07-23) |
 | Beta 1 patch — React Router GHSA + CMS info | **`v2.1.0-beta.3`** | [below](#210-beta3--2026-07-24) |
 | It.57 — Auto tags & meta description | **`v2.1.0-beta.4`** | [below](#210-beta4--2026-07-24) |
+| It.56 — Rich navigation + session/auth fixes | **`v2.1.0-beta.5`** | [below](#210-beta5--2026-07-24) |
 | Wave 5d — It.15 hook emitters + extension policy | **2.0.54** | [below](#2054--2026-07-23) |
 | It.19b–19d — Security runtime, auth UX, password policy | **2.0.45** | [below](#2045--2026-07-21) |
 
 ---
 
 ## [Unreleased]
+
+---
+
+## [2.1.0-beta.5] – 2026-07-24
+
+**It.56** — Rich navigation menu + **ISS-079** editor save fix + settings help texts + **ISS-084** session sliding cookie.
+
+### Added
+
+- **It.56** — Rich navigation: `description`, `iconType` (`none` \| `lucide` \| `media`), hover preview, `navigationUi` settings group. Admin `NavigationItemRichFields` + public `NavMenuVisual` / `Navbar`.
+- **Settings help texts** — stručné SK/EN vysvetlenia pri prepínačoch (Zapnuté/Vypnuté) v `SettingsSchema` + `settings/sk.ts` / `settings/en.ts`.
+
+### Fixed
+
+- **ISS-079** — `EditorContentValidator` pri save kontroluje len **bezpečnosť** (script/iframe, raw HTML v MD), nie capability whitelist profilu. Profil **blog** + `codeBlock` v toolbari.
+- **ISS-084** — samovolné odhlásenie po ~24 min: `DemoMode` default session **28800 s** (dev) / **7200 s** (prod), **sliding `PHPSESSID` cookie** cez `SessionManager::refreshCookieLifetime()` pri `touchSession()`. FE debounce `paginium:auth-expired` + single-flight `refreshUser()`.
+- **ISS-085** — Lucide ikony v menu: dynamický lookup cez `lucide-react` `icons` (nie hardcoded 7 ikon); popis + ikona na desktop top-level linkoch; admin preview Lucide.
+
+### Changed
+
+- **`AppVersion`** → `2.1.0-beta.5`
+- `ContentControllerTest` — profil validation → security + allow markdown image for minimal profile
 
 ---
 

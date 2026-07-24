@@ -1,6 +1,6 @@
 # Iteration 56 – Rich navigation menu items
 
-**Status:** ⏳ Planned (implementation **after It.15**)  
+**Status:** ✅ Complete · **2.1.0-beta.5**  
 **Wave:** Post-15 Editor & UX  
 **Priority:** 🟡 Medium
 
@@ -19,7 +19,7 @@ Extend flat-file navigation (`data/navigation.json`) with **descriptions**, **ic
 | `previewScale` | float | Hover scale factor (e.g. 1.5, 2.0) — proportional |
 | `thumbnailSize` | enum | `sm` \| `md` \| `lg` inline thumbnail |
 
-Settings group **`navigation.ui`** (global defaults):
+Settings group **`navigationUi`** (global defaults):
 
 - default preview scale, max tooltip width, enable animations
 
@@ -49,12 +49,22 @@ Settings group **`navigation.ui`** (global defaults):
 
 ## Acceptance criteria
 
-- [ ] CRUD description + media icon on menu item persists in `navigation.json`
-- [ ] Public navbar renders description; hover preview works on desktop
-- [ ] Settings control default preview scale
-- [ ] PHPUnit navigation validation tests updated
-- [ ] Vitest Navbar dropdown with description + hover mock
+- [x] CRUD description + media icon on menu item persists in `navigation.json`
+- [x] Public navbar renders description; hover preview works on desktop
+- [x] Settings control default preview scale (`navigationUi`)
+- [x] PHPUnit navigation validation tests updated
+- [x] Vitest Navbar dropdown with description + hover mock
+
+## Implementation notes
+
+- `NavigationItem::fromPayload()` — single hydrate path (BE)
+- `NavigationRichFieldValidator` — description length, icon type, media path extension
+- Legacy `icon` field migrated on read → `iconType` + `iconValue`
+- Settings `defaultPreviewScale` stored as int ×10 (15 = 1.5×) for form compatibility
+- Lucide icons: dynamic lookup via `lucide-react` `icons` (ISS-085 fix — not hardcoded whitelist)
+- Desktop top-level nav shows description via `NavItemContent` (ISS-085)
 
 ## Next
 
-→ [Iteration 57](ITERATION_57.md) — auto tags & description generator
+→ [Iteration 57](ITERATION_57.md) — auto tags & description generator ✅  
+→ [Iteration 60](ITERATION_60.md) — custom editor modules

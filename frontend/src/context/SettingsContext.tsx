@@ -36,6 +36,11 @@ const DEFAULT_PUBLIC: PublicSettings = {
     adminListPageSize: 20,
     openLinksInNewTab: false,
   },
+  navigationUi: {
+    defaultPreviewScale: 1.5,
+    maxTooltipWidthPx: 280,
+    enableHoverAnimations: true,
+  },
   comments: {
     enabled: true,
     requireApproval: true,

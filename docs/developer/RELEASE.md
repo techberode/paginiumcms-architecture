@@ -1,6 +1,6 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.1.0-beta.4** · 2026-07-24 · tag **`v2.1.0-beta.4`**  
+> Posledná verzia: **2.1.0-beta.5** · 2026-07-24 · tag **`v2.1.0-beta.5`**  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release.
 
 > **Poznámka k verziám:** **`2.0.58`** → `f53e71e` · **Public Beta 1** → `e3e0d82` · **Beta 1 Testing** → `c68e72b` · **Beta 1 patch (RR GHSA)** → *(commit po push)*.
@@ -22,7 +22,8 @@
 | Public Beta 1 | **`v2.1.0-beta.1`** | **`e3e0d82`** | ✅ tagged |
 | **Beta 1 Testing** | **`v2.1.0-beta.2`** | **`c68e72b`** | ✅ tagged |
 | **Beta 1 patch (RR GHSA + CMS info)** | **`v2.1.0-beta.3`** | ✅ tagged |
-| **It.57 — Auto tags & meta description** | **`v2.1.0-beta.4`** | *(this release)* | ⏳ tag po gate |
+| **It.57 — Auto tags & meta description** | **`v2.1.0-beta.4`** | **`2091076`** | ✅ tagged |
+| **It.56 — Rich navigation + auth/session fixes** | **`v2.1.0-beta.5`** | *(this release)* | ⏳ tag po gate |
 
 **Pravidlo:** Post-beta patchy — `2.0.59+` alebo `2.1.0-beta.N` podľa rozsahu.
 
@@ -35,7 +36,67 @@ gh auth login   # ak ešte nie
 ./scripts/create-github-releases.sh
 ```
 
-Testerom / security reviewerovi poslať **`v2.1.0-beta.4`** + [SECURITY_REVIEW.md](../SECURITY_REVIEW.md).
+Testerom / security reviewerovi poslať **`v2.1.0-beta.5`** + [SECURITY_REVIEW.md](../SECURITY_REVIEW.md).
+
+---
+
+## v2.1.0-beta.5 — It.56 Rich navigation + session fix
+
+```bash
+./scripts/iteration-gate.sh
+cd frontend && npm audit --audit-level=moderate
+composer audit
+```
+
+### Commit
+
+```bash
+git add -A
+git commit -m "$(cat <<'EOF'
+release: v2.1.0-beta.5 — It.56 rich nav, ISS-079/084/085, settings help.
+
+Rich navigation (icons, descriptions, hover preview). Editor save security-only validation.
+Sliding session cookie + longer default lifetime. Settings toggle help SK/EN.
+EOF
+)"
+git tag v2.1.0-beta.5
+git push origin main
+git push origin v2.1.0-beta.5
+```
+
+---
+
+## GitHub Release — copy-paste (v2.1.0-beta.5)
+
+**Title:** `v2.1.0-beta.5 — It.56 Rich navigation + session fix`
+
+**Body:**
+
+```markdown
+## Summary
+
+**It.56** — navigation descriptions, Lucide/media icons, hover preview + `navigationUi` settings.
+
+**Fixes:** ISS-079 (blog code block save), ISS-084 (spontaneous logout / sliding session cookie), ISS-085 (Lucide icons + desktop descriptions).
+
+**Admin:** Settings toggle help texts (SK/EN) for enable/disable behavior.
+
+## Added
+
+- Rich navigation fields in admin + public navbar
+- Settings help texts for bool toggles (i18n SK/EN)
+
+## Fixed
+
+- Editor profile no longer blocks save on existing code blocks (security-only validation)
+- Session cookie sliding refresh; default lifetime 8h dev / 2h prod
+- Dynamic Lucide icon resolution in public nav
+
+## Docs
+
+- ISSUES.md ISS-079, ISS-084, ISS-085
+- ITERATION_56.md complete
+```
 
 ---
 

@@ -66,6 +66,7 @@ export const settingsSk: MessageTree = {
     "maintenance": "Režim údržby",
     "content": "Obsah",
     "editor": "Editor",
+    "navigationUi": "Navigácia (UI)",
     "smtp": "Email / SMTP",
     "notifications": "Toast notifications",
     "connectors": "Notification connectors",
@@ -180,7 +181,8 @@ export const settingsSk: MessageTree = {
         "help": "Voliteľný obrázok na pozadí oboch stránok."
       },
       "newsletterEnabled": {
-        "label": "Povoliť newsletter"
+        "label": "Povoliť newsletter",
+        "help": "Zapnuté = na Coming Soon stránke sa zobrazí prihlásenie na newsletter. Vypnuté = formulár skrytý."
       },
       "newsletterHint": {
         "label": "Text newsletteru"
@@ -210,7 +212,8 @@ export const settingsSk: MessageTree = {
         "label": "Údržba – telo"
       },
       "maintenanceShowContactForm": {
-        "label": "Zobraziť kontaktný formulár"
+        "label": "Zobraziť kontaktný formulár",
+        "help": "Zapnuté = počas údržby je dostupný kontaktný formulár. Vypnuté = len informačný text."
       },
       "maintenanceContactSubject": {
         "label": "Predmet správy z údržby"
@@ -234,7 +237,8 @@ export const settingsSk: MessageTree = {
         "help": "md = YAML front matter + Markdown; json = čistý JSON súbor (Iterácia 19)."
       },
       "defaultStatus": {
-        "label": "Predvolený stav obsahu"
+        "label": "Predvolený stav obsahu",
+        "help": "Nové stránky/články vzniknú ako koncept alebo rovno publikované."
       },
       "autoSaveInterval": {
         "label": "Interval auto-save (s)",
@@ -263,7 +267,8 @@ export const settingsSk: MessageTree = {
     },
     "editor": {
       "defaultEditor": {
-        "label": "Predvolený editor"
+        "label": "Predvolený editor",
+        "help": "Ktorý editor sa otvorí pri novom obsahu (Markdown alebo WYSIWYG)."
       },
       "defaultProfilePage": {
         "label": "Predvolený profil (stránky)",
@@ -274,15 +279,31 @@ export const settingsSk: MessageTree = {
         "help": "Modulárny toolbar pre články (Iterácia 54)."
       },
       "spellcheck": {
-        "label": "Kontrola pravopisu"
+        "label": "Kontrola pravopisu",
+        "help": "Zapnuté = prehliadač podčiarkne pravopisné chyby v editore. Vypnuté = bez kontroly."
       },
       "tabSize": {
         "label": "Veľkosť tabulátora"
       }
     },
+    "navigationUi": {
+      "defaultPreviewScale": {
+        "label": "Predvolená mierka hover náhľadu (×10)",
+        "help": "Hodnota 15 = mierka 1.5× pri hover ikony v menu (It.56)."
+      },
+      "maxTooltipWidthPx": {
+        "label": "Max. šírka tooltipu (px)",
+        "help": "Obmedzenie šírky hover náhľadu v dropdown menu."
+      },
+      "enableHoverAnimations": {
+        "label": "Animácie hover náhľadu",
+        "help": "Respektuje prefers-reduced-motion — pri vypnutí statický náhľad."
+      }
+    },
     "smtp": {
       "enabled": {
-        "label": "Enable SMTP"
+        "label": "Enable SMTP",
+        "help": "Zapnuté = systém odosiela e-maily (OTP, notifikácie, kontakt). Vypnuté = odosielanie vypnuté."
       },
       "host": {
         "label": "SMTP host"
@@ -309,7 +330,8 @@ export const settingsSk: MessageTree = {
     },
     "notifications": {
       "toastEnabled": {
-        "label": "Enable toast notifications"
+        "label": "Enable toast notifications",
+        "help": "Zapnuté = krátke hlášky pri ukladaní a chybách v admin rozhraní. Vypnuté = bez toastov."
       },
       "toastPosition": {
         "label": "Toast position"
@@ -324,10 +346,12 @@ export const settingsSk: MessageTree = {
     },
     "connectors": {
       "emailEnabled": {
-        "label": "Email channel (SMTP)"
+        "label": "Email channel (SMTP)",
+        "help": "Zapnuté = incidenty a reporty môžu ísť e-mailom (vyžaduje zapnuté SMTP). Vypnuté = kanál e-mail sa nepoužije."
       },
       "ntfyEnabled": {
-        "label": "Enable ntfy"
+        "label": "Enable ntfy",
+        "help": "Zapnuté = push notifikácie cez ntfy. Vypnuté = kanál ntfy vypnutý."
       },
       "ntfyServer": {
         "label": "ntfy server URL"
@@ -349,13 +373,15 @@ export const settingsSk: MessageTree = {
         "label": "ntfy password (Basic auth)"
       },
       "discordEnabled": {
-        "label": "Enable Discord webhook"
+        "label": "Enable Discord webhook",
+        "help": "Zapnuté = incidenty sa posielajú na Discord webhook. Vypnuté = webhook sa nevolá."
       },
       "discordWebhookUrl": {
         "label": "Discord webhook URL"
       },
       "telegramEnabled": {
-        "label": "Enable Telegram bot"
+        "label": "Enable Telegram bot",
+        "help": "Zapnuté = incidenty do Telegram chatu. Vypnuté = bot sa nepoužije."
       },
       "telegramBotToken": {
         "label": "Telegram bot token"
@@ -364,7 +390,8 @@ export const settingsSk: MessageTree = {
         "label": "Telegram chat ID"
       },
       "webhookEnabled": {
-        "label": "Enable generic webhook"
+        "label": "Enable generic webhook",
+        "help": "Zapnuté = incidenty na vlastný HTTP webhook. Vypnuté = webhook vypnutý."
       },
       "webhookUrl": {
         "label": "Webhook URL"
@@ -379,20 +406,24 @@ export const settingsSk: MessageTree = {
     },
     "monitoring": {
       "alertsEnabled": {
-        "label": "Enable incident alerts"
+        "label": "Enable incident alerts",
+        "help": "Zapnuté = systém posiela alerty pri incidentoch cez zapnuté kanály. Vypnuté = žiadne automatické alerty."
       },
       "alertEmail": {
         "label": "Fallback alert email",
         "help": "Used when connectors are off; defaults to admin email."
       },
       "notifyFailedLogin": {
-        "label": "Alert on failed login"
+        "label": "Alert on failed login",
+        "help": "Zapnuté = upozornenie pri neúspešnom prihlásení. Vypnuté = udalosť sa nehlási."
       },
       "notifySecurityIncident": {
-        "label": "Alert on security audit events"
+        "label": "Alert on security audit events",
+        "help": "Zapnuté = upozornenie pri bezpečnostných audit udalostiach. Vypnuté = neposiela sa."
       },
       "notifyTrafficSpike": {
-        "label": "Alert on traffic spike"
+        "label": "Alert on traffic spike",
+        "help": "Zapnuté = alert pri prekročení prahu návštevnosti. Vypnuté = traffic spike sa ignoruje."
       },
       "trafficSpikeThreshold": {
         "label": "Traffic spike threshold (visits/hour)"
@@ -422,19 +453,24 @@ export const settingsSk: MessageTree = {
         "label": "Report connector"
       },
       "reportIncludeAnalytics": {
-        "label": "Report: analytics stats"
+        "label": "Report: analytics stats",
+        "help": "Zapnuté = report obsahuje štatistiky návštevnosti. Vypnuté = bez analytiky."
       },
       "reportIncludeHealth": {
-        "label": "Report: system health"
+        "label": "Report: system health",
+        "help": "Zapnuté = report obsahuje stav zdravia systému. Vypnuté = bez health sekcie."
       },
       "reportIncludeFlatFile": {
-        "label": "Report: flat-file counts"
+        "label": "Report: flat-file counts",
+        "help": "Zapnuté = report obsahuje počty stránok/článkov. Vypnuté = bez štatistík obsahu."
       },
       "notifyLogErrors": {
-        "label": "Alert on log ERROR/CRITICAL"
+        "label": "Alert on log ERROR/CRITICAL",
+        "help": "Zapnuté = ERROR/CRITICAL v logu spustí alert. Vypnuté = chyby v logu sa nehlásia."
       },
       "notifyLogWarnings": {
-        "label": "Alert on log WARNING"
+        "label": "Alert on log WARNING",
+        "help": "Zapnuté = WARNING v logu spustí alert. Vypnuté = varovania sa nehlásia."
       },
       "logIncidentConnector": {
         "label": "Log incident connector"
@@ -451,10 +487,12 @@ export const settingsSk: MessageTree = {
     },
     "codePolicy": {
       "enabled": {
-        "label": "Enable code policy checks"
+        "label": "Enable code policy checks",
+        "help": "Zapnuté = pred uložením PHP súborov sa kontrolujú zakázané funkcie a veľkosť. Vypnuté = kontrola vypnutá."
       },
       "strictMode": {
-        "label": "Strict extension namespace rules"
+        "label": "Strict extension namespace rules",
+        "help": "Zapnuté = prísnejšie pravidlá pre namespaces rozšírení. Vypnuté = uvoľnené pravidlá."
       },
       "maxFileSizeKb": {
         "label": "Max file size (KB)"
@@ -493,7 +531,8 @@ export const settingsSk: MessageTree = {
     },
     "company": {
       "showOnContactPage": {
-        "label": "Zobraziť blok na kontaktnej stránke"
+        "label": "Zobraziť blok na kontaktnej stránke",
+        "help": "Zapnuté = firemné údaje sa zobrazia na kontaktnej stránke. Vypnuté = blok skrytý."
       },
       "name": {
         "label": "Názov firmy"
@@ -649,6 +688,10 @@ export const settingsSk: MessageTree = {
         "label": "Zapnúť firewall",
         "help": "Interný WAF skenuje URI, query a User-Agent pred spracovaním požiadavky."
       },
+      "scanRequestBody": {
+        "label": "Skenuj POST/JSON telo",
+        "help": "Zapnuté = WAF kontroluje telo mutujúcich requestov (editor API je vyňaté). Vypnuté = skenuje sa len URI a hlavičky."
+      },
       "jailMinutes": {
         "label": "Dĺžka jail (min)",
         "help": "Dočasná blokácia IP po prekročení prahu incidentov."
@@ -701,7 +744,8 @@ export const settingsSk: MessageTree = {
     },
     "feeds": {
       "enabled": {
-        "label": "Povoliť feedy"
+        "label": "Povoliť feedy",
+        "help": "Zapnuté = RSS a sitemap.xml sú dostupné. Vypnuté = feedy vracajú 404."
       },
       "title": {
         "label": "Názov RSS kanála",
@@ -714,10 +758,12 @@ export const settingsSk: MessageTree = {
         "label": "Počet položiek v RSS"
       },
       "includePages": {
-        "label": "Sitemap: podstránky"
+        "label": "Sitemap: podstránky",
+        "help": "Zapnuté = statické stránky sú v sitemap. Vypnuté = stránky v sitemap chýbajú."
       },
       "includeArticles": {
-        "label": "RSS/Sitemap: články"
+        "label": "RSS/Sitemap: články",
+        "help": "Zapnuté = články v RSS a sitemap. Vypnuté = články v feedoch chýbajú."
       }
     },
     "seo": {
@@ -762,13 +808,15 @@ export const settingsSk: MessageTree = {
     },
     "sso": {
       "enabled": {
-        "label": "Povoliť SSO prihlásenie"
+        "label": "Povoliť SSO prihlásenie",
+        "help": "Zapnuté = externé prihlásenie je dostupné (podľa zapnutých providerov). Vypnuté = len lokálne účty."
       },
       "defaultRole": {
         "label": "Predvolená rola (nový účet)"
       },
       "githubEnabled": {
-        "label": "GitHub OAuth"
+        "label": "GitHub OAuth",
+        "help": "Zapnuté = tlačidlo „Prihlásiť cez GitHub“. Vypnuté = GitHub login skrytý."
       },
       "githubClientId": {
         "label": "GitHub Client ID"
@@ -777,7 +825,8 @@ export const settingsSk: MessageTree = {
         "label": "GitHub Client Secret"
       },
       "genericEnabled": {
-        "label": "Generic OAuth2"
+        "label": "Generic OAuth2",
+        "help": "Zapnuté = Generic OAuth2 provider podľa nižšie zadaných údajov. Vypnuté = provider vypnutý."
       },
       "genericName": {
         "label": "Generic provider name"

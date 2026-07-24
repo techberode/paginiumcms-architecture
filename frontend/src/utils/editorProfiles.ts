@@ -54,7 +54,7 @@ export const BUILTIN_EDITOR_PROFILES: EditorProfileDefinition[] = [
   {
     id: 'blog',
     label: 'Blog',
-    description: 'Články s nadpismi, obrázkami a citáciami — bez raw HTML a tabuliek.',
+    description: 'Články s nadpismi, obrázkami, citáciami a ukážkami kódu — bez raw HTML a tabuliek.',
     capabilities: [
       'bold',
       'italic',
@@ -65,6 +65,7 @@ export const BUILTIN_EDITOR_PROFILES: EditorProfileDefinition[] = [
       'link',
       'image',
       'code',
+      'codeBlock',
     ],
     modes: ['markdown', 'wysiwyg'],
   },
@@ -120,6 +121,7 @@ export function countMarkdownToolbarActions(profile: EditorProfileDefinition): n
     orderedList: 1,
     blockquote: 1,
     code: 1,
+    codeBlock: 1,
   };
 
   return profile.capabilities.reduce((sum, cap) => sum + (map[cap] ?? 0), 0);
