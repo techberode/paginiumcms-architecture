@@ -5,8 +5,8 @@
 
 **Aktuálne hotové:** It.1–24 ✅ · It.26–28 ✅ · It.25 ⏳ (setup wizard — odložené)
 
-**Ďalšia iterácia:** [It.59](ITERATION_59.md) (odložená publikácia) · potom It.56+  
-**Posledná shipped:** [It.55 Tiptap JSON + upload](ITERATION_55.md) — **2.0.43** · **Unreleased:** 2.0.52 (branding, ACL)
+**Ďalšia iterácia:** [It.60](ITERATION_60.md) (modulárny editor) · backlog It.59–61  
+**Posledná shipped:** [It.56 Rich navigation](ITERATION_56.md) — **`v2.1.0-beta.5`** · [It.57](ITERATION_57.md) — **`v2.1.0-beta.4`**
 
 **Incidenty a opravy:** [ISSUES.md](ISSUES.md)
 
@@ -31,8 +31,8 @@
 | **53** | **2.0.39** | **[Smooth SPA reload](ITERATION_53.md)** | **✅** | React Query cache, scroll restore, skeletons |
 | **54** | **2.0.42** | **[Modular MD + WYSIWYG profiles](ITERATION_54.md)** | **✅** | It.15 · Tiptap |
 | **55** | **2.0.43** | **[Tiptap JSON + media upload](ITERATION_55.md)** | **✅** | WYSIWYG JSON + BE render + upload |
-| **56** | TBD | **[Rich navigation items](ITERATION_56.md)** | **🟡** | ⛔ po It.15 |
-| **57** | TBD | **[Auto tags & description](ITERATION_57.md)** | **🟡** | ⛔ po It.15 |
+| **56** | **`v2.1.0-beta.5`** | **[Rich navigation items](ITERATION_56.md)** | **✅** | Popis, ikona, hover preview |
+| **57** | **`v2.1.0-beta.4`** | **[Auto tags & description](ITERATION_57.md)** | **✅** | suggest-meta API |
 | **58** | TBD | **[Page layout builder + color schemes](ITERATION_58.md)** | **🟡** | ⛔ po It.15 · layout + 5 presetov, preview, light/dark/system |
 | **59** | TBD | **[Odložená publikácia — plánovač v editore](ITERATION_59.md)** | **🟡** | Kalendár v editore + admin filtre; job `content.scheduled_publish` (It.29) |
 | **60** | TBD | **[Vlastné komponenty editora](ITERATION_60.md)** | **🟡** | Nastavenia → Stránka → Editor; pluginy; nie rola USER |

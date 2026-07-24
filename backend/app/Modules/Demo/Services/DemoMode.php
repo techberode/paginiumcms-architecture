@@ -55,7 +55,9 @@ final class DemoMode
 
     public function sessionLifetimeSeconds(): int
     {
-        $default = $this->isEnabled() ? 14400 : 1440;
+        $appEnv = getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? 'development');
+        $nonDemoDefault = $appEnv === 'production' ? 7200 : 28800;
+        $default = $this->isEnabled() ? 14400 : $nonDemoDefault;
         $raw = getenv('SESSION_LIFETIME') ?: ($_ENV['SESSION_LIFETIME'] ?? $default);
 
         return max(300, (int) $raw);

@@ -186,7 +186,7 @@ class ContentControllerTest extends TestCase
         $this->assertSame(400, $response->getStatusCode());
     }
 
-    public function testCreatePageRejectsDisallowedContentForProfile(): void
+    public function testCreatePageAllowsMarkdownImageForMinimalProfile(): void
     {
         $this->loginAsAdminUser();
 
@@ -200,6 +200,28 @@ class ContentControllerTest extends TestCase
                 'content' => 'Hello ![x](/a.png)',
                 'contentFormat' => 'markdown',
                 'editorProfile' => 'minimal',
+            ])
+        );
+
+        $this->assertSame(201, $response->getStatusCode());
+        $data = $this->getJsonResponse($response);
+        $this->assertTrue($data['success']);
+    }
+
+    public function testCreatePageRejectsRawHtmlInMarkdown(): void
+    {
+        $this->loginAsAdminUser();
+
+        $slug = 'security-test-' . uniqid();
+
+        $response = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/pages', [
+                'title' => 'Security validation',
+                'slug' => $slug,
+                'status' => 'draft',
+                'content' => "Hello\n\n<div>raw</div>",
+                'contentFormat' => 'markdown',
+                'editorProfile' => 'blog',
             ])
         );
 

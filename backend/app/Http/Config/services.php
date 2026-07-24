@@ -162,6 +162,7 @@ use PaginiumCMS\Modules\Messages\Contracts\MessageRepositoryInterface;
 use PaginiumCMS\Modules\Messages\Services\MessageRepository;
 use PaginiumCMS\Modules\Navigation\Contracts\NavigationRepositoryInterface;
 use PaginiumCMS\Modules\Navigation\Services\NavigationRepository;
+use PaginiumCMS\Modules\Navigation\Services\NavigationRichFieldValidator;
 use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
 use PaginiumCMS\Modules\Media\Services\MediaRepository;
 use PaginiumCMS\Modules\Media\Services\StockImageCatalog;
@@ -401,9 +402,11 @@ return [
             get(FileReaderInterface::class),
             get(FileWriterInterface::class)
         ),
+    NavigationRichFieldValidator::class => create(NavigationRichFieldValidator::class),
     NavigationController::class => create(NavigationController::class)
         ->constructor(
             get(NavigationRepositoryInterface::class),
+            get(NavigationRichFieldValidator::class),
             get(JsonResponder::class)
         ),
 

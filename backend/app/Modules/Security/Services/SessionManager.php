@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Modules\Security\Services;
 
+use PaginiumCMS\Modules\Demo\Services\DemoMode;
 use PaginiumCMS\Modules\Security\Models\User;
 
 /**
@@ -117,6 +118,44 @@ class SessionManager
      */
     public function touch(): void
     {
+    }
+
+    /**
+     * Obnoví Max-Age session cookie v prehliadači (sliding expiration pri aktívnej práci).
+     */
+    public function refreshCookieLifetime(): void
+    {
+        if (session_status() !== PHP_SESSION_ACTIVE || headers_sent()) {
+            return;
+        }
+
+        $sessionName = session_name();
+        $sessionId = session_id();
+        if ($sessionName === false || $sessionId === false) {
+            return;
+        }
+
+        $lifetime = (new DemoMode())->sessionLifetimeSeconds();
+        if ($lifetime <= 0) {
+            return;
+        }
+
+        $params = session_get_cookie_params();
+        $sameSite = 'Lax';
+        if (in_array($params['samesite'], ['Strict', 'strict'], true)) {
+            $sameSite = 'Strict';
+        } elseif (in_array($params['samesite'], ['None', 'none'], true)) {
+            $sameSite = 'None';
+        }
+
+        setcookie($sessionName, $sessionId, [
+            'expires' => time() + $lifetime,
+            'path' => $params['path'],
+            'domain' => $params['domain'],
+            'secure' => $params['secure'],
+            'httponly' => $params['httponly'],
+            'samesite' => $sameSite,
+        ]);
     }
 
     /**

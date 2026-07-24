@@ -185,6 +185,11 @@ final class SettingsController
                 'adminListPageSize' => (int) ($all['ui']['adminListPageSize'] ?? 20),
                 'openLinksInNewTab' => (bool) ($all['ui']['openLinksInNewTab'] ?? false),
             ],
+            'navigationUi' => [
+                'defaultPreviewScale' => ((int) ($all['navigationUi']['defaultPreviewScale'] ?? 15)) / 10.0,
+                'maxTooltipWidthPx' => (int) ($all['navigationUi']['maxTooltipWidthPx'] ?? 280),
+                'enableHoverAnimations' => (bool) ($all['navigationUi']['enableHoverAnimations'] ?? true),
+            ],
             'content' => $all['content'] ?? [],
             'editor' => array_merge($all['editor'] ?? [], [
                 'profiles' => $this->editorProfiles->listProfilesForApi(),

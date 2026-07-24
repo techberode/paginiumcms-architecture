@@ -112,7 +112,7 @@ final class EditorProfileService
             'blog' => new EditorProfile(
                 'blog',
                 'Blog',
-                'Články s nadpismi, obrázkami a citáciami — bez raw HTML a tabuliek.',
+                'Články s nadpismi, obrázkami, citáciami a ukážkami kódu — bez raw HTML a tabuliek.',
                 new EditorCapabilities([
                     'bold',
                     'italic',
@@ -123,6 +123,7 @@ final class EditorProfileService
                     'link',
                     'image',
                     'code',
+                    'codeBlock',
                 ])
             ),
             'minimal' => new EditorProfile(

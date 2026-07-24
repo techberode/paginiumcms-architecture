@@ -59,6 +59,7 @@ final class SecureSessionManager extends SessionManager
         $_SESSION[self::CREATED_KEY] = time();
         $_SESSION[self::LAST_ACTIVITY_KEY] = time();
         $this->validated = true;
+        $this->refreshCookieLifetime();
     }
 
     /**
@@ -71,6 +72,7 @@ final class SecureSessionManager extends SessionManager
         }
 
         $_SESSION[self::LAST_ACTIVITY_KEY] = time();
+        $this->refreshCookieLifetime();
     }
 
     private function validateSession(): bool

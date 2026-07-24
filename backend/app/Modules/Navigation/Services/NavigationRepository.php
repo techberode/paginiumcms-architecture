@@ -35,11 +35,14 @@ class NavigationRepository implements NavigationRepositoryInterface
             }
 
             $items = [];
-            foreach ($data as $entry) {
+            foreach ($data as $index => $entry) {
                 if (!is_array($entry)) {
                     continue;
                 }
-                $items[] = $this->hydrateItem($entry);
+                $item = NavigationItem::fromPayload($entry, $index);
+                if ($item !== null) {
+                    $items[] = $item;
+                }
             }
 
             usort($items, fn (NavigationItem $a, NavigationItem $b) => $a->getOrder() <=> $b->getOrder());
@@ -60,28 +63,6 @@ class NavigationRepository implements NavigationRepositoryInterface
         $this->writer->write(self::REGISTRY, $json, true);
     }
 
-    /**
-     * @param array<int|string, mixed> $entry
- */private function hydrateItem(array $entry): NavigationItem
-    {
-        $item = new NavigationItem(
-            (string) ($entry['label'] ?? 'Link'),
-            (string) ($entry['path'] ?? '/')
-        );
-
-        $reflection = new \ReflectionClass($item);
-        foreach (['id', 'target', 'order', 'parentId', 'icon'] as $property) {
-            if (!array_key_exists($property, $entry)) {
-                continue;
-            }
-
-            $prop = $reflection->getProperty($property);
-            $prop->setValue($item, $entry[$property]);
-        }
-
-        return $item;
-    }
-
     private function defaultNavigation(): Navigation
     {
         $defaults = [
@@ -91,7 +72,13 @@ class NavigationRepository implements NavigationRepositoryInterface
             ['id' => 'nav-contact', 'label' => 'Contact', 'path' => '/contact', 'order' => 3],
         ];
 
-        $items = array_map(fn (array $entry) => $this->hydrateItem($entry), $defaults);
+        $items = [];
+        foreach ($defaults as $index => $entry) {
+            $item = NavigationItem::fromPayload($entry, $index);
+            if ($item !== null) {
+                $items[] = $item;
+            }
+        }
 
         return new Navigation($items);
     }

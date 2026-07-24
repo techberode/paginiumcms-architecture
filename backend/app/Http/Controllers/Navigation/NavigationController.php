@@ -9,6 +9,7 @@ use PaginiumCMS\Core\FlatFile\Models\Navigation;
 use PaginiumCMS\Core\FlatFile\Models\NavigationItem;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Navigation\Contracts\NavigationRepositoryInterface;
+use PaginiumCMS\Modules\Navigation\Services\NavigationRichFieldValidator;
 use PaginiumCMS\Support\Lang;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -17,6 +18,7 @@ class NavigationController
 {
     public function __construct(
         private NavigationRepositoryInterface $navigationRepository,
+        private NavigationRichFieldValidator $richFieldValidator,
         private JsonResponder $json
     ) {
     }
@@ -40,6 +42,16 @@ class NavigationController
             return $this->json->error($response, Lang::get('invalid_payload', [], 'navigation'), 400);
         }
 
+        foreach ($itemsPayload as $entry) {
+            if (!is_array($entry)) {
+                continue;
+            }
+            $richError = $this->richFieldValidator->validateEntry($entry);
+            if ($richError !== null) {
+                return $this->json->error($response, $richError, 422);
+            }
+        }
+
         try {
             $navigation = $this->buildNavigation($itemsPayload);
             $depthError = $this->validateMaxDepth($navigation, 3);
@@ -60,8 +72,7 @@ class NavigationController
     }
 
     /**
-     * @param array<int, array<int|string, mixed>> $itemsPayload
-     * @param array<int|string, mixed> $itemsPayload
+     * @param array<int, mixed> $itemsPayload
      */
     private function buildNavigation(array $itemsPayload): Navigation
     {
@@ -72,31 +83,10 @@ class NavigationController
                 continue;
             }
 
-            $label = trim((string) ($entry['label'] ?? ''));
-            $path = trim((string) ($entry['path'] ?? ''));
-            if ($label === '' || $path === '') {
-                continue;
+            $item = NavigationItem::fromPayload($entry, $index);
+            if ($item !== null) {
+                $items[] = $item;
             }
-
-            $item = new NavigationItem($label, $path);
-            if (!empty($entry['id'])) {
-                $reflection = new \ReflectionClass($item);
-                $prop = $reflection->getProperty('id');
-                $prop->setValue($item, (string) $entry['id']);
-            }
-
-            $item->setOrder((int) ($entry['order'] ?? $index));
-            if (!empty($entry['target'])) {
-                $item->setTarget((string) $entry['target']);
-            }
-            if (array_key_exists('parentId', $entry)) {
-                $item->setParentId($entry['parentId'] !== null ? (string) $entry['parentId'] : null);
-            }
-            if (array_key_exists('icon', $entry)) {
-                $item->setIcon($entry['icon'] !== null ? (string) $entry['icon'] : null);
-            }
-
-            $items[] = $item;
         }
 
         return new Navigation($items);

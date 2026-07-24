@@ -50,4 +50,53 @@ class NavigationControllerTest extends TestCase
         $this->assertTrue($data['success']);
         $this->assertSame('Custom Home', $data['data'][0]['label']);
     }
+
+    public function testUpdateNavigationWithRichFields(): void
+    {
+        $login = $this->loginAsAdminUser();
+        $this->assertEquals(200, $login['response']->getStatusCode());
+
+        $request = $this->createJsonRequest('PUT', '/api/admin/navigation', [
+            'items' => [
+                [
+                    'label' => 'Blog',
+                    'path' => '/blog',
+                    'order' => 0,
+                    'description' => 'Tipy a novinky',
+                    'iconType' => 'media',
+                    'iconValue' => '/media/icons/blog.png',
+                    'previewOnHover' => true,
+                    'previewScale' => 1.8,
+                    'thumbnailSize' => 'md',
+                ],
+            ],
+        ]);
+        $response = $this->handleRequest($request);
+        $data = $this->getJsonResponse($response);
+
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertTrue($data['success']);
+        $this->assertSame('Tipy a novinky', $data['data'][0]['description']);
+        $this->assertSame('media', $data['data'][0]['iconType']);
+    }
+
+    public function testUpdateNavigationRejectsLongDescription(): void
+    {
+        $login = $this->loginAsAdminUser();
+        $this->assertEquals(200, $login['response']->getStatusCode());
+
+        $request = $this->createJsonRequest('PUT', '/api/admin/navigation', [
+            'items' => [
+                [
+                    'label' => 'Blog',
+                    'path' => '/blog',
+                    'order' => 0,
+                    'description' => str_repeat('x', 200),
+                ],
+            ],
+        ]);
+        $response = $this->handleRequest($request);
+
+        $this->assertEquals(422, $response->getStatusCode());
+    }
 }

@@ -150,6 +150,7 @@ export const editorEn: MessageTree = {
       orderedList: 'Numbered list',
       blockquote: 'Quote',
       code: 'Code',
+      codeBlock: 'Code block',
     },
     prompts: {
       linkUrl: 'Link URL',

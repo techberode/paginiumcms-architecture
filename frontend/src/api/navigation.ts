@@ -1,6 +1,9 @@
 // frontend/src/api/navigation.ts
 import apiClient from './client';
 
+export type NavigationIconType = 'none' | 'lucide' | 'media';
+export type NavigationThumbnailSize = 'sm' | 'md' | 'lg';
+
 export interface NavigationItem {
   id: string;
   label: string;
@@ -8,7 +11,12 @@ export interface NavigationItem {
   target?: string;
   order: number;
   parentId?: string | null;
-  icon?: string | null;
+  description?: string;
+  iconType?: NavigationIconType;
+  iconValue?: string | null;
+  previewOnHover?: boolean;
+  previewScale?: number;
+  thumbnailSize?: NavigationThumbnailSize;
 }
 
 export async function getNavigation(): Promise<NavigationItem[]> {

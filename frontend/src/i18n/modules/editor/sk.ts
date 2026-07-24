@@ -150,6 +150,7 @@ export const editorSk: MessageTree = {
       orderedList: 'Číslovaný zoznam',
       blockquote: 'Citácia',
       code: 'Kód',
+      codeBlock: 'Blok kódu',
     },
     prompts: {
       linkUrl: 'URL odkazu',

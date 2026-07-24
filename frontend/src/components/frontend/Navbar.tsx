@@ -3,14 +3,35 @@ import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ChevronDown, Search, Shield, Menu, X } from 'lucide-react';
 import { usePublicSite, type PublicNavItem } from '../../context/PublicSiteContext';
+import { useSettingsContext } from '../../context/SettingsContext';
 import { useAuth } from '../../hooks/useAuth';
 import { useI18n } from '../../context/I18nContext';
 import { SiteLogo } from '../branding/SiteLogo';
+import { NavDropdownEntry, NavMenuVisual } from './NavMenuVisual';
+import { navigationItemHasVisual } from '../../utils/navigationRich';
 
 interface NavbarProps {
   onOpenSearch: () => void;
   previewMode?: boolean;
 }
+
+const NavItemContent: React.FC<{
+  item: PublicNavItem;
+  labelClassName?: string;
+  descriptionClassName?: string;
+}> = ({ item, labelClassName = 'text-sm font-semibold', descriptionClassName = 'text-xs' }) => (
+  <>
+    {navigationItemHasVisual(item.iconType, item.iconValue) ? <NavMenuVisual item={item} /> : null}
+    <span className="min-w-0 text-left">
+      <span className={`block ${labelClassName}`}>{item.label}</span>
+      {item.description ? (
+        <span className={`block font-normal text-slate-500 dark:text-slate-400 ${descriptionClassName}`}>
+          {item.description}
+        </span>
+      ) : null}
+    </span>
+  </>
+);
 
 const NavLinkButton: React.FC<{
   item: PublicNavItem;
@@ -21,13 +42,13 @@ const NavLinkButton: React.FC<{
   <button
     type="button"
     onClick={() => onNavigate(item.path)}
-    className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer ${className} ${
+    className={`inline-flex items-start gap-2 px-4 py-2 rounded-xl transition-all cursor-pointer ${className} ${
       active
         ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50'
         : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
     }`}
   >
-    {item.label}
+    <NavItemContent item={item} />
   </button>
 );
 
@@ -35,7 +56,12 @@ const DesktopNavItem: React.FC<{
   item: PublicNavItem;
   isPathActive: (path: string) => boolean;
   onNavigate: (path: string) => void;
-}> = ({ item, isPathActive, onNavigate }) => {
+  navUi: {
+    defaultPreviewScale: number;
+    maxTooltipWidthPx: number;
+    enableHoverAnimations: boolean;
+  };
+}> = ({ item, isPathActive, onNavigate, navUi }) => {
   const [open, setOpen] = useState(false);
   const hasChildren = (item.children?.length ?? 0) > 0;
   const active =
@@ -50,37 +76,36 @@ const DesktopNavItem: React.FC<{
     <div className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
       <button
         type="button"
-        className={`inline-flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+        className={`inline-flex items-start gap-2 px-4 py-2 rounded-xl transition-all ${
           active
             ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50'
             : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
         }`}
         onClick={() => onNavigate(item.path)}
       >
-        {item.label}
-        <ChevronDown className="w-4 h-4" />
+        <NavItemContent item={item} />
+        <ChevronDown className="w-4 h-4 shrink-0 mt-0.5" />
       </button>
       {open ? (
-        <div className="absolute left-0 top-full pt-2 min-w-[200px] z-50">
+        <div className="absolute left-0 top-full pt-2 min-w-[240px] z-50">
           <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl py-2">
             {item.children?.map((child) => (
               <div key={child.id}>
-                <button
-                  type="button"
-                  className="block w-full text-left px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
-                  onClick={() => onNavigate(child.path)}
-                >
-                  {child.label}
-                </button>
+                <NavDropdownEntry
+                  item={child}
+                  onNavigate={onNavigate}
+                  isActive={isPathActive(child.path)}
+                  navUi={navUi}
+                />
                 {child.children?.map((grand) => (
-                  <button
+                  <NavDropdownEntry
                     key={grand.id}
-                    type="button"
-                    className="block w-full text-left pl-7 pr-4 py-1.5 text-xs text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
-                    onClick={() => onNavigate(grand.path)}
-                  >
-                    {grand.label}
-                  </button>
+                    item={grand}
+                    onNavigate={onNavigate}
+                    isActive={isPathActive(grand.path)}
+                    compact
+                    navUi={navUi}
+                  />
                 ))}
               </div>
             ))}
@@ -103,13 +128,13 @@ const MobileNavItems: React.FC<{
         <button
           type="button"
           onClick={() => onNavigate(item.path)}
-          className={`w-full p-3 rounded-xl text-base font-bold text-left ${
+          className={`w-full p-3 rounded-xl text-left flex items-start gap-3 ${
             isPathActive(item.path)
               ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400'
               : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
           }`}
         >
-          {item.label}
+          <NavItemContent item={item} labelClassName="text-base font-bold" descriptionClassName="text-sm" />
         </button>
         {item.children && item.children.length > 0 ? (
           <MobileNavItems
@@ -126,6 +151,7 @@ const MobileNavItems: React.FC<{
 
 export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, previewMode = false }) => {
   const { navigation } = usePublicSite();
+  const { get } = useSettingsContext();
   const { user } = useAuth();
   const { t } = useI18n();
   const location = useLocation();
@@ -140,6 +166,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, previewMode = fals
   };
 
   const sortedNav = [...navigation].sort((a, b) => a.order - b.order);
+
+  const navUi = {
+    defaultPreviewScale: Number(get('navigationUi.defaultPreviewScale', 1.5)),
+    maxTooltipWidthPx: Number(get('navigationUi.maxTooltipWidthPx', 280)),
+    enableHoverAnimations: Boolean(get('navigationUi.enableHoverAnimations', true)),
+  };
 
   const handleNavigate = (path: string) => {
     navigate(path);
@@ -175,6 +207,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, previewMode = fals
               item={item}
               isPathActive={isPathActive}
               onNavigate={handleNavigate}
+              navUi={navUi}
             />
           ))}
         </nav>

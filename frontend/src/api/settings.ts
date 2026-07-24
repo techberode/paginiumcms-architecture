@@ -106,6 +106,11 @@ export interface PublicSettings {
     adminListPageSize?: number;
     openLinksInNewTab?: boolean;
   };
+  navigationUi?: {
+    defaultPreviewScale?: number;
+    maxTooltipWidthPx?: number;
+    enableHoverAnimations?: boolean;
+  };
   content: Record<string, unknown>;
   editor: Record<string, unknown>;
   notifications?: {

@@ -111,6 +111,12 @@ export function mapNavigationTreeToPublic(
   path: string;
   order: number;
   parentId: string | null;
+  description?: string;
+  iconType?: NavigationItem['iconType'];
+  iconValue?: string | null;
+  previewOnHover?: boolean;
+  previewScale?: number;
+  thumbnailSize?: NavigationItem['thumbnailSize'];
   children: ReturnType<typeof mapNavigationTreeToPublic>;
 }> {
   return nodes.map((node) => ({
@@ -119,6 +125,12 @@ export function mapNavigationTreeToPublic(
     path: node.path,
     order: node.order,
     parentId: node.parentId ?? null,
+    description: node.description,
+    iconType: node.iconType,
+    iconValue: node.iconValue,
+    previewOnHover: node.previewOnHover,
+    previewScale: node.previewScale,
+    thumbnailSize: node.thumbnailSize,
     children: mapNavigationTreeToPublic(node.children),
   }));
 }

@@ -35,38 +35,53 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [pendingTwoFactor, setPendingTwoFactor] = useState(false);
   const [twoFactorSetupPending, setTwoFactorSetupPending] = useState(false);
 
+  const refreshInFlightRef = React.useRef<Promise<void> | null>(null);
+
   const refreshUser = useCallback(async () => {
-    debugLogProvider('auth', 'refresh.start');
-    const probe = await authApi.probeSession();
-    if (!probe.expired && probe.user === null) {
-      debugLogProvider('auth', 'refresh.transient_error');
-      return;
+    if (refreshInFlightRef.current) {
+      return refreshInFlightRef.current;
     }
-    setUser(probe.user);
-    if (probe.user?.twoFactorEnabled) {
-      const status = await authApi.twoFactor.getStatus();
-      // Pri transientnom zlyhaní /api/auth/2fa/status neprepínať stav — inak
-      // keepalive každé 4 min falošne nastaví pendingTwoFactor → redirect /login.
-      if (status.ok) {
-        setTwoFactorSetupPending(status.setupPending);
-        setPendingTwoFactor(!status.verified && !status.setupPending);
+
+    const task = (async () => {
+      debugLogProvider('auth', 'refresh.start');
+      const probe = await authApi.probeSession();
+      if (!probe.expired && probe.user === null) {
+        debugLogProvider('auth', 'refresh.transient_error');
+        return;
       }
-      debugLogProvider('auth', 'refresh.done', {
-        authenticated: true,
-        twoFactorEnabled: true,
-        twoFactorVerified: status.ok ? status.verified : undefined,
-        twoFactorSetupPending: status.ok ? status.setupPending : undefined,
-        twoFactorStatusOk: status.ok,
-        userId: probe.user.id,
-      });
-    } else {
-      setPendingTwoFactor(false);
-      setTwoFactorSetupPending(false);
-      debugLogProvider('auth', 'refresh.done', {
-        authenticated: Boolean(probe.user),
-        twoFactorEnabled: false,
-        userId: probe.user?.id ?? null,
-      });
+      setUser(probe.user);
+      if (probe.user?.twoFactorEnabled) {
+        const status = await authApi.twoFactor.getStatus();
+        // Pri transientnom zlyhaní /api/auth/2fa/status neprepínať stav — inak
+        // keepalive každé 4 min falošne nastaví pendingTwoFactor → redirect /login.
+        if (status.ok) {
+          setTwoFactorSetupPending(status.setupPending);
+          setPendingTwoFactor(!status.verified && !status.setupPending);
+        }
+        debugLogProvider('auth', 'refresh.done', {
+          authenticated: true,
+          twoFactorEnabled: true,
+          twoFactorVerified: status.ok ? status.verified : undefined,
+          twoFactorSetupPending: status.ok ? status.setupPending : undefined,
+          twoFactorStatusOk: status.ok,
+          userId: probe.user.id,
+        });
+      } else {
+        setPendingTwoFactor(false);
+        setTwoFactorSetupPending(false);
+        debugLogProvider('auth', 'refresh.done', {
+          authenticated: Boolean(probe.user),
+          twoFactorEnabled: false,
+          userId: probe.user?.id ?? null,
+        });
+      }
+    })();
+
+    refreshInFlightRef.current = task;
+    try {
+      await task;
+    } finally {
+      refreshInFlightRef.current = null;
     }
   }, []);
 

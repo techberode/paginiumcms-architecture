@@ -4,6 +4,8 @@ import { Navigation, Plus, Trash2, ArrowUp, ArrowDown, Save, CornerDownRight } f
 import { getNavigation, NavigationItem, updateNavigation } from '../../api/navigation';
 import { useToast } from '../../hooks/useToast';
 import { useI18n } from '../../context/I18nContext';
+import { MediaPickerModal } from './MediaPickerModal';
+import { NavigationItemRichFields } from './NavigationItemRichFields';
 import {
   NAVIGATION_MAX_DEPTH,
   buildNavigationTree,
@@ -21,6 +23,12 @@ const createItem = (label: string, path: string, parentId: string | null, order:
   order,
   target: '_self',
   parentId,
+  description: '',
+  iconType: 'none',
+  iconValue: null,
+  previewOnHover: false,
+  previewScale: 1.5,
+  thumbnailSize: 'sm',
 });
 
 export const NavigationManager: React.FC = () => {
@@ -31,6 +39,7 @@ export const NavigationManager: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [newLabel, setNewLabel] = useState('');
   const [newPath, setNewPath] = useState('');
+  const [mediaPickerItemId, setMediaPickerItemId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -140,9 +149,10 @@ export const NavigationManager: React.FC = () => {
             flatTree.map((node) => (
               <div
                 key={node.id}
-                className="flex flex-col lg:flex-row lg:items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700"
+                className="flex flex-col gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700"
                 style={{ marginLeft: `${(node.depth - 1) * 1.25}rem` }}
               >
+                <div className="flex flex-col lg:flex-row lg:items-center gap-3">
                 <div className="flex items-center gap-2 shrink-0 text-xs text-gray-400 min-w-[72px]">
                   <CornerDownRight className="w-3 h-3" />
                   {t('navigation.level', { depth: String(node.depth) })}
@@ -198,6 +208,13 @@ export const NavigationManager: React.FC = () => {
                     <Trash2 className="w-3 h-3" />
                   </button>
                 </div>
+                </div>
+
+                <NavigationItemRichFields
+                  item={node}
+                  onChange={(patch) => updateItem(node.id, patch)}
+                  onPickMedia={() => setMediaPickerItemId(node.id)}
+                />
               </div>
             ))
           )}
@@ -225,6 +242,19 @@ export const NavigationManager: React.FC = () => {
           </button>
         </div>
       </form>
+
+      <MediaPickerModal
+        open={mediaPickerItemId !== null}
+        onClose={() => setMediaPickerItemId(null)}
+        urlFormat="storage"
+        title={t('navigation.mediaPickerTitle')}
+        onSelect={(url) => {
+          if (mediaPickerItemId) {
+            updateItem(mediaPickerItemId, { iconType: 'media', iconValue: url });
+          }
+          setMediaPickerItemId(null);
+        }}
+      />
     </div>
   );
 };

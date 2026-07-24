@@ -34,7 +34,18 @@ final class EditorContentValidatorTest extends TestCase
         $this->validator = new EditorContentValidator(new EditorProfileService($settings));
     }
 
-    public function testMinimalProfileRejectsMarkdownImage(): void
+    public function testBlogProfileAllowsMarkdownCodeBlock(): void
+    {
+        $error = $this->validator->validate('article', [
+            'content' => "## Ukážka\n\n```markdown\n# title\n```",
+            'contentFormat' => 'markdown',
+            'editorProfile' => 'blog',
+        ]);
+
+        $this->assertNull($error);
+    }
+
+    public function testMinimalProfileAllowsMarkdownImage(): void
     {
         $error = $this->validator->validate('page', [
             'content' => 'Text ![alt](/img.png)',
@@ -42,10 +53,10 @@ final class EditorContentValidatorTest extends TestCase
             'editorProfile' => 'minimal',
         ]);
 
-        $this->assertSame('Profil editora nepovoľuje obrázky.', $error);
+        $this->assertNull($error);
     }
 
-    public function testBlogProfileRejectsHtmlTable(): void
+    public function testBlogProfileAllowsHtmlTable(): void
     {
         $error = $this->validator->validate('article', [
             'content' => '<p>x</p><table><tr><td>1</td></tr></table>',
@@ -53,7 +64,7 @@ final class EditorContentValidatorTest extends TestCase
             'editorProfile' => 'blog',
         ]);
 
-        $this->assertSame('Profil editora nepovoľuje tabuľky.', $error);
+        $this->assertNull($error);
     }
 
     public function testDeveloperProfileAllowsCodeBlock(): void
@@ -78,7 +89,7 @@ final class EditorContentValidatorTest extends TestCase
         $this->assertNull($error);
     }
 
-    public function testMinimalProfileRejectsTiptapImage(): void
+    public function testMinimalProfileAllowsTiptapImage(): void
     {
         $json = json_encode([
             'type' => 'doc',
@@ -94,7 +105,7 @@ final class EditorContentValidatorTest extends TestCase
             'editorProfile' => 'minimal',
         ]);
 
-        $this->assertSame('Profil editora nepovoľuje obrázky.', $error);
+        $this->assertNull($error);
     }
 
     public function testBlogProfileAllowsTiptapParagraph(): void
@@ -118,5 +129,38 @@ final class EditorContentValidatorTest extends TestCase
         ]);
 
         $this->assertNull($error);
+    }
+
+    public function testMarkdownRejectsRawHtmlTag(): void
+    {
+        $error = $this->validator->validate('article', [
+            'content' => "Text\n\n<div>raw</div>",
+            'contentFormat' => 'markdown',
+            'editorProfile' => 'blog',
+        ]);
+
+        $this->assertSame('Markdown obsah nesmie obsahovať raw HTML tagy.', $error);
+    }
+
+    public function testHtmlRejectsScriptTag(): void
+    {
+        $error = $this->validator->validate('page', [
+            'content' => '<p>ok</p><script>alert(1)</script>',
+            'contentFormat' => 'html',
+            'editorProfile' => 'developer',
+        ]);
+
+        $this->assertSame('Obsah nepovoľuje vložené skripty alebo iframe.', $error);
+    }
+
+    public function testInvalidEditorProfileRejected(): void
+    {
+        $error = $this->validator->validate('page', [
+            'content' => 'Hello',
+            'contentFormat' => 'markdown',
+            'editorProfile' => 'unknown-profile',
+        ]);
+
+        $this->assertSame('Neplatný editor profil.', $error);
     }
 }

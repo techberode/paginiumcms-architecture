@@ -66,6 +66,7 @@ export const settingsEn: MessageTree = {
     "maintenance": "Maintenance mode",
     "content": "Content",
     "editor": "Editor",
+    "navigationUi": "Navigation (UI)",
     "smtp": "Email / SMTP",
     "notifications": "Toast notifications",
     "connectors": "Notification connectors",
@@ -180,7 +181,8 @@ export const settingsEn: MessageTree = {
         "help": "Optional background for both maintenance pages."
       },
       "newsletterEnabled": {
-        "label": "Enable newsletter"
+        "label": "Enable newsletter",
+        "help": "Enabled = newsletter signup on the Coming Soon page. Disabled = form hidden."
       },
       "newsletterHint": {
         "label": "Newsletter hint text"
@@ -210,7 +212,8 @@ export const settingsEn: MessageTree = {
         "label": "Maintenance – body"
       },
       "maintenanceShowContactForm": {
-        "label": "Show contact form"
+        "label": "Show contact form",
+        "help": "Enabled = visitors can send a message during maintenance. Disabled = info text only."
       },
       "maintenanceContactSubject": {
         "label": "Maintenance message subject"
@@ -234,7 +237,8 @@ export const settingsEn: MessageTree = {
         "help": "md = YAML front matter + Markdown; json = pure JSON file (Iteration 19)."
       },
       "defaultStatus": {
-        "label": "Default content status"
+        "label": "Default content status",
+        "help": "New pages/articles start as draft or published immediately."
       },
       "autoSaveInterval": {
         "label": "Auto-save interval (s)",
@@ -263,7 +267,8 @@ export const settingsEn: MessageTree = {
     },
     "editor": {
       "defaultEditor": {
-        "label": "Default editor"
+        "label": "Default editor",
+        "help": "Which editor opens for new content (Markdown or WYSIWYG)."
       },
       "defaultProfilePage": {
         "label": "Default profile (pages)",
@@ -274,10 +279,25 @@ export const settingsEn: MessageTree = {
         "help": "Modular toolbar for articles (Iteration 54)."
       },
       "spellcheck": {
-        "label": "Spellcheck"
+        "label": "Spellcheck",
+        "help": "Enabled = browser underlines spelling errors in the editor. Disabled = no spellcheck."
       },
       "tabSize": {
         "label": "Tab size"
+      }
+    },
+    "navigationUi": {
+      "defaultPreviewScale": {
+        "label": "Default hover preview scale (×10)",
+        "help": "Value 15 = 1.5× scale on menu icon hover (It.56)."
+      },
+      "maxTooltipWidthPx": {
+        "label": "Max tooltip width (px)",
+        "help": "Width cap for hover preview in dropdown menus."
+      },
+      "enableHoverAnimations": {
+        "label": "Hover preview animations",
+        "help": "Respects prefers-reduced-motion — static preview when disabled."
       }
     },
     "comments": {
@@ -309,7 +329,8 @@ export const settingsEn: MessageTree = {
     },
     "company": {
       "showOnContactPage": {
-        "label": "Show block on contact page"
+        "label": "Show block on contact page",
+        "help": "Enabled = company details appear on the contact page. Disabled = block hidden."
       },
       "name": {
         "label": "Company name"
@@ -445,6 +466,10 @@ export const settingsEn: MessageTree = {
         "label": "Enable firewall",
         "help": "Internal WAF scans URI, query and User-Agent before handling the request."
       },
+      "scanRequestBody": {
+        "label": "Scan POST/JSON body",
+        "help": "Enabled = WAF checks body of mutating requests (editor API is excluded). Disabled = URI and headers only."
+      },
       "jailMinutes": {
         "label": "Jail duration (min)",
         "help": "Temporary IP block after exceeding the incident threshold."
@@ -497,7 +522,8 @@ export const settingsEn: MessageTree = {
     },
     "feeds": {
       "enabled": {
-        "label": "Enable feeds"
+        "label": "Enable feeds",
+        "help": "Enabled = RSS and sitemap.xml are available. Disabled = feeds return 404."
       },
       "title": {
         "label": "RSS channel title",
@@ -510,10 +536,12 @@ export const settingsEn: MessageTree = {
         "label": "RSS item count"
       },
       "includePages": {
-        "label": "Sitemap: pages"
+        "label": "Sitemap: pages",
+        "help": "Enabled = static pages are listed in the sitemap. Disabled = pages omitted."
       },
       "includeArticles": {
-        "label": "RSS/Sitemap: articles"
+        "label": "RSS/Sitemap: articles",
+        "help": "Enabled = articles in RSS and sitemap. Disabled = articles omitted from feeds."
       }
     },
     "seo": {
@@ -558,13 +586,15 @@ export const settingsEn: MessageTree = {
     },
     "sso": {
       "enabled": {
-        "label": "Enable SSO login"
+        "label": "Enable SSO login",
+        "help": "Enabled = external login is available (per enabled providers). Disabled = local accounts only."
       },
       "defaultRole": {
         "label": "Default role (new account)"
       },
       "githubEnabled": {
-        "label": "GitHub OAuth"
+        "label": "GitHub OAuth",
+        "help": "Enabled = “Sign in with GitHub” button shown. Disabled = GitHub login hidden."
       },
       "githubClientId": {
         "label": "GitHub Client ID"
@@ -573,7 +603,8 @@ export const settingsEn: MessageTree = {
         "label": "GitHub Client Secret"
       },
       "genericEnabled": {
-        "label": "Generic OAuth2"
+        "label": "Generic OAuth2",
+        "help": "Enabled = generic OAuth2 provider using settings below. Disabled = provider off."
       },
       "genericName": {
         "label": "Generic provider name"
@@ -599,7 +630,8 @@ export const settingsEn: MessageTree = {
     },
     "smtp": {
       "enabled": {
-        "label": "Enable SMTP"
+        "label": "Enable SMTP",
+        "help": "Enabled = system sends email (OTP, notifications, contact). Disabled = sending off."
       },
       "host": {
         "label": "SMTP host"
@@ -626,7 +658,8 @@ export const settingsEn: MessageTree = {
     },
     "notifications": {
       "toastEnabled": {
-        "label": "Enable toast notifications"
+        "label": "Enable toast notifications",
+        "help": "Enabled = short messages on save/errors in admin UI. Disabled = no toasts."
       },
       "toastPosition": {
         "label": "Toast position"
@@ -641,10 +674,12 @@ export const settingsEn: MessageTree = {
     },
     "connectors": {
       "emailEnabled": {
-        "label": "Email channel (SMTP)"
+        "label": "Email channel (SMTP)",
+        "help": "Enabled = incidents and reports can go by email (requires SMTP on). Disabled = email channel unused."
       },
       "ntfyEnabled": {
-        "label": "Enable ntfy"
+        "label": "Enable ntfy",
+        "help": "Enabled = push notifications via ntfy. Disabled = ntfy channel off."
       },
       "ntfyServer": {
         "label": "ntfy server URL"
@@ -666,13 +701,15 @@ export const settingsEn: MessageTree = {
         "label": "ntfy password (Basic auth)"
       },
       "discordEnabled": {
-        "label": "Enable Discord webhook"
+        "label": "Enable Discord webhook",
+        "help": "Enabled = incidents sent to Discord webhook. Disabled = webhook not called."
       },
       "discordWebhookUrl": {
         "label": "Discord webhook URL"
       },
       "telegramEnabled": {
-        "label": "Enable Telegram bot"
+        "label": "Enable Telegram bot",
+        "help": "Enabled = incidents sent to Telegram chat. Disabled = bot unused."
       },
       "telegramBotToken": {
         "label": "Telegram bot token"
@@ -681,7 +718,8 @@ export const settingsEn: MessageTree = {
         "label": "Telegram chat ID"
       },
       "webhookEnabled": {
-        "label": "Enable generic webhook"
+        "label": "Enable generic webhook",
+        "help": "Enabled = incidents sent to custom HTTP webhook. Disabled = webhook off."
       },
       "webhookUrl": {
         "label": "Webhook URL"
@@ -696,20 +734,24 @@ export const settingsEn: MessageTree = {
     },
     "monitoring": {
       "alertsEnabled": {
-        "label": "Enable incident alerts"
+        "label": "Enable incident alerts",
+        "help": "Enabled = system sends alerts on incidents via enabled channels. Disabled = no automatic alerts."
       },
       "alertEmail": {
         "label": "Fallback alert email",
         "help": "Used when connectors are off; defaults to admin email."
       },
       "notifyFailedLogin": {
-        "label": "Alert on failed login"
+        "label": "Alert on failed login",
+        "help": "Enabled = notification on failed login. Disabled = event not reported."
       },
       "notifySecurityIncident": {
-        "label": "Alert on security audit events"
+        "label": "Alert on security audit events",
+        "help": "Enabled = notification on security audit events. Disabled = not sent."
       },
       "notifyTrafficSpike": {
-        "label": "Alert on traffic spike"
+        "label": "Alert on traffic spike",
+        "help": "Enabled = alert when visit threshold exceeded. Disabled = traffic spikes ignored."
       },
       "trafficSpikeThreshold": {
         "label": "Traffic spike threshold (visits/hour)"
@@ -739,19 +781,24 @@ export const settingsEn: MessageTree = {
         "label": "Report connector"
       },
       "reportIncludeAnalytics": {
-        "label": "Report: analytics stats"
+        "label": "Report: analytics stats",
+        "help": "Enabled = report includes visit statistics. Disabled = no analytics section."
       },
       "reportIncludeHealth": {
-        "label": "Report: system health"
+        "label": "Report: system health",
+        "help": "Enabled = report includes system health. Disabled = no health section."
       },
       "reportIncludeFlatFile": {
-        "label": "Report: flat-file counts"
+        "label": "Report: flat-file counts",
+        "help": "Enabled = report includes page/article counts. Disabled = no content stats."
       },
       "notifyLogErrors": {
-        "label": "Alert on log ERROR/CRITICAL"
+        "label": "Alert on log ERROR/CRITICAL",
+        "help": "Enabled = ERROR/CRITICAL log entries trigger alerts. Disabled = log errors not reported."
       },
       "notifyLogWarnings": {
-        "label": "Alert on log WARNING"
+        "label": "Alert on log WARNING",
+        "help": "Enabled = WARNING log entries trigger alerts. Disabled = warnings not reported."
       },
       "logIncidentConnector": {
         "label": "Log incident connector"
@@ -768,10 +815,12 @@ export const settingsEn: MessageTree = {
     },
     "codePolicy": {
       "enabled": {
-        "label": "Enable code policy checks"
+        "label": "Enable code policy checks",
+        "help": "Enabled = forbidden functions and file size checked before saving PHP files. Disabled = checks off."
       },
       "strictMode": {
-        "label": "Strict extension namespace rules"
+        "label": "Strict extension namespace rules",
+        "help": "Enabled = stricter extension namespace rules. Disabled = relaxed rules."
       },
       "maxFileSizeKb": {
         "label": "Max file size (KB)"
