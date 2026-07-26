@@ -26,7 +26,7 @@
 | **It.56 — Rich navigation + auth/session fixes** | **`v2.1.0-beta.5`** | ✅ tagged |
 | **Security audit — XSS, Zip-Slip, deploy** | **`v2.1.0-beta.6`** | ✅ tagged |
 | **Deps + Vitest + deploy env (ISS-089–092)** | **`v2.1.0-beta.7`** | ✅ tagged |
-| **It.58b — Color schemes + themed public site** | **`v2.1.0-beta.8`** | ⏳ tag po gate |
+| **It.58b — Color schemes + themed public site** | **`v2.1.0-beta.8`** | ✅ tagged |
 
 **Pravidlo:** Post-beta patchy — `2.0.59+` alebo `2.1.0-beta.N` podľa rozsahu.
 
