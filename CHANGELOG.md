@@ -64,6 +64,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added (It.33 — Analytics enrichment)
+
+- **`RefererAnalyzer`** — classifies referers as direct / search / social / referral with human labels.
+- **`AnalyticsIpMasker`** — GDPR-aware masked IPs in admin analytics UI.
+- **Geo enrichment** — `countryCode`, top city, sample masked IPs, `geo_visits` recent list.
+- **Admin Analytics UI** — tab icons, country flags, enriched Sources and Geography tabs.
+
+### Added (It.60 — Custom editor components)
+
+- **`EditorComponentRegistry`** — aggregates `editor.components[]` from enabled plugin manifests.
+- **Settings → Editor** — master switch + profile × component matrix (`EditorCustomComponentsPanel`).
+- **`hello-widget`** — reference custom block (Markdown `:::hello-widget`, Tiptap `helloWidget` node).
+- **RBAC** — role **EDITOR** can read/write settings group `editor` only.
+- **Validator** — rejects unknown/disallowed custom components on content save.
+
 ### Added (It.62 — Scheduler prod hardening)
 
 - **`outcome`** on job runs: `completed` | `skipped` | `failed` (distinct from HTTP errors).
@@ -74,6 +89,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- **CI** — `ExtensionManifestValidator` missing class brace (PHPUnit/PHPStan/content:diagnose parse error).
+- **CI** — Editor PHPUnit tests mock `PluginManagerInterface` instead of final `EditorComponentRegistry`.
+- **CI** — `ContactForm.test.tsx` preserves `TestSettingsProvider` via `importOriginal` mock.
 - **ISS-094** — Job scheduler 500 on prod: Docker `www-data` storage, PHP warnings in JSON, admin UI false failure toast.
 - **Deploy** — Docker PHP 8.5 image, prod compose port override, log storage path, notification recipient fallback.
 - **FileWriter** — group-writable modes (`0664`/`0775`), suppressed write warnings.

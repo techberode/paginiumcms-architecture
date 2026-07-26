@@ -90,6 +90,8 @@ final class SettingsSchema
                     ['key' => 'defaultProfileArticle', 'type' => 'enum', 'label' => 'Predvolený profil (články)', 'default' => 'blog', 'options' => ['company', 'blog', 'minimal', 'developer'], 'rules' => ['required', 'in:company,blog,minimal,developer'], 'help' => 'Modulárny toolbar pre články (Iterácia 54).'],
                     ['key' => 'spellcheck', 'type' => 'bool', 'label' => 'Kontrola pravopisu', 'default' => true, 'rules' => ['bool'], 'help' => 'Zapnuté = prehliadač podčiarkne pravopisné chyby v editore. Vypnuté = bez kontroly.'],
                     ['key' => 'tabSize', 'type' => 'int', 'label' => 'Veľkosť tabulátora', 'default' => 2, 'rules' => ['required', 'int', 'min:2', 'max:8']],
+                    ['key' => 'customComponentsEnabled', 'type' => 'bool', 'label' => 'Povoliť custom komponenty editora', 'default' => false, 'rules' => ['bool'], 'help' => 'Pluginy môžu registrovať vlastné bloky pre Markdown a WYSIWYG (It.60).'],
+                    ['key' => 'profileCustomComponents', 'type' => 'string', 'label' => 'Custom komponenty podľa profilu (JSON)', 'default' => '{}', 'rules' => ['string'], 'help' => 'Mapa profil → zoznam ID komponentov. Upravuje sa v paneli nižšie.'],
                 ],
             ],
             'navigationUi' => [
@@ -435,6 +437,42 @@ final class SettingsSchema
         return (self::groups()[$group]['informational'] ?? false) === true;
     }
 
+    public static function isEditorAccessible(string $group): bool
+    {
+        return $group === 'editor';
+    }
+
+    public static function isEditorOnlyUser(?User $user): bool
+    {
+        if (!$user instanceof User) {
+            return false;
+        }
+
+        $roles = $user->getRoles();
+
+        return in_array('EDITOR', $roles, true)
+            && !in_array('ADMIN', $roles, true)
+            && !in_array('SUPER_ADMIN', $roles, true);
+    }
+
+    public static function userCanAccessGroup(?User $user, string $group): bool
+    {
+        if ($user === null) {
+            return false;
+        }
+
+        if (self::isSuperAdminOnly($group) && !in_array('SUPER_ADMIN', $user->getRoles(), true)) {
+            return false;
+        }
+
+        if (self::isEditorOnlyUser($user)) {
+            return self::isEditorAccessible($group);
+        }
+
+        return in_array('ADMIN', $user->getRoles(), true)
+            || in_array('SUPER_ADMIN', $user->getRoles(), true);
+    }
+
     /**
      * @param array<string, SettingGroup> $schema
      * @return array<string, SettingGroup>
@@ -443,6 +481,10 @@ final class SettingsSchema
     {
         if ($user instanceof User && in_array('SUPER_ADMIN', $user->getRoles(), true)) {
             return $schema;
+        }
+
+        if (self::isEditorOnlyUser($user)) {
+            return isset($schema['editor']) ? ['editor' => $schema['editor']] : [];
         }
 
         foreach ($schema as $group => $definition) {
@@ -462,6 +504,10 @@ final class SettingsSchema
     {
         if ($user instanceof User && in_array('SUPER_ADMIN', $user->getRoles(), true)) {
             return $values;
+        }
+
+        if (self::isEditorOnlyUser($user)) {
+            return isset($values['editor']) ? ['editor' => $values['editor']] : [];
         }
 
         foreach (array_keys($values) as $group) {

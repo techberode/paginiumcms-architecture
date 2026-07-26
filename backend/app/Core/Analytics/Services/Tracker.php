@@ -138,6 +138,7 @@ class Tracker implements TrackerInterface
         $visitData['deviceType'] = $deviceInfo['deviceType'];
         $visitData['browser'] = $deviceInfo['browser'];
         $visitData['country'] = $location ? $location->getCountry() : 'Unknown';
+        $visitData['countryCode'] = $location ? $location->getCountryCode() : null;
         $visitData['city'] = $location ? $location->getCity() : null;
 
         $visits[] = $visitData;

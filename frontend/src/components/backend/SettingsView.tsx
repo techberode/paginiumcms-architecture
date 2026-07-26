@@ -34,6 +34,7 @@ import { AdminHintCard } from './AdminHintCard';
 import { LoginBackgroundImagePicker } from './LoginBackgroundImagePicker';
 import { BrandingImagePicker } from './BrandingImagePicker';
 import { AccessControlSettingsPanel } from './AccessControlSettingsPanel';
+import { EditorCustomComponentsPanel, type EditorComponentMeta } from './EditorCustomComponentsPanel';
 import { AppearanceSettingsPanel } from '../admin/AppearanceSettingsPanel';
 import { CmsInfoSettingsPanel } from './CmsInfoSettingsPanel';
 import { TimezoneSelect } from './TimezoneSelect';
@@ -78,6 +79,7 @@ export const SettingsView: React.FC = () => {
   const { user } = useAuth();
   const [permissionsCatalog, setPermissionsCatalog] = useState<string[]>([]);
   const [cmsInfoMeta, setCmsInfoMeta] = useState<CmsInfoMeta | null>(null);
+  const [editorComponents, setEditorComponents] = useState<EditorComponentMeta[]>([]);
   const isSuperAdmin = user?.roles?.includes('SUPER_ADMIN') ?? false;
 
   const group = activeGroup ? schema[activeGroup] : undefined;
@@ -116,6 +118,7 @@ export const SettingsView: React.FC = () => {
         setValues(payload.values);
         setPermissionsCatalog(payload.meta?.permissions ?? []);
         setCmsInfoMeta(payload.meta?.cmsInfo ?? null);
+        setEditorComponents((payload.meta?.editorComponents as EditorComponentMeta[] | undefined) ?? []);
       } else {
         toastError(t('settings.page.loadFailed'));
       }
@@ -281,6 +284,28 @@ export const SettingsView: React.FC = () => {
                     watch={watch}
                     setValue={setValue}
                   />
+                ) : activeGroup === 'editor' ? (
+                  <>
+                    {group.fields
+                      .filter((field) => field.key !== 'profileCustomComponents')
+                      .map((field) => (
+                        <SettingFieldRow
+                          key={field.key}
+                          groupKey={activeGroup}
+                          field={field}
+                          register={register}
+                          watch={watch}
+                          setValue={setValue}
+                          error={errors[field.key]?.message as string | undefined}
+                        />
+                      ))}
+                    <EditorCustomComponentsPanel
+                      components={editorComponents}
+                      watch={watch}
+                      setValue={setValue}
+                    />
+                    <input type="hidden" {...register('profileCustomComponents')} />
+                  </>
                 ) : (
                   group.fields.map((field) => (
                     <SettingFieldRow

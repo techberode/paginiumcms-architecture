@@ -33,6 +33,19 @@ export const analyticsEn: MessageTree = {
     topArticles: 'Top articles',
     devices: 'Devices',
     browsers: 'Browsers',
+    geoSummary: 'Countries',
+    recentGeoVisits: 'Recent visits',
+  },
+  sources: {
+    types: {
+      direct: 'Direct',
+      search: 'Search',
+      social: 'Social',
+      referral: 'Referral',
+    },
+  },
+  geo: {
+    sampleIps: 'Sample IPs (masked)',
   },
   devices: {
     desktop: 'Desktop',

@@ -20,7 +20,7 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 
 **Stav:** **`v2.1.0-beta.8`** tagged · produkcia **`paginiumcms.com`** nasadená · **It.62** (scheduler prod hardening) shipped na `main` (**`f7a73f1`**, ešte bez tagu → cieľ **`v2.1.0-beta.9`**).
 
-**Ďalšia iterácia:** **[It.60 — Vlastné komponenty editora](ITERATION_60.md)** · backlog It.61
+**Ďalšia iterácia:** **[It.61 — Newsletter vo footeri](ITERATION_61.md)**
 
 | Priorita | Úloha | Stav |
 |----------|--------|------|
@@ -30,7 +30,9 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 | **Cron na hoste** | `scheduler:run` + `worker:process` každú minútu | ⏳ overiť crontab (BE joby už píšu do `runs.json`) |
 | **Tag beta.9** | Release notes + `v2.1.0-beta.9` po smoke na prod | ⏳ nasledujúci krok |
 | **It.59** | Scheduled publish UX v editore + filtre | ✅ **2.0.53** (overené po It.62) |
-| **It.60–61** | Modulárny editor, newsletter footer | ⏳ **ĎALŠIA ITERÁCIA** |
+| **It.60** | Custom komponenty editora (plugin + settings) | ✅ **Implementované** |
+| **It.33** | Analytics enrichment (sources, geo, vlajky) | ✅ **Implementované** |
+| **It.61** | Newsletter footer | ⏳ **ĎALŠIA ITERÁCIA** |
 
 Detail deployu (lokálne, gitignored): `PRIVATE_DOMAIN_DEPLOY.md` · scheduler: [ITERATION_62.md](ITERATION_62.md) · cron: [deploy/CRON.md](deploy/CRON.md)
 
@@ -305,8 +307,9 @@ Komunikuj po slovensky. Pravidlá: .cursorrules + ZÁKONY v docs/CONTINUATION.md
 HOTOVÉ (2026-07-26):
 - v2.1.0-beta.8 tagged (It.58b color schemes).
 - It.62 ✅ scheduler prod hardening (outcome, jobs:run CLI, Docker storage docs, UI fix).
-  Detail: docs/ITERATION_62.md, docs/deploy/CRON.md, ISS-094.
-- Produkčný deploy: git pull, composer --no-dev, frontend build:prod, stack.sh, storage 2775.
+- It.60 ✅ custom editor components (hello-widget, settings matrix, validator).
+- It.33 ✅ analytics enrichment (referer types, geo flags, masked IPs).
+- CI green: ExtensionManifestValidator brace, editor tests (final registry), ContactForm mock.
 
 PLÁNOVAČ / CRON (funguje):
 - Admin /scheduler — 3 system joby: backup-scheduled, monitoring-pipeline, content-scheduled-publish.
@@ -318,18 +321,17 @@ PROD CHECKLIST po každom pulli:
   ./stack.sh restart php   # OPcache
   ./stack.sh exec -u www-data php sh -c 'touch .../data/jobs/.write-test && rm ... && echo WRITE_OK'
 
-ĎALŠIA ITERÁCIA: It.60 — Vlastné komponenty editora (docs/ITERATION_60.md).
+ĎALŠIA ITERÁCIA: It.61 — Newsletter vo footeri (docs/ITERATION_61.md).
 
-It.59 ✅ (2.0.53): editor „Publikovať o“, stav scheduled, job content-scheduled-publish.
-  Smoke: vytvor stránku scheduled +1 min → jobs:run content-scheduled-publish → published.
-  Admin filter „Naplánované“ v PagesManager / Articles.
+It.33 smoke: Admin Analytika → Zdroje (Google/Direct label) → Geografia (vlajka + maskovaná IP).
+It.60 smoke: Settings → Editor → hello-widget pre Blog → toolbar v editore.
 
-Backlog: It.60 modulárny editor, It.61 newsletter footer, It.25 setup wizard (odložené).
+Backlog: It.61 newsletter, It.25 setup wizard (odložené).
 
-Začni It.59 podľa ITERATION_59.md. Po každej vlne: PHPUnit + Vitest + PHPStan + docs + RELEASE.md.
+Začni It.61 podľa ITERATION_61.md. Po každej vlne: PHPUnit + Vitest + PHPStan + docs + RELEASE.md.
 Deploy poznámky: PRIVATE_DOMAIN_DEPLOY.md (gitignored, na serveri).
 ```
 
 ---
 
-*Aktualizované 2026-07-26 po It.62 + prod deploy paginiumcms.com. Podrobnosti: `ITERATION_62.md`, `ISSUES.md` (ISS-094), `RELEASE.md` (beta.9 draft), `deploy/CRON.md`.*
+*Aktualizované 2026-07-26 po It.33 + It.60 CI fix + prod deploy paginiumcms.com. Podrobnosti: `ITERATION_33.md`, `ITERATION_60.md`, `ISSUES.md` (ISS-094), `RELEASE.md` (beta.9 draft), `deploy/CRON.md`.*

@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useEditor, EditorContent, type Extensions } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Link } from '@tiptap/extension-link';
@@ -19,6 +19,8 @@ import {
   profileAllows,
   type EditorProfileDefinition,
 } from '../../utils/editorProfiles';
+import { loadAllowedEditorComponents, type EditorComponentRegistration } from '../../utils/editorComponents';
+import { useSettingsContext } from '../../context/SettingsContext';
 import { useI18n } from '../../context/I18nContext';
 
 type WysiwygBlockedReason = 'images' | 'tables' | 'codeBlock' | 'scripts' | 'links' | 'uploadUnavailable';
@@ -41,7 +43,10 @@ interface WysiwygEditorProps {
   onBlockedAction?: (message: string) => void;
 }
 
-function buildExtensions(profile: EditorProfileDefinition): Extensions {
+function buildExtensions(
+  profile: EditorProfileDefinition,
+  customExtensions: Extensions = []
+): Extensions {
   const extensions: Extensions = [
     StarterKit.configure({
       heading: profileAllows(profile, 'heading')
@@ -93,7 +98,7 @@ function buildExtensions(profile: EditorProfileDefinition): Extensions {
     );
   }
 
-  return extensions;
+  return [...extensions, ...customExtensions];
 }
 
 function detectBlockedHtml(html: string, profile: EditorProfileDefinition): WysiwygBlockedReason | null {
@@ -139,8 +144,24 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
   ref
 ) {
   const { t } = useI18n();
+  const { settings } = useSettingsContext();
+  const editorSettings = settings.editor as Record<string, unknown>;
   const blockedMessage = (reason: WysiwygBlockedReason) => t(`editor.wysiwyg.blocked.${reason}`);
-  const extensions = useMemo(() => buildExtensions(profile), [profile]);
+  const [customComponents, setCustomComponents] = useState<EditorComponentRegistration[]>([]);
+  const [customExtensions, setCustomExtensions] = useState<Extensions>([]);
+
+  useEffect(() => {
+    void loadAllowedEditorComponents(profile, editorSettings).then(async (components) => {
+      setCustomComponents(components);
+      const loaded = await Promise.all(components.map((component) => component.loadTiptapExtension()));
+      setCustomExtensions(loaded);
+    });
+  }, [profile, editorSettings]);
+
+  const extensions = useMemo(
+    () => buildExtensions(profile, customExtensions),
+    [profile, customExtensions]
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadHandlerRef = useRef<(file: File) => Promise<void>>(async () => undefined);
 
@@ -189,7 +210,7 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
         return true;
       },
     },
-  });
+  }, [extensions]);
 
   uploadHandlerRef.current = async (file: File) => {
     if (!profileAllows(profile, 'image')) {
@@ -379,6 +400,29 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
             ⊞
           </button>
         )}
+        {customComponents.length > 0 && (
+          <span className="w-px h-6 bg-slate-300 dark:bg-slate-600 mx-1" />
+        )}
+        {customComponents.map((component) => (
+          <button
+            key={component.id}
+            type="button"
+            title={component.label}
+            onClick={() =>
+              editor
+                .chain()
+                .focus()
+                .insertContent({
+                  type: component.tiptapNodeName,
+                  attrs: { message: 'Hello from widget!' },
+                })
+                .run()
+            }
+            className={btn(editor.isActive(component.tiptapNodeName))}
+          >
+            ✦
+          </button>
+        ))}
         <span className="w-px h-6 bg-slate-300 dark:bg-slate-600 mx-1" />
         <button type="button" onClick={() => editor.chain().focus().undo().run()} className={btn(false)}>
           ↩

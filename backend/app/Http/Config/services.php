@@ -65,6 +65,7 @@ use PaginiumCMS\Core\Conflict\Contracts\ConflictLoggerInterface;
 use PaginiumCMS\Core\Conflict\Services\ConflictLogger;
 use PaginiumCMS\Core\Drafts\Contracts\DraftManagerInterface;
 use PaginiumCMS\Core\Drafts\Services\DraftManager;
+use PaginiumCMS\Core\Editor\Services\EditorComponentRegistry;
 use PaginiumCMS\Core\Editor\Services\EditorContentValidator;
 use PaginiumCMS\Core\Editor\Services\EditorProfileService;
 use PaginiumCMS\Core\Editor\Services\TiptapHtmlRenderer;
@@ -262,6 +263,7 @@ return [
             get(SecurityLogger::class),
             get(DemoMode::class),
             get(EditorProfileService::class),
+            get(EditorComponentRegistry::class),
             get(AccessControlSyncService::class),
             get(AuthorizationInterface::class),
             get(SupportedLocalesRegistry::class)
@@ -532,10 +534,12 @@ return [
     DeveloperModeMiddleware::class => create(DeveloperModeMiddleware::class)
         ->constructor(get(DeveloperModeGate::class)),
 
+    EditorComponentRegistry::class => create(EditorComponentRegistry::class)
+        ->constructor(get(PluginManagerInterface::class)),
     EditorProfileService::class => create(EditorProfileService::class)
-        ->constructor(get(SettingsRepositoryInterface::class)),
+        ->constructor(get(SettingsRepositoryInterface::class), get(EditorComponentRegistry::class)),
     EditorContentValidator::class => create(EditorContentValidator::class)
-        ->constructor(get(EditorProfileService::class)),
+        ->constructor(get(EditorProfileService::class), get(EditorComponentRegistry::class)),
 
     // HTTP controllers
     ContentController::class => create(ContentController::class)

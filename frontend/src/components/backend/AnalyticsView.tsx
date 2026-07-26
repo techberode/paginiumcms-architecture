@@ -4,8 +4,11 @@ import {
   BarChart3,
   Clock3,
   Eye,
-  Globe2,
+  FileText,
   Laptop,
+  Link2,
+  MapPin,
+  MonitorSmartphone,
   MousePointerClick,
   RefreshCw,
   Smartphone,
@@ -23,6 +26,7 @@ import { AnalyticsChart } from '../dashboard/AnalyticsChart';
 import { AdminPageSkeleton } from '../ui/AdminPageSkeleton';
 import { useI18n } from '../../context/I18nContext';
 import { useToast } from '../../hooks/useToast';
+import { countryCodeToFlag, refererTypeIcon } from '../../utils/countryFlag';
 
 type AnalyticsTab = 'overview' | 'pages' | 'sources' | 'devices' | 'geo';
 type PeriodDays = 7 | 14 | 30;
@@ -52,6 +56,21 @@ function deviceTotal(devices: AnalyticsPayload['devices'] | undefined): number {
     return 0;
   }
   return devices.desktop + devices.mobile + devices.tablet + devices.unknown;
+}
+
+function refererTypeLabel(type: string | undefined, t: (key: string) => string): string {
+  switch (type) {
+    case 'direct':
+      return t('analytics.sources.types.direct');
+    case 'search':
+      return t('analytics.sources.types.search');
+    case 'social':
+      return t('analytics.sources.types.social');
+    case 'referral':
+      return t('analytics.sources.types.referral');
+    default:
+      return type ?? '';
+  }
 }
 
 function devicePercent(value: number, total: number): number {
@@ -97,12 +116,12 @@ export const AnalyticsView: React.FC = () => {
   const tabs = useMemo(
     () =>
       [
-        { id: 'overview' as const, label: t('analytics.tabs.overview') },
-        { id: 'pages' as const, label: t('analytics.tabs.pages') },
-        { id: 'sources' as const, label: t('analytics.tabs.sources') },
-        { id: 'devices' as const, label: t('analytics.tabs.devices') },
-        { id: 'geo' as const, label: t('analytics.tabs.geo') },
-      ] satisfies Array<{ id: AnalyticsTab; label: string }>,
+        { id: 'overview' as const, label: t('analytics.tabs.overview'), icon: BarChart3 },
+        { id: 'pages' as const, label: t('analytics.tabs.pages'), icon: FileText },
+        { id: 'sources' as const, label: t('analytics.tabs.sources'), icon: Link2 },
+        { id: 'devices' as const, label: t('analytics.tabs.devices'), icon: MonitorSmartphone },
+        { id: 'geo' as const, label: t('analytics.tabs.geo'), icon: MapPin },
+      ] satisfies Array<{ id: AnalyticsTab; label: string; icon: typeof BarChart3 }>,
     [t]
   );
 
@@ -202,20 +221,24 @@ export const AnalyticsView: React.FC = () => {
 
       <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden">
         <div className="flex flex-wrap gap-1 border-b border-slate-200 dark:border-slate-800 px-4 pt-4">
-          {tabs.map((item) => (
+          {tabs.map((item) => {
+            const TabIcon = item.icon;
+            return (
             <button
               key={item.id}
               type="button"
               onClick={() => setTab(item.id)}
-              className={`px-4 py-2 text-sm font-bold border-b-2 transition ${
+              className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-bold border-b-2 transition ${
                 tab === item.id
                   ? 'border-indigo-600 text-indigo-600'
                   : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
               }`}
             >
+              <TabIcon className="h-4 w-4" />
               {item.label}
             </button>
-          ))}
+            );
+          })}
         </div>
 
         <div className="p-6">
@@ -324,9 +347,22 @@ export const AnalyticsView: React.FC = () => {
           {tab === 'sources' && (
             <div className="space-y-2">
               {(payload?.top_referers ?? []).map((source, index) => (
-                <div key={`${source.referer}-${index}`} className="flex items-center justify-between rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-3">
-                  <div className="font-semibold truncate">{source.referer}</div>
-                  <span className="font-black text-indigo-600">{source.visits}</span>
+                <div key={`${source.referer}-${index}`} className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-3">
+                  <div className="min-w-0">
+                    <div className="inline-flex items-center gap-2 font-semibold truncate">
+                      <span aria-hidden>{refererTypeIcon(source.type ?? 'referral')}</span>
+                      {source.source ?? source.referer}
+                    </div>
+                    {source.domain && source.type !== 'direct' && (
+                      <div className="text-xs text-slate-500 truncate">{source.domain}</div>
+                    )}
+                    {source.type && source.type !== 'direct' && (
+                      <div className="text-xs text-indigo-500 font-bold uppercase tracking-wide mt-0.5">
+                        {refererTypeLabel(source.type, t)}
+                      </div>
+                    )}
+                  </div>
+                  <span className="font-black text-indigo-600 shrink-0">{source.visits}</span>
                 </div>
               ))}
             </div>
@@ -361,16 +397,51 @@ export const AnalyticsView: React.FC = () => {
           )}
 
           {tab === 'geo' && (
-            <div className="space-y-2">
-              {(payload?.geo ?? []).map((entry) => (
-                <div key={entry.country} className="flex items-center justify-between rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-3">
-                  <span className="inline-flex items-center gap-2 font-semibold">
-                    <Globe2 className="h-4 w-4 text-indigo-500" />
-                    {entry.country}
-                  </span>
-                  <span className="font-black text-indigo-600">{entry.visits}</span>
-                </div>
-              ))}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <h3 className="text-sm font-black uppercase tracking-wider text-slate-500 mb-3">
+                  {t('analytics.sections.geoSummary')}
+                </h3>
+                {(payload?.geo ?? []).map((entry) => (
+                  <div key={`${entry.country}-${entry.countryCode ?? 'xx'}`} className="rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="inline-flex items-center gap-2 font-semibold">
+                        <span className="text-xl" aria-hidden>{countryCodeToFlag(entry.countryCode)}</span>
+                        <span>
+                          {entry.country}
+                          {entry.city ? ` · ${entry.city}` : ''}
+                        </span>
+                      </span>
+                      <span className="font-black text-indigo-600">{entry.visits}</span>
+                    </div>
+                    {(entry.sample_ips ?? []).length > 0 && (
+                      <div className="mt-2 text-xs text-slate-500">
+                        {t('analytics.geo.sampleIps')}: {(entry.sample_ips ?? []).join(', ')}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-sm font-black uppercase tracking-wider text-slate-500 mb-3">
+                  {t('analytics.sections.recentGeoVisits')}
+                </h3>
+                {(payload?.geo_visits ?? []).map((visit, index) => (
+                  <div key={`${visit.timestamp}-${index}`} className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-3">
+                    <div className="min-w-0">
+                      <div className="inline-flex items-center gap-2 font-semibold">
+                        <span aria-hidden>{countryCodeToFlag(visit.countryCode)}</span>
+                        {visit.country}
+                        {visit.city ? ` · ${visit.city}` : ''}
+                      </div>
+                      <div className="text-xs text-slate-500 truncate">{visit.requestUri}</div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <div className="text-xs font-mono text-slate-500">{visit.ip_masked}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>

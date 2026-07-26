@@ -34,6 +34,7 @@ final class AnalyticsController
             'devices' => $this->reporter->getDeviceStats((string) $period),
             'browsers' => $this->reporter->getBrowserStats((string) $period),
             'geo' => $this->reporter->getGeoStats((string) $period),
+            'geo_visits' => $this->reporter->getRecentGeoVisits(15, (string) $period),
         ]);
     }
 

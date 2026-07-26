@@ -155,4 +155,28 @@ export function useSettingsContext(): SettingsContextType {
   return ctx;
 }
 
+export const TestSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const value = useMemo<SettingsContextType>(
+    () => ({
+      settings: DEFAULT_PUBLIC,
+      loading: false,
+      get: (key: string, fallback?: unknown) => {
+        const parts = key.split('.');
+        let current: unknown = DEFAULT_PUBLIC;
+        for (const part of parts) {
+          if (current === null || typeof current !== 'object') {
+            return fallback;
+          }
+          current = (current as Record<string, unknown>)[part];
+        }
+        return current ?? fallback;
+      },
+      reload: async () => undefined,
+    }),
+    []
+  );
+
+  return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
+};
+
 export default SettingsContext;

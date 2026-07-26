@@ -176,6 +176,14 @@ export const settingsSk: MessageTree = {
       "body": "Nastavenia Obsah a Upload sa uplatňujú pri renderovaní HTML a pri každom upload do knižnice médií. Odporúčame nechať sanitizáciu a magic bytes zapnuté."
     }
   },
+  "editorComponents": {
+    "title": "Custom komponenty podľa profilu",
+    "help": "Vyberte, ktoré bloky z pluginov budú dostupné v jednotlivých profiloch editora.",
+    "empty": "Žiadne custom komponenty. Povoľte plugin s editor.components v manifeste.",
+    "disabledHint": "Zapnite „Povoliť custom komponenty editora“ vyššie pre konfiguráciu profilov.",
+    "profile": "Profil",
+    "toggle": "Povoliť {component} pre {profile}"
+  },
   "fields": {
     "general": {
       "siteName": {
@@ -320,6 +328,14 @@ export const settingsSk: MessageTree = {
       },
       "tabSize": {
         "label": "Veľkosť tabulátora"
+      },
+      "customComponentsEnabled": {
+        "label": "Povoliť custom komponenty editora",
+        "help": "Pluginy môžu registrovať vlastné bloky pre Markdown a WYSIWYG (It.60)."
+      },
+      "profileCustomComponents": {
+        "label": "Custom komponenty podľa profilu (JSON)",
+        "help": "Spravuje sa v matici nižšie."
       }
     },
     "navigationUi": {

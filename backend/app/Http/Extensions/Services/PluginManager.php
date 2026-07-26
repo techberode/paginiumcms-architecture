@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Extensions\Services;
 
+use PaginiumCMS\Core\Editor\Models\EditorComponentDefinition;
 use PaginiumCMS\Core\Hook\HookCatalog;
 use PaginiumCMS\Core\Hook\HookManager;
 use PaginiumCMS\Core\Hook\Services\HookEmitter;
@@ -74,6 +75,58 @@ final class PluginManager implements PluginManagerInterface
         sort($ids);
 
         return $ids;
+    }
+
+    /**
+     * @return list<EditorComponentDefinition>
+     */
+    public function listEnabledEditorComponents(): array
+    {
+        $components = [];
+
+        foreach ($this->getEnabledIds() as $pluginId) {
+            $manifest = $this->loadManifest($pluginId);
+            if ($manifest === null) {
+                continue;
+            }
+
+            $editor = $manifest['editor'] ?? null;
+            if (!is_array($editor)) {
+                continue;
+            }
+
+            $entries = $editor['components'] ?? [];
+            if (!is_array($entries)) {
+                continue;
+            }
+
+            foreach ($entries as $entry) {
+                if (!is_array($entry)) {
+                    continue;
+                }
+
+                $componentId = trim((string) ($entry['id'] ?? ''));
+                if ($componentId === '') {
+                    continue;
+                }
+
+                $markdownDirective = trim((string) ($entry['markdownDirective'] ?? $componentId));
+                $tiptapNodeType = trim((string) ($entry['tiptapNodeType'] ?? ''));
+                if ($tiptapNodeType === '') {
+                    continue;
+                }
+
+                $components[] = new EditorComponentDefinition(
+                    $componentId,
+                    trim((string) ($entry['label'] ?? $componentId)),
+                    $pluginId,
+                    $markdownDirective,
+                    $tiptapNodeType
+                );
+            }
+        }
+
+        return $components;
     }
 
     /**

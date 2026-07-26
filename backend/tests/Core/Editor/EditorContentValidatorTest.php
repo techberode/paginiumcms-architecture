@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Tests\Core\Editor;
 
+use PaginiumCMS\Core\Editor\Services\EditorComponentRegistry;
 use PaginiumCMS\Core\Editor\Services\EditorContentValidator;
 use PaginiumCMS\Core\Editor\Services\EditorProfileService;
 use PaginiumCMS\Core\FlatFile\Services\FileReader;
@@ -11,6 +12,7 @@ use PaginiumCMS\Core\FlatFile\Services\FileValidator;
 use PaginiumCMS\Core\FlatFile\Services\FileWriter;
 use PaginiumCMS\Core\Settings\Services\SettingsRepository;
 use PaginiumCMS\Core\Validation\Validator;
+use PaginiumCMS\Http\Extensions\Contracts\PluginManagerInterface;
 use PHPUnit\Framework\TestCase;
 
 final class EditorContentValidatorTest extends TestCase
@@ -31,7 +33,13 @@ final class EditorContentValidatorTest extends TestCase
             new Validator(),
             'data/settings.json'
         );
-        $this->validator = new EditorContentValidator(new EditorProfileService($settings));
+        $plugins = $this->createMock(PluginManagerInterface::class);
+        $plugins->method('listEnabledEditorComponents')->willReturn([]);
+        $components = new EditorComponentRegistry($plugins);
+        $this->validator = new EditorContentValidator(
+            new EditorProfileService($settings, $components),
+            $components
+        );
     }
 
     public function testBlogProfileAllowsMarkdownCodeBlock(): void

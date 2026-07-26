@@ -35,7 +35,7 @@ return function (App $app): void {
         $group->delete('', [$controller, 'reset']);
         $group->get('/{group}', [$controller, 'show']);
         $group->put('/{group}', [$controller, 'update']);
-    })->add(new RoleMiddleware($container->get(AuthorizationInterface::class), ['ADMIN', 'SUPER_ADMIN']))
+    })->add(new RoleMiddleware($container->get(AuthorizationInterface::class), ['EDITOR', 'ADMIN', 'SUPER_ADMIN']))
         ->add($container->get(TwoFactorMiddleware::class))
         ->add($container->get(AuthMiddleware::class));
 };

@@ -27,7 +27,19 @@ export interface BrowserStat {
 
 export interface GeoStat {
   country: string;
+  countryCode?: string | null;
+  city?: string | null;
   visits: number;
+  sample_ips?: string[];
+}
+
+export interface GeoVisit {
+  country: string;
+  countryCode?: string | null;
+  city?: string | null;
+  ip_masked: string;
+  requestUri: string;
+  timestamp: string;
 }
 
 export interface TopPage {
@@ -37,6 +49,9 @@ export interface TopPage {
 
 export interface TopReferer {
   referer: string;
+  source?: string;
+  domain?: string;
+  type?: 'direct' | 'search' | 'social' | 'referral' | string;
   visits: number;
 }
 
@@ -55,6 +70,7 @@ export interface AnalyticsPayload {
   devices: DeviceStats;
   browsers?: BrowserStat[];
   geo?: GeoStat[];
+  geo_visits?: GeoVisit[];
 }
 
 export interface ChartPoint {

@@ -5,8 +5,8 @@
 
 **Aktuálne hotové:** It.1–24 ✅ · It.26–28 ✅ · **It.62** ✅ (scheduler prod) · It.25 ⏳ (setup wizard — odložené)
 
-**Ďalšia iterácia:** [It.60](ITERATION_60.md) (vlastné komponenty editora) · backlog It.61  
-**Posledná shipped:** [It.62 Scheduler prod hardening](ITERATION_62.md) — **`main` @ `f7a73f1`** (tag **beta.9** pending) · [It.59](ITERATION_59.md) — **2.0.53**
+**Ďalšia iterácia:** [It.61](ITERATION_61.md) (newsletter footer)  
+**Posledná shipped:** [It.60 Custom editor components](ITERATION_60.md) · [It.62 Scheduler prod hardening](ITERATION_62.md)
 
 **Incidenty a opravy:** [ISSUES.md](ISSUES.md)
 
@@ -36,7 +36,7 @@
 | **57** | **`v2.1.0-beta.4`** | **[Auto tags & description](ITERATION_57.md)** | **✅** | suggest-meta API |
 | **58** | TBD | **[Page layout builder + color schemes](ITERATION_58.md)** | **🟡** | ⛔ po It.15 · [alternatívy](ITERATION_58_ALTERNATIVES.md) · layout + 5 presetov |
 | **59** | **2.0.53** | **[Odložená publikácia — plánovač v editore](ITERATION_59.md)** | **✅** | Editor datetime + filter scheduled + job `content.scheduled_publish` |
-| **60** | TBD | **[Vlastné komponenty editora](ITERATION_60.md)** | **🟡** | Nastavenia → Stránka → Editor; pluginy; nie rola USER |
+| **60** | TBD | **[Vlastné komponenty editora](ITERATION_60.md)** | **✅** | Plugin manifest + settings matica + hello-widget demo |
 | **61** | TBD | **[Newsletter vo footeri](ITERATION_61.md)** | **🟡** | Rýchly odber + admin zap/vyp; ≠ maintenance newsletter |
 | **15** | **2.0.38** | **[External plugins](ITERATION_15.md)** | **✅** | Import ZIP, registry, hooks, routes, admin UI |
 | **47** | TBD | **[Notification connector auth](ITERATION_47.md)** | **✅** | ntfy Bearer/Basic + test-connector |
@@ -155,16 +155,16 @@ Náhľad publikovanej stránky bez opustenia editora.
 
 ---
 
-## Iterácia 33 – Analytics enrichment ⏳
+## Iterácia 33 – Analytics enrichment ✅
 
-Rozšírenie existujúceho `Core/Analytics/`:
+Rozšírenie existujúceho `Core/Analytics/` — detail [ITERATION_33.md](ITERATION_33.md):
 
 | Pole | Zdroj |
 |------|--------|
-| Geo (krajina/mesto) | GeoIP služba / MaxMind lite |
-| Referrer / UTM | HTTP hlavičky |
+| Geo vlajky + mesto + maskovaná IP | `GeoIPService` + `AnalyticsIpMasker` |
+| Referrer typ (direct/search/social) | `RefererAnalyzer` |
 | Zariadenie | existujúci `DeviceDetector` |
-| IP (hash/anonymized) | GDPR-aware nastavenie |
+| Tab ikony + enriched admin UI | `AnalyticsView.tsx` |
 
 ---
 

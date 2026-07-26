@@ -176,6 +176,14 @@ export const settingsEn: MessageTree = {
       "body": "Content and Upload settings apply when HTML is rendered and when files are uploaded to the media library. Keep sanitization and magic-byte checks enabled unless you have a specific reason."
     }
   },
+  "editorComponents": {
+    "title": "Custom components by profile",
+    "help": "Choose which plugin blocks are available in each editor profile.",
+    "empty": "No custom components registered. Enable a plugin with editor.components in its manifest.",
+    "disabledHint": "Turn on “Enable custom editor components” above to configure profiles.",
+    "profile": "Profile",
+    "toggle": "Enable {component} for {profile}"
+  },
   "fields": {
     "general": {
       "siteName": {
@@ -320,6 +328,14 @@ export const settingsEn: MessageTree = {
       },
       "tabSize": {
         "label": "Tab size"
+      },
+      "customComponentsEnabled": {
+        "label": "Enable custom editor components",
+        "help": "Plugins can register custom blocks for Markdown and WYSIWYG (It.60)."
+      },
+      "profileCustomComponents": {
+        "label": "Custom components by profile (JSON)",
+        "help": "Managed in the matrix below."
       }
     },
     "navigationUi": {

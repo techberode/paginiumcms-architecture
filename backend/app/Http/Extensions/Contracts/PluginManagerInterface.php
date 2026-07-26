@@ -20,6 +20,11 @@ interface PluginManagerInterface
     public function getEnabledIds(): array;
 
     /**
+     * @return list<\PaginiumCMS\Core\Editor\Models\EditorComponentDefinition>
+     */
+    public function listEnabledEditorComponents(): array;
+
+    /**
      * @return list<array<string, mixed>>
      */
     public function list(): array;
