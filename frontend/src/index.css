@@ -1,5 +1,7 @@
 /* frontend/src/index.css */
 
+@import './theme/defaultTokens.css';
+
 /* Import Tailwind CSS */
 @tailwind base;
 @tailwind components;
@@ -15,7 +17,8 @@
 
   body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    @apply bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100;
+    background-color: var(--color-surface, #f8fafc);
+    color: var(--color-text, #0f172a);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -46,8 +49,35 @@
   }
 
   ::selection {
-    @apply bg-indigo-500 text-white;
+    background-color: var(--color-primary, #4f46e5);
+    color: var(--color-primary-foreground, #ffffff);
   }
+
+  /* Public markdown — reaguje na farebnú schému (It.58b) */
+  .paginium-prose h1 { color: var(--color-text); }
+  .paginium-prose h2 { color: var(--color-text); border-bottom-color: var(--color-border); }
+  .paginium-prose h3, .paginium-prose h4 { color: var(--color-text); }
+  .paginium-prose p, .paginium-prose li { color: var(--color-text-muted); }
+  .paginium-prose strong { color: var(--color-text); }
+  .paginium-prose blockquote {
+    border-left-color: var(--color-primary);
+    background-color: color-mix(in srgb, var(--color-primary) 12%, transparent);
+    color: var(--color-primary);
+  }
+  .paginium-prose code {
+    background-color: color-mix(in srgb, var(--color-secondary) 15%, transparent);
+    color: var(--color-primary);
+  }
+  .paginium-prose a { color: var(--color-primary); }
+  .paginium-prose a:hover { color: var(--color-accent); }
+  .paginium-prose hr { background: var(--color-border); }
+  .paginium-prose th {
+    background-color: var(--color-surface);
+    border-bottom-color: var(--color-border);
+    color: var(--color-text-muted);
+  }
+  .paginium-prose td { border-bottom-color: var(--color-border); color: var(--color-text-muted); }
+  .paginium-prose tr:hover td { background-color: var(--color-surface); }
 }
 
 @layer components {
@@ -133,6 +163,36 @@
 
   .badge-info {
     @apply bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200;
+  }
+
+  /* Public site chrome (It.58b) */
+  .public-footer {
+    background: color-mix(in srgb, var(--color-text) 90%, var(--color-primary));
+    color: color-mix(in srgb, var(--color-surface-elevated) 72%, var(--color-text-muted));
+    border-top: 1px solid color-mix(in srgb, var(--color-text) 45%, transparent);
+  }
+
+  .public-footer-heading {
+    color: var(--color-surface-elevated);
+  }
+
+  .public-footer-link {
+    @apply transition-colors;
+  }
+
+  .public-footer-link:hover {
+    color: var(--color-accent);
+  }
+
+  .public-hero {
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--color-text) 95%, transparent),
+      color-mix(in srgb, var(--color-primary) 55%, var(--color-text)),
+      color-mix(in srgb, var(--color-text) 92%, transparent)
+    );
+    color: var(--color-primary-foreground);
+    border-bottom: 1px solid color-mix(in srgb, var(--color-text) 40%, transparent);
   }
 }
 

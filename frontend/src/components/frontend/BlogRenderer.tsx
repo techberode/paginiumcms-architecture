@@ -30,6 +30,7 @@ import {
 } from '../../utils/blogArticles';
 import { formatContentDateLabels } from '../../utils/contentDates';
 import { formatReadingTime, resolveShowReadingTime } from '../../utils/readingTime';
+import { BTN_PRIMARY, INPUT_THEME, PUBLIC_CARD, PUBLIC_SPINNER } from '../../theme/publicUiClasses';
 
 export const BlogRenderer: React.FC = () => {
   const { t, locale } = useI18n();
@@ -219,7 +220,7 @@ export const BlogRenderer: React.FC = () => {
   if (slug && detailLoading) {
     return (
       <div className="min-h-[50vh] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600" />
+        <div className={PUBLIC_SPINNER} />
       </div>
     );
   }
@@ -227,12 +228,12 @@ export const BlogRenderer: React.FC = () => {
   if (slug && !detailLoading && !activeArticle) {
     return (
       <div className="min-h-[50vh] flex flex-col items-center justify-center px-4 text-center">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{t('public.errors.notFoundCode')}</h1>
-        <p className="mt-2 text-slate-500">{t('public.blog.errors.articleNotFound')}</p>
+        <h1 className="text-2xl font-bold text-theme-text">{t('public.errors.notFoundCode')}</h1>
+        <p className="mt-2 text-theme-text-muted">{t('public.blog.errors.articleNotFound')}</p>
         <button
           type="button"
           onClick={() => navigate('/blog')}
-          className="mt-6 bg-indigo-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold"
+          className={`mt-6 ${BTN_PRIMARY} px-6 py-2.5 text-sm`}
         >
           {t('public.blog.backToBlog')}
         </button>
@@ -266,12 +267,12 @@ export const BlogRenderer: React.FC = () => {
       activeArticle.commentsAllowGuests ?? globalAllowGuests;
 
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-24 transition-colors">
+      <div className="min-h-screen bg-theme-surface text-theme-text pb-24 transition-colors">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
           <button
             type="button"
             onClick={() => navigate(listPath)}
-            className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer mb-6"
+            className="inline-flex items-center gap-2 text-sm font-bold text-theme-text-muted hover:text-theme-primary transition-colors cursor-pointer mb-6"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>{t('public.blog.backToList')}</span>
@@ -283,31 +284,31 @@ export const BlogRenderer: React.FC = () => {
             {activeArticle.tags?.map((tag) => (
               <span
                 key={tag}
-                className="text-xs bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-extrabold px-3 py-1 rounded-lg flex items-center gap-1"
+                className="text-xs bg-theme-primary/10 text-theme-primary font-extrabold px-3 py-1 rounded-lg flex items-center gap-1"
               >
                 <Tag className="w-3 h-3" /> {tag}
               </span>
             ))}
           </div>
-          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
+          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-theme-text leading-tight">
             {activeArticle.title}
           </h1>
-          <div className="mt-6 flex items-center gap-6 text-xs text-slate-500 dark:text-slate-400 border-y border-slate-200/80 dark:border-slate-800 py-4">
+          <div className="mt-6 flex items-center gap-6 text-xs text-theme-text-muted border-y border-theme-border/80 py-4">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-rose-500 flex items-center justify-center text-white font-bold text-xs">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-theme-primary to-theme-accent flex items-center justify-center text-theme-primary-foreground font-bold text-xs">
                 {author.charAt(0)}
               </div>
               <div>
-                <div className="font-bold text-slate-800 dark:text-slate-200">{author}</div>
+                <div className="font-bold text-theme-text">{author}</div>
                 <div>{t('public.blog.editorialAuthor')}</div>
               </div>
             </div>
             <div className="flex items-center gap-1.5 ml-auto flex-wrap justify-end">
-              <Calendar className="w-4 h-4 text-slate-400" />
+              <Calendar className="w-4 h-4 text-theme-text-muted" />
               <span title={dates.primaryTitle}>{dates.primary}</span>
               {dates.secondary && (
                 <>
-                  <span className="text-slate-300">•</span>
+                  <span className="text-theme-border">•</span>
                   <span className="rounded-full bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 text-amber-700 dark:text-amber-300 font-bold" title={dates.secondaryTitle}>
                     {dates.secondary}
                   </span>
@@ -315,7 +316,7 @@ export const BlogRenderer: React.FC = () => {
               )}
               {showReadingTime && activeArticle.readingTime > 0 && (
                 <>
-                  <span className="text-slate-300">•</span>
+                  <span className="text-theme-border">•</span>
                   <span className="inline-flex items-center gap-1 font-semibold">
                     <Clock className="w-4 h-4" />
                     {formatReadingTime(activeArticle.readingTime, locale)}
@@ -332,7 +333,7 @@ export const BlogRenderer: React.FC = () => {
         </header>
 
         <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 sm:p-12 shadow-sm border border-slate-200/60 dark:border-slate-800/80">
+          <div className={`${PUBLIC_CARD} p-8 sm:p-12`}>
             <MarkdownRenderer content={activeArticle.content} html={activeArticle.html} />
           </div>
 
@@ -345,12 +346,12 @@ export const BlogRenderer: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => navigate(`/blog/${prevArticle.slug}`)}
-                  className="text-left rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors group"
+                  className="text-left rounded-2xl border border-theme-border bg-theme-surface-elevated p-5 hover:border-theme-primary/50 transition-colors group"
                 >
-                  <span className="text-xs font-bold uppercase tracking-wide text-slate-400 flex items-center gap-1">
+                  <span className="text-xs font-bold uppercase tracking-wide text-theme-text-muted flex items-center gap-1">
                     <ChevronLeft className="w-4 h-4" /> {t('public.blog.articleNav.previous')}
                   </span>
-                  <span className="mt-2 block text-sm font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 line-clamp-2">
+                  <span className="mt-2 block text-sm font-bold text-theme-text group-hover:text-theme-primary line-clamp-2">
                     {prevArticle.title}
                   </span>
                 </button>
@@ -361,12 +362,12 @@ export const BlogRenderer: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => navigate(`/blog/${nextArticle.slug}`)}
-                  className="text-right rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors group sm:col-start-2"
+                  className="text-right rounded-2xl border border-theme-border bg-theme-surface-elevated p-5 hover:border-theme-primary/50 transition-colors group sm:col-start-2"
                 >
-                  <span className="text-xs font-bold uppercase tracking-wide text-slate-400 flex items-center justify-end gap-1">
+                  <span className="text-xs font-bold uppercase tracking-wide text-theme-text-muted flex items-center justify-end gap-1">
                     {t('public.blog.articleNav.next')} <ChevronRight className="w-4 h-4" />
                   </span>
-                  <span className="mt-2 block text-sm font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 line-clamp-2">
+                  <span className="mt-2 block text-sm font-bold text-theme-text group-hover:text-theme-primary line-clamp-2">
                     {nextArticle.title}
                   </span>
                 </button>
@@ -375,15 +376,15 @@ export const BlogRenderer: React.FC = () => {
           )}
 
           {authorBio && (
-            <div className="mt-12 bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/60 rounded-3xl p-6 sm:p-8 flex items-center gap-6">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-extrabold text-2xl shrink-0 shadow-lg shadow-indigo-500/25">
+            <div className="mt-12 bg-theme-primary/10 border border-theme-primary/20 rounded-3xl p-6 sm:p-8 flex items-center gap-6">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-theme-primary to-theme-accent flex items-center justify-center text-theme-primary-foreground font-extrabold text-2xl shrink-0 shadow-lg">
                 {author.charAt(0)}
               </div>
               <div>
-                <h4 className="font-bold text-lg text-slate-900 dark:text-white">
+                <h4 className="font-bold text-lg text-theme-text">
                   {t('public.blog.aboutAuthor', { author })}
                 </h4>
-                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1">{authorBio}</p>
+                <p className="text-xs sm:text-sm text-theme-text-muted mt-1">{authorBio}</p>
               </div>
             </div>
           )}
@@ -405,22 +406,22 @@ export const BlogRenderer: React.FC = () => {
   if (listLoading && listArticles.length === 0) {
     return (
       <div className="min-h-[50vh] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600" />
+        <div className={PUBLIC_SPINNER} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-28 transition-colors">
-      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 pt-16 pb-20">
+    <div className="min-h-screen bg-theme-surface text-theme-text pb-28 transition-colors">
+      <div className="bg-theme-surface-elevated border-b border-theme-border pt-16 pb-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400 mx-auto mb-4">
+          <div className="w-12 h-12 rounded-2xl bg-theme-primary/10 flex items-center justify-center text-theme-primary mx-auto mb-4">
             <BookOpen className="w-6 h-6" />
           </div>
-          <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-slate-900 dark:text-white">
+          <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-theme-text">
             {t('public.blog.list.title')}
           </h1>
-          <p className="mt-4 text-base sm:text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
+          <p className="mt-4 text-base sm:text-lg text-theme-text-muted max-w-2xl mx-auto">
             {t('public.blog.list.subtitle')}
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-2">
@@ -429,8 +430,8 @@ export const BlogRenderer: React.FC = () => {
               onClick={() => updateListParams({ page: 1, tag: null })}
               className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
                 selectedTag === null
-                  ? 'bg-indigo-600 text-white shadow-md'
-                  : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'
+                  ? `${BTN_PRIMARY} shadow-md`
+                  : 'bg-theme-surface hover:bg-theme-surface-elevated text-theme-text-muted'
               }`}
             >
               {t('public.blog.list.allArticles', { count: totalPublished })}
@@ -442,8 +443,8 @@ export const BlogRenderer: React.FC = () => {
                 onClick={() => updateListParams({ page: 1, tag: selectedTag === tag ? null : tag })}
                 className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
                   selectedTag === tag
-                    ? 'bg-indigo-600 text-white shadow-md'
-                    : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'
+                    ? `${BTN_PRIMARY} shadow-md`
+                    : 'bg-theme-surface hover:bg-theme-surface-elevated text-theme-text-muted'
                 }`}
               >
                 <Tag className="w-3 h-3" />
@@ -452,14 +453,14 @@ export const BlogRenderer: React.FC = () => {
             ))}
           </div>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-            <label htmlFor="blog-sort" className="text-xs font-bold text-slate-500 uppercase tracking-wide">
+            <label htmlFor="blog-sort" className="text-xs font-bold text-theme-text-muted uppercase tracking-wide">
               {t('public.blog.list.sortLabel')}
             </label>
             <select
               id="blog-sort"
               value={sort}
               onChange={(event) => updateListParams({ page: 1, sort: parseBlogSort(event.target.value) })}
-              className="form-select text-sm rounded-xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900"
+              className={`form-select text-sm rounded-xl ${INPUT_THEME}`}
             >
               {sortOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -473,7 +474,7 @@ export const BlogRenderer: React.FC = () => {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16">
         {filteredTotal > 0 && (
-          <p className="text-center text-xs font-semibold text-slate-500 dark:text-slate-400 mb-8">
+          <p className="text-center text-xs font-semibold text-theme-text-muted mb-8">
             {t('public.blog.list.range', { start: rangeStart, end: rangeEnd, total: filteredTotal })}
             {totalPages > 1 ? t('public.blog.list.pageOf', { page: safePage, totalPages }) : ''}
           </p>
@@ -498,9 +499,9 @@ export const BlogRenderer: React.FC = () => {
                 key={article.id}
                 type="button"
                 onClick={() => navigate(`/blog/${article.slug}`)}
-                className="text-left bg-white dark:bg-slate-900 rounded-3xl overflow-hidden border border-slate-200/80 dark:border-slate-800 shadow-md hover:shadow-2xl transition-all hover:-translate-y-1.5 flex flex-col group cursor-pointer"
+                className={`text-left ${PUBLIC_CARD} overflow-hidden shadow-md hover:shadow-2xl transition-all hover:-translate-y-1.5 flex flex-col group cursor-pointer`}
               >
-                <div className="h-56 overflow-hidden relative bg-slate-100 dark:bg-slate-800">
+                <div className="h-56 overflow-hidden relative bg-theme-surface">
                   {image && (
                     <img
                       src={image}
@@ -512,7 +513,7 @@ export const BlogRenderer: React.FC = () => {
                     {article.tags?.slice(0, 2).map((tag) => (
                       <span
                         key={tag}
-                        className="bg-slate-900/90 backdrop-blur-md text-white text-[11px] font-bold px-2.5 py-1 rounded-lg"
+                        className="bg-theme-text/90 backdrop-blur-md text-theme-primary-foreground text-[11px] font-bold px-2.5 py-1 rounded-lg"
                       >
                         {tag}
                       </span>
@@ -521,9 +522,9 @@ export const BlogRenderer: React.FC = () => {
                 </div>
                 <div className="p-8 flex-1 flex flex-col justify-between">
                   <div>
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 mb-3 font-medium">
-                      <span className="inline-flex items-center gap-1 rounded-full bg-slate-50 dark:bg-slate-800/80 px-2.5 py-1" title={dates.primaryTitle}>
-                        <Calendar className="w-3.5 h-3.5 text-indigo-500" />
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-theme-text-muted mb-3 font-medium">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-theme-surface px-2.5 py-1" title={dates.primaryTitle}>
+                        <Calendar className="w-3.5 h-3.5 text-theme-primary" />
                         {dates.primary}
                       </span>
                       {dates.secondary && (
@@ -536,20 +537,20 @@ export const BlogRenderer: React.FC = () => {
                         {author}
                       </span>
                       {showReadingTime && article.readingTime > 0 && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 dark:bg-indigo-950/40 px-2.5 py-1 text-indigo-700 dark:text-indigo-300 font-bold">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-theme-primary/10 px-2.5 py-1 text-theme-primary font-bold">
                           <Clock className="w-3.5 h-3.5" />
                           {formatReadingTime(article.readingTime, locale)}
                         </span>
                       )}
                     </div>
-                    <h3 className="text-xl font-extrabold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-snug tracking-tight">
+                    <h3 className="text-xl font-extrabold text-theme-text group-hover:text-theme-primary transition-colors leading-snug tracking-tight">
                       {article.title}
                     </h3>
-                    <p className="mt-3 text-slate-600 dark:text-slate-400 text-sm leading-relaxed line-clamp-3">
+                    <p className="mt-3 text-theme-text-muted text-sm leading-relaxed line-clamp-3">
                       {desc}
                     </p>
                   </div>
-                  <div className="mt-8 pt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                  <div className="mt-8 pt-4 border-t border-theme-border/80 flex items-center justify-between text-xs font-bold text-theme-primary">
                     <span>{t('public.blog.list.readMore')}</span>
                     <span className="group-hover:translate-x-1 transition-transform">→</span>
                   </div>
@@ -560,12 +561,12 @@ export const BlogRenderer: React.FC = () => {
         </div>
 
         {filteredTotal === 0 && !listLoading && (
-          <div className="bg-white dark:bg-slate-900 rounded-3xl p-16 text-center border border-slate-200 dark:border-slate-800">
+          <div className={`${PUBLIC_CARD} p-16 text-center`}>
             <h3 className="text-2xl font-bold">{t('public.blog.list.emptyTitle')}</h3>
             <button
               type="button"
               onClick={() => updateListParams({ page: 1, tag: null })}
-              className="mt-6 bg-indigo-600 text-white font-bold px-6 py-2.5 rounded-xl text-sm"
+              className={`mt-6 ${BTN_PRIMARY} px-6 py-2.5 text-sm`}
             >
               {t('public.blog.list.showAll')}
             </button>
@@ -578,7 +579,7 @@ export const BlogRenderer: React.FC = () => {
               type="button"
               onClick={() => updateListParams({ page: 1 })}
               disabled={!hasPrev}
-              className="p-2.5 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              className="p-2.5 rounded-xl text-theme-text-muted hover:text-theme-primary hover:bg-theme-surface disabled:opacity-30 disabled:cursor-not-allowed transition-all"
               aria-label={t('public.blog.pagination.first')}
             >
               <ChevronsLeft className="w-5 h-5" />
@@ -587,7 +588,7 @@ export const BlogRenderer: React.FC = () => {
               type="button"
               onClick={() => updateListParams({ page: safePage - 1 })}
               disabled={!hasPrev}
-              className="p-2.5 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              className="p-2.5 rounded-xl text-theme-text-muted hover:text-theme-primary hover:bg-theme-surface disabled:opacity-30 disabled:cursor-not-allowed transition-all"
               aria-label={t('public.blog.pagination.previous')}
             >
               <ChevronLeft className="w-5 h-5" />
@@ -599,8 +600,8 @@ export const BlogRenderer: React.FC = () => {
                 onClick={() => updateListParams({ page })}
                 className={`w-10 h-10 rounded-xl text-xs font-bold transition-all ${
                   page === safePage
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/25'
-                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                    ? `${BTN_PRIMARY} shadow-md`
+                    : 'text-theme-text-muted hover:bg-theme-surface'
                 }`}
                 aria-current={page === safePage ? 'page' : undefined}
               >
@@ -611,7 +612,7 @@ export const BlogRenderer: React.FC = () => {
               type="button"
               onClick={() => updateListParams({ page: safePage + 1 })}
               disabled={!hasNext}
-              className="p-2.5 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              className="p-2.5 rounded-xl text-theme-text-muted hover:text-theme-primary hover:bg-theme-surface disabled:opacity-30 disabled:cursor-not-allowed transition-all"
               aria-label={t('public.blog.pagination.next')}
             >
               <ChevronRight className="w-5 h-5" />
@@ -620,7 +621,7 @@ export const BlogRenderer: React.FC = () => {
               type="button"
               onClick={() => updateListParams({ page: totalPages })}
               disabled={!hasNext}
-              className="p-2.5 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              className="p-2.5 rounded-xl text-theme-text-muted hover:text-theme-primary hover:bg-theme-surface disabled:opacity-30 disabled:cursor-not-allowed transition-all"
               aria-label={t('public.blog.pagination.last')}
             >
               <ChevronsRight className="w-5 h-5" />

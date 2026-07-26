@@ -6,6 +6,7 @@ import { useToast } from '../../hooks/useToast';
 import { useAuth } from '../../hooks/useAuth';
 import { useI18n } from '../../context/I18nContext';
 import { formatDisplayDateTime } from '../../utils/contentDates';
+import { BTN_PRIMARY, INPUT_THEME, PUBLIC_CARD } from '../../theme/publicUiClasses';
 
 interface ArticleCommentsProps {
   articleSlug: string;
@@ -13,6 +14,8 @@ interface ArticleCommentsProps {
   allowGuests?: boolean;
   requireApproval?: boolean;
 }
+
+const inputClassName = `w-full px-3 py-2 rounded-lg ${INPUT_THEME}`;
 
 export const ArticleComments: React.FC<ArticleCommentsProps> = ({
   articleSlug,
@@ -74,43 +77,37 @@ export const ArticleComments: React.FC<ArticleCommentsProps> = ({
 
   return (
     <section className="mt-12 space-y-6">
-      <h3 className="text-2xl font-bold text-slate-900 dark:text-white">{t('public.comments.title')}</h3>
+      <h3 className="text-2xl font-bold text-theme-text">{t('public.comments.title')}</h3>
 
       {loading ? (
-        <p className="text-sm text-slate-500">{t('public.comments.loading')}</p>
+        <p className="text-sm text-theme-text-muted">{t('public.comments.loading')}</p>
       ) : comments.length === 0 ? (
-        <p className="text-sm text-slate-500">{t('public.comments.empty')}</p>
+        <p className="text-sm text-theme-text-muted">{t('public.comments.empty')}</p>
       ) : (
         <div className="space-y-4">
           {comments.map((c) => (
-            <div
-              key={c.id}
-              className="rounded-2xl border border-slate-200 dark:border-slate-800 p-4 bg-white dark:bg-slate-900"
-            >
-              <p className="font-semibold text-sm">{c.author}</p>
-              <p className="text-xs text-slate-500 mb-2">{formatDisplayDateTime(c.createdAt, locale)}</p>
-              <p className="text-sm text-slate-700 dark:text-slate-300">{c.content}</p>
+            <div key={c.id} className={`${PUBLIC_CARD} p-4`}>
+              <p className="font-semibold text-sm text-theme-text">{c.author}</p>
+              <p className="text-xs text-theme-text-muted mb-2">{formatDisplayDateTime(c.createdAt, locale)}</p>
+              <p className="text-sm text-theme-text">{c.content}</p>
             </div>
           ))}
         </div>
       )}
 
       {canSubmit ? (
-        <form
-          onSubmit={(e) => void handleSubmit(e)}
-          className="rounded-2xl border border-slate-200 dark:border-slate-800 p-6 bg-white dark:bg-slate-900 space-y-3"
-        >
-          <h4 className="font-bold">{t('public.comments.form.title')}</h4>
+        <form onSubmit={(e) => void handleSubmit(e)} className={`${PUBLIC_CARD} p-6 space-y-3`}>
+          <h4 className="font-bold text-theme-text">{t('public.comments.form.title')}</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <input
-              className="form-input"
+              className={inputClassName}
               required
               placeholder={t('public.comments.form.name')}
               value={author}
               onChange={(e) => setAuthor(e.target.value)}
             />
             <input
-              className="form-input"
+              className={inputClassName}
               type="email"
               placeholder={t('public.comments.form.emailOptional')}
               value={email}
@@ -118,21 +115,21 @@ export const ArticleComments: React.FC<ArticleCommentsProps> = ({
             />
           </div>
           <textarea
-            className="form-input min-h-[100px]"
+            className={`${inputClassName} min-h-[100px]`}
             required
             minLength={3}
             placeholder={t('public.comments.form.contentPlaceholder')}
             value={content}
             onChange={(e) => setContent(e.target.value)}
           />
-          <button type="submit" className="btn btn-primary" disabled={submitting}>
+          <button type="submit" className={`${BTN_PRIMARY} px-6 py-2.5`} disabled={submitting}>
             {submitting ? t('public.comments.form.submitting') : t('public.comments.form.submit')}
           </button>
         </form>
       ) : (
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-theme-text-muted">
           {t('public.comments.loginRequired')}{' '}
-          <Link to="/login" className="text-indigo-600 hover:underline">
+          <Link to="/login" className="text-theme-primary hover:underline">
             {t('public.auth.common.signIn')}
           </Link>
         </p>

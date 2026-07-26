@@ -55,7 +55,7 @@ export const ForgotPasswordModal: React.FC = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600">
             <CheckCircle2 className="w-8 h-8" />
           </div>
-          <p className="text-sm text-slate-600 dark:text-slate-300">
+          <p className="text-sm text-theme-text-muted">
             {t('public.auth.forgot.confirmBody', { email })}
           </p>
           <Link to="/login" className={authButtonClass}>
@@ -67,7 +67,7 @@ export const ForgotPasswordModal: React.FC = () => {
           <div>
             <label className={authLabelClass}>{t('public.auth.common.email')}</label>
             <div className="relative">
-              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-theme-text-muted" />
               <input
                 type="email"
                 required
@@ -83,8 +83,8 @@ export const ForgotPasswordModal: React.FC = () => {
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
             <span>{loading ? t('public.auth.forgot.submitting') : t('public.auth.forgot.submit')}</span>
           </button>
-          <p className="text-center text-sm text-slate-500">
-            <Link to="/login" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
+          <p className="text-center text-sm text-theme-text-muted">
+            <Link to="/login" className="text-theme-primary hover:underline font-medium">
               {t('public.auth.common.backToLogin')}
             </Link>
           </p>

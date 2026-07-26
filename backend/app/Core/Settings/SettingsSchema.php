@@ -57,6 +57,15 @@ final class SettingsSchema
                     ['key' => 'faviconUrl', 'type' => 'url', 'label' => 'Favicon (URL)', 'default' => '', 'rules' => ['string', 'max:512'], 'help' => 'Ikona v karte prehliadača. Odporúčané ICO, PNG alebo SVG (min. 32×32 px).'],
                 ],
             ],
+            'appearance' => [
+                'label' => 'Vzhľad',
+                'fields' => [
+                    ['key' => 'colorScheme', 'type' => 'enum', 'label' => 'Farebná schéma', 'default' => 'indigo-classic', 'options' => ['indigo-classic', 'ocean-slate', 'forest-sage', 'sunset-rose', 'mono-zinc'], 'rules' => ['required', 'in:indigo-classic,ocean-slate,forest-sage,sunset-rose,mono-zinc'], 'help' => 'Predvolená paleta verejného webu (It.58b). Tokeny sa načítavajú z frontend katalógu.'],
+                    ['key' => 'mode', 'type' => 'enum', 'label' => 'Režim zobrazenia', 'default' => 'system', 'options' => ['light', 'dark', 'system'], 'rules' => ['required', 'in:light,dark,system'], 'help' => 'Predvolený svetlý / tmavý režim alebo podľa systému.'],
+                    ['key' => 'allowUserToggle', 'type' => 'bool', 'label' => 'Povoliť prepínač témy návštevníkom', 'default' => true, 'rules' => ['bool'], 'help' => 'Zobrazí prepínač svetlý/tmavý vo verejnom menu (localStorage).'],
+                    ['key' => 'previewTemplate', 'type' => 'enum', 'label' => 'Náhľadová šablóna', 'default' => 'hero-content', 'options' => ['hero-content', 'single', 'two-column', 'landing', 'blog-article'], 'rules' => ['required', 'in:hero-content,single,two-column,landing,blog-article'], 'help' => 'Wireframe pre náhľad schémy v administrácii.'],
+                ],
+            ],
             'content' => [
                 'label' => 'Obsah',
                 'fields' => [

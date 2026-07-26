@@ -87,9 +87,9 @@ export const TotpCodeInput: React.FC<TotpCodeInputProps> = ({
           onChange={(event) => handleChange(index, event.target.value)}
           onKeyDown={(event) => handleKeyDown(index, event)}
           className={`w-11 h-14 sm:w-12 sm:h-16 rounded-xl border-2 text-center text-2xl font-black font-mono transition-all duration-200
-            bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white
-            focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 focus:scale-105
-            ${digit.trim() ? 'border-indigo-400 shadow-md shadow-indigo-500/15' : 'border-slate-200 dark:border-slate-700'}
+            bg-theme-surface-elevated text-theme-text
+            focus:outline-none focus:border-theme-primary focus:ring-4 focus:ring-theme-primary/20 focus:scale-105
+            ${digit.trim() ? 'border-theme-primary shadow-md shadow-theme-primary/15' : 'border-theme-border'}
           `}
           aria-label={t('public.auth.totp.digitAria', { index: index + 1 })}
         />

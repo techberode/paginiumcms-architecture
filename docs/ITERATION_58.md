@@ -1,6 +1,6 @@
 # Iteration 58 – Page layout builder + color schemes
 
-**Status:** ⏳ Planned (implementation **after It.15**)  
+**Status:** ⏳ Planned (58a after It.15) · **58b ✅ implemented** (color schemes + appearance)  
 **Wave:** Post-15 Editor & UX  
 **Priority:** 🟡 Medium — largest slice in wave
 
@@ -205,7 +205,12 @@ layout:
 | `frontend/src/components/admin/AppearanceSettingsPanel.tsx` | Settings → Vzhľad |
 | `frontend/src/hooks/usePublicAppearance.ts` | Public: settings + localStorage override |
 
+| `frontend/src/theme/publicUiClasses.ts` | Zdieľané triedy pre verejný web |
+| `frontend/src/theme/defaultTokens.css` | Fallback tokeny pred hydratáciou |
+
 Extend existujúci **`ThemeContext`** — admin mode zostáva; public site číta `appearance.mode` z API a merge s visitor toggle.
+
+**Verejný web (58b finish):** komponenty v `components/frontend/`, auth, maintenance a `paginium-prose` používajú `theme-*` Tailwind triedy mapované na `--color-*` (nie natvrdo `indigo-*` / `slate-*`).
 
 ## Dependencies
 
@@ -234,13 +239,13 @@ Extend existujúci **`ThemeContext`** — admin mode zostáva; public site čít
 
 ### Color schemes & appearance (58b)
 
-- [ ] 5 preset schemes in catalog; each with light + dark tokens
-- [ ] Settings UI: swatch row + generic page preview updates live on select
-- [ ] Mode toggle: light / dark / system; system respects `prefers-color-scheme`
-- [ ] Public site applies global scheme; optional visitor toggle when enabled
-- [ ] `GET /api/settings/public` exposes `appearance` block (contract test)
-- [ ] Vitest: `applyColorScheme`, preview frame renders for all scheme IDs
-- [ ] Docs: token table per scheme in [architecture/THEMES.md](architecture/THEMES.md) (create at implementation)
+- [x] 5 preset schemes in catalog; each with light + dark tokens
+- [x] Settings UI: swatch row + generic page preview updates live on select
+- [x] Mode toggle: light / dark / system; system respects `prefers-color-scheme`
+- [x] Public site applies global scheme; optional visitor toggle when enabled
+- [x] `GET /api/settings/public` exposes `appearance` block (contract test)
+- [x] Vitest: `applyColorScheme`, preview frame renders for all scheme IDs
+- [x] Docs: token table per scheme in [architecture/THEMES.md](architecture/THEMES.md) (create at implementation)
 
 ## Related
 

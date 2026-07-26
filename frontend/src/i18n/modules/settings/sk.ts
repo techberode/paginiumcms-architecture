@@ -88,6 +88,7 @@ export const settingsSk: MessageTree = {
     "contentSecurity": "Bezpečnosť obsahu (XML/HTML)",
     "uploadSecurity": "Bezpečnosť uploadu",
     "branding": "Logo a favicon",
+    "appearance": "Vzhľad",
     "accessControl": "Oprávnenia rolí",
     "cmsInfo": "PaginiumCMS – info"
   },
@@ -109,6 +110,41 @@ export const settingsSk: MessageTree = {
     "linkPhilosophy": "Filozofia projektu",
     "linkChangelog": "Changelog (história verzií)",
     "footer": "Verzia sa aktualizuje pri release tagu. Táto sekcia je len na čítanie."
+  },
+  "appearance": {
+    "defaultBadge": "Predvolená",
+    "schemesTitle": "Farebné schémy",
+    "schemesHint": "Vyberte paletu pre verejný web. Každá schéma má svetlú a tmavú variantu.",
+    "modeTitle": "Režim zobrazenia",
+    "modes": {
+      "light": "Svetlý",
+      "dark": "Tmavý",
+      "system": "Podľa systému"
+    },
+    "allowUserToggle": "Povoliť návštevníkom prepínať svetlý / tmavý režim",
+    "previewTitle": "Náhľad stránky",
+    "schemes": {
+      "indigoClassic": {
+        "name": "Indigo Classic",
+        "description": "Indigo / violet na slate — default Paginium, SaaS a tech."
+      },
+      "oceanSlate": {
+        "name": "Ocean Slate",
+        "description": "Teal / cyan na cool gray — calm tech, fintech."
+      },
+      "forestSage": {
+        "name": "Forest Sage",
+        "description": "Emerald / sage na warm neutral — eko, wellness, B2B."
+      },
+      "sunsetRose": {
+        "name": "Sunset Rose",
+        "description": "Coral / rose na cream — magazín, lifestyle, kreatíva."
+      },
+      "monoZinc": {
+        "name": "Mono Zinc",
+        "description": "Zinc neutrals + accent — editorial, minimal, portfólio."
+      }
+    }
   },
   "accessControl": {
     "superAdminTitle": "Len pre super administrátora",

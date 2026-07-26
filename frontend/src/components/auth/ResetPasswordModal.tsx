@@ -60,7 +60,7 @@ export const ResetPasswordModal: React.FC = () => {
         formTitle={t('public.auth.reset.invalid.title')}
         formSubtitle={t('public.auth.reset.invalid.subtitle')}
       >
-        <p className="text-sm text-slate-600 dark:text-slate-300 mb-6">
+        <p className="text-sm text-theme-text-muted mb-6">
           {t('public.auth.reset.invalid.body')}
         </p>
         <Link to="/forgot-password" className={authButtonClass}>
@@ -92,7 +92,7 @@ export const ResetPasswordModal: React.FC = () => {
           <div>
             <label className={authLabelClass}>{t('public.auth.reset.fields.newPassword')}</label>
             <div className="relative">
-              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-theme-text-muted" />
               <input
                 type={showPassword ? 'text' : 'password'}
                 required
@@ -105,7 +105,7 @@ export const ResetPasswordModal: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-theme-text-muted hover:text-theme-text"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -115,7 +115,7 @@ export const ResetPasswordModal: React.FC = () => {
           <div>
             <label className={authLabelClass}>{t('public.auth.reset.fields.confirmPassword')}</label>
             <div className="relative">
-              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-theme-text-muted" />
               <input
                 type={showPassword ? 'text' : 'password'}
                 required

@@ -176,6 +176,7 @@ final class SettingsController
                 'logoUrl' => (string) ($all['branding']['logoUrl'] ?? ''),
                 'faviconUrl' => (string) ($all['branding']['faviconUrl'] ?? ''),
             ],
+            'appearance' => $this->publicAppearanceSettings($all['appearance'] ?? []),
             'maintenance' => $this->publicMaintenanceSettings($all['maintenance'] ?? []),
             'workflows' => [
                 'registrationOtpEnabled' => (bool) ($all['workflows']['registrationOtpEnabled'] ?? false),
@@ -318,6 +319,33 @@ final class SettingsController
         }
 
         return $values;
+    }
+
+    /**
+     * @param array<string, mixed> $appearance
+     * @return array{colorScheme: string, mode: string, allowUserToggle: bool}
+     */
+    private function publicAppearanceSettings(array $appearance): array
+    {
+        $defaults = SettingsSchema::defaults()['appearance'] ?? [];
+        $allowedSchemes = ['indigo-classic', 'ocean-slate', 'forest-sage', 'sunset-rose', 'mono-zinc'];
+        $allowedModes = ['light', 'dark', 'system'];
+
+        $colorScheme = (string) ($appearance['colorScheme'] ?? $defaults['colorScheme'] ?? 'indigo-classic');
+        if (!in_array($colorScheme, $allowedSchemes, true)) {
+            $colorScheme = 'indigo-classic';
+        }
+
+        $mode = (string) ($appearance['mode'] ?? $defaults['mode'] ?? 'system');
+        if (!in_array($mode, $allowedModes, true)) {
+            $mode = 'system';
+        }
+
+        return [
+            'colorScheme' => $colorScheme,
+            'mode' => $mode,
+            'allowUserToggle' => (bool) ($appearance['allowUserToggle'] ?? $defaults['allowUserToggle'] ?? true),
+        ];
     }
 
     /**

@@ -85,6 +85,11 @@ export const handlers = [
       data: {
         general: { siteName: 'PaginiumCMS', language: 'sk' },
         content: { autoSaveInterval: 60 },
+        appearance: {
+          colorScheme: 'indigo-classic',
+          mode: 'system',
+          allowUserToggle: true,
+        },
       },
     })
   ),

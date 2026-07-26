@@ -113,11 +113,11 @@ export const LoginModal: React.FC = () => {
 
   const footerLinks = (
     <div className="flex justify-between text-sm pt-1">
-      <Link to="/forgot-password" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
+      <Link to="/forgot-password" className="text-theme-primary hover:underline font-medium">
         {t('public.auth.login.forgotPassword')}
       </Link>
       {allowRegistration && (
-        <Link to="/register" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
+        <Link to="/register" className="text-theme-primary hover:underline font-medium">
           {t('public.auth.login.createAccount')}
         </Link>
       )}
@@ -158,7 +158,7 @@ export const LoginModal: React.FC = () => {
           <div>
             <label className={authLabelClass}>{t('public.auth.common.email')}</label>
             <div className="relative">
-              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-theme-text-muted" />
               <input
                 type="email"
                 required
@@ -174,7 +174,7 @@ export const LoginModal: React.FC = () => {
           <div>
             <label className={authLabelClass}>{t('public.auth.common.password')}</label>
             <div className="relative">
-              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-theme-text-muted" />
               <input
                 type={showPassword ? 'text' : 'password'}
                 required
@@ -187,7 +187,7 @@ export const LoginModal: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-theme-text-muted hover:text-theme-text"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -202,15 +202,15 @@ export const LoginModal: React.FC = () => {
           {footerLinks}
 
           {ssoProviders.length > 0 && (
-            <div className="pt-4 border-t border-slate-200 dark:border-slate-700 space-y-2">
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-400 text-center">{t('public.auth.login.ssoDivider')}</p>
+            <div className="pt-4 border-t border-theme-border space-y-2">
+              <p className="text-xs font-bold uppercase tracking-wider text-theme-text-muted text-center">{t('public.auth.login.ssoDivider')}</p>
               {ssoProviders.map((provider) => (
                 <button
                   key={provider.id}
                   type="button"
                   disabled={loading}
                   onClick={() => void handleSso(provider.id)}
-                  className="w-full py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800"
+                  className="w-full py-3 rounded-xl border border-theme-border text-sm font-bold text-theme-text hover:bg-theme-surface"
                 >
                   {t('public.auth.login.ssoButton', { provider: provider.name })}
                 </button>
@@ -220,15 +220,15 @@ export const LoginModal: React.FC = () => {
         </form>
       ) : (
         <form className="space-y-6" onSubmit={handleTotp}>
-          <div className="rounded-2xl border border-indigo-200/80 dark:border-indigo-800/60 bg-gradient-to-br from-indigo-50 to-violet-50 dark:from-indigo-950/40 dark:to-violet-950/30 p-6 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white dark:bg-slate-900 shadow-lg shadow-indigo-500/20 mb-4">
-              <Fingerprint className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+          <div className="rounded-2xl border border-theme-primary/30 bg-gradient-to-br from-theme-primary/10 to-theme-accent/10 p-6 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-theme-surface-elevated shadow-lg shadow-theme-primary/20 mb-4">
+              <Fingerprint className="w-8 h-8 text-theme-primary" />
             </div>
-            <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 flex items-center justify-center gap-2">
+            <p className="text-sm font-semibold text-theme-text flex items-center justify-center gap-2">
               <ShieldCheck className="w-4 h-4 text-emerald-500" />
               {t('public.auth.login.totp.panelTitle')}
             </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+            <p className="text-xs text-theme-text-muted mt-2">
               {t('public.auth.login.totp.panelHint')}
             </p>
           </div>
@@ -242,7 +242,7 @@ export const LoginModal: React.FC = () => {
 
           <button
             type="button"
-            className="w-full text-sm text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+            className="w-full text-sm text-theme-text-muted hover:text-theme-text"
             onClick={() => {
               setStep('credentials');
               setTotpCode('');

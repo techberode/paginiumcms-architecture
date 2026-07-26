@@ -7,8 +7,11 @@ import { useSettingsContext } from '../../context/SettingsContext';
 import { useAuth } from '../../hooks/useAuth';
 import { useI18n } from '../../context/I18nContext';
 import { SiteLogo } from '../branding/SiteLogo';
+import { PublicThemeToggle } from './PublicThemeToggle';
+import { usePublicAppearanceContext } from '../../context/PublicAppearanceProvider';
 import { NavDropdownEntry, NavMenuVisual } from './NavMenuVisual';
 import { navigationItemHasVisual } from '../../utils/navigationRich';
+import { BTN_PRIMARY_GRADIENT, LOGO_FALLBACK, NAV_LINK_ACTIVE, NAV_LINK_IDLE } from '../../theme/publicUiClasses';
 
 interface NavbarProps {
   onOpenSearch: () => void;
@@ -25,7 +28,7 @@ const NavItemContent: React.FC<{
     <span className="min-w-0 text-left">
       <span className={`block ${labelClassName}`}>{item.label}</span>
       {item.description ? (
-        <span className={`block font-normal text-slate-500 dark:text-slate-400 ${descriptionClassName}`}>
+        <span className={`block font-normal text-theme-text-muted ${descriptionClassName}`}>
           {item.description}
         </span>
       ) : null}
@@ -43,9 +46,7 @@ const NavLinkButton: React.FC<{
     type="button"
     onClick={() => onNavigate(item.path)}
     className={`inline-flex items-start gap-2 px-4 py-2 rounded-xl transition-all cursor-pointer ${className} ${
-      active
-        ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50'
-        : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
+      active ? NAV_LINK_ACTIVE : NAV_LINK_IDLE
     }`}
   >
     <NavItemContent item={item} />
@@ -77,9 +78,7 @@ const DesktopNavItem: React.FC<{
       <button
         type="button"
         className={`inline-flex items-start gap-2 px-4 py-2 rounded-xl transition-all ${
-          active
-            ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50'
-            : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
+          active ? NAV_LINK_ACTIVE : NAV_LINK_IDLE
         }`}
         onClick={() => onNavigate(item.path)}
       >
@@ -88,7 +87,7 @@ const DesktopNavItem: React.FC<{
       </button>
       {open ? (
         <div className="absolute left-0 top-full pt-2 min-w-[240px] z-50">
-          <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl py-2">
+          <div className="rounded-xl border border-theme-border bg-theme-surface-elevated shadow-xl py-2">
             {item.children?.map((child) => (
               <div key={child.id}>
                 <NavDropdownEntry
@@ -129,9 +128,7 @@ const MobileNavItems: React.FC<{
           type="button"
           onClick={() => onNavigate(item.path)}
           className={`w-full p-3 rounded-xl text-left flex items-start gap-3 ${
-            isPathActive(item.path)
-              ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400'
-              : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
+            isPathActive(item.path) ? NAV_LINK_ACTIVE : `${NAV_LINK_IDLE} text-theme-text`
           }`}
         >
           <NavItemContent item={item} labelClassName="text-base font-bold" descriptionClassName="text-sm" />
@@ -173,13 +170,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, previewMode = fals
     enableHoverAnimations: Boolean(get('navigationUi.enableHoverAnimations', true)),
   };
 
+  const { allowUserToggle, resolvedTheme, toggleVisitorTheme } = usePublicAppearanceContext();
+
   const handleNavigate = (path: string) => {
     navigate(path);
     setMobileMenuOpen(false);
   };
 
   return (
-    <header className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 sticky top-0 z-40 transition-colors">
+    <header className="backdrop-blur-md border-b border-theme-border bg-theme-surface-elevated/90 sticky top-0 z-40 transition-colors">
       {previewMode && (
         <div className="bg-amber-500 text-amber-950 text-center text-[11px] font-bold py-1">
           {t('public.nav.previewBanner')}
@@ -195,8 +194,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, previewMode = fals
             showName
             className="flex items-center gap-3"
             imageClassName="h-10 w-auto max-w-[160px] object-contain group-hover:scale-105 transition-transform"
-            fallbackClassName="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform shrink-0"
-            nameClassName="text-lg font-black tracking-tight text-slate-900 dark:text-white truncate"
+            fallbackClassName={`w-10 h-10 ${LOGO_FALLBACK} group-hover:scale-105 transition-transform`}
+            nameClassName="text-lg font-black tracking-tight text-theme-text truncate"
           />
         </button>
 
@@ -213,20 +212,24 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, previewMode = fals
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-3">
+          {allowUserToggle ? (
+            <PublicThemeToggle resolvedTheme={resolvedTheme} onToggle={toggleVisitorTheme} />
+          ) : null}
+
           <button
             type="button"
             onClick={onOpenSearch}
-            className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+            className="flex items-center gap-2 bg-theme-surface hover:opacity-80 text-theme-text px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer border border-theme-border/50"
           >
-            <Search className="w-4 h-4 text-indigo-500" />
-            <span className="hidden sm:inline text-slate-500 dark:text-slate-400 font-normal">{t('public.nav.search')}</span>
+            <Search className="w-4 h-4 text-theme-primary" />
+            <span className="hidden sm:inline text-theme-text-muted font-normal">{t('public.nav.search')}</span>
           </button>
 
           {user ? (
             <button
               type="button"
               onClick={() => navigate('/dashboard')}
-              className="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg shadow-indigo-500/25 transition-all cursor-pointer"
+              className={`flex items-center gap-2 px-4 py-2 text-xs ${BTN_PRIMARY_GRADIENT} cursor-pointer`}
             >
               <Shield className="w-4 h-4" />
               <span className="hidden sm:inline">{t('public.nav.adminButton')}</span>
@@ -235,7 +238,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, previewMode = fals
             <button
               type="button"
               onClick={() => navigate('/login')}
-              className="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer"
+              className="flex items-center gap-1.5 bg-theme-text hover:opacity-90 text-theme-surface px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer"
             >
               <Shield className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">{t('public.nav.loginButton')}</span>
@@ -245,7 +248,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, previewMode = fals
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+            className="md:hidden p-2 text-theme-text hover:bg-theme-surface rounded-xl transition-colors"
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -253,7 +256,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, previewMode = fals
       </div>
 
       {mobileMenuOpen ? (
-        <div className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-6 shadow-xl animate-fadeIn">
+        <div className="md:hidden border-t border-theme-border bg-theme-surface-elevated px-4 py-6 shadow-xl animate-fadeIn">
           <div className="flex flex-col gap-2">
             <MobileNavItems items={sortedNav} isPathActive={isPathActive} onNavigate={handleNavigate} />
           </div>

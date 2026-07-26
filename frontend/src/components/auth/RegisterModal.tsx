@@ -126,7 +126,7 @@ export const RegisterModal: React.FC = () => {
         formTitle={t('public.auth.register.disabled.title')}
         formSubtitle={t('public.auth.register.disabled.subtitle')}
       >
-        <p className="text-sm text-slate-600 dark:text-slate-300">
+        <p className="text-sm text-theme-text-muted">
           {t('public.auth.register.disabled.body')}
         </p>
         <Link to="/login" className={`${authButtonClass} mt-6 text-center`}>
@@ -153,7 +153,7 @@ export const RegisterModal: React.FC = () => {
               {t('public.auth.register.fields.fullName')} <span className="text-rose-500">*</span>
             </label>
             <div className="relative">
-              <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-theme-text-muted" />
               <input
                 type="text"
                 required
@@ -171,7 +171,7 @@ export const RegisterModal: React.FC = () => {
               {t('public.auth.common.email')} <span className="text-rose-500">*</span>
             </label>
             <div className="relative">
-              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-theme-text-muted" />
               <input
                 type="email"
                 required
@@ -189,7 +189,7 @@ export const RegisterModal: React.FC = () => {
               {t('public.auth.common.password')} <span className="text-rose-500">*</span>
             </label>
             <div className="relative">
-              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-theme-text-muted" />
               <input
                 type={showPassword ? 'text' : 'password'}
                 required
@@ -202,7 +202,7 @@ export const RegisterModal: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-theme-text-muted hover:text-theme-text"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -214,7 +214,7 @@ export const RegisterModal: React.FC = () => {
               {t('public.auth.common.passwordConfirm')} <span className="text-rose-500">*</span>
             </label>
             <div className="relative">
-              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-theme-text-muted" />
               <input
                 type={showPassword ? 'text' : 'password'}
                 required
@@ -234,9 +234,9 @@ export const RegisterModal: React.FC = () => {
             <span>{loading ? t('public.auth.register.submitting') : t('public.auth.register.submit')}</span>
           </button>
 
-          <p className="text-center text-sm text-slate-500">
+          <p className="text-center text-sm text-theme-text-muted">
             {t('public.auth.register.hasAccount')}{' '}
-            <Link to="/login" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
+            <Link to="/login" className="text-theme-primary hover:underline font-medium">
               {t('public.auth.common.signIn')}
             </Link>
           </p>
@@ -252,7 +252,7 @@ export const RegisterModal: React.FC = () => {
             type="button"
             disabled={loading}
             onClick={() => void handleResend()}
-            className="w-full py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800"
+            className="w-full py-3 rounded-xl border border-theme-border text-sm font-bold text-theme-text hover:bg-theme-surface"
           >
             {t('public.auth.register.otp.resend')}
           </button>
@@ -263,7 +263,7 @@ export const RegisterModal: React.FC = () => {
               setStep('form');
               setOtpCode('');
             }}
-            className="w-full text-sm text-slate-500 hover:underline"
+            className="w-full text-sm text-theme-text-muted hover:underline"
           >
             {t('public.auth.register.otp.backToForm')}
           </button>

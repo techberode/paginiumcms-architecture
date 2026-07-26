@@ -12,6 +12,7 @@ import { useI18n } from '../../context/I18nContext';
 import { useAuth } from '../../hooks/useAuth';
 import { useSeoMeta } from '../../hooks/useSeoMeta';
 import { MaintenanceGate } from '../maintenance/MaintenanceGate';
+import { BTN_PRIMARY, PUBLIC_SPINNER } from '../../theme/publicUiClasses';
 
 const ADMIN_PREFIXES = [
   '/dashboard',
@@ -35,7 +36,7 @@ export function PublicHomePage() {
   if (loading) {
     return (
       <div className="min-h-[50vh] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600" />
+        <div className={PUBLIC_SPINNER} />
       </div>
     );
   }
@@ -43,8 +44,8 @@ export function PublicHomePage() {
   if (!home) {
     return (
       <div className="min-h-[50vh] flex flex-col items-center justify-center px-4 text-center">
-        <h1 className="text-3xl font-black text-slate-900 dark:text-white">PaginiumCMS</h1>
-        <p className="mt-3 text-slate-500">{t('public.layout.noHomePage')}</p>
+        <h1 className="text-3xl font-black text-theme-text">PaginiumCMS</h1>
+        <p className="mt-3 text-theme-text-muted">{t('public.layout.noHomePage')}</p>
       </div>
     );
   }
@@ -63,7 +64,7 @@ export function PublicSlugPage() {
   if (loading) {
     return (
       <div className="min-h-[50vh] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600" />
+        <div className={PUBLIC_SPINNER} />
       </div>
     );
   }
@@ -71,12 +72,12 @@ export function PublicSlugPage() {
   if (!page) {
     return (
       <div className="min-h-[50vh] flex flex-col items-center justify-center px-4 text-center">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{t('public.errors.notFoundCode')}</h1>
-        <p className="mt-2 text-slate-500">{t('public.errors.pageNotFound', { slug: slug ?? '' })}</p>
+        <h1 className="text-2xl font-bold text-theme-text">{t('public.errors.notFoundCode')}</h1>
+        <p className="mt-2 text-theme-text-muted">{t('public.errors.pageNotFound', { slug: slug ?? '' })}</p>
         <button
           type="button"
           onClick={() => navigate('/')}
-          className="mt-6 bg-indigo-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold"
+          className={`mt-6 px-6 py-2.5 rounded-xl text-sm font-bold ${BTN_PRIMARY}`}
         >
           {t('public.nav.home')}
         </button>
@@ -164,7 +165,7 @@ export const PublicSiteLayout: React.FC = () => {
 
   return (
     <MaintenanceGate>
-      <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors">
+      <div className="min-h-screen flex flex-col bg-theme-surface text-theme-text transition-colors">
       {showCmsBar && <CMSBar currentDoc={currentDoc} />}
       <Navbar onOpenSearch={() => setSearchOpen(true)} />
       <div className="flex-1">
