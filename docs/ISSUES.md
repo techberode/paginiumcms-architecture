@@ -1,6 +1,6 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-26 · verzia **2.1.0-beta.7** · ISS-063–090 · backlog It.58–61
+> Posledná aktualizácia: 2026-07-26 · verzia **2.1.0-beta.8** (+ **It.62** unreleased) · ISS-063–094 · backlog It.59–61
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
 
@@ -111,6 +111,7 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-091 | Vitest 14× fail — `react-router@8` override + `useOptimistic` | Stredná (CI) | ✅ Opravené · **2.1.0-beta.7** |
 | ISS-092 | Deploy — lokálne env + syntax `:?` v deploy skripte | Nízka (ops) | ✅ Opravené · **2.1.0-beta.7** |
 | ISS-093 | ESLint `expand is not a function` — override `brace-expansion@5` vs `minimatch@3` | Stredná (CI) | ✅ Opravené · odstránený override |
+| ISS-094 | Job scheduler `POST …/run` → 500 na prod (Docker storage + UI) | Vysoká (prod) | ✅ Opravené · **It.62** (`f7a73f1`) |
 
 
 
@@ -2209,6 +2210,37 @@ DEPLOY_HOST=192.168.x.x DEPLOY_USER=yourName DEPLOY_SSH_PORT=22 ./scripts/deploy
 
 ---
 
+## ISS-094 – Job scheduler run → 500 na produkcii (Docker storage + UI) — VYRIEŠENÉ
+
+**Symptóm:** Po deployi na `paginiumcms.com` admin **Plánovač** — `POST /api/admin/jobs/{id}/run` → **500** (backup-scheduled, monitoring-pipeline, content-scheduled-publish). Neskôr API vracalo 200, ale UI stále vyzeralo nefunkčné.
+
+**Príčiny (vrstvené):**
+
+1. **Docker `www-data`** nemohol zapisovať do `backend/storage/app/content/data/jobs/runs.json` a `scheduler-state.json` (host user `marian` mal práva, kontajner nie).
+2. **`display_errors` On** → PHP `Warning:` pred JSON telom → FE neparsovalo odpoveď.
+3. **Frontend** považoval `result.success === false` (napr. „Backup not due“) za chybu toastu, hoci job bežal.
+4. **`git pull` na prod** blokovaný lokálnymi hotfixmi v `LogStoragePaths.php`, `composer.json`, `Dockerfile`.
+
+**Riešenie (It.62, commity `0fe21ec`…`f7a73f1`):**
+
+- Storage: `chown marian:www-data`, dirs `2775`, test `touch` ako `www-data` v kontajneri.
+- Backend: `ScheduledJobRunner::finalizeRun()`, pole `outcome`, `jobs:run` CLI.
+- PHP: `docker/php/php.ini` — `display_errors=Off`; `FileWriter` `@file_put_contents`, `chmod 0664`.
+- FE: toast pri HTTP success; badges Hotovo/Preskočené/Zlyhanie.
+- Docs: [ITERATION_62.md](ITERATION_62.md), [deploy/CRON.md](deploy/CRON.md).
+
+**Overenie:**
+
+```bash
+./stack.sh exec -u www-data php sh -c 'touch .../data/jobs/.write-test && rm ... && echo WRITE_OK'
+./stack.sh exec php php backend/bin/console jobs:run backup-scheduled
+# Admin /scheduler — zelený toast „Backup not due“, badge Preskočené v histórii
+```
+
+**Stav:** ✅ Opravené na prod · tag **`v2.1.0-beta.9`** pending.
+
+---
+
 ## Súvisiace dokumenty
 
 - [user/BRANDING.md](user/BRANDING.md) — logo a favicon (**2.0.52**)
@@ -2218,6 +2250,8 @@ DEPLOY_HOST=192.168.x.x DEPLOY_USER=yourName DEPLOY_SSH_PORT=22 ./scripts/deploy
 - [ITERATION_54.md](ITERATION_54.md) — editor profiles (ISS-079)
 - [ITERATION_56.md](ITERATION_56.md) — rich navigation (ISS-085)
 - [ITERATION_57.md](ITERATION_57.md) — suggest-meta (ISS-080)
+- [ITERATION_62.md](ITERATION_62.md) — scheduler prod hardening (ISS-094)
+- [deploy/CRON.md](deploy/CRON.md) — produkčný crontab + Docker storage
 - [developer/TESTING.md](developer/TESTING.md) — PHPUnit izolácia (`LoginAttemptTracker`)
 - [ITERATION_44.md](ITERATION_44.md) — It.44d index filtre (ISS-038)
 - [ROADMAP.md](ROADMAP.md) – plánované iterácie (It.41+, It.47–49)

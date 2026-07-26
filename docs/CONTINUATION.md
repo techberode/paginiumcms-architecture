@@ -16,7 +16,44 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 
 ---
 
-## Aktuálny plán (2026-07-23) — Public Beta 1
+## Aktuálny plán (2026-07-26) — Public Beta 1 + produkčný deploy
+
+**Stav:** **`v2.1.0-beta.8`** tagged · produkcia **`paginiumcms.com`** nasadená · **It.62** (scheduler prod hardening) shipped na `main` (**`f7a73f1`**, ešte bez tagu → cieľ **`v2.1.0-beta.9`**).
+
+**Ďalšia iterácia:** **[It.59 — Odložená publikácia v editore](ITERATION_59.md)** (kalendár + admin filtre; job `content-scheduled-publish` už beží cez It.29/62).
+
+| Priorita | Úloha | Stav |
+|----------|--------|------|
+| **Prod deploy** | Docker stack, nginx, SSL, `git pull` + frontend build | ✅ beží na `paginiumcms.com` |
+| **Prod fix — scheduler** | Jobs run 500, storage permissions, UI toast | ✅ **It.62** (`f7a73f1`) |
+| **Prod fix — deploy** | Docker PHP 8.5, log paths, SMTP recipient, OPcache | ✅ `0fe21ec` … `d1bd35b` |
+| **Cron na hoste** | `scheduler:run` + `worker:process` každú minútu | ⏳ overiť crontab (BE joby už píšu do `runs.json`) |
+| **Tag beta.9** | Release notes + `v2.1.0-beta.9` po smoke na prod | ⏳ nasledujúci krok |
+| **It.59** | Scheduled publish UX v editore + filtre | ⏳ **ĎALŠIA ITERÁCIA** |
+| **It.60–61** | Modulárny editor, newsletter footer | ⏳ backlog |
+
+Detail deployu (lokálne, gitignored): `PRIVATE_DOMAIN_DEPLOY.md` · scheduler: [ITERATION_62.md](ITERATION_62.md) · cron: [deploy/CRON.md](deploy/CRON.md)
+
+---
+
+## Iterácia 62 – Scheduler production hardening ✅ (2026-07-26)
+
+Produkčný incident: `POST /api/admin/jobs/*/run` → **500**, admin Plánovač vyzeral nefunkčný.
+
+| Vrstva | Problém | Oprava |
+|--------|---------|--------|
+| **Storage** | Docker `www-data` nemohol zapisovať `data/jobs/runs.json` | `chown user:www-data`, dirs `2775`, test `touch` z kontajnera |
+| **PHP** | `Warning:` pred JSON → FE parse error | `display_errors=Off`, `@file_put_contents`, `chmod 0664` |
+| **Backend** | Neošetrený zápis run logu → HTTP 500 | `ScheduledJobRunner::finalizeRun()`, `outcome` (`completed/skipped/failed`) |
+| **Frontend** | `success: false` („Backup not due“) = červený toast | Toast pri HTTP 200 + badge v Posledných behoch |
+| **CLI** | Chýbal smoke jedného jobu | `php backend/bin/console jobs:run {id}` |
+| **Diagnostika** | Host `content:diagnose` klamlivý (`marian` ≠ `www-data`) | Polia `jobsDirWritable` + Docker write test v docs |
+
+**Commity (main):** `0fe21ec` → `f7a73f1` · **ISS:** [ISS-094](ISSUES.md#iss-094--job-scheduler-run--500-na-produkcii-docker-storage--ui--vyriešené)
+
+---
+
+## Aktuálny plán (2026-07-23) — Public Beta 1 *(archív)*
 
 **Stav:** **`v2.1.0-beta.1`** shipped — vlny 5a–5f, 6, 7 dokončené. Testeri + feedback cez GitHub Issues.
 
@@ -261,56 +298,35 @@ od ktorých závisí väčšina ostatných funkcií, a aby každá iterácia pri
 
 ```
 Pokračujeme vo vývoji PaginiumCMS (Flat-File CMS, žiadna DB).
-Stack: React SPA (Vite 8, TS, TailwindCSS, React Query, Axios) ↔ Slim 4 REST API ↔
-PHP 8.5 jadro (PHP-DI, PHPStan level 8, striktné typy). Komunikuj po slovensky.
-Pravidlá: striktné typovanie (PHP declare(strict_types=1), plné namespaces; TS strict),
-absolútne cesty, čistý a rozšíriteľný kód, každú zmenu hneď zaznamenať do docs/,
-bloky kódu komentovať, radikálne zmeny aplikovať až po schválení. Výsledky hneď v kóde.
+Stack: React SPA (Vite 8, TS) ↔ Slim 4 REST API ↔ PHP 8.5 (PHPStan L8).
+Produkcia: paginiumcms.com (Docker PHP + host nginx, flat-file v backend/storage/).
+Komunikuj po slovensky. Pravidlá: .cursorrules + ZÁKONY v docs/CONTINUATION.md §2.
 
-ARCHITEKTONICKÉ ZÁKONY (docs/CONTINUATION.md §2):
-1. EXTERNÉ DOPLNKY mimo Core → backend/app/Http/Extensions/{id}/ + Http/Routes/extensions/
-   + frontend/src/extensions/{id}/. Nikdy do backend/app/Core/.
-2. API↔FE: každý nový endpoint = typovaný api/*.ts + komponent/route + záznam v API.md.
-3. POLITIKA KÓDU: vlastný kód (modul/téma/doplnok) sa uloží len po prechode CodePolicyEngine.
-   Detail: docs/developer/CODING_STANDARDS.md
+HOTOVÉ (2026-07-26):
+- v2.1.0-beta.8 tagged (It.58b color schemes).
+- It.62 ✅ scheduler prod hardening (outcome, jobs:run CLI, Docker storage docs, UI fix).
+  Detail: docs/ITERATION_62.md, docs/deploy/CRON.md, ISS-094.
+- Produkčný deploy: git pull, composer --no-dev, frontend build:prod, stack.sh, storage 2775.
 
-HOTOVÉ A FUNKČNÉ (nemeniť bez dôvodu):
-- Iterácia 1: zamykanie obsahu (Core/Locking, LockIndicator, /api/locks/*).
-- Iterácia 2: auto-save koncepty (Core/Drafts), revízie (ContentRevision), detekcia
-  konfliktu (409, baseRevision), DiffViewer, VersionHistory.
-- Iterácia 3: 3-way merge (utils/merge3.ts), ConflictResolver, ConflictLogger
-  (data/conflicts.json), /api/admin/conflicts.
-- Iterácia 4: Settings engine (data/settings.json, SettingsContext), ApiErrorHandler,
-  zdieľaná validácia (ValidationRules, GET /api/validation/rules).
-- Cache: Core/Cache (Memory+File chained) zapojená do ContentController.
-- CodeEditor (čiastočný): GatedCodeEditorController, SyntaxChecker, FileBackup,
-  DeveloperModeGate – path resolution rozbitá, FE FileTree/Monaco nehotové.
-- Testy: PHPUnit + PHPStan L8 + Vitest (validation, merge3, ConflictResolver).
+PLÁNOVAČ / CRON (funguje):
+- Admin /scheduler — 3 system joby: backup-scheduled, monitoring-pipeline, content-scheduled-publish.
+- CLI: scheduler:run, worker:process, jobs:run {id}.
+- „Backup not due“ / „No scheduled content due“ = outcome skipped (nie chyba).
 
-STAV PODNETOV je v docs/CONTINUATION.md (§2). Backend často existuje, chýba FE/prepojenie.
+PROD CHECKLIST po každom pulli:
+  git pull && composer install --no-dev && cd frontend && npm ci && npm run build:prod
+  ./stack.sh restart php   # OPcache
+  ./stack.sh exec -u www-data php sh -c 'touch .../data/jobs/.write-test && rm ... && echo WRITE_OK'
 
-PLÁN (docs/CONTINUATION.md §3), poradie podľa náročnosti/závislostí:
-It.5 Používatelia + roly, 2FA vynútenie + UI, kalenie auth (HttpOnly session).
-It.6 Notifikácie: reálne SMTP, konektory (ntfy/Discord/Telegram/webhook), toast konfigurácia.
-It.7 Admin dashboard: zámky + konflikty + Health + API Tracker/Analytics.
-It.8 Media manager FE + WYSIWYG + picker — ✅ ([ITERATION_8.md](ITERATION_8.md), 2.0.4; DAM It.24).
-It.9 prototype port (nav, comments, contact): see [ITERATION_9.md](ITERATION_9.md). SEO public meta: It.23 ✅. Admin SEO UX: It.27 ✅ (2.0.15).
-It.10 XML Feeds — ✅ ([ITERATION_10.md](ITERATION_10.md), 2.0.10 + polish Unreleased).
-It.11 SSO + jemnozrnné ACL + bezpečnostný audit log — ✅ ([ITERATION_11.md](ITERATION_11.md), Unreleased).
-It.12 Blueprint/Schema engine — ✅ ([ITERATION_12.md](ITERATION_12.md), Unreleased).
-It.13 Demo sandbox (iba demo.paginiumcms.com) — ✅ ([ITERATION_13.md](ITERATION_13.md), 2.0.28).
-It.14 Politika kódu (CodePolicyEngine) + oprava CodeEditor path/FE kontraktu.
-It.15 Externé doplnky mimo Core: PluginManager, install/import, HookManager DI.
-It.16 CodeEditor plný stack: moduly/témy/doplnky editovateľné s policy gate.
-It.17 ZÁKON API↔FE: scaffold + šablóny rozšírení + CONTRIBUTING checklist.
+ĎALŠIA ITERÁCIA: It.59 — Odložená publikácia v editore (docs/ITERATION_59.md).
+  Job content.scheduled_publish už beží; treba FE kalendár, filtre scheduled, smoke publish.
 
-STÁLY BOD: ku každému novému modulu/funkcionalite pridať testy (PHPUnit + Vitest).
+Backlog: It.60 modulárny editor, It.61 newsletter footer, It.25 setup wizard (odložené).
 
-Začni Iteráciou 5 (User management + 2FA + kalenie auth), alebo It.14 ak priorita
-je CodeEditor/doplnky. Postupuj po iteráciách; po každej: PHPUnit + PHPStan + Vitest + docs.
-Radikálne zmeny (Blueprint, SSO, Plugin runtime, zmena auth) najprv navrhni a počkaj na schválenie.
+Začni It.59 podľa ITERATION_59.md. Po každej vlne: PHPUnit + Vitest + PHPStan + docs + RELEASE.md.
+Deploy poznámky: PRIVATE_DOMAIN_DEPLOY.md (gitignored, na serveri).
 ```
 
 ---
 
-*Aktualizované po Iterácii 43 (Unreleased) + SEO It.23. Podrobnosti: `SETTINGS.md`, `STORAGE.md`, `API.md`, `ITERATION_23.md`, `ITERATION_43.md`, `ROADMAP.md`, `PLUGINS.md`.*
+*Aktualizované 2026-07-26 po It.62 + prod deploy paginiumcms.com. Podrobnosti: `ITERATION_62.md`, `ISSUES.md` (ISS-094), `RELEASE.md` (beta.9 draft), `deploy/CRON.md`.*

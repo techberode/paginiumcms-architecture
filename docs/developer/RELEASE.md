@@ -1,6 +1,7 @@
 # Release checklist — PaginiumCMS
 
 > Posledná verzia: **2.1.0-beta.8** · 2026-07-26 · tag **`v2.1.0-beta.8`**  
+> **Unreleased na `main`:** It.62 scheduler prod hardening → cieľ **`v2.1.0-beta.9`** (`f7a73f1`)  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release.
 
 > **Poznámka k verziám:** **`2.0.58`** → `f53e71e` · **Public Beta 1** → `e3e0d82` · **Beta 1 Testing** → `c68e72b` · **Beta 1 patch (RR GHSA)** → *(commit po push)*.
@@ -27,6 +28,7 @@
 | **Security audit — XSS, Zip-Slip, deploy** | **`v2.1.0-beta.6`** | ✅ tagged |
 | **Deps + Vitest + deploy env (ISS-089–092)** | **`v2.1.0-beta.7`** | ✅ tagged |
 | **It.58b — Color schemes + themed public site** | **`v2.1.0-beta.8`** | ✅ tagged |
+| **It.62 — Scheduler prod hardening (Docker, outcome UX)** | **`v2.1.0-beta.9`** | ⏳ na `main`, tag pending |
 
 **Pravidlo:** Post-beta patchy — `2.0.59+` alebo `2.1.0-beta.N` podľa rozsahu.
 
@@ -40,6 +42,47 @@ gh auth login   # ak ešte nie
 ```
 
 Testerom / security reviewerovi poslať **`v2.1.0-beta.8`** + [SECURITY_REVIEW.md](../SECURITY_REVIEW.md).
+
+---
+
+## v2.1.0-beta.9 — It.62 Scheduler prod hardening (draft)
+
+**Rozsah commitov na `main` od beta.8:** `0fe21ec` … `f7a73f1`
+
+| Oblasť | Zmena |
+|--------|--------|
+| Deploy | Docker PHP 8.5, prod compose, log paths, symfony/console |
+| Scheduler BE | `finalizeRun`, `outcome`, `jobs:run`, monitoring state guards |
+| Storage | FileWriter 0664/0775, PHP `display_errors=Off` |
+| Scheduler FE | Toast fix, outcome badges, copy cron |
+| Docs | `ITERATION_62.md`, `CRON.md`, ISS-094 |
+
+### Pred tagom
+
+```bash
+./scripts/iteration-gate.sh
+cd frontend && npm test && npm run build:prod
+./vendor/bin/phpunit backend/tests/Core/Scheduler/
+```
+
+### Commit + tag (keď prod smoke OK)
+
+```bash
+git add backend/app/Support/AppVersion.php CHANGELOG.md docs/
+git commit -m "$(cat <<'EOF'
+release: v2.1.0-beta.9 — It.62 scheduler prod hardening.
+
+Docker storage permissions, job run outcome UX, jobs:run CLI, admin scheduler fixes.
+EOF
+)"
+git tag v2.1.0-beta.9
+git push origin main
+git push origin v2.1.0-beta.9
+```
+
+### GitHub Release — title
+
+`v2.1.0-beta.9 — Scheduler production hardening (It.62)`
 
 ---
 

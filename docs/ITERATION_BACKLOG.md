@@ -3,10 +3,10 @@
 > Plánované moduly a rozšírenia po **Iterácii 28 (2.0.16)**.  
 > Legenda: ⏳ plánované · 🟡 stredná priorita · 🔵 nižšia · 🔴 kritická
 
-**Aktuálne hotové:** It.1–24 ✅ · It.26–28 ✅ · It.25 ⏳ (setup wizard — odložené)
+**Aktuálne hotové:** It.1–24 ✅ · It.26–28 ✅ · **It.62** ✅ (scheduler prod) · It.25 ⏳ (setup wizard — odložené)
 
-**Ďalšia iterácia:** [It.60](ITERATION_60.md) (modulárny editor) · backlog It.59–61  
-**Posledná shipped:** [It.56 Rich navigation](ITERATION_56.md) — **`v2.1.0-beta.5`** · [It.57](ITERATION_57.md) — **`v2.1.0-beta.4`** · deps/security — **`v2.1.0-beta.7`**
+**Ďalšia iterácia:** [It.59](ITERATION_59.md) (odložená publikácia v editore) · backlog It.60–61  
+**Posledná shipped:** [It.62 Scheduler prod hardening](ITERATION_62.md) — **`main` @ `f7a73f1`** (tag **beta.9** pending) · [It.58b](ITERATION_58.md) — **`v2.1.0-beta.8`**
 
 **Incidenty a opravy:** [ISSUES.md](ISSUES.md)
 
@@ -21,6 +21,7 @@
 | **27** | **2.0.15** | **[Admin view modes + SEO panel](ITERATION_27.md)** | **✅** | List / list+preview / grid + SEO UX + metadata modal |
 | **28** | **2.0.16** | **[Bulk actions platform](ITERATION_28.md)** | **✅** | Shared bulk bar + batch APIs |
 | **29** | **2.0.18** | **[Cron planner + Job Queue](ITERATION_29.md)** | **✅** | Registry + CLI + `/scheduler` |
+| **62** | **2.1.0-beta.9** | **[Scheduler prod hardening](ITERATION_62.md)** | **✅** | Docker storage, outcome UX, `jobs:run` |
 | **41** | TBD | **Email OTP schvaľovanie** | **✅** | Registrácia, komentáre, publikácia – zap/vyp v admin |
 | **42** | TBD | **Admin počty položiek** | **✅** | Sidebar badges cez `/api/admin/counts` |
 | **43** | **Unreleased** | **Pokročilé vyhľadávanie (FE + BE)** | **✅** | Command palette `Ctrl+K`, scoped `/api/search` — [ITERATION_43.md](ITERATION_43.md) |
@@ -79,6 +80,17 @@ Plánovač pre **plánované spúšťanie akcií** mimo HTTP requestu. **Full sp
 - Flat-file job registry + run history + optional queue
 - CLI `scheduler:run` + `worker:process`
 - Admin `/scheduler` + `GET/POST /api/admin/jobs`
+
+---
+
+## Iterácia 62 – Scheduler production hardening ✅
+
+Produkčný deploy + UX plánovača. **Full spec:** [ITERATION_62.md](ITERATION_62.md)
+
+- Run `outcome`: completed / skipped / failed (nie zamieňať s HTTP chybou)
+- CLI `jobs:run {id}`, dynamický `cron_hint`, Docker `www-data` storage checklist
+- FE: toast fix, badges v Posledných behoch, kopírovanie crontab riadku
+- Incident: [ISS-094](ISSUES.md#iss-094--job-scheduler-run--500-na-produkcii-docker-storage--ui--vyriešené)
 
 ---
 
