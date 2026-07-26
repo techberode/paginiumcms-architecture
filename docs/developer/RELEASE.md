@@ -1,6 +1,6 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.1.0-beta.7** · 2026-07-26 · tag **`v2.1.0-beta.7`**  
+> Posledná verzia: **2.1.0-beta.8** · 2026-07-26 · tag **`v2.1.0-beta.8`**  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release.
 
 > **Poznámka k verziám:** **`2.0.58`** → `f53e71e` · **Public Beta 1** → `e3e0d82` · **Beta 1 Testing** → `c68e72b` · **Beta 1 patch (RR GHSA)** → *(commit po push)*.
@@ -25,7 +25,8 @@
 | **It.57 — Auto tags & meta description** | **`v2.1.0-beta.4`** | **`2091076`** | ✅ tagged |
 | **It.56 — Rich navigation + auth/session fixes** | **`v2.1.0-beta.5`** | ✅ tagged |
 | **Security audit — XSS, Zip-Slip, deploy** | **`v2.1.0-beta.6`** | ✅ tagged |
-| **Deps + Vitest + deploy env (ISS-089–092)** | **`v2.1.0-beta.7`** | ⏳ tag po gate |
+| **Deps + Vitest + deploy env (ISS-089–092)** | **`v2.1.0-beta.7`** | ✅ tagged |
+| **It.58b — Color schemes + themed public site** | **`v2.1.0-beta.8`** | ⏳ tag po gate |
 
 **Pravidlo:** Post-beta patchy — `2.0.59+` alebo `2.1.0-beta.N` podľa rozsahu.
 
@@ -38,7 +39,67 @@ gh auth login   # ak ešte nie
 ./scripts/create-github-releases.sh
 ```
 
-Testerom / security reviewerovi poslať **`v2.1.0-beta.7`** + [SECURITY_REVIEW.md](../SECURITY_REVIEW.md).
+Testerom / security reviewerovi poslať **`v2.1.0-beta.8`** + [SECURITY_REVIEW.md](../SECURITY_REVIEW.md).
+
+---
+
+## v2.1.0-beta.8 — It.58b color schemes (ISS-093)
+
+```bash
+./scripts/iteration-gate.sh
+cd frontend && npm test && npm run type-check
+cd frontend && npm audit --audit-level=critical
+composer audit
+```
+
+### Commit
+
+```bash
+git add backend/app/Support/AppVersion.php CHANGELOG.md docs/developer/RELEASE.md
+git commit -m "$(cat <<'EOF'
+release: v2.1.0-beta.8 — It.58b color schemes + themed public site.
+
+Appearance settings, 5 preset schemes, public API slice, theme-* CSS on public UI.
+ISS-093 ESLint brace-expansion fix. THEMES.md + CI audit critical gate.
+EOF
+)"
+git tag v2.1.0-beta.8
+git push origin main
+git push origin v2.1.0-beta.8
+```
+
+---
+
+## GitHub Release — copy-paste (v2.1.0-beta.8)
+
+**Title:** `v2.1.0-beta.8 — Color schemes & themed public site (It.58b)`
+
+**Body:**
+
+```markdown
+## Summary
+
+- **It.58b** — 5 color schemes × light/dark, Settings → Vzhľad, live wireframe preview
+- **Public site** — `theme-*` tokens on Navbar, Footer, blog, login, maintenance, markdown prose
+- **API** — `GET /api/settings/public` → `appearance` block
+- **ISS-093** — ESLint fix (removed `brace-expansion@5` override)
+
+## Docs
+
+- [THEMES.md](docs/architecture/THEMES.md)
+- [ITERATION_58.md](docs/ITERATION_58.md) — 58b ✅, 58a layout builder pending It.15
+
+## Known
+
+- **ISS-089** — npm audit high GHSA-qwww-vcr4-c8h2 (React Router RSC-only); SPA not affected on React 18
+
+## Test plan
+
+- [ ] Nastavenia → Stránka → Vzhľad — zmena schémy viditeľná na `/` a `/blog`
+- [ ] Prepínač svetlý/tmavý v Navbar (ak `allowUserToggle`)
+- [ ] `cd frontend && npm test` — 244 tests
+- [ ] `npm audit --audit-level=critical` — 0 critical
+```
 
 ---
 

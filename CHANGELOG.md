@@ -55,12 +55,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.56 — Rich navigation + session/auth fixes | **`v2.1.0-beta.5`** | [below](#210-beta5--2026-07-24) |
 | Security audit — XSS, backup Zip-Slip, deploy script | **`v2.1.0-beta.6`** | [below](#210-beta6--2026-07-24) |
 | Deps + Vitest + deploy env (ISS-089–092) | **`v2.1.0-beta.7`** | [below](#210-beta7--2026-07-26) |
+| It.58b — Color schemes + themed public site | **`v2.1.0-beta.8`** | [below](#210-beta8--2026-07-26) |
 | Wave 5d — It.15 hook emitters + extension policy | **2.0.54** | [below](#2054--2026-07-23) |
 | It.19b–19d — Security runtime, auth UX, password policy | **2.0.45** | [below](#2045--2026-07-21) |
 
 ---
 
 ## [Unreleased]
+
+---
+
+## [2.1.0-beta.8] – 2026-07-26
+
+**It.58b** — Farebné schémy, appearance mode a themed verejný web.
+
+### Added
+
+- **Settings → Vzhľad** — 5 presetov (indigo-classic, ocean-slate, forest-sage, sunset-rose, mono-zinc), light/dark/system, náhľad wireframe.
+- **`GET /api/settings/public`** → blok `appearance` (contract test).
+- **`frontend/src/theme/`** — `colorSchemes.ts`, `applyColorScheme.ts`, `publicUiClasses.ts`, `defaultTokens.css`.
+- **Verejný web** — `theme-*` Tailwind triedy na Navbar, Footer, blog, login, maintenance, prose.
+- **Visitor toggle** — prepínač svetlý/tmavý v Navbar (localStorage).
+- **`docs/architecture/THEMES.md`** — token tabuľky a architektúra.
+
+### Fixed
+
+- **ISS-093** — ESLint `expand is not a function` (odstránený `brace-expansion@5` override).
+
+### Changed
+
+- **CI** — `npm audit --audit-level=critical` (ISS-089 RR high akceptované).
+- **`AppVersion`** → `2.1.0-beta.8`
 
 ---
 
