@@ -88,6 +88,10 @@ Group **`scheduler`** in SettingsSchema:
 
 ## Out of scope (future)
 
-- Trash auto-purge, content auto-publish handlers
+- Trash auto-purge, content auto-publish handlers *(publish handler exists as `content.scheduled_publish` — see [It.59](ITERATION_59.md) for editor UX)*
 - Redis queue backend → [It.45](ITERATION_45.md)
 - Server metrics agent → [It.46](ITERATION_46.md) (was noted under It.7)
+
+## Related
+
+- **Production hardening (Docker storage, outcome UX):** [ITERATION_62.md](ITERATION_62.md)

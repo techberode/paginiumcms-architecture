@@ -277,6 +277,7 @@ See [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md) and [user/CODE_EDITOR.md](u
 | 27 | [ITERATION_27.md](ITERATION_27.md) | ✅ Admin view modes + SEO panel |
 | 28 | [ITERATION_28.md](ITERATION_28.md) | ✅ Bulk actions |
 | 29 | [ITERATION_29.md](ITERATION_29.md) | ✅ Cron planner + job queue |
+| **62** | **[ITERATION_62.md](ITERATION_62.md)** | ✅ **Scheduler prod hardening** (Docker, outcome UX, beta.9) |
 | **43** | **[ITERATION_43.md](ITERATION_43.md)** | ✅ **Advanced search** (Unreleased) |
 | 41–42, 47 | [ITERATION_41.md](ITERATION_41.md) … [ITERATION_47.md](ITERATION_47.md) | ✅ OTP / counts / connector auth (Unreleased) |
 | 44–49 | [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) | ⏳ Filters, Redis, metrics, static web |

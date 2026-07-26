@@ -56,12 +56,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | Security audit — XSS, backup Zip-Slip, deploy script | **`v2.1.0-beta.6`** | [below](#210-beta6--2026-07-24) |
 | Deps + Vitest + deploy env (ISS-089–092) | **`v2.1.0-beta.7`** | [below](#210-beta7--2026-07-26) |
 | It.58b — Color schemes + themed public site | **`v2.1.0-beta.8`** | [below](#210-beta8--2026-07-26) |
+| It.62 — Scheduler prod hardening | **`v2.1.0-beta.9`** | Unreleased (pending tag) |
 | Wave 5d — It.15 hook emitters + extension policy | **2.0.54** | [below](#2054--2026-07-23) |
 | It.19b–19d — Security runtime, auth UX, password policy | **2.0.45** | [below](#2045--2026-07-21) |
 
 ---
 
 ## [Unreleased]
+
+### Added (It.62 — Scheduler prod hardening)
+
+- **`outcome`** on job runs: `completed` | `skipped` | `failed` (distinct from HTTP errors).
+- **CLI** `jobs:run {id}` — single-job smoke on production.
+- **`content:diagnose`** — checks `data/jobs` and `scheduler-state.json` writability.
+- **Admin `/scheduler`** — outcome badges, copy crontab, warning toast on `run_log_error`.
+- **Docs** — [ITERATION_62.md](docs/ITERATION_62.md), [CRON.md](docs/deploy/CRON.md) Docker write test.
+
+### Fixed
+
+- **ISS-094** — Job scheduler 500 on prod: Docker `www-data` storage, PHP warnings in JSON, admin UI false failure toast.
+- **Deploy** — Docker PHP 8.5 image, prod compose port override, log storage path, notification recipient fallback.
+- **FileWriter** — group-writable modes (`0664`/`0775`), suppressed write warnings.
+- **ScheduledJobRunner** — run log append failures no longer crash HTTP response.
+
+### Changed
+
+- **`cron_hint`** in jobs API uses real project root (not `/path/to/paginiumcms`).
 
 ---
 
