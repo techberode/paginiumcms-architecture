@@ -39,7 +39,7 @@ final class NotificationController
         return $this->json->success($response, [
             'connectors' => NotificationFactory::connectorOverview($this->settings),
             'active_adapters' => $this->notifications->getAdapters(),
-            'fallback_email' => $monitoring['alertEmail'] ?? $general['adminEmail'] ?? '',
+            'fallback_email' => $this->resolveRecipientEmail([], $monitoring, $general, $this->settings->group('smtp')),
             'alerts_enabled' => (bool) ($monitoring['alertsEnabled'] ?? false),
             'analytics' => $this->reporter->getOverview('today'),
             'top_pages' => $this->reporter->getTopPages(5, 'today'),
@@ -125,7 +125,15 @@ final class NotificationController
 
         $general = $this->settings->group('general');
         $monitoring = $this->settings->group('monitoring');
-        $to = (string) ($payload['to'] ?? $monitoring['alertEmail'] ?? $general['adminEmail'] ?? '');
+        $smtp = $this->settings->group('smtp');
+        $to = $this->resolveRecipientEmail($payload, $monitoring, $general, $smtp);
+
+        if ($to === '') {
+            return $this->json->respond($response, [
+                'success' => false,
+                'message' => 'Set recipient: Monitoring → alert email, General → admin email, or pass "to" in the request.',
+            ], 422);
+        }
 
         $ok = $this->notifications->send(
             $adapter,
@@ -179,7 +187,15 @@ final class NotificationController
 
         $general = $this->settings->group('general');
         $monitoring = $this->settings->group('monitoring');
-        $to = (string) ($payload['to'] ?? $monitoring['alertEmail'] ?? $general['adminEmail'] ?? '');
+        $smtp = $this->settings->group('smtp');
+        $to = $this->resolveRecipientEmail($payload, $monitoring, $general, $smtp);
+
+        if ($to === '') {
+            return $this->json->respond($response, [
+                'success' => false,
+                'message' => 'Set recipient: Monitoring → alert email, General → admin email, or pass "to" in the request.',
+            ], 422);
+        }
 
         $ok = $this->notifications->send(
             $connector,
@@ -194,5 +210,28 @@ final class NotificationController
             'message' => $ok ? 'Connector test succeeded' : 'Connector test failed — check server URL, topic, and credentials.',
             'authenticated' => true,
         ], $ok ? 200 : 502);
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     * @param array<string, mixed> $monitoring
+     * @param array<string, mixed> $general
+     * @param array<string, mixed> $smtp
+     */
+    private function resolveRecipientEmail(array $payload, array $monitoring, array $general, array $smtp): string
+    {
+        foreach ([
+            $payload['to'] ?? null,
+            $monitoring['alertEmail'] ?? null,
+            $general['adminEmail'] ?? null,
+            $smtp['fromEmail'] ?? null,
+        ] as $candidate) {
+            $email = trim((string) $candidate);
+            if ($email !== '') {
+                return $email;
+            }
+        }
+
+        return '';
     }
 }

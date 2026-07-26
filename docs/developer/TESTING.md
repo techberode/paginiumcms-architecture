@@ -399,6 +399,17 @@ cd frontend && npm ci && npm test && npm run build
 
 Lokálny ekvivalent CI + audit + diagnose: `./scripts/run-all-tests.zsh` (pozri sekciu vyššie).
 
+### Produkcia vs. dev (dôležité)
+
+| Prostredie | Čo spúšťať | Čo nespúšťať |
+|------------|------------|--------------|
+| **Produkčný server** (po deployi) | `curl …/api/health`, `content:diagnose --fix`, voliteľne `CoreHardeningTest` | plných 861 PHPUnit ako gate kvality |
+| **Laptop / CI** | `composer gate`, `./scripts/run-all-tests.zsh`, full PHPUnit | — |
+
+Na prod serveri môže full PHPUnit skončiť s pár failures (práva na `backend/app/Modules/` pre Code Editor test, `storage/` owned by `www-data`) — to **neznamená** rozbitý deploy. Maintainer cheat sheet: `PRIVATE_DOMAIN_DEPLOY.md` §12 a §17 (gitignored).
+
+Po PHPUnit na serveri (ak ho spustíš): vždy `php backend/bin/test-artifacts.php --purge` a `content:diagnose --fix`.
+
 Po It. 21: pridať `newman run docs/api/PaginiumCMS.postman_collection.json`.
 
 ## Známe incidenty a regresie (2026-07-18+)
