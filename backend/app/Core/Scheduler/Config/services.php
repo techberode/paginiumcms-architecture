@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use PaginiumCMS\Core\Scheduler\Commands\ProcessWorkerCommand;
+use PaginiumCMS\Core\Scheduler\Commands\RunJobCommand;
 use PaginiumCMS\Core\Scheduler\Commands\RunSchedulerCommand;
 use PaginiumCMS\Core\Scheduler\Handlers\BackupScheduledHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\ContentScheduledPublishHandler;
@@ -63,6 +64,8 @@ return [
             get(ScheduledJobRunner::class)
         ),
     RunSchedulerCommand::class => create(RunSchedulerCommand::class)
+        ->constructor(get(ScheduledJobRunner::class)),
+    RunJobCommand::class => create(RunJobCommand::class)
         ->constructor(get(ScheduledJobRunner::class)),
     ProcessWorkerCommand::class => create(ProcessWorkerCommand::class)
         ->constructor(get(JobWorker::class)),
