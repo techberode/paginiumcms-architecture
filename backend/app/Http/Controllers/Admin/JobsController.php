@@ -127,30 +127,34 @@ final class JobsController
      */
     public function run(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
-        $id = (string) ($args['id'] ?? '');
-        if ($this->registry->find($id) === null) {
-            return $this->json->error($response, 'Job not found', 404);
+        try {
+            $id = (string) ($args['id'] ?? '');
+            if ($this->registry->find($id) === null) {
+                return $this->json->error($response, 'Job not found', 404);
+            }
+
+            $payload = $this->parseBody($request) ?? [];
+            $async = (bool) ($payload['async'] ?? false);
+            $forceReport = (bool) ($payload['force_report'] ?? false);
+
+            if ($async) {
+                $queueId = $this->queue->enqueue($id, $forceReport ? ['force_report' => true] : []);
+                $processed = $this->worker->process(1);
+
+                return $this->json->success($response, [
+                    'queued' => true,
+                    'queue_id' => $queueId,
+                    'result' => $processed['results'][0] ?? null,
+                ]);
+            }
+
+            $runPayload = $forceReport ? ['force_report' => true] : [];
+            $result = $this->runner->runJobById($id, $runPayload);
+
+            return $this->json->success($response, ['result' => $result]);
+        } catch (\Throwable $e) {
+            return $this->json->error($response, 'Job run failed: ' . $e->getMessage(), 422);
         }
-
-        $payload = $this->parseBody($request) ?? [];
-        $async = (bool) ($payload['async'] ?? false);
-        $forceReport = (bool) ($payload['force_report'] ?? false);
-
-        if ($async) {
-            $queueId = $this->queue->enqueue($id, $forceReport ? ['force_report' => true] : []);
-            $processed = $this->worker->process(1);
-
-            return $this->json->success($response, [
-                'queued' => true,
-                'queue_id' => $queueId,
-                'result' => $processed['results'][0] ?? null,
-            ]);
-        }
-
-        $runPayload = $forceReport ? ['force_report' => true] : [];
-        $result = $this->runner->runJobById($id, $runPayload);
-
-        return $this->json->success($response, ['result' => $result]);
     }
 
     public function runDue(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
