@@ -162,7 +162,7 @@ final class ApplicationLogReaderTest extends TestCase
 
     public function testLogStoragePathsPointsToAppStorage(): void
     {
-        $expectedSuffix = '/backend/app/storage/logs/app';
+        $expectedSuffix = '/backend/storage/logs/app';
         $this->assertStringEndsWith($expectedSuffix, LogStoragePaths::app());
     }
 

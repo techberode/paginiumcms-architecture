@@ -11,7 +11,7 @@ final class LogStoragePaths
 {
     public static function base(): string
     {
-        return dirname(__DIR__, 2) . '/storage/logs';
+        return dirname(__DIR__, 3) . '/storage/logs';
     }
 
     public static function app(): string

@@ -107,7 +107,18 @@ final class ScheduledJobRunner
             ];
         }
 
-        $this->runs->append($id, $entry);
+        try {
+            $this->runs->append($id, $entry);
+        } catch (\Throwable $e) {
+            return array_merge(
+                ['job_id' => $id, 'handler' => $handlerKey],
+                $entry,
+                [
+                    'run_log_persisted' => false,
+                    'run_log_error' => $e->getMessage(),
+                ]
+            );
+        }
 
         return array_merge(['job_id' => $id, 'handler' => $handlerKey], $entry);
     }

@@ -26,6 +26,23 @@ echo "=== PaginiumCMS first-run ==="
 echo "Root: $ROOT"
 echo
 
+# ------------------------------------------------------------------ PHP version
+PHP_BIN="${PHP_BIN:-php}"
+if ! command -v "$PHP_BIN" >/dev/null 2>&1; then
+  fail "PHP not found ($PHP_BIN). Install PHP 8.5+ or run inside Docker: ./stack.sh exec php bash scripts/first-run.sh"
+fi
+PHP_MAJOR=$("$PHP_BIN" -r 'echo PHP_MAJOR_VERSION;')
+PHP_MINOR=$("$PHP_BIN" -r 'echo PHP_MINOR_VERSION;')
+if (( PHP_MAJOR < 8 || (PHP_MAJOR == 8 && PHP_MINOR < 5) )); then
+  echo -e "${RED}✗${NC} PHP $("$PHP_BIN" -v | head -1) — PaginiumCMS requires PHP ^8.5"
+  echo
+  echo "  Host CLI is too old. Use one of:"
+  echo "    • Docker:  cd /srv/docker/paginiumcms-prod && ./stack.sh exec php bash scripts/first-run.sh"
+  echo "    • Upgrade: install php8.5-cli on the server, then: PHP_BIN=php8.5 ./scripts/first-run.sh"
+  exit 1
+fi
+ok "PHP $("$PHP_BIN" -r 'echo PHP_VERSION;')"
+
 # ------------------------------------------------------------------ .env
 if [[ ! -f .env ]]; then
   cp .env.example .env
@@ -62,6 +79,7 @@ STORAGE_DIRS=(
   backend/storage/logs/debug
   backend/storage/app/content/data/users
   backend/storage/app/content/data/index
+  backend/storage/app/content/data/jobs
   backend/storage/app/content/pages
   backend/storage/app/content/blog
   backend/storage/app/content/media
@@ -74,9 +92,14 @@ done
 ok "Storage directories ready (${#STORAGE_DIRS[@]} paths)"
 
 # ------------------------------------------------------------------ composer
+COMPOSER_FLAGS=(install --no-interaction --prefer-dist)
+if [[ "${COMPOSER_NO_DEV:-1}" == "1" ]]; then
+  COMPOSER_FLAGS+=(--no-dev --optimize-autoloader)
+fi
+
 if [[ ! -f vendor/autoload.php ]]; then
   if command -v composer >/dev/null 2>&1; then
-    COMPOSER_ALLOW_SUPERUSER=1 composer install --no-interaction --prefer-dist
+    COMPOSER_ALLOW_SUPERUSER=1 composer "${COMPOSER_FLAGS[@]}"
     ok "Composer dependencies installed"
   else
     fail "composer not found and vendor/ is missing — install PHP Composer first"
@@ -86,11 +109,11 @@ else
 fi
 
 # ------------------------------------------------------------------ first admin
-php backend/bin/bootstrap-admin.php
+"$PHP_BIN" backend/bin/bootstrap-admin.php
 ok "Admin bootstrap finished"
 
 # ------------------------------------------------------------------ content diagnose
-if php backend/bin/console content:diagnose --fix; then
+if "$PHP_BIN" backend/bin/console content:diagnose --fix; then
   ok "content:diagnose — healthy"
 else
   warn "content:diagnose reported issues — review output above"

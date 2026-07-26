@@ -1,0 +1,33 @@
+# Production override — use ONLY via stack wrapper, not `docker compose up` in clone root.
+#
+#   cd /srv/docker/paginiumcms-prod
+#   ./stack.sh up -d
+#
+# Stack .env:
+#   APP_ROOT=/var/www/paginiumcms.com
+#   COMPOSE_PROJECT_NAME=paginiumcms-prod
+#   BACKEND_PORT=8089
+
+services:
+  php:
+    build:
+      context: ${APP_ROOT}
+      dockerfile: docker/php/Dockerfile
+    working_dir: /var/www/html
+    volumes:
+      - ${APP_ROOT}:/var/www/html
+    env_file:
+      - ${APP_ROOT}/.env
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+
+  nginx:
+    depends_on:
+      - php
+    # !override — base docker-compose.yml also maps 8080:80; merge would bind BOTH ports.
+    ports: !override
+      - "127.0.0.1:${BACKEND_PORT}:80"
+    volumes:
+      - ${APP_ROOT}:/var/www/html:ro
+      - ${APP_ROOT}/docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
