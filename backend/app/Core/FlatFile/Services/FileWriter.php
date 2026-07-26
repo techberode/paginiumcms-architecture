@@ -40,16 +40,16 @@ class FileWriter implements FileWriterInterface
         // Vytvorenie adresárov, ak neexistujú
         $directory = dirname($absolutePath);
         if (!is_dir($directory)) {
-            if (!mkdir($directory, 0775, true) && !is_dir($directory)) {
+            if (!@mkdir($directory, 0775, true) && !is_dir($directory)) {
                 throw new FlatFileException(sprintf('Nepodarilo sa vytvoriť adresár: %s', $directory));
             }
         }
 
-        // Zápis súboru - pre virtuálny systém použijeme bez zámku
+        // Zápis súboru - pre virtuálny systém použijeme bez zámku (@ potlačí warning; chybu riešime cez návratovú hodnotu)
         if ($isVirtual) {
-            $result = file_put_contents($absolutePath, $content);
+            $result = @file_put_contents($absolutePath, $content);
         } else {
-            $result = file_put_contents($absolutePath, $content, LOCK_EX);
+            $result = @file_put_contents($absolutePath, $content, LOCK_EX);
         }
 
         if ($result === false) {
@@ -60,9 +60,9 @@ class FileWriter implements FileWriterInterface
             ));
         }
 
-        // Nastavenie oprávnení (ak nie je v stream protokole)
+        // Nastavenie oprávnení (ak nie je v stream protokole) — 0664 pre zdieľaný Docker/host storage
         if (!$isVirtual) {
-            chmod($absolutePath, 0644);
+            @chmod($absolutePath, 0664);
         }
     }
 
@@ -77,15 +77,15 @@ class FileWriter implements FileWriterInterface
 
         $directory = dirname($absolutePath);
         if (!is_dir($directory)) {
-            if (!mkdir($directory, 0775, true) && !is_dir($directory)) {
+            if (!@mkdir($directory, 0775, true) && !is_dir($directory)) {
                 throw new FlatFileException(sprintf('Nepodarilo sa vytvoriť adresár: %s', $directory));
             }
         }
 
         if ($isVirtual) {
-            $result = file_put_contents($absolutePath, $content);
+            $result = @file_put_contents($absolutePath, $content);
         } else {
-            $result = file_put_contents($absolutePath, $content, LOCK_EX);
+            $result = @file_put_contents($absolutePath, $content, LOCK_EX);
         }
 
         if ($result === false) {
@@ -97,7 +97,7 @@ class FileWriter implements FileWriterInterface
         }
 
         if (!$isVirtual) {
-            chmod($absolutePath, 0644);
+            @chmod($absolutePath, 0664);
         }
     }
 
