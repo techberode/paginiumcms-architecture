@@ -20,7 +20,7 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 
 **Stav:** **`v2.1.0-beta.8`** tagged · produkcia **`paginiumcms.com`** nasadená · **It.62** (scheduler prod hardening) shipped na `main` (**`f7a73f1`**, ešte bez tagu → cieľ **`v2.1.0-beta.9`**).
 
-**Ďalšia iterácia:** **[It.59 — Odložená publikácia v editore](ITERATION_59.md)** (kalendár + admin filtre; job `content-scheduled-publish` už beží cez It.29/62).
+**Ďalšia iterácia:** **[It.60 — Vlastné komponenty editora](ITERATION_60.md)** · backlog It.61
 
 | Priorita | Úloha | Stav |
 |----------|--------|------|
@@ -29,8 +29,8 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 | **Prod fix — deploy** | Docker PHP 8.5, log paths, SMTP recipient, OPcache | ✅ `0fe21ec` … `d1bd35b` |
 | **Cron na hoste** | `scheduler:run` + `worker:process` každú minútu | ⏳ overiť crontab (BE joby už píšu do `runs.json`) |
 | **Tag beta.9** | Release notes + `v2.1.0-beta.9` po smoke na prod | ⏳ nasledujúci krok |
-| **It.59** | Scheduled publish UX v editore + filtre | ⏳ **ĎALŠIA ITERÁCIA** |
-| **It.60–61** | Modulárny editor, newsletter footer | ⏳ backlog |
+| **It.59** | Scheduled publish UX v editore + filtre | ✅ **2.0.53** (overené po It.62) |
+| **It.60–61** | Modulárny editor, newsletter footer | ⏳ **ĎALŠIA ITERÁCIA** |
 
 Detail deployu (lokálne, gitignored): `PRIVATE_DOMAIN_DEPLOY.md` · scheduler: [ITERATION_62.md](ITERATION_62.md) · cron: [deploy/CRON.md](deploy/CRON.md)
 
@@ -318,8 +318,11 @@ PROD CHECKLIST po každom pulli:
   ./stack.sh restart php   # OPcache
   ./stack.sh exec -u www-data php sh -c 'touch .../data/jobs/.write-test && rm ... && echo WRITE_OK'
 
-ĎALŠIA ITERÁCIA: It.59 — Odložená publikácia v editore (docs/ITERATION_59.md).
-  Job content.scheduled_publish už beží; treba FE kalendár, filtre scheduled, smoke publish.
+ĎALŠIA ITERÁCIA: It.60 — Vlastné komponenty editora (docs/ITERATION_60.md).
+
+It.59 ✅ (2.0.53): editor „Publikovať o“, stav scheduled, job content-scheduled-publish.
+  Smoke: vytvor stránku scheduled +1 min → jobs:run content-scheduled-publish → published.
+  Admin filter „Naplánované“ v PagesManager / Articles.
 
 Backlog: It.60 modulárny editor, It.61 newsletter footer, It.25 setup wizard (odložené).
 

@@ -43,3 +43,10 @@ Editor stránok a článkov umožní **naplánovať publikáciu** (scheduled pub
 - [ITERATION_29.md](ITERATION_29.md) — job registry
 - [architecture/CONTENT_API.md](architecture/CONTENT_API.md)
 - [ROADMAP.md](ROADMAP.md)
+
+## Smoke test
+
+1. **Editor** — `/pages/new` → pole „Publikovať o“ → dátum o 2 min → uložiť → stav **Naplánované**.
+2. **Cron / CLI** — pred due: `php backend/bin/console jobs:run content-scheduled-publish` → `outcome: skipped`, `reason: nothing_due`. Po due (do ~1 min): obsah **published**, `scheduledAt` odstránené.
+3. **Admin zoznam** — filter stav „Naplánované“, stĺpec dátumu (desktop + mobile karta).
+4. **Verejné API** — `GET /api/pages/{slug}` pre scheduled → **404** (skryté do publish).

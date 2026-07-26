@@ -13,6 +13,7 @@ export interface ContentListMobileCardProps {
   statusLabel: string;
   seoLevel: SeoHealthLevel;
   updatedAt: string;
+  scheduledAt?: string;
   routeBase: string;
   selected: boolean;
   onToggleSelect: () => void;
@@ -28,6 +29,7 @@ export const ContentListMobileCard: React.FC<ContentListMobileCardProps> = ({
   statusLabel,
   seoLevel,
   updatedAt,
+  scheduledAt,
   routeBase,
   selected,
   onToggleSelect,
@@ -60,6 +62,11 @@ export const ContentListMobileCard: React.FC<ContentListMobileCardProps> = ({
           <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
             <span className={statusBadgeClass}>{statusLabel}</span>
             <span>{formatDisplayDate(updatedAt, locale)}</span>
+            {scheduledAt ? (
+              <span>
+                {t('content.table.scheduledAt')}: {formatDisplayDate(scheduledAt, locale)}
+              </span>
+            ) : null}
           </div>
           <div className="flex flex-wrap gap-2 pt-1">
             <Link to={`/${routeBase}/${slug}`} className="btn btn-secondary text-xs px-3 py-1">

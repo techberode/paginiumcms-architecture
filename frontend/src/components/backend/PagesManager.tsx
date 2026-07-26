@@ -403,6 +403,11 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                 statusLabel={statusLabel(item.status as ContentItem['status'])}
                 seoLevel={seoLevel}
                 updatedAt={item.updatedAt}
+                scheduledAt={
+                  item.status === 'scheduled'
+                    ? String(item.scheduledAt ?? item.frontMatter?.scheduledAt ?? '')
+                    : undefined
+                }
                 routeBase={routeBase}
                 selected={bulkSelection.isSelected(item.slug)}
                 onToggleSelect={() => bulkSelection.toggle(item.slug)}
