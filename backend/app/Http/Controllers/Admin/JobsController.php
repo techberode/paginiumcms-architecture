@@ -44,8 +44,22 @@ final class JobsController
             'jobs' => array_map(fn (array $job): array => $this->enrichJob($job), $this->registry->all()),
             'recent_runs' => $this->runs->recent(20),
             'queue' => $this->queue->snapshot(),
-            'cron_hint' => '* * * * * cd /path/to/paginiumcms && php backend/bin/console scheduler:run && php backend/bin/console worker:process',
+            'cron_hint' => $this->buildCronHint(),
         ]);
+    }
+
+    private function buildCronHint(): string
+    {
+        $root = realpath(dirname(__DIR__, 5));
+        if ($root === false) {
+            $envRoot = getenv('APP_ROOT') ?: ($_ENV['APP_ROOT'] ?? '');
+            $root = is_string($envRoot) && $envRoot !== '' ? $envRoot : '/var/www/paginiumcms.com';
+        }
+
+        return sprintf(
+            '* * * * * cd %s && php backend/bin/console scheduler:run && php backend/bin/console worker:process',
+            $root
+        );
     }
 
     /**

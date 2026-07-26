@@ -80,6 +80,12 @@ export const platformSk: MessageTree = {
     runNow: 'Spustiť teraz',
     forceReport: 'Vynútiť report',
     systemJob: 'Systémový job',
+    copyCron: 'Kopírovať',
+    cronCopied: 'Cron skopírovaný',
+    outcomeCompleted: 'Hotovo',
+    outcomeSkipped: 'Preskočené',
+    outcomeFailed: 'Zlyhanie',
+    runLogWarning: 'Beh prebehol, ale história sa neuložila',
     toast: {
       jobDisabled: 'Job vypnutý',
       jobEnabled: 'Job zapnutý',

@@ -64,6 +64,7 @@ final class ScheduledJobRunnerTest extends TestCase
         $this->assertSame('backup-scheduled', $result['job_id']);
         $this->assertSame('Backup not due', $result['message']);
         $this->assertFalse($result['success']);
+        $this->assertSame('skipped', $result['outcome']);
     }
 
     public function testRunJobByIdSurvivesRunLogWriteFailure(): void
