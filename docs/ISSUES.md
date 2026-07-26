@@ -1,6 +1,6 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-24 · verzia **2.1.0-beta.5** · ISS-063–085 · backlog It.59–61
+> Posledná aktualizácia: 2026-07-26 · verzia **2.1.0-beta.7** · ISS-063–090 · backlog It.58–61
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
 
@@ -106,6 +106,10 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-086 | Stored XSS — `strip_tags` nečistí atribúty (`onerror`, `javascript:`) | **Kritická (security)** | ✅ Opravené · **2.1.0-beta.6** |
 | ISS-087 | `deploy-frontend-lan.sh` — hardcoded host/user/port | Stredná (ops / hygiene) | ✅ Opravené · **2.1.0-beta.6** |
 | ISS-088 | Backup import — Zip-Slip pri `extractTo()` | Stredná (security) | ✅ Opravené · **2.1.0-beta.6** |
+| ISS-089 | `npm audit` high — GHSA-qwww-vcr4-c8h2 (RR RSC-only, React 18) | Nízka (false positive SPA) | ⏳ Akceptované · plná oprava = React 19 + RR 8.3 |
+| ISS-090 | `eslint: latest` → npm 10, `npm audit fix` ERESOLVE | Nízka (CI/deps) | ✅ Opravené · **2.1.0-beta.7** |
+| ISS-091 | Vitest 14× fail — `react-router@8` override + `useOptimistic` | Stredná (CI) | ✅ Opravené · **2.1.0-beta.7** |
+| ISS-092 | Deploy — lokálne env + syntax `:?` v deploy skripte | Nízka (ops) | ✅ Opravené · **2.1.0-beta.7** |
 
 
 
@@ -2151,12 +2155,55 @@ DEPLOY_HOST=192.168.x.x DEPLOY_USER=yourName DEPLOY_SSH_PORT=22 ./scripts/deploy
 
 ---
 
+## ISS-089 – npm audit high: React Router RSC CSRF (GHSA-qwww-vcr4-c8h2) — AKCEPTOVANÉ (SPA)
+
+**Nález:** `npm audit` hlási **high** pre `react-router` 7.12.0–8.2.0 (teda aj **7.18.1**). Patch existuje len v **≥ 8.3.0** (peer **React ≥ 19.2.7**).
+
+**Kontext:** Advisory explicitne uvádza: *„This only affects your application if you are using the unstable RSC APIs.“* PaginiumCMS je **SPA** (`BrowserRouter`), RSC nepoužíva.
+
+**Riešenie (beta.7):** Zostať na `react-router-dom@7.18.1` + override `"react-router": "7.18.1"` (ISS-078 redirect/XSS fixy). CI gate: `npm audit --audit-level=critical` alebo dokumentovaná výnimka.
+
+**Plná oprava (budúcnosť):** React 19 migrácia + RR 8.3+ (súvis ISS-083).
+
+**Nespúšťať:** `npm audit fix --force` (downgrade na 7.11.0) ani override `react-router@8.3.0` bez React 19 — rozbije Vitest (`useOptimistic`).
+
+---
+
+## ISS-090 – ESLint 10 peer conflict — VYRIEŠENÉ (**2.1.0-beta.7**)
+
+**Symptóm:** `eslint: "latest"` inštalovalo ESLint 10; `eslint-plugin-react-hooks@5` podporuje max ESLint 9 → `npm audit fix` padá na ERESOLVE.
+
+**Riešenie:** Pin `eslint@^9.39.0`, `@eslint/js@^9.39.0`.
+
+---
+
+## ISS-091 – Vitest: 14 failed (react-router / useOptimistic) — VYRIEŠENÉ (**2.1.0-beta.7**)
+
+**Symptóm:** Po deps update: `The requested module 'react' does not provide an export named 'useOptimistic'` pri mock `react-router-dom`.
+
+**Príčina:** Override `"react-router": "^8.3.0"` nútil RR 8 + React 18.
+
+**Riešenie:** Odstránený RR 8 override; `react-router-dom@7.18.1` + override `7.18.1`. Vitest **75/75** files.
+
+---
+
+## ISS-092 – Deploy env + skript syntax — VYRIEŠENÉ (**2.1.0-beta.7**)
+
+**Zmeny:**
+
+- `.gitignore` — `scripts/deploy-frontend-lan.env.local` (dokumentácia v `PRIVATE_DOMAIN_DEPLOY.md` §16)
+- `deploy-frontend-lan.sh` — opravené `${DEPLOY_HOST:?…}` / `${DEPLOY_USER:?…}` (post-beta.6 syntax)
+
+**⚠️ Ops:** Nikdy necommitovať tokeny do `.env.example` — len placeholdery.
+
+---
+
 ## Súvisiace dokumenty
 
 - [user/BRANDING.md](user/BRANDING.md) — logo a favicon (**2.0.52**)
 - [user/ACCESS_CONTROL.md](user/ACCESS_CONTROL.md) — RBAC + Path ACL v nastaveniach (**2.0.52**)
-- [developer/RELEASE.md](developer/RELEASE.md) — release **2.0.52** · **2.1.0-beta.6**
-- [CHANGELOG.md](../CHANGELOG.md) — 2.0.52 · **2.1.0-beta.6**
+- [developer/RELEASE.md](developer/RELEASE.md) — release **2.0.52** · **2.1.0-beta.7**
+- [CHANGELOG.md](../CHANGELOG.md) — 2.0.52 · **2.1.0-beta.7**
 - [ITERATION_54.md](ITERATION_54.md) — editor profiles (ISS-079)
 - [ITERATION_56.md](ITERATION_56.md) — rich navigation (ISS-085)
 - [ITERATION_57.md](ITERATION_57.md) — suggest-meta (ISS-080)

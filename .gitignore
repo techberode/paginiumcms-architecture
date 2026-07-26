@@ -11,6 +11,11 @@ PRIVATE_OPS_CHECKLIST.md
 PRIVATE_DOMAIN_DEPLOY.md
 docs/FINAL_BETA1_ITERATION.md
 
+# LAN / deploy — lokálne env (nikdy necommituj host/user/port)
+scripts/deploy-frontend-lan.env
+scripts/deploy-frontend-lan.env.local
+scripts/deploy-*.env.local
+
 ###############################################################################
 # Composer
 ###############################################################################

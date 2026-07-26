@@ -1,6 +1,6 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.1.0-beta.6** · 2026-07-24 · tag **`v2.1.0-beta.6`**  
+> Posledná verzia: **2.1.0-beta.7** · 2026-07-26 · tag **`v2.1.0-beta.7`**  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release.
 
 > **Poznámka k verziám:** **`2.0.58`** → `f53e71e` · **Public Beta 1** → `e3e0d82` · **Beta 1 Testing** → `c68e72b` · **Beta 1 patch (RR GHSA)** → *(commit po push)*.
@@ -24,7 +24,8 @@
 | **Beta 1 patch (RR GHSA + CMS info)** | **`v2.1.0-beta.3`** | ✅ tagged |
 | **It.57 — Auto tags & meta description** | **`v2.1.0-beta.4`** | **`2091076`** | ✅ tagged |
 | **It.56 — Rich navigation + auth/session fixes** | **`v2.1.0-beta.5`** | ✅ tagged |
-| **Security audit — XSS, Zip-Slip, deploy** | **`v2.1.0-beta.6`** | ⏳ tag po gate |
+| **Security audit — XSS, Zip-Slip, deploy** | **`v2.1.0-beta.6`** | ✅ tagged |
+| **Deps + Vitest + deploy env (ISS-089–092)** | **`v2.1.0-beta.7`** | ⏳ tag po gate |
 
 **Pravidlo:** Post-beta patchy — `2.0.59+` alebo `2.1.0-beta.N` podľa rozsahu.
 
@@ -37,7 +38,61 @@ gh auth login   # ak ešte nie
 ./scripts/create-github-releases.sh
 ```
 
-Testerom / security reviewerovi poslať **`v2.1.0-beta.6`** + [SECURITY_REVIEW.md](../SECURITY_REVIEW.md).
+Testerom / security reviewerovi poslať **`v2.1.0-beta.7`** + [SECURITY_REVIEW.md](../SECURITY_REVIEW.md).
+
+---
+
+## v2.1.0-beta.7 — Deps, Vitest, It.58 doc (ISS-089–092)
+
+```bash
+./scripts/iteration-gate.sh
+cd frontend && npm test && npm run type-check
+cd frontend && npm audit --audit-level=critical
+composer audit
+```
+
+### Commit
+
+```bash
+git add -A
+git commit -m "$(cat <<'EOF'
+release: v2.1.0-beta.7 — Vitest RR fix, eslint pin, deploy env, It.58 doc.
+
+Fix react-router 8 override breaking Vitest on React 18. Pin eslint 9.x.
+Deploy env gitignore + script :? syntax. ITERATION_58_ALTERNATIVES + ISS-089–092.
+EOF
+)"
+git tag v2.1.0-beta.7
+git push origin main
+git push origin v2.1.0-beta.7
+```
+
+---
+
+## GitHub Release — copy-paste (v2.1.0-beta.7)
+
+**Title:** `v2.1.0-beta.7 — Vitest fix, deps hygiene, layout builder doc`
+
+**Body:**
+
+```markdown
+## Summary
+
+- **ISS-091** — Vitest 75/75: removed erroneous `react-router@8` override on React 18
+- **ISS-090** — ESLint pinned to ^9.39 (npm audit fix no longer ERESOLVE)
+- **ISS-092** — Deploy local env gitignored; `deploy-frontend-lan.sh` fail-fast syntax
+- **Docs:** [ITERATION_58_ALTERNATIVES.md](docs/ITERATION_58_ALTERNATIVES.md) — 3 layout options + security status
+
+## Known
+
+- **ISS-089** — npm audit high GHSA-qwww-vcr4-c8h2 (React Router RSC-only); SPA not affected on React 18
+
+## Test plan
+
+- [ ] `cd frontend && npm test` — 75 files / 238 tests
+- [ ] `npm audit --audit-level=critical` — 0 critical
+- [ ] Deploy via `scripts/deploy-frontend-lan.env.local` (see PRIVATE_DOMAIN_DEPLOY §16)
+```
 
 ---
 

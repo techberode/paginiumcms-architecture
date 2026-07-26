@@ -54,12 +54,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.57 — Auto tags & meta description | **`v2.1.0-beta.4`** | [below](#210-beta4--2026-07-24) |
 | It.56 — Rich navigation + session/auth fixes | **`v2.1.0-beta.5`** | [below](#210-beta5--2026-07-24) |
 | Security audit — XSS, backup Zip-Slip, deploy script | **`v2.1.0-beta.6`** | [below](#210-beta6--2026-07-24) |
+| Deps + Vitest + deploy env (ISS-089–092) | **`v2.1.0-beta.7`** | [below](#210-beta7--2026-07-26) |
 | Wave 5d — It.15 hook emitters + extension policy | **2.0.54** | [below](#2054--2026-07-23) |
 | It.19b–19d — Security runtime, auth UX, password policy | **2.0.45** | [below](#2045--2026-07-21) |
 
 ---
 
 ## [Unreleased]
+
+---
+
+## [2.1.0-beta.7] – 2026-07-26
+
+**Deps & CI** — Vitest fix, ESLint pin, deploy env hygiene, It.58 alternatives doc.
+
+### Fixed
+
+- **ISS-091** — Vitest 14× fail: odstránený override `react-router@8.3.0` (React 18 + `useOptimistic`).
+- **ISS-090** — Pin `eslint@^9.39.0` (nie `latest`) — `npm audit fix` už nepadá na ERESOLVE.
+- **ISS-092** — Deploy: `.gitignore` pre `deploy-frontend-lan.env.local`, syntax `:?` v skripte.
+
+### Changed
+
+- **`react-router-dom@7.18.1`** + override `react-router@7.18.1` (ISS-078 + ISS-089 poznámka).
+- **`AppVersion`** → `2.1.0-beta.7`
+- **`docs/ITERATION_58_ALTERNATIVES.md`** — 3 layout architektúry + security checklist stav.
+
+### Known / accepted
+
+- **ISS-089** — `npm audit` high GHSA-qwww-vcr4-c8h2 (RSC-only); SPA neexploitovateľné na React 18.
 
 ---
 
