@@ -17,19 +17,23 @@ vi.mock('../../api/contact', () => ({
   submitContactForm: vi.fn(),
 }));
 
-vi.mock('../../context/SettingsContext', () => ({
-  useSettingsContext: () => ({
-    settings: {
-      contact: {
-        subjects: 'Predaj\nPodpora',
-        allowCustomSubject: true,
+vi.mock('../../context/SettingsContext', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../context/SettingsContext')>();
+  return {
+    ...actual,
+    useSettingsContext: () => ({
+      settings: {
+        contact: {
+          subjects: 'Predaj\nPodpora',
+          allowCustomSubject: true,
+        },
       },
-    },
-    loading: false,
-    get: vi.fn(),
-    reload: vi.fn(),
-  }),
-}));
+      loading: false,
+      get: vi.fn(),
+      reload: vi.fn(),
+    }),
+  };
+});
 
 describe('ContactForm', () => {
   it('renders subjects from public settings', () => {

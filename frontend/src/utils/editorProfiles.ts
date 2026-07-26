@@ -23,6 +23,7 @@ export interface EditorProfileDefinition {
   description: string;
   capabilities: EditorCapability[];
   modes: ('markdown' | 'wysiwyg')[];
+  customComponents?: string[];
 }
 
 export const EDITOR_CAPABILITIES: EditorCapability[] = [
@@ -85,9 +86,12 @@ export const BUILTIN_EDITOR_PROFILES: EditorProfileDefinition[] = [
   },
 ];
 
-export function getEditorProfile(id: string | undefined | null): EditorProfileDefinition {
-  const found = BUILTIN_EDITOR_PROFILES.find((profile) => profile.id === id);
-  return found ?? BUILTIN_EDITOR_PROFILES[0];
+export function getEditorProfile(
+  id: string | undefined | null,
+  profiles: EditorProfileDefinition[] = BUILTIN_EDITOR_PROFILES
+): EditorProfileDefinition {
+  const found = profiles.find((profile) => profile.id === id);
+  return found ?? profiles[0] ?? BUILTIN_EDITOR_PROFILES[0];
 }
 
 export function resolveDefaultProfileId(

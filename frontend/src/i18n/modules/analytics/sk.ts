@@ -33,6 +33,19 @@ export const analyticsSk: MessageTree = {
     topArticles: 'Top články',
     devices: 'Zariadenia',
     browsers: 'Prehliadače',
+    geoSummary: 'Krajiny',
+    recentGeoVisits: 'Posledné návštevy',
+  },
+  sources: {
+    types: {
+      direct: 'Priamy prístup',
+      search: 'Vyhľadávanie',
+      social: 'Sociálne siete',
+      referral: 'Odkaz',
+    },
+  },
+  geo: {
+    sampleIps: 'Ukážkové IP (maskované)',
   },
   devices: {
     desktop: 'Desktop',

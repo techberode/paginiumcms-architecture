@@ -2,7 +2,7 @@
   "id": "hello-widget",
   "name": "Hello Widget",
   "version": "1.0.0",
-  "description": "Reference extension for hook subscription, routes, and frontend entry (Wave 5d).",
+  "description": "Reference extension for hook subscription, routes, frontend entry, and editor custom block (It.60).",
   "author": "PaginiumCMS",
   "minCmsVersion": "2.0.38",
   "hooks": {
@@ -10,5 +10,15 @@
     "content.after_save": "PaginiumCMS\\Http\\Extensions\\HelloWidget\\Hooks::onContentAfterSave"
   },
   "routes": true,
-  "frontend": true
+  "frontend": true,
+  "editor": {
+    "components": [
+      {
+        "id": "hello-widget",
+        "label": "Hello Widget",
+        "markdownDirective": "hello-widget",
+        "tiptapNodeType": "helloWidget"
+      }
+    ]
+  }
 }

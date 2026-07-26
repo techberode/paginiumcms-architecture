@@ -12,8 +12,11 @@ use PaginiumCMS\Core\Analytics\Contracts\TrackerInterface;
  */
 final class Reporter implements ReporterInterface
 {
+    private RefererAnalyzer $refererAnalyzer;
+
     public function __construct(private TrackerInterface $tracker)
     {
+        $this->refererAnalyzer = new RefererAnalyzer();
     }
 
     /**
@@ -66,26 +69,32 @@ final class Reporter implements ReporterInterface
     }
 
     /**
-     * @return list<array{referer: string, visits: int}>
+     * @return list<array{referer: string, source: string, domain: string, type: string, visits: int}>
      */
     public function getTopReferers(int $limit = 10, string $period = 'today'): array
     {
         $visits = $this->collectVisitsForPeriod($period, 5000);
+        /** @var array<string, array{referer: string, source: string, domain: string, type: string, visits: int}> $counts */
         $counts = [];
         foreach ($visits as $visit) {
-            $ref = (string) ($visit['referer'] ?? 'direct');
-            if ($ref === '') {
-                $ref = 'direct';
+            $rawReferer = (string) ($visit['referer'] ?? 'direct');
+            $analysis = $this->refererAnalyzer->analyze($rawReferer);
+            $key = $this->refererAnalyzer->groupingKey($rawReferer);
+            if (!isset($counts[$key])) {
+                $counts[$key] = [
+                    'referer' => $analysis['referer'],
+                    'source' => $analysis['source'],
+                    'domain' => $analysis['domain'],
+                    'type' => $analysis['type'],
+                    'visits' => 0,
+                ];
             }
-            $counts[$ref] = ($counts[$ref] ?? 0) + 1;
-        }
-        arsort($counts);
-        $top = [];
-        foreach (array_slice($counts, 0, $limit, true) as $referer => $count) {
-            $top[] = ['referer' => $referer, 'visits' => $count];
+            $counts[$key]['visits']++;
         }
 
-        return $top;
+        uasort($counts, static fn (array $a, array $b): int => $b['visits'] <=> $a['visits']);
+
+        return array_values(array_slice($counts, 0, $limit));
     }
 
     /**
@@ -131,23 +140,89 @@ final class Reporter implements ReporterInterface
     }
 
     /**
-     * @return list<array{country: string, visits: int}>
+     * @return list<array{country: string, countryCode: string|null, city: string|null, visits: int, sample_ips: list<string>}>
      */
     public function getGeoStats(string $period = 'today'): array
     {
         $visits = $this->collectVisitsForPeriod($period, 2000);
-        $counts = [];
+        /** @var array<string, array{country: string, countryCode: string|null, cityCounts: array<string, int>, visits: int, sample_ips: list<string>}> $stats */
+        $stats = [];
+
         foreach ($visits as $visit) {
             $country = (string) ($visit['country'] ?? 'Unknown');
-            $counts[$country] = ($counts[$country] ?? 0) + 1;
-        }
-        arsort($counts);
+            $countryCode = isset($visit['countryCode']) && is_string($visit['countryCode']) && $visit['countryCode'] !== ''
+                ? strtoupper($visit['countryCode'])
+                : null;
+            $city = isset($visit['city']) && is_string($visit['city']) && $visit['city'] !== ''
+                ? $visit['city']
+                : null;
+            $key = ($countryCode ?? 'xx') . '|' . $country;
 
-        return array_map(
-            static fn (string $country, int $visits): array => ['country' => $country, 'visits' => $visits],
-            array_keys($counts),
-            array_values($counts)
+            if (!isset($stats[$key])) {
+                $stats[$key] = [
+                    'country' => $country,
+                    'countryCode' => $countryCode,
+                    'cityCounts' => [],
+                    'visits' => 0,
+                    'sample_ips' => [],
+                ];
+            }
+
+            $stats[$key]['visits']++;
+            if ($city !== null) {
+                $stats[$key]['cityCounts'][$city] = ($stats[$key]['cityCounts'][$city] ?? 0) + 1;
+            }
+
+            $maskedIp = AnalyticsIpMasker::mask(isset($visit['ip']) ? (string) $visit['ip'] : null);
+            if ($maskedIp !== 'unknown' && !in_array($maskedIp, $stats[$key]['sample_ips'], true) && count($stats[$key]['sample_ips']) < 3) {
+                $stats[$key]['sample_ips'][] = $maskedIp;
+            }
+        }
+
+        uasort($stats, static fn (array $a, array $b): int => $b['visits'] <=> $a['visits']);
+
+        $rows = [];
+        foreach ($stats as $row) {
+            arsort($row['cityCounts']);
+            $topCity = array_key_first($row['cityCounts']);
+            $rows[] = [
+                'country' => $row['country'],
+                'countryCode' => $row['countryCode'],
+                'city' => is_string($topCity) ? $topCity : null,
+                'visits' => $row['visits'],
+                'sample_ips' => $row['sample_ips'],
+            ];
+        }
+
+        return $rows;
+    }
+
+    /**
+     * @return list<array{country: string, countryCode: string|null, city: string|null, ip_masked: string, requestUri: string, timestamp: string}>
+     */
+    public function getRecentGeoVisits(int $limit = 20, string $period = 'today'): array
+    {
+        $visits = $this->collectVisitsForPeriod($period, 2000);
+        usort(
+            $visits,
+            static fn (array $a, array $b): int => strcmp((string) ($b['timestamp'] ?? ''), (string) ($a['timestamp'] ?? ''))
         );
+
+        $rows = [];
+        foreach (array_slice($visits, 0, $limit) as $visit) {
+            $rows[] = [
+                'country' => (string) ($visit['country'] ?? 'Unknown'),
+                'countryCode' => isset($visit['countryCode']) && is_string($visit['countryCode']) && $visit['countryCode'] !== ''
+                    ? strtoupper($visit['countryCode'])
+                    : null,
+                'city' => isset($visit['city']) && is_string($visit['city']) ? $visit['city'] : null,
+                'ip_masked' => AnalyticsIpMasker::mask(isset($visit['ip']) ? (string) $visit['ip'] : null),
+                'requestUri' => (string) ($visit['requestUri'] ?? '/'),
+                'timestamp' => (string) ($visit['timestamp'] ?? ''),
+            ];
+        }
+
+        return $rows;
     }
 
     /**

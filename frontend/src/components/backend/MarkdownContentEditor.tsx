@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Bold,
   Code,
@@ -10,6 +10,7 @@ import {
   List,
   ListOrdered,
   Quote,
+  Sparkles,
   SquareCode,
 } from 'lucide-react';
 import { markdownToHtml, wrapSelection, insertAtCursor } from '../../utils/contentEditor';
@@ -18,6 +19,8 @@ import {
   profileAllows,
   type EditorProfileDefinition,
 } from '../../utils/editorProfiles';
+import { loadAllowedEditorComponents, type EditorComponentRegistration } from '../../utils/editorComponents';
+import { useSettingsContext } from '../../context/SettingsContext';
 import { useI18n } from '../../context/I18nContext';
 
 interface MarkdownContentEditorProps {
@@ -44,8 +47,15 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
   onBlockedAction,
 }) => {
   const { t } = useI18n();
+  const { settings } = useSettingsContext();
+  const editorSettings = settings.editor as Record<string, unknown>;
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [previewMode, setPreviewMode] = useState<PreviewMode>('split');
+  const [customComponents, setCustomComponents] = useState<EditorComponentRegistration[]>([]);
+
+  useEffect(() => {
+    void loadAllowedEditorComponents(profile, editorSettings).then(setCustomComponents);
+  }, [profile, editorSettings]);
 
   const previewHtml = useMemo(() => markdownToHtml(value), [value]);
 
@@ -169,6 +179,16 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
                 wrapSelection(text, start, end, '```\n', '\n```', 'code')
               )
             )}
+          {customComponents.length > 0 && (
+            <span className="w-px h-6 bg-slate-300 dark:bg-slate-600 mx-1" />
+          )}
+          {customComponents.map((component) =>
+            toolbarButton(component.label, <Sparkles size={16} />, () =>
+              applyEdit((text, start, end) =>
+                insertAtCursor(text, start, end, `\n${component.markdownInsert()}`)
+              )
+            )
+          )}
         </div>
 
         <div className="flex gap-1 text-xs">

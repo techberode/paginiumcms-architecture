@@ -6,6 +6,7 @@ namespace PaginiumCMS\Core\Editor\Services;
 
 use PaginiumCMS\Core\Editor\Models\EditorCapabilities;
 use PaginiumCMS\Core\Editor\Models\EditorProfile;
+use PaginiumCMS\Core\Editor\Services\EditorComponentRegistry;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 
 /**
@@ -17,7 +18,8 @@ final class EditorProfileService
     private ?array $builtIn = null;
 
     public function __construct(
-        private SettingsRepositoryInterface $settings
+        private SettingsRepositoryInterface $settings,
+        private EditorComponentRegistry $components
     ) {
     }
 
@@ -30,14 +32,80 @@ final class EditorProfileService
     }
 
     /**
-     * @return list<array{id: string, label: string, description: string, capabilities: array{enabled: list<string>}, modes: list<string>}>
+     * @return list<array{id: string, label: string, description: string, capabilities: array{enabled: list<string>}, modes: list<string>, customComponents: list<string>}>
      */
     public function listProfilesForApi(): array
     {
         return array_map(
             static fn (EditorProfile $profile): array => $profile->toArray(),
+            $this->listProfilesWithCustomComponents()
+        );
+    }
+
+    /**
+     * @return list<EditorProfile>
+     */
+    public function listProfilesWithCustomComponents(): array
+    {
+        return array_map(
+            fn (EditorProfile $profile): EditorProfile => $this->withCustomComponents($profile),
             $this->listProfiles()
         );
+    }
+
+    public function getProfileWithCustomComponents(string $id): ?EditorProfile
+    {
+        $profile = $this->getProfile($id);
+
+        return $profile !== null ? $this->withCustomComponents($profile) : null;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function getAllowedCustomComponents(string $profileId): array
+    {
+        if (!(bool) $this->settings->get('editor.customComponentsEnabled', false)) {
+            return [];
+        }
+
+        $map = $this->profileCustomComponentsMap();
+        $configured = $map[$profileId] ?? [];
+
+        $allowed = [];
+        foreach ($configured as $componentId) {
+            $componentId = trim($componentId);
+            if ($componentId !== '' && $this->components->isRegistered($componentId)) {
+                $allowed[] = $componentId;
+            }
+        }
+
+        return array_values(array_unique($allowed));
+    }
+
+    /**
+     * @return array<string, list<string>>
+     */
+    public function profileCustomComponentsMap(): array
+    {
+        $raw = (string) $this->settings->get('editor.profileCustomComponents', '{}');
+        $decoded = json_decode($raw, true);
+        if (!is_array($decoded)) {
+            return [];
+        }
+
+        $map = [];
+        foreach ($decoded as $profileId => $componentIds) {
+            if (!is_string($profileId) || !is_array($componentIds)) {
+                continue;
+            }
+            $map[$profileId] = array_values(array_filter(
+                array_map(static fn ($id): string => is_string($id) ? trim($id) : '', $componentIds),
+                static fn (string $id): bool => $id !== ''
+            ));
+        }
+
+        return $map;
     }
 
     public function getProfile(string $id): ?EditorProfile
@@ -66,13 +134,13 @@ final class EditorProfileService
             $profileId = $this->resolveDefaultProfileId($contentType);
         }
 
-        $profile = $this->getProfile($profileId);
+        $profile = $this->getProfileWithCustomComponents($profileId);
         if ($profile === null) {
-            $profile = $this->getProfile($this->resolveDefaultProfileId($contentType));
+            $profile = $this->getProfileWithCustomComponents($this->resolveDefaultProfileId($contentType));
         }
 
         if ($profile === null) {
-            $profile = $this->getProfile('company');
+            $profile = $this->getProfileWithCustomComponents('company');
         }
 
         /** @var EditorProfile $profile */
@@ -85,7 +153,8 @@ final class EditorProfileService
                     $profile->label,
                     $profile->description,
                     $merged,
-                    $profile->modes
+                    $profile->modes,
+                    $profile->customComponents
                 );
             }
         }
@@ -141,5 +210,17 @@ final class EditorProfileService
         ];
 
         return $this->builtIn;
+    }
+
+    private function withCustomComponents(EditorProfile $profile): EditorProfile
+    {
+        return new EditorProfile(
+            $profile->id,
+            $profile->label,
+            $profile->description,
+            $profile->capabilities,
+            $profile->modes,
+            $this->getAllowedCustomComponents($profile->id)
+        );
     }
 }

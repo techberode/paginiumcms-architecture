@@ -3,22 +3,26 @@ import { screen } from '@testing-library/react';
 import { CompanyInfoPanel, CompanyMapEmbed } from './CompanyInfoPanel';
 import { renderWithRouter } from '../../test/renderWithRouter';
 
-vi.mock('../../context/SettingsContext', () => ({
-  useSettingsContext: () => ({
-    settings: {
-      company: {
-        showOnContactPage: true,
-        name: 'Paginium s.r.o.',
-        ico: '12345678',
-        address: 'Bratislava',
-        mapEmbedUrl: 'https://www.google.com/maps/embed?pb=test',
+vi.mock('../../context/SettingsContext', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../context/SettingsContext')>();
+  return {
+    ...actual,
+    useSettingsContext: () => ({
+      settings: {
+        company: {
+          showOnContactPage: true,
+          name: 'Paginium s.r.o.',
+          ico: '12345678',
+          address: 'Bratislava',
+          mapEmbedUrl: 'https://www.google.com/maps/embed?pb=test',
+        },
       },
-    },
-    loading: false,
-    get: vi.fn(),
-    reload: vi.fn(),
-  }),
-}));
+      loading: false,
+      get: vi.fn(),
+      reload: vi.fn(),
+    }),
+  };
+});
 
 describe('CompanyInfoPanel', () => {
   it('renders company details from settings', () => {

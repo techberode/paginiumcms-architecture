@@ -9,6 +9,7 @@ use PaginiumCMS\Core\I18n\Services\SupportedLocalesRegistry;
 use PaginiumCMS\Core\Security\SecurityLogger;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\Settings\SettingsSchema;
+use PaginiumCMS\Core\Editor\Services\EditorComponentRegistry;
 use PaginiumCMS\Core\Editor\Services\EditorProfileService;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Demo\Data\DemoFixtures;
@@ -41,6 +42,7 @@ final class SettingsController
         private SecurityLogger $securityLogger,
         private DemoMode $demoMode,
         private EditorProfileService $editorProfiles,
+        private EditorComponentRegistry $editorComponents,
         private AccessControlSyncService $accessControlSync,
         private AuthorizationInterface $authorization,
         private SupportedLocalesRegistry $localesRegistry
@@ -64,6 +66,7 @@ final class SettingsController
                 'permissions' => PermissionCatalog::ALL,
                 'configurableRoles' => PermissionCatalog::configurableRoles(),
                 'cmsInfo' => $this->buildCmsInfoMeta(),
+                'editorComponents' => $this->editorComponents->listRegisteredForApi(),
             ],
         ]);
     }
@@ -81,6 +84,10 @@ final class SettingsController
 
         /** @var User|null $user */
         $user = $request->getAttribute('user');
+        if (!SettingsSchema::userCanAccessGroup($user, $group)) {
+            return $this->json->error($response, 'Nemáte oprávnenie na túto skupinu nastavení', 403);
+        }
+
         if (SettingsSchema::isSuperAdminOnly($group) && !$this->isSuperAdmin($user)) {
             return $this->json->error($response, 'Len super administrátor môže zobraziť túto skupinu nastavení', 403);
         }
@@ -113,6 +120,10 @@ final class SettingsController
 
         /** @var User|null $user */
         $user = $request->getAttribute('user');
+        if (!SettingsSchema::userCanAccessGroup($user, $group)) {
+            return $this->json->error($response, 'Nemáte oprávnenie na túto skupinu nastavení', 403);
+        }
+
         if (SettingsSchema::isSuperAdminOnly($group) && !$this->isSuperAdmin($user)) {
             return $this->json->error($response, 'Len super administrátor môže meniť túto skupinu nastavení', 403);
         }
@@ -194,6 +205,7 @@ final class SettingsController
             'content' => $all['content'] ?? [],
             'editor' => array_merge($all['editor'] ?? [], [
                 'profiles' => $this->editorProfiles->listProfilesForApi(),
+                'customComponents' => $this->editorComponents->listRegisteredForApi(),
             ]),
             'notifications' => [
                 'toastEnabled' => (bool) ($all['notifications']['toastEnabled'] ?? true),

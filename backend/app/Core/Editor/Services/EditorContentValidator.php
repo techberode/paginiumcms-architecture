@@ -13,7 +13,8 @@ namespace PaginiumCMS\Core\Editor\Services;
 final class EditorContentValidator
 {
     public function __construct(
-        private EditorProfileService $profiles
+        private EditorProfileService $profiles,
+        private EditorComponentRegistry $components
     ) {
     }
 
@@ -29,6 +30,10 @@ final class EditorContentValidator
 
         $frontMatter = is_array($payload['frontMatter'] ?? null) ? $payload['frontMatter'] : [];
         $profileId = trim((string) ($payload['editorProfile'] ?? $frontMatter['editorProfile'] ?? ''));
+        if ($profileId === '') {
+            $profileId = $this->profiles->resolveDefaultProfileId($contentType);
+        }
+
         if ($profileId !== '' && $this->profiles->getProfile($profileId) === null) {
             return 'Neplatný editor profil.';
         }
@@ -38,11 +43,92 @@ final class EditorContentValidator
             $format = str_starts_with(trim($content), '<') ? 'html' : 'markdown';
         }
 
-        return match ($format) {
+        $securityError = match ($format) {
             'html' => $this->validateHtmlSecurity($content),
             'tiptap_json' => $this->validateTiptapJsonSecurity($content),
             default => $this->validateMarkdownSecurity($content),
         };
+        if ($securityError !== null) {
+            return $securityError;
+        }
+
+        return match ($format) {
+            'tiptap_json' => $this->validateCustomTiptapComponents($content, $profileId),
+            default => $this->validateCustomMarkdownComponents($content, $profileId),
+        };
+    }
+
+    private function validateCustomMarkdownComponents(string $content, string $profileId): ?string
+    {
+        if (!preg_match_all('/:::([a-z0-9]+(?:-[a-z0-9]+)*)/', $content, $matches)) {
+            return null;
+        }
+
+        $allowed = $this->profiles->getAllowedCustomComponents($profileId);
+
+        foreach ($matches[1] as $directive) {
+            $definition = $this->components->getByMarkdownDirective($directive);
+            if ($definition === null) {
+                return 'Neznámy custom komponent v Markdown: ' . $directive . '.';
+            }
+
+            if (!in_array($definition->id, $allowed, true)) {
+                return 'Custom komponent nie je povolený pre tento profil: ' . $definition->id . '.';
+            }
+        }
+
+        return null;
+    }
+
+    private function validateCustomTiptapComponents(string $content, string $profileId): ?string
+    {
+        $decoded = json_decode($content, true);
+        if (!is_array($decoded)) {
+            return null;
+        }
+
+        $allowed = $this->profiles->getAllowedCustomComponents($profileId);
+        $customNodeTypes = $this->components->registeredTiptapNodeTypes();
+
+        return $this->validateTiptapCustomNodes($decoded, $allowed, $customNodeTypes);
+    }
+
+    /**
+     * @param array<string, mixed> $node
+     * @param list<string> $allowed
+     * @param list<string> $customNodeTypes
+     */
+    private function validateTiptapCustomNodes(array $node, array $allowed, array $customNodeTypes): ?string
+    {
+        $type = (string) ($node['type'] ?? '');
+        if ($type !== '' && in_array($type, $customNodeTypes, true)) {
+            $definition = $this->components->getByTiptapNodeType($type);
+            if ($definition === null) {
+                return 'Neznámy custom komponent v editore.';
+            }
+
+            if (!in_array($definition->id, $allowed, true)) {
+                return 'Custom komponent nie je povolený pre tento profil: ' . $definition->id . '.';
+            }
+        }
+
+        $children = $node['content'] ?? [];
+        if (!is_array($children)) {
+            return null;
+        }
+
+        foreach ($children as $child) {
+            if (!is_array($child)) {
+                continue;
+            }
+
+            $childError = $this->validateTiptapCustomNodes($child, $allowed, $customNodeTypes);
+            if ($childError !== null) {
+                return $childError;
+            }
+        }
+
+        return null;
     }
 
     private function validateMarkdownSecurity(string $content): ?string

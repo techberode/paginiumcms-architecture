@@ -57,6 +57,53 @@ final class ExtensionManifestValidator
             }
         }
 
+        $this->validateEditorComponents($manifest);
+
         return $id;
+    }
+
+    /**
+     * @param array<string, mixed> $manifest
+     */
+    private function validateEditorComponents(array $manifest): void
+    {
+        $editor = $manifest['editor'] ?? null;
+        if ($editor === null) {
+            return;
+        }
+
+        if (!is_array($editor)) {
+            throw new RuntimeException('plugin.json editor must be an object.');
+        }
+
+        $components = $editor['components'] ?? [];
+        if ($components === []) {
+            return;
+        }
+
+        if (!is_array($components)) {
+            throw new RuntimeException('plugin.json editor.components must be an array.');
+        }
+
+        foreach ($components as $index => $entry) {
+            if (!is_array($entry)) {
+                throw new RuntimeException('editor.components[' . $index . '] must be an object.');
+            }
+
+            $componentId = trim((string) ($entry['id'] ?? ''));
+            if ($componentId === '' || !preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $componentId)) {
+                throw new RuntimeException('editor.components[' . $index . '].id must be kebab-case.');
+            }
+
+            $tiptapNodeType = trim((string) ($entry['tiptapNodeType'] ?? ''));
+            if ($tiptapNodeType === '' || !preg_match('/^[a-zA-Z][a-zA-Z0-9]*$/', $tiptapNodeType)) {
+                throw new RuntimeException('editor.components[' . $index . '].tiptapNodeType must be camelCase.');
+            }
+
+            $markdownDirective = trim((string) ($entry['markdownDirective'] ?? $componentId));
+            if ($markdownDirective === '' || !preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $markdownDirective)) {
+                throw new RuntimeException('editor.components[' . $index . '].markdownDirective must be kebab-case.');
+            }
+        }
     }
 }

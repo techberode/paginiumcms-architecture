@@ -60,6 +60,7 @@ export interface SettingsPayload {
     permissions?: string[];
     configurableRoles?: string[];
     cmsInfo?: CmsInfoMeta;
+    editorComponents?: Array<{ id: string; label: string; pluginId: string }>;
   };
 }
 

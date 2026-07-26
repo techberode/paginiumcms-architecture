@@ -130,10 +130,12 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
     enabled: !isNew && canEdit,
   });
 
-  const editorProfileDefinition = useMemo(
-    () => getEditorProfile(editorProfile),
-    [editorProfile]
-  );
+  const editorProfileDefinition = useMemo(() => {
+    const apiProfiles = Array.isArray(settings.editor?.profiles)
+      ? (settings.editor.profiles as import('../../utils/editorProfiles').EditorProfileDefinition[])
+      : undefined;
+    return getEditorProfile(editorProfile, apiProfiles);
+  }, [editorProfile, settings.editor?.profiles]);
 
   useEffect(() => {
     if (isNew) {

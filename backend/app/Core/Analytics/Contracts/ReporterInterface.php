@@ -26,7 +26,7 @@ interface ReporterInterface
     /**
      * Získa top referery.
      *
-     * @return list<array{referer: string, visits: int}>
+     * @return list<array{referer: string, source: string, domain: string, type: string, visits: int}>
      */
     public function getTopReferers(int $limit = 10, string $period = 'today'): array;
 
@@ -45,9 +45,16 @@ interface ReporterInterface
     /**
      * Získa geo štatistiky.
      *
-     * @return list<array{country: string, visits: int}>
+     * @return list<array{country: string, countryCode: string|null, city: string|null, visits: int, sample_ips: list<string>}>
      */
     public function getGeoStats(string $period = 'today'): array;
+
+    /**
+     * Posledné návštevy s geo metadátami (maskovaná IP).
+     *
+     * @return list<array{country: string, countryCode: string|null, city: string|null, ip_masked: string, requestUri: string, timestamp: string}>
+     */
+    public function getRecentGeoVisits(int $limit = 20, string $period = 'today'): array;
 
     /**
      * Získa denné štatistiky pre graf.
