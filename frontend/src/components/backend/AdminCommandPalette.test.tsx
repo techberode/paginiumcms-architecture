@@ -4,7 +4,12 @@ import { screen, fireEvent } from '@testing-library/react';
 import { AdminCommandPalette } from './AdminCommandPalette';
 import { renderWithRouter } from '../../test/renderWithRouter';
 
-const mockNavigate = vi.fn();
+// 1. Obalenie mocku navigácie do vi.hoisted, aby bol dostupný pred importami
+const { mockNavigate } = vi.hoisted(() => {
+  return {
+    mockNavigate: vi.fn()
+  };
+});
 
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
@@ -54,3 +59,4 @@ describe('AdminCommandPalette', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/settings');
   });
 });
+

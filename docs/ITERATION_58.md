@@ -244,6 +244,7 @@ Extend existujúci **`ThemeContext`** — admin mode zostáva; public site čít
 
 ## Related
 
+- [ITERATION_58_ALTERNATIVES.md](ITERATION_58_ALTERNATIVES.md) — porovnanie 3 architektúr + security checklist (2026-07-26)
 - [ITERATION_48.md](ITERATION_48.md) — PHP/static templates
 - [ITERATION_51.md](ITERATION_51.md) — live preview modal (scheme preview hook)
 - [ITERATION_31.md](ITERATION_BACKLOG.md) — live preview (complements builder)

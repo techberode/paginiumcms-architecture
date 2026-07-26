@@ -14,9 +14,9 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT/frontend"
 
-HOST="${DEPLOY_HOST:192.168.10.26 (napr. export DEPLOY_HOST=192.168.x.x)}"
-PORT="${DEPLOY_SSH_PORT:-49555}"
-USER="${DEPLOY_USER:marian}"
+HOST="${DEPLOY_HOST:?Nastav DEPLOY_HOST (napr. export DEPLOY_HOST=192.168.x.x)}"
+PORT="${DEPLOY_SSH_PORT:-22}"
+USER="${DEPLOY_USER:?Nastav DEPLOY_USER}"
 REMOTE="${DEPLOY_PATH:-/var/www/paginium-test/dist/}"
 HEALTH_URL="${DEPLOY_HEALTH_URL:-http://${HOST}:8081/api/health}"
 PUBLIC_URL="${DEPLOY_PUBLIC_URL:-http://${HOST}:8081/}"
