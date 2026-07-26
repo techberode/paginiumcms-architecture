@@ -38,7 +38,7 @@ final class ContentScheduledPublishHandler implements JobHandlerInterface
             $publishedCount > 0,
             $message,
             $result,
-            $skippedCount > 0 ? 'some_items_skipped' : null
+            $publishedCount > 0 ? null : ($skippedCount > 0 ? 'some_items_skipped' : 'nothing_due')
         );
     }
 }

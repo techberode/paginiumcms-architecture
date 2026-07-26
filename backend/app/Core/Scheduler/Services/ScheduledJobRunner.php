@@ -11,6 +11,15 @@ use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
  */
 final class ScheduledJobRunner
 {
+    /** @var list<string> */
+    private const SKIPPED_REASONS = [
+        'not_due',
+        'no_schedule',
+        'disabled',
+        'nothing_due',
+        'some_items_skipped',
+    ];
+
     public function __construct(
         private SettingsRepositoryInterface $settings,
         private JobRegistryStore $registry,
@@ -115,6 +124,8 @@ final class ScheduledJobRunner
      */
     private function finalizeRun(string $id, string $handlerKey, array $entry): array
     {
+        $entry['outcome'] = $this->resolveOutcome($entry);
+
         try {
             $this->runs->append($id, $entry);
         } catch (\Throwable $e) {
@@ -129,5 +140,22 @@ final class ScheduledJobRunner
         }
 
         return array_merge(['job_id' => $id, 'handler' => $handlerKey], $entry);
+    }
+
+    /**
+     * @param array<string, mixed> $entry
+     */
+    private function resolveOutcome(array $entry): string
+    {
+        if (($entry['success'] ?? false) === true) {
+            return 'completed';
+        }
+
+        $reason = (string) ($entry['reason'] ?? '');
+        if (in_array($reason, self::SKIPPED_REASONS, true)) {
+            return 'skipped';
+        }
+
+        return 'failed';
     }
 }

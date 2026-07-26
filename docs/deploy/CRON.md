@@ -39,13 +39,20 @@ Jeden riadok každú minútu — spúšťa due joby z registry **a** spracuje fr
 # Health
 curl -s https://your-cms.example/api/health
 
-# Diagnostika flat-file (index, orphans)
-php backend/bin/console content:diagnose
-php backend/bin/console content:diagnose --fix   # oprava indexu/cache
+# Diagnostika flat-file (index, orphans, jobs storage)
+php backend/bin/console content:diagnose --json | jq '.jobsDirWritable, .issues'
+
+# Skutočný test zápisu — spusti v Dockeri ako www-data (host diagnose môže klamať)
+docker compose exec -u www-data php sh -c \
+  'touch /var/www/html/backend/storage/app/content/data/jobs/.write-test && rm /var/www/html/backend/storage/app/content/data/jobs/.write-test && echo WRITE_OK'
 
 # Simulácia cron (manuálne)
 php backend/bin/console scheduler:run
 php backend/bin/console worker:process
+
+# Jeden konkrétny job (It.62)
+php backend/bin/console jobs:run backup-scheduled
+php backend/bin/console jobs:run content-scheduled-publish
 
 # Legacy CLI (stále podporované, ale scheduler je preferovaný)
 php backend/bin/console backup:run-schedule
@@ -78,12 +85,15 @@ Pridaj do cronu alebo nechaj v registry cez admin Plánovač.
 | `registry.json` prázdna | Prvý beh | Otvor admin **Plánovač** alebo spusti API — seed defaults |
 | Backup len manuálne | `backup-scheduled` vypnutý | Zapni v `/scheduler` |
 | Logy plné chýb | PHP cesta / permissions | Skontroluj `>> log` a práva na `storage/` |
+| Admin run „nefunguje“, API 200 | UI bralo `success:false` ako chybu | It.62 — `outcome` + toast fix; `npm run build:prod` |
+| `Permission denied` na `runs.json` | Host vs Docker `www-data` | `chown user:www-data`, dirs `2775`, test `touch` v kontajneri — [ITERATION_62.md](../ITERATION_62.md) |
 
 ---
 
 ## Súvisiace
 
 - [ITERATION_29.md](../ITERATION_29.md) — job queue architektúra
+- [ITERATION_62.md](../ITERATION_62.md) — production hardening, `jobs:run`, outcome UX
 - [ITERATION_59.md](../ITERATION_59.md) — scheduled publish
 - [user/INSTALLATION.md](../user/INSTALLATION.md) — inštalácia + cron krok
 - [developer/BETA_INFRA.md](../developer/BETA_INFRA.md) — beta checklist pre maintainerov

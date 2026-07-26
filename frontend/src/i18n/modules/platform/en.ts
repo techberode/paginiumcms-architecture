@@ -80,6 +80,12 @@ export const platformEn: MessageTree = {
     runNow: 'Run now',
     forceReport: 'Force report',
     systemJob: 'System job',
+    copyCron: 'Copy',
+    cronCopied: 'Cron copied',
+    outcomeCompleted: 'Done',
+    outcomeSkipped: 'Skipped',
+    outcomeFailed: 'Failed',
+    runLogWarning: 'Job ran but run history was not saved',
     toast: {
       jobDisabled: 'Job disabled',
       jobEnabled: 'Job enabled',

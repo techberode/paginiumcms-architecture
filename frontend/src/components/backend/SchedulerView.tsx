@@ -1,8 +1,8 @@
 // frontend/src/components/backend/SchedulerView.tsx
-// === Job scheduler admin (Iteration 29) ===
+// === Job scheduler admin (Iteration 29, UX It.62) ===
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CalendarClock, Play, RefreshCw, Settings } from 'lucide-react';
+import { CalendarClock, Copy, Play, RefreshCw, Settings } from 'lucide-react';
 import {
   getJobsOverview,
   processJobQueue,
@@ -10,11 +10,13 @@ import {
   runJob,
   updateJob,
   JobsOverview,
+  JobRunEntry,
   ScheduledJob,
 } from '../../api/jobs';
 import { useToast } from '../../hooks/useToast';
 import { settingsGroupPath } from '../../utils/adminDeepLinks';
 import { useI18n } from '../../context/I18nContext';
+import { interpretJobRunOutcome, outcomeBadgeClass, type JobOutcome } from '../../utils/jobRunOutcome';
 
 export const SchedulerView: React.FC = () => {
   const { t } = useI18n();
@@ -22,7 +24,7 @@ export const SchedulerView: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [runningId, setRunningId] = useState<string | null>(null);
   const [simulating, setSimulating] = useState(false);
-  const { success, error: toastError } = useToast();
+  const { success, error: toastError, warning } = useToast();
 
   const load = async () => {
     setLoading(true);
@@ -71,11 +73,29 @@ export const SchedulerView: React.FC = () => {
         result.result?.message ??
         (result.queued ? t('platform.scheduler.toast.jobStarted') : t('platform.scheduler.toast.jobCompleted'));
 
-      // HTTP + handler OK — success:false v tele znamená „nič na vykonanie“ (not due), nie pád requestu
       success(message);
+
+      const runResult = result.result as (JobRunEntry & { run_log_error?: string }) | undefined;
+      if (runResult?.run_log_error) {
+        warning(`${t('platform.scheduler.runLogWarning')}: ${runResult.run_log_error}`);
+      }
+
       await load();
     } finally {
       setRunningId(null);
+    }
+  };
+
+  const handleCopyCron = async () => {
+    if (!data?.cron_hint) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(data.cron_hint);
+      success(t('platform.scheduler.cronCopied'));
+    } catch {
+      toastError(t('platform.scheduler.toast.saveFailed'));
     }
   };
 
@@ -152,9 +172,19 @@ export const SchedulerView: React.FC = () => {
           </Link>
         </div>
         {data?.cron_hint && (
-          <p className="text-xs text-slate-500 font-mono break-all bg-slate-50 dark:bg-slate-950 p-3 rounded-xl">
-            {data.cron_hint}
-          </p>
+          <div className="flex flex-col sm:flex-row gap-2 sm:items-start">
+            <p className="flex-1 text-xs text-slate-500 font-mono break-all bg-slate-50 dark:bg-slate-950 p-3 rounded-xl">
+              {data.cron_hint}
+            </p>
+            <button
+              type="button"
+              onClick={() => void handleCopyCron()}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-bold shrink-0"
+            >
+              <Copy size={14} />
+              {t('platform.scheduler.copyCron')}
+            </button>
+          </div>
         )}
       </section>
 
@@ -183,17 +213,9 @@ export const SchedulerView: React.FC = () => {
               {t('platform.scheduler.recentRuns')}
             </h2>
           </div>
-          <ul className="divide-y divide-slate-100 dark:divide-slate-800 max-h-64 overflow-y-auto">
+          <ul className="divide-y divide-slate-100 dark:divide-slate-800 max-h-72 overflow-y-auto">
             {data?.recent_runs.map((run) => (
-              <li key={run.id ?? `${run.job_id}-${run.finished_at}`} className="px-5 py-2 text-sm flex justify-between gap-4">
-                <span>
-                  <span className="font-mono text-xs text-indigo-600">{run.job_id}</span>{' '}
-                  {run.message}
-                </span>
-                <span className={`shrink-0 ${run.success ? 'text-emerald-600' : 'text-slate-400'}`}>
-                  {run.finished_at?.slice(0, 19) ?? '—'}
-                </span>
-              </li>
+              <RecentRunRow key={run.id ?? `${run.job_id}-${run.finished_at}`} run={run} />
             ))}
           </ul>
         </section>
@@ -201,6 +223,35 @@ export const SchedulerView: React.FC = () => {
     </div>
   );
 };
+
+function outcomeLabel(outcome: JobOutcome, t: (key: string) => string): string {
+  switch (outcome) {
+    case 'completed':
+      return t('platform.scheduler.outcomeCompleted');
+    case 'skipped':
+      return t('platform.scheduler.outcomeSkipped');
+    default:
+      return t('platform.scheduler.outcomeFailed');
+  }
+}
+
+function RecentRunRow({ run }: { run: JobRunEntry }) {
+  const { t } = useI18n();
+  const outcome = interpretJobRunOutcome(run);
+
+  return (
+    <li className="px-5 py-2.5 text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      <span className="flex flex-wrap items-center gap-2 min-w-0">
+        <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${outcomeBadgeClass(outcome)}`}>
+          {outcomeLabel(outcome, t)}
+        </span>
+        <span className="font-mono text-xs text-indigo-600 shrink-0">{run.job_id}</span>
+        <span className="text-slate-600 dark:text-slate-300 truncate">{run.message}</span>
+      </span>
+      <span className="shrink-0 text-xs text-slate-400 font-mono">{run.finished_at?.slice(0, 19) ?? '—'}</span>
+    </li>
+  );
+}
 
 function JobCard({
   job,

@@ -20,14 +20,19 @@ export interface ScheduledJob {
   due_now?: boolean;
 }
 
+export type JobOutcome = 'completed' | 'skipped' | 'failed';
+
 export interface JobRunEntry {
   id?: string;
   job_id: string;
   success?: boolean;
   message?: string;
   reason?: string | null;
+  outcome?: JobOutcome;
   finished_at?: string;
   duration_ms?: number;
+  run_log_persisted?: boolean;
+  run_log_error?: string;
 }
 
 export interface JobsOverview {
