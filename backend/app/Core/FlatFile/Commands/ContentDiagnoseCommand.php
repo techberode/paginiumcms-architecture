@@ -76,6 +76,8 @@ final class ContentDiagnoseCommand extends Command
                 ['Unreadable content files', (string) $report['unreadableFiles']],
                 ['Index orphans (missing file)', (string) $report['indexOrphans']],
                 ['Backup files in content dirs', (string) $report['backupFileCount']],
+                ['Jobs dir writable', $this->boolLabel($report['jobsDirWritable'])],
+                ['Scheduler state writable', $this->boolLabel($report['schedulerStateWritable'])],
             ]
         );
 
@@ -163,6 +165,10 @@ final class ContentDiagnoseCommand extends Command
             $issues[] = sprintf('%d content files failed to parse (check front matter / JSON).', $unreadableFiles);
         }
 
+        foreach ($this->checkSchedulerStorage($basePath) as $issue) {
+            $issues[] = $issue;
+        }
+
         $healthy = $issues === [];
 
         return [
@@ -178,6 +184,8 @@ final class ContentDiagnoseCommand extends Command
             'unreadableFiles' => $unreadableFiles,
             'indexOrphans' => $indexOrphans,
             'backupFileCount' => $backupFileCount,
+            'jobsDirWritable' => $this->isPathWritable(rtrim($basePath, '/') . '/data/jobs'),
+            'schedulerStateWritable' => $this->isPathWritable(rtrim($basePath, '/') . '/data/scheduler-state.json'),
             'issues' => $issues,
             'actions' => $actions,
         ];
@@ -245,5 +253,41 @@ final class ContentDiagnoseCommand extends Command
     private function boolLabel(bool $value): string
     {
         return $value ? 'yes' : 'no';
+    }
+
+    private function isPathWritable(string $path): bool
+    {
+        if (is_file($path)) {
+            return is_writable($path);
+        }
+
+        if (is_dir($path)) {
+            return is_writable($path);
+        }
+
+        $parent = dirname($path);
+
+        return is_dir($parent) ? is_writable($parent) : is_writable(dirname($parent));
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function checkSchedulerStorage(string $basePath): array
+    {
+        $issues = [];
+        $jobsDir = rtrim($basePath, '/') . '/data/jobs';
+        $schedulerState = rtrim($basePath, '/') . '/data/scheduler-state.json';
+
+        if (!$this->isPathWritable($jobsDir)) {
+            $issues[] = 'Job scheduler storage is not writable: ' . $jobsDir
+                . ' (Docker www-data needs group write — chown user:www-data, chmod 775).';
+        }
+
+        if (!$this->isPathWritable($schedulerState)) {
+            $issues[] = 'Scheduler state file is not writable: ' . $schedulerState;
+        }
+
+        return $issues;
     }
 }

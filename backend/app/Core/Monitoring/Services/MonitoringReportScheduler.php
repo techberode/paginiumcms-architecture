@@ -87,7 +87,16 @@ final class MonitoringReportScheduler
         );
 
         if ($delivery['sent']) {
-            $this->state->setLastReportAt(date('c'));
+            try {
+                $this->state->setLastReportAt(date('c'));
+            } catch (\Throwable $e) {
+                return [
+                    'sent' => true,
+                    'connector' => $connector,
+                    'state_persisted' => false,
+                    'state_error' => $e->getMessage(),
+                ];
+            }
 
             return [
                 'sent' => true,

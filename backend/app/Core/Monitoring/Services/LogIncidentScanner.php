@@ -85,12 +85,23 @@ final class LogIncidentScanner
             }
         }
 
-        if ($notifiedIds !== []) {
-            $this->state->addNotifiedLogIds($notifiedIds);
+        $stateError = null;
+        try {
+            if ($notifiedIds !== []) {
+                $this->state->addNotifiedLogIds($notifiedIds);
+            }
+
+            $this->state->setLastLogScanAt(date('Y-m-d H:i:s'));
+        } catch (\Throwable $e) {
+            $stateError = $e->getMessage();
         }
 
-        $this->state->setLastLogScanAt(date('Y-m-d H:i:s'));
+        $result = ['notified' => $notifiedCount, 'scanned' => count($entries)];
+        if ($stateError !== null) {
+            $result['state_persisted'] = false;
+            $result['state_error'] = $stateError;
+        }
 
-        return ['notified' => $notifiedCount, 'scanned' => count($entries)];
+        return $result;
     }
 }

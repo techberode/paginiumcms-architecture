@@ -72,7 +72,15 @@ final class NotificationController
         $payload = json_decode((string) $request->getBody(), true);
         $force = is_array($payload) && (bool) ($payload['force'] ?? false);
 
-        $result = $this->reportScheduler->runIfDue($force);
+        try {
+            $result = $this->reportScheduler->runIfDue($force);
+        } catch (\Throwable $e) {
+            return $this->json->respond($response, [
+                'success' => false,
+                'message' => 'Failed to send monitoring report: ' . $e->getMessage(),
+                'result' => ['sent' => false, 'reason' => 'internal_error'],
+            ], 422);
+        }
 
         $sent = $result['sent'];
         $message = $sent ? 'Monitoring report sent' : $this->reportFailureMessage($result);

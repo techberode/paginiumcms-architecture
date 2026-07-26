@@ -86,9 +86,8 @@ final class ScheduledJobRunner
                 'message' => 'Unknown handler: ' . $handlerKey,
                 'finished_at' => date('c'),
             ];
-            $this->runs->append($id, $entry);
 
-            return array_merge(['job_id' => $id], $entry);
+            return $this->finalizeRun($id, $handlerKey, $entry);
         }
 
         $started = microtime(true);
@@ -107,6 +106,15 @@ final class ScheduledJobRunner
             ];
         }
 
+        return $this->finalizeRun($id, $handlerKey, $entry);
+    }
+
+    /**
+     * @param array<string, mixed> $entry
+     * @return array<string, mixed>
+     */
+    private function finalizeRun(string $id, string $handlerKey, array $entry): array
+    {
         try {
             $this->runs->append($id, $entry);
         } catch (\Throwable $e) {

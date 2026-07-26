@@ -40,7 +40,7 @@ class FileWriter implements FileWriterInterface
         // Vytvorenie adresárov, ak neexistujú
         $directory = dirname($absolutePath);
         if (!is_dir($directory)) {
-            if (!mkdir($directory, 0755, true) && !is_dir($directory)) {
+            if (!mkdir($directory, 0775, true) && !is_dir($directory)) {
                 throw new FlatFileException(sprintf('Nepodarilo sa vytvoriť adresár: %s', $directory));
             }
         }
@@ -77,7 +77,7 @@ class FileWriter implements FileWriterInterface
 
         $directory = dirname($absolutePath);
         if (!is_dir($directory)) {
-            if (!mkdir($directory, 0755, true) && !is_dir($directory)) {
+            if (!mkdir($directory, 0775, true) && !is_dir($directory)) {
                 throw new FlatFileException(sprintf('Nepodarilo sa vytvoriť adresár: %s', $directory));
             }
         }
