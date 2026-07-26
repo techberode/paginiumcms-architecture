@@ -5,8 +5,8 @@
 
 **Aktuálne hotové:** It.1–24 ✅ · It.26–28 ✅ · **It.62** ✅ (scheduler prod) · It.25 ⏳ (setup wizard — odložené)
 
-**Ďalšia iterácia:** [It.59](ITERATION_59.md) (odložená publikácia v editore) · backlog It.60–61  
-**Posledná shipped:** [It.62 Scheduler prod hardening](ITERATION_62.md) — **`main` @ `f7a73f1`** (tag **beta.9** pending) · [It.58b](ITERATION_58.md) — **`v2.1.0-beta.8`**
+**Ďalšia iterácia:** [It.60](ITERATION_60.md) (vlastné komponenty editora) · backlog It.61  
+**Posledná shipped:** [It.62 Scheduler prod hardening](ITERATION_62.md) — **`main` @ `f7a73f1`** (tag **beta.9** pending) · [It.59](ITERATION_59.md) — **2.0.53**
 
 **Incidenty a opravy:** [ISSUES.md](ISSUES.md)
 
@@ -35,7 +35,7 @@
 | **56** | **`v2.1.0-beta.5`** | **[Rich navigation items](ITERATION_56.md)** | **✅** | Popis, ikona, hover preview |
 | **57** | **`v2.1.0-beta.4`** | **[Auto tags & description](ITERATION_57.md)** | **✅** | suggest-meta API |
 | **58** | TBD | **[Page layout builder + color schemes](ITERATION_58.md)** | **🟡** | ⛔ po It.15 · [alternatívy](ITERATION_58_ALTERNATIVES.md) · layout + 5 presetov |
-| **59** | TBD | **[Odložená publikácia — plánovač v editore](ITERATION_59.md)** | **🟡** | Kalendár v editore + admin filtre; job `content.scheduled_publish` (It.29) |
+| **59** | **2.0.53** | **[Odložená publikácia — plánovač v editore](ITERATION_59.md)** | **✅** | Editor datetime + filter scheduled + job `content.scheduled_publish` |
 | **60** | TBD | **[Vlastné komponenty editora](ITERATION_60.md)** | **🟡** | Nastavenia → Stránka → Editor; pluginy; nie rola USER |
 | **61** | TBD | **[Newsletter vo footeri](ITERATION_61.md)** | **🟡** | Rýchly odber + admin zap/vyp; ≠ maintenance newsletter |
 | **15** | **2.0.38** | **[External plugins](ITERATION_15.md)** | **✅** | Import ZIP, registry, hooks, routes, admin UI |
@@ -360,11 +360,23 @@ Implementácia **až po dokončení It.15**. Prehľad: [ITERATION_WAVE_POST_15.m
 
 ---
 
-## Iterácia 59 – Odložená publikácia ⏳
+## Iterácia 59 – Odložená publikácia ✅
 
-Plánovač publikácie priamo v editore stránok/článkov; rozbalovací kalendár v editore a admin filtroch; backend handler na existujúcom job queue (It.29).
+Plánovač publikácie v editore stránok/článkov; job `content-scheduled-publish` (It.29/62).
 
-**Full spec:** [ITERATION_59.md](ITERATION_59.md)
+**Shipped:** **2.0.53** · **Full spec:** [ITERATION_59.md](ITERATION_59.md)
+
+### Smoke test (prod / local)
+
+```bash
+# 1) V admin editore: nová stránka, „Publikovať o“ = o 2 min, uložiť → stav Naplánované
+# 2) Manuálny job (Docker):
+./stack.sh exec php php backend/bin/console jobs:run content-scheduled-publish
+# Pred due: outcome skipped, reason nothing_due
+# Po due: stránka published, scheduledAt zmizne z front matter
+
+# 3) Admin zoznam: filter stav „Naplánované“, stĺpec dátumu
+```
 
 ---
 

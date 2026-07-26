@@ -29,3 +29,15 @@ export function datetimeLocalToIso(value: string): string {
 }
 
 export type ContentEditorStatus = 'draft' | 'published' | 'archived' | 'scheduled';
+
+/** ISO value for API save — always sent so backend can clear scheduling metadata. */
+export function resolveScheduledAtForSave(
+  status: ContentEditorStatus,
+  scheduledAtLocal: string
+): string {
+  if (status === 'scheduled' || scheduledAtLocal.trim() !== '') {
+    return datetimeLocalToIso(scheduledAtLocal);
+  }
+
+  return '';
+}

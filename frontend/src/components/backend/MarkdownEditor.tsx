@@ -52,7 +52,7 @@ import {
   type ContentSaveResponse,
 } from '../../utils/contentEditorApi';
 import {
-  datetimeLocalToIso,
+  resolveScheduledAtForSave,
   isoToDatetimeLocalValue,
   type ContentEditorStatus,
 } from '../../utils/contentScheduling';
@@ -349,10 +349,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
           editorMode,
         };
 
-        const scheduledIso = datetimeLocalToIso(scheduledAt);
-        if (scheduledIso) {
-          data.scheduledAt = scheduledIso;
-        }
+        data.scheduledAt = resolveScheduledAtForSave(status, scheduledAt);
 
         if (type === 'page' && template.trim()) {
           data.template = template.trim();
