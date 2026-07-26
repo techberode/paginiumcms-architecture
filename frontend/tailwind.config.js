@@ -9,6 +9,17 @@ export default {
   theme: {
     extend: {
       colors: {
+        theme: {
+          primary: 'var(--color-primary)',
+          'primary-foreground': 'var(--color-primary-foreground)',
+          secondary: 'var(--color-secondary)',
+          surface: 'var(--color-surface)',
+          'surface-elevated': 'var(--color-surface-elevated)',
+          text: 'var(--color-text)',
+          'text-muted': 'var(--color-text-muted)',
+          accent: 'var(--color-accent)',
+          border: 'var(--color-border)',
+        },
         primary: {
           50: '#eef2ff',
           100: '#e0e7ff',

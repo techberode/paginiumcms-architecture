@@ -151,44 +151,44 @@ export const SiteSearchModal: React.FC<SiteSearchModalProps> = ({ isOpen, onClos
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 bg-slate-900/80 backdrop-blur-sm animate-fadeIn"
+      className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 bg-theme-text/80 backdrop-blur-sm animate-fadeIn"
       onClick={onClose}
       role="presentation"
     >
       <div
-        className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-2xl w-full border border-slate-200 dark:border-slate-800 overflow-hidden"
+        className="bg-theme-surface-elevated rounded-2xl shadow-2xl max-w-2xl w-full border border-theme-border overflow-hidden"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
       >
-        <div className="flex items-center px-5 py-4 border-b border-slate-100 dark:border-slate-800 gap-3">
-          <Search className="w-5 h-5 text-indigo-500" />
+        <div className="flex items-center px-5 py-4 border-b border-theme-border gap-3">
+          <Search className="w-5 h-5 text-theme-primary" />
           <input
             type="text"
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t('public.search.placeholder')}
-            className="flex-1 bg-transparent text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none text-base sm:text-lg"
+            className="flex-1 bg-transparent text-theme-text placeholder-theme-text-muted focus:outline-none text-base sm:text-lg"
           />
           <button
             type="button"
             onClick={onClose}
-            className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="p-1 text-theme-text-muted hover:text-theme-text rounded-lg hover:bg-theme-surface transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="max-h-[60vh] overflow-y-auto p-3 divide-y divide-slate-100 dark:divide-slate-800/60">
+        <div className="max-h-[60vh] overflow-y-auto p-3 divide-y divide-theme-border/60">
           {searchResults.length === 0 && query.length >= 2 && !searchLoading && (
-            <div className="py-12 text-center text-slate-500 dark:text-slate-400">
+            <div className="py-12 text-center text-theme-text-muted">
               <p className="text-base font-medium">{t('public.search.noResults', { query })}</p>
             </div>
           )}
 
           {searchResults.length === 0 && query.length < 2 && (
-            <div className="py-8 text-center text-slate-400 dark:text-slate-500 text-xs sm:text-sm">
+            <div className="py-8 text-center text-theme-text-muted text-xs sm:text-sm">
               {t('public.search.minCharsHint')}
             </div>
           )}
@@ -201,35 +201,35 @@ export const SiteSearchModal: React.FC<SiteSearchModalProps> = ({ isOpen, onClos
                 onSelectRoute(item.path);
                 onClose();
               }}
-              className="w-full text-left p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl cursor-pointer transition-colors flex items-start justify-between group"
+              className="w-full text-left p-4 hover:bg-theme-surface rounded-xl cursor-pointer transition-colors flex items-start justify-between group"
             >
               <div className="flex-1 pr-4">
                 <div className="flex items-center gap-2 mb-1">
                   <span
                     className={`text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1 ${
                       item.type === 'page'
-                        ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400'
+                        ? 'bg-theme-primary/10 text-theme-primary'
                         : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400'
                     }`}
                   >
                     {item.type === 'page' ? <FileText className="w-2.5 h-2.5" /> : <BookOpen className="w-2.5 h-2.5" />}
                     {item.type === 'page' ? t('public.search.typePage') : t('public.search.typeArticle')}
                   </span>
-                  <span className="text-xs text-slate-400 flex items-center gap-1">
+                  <span className="text-xs text-theme-text-muted flex items-center gap-1">
                     <Calendar className="w-3 h-3" />
                     {formatDisplayDate(item.date, locale)}
                   </span>
                 </div>
-                <h4 className="text-base font-semibold text-slate-900 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                <h4 className="text-base font-semibold text-theme-text group-hover:text-theme-primary transition-colors">
                   {item.title}
                 </h4>
-                <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 line-clamp-2">{item.matchSnippet}</p>
+                <p className="text-xs text-theme-text-muted mt-1 line-clamp-2">{item.matchSnippet}</p>
                 {item.tags && item.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-2">
                     {item.tags.map((t) => (
                       <span
                         key={t}
-                        className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-1.5 py-0.5 rounded flex items-center gap-0.5"
+                        className="text-[10px] bg-theme-surface text-theme-text-muted px-1.5 py-0.5 rounded flex items-center gap-0.5"
                       >
                         <Tag className="w-2.5 h-2.5" />
                         {t}
@@ -238,14 +238,14 @@ export const SiteSearchModal: React.FC<SiteSearchModalProps> = ({ isOpen, onClos
                   </div>
                 )}
               </div>
-              <ChevronRight className="w-5 h-5 text-slate-300 dark:text-slate-600 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all self-center" />
+              <ChevronRight className="w-5 h-5 text-theme-border group-hover:text-theme-primary group-hover:translate-x-1 transition-all self-center" />
             </button>
           ))}
         </div>
 
-        <div className="bg-slate-50 dark:bg-slate-800/80 px-5 py-3 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between">
+        <div className="bg-theme-surface px-5 py-3 border-t border-theme-border text-[11px] text-theme-text-muted flex items-center justify-between">
           <span>{t('public.search.footerSource')}</span>
-          <span className="font-semibold text-indigo-600 dark:text-indigo-400">
+          <span className="font-semibold text-theme-primary">
             {searchLoading
               ? t('public.search.searching')
               : t('public.search.resultCount', { count: searchResults.length })}

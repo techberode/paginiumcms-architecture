@@ -1,5 +1,7 @@
 // frontend/src/context/ThemeContext.tsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import { isAdminAppRoute } from '../utils/appRoutes';
 
 type Theme = 'light' | 'dark' | 'system';
 
@@ -12,6 +14,7 @@ interface ThemeContextType {
 export const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const location = useLocation();
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem('theme') as Theme;
     return saved || 'system';
@@ -20,6 +23,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
+    if (!isAdminAppRoute(location.pathname)) {
+      return undefined;
+    }
+
     const updateTheme = () => {
       const isDarkMode =
         theme === 'dark' ||
@@ -36,7 +43,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const handler = () => updateTheme();
     mediaQuery.addEventListener('change', handler);
     return () => mediaQuery.removeEventListener('change', handler);
-  }, [theme]);
+  }, [theme, location.pathname]);
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme, isDark }}>

@@ -7,6 +7,7 @@ import {
   resolveNavigationIconComponent,
   resolveNavigationIconUrl,
 } from '../../utils/navigationRich';
+import { NAV_LINK_ACTIVE, NAV_LINK_IDLE } from '../../theme/publicUiClasses';
 
 interface NavMenuVisualProps {
   item: PublicNavItem;
@@ -22,7 +23,7 @@ export const NavMenuVisual: React.FC<NavMenuVisualProps> = ({ item, className = 
       <img
         src={mediaUrl}
         alt=""
-        className={`${sizeClass} rounded object-cover shrink-0 border border-slate-200 dark:border-slate-700 ${className}`}
+        className={`${sizeClass} rounded object-cover shrink-0 border border-theme-border ${className}`}
       />
     );
   }
@@ -30,7 +31,7 @@ export const NavMenuVisual: React.FC<NavMenuVisualProps> = ({ item, className = 
   if (item.iconType === 'lucide') {
     const Icon = resolveNavigationIconComponent(item.iconValue);
     if (Icon) {
-      return <Icon className={`${sizeClass} shrink-0 text-indigo-500 ${className}`} aria-hidden />;
+      return <Icon className={`${sizeClass} shrink-0 text-theme-primary ${className}`} aria-hidden />;
     }
   }
 
@@ -75,18 +76,14 @@ export const NavDropdownEntry: React.FC<NavDropdownEntryProps> = ({
         type="button"
         className={`flex w-full items-start gap-3 text-left px-4 py-2 transition-colors ${
           compact ? 'py-1.5 pl-7 pr-4' : ''
-        } ${
-          isActive
-            ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300'
-            : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
-        }`}
+        } ${isActive ? NAV_LINK_ACTIVE : `${NAV_LINK_IDLE} text-theme-text`}`}
         onClick={() => onNavigate(item.path)}
       >
         {showVisual ? <NavMenuVisual item={item} /> : null}
         <span className="min-w-0">
           <span className={`block font-semibold ${compact ? 'text-xs' : 'text-sm'}`}>{item.label}</span>
           {item.description ? (
-            <span className={`block text-slate-500 dark:text-slate-400 ${compact ? 'text-[11px]' : 'text-xs'}`}>
+            <span className={`block text-theme-text-muted ${compact ? 'text-[11px]' : 'text-xs'}`}>
               {item.description}
             </span>
           ) : null}
@@ -99,14 +96,14 @@ export const NavDropdownEntry: React.FC<NavDropdownEntryProps> = ({
           style={{ maxWidth: navUi.maxTooltipWidthPx }}
         >
           <div
-            className={`rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-2xl p-3 ${
+            className={`rounded-xl border border-theme-border bg-theme-surface-elevated shadow-2xl p-3 ${
               animate ? 'transition-transform duration-150' : ''
             }`}
             style={{ transform: animate ? `scale(${previewScale})` : undefined, transformOrigin: 'left center' }}
           >
             <NavMenuVisual item={{ ...item, thumbnailSize: 'lg' }} />
             {item.description ? (
-              <p className="text-xs text-slate-500 mt-2 max-w-[240px]">{item.description}</p>
+              <p className="text-xs text-theme-text-muted mt-2 max-w-[240px]">{item.description}</p>
             ) : null}
           </div>
         </div>

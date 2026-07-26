@@ -106,10 +106,11 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-086 | Stored XSS — `strip_tags` nečistí atribúty (`onerror`, `javascript:`) | **Kritická (security)** | ✅ Opravené · **2.1.0-beta.6** |
 | ISS-087 | `deploy-frontend-lan.sh` — hardcoded host/user/port | Stredná (ops / hygiene) | ✅ Opravené · **2.1.0-beta.6** |
 | ISS-088 | Backup import — Zip-Slip pri `extractTo()` | Stredná (security) | ✅ Opravené · **2.1.0-beta.6** |
-| ISS-089 | `npm audit` high — GHSA-qwww-vcr4-c8h2 (RR RSC-only, React 18) | Nízka (false positive SPA) | ⏳ Akceptované · plná oprava = React 19 + RR 8.3 |
+| ISS-089 | `npm audit` high — GHSA-qwww-vcr4-c8h2 (RR RSC-only, React 18) | Nízka (false positive SPA) | ⏳ Akceptované · CI `--audit-level=critical` |
 | ISS-090 | `eslint: latest` → npm 10, `npm audit fix` ERESOLVE | Nízka (CI/deps) | ✅ Opravené · **2.1.0-beta.7** |
 | ISS-091 | Vitest 14× fail — `react-router@8` override + `useOptimistic` | Stredná (CI) | ✅ Opravené · **2.1.0-beta.7** |
 | ISS-092 | Deploy — lokálne env + syntax `:?` v deploy skripte | Nízka (ops) | ✅ Opravené · **2.1.0-beta.7** |
+| ISS-093 | ESLint `expand is not a function` — override `brace-expansion@5` vs `minimatch@3` | Stredná (CI) | ✅ Opravené · odstránený override |
 
 
 
@@ -2195,6 +2196,16 @@ DEPLOY_HOST=192.168.x.x DEPLOY_USER=yourName DEPLOY_SSH_PORT=22 ./scripts/deploy
 - `deploy-frontend-lan.sh` — opravené `${DEPLOY_HOST:?…}` / `${DEPLOY_USER:?…}` (post-beta.6 syntax)
 
 **⚠️ Ops:** Nikdy necommitovať tokeny do `.env.example` — len placeholdery.
+
+---
+
+## ISS-093 – ESLint `expand is not a function` — VYRIEŠENÉ
+
+**Symptóm:** `npm run lint` padá s `TypeError: expand is not a function` v `minimatch@3` (ESLint `@eslint/config-array`).
+
+**Príčina:** `package.json` override `"brace-expansion": "^5.0.8"` — v5 mení CJS export (`{ expand }`), ale `minimatch@3` volá `require('brace-expansion')` ako funkciu.
+
+**Riešenie:** Odstránený globálny `brace-expansion` override. ESLint 9 + lint prebehne. Dev-deps `brace-expansion` high (GHSA-mh99) ostáva do ESLint 10 upgrade (ISS-083). CI audit gate: `--audit-level=critical` (ISS-089 RR high).
 
 ---
 

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Loader2, Mail, Sparkles } from 'lucide-react';
 import { subscribeMaintenanceNewsletter, type MaintenanceModeValue } from '../../api/maintenance';
 import { useToast } from '../../hooks/useToast';
+import { BTN_PRIMARY, INPUT_THEME } from '../../theme/publicUiClasses';
 import { useI18n } from '../../context/I18nContext';
 
 interface MaintenanceNewsletterFormProps {
@@ -46,34 +47,34 @@ export const MaintenanceNewsletterForm: React.FC<MaintenanceNewsletterFormProps>
   }
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+    <div className="rounded-2xl border border-theme-border bg-theme-surface-elevated/80 p-5">
       <div className="mb-4 flex items-center gap-3">
-        <div className="rounded-xl bg-white/10 p-2">
-          <Sparkles className="h-5 w-5 text-indigo-200" />
+        <div className="rounded-xl bg-theme-primary/10 p-2">
+          <Sparkles className="h-5 w-5 text-theme-primary" />
         </div>
         <div>
-          <h2 className="text-sm font-bold uppercase tracking-wide text-white/90">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-theme-text">
             {t('public.maintenance.newsletter.title')}
           </h2>
-          <p className="text-xs text-white/60">{hint || t('public.maintenance.newsletter.hint')}</p>
+          <p className="text-xs text-theme-text-muted">{hint || t('public.maintenance.newsletter.hint')}</p>
         </div>
       </div>
 
       <form className="flex flex-col gap-3 sm:flex-row" onSubmit={(event) => void handleSubmit(event)}>
         <div className="relative flex-1">
-          <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+          <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-theme-text-muted" />
           <input
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             placeholder={t('public.maintenance.newsletter.placeholder')}
-            className="w-full rounded-xl border border-white/10 bg-white/10 py-3 pl-10 pr-4 text-sm text-white placeholder:text-white/40 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/30"
+            className={`w-full rounded-xl py-3 pl-10 pr-4 text-sm placeholder:text-theme-text-muted focus:outline-none ${INPUT_THEME}`}
           />
         </div>
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-indigo-400 disabled:opacity-60"
+          className={`inline-flex items-center justify-center gap-2 px-5 py-3 text-sm disabled:opacity-60 ${BTN_PRIMARY}`}
         >
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
           {t('public.maintenance.newsletter.submit')}

@@ -92,6 +92,18 @@ final class ApiResponseShapeTest extends TestCase
         $this->assertArrayHasKey('company', $data['data']);
         $this->assertArrayHasKey('showOnContactPage', $data['data']['company']);
         $this->assertArrayHasKey('mapEmbedUrl', $data['data']['company']);
+        $this->assertArrayHasKey('appearance', $data['data']);
+        $this->assertArrayHasKey('colorScheme', $data['data']['appearance']);
+        $this->assertArrayHasKey('mode', $data['data']['appearance']);
+        $this->assertArrayHasKey('allowUserToggle', $data['data']['appearance']);
+        $this->assertContains($data['data']['appearance']['colorScheme'], [
+            'indigo-classic',
+            'ocean-slate',
+            'forest-sage',
+            'sunset-rose',
+            'mono-zinc',
+        ]);
+        $this->assertContains($data['data']['appearance']['mode'], ['light', 'dark', 'system']);
     }
 
     public function testValidationRulesShape(): void

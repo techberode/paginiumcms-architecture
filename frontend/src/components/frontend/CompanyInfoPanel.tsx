@@ -3,6 +3,7 @@ import { Building2, Mail, MapPin, Phone, Globe } from 'lucide-react';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { useI18n } from '../../context/I18nContext';
 import { isSafeMapEmbedUrl } from '../../utils/mapEmbed';
+import { PUBLIC_CARD } from '../../theme/publicUiClasses';
 
 function hasCompanyDetails(company: Record<string, unknown> | undefined): boolean {
   if (!company) {
@@ -63,22 +64,22 @@ export const CompanyInfoPanel: React.FC = () => {
   }
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 sm:p-10 shadow-xl shadow-slate-100 dark:shadow-none space-y-5">
+    <div className={`${PUBLIC_CARD} p-6 sm:p-10 shadow-xl space-y-5`}>
       <div>
-        <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">
+        <h3 className="text-xl font-extrabold text-theme-text">
           {company?.name?.trim() || t('public.company.defaultTitle')}
         </h3>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t('public.company.editHint')}</p>
+        <p className="text-xs text-theme-text-muted mt-1">{t('public.company.editHint')}</p>
       </div>
       <dl className="space-y-3">
         {rows.map((row) => (
           <div key={row.label} className="flex gap-3 text-sm">
-            {row.icon && <span className="text-indigo-500 mt-0.5 shrink-0">{row.icon}</span>}
+            {row.icon && <span className="text-theme-primary mt-0.5 shrink-0">{row.icon}</span>}
             <div>
-              <dt className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{row.label}</dt>
-              <dd className="text-slate-800 dark:text-slate-100 mt-0.5">
+              <dt className="text-[10px] font-bold uppercase tracking-wider text-theme-text-muted">{row.label}</dt>
+              <dd className="text-theme-text mt-0.5">
                 {row.href ? (
-                  <a href={row.href} className="text-indigo-600 dark:text-indigo-400 hover:underline">
+                  <a href={row.href} className="text-theme-primary hover:underline">
                     {row.value}
                   </a>
                 ) : (
@@ -103,7 +104,7 @@ export const CompanyMapEmbed: React.FC = () => {
   }
 
   return (
-    <div className="rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-lg aspect-video bg-slate-100 dark:bg-slate-900">
+    <div className="rounded-3xl overflow-hidden border border-theme-border shadow-lg aspect-video bg-theme-surface">
       <iframe
         title={t('public.company.mapTitle')}
         src={embedUrl}

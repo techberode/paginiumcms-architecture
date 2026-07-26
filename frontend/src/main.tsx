@@ -9,6 +9,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { ContentProvider } from './context/ContentContext';
 import { SettingsProvider } from './context/SettingsContext';
+import { PublicAppearanceProvider } from './context/PublicAppearanceProvider';
 import { I18nProvider } from './context/I18nContext';
 import { PublicSiteProvider } from './context/PublicSiteContext';
 import App from './App';
@@ -34,6 +35,7 @@ async function bootstrap(): Promise<void> {
         <ThemeProvider>
           <AuthProvider>
             <SettingsProvider>
+              <PublicAppearanceProvider>
               <SiteBrandingHead />
               <I18nProvider>
                 <PublicSiteProvider>
@@ -44,6 +46,7 @@ async function bootstrap(): Promise<void> {
                   </NotificationProvider>
                 </PublicSiteProvider>
               </I18nProvider>
+              </PublicAppearanceProvider>
             </SettingsProvider>
           </AuthProvider>
         </ThemeProvider>

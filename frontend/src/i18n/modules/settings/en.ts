@@ -88,6 +88,7 @@ export const settingsEn: MessageTree = {
     "contentSecurity": "Content security (XML/HTML)",
     "uploadSecurity": "Upload security",
     "branding": "Logo & favicon",
+    "appearance": "Appearance",
     "accessControl": "Role permissions",
     "cmsInfo": "PaginiumCMS – info"
   },
@@ -109,6 +110,41 @@ export const settingsEn: MessageTree = {
     "linkPhilosophy": "Project philosophy",
     "linkChangelog": "Changelog (release history)",
     "footer": "Version updates with each release tag. This section is read-only."
+  },
+  "appearance": {
+    "defaultBadge": "Default",
+    "schemesTitle": "Color schemes",
+    "schemesHint": "Choose the public site palette. Each scheme includes light and dark variants.",
+    "modeTitle": "Appearance mode",
+    "modes": {
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "allowUserToggle": "Allow visitors to switch light / dark mode",
+    "previewTitle": "Page preview",
+    "schemes": {
+      "indigoClassic": {
+        "name": "Indigo Classic",
+        "description": "Indigo / violet on slate — default Paginium, SaaS and tech."
+      },
+      "oceanSlate": {
+        "name": "Ocean Slate",
+        "description": "Teal / cyan on cool gray — calm tech, fintech."
+      },
+      "forestSage": {
+        "name": "Forest Sage",
+        "description": "Emerald / sage on warm neutral — eco, wellness, B2B."
+      },
+      "sunsetRose": {
+        "name": "Sunset Rose",
+        "description": "Coral / rose on cream — magazine, lifestyle, creative."
+      },
+      "monoZinc": {
+        "name": "Mono Zinc",
+        "description": "Zinc neutrals + accent — editorial, minimal, portfolio."
+      }
+    }
   },
   "accessControl": {
     "superAdminTitle": "Super administrator only",

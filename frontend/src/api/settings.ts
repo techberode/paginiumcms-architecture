@@ -131,6 +131,11 @@ export interface PublicSettings {
     subjects?: string;
     allowCustomSubject?: boolean;
   };
+  appearance?: {
+    colorScheme: string;
+    mode: 'light' | 'dark' | 'system';
+    allowUserToggle: boolean;
+  };
   company?: {
     showOnContactPage?: boolean;
     name?: string;

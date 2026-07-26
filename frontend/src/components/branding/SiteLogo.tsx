@@ -2,6 +2,7 @@ import React from 'react';
 import { Rocket } from 'lucide-react';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { resolveBrandingUrl } from '../../utils/brandingUrl';
+import { LOGO_FALLBACK } from '../../theme/publicUiClasses';
 
 interface SiteLogoProps {
   className?: string;
@@ -14,9 +15,9 @@ interface SiteLogoProps {
 export const SiteLogo: React.FC<SiteLogoProps> = ({
   className = 'flex items-center gap-3',
   imageClassName = 'h-10 w-auto max-w-[160px] object-contain',
-  fallbackClassName = 'w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20 shrink-0',
+  fallbackClassName = `w-10 h-10 ${LOGO_FALLBACK}`,
   showName = true,
-  nameClassName = 'text-lg font-black tracking-tight text-slate-900 dark:text-white truncate',
+  nameClassName = 'text-lg font-black tracking-tight text-theme-text truncate',
 }) => {
   const { settings } = useSettingsContext();
   const siteName = String(settings?.general?.siteName ?? 'PaginiumCMS');

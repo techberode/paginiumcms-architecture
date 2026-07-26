@@ -34,6 +34,7 @@ import { AdminHintCard } from './AdminHintCard';
 import { LoginBackgroundImagePicker } from './LoginBackgroundImagePicker';
 import { BrandingImagePicker } from './BrandingImagePicker';
 import { AccessControlSettingsPanel } from './AccessControlSettingsPanel';
+import { AppearanceSettingsPanel } from '../admin/AppearanceSettingsPanel';
 import { CmsInfoSettingsPanel } from './CmsInfoSettingsPanel';
 import { TimezoneSelect } from './TimezoneSelect';
 import { MaintenanceModeSelect } from './MaintenanceModeSelect';
@@ -272,6 +273,8 @@ export const SettingsView: React.FC = () => {
               <div className="card-body space-y-5">
                 {activeGroup === 'cmsInfo' ? (
                   <CmsInfoSettingsPanel meta={cmsInfoMeta} />
+                ) : activeGroup === 'appearance' ? (
+                  <AppearanceSettingsPanel watch={watch} setValue={setValue} />
                 ) : activeGroup === 'accessControl' ? (
                   <AccessControlSettingsPanel
                     permissionsCatalog={permissionsCatalog}

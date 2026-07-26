@@ -66,11 +66,11 @@ export const PasswordPolicyHints: React.FC<PasswordPolicyHintsProps> = ({
 
   return (
     <div
-      className={`rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-50/80 dark:bg-slate-800/50 ${
+      className={`rounded-xl border border-theme-border/80 bg-theme-surface/80 ${
         compact ? 'p-3 space-y-1.5' : 'p-4 space-y-2'
       }`}
     >
-      <p className={`font-bold text-slate-600 dark:text-slate-300 ${compact ? 'text-[10px] uppercase tracking-wider' : 'text-xs uppercase tracking-wider'}`}>
+      <p className={`font-bold text-theme-text-muted ${compact ? 'text-[10px] uppercase tracking-wider' : 'text-xs uppercase tracking-wider'}`}>
         {t('public.auth.password.title')}
       </p>
       <ul className={compact ? 'space-y-1' : 'space-y-1.5'}>
@@ -78,7 +78,7 @@ export const PasswordPolicyHints: React.FC<PasswordPolicyHintsProps> = ({
           <li
             key={hint.id}
             className={`flex items-center gap-2 ${compact ? 'text-xs' : 'text-sm'} ${
-              hint.satisfied ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'
+              hint.satisfied ? 'text-emerald-600 dark:text-emerald-400' : 'text-theme-text-muted'
             }`}
           >
             {hint.satisfied ? (
