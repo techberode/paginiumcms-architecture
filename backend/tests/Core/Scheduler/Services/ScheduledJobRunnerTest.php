@@ -66,6 +66,43 @@ final class ScheduledJobRunnerTest extends TestCase
         $this->assertFalse($result['success']);
     }
 
+    public function testRunJobByIdSurvivesRunLogWriteFailure(): void
+    {
+        $settings = $this->createMock(SettingsRepositoryInterface::class);
+        $backup = $this->createMock(BackupInterface::class);
+        $backup->method('runScheduledBackupIfDue')->willReturn(['ran' => false, 'reason' => 'not_due']);
+
+        $reader = $this->createMock(FileReaderInterface::class);
+        $reader->method('exists')->willReturn(false);
+
+        $writer = $this->createMock(FileWriterInterface::class);
+        $writer->method('write')->willThrowException(new \RuntimeException('Permission denied'));
+
+        $registry = new JobRegistryStore($reader, $writer);
+        $runs = new JobRunStore($reader, $writer, $registry);
+
+        $scheduledPublish = $this->createMock(ContentScheduledPublishService::class);
+        $handlers = new JobHandlerRegistry(
+            new BackupScheduledHandler($backup),
+            new MonitoringPipelineHandler($this->buildMonitoringScheduler()),
+            new ContentScheduledPublishHandler($scheduledPublish)
+        );
+
+        $runner = new ScheduledJobRunner(
+            $settings,
+            $registry,
+            $runs,
+            $handlers,
+            new CronExpressionEvaluator()
+        );
+
+        $result = $runner->runJobById('backup-scheduled');
+
+        $this->assertSame('backup-scheduled', $result['job_id']);
+        $this->assertFalse($result['run_log_persisted']);
+        $this->assertStringContainsString('Permission denied', (string) ($result['run_log_error'] ?? ''));
+    }
+
     private function makeRunner(
         SettingsRepositoryInterface $settings,
         ?BackupInterface $backup = null
