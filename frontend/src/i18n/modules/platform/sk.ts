@@ -87,6 +87,7 @@ export const platformSk: MessageTree = {
       cronSaved: 'CRON uložený',
       invalidCron: 'Neplatný CRON výraz',
       jobStarted: 'Job spustený',
+      jobCompleted: 'Job dokončený',
       jobFailed: 'Job zlyhal',
       cronSim: 'Cron sim: :count job(ov)',
     },

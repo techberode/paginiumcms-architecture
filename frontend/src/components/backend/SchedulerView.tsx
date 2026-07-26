@@ -62,12 +62,18 @@ export const SchedulerView: React.FC = () => {
     setRunningId(job.id);
     try {
       const result = await runJob(job.id, { force_report: forceReport });
-      if (result?.result?.success || result?.queued) {
-        success(result.result?.message || t('platform.scheduler.toast.jobStarted'));
-        await load();
-      } else {
-        toastError(result?.result?.message || t('platform.scheduler.toast.jobFailed'));
+      if (!result) {
+        toastError(t('platform.scheduler.toast.jobFailed'));
+        return;
       }
+
+      const message =
+        result.result?.message ??
+        (result.queued ? t('platform.scheduler.toast.jobStarted') : t('platform.scheduler.toast.jobCompleted'));
+
+      // HTTP + handler OK — success:false v tele znamená „nič na vykonanie“ (not due), nie pád requestu
+      success(message);
+      await load();
     } finally {
       setRunningId(null);
     }

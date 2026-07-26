@@ -87,6 +87,7 @@ export const platformEn: MessageTree = {
       cronSaved: 'CRON saved',
       invalidCron: 'Invalid CRON expression',
       jobStarted: 'Job started',
+      jobCompleted: 'Job completed',
       jobFailed: 'Job failed',
       cronSim: 'Cron sim: :count job(s)',
     },
