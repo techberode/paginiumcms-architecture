@@ -30,6 +30,8 @@ VITE_PUBLIC_URL=https://demo.paginiumcms.com
 
 4. Seed (SUPER_ADMIN): `/demo` → **Reset demo seed**.
 
+**Login v prehliadači nefunguje, curl áno?** → ISS-098 (CORS / `APP_URL`). Postup: [`docs/deploy/DEMO_DEPLOY.md`](../../../docs/deploy/DEMO_DEPLOY.md).
+
 **Nginx (host):** [`docs/deploy/nginx-demo.paginiumcms.com.conf`](../../../docs/deploy/nginx-demo.paginiumcms.com.conf) — upstream port = stack `BACKEND_PORT` (napr. `8091`), root `/var/www/paginiumcms-demo/frontend/dist`.
 
 ## Úložisko (v2)

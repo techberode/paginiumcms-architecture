@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import { Footer } from './Footer';
 import { renderWithRouter } from '../../test/renderWithRouter';
+import type { PublicSettings } from '../../api/settings';
 
 vi.mock('../../context/PublicSiteContext', () => ({
   usePublicSite: () => ({
@@ -26,12 +27,21 @@ vi.mock('../../api/newsletter', () => ({
   subscribeFooterNewsletter: vi.fn(),
 }));
 
-function mockSettings(overrides: Record<string, unknown> = {}) {
+const BASE_SETTINGS: PublicSettings = {
+  general: { siteName: 'PaginiumCMS', language: 'sk' },
+  content: {},
+  editor: {},
+  demo: { enabled: false, url: 'https://demo.paginiumcms.com' },
+  newsletter: { footerEnabled: false, footerHint: '' },
+};
+
+function mockSettings(overrides: Partial<PublicSettings> = {}) {
   return {
     settings: {
-      demo: { enabled: false, url: 'https://demo.paginiumcms.com' },
-      newsletter: { footerEnabled: false },
+      ...BASE_SETTINGS,
       ...overrides,
+      demo: { ...BASE_SETTINGS.demo, ...overrides.demo },
+      newsletter: { ...BASE_SETTINGS.newsletter, ...overrides.newsletter },
     },
     loading: false,
     get: vi.fn(),

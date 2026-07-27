@@ -5,7 +5,7 @@ declare(strict_types=1);
 use DI\ContainerBuilder;
 use Slim\Factory\AppFactory;
 use Slim\Routing\RouteCollectorProxy;
-use Tuupola\Middleware\CorsMiddleware;
+use PaginiumCMS\Http\Middleware\SameOriginCorsMiddleware;
 
 // ---------- BEZPEČNOSTNÉ MIDDLEWARE ----------
 use PaginiumCMS\Http\Middleware\SecurityMiddleware;
@@ -584,6 +584,15 @@ if (is_string($corsExtra) && $corsExtra !== '') {
     }
 }
 
+foreach ([
+    getenv('DEMO_PUBLIC_URL') ?: ($_ENV['DEMO_PUBLIC_URL'] ?? null),
+    getenv('VITE_PUBLIC_URL') ?: ($_ENV['VITE_PUBLIC_URL'] ?? null),
+] as $publicUrl) {
+    if (is_string($publicUrl) && $publicUrl !== '') {
+        $corsAllowedOrigins[] = rtrim($publicUrl, '/');
+    }
+}
+
 $corsAllowedOrigins = array_values(array_unique($corsAllowedOrigins));
 
 $appEnv = getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? 'development');
@@ -626,7 +635,7 @@ if ($corsOriginServer !== null) {
     $corsOptions['origin.server'] = $corsOriginServer;
 }
 
-$app->add(new CorsMiddleware($corsOptions));
+$app->add(new SameOriginCorsMiddleware($corsOptions));
 
 // ============================================
 // 13. BEZPEČNOSTNÉ MIDDLEWARE (GLOBÁLNE)
