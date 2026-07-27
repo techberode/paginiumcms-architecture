@@ -13,6 +13,7 @@ use PaginiumCMS\Core\Scheduler\Commands\RunSchedulerCommand;
 use PaginiumCMS\Core\Cache\Commands\PurgeContentCacheCommand;
 use PaginiumCMS\Core\FlatFile\Commands\ContentDiagnoseCommand;
 use PaginiumCMS\Modules\Demo\Commands\RunDemoResetCommand;
+use PaginiumCMS\Core\SystemUpdate\Commands\SystemDeployCommand;
 use PaginiumCMS\Modules\Security\Commands\ClearLoginLockoutsCommand;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
@@ -31,4 +32,5 @@ $application->addCommand($container->get(PurgeContentCacheCommand::class));
 $application->addCommand($container->get(ContentDiagnoseCommand::class));
 $application->addCommand($container->get(RunDemoResetCommand::class));
 $application->addCommand($container->get(ClearLoginLockoutsCommand::class));
+$application->addCommand($container->get(SystemDeployCommand::class));
 $application->run();

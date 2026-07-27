@@ -25,6 +25,7 @@ import {
   Puzzle,
   Languages,
   BarChart3,
+  ArrowUpCircle,
 } from 'lucide-react';
 import type { AdminNavItemDef, AdminNavSectionDef } from './adminNavTypes';
 
@@ -78,6 +79,15 @@ export const ADMIN_NAV_SECTIONS: AdminNavSectionDef[] = [
       { id: 'users', labelKey: 'admin.nav.users', href: '/users', icon: Users, adminOnly: true },
       { id: 'notifications', labelKey: 'admin.nav.notifications', href: '/notifications', icon: Bell },
       { id: 'scheduler', labelKey: 'admin.nav.scheduler', href: '/scheduler', icon: CalendarClock, adminOnly: true },
+      {
+        id: 'system-update',
+        labelKey: 'admin.nav.systemUpdate',
+        href: '/platform/update',
+        icon: ArrowUpCircle,
+        adminOnly: true,
+        superAdminOnly: true,
+        hideOnDemoInstance: true,
+      },
       { id: 'account-security', labelKey: 'admin.nav.accountSecurity', href: '/account/security', icon: ShieldCheck },
     ],
   },

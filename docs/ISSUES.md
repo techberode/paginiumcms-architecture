@@ -120,6 +120,7 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-100 | S-DEMOCREDS — demo heslo v `GET /api/settings/public` | Stredná (audit) | ✅ **`v2.1.0-beta.11`** — quick-login, no password in GET |
 | ISS-101 | Editor biela obrazovka — `capabilities.includes is not a function` | Vysoká (demo/admin) | ✅ **`v2.1.0-beta.11`** — normalize API profile shape |
 | ISS-102 | Demo API celé HTTP 500 — chýba `backend/storage/app/demo/data/`, mkdir Permission denied | **Vysoká (demo)** | ✅ Ops — storage bootstrap (2026-07-27) |
+| ISS-103 | PHPUnit OTP/2FA flaky — lokálny `.env` (`DEMO_MODE=true`) polluluje HTTP testy | Stredná (dev/CI) | ✅ **`v2.1.0-beta.12`** — test bootstrap izolácia |
 
 
 
@@ -2503,6 +2504,32 @@ Manuálny snapshot: admin **Demo** → **Reset demo seed**.
 **Súvis:** **ISS-099** (host cron vs `www-data` — miernejší prípad, web môže bežať). Rovnaký permission pattern ako **ISS-094** (It.62).
 
 **Docs:** [deploy/DEMO_DEPLOY.md](deploy/DEMO_DEPLOY.md) § First-run + ISS-102 · [ITERATION_62.md](ITERATION_62.md)
+
+---
+
+## ISS-103 – PHPUnit OTP/2FA flaky — lokálny `.env` polluluje testy — VYRIEŠENÉ
+
+**Závažnosť:** Stredná (lokálny dev / CI — falošné regresie)  
+**Stav:** ✅ **`v2.1.0-beta.12`**
+
+**Symptóm:** `./scripts/run-all-tests.zsh` občas zlyhá na OTP/2FA testoch:
+
+- `AuthControllerTest` — register verify-otp očakáva 201, dostane 403
+- `CommentsControllerTest` — approve comment OTP očakáva 202, dostane 200
+- `TwoFactorSimpleTest` — 2FA enable očakáva 200, dostane 404
+
+**Príčina:** Vývojársky `.env` s `DEMO_MODE=true` (demo server) sa načítal aj počas PHPUnit HTTP testov. Demo guard a demo storage menili správanie auth/workflow endpointov.
+
+**Riešenie:**
+
+1. `bootstrap/app.php` — preskočiť Dotenv load keď `APP_ENV=testing`
+2. `backend/tests/Http/TestCase.php` — vynútiť `DEMO_MODE=false` pred bootstrapom + reset v tearDown
+3. `CsrfMiddleware` — explicit exempt pre `/api/auth/register/verify-otp` a `…/resend-otp`
+4. `DeveloperModeGateTest` — obnoviť `APP_ENV` v tearDown
+
+**Overenie:** Gate zelený aj s lokálnym `.env` obsahujúcim `DEMO_MODE=true`.
+
+**Docs:** [developer/TESTING.md](developer/TESTING.md) · [CHANGELOG.md](../CHANGELOG.md) beta.12
 
 ---
 

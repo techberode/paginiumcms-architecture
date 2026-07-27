@@ -20,6 +20,7 @@ use PaginiumCMS\Http\Middleware\MaintenanceModeMiddleware;
 use PaginiumCMS\Http\Middleware\FirewallMiddleware;
 use PaginiumCMS\Http\Middleware\CsrfMiddleware;
 use PaginiumCMS\Http\Middleware\RequestLoggingMiddleware;
+use PaginiumCMS\Support\AppVersion;
 
 // ---------- PÔVODNÉ IMPORTY ----------
 use PaginiumCMS\Modules\Security\Services\AuthenticationManager;
@@ -84,7 +85,10 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 // ---------- .env (voliteľné, lokálny vývoj) ----------
 $projectRoot = dirname(__DIR__, 2);
 $backendRoot = dirname(__DIR__);
-if (class_exists(\Dotenv\Dotenv::class)) {
+$appEnvForDotenv = getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? '');
+// PHPUnit / HTTP tests set APP_ENV=testing before bootstrap — skip .env so local
+// DEMO_MODE=true or production flags do not pollute the shared storage tree.
+if ($appEnvForDotenv !== 'testing' && class_exists(\Dotenv\Dotenv::class)) {
     if (is_file($projectRoot . '/.env')) {
         \Dotenv\Dotenv::createUnsafeImmutable($projectRoot)->safeLoad();
     } elseif (is_file($backendRoot . '/.env')) {
@@ -526,6 +530,11 @@ if (is_array($schedulerServices)) {
     $containerBuilder->addDefinitions($schedulerServices);
 }
 
+$systemUpdateServices = require __DIR__ . '/../app/Core/SystemUpdate/Config/services.php';
+if (is_array($systemUpdateServices)) {
+    $containerBuilder->addDefinitions($systemUpdateServices);
+}
+
 // ============================================
 // 10b. NAČÍTANIE DI VÄZIEB PRE HTTP VRSTVU (nové API endpointy, oddelené
 // od jadra - Content, Media, ...). PRIDANÉ pri oprave auditu 12.7.2026,
@@ -715,7 +724,7 @@ $app->get('/api/health', function ($request, $response) use ($container) {
     return $json->success($response, [
         'status' => 'healthy',
         'timestamp' => date('Y-m-d H:i:s'),
-        'version' => '2.0.9',
+        'version' => AppVersion::current(),
         'php_version' => PHP_VERSION,
         'environment' => getenv('APP_ENV') ?: 'development',
     ]);

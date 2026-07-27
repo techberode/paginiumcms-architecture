@@ -21,6 +21,7 @@ const ADMIN_ROUTE_PREFIXES = [
   '/demo',
   '/notifications',
   '/scheduler',
+  '/platform',
   '/settings',
   '/translations',
   '/account',

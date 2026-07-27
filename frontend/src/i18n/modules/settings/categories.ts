@@ -26,6 +26,7 @@ export const SETTINGS_CATEGORIES: SettingsCategoryDef[] = [
       'scheduler',
       'workflows',
       'codePolicy',
+      'systemUpdate',
     ],
   },
   {

@@ -28,6 +28,8 @@ use PaginiumCMS\Core\FlatFile\Services\ContentScheduledPublishService;
 use PaginiumCMS\Core\Scheduler\Handlers\BackupScheduledHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\ContentScheduledPublishHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\MonitoringPipelineHandler;
+use PaginiumCMS\Core\Scheduler\Handlers\SystemDeployHandler;
+use PaginiumCMS\Core\SystemUpdate\Services\SystemDeployService;
 use PaginiumCMS\Core\Scheduler\Services\CronExpressionEvaluator;
 use PaginiumCMS\Core\Scheduler\Services\JobHandlerRegistry;
 use PaginiumCMS\Core\Scheduler\Services\JobRegistryStore;
@@ -83,10 +85,12 @@ final class ScheduledJobRunnerTest extends TestCase
         $runs = new JobRunStore($reader, $writer, $registry);
 
         $scheduledPublish = $this->createMock(ContentScheduledPublishService::class);
+        $systemDeploy = new SystemDeployHandler(new SystemDeployService($settings));
         $handlers = new JobHandlerRegistry(
             new BackupScheduledHandler($backup),
             new MonitoringPipelineHandler($this->buildMonitoringScheduler()),
-            new ContentScheduledPublishHandler($scheduledPublish)
+            new ContentScheduledPublishHandler($scheduledPublish),
+            $systemDeploy
         );
 
         $runner = new ScheduledJobRunner(
@@ -114,11 +118,13 @@ final class ScheduledJobRunnerTest extends TestCase
 
         $scheduledPublish = $this->createMock(ContentScheduledPublishService::class);
         $scheduledPublish->method('publishDueItems')->willReturn(['published' => [], 'skipped' => []]);
+        $systemDeploy = new SystemDeployHandler(new SystemDeployService($settings));
 
         $handlers = new JobHandlerRegistry(
             new BackupScheduledHandler($backup),
             new MonitoringPipelineHandler($this->buildMonitoringScheduler()),
-            new ContentScheduledPublishHandler($scheduledPublish)
+            new ContentScheduledPublishHandler($scheduledPublish),
+            $systemDeploy
         );
 
         return new ScheduledJobRunner(

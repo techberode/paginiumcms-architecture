@@ -1,6 +1,6 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.1.0-beta.11** · 2026-07-27 · tag **`v2.1.0-beta.11`** (pending)  
+> Posledná verzia: **2.1.0-beta.12** · 2026-07-27 · tag **`v2.1.0-beta.12`** (pending)  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release.
 
 > **Poznámka k verziám:** **`2.0.58`** → `f53e71e` · **Public Beta 1** → `e3e0d82` · **Beta 1 Testing** → `c68e72b` · **Beta 1 patch (RR GHSA)** → *(commit po push)*.
@@ -29,7 +29,8 @@
 | **It.58b — Color schemes + themed public site** | **`v2.1.0-beta.8`** | ✅ tagged |
 | **It.62 + It.61 + demo deploy + analytics/editor** | **`v2.1.0-beta.9`** | ✅ tagged |
 | **It.13 v3 — Demo full trial** | **`v2.1.0-beta.10`** | ✅ **`ab5b5fb`** |
-| **It.13 v4 — Demo security polish** | **`v2.1.0-beta.11`** | ⏳ pending tag |
+| **It.13 v4 — Demo security polish** | **`v2.1.0-beta.11`** | ✅ **`b6f16a9`** |
+| **It.63 — Admin system update (MVP)** | **`v2.1.0-beta.12`** | ⏳ pending tag |
 
 **Pravidlo:** Post-beta patchy — `2.0.59+` alebo `2.1.0-beta.N` podľa rozsahu.
 
@@ -42,7 +43,46 @@ gh auth login   # ak ešte nie
 ./scripts/create-github-releases.sh
 ```
 
-Testerom / security reviewerovi poslať **`v2.1.0-beta.11`** + [SECURITY_REVIEW.md](../SECURITY_REVIEW.md).
+Testerom / security reviewerovi poslať **`v2.1.0-beta.12`** + [SECURITY_REVIEW.md](../SECURITY_REVIEW.md).
+
+---
+
+## v2.1.0-beta.12 — Admin system update MVP (It.63)
+
+**Scope:** SUPER_ADMIN deploy from admin UI, job queue + whitelisted deploy script, test isolation (ISS-103).
+
+### Gate (povinné pred tagom)
+
+```bash
+./scripts/iteration-gate.sh
+```
+
+### Tag
+
+```bash
+git tag -a v2.1.0-beta.12 -m "v2.1.0-beta.12 — It.63 admin system update MVP"
+git push origin v2.1.0-beta.12
+```
+
+### GitHub Release — copy-paste
+
+**Title:** `v2.1.0-beta.12 — Admin system update (It.63 MVP)`
+
+**Body highlights:**
+
+- Platform → **System update** (`/platform/update`) — status, remote check, deploy enqueue
+- Settings → **System update** — GitHub token, `deployEnabled`, branch/tag policy
+- CLI `php backend/bin/console system:deploy --ref=v2.1.0-beta.12`
+- ISS-103 — PHPUnit no longer loads developer `.env` during tests
+
+**Production deploy (paginiumcms.com):**
+
+```bash
+cd "$APP_ROOT" && git fetch origin && git checkout v2.1.0-beta.12
+./scripts/deploy-instance-update.sh
+```
+
+After deploy: Settings → System update → enable `deployEnabled` + GitHub token before using admin deploy button.
 
 ---
 
