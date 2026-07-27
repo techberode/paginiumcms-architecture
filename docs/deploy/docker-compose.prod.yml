@@ -1,0 +1,27 @@
+# PaginiumCMS — production/demo Docker override (merge with APP_ROOT/docker-compose.yml).
+# Copy to stack dir: /var/lib/docker/compose/paginiumcms[-demo]/docker-compose.prod.yml
+#
+# Stack .env must define: APP_ROOT, COMPOSE_PROJECT_NAME, BACKEND_PORT
+
+services:
+  php:
+    build:
+      context: ${APP_ROOT}
+      dockerfile: docker/php/Dockerfile
+    working_dir: /var/www/html
+    volumes:
+      - ${APP_ROOT}:/var/www/html
+    env_file:
+      - ${APP_ROOT}/.env
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+
+  nginx:
+    depends_on:
+      - php
+    ports: !override
+      - "127.0.0.1:${BACKEND_PORT}:80"
+    volumes:
+      - ${APP_ROOT}:/var/www/html:ro
+      - ${APP_ROOT}/docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro

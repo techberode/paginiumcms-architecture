@@ -30,6 +30,8 @@ VITE_PUBLIC_URL=https://demo.paginiumcms.com
 
 4. Seed (SUPER_ADMIN): `/demo` → **Reset demo seed**.
 
+**Nginx (host):** [`docs/deploy/nginx-demo.paginiumcms.com.conf`](../../../docs/deploy/nginx-demo.paginiumcms.com.conf) — upstream port = stack `BACKEND_PORT` (napr. `8091`), root `/var/www/paginiumcms-demo/frontend/dist`.
+
 ## Úložisko (v2)
 
 | Cesta | Účel |
