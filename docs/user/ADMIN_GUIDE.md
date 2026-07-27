@@ -241,6 +241,32 @@ Stará URL `/security/acl` presmeruje sem. Detail: [ACCESS_CONTROL.md](ACCESS_CO
 
 Plánované zálohy: **Plánovač** alebo cron `backup:run-schedule`.
 
+### Režim údržby a newsletter
+
+**Nastavenia → Režim údržby** — režimy **Vypnuté**, **Coming Soon**, **Údržba** (vzájomne vylučujúce).
+
+| Pole | Účel |
+|------|------|
+| Pozadie (URL) | Obrázok za obsahom — vyber z **Médií** alebo upload (`/storage/…` cesta). Po fixe ISS-095 (`88cbe31`) |
+| Newsletter | Formulár na Coming Soon / Údržba stránke |
+| Texty | Badge, nadpis, podnadpis, telo — editovateľné bez deploye |
+
+**Staff výnimka:** prihlásený EDITOR/ADMIN/SUPER_ADMIN vidí bežný web aj počas údržby.
+
+**Newsletter odberatelia — admin prehľad:**
+
+> ⚠️ **Dnes (ISS-097):** Admin **nemá UI** na zoznam prihlásených. Emaily sa ukladajú do flat-file:
+
+```
+backend/storage/app/content/data/newsletter/subscribers.json
+```
+
+Na serveri: `jq . …/subscribers.json` — záznamy obsahujú `email`, `subscribedAt`, `source`.
+
+**Plán:** [It.61](../ITERATION_61.md) pridá admin tabuľku + export + footer odber. Odhlásenie (unsubscribe) zatiaľ nie je implementované.
+
+Detail incidentov: [ISSUES.md § ISS-095–097](../ISSUES.md).
+
 ### Kôš (`/trash`)
 
 *ADMIN+* — zmazaný obsah pred trvalým odstránením. Obnovenie alebo permanent delete.

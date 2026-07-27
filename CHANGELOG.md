@@ -79,6 +79,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **RBAC** — role **EDITOR** can read/write settings group `editor` only.
 - **Validator** — rejects unknown/disallowed custom components on content save.
 
+### Added (It.61 — Footer newsletter + admin subscribers)
+
+- **`POST /api/newsletter/subscribe`** — public footer signup (`source: footer`), honeypot, rate limit, CSRF exempt.
+- **`GET /api/admin/newsletter/subscribers`** + **CSV export** — unified list for footer and maintenance subscribers (ADMIN+).
+- **Settings → Newsletter** — `footerEnabled`, `footerHint`; public footer form when enabled.
+- **Admin `/newsletter`** — subscriber table, source KPI badges, export.
+- **ISS-097** — admin UI gap closed (maintenance + footer share `subscribers.json`).
+
 ### Added (It.62 — Scheduler prod hardening)
 
 - **`outcome`** on job runs: `completed` | `skipped` | `failed` (distinct from HTTP errors).
@@ -89,6 +97,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- **ISS-095** — Maintenance hero background rejected `/storage/…` media paths as „Neplatná URL“ (`heroImageUrl` url rule → string; picker input type).
 - **CI** — `ExtensionManifestValidator` missing class brace (PHPUnit/PHPStan/content:diagnose parse error).
 - **CI** — Editor PHPUnit tests mock `PluginManagerInterface` instead of final `EditorComponentRegistry`.
 - **CI** — `ContactForm.test.tsx` preserves `TestSettingsProvider` via `importOriginal` mock.

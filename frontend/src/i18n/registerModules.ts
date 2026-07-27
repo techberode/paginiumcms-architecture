@@ -25,6 +25,8 @@ import { commentsEn } from './modules/comments/en';
 import { commentsSk } from './modules/comments/sk';
 import { messagesEn } from './modules/messages/en';
 import { messagesSk } from './modules/messages/sk';
+import { newsletterEn } from './modules/newsletter/en';
+import { newsletterSk } from './modules/newsletter/sk';
 import { backupsEn } from './modules/backups/en';
 import { backupsSk } from './modules/backups/sk';
 import { trashEn } from './modules/trash/en';
@@ -65,6 +67,8 @@ export function registerAllI18nModules(): void {
   registerModuleMessages('en', 'comments', commentsEn);
   registerModuleMessages('sk', 'messages', messagesSk);
   registerModuleMessages('en', 'messages', messagesEn);
+  registerModuleMessages('sk', 'newsletter', newsletterSk);
+  registerModuleMessages('en', 'newsletter', newsletterEn);
   registerModuleMessages('sk', 'backups', backupsSk);
   registerModuleMessages('en', 'backups', backupsEn);
   registerModuleMessages('sk', 'trash', trashSk);

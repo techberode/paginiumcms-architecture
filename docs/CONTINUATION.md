@@ -16,23 +16,24 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 
 ---
 
-## Aktuálny plán (2026-07-26) — Public Beta 1 + produkčný deploy
+## Aktuálny plán (2026-07-27) — Public Beta 1 + produkčný deploy
 
-**Stav:** **`v2.1.0-beta.8`** tagged · produkcia **`paginiumcms.com`** nasadená · **It.62** (scheduler prod hardening) shipped na `main` (**`f7a73f1`**, ešte bez tagu → cieľ **`v2.1.0-beta.9`**).
+**Stav:** **`v2.1.0-beta.8`** tagged · produkcia **`paginiumcms.com`** nasadená · **`main` @ `88cbe31`** (It.33, It.60, maintenance pozadie fix).
 
-**Ďalšia iterácia:** **[It.61 — Newsletter vo footeri](ITERATION_61.md)**
+**Ďalšia iterácia:** backlog po It.61 — pozri [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md)
 
 | Priorita | Úloha | Stav |
 |----------|--------|------|
 | **Prod deploy** | Docker stack, nginx, SSL, `git pull` + frontend build | ✅ beží na `paginiumcms.com` |
 | **Prod fix — scheduler** | Jobs run 500, storage permissions, UI toast | ✅ **It.62** (`f7a73f1`) |
+| **Prod fix — maintenance pozadie** | „Neplatná URL“ pri `/storage/` ceste | ✅ **`88cbe31`** (ISS-095) |
 | **Prod fix — deploy** | Docker PHP 8.5, log paths, SMTP recipient, OPcache | ✅ `0fe21ec` … `d1bd35b` |
-| **Cron na hoste** | `scheduler:run` + `worker:process` každú minútu | ⏳ overiť crontab (BE joby už píšu do `runs.json`) |
+| **Cron na hoste** | `scheduler:run` + `worker:process` každú minútu | ⏳ overiť crontab |
 | **Tag beta.9** | Release notes + `v2.1.0-beta.9` po smoke na prod | ⏳ nasledujúci krok |
-| **It.59** | Scheduled publish UX v editore + filtre | ✅ **2.0.53** (overené po It.62) |
-| **It.60** | Custom komponenty editora (plugin + settings) | ✅ **Implementované** |
-| **It.33** | Analytics enrichment (sources, geo, vlajky) | ✅ **Implementované** |
-| **It.61** | Newsletter footer | ⏳ **ĎALŠIA ITERÁCIA** |
+| **It.59** | Scheduled publish UX v editore + filtre | ✅ **2.0.53** |
+| **It.60** | Custom komponenty editora (plugin + settings) | ✅ **`3d3ab48`** |
+| **It.33** | Analytics enrichment (sources, geo, vlajky) | ✅ **`3d3ab48`** |
+| **It.61** | Newsletter footer + admin prehľad (ISS-097) | ✅ **shipped** |
 
 Detail deployu (lokálne, gitignored): `PRIVATE_DOMAIN_DEPLOY.md` · scheduler: [ITERATION_62.md](ITERATION_62.md) · cron: [deploy/CRON.md](deploy/CRON.md)
 
@@ -304,34 +305,39 @@ Stack: React SPA (Vite 8, TS) ↔ Slim 4 REST API ↔ PHP 8.5 (PHPStan L8).
 Produkcia: paginiumcms.com (Docker PHP + host nginx, flat-file v backend/storage/).
 Komunikuj po slovensky. Pravidlá: .cursorrules + ZÁKONY v docs/CONTINUATION.md §2.
 
-HOTOVÉ (2026-07-26):
-- v2.1.0-beta.8 tagged (It.58b color schemes).
-- It.62 ✅ scheduler prod hardening (outcome, jobs:run CLI, Docker storage docs, UI fix).
-- It.60 ✅ custom editor components (hello-widget, settings matrix, validator).
-- It.33 ✅ analytics enrichment (referer types, geo flags, masked IPs).
-- CI green: ExtensionManifestValidator brace, editor tests (final registry), ContactForm mock.
+HOTOVÉ (2026-07-27, main @ 88cbe31):
+- It.33 ✅ analytics enrichment (referer types, geo flags, masked IPs) — 3d3ab48
+- It.60 ✅ custom editor components (hello-widget, settings matrix) — 3d3ab48
+- It.62 ✅ scheduler prod hardening — f7a73f1
+- Prod fix ISS-095 ✅ maintenance heroImageUrl (/storage/ cesty) — 88cbe31
+- Prod deploy paginiumcms.com OK (health 200, maintenance pozadie funguje)
 
-PLÁNOVAČ / CRON (funguje):
-- Admin /scheduler — 3 system joby: backup-scheduled, monitoring-pipeline, content-scheduled-publish.
-- CLI: scheduler:run, worker:process, jobs:run {id}.
-- „Backup not due“ / „No scheduled content due“ = outcome skipped (nie chyba).
+ZNÁME MEDZERY:
+- ISS-097: newsletter odberateľia sa ukladajú do subscribers.json, ale ADMIN UI ZOZNAMU NIE JE
+  → rieši It.61 (footer newsletter + admin prehľad + export)
+- Počas údržby bez staff login: /api/pages → 503 (zámer, nie bug)
 
-PROD CHECKLIST po každom pulli:
-  git pull && composer install --no-dev && cd frontend && npm ci && npm run build:prod
-  ./stack.sh restart php   # OPcache
-  ./stack.sh exec -u www-data php sh -c 'touch .../data/jobs/.write-test && rm ... && echo WRITE_OK'
+PROD CHECKLIST po git pull:
+  cd /var/www/paginiumcms.com
+  git pull origin main && composer install --no-dev --optimize-autoloader
+  cd frontend && npm ci && npm run build:prod && cd ..
+  cd /var/lib/docker/compose/paginiumcms
+  ./stack.sh restart php
+  sleep 8 && curl -s http://127.0.0.1:8089/api/health
+  # 502 hneď po restarte = normálne, počkaj 5–10 s (ISS-096)
 
-ĎALŠIA ITERÁCIA: It.61 — Newsletter vo footeri (docs/ITERATION_61.md).
+PLÁNOVAČ / CRON:
+- CLI: scheduler:run, worker:process, jobs:run {id}
+- „Backup not due“ = outcome skipped (nie chyba)
 
-It.33 smoke: Admin Analytika → Zdroje (Google/Direct label) → Geografia (vlajka + maskovaná IP).
-It.60 smoke: Settings → Editor → hello-widget pre Blog → toolbar v editore.
+ĎALŠIA ITERÁCIA: It.61 — docs/ITERATION_61.md
+  (footer newsletter + GET /api/admin/newsletter/subscribers + admin UI zoznam)
 
-Backlog: It.61 newsletter, It.25 setup wizard (odložené).
-
-Začni It.61 podľa ITERATION_61.md. Po každej vlne: PHPUnit + Vitest + PHPStan + docs + RELEASE.md.
-Deploy poznámky: PRIVATE_DOMAIN_DEPLOY.md (gitignored, na serveri).
+Začni It.61. Po vlne: PHPUnit + Vitest + PHPStan + docs + RELEASE.md.
+Deploy: PRIVATE_DOMAIN_DEPLOY.md (gitignored).
+Incidenty: docs/ISSUES.md ISS-095–097.
 ```
 
 ---
 
-*Aktualizované 2026-07-26 po It.33 + It.60 CI fix + prod deploy paginiumcms.com. Podrobnosti: `ITERATION_33.md`, `ITERATION_60.md`, `ISSUES.md` (ISS-094), `RELEASE.md` (beta.9 draft), `deploy/CRON.md`.*
+*Aktualizované 2026-07-27 po prod deploy + ISS-095–097. Podrobnosti: `ISSUES.md`, `ITERATION_61.md`, `RELEASE.md` (beta.9 draft), `deploy/CRON.md`.*

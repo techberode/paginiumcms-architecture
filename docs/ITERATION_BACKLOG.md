@@ -3,10 +3,10 @@
 > Plánované moduly a rozšírenia po **Iterácii 28 (2.0.16)**.  
 > Legenda: ⏳ plánované · 🟡 stredná priorita · 🔵 nižšia · 🔴 kritická
 
-**Aktuálne hotové:** It.1–24 ✅ · It.26–28 ✅ · **It.62** ✅ (scheduler prod) · It.25 ⏳ (setup wizard — odložené)
+**Aktuálne hotové:** It.1–24 ✅ · It.26–28 ✅ · **It.61** ✅ · **It.62** ✅ · It.25 ⏳ (setup wizard — odložené)
 
-**Ďalšia iterácia:** [It.61](ITERATION_61.md) (newsletter footer)  
-**Posledná shipped:** [It.60 Custom editor components](ITERATION_60.md) · [It.62 Scheduler prod hardening](ITERATION_62.md)
+**Ďalšia iterácia:** pozri backlog (It.25, It.58, …)  
+**Posledná shipped:** **It.61** newsletter footer + admin subscribers · **`88cbe31`** maintenance pozadie fix
 
 **Incidenty a opravy:** [ISSUES.md](ISSUES.md)
 
@@ -37,7 +37,7 @@
 | **58** | TBD | **[Page layout builder + color schemes](ITERATION_58.md)** | **🟡** | ⛔ po It.15 · [alternatívy](ITERATION_58_ALTERNATIVES.md) · layout + 5 presetov |
 | **59** | **2.0.53** | **[Odložená publikácia — plánovač v editore](ITERATION_59.md)** | **✅** | Editor datetime + filter scheduled + job `content.scheduled_publish` |
 | **60** | TBD | **[Vlastné komponenty editora](ITERATION_60.md)** | **✅** | Plugin manifest + settings matica + hello-widget demo |
-| **61** | TBD | **[Newsletter vo footeri](ITERATION_61.md)** | **🟡** | Rýchly odber + admin zap/vyp; ≠ maintenance newsletter |
+| **61** | TBD | **[Newsletter vo footeri](ITERATION_61.md)** | **✅** | Footer subscribe + admin subscribers + CSV (ISS-097) |
 | **15** | **2.0.38** | **[External plugins](ITERATION_15.md)** | **✅** | Import ZIP, registry, hooks, routes, admin UI |
 | **47** | TBD | **[Notification connector auth](ITERATION_47.md)** | **✅** | ntfy Bearer/Basic + test-connector |
 | **48** | TBD | **[PHP templates + static/dynamic web](ITERATION_48.md)** | **🟡** | Front matter šablóny, JSON/INI meta, static HTML |
@@ -388,9 +388,9 @@ Rozšírenie Markdown/WYSIWYG o custom bloky — inštalácia pluginom alebo **N
 
 ---
 
-## Iterácia 61 – Newsletter vo footeri ⏳
+## Iterácia 61 – Newsletter vo footeri + admin odberatelia ⏳
 
-Rýchle prihlásenie na odber v pätičke verejného webu; zapnutie/vypnutie v administrácii. Oddelené od maintenance newsletter (2.0.51).
+Footer odber + **admin prehľad prihlásených** (dnes chýba — [ISS-097](ISSUES.md#iss-097--newsletter-odberatelia-bez-admin-prehľadu--medzera--it61)). Maintenance newsletter ukladá do `subscribers.json` bez UI.
 
 **Full spec:** [ITERATION_61.md](ITERATION_61.md)
 

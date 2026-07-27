@@ -30,6 +30,7 @@ export * from './maintenance';
 export * from './media';
 export * from './messages';
 export * from './navigation';
+export * from './newsletter';
 export * from './notifications';
 export * from './search';
 export * from './security';

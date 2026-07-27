@@ -50,6 +50,10 @@ const DEFAULT_PUBLIC: PublicSettings = {
     subjects: 'Všeobecný dotaz\nTechnická podpora\nObchodná spolupráca\nInformácie o produkte',
     allowCustomSubject: true,
   },
+  newsletter: {
+    footerEnabled: false,
+    footerHint: '',
+  },
   appearance: {
     colorScheme: 'indigo-classic',
     mode: 'system',

@@ -258,6 +258,7 @@ final class SettingsController
                 'subjects' => (string) ($all['contact']['subjects'] ?? "Všeobecný dotaz\nTechnická podpora\nObchodná spolupráca\nInformácie o produkte"),
                 'allowCustomSubject' => (bool) ($all['contact']['allowCustomSubject'] ?? true),
             ],
+            'newsletter' => $this->publicNewsletterSettings($all['newsletter'] ?? []),
             'company' => [
                 'showOnContactPage' => (bool) ($all['company']['showOnContactPage'] ?? true),
                 'name' => (string) ($all['company']['name'] ?? ''),
@@ -383,6 +384,20 @@ final class SettingsController
             'maintenanceBody' => (string) ($maintenance['maintenanceBody'] ?? ''),
             'maintenanceShowContactForm' => (bool) ($maintenance['maintenanceShowContactForm'] ?? true),
             'maintenanceContactSubject' => (string) ($maintenance['maintenanceContactSubject'] ?? $defaults['maintenanceContactSubject'] ?? ''),
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $newsletter
+     * @return array<string, mixed>
+     */
+    private function publicNewsletterSettings(array $newsletter): array
+    {
+        $defaults = SettingsSchema::defaults()['newsletter'] ?? [];
+
+        return [
+            'footerEnabled' => (bool) ($newsletter['footerEnabled'] ?? $defaults['footerEnabled'] ?? false),
+            'footerHint' => (string) ($newsletter['footerHint'] ?? $defaults['footerHint'] ?? ''),
         ];
     }
 

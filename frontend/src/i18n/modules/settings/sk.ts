@@ -75,6 +75,7 @@ export const settingsSk: MessageTree = {
     "codePolicy": "Code policy",
     "comments": "Komentáre",
     "contact": "Kontaktný formulár",
+    "newsletter": "Newsletter",
     "company": "Firemné údaje",
     "workflows": "Workflow OTP",
     "ui": "Admin UI",
@@ -579,6 +580,16 @@ export const settingsSk: MessageTree = {
       "allowCustomSubject": {
         "label": "Povoliť vlastný predmet",
         "help": "Návštevník môže zvoliť „Vlastný predmet“ a napísať vlastný text."
+      }
+    },
+    "newsletter": {
+      "footerEnabled": {
+        "label": "Povoliť newsletter vo footeri",
+        "help": "Zapnuté = kompaktný odberový formulár v pätičke verejného webu."
+      },
+      "footerHint": {
+        "label": "Text vo footeri",
+        "help": "Krátky popis pod nadpisom newsletteru vo footeri."
       }
     },
     "company": {

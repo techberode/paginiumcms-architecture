@@ -221,6 +221,13 @@ final class SettingsSchema
                     ['key' => 'allowCustomSubject', 'type' => 'bool', 'label' => 'Povoliť vlastný predmet', 'default' => true, 'rules' => ['bool'], 'help' => 'Návštevník môže zvoliť „Vlastný predmet“ a napísať vlastný text.'],
                 ],
             ],
+            'newsletter' => [
+                'label' => 'Newsletter',
+                'fields' => [
+                    ['key' => 'footerEnabled', 'type' => 'bool', 'label' => 'Povoliť newsletter vo footeri', 'default' => false, 'rules' => ['bool'], 'help' => 'Zapnuté = kompaktný odberový formulár v pätičke verejného webu. Vypnuté = formulár skrytý.'],
+                    ['key' => 'footerHint', 'type' => 'text', 'label' => 'Text vo footeri', 'default' => 'Prihláste sa na odber noviniek a nezmeškajte novinky.', 'rules' => ['string', 'max:500'], 'help' => 'Krátky popis pod nadpisom newsletteru vo footeri.'],
+                ],
+            ],
             'company' => [
                 'label' => 'Firemné údaje',
                 'fields' => [

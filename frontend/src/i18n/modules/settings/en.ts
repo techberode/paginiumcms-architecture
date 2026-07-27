@@ -75,6 +75,7 @@ export const settingsEn: MessageTree = {
     "codePolicy": "Code policy",
     "comments": "Comments",
     "contact": "Contact form",
+    "newsletter": "Newsletter",
     "company": "Company details",
     "workflows": "Workflow OTP",
     "ui": "Admin UI",
@@ -377,6 +378,16 @@ export const settingsEn: MessageTree = {
       "allowCustomSubject": {
         "label": "Allow custom subject",
         "help": "Visitors can choose “Custom subject” and enter their own text."
+      }
+    },
+    "newsletter": {
+      "footerEnabled": {
+        "label": "Enable footer newsletter",
+        "help": "Enabled = compact signup form in the public site footer."
+      },
+      "footerHint": {
+        "label": "Footer hint text",
+        "help": "Short description under the newsletter heading in the footer."
       }
     },
     "company": {

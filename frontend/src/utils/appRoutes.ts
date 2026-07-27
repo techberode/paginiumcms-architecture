@@ -7,6 +7,7 @@ const ADMIN_ROUTE_PREFIXES = [
   '/navigation',
   '/comments',
   '/messages',
+  '/newsletter',
   '/github',
   '/code-editor',
   '/backups',

@@ -11,6 +11,7 @@ export const adminEn: MessageTree = {
     navigation: 'Navigation',
     comments: 'Comments',
     messages: 'Messages',
+    newsletter: 'Newsletter',
     github: 'GitHub',
     codeEditor: 'Code Editor',
     backups: 'Backups',

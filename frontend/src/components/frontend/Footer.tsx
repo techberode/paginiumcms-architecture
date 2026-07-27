@@ -7,6 +7,7 @@ import { useSettingsContext } from '../../context/SettingsContext';
 import { useI18n } from '../../context/I18nContext';
 import { linkTargetProps } from '../../utils/linkTarget';
 import { useOpenLinksInNewTab } from '../../hooks/useOpenLinksInNewTab';
+import { FooterNewsletter } from './FooterNewsletter';
 import { LOGO_FALLBACK } from '../../theme/publicUiClasses';
 
 export const Footer: React.FC = () => {
@@ -17,6 +18,7 @@ export const Footer: React.FC = () => {
   const openInNewTab = useOpenLinksInNewTab();
   const demoUrl = settings.demo?.url ?? 'https://demo.paginiumcms.com';
   const isDemoInstance = settings.demo?.enabled === true;
+  const footerNewsletterEnabled = settings.newsletter?.footerEnabled === true;
 
   const sortedNav = [...navigation].sort((a, b) => a.order - b.order);
 
@@ -71,25 +73,31 @@ export const Footer: React.FC = () => {
           </div>
 
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider public-footer-heading mb-4">{t('public.footer.tryCmsTitle')}</h4>
-            {isDemoInstance ? (
-              <p className="text-sm opacity-70 leading-relaxed">
-                {t('public.footer.demoInstanceBody')}
-              </p>
+            {footerNewsletterEnabled ? (
+              <FooterNewsletter />
             ) : (
-              <div className="space-y-3">
-                <p className="text-sm opacity-70 leading-relaxed">
-                  {t('public.footer.tryCmsBody')}
-                </p>
-                <a
-                  href={demoUrl}
-                  {...linkTargetProps(openInNewTab)}
-                  className="inline-flex items-center gap-2 text-sm font-semibold public-footer-link text-theme-accent"
-                >
-                  demo.paginiumcms.com
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </a>
-              </div>
+              <>
+                <h4 className="text-xs font-bold uppercase tracking-wider public-footer-heading mb-4">{t('public.footer.tryCmsTitle')}</h4>
+                {isDemoInstance ? (
+                  <p className="text-sm opacity-70 leading-relaxed">
+                    {t('public.footer.demoInstanceBody')}
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-sm opacity-70 leading-relaxed">
+                      {t('public.footer.tryCmsBody')}
+                    </p>
+                    <a
+                      href={demoUrl}
+                      {...linkTargetProps(openInNewTab)}
+                      className="inline-flex items-center gap-2 text-sm font-semibold public-footer-link text-theme-accent"
+                    >
+                      demo.paginiumcms.com
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

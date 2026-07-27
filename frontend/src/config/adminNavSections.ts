@@ -6,6 +6,7 @@ import {
   Database,
   MessageSquare,
   Mail,
+  Newspaper,
   Settings,
   Code,
   History,
@@ -65,6 +66,7 @@ export const ADMIN_NAV_SECTIONS: AdminNavSectionDef[] = [
     items: [
       { id: 'comments', labelKey: 'admin.nav.comments', href: '/comments', icon: MessageSquare, adminOnly: true },
       { id: 'messages', labelKey: 'admin.nav.messages', href: '/messages', icon: Mail, adminOnly: true },
+      { id: 'newsletter', labelKey: 'admin.nav.newsletter', href: '/newsletter', icon: Newspaper, adminOnly: true },
     ],
   },
   {
