@@ -68,16 +68,21 @@ final class SystemDeployService
             return new JobRunResult(false, 'Deploy script missing', ['ref' => $ref], 'missing_script');
         }
 
+        $cacheRoot = $root . '/backend/storage/app/deploy-cache';
         $env = [
             'APP_ROOT' => $root,
             'GIT_REF' => $ref,
             'STACK_DIR' => getenv('STACK_DIR') ?: ($_ENV['STACK_DIR'] ?? ''),
             'BACKEND_PORT' => getenv('BACKEND_PORT') ?: ($_ENV['BACKEND_PORT'] ?? '8089'),
+            'DEPLOY_CACHE_ROOT' => $cacheRoot,
+            'COMPOSER_HOME' => $cacheRoot . '/composer',
         ];
 
         $command = $this->buildCommand($script, $env);
         $outputLines = [];
         $exitCode = 1;
+
+        set_time_limit(0);
         exec($command . ' 2>&1', $outputLines, $exitCode);
         $output = implode("\n", $outputLines);
 

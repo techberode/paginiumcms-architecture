@@ -309,7 +309,35 @@ Optional webhook (future): `POST /api/webhooks/github/release` → auto-enqueue 
 | Production | ✅ when `deployEnabled` | Controlled upgrades |
 | Demo | Hidden / disabled | Demo is resettable sandbox; SSH + tag pin is enough |
 
-### G6. Suggested iteration
+### G6. Docker production — admin UI deploy (It.63)
+
+When PHP runs in Docker (`/var/www/html`) and deploy is triggered from **Platform → System update**, the job runs as **`www-data`**. One-time host bootstrap:
+
+```bash
+APP_ROOT=/var/www/paginiumcms.com \
+  ./scripts/bootstrap-deploy-permissions.sh
+```
+
+**App `.env`** (mounted into container):
+
+```bash
+APP_ROOT=/var/www/html
+STACK_DIR=/var/lib/docker/compose/paginiumcms
+BACKEND_PORT=8089
+DEMO_MODE=false
+```
+
+| Symptom | Fix |
+|---------|-----|
+| `missing_script` | `APP_ROOT=/var/www/html` in app `.env` (see `AppRoot` resolver) |
+| `dubious ownership` / `FETCH_HEAD` Permission denied | Run `bootstrap-deploy-permissions.sh` on host |
+| `vendor/... Permission denied` (composer) | Same bootstrap (`www-data` group write on checkout) |
+| `stack.sh not reachable` | Normal from container — script logs `SKIP_RESTART`; run `./stack.sh restart php` on host after deploy |
+| Deploy timeout in browser | FE timeout 10 min (beta.14+); prefer SSH for very slow builds |
+
+**Recommended for routine releases:** SSH + `deploy-instance-update.sh` as host user. Admin button = convenience when bootstrap is applied.
+
+### G7. Suggested iteration
 
 Document as **It.63 — Admin system update (prod)** — see [ITERATION_63.md](../ITERATION_63.md):
 
