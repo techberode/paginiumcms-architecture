@@ -177,7 +177,7 @@ Review these **without** auth (CSRF exempt where noted):
 | ISS-011 | ESLint tech debt | CI baseline, not runtime security |
 | ISS-014 | CORS | Must set `APP_ENV=production` on prod |
 | S5 | CSP | `style-src 'unsafe-inline'` for React inline styles |
-| S-DEMOCREDS | Demo login hints | Only when demo mode enabled |
+| S-DEMOCREDS | Demo login hints | ✅ Mitigated **`v2.1.0-beta.11`** — no password in public settings; `POST /api/demo/quick-login` |
 
 Full public log: [ISSUES.md](ISSUES.md).
 

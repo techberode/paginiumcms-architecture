@@ -389,12 +389,9 @@ final class SettingsController
             return [
                 'enabled' => true,
                 'url' => $this->demoMode->publicDemoUrl(),
+                'loginEmail' => DemoFixtures::ADMIN_EMAIL,
                 'autoResetMinutes' => $this->demoMode->autoResetMinutes(),
                 'showFooterLink' => false,
-                'credentials' => [
-                    'email' => DemoFixtures::ADMIN_EMAIL,
-                    'password' => DemoFixtures::ADMIN_PASSWORD,
-                ],
             ];
         }
 
@@ -409,7 +406,6 @@ final class SettingsController
             'url' => $demoUrl,
             'showFooterLink' => (bool) ($marketing['demoFooterLinkEnabled'] ?? $defaults['demoFooterLinkEnabled'] ?? true),
             'autoResetMinutes' => null,
-            'credentials' => null,
         ];
     }
 

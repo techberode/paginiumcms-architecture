@@ -65,14 +65,34 @@ php backend/bin/console monitoring:run-schedule
 
 ## Demo režim (voliteľné)
 
-Len na `demo.paginiumcms.com` — **nie** na zákazníckej inštancii:
+Len na `demo.paginiumcms.com` — **nie** na zákazníckej inštancii.
+
+### Crontab
+
+```cron
+*/15 * * * * cd /var/www/paginiumcms-demo && /usr/bin/php backend/bin/console demo:reset-if-due >> /var/log/paginium-demo-reset.log 2>&1
+```
+
+- Interval kontroly: každých **15 min** (cron).
+- Skutočný reset: po uplynutí `DEMO_AUTO_RESET_MINUTES` (default **60**) v `.env`.
+- Výstup príkazu: `✅ obnovený` alebo `⏭ not_due` / `demo_disabled`.
+
+### Pred prvým cronom
 
 ```bash
-# Ak DEMO_MODE=true v .env
+cd /var/www/paginiumcms-demo
 php backend/bin/console demo:reset-if-due
 ```
 
-Pridaj do cronu alebo nechaj v registry cez admin Plánovač.
+Ak padne na `Permission denied` pre `storage/app/demo/data/plugins.json` → **ISS-099** — rovnaký fix ako ISS-094:
+
+```bash
+sudo chown -R "$(id -un):www-data" backend/storage
+sudo find backend/storage -type d -exec chmod 2775 {} \;
+sudo find backend/storage -type f -exec chmod 664 {} \;
+```
+
+Detail + Docker alternatíva: [DEMO_DEPLOY.md](DEMO_DEPLOY.md) § ISS-099.
 
 ---
 
@@ -87,6 +107,7 @@ Pridaj do cronu alebo nechaj v registry cez admin Plánovač.
 | Logy plné chýb | PHP cesta / permissions | Skontroluj `>> log` a práva na `storage/` |
 | Admin run „nefunguje“, API 200 | UI bralo `success:false` ako chybu | It.62 — `outcome` + toast fix; `npm run build:prod` |
 | `Permission denied` na `runs.json` | Host vs Docker `www-data` | `chown user:www-data`, dirs `2775`, test `touch` v kontajneri — [ITERATION_62.md](../ITERATION_62.md) |
+| `Permission denied` na demo `plugins.json` | Host cron/CLI vs Docker pri `demo:reset-if-due` | Rovnaký pattern — [DEMO_DEPLOY.md](DEMO_DEPLOY.md) § ISS-099 |
 
 ---
 
@@ -97,4 +118,5 @@ Pridaj do cronu alebo nechaj v registry cez admin Plánovač.
 - [ITERATION_59.md](../ITERATION_59.md) — scheduled publish
 - [user/INSTALLATION.md](../user/INSTALLATION.md) — inštalácia + cron krok
 - [developer/BETA_INFRA.md](../developer/BETA_INFRA.md) — beta checklist pre maintainerov
+- [DEMO_DEPLOY.md](DEMO_DEPLOY.md) — demo auto-reset cron (ISS-099)
 - [NGINX_API.md](./NGINX_API.md) — produkčný nginx

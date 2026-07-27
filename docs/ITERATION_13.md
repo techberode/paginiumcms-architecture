@@ -1,7 +1,7 @@
 # Iteration 13 – Demo Sandbox (demo.paginiumcms.com only)
 
-**Status:** ✅ Complete (v3 shipped)  
-**Version:** 2.0.28 + **v3 polish** (beta.9+)
+**Status:** ✅ Complete (v3 + **v4** shipped)  
+**Version:** 2.0.28 + **v3** · **`v2.1.0-beta.10`** · **v4** · **`v2.1.0-beta.11`**
 
 ## Produktová pozícia (dôležité)
 
@@ -41,7 +41,10 @@ Izolované demo prostredie s `DEMO_MODE`. **v3:** plný CMS trial — kompletný
 | `GET /api/demo/public-info` | ✅ v3 |
 | Separate storage `storage/app/demo/` | ✅ |
 | `GET /api/admin/demo/status` + `POST …/reset` | ✅ |
-| Public settings `demo.enabled` / credentials on demo instance | ✅ |
+| Public settings `demo.enabled` / `loginEmail` (no password in GET) | ✅ v4 |
+| `POST /api/demo/quick-login` — server-side demo session (S-DEMOCREDS) | ✅ v4 |
+| Admin nav **Demo modul** hidden on demo instance (banner link only) | ✅ v4 |
+| Editor profile API shape fix (`capabilities.enabled`) | ✅ v4 |
 | Admin banner + `/demo` manager UI | ✅ |
 | PHPUnit isolation + controller smoke | ✅ |
 
@@ -59,8 +62,9 @@ Http/Routes/demo.php
 
 | Route | Auth | Notes |
 |-------|------|-------|
-| `GET /api/demo/public-info` | Public | enabled, next reset — no secrets |
-| `GET /api/admin/demo/status` | ADMIN + 2FA | paths, file count, schedule |
+| `GET /api/demo/public-info` | Public | enabled, loginEmail, reset schedule — **no password** |
+| `POST /api/demo/quick-login` | Public (demo only) | One-click demo admin session; CSRF exempt; rate-limited |
+| `GET /api/admin/demo/status` | ADMIN + 2FA | paths, file count, schedule (no credentials) |
 | `POST /api/admin/demo/reset` | ADMIN + 2FA | Re-seed demo files |
 
 **Activation:** `DEMO_MODE=true` v `.env` + **reštart PHP**. Overenie: `GET /api/settings/public` → `demo.enabled: true`.
@@ -69,11 +73,11 @@ Http/Routes/demo.php
 
 ## Frontend
 
-- `frontend/src/api/demo.ts` — status, publicInfo, reset
-- `DemoModeBanner` — countdown + link `/demo`
-- `DemoManager` at `/demo` — onboarding, schedule, reset (ADMIN+)
+- `frontend/src/api/demo.ts` — status, publicInfo, quickLogin, reset
+- `DemoModeBanner` — countdown + link `/demo` (sidebar Demo modul hidden on demo instance)
+- `DemoManager` at `/demo` — onboarding, countdown, reset (ADMIN+); ops card hidden when live
 - `DemoPublicStrip` — verejný pás na demo inštancii
-- `LoginModal` — fill demo credentials
+- `LoginModal` — **Prihlásiť ako demo admin** (quick-login, no password in public API)
 - Settings group **Marketing** — footer demo URL + toggle (prod only)
 
 ## Tests
@@ -85,9 +89,11 @@ Http/Routes/demo.php
 
 ## Cron (demo inštancia)
 
-```bash
-*/15 * * * * cd /path/to/project && php backend/bin/console demo:reset-if-due
+```cron
+*/15 * * * * cd /var/www/paginiumcms-demo && /usr/bin/php backend/bin/console demo:reset-if-due >> /var/log/paginium-demo-reset.log 2>&1
 ```
+
+**Storage permissions (ISS-099):** Host cron musí zapisovať do `storage/app/demo/data/plugins.json` (bootstrap načíta `PluginManager` pred resetom). Rovnaký model ako It.62 — `chown user:www-data`, dirs `2775`, files `664`. Detail: [deploy/DEMO_DEPLOY.md](deploy/DEMO_DEPLOY.md) § ISS-099.
 
 ## Demo credentials
 

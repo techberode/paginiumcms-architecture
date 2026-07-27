@@ -1,15 +1,16 @@
 # Security Policy
 
-PaginiumCMS is in **Public Beta** (`v2.1.0-beta.3`). We welcome responsible disclosure from security researchers and beta testers.
+PaginiumCMS is in **Public Beta** (`v2.1.0-beta.10`). We welcome responsible disclosure from security researchers and beta testers.
 
 ## Supported versions
 
 | Version | Supported |
 |---------|-----------|
-| `v2.1.0-beta.3` | ✅ Current (recommended for review) — includes React Router GHSA fix (ISS-078) |
-| `v2.1.0-beta.2` | ⚠️ Superseded — missing `react-router-dom@7.18.1` (3× moderate npm GHSA published after tag) |
-| `v2.1.0-beta.1` | ⚠️ Superseded — missing audit-trail CSV sanitization fix |
-| `2.0.x` | Maintenance only — use beta.3 for security review |
+| **`v2.1.0-beta.11`** | ✅ **Current (recommended)** — It.13 v4 demo security + editor fix |
+| `v2.1.0-beta.10` | ✅ Supported — It.13 v3 demo full trial |
+| `v2.1.0-beta.9` | ⚠️ Superseded — upgrade for demo polish + editor fix |
+| `v2.1.0-beta.3` … `v2.1.0-beta.8` | ⚠️ Superseded — upgrade to beta.11 |
+| `2.0.x` | Maintenance only — use beta.11 for security review |
 
 ## Reporting a vulnerability
 

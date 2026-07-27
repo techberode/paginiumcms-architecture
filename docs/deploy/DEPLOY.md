@@ -96,7 +96,7 @@ cd frontend && npm ci && npm run build:prod && cd ..
 ## B. Release deploy (tagged update)
 
 A **release** = green gate + git tag + GitHub Release notes + production deploy + smoke.  
-Use for beta milestones (`v2.1.0-beta.9`, …), not for every small commit unless you policy-tag often.
+Use for beta milestones (`v2.1.0-beta.10`, …), not for every small commit unless you policy-tag often.
 
 ### B1. Developer machine (before server)
 
@@ -104,12 +104,12 @@ Use for beta milestones (`v2.1.0-beta.9`, …), not for every small commit unles
 # 1) Gate (mandatory)
 ./scripts/iteration-gate.sh
 
-# 2) Tag (example beta.9 after It.61)
-git tag -a v2.1.0-beta.9 -m "v2.1.0-beta.9 — It.61 newsletter footer + admin subscribers"
-git push origin v2.1.0-beta.9
+# 2) Tag (example beta.10 after It.13 v3)
+git tag -a v2.1.0-beta.10 -m "v2.1.0-beta.10 — It.13 v3 demo sandbox full trial"
+git push origin v2.1.0-beta.10
 
-# 3) GitHub Release (copy body from docs/developer/RELEASE.md)
-gh release create v2.1.0-beta.9 --title "v2.1.0-beta.9 — …" --notes-file /tmp/release-notes.md
+# 3) GitHub Release (copy body from docs/developer/RELEASE.md § beta.10)
+gh release create v2.1.0-beta.10 --title "v2.1.0-beta.10 — Demo sandbox full trial (It.13 v3)" --notes-file /tmp/release-notes.md
 ```
 
 Update `CHANGELOG.md`, `docs/CONTINUATION.md`, and `docs/developer/RELEASE.md` in the same wave (or immediately before tag).
@@ -121,7 +121,7 @@ Same as **§A**, but pin the ref:
 ```bash
 cd /var/www/paginiumcms.com
 git fetch origin --tags
-git checkout v2.1.0-beta.9    # detached HEAD is OK on servers
+git checkout v2.1.0-beta.10    # detached HEAD is OK on servers
 composer install --no-dev --optimize-autoloader
 cd frontend && npm ci && npm run build:prod && cd ..
 /var/lib/docker/compose/paginiumcms/stack.sh restart php
@@ -157,7 +157,7 @@ BACKEND_PORT=8091
 cd "$APP_ROOT"
 git fetch origin
 git checkout main && git pull origin main
-# or: git checkout v2.1.0-beta.9
+# or: git checkout v2.1.0-beta.10
 
 composer install --no-dev --optimize-autoloader
 cd frontend && npm ci && npm run build:prod && cd ..
@@ -221,6 +221,7 @@ Full stack update still requires **§A** on the server (composer + PHP restart).
 | 502 persists | PHP crash / parse error | `stack.sh logs --tail=50 php` |
 | Admin shows old UI | Stale `dist/` or browser cache | Re-run `npm run build:prod`, hard refresh |
 | Demo login 401, empty response in DevTools | CORS — `APP_URL` ≠ public domain | Set `APP_URL=https://demo.paginiumcms.com`, `stack.sh restart php`; verify curl with `Origin` header (§C) |
+| `demo:reset-if-due` Permission denied (`plugins.json`) | Host CLI/cron vs Docker `www-data` on demo storage | `chown user:www-data`, dirs `2775` — [DEMO_DEPLOY.md](DEMO_DEPLOY.md) § ISS-099 |
 | `git pull` → already up to date | Commit not pushed | Push from dev, then fetch on server |
 
 ---

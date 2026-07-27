@@ -181,14 +181,19 @@ Storage: `data/plugins.json`; code under `Http/Extensions/{id}/`; routes `Http/R
 
 Frontend: `frontend/src/api/extensions.ts`, admin `/extensions`, dynamic bundles `frontend/src/extensions/{id}/`.
 
-### Demo (It.13)
+### Demo (It.13 v3 — `v2.1.0-beta.10`)
 
-| Method | Route | Notes |
-|--------|-------|-------|
-| `GET` | `/api/admin/demo/status` | DEMO_MODE, paths, file count |
-| `POST` | `/api/admin/demo/reset` | SUPER_ADMIN; re-seed `storage/app/demo/` |
+| Method | Route | Auth | Notes |
+|--------|-------|------|-------|
+| `GET` | `/api/demo/public-info` | Public | Reset schedule + `loginEmail` when `DEMO_MODE=true` (no password) |
+| `POST` | `/api/demo/quick-login` | Public (demo only) | One-click demo admin session (S-DEMOCREDS) |
+| `GET` | `/api/admin/demo/status` | ADMIN + 2FA | paths, file count, `next_reset_at`, `seconds_until_reset`, `isolated` |
+| `POST` | `/api/admin/demo/reset` | ADMIN + 2FA | Re-seed `storage/app/demo/` (rich snapshot) |
 
-Public settings: `demo.enabled`.
+Public settings: `demo.enabled`, `demo.loginEmail` (demo instance only — **no password**).  
+Prod marketing: settings group **`marketing`** → public `demo.url`, `demo.showFooterLink`.
+
+Frontend: `frontend/src/api/demo.ts`, `DemoManager`, `DemoModeBanner`, `DemoPublicStrip`.
 
 ---
 

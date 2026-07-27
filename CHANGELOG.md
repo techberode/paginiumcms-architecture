@@ -58,6 +58,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.58b — Color schemes + themed public site | **`v2.1.0-beta.8`** | [below](#210-beta8--2026-07-26) |
 | It.62 + It.61 + demo deploy + analytics/editor | **`v2.1.0-beta.9`** | [below](#210-beta9--2026-07-27) |
 | It.13 v3 — Demo full trial | **`v2.1.0-beta.10`** | [below](#210-beta10--2026-07-27) |
+| It.13 v4 — Demo security polish | **`v2.1.0-beta.11`** | [below](#210-beta11--2026-07-27) |
 | It.63 — Admin system update (prod) | Planned | [ITERATION_63.md](docs/ITERATION_63.md) |
 | Wave 5d — It.15 hook emitters + extension policy | **2.0.54** | [below](#2054--2026-07-23) |
 | It.19b–19d — Security runtime, auth UX, password policy | **2.0.45** | [below](#2045--2026-07-21) |
@@ -68,7 +69,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [2.1.0-beta.11] – 2026-07-27
+
+**It.13 v4** — Demo security polish + editor hotfix.
+
+### Fixed
+
+- **Editor white screen** — normalize API editor profile `capabilities: { enabled: [] }` for content editor (It.54 API vs FE shape).
+- **S-DEMOCREDS** — remove demo password from `GET /api/settings/public` and admin demo status; login via `POST /api/demo/quick-login`.
+
+### Added (It.13 v4)
+
+- **`POST /api/demo/quick-login`** — server-side demo admin session (rate-limited, CSRF exempt on demo only).
+- **`loginEmail`** in public demo settings / `public-info` (hint only).
+- Login page **Sign in as demo admin** button (no password in Network tab).
+
+### Changed
+
+- Admin sidebar **Demo modul** hidden on `demo.paginiumcms.com` — manage via amber banner link.
+- `/demo` manager: hide ops diagnostics card on live demo (countdown + reset remain).
+
+### Docs
+
+- [ITERATION_13.md](docs/ITERATION_13.md) v4 · ISS-099 (S-DEMOCREDS) · SECURITY_REVIEW update.
+
+---
+
 ## [2.1.0-beta.10] – 2026-07-27
+
+**Release commit:** `ab5b5fb` · tag **`v2.1.0-beta.10`**
 
 **It.13 v3** — Demo sandbox full trial (isolated `storage/app/demo/`).
 
@@ -132,12 +161,13 @@ Prod hardening, analytics/editor iterations, newsletter admin, demo instance dep
 ### Added (Deploy & demo)
 
 - **[DEPLOY.md](docs/deploy/DEPLOY.md)** — prod + demo update guide, release vs commit deploy.
-- **[DEMO_DEPLOY.md](docs/deploy/DEMO_DEPLOY.md)** — demo C&P deploy, ISS-098 smoke, env checklist.
+- **[DEMO_DEPLOY.md](docs/deploy/DEMO_DEPLOY.md)** — demo C&P deploy, ISS-098 smoke, ISS-099 cron/storage, env checklist.
 - **`scripts/deploy-instance-update.sh`** — server-side git pull + composer + FE build + PHP restart.
 - **Demo stack templates** — `app.env.demo.example`, `stack.env.demo.example`, nginx demo conf.
 
 ### Fixed
 
+- **ISS-099** — Demo ops: host `demo:reset-if-due` / cron padá na `plugins.json` Permission denied — dokumentovaný fix storage práv (It.62 pattern). Docs: [DEMO_DEPLOY.md](docs/deploy/DEMO_DEPLOY.md), [CRON.md](docs/deploy/CRON.md).
 - **ISS-098** — Demo login 401 s prázdnym telom v prehliadači: `SameOriginCorsMiddleware` auto-povolí same-origin SPA; CORS chyby vracajú JSON. Docs: [DEMO_DEPLOY.md](docs/deploy/DEMO_DEPLOY.md).
 - **ISS-095** — Maintenance hero background rejected `/storage/…` media paths (`heroImageUrl` url rule → string).
 - **ISS-094** — Job scheduler 500 on prod: Docker `www-data` storage, PHP warnings in JSON, admin UI false failure toast.

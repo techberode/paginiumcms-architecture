@@ -50,7 +50,7 @@ Ak reviewuješ bezpečnosť (napr. ako beta tester s cybersec skúsenosťami):
 | [SECURITY.md](../SECURITY.md) (root) | Reporting policy, supported versions |
 | [ISSUES.md](ISSUES.md) | Verejný incident log (ISS-001–078) |
 
-**Odporúčaný tag:** `git checkout v2.1.0-beta.10` (demo full trial + prior beta.9 features)
+**Odporúčaný tag:** `git checkout v2.1.0-beta.11` (demo security polish + editor fix)
 
 ---
 

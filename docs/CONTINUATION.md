@@ -18,7 +18,7 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 
 ## Aktuálny plán (2026-07-27) — Public Beta 1 + produkčný deploy
 
-**Stav:** **`v2.1.0-beta.9`** · **`main` @ `ecbfe0b`** · It.13 v3 demo complete · **It.63** plánovaná
+**Stav:** **`v2.1.0-beta.11`** pending tag · It.13 v4 ready · **It.63** plánovaná
 
 **Ďalšia iterácia:** **[It.63 — Admin system update](ITERATION_63.md)** (prod deploy z admin UI)
 
@@ -29,12 +29,13 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 | **Prod fix — maintenance pozadie** | „Neplatná URL“ pri `/storage/` ceste | ✅ **`88cbe31`** (ISS-095) |
 | **Prod fix — deploy** | Docker PHP 8.5, log paths, SMTP recipient, OPcache | ✅ `0fe21ec` … `d1bd35b` |
 | **Cron na hoste** | `scheduler:run` + `worker:process` každú minútu | ⏳ overiť crontab |
-| **Tag beta.9** | Release notes + `v2.1.0-beta.9` po smoke na prod + demo | ⏳ docs ready, tag + push pending |
+| **Tag beta.10** | `v2.1.0-beta.10` It.13 v3 demo | ✅ **`ab5b5fb`** |
 | **It.59** | Scheduled publish UX v editore + filtre | ✅ **2.0.53** |
 | **It.60** | Custom komponenty editora (plugin + settings) | ✅ **`3d3ab48`** |
 | **It.33** | Analytics enrichment (sources, geo, vlajky) | ✅ **`3d3ab48`** |
 | **It.61** | Newsletter footer + admin prehľad (ISS-097) | ✅ **shipped** |
-| **It.13 v3** | Demo full trial (seed, strip, marketing settings) | ✅ **shipped** |
+| **It.13 v3** | Demo full trial (seed, strip, marketing settings) | ✅ **shipped** (`beta.10`) |
+| **It.13 v4** | S-DEMOCREDS, quick-login, editor fix, demo nav UX | ✅ **ready** (`beta.11`) |
 | **It.63** | Admin system update (prod deploy) | ⏳ **ďalšia iterácia** |
 
 Detail deployu (lokálne, gitignored): `PRIVATE_DOMAIN_DEPLOY.md` · scheduler: [ITERATION_62.md](ITERATION_62.md) · cron: [deploy/CRON.md](deploy/CRON.md)
@@ -309,19 +310,18 @@ Demo: demo.paginiumcms.com (port 8091, DEMO_MODE=true, samostatný clone + stack
 Komunikuj po slovensky. Pravidlá: .cursorrules + ZÁKONY v docs/CONTINUATION.md §2.
 
 HOTOVÉ (2026-07-27):
-- It.13 v3 ✅ demo full trial — rich seed, public strip, marketing settings, reset countdown
-- It.33 ✅ analytics enrichment — 3d3ab48
-- It.60 ✅ custom editor components — 3d3ab48
-- It.62 ✅ scheduler prod hardening — f7a73f1
-- It.61 ✅ footer newsletter + admin subscribers
-- ISS-098 ✅ demo login CORS — ecbfe0b
-- beta.9 tagged + demo deploy docs
+- It.13 v3 ✅ demo full trial — v2.1.0-beta.10 ab5b5fb
+- beta.9 ✅ scheduler, newsletter, ISS-098 CORS — ecbfe0b
+- It.61/62/33/60 ✅ v predchádzajúcich beta release
 
 ĎALŠIA ITERÁCIA:
-- It.63 — Admin system update (prod deploy z UI) — pozri ITERATION_63.md
+- It.63 — Admin system update (prod deploy z UI) — ITERATION_63.md
 
-ZNÁME MEDZERY (neskôr):
-- It.13 v3 hotové — demo reset na serveri spustiť manuálne po deployi (`POST /api/admin/demo/reset` alebo `demo:reset-if-due`)
+PO DEPLOYI DEMO (beta.10):
+- Admin /demo → Reset demo seed (nový snapshot)
+- Smoke: GET /api/demo/public-info, login s Origin hlavičkou
+- Storage: chown user:www-data backend/storage, dirs 2775 (ISS-099 pred cron)
+- php backend/bin/console demo:reset-if-due → ✅ alebo ⏭ not_due
 
 PROD DEPLOY (paginiumcms.com):
   cd /var/www/paginiumcms.com
@@ -344,12 +344,12 @@ DEMO DEPLOY (demo.paginiumcms.com) — plný C&P: docs/deploy/DEMO_DEPLOY.md
 
 PLÁNOVAČ / CRON:
 - CLI: scheduler:run, worker:process, jobs:run {id}
-- Demo: demo:reset-if-due každých 15 min (cron)
+- Demo: demo:reset-if-due každých 15 min — docs/deploy/CRON.md + DEMO_DEPLOY.md § ISS-099
 
-Incidenty: docs/ISSUES.md ISS-094–098.
+Incidenty: docs/ISSUES.md ISS-094–099.
 Deploy guide: docs/deploy/DEPLOY.md + docs/deploy/DEMO_DEPLOY.md.
 ```
 
 ---
 
-*Aktualizované 2026-07-27 po ISS-098 demo CORS fix + potvrdený login v prehliadači. Podrobnosti: `ISSUES.md`, `deploy/DEMO_DEPLOY.md`, `RELEASE.md`.*
+*Aktualizované 2026-07-27 po ISS-098 demo CORS + ISS-099 demo cron/storage docs. Podrobnosti: `ISSUES.md`, `deploy/DEMO_DEPLOY.md`, `RELEASE.md`.*

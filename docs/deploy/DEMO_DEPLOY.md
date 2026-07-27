@@ -1,7 +1,7 @@
-# Demo instance — deploy, login, CORS (ISS-098)
+# Demo instance — deploy, login, CORS (ISS-098), cron (ISS-099)
 
 > **Doména:** `https://demo.paginiumcms.com`  
-> **Účel:** predvádzacie vozidlo — plný CMS trial, zmeny sa resetujú (It.13).  
+> **Účel:** predvádzacie vozidlo — plný CMS trial, zmeny sa resetujú (**It.13 v4**, `v2.1.0-beta.11`).  
 > **Nie je súčasť zákazníckeho balíka** — `DEMO_MODE=true` len na tejto inštancii.
 
 ---
@@ -123,8 +123,7 @@ BACKEND_PORT=8091
 
 cd "$APP_ROOT"
 git fetch origin
-git checkout main
-git pull origin main
+git checkout v2.1.0-beta.11   # alebo: git pull origin main
 git log -1 --oneline
 
 composer install --no-dev --optimize-autoloader
@@ -152,12 +151,12 @@ BACKEND_PORT=8091 \
 
 ## C&P — smoke testy (po deployi)
 
-### 1. Health + demo settings
+### 1. Health + demo settings (no password)
 
 ```bash
 curl -s https://demo.paginiumcms.com/api/health | jq .
 curl -s https://demo.paginiumcms.com/api/settings/public | jq '.data.demo'
-# očakávané: enabled: true, credentials email/password
+# očakávané: enabled: true, loginEmail — **bez** credentials/password
 ```
 
 ### 2. Login bez Origin (curl baseline)
@@ -199,12 +198,138 @@ curl -sS -D - -o /dev/null \
 1. Otvor `https://demo.paginiumcms.com/login`
 2. **Vyplniť demo údaje** (amber box) → Prihlásiť sa
 3. DevTools → Network → `POST /api/auth/login` → **200**, JSON s `success: true`
+4. Verejný web — amber **DemoPublicStrip** s countdownom
+
+### 6. Quick login (v4 — S-DEMOCREDS)
+
+```bash
+curl -sS -X POST 'https://demo.paginiumcms.com/api/demo/quick-login' \
+  -H 'Content-Type: application/json' | jq .
+# očakávané: success: true, user: { email: demo@paginiumcms.com, ... }
+```
+
+### 7. Public demo info
+
+```bash
+curl -s https://demo.paginiumcms.com/api/demo/public-info | jq .
+# očakávané: enabled: true, loginEmail, next_reset_at, seconds_until_reset
+```
+
+### 8. Reset seed (po upgrade)
+
+V admin: **Demo** (`/demo`) → **Reset demo seed** — načíta komentáre, správy, newsletter, kontakt.
+
+### 8. CLI auto-reset (ISS-099)
+
+```bash
+cd /var/www/paginiumcms-demo
+php backend/bin/console demo:reset-if-due
+# očakávané: ✅ Demo snapshot obnovený  alebo  ⏭ Demo reset nebol spustený (not_due / demo_disabled)
+# zlyhanie: Permission denied na data/plugins.json → § ISS-099 nižšie
+```
+
+---
+
+## ISS-099 — `demo:reset-if-due` Permission denied (`plugins.json`)
+
+### Symptóm
+
+Host CLI spadne ešte pred resetom:
+
+```
+PHP Warning: fopen(.../storage/app/demo/data/plugins.json): Failed to open stream: Permission denied
+PHP Fatal error: Unable to open plugin registry
+```
+
+Web/API v Dockeri môže fungovať — cron na hoste nie.
+
+### Príčina
+
+Rovnaká trieda problému ako **ISS-094** (It.62): **SSH user** na hoste vs **`www-data`** v PHP kontajneri.
+
+`backend/bin/console` načíta celý `bootstrap/app.php` → `PluginManager->bootEnabledExtensions()` → `PluginRegistry` otvára `storage/app/demo/data/plugins.json` režimom `c+` (vyžaduje zápis). Súbor/adresár vytvoril Docker ako `www-data`; host user nemá group write.
+
+| Prostredie | User | Storage |
+|------------|------|---------|
+| Docker PHP (web + API) | `www-data` | `storage/app/demo/` |
+| Host cron / SSH CLI | napr. `marian` | ten istý mount — potrebuje zdieľanú skupinu |
+
+### Riešenie A — zdieľané práva (odporúčané)
+
+Rovnaký pattern ako prod scheduler ([ITERATION_62.md](../ITERATION_62.md)):
+
+```bash
+APP_ROOT=/var/www/paginiumcms-demo
+STACK_DIR=/var/lib/docker/compose/paginiumcms-demo
+
+cd "$APP_ROOT"
+
+# Diagnostika
+ls -la backend/storage/app/demo/data/
+id -un
+
+# Setgid + skupina www-data (host user + kontajner)
+sudo chown -R "$(id -un):www-data" backend/storage
+sudo find backend/storage -type d -exec chmod 2775 {} \;
+sudo find backend/storage -type f -exec chmod 664 {} \;
+
+# Ak plugins.json chýba
+sudo -u www-data touch backend/storage/app/demo/data/plugins.json
+sudo chmod 664 backend/storage/app/demo/data/plugins.json
+
+# Overenie zápisu — host
+touch backend/storage/app/demo/data/.write-test-host \
+  && rm backend/storage/app/demo/data/.write-test-host && echo HOST_WRITE_OK
+
+# Overenie zápisu — Docker www-data
+cd "$STACK_DIR"
+./stack.sh exec -u www-data php sh -c \
+  'touch /var/www/html/backend/storage/app/demo/data/.write-test-docker && rm /var/www/html/backend/storage/app/demo/data/.write-test-docker && echo DOCKER_WRITE_OK'
+
+# Smoke reset
+cd "$APP_ROOT"
+php backend/bin/console demo:reset-if-due
+```
+
+### Riešenie B — cron len v Dockeri
+
+Ak nechceš meniť ownership na hoste:
+
+```bash
+cd /var/lib/docker/compose/paginiumcms-demo
+./stack.sh exec php php backend/bin/console demo:reset-if-due
+```
+
+Crontab (každých 15 min, interval resetu riadi `DEMO_AUTO_RESET_MINUTES` v `.env`):
+
+```cron
+*/15 * * * * cd /var/lib/docker/compose/paginiumcms-demo && ./stack.sh exec -T php php backend/bin/console demo:reset-if-due >> /var/log/paginium-demo-reset.log 2>&1
+```
+
+**Odporúčanie:** Riešenie A — potom funguje aj manuálny `php backend/bin/console …` z SSH bez Docker wrappera.
+
+---
+
+## C&P — cron auto-reset (demo)
+
+Po úspešnom smoke teste z §8 / ISS-099:
+
+```cron
+*/15 * * * * cd /var/www/paginiumcms-demo && /usr/bin/php backend/bin/console demo:reset-if-due >> /var/log/paginium-demo-reset.log 2>&1
+```
+
+| Premenná | Default | Význam |
+|----------|---------|--------|
+| `DEMO_AUTO_RESET_MINUTES` | `60` | Po koľkých minútach sa má obnoviť snapshot |
+| Cron interval | `*/15` | Len kontrola — príkaz je no-op, kým interval neuplynie |
+
+Voliteľne na demo inštancii aj prod scheduler ([CRON.md](CRON.md)) — `scheduler:run`, `worker:process` — ak chceš scheduled publish / backup aj na demo.
 
 ---
 
 ## C&P — prod footer odkaz na demo
 
-Prod (`paginiumcms.com`) musí mať v settings `demo.enabled: false` (marketing). Odkaz „Vyskúšaj demo“ ide na `demo.paginiumcms.com` v **novom tabe** (`target="_blank"`).
+Prod (`paginiumcms.com`) musí mať v settings `demo.enabled: false`. Footer odkaz riadi **Nastavenia → Marketing** (`demoFooterLinkEnabled`, `demoUrl`). Odkaz ide na `demo.paginiumcms.com` v **novom tabe** (`target="_blank"`).
 
 Deploy prod FE po `git pull`:
 
@@ -229,7 +354,10 @@ cd /var/www/paginiumcms.com/frontend && npm ci && npm run build:prod
 ## Súvisiace dokumenty
 
 - [DEPLOY.md](DEPLOY.md) — §C demo, §F troubleshooting
-- [ITERATION_13.md](../ITERATION_13.md) — demo modul (+ §v3 známe medzery API/FE)
-- [ISSUES.md](../ISSUES.md) — ISS-098
+- [ITERATION_13.md](../ITERATION_13.md) — demo modul v3 ✅
+- [developer/RELEASE.md](../developer/RELEASE.md) — `v2.1.0-beta.10` C&P
+- [ISSUES.md](../ISSUES.md) — ISS-098, ISS-099
+- [CRON.md](CRON.md) — prod + demo crontab
+- [ITERATION_62.md](../ITERATION_62.md) — storage permissions (ISS-094, rovnaký pattern ako ISS-099)
 - [NGINX_API.md](NGINX_API.md) — host nginx + `/api` proxy
 - [app.env.demo.example](app.env.demo.example) — env šablóna
