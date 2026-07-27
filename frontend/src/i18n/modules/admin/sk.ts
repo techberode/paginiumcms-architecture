@@ -11,6 +11,7 @@ export const adminSk: MessageTree = {
     navigation: 'Navigácia',
     comments: 'Komentáre',
     messages: 'Správy',
+    newsletter: 'Newsletter',
     github: 'GitHub',
     codeEditor: 'Code Editor',
     backups: 'Zálohy',

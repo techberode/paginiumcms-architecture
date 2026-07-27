@@ -64,7 +64,7 @@ Tieto funkcie **nie sú** v scope Public Beta 1 — plánované post-beta:
 | 57 | Auto tags & meta description |
 | 58 | Page layout builder |
 | 60 | Vlastné MD/WYSIWYG komponenty |
-| 61 | Footer newsletter |
+| 61 | Footer newsletter + **admin zoznam odberateľov** (ISS-097) |
 | 25 | Setup wizard (first-run + FIRST_STEPS stačia) |
 | 16 | Plné CMS témy + Code Editor file tree |
 

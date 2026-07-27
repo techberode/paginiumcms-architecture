@@ -38,6 +38,15 @@ export const publicSk: MessageTree = {
     tryCmsBody: 'Open-source flat-file CMS — vyskúšajte admin aj verejný web bez inštalácie.',
     madeWith: 'Navrhnuté s',
     forCreators: 'pre tvorcov obsahu',
+    newsletter: {
+      title: 'Newsletter',
+      hint: 'Prihláste sa na odber noviniek.',
+      placeholder: 'Váš e-mail',
+      submit: 'Prihlásiť sa',
+      emailRequired: 'Zadajte e-mail.',
+      success: 'Ďakujeme! Boli ste prihlásení na odber.',
+      failed: 'Prihlásenie zlyhalo. Skúste to neskôr.',
+    },
   },
   cmsBar: {
     badge: 'Paginium FlatFile Engine',

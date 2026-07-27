@@ -1,6 +1,6 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-26 · verzia **2.1.0-beta.8** (+ **It.62** unreleased) · ISS-063–094 · backlog It.59–61
+> Posledná aktualizácia: 2026-07-27 · verzia **2.1.0-beta.8** (+ **main @ 88cbe31**) · ISS-063–097 · backlog It.61
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
 
@@ -2241,6 +2241,86 @@ DEPLOY_HOST=192.168.x.x DEPLOY_USER=yourName DEPLOY_SSH_PORT=22 ./scripts/deploy
 
 ---
 
+## ISS-095 – Maintenance pozadie „Neplatná URL“ pri uložení — VYRIEŠENÉ (**main `88cbe31`**)
+
+**Symptóm:** Admin → **Nastavenia → Režim údržby → Pozadie (URL)** — výber obrázku z médií alebo upload → pri **Uložiť** chyba **„Neplatná URL“** (frontend Zod + backend validátor).
+
+**Príčina:**
+
+1. Pole `maintenance.heroImageUrl` malo pravidlo **`url`** (`FILTER_VALIDATE_URL` / Zod `.url()`).
+2. Media picker a upload ukladajú **relatívnu cestu** typu `/storage/app/content/media/…`, nie `https://…`.
+3. Login pozadie (`login.backgroundImageUrl`) používalo len **`string`** — preto tam rovnaký picker fungoval.
+4. HTML `<input type="url">` v pickeri navyše odmietalo `/storage/` cesty v niektorých prehliadačoch.
+
+**Riešenie (`88cbe31`):**
+
+- `SettingsSchema`: `heroImageUrl` rules → `['string', 'max:2000']` (zarovnané s login pozadím).
+- `LoginBackgroundImagePicker`: `type="text"` namiesto `type="url"`.
+- PHPUnit: `SettingsRepositoryTest::testMaintenanceHeroImageUrlAcceptsStoragePath`.
+
+**Deploy incident (2026-07-27):**
+
+- Prvý deploy po analýze problému: `git pull` → **Already up to date** — oprava ešte **nebola pushnutá** na GitHub (lokálny commit chýbal).
+- Po pushi `88cbe31`: `git pull` + `composer install --no-dev` + `npm run build:prod` + `./stack.sh restart php` → **OK**.
+
+**Smoke:** Settings → Režim údržby → pozadie z médií → Uložiť bez chyby → Coming Soon / Údržba stránka zobrazí pozadie.
+
+---
+
+## ISS-096 – 502 Bad Gateway hneď po `./stack.sh restart php` — INFORMATÍVNE (nie bug)
+
+**Symptóm:** Po `./stack.sh restart php` okamžitý `curl` na `/api/health` vráti **502 Bad Gateway** (HTML od host nginx).
+
+**Príčina:** PHP-FPM kontajner ešte reštartuje (0–5 s). Host nginx proxy na `127.0.0.1:8089` nemá kam poslať request.
+
+**Riešenie:** Po reštarte počkať **5–10 s**, potom:
+
+```bash
+cd /var/lib/docker/compose/paginiumcms
+./stack.sh ps          # php = Up
+curl -s http://127.0.0.1:8089/api/health
+```
+
+Ak 502 **pretrváva** >30 s → `./stack.sh logs --tail=50 php` (parse error, .env, permissions).
+
+**Súvisiace logy (očakávané správanie, nie chyba deployu):**
+
+- Počas **režimu údržby** bez staff session: `GET /api/pages`, `/api/navigation` → **503** (MaintenanceModeMiddleware).
+- `GET /api/auth/me` → **401** keď session vypršala.
+
+---
+
+## ISS-097 – Newsletter odberateľia bez admin prehľadu — VYRIEŠENÉ (It.61)
+
+**Symptóm:** Návštevník sa prihlási na newsletter (Coming Soon / Údržba), admin **nevidí zoznam** prihlásení ani odhlásení v UI.
+
+**Stav dnes (2026-07-27):**
+
+| Čo funguje | Čo chýba |
+|------------|----------|
+| `POST /api/maintenance/newsletter` — uloží email | Admin stránka / API zoznam odberateľov |
+| Flat-file `data/newsletter/subscribers.json` | Export CSV, filtre, odhlásenie (unsubscribe) |
+| `NewsletterRepository::findAll()` v BE (bez HTTP) | Dashboard KPI „newsletter subscribers“ |
+
+**Kde sú dáta (workaround na serveri):**
+
+```bash
+# APP_ROOT = /var/www/paginiumcms.com
+cat backend/storage/app/content/data/newsletter/subscribers.json | jq .
+# alebo v Dockeri:
+./stack.sh exec php cat /var/www/html/backend/storage/app/content/data/newsletter/subscribers.json
+```
+
+Formát záznamu: `{ "id", "email", "subscribedAt", "source" }` — `source` napr. `coming_soon`, `under_maintenance`.
+
+**Plán:** [It.61 — Newsletter vo footeri](ITERATION_61.md) — admin prehľad + export; rozšíri sa aj na existujúcich maintenance odberateľov. Odhlásenie (unsubscribe) mimo MVP It.61 alebo v2.
+
+**Riešenie (It.61):** `POST /api/newsletter/subscribe`, admin `/newsletter`, `GET /api/admin/newsletter/subscribers` + CSV export; settings skupina `newsletter.footerEnabled`.
+
+**Stav:** ✅ Opravené (It.61).
+
+---
+
 ## Súvisiace dokumenty
 
 - [user/BRANDING.md](user/BRANDING.md) — logo a favicon (**2.0.52**)
@@ -2251,6 +2331,7 @@ DEPLOY_HOST=192.168.x.x DEPLOY_USER=yourName DEPLOY_SSH_PORT=22 ./scripts/deploy
 - [ITERATION_56.md](ITERATION_56.md) — rich navigation (ISS-085)
 - [ITERATION_57.md](ITERATION_57.md) — suggest-meta (ISS-080)
 - [ITERATION_62.md](ITERATION_62.md) — scheduler prod hardening (ISS-094)
+- [ITERATION_61.md](ITERATION_61.md) — footer newsletter + admin zoznam odberateľov (ISS-097)
 - [deploy/CRON.md](deploy/CRON.md) — produkčný crontab + Docker storage
 - [developer/TESTING.md](developer/TESTING.md) — PHPUnit izolácia (`LoginAttemptTracker`)
 - [ITERATION_44.md](ITERATION_44.md) — It.44d index filtre (ISS-038)

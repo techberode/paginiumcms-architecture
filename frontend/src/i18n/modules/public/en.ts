@@ -38,6 +38,15 @@ export const publicEn: MessageTree = {
     tryCmsBody: 'Open-source flat-file CMS — try the admin and public site without installation.',
     madeWith: 'Built with',
     forCreators: 'for content creators',
+    newsletter: {
+      title: 'Newsletter',
+      hint: 'Subscribe to our newsletter.',
+      placeholder: 'Your email',
+      submit: 'Subscribe',
+      emailRequired: 'Please enter your email.',
+      success: 'Thank you! You have been subscribed.',
+      failed: 'Subscription failed. Please try again later.',
+    },
   },
   cmsBar: {
     badge: 'Paginium FlatFile Engine',

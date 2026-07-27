@@ -23,6 +23,7 @@ import { MediaManager } from './components/backend/MediaManager';
 import { NavigationManager } from './components/backend/NavigationManager';
 import { CommentsManager } from './components/backend/CommentsManager';
 import { MessagesViewer } from './components/backend/MessagesViewer';
+import { NewsletterSubscribersPanel } from './components/backend/NewsletterSubscribersPanel';
 import { GitHubSyncPanel } from './components/backend/GitHubSyncPanel';
 import { CodeEditor } from './components/CodeEditor/CodeEditor';
 import { AuditTrail } from './components/Audit/AuditTrail';
@@ -153,6 +154,7 @@ function App() {
         <Route path="/navigation" element={<NavigationManager />} />
         <Route path="/comments" element={<CommentsManager />} />
         <Route path="/messages" element={<MessagesViewer />} />
+        <Route path="/newsletter" element={<NewsletterSubscribersPanel />} />
         <Route path="/github" element={<GitHubSyncPanel />} />
         <Route path="/code-editor" element={<CodeEditor />} />
         <Route path="/code-editor/*" element={<CodeEditor />} />

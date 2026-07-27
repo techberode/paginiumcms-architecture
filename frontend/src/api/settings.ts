@@ -132,6 +132,10 @@ export interface PublicSettings {
     subjects?: string;
     allowCustomSubject?: boolean;
   };
+  newsletter?: {
+    footerEnabled?: boolean;
+    footerHint?: string;
+  };
   appearance?: {
     colorScheme: string;
     mode: 'light' | 'dark' | 'system';

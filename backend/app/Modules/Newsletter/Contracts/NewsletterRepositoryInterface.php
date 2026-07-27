@@ -15,4 +15,11 @@ interface NewsletterRepositoryInterface
      * @return list<array{id: string, email: string, subscribedAt: string, source: string}>
      */
     public function findAll(): array;
+
+    /**
+     * @return array<string, int>
+     */
+    public function countBySource(): array;
+
+    public function exportCsv(): string;
 }

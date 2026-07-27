@@ -7,6 +7,7 @@ namespace PaginiumCMS\Modules\Newsletter\Services;
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
 use PaginiumCMS\Modules\Newsletter\Contracts\NewsletterRepositoryInterface;
+use PaginiumCMS\Support\LogSanitizer;
 use RuntimeException;
 
 final class NewsletterRepository implements NewsletterRepositoryInterface
@@ -78,6 +79,45 @@ final class NewsletterRepository implements NewsletterRepositoryInterface
         usort($entries, static fn (array $a, array $b): int => strcmp($b['subscribedAt'], $a['subscribedAt']));
 
         return $entries;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function countBySource(): array
+    {
+        $counts = [];
+        foreach ($this->findAll() as $entry) {
+            $source = $entry['source'];
+            $counts[$source] = ($counts[$source] ?? 0) + 1;
+        }
+
+        ksort($counts);
+
+        return $counts;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function exportCsv(): string
+    {
+        $entries = $this->findAll();
+        $lines = ['id,email,subscribed_at,source'];
+
+        foreach ($entries as $entry) {
+            $lines[] = implode(',', array_map(
+                static fn (string $value): string => '"' . str_replace('"', '""', LogSanitizer::value($value)) . '"',
+                [
+                    $entry['id'],
+                    $entry['email'],
+                    $entry['subscribedAt'],
+                    $entry['source'],
+                ]
+            ));
+        }
+
+        return implode("\n", $lines) . "\n";
     }
 
     /**
