@@ -69,12 +69,40 @@ final class DemoStorageService
     }
 
     /**
-     * @return array{enabled: bool, storage_path: string, content_path: string, file_count: int, seeded: bool, auto_reset_minutes: int, last_reset_at: ?string, credentials: ?array{email: string, password: string}}
+     * @return array{next_reset_at: ?string, seconds_until_reset: ?int}
+     */
+    public function resetSchedule(): array
+    {
+        if (!$this->demoMode->isEnabled()) {
+            return ['next_reset_at' => null, 'seconds_until_reset' => null];
+        }
+
+        $intervalMinutes = $this->demoMode->autoResetMinutes();
+        if ($intervalMinutes <= 0) {
+            return ['next_reset_at' => null, 'seconds_until_reset' => null];
+        }
+
+        $lastReset = $this->readLastResetTimestamp();
+        if ($lastReset === null) {
+            return ['next_reset_at' => null, 'seconds_until_reset' => null];
+        }
+
+        $dueAt = $lastReset + ($intervalMinutes * 60);
+
+        return [
+            'next_reset_at' => date('c', $dueAt),
+            'seconds_until_reset' => max(0, $dueAt - time()),
+        ];
+    }
+
+    /**
+     * @return array{enabled: bool, storage_path: string, content_path: string, file_count: int, seeded: bool, auto_reset_minutes: int, last_reset_at: ?string, next_reset_at: ?string, seconds_until_reset: ?int, isolated: bool, credentials: ?array{email: string, password: string}}
      */
     public function status(): array
     {
         $files = $this->listDemoFiles();
         $lastReset = $this->readLastResetTimestamp();
+        $schedule = $this->resetSchedule();
 
         return [
             'enabled' => $this->demoMode->isEnabled(),
@@ -84,6 +112,9 @@ final class DemoStorageService
             'seeded' => $files !== [],
             'auto_reset_minutes' => $this->demoMode->autoResetMinutes(),
             'last_reset_at' => $lastReset !== null ? date('c', $lastReset) : null,
+            'next_reset_at' => $schedule['next_reset_at'],
+            'seconds_until_reset' => $schedule['seconds_until_reset'],
+            'isolated' => true,
             'credentials' => $this->demoMode->isEnabled() ? [
                 'email' => DemoFixtures::ADMIN_EMAIL,
                 'password' => DemoFixtures::ADMIN_PASSWORD,

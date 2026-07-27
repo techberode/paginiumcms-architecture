@@ -30,9 +30,22 @@ final class DemoControllerTest extends TestCase
         $this->assertTrue($data['success']);
         $this->assertArrayHasKey('enabled', $data['data']);
         $this->assertArrayHasKey('storage_path', $data['data']);
+        $this->assertArrayHasKey('next_reset_at', $data['data']);
     }
 
-    public function testDemoResetRequiresSuperAdmin(): void
+    public function testDemoPublicInfoWhenDemoDisabled(): void
+    {
+        $response = $this->handleRequest(
+            $this->createJsonRequest('GET', '/api/demo/public-info')
+        );
+        $data = $this->getJsonResponse($response);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertTrue($data['success']);
+        $this->assertFalse($data['data']['enabled']);
+    }
+
+    public function testDemoResetForbiddenWhenDemoDisabled(): void
     {
         $this->loginAsAdminUser();
 
@@ -40,6 +53,6 @@ final class DemoControllerTest extends TestCase
             $this->createJsonRequest('POST', '/api/admin/demo/reset')
         );
 
-        $this->assertSame(403, $response->getStatusCode());
+        $this->assertSame(400, $response->getStatusCode());
     }
 }

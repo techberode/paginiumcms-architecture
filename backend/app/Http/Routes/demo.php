@@ -15,6 +15,8 @@ return function (App $app): void {
     $container = RouteBootstrap::container($app);
     $controller = $container->get(DemoController::class);
 
+    $app->get('/api/demo/public-info', [$controller, 'publicInfo']);
+
     $app->group('/api/admin/demo', function (RouteCollectorProxy $group) use ($controller): void {
         $group->get('/status', [$controller, 'status']);
         $group->post('/reset', [$controller, 'reset']);

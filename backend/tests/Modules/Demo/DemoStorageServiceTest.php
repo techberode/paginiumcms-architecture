@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Tests\Modules\Demo;
 
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
+use PaginiumCMS\Modules\Demo\Data\DemoFixtures;
 use PaginiumCMS\Modules\Demo\Services\DemoMode;
 use PaginiumCMS\Modules\Demo\Services\DemoStorageService;
 use org\bovigo\vfs\vfsStream;
@@ -51,8 +52,11 @@ final class DemoStorageServiceTest extends TestCase
         $service = new DemoStorageService(new DemoMode(), $reader);
         $result = $service->reset();
 
-        $this->assertSame(8, $result['written']);
+        $expectedWritten = count(DemoFixtures::seedFiles()) + 1;
+        $this->assertSame($expectedWritten, $result['written']);
         $this->assertFileExists(vfsStream::url('root/storage/app/demo/pages/home.md'));
+        $this->assertFileExists(vfsStream::url('root/storage/app/demo/pages/contact.md'));
+        $this->assertFileExists(vfsStream::url('root/storage/app/demo/data/comments.json'));
         $this->assertFileExists(vfsStream::url('root/storage/app/content/pages/real-page.md'));
         $this->assertStringContainsString('real-page.md', vfsStream::url('root/storage/app/content/pages/real-page.md'));
     }

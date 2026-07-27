@@ -157,7 +157,8 @@ export interface PublicSettings {
   demo?: {
     enabled?: boolean;
     url?: string;
-    autoResetMinutes?: number;
+    showFooterLink?: boolean;
+    autoResetMinutes?: number | null;
     credentials?: {
       email: string;
       password: string;

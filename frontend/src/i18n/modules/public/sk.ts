@@ -18,6 +18,12 @@ export const publicSk: MessageTree = {
   layout: {
     noHomePage: 'Zatiaľ nie je publikovaná domovská stránka (slug: home).',
   },
+  demo: {
+    stripTitle: 'Demo sandbox PaginiumCMS',
+    stripBody: 'Vyskúšajte plný CMS — zmeny sa periodicky resetujú, produkcia zostáva izolovaná.',
+    resetIn: 'Reset o :time',
+    stripLogin: 'Prihlásiť do adminu',
+  },
   errors: {
     notFoundCode: '404',
     pageNotFound: 'Stránka „:slug“ neexistuje.',

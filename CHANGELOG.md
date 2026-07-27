@@ -57,12 +57,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | Deps + Vitest + deploy env (ISS-089–092) | **`v2.1.0-beta.7`** | [below](#210-beta7--2026-07-26) |
 | It.58b — Color schemes + themed public site | **`v2.1.0-beta.8`** | [below](#210-beta8--2026-07-26) |
 | It.62 + It.61 + demo deploy + analytics/editor | **`v2.1.0-beta.9`** | [below](#210-beta9--2026-07-27) |
+| It.13 v3 — Demo full trial | **`v2.1.0-beta.10`** | [below](#210-beta10--2026-07-27) |
+| It.63 — Admin system update (prod) | Planned | [ITERATION_63.md](docs/ITERATION_63.md) |
 | Wave 5d — It.15 hook emitters + extension policy | **2.0.54** | [below](#2054--2026-07-23) |
 | It.19b–19d — Security runtime, auth UX, password policy | **2.0.45** | [below](#2045--2026-07-21) |
 
 ---
 
 ## [Unreleased]
+
+---
+
+## [2.1.0-beta.10] – 2026-07-27
+
+**It.13 v3** — Demo sandbox full trial (isolated `storage/app/demo/`).
+
+### Added (It.13 v3 — Demo full trial)
+
+- **Rich demo seed** — comments, contact messages, newsletter subscribers, contact page, appearance/login settings.
+- **`GET /api/demo/public-info`** — public reset schedule (no secrets).
+- **Admin demo UX** — onboarding panel, reset countdown, ADMIN+ manual reset.
+- **`DemoPublicStrip`** — public demo banner with countdown on demo instance.
+- **Settings → Marketing** — prod footer demo link URL + toggle (`demoFooterLinkEnabled`, `demoUrl`).
+- **Docs** — [ITERATION_13.md](docs/ITERATION_13.md) v3 complete, [ITERATION_63.md](docs/ITERATION_63.md) planned.
+
+### Changed
+
+- **Demo status API** — `next_reset_at`, `seconds_until_reset`, `isolated` flag.
+- **Demo banner copy** — clarifies isolated storage vs production.
+
+### Deploy note
+
+After deploy to **demo.paginiumcms.com**, run **Reset demo seed** in admin `/demo` (or wait for auto-reset cron) to load the new snapshot.
 
 ---
 

@@ -309,7 +309,7 @@ Optional webhook (future): `POST /api/webhooks/github/release` → auto-enqueue 
 
 ### G6. Suggested iteration
 
-Document as **It.63 — Admin system update (prod)** in backlog when scheduled:
+Document as **It.63 — Admin system update (prod)** — see [ITERATION_63.md](../ITERATION_63.md):
 
 - MVP: status + manual CLI trigger from admin (job queue)
 - v2: GitHub compare UI + one-click deploy

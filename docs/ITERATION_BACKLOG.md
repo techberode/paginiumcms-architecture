@@ -3,10 +3,10 @@
 > Plánované moduly a rozšírenia po **Iterácii 28 (2.0.16)**.  
 > Legenda: ⏳ plánované · 🟡 stredná priorita · 🔵 nižšia · 🔴 kritická
 
-**Aktuálne hotové:** It.1–24 ✅ · It.26–28 ✅ · **It.61** ✅ · **It.62** ✅ · It.25 ⏳ (setup wizard — odložené)
+**Aktuálne hotové:** It.1–24 ✅ · It.26–28 ✅ · **It.13 v3** ✅ · **It.61** ✅ · **It.62** ✅ · It.25 ⏳ (setup wizard — odložené)
 
-**Ďalšia iterácia:** pozri backlog (It.25, It.58, …)  
-**Posledná shipped:** **It.61** newsletter + **It.62** scheduler · **`a492e53`** (beta.9 release)
+**Ďalšia iterácia:** **[It.63 — Admin system update (prod)](ITERATION_63.md)**  
+**Posledná shipped:** **It.13 v3** demo complete trial + **It.61/62** · **`ecbfe0b`**
 
 **Incidenty a opravy:** [ISSUES.md](ISSUES.md)
 
@@ -38,7 +38,8 @@
 | **59** | **2.0.53** | **[Odložená publikácia — plánovač v editore](ITERATION_59.md)** | **✅** | Editor datetime + filter scheduled + job `content.scheduled_publish` |
 | **60** | TBD | **[Vlastné komponenty editora](ITERATION_60.md)** | **✅** | Plugin manifest + settings matica + hello-widget demo |
 | **61** | TBD | **[Newsletter vo footeri](ITERATION_61.md)** | **✅** | Footer subscribe + admin subscribers + CSV (ISS-097) |
-| **13v3** | TBD | **[Demo modul — API/FE polish](ITERATION_13.md#v3-polish--známe-medzery--neskôr)** | **🟡** | Infra+login OK; chýbajú doplnkové admin/verejné komponenty — odložené |
+| **13v3** | **beta.9+** | **[Demo modul — full trial](ITERATION_13.md)** | **✅** | Rich seed, public strip, marketing settings, reset countdown |
+| **63** | TBD | **[Admin system update (prod)](ITERATION_63.md)** | **🟡** | GitHub deploy z adminu — **ďalšia iterácia** |
 | **15** | **2.0.38** | **[External plugins](ITERATION_15.md)** | **✅** | Import ZIP, registry, hooks, routes, admin UI |
 | **47** | TBD | **[Notification connector auth](ITERATION_47.md)** | **✅** | ntfy Bearer/Basic + test-connector |
 | **48** | TBD | **[PHP templates + static/dynamic web](ITERATION_48.md)** | **🟡** | Front matter šablóny, JSON/INI meta, static HTML |
