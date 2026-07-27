@@ -24,19 +24,30 @@ export const SystemUpdateView: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [checking, setChecking] = useState(false);
   const [deploying, setDeploying] = useState(false);
-  const [ref, setRef] = useState('origin/main');
+  const [ref, setRef] = useState('');
 
   const isSuperAdmin = user?.roles?.includes('SUPER_ADMIN') ?? false;
   const isDemoInstance = settings?.demo?.enabled === true;
+
+  const applyDefaultRef = (status: SystemUpdateStatus | null, remote?: Record<string, unknown> | null) => {
+    const tag = typeof remote?.latest_release_tag === 'string' ? remote.latest_release_tag.trim() : '';
+    if (tag !== '') {
+      setRef(tag);
+      return;
+    }
+    const cfg = status?.config;
+    const branch = cfg?.defaultBranch?.trim() || 'main';
+    if (cfg?.allowDeployMain) {
+      setRef(`origin/${branch}`);
+    }
+  };
 
   const load = async () => {
     setLoading(true);
     try {
       const status = await getSystemUpdateStatus();
       setData(status);
-      if (status?.config?.defaultBranch) {
-        setRef(`origin/${status.config.defaultBranch}`);
-      }
+      applyDefaultRef(status, remoteCheck);
     } finally {
       setLoading(false);
     }
@@ -71,6 +82,7 @@ export const SystemUpdateView: React.FC = () => {
         return;
       }
       setRemoteCheck(result.remote);
+      applyDefaultRef(data, result.remote);
       success(t('platform.systemUpdate.toast.checkOk'));
     } finally {
       setChecking(false);
@@ -82,11 +94,16 @@ export const SystemUpdateView: React.FC = () => {
       warning(t('platform.systemUpdate.toast.deployDisabled'));
       return;
     }
+    const deployRef = ref.trim();
+    if (deployRef === '') {
+      toastError(t('platform.systemUpdate.toast.refRequired'));
+      return;
+    }
     setDeploying(true);
     try {
-      const result = await runSystemUpdate(ref.trim());
+      const { data: result, error } = await runSystemUpdate(deployRef);
       if (!result) {
-        toastError(t('platform.systemUpdate.toast.deployFailed'));
+        toastError(error ?? t('platform.systemUpdate.toast.deployFailed'));
         return;
       }
       success(t('platform.systemUpdate.toast.deployStarted'));
@@ -154,9 +171,16 @@ export const SystemUpdateView: React.FC = () => {
                 className="mt-1 w-full max-w-md rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm"
                 value={ref}
                 onChange={(e) => setRef(e.target.value)}
-                placeholder="origin/main or v2.1.0-beta.12"
+                placeholder={
+                  data?.config?.allowDeployMain
+                    ? 'v2.1.0-beta.12 or origin/main'
+                    : 'v2.1.0-beta.12'
+                }
               />
             </label>
+            {!data?.config?.allowDeployMain && (
+              <p className="text-xs text-slate-500">{t('platform.systemUpdate.refTagOnlyHint')}</p>
+            )}
             <button
               type="button"
               disabled={deploying || !data?.job_registered}

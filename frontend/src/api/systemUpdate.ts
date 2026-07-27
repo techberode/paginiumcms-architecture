@@ -48,7 +48,12 @@ export async function checkSystemUpdate(): Promise<SystemUpdateCheckResult | nul
   return res.success && res.data ? res.data : null;
 }
 
-export async function runSystemUpdate(ref: string): Promise<SystemUpdateRunResult | null> {
+export async function runSystemUpdate(
+  ref: string
+): Promise<{ data: SystemUpdateRunResult | null; error?: string }> {
   const res = await apiClient.post<SystemUpdateRunResult>('/api/admin/system/update/run', { ref });
-  return res.success && res.data ? res.data : null;
+  if (res.success && res.data) {
+    return { data: res.data };
+  }
+  return { data: null, error: res.error || res.message };
 }

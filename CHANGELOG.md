@@ -60,6 +60,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.13 v3 — Demo full trial | **`v2.1.0-beta.10`** | [below](#210-beta10--2026-07-27) |
 | It.13 v4 — Demo security polish | **`v2.1.0-beta.11`** | [below](#210-beta11--2026-07-27) |
 | It.63 — Admin system update (prod) | **`v2.1.0-beta.12`** | [below](#210-beta12--2026-07-27) |
+| It.63 hotfix — deploy AppRoot + UX | **`v2.1.0-beta.13`** | [below](#210-beta13--2026-07-27) |
 | Wave 5d — It.15 hook emitters + extension policy | **2.0.54** | [below](#2054--2026-07-23) |
 | It.19b–19d — Security runtime, auth UX, password policy | **2.0.45** | [below](#2045--2026-07-21) |
 
@@ -67,9 +68,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-### Docs
+### Fixed
 
 - (none)
+
+---
+
+## [2.1.0-beta.13] – 2026-07-27
+
+**It.63 hotfix** — deploy path resolution in Docker + system update UX.
+
+### Fixed
+
+- **`AppRoot` resolver** — find repo root via `/var/www/html` when `APP_ROOT` in `.env` is a host path (fixes `missing_script` on admin deploy).
+- **System update UI** — default ref to latest release tag; show API error on 422; hint when branch deploy is disabled.
 
 ---
 

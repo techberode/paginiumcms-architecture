@@ -317,12 +317,14 @@ export const platformSk: MessageTree = {
     recentRuns: 'Posledné deploy behy',
     superAdminOnly: 'Aktualizácia systému je len pre SUPER_ADMIN.',
     demoDisabled: 'Na demo inštancii je deploy vypnutý — použite SSH deploy workflow.',
+    refTagOnlyHint: 'Deploy z vetvy je v nastaveniach vypnutý — použite semver tag (napr. v2.1.0-beta.12), nie origin/main.',
     toast: {
       checkOk: 'Kontrola remote dokončená',
       checkFailed: 'Kontrola remote zlyhala',
       deployStarted: 'Deploy job zaradený do fronty',
       deployFailed: 'Deploy požiadavka zlyhala',
       deployDisabled: 'Najprv zapnite deploy v Nastaveniach → Aktualizácia systému',
+      refRequired: 'Zadajte deploy ref (tag alebo origin/vetva)',
     },
   },
   acl: {

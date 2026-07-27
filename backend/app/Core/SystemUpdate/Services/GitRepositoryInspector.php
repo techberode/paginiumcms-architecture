@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\SystemUpdate\Services;
 
+use PaginiumCMS\Support\AppRoot;
+
 /**
  * Read-only local git metadata for admin system update (It.63).
  */
@@ -45,25 +47,12 @@ final class GitRepositoryInspector
 
     private function resolveAppRoot(): ?string
     {
-        if ($this->appRoot !== null && $this->appRoot !== '') {
-            $real = realpath($this->appRoot);
-
-            return $real !== false ? $real : $this->appRoot;
-        }
-
-        $env = getenv('APP_ROOT') ?: ($_ENV['APP_ROOT'] ?? '');
-        if (is_string($env) && $env !== '') {
-            $real = realpath($env);
-
-            return $real !== false ? $real : $env;
-        }
-
-        $candidate = realpath(dirname(__DIR__, 4));
-        if ($candidate === false) {
+        $root = AppRoot::resolve($this->appRoot);
+        if ($root === null || !is_dir($root . '/.git')) {
             return null;
         }
 
-        return is_dir($candidate . '/.git') ? $candidate : null;
+        return $root;
     }
 
     private function runGit(string $root, string $args): string
