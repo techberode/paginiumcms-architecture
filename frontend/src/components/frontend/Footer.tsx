@@ -5,7 +5,6 @@ import { Rocket, ShieldCheck, Zap, Heart, ExternalLink } from 'lucide-react';
 import { usePublicSite } from '../../context/PublicSiteContext';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { useI18n } from '../../context/I18nContext';
-import { linkTargetProps } from '../../utils/linkTarget';
 import { FooterNewsletter } from './FooterNewsletter';
 import { LOGO_FALLBACK } from '../../theme/publicUiClasses';
 
@@ -71,30 +70,31 @@ export const Footer: React.FC = () => {
           </div>
 
           <div>
-            {footerNewsletterEnabled ? (
-              <FooterNewsletter />
-            ) : (
+            {footerNewsletterEnabled ? <FooterNewsletter /> : null}
+            {!isDemoInstance ? (
+              <div className={footerNewsletterEnabled ? 'mt-8 pt-8 border-t border-white/10' : undefined}>
+                <h4 className="text-xs font-bold uppercase tracking-wider public-footer-heading mb-4">
+                  {t('public.footer.tryCmsTitle')}
+                </h4>
+                <div className="space-y-3">
+                  <p className="text-sm opacity-70 leading-relaxed">{t('public.footer.tryCmsBody')}</p>
+                  <a
+                    href={demoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-sm font-semibold public-footer-link text-theme-accent"
+                  >
+                    demo.paginiumcms.com
+                    <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
+                  </a>
+                </div>
+              </div>
+            ) : footerNewsletterEnabled ? null : (
               <>
-                <h4 className="text-xs font-bold uppercase tracking-wider public-footer-heading mb-4">{t('public.footer.tryCmsTitle')}</h4>
-                {isDemoInstance ? (
-                  <p className="text-sm opacity-70 leading-relaxed">
-                    {t('public.footer.demoInstanceBody')}
-                  </p>
-                ) : (
-                  <div className="space-y-3">
-                    <p className="text-sm opacity-70 leading-relaxed">
-                      {t('public.footer.tryCmsBody')}
-                    </p>
-                    <a
-                      href={demoUrl}
-                      {...linkTargetProps(true)}
-                      className="inline-flex items-center gap-2 text-sm font-semibold public-footer-link text-theme-accent"
-                    >
-                      demo.paginiumcms.com
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                  </div>
-                )}
+                <h4 className="text-xs font-bold uppercase tracking-wider public-footer-heading mb-4">
+                  {t('public.footer.tryCmsTitle')}
+                </h4>
+                <p className="text-sm opacity-70 leading-relaxed">{t('public.footer.demoInstanceBody')}</p>
               </>
             )}
           </div>
