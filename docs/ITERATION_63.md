@@ -77,8 +77,10 @@ This is **code deploy** (git tag / `main`), not content sync (`/github` panel).
 
 ## Production enable checklist
 
-1. Settings → **System update** — set GitHub owner/repo/token, enable `deployEnabled`
+1. Settings → **System update** — GitHub token (`public_repo`), enable `deployEnabled`
 2. Prefer tag deploy (`allowDeployTags=true`); branch deploy only when intentional (`allowDeployMain`)
-3. Ensure host env: `APP_ROOT`, `STACK_DIR`, deploy script executable
-4. Cron: `scheduler:run` + `worker:process` (same as It.62)
-5. First deploy: use semver tag ref (e.g. `v2.1.0-beta.12`), verify audit log + job run history
+3. **App `.env`:** `APP_ROOT=/var/www/html`, `STACK_DIR`, `BACKEND_PORT`, `DEMO_MODE=false`
+4. **Docker bootstrap (once):** `APP_ROOT=/var/www/paginiumcms.com ./scripts/bootstrap-deploy-permissions.sh`
+5. Cron: `scheduler:run` + `worker:process` (same as It.62)
+6. Deploy via tag ref (e.g. `v2.1.0-beta.14`); after UI deploy from container, restart PHP on host if `SKIP_RESTART` logged
+7. Routine releases: SSH + `deploy-instance-update.sh` remains the most reliable path

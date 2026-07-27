@@ -13,7 +13,12 @@
 #   SKIP_COMPOSER=1   — skip composer install
 #   SKIP_FRONTEND=1   — skip npm build (PHP-only hotfix)
 #   SKIP_RESTART=1    — skip docker restart
+#   DEPLOY_CACHE_ROOT — composer/npm caches (default: $APP_ROOT/backend/storage/app/deploy-cache)
 #   SMOKE_DEMO_CORS=1   — POST login with Origin header (ISS-098); auto when DEMO_MODE=true
+#
+# Docker admin UI deploy (www-data): run once on host:
+#   APP_ROOT=/var/www/paginiumcms.com ./scripts/bootstrap-deploy-permissions.sh
+# App .env inside container: APP_ROOT=/var/www/html
 #
 # Example — production, latest main:
 #   APP_ROOT=/var/www/paginiumcms.com \
@@ -32,6 +37,21 @@ GIT_REF="${GIT_REF:-origin/main}"
 HEALTH_WAIT_SEC="${HEALTH_WAIT_SEC:-8}"
 
 cd "$APP_ROOT"
+
+# Docker admin UI: www-data + bind-mount — git safe.directory, writable composer/npm caches.
+DEPLOY_CACHE_ROOT="${DEPLOY_CACHE_ROOT:-$APP_ROOT/backend/storage/app/deploy-cache}"
+mkdir -p "$DEPLOY_CACHE_ROOT/composer" "$DEPLOY_CACHE_ROOT/npm" 2>/dev/null || true
+export COMPOSER_HOME="${COMPOSER_HOME:-$DEPLOY_CACHE_ROOT/composer}"
+export COMPOSER_ALLOW_SUPERUSER=1
+export npm_config_cache="${npm_config_cache:-$DEPLOY_CACHE_ROOT/npm}"
+export HOME="${HOME:-$DEPLOY_CACHE_ROOT}"
+export GIT_CONFIG_COUNT=1
+export GIT_CONFIG_KEY_0=safe.directory
+export GIT_CONFIG_VALUE_0="$APP_ROOT"
+
+git() {
+  command git -c safe.directory="$APP_ROOT" "$@"
+}
 
 echo "→ PaginiumCMS deploy update"
 echo "   APP_ROOT=$APP_ROOT"
@@ -70,6 +90,8 @@ if [[ "${SKIP_RESTART:-0}" != "1" && -n "$STACK_DIR" && -x "$STACK_DIR/stack.sh"
   "$STACK_DIR/stack.sh" restart php
   echo "→ waiting ${HEALTH_WAIT_SEC}s (502 right after restart is normal — ISS-096)"
   sleep "$HEALTH_WAIT_SEC"
+elif [[ "${SKIP_RESTART:-0}" != "1" && -n "$STACK_DIR" ]]; then
+  echo "→ SKIP_RESTART: stack.sh not reachable from this environment (restart PHP on host)"
 fi
 
 HEALTH_URL="http://127.0.0.1:${BACKEND_PORT}/api/health"

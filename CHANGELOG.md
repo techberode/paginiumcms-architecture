@@ -61,6 +61,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.13 v4 — Demo security polish | **`v2.1.0-beta.11`** | [below](#210-beta11--2026-07-27) |
 | It.63 — Admin system update (prod) | **`v2.1.0-beta.12`** | [below](#210-beta12--2026-07-27) |
 | It.63 hotfix — deploy AppRoot + UX | **`v2.1.0-beta.13`** | [below](#210-beta13--2026-07-27) |
+| It.63 — Docker admin deploy bootstrap | **`v2.1.0-beta.14`** | [below](#210-beta14--2026-07-27) |
 | Wave 5d — It.15 hook emitters + extension policy | **2.0.54** | [below](#2054--2026-07-23) |
 | It.19b–19d — Security runtime, auth UX, password policy | **2.0.45** | [below](#2045--2026-07-21) |
 
@@ -68,9 +69,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+---
+
+## [2.1.0-beta.14] – 2026-07-27
+
+**It.63** — Docker admin deploy hardening (git/composer/npm caches, permissions bootstrap).
+
+### Added
+
+- **`scripts/bootstrap-deploy-permissions.sh`** — one-time `www-data` group write on checkout for UI deploy from Docker.
+
 ### Fixed
 
-- (none)
+- **`deploy-instance-update.sh`** — `safe.directory`, `COMPOSER_HOME` / npm cache under `backend/storage/app/deploy-cache`; skip restart when `stack.sh` unreachable from container.
+- **`SystemDeployService`** — `set_time_limit(0)` during deploy exec; pass cache env to script.
+- **System update FE** — 10 min timeout on deploy POST.
+
+### Docs
+
+- [deploy/DEPLOY.md §G6](docs/deploy/DEPLOY.md) — Docker admin deploy troubleshooting.
 
 ---
 
