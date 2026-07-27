@@ -29,7 +29,7 @@
 | **Deps + Vitest + deploy env (ISS-089–092)** | **`v2.1.0-beta.7`** | ✅ tagged |
 | **It.58b — Color schemes + themed public site** | **`v2.1.0-beta.8`** | ✅ tagged |
 | **It.62 + It.61 + demo deploy + analytics/editor** | **`v2.1.0-beta.9`** | ✅ tagged |
-| **It.13 v3 — Demo full trial** | **`v2.1.0-beta.10`** | ⏳ release commit pending |
+| **It.13 v3 — Demo full trial** | **`v2.1.0-beta.10`** | ✅ **`ab5b5fb`** |
 
 **Pravidlo:** Post-beta patchy — `2.0.59+` alebo `2.1.0-beta.N` podľa rozsahu.
 
@@ -48,7 +48,7 @@ Testerom / security reviewerovi poslať **`v2.1.0-beta.10`** + [SECURITY_REVIEW.
 
 ## v2.1.0-beta.10 — Demo sandbox full trial (It.13 v3)
 
-**Rozsah commitov na `main` od beta.9:** `ecbfe0b` … release commit
+**Rozsah commitov na `main` od beta.9:** `ecbfe0b` … **`ab5b5fb`**
 
 | Oblasť | Zmena |
 |--------|--------|
