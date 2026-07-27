@@ -1,7 +1,7 @@
 # Iteration 63 — Admin system update (production only)
 
-**Status:** ✅ MVP shipped — **`v2.1.0-beta.12`**  
-**Target release:** `v2.1.0-beta.12`
+**Status:** ✅ MVP shipped — **`v2.1.0-beta.14`** (hotfixes `beta.13`–`beta.14`)  
+**Target release:** `v2.1.0-beta.14`
 
 ## Product position
 
@@ -48,10 +48,11 @@ This is **code deploy** (git tag / `main`), not content sync (`/github` panel).
 
 ## Phases (post-MVP)
 
-### v2
+### v2 (in progress)
 
+- Version check UX — “up to date” banner + GitHub release notes on remote check
 - GitHub compare UI (commits behind/ahead)
-- One-click deploy latest tag or `main`
+- One-click deploy latest tag
 
 ### v3
 

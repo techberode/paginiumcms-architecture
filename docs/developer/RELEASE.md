@@ -1,36 +1,40 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.1.0-beta.12** · 2026-07-27 · tag **`v2.1.0-beta.12`** (pending)  
-> Tento súbor obsahuje **copy-paste** bloky pre GitHub Release.
+> Latest version: **2.1.0-beta.14** · 2026-07-27 · tag **`v2.1.0-beta.14`** · commit `66e83f0`  
+> This file contains **copy-paste** blocks for GitHub Release.
 
-> **Poznámka k verziám:** **`2.0.58`** → `f53e71e` · **Public Beta 1** → `e3e0d82` · **Beta 1 Testing** → `c68e72b` · **Beta 1 patch (RR GHSA)** → *(commit po push)*.
+> **Poznámka k verziám:** `2.0.58` → `f53e71e` · **Public Beta 1** → `e3e0d82` · **Beta 1 Testing** → `c68e72b` · **Beta 1 patch (RR GHSA)** → *(commit po push)*.
 
 ### Kontinuita verzií (nepreskakovať)
 
-| Verzia | Git tag | Release commit | Stav |
-|--------|---------|----------------|------|
-| 2.0.49 | `v2.0.49` | `1ac58cf` | ✅ tagged |
-| **2.0.50** | **`v2.0.50`** | **`67d77bb`** | ✅ tagged |
-| **2.0.51** | **`v2.0.51`** | **`d9b7171`** | ✅ tagged |
-| **2.0.52** | **`v2.0.52`** | **`9d930a1`** | ✅ tagged |
-| **2.0.53** | **`v2.0.53`** | **`aee1494`** | ✅ tagged |
-| **2.0.54** | **`v2.0.54`** | **`2338fe9`** | ✅ tagged |
-| **2.0.55** | **`v2.0.55`** | **`d8c3437`** | ✅ tagged |
-| **2.0.56** | **`v2.0.56`** | **`0664ba3`** | ✅ tagged |
-| **2.0.57** | **`v2.0.57`** | **`e84b71f`** | ✅ tagged |
-| **2.0.58** | **`v2.0.58`** | **`f53e71e`** | ✅ tagged |
-| Public Beta 1 | **`v2.1.0-beta.1`** | **`e3e0d82`** | ✅ tagged |
-| **Beta 1 Testing** | **`v2.1.0-beta.2`** | **`c68e72b`** | ✅ tagged |
-| **Beta 1 patch (RR GHSA + CMS info)** | **`v2.1.0-beta.3`** | ✅ tagged |
-| **It.57 — Auto tags & meta description** | **`v2.1.0-beta.4`** | **`2091076`** | ✅ tagged |
-| **It.56 — Rich navigation + auth/session fixes** | **`v2.1.0-beta.5`** | ✅ tagged |
-| **Security audit — XSS, Zip-Slip, deploy** | **`v2.1.0-beta.6`** | ✅ tagged |
-| **Deps + Vitest + deploy env (ISS-089–092)** | **`v2.1.0-beta.7`** | ✅ tagged |
-| **It.58b — Color schemes + themed public site** | **`v2.1.0-beta.8`** | ✅ tagged |
-| **It.62 + It.61 + demo deploy + analytics/editor** | **`v2.1.0-beta.9`** | ✅ tagged |
-| **It.13 v3 — Demo full trial** | **`v2.1.0-beta.10`** | ✅ **`ab5b5fb`** |
-| **It.13 v4 — Demo security polish** | **`v2.1.0-beta.11`** | ✅ **`b6f16a9`** |
-| **It.63 — Admin system update (MVP)** | **`v2.1.0-beta.12`** | ⏳ pending tag |
+
+| Verzia                                             | Git tag          | Release commit | Stav     |
+| -------------------------------------------------- | ---------------- | -------------- | -------- |
+| 2.0.49                                             | `v2.0.49`        | `1ac58cf`      | ✅ tagged |
+| **2.0.50**                                         | `v2.0.50`        | `67d77bb`      | ✅ tagged |
+| **2.0.51**                                         | `v2.0.51`        | `d9b7171`      | ✅ tagged |
+| **2.0.52**                                         | `v2.0.52`        | `9d930a1`      | ✅ tagged |
+| **2.0.53**                                         | `v2.0.53`        | `aee1494`      | ✅ tagged |
+| **2.0.54**                                         | `v2.0.54`        | `2338fe9`      | ✅ tagged |
+| **2.0.55**                                         | `v2.0.55`        | `d8c3437`      | ✅ tagged |
+| **2.0.56**                                         | `v2.0.56`        | `0664ba3`      | ✅ tagged |
+| **2.0.57**                                         | `v2.0.57`        | `e84b71f`      | ✅ tagged |
+| **2.0.58**                                         | `v2.0.58`        | `f53e71e`      | ✅ tagged |
+| Public Beta 1                                      | `v2.1.0-beta.1`  | `e3e0d82`      | ✅ tagged |
+| **Beta 1 Testing**                                 | `v2.1.0-beta.2`  | `c68e72b`      | ✅ tagged |
+| **Beta 1 patch (RR GHSA + CMS info)**              | `v2.1.0-beta.3`  | ✅ tagged       |          |
+| **It.57 — Auto tags & meta description**           | `v2.1.0-beta.4`  | `2091076`      | ✅ tagged |
+| **It.56 — Rich navigation + auth/session fixes**   | `v2.1.0-beta.5`  | ✅ tagged       |          |
+| **Security audit — XSS, Zip-Slip, deploy**         | `v2.1.0-beta.6`  | ✅ tagged       |          |
+| **Deps + Vitest + deploy env (ISS-089–092)**       | `v2.1.0-beta.7`  | ✅ tagged       |          |
+| **It.58b — Color schemes + themed public site**    | `v2.1.0-beta.8`  | ✅ tagged       |          |
+| **It.62 + It.61 + demo deploy + analytics/editor** | `v2.1.0-beta.9`  | ✅ tagged       |          |
+| **It.13 v3 — Demo full trial**                     | `v2.1.0-beta.10` | ✅ `ab5b5fb`    |          |
+| **It.13 v4 — Demo security polish**                | `v2.1.0-beta.11` | ✅ `b6f16a9`    |          |
+| **It.63 — Admin system update (MVP)**              | `v2.1.0-beta.12` | `c9b11c8`      | ✅ tagged |
+| **It.63 hotfix — AppRoot + deploy UX**             | `v2.1.0-beta.13` | `db1cdcc`      | ✅ tagged |
+| **It.63 — Docker admin deploy bootstrap**          | `v2.1.0-beta.14` | `66e83f0`      | ✅ tagged |
+
 
 **Pravidlo:** Post-beta patchy — `2.0.59+` alebo `2.1.0-beta.N` podľa rozsahu.
 
@@ -43,9 +47,100 @@ gh auth login   # ak ešte nie
 ./scripts/create-github-releases.sh
 ```
 
-Testerom / security reviewerovi poslať **`v2.1.0-beta.12`** + [SECURITY_REVIEW.md](../SECURITY_REVIEW.md).
+Testerom / security reviewerovi poslať **`v2.1.0-beta.14`** + [SECURITY_REVIEW.md](../SECURITY_REVIEW.md).
 
 ---
+
+## v2.1.0-beta.14 — Docker admin deploy bootstrap (It.63)
+
+**Scope:** Host permissions bootstrap for www-data UI deploy; git/composer/npm caches; deploy timeouts.
+
+### Gate (required before tag)
+
+```bash
+./scripts/iteration-gate.sh
+```
+
+### Tag
+
+```bash
+git tag -a v2.1.0-beta.14 -m "v2.1.0-beta.14 — Docker admin deploy bootstrap"
+git push origin v2.1.0-beta.14
+```
+
+### GitHub Release — copy-paste
+
+**Title:** `v2.1.0-beta.14 — Docker admin deploy bootstrap (It.63)`
+
+**Body highlights:**
+
+- **`scripts/bootstrap-deploy-permissions.sh`** — one-time host bootstrap (`www-data` group write on checkout)
+- **`deploy-instance-update.sh`** — `safe.directory`, composer/npm caches under `backend/storage/app/deploy-cache`
+- **`SystemDeployService`** — `set_time_limit(0)` during deploy exec
+- **System update FE** — 10 min timeout on deploy POST
+- [deploy/DEPLOY.md §G6](../deploy/DEPLOY.md) — Docker admin deploy troubleshooting
+
+**Production deploy (paginiumcms.com):**
+
+```bash
+cd /var/www/paginiumcms.com
+git fetch origin --tags
+git checkout v2.1.0-beta.14
+
+# once on host (sudo):
+APP_ROOT=/var/www/paginiumcms.com ./scripts/bootstrap-deploy-permissions.sh
+
+APP_ROOT=/var/www/paginiumcms.com \
+STACK_DIR=/var/lib/docker/compose/paginiumcms \
+BACKEND_PORT=8089 \
+GIT_REF=v2.1.0-beta.14 \
+./scripts/deploy-instance-update.sh
+
+curl -s http://127.0.0.1:8089/api/health | jq '.data.version'
+# expected: 2.1.0-beta.14
+```
+
+**App `.env` (Docker mount):** `APP_ROOT=/var/www/html`, `STACK_DIR`, `BACKEND_PORT=8089`
+
+---
+
+## v2.1.0-beta.13 — AppRoot hotfix + system update UX (It.63)
+
+**Scope:** Fix `missing_script` when admin deploy runs from Docker; improve default ref and error toasts.
+
+### Gate
+
+```bash
+./scripts/iteration-gate.sh
+```
+
+### Tag
+
+```bash
+git tag -a v2.1.0-beta.13 -m "v2.1.0-beta.13 — It.63 deploy AppRoot hotfix + UX"
+git push origin v2.1.0-beta.13
+```
+
+### GitHub Release — copy-paste
+
+**Title:** `v2.1.0-beta.13 — Deploy AppRoot hotfix (It.63)`
+
+**Body highlights:**
+
+- **`AppRoot` resolver** — find repo via `/var/www/html` when host `APP_ROOT` is in `.env`
+- **System update UI** — default ref to latest release tag; API error on 422; tag-only hint
+
+**Production deploy:**
+
+```bash
+cd "$APP_ROOT" && git fetch origin --tags && git checkout v2.1.0-beta.13
+APP_ROOT=/var/www/paginiumcms.com STACK_DIR=… BACKEND_PORT=8089 GIT_REF=v2.1.0-beta.13 \
+  ./scripts/deploy-instance-update.sh
+```
+
+---
+
+
 
 ## v2.1.0-beta.12 — Admin system update MVP (It.63)
 
@@ -57,6 +152,8 @@ Testerom / security reviewerovi poslať **`v2.1.0-beta.12`** + [SECURITY_REVIEW.
 ./scripts/iteration-gate.sh
 ```
 
+
+
 ### Tag
 
 ```bash
@@ -64,15 +161,17 @@ git tag -a v2.1.0-beta.12 -m "v2.1.0-beta.12 — It.63 admin system update MVP"
 git push origin v2.1.0-beta.12
 ```
 
-### GitHub Release — copy-paste
 
-**Title:** `v2.1.0-beta.12 — Admin system update (It.63 MVP)`
 
-**Body highlights:**
+### `GitHub Release — copy-paste`
 
-- Platform → **System update** (`/platform/update`) — status, remote check, deploy enqueue
-- Settings → **System update** — GitHub token, `deployEnabled`, branch/tag policy
-- CLI `php backend/bin/console system:deploy --ref=v2.1.0-beta.12`
+`Title: v2.1.0-beta.12 — Admin system update (It.63 MVP)`
+
+`Body highlights:`
+
+- `Platform → System update (/platform/update) — status, remote check, deploy enqueue`
+- `Settings → System update — GitHub token, deployEnabled, branch/tag policy`
+- `CLI php backend/bin/console system:deploy --ref=v2.1.0-beta.12`
 - ISS-103 — PHPUnit no longer loads developer `.env` during tests
 
 **Production deploy (paginiumcms.com):**
@@ -86,17 +185,23 @@ After deploy: Settings → System update → enable `deployEnabled` + GitHub tok
 
 ---
 
+
+
 ## v2.1.0-beta.11 — Demo security polish (It.13 v4)
 
-**Rozsah:** od **`v2.1.0-beta.10`** · editor hotfix + S-DEMOCREDS + demo UX
+**Rozsah:** od `v2.1.0-beta.10` · editor hotfix + S-DEMOCREDS + demo UX
 
-| Oblasť | Zmena |
-|--------|--------|
-| Editor | Fix white screen — normalize `capabilities.enabled` from public settings |
-| S-DEMOCREDS | No password in `GET /api/settings/public`; `POST /api/demo/quick-login` |
-| Login FE | „Prihlásiť ako demo admin“ one-click |
-| Admin UX | Sidebar Demo modul hidden on demo instance; `/demo` ops card simplified |
-| Docs | ITERATION_13 v4, ISS-100, ISS-102 ops runbook |
+
+| Oblasť      | Zmena                                                                    |
+| ----------- | ------------------------------------------------------------------------ |
+| Editor      | Fix white screen — normalize `capabilities.enabled` from public settings |
+| S-DEMOCREDS | No password in `GET /api/settings/public`; `POST /api/demo/quick-login`  |
+| Login FE    | „Prihlásiť ako demo admin“ one-click                                     |
+| Admin UX    | Sidebar Demo modul hidden on demo instance; `/demo` ops card simplified  |
+| Docs        | ITERATION_13 v4, ISS-100, ISS-102 ops runbook                            |
+
+
+
 
 ### Pred tagom
 
@@ -106,6 +211,8 @@ vendor/bin/phpunit backend/tests/Http/Controllers/Admin/DemoControllerTest.php
 vendor/bin/phpunit backend/tests/Modules/Demo/
 cd frontend && npm test -- src/utils/editorProfiles.test.ts && npm run build:prod
 ```
+
+
 
 ### Commit + tag
 
@@ -122,6 +229,8 @@ git tag -a v2.1.0-beta.11 -m "v2.1.0-beta.11 — It.13 v4 demo security polish"
 git push origin main
 git push origin v2.1.0-beta.11
 ```
+
+
 
 ### GitHub Release — copy-paste (v2.1.0-beta.11)
 
@@ -151,6 +260,8 @@ curl -s -X POST https://demo.paginiumcms.com/api/demo/quick-login -H 'Content-Ty
 # true on demo instance
 ```
 
+
+
 ### Deploy demo C&P
 
 ```bash
@@ -175,6 +286,8 @@ curl -s  "http://127.0.0.1:${BACKEND_PORT}/api/settings/public" | jq '.data.demo
 curl -sS -X POST "http://127.0.0.1:${BACKEND_PORT}/api/demo/quick-login" | jq '.success'
 ```
 
+
+
 ### Deploy prod C&P (FE only if same tag)
 
 ```bash
@@ -192,18 +305,22 @@ curl -sf "http://127.0.0.1:${BACKEND_PORT}/api/health" | jq .
 
 ---
 
+
+
 ## v2.1.0-beta.10 — Demo sandbox full trial (It.13 v3)
 
-**Rozsah commitov na `main` od beta.9:** `ecbfe0b` … **`ab5b5fb`**
+**Rozsah commitov na** `main` **od beta.9:** `ecbfe0b` … `ab5b5fb`
 
-| Oblasť | Zmena |
-|--------|--------|
-| It.13 v3 | Rich demo seed — comments, messages, newsletter, contact page |
-| API | `GET /api/demo/public-info`, status `next_reset_at` / `seconds_until_reset` |
-| Admin FE | `/demo` onboarding, countdown, ADMIN+ reset |
-| Public FE | `DemoPublicStrip`, improved banner/footer copy |
-| Prod | Settings → Marketing — footer demo link URL + toggle |
-| Docs | `ITERATION_13.md` v3 ✅, `ITERATION_63.md` planned |
+
+| Oblasť    | Zmena                                                                       |
+| --------- | --------------------------------------------------------------------------- |
+| It.13 v3  | Rich demo seed — comments, messages, newsletter, contact page               |
+| API       | `GET /api/demo/public-info`, status `next_reset_at` / `seconds_until_reset` |
+| Admin FE  | `/demo` onboarding, countdown, ADMIN+ reset                                 |
+| Public FE | `DemoPublicStrip`, improved banner/footer copy                              |
+| Prod      | Settings → Marketing — footer demo link URL + toggle                        |
+| Docs      | `ITERATION_13.md` v3 ✅, `ITERATION_63.md` planned                           |
+
 
 **Izolácia:** `DEMO_MODE=true` → zápisy len do `storage/app/demo/`; produkcia nedotknutá.
 
@@ -214,6 +331,8 @@ curl -sf "http://127.0.0.1:${BACKEND_PORT}/api/health" | jq .
 vendor/bin/phpunit backend/tests/Modules/Demo/
 cd frontend && npm test && npm run build:prod
 ```
+
+
 
 ### Commit + tag
 
@@ -230,6 +349,8 @@ git tag v2.1.0-beta.10
 git push origin main
 git push origin v2.1.0-beta.10
 ```
+
+
 
 ### GitHub Release — copy-paste (v2.1.0-beta.10)
 
@@ -271,18 +392,30 @@ cd frontend && npm ci && npm run build:prod && cd ..
 sleep 8
 
 grep '^APP_URL=' "$APP_ROOT/.env"
-# APP_URL=https://demo.paginiumcms.com
+```
+
+
+
+# APP_URL=[https://demo.paginiumcms.com](https://demo.paginiumcms.com)
+
+
 
 # Smoke — login with Origin (browser simulation)
-curl -sS -o /dev/null -w 'login+Origin: HTTP %{http_code}\n' \
-  -X POST "https://demo.paginiumcms.com/api/auth/login" \
-  -H 'Content-Type: application/json' \
-  -H 'Origin: https://demo.paginiumcms.com' \
-  -d '{"email":"demo@paginiumcms.com","password":"Demo123!"}'
+
+curl -sS -o /dev/null -w 'login+Origin: HTTP %{http_code}\n'   
+  -X POST "[https://demo.paginiumcms.com/api/auth/login](https://demo.paginiumcms.com/api/auth/login)"   
+  -H 'Content-Type: application/json'   
+  -H 'Origin: [https://demo.paginiumcms.com](https://demo.paginiumcms.com)'   
+  -d '{"email":"[demo@paginiumcms.com](mailto:demo@paginiumcms.com)","password":"Demo123!"}'
+
 # Expected: HTTP 200
 
+
+
 # Public demo info
-curl -sS "https://demo.paginiumcms.com/api/demo/public-info" | jq .
+
+curl -sS "[https://demo.paginiumcms.com/api/demo/public-info](https://demo.paginiumcms.com/api/demo/public-info)" | jq .
+
 ```
 
 **After deploy:** Admin → **Demo** (`/demo`) → **Reset demo seed** (loads new snapshot with comments/messages/newsletter).
@@ -321,7 +454,12 @@ No `DEMO_MODE` on prod. New: **Settings → Marketing** for footer demo link.
 - [ ] Footer newsletter works on demo
 - [ ] Prod — Settings → Marketing toggles footer demo link
 - [ ] `./scripts/iteration-gate.sh` green
+
 ```
+
+```
+
+
 
 ### C&P — deploy demo only (quick)
 
@@ -340,20 +478,26 @@ Potom v admin: **Demo → Reset demo seed**.
 
 ---
 
+
+
 ## v2.1.0-beta.9 — Scheduler, newsletter, demo deploy (It.62 + It.61 + ISS-098)
 
-**Rozsah commitov na `main` od beta.8:** `0fe21ec` … `a492e53`
+**Rozsah commitov na** `main` **od beta.8:** `0fe21ec` … `a492e53`
 
-| Oblasť | Zmena |
-|--------|--------|
-| It.62 | Scheduler prod hardening — `outcome`, `jobs:run`, Docker storage, admin UX |
-| It.61 | Footer newsletter + admin `/newsletter` + CSV export (ISS-097) |
-| It.33 | Analytics enrichment — referer labels, geo, masked IPs |
-| It.60 | Custom editor components registry + hello-widget |
-| It.59 | Scheduled publish — clear scheduling on manual save |
-| ISS-098 | Demo CORS login fix — `SameOriginCorsMiddleware` |
-| Deploy | [DEPLOY.md](../deploy/DEPLOY.md), [DEMO_DEPLOY.md](../deploy/DEMO_DEPLOY.md), `deploy-instance-update.sh` |
-| Footer | Demo link visible with newsletter enabled, `_blank` |
+
+| Oblasť  | Zmena                                                                                                     |
+| ------- | --------------------------------------------------------------------------------------------------------- |
+| It.62   | Scheduler prod hardening — `outcome`, `jobs:run`, Docker storage, admin UX                                |
+| It.61   | Footer newsletter + admin `/newsletter` + CSV export (ISS-097)                                            |
+| It.33   | Analytics enrichment — referer labels, geo, masked IPs                                                    |
+| It.60   | Custom editor components registry + hello-widget                                                          |
+| It.59   | Scheduled publish — clear scheduling on manual save                                                       |
+| ISS-098 | Demo CORS login fix — `SameOriginCorsMiddleware`                                                          |
+| Deploy  | [DEPLOY.md](../deploy/DEPLOY.md), [DEMO_DEPLOY.md](../deploy/DEMO_DEPLOY.md), `deploy-instance-update.sh` |
+| Footer  | Demo link visible with newsletter enabled, `_blank`                                                       |
+
+
+
 
 ### Pred tagom
 
@@ -363,6 +507,8 @@ cd frontend && npm test && npm run build:prod
 ./vendor/bin/phpunit backend/tests/Core/Scheduler/
 ./vendor/bin/phpunit backend/tests/Http/Controllers/Newsletter/
 ```
+
+
 
 ### Commit + tag (keď prod + demo smoke OK)
 
@@ -379,6 +525,8 @@ git tag v2.1.0-beta.9
 git push origin main
 git push origin v2.1.0-beta.9
 ```
+
+
 
 ### GitHub Release — copy-paste (v2.1.0-beta.9)
 
@@ -433,6 +581,8 @@ Expected: **HTTP 200**
 - [ ] `./scripts/iteration-gate.sh` — green
 ```
 
+
+
 ### C&P — deploy production
 
 ```bash
@@ -447,6 +597,8 @@ cd frontend && npm ci && npm run build:prod && cd ..
 "$STACK_DIR/stack.sh" restart php
 sleep 8 && curl -s "http://127.0.0.1:${BACKEND_PORT}/api/health"
 ```
+
+
 
 ### C&P — deploy demo (ISS-098 smoke)
 
@@ -476,6 +628,8 @@ curl -sS -o /dev/null -w 'login+Origin: HTTP %{http_code}\n' \
 Plná dokumentácia: [deploy/DEMO_DEPLOY.md](../deploy/DEMO_DEPLOY.md) · [deploy/DEPLOY.md](../deploy/DEPLOY.md)
 
 ---
+
+
 
 ## Hotfix — ISS-098 Demo CORS login (2026-07-27)
 
@@ -513,6 +667,8 @@ curl -sS -o /dev/null -w 'login+Origin: HTTP %{http_code}\n' \
 
 ---
 
+
+
 ## v2.1.0-beta.8 — It.58b color schemes (ISS-093)
 
 ```bash
@@ -521,6 +677,8 @@ cd frontend && npm test && npm run type-check
 cd frontend && npm audit --audit-level=critical
 composer audit
 ```
+
+
 
 ### Commit
 
@@ -540,6 +698,8 @@ git push origin v2.1.0-beta.8
 
 ---
 
+
+
 ## GitHub Release — copy-paste (v2.1.0-beta.8)
 
 **Title:** `v2.1.0-beta.8 — Color schemes & themed public site (It.58b)`
@@ -550,7 +710,7 @@ git push origin v2.1.0-beta.8
 ## Summary
 
 - **It.58b** — 5 color schemes × light/dark, Settings → Vzhľad, live wireframe preview
-- **Public site** — `theme-*` tokens on Navbar, Footer, blog, login, maintenance, markdown prose
+- **Public site** — `theme-`* tokens on Navbar, Footer, blog, login, maintenance, markdown prose
 - **API** — `GET /api/settings/public` → `appearance` block
 - **ISS-093** — ESLint fix (removed `brace-expansion@5` override)
 
@@ -573,6 +733,8 @@ git push origin v2.1.0-beta.8
 
 ---
 
+
+
 ## v2.1.0-beta.7 — Deps, Vitest, It.58 doc (ISS-089–092)
 
 ```bash
@@ -581,6 +743,8 @@ cd frontend && npm test && npm run type-check
 cd frontend && npm audit --audit-level=critical
 composer audit
 ```
+
+
 
 ### Commit
 
@@ -599,6 +763,8 @@ git push origin v2.1.0-beta.7
 ```
 
 ---
+
+
 
 ## GitHub Release — copy-paste (v2.1.0-beta.7)
 
@@ -627,6 +793,8 @@ git push origin v2.1.0-beta.7
 
 ---
 
+
+
 ## v2.1.0-beta.6 — Security audit (ISS-086–088)
 
 ```bash
@@ -634,6 +802,8 @@ git push origin v2.1.0-beta.7
 cd frontend && npm audit --audit-level=moderate
 composer audit
 ```
+
+
 
 ### Commit
 
@@ -652,6 +822,8 @@ git push origin v2.1.0-beta.6
 ```
 
 ---
+
+
 
 ## GitHub Release — copy-paste (v2.1.0-beta.6)
 
@@ -688,6 +860,8 @@ Externý security audit pred LAN testom — tri opravy + PHPStan fix.
 
 ---
 
+
+
 ## v2.1.0-beta.5 — It.56 Rich navigation + session fix
 
 ```bash
@@ -695,6 +869,8 @@ Externý security audit pred LAN testom — tri opravy + PHPStan fix.
 cd frontend && npm audit --audit-level=moderate
 composer audit
 ```
+
+
 
 ### Commit
 
@@ -713,6 +889,8 @@ git push origin v2.1.0-beta.5
 ```
 
 ---
+
+
 
 ## GitHub Release — copy-paste (v2.1.0-beta.5)
 
@@ -748,6 +926,8 @@ git push origin v2.1.0-beta.5
 
 ---
 
+
+
 ## v2.1.0-beta.4 — It.57 Auto tags & meta description
 
 ```bash
@@ -755,6 +935,8 @@ git push origin v2.1.0-beta.5
 cd frontend && npm audit --audit-level=moderate
 composer audit
 ```
+
+
 
 ### Commit
 
@@ -772,6 +954,8 @@ git push origin v2.1.0-beta.4
 ```
 
 ---
+
+
 
 ## GitHub Release — copy-paste (v2.1.0-beta.4)
 
@@ -804,6 +988,8 @@ git push origin v2.1.0-beta.4
 
 ---
 
+
+
 ## v2.1.0-beta.3 — Beta 1 patch (React Router GHSA + CMS info)
 
 ```bash
@@ -811,6 +997,8 @@ git push origin v2.1.0-beta.4
 cd frontend && npm audit --audit-level=moderate
 composer audit
 ```
+
+
 
 ### Commit
 
@@ -829,6 +1017,8 @@ git push origin v2.1.0-beta.3
 ```
 
 ---
+
+
 
 ## GitHub Release — copy-paste (v2.1.0-beta.3)
 
@@ -876,12 +1066,16 @@ Patch after **v2.1.0-beta.2**. Three **moderate** React Router npm advisories we
 
 ---
 
+
+
 ## v2.1.0-beta.2 — Beta 1 Testing (pre-push security gate)
 
 ```bash
 composer gate
 # alebo: ./scripts/iteration-gate.sh
 ```
+
+
 
 ### Commit
 
@@ -900,6 +1094,8 @@ git push origin v2.1.0-beta.2
 ```
 
 ---
+
+
 
 ## GitHub Release — copy-paste (v2.1.0-beta.2)
 
@@ -930,11 +1126,15 @@ Pre-push security gate pred verejným testovaním Beta 1. Jediný blocking nále
 
 ---
 
+
+
 ## v2.1.0-beta.1 — Public Beta 1 (Wave 7)
 
 ```bash
 composer gate
 ```
+
+
 
 ### Commit
 
@@ -953,6 +1153,8 @@ git push origin v2.1.0-beta.1
 
 ---
 
+
+
 ## GitHub Release — copy-paste (v2.1.0-beta.1)
 
 **Title:** `v2.1.0-beta.1 — Public Beta 1`
@@ -960,6 +1162,8 @@ git push origin v2.1.0-beta.1
 **Body:** see [PUBLIC_BETA1.md](../PUBLIC_BETA1.md) · full template in git history of this file (Wave 7 block).
 
 ---
+
+
 
 ## 2.0.58 — Wave 6 Beta infra gate
 
@@ -986,6 +1190,8 @@ git push origin v2.0.58
 ```
 
 ---
+
+
 
 ## GitHub Release — copy-paste (2.0.58)
 
@@ -1033,6 +1239,8 @@ Closes **FINAL_BETA1 Fáza C (Wave 6)**: production cron documentation, maintain
 
 ---
 
+
+
 ## 2.0.57 — Wave 5f Docker onboarding + user docs
 
 ```bash
@@ -1060,6 +1268,8 @@ git push origin v2.0.57
 
 ---
 
+
+
 ## GitHub Release — copy-paste (2.0.57)
 
 **Title:**
@@ -1081,7 +1291,7 @@ Closes **FINAL_BETA1 Fáza A (Wave 5f)**: one documented path from git clone to 
 
 - Root **README.md** — first-run quick start, links to user + developer docs
 - **docs/README.md** — Getting Started via first-run
-- **LOCAL_SETUP.md** / **INSTALLATION.md** — env var tables (`FIRST_ADMIN_*`, session, 2FA)
+- **LOCAL_SETUP.md** / **INSTALLATION.md** — env var tables (`FIRST_ADMIN_`*, session, 2FA)
 - **`.env.example`** — documented bootstrap admin vars
 - **CONTINUATION.md**, **CHECKLIST.md** — Wave 5f shipped
 - `AppVersion` → 2.0.57
@@ -1102,6 +1312,8 @@ Closes **FINAL_BETA1 Fáza A (Wave 5f)**: one documented path from git clone to 
 ```
 
 ---
+
+
 
 ## 2.0.56 — Password confirmation (register + admin users)
 
@@ -1129,6 +1341,8 @@ git push origin v2.0.56
 ```
 
 ---
+
+
 
 ## GitHub Release — copy-paste (2.0.56)
 
@@ -1175,6 +1389,8 @@ Requires matching **password + passwordConfirm** on public registration and when
 
 ---
 
+
+
 ## 2.0.55 — Wave 5e API barrel + CONTRIBUTING (It.17 MVP)
 
 ```bash
@@ -1204,6 +1420,8 @@ git push origin v2.0.55
 ```
 
 ---
+
+
 
 ## GitHub Release — copy-paste (2.0.55)
 
@@ -1238,6 +1456,8 @@ After **2.0.54**: enforce **API↔FE law** for new work — full `api/index.ts` 
 ```
 
 ---
+
+
 
 ## 2.0.54 — Wave 5d hook emitters + extension policy (It.15d)
 
@@ -1274,6 +1494,8 @@ git push origin v2.0.54
 *(Po commite doplň hash do tabuľky a GitHub Release body.)*
 
 ---
+
+
 
 ## GitHub Release — copy-paste (2.0.54)
 
@@ -1314,6 +1536,8 @@ After **2.0.53**: Core **emits** canonical hooks; extensions subscribe via `plug
 
 ---
 
+
+
 ## 2.0.53 — It.59 scheduled publish (editor + cron)
 
 ```bash
@@ -1330,6 +1554,8 @@ npm test -- --run           # → 228/228
 3. **Cron** — `php backend/bin/console scheduler:run` každú minútu (job `content-scheduled-publish`)
 4. Po `scheduledAt` sa obsah automaticky prepne na **Publikované** (do ~1 min)
 5. Verejný web — scheduled obsah **nie je** viditeľný (404)
+
+
 
 ### Commit
 
@@ -1349,6 +1575,8 @@ git push origin v2.0.53
 *(Po commite doplň hash do tabuľky a GitHub Release body.)*
 
 ---
+
+
 
 ## GitHub Release — copy-paste (2.0.53)
 
@@ -1392,6 +1620,8 @@ After **2.0.52**: **scheduled publish** for pages and articles — pick date/tim
 
 ---
 
+
+
 ## 2.0.52 — branding, ACL v nastaveniach, CI (ISS-072–074)
 
 ```bash
@@ -1406,8 +1636,10 @@ npm test -- --run           # → 226/226
 1. **Nastavenia → Stránka → Logo a favicon** — logo + favicon → Navbar, admin sidebar, favicon v prehliadači
 2. **SUPER_ADMIN → Nastavenia → Bezpečnosť → Oprávnenia rolí** — RBAC + Path ACL; uložiť → `data/security/acl.json`
 3. **ADMIN → Security audit** — `/api/admin/security/audit` → **200**
-4. **`/security/acl`** — redirect na settings `accessControl`
+4. `/security/acl` — redirect na settings `accessControl`
 5. Regresia: login, editácia obsahu, media
+
+
 
 ### Commit
 
@@ -1427,6 +1659,8 @@ git push origin v2.0.52
 *(Po commite doplň hash do tabuľky a GitHub Release body.)*
 
 ---
+
+
 
 ## GitHub Release — copy-paste (2.0.52)
 
@@ -1478,6 +1712,8 @@ After **2.0.51**: configurable **logo & favicon** in Settings, **role permission
 
 ---
 
+
+
 ## 2.0.51 — ops hotfix + maintenance + logs (ISS-063–071)
 
 ```bash
@@ -1489,12 +1725,14 @@ npm test -- --run           # → 226/226
 
 **Po deployi (rebuild FE + reštart PHP):**
 
-1. **`/pages/home`** — bez `RangeError`, história verzií OK
+1. `/pages/home` — bez `RangeError`, história verzií OK
 2. **Nastavenia → Všeobecné** — timezone + DST; logy s aktuálnym časom
 3. **Nastavenia → Režim údržby** — Coming Soon / Under Maintenance (iba jeden naraz)
 4. **Verejný web** — maintenance stránky, prihlásenie OK, registrácia vypnutá
 5. **Admin → Logy** — bulk, delete-all, stránkovanie, ručný page size
 6. **Header** — „Vymazať cache“
+
+
 
 ### Commit
 
@@ -1512,6 +1750,8 @@ git push origin v2.0.51
 ```
 
 ---
+
+
 
 ## GitHub Release — copy-paste (2.0.51)
 
@@ -1554,9 +1794,11 @@ Hotfix after **2.0.50**: safe date formatting, correct log timestamps (timezone 
 
 ---
 
-> **Poznámka:** Ďalší tag **`v2.0.53`**. Plánované It.59–61 — [ITERATION_BACKLOG.md](../ITERATION_BACKLOG.md).
+> **Poznámka:** Ďalší tag `v2.0.53`. Plánované It.59–61 — [ITERATION_BACKLOG.md](../ITERATION_BACKLOG.md).
 
 ---
+
+
 
 ## 2.0.50 — pred release kontrola
 
@@ -1573,6 +1815,8 @@ Hotfix after **2.0.50**: safe date formatting, correct log timestamps (timezone 
 4. **Kontakt** — formulár labely sledujú locale (`Predmet` / `Subject`)
 
 ---
+
+
 
 ## GitHub Release — copy-paste (2.0.50)
 
@@ -1613,6 +1857,8 @@ Public site UI (blog, nav, footer, contact, search, auth modals) follows `genera
 
 ---
 
+
+
 ## 2.0.49 — pred release kontrola
 
 ```bash
@@ -1624,12 +1870,14 @@ Public site UI (blog, nav, footer, contact, search, auth modals) follows `genera
 
 1. **Nastavenia → Všeobecné → Jazyk = English**
 2. **Dashboard → Prehľad aktivít** — audit správy po anglicky (nie „Maxxim upravil článok…“)
-3. **`/audit`** — content/user trail zobrazuje `display_message` z API v EN
+3. `/audit` — content/user trail zobrazuje `display_message` z API v EN
 4. **Legacy logy** — staré SK `context.summary` sa pri read preformátujú podľa locale
 
 **Opravy:** ISS-061 · [ISSUES.md](../ISSUES.md)
 
 ---
+
+
 
 ## GitHub Release — copy-paste (2.0.49)
 
@@ -1678,6 +1926,8 @@ Audit trail and dashboard activity messages now follow **`general.language`** (S
 
 ---
 
+
+
 ## 2.0.48 — pred release kontrola
 
 ```bash
@@ -1696,6 +1946,8 @@ Audit trail and dashboard activity messages now follow **`general.language`** (S
 **Opravy:** ISS-012 · ISS-052 … ISS-058 · [ISSUES.md](../ISSUES.md)
 
 ---
+
+
 
 ## GitHub Release — copy-paste (2.0.48)
 
@@ -1747,6 +1999,8 @@ Formal release for **security audit hardening** already on `main`: at-rest encry
 
 ---
 
+
+
 ## 2.0.47 — pred release kontrola
 
 ```bash
@@ -1754,12 +2008,14 @@ Formal release for **security audit hardening** already on `main`: at-rest encry
 # Vitest: npm test -- --run  → 210/210
 ```
 
-**Commity na `main`:**
+**Commity na** `main`**:**
 
-| Commit | Obsah |
-|--------|--------|
+
+| Commit    | Obsah                                                                         |
+| --------- | ----------------------------------------------------------------------------- |
 | `f0a885c` | It.18f — ops/platform/editor i18n, Beta gate, ISS-060 (settings EN workflows) |
-| `390b392` | ISS-059 — `renderWithProviders`, Vitest CI green |
+| `390b392` | ISS-059 — `renderWithProviders`, Vitest CI green                              |
+
 
 **Po deployi:**
 
@@ -1772,6 +2028,8 @@ Formal release for **security audit hardening** already on `main`: at-rest encry
 **Opravy:** ISS-059 · ISS-060 · [ISSUES.md](../ISSUES.md)
 
 ---
+
+
 
 ## GitHub Release — copy-paste (2.0.47)
 
@@ -1821,6 +2079,8 @@ Completes **It.18f** (Beta gate): ops modules, platform UI, content editor, and 
 
 ---
 
+
+
 ## 2.0.46 — pred release kontrola
 
 ```bash
@@ -1842,6 +2102,8 @@ Completes **It.18f** (Beta gate): ops modules, platform UI, content editor, and 
 **Opravy:** ISS-046 … ISS-050 · [ISSUES.md](../ISSUES.md)
 
 ---
+
+
 
 ## GitHub Release — copy-paste (2.0.46)
 
@@ -1915,6 +2177,8 @@ Ships **It.18e** (media, navigation, dashboard i18n), **It.20** (analytics page,
 
 ---
 
+
+
 ## 2.0.45 — pred release kontrola
 
 ```bash
@@ -1935,6 +2199,8 @@ Ships **It.18e** (media, navigation, dashboard i18n), **It.20** (analytics page,
 **Hotfixy v tomto release (ISS-044, ISS-045):** pozri [ISSUES.md](../ISSUES.md).
 
 ---
+
+
 
 ## GitHub Release — copy-paste (2.0.45)
 
@@ -1991,6 +2257,8 @@ Includes hotfixes ISS-044 (services.php parse error) and ISS-045 (LocaleScaffold
 
 ---
 
+
+
 ## 2.0.44 — pred release kontrola
 
 ```bash
@@ -2007,6 +2275,8 @@ Includes hotfixes ISS-044 (services.php parse error) and ISS-045 (LocaleScaffold
 6. `./vendor/bin/phpunit` — bez chýb DI (HookManager import)
 
 ---
+
+
 
 ## GitHub Release — copy-paste (2.0.44)
 
@@ -2030,7 +2300,7 @@ Includes HookManager DI hotfix (146 PHPUnit errors) and Vitest `TestI18nProvider
 ## Highlights
 
 - **i18n modules:** admin, list, content, settings, translations
-- **Translation editor:** `/translations` + `/api/admin/translations/*` (Admin + 2FA)
+- **Translation editor:** `/translations` + `/api/admin/translations/`* (Admin + 2FA)
 - **Save policy:** staging → validate → promote; sequential policy toasts
 - **Settings UX:** System / Site / Media / Security category menu
 - **Schema:** `contentSecurity`, `uploadSecurity` groups (UI; runtime wiring in It.19b)
@@ -2052,6 +2322,8 @@ Includes HookManager DI hotfix (146 PHPUnit errors) and Vitest `TestI18nProvider
 
 ---
 
+
+
 ## 2.0.43 — pred release kontrola
 
 ```bash
@@ -2067,6 +2339,8 @@ Includes HookManager DI hotfix (146 PHPUnit errors) and Vitest `TestI18nProvider
 5. Login na **localhost:3025** — jeden pokus, bez dvojitého logu (ISS-042)
 
 ---
+
+
 
 ## GitHub Release — copy-paste (2.0.43)
 
@@ -2108,6 +2382,8 @@ Iteration 55 persists WYSIWYG content as structured Tiptap JSON, renders sanitiz
 
 ---
 
+
+
 ## 2.0.42 — pred release kontrola
 
 ```bash
@@ -2122,6 +2398,8 @@ Iteration 55 persists WYSIWYG content as structured Tiptap JSON, renders sanitiz
 4. Prepínanie profilu mení toolbar **bez** reload stránky
 
 ---
+
+
 
 ## GitHub Release — copy-paste (2.0.42)
 
@@ -2160,6 +2438,8 @@ Iteration 54 adds editor profiles that control which Markdown/WYSIWYG toolbar ac
 
 ---
 
+
+
 ## 2.0.41 — pred release kontrola (legacy commit label)
 
 ```bash
@@ -2174,6 +2454,8 @@ Iteration 54 adds editor profiles that control which Markdown/WYSIWYG toolbar ac
 4. Prepínanie profilu mení toolbar **bez** reload stránky
 
 ---
+
+
 
 ## GitHub Release — copy-paste (2.0.41)
 
@@ -2212,6 +2494,8 @@ Iteration 54 adds editor profiles that control which Markdown/WYSIWYG toolbar ac
 
 ---
 
+
+
 ## 2.0.40 — pred release kontrola
 
 ```bash
@@ -2225,6 +2509,8 @@ cd frontend && npm run type-check
 2. Admin `/pages` — zoznam, filtre, mutácie stále fungujú (cache invalidácia cez React Query)
 
 ---
+
+
 
 ## GitHub Release — copy-paste (2.0.40)
 
@@ -2261,6 +2547,8 @@ Hotfix for CI type-check failure introduced in 2.0.39 (It.53 React Query migrati
 
 ---
 
+
+
 ## 2.0.39 — pred release kontrola
 
 ```bash
@@ -2275,6 +2563,8 @@ Hotfix for CI type-check failure introduced in 2.0.39 (It.53 React Query migrati
 4. Verejný článok → login link — SPA navigácia na `/login`
 
 ---
+
+
 
 ## GitHub Release — copy-paste (2.0.39)
 
@@ -2313,6 +2603,8 @@ Iteration 53 removes admin navigation jank: React Query stale-while-revalidate, 
 
 ---
 
+
+
 ## 2.0.38 — pred release kontrola
 
 ```bash
@@ -2328,6 +2620,8 @@ Iteration 53 removes admin navigation jank: React Query stale-while-revalidate, 
 
 ---
 
+
+
 ## 2.0.37 — pred release kontrola
 
 ```bash
@@ -2336,12 +2630,14 @@ Iteration 53 removes admin navigation jank: React Query stale-while-revalidate, 
 
 **Po deployi:**
 
-1. Verejný **`/blog`** → Network: `GET /api/articles?page=1&per_page=6` (nie legacy full list)
-2. **`/blog?page=2&tag=…&sort=oldest`** — meta obsahuje `total`, `tags`, `total_published`
-3. Detail článku **`/blog/{slug}`** — `GET /api/articles/{slug}`; prev/next funguje
+1. Verejný `/blog` → Network: `GET /api/articles?page=1&per_page=6` (nie legacy full list)
+2. `/blog?page=2&tag=…&sort=oldest` — meta obsahuje `total`, `tags`, `total_published`
+3. Detail článku `/blog/{slug}` — `GET /api/articles/{slug}`; prev/next funguje
 4. Admin zoznam článkov — paginácia stále OK (`?page=1&per_page=20`)
 
 ---
+
+
 
 ## 2.0.34 — pred release kontrola
 
@@ -2359,6 +2655,8 @@ Iteration 53 removes admin navigation jank: React Query stale-while-revalidate, 
 ---
 
 ---
+
+
 
 ## GitHub Release — copy-paste (2.0.38)
 
@@ -2402,6 +2700,8 @@ Iteration 15 delivers the **external plugin system** outside Core: ZIP import wi
 
 ---
 
+
+
 ## GitHub Release — copy-paste (2.0.37)
 
 **Title:**
@@ -2440,6 +2740,8 @@ Detail: [docs/ITERATION_44.md](docs/ITERATION_44.md)
 
 ---
 
+
+
 ## GitHub Release — copy-paste (2.0.36)
 
 **Title:**
@@ -2461,7 +2763,7 @@ Detail: [docs/ITERATION_52.md](docs/ITERATION_52.md)
 
 ## Added
 
-- Settings → **Firemné údaje** (`company.*`)
+- Settings → **Firemné údaje** (`company.`*)
 - Contact page: company info block + optional map iframe
 - `isSafeMapEmbedUrl` whitelist for Google Maps embed only
 
@@ -2477,6 +2779,8 @@ Detail: [docs/ITERATION_52.md](docs/ITERATION_52.md)
 ```
 
 ---
+
+
 
 ## GitHub Release — copy-paste (2.0.35)
 
@@ -2516,6 +2820,8 @@ Detail: [docs/ITERATION_52.md](docs/ITERATION_52.md)
 ```
 
 ---
+
+
 
 ## GitHub Release — copy-paste (2.0.34)
 
@@ -2560,6 +2866,8 @@ Detail: [docs/ITERATION_52.md](docs/ITERATION_52.md)
 
 ---
 
+
+
 ## 2.0.32 — pred release kontrola
 
 ```bash
@@ -2580,6 +2888,8 @@ cd frontend && npm run type-check && npm run lint && npm test && npm run build:p
 5. Admin **Média/Komentáre/Kôš** → filter URL → refresh
 
 ---
+
+
 
 ## GitHub Release — copy-paste (2.0.32)
 
@@ -2633,6 +2943,8 @@ Detail: [docs/ITERATION_44.md](docs/ITERATION_44.md) · [docs/ITERATION_51.md](d
 
 ---
 
+
+
 ## Git commit message (optional)
 
 ```
@@ -2642,6 +2954,8 @@ Adds media/comments/trash URL filters, SitePreviewModal with proportional scale,
 ```
 
 ---
+
+
 
 ## 2.0.31 — pred release kontrola
 
@@ -2662,6 +2976,8 @@ cd frontend && npm run type-check && npm run lint && npm test && npm run build:p
 4. Detail článku → **Predchádzajúci / Ďalší** bez návratu na zoznam
 
 ---
+
+
 
 ## GitHub Release — copy-paste (2.0.31)
 
@@ -2713,6 +3029,8 @@ Detail: [docs/ITERATION_44.md](docs/ITERATION_44.md)
 
 ---
 
+
+
 ## Git commit message (optional)
 
 ```
@@ -2722,6 +3040,8 @@ Adds blogItemsPerPage, public blog prev/next, admin list URL sync, and ui.openLi
 ```
 
 ---
+
+
 
 ## 2.0.30 — pred release kontrola
 
@@ -2751,9 +3071,11 @@ curl -s http://192.168.10.26:8081/api/health | jq .
 3. Nový staff user → login → `/account/security` → QR → verify
 4. Existujúci „rozbitý“ user: opraviť JSON alebo reset 2FA polí (ISS-031)
 
-**Post-release hotfix (2026-07-20):** ak CI padlo na `type-check` po `f5061e6`, pull **`3fbc595`** (ISS-036). Žiadna zmena `.env` — len frontend typy + `updateUser` v 2FA settings.
+**Post-release hotfix (2026-07-20):** ak CI padlo na `type-check` po `f5061e6`, pull `3fbc595` (ISS-036). Žiadna zmena `.env` — len frontend typy + `updateUser` v 2FA settings.
 
 ---
+
+
 
 ## GitHub Release — copy-paste (2.0.30)
 
@@ -2818,9 +3140,13 @@ Restart PHP. Clear browser cookies.
 ## Full changelog
 
 [CHANGELOG.md#2030--2026-07-19](CHANGELOG.md#2030--2026-07-19)
+
 ```
 
 ---
+```
+
+
 
 ## Git commit message (optional, keď schváliš commit)
 
@@ -2833,6 +3159,8 @@ twoFactorVerifiedAt persistence, FE 401 hard redirect). Adds TWO_FACTOR_REQUIRED
 
 ---
 
+
+
 ## Hotfix commit message (2.0.30 post-release, ISS-036)
 
 ```
@@ -2841,11 +3169,14 @@ fix(frontend): resolve 2FA TypeScript CI errors on main.
 Map setup_pending in auth API layer, use updateUser in TwoFactorSettings, and align test fixtures.
 ```
 
-Commit: **`3fbc595`** · pushed to `main` 2026-07-20.
+Commit: `3fbc595` · pushed to `main` 2026-07-20.
 
 ---
+
+
 
 ## Predchádzajúce release
 
 - **2.0.29** — Session hardening, cache admin — [CHANGELOG.md#2029--2026-07-19](../CHANGELOG.md#2029--2026-07-19)
 - **2.0.28** — It.12 Blueprint + It.13 Demo sandbox v2 — [CHANGELOG.md#2028--2026-07-19](../CHANGELOG.md#2028--2026-07-19)
+
