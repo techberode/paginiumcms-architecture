@@ -55,6 +55,7 @@ final class CsrfMiddleware implements MiddlewareInterface
         '/api/maintenance',
         '/api/comments',
         '/api/debug/client-event',
+        '/api/demo/quick-login',
     ];
 
     /**

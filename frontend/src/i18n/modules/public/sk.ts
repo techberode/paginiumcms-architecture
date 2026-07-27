@@ -244,7 +244,9 @@ export const publicSk: MessageTree = {
       ssoDivider: 'Alebo SSO',
       ssoButton: 'Prihlásiť cez :provider',
       demo: {
-        title: 'Demo prihlasovacie údaje',
+        title: 'Demo prístup',
+        hint: 'Jedným klikom sa prihlásite ako demo administrátor (:email). Heslo sa neposiela cez verejné API.',
+        quickLoginButton: 'Prihlásiť ako demo admin',
         fillButton: 'Vyplniť demo údaje',
       },
       totp: {
@@ -259,6 +261,7 @@ export const publicSk: MessageTree = {
         totpRequired: 'Zadajte TOTP kód z autentifikátora',
         success: 'Prihlásenie úspešné',
         invalidCredentials: 'Neplatný e-mail alebo heslo',
+        demoQuickLoginFailed: 'Demo prihlásenie zlyhalo. Skúste znova o chvíľu.',
         ssoNotConfigured: 'SSO nie je nakonfigurované',
         totpCodeRequired: 'Zadajte 6-miestny TOTP kód',
         twoFactorSuccess: '2FA overenie úspešné',

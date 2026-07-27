@@ -20,6 +20,7 @@ import { useI18n } from '../../context/I18nContext';
 import { ADMIN_DEFAULT_ROUTE } from '../../config/adminNavSections';
 import { AuthShell, authButtonClass, authInputClass, authLabelClass } from '../auth/AuthShell';
 import { TotpCodeInput } from '../auth/TotpCodeInput';
+import { demoApi } from '../../api/demo';
 
 export const LoginModal: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -29,12 +30,13 @@ export const LoginModal: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [ssoProviders, setSsoProviders] = useState<SsoProvider[]>([]);
-  const { login, verifyTwoFactorLogin, pendingTwoFactor, twoFactorSetupPending, user } = useAuth();
+  const { login, verifyTwoFactorLogin, pendingTwoFactor, twoFactorSetupPending, user, refreshUser } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
   const { t } = useI18n();
   const { settings } = useSettingsContext();
-  const demoCredentials = settings.demo?.enabled ? settings.demo.credentials : null;
+  const isDemoInstance = settings.demo?.enabled === true;
+  const demoLoginEmail = settings.demo?.loginEmail ?? 'demo@paginiumcms.com';
   const allowRegistration =
     settings.general.allowRegistration !== false && !isMaintenanceActive(settings.maintenance?.mode);
 
@@ -52,6 +54,22 @@ export const LoginModal: React.FC = () => {
       setStep('totp');
     }
   }, [pendingTwoFactor, twoFactorSetupPending, user]);
+
+  const handleDemoQuickLogin = async () => {
+    setLoading(true);
+    try {
+      const result = await demoApi.quickLogin();
+      if (result?.user) {
+        await refreshUser();
+        toast.success(t('public.auth.login.toast.success'));
+        navigate(ADMIN_DEFAULT_ROUTE, { replace: true });
+        return;
+      }
+      toast.error(t('public.auth.login.toast.demoQuickLoginFailed'));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleCredentials = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -136,21 +154,17 @@ export const LoginModal: React.FC = () => {
     >
       {step === 'credentials' ? (
         <form className="space-y-5" onSubmit={handleCredentials}>
-          {demoCredentials && (
+          {isDemoInstance && (
             <div className="rounded-2xl border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/40 p-4 text-sm text-amber-900 dark:text-amber-100">
               <p className="font-bold mb-2">{t('public.auth.login.demo.title')}</p>
-              <p className="font-mono text-xs mb-3">
-                {demoCredentials.email} / {demoCredentials.password}
-              </p>
+              <p className="text-xs mb-3">{t('public.auth.login.demo.hint', { email: demoLoginEmail })}</p>
               <button
                 type="button"
-                className="w-full py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold"
-                onClick={() => {
-                  setEmail(demoCredentials.email);
-                  setPassword(demoCredentials.password);
-                }}
+                disabled={loading}
+                className="w-full py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold disabled:opacity-50"
+                onClick={() => void handleDemoQuickLogin()}
               >
-                {t('public.auth.login.demo.fillButton')}
+                {t('public.auth.login.demo.quickLoginButton')}
               </button>
             </div>
           )}

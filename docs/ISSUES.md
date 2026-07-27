@@ -1,6 +1,6 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-27 · verzia **2.1.0-beta.9** (tag pending) · **main @ `a492e53`** · ISS-063–098
+> Posledná aktualizácia: 2026-07-27 · verzia **2.1.0-beta.11** · ISS-063–101
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
 
@@ -116,6 +116,9 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-096 | 502 hneď po `stack.sh restart php` | Nízka (ops) | ℹ️ Informatívne — počkať 5–10 s |
 | ISS-097 | Newsletter odberatelia bez admin UI | Stredná | ✅ Opravené · **It.61** |
 | ISS-098 | Demo login 401 prázdna odpoveď (CORS / zlý `APP_URL`) | **Vysoká (demo)** | ✅ Opravené · **SameOriginCors** + `.env` |
+| ISS-099 | Demo CLI/cron `demo:reset-if-due` — Permission denied `plugins.json` | Stredná (demo ops) | ℹ️ Ops — storage `chown user:www-data`, dirs `2775` |
+| ISS-100 | S-DEMOCREDS — demo heslo v `GET /api/settings/public` | Stredná (audit) | ✅ **`v2.1.0-beta.11`** — quick-login, no password in GET |
+| ISS-101 | Editor biela obrazovka — `capabilities.includes is not a function` | Vysoká (demo/admin) | ✅ **`v2.1.0-beta.11`** — normalize API profile shape |
 
 
 
@@ -2370,6 +2373,86 @@ cd /var/lib/docker/compose/paginiumcms-demo && ./stack.sh up -d
 
 ---
 
+## ISS-099 – Demo `demo:reset-if-due` — Permission denied na `plugins.json` — OPS (nie kód)
+
+**Symptóm:** Na demo serveri host príkaz `php backend/bin/console demo:reset-if-due` spadne:
+
+```
+fopen(.../storage/app/demo/data/plugins.json): Permission denied
+RuntimeException: Unable to open plugin registry
+```
+
+Web login a admin API v Dockeri môžu fungovať normálne.
+
+**Príčina:** Host CLI (SSH user, cron) vs Docker `www-data`. Console bootne `PluginManager` pred samotným reset príkazom — registry `data/plugins.json` vyžaduje zápis (`fopen` režim `c+`). Demo storage vytvoril kontajner; host user nemá group write. Rovnaký pattern ako **ISS-094** (It.62, `runs.json` na produkcii).
+
+**Diagnostika:**
+
+```bash
+ls -la /var/www/paginiumcms-demo/backend/storage/app/demo/data/
+id -un
+cd /var/www/paginiumcms-demo && php backend/bin/console demo:reset-if-due
+```
+
+**Riešenie (odporúčané — zdieľaná skupina):**
+
+```bash
+cd /var/www/paginiumcms-demo
+sudo chown -R "$(id -un):www-data" backend/storage
+sudo find backend/storage -type d -exec chmod 2775 {} \;
+sudo find backend/storage -type f -exec chmod 664 {} \;
+php backend/bin/console demo:reset-if-due
+```
+
+**Alternatíva:** spúšťať cron cez `./stack.sh exec -T php php backend/bin/console demo:reset-if-due` v demo compose adresári.
+
+**Crontab (po oprave práv):**
+
+```cron
+*/15 * * * * cd /var/www/paginiumcms-demo && /usr/bin/php backend/bin/console demo:reset-if-due >> /var/log/paginium-demo-reset.log 2>&1
+```
+
+**Docs:** [deploy/DEMO_DEPLOY.md](deploy/DEMO_DEPLOY.md) § ISS-099 · [ITERATION_62.md](ITERATION_62.md) · [deploy/CRON.md](deploy/CRON.md)
+
+**Stav:** ℹ️ Dokumentované (2026-07-27). Vyžaduje jednorazovú ops oprávu na demo serveri — nie zmenu aplikačného kódu.
+
+---
+
+## ISS-100 – S-DEMOCREDS — demo heslo v public settings — VYRIEŠENÉ
+
+**Závažnosť:** Stredná (security audit finding)  
+**Stav:** ✅ **`v2.1.0-beta.11`**
+
+**Symptóm:** `curl …/api/settings/public` vracal `demo.credentials.password` v plain texte.
+
+**Riešenie:** Heslo odstránené z public settings a admin demo status. Nový `POST /api/demo/quick-login` (len `DEMO_MODE=true`, rate limit). Login stránka — tlačidlo „Prihlásiť ako demo admin“.
+
+**Overenie:**
+
+```bash
+curl -s https://demo.paginiumcms.com/api/settings/public | jq '.data.demo'
+# žiadny kľúč credentials / password
+curl -sS -X POST https://demo.paginiumcms.com/api/demo/quick-login | jq '.success'
+# true
+```
+
+**Docs:** [SECURITY_REVIEW.md](SECURITY_REVIEW.md) S-DEMOCREDS · [ITERATION_13.md](ITERATION_13.md) v4
+
+---
+
+## ISS-101 – Editor biela obrazovka (`capabilities.includes`) — VYRIEŠENÉ
+
+**Závažnosť:** Vysoká (demo trial blocker)  
+**Stav:** ✅ **`v2.1.0-beta.11`**
+
+**Symptóm:** Nová stránka/článok → biela obrazovka; Console: `TypeError: e.capabilities.includes is not a function`.
+
+**Príčina:** BE `/api/settings/public` posiela `editor.profiles[].capabilities` ako `{ enabled: string[] }`; FE očakával flat array.
+
+**Riešenie:** `normalizeEditorProfile()` v `frontend/src/utils/editorProfiles.ts`.
+
+---
+
 ## Súvisiace dokumenty
 
 - [user/BRANDING.md](user/BRANDING.md) — logo a favicon (**2.0.52**)
@@ -2381,7 +2464,7 @@ cd /var/lib/docker/compose/paginiumcms-demo && ./stack.sh up -d
 - [ITERATION_57.md](ITERATION_57.md) — suggest-meta (ISS-080)
 - [ITERATION_62.md](ITERATION_62.md) — scheduler prod hardening (ISS-094)
 - [ITERATION_61.md](ITERATION_61.md) — footer newsletter + admin zoznam odberateľov (ISS-097)
-- [deploy/DEMO_DEPLOY.md](deploy/DEMO_DEPLOY.md) — demo nasadenie + ISS-098 CORS login (ISS-098)
+- [deploy/DEMO_DEPLOY.md](deploy/DEMO_DEPLOY.md) — demo nasadenie + ISS-098 CORS + ISS-099 cron/storage
 - [deploy/CRON.md](deploy/CRON.md) — produkčný crontab + Docker storage
 - [developer/TESTING.md](developer/TESTING.md) — PHPUnit izolácia (`LoginAttemptTracker`)
 - [ITERATION_44.md](ITERATION_44.md) — It.44d index filtre (ISS-038)

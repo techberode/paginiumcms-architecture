@@ -282,8 +282,9 @@ Hotové v **2.0.1** — detail [ITERATION_6.md](ITERATION_6.md).
 **Nie je súčasť zákazníckeho balíka** — modul existuje len pre vlastnú try-inštanciu na subdoméne.
 
 - ✅ v1 + v2: `DEMO_MODE`, celý CMS z `storage/app/demo/`, full seed, auto-reset cron, demo login, footer link.
+- ✅ **v3** (`v2.1.0-beta.10`): rich seed (comments/messages/newsletter/contact), public strip, marketing settings, reset countdown.
 - ❌ Zákaznícka produkcia: `DEMO_MODE=false`, demo routes/UI neaktívne.
-- Release **2.0.28** — [ITERATION_13.md](ITERATION_13.md)
+- Releases: **2.0.28** (v1/v2) · **`v2.1.0-beta.10`** (v3) — [ITERATION_13.md](ITERATION_13.md)
 
 
 

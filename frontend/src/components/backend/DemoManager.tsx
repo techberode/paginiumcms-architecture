@@ -82,47 +82,36 @@ export const DemoManager: React.FC = () => {
         </ul>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 dark:border-slate-700 p-5 space-y-3 text-sm">
-        <p>
-          <span className="font-bold">{t('platform.demo.demoMode')}</span>{' '}
-          {status?.enabled ? t('platform.demo.enabled') : t('platform.demo.disabled')}
-        </p>
-        <p>
-          <span className="font-bold">{t('platform.demo.isolation')}</span>{' '}
-          {status?.isolated ? t('platform.demo.isolationYes') : t('platform.demo.isolationNo')}
-        </p>
-        <p>
-          <span className="font-bold">{t('platform.demo.storage')}</span> {status?.storage_path}
-        </p>
-        <p>
-          <span className="font-bold">{t('platform.demo.content')}</span> {status?.content_path}
-        </p>
-        <p>
-          <span className="font-bold">{t('platform.demo.files')}</span> {status?.file_count ?? 0}
-        </p>
-        {status?.last_reset_at && (
+      {status?.enabled ? (
+        countdown ? (
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-700 p-5 text-sm">
+            <p>
+              <span className="font-bold">{t('platform.demo.nextReset')}</span>{' '}
+              <span className="font-mono">{countdown}</span>
+            </p>
+          </div>
+        ) : null
+      ) : (
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-700 p-5 space-y-3 text-sm">
           <p>
-            <span className="font-bold">{t('platform.demo.lastReset')}</span> {status.last_reset_at}
+            <span className="font-bold">{t('platform.demo.demoMode')}</span>{' '}
+            {t('platform.demo.disabled')}
           </p>
-        )}
-        {typeof status?.auto_reset_minutes === 'number' && (
           <p>
-            <span className="font-bold">{t('platform.demo.autoReset')}</span>{' '}
-            {t('platform.demo.autoResetMinutes', { minutes: status.auto_reset_minutes })}
+            <span className="font-bold">{t('platform.demo.isolation')}</span>{' '}
+            {status?.isolated ? t('platform.demo.isolationYes') : t('platform.demo.isolationNo')}
           </p>
-        )}
-        {countdown ? (
           <p>
-            <span className="font-bold">{t('platform.demo.nextReset')}</span>{' '}
-            <span className="font-mono">{countdown}</span>
+            <span className="font-bold">{t('platform.demo.storage')}</span> {status?.storage_path}
           </p>
-        ) : null}
-        {status?.credentials && (
-          <p className="font-mono text-xs bg-slate-100 dark:bg-slate-800 p-2 rounded-lg">
-            {status.credentials.email} / {status.credentials.password}
+          <p>
+            <span className="font-bold">{t('platform.demo.content')}</span> {status?.content_path}
           </p>
-        )}
-      </div>
+          <p>
+            <span className="font-bold">{t('platform.demo.files')}</span> {status?.file_count ?? 0}
+          </p>
+        </div>
+      )}
 
       <button
         type="button"

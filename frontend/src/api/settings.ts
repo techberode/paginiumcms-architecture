@@ -157,12 +157,9 @@ export interface PublicSettings {
   demo?: {
     enabled?: boolean;
     url?: string;
+    loginEmail?: string;
     showFooterLink?: boolean;
     autoResetMinutes?: number | null;
-    credentials?: {
-      email: string;
-      password: string;
-    } | null;
   };
   login?: {
     pageTitle?: string;

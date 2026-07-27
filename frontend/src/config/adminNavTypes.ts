@@ -6,6 +6,8 @@ export interface AdminNavItemDef {
   href: string;
   icon: LucideIcon;
   adminOnly?: boolean;
+  /** Hide this nav item on demo instances (`settings.demo.enabled`). Access via banner link. */
+  hideOnDemoInstance?: boolean;
 }
 
 export interface AdminNavSectionDef {

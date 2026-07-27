@@ -43,6 +43,16 @@ final class DemoControllerTest extends TestCase
         $this->assertSame(200, $response->getStatusCode());
         $this->assertTrue($data['success']);
         $this->assertFalse($data['data']['enabled']);
+        $this->assertArrayNotHasKey('credentials', $data['data']);
+    }
+
+    public function testDemoQuickLoginForbiddenWhenDemoDisabled(): void
+    {
+        $response = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/demo/quick-login')
+        );
+
+        $this->assertSame(404, $response->getStatusCode());
     }
 
     public function testDemoResetForbiddenWhenDemoDisabled(): void

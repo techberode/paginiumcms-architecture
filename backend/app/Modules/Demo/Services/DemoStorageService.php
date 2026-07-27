@@ -96,7 +96,7 @@ final class DemoStorageService
     }
 
     /**
-     * @return array{enabled: bool, storage_path: string, content_path: string, file_count: int, seeded: bool, auto_reset_minutes: int, last_reset_at: ?string, next_reset_at: ?string, seconds_until_reset: ?int, isolated: bool, credentials: ?array{email: string, password: string}}
+     * @return array{enabled: bool, storage_path: string, content_path: string, file_count: int, seeded: bool, auto_reset_minutes: int, last_reset_at: ?string, next_reset_at: ?string, seconds_until_reset: ?int, isolated: bool}
      */
     public function status(): array
     {
@@ -115,10 +115,6 @@ final class DemoStorageService
             'next_reset_at' => $schedule['next_reset_at'],
             'seconds_until_reset' => $schedule['seconds_until_reset'],
             'isolated' => true,
-            'credentials' => $this->demoMode->isEnabled() ? [
-                'email' => DemoFixtures::ADMIN_EMAIL,
-                'password' => DemoFixtures::ADMIN_PASSWORD,
-            ] : null,
         ];
     }
 

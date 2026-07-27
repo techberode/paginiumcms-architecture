@@ -1,7 +1,6 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.1.0-beta.10** · 2026-07-27 · tag **`v2.1.0-beta.10`**  
-> **Rozsah od beta.9:** `ecbfe0b` … release commit · **It.13 v3** Demo full trial  
+> Posledná verzia: **2.1.0-beta.11** · 2026-07-27 · tag **`v2.1.0-beta.11`** (pending)  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release.
 
 > **Poznámka k verziám:** **`2.0.58`** → `f53e71e` · **Public Beta 1** → `e3e0d82` · **Beta 1 Testing** → `c68e72b` · **Beta 1 patch (RR GHSA)** → *(commit po push)*.
@@ -30,6 +29,7 @@
 | **It.58b — Color schemes + themed public site** | **`v2.1.0-beta.8`** | ✅ tagged |
 | **It.62 + It.61 + demo deploy + analytics/editor** | **`v2.1.0-beta.9`** | ✅ tagged |
 | **It.13 v3 — Demo full trial** | **`v2.1.0-beta.10`** | ✅ **`ab5b5fb`** |
+| **It.13 v4 — Demo security polish** | **`v2.1.0-beta.11`** | ⏳ pending tag |
 
 **Pravidlo:** Post-beta patchy — `2.0.59+` alebo `2.1.0-beta.N` podľa rozsahu.
 
@@ -42,7 +42,110 @@ gh auth login   # ak ešte nie
 ./scripts/create-github-releases.sh
 ```
 
-Testerom / security reviewerovi poslať **`v2.1.0-beta.10`** + [SECURITY_REVIEW.md](../SECURITY_REVIEW.md).
+Testerom / security reviewerovi poslať **`v2.1.0-beta.11`** + [SECURITY_REVIEW.md](../SECURITY_REVIEW.md).
+
+---
+
+## v2.1.0-beta.11 — Demo security polish (It.13 v4)
+
+**Rozsah:** od **`v2.1.0-beta.10`** · editor hotfix + S-DEMOCREDS + demo UX
+
+| Oblasť | Zmena |
+|--------|--------|
+| Editor | Fix white screen — normalize `capabilities.enabled` from public settings |
+| S-DEMOCREDS | No password in `GET /api/settings/public`; `POST /api/demo/quick-login` |
+| Login FE | „Prihlásiť ako demo admin“ one-click |
+| Admin UX | Sidebar Demo modul hidden on demo instance; `/demo` ops card simplified |
+| Docs | ITERATION_13 v4, ISS-099 |
+
+### Pred tagom
+
+```bash
+./scripts/iteration-gate.sh
+vendor/bin/phpunit backend/tests/Http/Controllers/Admin/DemoControllerTest.php
+vendor/bin/phpunit backend/tests/Modules/Demo/
+cd frontend && npm test -- src/utils/editorProfiles.test.ts && npm run build:prod
+```
+
+### Commit + tag
+
+```bash
+git add -A
+git commit -m "$(cat <<'EOF'
+release: v2.1.0-beta.11 — It.13 v4 demo security polish.
+
+Remove demo password from public settings (S-DEMOCREDS), add quick-login,
+fix editor profile capabilities shape, hide demo nav card on demo instance.
+EOF
+)"
+git tag -a v2.1.0-beta.11 -m "v2.1.0-beta.11 — It.13 v4 demo security polish"
+git push origin main
+git push origin v2.1.0-beta.11
+```
+
+### GitHub Release — copy-paste (v2.1.0-beta.11)
+
+**Title:** `v2.1.0-beta.11 — Demo security polish (It.13 v4)`
+
+**Body:**
+
+```markdown
+## Summary
+- **Editor fix** — content editor no longer crashes on new page/article (`capabilities.includes`).
+- **S-DEMOCREDS** — demo password removed from public settings API; use `POST /api/demo/quick-login`.
+- **Demo UX** — admin sidebar „Demo modul“ hidden on demo instance (banner link); simplified `/demo` page.
+
+## Deploy — demo (required)
+APP_ROOT=/var/www/paginiumcms-demo
+cd "$APP_ROOT" && git fetch origin && git checkout v2.1.0-beta.11
+composer install --no-dev --optimize-autoloader
+cd frontend && npm ci && npm run build:prod && cd ..
+# restart stack — see docs/deploy/DEMO_DEPLOY.md
+
+## Smoke
+curl -s https://demo.paginiumcms.com/api/settings/public | jq '.data.demo'
+# no "credentials" / "password" key
+curl -s -X POST https://demo.paginiumcms.com/api/demo/quick-login -H 'Content-Type: application/json' | jq '.success'
+# true on demo instance
+```
+
+### Deploy demo C&P
+
+```bash
+APP_ROOT=/var/www/paginiumcms-demo
+STACK_DIR=/var/lib/docker/compose/paginiumcms-demo
+BACKEND_PORT=8091
+
+cd "$APP_ROOT"
+git fetch origin --tags
+git checkout v2.1.0-beta.11
+git log -1 --oneline
+
+composer install --no-dev --optimize-autoloader
+cd frontend && npm ci && npm run build:prod && cd ..
+
+cd "$STACK_DIR" && ./stack.sh up -d
+sleep 10
+
+curl -sf "http://127.0.0.1:${BACKEND_PORT}/api/health" | jq .
+curl -s  "http://127.0.0.1:${BACKEND_PORT}/api/settings/public" | jq '.data.demo'
+curl -sS -X POST "http://127.0.0.1:${BACKEND_PORT}/api/demo/quick-login" | jq '.success'
+```
+
+### Deploy prod C&P (FE only if same tag)
+
+```bash
+APP_ROOT=/var/www/paginiumcms.com
+STACK_DIR=/var/lib/docker/compose/paginiumcms
+BACKEND_PORT=8089
+
+cd "$APP_ROOT"
+git fetch origin --tags && git checkout v2.1.0-beta.11
+composer install --no-dev --optimize-autoloader
+cd frontend && npm ci && npm run build:prod && cd ..
+"$STACK_DIR/stack.sh" restart php
+curl -sf "http://127.0.0.1:${BACKEND_PORT}/api/health" | jq .
+```
 
 ---
 

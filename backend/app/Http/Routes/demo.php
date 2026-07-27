@@ -16,6 +16,7 @@ return function (App $app): void {
     $controller = $container->get(DemoController::class);
 
     $app->get('/api/demo/public-info', [$controller, 'publicInfo']);
+    $app->post('/api/demo/quick-login', [$controller, 'quickLogin']);
 
     $app->group('/api/admin/demo', function (RouteCollectorProxy $group) use ($controller): void {
         $group->get('/status', [$controller, 'status']);

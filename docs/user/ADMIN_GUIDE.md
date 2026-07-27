@@ -25,7 +25,7 @@
 | **USER** | ❌ | Registrácia, komentáre (ak povolené) |
 | **EDITOR** | ✅ | Stránky, články, médiá, navigácia, audit (čítanie), zálohy |
 | **ADMIN** | ✅ | + používatelia, nastavenia, firewall, logy, schránka, preklady |
-| **SUPER_ADMIN** | ✅ | + demo reset, **oprávnenia rolí (Path ACL)**, extensions, blueprints, GitHub |
+| **SUPER_ADMIN** | ✅ | + Path ACL, extensions, blueprints, GitHub (demo reset = ADMIN+) |
 
 **Pravidlo:** EDITOR vidí obsah; ADMIN spravuje platformu; SUPER_ADMIN spravuje aj bezpečnostné a vývojové nástroje.
 
@@ -187,7 +187,25 @@ Pre **prihláseného** používateľa:
 
 ### Demo (`/demo`)
 
-**Len inštancia demo.paginiumcms.com** — reset seed dát. Na zákazníckej produkcii `DEMO_MODE=false`, modul neviditeľný.
+**Len inštancia `demo.paginiumcms.com`** — správa sandboxu a reset seed dát. Na zákazníckej produkcii `DEMO_MODE=false`, modul neviditeľný.
+
+| Funkcia | Popis |
+|---------|--------|
+| Sidebar **Demo modul** | Skrytý na demo inštancii — prístup cez amber banner → `/demo` |
+| Onboarding panel | Rýchly štart — verejný web, admin moduly, reset |
+| Countdown | Ďalší auto-reset podľa `DEMO_AUTO_RESET_MINUTES` |
+| Reset seed | **ADMIN+** — obnoví ukážkový snapshot (komentáre, správy, newsletter, kontakt) |
+| Amber banner | V admin shell + verejný **DemoPublicStrip** na demo webe |
+
+**Po deployi `v2.1.0-beta.10+`:** spusti **Reset demo seed**, inak chýbajú nové ukážkové dáta.
+
+**Prihlásenie:** login → **Prihlásiť ako demo admin** (heslo nie je v public API). Manuálne: `demo@paginiumcms.com` / `Demo123!`.
+
+### Marketing (prod only)
+
+**Nastavenia → Marketing** — URL demo inštancie a zapnutie footer odkazu „Vyskúšajte CMS“ (`paginiumcms.com` → `demo.paginiumcms.com` v novom tabe).
+
+Detail: [ITERATION_13.md](../ITERATION_13.md) · deploy: [deploy/DEMO_DEPLOY.md](../deploy/DEMO_DEPLOY.md)
 
 ---
 

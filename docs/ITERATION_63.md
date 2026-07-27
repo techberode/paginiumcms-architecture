@@ -1,7 +1,7 @@
 # Iteration 63 — Admin system update (production only)
 
 **Status:** ⏳ Planned (next iteration after It.13 v3)  
-**Target release:** `v2.1.0-beta.10` or post-beta patch
+**Target release:** `v2.1.0-beta.11` (after It.13 v3 shipped as beta.10)
 
 ## Product position
 

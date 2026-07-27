@@ -917,7 +917,13 @@ return [
     DemoDataProviderInterface::class => create(DemoDataProvider::class)
         ->constructor(get(DemoMode::class)),
     DemoController::class => create(DemoController::class)
-        ->constructor(get(DemoStorageService::class), get(JsonResponder::class)),
+        ->constructor(
+            get(DemoStorageService::class),
+            get(AuthenticationInterface::class),
+            get(LoginAttemptTracker::class),
+            get(SecurityLogger::class),
+            get(JsonResponder::class)
+        ),
     DemoResetScheduler::class => create(DemoResetScheduler::class)
         ->constructor(get(DemoMode::class), get(DemoStorageService::class)),
     RunDemoResetCommand::class => create(RunDemoResetCommand::class)

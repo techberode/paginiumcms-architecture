@@ -40,6 +40,10 @@
 | `security` | Password policy, 2FA staff requirement | ADMIN+ |
 | `firewall` | WAF settings slice | ADMIN+ |
 | `logging` | Log level, retention, auth endpoint logging | ADMIN+ |
+| `marketing` | `demoFooterLinkEnabled`, `demoUrl` (production footer link to live demo) | ADMIN+ |
+| `appearance` | Public theme / login page styling (also seeded on demo reset) | ADMIN+ |
+
+**Public read (no auth):** `GET /api/settings/public` — general, branding, notifications, maintenance, **marketing** (demo link flags). Demo instance adds `GET /api/settings/public-demo` for login-page copy when `DEMO_MODE=true`.
 
 ### Frontend
 

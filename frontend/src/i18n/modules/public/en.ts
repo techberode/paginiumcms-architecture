@@ -244,7 +244,9 @@ export const publicEn: MessageTree = {
       ssoDivider: 'Or SSO',
       ssoButton: 'Sign in with :provider',
       demo: {
-        title: 'Demo credentials',
+        title: 'Demo access',
+        hint: 'One click signs you in as the demo administrator (:email). No password is exposed via public API.',
+        quickLoginButton: 'Sign in as demo admin',
         fillButton: 'Fill demo credentials',
       },
       totp: {
@@ -259,6 +261,7 @@ export const publicEn: MessageTree = {
         totpRequired: 'Enter the TOTP code from your authenticator',
         success: 'Signed in successfully',
         invalidCredentials: 'Invalid email or password',
+        demoQuickLoginFailed: 'Demo sign-in failed. Please try again shortly.',
         ssoNotConfigured: 'SSO is not configured',
         totpCodeRequired: 'Enter a 6-digit TOTP code',
         twoFactorSuccess: '2FA verification successful',
