@@ -84,6 +84,12 @@ STORAGE_DIRS=(
   backend/storage/app/content/blog
   backend/storage/app/content/media
   backend/storage/app/content/trash
+  backend/storage/app/demo
+  backend/storage/app/demo/data/users
+  backend/storage/app/demo/data/index
+  backend/storage/app/demo/pages
+  backend/storage/app/demo/blog
+  backend/storage/app/demo/media
 )
 
 for dir in "${STORAGE_DIRS[@]}"; do
@@ -97,13 +103,26 @@ if [[ "${COMPOSER_NO_DEV:-1}" == "1" ]]; then
   COMPOSER_FLAGS+=(--no-dev --optimize-autoloader)
 fi
 
+# Docker bind-mount: repo owned by host user, composer/git run as root in container.
+if [[ -d .git ]] && command -v git >/dev/null 2>&1; then
+  git config --global --add safe.directory "$ROOT" 2>/dev/null || true
+fi
+
+run_composer_install() {
+  COMPOSER_ALLOW_SUPERUSER=1 composer "${COMPOSER_FLAGS[@]}"
+}
+
 if [[ ! -f vendor/autoload.php ]]; then
   if command -v composer >/dev/null 2>&1; then
-    COMPOSER_ALLOW_SUPERUSER=1 composer "${COMPOSER_FLAGS[@]}"
+    run_composer_install
     ok "Composer dependencies installed"
   else
     fail "composer not found and vendor/ is missing — install PHP Composer first"
   fi
+elif ! COMPOSER_ALLOW_SUPERUSER=1 composer validate --no-check-publish >/dev/null 2>&1; then
+  warn "composer.lock out of sync — running composer install"
+  run_composer_install
+  ok "Composer dependencies refreshed"
 else
   ok "vendor/ present (run 'composer install' manually if dependencies changed)"
 fi

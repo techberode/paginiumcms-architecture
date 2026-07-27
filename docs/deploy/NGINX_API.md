@@ -97,6 +97,7 @@ Open `http://localhost:3025` — API calls go through the Vite proxy.
 | Vite dev (local only) | `localhost` | `3025` |
 
 Use the full server block in [`nginx-paginium-test.conf`](./nginx-paginium-test.conf) on **`.26`**.  
+For **production demo** host `demo.paginiumcms.com` (Docker upstream = stack `BACKEND_PORT`, typically `8091`), use [`nginx-demo.paginiumcms.com.conf`](./nginx-demo.paginiumcms.com.conf).  
 Frontend build must have empty `VITE_API_URL` (same-origin `/api`).
 
 ```bash

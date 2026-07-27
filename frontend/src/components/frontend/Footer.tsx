@@ -6,7 +6,6 @@ import { usePublicSite } from '../../context/PublicSiteContext';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { useI18n } from '../../context/I18nContext';
 import { linkTargetProps } from '../../utils/linkTarget';
-import { useOpenLinksInNewTab } from '../../hooks/useOpenLinksInNewTab';
 import { FooterNewsletter } from './FooterNewsletter';
 import { LOGO_FALLBACK } from '../../theme/publicUiClasses';
 
@@ -15,7 +14,6 @@ export const Footer: React.FC = () => {
   const { settings } = useSettingsContext();
   const { t } = useI18n();
   const navigate = useNavigate();
-  const openInNewTab = useOpenLinksInNewTab();
   const demoUrl = settings.demo?.url ?? 'https://demo.paginiumcms.com';
   const isDemoInstance = settings.demo?.enabled === true;
   const footerNewsletterEnabled = settings.newsletter?.footerEnabled === true;
@@ -89,7 +87,7 @@ export const Footer: React.FC = () => {
                     </p>
                     <a
                       href={demoUrl}
-                      {...linkTargetProps(openInNewTab)}
+                      {...linkTargetProps(true)}
                       className="inline-flex items-center gap-2 text-sm font-semibold public-footer-link text-theme-accent"
                     >
                       demo.paginiumcms.com
