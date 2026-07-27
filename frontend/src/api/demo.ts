@@ -36,8 +36,11 @@ export const demoApi = {
   },
 
   async quickLogin() {
-    const response = await apiClient.post<{ user: import('./types').User }>('/api/demo/quick-login');
-    return response.success && response.data ? response.data : null;
+    const response = await apiClient.post<{ user?: import('./types').User }>('/api/demo/quick-login', {});
+    if (response.success && response.user) {
+      return { user: response.user as import('./types').User };
+    }
+    return null;
   },
 
   async reset() {

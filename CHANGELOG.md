@@ -67,6 +67,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Docs
+
+- **ISS-102** — Demo outage runbook: missing `backend/storage/app/demo/data/` → total API 500; First-run storage bootstrap in [DEMO_DEPLOY.md](docs/deploy/DEMO_DEPLOY.md). Resolved on demo server 2026-07-27 (`HOST_WRITE_OK`, health HTTP 200).
+
 ---
 
 ## [2.1.0-beta.11] – 2026-07-27
@@ -91,7 +95,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Docs
 
-- [ITERATION_13.md](docs/ITERATION_13.md) v4 · ISS-099 (S-DEMOCREDS) · SECURITY_REVIEW update.
+- [ITERATION_13.md](docs/ITERATION_13.md) v4 · ISS-100 (S-DEMOCREDS) · SECURITY_REVIEW update.
 
 ---
 

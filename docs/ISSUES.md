@@ -119,6 +119,7 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-099 | Demo CLI/cron `demo:reset-if-due` — Permission denied `plugins.json` | Stredná (demo ops) | ℹ️ Ops — storage `chown user:www-data`, dirs `2775` |
 | ISS-100 | S-DEMOCREDS — demo heslo v `GET /api/settings/public` | Stredná (audit) | ✅ **`v2.1.0-beta.11`** — quick-login, no password in GET |
 | ISS-101 | Editor biela obrazovka — `capabilities.includes is not a function` | Vysoká (demo/admin) | ✅ **`v2.1.0-beta.11`** — normalize API profile shape |
+| ISS-102 | Demo API celé HTTP 500 — chýba `backend/storage/app/demo/data/`, mkdir Permission denied | **Vysoká (demo)** | ✅ Ops — storage bootstrap (2026-07-27) |
 
 
 
@@ -2453,6 +2454,58 @@ curl -sS -X POST https://demo.paginiumcms.com/api/demo/quick-login | jq '.succes
 
 ---
 
+## ISS-102 – Demo celé API HTTP 500 — chýbajúci `demo/data/` strom — VYRIEŠENÉ (ops)
+
+**Závažnosť:** Vysoká (demo outage — login, health, všetko)  
+**Stav:** ✅ Ops opravené na demo serveri (2026-07-27)
+
+**Symptóm:** Všetky endpointy vracajú HTTP **500** vrátane `/api/health`:
+
+```json
+{ "success": false, "error": "Vnútorná chyba servera" }
+```
+
+PHP log:
+
+```
+PluginRegistry.php: Unable to open plugin registry: .../backend/storage/app/demo/data/plugins.json
+FirewallBanStore.php: mkdir(): Permission denied
+FirewallBanStore.php: Failed to open stream: .../whitelist.json: No such file or directory
+```
+
+Diagnostika: `demo/data missing`; test `$APP_ROOT/storage/app/demo/...` → **WRITE FAIL** (nesprávna cesta).
+
+**Príčina:** Adresár `backend/storage/app/demo/data/` neexistoval a Docker `www-data` nemohol vytvoriť podstrom (`mkdir` Permission denied). Bootstrap pri každom requeste otvára plugin registry a firewall flat-files — bez zapisovateľného `data/` padá celá aplikácia.
+
+**Riešenie (jednorazový bootstrap na serveri):**
+
+```bash
+APP_ROOT=/var/www/paginiumcms-demo
+STORAGE="$APP_ROOT/backend/storage"
+
+sudo mkdir -p "$STORAGE/app/demo/data" "$STORAGE/app/demo/data/security/firewall" \
+  "$STORAGE/cache" "$STORAGE/backups"
+sudo chown -R "$(id -un):www-data" "$STORAGE"
+sudo find "$STORAGE" -type d -exec chmod 2775 {} \;
+sudo find "$STORAGE" -type f -exec chmod 664 {} \;
+# minimálne JSON pre bootstrap — detail v DEMO_DEPLOY.md § First-run
+```
+
+**Overenie po fixe:**
+
+```
+HOST_WRITE_OK · DOCKER_WRITE_OK · GET /api/health → HTTP 200
+demo:reset-if-due → ⏭ not_due   (normálne, ak interval ešte neuplynul)
+```
+
+Manuálny snapshot: admin **Demo** → **Reset demo seed**.
+
+**Súvis:** **ISS-099** (host cron vs `www-data` — miernejší prípad, web môže bežať). Rovnaký permission pattern ako **ISS-094** (It.62).
+
+**Docs:** [deploy/DEMO_DEPLOY.md](deploy/DEMO_DEPLOY.md) § First-run + ISS-102 · [ITERATION_62.md](ITERATION_62.md)
+
+---
+
 ## Súvisiace dokumenty
 
 - [user/BRANDING.md](user/BRANDING.md) — logo a favicon (**2.0.52**)
@@ -2464,7 +2517,7 @@ curl -sS -X POST https://demo.paginiumcms.com/api/demo/quick-login | jq '.succes
 - [ITERATION_57.md](ITERATION_57.md) — suggest-meta (ISS-080)
 - [ITERATION_62.md](ITERATION_62.md) — scheduler prod hardening (ISS-094)
 - [ITERATION_61.md](ITERATION_61.md) — footer newsletter + admin zoznam odberateľov (ISS-097)
-- [deploy/DEMO_DEPLOY.md](deploy/DEMO_DEPLOY.md) — demo nasadenie + ISS-098 CORS + ISS-099 cron/storage
+- [deploy/DEMO_DEPLOY.md](deploy/DEMO_DEPLOY.md) — demo nasadenie + ISS-098 CORS + ISS-099 cron/storage + ISS-102 bootstrap
 - [deploy/CRON.md](deploy/CRON.md) — produkčný crontab + Docker storage
 - [developer/TESTING.md](developer/TESTING.md) — PHPUnit izolácia (`LoginAttemptTracker`)
 - [ITERATION_44.md](ITERATION_44.md) — It.44d index filtre (ISS-038)

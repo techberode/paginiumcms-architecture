@@ -883,6 +883,6 @@ if (DebugEventLogger::isEnabled()) {
     ]);
 }
 
-$container->get(DemoStorageService::class)->ensureSeeded();
+$container->get(DemoStorageService::class)->ensureSeededSafely();
 
 return $app;

@@ -93,7 +93,7 @@ final class DemoController
                 'success' => true,
                 'user' => $user->jsonSerialize(),
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->securityLogger->recordFailedLogin($ip, $email);
 
             return $this->json->error($response, 'Demo prihlásenie zlyhalo', 401);

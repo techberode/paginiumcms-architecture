@@ -36,6 +36,7 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 | **It.61** | Newsletter footer + admin prehľad (ISS-097) | ✅ **shipped** |
 | **It.13 v3** | Demo full trial (seed, strip, marketing settings) | ✅ **shipped** (`beta.10`) |
 | **It.13 v4** | S-DEMOCREDS, quick-login, editor fix, demo nav UX | ✅ **ready** (`beta.11`) |
+| **Demo ops — ISS-102** | Storage bootstrap, health 200, `demo:reset-if-due` not_due OK | ✅ **2026-07-27** (server `2.0.9`, pending `beta.11` deploy) |
 | **It.63** | Admin system update (prod deploy) | ⏳ **ďalšia iterácia** |
 
 Detail deployu (lokálne, gitignored): `PRIVATE_DOMAIN_DEPLOY.md` · scheduler: [ITERATION_62.md](ITERATION_62.md) · cron: [deploy/CRON.md](deploy/CRON.md)
@@ -311,17 +312,18 @@ Komunikuj po slovensky. Pravidlá: .cursorrules + ZÁKONY v docs/CONTINUATION.md
 
 HOTOVÉ (2026-07-27):
 - It.13 v3 ✅ demo full trial — v2.1.0-beta.10 ab5b5fb
+- ISS-102 ✅ demo storage bootstrap — health HTTP 200 (server ešte 2.0.9)
 - beta.9 ✅ scheduler, newsletter, ISS-098 CORS — ecbfe0b
 - It.61/62/33/60 ✅ v predchádzajúcich beta release
 
 ĎALŠIA ITERÁCIA:
 - It.63 — Admin system update (prod deploy z UI) — ITERATION_63.md
 
-PO DEPLOYI DEMO (beta.10):
-- Admin /demo → Reset demo seed (nový snapshot)
-- Smoke: GET /api/demo/public-info, login s Origin hlavičkou
-- Storage: chown user:www-data backend/storage, dirs 2775 (ISS-099 pred cron)
-- php backend/bin/console demo:reset-if-due → ✅ alebo ⏭ not_due
+PO DEPLOYI DEMO (beta.11):
+- git checkout v2.1.0-beta.11 + composer + FE build (docs/deploy/DEMO_DEPLOY.md)
+- Admin /demo → Reset demo seed (manuálny snapshot — not_due na CLI je OK)
+- Smoke: GET /api/health 200, GET /api/demo/public-info, quick-login, login s Origin
+- Storage: backend/storage — chown user:www-data, dirs 2775 (ISS-099/102 pred cron)
 
 PROD DEPLOY (paginiumcms.com):
   cd /var/www/paginiumcms.com
@@ -346,10 +348,10 @@ PLÁNOVAČ / CRON:
 - CLI: scheduler:run, worker:process, jobs:run {id}
 - Demo: demo:reset-if-due každých 15 min — docs/deploy/CRON.md + DEMO_DEPLOY.md § ISS-099
 
-Incidenty: docs/ISSUES.md ISS-094–099.
+Incidenty: docs/ISSUES.md ISS-094–102.
 Deploy guide: docs/deploy/DEPLOY.md + docs/deploy/DEMO_DEPLOY.md.
 ```
 
 ---
 
-*Aktualizované 2026-07-27 po ISS-098 demo CORS + ISS-099 demo cron/storage docs. Podrobnosti: `ISSUES.md`, `deploy/DEMO_DEPLOY.md`, `RELEASE.md`.*
+*Updated 2026-07-27 after ISS-102 demo storage bootstrap (health 200). Details: `ISSUES.md`, `deploy/DEMO_DEPLOY.md`, `RELEASE.md`.*

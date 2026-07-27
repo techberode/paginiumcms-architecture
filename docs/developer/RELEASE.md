@@ -56,7 +56,7 @@ Testerom / security reviewerovi poslať **`v2.1.0-beta.11`** + [SECURITY_REVIEW.
 | S-DEMOCREDS | No password in `GET /api/settings/public`; `POST /api/demo/quick-login` |
 | Login FE | „Prihlásiť ako demo admin“ one-click |
 | Admin UX | Sidebar Demo modul hidden on demo instance; `/demo` ops card simplified |
-| Docs | ITERATION_13 v4, ISS-099 |
+| Docs | ITERATION_13 v4, ISS-100, ISS-102 ops runbook |
 
 ### Pred tagom
 
@@ -97,10 +97,12 @@ git push origin v2.1.0-beta.11
 
 ## Deploy — demo (required)
 APP_ROOT=/var/www/paginiumcms-demo
+# If health returns 500 — run storage bootstrap first (ISS-102): docs/deploy/DEMO_DEPLOY.md § First-run
 cd "$APP_ROOT" && git fetch origin && git checkout v2.1.0-beta.11
 composer install --no-dev --optimize-autoloader
 cd frontend && npm ci && npm run build:prod && cd ..
 # restart stack — see docs/deploy/DEMO_DEPLOY.md
+# Admin → Demo → Reset demo seed (manual snapshot; CLI not_due is OK)
 
 ## Smoke
 curl -s https://demo.paginiumcms.com/api/settings/public | jq '.data.demo'
@@ -121,6 +123,7 @@ git fetch origin --tags
 git checkout v2.1.0-beta.11
 git log -1 --oneline
 
+# ISS-102: skip if health already 200; else see DEMO_DEPLOY.md § First-run storage bootstrap
 composer install --no-dev --optimize-autoloader
 cd frontend && npm ci && npm run build:prod && cd ..
 
@@ -209,7 +212,7 @@ git push origin v2.1.0-beta.10
 | Instance | `DEMO_MODE` | Storage |
 |----------|-------------|---------|
 | `paginiumcms.com` | `false` | `storage/app/content/` |
-| `demo.paginiumcms.com` | `true` | `storage/app/demo/` only |
+| `demo.paginiumcms.com` | `true` | `backend/storage/app/demo/` only |
 
 Production content is **never** written from demo instance.
 
