@@ -50,7 +50,7 @@ Ak reviewuješ bezpečnosť (napr. ako beta tester s cybersec skúsenosťami):
 | [SECURITY.md](../SECURITY.md) (root) | Reporting policy, supported versions |
 | [ISSUES.md](ISSUES.md) | Verejný incident log (ISS-001–078) |
 
-**Odporúčaný tag:** `git checkout v2.1.0-beta.3`
+**Odporúčaný tag:** `git checkout v2.1.0-beta.9` (scheduler, newsletter, demo deploy, analytics, custom editor blocks)
 
 ---
 
@@ -60,11 +60,7 @@ Tieto funkcie **nie sú** v scope Public Beta 1 — plánované post-beta:
 
 | It. | Funkcia |
 |-----|---------|
-| 56 | Rich navigation (ikony, mega menu) |
-| 57 | Auto tags & meta description |
-| 58 | Page layout builder |
-| 60 | Vlastné MD/WYSIWYG komponenty |
-| 61 | Footer newsletter + **admin zoznam odberateľov** (ISS-097) |
+| 58 | Page layout builder (58a) |
 | 25 | Setup wizard (first-run + FIRST_STEPS stačia) |
 | 16 | Plné CMS témy + Code Editor file tree |
 

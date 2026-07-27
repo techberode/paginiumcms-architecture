@@ -238,6 +238,8 @@ See [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md) and [user/CODE_EDITOR.md](u
 | [developer/LOCAL_SETUP.md](developer/LOCAL_SETUP.md) | Docker Compose, first-run, native dev |
 | [developer/BETA_INFRA.md](developer/BETA_INFRA.md) | Wave 6 — beta gate, cron, security baseline |
 | [deploy/CRON.md](deploy/CRON.md) | Production scheduler + worker crontab |
+| [deploy/DEPLOY.md](deploy/DEPLOY.md) | **Production & demo update** (commit deploy, release tag, future admin UI) |
+| [deploy/DEMO_DEPLOY.md](deploy/DEMO_DEPLOY.md) | **Demo subdoména** — deploy, login, ISS-098 CORS (copy-paste) |
 | [deploy/DEV.md](deploy/DEV.md) | Local dev stack (Vite + PHP built-in server) |
 | [deploy/NGINX_API.md](deploy/NGINX_API.md) | Production nginx |
 | **[user/README.md](user/README.md)** | **Príručka používateľa — od inštalácie po admin (SK)** |

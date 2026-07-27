@@ -255,17 +255,19 @@ Plánované zálohy: **Plánovač** alebo cron `backup:run-schedule`.
 
 **Newsletter odberatelia — admin prehľad:**
 
-> ⚠️ **Dnes (ISS-097):** Admin **nemá UI** na zoznam prihlásených. Emaily sa ukladajú do flat-file:
+Admin → **Newsletter** (`/newsletter`) — tabuľka odberateľov (footer + maintenance), KPI podľa zdroja, CSV export. Nastavenia → **Newsletter** — `footerEnabled`, `footerHint`.
+
+Flat-file zdroj (záloha / CLI):
 
 ```
 backend/storage/app/content/data/newsletter/subscribers.json
 ```
 
-Na serveri: `jq . …/subscribers.json` — záznamy obsahujú `email`, `subscribedAt`, `source`.
+Záznamy: `email`, `subscribedAt`, `source` (`footer` | `maintenance`).
 
-**Plán:** [It.61](../ITERATION_61.md) pridá admin tabuľku + export + footer odber. Odhlásenie (unsubscribe) zatiaľ nie je implementované.
+**Zatiaľ nie je:** odhlásenie (unsubscribe) — backlog.
 
-Detail incidentov: [ISSUES.md § ISS-095–097](../ISSUES.md).
+Detail: [ITERATION_61.md](../ITERATION_61.md) · incidenty [ISSUES.md § ISS-095–098](../ISSUES.md).
 
 ### Kôš (`/trash`)
 

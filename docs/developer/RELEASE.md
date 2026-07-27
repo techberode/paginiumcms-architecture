@@ -1,7 +1,7 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.1.0-beta.8** · 2026-07-26 · tag **`v2.1.0-beta.8`**  
-> **Unreleased na `main`:** It.62 scheduler prod hardening → cieľ **`v2.1.0-beta.9`** (`f7a73f1`)  
+> Posledná verzia: **2.1.0-beta.9** · 2026-07-27 · tag **`v2.1.0-beta.9`** (pending push)  
+> **Release commit:** `a492e53` · **Rozsah od beta.8:** `0fe21ec` … `a492e53`  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release.
 
 > **Poznámka k verziám:** **`2.0.58`** → `f53e71e` · **Public Beta 1** → `e3e0d82` · **Beta 1 Testing** → `c68e72b` · **Beta 1 patch (RR GHSA)** → *(commit po push)*.
@@ -28,7 +28,7 @@
 | **Security audit — XSS, Zip-Slip, deploy** | **`v2.1.0-beta.6`** | ✅ tagged |
 | **Deps + Vitest + deploy env (ISS-089–092)** | **`v2.1.0-beta.7`** | ✅ tagged |
 | **It.58b — Color schemes + themed public site** | **`v2.1.0-beta.8`** | ✅ tagged |
-| **It.62 — Scheduler prod hardening (Docker, outcome UX)** | **`v2.1.0-beta.9`** | ⏳ na `main`, tag pending |
+| **It.62 + It.61 + demo deploy + analytics/editor** | **`v2.1.0-beta.9`** | ⏳ release commit `a492e53`, tag pending |
 
 **Pravidlo:** Post-beta patchy — `2.0.59+` alebo `2.1.0-beta.N` podľa rozsahu.
 
@@ -41,21 +41,24 @@ gh auth login   # ak ešte nie
 ./scripts/create-github-releases.sh
 ```
 
-Testerom / security reviewerovi poslať **`v2.1.0-beta.8`** + [SECURITY_REVIEW.md](../SECURITY_REVIEW.md).
+Testerom / security reviewerovi poslať **`v2.1.0-beta.9`** + [SECURITY_REVIEW.md](../SECURITY_REVIEW.md).
 
 ---
 
-## v2.1.0-beta.9 — It.62 Scheduler prod hardening (draft)
+## v2.1.0-beta.9 — Scheduler, newsletter, demo deploy (It.62 + It.61 + ISS-098)
 
-**Rozsah commitov na `main` od beta.8:** `0fe21ec` … `f7a73f1`
+**Rozsah commitov na `main` od beta.8:** `0fe21ec` … `a492e53`
 
 | Oblasť | Zmena |
 |--------|--------|
-| Deploy | Docker PHP 8.5, prod compose, log paths, symfony/console |
-| Scheduler BE | `finalizeRun`, `outcome`, `jobs:run`, monitoring state guards |
-| Storage | FileWriter 0664/0775, PHP `display_errors=Off` |
-| Scheduler FE | Toast fix, outcome badges, copy cron |
-| Docs | `ITERATION_62.md`, `CRON.md`, ISS-094 |
+| It.62 | Scheduler prod hardening — `outcome`, `jobs:run`, Docker storage, admin UX |
+| It.61 | Footer newsletter + admin `/newsletter` + CSV export (ISS-097) |
+| It.33 | Analytics enrichment — referer labels, geo, masked IPs |
+| It.60 | Custom editor components registry + hello-widget |
+| It.59 | Scheduled publish — clear scheduling on manual save |
+| ISS-098 | Demo CORS login fix — `SameOriginCorsMiddleware` |
+| Deploy | [DEPLOY.md](../deploy/DEPLOY.md), [DEMO_DEPLOY.md](../deploy/DEMO_DEPLOY.md), `deploy-instance-update.sh` |
+| Footer | Demo link visible with newsletter enabled, `_blank` |
 
 ### Pred tagom
 
@@ -63,16 +66,18 @@ Testerom / security reviewerovi poslať **`v2.1.0-beta.8`** + [SECURITY_REVIEW.m
 ./scripts/iteration-gate.sh
 cd frontend && npm test && npm run build:prod
 ./vendor/bin/phpunit backend/tests/Core/Scheduler/
+./vendor/bin/phpunit backend/tests/Http/Controllers/Newsletter/
 ```
 
-### Commit + tag (keď prod smoke OK)
+### Commit + tag (keď prod + demo smoke OK)
 
 ```bash
 git add backend/app/Support/AppVersion.php CHANGELOG.md docs/
 git commit -m "$(cat <<'EOF'
-release: v2.1.0-beta.9 — It.62 scheduler prod hardening.
+release: v2.1.0-beta.9 — scheduler hardening, newsletter, demo deploy.
 
-Docker storage permissions, job run outcome UX, jobs:run CLI, admin scheduler fixes.
+It.62 outcome UX + jobs:run CLI, It.61 footer newsletter admin, It.33 analytics,
+It.60 custom editor blocks, ISS-098 demo CORS, deploy docs + demo stack templates.
 EOF
 )"
 git tag v2.1.0-beta.9
@@ -80,9 +85,136 @@ git push origin main
 git push origin v2.1.0-beta.9
 ```
 
-### GitHub Release — title
+### GitHub Release — copy-paste (v2.1.0-beta.9)
 
-`v2.1.0-beta.9 — Scheduler production hardening (It.62)`
+**Title:** `v2.1.0-beta.9 — Scheduler hardening, newsletter admin, demo deploy`
+
+**Body:**
+
+```markdown
+## Summary
+
+- **It.62** — Job scheduler production hardening: `outcome` badges, `jobs:run` CLI, Docker storage permissions, admin `/scheduler` UX
+- **It.61** — Footer newsletter signup + admin subscriber list + CSV export (ISS-097)
+- **It.33** — Analytics enrichment — referer classification, geo, masked IPs
+- **It.60** — Custom editor components registry + `hello-widget` reference block
+- **ISS-098** — Demo login 401 in browser — `SameOriginCorsMiddleware` + deploy docs
+- **Deploy** — [DEPLOY.md](docs/deploy/DEPLOY.md), [DEMO_DEPLOY.md](docs/deploy/DEMO_DEPLOY.md), `scripts/deploy-instance-update.sh`
+
+## Deploy
+
+Production and demo copy-paste blocks: [DEPLOY.md](docs/deploy/DEPLOY.md) · [DEMO_DEPLOY.md](docs/deploy/DEMO_DEPLOY.md)
+
+After deploy, verify demo login in browser (not curl without `Origin`). Smoke:
+
+    curl -sS -o /dev/null -w 'login+Origin: HTTP %{http_code}\n' \
+      -X POST "https://demo.paginiumcms.com/api/auth/login" \
+      -H 'Content-Type: application/json' \
+      -H 'Origin: https://demo.paginiumcms.com' \
+      -d '{"email":"demo@paginiumcms.com","password":"Demo123!"}'
+
+Expected: **HTTP 200**
+
+## Docs
+
+- [ITERATION_62.md](docs/ITERATION_62.md) — scheduler prod hardening ✅
+- [ITERATION_61.md](docs/ITERATION_61.md) — footer newsletter ✅
+- [CRON.md](docs/deploy/CRON.md) — cron + Docker write test
+- [DEPLOY.md](docs/deploy/DEPLOY.md) — prod/demo update workflow
+
+## Known
+
+- **ISS-089** — npm audit high GHSA-qwww-vcr4-c8h2 (React Router RSC-only); SPA not affected on React 18
+- Newsletter **unsubscribe** not implemented yet (planned backlog)
+
+## Test plan
+
+- [ ] Admin → Plánovač — spustiť job, outcome badge `completed` / `skipped` / `failed`
+- [ ] `php backend/bin/console jobs:run {id}` — single job smoke on server
+- [ ] Nastavenia → Newsletter → zapnúť footer form; verejný footer odber funguje
+- [ ] Admin → Newsletter — tabuľka + CSV export
+- [ ] Demo login v prehliadači (nie len curl bez Origin)
+- [ ] Footer — demo link viditeľný aj s newsletter stĺpcom
+- [ ] `./scripts/iteration-gate.sh` — green
+```
+
+### C&P — deploy production
+
+```bash
+APP_ROOT=/var/www/paginiumcms.com
+STACK_DIR=/var/lib/docker/compose/paginiumcms
+BACKEND_PORT=8089
+
+cd "$APP_ROOT"
+git fetch origin && git checkout v2.1.0-beta.9   # alebo: git pull origin main
+composer install --no-dev --optimize-autoloader
+cd frontend && npm ci && npm run build:prod && cd ..
+"$STACK_DIR/stack.sh" restart php
+sleep 8 && curl -s "http://127.0.0.1:${BACKEND_PORT}/api/health"
+```
+
+### C&P — deploy demo (ISS-098 smoke)
+
+```bash
+APP_ROOT=/var/www/paginiumcms-demo
+STACK_DIR=/var/lib/docker/compose/paginiumcms-demo
+BACKEND_PORT=8091
+
+cd "$APP_ROOT"
+git fetch origin && git checkout v2.1.0-beta.9
+composer install --no-dev --optimize-autoloader
+cd frontend && npm ci && npm run build:prod && cd ..
+"$STACK_DIR/stack.sh" restart php
+sleep 8
+
+grep '^APP_URL=' "$APP_ROOT/.env"
+# očakávané: APP_URL=https://demo.paginiumcms.com
+
+curl -sS -o /dev/null -w 'login+Origin: HTTP %{http_code}\n' \
+  -X POST "https://demo.paginiumcms.com/api/auth/login" \
+  -H 'Content-Type: application/json' \
+  -H 'Origin: https://demo.paginiumcms.com' \
+  -d '{"email":"demo@paginiumcms.com","password":"Demo123!"}'
+# očakávané: HTTP 200
+```
+
+Plná dokumentácia: [deploy/DEMO_DEPLOY.md](../deploy/DEMO_DEPLOY.md) · [deploy/DEPLOY.md](../deploy/DEPLOY.md)
+
+---
+
+## Hotfix — ISS-098 Demo CORS login (2026-07-27)
+
+**Symptóm:** `demo.paginiumcms.com` — curl login OK, prehliadač 401 prázdna odpoveď.  
+**Príčina:** CORS + zlý `APP_URL`. **Fix:** `SameOriginCorsMiddleware` + správny `.env`.
+
+### C&P — deploy na demo server
+
+```bash
+APP_ROOT=/var/www/paginiumcms-demo
+STACK_DIR=/var/lib/docker/compose/paginiumcms-demo
+BACKEND_PORT=8091
+
+cd "$APP_ROOT"
+git pull origin main
+composer install --no-dev --optimize-autoloader
+cd frontend && npm ci && npm run build:prod && cd ..
+"$STACK_DIR/stack.sh" restart php
+sleep 8
+
+# Over APP_URL
+grep '^APP_URL=' "$APP_ROOT/.env"
+# musí byť: APP_URL=https://demo.paginiumcms.com
+
+# Smoke — simulácia prehliadača (Origin hlavička)
+curl -sS -o /dev/null -w 'login+Origin: HTTP %{http_code}\n' \
+  -X POST "https://demo.paginiumcms.com/api/auth/login" \
+  -H 'Content-Type: application/json' \
+  -H 'Origin: https://demo.paginiumcms.com' \
+  -d '{"email":"demo@paginiumcms.com","password":"Demo123!"}'
+# očakávané: HTTP 200
+```
+
+**Plná dokumentácia:** [deploy/DEMO_DEPLOY.md](../deploy/DEMO_DEPLOY.md)
 
 ---
 
