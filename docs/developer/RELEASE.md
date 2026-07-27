@@ -1,6 +1,6 @@
 # Release checklist — PaginiumCMS
 
-> Latest version: **2.1.0-beta.14** · 2026-07-27 · tag **`v2.1.0-beta.14`** · commit `66e83f0`  
+> Latest version: **2.1.0-beta.15** · 2026-07-27 · tag **`v2.1.0-beta.15`** (pending)  
 > This file contains **copy-paste** blocks for GitHub Release.
 
 > **Poznámka k verziám:** `2.0.58` → `f53e71e` · **Public Beta 1** → `e3e0d82` · **Beta 1 Testing** → `c68e72b` · **Beta 1 patch (RR GHSA)** → *(commit po push)*.
@@ -34,6 +34,7 @@
 | **It.63 — Admin system update (MVP)**              | `v2.1.0-beta.12` | `c9b11c8`      | ✅ tagged |
 | **It.63 hotfix — AppRoot + deploy UX**             | `v2.1.0-beta.13` | `db1cdcc`      | ✅ tagged |
 | **It.63 — Docker admin deploy bootstrap**          | `v2.1.0-beta.14` | `66e83f0`      | ✅ tagged |
+| **It.63 v2 — version check + audit fixes**       | `v2.1.0-beta.15` | ⏳ pending tag  |          |
 
 
 **Pravidlo:** Post-beta patchy — `2.0.59+` alebo `2.1.0-beta.N` podľa rozsahu.
@@ -47,7 +48,47 @@ gh auth login   # ak ešte nie
 ./scripts/create-github-releases.sh
 ```
 
-Testerom / security reviewerovi poslať **`v2.1.0-beta.14`** + [SECURITY_REVIEW.md](../SECURITY_REVIEW.md).
+Testerom / security reviewerovi poslať **`v2.1.0-beta.15`** + [SECURITY_REVIEW.md](../SECURITY_REVIEW.md).
+
+---
+
+## v2.1.0-beta.15 — Version check UX + security audit fixes (It.63 v2)
+
+**Scope:** Remote check banners, GitHub release notes in admin UI; ISS-104 jobs deploy bypass; ISS-105 GeoIP HTTPS.
+
+### Gate (required before tag)
+
+```bash
+./scripts/iteration-gate.sh
+```
+
+### Tag
+
+```bash
+git tag -a v2.1.0-beta.15 -m "v2.1.0-beta.15 — It.63 v2 version check + ISS-104/105"
+git push origin v2.1.0-beta.15
+```
+
+### GitHub Release — copy-paste
+
+**Title:** `v2.1.0-beta.15 — System update version check + security fixes`
+
+**Body highlights:**
+
+- **System update UI** — “Your version is up to date” / “Update available” + release notes from GitHub Release
+- **ISS-104** — ADMIN cannot trigger deploy via jobs API (`system-deploy` SUPER_ADMIN-only; system job payload locked)
+- **ISS-105** — GeoIP lookup over HTTPS + OutboundUrlGuard
+
+**Production deploy:**
+
+```bash
+cd /var/www/paginiumcms.com
+git fetch origin --tags && git checkout v2.1.0-beta.15
+APP_ROOT=/var/www/paginiumcms.com STACK_DIR=… BACKEND_PORT=8089 GIT_REF=v2.1.0-beta.15 \
+  ./scripts/deploy-instance-update.sh
+curl -s http://127.0.0.1:8089/api/health | jq '.data.version'
+# expected: 2.1.0-beta.15
+```
 
 ---
 

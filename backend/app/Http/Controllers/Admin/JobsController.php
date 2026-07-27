@@ -10,9 +10,11 @@ use PaginiumCMS\Core\Scheduler\Services\JobQueueStore;
 use PaginiumCMS\Core\Scheduler\Services\JobRegistryStore;
 use PaginiumCMS\Core\Scheduler\Services\JobRunStore;
 use PaginiumCMS\Core\Scheduler\Services\JobWorker;
+use PaginiumCMS\Core\Scheduler\Services\PrivilegedJobPolicy;
 use PaginiumCMS\Core\Scheduler\Services\ScheduledJobRunner;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Http\Support\JsonResponder;
+use PaginiumCMS\Modules\Security\Models\User;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -113,6 +115,11 @@ final class JobsController
         }
 
         $payload['id'] = $id;
+        $privileged = $this->denyPrivilegedJobUnlessSuperAdmin($request, $response, $existing);
+        if ($privileged !== null) {
+            return $privileged;
+        }
+
         $error = $this->validateJobPayload($payload, false, $existing);
         if ($error !== null) {
             return $this->json->error($response, $error, 422);
@@ -143,8 +150,14 @@ final class JobsController
     {
         try {
             $id = (string) ($args['id'] ?? '');
-            if ($this->registry->find($id) === null) {
+            $job = $this->registry->find($id);
+            if ($job === null) {
                 return $this->json->error($response, 'Job not found', 404);
+            }
+
+            $privileged = $this->denyPrivilegedJobUnlessSuperAdmin($request, $response, $job);
+            if ($privileged !== null) {
+                return $privileged;
             }
 
             $payload = $this->parseBody($request) ?? [];
@@ -242,5 +255,31 @@ final class JobsController
         }
 
         return null;
+    }
+
+    /**
+     * @param array<string, mixed> $job
+     */
+    private function denyPrivilegedJobUnlessSuperAdmin(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        array $job
+    ): ?ResponseInterface {
+        if (!PrivilegedJobPolicy::requiresSuperAdmin($job)) {
+            return null;
+        }
+
+        if ($this->isSuperAdmin($request)) {
+            return null;
+        }
+
+        return $this->json->error($response, 'This job requires SUPER_ADMIN', 403);
+    }
+
+    private function isSuperAdmin(ServerRequestInterface $request): bool
+    {
+        $user = $request->getAttribute('user');
+
+        return $user instanceof User && in_array('SUPER_ADMIN', $user->getRoles(), true);
     }
 }

@@ -49,6 +49,9 @@ final class ScheduledJobRunner
 
             $id = (string) ($job['id'] ?? '');
             $handlerKey = (string) ($job['handler'] ?? '');
+            if (PrivilegedJobPolicy::skipInScheduledRunDue($handlerKey)) {
+                continue;
+            }
             $cronExpr = (string) ($job['cron'] ?? '* * * * *');
             $lastRun = isset($job['last_run_at']) ? (string) $job['last_run_at'] : null;
 

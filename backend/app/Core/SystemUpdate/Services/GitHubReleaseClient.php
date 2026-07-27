@@ -19,7 +19,7 @@ final class GitHubReleaseClient
      * @param array<string, mixed> $settings systemUpdate group (githubOwner, githubRepo, githubToken, defaultBranch)
      * @return array<string, mixed>
      */
-    public function check(array $settings, ?string $localCommit = null): array
+    public function check(array $settings, ?string $localCommit = null, ?string $localCommitFull = null): array
     {
         $owner = trim((string) ($settings['githubOwner'] ?? ''));
         $repo = trim((string) ($settings['githubRepo'] ?? ''));
@@ -53,9 +53,15 @@ final class GitHubReleaseClient
             }
 
             $compare = null;
-            if ($localCommit !== null && $localCommit !== '' && $latestSha !== null) {
-                $comparePath = $base . '/compare/' . rawurlencode($localCommit) . '...' . rawurlencode($latestSha);
+            $compareCommit = $localCommitFull ?? $localCommit;
+            if ($compareCommit !== null && $compareCommit !== '' && $latestSha !== null) {
+                $comparePath = $base . '/compare/' . rawurlencode($compareCommit) . '...' . rawurlencode($latestSha);
                 $compare = $this->request($comparePath, $token);
+            }
+
+            $releaseBody = is_string($latestRelease['body'] ?? null) ? trim($latestRelease['body']) : '';
+            if (strlen($releaseBody) > 8000) {
+                $releaseBody = substr($releaseBody, 0, 8000) . "\n\n…";
             }
 
             return [
@@ -69,6 +75,11 @@ final class GitHubReleaseClient
                     : null,
                 'latest_release_tag' => is_string($latestRelease['tag_name'] ?? null) ? $latestRelease['tag_name'] : null,
                 'latest_release_name' => is_string($latestRelease['name'] ?? null) ? $latestRelease['name'] : null,
+                'latest_release_body' => $releaseBody !== '' ? $releaseBody : null,
+                'latest_release_url' => is_string($latestRelease['html_url'] ?? null) ? $latestRelease['html_url'] : null,
+                'latest_release_published_at' => is_string($latestRelease['published_at'] ?? null)
+                    ? $latestRelease['published_at']
+                    : null,
                 'compare' => $compare !== null ? [
                     'status' => $compare['status'] ?? null,
                     'ahead_by' => (int) ($compare['ahead_by'] ?? 0),

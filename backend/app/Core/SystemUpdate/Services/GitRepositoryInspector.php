@@ -17,7 +17,7 @@ final class GitRepositoryInspector
     }
 
     /**
-     * @return array{available: bool, describe: ?string, commit: ?string, branch: ?string, dirty: bool}
+     * @return array{available: bool, describe: ?string, commit: ?string, commit_full: ?string, branch: ?string, dirty: bool}
      */
     public function status(): array
     {
@@ -27,6 +27,7 @@ final class GitRepositoryInspector
                 'available' => false,
                 'describe' => null,
                 'commit' => null,
+                'commit_full' => null,
                 'branch' => null,
                 'dirty' => false,
             ];
@@ -34,12 +35,14 @@ final class GitRepositoryInspector
 
         $describe = $this->runGit($root, 'describe --tags --always --dirty');
         $commit = $this->runGit($root, 'rev-parse --short HEAD');
+        $commitFull = $this->runGit($root, 'rev-parse HEAD');
         $branch = $this->runGit($root, 'rev-parse --abbrev-ref HEAD');
 
         return [
             'available' => true,
             'describe' => $describe !== '' ? $describe : null,
             'commit' => $commit !== '' ? $commit : null,
+            'commit_full' => $commitFull !== '' ? $commitFull : null,
             'branch' => $branch !== '' && $branch !== 'HEAD' ? $branch : null,
             'dirty' => str_contains($describe, '-dirty'),
         ];
