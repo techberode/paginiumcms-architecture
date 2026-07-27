@@ -72,6 +72,7 @@ export const settingsEn: MessageTree = {
     "connectors": "Notification connectors",
     "monitoring": "Monitoring & incidents",
     "scheduler": "Job scheduler",
+    "systemUpdate": "System update (deploy)",
     "codePolicy": "Code policy",
     "comments": "Comments",
     "contact": "Contact form",

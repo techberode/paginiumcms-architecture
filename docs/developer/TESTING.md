@@ -293,6 +293,8 @@ backend/tests/
 
 Bootstrap aplikácie pre HTTP testy: `backend/tests/Http/TestCase.php` — načíta reálny `bootstrap/app.php`, session reset, **`LoginAttemptTracker::clearAll()`** pred každým testom (inak zlyhané loginy z predchádzajúcich testov zablokujú IP `unknown` → HTTP **429** namiesto očakávaného **401**). Rate-limit middleware je v `APP_ENV=testing` no-op.
 
+**ISS-103 (beta.12):** PHPUnit HTTP testy **nenačítavajú** lokálny `.env` keď `APP_ENV=testing` (`bootstrap/app.php` skip Dotenv). `TestCase` vynucuje `DEMO_MODE=false` pred bootstrapom — inak vývojársky `.env` s demo flagom spôsobí flaky OTP/2FA testy. Detail: [ISSUES.md](../ISSUES.md#iss-103--phpunit-otp2fa-flaky--lokálny-env-polluluje-testy--vyriešené).
+
 ## Iterácia 20 – pokrytie core hardening
 
 

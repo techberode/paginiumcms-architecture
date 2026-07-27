@@ -26,7 +26,9 @@ final class JobRegistryStore
      */
     public function all(): array
     {
-        return $this->load()['jobs'] ?? $this->seedDefaults()['jobs'];
+        $jobs = $this->load()['jobs'] ?? $this->seedDefaults()['jobs'];
+
+        return $this->mergeMissingSystemJobs($jobs);
     }
 
     /**
@@ -154,8 +156,44 @@ final class JobRegistryStore
                     'system' => true,
                     'payload' => [],
                 ],
+                [
+                    'id' => 'system-deploy',
+                    'name' => 'System code deploy',
+                    'handler' => 'system.deploy',
+                    'cron' => '0 0 1 1 *',
+                    'enabled' => true,
+                    'system' => true,
+                    'payload' => [],
+                ],
             ],
         ];
+    }
+
+    /**
+     * @param list<array<string, mixed>> $jobs
+     * @return list<array<string, mixed>>
+     */
+    private function mergeMissingSystemJobs(array $jobs): array
+    {
+        $byId = [];
+        foreach ($jobs as $job) {
+            $id = (string) ($job['id'] ?? '');
+            if ($id !== '') {
+                $byId[$id] = $job;
+            }
+        }
+
+        foreach ($this->seedDefaults()['jobs'] as $systemJob) {
+            if (!(bool) ($systemJob['system'] ?? false)) {
+                continue;
+            }
+            $id = (string) ($systemJob['id'] ?? '');
+            if ($id !== '' && !isset($byId[$id])) {
+                $byId[$id] = $systemJob;
+            }
+        }
+
+        return array_values($byId);
     }
 
     /**

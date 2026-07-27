@@ -72,6 +72,7 @@ export const settingsSk: MessageTree = {
     "connectors": "Notification connectors",
     "monitoring": "Monitoring & incidents",
     "scheduler": "Job scheduler",
+    "systemUpdate": "Aktualizácia systému (deploy)",
     "codePolicy": "Code policy",
     "comments": "Komentáre",
     "contact": "Kontaktný formulár",

@@ -8,6 +8,7 @@ use PaginiumCMS\Core\Scheduler\Contracts\JobHandlerInterface;
 use PaginiumCMS\Core\Scheduler\Handlers\BackupScheduledHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\ContentScheduledPublishHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\MonitoringPipelineHandler;
+use PaginiumCMS\Core\Scheduler\Handlers\SystemDeployHandler;
 
 /**
  * Maps handler keys to DI-resolved handlers (Iteration 29).
@@ -17,7 +18,8 @@ final class JobHandlerRegistry
     public function __construct(
         private BackupScheduledHandler $backup,
         private MonitoringPipelineHandler $monitoring,
-        private ContentScheduledPublishHandler $scheduledPublish
+        private ContentScheduledPublishHandler $scheduledPublish,
+        private SystemDeployHandler $systemDeploy
     ) {
     }
 
@@ -27,6 +29,7 @@ final class JobHandlerRegistry
             'backup.scheduled' => $this->backup,
             'monitoring.pipeline' => $this->monitoring,
             'content.scheduled_publish' => $this->scheduledPublish,
+            'system.deploy' => $this->systemDeploy,
             default => null,
         };
     }
@@ -40,6 +43,7 @@ final class JobHandlerRegistry
             ['key' => $this->backup->key(), 'label' => $this->backup->label()],
             ['key' => $this->monitoring->key(), 'label' => $this->monitoring->label()],
             ['key' => $this->scheduledPublish->key(), 'label' => $this->scheduledPublish->label()],
+            ['key' => $this->systemDeploy->key(), 'label' => $this->systemDeploy->label()],
         ];
     }
 }

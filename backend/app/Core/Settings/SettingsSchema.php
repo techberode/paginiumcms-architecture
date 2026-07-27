@@ -402,6 +402,19 @@ final class SettingsSchema
                 'informational' => true,
                 'fields' => [],
             ],
+            'systemUpdate' => [
+                'label' => 'System update (production deploy)',
+                'superAdminOnly' => true,
+                'fields' => [
+                    ['key' => 'deployEnabled', 'type' => 'bool', 'label' => 'Enable admin deploy', 'default' => false, 'rules' => ['bool'], 'help' => 'SUPER_ADMIN can enqueue code deploy from Platform → System update. Ignored when DEMO_MODE=true.'],
+                    ['key' => 'githubOwner', 'type' => 'string', 'label' => 'GitHub owner', 'default' => 'techberode', 'rules' => ['string', 'max:120']],
+                    ['key' => 'githubRepo', 'type' => 'string', 'label' => 'GitHub repository', 'default' => 'paginiumcms-architecture', 'rules' => ['string', 'max:120']],
+                    ['key' => 'githubToken', 'type' => 'password', 'label' => 'GitHub token (repo read)', 'default' => '', 'rules' => ['string', 'max:512'], 'help' => 'Fine-grained or classic token with read access to code and releases.'],
+                    ['key' => 'defaultBranch', 'type' => 'string', 'label' => 'Default branch', 'default' => 'main', 'rules' => ['required', 'string', 'max:120']],
+                    ['key' => 'allowDeployMain', 'type' => 'bool', 'label' => 'Allow deploy from branch (origin/…)', 'default' => false, 'rules' => ['bool']],
+                    ['key' => 'allowDeployTags', 'type' => 'bool', 'label' => 'Allow deploy from semver tags', 'default' => true, 'rules' => ['bool']],
+                ],
+            ],
         ];
     }
 

@@ -1,7 +1,7 @@
 # Iteration 63 — Admin system update (production only)
 
-**Status:** ⏳ Planned (next iteration after It.13 v3)  
-**Target release:** `v2.1.0-beta.11` (after It.13 v3 shipped as beta.10)
+**Status:** ✅ MVP shipped — **`v2.1.0-beta.12`**  
+**Target release:** `v2.1.0-beta.12`
 
 ## Product position
 
@@ -15,24 +15,38 @@
 
 This is **code deploy** (git tag / `main`), not content sync (`/github` panel).
 
-## Summary
+## Summary (MVP)
 
 | Layer | Deliverable |
 |-------|-------------|
-| **UI** | `Platform → System update` (`/platform/update`) — current ref, remote SHA/tag, changelog snippet, deploy actions, job log |
+| **UI** | `Platform → System update` (`/platform/update`) — current ref, remote check, deploy actions, recent job runs |
 | **API** | `GET /api/admin/system/update/status`, `POST …/check`, `POST …/run` |
 | **CLI** | `php backend/bin/console system:deploy --ref=origin/main` |
-| **Execution** | Job queue → root-owned wrapper → [`scripts/deploy-instance-update.sh`](../scripts/deploy-instance-update.sh) |
+| **Execution** | Job queue `system-deploy` → whitelisted [`scripts/deploy-instance-update.sh`](../scripts/deploy-instance-update.sh) |
 | **Settings** | Group `systemUpdate` — GitHub owner/repo/token (encrypted), `deployEnabled`, tag/branch policy |
-| **Security** | SUPER_ADMIN + 2FA + CSRF; no user-controlled shell; audit log on every run |
+| **Security** | SUPER_ADMIN + 2FA middleware + CSRF; ref whitelist; audit log on every run; skipped in `APP_ENV=testing` and `DEMO_MODE` |
 
-## Phases
+## Backend
 
-### MVP
+- `GitRepositoryInspector` — local `git describe` / commit / branch
+- `GitHubReleaseClient` — GitHub compare/releases (`OutboundUrlGuard`)
+- `SystemDeployService` — validates ref, invokes deploy script only
+- `SystemDeployHandler` — job handler `system.deploy`
+- `SystemUpdateController` — status / check / run (enqueue + inline worker tick)
+- `SystemDeployCommand` — CLI `system:deploy --ref=`
 
-- Status endpoint (current `git describe`, remote compare via GitHub API)
-- Manual deploy enqueue from admin (job queue, same outcome UX as It.62)
-- CLI `system:deploy` for worker/cron
+## Frontend
+
+- `SystemUpdateView.tsx` + `frontend/src/api/systemUpdate.ts`
+- Nav: Platform → **System update** (SUPER_ADMIN only, hidden on demo instance)
+- Settings category **System** → group `systemUpdate`
+
+## Tests
+
+- `SystemDeployServiceTest` — ref validation, testing skip
+- `SystemUpdateControllerTest` — auth, SUPER_ADMIN, deploy gate
+
+## Phases (post-MVP)
 
 ### v2
 
@@ -60,3 +74,11 @@ This is **code deploy** (git tag / `main`), not content sync (`/github` panel).
 - Demo instance upgrade via admin
 - Customer-hosted auto-update without explicit SUPER_ADMIN action
 - Replacing SSH for first-time server bootstrap
+
+## Production enable checklist
+
+1. Settings → **System update** — set GitHub owner/repo/token, enable `deployEnabled`
+2. Prefer tag deploy (`allowDeployTags=true`); branch deploy only when intentional (`allowDeployMain`)
+3. Ensure host env: `APP_ROOT`, `STACK_DIR`, deploy script executable
+4. Cron: `scheduler:run` + `worker:process` (same as It.62)
+5. First deploy: use semver tag ref (e.g. `v2.1.0-beta.12`), verify audit log + job run history

@@ -18,9 +18,9 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 
 ## Aktuálny plán (2026-07-27) — Public Beta 1 + produkčný deploy
 
-**Stav:** **`v2.1.0-beta.11`** pending tag · It.13 v4 ready · **It.63** plánovaná
+**Stav:** **`v2.1.0-beta.12`** · It.63 MVP shipped · **It.64+** plánované
 
-**Ďalšia iterácia:** **[It.63 — Admin system update](ITERATION_63.md)** (prod deploy z admin UI)
+**Ďalšia iterácia:** backlog — It.63 v2 (GitHub compare UI) alebo It.25 setup wizard
 
 | Priorita | Úloha | Stav |
 |----------|--------|------|
@@ -36,8 +36,9 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 | **It.61** | Newsletter footer + admin prehľad (ISS-097) | ✅ **shipped** |
 | **It.13 v3** | Demo full trial (seed, strip, marketing settings) | ✅ **shipped** (`beta.10`) |
 | **It.13 v4** | S-DEMOCREDS, quick-login, editor fix, demo nav UX | ✅ **ready** (`beta.11`) |
-| **Demo ops — ISS-102** | Storage bootstrap, health 200, `demo:reset-if-due` not_due OK | ✅ **2026-07-27** (server `2.0.9`, pending `beta.11` deploy) |
-| **It.63** | Admin system update (prod deploy) | ⏳ **ďalšia iterácia** |
+| **Demo ops — ISS-102** | Storage bootstrap, health 200, `demo:reset-if-due` not_due OK | ✅ **2026-07-27** |
+| **ISS-103** | PHPUnit test isolation — `.env` / `DEMO_MODE` pollution | ✅ **`beta.12`** |
+| **It.63** | Admin system update (prod deploy) | ✅ **`beta.12`** MVP |
 
 Detail deployu (lokálne, gitignored): `PRIVATE_DOMAIN_DEPLOY.md` · scheduler: [ITERATION_62.md](ITERATION_62.md) · cron: [deploy/CRON.md](deploy/CRON.md)
 
@@ -317,7 +318,7 @@ HOTOVÉ (2026-07-27):
 - It.61/62/33/60 ✅ v predchádzajúcich beta release
 
 ĎALŠIA ITERÁCIA:
-- It.63 — Admin system update (prod deploy z UI) — ITERATION_63.md
+- It.63 v2 — GitHub compare UI, one-click tag deploy — ITERATION_63.md post-MVP
 
 PO DEPLOYI DEMO (beta.11):
 - git checkout v2.1.0-beta.11 + composer + FE build (docs/deploy/DEMO_DEPLOY.md)
@@ -354,4 +355,4 @@ Deploy guide: docs/deploy/DEPLOY.md + docs/deploy/DEMO_DEPLOY.md.
 
 ---
 
-*Updated 2026-07-27 after ISS-102 demo storage bootstrap (health 200). Details: `ISSUES.md`, `deploy/DEMO_DEPLOY.md`, `RELEASE.md`.*
+*Updated 2026-07-27 after It.63 MVP (`beta.12`) + ISS-103 test isolation. Details: `ITERATION_63.md`, `ISSUES.md`, `RELEASE.md`.*

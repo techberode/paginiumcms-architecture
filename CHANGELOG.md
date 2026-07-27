@@ -59,7 +59,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.62 + It.61 + demo deploy + analytics/editor | **`v2.1.0-beta.9`** | [below](#210-beta9--2026-07-27) |
 | It.13 v3 — Demo full trial | **`v2.1.0-beta.10`** | [below](#210-beta10--2026-07-27) |
 | It.13 v4 — Demo security polish | **`v2.1.0-beta.11`** | [below](#210-beta11--2026-07-27) |
-| It.63 — Admin system update (prod) | Planned | [ITERATION_63.md](docs/ITERATION_63.md) |
+| It.63 — Admin system update (prod) | **`v2.1.0-beta.12`** | [below](#210-beta12--2026-07-27) |
 | Wave 5d — It.15 hook emitters + extension policy | **2.0.54** | [below](#2054--2026-07-23) |
 | It.19b–19d — Security runtime, auth UX, password policy | **2.0.45** | [below](#2045--2026-07-21) |
 
@@ -69,7 +69,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Docs
 
-- **ISS-102** — Demo outage runbook: missing `backend/storage/app/demo/data/` → total API 500; First-run storage bootstrap in [DEMO_DEPLOY.md](docs/deploy/DEMO_DEPLOY.md). Resolved on demo server 2026-07-27 (`HOST_WRITE_OK`, health HTTP 200).
+- (none)
+
+---
+
+## [2.1.0-beta.12] – 2026-07-27
+
+**It.63 MVP** — Admin system update (production deploy from UI) + test isolation (ISS-103).
+
+### Added (It.63)
+
+- **`GET/POST /api/admin/system/update/*`** — status, GitHub remote check, deploy enqueue (`SUPER_ADMIN` + 2FA).
+- **`SystemUpdateView`** — `/platform/update` admin UI (hidden on demo instance).
+- **Settings group `systemUpdate`** — GitHub token (encrypted), `deployEnabled`, branch/tag policy.
+- **Job `system-deploy`** + CLI `system:deploy --ref=`.
+- **`SystemDeployService`** — whitelisted runner for `scripts/deploy-instance-update.sh` only.
+
+### Fixed
+
+- **ISS-103** — PHPUnit HTTP tests no longer load developer `.env` / `DEMO_MODE=true` during `APP_ENV=testing`.
+- **`/api/health`** — version from `AppVersion::current()` instead of hardcoded string.
+
+### Security
+
+- Deploy ref whitelist (semver tag or `origin/branch` when allowed); no user-controlled shell.
+- Audit log entry `system.deploy` on every admin-triggered run.
+- Deploy skipped in testing and demo environments.
+
+### Docs
+
+- [ITERATION_63.md](docs/ITERATION_63.md) · ISS-103 · [deploy/DEPLOY.md §G](docs/deploy/DEPLOY.md)
 
 ---
 

@@ -29,6 +29,13 @@ abstract class TestCase extends BaseTestCase
 
         putenv('APP_ENV=testing');
         $_ENV['APP_ENV'] = 'testing';
+        $_SERVER['APP_ENV'] = 'testing';
+
+        // Must be set before bootstrap so Dotenv safeLoad and DemoMode do not pick up
+        // a developer .env (e.g. DEMO_MODE=true for demo.paginiumcms.com).
+        putenv('DEMO_MODE=false');
+        $_ENV['DEMO_MODE'] = 'false';
+        unset($_SERVER['DEMO_MODE']);
 
         if (session_status() === PHP_SESSION_ACTIVE) {
             session_destroy();
@@ -60,11 +67,13 @@ abstract class TestCase extends BaseTestCase
             'allowRegistration' => true,
         ]));
 
-        $settings->setGroup('workflows', array_merge($settings->group('workflows'), [
+        $settings->setGroup('workflows', [
             'registrationOtpEnabled' => false,
             'commentApprovalOtpEnabled' => false,
             'publishApprovalOtpEnabled' => false,
-        ]));
+            'otpTtlMinutes' => 15,
+            'otpMaxAttempts' => 5,
+        ]);
     }
 
     protected function tearDown(): void
@@ -72,6 +81,13 @@ abstract class TestCase extends BaseTestCase
         if (session_status() === PHP_SESSION_ACTIVE) {
             session_destroy();
         }
+
+        putenv('APP_ENV=testing');
+        $_ENV['APP_ENV'] = 'testing';
+        $_SERVER['APP_ENV'] = 'testing';
+        putenv('DEMO_MODE=false');
+        $_ENV['DEMO_MODE'] = 'false';
+        unset($_SERVER['DEMO_MODE']);
 
         parent::tearDown();
     }
@@ -186,6 +202,38 @@ abstract class TestCase extends BaseTestCase
         $login = $this->loginTestUser($userData['email'], $userData['password']);
         if ($this->currentUser !== null) {
             $this->currentUser->setRoles(['ADMIN']);
+        }
+
+        return array_merge($userData, $login);
+    }
+
+    /**
+     * @return array{
+     *     email: string,
+     *     password: string,
+     *     name: string,
+     *     user: mixed,
+     *     response: ResponseInterface,
+     *     data: array<int|string, mixed>
+     * }
+     */
+    protected function loginAsSuperAdminUser(
+        ?string $email = null,
+        ?string $password = null,
+        ?string $name = null
+    ): array {
+        $userData = $this->createTestUser($email, $password, $name);
+
+        $repo = $this->container()->get(UserRepository::class);
+        $user = $repo->findByEmail($userData['email']);
+        if ($user !== null) {
+            $user->setRoles(['SUPER_ADMIN']);
+            $repo->save($user);
+        }
+
+        $login = $this->loginTestUser($userData['email'], $userData['password']);
+        if ($this->currentUser !== null) {
+            $this->currentUser->setRoles(['SUPER_ADMIN']);
         }
 
         return array_merge($userData, $login);

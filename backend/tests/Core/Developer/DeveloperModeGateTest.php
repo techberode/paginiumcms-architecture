@@ -15,11 +15,32 @@ use PaginiumCMS\Tests\Http\TestCase;
 
 final class DeveloperModeGateTest extends TestCase
 {
+    /** @var array{env: string|false, server: mixed} */
+    private array $savedAppEnv = ['env' => false, 'server' => null];
+
     protected function setUp(): void
     {
         parent::setUp();
+        $this->savedAppEnv = [
+            'env' => getenv('APP_ENV'),
+            'server' => $_ENV['APP_ENV'] ?? null,
+        ];
         putenv('APP_DEBUG=true');
         $_ENV['APP_DEBUG'] = 'true';
+    }
+
+    protected function tearDown(): void
+    {
+        if ($this->savedAppEnv['env'] === false) {
+            putenv('APP_ENV');
+            unset($_ENV['APP_ENV'], $_SERVER['APP_ENV']);
+        } else {
+            putenv('APP_ENV=' . $this->savedAppEnv['env']);
+            $_ENV['APP_ENV'] = $this->savedAppEnv['server'];
+            $_SERVER['APP_ENV'] = $this->savedAppEnv['server'];
+        }
+
+        parent::tearDown();
     }
 
     public function testUnlockWithTotpUsesFreshUserFromStorageWhenSessionIsStale(): void

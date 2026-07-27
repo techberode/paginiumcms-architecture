@@ -41,6 +41,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   const { counts, showListCounts } = useAdminCounts();
   const location = useLocation();
   const isAdmin = user?.roles?.some((r) => r === 'ADMIN' || r === 'SUPER_ADMIN') ?? false;
+  const isSuperAdmin = user?.roles?.includes('SUPER_ADMIN') ?? false;
   const isDemoInstance = settings?.demo?.enabled === true;
   const [openSections, setOpenSections] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(ADMIN_NAV_SECTIONS.map((section) => [section.id, true]))
@@ -76,6 +77,9 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       ADMIN_NAV_SECTIONS.map((section) => ({
         ...section,
         items: section.items.filter((item) => {
+          if (item.superAdminOnly && !isSuperAdmin) {
+            return false;
+          }
           if (item.adminOnly && !isAdmin) {
             return false;
           }
@@ -85,7 +89,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           return true;
         }),
       })).filter((section) => section.items.length > 0),
-    [isAdmin, isDemoInstance]
+    [isAdmin, isSuperAdmin, isDemoInstance]
   );
 
   const displayName = user?.name || t('admin.sidebar.userFallback');

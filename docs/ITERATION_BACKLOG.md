@@ -5,8 +5,8 @@
 
 **Aktuálne hotové:** It.1–24 ✅ · It.26–28 ✅ · **It.13 v3** ✅ · **It.61** ✅ · **It.62** ✅ · It.25 ⏳ (setup wizard — odložené)
 
-**Ďalšia iterácia:** **[It.63 — Admin system update (prod)](ITERATION_63.md)**  
-**Posledná shipped:** **It.13 v4** demo security polish · **`v2.1.0-beta.11`** (pending tag)
+**Ďalšia iterácia:** It.63 v2 (compare UI) alebo It.25 setup wizard  
+**Posledná shipped:** **It.63** admin system update · **`v2.1.0-beta.12`**
 
 **Incidenty a opravy:** [ISSUES.md](ISSUES.md)
 
@@ -40,7 +40,7 @@
 | **61** | TBD | **[Newsletter vo footeri](ITERATION_61.md)** | **✅** | Footer subscribe + admin subscribers + CSV (ISS-097) |
 | **13v3** | **`v2.1.0-beta.10`** | **[Demo modul — full trial](ITERATION_13.md)** | **✅** | Rich seed, public strip, marketing settings |
 | **13v4** | **`v2.1.0-beta.11`** | **[Demo modul — security polish](ITERATION_13.md)** | **✅** | S-DEMOCREDS, quick-login, editor fix, nav UX |
-| **63** | TBD | **[Admin system update (prod)](ITERATION_63.md)** | **🟡** | GitHub deploy z adminu — **ďalšia iterácia** |
+| **63** | **`v2.1.0-beta.12`** | **[Admin system update (prod)](ITERATION_63.md)** | **✅** | MVP — deploy z admin UI |
 | **15** | **2.0.38** | **[External plugins](ITERATION_15.md)** | **✅** | Import ZIP, registry, hooks, routes, admin UI |
 | **47** | TBD | **[Notification connector auth](ITERATION_47.md)** | **✅** | ntfy Bearer/Basic + test-connector |
 | **48** | TBD | **[PHP templates + static/dynamic web](ITERATION_48.md)** | **🟡** | Front matter šablóny, JSON/INI meta, static HTML |

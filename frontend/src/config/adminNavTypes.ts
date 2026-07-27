@@ -8,6 +8,8 @@ export interface AdminNavItemDef {
   adminOnly?: boolean;
   /** Hide this nav item on demo instances (`settings.demo.enabled`). Access via banner link. */
   hideOnDemoInstance?: boolean;
+  /** Visible only to SUPER_ADMIN (e.g. system update deploy). */
+  superAdminOnly?: boolean;
 }
 
 export interface AdminNavSectionDef {
