@@ -4,6 +4,7 @@ import {
   countMarkdownToolbarActions,
   countWysiwygToolbarActions,
   getEditorProfile,
+  normalizeEditorProfile,
   profileAllows,
   resolveDefaultProfileId,
 } from './editorProfiles';
@@ -34,5 +35,34 @@ describe('editorProfiles', () => {
     const company = getEditorProfile('company');
     const developer = getEditorProfile('developer');
     expect(countWysiwygToolbarActions(company)).toBeLessThan(countWysiwygToolbarActions(developer));
+  });
+
+  it('normalizes API profile capabilities shape { enabled: string[] }', () => {
+    const normalized = normalizeEditorProfile({
+      id: 'blog',
+      label: 'Blog',
+      description: 'Blog profile',
+      capabilities: { enabled: ['bold', 'italic', 'link'] },
+      modes: ['markdown', 'wysiwyg'],
+    });
+
+    expect(normalized).not.toBeNull();
+    expect(profileAllows(normalized!, 'bold')).toBe(true);
+    expect(profileAllows(normalized!, 'image')).toBe(false);
+  });
+
+  it('getEditorProfile uses API profiles with enabled capabilities', () => {
+    const profile = getEditorProfile('minimal', [
+      {
+        id: 'minimal',
+        label: 'Min',
+        description: '',
+        capabilities: { enabled: ['bold', 'link'] },
+        modes: ['markdown'],
+      },
+    ]);
+
+    expect(profileAllows(profile, 'bold')).toBe(true);
+    expect(profileAllows(profile, 'italic')).toBe(false);
   });
 });
