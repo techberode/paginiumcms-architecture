@@ -166,6 +166,18 @@ class SettingsRepositoryTest extends TestCase
         $this->assertSame('under_maintenance', $fresh->get('maintenance.mode'));
     }
 
+    public function testMaintenanceHeroImageUrlAcceptsStoragePath(): void
+    {
+        $storagePath = '/storage/app/content/media/very-long-maintenance-background-filename-2026.png';
+
+        $this->repo->setGroup('maintenance', [
+            'mode' => 'under_maintenance',
+            'heroImageUrl' => $storagePath,
+        ]);
+
+        $this->assertSame($storagePath, $this->repo->get('maintenance.heroImageUrl'));
+    }
+
     private function makeRepo(?EncryptionService $encryption = null): SettingsRepository
     {
         $validator = new FileValidator($this->baseDir);

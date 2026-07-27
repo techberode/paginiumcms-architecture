@@ -199,7 +199,7 @@ final class SettingsSchema
                 'label' => 'Režim údržby',
                 'fields' => [
                     ['key' => 'mode', 'type' => 'enum', 'label' => 'Aktívny režim', 'default' => 'off', 'options' => ['off', 'coming_soon', 'under_maintenance'], 'rules' => ['required', 'in:off,coming_soon,under_maintenance'], 'help' => 'Naraz môže byť zapnutý iba jeden režim.'],
-                    ['key' => 'heroImageUrl', 'type' => 'url', 'label' => 'Pozadie (URL)', 'default' => '', 'rules' => ['url', 'max:2000'], 'help' => 'Voliteľný obrázok na pozadí oboch stránok.'],
+                    ['key' => 'heroImageUrl', 'type' => 'url', 'label' => 'Pozadie (URL)', 'default' => '', 'rules' => ['string', 'max:2000'], 'help' => 'Absolútna URL alebo cesta /storage/… — voliteľný obrázok na pozadí oboch stránok údržby. V administrácii je možné vybrať z médií alebo nahrať súbor z disku.'],
                     ['key' => 'newsletterEnabled', 'type' => 'bool', 'label' => 'Povoliť newsletter', 'default' => true, 'rules' => ['bool'], 'help' => 'Zapnuté = na Coming Soon stránke sa zobrazí prihlásenie na newsletter. Vypnuté = formulár skrytý.'],
                     ['key' => 'newsletterHint', 'type' => 'text', 'label' => 'Text newsletteru', 'default' => 'Prihláste sa na odber noviniek a dáme vám vedieť hneď po spustení.', 'rules' => ['string', 'max:500']],
                     ['key' => 'comingSoonBadge', 'type' => 'string', 'label' => 'Coming Soon – odznak', 'default' => 'Pripravujeme', 'rules' => ['string', 'max:80']],
