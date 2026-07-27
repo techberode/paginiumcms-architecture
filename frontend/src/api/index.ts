@@ -35,6 +35,7 @@ export * from './notifications';
 export * from './search';
 export * from './security';
 export * from './settings';
+export * from './systemUpdate';
 export * from './translations';
 export * from './trash';
 export * from './user';

@@ -317,12 +317,14 @@ export const platformEn: MessageTree = {
     recentRuns: 'Recent deploy runs',
     superAdminOnly: 'System update is available only to SUPER_ADMIN.',
     demoDisabled: 'System update is disabled on the demo instance — use SSH deploy workflow.',
+    refTagOnlyHint: 'Branch deploy is disabled in settings — use a semver tag (e.g. v2.1.0-beta.12), not origin/main.',
     toast: {
       checkOk: 'Remote check completed',
       checkFailed: 'Remote check failed',
       deployStarted: 'Deploy job queued',
       deployFailed: 'Deploy request failed',
       deployDisabled: 'Enable deploy in Settings → System update first',
+      refRequired: 'Enter a deploy ref (tag or origin/branch)',
     },
   },
   acl: {

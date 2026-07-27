@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use PaginiumCMS\Core\Scheduler\Models\JobRunResult;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Modules\Demo\Services\DemoMode;
+use PaginiumCMS\Support\AppRoot;
 
 /**
  * Whitelisted deploy runner — invokes scripts/deploy-instance-update.sh only (It.63).
@@ -143,22 +144,7 @@ final class SystemDeployService
 
     private function resolveAppRoot(): ?string
     {
-        if ($this->appRoot !== null && $this->appRoot !== '') {
-            $real = realpath($this->appRoot);
-
-            return $real !== false ? $real : $this->appRoot;
-        }
-
-        $env = getenv('APP_ROOT') ?: ($_ENV['APP_ROOT'] ?? '');
-        if (is_string($env) && $env !== '') {
-            $real = realpath($env);
-
-            return $real !== false ? $real : $env;
-        }
-
-        $candidate = realpath(dirname(__DIR__, 4));
-
-        return $candidate !== false ? $candidate : null;
+        return AppRoot::resolve($this->appRoot);
     }
 
     private function isTesting(): bool
