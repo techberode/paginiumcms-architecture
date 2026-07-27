@@ -98,7 +98,8 @@ export const LoginBackgroundImagePicker: React.FC<LoginBackgroundImagePickerProp
       <div className="space-y-2">
         <input
           id="setting-backgroundImageUrl"
-          type="url"
+          type="text"
+          inputMode="url"
           value={value}
           onChange={(event) => onChange(event.target.value)}
           disabled={disabled || busy}

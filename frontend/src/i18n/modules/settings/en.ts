@@ -222,7 +222,7 @@ export const settingsEn: MessageTree = {
       },
       "heroImageUrl": {
         "label": "Background image (URL)",
-        "help": "Optional background for both maintenance pages."
+        "help": "Absolute URL or /storage/… path — optional background for both maintenance pages. Pick from media or upload from disk."
       },
       "newsletterEnabled": {
         "label": "Enable newsletter",

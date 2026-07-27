@@ -222,7 +222,7 @@ export const settingsSk: MessageTree = {
       },
       "heroImageUrl": {
         "label": "Pozadie (URL)",
-        "help": "Voliteľný obrázok na pozadí oboch stránok."
+        "help": "Absolútna URL alebo cesta /storage/… — voliteľný obrázok na pozadí oboch stránok údržby. Môžete vybrať z médií alebo nahrať súbor z disku."
       },
       "newsletterEnabled": {
         "label": "Povoliť newsletter",
