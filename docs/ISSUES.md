@@ -1,6 +1,6 @@
 # PaginiumCMS – Známe incidenty a opravy
 
-> Posledná aktualizácia: 2026-07-27 · verzia **2.1.0-beta.8** (+ **main @ 88cbe31**) · ISS-063–097 · backlog It.61
+> Posledná aktualizácia: 2026-07-27 · verzia **2.1.0-beta.9** (tag pending) · **main @ `a492e53`** · ISS-063–098
 
 Tento súbor eviduje produkčné / integračné problémy zistené pri testovaní, ich príčinu a stav opravy.
 
@@ -112,6 +112,10 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-092 | Deploy — lokálne env + syntax `:?` v deploy skripte | Nízka (ops) | ✅ Opravené · **2.1.0-beta.7** |
 | ISS-093 | ESLint `expand is not a function` — override `brace-expansion@5` vs `minimatch@3` | Stredná (CI) | ✅ Opravené · odstránený override |
 | ISS-094 | Job scheduler `POST …/run` → 500 na prod (Docker storage + UI) | Vysoká (prod) | ✅ Opravené · **It.62** (`f7a73f1`) |
+| ISS-095 | Maintenance heroImageUrl — `/storage/` cesty odmietnuté | Stredná (admin UX) | ✅ Opravené · **main `88cbe31`** |
+| ISS-096 | 502 hneď po `stack.sh restart php` | Nízka (ops) | ℹ️ Informatívne — počkať 5–10 s |
+| ISS-097 | Newsletter odberatelia bez admin UI | Stredná | ✅ Opravené · **It.61** |
+| ISS-098 | Demo login 401 prázdna odpoveď (CORS / zlý `APP_URL`) | **Vysoká (demo)** | ✅ Opravené · **SameOriginCors** + `.env` |
 
 
 
@@ -2321,6 +2325,51 @@ Formát záznamu: `{ "id", "email", "subscribedAt", "source" }` — `source` nap
 
 ---
 
+## ISS-098 – Demo login 401, prázdna odpoveď v prehliadači (CORS) — VYRIEŠENÉ
+
+**Symptóm:** Na `demo.paginiumcms.com` prihlásenie v prehliadači zlyhá; DevTools ukazuje `POST /api/auth/login` → **401**, `Content-Type: text/html`, **prázdne telo**. Konzola: `Unexpected end of JSON input`. Rovnaký request cez `curl` **bez** hlavičky `Origin` vracia **200 JSON**.
+
+**Príčina:** Prehliadač posiela `Origin: https://demo.paginiumcms.com`. Tuupola `CorsMiddleware` pri neznámom origin vracia HTTP 401 s prázdnym telom (`ERR_ORIGIN_NOT_ALLOWED`). Backend auth vôbec nespustí — nie je to zlé heslo ani session.
+
+Typický trigger: demo `.env` má `APP_URL=https://paginiumcms.com` (skopírované z produkcie) namiesto demo domény.
+
+**Diagnostika (copy-paste na serveri):**
+
+```bash
+grep '^APP_URL=' /var/www/paginiumcms-demo/.env
+
+curl -sS -o /dev/null -w 'bez Origin: HTTP %{http_code}\n' \
+  -X POST 'https://demo.paginiumcms.com/api/auth/login' \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"demo@paginiumcms.com","password":"Demo123!"}'
+
+curl -sS -o /dev/null -w 's Origin:    HTTP %{http_code} CT:%{content_type}\n' \
+  -X POST 'https://demo.paginiumcms.com/api/auth/login' \
+  -H 'Content-Type: application/json' \
+  -H 'Origin: https://demo.paginiumcms.com' \
+  -d '{"email":"demo@paginiumcms.com","password":"Demo123!"}'
+# Ak prvá 200 a druhá 401 text/html → ISS-098 potvrdené
+```
+
+**Riešenie (okamžité — env):**
+
+```bash
+sed -i 's|^APP_URL=.*|APP_URL=https://demo.paginiumcms.com|' /var/www/paginiumcms-demo/.env
+cd /var/lib/docker/compose/paginiumcms-demo && ./stack.sh up -d
+```
+
+**Riešenie (kód — odolné voči zlému APP_URL):**
+
+- `SameOriginCorsMiddleware` — ak `Origin` sedí s `Host` (+ `X-Forwarded-Proto`), origin sa povolí pre daný request.
+- CORS chyby vracajú JSON `{ "code": "cors_rejected" }` namiesto prázdneho HTML.
+- Bootstrap dopĺňa `DEMO_PUBLIC_URL` a `VITE_PUBLIC_URL` do statickej CORS allow-listy.
+
+**Deploy + smoke:** [deploy/DEMO_DEPLOY.md](deploy/DEMO_DEPLOY.md)
+
+**Stav:** ✅ Opravené (2026-07-27). User potvrdil: login v prehliadači funguje.
+
+---
+
 ## Súvisiace dokumenty
 
 - [user/BRANDING.md](user/BRANDING.md) — logo a favicon (**2.0.52**)
@@ -2332,6 +2381,7 @@ Formát záznamu: `{ "id", "email", "subscribedAt", "source" }` — `source` nap
 - [ITERATION_57.md](ITERATION_57.md) — suggest-meta (ISS-080)
 - [ITERATION_62.md](ITERATION_62.md) — scheduler prod hardening (ISS-094)
 - [ITERATION_61.md](ITERATION_61.md) — footer newsletter + admin zoznam odberateľov (ISS-097)
+- [deploy/DEMO_DEPLOY.md](deploy/DEMO_DEPLOY.md) — demo nasadenie + ISS-098 CORS login (ISS-098)
 - [deploy/CRON.md](deploy/CRON.md) — produkčný crontab + Docker storage
 - [developer/TESTING.md](developer/TESTING.md) — PHPUnit izolácia (`LoginAttemptTracker`)
 - [ITERATION_44.md](ITERATION_44.md) — It.44d index filtre (ISS-038)

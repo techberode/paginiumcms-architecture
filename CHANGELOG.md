@@ -56,13 +56,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | Security audit — XSS, backup Zip-Slip, deploy script | **`v2.1.0-beta.6`** | [below](#210-beta6--2026-07-24) |
 | Deps + Vitest + deploy env (ISS-089–092) | **`v2.1.0-beta.7`** | [below](#210-beta7--2026-07-26) |
 | It.58b — Color schemes + themed public site | **`v2.1.0-beta.8`** | [below](#210-beta8--2026-07-26) |
-| It.62 — Scheduler prod hardening | **`v2.1.0-beta.9`** | Unreleased (pending tag) |
+| It.62 + It.61 + demo deploy + analytics/editor | **`v2.1.0-beta.9`** | [below](#210-beta9--2026-07-27) |
 | Wave 5d — It.15 hook emitters + extension policy | **2.0.54** | [below](#2054--2026-07-23) |
 | It.19b–19d — Security runtime, auth UX, password policy | **2.0.45** | [below](#2045--2026-07-21) |
 
 ---
 
 ## [Unreleased]
+
+---
+
+## [2.1.0-beta.9] – 2026-07-27
+
+**Release commit:** `a492e53` · **Rozsah:** `0fe21ec` … `a492e53` (od `v2.1.0-beta.8`)
+
+Prod hardening, analytics/editor iterations, newsletter admin, demo instance deploy + CORS fix.
 
 ### Added (It.33 — Analytics enrichment)
 
@@ -95,14 +103,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Admin `/scheduler`** — outcome badges, copy crontab, warning toast on `run_log_error`.
 - **Docs** — [ITERATION_62.md](docs/ITERATION_62.md), [CRON.md](docs/deploy/CRON.md) Docker write test.
 
+### Added (Deploy & demo)
+
+- **[DEPLOY.md](docs/deploy/DEPLOY.md)** — prod + demo update guide, release vs commit deploy.
+- **[DEMO_DEPLOY.md](docs/deploy/DEMO_DEPLOY.md)** — demo C&P deploy, ISS-098 smoke, env checklist.
+- **`scripts/deploy-instance-update.sh`** — server-side git pull + composer + FE build + PHP restart.
+- **Demo stack templates** — `app.env.demo.example`, `stack.env.demo.example`, nginx demo conf.
+
 ### Fixed
 
-- **ISS-095** — Maintenance hero background rejected `/storage/…` media paths as „Neplatná URL“ (`heroImageUrl` url rule → string; picker input type).
-- **CI** — `ExtensionManifestValidator` missing class brace (PHPUnit/PHPStan/content:diagnose parse error).
-- **CI** — Editor PHPUnit tests mock `PluginManagerInterface` instead of final `EditorComponentRegistry`.
-- **CI** — `ContactForm.test.tsx` preserves `TestSettingsProvider` via `importOriginal` mock.
+- **ISS-098** — Demo login 401 s prázdnym telom v prehliadači: `SameOriginCorsMiddleware` auto-povolí same-origin SPA; CORS chyby vracajú JSON. Docs: [DEMO_DEPLOY.md](docs/deploy/DEMO_DEPLOY.md).
+- **ISS-095** — Maintenance hero background rejected `/storage/…` media paths (`heroImageUrl` url rule → string).
 - **ISS-094** — Job scheduler 500 on prod: Docker `www-data` storage, PHP warnings in JSON, admin UI false failure toast.
-- **Deploy** — Docker PHP 8.5 image, prod compose port override, log storage path, notification recipient fallback.
+- **It.59** — Scheduled publish cleared on manual save (no stale `scheduled` state).
+- **Footer** — demo marketing link stays visible when footer newsletter is enabled; opens in new tab (`a492e53`).
+- **CI** — `ExtensionManifestValidator` brace; editor tests mock `PluginManagerInterface`; `ContactForm.test.tsx` mock fix.
+- **Deploy** — Docker PHP 8.5 stack, log paths, notification recipient fallback, composer.lock for server installs.
 - **FileWriter** — group-writable modes (`0664`/`0775`), suppressed write warnings.
 - **ScheduledJobRunner** — run log append failures no longer crash HTTP response.
 

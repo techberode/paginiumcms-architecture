@@ -103,6 +103,19 @@ DEMO_AUTO_RESET_MINUTES=60
 
 Samostatný Docker/stack alebo compose profil `demo` — rovnaký kód, iné `.env` oproti `paginiumcms.com`.
 
+**Kompletný deploy + CORS troubleshooting (ISS-098):** [deploy/DEMO_DEPLOY.md](deploy/DEMO_DEPLOY.md)
+
+### Rýchly smoke po nasadení
+
+```bash
+curl -sS -o /dev/null -w 'login+Origin: HTTP %{http_code}\n' \
+  -X POST 'https://demo.paginiumcms.com/api/auth/login' \
+  -H 'Content-Type: application/json' \
+  -H 'Origin: https://demo.paginiumcms.com' \
+  -d '{"email":"demo@paginiumcms.com","password":"Demo123!"}'
+# Očakávané: HTTP 200 (nie 401 text/html size 0)
+```
+
 ## Dependencies (met)
 
 - ✅ Iteration 19 – content repository abstraction
@@ -111,7 +124,23 @@ Samostatný Docker/stack alebo compose profil `demo` — rovnaký kód, iné `.e
 
 - [ROADMAP.md](ROADMAP.md) – Iteration 13
 - [Modules/Demo/README.md](../backend/app/Modules/Demo/README.md)
+- [deploy/DEMO_DEPLOY.md](deploy/DEMO_DEPLOY.md) – nasadenie + ISS-098 CORS
+
+## v3 polish — známe medzery (⏳ neskôr)
+
+Infra + login + reset fungujú. Chýbajú alebo sú neúplné doplnkové **API / FE** (doriešiť v samostatnej vlne):
+
+| Oblasť | Stav dnes | Pravdepodobne chýba |
+|--------|-----------|---------------------|
+| **Admin API** | `GET/POST /api/admin/demo/*` (status, reset) | verejné demo metriky, manuálny „reset now“ pre ADMIN, cron stav v API |
+| **Admin FE** | `/demo` (`DemoManager`), `DemoModeBanner` | odpočet do auto-resetu, onboarding panel, prod nastavenie demo URL v Settings |
+| **Marketing (prod)** | footer link + `settings.public.demo` | admin UI na zapnutie odkazu / URL bez úpravy JSON |
+| **Verejný web (demo)** | login fill + banner v admin | welcome / tour stránka, „Zobraziť web“ hint pre návštevníka |
+| **Testy** | PHPUnit demo modul | Vitest pre `DemoManager`, `demoApi`, banner |
+
+**Poznámka (2026-07-27):** používateľ rieši doplnkové API/FE komponenty neskôr — deploy a prihlásenie (ISS-098) sú priorita hotová.
 
 ## Next
 
+→ **It.13 v3** (demo API/FE polish) — backlog  
 → [Iteration 14](ITERATION_14.md) – Code policy engine

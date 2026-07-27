@@ -18,7 +18,7 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 
 ## Aktuálny plán (2026-07-27) — Public Beta 1 + produkčný deploy
 
-**Stav:** **`v2.1.0-beta.8`** tagged · produkcia **`paginiumcms.com`** nasadená · **`main` @ `88cbe31`** (It.33, It.60, maintenance pozadie fix).
+**Stav:** **`v2.1.0-beta.9`** release pripravený (tag pending) · produkcia **`paginiumcms.com`** · demo **`demo.paginiumcms.com`** · **`main` @ `a492e53`** (It.61, ISS-098, footer demo link).
 
 **Ďalšia iterácia:** backlog po It.61 — pozri [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md)
 
@@ -29,7 +29,7 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 | **Prod fix — maintenance pozadie** | „Neplatná URL“ pri `/storage/` ceste | ✅ **`88cbe31`** (ISS-095) |
 | **Prod fix — deploy** | Docker PHP 8.5, log paths, SMTP recipient, OPcache | ✅ `0fe21ec` … `d1bd35b` |
 | **Cron na hoste** | `scheduler:run` + `worker:process` každú minútu | ⏳ overiť crontab |
-| **Tag beta.9** | Release notes + `v2.1.0-beta.9` po smoke na prod | ⏳ nasledujúci krok |
+| **Tag beta.9** | Release notes + `v2.1.0-beta.9` po smoke na prod + demo | ⏳ docs ready, tag + push pending |
 | **It.59** | Scheduled publish UX v editore + filtre | ✅ **2.0.53** |
 | **It.60** | Custom komponenty editora (plugin + settings) | ✅ **`3d3ab48`** |
 | **It.33** | Analytics enrichment (sources, geo, vlajky) | ✅ **`3d3ab48`** |
@@ -303,41 +303,49 @@ od ktorých závisí väčšina ostatných funkcií, a aby každá iterácia pri
 Pokračujeme vo vývoji PaginiumCMS (Flat-File CMS, žiadna DB).
 Stack: React SPA (Vite 8, TS) ↔ Slim 4 REST API ↔ PHP 8.5 (PHPStan L8).
 Produkcia: paginiumcms.com (Docker PHP + host nginx, flat-file v backend/storage/).
+Demo: demo.paginiumcms.com (port 8091, DEMO_MODE=true, samostatný clone + stack).
 Komunikuj po slovensky. Pravidlá: .cursorrules + ZÁKONY v docs/CONTINUATION.md §2.
 
-HOTOVÉ (2026-07-27, main @ 88cbe31):
-- It.33 ✅ analytics enrichment (referer types, geo flags, masked IPs) — 3d3ab48
-- It.60 ✅ custom editor components (hello-widget, settings matrix) — 3d3ab48
+HOTOVÉ (2026-07-27):
+- It.33 ✅ analytics enrichment — 3d3ab48
+- It.60 ✅ custom editor components — 3d3ab48
 - It.62 ✅ scheduler prod hardening — f7a73f1
-- Prod fix ISS-095 ✅ maintenance heroImageUrl (/storage/ cesty) — 88cbe31
-- Prod deploy paginiumcms.com OK (health 200, maintenance pozadie funguje)
+- ISS-095 ✅ maintenance heroImageUrl — 88cbe31
+- ISS-097 ✅ footer newsletter + admin subscribers — It.61
+- ISS-098 ✅ demo login CORS (SameOriginCorsMiddleware) — login v browseri OK
+- Demo stack nasadený (8091), prod footer demo link _blank — a492e53
+- Release v2.1.0-beta.9 pripravený (AppVersion, CHANGELOG, RELEASE.md) — tag pending smoke
 
-ZNÁME MEDZERY:
-- ISS-097: newsletter odberateľia sa ukladajú do subscribers.json, ale ADMIN UI ZOZNAMU NIE JE
-  → rieši It.61 (footer newsletter + admin prehľad + export)
-- Počas údržby bez staff login: /api/pages → 503 (zámer, nie bug)
+ZNÁME MEDZERY (neskôr):
+- It.13 v3 — doplnkové demo API/FE (admin polish, marketing settings UI, welcome) — pozri ITERATION_13.md §v3
 
-PROD CHECKLIST po git pull:
+PROD DEPLOY (paginiumcms.com):
   cd /var/www/paginiumcms.com
   git pull origin main && composer install --no-dev --optimize-autoloader
   cd frontend && npm ci && npm run build:prod && cd ..
-  cd /var/lib/docker/compose/paginiumcms
-  ./stack.sh restart php
+  cd /var/lib/docker/compose/paginiumcms && ./stack.sh restart php
   sleep 8 && curl -s http://127.0.0.1:8089/api/health
-  # 502 hneď po restarte = normálne, počkaj 5–10 s (ISS-096)
+
+DEMO DEPLOY (demo.paginiumcms.com) — plný C&P: docs/deploy/DEMO_DEPLOY.md
+  APP_ROOT=/var/www/paginiumcms-demo
+  STACK_DIR=/var/lib/docker/compose/paginiumcms-demo
+  BACKEND_PORT=8091
+  # APP_URL=https://demo.paginiumcms.com v .env je POVINNÉ
+  ./scripts/deploy-instance-update.sh
+  # smoke s Origin (ISS-098):
+  curl -sS -o /dev/null -w '%{http_code}\n' -X POST https://demo.paginiumcms.com/api/auth/login \
+    -H 'Content-Type: application/json' -H 'Origin: https://demo.paginiumcms.com' \
+    -d '{"email":"demo@paginiumcms.com","password":"Demo123!"}'
+  # očakávané: 200
 
 PLÁNOVAČ / CRON:
 - CLI: scheduler:run, worker:process, jobs:run {id}
-- „Backup not due“ = outcome skipped (nie chyba)
+- Demo: demo:reset-if-due každých 15 min (cron)
 
-ĎALŠIA ITERÁCIA: It.61 — docs/ITERATION_61.md
-  (footer newsletter + GET /api/admin/newsletter/subscribers + admin UI zoznam)
-
-Začni It.61. Po vlne: PHPUnit + Vitest + PHPStan + docs + RELEASE.md.
-Deploy: PRIVATE_DOMAIN_DEPLOY.md (gitignored).
-Incidenty: docs/ISSUES.md ISS-095–097.
+Incidenty: docs/ISSUES.md ISS-094–098.
+Deploy guide: docs/deploy/DEPLOY.md + docs/deploy/DEMO_DEPLOY.md.
 ```
 
 ---
 
-*Aktualizované 2026-07-27 po prod deploy + ISS-095–097. Podrobnosti: `ISSUES.md`, `ITERATION_61.md`, `RELEASE.md` (beta.9 draft), `deploy/CRON.md`.*
+*Aktualizované 2026-07-27 po ISS-098 demo CORS fix + potvrdený login v prehliadači. Podrobnosti: `ISSUES.md`, `deploy/DEMO_DEPLOY.md`, `RELEASE.md`.*

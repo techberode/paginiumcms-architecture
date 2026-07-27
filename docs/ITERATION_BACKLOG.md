@@ -6,7 +6,7 @@
 **Aktuálne hotové:** It.1–24 ✅ · It.26–28 ✅ · **It.61** ✅ · **It.62** ✅ · It.25 ⏳ (setup wizard — odložené)
 
 **Ďalšia iterácia:** pozri backlog (It.25, It.58, …)  
-**Posledná shipped:** **It.61** newsletter footer + admin subscribers · **`88cbe31`** maintenance pozadie fix
+**Posledná shipped:** **It.61** newsletter + **It.62** scheduler · **`a492e53`** (beta.9 release)
 
 **Incidenty a opravy:** [ISSUES.md](ISSUES.md)
 
@@ -38,6 +38,7 @@
 | **59** | **2.0.53** | **[Odložená publikácia — plánovač v editore](ITERATION_59.md)** | **✅** | Editor datetime + filter scheduled + job `content.scheduled_publish` |
 | **60** | TBD | **[Vlastné komponenty editora](ITERATION_60.md)** | **✅** | Plugin manifest + settings matica + hello-widget demo |
 | **61** | TBD | **[Newsletter vo footeri](ITERATION_61.md)** | **✅** | Footer subscribe + admin subscribers + CSV (ISS-097) |
+| **13v3** | TBD | **[Demo modul — API/FE polish](ITERATION_13.md#v3-polish--známe-medzery--neskôr)** | **🟡** | Infra+login OK; chýbajú doplnkové admin/verejné komponenty — odložené |
 | **15** | **2.0.38** | **[External plugins](ITERATION_15.md)** | **✅** | Import ZIP, registry, hooks, routes, admin UI |
 | **47** | TBD | **[Notification connector auth](ITERATION_47.md)** | **✅** | ntfy Bearer/Basic + test-connector |
 | **48** | TBD | **[PHP templates + static/dynamic web](ITERATION_48.md)** | **🟡** | Front matter šablóny, JSON/INI meta, static HTML |
