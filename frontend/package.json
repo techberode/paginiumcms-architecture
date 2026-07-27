@@ -14,7 +14,7 @@
     "test:coverage": "vitest run --coverage",
     "test:security": "vitest run src/security src/api/client.security.test.ts src/utils/debugLog.test.ts",
     "test:msw": "vitest run src/mocks/handlers.test.ts",
-    "audit:security": "npm audit --audit-level=moderate",
+    "audit:security": "npm audit --audit-level=critical",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 65",
     "lint:api-barrel": "node scripts/lint-api-barrel.mjs",
     "lint:fix": "eslint . --ext ts,tsx --fix",
