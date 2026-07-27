@@ -26,9 +26,33 @@ export interface SystemUpdateStatus {
   recent_runs: Array<Record<string, unknown>>;
 }
 
+export interface SystemUpdateRemoteCompare {
+  behind_by?: number;
+  ahead_by?: number;
+  status?: string;
+}
+
+export interface SystemUpdateRemote {
+  latest_release_tag?: string | null;
+  latest_release_body?: string | null;
+  latest_release_url?: string | null;
+  remote_commit?: string | null;
+  compare?: SystemUpdateRemoteCompare | null;
+  error?: string | null;
+}
+
 export interface SystemUpdateCheckResult {
   git: SystemUpdateGitStatus;
-  remote: Record<string, unknown>;
+  remote: SystemUpdateRemote;
+  update?: {
+    status: 'current' | 'update_available' | 'unknown';
+    current_version: string;
+    latest_version?: string | null;
+    current_tag?: string | null;
+    latest_tag?: string | null;
+  };
+  release_notes?: string | null;
+  release_url?: string | null;
 }
 
 export interface SystemUpdateRunResult {

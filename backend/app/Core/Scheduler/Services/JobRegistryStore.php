@@ -63,6 +63,7 @@ final class JobRegistryStore
                 if (($existing['system'] ?? false) === true) {
                     $job['system'] = true;
                     $job['handler'] = $existing['handler'] ?? $job['handler'] ?? '';
+                    unset($job['payload']);
                 }
                 $jobs[$index] = $this->normalize($job, $existing);
                 $found = true;
@@ -222,7 +223,9 @@ final class JobRegistryStore
             'cron' => (string) ($job['cron'] ?? $existing['cron'] ?? '* * * * *'),
             'enabled' => (bool) ($job['enabled'] ?? $existing['enabled'] ?? false),
             'system' => (bool) ($job['system'] ?? $existing['system'] ?? false),
-            'payload' => is_array($job['payload'] ?? null) ? $job['payload'] : ($existing['payload'] ?? []),
+            'payload' => ($existing['system'] ?? false) === true
+                ? (is_array($existing['payload'] ?? null) ? $existing['payload'] : [])
+                : (is_array($job['payload'] ?? null) ? $job['payload'] : ($existing['payload'] ?? [])),
             'last_run_at' => $existing['last_run_at'] ?? null,
         ];
     }

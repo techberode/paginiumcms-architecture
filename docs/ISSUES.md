@@ -121,6 +121,8 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-101 | Editor biela obrazovka — `capabilities.includes is not a function` | Vysoká (demo/admin) | ✅ **`v2.1.0-beta.11`** — normalize API profile shape |
 | ISS-102 | Demo API celé HTTP 500 — chýba `backend/storage/app/demo/data/`, mkdir Permission denied | **Vysoká (demo)** | ✅ Ops — storage bootstrap (2026-07-27) |
 | ISS-103 | PHPUnit OTP/2FA flaky — lokálny `.env` (`DEMO_MODE=true`) polluluje HTTP testy | Stredná (dev/CI) | ✅ **`v2.1.0-beta.12`** — test bootstrap izolácia |
+| ISS-104 | A3-JOBDEPLOY — ADMIN obíde SUPER_ADMIN cez jobs API pri `system-deploy` | Stredná (audit) | ✅ **`v2.1.0-beta.15`** |
+| ISS-105 | A6-GEOIP — cleartext `ip-api.com` bez `OutboundUrlGuard` | Nízka (audit) | ✅ **`v2.1.0-beta.15`** |
 
 
 
@@ -2530,6 +2532,39 @@ Manuálny snapshot: admin **Demo** → **Reset demo seed**.
 **Overenie:** Gate zelený aj s lokálnym `.env` obsahujúcim `DEMO_MODE=true`.
 
 **Docs:** [developer/TESTING.md](developer/TESTING.md) · [CHANGELOG.md](../CHANGELOG.md) beta.12
+
+---
+
+## ISS-104 – A3-JOBDEPLOY — ADMIN deploy bypass cez jobs API — VYRIEŠENÉ
+
+**Závažnosť:** Stredná (security audit 2026-07-27)  
+**Stav:** ✅ fix **`v2.1.0-beta.15`**
+
+**Symptóm:** `/api/admin/system/update/run` vyžaduje `SUPER_ADMIN`, ale ADMIN mohol:
+
+1. `PUT /api/admin/jobs/system-deploy` s `payload.ref`
+2. `POST /api/admin/jobs/system-deploy/run` → spustiť deploy chain
+
+**Riešenie:**
+
+- `JobRegistryStore` — `payload` systémových jobov sa pri update neprepíše
+- `PrivilegedJobPolicy` + `JobsController` — handler `system.deploy` vyžaduje `SUPER_ADMIN` na run/update
+- `ScheduledJobRunner::runDue()` — `system.deploy` sa nikdy nespustí automaticky cez cron API
+
+**Testy:** `JobRegistryStoreTest`, `JobsControllerPrivilegedDeployTest`, `PrivilegedJobPolicyTest`
+
+---
+
+## ISS-105 – A6-GEOIP — cleartext outbound lookup — VYRIEŠENÉ
+
+**Závažnosť:** Nízka (defense-in-depth)  
+**Stav:** ✅ fix **`v2.1.0-beta.15`**
+
+**Symptóm:** `GeoIPService` volal `http://ip-api.com` cez `file_get_contents` bez `OutboundUrlGuard`.
+
+**Riešenie:** HTTPS endpoint + `OutboundUrlGuard::isAllowed()` pred fetchom.
+
+**Testy:** `GeoIPServiceTest`
 
 ---
 

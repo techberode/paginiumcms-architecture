@@ -176,6 +176,8 @@ Review these **without** auth (CSRF exempt where noted):
 | ISS-008 | HTTPS | Transport — ops responsibility on production |
 | ISS-011 | ESLint tech debt | CI baseline, not runtime security |
 | ISS-014 | CORS | Must set `APP_ENV=production` on prod |
+| ISS-104 | Jobs deploy bypass (A3) | ✅ Fixed **`v2.1.0-beta.15`** — SUPER_ADMIN gate on `system.deploy` |
+| ISS-105 | GeoIP cleartext (A6) | ✅ Fixed **`v2.1.0-beta.15`** — HTTPS + OutboundUrlGuard |
 | S5 | CSP | `style-src 'unsafe-inline'` for React inline styles |
 | S-DEMOCREDS | Demo login hints | ✅ Mitigated **`v2.1.0-beta.11`** — no password in public settings; `POST /api/demo/quick-login` |
 

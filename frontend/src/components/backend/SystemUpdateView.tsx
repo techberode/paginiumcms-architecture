@@ -10,6 +10,8 @@ import {
   checkSystemUpdate,
   getSystemUpdateStatus,
   runSystemUpdate,
+  type SystemUpdateCheckResult,
+  type SystemUpdateRemote,
   type SystemUpdateStatus,
 } from '../../api/systemUpdate';
 import { settingsGroupPath } from '../../utils/adminDeepLinks';
@@ -20,7 +22,7 @@ export const SystemUpdateView: React.FC = () => {
   const { settings } = useSettings();
   const { success, error: toastError, warning } = useToast();
   const [data, setData] = useState<SystemUpdateStatus | null>(null);
-  const [remoteCheck, setRemoteCheck] = useState<Record<string, unknown> | null>(null);
+  const [remoteCheck, setRemoteCheck] = useState<SystemUpdateCheckResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [checking, setChecking] = useState(false);
   const [deploying, setDeploying] = useState(false);
@@ -29,8 +31,8 @@ export const SystemUpdateView: React.FC = () => {
   const isSuperAdmin = user?.roles?.includes('SUPER_ADMIN') ?? false;
   const isDemoInstance = settings?.demo?.enabled === true;
 
-  const applyDefaultRef = (status: SystemUpdateStatus | null, remote?: Record<string, unknown> | null) => {
-    const tag = typeof remote?.latest_release_tag === 'string' ? remote.latest_release_tag.trim() : '';
+  const applyDefaultRef = (status: SystemUpdateStatus | null, remote?: SystemUpdateRemote | null) => {
+    const tag = remote?.latest_release_tag?.trim() ?? '';
     if (tag !== '') {
       setRef(tag);
       return;
@@ -42,12 +44,18 @@ export const SystemUpdateView: React.FC = () => {
     }
   };
 
+  const updateStatus = remoteCheck?.update?.status;
+  const latestTag =
+    remoteCheck?.update?.latest_tag ??
+    remoteCheck?.remote.latest_release_tag ??
+    null;
+
   const load = async () => {
     setLoading(true);
     try {
       const status = await getSystemUpdateStatus();
       setData(status);
-      applyDefaultRef(status, remoteCheck);
+      applyDefaultRef(status, remoteCheck?.remote ?? null);
     } finally {
       setLoading(false);
     }
@@ -81,9 +89,17 @@ export const SystemUpdateView: React.FC = () => {
         toastError(t('platform.systemUpdate.toast.checkFailed'));
         return;
       }
-      setRemoteCheck(result.remote);
+      setRemoteCheck(result);
       applyDefaultRef(data, result.remote);
-      success(t('platform.systemUpdate.toast.checkOk'));
+      const newLatestTag =
+        result.update?.latest_tag ?? result.remote.latest_release_tag ?? null;
+      if (result.update?.status === 'current') {
+        success(t('platform.systemUpdate.toast.checkCurrent'));
+      } else if (result.update?.status === 'update_available') {
+        success(t('platform.systemUpdate.toast.checkUpdateAvailable', { version: newLatestTag ?? '?' }));
+      } else {
+        success(t('platform.systemUpdate.toast.checkOk'));
+      }
     } finally {
       setChecking(false);
     }
@@ -149,14 +165,69 @@ export const SystemUpdateView: React.FC = () => {
                 <div><dt className="inline text-slate-500">{t('platform.systemUpdate.deployEnabled')}: </dt><dd className="inline">{data?.config?.deployEnabled ? t('platform.scheduler.yes') : t('platform.scheduler.no')}</dd></div>
               </dl>
             </div>
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm space-y-3">
               <h2 className="font-semibold text-slate-800 mb-2">{t('platform.systemUpdate.remote')}</h2>
               {remoteCheck ? (
-                <pre className="text-xs bg-slate-50 p-3 rounded-lg overflow-auto max-h-48">{JSON.stringify(remoteCheck, null, 2)}</pre>
+                <>
+                  {updateStatus === 'current' && (
+                    <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+                      {t('platform.systemUpdate.versionCurrent')}
+                    </div>
+                  )}
+                  {updateStatus === 'update_available' && (
+                    <div className="rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-900 space-y-1">
+                      <p className="font-medium">
+                        {t('platform.systemUpdate.versionUpdateAvailable', {
+                          version: latestTag ?? remoteCheck.update?.latest_version ?? '?',
+                        })}
+                      </p>
+                      {remoteCheck.release_url && (
+                        <a
+                          href={remoteCheck.release_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-indigo-700 underline text-xs"
+                        >
+                          {t('platform.systemUpdate.releaseLink')}
+                        </a>
+                      )}
+                    </div>
+                  )}
+                  {updateStatus === 'unknown' && (
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+                      {t('platform.systemUpdate.versionUnknown')}
+                    </div>
+                  )}
+                  {updateStatus === 'update_available' && remoteCheck.release_notes && (
+                    <div>
+                      <h3 className="text-sm font-medium text-slate-800 mb-2">
+                        {t('platform.systemUpdate.releaseNotes')}
+                      </h3>
+                      <pre className="text-xs bg-slate-50 p-3 rounded-lg overflow-auto max-h-64 whitespace-pre-wrap">
+                        {remoteCheck.release_notes}
+                      </pre>
+                    </div>
+                  )}
+                  <dl className="text-xs text-slate-600 space-y-1">
+                    {typeof remoteCheck.remote.latest_release_tag === 'string' &&
+                      remoteCheck.remote.latest_release_tag !== '' && (
+                      <div>
+                        <dt className="inline text-slate-500">{t('platform.systemUpdate.latestTag')}: </dt>
+                        <dd className="inline font-mono">{remoteCheck.remote.latest_release_tag}</dd>
+                      </div>
+                    )}
+                    {remoteCheck.remote.compare?.behind_by !== undefined && (
+                        <div>
+                          <dt className="inline text-slate-500">{t('platform.systemUpdate.commitsBehind')}: </dt>
+                          <dd className="inline font-mono">{remoteCheck.remote.compare.behind_by}</dd>
+                        </div>
+                      )}
+                  </dl>
+                </>
               ) : (
                 <p className="text-sm text-slate-500">{t('platform.systemUpdate.remoteHint')}</p>
               )}
-              <button type="button" disabled={checking} onClick={() => void handleCheck()} className="btn-secondary mt-3 inline-flex items-center gap-2">
+              <button type="button" disabled={checking} onClick={() => void handleCheck()} className="btn-secondary inline-flex items-center gap-2">
                 <GitBranch className="w-4 h-4" />
                 {checking ? t('platform.systemUpdate.checking') : t('platform.systemUpdate.checkRemote')}
               </button>
@@ -165,6 +236,11 @@ export const SystemUpdateView: React.FC = () => {
 
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm space-y-3">
             <h2 className="font-semibold text-slate-800">{t('platform.systemUpdate.deployTitle')}</h2>
+            {updateStatus === 'current' && (
+              <p className="text-sm text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
+                {t('platform.systemUpdate.deployUpToDate')}
+              </p>
+            )}
             <label className="block text-sm text-slate-600">
               {t('platform.systemUpdate.refLabel')}
               <input

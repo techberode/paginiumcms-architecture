@@ -18,7 +18,7 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 
 ## Aktuálny plán (2026-07-27) — Public Beta 1 + produkčný deploy
 
-**Stav:** **`v2.1.0-beta.14`** · It.63 MVP + deploy hotfixes shipped · **It.64+** plánované
+**Stav:** **`v2.1.0-beta.15`** · It.63 v2 (version check) + ISS-104/105 · **It.64+** plánované
 
 **Ďalšia iterácia:** backlog — It.63 v2 (GitHub compare UI) alebo It.25 setup wizard
 
@@ -38,7 +38,7 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 | **It.13 v4** | S-DEMOCREDS, quick-login, editor fix, demo nav UX | ✅ **ready** (`beta.11`) |
 | **Demo ops — ISS-102** | Storage bootstrap, health 200, `demo:reset-if-due` not_due OK | ✅ **2026-07-27** |
 | **ISS-103** | PHPUnit test isolation — `.env` / `DEMO_MODE` pollution | ✅ **`beta.12`** |
-| **It.63** | Admin system update (prod deploy) | ✅ **`beta.12`** MVP · hotfix **`beta.13`–`beta.14`** |
+| **It.63** | Admin system update (prod deploy) | ✅ **`beta.15`** — MVP + v2 version check + ISS-104/105 |
 
 Detail deployu (lokálne, gitignored): `PRIVATE_DOMAIN_DEPLOY.md` · scheduler: [ITERATION_62.md](ITERATION_62.md) · cron: [deploy/CRON.md](deploy/CRON.md)
 
@@ -355,4 +355,4 @@ Deploy guide: docs/deploy/DEPLOY.md + docs/deploy/DEMO_DEPLOY.md.
 
 ---
 
-*Updated 2026-07-27 after It.63 MVP (`beta.12`–`beta.14`) + ISS-103 test isolation. Details: `ITERATION_63.md`, `ISSUES.md`, `RELEASE.md`.*
+*Updated 2026-07-27 after It.63 v2 (`beta.15`) — version check UX + ISS-104/105. Details: `ITERATION_63.md`, `ISSUES.md`, `RELEASE.md`.*

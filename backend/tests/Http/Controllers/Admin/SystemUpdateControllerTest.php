@@ -87,4 +87,35 @@ final class SystemUpdateControllerTest extends TestCase
         $this->assertTrue($data['data']['queued']);
         $this->assertSame('v2.1.0-beta.12', $data['data']['ref']);
     }
+
+    public function testCheckForbiddenForAdmin(): void
+    {
+        $this->loginAsAdminUser();
+
+        $response = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/admin/system/update/check', [])
+        );
+
+        $this->assertSame(403, $response->getStatusCode());
+    }
+
+    public function testCheckReturnsUpdateEnvelopeForSuperAdmin(): void
+    {
+        $this->loginAsSuperAdminUser();
+
+        $response = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/admin/system/update/check', [])
+        );
+        $data = $this->getJsonResponse($response);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertTrue($data['success']);
+        $this->assertArrayHasKey('git', $data['data']);
+        $this->assertArrayHasKey('remote', $data['data']);
+        $this->assertArrayHasKey('update', $data['data']);
+        $this->assertContains(
+            $data['data']['update']['status'] ?? '',
+            ['current', 'update_available', 'unknown']
+        );
+    }
 }

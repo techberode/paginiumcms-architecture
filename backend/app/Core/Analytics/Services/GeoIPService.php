@@ -5,16 +5,22 @@ declare(strict_types=1);
 namespace PaginiumCMS\Core\Analytics\Services;
 
 use PaginiumCMS\Core\Analytics\Models\GeoLocation;
+use PaginiumCMS\Core\Security\Services\OutboundUrlGuard;
 
 /**
- * Služba pre geolokáciu IP adries.
- * Používa free API alebo lokálnu databázu.
+ * Geolocation lookup for analytics (audit A6-GEOIP: HTTPS + OutboundUrlGuard).
  */
 class GeoIPService
 {
-    private string $apiUrl = 'http://ip-api.com/json/';
+    private string $apiUrl = 'https://ip-api.com/json/';
+
     /** @var array<int|string, mixed> */
     private array $cache = [];
+
+    public function __construct(
+        private ?OutboundUrlGuard $outboundGuard = null
+    ) {
+    }
 
     /**
      * Získa geolokačné údaje pre IP adresu.
@@ -68,6 +74,11 @@ class GeoIPService
 
     private function fetchRemoteJson(string $url): ?string
     {
+        $guard = $this->outboundGuard ?? OutboundUrlGuard::fromEnv();
+        if (!$guard->isAllowed($url)) {
+            return null;
+        }
+
         $context = stream_context_create([
             'http' => [
                 'timeout' => 2,

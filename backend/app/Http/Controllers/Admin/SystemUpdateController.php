@@ -12,6 +12,7 @@ use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\SystemUpdate\Services\GitHubReleaseClient;
 use PaginiumCMS\Core\SystemUpdate\Services\GitRepositoryInspector;
 use PaginiumCMS\Core\SystemUpdate\Services\SystemDeployService;
+use PaginiumCMS\Core\SystemUpdate\Services\SystemUpdateVersionMatcher;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Demo\Services\DemoMode;
 use PaginiumCMS\Modules\Security\Models\User;
@@ -37,6 +38,7 @@ final class SystemUpdateController
         private JobQueueStore $queue,
         private JobWorker $worker,
         private SecurityAuditStore $audit,
+        private SystemUpdateVersionMatcher $versionMatcher,
         private JsonResponder $json
     ) {
     }
@@ -64,11 +66,33 @@ final class SystemUpdateController
 
         $gitStatus = $this->git->status();
         $config = $this->settings->group('systemUpdate');
-        $remote = $this->github->check($config, $gitStatus['commit'] ?? null);
+        $remote = $this->github->check(
+            $config,
+            $gitStatus['commit'] ?? null,
+            $gitStatus['commit_full'] ?? null
+        );
+
+        $behindBy = is_array($remote['compare'] ?? null)
+            ? (int) ($remote['compare']['behind_by'] ?? 0)
+            : null;
+
+        $update = $this->versionMatcher->evaluate(
+            AppVersion::current(),
+            is_string($gitStatus['describe'] ?? null) ? $gitStatus['describe'] : null,
+            is_string($remote['latest_release_tag'] ?? null) ? $remote['latest_release_tag'] : null,
+            is_string($gitStatus['commit_full'] ?? null) ? $gitStatus['commit_full'] : ($gitStatus['commit'] ?? null),
+            is_string($remote['remote_commit'] ?? null) ? $remote['remote_commit'] : null,
+            $behindBy
+        );
 
         return $this->json->success($response, [
             'git' => $gitStatus,
             'remote' => $remote,
+            'update' => $update,
+            'release_notes' => is_string($remote['latest_release_body'] ?? null) && $update['status'] === 'update_available'
+                ? $remote['latest_release_body']
+                : null,
+            'release_url' => is_string($remote['latest_release_url'] ?? null) ? $remote['latest_release_url'] : null,
         ]);
     }
 

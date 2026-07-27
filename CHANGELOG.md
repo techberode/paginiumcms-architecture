@@ -59,15 +59,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.62 + It.61 + demo deploy + analytics/editor | **`v2.1.0-beta.9`** | [below](#210-beta9--2026-07-27) |
 | It.13 v3 — Demo full trial | **`v2.1.0-beta.10`** | [below](#210-beta10--2026-07-27) |
 | It.13 v4 — Demo security polish | **`v2.1.0-beta.11`** | [below](#210-beta11--2026-07-27) |
-| It.63 — Admin system update (prod) | **`v2.1.0-beta.12`** | [below](#210-beta12--2026-07-27) |
+| It.63 — Admin system update (MVP) | **`v2.1.0-beta.12`** | [below](#210-beta12--2026-07-27) |
 | It.63 hotfix — deploy AppRoot + UX | **`v2.1.0-beta.13`** | [below](#210-beta13--2026-07-27) |
 | It.63 — Docker admin deploy bootstrap | **`v2.1.0-beta.14`** | [below](#210-beta14--2026-07-27) |
+| It.63 v2 — version check + audit fixes | **`v2.1.0-beta.15`** | [below](#210-beta15--2026-07-27) |
 | Wave 5d — It.15 hook emitters + extension policy | **2.0.54** | [below](#2054--2026-07-23) |
 | It.19b–19d — Security runtime, auth UX, password policy | **2.0.45** | [below](#2045--2026-07-21) |
 
 ---
 
 ## [Unreleased]
+
+---
+
+## [2.1.0-beta.15] – 2026-07-27
+
+**It.63 v2** — System update version check UX + security audit fixes (ISS-104, ISS-105).
+
+### Added (It.63 v2)
+
+- **`SystemUpdateVersionMatcher`** — compares local tag/commit with GitHub latest release.
+- **Remote check UI** — “up to date” / “update available” banners, GitHub release notes + link.
+- **`SystemUpdateRemote`** FE types (fixes TS2322 on compare display).
+
+### Security
+
+- **ISS-104 (A3-JOBDEPLOY):** Lock `payload` on system jobs; `system.deploy` requires `SUPER_ADMIN` on jobs API run/update; excluded from `run-due`.
+- **ISS-105 (A6-GEOIP):** `GeoIPService` HTTPS + `OutboundUrlGuard`.
+
+### Tests
+
+- `SystemUpdateVersionMatcherTest`, extended `SystemUpdateControllerTest`
+- `JobRegistryStoreTest`, `JobsControllerPrivilegedDeployTest`, `PrivilegedJobPolicyTest`, `GeoIPServiceTest`
 
 ---
 
