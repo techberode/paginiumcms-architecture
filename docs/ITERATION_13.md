@@ -39,7 +39,7 @@ Izolované demo prostredie s `DEMO_MODE`. **v3:** plný CMS trial — kompletný
 | **Public demo strip** + countdown | ✅ v3 |
 | **Admin `/demo`** onboarding + reset countdown (ADMIN+) | ✅ v3 |
 | `GET /api/demo/public-info` | ✅ v3 |
-| Separate storage `storage/app/demo/` | ✅ |
+| Separate storage `backend/storage/app/demo/` | ✅ |
 | `GET /api/admin/demo/status` + `POST …/reset` | ✅ |
 | Public settings `demo.enabled` / `loginEmail` (no password in GET) | ✅ v4 |
 | `POST /api/demo/quick-login` — server-side demo session (S-DEMOCREDS) | ✅ v4 |
@@ -93,7 +93,7 @@ Http/Routes/demo.php
 */15 * * * * cd /var/www/paginiumcms-demo && /usr/bin/php backend/bin/console demo:reset-if-due >> /var/log/paginium-demo-reset.log 2>&1
 ```
 
-**Storage permissions (ISS-099):** Host cron musí zapisovať do `storage/app/demo/data/plugins.json` (bootstrap načíta `PluginManager` pred resetom). Rovnaký model ako It.62 — `chown user:www-data`, dirs `2775`, files `664`. Detail: [deploy/DEMO_DEPLOY.md](deploy/DEMO_DEPLOY.md) § ISS-099.
+**Storage permissions (ISS-099, ISS-102):** Bootstrap zapisuje do `backend/storage/app/demo/data/plugins.json` a firewall JSON. Chýbajúci alebo nezapisovateľný `data/` → celé API 500 (ISS-102). Host cron potrebuje group write (ISS-099). Rovnaký model ako It.62 — `chown user:www-data`, dirs `2775`, files `664`. Detail: [deploy/DEMO_DEPLOY.md](deploy/DEMO_DEPLOY.md) § First-run, ISS-099, ISS-102.
 
 ## Demo credentials
 

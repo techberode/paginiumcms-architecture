@@ -221,6 +221,7 @@ Full stack update still requires **§A** on the server (composer + PHP restart).
 | 502 persists | PHP crash / parse error | `stack.sh logs --tail=50 php` |
 | Admin shows old UI | Stale `dist/` or browser cache | Re-run `npm run build:prod`, hard refresh |
 | Demo login 401, empty response in DevTools | CORS — `APP_URL` ≠ public domain | Set `APP_URL=https://demo.paginiumcms.com`, `stack.sh restart php`; verify curl with `Origin` header (§C) |
+| Demo **all** API 500, health fails | Missing `backend/storage/app/demo/data/` or not writable by `www-data` | Storage bootstrap — [DEMO_DEPLOY.md](DEMO_DEPLOY.md) § First-run, ISS-102 |
 | `demo:reset-if-due` Permission denied (`plugins.json`) | Host CLI/cron vs Docker `www-data` on demo storage | `chown user:www-data`, dirs `2775` — [DEMO_DEPLOY.md](DEMO_DEPLOY.md) § ISS-099 |
 | `git pull` → already up to date | Commit not pushed | Push from dev, then fetch on server |
 

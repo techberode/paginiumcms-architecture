@@ -1,4 +1,4 @@
-# Demo instance — deploy, login, CORS (ISS-098), cron (ISS-099)
+# Demo instance — deploy, login, CORS (ISS-098), storage (ISS-099, ISS-102), cron
 
 > **Doména:** `https://demo.paginiumcms.com`  
 > **Účel:** predvádzacie vozidlo — plný CMS trial, zmeny sa resetujú (**It.13 v4**, `v2.1.0-beta.11`).  
@@ -19,7 +19,7 @@
 ```
 Prehliadač → https://demo.paginiumcms.com/
            → host nginx (static dist + proxy /api → :8091)
-           → Docker PHP (DEMO_MODE=true, storage/app/demo/)
+           → Docker PHP (DEMO_MODE=true, backend/storage/app/demo/)
 ```
 
 ---
@@ -114,6 +114,50 @@ Súbory:
 
 ---
 
+## First-run — demo storage bootstrap (pred prvým deployom / po čistom clone)
+
+**Cesta musí byť `backend/storage/`** — nie `$APP_ROOT/storage/` (bežná chyba pri diagnostike).
+
+Bootstrap PHP pri každom requeste otvára `backend/storage/app/demo/data/plugins.json` a firewall JSON súbory. Ak `data/` chýba alebo `www-data` nemá zápis → **HTTP 500 na celé API** (ISS-102).
+
+```bash
+APP_ROOT=/var/www/paginiumcms-demo
+STACK_DIR=/var/lib/docker/compose/paginiumcms-demo
+STORAGE="$APP_ROOT/backend/storage"
+
+cd "$APP_ROOT"
+
+sudo mkdir -p \
+  "$STORAGE/app/demo/data" \
+  "$STORAGE/app/demo/data/security/firewall" \
+  "$STORAGE/cache" \
+  "$STORAGE/backups"
+
+sudo chown -R "$(id -un):www-data" "$STORAGE"
+sudo find "$STORAGE" -type d -exec chmod 2775 {} \;
+sudo find "$STORAGE" -type f -exec chmod 664 {} \;
+
+echo '{"plugins":{}}' | sudo -u www-data tee "$STORAGE/app/demo/data/plugins.json" > /dev/null
+echo '{"ips":[]}' | sudo -u www-data tee "$STORAGE/app/demo/data/security/firewall/whitelist.json" > /dev/null
+echo '{"bans":[],"sin_scores":[],"recent_incidents":[]}' | sudo -u www-data tee "$STORAGE/app/demo/data/security/firewall/bans.json" > /dev/null
+
+touch "$STORAGE/app/demo/data/.write-test-host" \
+  && rm "$STORAGE/app/demo/data/.write-test-host" && echo HOST_WRITE_OK
+
+cd "$STACK_DIR"
+./stack.sh exec -u www-data php sh -c \
+  'touch /var/www/html/backend/storage/app/demo/data/.write-test-docker && rm /var/www/html/backend/storage/app/demo/data/.write-test-docker && echo DOCKER_WRITE_OK'
+
+curl -sS -w "\nHTTP %{http_code}\n" "http://127.0.0.1:8091/api/health"
+# očakávané: success true, HTTP 200
+```
+
+Po health **200**: admin `/demo` → **Reset demo seed**, alebo `php backend/bin/console demo:reset-if-due` (⏭ `not_due` je OK — interval ešte neuplynul).
+
+Detail incidentu: **ISS-102** · cron/host CLI: **ISS-099**.
+
+---
+
 ## C&P — plný deploy demo (kód + FE)
 
 ```bash
@@ -126,6 +170,7 @@ git fetch origin
 git checkout v2.1.0-beta.11   # alebo: git pull origin main
 git log -1 --oneline
 
+# Ak health padá na 500 pred deployom → § First-run storage bootstrap vyššie
 composer install --no-dev --optimize-autoloader
 
 cd frontend
@@ -230,6 +275,41 @@ php backend/bin/console demo:reset-if-due
 
 ---
 
+## ISS-102 — Celé demo API HTTP 500 (chýba `demo/data/`, Permission denied)
+
+### Symptóm
+
+| Nástroj | Výsledok |
+|---------|----------|
+| `curl /api/health` | ❌ HTTP **500**, `{ "success": false, "error": "Vnútorná chyba servera" }` |
+| `curl /api/auth/login` | ❌ rovnaké — **všetky** endpointy |
+| PHP log | `PluginRegistry.php` — `Unable to open plugin registry` |
+| PHP log | `FirewallBanStore.php` — `mkdir(): Permission denied`, `whitelist.json` No such file |
+| Diagnostika | `demo/data missing`; `touch $APP_ROOT/storage/...` → **WRITE FAIL** (zlá cesta) |
+
+### Príčina
+
+1. **`backend/storage/app/demo/data/` neexistuje** (fresh clone, vymazaný strom, nesprávny deploy).
+2. **`www-data` nemôže vytvoriť adresáre** — parent `backend/storage` bez group write.
+3. Bootstrap pri štarte volá `PluginRegistry` + `FirewallBanStore::ensureWhitelistStorage()` — oba potrebujú zápis do `data/`.
+
+**Poznámka k ceste:** platná cesta je **`$APP_ROOT/backend/storage/app/demo/`**, nie `$APP_ROOT/storage/app/demo/`.
+
+### Riešenie
+
+Postup **First-run — demo storage bootstrap** vyššie. Overenie (2026-07-27 na demo serveri):
+
+```
+HOST_WRITE_OK
+DOCKER_WRITE_OK
+HTTP 200  (health)
+⏭ Demo reset nebol spustený (not_due)   ← OK, interval ešte nebežal
+```
+
+Manuálny seed: admin **Demo** → **Reset demo seed** (nezávisle od `not_due`).
+
+---
+
 ## ISS-099 — `demo:reset-if-due` Permission denied (`plugins.json`)
 
 ### Symptóm
@@ -237,11 +317,11 @@ php backend/bin/console demo:reset-if-due
 Host CLI spadne ešte pred resetom:
 
 ```
-PHP Warning: fopen(.../storage/app/demo/data/plugins.json): Failed to open stream: Permission denied
+PHP Warning: fopen(.../backend/storage/app/demo/data/plugins.json): Failed to open stream: Permission denied
 PHP Fatal error: Unable to open plugin registry
 ```
 
-Web/API v Dockeri môže fungovať — cron na hoste nie.
+Web/API v Dockeri môže fungovať — cron na hoste nie. Pri chýbajúcom `data/` pozri **ISS-102** (celé API 500).
 
 ### Príčina
 
@@ -251,7 +331,7 @@ Rovnaká trieda problému ako **ISS-094** (It.62): **SSH user** na hoste vs **`w
 
 | Prostredie | User | Storage |
 |------------|------|---------|
-| Docker PHP (web + API) | `www-data` | `storage/app/demo/` |
+| Docker PHP (web + API) | `www-data` | `backend/storage/app/demo/` |
 | Host cron / SSH CLI | napr. `marian` | ten istý mount — potrebuje zdieľanú skupinu |
 
 ### Riešenie A — zdieľané práva (odporúčané)
@@ -356,7 +436,7 @@ cd /var/www/paginiumcms.com/frontend && npm ci && npm run build:prod
 - [DEPLOY.md](DEPLOY.md) — §C demo, §F troubleshooting
 - [ITERATION_13.md](../ITERATION_13.md) — demo modul v3 ✅
 - [developer/RELEASE.md](../developer/RELEASE.md) — `v2.1.0-beta.10` C&P
-- [ISSUES.md](../ISSUES.md) — ISS-098, ISS-099
+- [ISSUES.md](../ISSUES.md) — ISS-098, ISS-099, ISS-102
 - [CRON.md](CRON.md) — prod + demo crontab
 - [ITERATION_62.md](../ITERATION_62.md) — storage permissions (ISS-094, rovnaký pattern ako ISS-099)
 - [NGINX_API.md](NGINX_API.md) — host nginx + `/api` proxy

@@ -84,7 +84,9 @@ cd /var/www/paginiumcms-demo
 php backend/bin/console demo:reset-if-due
 ```
 
-Ak padne na `Permission denied` pre `storage/app/demo/data/plugins.json` → **ISS-099** — rovnaký fix ako ISS-094:
+Ak padne na `Permission denied` pre `backend/storage/app/demo/data/plugins.json` → **ISS-099** — rovnaký fix ako ISS-094.
+
+Ak **celé API** vracia 500 (health/login) → chýba `data/` strom — **ISS-102**. Najprv [DEMO_DEPLOY.md](DEMO_DEPLOY.md) § First-run storage bootstrap, potom ISS-099 ak treba.
 
 ```bash
 sudo chown -R "$(id -un):www-data" backend/storage
@@ -92,7 +94,7 @@ sudo find backend/storage -type d -exec chmod 2775 {} \;
 sudo find backend/storage -type f -exec chmod 664 {} \;
 ```
 
-Detail + Docker alternatíva: [DEMO_DEPLOY.md](DEMO_DEPLOY.md) § ISS-099.
+Detail + Docker alternatíva: [DEMO_DEPLOY.md](DEMO_DEPLOY.md) § ISS-099 · § ISS-102.
 
 ---
 
@@ -108,6 +110,7 @@ Detail + Docker alternatíva: [DEMO_DEPLOY.md](DEMO_DEPLOY.md) § ISS-099.
 | Admin run „nefunguje“, API 200 | UI bralo `success:false` ako chybu | It.62 — `outcome` + toast fix; `npm run build:prod` |
 | `Permission denied` na `runs.json` | Host vs Docker `www-data` | `chown user:www-data`, dirs `2775`, test `touch` v kontajneri — [ITERATION_62.md](../ITERATION_62.md) |
 | `Permission denied` na demo `plugins.json` | Host cron/CLI vs Docker pri `demo:reset-if-due` | Rovnaký pattern — [DEMO_DEPLOY.md](DEMO_DEPLOY.md) § ISS-099 |
+| Demo health/login **500** | Chýba `backend/storage/app/demo/data/` | [DEMO_DEPLOY.md](DEMO_DEPLOY.md) § First-run, ISS-102 |
 
 ---
 

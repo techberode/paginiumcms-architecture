@@ -65,8 +65,8 @@ SESSION_LIFETIME=14400
 
 | Cesta | Účel |
 |-------|------|
-| `storage/app/demo/` | **Celý CMS** pri `DEMO_MODE=true` (obsah, users, settings) |
-| `storage/app/content/` | Produkčný obsah — na demo inštancii sa **nepoužíva** |
+| `storage/app/demo/` | **Celý CMS** pri `DEMO_MODE=true` (obsah, users, settings) — cesta v repozitári: `backend/storage/app/demo/` |
+| `backend/storage/app/content/` | Produkčný obsah — na demo inštancii sa **nepoužíva** |
 
 `DemoStorageService::assertIsolatedFromProduction()` — demo cesta nesmie prekrývať content.
 
@@ -79,6 +79,8 @@ SESSION_LIFETIME=14400
 **Pred nastavením cronu** over manuálne: `php backend/bin/console demo:reset-if-due`.
 
 Ak `Permission denied` na `data/plugins.json` → host user vs Docker `www-data`. Fix: `chown user:www-data`, dirs `2775` (ISS-099, rovnaký pattern ako It.62). Postup: [`docs/deploy/DEMO_DEPLOY.md`](../../../docs/deploy/DEMO_DEPLOY.md) § ISS-099.
+
+**Celé API HTTP 500 (health/login)?** → chýba alebo nie je zapisovateľný `backend/storage/app/demo/data/` (ISS-102). Postup: [`DEMO_DEPLOY.md`](../../../docs/deploy/DEMO_DEPLOY.md) § First-run storage bootstrap.
 
 ## Demo účet
 

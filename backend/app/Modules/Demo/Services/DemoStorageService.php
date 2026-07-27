@@ -51,6 +51,19 @@ final class DemoStorageService
 
     /**
      * Seed demo snapshot on first boot when empty (skipped in APP_ENV=testing).
+     * Failures are logged but must not take down the whole API (demo storage permissions).
+     */
+    public function ensureSeededSafely(): void
+    {
+        try {
+            $this->ensureSeeded();
+        } catch (\Throwable $e) {
+            error_log('[PaginiumCMS] Demo ensureSeeded failed: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Seed demo snapshot on first boot when empty (skipped in APP_ENV=testing).
      */
     public function ensureSeeded(): void
     {
