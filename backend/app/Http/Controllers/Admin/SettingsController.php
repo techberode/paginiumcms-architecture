@@ -240,15 +240,7 @@ final class SettingsController
                 'passwordRequireNumbers' => (bool) ($all['security']['passwordRequireNumbers'] ?? true),
                 'passwordRequireSpecialChars' => (bool) ($all['security']['passwordRequireSpecialChars'] ?? true),
             ],
-            'demo' => [
-                'enabled' => $this->demoMode->isEnabled(),
-                'url' => $this->demoMode->publicDemoUrl(),
-                'autoResetMinutes' => $this->demoMode->autoResetMinutes(),
-                'credentials' => $this->demoMode->isEnabled() ? [
-                    'email' => DemoFixtures::ADMIN_EMAIL,
-                    'password' => DemoFixtures::ADMIN_PASSWORD,
-                ] : null,
-            ],
+            'demo' => $this->publicDemoSettings($all['marketing'] ?? []),
             'comments' => [
                 'enabled' => (bool) ($all['comments']['enabled'] ?? true),
                 'requireApproval' => (bool) ($all['comments']['requireApproval'] ?? true),
@@ -384,6 +376,40 @@ final class SettingsController
             'maintenanceBody' => (string) ($maintenance['maintenanceBody'] ?? ''),
             'maintenanceShowContactForm' => (bool) ($maintenance['maintenanceShowContactForm'] ?? true),
             'maintenanceContactSubject' => (string) ($maintenance['maintenanceContactSubject'] ?? $defaults['maintenanceContactSubject'] ?? ''),
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $marketing
+     * @return array<string, mixed>
+     */
+    private function publicDemoSettings(array $marketing): array
+    {
+        if ($this->demoMode->isEnabled()) {
+            return [
+                'enabled' => true,
+                'url' => $this->demoMode->publicDemoUrl(),
+                'autoResetMinutes' => $this->demoMode->autoResetMinutes(),
+                'showFooterLink' => false,
+                'credentials' => [
+                    'email' => DemoFixtures::ADMIN_EMAIL,
+                    'password' => DemoFixtures::ADMIN_PASSWORD,
+                ],
+            ];
+        }
+
+        $defaults = SettingsSchema::defaults()['marketing'] ?? [];
+        $demoUrl = trim((string) ($marketing['demoUrl'] ?? $defaults['demoUrl'] ?? ''));
+        if ($demoUrl === '') {
+            $demoUrl = $this->demoMode->publicDemoUrl();
+        }
+
+        return [
+            'enabled' => false,
+            'url' => $demoUrl,
+            'showFooterLink' => (bool) ($marketing['demoFooterLinkEnabled'] ?? $defaults['demoFooterLinkEnabled'] ?? true),
+            'autoResetMinutes' => null,
+            'credentials' => null,
         ];
     }
 

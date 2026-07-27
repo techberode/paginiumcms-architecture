@@ -1,7 +1,7 @@
 # Release checklist — PaginiumCMS
 
-> Posledná verzia: **2.1.0-beta.9** · 2026-07-27 · tag **`v2.1.0-beta.9`** (pending push)  
-> **Release commit:** `a492e53` · **Rozsah od beta.8:** `0fe21ec` … `a492e53`  
+> Posledná verzia: **2.1.0-beta.10** · 2026-07-27 · tag **`v2.1.0-beta.10`**  
+> **Rozsah od beta.9:** `ecbfe0b` … release commit · **It.13 v3** Demo full trial  
 > Tento súbor obsahuje **copy-paste** bloky pre GitHub Release.
 
 > **Poznámka k verziám:** **`2.0.58`** → `f53e71e` · **Public Beta 1** → `e3e0d82` · **Beta 1 Testing** → `c68e72b` · **Beta 1 patch (RR GHSA)** → *(commit po push)*.
@@ -28,7 +28,8 @@
 | **Security audit — XSS, Zip-Slip, deploy** | **`v2.1.0-beta.6`** | ✅ tagged |
 | **Deps + Vitest + deploy env (ISS-089–092)** | **`v2.1.0-beta.7`** | ✅ tagged |
 | **It.58b — Color schemes + themed public site** | **`v2.1.0-beta.8`** | ✅ tagged |
-| **It.62 + It.61 + demo deploy + analytics/editor** | **`v2.1.0-beta.9`** | ⏳ release commit `a492e53`, tag pending |
+| **It.62 + It.61 + demo deploy + analytics/editor** | **`v2.1.0-beta.9`** | ✅ tagged |
+| **It.13 v3 — Demo full trial** | **`v2.1.0-beta.10`** | ⏳ release commit pending |
 
 **Pravidlo:** Post-beta patchy — `2.0.59+` alebo `2.1.0-beta.N` podľa rozsahu.
 
@@ -41,7 +42,155 @@ gh auth login   # ak ešte nie
 ./scripts/create-github-releases.sh
 ```
 
-Testerom / security reviewerovi poslať **`v2.1.0-beta.9`** + [SECURITY_REVIEW.md](../SECURITY_REVIEW.md).
+Testerom / security reviewerovi poslať **`v2.1.0-beta.10`** + [SECURITY_REVIEW.md](../SECURITY_REVIEW.md).
+
+---
+
+## v2.1.0-beta.10 — Demo sandbox full trial (It.13 v3)
+
+**Rozsah commitov na `main` od beta.9:** `ecbfe0b` … release commit
+
+| Oblasť | Zmena |
+|--------|--------|
+| It.13 v3 | Rich demo seed — comments, messages, newsletter, contact page |
+| API | `GET /api/demo/public-info`, status `next_reset_at` / `seconds_until_reset` |
+| Admin FE | `/demo` onboarding, countdown, ADMIN+ reset |
+| Public FE | `DemoPublicStrip`, improved banner/footer copy |
+| Prod | Settings → Marketing — footer demo link URL + toggle |
+| Docs | `ITERATION_13.md` v3 ✅, `ITERATION_63.md` planned |
+
+**Izolácia:** `DEMO_MODE=true` → zápisy len do `storage/app/demo/`; produkcia nedotknutá.
+
+### Pred tagom
+
+```bash
+./scripts/iteration-gate.sh
+vendor/bin/phpunit backend/tests/Modules/Demo/
+cd frontend && npm test && npm run build:prod
+```
+
+### Commit + tag
+
+```bash
+git add -A
+git commit -m "$(cat <<'EOF'
+release: v2.1.0-beta.10 — It.13 v3 demo sandbox full trial.
+
+Rich demo seed, public-info API, DemoPublicStrip, marketing settings,
+reset countdown UX. ITERATION_63 planned for admin prod deploy.
+EOF
+)"
+git tag v2.1.0-beta.10
+git push origin main
+git push origin v2.1.0-beta.10
+```
+
+### GitHub Release — copy-paste (v2.1.0-beta.10)
+
+**Title:** `v2.1.0-beta.10 — Demo sandbox full trial (It.13 v3)`
+
+**Body:**
+
+```markdown
+## Summary
+
+- **It.13 v3** — Demo instance works like production CMS trial with strict storage isolation
+- **Rich seed** — sample comments, contact messages, newsletter subscribers, contact page, appearance settings
+- **`GET /api/demo/public-info`** — public reset countdown (no credentials)
+- **Admin `/demo`** — onboarding steps, reset countdown, ADMIN+ manual reset
+- **`DemoPublicStrip`** — amber banner on public demo site
+- **Prod marketing** — Settings → Marketing controls footer demo link (`demoUrl`, `demoFooterLinkEnabled`)
+
+## Isolation (mandatory)
+
+| Instance | `DEMO_MODE` | Storage |
+|----------|-------------|---------|
+| `paginiumcms.com` | `false` | `storage/app/content/` |
+| `demo.paginiumcms.com` | `true` | `storage/app/demo/` only |
+
+Production content is **never** written from demo instance.
+
+## Deploy — demo (`demo.paginiumcms.com`) — primary target
+
+```bash
+APP_ROOT=/var/www/paginiumcms-demo
+STACK_DIR=/var/lib/docker/compose/paginiumcms-demo
+BACKEND_PORT=8091
+
+cd "$APP_ROOT"
+git fetch origin && git checkout v2.1.0-beta.10
+composer install --no-dev --optimize-autoloader
+cd frontend && npm ci && npm run build:prod && cd ..
+"$STACK_DIR/stack.sh" restart php
+sleep 8
+
+grep '^APP_URL=' "$APP_ROOT/.env"
+# APP_URL=https://demo.paginiumcms.com
+
+# Smoke — login with Origin (browser simulation)
+curl -sS -o /dev/null -w 'login+Origin: HTTP %{http_code}\n' \
+  -X POST "https://demo.paginiumcms.com/api/auth/login" \
+  -H 'Content-Type: application/json' \
+  -H 'Origin: https://demo.paginiumcms.com' \
+  -d '{"email":"demo@paginiumcms.com","password":"Demo123!"}'
+# Expected: HTTP 200
+
+# Public demo info
+curl -sS "https://demo.paginiumcms.com/api/demo/public-info" | jq .
+```
+
+**After deploy:** Admin → **Demo** (`/demo`) → **Reset demo seed** (loads new snapshot with comments/messages/newsletter).
+
+Plná dokumentácia: [DEMO_DEPLOY.md](docs/deploy/DEMO_DEPLOY.md)
+
+## Deploy — production (`paginiumcms.com`) — optional (marketing settings only)
+
+```bash
+APP_ROOT=/var/www/paginiumcms.com
+STACK_DIR=/var/lib/docker/compose/paginiumcms
+BACKEND_PORT=8089
+
+cd "$APP_ROOT"
+git fetch origin && git checkout v2.1.0-beta.10
+composer install --no-dev --optimize-autoloader
+cd frontend && npm ci && npm run build:prod && cd ..
+"$STACK_DIR/stack.sh" restart php
+sleep 8 && curl -s "http://127.0.0.1:${BACKEND_PORT}/api/health"
+```
+
+No `DEMO_MODE` on prod. New: **Settings → Marketing** for footer demo link.
+
+## Docs
+
+- [ITERATION_13.md](docs/ITERATION_13.md) — It.13 v3 ✅
+- [ITERATION_63.md](docs/ITERATION_63.md) — next: admin prod deploy
+- [deploy/DEMO_DEPLOY.md](docs/deploy/DEMO_DEPLOY.md)
+
+## Test plan
+
+- [ ] Demo login in browser (not curl without Origin)
+- [ ] Public site — amber demo strip + countdown
+- [ ] Admin — comments, messages, newsletter have sample data after reset
+- [ ] `/contact` page + form → message in admin
+- [ ] Footer newsletter works on demo
+- [ ] Prod — Settings → Marketing toggles footer demo link
+- [ ] `./scripts/iteration-gate.sh` green
+```
+
+### C&P — deploy demo only (quick)
+
+```bash
+APP_ROOT=/var/www/paginiumcms-demo
+STACK_DIR=/var/lib/docker/compose/paginiumcms-demo
+
+cd "$APP_ROOT"
+git fetch origin && git checkout v2.1.0-beta.10
+composer install --no-dev --optimize-autoloader
+cd frontend && npm ci && npm run build:prod && cd ..
+"$STACK_DIR/stack.sh" restart php
+```
+
+Potom v admin: **Demo → Reset demo seed**.
 
 ---
 

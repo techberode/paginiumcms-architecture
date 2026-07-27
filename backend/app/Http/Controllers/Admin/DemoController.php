@@ -24,11 +24,37 @@ final class DemoController
         return $this->json->success($response, $this->demoStorage->status());
     }
 
+    /**
+     * Public demo info — no secrets, only when DEMO_MODE=true.
+     */
+    public function publicInfo(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        if (!$this->demoStorage->isEnabled()) {
+            return $this->json->success($response, ['enabled' => false]);
+        }
+
+        $status = $this->demoStorage->status();
+
+        return $this->json->success($response, [
+            'enabled' => true,
+            'auto_reset_minutes' => $status['auto_reset_minutes'],
+            'last_reset_at' => $status['last_reset_at'],
+            'next_reset_at' => $status['next_reset_at'],
+            'seconds_until_reset' => $status['seconds_until_reset'],
+            'isolated' => true,
+        ]);
+    }
+
     public function reset(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $user = $request->getAttribute('user');
-        if (!$user instanceof User || !in_array('SUPER_ADMIN', $user->getRoles(), true)) {
-            return $this->json->error($response, 'Len SUPER_ADMIN môže resetovať demo úložisko', 403);
+        if (!$user instanceof User) {
+            return $this->json->error($response, 'Neautorizovaný prístup', 403);
+        }
+
+        $roles = $user->getRoles();
+        if (!in_array('ADMIN', $roles, true) && !in_array('SUPER_ADMIN', $roles, true)) {
+            return $this->json->error($response, 'Len ADMIN môže resetovať demo úložisko', 403);
         }
 
         try {

@@ -15,6 +15,7 @@ export const Footer: React.FC = () => {
   const navigate = useNavigate();
   const demoUrl = settings.demo?.url ?? 'https://demo.paginiumcms.com';
   const isDemoInstance = settings.demo?.enabled === true;
+  const showDemoFooterLink = !isDemoInstance && settings.demo?.showFooterLink !== false;
   const footerNewsletterEnabled = settings.newsletter?.footerEnabled === true;
 
   const sortedNav = [...navigation].sort((a, b) => a.order - b.order);
@@ -71,7 +72,7 @@ export const Footer: React.FC = () => {
 
           <div>
             {footerNewsletterEnabled ? <FooterNewsletter /> : null}
-            {!isDemoInstance ? (
+            {showDemoFooterLink ? (
               <div className={footerNewsletterEnabled ? 'mt-8 pt-8 border-t border-white/10' : undefined}>
                 <h4 className="text-xs font-bold uppercase tracking-wider public-footer-heading mb-4">
                   {t('public.footer.tryCmsTitle')}
@@ -89,14 +90,15 @@ export const Footer: React.FC = () => {
                   </a>
                 </div>
               </div>
-            ) : footerNewsletterEnabled ? null : (
+            ) : null}
+            {isDemoInstance && !footerNewsletterEnabled ? (
               <>
                 <h4 className="text-xs font-bold uppercase tracking-wider public-footer-heading mb-4">
                   {t('public.footer.tryCmsTitle')}
                 </h4>
                 <p className="text-sm opacity-70 leading-relaxed">{t('public.footer.demoInstanceBody')}</p>
               </>
-            )}
+            ) : null}
           </div>
         </div>
 

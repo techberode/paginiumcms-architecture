@@ -18,9 +18,9 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 
 ## Aktuálny plán (2026-07-27) — Public Beta 1 + produkčný deploy
 
-**Stav:** **`v2.1.0-beta.9`** release pripravený (tag pending) · produkcia **`paginiumcms.com`** · demo **`demo.paginiumcms.com`** · **`main` @ `a492e53`** (It.61, ISS-098, footer demo link).
+**Stav:** **`v2.1.0-beta.9`** · **`main` @ `ecbfe0b`** · It.13 v3 demo complete · **It.63** plánovaná
 
-**Ďalšia iterácia:** backlog po It.61 — pozri [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md)
+**Ďalšia iterácia:** **[It.63 — Admin system update](ITERATION_63.md)** (prod deploy z admin UI)
 
 | Priorita | Úloha | Stav |
 |----------|--------|------|
@@ -34,6 +34,8 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 | **It.60** | Custom komponenty editora (plugin + settings) | ✅ **`3d3ab48`** |
 | **It.33** | Analytics enrichment (sources, geo, vlajky) | ✅ **`3d3ab48`** |
 | **It.61** | Newsletter footer + admin prehľad (ISS-097) | ✅ **shipped** |
+| **It.13 v3** | Demo full trial (seed, strip, marketing settings) | ✅ **shipped** |
+| **It.63** | Admin system update (prod deploy) | ⏳ **ďalšia iterácia** |
 
 Detail deployu (lokálne, gitignored): `PRIVATE_DOMAIN_DEPLOY.md` · scheduler: [ITERATION_62.md](ITERATION_62.md) · cron: [deploy/CRON.md](deploy/CRON.md)
 
@@ -307,17 +309,19 @@ Demo: demo.paginiumcms.com (port 8091, DEMO_MODE=true, samostatný clone + stack
 Komunikuj po slovensky. Pravidlá: .cursorrules + ZÁKONY v docs/CONTINUATION.md §2.
 
 HOTOVÉ (2026-07-27):
+- It.13 v3 ✅ demo full trial — rich seed, public strip, marketing settings, reset countdown
 - It.33 ✅ analytics enrichment — 3d3ab48
 - It.60 ✅ custom editor components — 3d3ab48
 - It.62 ✅ scheduler prod hardening — f7a73f1
-- ISS-095 ✅ maintenance heroImageUrl — 88cbe31
-- ISS-097 ✅ footer newsletter + admin subscribers — It.61
-- ISS-098 ✅ demo login CORS (SameOriginCorsMiddleware) — login v browseri OK
-- Demo stack nasadený (8091), prod footer demo link _blank — a492e53
-- Release v2.1.0-beta.9 pripravený (AppVersion, CHANGELOG, RELEASE.md) — tag pending smoke
+- It.61 ✅ footer newsletter + admin subscribers
+- ISS-098 ✅ demo login CORS — ecbfe0b
+- beta.9 tagged + demo deploy docs
+
+ĎALŠIA ITERÁCIA:
+- It.63 — Admin system update (prod deploy z UI) — pozri ITERATION_63.md
 
 ZNÁME MEDZERY (neskôr):
-- It.13 v3 — doplnkové demo API/FE (admin polish, marketing settings UI, welcome) — pozri ITERATION_13.md §v3
+- It.13 v3 hotové — demo reset na serveri spustiť manuálne po deployi (`POST /api/admin/demo/reset` alebo `demo:reset-if-due`)
 
 PROD DEPLOY (paginiumcms.com):
   cd /var/www/paginiumcms.com

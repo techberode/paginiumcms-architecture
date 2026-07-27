@@ -9,12 +9,29 @@ export interface DemoStatus {
   seeded: boolean;
   auto_reset_minutes?: number;
   last_reset_at?: string | null;
+  next_reset_at?: string | null;
+  seconds_until_reset?: number | null;
+  isolated?: boolean;
   credentials?: { email: string; password: string } | null;
+}
+
+export interface DemoPublicInfo {
+  enabled: boolean;
+  auto_reset_minutes?: number;
+  last_reset_at?: string | null;
+  next_reset_at?: string | null;
+  seconds_until_reset?: number | null;
+  isolated?: boolean;
 }
 
 export const demoApi = {
   async status() {
     const response = await apiClient.get<DemoStatus>('/api/admin/demo/status');
+    return response.success && response.data ? response.data : null;
+  },
+
+  async publicInfo() {
+    const response = await apiClient.get<DemoPublicInfo>('/api/demo/public-info');
     return response.success && response.data ? response.data : null;
   },
 

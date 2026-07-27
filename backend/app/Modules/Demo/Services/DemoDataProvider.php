@@ -39,7 +39,7 @@ final class DemoDataProvider implements DemoDataProviderInterface
 
         return array_values(array_filter(
             $all,
-            static fn (array $c): bool => $c['article_slug'] === $articleSlug
+            static fn (array $c): bool => ($c['articleSlug'] ?? $c['article_slug'] ?? '') === $articleSlug
         ));
     }
 

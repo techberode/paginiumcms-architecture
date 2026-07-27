@@ -18,6 +18,12 @@ export const publicEn: MessageTree = {
   layout: {
     noHomePage: 'No home page has been published yet (slug: home).',
   },
+  demo: {
+    stripTitle: 'PaginiumCMS demo sandbox',
+    stripBody: 'Try the full CMS — changes reset periodically; production data stays isolated.',
+    resetIn: 'Reset in :time',
+    stripLogin: 'Sign in to admin',
+  },
   errors: {
     notFoundCode: '404',
     pageNotFound: 'Page “:slug” does not exist.',

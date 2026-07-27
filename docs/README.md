@@ -273,7 +273,8 @@ See [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md) and [user/CODE_EDITOR.md](u
 | 10 | [ITERATION_10.md](ITERATION_10.md) | ✅ **RSS/sitemap/robots** + cache |
 | 11 | [ITERATION_11.md](ITERATION_11.md) | ✅ **SSO + ACL + security audit** (2.0.27) |
 | 12 | [ITERATION_12.md](ITERATION_12.md) | ✅ **Blueprint engine** (Unreleased) |
-| 13 | [ITERATION_13.md](ITERATION_13.md) | 🟡 **Demo sandbox** (iba demo.paginiumcms.com, nie zákaznícky balík) |
+| 13 | [ITERATION_13.md](ITERATION_13.md) | ✅ **Demo sandbox v3** (full trial, demo.paginiumcms.com only) |
+| 63 | [ITERATION_63.md](ITERATION_63.md) | ⏳ **Admin system update** (prod deploy — next) |
 | 19–22 | [ITERATION_19.md](ITERATION_19.md) … [ITERATION_22.md](ITERATION_22.md) | ✅ Index, hardening, contract, ops + feeds ship |
 | **23** | **[ITERATION_23.md](ITERATION_23.md)** | ✅ **SEO meta engine** (public `<head>` tags, 2.0.11) |
 | 27 | [ITERATION_27.md](ITERATION_27.md) | ✅ Admin view modes + SEO panel |

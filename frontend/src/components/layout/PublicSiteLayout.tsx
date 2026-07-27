@@ -11,6 +11,7 @@ import { useSettingsContext } from '../../context/SettingsContext';
 import { useI18n } from '../../context/I18nContext';
 import { useAuth } from '../../hooks/useAuth';
 import { useSeoMeta } from '../../hooks/useSeoMeta';
+import { DemoPublicStrip } from '../frontend/DemoPublicStrip';
 import { MaintenanceGate } from '../maintenance/MaintenanceGate';
 import { BTN_PRIMARY, PUBLIC_SPINNER } from '../../theme/publicUiClasses';
 
@@ -166,6 +167,7 @@ export const PublicSiteLayout: React.FC = () => {
   return (
     <MaintenanceGate>
       <div className="min-h-screen flex flex-col bg-theme-surface text-theme-text transition-colors">
+      <DemoPublicStrip />
       {showCmsBar && <CMSBar currentDoc={currentDoc} />}
       <Navbar onOpenSearch={() => setSearchOpen(true)} />
       <div className="flex-1">
