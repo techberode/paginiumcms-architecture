@@ -139,6 +139,12 @@ export interface PublicSettings {
     requireConsentCheckbox?: boolean;
     requireDoubleOptIn?: boolean;
   };
+  privacy?: {
+    cookieBannerEnabled?: boolean;
+    cookieBannerText?: string;
+    cookiePolicyUrl?: string;
+    cookieShowRejectButton?: boolean;
+  };
   appearance?: {
     colorScheme: string;
     mode: 'light' | 'dark' | 'system';

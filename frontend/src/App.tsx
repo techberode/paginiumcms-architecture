@@ -33,6 +33,7 @@ import { RegisterModal } from './components/auth/RegisterModal';
 import { ForgotPasswordModal } from './components/auth/ForgotPasswordModal';
 import { ResetPasswordModal } from './components/auth/ResetPasswordModal';
 import { NewsletterConfirmPage } from './components/frontend/NewsletterConfirmPage';
+import { NewsletterManagePage } from './components/frontend/NewsletterManagePage';
 import { NewsletterUnsubscribePage } from './components/frontend/NewsletterUnsubscribePage';
 import { useAuth } from './hooks/useAuth';
 import { AdminRoleGuard } from './components/auth/AdminRoleGuard';
@@ -146,6 +147,7 @@ function App() {
       />
       <Route path="/reset-password" element={<ResetPasswordModal />} />
       <Route path="/newsletter/confirm" element={<NewsletterConfirmPage />} />
+      <Route path="/newsletter/manage" element={<NewsletterManagePage />} />
       <Route path="/newsletter/unsubscribe" element={<NewsletterUnsubscribePage />} />
 
       <Route element={<AdminShell />}>

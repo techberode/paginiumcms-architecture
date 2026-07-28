@@ -317,7 +317,8 @@ HOTOVÉ (2026-07-28):
 - ISS-106/107/108 ✅ audit wave 2 (demo fail-closed, newsletter rate limit, GitHub OutboundUrlGuard)
 
 ĎALŠIA ITERÁCIA:
-- It.61 Phase 4 — CMS release campaigns, preference-scoped unsubscribe (backlog)
+- It.61 Phase 4 ✅ CMS release, manage/unsubscribe, settings on `/newsletter`
+- It.61 UX ✅ Footer newsletter modal + cookie consent banner (`privacy` settings)
 - It.25 — Setup wizard (odložené)
 
 PO DEPLOYI DEMO (beta.11):

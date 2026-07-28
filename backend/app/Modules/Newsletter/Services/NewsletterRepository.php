@@ -201,40 +201,169 @@ final class NewsletterRepository implements NewsletterRepositoryInterface
     /**
      * {@inheritDoc}
      */
-    public function unsubscribeByToken(string $token): array
+    public function unsubscribeByToken(string $token, ?string $preference = null): array
     {
         $token = trim($token);
         if ($token === '') {
             return ['ok' => false, 'reason' => 'invalid_token'];
         }
 
-        return $this->withLockedStore(function (array &$store) use ($token): array {
-            foreach ($store as $index => $entry) {
-                $id = (string) ($entry['id'] ?? '');
-                if ($id === '' || !$this->unsubscribeToken->matches($id, $token)) {
-                    continue;
-                }
+        $preferenceKey = $preference !== null ? trim($preference) : '';
+        if ($preferenceKey !== '' && !in_array($preferenceKey, NewsletterPreferences::ALL, true)) {
+            return ['ok' => false, 'reason' => 'invalid_preference'];
+        }
 
-                if (($entry['status'] ?? '') === 'unsubscribed') {
-                    return [
-                        'ok' => true,
-                        'email' => (string) ($entry['email'] ?? ''),
-                        'reason' => 'already_unsubscribed',
-                    ];
-                }
+        return $this->withLockedStore(function (array &$store) use ($token, $preferenceKey): array {
+            $index = $this->findIndexByManageToken($store, $token);
+            if ($index === null) {
+                return ['ok' => false, 'reason' => 'invalid_token'];
+            }
 
+            $entry = $store[$index];
+            $email = (string) ($entry['email'] ?? '');
+
+            if (($entry['status'] ?? '') === 'unsubscribed') {
+                return [
+                    'ok' => true,
+                    'email' => $email,
+                    'reason' => 'already_unsubscribed',
+                    'fullyUnsubscribed' => true,
+                ];
+            }
+
+            if ($preferenceKey === '') {
                 $store[$index]['status'] = 'unsubscribed';
                 $store[$index]['unsubscribedAt'] = date('c');
                 unset($store[$index]['confirmTokenHash'], $store[$index]['confirmTokenExpires']);
 
                 return [
                     'ok' => true,
-                    'email' => (string) ($entry['email'] ?? ''),
+                    'email' => $email,
+                    'fullyUnsubscribed' => true,
                 ];
             }
 
-            return ['ok' => false, 'reason' => 'invalid_token'];
+            $preferences = $this->normalizeStoredPreferences($entry);
+            $remaining = array_values(array_filter(
+                $preferences,
+                static fn (string $key): bool => $key !== $preferenceKey
+            ));
+
+            if ($remaining === []) {
+                $store[$index]['status'] = 'unsubscribed';
+                $store[$index]['unsubscribedAt'] = date('c');
+                unset($store[$index]['confirmTokenHash'], $store[$index]['confirmTokenExpires']);
+
+                return [
+                    'ok' => true,
+                    'email' => $email,
+                    'preference' => $preferenceKey,
+                    'fullyUnsubscribed' => true,
+                ];
+            }
+
+            $store[$index]['preferences'] = $remaining;
+            $store[$index]['status'] = 'active';
+            unset($store[$index]['unsubscribedAt']);
+
+            return [
+                'ok' => true,
+                'email' => $email,
+                'preference' => $preferenceKey,
+                'fullyUnsubscribed' => false,
+            ];
         });
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function findByManageToken(string $token): array
+    {
+        $token = trim($token);
+        if ($token === '') {
+            return ['ok' => false, 'reason' => 'invalid_token'];
+        }
+
+        foreach ($this->readStore() as $entry) {
+            $id = (string) ($entry['id'] ?? '');
+            if ($id === '' || !$this->unsubscribeToken->matches($id, $token)) {
+                continue;
+            }
+
+            $normalized = $this->normalizeEntry($entry);
+
+            return [
+                'ok' => true,
+                'id' => $normalized['id'],
+                'email' => $normalized['email'],
+                'preferences' => $normalized['preferences'],
+                'status' => $normalized['status'],
+            ];
+        }
+
+        return ['ok' => false, 'reason' => 'invalid_token'];
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function updatePreferencesByToken(string $token, array $preferences): array
+    {
+        $token = trim($token);
+        if ($token === '') {
+            return ['ok' => false, 'reason' => 'invalid_token'];
+        }
+
+        $normalizedPreferences = NewsletterPreferences::normalizeSelection(
+            $preferences,
+            NewsletterPreferences::ALL
+        );
+        if ($normalizedPreferences === []) {
+            return ['ok' => false, 'reason' => 'preferences_required'];
+        }
+
+        return $this->withLockedStore(function (array &$store) use ($token, $normalizedPreferences): array {
+            $index = $this->findIndexByManageToken($store, $token);
+            if ($index === null) {
+                return ['ok' => false, 'reason' => 'invalid_token'];
+            }
+
+            $entry = $store[$index];
+            if (($entry['status'] ?? '') === 'unsubscribed') {
+                return ['ok' => false, 'reason' => 'unsubscribed'];
+            }
+
+            $store[$index]['preferences'] = $normalizedPreferences;
+            if (($entry['status'] ?? '') === 'pending') {
+                // Keep pending until confirmed.
+            } else {
+                $store[$index]['status'] = 'active';
+            }
+            unset($store[$index]['unsubscribedAt']);
+
+            return [
+                'ok' => true,
+                'email' => (string) ($entry['email'] ?? ''),
+                'preferences' => $normalizedPreferences,
+                'status' => (string) ($store[$index]['status'] ?? 'active'),
+            ];
+        });
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $store
+     */
+    private function findIndexByManageToken(array $store, string $token): ?int
+    {
+        foreach ($store as $index => $entry) {
+            $id = (string) ($entry['id'] ?? '');
+            if ($id !== '' && $this->unsubscribeToken->matches($id, $token)) {
+                return $index;
+            }
+        }
+
+        return null;
     }
 
     /**

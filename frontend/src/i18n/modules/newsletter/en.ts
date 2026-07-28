@@ -3,7 +3,17 @@ import type { MessageTree } from '../../types';
 export const newsletterEn: MessageTree = {
   page: {
     title: 'Newsletter subscribers',
-    subtitle: 'Emails subscribed via the site footer or maintenance pages.',
+    subtitle: 'Subscription settings, subscriber list, and campaign sending.',
+  },
+  settings: {
+    title: 'Newsletter settings',
+    subtitle: 'Enable the footer form, outbound email, and subscription types.',
+    openFull: 'All settings',
+    save: 'Save settings',
+    saving: 'Saving…',
+    saved: 'Newsletter settings saved.',
+    saveFailed: 'Failed to save newsletter settings.',
+    loadFailed: 'Failed to load newsletter settings.',
   },
   search: {
     placeholder: 'Search by email or source…',
@@ -37,10 +47,24 @@ export const newsletterEn: MessageTree = {
     exportCsv: 'Export CSV',
     sendWeeklyDigest: 'Send weekly digest now',
     sendTest: 'Send test email',
+    sendRelease: 'Send release campaign',
+  },
+  release: {
+    title: 'CMS release campaign',
+    subtitle: 'Emails subscribers with the CMS releases preference (requires sending enabled + SMTP).',
+    version: 'Version',
+    versionPlaceholder: 'e.g. 2.1.0-beta.17',
+    releaseTitle: 'Title',
+    titlePlaceholder: 'New PaginiumCMS beta release',
+    body: 'Message body',
+    bodyPlaceholder: 'Short summary of what is new in this release…',
+    url: 'Link (optional)',
+    urlPlaceholder: 'https://…',
+    validation: 'Fill in the title and message body.',
   },
   send: {
     title: 'Email sending',
-    subtitle: 'Weekly digest and new-article notifications (requires SMTP / email channel).',
+    subtitle: 'Weekly digest, new-article alerts, and release campaigns (requires SMTP / email channel).',
     configured: 'Email channel',
     sendEnabled: 'Sending enabled',
     weeklyDigestEnabled: 'Weekly digest',
@@ -63,5 +87,7 @@ export const newsletterEn: MessageTree = {
     weeklyDigestFailed: 'Weekly digest was not sent.',
     testSent: 'Test email sent.',
     testFailed: 'Test email failed.',
+    releaseSent: 'Release campaign sent.',
+    releaseFailed: 'Release campaign was not sent.',
   },
 };

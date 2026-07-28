@@ -234,6 +234,7 @@ final class SettingsSchema
                     ['key' => 'sendEnabled', 'type' => 'bool', 'label' => 'Povoliť odosielanie e-mailov', 'default' => false, 'rules' => ['bool'], 'help' => 'Master prepínač pre weekly digest a notifikácie o nových článkoch. Vyžaduje nakonfigurovaný SMTP / e-mail kanál.'],
                     ['key' => 'weeklyDigestEnabled', 'type' => 'bool', 'label' => 'Týždenný digest', 'default' => false, 'rules' => ['bool'], 'help' => 'Odosiela zhrnutie publikovaných článkov odberateľom s preferenciou weekly_digest.'],
                     ['key' => 'newArticleEnabled', 'type' => 'bool', 'label' => 'Notifikácia pri novom článku', 'default' => false, 'rules' => ['bool'], 'help' => 'Pri publikovaní článku odošle e-mail odberateľom s preferenciou new_article.'],
+                    ['key' => 'cmsReleaseEnabled', 'type' => 'bool', 'label' => 'Kampane o vydaniach CMS', 'default' => false, 'rules' => ['bool'], 'help' => 'Povolí manuálne odoslanie oznámenia o verzii odberateľom s preferenciou cms_release.'],
                     ['key' => 'instantArticleCooldownHours', 'type' => 'int', 'label' => 'Cooldown medzi instant mailmi (hodiny)', 'default' => 24, 'rules' => ['int', 'min:1', 'max:168'], 'help' => 'Max. jeden instant mail na odberateľa za dané obdobie.'],
                     ['key' => 'sendBatchLimitPerRun', 'type' => 'int', 'label' => 'Limit odoslaní na beh', 'default' => 50, 'rules' => ['int', 'min:1', 'max:500'], 'help' => 'Počet e-mailov odoslaných v jednom behu (cron alebo manuálne).'],
                     ['key' => 'requireDoubleOptIn', 'type' => 'bool', 'label' => 'Double opt-in (potvrdenie e-mailom)', 'default' => false, 'rules' => ['bool'], 'help' => 'Nový odberateľ je pending, kým neklikne na potvrdzovací link v e-maili.'],
@@ -288,6 +289,15 @@ final class SettingsSchema
                     ['key' => 'pageDescription', 'type' => 'text', 'label' => 'Popis prihlasovacej stránky', 'default' => '', 'rules' => ['string', 'max:500'], 'help' => 'Krátky text v informačnom paneli prihlásenia/registrácie.'],
                     ['key' => 'backgroundImageUrl', 'type' => 'url', 'label' => 'URL obrázka pozadia', 'default' => '', 'rules' => ['string', 'max:512'], 'help' => 'Absolútna URL alebo cesta /storage/… — zobrazí sa za prihlasovacím formulárom. V administrácii je možné vybrať z médií alebo nahrať súbor z disku.'],
                     ['key' => 'infoBullets', 'type' => 'text', 'label' => 'Informačné body', 'default' => "Bezpečné prihlásenie do administrácie\nSpráva stránok, článkov a médií\nFlat-file úložisko bez SQL databázy", 'rules' => ['string', 'max:2000'], 'help' => 'Jeden riadok = jeden bod v informačnom paneli.'],
+                ],
+            ],
+            'privacy' => [
+                'label' => 'Súkromie a cookies',
+                'fields' => [
+                    ['key' => 'cookieBannerEnabled', 'type' => 'bool', 'label' => 'Zobraziť cookie lištu', 'default' => false, 'rules' => ['bool'], 'help' => 'Zapnuté = pri prvej návšteve sa zobrazí súhlas s cookies (GDPR).'],
+                    ['key' => 'cookieBannerText', 'type' => 'text', 'label' => 'Text cookie lišty', 'default' => 'Tento web používa cookies na zabezpečenie funkčnosti a zlepšenie používateľského zážitku. Môžete prijať všetky, odmietnuť voliteľné alebo upraviť nastavenia.', 'rules' => ['string', 'max:1000']],
+                    ['key' => 'cookiePolicyUrl', 'type' => 'url', 'label' => 'URL zásad cookies / GDPR', 'default' => '', 'rules' => ['string', 'max:500'], 'help' => 'Voliteľný odkaz na stránku so zásadami ochrany súkromia.'],
+                    ['key' => 'cookieShowRejectButton', 'type' => 'bool', 'label' => 'Tlačidlo „Odmietnuť voliteľné“', 'default' => true, 'rules' => ['bool'], 'help' => 'Zapnuté = návštevník môže odmietnuť nevyhnutné cookies okrem technicky nutných.'],
                 ],
             ],
             'security' => [

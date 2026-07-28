@@ -57,6 +57,12 @@ const DEFAULT_PUBLIC: PublicSettings = {
     requireConsentCheckbox: false,
     requireDoubleOptIn: false,
   },
+  privacy: {
+    cookieBannerEnabled: false,
+    cookieBannerText: '',
+    cookiePolicyUrl: '',
+    cookieShowRejectButton: true,
+  },
   appearance: {
     colorScheme: 'indigo-classic',
     mode: 'system',

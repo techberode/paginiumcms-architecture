@@ -71,6 +71,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [2.1.0-beta.17] – 2026-07-28
+
+**It.61 Newsletter Phase 4 + public UX** — manage preferences, CMS release campaigns, footer subscribe modal, GDPR cookie banner.
+
+### Added (Newsletter v2 — Phase 4)
+
+- **Settings UX** — newsletter group under **Settings → System**; editable toggles on `/newsletter` (`NewsletterSettingsPanel`).
+- **Manage preferences** — `GET/POST /api/newsletter/manage`, public page `/newsletter/manage?token=…`.
+- **Preference-scoped unsubscribe** — `GET /api/newsletter/unsubscribe?token=&preference=` removes one subscription type.
+- **CMS release campaigns** — `cmsReleaseEnabled` setting; `POST /api/admin/newsletter/send/cms-release` (SUPER_ADMIN).
+- **Mail footer** — manage-preferences + unsubscribe-all links in outbound emails.
+- **Maintenance API** — `/api/newsletter/*` exempt during maintenance mode.
+
+### Added (Public UX)
+
+- **Footer newsletter modal** — compact highlighted CTA in footer; full preference form in modal dialog.
+- **Cookie consent banner** — Settings → Site → Privacy & cookies; accept/reject/customize; functional storage gated (theme preference).
+
+---
+
 ## [2.1.0-beta.16] – 2026-07-28
 
 **It.61 Newsletter v2** — Phases 1–3 (preferences, sending, double opt-in, unsubscribe) + BE↔FE wiring audit + test hygiene.

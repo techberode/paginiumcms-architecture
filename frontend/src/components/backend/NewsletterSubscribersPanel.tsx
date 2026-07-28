@@ -4,6 +4,7 @@ import {
   exportNewsletterSubscribersCsv,
   fetchNewsletterSendStatus,
   listNewsletterSubscribers,
+  sendNewsletterCmsRelease,
   sendNewsletterTestEmail,
   sendNewsletterWeeklyDigestNow,
   type NewsletterPreferenceKey,
@@ -19,6 +20,7 @@ import { AdminListPagination } from './AdminListPagination';
 import { AdminListSortBar } from './SortableTableHeader';
 import { applyClientListView } from '../../utils/clientListView';
 import { useI18n } from '../../context/I18nContext';
+import { NewsletterSettingsPanel } from './NewsletterSettingsPanel';
 
 const sourceLabelKey = (source: string): string => `newsletter.source.${source}`;
 
@@ -35,6 +37,10 @@ export const NewsletterSubscribersPanel: React.FC = () => {
   const [sendLoading, setSendLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [testEmail, setTestEmail] = useState('');
+  const [releaseVersion, setReleaseVersion] = useState('');
+  const [releaseTitle, setReleaseTitle] = useState('');
+  const [releaseBody, setReleaseBody] = useState('');
+  const [releaseUrl, setReleaseUrl] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useAdminListPageSize('newsletter');
@@ -157,6 +163,35 @@ export const NewsletterSubscribersPanel: React.FC = () => {
     }
   };
 
+  const handleSendCmsRelease = async () => {
+    const title = releaseTitle.trim();
+    const body = releaseBody.trim();
+    if (title === '' || body === '') {
+      showError(t('newsletter.release.validation'));
+      return;
+    }
+
+    setSendLoading(true);
+    try {
+      const result = await sendNewsletterCmsRelease({
+        version: releaseVersion.trim() || undefined,
+        title,
+        body,
+        url: releaseUrl.trim() || undefined,
+      });
+      if (result.ok) {
+        showSuccess(result.message ?? t('newsletter.toast.releaseSent'));
+        await load();
+      } else {
+        showError(result.message ?? t('newsletter.toast.releaseFailed'));
+      }
+    } catch {
+      showError(t('newsletter.toast.releaseFailed'));
+    } finally {
+      setSendLoading(false);
+    }
+  };
+
   const formatSource = (source: string): string => {
     const key = sourceLabelKey(source);
     const translated = t(key);
@@ -230,6 +265,8 @@ export const NewsletterSubscribersPanel: React.FC = () => {
         </div>
       ) : null}
 
+      <NewsletterSettingsPanel onSaved={() => void load()} />
+
       {sendStatus ? (
         <div className="rounded-xl border border-theme-border bg-theme-surface p-4 space-y-4">
           <div>
@@ -240,18 +277,6 @@ export const NewsletterSubscribersPanel: React.FC = () => {
             <div className="flex justify-between gap-4 sm:block">
               <dt className="text-theme-text-muted">{t('newsletter.send.configured')}</dt>
               <dd className="font-medium text-theme-text">{formatBool(sendStatus.configured)}</dd>
-            </div>
-            <div className="flex justify-between gap-4 sm:block">
-              <dt className="text-theme-text-muted">{t('newsletter.send.sendEnabled')}</dt>
-              <dd className="font-medium text-theme-text">{formatBool(sendStatus.sendEnabled)}</dd>
-            </div>
-            <div className="flex justify-between gap-4 sm:block">
-              <dt className="text-theme-text-muted">{t('newsletter.send.weeklyDigestEnabled')}</dt>
-              <dd className="font-medium text-theme-text">{formatBool(sendStatus.weeklyDigestEnabled)}</dd>
-            </div>
-            <div className="flex justify-between gap-4 sm:block">
-              <dt className="text-theme-text-muted">{t('newsletter.send.newArticleEnabled')}</dt>
-              <dd className="font-medium text-theme-text">{formatBool(sendStatus.newArticleEnabled)}</dd>
             </div>
             <div className="flex justify-between gap-4 sm:block sm:col-span-2">
               <dt className="text-theme-text-muted">{t('newsletter.send.lastWeeklyDigestAt')}</dt>
@@ -264,7 +289,7 @@ export const NewsletterSubscribersPanel: React.FC = () => {
           </dl>
 
           {isSuperAdmin ? (
-            <div className="flex flex-col gap-3 pt-2 border-t border-theme-border">
+            <div className="flex flex-col gap-4 pt-2 border-t border-theme-border">
               <button
                 type="button"
                 onClick={() => void handleSendWeeklyDigest()}
@@ -274,6 +299,63 @@ export const NewsletterSubscribersPanel: React.FC = () => {
                 <Send className="h-4 w-4" />
                 {t('newsletter.actions.sendWeeklyDigest')}
               </button>
+
+              <div className="rounded-lg border border-theme-border bg-theme-surface-elevated/40 p-4 space-y-3">
+                <h3 className="text-sm font-semibold text-theme-text">{t('newsletter.release.title')}</h3>
+                <p className="text-xs text-theme-text-muted">{t('newsletter.release.subtitle')}</p>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <label className="flex flex-col gap-1 text-sm">
+                    <span className="font-medium text-theme-text">{t('newsletter.release.version')}</span>
+                    <input
+                      type="text"
+                      value={releaseVersion}
+                      onChange={(event) => setReleaseVersion(event.target.value)}
+                      placeholder={t('newsletter.release.versionPlaceholder')}
+                      className="rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-theme-text"
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1 text-sm sm:col-span-2">
+                    <span className="font-medium text-theme-text">{t('newsletter.release.releaseTitle')}</span>
+                    <input
+                      type="text"
+                      value={releaseTitle}
+                      onChange={(event) => setReleaseTitle(event.target.value)}
+                      placeholder={t('newsletter.release.titlePlaceholder')}
+                      className="rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-theme-text"
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1 text-sm sm:col-span-2">
+                    <span className="font-medium text-theme-text">{t('newsletter.release.body')}</span>
+                    <textarea
+                      rows={4}
+                      value={releaseBody}
+                      onChange={(event) => setReleaseBody(event.target.value)}
+                      placeholder={t('newsletter.release.bodyPlaceholder')}
+                      className="rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-theme-text"
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1 text-sm sm:col-span-2">
+                    <span className="font-medium text-theme-text">{t('newsletter.release.url')}</span>
+                    <input
+                      type="url"
+                      value={releaseUrl}
+                      onChange={(event) => setReleaseUrl(event.target.value)}
+                      placeholder={t('newsletter.release.urlPlaceholder')}
+                      className="rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-theme-text"
+                    />
+                  </label>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void handleSendCmsRelease()}
+                  disabled={sendLoading}
+                  className="inline-flex w-fit items-center gap-2 rounded-xl border border-theme-border bg-theme-surface px-4 py-2 text-sm font-semibold text-theme-text hover:bg-theme-surface-elevated disabled:opacity-60"
+                >
+                  <Send className="h-4 w-4" />
+                  {t('newsletter.actions.sendRelease')}
+                </button>
+              </div>
+
               <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
                 <label className="flex flex-col gap-1 text-sm flex-1 max-w-md">
                   <span className="font-medium text-theme-text">{t('newsletter.send.testEmailLabel')}</span>

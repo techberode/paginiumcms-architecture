@@ -20,14 +20,29 @@ final class NewsletterLinkBuilder
         return $this->siteUrl() . '/newsletter/confirm?token=' . rawurlencode($token);
     }
 
-    public function unsubscribeUrl(string $token): string
+    public function unsubscribeUrl(string $token, ?string $preference = null): string
     {
-        return $this->siteUrl() . '/newsletter/unsubscribe?token=' . rawurlencode($token);
+        $url = $this->siteUrl() . '/newsletter/unsubscribe?token=' . rawurlencode($token);
+        if ($preference !== null && $preference !== '') {
+            $url .= '&preference=' . rawurlencode($preference);
+        }
+
+        return $url;
     }
 
-    public function unsubscribeUrlForSubscriber(string $subscriberId): string
+    public function unsubscribeUrlForSubscriber(string $subscriberId, ?string $preference = null): string
     {
-        return $this->unsubscribeUrl($this->unsubscribeToken->forSubscriber($subscriberId));
+        return $this->unsubscribeUrl($this->unsubscribeToken->forSubscriber($subscriberId), $preference);
+    }
+
+    public function manageUrl(string $token): string
+    {
+        return $this->siteUrl() . '/newsletter/manage?token=' . rawurlencode($token);
+    }
+
+    public function manageUrlForSubscriber(string $subscriberId): string
+    {
+        return $this->manageUrl($this->unsubscribeToken->forSubscriber($subscriberId));
     }
 
     private function siteUrl(): string

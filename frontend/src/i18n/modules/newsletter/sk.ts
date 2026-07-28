@@ -3,7 +3,17 @@ import type { MessageTree } from '../../types';
 export const newsletterSk: MessageTree = {
   page: {
     title: 'Newsletter — odberatelia',
-    subtitle: 'Prehľad e-mailov prihlásených cez footer alebo stránky údržby.',
+    subtitle: 'Nastavenia odberu, prehľad e-mailov a odosielanie kampaní.',
+  },
+  settings: {
+    title: 'Nastavenia newsletteru',
+    subtitle: 'Zapnite formulár vo footeri, odosielanie e-mailov a typy odberu.',
+    openFull: 'Všetky nastavenia',
+    save: 'Uložiť nastavenia',
+    saving: 'Ukladám…',
+    saved: 'Nastavenia newsletteru boli uložené.',
+    saveFailed: 'Nepodarilo sa uložiť nastavenia newsletteru.',
+    loadFailed: 'Nepodarilo sa načítať nastavenia newsletteru.',
   },
   search: {
     placeholder: 'Hľadať podľa e-mailu alebo zdroja…',
@@ -37,6 +47,20 @@ export const newsletterSk: MessageTree = {
     exportCsv: 'Export CSV',
     sendWeeklyDigest: 'Odoslať týždenný digest',
     sendTest: 'Odoslať test',
+    sendRelease: 'Odoslať kampaň o vydaní',
+  },
+  release: {
+    title: 'Kampaň o vydaní CMS',
+    subtitle: 'Odošle e-mail odberateľom s preferenciou „Verzie CMS“ (vyžaduje zapnuté odosielanie a SMTP).',
+    version: 'Verzia',
+    versionPlaceholder: 'napr. 2.1.0-beta.17',
+    releaseTitle: 'Nadpis',
+    titlePlaceholder: 'Nová beta verzia PaginiumCMS',
+    body: 'Text správy',
+    bodyPlaceholder: 'Stručný popis noviniek vo vydaní…',
+    url: 'Odkaz (voliteľné)',
+    urlPlaceholder: 'https://…',
+    validation: 'Vyplňte nadpis a text správy.',
   },
   send: {
     title: 'Odosielanie e-mailov',
@@ -63,5 +87,7 @@ export const newsletterSk: MessageTree = {
     weeklyDigestFailed: 'Týždenný digest nebol odoslaný.',
     testSent: 'Testovací e-mail bol odoslaný.',
     testFailed: 'Testovací e-mail zlyhal.',
+    releaseSent: 'Kampaň o vydaní bola odoslaná.',
+    releaseFailed: 'Kampaň o vydaní nebola odoslaná.',
   },
 };

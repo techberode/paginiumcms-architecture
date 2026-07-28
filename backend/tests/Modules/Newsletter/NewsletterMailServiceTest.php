@@ -244,6 +244,20 @@ final class NewsletterMailServiceTest extends TestCase
         );
     }
 
+    public function testSendCmsReleaseReturnsDisabledWhenFeatureOff(): void
+    {
+        $service = $this->makeService(
+            newsletterSettings: ['sendEnabled' => true, 'cmsReleaseEnabled' => false],
+            emailConfigured: true
+        );
+
+        $result = $service->sendCmsRelease('2.1.0', 'Beta', 'Release notes');
+
+        $this->assertSame(0, $result['sent']);
+        $this->assertArrayHasKey('reason', $result);
+        $this->assertSame('cms_release_disabled', $result['reason']);
+    }
+
     private function removeDir(string $dir): void
     {
         if (!is_dir($dir)) {

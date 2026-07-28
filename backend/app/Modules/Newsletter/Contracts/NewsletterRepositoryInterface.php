@@ -74,7 +74,31 @@ interface NewsletterRepositoryInterface
     public function confirmByToken(string $token): array;
 
     /**
-     * @return array{ok: bool, reason?: string, email?: string}
+     * @return array{ok: bool, reason?: string, email?: string, preference?: string, fullyUnsubscribed?: bool}
      */
-    public function unsubscribeByToken(string $token): array;
+    public function unsubscribeByToken(string $token, ?string $preference = null): array;
+
+    /**
+     * @return array{
+     *     ok: bool,
+     *     reason?: string,
+     *     id?: string,
+     *     email?: string,
+     *     preferences?: list<string>,
+     *     status?: string
+     * }
+     */
+    public function findByManageToken(string $token): array;
+
+    /**
+     * @param list<string> $preferences
+     * @return array{
+     *     ok: bool,
+     *     reason?: string,
+     *     email?: string,
+     *     preferences?: list<string>,
+     *     status?: string
+     * }
+     */
+    public function updatePreferencesByToken(string $token, array $preferences): array;
 }

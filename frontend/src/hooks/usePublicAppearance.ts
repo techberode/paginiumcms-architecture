@@ -10,6 +10,7 @@ import {
 } from '../theme/colorSchemes';
 import { applyColorScheme, clearColorScheme } from '../theme/applyColorScheme';
 import { isAdminAppRoute } from '../utils/appRoutes';
+import { readStoredCookieConsent } from '../utils/cookieConsent';
 
 export const PUBLIC_THEME_STORAGE_KEY = 'paginium-public-theme';
 
@@ -29,6 +30,12 @@ function readVisitorMode(): AppearanceMode | null {
   if (typeof window === 'undefined') {
     return null;
   }
+
+  const consent = readStoredCookieConsent();
+  if (consent !== null && !consent.functional) {
+    return null;
+  }
+
   const saved = window.localStorage.getItem(PUBLIC_THEME_STORAGE_KEY);
   if (saved === 'light' || saved === 'dark') {
     return saved;
@@ -107,12 +114,19 @@ export function usePublicAppearance(options: UsePublicAppearanceOptions = {}) {
 
   const setVisitorMode = useCallback(
     (mode: AppearanceMode | null) => {
+      const consent = readStoredCookieConsent();
+      const canPersist = consent === null || consent.functional;
+
       if (mode === 'light' || mode === 'dark') {
-        window.localStorage.setItem(PUBLIC_THEME_STORAGE_KEY, mode);
+        if (canPersist) {
+          window.localStorage.setItem(PUBLIC_THEME_STORAGE_KEY, mode);
+        }
         setVisitorModeState(mode);
         return;
       }
-      window.localStorage.removeItem(PUBLIC_THEME_STORAGE_KEY);
+      if (canPersist) {
+        window.localStorage.removeItem(PUBLIC_THEME_STORAGE_KEY);
+      }
       setVisitorModeState(null);
     },
     []

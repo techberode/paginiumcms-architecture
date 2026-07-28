@@ -17,6 +17,7 @@ export const SETTINGS_CATEGORIES: SettingsCategoryDef[] = [
       'general',
       'cmsInfo',
       'maintenance',
+      'newsletter',
       'logging',
       'adminUi',
       'monitoring',
@@ -33,7 +34,7 @@ export const SETTINGS_CATEGORIES: SettingsCategoryDef[] = [
     id: 'site',
     labelKey: 'settings.categories.site.label',
     descriptionKey: 'settings.categories.site.description',
-    groups: ['branding', 'appearance', 'content', 'editor', 'seo', 'feeds', 'comments', 'contact', 'newsletter', 'company', 'login'],
+    groups: ['branding', 'appearance', 'content', 'editor', 'seo', 'feeds', 'comments', 'contact', 'company', 'privacy', 'login'],
   },
   {
     id: 'media',

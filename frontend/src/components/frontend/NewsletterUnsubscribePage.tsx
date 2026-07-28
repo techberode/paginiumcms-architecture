@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Loader2, MailX, XCircle } from 'lucide-react';
-import { unsubscribeNewsletter } from '../../api/newsletter';
+import { unsubscribeNewsletter, type NewsletterPreferenceKey } from '../../api/newsletter';
 import { useI18n } from '../../context/I18nContext';
 import { AuthShell, authButtonClass } from '../auth/AuthShell';
 
 export const NewsletterUnsubscribePage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token') || '';
+  const preference = searchParams.get('preference') || undefined;
   const { t } = useI18n();
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState(false);
@@ -20,12 +21,12 @@ export const NewsletterUnsubscribePage: React.FC = () => {
     }
 
     void (async () => {
-      const result = await unsubscribeNewsletter(token);
+      const result = await unsubscribeNewsletter(token, preference as NewsletterPreferenceKey | undefined);
       setSuccess(result.ok);
       setMessage(result.message ?? '');
       setLoading(false);
     })();
-  }, [token]);
+  }, [token, preference]);
 
   if (!token) {
     return (

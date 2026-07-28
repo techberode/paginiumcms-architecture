@@ -78,6 +78,7 @@ export const settingsEn: MessageTree = {
     "contact": "Contact form",
     "newsletter": "Newsletter",
     "company": "Company details",
+    "privacy": "Privacy & cookies",
     "workflows": "Workflow OTP",
     "ui": "Admin UI",
     "security": "Security",
@@ -422,6 +423,10 @@ export const settingsEn: MessageTree = {
         "label": "New article notification",
         "help": "Sends an email when an article is published to subscribers with the new_article preference."
       },
+      "cmsReleaseEnabled": {
+        "label": "CMS release campaigns",
+        "help": "Enables manual release announcements to subscribers with the cms_release preference."
+      },
       "instantArticleCooldownHours": {
         "label": "Instant mail cooldown (hours)",
         "help": "At most one instant email per subscriber within this period."
@@ -542,6 +547,23 @@ export const settingsEn: MessageTree = {
         "uploadAlt": "Branding upload",
         "invalidType": "Unsupported file type",
         "uploadFailed": "Upload failed"
+      }
+    },
+    "privacy": {
+      "cookieBannerEnabled": {
+        "label": "Show cookie banner",
+        "help": "Enabled = visitors see a GDPR cookie consent bar on first visit."
+      },
+      "cookieBannerText": {
+        "label": "Cookie banner text"
+      },
+      "cookiePolicyUrl": {
+        "label": "Cookie / privacy policy URL",
+        "help": "Optional link to your privacy policy page."
+      },
+      "cookieShowRejectButton": {
+        "label": "Show “Reject optional” button",
+        "help": "Enabled = visitors can reject optional cookies while keeping necessary ones."
       }
     },
     "login": {
