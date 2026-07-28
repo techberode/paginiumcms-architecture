@@ -273,17 +273,22 @@ Plánované zálohy: **Plánovač** alebo cron `backup:run-schedule`.
 
 **Newsletter odberatelia — admin prehľad:**
 
-Admin → **Newsletter** (`/newsletter`) — tabuľka odberateľov (footer + maintenance), KPI podľa zdroja, CSV export. Nastavenia → **Newsletter** — `footerEnabled`, `footerHint`.
+Admin → **Newsletter** (`/newsletter`) — tabuľka odberateľov (footer + maintenance), KPI podľa zdroja, CSV export, **panel odosielania** (stav SMTP / prepínačov). Nastavenia → **Newsletter** — `footerEnabled`, preference types, **`sendEnabled`**, weekly digest / new-article toggles, batch limit, cooldown.
 
-Flat-file zdroj (záloha / CLI):
+**SUPER_ADMIN** can trigger **Send weekly digest now** and **Send test email** from the admin panel. Scheduled digest runs via system job `newsletter-weekly-digest` (default Mon 09:00).
+
+Optional **double opt-in** (`requireDoubleOptIn`) keeps new subscribers in `pending` until they click the confirmation link. Every outbound newsletter includes an **unsubscribe** link (`/newsletter/unsubscribe?token=…`).
+
+Flat-file sources (backup / CLI):
 
 ```
 backend/storage/app/content/data/newsletter/subscribers.json
+backend/storage/app/content/data/newsletter/send-state.json
 ```
 
-Záznamy: `email`, `subscribedAt`, `source` (`footer` | `maintenance`).
+Records: `email`, `subscribedAt`, `source` (`footer` | `maintenance`), `preferences[]`, `status` (`active` | `pending` | `unsubscribed`).
 
-**Zatiaľ nie je:** odhlásenie (unsubscribe) — backlog.
+**Phase 4 backlog:** CMS release campaigns, preference-scoped unsubscribe.
 
 Detail: [ITERATION_61.md](../ITERATION_61.md) · incidenty [ISSUES.md § ISS-095–098](../ISSUES.md).
 

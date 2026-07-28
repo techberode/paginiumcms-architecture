@@ -80,4 +80,30 @@ final class DemoModeTest extends TestCase
 
         $this->assertSame(28800, $mode->sessionLifetimeSeconds());
     }
+
+    public function testDemoModeIsDisabledOnProductionEvenWhenEnvFlagTrue(): void
+    {
+        putenv('DEMO_MODE=true');
+        $_ENV['DEMO_MODE'] = 'true';
+        putenv('APP_ENV=production');
+        $_ENV['APP_ENV'] = 'production';
+
+        $this->assertTrue(DemoMode::isMisconfiguredProductionDemo());
+        $this->assertFalse(DemoMode::isEnabledFromEnv());
+        $this->assertSame('/var/app/storage/app/content', DemoMode::resolveContentBasePath('/var/app/storage/app'));
+
+        $mode = new DemoMode();
+        $this->assertFalse($mode->isEnabled());
+    }
+
+    public function testDemoModeRemainsEnabledOnNonProduction(): void
+    {
+        putenv('DEMO_MODE=true');
+        $_ENV['DEMO_MODE'] = 'true';
+        putenv('APP_ENV=development');
+        $_ENV['APP_ENV'] = 'development';
+
+        $this->assertFalse(DemoMode::isMisconfiguredProductionDemo());
+        $this->assertTrue(DemoMode::isEnabledFromEnv());
+    }
 }

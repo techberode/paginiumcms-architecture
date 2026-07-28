@@ -6,11 +6,19 @@ import { renderWithRouter } from '../../test/renderWithRouter';
 const mocks = vi.hoisted(() => ({
   list: vi.fn(),
   exportCsv: vi.fn(),
+  sendStatus: vi.fn(),
 }));
 
 vi.mock('../../api/newsletter', () => ({
   listNewsletterSubscribers: mocks.list,
   exportNewsletterSubscribersCsv: mocks.exportCsv,
+  fetchNewsletterSendStatus: mocks.sendStatus,
+  sendNewsletterWeeklyDigestNow: vi.fn(),
+  sendNewsletterTestEmail: vi.fn(),
+}));
+
+vi.mock('../../hooks/useAuth', () => ({
+  useAuth: () => ({ user: { roles: ['ADMIN'] } }),
 }));
 
 vi.mock('../../hooks/useToast', () => ({
@@ -41,6 +49,13 @@ describe('NewsletterSubscribersPanel', () => {
       ],
       count: 1,
       bySource: { footer: 1 },
+    });
+    mocks.sendStatus.mockResolvedValue({
+      configured: true,
+      sendEnabled: false,
+      weeklyDigestEnabled: false,
+      newArticleEnabled: false,
+      lastWeeklyDigestAt: null,
     });
   });
 

@@ -6,7 +6,7 @@
 **Aktuálne hotové:** It.1–24 ✅ · It.26–28 ✅ · **It.13 v3** ✅ · **It.61** ✅ · **It.62** ✅ · It.25 ⏳ (setup wizard — odložené)
 
 **Ďalšia iterácia:** It.63 v2 (compare UI) alebo It.25 setup wizard  
-**Posledná shipped:** **It.63 v2** · **`v2.1.0-beta.15`**
+**Posledná shipped:** **It.61 Newsletter v2** · **`v2.1.0-beta.16`**
 
 **Incidenty a opravy:** [ISSUES.md](ISSUES.md)
 

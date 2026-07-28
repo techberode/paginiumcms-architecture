@@ -32,6 +32,8 @@ import { BlogRenderer } from './components/frontend/BlogRenderer';
 import { RegisterModal } from './components/auth/RegisterModal';
 import { ForgotPasswordModal } from './components/auth/ForgotPasswordModal';
 import { ResetPasswordModal } from './components/auth/ResetPasswordModal';
+import { NewsletterConfirmPage } from './components/frontend/NewsletterConfirmPage';
+import { NewsletterUnsubscribePage } from './components/frontend/NewsletterUnsubscribePage';
 import { useAuth } from './hooks/useAuth';
 import { AdminRoleGuard } from './components/auth/AdminRoleGuard';
 import { PreviewPage } from './components/backend/PreviewPage';
@@ -143,6 +145,8 @@ function App() {
         }
       />
       <Route path="/reset-password" element={<ResetPasswordModal />} />
+      <Route path="/newsletter/confirm" element={<NewsletterConfirmPage />} />
+      <Route path="/newsletter/unsubscribe" element={<NewsletterUnsubscribePage />} />
 
       <Route element={<AdminShell />}>
         <Route path="/dashboard" element={<DashboardView />} />

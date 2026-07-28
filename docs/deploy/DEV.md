@@ -105,16 +105,56 @@ For production deploy with one host, see [NGINX_API.md](./NGINX_API.md).
 
 ## LAN test server
 
-Ready-made config for the split setup (SPA + PHP API proxy on one nginx host):
+Ready-made configs for the split setup (SPA + PHP API proxy on one nginx host):
 
-- **File:** [`nginx-paginium-test.conf`](./nginx-paginium-test.conf)
-- **Deploy script:** [`../../scripts/deploy-frontend-lan.sh`](../../scripts/deploy-frontend-lan.sh)
+| Mode | Config | Frontend source | Hot reload |
+|------|--------|-----------------|------------|
+| **Prod-like** (static) | [`nginx-paginium-test.conf`](./nginx-paginium-test.conf) | `dist/` via [`deploy-frontend-lan.sh`](../../scripts/deploy-frontend-lan.sh) | No — rebuild + rsync |
+| **Dev proxy** (HMR) | [`nginx-paginium-dev.conf`](./nginx-paginium-dev.conf) | Vite on `127.0.0.1:3025` | Yes — edit & save |
+
+### A) Static test (no Vite) — `:8081` serves built `dist/`
 
 Deploy (no hardcoded host/user in repo — set your own):
 
 ```bash
 DEPLOY_HOST=192.168.x.x DEPLOY_USER=yourName DEPLOY_SSH_PORT=22 ./scripts/deploy-frontend-lan.sh
 ```
+
+### B) Dev proxy — `:8081` with hot reload (no manual `:3025` in browser)
+
+**Goal:** Open only `http://192.168.10.26:8081/` while Vite runs in the background.
+
+1. **Start Vite once** (pick one):
+
+   ```bash
+   # From repo on the nginx host:
+   cd frontend && npm run dev:lan
+
+   # Or Docker (same machine):
+   docker compose --profile dev up -d frontend
+   ```
+
+2. **Enable dev nginx** (on `192.168.10.26`):
+
+   ```bash
+   sudo cp docs/deploy/nginx-paginium-dev.conf /etc/nginx/sites-available/paginium-dev
+   sudo ln -sf /etc/nginx/sites-available/paginium-dev /etc/nginx/sites-enabled/
+   sudo nginx -t && sudo systemctl reload nginx
+   ```
+
+3. **Backend `.env` on LAN** (confirm links / CORS):
+
+   ```env
+   APP_URL=http://192.168.10.26:8081
+   ```
+
+4. Open **http://192.168.10.26:8081/** — API stays same-origin via nginx → PHP; SPA + HMR via nginx → Vite.
+
+`npm run dev:lan` sets `VITE_HMR_CLIENT_PORT=8081` so WebSocket HMR works through nginx (see `frontend/vite.config.ts`).
+
+**Auto-start Vite after reboot (optional):** systemd user unit or `docker compose --profile dev up -d` in `@reboot` cron — Vite is still required; nginx only proxies to it.
+
+**Switch back to static test:** restore `nginx-paginium-test.conf` + `./scripts/deploy-frontend-lan.sh`.
 
 Optional: `DEPLOY_SSH_HOST=homelab` (SSH config alias), `DEPLOY_HEALTH_URL`, `DEPLOY_PUBLIC_URL`.
 

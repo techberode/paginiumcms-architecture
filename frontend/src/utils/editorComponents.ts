@@ -1,6 +1,5 @@
 import type { Extension } from '@tiptap/core';
 import { loadExtensionModule } from '../extensions/loader';
-import { getEditorComponentRegistration } from '../extensions/hello-widget';
 import type { EditorProfileDefinition } from './editorProfiles';
 
 export interface EditorComponentRegistration {
@@ -80,11 +79,6 @@ export function allowedCustomComponentsForProfile(
 export async function loadEditorComponentRegistration(
   componentId: string
 ): Promise<EditorComponentRegistration | null> {
-  const direct = getEditorComponentRegistration(componentId);
-  if (direct) {
-    return direct;
-  }
-
   const module = await loadExtensionModule(componentId);
   if (!module || typeof module !== 'object') {
     return null;

@@ -29,6 +29,15 @@ use PaginiumCMS\Core\Scheduler\Handlers\BackupScheduledHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\ContentScheduledPublishHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\MonitoringPipelineHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\SystemDeployHandler;
+use PaginiumCMS\Core\FlatFile\Services\FileReader;
+use PaginiumCMS\Core\FlatFile\Services\FileValidator;
+use PaginiumCMS\Core\FlatFile\Services\FileWriter;
+use PaginiumCMS\Modules\Newsletter\Contracts\NewsletterRepositoryInterface;
+use PaginiumCMS\Modules\Newsletter\Handlers\NewsletterWeeklyDigestHandler;
+use PaginiumCMS\Modules\Newsletter\Services\NewsletterLinkBuilder;
+use PaginiumCMS\Modules\Newsletter\Services\NewsletterMailService;
+use PaginiumCMS\Modules\Newsletter\Services\NewsletterSendStateStore;
+use PaginiumCMS\Modules\Newsletter\Support\NewsletterUnsubscribeToken;
 use PaginiumCMS\Core\SystemUpdate\Services\SystemDeployService;
 use PaginiumCMS\Core\Scheduler\Services\CronExpressionEvaluator;
 use PaginiumCMS\Core\Scheduler\Services\JobHandlerRegistry;
@@ -90,7 +99,8 @@ final class ScheduledJobRunnerTest extends TestCase
             new BackupScheduledHandler($backup),
             new MonitoringPipelineHandler($this->buildMonitoringScheduler()),
             new ContentScheduledPublishHandler($scheduledPublish),
-            $systemDeploy
+            $systemDeploy,
+            new NewsletterWeeklyDigestHandler($this->makeNewsletterMailService($settings))
         );
 
         $runner = new ScheduledJobRunner(
@@ -124,7 +134,8 @@ final class ScheduledJobRunnerTest extends TestCase
             new BackupScheduledHandler($backup),
             new MonitoringPipelineHandler($this->buildMonitoringScheduler()),
             new ContentScheduledPublishHandler($scheduledPublish),
-            $systemDeploy
+            $systemDeploy,
+            new NewsletterWeeklyDigestHandler($this->makeNewsletterMailService($settings))
         );
 
         return new ScheduledJobRunner(
@@ -195,5 +206,27 @@ final class ScheduledJobRunnerTest extends TestCase
         );
 
         return new MonitoringScheduler($reportScheduler, $logScanner);
+    }
+
+    private function makeNewsletterMailService(SettingsRepositoryInterface $settings): NewsletterMailService
+    {
+        $basePath = sys_get_temp_dir() . '/paginium-scheduler-newsletter-' . bin2hex(random_bytes(4));
+        mkdir($basePath . '/data/newsletter', 0777, true);
+        $validator = new FileValidator($basePath);
+
+        return new NewsletterMailService(
+            new NotificationService(),
+            $settings,
+            $this->createMock(NewsletterRepositoryInterface::class),
+            $this->createMock(ContentRepositoryInterface::class),
+            new NewsletterSendStateStore(
+                new FileReader($validator),
+                new FileWriter($validator)
+            ),
+            new NewsletterLinkBuilder(
+                $settings,
+                new NewsletterUnsubscribeToken('test-key')
+            )
+        );
     }
 }

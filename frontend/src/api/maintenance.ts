@@ -20,19 +20,28 @@ export interface MaintenanceSettings {
 }
 
 export async function subscribeMaintenanceNewsletter(
-  email: string,
-  source: MaintenanceModeValue
-): Promise<{ ok: boolean; message?: string; error?: string }> {
-  const res = await apiClient.post<{ id: string; created: boolean }>('/api/maintenance/newsletter', {
-    email,
-    source,
-  });
+  payload: {
+    email: string;
+    source: MaintenanceModeValue;
+    preferences: import('./newsletter').NewsletterPreferenceKey[];
+    consent?: boolean;
+    _hp?: string;
+  }
+): Promise<{ ok: boolean; message?: string; error?: string; pending?: boolean }> {
+  const res = await apiClient.post<{ id: string; created: boolean; merged?: boolean; pending?: boolean }>(
+    '/api/maintenance/newsletter',
+    payload
+  );
 
   if (res.success) {
-    return { ok: true, message: res.message ?? undefined };
+    return {
+      ok: true,
+      message: res.message ?? undefined,
+      pending: res.data?.pending === true,
+    };
   }
 
-  return { ok: false, error: res.error ?? 'Newsletter subscription failed' };
+  return { ok: false, error: res.error ?? res.message ?? 'Newsletter subscription failed' };
 }
 
 export async function sendMaintenanceMessage(payload: {

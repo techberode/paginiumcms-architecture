@@ -46,6 +46,7 @@ class CountsControllerTest extends TestCase
         $this->assertTrue($data['success']);
         $this->assertArrayHasKey('comments', $data['data']);
         $this->assertArrayHasKey('messages', $data['data']);
+        $this->assertArrayHasKey('newsletter', $data['data']);
         $this->assertArrayHasKey('trash', $data['data']);
         $this->assertArrayHasKey('users', $data['data']);
     }

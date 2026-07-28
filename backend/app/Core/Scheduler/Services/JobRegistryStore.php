@@ -166,6 +166,15 @@ final class JobRegistryStore
                     'system' => true,
                     'payload' => [],
                 ],
+                [
+                    'id' => 'newsletter-weekly-digest',
+                    'name' => 'Newsletter weekly digest',
+                    'handler' => 'newsletter.weekly_digest',
+                    'cron' => '0 9 * * 1',
+                    'enabled' => true,
+                    'system' => true,
+                    'payload' => [],
+                ],
             ],
         ];
     }

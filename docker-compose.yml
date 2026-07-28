@@ -38,7 +38,7 @@ services:
     profiles: ["dev"]
     image: node:22-alpine
     working_dir: /var/www/html/frontend
-    command: sh -c "npm ci && npm run dev -- --host 0.0.0.0"
+    command: sh -c "npm ci && npm run dev:lan"
     ports:
       - "3025:3025"
     volumes:

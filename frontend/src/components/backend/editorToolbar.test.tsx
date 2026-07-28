@@ -1,11 +1,15 @@
-import { describe, expect, it } from 'vitest';
-import { within } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
+import { waitFor, within } from '@testing-library/react';
 import { renderWithProviders } from '../../test/renderWithProviders';
 import { MarkdownContentEditor } from './MarkdownContentEditor';
 import { getEditorProfile } from '../../utils/editorProfiles';
 
+vi.mock('../../utils/editorComponents', () => ({
+  loadAllowedEditorComponents: vi.fn(() => Promise.resolve([])),
+}));
+
 describe('MarkdownContentEditor toolbar profiles', () => {
-  it('renders fewer formatting buttons for minimal profile', () => {
+  it('renders fewer formatting buttons for minimal profile', async () => {
     const { container: minimalRoot } = renderWithProviders(
       <MarkdownContentEditor
         value=""
@@ -21,6 +25,11 @@ describe('MarkdownContentEditor toolbar profiles', () => {
         profile={getEditorProfile('developer')}
       />
     );
+
+    await waitFor(() => {
+      expect(minimalRoot.querySelectorAll('button[title]').length).toBeGreaterThan(0);
+      expect(developerRoot.querySelectorAll('button[title]').length).toBeGreaterThan(0);
+    });
 
     const minimalButtons = minimalRoot.querySelectorAll('button[title]');
     const developerButtons = developerRoot.querySelectorAll('button[title]');

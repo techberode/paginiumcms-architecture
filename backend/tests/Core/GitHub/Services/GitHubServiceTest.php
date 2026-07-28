@@ -10,16 +10,20 @@ use PaginiumCMS\Core\FlatFile\Services\FileWriter;
 use PaginiumCMS\Core\FlatFile\Services\FileValidator;
 use PHPUnit\Framework\TestCase;
 use org\bovigo\vfs\vfsStream;
+use ReflectionMethod;
+use RuntimeException;
 
 class GitHubServiceTest extends TestCase
 {
     private GitHubService $service;
     private string $root;
     private string $contentPath;
+    private string|false|null $previousAppEnv = null;
 
     protected function setUp(): void
     {
         parent::setUp();
+        $this->previousAppEnv = getenv('APP_ENV');
 
         $structure = [
             'storage' => [
@@ -57,6 +61,19 @@ class GitHubServiceTest extends TestCase
                 'content_path' => $this->contentPath,
             ]
         );
+    }
+
+    protected function tearDown(): void
+    {
+        if ($this->previousAppEnv === false) {
+            putenv('APP_ENV');
+            unset($_ENV['APP_ENV']);
+        } elseif ($this->previousAppEnv !== null) {
+            putenv('APP_ENV=' . $this->previousAppEnv);
+            $_ENV['APP_ENV'] = $this->previousAppEnv;
+        }
+
+        parent::tearDown();
     }
 
     public function testGetStatus(): void
@@ -148,5 +165,17 @@ class GitHubServiceTest extends TestCase
         // Overíme, že import nájde súbory
         $result = $this->service->import();
         $this->assertArrayHasKey('success', $result);
+    }
+
+    public function testApiRequestBlocksDisallowedOutboundUrlInProduction(): void
+    {
+        putenv('APP_ENV=production');
+        $_ENV['APP_ENV'] = 'production';
+
+        $method = new ReflectionMethod(GitHubService::class, 'apiRequest');
+
+        $this->expectException(RuntimeException::class);
+
+        $method->invoke($this->service, 'http://127.0.0.1/internal', 'GET');
     }
 }

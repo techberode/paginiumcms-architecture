@@ -9,6 +9,7 @@ use PaginiumCMS\Core\Scheduler\Handlers\BackupScheduledHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\ContentScheduledPublishHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\MonitoringPipelineHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\SystemDeployHandler;
+use PaginiumCMS\Modules\Newsletter\Handlers\NewsletterWeeklyDigestHandler;
 
 /**
  * Maps handler keys to DI-resolved handlers (Iteration 29).
@@ -19,7 +20,8 @@ final class JobHandlerRegistry
         private BackupScheduledHandler $backup,
         private MonitoringPipelineHandler $monitoring,
         private ContentScheduledPublishHandler $scheduledPublish,
-        private SystemDeployHandler $systemDeploy
+        private SystemDeployHandler $systemDeploy,
+        private NewsletterWeeklyDigestHandler $newsletterWeeklyDigest
     ) {
     }
 
@@ -30,6 +32,7 @@ final class JobHandlerRegistry
             'monitoring.pipeline' => $this->monitoring,
             'content.scheduled_publish' => $this->scheduledPublish,
             'system.deploy' => $this->systemDeploy,
+            'newsletter.weekly_digest' => $this->newsletterWeeklyDigest,
             default => null,
         };
     }
@@ -44,6 +47,7 @@ final class JobHandlerRegistry
             ['key' => $this->monitoring->key(), 'label' => $this->monitoring->label()],
             ['key' => $this->scheduledPublish->key(), 'label' => $this->scheduledPublish->label()],
             ['key' => $this->systemDeploy->key(), 'label' => $this->systemDeploy->label()],
+            ['key' => $this->newsletterWeeklyDigest->key(), 'label' => $this->newsletterWeeklyDigest->label()],
         ];
     }
 }

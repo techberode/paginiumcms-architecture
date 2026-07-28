@@ -53,6 +53,9 @@ const DEFAULT_PUBLIC: PublicSettings = {
   newsletter: {
     footerEnabled: false,
     footerHint: '',
+    enabledPreferences: ['weekly_digest', 'general_news'],
+    requireConsentCheckbox: false,
+    requireDoubleOptIn: false,
   },
   appearance: {
     colorScheme: 'indigo-classic',

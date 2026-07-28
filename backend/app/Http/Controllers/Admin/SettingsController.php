@@ -420,6 +420,15 @@ final class SettingsController
         return [
             'footerEnabled' => (bool) ($newsletter['footerEnabled'] ?? $defaults['footerEnabled'] ?? false),
             'footerHint' => (string) ($newsletter['footerHint'] ?? $defaults['footerHint'] ?? ''),
+            'enabledPreferences' => \PaginiumCMS\Modules\Newsletter\Support\NewsletterPreferences::parseEnabledList(
+                (string) ($newsletter['enabledPreferences'] ?? $defaults['enabledPreferences'] ?? '')
+            ),
+            'requireConsentCheckbox' => (bool) (
+                $newsletter['requireConsentCheckbox'] ?? $defaults['requireConsentCheckbox'] ?? false
+            ),
+            'requireDoubleOptIn' => (bool) (
+                $newsletter['requireDoubleOptIn'] ?? $defaults['requireDoubleOptIn'] ?? false
+            ),
         ];
     }
 

@@ -122,7 +122,9 @@ Admin-configured outbound URLs must pass `OutboundUrlGuard`:
 
 Production: HTTPS only, block private/metadata IP ranges.
 
-**Not guarded (by design):** fixed URLs — e.g. GeoIP `ip-api.com`, Unsplash stock import allow-list.
+**Not guarded (by design):** fixed URLs — e.g. Unsplash stock import allow-list.
+
+**Also guarded (wave 2):** `GitHubService` content sync (`api.github.com`) — same `OutboundUrlGuard` as `GitHubReleaseClient`.
 
 ### 6. Plugins & code execution
 
@@ -178,6 +180,9 @@ Review these **without** auth (CSRF exempt where noted):
 | ISS-014 | CORS | Must set `APP_ENV=production` on prod |
 | ISS-104 | Jobs deploy bypass (A3) | ✅ Fixed **`v2.1.0-beta.15`** — SUPER_ADMIN gate on `system.deploy` |
 | ISS-105 | GeoIP cleartext (A6) | ✅ Fixed **`v2.1.0-beta.15`** — HTTPS + OutboundUrlGuard |
+| ISS-106 | Demo mode on production (A8) | ✅ Fixed **[Unreleased]** — fail-closed + boot warning |
+| ISS-107 | Newsletter subscribe hardening (A7) | ✅ Fixed **[Unreleased]** — rate limit + honeypot |
+| ISS-108 | GitHubService SSRF guard (A9) | ✅ Fixed **[Unreleased]** — OutboundUrlGuard |
 | S5 | CSP | `style-src 'unsafe-inline'` for React inline styles |
 | S-DEMOCREDS | Demo login hints | ✅ Mitigated **`v2.1.0-beta.11`** — no password in public settings; `POST /api/demo/quick-login` |
 

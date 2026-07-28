@@ -13,6 +13,8 @@ use PaginiumCMS\Http\Middleware\ContentSuggestMetaRateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\RateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\LoginRateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\OtpResendRateLimitMiddleware;
+use PaginiumCMS\Http\Middleware\NewsletterSubscribeRateLimitMiddleware;
+use PaginiumCMS\Http\Middleware\NewsletterTokenRateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\OtpStartRateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\OtpVerifyRateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\LocaleMiddleware;
@@ -97,6 +99,8 @@ if ($appEnvForDotenv !== 'testing' && class_exists(\Dotenv\Dotenv::class)) {
 }
 
 require_once __DIR__ . '/timezone.php';
+
+DemoMode::warnIfMisconfigured();
 
 // ---------- SESSION BEZPEČNOSŤ ----------
 if (file_exists(__DIR__ . '/session.php')) {
@@ -320,6 +324,20 @@ $containerBuilder->addDefinitions([
 
     OtpStartRateLimitMiddleware::class => function ($container) {
         return new OtpStartRateLimitMiddleware(
+            $container->get(CacheManager::class),
+            array_filter(explode(',', (string)($_ENV['TRUSTED_PROXIES'] ?? '127.0.0.1,::1,192.168.10.26')))
+        );
+    },
+
+    NewsletterSubscribeRateLimitMiddleware::class => function ($container) {
+        return new NewsletterSubscribeRateLimitMiddleware(
+            $container->get(CacheManager::class),
+            array_filter(explode(',', (string)($_ENV['TRUSTED_PROXIES'] ?? '127.0.0.1,::1,192.168.10.26')))
+        );
+    },
+
+    NewsletterTokenRateLimitMiddleware::class => function ($container) {
+        return new NewsletterTokenRateLimitMiddleware(
             $container->get(CacheManager::class),
             array_filter(explode(',', (string)($_ENV['TRUSTED_PROXIES'] ?? '127.0.0.1,::1,192.168.10.26')))
         );
@@ -893,5 +911,7 @@ if (DebugEventLogger::isEnabled()) {
 }
 
 $container->get(DemoStorageService::class)->ensureSeededSafely();
+
+$container->get(\PaginiumCMS\Modules\Newsletter\Services\NewsletterHookRegistrar::class)->register();
 
 return $app;

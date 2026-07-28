@@ -11,7 +11,7 @@ use PaginiumCMS\Core\Validation\Validator;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Messages\Contracts\MessageRepositoryInterface;
 use PaginiumCMS\Modules\Messages\Models\ContactMessage;
-use PaginiumCMS\Modules\Newsletter\Contracts\NewsletterRepositoryInterface;
+use PaginiumCMS\Modules\Newsletter\Services\NewsletterSubscribeService;
 use PaginiumCMS\Support\Lang;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -20,7 +20,7 @@ class MaintenanceController
 {
     public function __construct(
         private SettingsRepositoryInterface $settings,
-        private NewsletterRepositoryInterface $newsletterRepository,
+        private NewsletterSubscribeService $subscribeService,
         private MessageRepositoryInterface $messageRepository,
         private Validator $validator,
         private JsonResponder $json
@@ -59,13 +59,28 @@ class MaintenanceController
         $mode = MaintenanceMode::resolve($maintenance);
         $source = (string) ($validated['source'] ?? $mode);
 
-        $result = $this->newsletterRepository->subscribe((string) $validated['email'], $source);
+        $result = $this->subscribeService->subscribe($data, $source);
+        if (!$result['ok']) {
+            if (isset($result['errors'])) {
+                return $this->json->validation(
+                    $response,
+                    $result['message'] ?? Lang::get('validation_failed', [], 'maintenance'),
+                    $result['errors']
+                );
+            }
+
+            return $this->json->error(
+                $response,
+                $result['message'] ?? Lang::get('invalid_payload', [], 'maintenance'),
+                $result['status']
+            );
+        }
 
         return $this->json->success(
             $response,
-            ['id' => $result['id'], 'created' => $result['created']],
-            $result['created'] ? 201 : 200,
-            Lang::get($result['created'] ? 'newsletter_subscribed' : 'newsletter_exists', [], 'maintenance')
+            $result['payload'] ?? [],
+            $result['status'],
+            Lang::get('newsletter_subscribed', [], 'maintenance')
         );
     }
 

@@ -226,6 +226,18 @@ final class SettingsSchema
                 'fields' => [
                     ['key' => 'footerEnabled', 'type' => 'bool', 'label' => 'Povoliť newsletter vo footeri', 'default' => false, 'rules' => ['bool'], 'help' => 'Zapnuté = kompaktný odberový formulár v pätičke verejného webu. Vypnuté = formulár skrytý.'],
                     ['key' => 'footerHint', 'type' => 'text', 'label' => 'Text vo footeri', 'default' => 'Prihláste sa na odber noviniek a nezmeškajte novinky.', 'rules' => ['string', 'max:500'], 'help' => 'Krátky popis pod nadpisom newsletteru vo footeri.'],
+                    ['key' => 'fromEmail', 'type' => 'email', 'label' => 'Odosielateľ (e-mail)', 'default' => '', 'rules' => ['email', 'max:200'], 'help' => 'Pripravené pre budúce odosielanie; fallback na SMTP nastavenia.'],
+                    ['key' => 'fromName', 'type' => 'string', 'label' => 'Odosielateľ (meno)', 'default' => '', 'rules' => ['string', 'max:120'], 'help' => 'Zobrazované meno odosielateľa v budúcich e-mailoch.'],
+                    ['key' => 'replyTo', 'type' => 'email', 'label' => 'Reply-To', 'default' => '', 'rules' => ['email', 'max:200'], 'help' => 'Voliteľná adresa pre odpovede na newsletter.'],
+                    ['key' => 'enabledPreferences', 'type' => 'text', 'label' => 'Typy odberu vo formulári', 'default' => "weekly_digest\ngeneral_news", 'rules' => ['string', 'max:500'], 'help' => 'Jeden kľúč na riadok: weekly_digest, new_article, cms_release, general_news.'],
+                    ['key' => 'requireConsentCheckbox', 'type' => 'bool', 'label' => 'Vyžadovať súhlas (checkbox)', 'default' => false, 'rules' => ['bool'], 'help' => 'Zapnuté = návštevník musí explicitne potvrdiť súhlas pred odberom.'],
+                    ['key' => 'sendEnabled', 'type' => 'bool', 'label' => 'Povoliť odosielanie e-mailov', 'default' => false, 'rules' => ['bool'], 'help' => 'Master prepínač pre weekly digest a notifikácie o nových článkoch. Vyžaduje nakonfigurovaný SMTP / e-mail kanál.'],
+                    ['key' => 'weeklyDigestEnabled', 'type' => 'bool', 'label' => 'Týždenný digest', 'default' => false, 'rules' => ['bool'], 'help' => 'Odosiela zhrnutie publikovaných článkov odberateľom s preferenciou weekly_digest.'],
+                    ['key' => 'newArticleEnabled', 'type' => 'bool', 'label' => 'Notifikácia pri novom článku', 'default' => false, 'rules' => ['bool'], 'help' => 'Pri publikovaní článku odošle e-mail odberateľom s preferenciou new_article.'],
+                    ['key' => 'instantArticleCooldownHours', 'type' => 'int', 'label' => 'Cooldown medzi instant mailmi (hodiny)', 'default' => 24, 'rules' => ['int', 'min:1', 'max:168'], 'help' => 'Max. jeden instant mail na odberateľa za dané obdobie.'],
+                    ['key' => 'sendBatchLimitPerRun', 'type' => 'int', 'label' => 'Limit odoslaní na beh', 'default' => 50, 'rules' => ['int', 'min:1', 'max:500'], 'help' => 'Počet e-mailov odoslaných v jednom behu (cron alebo manuálne).'],
+                    ['key' => 'requireDoubleOptIn', 'type' => 'bool', 'label' => 'Double opt-in (potvrdenie e-mailom)', 'default' => false, 'rules' => ['bool'], 'help' => 'Nový odberateľ je pending, kým neklikne na potvrdzovací link v e-maili.'],
+                    ['key' => 'confirmTokenTtlHours', 'type' => 'int', 'label' => 'Platnosť potvrdzovacieho linku (hodiny)', 'default' => 72, 'rules' => ['int', 'min:1', 'max:168'], 'help' => 'Po uplynutí musí odberateľ požiadať o nový potvrdzovací e-mail.'],
                 ],
             ],
             'marketing' => [

@@ -63,12 +63,67 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.63 hotfix — deploy AppRoot + UX | **`v2.1.0-beta.13`** | [below](#210-beta13--2026-07-27) |
 | It.63 — Docker admin deploy bootstrap | **`v2.1.0-beta.14`** | [below](#210-beta14--2026-07-27) |
 | It.63 v2 — version check + audit fixes | **`v2.1.0-beta.15`** | [below](#210-beta15--2026-07-27) |
+| It.61 Newsletter v2 Phases 1–3 + BE↔FE wiring | **`v2.1.0-beta.16`** | [below](#210-beta16--2026-07-28) |
 | Wave 5d — It.15 hook emitters + extension policy | **2.0.54** | [below](#2054--2026-07-23) |
 | It.19b–19d — Security runtime, auth UX, password policy | **2.0.45** | [below](#2045--2026-07-21) |
 
 ---
 
-## [Unreleased]
+---
+
+## [2.1.0-beta.16] – 2026-07-28
+
+**It.61 Newsletter v2** — Phases 1–3 (preferences, sending, double opt-in, unsubscribe) + BE↔FE wiring audit + test hygiene.
+
+### Added (Newsletter v2 — Phase 3)
+
+- **Double opt-in** — optional `requireDoubleOptIn`; pending subscribers until email confirm link clicked.
+- **Confirm flow** — `GET /api/newsletter/confirm`, public page `/newsletter/confirm`, confirmation email.
+- **Unsubscribe** — HMAC token per subscriber; `GET /api/newsletter/unsubscribe`, page `/newsletter/unsubscribe`.
+- **Mail footer** — unsubscribe link on weekly digest and new-article notifications.
+- **Settings** — `requireDoubleOptIn`, `confirmTokenTtlHours`.
+- **Admin UI** — subscriber status column (`active`, `pending`, `unsubscribed`).
+
+### Added (Newsletter v2 — Phase 2)
+
+- **Email sending** — `NewsletterMailService` (weekly digest + new-article notifications) via `NotificationService` / SMTP.
+- **Scheduler job** — `newsletter.weekly_digest` (Mon 09:00 cron default); `NewsletterWeeklyDigestHandler`.
+- **Content hooks** — auto new-article mail on publish (`content.after_status_change`, `content.after_scheduled_publish`).
+- **Send state** — `data/newsletter/send-state.json` (last weekly digest, article cooldown per email).
+- **Settings** — `sendEnabled`, `weeklyDigestEnabled`, `newArticleEnabled`, `instantArticleCooldownHours`, `sendBatchLimitPerRun`.
+- **Admin API** — `GET /api/admin/newsletter/send/status`; `POST /api/admin/newsletter/send/weekly-digest` and `/send/test` (SUPER_ADMIN).
+- **Admin UI** — send status panel + manual digest / test on `/newsletter`.
+
+### Added (Newsletter v2 — Phase 1)
+
+- **Subscriber preferences** — `weekly_digest`, `new_article`, `cms_release`, `general_news` stored in `subscribers.json`; merged on re-subscribe.
+- **Admin settings** — `fromEmail`, `fromName`, `replyTo`, `enabledPreferences`, `requireConsentCheckbox`.
+- **Public API** — `GET /api/settings/public` exposes preferences + consent + double opt-in flags.
+- **Footer & maintenance UX** — preference checkboxes + optional consent; honeypot on maintenance subscribe.
+- **Rate limiting** — `NewsletterSubscribeRateLimitMiddleware` + `NewsletterTokenRateLimitMiddleware`.
+- **Admin list** — preferences + status columns; CSV export.
+
+### Fixed (BE ↔ FE wiring + tests)
+
+- **`PublicSettings.newsletter`** — `requireDoubleOptIn` type + default aligned with backend public slice.
+- **Settings i18n (EN/SK)** — full newsletter group field labels (send, opt-in, batch limits).
+- **Admin counts** — `newsletter` subscriber count in `/api/admin/counts` + sidebar badge.
+- **Vitest** — `editorToolbar` act warnings; `CompanyInfoPanel` happy-dom iframe stderr (SSR map test).
+- **ESLint** — 4 → 0 warnings (`SystemUpdateView`, `PublicSiteContext`, constants split).
+- **Vite build** — hello-widget ineffective dynamic import (code-split chunk only).
+
+### Added (DX — LAN dev on :8081)
+
+- **`docs/deploy/nginx-paginium-dev.conf`** — nginx proxies SPA to Vite `:3025`, API to PHP; HMR on `:8081`.
+- **`npm run dev:lan`** — `VITE_HMR_CLIENT_PORT=8081` for nginx dev proxy; Docker `dev` profile uses it.
+
+### Security
+
+- Generic success message on duplicate subscribe (anti-enumeration).
+- Preferences validated against admin `enabledPreferences` allow-list.
+- **ISS-106 (A8-DEMOMODE):** `DEMO_MODE=true` + `APP_ENV=production` → demo fail-closed + boot warning.
+- **ISS-107 (A7-NEWSLETTER):** dedicated subscribe rate limit + maintenance honeypot.
+- **ISS-108 (A9-GHSERVICE):** `OutboundUrlGuard` on `GitHubService` outbound requests.
 
 ---
 

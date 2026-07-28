@@ -1,11 +1,17 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Download, Mail, RefreshCw } from 'lucide-react';
+import { Download, Mail, RefreshCw, Send } from 'lucide-react';
 import {
   exportNewsletterSubscribersCsv,
+  fetchNewsletterSendStatus,
   listNewsletterSubscribers,
+  sendNewsletterTestEmail,
+  sendNewsletterWeeklyDigestNow,
+  type NewsletterPreferenceKey,
+  type NewsletterSendStatus,
   type NewsletterSubscriber,
 } from '../../api/newsletter';
 import { useToast } from '../../hooks/useToast';
+import { useAuth } from '../../hooks/useAuth';
 import { useAdminListPageSize } from '../../hooks/useAdminListPageSize';
 import { useColumnSort } from '../../hooks/useColumnSort';
 import { AdminListToolbar } from './AdminListToolbar';
@@ -18,12 +24,17 @@ const sourceLabelKey = (source: string): string => `newsletter.source.${source}`
 
 export const NewsletterSubscribersPanel: React.FC = () => {
   const { t, locale } = useI18n();
+  const { user } = useAuth();
   const dateLocale = locale === 'en' ? 'en-US' : 'sk-SK';
   const { error: showError, success: showSuccess } = useToast();
+  const isSuperAdmin = user?.roles?.includes('SUPER_ADMIN') ?? false;
   const [items, setItems] = useState<NewsletterSubscriber[]>([]);
   const [bySource, setBySource] = useState<Record<string, number>>({});
+  const [sendStatus, setSendStatus] = useState<NewsletterSendStatus | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sendLoading, setSendLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [testEmail, setTestEmail] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useAdminListPageSize('newsletter');
@@ -32,9 +43,13 @@ export const NewsletterSubscribersPanel: React.FC = () => {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await listNewsletterSubscribers();
+      const [data, status] = await Promise.all([
+        listNewsletterSubscribers(),
+        fetchNewsletterSendStatus(),
+      ]);
       setItems(data.items);
       setBySource(data.bySource);
+      setSendStatus(status);
     } catch {
       showError(t('newsletter.toast.loadFailed'));
     } finally {
@@ -54,7 +69,8 @@ export const NewsletterSubscribersPanel: React.FC = () => {
     () =>
       applyClientListView(items, {
         search,
-        searchText: (row) => `${row.email} ${row.source}`,
+        searchText: (row) =>
+          `${row.email} ${row.source} ${(row.preferences ?? []).join(' ')} ${row.status ?? ''}`,
         sortField,
         sortDirection,
         sortFields: [
@@ -64,6 +80,16 @@ export const NewsletterSubscribersPanel: React.FC = () => {
             value: 'subscribedAt',
             label: t('newsletter.table.date'),
             getValue: (row) => row.subscribedAt,
+          },
+          {
+            value: 'preferences',
+            label: t('newsletter.table.preferences'),
+            getValue: (row) => (row.preferences ?? []).join(','),
+          },
+          {
+            value: 'status',
+            label: t('newsletter.table.status'),
+            getValue: (row) => row.status ?? '',
           },
         ],
         page,
@@ -90,10 +116,73 @@ export const NewsletterSubscribersPanel: React.FC = () => {
     }
   };
 
+  const formatBool = (value: boolean | undefined): string =>
+    value ? t('newsletter.send.yes') : t('newsletter.send.no');
+
+  const handleSendWeeklyDigest = async () => {
+    setSendLoading(true);
+    try {
+      const result = await sendNewsletterWeeklyDigestNow();
+      if (result.ok) {
+        showSuccess(result.message ?? t('newsletter.toast.weeklyDigestSent'));
+        await load();
+      } else {
+        showError(result.message ?? t('newsletter.toast.weeklyDigestFailed'));
+      }
+    } catch {
+      showError(t('newsletter.toast.weeklyDigestFailed'));
+    } finally {
+      setSendLoading(false);
+    }
+  };
+
+  const handleSendTest = async () => {
+    const email = testEmail.trim();
+    if (email === '') {
+      return;
+    }
+
+    setSendLoading(true);
+    try {
+      const result = await sendNewsletterTestEmail(email);
+      if (result.ok) {
+        showSuccess(result.message ?? t('newsletter.toast.testSent'));
+      } else {
+        showError(result.message ?? t('newsletter.toast.testFailed'));
+      }
+    } catch {
+      showError(t('newsletter.toast.testFailed'));
+    } finally {
+      setSendLoading(false);
+    }
+  };
+
   const formatSource = (source: string): string => {
     const key = sourceLabelKey(source);
     const translated = t(key);
     return translated !== key ? translated : source;
+  };
+
+  const formatPreference = (key: NewsletterPreferenceKey): string => {
+    const labelKey = `newsletter.preference.${key}`;
+    const translated = t(labelKey);
+    return translated !== labelKey ? translated : key;
+  };
+
+  const formatPreferences = (preferences?: NewsletterPreferenceKey[]): string => {
+    if (!preferences || preferences.length === 0) {
+      return '—';
+    }
+    return preferences.map((key) => formatPreference(key)).join(', ');
+  };
+
+  const formatStatus = (status?: string): string => {
+    if (!status) {
+      return '—';
+    }
+    const key = `newsletter.status.${status}`;
+    const translated = t(key);
+    return translated !== key ? translated : status;
   };
 
   return (
@@ -141,6 +230,77 @@ export const NewsletterSubscribersPanel: React.FC = () => {
         </div>
       ) : null}
 
+      {sendStatus ? (
+        <div className="rounded-xl border border-theme-border bg-theme-surface p-4 space-y-4">
+          <div>
+            <h2 className="text-lg font-semibold text-theme-text">{t('newsletter.send.title')}</h2>
+            <p className="text-sm text-theme-text-muted mt-1">{t('newsletter.send.subtitle')}</p>
+          </div>
+          <dl className="grid gap-2 sm:grid-cols-2 text-sm">
+            <div className="flex justify-between gap-4 sm:block">
+              <dt className="text-theme-text-muted">{t('newsletter.send.configured')}</dt>
+              <dd className="font-medium text-theme-text">{formatBool(sendStatus.configured)}</dd>
+            </div>
+            <div className="flex justify-between gap-4 sm:block">
+              <dt className="text-theme-text-muted">{t('newsletter.send.sendEnabled')}</dt>
+              <dd className="font-medium text-theme-text">{formatBool(sendStatus.sendEnabled)}</dd>
+            </div>
+            <div className="flex justify-between gap-4 sm:block">
+              <dt className="text-theme-text-muted">{t('newsletter.send.weeklyDigestEnabled')}</dt>
+              <dd className="font-medium text-theme-text">{formatBool(sendStatus.weeklyDigestEnabled)}</dd>
+            </div>
+            <div className="flex justify-between gap-4 sm:block">
+              <dt className="text-theme-text-muted">{t('newsletter.send.newArticleEnabled')}</dt>
+              <dd className="font-medium text-theme-text">{formatBool(sendStatus.newArticleEnabled)}</dd>
+            </div>
+            <div className="flex justify-between gap-4 sm:block sm:col-span-2">
+              <dt className="text-theme-text-muted">{t('newsletter.send.lastWeeklyDigestAt')}</dt>
+              <dd className="font-medium text-theme-text">
+                {sendStatus.lastWeeklyDigestAt
+                  ? new Date(sendStatus.lastWeeklyDigestAt).toLocaleString(dateLocale)
+                  : t('newsletter.send.never')}
+              </dd>
+            </div>
+          </dl>
+
+          {isSuperAdmin ? (
+            <div className="flex flex-col gap-3 pt-2 border-t border-theme-border">
+              <button
+                type="button"
+                onClick={() => void handleSendWeeklyDigest()}
+                disabled={sendLoading}
+                className="inline-flex w-fit items-center gap-2 rounded-xl bg-theme-primary px-4 py-2 text-sm font-semibold text-theme-primary-foreground hover:opacity-90 disabled:opacity-60"
+              >
+                <Send className="h-4 w-4" />
+                {t('newsletter.actions.sendWeeklyDigest')}
+              </button>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+                <label className="flex flex-col gap-1 text-sm flex-1 max-w-md">
+                  <span className="font-medium text-theme-text">{t('newsletter.send.testEmailLabel')}</span>
+                  <input
+                    type="email"
+                    value={testEmail}
+                    onChange={(event) => setTestEmail(event.target.value)}
+                    placeholder={t('newsletter.send.testEmailPlaceholder')}
+                    className="rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-theme-text"
+                  />
+                </label>
+                <button
+                  type="button"
+                  onClick={() => void handleSendTest()}
+                  disabled={sendLoading || testEmail.trim() === ''}
+                  className="inline-flex items-center gap-2 rounded-xl border border-theme-border bg-theme-surface px-4 py-2 text-sm font-semibold text-theme-text hover:bg-theme-surface-elevated disabled:opacity-60"
+                >
+                  {t('newsletter.actions.sendTest')}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <p className="text-xs text-theme-text-muted">{t('newsletter.send.superAdminHint')}</p>
+          )}
+        </div>
+      ) : null}
+
       <AdminListToolbar
         search={search}
         onSearchChange={setSearch}
@@ -153,6 +313,8 @@ export const NewsletterSubscribersPanel: React.FC = () => {
         columns={[
           { field: 'email', label: t('newsletter.table.email') },
           { field: 'source', label: t('newsletter.table.source') },
+          { field: 'preferences', label: t('newsletter.table.preferences') },
+          { field: 'status', label: t('newsletter.table.status') },
           { field: 'subscribedAt', label: t('newsletter.table.date') },
         ]}
         activeField={sortField}
@@ -166,19 +328,21 @@ export const NewsletterSubscribersPanel: React.FC = () => {
             <tr>
               <th className="px-4 py-3 text-left font-semibold text-theme-text-muted">{t('newsletter.table.email')}</th>
               <th className="px-4 py-3 text-left font-semibold text-theme-text-muted">{t('newsletter.table.source')}</th>
+              <th className="px-4 py-3 text-left font-semibold text-theme-text-muted">{t('newsletter.table.preferences')}</th>
+              <th className="px-4 py-3 text-left font-semibold text-theme-text-muted">{t('newsletter.table.status')}</th>
               <th className="px-4 py-3 text-left font-semibold text-theme-text-muted">{t('newsletter.table.date')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-theme-border">
             {loading ? (
               <tr>
-                <td colSpan={3} className="px-4 py-8 text-center text-theme-text-muted">
+                <td colSpan={5} className="px-4 py-8 text-center text-theme-text-muted">
                   {t('list.loading')}
                 </td>
               </tr>
             ) : listView.items.length === 0 ? (
               <tr>
-                <td colSpan={3} className="px-4 py-8 text-center text-theme-text-muted">
+                <td colSpan={5} className="px-4 py-8 text-center text-theme-text-muted">
                   {t('newsletter.empty')}
                 </td>
               </tr>
@@ -187,6 +351,8 @@ export const NewsletterSubscribersPanel: React.FC = () => {
                 <tr key={row.id} className="hover:bg-theme-surface-elevated/40">
                   <td className="px-4 py-3 font-medium text-theme-text">{row.email}</td>
                   <td className="px-4 py-3 text-theme-text-muted">{formatSource(row.source)}</td>
+                  <td className="px-4 py-3 text-theme-text-muted">{formatPreferences(row.preferences)}</td>
+                  <td className="px-4 py-3 text-theme-text-muted">{formatStatus(row.status)}</td>
                   <td className="px-4 py-3 text-theme-text-muted">
                     {row.subscribedAt
                       ? new Date(row.subscribedAt).toLocaleString(dateLocale)

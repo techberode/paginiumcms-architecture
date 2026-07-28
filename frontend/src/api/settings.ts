@@ -135,6 +135,9 @@ export interface PublicSettings {
   newsletter?: {
     footerEnabled?: boolean;
     footerHint?: string;
+    enabledPreferences?: string[];
+    requireConsentCheckbox?: boolean;
+    requireDoubleOptIn?: boolean;
   };
   appearance?: {
     colorScheme: string;

@@ -8,6 +8,10 @@ export default defineConfig({
   },
   server: {
     port: 3025,
+    host: process.env.VITE_DEV_HOST === '0.0.0.0' ? '0.0.0.0' : true,
+    hmr: process.env.VITE_HMR_CLIENT_PORT
+      ? { clientPort: Number(process.env.VITE_HMR_CLIENT_PORT) }
+      : undefined,
     proxy: {
       '/api': {
         target: 'http://localhost:8080',

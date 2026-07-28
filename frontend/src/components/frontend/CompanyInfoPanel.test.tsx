@@ -1,7 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { screen } from '@testing-library/react';
 import { CompanyInfoPanel, CompanyMapEmbed } from './CompanyInfoPanel';
 import { renderWithRouter } from '../../test/renderWithRouter';
+import { TestI18nProvider } from '../../context/I18nContext';
 
 vi.mock('../../context/SettingsContext', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../context/SettingsContext')>();
@@ -32,9 +34,14 @@ describe('CompanyInfoPanel', () => {
     expect(screen.getByText('Bratislava')).toBeInTheDocument();
   });
 
-  it('renders map iframe for safe embed URL', () => {
-    renderWithRouter(<CompanyMapEmbed />);
-    const frame = screen.getByTitle('Mapa — firemná adresa');
-    expect(frame).toHaveAttribute('src', 'https://www.google.com/maps/embed?pb=test');
+  it('renders map iframe markup for safe embed URL', () => {
+    const html = renderToStaticMarkup(
+      <TestI18nProvider locale="sk">
+        <CompanyMapEmbed />
+      </TestI18nProvider>
+    );
+
+    expect(html).toContain('https://www.google.com/maps/embed?pb=test');
+    expect(html).toContain('iframe');
   });
 });

@@ -5,6 +5,8 @@ declare(strict_types=1);
 use PaginiumCMS\Http\Controllers\Admin\NewsletterAdminController;
 use PaginiumCMS\Http\Controllers\Newsletter\NewsletterController;
 use PaginiumCMS\Http\Middleware\AuthMiddleware;
+use PaginiumCMS\Http\Middleware\NewsletterSubscribeRateLimitMiddleware;
+use PaginiumCMS\Http\Middleware\NewsletterTokenRateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\RoleMiddleware;
 use PaginiumCMS\Http\Middleware\TwoFactorMiddleware;
 use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
@@ -17,13 +19,30 @@ return function (App $app): void {
     $public = $container->get(NewsletterController::class);
     $admin = $container->get(NewsletterAdminController::class);
     $auth = $container->get(AuthMiddleware::class);
+    $authz = $container->get(AuthorizationInterface::class);
+    $tokenRateLimit = $container->get(NewsletterTokenRateLimitMiddleware::class);
 
-    $app->post('/api/newsletter/subscribe', [$public, 'subscribe']);
+    $app->post('/api/newsletter/subscribe', [$public, 'subscribe'])
+        ->add($container->get(NewsletterSubscribeRateLimitMiddleware::class));
+
+    $app->get('/api/newsletter/confirm', [$public, 'confirm'])
+        ->add($tokenRateLimit);
+
+    $app->get('/api/newsletter/unsubscribe', [$public, 'unsubscribe'])
+        ->add($tokenRateLimit);
 
     $app->group('/api/admin/newsletter', function (RouteCollectorProxy $group) use ($admin) {
         $group->get('/subscribers', [$admin, 'listSubscribers']);
         $group->get('/subscribers/export', [$admin, 'exportSubscribers']);
-    })->add(new RoleMiddleware($container->get(AuthorizationInterface::class), ['ADMIN', 'SUPER_ADMIN']))
+        $group->get('/send/status', [$admin, 'sendStatus']);
+    })->add(new RoleMiddleware($authz, ['ADMIN', 'SUPER_ADMIN']))
+        ->add($container->get(TwoFactorMiddleware::class))
+        ->add($auth);
+
+    $app->group('/api/admin/newsletter/send', function (RouteCollectorProxy $group) use ($admin) {
+        $group->post('/weekly-digest', [$admin, 'sendWeeklyDigestNow']);
+        $group->post('/test', [$admin, 'sendTest']);
+    })->add(new RoleMiddleware($authz, ['SUPER_ADMIN']))
         ->add($container->get(TwoFactorMiddleware::class))
         ->add($auth);
 };

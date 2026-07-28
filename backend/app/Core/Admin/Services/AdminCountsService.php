@@ -11,6 +11,7 @@ use PaginiumCMS\Modules\Comments\Contracts\CommentsRepositoryInterface;
 use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
 use PaginiumCMS\Modules\Messages\Contracts\MessageRepositoryInterface;
 use PaginiumCMS\Modules\Messages\Models\ContactMessage;
+use PaginiumCMS\Modules\Newsletter\Contracts\NewsletterRepositoryInterface;
 use PaginiumCMS\Core\Security\Firewall\FirewallService;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
@@ -25,6 +26,7 @@ final class AdminCountsService
         private MediaRepositoryInterface $media,
         private CommentsRepositoryInterface $comments,
         private MessageRepositoryInterface $messages,
+        private NewsletterRepositoryInterface $newsletter,
         private BackupInterface $backups,
         private TrashService $trash,
         private UserRepository $users,
@@ -48,6 +50,7 @@ final class AdminCountsService
             $messages = $this->messages->findAll();
             $counts['comments'] = count($this->comments->findAll());
             $counts['messages'] = count($messages);
+            $counts['newsletter'] = count($this->newsletter->findAll());
             $counts['messages_unread'] = count(array_filter(
                 $messages,
                 static fn (ContactMessage $message): bool => !$message->isRead() && !$message->isArchived()

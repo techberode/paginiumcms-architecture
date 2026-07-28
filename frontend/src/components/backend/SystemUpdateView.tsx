@@ -1,5 +1,5 @@
 // frontend/src/components/backend/SystemUpdateView.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpCircle, GitBranch, Play, RefreshCw, Settings } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
@@ -50,20 +50,20 @@ export const SystemUpdateView: React.FC = () => {
     remoteCheck?.remote.latest_release_tag ??
     null;
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const status = await getSystemUpdateStatus();
       setData(status);
-      applyDefaultRef(status, remoteCheck?.remote ?? null);
+      applyDefaultRef(status, null);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     void load();
-  }, []);
+  }, [load]);
 
   if (!isSuperAdmin) {
     return (
