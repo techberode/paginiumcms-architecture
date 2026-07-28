@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Tests\Http\Controllers\Admin;
 
+use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Tests\Http\TestCase;
 
 final class DemoControllerTest extends TestCase
@@ -53,6 +54,28 @@ final class DemoControllerTest extends TestCase
         );
 
         $this->assertSame(404, $response->getStatusCode());
+    }
+
+    public function testDemoPublicInfoFailsClosedWhenMisconfiguredOnProduction(): void
+    {
+        $settings = $this->container()->get(SettingsRepositoryInterface::class);
+        $settings->setGroup('firewall', array_merge($settings->group('firewall'), [
+            'enabled' => false,
+        ]));
+
+        putenv('DEMO_MODE=true');
+        $_ENV['DEMO_MODE'] = 'true';
+        putenv('APP_ENV=production');
+        $_ENV['APP_ENV'] = 'production';
+
+        $response = $this->handleRequest(
+            $this->createJsonRequest('GET', '/api/demo/public-info')
+        );
+        $data = $this->getJsonResponse($response);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertTrue($data['success']);
+        $this->assertFalse($data['data']['enabled']);
     }
 
     public function testDemoResetForbiddenWhenDemoDisabled(): void

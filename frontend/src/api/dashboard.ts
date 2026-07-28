@@ -36,6 +36,7 @@ export interface DashboardOverview {
     | 'comments'
     | 'messages'
     | 'messages_unread'
+    | 'newsletter'
     | 'trash'
     | 'users'
     | 'firewall_jails',

@@ -28,7 +28,12 @@ export const MaintenanceGate: React.FC<MaintenanceGateProps> = ({ children }) =>
     return <>{children}</>;
   }
 
-  if (pathname === '/login' || pathname.startsWith('/reset-password')) {
+  if (
+    pathname === '/login'
+    || pathname.startsWith('/reset-password')
+    || pathname.startsWith('/newsletter/confirm')
+    || pathname.startsWith('/newsletter/unsubscribe')
+  ) {
     return <>{children}</>;
   }
 

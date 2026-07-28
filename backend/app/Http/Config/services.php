@@ -161,6 +161,7 @@ use PaginiumCMS\Modules\Comments\Services\CommentPolicyResolver;
 use PaginiumCMS\Modules\Comments\Services\CommentsRepository;
 use PaginiumCMS\Modules\Messages\Contracts\MessageRepositoryInterface;
 use PaginiumCMS\Modules\Messages\Services\MessageRepository;
+use PaginiumCMS\Modules\Newsletter\Contracts\NewsletterRepositoryInterface;
 use PaginiumCMS\Modules\Navigation\Contracts\NavigationRepositoryInterface;
 use PaginiumCMS\Modules\Navigation\Services\NavigationRepository;
 use PaginiumCMS\Modules\Navigation\Services\NavigationRichFieldValidator;
@@ -301,6 +302,7 @@ return [
             get(MediaRepositoryInterface::class),
             get(CommentsRepositoryInterface::class),
             get(MessageRepositoryInterface::class),
+            get(NewsletterRepositoryInterface::class),
             get(BackupInterface::class),
             get(TrashService::class),
             get(UserRepository::class),
@@ -443,15 +445,68 @@ return [
             get(Validator::class),
             get(JsonResponder::class)
         ),
+    PaginiumCMS\Modules\Newsletter\Support\NewsletterUnsubscribeToken::class => function () {
+        $appKey = getenv('APP_KEY') ?: ($_ENV['APP_KEY'] ?? null);
+
+        return new PaginiumCMS\Modules\Newsletter\Support\NewsletterUnsubscribeToken(
+            is_string($appKey) ? $appKey : null
+        );
+    },
+    PaginiumCMS\Modules\Newsletter\Services\NewsletterLinkBuilder::class => create(PaginiumCMS\Modules\Newsletter\Services\NewsletterLinkBuilder::class)
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(PaginiumCMS\Modules\Newsletter\Support\NewsletterUnsubscribeToken::class)
+        ),
     PaginiumCMS\Modules\Newsletter\Contracts\NewsletterRepositoryInterface::class => create(PaginiumCMS\Modules\Newsletter\Services\NewsletterRepository::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class),
+            get(PaginiumCMS\Modules\Newsletter\Support\NewsletterUnsubscribeToken::class)
+        ),
+    PaginiumCMS\Modules\Newsletter\Services\NewsletterSubscribeService::class => create(PaginiumCMS\Modules\Newsletter\Services\NewsletterSubscribeService::class)
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(PaginiumCMS\Modules\Newsletter\Contracts\NewsletterRepositoryInterface::class),
+            get(PaginiumCMS\Modules\Newsletter\Services\NewsletterMailService::class),
+            get(Validator::class)
+        ),
+    PaginiumCMS\Modules\Newsletter\Services\NewsletterSendStateStore::class => create(PaginiumCMS\Modules\Newsletter\Services\NewsletterSendStateStore::class)
         ->constructor(
             get(FileReaderInterface::class),
             get(FileWriterInterface::class)
         ),
+    PaginiumCMS\Modules\Newsletter\Services\NewsletterMailService::class => create(PaginiumCMS\Modules\Newsletter\Services\NewsletterMailService::class)
+        ->constructor(
+            get(\PaginiumCMS\Core\Notification\NotificationService::class),
+            get(SettingsRepositoryInterface::class),
+            get(PaginiumCMS\Modules\Newsletter\Contracts\NewsletterRepositoryInterface::class),
+            get(\PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface::class),
+            get(PaginiumCMS\Modules\Newsletter\Services\NewsletterSendStateStore::class),
+            get(PaginiumCMS\Modules\Newsletter\Services\NewsletterLinkBuilder::class)
+        ),
+    PaginiumCMS\Modules\Newsletter\Services\NewsletterHookRegistrar::class => create(PaginiumCMS\Modules\Newsletter\Services\NewsletterHookRegistrar::class)
+        ->constructor(
+            get(HookManager::class),
+            get(PaginiumCMS\Modules\Newsletter\Services\NewsletterMailService::class)
+        ),
+    PaginiumCMS\Http\Controllers\Admin\NewsletterAdminController::class => create(PaginiumCMS\Http\Controllers\Admin\NewsletterAdminController::class)
+        ->constructor(
+            get(PaginiumCMS\Modules\Newsletter\Contracts\NewsletterRepositoryInterface::class),
+            get(PaginiumCMS\Modules\Newsletter\Services\NewsletterMailService::class),
+            get(Validator::class),
+            get(JsonResponder::class)
+        ),
+    PaginiumCMS\Http\Controllers\Newsletter\NewsletterController::class => create(PaginiumCMS\Http\Controllers\Newsletter\NewsletterController::class)
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(PaginiumCMS\Modules\Newsletter\Services\NewsletterSubscribeService::class),
+            get(PaginiumCMS\Modules\Newsletter\Contracts\NewsletterRepositoryInterface::class),
+            get(JsonResponder::class)
+        ),
     PaginiumCMS\Http\Controllers\Maintenance\MaintenanceController::class => create(PaginiumCMS\Http\Controllers\Maintenance\MaintenanceController::class)
         ->constructor(
             get(SettingsRepositoryInterface::class),
-            get(PaginiumCMS\Modules\Newsletter\Contracts\NewsletterRepositoryInterface::class),
+            get(PaginiumCMS\Modules\Newsletter\Services\NewsletterSubscribeService::class),
             get(MessageRepositoryInterface::class),
             get(Validator::class),
             get(JsonResponder::class)

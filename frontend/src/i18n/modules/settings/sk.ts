@@ -591,6 +591,54 @@ export const settingsSk: MessageTree = {
       "footerHint": {
         "label": "Text vo footeri",
         "help": "Krátky popis pod nadpisom newsletteru vo footeri."
+      },
+      "fromEmail": {
+        "label": "Odosielateľ (e-mail)",
+        "help": "Pripravené pre budúce odosielanie; fallback na SMTP nastavenia."
+      },
+      "fromName": {
+        "label": "Odosielateľ (meno)",
+        "help": "Zobrazované meno odosielateľa v e-mailoch."
+      },
+      "replyTo": {
+        "label": "Reply-To",
+        "help": "Voliteľná adresa pre odpovede na newsletter."
+      },
+      "enabledPreferences": {
+        "label": "Typy odberu vo formulári",
+        "help": "Jeden kľúč na riadok: weekly_digest, new_article, cms_release, general_news."
+      },
+      "requireConsentCheckbox": {
+        "label": "Vyžadovať súhlas (checkbox)",
+        "help": "Návštevník musí explicitne potvrdiť súhlas pred odberom."
+      },
+      "sendEnabled": {
+        "label": "Povoliť odosielanie e-mailov",
+        "help": "Master prepínač pre weekly digest a notifikácie o nových článkoch. Vyžaduje nakonfigurovaný SMTP."
+      },
+      "weeklyDigestEnabled": {
+        "label": "Týždenný digest",
+        "help": "Odosiela zhrnutie publikovaných článkov odberateľom s preferenciou weekly_digest."
+      },
+      "newArticleEnabled": {
+        "label": "Notifikácia pri novom článku",
+        "help": "Pri publikovaní článku odošle e-mail odberateľom s preferenciou new_article."
+      },
+      "instantArticleCooldownHours": {
+        "label": "Cooldown medzi instant mailmi (hodiny)",
+        "help": "Max. jeden instant mail na odberateľa za dané obdobie."
+      },
+      "sendBatchLimitPerRun": {
+        "label": "Limit odoslaní na beh",
+        "help": "Počet e-mailov odoslaných v jednom behu (cron alebo manuálne)."
+      },
+      "requireDoubleOptIn": {
+        "label": "Double opt-in (potvrdenie e-mailom)",
+        "help": "Nový odberateľ je pending, kým neklikne na potvrdzovací link v e-maili."
+      },
+      "confirmTokenTtlHours": {
+        "label": "Platnosť potvrdzovacieho linku (hodiny)",
+        "help": "Po uplynutí musí odberateľ požiadať o nový potvrdzovací e-mail."
       }
     },
     "company": {

@@ -311,14 +311,14 @@ Produkcia: paginiumcms.com (Docker PHP + host nginx, flat-file v backend/storage
 Demo: demo.paginiumcms.com (port 8091, DEMO_MODE=true, samostatný clone + stack).
 Komunikuj po slovensky. Pravidlá: .cursorrules + ZÁKONY v docs/CONTINUATION.md §2.
 
-HOTOVÉ (2026-07-27):
-- It.13 v3 ✅ demo full trial — v2.1.0-beta.10 ab5b5fb
-- ISS-102 ✅ demo storage bootstrap — health HTTP 200 (server ešte 2.0.9)
-- beta.9 ✅ scheduler, newsletter, ISS-098 CORS — ecbfe0b
-- It.61/62/33/60 ✅ v predchádzajúcich beta release
+HOTOVÉ (2026-07-28):
+- It.61 ✅ Newsletter v2 Phases 1–3 + BE↔FE wiring — v2.1.0-beta.16
+- It.63 v2 ✅ version check + ISS-104/105 — v2.1.0-beta.15
+- ISS-106/107/108 ✅ audit wave 2 (demo fail-closed, newsletter rate limit, GitHub OutboundUrlGuard)
 
 ĎALŠIA ITERÁCIA:
-- It.63 v2 — GitHub compare UI, one-click tag deploy — ITERATION_63.md post-MVP
+- It.61 Phase 4 — CMS release campaigns, preference-scoped unsubscribe (backlog)
+- It.25 — Setup wizard (odložené)
 
 PO DEPLOYI DEMO (beta.11):
 - git checkout v2.1.0-beta.11 + composer + FE build (docs/deploy/DEMO_DEPLOY.md)
@@ -328,7 +328,11 @@ PO DEPLOYI DEMO (beta.11):
 
 PROD DEPLOY (paginiumcms.com):
   cd /var/www/paginiumcms.com
-  git pull origin main && composer install --no-dev --optimize-autoloader
+  GIT_REF=v2.1.0-beta.16 APP_ROOT=/var/www/paginiumcms.com \
+    STACK_DIR=/var/lib/docker/compose/paginiumcms BACKEND_PORT=8089 \
+    ./scripts/deploy-instance-update.sh
+  # alebo manuálne:
+  git fetch && git checkout v2.1.0-beta.16 && composer install --no-dev --optimize-autoloader
   cd frontend && npm ci && npm run build:prod && cd ..
   cd /var/lib/docker/compose/paginiumcms && ./stack.sh restart php
   sleep 8 && curl -s http://127.0.0.1:8089/api/health

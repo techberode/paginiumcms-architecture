@@ -123,6 +123,9 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-103 | PHPUnit OTP/2FA flaky — lokálny `.env` (`DEMO_MODE=true`) polluluje HTTP testy | Stredná (dev/CI) | ✅ **`v2.1.0-beta.12`** — test bootstrap izolácia |
 | ISS-104 | A3-JOBDEPLOY — ADMIN obíde SUPER_ADMIN cez jobs API pri `system-deploy` | Stredná (audit) | ✅ **`v2.1.0-beta.15`** |
 | ISS-105 | A6-GEOIP — cleartext `ip-api.com` bez `OutboundUrlGuard` | Nízka (audit) | ✅ **`v2.1.0-beta.15`** |
+| ISS-106 | A8-DEMOMODE — `DEMO_MODE=true` na produkcii bez fail-closed | Nízka (audit) | ✅ **`v2.1.0-beta.16`** |
+| ISS-107 | A7-NEWSLETTER — maintenance subscribe bez honeypatu / bez dedikovaného rate limitu | Nízka (audit) | ✅ **`v2.1.0-beta.16`** |
+| ISS-108 | A9-GHSERVICE — `GitHubService` curl bez `OutboundUrlGuard` | Info (audit) | ✅ **`v2.1.0-beta.16`** |
 
 
 
@@ -2565,6 +2568,45 @@ Manuálny snapshot: admin **Demo** → **Reset demo seed**.
 **Riešenie:** HTTPS endpoint + `OutboundUrlGuard::isAllowed()` pred fetchom.
 
 **Testy:** `GeoIPServiceTest`
+
+---
+
+## ISS-106 – A8-DEMOMODE — demo režim na produkcii — VYRIEŠENÉ
+
+**Závažnosť:** Nízka / informačná (audit 2026-07-27)
+**Stav:** ✅ fix **`v2.1.0-beta.16`**
+
+**Symptóm:** `DEMO_MODE=true` s `APP_ENV=production` mohlo aktivovať demo strom, quick-login a izolované úložisko na produkčnej inštancii (ops misconfiguration).
+
+**Riešenie:** `DemoMode::isEnabledFromEnv()` fail-closed — na produkcii demo **nikdy** neaktivuje; `warnIfMisconfigured()` pri boote zapíše security warning do error logu.
+
+**Testy:** `DemoModeTest`, `DemoControllerTest`
+
+---
+
+## ISS-107 – A7-NEWSLETTER — subscribe hardening — VYRIEŠENÉ
+
+**Závažnosť:** Nízka (audit 2026-07-27)
+**Stav:** ✅ fix **`v2.1.0-beta.16`** (Newsletter v2 Phase 1)
+
+**Symptóm:** `/api/maintenance/newsletter` bez honeypotu; footer/maintenance subscribe len s globálnym rate limitom; duplicitná odpoveď odhaľovala existujúci email.
+
+**Riešenie:** `NewsletterSubscribeRateLimitMiddleware` (5/h IP, 3/deň email), honeypot na oboch endpointoch, generic success message, preference allow-list.
+
+**Testy:** `NewsletterControllerTest`, `NewsletterSubscribeRateLimitMiddleware` (via HTTP suite)
+
+---
+
+## ISS-108 – A9-GHSERVICE — GitHub content sync bez OutboundUrlGuard — VYRIEŠENÉ
+
+**Závažnosť:** Informačná (konzistencia s ISS-054 / A6)
+**Stav:** ✅ fix **`v2.1.0-beta.16`**
+
+**Symptóm:** `GitHubService::apiRequest()` volal curl priamo na `api.github.com` bez `OutboundUrlGuard` (fixný host, nízke riziko).
+
+**Riešenie:** `OutboundUrlGuard::fromEnv()->assertAllowed($url)` pred každým outbound requestom (rovnako ako `GitHubReleaseClient`).
+
+**Testy:** `GitHubServiceTest`
 
 ---
 

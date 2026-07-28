@@ -389,6 +389,54 @@ export const settingsEn: MessageTree = {
       "footerHint": {
         "label": "Footer hint text",
         "help": "Short description under the newsletter heading in the footer."
+      },
+      "fromEmail": {
+        "label": "Sender email",
+        "help": "Prepared for outbound mail; falls back to SMTP settings when empty."
+      },
+      "fromName": {
+        "label": "Sender name",
+        "help": "Display name for future newsletter emails."
+      },
+      "replyTo": {
+        "label": "Reply-To",
+        "help": "Optional address for replies to newsletter messages."
+      },
+      "enabledPreferences": {
+        "label": "Subscription types in forms",
+        "help": "One key per line: weekly_digest, new_article, cms_release, general_news."
+      },
+      "requireConsentCheckbox": {
+        "label": "Require consent checkbox",
+        "help": "Visitors must explicitly confirm consent before subscribing."
+      },
+      "sendEnabled": {
+        "label": "Enable email sending",
+        "help": "Master switch for weekly digest and new-article notifications. Requires configured SMTP/email channel."
+      },
+      "weeklyDigestEnabled": {
+        "label": "Weekly digest",
+        "help": "Sends a summary of published articles to subscribers with the weekly_digest preference."
+      },
+      "newArticleEnabled": {
+        "label": "New article notification",
+        "help": "Sends an email when an article is published to subscribers with the new_article preference."
+      },
+      "instantArticleCooldownHours": {
+        "label": "Instant mail cooldown (hours)",
+        "help": "At most one instant email per subscriber within this period."
+      },
+      "sendBatchLimitPerRun": {
+        "label": "Send limit per run",
+        "help": "Number of emails sent in one cron or manual run."
+      },
+      "requireDoubleOptIn": {
+        "label": "Double opt-in (email confirmation)",
+        "help": "New subscribers stay pending until they click the confirmation link in email."
+      },
+      "confirmTokenTtlHours": {
+        "label": "Confirmation link validity (hours)",
+        "help": "After expiry the subscriber must request a new confirmation email."
       }
     },
     "company": {

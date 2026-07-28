@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { AdminViewModeToggle } from './AdminViewModeToggle';
 import type { AdminViewMode } from '../../hooks/useAdminViewMode';
 import { useI18n } from '../../context/I18nContext';
+import { DEFAULT_PAGE_SIZE_OPTIONS } from './adminListToolbarConstants';
 
 export interface AdminStatusOption {
   value: string;
@@ -31,8 +32,6 @@ export interface AdminListToolbarProps {
   showResetFilters?: boolean;
   children?: React.ReactNode;
 }
-
-export const DEFAULT_PAGE_SIZE_OPTIONS = [5, 10, 20, 50, 100] as const;
 
 export const AdminListToolbar: React.FC<AdminListToolbarProps> = ({
   search,

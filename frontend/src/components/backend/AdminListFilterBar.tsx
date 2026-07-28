@@ -4,7 +4,7 @@
  */
 export {
   AdminListToolbar as AdminListFilterBar,
-  DEFAULT_PAGE_SIZE_OPTIONS,
   type AdminListToolbarProps as AdminListFilterBarProps,
   type AdminStatusOption,
 } from './AdminListToolbar';
+export { DEFAULT_PAGE_SIZE_OPTIONS } from './adminListToolbarConstants';

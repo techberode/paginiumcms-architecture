@@ -113,7 +113,7 @@ export const PublicSiteProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     } finally {
       setLoading(false);
     }
-  }, [settings.general?.language]);
+  }, []);
 
   useEffect(() => {
     void refresh();

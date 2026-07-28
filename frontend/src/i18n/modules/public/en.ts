@@ -50,9 +50,63 @@ export const publicEn: MessageTree = {
       placeholder: 'Your email',
       submit: 'Subscribe',
       emailRequired: 'Please enter your email.',
+      preferencesRequired: 'Select at least one subscription type.',
+      consentRequired: 'Please confirm your consent to subscribe.',
       success: 'Thank you! You have been subscribed.',
+      confirmationPending: 'Check your email and confirm your subscription.',
       failed: 'Subscription failed. Please try again later.',
     },
+  },
+  newsletter: {
+    backHome: 'Back to site',
+    confirm: {
+      loading: {
+        title: 'Confirming subscription…',
+        subtitle: 'Please wait.',
+      },
+      success: {
+        title: 'Subscription confirmed',
+        subtitle: 'Thank you! You will now receive newsletter emails.',
+      },
+      failed: {
+        title: 'Confirmation failed',
+        subtitle: 'The link is invalid or has expired.',
+      },
+      invalid: {
+        title: 'Invalid link',
+        subtitle: 'The confirmation token is missing from the URL.',
+      },
+    },
+    unsubscribe: {
+      loading: {
+        title: 'Unsubscribing…',
+        subtitle: 'Please wait.',
+      },
+      success: {
+        title: 'Unsubscribed',
+        subtitle: 'You will no longer receive newsletter emails.',
+      },
+      failed: {
+        title: 'Unsubscribe failed',
+        subtitle: 'The link is invalid.',
+      },
+      invalid: {
+        title: 'Invalid link',
+        subtitle: 'The unsubscribe token is missing from the URL.',
+      },
+    },
+    preferences: {
+      title: 'What would you like to receive?',
+      weekly_digest: 'Weekly digest',
+      weekly_digestHint: 'A summary of new content once per week.',
+      new_article: 'New articles',
+      new_articleHint: 'Notify me when a new article is published.',
+      cms_release: 'CMS releases',
+      cms_releaseHint: 'Updates about PaginiumCMS releases.',
+      general_news: 'General news',
+      general_newsHint: 'Product news and announcements.',
+    },
+    consent: 'I agree to receive newsletter emails.',
   },
   cmsBar: {
     badge: 'Paginium FlatFile Engine',
@@ -360,7 +414,10 @@ export const publicEn: MessageTree = {
       placeholder: 'Your email',
       submit: 'Subscribe',
       emailRequired: 'Enter your email',
+      preferencesRequired: 'Select at least one subscription type.',
+      consentRequired: 'Please confirm your consent to subscribe.',
       success: 'Thank you! You have been subscribed.',
+      confirmationPending: 'Check your email and confirm your subscription.',
       failed: 'Could not process the newsletter subscription.',
     },
     contact: {

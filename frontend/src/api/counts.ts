@@ -8,6 +8,8 @@ export interface AdminCounts {
   backups: number;
   comments?: number;
   messages?: number;
+  messages_unread?: number;
+  newsletter?: number;
   trash?: number;
   users?: number;
   firewall_jails?: number;

@@ -7,6 +7,8 @@ namespace PaginiumCMS\Tests\Http\Controllers\Newsletter;
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
+use PaginiumCMS\Modules\Newsletter\Support\NewsletterPreferences;
+use PaginiumCMS\Modules\Newsletter\Support\NewsletterUnsubscribeToken;
 use PaginiumCMS\Tests\Http\TestCase;
 
 final class NewsletterControllerTest extends TestCase
@@ -31,6 +33,8 @@ final class NewsletterControllerTest extends TestCase
     {
         $this->setSettingsGroup('newsletter', [
             'footerEnabled' => false,
+            'enabledPreferences' => implode("\n", NewsletterPreferences::DEFAULT_ENABLED),
+            'requireConsentCheckbox' => false,
         ]);
     }
 
@@ -50,12 +54,24 @@ final class NewsletterControllerTest extends TestCase
         return $prefix . '_' . uniqid('', true) . '@example.com';
     }
 
+    /**
+     * @param array<string, mixed> $extra
+     * @return array<string, mixed>
+     */
+    private function subscribePayload(string $email, array $extra = []): array
+    {
+        return array_merge([
+            'email' => $email,
+            'preferences' => NewsletterPreferences::DEFAULT_ENABLED,
+        ], $extra);
+    }
+
     public function testFooterSubscribeRequiresEnabledSetting(): void
     {
         $response = $this->handleRequest(
-            $this->createJsonRequest('POST', '/api/newsletter/subscribe', [
-                'email' => $this->uniqueEmail('disabled'),
-            ])
+            $this->createJsonRequest('POST', '/api/newsletter/subscribe', $this->subscribePayload(
+                $this->uniqueEmail('disabled')
+            ))
         );
 
         $this->assertSame(403, $response->getStatusCode());
@@ -69,15 +85,100 @@ final class NewsletterControllerTest extends TestCase
         ]);
 
         $response = $this->handleRequest(
-            $this->createJsonRequest('POST', '/api/newsletter/subscribe', [
-                'email' => $this->uniqueEmail('footer-user'),
-            ])
+            $this->createJsonRequest('POST', '/api/newsletter/subscribe', $this->subscribePayload(
+                $this->uniqueEmail('footer-user')
+            ))
         );
         $data = $this->getJsonResponse($response);
 
         $this->assertSame(201, $response->getStatusCode());
         $this->assertTrue($data['success']);
         $this->assertTrue($data['data']['created']);
+    }
+
+    public function testFooterSubscribeRequiresAtLeastOnePreference(): void
+    {
+        $this->setSettingsGroup('newsletter', [
+            'footerEnabled' => true,
+        ]);
+
+        $response = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/newsletter/subscribe', [
+                'email' => $this->uniqueEmail('no-prefs'),
+                'preferences' => [],
+            ])
+        );
+
+        $this->assertSame(422, $response->getStatusCode());
+    }
+
+    public function testFooterSubscribeMergesPreferencesOnDuplicate(): void
+    {
+        $this->setSettingsGroup('newsletter', [
+            'footerEnabled' => true,
+            'enabledPreferences' => implode("\n", [
+                NewsletterPreferences::WEEKLY_DIGEST,
+                NewsletterPreferences::NEW_ARTICLE,
+                NewsletterPreferences::GENERAL_NEWS,
+            ]),
+        ]);
+
+        $email = $this->uniqueEmail('merge');
+        $first = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/newsletter/subscribe', $this->subscribePayload($email, [
+                'preferences' => [NewsletterPreferences::WEEKLY_DIGEST],
+            ]))
+        );
+        $this->assertSame(201, $first->getStatusCode());
+
+        $second = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/newsletter/subscribe', $this->subscribePayload($email, [
+                'preferences' => [NewsletterPreferences::NEW_ARTICLE],
+            ]))
+        );
+        $data = $this->getJsonResponse($second);
+
+        $this->assertSame(200, $second->getStatusCode());
+        $this->assertFalse($data['data']['created']);
+        $this->assertTrue($data['data']['merged']);
+
+        $login = $this->loginAsAdminUser();
+        $this->assertSame(200, $login['response']->getStatusCode());
+
+        $list = $this->handleRequest(
+            $this->createJsonRequest('GET', '/api/admin/newsletter/subscribers')
+        );
+        $listData = $this->getJsonResponse($list);
+        $row = null;
+        foreach ($listData['data']['items'] as $item) {
+            if ($item['email'] === strtolower($email)) {
+                $row = $item;
+                break;
+            }
+        }
+
+        $this->assertNotNull($row);
+        $this->assertContains(NewsletterPreferences::WEEKLY_DIGEST, $row['preferences']);
+        $this->assertContains(NewsletterPreferences::NEW_ARTICLE, $row['preferences']);
+    }
+
+    public function testFooterSubscribeUsesGenericSuccessMessageForDuplicate(): void
+    {
+        $this->setSettingsGroup('newsletter', [
+            'footerEnabled' => true,
+        ]);
+
+        $email = $this->uniqueEmail('generic');
+        $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/newsletter/subscribe', $this->subscribePayload($email))
+        );
+
+        $second = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/newsletter/subscribe', $this->subscribePayload($email))
+        );
+        $data = $this->getJsonResponse($second);
+
+        $this->assertStringNotContainsString('already', strtolower((string) ($data['message'] ?? '')));
     }
 
     public function testFooterSubscribeDeduplicatesEmail(): void
@@ -87,7 +188,7 @@ final class NewsletterControllerTest extends TestCase
         ]);
 
         $email = $this->uniqueEmail('dup');
-        $payload = ['email' => $email];
+        $payload = $this->subscribePayload($email);
         $first = $this->handleRequest(
             $this->createJsonRequest('POST', '/api/newsletter/subscribe', $payload)
         );
@@ -110,10 +211,9 @@ final class NewsletterControllerTest extends TestCase
 
         $email = $this->uniqueEmail('bot');
         $response = $this->handleRequest(
-            $this->createJsonRequest('POST', '/api/newsletter/subscribe', [
-                'email' => $email,
+            $this->createJsonRequest('POST', '/api/newsletter/subscribe', $this->subscribePayload($email, [
                 '_hp' => 'http://spam.example',
-            ])
+            ]))
         );
         $this->assertSame(201, $response->getStatusCode());
 
@@ -135,9 +235,7 @@ final class NewsletterControllerTest extends TestCase
 
         $email = $this->uniqueEmail('admin-list');
         $this->handleRequest(
-            $this->createJsonRequest('POST', '/api/newsletter/subscribe', [
-                'email' => $email,
-            ])
+            $this->createJsonRequest('POST', '/api/newsletter/subscribe', $this->subscribePayload($email))
         );
 
         $login = $this->loginAsAdminUser();
@@ -176,10 +274,9 @@ final class NewsletterControllerTest extends TestCase
 
         $email = $this->uniqueEmail('maintenance-user');
         $this->handleRequest(
-            $this->createJsonRequest('POST', '/api/maintenance/newsletter', [
-                'email' => $email,
+            $this->createJsonRequest('POST', '/api/maintenance/newsletter', $this->subscribePayload($email, [
                 'source' => 'coming_soon',
-            ])
+            ]))
         );
 
         $response = $this->handleRequest(
@@ -190,6 +287,75 @@ final class NewsletterControllerTest extends TestCase
         $this->assertSame(200, $response->getStatusCode());
         $sources = array_column($data['data']['items'], 'source');
         $this->assertContains('coming_soon', $sources);
-        $this->assertContains($email, array_column($data['data']['items'], 'email'));
+        $this->assertContains(strtolower($email), array_column($data['data']['items'], 'email'));
+    }
+
+    public function testMaintenanceHoneypotDoesNotPersistSubscriber(): void
+    {
+        $login = $this->loginAsAdminUser();
+        $this->assertSame(200, $login['response']->getStatusCode());
+
+        $this->setSettingsGroup('maintenance', [
+            'mode' => 'coming_soon',
+            'newsletterEnabled' => true,
+        ]);
+
+        $email = $this->uniqueEmail('maintenance-bot');
+        $response = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/maintenance/newsletter', $this->subscribePayload($email, [
+                'source' => 'coming_soon',
+                '_hp' => 'filled-by-bot',
+            ]))
+        );
+        $this->assertSame(201, $response->getStatusCode());
+
+        $list = $this->handleRequest(
+            $this->createJsonRequest('GET', '/api/admin/newsletter/subscribers')
+        );
+        $data = $this->getJsonResponse($list);
+
+        $this->assertNotContains(strtolower($email), array_column($data['data']['items'], 'email'));
+    }
+
+    public function testConfirmActivatesPendingSubscriber(): void
+    {
+        $repo = $this->container()->get(\PaginiumCMS\Modules\Newsletter\Contracts\NewsletterRepositoryInterface::class);
+        $created = $repo->subscribe(
+            $this->uniqueEmail('confirm-me'),
+            'footer',
+            [NewsletterPreferences::WEEKLY_DIGEST],
+            null,
+            true
+        );
+        $this->assertTrue($created['pending']);
+        $token = (string) $created['confirmToken'];
+
+        $response = $this->handleRequest(
+            $this->createJsonRequest('GET', '/api/newsletter/confirm?token=' . urlencode($token))
+        );
+        $data = $this->getJsonResponse($response);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertTrue($data['success']);
+        $this->assertTrue($data['data']['confirmed']);
+    }
+
+    public function testUnsubscribeMarksSubscriberInactive(): void
+    {
+        $email = $this->uniqueEmail('unsub-me');
+        $repo = $this->container()->get(\PaginiumCMS\Modules\Newsletter\Contracts\NewsletterRepositoryInterface::class);
+        $created = $repo->subscribe($email, 'footer', [NewsletterPreferences::GENERAL_NEWS]);
+        $token = $this->container()
+            ->get(NewsletterUnsubscribeToken::class)
+            ->forSubscriber($created['id']);
+
+        $response = $this->handleRequest(
+            $this->createJsonRequest('GET', '/api/newsletter/unsubscribe?token=' . urlencode($token))
+        );
+        $data = $this->getJsonResponse($response);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertTrue($data['success']);
+        $this->assertTrue($data['data']['unsubscribed']);
     }
 }

@@ -7,6 +7,7 @@ namespace PaginiumCMS\Core\GitHub\Services;
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
+use PaginiumCMS\Core\Security\Services\OutboundUrlGuard;
 use PaginiumCMS\Support\JsonHelper;
 
 class GitHubService
@@ -240,6 +241,8 @@ class GitHubService
      */
     private function apiRequest(string $url, string $method = 'GET', ?array $data = null): array
     {
+        OutboundUrlGuard::fromEnv()->assertAllowed($url);
+
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_USERAGENT, 'PaginiumCMS');

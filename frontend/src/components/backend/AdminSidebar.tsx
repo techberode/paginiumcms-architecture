@@ -57,6 +57,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       media: counts.media,
       comments: counts.comments,
       messages: counts.messages,
+      newsletter: counts.newsletter,
       backups: counts.backups,
       trash: counts.trash,
       users: counts.users,
