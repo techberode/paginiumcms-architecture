@@ -358,4 +358,77 @@ final class NewsletterControllerTest extends TestCase
         $this->assertTrue($data['success']);
         $this->assertTrue($data['data']['unsubscribed']);
     }
+
+    public function testUnsubscribeSinglePreferenceKeepsSubscriberActive(): void
+    {
+        $email = $this->uniqueEmail('partial-unsub');
+        $repo = $this->container()->get(\PaginiumCMS\Modules\Newsletter\Contracts\NewsletterRepositoryInterface::class);
+        $created = $repo->subscribe($email, 'footer', [
+            NewsletterPreferences::WEEKLY_DIGEST,
+            NewsletterPreferences::GENERAL_NEWS,
+        ]);
+        $token = $this->container()
+            ->get(NewsletterUnsubscribeToken::class)
+            ->forSubscriber($created['id']);
+
+        $response = $this->handleRequest(
+            $this->createJsonRequest(
+                'GET',
+                '/api/newsletter/unsubscribe?token=' . urlencode($token)
+                    . '&preference=' . NewsletterPreferences::WEEKLY_DIGEST
+            )
+        );
+        $data = $this->getJsonResponse($response);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertTrue($data['success']);
+        $this->assertFalse($data['data']['fullyUnsubscribed']);
+
+        $items = $repo->findAll();
+        $match = array_values(array_filter($items, static fn (array $row): bool => strtolower($row['email']) === strtolower($email)));
+        $this->assertCount(1, $match);
+        $this->assertSame('active', $match[0]['status']);
+        $this->assertSame([NewsletterPreferences::GENERAL_NEWS], $match[0]['preferences']);
+    }
+
+    public function testManageGetAndUpdatePreferences(): void
+    {
+        $this->setSettingsGroup('newsletter', [
+            'enabledPreferences' => implode("\n", [
+                NewsletterPreferences::WEEKLY_DIGEST,
+                NewsletterPreferences::GENERAL_NEWS,
+                NewsletterPreferences::CMS_RELEASE,
+            ]),
+        ]);
+
+        $email = $this->uniqueEmail('manage-me');
+        $repo = $this->container()->get(\PaginiumCMS\Modules\Newsletter\Contracts\NewsletterRepositoryInterface::class);
+        $created = $repo->subscribe($email, 'footer', [NewsletterPreferences::WEEKLY_DIGEST]);
+        $token = $this->container()
+            ->get(NewsletterUnsubscribeToken::class)
+            ->forSubscriber($created['id']);
+
+        $get = $this->handleRequest(
+            $this->createJsonRequest('GET', '/api/newsletter/manage?token=' . urlencode($token))
+        );
+        $getData = $this->getJsonResponse($get);
+        $this->assertSame(200, $get->getStatusCode());
+        $this->assertTrue($getData['success']);
+        $this->assertContains(NewsletterPreferences::WEEKLY_DIGEST, $getData['data']['preferences']);
+
+        $update = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/newsletter/manage', [
+                'token' => $token,
+                'preferences' => [
+                    NewsletterPreferences::GENERAL_NEWS,
+                    NewsletterPreferences::CMS_RELEASE,
+                ],
+            ])
+        );
+        $updateData = $this->getJsonResponse($update);
+        $this->assertSame(200, $update->getStatusCode());
+        $this->assertTrue($updateData['success']);
+        $this->assertContains(NewsletterPreferences::GENERAL_NEWS, $updateData['data']['preferences']);
+        $this->assertContains(NewsletterPreferences::CMS_RELEASE, $updateData['data']['preferences']);
+    }
 }

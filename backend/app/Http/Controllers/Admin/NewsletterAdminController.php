@@ -9,6 +9,7 @@ use PaginiumCMS\Core\Validation\Validator;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Newsletter\Contracts\NewsletterRepositoryInterface;
 use PaginiumCMS\Modules\Newsletter\Services\NewsletterMailService;
+use PaginiumCMS\Support\AppVersion;
 use PaginiumCMS\Support\Lang;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -114,5 +115,63 @@ final class NewsletterAdminController
                 ? Lang::get('admin.test_sent', [], 'newsletter')
                 : Lang::get('admin.test_failed', [], 'newsletter'),
         ], $ok ? 200 : 502);
+    }
+
+    public function sendCmsRelease(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $payload = json_decode((string) $request->getBody(), true);
+        if (!is_array($payload)) {
+            return $this->json->error($response, Lang::get('invalid_payload', [], 'newsletter'), 400);
+        }
+
+        try {
+            $this->validator->validate($payload, [
+                'version' => ['string', 'max:40'],
+                'title' => ['required', 'string', 'min:2', 'max:200'],
+                'body' => ['required', 'string', 'min:2', 'max:5000'],
+                'url' => ['url', 'max:500'],
+            ]);
+        } catch (ValidationException $e) {
+            return $this->json->validation(
+                $response,
+                Lang::get('validation_failed', [], 'newsletter'),
+                $e->getErrors()
+            );
+        }
+
+        $version = trim((string) ($payload['version'] ?? AppVersion::current()));
+        $title = trim((string) ($payload['title'] ?? ''));
+        $body = trim((string) ($payload['body'] ?? ''));
+        $url = isset($payload['url']) ? trim((string) $payload['url']) : null;
+        if ($url === '') {
+            $url = null;
+        }
+
+        $result = $this->mailService->sendCmsRelease($version, $title, $body, $url);
+
+        if ($result['sent'] > 0) {
+            return $this->json->success(
+                $response,
+                $result,
+                200,
+                Lang::get('admin.cms_release_sent', [], 'newsletter')
+            );
+        }
+
+        $reason = (string) ($result['reason'] ?? 'nothing_sent');
+        $message = match ($reason) {
+            'send_disabled' => Lang::get('admin.send_disabled', [], 'newsletter'),
+            'cms_release_disabled' => Lang::get('admin.cms_release_disabled', [], 'newsletter'),
+            'email_not_configured' => Lang::get('admin.email_not_configured', [], 'newsletter'),
+            'no_subscribers' => Lang::get('admin.no_cms_release_subscribers', [], 'newsletter'),
+            'invalid_payload' => Lang::get('validation_failed', [], 'newsletter'),
+            default => Lang::get('admin.send_failed', [], 'newsletter'),
+        };
+
+        return $this->json->respond($response, [
+            'success' => false,
+            'message' => $message,
+            'data' => $result,
+        ], in_array($reason, ['no_subscribers'], true) ? 200 : 422);
     }
 }

@@ -145,6 +145,50 @@ jq . /var/www/paginiumcms.com/backend/storage/app/content/data/newsletter/subscr
 
 ---
 
+## Newsletter v2 — Phase 4 (2026-07-28)
+
+**Status:** ✅ Done (preference management + CMS release campaigns)
+
+| Area | Delivered |
+|------|-----------|
+| **Settings UX** | Newsletter group moved to **Settings → System**; editable panel on `/newsletter` |
+| **Manage preferences** | `GET/POST /api/newsletter/manage?token=` + public page `/newsletter/manage` |
+| **Preference-scoped unsubscribe** | `GET /api/newsletter/unsubscribe?token=&preference=` removes one type; full unsubscribe when none left |
+| **Mail footer** | Manage preferences + unsubscribe-all links in outbound emails |
+| **CMS release campaigns** | Setting `cmsReleaseEnabled`; `POST /api/admin/newsletter/send/cms-release` (SUPER_ADMIN) |
+| **Maintenance API** | `/api/newsletter/*` allowed during maintenance (confirm/manage/unsubscribe) |
+
+### Acceptance (Phase 4)
+
+- [x] Admin can toggle footer/send/digest/release from `/newsletter` without hunting Site settings
+- [x] Subscriber can update preferences via token link from email
+- [x] Partial unsubscribe removes one preference key only
+- [x] CMS release mail sends to active `cms_release` subscribers when enabled
+- [x] PHPUnit + iteration gate green
+
+---
+
+## Public UX — footer modal + cookie consent (2026-07-28)
+
+**Status:** ✅ Done
+
+| Area | Delivered |
+|------|-----------|
+| **Footer newsletter** | Highlighted CTA box (email + button); full signup in **modal** (`NewsletterSubscribeModal`) |
+| **Cookie banner** | Settings group `privacy` — banner on first visit; accept / reject optional / customize |
+| **Functional storage** | Theme preference (`paginium-public-theme`) written only after functional cookie consent |
+| **Footer link** | „Nastavenia cookies“ reopens consent modal after decision |
+| **Settings** | Nastavenia → Stránka → **Súkromie a cookies** |
+
+### Acceptance (UX)
+
+- [x] Footer stays compact; preferences + consent only in modal
+- [x] Cookie banner configurable (text, policy URL, reject button)
+- [x] SK/EN i18n for public cookies + footer CTA
+- [x] PHPUnit + iteration gate green
+
+---
+
 ## BE ↔ FE wiring audit (2026-07-28)
 
 **Status:** ✅ Done (`v2.1.0-beta.16`)

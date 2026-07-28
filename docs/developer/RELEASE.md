@@ -1,6 +1,7 @@
 # Release checklist — PaginiumCMS
 
-> Latest version: **2.1.0-beta.15** · 2026-07-27 · tag **`v2.1.0-beta.15`** (pending)  
+> Latest version: **2.1.0-beta.17** · 2026-07-28 · tag **`v2.1.0-beta.17`** (after push) · main  
+> Previous: **2.1.0-beta.16** · tag **`v2.1.0-beta.16`** · `d490658`  
 > This file contains **copy-paste** blocks for GitHub Release.
 
 > **Poznámka k verziám:** `2.0.58` → `f53e71e` · **Public Beta 1** → `e3e0d82` · **Beta 1 Testing** → `c68e72b` · **Beta 1 patch (RR GHSA)** → *(commit po push)*.
@@ -34,7 +35,9 @@
 | **It.63 — Admin system update (MVP)**              | `v2.1.0-beta.12` | `c9b11c8`      | ✅ tagged |
 | **It.63 hotfix — AppRoot + deploy UX**             | `v2.1.0-beta.13` | `db1cdcc`      | ✅ tagged |
 | **It.63 — Docker admin deploy bootstrap**          | `v2.1.0-beta.14` | `66e83f0`      | ✅ tagged |
-| **It.63 v2 — version check + audit fixes**       | `v2.1.0-beta.15` | ⏳ pending tag  |          |
+| **It.63 v2 — version check + audit fixes**       | `v2.1.0-beta.15` | `279bd88`      | ✅ tagged |
+| **It.61 — Newsletter v2 Phases 1–3 + BE↔FE**     | `v2.1.0-beta.16` | `baab12e`      | ✅ tagged |
+| **It.61 Phase 4 + footer modal + cookie consent** | `v2.1.0-beta.17` | *(this commit)* | pending  |
 
 
 **Pravidlo:** Post-beta patchy — `2.0.59+` alebo `2.1.0-beta.N` podľa rozsahu.
@@ -48,7 +51,101 @@ gh auth login   # ak ešte nie
 ./scripts/create-github-releases.sh
 ```
 
-Testerom / security reviewerovi poslať **`v2.1.0-beta.15`** + [SECURITY_REVIEW.md](../SECURITY_REVIEW.md).
+Testerom / security reviewerovi poslať **`v2.1.0-beta.17`** + [SECURITY_REVIEW.md](../SECURITY_REVIEW.md).
+
+---
+
+## v2.1.0-beta.17 — Newsletter Phase 4 + footer modal + cookie consent
+
+**Scope:** Preference manage/unsubscribe, CMS release campaigns, admin settings on `/newsletter`, footer subscribe modal, GDPR cookie banner.
+
+**Highlights:**
+- `GET/POST /api/newsletter/manage`, preference-scoped unsubscribe, CMS release send (SUPER_ADMIN)
+- Footer: compact CTA → modal with preferences
+- Settings → Site → **Privacy & cookies** (banner, policy URL, functional storage gate for theme)
+- Newsletter settings moved to **Settings → System**; editable panel on `/newsletter`
+
+**Deploy (production):**
+
+```bash
+APP_ROOT=/var/www/paginiumcms.com \
+STACK_DIR=/var/lib/docker/compose/paginiumcms \
+BACKEND_PORT=8089 \
+./scripts/deploy-instance-update.sh
+```
+
+**Verify:**
+
+```bash
+curl -s https://paginiumcms.com/api/health | jq -r '.data.version'   # 2.1.0-beta.17
+```
+
+**Tag (after gate green on main):**
+
+```bash
+git tag -a v2.1.0-beta.17 -m "v2.1.0-beta.17 — Newsletter Phase 4, footer modal, cookie consent"
+git push origin v2.1.0-beta.17
+```
+
+---
+
+## v2.1.0-beta.16 — Newsletter v2 (It.61 Phases 1–3) + BE↔FE wiring
+
+**Scope:** Footer/maintenance subscribe with preferences; SMTP weekly digest + new-article mail; double opt-in + unsubscribe; admin send panel; audit fixes ISS-106–108; LAN dev nginx HMR proxy.
+
+### Gate (required before tag)
+
+```bash
+./scripts/iteration-gate.sh
+```
+
+### Tag
+
+```bash
+git tag -a v2.1.0-beta.16 -m "v2.1.0-beta.16 — Newsletter v2 (Phases 1–3) + BE↔FE wiring"
+git push origin v2.1.0-beta.16
+```
+
+**Note:** Tag points at `baab12e`. Pull **`main`** (≥ `d490658`) for `AppVersion::VERSION = 2.1.0-beta.16` in `/api/health`.
+
+### GitHub Release — copy-paste
+
+**Title:** `v2.1.0-beta.16 — Newsletter v2 (subscribe, send, double opt-in, unsubscribe)`
+
+**Body highlights:**
+
+- **Phase 1** — subscriber preferences (`weekly_digest`, `new_article`, …), consent checkbox, rate limits, admin CSV + preferences column
+- **Phase 2** — `NewsletterMailService` (weekly digest cron + new-article hooks), admin send status / manual digest / test email (`SUPER_ADMIN`)
+- **Phase 3** — double opt-in (`/newsletter/confirm`), one-click unsubscribe (`/newsletter/unsubscribe`), status column (`active` / `pending` / `unsubscribed`)
+- **BE ↔ FE** — `PublicSettings.requireDoubleOptIn`, EN/SK newsletter settings i18n, sidebar subscriber count
+- **ISS-106** — `DEMO_MODE=true` on production → fail-closed + boot warning
+- **ISS-107** — dedicated newsletter subscribe rate limit + maintenance honeypot
+- **ISS-108** — `GitHubService` outbound via `OutboundUrlGuard`
+- **DX** — `docs/deploy/nginx-paginium-dev.conf` + `npm run dev:lan` (HMR on `:8081` without opening `:3025`)
+
+**Docs:** [ITERATION_61.md](../ITERATION_61.md) · [ADMIN_GUIDE.md](../user/ADMIN_GUIDE.md) · [CHANGELOG.md](../../CHANGELOG.md#210-beta16--2026-07-28)
+
+**Production deploy:**
+
+```bash
+cd /var/www/paginiumcms.com
+git fetch origin --tags && git pull origin main   # includes d490658 AppVersion
+# or: git checkout v2.1.0-beta.16 && git cherry-pick d490658
+APP_ROOT=/var/www/paginiumcms.com \
+  STACK_DIR=/var/lib/docker/compose/paginiumcms \
+  BACKEND_PORT=8089 \
+  GIT_REF=origin/main \
+  ./scripts/deploy-instance-update.sh
+curl -s http://127.0.0.1:8089/api/health | jq '.data.version'
+# expected: 2.1.0-beta.16
+```
+
+**Smoke (newsletter):**
+
+1. Settings → Newsletter → enable footer + preferences; optional double opt-in.
+2. Public footer → subscribe → admin **Newsletter → Odberatelia** (status + source).
+3. SUPER_ADMIN → weekly digest test / send status panel.
+4. Confirm link `/newsletter/confirm?token=…` and unsubscribe from mail footer.
 
 ---
 

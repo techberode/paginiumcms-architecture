@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { screen } from '@testing-library/react';
+import { screen, fireEvent } from '@testing-library/react';
 import { FooterNewsletter } from './FooterNewsletter';
 import { renderWithRouter } from '../../test/renderWithRouter';
 
@@ -26,6 +26,7 @@ vi.mock('../../context/SettingsContext', async (importOriginal) => {
         newsletter: {
           footerEnabled: true,
           footerHint: 'Custom hint from settings',
+          enabledPreferences: ['weekly_digest', 'general_news'],
         },
       },
       loading: false,
@@ -36,12 +37,17 @@ vi.mock('../../context/SettingsContext', async (importOriginal) => {
 });
 
 describe('FooterNewsletter', () => {
-  it('renders signup form when footer newsletter is enabled', () => {
+  it('renders compact CTA and opens modal on subscribe click', () => {
     renderWithRouter(<FooterNewsletter />);
 
     expect(screen.getByText('Newsletter')).toBeInTheDocument();
     expect(screen.getByText('Custom hint from settings')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Váš e-mail')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Prihlásiť sa' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Prihlásiť sa/i })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /Prihlásiť sa/i }));
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByText('Odber noviniek')).toBeInTheDocument();
   });
 });

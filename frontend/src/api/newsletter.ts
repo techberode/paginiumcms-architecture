@@ -27,6 +27,7 @@ export interface NewsletterSendStatus {
   sendEnabled: boolean;
   weeklyDigestEnabled: boolean;
   newArticleEnabled: boolean;
+  cmsReleaseEnabled: boolean;
   lastWeeklyDigestAt: string | null;
 }
 
@@ -76,14 +77,65 @@ export async function confirmNewsletterSubscription(
   };
 }
 
-export async function unsubscribeNewsletter(token: string): Promise<{ ok: boolean; message?: string }> {
-  const res = await apiClient.get<{ unsubscribed: boolean }>(
-    `/api/newsletter/unsubscribe?token=${encodeURIComponent(token)}`
+export async function unsubscribeNewsletter(
+  token: string,
+  preference?: NewsletterPreferenceKey
+): Promise<{ ok: boolean; message?: string; fullyUnsubscribed?: boolean }> {
+  const query = new URLSearchParams({ token });
+  if (preference) {
+    query.set('preference', preference);
+  }
+
+  const res = await apiClient.get<{ unsubscribed: boolean; fullyUnsubscribed?: boolean }>(
+    `/api/newsletter/unsubscribe?${query.toString()}`
   );
 
   return {
     ok: res.success === true,
     message: res.message ?? res.error,
+    fullyUnsubscribed: res.data?.fullyUnsubscribed,
+  };
+}
+
+export interface NewsletterManageData {
+  emailMasked: string;
+  preferences: NewsletterPreferenceKey[];
+  status: string;
+  enabledPreferences: NewsletterPreferenceKey[];
+  requireConsentCheckbox: boolean;
+}
+
+export async function fetchNewsletterManage(
+  token: string
+): Promise<{ ok: boolean; message?: string; data?: NewsletterManageData }> {
+  const res = await apiClient.get<NewsletterManageData>(
+    `/api/newsletter/manage?token=${encodeURIComponent(token)}`
+  );
+
+  return {
+    ok: res.success === true,
+    message: res.message ?? res.error,
+    data: res.data ?? undefined,
+  };
+}
+
+export async function updateNewsletterManage(
+  token: string,
+  preferences: NewsletterPreferenceKey[]
+): Promise<{
+  ok: boolean;
+  message?: string;
+  data?: { preferences: NewsletterPreferenceKey[]; status: string };
+}> {
+  const res = await apiClient.post<{ preferences: NewsletterPreferenceKey[]; status: string }>(
+    '/api/newsletter/manage',
+    { token, preferences }
+  );
+
+  return {
+    ok: res.success === true,
+    message: res.message ?? res.error,
+    data: res.data ?? undefined,
   };
 }
 
@@ -124,5 +176,23 @@ export async function sendNewsletterTestEmail(email: string): Promise<{ ok: bool
   return {
     ok: res.success === true,
     message: res.message ?? res.error,
+  };
+}
+
+export interface CmsReleasePayload {
+  version?: string;
+  title: string;
+  body: string;
+  url?: string;
+}
+
+export async function sendNewsletterCmsRelease(
+  payload: CmsReleasePayload
+): Promise<{ ok: boolean; message?: string; data?: NewsletterSendResult }> {
+  const res = await apiClient.post<NewsletterSendResult>('/api/admin/newsletter/send/cms-release', payload);
+  return {
+    ok: res.success === true,
+    message: res.message ?? res.error,
+    data: res.data ?? undefined,
   };
 }

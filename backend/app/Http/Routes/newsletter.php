@@ -31,6 +31,12 @@ return function (App $app): void {
     $app->get('/api/newsletter/unsubscribe', [$public, 'unsubscribe'])
         ->add($tokenRateLimit);
 
+    $app->get('/api/newsletter/manage', [$public, 'manageGet'])
+        ->add($tokenRateLimit);
+
+    $app->post('/api/newsletter/manage', [$public, 'manageUpdate'])
+        ->add($tokenRateLimit);
+
     $app->group('/api/admin/newsletter', function (RouteCollectorProxy $group) use ($admin) {
         $group->get('/subscribers', [$admin, 'listSubscribers']);
         $group->get('/subscribers/export', [$admin, 'exportSubscribers']);
@@ -42,6 +48,7 @@ return function (App $app): void {
     $app->group('/api/admin/newsletter/send', function (RouteCollectorProxy $group) use ($admin) {
         $group->post('/weekly-digest', [$admin, 'sendWeeklyDigestNow']);
         $group->post('/test', [$admin, 'sendTest']);
+        $group->post('/cms-release', [$admin, 'sendCmsRelease']);
     })->add(new RoleMiddleware($authz, ['SUPER_ADMIN']))
         ->add($container->get(TwoFactorMiddleware::class))
         ->add($auth);

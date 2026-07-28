@@ -35,6 +35,7 @@ final class NewsletterMailService
      *     sendEnabled: bool,
      *     weeklyDigestEnabled: bool,
      *     newArticleEnabled: bool,
+     *     cmsReleaseEnabled: bool,
      *     lastWeeklyDigestAt: ?string
      * }
      */
@@ -47,6 +48,7 @@ final class NewsletterMailService
             'sendEnabled' => ($newsletter['sendEnabled'] ?? false) === true,
             'weeklyDigestEnabled' => ($newsletter['weeklyDigestEnabled'] ?? false) === true,
             'newArticleEnabled' => ($newsletter['newArticleEnabled'] ?? false) === true,
+            'cmsReleaseEnabled' => ($newsletter['cmsReleaseEnabled'] ?? false) === true,
             'lastWeeklyDigestAt' => $this->sendState->lastWeeklyDigestAt(),
         ];
     }
@@ -88,6 +90,44 @@ final class NewsletterMailService
         }
 
         return $result;
+    }
+
+    /**
+     * @return array{sent: int, failed: int, skipped: int, reason?: string}
+     */
+    public function sendCmsRelease(string $version, string $title, string $body, ?string $url = null): array
+    {
+        $newsletter = $this->settings->group('newsletter');
+        if (($newsletter['sendEnabled'] ?? false) !== true) {
+            return ['sent' => 0, 'failed' => 0, 'skipped' => 0, 'reason' => 'send_disabled'];
+        }
+        if (($newsletter['cmsReleaseEnabled'] ?? false) !== true) {
+            return ['sent' => 0, 'failed' => 0, 'skipped' => 0, 'reason' => 'cms_release_disabled'];
+        }
+        if (!$this->isEmailConfigured()) {
+            return ['sent' => 0, 'failed' => 0, 'skipped' => 0, 'reason' => 'email_not_configured'];
+        }
+
+        $version = trim($version);
+        $title = trim($title);
+        $body = trim($body);
+        if ($version === '' || $title === '') {
+            return ['sent' => 0, 'failed' => 0, 'skipped' => 0, 'reason' => 'invalid_payload'];
+        }
+
+        $recipients = $this->subscribers->findActiveByPreference(NewsletterPreferences::CMS_RELEASE);
+        if ($recipients === []) {
+            return ['sent' => 0, 'failed' => 0, 'skipped' => 0, 'reason' => 'no_subscribers'];
+        }
+
+        $siteName = $this->siteName();
+        $subject = Lang::get('mail.cms_release_subject', [
+            'site' => $siteName,
+            'version' => $version,
+        ], 'newsletter');
+        $html = $this->buildCmsReleaseHtml($version, $title, $body, $url, $siteName);
+
+        return $this->sendBatch($recipients, $subject, $html, (int) ($newsletter['sendBatchLimitPerRun'] ?? 50));
     }
 
     /**
@@ -264,13 +304,23 @@ final class NewsletterMailService
             return $html;
         }
 
-        $url = htmlspecialchars(
+        $manageUrl = htmlspecialchars(
+            $this->links->manageUrlForSubscriber($subscriberId),
+            ENT_QUOTES,
+            'UTF-8'
+        );
+        $manageLabel = htmlspecialchars(
+            Lang::get('mail.manage_link', [], 'newsletter'),
+            ENT_QUOTES,
+            'UTF-8'
+        );
+        $allUrl = htmlspecialchars(
             $this->links->unsubscribeUrlForSubscriber($subscriberId),
             ENT_QUOTES,
             'UTF-8'
         );
-        $label = htmlspecialchars(
-            Lang::get('mail.unsubscribe_link', [], 'newsletter'),
+        $allLabel = htmlspecialchars(
+            Lang::get('mail.unsubscribe_all_link', [], 'newsletter'),
             ENT_QUOTES,
             'UTF-8'
         );
@@ -278,7 +328,9 @@ final class NewsletterMailService
         return $html
             . '<hr style="margin-top:24px;border:none;border-top:1px solid #ddd;">'
             . '<p style="font-size:12px;color:#666;">'
-            . '<a href="' . $url . '">' . $label . '</a>'
+            . '<a href="' . $manageUrl . '">' . $manageLabel . '</a>'
+            . ' · '
+            . '<a href="' . $allUrl . '">' . $allLabel . '</a>'
             . '</p>';
     }
 
@@ -353,6 +405,35 @@ final class NewsletterMailService
         return '<p>' . $intro . '</p>'
             . '<p><a href="' . $url . '"><strong>' . $title . '</strong></a></p>'
             . '<p>' . $excerpt . '</p>';
+    }
+
+    private function buildCmsReleaseHtml(
+        string $version,
+        string $title,
+        string $body,
+        ?string $url,
+        string $siteName
+    ): string {
+        $safeVersion = htmlspecialchars($version, ENT_QUOTES, 'UTF-8');
+        $safeTitle = htmlspecialchars($title, ENT_QUOTES, 'UTF-8');
+        $intro = htmlspecialchars(
+            Lang::get('mail.cms_release_intro', ['site' => $siteName, 'version' => $version], 'newsletter'),
+            ENT_QUOTES,
+            'UTF-8'
+        );
+        $safeBody = nl2br(htmlspecialchars($body, ENT_QUOTES, 'UTF-8'));
+        $html = '<p>' . $intro . '</p>'
+            . '<p><strong>' . $safeVersion . ' — ' . $safeTitle . '</strong></p>'
+            . '<p>' . $safeBody . '</p>';
+
+        $link = trim((string) $url);
+        if ($link !== '') {
+            $safeUrl = htmlspecialchars($link, ENT_QUOTES, 'UTF-8');
+            $button = htmlspecialchars(Lang::get('mail.cms_release_button', [], 'newsletter'), ENT_QUOTES, 'UTF-8');
+            $html .= '<p><a href="' . $safeUrl . '"><strong>' . $button . '</strong></a></p>';
+        }
+
+        return $html;
     }
 
     private function articleUrl(Article $article): string

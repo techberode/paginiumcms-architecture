@@ -273,7 +273,9 @@ Plánované zálohy: **Plánovač** alebo cron `backup:run-schedule`.
 
 **Newsletter odberatelia — admin prehľad:**
 
-Admin → **Newsletter** (`/newsletter`) — tabuľka odberateľov (footer + maintenance), KPI podľa zdroja, CSV export, **panel odosielania** (stav SMTP / prepínačov). Nastavenia → **Newsletter** — `footerEnabled`, preference types, **`sendEnabled`**, weekly digest / new-article toggles, batch limit, cooldown.
+Admin → **Newsletter** (`/newsletter`) — **nastavenia odberu** (prepínače priamo v module), tabuľka odberateľov, CSV export, odosielanie digestu / CMS release kampaní. Plná schéma: Nastavenia → **Systém** → **Newsletter**.
+
+**Subscriber self-service:** e-mail footer link **Manage preferences** → `/newsletter/manage?token=…` (update types) or partial unsubscribe via `?preference=` on unsubscribe URL.
 
 **SUPER_ADMIN** can trigger **Send weekly digest now** and **Send test email** from the admin panel. Scheduled digest runs via system job `newsletter-weekly-digest` (default Mon 09:00).
 
@@ -288,7 +290,20 @@ backend/storage/app/content/data/newsletter/send-state.json
 
 Records: `email`, `subscribedAt`, `source` (`footer` | `maintenance`), `preferences[]`, `status` (`active` | `pending` | `unsubscribed`).
 
-**Phase 4 backlog:** CMS release campaigns, preference-scoped unsubscribe.
+**CMS release campaigns (Phase 4):** enable `cmsReleaseEnabled`, then SUPER_ADMIN → Newsletter → **Send release campaign** (version, title, body, optional URL) → mails subscribers with `cms_release` preference.
+
+**Public footer newsletter (modal UX):** enable `footerEnabled` — visitors see a compact highlighted CTA in the footer (email field + **Subscribe**). Clicking opens a **modal** with preference checkboxes and optional consent (not the full form inline in the footer).
+
+### Privacy & cookies (`Settings → Site → Privacy & cookies`)
+
+| Setting | Purpose |
+|---------|---------|
+| **Show cookie banner** | GDPR consent bar on first visit |
+| **Banner text** | Custom message |
+| **Cookie / privacy policy URL** | Link to your policy page |
+| **Show “Reject optional” button** | Allow rejecting non-essential cookies |
+
+Categories in the settings modal: **Necessary** (always on), **Functional** (e.g. light/dark theme in browser), **Analytics** (reserved for future). After consent, visitors can reopen settings via **Cookie settings** in the footer.
 
 Detail: [ITERATION_61.md](../ITERATION_61.md) · incidenty [ISSUES.md § ISS-095–098](../ISSUES.md).
 

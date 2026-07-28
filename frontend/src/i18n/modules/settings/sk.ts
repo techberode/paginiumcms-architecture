@@ -78,6 +78,7 @@ export const settingsSk: MessageTree = {
     "contact": "Kontaktný formulár",
     "newsletter": "Newsletter",
     "company": "Firemné údaje",
+    "privacy": "Súkromie a cookies",
     "workflows": "Workflow OTP",
     "ui": "Admin UI",
     "security": "Bezpečnosť",
@@ -624,6 +625,10 @@ export const settingsSk: MessageTree = {
         "label": "Notifikácia pri novom článku",
         "help": "Pri publikovaní článku odošle e-mail odberateľom s preferenciou new_article."
       },
+      "cmsReleaseEnabled": {
+        "label": "Kampane o vydaniach CMS",
+        "help": "Povolí manuálne odoslanie oznámenia o verzii odberateľom s preferenciou cms_release."
+      },
       "instantArticleCooldownHours": {
         "label": "Cooldown medzi instant mailmi (hodiny)",
         "help": "Max. jeden instant mail na odberateľa za dané obdobie."
@@ -764,6 +769,23 @@ export const settingsSk: MessageTree = {
         "uploadAlt": "Branding upload",
         "invalidType": "Nepodporovaný typ súboru",
         "uploadFailed": "Upload zlyhal"
+      }
+    },
+    "privacy": {
+      "cookieBannerEnabled": {
+        "label": "Zobraziť cookie lištu",
+        "help": "Zapnuté = pri prvej návšteve sa zobrazí súhlas s cookies (GDPR)."
+      },
+      "cookieBannerText": {
+        "label": "Text cookie lišty"
+      },
+      "cookiePolicyUrl": {
+        "label": "URL zásad cookies / GDPR",
+        "help": "Voliteľný odkaz na stránku so zásadami ochrany súkromia."
+      },
+      "cookieShowRejectButton": {
+        "label": "Tlačidlo „Odmietnuť voliteľné“",
+        "help": "Zapnuté = návštevník môže odmietnuť voliteľné cookies okrem technicky nutných."
       }
     },
     "login": {

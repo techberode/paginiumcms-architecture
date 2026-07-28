@@ -251,6 +251,7 @@ final class SettingsController
                 'allowCustomSubject' => (bool) ($all['contact']['allowCustomSubject'] ?? true),
             ],
             'newsletter' => $this->publicNewsletterSettings($all['newsletter'] ?? []),
+            'privacy' => $this->publicPrivacySettings($all['privacy'] ?? []),
             'company' => [
                 'showOnContactPage' => (bool) ($all['company']['showOnContactPage'] ?? true),
                 'name' => (string) ($all['company']['name'] ?? ''),
@@ -428,6 +429,24 @@ final class SettingsController
             ),
             'requireDoubleOptIn' => (bool) (
                 $newsletter['requireDoubleOptIn'] ?? $defaults['requireDoubleOptIn'] ?? false
+            ),
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $privacy
+     * @return array<string, mixed>
+     */
+    private function publicPrivacySettings(array $privacy): array
+    {
+        $defaults = SettingsSchema::defaults()['privacy'] ?? [];
+
+        return [
+            'cookieBannerEnabled' => (bool) ($privacy['cookieBannerEnabled'] ?? $defaults['cookieBannerEnabled'] ?? false),
+            'cookieBannerText' => (string) ($privacy['cookieBannerText'] ?? $defaults['cookieBannerText'] ?? ''),
+            'cookiePolicyUrl' => (string) ($privacy['cookiePolicyUrl'] ?? $defaults['cookiePolicyUrl'] ?? ''),
+            'cookieShowRejectButton' => (bool) (
+                $privacy['cookieShowRejectButton'] ?? $defaults['cookieShowRejectButton'] ?? true
             ),
         ];
     }

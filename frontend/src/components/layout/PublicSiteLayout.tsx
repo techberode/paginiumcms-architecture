@@ -13,6 +13,8 @@ import { useAuth } from '../../hooks/useAuth';
 import { useSeoMeta } from '../../hooks/useSeoMeta';
 import { DemoPublicStrip } from '../frontend/DemoPublicStrip';
 import { MaintenanceGate } from '../maintenance/MaintenanceGate';
+import { CookieConsentProvider } from '../../context/CookieConsentContext';
+import { CookieConsentBanner } from '../frontend/CookieConsentBanner';
 import { BTN_PRIMARY, PUBLIC_SPINNER } from '../../theme/publicUiClasses';
 
 const ADMIN_PREFIXES = [
@@ -166,6 +168,7 @@ export const PublicSiteLayout: React.FC = () => {
 
   return (
     <MaintenanceGate>
+      <CookieConsentProvider>
       <div className="min-h-screen flex flex-col bg-theme-surface text-theme-text transition-colors">
       <DemoPublicStrip />
       {showCmsBar && <CMSBar currentDoc={currentDoc} />}
@@ -174,12 +177,14 @@ export const PublicSiteLayout: React.FC = () => {
         <Outlet />
       </div>
       <Footer />
+      <CookieConsentBanner />
       <SiteSearchModal
         isOpen={searchOpen}
         onClose={() => setSearchOpen(false)}
         onSelectRoute={(path) => navigate(path)}
       />
       </div>
+      </CookieConsentProvider>
     </MaintenanceGate>
   );
 };
