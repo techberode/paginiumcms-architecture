@@ -62,6 +62,7 @@ export const publicEn: MessageTree = {
       failed: 'Subscription failed. Please try again later.',
     },
     cookieSettings: 'Cookie settings',
+    socialTitle: 'Follow us',
     socialAria: 'Social networks',
   },
   cookies: {
