@@ -184,6 +184,67 @@
     color: var(--color-accent);
   }
 
+  .public-footer-social-link {
+    color: color-mix(in srgb, var(--color-surface-elevated) 92%, var(--color-accent));
+    background: color-mix(in srgb, var(--color-surface-elevated) 14%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-surface-elevated) 32%, transparent);
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--color-text) 18%, transparent);
+  }
+
+  .public-footer-social-link:hover {
+    color: var(--color-accent);
+    background: color-mix(in srgb, var(--color-accent) 22%, transparent);
+    border-color: color-mix(in srgb, var(--color-accent) 50%, transparent);
+  }
+
+  .public-footer-social-link:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 55%, transparent);
+  }
+
+  /* Cookie consent — contrast on any page background / color scheme */
+  .public-cookie-banner {
+    background: color-mix(in srgb, var(--color-surface-elevated) 94%, var(--color-primary));
+    border-top-color: color-mix(in srgb, var(--color-border) 80%, var(--color-primary));
+    color: var(--color-text);
+    box-shadow:
+      0 -4px 24px color-mix(in srgb, var(--color-text) 12%, transparent),
+      0 -1px 0 color-mix(in srgb, var(--color-primary) 25%, transparent);
+  }
+
+  .public-cookie-btn-secondary {
+    color: var(--color-text);
+    background: color-mix(in srgb, var(--color-surface) 88%, var(--color-surface-elevated));
+    border: 1px solid color-mix(in srgb, var(--color-border) 90%, var(--color-text-muted));
+  }
+
+  .public-cookie-btn-secondary:hover {
+    background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface-elevated));
+    border-color: color-mix(in srgb, var(--color-primary) 35%, var(--color-border));
+    color: var(--color-text);
+  }
+
+  .public-cookie-panel {
+    background: color-mix(in srgb, var(--color-surface-elevated) 96%, var(--color-primary));
+    border-color: color-mix(in srgb, var(--color-border) 85%, var(--color-primary));
+    box-shadow: 0 24px 48px color-mix(in srgb, var(--color-text) 18%, transparent);
+  }
+
+  .public-cookie-chip {
+    background: color-mix(in srgb, var(--color-surface) 75%, var(--color-surface-elevated));
+    border-color: color-mix(in srgb, var(--color-border) 80%, var(--color-text-muted));
+  }
+
+  .public-footer-cookie-link {
+    color: color-mix(in srgb, var(--color-surface-elevated) 88%, var(--color-accent));
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .public-footer-cookie-link:hover {
+    color: var(--color-accent);
+  }
+
   .public-hero {
     background: linear-gradient(
       to bottom,

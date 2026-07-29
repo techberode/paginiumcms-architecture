@@ -41,14 +41,14 @@ export const CookieConsentBanner: React.FC = () => {
     <>
       {showBanner ? (
         <div
-          className="fixed inset-x-0 bottom-0 z-[70] border-t border-theme-border bg-theme-surface-elevated/95 backdrop-blur-md shadow-2xl"
+          className="public-cookie-banner fixed inset-x-0 bottom-0 z-[70] border-t backdrop-blur-md"
           role="dialog"
           aria-live="polite"
           aria-label={t('public.cookies.bannerLabel')}
         >
           <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <div className="flex items-start gap-3 min-w-0">
-              <Cookie className="mt-0.5 h-5 w-5 shrink-0 text-theme-primary" />
+              <Cookie className="mt-0.5 h-5 w-5 shrink-0 text-theme-accent" />
               <div className="min-w-0">
                 <p className="text-sm text-theme-text leading-relaxed">{text}</p>
                 {policyUrl ? (
@@ -67,7 +67,7 @@ export const CookieConsentBanner: React.FC = () => {
               <button
                 type="button"
                 onClick={openSettings}
-                className="inline-flex items-center gap-1 rounded-xl border border-theme-border px-3 py-2 text-xs font-semibold text-theme-text hover:bg-theme-surface"
+                className="public-cookie-btn-secondary inline-flex items-center gap-1 rounded-xl px-3 py-2 text-xs font-semibold"
               >
                 <Settings2 className="h-3.5 w-3.5" />
                 {t('public.cookies.settings')}
@@ -76,7 +76,7 @@ export const CookieConsentBanner: React.FC = () => {
                 <button
                   type="button"
                   onClick={rejectOptional}
-                  className="rounded-xl border border-theme-border px-3 py-2 text-xs font-semibold text-theme-text hover:bg-theme-surface"
+                  className="public-cookie-btn-secondary rounded-xl px-3 py-2 text-xs font-semibold"
                 >
                   {t('public.cookies.reject')}
                 </button>
@@ -100,7 +100,7 @@ export const CookieConsentBanner: React.FC = () => {
           role="presentation"
         >
           <div
-            className="w-full max-w-md rounded-2xl border border-theme-border bg-theme-surface-elevated shadow-2xl"
+            className="public-cookie-panel w-full max-w-md rounded-2xl border shadow-2xl"
             onClick={(event) => event.stopPropagation()}
             role="dialog"
             aria-modal="true"
@@ -121,13 +121,13 @@ export const CookieConsentBanner: React.FC = () => {
             </div>
 
             <div className="space-y-3 px-5 py-4 text-sm">
-              <div className="rounded-xl border border-theme-border bg-theme-surface/60 p-3">
+              <div className="public-cookie-chip rounded-xl border p-3">
                 <p className="font-semibold text-theme-text">{t('public.cookies.necessaryTitle')}</p>
                 <p className="mt-1 text-xs text-theme-text-muted">{t('public.cookies.necessaryHint')}</p>
                 <p className="mt-2 text-xs font-medium text-emerald-500">{t('public.cookies.alwaysOn')}</p>
               </div>
 
-              <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-theme-border bg-theme-surface/60 p-3">
+              <label className="public-cookie-chip flex cursor-pointer items-start gap-3 rounded-xl border p-3">
                 <input
                   type="checkbox"
                   className="mt-0.5"
@@ -162,7 +162,7 @@ export const CookieConsentBanner: React.FC = () => {
               <button
                 type="button"
                 onClick={closeSettings}
-                className="rounded-xl border border-theme-border px-4 py-2 text-xs font-semibold text-theme-text hover:bg-theme-surface"
+                className="public-cookie-btn-secondary rounded-xl px-4 py-2 text-xs font-semibold"
               >
                 {t('public.cookies.cancel')}
               </button>

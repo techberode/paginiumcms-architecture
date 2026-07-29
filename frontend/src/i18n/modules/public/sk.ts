@@ -62,6 +62,7 @@ export const publicSk: MessageTree = {
       failed: 'Prihlásenie zlyhalo. Skúste to neskôr.',
     },
     cookieSettings: 'Nastavenia cookies',
+    socialTitle: 'Sociálne siete',
     socialAria: 'Sociálne siete',
   },
   cookies: {

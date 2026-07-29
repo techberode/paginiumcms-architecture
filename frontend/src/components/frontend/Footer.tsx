@@ -40,6 +40,7 @@ export const Footer: React.FC = () => {
                 <ShieldCheck className="w-3.5 h-3.5" /> {t('public.footer.secureBadge')}
               </span>
             </div>
+            <FooterSocialLinks className="mt-6" />
           </div>
 
           <div>
@@ -105,26 +106,23 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col gap-6">
-          <FooterSocialLinks />
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs opacity-70">
+        <div className="mt-12 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs opacity-70">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <span>{footerText}</span>
             {cookieConsent?.bannerEnabled && cookieConsent.decided ? (
               <button
                 type="button"
                 onClick={cookieConsent.openSettings}
-                className="font-medium text-theme-accent hover:underline"
+                className="public-footer-cookie-link font-medium"
               >
                 {t('public.footer.cookieSettings')}
               </button>
             ) : null}
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 shrink-0">
             <span>{t('public.footer.madeWith')}</span>
             <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />
             <span>{t('public.footer.forCreators')}</span>
-          </div>
           </div>
         </div>
       </div>
