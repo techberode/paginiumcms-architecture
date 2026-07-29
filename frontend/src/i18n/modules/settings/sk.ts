@@ -77,6 +77,7 @@ export const settingsSk: MessageTree = {
     "comments": "Komentáre",
     "contact": "Kontaktný formulár",
     "newsletter": "Newsletter",
+    "marketing": "Marketing a sociálne siete",
     "company": "Firemné údaje",
     "privacy": "Súkromie a cookies",
     "workflows": "Workflow OTP",
@@ -146,6 +147,35 @@ export const settingsSk: MessageTree = {
       "monoZinc": {
         "name": "Mono Zinc",
         "description": "Zinc neutrals + accent — editorial, minimal, portfólio."
+      }
+    }
+  },
+  "marketing": {
+    "social": {
+      "title": "Sociálne siete vo footeri",
+      "description": "Pridajte ikony s odkazmi na propagáciu projektu (GitHub, X, LinkedIn, …). Max. 12 položiek.",
+      "platform": "Platforma",
+      "url": "URL",
+      "email": "E-mailová adresa",
+      "label": "Popis pre čítačku",
+      "enabled": "Zobraziť vo footeri",
+      "add": "Pridať odkaz",
+      "remove": "Odstrániť odkaz",
+      "moveUp": "Posunúť hore",
+      "moveDown": "Posunúť dole",
+      "platforms": {
+        "github": "GitHub",
+        "gitlab": "GitLab",
+        "twitter": "X / Twitter",
+        "facebook": "Facebook",
+        "instagram": "Instagram",
+        "linkedin": "LinkedIn",
+        "youtube": "YouTube",
+        "mastodon": "Mastodon",
+        "discord": "Discord",
+        "website": "Web",
+        "email": "E-mail",
+        "rss": "RSS kanál"
       }
     }
   },
@@ -582,6 +612,24 @@ export const settingsSk: MessageTree = {
       "allowCustomSubject": {
         "label": "Povoliť vlastný predmet",
         "help": "Návštevník môže zvoliť „Vlastný predmet“ a napísať vlastný text."
+      }
+    },
+    "marketing": {
+      "demoFooterLinkEnabled": {
+        "label": "Zobraziť odkaz na demo vo footeri",
+        "help": "Len produkcia — odkaz na verejnú demo inštanciu."
+      },
+      "demoUrl": {
+        "label": "URL demo inštancie",
+        "help": "Cieľ odkazu „Vyskúšajte CMS“ vo footeri."
+      },
+      "socialLinksEnabled": {
+        "label": "Zobraziť sociálne siete vo footeri",
+        "help": "Riadok ikon v pätičke verejného webu (GitHub, X, …)."
+      },
+      "socialLinksJson": {
+        "label": "Sociálne siete (JSON)",
+        "help": "Spravované vizuálnym editorom nižšie."
       }
     },
     "newsletter": {

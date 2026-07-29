@@ -84,6 +84,16 @@ const DEFAULT_PUBLIC: PublicSettings = {
   demo: {
     enabled: false,
   },
+  social: {
+    enabled: true,
+    links: [
+      {
+        platform: 'github',
+        url: 'https://github.com/techberode/paginiumcms-architecture',
+        label: 'GitHub',
+      },
+    ],
+  },
 };
 
 interface SettingsContextType {

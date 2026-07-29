@@ -203,7 +203,9 @@ Pre **prihláseného** používateľa:
 
 ### Marketing (prod only)
 
-**Nastavenia → Marketing** — URL demo inštancie a zapnutie footer odkazu „Vyskúšajte CMS“ (`paginiumcms.com` → `demo.paginiumcms.com` v novom tabe).
+**Settings → Site → Marketing & social** — demo footer link (`demoFooterLinkEnabled`, `demoUrl`) and **footer social icons** (GitHub, X, LinkedIn, …). Each link: platform (icon), URL or e-mail, accessible label, show/hide, order (max 12). Toggle master switch **Show social links in footer**. Default preset includes the PaginiumCMS GitHub repo when empty.
+
+Public footer shows circular icon buttons above the copyright row. External links follow **Admin UI → open links in new tab** when enabled.
 
 Detail: [ITERATION_13.md](../ITERATION_13.md) · deploy: [deploy/DEMO_DEPLOY.md](../deploy/DEMO_DEPLOY.md)
 

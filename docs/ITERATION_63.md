@@ -59,6 +59,17 @@ This is **code deploy** (git tag / `main`), not content sync (`/github` panel).
 - Auto-enqueues `system-deploy` job; idempotent skip when same tag recently succeeded
 - Exempt from CSRF; allowed during maintenance mode; WAF body-scan exempt
 
+### v4 ⏳ deferred → [Iteration 25](ITERATION_25.md) (pre-Final 1.0)
+
+End-user **Grav-like** polish (not beta scope):
+
+- Dashboard “update available” banner + primary **Update now** CTA
+- Setup wizard step for GitHub token / deploy enable / permissions checklist
+- Human-readable deploy progress; webhook + manual ref under Advanced/Ops
+- Optional pre-update backup prompt
+
+Technical deploy engine stays in It.63; UX and onboarding move to It.25 as a **late pre-Final gate**.
+
 ## Production enable checklist
 
 1. Settings → **System update** — GitHub token (`public_repo`), enable `deployEnabled`

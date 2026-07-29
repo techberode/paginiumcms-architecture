@@ -54,6 +54,7 @@ final class CsrfMiddleware implements MiddlewareInterface
         '/api/auth/sso',
         '/api/contact',
         '/api/newsletter',
+        '/api/analytics/pageview',
         '/api/maintenance',
         '/api/comments',
         '/api/debug/client-event',

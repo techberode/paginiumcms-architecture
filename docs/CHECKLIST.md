@@ -1,10 +1,11 @@
 # PaginiumCMS – API, Frontend & Feature Checklist
 
-**Last updated:** 2026-07-23 (release **2.0.57**)  
-**Version:** 2.0.57  
-**Architecture docs:** [architecture/](architecture/) · CI incidents: [ISSUES.md](ISSUES.md) ISS-015–022
+**Last updated:** 2026-07-29 (release **`v2.1.0-beta.18`**)  
+**Version:** 2.1.0-beta.18  
+**Living overview (implemented vs planned):** **[FEATURE_OVERVIEW.md](FEATURE_OVERVIEW.md)** ← prefer for beta+ status  
+**Architecture docs:** [architecture/](architecture/) · CI incidents: [ISSUES.md](ISSUES.md)
 
-Single source of truth: čo existuje v backend API, čo React admin SPA používa, stav oproti pôvodnému prototypu (`screenshots/`).
+Detailed API/FE wiring matrix (2.0.x baseline). For beta features (newsletter, system update, demo, cookie consent) see **FEATURE_OVERVIEW.md**.
 
 ---
 
@@ -227,6 +228,7 @@ cd frontend && npm run lint && npm run type-check && npm test
 
 ## Súvisiace dokumenty
 
+- **[FEATURE_OVERVIEW.md](FEATURE_OVERVIEW.md)** — implemented vs planned (beta.18)
 - [architecture/API.md](architecture/API.md) · [API_CONTRACT.md](architecture/API_CONTRACT.md)
 - [architecture/BACKEND.md](architecture/BACKEND.md) · [CORE.md](architecture/CORE.md)
 - [user/FIREWALL.md](user/FIREWALL.md) · [user/LOGGING.md](user/LOGGING.md)

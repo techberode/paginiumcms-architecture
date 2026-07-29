@@ -53,4 +53,11 @@ export const analyticsSk: MessageTree = {
     tablet: 'Tablet',
     unknown: 'Neznáme',
   },
+  empty: {
+    noData: 'Zatiaľ žiadne dáta. Navštívte verejný web, aby sa začali zaznamenávať zobrazenia.',
+    noPages: 'V tomto období žiadne zobrazenia stránok.',
+    noSources: 'Zatiaľ žiadne zdroje návštevnosti.',
+    noGeo: 'Zatiaľ žiadne geografické dáta.',
+  },
+  homeLabel: 'Domov',
 };

@@ -3,11 +3,11 @@
 > Plánované moduly a rozšírenia po **Iterácii 28 (2.0.16)**.  
 > Legenda: ⏳ plánované · 🟡 stredná priorita · 🔵 nižšia · 🔴 kritická
 
-**Aktuálne hotové:** It.1–24 ✅ · It.26–28 ✅ · **It.13 v3** ✅ · **It.61** ✅ · **It.62** ✅ · It.25 ⏳ (setup wizard — odložené)
+**Aktuálne hotové:** It.1–24 ✅ · It.26–28 ✅ · **It.13 v3** ✅ · **It.61** ✅ · **It.62** ✅ · **It.63 v2/v3** ✅ · It.25 ⏳ (pre-Final gate)
 
-**Posledná shipped:** **It.61 Phase 5 + It.63 v2** · **`v2.1.0-beta.18`**
+**Posledná shipped:** **It.64 + Analytics SPA beacon** · **`v2.1.0-beta.19`**
 
-**Ďalšia iterácia:** **It.63 v3** — GitHub release webhook — [ITERATION_63.md](ITERATION_63.md#v3)
+**Ďalšia iterácia:** beta tester feedback + **It.65 Feature gallery** (screenshots) · It.58 layout builder · **It.25 až pred Final 1.0** — [ITERATION_25.md](ITERATION_25.md)
 
 **Incidenty a opravy:** [ISSUES.md](ISSUES.md)
 
@@ -17,7 +17,8 @@
 
 | It. | Verzia | Názov | Priorita | Poznámka |
 |-----|--------|-------|----------|----------|
-| 25 | TBD | [Setup wizard](ITERATION_25.md) | 🟡 | Odložené — téma cez Settings |
+| 25 | pre-1.0 | [Setup wizard + one-click updates](ITERATION_25.md) | 🟡 | **Posledné kroky pred Final** — onboarding + Grav-like update UX (engine: It.63 ✅) |
+| **65** | TBD | **[Feature gallery — admin screenshots](ITERATION_65.md)** | **🟡** | Slider + modal + flat-file items; Phase 1 grid/MVP → Phase 2 effects |
 | 26 | 2.0.14 | [Media preview + binárny hotfix](ITERATION_26.md) | ✅ | Lightbox + strict formats |
 | **27** | **2.0.15** | **[Admin view modes + SEO panel](ITERATION_27.md)** | **✅** | List / list+preview / grid + SEO UX + metadata modal |
 | **28** | **2.0.16** | **[Bulk actions platform](ITERATION_28.md)** | **✅** | Shared bulk bar + batch APIs |
@@ -41,7 +42,7 @@
 | **61** | **`v2.1.0-beta.18`** | **[Newsletter vo footeri](ITERATION_61.md)** | **✅** | Phases 1–5 (inline email footer); A/C modes backlog |
 | **13v3** | **`v2.1.0-beta.10`** | **[Demo modul — full trial](ITERATION_13.md)** | **✅** | Rich seed, public strip, marketing settings |
 | **13v4** | **`v2.1.0-beta.11`** | **[Demo modul — security polish](ITERATION_13.md)** | **✅** | S-DEMOCREDS, quick-login, editor fix, nav UX |
-| **63** | **`v2.1.0-beta.18`** | **[Admin system update](ITERATION_63.md)** | **✅** | MVP + v2 compare UI + deploy latest tag; v3 webhook ⏳ |
+| **63** | **`v2.1.0-beta.18`** | **[Admin system update](ITERATION_63.md)** | **✅** | MVP + v2 compare + v3 webhook; v4 UX → It.25 pre-Final |
 | **15** | **2.0.38** | **[External plugins](ITERATION_15.md)** | **✅** | Import ZIP, registry, hooks, routes, admin UI |
 | **47** | TBD | **[Notification connector auth](ITERATION_47.md)** | **✅** | ntfy Bearer/Basic + test-connector |
 | **48** | TBD | **[PHP templates + static/dynamic web](ITERATION_48.md)** | **🟡** | Front matter šablóny, JSON/INI meta, static HTML |

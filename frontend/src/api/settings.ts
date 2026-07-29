@@ -170,6 +170,10 @@ export interface PublicSettings {
     showFooterLink?: boolean;
     autoResetMinutes?: number | null;
   };
+  social?: {
+    enabled?: boolean;
+    links?: Array<{ platform: string; url: string; label: string }>;
+  };
   login?: {
     pageTitle?: string;
     pageDescription?: string;

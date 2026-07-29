@@ -77,6 +77,7 @@ export const settingsEn: MessageTree = {
     "comments": "Comments",
     "contact": "Contact form",
     "newsletter": "Newsletter",
+    "marketing": "Marketing & social",
     "company": "Company details",
     "privacy": "Privacy & cookies",
     "workflows": "Workflow OTP",
@@ -146,6 +147,35 @@ export const settingsEn: MessageTree = {
       "monoZinc": {
         "name": "Mono Zinc",
         "description": "Zinc neutrals + accent — editorial, minimal, portfolio."
+      }
+    }
+  },
+  "marketing": {
+    "social": {
+      "title": "Footer social links",
+      "description": "Add icons with links for project promotion (GitHub, X, LinkedIn, …). Up to 12 entries.",
+      "platform": "Platform",
+      "url": "URL",
+      "email": "Email address",
+      "label": "Accessible label",
+      "enabled": "Show in footer",
+      "add": "Add link",
+      "remove": "Remove link",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "platforms": {
+        "github": "GitHub",
+        "gitlab": "GitLab",
+        "twitter": "X / Twitter",
+        "facebook": "Facebook",
+        "instagram": "Instagram",
+        "linkedin": "LinkedIn",
+        "youtube": "YouTube",
+        "mastodon": "Mastodon",
+        "discord": "Discord",
+        "website": "Website",
+        "email": "Email",
+        "rss": "RSS feed"
       }
     }
   },
@@ -380,6 +410,24 @@ export const settingsEn: MessageTree = {
       "allowCustomSubject": {
         "label": "Allow custom subject",
         "help": "Visitors can choose “Custom subject” and enter their own text."
+      }
+    },
+    "marketing": {
+      "demoFooterLinkEnabled": {
+        "label": "Show demo link in footer",
+        "help": "Production only — links to the public demo instance."
+      },
+      "demoUrl": {
+        "label": "Demo instance URL",
+        "help": "Target URL for the “Try the CMS” footer block."
+      },
+      "socialLinksEnabled": {
+        "label": "Show social links in footer",
+        "help": "Icon row in the public footer (GitHub, X, …)."
+      },
+      "socialLinksJson": {
+        "label": "Social links (JSON)",
+        "help": "Managed by the visual editor below."
       }
     },
     "newsletter": {

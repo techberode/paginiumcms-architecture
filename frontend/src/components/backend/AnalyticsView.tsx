@@ -43,9 +43,9 @@ function formatDuration(seconds: number): string {
   return rest > 0 ? `${minutes}m ${rest}s` : `${minutes}m`;
 }
 
-function humanizeUri(uri: string): string {
+function humanizeUri(uri: string, homeLabel: string): string {
   if (uri === '/' || uri === '') {
-    return 'Domov';
+    return homeLabel;
   }
   const slug = uri.split('/').filter(Boolean).pop() ?? uri;
   return slug.replace(/[-_]/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
@@ -112,6 +112,7 @@ export const AnalyticsView: React.FC = () => {
 
   const overview = payload?.overview;
   const deviceTotalCount = deviceTotal(payload?.devices);
+  const homeLabel = t('analytics.homeLabel');
 
   const tabs = useMemo(
     () =>
@@ -256,14 +257,17 @@ export const AnalyticsView: React.FC = () => {
                     {t('analytics.sections.topPages')}
                   </h3>
                   <div className="space-y-2">
-                    {(payload?.top_pages ?? []).slice(0, 5).map((page, index) => (
+                    {(payload?.top_pages ?? []).length === 0 ? (
+                      <p className="text-sm text-slate-500 py-4">{t('analytics.empty.noPages')}</p>
+                    ) : (
+                      (payload?.top_pages ?? []).slice(0, 5).map((page, index) => (
                       <div
                         key={page.uri}
                         className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-3"
                       >
                         <div className="min-w-0">
                           <div className="font-semibold text-slate-900 dark:text-white truncate">
-                            {humanizeUri(page.uri)}
+                            {humanizeUri(page.uri, homeLabel)}
                           </div>
                           <div className="text-xs text-slate-500 truncate">{page.uri}</div>
                         </div>
@@ -271,7 +275,8 @@ export const AnalyticsView: React.FC = () => {
                           {index + 1}. {page.views}
                         </div>
                       </div>
-                    ))}
+                    ))
+                    )}
                   </div>
                 </div>
                 <div>
@@ -314,15 +319,19 @@ export const AnalyticsView: React.FC = () => {
                   {t('analytics.sections.topPages')}
                 </h3>
                 <div className="space-y-2">
-                  {(payload?.top_pages ?? []).map((page, index) => (
+                  {(payload?.top_pages ?? []).length === 0 ? (
+                    <p className="text-sm text-slate-500 py-4">{t('analytics.empty.noPages')}</p>
+                  ) : (
+                    (payload?.top_pages ?? []).map((page, index) => (
                     <div key={page.uri} className="flex items-center justify-between rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-3">
                       <div>
-                        <div className="font-semibold">{humanizeUri(page.uri)}</div>
+                        <div className="font-semibold">{humanizeUri(page.uri, homeLabel)}</div>
                         <div className="text-xs text-slate-500">{page.uri}</div>
                       </div>
                       <span className="font-black text-indigo-600">{index + 1}. {page.views}</span>
                     </div>
-                  ))}
+                  ))
+                  )}
                 </div>
               </div>
               <div>
@@ -346,7 +355,10 @@ export const AnalyticsView: React.FC = () => {
 
           {tab === 'sources' && (
             <div className="space-y-2">
-              {(payload?.top_referers ?? []).map((source, index) => (
+              {(payload?.top_referers ?? []).length === 0 ? (
+                <p className="text-sm text-slate-500 py-4">{t('analytics.empty.noSources')}</p>
+              ) : (
+                (payload?.top_referers ?? []).map((source, index) => (
                 <div key={`${source.referer}-${index}`} className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-3">
                   <div className="min-w-0">
                     <div className="inline-flex items-center gap-2 font-semibold truncate">
@@ -364,7 +376,8 @@ export const AnalyticsView: React.FC = () => {
                   </div>
                   <span className="font-black text-indigo-600 shrink-0">{source.visits}</span>
                 </div>
-              ))}
+              ))
+              )}
             </div>
           )}
 
@@ -402,7 +415,10 @@ export const AnalyticsView: React.FC = () => {
                 <h3 className="text-sm font-black uppercase tracking-wider text-slate-500 mb-3">
                   {t('analytics.sections.geoSummary')}
                 </h3>
-                {(payload?.geo ?? []).map((entry) => (
+                {(payload?.geo ?? []).length === 0 ? (
+                  <p className="text-sm text-slate-500 py-4">{t('analytics.empty.noGeo')}</p>
+                ) : (
+                  (payload?.geo ?? []).map((entry) => (
                   <div key={`${entry.country}-${entry.countryCode ?? 'xx'}`} className="rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-3">
                     <div className="flex items-center justify-between gap-3">
                       <span className="inline-flex items-center gap-2 font-semibold">
@@ -420,13 +436,17 @@ export const AnalyticsView: React.FC = () => {
                       </div>
                     )}
                   </div>
-                ))}
+                ))
+                )}
               </div>
               <div className="space-y-2">
                 <h3 className="text-sm font-black uppercase tracking-wider text-slate-500 mb-3">
                   {t('analytics.sections.recentGeoVisits')}
                 </h3>
-                {(payload?.geo_visits ?? []).map((visit, index) => (
+                {(payload?.geo_visits ?? []).length === 0 ? (
+                  <p className="text-sm text-slate-500 py-4">{t('analytics.empty.noGeo')}</p>
+                ) : (
+                  (payload?.geo_visits ?? []).map((visit, index) => (
                   <div key={`${visit.timestamp}-${index}`} className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-3">
                     <div className="min-w-0">
                       <div className="inline-flex items-center gap-2 font-semibold">
@@ -440,7 +460,8 @@ export const AnalyticsView: React.FC = () => {
                       <div className="text-xs font-mono text-slate-500">{visit.ip_masked}</div>
                     </div>
                   </div>
-                ))}
+                ))
+                )}
               </div>
             </div>
           )}

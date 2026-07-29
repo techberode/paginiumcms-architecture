@@ -37,7 +37,7 @@ class Tracker implements TrackerInterface
 
     public function track(Visit $visit): void
     {
-        if (in_array($visit->getIp(), $this->excludeIps, true)) {
+        if ($this->shouldExcludeIp($visit->getIp())) {
             return;
         }
 
@@ -50,6 +50,21 @@ class Tracker implements TrackerInterface
         $this->saveVisit($visit);
         $this->updateVisitor($visit);
         $this->updateDailyStats($visit);
+    }
+
+    private function shouldExcludeIp(string $ip): bool
+    {
+        if (!in_array($ip, $this->excludeIps, true)) {
+            return false;
+        }
+
+        if (filter_var(getenv('ANALYTICS_TRACK_LOCALHOST') ?: 'false', FILTER_VALIDATE_BOOL)) {
+            return false;
+        }
+
+        $appEnv = getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? 'production');
+
+        return !in_array($appEnv, ['development', 'local', 'testing'], true);
     }
 
     public function getVisitor(string $visitorId): ?Visitor
@@ -194,7 +209,18 @@ class Tracker implements TrackerInterface
         $stats['date'] = $date;
         $stats['visits'] = ($stats['visits'] ?? 0) + 1;
         $stats['page_views'] = ($stats['page_views'] ?? 0) + 1;
-        $stats['unique_visitors'] = ($stats['unique_visitors'] ?? 0) + 1;
+
+        $visitorId = $visit->getVisitorId();
+        /** @var list<string> $knownVisitors */
+        $knownVisitors = is_array($stats['visitor_ids'] ?? null) ? $stats['visitor_ids'] : [];
+        if ($visitorId !== '' && !in_array($visitorId, $knownVisitors, true)) {
+            $knownVisitors[] = $visitorId;
+            if (count($knownVisitors) > 5000) {
+                $knownVisitors = array_slice($knownVisitors, -5000);
+            }
+            $stats['visitor_ids'] = $knownVisitors;
+            $stats['unique_visitors'] = count($knownVisitors);
+        }
 
         $this->writer->write($relativePath, JsonHelper::encode($stats), false);
     }

@@ -35,7 +35,7 @@ Legenda: ✅ hotové · 🚧 rozpracované · ⏳ plánované · 🔴 kritická 
 | **47**   | **[Notification connector auth](ITERATION_47.md)**            | **⏳ ntfy token / test**              |
 | **48**   | **[PHP templates + static/dynamic web](ITERATION_48.md)**     | **⏳ static HTML + admin toggle**     |
 | **49**   | **[Unified cache (file + Redis)](ITERATION_49.md)**           | **⏳ hosting-aware prepínač**         |
-| 25       | Setup wizard (profil webu)                                    | ⏳ odložené                           |
+| 25       | Setup wizard + one-click updates (pre-Final gate)             | ⏳ po beta testovaní                  |
 | 30+      | [Backlog modulov](ITERATION_BACKLOG.md)                       | ⏳                                    |
 | 6–7      | Notifikácie, dashboard                                        | ✅ It.6 · ✅ It.7                      |
 | 8–10     | DAM, SEO, feedy                                               | 🟢                                   |

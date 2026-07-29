@@ -53,4 +53,11 @@ export const analyticsEn: MessageTree = {
     tablet: 'Tablet',
     unknown: 'Unknown',
   },
+  empty: {
+    noData: 'No analytics data yet. Visit the public site to record page views.',
+    noPages: 'No page views in this period.',
+    noSources: 'No traffic sources recorded yet.',
+    noGeo: 'No geographic data yet.',
+  },
+  homeLabel: 'Home',
 };

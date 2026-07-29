@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 /**
  * backend/app/Http/Routes/analytics.php
- * Admin analytics reports (Iteration 6).
+ * Admin analytics reports (Iteration 6) + public SPA pageview beacon.
  */
 
 use PaginiumCMS\Http\Controllers\Admin\AnalyticsController;
+use PaginiumCMS\Http\Controllers\Analytics\AnalyticsPageviewController;
+use PaginiumCMS\Http\Middleware\AnalyticsPageviewRateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\AuthMiddleware;
 use PaginiumCMS\Http\Middleware\RoleMiddleware;
 use PaginiumCMS\Http\Middleware\TwoFactorMiddleware;
@@ -18,6 +20,10 @@ use PaginiumCMS\Http\Support\RouteBootstrap;
 
 return function (App $app): void {
     $container = RouteBootstrap::container($app);
+
+    $pageview = $container->get(AnalyticsPageviewController::class);
+    $app->post('/api/analytics/pageview', [$pageview, 'track'])
+        ->add($container->get(AnalyticsPageviewRateLimitMiddleware::class));
 
     $app->group('/api/admin/analytics', function (RouteCollectorProxy $group) use ($container) {
         $controller = $container->get(AnalyticsController::class);

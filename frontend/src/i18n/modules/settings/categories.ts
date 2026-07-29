@@ -34,7 +34,7 @@ export const SETTINGS_CATEGORIES: SettingsCategoryDef[] = [
     id: 'site',
     labelKey: 'settings.categories.site.label',
     descriptionKey: 'settings.categories.site.description',
-    groups: ['branding', 'appearance', 'content', 'editor', 'seo', 'feeds', 'comments', 'contact', 'company', 'privacy', 'login'],
+    groups: ['branding', 'appearance', 'content', 'editor', 'seo', 'feeds', 'comments', 'contact', 'company', 'marketing', 'privacy', 'login'],
   },
   {
     id: 'media',

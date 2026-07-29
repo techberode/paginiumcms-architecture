@@ -1,6 +1,7 @@
 // frontend/src/components/dashboard/AnalyticsChart.tsx
 import React, { useMemo } from 'react';
 import { ChartPoint } from '../../api/analytics';
+import { useI18n } from '../../context/I18nContext';
 
 interface AnalyticsChartProps {
   data: ChartPoint[];
@@ -8,6 +9,8 @@ interface AnalyticsChartProps {
 }
 
 export const AnalyticsChart: React.FC<AnalyticsChartProps> = ({ data, loading }) => {
+  const { t } = useI18n();
+  const hasActivity = useMemo(() => data.some((point) => point.visits > 0), [data]);
   const maxVisits = useMemo(
     () => Math.max(1, ...data.map((point) => point.visits)),
     [data]
@@ -21,8 +24,12 @@ export const AnalyticsChart: React.FC<AnalyticsChartProps> = ({ data, loading })
     );
   }
 
-  if (data.length === 0) {
-    return <p className="text-sm text-gray-500 dark:text-gray-400 py-6 text-center">No analytics data yet.</p>;
+  if (data.length === 0 || !hasActivity) {
+    return (
+      <p className="text-sm text-gray-500 dark:text-gray-400 py-6 text-center">
+        {t('analytics.empty.noData')}
+      </p>
+    );
   }
 
   return (
