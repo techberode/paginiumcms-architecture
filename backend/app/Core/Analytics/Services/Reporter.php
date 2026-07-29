@@ -42,7 +42,7 @@ final class Reporter implements ReporterInterface
             'visits' => (int) ($stats['visits'] ?? 0),
             'page_views' => (int) ($stats['page_views'] ?? 0),
             'unique_visitors' => $this->countUniqueVisitors($visits),
-            'bounce_rate' => (float) ($stats['bounce_rate'] ?? 0),
+            'bounce_rate' => $this->calculateBounceRate($visits),
             'avg_duration_seconds' => $avgDuration,
             'realtime_visitors' => count($realtime),
         ];
@@ -443,7 +443,7 @@ final class Reporter implements ReporterInterface
             'visits' => count($visits),
             'page_views' => count($visits),
             'unique_visitors' => $this->countUniqueVisitors($visits),
-            'bounce_rate' => 0.0,
+            'bounce_rate' => $this->calculateBounceRate($visits),
             'avg_duration_seconds' => $this->averageDuration($visits),
             'realtime_visitors' => count($this->tracker->getRealtimeVisitors()),
         ];
@@ -482,5 +482,34 @@ final class Reporter implements ReporterInterface
         }
 
         return $count > 0 ? (int) round($total / $count) : 0;
+    }
+
+    /**
+     * @param list<array<string, mixed>> $visits
+     */
+    private function calculateBounceRate(array $visits): float
+    {
+        /** @var array<string, int> $counts */
+        $counts = [];
+        foreach ($visits as $visit) {
+            $visitorId = (string) ($visit['visitorId'] ?? '');
+            if ($visitorId === '') {
+                continue;
+            }
+            $counts[$visitorId] = ($counts[$visitorId] ?? 0) + 1;
+        }
+
+        if ($counts === []) {
+            return 0.0;
+        }
+
+        $bounces = 0;
+        foreach ($counts as $count) {
+            if ($count === 1) {
+                ++$bounces;
+            }
+        }
+
+        return round(($bounces / count($counts)) * 100, 1);
     }
 }

@@ -16,6 +16,7 @@ use PaginiumCMS\Modules\Demo\Data\DemoFixtures;
 use PaginiumCMS\Modules\Demo\Services\DemoMode;
 use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
 use PaginiumCMS\Modules\Security\Models\User;
+use PaginiumCMS\Core\Settings\Services\SocialLinksNormalizer;
 use PaginiumCMS\Modules\Security\PermissionCatalog;
 use PaginiumCMS\Modules\Security\Services\AccessControlSyncService;
 use PaginiumCMS\Support\AppVersion;
@@ -143,6 +144,15 @@ final class SettingsController
             }
         }
 
+        if ($group === 'marketing' && array_key_exists('socialLinksJson', $payload)) {
+            try {
+                $normalized = SocialLinksNormalizer::normalizeJson((string) $payload['socialLinksJson']);
+                $payload['socialLinksJson'] = SocialLinksNormalizer::encode($normalized);
+            } catch (InvalidArgumentException $e) {
+                return $this->json->error($response, $e->getMessage(), 422);
+            }
+        }
+
         try {
             $values = $this->settings->setGroup($group, $payload);
         } catch (InvalidArgumentException $e) {
@@ -241,6 +251,7 @@ final class SettingsController
                 'passwordRequireSpecialChars' => (bool) ($all['security']['passwordRequireSpecialChars'] ?? true),
             ],
             'demo' => $this->publicDemoSettings($all['marketing'] ?? []),
+            'social' => $this->publicSocialSettings($all['marketing'] ?? []),
             'comments' => [
                 'enabled' => (bool) ($all['comments']['enabled'] ?? true),
                 'requireApproval' => (bool) ($all['comments']['requireApproval'] ?? true),
@@ -407,6 +418,26 @@ final class SettingsController
             'url' => $demoUrl,
             'showFooterLink' => (bool) ($marketing['demoFooterLinkEnabled'] ?? $defaults['demoFooterLinkEnabled'] ?? true),
             'autoResetMinutes' => null,
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $marketing
+     * @return array{enabled: bool, links: list<array{platform: string, url: string, label: string}>}
+     */
+    private function publicSocialSettings(array $marketing): array
+    {
+        $defaults = SettingsSchema::defaults()['marketing'] ?? [];
+        $enabled = (bool) ($marketing['socialLinksEnabled'] ?? $defaults['socialLinksEnabled'] ?? true);
+        $raw = trim((string) ($marketing['socialLinksJson'] ?? ''));
+
+        if ($raw === '') {
+            $raw = SocialLinksNormalizer::encode(SocialLinksNormalizer::defaults());
+        }
+
+        return [
+            'enabled' => $enabled,
+            'links' => SocialLinksNormalizer::publicLinks($raw, $enabled),
         ];
     }
 

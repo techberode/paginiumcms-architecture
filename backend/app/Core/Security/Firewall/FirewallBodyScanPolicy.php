@@ -18,6 +18,7 @@ final class FirewallBodyScanPolicy
         '/api/drafts',
         '/api/admin/code-editor',
         '/api/webhooks/',
+        '/api/analytics/pageview',
     ];
 
     public function shouldScan(string $method, string $uriPath, bool $enabledInSettings): bool

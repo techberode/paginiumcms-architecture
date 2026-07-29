@@ -91,6 +91,9 @@ php backend/bin/console monitoring:run-schedule
 
 | Symptom | Fix |
 |--------|-----|
+| **502 on `http://192.168.10.26:8081/`** but `/api/health` OK | nginx dev upstream points to wrong Vite host — use `192.168.10.20:3025` in `paginium_vite_dev`, run `npm run dev:lan` on `.20` |
+| **502 on `/api/*` via LAN nginx** | PHP bound to `localhost:8080` only — use `php -S 0.0.0.0:8080` in `backend/public` |
+| **Network Error** (login / API v admin) | `frontend/.env` má `VITE_API_URL` na iný host než SPA v prehliadači → nechaj prázdne; reštart `npm run dev:lan`. Pri `:8081` musí ísť `/api` cez nginx, nie priamo na `:8080`. |
 | API returns HTML in browser | Use Vite dev server (3025), not `file://` or static `dist/` without nginx |
 | 401 on admin after login | Check session cookies; proxy must forward credentials |
 | Odhlásenie počas editácie / pri uložení | Reštart PHP po deployi. `.env`: `SESSION_LIFETIME=28800`, `SESSION_STRICT=false`. `SESSION_USE_STRICT_MODE` ≠ `SESSION_STRICT` (prvé = PHP ini, druhé = IP binding). Minimum lifetime v kóde je 300 s. |
@@ -110,7 +113,7 @@ Ready-made configs for the split setup (SPA + PHP API proxy on one nginx host):
 | Mode | Config | Frontend source | Hot reload |
 |------|--------|-----------------|------------|
 | **Prod-like** (static) | [`nginx-paginium-test.conf`](./nginx-paginium-test.conf) | `dist/` via [`deploy-frontend-lan.sh`](../../scripts/deploy-frontend-lan.sh) | No — rebuild + rsync |
-| **Dev proxy** (HMR) | [`nginx-paginium-dev.conf`](./nginx-paginium-dev.conf) | Vite on `127.0.0.1:3025` | Yes — edit & save |
+| **Dev proxy** (HMR) | [`nginx-paginium-dev.conf`](./nginx-paginium-dev.conf) | Vite on dev workstation `192.168.10.20:3025` | Yes — edit & save |
 
 ### A) Static test (no Vite) — `:8081` serves built `dist/`
 
@@ -122,16 +125,18 @@ DEPLOY_HOST=192.168.x.x DEPLOY_USER=yourName DEPLOY_SSH_PORT=22 ./scripts/deploy
 
 ### B) Dev proxy — `:8081` with hot reload (no manual `:3025` in browser)
 
-**Goal:** Open only `http://192.168.10.26:8081/` while Vite runs in the background.
+**Topology (split dev):** nginx on `192.168.10.26:8081` → PHP `192.168.10.20:8080` + Vite `192.168.10.20:3025`. Both dev processes run on your workstation (`.20`), not on the nginx host.
 
-1. **Start Vite once** (pick one):
+**Goal:** Open only `http://192.168.10.26:8081/` while Vite + PHP run on `.20`.
+
+1. **Start PHP + Vite on the dev workstation** (`192.168.10.20`):
 
    ```bash
-   # From repo on the nginx host:
-   cd frontend && npm run dev:lan
+   # terminal 1 — must bind LAN, not 127.0.0.1 only (nginx on .26 must reach :8080)
+   cd backend/public && php -S 0.0.0.0:8080
 
-   # Or Docker (same machine):
-   docker compose --profile dev up -d frontend
+   # terminal 2 — HMR through nginx :8081
+   cd frontend && npm run dev:lan
    ```
 
 2. **Enable dev nginx** (on `192.168.10.26`):

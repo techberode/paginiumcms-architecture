@@ -242,10 +242,12 @@ final class SettingsSchema
                 ],
             ],
             'marketing' => [
-                'label' => 'Marketing & demo odkaz',
+                'label' => 'Marketing & sociálne siete',
                 'fields' => [
                     ['key' => 'demoFooterLinkEnabled', 'type' => 'bool', 'label' => 'Zobraziť odkaz na demo vo footeri', 'default' => true, 'rules' => ['bool'], 'help' => 'Platí len na produkčnej inštancii (DEMO_MODE=false). Na demo subdoméne sa nezobrazuje duplicitný odkaz.'],
                     ['key' => 'demoUrl', 'type' => 'url', 'label' => 'URL demo inštancie', 'default' => 'https://demo.paginiumcms.com', 'rules' => ['string', 'max:500'], 'help' => 'Cieľ footer odkazu „Vyskúšajte CMS“. Fallback: env DEMO_PUBLIC_URL.'],
+                    ['key' => 'socialLinksEnabled', 'type' => 'bool', 'label' => 'Zobraziť sociálne siete vo footeri', 'default' => true, 'rules' => ['bool'], 'help' => 'Ikony s odkazmi (GitHub, X, …) v spodnej časti verejného webu.'],
+                    ['key' => 'socialLinksJson', 'type' => 'text', 'label' => 'Sociálne siete (JSON)', 'default' => '', 'rules' => ['string', 'max:8000'], 'help' => 'Spravované vizuálnym editorom nižšie. Ukladá sa normalizovaný JSON.'],
                 ],
             ],
             'company' => [

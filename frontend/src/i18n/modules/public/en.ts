@@ -62,6 +62,7 @@ export const publicEn: MessageTree = {
       failed: 'Subscription failed. Please try again later.',
     },
     cookieSettings: 'Cookie settings',
+    socialAria: 'Social networks',
   },
   cookies: {
     bannerLabel: 'Cookie consent',
@@ -78,7 +79,7 @@ export const publicEn: MessageTree = {
     functionalTitle: 'Functional',
     functionalHint: 'Stores appearance preferences (light/dark mode) in your browser.',
     analyticsTitle: 'Analytics',
-    analyticsHint: 'Reserved for future visit analytics (currently inactive).',
+    analyticsHint: 'Counts anonymous page views when you accept analytics cookies.',
     cancel: 'Cancel',
     save: 'Save selection',
   },

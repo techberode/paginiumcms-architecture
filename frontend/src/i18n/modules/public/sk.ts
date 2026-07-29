@@ -62,6 +62,7 @@ export const publicSk: MessageTree = {
       failed: 'Prihlásenie zlyhalo. Skúste to neskôr.',
     },
     cookieSettings: 'Nastavenia cookies',
+    socialAria: 'Sociálne siete',
   },
   cookies: {
     bannerLabel: 'Súhlas s cookies',
@@ -78,7 +79,7 @@ export const publicSk: MessageTree = {
     functionalTitle: 'Funkčné',
     functionalHint: 'Uloženie preferencií vzhľadu (svetlý/tmavý režim) v prehliadači.',
     analyticsTitle: 'Analytické',
-    analyticsHint: 'Pripravené pre budúce meranie návštevnosti (momentálne neaktívne).',
+    analyticsHint: 'Po súhlase so súbormi cookie sa anonymne počítajú zobrazenia stránok.',
     cancel: 'Zrušiť',
     save: 'Uložiť výber',
   },

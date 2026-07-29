@@ -26,11 +26,11 @@ class Visit implements JsonSerializable
     public function __construct()
     {
         $this->id = uniqid('visit_', true);
-        $this->visitorId = $this->generateVisitorId();
         $this->sessionId = session_id() ?: uniqid('sess_', true);
         $this->timestamp = date('Y-m-d H:i:s');
         $this->ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
         $this->userAgent = null;
+        $this->visitorId = $this->generateVisitorId();
         $this->referer = null;
         $this->requestUri = null;
         $this->requestMethod = null;
@@ -42,10 +42,16 @@ class Visit implements JsonSerializable
 
     private function generateVisitorId(): string
     {
-        $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
-        $ua = $_SERVER['HTTP_USER_AGENT'] ?? 'unknown';
+        $ip = $this->ip !== 'unknown' ? $this->ip : ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
+        $ua = $this->userAgent ?? ($_SERVER['HTTP_USER_AGENT'] ?? 'unknown');
         $acceptLanguage = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '';
+
         return md5($ip . $ua . $acceptLanguage);
+    }
+
+    private function refreshVisitorId(): void
+    {
+        $this->visitorId = $this->generateVisitorId();
     }
 
     public function getId(): string { return $this->id; }
@@ -54,9 +60,21 @@ class Visit implements JsonSerializable
     public function getTimestamp(): string { return $this->timestamp; }
     public function setTimestamp(string $timestamp): self { $this->timestamp = $timestamp; return $this; }
     public function getIp(): string { return $this->ip; }
-    public function setIp(string $ip): self { $this->ip = $ip; return $this; }
+    public function setIp(string $ip): self
+    {
+        $this->ip = $ip;
+        $this->refreshVisitorId();
+
+        return $this;
+    }
     public function getUserAgent(): ?string { return $this->userAgent; }
-    public function setUserAgent(?string $ua): self { $this->userAgent = $ua; return $this; }
+    public function setUserAgent(?string $ua): self
+    {
+        $this->userAgent = $ua;
+        $this->refreshVisitorId();
+
+        return $this;
+    }
     public function getReferer(): ?string { return $this->referer; }
     public function setReferer(?string $referer): self { $this->referer = $referer; return $this; }
     public function getRequestUri(): ?string { return $this->requestUri; }

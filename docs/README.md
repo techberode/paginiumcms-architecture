@@ -49,7 +49,7 @@ Recently shipped: **2.0.52** — [BRANDING.md](user/BRANDING.md), [ACCESS_CONTRO
 
 **It.10 (RSS/sitemap):** ✅ [ITERATION_10.md](ITERATION_10.md) — feeds, sitemap, robots.txt, cache, Postman smoke.
 
-Full backlog: [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) · Main map: [ROADMAP.md](ROADMAP.md)
+Full backlog: [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) · Main map: [ROADMAP.md](ROADMAP.md) · **Feature status:** [FEATURE_OVERVIEW.md](FEATURE_OVERVIEW.md)
 
 ### Recent releases
 

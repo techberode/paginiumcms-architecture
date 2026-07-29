@@ -35,6 +35,21 @@ Rozšíriť admin **Analytiku** o čitateľnejšie zdroje návštevnosti a geogr
 - `AnalyticsView.tsx` — tabs s ikonami, Sources + Geo UI
 - `api/analytics.ts` — typy `TopReferer`, `GeoStat`, `GeoVisit`
 
+### SPA pageview beacon (2026-07 fix)
+
+Production nginx serves the React SPA as static files — PHP `AnalyticsMiddleware` never runs on public routes. Fix:
+
+| Layer | Change |
+|-------|--------|
+| **BE** | `POST /api/analytics/pageview` — public beacon (CSRF-exempt, rate-limited, path-validated) |
+| **BE** | `PageviewPathValidator` — allow public SPA paths only (reject `/api/*`, traversal) |
+| **BE** | `AnalyticsManager::trackPageViewFromRequest()` — dedupe 3s via `CacheManager` |
+| **FE** | `useAnalyticsPageview()` in `PublicSiteLayout` — fires on React Router navigation |
+| **FE** | Respects cookie consent (`analytics` category when banner enabled) |
+| **FE** | Empty states in dashboard chart + analytics tabs when no data yet |
+
+Localhost tracking: enabled when `APP_ENV` is `development`, `local`, or `testing`, or `ANALYTICS_TRACK_LOCALHOST=true`.
+
 ## Acceptance criteria
 
 - [x] Sources tab zobrazuje typ a label zdroja (nie len raw URL)
@@ -44,10 +59,13 @@ Rozšíriť admin **Analytiku** o čitateľnejšie zdroje návštevnosti a geogr
 
 ## Smoke test
 
-1. Otvor verejnú stránku v anonymnom okne (generuje visit s referer/direct).
-2. Admin → **Analytika** → tab **Zdroje** — over direct / search / social label.
-3. Tab **Geografia** — vlajka krajiny, maskovaná IP v „Posledné návštevy“.
-4. API: `GET /api/admin/analytics/overview?period=7` — polia `top_referers[].type`, `geo[].countryCode`, `geo_visits[]`.
+1. Accept analytics cookies on the public site (if cookie banner is enabled).
+2. Browse several public pages (`/`, `/blog/...`) — each navigation sends `POST /api/analytics/pageview`.
+3. Admin → **Analytika** → tab **Prehľad** — KPI a graf by mali mať nenulové hodnoty (po pár sekundách).
+4. Tab **Zdroje** — direct / search / social label.
+5. Tab **Geografia** — vlajka krajiny, maskovaná IP v „Posledné návštevy“.
+6. Dashboard (`/dashboard`) — analytics chart zobrazí dáta alebo empty state s hintom.
+7. API: `GET /api/admin/analytics/overview?period=7` — polia `top_referers[].type`, `geo[].countryCode`, `geo_visits[]`.
 
 ## CI hotfix (súvisiaci)
 

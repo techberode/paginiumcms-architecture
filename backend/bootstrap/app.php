@@ -869,24 +869,8 @@ $errorMiddleware->setDefaultErrorHandler(
     new \PaginiumCMS\Http\Support\ApiErrorHandler($app->getResponseFactory())
 );
 
-// Pridanie CORS Middleware IBA pre lokálny vývoj.
-// Audit 2026-07-22: táto natvrdo zadaná closure predtým VŽDY nastavovala
-// Allow-Origin: http://localhost:5173 + credentials:true, aj v produkcii, kde
-// kolidovala s Tuupola CorsMiddleware. Gatujeme ju len na ne-produkčné prostredie;
-// v produkcii CORS rieši výhradne konfigurovaný CorsMiddleware vyššie.
-$appEnvCors = (string) (getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? 'development'));
-if ($appEnvCors !== 'production') {
-    $app->add(function ($request, $handler) {
-        $response = $handler->handle($request);
-
-        // Tieto hlavičky dovolia Reactu bezpečne čítať API odpovede
-        return $response
-        ->withHeader('Access-Control-Allow-Origin', 'http://localhost:5173')
-        ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization, X-CSRF-Token')
-        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS')
-        ->withHeader('Access-Control-Allow-Credentials', 'true'); // Dôležité pre cookies/session
-    });
-}
+// Dev-only: do not override Tuupola CORS — it already allows LAN origins in non-production.
+// (Removed hardcoded localhost:5173 wrapper; it broke :8081 / :3025 with "Network Error".)
 
 // Ošetrenie predbežných OPTIONS požiadaviek, ktoré prehliadač automaticky posiela
 $app->options('/{routes:.+}', function ($request, $response, $args) {

@@ -79,6 +79,7 @@ use PaginiumCMS\Core\Feeds\Services\FeedGenerator;
 use PaginiumCMS\Core\Feeds\Services\RobotsTxtGenerator;
 use PaginiumCMS\Core\Feeds\Services\SitemapGenerator;
 use PaginiumCMS\Core\Seo\Services\SeoMetaBuilder;
+use PaginiumCMS\Core\Security\ClientIpResolver;
 use PaginiumCMS\Core\Security\SecurityLogger;
 use PaginiumCMS\Core\Security\Services\ContentSecuritySanitizer;
 use PaginiumCMS\Core\Security\Services\LoginAttemptTracker;
@@ -111,6 +112,7 @@ use PaginiumCMS\Core\Workflow\Services\OtpWorkflowService;
 use PaginiumCMS\Core\Versioning\Services\EnhancedVersionManager;
 use PaginiumCMS\Http\Controllers\Admin\CacheController;
 use PaginiumCMS\Http\Controllers\Admin\AnalyticsController;
+use PaginiumCMS\Http\Controllers\Analytics\AnalyticsPageviewController;
 use PaginiumCMS\Http\Controllers\Admin\AuditTrailController;
 use PaginiumCMS\Http\Controllers\Admin\DashboardController;
 use PaginiumCMS\Http\Controllers\Admin\HealthController;
@@ -155,6 +157,7 @@ use PaginiumCMS\Http\Extensions\Services\PluginRegistry;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Http\Controllers\Locking\LockController;
 use PaginiumCMS\Http\Controllers\Media\MediaController;
+use PaginiumCMS\Http\Middleware\AnalyticsPageviewRateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\DeveloperModeMiddleware;
 use PaginiumCMS\Modules\Comments\Contracts\CommentsRepositoryInterface;
 use PaginiumCMS\Modules\Comments\Services\CommentPolicyResolver;
@@ -740,6 +743,7 @@ return [
             get(TrackerInterface::class),
             get(ReporterInterface::class),
             get(SettingsRepositoryInterface::class),
+            get(CacheManager::class),
             get(IncidentNotifier::class)
         ),
     AnalyticsMiddleware::class => create(AnalyticsMiddleware::class)
@@ -752,6 +756,10 @@ return [
             get(RealtimeTracker::class),
             get(JsonResponder::class)
         ),
+    AnalyticsPageviewController::class => create(AnalyticsPageviewController::class)
+        ->constructor(get(AnalyticsManager::class), get(JsonResponder::class)),
+    AnalyticsPageviewRateLimitMiddleware::class => create(AnalyticsPageviewRateLimitMiddleware::class)
+        ->constructor(get(CacheManager::class), ClientIpResolver::trustedProxiesFromEnv()),
     DashboardController::class => create(DashboardController::class)
         ->constructor(
             get(LockManagerInterface::class),

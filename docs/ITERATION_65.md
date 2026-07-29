@@ -1,0 +1,199 @@
+# Iteration 65 — Feature gallery (admin screenshots)
+
+**Status:** ⏳ Planned  
+**Priority:** 🟡 Medium  
+**Use case:** Present PaginiumCMS admin UI screenshots with feature descriptions — marketing, demo, onboarding.  
+**Related:** [It.26 Media lightbox](ITERATION_26.md) · [It.58 Layout builder](ITERATION_58.md) (future gallery block) · [It.64 Footer social](ITERATION_64.md)
+
+---
+
+## Goal
+
+A dedicated **Gallery** module: upload or pick screenshots from Media, attach titles/descriptions/feature tags, publish on the public site in a **high-quality slider + modal** experience. Full placement and visual options configurable in admin — without hardcoding assets in the theme.
+
+Aligns with project principles: flat-file data, open-source showcase, no paid SaaS layer.
+
+---
+
+## Non-goals (v1)
+
+- Full DAM replacement (Media module stays source of binaries)
+- Elementor-style free-form page builder (see It.58)
+- Video hosting / YouTube embed gallery (optional later)
+- Multi-tenant / per-customer galleries
+
+---
+
+## User stories
+
+| Actor | Story |
+|-------|--------|
+| **Admin** | I add admin screenshots with title, short description, optional “feature module” tag (Analytics, Newsletter, …) and sort order. |
+| **Visitor** | I browse a smooth slider/carousel on the home page or `/features` and open a fullscreen modal with caption + keyboard navigation. |
+| **Admin** | I choose layout (grid / slider / hero strip), animation preset, autoplay, and which page shows the gallery — without redeploying frontend. |
+
+---
+
+## Architecture
+
+```
+Admin UI (/gallery)
+    → PUT/POST /api/admin/gallery/*
+    → GalleryRepository (flat-file data/gallery/)
+         items/{id}.json + index.json
+    → Media paths reference /storage/ or /api/media/file/…
+
+Public site
+    → GET /api/gallery/public (published items + settings slice)
+    → FeatureGallerySection (home embed or route /features)
+         Slider (Embla or CSS scroll-snap + a11y)
+         Modal (extend MediaPreviewLightbox patterns)
+```
+
+### Flat-file model
+
+**`data/gallery/index.json`** — ordered list of item IDs + publish metadata.
+
+**`data/gallery/items/{id}.json`**
+
+| Field | Type | Notes |
+|-------|------|--------|
+| `id` | string | `gallery_*` |
+| `title` | string | Slide heading |
+| `description` | string | Feature explanation (plain or markdown subset) |
+| `mediaPath` | string | From Media picker — relative under `media/` |
+| `featureTag` | string? | e.g. `analytics`, `newsletter`, `scheduler` |
+| `linkUrl` | string? | Optional “learn more” |
+| `sortOrder` | int | |
+| `status` | enum | `draft` \| `published` |
+| `publishedAt` | string? | ISO datetime |
+
+**Settings group `gallery`** (or extend `marketing` if small):
+
+| Key | Type | Purpose |
+|-----|------|---------|
+| `enabled` | bool | Master switch |
+| `placement` | enum | `home`, `route`, `both`, `off` |
+| `publicRoute` | string | Default `/features` |
+| `layout` | enum | `slider`, `grid`, `hero-strip` |
+| `effectPreset` | enum | `subtle`, `cinematic`, `minimal` |
+| `autoplayEnabled` | bool | |
+| `autoplayIntervalMs` | int | 4000–15000 |
+| `showFeatureTags` | bool | Badge on slides |
+| `modalCaptionStyle` | enum | `below`, `overlay`, `side` |
+| `openLinksInNewTab` | bool | Inherits global UI if unset |
+
+---
+
+## Backend scope
+
+| Component | Responsibility |
+|-----------|------------------|
+| `Modules/Gallery/` | Repository, validator, public serializer |
+| `Http/Routes/gallery.php` | Admin CRUD + public read |
+| `GalleryController` (Admin) | Auth + `gallery:manage` permission |
+| `GalleryPublicController` | Anonymous GET published items |
+| Settings | `SettingsSchema` group `gallery` |
+
+**Security:** mutating routes → `AuthMiddleware` + `PermissionMiddleware('gallery:manage')`; public read only published; media URLs via existing allow-list; captions sanitized; no user HTML in API without sanitizer.
+
+**Permission:** add `gallery:manage` to ADMIN default map; EDITOR read-only optional (phase 2).
+
+---
+
+## Frontend scope
+
+### Admin (`/gallery`)
+
+- List with drag reorder (reuse bulk/dnd patterns from navigation or media grid)
+- Create/edit drawer: Media picker, title, description, tag, publish toggle
+- **Gallery settings** tab: layout, effects, placement preview mockup
+- i18n module `gallery/{sk,en}.ts`
+
+### Public
+
+| Component | Behavior |
+|-----------|----------|
+| `FeatureGallerySlider` | Touch + keyboard; respects `prefers-reduced-motion` |
+| `FeatureGalleryModal` | Fullscreen; prev/next; ESC; focus trap (a11y) |
+| `FeatureGalleryGrid` | Fallback layout when `layout=grid` |
+| `useGalleryPublic` | React Query → `/api/gallery/public` |
+
+**Visual effects (presets, CSS-first):**
+
+- `subtle` — fade + slight scale on active slide
+- `cinematic` — crossfade, soft vignette, lazy blur-up on images
+- `minimal` — no autoplay animation; instant swap
+
+Optional dependency: **`embla-carousel-react`** (~3kb gzip) if native scroll-snap is insufficient for autoplay loop — evaluate in Phase 2 spike.
+
+**Integration points:**
+
+- `PublicHomePage` or dedicated `FeaturesPage` route
+- Settings-driven: show block only when `gallery.enabled && placement matches`
+
+---
+
+## Phased delivery (recommended)
+
+### Phase 1 — MVP (ship first)
+
+- [ ] BE: repository + admin CRUD + public GET
+- [ ] FE admin: list + form + media picker
+- [ ] FE public: **grid** + **basic modal** (reuse lightbox UX from It.26)
+- [ ] Settings: `enabled`, `placement`, `publicRoute`
+- [ ] PHPUnit + Vitest + smoke in `ITERATION_65.md`
+- [ ] Seed 3–5 demo screenshots for `paginiumcms.com`
+
+**Estimate:** 1 focused iteration (~similar size to It.64 + It.33 slice).
+
+### Phase 2 — Slider & admin polish
+
+- [ ] Slider layout + autoplay + pause on hover/focus
+- [ ] Effect presets (`subtle` / `cinematic` / `minimal`)
+- [ ] Feature tag badges + filter chips on public page
+- [ ] Admin live preview panel
+
+### Phase 3 — Premium UX (optional)
+
+- [ ] Ken Burns / parallax on hero-strip (CSS only, reduced-motion off)
+- [ ] Deep link to slide (`?slide=analytics`)
+- [ ] It.58 layout block “Gallery” consuming same API
+- [ ] Export/import gallery JSON (backup-friendly)
+
+---
+
+## Acceptance criteria (Phase 1)
+
+- [ ] Admin can CRUD gallery items linked to Media files
+- [ ] Only `published` items appear on public API
+- [ ] Public modal: keyboard ←/→, ESC, focus trap
+- [ ] Gallery hidden when `enabled=false`
+- [ ] PHPStan L8 + iteration gate green
+- [ ] Docs: `ADMIN_GUIDE`, `CHANGELOG`, this file updated
+
+---
+
+## Smoke test
+
+1. Admin → **Gallery** → add item (screenshot + title + description) → publish.
+2. Settings → **Gallery** → enable, placement `home` or `/features`.
+3. Public site — section visible; click opens modal with caption.
+4. `curl -s http://localhost:8080/api/gallery/public | jq '.data.items | length'`
+
+---
+
+## Open decisions (confirm before Phase 1)
+
+| # | Question | Recommendation |
+|---|----------|----------------|
+| 1 | Dedicated route `/gallery` vs `/features`? | **`/features`** (marketing); keep `/gallery` as admin only |
+| 2 | Separate admin menu vs under Content? | **Top-level `/gallery`** — visible for marketing |
+| 3 | New npm dependency for carousel? | **Phase 1: CSS grid + modal**; Embla in Phase 2 if needed |
+| 4 | Markdown in descriptions? | **Plain text v1**; markdown subset in Phase 2 |
+
+---
+
+## Relation to layout builder (It.58)
+
+It.65 delivers a **standalone module** first. It.58a can later register a **Gallery block** that calls the same `GET /api/gallery/public` — no duplicate storage.

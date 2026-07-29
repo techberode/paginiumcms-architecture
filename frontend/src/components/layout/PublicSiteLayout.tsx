@@ -15,6 +15,7 @@ import { DemoPublicStrip } from '../frontend/DemoPublicStrip';
 import { MaintenanceGate } from '../maintenance/MaintenanceGate';
 import { CookieConsentProvider } from '../../context/CookieConsentContext';
 import { CookieConsentBanner } from '../frontend/CookieConsentBanner';
+import { useAnalyticsPageview } from '../../hooks/useAnalyticsPageview';
 import { BTN_PRIMARY, PUBLIC_SPINNER } from '../../theme/publicUiClasses';
 
 const ADMIN_PREFIXES = [
@@ -93,6 +94,7 @@ export function PublicSlugPage() {
 
 export const PublicSiteLayout: React.FC = () => {
   const { t } = useI18n();
+  useAnalyticsPageview();
   const [searchOpen, setSearchOpen] = useState(false);
   const { pathname } = useLocation();
   const navigate = useNavigate();

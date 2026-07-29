@@ -57,6 +57,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | Deps + Vitest + deploy env (ISS-089–092) | **`v2.1.0-beta.7`** | [below](#210-beta7--2026-07-26) |
 | It.58b — Color schemes + themed public site | **`v2.1.0-beta.8`** | [below](#210-beta8--2026-07-26) |
 | It.62 + It.61 + demo deploy + analytics/editor | **`v2.1.0-beta.9`** | [below](#210-beta9--2026-07-27) |
+| It.64 + Analytics SPA beacon + dev LAN fixes | **`v2.1.0-beta.19`** | [below](#210-beta19--2026-07-29) |
 | It.13 v3 — Demo full trial | **`v2.1.0-beta.10`** | [below](#210-beta10--2026-07-27) |
 | It.13 v4 — Demo security polish | **`v2.1.0-beta.11`** | [below](#210-beta11--2026-07-27) |
 | It.63 — Admin system update (MVP) | **`v2.1.0-beta.12`** | [below](#210-beta12--2026-07-27) |
@@ -68,6 +69,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.19b–19d — Security runtime, auth UX, password policy | **2.0.45** | [below](#2045--2026-07-21) |
 
 ---
+
+---
+
+## [2.1.0-beta.19] – 2026-07-29
+
+**It.64 + Analytics fix** — footer social links, SPA pageview beacon, LAN dev/nginx docs, CORS dev cleanup.
+
+### Added (It.64 — Footer social links)
+
+- **Settings → Site → Marketing & social** — admin editor for footer social icons (GitHub, GitLab, X, LinkedIn, YouTube, Mastodon, Discord, e-mail, RSS, …). Up to 12 links with platform icons, custom labels, enable/disable, reorder.
+- **Public footer** — icon row above copyright; respects **Admin UI → open links in new tab**; default includes PaginiumCMS GitHub when unset.
+- **API** — `GET /api/settings/public` includes `social.enabled` and `social.links[]`.
+
+### Fixed (Analytics — SPA pageview tracking)
+
+- **Empty dashboard/analytics** — nginx serves the public SPA as static files, so PHP `AnalyticsMiddleware` never recorded visits. Added `POST /api/analytics/pageview` beacon from React Router (`useAnalyticsPageview` in `PublicSiteLayout`), with path validation, rate limit, 3s dedupe, and cookie-consent respect.
+- **`Visit` model** — fixed constructor order so `visitorId` is generated after `ip` is initialized (500 on beacon).
+- **Admin UI** — empty states when no analytics data; geo tab placeholder; cookie banner text reflects active analytics when consented.
+
+### Fixed (Dev / LAN)
+
+- **502 on `:8081/`** — nginx dev config proxies Vite to dev workstation (`192.168.10.20:3025`), not localhost on nginx host.
+- **Network Error in admin** — removed hardcoded dev CORS override (`localhost:5173`); use empty `VITE_API_URL` for same-origin via nginx/Vite proxy.
+
+### Docs
+
+- [ITERATION_64.md](docs/ITERATION_64.md), [ITERATION_65.md](docs/ITERATION_65.md) (gallery planned), [FEATURE_OVERVIEW.md](docs/FEATURE_OVERVIEW.md), [DEV.md](docs/deploy/DEV.md) troubleshooting.
 
 ---
 

@@ -34,6 +34,7 @@ import { AdminHintCard } from './AdminHintCard';
 import { LoginBackgroundImagePicker } from './LoginBackgroundImagePicker';
 import { BrandingImagePicker } from './BrandingImagePicker';
 import { AccessControlSettingsPanel } from './AccessControlSettingsPanel';
+import { SocialLinksSettingsPanel } from './SocialLinksSettingsPanel';
 import { EditorCustomComponentsPanel, type EditorComponentMeta } from './EditorCustomComponentsPanel';
 import { AppearanceSettingsPanel } from '../admin/AppearanceSettingsPanel';
 import { CmsInfoSettingsPanel } from './CmsInfoSettingsPanel';
@@ -305,6 +306,23 @@ export const SettingsView: React.FC = () => {
                       setValue={setValue}
                     />
                     <input type="hidden" {...register('profileCustomComponents')} />
+                  </>
+                ) : activeGroup === 'marketing' ? (
+                  <>
+                    {group.fields
+                      .filter((field) => field.key !== 'socialLinksJson')
+                      .map((field) => (
+                        <SettingFieldRow
+                          key={field.key}
+                          groupKey={activeGroup}
+                          field={field}
+                          register={register}
+                          watch={watch}
+                          setValue={setValue}
+                          error={errors[field.key]?.message as string | undefined}
+                        />
+                      ))}
+                    <SocialLinksSettingsPanel register={register} watch={watch} setValue={setValue} />
                   </>
                 ) : (
                   group.fields.map((field) => (

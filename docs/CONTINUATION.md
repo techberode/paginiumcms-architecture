@@ -18,9 +18,9 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 
 ## Aktuálny plán (2026-07-27) — Public Beta 1 + produkčný deploy
 
-**Stav:** **`v2.1.0-beta.15`** · It.63 v2 (version check) + ISS-104/105 · **It.64+** plánované
+**Stav:** **`v2.1.0-beta.18`** · It.61 Phase 5 + It.63 v2/v3 (compare, deploy, webhook) · **It.25** ⏳ pre-Final gate
 
-**Ďalšia iterácia:** backlog — It.63 v2 (GitHub compare UI) alebo It.25 setup wizard
+**Ďalšia iterácia:** beta testing + backlog (It.58, …) — **It.25 setup wizard + one-click update UX až pred Final 1.0**
 
 | Priorita | Úloha | Stav |
 |----------|--------|------|
@@ -313,10 +313,13 @@ Komunikuj po slovensky. Pravidlá: .cursorrules + ZÁKONY v docs/CONTINUATION.md
 
 HOTOVÉ (2026-07-29):
 - It.61 Phase 5 ✅ inline email footer — v2.1.0-beta.18
-- It.63 v2 ✅ compare commits + deploy latest tag — v2.1.0-beta.18
+- It.63 v2/v3 ✅ compare + deploy latest tag + GitHub release webhook — v2.1.0-beta.18
 
-ĎALŠIA ITERÁCIA:
-- It.63 **v3** ⏳ GitHub release webhook — [ITERATION_63.md](ITERATION_63.md)
+PRE-FINAL (neskôr, po beta testovaní):
+- It.25 ⏳ setup wizard + one-click update UX (Grav-like feel, engine z It.63) — [ITERATION_25.md](ITERATION_25.md)
+
+ĎALŠIA ITERÁCIA (beta fáza):
+- Tester feedback, It.58 layout builder, … — It.25 až pred Final 1.0
 
 PO DEPLOYI DEMO (beta.11):
 - git checkout v2.1.0-beta.11 + composer + FE build (docs/deploy/DEMO_DEPLOY.md)
