@@ -23,6 +23,7 @@ export * from './drafts';
 export * from './extensions';
 export * from './firewall';
 export * from './github';
+export * from './gallery';
 export * from './health';
 export * from './jobs';
 export * from './locks';

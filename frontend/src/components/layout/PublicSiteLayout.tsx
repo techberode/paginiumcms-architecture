@@ -6,6 +6,7 @@ import { Footer } from '../frontend/Footer';
 import { CMSBar, CMSBarDoc } from '../frontend/CMSBar';
 import { SiteSearchModal } from '../frontend/SiteSearchModal';
 import { PageRenderer } from '../frontend/PageRenderer';
+import { FeatureGallerySection } from '../frontend/FeatureGallerySection';
 import { usePublicSite } from '../../context/PublicSiteContext';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { useI18n } from '../../context/I18nContext';
@@ -35,7 +36,12 @@ const ADMIN_PREFIXES = [
 export function PublicHomePage() {
   const { t } = useI18n();
   const { getPageBySlug, loading } = usePublicSite();
+  const { settings } = useSettingsContext();
   const home = getPageBySlug('home') ?? getPageBySlug('index');
+  const galleryPlacement = settings.gallery?.placement ?? 'route';
+  const showGalleryEmbed =
+    settings.gallery?.enabled === true &&
+    (galleryPlacement === 'home' || galleryPlacement === 'both');
 
   if (loading) {
     return (
@@ -50,11 +56,17 @@ export function PublicHomePage() {
       <div className="min-h-[50vh] flex flex-col items-center justify-center px-4 text-center">
         <h1 className="text-3xl font-black text-theme-text">PaginiumCMS</h1>
         <p className="mt-3 text-theme-text-muted">{t('public.layout.noHomePage')}</p>
+        {showGalleryEmbed ? <FeatureGallerySection variant="embedded" /> : null}
       </div>
     );
   }
 
-  return <PageRenderer page={home} />;
+  return (
+    <>
+      <PageRenderer page={home} />
+      {showGalleryEmbed ? <FeatureGallerySection variant="embedded" /> : null}
+    </>
+  );
 }
 
 export function PublicSlugPage() {

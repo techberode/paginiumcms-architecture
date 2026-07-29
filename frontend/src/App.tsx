@@ -24,11 +24,13 @@ import { NavigationManager } from './components/backend/NavigationManager';
 import { CommentsManager } from './components/backend/CommentsManager';
 import { MessagesViewer } from './components/backend/MessagesViewer';
 import { NewsletterSubscribersPanel } from './components/backend/NewsletterSubscribersPanel';
+import { GalleryManager } from './components/backend/GalleryManager';
 import { GitHubSyncPanel } from './components/backend/GitHubSyncPanel';
 import { CodeEditor } from './components/CodeEditor/CodeEditor';
 import { AuditTrail } from './components/Audit/AuditTrail';
 import { LoginModal } from './components/frontend/LoginModal';
 import { BlogRenderer } from './components/frontend/BlogRenderer';
+import { FeaturesPage } from './components/frontend/FeaturesPage';
 import { RegisterModal } from './components/auth/RegisterModal';
 import { ForgotPasswordModal } from './components/auth/ForgotPasswordModal';
 import { ResetPasswordModal } from './components/auth/ResetPasswordModal';
@@ -162,6 +164,7 @@ function App() {
         <Route path="/comments" element={<CommentsManager />} />
         <Route path="/messages" element={<MessagesViewer />} />
         <Route path="/newsletter" element={<NewsletterSubscribersPanel />} />
+        <Route path="/gallery" element={<GalleryManager />} />
         <Route path="/github" element={<GitHubSyncPanel />} />
         <Route path="/code-editor" element={<CodeEditor />} />
         <Route path="/code-editor/*" element={<CodeEditor />} />
@@ -200,6 +203,7 @@ function App() {
 
       <Route element={<PublicSiteLayout />}>
         <Route index element={<PublicHomePage />} />
+        <Route path="features" element={<FeaturesPage />} />
         <Route path="blog" element={<BlogRenderer />} />
         <Route path="blog/:slug" element={<BlogRenderer />} />
         <Route path=":slug" element={<PublicSlugPage />} />

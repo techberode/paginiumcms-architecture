@@ -58,6 +58,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.58b — Color schemes + themed public site | **`v2.1.0-beta.8`** | [below](#210-beta8--2026-07-26) |
 | It.62 + It.61 + demo deploy + analytics/editor | **`v2.1.0-beta.9`** | [below](#210-beta9--2026-07-27) |
 | It.64 + Analytics SPA beacon + dev LAN fixes | **`v2.1.0-beta.19`** | [below](#210-beta19--2026-07-29) |
+| It.65 gallery Phase 1 + footer UX | **`v2.1.0-beta.20`** | [below](#210-beta20--2026-07-29) |
 | It.13 v3 — Demo full trial | **`v2.1.0-beta.10`** | [below](#210-beta10--2026-07-27) |
 | It.13 v4 — Demo security polish | **`v2.1.0-beta.11`** | [below](#210-beta11--2026-07-27) |
 | It.63 — Admin system update (MVP) | **`v2.1.0-beta.12`** | [below](#210-beta12--2026-07-27) |
@@ -69,6 +70,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.19b–19d — Security runtime, auth UX, password policy | **2.0.45** | [below](#2045--2026-07-21) |
 
 ---
+
+---
+
+## [2.1.0-beta.20] – 2026-07-29
+
+**It.65 Phase 1 + footer UX polish**
+
+### Added (It.65 — Feature gallery, Phase 1)
+
+- **Admin → Feature gallery** (`/gallery`) — CRUD for admin screenshots linked to Media; draft/publish, reorder, module tags.
+- **Settings → Site → Feature gallery** — enable, placement (`home`, `/features`, both, off), layout (grid), feature tag badges.
+- **Public** — `/features` page and optional home embed; grid + fullscreen modal (keyboard ←/→, ESC).
+- **API** — `GET /api/gallery/public`, `GET/POST/PUT/DELETE /api/admin/gallery/*` with `gallery:manage` permission.
+- **Flat-file** — `data/gallery/index.json` + `data/gallery/items/{id}.json`.
+
+### Changed (footer UX)
+
+- Social icons moved to left footer column; theme-aware contrast for footer links and cookie banner surfaces.
+
+### Docs
+
+- [ITERATION_65.md](docs/ITERATION_65.md) (usage guide), [ADMIN_GUIDE.md](docs/user/ADMIN_GUIDE.md), [FEATURE_OVERVIEW.md](docs/FEATURE_OVERVIEW.md).
 
 ---
 

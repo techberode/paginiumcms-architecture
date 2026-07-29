@@ -252,6 +252,7 @@ final class SettingsController
             ],
             'demo' => $this->publicDemoSettings($all['marketing'] ?? []),
             'social' => $this->publicSocialSettings($all['marketing'] ?? []),
+            'gallery' => $this->publicGallerySettings($all['gallery'] ?? []),
             'comments' => [
                 'enabled' => (bool) ($all['comments']['enabled'] ?? true),
                 'requireApproval' => (bool) ($all['comments']['requireApproval'] ?? true),
@@ -438,6 +439,23 @@ final class SettingsController
         return [
             'enabled' => $enabled,
             'links' => SocialLinksNormalizer::publicLinks($raw, $enabled),
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $gallery
+     * @return array{enabled: bool, placement: string, publicRoute: string, layout: string, showFeatureTags: bool}
+     */
+    private function publicGallerySettings(array $gallery): array
+    {
+        $defaults = SettingsSchema::defaults()['gallery'] ?? [];
+
+        return [
+            'enabled' => (bool) ($gallery['enabled'] ?? $defaults['enabled'] ?? false),
+            'placement' => (string) ($gallery['placement'] ?? $defaults['placement'] ?? 'route'),
+            'publicRoute' => (string) ($gallery['publicRoute'] ?? $defaults['publicRoute'] ?? '/features'),
+            'layout' => (string) ($gallery['layout'] ?? $defaults['layout'] ?? 'grid'),
+            'showFeatureTags' => (bool) ($gallery['showFeatureTags'] ?? $defaults['showFeatureTags'] ?? true),
         ];
     }
 

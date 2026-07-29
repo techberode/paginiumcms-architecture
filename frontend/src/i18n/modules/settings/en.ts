@@ -78,6 +78,7 @@ export const settingsEn: MessageTree = {
     "contact": "Contact form",
     "newsletter": "Newsletter",
     "marketing": "Marketing & social",
+    "gallery": "Feature gallery",
     "company": "Company details",
     "privacy": "Privacy & cookies",
     "workflows": "Workflow OTP",

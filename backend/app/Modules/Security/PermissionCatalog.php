@@ -23,6 +23,7 @@ final class PermissionCatalog
         'media:upload',
         'media:delete',
         'settings:manage',
+        'gallery:manage',
         'logs:view',
         'profile:edit',
     ];
@@ -45,6 +46,7 @@ final class PermissionCatalog
                 'content:manage',
                 'media:manage',
                 'settings:manage',
+                'gallery:manage',
                 'logs:view',
             ],
             AuthorizationInterface::ROLE_EDITOR => [

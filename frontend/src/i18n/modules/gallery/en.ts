@@ -1,0 +1,45 @@
+import type { MessageTree } from '../../types';
+
+export const galleryEn: MessageTree = {
+  title: 'Feature gallery',
+  subtitle: 'Admin screenshots for marketing and onboarding.',
+  addItem: 'Add screenshot',
+  editItem: 'Edit item',
+  empty: 'No gallery items yet.',
+  settingsLink: 'Gallery settings',
+  form: {
+    title: 'Title',
+    description: 'Description',
+    mediaPath: 'Screenshot',
+    featureTag: 'Feature tag',
+    linkUrl: 'Learn more URL',
+    status: 'Status',
+    pickMedia: 'Pick from Media',
+    changeMedia: 'Change image',
+  },
+  status: {
+    draft: 'Draft',
+    published: 'Published',
+  },
+  actions: {
+    save: 'Save',
+    cancel: 'Cancel',
+    delete: 'Delete',
+    moveUp: 'Move up',
+    moveDown: 'Move down',
+    publish: 'Publish',
+    unpublish: 'Unpublish',
+  },
+  confirm: {
+    delete: 'Delete this gallery item?',
+  },
+  toast: {
+    loadFailed: 'Failed to load gallery items.',
+    created: 'Gallery item created.',
+    updated: 'Gallery item updated.',
+    deleted: 'Gallery item deleted.',
+    reordered: 'Gallery order updated.',
+    saveFailed: 'Failed to save gallery item.',
+    deleteFailed: 'Failed to delete gallery item.',
+  },
+};

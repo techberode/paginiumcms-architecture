@@ -205,6 +205,12 @@ Pre **prihláseného** používateľa:
 
 **Settings → Site → Marketing & social** — demo footer link (`demoFooterLinkEnabled`, `demoUrl`) and **footer social icons** (GitHub, X, LinkedIn, …). Each link: platform (icon), URL or e-mail, accessible label, show/hide, order (max 12). Toggle master switch **Show social links in footer**. Default preset includes the PaginiumCMS GitHub repo when empty.
 
+**Settings → Site → Feature gallery** — master switch, placement (`home`, `/features`, both, off), public route (default `/features`), layout (grid in Phase 1), feature tag badges.
+
+**Admin → Feature gallery** (`/gallery`) — add admin screenshots from Media, title, description, optional module tag, publish/draft, reorder. Public visitors see a grid on `/features` or embedded on the home page (depending on placement).
+
+**Quick setup:** (1) Media → upload screenshots → (2) `/gallery` → add items → Publish → (3) Settings → Site → Feature gallery → enable + placement → (4) Navigation → link to `/features`. Full walkthrough: [ITERATION_65.md](../ITERATION_65.md#usage-guide-admin).
+
 Public footer shows circular icon buttons above the copyright row. External links follow **Admin UI → open links in new tab** when enabled.
 
 Detail: [ITERATION_13.md](../ITERATION_13.md) · deploy: [deploy/DEMO_DEPLOY.md](../deploy/DEMO_DEPLOY.md)

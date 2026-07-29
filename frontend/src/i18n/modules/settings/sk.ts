@@ -78,6 +78,7 @@ export const settingsSk: MessageTree = {
     "contact": "Kontaktný formulár",
     "newsletter": "Newsletter",
     "marketing": "Marketing a sociálne siete",
+    "gallery": "Galéria funkcií",
     "company": "Firemné údaje",
     "privacy": "Súkromie a cookies",
     "workflows": "Workflow OTP",

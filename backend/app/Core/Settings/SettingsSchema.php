@@ -250,6 +250,16 @@ final class SettingsSchema
                     ['key' => 'socialLinksJson', 'type' => 'text', 'label' => 'Sociálne siete (JSON)', 'default' => '', 'rules' => ['string', 'max:8000'], 'help' => 'Spravované vizuálnym editorom nižšie. Ukladá sa normalizovaný JSON.'],
                 ],
             ],
+            'gallery' => [
+                'label' => 'Feature gallery',
+                'fields' => [
+                    ['key' => 'enabled', 'type' => 'bool', 'label' => 'Zapnúť galériu na verejnom webe', 'default' => false, 'rules' => ['bool'], 'help' => 'Master prepínač pre sekciu so screenshotmi administrácie.'],
+                    ['key' => 'placement', 'type' => 'enum', 'label' => 'Umiestnenie', 'default' => 'route', 'options' => ['home', 'route', 'both', 'off'], 'rules' => ['required', 'in:home,route,both,off'], 'help' => 'Kde sa galéria zobrazí: domovská stránka, samostatná route, oboje, alebo vypnuté.'],
+                    ['key' => 'publicRoute', 'type' => 'string', 'label' => 'Verejná route', 'default' => '/features', 'rules' => ['required', 'string', 'max:120'], 'help' => 'Cesta bez domény, napr. /features. Použije sa pri placement route alebo both.'],
+                    ['key' => 'layout', 'type' => 'enum', 'label' => 'Layout', 'default' => 'grid', 'options' => ['grid', 'slider', 'hero-strip'], 'rules' => ['required', 'in:grid,slider,hero-strip'], 'help' => 'Phase 1: grid. Slider a hero-strip v Phase 2.'],
+                    ['key' => 'showFeatureTags', 'type' => 'bool', 'label' => 'Zobraziť tagy modulov', 'default' => true, 'rules' => ['bool'], 'help' => 'Badge s názvom modulu (Analytics, Newsletter, …) pri položkách galérie.'],
+                ],
+            ],
             'company' => [
                 'label' => 'Firemné údaje',
                 'fields' => [
@@ -343,7 +353,7 @@ final class SettingsSchema
                 'fields' => [
                     ['key' => 'pathAclEnabled', 'type' => 'bool', 'label' => 'Povoliť path ACL', 'default' => false, 'rules' => ['bool'], 'help' => 'Obmedzí prístup k vybraným cestám flat-file obsahu podľa rolí alebo oprávnení.'],
                     ['key' => 'pathAclRulesJson', 'type' => 'text', 'label' => 'Path ACL pravidlá (JSON)', 'default' => '[]', 'rules' => ['string', 'max:50000'], 'help' => 'Spravované cez vizuálny editor v administrácii.'],
-                    ['key' => 'permissionsAdmin', 'type' => 'text', 'label' => 'Oprávnenia ADMIN', 'default' => 'user:manage,content:manage,media:manage,settings:manage,logs:view', 'rules' => ['required', 'string', 'max:5000']],
+                    ['key' => 'permissionsAdmin', 'type' => 'text', 'label' => 'Oprávnenia ADMIN', 'default' => 'user:manage,content:manage,media:manage,settings:manage,gallery:manage,logs:view', 'rules' => ['required', 'string', 'max:5000']],
                     ['key' => 'permissionsEditor', 'type' => 'text', 'label' => 'Oprávnenia EDITOR', 'default' => 'content:create,content:edit,content:delete,media:upload,media:delete', 'rules' => ['required', 'string', 'max:5000']],
                     ['key' => 'permissionsUser', 'type' => 'text', 'label' => 'Oprávnenia USER', 'default' => 'content:view,profile:edit', 'rules' => ['required', 'string', 'max:5000']],
                 ],
