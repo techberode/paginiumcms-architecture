@@ -292,7 +292,7 @@ Records: `email`, `subscribedAt`, `source` (`footer` | `maintenance`), `preferen
 
 **CMS release campaigns (Phase 4):** enable `cmsReleaseEnabled`, then SUPER_ADMIN → Newsletter → **Send release campaign** (version, title, body, optional URL) → mails subscribers with `cms_release` preference.
 
-**Public footer newsletter (modal UX):** enable `footerEnabled` — visitors see a compact highlighted CTA in the footer (email field + **Subscribe**). Clicking opens a **modal** with preference checkboxes and optional consent (not the full form inline in the footer).
+**Public footer newsletter (modal UX):** enable `footerEnabled` — visitors see a compact **inline email field** and arrow button in the footer column; preferences open in a **modal**. Optional display modes (link-only, side tab) planned via `footerDisplayMode` — see [ITERATION_61.md](../ITERATION_61.md#newsletter-v2--phase-5-footer-ux-polish-).
 
 ### Privacy & cookies (`Settings → Site → Privacy & cookies`)
 

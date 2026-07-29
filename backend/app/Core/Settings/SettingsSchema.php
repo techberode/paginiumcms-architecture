@@ -435,6 +435,8 @@ final class SettingsSchema
                     ['key' => 'defaultBranch', 'type' => 'string', 'label' => 'Default branch', 'default' => 'main', 'rules' => ['required', 'string', 'max:120']],
                     ['key' => 'allowDeployMain', 'type' => 'bool', 'label' => 'Allow deploy from branch (origin/…)', 'default' => false, 'rules' => ['bool']],
                     ['key' => 'allowDeployTags', 'type' => 'bool', 'label' => 'Allow deploy from semver tags', 'default' => true, 'rules' => ['bool']],
+                    ['key' => 'webhookDeployEnabled', 'type' => 'bool', 'label' => 'Enable GitHub release webhook deploy', 'default' => false, 'rules' => ['bool'], 'help' => 'When enabled, POST /api/webhooks/github/release queues deploy on release published (HMAC secret required).'],
+                    ['key' => 'githubWebhookSecret', 'type' => 'password', 'label' => 'GitHub webhook secret', 'default' => '', 'rules' => ['string', 'max:255'], 'help' => 'Same secret as configured in GitHub → Settings → Webhooks → Secret. Never logged.'],
                 ],
             ],
         ];

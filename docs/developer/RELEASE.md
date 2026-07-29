@@ -1,7 +1,7 @@
 # Release checklist — PaginiumCMS
 
-> Latest version: **2.1.0-beta.17** · 2026-07-28 · tag **`v2.1.0-beta.17`** (after push) · main  
-> Previous: **2.1.0-beta.16** · tag **`v2.1.0-beta.16`** · `d490658`  
+> Latest version: **2.1.0-beta.18** · 2026-07-29 · tag **`v2.1.0-beta.18`** (after push) · main  
+> Previous: **2.1.0-beta.17** · tag **`v2.1.0-beta.17`**  
 > This file contains **copy-paste** blocks for GitHub Release.
 
 > **Poznámka k verziám:** `2.0.58` → `f53e71e` · **Public Beta 1** → `e3e0d82` · **Beta 1 Testing** → `c68e72b` · **Beta 1 patch (RR GHSA)** → *(commit po push)*.
@@ -37,7 +37,8 @@
 | **It.63 — Docker admin deploy bootstrap**          | `v2.1.0-beta.14` | `66e83f0`      | ✅ tagged |
 | **It.63 v2 — version check + audit fixes**       | `v2.1.0-beta.15` | `279bd88`      | ✅ tagged |
 | **It.61 — Newsletter v2 Phases 1–3 + BE↔FE**     | `v2.1.0-beta.16` | `baab12e`      | ✅ tagged |
-| **It.61 Phase 4 + footer modal + cookie consent** | `v2.1.0-beta.17` | *(this commit)* | pending  |
+| **It.61 Phase 4 + footer modal + cookie consent** | `v2.1.0-beta.17` | `f9ae151`      | ✅ tagged |
+| **It.61 Phase 5 + It.63 v2/v3 — footer UX + system update + webhook** | `v2.1.0-beta.18` | *(this commit)* | pending  |
 
 
 **Pravidlo:** Post-beta patchy — `2.0.59+` alebo `2.1.0-beta.N` podľa rozsahu.
@@ -51,7 +52,20 @@ gh auth login   # ak ešte nie
 ./scripts/create-github-releases.sh
 ```
 
-Testerom / security reviewerovi poslať **`v2.1.0-beta.17`** + [SECURITY_REVIEW.md](../SECURITY_REVIEW.md).
+Testerom / security reviewerovi poslať **`v2.1.0-beta.18`** + [SECURITY_REVIEW.md](../SECURITY_REVIEW.md).
+
+---
+
+## v2.1.0-beta.18 — It.61 Phase 5 + It.63 v2
+
+**Scope:** Inline email footer newsletter (ISS-109) + system update compare commits table + deploy latest tag + GitHub release webhook auto-deploy.
+
+**Tag (after gate green):**
+
+```bash
+git tag -a v2.1.0-beta.18 -m "v2.1.0-beta.18 — It.61 Phase 5 footer UX + It.63 v2 system update"
+git push origin v2.1.0-beta.18
+```
 
 ---
 

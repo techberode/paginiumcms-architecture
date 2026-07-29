@@ -75,7 +75,7 @@ export const Footer: React.FC = () => {
           <div>
             {footerNewsletterEnabled ? <FooterNewsletter /> : null}
             {showDemoFooterLink ? (
-              <div className={footerNewsletterEnabled ? 'mt-8 pt-8 border-t border-white/10' : undefined}>
+              <div className={footerNewsletterEnabled ? 'mt-6 pt-6 border-t border-white/10' : undefined}>
                 <h4 className="text-xs font-bold uppercase tracking-wider public-footer-heading mb-4">
                   {t('public.footer.tryCmsTitle')}
                 </h4>

@@ -5,8 +5,9 @@
 
 **Aktuálne hotové:** It.1–24 ✅ · It.26–28 ✅ · **It.13 v3** ✅ · **It.61** ✅ · **It.62** ✅ · It.25 ⏳ (setup wizard — odložené)
 
-**Ďalšia iterácia:** It.63 v2 (compare UI) alebo It.25 setup wizard  
-**Posledná shipped:** **It.61 Newsletter v2** · **`v2.1.0-beta.16`**
+**Posledná shipped:** **It.61 Phase 5 + It.63 v2** · **`v2.1.0-beta.18`**
+
+**Ďalšia iterácia:** **It.63 v3** — GitHub release webhook — [ITERATION_63.md](ITERATION_63.md#v3)
 
 **Incidenty a opravy:** [ISSUES.md](ISSUES.md)
 
@@ -37,10 +38,10 @@
 | **58** | TBD | **[Page layout builder + color schemes](ITERATION_58.md)** | **🟡** | ⛔ po It.15 · [alternatívy](ITERATION_58_ALTERNATIVES.md) · layout + 5 presetov |
 | **59** | **2.0.53** | **[Odložená publikácia — plánovač v editore](ITERATION_59.md)** | **✅** | Editor datetime + filter scheduled + job `content.scheduled_publish` |
 | **60** | TBD | **[Vlastné komponenty editora](ITERATION_60.md)** | **✅** | Plugin manifest + settings matica + hello-widget demo |
-| **61** | TBD | **[Newsletter vo footeri](ITERATION_61.md)** | **✅** | Footer subscribe + admin subscribers + CSV (ISS-097) |
+| **61** | **`v2.1.0-beta.18`** | **[Newsletter vo footeri](ITERATION_61.md)** | **✅** | Phases 1–5 (inline email footer); A/C modes backlog |
 | **13v3** | **`v2.1.0-beta.10`** | **[Demo modul — full trial](ITERATION_13.md)** | **✅** | Rich seed, public strip, marketing settings |
 | **13v4** | **`v2.1.0-beta.11`** | **[Demo modul — security polish](ITERATION_13.md)** | **✅** | S-DEMOCREDS, quick-login, editor fix, nav UX |
-| **63** | **`v2.1.0-beta.15`** | **[Admin system update (prod)](ITERATION_63.md)** | **✅** | v2 version check + ISS-104/105 |
+| **63** | **`v2.1.0-beta.18`** | **[Admin system update](ITERATION_63.md)** | **✅** | MVP + v2 compare UI + deploy latest tag; v3 webhook ⏳ |
 | **15** | **2.0.38** | **[External plugins](ITERATION_15.md)** | **✅** | Import ZIP, registry, hooks, routes, admin UI |
 | **47** | TBD | **[Notification connector auth](ITERATION_47.md)** | **✅** | ntfy Bearer/Basic + test-connector |
 | **48** | TBD | **[PHP templates + static/dynamic web](ITERATION_48.md)** | **🟡** | Front matter šablóny, JSON/INI meta, static HTML |
@@ -391,9 +392,9 @@ Rozšírenie Markdown/WYSIWYG o custom bloky — inštalácia pluginom alebo **N
 
 ---
 
-## Iterácia 61 – Newsletter vo footeri + admin odberatelia ⏳
+## Iterácia 61 – Newsletter vo footeri + admin odberatelia ✅
 
-Footer odber + **admin prehľad prihlásených** (dnes chýba — [ISS-097](ISSUES.md#iss-097--newsletter-odberatelia-bez-admin-prehľadu--medzera--it61)). Maintenance newsletter ukladá do `subscribers.json` bez UI.
+Phases 1–5 shipped (`v2.1.0-beta.16`–`.18`). Footer UX: inline e-mail + modal (ISS-109 ✅). Voliteľné režimy link/side-tab — backlog pri `footerDisplayMode`.
 
 **Full spec:** [ITERATION_61.md](ITERATION_61.md)
 

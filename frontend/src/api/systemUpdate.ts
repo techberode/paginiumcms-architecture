@@ -10,11 +10,18 @@ export interface SystemUpdateGitStatus {
 
 export interface SystemUpdateConfig {
   deployEnabled?: boolean;
+  webhookDeployEnabled?: boolean;
   githubOwner?: string;
   githubRepo?: string;
   defaultBranch?: string;
   allowDeployMain?: boolean;
   allowDeployTags?: boolean;
+}
+
+export interface SystemUpdateWebhookConfig {
+  path: string;
+  webhook_deploy_enabled?: boolean;
+  secret_configured?: boolean;
 }
 
 export interface SystemUpdateStatus {
@@ -23,13 +30,27 @@ export interface SystemUpdateStatus {
   git: SystemUpdateGitStatus;
   config: SystemUpdateConfig;
   job_registered: boolean;
+  webhook?: SystemUpdateWebhookConfig;
   recent_runs: Array<Record<string, unknown>>;
+}
+
+export interface SystemUpdateRemoteCommit {
+  sha: string;
+  sha_full?: string;
+  message: string;
+  author?: string | null;
+  date?: string | null;
+  url?: string | null;
 }
 
 export interface SystemUpdateRemoteCompare {
   behind_by?: number;
   ahead_by?: number;
   status?: string;
+  total_commits?: number;
+  compare_head?: string | null;
+  commits?: SystemUpdateRemoteCommit[];
+  commits_truncated?: boolean;
 }
 
 export interface SystemUpdateRemote {

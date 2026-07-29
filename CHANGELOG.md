@@ -71,6 +71,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [2.1.0-beta.18] – 2026-07-29
+
+**It.61 Phase 5 + It.63 v2/v3** — inline email footer, system update compare/deploy UX, GitHub release webhook auto-deploy.
+
+### Changed (Public UX — It.61 Phase 5)
+
+- **Footer newsletter** — removed bulky gradient CTA box; footer column now shows title, short hint, inline email field + arrow button → existing subscribe modal (ISS-109).
+
+### Added (Admin — It.63 v2/v3, Platform → System update)
+
+- **Compare commits table** — incoming commits (SHA, message, author, date) after remote check; compare head prefers latest release tag.
+- **Deploy latest tag** — primary button when an update is available; confirms before queueing deploy job.
+- **GitHub release webhook** — `POST /api/webhooks/github/release` queues deploy on `release` / `published` when enabled; HMAC secret in settings; webhook URL shown in admin UI.
+
+---
+
 ## [2.1.0-beta.17] – 2026-07-28
 
 **It.61 Newsletter Phase 4 + public UX** — manage preferences, CMS release campaigns, footer subscribe modal, GDPR cookie banner.

@@ -174,7 +174,7 @@ jq . /var/www/paginiumcms.com/backend/storage/app/content/data/newsletter/subscr
 
 | Area | Delivered |
 |------|-----------|
-| **Footer newsletter** | Highlighted CTA box (email + button); full signup in **modal** (`NewsletterSubscribeModal`) |
+| **Footer newsletter** | Inline email field + arrow (Phase 5); full signup in **modal** (`NewsletterSubscribeModal`) |
 | **Cookie banner** | Settings group `privacy` — banner on first visit; accept / reject optional / customize |
 | **Functional storage** | Theme preference (`paginium-public-theme`) written only after functional cookie consent |
 | **Footer link** | „Nastavenia cookies“ reopens consent modal after decision |
@@ -182,14 +182,37 @@ jq . /var/www/paginiumcms.com/backend/storage/app/content/data/newsletter/subscr
 
 ### Acceptance (UX)
 
-- [x] Footer stays compact; preferences + consent only in modal
 - [x] Cookie banner configurable (text, policy URL, reject button)
 - [x] SK/EN i18n for public cookies + footer CTA
 - [x] PHPUnit + iteration gate green
+- [x] **Footer newsletter — inline email (Phase 5 variant B)**
 
 ---
 
-## BE ↔ FE wiring audit (2026-07-28)
+## Newsletter v2 — Phase 5: Footer UX polish ✅
+
+**Status:** ✅ **Shipped variant B** (`v2.1.0-beta.18`)  
+**Priorita:** 🟡 Stredná — UX / vizuál footeru  
+**Issue:** [ISS-109](ISSUES.md#iss-109--newsletter-footer-cta-prilis-objemny--medzistav--it61-phase-5) — ✅ vyriešené (variant B)
+
+**Implementované (variant B):** Stĺpec footeru zladený s ostatnými — nadpis, krátky hint, tenké e-mail pole + ikona šípky (bez gradient boxu). Enter alebo šípka → existujúci `NewsletterSubscribeModal`.
+
+| Variant | Stav |
+|---------|------|
+| **A — Link only** | ⏳ backlog (voliteľné `footerDisplayMode`) |
+| **B — Inline e-mail** | ✅ **shipped** |
+| **C — Side tab / flyout** | ⏳ backlog |
+
+**Budúce rozšírenie:** `newsletter.footerDisplayMode` = `link` \| `email` \| `side_tab` (default `email`).
+
+**Acceptance (Phase 5):**
+
+- [x] Footer výška / vizuál neporušuje grid (4 stĺpce vyvážené)
+- [x] Subscribe flow (preferences, consent, double opt-in) nezmenený z pohľadu API
+- [x] Vitest: inline field + modal open (click + Enter)
+- [ ] Mobile side tab — N/A (variant C)
+
+**Problém (feedback 2026-07-28):**## BE ↔ FE wiring audit (2026-07-28)
 
 **Status:** ✅ Done (`v2.1.0-beta.16`)
 

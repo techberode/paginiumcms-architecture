@@ -117,5 +117,8 @@ final class SystemUpdateControllerTest extends TestCase
             $data['data']['update']['status'] ?? '',
             ['current', 'update_available', 'unknown']
         );
+        if (is_array($data['data']['remote']['compare'] ?? null)) {
+            $this->assertArrayHasKey('commits', $data['data']['remote']['compare']);
+        }
     }
 }
