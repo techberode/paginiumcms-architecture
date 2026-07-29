@@ -65,6 +65,17 @@ export const publicEn: MessageTree = {
     socialTitle: 'Follow us',
     socialAria: 'Social networks',
   },
+  gallery: {
+    sectionTitle: 'Explore the admin',
+    sectionSubtitle: 'Screenshots of PaginiumCMS modules and workflows.',
+    openModal: 'Open screenshot',
+    learnMore: 'Learn more',
+    empty: 'Gallery coming soon.',
+    pageTitle: 'Features',
+    previous: 'Previous screenshot',
+    next: 'Next screenshot',
+    close: 'Close gallery',
+  },
   cookies: {
     bannerLabel: 'Cookie consent',
     defaultText: 'This site uses cookies to ensure functionality and improve your experience.',

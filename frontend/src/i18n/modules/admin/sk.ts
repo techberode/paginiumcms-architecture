@@ -8,6 +8,7 @@ export const adminSk: MessageTree = {
     pages: 'Podstránky',
     articles: 'Články (Blog)',
     media: 'Médiá',
+    gallery: 'Galéria funkcií',
     navigation: 'Navigácia',
     comments: 'Komentáre',
     messages: 'Správy',

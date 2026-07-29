@@ -65,6 +65,17 @@ export const publicSk: MessageTree = {
     socialTitle: 'Sociálne siete',
     socialAria: 'Sociálne siete',
   },
+  gallery: {
+    sectionTitle: 'Preskúmajte administráciu',
+    sectionSubtitle: 'Screenshoty modulov a workflow PaginiumCMS.',
+    openModal: 'Otvoriť screenshot',
+    learnMore: 'Dozvedieť sa viac',
+    empty: 'Galéria bude čoskoro dostupná.',
+    pageTitle: 'Funkcie',
+    previous: 'Predchádzajúci screenshot',
+    next: 'Ďalší screenshot',
+    close: 'Zavrieť galériu',
+  },
   cookies: {
     bannerLabel: 'Súhlas s cookies',
     defaultText: 'Tento web používa cookies na zabezpečenie funkčnosti a zlepšenie používateľského zážitku.',

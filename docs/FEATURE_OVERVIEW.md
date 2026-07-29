@@ -204,7 +204,7 @@ Public (same SPA): `/`, `/blog`, `/blog/:slug`, `/:slug`, `/newsletter/*`
 
 | It. | Name | Priority | Status |
 |-----|------|----------|--------|
-| **65** | [Feature gallery — admin screenshots](ITERATION_65.md) | 🟡 | ⏳ slider + modal; Phase 1 MVP |
+| **65** | [Feature gallery — admin screenshots](ITERATION_65.md) | 🟡 | ✅ Phase 1 grid + modal (`beta.20`); Phase 2 slider |
 | **58a** | Page layout builder (5 templates) | 🟡 | ⏳ 58b (color schemes) ✅ |
 | **48** | PHP templates + static HTML export | 🟡 | ⏳ |
 | **49** | Unified cache (file + Redis) | 🟡 | ⏳ absorbs It.45 |

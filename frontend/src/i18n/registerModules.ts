@@ -39,6 +39,8 @@ import { editorEn } from './modules/editor/en';
 import { editorSk } from './modules/editor/sk';
 import { auditEn } from './modules/audit/en';
 import { auditSk } from './modules/audit/sk';
+import { galleryEn } from './modules/gallery/en';
+import { gallerySk } from './modules/gallery/sk';
 import { publicEn } from './modules/public/en';
 import { publicSk } from './modules/public/sk';
 
@@ -69,6 +71,8 @@ export function registerAllI18nModules(): void {
   registerModuleMessages('en', 'messages', messagesEn);
   registerModuleMessages('sk', 'newsletter', newsletterSk);
   registerModuleMessages('en', 'newsletter', newsletterEn);
+  registerModuleMessages('sk', 'gallery', gallerySk);
+  registerModuleMessages('en', 'gallery', galleryEn);
   registerModuleMessages('sk', 'backups', backupsSk);
   registerModuleMessages('en', 'backups', backupsEn);
   registerModuleMessages('sk', 'trash', trashSk);

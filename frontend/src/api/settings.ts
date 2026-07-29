@@ -174,6 +174,13 @@ export interface PublicSettings {
     enabled?: boolean;
     links?: Array<{ platform: string; url: string; label: string }>;
   };
+  gallery?: {
+    enabled?: boolean;
+    placement?: 'home' | 'route' | 'both' | 'off';
+    publicRoute?: string;
+    layout?: 'grid' | 'slider' | 'hero-strip';
+    showFeatureTags?: boolean;
+  };
   login?: {
     pageTitle?: string;
     pageDescription?: string;

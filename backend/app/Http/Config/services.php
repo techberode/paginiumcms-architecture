@@ -133,6 +133,8 @@ use PaginiumCMS\Http\Controllers\Auth\SsoController;
 use PaginiumCMS\Http\Controllers\Admin\TrashController;
 use PaginiumCMS\Http\Controllers\Admin\FirewallController;
 use PaginiumCMS\Http\Controllers\Admin\LogController;
+use PaginiumCMS\Http\Controllers\Gallery\GalleryAdminController;
+use PaginiumCMS\Http\Controllers\Gallery\GalleryPublicController;
 use PaginiumCMS\Http\Controllers\Feeds\FeedController;
 use PaginiumCMS\Http\Controllers\Seo\SeoController;
 use PaginiumCMS\Http\Controllers\Admin\VersionController;
@@ -168,6 +170,9 @@ use PaginiumCMS\Modules\Newsletter\Contracts\NewsletterRepositoryInterface;
 use PaginiumCMS\Modules\Navigation\Contracts\NavigationRepositoryInterface;
 use PaginiumCMS\Modules\Navigation\Services\NavigationRepository;
 use PaginiumCMS\Modules\Navigation\Services\NavigationRichFieldValidator;
+use PaginiumCMS\Modules\Gallery\Contracts\GalleryRepositoryInterface;
+use PaginiumCMS\Modules\Gallery\Services\GalleryRepository;
+use PaginiumCMS\Modules\Gallery\Services\GalleryItemValidator;
 use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
 use PaginiumCMS\Modules\Media\Services\MediaRepository;
 use PaginiumCMS\Modules\Media\Services\StockImageCatalog;
@@ -414,6 +419,25 @@ return [
         ->constructor(
             get(NavigationRepositoryInterface::class),
             get(NavigationRichFieldValidator::class),
+            get(JsonResponder::class)
+        ),
+
+    GalleryRepositoryInterface::class => create(GalleryRepository::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class)
+        ),
+    GalleryItemValidator::class => create(GalleryItemValidator::class),
+    GalleryAdminController::class => create(GalleryAdminController::class)
+        ->constructor(
+            get(GalleryRepositoryInterface::class),
+            get(GalleryItemValidator::class),
+            get(JsonResponder::class)
+        ),
+    GalleryPublicController::class => create(GalleryPublicController::class)
+        ->constructor(
+            get(GalleryRepositoryInterface::class),
+            get(SettingsRepositoryInterface::class),
             get(JsonResponder::class)
         ),
 

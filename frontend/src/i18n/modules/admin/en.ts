@@ -8,6 +8,7 @@ export const adminEn: MessageTree = {
     pages: 'Pages',
     articles: 'Articles (Blog)',
     media: 'Media',
+    gallery: 'Feature gallery',
     navigation: 'Navigation',
     comments: 'Comments',
     messages: 'Messages',

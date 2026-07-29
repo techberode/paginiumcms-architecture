@@ -1,6 +1,6 @@
 # Iteration 65 — Feature gallery (admin screenshots)
 
-**Status:** ⏳ Planned  
+**Status:** ✅ Phase 1 shipped in `v2.1.0-beta.20`  
 **Priority:** 🟡 Medium  
 **Use case:** Present PaginiumCMS admin UI screenshots with feature descriptions — marketing, demo, onboarding.  
 **Related:** [It.26 Media lightbox](ITERATION_26.md) · [It.58 Layout builder](ITERATION_58.md) (future gallery block) · [It.64 Footer social](ITERATION_64.md)
@@ -138,11 +138,11 @@ Optional dependency: **`embla-carousel-react`** (~3kb gzip) if native scroll-sna
 
 ### Phase 1 — MVP (ship first)
 
-- [ ] BE: repository + admin CRUD + public GET
-- [ ] FE admin: list + form + media picker
-- [ ] FE public: **grid** + **basic modal** (reuse lightbox UX from It.26)
-- [ ] Settings: `enabled`, `placement`, `publicRoute`
-- [ ] PHPUnit + Vitest + smoke in `ITERATION_65.md`
+- [x] BE: repository + admin CRUD + public GET
+- [x] FE admin: list + form + media picker
+- [x] FE public: **grid** + **basic modal** (reuse lightbox UX from It.26)
+- [x] Settings: `enabled`, `placement`, `publicRoute`
+- [x] PHPUnit + Vitest + smoke in `ITERATION_65.md`
 - [ ] Seed 3–5 demo screenshots for `paginiumcms.com`
 
 **Estimate:** 1 focused iteration (~similar size to It.64 + It.33 slice).
@@ -165,12 +165,12 @@ Optional dependency: **`embla-carousel-react`** (~3kb gzip) if native scroll-sna
 
 ## Acceptance criteria (Phase 1)
 
-- [ ] Admin can CRUD gallery items linked to Media files
-- [ ] Only `published` items appear on public API
-- [ ] Public modal: keyboard ←/→, ESC, focus trap
-- [ ] Gallery hidden when `enabled=false`
-- [ ] PHPStan L8 + iteration gate green
-- [ ] Docs: `ADMIN_GUIDE`, `CHANGELOG`, this file updated
+- [x] Admin can CRUD gallery items linked to Media files
+- [x] Only `published` items appear on public API
+- [x] Public modal: keyboard ←/→, ESC, focus trap
+- [x] Gallery hidden when `enabled=false`
+- [x] PHPStan L8 + iteration gate green
+- [x] Docs: `ADMIN_GUIDE`, `CHANGELOG`, this file updated
 
 ---
 
@@ -180,6 +180,21 @@ Optional dependency: **`embla-carousel-react`** (~3kb gzip) if native scroll-sna
 2. Settings → **Gallery** → enable, placement `home` or `/features`.
 3. Public site — section visible; click opens modal with caption.
 4. `curl -s http://localhost:8080/api/gallery/public | jq '.data.items | length'`
+
+---
+
+## Usage guide (admin)
+
+1. **Upload screenshots** — Admin → **Media** → upload PNG/WebP admin UI captures.
+2. **Create gallery items** — Admin → **Feature gallery** (`/gallery`) → **Add screenshot** → pick image from Media, title, description, optional module tag (e.g. `analytics`) → **Published** → Save.
+3. **Enable on public site** — Settings → **Site** → **Feature gallery** → enable gallery; choose **Placement**:
+   - `route` — only `/features`
+   - `home` — grid below home page content
+   - `both` — home embed + `/features`
+4. **Menu link (optional)** — Admin → **Navigation** → new item, path `/features`, label e.g. „Funkcie“.
+5. **Verify** — open `/features` (or home with `both`); click a tile → fullscreen modal; test ←/→ and ESC.
+
+Phase 1 uses fixed route `/features` in the SPA (Settings `publicRoute` is stored for Phase 2 dynamic routing).
 
 ---
 
