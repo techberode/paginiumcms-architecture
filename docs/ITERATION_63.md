@@ -1,7 +1,7 @@
 # Iteration 63 — Admin system update (production only)
 
-**Status:** ✅ **v2.1.0-beta.15** — MVP + deploy hotfixes + v2 version check UX  
-**Target release:** `v2.1.0-beta.15`
+**Status:** ✅ **v2.1.0-beta.18** — MVP + v2 compare UI + one-click deploy latest tag  
+**Target release:** `v2.1.0-beta.18`
 
 ## Product position
 
@@ -42,19 +42,22 @@ This is **code deploy** (git tag / `main`), not content sync (`/github` panel).
 
 ## Tests
 
-- `SystemDeployServiceTest`, `SystemUpdateControllerTest`, `SystemUpdateVersionMatcherTest`
+- `SystemDeployServiceTest`, `SystemUpdateControllerTest`, `SystemUpdateVersionMatcherTest`, `GitHubReleaseClientTest`, `GitHubReleaseWebhookVerifierTest`, `GitHubReleaseWebhookControllerTest`
 - `JobRegistryStoreTest`, `JobsControllerPrivilegedDeployTest`, `PrivilegedJobPolicyTest`
 
 ## Phases (post-v2)
 
-### v2 remaining
+### v2 ✅ (shipped `v2.1.0-beta.18`)
 
-- One-click deploy latest tag button
-- Rich compare UI (commit list)
+- One-click deploy latest tag button (confirm + primary CTA when update available)
+- Rich compare UI — commit table (SHA, message, author, date) from GitHub compare API (max 50, tag-aware head)
 
-### v3
+### v3 ✅ (shipped `v2.1.0-beta.18`)
 
-- Webhook `POST /api/webhooks/github/release` on published release (HMAC secret in settings)
+- Webhook `POST /api/webhooks/github/release` on **release published** (HMAC `X-Hub-Signature-256`)
+- Settings: `webhookDeployEnabled`, `githubWebhookSecret` (encrypted at-rest)
+- Auto-enqueues `system-deploy` job; idempotent skip when same tag recently succeeded
+- Exempt from CSRF; allowed during maintenance mode; WAF body-scan exempt
 
 ## Production enable checklist
 
@@ -64,6 +67,7 @@ This is **code deploy** (git tag / `main`), not content sync (`/github` panel).
 4. **Docker bootstrap (once):** `APP_ROOT=/var/www/paginiumcms.com ./scripts/bootstrap-deploy-permissions.sh`
 5. Deploy via tag ref (e.g. `v2.1.0-beta.15`)
 6. **Remote check:** Platform → System update → *Skontrolovať remote* — verify banner + release notes from GitHub
+7. **Webhook (optional auto-deploy):** Settings → enable `webhookDeployEnabled`, set `githubWebhookSecret`; GitHub → Webhooks → URL `https://your-domain/api/webhooks/github/release`, content type JSON, secret, event **Release** only
 
 ## Related docs
 

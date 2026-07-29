@@ -54,9 +54,26 @@ final class GitHubReleaseClient
 
             $compare = null;
             $compareCommit = $localCommitFull ?? $localCommit;
-            if ($compareCommit !== null && $compareCommit !== '' && $latestSha !== null) {
-                $comparePath = $base . '/compare/' . rawurlencode($compareCommit) . '...' . rawurlencode($latestSha);
+            $latestTag = is_string($latestRelease['tag_name'] ?? null) ? $latestRelease['tag_name'] : null;
+            $compareHead = $latestTag ?? $latestSha;
+            if ($compareCommit !== null && $compareCommit !== '' && $compareHead !== null && $compareHead !== '') {
+                $comparePath = $base . '/compare/' . rawurlencode($compareCommit) . '...' . rawurlencode($compareHead);
                 $compare = $this->request($comparePath, $token);
+            }
+
+            $normalizedCompare = null;
+            if (is_array($compare)) {
+                $totalCommits = (int) ($compare['total_commits'] ?? 0);
+                $commits = $this->normalizeCommits($compare);
+                $normalizedCompare = [
+                    'status' => $compare['status'] ?? null,
+                    'ahead_by' => (int) ($compare['ahead_by'] ?? 0),
+                    'behind_by' => (int) ($compare['behind_by'] ?? 0),
+                    'total_commits' => $totalCommits,
+                    'compare_head' => $compareHead,
+                    'commits' => $commits,
+                    'commits_truncated' => $totalCommits > count($commits),
+                ];
             }
 
             $releaseBody = is_string($latestRelease['body'] ?? null) ? trim($latestRelease['body']) : '';
@@ -80,12 +97,7 @@ final class GitHubReleaseClient
                 'latest_release_published_at' => is_string($latestRelease['published_at'] ?? null)
                     ? $latestRelease['published_at']
                     : null,
-                'compare' => $compare !== null ? [
-                    'status' => $compare['status'] ?? null,
-                    'ahead_by' => (int) ($compare['ahead_by'] ?? 0),
-                    'behind_by' => (int) ($compare['behind_by'] ?? 0),
-                    'total_commits' => (int) ($compare['total_commits'] ?? 0),
-                ] : null,
+                'compare' => $normalizedCompare,
             ];
         } catch (RuntimeException $e) {
             return [
@@ -136,5 +148,53 @@ final class GitHubReleaseClient
         $decoded = json_decode($body, true);
 
         return is_array($decoded) ? $decoded : [];
+    }
+
+    /**
+     * @param array<string, mixed> $compare
+     * @return list<array{sha: string, sha_full: string, message: string, author: ?string, date: ?string, url: ?string}>
+     */
+    private function normalizeCommits(array $compare, int $limit = 50): array
+    {
+        $rows = $compare['commits'] ?? [];
+        if (!is_array($rows)) {
+            return [];
+        }
+
+        $out = [];
+        foreach (array_slice($rows, 0, $limit) as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $shaFull = is_string($row['sha'] ?? null) ? $row['sha'] : '';
+            if ($shaFull === '') {
+                continue;
+            }
+            $commit = is_array($row['commit'] ?? null) ? $row['commit'] : [];
+            $messageRaw = is_string($commit['message'] ?? null) ? $commit['message'] : '';
+            $message = '';
+            if ($messageRaw !== '') {
+                $lines = explode("\n", $messageRaw, 2);
+                $message = $lines[0];
+            }
+            if (strlen($message) > 200) {
+                $message = substr($message, 0, 200) . '…';
+            }
+            $author = is_array($commit['author'] ?? null) ? $commit['author'] : [];
+            $authorName = is_string($author['name'] ?? null) ? $author['name'] : null;
+            $date = is_string($author['date'] ?? null) ? $author['date'] : null;
+            $url = is_string($row['html_url'] ?? null) ? $row['html_url'] : null;
+
+            $out[] = [
+                'sha' => substr($shaFull, 0, 7),
+                'sha_full' => $shaFull,
+                'message' => $message,
+                'author' => $authorName,
+                'date' => $date,
+                'url' => $url,
+            ];
+        }
+
+        return $out;
     }
 }

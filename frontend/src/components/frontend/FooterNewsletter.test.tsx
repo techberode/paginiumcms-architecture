@@ -17,6 +17,15 @@ vi.mock('../../api/newsletter', () => ({
   subscribeFooterNewsletter: vi.fn(),
 }));
 
+vi.mock('./NewsletterSubscribeModal', () => ({
+  NewsletterSubscribeModal: ({ isOpen }: { isOpen: boolean }) =>
+    isOpen ? (
+      <div role="dialog">
+        <h2>Odber noviniek</h2>
+      </div>
+    ) : null,
+}));
+
 vi.mock('../../context/SettingsContext', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../context/SettingsContext')>();
   return {
@@ -37,17 +46,27 @@ vi.mock('../../context/SettingsContext', async (importOriginal) => {
 });
 
 describe('FooterNewsletter', () => {
-  it('renders compact CTA and opens modal on subscribe click', () => {
+  it('renders inline email field and opens modal on submit', () => {
     renderWithRouter(<FooterNewsletter />);
 
     expect(screen.getByText('Newsletter')).toBeInTheDocument();
     expect(screen.getByText('Custom hint from settings')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Váš e-mail')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Prihlásiť sa/i })).toBeInTheDocument();
+    expect(screen.queryByText('Vybrať typy odberu…')).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Prihlásiť sa/i }));
 
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     expect(screen.getByText('Odber noviniek')).toBeInTheDocument();
+  });
+
+  it('opens modal when Enter is pressed in email field', () => {
+    renderWithRouter(<FooterNewsletter />);
+
+    const input = screen.getByPlaceholderText('Váš e-mail');
+    fireEvent.change(input, { target: { value: 'test@example.com' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 });

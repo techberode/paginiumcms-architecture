@@ -2610,6 +2610,23 @@ Manuálny snapshot: admin **Demo** → **Reset demo seed**.
 
 ---
 
+## ISS-109 – Newsletter footer CTA príliš objemný — medzistav — It.61 Phase 5
+
+**Závažnosť:** Nízka (UX / vizuál, nie funkčná chyba)  
+**Stav:** ✅ **vyriešené** — variant B shipped **`v2.1.0-beta.18`**
+
+**Symptóm:** Zapnutý footer newsletter (`footerEnabled`) zväčšuje pätičku — zvýraznený CTA box s e-mailom a odkazom pôsobí „neohrabane“. Modal s preferenciami je OK, problém je **footprint vo footeri**.
+
+**Požadované riešenie (product):**
+
+1. **Minimal** — len odkaz „Prihlásiť sa na novinky“ → modal (existujúci flow).
+2. **Inline email** — samotné tenké pole alebo odkaz s rozklikom, bez objemného boxu.
+3. **Side tab** — skrytá bočná záložka s rozbalením panelu (footer vizuálne čistý).
+
+**Riešenie:** It.61 Phase 5 variant **B** — inline e-mail pole + šípka vo footer stĺpci (bez gradient boxu); modal s preferenciami nezmenený. Varianty A/C + `footerDisplayMode` zostávajú v backlogu.
+
+---
+
 ## Súvisiace dokumenty
 
 - [user/BRANDING.md](user/BRANDING.md) — logo a favicon (**2.0.52**)
@@ -2620,7 +2637,7 @@ Manuálny snapshot: admin **Demo** → **Reset demo seed**.
 - [ITERATION_56.md](ITERATION_56.md) — rich navigation (ISS-085)
 - [ITERATION_57.md](ITERATION_57.md) — suggest-meta (ISS-080)
 - [ITERATION_62.md](ITERATION_62.md) — scheduler prod hardening (ISS-094)
-- [ITERATION_61.md](ITERATION_61.md) — footer newsletter + admin zoznam odberateľov (ISS-097)
+- [ITERATION_61.md](ITERATION_61.md) — footer newsletter + admin zoznam odberateľov (ISS-097); Phase 5 footer UX (ISS-109)
 - [deploy/DEMO_DEPLOY.md](deploy/DEMO_DEPLOY.md) — demo nasadenie + ISS-098 CORS + ISS-099 cron/storage + ISS-102 bootstrap
 - [deploy/CRON.md](deploy/CRON.md) — produkčný crontab + Docker storage
 - [developer/TESTING.md](developer/TESTING.md) — PHPUnit izolácia (`LoginAttemptTracker`)

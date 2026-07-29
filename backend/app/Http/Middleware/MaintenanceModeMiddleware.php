@@ -30,6 +30,7 @@ class MaintenanceModeMiddleware implements MiddlewareInterface
         '/api/maintenance/',
         '/api/newsletter/',
         '/api/debug/',
+        '/api/webhooks/',
         '/storage/',
     ];
 

@@ -300,7 +300,7 @@ GitHub API (read-only for check):
 - `GET /repos/{owner}/{repo}/releases/latest` — latest tag + body
 - `GET /repos/{owner}/{repo}/compare/{base}...{head}` — commits behind/ahead
 
-Optional webhook (future): `POST /api/webhooks/github/release` → auto-enqueue deploy on published release (HMAC secret in settings).
+Optional webhook (It.63 v3): `POST /api/webhooks/github/release` → auto-enqueue deploy on **release published** (HMAC secret in Settings → System update).
 
 ### G5. Demo policy
 
@@ -343,7 +343,7 @@ Document as **It.63 — Admin system update (prod)** — see [ITERATION_63.md](.
 
 - MVP: status + manual CLI trigger from admin (job queue)
 - v2: GitHub compare UI + one-click deploy
-- v3: webhook on release publish
+- v3: webhook on release publish ✅
 
 ---
 

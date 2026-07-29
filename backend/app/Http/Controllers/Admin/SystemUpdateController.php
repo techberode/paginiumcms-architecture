@@ -4,25 +4,23 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Admin;
 
-use PaginiumCMS\Core\Scheduler\Services\JobQueueStore;
 use PaginiumCMS\Core\Scheduler\Services\JobRegistryStore;
 use PaginiumCMS\Core\Scheduler\Services\JobRunStore;
-use PaginiumCMS\Core\Scheduler\Services\JobWorker;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\SystemUpdate\Services\GitHubReleaseClient;
 use PaginiumCMS\Core\SystemUpdate\Services\GitRepositoryInspector;
-use PaginiumCMS\Core\SystemUpdate\Services\SystemDeployService;
+use PaginiumCMS\Core\SystemUpdate\Services\SystemDeployTriggerService;
 use PaginiumCMS\Core\SystemUpdate\Services\SystemUpdateVersionMatcher;
+use PaginiumCMS\Core\SystemUpdate\Services\SystemUpdateWebhookService;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Demo\Services\DemoMode;
 use PaginiumCMS\Modules\Security\Models\User;
-use PaginiumCMS\Modules\Security\Services\SecurityAuditStore;
 use PaginiumCMS\Support\AppVersion;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
- * Admin system update — status, GitHub compare, deploy enqueue (It.63 MVP).
+ * Admin system update — status, GitHub compare, deploy enqueue (It.63).
  */
 final class SystemUpdateController
 {
@@ -32,12 +30,10 @@ final class SystemUpdateController
         private SettingsRepositoryInterface $settings,
         private GitRepositoryInspector $git,
         private GitHubReleaseClient $github,
-        private SystemDeployService $deploy,
+        private SystemDeployTriggerService $deployTrigger,
         private JobRegistryStore $registry,
         private JobRunStore $runs,
-        private JobQueueStore $queue,
-        private JobWorker $worker,
-        private SecurityAuditStore $audit,
+        private SystemUpdateWebhookService $webhook,
         private SystemUpdateVersionMatcher $versionMatcher,
         private JsonResponder $json
     ) {
@@ -54,6 +50,7 @@ final class SystemUpdateController
             'git' => $gitStatus,
             'config' => $config,
             'job_registered' => $this->registry->find(self::JOB_ID) !== null,
+            'webhook' => $this->webhook->publicWebhookConfig(),
             'recent_runs' => $this->runs->forJob(self::JOB_ID, 10),
         ]);
     }
@@ -114,45 +111,11 @@ final class SystemUpdateController
             $ref = 'origin/' . ($branch !== '' ? $branch : 'main');
         }
 
-        $config = $this->settings->group('systemUpdate');
-        if (!(bool) ($config['deployEnabled'] ?? false)) {
-            return $this->json->error($response, 'System deploy is disabled in settings', 403);
-        }
-
-        try {
-            $this->deploy->assertAllowedRef($ref, $config);
-        } catch (\InvalidArgumentException $e) {
-            return $this->json->error($response, $e->getMessage(), 422);
-        }
-
-        if ($this->registry->find(self::JOB_ID) === null) {
-            return $this->json->error($response, 'System deploy job is not registered', 503);
-        }
-
         /** @var User|null $user */
         $user = $request->getAttribute('user');
-        $payload = ['ref' => $ref];
+        $result = $this->deployTrigger->trigger($ref, $user, 'system.deploy');
 
-        $queueId = $this->queue->enqueue(self::JOB_ID, $payload);
-        $processed = $this->worker->process(1);
-        $result = $processed['results'][0] ?? null;
-
-        $this->audit->append(
-            'system.deploy',
-            'warning',
-            'System deploy triggered',
-            $user instanceof User ? $user->getId() : null,
-            $user instanceof User ? $user->getEmail() : null,
-            null,
-            ['ref' => $ref, 'queue_id' => $queueId, 'result' => $result]
-        );
-
-        return $this->json->success($response, [
-            'queued' => true,
-            'queue_id' => $queueId,
-            'ref' => $ref,
-            'result' => $result,
-        ]);
+        return $this->respondTrigger($response, $result);
     }
 
     /**
@@ -161,8 +124,27 @@ final class SystemUpdateController
      */
     private function publicConfig(array $config): array
     {
-        unset($config['githubToken']);
+        unset($config['githubToken'], $config['githubWebhookSecret']);
 
         return $config;
+    }
+
+    /**
+     * @param array<string, mixed> $result
+     */
+    private function respondTrigger(ResponseInterface $response, array $result): ResponseInterface
+    {
+        $status = (int) ($result['http_status'] ?? 500);
+        if (($result['ok'] ?? false) !== true) {
+            return $this->json->error(
+                $response,
+                is_string($result['error'] ?? null) ? $result['error'] : 'Deploy request failed',
+                $status
+            );
+        }
+
+        unset($result['http_status'], $result['ok']);
+
+        return $this->json->success($response, $result);
     }
 }
