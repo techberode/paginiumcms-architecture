@@ -1,7 +1,7 @@
 # PaginiumCMS — Feature overview (implemented vs planned)
 
 > **Purpose:** Single map of what the project **already ships**, what is **backlog / pre-Final**, and what **checklists** still need attention.  
-> **Current release:** **`v2.1.0-beta.18`** · **2026-07-29**  
+> **Current release:** **`v2.1.0-beta.20`** · **2026-07-29**  
 > **Architecture:** React SPA (Vite 8, TS) ↔ Slim 4 REST API ↔ PHP 8.5 flat-file core (no SQL)
 
 | Symbol | Meaning |
@@ -22,8 +22,8 @@
 |-----------|---------------|--------|
 | Core CMS (2.0.x) | `v2.0.58` … `2.0.58` | Auth, content, media, WAF, i18n waves, plugins |
 | Public Beta 1 | `v2.1.0-beta.1`–`.3` | Beta docs, security patches, tester path |
-| Post-beta features | `beta.4`–`.18` | Nav, analytics, demo, newsletter, system update |
-| **Latest** | **`v2.1.0-beta.18`** | It.61 Phase 5 footer + It.63 v2/v3 (compare, deploy, webhook) |
+| Post-beta features | `beta.4`–`.20` | Nav, analytics, demo, newsletter, system update, gallery |
+| **Latest** | **`v2.1.0-beta.20`** | It.65 gallery Phase 1 + footer UX + analytics beacon (beta.19) |
 | Final 1.0 GA | not tagged | After beta testing + **It.25** setup wizard & one-click update UX |
 
 **Production instances:** `paginiumcms.com` (prod) · `demo.paginiumcms.com` (demo, `DEMO_MODE=true`)
@@ -88,6 +88,8 @@
 | Cookie consent banner | ✅ | beta.17, GDPR settings |
 | Contact form | ✅ | It.52 |
 | Footer newsletter (inline email → modal) | ✅ | It.61 Phase 5, beta.18 |
+| Footer social links (icons) | ✅ | It.64, beta.19 |
+| Feature gallery (`/features`, home embed) | ✅ | It.65 Phase 1, beta.20 |
 | Newsletter confirm / manage / unsubscribe | ✅ | It.61 Phases 3–4 public pages |
 
 ### 2.5 Newsletter & campaigns ✅
@@ -154,10 +156,10 @@
 |------|--------|
 | Docker Compose + `first-run.sh` | ✅ |
 | `iteration-gate.sh` (PHPStan L8, PHPUnit, tsc, ESLint, Vitest) | ✅ |
-| Deploy guides (prod, demo, release tag) | ✅ [deploy/DEPLOY.md](deploy/DEPLOY.md) |
+| Deploy guides (prod, demo, release tag) | ✅ [deploy/DEPLOY.md](deploy/DEPLOY.md) · [developer/RELEASE.md](developer/RELEASE.md) |
 | Cron documentation | ✅ [deploy/CRON.md](deploy/CRON.md) |
 | User guides (install, admin, beta tester) | ✅ `docs/user/*` |
-| GitHub Releases beta tags | ✅ through **beta.18** |
+| GitHub Releases beta tags | ✅ through **beta.20** |
 
 ---
 
@@ -165,7 +167,7 @@
 
 Auto-discovered from `backend/app/Http/Routes/` (+ auth inline in `bootstrap/app.php`):
 
-`analytics` · `audittrail` · `blueprints` · `cache` · `codeeditor` · `comments` · `conflicts` · `contact` · `content` · `counts` · `dashboard` · `debug` · `demo` · `developer` · `drafts` · `extensions` · `feeds` · `firewall` · `github` · `health` · `jobs` · `locking` · `logs` · `maintenance` · `media` · `messages` · `navigation` · `newsletter` · `notifications` · `security` · `seo` · `settings` · `sso` · `storage` · `systemupdate` · `translations` · `trash` · `users` · `validation` · `versions` · `webhooks` · `workflows`
+`analytics` · `audittrail` · `blueprints` · `cache` · `codeeditor` · `comments` · `conflicts` · `contact` · `content` · `counts` · `dashboard` · `debug` · `demo` · `developer` · `drafts` · `extensions` · `feeds` · `firewall` · `gallery` · `github` · `health` · `jobs` · `locking` · `logs` · `maintenance` · `media` · `messages` · `navigation` · `newsletter` · `notifications` · `security` · `seo` · `settings` · `sso` · `storage` · `systemupdate` · `translations` · `trash` · `users` · `validation` · `versions` · `webhooks` · `workflows`
 
 Detail: [architecture/API.md](architecture/API.md) · [CHECKLIST.md §1](CHECKLIST.md#1-backend-api-inventory-30-route-files)
 
@@ -176,7 +178,7 @@ Detail: [architecture/API.md](architecture/API.md) · [CHECKLIST.md §1](CHECKLI
 | Route | Module |
 |-------|--------|
 | `/dashboard`, `/analytics` | Dashboard, analytics |
-| `/pages`, `/articles`, `/media`, `/navigation` | Content |
+| `/pages`, `/articles`, `/media`, `/navigation`, `/gallery` | Content / marketing |
 | `/comments`, `/messages`, `/newsletter` | Engagement |
 | `/github`, `/platform/update` | Integrations / deploy |
 | `/scheduler`, `/backups`, `/trash` | Ops |
@@ -186,7 +188,7 @@ Detail: [architecture/API.md](architecture/API.md) · [CHECKLIST.md §1](CHECKLI
 | `/blueprints`, `/extensions`, `/demo` | Extensions & demo |
 | `/code-editor`, `/developer/logs` | Developer 🛠 |
 
-Public (same SPA): `/`, `/blog`, `/blog/:slug`, `/:slug`, `/newsletter/*`
+Public (same SPA): `/`, `/features`, `/blog`, `/blog/:slug`, `/:slug`, `/newsletter/*`
 
 ---
 
@@ -200,7 +202,7 @@ Public (same SPA): `/`, `/blog`, `/blog/:slug`, `/:slug`, `/newsletter/*`
 | — | **Community beta testing** | 🔴 | [BETA_TESTER.md](user/BETA_TESTER.md) — not fully executed yet |
 | — | **Final 1.0 GA tag** | ⏳ | After testing + It.25 |
 
-### 5.2 Feature backlog (post-beta, not blocking beta.18)
+### 5.2 Feature backlog (post-beta, not blocking beta.20)
 
 | It. | Name | Priority | Status |
 |-----|------|----------|--------|

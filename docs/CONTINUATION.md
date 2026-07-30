@@ -16,33 +16,29 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 
 ---
 
-## Aktuálny plán (2026-07-27) — Public Beta 1 + produkčný deploy
+## Aktuálny plán (2026-07-30) — Public Beta 1 + produkčný deploy
 
-**Stav:** **`v2.1.0-beta.18`** · It.61 Phase 5 + It.63 v2/v3 (compare, deploy, webhook) · **It.25** ⏳ pre-Final gate
+**Stav:** **`v2.1.0-beta.20`** · It.65 Phase 1 (gallery) + It.64/Analytics + footer UX · **It.25** ⏳ pre-Final gate
 
-**Ďalšia iterácia:** beta testing + backlog (It.58, …) — **It.25 setup wizard + one-click update UX až pred Final 1.0**
+**Ďalšia iterácia:** **It.65 Phase 2** (slider) · It.58 layout builder · **It.25 setup wizard až pred Final 1.0**
 
 | Priorita | Úloha | Stav |
 |----------|--------|------|
 | **Prod deploy** | Docker stack, nginx, SSL, `git pull` + frontend build | ✅ beží na `paginiumcms.com` |
-| **Prod fix — scheduler** | Jobs run 500, storage permissions, UI toast | ✅ **It.62** (`f7a73f1`) |
-| **Prod fix — maintenance pozadie** | „Neplatná URL“ pri `/storage/` ceste | ✅ **`88cbe31`** (ISS-095) |
-| **Prod fix — deploy** | Docker PHP 8.5, log paths, SMTP recipient, OPcache | ✅ `0fe21ec` … `d1bd35b` |
+| **Release beta.20** | It.65 gallery + footer UX | ✅ **`4d17e05`** · tag `v2.1.0-beta.20` |
+| **It.64** | Footer social links | ✅ **`v2.1.0-beta.19`** |
+| **Analytics SPA beacon** | `POST /api/analytics/pageview` | ✅ **`v2.1.0-beta.19`** |
+| **It.65 Phase 1** | Feature gallery grid + modal | ✅ **`v2.1.0-beta.20`** |
+| **Footer UX** | Social left column + theme contrast | ✅ beta.20 (includes `51c3bc9`) |
 | **Cron na hoste** | `scheduler:run` + `worker:process` každú minútu | ⏳ overiť crontab |
-| **Tag beta.10** | `v2.1.0-beta.10` It.13 v3 demo | ✅ **`ab5b5fb`** |
-| **It.59** | Scheduled publish UX v editore + filtre | ✅ **2.0.53** |
-| **It.60** | Custom komponenty editora (plugin + settings) | ✅ **`3d3ab48`** |
-| **It.33** | Analytics enrichment (sources, geo, vlajky) | ✅ **`3d3ab48`** |
-| **It.61** | Newsletter footer + admin prehľad (ISS-097) | ✅ **shipped** |
-| **It.13 v3** | Demo full trial (seed, strip, marketing settings) | ✅ **shipped** (`beta.10`) |
-| **It.13 v4** | S-DEMOCREDS, quick-login, editor fix, demo nav UX | ✅ **ready** (`beta.11`) |
-| **Demo ops — ISS-102** | Storage bootstrap, health 200, `demo:reset-if-due` not_due OK | ✅ **2026-07-27** |
-| **ISS-103** | PHPUnit test isolation — `.env` / `DEMO_MODE` pollution | ✅ **`beta.12`** |
-| **It.63** | Admin system update (prod deploy) | ✅ **`beta.15`** — MVP + v2 version check + ISS-104/105 |
+| **It.63** | Admin system update (prod deploy) | ✅ **`beta.15`** — MVP + v2/v3 webhook |
+| **It.61** | Newsletter footer + admin prehľad | ✅ **shipped** |
 
-Detail deployu (lokálne, gitignored): `PRIVATE_DOMAIN_DEPLOY.md` · scheduler: [ITERATION_62.md](ITERATION_62.md) · cron: [deploy/CRON.md](deploy/CRON.md)
+Detail deployu (lokálne, gitignored): `PRIVATE_DOMAIN_DEPLOY.md` · releases: [developer/RELEASE.md](developer/RELEASE.md) · gallery usage: [ITERATION_65.md](ITERATION_65.md#usage-guide-admin)
 
 ---
+
+## Aktuálny plán (2026-07-27) — Public Beta 1 + produkčný deploy *(archív)*
 
 ## Iterácia 62 – Scheduler production hardening ✅ (2026-07-26)
 
@@ -308,56 +304,44 @@ od ktorých závisí väčšina ostatných funkcií, a aby každá iterácia pri
 Pokračujeme vo vývoji PaginiumCMS (Flat-File CMS, žiadna DB).
 Stack: React SPA (Vite 8, TS) ↔ Slim 4 REST API ↔ PHP 8.5 (PHPStan L8).
 Produkcia: paginiumcms.com (Docker PHP + host nginx, flat-file v backend/storage/).
-Demo: demo.paginiumcms.com (port 8091, DEMO_MODE=true, samostatný clone + stack).
-Komunikuj po slovensky. Pravidlá: .cursorrules + ZÁKONY v docs/CONTINUATION.md §2.
+Dev: workstation 192.168.10.20 · homelab prod 192.168.10.26 · VITE_API_URL= (same-origin).
+Demo: demo.paginiumcms.com (port 8091, DEMO_MODE=true).
+Komunikuj po slovensky. Pravidlá: .cursorrules + docs/CONTINUATION.md §2.
+Nemáme externých testerov — QA = gate + manuálny smoke.
 
-HOTOVÉ (2026-07-29):
-- It.61 Phase 5 ✅ inline email footer — v2.1.0-beta.18
-- It.63 v2/v3 ✅ compare + deploy latest tag + GitHub release webhook — v2.1.0-beta.18
+HOTOVÉ (2026-07-30) — v2.1.0-beta.20 (4d17e05):
+- It.65 Phase 1 ✅ Feature gallery — admin /gallery, public /features, home embed, gallery:manage
+- It.64 ✅ Footer social links (beta.19)
+- Analytics SPA beacon ✅ POST /api/analytics/pageview (beta.19)
+- Footer UX ✅ social icons left + theme contrast (51c3bc9 + beta.20)
 
-PRE-FINAL (neskôr, po beta testovaní):
-- It.25 ⏳ setup wizard + one-click update UX (Grav-like feel, engine z It.63) — [ITERATION_25.md](ITERATION_25.md)
+PRE-FINAL (pred 1.0):
+- It.25 ⏳ setup wizard + one-click update UX — [ITERATION_25.md](ITERATION_25.md)
 
-ĎALŠIA ITERÁCIA (beta fáza):
-- Tester feedback, It.58 layout builder, … — It.25 až pred Final 1.0
+ĎALŠIA ITERÁCIA (dohodnuté):
+- It.65 Phase 2 — slider, autoplay, effect presets, dynamic publicRoute
+- It.58 — layout builder
+- Ops: cron check, prod deploy beta.20 ak ešte nie
 
-PO DEPLOYI DEMO (beta.11):
-- git checkout v2.1.0-beta.11 + composer + FE build (docs/deploy/DEMO_DEPLOY.md)
-- Admin /demo → Reset demo seed (manuálny snapshot — not_due na CLI je OK)
-- Smoke: GET /api/health 200, GET /api/demo/public-info, quick-login, login s Origin
-- Storage: backend/storage — chown user:www-data, dirs 2775 (ISS-099/102 pred cron)
+GALLERY USAGE (It.65):
+- docs/ITERATION_65.md#usage-guide-admin
+- Admin /gallery → Media screenshots → Published
+- Settings → Feature gallery → enabled + placement
+- Navigation → /features
 
 PROD DEPLOY (paginiumcms.com):
   cd /var/www/paginiumcms.com
-  GIT_REF=v2.1.0-beta.18 APP_ROOT=/var/www/paginiumcms.com \
+  GIT_REF=v2.1.0-beta.20 APP_ROOT=/var/www/paginiumcms.com \
     STACK_DIR=/var/lib/docker/compose/paginiumcms BACKEND_PORT=8089 \
     ./scripts/deploy-instance-update.sh
-  # alebo manuálne:
-  git fetch && git checkout v2.1.0-beta.18 && composer install --no-dev --optimize-autoloader
-  cd frontend && npm ci && npm run build:prod && cd ..
-  cd /var/lib/docker/compose/paginiumcms && ./stack.sh restart php
-  sleep 8 && curl -s http://127.0.0.1:8089/api/health
+  curl -s http://127.0.0.1:8089/api/health | jq -r '.data.version'
+  # expected: 2.1.0-beta.20
 
-DEMO DEPLOY (demo.paginiumcms.com) — plný C&P: docs/deploy/DEMO_DEPLOY.md
-  APP_ROOT=/var/www/paginiumcms-demo
-  STACK_DIR=/var/lib/docker/compose/paginiumcms-demo
-  BACKEND_PORT=8091
-  # APP_URL=https://demo.paginiumcms.com v .env je POVINNÉ
-  ./scripts/deploy-instance-update.sh
-  # smoke s Origin (ISS-098):
-  curl -sS -o /dev/null -w '%{http_code}\n' -X POST https://demo.paginiumcms.com/api/auth/login \
-    -H 'Content-Type: application/json' -H 'Origin: https://demo.paginiumcms.com' \
-    -d '{"email":"demo@paginiumcms.com","password":"Demo123!"}'
-  # očakávané: 200
-
-PLÁNOVAČ / CRON:
-- CLI: scheduler:run, worker:process, jobs:run {id}
-- Demo: demo:reset-if-due každých 15 min — docs/deploy/CRON.md + DEMO_DEPLOY.md § ISS-099
-
-Incidenty: docs/ISSUES.md ISS-094–102.
-Deploy guide: docs/deploy/DEPLOY.md + docs/deploy/DEMO_DEPLOY.md.
+RELEASE DOCS: docs/developer/RELEASE.md (beta.18–20 copy-paste blocks)
+BACKLOG: docs/ITERATION_BACKLOG.md
+Incidenty: docs/ISSUES.md · Deploy: docs/deploy/DEPLOY.md
 ```
 
 ---
 
-*Updated 2026-07-27 after It.63 v2 (`beta.15`) — version check UX + ISS-104/105. Details: `ITERATION_63.md`, `ISSUES.md`, `RELEASE.md`.*
+*Updated 2026-07-30 after **`v2.1.0-beta.20`** — It.65 gallery Phase 1 + footer UX. Details: `ITERATION_65.md`, `RELEASE.md`, `CHANGELOG.md`.*

@@ -1,7 +1,7 @@
 # PaginiumCMS – API, Frontend & Feature Checklist
 
-**Last updated:** 2026-07-29 (release **`v2.1.0-beta.18`**)  
-**Version:** 2.1.0-beta.18  
+**Last updated:** 2026-07-30 (release **`v2.1.0-beta.20`**)  
+**Version:** 2.1.0-beta.20  
 **Living overview (implemented vs planned):** **[FEATURE_OVERVIEW.md](FEATURE_OVERVIEW.md)** ← prefer for beta+ status  
 **Architecture docs:** [architecture/](architecture/) · CI incidents: [ISSUES.md](ISSUES.md)
 
@@ -228,7 +228,7 @@ cd frontend && npm run lint && npm run type-check && npm test
 
 ## Súvisiace dokumenty
 
-- **[FEATURE_OVERVIEW.md](FEATURE_OVERVIEW.md)** — implemented vs planned (beta.18)
+- **[FEATURE_OVERVIEW.md](FEATURE_OVERVIEW.md)** — implemented vs planned (beta.20)
 - [architecture/API.md](architecture/API.md) · [API_CONTRACT.md](architecture/API_CONTRACT.md)
 - [architecture/BACKEND.md](architecture/BACKEND.md) · [CORE.md](architecture/CORE.md)
 - [user/FIREWALL.md](user/FIREWALL.md) · [user/LOGGING.md](user/LOGGING.md)

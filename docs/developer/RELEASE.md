@@ -1,7 +1,7 @@
 # Release checklist — PaginiumCMS
 
-> Latest version: **2.1.0-beta.18** · 2026-07-29 · tag **`v2.1.0-beta.18`** (after push) · main  
-> Previous: **2.1.0-beta.17** · tag **`v2.1.0-beta.17`**  
+> Latest version: **2.1.0-beta.20** · 2026-07-29 · tag **`v2.1.0-beta.20`** · commit **`4d17e05`** · main  
+> Previous: **2.1.0-beta.19** · tag **`v2.1.0-beta.19`** · commit **`543f463`**  
 > This file contains **copy-paste** blocks for GitHub Release.
 
 > **Poznámka k verziám:** `2.0.58` → `f53e71e` · **Public Beta 1** → `e3e0d82` · **Beta 1 Testing** → `c68e72b` · **Beta 1 patch (RR GHSA)** → *(commit po push)*.
@@ -38,7 +38,9 @@
 | **It.63 v2 — version check + audit fixes**       | `v2.1.0-beta.15` | `279bd88`      | ✅ tagged |
 | **It.61 — Newsletter v2 Phases 1–3 + BE↔FE**     | `v2.1.0-beta.16` | `baab12e`      | ✅ tagged |
 | **It.61 Phase 4 + footer modal + cookie consent** | `v2.1.0-beta.17` | `f9ae151`      | ✅ tagged |
-| **It.61 Phase 5 + It.63 v2/v3 — footer UX + system update + webhook** | `v2.1.0-beta.18` | *(this commit)* | pending  |
+| **It.61 Phase 5 + It.63 v2/v3 — footer UX + system update + webhook** | `v2.1.0-beta.18` | `9eb944e` | ✅ tagged |
+| **It.64 + Analytics SPA beacon + LAN dev fixes** | `v2.1.0-beta.19` | `543f463` | ✅ tagged |
+| **It.65 gallery Phase 1 + footer UX theme contrast** | `v2.1.0-beta.20` | `4d17e05` | ✅ tagged |
 
 
 **Pravidlo:** Post-beta patchy — `2.0.59+` alebo `2.1.0-beta.N` podľa rozsahu.
@@ -52,19 +54,164 @@ gh auth login   # ak ešte nie
 ./scripts/create-github-releases.sh
 ```
 
-Testerom / security reviewerovi poslať **`v2.1.0-beta.18`** + [SECURITY_REVIEW.md](../SECURITY_REVIEW.md).
+**Latest GH Release:** https://github.com/techberode/paginiumcms-architecture/releases/tag/v2.1.0-beta.20
 
 ---
 
-## v2.1.0-beta.18 — It.61 Phase 5 + It.63 v2
+## v2.1.0-beta.20 — It.65 Feature gallery Phase 1 + footer UX
+
+**Scope:** Admin/public feature gallery (grid + modal, `/features`, home embed); footer social icons left column + theme-aware cookie/footer contrast (includes `51c3bc9`).
+
+**Release commit:** `4d17e05` · **Tag:** `v2.1.0-beta.20` · **GH Release:** published 2026-07-29
+
+### Gate (required before tag)
+
+```bash
+./scripts/iteration-gate.sh
+```
+
+### Tag (already shipped)
+
+```bash
+git tag -a v2.1.0-beta.20 -m "v2.1.0-beta.20 — It.65 gallery Phase 1 + footer UX"
+git push origin v2.1.0-beta.20
+```
+
+### GitHub Release — copy-paste
+
+**Title:** `v2.1.0-beta.20 — Feature gallery Phase 1 + footer UX`
+
+**Body highlights:**
+
+- **It.65 Phase 1** — Admin `/gallery`, CRUD screenshots from Media, draft/publish, reorder, module tags
+- **Settings → Site → Feature gallery** — enable, placement (`home`, `/features`, both, off), grid layout, feature tag badges
+- **Public** — `/features` grid + fullscreen modal (←/→, ESC); optional home embed; Navigation link to `/features`
+- **API** — `GET /api/gallery/public`, `/api/admin/gallery/*`, permission `gallery:manage`
+- **Flat-file** — `data/gallery/index.json` + `data/gallery/items/{id}.json`
+- **Footer UX** — social icons in left column; theme-aware footer links and cookie banner surfaces
+- **Docs** — usage guide in [ITERATION_65.md](../ITERATION_65.md#usage-guide-admin), [ADMIN_GUIDE.md](../user/ADMIN_GUIDE.md)
+
+**Docs:** [CHANGELOG.md](../../CHANGELOG.md#210-beta20--2026-07-29) · [ITERATION_65.md](../ITERATION_65.md)
+
+**Production deploy:**
+
+```bash
+cd /var/www/paginiumcms.com
+git fetch origin --tags
+APP_ROOT=/var/www/paginiumcms.com \
+  STACK_DIR=/var/lib/docker/compose/paginiumcms \
+  BACKEND_PORT=8089 \
+  GIT_REF=v2.1.0-beta.20 \
+  ./scripts/deploy-instance-update.sh
+curl -s http://127.0.0.1:8089/api/health | jq -r '.data.version'
+# expected: 2.1.0-beta.20
+```
+
+**Smoke (gallery):**
+
+1. Admin → **Feature gallery** → add screenshot from Media → **Published**.
+2. Settings → **Feature gallery** → enable; placement `route` or `both`.
+3. Public `/features` — grid, click → modal, keyboard navigation.
+4. Navigation → item path `/features` (optional menu link).
+5. `curl -s http://127.0.0.1:8089/api/gallery/public | jq '.data.count'`
+
+**Note:** Gallery item JSON on production is created via admin UI only (repo ships empty `data/gallery/index.json`).
+
+---
+
+## v2.1.0-beta.19 — It.64 Footer social + Analytics SPA beacon
+
+**Scope:** Editable footer social links; SPA pageview analytics beacon; LAN dev/nginx + CORS fixes.
+
+**Release commit:** `543f463` · **Tag:** `v2.1.0-beta.19`
+
+### Gate (required before tag)
+
+```bash
+./scripts/iteration-gate.sh
+```
+
+### Tag (already shipped)
+
+```bash
+git tag -a v2.1.0-beta.19 -m "v2.1.0-beta.19 — analytics SPA beacon, footer social links"
+git push origin v2.1.0-beta.19
+```
+
+### GitHub Release — copy-paste
+
+**Title:** `v2.1.0-beta.19 — Analytics SPA beacon, footer social links`
+
+**Body highlights:**
+
+- **It.64** — Settings → Marketing & social: footer social icon editor (GitHub, X, LinkedIn, …, max 12)
+- **Public footer** — icon row; `GET /api/settings/public` → `social.enabled`, `social.links[]`
+- **Analytics fix** — `POST /api/analytics/pageview` from React Router (`useAnalyticsPageview`); nginx static SPA no longer skips tracking
+- **`Visit` model** — constructor order fix (500 on beacon)
+- **Admin analytics** — empty states; geo placeholder
+- **Dev/LAN** — nginx dev Vite upstream to workstation; empty `VITE_API_URL`; CORS dev override removed
+
+**Docs:** [ITERATION_64.md](../ITERATION_64.md) · [CHANGELOG.md](../../CHANGELOG.md#210-beta19--2026-07-29) · [DEV.md](../deploy/DEV.md)
+
+**Production deploy:**
+
+```bash
+APP_ROOT=/var/www/paginiumcms.com \
+  STACK_DIR=/var/lib/docker/compose/paginiumcms \
+  BACKEND_PORT=8089 \
+  GIT_REF=v2.1.0-beta.19 \
+  ./scripts/deploy-instance-update.sh
+curl -s http://127.0.0.1:8089/api/health | jq -r '.data.version'
+# expected: 2.1.0-beta.19
+```
+
+**Smoke:**
+
+1. Settings → Marketing & social → add GitHub link → public footer icons.
+2. Public site navigation → Analytics dashboard shows pageviews after consent.
+3. Footer social icons visible when enabled.
+
+---
+
+## v2.1.0-beta.18 — It.61 Phase 5 + It.63 v2/v3
 
 **Scope:** Inline email footer newsletter (ISS-109) + system update compare commits table + deploy latest tag + GitHub release webhook auto-deploy.
 
-**Tag (after gate green):**
+**Release commit:** `9eb944e` · **Tag:** `v2.1.0-beta.18`
+
+### Gate (required before tag)
+
+```bash
+./scripts/iteration-gate.sh
+```
+
+### Tag (already shipped)
 
 ```bash
 git tag -a v2.1.0-beta.18 -m "v2.1.0-beta.18 — It.61 Phase 5 footer UX + It.63 v2 system update"
 git push origin v2.1.0-beta.18
+```
+
+### GitHub Release — copy-paste
+
+**Title:** `v2.1.0-beta.18 — Footer newsletter UX, system update v2/v3`
+
+**Body highlights:**
+
+- **It.61 Phase 5** — footer newsletter: inline email field + arrow → subscribe modal (removed bulky gradient CTA, ISS-109)
+- **It.63 v2** — System update: compare commits table, deploy latest tag button
+- **It.63 v3** — GitHub release webhook → auto-enqueue deploy (`POST /api/webhooks/github/release`)
+
+**Docs:** [CHANGELOG.md](../../CHANGELOG.md#210-beta18--2026-07-29) · [ITERATION_61.md](../ITERATION_61.md) · [ITERATION_63.md](../ITERATION_63.md)
+
+**Production deploy:**
+
+```bash
+GIT_REF=v2.1.0-beta.18 APP_ROOT=/var/www/paginiumcms.com \
+  STACK_DIR=/var/lib/docker/compose/paginiumcms BACKEND_PORT=8089 \
+  ./scripts/deploy-instance-update.sh
+curl -s http://127.0.0.1:8089/api/health | jq -r '.data.version'
+# expected: 2.1.0-beta.18
 ```
 
 ---

@@ -91,7 +91,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Docs
 
-- [ITERATION_65.md](docs/ITERATION_65.md) (usage guide), [ADMIN_GUIDE.md](docs/user/ADMIN_GUIDE.md), [FEATURE_OVERVIEW.md](docs/FEATURE_OVERVIEW.md).
+- [ITERATION_65.md](docs/ITERATION_65.md) (usage guide), [developer/RELEASE.md](docs/developer/RELEASE.md), [ADMIN_GUIDE.md](docs/user/ADMIN_GUIDE.md), [FEATURE_OVERVIEW.md](docs/FEATURE_OVERVIEW.md).
 
 ---
 
