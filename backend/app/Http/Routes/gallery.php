@@ -23,6 +23,8 @@ return function (App $app): void {
 
     $app->group('/api/admin/gallery', function (RouteCollectorProxy $group) use ($admin) {
         $group->get('', [$admin, 'list']);
+        $group->get('/export', [$admin, 'export']);
+        $group->post('/import', [$admin, 'import']);
         $group->post('', [$admin, 'create']);
         $group->put('/reorder', [$admin, 'reorder']);
         $group->put('/{id}', [$admin, 'update']);

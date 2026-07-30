@@ -1,10 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { listPublicGalleryItems, type GalleryItem } from '../../api/gallery';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { useI18n } from '../../context/I18nContext';
 import { FeatureGalleryGrid } from './FeatureGalleryGrid';
 import { FeatureGallerySlider } from './FeatureGallerySlider';
 import { FeatureGalleryTagFilter } from './FeatureGalleryTagFilter';
+import { resolveGallerySlideDeepLink } from '../../utils/gallerySlideDeepLink';
 import { PUBLIC_SPINNER } from '../../theme/publicUiClasses';
 
 export interface FeatureGallerySectionProps {
@@ -13,6 +15,11 @@ export interface FeatureGallerySectionProps {
   previewItems?: GalleryItem[];
 }
 
+/**
+ * Public feature gallery section.
+ * It.58a entry point: a future layout block `featureGallery` should render this
+ * component (same `GET /api/gallery/public` — no duplicate storage).
+ */
 export const FeatureGallerySection: React.FC<FeatureGallerySectionProps> = ({
   variant = 'embedded',
   previewItems,
@@ -20,9 +27,12 @@ export const FeatureGallerySection: React.FC<FeatureGallerySectionProps> = ({
   const { t } = useI18n();
   const { settings } = useSettingsContext();
   const gallerySettings = settings.gallery;
+  const [searchParams, setSearchParams] = useSearchParams();
   const [items, setItems] = useState<GalleryItem[]>(previewItems ?? []);
   const [loading, setLoading] = useState(previewItems === undefined);
   const [activeTag, setActiveTag] = useState<string | null>(null);
+  const [deepLinkModalIndex, setDeepLinkModalIndex] = useState<number | null>(null);
+  const [deepLinkReady, setDeepLinkReady] = useState(variant === 'preview');
 
   useEffect(() => {
     if (previewItems !== undefined) {
@@ -48,6 +58,17 @@ export const FeatureGallerySection: React.FC<FeatureGallerySectionProps> = ({
     };
   }, [previewItems]);
 
+  useEffect(() => {
+    if (variant === 'preview' || loading) {
+      return;
+    }
+    const slide = searchParams.get('slide');
+    const resolved = resolveGallerySlideDeepLink(items, slide);
+    setActiveTag(resolved.activeTag);
+    setDeepLinkModalIndex(resolved.modalIndex);
+    setDeepLinkReady(true);
+  }, [items, loading, searchParams, variant]);
+
   const tags = useMemo(() => {
     const set = new Set<string>();
     for (const item of items) {
@@ -66,11 +87,26 @@ export const FeatureGallerySection: React.FC<FeatureGallerySectionProps> = ({
     return items.filter((item) => item.featureTag === activeTag);
   }, [activeTag, items]);
 
+  const handleTagChange = (tag: string | null) => {
+    setActiveTag(tag);
+    setDeepLinkModalIndex(null);
+    if (variant === 'preview') {
+      return;
+    }
+    const next = new URLSearchParams(searchParams);
+    if (tag) {
+      next.set('slide', tag);
+    } else {
+      next.delete('slide');
+    }
+    setSearchParams(next, { replace: true });
+  };
+
   if (variant !== 'preview' && !gallerySettings?.enabled) {
     return null;
   }
 
-  if (loading) {
+  if (loading || !deepLinkReady) {
     return (
       <div className="flex justify-center py-12">
         <div className={PUBLIC_SPINNER} />
@@ -95,12 +131,14 @@ export const FeatureGallerySection: React.FC<FeatureGallerySectionProps> = ({
         autoplayEnabled={variant === 'preview' ? false : autoplayEnabled}
         autoplayIntervalMs={autoplayIntervalMs}
         modalCaptionStyle={modalCaptionStyle}
+        initialModalIndex={deepLinkModalIndex}
       />
     ) : (
       <FeatureGalleryGrid
         items={filteredItems}
         showFeatureTags={showFeatureTags}
         modalCaptionStyle={modalCaptionStyle}
+        initialModalIndex={deepLinkModalIndex}
       />
     );
 
@@ -128,7 +166,7 @@ export const FeatureGallerySection: React.FC<FeatureGallerySectionProps> = ({
           </p>
         )}
         {showFeatureTags ? (
-          <FeatureGalleryTagFilter tags={tags} activeTag={activeTag} onChange={setActiveTag} />
+          <FeatureGalleryTagFilter tags={tags} activeTag={activeTag} onChange={handleTagChange} />
         ) : null}
         {body}
       </div>

@@ -10,7 +10,10 @@ use PaginiumCMS\Core\CodePolicy\Exceptions\CodePolicyViolationException;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 
 /**
- * Syntax + security + size policy for CodeEditor writes (Iteration 14).
+ * Syntax + security + size policy for CodeEditor / plugins / layout Monaco.
+ *
+ * Untrusted trees (extensions, themes, layout shortcodes, …) are fail-closed:
+ * policy always runs, even if Settings `codePolicy.enabled` is false.
  */
 final class CodePolicyEngine implements CodePolicyEngineInterface
 {
@@ -27,12 +30,10 @@ final class CodePolicyEngine implements CodePolicyEngineInterface
     ];
 
     /**
-     * Prísnejší zoznam pre extension/plugin kód (untrusted ZIP import).
-     * Tu zakazujeme aj RCE primitíva, ktoré sú v jadre CMS legitímne
-     * (include/require pri bootstrappingu, unserialize v session storage),
-     * ale v pluginoch predstavujú priamu cestu k spusteniu ľubovoľného kódu.
+     * Stricter list for untrusted code (plugins, themes, Monaco-authored artifacts).
+     * Blocks RCE primitives that are legitimate in core bootstrap only.
      */
-    private const EXTENSION_FORBIDDEN = [
+    private const UNTRUSTED_FORBIDDEN = [
         'unserialize',
         'call_user_func',
         'call_user_func_array',
@@ -40,6 +41,21 @@ final class CodePolicyEngine implements CodePolicyEngineInterface
         'include_once',
         'require',
         'require_once',
+    ];
+
+    /**
+     * Path markers (normalized with forward slashes) for content outside CMS core.
+     *
+     * @var list<string>
+     */
+    private const UNTRUSTED_PATH_MARKERS = [
+        'backend/app/Http/Extensions/',
+        'Http/Extensions/',
+        'themes/',
+        'data/layout/',
+        'data/shortcodes/',
+        'data/plugins/',
+        'untrusted://',
     ];
 
     private const EXTENSION_PATH_MARKER = 'backend/app/Http/Extensions/';
@@ -53,14 +69,48 @@ final class CodePolicyEngine implements CodePolicyEngineInterface
 
     public function validate(string $path, string $content): void
     {
+        $this->runValidation($path, $content, $this->isUntrustedPath($path));
+    }
+
+    public function validateUntrusted(string $logicalPath, string $content): void
+    {
+        $path = $logicalPath;
+        if (!$this->isUntrustedPath($path)) {
+            $path = 'untrusted://' . ltrim(str_replace('\\', '/', $logicalPath), '/');
+        }
+
+        $this->runValidation($path, $content, true);
+    }
+
+    public function isUntrustedPath(string $path): bool
+    {
+        $normalized = str_replace('\\', '/', $path);
+        foreach (self::UNTRUSTED_PATH_MARKERS as $marker) {
+            if (str_contains($normalized, $marker)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function runValidation(string $path, string $content, bool $untrusted): void
+    {
         $policy = $this->settings->group('codePolicy');
-        if (!(bool) ($policy['enabled'] ?? true)) {
+
+        // Core may opt out; untrusted never may (fail-closed).
+        if (!$untrusted && !(bool) ($policy['enabled'] ?? true)) {
             return;
         }
 
         $errors = [];
 
         $maxKb = (int) ($policy['maxFileSizeKb'] ?? 512);
+        if ($untrusted) {
+            // Tighter default cap for non-core artifacts.
+            $maxKb = min($maxKb, (int) ($policy['untrustedMaxFileSizeKb'] ?? 256));
+        }
+
         if (strlen($content) > $maxKb * 1024) {
             $errors['size'][] = sprintf('File exceeds maximum size of %d KB', $maxKb);
         }
@@ -70,22 +120,31 @@ final class CodePolicyEngine implements CodePolicyEngineInterface
         }
 
         $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-        if ($extension === 'php') {
+        if ($extension === 'php' || str_ends_with(strtolower($path), '.php')) {
             $forbidden = $this->parseForbiddenList((string) ($policy['forbiddenPhpFunctions'] ?? ''));
-
-            // Extension/plugin kód (untrusted) dostáva prísnejší zoznam.
-            $isExtensionPath = str_contains(str_replace('\\', '/', $path), self::EXTENSION_PATH_MARKER);
-            if ($isExtensionPath) {
-                $forbidden = array_values(array_unique(array_merge($forbidden, self::EXTENSION_FORBIDDEN)));
+            if ($untrusted) {
+                $forbidden = array_values(array_unique(array_merge($forbidden, self::UNTRUSTED_FORBIDDEN)));
             }
 
             foreach ($this->securityScanner->scanPhp($content, $forbidden) as $violation) {
                 $errors['security'][] = $violation;
             }
 
-            if ((bool) ($policy['strictMode'] ?? false) && str_contains($path, self::EXTENSION_PATH_MARKER)) {
+            if ($untrusted) {
+                if (!str_contains($content, 'declare(strict_types=1)')) {
+                    $errors['compatibility'][] = 'Untrusted PHP must declare strict_types=1';
+                }
+            }
+
+            $normalized = str_replace('\\', '/', $path);
+            $strict = $untrusted || (bool) ($policy['strictMode'] ?? false);
+            if (
+                $strict
+                && str_contains($normalized, self::EXTENSION_PATH_MARKER)
+                && $this->requiresExtensionNamespace($normalized)
+            ) {
                 if (!preg_match('/namespace\s+PaginiumCMS\\\\Http\\\\Extensions\\\\[A-Za-z0-9_]+;/', $content)) {
-                    $errors['compatibility'][] = 'Extension PHP files must declare namespace PaginiumCMS\\Http\\Extensions\\{id}';
+                    $errors['compatibility'][] = 'Extension PHP class files must declare namespace PaginiumCMS\\Http\\Extensions\\{id}';
                 }
             }
         }
@@ -93,6 +152,19 @@ final class CodePolicyEngine implements CodePolicyEngineInterface
         if ($errors !== []) {
             throw new CodePolicyViolationException($errors);
         }
+    }
+
+    /**
+     * routes.php / bootstrap stubs are closures without a class namespace; class files under src/ must declare one.
+     */
+    private function requiresExtensionNamespace(string $normalizedPath): bool
+    {
+        $base = basename($normalizedPath);
+        if ($base === 'routes.php' || $base === 'bootstrap.php') {
+            return false;
+        }
+
+        return str_contains($normalizedPath, '/src/') || str_contains($normalizedPath, '/Src/');
     }
 
     /**

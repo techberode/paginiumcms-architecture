@@ -587,6 +587,21 @@
   gap: 1.25rem;
 }
 
+/* It.65 Phase 3 — Ken Burns on hero-strip active slide (CSS only) */
+.gallery-slider--hero .gallery-slider__slide.is-active .gallery-slider__image {
+  animation: gallery-ken-burns 14s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@keyframes gallery-ken-burns {
+  from {
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.08) translate3d(-1.5%, -1%, 0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .gallery-slider__slide,
   .gallery-slider--cinematic .gallery-slider__image {
@@ -598,5 +613,9 @@
   }
   .gallery-slider--subtle .gallery-slider__slide.is-active {
     transform: none;
+  }
+  .gallery-slider--hero .gallery-slider__slide.is-active .gallery-slider__image {
+    animation: none !important;
+    transform: none !important;
   }
 }

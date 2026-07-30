@@ -180,10 +180,11 @@ final class SettingsSchema
             'codePolicy' => [
                 'label' => 'Code policy',
                 'fields' => [
-                    ['key' => 'enabled', 'type' => 'bool', 'label' => 'Enable code policy checks', 'default' => true, 'rules' => ['bool'], 'help' => 'Zapnuté = pred uložením PHP súborov sa kontrolujú zakázané funkcie a veľkosť. Vypnuté = kontrola vypnutá.'],
-                    ['key' => 'strictMode', 'type' => 'bool', 'label' => 'Strict extension namespace rules', 'default' => false, 'rules' => ['bool'], 'help' => 'Zapnuté = prísnejšie pravidlá pre namespaces rozšírení. Vypnuté = uvoľnené pravidlá.'],
+                    ['key' => 'enabled', 'type' => 'bool', 'label' => 'Enable code policy checks (core)', 'default' => true, 'rules' => ['bool'], 'help' => 'Core Code Editor writes. Untrusted paths (plugins, themes, layout shortcodes, Monaco validateUntrusted) are ALWAYS checked even when this is off.'],
+                    ['key' => 'strictMode', 'type' => 'bool', 'label' => 'Strict extension namespace rules', 'default' => true, 'rules' => ['bool'], 'help' => 'Zapnuté = prísnejšie namespaces pre Extensions. Untrusted PHP vždy vyžaduje strict_types.'],
                     ['key' => 'maxFileSizeKb', 'type' => 'int', 'label' => 'Max file size (KB)', 'default' => 512, 'rules' => ['required', 'int', 'min:16', 'max:4096']],
-                    ['key' => 'forbiddenPhpFunctions', 'type' => 'text', 'label' => 'Forbidden PHP functions', 'default' => 'eval,exec,shell_exec,system,passthru,proc_open,popen,assert,create_function', 'rules' => ['string', 'max:2000'], 'help' => 'Comma-separated list scanned before save.'],
+                    ['key' => 'untrustedMaxFileSizeKb', 'type' => 'int', 'label' => 'Max untrusted file size (KB)', 'default' => 256, 'rules' => ['required', 'int', 'min:16', 'max:1024'], 'help' => 'Cap for plugins/themes/layout shortcode artifacts (cannot exceed maxFileSizeKb).'],
+                    ['key' => 'forbiddenPhpFunctions', 'type' => 'text', 'label' => 'Forbidden PHP functions', 'default' => 'eval,exec,shell_exec,system,passthru,proc_open,popen,assert,create_function', 'rules' => ['string', 'max:2000'], 'help' => 'Comma-separated list scanned before save. Untrusted trees also block include/require/unserialize/call_user_func*.'],
                 ],
             ],
             'comments' => [

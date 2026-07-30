@@ -128,6 +128,65 @@ final class GalleryRepository implements GalleryRepositoryInterface
     }
 
     /**
+     * @param list<array<string, mixed>> $items
+     *
+     * @return array{imported: int, replaced: bool}
+     */
+    public function importItems(array $items, bool $replace = true): array
+    {
+        if ($replace) {
+            foreach ($this->readIndexOrder() as $existingId) {
+                $path = self::ITEMS_DIR . '/' . $existingId . '.json';
+                if ($this->reader->exists($path)) {
+                    $this->writer->delete($path, true);
+                }
+            }
+            $this->writeIndex([]);
+        }
+
+        $order = $replace ? [] : $this->readIndexOrder();
+        $imported = 0;
+
+        foreach ($items as $raw) {
+            $title = trim((string) ($raw['title'] ?? ''));
+            $mediaPath = trim((string) ($raw['mediaPath'] ?? ''));
+            if ($title === '' || $mediaPath === '') {
+                continue;
+            }
+
+            $id = trim((string) ($raw['id'] ?? ''));
+            if ($id !== '' && $this->isValidImportId($id)) {
+                $item = GalleryItem::fromArray($raw, $id);
+                $this->saveItem($item);
+                if (!in_array($id, $order, true)) {
+                    $order[] = $id;
+                }
+            } else {
+                $item = new GalleryItem($title, $mediaPath);
+                $item->applyPayload($raw);
+                $this->saveItem($item);
+                $order[] = $item->getId();
+            }
+
+            ++$imported;
+        }
+
+        $this->writeIndex($order);
+
+        return [
+            'imported' => $imported,
+            'replaced' => $replace,
+        ];
+    }
+
+    private function isValidImportId(string $id): bool
+    {
+        return (bool) preg_match('/^gallery_[a-zA-Z0-9_.]+$/', $id)
+            && !str_contains($id, '..')
+            && !str_contains($id, '/');
+    }
+
+    /**
      * @return list<GalleryItem>
      */
     private function loadOrdered(bool $publishedOnly): array

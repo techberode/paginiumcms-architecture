@@ -1,14 +1,29 @@
 # Iteration 58 – Page layout builder + color schemes
 
-**Status:** ⏳ Planned (58a after It.15) · **58b ✅ implemented** (color schemes + appearance)  
+**Status:** ⏳ Planned layout phases **58c–58g** · **58b ✅** (color schemes + appearance)  
 **Wave:** Post-15 Editor & UX  
-**Priority:** 🟡 Medium — largest slice in wave
+**Priority:** 🟡 Medium — largest remaining slice in wave  
+**Decision doc:** [ITERATION_58_ALTERNATIVES.md](ITERATION_58_ALTERNATIVES.md) — **Layout Switch** (Settings picks builder; shared AST; scheme-like preview; Monaco for developer/shortcodes)
 
 ## Summary
 
-Editable **page layout** based on **≥5 fixed templates** (not a full Elementor clone): configurable **Header**, **Footer**, and **Body** as named blocks. Each block holds ordered content slots (text, hero, gallery, CTA, …).
+Editable **page layout** via **multiple builders the user switches in Settings** (not role-locked alternatives):
 
-**Plus:** predvolené **farebné schémy** (5 trendy presetov) s **náhľadom farieb** a **generickým náhľadom stránky** v zvolenej schéme; verejný web + admin layout editor podporujú **svetlý / tmavý / systémový** režim.
+| Builder mode | Editor UI | Typical use |
+|--------------|-----------|-------------|
+| **Templates** | Template picker + slot forms | Quick structured pages |
+| **Shortcodes** | Palette in MD/Tiptap | Flexible content structure |
+| **Block outline** | Section list + reorder (optional phase) | Visual structure without code |
+| **Developer** | **Monaco** (layout JSON, shortcode defs, `pg-*` snippets) | Full control |
+
+**Settings → Layout:** builder switcher + **`LayoutPreviewFrame`** (same idea as `SchemePreviewFrame` for color schemes).  
+Site default + optional per-user preference; soft capability for who may open Developer mode.
+
+Public output shares one AST → HTML (+ It.48 cache). Includes **`featureGallery`** from [It.65](ITERATION_65.md).
+
+**Plus (shipped):** predvolené **farebné schémy** (5 presetov) + light/dark/system — **58b**.
+
+**Future (not It.58):** plugin / theme / module authoring via Monaco or visual code-block editor.
 
 Stays compatible with PaginiumCMS flat-file principles — **no SQL**, **no runtime PHP templates required for MVP**.
 
@@ -17,21 +32,32 @@ Stays compatible with PaginiumCMS flat-file principles — **no SQL**, **no runt
 | Principle | Rule |
 |-----------|------|
 | Flat-file SSOT | Layout JSON in content front matter or sidecar `{slug}.layout.json` |
+| Settings switch | User picks active layout builder; not exclusive per role |
+| Layout preview | `LayoutPreviewFrame` parity with `SchemePreviewFrame` (58b) |
+| Developer editing | Monaco for shortcode defs / layout JSON / allow-listed snippets |
+| Fail-closed untrusted code | `CodePolicyEngine::validateUntrusted` + `ShortcodeDefinitionPolicy` before any non-core write |
 | No heavy framework | Prefer composition of existing React components + CSS grid |
 | Static-friendly | Layout resolves to HTML cache (align with It.48) |
 | Escape hatch | Markdown-only pages still work — layout optional |
-| Performance | Lazy-load block editors; public site reads pre-built structure |
+| Performance | Lazy-load Monaco / block editors; public site reads pre-built structure |
 | Theming | CSS variables (`--color-*`) per scheme; light + dark variant each |
 | User preference | Site default + optional visitor toggle; `prefers-color-scheme` when `system` |
 
 ## Delivery slices (recommended)
 
-| Slice | Scope |
-|-------|--------|
-| **It.58a** | 5 layout templates + block types + public render |
-| **It.58b** | Color scheme catalog, swatch preview, generic page preview, appearance mode |
+| Slice | Scope | Status |
+|-------|--------|--------|
+| **It.58a** | (legacy name) → absorbed into **58c** templates + AST | ⏳ renamed |
+| **It.58b** | Color scheme catalog, swatch preview, appearance mode | ✅ |
+| **It.58c** | Settings builder switch + page templates + **LayoutPreviewFrame** | ⏳ **next** |
+| **It.58d** | Shortcode engine + **Monaco** shortcode definitions | ⏳ |
+| **It.58e** | Safe `pg-*` layout utilities + Monaco snippets | ⏳ |
+| **It.58f** | Block outline + DnD (optional) | ⏳ backlog if needed |
+| **It.58g** | Compile/cache HTML (with It.48) | ⏳ |
 
-Slices share settings group `appearance` and layout front matter; ship **58b** together with or immediately after **58a** (same release train).
+Detail, Settings UX, Monaco, preview parity, and future plugin studio: [ITERATION_58_ALTERNATIVES.md](ITERATION_58_ALTERNATIVES.md).
+
+Slices share settings group `appearance` / new `layout` keys and layout front matter; **58c** starts next; shortcodes may register via plugins.
 
 ## Color schemes (preset catalog — minimum 5)
 
@@ -148,6 +174,7 @@ layout:
 - `richtext` (MD or Tiptap slot)
 - `hero` (title, subtitle, image, CTA link)
 - `imageGallery` (media IDs)
+- `featureGallery` — **It.65 contract:** render `FeatureGallerySection` / `GET /api/gallery/public` (no second store; settings placement may be ignored when embedded as a block)
 - `htmlEmbed` (restricted — profile-gated)
 - `spacer` / `divider`
 

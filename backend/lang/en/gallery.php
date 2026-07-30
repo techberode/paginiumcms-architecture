@@ -17,4 +17,7 @@ return [
     'updated' => 'Gallery item updated.',
     'deleted' => 'Gallery item deleted.',
     'reordered' => 'Gallery order updated.',
+    'imported' => 'Gallery import completed.',
+    'invalid_import' => 'Invalid gallery import payload.',
+    'export_failed' => 'Failed to export gallery.',
 ];

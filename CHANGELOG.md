@@ -76,6 +76,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added (It.65 — Feature gallery, Phase 3)
+
+- **Ken Burns** — CSS animation on `hero-strip` active slide; respects `prefers-reduced-motion`.
+- **Deep links** — `?slide=` matches feature tag or item id; syncs tag filter chips.
+- **Export/import** — `GET /api/admin/gallery/export`, `POST /api/admin/gallery/import` (`gallery:manage`); Admin UI buttons; JSON metadata only (media paths as references).
+- **It.58 hook** — documented `featureGallery` block → `FeatureGallerySection` (no layout registry yet).
+
+### Security (It.58 prep — untrusted code gate)
+
+- **`CodePolicyEngine`** — fail-closed for untrusted paths (extensions, themes, `data/layout|shortcodes|plugins`); `validateUntrusted()` for Monaco buffers; untrusted PHP requires `strict_types`.
+- **`ShortcodeDefinitionPolicy`** — schema + expand allow-list (`pg-*` classes; blocks script/iframe/PHP tags) before shortcode defs can be activated.
+- Settings `codePolicy.strictMode` default **true**; `untrustedMaxFileSizeKb` cap.
+
+### Docs
+
+- [ITERATION_65.md](docs/ITERATION_65.md) Phase 3 · [ITERATION_58.md](docs/ITERATION_58.md) / [ITERATION_58_ALTERNATIVES.md](docs/ITERATION_58_ALTERNATIVES.md) Layout Switch + max-protection gate.
+- Planned security follow-ups: [ITERATION_66.md](docs/ITERATION_66.md), [ITERATION_67.md](docs/ITERATION_67.md).
+
 ---
 
 ## [2.1.0-beta.21] – 2026-07-30

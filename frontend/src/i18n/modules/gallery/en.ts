@@ -37,9 +37,12 @@ export const galleryEn: MessageTree = {
     moveDown: 'Move down',
     publish: 'Publish',
     unpublish: 'Unpublish',
+    export: 'Export JSON',
+    import: 'Import JSON',
   },
   confirm: {
     delete: 'Delete this gallery item?',
+    importReplace: 'Import will replace all current gallery items. Continue?',
   },
   toast: {
     loadFailed: 'Failed to load gallery items.',
@@ -49,5 +52,8 @@ export const galleryEn: MessageTree = {
     reordered: 'Gallery order updated.',
     saveFailed: 'Failed to save gallery item.',
     deleteFailed: 'Failed to delete gallery item.',
+    exported: 'Gallery export downloaded.',
+    imported: 'Imported {count} gallery items.',
+    importFailed: 'Failed to import gallery JSON.',
   },
 };

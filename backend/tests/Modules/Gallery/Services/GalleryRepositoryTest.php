@@ -71,4 +71,39 @@ final class GalleryRepositoryTest extends TestCase
         $this->expectException(FlatFileException::class);
         $this->repository->delete('missing');
     }
+
+    public function testImportReplacePreservesIds(): void
+    {
+        $this->repository->create([
+            'title' => 'Old',
+            'mediaPath' => '/storage/media/old.png',
+            'status' => GalleryItem::STATUS_DRAFT,
+        ]);
+
+        $result = $this->repository->importItems([
+            [
+                'id' => 'gallery_import_1',
+                'title' => 'Imported analytics',
+                'description' => 'From backup',
+                'mediaPath' => '/storage/media/analytics.png',
+                'featureTag' => 'analytics',
+                'status' => GalleryItem::STATUS_PUBLISHED,
+            ],
+            [
+                'title' => 'No id item',
+                'mediaPath' => '/storage/media/other.png',
+                'status' => GalleryItem::STATUS_DRAFT,
+            ],
+        ], true);
+
+        $this->assertSame(2, $result['imported']);
+        $this->assertTrue($result['replaced']);
+
+        $all = $this->repository->findAllOrdered();
+        $this->assertCount(2, $all);
+        $this->assertSame('gallery_import_1', $all[0]->getId());
+        $this->assertSame('Imported analytics', $all[0]->getTitle());
+        $this->assertTrue($all[0]->isPublished());
+        $this->assertStringStartsWith('gallery_', $all[1]->getId());
+    }
 }

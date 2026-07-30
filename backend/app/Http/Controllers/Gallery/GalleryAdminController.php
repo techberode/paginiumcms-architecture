@@ -145,6 +145,75 @@ final class GalleryAdminController
         }
     }
 
+    public function export(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $items = array_map(
+            static fn ($item) => $item->jsonSerialize(),
+            $this->repository->findAllOrdered()
+        );
+
+        $payload = [
+            'version' => 1,
+            'exportedAt' => date('c'),
+            'items' => $items,
+        ];
+
+        $json = json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        if ($json === false) {
+            return $this->json->error($response, Lang::get('export_failed', [], 'gallery'), 500);
+        }
+
+        $response->getBody()->write($json);
+
+        return $response
+            ->withHeader('Content-Type', 'application/json; charset=utf-8')
+            ->withHeader(
+                'Content-Disposition',
+                'attachment; filename="gallery-export-' . date('Y-m-d') . '.json"'
+            );
+    }
+
+    public function import(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $payload = $this->decodeBody($request);
+        if ($payload === null) {
+            return $this->json->error($response, Lang::get('invalid_payload', [], 'gallery'), 400);
+        }
+
+        $rawItems = $payload['items'] ?? null;
+        if (!is_array($rawItems)) {
+            return $this->json->error($response, Lang::get('invalid_import', [], 'gallery'), 400);
+        }
+
+        /** @var list<array<string, mixed>> $items */
+        $items = [];
+        foreach ($rawItems as $entry) {
+            if (!is_array($entry)) {
+                return $this->json->error($response, Lang::get('invalid_import', [], 'gallery'), 400);
+            }
+            $error = $this->validator->validate($entry, true);
+            if ($error !== null) {
+                return $this->json->error($response, $error, 422);
+            }
+            $items[] = $entry;
+        }
+
+        $replace = !array_key_exists('replace', $payload) || (bool) $payload['replace'];
+
+        try {
+            $result = $this->repository->importItems($items, $replace);
+
+            return $this->json->success(
+                $response,
+                $result,
+                200,
+                Lang::get('imported', [], 'gallery')
+            );
+        } catch (FlatFileException $e) {
+            return $this->json->error($response, $e->getMessage(), 500);
+        }
+    }
+
     /**
      * @return array<string, mixed>|null
      */

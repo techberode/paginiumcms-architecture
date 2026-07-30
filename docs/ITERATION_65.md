@@ -1,10 +1,10 @@
 # Iteration 65 — Feature gallery (admin screenshots)
 
-**Status:** ✅ Complete (Phase 1 + Phase 2) — **`v2.1.0-beta.21`** (prod `paginiumcms.com`)  
+**Status:** ✅ Complete (Phase 1–3) — **`v2.1.0-beta.21`** + Phase 3 on main (next release)  
 **Priority:** ✅ Done  
 **Use case:** Present PaginiumCMS admin UI screenshots with feature descriptions — marketing, demo, onboarding.  
 **Related:** [It.26 Media lightbox](ITERATION_26.md) · [It.58 Layout builder](ITERATION_58.md) (future gallery block) · [It.64 Footer social](ITERATION_64.md)  
-**Out of scope (optional later):** Phase 3 — Ken Burns, deep links, It.58 Gallery block, JSON export/import.  
+**Out of scope:** Full It.58a block registry (Phase 3 ships `featureGallery` contract only).  
 **Ops leftover:** seed 3–5 screenshots via Admin → Gallery on prod/demo (repo ships empty `data/gallery/`).
 
 ---
@@ -167,12 +167,12 @@ Optional dependency: **`embla-carousel-react`** (~3kb gzip) if native scroll-sna
 - [x] Dynamic `publicRoute` from Settings (single path segment)
 - [x] `hero-strip` layout + `modalCaptionStyle` (below / overlay / side)
 
-### Phase 3 — Premium UX (optional)
+### Phase 3 — Premium UX
 
-- [ ] Ken Burns / parallax on hero-strip (CSS only, reduced-motion off)
-- [ ] Deep link to slide (`?slide=analytics`)
-- [ ] It.58 layout block “Gallery” consuming same API
-- [ ] Export/import gallery JSON (backup-friendly)
+- [x] Ken Burns / parallax on hero-strip (CSS only, reduced-motion off)
+- [x] Deep link to slide (`?slide=analytics` or item id)
+- [x] It.58 layout block “Gallery” — **contract/hook only** (no block registry yet in 58a)
+- [x] Export/import gallery JSON (backup-friendly; media paths as references)
 
 ---
 
@@ -194,6 +194,13 @@ Optional dependency: **`embla-carousel-react`** (~3kb gzip) if native scroll-sna
 - [x] Admin `/gallery` live preview of published items
 - [x] Custom `publicRoute` (e.g. `/funkcie`) resolves via SPA slug intercept
 
+## Acceptance criteria (Phase 3)
+
+- [x] Hero-strip Ken Burns CSS animation; disabled under `prefers-reduced-motion`
+- [x] `?slide=` opens matching item (feature tag or id) and syncs tag filter chips
+- [x] Admin export/import JSON under `gallery:manage` (replace import; media paths only)
+- [x] It.58 `featureGallery` block contract documented; renderer entry = `FeatureGallerySection`
+
 ---
 
 ## Smoke test
@@ -204,6 +211,8 @@ Optional dependency: **`embla-carousel-react`** (~3kb gzip) if native scroll-sna
 4. Change `publicRoute` to `/funkcie` → Navigation link → page loads gallery.
 5. `curl -s http://localhost:8080/api/gallery/public | jq '.data.items | length'`
 6. `curl -s http://localhost:8080/api/settings/public | jq '.data.gallery'`
+7. Public `?slide=analytics` — filter + modal open; hero-strip shows Ken Burns (unless reduced-motion).
+8. Admin → Export JSON → Import JSON (replace) → list matches export.
 
 ---
 
@@ -219,6 +228,8 @@ Optional dependency: **`embla-carousel-react`** (~3kb gzip) if native scroll-sna
 5. **Live preview** — on `/gallery`, use the preview panel (published items only; mirrors Settings layout).
 6. **Menu link (optional)** — Admin → **Navigation** → new item, path matching `publicRoute` (e.g. `/features` or `/funkcie`).
 7. **Verify** — open public route; filter by tag; open modal; test ←/→ and ESC.
+8. **Deep link** — open `/features?slide=analytics` (or item id) to jump to that slide/modal.
+9. **Backup** — Admin → Feature gallery → **Export JSON** / **Import JSON** (replace; media files stay in Media).
 
 `publicRoute` supports a **single path segment** (e.g. `/features`, `/funkcie`). Multi-segment paths are normalized to the first segment.
 
@@ -239,4 +250,4 @@ Optional dependency: **`embla-carousel-react`** (~3kb gzip) if native scroll-sna
 
 ## Relation to layout builder (It.58)
 
-It.65 delivers a **standalone module** first. It.58a can later register a **Gallery block** that calls the same `GET /api/gallery/public` — no duplicate storage.
+It.65 delivers a **standalone module** first. It.58a should register block type **`featureGallery`** that renders `FeatureGallerySection` and calls the same `GET /api/gallery/public` — no duplicate storage. Until 58a lands, public entry points remain `/features` (or `publicRoute`), home embed, and this React component.

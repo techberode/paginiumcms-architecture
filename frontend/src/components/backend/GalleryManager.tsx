@@ -1,11 +1,25 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowDown, ArrowUp, ExternalLink, Eye, EyeOff, LayoutGrid, Plus, Settings, Trash2 } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  ArrowDown,
+  ArrowUp,
+  Download,
+  ExternalLink,
+  Eye,
+  EyeOff,
+  LayoutGrid,
+  Plus,
+  Settings,
+  Trash2,
+  Upload,
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
   createGalleryItem,
   deleteGalleryItem,
+  exportGalleryJson,
   GalleryItem,
   GalleryItemStatus,
+  importGalleryJson,
   listAdminGalleryItems,
   reorderGalleryItems,
   updateGalleryItem,
@@ -48,6 +62,8 @@ export const GalleryManager: React.FC = () => {
   const [form, setForm] = useState<FormState>(emptyForm());
   const [formOpen, setFormOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(true);
+  const [importing, setImporting] = useState(false);
+  const importInputRef = useRef<HTMLInputElement>(null);
 
   const publishedItems = useMemo(
     () => items.filter((item) => item.status === 'published'),
@@ -72,6 +88,55 @@ export const GalleryManager: React.FC = () => {
     void load();
   }, [load]);
 
+  const handleExport = async () => {
+    const result = await exportGalleryJson();
+    if (!result.ok) {
+      showError(result.error);
+      return;
+    }
+    const url = URL.createObjectURL(result.blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `gallery-export-${new Date().toISOString().slice(0, 10)}.json`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+    showSuccess(t('gallery.toast.exported'));
+  };
+
+  const handleImportFile = async (file: File | null) => {
+    if (!file) {
+      return;
+    }
+    if (!confirm(t('gallery.confirm.importReplace'))) {
+      return;
+    }
+    setImporting(true);
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text) as { items?: unknown };
+      if (!Array.isArray(parsed.items)) {
+        showError(t('gallery.toast.importFailed'));
+        return;
+      }
+      const result = await importGalleryJson({
+        items: parsed.items as Array<GalleryItem>,
+        replace: true,
+      });
+      if (!result.ok) {
+        showError(result.error);
+        return;
+      }
+      showSuccess(t('gallery.toast.imported', { count: String(result.result.imported) }));
+      void load();
+    } catch {
+      showError(t('gallery.toast.importFailed'));
+    } finally {
+      setImporting(false);
+      if (importInputRef.current) {
+        importInputRef.current.value = '';
+      }
+    }
+  };
   const openCreate = () => {
     setEditingId(null);
     setForm(emptyForm());
@@ -182,6 +247,30 @@ export const GalleryManager: React.FC = () => {
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{t('gallery.subtitle')}</p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <input
+            ref={importInputRef}
+            type="file"
+            accept="application/json,.json"
+            className="hidden"
+            onChange={(e) => void handleImportFile(e.target.files?.[0] ?? null)}
+          />
+          <button
+            type="button"
+            className="btn btn-secondary inline-flex items-center gap-2"
+            onClick={() => void handleExport()}
+          >
+            <Download className="w-4 h-4" />
+            {t('gallery.actions.export')}
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary inline-flex items-center gap-2"
+            disabled={importing}
+            onClick={() => importInputRef.current?.click()}
+          >
+            <Upload className="w-4 h-4" />
+            {t('gallery.actions.import')}
+          </button>
           <button
             type="button"
             className="btn btn-secondary inline-flex items-center gap-2"

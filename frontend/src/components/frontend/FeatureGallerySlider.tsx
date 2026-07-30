@@ -16,6 +16,8 @@ export interface FeatureGallerySliderProps {
   autoplayEnabled?: boolean;
   autoplayIntervalMs?: number;
   modalCaptionStyle?: 'below' | 'overlay' | 'side';
+  /** It.65 Phase 3 — open modal at this index when items load (`?slide=`). */
+  initialModalIndex?: number | null;
   className?: string;
 }
 
@@ -31,6 +33,7 @@ export const FeatureGallerySlider: React.FC<FeatureGallerySliderProps> = ({
   autoplayEnabled = true,
   autoplayIntervalMs = 6000,
   modalCaptionStyle = 'below',
+  initialModalIndex = null,
   className = '',
 }) => {
   const { t } = useI18n();
@@ -39,6 +42,7 @@ export const FeatureGallerySlider: React.FC<FeatureGallerySliderProps> = ({
   const [paused, setPaused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const trackRef = useRef<HTMLDivElement>(null);
+  const deepLinkApplied = useRef(false);
 
   useEffect(() => {
     setReducedMotion(prefersReducedMotion());
@@ -47,6 +51,18 @@ export const FeatureGallerySlider: React.FC<FeatureGallerySliderProps> = ({
     mq.addEventListener('change', onChange);
     return () => mq.removeEventListener('change', onChange);
   }, []);
+
+  useEffect(() => {
+    if (deepLinkApplied.current || initialModalIndex === null || initialModalIndex === undefined) {
+      return;
+    }
+    if (initialModalIndex < 0 || initialModalIndex >= items.length) {
+      return;
+    }
+    deepLinkApplied.current = true;
+    setActiveIndex(initialModalIndex);
+    setModalIndex(initialModalIndex);
+  }, [initialModalIndex, items.length]);
 
   const goTo = useCallback(
     (index: number) => {

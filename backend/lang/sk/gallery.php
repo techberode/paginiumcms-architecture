@@ -17,4 +17,7 @@ return [
     'updated' => 'Položka galérie bola aktualizovaná.',
     'deleted' => 'Položka galérie bola odstránená.',
     'reordered' => 'Poradie galérie bolo aktualizované.',
+    'imported' => 'Import galérie bol dokončený.',
+    'invalid_import' => 'Neplatný import galérie.',
+    'export_failed' => 'Export galérie zlyhal.',
 ];
