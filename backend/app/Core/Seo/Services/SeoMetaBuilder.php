@@ -39,7 +39,8 @@ final class SeoMetaBuilder
         $siteName = (string) ($general['siteName'] ?? 'PaginiumCMS');
         $siteUrl = rtrim((string) ($general['siteUrl'] ?? ''), '/');
         if ($siteUrl === '') {
-            $siteUrl = 'http://localhost:3025';
+            $envUrl = getenv('APP_URL') ?: ($_ENV['APP_URL'] ?? '');
+            $siteUrl = is_string($envUrl) && $envUrl !== '' ? rtrim($envUrl, '/') : 'http://localhost:3025';
         }
 
         $frontMatter = $content->getFrontMatter();

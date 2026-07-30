@@ -75,6 +75,10 @@ export const publicEn: MessageTree = {
     previous: 'Previous screenshot',
     next: 'Next screenshot',
     close: 'Close gallery',
+    filterLabel: 'Filter by module',
+    filterAll: 'All',
+    dotsLabel: 'Gallery slides',
+    goToSlide: 'Go to slide',
   },
   cookies: {
     bannerLabel: 'Cookie consent',

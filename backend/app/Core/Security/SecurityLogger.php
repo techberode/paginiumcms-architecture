@@ -54,23 +54,26 @@ final class SecurityLogger
         // Anti log-injection (C11): User-Agent je útočníkom kontrolovaný.
         $ua = LogSanitizer::value((string) ($userAgent ?? $_SERVER['HTTP_USER_AGENT'] ?? 'unknown'), 256);
 
-        $this->logger->warning('Security: Failed login attempt', [
-            'email' => $email,
-            'ip' => $ip,
-            'user_agent' => $ua,
-            'timestamp' => date('Y-m-d H:i:s'),
-            'type' => 'failed_login',
-        ]);
+        // PHPUnit must not flood Admin → Logs; lockout tracker still runs below.
+        if (!$this->isTestingEnvironment()) {
+            $this->logger->warning('Security: Failed login attempt', [
+                'email' => $email,
+                'ip' => $ip,
+                'user_agent' => $ua,
+                'timestamp' => date('Y-m-d H:i:s'),
+                'type' => 'failed_login',
+            ]);
 
-        $this->securityAudit?->append(
-            'failed_login',
-            LogSeverity::WARNING,
-            'Failed login attempt',
-            null,
-            $email,
-            $ip,
-            ['user_agent' => $ua]
-        );
+            $this->securityAudit?->append(
+                'failed_login',
+                LogSeverity::WARNING,
+                'Failed login attempt',
+                null,
+                $email,
+                $ip,
+                ['user_agent' => $ua]
+            );
+        }
 
         // Alert pri opakovaných pokusoch
         if ($this->config['alert_on_brute_force']) {
@@ -83,7 +86,7 @@ final class SecurityLogger
      */
     public function logSuccessfulLogin(string $userId, string $email, string $ip): void
     {
-        if (!$this->config['log_successful_logins']) {
+        if ($this->isTestingEnvironment() || !$this->config['log_successful_logins']) {
             return;
         }
 
@@ -192,6 +195,10 @@ final class SecurityLogger
 
         $locked = $this->loginAttempts->recordFailure($ip, $email);
         if ($locked) {
+            if ($this->isTestingEnvironment()) {
+                return;
+            }
+
             $this->logger->critical('Security: Brute-force lockout triggered', [
                 'email' => $email,
                 'ip' => $ip,
@@ -302,5 +309,12 @@ final class SecurityLogger
                 // TODO: Odoslať notifikáciu administrátorovi
             }
         }
+    }
+
+    private function isTestingEnvironment(): bool
+    {
+        return getenv('APP_ENV') === 'testing'
+            || ($_ENV['APP_ENV'] ?? '') === 'testing'
+            || ($_SERVER['APP_ENV'] ?? '') === 'testing';
     }
 }

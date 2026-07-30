@@ -25,6 +25,17 @@ final class AccessLogService
         '/api/auth/2fa/verify-login',
     ];
 
+    /**
+     * High-churn / meta endpoints that drown real access signals in Admin → Logs.
+     *
+     * @var list<string>
+     */
+    private const EXCLUDED_PATH_PREFIXES = [
+        '/api/health',
+        '/api/debug/client-event',
+        '/api/admin/logs',
+    ];
+
     public function __construct(
         private LogWriterInterface $writer,
         private SettingsRepositoryInterface $settings
@@ -51,6 +62,10 @@ final class AccessLogService
         array $context = []
     ): void {
         if (!$this->isEnabled()) {
+            return;
+        }
+
+        if ($this->isExcludedPath($path)) {
             return;
         }
 
@@ -103,6 +118,10 @@ final class AccessLogService
         if ($status >= 500) {
             return LogSeverity::ERROR;
         }
+        // Expected "not found" / anonymous auth probe — operational noise as WARNING.
+        if ($status === 404 || $status === 401) {
+            return LogSeverity::INFO;
+        }
         if ($status >= 400) {
             return LogSeverity::WARNING;
         }
@@ -137,6 +156,17 @@ final class AccessLogService
     {
         foreach (self::SENSITIVE_PATHS as $sensitive) {
             if (str_starts_with($path, $sensitive)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function isExcludedPath(string $path): bool
+    {
+        foreach (self::EXCLUDED_PATH_PREFIXES as $prefix) {
+            if ($path === $prefix || str_starts_with($path, $prefix . '/')) {
                 return true;
             }
         }

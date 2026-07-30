@@ -179,7 +179,11 @@ export interface PublicSettings {
     placement?: 'home' | 'route' | 'both' | 'off';
     publicRoute?: string;
     layout?: 'grid' | 'slider' | 'hero-strip';
+    effectPreset?: 'subtle' | 'cinematic' | 'minimal';
+    autoplayEnabled?: boolean;
+    autoplayIntervalMs?: number;
     showFeatureTags?: boolean;
+    modalCaptionStyle?: 'below' | 'overlay' | 'side';
   };
   login?: {
     pageTitle?: string;

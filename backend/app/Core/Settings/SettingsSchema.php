@@ -255,9 +255,13 @@ final class SettingsSchema
                 'fields' => [
                     ['key' => 'enabled', 'type' => 'bool', 'label' => 'Zapnúť galériu na verejnom webe', 'default' => false, 'rules' => ['bool'], 'help' => 'Master prepínač pre sekciu so screenshotmi administrácie.'],
                     ['key' => 'placement', 'type' => 'enum', 'label' => 'Umiestnenie', 'default' => 'route', 'options' => ['home', 'route', 'both', 'off'], 'rules' => ['required', 'in:home,route,both,off'], 'help' => 'Kde sa galéria zobrazí: domovská stránka, samostatná route, oboje, alebo vypnuté.'],
-                    ['key' => 'publicRoute', 'type' => 'string', 'label' => 'Verejná route', 'default' => '/features', 'rules' => ['required', 'string', 'max:120'], 'help' => 'Cesta bez domény, napr. /features. Použije sa pri placement route alebo both.'],
-                    ['key' => 'layout', 'type' => 'enum', 'label' => 'Layout', 'default' => 'grid', 'options' => ['grid', 'slider', 'hero-strip'], 'rules' => ['required', 'in:grid,slider,hero-strip'], 'help' => 'Phase 1: grid. Slider a hero-strip v Phase 2.'],
+                    ['key' => 'publicRoute', 'type' => 'string', 'label' => 'Verejná route', 'default' => '/features', 'rules' => ['required', 'string', 'max:120'], 'help' => 'Jednosegmentová cesta bez domény, napr. /features alebo /funkcie.'],
+                    ['key' => 'layout', 'type' => 'enum', 'label' => 'Layout', 'default' => 'grid', 'options' => ['grid', 'slider', 'hero-strip'], 'rules' => ['required', 'in:grid,slider,hero-strip'], 'help' => 'Grid = dlaždice; slider = carousel s autoplay; hero-strip = široký pás screenshotov.'],
+                    ['key' => 'effectPreset', 'type' => 'enum', 'label' => 'Efekt (preset)', 'default' => 'subtle', 'options' => ['subtle', 'cinematic', 'minimal'], 'rules' => ['required', 'in:subtle,cinematic,minimal'], 'help' => 'subtle = fade+scale; cinematic = crossfade+vignette; minimal = okamžitá výmena (bez animácie).'],
+                    ['key' => 'autoplayEnabled', 'type' => 'bool', 'label' => 'Autoplay slidera', 'default' => true, 'rules' => ['bool'], 'help' => 'Platí pre layout slider a hero-strip. Pauza pri hover/focus; vypnuté pri prefers-reduced-motion.'],
+                    ['key' => 'autoplayIntervalMs', 'type' => 'int', 'label' => 'Autoplay interval (ms)', 'default' => 6000, 'rules' => ['required', 'int', 'min:4000', 'max:15000'], 'help' => 'Interval medzi slidmi (4000–15000 ms).'],
                     ['key' => 'showFeatureTags', 'type' => 'bool', 'label' => 'Zobraziť tagy modulov', 'default' => true, 'rules' => ['bool'], 'help' => 'Badge s názvom modulu (Analytics, Newsletter, …) pri položkách galérie.'],
+                    ['key' => 'modalCaptionStyle', 'type' => 'enum', 'label' => 'Štýl popisu v modale', 'default' => 'below', 'options' => ['below', 'overlay', 'side'], 'rules' => ['required', 'in:below,overlay,side'], 'help' => 'below = pod obrázkom; overlay = cez spodok; side = vedľa (široké obrazovky).'],
                 ],
             ],
             'company' => [
@@ -375,7 +379,7 @@ final class SettingsSchema
                 'label' => 'Logy',
                 'fields' => [
                     ['key' => 'enabled', 'type' => 'bool', 'label' => 'Zapnúť logovanie', 'default' => true, 'rules' => ['bool'], 'help' => 'Master prepínač structured logov (app, audit, event, user).'],
-                    ['key' => 'requestLogging', 'type' => 'bool', 'label' => 'Logovať HTTP requesty', 'default' => true, 'rules' => ['bool'], 'help' => 'Každý API endpoint → záznam s timestamp, IP, status, duration.'],
+                    ['key' => 'requestLogging', 'type' => 'bool', 'label' => 'Logovať HTTP requesty', 'default' => true, 'rules' => ['bool'], 'help' => 'API requesty → záznam s timestamp, IP, status, duration. Výnimky: /api/health, /api/debug/client-event, /api/admin/logs*. 404 = INFO (nie WARNING).'],
                     ['key' => 'minSeverity', 'type' => 'enum', 'label' => 'Min. úroveň zápisu', 'default' => 'debug', 'options' => ['debug', 'info', 'warning', 'error', 'critical'], 'rules' => ['required', 'in:debug,info,warning,error,critical'], 'help' => 'Nižšie úrovne sa neukladajú (HTTP access log).'],
                     ['key' => 'retentionDays', 'type' => 'int', 'label' => 'Retencia logov (dni)', 'default' => 30, 'rules' => ['required', 'int', 'min:1', 'max:365'], 'help' => 'Staršie denné súbory sa vymažú (purge v admin Logy).'],
                     ['key' => 'slowRequestMs', 'type' => 'int', 'label' => 'Pomalý request (ms)', 'default' => 2000, 'rules' => ['required', 'int', 'min:100', 'max:60000'], 'help' => 'Requesty nad tento limit sa logujú ako WARNING.'],

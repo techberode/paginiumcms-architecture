@@ -18,23 +18,23 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 
 ## Aktuálny plán (2026-07-30) — Public Beta 1 + produkčný deploy
 
-**Stav:** **`v2.1.0-beta.20`** · It.65 Phase 1 (gallery) + It.64/Analytics + footer UX · **It.25** ⏳ pre-Final gate
+**Stav:** **`v2.1.0-beta.21`** · It.65 Feature gallery **complete** (Phase 1+2) · **It.25** ⏳ pre-Final gate
 
-**Ďalšia iterácia:** **It.65 Phase 2** (slider) · It.58 layout builder · **It.25 setup wizard až pred Final 1.0**
+**Ďalšia iterácia:** It.58 layout builder · **It.25 setup wizard až pred Final 1.0**
 
 | Priorita | Úloha | Stav |
 |----------|--------|------|
 | **Prod deploy** | Docker stack, nginx, SSL, `git pull` + frontend build | ✅ beží na `paginiumcms.com` |
-| **Release beta.20** | It.65 gallery + footer UX | ✅ **`4d17e05`** · tag `v2.1.0-beta.20` |
+| **Release beta.21** | It.65 Phase 2 + ISS-110/111 | ✅ **`v2.1.0-beta.21`** |
+| **It.65** | Feature gallery (grid/slider/hero-strip) | ✅ **complete** |
 | **It.64** | Footer social links | ✅ **`v2.1.0-beta.19`** |
 | **Analytics SPA beacon** | `POST /api/analytics/pageview` | ✅ **`v2.1.0-beta.19`** |
-| **It.65 Phase 1** | Feature gallery grid + modal | ✅ **`v2.1.0-beta.20`** |
-| **Footer UX** | Social left column + theme contrast | ✅ beta.20 (includes `51c3bc9`) |
 | **Cron na hoste** | `scheduler:run` + `worker:process` každú minútu | ⏳ overiť crontab |
 | **It.63** | Admin system update (prod deploy) | ✅ **`beta.15`** — MVP + v2/v3 webhook |
 | **It.61** | Newsletter footer + admin prehľad | ✅ **shipped** |
 
 Detail deployu (lokálne, gitignored): `PRIVATE_DOMAIN_DEPLOY.md` · releases: [developer/RELEASE.md](developer/RELEASE.md) · gallery usage: [ITERATION_65.md](ITERATION_65.md#usage-guide-admin)
+
 
 ---
 
@@ -309,39 +309,37 @@ Demo: demo.paginiumcms.com (port 8091, DEMO_MODE=true).
 Komunikuj po slovensky. Pravidlá: .cursorrules + docs/CONTINUATION.md §2.
 Nemáme externých testerov — QA = gate + manuálny smoke.
 
-HOTOVÉ (2026-07-30) — v2.1.0-beta.20 (4d17e05):
-- It.65 Phase 1 ✅ Feature gallery — admin /gallery, public /features, home embed, gallery:manage
-- It.64 ✅ Footer social links (beta.19)
-- Analytics SPA beacon ✅ POST /api/analytics/pageview (beta.19)
-- Footer UX ✅ social icons left + theme contrast (51c3bc9 + beta.20)
+HOTOVÉ (2026-07-30) — v2.1.0-beta.21:
+- It.65 ✅ complete — Phase 1+2 (grid/slider/hero-strip, effects, tag filter, live preview, publicRoute)
+- ISS-110 ✅ SEO cache collision fix · ISS-111 ✅ LoggerTest / PHPStan
+- It.64 ✅ Footer social · Analytics SPA beacon · Footer UX theme contrast (beta.19–20)
 
 PRE-FINAL (pred 1.0):
 - It.25 ⏳ setup wizard + one-click update UX — [ITERATION_25.md](ITERATION_25.md)
 
 ĎALŠIA ITERÁCIA (dohodnuté):
-- It.65 Phase 2 — slider, autoplay, effect presets, dynamic publicRoute
 - It.58 — layout builder
-- Ops: cron check, prod deploy beta.20 ak ešte nie
+- Ops: seed gallery screenshots on prod; cron check; deploy beta.21
 
 GALLERY USAGE (It.65):
 - docs/ITERATION_65.md#usage-guide-admin
 - Admin /gallery → Media screenshots → Published
-- Settings → Feature gallery → enabled + placement
-- Navigation → /features
+- Settings → Feature gallery → enabled + placement + layout/effects
+- Navigation → publicRoute (default /features)
 
 PROD DEPLOY (paginiumcms.com):
   cd /var/www/paginiumcms.com
-  GIT_REF=v2.1.0-beta.20 APP_ROOT=/var/www/paginiumcms.com \
+  GIT_REF=v2.1.0-beta.21 APP_ROOT=/var/www/paginiumcms.com \
     STACK_DIR=/var/lib/docker/compose/paginiumcms BACKEND_PORT=8089 \
     ./scripts/deploy-instance-update.sh
   curl -s http://127.0.0.1:8089/api/health | jq -r '.data.version'
-  # expected: 2.1.0-beta.20
+  # expected: 2.1.0-beta.21
 
-RELEASE DOCS: docs/developer/RELEASE.md (beta.18–20 copy-paste blocks)
+RELEASE DOCS: docs/developer/RELEASE.md (beta.21 copy-paste block)
 BACKLOG: docs/ITERATION_BACKLOG.md
 Incidenty: docs/ISSUES.md · Deploy: docs/deploy/DEPLOY.md
 ```
 
 ---
 
-*Updated 2026-07-30 after **`v2.1.0-beta.20`** — It.65 gallery Phase 1 + footer UX. Details: `ITERATION_65.md`, `RELEASE.md`, `CHANGELOG.md`.*
+*Updated 2026-07-30 after **`v2.1.0-beta.21`** — It.65 gallery complete (Phase 1+2) + ISS-110/111. Details: `ITERATION_65.md`, `RELEASE.md`, `CHANGELOG.md`.*

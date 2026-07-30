@@ -539,3 +539,64 @@
 .dark .tiptap strong { color: #f8fafc; }
 .tiptap [style*="text-align: center"] { text-align: center; }
 .tiptap [style*="text-align: right"] { text-align: right; }
+
+/* Feature gallery slider (It.65 Phase 2) */
+.gallery-slider__track {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.gallery-slider__track::-webkit-scrollbar {
+  display: none;
+}
+
+.gallery-slider__slide {
+  transition: transform 0.35s ease, opacity 0.35s ease, box-shadow 0.35s ease;
+  opacity: 0.72;
+}
+.gallery-slider__slide.is-active {
+  opacity: 1;
+}
+
+.gallery-slider--subtle .gallery-slider__slide.is-active {
+  transform: scale(1.02);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+}
+
+.gallery-slider--cinematic .gallery-slider__image {
+  filter: blur(6px) saturate(0.85);
+  transform: scale(1.04);
+  transition: filter 0.5s ease, transform 0.5s ease;
+}
+.gallery-slider--cinematic .gallery-slider__slide.is-active .gallery-slider__image {
+  filter: none;
+  transform: scale(1);
+}
+.gallery-slider__vignette {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 45%, rgba(0, 0, 0, 0.35) 100%);
+}
+
+.gallery-slider--minimal .gallery-slider__slide {
+  transition: none;
+  opacity: 1;
+}
+
+.gallery-slider--hero .gallery-slider__track {
+  gap: 1.25rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gallery-slider__slide,
+  .gallery-slider--cinematic .gallery-slider__image {
+    transition: none !important;
+  }
+  .gallery-slider--cinematic .gallery-slider__image {
+    filter: none !important;
+    transform: none !important;
+  }
+  .gallery-slider--subtle .gallery-slider__slide.is-active {
+    transform: none;
+  }
+}

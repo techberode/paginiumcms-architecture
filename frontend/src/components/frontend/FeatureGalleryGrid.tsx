@@ -7,12 +7,14 @@ import { FeatureGalleryModal } from './FeatureGalleryModal';
 export interface FeatureGalleryGridProps {
   items: GalleryItem[];
   showFeatureTags?: boolean;
+  modalCaptionStyle?: 'below' | 'overlay' | 'side';
   className?: string;
 }
 
 export const FeatureGalleryGrid: React.FC<FeatureGalleryGridProps> = ({
   items,
   showFeatureTags = true,
+  modalCaptionStyle = 'below',
   className = '',
 }) => {
   const { t } = useI18n();
@@ -66,6 +68,7 @@ export const FeatureGalleryGrid: React.FC<FeatureGalleryGridProps> = ({
         onClose={() => setActiveIndex(null)}
         onChangeIndex={setActiveIndex}
         showFeatureTags={showFeatureTags}
+        captionStyle={modalCaptionStyle}
       />
     </>
   );

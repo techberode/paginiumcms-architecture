@@ -1,9 +1,10 @@
 # Iteration 65 — Feature gallery (admin screenshots)
 
-**Status:** ✅ Phase 1 shipped in `v2.1.0-beta.20`  
-**Priority:** 🟡 Medium  
+**Status:** ✅ Complete (Phase 1 + Phase 2) — **`v2.1.0-beta.21`**  
+**Priority:** ✅ Done  
 **Use case:** Present PaginiumCMS admin UI screenshots with feature descriptions — marketing, demo, onboarding.  
-**Related:** [It.26 Media lightbox](ITERATION_26.md) · [It.58 Layout builder](ITERATION_58.md) (future gallery block) · [It.64 Footer social](ITERATION_64.md)
+**Related:** [It.26 Media lightbox](ITERATION_26.md) · [It.58 Layout builder](ITERATION_58.md) (future gallery block) · [It.64 Footer social](ITERATION_64.md)  
+**Out of scope (optional later):** Phase 3 — Ken Burns, deep links, It.58 Gallery block, JSON export/import.
 
 ---
 
@@ -143,16 +144,18 @@ Optional dependency: **`embla-carousel-react`** (~3kb gzip) if native scroll-sna
 - [x] FE public: **grid** + **basic modal** (reuse lightbox UX from It.26)
 - [x] Settings: `enabled`, `placement`, `publicRoute`
 - [x] PHPUnit + Vitest + smoke in `ITERATION_65.md`
-- [ ] Seed 3–5 demo screenshots for `paginiumcms.com`
+- [x] Seed screenshots — **ops on prod** via Admin → Gallery (repo ships empty `data/gallery/`; no binary assets in git)
 
 **Estimate:** 1 focused iteration (~similar size to It.64 + It.33 slice).
 
 ### Phase 2 — Slider & admin polish
 
-- [ ] Slider layout + autoplay + pause on hover/focus
-- [ ] Effect presets (`subtle` / `cinematic` / `minimal`)
-- [ ] Feature tag badges + filter chips on public page
-- [ ] Admin live preview panel
+- [x] Slider layout + autoplay + pause on hover/focus
+- [x] Effect presets (`subtle` / `cinematic` / `minimal`)
+- [x] Feature tag badges + filter chips on public page
+- [x] Admin live preview panel
+- [x] Dynamic `publicRoute` from Settings (single path segment)
+- [x] `hero-strip` layout + `modalCaptionStyle` (below / overlay / side)
 
 ### Phase 3 — Premium UX (optional)
 
@@ -172,14 +175,25 @@ Optional dependency: **`embla-carousel-react`** (~3kb gzip) if native scroll-sna
 - [x] PHPStan L8 + iteration gate green
 - [x] Docs: `ADMIN_GUIDE`, `CHANGELOG`, this file updated
 
+## Acceptance criteria (Phase 2)
+
+- [x] Settings drive `layout`, `effectPreset`, `autoplayEnabled`, `autoplayIntervalMs`, `modalCaptionStyle`
+- [x] Slider/hero-strip: prev/next, dots, keyboard on track, pause on hover/focus
+- [x] `prefers-reduced-motion` disables autoplay and animations
+- [x] Tag filter chips on public section (when tags exist)
+- [x] Admin `/gallery` live preview of published items
+- [x] Custom `publicRoute` (e.g. `/funkcie`) resolves via SPA slug intercept
+
 ---
 
 ## Smoke test
 
-1. Admin → **Gallery** → add item (screenshot + title + description) → publish.
-2. Settings → **Gallery** → enable, placement `home` or `/features`.
-3. Public site — section visible; click opens modal with caption.
-4. `curl -s http://localhost:8080/api/gallery/public | jq '.data.items | length'`
+1. Admin → **Gallery** → add item (screenshot + title + description + tag) → publish.
+2. Settings → **Gallery** → enable; layout `slider`; effect `cinematic`; autoplay on.
+3. Public site — slider visible; hover pauses; click opens modal; filter chips work.
+4. Change `publicRoute` to `/funkcie` → Navigation link → page loads gallery.
+5. `curl -s http://localhost:8080/api/gallery/public | jq '.data.items | length'`
+6. `curl -s http://localhost:8080/api/settings/public | jq '.data.gallery'`
 
 ---
 
@@ -188,27 +202,30 @@ Optional dependency: **`embla-carousel-react`** (~3kb gzip) if native scroll-sna
 1. **Upload screenshots** — Admin → **Media** → upload PNG/WebP admin UI captures.
 2. **Create gallery items** — Admin → **Feature gallery** (`/gallery`) → **Add screenshot** → pick image from Media, title, description, optional module tag (e.g. `analytics`) → **Published** → Save.
 3. **Enable on public site** — Settings → **Site** → **Feature gallery** → enable gallery; choose **Placement**:
-   - `route` — only `/features`
-   - `home` — grid below home page content
-   - `both` — home embed + `/features`
-4. **Menu link (optional)** — Admin → **Navigation** → new item, path `/features`, label e.g. „Funkcie“.
-5. **Verify** — open `/features` (or home with `both`); click a tile → fullscreen modal; test ←/→ and ESC.
+   - `route` — only the public route (default `/features`)
+   - `home` — embed below home page content
+   - `both` — home embed + public route
+4. **Layout & effects (Phase 2)** — set **Layout** (`grid` / `slider` / `hero-strip`), **Effect preset**, autoplay interval; optional modal caption style.
+5. **Live preview** — on `/gallery`, use the preview panel (published items only; mirrors Settings layout).
+6. **Menu link (optional)** — Admin → **Navigation** → new item, path matching `publicRoute` (e.g. `/features` or `/funkcie`).
+7. **Verify** — open public route; filter by tag; open modal; test ←/→ and ESC.
 
-Phase 1 uses fixed route `/features` in the SPA (Settings `publicRoute` is stored for Phase 2 dynamic routing).
+`publicRoute` supports a **single path segment** (e.g. `/features`, `/funkcie`). Multi-segment paths are normalized to the first segment.
 
 ---
 
-## Open decisions (confirm before Phase 1)
+## Decisions
 
-| # | Question | Recommendation |
-|---|----------|----------------|
-| 1 | Dedicated route `/gallery` vs `/features`? | **`/features`** (marketing); keep `/gallery` as admin only |
-| 2 | Separate admin menu vs under Content? | **Top-level `/gallery`** — visible for marketing |
-| 3 | New npm dependency for carousel? | **Phase 1: CSS grid + modal**; Embla in Phase 2 if needed |
-| 4 | Markdown in descriptions? | **Plain text v1**; markdown subset in Phase 2 |
+| # | Question | Outcome |
+|---|----------|---------|
+| 1 | Dedicated route `/gallery` vs `/features`? | **`/features`** default; custom via `publicRoute` |
+| 2 | Separate admin menu vs under Content? | **Top-level `/gallery`** |
+| 3 | New npm dependency for carousel? | **CSS scroll-snap** (no Embla) — sufficient for autoplay + a11y |
+| 4 | Markdown in descriptions? | **Plain text** (Phase 3 optional) |
 
 ---
 
 ## Relation to layout builder (It.58)
 
 It.65 delivers a **standalone module** first. It.58a can later register a **Gallery block** that calls the same `GET /api/gallery/public` — no duplicate storage.
+

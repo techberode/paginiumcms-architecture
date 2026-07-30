@@ -1,7 +1,7 @@
 # PaginiumCMS — Feature overview (implemented vs planned)
 
 > **Purpose:** Single map of what the project **already ships**, what is **backlog / pre-Final**, and what **checklists** still need attention.  
-> **Current release:** **`v2.1.0-beta.20`** · **2026-07-29**  
+> **Current release:** **`v2.1.0-beta.21`** · **2026-07-30**  
 > **Architecture:** React SPA (Vite 8, TS) ↔ Slim 4 REST API ↔ PHP 8.5 flat-file core (no SQL)
 
 | Symbol | Meaning |
@@ -22,8 +22,8 @@
 |-----------|---------------|--------|
 | Core CMS (2.0.x) | `v2.0.58` … `2.0.58` | Auth, content, media, WAF, i18n waves, plugins |
 | Public Beta 1 | `v2.1.0-beta.1`–`.3` | Beta docs, security patches, tester path |
-| Post-beta features | `beta.4`–`.20` | Nav, analytics, demo, newsletter, system update, gallery |
-| **Latest** | **`v2.1.0-beta.20`** | It.65 gallery Phase 1 + footer UX + analytics beacon (beta.19) |
+| Post-beta features | `beta.4`–`.21` | Nav, analytics, demo, newsletter, system update, gallery |
+| **Latest** | **`v2.1.0-beta.21`** | It.65 gallery Phase 1+2 + SEO/logging fixes (ISS-110/111) |
 | Final 1.0 GA | not tagged | After beta testing + **It.25** setup wizard & one-click update UX |
 
 **Production instances:** `paginiumcms.com` (prod) · `demo.paginiumcms.com` (demo, `DEMO_MODE=true`)
@@ -89,7 +89,7 @@
 | Contact form | ✅ | It.52 |
 | Footer newsletter (inline email → modal) | ✅ | It.61 Phase 5, beta.18 |
 | Footer social links (icons) | ✅ | It.64, beta.19 |
-| Feature gallery (`/features`, home embed) | ✅ | It.65 Phase 1, beta.20 |
+| Feature gallery (`/features`, home embed, slider) | ✅ | It.65 Phase 1+2 · **`v2.1.0-beta.21`** |
 | Newsletter confirm / manage / unsubscribe | ✅ | It.61 Phases 3–4 public pages |
 
 ### 2.5 Newsletter & campaigns ✅
@@ -206,7 +206,7 @@ Public (same SPA): `/`, `/features`, `/blog`, `/blog/:slug`, `/:slug`, `/newslet
 
 | It. | Name | Priority | Status |
 |-----|------|----------|--------|
-| **65** | [Feature gallery — admin screenshots](ITERATION_65.md) | 🟡 | ✅ Phase 1 grid + modal (`beta.20`); Phase 2 slider |
+| **65** | [Feature gallery — admin screenshots](ITERATION_65.md) | ✅ | Phase 1+2 · **`v2.1.0-beta.21`**; Phase 3 optional backlog |
 | **58a** | Page layout builder (5 templates) | 🟡 | ⏳ 58b (color schemes) ✅ |
 | **48** | PHP templates + static HTML export | 🟡 | ⏳ |
 | **49** | Unified cache (file + Redis) | 🟡 | ⏳ absorbs It.45 |

@@ -5,9 +5,9 @@
 
 **Aktuálne hotové:** It.1–24 ✅ · It.26–28 ✅ · **It.13 v3** ✅ · **It.61** ✅ · **It.62** ✅ · **It.63 v2/v3** ✅ · It.25 ⏳ (pre-Final gate)
 
-**Posledná shipped:** **It.65 Feature gallery Phase 1 + footer UX** · **`v2.1.0-beta.20`**
+**Posledná shipped:** **It.65 Feature gallery** (Phase 1+2) · **`v2.1.0-beta.21`**
 
-**Ďalšia iterácia:** **It.65 Phase 2** (slider) · It.58 layout builder · **It.25 až pred Final 1.0** — [ITERATION_25.md](ITERATION_25.md)
+**Ďalšia iterácia:** It.58 layout builder · **It.25 až pred Final 1.0** — [ITERATION_25.md](ITERATION_25.md)
 
 **Incidenty a opravy:** [ISSUES.md](ISSUES.md)
 
@@ -18,7 +18,7 @@
 | It. | Verzia | Názov | Priorita | Poznámka |
 |-----|--------|-------|----------|----------|
 | 25 | pre-1.0 | [Setup wizard + one-click updates](ITERATION_25.md) | 🟡 | **Posledné kroky pred Final** — onboarding + Grav-like update UX (engine: It.63 ✅) |
-| **65** | **`v2.1.0-beta.20`** | **[Feature gallery — admin screenshots](ITERATION_65.md)** | **✅ Phase 1** | Grid + modal MVP; Phase 2 slider/effects |
+| **65** | **`v2.1.0-beta.21`** | **[Feature gallery — admin screenshots](ITERATION_65.md)** | **✅** | Grid/slider/hero-strip; Phase 3 optional backlog |
 | 26 | 2.0.14 | [Media preview + binárny hotfix](ITERATION_26.md) | ✅ | Lightbox + strict formats |
 | **27** | **2.0.15** | **[Admin view modes + SEO panel](ITERATION_27.md)** | **✅** | List / list+preview / grid + SEO UX + metadata modal |
 | **28** | **2.0.16** | **[Bulk actions platform](ITERATION_28.md)** | **✅** | Shared bulk bar + batch APIs |
