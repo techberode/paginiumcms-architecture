@@ -5,9 +5,9 @@
 
 **Aktuálne hotové:** It.1–24 ✅ · It.26–28 ✅ · **It.13 v3** ✅ · **It.61** ✅ · **It.62** ✅ · **It.63 v2/v3** ✅ · It.25 ⏳ (pre-Final gate)
 
-**Posledná shipped:** **It.65 Feature gallery** (Phase 1+2) · **`v2.1.0-beta.21`**
+**Posledná shipped (pending release):** **It.65 Feature gallery Phase 1–3** + CodePolicy untrusted gate · next **It.66**
 
-**Ďalšia iterácia:** It.58 layout builder · **It.25 až pred Final 1.0** — [ITERATION_25.md](ITERATION_25.md)
+**Ďalšia iterácia:** **It.66** security write-time/CI · **It.58c** layout switch · **It.25** až pred Final 1.0 — [ITERATION_25.md](ITERATION_25.md)
 
 **Incidenty a opravy:** [ISSUES.md](ISSUES.md)
 
@@ -18,7 +18,9 @@
 | It. | Verzia | Názov | Priorita | Poznámka |
 |-----|--------|-------|----------|----------|
 | 25 | pre-1.0 | [Setup wizard + one-click updates](ITERATION_25.md) | 🟡 | **Posledné kroky pred Final** — onboarding + Grav-like update UX (engine: It.63 ✅) |
-| **65** | **`v2.1.0-beta.21`** | **[Feature gallery — admin screenshots](ITERATION_65.md)** | **✅** | Grid/slider/hero-strip; Phase 3 optional backlog |
+| **67** | TBD | **[Untrusted surfaces & defense-in-depth](ITERATION_67.md)** | **🟡** | Shortcodes+Monaco gate · theme import · CSP/deps |
+| **66** | TBD | **[Security write-time gate & test packs](ITERATION_66.md)** | **🟡 next** | Write/import fail-closed · alltests packs · ops ISS-008/014 |
+| **65** | **`v2.1.0-beta.21`** (+ P3 pending tag) | **[Feature gallery — admin screenshots](ITERATION_65.md)** | **✅** | Phase 1–3 complete; export/import, deep link, Ken Burns |
 | 26 | 2.0.14 | [Media preview + binárny hotfix](ITERATION_26.md) | ✅ | Lightbox + strict formats |
 | **27** | **2.0.15** | **[Admin view modes + SEO panel](ITERATION_27.md)** | **✅** | List / list+preview / grid + SEO UX + metadata modal |
 | **28** | **2.0.16** | **[Bulk actions platform](ITERATION_28.md)** | **✅** | Shared bulk bar + batch APIs |
@@ -36,7 +38,7 @@
 | **55** | **2.0.43** | **[Tiptap JSON + media upload](ITERATION_55.md)** | **✅** | WYSIWYG JSON + BE render + upload |
 | **56** | **`v2.1.0-beta.5`** | **[Rich navigation items](ITERATION_56.md)** | **✅** | Popis, ikona, hover preview |
 | **57** | **`v2.1.0-beta.4`** | **[Auto tags & description](ITERATION_57.md)** | **✅** | suggest-meta API |
-| **58** | TBD | **[Page layout builder + color schemes](ITERATION_58.md)** | **🟡** | ⛔ po It.15 · [alternatívy](ITERATION_58_ALTERNATIVES.md) · layout + 5 presetov |
+| **58** | TBD | **[Page layout builder + color schemes](ITERATION_58.md)** | **🟡** | 58b ✅ · next **58c** (Settings switch + preview) · [alternatives](ITERATION_58_ALTERNATIVES.md) |
 | **59** | **2.0.53** | **[Odložená publikácia — plánovač v editore](ITERATION_59.md)** | **✅** | Editor datetime + filter scheduled + job `content.scheduled_publish` |
 | **60** | TBD | **[Vlastné komponenty editora](ITERATION_60.md)** | **✅** | Plugin manifest + settings matica + hello-widget demo |
 | **61** | **`v2.1.0-beta.18`** | **[Newsletter vo footeri](ITERATION_61.md)** | **✅** | Phases 1–5 (inline email footer); A/C modes backlog |

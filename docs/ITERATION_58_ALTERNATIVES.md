@@ -1,214 +1,284 @@
-# It.58 — Porovnanie alternatív layout buildera (2026-07-26)
+# It.58 — Layout & page-building alternatives (decision + phased plan)
 
-> **Stav:** Rozhodovací dokument pred implementáciou [ITERATION_58.md](ITERATION_58.md)  
-> **Verzia CMS:** `v2.1.0-beta.7` · React 18 · flat-file SSOT
+> **Status:** Decision document for [ITERATION_58.md](ITERATION_58.md)  
+> **Updated:** 2026-07-30 · CMS `v2.1.0-beta.21` · React SPA · flat-file SSOT · **58b shipped** (appearance / color schemes)  
+> **Language:** English (project docs standard)
 
-Tri navrhované architektúry oproti **aktuálnemu plánu It.58** (5 šablón + bloky + CSS variables, bez pixel canvas).
-
----
-
-## Odporúčanie (stručne)
-
-| Alternatíva | Vhodnosť pre PaginiumCMS | Poznámka |
-|-------------|-------------------------|----------|
-| **1 — Grid (react-grid-layout)** | 🟡 Pre dashboard widgety, nie pre verejné stránky | Ťažké JS na admin; verejný render OK cez CSS Grid, ale komplexita vysoká |
-| **2 — Sekvenčný page builder** | ✅ **Najbližšie It.58** | `@hello-pangea/dnd` + Tailwind šírky = plánovaný „visual outline, reorder blocks“ |
-| **3 — Vanilla JS + statické HTML** | 🟡 Ako **It.48 slice** (cache), nie ako jediný editor | Server-side HTML cache dobrý pre výkon; editor ostáva React admin |
-
-**Odporúčaný hybrid pre It.58:** **Alt 2** (admin UX) + **CSS variables / Tailwind tokeny** zo It.58b + voliteľný **statický HTML cache** z Alt 3 v rámci [It.48](ITERATION_48.md).
+This document replaces the earlier 2026-07-26 comparison (react-grid-layout vs sequential DnD vs static HTML).  
+Goal: a **Paginium-native** stack with **several layout builders the user can switch between in Settings** — not role-locked “skill tracks” — while keeping security, flat-file SSOT, speed, and SEO.
 
 ---
 
-## Alternatíva 1 — Komplexný Grid (Dashboard Style)
+## 1. Design north star
 
-### Flat-file JSON (ukážka)
-
-```json
-{
-  "schemaVersion": 1,
-  "template": "grid-dashboard",
-  "items": [
-    { "id": "hero-1", "type": "hero", "x": 0, "y": 0, "w": 12, "h": 4, "props": { "title": "Vitajte" } },
-    { "id": "text-1", "type": "richtext", "x": 0, "y": 4, "w": 8, "h": 6, "props": { "bodyRef": "main" } },
-    { "id": "cta-1", "type": "cta", "x": 8, "y": 4, "w": 4, "h": 3, "props": { "href": "/contact" } }
-  ]
-}
-```
-
-Uloženie: sidecar `content/pages/{slug}.layout.json` alebo front matter kľúč `layout`.
-
-### Admin React (skica)
-
-```tsx
-// Lazy: const Grid = lazy(() => import('react-grid-layout'));
-// onLayoutChange → debounce → PUT /api/admin/pages/{id}/layout
-// Validácia: w/h v rozsahu 1–12, x/y ≥ 0, žiadne prekryvy (voliteľné)
-```
-
-### PHP validácia (Slim)
-
-```php
-// LayoutGridValidator::validate(array $payload): void
-// - schemaVersion int
-// - items[].x,y,w,h: int, min/max grid (12 cols)
-// - items[].type: allowlist (hero, richtext, …)
-// - props: per-type Validator (HtmlDomSanitizer pre HTML polia)
-```
-
-### CSS izolácia
-
-- Verejný web: `className="paginium-public-grid"` + `--theme-*` na `#public-root` only
-- Admin grid editor: wrapper `data-admin-layout-editor` — **bez** globálnych `--theme-*` na `document.documentElement` admin shell
-
-### Čo už máme vs. čo chýba
-
-| Položka | Stav |
-|---------|------|
-| Flat-file JSON SSOT | ✅ vzor v `navigation.json`, settings |
-| `HtmlDomSanitizer` / XSS | ✅ ISS-086 |
-| Lazy Monaco | ✅ `@monaco-editor/react` v projekte (Code Editor) |
-| Grid layout editor | ⏳ It.58 — **neimplementované** |
-| Public render bez admin bundle | ✅ SPA public routes oddelené; layout renderer ⏳ |
+| Constraint | Rule |
+|------------|------|
+| **Settings switch, not role lock** | User (or site default) picks **which layout builder to work with** in Settings / editor chrome. Roles may *allow* Advanced, but do **not** force a single builder per persona. |
+| **No heavy third-party builders** | No GrapesJS / Elementor clones as core. Optional thin DnD only for block reorder. |
+| **Flat-file SSOT** | Layout + content stay JSON/MD on disk; public render is deterministic. |
+| **Speed & SEO** | Public HTML from allow-listed structure — target sub-ms PHP path after cache warm (It.48). |
+| **Security first** | Allow-lists (block types, shortcode names, `pg-*` classes, templates). Sanitize HTML; no `eval`. |
+| **Fail-closed untrusted** | Plugins / themes / layout shortcodes / Monaco: always `CodePolicyEngine` + artifact schema — cannot disable for non-core. |
+| **Live layout preview** | Same UX idea as **58b color schemes**: card/wireframe **LayoutPreviewFrame** updates when template / shortcode / outline changes. |
+| **Developer = Monaco** | Advanced lane edits shortcodes / layout markup / template JSON in **Monaco** (already in Code Editor), with insert helpers — not a free-for-all textarea. |
+| **Originality** | Multi-builder switch + shared AST + scheme-like preview — not a me-too pixel canvas. |
 
 ---
 
-## Alternatíva 2 — Sekvenčný page builder (Page Builder Style)
+## 2. How the user chooses a builder (important)
 
-### Flat-file JSON (ukážka)
+**Wrong model:** “Beginner role → only templates; Developer role → only Monaco.”  
+**Right model:** Settings (and/or page editor toolbar) expose:
 
-```json
-{
-  "schemaVersion": 1,
-  "template": "hero-content",
-  "sections": [
-    { "id": "s1", "type": "hero", "width": "full", "props": { "title": "…", "image": "media/uuid.jpg" } },
-    { "id": "s2", "type": "richtext", "width": "2/3", "props": { "bodyRef": "main" } },
-    { "id": "s3", "type": "cta", "width": "1/3", "props": { "label": "Kontakt", "href": "/contact" } }
-  ]
-}
+```
+Layout builder:  ○ Templates   ○ Shortcodes   ○ Block outline   ○ Developer (Monaco)
 ```
 
-`width`: allowlist `full` \| `1/2` \| `1/3` \| `2/3` \| `1/4` \| `3/4`.
+| Setting | Scope | Notes |
+|---------|--------|-------|
+| `layout.builderMode` (working name) | **User preference** and/or **site default** | `templates` \| `shortcodes` \| `outline` \| `developer` |
+| Per-page override | Optional | Page can pin a mode for that document |
+| Capability gate | Soft | e.g. EDITOR: templates + shortcodes + outline; `developer` may require ADMIN / Developer Mode unlock — **still a switch**, not a separate product |
 
-### Admin React (skica)
+All modes read/write the **same canonical layout AST** (plus body shortcodes where applicable). Switching mode does not wipe content; the UI changes, the SSOT stays.
 
-```tsx
-// @hello-pangea/dnd DragDropContext — vertikálne reorder sections
-// Select width → PATCH section.width
-// onDragEnd → PUT layout JSON
+```
+Settings: active builder ──► Editor chrome (Templates | Shortcodes | Outline | Monaco)
+                                      │
+                                      ▼
+                            Canonical layout AST (+ body)
+                                      │
+                                      ▼
+                     LayoutPreviewFrame (like SchemePreviewFrame)
+                                      │
+                                      ▼
+                            Public HTML (+ cache)
 ```
 
-### PHP validácia
+### Personas (guidance only — not hard locks)
 
-```php
-// LayoutSectionValidator
-// - sections: array, max 50 items
-// - width enum
-// - href v CTA: OutboundUrlGuard / relative path only
-// - HTML props → ContentSecuritySanitizer::sanitizeHtml()
-```
-
-### CSS izolácia
-
-- Dynamic Tailwind: **prefer fixed class map** (`widthClass['1/2'] => 'max-w-1/2'`) — **nie** arbitrary `w-[${user}]` (Tailwind purge + injection)
-- Téma: `data-scheme` + `data-theme` len na public wrapper ([ITERATION_58.md](ITERATION_58.md) token model)
-
-### Čo už máme vs. čo chýba
-
-| Položka | Stav |
-|---------|------|
-| Tiptap / MD bloky | ✅ It.54–55 |
-| `SitePreviewModal` | ✅ It.51 |
-| DnD knižnica | ⏳ `@hello-pangea/dnd` **nie v package.json** |
-| `LayoutValidator` | ⏳ It.58 backend |
-| Sekvenčný builder UI | ⏳ It.58 frontend |
-
-**→ Toto je baseline pre It.58a.**
+| Persona | Likely picks | Still can open |
+|---------|--------------|----------------|
+| Beginner | **Templates** | Shortcode palette later |
+| Experienced blogger | **Shortcodes** | Templates / outline |
+| Developer | **Developer (Monaco)** + custom shortcode defs | Any other mode for content editors on the team |
 
 ---
 
-## Alternatíva 3 — Vanilla JS + statické HTML (Zero-Dependency visitor)
+## 3. Four builders (same product)
 
-### Flat-file JSON (ukážka)
+### Builder A — Page templates
 
-Rovnaké ako Alt 2; navyše server generuje cache:
+Pick named template (`landing-page`, `contact`, `services`, `single`, `blog-index`).  
+JSON slot definitions; fill hero/body/gallery in forms.
 
-```
-content/pages/about.layout.json     ← SSOT (admin edit)
-content/cache/pages/about.html      ← compiled snapshot (public serve)
-content/cache/pages/about.meta.json ← { compiledAt, layoutHash, scheme }
-```
+**Preview:** `LayoutPreviewFrame` shows wireframe for that template (header / hero / columns / footer), updating on template change — mirror of `SchemePreviewFrame`.
 
-### Admin React (skica)
+### Builder B — Shortcodes
 
-- Ľahký textarea + Prism pre HTML embed bloky (profile-gated)
-- Drag: native HTML5 DnD alebo tenká React obálka
+Author in MD/Tiptap with palette insert:
 
-### PHP — kompilácia pri save
-
-```php
-// LayoutHtmlCompiler::compile(Page $page, array $layout): string
-// - render sections → HTML string
-// - ContentSecuritySanitizer on each HTML fragment
-// - write cache atomically: temp + rename + LOCK_EX
+```text
+[section layout="2-columns"]…|||…[/section]
+[callout tone="info"]…[/callout]
+[feature-gallery]
 ```
 
-### CSS izolácia
+**Creating / editing shortcode definitions (core + site):** **Monaco** panel (Developer builder or Settings → Layout → Shortcodes) with schema JSON + example body — not ad-hoc PHP in the browser.
 
-- Statické HTML obsahuje len `paginium-public-*` triedy + inline `:root` token block pre schému
-- Admin nikdy nenačítava compiled HTML do iframe bez sandbox CSP
+**Preview:** Preview frame expands shortcodes to the same wireframe / mini render.
 
-### Čo už máme vs. čo chýba
+### Builder C — Block outline (optional phase)
 
-| Položka | Stav |
-|---------|------|
-| `ContentCacheService` / purge | ✅ admin panel cache |
-| `ContentBodyRenderer` | ✅ BE render MD/HTML/Tiptap |
-| `LOCK_EX` / atomic write | ✅ SettingsRepository, LockManager, … |
-| Layout → static HTML pipeline | ⏳ It.48 + It.58 |
-| Prism.js editor | ⏳ nie v projekte (Monaco pre code editor) |
+Sequential sections + reorder + width enums → `pg-*` classes.  
+Comfort UI for people who want drag without code.
+
+### Builder D — Developer (Monaco)
+
+- Edit layout sidecar / template JSON in Monaco  
+- Edit custom shortcode definitions (name, attr schema, expand template) in Monaco  
+- Safe `pg-*` markup snippets with autocomplete from allow-list  
+- Lint / validate before save (unknown shortcode, illegal class → error)
+
+Reuse existing `@monaco-editor/react` from Code Editor; lazy-load in layout settings.
 
 ---
 
-## Bezpečnostný checklist (26.07.2026) — stav v PaginiumCMS
+## 4. Layout preview (parity with color schemes)
 
-| Oblast | Požiadavka | Stav | Kde / poznámka |
-|--------|------------|------|----------------|
-| **1. Flat-file FS** | Web root izolácia | ✅ | `backend/public/` docroot; `data/` mimo |
-| | HMAC podpis súborov | ⏳ | Len `DevTokenGenerator` HMAC; **nie** content integrity |
-| | CHMOD / vlastník ≠ www-data | ⏳ Ops — dokumentácia [PRIVATE_DOMAIN_DEPLOY.md](../PRIVATE_DOMAIN_DEPLOY.md) |
-| | `LOCK_EX` pri zápise | ✅ | Settings, locks, audit, cache, … |
-| **2. Backend** | Path traversal / slug | ✅ | `FileValidator`, storage allow-list (C-STORAGE) |
-| | CSRF | ✅ | `CsrfMiddleware` (ISS-012) |
-| | Rate limiting | ✅ | Login, OTP, suggest-meta, global middleware |
-| | `disable_functions` | ⏳ Ops — `php.ini` na serveri |
-| **3. Upload** | Blok PHP v upload dir | ⏳ Ops — nginx `location` (docs) |
-| | Magic bytes (`finfo`) | ✅ | `FileValidator.php` |
-| | Re-encode obrázkov | ⏳ | MIME check áno; GD recompress **nie** |
-| | UUID názvy súborov | ✅ | Media repository |
-| **4. Frontend** | DOMPurify + BE sanitizácia | ✅ | ISS-086 `HtmlDomSanitizer` + `sanitizePublicHtml` |
-| | `javascript:` v href | ✅ | `safeUrl.ts` + BE URI guard |
-| | Token v httpOnly cookie | 🟡 | Session cookie httpOnly; CSRF token v **localStorage** (ISS-012 design) |
-| **5. HTTP** | CSP | 🟡 | `SecurityMiddleware` — `script-src` bez unsafe-inline; `style-src` unsafe-inline (React) |
-| | X-Frame-Options, nosniff, HSTS | ✅ / ⏳ | Middleware + nginx docs |
-| **6. Audit** | Immutable audit log | 🟡 | JSON logs + SecurityAuditStore; append-only **nie** OS-level |
-| | `npm audit` / `composer audit` | ✅ CI | ISS-089: RR RSC high = false positive pre SPA |
-| **Sieť** | WAF / static deny | ✅ | `FirewallMiddleware` (It.50) |
-| | Session-bound API | ✅ | AuthMiddleware + CSRF |
+| Color schemes (58b) | Layout builders (58c+) |
+|---------------------|-------------------------|
+| `ColorSchemeCard` + swatches | `LayoutBuilderCard` (mode icon + short description) |
+| `SchemePreviewFrame` wireframe | **`LayoutPreviewFrame`** — same generic page chrome, slots reflect **active template / AST** |
+| Live update on scheme select | Live update on template / shortcode / outline / Monaco validate-success |
+| Light/dark/system | Same appearance tokens on preview |
 
-### Otvorené (priorita pre ďalšie iterácie)
-
-1. **ISS-014** — overiť `CORS_ALLOWED_ORIGINS` na test/prod serveri  
-2. **ISS-089** — npm audit high (RR RSC-only) — akceptované na React 18; plná oprava = React 19 + RR 8.3  
-3. **ISS-083** — ESLint 10 + flat config upgrade  
-4. **HMAC content integrity** — nový návrh (nie v scope beta.7)  
-5. **GD image re-encode** — hardening upload pipeline  
-6. **It.58** — layout builder (Alt 2 + tokeny z plánu)
+Settings → **Layout** (or Appearance sibling): builder switcher **above** the preview, so the user sees *what they will work with* before opening a page.
 
 ---
 
-## Súvisiace
+## 5. Safe Grid / Flex (`pg-*`)
 
-- [ITERATION_58.md](ITERATION_58.md) — plánovaná implementácia  
-- [ISSUES.md](ISSUES.md) — ISS-086–090  
-- [SECURITY.md](../SECURITY.md) — verejný prehľad
+Not raw Tailwind from users. Curated `pg-*` classes emitted by shortcodes / outline / Monaco snippets.
+
+```html
+<div class="pg-grid pg-grid-cols-1 pg-md:grid-cols-3 pg-gap-4">…</div>
+```
+
+Cards / alerts / banners = named shortcodes or blocks, not inventing Bootstrap per page.
+
+---
+
+## 6. What we reject as core
+
+| Alternative | Verdict |
+|-------------|---------|
+| react-grid-layout pixel canvas | ❌ |
+| GrapesJS / full visual builders | ❌ |
+| Arbitrary user Tailwind / inline styles | ❌ |
+| Role-exclusive builders (no Settings switch) | ❌ |
+| Runtime PHP templates as only path | ❌ MVP |
+
+---
+
+## 7. Recommended architecture
+
+**Name:** **Paginium Layout Switch** (multi-builder, one AST)
+
+| Layer | Storage | Editor UI |
+|-------|---------|-----------|
+| Active builder mode | Settings / user prefs | Switcher + `LayoutPreviewFrame` |
+| Template ID | Page FM | Template picker |
+| Shortcodes | Body + registry | Palette + **Monaco** for definitions |
+| Outline JSON | `{slug}.layout.json` | Outline UI |
+| `pg-*` CSS | Bundled stylesheet | Monaco snippets / shortcode expand |
+| Feature gallery | It.65 API | Block / `[feature-gallery]` |
+
+---
+
+## 8. Phased delivery (one iteration)
+
+### Phase 58c — Templates + Settings switch + LayoutPreviewFrame
+
+- [ ] `layout.builderMode` (site default + user preference)
+- [ ] Template catalog ≥5; picker in page editor when mode = templates
+- [ ] **`LayoutPreviewFrame`** in Settings (scheme-preview parity)
+- [ ] Soft capability: who may select `developer` (default ADMIN)
+- [ ] PHPUnit / Vitest for mode setting + unknown template reject
+
+### Phase 58d — Shortcode engine + Monaco definitions
+
+- [ ] Registry + parser + expand-on-save
+- [ ] Built-ins: `section`, `grid`, `callout`, `feature-gallery`
+- [ ] Admin shortcode palette in Shortcodes mode
+- [ ] **Monaco** UI to create/edit shortcode definitions (schema + expand template)
+- [ ] **Every save:** `ShortcodeDefinitionPolicy` + `CodePolicyEngine::validateUntrusted` — reject broken/hostile defs (422)
+- [ ] Preview frame reflects shortcode expand
+- [ ] Plugin registration hook (It.15) — same gate; no bypass
+
+### Phase 58e — Safe `pg-*` utilities + Monaco snippets
+
+- [ ] CSS pack + attr maps from shortcodes
+- [ ] Monaco autocomplete for allow-listed classes only
+- [ ] htmlEmbed profile strips non-`pg-*` classes
+
+### Phase 58f — Block outline UI
+
+- [ ] Reorder + width enums; sync rules with AST when switching from Monaco/shortcodes
+
+### Phase 58g — Compile & cache (It.48)
+
+- [ ] Published AST → HTML cache; invalidate on layout/content/appearance change
+
+---
+
+## 9. Future (explicitly **out of It.58**)
+
+Later iterations (themes / modules / plugin authoring):
+
+- Create **plugins, themes, modules** via **Monaco** and/or a **visual editor of defined code blocks**
+- Same security baseline: `CodePolicyEngine`, no `data/` access, allow-listed APIs
+- May reuse Layout Switch patterns (mode switch + preview + Monaco)
+
+Do **not** block 58c–58g on that workstream.
+
+---
+
+## 10. Decision matrix (score 1–5)
+
+| Criterion | Templates | Shortcodes + Monaco defs | Outline | Pixel grid | Full visual builder |
+|-----------|-----------|--------------------------|---------|------------|---------------------|
+| Settings-switch UX | **5** | **5** | **5** | 2 | 2 |
+| Preview parity with schemes | **5** | **4** | **5** | 3 | 3 |
+| Developer comfort (Monaco) | 3 | **5** | 3 | 3 | 2 |
+| Security | **5** | **4** | **4** | 2 | 1 |
+| Perf / SEO | **5** | **5** | **5** | 3 | 2 |
+| **Pick** | 58c | **58d heart** | 58f | Reject | Reject |
+
+---
+
+## 11. Maximum protection (mandatory — core and non-core)
+
+Anything authored **outside CMS core** (plugins, themes, layout shortcodes, Monaco buffers, future module studio) must pass a **fail-closed** gate before activation.
+
+### Layers
+
+| Layer | What | Engine |
+|-------|------|--------|
+| **1. Syntax** | PHP lint / JSON parse | `SyntaxChecker` |
+| **2. Security scan** | Forbidden PHP constructs/functions | `SecurityScanner` + untrusted forbid list |
+| **3. Policy** | Size, strict_types, extension namespace | `CodePolicyEngine` |
+| **4. Artifact schema** | Shortcode definition JSON | `ShortcodeDefinitionPolicy` |
+| **5. Expand allow-list** | No script/iframe; only `pg-*` / public classes in expand HTML | `ShortcodeDefinitionPolicy` |
+| **6. Runtime** | Public expand uses AST + sanitizers — never `eval` of user PHP | Shortcode engine (58d) |
+
+### Fail-closed rules
+
+1. **Untrusted paths always validated** — even if Settings `codePolicy.enabled` is false for core Code Editor.  
+2. **`validateUntrusted($path, $content)`** — Monaco / import must call this before write (forced untrusted realm).  
+3. Untrusted PHP: `EXTENSION_FORBIDDEN` + `declare(strict_types=1)` required.  
+4. Shortcode defs are **data + expand templates**, never executable PHP.  
+5. Broken / hostile definitions → `CodePolicyViolationException` → **HTTP 422**, artifact not written, registry not updated.  
+6. Preview uses the same validators — no “preview-only” escape hatch.
+
+### Path markers (untrusted)
+
+`backend/app/Http/Extensions/`, `themes/`, `data/layout/`, `data/shortcodes/`, `data/plugins/`, virtual `untrusted://…`
+
+### Settings (`codePolicy`)
+
+| Key | Role |
+|-----|------|
+| `enabled` | Core Code Editor only |
+| `strictMode` | Extension namespace rules (default **true**) |
+| `maxFileSizeKb` / `untrustedMaxFileSizeKb` | Size caps |
+| `forbiddenPhpFunctions` | Base list; untrusted merges include/require/unserialize/call_user_func* |
+
+Future plugin/theme Monaco studio **reuses the same gate** — no parallel weak path.
+
+---
+
+## 12. Open decisions (58c kickoff)
+
+| # | Question | Recommendation |
+|---|----------|----------------|
+| 1 | Site default vs per-user builder mode? | Both: site default + user override in prefs |
+| 2 | SSOT if outline JSON and shortcodes both present? | Follow `builderMode`; document sync on mode switch |
+| 3 | Monaco for shortcode defs in Settings or Code Editor route? | Settings → Layout → Shortcodes (Monaco lazy); deep-link from Code Editor optional |
+| 4 | Who can enable Developer builder? | ADMIN + optional Developer Mode unlock |
+
+---
+
+## 13. Related
+
+- [ITERATION_58.md](ITERATION_58.md) — implementation plan  
+- [ITERATION_65.md](ITERATION_65.md) — `featureGallery`  
+- [ITERATION_48.md](ITERATION_48.md) — static compile  
+- [ITERATION_15.md](ITERATION_15.md) — plugins  
+- Code Editor / Monaco — existing `@monaco-editor/react` patterns  
+
+---
+
+## 14. One-line verdict
+
+**Ship multiple layout builders behind a Settings switch (not role silos), with scheme-like live preview, Monaco for developer/shortcode authoring, shared AST for public HTML — plugin/theme Monaco studios come later.**

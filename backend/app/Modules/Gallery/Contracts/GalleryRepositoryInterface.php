@@ -46,4 +46,15 @@ interface GalleryRepositoryInterface
      * @throws FlatFileException
      */
     public function delete(string $id): void;
+
+    /**
+     * Replace or merge gallery items from an export payload (metadata only; media paths as references).
+     *
+     * @param list<array<string, mixed>> $items
+     *
+     * @return array{imported: int, replaced: bool}
+     *
+     * @throws FlatFileException
+     */
+    public function importItems(array $items, bool $replace = true): array;
 }

@@ -89,7 +89,7 @@
 | Contact form | ✅ | It.52 |
 | Footer newsletter (inline email → modal) | ✅ | It.61 Phase 5, beta.18 |
 | Footer social links (icons) | ✅ | It.64, beta.19 |
-| Feature gallery (`/features`, home embed, slider) | ✅ | It.65 Phase 1+2 · **`v2.1.0-beta.21`** |
+| Feature gallery (`/features`, home embed, slider) | ✅ | It.65 Phase 1–3 · deep link `?slide=` · JSON export/import · Ken Burns |
 | Newsletter confirm / manage / unsubscribe | ✅ | It.61 Phases 3–4 public pages |
 
 ### 2.5 Newsletter & campaigns ✅
@@ -206,7 +206,7 @@ Public (same SPA): `/`, `/features`, `/blog`, `/blog/:slug`, `/:slug`, `/newslet
 
 | It. | Name | Priority | Status |
 |-----|------|----------|--------|
-| **65** | [Feature gallery — admin screenshots](ITERATION_65.md) | ✅ | Phase 1+2 · **`v2.1.0-beta.21`**; Phase 3 optional backlog |
+| **65** | [Feature gallery — admin screenshots](ITERATION_65.md) | ✅ | Phase 1–3 complete; It.58 `featureGallery` block deferred to 58a |
 | **58a** | Page layout builder (5 templates) | 🟡 | ⏳ 58b (color schemes) ✅ |
 | **48** | PHP templates + static HTML export | 🟡 | ⏳ |
 | **49** | Unified cache (file + Redis) | 🟡 | ⏳ absorbs It.45 |

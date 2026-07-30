@@ -86,3 +86,42 @@ export async function listPublicGalleryItems(): Promise<GalleryItem[]> {
   const res = await apiClient.get<GalleryPublicResponse>('/api/gallery/public');
   return res.success && res.data?.items ? res.data.items : [];
 }
+
+export interface GalleryExportPayload {
+  version: number;
+  exportedAt: string;
+  items: GalleryItem[];
+}
+
+export interface GalleryImportResult {
+  imported: number;
+  replaced: boolean;
+}
+
+export async function exportGalleryJson(): Promise<{ ok: true; blob: Blob } | { ok: false; error: string }> {
+  try {
+    const response = await fetch('/api/admin/gallery/export', {
+      credentials: 'include',
+    });
+    if (!response.ok) {
+      return { ok: false, error: `Export failed (${response.status})` };
+    }
+    const blob = await response.blob();
+    return { ok: true, blob };
+  } catch {
+    return { ok: false, error: 'Export failed.' };
+  }
+}
+
+export async function importGalleryJson(
+  payload: { items: Array<Partial<GalleryItem> & Pick<GalleryItem, 'title' | 'mediaPath'>>; replace?: boolean }
+): Promise<{ ok: true; result: GalleryImportResult } | { ok: false; error: string }> {
+  const res = await apiClient.post<GalleryImportResult>('/api/admin/gallery/import', {
+    items: payload.items,
+    replace: payload.replace !== false,
+  });
+  if (res.success && res.data) {
+    return { ok: true, result: res.data };
+  }
+  return { ok: false, error: res.error ?? 'Import failed.' };
+}

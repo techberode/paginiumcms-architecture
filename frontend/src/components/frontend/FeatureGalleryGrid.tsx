@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { GalleryItem } from '../../api/gallery';
 import { resolvePublicMediaUrl } from '../../api/media';
 import { useI18n } from '../../context/I18nContext';
@@ -8,6 +8,8 @@ export interface FeatureGalleryGridProps {
   items: GalleryItem[];
   showFeatureTags?: boolean;
   modalCaptionStyle?: 'below' | 'overlay' | 'side';
+  /** It.65 Phase 3 — open modal at this index when items load (`?slide=`). */
+  initialModalIndex?: number | null;
   className?: string;
 }
 
@@ -15,10 +17,23 @@ export const FeatureGalleryGrid: React.FC<FeatureGalleryGridProps> = ({
   items,
   showFeatureTags = true,
   modalCaptionStyle = 'below',
+  initialModalIndex = null,
   className = '',
 }) => {
   const { t } = useI18n();
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const deepLinkApplied = useRef(false);
+
+  useEffect(() => {
+    if (deepLinkApplied.current || initialModalIndex === null || initialModalIndex === undefined) {
+      return;
+    }
+    if (initialModalIndex < 0 || initialModalIndex >= items.length) {
+      return;
+    }
+    deepLinkApplied.current = true;
+    setActiveIndex(initialModalIndex);
+  }, [initialModalIndex, items.length]);
 
   if (items.length === 0) {
     return (

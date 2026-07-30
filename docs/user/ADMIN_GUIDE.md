@@ -209,7 +209,7 @@ Pre **prihláseného** používateľa:
 
 **Admin → Feature gallery** (`/gallery`) — add admin screenshots from Media, title, description, optional module tag, publish/draft, reorder, **live preview** of published items. Public visitors see grid/slider on the configured route or embedded on the home page.
 
-**Quick setup:** (1) Media → upload screenshots → (2) `/gallery` → add items → Publish → (3) Settings → Site → Feature gallery → enable + placement + layout → (4) Navigation → link to `publicRoute`. Full walkthrough: [ITERATION_65.md](../ITERATION_65.md#usage-guide-admin).
+**Quick setup:** (1) Media → upload screenshots → (2) `/gallery` → add items → Publish → (3) Settings → Site → Feature gallery → enable + placement + layout → (4) Navigation → link to `publicRoute`. Deep link: `/features?slide=analytics`. Backup: Export/Import JSON on `/gallery`. Full walkthrough: [ITERATION_65.md](../ITERATION_65.md#usage-guide-admin).
 
 Public footer shows circular icon buttons above the copyright row. External links follow **Admin UI → open links in new tab** when enabled.
 

@@ -723,6 +723,9 @@ return [
             get(SyntaxChecker::class),
             get(SecurityScanner::class)
         ),
+    \PaginiumCMS\Core\CodePolicy\Services\ShortcodeDefinitionPolicy::class => create(
+        \PaginiumCMS\Core\CodePolicy\Services\ShortcodeDefinitionPolicy::class
+    ),
     FileBackup::class => create(FileBackup::class),
     CodeEditorManager::class => create(CodeEditorManager::class)
         ->constructor(
