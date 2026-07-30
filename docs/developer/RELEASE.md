@@ -41,7 +41,7 @@
 | **It.61 Phase 5 + It.63 v2/v3 — footer UX + system update + webhook** | `v2.1.0-beta.18` | `9eb944e` | ✅ tagged |
 | **It.64 + Analytics SPA beacon + LAN dev fixes** | `v2.1.0-beta.19` | `543f463` | ✅ tagged |
 | **It.65 gallery Phase 1 + footer UX theme contrast** | `v2.1.0-beta.20` | `4d17e05` | ✅ tagged |
-| **It.65 Phase 2 + SEO/logging (ISS-110/111)** | `v2.1.0-beta.21` | `9b19ff6` | ⏳ tag after push |
+| **It.65 Phase 2 + SEO/logging (ISS-110/111)** | `v2.1.0-beta.21` | `9b19ff6` | ✅ tagged (local; push pending) |
 
 
 **Pravidlo:** Post-beta patchy — `2.0.59+` alebo `2.1.0-beta.N` podľa rozsahu.
