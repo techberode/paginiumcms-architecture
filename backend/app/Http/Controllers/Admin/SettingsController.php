@@ -444,18 +444,39 @@ final class SettingsController
 
     /**
      * @param array<string, mixed> $gallery
-     * @return array{enabled: bool, placement: string, publicRoute: string, layout: string, showFeatureTags: bool}
+     * @return array{
+     *   enabled: bool,
+     *   placement: string,
+     *   publicRoute: string,
+     *   layout: string,
+     *   effectPreset: string,
+     *   autoplayEnabled: bool,
+     *   autoplayIntervalMs: int,
+     *   showFeatureTags: bool,
+     *   modalCaptionStyle: string
+     * }
      */
     private function publicGallerySettings(array $gallery): array
     {
         $defaults = SettingsSchema::defaults()['gallery'] ?? [];
+        $interval = (int) ($gallery['autoplayIntervalMs'] ?? $defaults['autoplayIntervalMs'] ?? 6000);
+        if ($interval < 4000) {
+            $interval = 4000;
+        }
+        if ($interval > 15000) {
+            $interval = 15000;
+        }
 
         return [
             'enabled' => (bool) ($gallery['enabled'] ?? $defaults['enabled'] ?? false),
             'placement' => (string) ($gallery['placement'] ?? $defaults['placement'] ?? 'route'),
             'publicRoute' => (string) ($gallery['publicRoute'] ?? $defaults['publicRoute'] ?? '/features'),
             'layout' => (string) ($gallery['layout'] ?? $defaults['layout'] ?? 'grid'),
+            'effectPreset' => (string) ($gallery['effectPreset'] ?? $defaults['effectPreset'] ?? 'subtle'),
+            'autoplayEnabled' => (bool) ($gallery['autoplayEnabled'] ?? $defaults['autoplayEnabled'] ?? true),
+            'autoplayIntervalMs' => $interval,
             'showFeatureTags' => (bool) ($gallery['showFeatureTags'] ?? $defaults['showFeatureTags'] ?? true),
+            'modalCaptionStyle' => (string) ($gallery['modalCaptionStyle'] ?? $defaults['modalCaptionStyle'] ?? 'below'),
         ];
     }
 

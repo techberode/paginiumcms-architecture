@@ -75,6 +75,10 @@ export const publicSk: MessageTree = {
     previous: 'Predchádzajúci screenshot',
     next: 'Ďalší screenshot',
     close: 'Zavrieť galériu',
+    filterLabel: 'Filter podľa modulu',
+    filterAll: 'Všetko',
+    dotsLabel: 'Slidy galérie',
+    goToSlide: 'Prejsť na slide',
   },
   cookies: {
     bannerLabel: 'Súhlas s cookies',

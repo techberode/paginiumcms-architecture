@@ -126,7 +126,9 @@ Tento súbor eviduje produkčné / integračné problémy zistené pri testovan�
 | ISS-106 | A8-DEMOMODE — `DEMO_MODE=true` na produkcii bez fail-closed | Nízka (audit) | ✅ **`v2.1.0-beta.16`** |
 | ISS-107 | A7-NEWSLETTER — maintenance subscribe bez honeypatu / bez dedikovaného rate limitu | Nízka (audit) | ✅ **`v2.1.0-beta.16`** |
 | ISS-108 | A9-GHSERVICE — `GitHubService` curl bez `OutboundUrlGuard` | Info (audit) | ✅ **`v2.1.0-beta.16`** |
-
+| ISS-109 | Newsletter footer CTA príliš objemný | Nízka (UX) | ✅ **`v2.1.0-beta.18`** |
+| ISS-110 | Prod SEO `GET /api/seo/*` → 500 (cache array vs Content) | **Vysoká (prod)** | ✅ **`v2.1.0-beta.21`** |
+| ISS-111 | LoggerTest / PHPStan regresia po skip logov v `APP_ENV=testing` | Stredná (CI/testy) | ✅ **`v2.1.0-beta.21`** |
 
 
 
@@ -2624,6 +2626,46 @@ Manuálny snapshot: admin **Demo** → **Reset demo seed**.
 3. **Side tab** — skrytá bočná záložka s rozbalením panelu (footer vizuálne čistý).
 
 **Riešenie:** It.61 Phase 5 variant **B** — inline e-mail pole + šípka vo footer stĺpci (bez gradient boxu); modal s preferenciami nezmenený. Varianty A/C + `footerDisplayMode` zostávajú v backlogu.
+
+---
+
+## ISS-110 – Prod SEO `/api/seo/page/home` → HTTP 500 (cache collision)
+
+**Závažnosť:** Vysoká (prod — Googlebot + visitors)  
+**Stav:** ✅ **opravené** — **`v2.1.0-beta.21`** (hotfix na `paginiumcms.com` 2026-07-30)
+
+**Symptóm:** Admin → Logy → `http_access` ERROR: `GET /api/seo/page/home 500`, `GET /api/seo/article/… 500`. Intermittent: po `content:diagnose --fix` prvý request 200, ďalšie znova 500.
+
+**Príčina:** `ContentController` a `SeoController` zdieľali cache kľúč `content.page.{slug}`. ContentController ukladá **API pole** (`path`, `frontMatter`, …). `FileDriver` je JSON-only — po načítaní SEO dostalo **array** a padlo na `$content->getStatus()`.
+
+**Riešenie:**
+
+1. `SeoController` číta obsah cez `ContentRepository` (nekache-uje model objekty).
+2. `ContentCacheService` item kľúče → `content.page.payload.{slug}` (API only); legacy kľúče sa maže pri invalidate.
+3. Access log: 401/404 → INFO (nie WARNING); scan/bot 404 šum.
+
+**Overenie (prod):** 5× `GET /api/seo/page/home` = 200; po `GET /api/pages/home` stále SEO 200.
+
+---
+
+## ISS-111 – LoggerTest + PHPStan regresia (`APP_ENV=testing` log skip)
+
+**Závažnosť:** Stredná (CI / full test suite)  
+**Stav:** ✅ **opravené** — **`v2.1.0-beta.21`**  
+**Zdroj:** `alltests_300726_0842.log` (2026-07-30)
+
+**Symptóm:**
+1. PHPUnit — 6× `LoggerTest` fail: mock `write()` expected once, called 0×.
+2. PHPStan L8 — `AccessLogServiceTest.php:59` redundant `is_array()` (always true).
+
+**Príčina:** Po úprave proti znečisteniu Admin → Logs (`Logger` skipuje durable writes pri `APP_ENV=testing`) unit testy s mock writerom už nevolali `write()`. PHPStan: `FileHelper::readJson()` vždy vracia `array`.
+
+**Riešenie:**
+1. `Logger::isTestingEnvironment()` — výnimka `PAGINIUM_LOGGER_ALLOW_TESTING=1` pre unit testy s mock writerom.
+2. `LoggerTest` — flag v setUp/tearDown + regresný test `testSkipsWritesInTestingWithoutAllowFlag`.
+3. `AccessLogServiceTest::readEntries()` — priamy `array_values(FileHelper::readJson(...))`.
+
+**Overenie:** PHPUnit `LoggerTest` + `AccessLogServiceTest`; PHPStan L8 na test súboroch.
 
 ---
 

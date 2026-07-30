@@ -7,6 +7,14 @@ export const gallerySk: MessageTree = {
   editItem: 'Upraviť položku',
   empty: 'Galéria zatiaľ nemá žiadne položky.',
   settingsLink: 'Nastavenia galérie',
+  preview: {
+    title: 'Živý náhľad (publikované položky)',
+    show: 'Zobraziť náhľad',
+    hide: 'Skryť náhľad',
+    empty: 'Publikujte aspoň jednu položku pre náhľad verejnej galérie.',
+    openPublic: 'Otvoriť verejnú stránku',
+    meta: 'Layout: {layout} · Efekt: {effect} · Route: {route}',
+  },
   form: {
     title: 'Názov',
     description: 'Popis',

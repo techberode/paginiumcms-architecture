@@ -7,6 +7,14 @@ export const galleryEn: MessageTree = {
   editItem: 'Edit item',
   empty: 'No gallery items yet.',
   settingsLink: 'Gallery settings',
+  preview: {
+    title: 'Live preview (published items)',
+    show: 'Show preview',
+    hide: 'Hide preview',
+    empty: 'Publish at least one item to preview the public gallery.',
+    openPublic: 'Open public page',
+    meta: 'Layout: {layout} · Effect: {effect} · Route: {route}',
+  },
   form: {
     title: 'Title',
     description: 'Description',

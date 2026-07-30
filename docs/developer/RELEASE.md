@@ -1,7 +1,7 @@
 # Release checklist — PaginiumCMS
 
-> Latest version: **2.1.0-beta.20** · 2026-07-29 · tag **`v2.1.0-beta.20`** · commit **`4d17e05`** · main  
-> Previous: **2.1.0-beta.19** · tag **`v2.1.0-beta.19`** · commit **`543f463`**  
+> Latest version: **2.1.0-beta.21** · 2026-07-30 · tag **`v2.1.0-beta.21`** · (pending tag) · main  
+> Previous: **2.1.0-beta.20** · tag **`v2.1.0-beta.20`** · commit **`4d17e05`**  
 > This file contains **copy-paste** blocks for GitHub Release.
 
 > **Poznámka k verziám:** `2.0.58` → `f53e71e` · **Public Beta 1** → `e3e0d82` · **Beta 1 Testing** → `c68e72b` · **Beta 1 patch (RR GHSA)** → *(commit po push)*.
@@ -41,6 +41,7 @@
 | **It.61 Phase 5 + It.63 v2/v3 — footer UX + system update + webhook** | `v2.1.0-beta.18` | `9eb944e` | ✅ tagged |
 | **It.64 + Analytics SPA beacon + LAN dev fixes** | `v2.1.0-beta.19` | `543f463` | ✅ tagged |
 | **It.65 gallery Phase 1 + footer UX theme contrast** | `v2.1.0-beta.20` | `4d17e05` | ✅ tagged |
+| **It.65 Phase 2 + SEO/logging (ISS-110/111)** | `v2.1.0-beta.21` | *(release commit)* | ⏳ tag after gate |
 
 
 **Pravidlo:** Post-beta patchy — `2.0.59+` alebo `2.1.0-beta.N` podľa rozsahu.
@@ -54,7 +55,63 @@ gh auth login   # ak ešte nie
 ./scripts/create-github-releases.sh
 ```
 
-**Latest GH Release:** https://github.com/techberode/paginiumcms-architecture/releases/tag/v2.1.0-beta.20
+**Latest GH Release:** https://github.com/techberode/paginiumcms-architecture/releases/tag/v2.1.0-beta.21
+
+---
+
+## v2.1.0-beta.21 — It.65 Feature gallery Phase 2 + SEO/logging
+
+**Scope:** Gallery slider/hero-strip, effect presets, tag filter, admin live preview, dynamic `publicRoute`; ISS-110 SEO cache collision; quieter access logs; PHPUnit log isolation (ISS-111).
+
+**Release commit:** *(fill after commit)* · **Tag:** `v2.1.0-beta.21`
+
+### Gate (required before tag)
+
+```bash
+./scripts/iteration-gate.sh
+```
+
+### Tag
+
+```bash
+git tag -a v2.1.0-beta.21 -m "v2.1.0-beta.21 — It.65 gallery Phase 2 + SEO/logging fixes"
+git push origin v2.1.0-beta.21
+```
+
+### GitHub Release — copy-paste
+
+**Title:** `v2.1.0-beta.21 — Feature gallery Phase 2 + SEO/logging`
+
+**Body highlights:**
+
+- **It.65 Phase 2** — layouts `slider` / `hero-strip` (CSS scroll-snap), effect presets, autoplay + pause on hover/focus, tag filter chips, admin live preview, custom `publicRoute`
+- **ISS-110** — SEO no longer shares ContentController cache payload keys (fixes intermittent `/api/seo/*` 500)
+- **Logging** — skip durable Logger writes in `APP_ENV=testing`; quieter http_access (401/404 INFO; exclude debug/health/admin logs noise)
+- **ISS-111** — LoggerTest allow-flag + PHPStan AccessLogServiceTest cleanup
+
+**Docs:** [CHANGELOG.md](../../CHANGELOG.md#210-beta21--2026-07-30) · [ITERATION_65.md](../ITERATION_65.md)
+
+**Production deploy:**
+
+```bash
+cd /var/www/paginiumcms.com
+git fetch origin --tags
+APP_ROOT=/var/www/paginiumcms.com \
+  STACK_DIR=/var/lib/docker/compose/paginiumcms \
+  BACKEND_PORT=8089 \
+  GIT_REF=v2.1.0-beta.21 \
+  ./scripts/deploy-instance-update.sh
+curl -s http://127.0.0.1:8089/api/health | jq -r '.data.version'
+# expected: 2.1.0-beta.21
+```
+
+**Smoke (gallery Phase 2):**
+
+1. Settings → Feature gallery → layout `slider`, effect `cinematic`, autoplay on.
+2. Public route — slider, hover pauses, filter chips, modal ←/→/ESC.
+3. Change `publicRoute` to `/funkcie` → SPA loads gallery.
+4. `curl -s http://127.0.0.1:8089/api/settings/public | jq '.data.gallery'`
+5. Ops: seed 3–5 screenshots via Admin → Gallery (empty index in repo by design).
 
 ---
 

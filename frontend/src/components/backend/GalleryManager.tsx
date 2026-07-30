@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { ArrowDown, ArrowUp, ExternalLink, LayoutGrid, Plus, Settings, Trash2 } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { ArrowDown, ArrowUp, ExternalLink, Eye, EyeOff, LayoutGrid, Plus, Settings, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
   createGalleryItem,
@@ -13,6 +13,9 @@ import {
 import { resolvePublicMediaUrl } from '../../api/media';
 import { useToast } from '../../hooks/useToast';
 import { useI18n } from '../../context/I18nContext';
+import { useSettingsContext } from '../../context/SettingsContext';
+import { FeatureGallerySection } from '../frontend/FeatureGallerySection';
+import { normalizeGalleryPublicPath } from '../../utils/galleryPublicRoute';
 import { MediaPickerModal } from './MediaPickerModal';
 
 type FormState = {
@@ -35,6 +38,7 @@ const emptyForm = (): FormState => ({
 
 export const GalleryManager: React.FC = () => {
   const { t } = useI18n();
+  const { settings } = useSettingsContext();
   const { error: showError, success: showSuccess } = useToast();
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,6 +47,15 @@ export const GalleryManager: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm());
   const [formOpen, setFormOpen] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(true);
+
+  const publishedItems = useMemo(
+    () => items.filter((item) => item.status === 'published'),
+    [items]
+  );
+  const publicRoute = normalizeGalleryPublicPath(settings.gallery?.publicRoute);
+  const layoutLabel = settings.gallery?.layout ?? 'grid';
+  const effectLabel = settings.gallery?.effectPreset ?? 'subtle';
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -169,6 +182,14 @@ export const GalleryManager: React.FC = () => {
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{t('gallery.subtitle')}</p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            className="btn btn-secondary inline-flex items-center gap-2"
+            onClick={() => setPreviewOpen((open) => !open)}
+          >
+            {previewOpen ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            {previewOpen ? t('gallery.preview.hide') : t('gallery.preview.show')}
+          </button>
           <Link
             to="/settings?category=site&group=gallery"
             className="btn btn-secondary inline-flex items-center gap-2"
@@ -182,6 +203,30 @@ export const GalleryManager: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {previewOpen ? (
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 overflow-hidden">
+          <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+            <span>
+              {t('gallery.preview.meta', {
+                layout: layoutLabel,
+                effect: effectLabel,
+                route: publicRoute,
+              })}
+            </span>
+            <Link to={publicRoute} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">
+              {t('gallery.preview.openPublic')}
+            </Link>
+          </div>
+          {publishedItems.length === 0 ? (
+            <p className="p-6 text-sm text-slate-500 dark:text-slate-400">{t('gallery.preview.empty')}</p>
+          ) : (
+            <div className="bg-theme-surface text-theme-text">
+              <FeatureGallerySection variant="preview" previewItems={publishedItems} />
+            </div>
+          )}
+        </div>
+      ) : null}
 
       {loading ? (
         <div className="flex justify-center py-16">

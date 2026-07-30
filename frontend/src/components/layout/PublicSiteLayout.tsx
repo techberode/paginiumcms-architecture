@@ -7,6 +7,7 @@ import { CMSBar, CMSBarDoc } from '../frontend/CMSBar';
 import { SiteSearchModal } from '../frontend/SiteSearchModal';
 import { PageRenderer } from '../frontend/PageRenderer';
 import { FeatureGallerySection } from '../frontend/FeatureGallerySection';
+import { FeaturesPage } from '../frontend/FeaturesPage';
 import { usePublicSite } from '../../context/PublicSiteContext';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { useI18n } from '../../context/I18nContext';
@@ -17,6 +18,7 @@ import { MaintenanceGate } from '../maintenance/MaintenanceGate';
 import { CookieConsentProvider } from '../../context/CookieConsentContext';
 import { CookieConsentBanner } from '../frontend/CookieConsentBanner';
 import { useAnalyticsPageview } from '../../hooks/useAnalyticsPageview';
+import { galleryPublicSlug } from '../../utils/galleryPublicRoute';
 import { BTN_PRIMARY, PUBLIC_SPINNER } from '../../theme/publicUiClasses';
 
 const ADMIN_PREFIXES = [
@@ -73,7 +75,22 @@ export function PublicSlugPage() {
   const { t } = useI18n();
   const { slug } = useParams<{ slug: string }>();
   const { getPageBySlug, loading } = usePublicSite();
+  const { settings } = useSettingsContext();
   const navigate = useNavigate();
+
+  const galleryEnabled = settings.gallery?.enabled === true;
+  const galleryPlacement = settings.gallery?.placement ?? 'route';
+  const galleryRouteSlug = galleryPublicSlug(settings.gallery?.publicRoute);
+  // Dynamic publicRoute from Settings (single segment); /features has a dedicated App route.
+  const isGalleryRoute =
+    galleryEnabled &&
+    (galleryPlacement === 'route' || galleryPlacement === 'both') &&
+    slug === galleryRouteSlug &&
+    galleryRouteSlug !== 'features';
+
+  if (isGalleryRoute) {
+    return <FeaturesPage />;
+  }
 
   const page = slug ? getPageBySlug(slug) : undefined;
 

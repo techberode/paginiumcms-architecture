@@ -59,6 +59,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.62 + It.61 + demo deploy + analytics/editor | **`v2.1.0-beta.9`** | [below](#210-beta9--2026-07-27) |
 | It.64 + Analytics SPA beacon + dev LAN fixes | **`v2.1.0-beta.19`** | [below](#210-beta19--2026-07-29) |
 | It.65 gallery Phase 1 + footer UX | **`v2.1.0-beta.20`** | [below](#210-beta20--2026-07-29) |
+| It.65 gallery Phase 2 + SEO/logging fixes | **`v2.1.0-beta.21`** | [below](#210-beta21--2026-07-30) |
 | It.13 v3 — Demo full trial | **`v2.1.0-beta.10`** | [below](#210-beta10--2026-07-27) |
 | It.13 v4 — Demo security polish | **`v2.1.0-beta.11`** | [below](#210-beta11--2026-07-27) |
 | It.63 — Admin system update (MVP) | **`v2.1.0-beta.12`** | [below](#210-beta12--2026-07-27) |
@@ -70,6 +71,41 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.19b–19d — Security runtime, auth UX, password policy | **2.0.45** | [below](#2045--2026-07-21) |
 
 ---
+
+---
+
+## [Unreleased]
+
+---
+
+## [2.1.0-beta.21] – 2026-07-30
+
+**It.65 Phase 2 complete + prod SEO/logging hardening**
+
+### Added (It.65 — Feature gallery, Phase 2)
+
+- **Layouts** — `slider` and `hero-strip` (CSS scroll-snap carousel; no Embla dependency).
+- **Effect presets** — `subtle`, `cinematic`, `minimal`; autoplay with pause on hover/focus; respects `prefers-reduced-motion`.
+- **Settings** — `effectPreset`, `autoplayEnabled`, `autoplayIntervalMs`, `modalCaptionStyle` (exposed on `/api/settings/public`).
+- **Public** — feature-tag filter chips; dynamic `publicRoute` (single path segment, e.g. `/funkcie`).
+- **Admin** — live preview panel on `/gallery` for published items.
+
+### Fixed (ISS-110 — prod SEO 500)
+
+- **Root cause:** `ContentController` and `SeoController` shared cache key `content.page.{slug}`; FileDriver JSON-decoded API arrays made SEO call `getStatus()` on array → HTTP 500.
+- **Fix:** SEO loads via repository only; item cache keys renamed to `content.*.payload.{slug}`; legacy keys cleared on invalidate.
+- Hotfixed on `paginiumcms.com` (verified `/api/seo/page/home` stays 200 after `/api/pages/home`).
+
+### Fixed (logging noise + ISS-111)
+
+- **PHPUnit no longer pollutes Admin → Logs** — `Logger` / `SecurityLogger` skip durable app-log writes when `APP_ENV=testing` (lockout tracker still runs).
+- **ISS-111** — `LoggerTest` uses `PAGINIUM_LOGGER_ALLOW_TESTING=1` so mock-writer unit tests still exercise `write()`; PHPStan clean on `AccessLogServiceTest`.
+- **http_access quieter** — exclude `/api/debug/client-event`, `/api/health`, `/api/admin/logs*`; treat HTTP **401** and **404** as INFO (not WARNING).
+- `SeoMetaBuilder` falls back to `APP_URL` when `general.siteUrl` is empty (avoids `localhost:3025` canonicals on prod).
+
+### Docs
+
+- [ISSUES.md](docs/ISSUES.md) ISS-110, ISS-111 · [ITERATION_65.md](docs/ITERATION_65.md) · [ADMIN_GUIDE.md](docs/user/ADMIN_GUIDE.md) · [RELEASE.md](docs/developer/RELEASE.md)
 
 ---
 

@@ -21,6 +21,12 @@ class LoggerTest extends TestCase
     {
         parent::setUp();
 
+        // APP_ENV=testing suppresses durable Logger writes (ISS-111).
+        // These unit tests mock the writer and must exercise the write path.
+        putenv('PAGINIUM_LOGGER_ALLOW_TESTING=1');
+        $_ENV['PAGINIUM_LOGGER_ALLOW_TESTING'] = '1';
+        $_SERVER['PAGINIUM_LOGGER_ALLOW_TESTING'] = '1';
+
         $structure = [
             'logs' => [
                 'app' => [],
@@ -34,6 +40,13 @@ class LoggerTest extends TestCase
         $writer = $this->createMock(FileWriterInterface::class);
 
         $this->writer = new LogWriter($reader, $writer, $this->root . '/logs/app');
+    }
+
+    protected function tearDown(): void
+    {
+        putenv('PAGINIUM_LOGGER_ALLOW_TESTING');
+        unset($_ENV['PAGINIUM_LOGGER_ALLOW_TESTING'], $_SERVER['PAGINIUM_LOGGER_ALLOW_TESTING']);
+        parent::tearDown();
     }
 
     public function testInfo(): void
@@ -124,5 +137,33 @@ class LoggerTest extends TestCase
 
         $logger = new Logger($this->writer, 'test');
         $logger->clearOldEntries(30);
+    }
+
+    public function testSkipsWritesInTestingWithoutAllowFlag(): void
+    {
+        putenv('PAGINIUM_LOGGER_ALLOW_TESTING');
+        unset($_ENV['PAGINIUM_LOGGER_ALLOW_TESTING'], $_SERVER['PAGINIUM_LOGGER_ALLOW_TESTING']);
+
+        $prevEnv = getenv('APP_ENV');
+        putenv('APP_ENV=testing');
+        $_ENV['APP_ENV'] = 'testing';
+        $_SERVER['APP_ENV'] = 'testing';
+
+        try {
+            $this->writer = $this->createMock(LogWriter::class);
+            $this->writer->expects($this->never())->method('write');
+
+            $logger = new Logger($this->writer, 'test');
+            $logger->info('must not reach disk in testing');
+        } finally {
+            if ($prevEnv === false) {
+                putenv('APP_ENV');
+                unset($_ENV['APP_ENV'], $_SERVER['APP_ENV']);
+            } else {
+                putenv('APP_ENV=' . $prevEnv);
+                $_ENV['APP_ENV'] = $prevEnv;
+                $_SERVER['APP_ENV'] = $prevEnv;
+            }
+        }
     }
 }

@@ -10,9 +10,14 @@ namespace PaginiumCMS\Core\Cache;
  * Kľúče:
  * - content.pages.list.{filterHash}
  * - content.articles.list.{filterHash}
- * - content.page.{slug}
- * - content.article.{slug}
+ * - content.page.payload.{slug}   — API array (ContentController); FileDriver is JSON-only
+ * - content.article.payload.{slug}
  * - content.feeds.{rss|sitemap|robots}.{gen}
+ *
+ * Do NOT cache Content model objects here — FileDriver json_encodes values and turns
+ * objects into arrays (prod SEO 500: getStatus() on array).
+ *
+ * Legacy keys content.page.{slug} / content.article.{slug} are deleted on invalidate.
  *
  * Po každom zápise zavolaj invalidate* – žiadne globálne clear().
  */
@@ -41,8 +46,9 @@ class ContentCacheService
 
     /**
      * @param array<int|string, mixed> $filters
- * @return array<int|string, mixed>
- */public function rememberPageList(array $filters, callable $loader): array
+     * @return array<int|string, mixed>
+     */
+    public function rememberPageList(array $filters, callable $loader): array
     {
         $gen = $this->listGeneration('pages');
         $key = 'content.pages.list.' . $gen . '.' . md5(json_encode($filters) ?: '');
@@ -52,8 +58,9 @@ class ContentCacheService
 
     /**
      * @param array<int|string, mixed> $filters
- * @return array<int|string, mixed>
- */public function rememberArticleList(array $filters, callable $loader): array
+     * @return array<int|string, mixed>
+     */
+    public function rememberArticleList(array $filters, callable $loader): array
     {
         $gen = $this->listGeneration('articles');
         $key = 'content.articles.list.' . $gen . '.' . md5(json_encode($filters) ?: '');
@@ -61,16 +68,22 @@ class ContentCacheService
         return $this->cache->rememberLocked($key, $loader, self::TTL_LIST);
     }
 
+    /**
+     * Cache API payload array for a page (JSON-safe arrays only — never Content models).
+     */
     public function rememberPage(string $slug, callable $loader): mixed
     {
-        $key = 'content.page.' . $slug;
+        $key = 'content.page.payload.' . $slug;
 
         return $this->cache->rememberLocked($key, $loader, self::TTL_ITEM);
     }
 
+    /**
+     * Cache API payload array for an article (JSON-safe arrays only — never Content models).
+     */
     public function rememberArticle(string $slug, callable $loader): mixed
     {
-        $key = 'content.article.' . $slug;
+        $key = 'content.article.payload.' . $slug;
 
         return $this->cache->rememberLocked($key, $loader, self::TTL_ITEM);
     }
@@ -79,6 +92,8 @@ class ContentCacheService
     {
         $this->bumpListGeneration('pages');
         if ($slug !== null) {
+            $this->cache->delete('content.page.payload.' . $slug);
+            // Legacy shared key (ContentController array vs SeoController model collision → SEO 500).
             $this->cache->delete('content.page.' . $slug);
         }
         $this->invalidateFeeds();
@@ -88,6 +103,7 @@ class ContentCacheService
     {
         $this->bumpListGeneration('articles');
         if ($slug !== null) {
+            $this->cache->delete('content.article.payload.' . $slug);
             $this->cache->delete('content.article.' . $slug);
         }
         $this->invalidateFeeds();

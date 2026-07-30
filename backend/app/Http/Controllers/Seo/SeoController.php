@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Seo;
 
-use PaginiumCMS\Core\Cache\ContentCacheService;
 use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
+use PaginiumCMS\Core\FlatFile\Models\Content;
 use PaginiumCMS\Core\Seo\Services\SeoMetaBuilder;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Security\Contracts\AuthenticationInterface;
@@ -16,12 +16,15 @@ use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * Public SEO meta API (Iteration 23).
+ *
+ * Loads Content from the repository directly. FileDriver cache is JSON-only — caching
+ * Page/Article objects under the same keys as ContentController API payloads corrupted
+ * them into arrays and caused HTTP 500 (`getStatus()` on array) on production.
  */
 final class SeoController
 {
     public function __construct(
         private ContentRepositoryInterface $repository,
-        private ContentCacheService $contentCache,
         private SeoMetaBuilder $seo,
         private AuthenticationInterface $auth,
         private JsonResponder $json
@@ -40,11 +43,9 @@ final class SeoController
             return $this->json->error($response, 'Neplatný typ alebo slug', 400);
         }
 
-        $content = $type === 'page'
-            ? $this->contentCache->rememberPage($slug, fn () => $this->repository->findBySlug($slug, 'page'))
-            : $this->contentCache->rememberArticle($slug, fn () => $this->repository->findBySlug($slug, 'article'));
+        $content = $this->repository->findBySlug($slug, $type);
 
-        if ($content === null) {
+        if (!$content instanceof Content) {
             return $this->json->error($response, Lang::get('not_found', [], 'content'), 404);
         }
 

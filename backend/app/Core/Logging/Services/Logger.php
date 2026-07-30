@@ -68,6 +68,11 @@ class Logger implements LoggerInterface
      */
     public function log(string $severity, string $message, array $context = []): void
     {
+        // PHPUnit must not pollute real flat-file app logs (Security failed-login WARNINGs, etc.).
+        if ($this->isTestingEnvironment()) {
+            return;
+        }
+
         $entry = new LogEntry($severity, $this->category, $message);
 
         // Pridanie kontextu
@@ -88,6 +93,10 @@ class Logger implements LoggerInterface
 
     public function writeEntry(LogEntry $entry): void
     {
+        if ($this->isTestingEnvironment()) {
+            return;
+        }
+
         if ($entry->getIp() === null && isset($_SERVER['REMOTE_ADDR'])) {
             $entry->setIp((string) $_SERVER['REMOTE_ADDR']);
         }
@@ -143,5 +152,22 @@ class Logger implements LoggerInterface
                 break;
             }
         }
+    }
+
+    private function isTestingEnvironment(): bool
+    {
+        // Unit tests that mock LogWriter still need write() to run.
+        // Set PAGINIUM_LOGGER_ALLOW_TESTING=1 in those tests only.
+        if (
+            getenv('PAGINIUM_LOGGER_ALLOW_TESTING') === '1'
+            || ($_ENV['PAGINIUM_LOGGER_ALLOW_TESTING'] ?? '') === '1'
+            || ($_SERVER['PAGINIUM_LOGGER_ALLOW_TESTING'] ?? '') === '1'
+        ) {
+            return false;
+        }
+
+        return getenv('APP_ENV') === 'testing'
+            || ($_ENV['APP_ENV'] ?? '') === 'testing'
+            || ($_SERVER['APP_ENV'] ?? '') === 'testing';
     }
 }

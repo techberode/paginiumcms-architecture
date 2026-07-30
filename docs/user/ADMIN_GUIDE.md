@@ -205,11 +205,11 @@ Pre **prihláseného** používateľa:
 
 **Settings → Site → Marketing & social** — demo footer link (`demoFooterLinkEnabled`, `demoUrl`) and **footer social icons** (GitHub, X, LinkedIn, …). Each link: platform (icon), URL or e-mail, accessible label, show/hide, order (max 12). Toggle master switch **Show social links in footer**. Default preset includes the PaginiumCMS GitHub repo when empty.
 
-**Settings → Site → Feature gallery** — master switch, placement (`home`, `/features`, both, off), public route (default `/features`), layout (grid in Phase 1), feature tag badges.
+**Settings → Site → Feature gallery** — master switch, placement (`home`, route, both, off), public route (default `/features`, single path segment), layout (`grid` / `slider` / `hero-strip`), effect preset (`subtle` / `cinematic` / `minimal`), autoplay, feature tag badges, modal caption style.
 
-**Admin → Feature gallery** (`/gallery`) — add admin screenshots from Media, title, description, optional module tag, publish/draft, reorder. Public visitors see a grid on `/features` or embedded on the home page (depending on placement).
+**Admin → Feature gallery** (`/gallery`) — add admin screenshots from Media, title, description, optional module tag, publish/draft, reorder, **live preview** of published items. Public visitors see grid/slider on the configured route or embedded on the home page.
 
-**Quick setup:** (1) Media → upload screenshots → (2) `/gallery` → add items → Publish → (3) Settings → Site → Feature gallery → enable + placement → (4) Navigation → link to `/features`. Full walkthrough: [ITERATION_65.md](../ITERATION_65.md#usage-guide-admin).
+**Quick setup:** (1) Media → upload screenshots → (2) `/gallery` → add items → Publish → (3) Settings → Site → Feature gallery → enable + placement + layout → (4) Navigation → link to `publicRoute`. Full walkthrough: [ITERATION_65.md](../ITERATION_65.md#usage-guide-admin).
 
 Public footer shows circular icon buttons above the copyright row. External links follow **Admin UI → open links in new tab** when enabled.
 
