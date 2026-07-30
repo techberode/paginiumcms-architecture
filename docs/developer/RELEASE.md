@@ -44,7 +44,7 @@
 | **It.65 gallery Phase 1 + footer UX theme contrast** | `v2.1.0-beta.20` | `4d17e05` | ✅ tagged |
 | **It.65 Phase 2 + SEO/logging (ISS-110/111)** | `v2.1.0-beta.21` | `9b19ff6` | ✅ tagged + GH Release + was on prod |
 | **It.66 security write-time + It.65 Phase 3** | `v2.1.0-beta.22` | `06d3df8` | ✅ tagged + GH Release |
-| **It.58c Layout Switch** | `v2.1.0-beta.23` | *(release commit on main)* | ✅ tagged + GH Release + **prod** |
+| **It.58c Layout Switch** | `v2.1.0-beta.23` | `1f11eba` | ✅ tagged + GH Release + **prod** |
 
 
 **Pravidlo:** Post-beta patchy — `2.0.59+` alebo `2.1.0-beta.N` podľa rozsahu.
@@ -66,7 +66,7 @@ gh auth login   # ak ešte nie
 
 **Scope:** Settings layout builder switch, ≥5 structure templates, `LayoutPreviewFrame` (scheme-preview parity), per-page `layoutTemplate` in the editor when builder mode is Templates; soft ADMIN gate for Developer mode.
 
-**Release commit:** *(tag on tip of main after release docs + LayoutSettingsPanel TS fix)* · **Tag:** `v2.1.0-beta.23` · **GH Release:** published 2026-07-30 · **Prod:** `paginiumcms.com` → beta.23
+**Release commit:** `1f11eba` · **Tag:** `v2.1.0-beta.23` · **GH Release:** published 2026-07-30 · **Prod:** `paginiumcms.com` on beta.23
 
 ### Gate (required before tag)
 
