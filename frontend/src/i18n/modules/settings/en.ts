@@ -94,6 +94,7 @@ export const settingsEn: MessageTree = {
     "uploadSecurity": "Upload security",
     "branding": "Logo & favicon",
     "appearance": "Appearance",
+    "layout": "Page layout",
     "accessControl": "Role permissions",
     "cmsInfo": "PaginiumCMS – info"
   },
@@ -127,6 +128,7 @@ export const settingsEn: MessageTree = {
       "system": "System"
     },
     "allowUserToggle": "Allow visitors to switch light / dark mode",
+    "previewTemplateTitle": "Preview layout wireframe",
     "previewTitle": "Page preview",
     "schemes": {
       "indigoClassic": {
@@ -148,6 +150,55 @@ export const settingsEn: MessageTree = {
       "monoZinc": {
         "name": "Mono Zinc",
         "description": "Zinc neutrals + accent — editorial, minimal, portfolio."
+      }
+    }
+  },
+  "layout": {
+    "buildersTitle": "Layout builder",
+    "buildersHint": "Choose how editors build page structure. All modes share the same layout data later — this switch only changes the UI.",
+    "templatesTitle": "Default page layout template",
+    "templatesHint": "Used for new pages and the live layout preview below (structure, not chrome templates like Home/Contact).",
+    "previewTitle": "Layout preview",
+    "developerRequiresAdmin": "Restrict Developer (Monaco) builder to ADMIN and SUPER_ADMIN",
+    "developerLocked": "Available only to ADMIN / SUPER_ADMIN while this restriction is on.",
+    "builders": {
+      "templates": {
+        "name": "Templates",
+        "description": "Pick a named structure and fill slots — best for quick pages."
+      },
+      "shortcodes": {
+        "name": "Shortcodes",
+        "description": "Compose with shortcodes in Markdown / WYSIWYG (It.58d)."
+      },
+      "outline": {
+        "name": "Block outline",
+        "description": "Reorder sections without code (optional later slice)."
+      },
+      "developer": {
+        "name": "Developer",
+        "description": "Monaco for layout JSON and shortcode definitions."
+      }
+    },
+    "templates": {
+      "single": {
+        "name": "Single column",
+        "description": "Header → body → footer"
+      },
+      "heroContent": {
+        "name": "Hero + content",
+        "description": "Header → hero → cards → footer"
+      },
+      "twoColumn": {
+        "name": "Two column",
+        "description": "Main column + sidebar"
+      },
+      "landing": {
+        "name": "Landing",
+        "description": "Hero → feature grid → CTA"
+      },
+      "blogArticle": {
+        "name": "Blog article",
+        "description": "Title, meta strip, long body"
       }
     }
   },

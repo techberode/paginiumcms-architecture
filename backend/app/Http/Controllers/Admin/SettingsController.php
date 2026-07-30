@@ -7,6 +7,7 @@ namespace PaginiumCMS\Http\Controllers\Admin;
 use InvalidArgumentException;
 use PaginiumCMS\Core\I18n\Services\SupportedLocalesRegistry;
 use PaginiumCMS\Core\Security\SecurityLogger;
+use PaginiumCMS\Core\Layout\PageLayoutCatalog;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\Settings\SettingsSchema;
 use PaginiumCMS\Core\Editor\Services\EditorComponentRegistry;
@@ -198,6 +199,7 @@ final class SettingsController
                 'faviconUrl' => (string) ($all['branding']['faviconUrl'] ?? ''),
             ],
             'appearance' => $this->publicAppearanceSettings($all['appearance'] ?? []),
+            'layout' => $this->publicLayoutSettings($all['layout'] ?? []),
             'maintenance' => $this->publicMaintenanceSettings($all['maintenance'] ?? []),
             'workflows' => [
                 'registrationOtpEnabled' => (bool) ($all['workflows']['registrationOtpEnabled'] ?? false),
@@ -341,7 +343,7 @@ final class SettingsController
 
     /**
      * @param array<string, mixed> $appearance
-     * @return array{colorScheme: string, mode: string, allowUserToggle: bool}
+     * @return array{colorScheme: string, mode: string, allowUserToggle: bool, previewTemplate: string}
      */
     private function publicAppearanceSettings(array $appearance): array
     {
@@ -363,6 +365,28 @@ final class SettingsController
             'colorScheme' => $colorScheme,
             'mode' => $mode,
             'allowUserToggle' => (bool) ($appearance['allowUserToggle'] ?? $defaults['allowUserToggle'] ?? true),
+            'previewTemplate' => PageLayoutCatalog::normalizeTemplate(
+                (string) ($appearance['previewTemplate'] ?? $defaults['previewTemplate'] ?? PageLayoutCatalog::DEFAULT_TEMPLATE)
+            ),
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $layout
+     * @return array{builderMode: string, defaultTemplate: string, developerRequiresAdmin: bool}
+     */
+    private function publicLayoutSettings(array $layout): array
+    {
+        $defaults = SettingsSchema::defaults()['layout'] ?? [];
+
+        return [
+            'builderMode' => PageLayoutCatalog::normalizeBuilderMode(
+                (string) ($layout['builderMode'] ?? $defaults['builderMode'] ?? PageLayoutCatalog::DEFAULT_BUILDER_MODE)
+            ),
+            'defaultTemplate' => PageLayoutCatalog::normalizeTemplate(
+                (string) ($layout['defaultTemplate'] ?? $defaults['defaultTemplate'] ?? PageLayoutCatalog::DEFAULT_TEMPLATE)
+            ),
+            'developerRequiresAdmin' => (bool) ($layout['developerRequiresAdmin'] ?? $defaults['developerRequiresAdmin'] ?? true),
         ];
     }
 

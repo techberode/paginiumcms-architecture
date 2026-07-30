@@ -61,6 +61,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.65 gallery Phase 1 + footer UX | **`v2.1.0-beta.20`** | [below](#210-beta20--2026-07-29) |
 | It.65 gallery Phase 2 + SEO/logging fixes | **`v2.1.0-beta.21`** | [below](#210-beta21--2026-07-30) |
 | It.65 Phase 3 + It.66 security packs | **`v2.1.0-beta.22`** | [below](#210-beta22--2026-07-30) |
+| It.58c Layout Switch | **`v2.1.0-beta.23`** | [below](#210-beta23--2026-07-30) |
 | It.13 v3 — Demo full trial | **`v2.1.0-beta.10`** | [below](#210-beta10--2026-07-27) |
 | It.13 v4 — Demo security polish | **`v2.1.0-beta.11`** | [below](#210-beta11--2026-07-27) |
 | It.63 — Admin system update (MVP) | **`v2.1.0-beta.12`** | [below](#210-beta12--2026-07-27) |
@@ -76,6 +77,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ---
 
 ## [Unreleased]
+
+---
+
+## [2.1.0-beta.23] – 2026-07-30
+
+**It.58c — Layout Switch (Settings + LayoutPreviewFrame + page templates)**
+
+### Added
+
+- Settings group **`layout`**: `builderMode` (templates / shortcodes / outline / developer), `defaultTemplate` (≥5 structure templates), `developerRequiresAdmin`.
+- **`LayoutPreviewFrame`** (+ builder cards) in Settings → Page layout; Appearance preview reuses the same wireframe with `previewTemplate`.
+- Page front matter / API **`layoutTemplate`** (distinct from chrome `template`); editor picker when builder mode is Templates.
+- `PageLayoutCatalog` + PHPUnit / Vitest coverage; public settings expose `layout` + `appearance.previewTemplate`.
+
+### Docs
+
+- [ITERATION_58.md](docs/ITERATION_58.md) · [ITERATION_58_ALTERNATIVES.md](docs/ITERATION_58_ALTERNATIVES.md) — 58c complete; next **58d**.
 
 ---
 

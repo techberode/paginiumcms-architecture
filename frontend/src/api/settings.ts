@@ -149,6 +149,12 @@ export interface PublicSettings {
     colorScheme: string;
     mode: 'light' | 'dark' | 'system';
     allowUserToggle: boolean;
+    previewTemplate?: string;
+  };
+  layout?: {
+    builderMode: 'templates' | 'shortcodes' | 'outline' | 'developer';
+    defaultTemplate: string;
+    developerRequiresAdmin: boolean;
   };
   company?: {
     showOnContactPage?: boolean;

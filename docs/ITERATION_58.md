@@ -1,6 +1,6 @@
 # Iteration 58 – Page layout builder + color schemes
 
-**Status:** ⏳ Planned layout phases **58c–58g** · **58b ✅** (color schemes + appearance)  
+**Status:** **58c ✅** · **58b ✅** · Planned **58d–58g**  
 **Wave:** Post-15 Editor & UX  
 **Priority:** 🟡 Medium — largest remaining slice in wave  
 **Decision doc:** [ITERATION_58_ALTERNATIVES.md](ITERATION_58_ALTERNATIVES.md) — **Layout Switch** (Settings picks builder; shared AST; scheme-like preview; Monaco for developer/shortcodes)
@@ -49,8 +49,8 @@ Stays compatible with PaginiumCMS flat-file principles — **no SQL**, **no runt
 |-------|--------|--------|
 | **It.58a** | (legacy name) → absorbed into **58c** templates + AST | ⏳ renamed |
 | **It.58b** | Color scheme catalog, swatch preview, appearance mode | ✅ |
-| **It.58c** | Settings builder switch + page templates + **LayoutPreviewFrame** | ⏳ **next** |
-| **It.58d** | Shortcode engine + **Monaco** shortcode definitions | ⏳ |
+| **It.58c** | Settings builder switch + page templates + **LayoutPreviewFrame** | ✅ **shipped** (`v2.1.0-beta.23`) |
+| **It.58d** | Shortcode engine + **Monaco** shortcode definitions | ⏳ **next** |
 | **It.58e** | Safe `pg-*` layout utilities + Monaco snippets | ⏳ |
 | **It.58f** | Block outline + DnD (optional) | ⏳ backlog if needed |
 | **It.58g** | Compile/cache HTML (with It.48) | ⏳ |

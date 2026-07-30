@@ -37,6 +37,7 @@ import { AccessControlSettingsPanel } from './AccessControlSettingsPanel';
 import { SocialLinksSettingsPanel } from './SocialLinksSettingsPanel';
 import { EditorCustomComponentsPanel, type EditorComponentMeta } from './EditorCustomComponentsPanel';
 import { AppearanceSettingsPanel } from '../admin/AppearanceSettingsPanel';
+import { LayoutSettingsPanel } from '../admin/LayoutSettingsPanel';
 import { CmsInfoSettingsPanel } from './CmsInfoSettingsPanel';
 import { TimezoneSelect } from './TimezoneSelect';
 import { MaintenanceModeSelect } from './MaintenanceModeSelect';
@@ -279,6 +280,23 @@ export const SettingsView: React.FC = () => {
                   <CmsInfoSettingsPanel meta={cmsInfoMeta} />
                 ) : activeGroup === 'appearance' ? (
                   <AppearanceSettingsPanel watch={watch} setValue={setValue} />
+                ) : activeGroup === 'layout' ? (
+                  <LayoutSettingsPanel
+                    watch={watch}
+                    setValue={setValue}
+                    appearanceSchemeId={
+                      typeof values.appearance?.colorScheme === 'string'
+                        ? values.appearance.colorScheme
+                        : undefined
+                    }
+                    appearanceMode={
+                      values.appearance?.mode === 'light' ||
+                      values.appearance?.mode === 'dark' ||
+                      values.appearance?.mode === 'system'
+                        ? values.appearance.mode
+                        : 'system'
+                    }
+                  />
                 ) : activeGroup === 'accessControl' ? (
                   <AccessControlSettingsPanel
                     permissionsCatalog={permissionsCatalog}

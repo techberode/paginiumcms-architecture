@@ -25,6 +25,19 @@ import { ArticleTagsEditor } from './ArticleTagsEditor';
 import { ContentMetaSuggestPanel } from './ContentMetaSuggestPanel';
 import { linkTargetProps } from '../../utils/linkTarget';
 import { useI18n } from '../../context/I18nContext';
+import { useSettingsContext } from '../../context/SettingsContext';
+import { useAuth } from '../../hooks/useAuth';
+import {
+  PAGE_LAYOUT_TEMPLATES,
+  normalizeLayoutBuilderMode,
+  type LayoutBuilderMode,
+} from '../../layout/pageLayoutTemplates';
+import { LayoutPreviewFrame } from '../admin/LayoutPreviewFrame';
+import {
+  DEFAULT_COLOR_SCHEME_ID,
+  isColorSchemeId,
+  type AppearanceMode,
+} from '../../theme/colorSchemes';
 
 const PAGE_TEMPLATE_VALUES = ['default', 'home', 'about', 'contact', 'landing', 'services', 'blog'] as const;
 
@@ -36,6 +49,7 @@ interface ContentEditorShellProps {
   status: ContentEditorStatus;
   scheduledAt: string;
   template: string;
+  layoutTemplate: string;
   content: string;
   contentFormat: ContentFormat;
   editorMode: EditorMode;
@@ -54,6 +68,7 @@ interface ContentEditorShellProps {
   onStatusChange: (value: ContentEditorStatus) => void;
   onScheduledAtChange: (value: string) => void;
   onTemplateChange: (value: string) => void;
+  onLayoutTemplateChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
   onSeoChange: (values: SeoFormValues) => void;
   onSeoOpenChange: (open: boolean) => void;
@@ -78,6 +93,7 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
   status,
   scheduledAt,
   template,
+  layoutTemplate,
   content,
   contentFormat,
   editorMode,
@@ -96,6 +112,7 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
   onStatusChange,
   onScheduledAtChange,
   onTemplateChange,
+  onLayoutTemplateChange,
   onDescriptionChange,
   onSeoChange,
   onSeoOpenChange,
@@ -112,12 +129,25 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
   globalCommentsAllowGuests = true,
 }) => {
   const { t } = useI18n();
+  const { settings } = useSettingsContext();
+  const { user } = useAuth();
   const stats = countContentStats(content);
   const openInNewTab = useOpenLinksInNewTab();
   const listPath = type === 'article' ? '/articles' : '/pages';
   const previewPath = type === 'page' && !isNew && editSlug ? `/preview/${editSlug}` : null;
   const contextLabel =
     navigationMatches[0]?.label || title.trim() || editSlug || t('editor.shell.newItem');
+
+  const builderMode: LayoutBuilderMode = normalizeLayoutBuilderMode(settings.layout?.builderMode);
+  const developerRequiresAdmin = settings.layout?.developerRequiresAdmin !== false;
+  const isAdmin = user?.roles?.some((role) => role === 'ADMIN' || role === 'SUPER_ADMIN') ?? false;
+  const showLayoutTemplatePicker = type === 'page' && builderMode === 'templates';
+  const showDeveloperHint =
+    type === 'page' && builderMode === 'developer' && developerRequiresAdmin && !isAdmin;
+
+  const rawScheme = settings.appearance?.colorScheme ?? '';
+  const schemeId = isColorSchemeId(rawScheme) ? rawScheme : DEFAULT_COLOR_SCHEME_ID;
+  const appearanceMode = (settings.appearance?.mode as AppearanceMode | undefined) ?? 'system';
 
   const heading = isNew
     ? type === 'article'
@@ -269,6 +299,39 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
                     </option>
                   ))}
                 </select>
+              </div>
+            )}
+
+            {showLayoutTemplatePicker && (
+              <div className="form-group md:col-span-2 space-y-3">
+                <label className="form-label">{t('editor.shell.layoutTemplate')}</label>
+                <select
+                  value={layoutTemplate || 'hero-content'}
+                  onChange={(e) => onLayoutTemplateChange(e.target.value)}
+                  disabled={!canEdit}
+                  className="form-input text-sm"
+                  data-testid="editor-layout-template"
+                >
+                  {PAGE_LAYOUT_TEMPLATES.map((entry) => (
+                    <option key={entry.id} value={entry.id}>
+                      {t(entry.nameKey)}
+                    </option>
+                  ))}
+                </select>
+                <LayoutPreviewFrame
+                  templateId={layoutTemplate}
+                  schemeId={schemeId}
+                  mode={appearanceMode}
+                  className="max-w-sm"
+                />
+              </div>
+            )}
+
+            {showDeveloperHint && (
+              <div className="form-group md:col-span-2">
+                <p className="text-xs text-amber-700 dark:text-amber-400">
+                  {t('editor.shell.developerLockedHint')}
+                </p>
               </div>
             )}
 

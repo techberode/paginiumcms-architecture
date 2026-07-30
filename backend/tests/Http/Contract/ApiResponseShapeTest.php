@@ -104,6 +104,22 @@ final class ApiResponseShapeTest extends TestCase
             'mono-zinc',
         ]);
         $this->assertContains($data['data']['appearance']['mode'], ['light', 'dark', 'system']);
+        $this->assertArrayHasKey('layout', $data['data']);
+        $this->assertArrayHasKey('builderMode', $data['data']['layout']);
+        $this->assertArrayHasKey('defaultTemplate', $data['data']['layout']);
+        $this->assertContains($data['data']['layout']['builderMode'], [
+            'templates',
+            'shortcodes',
+            'outline',
+            'developer',
+        ]);
+        $this->assertContains($data['data']['layout']['defaultTemplate'], [
+            'single',
+            'hero-content',
+            'two-column',
+            'landing',
+            'blog-article',
+        ]);
     }
 
     public function testValidationRulesShape(): void

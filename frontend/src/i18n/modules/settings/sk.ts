@@ -94,6 +94,7 @@ export const settingsSk: MessageTree = {
     "uploadSecurity": "Bezpečnosť uploadu",
     "branding": "Logo a favicon",
     "appearance": "Vzhľad",
+    "layout": "Rozloženie stránky",
     "accessControl": "Oprávnenia rolí",
     "cmsInfo": "PaginiumCMS – info"
   },
@@ -127,6 +128,7 @@ export const settingsSk: MessageTree = {
       "system": "Podľa systému"
     },
     "allowUserToggle": "Povoliť návštevníkom prepínať svetlý / tmavý režim",
+    "previewTemplateTitle": "Náhľadová layout šablóna",
     "previewTitle": "Náhľad stránky",
     "schemes": {
       "indigoClassic": {
@@ -148,6 +150,55 @@ export const settingsSk: MessageTree = {
       "monoZinc": {
         "name": "Mono Zinc",
         "description": "Zinc neutrals + accent — editorial, minimal, portfólio."
+      }
+    }
+  },
+  "layout": {
+    "buildersTitle": "Layout builder",
+    "buildersHint": "Vyberte, ako editormi skladajú štruktúru stránky. Režimy neskôr zdieľajú rovnaké dáta — prepínač mení len UI.",
+    "templatesTitle": "Predvolená layout šablóna",
+    "templatesHint": "Pre nové stránky a živý náhľad nižšie (štruktúra, nie chrome šablóny Home/Kontakt).",
+    "previewTitle": "Náhľad layoutu",
+    "developerRequiresAdmin": "Developer (Monaco) režim len pre ADMIN a SUPER_ADMIN",
+    "developerLocked": "Dostupné len pre ADMIN / SUPER_ADMIN, kým je toto obmedzenie zapnuté.",
+    "builders": {
+      "templates": {
+        "name": "Šablóny",
+        "description": "Výber pomenovanej štruktúry a vyplnenie slotov — rýchle stránky."
+      },
+      "shortcodes": {
+        "name": "Shortcodes",
+        "description": "Skladanie cez shortcodes v Markdown / WYSIWYG (It.58d)."
+      },
+      "outline": {
+        "name": "Outline blokov",
+        "description": "Presúvanie sekcií bez kódu (neskorší slice)."
+      },
+      "developer": {
+        "name": "Developer",
+        "description": "Monaco pre layout JSON a definície shortcodes."
+      }
+    },
+    "templates": {
+      "single": {
+        "name": "Jeden stĺpec",
+        "description": "Header → body → footer"
+      },
+      "heroContent": {
+        "name": "Hero + obsah",
+        "description": "Header → hero → karty → footer"
+      },
+      "twoColumn": {
+        "name": "Dva stĺpce",
+        "description": "Hlavný stĺpec + sidebar"
+      },
+      "landing": {
+        "name": "Landing",
+        "description": "Hero → mriežka → CTA"
+      },
+      "blogArticle": {
+        "name": "Blog článok",
+        "description": "Nadpis, meta, dlhé telo"
       }
     }
   },

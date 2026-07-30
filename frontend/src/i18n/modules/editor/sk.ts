@@ -18,6 +18,9 @@ export const editorSk: MessageTree = {
     slugHint: 'Slug sa po vytvorení nemení (URL ostáva stabilná).',
     status: 'Stav',
     template: 'Šablóna',
+    layoutTemplate: 'Layout šablóna stránky',
+    developerLockedHint:
+      'Site layout builder je Developer, ale vaša rola nemôže použiť Monaco režim, kým je zapnuté obmedzenie ADMIN.',
     description: 'Popis',
     descriptionPlaceholder: 'Krátky popis pre vyhľadávače a sociálne siete',
     routingTitle: 'Kam smeruje táto položka',

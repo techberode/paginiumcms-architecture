@@ -77,6 +77,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
   const [editSlug, setEditSlug] = useState('');
   const [slugTouched, setSlugTouched] = useState(false);
   const [template, setTemplate] = useState('');
+  const [layoutTemplate, setLayoutTemplate] = useState('hero-content');
   const [storagePath, setStoragePath] = useState('');
   const [content, setContent] = useState('');
   const [baseContent, setBaseContent] = useState('');
@@ -151,6 +152,12 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
   }, [isNew, type, settings.editor]);
 
   useEffect(() => {
+    if (isNew && type === 'page') {
+      setLayoutTemplate(String(settings.layout?.defaultTemplate ?? 'hero-content'));
+    }
+  }, [isNew, type, settings.layout?.defaultTemplate]);
+
+  useEffect(() => {
     void getNavigation().then(setNavigationItems).catch(() => setNavigationItems([]));
   }, []);
 
@@ -219,6 +226,14 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         setTitle(response.data.title || '');
         setEditSlug(loadedSlug);
         setTemplate(String(response.data.template ?? fm.template ?? 'default'));
+        setLayoutTemplate(
+          String(
+            response.data.layoutTemplate ??
+              fm.layoutTemplate ??
+              settings.layout?.defaultTemplate ??
+              'hero-content'
+          )
+        );
         setStoragePath(
           resolveStoragePath(type, loadedSlug, String(response.data.path ?? ''), storageFormat)
         );
@@ -355,6 +370,10 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
           data.template = template.trim();
         }
 
+        if (type === 'page' && layoutTemplate.trim()) {
+          data.layoutTemplate = layoutTemplate.trim();
+        }
+
         if (type === 'article') {
           data.commentsEnabled = articleComments.commentsEnabled;
           data.commentsRequireApproval = triStateToApi(articleComments.commentsRequireApproval);
@@ -447,6 +466,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
       slug,
       editSlug,
       template,
+      layoutTemplate,
       endpoint,
       type,
       seo,
@@ -581,6 +601,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         status={status}
         scheduledAt={scheduledAt}
         template={template}
+        layoutTemplate={layoutTemplate}
         content={content}
         contentFormat={contentFormat}
         editorMode={editorMode}
@@ -602,6 +623,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         onStatusChange={handleStatusChange}
         onScheduledAtChange={handleScheduledAtChange}
         onTemplateChange={setTemplate}
+        onLayoutTemplateChange={setLayoutTemplate}
         onDescriptionChange={(value) => setSeo((prev) => ({ ...prev, seoDescription: value }))}
         onSeoChange={setSeo}
         onSeoOpenChange={setSeoOpen}
