@@ -199,3 +199,25 @@ PaginiumCMS Beta 1 is **SPA-only** — SSR hydration issue is informational. Fix
 | [BETA_INFRA.md](./BETA_INFRA.md) | Beta security baseline checklist |
 
 Private detailed incident log: `SECURITY_ISSUES.md` (maintainer local, gitignored).
+
+
+---
+
+## Untrusted code gate (It.66 / It.58 prep)
+
+| Mechanism | Role |
+|-----------|------|
+| `CodePolicyEngine::validateUntrusted` | Fail-closed for plugins, themes, layout shortcodes, Monaco buffers |
+| `ShortcodeDefinitionPolicy` | Schema + expand allow-list before activation |
+| Code Editor | Routes untrusted paths through `validateUntrusted` on save |
+
+Disabling Settings `codePolicy.enabled` **does not** skip untrusted trees.
+
+## Ops verification checklist
+
+| Item | Check |
+|------|-------|
+| ISS-008 | Prod serves login/password forms over HTTPS only |
+| ISS-014 | `APP_ENV=production` and CORS allow-list on prod/demo |
+| ISS-089 | CI `npm audit` critical-only; review Dependabot periodically |
+

@@ -28,7 +28,7 @@ if [[ ! -f vendor/bin/phpunit ]]; then
 fi
 
 PROJECT_ROOT=$PWD
-TOTAL_STEPS=18
+TOTAL_STEPS=21
 CLEANUP_STEP=19
 
 typeset -a FAILED_STEPS
@@ -516,6 +516,30 @@ run_step 18 "PHPUnit OTP rate limit (OtpRateLimitMiddleware + OtpWorkflowService
      backend/tests/Core/Workflow/OtpWorkflowServiceTest.php'
 
 # ==================================================
+# It.66 — CodePolicy / untrusted write-time gate
+# ==================================================
+
+run_step 19 "PHPUnit CodePolicy pack (untrusted + shortcode defs)" \
+  'vendor/bin/phpunit --colors=always backend/tests/Core/CodePolicy/'
+
+# ==================================================
+# It.66 — XSS sanitizer + Zip-Slip + security headers
+# ==================================================
+
+run_step 20 "PHPUnit XSS/Zip/headers pack" \
+  'vendor/bin/phpunit --colors=always \
+     backend/tests/Core/Security/Services/ContentSecuritySanitizerTest.php \
+     backend/tests/Core/Security/Services/ZipEntryGuardTest.php \
+     backend/tests/Http/Middleware/SecurityMiddlewareTest.php'
+
+# ==================================================
+# It.66 — static outbound HTTP hygiene (no request-path cost)
+# ==================================================
+
+run_step 21 "Security static grep (OutboundUrlGuard hygiene)" \
+  './scripts/security-static-grep.sh'
+
+# ==================================================
 # ZÁVEREČNÝ SÚHRN
 # ==================================================
 print ""
@@ -542,6 +566,9 @@ labels=(
   "PHPUnit WAF POST body (FirewallScanner/Middleware/Policy)"
   "PHPUnit UserRepository index (UserIndexService + UserRepository)"
   "PHPUnit OTP rate limit (OtpRateLimitMiddleware + OtpWorkflowService)"
+  "PHPUnit CodePolicy pack (untrusted + shortcode defs)"
+  "PHPUnit XSS/Zip/headers pack"
+  "Security static grep (OutboundUrlGuard hygiene)"
 )
 
 i=1

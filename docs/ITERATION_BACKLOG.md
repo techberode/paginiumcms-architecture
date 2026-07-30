@@ -5,9 +5,9 @@
 
 **Aktuálne hotové:** It.1–24 ✅ · It.26–28 ✅ · **It.13 v3** ✅ · **It.61** ✅ · **It.62** ✅ · **It.63 v2/v3** ✅ · It.25 ⏳ (pre-Final gate)
 
-**Posledná shipped (pending release):** **It.65 Feature gallery Phase 1–3** + CodePolicy untrusted gate · next **It.66**
+**Posledná shipped:** **It.66** security packs + **It.65 Phase 3** · **`v2.1.0-beta.22`**
 
-**Ďalšia iterácia:** **It.66** security write-time/CI · **It.58c** layout switch · **It.25** až pred Final 1.0 — [ITERATION_25.md](ITERATION_25.md)
+**Ďalšia iterácia:** **It.58c** layout switch · **It.67** untrusted surfaces · **It.25** až pred Final 1.0
 
 **Incidenty a opravy:** [ISSUES.md](ISSUES.md)
 
@@ -19,7 +19,7 @@
 |-----|--------|-------|----------|----------|
 | 25 | pre-1.0 | [Setup wizard + one-click updates](ITERATION_25.md) | 🟡 | **Posledné kroky pred Final** — onboarding + Grav-like update UX (engine: It.63 ✅) |
 | **67** | TBD | **[Untrusted surfaces & defense-in-depth](ITERATION_67.md)** | **🟡** | Shortcodes+Monaco gate · theme import · CSP/deps |
-| **66** | TBD | **[Security write-time gate & test packs](ITERATION_66.md)** | **🟡 next** | Write/import fail-closed · alltests packs · ops ISS-008/014 |
+| **66** | **`v2.1.0-beta.22`** | **[Security write-time gate & test packs](ITERATION_66.md)** | **✅** | Write/import fail-closed · alltests packs · ops checklist |
 | **65** | **`v2.1.0-beta.21`** (+ P3 pending tag) | **[Feature gallery — admin screenshots](ITERATION_65.md)** | **✅** | Phase 1–3 complete; export/import, deep link, Ken Burns |
 | 26 | 2.0.14 | [Media preview + binárny hotfix](ITERATION_26.md) | ✅ | Lightbox + strict formats |
 | **27** | **2.0.15** | **[Admin view modes + SEO panel](ITERATION_27.md)** | **✅** | List / list+preview / grid + SEO UX + metadata modal |

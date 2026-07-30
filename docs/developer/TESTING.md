@@ -33,7 +33,19 @@ Checklist maintainera: [BETA_INFRA.md](./BETA_INFRA.md) · Cron na produkcii: [d
 
 Automatický skript spustí **11 testovacích krokov** + **záverečný cleanup** (krok 12), streamuje výstup do terminálu, uloží celý log do súboru a na konci vypíše **súhrnnú tabuľku** metrik (Passed / Failed / Errors / Skipped) plus **detailné bloky chýb** pre zlyhané kroky. Cleanup test artefaktov beží **až po všetkých testoch**.
 
-**Súbor:** `scripts/run-all-tests.zsh`  
+**Súbor:** `scripts/run-all-tests.zsh`
+
+### It.66 security packs (steps 19–21 + helper)
+
+| Command | Purpose |
+|---------|---------|
+| `./scripts/security-regression.sh` | CodePolicy + XSS/Zip/headers + static outbound grep + FE `test:security` |
+| `./scripts/security-static-grep.sh` | Fail if new unguarded `curl`/`file_get_contents(http…)` in `backend/app` |
+| alltests steps **19–21** | Same packs inside full suite (`TOTAL_STEPS=21`) |
+
+Write-time policy (no public GET cost): Code Editor uses `validateUntrusted` for extension/theme/layout paths.
+
+  
 **Shell:** zsh (shebang `#!/usr/bin/env zsh`)
 
 ### Predpoklady
