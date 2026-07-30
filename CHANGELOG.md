@@ -60,6 +60,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | It.64 + Analytics SPA beacon + dev LAN fixes | **`v2.1.0-beta.19`** | [below](#210-beta19--2026-07-29) |
 | It.65 gallery Phase 1 + footer UX | **`v2.1.0-beta.20`** | [below](#210-beta20--2026-07-29) |
 | It.65 gallery Phase 2 + SEO/logging fixes | **`v2.1.0-beta.21`** | [below](#210-beta21--2026-07-30) |
+| It.65 Phase 3 + It.66 security packs | **`v2.1.0-beta.22`** | [below](#210-beta22--2026-07-30) |
 | It.13 v3 — Demo full trial | **`v2.1.0-beta.10`** | [below](#210-beta10--2026-07-27) |
 | It.13 v4 — Demo security polish | **`v2.1.0-beta.11`** | [below](#210-beta11--2026-07-27) |
 | It.63 — Admin system update (MVP) | **`v2.1.0-beta.12`** | [below](#210-beta12--2026-07-27) |
@@ -76,12 +77,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+---
+
+## [2.1.0-beta.22] – 2026-07-30
+
+**It.66 security write-time packs + It.65 Phase 3**
+
 ### Added (It.65 — Feature gallery, Phase 3)
 
 - **Ken Burns** — CSS animation on `hero-strip` active slide; respects `prefers-reduced-motion`.
 - **Deep links** — `?slide=` matches feature tag or item id; syncs tag filter chips.
 - **Export/import** — `GET /api/admin/gallery/export`, `POST /api/admin/gallery/import` (`gallery:manage`); Admin UI buttons; JSON metadata only (media paths as references).
 - **It.58 hook** — documented `featureGallery` block → `FeatureGallerySection` (no layout registry yet).
+
+### Added (It.66 — Security write-time gate & test packs)
+
+- Code Editor routes untrusted paths through `validateUntrusted`.
+- `run-all-tests.zsh` steps 19–21 + `./scripts/security-regression.sh` + `security-static-grep.sh`.
+- Ops checklist (ISS-008 / 014 / 089) in SECURITY.md.
 
 ### Security (It.58 prep — untrusted code gate)
 

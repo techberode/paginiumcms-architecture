@@ -110,7 +110,11 @@ final class CodeEditorManager implements CodeEditorInterface
         $fullPath = $this->resolveWritablePath($path);
 
         try {
-            $this->codePolicy->validate($path, $content);
+            if ($this->codePolicy->isUntrustedPath($path)) {
+                $this->codePolicy->validateUntrusted($path, $content);
+            } else {
+                $this->codePolicy->validate($path, $content);
+            }
         } catch (CodePolicyViolationException $e) {
             try {
                 $this->logger->logPolicyRejection($path, $e);
