@@ -1,10 +1,11 @@
 # Iteration 65 — Feature gallery (admin screenshots)
 
-**Status:** ✅ Complete (Phase 1 + Phase 2) — **`v2.1.0-beta.21`**  
+**Status:** ✅ Complete (Phase 1 + Phase 2) — **`v2.1.0-beta.21`** (prod `paginiumcms.com`)  
 **Priority:** ✅ Done  
 **Use case:** Present PaginiumCMS admin UI screenshots with feature descriptions — marketing, demo, onboarding.  
 **Related:** [It.26 Media lightbox](ITERATION_26.md) · [It.58 Layout builder](ITERATION_58.md) (future gallery block) · [It.64 Footer social](ITERATION_64.md)  
-**Out of scope (optional later):** Phase 3 — Ken Burns, deep links, It.58 Gallery block, JSON export/import.
+**Out of scope (optional later):** Phase 3 — Ken Burns, deep links, It.58 Gallery block, JSON export/import.  
+**Ops leftover:** seed 3–5 screenshots via Admin → Gallery on prod/demo (repo ships empty `data/gallery/`).
 
 ---
 
@@ -27,11 +28,13 @@ Aligns with project principles: flat-file data, open-source showcase, no paid Sa
 
 ## User stories
 
-| Actor | Story |
-|-------|--------|
-| **Admin** | I add admin screenshots with title, short description, optional “feature module” tag (Analytics, Newsletter, …) and sort order. |
-| **Visitor** | I browse a smooth slider/carousel on the home page or `/features` and open a fullscreen modal with caption + keyboard navigation. |
-| **Admin** | I choose layout (grid / slider / hero strip), animation preset, autoplay, and which page shows the gallery — without redeploying frontend. |
+
+| Actor       | Story                                                                                                                                      |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Admin**   | I add admin screenshots with title, short description, optional “feature module” tag (Analytics, Newsletter, …) and sort order.            |
+| **Visitor** | I browse a smooth slider/carousel on the home page or `/features` and open a fullscreen modal with caption + keyboard navigation.          |
+| **Admin**   | I choose layout (grid / slider / hero strip), animation preset, autoplay, and which page shows the gallery — without redeploying frontend. |
+
 
 ---
 
@@ -57,44 +60,49 @@ Public site
 
 **`data/gallery/items/{id}.json`**
 
-| Field | Type | Notes |
-|-------|------|--------|
-| `id` | string | `gallery_*` |
-| `title` | string | Slide heading |
-| `description` | string | Feature explanation (plain or markdown subset) |
-| `mediaPath` | string | From Media picker — relative under `media/` |
-| `featureTag` | string? | e.g. `analytics`, `newsletter`, `scheduler` |
-| `linkUrl` | string? | Optional “learn more” |
-| `sortOrder` | int | |
-| `status` | enum | `draft` \| `published` |
-| `publishedAt` | string? | ISO datetime |
+| Field         | Type    | Notes                                          |
+| ------------- | ------- | ---------------------------------------------- |
+| `id`          | string  | `gallery_*`                                    |
+| `title`       | string  | Slide heading                                  |
+| `description` | string  | Feature explanation (plain or markdown subset) |
+| `mediaPath`   | string  | From Media picker — relative under `media/`    |
+| `featureTag`  | string? | e.g. `analytics`, `newsletter`, `scheduler`    |
+| `linkUrl`     | string? | Optional “learn more”                          |
+| `sortOrder`   | int     |                                                |
+| `status`      | enum    | `draft` \| `published`                         |
+| `publishedAt` | string? | ISO datetime                                   |
+
 
 **Settings group `gallery`** (or extend `marketing` if small):
 
-| Key | Type | Purpose |
-|-----|------|---------|
-| `enabled` | bool | Master switch |
-| `placement` | enum | `home`, `route`, `both`, `off` |
-| `publicRoute` | string | Default `/features` |
-| `layout` | enum | `slider`, `grid`, `hero-strip` |
-| `effectPreset` | enum | `subtle`, `cinematic`, `minimal` |
-| `autoplayEnabled` | bool | |
-| `autoplayIntervalMs` | int | 4000–15000 |
-| `showFeatureTags` | bool | Badge on slides |
-| `modalCaptionStyle` | enum | `below`, `overlay`, `side` |
-| `openLinksInNewTab` | bool | Inherits global UI if unset |
+
+| Key                  | Type   | Purpose                          |
+| -------------------- | ------ | -------------------------------- |
+| `enabled`            | bool   | Master switch                    |
+| `placement`          | enum   | `home`, `route`, `both`, `off`   |
+| `publicRoute`        | string | Default `/features`              |
+| `layout`             | enum   | `slider`, `grid`, `hero-strip`   |
+| `effectPreset`       | enum   | `subtle`, `cinematic`, `minimal` |
+| `autoplayEnabled`    | bool   |                                  |
+| `autoplayIntervalMs` | int    | 4000–15000                       |
+| `showFeatureTags`    | bool   | Badge on slides                  |
+| `modalCaptionStyle`  | enum   | `below`, `overlay`, `side`       |
+| `openLinksInNewTab`  | bool   | Inherits global UI if unset      |
+
 
 ---
 
 ## Backend scope
 
-| Component | Responsibility |
-|-----------|------------------|
-| `Modules/Gallery/` | Repository, validator, public serializer |
-| `Http/Routes/gallery.php` | Admin CRUD + public read |
-| `GalleryController` (Admin) | Auth + `gallery:manage` permission |
-| `GalleryPublicController` | Anonymous GET published items |
-| Settings | `SettingsSchema` group `gallery` |
+
+| Component                   | Responsibility                           |
+| --------------------------- | ---------------------------------------- |
+| `Modules/Gallery/`          | Repository, validator, public serializer |
+| `Http/Routes/gallery.php`   | Admin CRUD + public read                 |
+| `GalleryController` (Admin) | Auth + `gallery:manage` permission       |
+| `GalleryPublicController`   | Anonymous GET published items            |
+| Settings                    | `SettingsSchema` group `gallery`         |
+
 
 **Security:** mutating routes → `AuthMiddleware` + `PermissionMiddleware('gallery:manage')`; public read only published; media URLs via existing allow-list; captions sanitized; no user HTML in API without sanitizer.
 
@@ -113,12 +121,14 @@ Public site
 
 ### Public
 
-| Component | Behavior |
-|-----------|----------|
+
+| Component              | Behavior                                            |
+| ---------------------- | --------------------------------------------------- |
 | `FeatureGallerySlider` | Touch + keyboard; respects `prefers-reduced-motion` |
-| `FeatureGalleryModal` | Fullscreen; prev/next; ESC; focus trap (a11y) |
-| `FeatureGalleryGrid` | Fallback layout when `layout=grid` |
-| `useGalleryPublic` | React Query → `/api/gallery/public` |
+| `FeatureGalleryModal`  | Fullscreen; prev/next; ESC; focus trap (a11y)       |
+| `FeatureGalleryGrid`   | Fallback layout when `layout=grid`                  |
+| `useGalleryPublic`     | React Query → `/api/gallery/public`                 |
+
 
 **Visual effects (presets, CSS-first):**
 
@@ -202,9 +212,9 @@ Optional dependency: **`embla-carousel-react`** (~3kb gzip) if native scroll-sna
 1. **Upload screenshots** — Admin → **Media** → upload PNG/WebP admin UI captures.
 2. **Create gallery items** — Admin → **Feature gallery** (`/gallery`) → **Add screenshot** → pick image from Media, title, description, optional module tag (e.g. `analytics`) → **Published** → Save.
 3. **Enable on public site** — Settings → **Site** → **Feature gallery** → enable gallery; choose **Placement**:
-   - `route` — only the public route (default `/features`)
-   - `home` — embed below home page content
-   - `both` — home embed + public route
+  - `route` — only the public route (default `/features`)
+  - `home` — embed below home page content
+  - `both` — home embed + public route
 4. **Layout & effects (Phase 2)** — set **Layout** (`grid` / `slider` / `hero-strip`), **Effect preset**, autoplay interval; optional modal caption style.
 5. **Live preview** — on `/gallery`, use the preview panel (published items only; mirrors Settings layout).
 6. **Menu link (optional)** — Admin → **Navigation** → new item, path matching `publicRoute` (e.g. `/features` or `/funkcie`).
@@ -216,16 +226,17 @@ Optional dependency: **`embla-carousel-react`** (~3kb gzip) if native scroll-sna
 
 ## Decisions
 
-| # | Question | Outcome |
-|---|----------|---------|
-| 1 | Dedicated route `/gallery` vs `/features`? | **`/features`** default; custom via `publicRoute` |
-| 2 | Separate admin menu vs under Content? | **Top-level `/gallery`** |
-| 3 | New npm dependency for carousel? | **CSS scroll-snap** (no Embla) — sufficient for autoplay + a11y |
-| 4 | Markdown in descriptions? | **Plain text** (Phase 3 optional) |
+
+| #   | Question                                   | Outcome                                                         |
+| --- | ------------------------------------------ | --------------------------------------------------------------- |
+| 1   | Dedicated route `/gallery` vs `/features`? | **`/features`** default; custom via `publicRoute`               |
+| 2   | Separate admin menu vs under Content?      | **Top-level `/gallery`**                                        |
+| 3   | New npm dependency for carousel?           | **CSS scroll-snap** (no Embla) — sufficient for autoplay + a11y |
+| 4   | Markdown in descriptions?                  | **Plain text** (Phase 3 optional)                               |
+
 
 ---
 
 ## Relation to layout builder (It.58)
 
 It.65 delivers a **standalone module** first. It.58a can later register a **Gallery block** that calls the same `GET /api/gallery/public` — no duplicate storage.
-
