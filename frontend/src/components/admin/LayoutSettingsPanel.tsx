@@ -51,9 +51,8 @@ export const LayoutSettingsPanel: React.FC<LayoutSettingsPanelProps> = ({
     user?.roles?.some((role) => role === 'ADMIN' || role === 'SUPER_ADMIN') ?? false;
   const canSelectDeveloper = !developerRequiresAdmin || isAdmin;
 
-  const schemeId = isColorSchemeId(appearanceSchemeId ?? '')
-    ? appearanceSchemeId
-    : DEFAULT_COLOR_SCHEME_ID;
+  const rawScheme = appearanceSchemeId ?? '';
+  const schemeId = isColorSchemeId(rawScheme) ? rawScheme : DEFAULT_COLOR_SCHEME_ID;
 
   return (
     <div className="space-y-8">

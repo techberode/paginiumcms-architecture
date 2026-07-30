@@ -1,7 +1,8 @@
 # Release checklist — PaginiumCMS
 
-> Latest version: **2.1.0-beta.21** · 2026-07-30 · tag **`v2.1.0-beta.21`** · commit **`9b19ff6`** · main  
-> Previous: **2.1.0-beta.20** · tag **`v2.1.0-beta.20`** · commit **`4d17e05`**  
+> Latest version: **2.1.0-beta.23** · 2026-07-30 · tag **`v2.1.0-beta.23`** · main · **prod target**  
+> Previous: **2.1.0-beta.22** · tag **`v2.1.0-beta.22`** · commit **`06d3df8`**  
+> Before that: **2.1.0-beta.21** · tag **`v2.1.0-beta.21`** · **`9b19ff6`** · was on prod  
 > This file contains **copy-paste** blocks for GitHub Release.
 
 > **Poznámka k verziám:** `2.0.58` → `f53e71e` · **Public Beta 1** → `e3e0d82` · **Beta 1 Testing** → `c68e72b` · **Beta 1 patch (RR GHSA)** → *(commit po push)*.
@@ -41,7 +42,9 @@
 | **It.61 Phase 5 + It.63 v2/v3 — footer UX + system update + webhook** | `v2.1.0-beta.18` | `9eb944e` | ✅ tagged |
 | **It.64 + Analytics SPA beacon + LAN dev fixes** | `v2.1.0-beta.19` | `543f463` | ✅ tagged |
 | **It.65 gallery Phase 1 + footer UX theme contrast** | `v2.1.0-beta.20` | `4d17e05` | ✅ tagged |
-| **It.65 Phase 2 + SEO/logging (ISS-110/111)** | `v2.1.0-beta.21` | `9b19ff6` | ✅ tagged + GH Release + prod |
+| **It.65 Phase 2 + SEO/logging (ISS-110/111)** | `v2.1.0-beta.21` | `9b19ff6` | ✅ tagged + GH Release + was on prod |
+| **It.66 security write-time + It.65 Phase 3** | `v2.1.0-beta.22` | `06d3df8` | ✅ tagged + GH Release |
+| **It.58c Layout Switch** | `v2.1.0-beta.23` | *(release commit on main)* | ✅ tagged + GH Release + **prod** |
 
 
 **Pravidlo:** Post-beta patchy — `2.0.59+` alebo `2.1.0-beta.N` podľa rozsahu.
@@ -55,7 +58,119 @@ gh auth login   # ak ešte nie
 ./scripts/create-github-releases.sh
 ```
 
-**Latest GH Release:** https://github.com/techberode/paginiumcms-architecture/releases/tag/v2.1.0-beta.21
+**Latest GH Release:** https://github.com/techberode/paginiumcms-architecture/releases/tag/v2.1.0-beta.23
+
+---
+
+## v2.1.0-beta.23 — It.58c Layout Switch + LayoutPreviewFrame
+
+**Scope:** Settings layout builder switch, ≥5 structure templates, `LayoutPreviewFrame` (scheme-preview parity), per-page `layoutTemplate` in the editor when builder mode is Templates; soft ADMIN gate for Developer mode.
+
+**Release commit:** *(tag on tip of main after release docs + LayoutSettingsPanel TS fix)* · **Tag:** `v2.1.0-beta.23` · **GH Release:** published 2026-07-30 · **Prod:** `paginiumcms.com` → beta.23
+
+### Gate (required before tag)
+
+```bash
+./scripts/iteration-gate.sh
+```
+
+### Tag
+
+```bash
+git tag -a v2.1.0-beta.23 -m "v2.1.0-beta.23 — It.58c Layout Switch + LayoutPreviewFrame"
+git push origin v2.1.0-beta.23
+```
+
+### GitHub Release — copy-paste
+
+**Title:** `v2.1.0-beta.23 — It.58c Layout Switch`
+
+**Body highlights:**
+
+- **Settings → Page layout** — `builderMode` (`templates` / `shortcodes` / `outline` / `developer`), `defaultTemplate`, `developerRequiresAdmin`
+- **`LayoutPreviewFrame`** — live wireframe per template; Appearance preview reuses it via `previewTemplate`
+- **Editor** — when mode is Templates, page picker for `layoutTemplate` (distinct from chrome `template` home/contact)
+- **Catalog** — `PageLayoutCatalog` + PHPUnit/Vitest; public settings expose `layout` + `appearance.previewTemplate`
+- Next slice: **It.58d** shortcodes + Monaco definitions
+
+**Docs:** [CHANGELOG.md](../../CHANGELOG.md#210-beta23--2026-07-30) · [ITERATION_58.md](../ITERATION_58.md) · [ITERATION_58_ALTERNATIVES.md](../ITERATION_58_ALTERNATIVES.md)
+
+**Production deploy:**
+
+```bash
+cd /var/www/paginiumcms.com
+git fetch origin --tags
+APP_ROOT=/var/www/paginiumcms.com \
+  STACK_DIR=/var/lib/docker/compose/paginiumcms \
+  BACKEND_PORT=8089 \
+  GIT_REF=v2.1.0-beta.23 \
+  ./scripts/deploy-instance-update.sh
+curl -s http://127.0.0.1:8089/api/health | jq -r '.data.version'
+# expected: 2.1.0-beta.23
+```
+
+**Smoke (It.58c):**
+
+1. Settings → Page layout — switch builders; Developer locked for non-ADMIN when gate on.
+2. Pick each of 5 templates — preview wireframe updates.
+3. New page with builderMode=templates — layout template select + mini preview.
+4. `curl -s http://127.0.0.1:8089/api/settings/public | jq '.data.layout'`
+5. Save page with `layoutTemplate=landing` — GET page payload includes `layoutTemplate`.
+
+---
+
+## v2.1.0-beta.22 — It.66 security write-time gate + It.65 Phase 3
+
+**Scope:** Write-time `CodePolicyEngine::validateUntrusted` on Code Editor saves for untrusted paths; security static grep + PHPUnit regression pack wired into full suite; It.65 Phase 3 (Ken Burns, deep link `?slide=`, gallery export/import) was included in the preceding main commits and documented with this security ship.
+
+**Release commit:** `06d3df8` · **Tag:** `v2.1.0-beta.22` · **GH Release:** published 2026-07-30 · **AppVersion at ship:** `2.1.0-beta.22` (superseded on prod by beta.23)
+
+### Gate (required before tag)
+
+```bash
+./scripts/iteration-gate.sh
+```
+
+### Tag
+
+```bash
+git tag -a v2.1.0-beta.22 -m "v2.1.0-beta.22 — It.66 security write-time gate and regression packs"
+git push origin v2.1.0-beta.22
+```
+
+### GitHub Release — copy-paste
+
+**Title:** `v2.1.0-beta.22 — It.66 security packs`
+
+**Body highlights:**
+
+- **It.66** — `CodeEditorManager` write path calls `validateUntrusted` for theme/extension/shortcode/layout markers
+- **`scripts/security-static-grep.sh`** + **`scripts/security-regression.sh`** — wired as `run-all-tests.zsh` steps 19–21
+- Ops checklist in `docs/developer/SECURITY.md`
+- Related prior on main: **It.65 Phase 3** (Ken Burns, `?slide=` deep link, gallery export/import) + fail-closed CodePolicy / ShortcodeDefinitionPolicy prep for It.58
+
+**Docs:** [CHANGELOG.md](../../CHANGELOG.md#210-beta22--2026-07-30) · [ITERATION_66.md](../ITERATION_66.md) · [ITERATION_65.md](../ITERATION_65.md)
+
+**Production deploy:**
+
+```bash
+cd /var/www/paginiumcms.com
+git fetch origin --tags
+APP_ROOT=/var/www/paginiumcms.com \
+  STACK_DIR=/var/lib/docker/compose/paginiumcms \
+  BACKEND_PORT=8089 \
+  GIT_REF=v2.1.0-beta.22 \
+  ./scripts/deploy-instance-update.sh
+curl -s http://127.0.0.1:8089/api/health | jq -r '.data.version'
+# expected: 2.1.0-beta.22
+```
+
+**Smoke (It.66):**
+
+1. `./scripts/security-regression.sh`
+2. Code Editor — save under untrusted path with forbidden construct → 422 / policy reject.
+3. Core trusted path still writable when codePolicy allows.
+4. Gallery Phase 3 (if not already on prod): export JSON, deep link `?slide=`, Ken Burns on hero-strip.
 
 ---
 
