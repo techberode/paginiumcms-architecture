@@ -25,7 +25,7 @@ strict types) ↔ **Flat-File** storage (no SQL database).
 | Priorita | Úloha | Stav |
 |----------|--------|------|
 | **Prod deploy** | Docker stack, nginx, SSL, `git pull` + frontend build | ✅ beží na `paginiumcms.com` |
-| **Release beta.21** | It.65 Phase 2 + ISS-110/111 | ✅ **`v2.1.0-beta.21`** |
+| **Release beta.21** | It.65 Phase 2 + ISS-110/111 | ✅ **`v2.1.0-beta.21`** · prod deployed |
 | **It.65** | Feature gallery (grid/slider/hero-strip) | ✅ **complete** |
 | **It.64** | Footer social links | ✅ **`v2.1.0-beta.19`** |
 | **Analytics SPA beacon** | `POST /api/analytics/pageview` | ✅ **`v2.1.0-beta.19`** |
