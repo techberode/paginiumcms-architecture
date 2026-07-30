@@ -18,6 +18,9 @@ export const editorEn: MessageTree = {
     slugHint: 'Slug cannot be changed after creation (URL stays stable).',
     status: 'Status',
     template: 'Template',
+    layoutTemplate: 'Page layout template',
+    developerLockedHint:
+      'Site layout builder is set to Developer, but your role cannot use Monaco mode while ADMIN restriction is enabled.',
     description: 'Description',
     descriptionPlaceholder: 'Short description for search engines and social media',
     routingTitle: 'Where this item points',

@@ -665,6 +665,10 @@ class ContentController
             $content->setTemplate((string) $data['template']);
         }
 
+        if ($content instanceof Page && array_key_exists('layoutTemplate', $data)) {
+            $content->setLayoutTemplate((string) ($data['layoutTemplate'] ?? ''));
+        }
+
         if ($content instanceof Article) {
             if (!empty($data['featuredImage'])) {
                 $content->setFeaturedImage((string) $data['featuredImage']);
@@ -805,6 +809,7 @@ class ContentController
 
         if ($content instanceof Page) {
             $payload['template'] = $content->getTemplate();
+            $payload['layoutTemplate'] = $content->getLayoutTemplate();
         }
 
         if ($content instanceof Article) {

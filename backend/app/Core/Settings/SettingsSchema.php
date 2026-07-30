@@ -63,7 +63,15 @@ final class SettingsSchema
                     ['key' => 'colorScheme', 'type' => 'enum', 'label' => 'Farebná schéma', 'default' => 'indigo-classic', 'options' => ['indigo-classic', 'ocean-slate', 'forest-sage', 'sunset-rose', 'mono-zinc'], 'rules' => ['required', 'in:indigo-classic,ocean-slate,forest-sage,sunset-rose,mono-zinc'], 'help' => 'Predvolená paleta verejného webu (It.58b). Tokeny sa načítavajú z frontend katalógu.'],
                     ['key' => 'mode', 'type' => 'enum', 'label' => 'Režim zobrazenia', 'default' => 'system', 'options' => ['light', 'dark', 'system'], 'rules' => ['required', 'in:light,dark,system'], 'help' => 'Predvolený svetlý / tmavý režim alebo podľa systému.'],
                     ['key' => 'allowUserToggle', 'type' => 'bool', 'label' => 'Povoliť prepínač témy návštevníkom', 'default' => true, 'rules' => ['bool'], 'help' => 'Zobrazí prepínač svetlý/tmavý vo verejnom menu (localStorage).'],
-                    ['key' => 'previewTemplate', 'type' => 'enum', 'label' => 'Náhľadová šablóna', 'default' => 'hero-content', 'options' => ['hero-content', 'single', 'two-column', 'landing', 'blog-article'], 'rules' => ['required', 'in:hero-content,single,two-column,landing,blog-article'], 'help' => 'Wireframe pre náhľad schémy v administrácii.'],
+                    ['key' => 'previewTemplate', 'type' => 'enum', 'label' => 'Náhľadová šablóna', 'default' => 'hero-content', 'options' => ['hero-content', 'single', 'two-column', 'landing', 'blog-article'], 'rules' => ['required', 'in:hero-content,single,two-column,landing,blog-article'], 'help' => 'Wireframe pre náhľad schémy v administrácii (It.58b/58c).'],
+                ],
+            ],
+            'layout' => [
+                'label' => 'Rozloženie stránky',
+                'fields' => [
+                    ['key' => 'builderMode', 'type' => 'enum', 'label' => 'Predvolený layout builder', 'default' => 'templates', 'options' => ['templates', 'shortcodes', 'outline', 'developer'], 'rules' => ['required', 'in:templates,shortcodes,outline,developer'], 'help' => 'Ktorý editor layoutu sa použije v admin chrome (It.58c). Shortcodes/outline/developer sa aktivujú v ďalších slice.'],
+                    ['key' => 'defaultTemplate', 'type' => 'enum', 'label' => 'Predvolená layout šablóna', 'default' => 'hero-content', 'options' => ['single', 'hero-content', 'two-column', 'landing', 'blog-article'], 'rules' => ['required', 'in:single,hero-content,two-column,landing,blog-article'], 'help' => 'Štruktúra pre nové stránky a LayoutPreviewFrame (nie chrome template home/contact).'],
+                    ['key' => 'developerRequiresAdmin', 'type' => 'bool', 'label' => 'Developer režim len pre ADMIN+', 'default' => true, 'rules' => ['bool'], 'help' => 'Ak je zapnuté, builderMode=developer môžu vybrať len ADMIN / SUPER_ADMIN.'],
                 ],
             ],
             'content' => [

@@ -13,6 +13,7 @@ export interface ContentEditorLoadData {
   revision?: string;
   path?: string;
   template?: string;
+  layoutTemplate?: string;
   status?: 'draft' | 'published' | 'archived' | 'scheduled';
   scheduledAt?: string;
   createdAt?: string;

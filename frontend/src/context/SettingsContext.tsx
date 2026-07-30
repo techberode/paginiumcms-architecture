@@ -67,6 +67,12 @@ const DEFAULT_PUBLIC: PublicSettings = {
     colorScheme: 'indigo-classic',
     mode: 'system',
     allowUserToggle: true,
+    previewTemplate: 'hero-content',
+  },
+  layout: {
+    builderMode: 'templates',
+    defaultTemplate: 'hero-content',
+    developerRequiresAdmin: true,
   },
   company: {
     showOnContactPage: true,

@@ -9,7 +9,13 @@ import {
   DEFAULT_COLOR_SCHEME_ID,
 } from '../../theme/colorSchemes';
 import { ColorSchemeCard } from './ColorSchemeCard';
-import { SchemePreviewFrame } from './SchemePreviewFrame';
+import { LayoutPreviewFrame } from './LayoutPreviewFrame';
+import {
+  DEFAULT_LAYOUT_TEMPLATE_ID,
+  isPageLayoutTemplateId,
+  PAGE_LAYOUT_TEMPLATES,
+  type PageLayoutTemplateId,
+} from '../../layout/pageLayoutTemplates';
 
 interface AppearanceSettingsPanelProps {
   watch: (name: string) => unknown;
@@ -24,9 +30,13 @@ export const AppearanceSettingsPanel: React.FC<AppearanceSettingsPanelProps> = (
   const colorScheme = String(watch('colorScheme') ?? DEFAULT_COLOR_SCHEME_ID);
   const mode = (watch('mode') as AppearanceMode | undefined) ?? 'system';
   const allowUserToggle = Boolean(watch('allowUserToggle'));
+  const previewTemplateRaw = String(watch('previewTemplate') ?? DEFAULT_LAYOUT_TEMPLATE_ID);
 
   const safeSchemeId = isColorSchemeId(colorScheme) ? colorScheme : DEFAULT_COLOR_SCHEME_ID;
   const previewTheme = resolveThemeMode(mode);
+  const previewTemplate: PageLayoutTemplateId = isPageLayoutTemplateId(previewTemplateRaw)
+    ? previewTemplateRaw
+    : DEFAULT_LAYOUT_TEMPLATE_ID;
 
   return (
     <div className="space-y-8">
@@ -103,9 +113,44 @@ export const AppearanceSettingsPanel: React.FC<AppearanceSettingsPanelProps> = (
 
       <section className="space-y-3">
         <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+          {t('settings.appearance.previewTemplateTitle')}
+        </h3>
+        <div className="flex flex-wrap gap-2">
+          {PAGE_LAYOUT_TEMPLATES.map((template) => {
+            const active = previewTemplate === template.id;
+            return (
+              <button
+                key={template.id}
+                type="button"
+                onClick={() =>
+                  setValue('previewTemplate', template.id, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
+                }
+                className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
+                  active
+                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300'
+                    : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'
+                }`}
+              >
+                {t(template.nameKey)}
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="space-y-3">
+        <h3 className="text-sm font-bold text-slate-900 dark:text-white">
           {t('settings.appearance.previewTitle')}
         </h3>
-        <SchemePreviewFrame schemeId={safeSchemeId} mode={mode} className="max-w-md" />
+        <LayoutPreviewFrame
+          templateId={previewTemplate}
+          schemeId={safeSchemeId}
+          mode={mode}
+          className="max-w-md"
+        />
       </section>
     </div>
   );

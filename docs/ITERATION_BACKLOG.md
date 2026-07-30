@@ -5,9 +5,9 @@
 
 **Aktuálne hotové:** It.1–24 ✅ · It.26–28 ✅ · **It.13 v3** ✅ · **It.61** ✅ · **It.62** ✅ · **It.63 v2/v3** ✅ · It.25 ⏳ (pre-Final gate)
 
-**Posledná shipped:** **It.66** security packs + **It.65 Phase 3** · **`v2.1.0-beta.22`**
+**Posledná shipped:** **It.58c** layout switch · **It.66** · **It.65 Phase 3** · **`v2.1.0-beta.23`**
 
-**Ďalšia iterácia:** **It.58c** layout switch · **It.67** untrusted surfaces · **It.25** až pred Final 1.0
+**Ďalšia iterácia:** **It.58d** shortcodes + Monaco · **It.67** untrusted surfaces · **It.25** až pred Final 1.0
 
 **Incidenty a opravy:** [ISSUES.md](ISSUES.md)
 
@@ -38,7 +38,7 @@
 | **55** | **2.0.43** | **[Tiptap JSON + media upload](ITERATION_55.md)** | **✅** | WYSIWYG JSON + BE render + upload |
 | **56** | **`v2.1.0-beta.5`** | **[Rich navigation items](ITERATION_56.md)** | **✅** | Popis, ikona, hover preview |
 | **57** | **`v2.1.0-beta.4`** | **[Auto tags & description](ITERATION_57.md)** | **✅** | suggest-meta API |
-| **58** | TBD | **[Page layout builder + color schemes](ITERATION_58.md)** | **🟡** | 58b ✅ · next **58c** (Settings switch + preview) · [alternatives](ITERATION_58_ALTERNATIVES.md) |
+| **58** | TBD | **[Page layout builder + color schemes](ITERATION_58.md)** | **🟡** | 58b ✅ · **58c ✅** (`beta.23`) · next **58d** · [alternatives](ITERATION_58_ALTERNATIVES.md) |
 | **59** | **2.0.53** | **[Odložená publikácia — plánovač v editore](ITERATION_59.md)** | **✅** | Editor datetime + filter scheduled + job `content.scheduled_publish` |
 | **60** | TBD | **[Vlastné komponenty editora](ITERATION_60.md)** | **✅** | Plugin manifest + settings matica + hello-widget demo |
 | **61** | **`v2.1.0-beta.18`** | **[Newsletter vo footeri](ITERATION_61.md)** | **✅** | Phases 1–5 (inline email footer); A/C modes backlog |

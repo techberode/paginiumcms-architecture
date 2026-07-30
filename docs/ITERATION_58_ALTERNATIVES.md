@@ -160,11 +160,11 @@ Cards / alerts / banners = named shortcodes or blocks, not inventing Bootstrap p
 
 ### Phase 58c — Templates + Settings switch + LayoutPreviewFrame
 
-- [ ] `layout.builderMode` (site default + user preference)
-- [ ] Template catalog ≥5; picker in page editor when mode = templates
-- [ ] **`LayoutPreviewFrame`** in Settings (scheme-preview parity)
-- [ ] Soft capability: who may select `developer` (default ADMIN)
-- [ ] PHPUnit / Vitest for mode setting + unknown template reject
+- [x] `layout.builderMode` (site default + soft ADMIN gate for developer)
+- [x] Template catalog ≥5; picker in page editor when mode = templates
+- [x] **`LayoutPreviewFrame`** in Settings (scheme-preview parity)
+- [x] Soft capability: who may select `developer` (default ADMIN)
+- [x] PHPUnit / Vitest for mode setting + unknown template reject
 
 ### Phase 58d — Shortcode engine + Monaco definitions
 
