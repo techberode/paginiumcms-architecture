@@ -26,7 +26,12 @@ jobs:
         run: ./vendor/bin/phpstan analyse backend --level=8
 
       - name: PHPUnit
-        run: ./vendor/bin/phpunit --colors=never
+        env:
+          PAGINIUMCMS_CI_STRICT_OUTPUT: '1'
+        run: |
+          chmod +x .github/scripts/run-backend-tests-ci.sh \
+            .github/scripts/verify-ci-log-redaction.sh
+          .github/scripts/run-backend-tests-ci.sh
 
   frontend:
     runs-on: ubuntu-latest
