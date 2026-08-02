@@ -1,0 +1,18 @@
+{
+  "errors": [],
+  "warnings": [],
+  "metrics": {
+    "sk_files": 151,
+    "en_files": 151,
+    "sk_markdown": 139,
+    "en_markdown": 139,
+    "sk_words": 132305,
+    "en_words": 135977,
+    "issues_structural_variance": "accepted; 120 anchor parity and link integrity are authoritative",
+    "sk_issue_anchors": 120,
+    "sk_release_anchors": 81,
+    "en_issue_anchors": 120,
+    "en_release_anchors": 81,
+    "repo_context_link_warnings": 0
+  }
+}

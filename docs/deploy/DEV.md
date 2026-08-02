@@ -1,180 +1,241 @@
-# Local development – PaginiumCMS
+---
+title: Local and LAN development
+description: Development backend, Vite frontend, Docker alternative, LAN proxy, environment reset, and security boundaries
+icon: material/laptop
+---
 
-See [developer/LOCAL_SETUP.md](../developer/LOCAL_SETUP.md) for Docker Compose + `first-run.sh`, or continue below for the classic two-terminal flow.
+# Local and LAN development
 
-## 1. Backend (PHP 8.5+)
+> PHP and Vite development servers are intended only for local or trusted LAN environments. They are not production web servers or public sandboxes.
+
+## 1. Prerequisites
+
+The reference development stack uses:
+
+- PHP 8.5+ and Composer,
+- Node.js according to `frontend/package.json` and its lockfile,
+- Git,
+- optional Docker Compose,
+- writable test storage,
+- separate test secrets and accounts.
+
+Verify the runtime first:
+
+```bash
+php -v
+composer --version
+node --version
+npm --version
+git status --short
+```
+
+Versions in the release tag and CI take precedence over general documentation.
+
+## 2. Clean clone setup
+
+```bash
+git clone <repository-url> paginiumcms
+cd paginiumcms
+composer install
+cp .env.example .env
+
+cd frontend
+npm ci
+cd ..
+```
+
+Use development-only secrets. Do not copy production `.env`, production `APP_KEY`, SMTP passwords, or OAuth tokens into development.
+
+## 3. Backend development server
+
+Reference command retained from the source documentation:
 
 ```bash
 cd backend/public
-php -S localhost:8080
+php -S 127.0.0.1:8080
 ```
 
-Verify:
+For LAN testing the backend may bind to `0.0.0.0:8080`, but only behind a host firewall on a trusted network:
 
 ```bash
-curl http://localhost:8080/api/test
-curl http://localhost:8080/api/health
+php -S 0.0.0.0:8080
 ```
 
-## 2. Frontend (Vite + proxy)
+The built-in PHP server:
 
-In a second terminal:
+- does not provide production TLS,
+- is not a production process manager,
+- must not be Internet-facing,
+- can behave differently from nginx plus container/FPM,
+- is suitable for rapid development, not release acceptance.
+
+## 4. Vite frontend
 
 ```bash
 cd frontend
-cp .env.example .env   # optional; leave VITE_API_URL empty
-npm install
 npm run dev
 ```
 
-Open **http://localhost:3025**
+The frontend uses a proxy for `/api` to preserve a same-origin development flow. Verify the exact port and proxy target in the Vite configuration of the current commit.
 
-- Admin: `/login` → `/dashboard` (requires EDITOR+ role via `AdminRoleGuard`)
-- Public site: `/` (home, blog, pages from flat-file storage)
-- Preview draft: `/preview/{slug}` (auth + staff role)
-- Developer logs: `/developer/logs` (dev mode unlocked)
-
-**Vite proxies:**
-
-| Path | Target |
-|------|--------|
-| `/api` | `http://localhost:8080` |
-| `/storage` | `http://localhost:8080` (media files, It. 20) |
-
-## 3. Tests
+Retained LAN mode:
 
 ```bash
-composer test && composer stan
-composer gate    # iteration-gate.sh — pred release tagom
-
-cd frontend && npm run type-check && npm run lint && npm run lint:api-barrel && npm test
+npm run dev:lan
 ```
 
-Plná sada: `./scripts/run-all-tests.zsh`
+Typical topology:
 
-## 4. CLI commands
+```text
+browser → LAN nginx :8081
+nginx /api → PHP :8080
+nginx / → Vite :3025 + HMR WebSocket
+```
+
+## 5. Development `.env`
+
+Example for a trusted LAN profile:
+
+```env
+APP_ENV=development
+APP_DEBUG=true
+APP_URL=http://192.168.10.26:8081
+DEVELOPER_MODE=true
+DEV_UNLOCK_SECRET=replace-with-local-random-value
+CORS_ALLOWED_ORIGINS=http://192.168.10.26:8081,http://192.168.10.20:3025
+TRUSTED_PROXIES=127.0.0.1,::1,192.168.10.26
+```
+
+`TRUSTED_PROXIES` is not a list of clients. It contains only proxies trusted to supply `X-Forwarded-*` headers.
+
+Restart the backend after changing `.env`. Vite variables are loaded at startup/build time, not dynamically at runtime.
+
+## 6. Docker development alternative
+
+When the repository contains a base `docker-compose.yml`, use the version from the exact tag:
 
 ```bash
-php backend/bin/console audit:run
-php backend/bin/console content:diagnose --fix
-php backend/bin/console scheduler:run      # preferovaný cron entrypoint
+docker compose config --quiet
+docker compose up -d --build
+docker compose ps
+```
+
+A development bind mount improves iteration speed but is not proof of an immutable production artifact. For diagnostics compare:
+
+```bash
+docker compose exec -T php php -v
+docker compose exec -T php pwd
+docker compose exec -T php id
+```
+
+## 7. CLI and scheduler
+
+From the repository root:
+
+```bash
+php backend/bin/console content:diagnose --json
+php backend/bin/console scheduler:run
 php backend/bin/console worker:process
 ```
 
-**Produkcia cron:** [CRON.md](./CRON.md) — scheduled publish, backup, monitoring.
-
-Legacy (stále OK):
+Under Docker, run CLI inside the container when host PHP or user identity differs from the web runtime:
 
 ```bash
-php backend/bin/console backup:run-schedule
-php backend/bin/console monitoring:run-schedule
+docker compose exec -T -u www-data php \
+  php backend/bin/console content:diagnose --json
 ```
 
-## 5. Integration smoke (BE)
+## 8. Testing workflow
 
-`backend/tests/Http/ApplicationFlowTest.php` covers:
-
-- Public endpoints (`/api/test`, navigation, pages, settings)
-- Contact form → admin inbox
-- Comment submit → admin approve
-- Navigation update → public read
-- Protected routes return 401 without session
-
-`backend/tests/Http/Controllers/CoreHardeningTest.php` (It. 20):
-
-- RBAC 403 for USER on content create
-- Maintenance mode 503 + health exempt
-- Registration toggle
-- `/storage` serving + path traversal block
-
-## Troubleshooting
-
-| Symptom | Fix |
-|--------|-----|
-| **502 on `http://192.168.10.26:8081/`** but `/api/health` OK | nginx dev upstream points to wrong Vite host — use `192.168.10.20:3025` in `paginium_vite_dev`, run `npm run dev:lan` on `.20` |
-| **502 on `/api/*` via LAN nginx** | PHP bound to `localhost:8080` only — use `php -S 0.0.0.0:8080` in `backend/public` |
-| **Network Error** (login / API v admin) | `frontend/.env` má `VITE_API_URL` na iný host než SPA v prehliadači → nechaj prázdne; reštart `npm run dev:lan`. Pri `:8081` musí ísť `/api` cez nginx, nie priamo na `:8080`. |
-| API returns HTML in browser | Use Vite dev server (3025), not `file://` or static `dist/` without nginx |
-| 401 on admin after login | Check session cookies; proxy must forward credentials |
-| Odhlásenie počas editácie / pri uložení | Reštart PHP po deployi. `.env`: `SESSION_LIFETIME=28800`, `SESSION_STRICT=false`. `SESSION_USE_STRICT_MODE` ≠ `SESSION_STRICT` (prvé = PHP ini, druhé = IP binding). Minimum lifetime v kóde je 300 s. |
-| TOTP/2FA počas vývoja obmedzuje | `.env`: `TWO_FACTOR_REQUIRED=false` (platí len pri `APP_ENV=development|local|testing`, nie na produkcii). Reštart PHP. |
-| Media images 404 | Ensure backend serves `/storage/...` or nginx alias; Vite proxy includes `/storage` |
-| 503 on public API | Check `general.maintenanceMode` in settings |
-| 429 „Príliš veľa požiadaviek“ / login lockout | `php backend/bin/console security:clear-lockouts` on PHP server |
-| Starý obsah na webe po úpravách | Nastavenia → panel **Cache systému** → „Vymazať cache obsahu“ (alebo CLI `php backend/bin/console content:cache-purge`) |
-| USER cannot access admin | Expected — only EDITOR/ADMIN/SUPER_ADMIN (`AdminRoleGuard`) |
-
-For production deploy with one host, see [NGINX_API.md](./NGINX_API.md).
-
-## LAN test server
-
-Ready-made configs for the split setup (SPA + PHP API proxy on one nginx host):
-
-| Mode | Config | Frontend source | Hot reload |
-|------|--------|-----------------|------------|
-| **Prod-like** (static) | [`nginx-paginium-test.conf`](./nginx-paginium-test.conf) | `dist/` via [`deploy-frontend-lan.sh`](../../scripts/deploy-frontend-lan.sh) | No — rebuild + rsync |
-| **Dev proxy** (HMR) | [`nginx-paginium-dev.conf`](./nginx-paginium-dev.conf) | Vite on dev workstation `192.168.10.20:3025` | Yes — edit & save |
-
-### A) Static test (no Vite) — `:8081` serves built `dist/`
-
-Deploy (no hardcoded host/user in repo — set your own):
+Fast local cycle:
 
 ```bash
-DEPLOY_HOST=192.168.x.x DEPLOY_USER=yourName DEPLOY_SSH_PORT=22 ./scripts/deploy-frontend-lan.sh
+vendor/bin/phpunit <target>
+cd frontend && npm test -- <target>
 ```
 
-### B) Dev proxy — `:8081` with hot reload (no manual `:3025` in browser)
+Before a pull request or release candidate run the documented full gate. The complete local log is stored outside the project. CI must display only sanitized output without TOTP secrets, QR payloads, tokens, or passwords.
 
-**Topology (split dev):** nginx on `192.168.10.26:8081` → PHP `192.168.10.20:8080` + Vite `192.168.10.20:3025`. Both dev processes run on your workstation (`.20`), not on the nginx host.
+## 9. Static LAN test
 
-**Goal:** Open only `http://192.168.10.26:8081/` while Vite + PHP run on `.20`.
-
-1. **Start PHP + Vite on the dev workstation** (`192.168.10.20`):
-
-   ```bash
-   # terminal 1 — must bind LAN, not 127.0.0.1 only (nginx on .26 must reach :8080)
-   cd backend/public && php -S 0.0.0.0:8080
-
-   # terminal 2 — HMR through nginx :8081
-   cd frontend && npm run dev:lan
-   ```
-
-2. **Enable dev nginx** (on `192.168.10.26`):
-
-   ```bash
-   sudo cp docs/deploy/nginx-paginium-dev.conf /etc/nginx/sites-available/paginium-dev
-   sudo ln -sf /etc/nginx/sites-available/paginium-dev /etc/nginx/sites-enabled/
-   sudo nginx -t && sudo systemctl reload nginx
-   ```
-
-3. **Backend `.env` on LAN** (confirm links / CORS):
-
-   ```env
-   APP_URL=http://192.168.10.26:8081
-   ```
-
-4. Open **http://192.168.10.26:8081/** — API stays same-origin via nginx → PHP; SPA + HMR via nginx → Vite.
-
-`npm run dev:lan` sets `VITE_HMR_CLIENT_PORT=8081` so WebSocket HMR works through nginx (see `frontend/vite.config.ts`).
-
-**Auto-start Vite after reboot (optional):** systemd user unit or `docker compose --profile dev up -d` in `@reboot` cron — Vite is still required; nginx only proxies to it.
-
-**Switch back to static test:** restore `nginx-paginium-test.conf` + `./scripts/deploy-frontend-lan.sh`.
-
-Optional: `DEPLOY_SSH_HOST=homelab` (SSH config alias), `DEPLOY_HEALTH_URL`, `DEPLOY_PUBLIC_URL`.
-
-Read-only tunnel for external tester (no router port forward):
+`nginx-paginium-test.conf` serves the production `dist` on an HTTP LAN port and proxies the API:
 
 ```bash
-ssh -L 8081:localhost:8081 -p 49555 user@192.168.x.x
-# then open http://localhost:8081/
+cd frontend
+npm ci
+npm run build:prod
 ```
 
-Quick install on the nginx host:
+Deploy `dist` using the local script or atomically into:
+
+```text
+/var/www/paginium-test/dist
+```
+
+Smoke:
 
 ```bash
-sudo cp docs/deploy/nginx-paginium-test.conf /etc/nginx/sites-available/paginium-test
-sudo ln -sf /etc/nginx/sites-available/paginium-test /etc/nginx/sites-enabled/
-sudo nginx -t && sudo systemctl reload nginx
-curl -s http://YOUR_HOST:8081/api/health
+curl -fsS http://192.168.10.26:8081/api/health
+curl -fsSI http://192.168.10.26:8081/feed.xml
 ```
+
+This profile is closer to production than Vite, but without TLS it still does not validate HSTS, secure cookies, or HTTPS-only behavior.
+
+## 10. LAN HMR proxy
+
+`nginx-paginium-dev.conf` exposes one `:8081` URL while nginx proxies both React/Vite and the API. Benefits:
+
+- the browser uses one origin,
+- HMR WebSocket passes through nginx,
+- the API is not tested through a manually opened second origin,
+- routing more closely resembles production.
+
+Do not expose this vhost to the WAN. HMR and Developer Mode provide capabilities unsuitable for a public network.
+
+## 11. Session, CORS, and proxy behavior
+
+During HTTP LAN testing the application must not set a `Secure` cookie unless the request is HTTPS. When nginx terminates HTTPS, it must send the correct `X-Forwarded-Proto`, and the backend must trust only that proxy.
+
+Diagnostics:
+
+```bash
+curl -i http://192.168.10.26:8081/api/health
+curl -i -X OPTIONS http://192.168.10.26:8081/api/auth/login \
+  -H 'Origin: http://192.168.10.26:8081' \
+  -H 'Access-Control-Request-Method: POST'
+```
+
+Do not solve credentialed admin CORS with `*`.
+
+## 12. Safe development reset
+
+Distinguish:
+
+```text
+cache/index rebuild
+≠ dependency reinstall
+≠ test storage reset
+≠ deletion of user content SSOT
+```
+
+Before a destructive reset print the exact path and verify that it belongs to the test environment. Do not use wildcard cleanup by a generic email domain against production data.
+
+## 13. Troubleshooting
+
+| Symptom | Likely cause | Check |
+|---|---|---|
+| nginx `502` | backend is not listening on LAN address/port | `ss -ltnp`, curl from nginx host |
+| SPA returns HTML for `/api` | missing or incorrectly ordered `/api/` location | [NGINX_API.md](./NGINX_API.md) |
+| login 401 with empty body | APP_URL/CORS/proxy mismatch | Origin test and backend log |
+| Developer unlock 403 | flag exists only on frontend host | backend `.env` and restart |
+| HMR cannot connect | WebSocket headers/clientPort | nginx dev config and Vite config |
+| permission denied | host/container identity mismatch | `id`, mount, setgid permissions |
+| stale frontend | build or cache issue | asset hashes, hard reload |
+
+## 14. Related documents
+
+- [LOCAL_SETUP.md](../developer/LOCAL_SETUP.md)
+- [DEVELOPMENT.md](../developer/DEVELOPMENT.md)
+- [TESTING.md](../developer/TESTING.md)
+- [NGINX_API.md](./NGINX_API.md)
+- [DEPLOY.md](./DEPLOY.md)

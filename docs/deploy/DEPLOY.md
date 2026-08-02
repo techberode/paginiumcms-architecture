@@ -1,356 +1,303 @@
-# Production & demo deploy guide
-
-> **Scope:** updating a running PaginiumCMS instance after a new commit or release tag.  
-> **Not covered here:** first-time server setup (see `PRIVATE_DOMAIN_DEPLOY.md` on the server, gitignored) and [CRON.md](./CRON.md).
-
+---
+title: Production and demo deployment
+description: Safe and reproducible PaginiumCMS deployment, release update, smoke test, rollback, and operational evidence
+icon: material/server-network
 ---
 
-## Architecture (two instances)
+# Production and demo deployment
 
-| | **Production** | **Demo** |
-|---|----------------|----------|
-| Domain | `paginiumcms.com` | `demo.paginiumcms.com` |
-| App root (typical) | `/var/www/paginiumcms.com` | `/var/www/paginiumcms-demo` |
-| Docker stack dir | `/var/lib/docker/compose/paginiumcms` | `/var/lib/docker/compose/paginiumcms-demo` |
-| PHP upstream (host nginx) | `127.0.0.1:8089` | `127.0.0.1:8091` |
-| `DEMO_MODE` | `false` | `true` |
-| Admin code deploy | ✅ planned (see §5) | ❌ SSH only (by design) |
+> This document covers deployment of the **`v2.1.0-beta.*`** family to an already prepared server. Initial operating-system, DNS, TLS, and user bootstrap belongs in a separate server runbook. The release decision and the 21-step gate are defined in [RELEASE.md](../developer/RELEASE.md).
 
-Both instances share the same repo layout: git clone → `composer` → `frontend/dist` → Docker PHP via `stack.sh`.
+## 1. Deployment contract
 
-**Demo-specific guide (login, CORS ISS-098, smoke tests):** [DEMO_DEPLOY.md](DEMO_DEPLOY.md)
+Deployment is not merely `git pull`. A successful deployment means that:
 
----
+- the exact commit or annotated tag is known,
+- authoritative flat-file data and restore-critical secrets are backed up,
+- backend dependencies and the frontend build belong to the same commit,
+- PHP runtime, web server, scheduler, and worker use the same storage root,
+- health, login, authorization, and feature smoke checks pass after restart,
+- rollback or roll-forward is ready,
+- a short deployment record captures commit, time, result, and anomalies.
 
-## What is **not** a code deploy
+Canonical release identity:
 
-Admin **GitHub** (`/github`) syncs **flat-file content** (pages, settings export) via `GitHubService` — export / import / sync of CMS data, **not** `git pull` of the application.
+```text
+repository + commit SHA + tag + artifact SHA-256
+```
 
-Do not use `/github` to upgrade PHP or React bundles.
+## 2. Supported profiles
 
----
+| Profile | Public frontend | PHP API | SSOT | Optional services | Status |
+|---|---|---|---|---|---|
+| Classic single-node | host nginx + `frontend/dist` | Docker or PHP-FPM | local disk | cron/worker | ✅ current baseline |
+| Demo | separate vhost and stack | separate port | isolated demo storage | automatic reset | ✅ supported |
+| Hybrid | same topology | same API | disk SSOT | Redis, Git publish | ⏳ It.68–70 |
+| Git-headless | static or API frontend | editor/API node | disk/repository checkout SSOT | queue + build hook | ⏳ target profile |
 
-## A. Regular commit deploy (production)
+Profiles are configurations of one product. They do not authorize moving authoritative content into an SQL database.
 
-Use after every merge/push to `main` that should go live (e.g. `03ef2a0` — It.61).
+## 3. Recommended directory topology
 
-### Preconditions
+```text
+/var/www/paginiumcms.com/                  # production checkout
+/var/www/paginiumcms-demo/                 # demo checkout
+/var/lib/docker/compose/paginiumcms/        # production stack wrapper
+/var/lib/docker/compose/paginiumcms-demo/   # demo stack wrapper
+/var/backups/paginiumcms/                   # backup outside web root
+/var/log/paginiumcms/                       # scheduler/worker/deploy logs
+```
 
-- Changes are on `origin/main` (pushed from dev machine).
-- `./scripts/iteration-gate.sh` was green before push (mandatory project rule).
+Reference ports preserved from the source configuration:
 
-### On the server (SSH)
+| Instance | Host nginx upstream | Docker project |
+|---|---:|---|
+| production | `127.0.0.1:8089` | `paginiumcms` |
+| demo | `127.0.0.1:8091` | `paginiumcms-demo` |
+
+Ports and paths are deployment-specific. They are a retained reference profile, not a universal requirement.
+
+## 4. What is not an application deployment
+
+The GitHub admin section synchronizes flat-file content through the application integration layer. It is not a mechanism for:
+
+- pulling application code,
+- updating Composer/NPM dependencies,
+- building the React bundle,
+- restarting PHP or Docker,
+- migrating server configuration.
+
+Local save, Git content publish, frontend build, and production deployment are separate states.
+
+## 5. Pre-deployment conditions
+
+Before every production deployment verify:
+
+```bash
+cd /var/www/paginiumcms.com
+git status --short
+git rev-parse HEAD
+git remote -v
+```
+
+Required conditions:
+
+- the working tree has no undocumented local changes,
+- the release gate and manual review are closed,
+- GitHub CI belongs to the deployed SHA,
+- `.env`, storage, and uploads are not overwritten by checkout,
+- there is enough space for build, backup, and temporary files,
+- nginx passes `nginx -t`,
+- the stack passes `docker compose config --quiet`,
+- backup and restore have been practically tested for this profile.
+
+## 6. Production deployment of a tagged release
+
+The preferred production model pins an immutable tag:
 
 ```bash
 APP_ROOT=/var/www/paginiumcms.com
 STACK_DIR=/var/lib/docker/compose/paginiumcms
 BACKEND_PORT=8089
+RELEASE_REF=v2.1.0-beta.23
 
 cd "$APP_ROOT"
+git fetch origin --tags --prune
+git checkout --detach "$RELEASE_REF"
+git rev-parse HEAD
 
-# 1) Code
-git fetch origin
-git checkout main
-git pull origin main
-git log -1 --oneline   # verify expected commit
+composer install \
+  --no-dev \
+  --prefer-dist \
+  --no-interaction \
+  --optimize-autoloader
 
-# 2) Backend deps
-composer install --no-dev --optimize-autoloader
-
-# 3) Frontend (required when FE/admin/public UI changed)
 cd frontend
 npm ci
 npm run build:prod
 cd ..
 
-# 4) Restart PHP (OPcache + new PHP files)
-"$STACK_DIR/stack.sh" restart php
-
-# 5) Wait — 502 immediately after restart is normal (ISS-096)
-sleep 8
-curl -sf "http://127.0.0.1:${BACKEND_PORT}/api/health" | jq .
-
-# 6) Optional diagnostics
-php backend/bin/console content:diagnose --json | jq '.jobsDirWritable, .issues'
+"$STACK_DIR/stack.sh" config --quiet
+"$STACK_DIR/stack.sh" up -d --build
 ```
 
-### Smoke (2 min)
+`npm ci` and the Composer lockfile must belong to the same tag. A server must not repair dependencies using ad-hoc `npm update` or `composer update`.
 
-- `https://paginiumcms.com/api/health` → 200
-- Admin login → dashboard loads
-- If iteration touched a feature — quick manual check (see release notes / `ITERATION_*.md`)
+## 7. Commit deployment for staging or rapid beta updates
 
-### Rollback (commit deploy)
+Deployment from `origin/main` is acceptable for staging or an intentionally managed beta workflow:
 
 ```bash
-cd "$APP_ROOT"
-git log -5 --oneline
-git checkout <previous-sha>
-composer install --no-dev --optimize-autoloader
-cd frontend && npm ci && npm run build:prod && cd ..
-"$STACK_DIR/stack.sh" restart php
+cd /var/www/paginiumcms.com
+git fetch origin --prune
+git checkout main
+git pull --ff-only origin main
 ```
 
----
+Use `--ff-only`; an automatic merge on the production server is not a release process. Record the resulting SHA. A stable production release should prefer a tag or verified artifact.
 
-## B. Release deploy (tagged update)
+## 8. Restart and transient 502 responses
 
-A **release** = green gate + git tag + GitHub Release notes + production deploy + smoke.  
-Use for beta milestones (`v2.1.0-beta.10`, …), not for every small commit unless you policy-tag often.
-
-### B1. Developer machine (before server)
+Restart the relevant service after PHP code or configuration changes:
 
 ```bash
-# 1) Gate (mandatory)
-./scripts/iteration-gate.sh
-
-# 2) Tag (example beta.10 after It.13 v3)
-git tag -a v2.1.0-beta.10 -m "v2.1.0-beta.10 — It.13 v3 demo sandbox full trial"
-git push origin v2.1.0-beta.10
-
-# 3) GitHub Release (copy body from docs/developer/RELEASE.md § beta.10)
-gh release create v2.1.0-beta.10 --title "v2.1.0-beta.10 — Demo sandbox full trial (It.13 v3)" --notes-file /tmp/release-notes.md
+/var/lib/docker/compose/paginiumcms/stack.sh restart php
 ```
 
-Update `CHANGELOG.md`, `docs/CONTINUATION.md`, and `docs/developer/RELEASE.md` in the same wave (or immediately before tag).
+A short `502 Bad Gateway` during startup may match known [ISS-096](../ISSUES.md#iss-096). Use a bounded health loop rather than assuming a fixed wait:
 
-### B2. Production server (checkout tag)
+```bash
+for attempt in $(seq 1 30); do
+  if curl -fsS "http://127.0.0.1:8089/api/health" >/dev/null; then
+    echo "Backend ready"
+    break
+  fi
+  sleep 2
+  if [ "$attempt" -eq 30 ]; then
+    echo "Backend health timeout" >&2
+    exit 1
+  fi
+done
+```
 
-Same as **§A**, but pin the ref:
+## 9. Mandatory smoke test
+
+Minimum smoke after every deployment:
+
+```bash
+curl -fsS https://paginiumcms.com/api/health
+curl -fsSI https://paginiumcms.com/
+curl -fsSI https://paginiumcms.com/.well-known/security.txt
+curl -fsSI https://paginiumcms.com/feed.xml
+```
+
+Manually verify:
+
+- admin login and CSRF flow,
+- dashboard without 5xx responses,
+- one public document,
+- authorization of a least-privileged account,
+- upload or storage route when affected,
+- scheduler/worker when jobs changed,
+- the feature named in release notes.
+
+A `200` health response alone does not prove login, the frontend bundle, or SSOT writes.
+
+## 10. Frontend-only update
+
+When only the frontend changed and the API contract remains compatible:
+
+```bash
+cd /var/www/paginiumcms.com/frontend
+npm ci
+npm run build:prod
+```
+
+Recommended safe swap:
+
+```text
+build into temporary directory
+→ validate index.html and assets
+→ atomically replace dist
+→ smoke test
+```
+
+Overwriting `dist/` in place can expose an incomplete HTML/hashed-asset combination during the build.
+
+## 11. Storage ownership and process identity
+
+The web process, scheduler, worker, and deploy script must use the same storage tree. Do not fix ownership with blanket `chmod 777`.
+
+Reference model from the source deployment:
+
+```bash
+sudo chown -R deploy-user:www-data backend/storage
+sudo find backend/storage -type d -exec chmod 2775 {} \;
+sudo find backend/storage -type f -exec chmod 0664 {} \;
+```
+
+Adapt the deploy user to the server. Verify writes under the same identity used by the PHP container:
+
+```bash
+/var/lib/docker/compose/paginiumcms/stack.sh \
+  exec -T -u www-data php \
+  sh -lc 'touch backend/storage/.deploy-write-test && rm backend/storage/.deploy-write-test'
+```
+
+## 12. Upgrade, backup, and rollback
+
+Before deployment create:
+
+- an application backup using the supported backup mechanism,
+- an out-of-release copy of `.env` and secret material,
+- a record of the current SHA/tag,
+- a storage volume or filesystem snapshot when appropriate.
+
+Rollback to a previous tag:
 
 ```bash
 cd /var/www/paginiumcms.com
 git fetch origin --tags
-git checkout v2.1.0-beta.10    # detached HEAD is OK on servers
-composer install --no-dev --optimize-autoloader
+git checkout --detach <previous-tag>
+composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
 cd frontend && npm ci && npm run build:prod && cd ..
-/var/lib/docker/compose/paginiumcms/stack.sh restart php
-sleep 8 && curl -sf http://127.0.0.1:8089/api/health
+/var/lib/docker/compose/paginiumcms/stack.sh up -d --build
 ```
 
-To return to tracking `main` later:
+If the new version changed authoritative data incompatibly, checking out code is insufficient. Use the documented restore or a forward fix. Every future migration must state backward compatibility and its rollback boundary.
+
+## 13. Docker autostart
+
+The production override uses `restart: unless-stopped`, which restarts containers after host boot when the Docker daemon starts automatically. Verify:
 
 ```bash
-git checkout main && git pull origin main
+systemctl is-enabled docker
+/var/lib/docker/compose/paginiumcms/stack.sh ps
+/var/lib/docker/compose/paginiumcms/stack.sh config | grep -n 'restart:'
 ```
 
-### B3. Release smoke checklist
+This covers the operational part of [ISS-119](../ISSUES.md#iss-119). `depends_on` does not prove application readiness; readiness is established by health and smoke checks.
 
-Use the checklist in `docs/developer/RELEASE.md` for that version, plus:
+## 14. Admin “System update”
 
-- [ ] `/api/health` 200
-- [ ] Cron still runs (`scheduler:run` in crontab unchanged)
-- [ ] Admin `/scheduler` — manual job run → outcome badge (not red 500 toast)
-- [ ] New features from release notes
+Admin-triggered application updates remain a planned capability, not a current safe production mechanism. They must not reuse the content `GitHubService` or execute as an unrestricted web shell.
 
----
+The future contract requires:
 
-## C. Demo instance deploy (SSH only)
+- a production-only feature flag,
+- SUPER_ADMIN plus fresh 2FA confirmation,
+- repository allow-list and branch/tag policy,
+- an out-of-process privileged deploy runner,
+- backup, maintenance mode, locking, and audit,
+- a sanitized log stream,
+- immutable release reference and checksum,
+- automatic health/smoke checks and a rollback boundary.
 
-Demo **does not** need admin-triggered upgrades. Reset + seed is the main ops path; code updates are occasional.
+## 15. Deployment evidence
 
-```bash
-APP_ROOT=/var/www/paginiumcms-demo
-STACK_DIR=/var/lib/docker/compose/paginiumcms-demo
-BACKEND_PORT=8091
+After a successful deployment retain outside the web root:
 
-cd "$APP_ROOT"
-git fetch origin
-git checkout main && git pull origin main
-# or: git checkout v2.1.0-beta.10
-
-composer install --no-dev --optimize-autoloader
-cd frontend && npm ci && npm run build:prod && cd ..
-"$STACK_DIR/stack.sh" restart php
-sleep 8 && curl -sf "http://127.0.0.1:${BACKEND_PORT}/api/health"
+```text
+timestamp
+instance/profile
+tag + commit SHA
+artifact checksum
+backup identifier
+nginx/docker validation
+smoke results
+scheduler/worker result
+reviewer/deploy owner
+anomalies and disposition
+rollback reference
 ```
 
-Ensure demo env (`DEMO_MODE=true`, `APP_URL=https://demo.paginiumcms.com`) — see [ITERATION_13.md](../ITERATION_13.md), [DEMO_DEPLOY.md](DEMO_DEPLOY.md), and `docs/deploy/app.env.demo.example`.
+The record may be short, but it must establish what was deployed.
 
-**Login smoke (browser vs curl):** curl without `Origin` can succeed while the browser gets **401 with empty body**. That is CORS — fix `APP_URL` to the demo domain, then restart PHP:
+## 16. Related documents
 
-```bash
-grep -E '^APP_URL=' "$APP_ROOT/.env"
-curl -sS -o /dev/null -w 'with Origin: HTTP %{http_code}\n' \
-  -X POST "https://demo.paginiumcms.com/api/auth/login" \
-  -H 'Content-Type: application/json' \
-  -H 'Origin: https://demo.paginiumcms.com' \
-  -d '{"email":"demo@paginiumcms.com","password":"Demo123!"}'
-# Expect: HTTP 200 (or 401 JSON with wrong password — NOT empty 401)
-```
-
-After deploy: Admin → **Demo** → reset seed if you need a clean showcase.
-
----
-
-## D. Helper script (optional)
-
-From repo root **on the server**:
-
-```bash
-export APP_ROOT=/var/www/paginiumcms.com
-export STACK_DIR=/var/lib/docker/compose/paginiumcms
-export BACKEND_PORT=8089
-export GIT_REF=origin/main          # or v2.1.0-beta.9
-
-./scripts/deploy-instance-update.sh
-```
-
-See [scripts/deploy-instance-update.sh](../../scripts/deploy-instance-update.sh).
-
----
-
-## E. Local / LAN frontend-only deploy
-
-When PHP already runs on the server and you only need to push a new `frontend/dist` from your laptop:
-
-```bash
-DEPLOY_HOST=… DEPLOY_USER=… DEPLOY_PATH=/var/www/paginiumcms.com/frontend/dist/ \
-  ./scripts/deploy-frontend-lan.sh
-```
-
-Full stack update still requires **§A** on the server (composer + PHP restart).
-
----
-
-## F. Troubleshooting
-
-| Symptom | Likely cause | Action |
-|---------|--------------|--------|
-| 502 right after restart | PHP container starting (ISS-096) | Wait 5–10 s, retry health |
-| 502 persists | PHP crash / parse error | `stack.sh logs --tail=50 php` |
-| Admin shows old UI | Stale `dist/` or browser cache | Re-run `npm run build:prod`, hard refresh |
-| Demo login 401, empty response in DevTools | CORS — `APP_URL` ≠ public domain | Set `APP_URL=https://demo.paginiumcms.com`, `stack.sh restart php`; verify curl with `Origin` header (§C) |
-| Demo **all** API 500, health fails | Missing `backend/storage/app/demo/data/` or not writable by `www-data` | Storage bootstrap — [DEMO_DEPLOY.md](DEMO_DEPLOY.md) § First-run, ISS-102 |
-| `demo:reset-if-due` Permission denied (`plugins.json`) | Host CLI/cron vs Docker `www-data` on demo storage | `chown user:www-data`, dirs `2775` — [DEMO_DEPLOY.md](DEMO_DEPLOY.md) § ISS-099 |
-| `git pull` → already up to date | Commit not pushed | Push from dev, then fetch on server |
-
----
-
-## G. Planned: Admin “System update” (production only)
-
-**Goal:** SUPER_ADMIN triggers deploy from admin UI, backed by GitHub — **without** shell access for routine updates.
-
-**Not in v1:** demo instance upgrade via admin (demo stays SSH + reset workflow).
-
-### G1. UI (admin SPA)
-
-New module: **Platform → System update** (`/platform/update`), SUPER_ADMIN only.
-
-| Block | Content |
-|-------|---------|
-| Current version | `composer.json` version + `git describe` / `APP_VERSION` file written at deploy |
-| Remote | Latest tag / latest `main` SHA from GitHub API |
-| Changelog | Markdown snippet from release body (cached) |
-| Actions | **Check for updates** · **Deploy latest main** · **Deploy tag …** (dropdown) |
-| Log | Last 20 lines of deploy job (SSE or poll) |
-
-### G2. Backend (new, not `GitHubService` content sync)
-
-| Endpoint | Purpose |
-|----------|---------|
-| `GET /api/admin/system/update/status` | current ref, remote ref, pending, last job |
-| `POST /api/admin/system/update/check` | fetch GitHub compare (token from settings) |
-| `POST /api/admin/system/update/run` | enqueue deploy job `{ ref: "main" \| "v2.1.0-beta.9" }` |
-
-Security baseline:
-
-- `AuthMiddleware` + `RoleMiddleware(['SUPER_ADMIN'])` + `TwoFactorMiddleware`
-- CSRF on POST
-- Deploy token in `SettingsSchema` as `password` (encrypted at rest)
-- No user-controlled shell — whitelist script only
-- Audit log entry on every run
-
-### G3. Execution model (recommended)
-
-**Do not** run `git pull` inside the web request.
-
-1. Admin POST → write job to flat-file queue (`data/jobs/` or dedicated `data/deploy/runs.json`)
-2. CLI worker or cron invokes:
-
-   ```bash
-   php backend/bin/console system:deploy --ref=origin/main
-   ```
-
-3. Command runs **only** `/usr/local/bin/paginium-deploy-update` (root-owned wrapper) with fixed env:
-
-   ```bash
-   APP_ROOT=/var/www/paginiumcms.com STACK_DIR=… BACKEND_PORT=8089 GIT_REF=… \
-     /path/to/repo/scripts/deploy-instance-update.sh
-   ```
-
-4. Job outcome: `completed` | `failed` | `skipped` (same pattern as It.62 scheduler)
-
-Host hardening: wrapper in `sudoers` for `www-data` → script only, no arbitrary commands.
-
-### G4. GitHub integration
-
-| Setting (`settings` group `systemUpdate`) | Purpose |
-|-------------------------------------------|---------|
-| `githubOwner` / `githubRepo` | `techberode/paginiumcms-architecture` |
-| `githubToken` | `password` — `repo` read + releases read |
-| `defaultBranch` | `main` |
-| `deployEnabled` | master switch (prod only; ignored when `DEMO_MODE=true`) |
-| `allowDeployMain` | allow tracking branch deploy |
-| `allowDeployTags` | allow tag-only deploy |
-
-GitHub API (read-only for check):
-
-- `GET /repos/{owner}/{repo}/commits/main` — latest SHA
-- `GET /repos/{owner}/{repo}/releases/latest` — latest tag + body
-- `GET /repos/{owner}/{repo}/compare/{base}...{head}` — commits behind/ahead
-
-Optional webhook (It.63 v3): `POST /api/webhooks/github/release` → auto-enqueue deploy on **release published** (HMAC secret in Settings → System update).
-
-### G5. Demo policy
-
-| Instance | Admin update button | Reason |
-|----------|-------------------|--------|
-| Production | ✅ when `deployEnabled` | Controlled upgrades |
-| Demo | Hidden / disabled | Demo is resettable sandbox; SSH + tag pin is enough |
-
-### G6. Docker production — admin UI deploy (It.63)
-
-When PHP runs in Docker (`/var/www/html`) and deploy is triggered from **Platform → System update**, the job runs as **`www-data`**. One-time host bootstrap:
-
-```bash
-APP_ROOT=/var/www/paginiumcms.com \
-  ./scripts/bootstrap-deploy-permissions.sh
-```
-
-**App `.env`** (mounted into container):
-
-```bash
-APP_ROOT=/var/www/html
-STACK_DIR=/var/lib/docker/compose/paginiumcms
-BACKEND_PORT=8089
-DEMO_MODE=false
-```
-
-| Symptom | Fix |
-|---------|-----|
-| `missing_script` | `APP_ROOT=/var/www/html` in app `.env` (see `AppRoot` resolver) |
-| `dubious ownership` / `FETCH_HEAD` Permission denied | Run `bootstrap-deploy-permissions.sh` on host |
-| `vendor/... Permission denied` (composer) | Same bootstrap (`www-data` group write on checkout) |
-| `stack.sh not reachable` | Normal from container — script logs `SKIP_RESTART`; run `./stack.sh restart php` on host after deploy |
-| Deploy timeout in browser | FE timeout 10 min (beta.14+); prefer SSH for very slow builds |
-
-**Recommended for routine releases:** SSH + `deploy-instance-update.sh` as host user. Admin button = convenience when bootstrap is applied.
-
-### G7. Suggested iteration
-
-Document as **It.63 — Admin system update (prod)** — see [ITERATION_63.md](../ITERATION_63.md):
-
-- MVP: status + manual CLI trigger from admin (job queue)
-- v2: GitHub compare UI + one-click deploy
-- v3: webhook on release publish ✅
-
----
-
-## Related docs
-
-- [CRON.md](./CRON.md) — scheduler after deploy (unchanged)
-- [NGINX_API.md](./NGINX_API.md) — host nginx (usually no restart on app deploy)
-- [developer/RELEASE.md](../developer/RELEASE.md) — tag + GitHub Release copy-paste
-- [developer/BETA_INFRA.md](../developer/BETA_INFRA.md) — gate before tag
-- [ITERATION_62.md](../ITERATION_62.md) — scheduler prod hardening
+- [RELEASE.md](../developer/RELEASE.md) — release gate and decision
+- [INSTALLATION.md](../user/INSTALLATION.md) — first installation
+- [DEPLOYMENT_MODES.md](../architecture/DEPLOYMENT_MODES.md) — hosting profiles
+- [NGINX_API.md](./NGINX_API.md) — reverse proxy
+- [CRON.md](./CRON.md) — scheduler and worker
+- [DEMO_DEPLOY.md](./DEMO_DEPLOY.md) — demo profile
