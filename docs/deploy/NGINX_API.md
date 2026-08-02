@@ -1,139 +1,250 @@
-# Nginx – API proxy for PaginiumCMS
+---
+title: Nginx reverse proxy and static frontend
+description: Same-origin API proxy, SPA fallback, storage routes, security headers, trusted proxy, and vhost validation
+icon: simple/nginx
+---
 
-When the React SPA and PHP backend share one host, **nginx must proxy `/api` to PHP** before the SPA fallback. Otherwise `/api/*` returns `index.html` and the frontend cannot reach the backend.
+# Nginx reverse proxy and static frontend
 
-> **Note:** A legacy prototype was once tested on `paginiumcms.com` (old `/backend/v1/*` scripts + mock SPA). That host is **not** the deployment target for this repo — it was only a visual/functional reference. Use your own domain or LAN IP below.
+## 1. Reference topology
 
-## Symptom
-
-```bash
-curl http://YOUR_HOST/api/test
-# Returns HTML (SPA) instead of JSON
+```text
+browser
+  ├─ /, /assets/*, /.well-known/security.txt → host nginx → frontend/dist
+  ├─ /api/*                                 → host nginx → Docker nginx/PHP API
+  ├─ /storage/*                             → PHP-controlled storage route
+  └─ /feed.xml, /sitemap.xml, /robots.txt   → public PHP endpoints
 ```
 
-## Fix (example)
+The key principle is **same-origin**. The public frontend and API use the same scheme, host, and port. This reduces CORS complexity and preserves the session/CSRF model.
 
-Replace `YOUR_HOST` with your server name or LAN IP (e.g. `192.168.1.50`, `cms.local`).
+## 2. Location ordering
+
+API, storage, and exact public endpoints must appear before the SPA fallback:
 
 ```nginx
-server {
-    listen 80;
-    server_name YOUR_HOST;
+location /api/ { ... }
+location /storage/ { ... }
+location = /feed.xml { ... }
+location = /sitemap.xml { ... }
+location = /robots.txt { ... }
+location / { try_files $uri $uri/ /index.html; }
+```
 
-    root /var/www/paginiumcms/frontend/dist;
-    index index.html;
+If `/api/` falls into `location /`, nginx returns `index.html` with HTTP 200 instead of JSON. The frontend then reports a parsing error while routing is the real problem.
 
-    # PHP backend (Docker on port 8080 or php-fpm socket)
-    location /api {
-        proxy_pass http://127.0.0.1:8080;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
+## 3. `proxy_pass` contract
 
-    # Static media from flat-file storage
-    location /storage {
-        proxy_pass http://127.0.0.1:8080;
-    }
+The retained profile uses:
 
-    # Public XML feeds (Iteration 22 — must be BEFORE SPA fallback)
-    location = /feed.xml {
-        proxy_pass http://127.0.0.1:8080/feed.xml;
-    }
-
-    location = /sitemap.xml {
-        proxy_pass http://127.0.0.1:8080/sitemap.xml;
-    }
-
-    location = /robots.txt {
-        proxy_pass http://127.0.0.1:8080/robots.txt;
-    }
-
-    # SPA fallback (must be AFTER /api and feed routes)
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
+```nginx
+location /api/ {
+    proxy_pass http://paginium_prod_php;
 }
 ```
 
-## Frontend build
+Without a trailing URI after the upstream, the original `/api/...` path is preserved. Changing it to `proxy_pass http://upstream/;` can rewrite the prefix. Verify every change against concrete API endpoints.
 
-For production on the **same host** as the API, leave `VITE_API_URL` empty so the client uses `window.location.origin`:
+Recommended proxy headers:
 
-```env
-# .env.production
-VITE_API_URL=
+```nginx
+proxy_set_header Host $host;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+proxy_set_header X-Forwarded-Proto $scheme;
+proxy_set_header X-Forwarded-Host $host;
+proxy_set_header X-Forwarded-Port $server_port;
+proxy_set_header Connection "";
 ```
 
-For local dev, Vite proxy handles `/api` → `localhost:8080` (see `frontend/vite.config.ts`).
+The backend must trust only actual proxy addresses.
 
-After deploy, verify:
+## 4. Trusted proxies and client IP
+
+`TRUSTED_PROXIES` is a security boundary. Trusting arbitrary clients allows spoofed `X-Forwarded-For`, distorted audit records, or IP rate-limit bypass.
+
+Inspect the topology from the backend perspective:
 
 ```bash
-curl http://YOUR_HOST/api/test
-# {"success":true,"data":{"status":"ok",...}}
+ss -ltnp | grep -E '8089|8091'
+docker compose ps
+docker compose exec -T php env | grep TRUSTED_PROXIES
 ```
 
-## Local dev (no nginx)
+Do not add whole public or LAN ranges merely because they are “internal.” Add only the hop that actually terminated the proxy.
+
+## 5. CORS and sessions
+
+In a correct same-origin deployment the browser does not need cross-origin CORS for the normal admin flow. `APP_URL` must exactly match the public URL.
+
+Diagnostic login with Origin:
 
 ```bash
-# Terminal 1 – backend
-cd backend && php -S localhost:8080 -t public   # or Docker on :8080
-
-# Terminal 2 – frontend (proxy /api → :8080)
-cd frontend && npm run dev
+curl -i -X POST https://demo.paginiumcms.com/api/auth/login \
+  -H 'Origin: https://demo.paginiumcms.com' \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"invalid@example.com","password":"invalid"}'
 ```
 
-Open `http://localhost:3025` — API calls go through the Vite proxy.
+Expect JSON with the correct status, not an empty HTML `401`. Demo specifics are in [DEMO_DEPLOY.md](./DEMO_DEPLOY.md) and [ISS-098](../ISSUES.md#iss-098).
 
-## LAN test layout (split hosts)
+## 6. Static frontend and caching
 
-| Role | Host | Port |
-|------|------|------|
-| React SPA (nginx) | `192.168.10.26` | `8081` |
-| PHP backend (Docker) | `192.168.10.20` | `8080` |
-| Vite dev (local only) | `localhost` | `3025` |
+Hashed Vite assets may use a long immutable cache:
 
-Use the full server block in [`nginx-paginium-test.conf`](./nginx-paginium-test.conf) on **`.26`**.  
-For **production demo** host `demo.paginiumcms.com` (Docker upstream = stack `BACKEND_PORT`, typically `8091`), use [`nginx-demo.paginiumcms.com.conf`](./nginx-demo.paginiumcms.com.conf).  
-Frontend build must have empty `VITE_API_URL` (same-origin `/api`).
+```nginx
+location /assets/ {
+    try_files $uri =404;
+    expires 30d;
+    add_header Cache-Control "public, immutable" always;
+}
+```
+
+`index.html` must not receive the same long immutable cache because it references new hashed files after deployment. Build a new `dist` and swap it as a unit.
+
+## 7. Storage route
+
+`/storage/` remains proxied to the application. Host nginx must not automatically expose the complete `backend/storage`, which includes private data, indexes, logs, backups, and secrets.
+
+```text
+public media request
+→ PHP route
+→ path canonicalization
+→ ACL/authorization for the resource
+→ allowed file
+```
+
+An nginx alias to the entire storage root would violate the Core storage contract.
+
+## 8. Security headers
+
+The artifacts provide separate HTTP/LAN and HTTPS snippets. Important nginx behavior:
+
+> A `location` that sets its own `add_header` may stop inheriting headers from server scope.
+
+Therefore `/assets/`, `security.txt`, and the SPA fallback explicitly include the snippet.
+
+HTTPS baseline:
+
+- HSTS,
+- CSP,
+- `X-Frame-Options: DENY`,
+- `X-Content-Type-Options: nosniff`,
+- Referrer Policy,
+- Permissions Policy.
+
+The current CSP includes `style-src 'unsafe-inline'` for the current frontend profile. Future tightening requires UI regression testing.
+
+## 9. HSTS and preload
+
+The updated snippet conservatively enables:
+
+```text
+Strict-Transport-Security: max-age=31536000
+```
+
+Add `includeSubDomains` and `preload` only after confirming that:
+
+- all relevant subdomains support HTTPS,
+- no HTTP-only internal or legacy host exists under the domain,
+- certificate renewal and recovery are reliable,
+- the owner knowingly accepts the long-lived preload commitment.
+
+HSTS is never sent by the HTTP-only LAN configuration.
+
+## 10. `security.txt`
+
+The build copies the file into:
+
+```text
+frontend/dist/.well-known/security.txt
+```
+
+The exact location must precede the SPA fallback:
+
+```nginx
+location = /.well-known/security.txt {
+    default_type text/plain;
+    try_files $uri =404;
+}
+```
+
+Smoke:
 
 ```bash
-# On dev machine — upload dist to nginx host
-./scripts/deploy-frontend-lan.sh
-
-# Smoke test
-curl http://192.168.10.26:8081/api/health
-curl -I http://192.168.10.26:8081/feed.xml
+curl -fsSI https://paginiumcms.com/.well-known/security.txt
+curl -fsS https://paginiumcms.com/.well-known/security.txt
 ```
 
-If backend and nginx share one VM, change upstream to `127.0.0.1:8080` (comment at bottom of the conf file).
+Related to [ISS-118](../ISSUES.md#iss-118).
 
-### Session cookies on HTTP (LAN)
+## 11. TLS and ACME
 
-`backend/bootstrap/session.php` sets `session.cookie_secure` only when the request is HTTPS
-(or `X-Forwarded-Proto: https` from nginx). Plain `http://192.168.x.x` LAN tests work without
-Secure cookies being dropped by the browser.
+The HTTP vhost retains `/.well-known/acme-challenge/` and redirects other requests to HTTPS. Before activating a certificate verify:
 
-After deploy, clear site cookies and hard-refresh before testing login.
-
-### Backend `.env` on LAN (recommended)
-
-```env
-APP_ENV=development
-APP_DEBUG=true
-APP_URL=http://192.168.10.26:8081
-DEVELOPER_MODE=true
-DEV_UNLOCK_SECRET=change-me-local-dev-secret
-# optional explicit list (wildcards below cover LAN when APP_ENV != production)
-CORS_ALLOWED_ORIGINS=http://192.168.10.26:8081,http://192.168.10.26:3025
-TRUSTED_PROXIES=127.0.0.1,::1,192.168.10.26
+```bash
+sudo nginx -t
+curl -I http://paginiumcms.com/.well-known/acme-challenge/test
 ```
 
-**Developer Mode / Code Editor:** `DEVELOPER_MODE=true` (or `APP_DEBUG=true`, or `APP_ENV=development`) must be set on the **PHP backend** host (`192.168.10.20:8080`), not only on the nginx SPA host. Without it, `/api/admin/developer/unlock` returns 403 before TOTP is checked. Restart PHP/Docker after editing `.env`.
+Certificate paths in the artifacts are Certbot reference paths. Adapt them for another ACME client without placing API credentials in nginx configuration.
 
-When `APP_ENV` is not `production`, backend also allows CORS from `http://192.168.*`, `http://localhost:*` (Vite **:3025**), etc.
+## 12. Production, demo, and LAN
 
-Restart PHP / Docker after changing `.env` or pulling code.
+| Artifact | Purpose | Internet-facing |
+|---|---|---|
+| `nginx-paginiumcms.com.conf` | production HTTPS vhost | yes |
+| `nginx-demo.paginiumcms.com.conf` | isolated demo | yes |
+| `nginx-paginium-test.conf` | static LAN test | no |
+| `nginx-paginium-dev.conf` | Vite HMR LAN proxy | no |
+| `nginx-security-headers-https.conf` | HTTPS snippet | yes |
+| `nginx-security-headers-http.conf` | HTTP LAN snippet | no |
+
+If IPv6 is disabled on the host, remove or comment the `listen [::]...` directives; do not enable IPv6 merely by copying a template.
+
+## 13. Configuration validation
+
+Before reload:
+
+```bash
+sudo nginx -T > /tmp/nginx-effective.conf
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+After reload:
+
+```bash
+curl -fsSI https://paginiumcms.com/
+curl -fsS https://paginiumcms.com/api/health
+curl -fsSI https://paginiumcms.com/assets/<known-asset>
+curl -fsSI https://paginiumcms.com/.well-known/security.txt
+```
+
+Verify headers:
+
+```bash
+curl -sI https://paginiumcms.com/ | \
+  grep -iE 'strict-transport|content-security|x-frame|content-type-options'
+```
+
+## 14. Common failures
+
+| Symptom | Cause | Resolution |
+|---|---|---|
+| API returns HTML | SPA fallback caught `/api` | fix location/order |
+| `502` | upstream is down or starting | local curl, `stack.sh ps`, health loop |
+| incorrect client IP | proxy headers/trust | audit proxy hops |
+| login works without Origin but not in browser | APP_URL/CORS | Origin smoke test |
+| static content lacks security headers | nginx `add_header` inheritance | include snippet in location |
+| stale frontend after deploy | cache or non-atomic `dist` | asset hashes and atomic swap |
+| duplicate upstream | backup file in `sites-enabled` | retain only active symlink |
+| Certbot challenge fails | challenge location/root | test HTTP challenge path |
+
+## 15. Related documents
+
+- [DEPLOY.md](./DEPLOY.md)
+- [DEV.md](./DEV.md)
+- [DEMO_DEPLOY.md](./DEMO_DEPLOY.md)
+- [FIREWALL.md](../user/FIREWALL.md)
+- [SECURITY.md](../developer/SECURITY.md)

@@ -1,0 +1,38 @@
+{
+  "CONTRIBUTING.md": {
+    "targets": [
+      "SK/docs/developer/CONTRIBUTING.md",
+      "EN/docs/developer/CONTRIBUTING.md"
+    ],
+    "method": "merged into comprehensive canonical contribution contract"
+  },
+  "TESTING.md": {
+    "targets": [
+      "SK/docs/developer/TESTING.md",
+      "EN/docs/developer/TESTING.md"
+    ],
+    "method": "reconciled to 21 current steps plus separate post-run cleanup; added local/CI log policy"
+  },
+  "SECURITY.md": {
+    "targets": [
+      "SK/docs/developer/SECURITY.md",
+      "EN/docs/developer/SECURITY.md"
+    ],
+    "method": "treated as developer security architecture, not root disclosure policy"
+  },
+  "LOCAL_TEST_LOGS.md": {
+    "targets": [
+      "SK/LOCAL_TEST_LOGS.md.example",
+      "EN/LOCAL_TEST_LOGS.md.example"
+    ],
+    "method": "published only as a safe template; real local file remains gitignored"
+  },
+  "CHANGELOG.md": {
+    "targets": [
+      "SK/CHANGELOG.md",
+      "EN/CHANGELOG.md",
+      "SOURCE_UPDATES/CHANGELOG.md"
+    ],
+    "method": "latest exact source preserved; normalized canonical history updated for ISS-120"
+  }
+}

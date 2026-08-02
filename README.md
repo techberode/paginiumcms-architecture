@@ -1,18 +1,26 @@
 # PaginiumCMS
 
-> **Verzia:** 2.1.0-beta.2 · **Public Beta 1** · júl 2026
+> **Final consolidated edition — 2026-08-02.** This tree contains the complete English documentation, historical iterations, the Hybrid Engine design, and the latest security changes including ISS-120. [Open the complete navigation](docs/NAVIGATION.md).
+> **Slovenská dokumentácia:** [docs/sk/NAVIGATION.md](docs/sk/NAVIGATION.md)
 
-Headless flat-file CMS — PHP 8.5 backend (Slim 4) + React admin SPA (Vite 8).
+> **Version:** 2.1.0-beta.23 · **Public Beta 1** · August 2026  
+> **Direction:** Hybrid Headless Content Engine · No-SQL file source of truth · API-first
 
-**Filozofia:** 100 % open source, bez poplatkov — [docs/PHILOSOPHY.md](docs/PHILOSOPHY.md)
+PaginiumCMS is an open-source **Hybrid Headless Content Engine** built with PHP 8.5, Slim 4, and a React administration SPA powered by Vite 8.
 
-**Kompletná dokumentácia:** [`docs/README.md`](docs/README.md) · **Public Beta 1:** [`docs/PUBLIC_BETA1.md`](docs/PUBLIC_BETA1.md) · **Tester:** [`docs/user/BETA_TESTER.md`](docs/user/BETA_TESTER.md) · **Security review:** [`docs/SECURITY_REVIEW.md`](docs/SECURITY_REVIEW.md)
+The project retains the defining property of a flat-file CMS: content, configuration, and operational state remain in files. It adds professional layers for indexing, caching, versioning, Git-based distribution, multilingual content, and future AI-assisted workflows.
+
+> **Immutable rule:** neither SQL nor an external document database may replace files as the primary CMS source of truth. Redis, APCu, and similar technologies may be used only as derived cache or temporary coordination layers.
+
+**Architecture:** [docs/architecture/HYBRID_ENGINE.md](docs/architecture/HYBRID_ENGINE.md) · **Philosophy:** [docs/PHILOSOPHY.md](docs/PHILOSOPHY.md) · **No-SQL mandate:** [docs/architecture/NOSQL_MANDATE.md](docs/architecture/NOSQL_MANDATE.md)
+
+**Full documentation:** [`docs/README.md`](docs/README.md) · **Public Beta 1:** [`docs/PUBLIC_BETA1.md`](docs/PUBLIC_BETA1.md) · **Tester guide:** [`docs/user/BETA_TESTER.md`](docs/user/BETA_TESTER.md) · **Security review:** [`docs/SECURITY_REVIEW.md`](docs/SECURITY_REVIEW.md)
 
 ---
 
-## Rýchly štart (odporúčané)
+## Quick start
 
-Nový clone → pripravený admin → API bez 500:
+Fresh clone → initial administrator → working API:
 
 ```bash
 git clone <repo> paginiumcms && cd paginiumcms
@@ -22,14 +30,14 @@ docker compose up -d
 curl -s http://localhost:8080/api/health
 ```
 
-**Predvolený admin** (len pri prázdnom `data/users/`):
+The **default administrator** is created only when `data/users/` is empty:
 
-| Pole | Hodnota |
-|------|---------|
+| Field | Value |
+|-------|-------|
 | Email | `admin@localhost` |
-| Heslo | `Admin123!ChangeMe` |
+| Password | `Admin123!ChangeMe` |
 
-Vlastné údaje pred `first-run`:
+Set custom credentials before running `first-run.sh`:
 
 ```bash
 export FIRST_ADMIN_EMAIL=you@example.com
@@ -38,19 +46,19 @@ export FIRST_ADMIN_NAME='Your Name'
 ./scripts/first-run.sh
 ```
 
-**Frontend dev** (Vite proxy `/api` → `:8080`):
+**Frontend development** — the Vite proxy forwards `/api` to port `8080`:
 
 ```bash
-INSTALL_FRONTEND=1 ./scripts/first-run.sh   # voliteľné npm ci
-docker compose --profile dev up -d          # alebo: cd frontend && npm run dev
+INSTALL_FRONTEND=1 ./scripts/first-run.sh   # optional npm ci
+docker compose --profile dev up -d          # or: cd frontend && npm run dev
 # → http://localhost:3025
 ```
 
-Detail: [docs/developer/LOCAL_SETUP.md](docs/developer/LOCAL_SETUP.md) · [docs/user/INSTALLATION.md](docs/user/INSTALLATION.md) · [docs/user/FIRST_STEPS.md](docs/user/FIRST_STEPS.md)
+Details: [docs/developer/LOCAL_SETUP.md](docs/developer/LOCAL_SETUP.md) · [docs/user/INSTALLATION.md](docs/user/INSTALLATION.md) · [docs/user/FIRST_STEPS.md](docs/user/FIRST_STEPS.md)
 
 ---
 
-## Klasický vývoj (bez Dockeru)
+## Classic development without Docker
 
 ```bash
 ./scripts/first-run.sh
@@ -67,36 +75,46 @@ cd frontend && npm run type-check && npm run lint && npm run lint:api-barrel && 
 
 ---
 
-## Aktuálny stav (2.0.58)
+## Current status
 
-| Oblasť | Stav |
-|--------|------|
-| Backend API | ✅ Slim 4, auto-discovery, JsonResponder, PHPStan L8 |
-| Auth + 2FA + RBAC + password confirm | ✅ 2.0.48–56 |
-| Admin + public i18n (SK/EN) | ✅ 2.0.47–50 |
-| Scheduled publish (It.59) | ✅ 2.0.53 · potrebuje cron `scheduler:run` |
-| External plugins + hook emitters | ✅ 2.0.38, 2.0.54 |
-| Docker + `first-run.sh` | ✅ Wave **5f** |
-| Beta infra docs + cron | ✅ Wave **6** (2.0.58) |
-| **Public Beta 1** | ✅ **`v2.1.0-beta.1`** |
+| Area | Status |
+|------|--------|
+| Backend API | ✅ Slim 4, route auto-discovery, `JsonResponder`, PHPStan L8 |
+| Authentication and security | ✅ Session, CSRF, 2FA, RBAC, password confirmation, WAF |
+| Administration and public site | ✅ React SPA, SK/EN i18n, content, media, navigation, newsletter |
+| File source of truth | ✅ JSON / Markdown / YAML, index, locks, OCC, and versioning |
+| Public Beta 1 | ✅ releases through `v2.1.0-beta.23` |
+| Hybrid Engine — documentation Phase 0 | ✅ target architecture and direction defined |
+| Hybrid Engine — implementation | ⏸️ paused until the bilingual documentation pass is complete |
+| Next implementation | ⏳ It.68 — storage abstraction and engine settings |
 
-### Ďalší krok
+### Target model
 
-Post-beta backlog: It.56–61, It.25 setup wizard — [PUBLIC_BETA1.md](docs/PUBLIC_BETA1.md)
+1. **Files on disk** remain the only source of truth.
+2. **Indexes and caches** accelerate reads but must be rebuildable from files.
+3. The **REST API** provides validation, authorization, and a consistent contract.
+4. **Git distribution** may publish content immediately or in batches.
+5. **Deployment modes** allow the same core to operate as a classic CMS, hybrid website, or Git-headless/Jamstack engine.
 
 ---
 
-## Kľúčové dokumenty
+## Key documents
 
-| Pre koho | Dokument |
-|----------|----------|
-| Beta tester / admin | [docs/user/README.md](docs/user/README.md) |
-| Inštalácia | [docs/user/INSTALLATION.md](docs/user/INSTALLATION.md) |
-| Vývojár (Docker) | [docs/developer/LOCAL_SETUP.md](docs/developer/LOCAL_SETUP.md) |
-| Prispievanie | [docs/developer/CONTRIBUTING.md](docs/developer/CONTRIBUTING.md) |
-| API kontrakt | [docs/architecture/API_CONTRACT.md](docs/architecture/API_CONTRACT.md) |
-| Release / C&P | [docs/developer/RELEASE.md](docs/developer/RELEASE.md) |
-| Beta infra (Wave 6) | [docs/developer/BETA_INFRA.md](docs/developer/BETA_INFRA.md) |
-| Produkcia cron | [docs/deploy/CRON.md](docs/deploy/CRON.md) |
-| Beta tester checklist | [docs/user/README.md](docs/user/README.md) |
-| Changelog | [CHANGELOG.md](CHANGELOG.md) |
+| Audience / area | Document |
+|-----------------|----------|
+| Vision and immutable principles | [docs/PHILOSOPHY.md](docs/PHILOSOPHY.md) |
+| Target architecture | [docs/architecture/HYBRID_ENGINE.md](docs/architecture/HYBRID_ENGINE.md) |
+| No-SQL rule | [docs/architecture/NOSQL_MANDATE.md](docs/architecture/NOSQL_MANDATE.md) |
+| Deployment modes | [docs/architecture/DEPLOYMENT_MODES.md](docs/architecture/DEPLOYMENT_MODES.md) |
+| Beta tester / administrator | [docs/user/README.md](docs/user/README.md) |
+| Installation | [docs/user/INSTALLATION.md](docs/user/INSTALLATION.md) |
+| Local development | [docs/developer/LOCAL_SETUP.md](docs/developer/LOCAL_SETUP.md) |
+| Contributing | [docs/developer/CONTRIBUTING.md](docs/developer/CONTRIBUTING.md) |
+| API contract | [docs/architecture/API_CONTRACT.md](docs/architecture/API_CONTRACT.md) |
+| Releases | [docs/developer/RELEASE.md](docs/developer/RELEASE.md) |
+| Production cron | [docs/deploy/CRON.md](docs/deploy/CRON.md) |
+| Change history | [CHANGELOG.md](CHANGELOG.md) |
+
+---
+
+> **Documentation First:** when code and documentation diverge, document the actual state precisely first, then make the next code change deliberately close the gap.

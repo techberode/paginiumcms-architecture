@@ -1,125 +1,203 @@
-# Produkcia — cron a plánovač úloh
-
-> **Wave 6 / It.29** · Posledná aktualizácia: júl 2026 · verzia **2.0.58**
-
-PaginiumCMS **nepoužíva SQL** — scheduled publish, zálohy a monitoring bežia cez **flat-file job registry** (`data/jobs/registry.json`) a CLI `scheduler:run`.
-
-Bez cronu na serveri **nefungujú automaticky:**
-
-| Job ID | Handler | Cron (default) | Čo robí |
-|--------|---------|----------------|---------|
-| `content-scheduled-publish` | `content.scheduled_publish` | `* * * * *` | It.59 — publikuje obsah so stavom `scheduled` |
-| `monitoring-pipeline` | `monitoring.pipeline` | `* * * * *` | Monitoring reporty + scan logov (It.7) |
-| `backup-scheduled` | `backup.scheduled` | `0 2 * * *` | Nočná záloha CMS |
-
-Admin UI: **Plánovač** (`/scheduler`) — zap/vyp jobov, úprava CRON, manuálny beh.
-
+---
+title: Cron, scheduler, and worker
+description: Production execution of flat-file jobs, overlap protection, process identity, logging, demo reset, and monitoring
+icon: material/timer-cog
 ---
 
-## Odporúčaný crontab (produkcia)
+# Cron, scheduler, and worker
 
-Jeden riadok každú minútu — spúšťa due joby z registry **a** spracuje frontu:
+> PaginiumCMS does not use an SQL job table. The job registry and queue state are flat-file data. Cron or a systemd timer merely invokes the application scheduler and worker.
+
+## 1. What depends on the scheduler
+
+The retained current profile includes, for example:
+
+| Job ID | Handler | Default schedule | Purpose |
+|---|---|---|---|
+| `content-scheduled-publish` | `content.scheduled_publish` | every minute | publish due content |
+| `monitoring-pipeline` | `monitoring.pipeline` | every minute | monitoring and log scanning |
+| `backup-scheduled` | `backup.scheduled` | daily at 02:00 | scheduled CMS backup |
+
+The authoritative list is the registry and implementation of the exact release tag. The admin UI may enable, disable, and edit job cron expressions.
+
+## 2. Scheduler versus worker
+
+```text
+scheduler:run
+→ evaluates due jobs
+→ creates/runs scheduled work through its handler
+
+worker:process
+→ processes queued work
+→ records outcome, audit, and retry state
+```
+
+Both processes must use the same checkout, `.env`, storage, and timezone as the web application.
+
+## 3. Canonical Docker cron
+
+For a production Docker stack, invoke CLI inside the same PHP container under the application identity:
 
 ```cron
-* * * * * cd /var/www/paginiumcms && /usr/bin/php backend/bin/console scheduler:run >> /var/log/paginium-scheduler.log 2>&1
-* * * * * cd /var/www/paginiumcms && /usr/bin/php backend/bin/console worker:process >> /var/log/paginium-worker.log 2>&1
+* * * * * flock -n /run/lock/paginium-scheduler.lock /var/lib/docker/compose/paginiumcms/stack.sh exec -T -u www-data php php backend/bin/console scheduler:run >> /var/log/paginiumcms/scheduler.log 2>&1
+* * * * * flock -n /run/lock/paginium-worker.lock /var/lib/docker/compose/paginiumcms/stack.sh exec -T -u www-data php php backend/bin/console worker:process >> /var/log/paginiumcms/worker.log 2>&1
 ```
 
-**Dôležité:**
+Benefits:
 
-- `cd` musí smerovať na **koreň repozitára** (kde je `backend/` a `vendor/`).
-- PHP worker a web (nginx/FPM) musia vidieť **rovnaké** `backend/storage/` — flat-file dáta.
-- Použi absolútnu cestu k `php` (`which php`).
+- the same PHP version and extensions as the web runtime,
+- the same storage mount,
+- the same environment variables,
+- less host/container permission drift.
 
----
+`flock -n` prevents the next minute run from overlapping a still-running process.
 
-## Overenie po nasadení
+## 4. Host PHP alternative
 
-```bash
-# Health
-curl -s https://your-cms.example/api/health
+Host cron is acceptable only when:
 
-# Diagnostika flat-file (index, orphans, jobs storage)
-php backend/bin/console content:diagnose --json | jq '.jobsDirWritable, .issues'
-
-# Skutočný test zápisu — spusti v Dockeri ako www-data (host diagnose môže klamať)
-docker compose exec -u www-data php sh -c \
-  'touch /var/www/html/backend/storage/app/content/data/jobs/.write-test && rm /var/www/html/backend/storage/app/content/data/jobs/.write-test && echo WRITE_OK'
-
-# Simulácia cron (manuálne)
-php backend/bin/console scheduler:run
-php backend/bin/console worker:process
-
-# Jeden konkrétny job (It.62)
-php backend/bin/console jobs:run backup-scheduled
-php backend/bin/console jobs:run content-scheduled-publish
-
-# Legacy CLI (stále podporované, ale scheduler je preferovaný)
-php backend/bin/console backup:run-schedule
-php backend/bin/console monitoring:run-schedule
-```
-
-**Scheduled publish smoke:** v editore nastav článok na publikáciu o +2 min → po minúte spusti `scheduler:run` → stav `published`, verejný web zobrazí obsah.
-
----
-
-## Demo režim (voliteľné)
-
-Len na `demo.paginiumcms.com` — **nie** na zákazníckej inštancii.
-
-### Crontab
+- host PHP and extensions match the release contract,
+- the host user has controlled group permissions,
+- it uses the same checkout and storage,
+- `.env` is loaded consistently,
+- testing proves behavior equivalent to the web runtime.
 
 ```cron
-*/15 * * * * cd /var/www/paginiumcms-demo && /usr/bin/php backend/bin/console demo:reset-if-due >> /var/log/paginium-demo-reset.log 2>&1
+* * * * * flock -n /run/lock/paginium-scheduler.lock sh -lc 'cd /var/www/paginiumcms.com && /usr/bin/php backend/bin/console scheduler:run' >> /var/log/paginiumcms/scheduler.log 2>&1
 ```
 
-- Interval kontroly: každých **15 min** (cron).
-- Skutočný reset: po uplynutí `DEMO_AUTO_RESET_MINUTES` (default **60**) v `.env`.
-- Výstup príkazu: `✅ obnovený` alebo `⏭ not_due` / `demo_disabled`.
+Do not randomly mix host and container models between scheduler, worker, and manual operations.
 
-### Pred prvým cronom
+## 5. Cron user and permissions
+
+Use a dedicated deploy/service account that:
+
+- can invoke only the required stack wrapper or Docker command,
+- cannot modify application code outside the release process,
+- has group access to storage and logs,
+- has no plaintext production secrets in crontab,
+- never prints `.env` into logs.
+
+When `sudo` is required, use a narrow sudoers rule for the exact wrapper, not general `NOPASSWD: ALL`.
+
+## 6. Time, timezone, and DST
+
+Cron runs in the host timezone; the application may use its own `APP_TIMEZONE`. Document which layer interprets the cron expression.
+
+Verify:
 
 ```bash
-cd /var/www/paginiumcms-demo
-php backend/bin/console demo:reset-if-due
+timedatectl
+php -r 'echo date_default_timezone_get(), PHP_EOL;'
+date --iso-8601=seconds
 ```
 
-Ak padne na `Permission denied` pre `backend/storage/app/demo/data/plugins.json` → **ISS-099** — rovnaký fix ako ISS-094.
+NTP must be synchronized. Scheduled publishing and TOTP are sensitive to clock drift. Test the DST transition day for locally scheduled jobs.
 
-Ak **celé API** vracia 500 (health/login) → chýba `data/` strom — **ISS-102**. Najprv [DEMO_DEPLOY.md](DEMO_DEPLOY.md) § First-run storage bootstrap, potom ISS-099 ak treba.
+## 7. Logging and rotation
+
+Logs belong outside the repository:
+
+```text
+/var/log/paginiumcms/scheduler.log
+/var/log/paginiumcms/worker.log
+/var/log/paginiumcms/demo-reset.log
+```
+
+Example logrotate policy:
+
+```text
+/var/log/paginiumcms/*.log {
+    daily
+    rotate 14
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0640 deploy-user www-data
+}
+```
+
+Logs must not contain passwords, tokens, TOTP secrets, QR payloads, or complete sensitive requests. The same redaction contract applies to CI and production job logs.
+
+## 8. Manual smoke
 
 ```bash
-sudo chown -R "$(id -un):www-data" backend/storage
-sudo find backend/storage -type d -exec chmod 2775 {} \;
-sudo find backend/storage -type f -exec chmod 664 {} \;
+cd /var/www/paginiumcms.com
+/var/lib/docker/compose/paginiumcms/stack.sh \
+  exec -T -u www-data php \
+  php backend/bin/console content:diagnose --json
+
+/var/lib/docker/compose/paginiumcms/stack.sh \
+  exec -T -u www-data php \
+  php backend/bin/console scheduler:run
+
+/var/lib/docker/compose/paginiumcms/stack.sh \
+  exec -T -u www-data php \
+  php backend/bin/console worker:process
 ```
 
-Detail + Docker alternatíva: [DEMO_DEPLOY.md](DEMO_DEPLOY.md) § ISS-099 · § ISS-102.
+Even with a successful exit, inspect the outcome and application log. A payload containing `success:false` must not be presented as a successful operation.
 
----
+## 9. Scheduled publish acceptance
 
-## Riešenie problémov
+Practical test:
 
-| Symptóm | Príčina | Riešenie |
-|---------|---------|----------|
-| Scheduled publish nikdy neprebehne | Chýba cron | Crontab vyššie + over `scheduler:run` |
-| Job beží, obsah sa nezmení | Iný `storage/` path ako web | Zjednotiť mount / symlink |
-| `registry.json` prázdna | Prvý beh | Otvor admin **Plánovač** alebo spusti API — seed defaults |
-| Backup len manuálne | `backup-scheduled` vypnutý | Zapni v `/scheduler` |
-| Logy plné chýb | PHP cesta / permissions | Skontroluj `>> log` a práva na `storage/` |
-| Admin run „nefunguje“, API 200 | UI bralo `success:false` ako chybu | It.62 — `outcome` + toast fix; `npm run build:prod` |
-| `Permission denied` na `runs.json` | Host vs Docker `www-data` | `chown user:www-data`, dirs `2775`, test `touch` v kontajneri — [ITERATION_62.md](../ITERATION_62.md) |
-| `Permission denied` na demo `plugins.json` | Host cron/CLI vs Docker pri `demo:reset-if-due` | Rovnaký pattern — [DEMO_DEPLOY.md](DEMO_DEPLOY.md) § ISS-099 |
-| Demo health/login **500** | Chýba `backend/storage/app/demo/data/` | [DEMO_DEPLOY.md](DEMO_DEPLOY.md) § First-run, ISS-102 |
+1. create a test draft,
+2. schedule publication for about two minutes later,
+3. verify it is not public before the due time,
+4. run scheduler and worker,
+5. verify `published` state, revision, and public endpoint,
+6. remove the test artifact.
 
----
+When OTP approval is mandatory, include approval or verify the expected block.
 
-## Súvisiace
+## 10. Demo automatic reset
 
-- [ITERATION_29.md](../ITERATION_29.md) — job queue architektúra
-- [ITERATION_62.md](../ITERATION_62.md) — production hardening, `jobs:run`, outcome UX
-- [ITERATION_59.md](../ITERATION_59.md) — scheduled publish
-- [user/INSTALLATION.md](../user/INSTALLATION.md) — inštalácia + cron krok
-- [developer/BETA_INFRA.md](../developer/BETA_INFRA.md) — beta checklist pre maintainerov
-- [DEMO_DEPLOY.md](DEMO_DEPLOY.md) — demo auto-reset cron (ISS-099)
-- [NGINX_API.md](./NGINX_API.md) — produkčný nginx
+Reference cron:
+
+```cron
+*/15 * * * * flock -n /run/lock/paginium-demo-reset.lock /var/lib/docker/compose/paginiumcms-demo/stack.sh exec -T -u www-data php php backend/bin/console demo:reset-if-due >> /var/log/paginiumcms/demo-reset.log 2>&1
+```
+
+Cron checks every 15 minutes; the actual reset follows `DEMO_AUTO_RESET_MINUTES`. Never enable demo reset in a customer/production profile.
+
+Related issues:
+
+- [ISS-099](../ISSUES.md#iss-099) — permission denied during demo reset,
+- [ISS-102](../ISSUES.md#iss-102) — missing demo data tree.
+
+## 11. Failure policy and monitoring
+
+Alert at least on:
+
+- repeated non-zero exit,
+- no successful scheduler run beyond the expected interval,
+- growing queue without processing,
+- a lock held for too long,
+- unreadable registry or storage,
+- a backup job without a new verified artifact,
+- scheduled content still unpublished after its due time.
+
+Cron mail without a correctly configured MTA is not reliable monitoring. Use the application, systemd journal, ntfy, or the existing monitoring stack.
+
+## 12. Troubleshooting
+
+| Symptom | Cause | Resolution |
+|---|---|---|
+| job never runs | missing cron/timer or wrong user | `crontab -l`, journal/syslog |
+| job runs multiple times | overlapping intervals | `flock`, idempotency |
+| permission denied | UID/GID or mount mismatch | run in container, setgid |
+| different storage from web | wrong path/mount | `pwd`, diagnose, compose config |
+| empty registry | initial seed or corruption | admin scheduler, recovery contract |
+| manual command works, cron fails | restricted PATH/environment | absolute paths and wrapper |
+| log grows forever | no rotation | logrotate/journald policy |
+| wrong publish time | timezone/NTP/DST | `timedatectl`, app timezone |
+
+## 13. Related documents
+
+- [DEPLOY.md](./DEPLOY.md)
+- [DEMO_DEPLOY.md](./DEMO_DEPLOY.md)
+- [LOGGING.md](../user/LOGGING.md)
+- [TESTING.md](../developer/TESTING.md)
+- [ITERATION_29.md](../ITERATION_29.md)

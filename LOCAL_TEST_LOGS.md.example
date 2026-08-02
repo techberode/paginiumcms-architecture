@@ -1,0 +1,58 @@
+# Local test log policy — maintainer template
+
+> **Template only.** Copy it to `LOCAL_TEST_LOGS.md` in the working repository root. The local copy is gitignored and must never contain committed secrets or bundled raw logs.
+
+Related documents: [TESTING.md](docs/developer/TESTING.md#0-current-implementation-snapshot--2026-08-02) · [ISS-120](docs/ISSUES.md#iss-120).
+
+## Where logs go
+
+| Tool | Output destination | Can it contain test secrets? |
+|---|---|---|
+| `./scripts/run-all-tests.zsh` | `${PAGINIUMCMS_TEST_LOG_DIR:-$HOME/projects/paginiumcms_tests}/alltests_*.log` + terminal | Yes, complete local diagnostic output |
+| `./scripts/iteration-gate.sh` | terminal only | It should not; PHPUnit custom output is suppressed |
+| GitHub Actions backend job | sanitized console output through the CI wrapper | No; redaction must pass fail-closed verification |
+
+The default directory is outside the repository. Never redirect raw output through `tee` into the project tree.
+
+## Security contract
+
+1. GitHub CI publishes sanitized PHPUnit output only.
+2. A full local log may remain on a private machine, but it is not committed or attached to a public issue or PR.
+3. Before sharing, sanitize the log and review it manually.
+
+## Pre-sharing checklist
+
+- [ ] The source is a test log, not a production `storage/logs/` export.
+- [ ] The sanitizer and fail-closed verifier both passed.
+- [ ] The file contains no `otpauth://`, raw TOTP seed, QR payload, bearer token, cookie, password, API key, or `enc:` blob.
+- [ ] Only `*.sanitized.log` is shared.
+- [ ] The raw file remains local and outside Git.
+
+## Sanitization
+
+```bash
+RAW="$HOME/projects/paginiumcms_tests/alltests_DDMMYY_HHMM.log"
+SAFE="${RAW%.log}.sanitized.log"
+
+python3 .github/scripts/sanitize-ci-log.py "$RAW" > "$SAFE"
+.github/scripts/verify-ci-log-redaction.sh "$SAFE"
+
+rg -i 'otpauth://|two_factor_secret|Bearer [A-Za-z0-9._-]{20,}' "$SAFE" \
+  && echo 'FAIL: sensitive patterns remain' \
+  || echo 'OK'
+```
+
+## Optional variables
+
+```bash
+export PAGINIUMCMS_TEST_LOG_DIR="$HOME/logs/paginiumcms_tests"
+export PAGINIUMCMS_NO_PROGRESS=1
+```
+
+## Related repository files
+
+- `.github/scripts/run-backend-tests-ci.sh`
+- `.github/scripts/sanitize-ci-log.py`
+- `.github/scripts/verify-ci-log-redaction.sh`
+- `docs/developer/TESTING.md`
+- `docs/ISSUES.md` — ISS-120

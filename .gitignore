@@ -9,7 +9,12 @@
 SECURITY_ISSUES.md
 PRIVATE_OPS_CHECKLIST.md
 PRIVATE_DOMAIN_DEPLOY.md
+LOCAL_TEST_LOGS.md
 docs/FINAL_BETA1_ITERATION.md
+
+# Sanitized copies of local test logs (never commit raw or sanitized logs from dev machine)
+local-test-logs/
+*.sanitized.log
 
 # LAN / deploy — lokálne env (nikdy necommituj host/user/port)
 scripts/deploy-frontend-lan.env
@@ -259,3 +264,4 @@ public/media/*
 !tests/
 !frontend/
 !backend/
+PaginiumCMS_Dokumentacia_Iteracia_18_Final/
