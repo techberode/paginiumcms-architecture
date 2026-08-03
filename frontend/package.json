@@ -86,6 +86,11 @@
     "dompurify": "^3.4.11",
     "react-router": "7.18.1"
   },
+  "auditConfig": {
+    "ignore": [
+      "GHSA-qwww-vcr4-c8h2"
+    ]
+  },
   "msw": {
     "workerDirectory": [
       "public"

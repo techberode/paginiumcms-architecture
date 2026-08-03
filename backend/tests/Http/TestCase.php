@@ -57,6 +57,12 @@ abstract class TestCase extends BaseTestCase
 
     private function applyTestSettingsOverrides(): void
     {
+        $storage = $this->container()->get(\PaginiumCMS\Core\Storage\Contracts\StorageInterface::class);
+        $settingsFile = 'data/settings.testing.json';
+        if ($storage->exists($settingsFile)) {
+            $storage->delete($settingsFile, false);
+        }
+
         $settings = $this->container()->get(SettingsRepositoryInterface::class);
 
         $settings->setGroup('maintenance', array_merge($settings->group('maintenance'), [

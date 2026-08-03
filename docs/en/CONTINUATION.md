@@ -2,7 +2,7 @@
 
 > **Purpose:** concise, current handoff for the next development session  
 > **Checkpoint:** August 2, 2026 · `v2.1.0-beta.23`  
-> **Active decision:** It.68+ code is paused until the bilingual documentation pass is complete
+> **Active decision:** It.69 (cache layer) is the next Hybrid Engine code target after It.68
 
 This document replaces the old chronological “log of everything.” Historical detail remains in [`CHANGELOG.md`](../../CHANGELOG.md), [`ISSUES.md`](ISSUES.md), and individual `ITERATION_*.md` files.
 
@@ -21,8 +21,8 @@ PaginiumCMS is a **No-SQL Hybrid Headless Content Engine**: the React/Vite admin
 | Latest documented release | ✅ `v2.1.0-beta.23` — It.58c Layout Switch |
 | Public Beta foundation | ✅ functional and continuously hardened |
 | Hybrid Engine Phase 0 | ✅ architecture, No-SQL mandate, and deployment profiles |
-| Bilingual documentation | 🚧 processed in thematic iterations |
-| It.68 implementation | ⏸️ waiting for the docs gate |
+| Bilingual documentation | ✅ consolidated (It.18) |
+| It.68 implementation | ✅ Hybrid Engine foundation shipped |
 | It.69–77 | ⏳ planned |
 | It.58d, It.67, It.25 | ⏳ parallel / pre-Final backlog |
 
@@ -77,26 +77,23 @@ Inventory: [FEATURE_OVERVIEW.md](FEATURE_OVERVIEW.md).
 
 ---
 
-## 5. Next implementation target — It.68
+## 5. Next implementation target — It.69
 
-It.68 is a foundation iteration, not a visual feature. Before the first commit, confirm:
+It.69 is the next Hybrid Engine code iteration after the shipped It.68 foundation. Before the first commit, confirm:
 
-- the boundary between `StorageInterface` and existing repository services,
-- compatibility with current paths and files,
-- a safe local driver as the default,
-- the schema registry and behavior for invalid legacy documents,
-- engine settings and their Classic defaults,
-- index rebuild/diagnose behavior,
-- zero requirement for an SQL migration.
+- the unified cache contract and key namespace (tenant/locale aware),
+- Redis as an optional driver with safe Classic fallback,
+- HTTP `ETag` / `Last-Modified` validators on read-heavy public routes,
+- cache invalidation hooks after SSOT writes,
+- zero requirement for Redis in Classic mode.
 
-### Expected It.68 output
+### Expected It.69 output
 
-1. contracts and local driver,
-2. integration tests reading and writing existing content,
-3. schema registry for documents written by the admin,
-4. settings schema + admin display without activating unfinished drivers,
-5. in-place migration or a compatibility adapter,
-6. updated architecture, API, testing, and user documentation.
+1. cache interface + file/memory baseline and optional Redis driver,
+2. admin diagnostics for cache status and rebuild,
+3. HTTP conditional request support on selected public endpoints,
+4. integration tests with cache on/off and Redis unavailable,
+5. updated architecture, API, testing, and user documentation.
 
 ---
 
@@ -206,12 +203,12 @@ Stack: React + TypeScript + Vite ↔ Slim REST API ↔ PHP 8.5 Core.
 
 Current state:
 - Phase 0 architecture is documented.
-- Bilingual SK/EN documentation consolidation is in progress.
-- It.68+ implementation is paused until the docs gate is complete.
+- It.68 Hybrid Engine foundation is shipped in [Unreleased].
+- Bilingual SK/EN documentation consolidation is in progress (EN first for It.68).
 
 Next code:
-- It.68: StorageInterface, local driver, schema registry, engine settings,
-  compatibility with existing files, and rebuild diagnostics.
+- It.69: unified cache layer, optional Redis driver, HTTP validators,
+  safe Classic fallback, and cache diagnostics.
 
 Mandatory laws:
 - files are the only source of truth,

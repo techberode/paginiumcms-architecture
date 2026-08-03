@@ -32,6 +32,20 @@ export interface SettingGroup {
   informational?: boolean;
 }
 
+export interface EngineCapabilityRow {
+  status: string;
+  message: string;
+}
+
+export interface EngineSettingsMeta {
+  capabilityProbe: {
+    deploymentMode: { configured: string; active: string; status: string };
+    storageDriver: { configured: string; active: string; status: string };
+    capabilities: Record<string, EngineCapabilityRow>;
+  } | null;
+  documentationUrl?: string;
+}
+
 export interface CmsInfoMeta {
   productName: string;
   version: string;
@@ -60,6 +74,7 @@ export interface SettingsPayload {
     permissions?: string[];
     configurableRoles?: string[];
     cmsInfo?: CmsInfoMeta;
+    engine?: EngineSettingsMeta;
     editorComponents?: Array<{ id: string; label: string; pluginId: string }>;
   };
 }

@@ -138,7 +138,7 @@ The primary document is stored before derived layers are updated. If Redis or Gi
 | Capability | Checkpoint state | Target direction |
 |------------|------------------|------------------|
 | Slim 4 REST API + React SPA | ✅ implemented | stabilize contracts and headless use |
-| Flat-file content and settings | ✅ implemented | unify behind `StorageInterface` in It.68 |
+| Flat-file content and settings | ✅ implemented | unified behind `StorageInterface` (It.68) for settings + JSON content |
 | Index, memory/file cache | ✅ implemented | unified cache + optional Redis in It.69 |
 | Session, CSRF, RBAC, TOTP | ✅ implemented | retain as the admin model |
 | API keys/JWT | ⏳ It.74 | additive scopes for integrations, not a session replacement |

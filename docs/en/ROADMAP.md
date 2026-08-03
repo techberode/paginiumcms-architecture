@@ -3,7 +3,7 @@
 > **Documentation checkpoint:** August 2, 2026  
 > **Latest release recorded by this bundle:** `v2.1.0-beta.23`  
 > **Direction:** Hybrid Headless Content Engine · No-SQL file source of truth · API-first  
-> **Code status:** implementation of It.68+ is paused until the bilingual documentation pass is complete
+> **Code status:** It.68 foundation shipped in `[Unreleased]` · next target It.69
 
 This roadmap is the canonical map of the **future direction**. Release history belongs in [`CHANGELOG.md`](../../CHANGELOG.md), detailed implementation specifications in `ITERATION_*.md`, and incidents in [`ISSUES.md`](ISSUES.md).
 
@@ -41,7 +41,8 @@ PaginiumCMS is evolving from a production-capable flat-file CMS into a **Hybrid 
 | Deployment modes | ✅ | Classic, Hybrid, and Git-headless profiles |
 | Roadmap and backlog | ✅ this iteration | stale priorities and duplicate iteration numbers removed |
 | Bilingual documentation | 🚧 | separate, structurally matching `SK/` and `EN/` trees |
-| Hybrid Engine implementation | ⏸️ | starts only after the documentation gate |
+| Hybrid Engine foundation (It.68) | ✅ | `[Unreleased]` — storage abstraction, schema registry, engine settings |
+| Hybrid Engine layers It.69–77 | ⏳ | cache, Git publish, APM, media drivers, locale, API auth, AI/translation |
 
 The **documentation gate is complete** when the SK and EN editions do not contradict each other, feature states match, and planned capabilities are not presented as shipped.
 
@@ -60,7 +61,7 @@ Instead of repeating dozens of historical specifications, this roadmap groups sh
 | Security | ✅ ongoing | sessions, CSRF, RBAC, 2FA, encryption, WAF, rate limits, SSRF/Zip-Slip/path controls, audit |
 | Extensions | ✅ foundation | external plugins, hooks, Code Policy, Developer Mode, Code Editor |
 | Operations | ✅ foundation | Docker onboarding, health, monitoring, logs, release and deployment workflow |
-| Hybrid Engine layers | 🟡 | index and file/memory cache exist; unified abstractions, Redis/Git/APM/S3 remain planned |
+| Hybrid Engine layers | 🟡 | It.68 foundation shipped; unified cache/Redis/Git/APM/S3 remain planned |
 
 Detailed inventory: [FEATURE_OVERVIEW.md](FEATURE_OVERVIEW.md).
 
@@ -70,7 +71,7 @@ Detailed inventory: [FEATURE_OVERVIEW.md](FEATURE_OVERVIEW.md).
 
 | It. | Topic | Priority | Status | Dependencies / note |
 |-----|-------|----------|--------|---------------------|
-| **68** | Storage abstraction, schema registry, and engine settings | 🔴 | ⏸️ | first implementation after docs |
+| **68** | Storage abstraction, schema registry, and engine settings | 🔴 | ✅ `[Unreleased]` | local driver; settings + JSON content write slice |
 | **69** | Unified cache, Redis, `ETag`, `Last-Modified` | 🔴 | ⏳ | absorbs legacy It.45 and It.49 |
 | **70** | Git publish — immediate and queued | 🟡 | ⏳ | uses scheduler/queue |
 | **71** | Performance Guard APM | 🟡 | ⏳ | latency, I/O, memory, and incident measurement |
@@ -89,15 +90,15 @@ Dependency map: [ITERATION_WAVE_HYBRID_ENGINE.md](ITERATION_WAVE_HYBRID_ENGINE.m
 
 ### HE-1 — safe storage abstraction
 
-**It.68** must precede the additional layers:
+**It.68** shipped the foundation layer:
 
-- `StorageInterface` and a compatible local driver,
-- a JSON Schema registry for documents written through admin/Monaco,
-- `engine.*` settings with safe Classic defaults,
-- migration tests against existing files,
-- rebuild and diagnostics without an SQL migration.
+- ✅ `StorageInterface` and a compatible local driver,
+- ✅ JSON Schema registry (`settings.overrides@1`) for admin documents,
+- ✅ `engine.*` settings with safe Classic defaults,
+- ✅ regression tests against existing files,
+- ⏳ full repository migration and rebuild diagnostics in follow-ups.
 
-### HE-2 — performance without changing the source of truth
+**It.69** must follow before additional read-performance layers:
 
 **It.69** unifies caching and conditional HTTP responses:
 
@@ -141,8 +142,8 @@ The order is **It.73 → It.76/77 → It.75**. The AI agent may only propose cha
 ## 7. Path to Final 1.0
 
 ```text
-Bilingual documentation
-    → It.68 foundation
+It.68 foundation (shipped)
+    → It.69 cache + HTTP validators
     → first Hybrid Engine stabilization releases
     → It.67 security gate
     → community beta and fixes

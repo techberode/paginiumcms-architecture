@@ -54,7 +54,7 @@ When new `engine.*` keys are missing, the system must behave as Classic. This mo
 
 ## Mode B — Hybrid
 
-> **Status:** ⏳ target of It.68–70
+> **Status:** ⏳ target of It.69–70 (It.68 foundation shipped; Hybrid mode not yet active)
 
 ### Behavior
 

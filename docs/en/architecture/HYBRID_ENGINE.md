@@ -167,7 +167,7 @@ When keys are absent, the system must preserve compatible **Classic** behavior.
 | Git commit and queued publish | ⏳ Planned | **It.70** |
 | Static / Jamstack output | ⏳ Planned | It.48 |
 | HTTP `ETag` and `Last-Modified` | ⏳ Planned | **It.69** |
-| `StorageInterface` and drivers | ⏳ Planned | **It.68** |
+| `StorageInterface` and drivers | ✅ Shipped | **It.68** — local driver; settings + JSON content write slice |
 | Performance Guard APM | ⏳ Planned | **It.71** |
 | Flysystem media / S3 / CDN | ⏳ Planned | **It.72** |
 | Multiple locales in one document | ⏳ Planned | **It.73** |
@@ -175,7 +175,7 @@ When keys are absent, the system must preserve compatible **Classic** behavior.
 | Enterprise CMS AI agent | ⏳ Planned | **It.75** |
 | Assisted translation through LibreTranslate | ⏳ Planned | **It.76** |
 | Assisted translation through cloud providers | ⏳ Planned | **It.77** |
-| JSON Schema for every Monaco save | ⏳ Planned | schema registry in **It.68** |
+| JSON Schema for admin documents | ✅ Shipped (partial) | **It.68** — `settings.overrides@1`; Monaco/all types in follow-ups |
 
 ---
 

@@ -38,7 +38,7 @@ final class ClientIpResolver
      */
     public static function trustedProxiesFromEnv(): array
     {
-        $raw = getenv('TRUSTED_PROXIES') ?: ($_ENV['TRUSTED_PROXIES'] ?? '127.0.0.1,::1,192.168.10.26');
+        $raw = getenv('TRUSTED_PROXIES') ?: ($_ENV['TRUSTED_PROXIES'] ?? '127.0.0.1,::1');
 
         return array_values(array_filter(array_map('trim', explode(',', (string) $raw))));
     }

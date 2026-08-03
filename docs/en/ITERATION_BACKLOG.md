@@ -23,9 +23,9 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 
 | Order | Item | Priority | Status | Reason |
 |-------|------|----------|--------|--------|
-| 1 | Complete bilingual documentation | 🔴 | 🚧 | gate before changing the core |
-| 2 | **It.68** Hybrid Engine foundation | 🔴 | ⏸️ | storage abstraction, schema registry, engine settings |
-| 3 | **It.69** Unified cache + Redis + HTTP validators | 🔴 | ⏳ | performance and consolidation of old It.45/49 |
+| 1 | Complete bilingual documentation | 🔴 | ✅ | It.18 consolidation shipped; SK detail catch-up deferred |
+| 2 | **It.68** Hybrid Engine foundation | 🔴 | ✅ | shipped in `[Unreleased]` — see [ITERATION_68](ITERATION_68.md) |
+| 3 | **It.69** Unified cache + Redis + HTTP validators | 🔴 | ⏳ | next Hybrid Engine code target |
 | 4 | **It.67** Untrusted surfaces hardening | 🔴 | ⏳ | imports, shortcodes, Monaco, themes, CSP |
 | 5 | **It.70** Git publish modes | 🟡 | ⏳ | immediate/queued distribution |
 | 6 | **It.71** Performance Guard | 🟡 | ⏳ | APM and safe fallbacks |
@@ -41,14 +41,16 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 
 ## 2. Hybrid Engine backlog It.68–77
 
-### It.68 — foundation 🔴
+### It.68 — foundation 🔴 ✅ shipped (`[Unreleased]`)
 
 - `StorageInterface` and compatible local driver,
 - engine settings with Classic default,
-- JSON Schema registry,
-- existing files without SQL migration,
-- diagnostics and rebuild,
-- security and migration tests.
+- JSON Schema registry (`settings.overrides@1`),
+- settings read path + JSON content write slice,
+- capability probe in admin settings,
+- diagnostics, migration notes, and regression tests.
+
+See [ITERATION_68.md](ITERATION_68.md) and [ISS-121–123](../ISSUES.md#iss-121).
 
 ### It.69 — cache and HTTP validators 🔴
 
@@ -220,6 +222,7 @@ The old backlog incorrectly marked these items as planned or incomplete:
 | 65 | Feature gallery | ✅ phases 1–3 |
 | 66 | Security write-time packs | ✅ `beta.22` |
 | 58b/58c | Appearance + Layout Switch | ✅ `beta.8` / `beta.23` |
+| 68 | Hybrid Engine foundation | ✅ `[Unreleased]` |
 
 Shipped items continue through incidents and follow-up specs, not as entire active iterations.
 
@@ -241,7 +244,6 @@ Shipped items continue through incidents and follow-up specs, not as entire acti
 
 ```text
 Docs gate
-  → It.68
   → It.69
   → It.67 security hardening
   → It.70 / It.48 unified publishing design

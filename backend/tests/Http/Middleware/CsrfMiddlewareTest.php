@@ -124,6 +124,24 @@ final class CsrfMiddlewareTest extends TestCase
         $this->assertSame(200, $response->getStatusCode());
     }
 
+    public function testSimilarPrefixDoesNotExemptCsrf(): void
+    {
+        $response = $this->makeMiddleware()->process(
+            $this->request('POST', '/api/newsletter-admin/bulk'),
+            $this->handler()
+        );
+        $this->assertSame(403, $response->getStatusCode());
+    }
+
+    public function testExemptPrefixWithSubpathPassesWithoutToken(): void
+    {
+        $response = $this->makeMiddleware()->process(
+            $this->request('POST', '/api/newsletter/subscribe'),
+            $this->handler()
+        );
+        $this->assertSame(200, $response->getStatusCode());
+    }
+
     public function testProtectedPostWithoutTokenIsRejected(): void
     {
         $response = $this->makeMiddleware()->process(

@@ -74,6 +74,7 @@ export const settingsSk: MessageTree = {
     "scheduler": "Job scheduler",
     "systemUpdate": "Aktualizácia systému (deploy)",
     "codePolicy": "Code policy",
+    "engine": "Hybrid Engine",
     "comments": "Komentáre",
     "contact": "Kontaktný formulár",
     "newsletter": "Newsletter",
@@ -116,6 +117,13 @@ export const settingsSk: MessageTree = {
     "linkPhilosophy": "Filozofia projektu",
     "linkChangelog": "Changelog (história verzií)",
     "footer": "Verzia sa aktualizuje pri release tagu. Táto sekcia je len na čítanie."
+  },
+  "engine": {
+    "probeTitle": "Capability probe enginu",
+    "probeIntro": "Aktuálny deployment profil a nainštalované schopnosti Hybrid Engine. Budúce režimy sú zobrazené ako nedostupné — nie ako funkčné prepínače.",
+    "deploymentMode": "Režim nasadenia",
+    "storageDriver": "Storage driver",
+    "docsLink": "Dokumentácia Hybrid Engine architektúry"
   },
   "appearance": {
     "defaultBadge": "Predvolená",

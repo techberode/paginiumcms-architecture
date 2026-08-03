@@ -2,7 +2,7 @@
 
 > **Účel:** stručný a aktuálny handoff pre ďalšiu vývojovú reláciu  
 > **Checkpoint:** 2. august 2026 · `v2.1.0-beta.23`  
-> **Aktívne rozhodnutie:** kód It.68+ je pozastavený, kým nebude hotová dvojjazyčná dokumentácia
+> **Aktívne rozhodnutie:** It.69 (cache vrstva) je ďalší Hybrid Engine cieľ po It.68
 
 Tento dokument nahrádza starý chronologický „denník všetkého“. Historické podrobnosti zostávajú v [`CHANGELOG.md`](../../CHANGELOG.md), [`ISSUES.md`](ISSUES.md) a jednotlivých `ITERATION_*.md`.
 
@@ -22,7 +22,7 @@ PaginiumCMS je **No-SQL Hybrid Headless Content Engine**: React/Vite administrá
 | Public Beta základ | ✅ funkčný a priebežne hardenovaný |
 | Hybrid Engine Fáza 0 | ✅ architektúra, No-SQL mandát a deployment profily |
 | Dvojjazyčná dokumentácia | 🚧 spracováva sa po tematických iteráciách |
-| It.68 implementácia | ⏸️ čaká na docs gate |
+| It.68 implementácia | ✅ Hybrid Engine foundation |
 | It.69–77 | ⏳ naplánované |
 | It.58d, It.67, It.25 | ⏳ paralelný / pre-Final backlog |
 

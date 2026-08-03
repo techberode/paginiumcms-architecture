@@ -50,7 +50,12 @@ final class PluginManagerTest extends TestCase
         $writer = new FileWriter($validator);
         $registry = new PluginRegistry($reader, $writer, 'data/plugins.json');
         $policy = new CodePolicyEngine(
-            new SettingsRepository($reader, $writer, new Validator(), 'data/settings.json'),
+            new SettingsRepository(
+                $writer,
+                \PaginiumCMS\Tests\Support\StorageTestHelper::localStorage($this->baseDir),
+                new Validator(),
+                'data/settings.json'
+            ),
             new SyntaxChecker(),
             new SecurityScanner()
         );

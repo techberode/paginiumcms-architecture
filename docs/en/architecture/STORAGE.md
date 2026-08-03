@@ -8,7 +8,7 @@ icon: material/database-off-outline
 
 > **Mandatory:** [No-SQL mandate](./NOSQL_MANDATE.md)  
 > **Current local root:** `backend/storage/app/content/`  
-> **It.68 target:** storage abstraction with the local driver as the baseline
+> **It.68 shipped:** `StorageInterface` with the local driver on settings reads and JSON content writes
 
 The storage layer holds authoritative documents and file-based operational state. **SQLite, MySQL, PostgreSQL, or an external document database are not planned as an alternative CMS source of truth.** Optional services may accelerate reads or distribute output, but may not take ownership of primary data.
 
@@ -214,22 +214,24 @@ Cache, temporary files, and a rebuildable index may be excluded if restore rebui
 
 ---
 
-## 13. Target `StorageInterface` in It.68
+## 13. `StorageInterface` (It.68 — shipped)
 
-The contract should support at minimum:
+The contract supports:
 
-- read document plus metadata/revision,
-- create/replace with atomic semantics,
-- delete/move/exists/list by capability,
-- a path or document key without leaking internal absolute paths,
-- typed errors,
-- capability probe,
-- contract tests,
-- a local driver with behavior parity.
+- read / write / exists / delete / list on logical paths,
+- atomic temp write → `fsync` → rename on real filesystems,
+- path normalization, traversal and symlink rejection,
+- stable `StorageException` mapping,
+- allow-listed driver resolution via `StorageFactory`,
+- capability probe for admin diagnostics.
 
-`StorageInterface` is not a generic shell/filesystem API for plugins or AI. Domain services receive only the operations needed for their document type.
+Production path in It.68:
 
----
+- `SettingsRepository` reads through storage; writes keep `flock` on the settings file handle,
+- JSON content saves in `ContentRepository` (Markdown path unchanged),
+- default / missing `engine.*` = Classic + local driver.
+
+Rollback = restore previous DI bindings; no flat-file conversion required.
 
 ## 14. Operations checklist
 

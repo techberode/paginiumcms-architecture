@@ -39,7 +39,7 @@ Beta is not a promise of API stability or a guarantee of defect-free operation. 
 | Plugin runtime, Code Policy, Developer Mode | ✅ foundation |
 | System update and demo sandbox | ✅ |
 | Layout Switch It.58c | ✅ |
-| Hybrid Engine It.68–77 | ⏳ not part of beta.23 |
+| Hybrid Engine It.68–77 | 🟡 It.68 foundation in `[Unreleased]`; rest planned |
 
 Complete inventory: [FEATURE_OVERVIEW.md](FEATURE_OVERVIEW.md).
 
@@ -104,7 +104,7 @@ Record the exact version, commit, and deployment mode.
 ## 6. Known boundaries that are not regressions
 
 - The It.25 setup wizard is not shipped; onboarding uses `first-run.sh` and guides.
-- The full It.68–77 Hybrid/Git-headless engine is a plan, not a beta.23 feature.
+- The It.68 foundation (`StorageInterface`, schema registry, engine settings) is shipped in `[Unreleased]`; full It.69–77 Hybrid/Git-headless capabilities are not part of `beta.23`.
 - Redis, S3, cloud translation, and the AI agent are neither mandatory nor active.
 - Some integrations become usable only after admin and infrastructure configuration.
 - Cron-dependent workflows do not run automatically without host cron/systemd/worker setup.
@@ -147,8 +147,7 @@ Do not publish an unpatched vulnerability as a normal public issue. Follow the p
 
 The nearest direction after documentation completion:
 
-- It.68 Hybrid Engine foundation,
-- It.69 cache/Redis/HTTP validators,
+- It.69 unified cache / optional Redis / HTTP validators,
 - It.67 untrusted surfaces hardening,
 - It.58d layout polish,
 - community beta fixes,

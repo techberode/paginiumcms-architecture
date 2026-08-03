@@ -99,7 +99,7 @@ final class CsrfMiddleware implements MiddlewareInterface
     private function isExempt(string $path): bool
     {
         foreach (array_merge(self::EXEMPT_PREFIXES, $this->extraExemptPrefixes) as $prefix) {
-            if ($path === $prefix || str_starts_with($path, $prefix . '/') || str_starts_with($path, $prefix)) {
+            if ($path === $prefix || str_starts_with($path, $prefix . '/')) {
                 return true;
             }
         }

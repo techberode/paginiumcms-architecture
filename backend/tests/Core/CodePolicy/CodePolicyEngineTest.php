@@ -118,8 +118,8 @@ final class CodePolicyEngineTest extends TestCase
     {
         $validator = new FileValidator($this->baseDir);
         $settings = new SettingsRepository(
-            new FileReader($validator),
             new FileWriter($validator),
+            \PaginiumCMS\Tests\Support\StorageTestHelper::localStorage($this->baseDir),
             new Validator(),
             'data/settings.json'
         );

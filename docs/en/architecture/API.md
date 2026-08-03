@@ -190,7 +190,7 @@ This is a family-level overview. A release-grade reference requires a generated 
 
 | Iteration | Expected API surface | Status |
 |-----------|----------------------|--------|
-| It.68 | capability/schema/storage diagnostics without exposing internal paths | ⏳ |
+| It.68 | `GET /api/admin/settings/engine` returns schema + `meta.capabilityProbe`; invalid overrides → **422**; only `classic`/`local` active | ✅ |
 | It.69 | cache status/rebuild and HTTP validators; Redis remains optional | ⏳ |
 | It.70 | `/api/admin/git/publish`, status/job detail, retry | ⏳ consolidation |
 | It.71 | protected APM metrics such as `/api/admin/metrics/apm` | ⏳ |
@@ -201,6 +201,37 @@ This is a family-level overview. A release-grade reference requires a generated 
 | It.76–77 | translation proposal/diff/Apply and provider status/quota | ⏳ |
 
 A route name in a historical iteration is not automatically final. Before implementation it must pass threat modeling, naming review, and contract testing.
+
+### It.68 — engine settings and capability probe (shipped)
+
+**Endpoint:** `GET /api/admin/settings/engine`  
+**Auth:** session + CSRF bootstrap; **SUPER_ADMIN** for engine group read/write.
+
+The response follows the standard admin settings group shape (`schema`, `values`, `meta`). When `engine.capabilityProbeEnabled` is true (default), `meta` includes:
+
+```json
+{
+  "capabilityProbe": {
+    "deploymentMode": { "configured": "classic", "active": "classic", "status": "active" },
+    "storageDriver": { "configured": "local", "active": "local", "status": "active" },
+    "capabilities": {
+      "localStorage": { "status": "available", "message": "Local flat-file storage is operational." },
+      "classicMode": { "status": "available", "message": "Classic deployment mode is active." },
+      "hybridMode": { "status": "unavailable", "message": "Hybrid mode is not installed in this release." },
+      "gitHeadlessMode": { "status": "unavailable", "message": "Git headless mode is not installed in this release." },
+      "remoteStorageDrivers": { "status": "unavailable", "message": "Only the local driver is available in Iteration 68." },
+      "schemaValidation": { "status": "available", "message": "JSON Schema validation for admin documents." }
+    }
+  },
+  "documentationUrl": "/docs/en/architecture/HYBRID_ENGINE.md"
+}
+```
+
+The probe reports capability status only — no internal filesystem paths. When the probe is disabled, `meta.capabilityProbe` is `null`.
+
+**Validation:** settings overrides are validated against `settings.overrides@1` before and after mutation. Corrupt group shapes (for example `"general": "not-an-object"`) return HTTP **422** with stable field errors instead of silent normalization. Non-Classic deployment modes and non-local storage drivers are rejected until their iterations ship.
+
+See [SETTINGS](./SETTINGS.md), [STORAGE](./STORAGE.md), and [ITERATION_68](../ITERATION_68.md).
 
 ---
 

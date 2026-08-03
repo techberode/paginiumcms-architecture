@@ -36,7 +36,7 @@ Core should not own a specific blog, comments, gallery, contact messages, naviga
 
 | Package | Responsibility | Architecture classification |
 |---------|----------------|-----------------------------|
-| `FlatFile` | Markdown/JSON read-write, front matter, index, trash | Core; It.68 should separate the contract from the local driver |
+| `FlatFile` | Markdown/JSON read-write, front matter, index, trash | Core; It.68 separates the contract from the local driver (settings + JSON content slice) |
 | `Settings` | schema, defaults, overrides | Core |
 | `Cache` | memory/file/chained cache | Core; Redis is an optional It.69 driver |
 | `Event` | internal dispatcher | Core |
@@ -111,7 +111,7 @@ A controller is an adapter. It must not contain storage layout, cryptography, or
 | `LockManagerInterface` | pessimistic locks |
 | `LoggerInterface` | structured logging |
 | `BackupInterface` | export/import orchestration |
-| `StorageInterface` | planned It.68 unified document-storage contract |
+| `StorageInterface` | ✅ implemented It.68 — local driver on settings + JSON content writes |
 | `CacheInterface` / driver contract | planned It.69 unified cache semantics |
 | `PublisherInterface` | planned It.70 Git/distribution pipeline |
 | `MediaStorageDriverInterface` | planned It.72 binary media; metadata remains flat-file |

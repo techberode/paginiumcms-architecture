@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace PaginiumCMS\Core\Settings\Services;
 
 use InvalidArgumentException;
-use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
 use PaginiumCMS\Core\Security\Services\EncryptionService;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\Settings\SettingsSchema;
+use PaginiumCMS\Core\Storage\Contracts\StorageInterface;
+use PaginiumCMS\Core\Storage\StorageFactory;
+use PaginiumCMS\Core\Validation\DocumentSchemaRegistry;
+use PaginiumCMS\Core\Validation\DocumentValidator;
 use PaginiumCMS\Core\Validation\Validator;
 use RuntimeException;
 
@@ -30,13 +33,14 @@ final class SettingsRepository implements SettingsRepositoryInterface
     private string $absolutePath;
 
     public function __construct(
-        private FileReaderInterface $reader,
         private FileWriterInterface $writer,
+        private StorageInterface $storage,
         private Validator $validator,
         private string $file = 'data/settings.json',
-        private ?EncryptionService $encryption = null
+        private ?EncryptionService $encryption = null,
+        private ?DocumentValidator $documentValidator = null,
     ) {
-        $this->absolutePath = rtrim($this->reader->getBasePath(), '/') . '/' . ltrim($this->file, '/');
+        $this->absolutePath = $this->storage->resolveAbsolutePath($this->file);
     }
 
     /**
@@ -112,7 +116,7 @@ final class SettingsRepository implements SettingsRepositoryInterface
     // === Blok: Efektívne hodnoty (predvolby prekryté odchýlkami) ===
 
     /**
-     * @param array<string, array<string, mixed>> $overrides
+     * @param array<string, mixed> $overrides
      * @return array<string, array<string, mixed>>
      */
     private function mergeWithDefaults(array $overrides): array
@@ -121,6 +125,9 @@ final class SettingsRepository implements SettingsRepositoryInterface
 
         foreach ($effective as $group => $fields) {
             $groupOverrides = $overrides[$group] ?? [];
+            if (!is_array($groupOverrides)) {
+                continue;
+            }
             foreach ($fields as $key => $default) {
                 if (array_key_exists($key, $groupOverrides)) {
                     $effective[$group][$key] = $groupOverrides[$key];
@@ -133,16 +140,20 @@ final class SettingsRepository implements SettingsRepositoryInterface
 
     /**
      * @param array<string, array<string, mixed>> $effective
-     * @param array<string, array<string, mixed>> $overrides
+     * @param array<string, mixed> $overrides
      * @return array<string, array<string, mixed>>
      */
     private function migrateLegacySettings(array $effective, array $overrides): array
     {
-        $legacyMaintenance = ($overrides['general']['maintenanceMode'] ?? false) === true;
+        $general = $overrides['general'] ?? [];
+        $legacyMaintenance = is_array($general) && ($general['maintenanceMode'] ?? false) === true;
         $currentMode = (string) ($effective['maintenance']['mode'] ?? 'off');
 
-        if ($legacyMaintenance && $currentMode === 'off' && !array_key_exists('mode', $overrides['maintenance'] ?? [])) {
-            $effective['maintenance']['mode'] = 'under_maintenance';
+        if ($legacyMaintenance && $currentMode === 'off') {
+            $maintenance = $overrides['maintenance'] ?? [];
+            if (!is_array($maintenance) || !array_key_exists('mode', $maintenance)) {
+                $effective['maintenance']['mode'] = 'under_maintenance';
+            }
         }
 
         return $effective;
@@ -151,16 +162,16 @@ final class SettingsRepository implements SettingsRepositoryInterface
     // === Blok: Interná atomická práca s odchýlkami ===
 
     /**
-     * @return array<string, array<string, mixed>>
+     * @return array<string, mixed>
      */
     private function readOverrides(): array
     {
-        if (!$this->reader->exists($this->file)) {
+        if (!$this->storage->exists($this->file)) {
             return [];
         }
 
         try {
-            $decoded = json_decode($this->reader->read($this->file), true);
+            $decoded = json_decode($this->storage->read($this->file), true);
         } catch (\Throwable) {
             return [];
         }
@@ -170,13 +181,19 @@ final class SettingsRepository implements SettingsRepositoryInterface
 
     /**
      * @param array<mixed> $decoded
-     * @return array<string, array<string, mixed>>
+     * @return array<string, mixed>
      */
     private function normalizeOverrides(array $decoded): array
     {
         $overrides = [];
         foreach ($decoded as $group => $fields) {
-            if (!is_string($group) || !is_array($fields)) {
+            if (!is_string($group)) {
+                continue;
+            }
+
+            if (!is_array($fields)) {
+                $overrides[$group] = $fields;
+
                 continue;
             }
 
@@ -211,11 +228,13 @@ final class SettingsRepository implements SettingsRepositoryInterface
             }
 
             $overrides = $this->readHandle($handle);
+            $this->validateOverridesDocument($overrides);
             $before = json_encode($overrides);
             $mutator($overrides);
             $after = json_encode($overrides);
 
             if ($after !== $before) {
+                $this->validateOverridesDocument($overrides);
                 $this->writeHandle($handle, $overrides);
             }
         } finally {
@@ -266,6 +285,26 @@ final class SettingsRepository implements SettingsRepositoryInterface
         }
     }
 
+    /**
+     * @param array<string, mixed> $overrides
+     */
+    private function validateOverridesDocument(array $overrides): void
+    {
+        if ($this->documentValidator === null) {
+            return;
+        }
+
+        if ($this->get('engine.schemaValidationEnabled', true) !== true) {
+            return;
+        }
+
+        $this->documentValidator->validate(
+            DocumentSchemaRegistry::TYPE_SETTINGS_OVERRIDES,
+            1,
+            $overrides
+        );
+    }
+
     // === Blok: Šifrovanie tajomstiev „at-rest" (audit A1) ===
 
     /**
@@ -293,8 +332,8 @@ final class SettingsRepository implements SettingsRepositoryInterface
      * Dešifruje citlivé polia vo všetkých skupinách po načítaní z disku.
      * Transparentné pre plaintext hodnoty (staršie inštalácie).
      *
-     * @param array<string, array<string, mixed>> $overrides
-     * @return array<string, array<string, mixed>>
+     * @param array<string, mixed> $overrides
+     * @return array<string, mixed>
      */
     private function decryptOverrides(array $overrides): array
     {
@@ -304,6 +343,9 @@ final class SettingsRepository implements SettingsRepositoryInterface
 
         $secretKeys = SettingsSchema::secretKeys();
         foreach ($overrides as $group => $fields) {
+            if (!is_array($fields)) {
+                continue;
+            }
             foreach ($secretKeys[$group] ?? [] as $key) {
                 if (isset($fields[$key]) && is_string($fields[$key]) && $fields[$key] !== '') {
                     $overrides[$group][$key] = $this->encryption->decrypt($fields[$key]);

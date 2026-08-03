@@ -10,6 +10,7 @@
 
 services:
   php:
+    restart: unless-stopped
     build:
       context: ${APP_ROOT}
       dockerfile: docker/php/Dockerfile
@@ -23,6 +24,7 @@ services:
       APP_DEBUG: "false"
 
   nginx:
+    restart: unless-stopped
     depends_on:
       - php
     # !override — base docker-compose.yml also maps 8080:80; merge would bind BOTH ports.

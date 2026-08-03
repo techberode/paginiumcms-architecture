@@ -1,6 +1,6 @@
 # Iterácia 68 — základ Hybrid Engineu
 
-> **Stav:** ⏸️ plánované; prvá kódová iterácia po dokumentačnej Fáze 0  
+> **Stav:** ✅ hotové (Hybrid Engine foundation — It.68)  
 > **Priorita:** 🔴 kritická cesta  
 > **Vlna:** [Hybrid Engine HE-1](ITERATION_WAVE_HYBRID_ENGINE.md)  
 > **Pravidlá:** [No-SQL mandát](architecture/NOSQL_MANDATE.md) · [Hybrid Engine](architecture/HYBRID_ENGINE.md)
@@ -133,14 +133,14 @@ Migrácia storage vrstvy:
 
 ## Definition of Done
 
-- [ ] `StorageInterface` a local driver sú v produkčnej ceste pre settings a jeden content write slice.
-- [ ] Driver factory používa allow-list a bezpečné defaulty.
-- [ ] Aspoň jeden admin dokument má verziovanú JSON Schema validáciu.
-- [ ] Capability probe odlišuje dostupné, nedostupné a chybné capability.
-- [ ] Chýbajúce `engine.*` zachová správanie `beta.23`.
-- [ ] Migration dry-run, rollback a incident scenár sú zdokumentované.
-- [ ] SK/EN architektúra, API/settings dokumentácia a changelog sú aktualizované.
-- [ ] `iteration-gate.sh` a Classic smoke test sú zelené.
+- [x] `StorageInterface` a local driver sú v produkčnej ceste pre settings a jeden content write slice.
+- [x] Driver factory používa allow-list a bezpečné defaulty.
+- [x] Aspoň jeden admin dokument má verziovanú JSON Schema validáciu (`settings.overrides@1`).
+- [x] Capability probe odlišuje dostupné, nedostupné a chybné capability.
+- [x] Chýbajúce `engine.*` zachová správanie `beta.23`.
+- [x] Migration dry-run, rollback a incident scenár sú zdokumentované.
+- [x] SK/EN architektúra, API/settings dokumentácia a changelog sú aktualizované.
+- [x] `iteration-gate.sh` a Classic smoke test sú zelené.
 
 ## Nadväzuje
 

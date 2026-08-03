@@ -14,6 +14,7 @@ use PaginiumCMS\Core\FlatFile\Models\Page;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Core\FlatFile\Exception\FileNotFoundException;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
+use PaginiumCMS\Core\Storage\Contracts\StorageInterface;
 use PaginiumCMS\Http\Support\PaginationQuery;
 
 /**
@@ -36,7 +37,8 @@ class ContentRepository implements ContentRepositoryInterface
         private ContentIndexService $index,
         private MarkdownContentStorage $markdownStorage,
         private JsonContentStorage $jsonStorage,
-        private SettingsRepositoryInterface $settings
+        private SettingsRepositoryInterface $settings,
+        private StorageInterface $storageLayer,
     ) {
     }
 
@@ -202,7 +204,11 @@ class ContentRepository implements ContentRepositoryInterface
         }
 
         $serialized = $storage->serialize($this->normalizeFrontMatter($content->getFrontMatter()), $content->getContent());
-        $this->writer->write($path, $serialized, true);
+        if ($storage->format() === 'json') {
+            $this->storageLayer->write($path, $serialized, true);
+        } else {
+            $this->writer->write($path, $serialized, true);
+        }
 
         $info = $this->reader->getInfo($path);
         $content->setSize($info['size']);

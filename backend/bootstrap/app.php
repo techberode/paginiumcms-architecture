@@ -73,6 +73,7 @@ use PaginiumCMS\Core\Logging\LogStoragePaths;
 use PaginiumCMS\Core\Logging\Contracts\LoggerInterface;
 use PaginiumCMS\Core\Notification\Services\IncidentNotifier;
 use PaginiumCMS\Core\Security\SecurityLogger;
+use PaginiumCMS\Core\Security\ClientIpResolver;
 use PaginiumCMS\Core\Security\Services\EncryptionService;
 use PaginiumCMS\Core\Security\Services\LoginAttemptTracker;
 use PaginiumCMS\Core\Workflow\Services\OtpChallengeStore;
@@ -282,21 +283,21 @@ $containerBuilder->addDefinitions([
             excludedPaths: ['/api/health', '/api/test', '/api/debug/client-event'],
             excludedIps: $isTesting ? ['127.0.0.1', '::1'] : [],
             // Ak beží ZA nginx reverse proxy (LAN: .26 → PHP .20), pridajte IP nginx hosta.
-    trustedProxies: array_filter(explode(',', (string)($_ENV['TRUSTED_PROXIES'] ?? '127.0.0.1,::1,192.168.10.26')))
+    trustedProxies: ClientIpResolver::trustedProxiesFromEnv()
         );
     },
 
     FirewallMiddleware::class => function ($container) {
         return new FirewallMiddleware(
             $container->get(\PaginiumCMS\Core\Security\Firewall\FirewallService::class),
-            trustedProxies: array_filter(explode(',', (string)($_ENV['TRUSTED_PROXIES'] ?? '127.0.0.1,::1,192.168.10.26')))
+            trustedProxies: ClientIpResolver::trustedProxiesFromEnv()
         );
     },
 
     RequestLoggingMiddleware::class => function ($container) {
         return new RequestLoggingMiddleware(
             $container->get(\PaginiumCMS\Core\Logging\Services\AccessLogService::class),
-            trustedProxies: array_filter(explode(',', (string)($_ENV['TRUSTED_PROXIES'] ?? '127.0.0.1,::1,192.168.10.26')))
+            trustedProxies: ClientIpResolver::trustedProxiesFromEnv()
         );
     },
 
@@ -304,49 +305,49 @@ $containerBuilder->addDefinitions([
         return new LoginRateLimitMiddleware(
             $container->get(CacheManager::class),
                                             // Ak beží ZA nginx reverse proxy (LAN: .26 → PHP .20), pridajte IP nginx hosta.
-    trustedProxies: array_filter(explode(',', (string)($_ENV['TRUSTED_PROXIES'] ?? '127.0.0.1,::1,192.168.10.26')))
+    trustedProxies: ClientIpResolver::trustedProxiesFromEnv()
         );
     },
 
     OtpVerifyRateLimitMiddleware::class => function ($container) {
         return new OtpVerifyRateLimitMiddleware(
             $container->get(CacheManager::class),
-            array_filter(explode(',', (string)($_ENV['TRUSTED_PROXIES'] ?? '127.0.0.1,::1,192.168.10.26')))
+            ClientIpResolver::trustedProxiesFromEnv()
         );
     },
 
     OtpResendRateLimitMiddleware::class => function ($container) {
         return new OtpResendRateLimitMiddleware(
             $container->get(CacheManager::class),
-            array_filter(explode(',', (string)($_ENV['TRUSTED_PROXIES'] ?? '127.0.0.1,::1,192.168.10.26')))
+            ClientIpResolver::trustedProxiesFromEnv()
         );
     },
 
     OtpStartRateLimitMiddleware::class => function ($container) {
         return new OtpStartRateLimitMiddleware(
             $container->get(CacheManager::class),
-            array_filter(explode(',', (string)($_ENV['TRUSTED_PROXIES'] ?? '127.0.0.1,::1,192.168.10.26')))
+            ClientIpResolver::trustedProxiesFromEnv()
         );
     },
 
     NewsletterSubscribeRateLimitMiddleware::class => function ($container) {
         return new NewsletterSubscribeRateLimitMiddleware(
             $container->get(CacheManager::class),
-            array_filter(explode(',', (string)($_ENV['TRUSTED_PROXIES'] ?? '127.0.0.1,::1,192.168.10.26')))
+            ClientIpResolver::trustedProxiesFromEnv()
         );
     },
 
     NewsletterTokenRateLimitMiddleware::class => function ($container) {
         return new NewsletterTokenRateLimitMiddleware(
             $container->get(CacheManager::class),
-            array_filter(explode(',', (string)($_ENV['TRUSTED_PROXIES'] ?? '127.0.0.1,::1,192.168.10.26')))
+            ClientIpResolver::trustedProxiesFromEnv()
         );
     },
 
     ContentSuggestMetaRateLimitMiddleware::class => function ($container) {
         return new ContentSuggestMetaRateLimitMiddleware(
             $container->get(CacheManager::class),
-            array_filter(explode(',', (string)($_ENV['TRUSTED_PROXIES'] ?? '127.0.0.1,::1,192.168.10.26')))
+            ClientIpResolver::trustedProxiesFromEnv()
         );
     },
 

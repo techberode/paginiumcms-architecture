@@ -6,13 +6,13 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 2 August 2026 · documentation snapshot **`v2.1.0-beta.23`** · register **ISS-001–ISS-120**
+> **Last updated:** 3 August 2026 · register **ISS-001–ISS-123** · It.68 foundation in `[Unreleased]`
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
-> **Link stability:** Explicit anchors use `#iss-001` through `#iss-120`. Titles may be edited without breaking changelog, release-note, commit, or GitHub Issue references.
+> **Link stability:** Explicit anchors use `#iss-001` through `#iss-123`. Titles may be edited without breaking changelog, release-note, commit, or GitHub Issue references.
 
-> **Edition note:** The English branch provides a complete operational synopsis for all 120 records, including status, evidence, commands, commits, releases, and cross-links. The Slovak branch remains the verbatim detailed source record and is linked from every incident.
+> **Edition note:** The English branch provides a complete operational synopsis for all 123 records, including status, evidence, commands, commits, releases, and cross-links. The Slovak branch remains the verbatim detailed source record and is linked from every incident.
 
 > **Audit report:** The root `AUDIT_REPORT.md` may be a local/gitignored working document. Public remediation status belongs here and in [CHANGELOG.md](../CHANGELOG.md).
 
@@ -143,6 +143,9 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-118](#iss-118) | security.txt was missing or swallowed by SPA fallback | Low (audit) | ✅ `frontend/public/.well-known/` + nginx |
 | [ISS-119](#iss-119) | Docker stack did not restart after host reboot | Medium (ops) | ✅ `restart: unless-stopped` v prod compose |
 | [ISS-120](#iss-120) | CI PHPUnit output exposed TOTP and 2FA secrets in GitHub job logs | Medium (security / CI) | ✅ sanitize wrapper + verify |
+| [ISS-121](#iss-121) | Invalid settings group shapes were silently dropped during normalization | Medium (data integrity) | ✅ **`[Unreleased]`** · It.68 fail-closed validation |
+| [ISS-122](#iss-122) | Storage read path did not enforce base-path containment (symlink escape) | Medium (security) | ✅ **`[Unreleased]`** · It.68 `LocalFlatFileStorage` |
+| [ISS-123](#iss-123) | Corrupt `settings.testing.json` leaked between HTTP PHPUnit tests | Low (tests) | ✅ **`[Unreleased]`** · `Http/TestCase` reset |
 
 ## CI failures (GitHub Actions)
 
@@ -3433,3 +3436,88 @@ Verbose 2FA tests printed secrets, QR payloads, provisioning URIs, and OTP value
 ```
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
+
+
+---
+
+<a id="iss-121"></a>
+
+## ISS-121 – Invalid settings group shapes were silently dropped during normalization
+
+[↑ Overview](#overview)
+
+**Severity:** Medium (data integrity)  
+**Status:** ✅ **`[Unreleased]`** · Iteration 68 fail-closed validation  
+**Iteration:** [It.68](en/ITERATION_68.md)
+
+### Operational synopsis
+
+`SettingsRepository::normalizeOverrides()` skipped non-array group values (for example `"general": "not-an-object"`). Corrupt `settings.json` could be read as if the group did not exist, and a later partial write could persist without surfacing the integrity problem. It.68 validates the full overrides document before and after mutation and returns HTTP **422** for invalid shapes.
+
+### Evidence and traceability
+
+- **Key technical identifiers:** `SettingsRepository::normalizeOverrides()`, `DocumentValidator`, `DocumentSchemaRegistry::TYPE_SETTINGS_OVERRIDES`, `SettingsControllerEngineTest`, `SettingsStorageParityTest`
+- **History:** [CHANGELOG](../CHANGELOG.md) · [ITERATION_68](en/ITERATION_68.md)
+
+### Verification or operational excerpts
+
+```bash
+./vendor/bin/phpunit backend/tests/Core/Settings/SettingsStorageParityTest.php
+./vendor/bin/phpunit backend/tests/Http/Controllers/Admin/SettingsControllerEngineTest.php
+```
+
+
+---
+
+<a id="iss-122"></a>
+
+## ISS-122 – Storage read path did not enforce base-path containment (symlink escape)
+
+[↑ Overview](#overview)
+
+**Severity:** Medium (security)  
+**Status:** ✅ **`[Unreleased]`** · Iteration 68 storage driver  
+**Iteration:** [It.68](en/ITERATION_68.md)
+
+### Operational synopsis
+
+The initial It.68 `LocalFlatFileStorage` implementation called `assertWithinBase()` only on write and `resolveAbsolutePath()`. `read()`, `exists()`, `delete()`, and `list()` delegated directly to `FileReader`/`FileWriter`, so a symlink under the storage root could expose files outside the configured base. All public storage methods now enforce the same containment rules.
+
+### Evidence and traceability
+
+- **Key technical identifiers:** `LocalFlatFileStorage::assertWithinBase()`, `LocalFlatFileStorageTest::testRejectsSymlinkEscape`
+- **History:** [CHANGELOG](../CHANGELOG.md) · [STORAGE](en/architecture/STORAGE.md)
+
+### Verification or operational excerpts
+
+```bash
+./vendor/bin/phpunit backend/tests/Core/Storage/LocalFlatFileStorageTest.php
+```
+
+
+---
+
+<a id="iss-123"></a>
+
+## ISS-123 – Corrupt `settings.testing.json` leaked between HTTP PHPUnit tests
+
+[↑ Overview](#overview)
+
+**Severity:** Low (tests / CI hygiene)  
+**Status:** ✅ **`[Unreleased]`** · HTTP test harness reset  
+**Iteration:** [It.68](en/ITERATION_68.md)
+
+### Operational synopsis
+
+`SettingsControllerEngineTest` wrote an intentionally corrupt `data/settings.testing.json` to assert API **422** behavior. Because later tests reused the same file, `Http\TestCase::applyTestSettingsOverrides()` failed during `setUp()` with `ValidationException`. The HTTP test base now deletes the testing settings file before applying overrides; the corrupt-state test restores `{}` in a `finally` block.
+
+### Evidence and traceability
+
+- **Key technical identifiers:** `PaginiumCMS\Tests\Http\TestCase::applyTestSettingsOverrides()`, `SettingsControllerEngineTest`
+- **History:** [CHANGELOG](../CHANGELOG.md)
+
+### Verification or operational excerpts
+
+```bash
+./vendor/bin/phpunit backend/tests/Http/Controllers/Admin/SettingsControllerEngineTest.php
+```
