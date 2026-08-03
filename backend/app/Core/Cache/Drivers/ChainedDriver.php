@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\Cache\Drivers;
 
+use PaginiumCMS\Core\Cache\Contracts\CacheDriverInterface;
+
 /**
  * Dvojvrstvý cache driver: Memory → File.
  *
@@ -13,7 +15,7 @@ namespace PaginiumCMS\Core\Cache\Drivers;
  *
  * Zápis ide do oboch vrstiev (write-through), aby invalidácia bola konzistentná.
  */
-class ChainedDriver implements DriverInterface
+class ChainedDriver implements CacheDriverInterface
 {
     public function __construct(
         private MemoryDriver $memory,
@@ -69,5 +71,35 @@ class ChainedDriver implements DriverInterface
         $this->memory->set($key, $new, $ttl);
 
         return $new;
+    }
+
+    public function health(): array
+    {
+        $memory = $this->memory->health();
+        $file = $this->file->health();
+
+        return [
+            'ok' => $memory['ok'] && $file['ok'],
+            'driver' => 'auto',
+            'latencyMs' => $memory['latencyMs'] + $file['latencyMs'],
+            'message' => 'Chained memory + file cache.',
+        ];
+    }
+
+    /**
+     * @param list<string> $tags
+     */
+    public function invalidateTags(array $tags): int
+    {
+        return $this->memory->invalidateTags($tags) + $this->file->invalidateTags($tags);
+    }
+
+    /**
+     * @param list<string> $tags
+     */
+    public function tagKey(string $key, array $tags): void
+    {
+        $this->memory->tagKey($key, $tags);
+        $this->file->tagKey($key, $tags);
     }
 }

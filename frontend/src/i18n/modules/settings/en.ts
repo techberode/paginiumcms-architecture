@@ -123,6 +123,9 @@ export const settingsEn: MessageTree = {
     "probeIntro": "Current deployment profile and installed Hybrid Engine capabilities. Future modes are shown as unavailable — not as working switches.",
     "deploymentMode": "Deployment mode",
     "storageDriver": "Storage driver",
+    "cacheProbeTitle": "Cache layer probe",
+    "cacheDriver": "Cache driver",
+    "cacheHealth": "Cache health",
     "docsLink": "Hybrid Engine architecture documentation"
   },
   "appearance": {

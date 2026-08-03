@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\Cache\Drivers;
 
+use PaginiumCMS\Core\Cache\Contracts\CacheDriverInterface;
+
 /**
  * In-process cache driver (per PHP worker).
  *
@@ -13,10 +15,13 @@ namespace PaginiumCMS\Core\Cache\Drivers;
  *
  * TTL je voliteľný; expirované kľúče sa odstraňujú pri get()/has().
  */
-class MemoryDriver implements DriverInterface
+class MemoryDriver implements CacheDriverInterface
 {
     /** @var array<string, array{value: mixed, expires: ?int}> */
     private array $store = [];
+
+    /** @var array<string, list<string>> */
+    private array $tagIndex = [];
 
     public function get(string $key, mixed $default = null): mixed
     {
@@ -49,6 +54,7 @@ class MemoryDriver implements DriverInterface
     public function clear(): bool
     {
         $this->store = [];
+        $this->tagIndex = [];
 
         return true;
     }
@@ -68,6 +74,64 @@ class MemoryDriver implements DriverInterface
         $this->set($key, $new, $ttl);
 
         return $new;
+    }
+
+    public function health(): array
+    {
+        $started = hrtime(true);
+        $probeKey = '__health_' . bin2hex(random_bytes(4));
+        $ok = $this->set($probeKey, 'ok', 5)
+            && $this->get($probeKey) === 'ok'
+            && $this->delete($probeKey);
+
+        return [
+            'ok' => $ok,
+            'driver' => 'memory',
+            'latencyMs' => (int) ((hrtime(true) - $started) / 1_000_000),
+            'message' => $ok ? 'In-process memory cache operational.' : 'Memory cache health probe failed.',
+        ];
+    }
+
+    /**
+     * @param list<string> $tags
+     */
+    public function invalidateTags(array $tags): int
+    {
+        $deleted = 0;
+
+        foreach ($tags as $tag) {
+            $tag = trim($tag);
+            if ($tag === '' || !isset($this->tagIndex[$tag])) {
+                continue;
+            }
+
+            foreach ($this->tagIndex[$tag] as $key) {
+                if ($this->delete($key)) {
+                    ++$deleted;
+                }
+            }
+
+            unset($this->tagIndex[$tag]);
+        }
+
+        return $deleted;
+    }
+
+    /**
+     * @param list<string> $tags
+     */
+    public function tagKey(string $key, array $tags): void
+    {
+        foreach ($tags as $tag) {
+            $tag = trim($tag);
+            if ($tag === '') {
+                continue;
+            }
+
+            if (!in_array($key, $this->tagIndex[$tag] ?? [], true)) {
+                $this->tagIndex[$tag][] = $key;
+            }
+        }
     }
 
     private function isValid(string $key): bool

@@ -53,6 +53,8 @@ final class CacheAdminServiceTest extends TestCase
         $this->assertSame($this->cacheDir, $stats['storage_path']);
         $this->assertGreaterThanOrEqual(1, $stats['file_entries']);
         $this->assertSame(2, $stats['generations']['pages']);
+        $this->assertSame(0, $stats['metrics']['hits']);
+        $this->assertSame(0, $stats['metrics']['misses']);
     }
 
     public function testPurgeContentBumpsGenerations(): void

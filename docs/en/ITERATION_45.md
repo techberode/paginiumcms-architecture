@@ -34,4 +34,4 @@ The source does not identify an implementation release. Its driver-level design 
 
 ## Current interpretation
 
-It.45 is now a reference design rather than a separate active backlog item. Implementation belongs to It.69 and must use a capability probe; Redis must not be enabled “magically” merely because a socket is reachable.
+> **Implementation status:** ✅ shipped in It.69 (Classic scope). Redis driver deferred; `cacheDriver=redis` falls back to `auto`.

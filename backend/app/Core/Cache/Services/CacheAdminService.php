@@ -27,7 +27,8 @@ final class CacheAdminService
      * @return array{
      *     storage_path: string,
      *     file_entries: int,
-     *     generations: array<string, int>
+     *     generations: array<string, int>,
+     *     metrics: array{hits: int, misses: int}
      * }
      */
     public function stats(): array
@@ -40,6 +41,7 @@ final class CacheAdminService
                 'articles' => (int) $this->cache->get('content.articles.list.gen', 0),
                 'feeds' => (int) $this->cache->get('content.feeds.gen', 0),
             ],
+            'metrics' => $this->cache->metrics(),
         ];
     }
 

@@ -3,7 +3,7 @@
 > **Documentation checkpoint:** August 2, 2026  
 > **Latest release recorded by this bundle:** `v2.1.0-beta.23`  
 > **Direction:** Hybrid Headless Content Engine · No-SQL file source of truth · API-first  
-> **Code status:** It.68 foundation shipped in `[Unreleased]` · next target It.69
+> **Code status:** It.68–69 shipped in `[Unreleased]` · next target It.67 / It.70
 
 This roadmap is the canonical map of the **future direction**. Release history belongs in [`CHANGELOG.md`](../../CHANGELOG.md), detailed implementation specifications in `ITERATION_*.md`, and incidents in [`ISSUES.md`](ISSUES.md).
 
@@ -72,7 +72,7 @@ Detailed inventory: [FEATURE_OVERVIEW.md](FEATURE_OVERVIEW.md).
 | It. | Topic | Priority | Status | Dependencies / note |
 |-----|-------|----------|--------|---------------------|
 | **68** | Storage abstraction, schema registry, and engine settings | 🔴 | ✅ `[Unreleased]` | local driver; settings + JSON content write slice |
-| **69** | Unified cache, Redis, `ETag`, `Last-Modified` | 🔴 | ⏳ | absorbs legacy It.45 and It.49 |
+| **69** | Unified cache, Redis, `ETag`, `Last-Modified` | 🔴 | ✅ | absorbs legacy It.45 and It.49; Redis driver deferred |
 | **70** | Git publish — immediate and queued | 🟡 | ⏳ | uses scheduler/queue |
 | **71** | Performance Guard APM | 🟡 | ⏳ | latency, I/O, memory, and incident measurement |
 | **72** | Flysystem media drivers, S3/CDN | 🟡 | ⏳ | local driver remains the default |

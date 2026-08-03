@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\Cache;
 
+use PaginiumCMS\Core\Cache\Contracts\CacheDriverInterface;
 use PaginiumCMS\Core\Cache\Drivers\DriverInterface;
 
 /**
@@ -16,11 +17,13 @@ use PaginiumCMS\Core\Cache\Drivers\DriverInterface;
  */
 class CacheManager
 {
-    private DriverInterface $driver;
+    private CacheDriverInterface|DriverInterface $driver;
     private string $prefix;
     private string $lockPath;
+    private int $hits = 0;
+    private int $misses = 0;
 
-    public function __construct(DriverInterface $driver, string $prefix = 'paginium_', ?string $lockPath = null)
+    public function __construct(CacheDriverInterface|DriverInterface $driver, string $prefix = 'paginium_', ?string $lockPath = null)
     {
         $this->driver = $driver;
         $this->prefix = $prefix;
@@ -58,9 +61,12 @@ class CacheManager
     public function remember(string $key, callable $callback, ?int $ttl = null): mixed
     {
         if ($this->has($key)) {
+            ++$this->hits;
+
             return $this->get($key);
         }
 
+        ++$this->misses;
         $value = $callback();
         if ($value !== null) {
             $this->set($key, $value, $ttl);
@@ -75,6 +81,8 @@ class CacheManager
     public function rememberLocked(string $key, callable $callback, ?int $ttl = null): mixed
     {
         if ($this->has($key)) {
+            ++$this->hits;
+
             return $this->get($key);
         }
 
@@ -90,8 +98,12 @@ class CacheManager
             flock($handle, LOCK_EX);
             $cached = $this->driver->get($this->prefix . $key, $sentinel);
             if ($cached !== $sentinel) {
+                ++$this->hits;
+
                 return $cached;
             }
+
+            ++$this->misses;
             $value = $callback();
             if ($value !== null) {
                 $this->set($key, $value, $ttl);
@@ -115,5 +127,38 @@ class CacheManager
         $this->set($key, $new, $ttl);
 
         return $new;
+    }
+
+    /**
+     * @param list<string> $tags
+     */
+    public function invalidateTags(array $tags): int
+    {
+        if ($this->driver instanceof CacheDriverInterface) {
+            return $this->driver->invalidateTags($tags);
+        }
+
+        return 0;
+    }
+
+    /**
+     * @param list<string> $tags
+     */
+    public function tagKey(string $key, array $tags): void
+    {
+        if ($this->driver instanceof CacheDriverInterface) {
+            $this->driver->tagKey($this->prefix . $key, $tags);
+        }
+    }
+
+    /**
+     * @return array{hits: int, misses: int}
+     */
+    public function metrics(): array
+    {
+        return [
+            'hits' => $this->hits,
+            'misses' => $this->misses,
+        ];
     }
 }

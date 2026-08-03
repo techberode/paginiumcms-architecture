@@ -58,7 +58,7 @@ Recommended request headers by flow:
 |--------|-----|
 | `X-CSRF-Token` | session-authenticated mutations |
 | `Authorization: Bearer …` | ⏳ It.74 API key/JWT flow; not admin SPA local storage |
-| `If-None-Match` | ⏳ conditional reads after It.69 |
+| `If-None-Match` | ✅ conditional reads on public GET (`/api/settings/public`, `/api/pages`, `/api/articles`) — It.69 |
 | `If-Match` or `baseRevision` in payload | OCC writes; the wire contract must remain consistent |
 | `Idempotency-Key` | ⏳ publish/job mutations that may be retried safely |
 | `Accept-Language` or explicit `locale` | ⏳ locale-aware content after It.73; fallback must not bypass ACL |

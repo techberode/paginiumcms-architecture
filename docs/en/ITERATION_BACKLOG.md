@@ -25,7 +25,7 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 |-------|------|----------|--------|--------|
 | 1 | Complete bilingual documentation | 🔴 | ✅ | It.18 consolidation shipped; SK detail catch-up deferred |
 | 2 | **It.68** Hybrid Engine foundation | 🔴 | ✅ | shipped in `[Unreleased]` — see [ITERATION_68](ITERATION_68.md) |
-| 3 | **It.69** Unified cache + Redis + HTTP validators | 🔴 | ⏳ | next Hybrid Engine code target |
+| 3 | **It.69** Unified cache + Redis + HTTP validators | 🔴 | ✅ | shipped in `[Unreleased]` — see [ITERATION_69](ITERATION_69.md) |
 | 4 | **It.67** Untrusted surfaces hardening | 🔴 | ⏳ | imports, shortcodes, Monaco, themes, CSP |
 | 5 | **It.70** Git publish modes | 🟡 | ⏳ | immediate/queued distribution |
 | 6 | **It.71** Performance Guard | 🟡 | ⏳ | APM and safe fallbacks |
@@ -52,14 +52,16 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 
 See [ITERATION_68.md](ITERATION_68.md) and [ISS-121–123](../ISSUES.md#iss-121).
 
-### It.69 — cache and HTTP validators 🔴
+### It.69 — cache and HTTP validators 🔴 ✅ shipped (`[Unreleased]`)
 
-- memory/file/Redis driver factory,
-- read-through cache and deterministic invalidation,
-- Redis fallback,
-- `ETag` and `Last-Modified`,
-- cache health/diagnose,
+- memory/file/auto driver factory with tag invalidation,
+- read-through content cache and deterministic invalidation,
+- Redis fallback (`redis` → `auto`; driver deferred),
+- `ETag`, `Last-Modified`, and `304` on public GET slice,
+- cache health/diagnose and operations runbook,
 - absorbs It.45 and It.49 proposals.
+
+See [ITERATION_69](ITERATION_69.md).
 
 ### It.70 — Git publishing 🟡
 

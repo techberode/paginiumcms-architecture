@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\Cache\Drivers;
 
+use PaginiumCMS\Core\Cache\Contracts\CacheDriverInterface;
 use PaginiumCMS\Support\FileHelper;
 use PaginiumCMS\Support\JsonHelper;
 
-class FileDriver implements DriverInterface
+class FileDriver implements CacheDriverInterface
 {
     private string $path;
     private string $hashAlgo;
@@ -109,6 +110,103 @@ class FileDriver implements DriverInterface
             flock($handle, LOCK_UN);
             fclose($handle);
         }
+    }
+
+    public function health(): array
+    {
+        $started = hrtime(true);
+        $probeKey = '__health_' . bin2hex(random_bytes(4));
+        $ok = $this->set($probeKey, 'ok', 5)
+            && $this->get($probeKey) === 'ok'
+            && $this->delete($probeKey);
+
+        return [
+            'ok' => $ok,
+            'driver' => 'file',
+            'latencyMs' => (int) ((hrtime(true) - $started) / 1_000_000),
+            'message' => $ok ? 'File cache read/write/delete operational.' : 'File cache health probe failed.',
+        ];
+    }
+
+    /**
+     * @param list<string> $tags
+     */
+    public function invalidateTags(array $tags): int
+    {
+        if ($tags === []) {
+            return 0;
+        }
+
+        $index = $this->loadTagIndex();
+        $deleted = 0;
+
+        foreach ($tags as $tag) {
+            $tag = trim($tag);
+            if ($tag === '' || !isset($index[$tag])) {
+                continue;
+            }
+
+            foreach ($index[$tag] as $key) {
+                if ($this->delete($key)) {
+                    ++$deleted;
+                }
+            }
+
+            unset($index[$tag]);
+        }
+
+        $this->saveTagIndex($index);
+
+        return $deleted;
+    }
+
+    /**
+     * @param list<string> $tags
+     */
+    public function tagKey(string $key, array $tags): void
+    {
+        if ($tags === []) {
+            return;
+        }
+
+        $index = $this->loadTagIndex();
+
+        foreach ($tags as $tag) {
+            $tag = trim($tag);
+            if ($tag === '') {
+                continue;
+            }
+
+            if (!in_array($key, $index[$tag] ?? [], true)) {
+                $index[$tag][] = $key;
+            }
+        }
+
+        $this->saveTagIndex($index);
+    }
+
+    /**
+     * @return array<string, list<string>>
+     */
+    private function loadTagIndex(): array
+    {
+        $path = $this->path . '/.tag_index.json';
+        if (!is_file($path)) {
+            return [];
+        }
+
+        $decoded = json_decode(FileHelper::read($path), true);
+
+        return is_array($decoded) ? $decoded : [];
+    }
+
+    /**
+     * @param array<string, list<string>> $index
+     */
+    private function saveTagIndex(array $index): void
+    {
+        $path = $this->path . '/.tag_index.json';
+        file_put_contents($path, JsonHelper::encode($index));
     }
 
     private function getFilePath(string $key): string

@@ -34,4 +34,4 @@ The source explicitly says implementation is tracked in [It.69](ITERATION_69.md)
 
 ## Current interpretation
 
-It.49 is a detailed product reference design. Canonical implementation and Definition of Done belong to It.69 in the Hybrid Engine wave.
+> **Implementation status:** ✅ shipped in It.69 (Classic scope). Full Redis driver remains a follow-up.

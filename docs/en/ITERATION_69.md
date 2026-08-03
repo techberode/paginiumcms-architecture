@@ -1,6 +1,6 @@
 # Iteration 69 — unified cache and HTTP conditional requests
 
-> **Status:** ⏳ planned  
+> **Status:** ✅ shipped (Classic scope — Redis driver deferred)  
 > **Priority:** 🔴  
 > **Wave:** [Hybrid Engine HE-2](ITERATION_WAVE_HYBRID_ENGINE.md)  
 > **Depends on:** [It.68](ITERATION_68.md)  
@@ -123,14 +123,25 @@ An optional Docker Compose `cache` profile is documented in `LOCAL_SETUP`/deploy
 
 ## Definition of Done
 
-- [ ] It.45 and It.49 are marked as absorbed by It.69.
-- [ ] Memory/file/Redis implement one contract and safe serialization.
-- [ ] At least three public GET resource types return a valid `ETag`.
-- [ ] Invalidation is deterministic for write/publish/delete.
-- [ ] Classic runs with file/memory only.
-- [ ] Redis outage, stale cache, and rebuild have a runbook.
-- [ ] Metrics needed by It.71 are available without storing content payloads.
-- [ ] SK/EN documentation and the gate are green.
+- [x] It.45 and It.49 are marked as absorbed by It.69.
+- [x] Memory/file/auto implement `CacheDriverInterface` with health probe and `tagKey` / `invalidateTags`.
+- [x] `CacheDriverFactory` reads `engine.cacheDriver` (Redis falls back to auto).
+- [x] Public GET slice returns valid `ETag` / `Last-Modified` and supports `304`:
+  - `GET /api/settings/public`
+  - `GET /api/pages`, `GET /api/pages/{slug}`
+  - `GET /api/articles`, `GET /api/articles/{slug}` (anonymous reads only)
+- [x] Invalidation is deterministic for write/publish/delete (`CacheTagRegistry` + generation bump).
+- [x] Classic runs with file/memory only (no Redis required).
+- [x] Redis outage, stale cache, and rebuild: [en/runbooks/CACHE_OPERATIONS.md](en/runbooks/CACHE_OPERATIONS.md).
+- [x] Hit/miss counters exposed via `CacheAdminService::stats()` metrics (It.71 foundation).
+- [x] EN documentation and iteration gate green; SK detail catch-up deferred.
+
+### Deferred to follow-up
+
+- `RedisDriver` implementation and Docker Compose `cache` profile,
+- `ResourceFingerprint` helper (ETag uses response-body SHA-256),
+- locale-scoped tag variants (It.73 multi-locale),
+- settings publish invalidation for `/api/settings/public` ETag (manual TTL until settings change hook).
 
 ## Follow-up
 
