@@ -43,6 +43,11 @@ export interface EngineSettingsMeta {
     storageDriver: { configured: string; active: string; status: string };
     capabilities: Record<string, EngineCapabilityRow>;
   } | null;
+  cacheProbe?: {
+    cacheDriver: { configured: string; active: string; status: string };
+    capabilities: Record<string, EngineCapabilityRow>;
+    health: { ok: boolean; driver: string; latencyMs: number; message?: string };
+  } | null;
   documentationUrl?: string;
 }
 

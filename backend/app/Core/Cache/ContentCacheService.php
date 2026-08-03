@@ -53,7 +53,10 @@ class ContentCacheService
         $gen = $this->listGeneration('pages');
         $key = 'content.pages.list.' . $gen . '.' . md5(json_encode($filters) ?: '');
 
-        return $this->cache->rememberLocked($key, $loader, self::TTL_LIST);
+        $value = $this->cache->rememberLocked($key, $loader, self::TTL_LIST);
+        $this->cache->tagKey($key, [CacheTagRegistry::pagesList()]);
+
+        return $value;
     }
 
     /**
@@ -65,7 +68,10 @@ class ContentCacheService
         $gen = $this->listGeneration('articles');
         $key = 'content.articles.list.' . $gen . '.' . md5(json_encode($filters) ?: '');
 
-        return $this->cache->rememberLocked($key, $loader, self::TTL_LIST);
+        $value = $this->cache->rememberLocked($key, $loader, self::TTL_LIST);
+        $this->cache->tagKey($key, [CacheTagRegistry::articlesList()]);
+
+        return $value;
     }
 
     /**
@@ -75,7 +81,13 @@ class ContentCacheService
     {
         $key = 'content.page.payload.' . $slug;
 
-        return $this->cache->rememberLocked($key, $loader, self::TTL_ITEM);
+        $value = $this->cache->rememberLocked($key, $loader, self::TTL_ITEM);
+        $this->cache->tagKey($key, [
+            CacheTagRegistry::page($slug),
+            CacheTagRegistry::pagesList(),
+        ]);
+
+        return $value;
     }
 
     /**
@@ -85,7 +97,13 @@ class ContentCacheService
     {
         $key = 'content.article.payload.' . $slug;
 
-        return $this->cache->rememberLocked($key, $loader, self::TTL_ITEM);
+        $value = $this->cache->rememberLocked($key, $loader, self::TTL_ITEM);
+        $this->cache->tagKey($key, [
+            CacheTagRegistry::article($slug),
+            CacheTagRegistry::articlesList(),
+        ]);
+
+        return $value;
     }
 
     public function invalidatePage(?string $slug = null): void
@@ -96,6 +114,7 @@ class ContentCacheService
             // Legacy shared key (ContentController array vs SeoController model collision → SEO 500).
             $this->cache->delete('content.page.' . $slug);
         }
+        $this->cache->invalidateTags(CacheTagRegistry::invalidatePageTags($slug));
         $this->invalidateFeeds();
     }
 
@@ -106,6 +125,7 @@ class ContentCacheService
             $this->cache->delete('content.article.payload.' . $slug);
             $this->cache->delete('content.article.' . $slug);
         }
+        $this->cache->invalidateTags(CacheTagRegistry::invalidateArticleTags($slug));
         $this->invalidateFeeds();
     }
 
@@ -118,7 +138,10 @@ class ContentCacheService
         $gen = $this->listGeneration('pages');
         $key = 'content.pages.paginated.' . $gen . '.' . md5(json_encode($filters) ?: '');
 
-        return $this->cache->rememberLocked($key, $loader, self::TTL_LIST);
+        $value = $this->cache->rememberLocked($key, $loader, self::TTL_LIST);
+        $this->cache->tagKey($key, [CacheTagRegistry::pagesList()]);
+
+        return $value;
     }
 
     /**
@@ -130,7 +153,10 @@ class ContentCacheService
         $gen = $this->listGeneration('articles');
         $key = 'content.articles.paginated.' . $gen . '.' . md5(json_encode($filters) ?: '');
 
-        return $this->cache->rememberLocked($key, $loader, self::TTL_LIST);
+        $value = $this->cache->rememberLocked($key, $loader, self::TTL_LIST);
+        $this->cache->tagKey($key, [CacheTagRegistry::articlesList()]);
+
+        return $value;
     }
 
     public function invalidateSearch(): void

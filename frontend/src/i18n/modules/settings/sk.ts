@@ -123,6 +123,9 @@ export const settingsSk: MessageTree = {
     "probeIntro": "Aktuálny deployment profil a nainštalované schopnosti Hybrid Engine. Budúce režimy sú zobrazené ako nedostupné — nie ako funkčné prepínače.",
     "deploymentMode": "Režim nasadenia",
     "storageDriver": "Storage driver",
+    "cacheProbeTitle": "Cache vrstva — diagnostika",
+    "cacheDriver": "Cache driver",
+    "cacheHealth": "Stav cache",
     "docsLink": "Dokumentácia Hybrid Engine architektúry"
   },
   "appearance": {

@@ -39,6 +39,40 @@ export const EngineSettingsPanel: React.FC<Props> = ({ meta }) => {
         </div>
       </dl>
 
+      {meta?.cacheProbe ? (
+        <>
+          <h5 className="mt-4 text-sm font-semibold text-gray-900 dark:text-white">
+            {t('settings.engine.cacheProbeTitle')}
+          </h5>
+          <dl className="mt-2 grid gap-3 text-sm sm:grid-cols-2">
+            <div>
+              <dt className="font-medium text-gray-700 dark:text-gray-200">{t('settings.engine.cacheDriver')}</dt>
+              <dd className="text-gray-600 dark:text-gray-300">
+                {meta.cacheProbe.cacheDriver.configured} → {meta.cacheProbe.cacheDriver.active} (
+                {meta.cacheProbe.cacheDriver.status})
+              </dd>
+            </div>
+            <div>
+              <dt className="font-medium text-gray-700 dark:text-gray-200">{t('settings.engine.cacheHealth')}</dt>
+              <dd className="text-gray-600 dark:text-gray-300">
+                {meta.cacheProbe.health.driver} · {meta.cacheProbe.health.latencyMs}ms ·{' '}
+                {meta.cacheProbe.health.ok ? 'OK' : 'FAIL'}
+              </dd>
+            </div>
+          </dl>
+          <ul className="mt-3 space-y-2 text-sm">
+            {Object.entries(meta.cacheProbe.capabilities).map(([key, row]) => (
+              <li key={key} className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:gap-2">
+                <span className="font-medium text-gray-800 dark:text-gray-100">{key}</span>
+                <span className="text-gray-500 dark:text-gray-400">
+                  {row.status} — {row.message}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : null}
+
       <ul className="mt-4 space-y-2 text-sm">
         {Object.entries(probe.capabilities).map(([key, row]) => (
           <li key={key} className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:gap-2">

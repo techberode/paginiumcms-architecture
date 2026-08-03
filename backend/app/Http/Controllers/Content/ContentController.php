@@ -23,6 +23,7 @@ use PaginiumCMS\Core\Versioning\Services\ContentVersioningService;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\Workflow\Services\OtpWorkflowService;
 use PaginiumCMS\Http\Support\BulkBatchResult;
+use PaginiumCMS\Http\Support\HttpConditionalResponse;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Http\Support\PaginationMeta;
 use PaginiumCMS\Http\Support\PaginationQuery;
@@ -83,7 +84,13 @@ class ContentController
             return $this->json->error($response, Lang::get('not_found', [], 'content'), 404);
         }
 
-        return $this->json->success($response, $payload);
+        $response = $this->json->success($response, $payload);
+
+        return $this->withPublicHttpCache(
+            $request,
+            $response,
+            $this->lastModifiedUnixFromPayload($payload)
+        );
     }
 
     public function createPage(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -135,7 +142,13 @@ class ContentController
             return $this->json->error($response, Lang::get('not_found', [], 'content'), 404);
         }
 
-        return $this->json->success($response, $payload);
+        $response = $this->json->success($response, $payload);
+
+        return $this->withPublicHttpCache(
+            $request,
+            $response,
+            $this->lastModifiedUnixFromPayload($payload)
+        );
     }
 
     public function createArticle(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -1008,7 +1021,9 @@ class ContentController
                 ? $this->contentCache->rememberArticleList($cacheKey, $loader)
                 : $this->contentCache->rememberPageList($cacheKey, $loader);
 
-            return $this->json->success($response, $items);
+            $response = $this->json->success($response, $items);
+
+            return $this->withPublicHttpCache($request, $response);
         }
 
         $cachePayload = [
@@ -1053,7 +1068,9 @@ class ContentController
 
         $meta = new PaginationMeta($query->page, $query->perPage, $result['total'], $metaExtra);
 
-        return $this->json->paginated($response, $result['items'], $meta);
+        $response = $this->json->paginated($response, $result['items'], $meta);
+
+        return $this->withPublicHttpCache($request, $response);
     }
 
     private function isPaginationRequested(ServerRequestInterface $request): bool
@@ -1085,6 +1102,35 @@ class ContentController
         }
 
         return $this->auth->isAuthenticated();
+    }
+
+    private function withPublicHttpCache(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        ?int $lastModifiedUnix = null,
+    ): ResponseInterface {
+        return HttpConditionalResponse::applyWhenEligible(
+            $request,
+            $response,
+            $this->settings->group('engine'),
+            !$this->isAuthenticated($request),
+            $lastModifiedUnix
+        );
+    }
+
+    /**
+     * @param array<int|string, mixed> $payload
+     */
+    private function lastModifiedUnixFromPayload(array $payload): ?int
+    {
+        $updatedAt = $payload['updatedAt'] ?? null;
+        if (!is_string($updatedAt) || $updatedAt === '') {
+            return null;
+        }
+
+        $unix = strtotime($updatedAt);
+
+        return $unix !== false && $unix > 0 ? $unix : null;
     }
 
     /**

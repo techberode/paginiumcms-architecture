@@ -27,7 +27,9 @@ use PaginiumCMS\Core\Monitoring\Services\SchedulerStateStore;
 use PaginiumCMS\Core\Notification\NotificationService;
 use PaginiumCMS\Core\Notification\Services\IncidentNotifier;
 use PaginiumCMS\Core\Notification\Services\NotificationFactory;
+use PaginiumCMS\Core\Cache\CacheDriverFactory;
 use PaginiumCMS\Core\Cache\CacheManager;
+use PaginiumCMS\Core\Cache\Services\CacheCapabilityProbe;
 use PaginiumCMS\Core\Cache\ContentCacheService;
 use PaginiumCMS\Core\Cache\Commands\PurgeContentCacheCommand;
 use PaginiumCMS\Core\Cache\Services\CacheAdminService;
@@ -269,6 +271,23 @@ return [
         return $factory->create(null, true);
     },
     EngineCapabilityProbe::class => create(EngineCapabilityProbe::class),
+    CacheDriverFactory::class => function () {
+        return new CacheDriverFactory(dirname(__DIR__, 3) . '/storage/cache');
+    },
+    CacheManager::class => function ($container) {
+        /** @var CacheDriverFactory $factory */
+        $factory = $container->get(CacheDriverFactory::class);
+        $settings = $container->get(SettingsRepositoryInterface::class);
+        $engine = $settings->group('engine');
+        $driver = $factory->create(CacheDriverFactory::driverFromEngineSettings($engine));
+
+        return new CacheManager(
+            $driver,
+            'paginium_',
+            dirname(__DIR__, 3) . '/storage/cache/locks'
+        );
+    },
+    CacheCapabilityProbe::class => create(CacheCapabilityProbe::class),
 
     // === Blok: Nastavenia + validácia (Iterácia 4) ===
     // Zdieľaný validator (bezstavový) – používa ho SettingsRepository aj ďalšie moduly.
@@ -304,6 +323,8 @@ return [
             get(AuthorizationInterface::class),
             get(SupportedLocalesRegistry::class),
             get(EngineCapabilityProbe::class),
+            get(CacheCapabilityProbe::class),
+            get(CacheDriverFactory::class),
             get(StorageInterface::class)
         ),
 

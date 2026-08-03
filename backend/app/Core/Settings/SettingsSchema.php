@@ -203,6 +203,9 @@ final class SettingsSchema
                     ['key' => 'storageDriver', 'type' => 'enum', 'label' => 'Storage driver', 'default' => 'local', 'options' => ['local'], 'rules' => ['required', 'in:local'], 'help' => 'Local flat-file driver (default). Remote drivers require later iterations.'],
                     ['key' => 'schemaValidationEnabled', 'type' => 'bool', 'label' => 'Enable JSON Schema validation', 'default' => true, 'rules' => ['bool'], 'help' => 'When enabled, admin JSON documents are validated against registered schemas before write.'],
                     ['key' => 'capabilityProbeEnabled', 'type' => 'bool', 'label' => 'Enable capability probe', 'default' => true, 'rules' => ['bool'], 'help' => 'Expose engine capability diagnostics in admin settings.'],
+                    ['key' => 'cacheDriver', 'type' => 'enum', 'label' => 'Cache driver', 'default' => 'auto', 'options' => ['auto', 'memory', 'file', 'redis'], 'rules' => ['required', 'in:auto,memory,file'], 'help' => 'Iteration 69: auto = memory + file chain. Redis appears as not installed.'],
+                    ['key' => 'cacheDefaultTtlSeconds', 'type' => 'int', 'label' => 'Default cache TTL (seconds)', 'default' => 300, 'rules' => ['required', 'int', 'min:60', 'max:86400']],
+                    ['key' => 'httpValidatorsEnabled', 'type' => 'bool', 'label' => 'Enable HTTP ETag / Last-Modified', 'default' => true, 'rules' => ['bool'], 'help' => 'Conditional requests on safe public GET endpoints (e.g. /api/settings/public).'],
                 ],
             ],
             'comments' => [

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Controllers\Admin;
 
 use InvalidArgumentException;
+use PaginiumCMS\Core\Cache\CacheDriverFactory;
+use PaginiumCMS\Core\Cache\Services\CacheCapabilityProbe;
 use PaginiumCMS\Core\I18n\Services\SupportedLocalesRegistry;
 use PaginiumCMS\Core\Security\SecurityLogger;
 use PaginiumCMS\Core\Layout\PageLayoutCatalog;
@@ -14,6 +16,7 @@ use PaginiumCMS\Core\Storage\Services\EngineCapabilityProbe;
 use PaginiumCMS\Core\Settings\SettingsSchema;
 use PaginiumCMS\Core\Editor\Services\EditorComponentRegistry;
 use PaginiumCMS\Core\Editor\Services\EditorProfileService;
+use PaginiumCMS\Http\Support\HttpConditionalResponse;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Demo\Data\DemoFixtures;
 use PaginiumCMS\Modules\Demo\Services\DemoMode;
@@ -51,6 +54,8 @@ final class SettingsController
         private AuthorizationInterface $authorization,
         private SupportedLocalesRegistry $localesRegistry,
         private EngineCapabilityProbe $engineProbe,
+        private CacheCapabilityProbe $cacheProbe,
+        private CacheDriverFactory $cacheFactory,
         private StorageInterface $storage,
     ) {
     }
@@ -201,9 +206,25 @@ final class SettingsController
      */
     public function publicSettings(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
+        $payload = $this->buildPublicSettingsPayload();
+        $response = $this->json->success($response, $payload);
+
+        return HttpConditionalResponse::applyWhenEligible(
+            $request,
+            $response,
+            $this->settings->group('engine'),
+            true
+        );
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildPublicSettingsPayload(): array
+    {
         $all = $this->settings->all();
 
-        return $this->json->success($response, [
+        return [
             'general' => [
                 'siteName' => $all['general']['siteName'] ?? 'PaginiumCMS',
                 'siteDescription' => (string) ($all['general']['siteDescription'] ?? ''),
@@ -298,7 +319,7 @@ final class SettingsController
             'firewall' => [
                 'enabled' => (bool) ($all['firewall']['enabled'] ?? true),
             ],
-        ]);
+        ];
     }
 
     /**
@@ -630,11 +651,15 @@ final class SettingsController
     private function buildEngineMeta(array $engineValues): array
     {
         if (($engineValues['capabilityProbeEnabled'] ?? true) !== true) {
-            return ['capabilityProbe' => null];
+            return ['capabilityProbe' => null, 'cacheProbe' => null];
         }
 
         return [
             'capabilityProbe' => $this->engineProbe->probe($this->storage, $engineValues),
+            'cacheProbe' => $this->cacheProbe->probe(
+                $this->cacheFactory->create(CacheDriverFactory::driverFromEngineSettings($engineValues)),
+                $engineValues
+            ),
             'documentationUrl' => '/docs/en/architecture/HYBRID_ENGINE.md',
         ];
     }

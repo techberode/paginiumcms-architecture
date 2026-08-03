@@ -111,7 +111,7 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-086](#iss-086) | Stored XSS survived strip_tags through dangerous attributes and schemes | **Critical (security)** | ✅ Fixed · **2.1.0-beta.6** |
 | [ISS-087](#iss-087) | LAN frontend deploy script contained hard-coded host, user, and port | Medium (ops / hygiene) | ✅ Fixed · **2.1.0-beta.6** |
 | [ISS-088](#iss-088) | Backup import was vulnerable to Zip-Slip through extractTo | Medium (security) | ✅ Fixed · **2.1.0-beta.6** |
-| [ISS-089](#iss-089) | React Router RSC-only advisory was accepted as not reachable in the SPA | Low (false positive SPA) | ⏳ Accepted · CI `--audit-level=critical` |
+| [ISS-089](#iss-089) | React Router RSC-only advisory was accepted as not reachable in the SPA | Low (false positive SPA) | ℹ️ Not applicable · CI `--audit-level=critical` |
 | [ISS-090](#iss-090) | eslint latest and npm audit fix caused dependency resolution failure | Low (CI/deps) | ✅ Fixed · **2.1.0-beta.7** |
 | [ISS-091](#iss-091) | React Router override and useOptimistic caused fourteen Vitest failures | Medium (CI) | ✅ Fixed · **2.1.0-beta.7** |
 | [ISS-092](#iss-092) | Deploy script mixed local environment assumptions with invalid :? syntax | Low (ops) | ✅ Fixed · **2.1.0-beta.7** |
@@ -2565,17 +2565,28 @@ Direct archive extraction allowed traversal entries to escape the restore direct
 [↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-089)
 
 **Severity:** Low (false positive SPA)  
-**Status:** ⏳ Accepted · CI `--audit-level=critical`
+**Status:** ℹ️ Not applicable · CI `--audit-level=critical`
 
 ### Operational synopsis
 
-The advisory applies to React Server Components, while this product uses a React 18 SPA. The risk is documented and monitored under a critical audit threshold.
+The advisory **GHSA-qwww-vcr4-c8h2** (*React Router: RSC Mode CSRF Bypass Allows Action Execution Before 400 Response*) applies only when React Router runs in **React Server Components (RSC) mode** with server actions. PaginiumCMS uses a **React 18 client-side SPA** (`react-router-dom` 7.x, Vite build, no RSC pipeline). The vulnerable code path is not reachable; `npm audit fix --force` would downgrade to 7.11.0 and is rejected.
 
 ### Evidence and traceability
 
-- **Related incidents:** [ISS-078](#iss-078), [ISS-083](#iss-083)
-- **Key technical identifiers:** `npm audit`, `npm audit --audit-level=critical`, `frontend/package.json`, `npm audit fix --force`
+- **Advisory:** [GHSA-qwww-vcr4-c8h2](https://github.com/advisories/GHSA-qwww-vcr4-c8h2)
+- **Related incidents:** [ISS-078](#iss-078), [ISS-083](#iss-083), [ISS-117](#iss-117)
+- **Key technical identifiers:** `npm audit`, `npm audit --audit-level=critical`, `frontend/package.json` (`react-router-dom@7.18.1`), `npm audit fix --force`
 - **History:** [CHANGELOG](../CHANGELOG.md)
+
+### Verification or operational excerpts
+
+```bash
+cd frontend && npm audit --audit-level=critical
+# Expected: exit 0 (high RSC advisory ignored by threshold)
+
+cd frontend && npm audit --audit-level=high
+# Expected: reports react-router GHSA-qwww-vcr4-c8h2 — documented N/A for SPA
+```
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -3343,13 +3354,7 @@ A project-specific LAN proxy address was shipped as a default. Only loopback is 
 
 ### Operational synopsis
 
-This is the same RSC-only advisory tracked in ISS-089 and is not reachable in the current SPA architecture.
-
-### Evidence and traceability
-
-- **Related incidents:** [ISS-089](#iss-089)
-- **Key technical identifiers:** `npm audit --audit-level=critical`, `npm audit fix --force`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+Same as [ISS-089](#iss-089): **GHSA-qwww-vcr4-c8h2** (RSC-mode CSRF bypass) is **not applicable** to the PaginiumCMS SPA profile. See ISS-089 for advisory ID, verification commands, and rationale.
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -3434,6 +3439,18 @@ Verbose 2FA tests printed secrets, QR payloads, provisioning URIs, and OTP value
 .github/scripts/run-backend-tests-ci.sh
 # očakávané: „CI log redaction verification: OK“, v konzole len [REDACTED] namiesto otpauth
 ```
+
+### Historical GitHub Actions logs (pre-`ee19806`)
+
+Commit **`ee19806`** introduced sanitized PHPUnit output before publishing CI logs ([ISS-120](#iss-120)). **Workflow runs completed before that commit may still contain raw TOTP/2FA material in retained GitHub job logs.**
+
+**Manual hygiene (ops — not automatable from the repo):**
+
+1. GitHub → repository → **Actions** → filter workflow **CI**.
+2. For runs **before** `2026-07-27` / commit `ee19806`, use **Delete all logs** (or delete individual runs) if logs were ever public or shared.
+3. After cleanup, spot-check a recent run: secrets must appear only as `[REDACTED]` in the published PHPUnit step.
+
+> Retention policy: prefer **90 days or less** for Actions log retention in repository settings when available.
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 

@@ -198,7 +198,7 @@ final class LocalFlatFileStorage implements StorageInterface
 
         $baseReal = realpath($this->validator->getBasePath());
         if ($baseReal === false) {
-            return;
+            throw new InvalidPathException($logicalPath, 'Storage root is unavailable');
         }
 
         $parent = dirname($absolutePath);

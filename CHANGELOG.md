@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.26`](#release-2-1-0-beta-26) | 2026-08-03 | Unified cache, HTTP ETag/304 validators, audit hardening |
 | [`2.1.0-beta.23`](#release-2-1-0-beta-23) | 2026-07-30 | Layout Switch, layout settings, preview frame and page templates |
 | [`2.1.0-beta.22`](#release-2-1-0-beta-22) | 2026-07-30 | Security write-time gates and Feature Gallery Phase 3 |
 | [`2.1.0-beta.21`](#release-2-1-0-beta-21) | 2026-07-30 | Feature Gallery Phase 2 and production SEO/logging hardening |
@@ -98,6 +99,36 @@ This canonical history records release facts supported by the supplied `CHANGELO
 | [`1.0.0`](#release-1-0-0) | Initial structure | Initial repository structure |
 
 ## [Unreleased]
+
+<a id="release-2-1-0-beta-26"></a>
+
+## [2.1.0-beta.26] – 2026-08-03
+
+Unified cache and HTTP conditional requests (Iteration 69)
+
+### Added (Iteration 69)
+
+- `CacheDriverInterface` with `health()`, `tagKey()`, and `invalidateTags()`; `MemoryDriver`, `FileDriver`, and `ChainedDriver` (`auto`).
+- `CacheDriverFactory`, `CacheTagRegistry`, and `CacheCapabilityProbe`; `engine.cacheDriver`, `cacheDefaultTtlSeconds`, `httpValidatorsEnabled`.
+- HTTP `ETag`, `Last-Modified`, and `Cache-Control` on public GET:
+  - `/api/settings/public`
+  - `/api/pages`, `/api/pages/{slug}`
+  - `/api/articles`, `/api/articles/{slug}` (anonymous reads; `304` when `If-None-Match` matches).
+- Deterministic content cache invalidation on write/publish/delete (generation bump + tags).
+- Admin cache stats include hit/miss metrics; Engine panel cache probe (SK/EN).
+- Runbook: [docs/en/runbooks/CACHE_OPERATIONS.md](docs/en/runbooks/CACHE_OPERATIONS.md).
+- Absorbs legacy **It.45** and **It.49**; Redis driver deferred (`cacheDriver=redis` → `auto`).
+
+### Fixed
+
+- **`LocalFlatFileStorage::assertWithinBase()`** — missing storage root now fails closed instead of silently allowing I/O.
+- **ISS-089** — documented **GHSA-qwww-vcr4-c8h2** (React Router RSC CSRF) as not applicable to the SPA profile; CI remains `--audit-level=critical`.
+- **npm audit** — dev-only `brace-expansion` advisories resolved via `npm audit fix`.
+
+### Release facts
+
+- **Categories:** Added, Fixed, Documentation
+- **Technical identifiers:** `HttpConditionalResponse`, `CacheTagRegistry`, `CacheDriverFactory`, `AppVersion`
 
 <a id="release-2-1-0-beta-25"></a>
 

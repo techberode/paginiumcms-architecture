@@ -1,6 +1,6 @@
 # Hybrid Engine — implementation wave It.68–77
 
-> **Status:** It.68 foundation shipped in `[Unreleased]` · next code target It.69  
+> **Status:** It.68–69 shipped in `[Unreleased]` · next code target It.67 / It.70  
 > **Checkpoint:** `v2.1.0-beta.23` · August 2, 2026  
 > **Architecture baseline:** [Hybrid Engine](architecture/HYBRID_ENGINE.md) · [No-SQL mandate](architecture/NOSQL_MANDATE.md) · [deployment modes](architecture/DEPLOYMENT_MODES.md)
 
@@ -64,7 +64,7 @@ This document canonically assigns It.73 to **HE-6**. The earlier draft inconsist
 | It. | Title | Priority | Status | Required dependency | Absorbs / coordinates |
 |-----|-------|----------|--------|---------------------|------------------------|
 | **68** | [Hybrid Engine foundation](ITERATION_68.md) | 🔴 | ✅ `[Unreleased]` | Phase 0 | foundation for every later layer |
-| **69** | [Cache + HTTP conditional requests](ITERATION_69.md) | 🔴 | ⏳ | It.68 | absorbs It.45 and It.49 |
+| **69** | [Cache + HTTP conditional requests](ITERATION_69.md) | 🔴 | ✅ | It.68 | absorbs It.45 and It.49 |
 | **70** | [Git publish modes](ITERATION_70.md) | 🟡 | ⏳ | It.68 | extends `GitHubService`, coordinates It.48 |
 | **71** | [Performance Guard](ITERATION_71.md) | 🟡 | ⏳ | It.69 | complements It.7 and It.46 remainder |
 | **72** | [Media storage drivers](ITERATION_72.md) | 🟡 | ⏳ | It.68 | follows DAM It.24 |
@@ -152,4 +152,4 @@ Phase 0 for this wave is ready when:
 - AI and translation remain proposal workflows requiring explicit confirmation,
 - no planned capability is presented as implemented.
 
-**Next implementation:** [It.69](ITERATION_69.md) cache layer and HTTP validators.
+**Next implementation:** [It.67](ITERATION_67.md) untrusted surfaces / [It.70](ITERATION_70.md) Git publish modes.
