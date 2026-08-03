@@ -99,6 +99,23 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+<a id="release-2-1-0-beta-25"></a>
+
+## [2.1.0-beta.25] – 2026-08-03
+
+Release hotfix — version string, deploy script, admin update ref validation
+
+### Fixed
+
+- **`AppVersion::VERSION`** now matches the release tag (beta.24 incorrectly reported `2.1.0-beta.23` in `/api/health`).
+- **`scripts/deploy-instance-update.sh`** — tag checkout backs up untracked blockers, supports `DEPLOY_FORCE=1`, uses `git checkout -f` for immutable release deploys.
+- **Admin system update** — empty `ref` no longer silently defaults to `origin/main` when branch deploy is disabled; returns a clear **422** asking for a release tag.
+
+### Release facts
+
+- **Categories:** Fixed, Operations
+- **Technical identifiers:** `AppVersion`, `deploy-instance-update.sh`, `DEPLOY_FORCE`, `SystemUpdateController::run`
+
 <a id="release-2-1-0-beta-24"></a>
 
 ## [2.1.0-beta.24] – 2026-08-03
@@ -134,7 +151,8 @@ Hybrid Engine foundation (Iteration 68)
 
 ### Release facts
 
-- **Tag commit:** `7795da9`
+- **Tag commit:** `e6790cc`
+- **Note:** `/api/health` still reported `2.1.0-beta.23` until **beta.25** (`AppVersion` bump omitted).
 - **Categories:** Added, Documentation, Security, Fixed
 - **Technical identifiers:** `StorageInterface`, `LocalFlatFileStorage`, `DocumentSchemaRegistry`, `settings.overrides@1`, `engine.deploymentMode`, `GET /api/admin/settings/engine`, `EngineSettingsPanel`, `EngineCapabilityProbe`
 

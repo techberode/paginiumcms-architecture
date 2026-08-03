@@ -107,6 +107,13 @@ final class SystemUpdateController
         $ref = trim((string) ($body['ref'] ?? ''));
         if ($ref === '') {
             $config = $this->settings->group('systemUpdate');
+            if (!(bool) ($config['allowDeployMain'] ?? false)) {
+                return $this->json->error(
+                    $response,
+                    'Deploy ref is required. Use a release tag (e.g. v2.1.0-beta.24). Branch deploy is disabled.',
+                    422
+                );
+            }
             $branch = trim((string) ($config['defaultBranch'] ?? 'main'));
             $ref = 'origin/' . ($branch !== '' ? $branch : 'main');
         }

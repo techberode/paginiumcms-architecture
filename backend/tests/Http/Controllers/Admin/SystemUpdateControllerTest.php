@@ -88,6 +88,27 @@ final class SystemUpdateControllerTest extends TestCase
         $this->assertSame('v2.1.0-beta.12', $data['data']['ref']);
     }
 
+    public function testRunEmptyRefRequiresTagWhenBranchDeployDisabled(): void
+    {
+        $settings = $this->container()->get(SettingsRepositoryInterface::class);
+        $settings->setGroup('systemUpdate', array_merge($settings->group('systemUpdate'), [
+            'deployEnabled' => true,
+            'allowDeployTags' => true,
+            'allowDeployMain' => false,
+        ]));
+
+        $this->loginAsSuperAdminUser();
+
+        $response = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/admin/system/update/run', [])
+        );
+        $data = $this->getJsonResponse($response);
+
+        $this->assertSame(422, $response->getStatusCode());
+        $this->assertFalse($data['success']);
+        $this->assertStringContainsString('release tag', strtolower((string) ($data['error'] ?? '')));
+    }
+
     public function testCheckForbiddenForAdmin(): void
     {
         $this->loginAsAdminUser();
