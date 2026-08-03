@@ -30,7 +30,7 @@ Editor body nesmie byť skenovaný jednoduchými SQL/XSS regexmi bez kontextu. T
 
 ## Overenie a súvisiace záznamy
 
-Release je [2.0.26](../CHANGELOG.md#release-2-0-26). Neskorší audit odhalil medzeru v POST/JSON body skene a uzavrel ju v [ISS-056](ISSUES.md#iss-056). Používateľský kontrakt je v [user/FIREWALL.md](user/FIREWALL.md).
+Release je [2.0.26](../../CHANGELOG.md#release-2-0-26). Neskorší audit odhalil medzeru v POST/JSON body skene a uzavrel ju v [ISS-056](ISSUES.md#iss-056). Používateľský kontrakt je v [user/FIREWALL.md](user/FIREWALL.md).
 
 ## Aktuálna interpretácia
 

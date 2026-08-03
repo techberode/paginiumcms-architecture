@@ -30,7 +30,7 @@ Scheduler identity nesmie obísť content permissions alebo OTP policy. Čas sa 
 
 ## Overenie a súvisiace záznamy
 
-Release: [2.0.53](../CHANGELOG.md#release-2-0-53). Produkčné outcome a permission hardening plánovača bolo neskôr spracované v [It.62](ITERATION_62.md).
+Release: [2.0.53](../../CHANGELOG.md#release-2-0-53). Produkčné outcome a permission hardening plánovača bolo neskôr spracované v [It.62](ITERATION_62.md).
 
 ## Aktuálna interpretácia
 

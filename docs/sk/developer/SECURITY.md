@@ -35,13 +35,13 @@ run-backend-tests-ci.sh
 → až potom GitHub console/artifact
 ```
 
-Lokálny kompletný log zostáva mimo repozitára. Verejná šablóna postupu je [`../../LOCAL_TEST_LOGS.md.example`](../../LOCAL_TEST_LOGS.md.example); raw log, lokálny checklist ani sanitizovaný pracovný súbor sa necommitujú.
+Lokálny kompletný log zostáva mimo repozitára. Verejná šablóna postupu je [`../../LOCAL_TEST_LOGS.md.example`](../../../LOCAL_TEST_LOGS.md.example); raw log, lokálny checklist ani sanitizovaný pracovný súbor sa necommitujú.
 
 ### Dependency disclosure
 
 React Router advisories publikované po `v2.1.0-beta.2` boli riešené v `v2.1.0-beta.3`. Auditný exit kód sa nesmie interpretovať bez kontroly severity threshold a úplného výstupu; nález pod nakonfigurovaným prahom stále môže vyžadovať `PASS_WITH_REVIEW` alebo `INVESTIGATION_REQUIRED`.
 
-> Tento dokument opisuje bezpečnostné invarianty release rodiny **`v2.1.0-beta.*`** a cieľového Hybrid Headless Content Engineu. Konkrétna implementácia sa vždy overuje voči kódu a testom daného tagu. Verejný reporting zraniteľností upravuje koreňový [SECURITY.md](../../SECURITY.md).
+> Tento dokument opisuje bezpečnostné invarianty release rodiny **`v2.1.0-beta.*`** a cieľového Hybrid Headless Content Engineu. Konkrétna implementácia sa vždy overuje voči kódu a testom daného tagu. Verejný reporting zraniteľností upravuje koreňový [SECURITY.md](../../../SECURITY.md).
 
 ## 1. Bezpečnostné zásady
 
@@ -509,7 +509,7 @@ Security testy a quality gates: [TESTING.md](TESTING.md).
 
 ## 25. Reporting a verejný incident log
 
-Citlivú zraniteľnosť neposielaj najprv do verejného issue. Použi postup v koreňovom [SECURITY.md](../../SECURITY.md).
+Citlivú zraniteľnosť neposielaj najprv do verejného issue. Použi postup v koreňovom [SECURITY.md](../../../SECURITY.md).
 
 `docs/ISSUES.md` je verejný technický záznam opravených alebo bezpečne zverejnených problémov. Pri jeho dvojjazyčnom spracovaní v Iterácii 13 bude:
 
@@ -539,7 +539,7 @@ Súkromný `SECURITY_ISSUES.md` môže obsahovať detailný interný incident wo
 
 ## 27. Súvisiace dokumenty
 
-- [Koreňová security policy](../../SECURITY.md)
+- [Koreňová security policy](../../../SECURITY.md)
 - [Security review](../SECURITY_REVIEW.md)
 - [Testovanie a quality gates](TESTING.md)
 - [Core hardening](../architecture/CORE_HARDENING.md)

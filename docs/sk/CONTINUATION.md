@@ -4,7 +4,7 @@
 > **Checkpoint:** 2. august 2026 · `v2.1.0-beta.23`  
 > **Aktívne rozhodnutie:** kód It.68+ je pozastavený, kým nebude hotová dvojjazyčná dokumentácia
 
-Tento dokument nahrádza starý chronologický „denník všetkého“. Historické podrobnosti zostávajú v [`CHANGELOG.md`](../CHANGELOG.md), [`ISSUES.md`](ISSUES.md) a jednotlivých `ITERATION_*.md`.
+Tento dokument nahrádza starý chronologický „denník všetkého“. Historické podrobnosti zostávajú v [`CHANGELOG.md`](../../CHANGELOG.md), [`ISSUES.md`](ISSUES.md) a jednotlivých `ITERATION_*.md`.
 
 ---
 

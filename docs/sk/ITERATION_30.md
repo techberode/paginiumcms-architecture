@@ -37,5 +37,5 @@ Zdroj uvádzal jednorazový `content:cache-purge --reindex` po deployi. Mazanie 
 
 ## Overenie a aktuálna interpretácia
 
-Test plan zahŕňal create/refresh, version/body load, prepínanie editorov, mobile cards a CLI purge. Later cache/index pravidlá sú konsolidované v [STORAGE.md](architecture/STORAGE.md) a [CONTENT_API.md](architecture/CONTENT_API.md). Release: [2.0.20](../CHANGELOG.md#release-2-0-20).
+Test plan zahŕňal create/refresh, version/body load, prepínanie editorov, mobile cards a CLI purge. Later cache/index pravidlá sú konsolidované v [STORAGE.md](architecture/STORAGE.md) a [CONTENT_API.md](architecture/CONTENT_API.md). Release: [2.0.20](../../CHANGELOG.md#release-2-0-20).
 

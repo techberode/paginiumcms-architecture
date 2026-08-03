@@ -30,7 +30,7 @@ Subscriber data is personal data: admin listing is ADMIN+, CSV export must be in
 
 ## Verification and related records
 
-The original admin-list gap is [ISS-097](ISSUES.md#iss-097). Dedicated newsletter abuse hardening is [ISS-107](ISSUES.md#iss-107). Footer variant B resolved [ISS-109](ISSUES.md#iss-109) and shipped in [v2.1.0-beta.18](../CHANGELOG.md#release-2-1-0-beta-18); the wiring audit is marked `v2.1.0-beta.16`.
+The original admin-list gap is [ISS-097](ISSUES.md#iss-097). Dedicated newsletter abuse hardening is [ISS-107](ISSUES.md#iss-107). Footer variant B resolved [ISS-109](ISSUES.md#iss-109) and shipped in [v2.1.0-beta.18](../../CHANGELOG.md#release-2-1-0-beta-18); the wiring audit is marked `v2.1.0-beta.16`.
 
 ## Current interpretation
 

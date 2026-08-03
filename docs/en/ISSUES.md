@@ -14,7 +14,7 @@ This is the canonical public register of production, integration, security, oper
 
 > **Edition note:** The English branch provides a complete operational synopsis for all 120 records, including status, evidence, commands, commits, releases, and cross-links. The Slovak branch remains the verbatim detailed source record and is linked from every incident.
 
-> **Audit report:** The root `AUDIT_REPORT.md` may be a local/gitignored working document. Public remediation status belongs here and in [CHANGELOG.md](../CHANGELOG.md).
+> **Audit report:** The root `AUDIT_REPORT.md` may be a local/gitignored working document. Public remediation status belongs here and in [CHANGELOG.md](../../CHANGELOG.md).
 
 <a id="overview"></a>
 
@@ -183,7 +183,7 @@ Each canonical record contains an English operational synopsis and links to the 
 
 ## ISS-001 – Debug client-event endpoint returned 404
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-001)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-001)
 
 **Severity:** Low (console noise)  
 **Status:** ✅ Fixed
@@ -195,7 +195,7 @@ The frontend emitted debug events while the backend route was conditionally abse
 ### Evidence and traceability
 
 - **Key technical identifiers:** `XHR POST …/api/debug/client-event [404]`, `APP_DEBUG=true`, `backend/app/Http/Routes/debug.php`, `DebugController`, `frontend/src/utils/debugLog.ts`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -206,7 +206,7 @@ The frontend emitted debug events while the backend route was conditionally abse
 
 ## ISS-002 – GET /api/pages returned 500 on the dashboard
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-002)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-002)
 
 **Severity:** High  
 **Status:** ✅ Intermittent — diagnose + hardening
@@ -219,7 +219,7 @@ A damaged index, malformed content file, cache state, or filesystem permission c
 
 - **Recorded versions:** `2.0.26`
 - **Key technical identifiers:** `/api/pages`, `/api/articles`, `data/index/content.json`, `content/pages/*.md`, `backend/storage/app/content/`, `ContentRepository::findByPath()`, `ContentController::serializeContentList()`, `FileReader::listFiles()`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -256,7 +256,7 @@ curl -s -b cookies.txt http://192.168.10.26:8081/api/pages | jq .
 
 ## ISS-003 – Phantom or duplicate users appeared repeatedly
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-003)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-003)
 
 **Severity:** Medium  
 **Status:** ✅ Backend hardening
@@ -268,7 +268,7 @@ Backup files, invalid user JSON, and open registration could look like newly gen
 ### Evidence and traceability
 
 - **Key technical identifiers:** `/users`, `data/users/`, `*.json.backup.Ymd_His`, `/api/auth/register`, `UserRepository::getAllUserFiles()`, `UserRepository::findAll()`, `FileWriter::pruneBackups()`, `user_xxx.json.backup.20260718_120000`, `user_xxx.json`, `ls …/data/users/*.json`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -289,7 +289,7 @@ find backend/storage/app/content/data/users -name '*.backup.*' -delete
 
 ## ISS-004 – navigation.json.backup.* files accumulated
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-004)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-004)
 
 **Severity:** Low  
 **Status:** ✅ Backup retention
@@ -301,7 +301,7 @@ Timestamped write backups accumulated without bounded retention. FileWriter now 
 ### Evidence and traceability
 
 - **Key technical identifiers:** `data/`, `navigation.json.backup.20260718_104530`, `FileWriter::write(..., backup=true)`, `FileWriter::pruneBackups()`, `navigation.json.backup.*`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -312,7 +312,7 @@ Timestamped write backups accumulated without bounded retention. FileWriter now 
 
 ## ISS-005 – Vitest worker crashed or hung
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-005)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-005)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed
@@ -324,7 +324,7 @@ An unstable dependency in useBulkSelection caused the Vitest worker to loop or e
 ### Evidence and traceability
 
 - **Key technical identifiers:** `npm test`, `frontend/src/hooks/useBulkSelection.ts`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -335,7 +335,7 @@ An unstable dependency in useBulkSelection caused the Vitest worker to loop or e
 
 ## ISS-006 – PHPStan reported 15 errors
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-006)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-006)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed
@@ -347,7 +347,7 @@ Level-8 static analysis found fifteen type defects. The affected backend classes
 ### Evidence and traceability
 
 - **Key technical identifiers:** `MediaRepository`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -358,7 +358,7 @@ Level-8 static analysis found fifteen type defects. The affected backend classes
 
 ## ISS-007 – Dashboard displayed the wrong user count
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-007)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-007)
 
 **Severity:** Low  
 **Status:** ✅ Fixed
@@ -370,7 +370,7 @@ The dashboard read the wrong API response shape. It now counts the users array i
 ### Evidence and traceability
 
 - **Key technical identifiers:** `DashboardView.tsx`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -381,7 +381,7 @@ The dashboard read the wrong API response shape. It now counts the users array i
 
 ## ISS-008 – Password fields were served over HTTP
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-008)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-008)
 
 **Severity:** Info  
 **Status:** ⏳ HTTPS in production
@@ -393,7 +393,7 @@ The browser warning was caused by password inputs on plain HTTP, not by form val
 ### Evidence and traceability
 
 - **Key technical identifiers:** `/login`, `/users`, `/settings`, `http://192.168.10.26:8081`, `docs/deploy/nginx-paginium-test.conf`, `https://192.168.10.26:8443/settings`, `docs/deploy/NGINX_API.md`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -421,7 +421,7 @@ ssl_certificate_key /etc/nginx/ssl/paginium-test.key;
 
 ## ISS-009 – Settings crashed with n.max is not a function
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-009)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-009)
 
 **Severity:** High  
 **Status:** ✅ Fixed
@@ -433,7 +433,7 @@ Validation rules applied min/max after wrapping the schema as optional. Constrai
 ### Evidence and traceability
 
 - **Key technical identifiers:** `/settings`, `zodFromRules.ts`, `npm test -- src/validation/zodFromRules.test.ts`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -444,7 +444,7 @@ Validation rules applied min/max after wrapping the schema as optional. Constrai
 
 ## ISS-010 – Vitest stderr contained act() and router future-flag warnings
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-010)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-010)
 
 **Severity:** Low (CI noise)  
 **Status:** ✅ Fixed (2.0.24)
@@ -458,7 +458,7 @@ Tests used asynchronous interactions without proper waiting and omitted router f
 - **Recorded versions:** `2.0.24`
 - **Commit:** [`b9a740f`](https://github.com/techberode/paginiumcms-architecture/commit/b9a740f)
 - **Key technical identifiers:** `npm test`, `DeveloperUnlockGate.test.tsx`, `MediaManager.test.tsx`, `frontend/src/test/renderWithRouter.tsx`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -469,7 +469,7 @@ Tests used asynchronous interactions without proper waiting and omitted router f
 
 ## ISS-011 – ESLint warning baseline and technical debt
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-011)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-011)
 
 **Severity:** Low (technical debt)  
 **Status:** ⏳ 57/65 baseline, gradual cleanup
@@ -483,7 +483,7 @@ Warnings remain controlled technical debt under a CI baseline. The policy is to 
 - **Recorded versions:** `2.0.26`
 - **Related incidents:** [ISS-020](#iss-020)
 - **Key technical identifiers:** `npm run lint`, `@typescript-eslint/no-explicit-any`, `client.ts`, `useApi.ts`, `react-refresh/only-export-components`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -494,7 +494,7 @@ Warnings remain controlled technical debt under a CI baseline. The policy is to 
 
 ## ISS-012 – CSRF middleware was not wired into mutating routes
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-012)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-012)
 
 **Severity:** Medium  
 **Status:** ✅ Fixed — `CsrfMiddleware` (synchronizer-token)
@@ -506,7 +506,7 @@ A CSRF manager existed but mutating routes were not globally protected. A SPA-co
 ### Evidence and traceability
 
 - **Key technical identifiers:** `CsrfProtectionManager`, `CsrfMiddleware`, `backend/app/Http/Middleware/CsrfMiddleware.php`, `POST/PUT/PATCH/DELETE`, `/api/auth/login`, `/api/auth/register`, `/api/auth/reset-password`, `/api/auth/verify-reset-token`, `/api/auth/csrf-token`, `/api/auth/sso`, `/api/contact`, `/api/comments`, `/api/debug/client-event`, `APP_ENV=testing`, `bootstrap/app.php`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -517,7 +517,7 @@ A CSRF manager existed but mutating routes were not globally protected. A SPA-co
 
 ## Login background — media-library and local upload support (2.0.46)
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#feature-login-background)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#feature-login-background)
 
 The login and registration settings originally accepted only a background-image URL. Version 2.0.46 added selection from the media library, local upload, preview, removal, correct `/storage/` path handling, and paired SK/EN interface text.
 
@@ -530,7 +530,7 @@ The login and registration settings originally accepted only a background-image 
 
 ## ISS-013 – ntfy private topics failed without authentication
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-013)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-013)
 
 **Severity:** Medium  
 **Status:** ✅ It.47 (Bearer/Basic + test-connector)
@@ -542,7 +542,7 @@ The ntfy adapter sent unauthenticated requests. Bearer and Basic modes plus a co
 ### Evidence and traceability
 
 - **Key technical identifiers:** `NtfyAdapter::buildAuthHeaders()`, `POST /api/admin/notifications/test-connector`, `/notifications`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -553,7 +553,7 @@ The ntfy adapter sent unauthenticated requests. Bearer and Basic modes plus a co
 
 ## ISS-014 – Development CORS wildcards could remain active with an incorrect APP_ENV
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-014)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-014)
 
 **Severity:** Low  
 **Status:** ⏳ Verify deployment
@@ -565,7 +565,7 @@ Non-production CORS patterns are intentionally broad, so a wrongly deployed APP_
 ### Evidence and traceability
 
 - **Key technical identifiers:** `APP_ENV`, `APP_ENV=production`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -576,7 +576,7 @@ Non-production CORS patterns are intentionally broad, so a wrongly deployed APP_
 
 ## ISS-015 – PHPUnit suffered 429, 503, and OTP persistence failures
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-015)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-015)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed (2.0.25)
@@ -589,7 +589,7 @@ Shared test state leaked rate limits, maintenance mode, OTP files, and caches be
 
 - **Commit:** [`f54361d`](https://github.com/techberode/paginiumcms-architecture/commit/f54361d)
 - **Key technical identifiers:** `settings.json`, `otp-challenges.json`, `APP_ENV=testing`, `TestCase::setUp()`, `SettingsRepository::setGroup()`, `RateLimitMiddleware`, `SettingsRepository`, `./vendor/bin/phpunit`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -600,7 +600,7 @@ Shared test state leaked rate limits, maintenance mode, OTP files, and caches be
 
 ## ISS-016 – PHPStan phpVersion did not match composer.json
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-016)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-016)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed (2.0.25)
@@ -613,7 +613,7 @@ Static analysis targeted PHP 8.5 while Composer declared an 8.4 floor. PHPStan n
 
 - **Commit:** [`d5c2660`](https://github.com/techberode/paginiumcms-architecture/commit/d5c2660)
 - **Key technical identifiers:** `composer.json`, `./vendor/bin/phpstan analyse backend --level=8`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -624,7 +624,7 @@ Static analysis targeted PHP 8.5 while Composer declared an 8.4 floor. PHPStan n
 
 ## ISS-017 – PHPStan reported match.alwaysTrue in bulk controllers
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-017)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-017)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed (2.0.25)
@@ -637,7 +637,7 @@ Guard clauses narrowed the action before a match expression, making branches sta
 
 - **Commit:** [`d5c2660`](https://github.com/techberode/paginiumcms-architecture/commit/d5c2660)
 - **Key technical identifiers:** `MessageController::bulkAction()`, `CommentsController::bulkAction()`, `if / elseif`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -648,7 +648,7 @@ Guard clauses narrowed the action before a match expression, making branches sta
 
 ## ISS-018 – TrashController passed a possible false fopen result as a resource
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-018)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-018)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed (2.0.25)
@@ -661,7 +661,7 @@ fopen may return false, but the result was passed as a stream resource. The cont
 
 - **Commit:** [`d5c2660`](https://github.com/techberode/paginiumcms-architecture/commit/d5c2660)
 - **Key technical identifiers:** `TrashControllerTest`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -681,7 +681,7 @@ if ($handle === false) {
 
 ## ISS-019 – Strict TypeScript type-check failures
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-019)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-019)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed (2.0.25)
@@ -695,7 +695,7 @@ Several frontend DTO casts, optional values, and unused variables violated stric
 - **Recorded versions:** `2.0.25`
 - **Commit:** [`5398b48`](https://github.com/techberode/paginiumcms-architecture/commit/5398b48)
 - **Key technical identifiers:** `npm run type-check`, `api/comments.ts`, `api/workflows.ts`, `/workflows/otp/verify`, `MarkdownEditor.tsx`, `BackupManager.tsx`, `Navbar.tsx`, `comments.ts`, `workflows.ts`, `cd frontend && npm run type-check`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -706,7 +706,7 @@ Several frontend DTO casts, optional values, and unused variables violated stric
 
 ## ISS-020 – ESLint exceeded the 65-warning CI limit
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-020)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-020)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed (2.0.26)
@@ -720,7 +720,7 @@ Hook dependency warnings pushed ESLint beyond the accepted baseline. Dependencie
 - **Recorded versions:** `2.0.26`
 - **Commit:** [`d24f0e0`](https://github.com/techberode/paginiumcms-architecture/commit/d24f0e0)
 - **Key technical identifiers:** `npm run lint`, `package.json`, `react-hooks/exhaustive-deps`, `useToast.ts`, `MediaManager`, `cd frontend && npm run lint`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -731,7 +731,7 @@ Hook dependency warnings pushed ESLint beyond the accepted baseline. Dependencie
 
 ## ISS-021 – Redundant is_array checks failed PHPStan
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-021)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-021)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed (2.0.26)
@@ -744,7 +744,7 @@ PHPStan correctly identified is_array calls on values already guaranteed to be a
 
 - **Commit:** [`d24f0e0`](https://github.com/techberode/paginiumcms-architecture/commit/d24f0e0)
 - **Key technical identifiers:** `ApplicationLogReader.php`, `JsonHelper::decode()`, `./vendor/bin/phpstan analyse backend --level=8`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -755,7 +755,7 @@ PHPStan correctly identified is_array calls on values already guaranteed to be a
 
 ## ISS-022 – MediaManager Vitest assertions were brittle
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-022)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-022)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed (2.0.26)
@@ -768,7 +768,7 @@ Text queries matched duplicated or unstable UI strings and a toast mock changed 
 
 - **Related incidents:** [ISS-020](#iss-020)
 - **Key technical identifiers:** `npm test`, `MediaManager`, `MediaManager.test.tsx`, `findByRole('button', { name: /Preview hero\.png/i })`, `findByRole('checkbox', { name: /Select hero\.png/i })`, `cd frontend && npm test -- src/components/backend/MediaManager.test.tsx`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -779,7 +779,7 @@ Text queries matched duplicated or unstable UI strings and a toast mock changed 
 
 ## ISS-023 – Admin draft search test was flaky
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-023)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-023)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed (2.0.29)
@@ -792,7 +792,7 @@ The test searched using a non-deterministic slug and accidentally overwrote the 
 
 - **Commit:** [`3fd8323`](https://github.com/techberode/paginiumcms-architecture/commit/3fd8323)
 - **Key technical identifiers:** `SearchControllerTest::testAdminSearchIncludesDraftPages`, `TrashControllerTest`, `./vendor/bin/phpunit backend/tests/Http/Controllers/Content/SearchControllerTest.php`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -809,7 +809,7 @@ Failed asserting that an array contains 'seo-test-<uniqid>'.
 
 ## ISS-024 – AuthMiddleware caused HTTP 500 on protected routes
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-024)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-024)
 
 **Severity:** Critical  
 **Status:** ✅ Fixed (2.0.29)
@@ -821,7 +821,7 @@ Dependency injection supplied the wrong constructor shape after AuthMiddleware c
 ### Evidence and traceability
 
 - **Key technical identifiers:** `POST /api/admin/settings/monitoring`, `POST /api/debug/client-event`, `AuthMiddleware`, `SessionManager`, `bootstrap/app.php`, `AuthenticationManager`, `AuthControllerTest`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -838,7 +838,7 @@ AuthMiddleware::__construct(): Argument #2 ($session) must be of type SessionMan
 
 ## ISS-025 – Users were logged out while editing or saving
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-025)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-025)
 
 **Severity:** High  
 **Status:** ✅ Fixed (2.0.29)
@@ -850,7 +850,7 @@ Short lifetimes, multiple session objects, proxy IP binding, and eager frontend 
 ### Evidence and traceability
 
 - **Key technical identifiers:** `/login`, `SESSION_LIFETIME=120`, `SessionManager`, `SESSION_STRICT=true`, `SecureSessionManager`, `TRUSTED_PROXIES`, `AuthenticationManager::touchSession()`, `AuthMiddleware`, `bootstrap/session.php`, `session.cookie_path=/`, `client.ts`, `/api/auth/me`, `POST /api/auth/login`, `GET /api/auth/me`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -870,7 +870,7 @@ TRUSTED_PROXIES=127.0.0.1,::1,192.168.10.26
 
 ## ISS-026 – SESSION_USE_STRICT_MODE was confused with SESSION_STRICT
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-026)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-026)
 
 **Severity:** Medium (ops)  
 **Status:** ✅ Documented (2.0.29)
@@ -882,7 +882,7 @@ The two environment variables control different security mechanisms. Documentati
 ### Evidence and traceability
 
 - **Key technical identifiers:** `SESSION_USE_STRICT_MODE=false`, `.env`, `SESSION_USE_STRICT_MODE`, `SESSION_STRICT`, `SecureSessionManager`, `.env.example`, `SESSION_STRICT=false`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -893,7 +893,7 @@ The two environment variables control different security mechanisms. Documentati
 
 ## ISS-027 – PHPUnit produced false login-401 debug records
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-027)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-027)
 
 **Severity:** Low (diagnostics)  
 **Status:** ✅ Fixed (2.0.29)
@@ -905,7 +905,7 @@ HTTP tests wrote expected failed-login activity into development debug logs. Deb
 ### Evidence and traceability
 
 - **Key technical identifiers:** `storage/logs/debug/*.log`, `APP_ENV=testing`, `DebugEventLogger::isEnabled()`, `./vendor/bin/phpunit`, `APP_DEBUG`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -923,7 +923,7 @@ HTTP tests wrote expected failed-login activity into development debug logs. Deb
 
 ## ISS-028 – Production frontend build failed on malformed JSX
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-028)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-028)
 
 **Severity:** High (deploy)  
 **Status:** ✅ Fixed (2.0.29)
@@ -935,7 +935,7 @@ A misplaced closing element broke the SettingsView JSX tree. The 2FA card struct
 ### Evidence and traceability
 
 - **Key technical identifiers:** `npm run build:prod`, `CacheManagerPanel`, `</div>`, `cd frontend && npm run build:prod`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -953,7 +953,7 @@ SettingsView.tsx:162
 
 ## ISS-029 – Login briefly succeeded and then returned to /login
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-029)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-029)
 
 **Severity:** High  
 **Status:** ✅ 2.0.29 session; **2.0.30** 2FA loop
@@ -967,7 +967,7 @@ Session loss or an eager 401 redirect produced a login loop. Backend session che
 - **Recorded versions:** `2.0.29`, `2.0.30`
 - **Related incidents:** [ISS-025](#iss-025), [ISS-030](#iss-030), [ISS-034](#iss-034)
 - **Key technical identifiers:** `/login`, `/api/auth/me`, `AuthController`, `POST /api/auth/login`, `GET /api/auth/me`, `php backend/bin/console security:clear-lockouts`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -978,7 +978,7 @@ Session loss or an eager 401 redirect produced a login loop. Backend session che
 
 ## ISS-030 – 2FA setup QR disappeared and redirected to TOTP login
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-030)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-030)
 
 **Severity:** High  
 **Status:** ✅ Fixed (2.0.30)
@@ -990,7 +990,7 @@ The setup flow reused the same state as post-login TOTP verification. A setup_pe
 ### Evidence and traceability
 
 - **Key technical identifiers:** `/account/security`, `/login`, `/api/auth/2fa/status`, `TwoFactorMiddleware`, `AuthController::login`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -1001,7 +1001,7 @@ The setup flow reused the same state as post-login TOTP verification. A setup_pe
 
 ## ISS-031 – New staff users had twoFactorEnabled without a secret
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-031)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-031)
 
 **Severity:** Critical  
 **Status:** ✅ Fixed (2.0.30)
@@ -1013,7 +1013,7 @@ Policy code enabled 2FA before a secret existed. Staff accounts now enter 2FA on
 ### Evidence and traceability
 
 - **Key technical identifiers:** `POST /api/auth/2fa/enable`, `UserController`, `TwoFactorController::enable()`, `backend/storage/app/users/{id}.json`, `/account/security`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -1032,7 +1032,7 @@ Policy code enabled 2FA before a secret existed. Staff accounts now enter 2FA on
 
 ## ISS-032 – twoFactorVerifiedAt was not persisted to user JSON
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-032)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-032)
 
 **Severity:** High  
 **Status:** ✅ Fixed (2.0.30)
@@ -1044,7 +1044,7 @@ User serialization omitted the verification timestamp. The field is now included
 ### Evidence and traceability
 
 - **Key technical identifiers:** `UserRepository::extract()`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -1055,7 +1055,7 @@ User serialization omitted the verification timestamp. The field is now included
 
 ## ISS-033 – Frontend 401 interceptor caused a full-page double login
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-033)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-033)
 
 **Severity:** High  
 **Status:** ✅ Fixed (2.0.30)
@@ -1067,7 +1067,7 @@ The Axios interceptor performed a hard browser redirect on every 401. Auth event
 ### Evidence and traceability
 
 - **Key technical identifiers:** `window.location.href = '/login'`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -1078,7 +1078,7 @@ The Axios interceptor performed a hard browser redirect on every 401. Auth event
 
 ## ISS-034 – Development environment lacked a TOTP policy switch
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-034)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-034)
 
 **Severity:** Medium (DX)  
 **Status:** ✅ Fixed (2.0.30)
@@ -1090,7 +1090,7 @@ Development needed a safe way to relax mandatory TOTP. TwoFactorPolicy now permi
 ### Evidence and traceability
 
 - **Key technical identifiers:** `.env`, `APP_ENV=production`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -1108,7 +1108,7 @@ TWO_FACTOR_REQUIRED=false
 
 ## ISS-035 – ClientIpResolver contained a dead null-coalescing fallback
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-035)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-035)
 
 **Severity:** Low (CI)  
 **Status:** ✅ Fixed (2.0.29 hotfix)
@@ -1120,7 +1120,7 @@ explode always returns a non-empty list, so the null-coalescing fallback was unr
 ### Evidence and traceability
 
 - **Recorded versions:** `2.0.29`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -1138,7 +1138,7 @@ ClientIpResolver.php — $parts[0] ?? $remoteAddr
 
 ## ISS-036 – 2FA setup_pending and setUser broke frontend type-checking
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-036)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-036)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed (2.0.30 hotfix `3fbc595`)
@@ -1153,7 +1153,7 @@ The backend snake_case field and frontend camelCase model diverged, and the comp
 - **Commit:** [`f5061e6`](https://github.com/techberode/paginiumcms-architecture/commit/f5061e6)
 - **Commit:** [`3fbc595`](https://github.com/techberode/paginiumcms-architecture/commit/3fbc595)
 - **Key technical identifiers:** `frontend/src/api/auth.ts`, `frontend/src/api/client.ts`, `frontend/src/components/auth/TwoFactorSettings.tsx`, `frontend/src/components/auth/TwoFactorSettings.test.tsx`, `auth.ts`, `cd frontend && npm run type-check && npm test -- --run src/components/auth/TwoFactorSettings.test.tsx`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -1172,7 +1172,7 @@ src/components/auth/TwoFactorSettings.test.tsx — mock missing setupPending
 
 ## ISS-037 – Unused React import failed frontend type-checking
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-037)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-037)
 
 **Severity:** Low (CI)  
 **Status:** ✅ Fixed (hotfix `64cc894`)
@@ -1186,7 +1186,7 @@ The automatic JSX runtime made an explicit React import unused. Removing the imp
 - **Commit:** [`fbb574b`](https://github.com/techberode/paginiumcms-architecture/commit/fbb574b)
 - **Commit:** [`64cc894`](https://github.com/techberode/paginiumcms-architecture/commit/64cc894)
 - **Key technical identifiers:** `SettingsView.test.tsx`, `cd frontend && npm run type-check`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -1203,7 +1203,7 @@ src/components/backend/SettingsView.test.tsx(4,1): error TS6133: 'React' is decl
 
 ## ISS-038 – Content index tag, author, and date filters failed PHPUnit
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-038)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-038)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed (`54b013c`)
@@ -1218,7 +1218,7 @@ Content index tests exposed missing or inconsistent tag, author, date, and disti
 - **Commit:** [`05a4800`](https://github.com/techberode/paginiumcms-architecture/commit/05a4800)
 - **Commit:** [`54b013c`](https://github.com/techberode/paginiumcms-architecture/commit/54b013c)
 - **Key technical identifiers:** `ContentRepositoryTest.php`, `ContentIndexEntry::normalizeIndexedDate()`, `ContentIndexEntry::normalizeTags()`, `ContentIndexService::applyIndexFilters()`, `ContentIndexEntry.php`, `ContentIndexService.php`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -1236,7 +1236,7 @@ php vendor/bin/phpunit --filter ContentRepositoryTest::testListDistinctTagsAndCo
 
 ## ISS-039 – LogWriter tests failed on virtual files and corrupt JSON
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-039)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-039)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed (`54b013c`)
@@ -1250,7 +1250,7 @@ LogWriter tests assumed files existed and did not model damaged JSON safely. Vir
 - **Commit:** [`743e922`](https://github.com/techberode/paginiumcms-architecture/commit/743e922)
 - **Commit:** [`54b013c`](https://github.com/techberode/paginiumcms-architecture/commit/54b013c)
 - **Key technical identifiers:** `LogWriterTest.php`, `Failed asserting that file "vfs://storage/logs/app/YYYY-MM-DD.json" exists`, `FileHelper.php:36`, `vfs://`, `FileHelper::read()`, `LogWriter::salvageCorruptLogPayload()`, `LogWriter::ensureStorageDirectory()`, `LogWriter::readLogFile()`, `LogWriter.php`, `php vendor/bin/phpunit --filter LogWriterTest`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -1261,7 +1261,7 @@ LogWriter tests assumed files existed and did not model damaged JSON safely. Vir
 
 ## ISS-040 – Corrupt access log caused JsonException and global API 500
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-040)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-040)
 
 **Severity:** Critical (prod)  
 **Status:** ✅ Fixed (`743e922`)
@@ -1276,7 +1276,7 @@ One malformed access-log file threw JsonException during global request processi
 - **Commit:** [`54b013c`](https://github.com/techberode/paginiumcms-architecture/commit/54b013c)
 - **Related incidents:** [ISS-039](#iss-039)
 - **Key technical identifiers:** `backend/app/storage/logs/app/YYYY-MM-DD.json`, `RequestLoggingMiddleware`, `LogWriter::decodeLogPayload()`, `RequestLoggingMiddleware::safeLogRequest()`, `LogWriter.php`, `RequestLoggingMiddleware.php`, `./scripts/iteration-gate.sh`, `/api/settings/public`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -1307,7 +1307,7 @@ git pull   # 743e922 + 54b013c
 
 ## ISS-041 – Unused refetch variable failed PagesManager type-checking
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-041)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-041)
 
 **Severity:** Low (CI)  
 **Status:** ✅ Fixed (hotfix 2.0.40)
@@ -1320,7 +1320,7 @@ PagesManager retained an unused refetch binding after a refactor. Removing it re
 
 - **Recorded versions:** `2.0.40`
 - **Key technical identifiers:** `PagesManager.tsx`, `cd frontend && npm run type-check`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -1344,7 +1344,7 @@ const { data: listData, isLoading } = useAdminListQuery({ ... })
 
 ## ISS-042 – First login attempt failed while the second succeeded
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-042)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-042)
 
 **Severity:** High (auth UX)  
 **Status:** ✅ Fixed (**2.0.43**)
@@ -1358,7 +1358,7 @@ The first credentials request succeeded but the immediate session probe failed, 
 - **Recorded versions:** `2.0.42`
 - **Related incidents:** [ISS-029](#iss-029), [ISS-033](#iss-033)
 - **Key technical identifiers:** `GET /api/auth/me`, `POST /api/auth/login`, `/api/auth/me`, `http://localhost:3025`, `/api`, `/me`, `POST /login`, `npm run dev`, `/api/`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -1369,7 +1369,7 @@ The first credentials request succeeded but the immediate session probe failed, 
 
 ## ISS-043 – editorToolbar test used global screen against multiple renders
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-043)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-043)
 
 **Severity:** Low (CI)  
 **Status:** ✅ Fixed (2.0.42 It.54)
@@ -1383,7 +1383,7 @@ A test queried the global document after rendering multiple toolbar profiles. Qu
 - **Recorded versions:** `2.0.41`
 - **Commit:** [`8526c19`](https://github.com/techberode/paginiumcms-architecture/commit/8526c19)
 - **Key technical identifiers:** `editorToolbar.test.tsx`, `npm test -- src/components/backend/editorToolbar.test.tsx`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -1394,7 +1394,7 @@ A test queried the global document after rendering multiple toolbar profiles. Qu
 
 ## ISS-044 – services.php parse error caused all API requests to fail
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-044)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-044)
 
 **Severity:** Critical  
 **Status:** ✅ Fixed (**2.0.45**)
@@ -1407,7 +1407,7 @@ A syntax error in the services container prevented application bootstrap. Correc
 
 - **Recorded versions:** `2.0.45`
 - **Key technical identifiers:** `ValidationController`, `backend/app/Http/Config/services.php`, `POST /api/debug/client-event`, `php -l backend/app/Http/Config/services.php`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -1425,7 +1425,7 @@ A syntax error in the services container prevented application bootstrap. Correc
 
 ## ISS-045 – LocaleScaffoldService projectRoot failed PHPStan and PHPUnit
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-045)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-045)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed (**2.0.45**)
@@ -1438,7 +1438,7 @@ LocaleScaffoldService referenced a projectRoot property that was not defined con
 
 - **Recorded versions:** `2.0.45`
 - **Key technical identifiers:** `LocaleScaffoldService.php`, `./scripts/iteration-gate.sh`, `LocaleScaffoldService`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -1462,7 +1462,7 @@ public function __construct(
 
 ## ISS-046 – Audit events were stored under the app category
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-046)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-046)
 
 **Severity:** High (audit)  
 **Status:** ✅ Fixed (**2.0.46**)
@@ -1476,7 +1476,7 @@ Audit records used the generic app category and disappeared from audit views. Au
 - **Recorded versions:** `2.0.46`
 - **Related incidents:** [ISS-047](#iss-047)
 - **Key technical identifiers:** `storage/logs/app/*.json`, `AuditTrailService::logAuditEvent()`, `LoggerInterface::writeEntry(LogEntry)`, `AuditTrailService`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -1487,7 +1487,7 @@ Audit records used the generic app category and disappeared from audit views. Au
 
 ## ISS-047 – Dashboard activity overview was empty
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-047)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-047)
 
 **Severity:** High (admin UX)  
 **Status:** ✅ Fixed (**2.0.46**)
@@ -1501,7 +1501,7 @@ The dashboard queried or interpreted activity data incorrectly. The overview now
 - **Recorded versions:** `2.0.46`
 - **Related incidents:** [ISS-046](#iss-046), [ISS-048](#iss-048)
 - **Key technical identifiers:** `/dashboard`, `GET /api/admin/audit/stats`, `AuditTrailService::isAuditEntry()`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -1512,7 +1512,7 @@ The dashboard queried or interpreted activity data incorrectly. The overview now
 
 ## ISS-048 – Audit messages were unreadable or used the wrong locale
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-048)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-048)
 
 **Severity:** Medium (audit UX)  
 **Status:** ✅ Fixed (**2.0.46**)
@@ -1525,7 +1525,7 @@ Stored audit summaries were inconsistent and sometimes used the wrong language. 
 
 - **Recorded versions:** `2.0.46`
 - **Key technical identifiers:** `/audit`, `formatAuditEvent.ts`, `formatAuditEvent.test.ts`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -1536,7 +1536,7 @@ Stored audit summaries were inconsistent and sometimes used the wrong language. 
 
 ## ISS-049 – Daily log file 2026-07-21.json was corrupt
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-049)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-049)
 
 **Severity:** Medium (ops)  
 **Status:** ✅ Fixed (**2.0.46**)
@@ -1550,7 +1550,7 @@ A damaged daily JSON log blocked normal reading. Corruption handling and log rep
 - **Recorded versions:** `2.0.46`
 - **Related incidents:** [ISS-046](#iss-046), [ISS-047](#iss-047)
 - **Key technical identifiers:** `backend/app/storage/logs/app/`, `LogWriter::decodeLogPayload()`, `JsonHelper::decode('')`, `2026-07-21.json`, `rm backend/app/storage/logs/app/2026-07-21.json.corrupt-*`, `./vendor/bin/phpunit backend/tests/Core/Logging/Services/LogWriterTest.php`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -1561,7 +1561,7 @@ A damaged daily JSON log blocked normal reading. Corruption handling and log rep
 
 ## ISS-050 – Logs section used the wrong reader path and appeared empty
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-050)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-050)
 
 **Severity:** High (admin UX)  
 **Status:** ✅ Fixed (**2.0.46**)
@@ -1575,7 +1575,7 @@ ApplicationLogReader pointed at a path different from the active log writer. Sto
 - **Recorded versions:** `2.0.46`
 - **Related incidents:** [ISS-049](#iss-049)
 - **Key technical identifiers:** `/logs`, `backend/app/storage/logs/app/`, `Http/Config/services.php`, `backend/storage/logs/`, `app/`, `/logs?severity=info`, `backend/app/storage/logs/*`, `ApplicationLogReader::severityStats()`, `LogController`, `./vendor/bin/phpunit backend/tests/Core/Logging/ApplicationLogReaderTest.php`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -1586,7 +1586,7 @@ ApplicationLogReader pointed at a path different from the active log writer. Sto
 
 ## ISS-051 – DevTokenGenerator exception crashed production boot and CLI
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-051)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-051)
 
 **Severity:** Critical (boot/CLI)  
 **Status:** ✅ Fixed (security_fix hotfix)
@@ -1598,7 +1598,7 @@ A development token generator threw during production container construction. Pr
 ### Evidence and traceability
 
 - **Key technical identifiers:** `APP_ENV=production`, `scripts/run-all-tests.zsh`, `DevTokenGenerator::class`, `APP_ENV`, `backend/.env`, `bootstrap/app.php`, `php backend/bin/console content:diagnose`, `APP_DEBUG=true`, `APP_ENV=development`, `backend/app/Http/Config/services.php`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -1621,7 +1621,7 @@ ISSUE — thrown in .../backend/app/Http/Config/services.php
 
 ## ISS-052 – TOTP, SMTP, SSO, and ntfy secrets were stored in plaintext
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-052)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-052)
 
 **Severity:** Medium (security)  
 **Status:** ✅ Fixed — `EncryptionService` + `APP_KEY`
@@ -1633,7 +1633,7 @@ Sensitive settings and TOTP seeds were persisted in clear text. EncryptionServic
 ### Evidence and traceability
 
 - **Key technical identifiers:** `data/users/*.json`, `data/settings.json`, `EncryptionService`, `backend/app/Core/Security/Services/EncryptionService.php`, `APP_KEY`, `UserRepository`, `SettingsRepository`, `SettingsSchema::secretKeys()`, `EncryptionServiceTest`, `UserRepositoryTest`, `SettingsRepositoryTest`, `EncryptionService.php`, `UserRepository.php`, `SettingsRepository.php`, `SettingsSchema.php`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -1644,7 +1644,7 @@ Sensitive settings and TOTP seeds were persisted in clear text. EncryptionServic
 
 ## ISS-053 – Control characters enabled log and CSV injection
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-053)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-053)
 
 **Severity:** Low–Medium (security)  
 **Status:** ✅ Fixed — `LogSanitizer`
@@ -1656,7 +1656,7 @@ CR/LF and control characters could forge log lines or spreadsheet cells. LogSani
 ### Evidence and traceability
 
 - **Key technical identifiers:** `backend/app/Support/LogSanitizer.php`, `AccessLogService`, `SecurityAuditStore::exportCsv()`, `LogSanitizer.php`, `AccessLogService.php`, `FirewallIncidentLogger.php`, `SecurityAuditStore.php`, `SecurityLogger.php`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -1667,7 +1667,7 @@ CR/LF and control characters could forge log lines or spreadsheet cells. LogSani
 
 ## ISS-054 – Admin-configurable outbound URLs enabled SSRF paths
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-054)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-054)
 
 **Severity:** Low–Medium (security)  
 **Status:** ✅ Fixed — `OutboundUrlGuard`
@@ -1679,7 +1679,7 @@ OAuth, ntfy, webhook, and related URLs could reach unsafe destinations. Outbound
 ### Evidence and traceability
 
 - **Key technical identifiers:** `OutboundUrlGuard`, `backend/app/Core/Security/Services/OutboundUrlGuard.php`, `https://`, `10/8`, `172.16/12`, `192.168/16`, `::1`, `OAuthSsoService`, `OutboundUrlGuardTest`, `OutboundUrlGuard.php`, `OAuthSsoService.php`, `NtfyAdapter.php`, `WebhookAdapter.php`, `DiscordAdapter.php`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -1690,7 +1690,7 @@ OAuth, ntfy, webhook, and related URLs could reach unsafe destinations. Outbound
 
 ## ISS-055 – Path ACL existed but was not enforced for content and media
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-055)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-055)
 
 **Severity:** Medium (security)  
 **Status:** ✅ Fixed — `ContentPathAclGuard`
@@ -1703,7 +1703,7 @@ Path ACL rules existed but content and media operations bypassed them. ContentPa
 
 - **Recorded versions:** `2.0.51`
 - **Key technical identifiers:** `PathAclService`, `/security/acl`, `data/security/acl.json`, `ContentPathAclGuard`, `PathAclService::normalizeStoragePath()`, `pages/foo.md`, `content/pages/foo`, `ContentController`, `DraftController`, `MediaController`, `PathAclServiceTest`, `ContentPathAclGuardTest`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -1714,7 +1714,7 @@ Path ACL rules existed but content and media operations bypassed them. ContentPa
 
 ## ISS-056 – WAF scanned URI and headers but not POST or JSON bodies
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-056)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-056)
 
 **Severity:** Medium (security)  
 **Status:** ✅ Fixed — body scan + editor exempt
@@ -1726,7 +1726,7 @@ The application firewall ignored request bodies. Bounded POST/JSON scanning was 
 ### Evidence and traceability
 
 - **Key technical identifiers:** `FirewallMiddleware`, `multipart/form-data`, `/api/pages`, `/api/articles`, `/api/drafts`, `/api/admin/code-editor`, `APP_ENV=testing`, `FirewallMiddlewareTest`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -1737,7 +1737,7 @@ The application firewall ignored request bodies. Bounded POST/JSON scanning was 
 
 ## ISS-057 – UserRepository lookups scanned every JSON file in O(n)
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-057)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-057)
 
 **Severity:** Low (performance)  
 **Status:** ✅ Fixed — `UserIndexService` + `data/index/users.json`
@@ -1749,7 +1749,7 @@ Every user lookup scanned all JSON files. UserIndexService now maintains an inde
 ### Evidence and traceability
 
 - **Key technical identifiers:** `UserRepository::findByEmail()`, `data/users/*.json`, `UserIndexService`, `data/index/users.json`, `ContentIndexService`, `UserRepository`, `bootstrap/app.php`, `Modules/Security/Config/services.php`, `UserIndexServiceTest`, `UserRepositoryTest`, `UserIndexService.php`, `UserRepository.php`, `scripts/run-all-tests.zsh`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -1760,7 +1760,7 @@ Every user lookup scanned all JSON files. UserIndexService now maintains an inde
 
 ## ISS-058 – OTP lacked a dedicated limiter and resend reset attempts
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-058)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-058)
 
 **Severity:** Medium (security)  
 **Status:** ✅ Fixed — `Otp*RateLimitMiddleware` + `resend_count`
@@ -1772,7 +1772,7 @@ OTP endpoints lacked their own limits and resend could reset attempts. Dedicated
 ### Evidence and traceability
 
 - **Key technical identifiers:** `/api/auth/register*`, `/api/admin/workflows/otp/*`, `OtpStartRateLimitMiddleware`, `OtpVerifyRateLimitMiddleware`, `OtpResendRateLimitMiddleware`, `bootstrap/app.php`, `workflows.php`, `OtpRateLimitMiddlewareTest`, `OtpWorkflowServiceTest`, `OtpRateLimitMiddleware.php`, `OtpVerifyRateLimitMiddleware.php`, `OtpResendRateLimitMiddleware.php`, `OtpStartRateLimitMiddleware.php`, `OtpWorkflowService.php`, `OtpChallengeStore.php`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -1783,7 +1783,7 @@ OTP endpoints lacked their own limits and resend could reset attempts. Dedicated
 
 ## ISS-059 – Vitest used useI18n without I18nProvider
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-059)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-059)
 
 **Severity:** Low (CI)  
 **Status:** ✅ Fixed — `renderWithProviders` (**2.0.47**)
@@ -1798,7 +1798,7 @@ Unit tests rendered components outside the i18n provider. A shared renderWithPro
 - **Commit:** [`f0a885c787e2234f8c117921e75e42b555bfe5a5`](https://github.com/techberode/paginiumcms-architecture/commit/f0a885c787e2234f8c117921e75e42b555bfe5a5)
 - **Related incidents:** [ISS-022](#iss-022)
 - **Key technical identifiers:** `@testing-library/react`, `MediaPreviewLightbox.test.tsx`, `MediaPreviewLightbox.tsx:35`, `SitePreviewModal.test.tsx`, `SitePreviewModal.tsx:137`, `editorToolbar.test.tsx`, `MarkdownContentEditor.tsx:44`, `HealthPanel.test.tsx`, `HealthPanel.tsx:18`, `LocksPanel.test.tsx`, `LocksPanel.tsx:15`, `Unable to find role="dialog" and name /Edit metadata/i`, `frontend/src/test/renderWithProviders.tsx`, `renderWithRouter.tsx`, `MediaManager.test.tsx`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -1816,7 +1816,7 @@ Error: useI18n must be used within I18nProvider
 
 ## ISS-060 – English settings catalogue contained Slovak workflow labels
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-060)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-060)
 
 **Severity:** Medium (i18n UX)  
 **Status:** ✅ Fixed (**2.0.47** / `f0a885c`)
@@ -1830,7 +1830,7 @@ English workflow strings were copied from the Slovak catalogue. The English labe
 - **Recorded versions:** `2.0.47`
 - **Commit:** [`f0a885c`](https://github.com/techberode/paginiumcms-architecture/commit/f0a885c)
 - **Key technical identifiers:** `frontend/src/i18n/modules/settings/en.ts`, `settings/en.ts`, `SettingsSchema.php`, `settings.test.ts`, `SettingsView.tsx`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -1841,7 +1841,7 @@ English workflow strings were copied from the Slovak catalogue. The English labe
 
 ## ISS-061 – Audit messages remained Slovak in the English admin locale
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-061)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-061)
 
 **Severity:** Medium (i18n UX)  
 **Status:** ✅ Fixed (**2.0.49**)
@@ -1855,7 +1855,7 @@ Audit formatting ignored the selected English locale. Message generation now app
 - **Recorded versions:** `2.0.49`
 - **Related incidents:** [ISS-048](#iss-048)
 - **Key technical identifiers:** `/audit`, `Lang::getLocale()`, `formatAuditEvent.ts`, `backend/lang/{sk,en}/audit.php`, `Lang::get()`, `AuditTrailService::buildDiffMetadata()`, `audit.php`, `AuditMessageFormatter.php`, `AuditTrailService.php`, `EnhancedVersionManager.php`, `AuditTrail.tsx`, `DashboardActivityPanel.tsx`, `i18n/modules/audit/*`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -1866,7 +1866,7 @@ Audit formatting ignored the selected English locale. Message generation now app
 
 ## ISS-062 – Public website contained hard-coded Slovak strings
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-062)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-062)
 
 **Severity:** Medium (i18n UX)  
 **Status:** ✅ Fixed (**2.0.50**)
@@ -1879,7 +1879,7 @@ Public components contained literal Slovak text. Public-site strings now pass th
 
 - **Recorded versions:** `2.0.50`
 - **Key technical identifiers:** `frontend/src/components/frontend/*`, `contentDates.ts`, `readingTime.ts`, `frontend/src/i18n/modules/public/{sk,en}.ts`, `public.test.ts`, `i18n/modules/public/*`, `BlogRenderer.tsx`, `Navbar.tsx`, `LoginModal.tsx`, `PublicSiteContext.tsx`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -1890,7 +1890,7 @@ Public components contained literal Slovak text. Public-site strings now pass th
 
 ## ISS-063 – Invalid date values crashed admin and public views
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-063)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-063)
 
 **Severity:** High (prod crash)  
 **Status:** ✅ **2.0.51**
@@ -1904,7 +1904,7 @@ Invalid or missing date values reached Intl formatting and threw RangeError. Dat
 - **Recorded versions:** `2.0.50`, `2.0.51`
 - **Related incidents:** [ISS-062](#iss-062)
 - **Key technical identifiers:** `contentDates.ts`, `VersionHistory.tsx`, `AuditTrail.tsx`, `PagesManager.tsx`, `LockIndicator.tsx`, `contentDates.test.ts`, `/pages/home`, `SiteSearchModal.tsx`, `PageRenderer.tsx`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -1923,7 +1923,7 @@ RangeError: Invalid time value
 
 ## ISS-064 – DEFAULT_LOCALE was not exported from i18n/index.ts
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-064)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-064)
 
 **Severity:** Low (CI)  
 **Status:** ✅ **2.0.51**
@@ -1937,7 +1937,7 @@ The locale constant existed but was not exported through the public i18n barrel.
 - **Recorded versions:** `2.0.51`
 - **Related incidents:** [ISS-062](#iss-062)
 - **Key technical identifiers:** `npm run type-check`, `../i18n`, `frontend/src/i18n/index.ts`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -1960,7 +1960,7 @@ export { DEFAULT_LOCALE, type Locale, type MessageTree, type MessageValue } from
 
 ## ISS-065 – Admin logs were two hours behind because PHP used UTC
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-065)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-065)
 
 **Severity:** Medium (ops)  
 **Status:** ✅ **2.0.51**
@@ -1972,7 +1972,7 @@ PHP used UTC while the admin expected Europe/Bratislava. Application timezone co
 ### Evidence and traceability
 
 - **Key technical identifiers:** `APP_TIMEZONE=Europe/Bratislava`, `.env`, `backend/bootstrap/timezone.php`, `APP_TIMEZONE`, `LocaleMiddleware`, `Europe/Bratislava`, `AppTimezone.php`, `bootstrap/timezone.php`, `LocaleMiddleware.php`, `SystemChecker.php`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -1983,7 +1983,7 @@ PHP used UTC while the admin expected Europe/Bratislava. Application timezone co
 
 ## ISS-066 – CronExpressionEvaluator same-minute and DST tests failed
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-066)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-066)
 
 **Severity:** Low (CI)  
 **Status:** ✅ **2.0.51**
@@ -1995,7 +1995,7 @@ Cron due-state logic mishandled same-minute execution and daylight-saving transi
 ### Evidence and traceability
 
 - **Key technical identifiers:** `./vendor/bin/phpunit`, `CronExpressionEvaluatorTest::testIsDueSinceLastRunSkipsSameMinute`, `Europe/Bratislava`, `CronExpressionEvaluator.php`, `CronExpressionEvaluatorTest.php`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -2006,7 +2006,7 @@ Cron due-state logic mishandled same-minute execution and daylight-saving transi
 
 ## ISS-067 – LocaleMiddleware test mock broke after timezone middleware
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-067)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-067)
 
 **Severity:** Low (CI)  
 **Status:** ✅ **2.0.51**
@@ -2018,7 +2018,7 @@ Timezone middleware changed the request flow expected by a locale test mock. The
 ### Evidence and traceability
 
 - **Key technical identifiers:** `LocaleMiddlewareTest::testUsesConfiguredLanguageFromSettings`, `LocaleMiddlewareTest.php`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -2029,7 +2029,7 @@ Timezone middleware changed the request flow expected by a locale test mock. The
 
 ## ISS-068 – Expected Code Policy rejection was logged as ERROR with stack trace
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-068)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-068)
 
 **Severity:** Medium (logging)  
 **Status:** ✅ **2.0.51**
@@ -2041,7 +2041,7 @@ A user-facing policy rejection was treated as an application error. Logging seve
 ### Evidence and traceability
 
 - **Key technical identifiers:** `CodeEditorControllerTest::testSaveFileRejectsPolicyViolation`, `CodeEditorManager`, `CodeEditorLogger.php`, `CodeEditorManager.php`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -2058,7 +2058,7 @@ Error in file backend/app/Modules/PolicyTest.php: Code policy validation failed
 
 ## ISS-069 – Timezone setting was only a free-text field
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-069)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-069)
 
 **Severity:** Medium (admin UX)  
 **Status:** ✅ **2.0.51**
@@ -2070,7 +2070,7 @@ Free-text timezone input allowed invalid identifiers and poor usability. Setting
 ### Evidence and traceability
 
 - **Key technical identifiers:** `TimezoneSelect.tsx`, `utils/timezones.ts`, `Validator.php`, `SettingsSchema.php`, `timezones.ts`, `SettingsView.tsx`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -2081,7 +2081,7 @@ Free-text timezone input allowed invalid identifiers and poor usability. Setting
 
 ## ISS-070 – Settings lacked a daylight-saving-time switch
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-070)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-070)
 
 **Severity:** Medium (ops)  
 **Status:** ✅ **2.0.51**
@@ -2093,7 +2093,7 @@ Operators could not choose fixed-standard-time behavior. A DST policy switch and
 ### Evidence and traceability
 
 - **Key technical identifiers:** `Europe/Bratislava`, `SettingsSchema.php`, `AppTimezone.php`, `TimezoneSelect.tsx`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -2104,7 +2104,7 @@ Operators could not choose fixed-standard-time behavior. A DST policy switch and
 
 ## ISS-071 – Logs lacked bulk actions, delete-all, and pagination
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-071)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-071)
 
 **Severity:** Medium (admin UX)  
 **Status:** ✅ Fixed · **2.0.51**
@@ -2117,7 +2117,7 @@ Log management could not efficiently handle large datasets. Bulk archive/delete,
 
 - **Recorded versions:** `2.0.51`
 - **Key technical identifiers:** `/logs`, `LogsManager`, `POST /api/admin/logs/bulk`, `POST /api/admin/logs/delete-all`, `LogControllerTest`, `ApplicationLogReader.php`, `LogController.php`, `logs.php`, `LogsManager.tsx`, `logs.ts`, `AdminListToolbar.tsx`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -2128,7 +2128,7 @@ Log management could not efficiently handle large datasets. Bulk archive/delete,
 
 ## ISS-072 – Security audit endpoint returned 403 for ADMIN
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-072)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-072)
 
 **Severity:** Medium (regression)  
 **Status:** ✅ Fixed · **2.0.52**
@@ -2140,7 +2140,7 @@ The security audit route required a permission stricter than the intended ADMIN 
 ### Evidence and traceability
 
 - **Key technical identifiers:** `GET /api/admin/security/audit`, `SecurityAuditControllerTest`, `/api/admin/security/*`, `backend/app/Http/Routes/security.php`, `GET /audit`, `GET /audit/export`, `GET/PUT /acl`, `./vendor/bin/phpunit --filter SecurityAuditControllerTest`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -2151,7 +2151,7 @@ The security audit route required a permission stricter than the intended ADMIN 
 
 ## ISS-073 – Login tests returned 429 instead of 401 because lockouts persisted
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-073)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-073)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed · **2.0.52**
@@ -2164,7 +2164,7 @@ Lockout state persisted across login tests, changing expected 401 responses into
 
 - **Related incidents:** [ISS-015](#iss-015)
 - **Key technical identifiers:** `ApiResponseShapeTest::testLoginErrorShape`, `AuthControllerTest::testLoginWithNonExistentEmail`, `data/security/login_attempts.json`, `AuthController::login()`, `backend/tests/Http/TestCase.php`, `LoginAttemptTracker::clearAll()`, `./vendor/bin/phpunit`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -2175,7 +2175,7 @@ Lockout state persisted across login tests, changing expected 401 responses into
 
 ## ISS-074 – Access-control and branding changes introduced ten PHPStan errors
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-074)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-074)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed · **2.0.52**
@@ -2188,7 +2188,7 @@ New access-control and branding shapes were insufficiently typed. Schemas, servi
 
 - **Related incidents:** [ISS-055](#iss-055)
 - **Key technical identifiers:** `./vendor/bin/phpstan analyse --level=8 backend/app`, `AccessControlSyncService`, `SettingsSchema.php`, `AccessControlSyncService.php`, `PermissionCatalog.php`, `Http/Config/services.php`, `use AccessControlSyncService`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -2199,7 +2199,7 @@ New access-control and branding shapes were insufficiently typed. Schemas, servi
 
 ## ISS-075 – PHPUnit crashed on duplicate HelloWidget Hooks class
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-075)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-075)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed · **2.0.54**
@@ -2211,7 +2211,7 @@ A reference plugin class was loaded more than once in one PHPUnit process. Fixtu
 ### Evidence and traceability
 
 - **Key technical identifiers:** `PluginManagerTest::testEnableRegistersHooksOnBoot`, `PluginManager::loadPluginClasses()`, `PluginManagerTest.php`, `./vendor/bin/phpunit`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -2230,7 +2230,7 @@ in /tmp/pag_plugins_mgr_…/extensions/hello-widget/src/Hooks.php on line 7
 
 ## ISS-076 – passwordConfirm rollout triggered a cascade of 21 PHPUnit failures
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-076)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-076)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed · **2.0.56**
@@ -2244,7 +2244,7 @@ The new password confirmation requirement invalidated many test payloads and cas
 - **Recorded versions:** `2.0.56`
 - **Commit:** [`0664ba3`](https://github.com/techberode/paginiumcms-architecture/commit/0664ba3)
 - **Key technical identifiers:** `GET /api/media`, `MediaControllerTest`, `OtpWorkflowServiceTest`, `AuthController::register`, `ValidationRules::validatePasswordConfirmation()`, `CoreHardeningTest.php`, `try/finally`, `TestCase.php`, `AuthControllerTest.php`, `./vendor/bin/phpunit`, `POST /api/auth/register`, `GET /api/auth/me`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -2263,7 +2263,7 @@ Failed asserting that null is not null.
 
 ## ISS-077 – Audit-trail CSV export bypassed LogSanitizer
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-077)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-077)
 
 **Severity:** Medium (security)  
 **Status:** ✅ Fixed · **2.1.0-beta.2**
@@ -2275,7 +2275,7 @@ Audit CSV export did not pass every cell through the injection sanitizer. The ex
 ### Evidence and traceability
 
 - **Key technical identifiers:** `AuditTrailService::exportAuditToCsv()`, `SecurityAuditStore::exportCsv()`, `LogSanitizer::value()`, `AuditTrailServiceTest::testExportAuditToCsvSanitizesAllCells()`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -2286,7 +2286,7 @@ Audit CSV export did not pass every cell through the injection sanitizer. The ex
 
 ## ISS-078 – react-router-dom advisories appeared after beta.2
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-078)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-078)
 
 **Severity:** Medium (dependency)  
 **Status:** ✅ Fixed · **2.1.0-beta.3**
@@ -2299,7 +2299,7 @@ Dependency advisories arrived immediately after a beta tag. The router packages 
 
 - **Recorded versions:** `v2.1.0-beta.2`
 - **Key technical identifiers:** `npm audit --audit-level=high`, `npm audit --audit-level=moderate`, `npm audit --audit-level=**high**`, `frontend/package.json`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -2310,7 +2310,7 @@ Dependency advisories arrived immediately after a beta tag. The router packages 
 
 ## ISS-079 – Blog profile rejected existing fenced code blocks on save
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-079)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-079)
 
 **Severity:** High (admin UX)  
 **Status:** ✅ Fixed · **2.1.0-beta.5**
@@ -2323,7 +2323,7 @@ Code Policy interpreted an existing Markdown fence as unsafe executable code. Th
 
 - **Recorded versions:** `v2.1.0-beta.5`
 - **Key technical identifiers:** `EditorProfileService`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -2334,7 +2334,7 @@ Code Policy interpreted an existing Markdown fence as unsafe executable code. Th
 
 ## ISS-080 – ContentMetaController called a missing getGroup method
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-080)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-080)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed · **2.1.0-beta.4**
@@ -2347,7 +2347,7 @@ The controller called a settings method that did not exist on the injected servi
 
 - **Recorded versions:** `v2.1.0-beta.4`
 - **Key technical identifiers:** `./scripts/iteration-gate.sh`, `POST /api/admin/content/suggest-meta`, `ContentMetaController.php`, `SettingsRepositoryInterface`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -2364,7 +2364,7 @@ Call to an undefined method SettingsRepositoryInterface::getGroup()
 
 ## ISS-081 – Partial @tiptap dependency update caused peer conflict and CI failure
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-081)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-081)
 
 **Severity:** Medium (CI / deps)  
 **Status:** ✅ Fixed · **2.1.0-beta.4**
@@ -2378,7 +2378,7 @@ Dependabot updated only part of the tightly coupled TipTap family. Packages are 
 - **Recorded versions:** `2.8.3`
 - **Related incidents:** [ISS-082](#iss-082), [ISS-083](#iss-083)
 - **Key technical identifiers:** `@tiptap/extension-*`, `npm ci`, `@tiptap/extension-image@3.28.0`, `@tiptap/core@3.28.0`, `@tiptap/*`, `frontend/package.json`, `package-lock.json`, `rm package-lock.json && npm install`, `league/commonmark`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -2389,7 +2389,7 @@ Dependabot updated only part of the tightly coupled TipTap family. Packages are 
 
 ## ISS-082 – symfony/yaml 8 upgrade was incompatible with the current constraint
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-082)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-082)
 
 **Severity:** Low (technical debt)  
 **Status:** ⏳ Deferred — major migrácia
@@ -2401,7 +2401,7 @@ The suggested major Symfony YAML version exceeded the declared compatibility ran
 ### Evidence and traceability
 
 - **Key technical identifiers:** `symfony/yaml`, `composer.json`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -2412,7 +2412,7 @@ The suggested major Symfony YAML version exceeded the declared compatibility ran
 
 ## ISS-083 – ESLint 10 required a breaking flat-config migration
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-083)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-083)
 
 **Severity:** Low (technical debt)  
 **Status:** ⏳ Deferred — samostatný upgrade
@@ -2424,7 +2424,7 @@ ESLint 10 changes configuration and plugin compatibility. The upgrade is deferre
 ### Evidence and traceability
 
 - **Related incidents:** [ISS-011](#iss-011)
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -2435,7 +2435,7 @@ ESLint 10 changes configuration and plugin compatibility. The upgrade is deferre
 
 ## ISS-084 – Chrome sessions expired after roughly 24 minutes and caused 401 cascades
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-084)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-084)
 
 **Severity:** High (auth UX)  
 **Status:** ✅ Fixed · **2.1.0-beta.5**
@@ -2449,7 +2449,7 @@ Session lifetime and keepalive behavior in Chrome caused a burst of unauthorized
 - **Recorded versions:** `v2.1.0-beta.5`
 - **Related incidents:** [ISS-025](#iss-025), [ISS-029](#iss-029), [ISS-042](#iss-042)
 - **Key technical identifiers:** `/login`, `GET /api/auth/me`, `GET /api/admin/counts`, `GET /api/media`, `GET /api/admin/users`, `DemoMode::sessionLifetimeSeconds()`, `SessionManager::refreshCookieLifetime()`, `SecureSessionManager::touch()`, `AuthMiddleware`, `.env`, `SESSION_LIFETIME=28800`, `backend/bootstrap/session.php`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -2460,7 +2460,7 @@ Session lifetime and keepalive behavior in Chrome caused a burst of unauthorized
 
 ## ISS-085 – Rich navigation icon rendered as an empty frame and hid description
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-085)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-085)
 
 **Severity:** Medium (admin/public UX)  
 **Status:** ✅ Fixed · **2.1.0-beta.5**
@@ -2472,7 +2472,7 @@ Icon metadata and responsive rendering produced an empty frame and hid descripti
 ### Evidence and traceability
 
 - **Key technical identifiers:** `navigationRich.ts`, `Navbar.tsx`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -2483,7 +2483,7 @@ Icon metadata and responsive rendering produced an empty frame and hid descripti
 
 ## ISS-086 – Stored XSS survived strip_tags through dangerous attributes and schemes
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-086)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-086)
 
 **Severity:** **Critical (security)**  
 **Status:** ✅ Fixed · **2.1.0-beta.6**
@@ -2495,7 +2495,7 @@ strip_tags removed elements but not dangerous attributes or URL schemes. A dedic
 ### Evidence and traceability
 
 - **Key technical identifiers:** `ContentSecuritySanitizer::sanitizeHtml()`, `ContentSecuritySanitizer.php`, `frontend/src/utils/sanitizeHtml.ts`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -2506,7 +2506,7 @@ strip_tags removed elements but not dangerous attributes or URL schemes. A dedic
 
 ## ISS-087 – LAN frontend deploy script contained hard-coded host, user, and port
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-087)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-087)
 
 **Severity:** Medium (ops / hygiene)  
 **Status:** ✅ Fixed · **2.1.0-beta.6**
@@ -2518,7 +2518,7 @@ A deploy helper embedded environment-specific connection data. Host, user, port,
 ### Evidence and traceability
 
 - **Key technical identifiers:** `scripts/deploy-frontend-lan.sh`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -2535,7 +2535,7 @@ DEPLOY_HOST=192.168.x.x DEPLOY_USER=yourName DEPLOY_SSH_PORT=22 ./scripts/deploy
 
 ## ISS-088 – Backup import was vulnerable to Zip-Slip through extractTo
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-088)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-088)
 
 **Severity:** Medium (security)  
 **Status:** ✅ Fixed · **2.1.0-beta.6**
@@ -2548,7 +2548,7 @@ Direct archive extraction allowed traversal entries to escape the restore direct
 
 - **Related incidents:** [ISS-086](#iss-086)
 - **Key technical identifiers:** `BackupManager::importBackup()`, `ZipEntryGuard::isSafeEntry()`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -2559,7 +2559,7 @@ Direct archive extraction allowed traversal entries to escape the restore direct
 
 ## ISS-089 – React Router RSC-only advisory was accepted as not reachable in the SPA
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-089)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-089)
 
 **Severity:** Low (false positive SPA)  
 **Status:** ⏳ Accepted · CI `--audit-level=critical`
@@ -2572,7 +2572,7 @@ The advisory applies to React Server Components, while this product uses a React
 
 - **Related incidents:** [ISS-078](#iss-078), [ISS-083](#iss-083)
 - **Key technical identifiers:** `npm audit`, `npm audit --audit-level=critical`, `frontend/package.json`, `npm audit fix --force`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -2583,7 +2583,7 @@ The advisory applies to React Server Components, while this product uses a React
 
 ## ISS-090 – eslint latest and npm audit fix caused dependency resolution failure
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-090)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-090)
 
 **Severity:** Low (CI/deps)  
 **Status:** ✅ Fixed · **2.1.0-beta.7**
@@ -2595,7 +2595,7 @@ An unbounded latest dependency and forced audit fix created peer conflicts. Vers
 ### Evidence and traceability
 
 - **Key technical identifiers:** `npm audit fix`, `@eslint/js@^9.39.0`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -2606,7 +2606,7 @@ An unbounded latest dependency and forced audit fix created peer conflicts. Vers
 
 ## ISS-091 – React Router override and useOptimistic caused fourteen Vitest failures
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-091)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-091)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed · **2.1.0-beta.7**
@@ -2625,7 +2625,7 @@ A router override installed an incompatible major version and exposed unsupporte
 
 ## ISS-092 – Deploy script mixed local environment assumptions with invalid :? syntax
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-092)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-092)
 
 **Severity:** Low (ops)  
 **Status:** ✅ Fixed · **2.1.0-beta.7**
@@ -2637,7 +2637,7 @@ The deploy script depended on local-only variables and used invalid parameter ex
 ### Evidence and traceability
 
 - **Key technical identifiers:** `scripts/deploy-frontend-lan.env.local`, `.env.example`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -2648,7 +2648,7 @@ The deploy script depended on local-only variables and used invalid parameter ex
 
 ## ISS-093 – brace-expansion override broke ESLint with expand is not a function
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-093)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-093)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed · odstránený override
@@ -2661,7 +2661,7 @@ Forcing brace-expansion 5 beneath minimatch 3 broke ESLint internals. The incomp
 
 - **Related incidents:** [ISS-083](#iss-083), [ISS-089](#iss-089)
 - **Key technical identifiers:** `npm run lint`, `@eslint/config-array`, `package.json`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -2672,7 +2672,7 @@ Forcing brace-expansion 5 beneath minimatch 3 broke ESLint internals. The incomp
 
 ## ISS-094 – Production job scheduler run endpoint returned HTTP 500
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-094)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-094)
 
 **Severity:** High (prod)  
 **Status:** ✅ Fixed · **It.62** (`f7a73f1`)
@@ -2687,7 +2687,7 @@ The scheduler API could not write its Docker-backed storage and the UI obscured 
 - **Commit:** [`0fe21ec`](https://github.com/techberode/paginiumcms-architecture/commit/0fe21ec)
 - **Commit:** [`f7a73f1`](https://github.com/techberode/paginiumcms-architecture/commit/f7a73f1)
 - **Key technical identifiers:** `POST /api/admin/jobs/{id}/run`, `backend/storage/app/content/data/jobs/runs.json`, `scheduler-state.json`, `LogStoragePaths.php`, `composer.json`, `ScheduledJobRunner::finalizeRun()`, `docker/php/php.ini`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -2706,7 +2706,7 @@ The scheduler API could not write its Docker-backed storage and the UI obscured 
 
 ## ISS-095 – Maintenance heroImageUrl rejected valid /storage/ paths
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-095)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-095)
 
 **Severity:** Medium (admin UX)  
 **Status:** ✅ Fixed · **main `88cbe31`**
@@ -2719,7 +2719,7 @@ Validation accepted only external URLs and rejected internal media paths. Mainte
 
 - **Commit:** [`88cbe31`](https://github.com/techberode/paginiumcms-architecture/commit/88cbe31)
 - **Key technical identifiers:** `/storage/app/content/media/…`, `https://…`, `/storage/`, `SettingsRepositoryTest::testMaintenanceHeroImageUrlAcceptsStoragePath`, `npm run build:prod`, `./stack.sh restart php`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -2730,7 +2730,7 @@ Validation accepted only external URLs and rejected internal media paths. Mainte
 
 ## ISS-096 – Temporary 502 occurred immediately after restarting the PHP container
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-096)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-096)
 
 **Severity:** Low (ops)  
 **Status:** ℹ️ Informational — počkať 5–10 s
@@ -2742,7 +2742,7 @@ nginx briefly reached PHP while the container was restarting. Deployment now tre
 ### Evidence and traceability
 
 - **Key technical identifiers:** `./stack.sh restart php`, `/api/health`, `./stack.sh logs --tail=50 php`, `GET /api/pages`, `/api/navigation`, `GET /api/auth/me`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -2761,7 +2761,7 @@ curl -s http://127.0.0.1:8089/api/health
 
 ## ISS-097 – Newsletter subscribers had no administration interface
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-097)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-097)
 
 **Severity:** Medium  
 **Status:** ✅ Fixed · **It.61**
@@ -2773,7 +2773,7 @@ Subscription data existed but administrators could not inspect or manage it. Ite
 ### Evidence and traceability
 
 - **Key technical identifiers:** `POST /api/maintenance/newsletter`, `data/newsletter/subscribers.json`, `NewsletterRepository::findAll()`, `POST /api/newsletter/subscribe`, `/newsletter`, `GET /api/admin/newsletter/subscribers`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -2793,7 +2793,7 @@ cat backend/storage/app/content/data/newsletter/subscribers.json | jq .
 
 ## ISS-098 – Demo login returned empty 401 responses because of CORS and APP_URL
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-098)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-098)
 
 **Severity:** **High (demo)**  
 **Status:** ✅ Fixed · **SameOriginCors** + `.env`
@@ -2805,7 +2805,7 @@ Frontend origin and APP_URL disagreed, producing an empty CORS failure. Same-ori
 ### Evidence and traceability
 
 - **Key technical identifiers:** `POST /api/auth/login`, `Content-Type: text/html`, `Origin: https://demo.paginiumcms.com`, `CorsMiddleware`, `.env`, `APP_URL=https://paginiumcms.com`, `SameOriginCorsMiddleware`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -2838,7 +2838,7 @@ cd /var/lib/docker/compose/paginiumcms-demo && ./stack.sh up -d
 
 ## ISS-099 – Demo reset CLI lacked permission to update plugins.json
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-099)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-099)
 
 **Severity:** Medium (demo ops)  
 **Status:** ℹ️ Ops — storage `chown user:www-data`, dirs `2775`
@@ -2851,7 +2851,7 @@ The cron identity lacked group write access to demo storage. Shared group owners
 
 - **Related incidents:** [ISS-094](#iss-094)
 - **Key technical identifiers:** `php backend/bin/console demo:reset-if-due`, `PluginManager`, `data/plugins.json`, `runs.json`, `./stack.sh exec -T php php backend/bin/console demo:reset-if-due`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -2881,7 +2881,7 @@ php backend/bin/console demo:reset-if-due
 
 ## ISS-100 – Public settings exposed the demo password
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-100)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-100)
 
 **Severity:** Medium (audit)  
 **Status:** ✅ **`v2.1.0-beta.11`** — quick-login, no password in GET
@@ -2894,7 +2894,7 @@ A public settings response exposed reusable demo credentials. Quick-login now pe
 
 - **Recorded versions:** `v2.1.0-beta.11`
 - **Key technical identifiers:** `curl …/api/settings/public`, `POST /api/demo/quick-login`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -2914,7 +2914,7 @@ curl -sS -X POST https://demo.paginiumcms.com/api/demo/quick-login | jq '.succes
 
 ## ISS-101 – Editor crashed because capabilities was not normalized to an array
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-101)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-101)
 
 **Severity:** High (demo/admin)  
 **Status:** ✅ **`v2.1.0-beta.11`** — normalize API profile shape
@@ -2927,7 +2927,7 @@ The editor assumed capabilities was always an array. API profile normalization n
 
 - **Recorded versions:** `v2.1.0-beta.11`
 - **Key technical identifiers:** `/api/settings/public`, `frontend/src/utils/editorProfiles.ts`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -2938,7 +2938,7 @@ The editor assumed capabilities was always an array. API profile normalization n
 
 ## ISS-102 – Demo API returned HTTP 500 because the demo data tree could not be created
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-102)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-102)
 
 **Severity:** **High (demo)**  
 **Status:** ✅ Ops — storage bootstrap (2026-07-27)
@@ -2951,7 +2951,7 @@ The demo runtime could not create required directories under its storage owner. 
 
 - **Related incidents:** [ISS-099](#iss-099), [ISS-094](#iss-094)
 - **Key technical identifiers:** `/api/health`, `demo/data missing`, `$APP_ROOT/storage/app/demo/...`, `backend/storage/app/demo/data/`, `data/`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -2984,7 +2984,7 @@ sudo find "$STORAGE" -type f -exec chmod 664 {} \;
 
 ## ISS-103 – Local DEMO_MODE polluted PHPUnit OTP and 2FA tests
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-103)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-103)
 
 **Severity:** Medium (dev/CI)  
 **Status:** ✅ **`v2.1.0-beta.12`** — test bootstrap izolácia
@@ -2997,7 +2997,7 @@ The local .env leaked DEMO_MODE into HTTP tests. Testing bootstrap now overrides
 
 - **Recorded versions:** `v2.1.0-beta.12`
 - **Key technical identifiers:** `./scripts/run-all-tests.zsh`, `AuthControllerTest`, `CommentsControllerTest`, `.env`, `bootstrap/app.php`, `APP_ENV=testing`, `backend/tests/Http/TestCase.php`, `CsrfMiddleware`, `/api/auth/register/verify-otp`, `…/resend-otp`, `APP_ENV`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -3008,7 +3008,7 @@ The local .env leaked DEMO_MODE into HTTP tests. Testing bootstrap now overrides
 
 ## ISS-104 – ADMIN could bypass SUPER_ADMIN through the system-deploy jobs API
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-104)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-104)
 
 **Severity:** Medium (audit)  
 **Status:** ✅ **`v2.1.0-beta.15`**
@@ -3021,7 +3021,7 @@ Generic job execution authorization allowed ADMIN to trigger a SUPER_ADMIN deplo
 
 - **Recorded versions:** `v2.1.0-beta.15`
 - **Key technical identifiers:** `/api/admin/system/update/run`, `PUT /api/admin/jobs/system-deploy`, `POST /api/admin/jobs/system-deploy/run`, `JobsController`, `ScheduledJobRunner::runDue()`, `JobsControllerPrivilegedDeployTest`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -3032,7 +3032,7 @@ Generic job execution authorization allowed ADMIN to trigger a SUPER_ADMIN deplo
 
 ## ISS-105 – GeoIP lookup used cleartext HTTP without OutboundUrlGuard
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-105)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-105)
 
 **Severity:** Low (audit)  
 **Status:** ✅ **`v2.1.0-beta.15`**
@@ -3045,7 +3045,7 @@ GeoIP used an unencrypted external endpoint and bypassed outbound policy. The in
 
 - **Recorded versions:** `v2.1.0-beta.15`
 - **Key technical identifiers:** `GeoIPService`, `http://ip-api.com`, `OutboundUrlGuard`, `OutboundUrlGuard::isAllowed()`, `GeoIPServiceTest`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -3056,7 +3056,7 @@ GeoIP used an unencrypted external endpoint and bypassed outbound policy. The in
 
 ## ISS-106 – DEMO_MODE could be enabled in production without failing closed
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-106)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-106)
 
 **Severity:** Low (audit)  
 **Status:** ✅ **`v2.1.0-beta.16`**
@@ -3069,7 +3069,7 @@ A production instance could accidentally start in demo mode. Startup validation 
 
 - **Recorded versions:** `v2.1.0-beta.16`
 - **Key technical identifiers:** `APP_ENV=production`, `DemoMode::isEnabledFromEnv()`, `DemoControllerTest`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -3080,7 +3080,7 @@ A production instance could accidentally start in demo mode. Startup validation 
 
 ## ISS-107 – Maintenance newsletter subscription lacked honeypot and dedicated rate limit
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-107)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-107)
 
 **Severity:** Low (audit)  
 **Status:** ✅ **`v2.1.0-beta.16`**
@@ -3093,7 +3093,7 @@ The anonymous maintenance subscription endpoint lacked anti-bot and workflow-spe
 
 - **Recorded versions:** `v2.1.0-beta.16`
 - **Key technical identifiers:** `/api/maintenance/newsletter`, `NewsletterSubscribeRateLimitMiddleware`, `NewsletterControllerTest`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -3104,7 +3104,7 @@ The anonymous maintenance subscription endpoint lacked anti-bot and workflow-spe
 
 ## ISS-108 – GitHubService curl calls bypassed OutboundUrlGuard
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-108)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-108)
 
 **Severity:** Info (audit)  
 **Status:** ✅ **`v2.1.0-beta.16`**
@@ -3118,7 +3118,7 @@ GitHubService performed direct curl requests outside centralized SSRF controls. 
 - **Recorded versions:** `v2.1.0-beta.16`
 - **Related incidents:** [ISS-054](#iss-054)
 - **Key technical identifiers:** `GitHubService::apiRequest()`, `OutboundUrlGuard`, `OutboundUrlGuard::fromEnv()->assertAllowed($url)`, `GitHubServiceTest`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -3129,7 +3129,7 @@ GitHubService performed direct curl requests outside centralized SSRF controls. 
 
 ## ISS-109 – Newsletter footer call-to-action was too large
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-109)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-109)
 
 **Severity:** Low (UX)  
 **Status:** ✅ **`v2.1.0-beta.18`**
@@ -3141,7 +3141,7 @@ The footer subscription block dominated the layout. Responsive spacing and conte
 ### Evidence and traceability
 
 - **Recorded versions:** `v2.1.0-beta.18`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -3152,7 +3152,7 @@ The footer subscription block dominated the layout. Responsive spacing and conte
 
 ## ISS-110 – Production SEO endpoint returned 500 due to cache shape collision
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-110)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-110)
 
 **Severity:** **High (prod)**  
 **Status:** ✅ **`v2.1.0-beta.21`**
@@ -3165,7 +3165,7 @@ A cached array was treated as a Content object in SEO serialization. Cache norma
 
 - **Recorded versions:** `v2.1.0-beta.21`
 - **Key technical identifiers:** `GET /api/seo/page/home 500`, `GET /api/seo/article/… 500`, `ContentController`, `SeoController`, `ContentRepository`, `ContentCacheService`, `GET /api/seo/page/home`, `GET /api/pages/home`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -3176,7 +3176,7 @@ A cached array was treated as a Content object in SEO serialization. Cache norma
 
 ## ISS-111 – LoggerTest and PHPStan regressed after testing-environment log suppression
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-111)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-111)
 
 **Severity:** Medium (CI/tests)  
 **Status:** ✅ **`v2.1.0-beta.21`**
@@ -3189,7 +3189,7 @@ Suppressing logs in testing changed test assumptions and exposed static type iss
 
 - **Recorded versions:** `v2.1.0-beta.21`
 - **Key technical identifiers:** `AccessLogServiceTest.php:59`, `APP_ENV=testing`, `FileHelper::readJson()`, `Logger::isTestingEnvironment()`, `AccessLogServiceTest::readEntries()`, `array_values(FileHelper::readJson(...))`, `AccessLogServiceTest`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -3200,7 +3200,7 @@ Suppressing logs in testing changed test assumptions and exposed static type iss
 
 ## ISS-112 – Lock badge displayed activity more than 56 years ago
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-112)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-112)
 
 **Severity:** Low (admin UX)  
 **Status:** ✅ fixed lokálne — **next release**
@@ -3213,7 +3213,7 @@ The API returned Unix seconds while the UI interpreted milliseconds. Timestamp n
 
 - **Recorded versions:** `v2.1.0-beta.23`
 - **Key technical identifiers:** `/api/locks/*`, `frontend/src/utils/contentDates.ts`, `contentDates.test.ts`, `npx vitest run src/utils/contentDates.test.ts`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -3232,7 +3232,7 @@ new Date(value * 1000 > 1_000_000_000_000 ? value : value * 1000)
 
 ## ISS-113 – Static SPA responses lacked security headers
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-113)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-113)
 
 **Severity:** Medium (audit)  
 **Status:** ✅ nginx snippet + prod/demo template
@@ -3244,7 +3244,7 @@ PHP middleware protected API responses but not files served directly by nginx. S
 ### Evidence and traceability
 
 - **Key technical identifiers:** `SecurityMiddleware`, `/api/*`, `frontend/dist`, `location /`, `/assets/`, `docs/deploy/nginx-security-headers-https.conf`, `docker/nginx/security-headers.conf`, `/etc/nginx/sites-enabled/paginiumcms`, `/.well-known/security.txt`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -3264,7 +3264,7 @@ curl -sI https://paginiumcms.com/ | grep -iE 'strict-transport|content-security|
 
 ## ISS-114 – CSRF exemption prefix lacked a slash boundary
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-114)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-114)
 
 **Severity:** Medium (audit)  
 **Status:** ✅ `CsrfMiddleware::isExempt()`
@@ -3276,7 +3276,7 @@ Prefix matching could exempt unintended paths such as a longer look-alike route.
 ### Evidence and traceability
 
 - **Key technical identifiers:** `$path === $prefix || str_starts_with($path, $prefix . '/')`, `CsrfMiddleware::isExempt()`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -3287,7 +3287,7 @@ Prefix matching could exempt unintended paths such as a longer look-alike route.
 
 ## ISS-115 – expose_php disclosed the PHP version
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-115)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-115)
 
 **Severity:** Low (audit)  
 **Status:** ✅ `docker/php/php.ini`
@@ -3299,7 +3299,7 @@ The default PHP header revealed the runtime version. expose_php is disabled in t
 ### Evidence and traceability
 
 - **Key technical identifiers:** `expose_php = Off`, `docker/php/php.ini`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -3310,7 +3310,7 @@ The default PHP header revealed the runtime version. expose_php is disabled in t
 
 ## ISS-116 – TRUSTED_PROXIES default contained a hard-coded LAN address
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-116)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-116)
 
 **Severity:** Low (audit)  
 **Status:** ✅ default `127.0.0.1,::1` + `.env`
@@ -3322,7 +3322,7 @@ A project-specific LAN proxy address was shipped as a default. Only loopback is 
 ### Evidence and traceability
 
 - **Key technical identifiers:** `127.0.0.1,::1`, `ClientIpResolver::trustedProxiesFromEnv()`, `bootstrap/app.php`, `TRUSTED_PROXIES`, `.env`, `.env.example`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -3333,7 +3333,7 @@ A project-specific LAN proxy address was shipped as a default. Only loopback is 
 
 ## ISS-117 – React Router RSC advisory was not applicable to the SPA profile
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-117)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-117)
 
 **Severity:** Low (N/A SPA)  
 **Status:** ℹ️ ISS-089 · CI `--audit-level=critical`
@@ -3346,7 +3346,7 @@ This is the same RSC-only advisory tracked in ISS-089 and is not reachable in th
 
 - **Related incidents:** [ISS-089](#iss-089)
 - **Key technical identifiers:** `npm audit --audit-level=critical`, `npm audit fix --force`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -3357,7 +3357,7 @@ This is the same RSC-only advisory tracked in ISS-089 and is not reachable in th
 
 ## ISS-118 – security.txt was missing or swallowed by SPA fallback
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-118)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-118)
 
 **Severity:** Low (audit)  
 **Status:** ✅ `frontend/public/.well-known/` + nginx
@@ -3369,7 +3369,7 @@ The standard disclosure file was absent or routed to index.html. A static file a
 ### Evidence and traceability
 
 - **Key technical identifiers:** `frontend/public/.well-known/security.txt`, `backend/public/`, `location = /.well-known/security.txt`, `Content-Type: text/plain`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -3380,7 +3380,7 @@ The standard disclosure file was absent or routed to index.html. A static file a
 
 ## ISS-119 – Docker stack did not restart after host reboot
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-119)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-119)
 
 **Severity:** Medium (ops)  
 **Status:** ✅ `restart: unless-stopped` v prod compose
@@ -3392,7 +3392,7 @@ Compose services lacked a restart policy. Production now uses restart: unless-st
 ### Evidence and traceability
 
 - **Key technical identifiers:** `./stack.sh up -d`, `docs/deploy/docker-compose.prod.yml`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 
@@ -3409,7 +3409,7 @@ docker inspect --format '{{.Name}} restart={{.HostConfig.RestartPolicy.Name}}' $
 
 ## ISS-120 – CI PHPUnit output exposed TOTP and 2FA secrets in GitHub job logs
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-120)
+[↑ Overview](#overview) · [Slovak detailed record](../sk/ISSUES.md#iss-120)
 
 **Severity:** Medium (security / CI)  
 **Status:** ✅ sanitize wrapper + verify
@@ -3423,7 +3423,7 @@ Verbose 2FA tests printed secrets, QR payloads, provisioning URIs, and OTP value
 - **Recorded versions:** `2.0.52`, `2.1.0-beta.7`
 - **Related incidents:** [ISS-079](#iss-079), [ISS-085](#iss-085), [ISS-080](#iss-080), [ISS-094](#iss-094), [ISS-097](#iss-097), [ISS-109](#iss-109), [ISS-098](#iss-098), [ISS-099](#iss-099), [ISS-102](#iss-102), [ISS-038](#iss-038), [ISS-013](#iss-013)
 - **Key technical identifiers:** `./vendor/bin/phpunit`, `otpauth://`, `.github/scripts/run-backend-tests-ci.sh`, `.github/scripts/sanitize-ci-log.py`, `.github/scripts/verify-ci-log-redaction.sh`, `.github/workflows/ci.yml`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **History:** [CHANGELOG](../../CHANGELOG.md)
 
 ### Verification or operational excerpts
 

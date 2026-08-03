@@ -30,7 +30,7 @@ Node whitelist musí kopírovať profilové capabilities, unsafe URL sa odmietaj
 
 ## Overenie a súvisiace záznamy
 
-Release: [2.0.43](../CHANGELOG.md#release-2-0-43). Súčasťou dodávky bol auth retry fix [ISS-042](ISSUES.md#iss-042).
+Release: [2.0.43](../../CHANGELOG.md#release-2-0-43). Súčasťou dodávky bol auth retry fix [ISS-042](ISSUES.md#iss-042).
 
 ## Aktuálna interpretácia
 

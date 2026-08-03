@@ -42,5 +42,5 @@ The source left further i18n migration, optional dynamic FE locale loading, and 
 
 ## Verification and continuity
 
-Release records: [2.0.44](../CHANGELOG.md#release-2-0-44), [2.0.45](../CHANGELOG.md#release-2-0-45), and [2.0.46](../CHANGELOG.md#release-2-0-46). Related historical documents: [Iteration 18](ITERATION_18.md) and [Iteration 20](ITERATION_20.md).
+Release records: [2.0.44](../../CHANGELOG.md#release-2-0-44), [2.0.45](../../CHANGELOG.md#release-2-0-45), and [2.0.46](../../CHANGELOG.md#release-2-0-46). Related historical documents: [Iteration 18](ITERATION_18.md) and [Iteration 20](ITERATION_20.md).
 

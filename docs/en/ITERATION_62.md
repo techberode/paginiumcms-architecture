@@ -30,7 +30,7 @@ Permissions must be tested as the actual runtime user inside the container; host
 
 ## Verification and related records
 
-Release: [v2.1.0-beta.9](../CHANGELOG.md#release-2-1-0-beta-9). The production 500 failure is recorded in [ISS-094](ISSUES.md#iss-094). The same shared-storage model later appeared in demo operations in [ISS-099](ISSUES.md#iss-099).
+Release: [v2.1.0-beta.9](../../CHANGELOG.md#release-2-1-0-beta-9). The production 500 failure is recorded in [ISS-094](ISSUES.md#iss-094). The same shared-storage model later appeared in demo operations in [ISS-099](ISSUES.md#iss-099).
 
 ## Current interpretation
 

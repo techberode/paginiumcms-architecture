@@ -40,5 +40,5 @@ The global indexing switch arrived in [It.20](ITERATION_20.md). Admin editing of
 
 ## Verification
 
-PHPUnit covered the builder and controller, and Vitest covered the hook. The release is recorded under [CHANGELOG 2.0.11](../CHANGELOG.md#release-2-0-11).
+PHPUnit covered the builder and controller, and Vitest covered the hook. The release is recorded under [CHANGELOG 2.0.11](../../CHANGELOG.md#release-2-0-11).
 

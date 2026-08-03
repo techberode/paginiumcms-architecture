@@ -68,7 +68,7 @@ It.25 was correctly removed from the Beta blockers. `first-run.sh` and the user 
 | `v2.1.0-beta.1` | Public Beta 1 |
 | `beta.2`–`beta.23` | cumulative hardening and post-beta features |
 
-Current release history belongs in [`CHANGELOG.md`](../CHANGELOG.md), not in this historical plan.
+Current release history belongs in [`CHANGELOG.md`](../../CHANGELOG.md), not in this historical plan.
 
 ---
 

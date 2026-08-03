@@ -38,5 +38,5 @@ The historical record predates later SSRF hardening. Every stock-asset download 
 
 ## Deferred and verification
 
-Asset locking, thumbnails, bulk move, and expanded caption/tags UI remained outside v1. Tests covered repository, controller, stock catalog/importer, and frontend folder navigation. Release: [2.0.12](../CHANGELOG.md#release-2-0-12).
+Asset locking, thumbnails, bulk move, and expanded caption/tags UI remained outside v1. Tests covered repository, controller, stock catalog/importer, and frontend folder navigation. Release: [2.0.12](../../CHANGELOG.md#release-2-0-12).
 

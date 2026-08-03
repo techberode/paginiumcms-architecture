@@ -41,5 +41,5 @@ Bulk mutácie musia opätovne overovať permission pre každú operáciu a rešp
 
 ## Odložené a overenie
 
-Bulk SEO patch, messages mark-read a generický registry zostali mimo 2.0.16. Testy pokrývali aggregator, content/trash controllery a selection hook. Release: [2.0.16](../CHANGELOG.md#release-2-0-16).
+Bulk SEO patch, messages mark-read a generický registry zostali mimo 2.0.16. Testy pokrývali aggregator, content/trash controllery a selection hook. Release: [2.0.16](../../CHANGELOG.md#release-2-0-16).
 

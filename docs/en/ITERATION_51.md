@@ -30,7 +30,7 @@ Preview must use the same renderer, sanitization, and capability rules as public
 
 ## Verification and related records
 
-Delivery is recorded in [2.0.32](../CHANGELOG.md#release-2-0-32). The source identifies frontend tests for `SitePreviewModal` and `contentDates`.
+Delivery is recorded in [2.0.32](../../CHANGELOG.md#release-2-0-32). The source identifies frontend tests for `SitePreviewModal` and `contentDates`.
 
 ## Current interpretation
 

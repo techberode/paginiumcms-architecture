@@ -67,7 +67,7 @@ python3 .github/scripts/sanitize-ci-log.py "$RAW" > "$SAFE"
 .github/scripts/verify-ci-log-redaction.sh "$SAFE"
 ```
 
-Maintainer template: [`../../LOCAL_TEST_LOGS.md.example`](../../LOCAL_TEST_LOGS.md.example). Incident and implemented fix: [ISS-120](../ISSUES.md#iss-120).
+Maintainer template: [`../../LOCAL_TEST_LOGS.md.example`](../../../LOCAL_TEST_LOGS.md.example). Incident and implemented fix: [ISS-120](../ISSUES.md#iss-120).
 
 > This document is a living contract for the **`v2.1.0-beta.*`** release family. Exact test counts, CI job names, and helper-script step counts belong to a specific tag. They are not immutable architectural properties.
 

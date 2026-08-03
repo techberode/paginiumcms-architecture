@@ -30,7 +30,7 @@ Mutations require `gallery:manage`, public reads filter by status, captions are 
 
 ## Verification and related records
 
-Phases 1–2 are tied to [v2.1.0-beta.21](../CHANGELOG.md#release-2-1-0-beta-21); the source says Phase 3 was “on main (next release)”, so this document does not prove its first tag. An operations task remained to seed 3–5 screenshots on prod/demo.
+Phases 1–2 are tied to [v2.1.0-beta.21](../../CHANGELOG.md#release-2-1-0-beta-21); the source says Phase 3 was “on main (next release)”, so this document does not prove its first tag. An operations task remained to seed 3–5 screenshots on prod/demo.
 
 ## Current interpretation
 

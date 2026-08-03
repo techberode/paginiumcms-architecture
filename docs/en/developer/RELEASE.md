@@ -798,4 +798,4 @@ The release lifecycle is implemented when:
 - [Content versioning architecture](../architecture/VERSIONING.md)
 - [Deployment modes](../architecture/DEPLOYMENT_MODES.md)
 - [Incident register](../ISSUES.md)
-- [Changelog](../../CHANGELOG.md)
+- [Changelog](../../../CHANGELOG.md)

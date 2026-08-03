@@ -30,7 +30,7 @@ Externý mapový embed musí byť allow-listovaný a validovaný; URL nie je dô
 
 ## Overenie a súvisiace záznamy
 
-Kontakt bol dodaný v [2.0.35](../CHANGELOG.md#release-2-0-35), firemné údaje v [2.0.36](../CHANGELOG.md#release-2-0-36).
+Kontakt bol dodaný v [2.0.35](../../CHANGELOG.md#release-2-0-35), firemné údaje v [2.0.36](../../CHANGELOG.md#release-2-0-36).
 
 ## Aktuálna interpretácia
 

@@ -30,7 +30,7 @@ Media cesty musia prejsť existujúcou allow-list/ACL vrstvou. Hover nemôže by
 
 ## Overenie a súvisiace záznamy
 
-Release: [v2.1.0-beta.5](../CHANGELOG.md#release-2-1-0-beta-5). Dynamické Lucide lookup a desktop popis boli dotiahnuté v [ISS-085](ISSUES.md#iss-085).
+Release: [v2.1.0-beta.5](../../CHANGELOG.md#release-2-1-0-beta-5). Dynamické Lucide lookup a desktop popis boli dotiahnuté v [ISS-085](ISSUES.md#iss-085).
 
 ## Aktuálna interpretácia
 

@@ -30,7 +30,7 @@ Oprávnenia sa musia testovať ako skutočný runtime používateľ v kontajneri
 
 ## Overenie a súvisiace záznamy
 
-Release: [v2.1.0-beta.9](../CHANGELOG.md#release-2-1-0-beta-9). Produkčný 500 problém je evidovaný v [ISS-094](ISSUES.md#iss-094). Rovnaký shared-storage model sa objavil aj pri demo ops v [ISS-099](ISSUES.md#iss-099).
+Release: [v2.1.0-beta.9](../../CHANGELOG.md#release-2-1-0-beta-9). Produkčný 500 problém je evidovaný v [ISS-094](ISSUES.md#iss-094). Rovnaký shared-storage model sa objavil aj pri demo ops v [ISS-099](ISSUES.md#iss-099).
 
 ## Aktuálna interpretácia
 

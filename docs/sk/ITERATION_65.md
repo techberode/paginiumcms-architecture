@@ -30,7 +30,7 @@ Mutácie vyžadujú `gallery:manage`, public read filtruje status, captions sú 
 
 ## Overenie a súvisiace záznamy
 
-Phase 1–2 sú viazané na [v2.1.0-beta.21](../CHANGELOG.md#release-2-1-0-beta-21); zdroj uvádza Phase 3 „on main (next release)“, preto jej prvý tag z tohto dokumentu nie je potvrdený. Zostal ops krok naplniť 3–5 screenshotov na prod/demo.
+Phase 1–2 sú viazané na [v2.1.0-beta.21](../../CHANGELOG.md#release-2-1-0-beta-21); zdroj uvádza Phase 3 „on main (next release)“, preto jej prvý tag z tohto dokumentu nie je potvrdený. Zostal ops krok naplniť 3–5 screenshotov na prod/demo.
 
 ## Aktuálna interpretácia
 

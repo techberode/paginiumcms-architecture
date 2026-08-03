@@ -192,7 +192,7 @@ Podrobné kontrakty:
 - auditné udalosti a bezpečný CSV export,
 - kontrolované správanie maintenance a demo režimu.
 
-Referencie: [SECURITY_REVIEW.md](SECURITY_REVIEW.md) · [developer/SECURITY.md](developer/SECURITY.md) · [../SECURITY.md](../SECURITY.md)
+Referencie: [SECURITY_REVIEW.md](SECURITY_REVIEW.md) · [developer/SECURITY.md](developer/SECURITY.md) · [../SECURITY.md](../../SECURITY.md)
 
 ---
 
@@ -260,7 +260,7 @@ Podrobnosti: [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md) · [user/CODE_EDIT
 | [CONTINUATION.md](CONTINUATION.md) | Kontext pokračovania projektu |
 | [FEATURE_OVERVIEW.md](FEATURE_OVERVIEW.md) | Implementované a plánované funkcie |
 | [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) | Konsolidovaný backlog |
-| [../CHANGELOG.md](../CHANGELOG.md) | História vydaní |
+| [../CHANGELOG.md](../../CHANGELOG.md) | História vydaní |
 
 ### Architektúra
 
@@ -318,8 +318,8 @@ Podrobnosti: [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md) · [user/CODE_EDIT
 | [SECURITY_REVIEW.md](SECURITY_REVIEW.md) | Návod pre externú bezpečnostnú revíziu |
 | [ISSUES.md](ISSUES.md) | Známe incidenty, príčiny a opravy |
 | [CHECKLIST.md](CHECKLIST.md) | Inventár API, frontendu a funkcií |
-| [../AUDIT_REPORT.md](../AUDIT_REPORT.md) | Audit projektu |
-| [../SECURITY.md](../SECURITY.md) | Nahlasovanie zraniteľností |
+| [../AUDIT_REPORT.md](../../AUDIT_REPORT.md) | Audit projektu |
+| [../SECURITY.md](../../SECURITY.md) | Nahlasovanie zraniteľností |
 
 ---
 

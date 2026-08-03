@@ -30,7 +30,7 @@ The node whitelist must mirror profile capabilities, unsafe URLs are rejected, a
 
 ## Verification and related records
 
-Release: [2.0.43](../CHANGELOG.md#release-2-0-43). Delivery also included the authentication retry fix [ISS-042](ISSUES.md#iss-042).
+Release: [2.0.43](../../CHANGELOG.md#release-2-0-43). Delivery also included the authentication retry fix [ISS-042](ISSUES.md#iss-042).
 
 ## Current interpretation
 

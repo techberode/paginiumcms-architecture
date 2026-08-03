@@ -30,7 +30,7 @@ URL validácia musí blokovať `javascript:` a nebezpečné schémy; external li
 
 ## Overenie a súvisiace záznamy
 
-Release: [v2.1.0-beta.19](../CHANGELOG.md#release-2-1-0-beta-19). Zdroj uvádza PHPUnit/Vitest coverage a smoke cez public settings.
+Release: [v2.1.0-beta.19](../../CHANGELOG.md#release-2-1-0-beta-19). Zdroj uvádza PHPUnit/Vitest coverage a smoke cez public settings.
 
 ## Aktuálna interpretácia
 

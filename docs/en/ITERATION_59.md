@@ -30,7 +30,7 @@ Scheduler identity must not bypass content permissions or OTP policy. Time is st
 
 ## Verification and related records
 
-Release: [2.0.53](../CHANGELOG.md#release-2-0-53). Production outcome and permission hardening for the scheduler was later handled in [It.62](ITERATION_62.md).
+Release: [2.0.53](../../CHANGELOG.md#release-2-0-53). Production outcome and permission hardening for the scheduler was later handled in [It.62](ITERATION_62.md).
 
 ## Current interpretation
 

@@ -35,13 +35,13 @@ run-backend-tests-ci.sh
 → only then GitHub console/artifact
 ```
 
-The complete local log remains outside the repository. The public workflow template is [`../../LOCAL_TEST_LOGS.md.example`](../../LOCAL_TEST_LOGS.md.example); raw logs, the local checklist, and sanitized working copies are not committed.
+The complete local log remains outside the repository. The public workflow template is [`../../LOCAL_TEST_LOGS.md.example`](../../../LOCAL_TEST_LOGS.md.example); raw logs, the local checklist, and sanitized working copies are not committed.
 
 ### Dependency disclosure
 
 React Router advisories published after `v2.1.0-beta.2` were addressed in `v2.1.0-beta.3`. An audit exit code must not be interpreted without checking the severity threshold and complete output; a finding below the configured threshold may still require `PASS_WITH_REVIEW` or `INVESTIGATION_REQUIRED`.
 
-> This document defines security invariants for the **`v2.1.0-beta.*`** release family and the target Hybrid Headless Content Engine. Concrete implementation must always be verified against the code and tests in the relevant tag. Public vulnerability reporting is governed by the root [SECURITY.md](../../SECURITY.md).
+> This document defines security invariants for the **`v2.1.0-beta.*`** release family and the target Hybrid Headless Content Engine. Concrete implementation must always be verified against the code and tests in the relevant tag. Public vulnerability reporting is governed by the root [SECURITY.md](../../../SECURITY.md).
 
 ## 1. Security principles
 
@@ -509,7 +509,7 @@ Security tests and quality gates: [TESTING.md](TESTING.md).
 
 ## 25. Reporting and public incident log
 
-Do not first disclose a sensitive vulnerability in a public issue. Follow the root [SECURITY.md](../../SECURITY.md).
+Do not first disclose a sensitive vulnerability in a public issue. Follow the root [SECURITY.md](../../../SECURITY.md).
 
 `docs/ISSUES.md` is the public technical log for repaired or safely disclosed problems. During its bilingual processing in Iteration 13:
 
@@ -539,7 +539,7 @@ A private `SECURITY_ISSUES.md` may contain a detailed internal incident workflow
 
 ## 27. Related documents
 
-- [Root security policy](../../SECURITY.md)
+- [Root security policy](../../../SECURITY.md)
 - [Security review](../SECURITY_REVIEW.md)
 - [Testing and quality gates](TESTING.md)
 - [Core hardening](../architecture/CORE_HARDENING.md)

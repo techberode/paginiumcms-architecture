@@ -33,7 +33,7 @@ Analytika používa flat-file dáta a nepredstavuje nový databázový subsysté
 
 ## Overenie
 
-Historický checklist vyžadoval funkčné KPI/tabs na `/analytics`, štyri quick links a disk panel na `/dashboard`, `Disallow: /` po vypnutí indexovania a verejný meta `noindex`. Release je evidovaný v [CHANGELOG 2.0.46](../CHANGELOG.md#release-2-0-46).
+Historický checklist vyžadoval funkčné KPI/tabs na `/analytics`, štyri quick links a disk panel na `/dashboard`, `Disallow: /` po vypnutí indexovania a verejný meta `noindex`. Release je evidovaný v [CHANGELOG 2.0.46](../../CHANGELOG.md#release-2-0-46).
 
 ## Súvisiace záznamy
 

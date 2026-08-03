@@ -30,7 +30,7 @@ Media paths must pass the existing allow-list/ACL layer. Hover cannot be the onl
 
 ## Verification and related records
 
-Release: [v2.1.0-beta.5](../CHANGELOG.md#release-2-1-0-beta-5). Dynamic Lucide lookup and desktop descriptions were finalized in [ISS-085](ISSUES.md#iss-085).
+Release: [v2.1.0-beta.5](../../CHANGELOG.md#release-2-1-0-beta-5). Dynamic Lucide lookup and desktop descriptions were finalized in [ISS-085](ISSUES.md#iss-085).
 
 ## Current interpretation
 

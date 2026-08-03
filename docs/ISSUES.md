@@ -183,7 +183,7 @@ Each canonical record contains an English operational synopsis and links to the 
 
 ## ISS-001 – Debug client-event endpoint returned 404
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-001)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-001)
 
 **Severity:** Low (console noise)  
 **Status:** ✅ Fixed
@@ -206,7 +206,7 @@ The frontend emitted debug events while the backend route was conditionally abse
 
 ## ISS-002 – GET /api/pages returned 500 on the dashboard
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-002)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-002)
 
 **Severity:** High  
 **Status:** ✅ Intermittent — diagnose + hardening
@@ -256,7 +256,7 @@ curl -s -b cookies.txt http://192.168.10.26:8081/api/pages | jq .
 
 ## ISS-003 – Phantom or duplicate users appeared repeatedly
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-003)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-003)
 
 **Severity:** Medium  
 **Status:** ✅ Backend hardening
@@ -289,7 +289,7 @@ find backend/storage/app/content/data/users -name '*.backup.*' -delete
 
 ## ISS-004 – navigation.json.backup.* files accumulated
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-004)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-004)
 
 **Severity:** Low  
 **Status:** ✅ Backup retention
@@ -312,7 +312,7 @@ Timestamped write backups accumulated without bounded retention. FileWriter now 
 
 ## ISS-005 – Vitest worker crashed or hung
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-005)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-005)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed
@@ -335,7 +335,7 @@ An unstable dependency in useBulkSelection caused the Vitest worker to loop or e
 
 ## ISS-006 – PHPStan reported 15 errors
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-006)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-006)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed
@@ -358,7 +358,7 @@ Level-8 static analysis found fifteen type defects. The affected backend classes
 
 ## ISS-007 – Dashboard displayed the wrong user count
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-007)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-007)
 
 **Severity:** Low  
 **Status:** ✅ Fixed
@@ -381,7 +381,7 @@ The dashboard read the wrong API response shape. It now counts the users array i
 
 ## ISS-008 – Password fields were served over HTTP
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-008)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-008)
 
 **Severity:** Info  
 **Status:** ⏳ HTTPS in production
@@ -421,7 +421,7 @@ ssl_certificate_key /etc/nginx/ssl/paginium-test.key;
 
 ## ISS-009 – Settings crashed with n.max is not a function
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-009)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-009)
 
 **Severity:** High  
 **Status:** ✅ Fixed
@@ -444,7 +444,7 @@ Validation rules applied min/max after wrapping the schema as optional. Constrai
 
 ## ISS-010 – Vitest stderr contained act() and router future-flag warnings
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-010)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-010)
 
 **Severity:** Low (CI noise)  
 **Status:** ✅ Fixed (2.0.24)
@@ -469,7 +469,7 @@ Tests used asynchronous interactions without proper waiting and omitted router f
 
 ## ISS-011 – ESLint warning baseline and technical debt
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-011)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-011)
 
 **Severity:** Low (technical debt)  
 **Status:** ⏳ 57/65 baseline, gradual cleanup
@@ -494,7 +494,7 @@ Warnings remain controlled technical debt under a CI baseline. The policy is to 
 
 ## ISS-012 – CSRF middleware was not wired into mutating routes
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-012)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-012)
 
 **Severity:** Medium  
 **Status:** ✅ Fixed — `CsrfMiddleware` (synchronizer-token)
@@ -517,7 +517,7 @@ A CSRF manager existed but mutating routes were not globally protected. A SPA-co
 
 ## Login background — media-library and local upload support (2.0.46)
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#feature-login-background)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#feature-login-background)
 
 The login and registration settings originally accepted only a background-image URL. Version 2.0.46 added selection from the media library, local upload, preview, removal, correct `/storage/` path handling, and paired SK/EN interface text.
 
@@ -530,7 +530,7 @@ The login and registration settings originally accepted only a background-image 
 
 ## ISS-013 – ntfy private topics failed without authentication
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-013)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-013)
 
 **Severity:** Medium  
 **Status:** ✅ It.47 (Bearer/Basic + test-connector)
@@ -553,7 +553,7 @@ The ntfy adapter sent unauthenticated requests. Bearer and Basic modes plus a co
 
 ## ISS-014 – Development CORS wildcards could remain active with an incorrect APP_ENV
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-014)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-014)
 
 **Severity:** Low  
 **Status:** ⏳ Verify deployment
@@ -576,7 +576,7 @@ Non-production CORS patterns are intentionally broad, so a wrongly deployed APP_
 
 ## ISS-015 – PHPUnit suffered 429, 503, and OTP persistence failures
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-015)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-015)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed (2.0.25)
@@ -600,7 +600,7 @@ Shared test state leaked rate limits, maintenance mode, OTP files, and caches be
 
 ## ISS-016 – PHPStan phpVersion did not match composer.json
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-016)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-016)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed (2.0.25)
@@ -624,7 +624,7 @@ Static analysis targeted PHP 8.5 while Composer declared an 8.4 floor. PHPStan n
 
 ## ISS-017 – PHPStan reported match.alwaysTrue in bulk controllers
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-017)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-017)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed (2.0.25)
@@ -648,7 +648,7 @@ Guard clauses narrowed the action before a match expression, making branches sta
 
 ## ISS-018 – TrashController passed a possible false fopen result as a resource
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-018)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-018)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed (2.0.25)
@@ -681,7 +681,7 @@ if ($handle === false) {
 
 ## ISS-019 – Strict TypeScript type-check failures
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-019)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-019)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed (2.0.25)
@@ -706,7 +706,7 @@ Several frontend DTO casts, optional values, and unused variables violated stric
 
 ## ISS-020 – ESLint exceeded the 65-warning CI limit
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-020)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-020)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed (2.0.26)
@@ -731,7 +731,7 @@ Hook dependency warnings pushed ESLint beyond the accepted baseline. Dependencie
 
 ## ISS-021 – Redundant is_array checks failed PHPStan
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-021)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-021)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed (2.0.26)
@@ -755,7 +755,7 @@ PHPStan correctly identified is_array calls on values already guaranteed to be a
 
 ## ISS-022 – MediaManager Vitest assertions were brittle
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-022)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-022)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed (2.0.26)
@@ -779,7 +779,7 @@ Text queries matched duplicated or unstable UI strings and a toast mock changed 
 
 ## ISS-023 – Admin draft search test was flaky
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-023)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-023)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed (2.0.29)
@@ -809,7 +809,7 @@ Failed asserting that an array contains 'seo-test-<uniqid>'.
 
 ## ISS-024 – AuthMiddleware caused HTTP 500 on protected routes
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-024)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-024)
 
 **Severity:** Critical  
 **Status:** ✅ Fixed (2.0.29)
@@ -838,7 +838,7 @@ AuthMiddleware::__construct(): Argument #2 ($session) must be of type SessionMan
 
 ## ISS-025 – Users were logged out while editing or saving
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-025)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-025)
 
 **Severity:** High  
 **Status:** ✅ Fixed (2.0.29)
@@ -870,7 +870,7 @@ TRUSTED_PROXIES=127.0.0.1,::1,192.168.10.26
 
 ## ISS-026 – SESSION_USE_STRICT_MODE was confused with SESSION_STRICT
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-026)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-026)
 
 **Severity:** Medium (ops)  
 **Status:** ✅ Documented (2.0.29)
@@ -893,7 +893,7 @@ The two environment variables control different security mechanisms. Documentati
 
 ## ISS-027 – PHPUnit produced false login-401 debug records
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-027)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-027)
 
 **Severity:** Low (diagnostics)  
 **Status:** ✅ Fixed (2.0.29)
@@ -923,7 +923,7 @@ HTTP tests wrote expected failed-login activity into development debug logs. Deb
 
 ## ISS-028 – Production frontend build failed on malformed JSX
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-028)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-028)
 
 **Severity:** High (deploy)  
 **Status:** ✅ Fixed (2.0.29)
@@ -953,7 +953,7 @@ SettingsView.tsx:162
 
 ## ISS-029 – Login briefly succeeded and then returned to /login
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-029)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-029)
 
 **Severity:** High  
 **Status:** ✅ 2.0.29 session; **2.0.30** 2FA loop
@@ -978,7 +978,7 @@ Session loss or an eager 401 redirect produced a login loop. Backend session che
 
 ## ISS-030 – 2FA setup QR disappeared and redirected to TOTP login
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-030)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-030)
 
 **Severity:** High  
 **Status:** ✅ Fixed (2.0.30)
@@ -1001,7 +1001,7 @@ The setup flow reused the same state as post-login TOTP verification. A setup_pe
 
 ## ISS-031 – New staff users had twoFactorEnabled without a secret
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-031)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-031)
 
 **Severity:** Critical  
 **Status:** ✅ Fixed (2.0.30)
@@ -1032,7 +1032,7 @@ Policy code enabled 2FA before a secret existed. Staff accounts now enter 2FA on
 
 ## ISS-032 – twoFactorVerifiedAt was not persisted to user JSON
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-032)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-032)
 
 **Severity:** High  
 **Status:** ✅ Fixed (2.0.30)
@@ -1055,7 +1055,7 @@ User serialization omitted the verification timestamp. The field is now included
 
 ## ISS-033 – Frontend 401 interceptor caused a full-page double login
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-033)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-033)
 
 **Severity:** High  
 **Status:** ✅ Fixed (2.0.30)
@@ -1078,7 +1078,7 @@ The Axios interceptor performed a hard browser redirect on every 401. Auth event
 
 ## ISS-034 – Development environment lacked a TOTP policy switch
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-034)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-034)
 
 **Severity:** Medium (DX)  
 **Status:** ✅ Fixed (2.0.30)
@@ -1108,7 +1108,7 @@ TWO_FACTOR_REQUIRED=false
 
 ## ISS-035 – ClientIpResolver contained a dead null-coalescing fallback
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-035)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-035)
 
 **Severity:** Low (CI)  
 **Status:** ✅ Fixed (2.0.29 hotfix)
@@ -1138,7 +1138,7 @@ ClientIpResolver.php — $parts[0] ?? $remoteAddr
 
 ## ISS-036 – 2FA setup_pending and setUser broke frontend type-checking
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-036)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-036)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed (2.0.30 hotfix `3fbc595`)
@@ -1172,7 +1172,7 @@ src/components/auth/TwoFactorSettings.test.tsx — mock missing setupPending
 
 ## ISS-037 – Unused React import failed frontend type-checking
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-037)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-037)
 
 **Severity:** Low (CI)  
 **Status:** ✅ Fixed (hotfix `64cc894`)
@@ -1203,7 +1203,7 @@ src/components/backend/SettingsView.test.tsx(4,1): error TS6133: 'React' is decl
 
 ## ISS-038 – Content index tag, author, and date filters failed PHPUnit
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-038)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-038)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed (`54b013c`)
@@ -1236,7 +1236,7 @@ php vendor/bin/phpunit --filter ContentRepositoryTest::testListDistinctTagsAndCo
 
 ## ISS-039 – LogWriter tests failed on virtual files and corrupt JSON
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-039)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-039)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed (`54b013c`)
@@ -1261,7 +1261,7 @@ LogWriter tests assumed files existed and did not model damaged JSON safely. Vir
 
 ## ISS-040 – Corrupt access log caused JsonException and global API 500
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-040)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-040)
 
 **Severity:** Critical (prod)  
 **Status:** ✅ Fixed (`743e922`)
@@ -1307,7 +1307,7 @@ git pull   # 743e922 + 54b013c
 
 ## ISS-041 – Unused refetch variable failed PagesManager type-checking
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-041)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-041)
 
 **Severity:** Low (CI)  
 **Status:** ✅ Fixed (hotfix 2.0.40)
@@ -1344,7 +1344,7 @@ const { data: listData, isLoading } = useAdminListQuery({ ... })
 
 ## ISS-042 – First login attempt failed while the second succeeded
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-042)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-042)
 
 **Severity:** High (auth UX)  
 **Status:** ✅ Fixed (**2.0.43**)
@@ -1369,7 +1369,7 @@ The first credentials request succeeded but the immediate session probe failed, 
 
 ## ISS-043 – editorToolbar test used global screen against multiple renders
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-043)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-043)
 
 **Severity:** Low (CI)  
 **Status:** ✅ Fixed (2.0.42 It.54)
@@ -1394,7 +1394,7 @@ A test queried the global document after rendering multiple toolbar profiles. Qu
 
 ## ISS-044 – services.php parse error caused all API requests to fail
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-044)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-044)
 
 **Severity:** Critical  
 **Status:** ✅ Fixed (**2.0.45**)
@@ -1425,7 +1425,7 @@ A syntax error in the services container prevented application bootstrap. Correc
 
 ## ISS-045 – LocaleScaffoldService projectRoot failed PHPStan and PHPUnit
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-045)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-045)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed (**2.0.45**)
@@ -1462,7 +1462,7 @@ public function __construct(
 
 ## ISS-046 – Audit events were stored under the app category
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-046)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-046)
 
 **Severity:** High (audit)  
 **Status:** ✅ Fixed (**2.0.46**)
@@ -1487,7 +1487,7 @@ Audit records used the generic app category and disappeared from audit views. Au
 
 ## ISS-047 – Dashboard activity overview was empty
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-047)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-047)
 
 **Severity:** High (admin UX)  
 **Status:** ✅ Fixed (**2.0.46**)
@@ -1512,7 +1512,7 @@ The dashboard queried or interpreted activity data incorrectly. The overview now
 
 ## ISS-048 – Audit messages were unreadable or used the wrong locale
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-048)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-048)
 
 **Severity:** Medium (audit UX)  
 **Status:** ✅ Fixed (**2.0.46**)
@@ -1536,7 +1536,7 @@ Stored audit summaries were inconsistent and sometimes used the wrong language. 
 
 ## ISS-049 – Daily log file 2026-07-21.json was corrupt
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-049)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-049)
 
 **Severity:** Medium (ops)  
 **Status:** ✅ Fixed (**2.0.46**)
@@ -1561,7 +1561,7 @@ A damaged daily JSON log blocked normal reading. Corruption handling and log rep
 
 ## ISS-050 – Logs section used the wrong reader path and appeared empty
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-050)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-050)
 
 **Severity:** High (admin UX)  
 **Status:** ✅ Fixed (**2.0.46**)
@@ -1586,7 +1586,7 @@ ApplicationLogReader pointed at a path different from the active log writer. Sto
 
 ## ISS-051 – DevTokenGenerator exception crashed production boot and CLI
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-051)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-051)
 
 **Severity:** Critical (boot/CLI)  
 **Status:** ✅ Fixed (security_fix hotfix)
@@ -1621,7 +1621,7 @@ ISSUE — thrown in .../backend/app/Http/Config/services.php
 
 ## ISS-052 – TOTP, SMTP, SSO, and ntfy secrets were stored in plaintext
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-052)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-052)
 
 **Severity:** Medium (security)  
 **Status:** ✅ Fixed — `EncryptionService` + `APP_KEY`
@@ -1644,7 +1644,7 @@ Sensitive settings and TOTP seeds were persisted in clear text. EncryptionServic
 
 ## ISS-053 – Control characters enabled log and CSV injection
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-053)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-053)
 
 **Severity:** Low–Medium (security)  
 **Status:** ✅ Fixed — `LogSanitizer`
@@ -1667,7 +1667,7 @@ CR/LF and control characters could forge log lines or spreadsheet cells. LogSani
 
 ## ISS-054 – Admin-configurable outbound URLs enabled SSRF paths
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-054)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-054)
 
 **Severity:** Low–Medium (security)  
 **Status:** ✅ Fixed — `OutboundUrlGuard`
@@ -1690,7 +1690,7 @@ OAuth, ntfy, webhook, and related URLs could reach unsafe destinations. Outbound
 
 ## ISS-055 – Path ACL existed but was not enforced for content and media
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-055)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-055)
 
 **Severity:** Medium (security)  
 **Status:** ✅ Fixed — `ContentPathAclGuard`
@@ -1714,7 +1714,7 @@ Path ACL rules existed but content and media operations bypassed them. ContentPa
 
 ## ISS-056 – WAF scanned URI and headers but not POST or JSON bodies
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-056)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-056)
 
 **Severity:** Medium (security)  
 **Status:** ✅ Fixed — body scan + editor exempt
@@ -1737,7 +1737,7 @@ The application firewall ignored request bodies. Bounded POST/JSON scanning was 
 
 ## ISS-057 – UserRepository lookups scanned every JSON file in O(n)
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-057)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-057)
 
 **Severity:** Low (performance)  
 **Status:** ✅ Fixed — `UserIndexService` + `data/index/users.json`
@@ -1760,7 +1760,7 @@ Every user lookup scanned all JSON files. UserIndexService now maintains an inde
 
 ## ISS-058 – OTP lacked a dedicated limiter and resend reset attempts
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-058)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-058)
 
 **Severity:** Medium (security)  
 **Status:** ✅ Fixed — `Otp*RateLimitMiddleware` + `resend_count`
@@ -1783,7 +1783,7 @@ OTP endpoints lacked their own limits and resend could reset attempts. Dedicated
 
 ## ISS-059 – Vitest used useI18n without I18nProvider
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-059)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-059)
 
 **Severity:** Low (CI)  
 **Status:** ✅ Fixed — `renderWithProviders` (**2.0.47**)
@@ -1816,7 +1816,7 @@ Error: useI18n must be used within I18nProvider
 
 ## ISS-060 – English settings catalogue contained Slovak workflow labels
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-060)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-060)
 
 **Severity:** Medium (i18n UX)  
 **Status:** ✅ Fixed (**2.0.47** / `f0a885c`)
@@ -1841,7 +1841,7 @@ English workflow strings were copied from the Slovak catalogue. The English labe
 
 ## ISS-061 – Audit messages remained Slovak in the English admin locale
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-061)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-061)
 
 **Severity:** Medium (i18n UX)  
 **Status:** ✅ Fixed (**2.0.49**)
@@ -1866,7 +1866,7 @@ Audit formatting ignored the selected English locale. Message generation now app
 
 ## ISS-062 – Public website contained hard-coded Slovak strings
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-062)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-062)
 
 **Severity:** Medium (i18n UX)  
 **Status:** ✅ Fixed (**2.0.50**)
@@ -1890,7 +1890,7 @@ Public components contained literal Slovak text. Public-site strings now pass th
 
 ## ISS-063 – Invalid date values crashed admin and public views
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-063)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-063)
 
 **Severity:** High (prod crash)  
 **Status:** ✅ **2.0.51**
@@ -1923,7 +1923,7 @@ RangeError: Invalid time value
 
 ## ISS-064 – DEFAULT_LOCALE was not exported from i18n/index.ts
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-064)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-064)
 
 **Severity:** Low (CI)  
 **Status:** ✅ **2.0.51**
@@ -1960,7 +1960,7 @@ export { DEFAULT_LOCALE, type Locale, type MessageTree, type MessageValue } from
 
 ## ISS-065 – Admin logs were two hours behind because PHP used UTC
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-065)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-065)
 
 **Severity:** Medium (ops)  
 **Status:** ✅ **2.0.51**
@@ -1983,7 +1983,7 @@ PHP used UTC while the admin expected Europe/Bratislava. Application timezone co
 
 ## ISS-066 – CronExpressionEvaluator same-minute and DST tests failed
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-066)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-066)
 
 **Severity:** Low (CI)  
 **Status:** ✅ **2.0.51**
@@ -2006,7 +2006,7 @@ Cron due-state logic mishandled same-minute execution and daylight-saving transi
 
 ## ISS-067 – LocaleMiddleware test mock broke after timezone middleware
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-067)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-067)
 
 **Severity:** Low (CI)  
 **Status:** ✅ **2.0.51**
@@ -2029,7 +2029,7 @@ Timezone middleware changed the request flow expected by a locale test mock. The
 
 ## ISS-068 – Expected Code Policy rejection was logged as ERROR with stack trace
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-068)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-068)
 
 **Severity:** Medium (logging)  
 **Status:** ✅ **2.0.51**
@@ -2058,7 +2058,7 @@ Error in file backend/app/Modules/PolicyTest.php: Code policy validation failed
 
 ## ISS-069 – Timezone setting was only a free-text field
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-069)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-069)
 
 **Severity:** Medium (admin UX)  
 **Status:** ✅ **2.0.51**
@@ -2081,7 +2081,7 @@ Free-text timezone input allowed invalid identifiers and poor usability. Setting
 
 ## ISS-070 – Settings lacked a daylight-saving-time switch
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-070)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-070)
 
 **Severity:** Medium (ops)  
 **Status:** ✅ **2.0.51**
@@ -2104,7 +2104,7 @@ Operators could not choose fixed-standard-time behavior. A DST policy switch and
 
 ## ISS-071 – Logs lacked bulk actions, delete-all, and pagination
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-071)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-071)
 
 **Severity:** Medium (admin UX)  
 **Status:** ✅ Fixed · **2.0.51**
@@ -2128,7 +2128,7 @@ Log management could not efficiently handle large datasets. Bulk archive/delete,
 
 ## ISS-072 – Security audit endpoint returned 403 for ADMIN
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-072)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-072)
 
 **Severity:** Medium (regression)  
 **Status:** ✅ Fixed · **2.0.52**
@@ -2151,7 +2151,7 @@ The security audit route required a permission stricter than the intended ADMIN 
 
 ## ISS-073 – Login tests returned 429 instead of 401 because lockouts persisted
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-073)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-073)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed · **2.0.52**
@@ -2175,7 +2175,7 @@ Lockout state persisted across login tests, changing expected 401 responses into
 
 ## ISS-074 – Access-control and branding changes introduced ten PHPStan errors
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-074)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-074)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed · **2.0.52**
@@ -2199,7 +2199,7 @@ New access-control and branding shapes were insufficiently typed. Schemas, servi
 
 ## ISS-075 – PHPUnit crashed on duplicate HelloWidget Hooks class
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-075)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-075)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed · **2.0.54**
@@ -2230,7 +2230,7 @@ in /tmp/pag_plugins_mgr_…/extensions/hello-widget/src/Hooks.php on line 7
 
 ## ISS-076 – passwordConfirm rollout triggered a cascade of 21 PHPUnit failures
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-076)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-076)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed · **2.0.56**
@@ -2263,7 +2263,7 @@ Failed asserting that null is not null.
 
 ## ISS-077 – Audit-trail CSV export bypassed LogSanitizer
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-077)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-077)
 
 **Severity:** Medium (security)  
 **Status:** ✅ Fixed · **2.1.0-beta.2**
@@ -2286,7 +2286,7 @@ Audit CSV export did not pass every cell through the injection sanitizer. The ex
 
 ## ISS-078 – react-router-dom advisories appeared after beta.2
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-078)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-078)
 
 **Severity:** Medium (dependency)  
 **Status:** ✅ Fixed · **2.1.0-beta.3**
@@ -2310,7 +2310,7 @@ Dependency advisories arrived immediately after a beta tag. The router packages 
 
 ## ISS-079 – Blog profile rejected existing fenced code blocks on save
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-079)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-079)
 
 **Severity:** High (admin UX)  
 **Status:** ✅ Fixed · **2.1.0-beta.5**
@@ -2334,7 +2334,7 @@ Code Policy interpreted an existing Markdown fence as unsafe executable code. Th
 
 ## ISS-080 – ContentMetaController called a missing getGroup method
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-080)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-080)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed · **2.1.0-beta.4**
@@ -2364,7 +2364,7 @@ Call to an undefined method SettingsRepositoryInterface::getGroup()
 
 ## ISS-081 – Partial @tiptap dependency update caused peer conflict and CI failure
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-081)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-081)
 
 **Severity:** Medium (CI / deps)  
 **Status:** ✅ Fixed · **2.1.0-beta.4**
@@ -2389,7 +2389,7 @@ Dependabot updated only part of the tightly coupled TipTap family. Packages are 
 
 ## ISS-082 – symfony/yaml 8 upgrade was incompatible with the current constraint
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-082)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-082)
 
 **Severity:** Low (technical debt)  
 **Status:** ⏳ Deferred — major migrácia
@@ -2412,7 +2412,7 @@ The suggested major Symfony YAML version exceeded the declared compatibility ran
 
 ## ISS-083 – ESLint 10 required a breaking flat-config migration
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-083)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-083)
 
 **Severity:** Low (technical debt)  
 **Status:** ⏳ Deferred — samostatný upgrade
@@ -2435,7 +2435,7 @@ ESLint 10 changes configuration and plugin compatibility. The upgrade is deferre
 
 ## ISS-084 – Chrome sessions expired after roughly 24 minutes and caused 401 cascades
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-084)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-084)
 
 **Severity:** High (auth UX)  
 **Status:** ✅ Fixed · **2.1.0-beta.5**
@@ -2460,7 +2460,7 @@ Session lifetime and keepalive behavior in Chrome caused a burst of unauthorized
 
 ## ISS-085 – Rich navigation icon rendered as an empty frame and hid description
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-085)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-085)
 
 **Severity:** Medium (admin/public UX)  
 **Status:** ✅ Fixed · **2.1.0-beta.5**
@@ -2483,7 +2483,7 @@ Icon metadata and responsive rendering produced an empty frame and hid descripti
 
 ## ISS-086 – Stored XSS survived strip_tags through dangerous attributes and schemes
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-086)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-086)
 
 **Severity:** **Critical (security)**  
 **Status:** ✅ Fixed · **2.1.0-beta.6**
@@ -2506,7 +2506,7 @@ strip_tags removed elements but not dangerous attributes or URL schemes. A dedic
 
 ## ISS-087 – LAN frontend deploy script contained hard-coded host, user, and port
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-087)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-087)
 
 **Severity:** Medium (ops / hygiene)  
 **Status:** ✅ Fixed · **2.1.0-beta.6**
@@ -2535,7 +2535,7 @@ DEPLOY_HOST=192.168.x.x DEPLOY_USER=yourName DEPLOY_SSH_PORT=22 ./scripts/deploy
 
 ## ISS-088 – Backup import was vulnerable to Zip-Slip through extractTo
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-088)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-088)
 
 **Severity:** Medium (security)  
 **Status:** ✅ Fixed · **2.1.0-beta.6**
@@ -2559,7 +2559,7 @@ Direct archive extraction allowed traversal entries to escape the restore direct
 
 ## ISS-089 – React Router RSC-only advisory was accepted as not reachable in the SPA
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-089)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-089)
 
 **Severity:** Low (false positive SPA)  
 **Status:** ⏳ Accepted · CI `--audit-level=critical`
@@ -2583,7 +2583,7 @@ The advisory applies to React Server Components, while this product uses a React
 
 ## ISS-090 – eslint latest and npm audit fix caused dependency resolution failure
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-090)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-090)
 
 **Severity:** Low (CI/deps)  
 **Status:** ✅ Fixed · **2.1.0-beta.7**
@@ -2606,7 +2606,7 @@ An unbounded latest dependency and forced audit fix created peer conflicts. Vers
 
 ## ISS-091 – React Router override and useOptimistic caused fourteen Vitest failures
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-091)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-091)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed · **2.1.0-beta.7**
@@ -2625,7 +2625,7 @@ A router override installed an incompatible major version and exposed unsupporte
 
 ## ISS-092 – Deploy script mixed local environment assumptions with invalid :? syntax
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-092)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-092)
 
 **Severity:** Low (ops)  
 **Status:** ✅ Fixed · **2.1.0-beta.7**
@@ -2648,7 +2648,7 @@ The deploy script depended on local-only variables and used invalid parameter ex
 
 ## ISS-093 – brace-expansion override broke ESLint with expand is not a function
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-093)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-093)
 
 **Severity:** Medium (CI)  
 **Status:** ✅ Fixed · odstránený override
@@ -2672,7 +2672,7 @@ Forcing brace-expansion 5 beneath minimatch 3 broke ESLint internals. The incomp
 
 ## ISS-094 – Production job scheduler run endpoint returned HTTP 500
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-094)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-094)
 
 **Severity:** High (prod)  
 **Status:** ✅ Fixed · **It.62** (`f7a73f1`)
@@ -2706,7 +2706,7 @@ The scheduler API could not write its Docker-backed storage and the UI obscured 
 
 ## ISS-095 – Maintenance heroImageUrl rejected valid /storage/ paths
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-095)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-095)
 
 **Severity:** Medium (admin UX)  
 **Status:** ✅ Fixed · **main `88cbe31`**
@@ -2730,7 +2730,7 @@ Validation accepted only external URLs and rejected internal media paths. Mainte
 
 ## ISS-096 – Temporary 502 occurred immediately after restarting the PHP container
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-096)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-096)
 
 **Severity:** Low (ops)  
 **Status:** ℹ️ Informational — počkať 5–10 s
@@ -2761,7 +2761,7 @@ curl -s http://127.0.0.1:8089/api/health
 
 ## ISS-097 – Newsletter subscribers had no administration interface
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-097)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-097)
 
 **Severity:** Medium  
 **Status:** ✅ Fixed · **It.61**
@@ -2793,7 +2793,7 @@ cat backend/storage/app/content/data/newsletter/subscribers.json | jq .
 
 ## ISS-098 – Demo login returned empty 401 responses because of CORS and APP_URL
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-098)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-098)
 
 **Severity:** **High (demo)**  
 **Status:** ✅ Fixed · **SameOriginCors** + `.env`
@@ -2838,7 +2838,7 @@ cd /var/lib/docker/compose/paginiumcms-demo && ./stack.sh up -d
 
 ## ISS-099 – Demo reset CLI lacked permission to update plugins.json
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-099)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-099)
 
 **Severity:** Medium (demo ops)  
 **Status:** ℹ️ Ops — storage `chown user:www-data`, dirs `2775`
@@ -2881,7 +2881,7 @@ php backend/bin/console demo:reset-if-due
 
 ## ISS-100 – Public settings exposed the demo password
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-100)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-100)
 
 **Severity:** Medium (audit)  
 **Status:** ✅ **`v2.1.0-beta.11`** — quick-login, no password in GET
@@ -2914,7 +2914,7 @@ curl -sS -X POST https://demo.paginiumcms.com/api/demo/quick-login | jq '.succes
 
 ## ISS-101 – Editor crashed because capabilities was not normalized to an array
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-101)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-101)
 
 **Severity:** High (demo/admin)  
 **Status:** ✅ **`v2.1.0-beta.11`** — normalize API profile shape
@@ -2938,7 +2938,7 @@ The editor assumed capabilities was always an array. API profile normalization n
 
 ## ISS-102 – Demo API returned HTTP 500 because the demo data tree could not be created
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-102)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-102)
 
 **Severity:** **High (demo)**  
 **Status:** ✅ Ops — storage bootstrap (2026-07-27)
@@ -2984,7 +2984,7 @@ sudo find "$STORAGE" -type f -exec chmod 664 {} \;
 
 ## ISS-103 – Local DEMO_MODE polluted PHPUnit OTP and 2FA tests
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-103)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-103)
 
 **Severity:** Medium (dev/CI)  
 **Status:** ✅ **`v2.1.0-beta.12`** — test bootstrap izolácia
@@ -3008,7 +3008,7 @@ The local .env leaked DEMO_MODE into HTTP tests. Testing bootstrap now overrides
 
 ## ISS-104 – ADMIN could bypass SUPER_ADMIN through the system-deploy jobs API
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-104)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-104)
 
 **Severity:** Medium (audit)  
 **Status:** ✅ **`v2.1.0-beta.15`**
@@ -3032,7 +3032,7 @@ Generic job execution authorization allowed ADMIN to trigger a SUPER_ADMIN deplo
 
 ## ISS-105 – GeoIP lookup used cleartext HTTP without OutboundUrlGuard
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-105)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-105)
 
 **Severity:** Low (audit)  
 **Status:** ✅ **`v2.1.0-beta.15`**
@@ -3056,7 +3056,7 @@ GeoIP used an unencrypted external endpoint and bypassed outbound policy. The in
 
 ## ISS-106 – DEMO_MODE could be enabled in production without failing closed
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-106)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-106)
 
 **Severity:** Low (audit)  
 **Status:** ✅ **`v2.1.0-beta.16`**
@@ -3080,7 +3080,7 @@ A production instance could accidentally start in demo mode. Startup validation 
 
 ## ISS-107 – Maintenance newsletter subscription lacked honeypot and dedicated rate limit
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-107)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-107)
 
 **Severity:** Low (audit)  
 **Status:** ✅ **`v2.1.0-beta.16`**
@@ -3104,7 +3104,7 @@ The anonymous maintenance subscription endpoint lacked anti-bot and workflow-spe
 
 ## ISS-108 – GitHubService curl calls bypassed OutboundUrlGuard
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-108)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-108)
 
 **Severity:** Info (audit)  
 **Status:** ✅ **`v2.1.0-beta.16`**
@@ -3129,7 +3129,7 @@ GitHubService performed direct curl requests outside centralized SSRF controls. 
 
 ## ISS-109 – Newsletter footer call-to-action was too large
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-109)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-109)
 
 **Severity:** Low (UX)  
 **Status:** ✅ **`v2.1.0-beta.18`**
@@ -3152,7 +3152,7 @@ The footer subscription block dominated the layout. Responsive spacing and conte
 
 ## ISS-110 – Production SEO endpoint returned 500 due to cache shape collision
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-110)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-110)
 
 **Severity:** **High (prod)**  
 **Status:** ✅ **`v2.1.0-beta.21`**
@@ -3176,7 +3176,7 @@ A cached array was treated as a Content object in SEO serialization. Cache norma
 
 ## ISS-111 – LoggerTest and PHPStan regressed after testing-environment log suppression
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-111)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-111)
 
 **Severity:** Medium (CI/tests)  
 **Status:** ✅ **`v2.1.0-beta.21`**
@@ -3200,7 +3200,7 @@ Suppressing logs in testing changed test assumptions and exposed static type iss
 
 ## ISS-112 – Lock badge displayed activity more than 56 years ago
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-112)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-112)
 
 **Severity:** Low (admin UX)  
 **Status:** ✅ fixed lokálne — **next release**
@@ -3232,7 +3232,7 @@ new Date(value * 1000 > 1_000_000_000_000 ? value : value * 1000)
 
 ## ISS-113 – Static SPA responses lacked security headers
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-113)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-113)
 
 **Severity:** Medium (audit)  
 **Status:** ✅ nginx snippet + prod/demo template
@@ -3264,7 +3264,7 @@ curl -sI https://paginiumcms.com/ | grep -iE 'strict-transport|content-security|
 
 ## ISS-114 – CSRF exemption prefix lacked a slash boundary
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-114)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-114)
 
 **Severity:** Medium (audit)  
 **Status:** ✅ `CsrfMiddleware::isExempt()`
@@ -3287,7 +3287,7 @@ Prefix matching could exempt unintended paths such as a longer look-alike route.
 
 ## ISS-115 – expose_php disclosed the PHP version
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-115)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-115)
 
 **Severity:** Low (audit)  
 **Status:** ✅ `docker/php/php.ini`
@@ -3310,7 +3310,7 @@ The default PHP header revealed the runtime version. expose_php is disabled in t
 
 ## ISS-116 – TRUSTED_PROXIES default contained a hard-coded LAN address
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-116)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-116)
 
 **Severity:** Low (audit)  
 **Status:** ✅ default `127.0.0.1,::1` + `.env`
@@ -3333,7 +3333,7 @@ A project-specific LAN proxy address was shipped as a default. Only loopback is 
 
 ## ISS-117 – React Router RSC advisory was not applicable to the SPA profile
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-117)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-117)
 
 **Severity:** Low (N/A SPA)  
 **Status:** ℹ️ ISS-089 · CI `--audit-level=critical`
@@ -3357,7 +3357,7 @@ This is the same RSC-only advisory tracked in ISS-089 and is not reachable in th
 
 ## ISS-118 – security.txt was missing or swallowed by SPA fallback
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-118)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-118)
 
 **Severity:** Low (audit)  
 **Status:** ✅ `frontend/public/.well-known/` + nginx
@@ -3380,7 +3380,7 @@ The standard disclosure file was absent or routed to index.html. A static file a
 
 ## ISS-119 – Docker stack did not restart after host reboot
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-119)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-119)
 
 **Severity:** Medium (ops)  
 **Status:** ✅ `restart: unless-stopped` v prod compose
@@ -3409,7 +3409,7 @@ docker inspect --format '{{.Name}} restart={{.HostConfig.RestartPolicy.Name}}' $
 
 ## ISS-120 – CI PHPUnit output exposed TOTP and 2FA secrets in GitHub job logs
 
-[↑ Overview](#overview) · [Slovak detailed record](../../SK/docs/ISSUES.md#iss-120)
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-120)
 
 **Severity:** Medium (security / CI)  
 **Status:** ✅ sanitize wrapper + verify

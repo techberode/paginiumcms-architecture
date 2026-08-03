@@ -30,7 +30,7 @@ Suggestions must not overwrite front matter automatically. The endpoint needs bo
 
 ## Verification and related records
 
-Release: [v2.1.0-beta.4](../CHANGELOG.md#release-2-1-0-beta-4). The source records network-free unit tests and support for Markdown and Tiptap plain-text extraction.
+Release: [v2.1.0-beta.4](../../CHANGELOG.md#release-2-1-0-beta-4). The source records network-free unit tests and support for Markdown and Tiptap plain-text extraction.
 
 ## Current interpretation
 

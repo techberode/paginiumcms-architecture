@@ -20,7 +20,7 @@ Dodať viac layout builderov prepínateľných v Settings, ktoré zapisujú jede
 
 ## Rozsah a výsledok
 
-Dodané 58b: päť presetov s light/dark tokenmi, `appearance` settings, swatch a `SchemePreviewFrame`, public application a visitor toggle. Dodané 58c: builder switch, template catalog, page template výber a `LayoutPreviewFrame`; release [v2.1.0-beta.23](../CHANGELOG.md#release-2-1-0-beta-23).
+Dodané 58b: päť presetov s light/dark tokenmi, `appearance` settings, swatch a `SchemePreviewFrame`, public application a visitor toggle. Dodané 58c: builder switch, template catalog, page template výber a `LayoutPreviewFrame`; release [v2.1.0-beta.23](../../CHANGELOG.md#release-2-1-0-beta-23).
 
 Plánované 58d–58g: shortcode engine + Monaco definitions, safe `pg-*` utility pack, optional outline/DnD a compile/cache HTML spolu s It.48. `featureGallery` má reuse It.65 API bez druhého store.
 
