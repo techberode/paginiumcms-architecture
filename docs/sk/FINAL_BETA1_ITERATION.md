@@ -68,7 +68,7 @@ It.25 bol správne vyňatý z Beta blockerov. `first-run.sh` a používateľská
 | `v2.1.0-beta.1` | Public Beta 1 |
 | `beta.2`–`beta.23` | kumulatívny hardening a post-beta funkcie |
 
-Aktuálny detail release histórie patrí do [`CHANGELOG.md`](../CHANGELOG.md), nie do tohto historického plánu.
+Aktuálny detail release histórie patrí do [`CHANGELOG.md`](../../CHANGELOG.md), nie do tohto historického plánu.
 
 ---
 

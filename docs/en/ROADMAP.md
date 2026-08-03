@@ -5,7 +5,7 @@
 > **Direction:** Hybrid Headless Content Engine · No-SQL file source of truth · API-first  
 > **Code status:** implementation of It.68+ is paused until the bilingual documentation pass is complete
 
-This roadmap is the canonical map of the **future direction**. Release history belongs in [`CHANGELOG.md`](../CHANGELOG.md), detailed implementation specifications in `ITERATION_*.md`, and incidents in [`ISSUES.md`](ISSUES.md).
+This roadmap is the canonical map of the **future direction**. Release history belongs in [`CHANGELOG.md`](../../CHANGELOG.md), detailed implementation specifications in `ITERATION_*.md`, and incidents in [`ISSUES.md`](ISSUES.md).
 
 **Architecture:** [architecture/HYBRID_ENGINE.md](architecture/HYBRID_ENGINE.md) · **No-SQL mandate:** [architecture/NOSQL_MANDATE.md](architecture/NOSQL_MANDATE.md) · **Backlog:** [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md)
 

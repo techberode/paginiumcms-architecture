@@ -30,7 +30,7 @@ Subscriber údaje sú osobné údaje: admin list je ADMIN+, CSV export musí by�
 
 ## Overenie a súvisiace záznamy
 
-Pôvodná medzera admin zoznamu je [ISS-097](ISSUES.md#iss-097). Dedikovaný newsletter abuse hardening je [ISS-107](ISSUES.md#iss-107). Footer polish variant B vyriešil [ISS-109](ISSUES.md#iss-109) a bol dodaný v [v2.1.0-beta.18](../CHANGELOG.md#release-2-1-0-beta-18); wiring audit je označený `v2.1.0-beta.16`.
+Pôvodná medzera admin zoznamu je [ISS-097](ISSUES.md#iss-097). Dedikovaný newsletter abuse hardening je [ISS-107](ISSUES.md#iss-107). Footer polish variant B vyriešil [ISS-109](ISSUES.md#iss-109) a bol dodaný v [v2.1.0-beta.18](../../CHANGELOG.md#release-2-1-0-beta-18); wiring audit je označený `v2.1.0-beta.16`.
 
 ## Aktuálna interpretácia
 

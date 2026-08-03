@@ -126,7 +126,7 @@ For a regular bug report, include:
 
 ### Security findings
 
-Do not publish an unpatched vulnerability as a normal public issue. Follow the process in root [`SECURITY.md`](../SECURITY.md). Remove passwords, tokens, cookies, personal data, and production content before sharing evidence.
+Do not publish an unpatched vulnerability as a normal public issue. Follow the process in root [`SECURITY.md`](../../SECURITY.md). Remove passwords, tokens, cookies, personal data, and production content before sharing evidence.
 
 ---
 

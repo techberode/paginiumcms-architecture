@@ -4,7 +4,7 @@
 > **Checkpoint:** August 2, 2026 · `v2.1.0-beta.23`  
 > **Active decision:** It.68+ code is paused until the bilingual documentation pass is complete
 
-This document replaces the old chronological “log of everything.” Historical detail remains in [`CHANGELOG.md`](../CHANGELOG.md), [`ISSUES.md`](ISSUES.md), and individual `ITERATION_*.md` files.
+This document replaces the old chronological “log of everything.” Historical detail remains in [`CHANGELOG.md`](../../CHANGELOG.md), [`ISSUES.md`](ISSUES.md), and individual `ITERATION_*.md` files.
 
 ---
 

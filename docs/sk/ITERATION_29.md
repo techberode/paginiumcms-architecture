@@ -40,5 +40,5 @@ Worker nie je implicitný SUPER_ADMIN. Identita pôvodného používateľa a aut
 
 ## Overenie a ďalší rozsah
 
-Testy pokrývali CRON evaluator a scheduled runner. Redis queue bola budúci smer a dnes patrí do capability-based Hybrid Engine kontraktu, nie do povinného základu. Release: [2.0.18](../CHANGELOG.md#release-2-0-18).
+Testy pokrývali CRON evaluator a scheduled runner. Redis queue bola budúci smer a dnes patrí do capability-based Hybrid Engine kontraktu, nie do povinného základu. Release: [2.0.18](../../CHANGELOG.md#release-2-0-18).
 

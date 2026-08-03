@@ -41,5 +41,5 @@ Bulk mutations must re-check permissions for each operation and respect 2FA/CSRF
 
 ## Deferred and verification
 
-Bulk SEO patch, message mark-read, and a generic registry remained outside 2.0.16. Tests covered the aggregator, content/trash controllers, and selection hook. Release: [2.0.16](../CHANGELOG.md#release-2-0-16).
+Bulk SEO patch, message mark-read, and a generic registry remained outside 2.0.16. Tests covered the aggregator, content/trash controllers, and selection hook. Release: [2.0.16](../../CHANGELOG.md#release-2-0-16).
 

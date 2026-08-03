@@ -42,5 +42,5 @@ Zostávajúci rozsah v zdroji zahŕňal ďalšie i18n migrácie, voliteľné dyn
 
 ## Overenie a nadväznosť
 
-Release záznamy: [2.0.44](../CHANGELOG.md#release-2-0-44), [2.0.45](../CHANGELOG.md#release-2-0-45) a [2.0.46](../CHANGELOG.md#release-2-0-46). Súvisiace historické dokumenty: [Iterácia 18](ITERATION_18.md) a [Iterácia 20](ITERATION_20.md).
+Release záznamy: [2.0.44](../../CHANGELOG.md#release-2-0-44), [2.0.45](../../CHANGELOG.md#release-2-0-45) a [2.0.46](../../CHANGELOG.md#release-2-0-46). Súvisiace historické dokumenty: [Iterácia 18](ITERATION_18.md) a [Iterácia 20](ITERATION_20.md).
 

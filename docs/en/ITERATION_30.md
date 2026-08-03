@@ -37,5 +37,5 @@ The source prescribed a one-time `content:cache-purge --reindex` after deploymen
 
 ## Verification and current interpretation
 
-The test plan covered create/refresh, version/body loading, editor-mode switching, mobile cards, and CLI purge. Later cache/index rules are consolidated in [STORAGE.md](architecture/STORAGE.md) and [CONTENT_API.md](architecture/CONTENT_API.md). Release: [2.0.20](../CHANGELOG.md#release-2-0-20).
+The test plan covered create/refresh, version/body loading, editor-mode switching, mobile cards, and CLI purge. Later cache/index rules are consolidated in [STORAGE.md](architecture/STORAGE.md) and [CONTENT_API.md](architecture/CONTENT_API.md). Release: [2.0.20](../../CHANGELOG.md#release-2-0-20).
 

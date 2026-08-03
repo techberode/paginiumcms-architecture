@@ -30,7 +30,7 @@ Code deployment is separate from content Git synchronization. Refs must be allow
 
 ## Verification and related records
 
-Release: [v2.1.0-beta.18](../CHANGELOG.md#release-2-1-0-beta-18). The privilege bypass was closed in [ISS-104](ISSUES.md#iss-104). The source lists ISS-105, but the current register assigns ISS-105 to GeoIP; the relevant GitHub outbound finding is [ISS-108](ISSUES.md#iss-108).
+Release: [v2.1.0-beta.18](../../CHANGELOG.md#release-2-1-0-beta-18). The privilege bypass was closed in [ISS-104](ISSUES.md#iss-104). The source lists ISS-105, but the current register assigns ISS-105 to GeoIP; the relevant GitHub outbound finding is [ISS-108](ISSUES.md#iss-108).
 
 ## Current interpretation
 

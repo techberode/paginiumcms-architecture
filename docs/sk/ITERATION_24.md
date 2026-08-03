@@ -38,5 +38,5 @@ Historický záznam predchádza neskoršiemu SSRF hardeningu. Každé sťahovani
 
 ## Odložené a overenie
 
-Asset locking, thumbnails, bulk move a rozšírené caption/tags UI zostali mimo v1. Testy pokrývali repository, controller, stock catalog/importer a frontend folder navigation. Release: [2.0.12](../CHANGELOG.md#release-2-0-12).
+Asset locking, thumbnails, bulk move a rozšírené caption/tags UI zostali mimo v1. Testy pokrývali repository, controller, stock catalog/importer a frontend folder navigation. Release: [2.0.12](../../CHANGELOG.md#release-2-0-12).
 

@@ -39,5 +39,5 @@ Login lockout musí používať bezpečné file locking a nesmie zdieľať stav 
 
 ## Overenie a nadväznosť
 
-Release je v [CHANGELOG 2.0.10](../CHANGELOG.md#release-2-0-10). Iterácia nadväzuje na [It.21](ITERATION_21.md) a pripravuje SEO meta engine v [It.23](ITERATION_23.md).
+Release je v [CHANGELOG 2.0.10](../../CHANGELOG.md#release-2-0-10). Iterácia nadväzuje na [It.21](ITERATION_21.md) a pripravuje SEO meta engine v [It.23](ITERATION_23.md).
 

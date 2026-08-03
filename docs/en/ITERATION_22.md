@@ -39,5 +39,5 @@ Login lockout requires safe file locking and must not leak state across isolated
 
 ## Verification and continuity
 
-The release is recorded under [CHANGELOG 2.0.10](../CHANGELOG.md#release-2-0-10). It follows [It.21](ITERATION_21.md) and prepares the SEO meta engine in [It.23](ITERATION_23.md).
+The release is recorded under [CHANGELOG 2.0.10](../../CHANGELOG.md#release-2-0-10). It follows [It.21](ITERATION_21.md) and prepares the SEO meta engine in [It.23](ITERATION_23.md).
 

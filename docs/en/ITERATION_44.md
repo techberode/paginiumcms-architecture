@@ -35,7 +35,7 @@ The URL is shareable filter state, not an authorization source. The backend must
 
 ## Incident and verification
 
-Backend It.44d tests for tag/date filters were later fixed in [ISS-038](ISSUES.md#iss-038). The test gate covered repository/controller tests and the `blogArticles` utility. Release: [2.0.37](../CHANGELOG.md#release-2-0-37).
+Backend It.44d tests for tag/date filters were later fixed in [ISS-038](ISSUES.md#iss-038). The test gate covered repository/controller tests and the `blogArticles` utility. Release: [2.0.37](../../CHANGELOG.md#release-2-0-37).
 
 ## Current interpretation
 

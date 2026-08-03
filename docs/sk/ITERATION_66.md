@@ -30,7 +30,7 @@ Scanner nie je sandbox. Gate musí bežať pred zápisom/aktiváciou, error skon
 
 ## Overenie a súvisiace záznamy
 
-Release: [v2.1.0-beta.22](../CHANGELOG.md#release-2-1-0-beta-22). Zdroj odkazuje na [ISS-008](ISSUES.md#iss-008), [ISS-014](ISSUES.md#iss-014) a [ISS-089](ISSUES.md#iss-089). Neskoršia ochrana secrets v CI logoch je samostatný [ISS-120](ISSUES.md#iss-120), nie pôvodný rozsah It.66.
+Release: [v2.1.0-beta.22](../../CHANGELOG.md#release-2-1-0-beta-22). Zdroj odkazuje na [ISS-008](ISSUES.md#iss-008), [ISS-014](ISSUES.md#iss-014) a [ISS-089](ISSUES.md#iss-089). Neskoršia ochrana secrets v CI logoch je samostatný [ISS-120](ISSUES.md#iss-120), nie pôvodný rozsah It.66.
 
 ## Aktuálna interpretácia
 

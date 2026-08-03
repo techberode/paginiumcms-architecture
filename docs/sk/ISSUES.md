@@ -14,7 +14,7 @@ Tento dokument je kanonický verejný register produkčných, integračných, be
 
 > **Markdown preview:** Wildcard zapisuj celý v backticks, napríklad `navigation.json.backup.*`. Neuzavretá kurzíva alebo code fence môže rozbiť preview veľkého súboru.
 
-> **Audit report:** Koreňový `AUDIT_REPORT.md` môže byť lokálny/gitignored pracovný dokument. Verejný stav opráv sleduj v tomto registri a v [CHANGELOG.md](../CHANGELOG.md).
+> **Audit report:** Koreňový `AUDIT_REPORT.md` môže byť lokálny/gitignored pracovný dokument. Verejný stav opráv sleduj v tomto registri a v [CHANGELOG.md](../../CHANGELOG.md).
 
 <a id="prehlad"></a>
 
@@ -183,7 +183,7 @@ Každý kanonický záznam obsahuje podľa dostupnosti **symptóm**, **príčinu
 
 ## ISS-001 – Debug client-event 404
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-001)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-001)
 
 **Symptóm:** Konzola plná `XHR POST …/api/debug/client-event [404]`, hoci FE loguje `[PaginiumCMS] event: …`.
 
@@ -202,7 +202,7 @@ Každý kanonický záznam obsahuje podľa dostupnosti **symptóm**, **príčinu
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -210,7 +210,7 @@ Každý kanonický záznam obsahuje podľa dostupnosti **symptóm**, **príčinu
 
 ## ISS-002 – GET /api/pages → 500
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-002)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-002)
 
 **Symptóm:** Po prihlásení dashboard volá `/api/pages` a dostane **500 Internal Server Error**. Články (`/api/articles`) môžu prejsť.
 
@@ -266,7 +266,7 @@ curl -s -b cookies.txt http://192.168.10.26:8081/api/pages | jq .
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -274,7 +274,7 @@ curl -s -b cookies.txt http://192.168.10.26:8081/api/pages | jq .
 
 ## ISS-003 – Phantom / duplicitní používatelia
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-003)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-003)
 
 **Symptóm:** V admin `/users` pribúdajú záznamy (pocit „generovania každú sekundu“).
 
@@ -311,7 +311,7 @@ find backend/storage/app/content/data/users -name '*.backup.*' -delete
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -319,7 +319,7 @@ find backend/storage/app/content/data/users -name '*.backup.*' -delete
 
 ## ISS-004 – navigation.json.backup.*
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-004)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-004)
 
 **Symptóm:** V `data/` pribúdajú súbory `navigation.json.backup.20260718_104530`.
 
@@ -334,7 +334,7 @@ find backend/storage/app/content/data/users -name '*.backup.*' -delete
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -342,7 +342,7 @@ find backend/storage/app/content/data/users -name '*.backup.*' -delete
 
 ## ISS-005 – Vitest worker crash (Node 26)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-005)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-005)
 
 **Symptóm:** `Error: Worker exited unexpectedly` pri `npm test`.
 
@@ -357,7 +357,7 @@ find backend/storage/app/content/data/users -name '*.backup.*' -delete
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -365,7 +365,7 @@ find backend/storage/app/content/data/users -name '*.backup.*' -delete
 
 ## ISS-006 – PHPStan level 8
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-006)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-006)
 
 **Opravené súbory:** `LoginAttemptTracker`, `SeoMetaBuilder`, `MediaFormats`, `MediaRepository`, `BulkBatchResultTest`.
 
@@ -374,7 +374,7 @@ find backend/storage/app/content/data/users -name '*.backup.*' -delete
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -382,7 +382,7 @@ find backend/storage/app/content/data/users -name '*.backup.*' -delete
 
 ## ISS-007 – Dashboard user count = 0
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-007)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-007)
 
 **Príčina:** `DashboardView` čítal `usersRes.data.length`, ale API vracia `{ users: User[] }`.
 
@@ -393,7 +393,7 @@ find backend/storage/app/content/data/users -name '*.backup.*' -delete
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -401,7 +401,7 @@ find backend/storage/app/content/data/users -name '*.backup.*' -delete
 
 ## ISS-008 – Heslo cez HTTP (login, users, **settings**)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-008)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-008)
 
 **Symptóm:** Prehliadač varuje: „Polia s heslami sú umiestnené na nezabezpečenej stránke (http://).“  
 Vidíš to na `/login`, `/users` aj `/settings` – nie je to chyba PaginiumCMS.
@@ -454,7 +454,7 @@ Potom otvor `https://192.168.10.26:8443/settings` – varovanie pri heslách zmi
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -462,7 +462,7 @@ Potom otvor `https://192.168.10.26:8443/settings` – varovanie pri heslách zmi
 
 ## ISS-009 – Settings crash: `n.max is not a function`
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-009)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-009)
 
 **Symptóm:** Po navigácii na `/settings` stránka spadne: `TypeError: n.max is not a function`.
 
@@ -477,7 +477,7 @@ Potom otvor `https://192.168.10.26:8443/settings` – varovanie pri heslách zmi
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -485,7 +485,7 @@ Potom otvor `https://192.168.10.26:8443/settings` – varovanie pri heslách zmi
 
 ## ISS-010 – Vitest stderr: `act(...)` a Router future flags
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-010)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-010)
 
 **Symptóm:** Pri `npm test` testy prechádzali, ale stderr obsahoval desiatky warningov:
 `An update to … was not wrapped in act(...)` a React Router v7 future flag hints.
@@ -506,7 +506,7 @@ Potom otvor `https://192.168.10.26:8443/settings` – varovanie pri heslách zmi
 ### Súvisiace odkazy
 
 - [Commit `b9a740f`](https://github.com/techberode/paginiumcms-architecture/commit/b9a740f)
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -514,7 +514,7 @@ Potom otvor `https://192.168.10.26:8443/settings` – varovanie pri heslách zmi
 
 ## ISS-011 – ESLint warnings (technický dlh)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-011)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-011)
 
 **Symptóm:** `npm run lint` — 0 errors, warnings hlavne `@typescript-eslint/no-explicit-any`
 (`client.ts`, `useApi.ts`) a `react-refresh/only-export-components`.
@@ -529,7 +529,7 @@ Po oprave hook deps (2.0.26): **57 warnings** — rezerva 8 slotov do limitu.
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -537,7 +537,7 @@ Po oprave hook deps (2.0.26): **57 warnings** — rezerva 8 slotov do limitu.
 
 ## ISS-012 – CSRF middleware nezapojený (audit S3) — VYRIEŠENÉ
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-012)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-012)
 
 **Symptóm / riziko:** `CsrfProtectionManager` existoval a bol testovaný, ale **nebol nikde zapojený** — žiadny `CsrfMiddleware`, backend `X-CSRF-TOKEN` nevalidoval. Jediná ochrana bola `SameSite=Lax` cookie. Navyše FE `authApi.getCsrfToken()` bol definovaný, ale **nikde sa nevolal** → token sa reálne ani neposielal.
 
@@ -564,7 +564,7 @@ Po oprave hook deps (2.0.26): **57 warnings** — rezerva 8 slotov do limitu.
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 
 ---
@@ -573,7 +573,7 @@ Po oprave hook deps (2.0.26): **57 warnings** — rezerva 8 slotov do limitu.
 
 ## Login pozadie — upload z médií / disku (2.0.46)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#feature-login-background)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#feature-login-background)
 
 **Symptóm:** V **Nastavenia → Stránka → Prihlásenie a registrácia** bolo pole `backgroundImageUrl` len textové URL — administrátor nemohol vybrať obrázok z knižnice médií ani nahrať súbor z lokálneho disku.
 
@@ -598,7 +598,7 @@ Po oprave hook deps (2.0.26): **57 warnings** — rezerva 8 slotov do limitu.
 
 ## ISS-013 – ntfy bez autentifikácie (privátne topicy)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-013)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-013)
 
 **Symptóm:** `NtfyAdapter` posielal POST bez `Authorization` — zlyhá na ACL topic / self-hosted ntfy.
 
@@ -616,7 +616,7 @@ Po oprave hook deps (2.0.26): **57 warnings** — rezerva 8 slotov do limitu.
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -624,7 +624,7 @@ Po oprave hook deps (2.0.26): **57 warnings** — rezerva 8 slotov do limitu.
 
 ## ISS-014 – CORS dev wildcardy (audit nález S6)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-014)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-014)
 
 **Symptóm:** Mimo produkcie CORS povoľuje `localhost:*`, `192.168.*`, `10.*`, `172.*` s `credentials: true`.
 
@@ -637,7 +637,7 @@ Po oprave hook deps (2.0.26): **57 warnings** — rezerva 8 slotov do limitu.
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -645,7 +645,7 @@ Po oprave hook deps (2.0.26): **57 warnings** — rezerva 8 slotov do limitu.
 
 ## ISS-015 – PHPUnit: rate limit, maintenance a OTP persistencia
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-015)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-015)
 
 **CI job:** `backend` → step **PHPUnit**
 
@@ -676,7 +676,7 @@ Po oprave hook deps (2.0.26): **57 warnings** — rezerva 8 slotov do limitu.
 ### Súvisiace odkazy
 
 - [Commit `f54361d`](https://github.com/techberode/paginiumcms-architecture/commit/f54361d)
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -684,7 +684,7 @@ Po oprave hook deps (2.0.26): **57 warnings** — rezerva 8 slotov do limitu.
 
 ## ISS-016 – PHPStan: nezhoda `phpVersion` s Composer
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-016)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-016)
 
 **CI job:** `backend` → step **PHPStan level 8**
 
@@ -704,7 +704,7 @@ Po oprave hook deps (2.0.26): **57 warnings** — rezerva 8 slotov do limitu.
 ### Súvisiace odkazy
 
 - [Commit `d5c2660`](https://github.com/techberode/paginiumcms-architecture/commit/d5c2660)
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -712,7 +712,7 @@ Po oprave hook deps (2.0.26): **57 warnings** — rezerva 8 slotov do limitu.
 
 ## ISS-017 – PHPStan: `match.alwaysTrue` v bulk akciách
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-017)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-017)
 
 **CI job:** `backend` → step **PHPStan level 8**
 
@@ -736,7 +736,7 @@ Po oprave hook deps (2.0.26): **57 warnings** — rezerva 8 slotov do limitu.
 ### Súvisiace odkazy
 
 - [Commit `d5c2660`](https://github.com/techberode/paginiumcms-architecture/commit/d5c2660)
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -744,7 +744,7 @@ Po oprave hook deps (2.0.26): **57 warnings** — rezerva 8 slotov do limitu.
 
 ## ISS-018 – PHPStan: `TrashController::downloadBackup` a `fopen`
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-018)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-018)
 
 **CI job:** `backend` → step **PHPStan level 8**
 
@@ -769,7 +769,7 @@ if ($handle === false) {
 ### Súvisiace odkazy
 
 - [Commit `d5c2660`](https://github.com/techberode/paginiumcms-architecture/commit/d5c2660)
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -777,7 +777,7 @@ if ($handle === false) {
 
 ## ISS-019 – Frontend CI: `tsc --noEmit` strict errors
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-019)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-019)
 
 **CI job:** `frontend` → step **TypeScript type-check** (`npm run type-check`)
 
@@ -814,7 +814,7 @@ if ($handle === false) {
 ### Súvisiace odkazy
 
 - [Commit `5398b48`](https://github.com/techberode/paginiumcms-architecture/commit/5398b48)
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -822,7 +822,7 @@ if ($handle === false) {
 
 ## ISS-020 – ESLint: prekročenie `--max-warnings 65`
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-020)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-020)
 
 **CI job:** `frontend` → step **ESLint** (`npm run lint`)
 
@@ -851,7 +851,7 @@ CodeEditor, AuditTrail, MediaManager, …).
 ### Súvisiace odkazy
 
 - [Commit `d24f0e0`](https://github.com/techberode/paginiumcms-architecture/commit/d24f0e0)
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -859,7 +859,7 @@ CodeEditor, AuditTrail, MediaManager, …).
 
 ## ISS-021 – PHPStan: redundantné `is_array()` v ApplicationLogReader
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-021)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-021)
 
 **CI job:** `backend` → step **PHPStan level 8**
 
@@ -886,7 +886,7 @@ ponechané (položka je `mixed`)
 ### Súvisiace odkazy
 
 - [Commit `d24f0e0`](https://github.com/techberode/paginiumcms-architecture/commit/d24f0e0)
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -894,7 +894,7 @@ ponechané (položka je `mixed`)
 
 ## ISS-022 – Vitest: `MediaManager.test.tsx` krehké asercie
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-022)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-022)
 
 **CI job:** `frontend` → step **Vitest** (`npm test`)
 
@@ -929,7 +929,7 @@ ponechané (položka je `mixed`)
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -937,7 +937,7 @@ ponechané (položka je `mixed`)
 
 ## ISS-023 – PHPUnit: flaky admin draft search
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-023)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-023)
 
 **CI job:** `backend` → step **PHPUnit**
 
@@ -966,7 +966,7 @@ Failed asserting that an array contains 'seo-test-<uniqid>'.
 ### Súvisiace odkazy
 
 - [Commit `3fd8323`](https://github.com/techberode/paginiumcms-architecture/commit/3fd8323)
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -974,7 +974,7 @@ Failed asserting that an array contains 'seo-test-<uniqid>'.
 
 ## ISS-024 – AuthMiddleware → 500 na auth trasách
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-024)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-024)
 
 **Symptóm:** Po deployi padajú chránené endpointy (**500**), napr. `POST /api/admin/settings/monitoring`, `POST /api/debug/client-event`. PHP log:
 
@@ -996,7 +996,7 @@ AuthMiddleware::__construct(): Argument #2 ($session) must be of type SessionMan
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -1004,7 +1004,7 @@ AuthMiddleware::__construct(): Argument #2 ($session) must be of type SessionMan
 
 ## ISS-025 – Odhlásenie počas editácie / pri uložení
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-025)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-025)
 
 **Symptóm:** Používateľ sa prihlási, začne editovať článok alebo nastavenia a po uložení (alebo po chvíli) ho frontend presmeruje na `/login`. Nie je to nečinnosť — deje sa to pri aktívnej práci.
 
@@ -1040,7 +1040,7 @@ Reštart PHP, vymazať cookies, znova prihlásiť.
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -1048,7 +1048,7 @@ Reštart PHP, vymazať cookies, znova prihlásiť.
 
 ## ISS-026 – Zámena SESSION_USE_STRICT_MODE ↔ SESSION_STRICT
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-026)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-026)
 
 **Symptóm:** Admin nastavil `SESSION_USE_STRICT_MODE=false` v `.env` a očakával vypnutie „strict session“, no stále dochádzalo k odhláseniu.
 
@@ -1070,7 +1070,7 @@ Reštart PHP, vymazať cookies, znova prihlásiť.
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -1078,7 +1078,7 @@ Reštart PHP, vymazať cookies, znova prihlásiť.
 
 ## ISS-027 – Debug log: falošné login 401 z PHPUnit
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-027)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-027)
 
 **Symptóm:** V `storage/logs/debug/*.log` desiatky riadkov:
 
@@ -1100,7 +1100,7 @@ Vyzerá to ako opakované zlyhané prihlásenie v prehliadači.
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -1108,7 +1108,7 @@ Vyzerá to ako opakované zlyhané prihlásenie v prehliadači.
 
 ## ISS-028 – Frontend build: JSX v SettingsView
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-028)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-028)
 
 **Symptóm:** `npm run build:prod` zlyhá:
 
@@ -1128,7 +1128,7 @@ SettingsView.tsx:162
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -1136,7 +1136,7 @@ SettingsView.tsx:162
 
 ## ISS-029 – Login loop (krátke prihlásenie → späť na login)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-029)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-029)
 
 **Symptóm:** Prihlásenie prejde, dashboard sa na chvíľu zobrazí, potom okamžitý návrat na `/login`. Debug log môže ukazovať 401 na `/api/auth/me` alebo chránených trasách.
 
@@ -1159,7 +1159,7 @@ SettingsView.tsx:162
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -1167,7 +1167,7 @@ SettingsView.tsx:162
 
 ## ISS-030 – 2FA setup: QR kód zmizne → TOTP login
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-030)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-030)
 
 **Symptóm:** Po kliknutí „Začať nastavenie 2FA“ sa na `/account/security` na chvíľu zobrazí QR, potom okamžitý preskok na login obrazovku s požiadavkou **TOTP kódu** (bez možnosti naskenovať QR).
 
@@ -1189,7 +1189,7 @@ SettingsView.tsx:162
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -1197,7 +1197,7 @@ SettingsView.tsx:162
 
 ## ISS-031 – Nový staff user: 2FA zapnuté bez tajného kľúča
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-031)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-031)
 
 **Symptóm:** Admin vytvorí používateľa s vynúteným 2FA. Prihlásenie heslom → hneď TOTP krok, ale autentifikátor nemá čo skenovať. `POST /api/auth/2fa/enable` vráti **400** „2FA je už aktivovaná“.
 
@@ -1223,7 +1223,7 @@ v `backend/storage/app/users/{id}.json`, potom re-login → `/account/security`.
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -1231,7 +1231,7 @@ v `backend/storage/app/users/{id}.json`, potom re-login → `/account/security`.
 
 ## ISS-032 – `twoFactorVerifiedAt` sa neukladalo
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-032)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-032)
 
 **Symptóm:** Po úspešnom overení QR funguje session, ale po **odhlásení / novom login-e** systém stále správa 2FA ako nedokončenú alebo vyžaduje TOTP nesprávne.
 
@@ -1246,7 +1246,7 @@ v `backend/storage/app/users/{id}.json`, potom re-login → `/account/security`.
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -1254,7 +1254,7 @@ v `backend/storage/app/users/{id}.json`, potom re-login → `/account/security`.
 
 ## ISS-033 – Frontend 401 hard redirect (dvojitý login)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-033)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-033)
 
 **Symptóm:** Po úspešnom prihlásení krátky flash dashboardu, potom návrat na login — používateľ musí zadať **heslo znova** (full page reload).
 
@@ -1271,7 +1271,7 @@ v `backend/storage/app/users/{id}.json`, potom re-login → `/account/security`.
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -1279,7 +1279,7 @@ v `backend/storage/app/users/{id}.json`, potom re-login → `/account/security`.
 
 ## ISS-034 – Dev: ovládanie TOTP cez `.env`
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-034)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-034)
 
 **Symptóm:** Počas vývoja/LAN testu je TOTP nepraktické; v `.env` nebol prepínač.
 
@@ -1299,7 +1299,7 @@ Platí len v `development|local|testing` — na **produkcii** (`APP_ENV=producti
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -1307,7 +1307,7 @@ Platí len v `development|local|testing` — na **produkcii** (`APP_ENV=producti
 
 ## ISS-035 – PHPStan: ClientIpResolver mŕtvy null coalesce
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-035)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-035)
 
 **Symptóm:** CI job „PHPStan level 8“ padá:
 
@@ -1325,7 +1325,7 @@ ClientIpResolver.php — $parts[0] ?? $remoteAddr
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -1333,7 +1333,7 @@ ClientIpResolver.php — $parts[0] ?? $remoteAddr
 
 ## ISS-036 – Frontend type-check: 2FA API shape + `setUser` (CI)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-036)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-036)
 
 **Symptóm:** Po pushi release **2.0.30** (`f5061e6`) CI job **frontend → TypeScript type-check** padá:
 
@@ -1374,7 +1374,7 @@ src/components/auth/TwoFactorSettings.test.tsx — mock missing setupPending
 - [Commit `f5061e6`](https://github.com/techberode/paginiumcms-architecture/commit/f5061e6)
 - [Commit `3fbc595`](https://github.com/techberode/paginiumcms-architecture/commit/3fbc595)
 - [GitHub Actions run](https://github.com/techberode/paginiumcms-architecture/actions/runs/29705295632)
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -1382,7 +1382,7 @@ src/components/auth/TwoFactorSettings.test.tsx — mock missing setupPending
 
 ## ISS-037 – Frontend type-check: nepoužitý React import v teste (CI)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-037)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-037)
 
 **Symptóm:** Po pushi fixu admin deep linkov (`fbb574b`) CI job **frontend → TypeScript type-check** padá:
 
@@ -1405,7 +1405,7 @@ src/components/backend/SettingsView.test.tsx(4,1): error TS6133: 'React' is decl
 
 - [Commit `fbb574b`](https://github.com/techberode/paginiumcms-architecture/commit/fbb574b)
 - [Commit `64cc894`](https://github.com/techberode/paginiumcms-architecture/commit/64cc894)
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -1413,7 +1413,7 @@ src/components/backend/SettingsView.test.tsx(4,1): error TS6133: 'React' is decl
 
 ## ISS-038 – PHPUnit It.44d: index filtre tag / author / date (CI)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-038)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-038)
 
 **Symptóm:** Po pushi It.44d (`743e922` / `05a4800`) CI job **backend → PHPUnit** padá v `ContentRepositoryTest.php`:
 
@@ -1458,7 +1458,7 @@ php vendor/bin/phpunit --filter ContentRepositoryTest::testListDistinctTagsAndCo
 - [Commit `743e922`](https://github.com/techberode/paginiumcms-architecture/commit/743e922)
 - [Commit `05a4800`](https://github.com/techberode/paginiumcms-architecture/commit/05a4800)
 - [Commit `54b013c`](https://github.com/techberode/paginiumcms-architecture/commit/54b013c)
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -1466,7 +1466,7 @@ php vendor/bin/phpunit --filter ContentRepositoryTest::testListDistinctTagsAndCo
 
 ## ISS-039 – PHPUnit `LogWriterTest`: vfs súbor + corrupt JSON (CI)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-039)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-039)
 
 **Symptóm:** CI na commite `743e922` — `LogWriterTest.php`:
 
@@ -1513,7 +1513,7 @@ php vendor/bin/phpunit --filter ContentRepositoryTest::testListDistinctTagsAndCo
 
 - [Commit `743e922`](https://github.com/techberode/paginiumcms-architecture/commit/743e922)
 - [Commit `54b013c`](https://github.com/techberode/paginiumcms-architecture/commit/54b013c)
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -1521,7 +1521,7 @@ php vendor/bin/phpunit --filter ContentRepositoryTest::testListDistinctTagsAndCo
 
 ## ISS-040 – Corrupt HTTP access log → globálne API 500 (produkcia)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-040)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-040)
 
 **Symptóm:** Po nasadení `743e922` verejný web a admin konzola — **všetky** requesty `500`:
 
@@ -1573,7 +1573,7 @@ git pull   # 743e922 + 54b013c
 
 - [Commit `743e922`](https://github.com/techberode/paginiumcms-architecture/commit/743e922)
 - [Commit `54b013c`](https://github.com/techberode/paginiumcms-architecture/commit/54b013c)
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -1581,7 +1581,7 @@ git pull   # 743e922 + 54b013c
 
 ## ISS-041 – Frontend type-check: nepoužitý `refetch` v PagesManager (CI)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-041)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-041)
 
 **Symptóm:** Po pushi It.53 (`9101377`) CI job **frontend → TypeScript type-check** padá:
 
@@ -1610,7 +1610,7 @@ const { data: listData, isLoading } = useAdminListQuery({ ... })
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -1618,7 +1618,7 @@ const { data: listData, isLoading } = useAdminListQuery({ ... })
 
 ## ISS-042 – Dvojitý login (1. pokus zlyhá, 2. prejde)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-042)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-042)
 
 **Symptóm:** Po zadaní správneho hesla prvý pokus zlyhá (toast chyby alebo návrat na login). Druhý pokus s rovnakými údajmi prejde. V DevTools opakované `GET /api/auth/me` → **401** hneď po `POST /api/auth/login` → **200**.
 
@@ -1642,7 +1642,7 @@ const { data: listData, isLoading } = useAdminListQuery({ ... })
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -1650,7 +1650,7 @@ const { data: listData, isLoading } = useAdminListQuery({ ... })
 
 ## ISS-043 – Vitest: toolbar test — globálny `screen` (It.54)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-043)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-043)
 
 **Symptóm:** `editorToolbar.test.tsx` padá — `expect(screen.queryByTitle('Obrázok')).not.toBeInTheDocument()` aj pre minimal profil.
 
@@ -1666,7 +1666,7 @@ const { data: listData, isLoading } = useAdminListQuery({ ... })
 ### Súvisiace odkazy
 
 - [Commit `8526c19`](https://github.com/techberode/paginiumcms-architecture/commit/8526c19)
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -1674,7 +1674,7 @@ const { data: listData, isLoading } = useAdminListQuery({ ... })
 
 ## ISS-044 – `services.php` parse error (API 500)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-044)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-044)
 
 **Symptóm:** Po úprave `ValidationController` DI backend nenačíta — `PHP Parse error: unexpected token "->", expecting "]"` v `backend/app/Http/Config/services.php` na riadku **301**. Všetky API volania (vrátane `POST /api/debug/client-event`) → **500**.
 
@@ -1694,7 +1694,7 @@ const { data: listData, isLoading } = useAdminListQuery({ ... })
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -1702,7 +1702,7 @@ const { data: listData, isLoading } = useAdminListQuery({ ... })
 
 ## ISS-045 – `LocaleScaffoldService::$projectRoot` (PHPStan + PHPUnit)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-045)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-045)
 
 **Symptóm:** `alltests` — PHPUnit **exit 1** napriek `689 passed, 0 failed`; PHPStan **7 chýb** na `LocaleScaffoldService.php` (riadky 18, 53, 54, 83, 85, 101, 119). PHPUnit warning: `Creation of dynamic property ... $projectRoot is deprecated`.
 
@@ -1728,7 +1728,7 @@ public function __construct(
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -1736,7 +1736,7 @@ public function __construct(
 
 ## ISS-046 – Audit udalosti sa zapisovali ako kategória `app`
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-046)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-046)
 
 **Symptóm:** Uloženie stránky/článku vytvorilo verziu, ale v audit štatistikách chýbala udalosť. V `storage/logs/app/*.json` boli záznamy s `[CONTENT_CHANGE]`, no pole `category` bolo `app`, nie `audit_content_change`.
 
@@ -1756,7 +1756,7 @@ public function __construct(
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -1764,7 +1764,7 @@ public function __construct(
 
 ## ISS-047 – Dashboard „Prehľad aktivít“ prázdny
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-047)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-047)
 
 **Symptóm:** Panel na `/dashboard` zobrazoval „Zatiaľ žiadne udalosti v audit logu“, hoci obsah sa ukladal a verzie vznikali.
 
@@ -1790,7 +1790,7 @@ public function __construct(
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -1798,7 +1798,7 @@ public function __construct(
 
 ## ISS-048 – Audit správy nečitateľné (zlý formát)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-048)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-048)
 
 **Symptóm:** V dashboarde a `/audit` sa zobrazovalo napr. `[CONTENT_CHANGE] UPDATE: blog on maxxim@webland.fun by 2026-07-20 20:44:47` — nejasné, kto čo urobil.
 
@@ -1821,7 +1821,7 @@ public function __construct(
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -1829,7 +1829,7 @@ public function __construct(
 
 ## ISS-049 – Korumpovaný denný log `2026-07-21.json`
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-049)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-049)
 
 **Symptóm:** V `backend/app/storage/logs/app/` chýba platný súbor pre 21.7.; stovky prázdnych `.corrupt-`* backupov (752×). Nové udalosti z dnešného dňa sa nezapisujú — v dashboarde sú len záznamy zo včera.
 
@@ -1856,7 +1856,7 @@ public function __construct(
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -1864,7 +1864,7 @@ public function __construct(
 
 ## ISS-050 – Sekcia Logy prázdna (ApplicationLogReader)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-050)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-050)
 
 **Symptóm:** `/logs` aj dashboard panel „Logy (24 h)“ zobrazujú **0 záznamov** / „Žiadne záznamy“, hoci `backend/app/storage/logs/app/` obsahuje veľké JSON súbory.
 
@@ -1889,7 +1889,7 @@ public function __construct(
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -1897,7 +1897,7 @@ public function __construct(
 
 ## ISS-051 – Boot crash: `DevTokenGenerator` výnimka pri `APP_ENV=production`
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-051)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-051)
 
 **Symptóm:** Po security hardeningu (audit 2026-07-22) prestal fungovať boot aplikácie na prostrediach s `APP_ENV=production` — celý DI kontajner spadol s:
 
@@ -1942,7 +1942,7 @@ výnimka pri konštrukcii služby zhodila celý boot kontajnera — teda aj HTTP
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -1950,7 +1950,7 @@ výnimka pri konštrukcii služby zhodila celý boot kontajnera — teda aj HTTP
 
 ## ISS-052 – Šifrovanie tajomstiev „at-rest" (audit A1) — VYRIEŠENÉ
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-052)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-052)
 
 **Symptóm / riziko:** Citlivé tajomstvá boli vo flat-file úložisku uložené v **plaintexte**: `twoFactorSecret` (TOTP seed) v `data/users/*.json` a settings secrety (`smtp.password`, `connectors.ntfyAccessToken`/`ntfyPassword`, `telegramBotToken`, `webhookSecret`, SSO `*ClientSecret`) v `data/settings.json`. Pri úniku súborov (záloha, zlé práva, iná zraniteľnosť) → priame prevzatie 2FA a únik notifikačných/SSO/SMTP credentials.
 
@@ -1972,7 +1972,7 @@ výnimka pri konštrukcii služby zhodila celý boot kontajnera — teda aj HTTP
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -1980,7 +1980,7 @@ výnimka pri konštrukcii služby zhodila celý boot kontajnera — teda aj HTTP
 
 ## ISS-053 – Log / CSV injection cez control znaky (audit C11) — VYRIEŠENÉ
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-053)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-053)
 
 **Symptóm / riziko:** User-controlled vstupy (query string, User-Agent, URI, Referer) sa zapisovali do logov/auditu bez odstránenia `\r\n`/control znakov. JSON logy CR/LF escapujú (fake-line injection do JSON nehrozí), ale zraniteľné ostávali: **CSV export** security auditu (embedded newline láme riadky), plaintext/terminálové zobrazenie a ne-JSON konzumenti (ANSI `\x1B`, DEL).
 
@@ -1993,7 +1993,7 @@ výnimka pri konštrukcii služby zhodila celý boot kontajnera — teda aj HTTP
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -2001,7 +2001,7 @@ výnimka pri konštrukcii služby zhodila celý boot kontajnera — teda aj HTTP
 
 ## ISS-054 – SSRF cez admin-konfigurovateľné odchádzajúce URL (audit C14) — VYRIEŠENÉ
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-054)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-054)
 
 **Symptóm / riziko:** Odchádzajúce HTTP volania na admin-konfigurovateľné URL (generic OAuth `token_url`/`userinfo_url`, ntfy server, webhook, Discord webhook) bežali cez `file_get_contents` bez SSRF ochrany → server sa dal prinútiť volať interné služby: cloud metadata (`169.254.169.254`), `localhost`, privátne rozsahy, ne-HTTPS ciele.
 
@@ -2014,7 +2014,7 @@ výnimka pri konštrukcii služby zhodila celý boot kontajnera — teda aj HTTP
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -2022,7 +2022,7 @@ výnimka pri konštrukcii služby zhodila celý boot kontajnera — teda aj HTTP
 
 ## ISS-055 – Path ACL nezapojené do content/media operácií (audit S9) — VYRIEŠENÉ
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-055)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-055)
 
 **Symptóm / riziko:** `PathAclService` a admin UI `/security/acl` existovali od It.11, ale služba sa **nikde nevolala** — pravidlá v `data/security/acl.json` nemali vplyv na CRUD stránok/článkov, draftov ani médií.
 
@@ -2037,7 +2037,7 @@ výnimka pri konštrukcii služby zhodila celý boot kontajnera — teda aj HTTP
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -2045,7 +2045,7 @@ výnimka pri konštrukcii služby zhodila celý boot kontajnera — teda aj HTTP
 
 ## ISS-056 – WAF neskenuje POST/JSON telo (audit S-WAFBODY) — VYRIEŠENÉ
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-056)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-056)
 
 **Symptóm / riziko:** `FirewallMiddleware` kontroloval len URI, query string a User-Agent. SQLi/traversal/SSRF payloady v JSON tele (login, contact, settings webhook URL…) prešli bez matchu.
 
@@ -2063,7 +2063,7 @@ výnimka pri konštrukcii služby zhodila celý boot kontajnera — teda aj HTTP
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -2071,7 +2071,7 @@ výnimka pri konštrukcii služby zhodila celý boot kontajnera — teda aj HTTP
 
 ## ISS-057 – UserRepository O(n) lookup (audit PERF-USERREPO) — VYRIEŠENÉ
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-057)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-057)
 
 **Symptóm / riziko:** `UserRepository::findByEmail()`, `findById()`, `findByResetToken()` a `existsByUsername()` pri každom volaní načítali a dekódovali **všetky** `data/users/*.json` súbory → O(n) I/O pri každom prihlásení, 2FA refreshi alebo reset hesla. Pri malom počte účtov zanedbateľné, pri raste inštancie zbytočná záťaž disku a latencia auth cesty.
 
@@ -2091,7 +2091,7 @@ výnimka pri konštrukcii služby zhodila celý boot kontajnera — teda aj HTTP
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -2099,7 +2099,7 @@ výnimka pri konštrukcii služby zhodila celý boot kontajnera — teda aj HTTP
 
 ## ISS-058 – OTP bez dedikovaného rate-limitu (audit S10) — VYRIEŠENÉ
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-058)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-058)
 
 **Symptóm / riziko:** OTP routy (`/api/auth/register*`, `/api/admin/workflows/otp/*`) mali len globálny limit 60/min — príliš voľný pre brute-force 6-miestneho kódu. `resendRegistration()`/`resendEditorChallenge()` navyše resetovali `attempts` na 0 → obídenie `otpMaxAttempts` opakovaným resendom.
 
@@ -2118,7 +2118,7 @@ výnimka pri konštrukcii služby zhodila celý boot kontajnera — teda aj HTTP
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -2126,7 +2126,7 @@ výnimka pri konštrukcii služby zhodila celý boot kontajnera — teda aj HTTP
 
 ## ISS-059 – Vitest: `useI18n()` bez `I18nProvider` (CI @ `f0a885c`) — VYRIEŠENÉ
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-059)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-059)
 
 **Symptóm / CI log:**
 
@@ -2166,7 +2166,7 @@ Spustené z komponentov, ktoré boli migrované na `useI18n()` v It.18f, ale uni
 ### Súvisiace odkazy
 
 - [Commit `f0a885c787e2234f8c117921e75e42b555bfe5a5`](https://github.com/techberode/paginiumcms-architecture/commit/f0a885c787e2234f8c117921e75e42b555bfe5a5)
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -2174,7 +2174,7 @@ Spustené z komponentov, ktoré boli migrované na `useI18n()` v It.18f, ale uni
 
 ## ISS-060 – Settings EN katalóg: SK copy-paste v `workflows` — VYRIEŠENÉ
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-060)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-060)
 
 **Symptóm:** Pri prepnutí admin jazyka na **English** (`Nastavenia → Všeobecné → Jazyk`) zostali v sekcii **Workflows / OTP** slovenské labely a popisy. Používateľ videl zmiešané SK/EN bloky v inak anglickom admin rozhraní.
 
@@ -2197,7 +2197,7 @@ Spustené z komponentov, ktoré boli migrované na `useI18n()` v It.18f, ale uni
 ### Súvisiace odkazy
 
 - [Commit `f0a885c`](https://github.com/techberode/paginiumcms-architecture/commit/f0a885c)
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -2205,7 +2205,7 @@ Spustené z komponentov, ktoré boli migrované na `useI18n()` v It.18f, ale uni
 
 ## ISS-061 – Audit správy v EN admin locale zostávali po slovensky — VYRIEŠENÉ
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-061)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-061)
 
 **Symptóm:** Pri **`Nastavenia → Všeobecné → Jazyk = English`** zostali audit správy v dashboard „Prehľad aktivít“ a v `/audit` po slovensky (napr. „Maxxim upravil článok…“), zatiaľ čo zvyšok admin UI bol anglický.
 
@@ -2235,7 +2235,7 @@ Spustené z komponentov, ktoré boli migrované na `useI18n()` v It.18f, ale uni
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -2243,7 +2243,7 @@ Spustené z komponentov, ktoré boli migrované na `useI18n()` v It.18f, ale uni
 
 ## ISS-062 – Verejný web hardcoded SK pri EN locale — VYRIEŠENÉ
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-062)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-062)
 
 **Symptóm:** Pri **`Nastavenia → Všeobecné → Jazyk = English`** zostal verejný web (navbar, blog, footer, login/register modals, contact form) po slovensky, zatiaľ čo admin UI bol anglický.
 
@@ -2268,7 +2268,7 @@ Spustené z komponentov, ktoré boli migrované na `useI18n()` v It.18f, ale uni
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -2276,7 +2276,7 @@ Spustené z komponentov, ktoré boli migrované na `useI18n()` v It.18f, ale uni
 
 ## ISS-063 – `RangeError: Invalid time value` (admin + verejný web) — OPRAVENÉ LOKÁLNE (release 2.0.51 ⏳)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-063)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-063)
 
 **Symptóm:** Po deployi **2.0.50** pád Reactu v konzole:
 
@@ -2316,7 +2316,7 @@ Stránka sa nevykreslí; pri admin editore to vyzeralo aj ako „odhlásenie“ 
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -2324,7 +2324,7 @@ Stránka sa nevykreslí; pri admin editore to vyzeralo aj ako „odhlásenie“ 
 
 ## ISS-064 – CI `tsc`: `DEFAULT_LOCALE` not exported — OPRAVENÉ LOKÁLNE (release 2.0.51 ⏳)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-064)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-064)
 
 **Symptóm:** GitHub Actions / lokálne `npm run type-check`:
 
@@ -2354,7 +2354,7 @@ export { DEFAULT_LOCALE, type Locale, type MessageTree, type MessageValue } from
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -2362,7 +2362,7 @@ export { DEFAULT_LOCALE, type Locale, type MessageTree, type MessageValue } from
 
 ## ISS-065 – Admin logy o 2 hodiny dozadu (timezone) — OPRAVENÉ LOKÁLNE (2.0.51 ⏳)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-065)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-065)
 
 **Symptóm:** V administrácii (Logy, audit) čas záznamov o **2 h menej** než skutočný lokálny čas (SK leto = UTC+2). Nie je to NTP sync — ide o **časovú zónu PHP**.
 
@@ -2383,7 +2383,7 @@ export { DEFAULT_LOCALE, type Locale, type MessageTree, type MessageValue } from
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -2391,7 +2391,7 @@ export { DEFAULT_LOCALE, type Locale, type MessageTree, type MessageValue } from
 
 ## ISS-066 – PHPUnit CronExpressionEvaluator same-minute — OPRAVENÉ (2.0.51 ⏳)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-066)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-066)
 
 **Symptóm:** `./vendor/bin/phpunit` — `CronExpressionEvaluatorTest::testIsDueSinceLastRunSkipsSameMinute` failed (true !== false).
 
@@ -2406,7 +2406,7 @@ export { DEFAULT_LOCALE, type Locale, type MessageTree, type MessageValue } from
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -2414,7 +2414,7 @@ export { DEFAULT_LOCALE, type Locale, type MessageTree, type MessageValue } from
 
 ## ISS-067 – PHPUnit LocaleMiddlewareTest — OPRAVENÉ (2.0.51 ⏳)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-067)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-067)
 
 **Symptóm:** `LocaleMiddlewareTest::testUsesConfiguredLanguageFromSettings` — mock očakával len `general.language`, middleware volá aj `general.timezone`.
 
@@ -2427,7 +2427,7 @@ export { DEFAULT_LOCALE, type Locale, type MessageTree, type MessageValue } from
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -2435,7 +2435,7 @@ export { DEFAULT_LOCALE, type Locale, type MessageTree, type MessageValue } from
 
 ## ISS-068 – Code policy v logoch ako ERROR — OPRAVENÉ (2.0.51 ⏳)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-068)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-068)
 
 **Symptóm:** V admin Logoch záznam:
 
@@ -2456,7 +2456,7 @@ Error in file backend/app/Modules/PolicyTest.php: Code policy validation failed
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -2464,7 +2464,7 @@ Error in file backend/app/Modules/PolicyTest.php: Code policy validation failed
 
 ## ISS-069 – Časové pásmo: vyhľadávateľný zoznam — OPRAVENÉ (2.0.51 ⏳)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-069)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-069)
 
 **Symptóm:** Nastavenia → Všeobecné → Časové pásmo bolo obyčajné textové pole (preklep → neplatná zóna).
 
@@ -2481,7 +2481,7 @@ Error in file backend/app/Modules/PolicyTest.php: Code policy validation failed
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -2489,7 +2489,7 @@ Error in file backend/app/Modules/PolicyTest.php: Code policy validation failed
 
 ## ISS-070 – Letný čas (DST) v nastaveniach — OPRAVENÉ (2.0.51 ⏳)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-070)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-070)
 
 **Symptóm:** Chýbal prepínač letného času; admin nevedel, či CMS aplikuje DST korekciu.
 
@@ -2507,7 +2507,7 @@ Error in file backend/app/Modules/PolicyTest.php: Code policy validation failed
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -2515,7 +2515,7 @@ Error in file backend/app/Modules/PolicyTest.php: Code policy validation failed
 
 ## ISS-071 – Logy: bulk akcie, delete-all, stránkovanie — VYRIEŠENÉ (**2.0.51**)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-071)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-071)
 
 **Symptóm:** Admin **Logy** (`/logs`) zobrazoval max 200 záznamov bez stránkovania, bez výberu riadkov, bez ručného mazania/archivácie vybraných položiek ani kompletného vymazania.
 
@@ -2535,7 +2535,7 @@ Error in file backend/app/Modules/PolicyTest.php: Code policy validation failed
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -2543,7 +2543,7 @@ Error in file backend/app/Modules/PolicyTest.php: Code policy validation failed
 
 ## ISS-072 – Security audit 403 pre ADMIN — VYRIEŠENÉ (**2.0.52**)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-072)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-072)
 
 **Symptóm:** `GET /api/admin/security/audit` vracal **403** pre rolu **ADMIN** (PHPUnit `SecurityAuditControllerTest`, admin audit v UI).
 
@@ -2563,7 +2563,7 @@ Error in file backend/app/Modules/PolicyTest.php: Code policy validation failed
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -2571,7 +2571,7 @@ Error in file backend/app/Modules/PolicyTest.php: Code policy validation failed
 
 ## ISS-073 – PHPUnit login → 429 namiesto 401 — VYRIEŠENÉ (**2.0.52**)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-073)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-073)
 
 **Symptóm:** V plnom behu suite padali testy očakávajúce **401** pri zlom hesle / neexistujúcom účte, ale dostávali **429**:
 
@@ -2591,7 +2591,7 @@ Error in file backend/app/Modules/PolicyTest.php: Code policy validation failed
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -2599,7 +2599,7 @@ Error in file backend/app/Modules/PolicyTest.php: Code policy validation failed
 
 ## ISS-074 – PHPStan L8 po accessControl / branding — VYRIEŠENÉ (**2.0.52**)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-074)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-074)
 
 **Symptóm:** `./vendor/bin/phpstan analyse --level=8 backend/app` — **10 chýb** po pridaní skupiny `accessControl`, `AccessControlSyncService`, `PermissionCatalog`.
 
@@ -2621,7 +2621,7 @@ Error in file backend/app/Modules/PolicyTest.php: Code policy validation failed
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -2629,7 +2629,7 @@ Error in file backend/app/Modules/PolicyTest.php: Code policy validation failed
 
 ## ISS-075 – PHPUnit fatal: duplicate `HelloWidget\Hooks` class — VYRIEŠENÉ (**2.0.54**)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-075)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-075)
 
 **Symptóm:** Po pridaní referenčného pluginu `hello-widget` do repozitára padol celý PHPUnit suite:
 
@@ -2659,7 +2659,7 @@ in /tmp/pag_plugins_mgr_…/extensions/hello-widget/src/Hooks.php on line 7
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -2667,7 +2667,7 @@ in /tmp/pag_plugins_mgr_…/extensions/hello-widget/src/Hooks.php on line 7
 
 ## ISS-076 – PHPUnit kaskáda po zavedení `passwordConfirm` — VYRIEŠENÉ (**2.0.56**)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-076)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-076)
 
 **Symptóm:** Po release **2.0.56** (povinné potvrdenie hesla pri registrácii a admin CRUD používateľov) padlo **21 PHPUnit testov** v niekoľkých suite naraz:
 
@@ -2711,7 +2711,7 @@ Failed asserting that null is not null.
 - Testy, ktoré dočasne menia `general.allowRegistration` alebo `maintenance.mode`, musia obnoviť stav v **`finally`** (nie len na konci metódy po assertion).
 - Pri pridávaní validácie **pred** business pravidlom (403 maintenance) aktualizovať aj testy, ktoré očakávajú konkrétny HTTP kód z business vrstvy.
 
-**Súvisí s:** [ITERATION_5.md](ITERATION_5.md#password-confirmation-2056), [CORE_HARDENING.md](architecture/CORE_HARDENING.md) §4, [CHANGELOG.md](../CHANGELOG.md#2056--2026-07-23), commit `0664ba3`.
+**Súvisí s:** [ITERATION_5.md](ITERATION_5.md#password-confirmation-2056), [CORE_HARDENING.md](architecture/CORE_HARDENING.md) §4, [CHANGELOG.md](../../CHANGELOG.md#2056--2026-07-23), commit `0664ba3`.
 
 ---
 
@@ -2730,7 +2730,7 @@ Failed asserting that null is not null.
 ### Súvisiace odkazy
 
 - [Commit `0664ba3`](https://github.com/techberode/paginiumcms-architecture/commit/0664ba3)
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -2738,7 +2738,7 @@ Failed asserting that null is not null.
 
 ## ISS-077 – Audit trail CSV export bez LogSanitizer — VYRIEŠENÉ (**2.1.0-beta.2**)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-077)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-077)
 
 **Symptóm:** Pre-beta audit našiel Medium nález: `AuditTrailService::exportAuditToCsv()` neaplikoval `LogSanitizer` na bunky CSV (na rozdiel od `SecurityAuditStore::exportCsv()` po C11). EDITOR+ mohol cez auditovaný obsah (`\r\n`, `=CMD()`) poškodiť export alebo spustiť formula injection v Excel/LibreOffice.
 
@@ -2751,7 +2751,7 @@ Failed asserting that null is not null.
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -2759,7 +2759,7 @@ Failed asserting that null is not null.
 
 ## ISS-078 – React Router npm advisories (post-beta.2) — VYRIEŠENÉ (**2.1.0-beta.3**)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-078)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-078)
 
 **Kontext:** Tag **`v2.1.0-beta.2`** (2026-07-23) prešiel pre-push gate s `npm audit --audit-level=high` → **0 CVE**. GitHub Security Advisories pre React Router boli **publikované až po tomto release**; pri `npm audit --audit-level=moderate` sa objavili **3 moderate** nálezy v transitívnom balíku `react-router@6.30.4` (via `react-router-dom@^6.20.0` → lock **6.30.4**). V vetve **6.x neexistuje patch** — oprava je až od **`react-router-dom@7.18.0`**.
 
@@ -2793,7 +2793,7 @@ Failed asserting that null is not null.
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -2801,7 +2801,7 @@ Failed asserting that null is not null.
 
 ## ISS-079 – Editor profil blog blokuje uloženie code blocku — VYRIEŠENÉ (**2.1.0-beta.5**)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-079)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-079)
 
 **Symptóm:** Článok s fenced code blockom (`` ```markdown … ``` ``) sa dal vytvoriť, ale pri **opätovnom editovaní a uložení** toast: *„Profil editora nepovoľuje bloky kódu."* (profil **blog**, It.54).
 
@@ -2827,7 +2827,7 @@ Failed asserting that null is not null.
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -2835,7 +2835,7 @@ Failed asserting that null is not null.
 
 ## ISS-080 – PHPStan: `ContentMetaController::getGroup()` — VYRIEŠENÉ (**2.1.0-beta.4**)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-080)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-080)
 
 **Symptóm:** `./scripts/iteration-gate.sh` / PHPStan L8 padol pri It.57 (`ContentMetaSuggestPanel` + `POST /api/admin/content/suggest-meta`):
 
@@ -2854,7 +2854,7 @@ Call to an undefined method SettingsRepositoryInterface::getGroup()
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -2862,7 +2862,7 @@ Call to an undefined method SettingsRepositoryInterface::getGroup()
 
 ## ISS-081 – Dependabot: split `@tiptap/*` PR → npm peer conflict — VYRIEŠENÉ (**2.1.0-beta.4**)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-081)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-081)
 
 **Symptóm:** GitHub Dependabot PR **#9**, **#11**, **#12** (jednotlivé balíky `@tiptap/extension-*` 3.27.3 → 3.28.0) — CI **frontend** job red: `npm ci` / Vitest.
 
@@ -2884,7 +2884,7 @@ Call to an undefined method SettingsRepositoryInterface::getGroup()
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -2892,7 +2892,7 @@ Call to an undefined method SettingsRepositoryInterface::getGroup()
 
 ## ISS-082 – Dependabot: `symfony/yaml` 8.x (PR #7) — ODLOŽENÉ
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-082)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-082)
 
 **Symptóm:** Dependabot navrhol `symfony/yaml` **7.4.14 → 8.1.1** (major). CI na PR prešlo, ale merge by porušil `composer.json` constraint **`^7.0`**.
 
@@ -2905,7 +2905,7 @@ Call to an undefined method SettingsRepositoryInterface::getGroup()
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -2913,7 +2913,7 @@ Call to an undefined method SettingsRepositoryInterface::getGroup()
 
 ## ISS-083 – Dependabot: `eslint` 10.x (PR #10) — ODLOŽENÉ
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-083)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-083)
 
 **Symptóm:** Dependabot navrhol `eslint` **9.39.5 → 10.7.0** (major). CI frontend padol (breaking config / pravidlá).
 
@@ -2926,7 +2926,7 @@ Call to an undefined method SettingsRepositoryInterface::getGroup()
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -2934,7 +2934,7 @@ Call to an undefined method SettingsRepositoryInterface::getGroup()
 
 ## ISS-084 – Samovolné odhlásenie v Chrome (kaskáda 401) — VYRIEŠENÉ (**2.1.0-beta.5**)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-084)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-084)
 
 **Symptóm:** Po ~20–30 min v admin paneli (Chrome) náhle redirect na `/login`. V logoch naraz:
 
@@ -2964,7 +2964,7 @@ Call to an undefined method SettingsRepositoryInterface::getGroup()
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -2972,7 +2972,7 @@ Call to an undefined method SettingsRepositoryInterface::getGroup()
 
 ## ISS-085 – Rich navigácia: prázdna ikona + chýbajúci popis — VYRIEŠENÉ (**2.1.0-beta.5**)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-085)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-085)
 
 **Symptóm:** V admin navigácii nastavená **Lucide ikona** — na webe len prázdny rámček (hover tooltip). **Popis položky** sa nezobrazil na desktop top-level linkoch (mobile OK).
 
@@ -2995,7 +2995,7 @@ Call to an undefined method SettingsRepositoryInterface::getGroup()
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -3003,7 +3003,7 @@ Call to an undefined method SettingsRepositoryInterface::getGroup()
 
 ## ISS-086 – Stored XSS cez HTML obsah (audit) — VYRIEŠENÉ (**2.1.0-beta.6**)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-086)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-086)
 
 **Nález:** `ContentSecuritySanitizer::sanitizeHtml()` používal `strip_tags()` — odstránil zakázané tagy, ale **nečistil atribúty** na `<a>` / `<img>`. Payloady typu `onerror=`, `javascript:` v `href` prešli a renderovali sa cez `dangerouslySetInnerHTML` na verejných stránkach aj v admin preview.
 
@@ -3019,7 +3019,7 @@ Call to an undefined method SettingsRepositoryInterface::getGroup()
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -3027,7 +3027,7 @@ Call to an undefined method SettingsRepositoryInterface::getGroup()
 
 ## ISS-087 – Deploy script hardcoded credentials — VYRIEŠENÉ (**2.1.0-beta.6**)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-087)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-087)
 
 **Nález:** `scripts/deploy-frontend-lan.sh` mal default `192.168.10.26`, `marian`, port `49555` v repozitári.
 
@@ -3042,7 +3042,7 @@ DEPLOY_HOST=192.168.x.x DEPLOY_USER=yourName DEPLOY_SSH_PORT=22 ./scripts/deploy
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -3050,7 +3050,7 @@ DEPLOY_HOST=192.168.x.x DEPLOY_USER=yourName DEPLOY_SSH_PORT=22 ./scripts/deploy
 
 ## ISS-088 – Backup import Zip-Slip — VYRIEŠENÉ (**2.1.0-beta.6**)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-088)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-088)
 
 **Nález:** `BackupManager::importBackup()` volal `$zip->extractTo()` bez validácie názvov entries (na rozdiel od extension importu).
 
@@ -3063,7 +3063,7 @@ DEPLOY_HOST=192.168.x.x DEPLOY_USER=yourName DEPLOY_SSH_PORT=22 ./scripts/deploy
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -3071,7 +3071,7 @@ DEPLOY_HOST=192.168.x.x DEPLOY_USER=yourName DEPLOY_SSH_PORT=22 ./scripts/deploy
 
 ## ISS-089 – npm audit high: React Router RSC CSRF (GHSA-qwww-vcr4-c8h2) — AKCEPTOVANÉ (SPA)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-089)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-089)
 
 **Nález:** `npm audit` hlási **high** pre `react-router` 7.12.0–8.2.0 (teda aj **7.18.1**). Patch existuje len v **≥ 8.3.0** (peer **React ≥ 19.2.7**).
 
@@ -3088,7 +3088,7 @@ DEPLOY_HOST=192.168.x.x DEPLOY_USER=yourName DEPLOY_SSH_PORT=22 ./scripts/deploy
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -3096,7 +3096,7 @@ DEPLOY_HOST=192.168.x.x DEPLOY_USER=yourName DEPLOY_SSH_PORT=22 ./scripts/deploy
 
 ## ISS-090 – ESLint 10 peer conflict — VYRIEŠENÉ (**2.1.0-beta.7**)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-090)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-090)
 
 **Symptóm:** `eslint: "latest"` inštalovalo ESLint 10; `eslint-plugin-react-hooks@5` podporuje max ESLint 9 → `npm audit fix` padá na ERESOLVE.
 
@@ -3107,7 +3107,7 @@ DEPLOY_HOST=192.168.x.x DEPLOY_USER=yourName DEPLOY_SSH_PORT=22 ./scripts/deploy
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -3115,7 +3115,7 @@ DEPLOY_HOST=192.168.x.x DEPLOY_USER=yourName DEPLOY_SSH_PORT=22 ./scripts/deploy
 
 ## ISS-091 – Vitest: 14 failed (react-router / useOptimistic) — VYRIEŠENÉ (**2.1.0-beta.7**)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-091)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-091)
 
 **Symptóm:** Po deps update: `The requested module 'react' does not provide an export named 'useOptimistic'` pri mock `react-router-dom`.
 
@@ -3128,7 +3128,7 @@ DEPLOY_HOST=192.168.x.x DEPLOY_USER=yourName DEPLOY_SSH_PORT=22 ./scripts/deploy
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -3136,7 +3136,7 @@ DEPLOY_HOST=192.168.x.x DEPLOY_USER=yourName DEPLOY_SSH_PORT=22 ./scripts/deploy
 
 ## ISS-092 – Deploy env + skript syntax — VYRIEŠENÉ (**2.1.0-beta.7**)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-092)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-092)
 
 **Zmeny:**
 
@@ -3150,7 +3150,7 @@ DEPLOY_HOST=192.168.x.x DEPLOY_USER=yourName DEPLOY_SSH_PORT=22 ./scripts/deploy
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -3158,7 +3158,7 @@ DEPLOY_HOST=192.168.x.x DEPLOY_USER=yourName DEPLOY_SSH_PORT=22 ./scripts/deploy
 
 ## ISS-093 – ESLint `expand is not a function` — VYRIEŠENÉ
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-093)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-093)
 
 **Symptóm:** `npm run lint` padá s `TypeError: expand is not a function` v `minimatch@3` (ESLint `@eslint/config-array`).
 
@@ -3171,7 +3171,7 @@ DEPLOY_HOST=192.168.x.x DEPLOY_USER=yourName DEPLOY_SSH_PORT=22 ./scripts/deploy
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -3179,7 +3179,7 @@ DEPLOY_HOST=192.168.x.x DEPLOY_USER=yourName DEPLOY_SSH_PORT=22 ./scripts/deploy
 
 ## ISS-094 – Job scheduler run → 500 na produkcii (Docker storage + UI) — VYRIEŠENÉ
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-094)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-094)
 
 **Symptóm:** Po deployi na `paginiumcms.com` admin **Plánovač** — `POST /api/admin/jobs/{id}/run` → **500** (backup-scheduled, monitoring-pipeline, content-scheduled-publish). Neskôr API vracalo 200, ale UI stále vyzeralo nefunkčné.
 
@@ -3215,7 +3215,7 @@ DEPLOY_HOST=192.168.x.x DEPLOY_USER=yourName DEPLOY_SSH_PORT=22 ./scripts/deploy
 
 - [Commit `0fe21ec`](https://github.com/techberode/paginiumcms-architecture/commit/0fe21ec)
 - [Commit `f7a73f1`](https://github.com/techberode/paginiumcms-architecture/commit/f7a73f1)
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -3223,7 +3223,7 @@ DEPLOY_HOST=192.168.x.x DEPLOY_USER=yourName DEPLOY_SSH_PORT=22 ./scripts/deploy
 
 ## ISS-095 – Maintenance pozadie „Neplatná URL“ pri uložení — VYRIEŠENÉ (**main `88cbe31`**)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-095)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-095)
 
 **Symptóm:** Admin → **Nastavenia → Režim údržby → Pozadie (URL)** — výber obrázku z médií alebo upload → pri **Uložiť** chyba **„Neplatná URL“** (frontend Zod + backend validátor).
 
@@ -3253,7 +3253,7 @@ DEPLOY_HOST=192.168.x.x DEPLOY_USER=yourName DEPLOY_SSH_PORT=22 ./scripts/deploy
 ### Súvisiace odkazy
 
 - [Commit `88cbe31`](https://github.com/techberode/paginiumcms-architecture/commit/88cbe31)
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -3261,7 +3261,7 @@ DEPLOY_HOST=192.168.x.x DEPLOY_USER=yourName DEPLOY_SSH_PORT=22 ./scripts/deploy
 
 ## ISS-096 – 502 Bad Gateway hneď po `./stack.sh restart php` — INFORMATÍVNE (nie bug)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-096)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-096)
 
 **Symptóm:** Po `./stack.sh restart php` okamžitý `curl` na `/api/health` vráti **502 Bad Gateway** (HTML od host nginx).
 
@@ -3287,7 +3287,7 @@ Ak 502 **pretrváva** >30 s → `./stack.sh logs --tail=50 php` (parse error, .e
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -3295,7 +3295,7 @@ Ak 502 **pretrváva** >30 s → `./stack.sh logs --tail=50 php` (parse error, .e
 
 ## ISS-097 – Newsletter odberateľia bez admin prehľadu — VYRIEŠENÉ (It.61)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-097)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-097)
 
 **Symptóm:** Návštevník sa prihlási na newsletter (Coming Soon / Údržba), admin **nevidí zoznam** prihlásení ani odhlásení v UI.
 
@@ -3329,7 +3329,7 @@ Formát záznamu: `{ "id", "email", "subscribedAt", "source" }` — `source` nap
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -3337,7 +3337,7 @@ Formát záznamu: `{ "id", "email", "subscribedAt", "source" }` — `source` nap
 
 ## ISS-098 – Demo login 401, prázdna odpoveď v prehliadači (CORS) — VYRIEŠENÉ
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-098)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-098)
 
 **Symptóm:** Na `demo.paginiumcms.com` prihlásenie v prehliadači zlyhá; DevTools ukazuje `POST /api/auth/login` → **401**, `Content-Type: text/html`, **prázdne telo**. Konzola: `Unexpected end of JSON input`. Rovnaký request cez `curl` **bez** hlavičky `Origin` vracia **200 JSON**.
 
@@ -3385,7 +3385,7 @@ cd /var/lib/docker/compose/paginiumcms-demo && ./stack.sh up -d
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -3393,7 +3393,7 @@ cd /var/lib/docker/compose/paginiumcms-demo && ./stack.sh up -d
 
 ## ISS-099 – Demo `demo:reset-if-due` — Permission denied na `plugins.json` — OPS (nie kód)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-099)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-099)
 
 **Symptóm:** Na demo serveri host príkaz `php backend/bin/console demo:reset-if-due` spadne:
 
@@ -3441,7 +3441,7 @@ php backend/bin/console demo:reset-if-due
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -3449,7 +3449,7 @@ php backend/bin/console demo:reset-if-due
 
 ## ISS-100 – S-DEMOCREDS — demo heslo v public settings — VYRIEŠENÉ
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-100)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-100)
 
 **Závažnosť:** Stredná (security audit finding)  
 **Stav:** ✅ **`v2.1.0-beta.11`**
@@ -3474,7 +3474,7 @@ curl -sS -X POST https://demo.paginiumcms.com/api/demo/quick-login | jq '.succes
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -3482,7 +3482,7 @@ curl -sS -X POST https://demo.paginiumcms.com/api/demo/quick-login | jq '.succes
 
 ## ISS-101 – Editor biela obrazovka (`capabilities.includes`) — VYRIEŠENÉ
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-101)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-101)
 
 **Závažnosť:** Vysoká (demo trial blocker)  
 **Stav:** ✅ **`v2.1.0-beta.11`**
@@ -3498,7 +3498,7 @@ curl -sS -X POST https://demo.paginiumcms.com/api/demo/quick-login | jq '.succes
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -3506,7 +3506,7 @@ curl -sS -X POST https://demo.paginiumcms.com/api/demo/quick-login | jq '.succes
 
 ## ISS-102 – Demo celé API HTTP 500 — chýbajúci `demo/data/` strom — VYRIEŠENÉ (ops)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-102)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-102)
 
 **Závažnosť:** Vysoká (demo outage — login, health, všetko)  
 **Stav:** ✅ Ops opravené na demo serveri (2026-07-27)
@@ -3561,7 +3561,7 @@ Manuálny snapshot: admin **Demo** → **Reset demo seed**.
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -3569,7 +3569,7 @@ Manuálny snapshot: admin **Demo** → **Reset demo seed**.
 
 ## ISS-103 – PHPUnit OTP/2FA flaky — lokálny `.env` polluluje testy — VYRIEŠENÉ
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-103)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-103)
 
 **Závažnosť:** Stredná (lokálny dev / CI — falošné regresie)  
 **Stav:** ✅ **`v2.1.0-beta.12`**
@@ -3591,14 +3591,14 @@ Manuálny snapshot: admin **Demo** → **Reset demo seed**.
 
 **Overenie:** Gate zelený aj s lokálnym `.env` obsahujúcim `DEMO_MODE=true`.
 
-**Docs:** [developer/TESTING.md](developer/TESTING.md) · [CHANGELOG.md](../CHANGELOG.md) beta.12
+**Docs:** [developer/TESTING.md](developer/TESTING.md) · [CHANGELOG.md](../../CHANGELOG.md) beta.12
 
 ---
 
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -3606,7 +3606,7 @@ Manuálny snapshot: admin **Demo** → **Reset demo seed**.
 
 ## ISS-104 – A3-JOBDEPLOY — ADMIN deploy bypass cez jobs API — VYRIEŠENÉ
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-104)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-104)
 
 **Závažnosť:** Stredná (security audit 2026-07-27)  
 **Stav:** ✅ fix **`v2.1.0-beta.15`**
@@ -3629,7 +3629,7 @@ Manuálny snapshot: admin **Demo** → **Reset demo seed**.
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -3637,7 +3637,7 @@ Manuálny snapshot: admin **Demo** → **Reset demo seed**.
 
 ## ISS-105 – A6-GEOIP — cleartext outbound lookup — VYRIEŠENÉ
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-105)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-105)
 
 **Závažnosť:** Nízka (defense-in-depth)  
 **Stav:** ✅ fix **`v2.1.0-beta.15`**
@@ -3653,7 +3653,7 @@ Manuálny snapshot: admin **Demo** → **Reset demo seed**.
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -3661,7 +3661,7 @@ Manuálny snapshot: admin **Demo** → **Reset demo seed**.
 
 ## ISS-106 – A8-DEMOMODE — demo režim na produkcii — VYRIEŠENÉ
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-106)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-106)
 
 **Závažnosť:** Nízka / informačná (audit 2026-07-27)
 **Stav:** ✅ fix **`v2.1.0-beta.16`**
@@ -3677,7 +3677,7 @@ Manuálny snapshot: admin **Demo** → **Reset demo seed**.
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -3685,7 +3685,7 @@ Manuálny snapshot: admin **Demo** → **Reset demo seed**.
 
 ## ISS-107 – A7-NEWSLETTER — subscribe hardening — VYRIEŠENÉ
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-107)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-107)
 
 **Závažnosť:** Nízka (audit 2026-07-27)
 **Stav:** ✅ fix **`v2.1.0-beta.16`** (Newsletter v2 Phase 1)
@@ -3701,7 +3701,7 @@ Manuálny snapshot: admin **Demo** → **Reset demo seed**.
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -3709,7 +3709,7 @@ Manuálny snapshot: admin **Demo** → **Reset demo seed**.
 
 ## ISS-108 – A9-GHSERVICE — GitHub content sync bez OutboundUrlGuard — VYRIEŠENÉ
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-108)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-108)
 
 **Závažnosť:** Informačná (konzistencia s [ISS-054](#iss-054) / A6)
 **Stav:** ✅ fix **`v2.1.0-beta.16`**
@@ -3725,7 +3725,7 @@ Manuálny snapshot: admin **Demo** → **Reset demo seed**.
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -3733,7 +3733,7 @@ Manuálny snapshot: admin **Demo** → **Reset demo seed**.
 
 ## ISS-109 – Newsletter footer CTA príliš objemný — medzistav — It.61 Phase 5
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-109)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-109)
 
 **Závažnosť:** Nízka (UX / vizuál, nie funkčná chyba)  
 **Stav:** ✅ **vyriešené** — variant B shipped **`v2.1.0-beta.18`**
@@ -3753,7 +3753,7 @@ Manuálny snapshot: admin **Demo** → **Reset demo seed**.
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -3761,7 +3761,7 @@ Manuálny snapshot: admin **Demo** → **Reset demo seed**.
 
 ## ISS-110 – Prod SEO `/api/seo/page/home` → HTTP 500 (cache collision)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-110)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-110)
 
 **Závažnosť:** Vysoká (prod — Googlebot + visitors)  
 **Stav:** ✅ **opravené** — **`v2.1.0-beta.21`** (hotfix na `paginiumcms.com` 2026-07-30)
@@ -3783,7 +3783,7 @@ Manuálny snapshot: admin **Demo** → **Reset demo seed**.
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -3791,7 +3791,7 @@ Manuálny snapshot: admin **Demo** → **Reset demo seed**.
 
 ## ISS-111 – LoggerTest + PHPStan regresia (`APP_ENV=testing` log skip)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-111)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-111)
 
 **Závažnosť:** Stredná (CI / full test suite)  
 **Stav:** ✅ **opravené** — **`v2.1.0-beta.21`**  
@@ -3815,7 +3815,7 @@ Manuálny snapshot: admin **Demo** → **Reset demo seed**.
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -3823,7 +3823,7 @@ Manuálny snapshot: admin **Demo** → **Reset demo seed**.
 
 ## ISS-112 – Lock badge „aktívne pred viac než 56 rokmi“
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-112)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-112)
 
 **Závažnosť:** Nízka (admin UX)  
 **Stav:** ✅ **opravené v working tree** — pripojiť k **ďalšiemu release** (po `v2.1.0-beta.23`)  
@@ -3856,7 +3856,7 @@ new Date(value * 1000 > 1_000_000_000_000 ? value : value * 1000)
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -3864,7 +3864,7 @@ new Date(value * 1000 > 1_000_000_000_000 ? value : value * 1000)
 
 ## ISS-113 – Static content bez security headers (audit) — VYRIEŠENÉ
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-113)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-113)
 
 **Nález:** CSP, HSTS, X-Frame-Options a ďalšie hlavičky prichádzali len z PHP `SecurityMiddleware` na `/api/*`. Statické súbory z `frontend/dist` (nginx `location /`, `/assets/`) ich nedostávali.
 
@@ -3888,7 +3888,7 @@ curl -sI https://paginiumcms.com/ | grep -iE 'strict-transport|content-security|
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -3896,7 +3896,7 @@ curl -sI https://paginiumcms.com/ | grep -iE 'strict-transport|content-security|
 
 ## ISS-114 – CSRF exempt prefix bez word boundary — VYRIEŠENÉ
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-114)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-114)
 
 **Nález:** `str_starts_with($path, $prefix)` bez `/` mohlo v budúcnosti omylom exemptnúť napr. `/api/newsletter-admin/…` pri prefixe `/api/newsletter`.
 
@@ -3907,7 +3907,7 @@ curl -sI https://paginiumcms.com/ | grep -iE 'strict-transport|content-security|
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -3915,7 +3915,7 @@ curl -sI https://paginiumcms.com/ | grep -iE 'strict-transport|content-security|
 
 ## ISS-115 – `X-Powered-By: PHP/x.y` fingerprinting — VYRIEŠENÉ
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-115)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-115)
 
 **Riešenie:** `expose_php = Off` v `docker/php/php.ini` (rebuild/restart PHP kontajnera).
 
@@ -3924,7 +3924,7 @@ curl -sI https://paginiumcms.com/ | grep -iE 'strict-transport|content-security|
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -3932,7 +3932,7 @@ curl -sI https://paginiumcms.com/ | grep -iE 'strict-transport|content-security|
 
 ## ISS-116 – Hardcoded `192.168.10.26` v TRUSTED_PROXIES default — VYRIEŠENÉ
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-116)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-116)
 
 **Riešenie:** Default `127.0.0.1,::1` v `ClientIpResolver::trustedProxiesFromEnv()`; `bootstrap/app.php` používa jednotný helper. LAN/prod za nginx musí nastaviť `TRUSTED_PROXIES` v `.env` explicitne (dokumentované v `.env.example`).
 
@@ -3941,7 +3941,7 @@ curl -sI https://paginiumcms.com/ | grep -iE 'strict-transport|content-security|
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -3949,7 +3949,7 @@ curl -sI https://paginiumcms.com/ | grep -iE 'strict-transport|content-security|
 
 ## ISS-117 – GHSA-qwww-vcr4-c8h2 (React Router RSC CSRF) — N/A (SPA)
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-117)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-117)
 
 Pozri **[ISS-089](#iss-089)**. PaginiumCMS = `BrowserRouter` SPA bez RSC/SSR. CI: `npm audit --audit-level=critical`. Nepoužívať `npm audit fix --force` na RR 8 bez React 19.
 
@@ -3958,7 +3958,7 @@ Pozri **[ISS-089](#iss-089)**. PaginiumCMS = `BrowserRouter` SPA bez RSC/SSR. CI
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -3966,7 +3966,7 @@ Pozri **[ISS-089](#iss-089)**. PaginiumCMS = `BrowserRouter` SPA bez RSC/SSR. CI
 
 ## ISS-118 – `security.txt` — VYRIEŠENÉ
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-118)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-118)
 
 **Riešenie:** `frontend/public/.well-known/security.txt` (+ `backend/public/` pre API docroot), nginx `location = /.well-known/security.txt` pred SPA fallback, `Content-Type: text/plain`.
 
@@ -3977,7 +3977,7 @@ Pozri **[ISS-089](#iss-089)**. PaginiumCMS = `BrowserRouter` SPA bez RSC/SSR. CI
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -3985,7 +3985,7 @@ Pozri **[ISS-089](#iss-089)**. PaginiumCMS = `BrowserRouter` SPA bez RSC/SSR. CI
 
 ## ISS-119 – Docker stack neštartuje po reboot servera — VYRIEŠENÉ
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-119)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-119)
 
 **Symptóm:** Po reštarte Ubuntu hosta produkcia aj demo vracajú **502**; kontajnery `paginiumcms-prod-*` / `paginiumcms-demo-*` sú **Down**, kým admin manuálne nespustí `./stack.sh up -d`.
 
@@ -4008,7 +4008,7 @@ Runbook: [deploy/DEPLOY.md](deploy/DEPLOY.md#f-boot-autostart-docker-restart-pol
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)
 
 ---
 
@@ -4016,7 +4016,7 @@ Runbook: [deploy/DEPLOY.md](deploy/DEPLOY.md#f-boot-autostart-docker-restart-pol
 
 ## ISS-120 – CI PHPUnit log: TOTP / 2FA secret v GitHub job logu — VYRIEŠENÉ
 
-[↑ Prehľad](#prehlad) · [English](../../EN/docs/ISSUES.md#iss-120)
+[↑ Prehľad](#prehlad) · [English](../en/ISSUES.md#iss-120)
 
 **Nález:** GitHub Actions `backend` job spúšťal `./vendor/bin/phpunit` priamo do konzoly. Verbose testy (napr. `TwoFactorSimpleTest`) vypisujú diagnostický echo (`otpauth://`, provisioning URI, secret polia) → **recoverable secrets v verejnom/tímovom CI logu**.
 
@@ -4051,7 +4051,7 @@ Runbook: [deploy/DEPLOY.md](deploy/DEPLOY.md#f-boot-autostart-docker-restart-pol
 - [user/BRANDING.md](user/BRANDING.md) — logo a favicon (**2.0.52**)
 - [user/ACCESS_CONTROL.md](user/ACCESS_CONTROL.md) — RBAC + Path ACL v nastaveniach (**2.0.52**)
 - [developer/RELEASE.md](developer/RELEASE.md) — release **2.0.52** · **2.1.0-beta.7**
-- [CHANGELOG.md](../CHANGELOG.md) — 2.0.52 · **2.1.0-beta.7**
+- [CHANGELOG.md](../../CHANGELOG.md) — 2.0.52 · **2.1.0-beta.7**
 - [ITERATION_54.md](ITERATION_54.md) — editor profiles ([ISS-079](#iss-079))
 - [ITERATION_56.md](ITERATION_56.md) — rich navigation ([ISS-085](#iss-085))
 - [ITERATION_57.md](ITERATION_57.md) — suggest-meta ([ISS-080](#iss-080))
@@ -4068,4 +4068,4 @@ Runbook: [deploy/DEPLOY.md](deploy/DEPLOY.md#f-boot-autostart-docker-restart-pol
 
 ### Súvisiace odkazy
 
-- [CHANGELOG](../CHANGELOG.md)
+- [CHANGELOG](../../CHANGELOG.md)

@@ -30,7 +30,7 @@ Code deploy je oddelený od content Git sync. Ref musí byť allow-listed, job n
 
 ## Overenie a súvisiace záznamy
 
-Release: [v2.1.0-beta.18](../CHANGELOG.md#release-2-1-0-beta-18). Privilege bypass bol uzavretý v [ISS-104](ISSUES.md#iss-104). Zdroj v related docs uvádza ISS-105, no aktuálny register priraďuje ISS-105 GeoIP; relevantný GitHub outbound nález je [ISS-108](ISSUES.md#iss-108).
+Release: [v2.1.0-beta.18](../../CHANGELOG.md#release-2-1-0-beta-18). Privilege bypass bol uzavretý v [ISS-104](ISSUES.md#iss-104). Zdroj v related docs uvádza ISS-105, no aktuálny register priraďuje ISS-105 GeoIP; relevantný GitHub outbound nález je [ISS-108](ISSUES.md#iss-108).
 
 ## Aktuálna interpretácia
 

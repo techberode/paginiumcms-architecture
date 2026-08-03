@@ -40,5 +40,5 @@ A worker is not an implicit SUPER_ADMIN. The originating user identity and autho
 
 ## Verification and further scope
 
-Tests covered the CRON evaluator and scheduled runner. A Redis queue was future work and now belongs to the capability-based Hybrid Engine contract, not the mandatory baseline. Release: [2.0.18](../CHANGELOG.md#release-2-0-18).
+Tests covered the CRON evaluator and scheduled runner. A Redis queue was future work and now belongs to the capability-based Hybrid Engine contract, not the mandatory baseline. Release: [2.0.18](../../CHANGELOG.md#release-2-0-18).
 

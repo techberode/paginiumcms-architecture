@@ -30,7 +30,7 @@ Frontendové skrytie tlačidla nie je bezpečnostná kontrola; backend musí val
 
 ## Overenie a súvisiace záznamy
 
-Release: [2.0.42](../CHANGELOG.md#release-2-0-42). Neskorší blog-profile problém s fenced code blockom bol opravený v [ISS-079](ISSUES.md#iss-079).
+Release: [2.0.42](../../CHANGELOG.md#release-2-0-42). Neskorší blog-profile problém s fenced code blockom bol opravený v [ISS-079](ISSUES.md#iss-079).
 
 ## Aktuálna interpretácia
 

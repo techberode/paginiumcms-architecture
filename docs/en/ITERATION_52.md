@@ -30,7 +30,7 @@ External map embeds must be allow-listed and validated; the URL is not trusted H
 
 ## Verification and related records
 
-Contact settings shipped in [2.0.35](../CHANGELOG.md#release-2-0-35), and company data in [2.0.36](../CHANGELOG.md#release-2-0-36).
+Contact settings shipped in [2.0.35](../../CHANGELOG.md#release-2-0-35), and company data in [2.0.36](../../CHANGELOG.md#release-2-0-36).
 
 ## Current interpretation
 

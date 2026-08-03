@@ -38,5 +38,5 @@ Zdroj požadoval zmazať a znovu nahrať médiá uploadnuté pred 2.0.14, preto�
 
 ## Overenie a hranice
 
-Testy pokrývali lightbox, MediaFormats, repository/controller a URL helpers. Thumbnail generation, zoom/pan a širšie editor preview zostali mimo scope. Release: [2.0.14](../CHANGELOG.md#release-2-0-14).
+Testy pokrývali lightbox, MediaFormats, repository/controller a URL helpers. Thumbnail generation, zoom/pan a širšie editor preview zostali mimo scope. Release: [2.0.14](../../CHANGELOG.md#release-2-0-14).
 

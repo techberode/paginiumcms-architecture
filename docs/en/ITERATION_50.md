@@ -30,7 +30,7 @@ Editor bodies must not be scanned by context-free SQL/XSS regexes. Tarpit is dis
 
 ## Verification and related records
 
-The release is [2.0.26](../CHANGELOG.md#release-2-0-26). A later audit found a POST/JSON body-scan gap and closed it in [ISS-056](ISSUES.md#iss-056). The user-facing contract is in [user/FIREWALL.md](user/FIREWALL.md).
+The release is [2.0.26](../../CHANGELOG.md#release-2-0-26). A later audit found a POST/JSON body-scan gap and closed it in [ISS-056](ISSUES.md#iss-056). The user-facing contract is in [user/FIREWALL.md](user/FIREWALL.md).
 
 ## Current interpretation
 

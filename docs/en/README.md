@@ -192,7 +192,7 @@ Detailed contracts:
 - audit events and safe CSV export,
 - controlled maintenance and demo-mode behavior.
 
-References: [SECURITY_REVIEW.md](SECURITY_REVIEW.md) · [developer/SECURITY.md](developer/SECURITY.md) · [../SECURITY.md](../SECURITY.md)
+References: [SECURITY_REVIEW.md](SECURITY_REVIEW.md) · [developer/SECURITY.md](developer/SECURITY.md) · [../SECURITY.md](../../SECURITY.md)
 
 ---
 
@@ -260,7 +260,7 @@ Details: [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md) · [user/CODE_EDITOR.m
 | [CONTINUATION.md](CONTINUATION.md) | Project continuation context |
 | [FEATURE_OVERVIEW.md](FEATURE_OVERVIEW.md) | Shipped and planned features |
 | [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) | Consolidated backlog |
-| [../CHANGELOG.md](../CHANGELOG.md) | Release history |
+| [../CHANGELOG.md](../../CHANGELOG.md) | Release history |
 
 ### Architecture
 
@@ -318,8 +318,8 @@ Details: [user/DEVELOPER_MODE.md](user/DEVELOPER_MODE.md) · [user/CODE_EDITOR.m
 | [SECURITY_REVIEW.md](SECURITY_REVIEW.md) | External security review guide |
 | [ISSUES.md](ISSUES.md) | Known incidents, root causes, and fixes |
 | [CHECKLIST.md](CHECKLIST.md) | API, frontend, and feature inventory |
-| [../AUDIT_REPORT.md](../AUDIT_REPORT.md) | Project audit |
-| [../SECURITY.md](../SECURITY.md) | Vulnerability reporting |
+| [../AUDIT_REPORT.md](../../AUDIT_REPORT.md) | Project audit |
+| [../SECURITY.md](../../SECURITY.md) | Vulnerability reporting |
 
 ---
 

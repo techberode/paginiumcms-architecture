@@ -30,7 +30,7 @@ The scanner is not a sandbox. The gate runs before write/activation, failures pr
 
 ## Verification and related records
 
-Release: [v2.1.0-beta.22](../CHANGELOG.md#release-2-1-0-beta-22). The source links [ISS-008](ISSUES.md#iss-008), [ISS-014](ISSUES.md#iss-014), and [ISS-089](ISSUES.md#iss-089). Later CI-log secret protection is the separate [ISS-120](ISSUES.md#iss-120), not original It.66 scope.
+Release: [v2.1.0-beta.22](../../CHANGELOG.md#release-2-1-0-beta-22). The source links [ISS-008](ISSUES.md#iss-008), [ISS-014](ISSUES.md#iss-014), and [ISS-089](ISSUES.md#iss-089). Later CI-log secret protection is the separate [ISS-120](ISSUES.md#iss-120), not original It.66 scope.
 
 ## Current interpretation
 

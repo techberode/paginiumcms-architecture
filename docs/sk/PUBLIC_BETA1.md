@@ -126,7 +126,7 @@ Pri bežnom bug reporte uveď:
 
 ### Bezpečnostné nálezy
 
-Nezverejňuj neopravenú zraniteľnosť ako bežný verejný Issue. Použi postup v koreňovom [`SECURITY.md`](../SECURITY.md). Pred zdieľaním odstráň heslá, tokeny, cookies, osobné údaje a obsah produkčných súborov.
+Nezverejňuj neopravenú zraniteľnosť ako bežný verejný Issue. Použi postup v koreňovom [`SECURITY.md`](../../SECURITY.md). Pred zdieľaním odstráň heslá, tokeny, cookies, osobné údaje a obsah produkčných súborov.
 
 ---
 

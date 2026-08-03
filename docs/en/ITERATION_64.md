@@ -30,7 +30,7 @@ URL validation must block `javascript:` and unsafe schemes; external links must 
 
 ## Verification and related records
 
-Release: [v2.1.0-beta.19](../CHANGELOG.md#release-2-1-0-beta-19). The source records PHPUnit/Vitest coverage and a public-settings smoke check.
+Release: [v2.1.0-beta.19](../../CHANGELOG.md#release-2-1-0-beta-19). The source records PHPUnit/Vitest coverage and a public-settings smoke check.
 
 ## Current interpretation
 

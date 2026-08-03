@@ -74,7 +74,7 @@ Critical boundaries:
 6. **Test the trust boundary:** not only the happy-path controller.
 7. **Create a minimal PoC:** without production data or persistence.
 8. **Propose a regression test:** a finding without a test is easy to reintroduce.
-9. **Report privately:** follow the root [SECURITY.md](../SECURITY.md).
+9. **Report privately:** follow the root [SECURITY.md](../../SECURITY.md).
 
 ## 4. Authentication, session, and 2FA
 
@@ -303,4 +303,4 @@ Do not submit a complete `.env`, user JSON, TOTP seed, cookie, or production dum
 
 ## 18. Reporting
 
-Follow the root [SECURITY.md](../SECURITY.md). After a fix is released, the public record is linked from [ISSUES.md](ISSUES.md) with cause, resolution, test, and release where available.
+Follow the root [SECURITY.md](../../SECURITY.md). After a fix is released, the public record is linked from [ISSUES.md](ISSUES.md) with cause, resolution, test, and release where available.

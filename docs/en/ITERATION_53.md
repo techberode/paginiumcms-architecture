@@ -30,7 +30,7 @@ Caching must not bypass authorization or retain stale sensitive responses after 
 
 ## Verification and related records
 
-Release: [2.0.39](../CHANGELOG.md#release-2-0-39). The source links the session and hard-redirect incidents [ISS-025](ISSUES.md#iss-025) and [ISS-033](ISSUES.md#iss-033).
+Release: [2.0.39](../../CHANGELOG.md#release-2-0-39). The source links the session and hard-redirect incidents [ISS-025](ISSUES.md#iss-025) and [ISS-033](ISSUES.md#iss-033).
 
 ## Current interpretation
 

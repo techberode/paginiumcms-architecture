@@ -30,7 +30,7 @@ Hiding a frontend button is not a security control; the backend must validate ev
 
 ## Verification and related records
 
-Release: [2.0.42](../CHANGELOG.md#release-2-0-42). A later blog-profile failure on fenced code blocks was fixed in [ISS-079](ISSUES.md#iss-079).
+Release: [2.0.42](../../CHANGELOG.md#release-2-0-42). A later blog-profile failure on fenced code blocks was fixed in [ISS-079](ISSUES.md#iss-079).
 
 ## Current interpretation
 

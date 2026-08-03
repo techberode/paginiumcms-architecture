@@ -35,7 +35,7 @@ URL je zdieľateľný stav filtrov, nie zdroj autorizácie. Backend musí znova 
 
 ## Incident a overenie
 
-Backend It.44d testy pre tag/date filtre boli neskôr opravené v [ISS-038](ISSUES.md#iss-038). Test gate zahŕňal repository/controller testy a `blogArticles` utility. Release: [2.0.37](../CHANGELOG.md#release-2-0-37).
+Backend It.44d testy pre tag/date filtre boli neskôr opravené v [ISS-038](ISSUES.md#iss-038). Test gate zahŕňal repository/controller testy a `blogArticles` utility. Release: [2.0.37](../../CHANGELOG.md#release-2-0-37).
 
 ## Aktuálna interpretácia
 

@@ -30,7 +30,7 @@ Maximálna ochrana má šesť vrstiev: syntax/JSON parse, security scan, code po
 
 ## Overenie a súvisiace záznamy
 
-Zdroj bol aktualizovaný pri `v2.1.0-beta.21`, keď bola 58b hotová. Neskorší hlavný dokument potvrdzuje 58c v [v2.1.0-beta.23](../CHANGELOG.md#release-2-1-0-beta-23). Otvorené zostávajú SSOT sync pri prepínaní a presný Monaco placement.
+Zdroj bol aktualizovaný pri `v2.1.0-beta.21`, keď bola 58b hotová. Neskorší hlavný dokument potvrdzuje 58c v [v2.1.0-beta.23](../../CHANGELOG.md#release-2-1-0-beta-23). Otvorené zostávajú SSOT sync pri prepínaní a presný Monaco placement.
 
 ## Aktuálna interpretácia
 

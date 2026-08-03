@@ -30,7 +30,7 @@ Cache nesmie obchádzať autorizáciu ani držať staré citlivé odpovede po lo
 
 ## Overenie a súvisiace záznamy
 
-Release: [2.0.39](../CHANGELOG.md#release-2-0-39). Zdroj odkazuje na session a hard-redirect incidenty [ISS-025](ISSUES.md#iss-025) a [ISS-033](ISSUES.md#iss-033).
+Release: [2.0.39](../../CHANGELOG.md#release-2-0-39). Zdroj odkazuje na session a hard-redirect incidenty [ISS-025](ISSUES.md#iss-025) a [ISS-033](ISSUES.md#iss-033).
 
 ## Aktuálna interpretácia
 

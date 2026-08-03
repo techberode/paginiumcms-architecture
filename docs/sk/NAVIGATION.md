@@ -4,12 +4,12 @@
 
 ## Projektové súbory
 
-- [PaginiumCMS](../README.md) — `README.md`
-- [Auditná stopa a aktuálny bezpečnostný stav](../AUDIT_REPORT.md) — `AUDIT_REPORT.md`
-- [Zoznam zmien](../CHANGELOG.md) — `CHANGELOG.md`
-- [Politika lokálnych testovacích logov — šablóna správcu](../LOCAL_TEST_LOGS.md.example) — `LOCAL_TEST_LOGS.md.example`
-- [Odporúčania po audite a plán hardeningu](../RECOMMENDATIONS.md) — `RECOMMENDATIONS.md`
-- [Bezpečnostná politika](../SECURITY.md) — `SECURITY.md`
+- [PaginiumCMS](README.md) — `README.md`
+- [Auditná stopa a aktuálny bezpečnostný stav](../../AUDIT_REPORT.md) — `AUDIT_REPORT.md`
+- [Zoznam zmien](../../CHANGELOG.md) — `CHANGELOG.md`
+- [Politika lokálnych testovacích logov — šablóna správcu](../../LOCAL_TEST_LOGS.md.example) — `LOCAL_TEST_LOGS.md.example`
+- [Odporúčania po audite a plán hardeningu](../../RECOMMENDATIONS.md) — `RECOMMENDATIONS.md`
+- [Bezpečnostná politika](../../SECURITY.md) — `SECURITY.md`
 
 ## Základná dokumentácia
 

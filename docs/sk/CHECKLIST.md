@@ -214,9 +214,9 @@ Pri neimplementovanej schopnosti označ `NOT_APPLICABLE`.
 
 ## 17. Súvisiace dokumenty
 
-- [Bezpečnostná politika](../SECURITY.md)
-- [Audit report](../AUDIT_REPORT.md)
-- [Odporúčania](../RECOMMENDATIONS.md)
+- [Bezpečnostná politika](../../SECURITY.md)
+- [Audit report](../../AUDIT_REPORT.md)
+- [Odporúčania](../../RECOMMENDATIONS.md)
 - [Security Review Guide](SECURITY_REVIEW.md)
 - [Testovanie](developer/TESTING.md)
 - [Release lifecycle](developer/RELEASE.md)

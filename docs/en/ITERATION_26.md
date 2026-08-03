@@ -38,5 +38,5 @@ The source required deleting and re-uploading media uploaded before 2.0.14 becau
 
 ## Verification and boundaries
 
-Tests covered the lightbox, MediaFormats, repository/controller, and URL helpers. Thumbnail generation, zoom/pan, and broader editor preview remained out of scope. Release: [2.0.14](../CHANGELOG.md#release-2-0-14).
+Tests covered the lightbox, MediaFormats, repository/controller, and URL helpers. Thumbnail generation, zoom/pan, and broader editor preview remained out of scope. Release: [2.0.14](../../CHANGELOG.md#release-2-0-14).
 

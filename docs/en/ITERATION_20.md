@@ -33,7 +33,7 @@ Analytics remains flat-file and does not introduce a database subsystem. The ind
 
 ## Verification
 
-The historical checklist required working KPI/tabs on `/analytics`, four quick links and a disk panel on `/dashboard`, `Disallow: /` when indexing is disabled, and a public `noindex` meta tag. The release is recorded under [CHANGELOG 2.0.46](../CHANGELOG.md#release-2-0-46).
+The historical checklist required working KPI/tabs on `/analytics`, four quick links and a disk panel on `/dashboard`, `Disallow: /` when indexing is disabled, and a public `noindex` meta tag. The release is recorded under [CHANGELOG 2.0.46](../../CHANGELOG.md#release-2-0-46).
 
 ## Related records
 

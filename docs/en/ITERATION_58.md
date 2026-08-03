@@ -20,7 +20,7 @@ Deliver multiple layout builders selectable in Settings, all writing one canonic
 
 ## Scope and outcome
 
-Delivered in 58b: five presets with light/dark tokens, `appearance` settings, swatches and `SchemePreviewFrame`, public application, and visitor toggle. Delivered in 58c: builder switch, template catalog, page template selection, and `LayoutPreviewFrame`; release [v2.1.0-beta.23](../CHANGELOG.md#release-2-1-0-beta-23).
+Delivered in 58b: five presets with light/dark tokens, `appearance` settings, swatches and `SchemePreviewFrame`, public application, and visitor toggle. Delivered in 58c: builder switch, template catalog, page template selection, and `LayoutPreviewFrame`; release [v2.1.0-beta.23](../../CHANGELOG.md#release-2-1-0-beta-23).
 
 Planned for 58d–58g: shortcode engine plus Monaco definitions, safe `pg-*` utilities, optional outline/DnD, and HTML compile/cache with It.48. The `featureGallery` block must reuse the It.65 API without a second store.
 

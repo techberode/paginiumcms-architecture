@@ -214,9 +214,9 @@ Mark an unimplemented capability `NOT_APPLICABLE`.
 
 ## 17. Related documents
 
-- [Security Policy](../SECURITY.md)
-- [Audit report](../AUDIT_REPORT.md)
-- [Recommendations](../RECOMMENDATIONS.md)
+- [Security Policy](../../SECURITY.md)
+- [Audit report](../../AUDIT_REPORT.md)
+- [Recommendations](../../RECOMMENDATIONS.md)
 - [Security Review Guide](SECURITY_REVIEW.md)
 - [Testing](developer/TESTING.md)
 - [Release lifecycle](developer/RELEASE.md)

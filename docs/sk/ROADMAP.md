@@ -5,7 +5,7 @@
 > **Smerovanie:** Hybrid Headless Content Engine · No-SQL súborový zdroj pravdy · API-first  
 > **Stav kódu:** implementácia It.68+ je pozastavená do dokončenia dvojjazyčnej dokumentácie
 
-Táto roadmapa je kanonická mapa **budúceho smerovania**. História jednotlivých vydaní patrí do [`CHANGELOG.md`](../CHANGELOG.md), detailné implementačné špecifikácie do `ITERATION_*.md` a incidenty do [`ISSUES.md`](ISSUES.md).
+Táto roadmapa je kanonická mapa **budúceho smerovania**. História jednotlivých vydaní patrí do [`CHANGELOG.md`](../../CHANGELOG.md), detailné implementačné špecifikácie do `ITERATION_*.md` a incidenty do [`ISSUES.md`](ISSUES.md).
 
 **Architektúra:** [architecture/HYBRID_ENGINE.md](architecture/HYBRID_ENGINE.md) · **No-SQL mandát:** [architecture/NOSQL_MANDATE.md](architecture/NOSQL_MANDATE.md) · **Backlog:** [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md)
 

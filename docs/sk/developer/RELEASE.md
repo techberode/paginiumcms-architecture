@@ -798,4 +798,4 @@ Release lifecycle je implementovaný, keď:
 - [Architektonické verziovanie obsahu](../architecture/VERSIONING.md)
 - [Režimy nasadenia](../architecture/DEPLOYMENT_MODES.md)
 - [Register incidentov](../ISSUES.md)
-- [Changelog](../../CHANGELOG.md)
+- [Changelog](../../../CHANGELOG.md)

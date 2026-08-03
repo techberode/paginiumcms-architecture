@@ -74,7 +74,7 @@ Kritické hranice:
 6. **Testuj trust boundary:** nie iba happy-path controller.
 7. **Vytvor minimálny PoC:** bez produkčných dát a bez perzistencie.
 8. **Navrhni regresný test:** nález bez testu sa ľahko vráti.
-9. **Reportuj súkromne:** podľa root [SECURITY.md](../SECURITY.md).
+9. **Reportuj súkromne:** podľa root [SECURITY.md](../../SECURITY.md).
 
 ## 4. Autentifikácia, session a 2FA
 
@@ -303,4 +303,4 @@ Nahlásenie neposiela celý `.env`, user JSON, TOTP seed, cookie ani produkčný
 
 ## 18. Reporting
 
-Postupuj podľa root [SECURITY.md](../SECURITY.md). Po oprave a vydaní sa verejný záznam prelinkuje do [ISSUES.md](ISSUES.md) s príčinou, riešením, testom a release podľa dostupnosti.
+Postupuj podľa root [SECURITY.md](../../SECURITY.md). Po oprave a vydaní sa verejný záznam prelinkuje do [ISSUES.md](ISSUES.md) s príčinou, riešením, testom a release podľa dostupnosti.

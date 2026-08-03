@@ -30,7 +30,7 @@ Návrhy nesmú automaticky prepísať front matter. Endpoint potrebuje size limi
 
 ## Overenie a súvisiace záznamy
 
-Release: [v2.1.0-beta.4](../CHANGELOG.md#release-2-1-0-beta-4). Zdroj uvádza unit testy bez network callov a podporu Markdown aj Tiptap plain-text extraction.
+Release: [v2.1.0-beta.4](../../CHANGELOG.md#release-2-1-0-beta-4). Zdroj uvádza unit testy bez network callov a podporu Markdown aj Tiptap plain-text extraction.
 
 ## Aktuálna interpretácia
 

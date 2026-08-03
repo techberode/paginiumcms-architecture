@@ -30,7 +30,7 @@ Preview musí používať rovnaký renderer, sanitizáciu a capability pravidlá
 
 ## Overenie a súvisiace záznamy
 
-Dodávka je evidovaná v [2.0.32](../CHANGELOG.md#release-2-0-32). Zdroj uvádza frontendové testy `SitePreviewModal` a `contentDates`.
+Dodávka je evidovaná v [2.0.32](../../CHANGELOG.md#release-2-0-32). Zdroj uvádza frontendové testy `SitePreviewModal` a `contentDates`.
 
 ## Aktuálna interpretácia
 

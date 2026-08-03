@@ -4,12 +4,12 @@ Complete index of the final bilingual PaginiumCMS documentation. Paths are relat
 
 ## Project
 
-- [PaginiumCMS](../README.md) — `README.md`
-- [Audit Trail and Current Security Posture](../AUDIT_REPORT.md) — `AUDIT_REPORT.md`
-- [Changelog](../CHANGELOG.md) — `CHANGELOG.md`
-- [Local test log policy — maintainer template](../LOCAL_TEST_LOGS.md.example) — `LOCAL_TEST_LOGS.md.example`
-- [Post-Audit Recommendations and Hardening Plan](../RECOMMENDATIONS.md) — `RECOMMENDATIONS.md`
-- [Security Policy](../SECURITY.md) — `SECURITY.md`
+- [PaginiumCMS](README.md) — `README.md`
+- [Audit Trail and Current Security Posture](../../AUDIT_REPORT.md) — `AUDIT_REPORT.md`
+- [Changelog](../../CHANGELOG.md) — `CHANGELOG.md`
+- [Local test log policy — maintainer template](../../LOCAL_TEST_LOGS.md.example) — `LOCAL_TEST_LOGS.md.example`
+- [Post-Audit Recommendations and Hardening Plan](../../RECOMMENDATIONS.md) — `RECOMMENDATIONS.md`
+- [Security Policy](../../SECURITY.md) — `SECURITY.md`
 
 ## Core documentation
 

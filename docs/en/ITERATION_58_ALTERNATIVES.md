@@ -30,7 +30,7 @@ Maximum protection has six layers: syntax/JSON parsing, security scan, code poli
 
 ## Verification and related records
 
-The source was updated at `v2.1.0-beta.21` with 58b shipped. The later main record confirms 58c in [v2.1.0-beta.23](../CHANGELOG.md#release-2-1-0-beta-23). Open decisions remain around SSOT synchronization during mode switching and Monaco placement.
+The source was updated at `v2.1.0-beta.21` with 58b shipped. The later main record confirms 58c in [v2.1.0-beta.23](../../CHANGELOG.md#release-2-1-0-beta-23). Open decisions remain around SSOT synchronization during mode switching and Monaco placement.
 
 ## Current interpretation
 

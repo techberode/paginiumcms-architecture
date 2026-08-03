@@ -67,7 +67,7 @@ python3 .github/scripts/sanitize-ci-log.py "$RAW" > "$SAFE"
 .github/scripts/verify-ci-log-redaction.sh "$SAFE"
 ```
 
-Maintainer šablóna: [`../../LOCAL_TEST_LOGS.md.example`](../../LOCAL_TEST_LOGS.md.example). Incident a implementované riešenie: [ISS-120](../ISSUES.md#iss-120).
+Maintainer šablóna: [`../../LOCAL_TEST_LOGS.md.example`](../../../LOCAL_TEST_LOGS.md.example). Incident a implementované riešenie: [ISS-120](../ISSUES.md#iss-120).
 
 > Tento dokument je živý kontrakt pre release rodinu **`v2.1.0-beta.*`**. Presný počet testov, názvy CI jobov a počet krokov pomocných skriptov sú vlastnosťou konkrétneho tagu. Nie sú nemennou vlastnosťou architektúry.
 
