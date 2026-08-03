@@ -1,0 +1,8 @@
+Contact: mailto:security@paginiumcms.com
+Expires: 2027-07-31T23:59:59.000Z
+Preferred-Languages: en, sk
+Canonical: https://paginiumcms.com/.well-known/security.txt
+Policy: https://github.com/techberode/paginiumcms-architecture/blob/main/SECURITY.md
+
+# PaginiumCMS — responsible disclosure. Do not test against production without permission.
+# Report vulnerabilities privately before public disclosure.

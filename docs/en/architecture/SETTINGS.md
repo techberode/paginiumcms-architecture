@@ -105,12 +105,17 @@ The public endpoint uses a field allow-list. It must not serialize a whole group
 | `logging` | severity, retention, request logging | ADMIN+ |
 | `marketing` | demo footer link and URL | ADMIN+ |
 
-### Planned Hybrid Engine groups
+### Hybrid Engine groups (It.68+)
 
-It.68–77 should use one shared hierarchy, for example:
+Shipped in It.68:
 
-- `engine.deploymentMode`
-- `engine.storage.driver`
+- `engine.deploymentMode` — `classic` only active; `hybrid` / `git_headless` shown as unavailable
+- `engine.storageDriver` — `local` only
+- `engine.schemaValidationEnabled` — JSON Schema gate for admin documents (starts with `settings.overrides@1`)
+- `engine.capabilityProbeEnabled` — admin capability diagnostics
+
+Planned follow-ups (It.69–77) extend the same hierarchy, for example:
+
 - `engine.cache.driver`
 - `engine.git.enabled`
 - `engine.git.publishStrategy`

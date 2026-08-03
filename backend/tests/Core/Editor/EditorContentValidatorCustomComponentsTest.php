@@ -30,8 +30,8 @@ final class EditorContentValidatorCustomComponentsTest extends TestCase
 
         $fileValidator = new FileValidator($baseDir);
         $this->settings = new SettingsRepository(
-            new FileReader($fileValidator),
             new FileWriter($fileValidator),
+            \PaginiumCMS\Tests\Support\StorageTestHelper::localStorage($baseDir),
             new Validator(),
             'data/settings.json'
         );

@@ -160,7 +160,7 @@ Rules:
 - controller dependencies are constructor-injected and testable,
 - an optional capability has `CapabilityUnavailable`/safe fallback instead of nullable chaos.
 
-It.68 plans a unified `StorageInterface`; It.69 a cache contract; It.70 a publisher; It.72 a media driver.
+It.68 ships a unified `StorageInterface` (local driver on settings reads and JSON content writes); It.69 adds a cache contract; It.70 a publisher; It.72 a media driver.
 
 ---
 

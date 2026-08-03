@@ -74,6 +74,7 @@ export const settingsEn: MessageTree = {
     "scheduler": "Job scheduler",
     "systemUpdate": "System update (deploy)",
     "codePolicy": "Code policy",
+    "engine": "Hybrid Engine",
     "comments": "Comments",
     "contact": "Contact form",
     "newsletter": "Newsletter",
@@ -116,6 +117,13 @@ export const settingsEn: MessageTree = {
     "linkPhilosophy": "Project philosophy",
     "linkChangelog": "Changelog (release history)",
     "footer": "Version updates with each release tag. This section is read-only."
+  },
+  "engine": {
+    "probeTitle": "Engine capability probe",
+    "probeIntro": "Current deployment profile and installed Hybrid Engine capabilities. Future modes are shown as unavailable — not as working switches.",
+    "deploymentMode": "Deployment mode",
+    "storageDriver": "Storage driver",
+    "docsLink": "Hybrid Engine architecture documentation"
   },
   "appearance": {
     "defaultBadge": "Default",

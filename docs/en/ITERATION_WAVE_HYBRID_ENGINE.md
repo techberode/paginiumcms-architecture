@@ -1,6 +1,6 @@
 # Hybrid Engine — implementation wave It.68–77
 
-> **Status:** Documentation Phase 0 · implementation paused until the SK/EN documentation pass is complete  
+> **Status:** It.68 foundation shipped in `[Unreleased]` · next code target It.69  
 > **Checkpoint:** `v2.1.0-beta.23` · August 2, 2026  
 > **Architecture baseline:** [Hybrid Engine](architecture/HYBRID_ENGINE.md) · [No-SQL mandate](architecture/NOSQL_MANDATE.md) · [deployment modes](architecture/DEPLOYMENT_MODES.md)
 
@@ -48,7 +48,7 @@ The iteration number does not define delivery order. **It.75 is delivered after 
 | Phase | Iterations | Outcome |
 |-------|------------|---------|
 | **Phase 0** | documentation | aligned SK/EN contract and locked invariants |
-| **HE-1 Foundation** | **It.68** | storage abstraction, schema registry, engine settings |
+| **HE-1 Foundation** | **It.68** | ✅ shipped — storage abstraction, schema registry, engine settings |
 | **HE-2 Read performance** | **It.69** | unified cache, Redis fallback, HTTP validators |
 | **HE-3 Distribution** | **It.70** + It.48 coordination | immediate/queued Git publish and later static build |
 | **HE-4 Observability** | **It.71** + It.46 remainder | PHP APM, budgets, incidents, and host metrics |
@@ -63,7 +63,7 @@ This document canonically assigns It.73 to **HE-6**. The earlier draft inconsist
 
 | It. | Title | Priority | Status | Required dependency | Absorbs / coordinates |
 |-----|-------|----------|--------|---------------------|------------------------|
-| **68** | [Hybrid Engine foundation](ITERATION_68.md) | 🔴 | ⏸️ docs gate | Phase 0 | foundation for every later layer |
+| **68** | [Hybrid Engine foundation](ITERATION_68.md) | 🔴 | ✅ `[Unreleased]` | Phase 0 | foundation for every later layer |
 | **69** | [Cache + HTTP conditional requests](ITERATION_69.md) | 🔴 | ⏳ | It.68 | absorbs It.45 and It.49 |
 | **70** | [Git publish modes](ITERATION_70.md) | 🟡 | ⏳ | It.68 | extends `GitHubService`, coordinates It.48 |
 | **71** | [Performance Guard](ITERATION_71.md) | 🟡 | ⏳ | It.69 | complements It.7 and It.46 remainder |
@@ -129,7 +129,7 @@ After every iteration:
 
 The recommended approach is to ship vertical slices rather than one large merge:
 
-1. **It.68** with the local driver only and one migrated vertical slice.
+1. ✅ **It.68** with the local driver only and one migrated vertical slice (shipped in `[Unreleased]`).
 2. **It.69** with file/memory parity first, optional Redis second, and HTTP validators last.
 3. **It.70** with a local Git fixture, queued workflow, and then remote push.
 4. **It.71–74** as separate, disable-able capabilities.
@@ -152,4 +152,4 @@ Phase 0 for this wave is ready when:
 - AI and translation remain proposal workflows requiring explicit confirmation,
 - no planned capability is presented as implemented.
 
-**Next implementation:** It.68 only after the complete bilingual documentation gate and an explicit maintainer decision.
+**Next implementation:** [It.69](ITERATION_69.md) cache layer and HTTP validators.

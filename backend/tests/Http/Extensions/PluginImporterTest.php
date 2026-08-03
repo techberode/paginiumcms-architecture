@@ -179,7 +179,12 @@ PHP,
 
     private function makePolicyEngine(FileReader $reader, FileWriter $writer): CodePolicyEngine
     {
-        $settings = new SettingsRepository($reader, $writer, new Validator(), 'data/settings.json');
+        $settings = new SettingsRepository(
+            $writer,
+            \PaginiumCMS\Tests\Support\StorageTestHelper::localStorage($this->baseDir),
+            new Validator(),
+            'data/settings.json'
+        );
 
         return new CodePolicyEngine($settings, new SyntaxChecker(), new SecurityScanner());
     }

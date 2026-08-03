@@ -59,16 +59,16 @@ Bilingual documentation rules:
 | **Cache** | 🟡 Partial | file/memory; unified Redis layer → It.69 |
 | **Git distribution** | 🟡 Partial | GitHub API sync; full publishing workflow → It.70 |
 | **Public and admin frontend** | ✅ Shipped | React, TypeScript, Vite 8, SK/EN i18n |
-| **Automated tests** | ✅ 838+ PHPUnit | PHPStan L8; frontend gate in `developer/TESTING.md` |
+| **Automated tests** | ✅ 1000+ PHPUnit | PHPStan L8; frontend gate in `developer/TESTING.md` |
 | **Latest documented release** | ✅ `v2.1.0-beta.23` | It.58c Layout Switch |
-| **Next code work** | ⏸️ Paused | resumes after the bilingual documentation pass |
-| **First Hybrid Engine implementation** | ⏳ It.68 | storage abstraction + schema registry + engine settings |
+| **Hybrid Engine foundation (It.68)** | ✅ `[Unreleased]` | storage abstraction, schema registry, engine settings |
+| **Next code work** | ⏳ It.69 | unified cache, optional Redis, HTTP validators |
 
 ### Planned Hybrid Engine wave
 
 | Iteration | Feature |
 |-----------|---------|
-| **68** | Storage abstraction, schema registry, and engine settings |
+| **68** | Storage abstraction, schema registry, and engine settings | ✅ `[Unreleased]` |
 | **69** | Unified cache, Redis, `ETag`, and `Last-Modified` |
 | **70** | Immediate and queued Git publish |
 | **71** | Performance Guard — APM middleware |
@@ -344,7 +344,7 @@ New wave map: [ITERATION_WAVE_HYBRID_ENGINE.md](ITERATION_WAVE_HYBRID_ENGINE.md)
 - Not every historical document in the source package used one language consistently; a separate SK/EN pass is in progress.
 - `architecture/EVENTS.md`, `architecture/FRONTEND.md`, `architecture/MODULES.md`, `developer/DEVELOPMENT.md`, `user/PLUGINS.md`, and `user/THEMES.md` are empty in the source package and require authored content, not translation only.
 - Some older overview documents contain stale versions or iteration status; the bilingual review will align them with the changelog and code.
-- Hybrid Engine documentation is a target design, not a claim that It.68–77 are already implemented.
+- Hybrid Engine It.68 foundation is shipped in `[Unreleased]`; It.69–77 remain planned.
 - The legal scope of open-source and commercial use must match the repository's current `LICENSE` file.
 
 ---

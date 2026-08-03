@@ -41,4 +41,22 @@ final class ClientIpResolverTest extends TestCase
 
         $this->assertSame('203.0.113.1', $ip);
     }
+
+    public function testTrustedProxiesFromEnvDefaultsToLoopback(): void
+    {
+        $previous = getenv('TRUSTED_PROXIES');
+        putenv('TRUSTED_PROXIES');
+        unset($_ENV['TRUSTED_PROXIES']);
+
+        try {
+            $this->assertSame(['127.0.0.1', '::1'], ClientIpResolver::trustedProxiesFromEnv());
+        } finally {
+            if ($previous === false) {
+                putenv('TRUSTED_PROXIES');
+            } else {
+                putenv('TRUSTED_PROXIES=' . $previous);
+                $_ENV['TRUSTED_PROXIES'] = $previous;
+            }
+        }
+    }
 }

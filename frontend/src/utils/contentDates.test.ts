@@ -56,4 +56,15 @@ describe('formatContentDateLabels', () => {
     expect(formatRelativeTime(undefined)).toBe('—');
     expect(formatRelativeTime('2020-01-01T12:00:00Z')).not.toBe('—');
   });
+
+  it('treats unix seconds (locks/API) as seconds, not milliseconds', () => {
+    const nowSec = Math.floor(Date.now() / 1000);
+    const relative = formatRelativeTime(nowSec, 'sk');
+    expect(relative).not.toMatch(/rok/);
+    expect(relative).toMatch(/sekund|minút|chvíľ|less than|minute|second|ago|pred/i);
+
+    const year2026Ms = Date.UTC(2026, 6, 30, 12, 0, 0);
+    expect(formatDisplayDate(year2026Ms / 1000, 'en')).toContain('2026');
+    expect(formatDisplayDate(year2026Ms, 'en')).toContain('2026');
+  });
 });

@@ -40,7 +40,11 @@ function parseContentDate(value: string | number | undefined): Date | null {
   }
 
   if (typeof value === 'number') {
-    const fromNumber = new Date(value * 1000 > 1_000_000_000_000 ? value : value * 1000);
+    // Unix seconds (~1e9–1e10) vs epoch milliseconds (~1e12–1e13).
+    // Wrong check used `value * 1000 > 1e12`, which treated every post-2001
+    // second-timestamp as ms → Date(~1970) → “56 years ago” on lock badges.
+    const ms = Math.abs(value) >= 1_000_000_000_000 ? value : value * 1000;
+    const fromNumber = new Date(ms);
     return Number.isNaN(fromNumber.getTime()) ? null : fromNumber;
   }
 

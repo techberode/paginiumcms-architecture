@@ -11,6 +11,7 @@ use PaginiumCMS\Core\Security\Services\EncryptionService;
 use PaginiumCMS\Core\Settings\Services\SettingsRepository;
 use PaginiumCMS\Core\Validation\ValidationException;
 use PaginiumCMS\Core\Validation\Validator;
+use PaginiumCMS\Tests\Support\StorageTestHelper;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -183,8 +184,8 @@ class SettingsRepositoryTest extends TestCase
         $validator = new FileValidator($this->baseDir);
 
         return new SettingsRepository(
-            new FileReader($validator),
             new FileWriter($validator),
+            StorageTestHelper::localStorage($this->baseDir),
             new Validator(),
             'data/settings.json',
             $encryption

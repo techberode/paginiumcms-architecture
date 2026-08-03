@@ -24,7 +24,7 @@
 | Public Beta 1 | `v2.1.0-beta.1` | first public beta gate and tester path |
 | Beta patch series | `beta.2` through `beta.23` | hardening, UX, demo, newsletter, update, gallery, layout |
 | Latest release in this snapshot | **`v2.1.0-beta.23`** | It.58c Layout Switch |
-| Hybrid Engine | Phase 0 docs | target architecture; It.68+ code has not started |
+| Hybrid Engine | It.68 foundation ✅ `[Unreleased]` | storage abstraction, schema registry, engine settings; It.69+ planned |
 | Final 1.0 | no tag | scope must be confirmed by a separate release gate |
 
 ---
@@ -137,7 +137,7 @@
 | Blueprint manager | ✅ |
 | Full theme import/runtime | 🟡 |
 | Untrusted surfaces hardening | ⏳ It.67 |
-| JSON Schema registry for all admin writes | ⏳ It.68 |
+| JSON Schema registry for admin writes | 🟡 | `settings.overrides@1` shipped It.68; Monaco/all document types → follow-ups |
 
 ---
 
@@ -163,7 +163,7 @@ The Hybrid Engine must not weaken this baseline. New drivers use the existing do
 | Capability | Today | Target |
 |------------|-------|--------|
 | File SSOT | ✅ | preserve without exception |
-| Content index | ✅ | formalize behind It.68 abstraction |
+| Content index | ✅ | settings + JSON content behind `StorageInterface` (It.68); full repo migration → follow-ups |
 | File/memory cache | ✅ | unify in It.69 |
 | Redis | ❌ | optional It.69 driver |
 | HTTP validators | ❌ | `ETag`/`Last-Modified` in It.69 |
@@ -203,8 +203,8 @@ cd frontend && npm run type-check && npm run lint && npm test
 
 - Host cron must be configured on every instance; the existence of jobs alone is not enough.
 - SSO, webhook deployment, and external connectors require correct secret configuration and outbound policy.
-- Classic mode is the current safe base; full Hybrid/Git-headless capability is still planned.
-- The setup wizard, final theme model, and all of It.68–77 are not part of `beta.23`.
+- Classic mode is the current safe base; It.68 foundation is in `[Unreleased]`; full Hybrid/Git-headless capability remains planned.
+- The setup wizard, final theme model, and It.69–77 are not part of `beta.23`.
 - Verify individual incident status in `ISSUES.md`; this overview is not an incident tracker.
 
 ---

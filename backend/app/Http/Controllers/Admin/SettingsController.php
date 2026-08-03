@@ -9,6 +9,8 @@ use PaginiumCMS\Core\I18n\Services\SupportedLocalesRegistry;
 use PaginiumCMS\Core\Security\SecurityLogger;
 use PaginiumCMS\Core\Layout\PageLayoutCatalog;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
+use PaginiumCMS\Core\Storage\Contracts\StorageInterface;
+use PaginiumCMS\Core\Storage\Services\EngineCapabilityProbe;
 use PaginiumCMS\Core\Settings\SettingsSchema;
 use PaginiumCMS\Core\Editor\Services\EditorComponentRegistry;
 use PaginiumCMS\Core\Editor\Services\EditorProfileService;
@@ -47,7 +49,9 @@ final class SettingsController
         private EditorComponentRegistry $editorComponents,
         private AccessControlSyncService $accessControlSync,
         private AuthorizationInterface $authorization,
-        private SupportedLocalesRegistry $localesRegistry
+        private SupportedLocalesRegistry $localesRegistry,
+        private EngineCapabilityProbe $engineProbe,
+        private StorageInterface $storage,
     ) {
     }
 
@@ -61,15 +65,23 @@ final class SettingsController
             $user
         );
 
-        return $this->json->success($response, [
-            'schema' => $schema,
-            'values' => $values,
-            'meta' => [
+        $meta = [
                 'permissions' => PermissionCatalog::ALL,
                 'configurableRoles' => PermissionCatalog::configurableRoles(),
                 'cmsInfo' => $this->buildCmsInfoMeta(),
                 'editorComponents' => $this->editorComponents->listRegisteredForApi(),
-            ],
+            ];
+
+        if ($this->isSuperAdmin($user) && isset($schema['engine'])) {
+            /** @var array<string, mixed> $engineValues */
+            $engineValues = $values['engine'] ?? SettingsSchema::defaults()['engine'] ?? [];
+            $meta['engine'] = $this->buildEngineMeta($engineValues);
+        }
+
+        return $this->json->success($response, [
+            'schema' => $schema,
+            'values' => $values,
+            'meta' => $meta,
         ]);
     }
 
@@ -102,10 +114,14 @@ final class SettingsController
         return $this->json->success($response, [
             'schema' => SettingsSchema::groups()[$group],
             'values' => $this->maskSensitiveValues([$group => $groupValues])[$group] ?? [],
-            'meta' => $group === 'accessControl' ? [
-                'permissions' => PermissionCatalog::ALL,
-                'configurableRoles' => PermissionCatalog::configurableRoles(),
-            ] : null,
+            'meta' => match ($group) {
+                'accessControl' => [
+                    'permissions' => PermissionCatalog::ALL,
+                    'configurableRoles' => PermissionCatalog::configurableRoles(),
+                ],
+                'engine' => $this->buildEngineMeta($groupValues),
+                default => null,
+            },
         ]);
     }
 
@@ -605,6 +621,22 @@ final class SettingsController
         }
 
         return array_merge($accessControl, $fromAcl);
+    }
+
+    /**
+     * @param array<string, mixed> $engineValues
+     * @return array<string, mixed>
+     */
+    private function buildEngineMeta(array $engineValues): array
+    {
+        if (($engineValues['capabilityProbeEnabled'] ?? true) !== true) {
+            return ['capabilityProbe' => null];
+        }
+
+        return [
+            'capabilityProbe' => $this->engineProbe->probe($this->storage, $engineValues),
+            'documentationUrl' => '/docs/en/architecture/HYBRID_ENGINE.md',
+        ];
     }
 
     /**

@@ -75,7 +75,8 @@ class ContentRepositoryTest extends TestCase
             $this->index,
             $markdownStorage,
             $jsonStorage,
-            $settings
+            $settings,
+            \PaginiumCMS\Tests\Support\StorageTestHelper::localStorage($this->root . '/content')
         );
     }
 

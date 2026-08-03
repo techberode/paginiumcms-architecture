@@ -103,6 +103,11 @@ use PaginiumCMS\Core\FlatFile\Services\MarkdownParser;
 use PaginiumCMS\Core\Locking\Contracts\LockManagerInterface;
 use PaginiumCMS\Core\Locking\Services\LockManager;
 use PaginiumCMS\Core\Logging\Contracts\LoggerInterface;
+use PaginiumCMS\Core\Storage\StorageFactory;
+use PaginiumCMS\Core\Storage\Contracts\StorageInterface;
+use PaginiumCMS\Core\Storage\Services\EngineCapabilityProbe;
+use PaginiumCMS\Core\Validation\DocumentSchemaRegistry;
+use PaginiumCMS\Core\Validation\DocumentValidator;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\Settings\Services\SettingsRepository;
 use PaginiumCMS\Core\Search\Services\AdvancedSearchService;
@@ -241,8 +246,29 @@ return [
             get(ContentIndexService::class),
             get(MarkdownContentStorage::class),
             get(JsonContentStorage::class),
-            get(SettingsRepositoryInterface::class)
+            get(SettingsRepositoryInterface::class),
+            get(StorageInterface::class)
         ),
+
+    // === Blok: Hybrid Engine storage (Iteration 68) ===
+    DocumentSchemaRegistry::class => function () {
+        return DocumentSchemaRegistry::createWithDefaults();
+    },
+    DocumentValidator::class => create(DocumentValidator::class)
+        ->constructor(get(DocumentSchemaRegistry::class)),
+    StorageFactory::class => create(StorageFactory::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class),
+            get(\PaginiumCMS\Core\FlatFile\Services\FileValidator::class)
+        ),
+    StorageInterface::class => function ($container) {
+        /** @var StorageFactory $factory */
+        $factory = $container->get(StorageFactory::class);
+
+        return $factory->create(null, true);
+    },
+    EngineCapabilityProbe::class => create(EngineCapabilityProbe::class),
 
     // === Blok: Nastavenia + validácia (Iterácia 4) ===
     // Zdieľaný validator (bezstavový) – používa ho SettingsRepository aj ďalšie moduly.
@@ -256,11 +282,12 @@ return [
             : 'data/settings.json';
 
         return new SettingsRepository(
-            $container->get(FileReaderInterface::class),
             $container->get(FileWriterInterface::class),
+            $container->get(StorageInterface::class),
             $container->get(Validator::class),
             $settingsFile,
-            $container->get(\PaginiumCMS\Core\Security\Services\EncryptionService::class)
+            $container->get(\PaginiumCMS\Core\Security\Services\EncryptionService::class),
+            $container->get(DocumentValidator::class)
         );
     },
     AccessControlSyncService::class => create(AccessControlSyncService::class)
@@ -275,7 +302,9 @@ return [
             get(EditorComponentRegistry::class),
             get(AccessControlSyncService::class),
             get(AuthorizationInterface::class),
-            get(SupportedLocalesRegistry::class)
+            get(SupportedLocalesRegistry::class),
+            get(EngineCapabilityProbe::class),
+            get(StorageInterface::class)
         ),
 
     TranslationFileManagerInterface::class => create(TranslationFileManager::class)

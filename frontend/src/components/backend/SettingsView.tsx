@@ -11,6 +11,7 @@ import {
   SettingsValues,
   SettingField,
   type CmsInfoMeta,
+  type EngineSettingsMeta,
 } from '../../api/settings';
 import { useToast } from '../../hooks/useToast';
 import { useSettings } from '../../hooks/useSettings';
@@ -39,6 +40,7 @@ import { EditorCustomComponentsPanel, type EditorComponentMeta } from './EditorC
 import { AppearanceSettingsPanel } from '../admin/AppearanceSettingsPanel';
 import { LayoutSettingsPanel } from '../admin/LayoutSettingsPanel';
 import { CmsInfoSettingsPanel } from './CmsInfoSettingsPanel';
+import { EngineSettingsPanel } from './EngineSettingsPanel';
 import { TimezoneSelect } from './TimezoneSelect';
 import { MaintenanceModeSelect } from './MaintenanceModeSelect';
 import { useAuth } from '../../hooks/useAuth';
@@ -81,6 +83,7 @@ export const SettingsView: React.FC = () => {
   const { user } = useAuth();
   const [permissionsCatalog, setPermissionsCatalog] = useState<string[]>([]);
   const [cmsInfoMeta, setCmsInfoMeta] = useState<CmsInfoMeta | null>(null);
+  const [engineMeta, setEngineMeta] = useState<EngineSettingsMeta | null>(null);
   const [editorComponents, setEditorComponents] = useState<EditorComponentMeta[]>([]);
   const isSuperAdmin = user?.roles?.includes('SUPER_ADMIN') ?? false;
 
@@ -120,6 +123,7 @@ export const SettingsView: React.FC = () => {
         setValues(payload.values);
         setPermissionsCatalog(payload.meta?.permissions ?? []);
         setCmsInfoMeta(payload.meta?.cmsInfo ?? null);
+        setEngineMeta(payload.meta?.engine ?? null);
         setEditorComponents((payload.meta?.editorComponents as EditorComponentMeta[] | undefined) ?? []);
       } else {
         toastError(t('settings.page.loadFailed'));
@@ -341,6 +345,21 @@ export const SettingsView: React.FC = () => {
                         />
                       ))}
                     <SocialLinksSettingsPanel register={register} watch={watch} setValue={setValue} />
+                  </>
+                ) : activeGroup === 'engine' ? (
+                  <>
+                    {group.fields.map((field) => (
+                      <SettingFieldRow
+                        key={field.key}
+                        groupKey={activeGroup}
+                        field={field}
+                        register={register}
+                        watch={watch}
+                        setValue={setValue}
+                        error={errors[field.key]?.message as string | undefined}
+                      />
+                    ))}
+                    <EngineSettingsPanel meta={engineMeta} />
                   </>
                 ) : (
                   group.fields.map((field) => (

@@ -119,8 +119,8 @@ final class CodeEditorManagerTest extends TestCase
     {
         $validator = new FileValidator($this->projectRoot);
         $settings = new SettingsRepository(
-            new FileReader($validator),
             new FileWriter($validator),
+            \PaginiumCMS\Tests\Support\StorageTestHelper::localStorage($this->projectRoot),
             new Validator(),
             'data/settings.json'
         );

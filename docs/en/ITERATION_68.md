@@ -1,6 +1,6 @@
 # Iteration 68 — Hybrid Engine foundation
 
-> **Status:** ⏸️ planned; first code iteration after Documentation Phase 0  
+> **Status:** ✅ complete (Hybrid Engine foundation — It.68)  
 > **Priority:** 🔴 critical path  
 > **Wave:** [Hybrid Engine HE-1](ITERATION_WAVE_HYBRID_ENGINE.md)  
 > **Rules:** [No-SQL mandate](architecture/NOSQL_MANDATE.md) · [Hybrid Engine](architecture/HYBRID_ENGINE.md)
@@ -133,15 +133,38 @@ Storage-layer migration:
 
 ## Definition of Done
 
-- [ ] `StorageInterface` and the local driver are in the production path for settings and one content write slice.
-- [ ] The driver factory uses an allow-list and safe defaults.
-- [ ] At least one admin document has versioned JSON Schema validation.
-- [ ] The capability probe distinguishes available, unavailable, and failing capabilities.
-- [ ] Missing `engine.*` preserves `beta.23` behavior.
-- [ ] Migration dry-run, rollback, and incident scenarios are documented.
-- [ ] SK/EN architecture, API/settings documentation, and changelog are updated.
-- [ ] `iteration-gate.sh` and the Classic smoke test are green.
+- [x] `StorageInterface` and the local driver are in the production path for settings and one content write slice.
+- [x] The driver factory uses an allow-list and safe defaults.
+- [x] At least one admin document has versioned JSON Schema validation (`settings.overrides@1`).
+- [x] The capability probe distinguishes available, unavailable, and failing capabilities.
+- [x] Missing `engine.*` preserves `beta.23` behavior.
+- [x] Migration dry-run, rollback, and incident scenarios are documented (see below).
+- [x] SK/EN architecture, API/settings documentation, and changelog are updated.
+- [x] `iteration-gate.sh` and the Classic smoke test are green.
+
+---
+
+## Migration dry-run, rollback, and incidents
+
+| Scenario | Expected behavior |
+|----------|-------------------|
+| Missing `engine.*` keys | Bootstrap uses `classic` + `local`; no settings migration required |
+| Invalid `settings.json` group shape | Fail closed on read/write (`422` / `ValidationException`); admin must repair the file |
+| Unknown storage driver in settings | `StorageFactory` falls back to `local` at bootstrap; strict factory mode throws |
+| Interrupted atomic write | Previous valid file remains (temp file discarded on failed rename) |
+| Rollback It.68 code | Restore prior DI bindings in `services.php`; flat-file data needs no conversion |
+| Enable hybrid/git before It.69+ | UI shows capability `unavailable`; active mode stays `classic` |
+
+Storage rollout order used in It.68:
+
+1. Contracts + `LocalFlatFileStorage`
+2. Settings read/write through `StorageInterface`
+3. Parity tests (`SettingsStorageParityTest`)
+4. JSON content writes through storage (Markdown unchanged)
+5. JSON Schema for `settings.overrides` before accepting new writes
 
 ## Follow-ups
+
+[ISS-121](../ISSUES.md#iss-121) · [ISS-122](../ISSUES.md#iss-122) · [ISS-123](../ISSUES.md#iss-123) — defects found and fixed during It.68 implementation (pre-release).
 
 [It.69 cache](ITERATION_69.md) · [It.70 Git publish](ITERATION_70.md) · [It.72 media drivers](ITERATION_72.md) · [It.73 locale model](ITERATION_73.md) · [It.74 auth](ITERATION_74.md)

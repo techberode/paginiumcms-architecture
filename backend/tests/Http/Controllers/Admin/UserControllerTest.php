@@ -41,10 +41,10 @@ class UserControllerTest extends TestCase
             $this->repo,
             new UserAvatarService($this->createMock(\PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface::class)),
             new \PaginiumCMS\Core\Settings\Services\SettingsRepository(
-                new FileReader(new FileValidator($this->baseDir . '/data')),
                 new FileWriter(new FileValidator($this->baseDir . '/data')),
+                \PaginiumCMS\Tests\Support\StorageTestHelper::localStorage($this->baseDir . '/data'),
                 new Validator(),
-                $this->baseDir . '/data/settings.json'
+                'settings.json'
             ),
             new Validator(),
             new PasswordPolicy(),

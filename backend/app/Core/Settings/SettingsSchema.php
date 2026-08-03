@@ -195,6 +195,16 @@ final class SettingsSchema
                     ['key' => 'forbiddenPhpFunctions', 'type' => 'text', 'label' => 'Forbidden PHP functions', 'default' => 'eval,exec,shell_exec,system,passthru,proc_open,popen,assert,create_function', 'rules' => ['string', 'max:2000'], 'help' => 'Comma-separated list scanned before save. Untrusted trees also block include/require/unserialize/call_user_func*.'],
                 ],
             ],
+            'engine' => [
+                'label' => 'Hybrid Engine',
+                'superAdminOnly' => true,
+                'fields' => [
+                    ['key' => 'deploymentMode', 'type' => 'enum', 'label' => 'Deployment mode', 'default' => 'classic', 'options' => ['classic', 'hybrid', 'git_headless'], 'rules' => ['required', 'in:classic'], 'help' => 'Iteration 68: only Classic is active. Hybrid and Git headless appear as not installed.'],
+                    ['key' => 'storageDriver', 'type' => 'enum', 'label' => 'Storage driver', 'default' => 'local', 'options' => ['local'], 'rules' => ['required', 'in:local'], 'help' => 'Local flat-file driver (default). Remote drivers require later iterations.'],
+                    ['key' => 'schemaValidationEnabled', 'type' => 'bool', 'label' => 'Enable JSON Schema validation', 'default' => true, 'rules' => ['bool'], 'help' => 'When enabled, admin JSON documents are validated against registered schemas before write.'],
+                    ['key' => 'capabilityProbeEnabled', 'type' => 'bool', 'label' => 'Enable capability probe', 'default' => true, 'rules' => ['bool'], 'help' => 'Expose engine capability diagnostics in admin settings.'],
+                ],
+            ],
             'comments' => [
                 'label' => 'Komentáre',
                 'fields' => [

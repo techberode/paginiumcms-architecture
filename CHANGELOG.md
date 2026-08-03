@@ -99,10 +99,19 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+### Added (Iteration 68 — Hybrid Engine foundation)
+
+- `StorageInterface`, `LocalFlatFileStorage`, and `StorageFactory` with allow-listed `local` driver and Classic bootstrap defaults.
+- Settings `engine` group (`deploymentMode`, `storageDriver`, `schemaValidationEnabled`, `capabilityProbeEnabled`); missing `engine.*` keeps beta.23 behavior.
+- `DocumentSchemaRegistry` + `DocumentValidator` with fail-closed `settings.overrides@1` JSON Schema validation.
+- Settings persistence reads through `StorageInterface`; JSON content saves use the storage layer (Markdown path unchanged).
+- Admin **Settings → Hybrid Engine** with capability probe panel (SK/EN).
+- Regression/API tests: storage parity, symlink escape, corrupt overrides → `422`, engine capability probe.
+
 ### Documentation
 
 - PaginiumCMS is documented as a **Hybrid Headless Content Engine** with a mandatory **No-SQL flat-file source of truth**.
-- It.68–77 remain target capabilities and are not presented as already implemented.
+- It.69–77 remain target capabilities; It.68 foundation is shipped in `[Unreleased]`.
 - Iteration 14 consolidates chronology, stable release anchors, issues and commit evidence.
 
 ### Security and operations
@@ -113,6 +122,9 @@ This canonical history records release facts supported by the supplied `CHANGELO
 ### Fixed
 
 - [ISS-112](docs/ISSUES.md#iss-112): Unix-second lock timestamps are no longer interpreted as milliseconds.
+- [ISS-121](docs/ISSUES.md#iss-121): invalid settings group shapes are no longer silently dropped; fail-closed JSON Schema validation returns HTTP **422**.
+- [ISS-122](docs/ISSUES.md#iss-122): `LocalFlatFileStorage` enforces base-path containment on all public methods, including `read()`.
+- [ISS-123](docs/ISSUES.md#iss-123): HTTP PHPUnit tests reset `settings.testing.json` so corrupt-state cases do not leak between tests.
 
 <a id="release-2-1-0-beta-23"></a>
 
