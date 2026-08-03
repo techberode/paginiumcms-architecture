@@ -99,6 +99,12 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+<a id="release-2-1-0-beta-24"></a>
+
+## [2.1.0-beta.24] – 2026-08-03
+
+Hybrid Engine foundation (Iteration 68)
+
 ### Added (Iteration 68 — Hybrid Engine foundation)
 
 - `StorageInterface`, `LocalFlatFileStorage`, and `StorageFactory` with allow-listed `local` driver and Classic bootstrap defaults.
@@ -111,12 +117,12 @@ This canonical history records release facts supported by the supplied `CHANGELO
 ### Documentation
 
 - PaginiumCMS is documented as a **Hybrid Headless Content Engine** with a mandatory **No-SQL flat-file source of truth**.
-- It.69–77 remain target capabilities; It.68 foundation is shipped in `[Unreleased]`.
+- It.69–77 remain target capabilities; It.68 foundation is shipped in this release.
 - Iteration 14 consolidates chronology, stable release anchors, issues and commit evidence.
 
 ### Security and operations
 
-- Static SPA headers, CSRF exemption-boundary hardening, `expose_php = Off`, loopback-only trusted-proxy defaults, `/.well-known/security.txt`, and Docker reboot recovery are recorded for the next release.
+- Static SPA headers, CSRF exemption-boundary hardening, `expose_php = Off`, loopback-only trusted-proxy defaults, `/.well-known/security.txt`, and Docker reboot recovery.
 - [ISS-120](docs/ISSUES.md#iss-120): backend CI uses `run-backend-tests-ci.sh` → `sanitize-ci-log.py` → `verify-ci-log-redaction.sh`; raw output is not published and the local workflow is documented in [`LOCAL_TEST_LOGS.md.example`](LOCAL_TEST_LOGS.md.example).
 
 ### Fixed
@@ -125,6 +131,12 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - [ISS-121](docs/ISSUES.md#iss-121): invalid settings group shapes are no longer silently dropped; fail-closed JSON Schema validation returns HTTP **422**.
 - [ISS-122](docs/ISSUES.md#iss-122): `LocalFlatFileStorage` enforces base-path containment on all public methods, including `read()`.
 - [ISS-123](docs/ISSUES.md#iss-123): HTTP PHPUnit tests reset `settings.testing.json` so corrupt-state cases do not leak between tests.
+
+### Release facts
+
+- **Tag commit:** `7795da9`
+- **Categories:** Added, Documentation, Security, Fixed
+- **Technical identifiers:** `StorageInterface`, `LocalFlatFileStorage`, `DocumentSchemaRegistry`, `settings.overrides@1`, `engine.deploymentMode`, `GET /api/admin/settings/engine`, `EngineSettingsPanel`, `EngineCapabilityProbe`
 
 <a id="release-2-1-0-beta-23"></a>
 
