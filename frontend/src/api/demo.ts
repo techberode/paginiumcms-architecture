@@ -17,6 +17,10 @@ export interface DemoStatus {
 export interface DemoPublicInfo {
   enabled: boolean;
   loginEmail?: string;
+  credentials?: {
+    email: string;
+    password: string;
+  };
   auto_reset_minutes?: number;
   last_reset_at?: string | null;
   next_reset_at?: string | null;

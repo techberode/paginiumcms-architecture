@@ -357,7 +357,7 @@ export const publicEn: MessageTree = {
       ssoButton: 'Sign in with :provider',
       demo: {
         title: 'Demo access',
-        hint: 'One click signs you in as the demo administrator (:email). No password is exposed via public API.',
+        hint: 'This is a public demo sandbox — use the credentials below or sign in with one click.',
         quickLoginButton: 'Sign in as demo admin',
         fillButton: 'Fill demo credentials',
       },

@@ -47,6 +47,24 @@ final class DemoControllerTest extends TestCase
         $this->assertArrayNotHasKey('credentials', $data['data']);
     }
 
+    public function testDemoPublicInfoIncludesCredentialsWhenDemoEnabled(): void
+    {
+        putenv('DEMO_MODE=true');
+        $_ENV['DEMO_MODE'] = 'true';
+
+        $this->app = require __DIR__ . '/../../../../bootstrap/app.php';
+
+        $response = $this->handleRequest(
+            $this->createJsonRequest('GET', '/api/demo/public-info')
+        );
+        $data = $this->getJsonResponse($response);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertTrue($data['data']['enabled']);
+        $this->assertSame('demo@paginiumcms.com', $data['data']['credentials']['email'] ?? null);
+        $this->assertSame('Demo123!', $data['data']['credentials']['password'] ?? null);
+    }
+
     public function testDemoQuickLoginForbiddenWhenDemoDisabled(): void
     {
         $response = $this->handleRequest(

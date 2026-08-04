@@ -56,7 +56,7 @@ SESSION_LIFETIME=14400
 
 | Route | Účel |
 |-------|------|
-| `GET /api/demo/public-info` | Countdown resetu + `loginEmail` (bez hesla) |
+| `GET /api/demo/public-info` | Countdown resetu + `loginEmail` + `credentials` (iba pri `DEMO_MODE=true`) |
 | `POST /api/demo/quick-login` | One-click demo admin session (S-DEMOCREDS, v4) |
 | `GET /api/admin/demo/status` | Admin stav + schedule (bez credentials) |
 | `POST /api/admin/demo/reset` | ADMIN+ — re-seed snapshot |
