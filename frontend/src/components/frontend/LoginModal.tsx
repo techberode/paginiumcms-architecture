@@ -36,9 +36,23 @@ export const LoginModal: React.FC = () => {
   const { t } = useI18n();
   const { settings } = useSettingsContext();
   const isDemoInstance = settings.demo?.enabled === true;
-  const demoLoginEmail = settings.demo?.loginEmail ?? 'demo@paginiumcms.com';
+  const [demoCredentials, setDemoCredentials] = useState<{ email: string; password: string } | null>(null);
   const allowRegistration =
     settings.general.allowRegistration !== false && !isMaintenanceActive(settings.maintenance?.mode);
+
+  useEffect(() => {
+    if (!isDemoInstance) {
+      setDemoCredentials(null);
+      return;
+    }
+
+    void demoApi.publicInfo().then((info) => {
+      if (info?.credentials) {
+        setDemoCredentials(info.credentials);
+        setEmail(info.credentials.email);
+      }
+    });
+  }, [isDemoInstance]);
 
   useEffect(() => {
     void (async () => {
@@ -157,15 +171,38 @@ export const LoginModal: React.FC = () => {
           {isDemoInstance && (
             <div className="rounded-2xl border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/40 p-4 text-sm text-amber-900 dark:text-amber-100">
               <p className="font-bold mb-2">{t('public.auth.login.demo.title')}</p>
-              <p className="text-xs mb-3">{t('public.auth.login.demo.hint', { email: demoLoginEmail })}</p>
-              <button
-                type="button"
-                disabled={loading}
-                className="w-full py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold disabled:opacity-50"
-                onClick={() => void handleDemoQuickLogin()}
-              >
-                {t('public.auth.login.demo.quickLoginButton')}
-              </button>
+              <p className="text-xs mb-3">{t('public.auth.login.demo.hint')}</p>
+              {demoCredentials ? (
+                <dl className="mb-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs font-mono bg-amber-100/80 dark:bg-amber-900/30 rounded-lg p-3">
+                  <dt className="font-sans font-semibold">{t('public.auth.common.email')}</dt>
+                  <dd>{demoCredentials.email}</dd>
+                  <dt className="font-sans font-semibold">{t('public.auth.common.password')}</dt>
+                  <dd>{demoCredentials.password}</dd>
+                </dl>
+              ) : null}
+              <div className="flex flex-col gap-2">
+                <button
+                  type="button"
+                  disabled={loading}
+                  className="w-full py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold disabled:opacity-50"
+                  onClick={() => void handleDemoQuickLogin()}
+                >
+                  {t('public.auth.login.demo.quickLoginButton')}
+                </button>
+                {demoCredentials ? (
+                  <button
+                    type="button"
+                    disabled={loading}
+                    className="w-full py-2 rounded-lg border border-amber-400/70 text-amber-950 dark:text-amber-100 text-xs font-bold disabled:opacity-50"
+                    onClick={() => {
+                      setEmail(demoCredentials.email);
+                      setPassword(demoCredentials.password);
+                    }}
+                  >
+                    {t('public.auth.login.demo.fillButton')}
+                  </button>
+                ) : null}
+              </div>
             </div>
           )}
 

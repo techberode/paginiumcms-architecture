@@ -330,7 +330,7 @@ export const publicSk: MessageTree = {
       ssoButton: 'Prihlásiť cez :provider',
       demo: {
         title: 'Demo prístup',
-        hint: 'Jedným klikom sa prihlásite ako demo administrátor (:email). Heslo sa neposiela cez verejné API.',
+        hint: 'Toto je verejná demo sandbox — prihlasovacie údaje nižšie alebo jedným klikom.',
         quickLoginButton: 'Prihlásiť ako demo admin',
         fillButton: 'Vyplniť demo údaje',
       },

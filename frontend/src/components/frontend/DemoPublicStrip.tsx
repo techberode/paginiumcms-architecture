@@ -48,6 +48,11 @@ export const DemoPublicStrip: React.FC = () => {
         <Link to="/login" className="font-semibold underline underline-offset-2">
           {t('public.demo.stripLogin')}
         </Link>
+        {info.credentials ? (
+          <span className="font-mono text-xs bg-amber-600/20 px-2 py-0.5 rounded-md">
+            {info.credentials.email} / {info.credentials.password}
+          </span>
+        ) : null}
       </div>
     </div>
   );

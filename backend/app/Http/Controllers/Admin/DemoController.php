@@ -45,6 +45,10 @@ final class DemoController
         return $this->json->success($response, [
             'enabled' => true,
             'loginEmail' => DemoFixtures::ADMIN_EMAIL,
+            'credentials' => [
+                'email' => DemoFixtures::ADMIN_EMAIL,
+                'password' => DemoFixtures::ADMIN_PASSWORD,
+            ],
             'auto_reset_minutes' => $status['auto_reset_minutes'],
             'last_reset_at' => $status['last_reset_at'],
             'next_reset_at' => $status['next_reset_at'],
