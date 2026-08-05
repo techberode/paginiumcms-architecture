@@ -103,9 +103,13 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ### Fixed
 
+- **PHPUnit DEMO_MODE isolation ([ISS-125](docs/ISSUES.md#iss-125))** — force `DEMO_MODE=false` in `phpunit.xml` and `tests/bootstrap.php`; demo HTTP tests restore env and re-bootstrap in `try/finally`; `Http/TestCase` syncs `$_SERVER`, purges OTP challenges, adds `enableWorkflows()`; OTP and SystemUpdate tests assert prerequisites.
+- **Post-beta.27 CI hotfix bundle ([ISS-126](docs/ISSUES.md#iss-126))** — see items below (no new release tag; deploy `origin/main`).
 - **`LocalFlatFileStorage::assertWithinBase()`** — allow logical paths when intermediate directories (e.g. `data/`) do not exist yet; fixes HTTP PHPUnit `settings.testing.json` failures in CI.
 - **API barrel (It.17)** — register `git`, `shortcodes`, and `themes` in `frontend/src/api/index.ts`.
 - **Demo dashboard storage metric** — `DEMO_MODE=true` no longer exposes host partition free space; `DemoStorageQuotaService` reports synthetic sandbox quota (default 2 GiB from `DEMO_STORAGE_QUOTA_BYTES`) based on `storage/app/demo/` usage only.
+- **`ScheduledJobRunnerTest`** — `createDirectory` mock matches void production signature (PHPUnit CI).
+- **`SettingsControllerEngineTest`** — corrupt settings file deleted in `finally` ([ISS-123](docs/ISSUES.md#iss-123)).
 
 <a id="release-2-1-0-beta-27"></a>
 

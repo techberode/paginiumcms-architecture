@@ -22,5 +22,6 @@
     <php>
         <env name="APP_ENV" value="testing" force="true"/>
         <env name="APP_DEBUG" value="true" force="true"/>
+        <env name="DEMO_MODE" value="false" force="true"/>
     </php>
 </phpunit>

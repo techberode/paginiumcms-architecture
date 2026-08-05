@@ -80,8 +80,10 @@ class CommentsControllerTest extends TestCase
         putenv('APP_ENV=testing');
         $_ENV['APP_ENV'] = 'testing';
 
+        $this->enableWorkflows(['commentApprovalOtpEnabled' => true]);
+
         $settings = $this->app->getContainer()->get(SettingsRepositoryInterface::class);
-        $settings->setGroup('workflows', ['commentApprovalOtpEnabled' => true]);
+        $this->assertTrue($settings->group('workflows')['commentApprovalOtpEnabled'] ?? false);
 
         $articleSlug = 'otp-comment-' . uniqid('', true);
         $submitRequest = $this->createJsonRequest('POST', '/api/comments', [

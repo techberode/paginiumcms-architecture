@@ -2,6 +2,14 @@
 
 declare(strict_types=1);
 
+// PHPUnit must never inherit host/demo .env flags (CI runners, homelab demo stacks).
+putenv('APP_ENV=testing');
+$_ENV['APP_ENV'] = 'testing';
+$_SERVER['APP_ENV'] = 'testing';
+putenv('DEMO_MODE=false');
+$_ENV['DEMO_MODE'] = 'false';
+$_SERVER['DEMO_MODE'] = 'false';
+
 // 1. Načítanie UTF-8 nastavení (definuje utf8_normalize())
 require_once __DIR__ . '/../backend/bootstrap/utf8.php';
 

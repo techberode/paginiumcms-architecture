@@ -51,7 +51,9 @@ final class SettingsControllerEngineTest extends TestCase
             $this->assertIsArray($data['errors'] ?? null);
             $this->assertNotEmpty($data['errors']);
         } finally {
-            $storage->write($settingsPath, '{}');
+            if ($storage->exists($settingsPath)) {
+                $storage->delete($settingsPath, false);
+            }
         }
     }
 

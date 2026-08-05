@@ -94,12 +94,14 @@ class AuthControllerTest extends TestCase
         putenv('APP_ENV=testing');
         $_ENV['APP_ENV'] = 'testing';
 
-        $settings = $this->app->getContainer()->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class);
-        $settings->setGroup('workflows', [
+        $this->enableWorkflows([
             'registrationOtpEnabled' => true,
             'otpTtlMinutes' => 15,
             'otpMaxAttempts' => 5,
         ]);
+
+        $settings = $this->container()->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class);
+        $this->assertTrue($settings->group('workflows')['registrationOtpEnabled'] ?? false);
 
         $email = 'otp_reg_' . uniqid() . '@example.com';
         $password = 'StrongP@ssw0rd123!';

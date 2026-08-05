@@ -53,7 +53,8 @@ final class SystemUpdateControllerTest extends TestCase
             'allowDeployTags' => true,
         ]));
 
-        $this->loginAsSuperAdminUser();
+        $login = $this->loginAsSuperAdminUser();
+        $this->assertSame(200, $login['response']->getStatusCode());
 
         $response = $this->handleRequest(
             $this->createJsonRequest('POST', '/api/admin/system/update/run', [
@@ -73,7 +74,8 @@ final class SystemUpdateControllerTest extends TestCase
             'allowDeployMain' => false,
         ]));
 
-        $this->loginAsSuperAdminUser();
+        $login = $this->loginAsSuperAdminUser();
+        $this->assertSame(200, $login['response']->getStatusCode());
 
         $response = $this->handleRequest(
             $this->createJsonRequest('POST', '/api/admin/system/update/run', [
