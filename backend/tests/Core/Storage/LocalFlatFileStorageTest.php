@@ -113,6 +113,17 @@ final class LocalFlatFileStorageTest extends TestCase
         $this->storage->read('../../etc/passwd');
     }
 
+    public function testExistsAllowsPathWhenIntermediateDirectoryMissing(): void
+    {
+        $base = sys_get_temp_dir() . '/pag_storage_missing_data_' . uniqid('', true);
+        mkdir($base, 0777, true);
+
+        $validator = new FileValidator($base);
+        $storage = new LocalFlatFileStorage(new FileReader($validator), new FileWriter($validator), $validator);
+
+        $this->assertFalse($storage->exists('data/settings.testing.json'));
+    }
+
     public function testRejectsWhenStorageRootIsMissing(): void
     {
         $missingBase = sys_get_temp_dir() . '/pag_storage_missing_' . uniqid('', true);

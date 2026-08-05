@@ -69,10 +69,13 @@ import { contentApi } from './content';
 import { demoApi } from './demo';
 import { extensionsApi } from './extensions';
 import { firewallApi } from './firewall';
+import { gitApi } from './git';
 import { healthApi } from './health';
 import { logsApi } from './logs';
 import { securityApi } from './security';
+import { shortcodesApi } from './shortcodes';
 import { translationsApi } from './translations';
+import { themesApi } from './themes';
 import { trashApi } from './trash';
 import { userApi } from './user';
 import { versionApi } from './version';
@@ -88,9 +91,12 @@ export const api = {
   demo: demoApi,
   extensions: extensionsApi,
   firewall: firewallApi,
+  git: gitApi,
   health: healthApi,
   logs: logsApi,
   security: securityApi,
+  shortcodes: shortcodesApi,
+  themes: themesApi,
   translations: translationsApi,
   trash: trashApi,
   user: userApi,

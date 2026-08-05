@@ -201,18 +201,25 @@ final class LocalFlatFileStorage implements StorageInterface
             throw new InvalidPathException($logicalPath, 'Storage root is unavailable');
         }
 
-        $parent = dirname($absolutePath);
-        $parentReal = realpath($parent);
-        if ($parentReal === false) {
-            if (!str_starts_with($parent, $baseReal . DIRECTORY_SEPARATOR) && $parent !== $baseReal) {
-                throw new InvalidPathException($logicalPath, 'Path escapes storage root');
+        $relative = ltrim(str_replace('\\', '/', $logicalPath), '/');
+        $resolvedTarget = $this->normalizePath($baseReal . '/' . $relative);
+        $normalizedBase = $this->normalizePath($baseReal);
+
+        if (!str_starts_with($resolvedTarget, $normalizedBase . '/') && $resolvedTarget !== $normalizedBase) {
+            throw new InvalidPathException($logicalPath, 'Path escapes storage root');
+        }
+
+        $parentReal = realpath(dirname($absolutePath));
+        if ($parentReal !== false) {
+            $normalizedParent = $this->normalizePath($parentReal);
+            if ($normalizedParent !== $normalizedBase && !str_starts_with($normalizedParent, $normalizedBase . '/')) {
+                throw new InvalidPathException($logicalPath, 'Path escapes storage root (symlink)');
             }
-
-            return;
         }
+    }
 
-        if ($parentReal !== $baseReal && !str_starts_with($parentReal, $baseReal . DIRECTORY_SEPARATOR)) {
-            throw new InvalidPathException($logicalPath, 'Path escapes storage root (symlink)');
-        }
+    private function normalizePath(string $path): string
+    {
+        return rtrim(str_replace('\\', '/', $path), '/');
     }
 }
