@@ -97,7 +97,7 @@ function applyIntRules(rules: string[]): z.ZodTypeAny {
 
 function applyNumberRules(rules: string[]): z.ZodTypeAny {
   const required = rules.includes('required');
-  let schema = z.coerce.number({ invalid_type_error: 'Musí byť číslo.' });
+  let schema = z.coerce.number();
 
   for (const rule of rules) {
     if (rule.startsWith('min:')) {

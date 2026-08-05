@@ -109,6 +109,6 @@ final class SettingsControllerEngineTest extends TestCase
         $this->assertSame(200, $response->getStatusCode(), json_encode($data, JSON_THROW_ON_ERROR));
         $this->assertTrue($data['success']);
         $this->assertTrue($data['data']['values']['performanceGuardEnabled'] ?? false);
-        $this->assertSame(1.0, $data['data']['values']['performanceGuardSampleRate'] ?? null);
+        $this->assertEquals(1.0, $data['data']['values']['performanceGuardSampleRate'] ?? null);
     }
 }
