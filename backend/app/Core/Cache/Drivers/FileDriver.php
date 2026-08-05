@@ -42,9 +42,13 @@ class FileDriver implements CacheDriverInterface
     public function set(string $key, mixed $value, ?int $ttl = null): bool
     {
         $file = $this->getFilePath($key);
-        $data = ['value' => $value, 'expires' => $ttl ? time() + $ttl : null, 'created' => time()];
+        $data = [
+            'value' => $value,
+            'expires' => $ttl ? time() + $ttl : null,
+            'created' => time(),
+        ];
 
-        return file_put_contents($file, JsonHelper::encode($data)) !== false;
+        return $this->writeFile($file, JsonHelper::encode($data));
     }
 
     public function delete(string $key): bool
@@ -206,7 +210,26 @@ class FileDriver implements CacheDriverInterface
     private function saveTagIndex(array $index): void
     {
         $path = $this->path . '/.tag_index.json';
-        file_put_contents($path, JsonHelper::encode($index));
+        $this->writeFile($path, JsonHelper::encode($index));
+    }
+
+    private function writeFile(string $path, string $contents): bool
+    {
+        $dir = dirname($path);
+
+        if (!is_dir($dir)) {
+            return false;
+        }
+
+        // vfsStream reports non-writable even when writes succeed (CacheManagerTest).
+        if (!str_starts_with($dir, 'vfs://') && !is_writable($dir)) {
+            return false;
+        }
+
+        $flags = str_starts_with($path, 'vfs://') ? 0 : LOCK_EX;
+        $bytes = @file_put_contents($path, $contents, $flags);
+
+        return $bytes !== false;
     }
 
     private function getFilePath(string $key): string

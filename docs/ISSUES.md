@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 5 August 2026 · register **ISS-001–ISS-128** · It.67 + It.68 + It.71 in `[Unreleased]`
+> **Last updated:** 5 August 2026 · register **ISS-001–ISS-129** · It.67 + It.68 + It.71 in `[Unreleased]`
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -151,6 +151,7 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-126](#iss-126) | Post-beta.27 CI regressions (storage path, void mock, API barrel, demo disk metric) | Medium (CI / demo UX) | ✅ **`[Unreleased]`** · hotfix on `main` |
 | [ISS-127](#iss-127) | It.71 Performance Guard DI incomplete — 233 PHPUnit errors, console fatal | High (CI / bootstrap) | ✅ **`[Unreleased]`** · explicit DI + ACL default |
 | [ISS-128](#iss-128) | Engine Performance Guard settings could not be saved (`float` field / Zod) | Medium (admin UX) | ✅ **`[Unreleased]`** · float input + numeric Zod |
+| [ISS-129](#iss-129) | FileDriver emitted PHP warning on read-only cache dir (CI PHPUnit) | Low (CI / cache) | ✅ **`[Unreleased]`** · writable guard + silent write fail |
 
 ## CI failures (GitHub Actions)
 
@@ -3757,4 +3758,47 @@ cd frontend && npm test -- zodFromRules.test.ts
 ### Ops note
 
 After deploy, **Settings → Engine → Enable Performance Guard** → **Save** should persist. Tune sample rate and latency budgets as needed; ensure **`metrics:read`** is on ADMIN ACL if the dashboard panel should be visible ([ISS-127](#iss-127)).
+
+<a id="iss-129"></a>
+
+## ISS-129 – FileDriver emitted PHP warning on read-only cache dir (CI PHPUnit)
+
+[↑ Overview](#overview)
+
+**Severity:** Low (CI / cache)  
+**Status:** ✅ **`[Unreleased]`**  
+**Release context:** Local **`alltests`** / CI PHPUnit after It.71 — suite reported **0 failures** but **1 PHP warning**, failing the job.
+
+### Operational synopsis
+
+`SafeRemediationServiceTest::testAutomaticSkipsWhenCacheCapabilityFails()` creates a cache directory, sets it **read-only** (`chmod 0555`), and expects automatic Performance Guard remediation to detect cache failure and return `cache_capability_failed` without applying purge.
+
+`FileDriver::set()` called `file_put_contents()` unconditionally on the health-probe path. On a read-only directory PHP emitted:
+
+`file_put_contents(...): Failed to open stream: Permission denied`
+
+PHPUnit treats warnings as CI failure even when assertions pass. The test expectation (`applied === false`, `detail === cache_capability_failed`) was correct; the driver should fail **silently** with `false`, not raise a warning.
+
+### Fix
+
+- **`FileDriver::writeFile()`** — check `is_dir()` + `is_writable()` on the target directory before write (skip writability pre-check on `vfs://` — vfsStream quirk in `CacheManagerTest`); use `@file_put_contents(..., LOCK_EX)` on real paths and omit `LOCK_EX` on vfs; return `false` on failure.
+- **`set()`** and **`saveTagIndex()`** route through `writeFile()` so tag-index writes follow the same guard.
+
+Higher-level services (`CacheCapabilityProbe`, `SafeRemediationService`) already interpret `health()['ok'] === false` as “cache unavailable”.
+
+### Evidence and traceability
+
+- **Symptom:** PHPUnit summary `Warnings: 1` at `FileDriver.php:47`; triggered by `SafeRemediationServiceTest::testAutomaticSkipsWhenCacheCapabilityFails`.
+- **Key files:** `backend/app/Core/Cache/Drivers/FileDriver.php`, `backend/tests/Core/Performance/SafeRemediationServiceTest.php`
+- **History:** [CHANGELOG](../CHANGELOG.md) `[Unreleased]`
+
+### Verification
+
+```bash
+./vendor/bin/phpunit backend/tests/Core/Performance/SafeRemediationServiceTest.php --display-warnings
+./vendor/bin/phpunit --display-warnings
+./scripts/iteration-gate.sh
+```
+
+Expected: **0 warnings**, remediation test still passes.
 
