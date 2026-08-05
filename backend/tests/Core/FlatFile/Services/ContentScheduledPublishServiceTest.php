@@ -5,14 +5,10 @@ declare(strict_types=1);
 namespace PaginiumCMS\Tests\Core\FlatFile\Services;
 
 use DateTimeImmutable;
-use PaginiumCMS\Core\Cache\ContentCacheService;
 use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
 use PaginiumCMS\Core\FlatFile\Models\Page;
 use PaginiumCMS\Core\FlatFile\Services\ContentScheduledPublishService;
-use PaginiumCMS\Core\Hook\Services\HookEmitter;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
-use PaginiumCMS\Core\Versioning\Services\ContentVersioningService;
-use PaginiumCMS\Core\Workflow\Services\OtpWorkflowService;
 use PaginiumCMS\Tests\Http\TestCase;
 
 final class ContentScheduledPublishServiceTest extends TestCase
@@ -83,37 +79,48 @@ final class ContentScheduledPublishServiceTest extends TestCase
     public function testPublishDueItemsSkipsWhenOtpEnabledWithoutApproval(): void
     {
         $settings = $this->app->getContainer()->get(SettingsRepositoryInterface::class);
-        $settings->setGroup('workflows', ['publishApprovalOtpEnabled' => true]);
+        $originalWorkflows = $settings->group('workflows');
 
-        $repo = $this->app->getContainer()->get(ContentRepositoryInterface::class);
-        $slug = 'otp-blocked-' . uniqid('', true);
-        $dueAt = (new DateTimeImmutable('-1 minute'))->format('c');
+        try {
+            $settings->setGroup('workflows', array_merge($originalWorkflows, [
+                'publishApprovalOtpEnabled' => true,
+            ]));
 
-        $page = new Page();
-        $page->setSlug($slug);
-        $page->setTitle('OTP blocked');
-        $page->setContent('# OTP');
-        $page->setStatus('scheduled');
-        $page->setFrontMatter([
-            'title' => 'OTP blocked',
-            'slug' => $slug,
-            'status' => 'scheduled',
-            'scheduledAt' => $dueAt,
-        ]);
-        $repo->save($page);
+            $repo = $this->app->getContainer()->get(ContentRepositoryInterface::class);
+            $slug = 'otp-blocked-' . uniqid('', true);
+            $dueAt = (new DateTimeImmutable('-1 minute'))->format('c');
 
-        $service = new ContentScheduledPublishService(
-            $repo,
-            $this->app->getContainer()->get(ContentVersioningService::class),
-            $this->app->getContainer()->get(ContentCacheService::class),
-            $this->app->getContainer()->get(OtpWorkflowService::class),
-            $this->app->getContainer()->get(HookEmitter::class)
-        );
+            $page = new Page();
+            $page->setSlug($slug);
+            $page->setTitle('OTP blocked');
+            $page->setContent('# OTP');
+            $page->setStatus('scheduled');
+            $page->setFrontMatter([
+                'title' => 'OTP blocked',
+                'slug' => $slug,
+                'status' => 'scheduled',
+                'scheduledAt' => $dueAt,
+            ]);
+            $repo->save($page);
 
-        $result = $service->publishDueItems(new DateTimeImmutable('now'));
+            $service = $this->app->getContainer()->get(ContentScheduledPublishService::class);
+            $result = $service->publishDueItems(new DateTimeImmutable('now'));
 
-        $this->assertSame([], $result['published']);
-        $this->assertCount(1, $result['skipped']);
-        $this->assertSame('otp_not_approved', $result['skipped'][0]['reason']);
+            $publishedSlugs = array_column($result['published'], 'slug');
+            $this->assertNotContains($slug, $publishedSlugs);
+
+            $skippedForSlug = array_values(array_filter(
+                $result['skipped'],
+                static fn (array $row): bool => ($row['slug'] ?? '') === $slug && ($row['type'] ?? '') === 'page'
+            ));
+            $this->assertCount(1, $skippedForSlug);
+            $this->assertSame('otp_not_approved', $skippedForSlug[0]['reason']);
+
+            $saved = $repo->findBySlug($slug, 'page');
+            $this->assertNotNull($saved);
+            $this->assertSame('scheduled', $saved->getStatus());
+        } finally {
+            $settings->setGroup('workflows', $originalWorkflows);
+        }
     }
 }

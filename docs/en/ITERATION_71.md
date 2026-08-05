@@ -1,6 +1,6 @@
 # Iteration 71 — Performance Guard (application APM)
 
-> **Status:** ⏳ planned  
+> **Status:** ✅ shipped (2026-08-05)  
 > **Priority:** 🟡  
 > **Wave:** [Hybrid Engine HE-4](ITERATION_WAVE_HYBRID_ENGINE.md)  
 > **Depends on:** [It.69](ITERATION_69.md)  
@@ -135,13 +135,13 @@ The guard **must not automatically enable Redis** without valid, verified Redis 
 
 ## Definition of Done
 
-- [ ] Staging displays p95 and breach trends without content payloads.
-- [ ] An intentionally slow test route creates a deduplicated incident.
-- [ ] Defaults are `enabled=false` and `remediationMode=suggest`.
-- [ ] Automatic mode has capability gate, cooldown, rollback, and audit.
-- [ ] Redis is never enabled without verified configuration.
-- [ ] It.46 and It.71 have clearly separated responsibilities.
-- [ ] Retention, privacy, and runbook are documented in SK/EN.
+- [x] Staging displays p95 and breach trends without content payloads.
+- [x] An intentionally slow test route creates a deduplicated incident.
+- [x] Defaults are `enabled=false` and `remediationMode=suggest`.
+- [x] Automatic mode has capability gate, cooldown, rollback, and audit.
+- [x] Redis is never enabled without verified configuration.
+- [x] It.46 and It.71 have clearly separated responsibilities.
+- [x] Retention, privacy, and runbook are documented in SK/EN.
 
 ## Related
 

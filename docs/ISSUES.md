@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 5 August 2026 · register **ISS-001–ISS-126** · It.67 + It.68 foundation in `[Unreleased]`
+> **Last updated:** 5 August 2026 · register **ISS-001–ISS-127** · It.67 + It.68 + It.71 in `[Unreleased]`
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -149,6 +149,7 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-124](#iss-124) | CSP retains `style-src 'unsafe-inline'` for React inline styles | Low (documented residual) | ℹ️ It.67 inventory · no script unsafe-inline |
 | [ISS-125](#iss-125) | DEMO_MODE leaked into HTTP PHPUnit after demo tests (4 failures post-beta.27) | Medium (CI) | ✅ **`[Unreleased]`** · test env hardening |
 | [ISS-126](#iss-126) | Post-beta.27 CI regressions (storage path, void mock, API barrel, demo disk metric) | Medium (CI / demo UX) | ✅ **`[Unreleased]`** · hotfix on `main` |
+| [ISS-127](#iss-127) | It.71 Performance Guard DI incomplete — 233 PHPUnit errors, console fatal | High (CI / bootstrap) | ✅ **`[Unreleased]`** · explicit DI + ACL default |
 
 ## CI failures (GitHub Actions)
 
@@ -166,6 +167,7 @@ Workflow: [`.github/workflows/ci.yml`](https://github.com/techberode/paginiumcms
 | `backend` | PHPUnit | CI PHPUnit output exposed TOTP and 2FA secrets in GitHub job logs | [ISS-120](#iss-120) |
 | `backend` | PHPUnit | Four HTTP tests failed after beta.27 (OTP verify 403, SystemUpdate 401/403) | [ISS-125](#iss-125) |
 | `backend` | PHPUnit | Post-beta.27 storage/settings path and ScheduledJobRunner mock regressions | [ISS-126](#iss-126) |
+| `backend` | PHPUnit / bootstrap | It.71 MetricsController DI unresolved — cascade 233 errors, `bin/console` fatal | [ISS-127](#iss-127) |
 | `backend` | PHPUnit | PHPUnit suffered 429, 503, and OTP persistence failures | [ISS-015](#iss-015), [ISS-023](#iss-023) |
 | `backend` | PHPUnit | Content index tag, author, and date filters failed PHPUnit | [ISS-038](#iss-038) |
 | `backend` | PHPUnit | LogWriter tests failed on virtual files and corrupt JSON | [ISS-039](#iss-039) |
@@ -3661,3 +3663,51 @@ cd frontend && npm run lint:api-barrel
 ### Deploy note
 
 Apply with **`GIT_REF=origin/main`** on production and demo — **no new tag**. See [PRIVATE_DOMAIN_DEPLOY.md](../PRIVATE_DOMAIN_DEPLOY.md) or `scripts/deploy-instance-update.sh`.
+
+<a id="iss-127"></a>
+
+## ISS-127 – It.71 Performance Guard DI incomplete — 233 PHPUnit errors, console fatal
+
+[↑ Overview](#overview)
+
+**Severity:** High (CI / bootstrap)  
+**Status:** ✅ **`[Unreleased]`**  
+**Release context:** Discovered in local **`alltests`** run after It.71 implementation (Performance Guard / APM).
+
+### Operational synopsis
+
+Adding It.71 registered `MetricsController` and Performance Guard services in `Core/Performance/Config/services.php` using bare `create(Class::class)` entries. The project DI container does **not** autowire constructor parameters — every dependency must be explicit (same pattern as `Monitoring/Config/services.php` and `Http/Config/services.php`).
+
+At route bootstrap, `metrics.php` resolves `MetricsController` immediately → **PHP-DI `InvalidDefinition`** on parameter `$settings` (`PerformanceGuardSettings`). This cascaded into **233 HTTP PHPUnit errors**, security-regression subset failures, path ACL subset failures, OTP subset failures, and **`backend/bin/console` fatal** (content diagnose step).
+
+Secondary issues in the same bundle:
+
+1. **`permissionsAdmin` schema default** omitted `metrics:read` (and `git:publish`) while `PermissionCatalog` included them — settings-backed ACL overrides catalog defaults → ADMIN received **403** on `GET /api/admin/metrics/apm`.
+2. **`PerformanceRouteLabelResolver`** called `RouteContext::fromRequest()` without a matched route (unit tests) → `RuntimeException`.
+3. **`PerformanceSampleStoreTest`** used `assertSame(6.0, …)` but JSON decode returns int `6`.
+
+### Fix
+
+- Explicit `->constructor(get(...))` for `MetricsController`, `PerformanceGuardMiddleware`, `PerformanceIncidentService`, `SafeRemediationService`, `PerformanceAggregator`, and `PerformanceBreachStore` in `Core/Performance/Config/services.php`.
+- Extend `SettingsSchema` `permissionsAdmin` default with `git:publish,metrics:read`.
+- Wrap route-context lookup in try/catch; fall back to `sanitizePath()`.
+- Use `assertEquals` for JSON-numeric duration in ring-buffer test.
+
+### Evidence and traceability
+
+- **Log:** `alltests_050826_1643.log` — PHPUnit `Errors: 233`, `bin/console` fatal on `MetricsController`.
+- **Key files:** `backend/app/Core/Performance/Config/services.php`, `backend/app/Http/Routes/metrics.php`, `SettingsSchema.php` (`permissionsAdmin`), `PerformanceRouteLabelResolver.php`
+- **History:** [CHANGELOG](../CHANGELOG.md) `[Unreleased]` · [ITERATION_71](en/ITERATION_71.md)
+
+### Verification
+
+```bash
+./scripts/iteration-gate.sh
+APP_ENV=testing php -r "require 'vendor/autoload.php'; require 'backend/bootstrap/app.php'; echo 'OK';"
+./vendor/bin/phpunit backend/tests/Http/Controllers/Admin/MetricsControllerTest.php
+```
+
+### Ops note (existing installs)
+
+Instances that already saved **`accessControl.permissionsAdmin`** without `metrics:read` must add it in **Settings → Access control** (SUPER_ADMIN) or rely on SUPER_ADMIN role for APM API access until updated.
+

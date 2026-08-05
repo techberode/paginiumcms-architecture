@@ -117,6 +117,8 @@ use PaginiumCMS\Core\FlatFile\Services\MarkdownParser;
 use PaginiumCMS\Core\Locking\Contracts\LockManagerInterface;
 use PaginiumCMS\Core\Locking\Services\LockManager;
 use PaginiumCMS\Core\Logging\Contracts\LoggerInterface;
+use PaginiumCMS\Core\Performance\PerformanceContext;
+use PaginiumCMS\Core\Performance\Services\InstrumentedStorage;
 use PaginiumCMS\Core\Storage\StorageFactory;
 use PaginiumCMS\Core\Storage\Contracts\StorageInterface;
 use PaginiumCMS\Core\Storage\Services\EngineCapabilityProbe;
@@ -290,8 +292,12 @@ return [
     StorageInterface::class => function ($container) {
         /** @var StorageFactory $factory */
         $factory = $container->get(StorageFactory::class);
+        $inner = $factory->create(null, true);
 
-        return $factory->create(null, true);
+        return new InstrumentedStorage(
+            $inner,
+            $container->get(PerformanceContext::class)
+        );
     },
     EngineCapabilityProbe::class => create(EngineCapabilityProbe::class),
     CacheDriverFactory::class => function () {

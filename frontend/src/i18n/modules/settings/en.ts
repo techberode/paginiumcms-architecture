@@ -129,6 +129,9 @@ export const settingsEn: MessageTree = {
     "gitProbeTitle": "Git publish probe",
     "gitProbeStatus": "Git publish status",
     "gitProbeStrategy": "Configured strategy",
+    "performanceGuardTitle": "Performance Guard (APM)",
+    "performanceGuardIntro": "In-request latency and I/O sampling. Disabled by default — tune budgets for your hardware. Does not replace host metrics (It.46).",
+    "performanceGuardOverhead": "Overhead grows with sample rate; ring buffer retains the latest 500 route templates without content payloads.",
     "docsLink": "Hybrid Engine architecture documentation"
   },
   "appearance": {

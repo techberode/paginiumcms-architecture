@@ -72,6 +72,15 @@ export const dashboardSk: MessageTree = {
       fail: 'Zlyhanie',
       total: 'Spolu',
     },
+    apm: {
+      title: 'Performance Guard',
+      settingsLink: 'Nastavenia enginu →',
+      disabled: 'APM je vypnuté. Zapnite ho v Nastavenia → Engine, ak potrebujete budgety latencie.',
+      p95: 'p95',
+      errorRate: 'Chybovosť',
+      samples: 'Vzorky',
+      breaches: 'Porušenia',
+    },
     logs: {
       title: 'Logy (:hours h)',
       open: 'Otvoriť logy →',

@@ -72,6 +72,15 @@ export const dashboardEn: MessageTree = {
       fail: 'Fail',
       total: 'Total',
     },
+    apm: {
+      title: 'Performance Guard',
+      settingsLink: 'Engine settings →',
+      disabled: 'APM is disabled. Enable it under Settings → Engine when you need in-request latency budgets.',
+      p95: 'p95',
+      errorRate: 'Error rate',
+      samples: 'Samples',
+      breaches: 'Breaches',
+    },
     logs: {
       title: 'Logs (:hours h)',
       open: 'Open logs →',
