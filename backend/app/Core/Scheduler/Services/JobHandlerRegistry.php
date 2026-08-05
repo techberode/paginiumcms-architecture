@@ -7,6 +7,7 @@ namespace PaginiumCMS\Core\Scheduler\Services;
 use PaginiumCMS\Core\Scheduler\Contracts\JobHandlerInterface;
 use PaginiumCMS\Core\Scheduler\Handlers\BackupScheduledHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\ContentScheduledPublishHandler;
+use PaginiumCMS\Core\Scheduler\Handlers\GitPublishHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\MonitoringPipelineHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\SystemDeployHandler;
 use PaginiumCMS\Modules\Newsletter\Handlers\NewsletterWeeklyDigestHandler;
@@ -21,7 +22,8 @@ final class JobHandlerRegistry
         private MonitoringPipelineHandler $monitoring,
         private ContentScheduledPublishHandler $scheduledPublish,
         private SystemDeployHandler $systemDeploy,
-        private NewsletterWeeklyDigestHandler $newsletterWeeklyDigest
+        private NewsletterWeeklyDigestHandler $newsletterWeeklyDigest,
+        private GitPublishHandler $gitPublish,
     ) {
     }
 
@@ -33,6 +35,7 @@ final class JobHandlerRegistry
             'content.scheduled_publish' => $this->scheduledPublish,
             'system.deploy' => $this->systemDeploy,
             'newsletter.weekly_digest' => $this->newsletterWeeklyDigest,
+            'git.publish' => $this->gitPublish,
             default => null,
         };
     }
@@ -48,6 +51,7 @@ final class JobHandlerRegistry
             ['key' => $this->scheduledPublish->key(), 'label' => $this->scheduledPublish->label()],
             ['key' => $this->systemDeploy->key(), 'label' => $this->systemDeploy->label()],
             ['key' => $this->newsletterWeeklyDigest->key(), 'label' => $this->newsletterWeeklyDigest->label()],
+            ['key' => $this->gitPublish->key(), 'label' => $this->gitPublish->label()],
         ];
     }
 }

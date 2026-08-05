@@ -98,4 +98,12 @@ fi
 ok "Basic wiring checks passed"
 
 echo
+echo "--- Security regression pack ---"
+if ./scripts/security-regression.sh; then
+  ok "Security regression pack passed"
+else
+  fail "Security regression pack failed — fix before commit"
+fi
+
+echo
 echo -e "${GREEN}=== Iteration gate complete ===${NC}"

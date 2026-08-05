@@ -23,7 +23,6 @@ use PaginiumCMS\Core\Monitoring\Services\SchedulerStateStore;
 use PaginiumCMS\Core\Notification\NotificationService;
 use PaginiumCMS\Core\Notification\Services\IncidentNotifier;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
-use PaginiumCMS\Tests\Support\IncidentNotifierTestFactory;
 use PaginiumCMS\Core\FlatFile\Services\ContentScheduledPublishService;
 use PaginiumCMS\Core\Scheduler\Handlers\BackupScheduledHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\ContentScheduledPublishHandler;
@@ -45,6 +44,8 @@ use PaginiumCMS\Core\Scheduler\Services\JobRegistryStore;
 use PaginiumCMS\Core\Scheduler\Services\JobRunStore;
 use PaginiumCMS\Core\Scheduler\Services\ScheduledJobRunner;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
+use PaginiumCMS\Tests\Support\GitPublishTestHelper;
+use PaginiumCMS\Tests\Support\IncidentNotifierTestFactory;
 use PHPUnit\Framework\TestCase;
 
 final class ScheduledJobRunnerTest extends TestCase
@@ -86,9 +87,12 @@ final class ScheduledJobRunnerTest extends TestCase
 
         $reader = $this->createMock(FileReaderInterface::class);
         $reader->method('exists')->willReturn(false);
+        $reader->method('getBasePath')->willReturn('/tmp/paginium-test');
 
         $writer = $this->createMock(FileWriterInterface::class);
         $writer->method('write')->willThrowException(new \RuntimeException('Permission denied'));
+        $writer->method('createDirectory')->willReturnCallback(static function (): void {
+        });
 
         $registry = new JobRegistryStore($reader, $writer);
         $runs = new JobRunStore($reader, $writer, $registry);
@@ -100,7 +104,8 @@ final class ScheduledJobRunnerTest extends TestCase
             new MonitoringPipelineHandler($this->buildMonitoringScheduler()),
             new ContentScheduledPublishHandler($scheduledPublish),
             $systemDeploy,
-            new NewsletterWeeklyDigestHandler($this->makeNewsletterMailService($settings))
+            new NewsletterWeeklyDigestHandler($this->makeNewsletterMailService($settings)),
+            GitPublishTestHelper::disabledHandler($reader, $writer, $settings)
         );
 
         $runner = new ScheduledJobRunner(
@@ -122,7 +127,7 @@ final class ScheduledJobRunnerTest extends TestCase
         SettingsRepositoryInterface $settings,
         ?BackupInterface $backup = null
     ): ScheduledJobRunner {
-        [$registry, $runs] = $this->makeStores();
+        [$registry, $runs, $reader, $writer] = $this->makeStores();
 
         $backup ??= $this->createMock(BackupInterface::class);
 
@@ -135,7 +140,8 @@ final class ScheduledJobRunnerTest extends TestCase
             new MonitoringPipelineHandler($this->buildMonitoringScheduler()),
             new ContentScheduledPublishHandler($scheduledPublish),
             $systemDeploy,
-            new NewsletterWeeklyDigestHandler($this->makeNewsletterMailService($settings))
+            new NewsletterWeeklyDigestHandler($this->makeNewsletterMailService($settings)),
+            GitPublishTestHelper::disabledHandler($reader, $writer, $settings)
         );
 
         return new ScheduledJobRunner(
@@ -148,23 +154,26 @@ final class ScheduledJobRunnerTest extends TestCase
     }
 
     /**
-     * @return array{0: JobRegistryStore, 1: JobRunStore}
+     * @return array{0: JobRegistryStore, 1: JobRunStore, 2: FileReaderInterface, 3: FileWriterInterface}
      */
     private function makeStores(): array
     {
         $reader = $this->createMock(FileReaderInterface::class);
         $reader->method('exists')->willReturnCallback(fn (string $path): bool => isset($this->files[$path]));
         $reader->method('read')->willReturnCallback(fn (string $path): string => $this->files[$path] ?? '');
+        $reader->method('getBasePath')->willReturn('/tmp/paginium-test');
 
         $writer = $this->createMock(FileWriterInterface::class);
         $writer->method('write')->willReturnCallback(function (string $path, string $content): void {
             $this->files[$path] = $content;
         });
+        $writer->method('createDirectory')->willReturnCallback(static function (): void {
+        });
 
         $registry = new JobRegistryStore($reader, $writer);
         $runs = new JobRunStore($reader, $writer, $registry);
 
-        return [$registry, $runs];
+        return [$registry, $runs, $reader, $writer];
     }
 
     private function buildMonitoringScheduler(): MonitoringScheduler

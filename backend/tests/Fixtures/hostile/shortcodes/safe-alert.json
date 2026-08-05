@@ -1,0 +1,11 @@
+{
+  "name": "alert-box",
+  "version": 1,
+  "attrs": {
+    "tone": {
+      "type": "enum",
+      "options": ["info", "warn"]
+    }
+  },
+  "expand": "<div class=\"pg-alert\">{{content}}</div>"
+}

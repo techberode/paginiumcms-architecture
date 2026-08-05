@@ -136,7 +136,7 @@
 | Custom editor components | ✅ |
 | Blueprint manager | ✅ |
 | Full theme import/runtime | 🟡 |
-| Untrusted surfaces hardening | ⏳ It.67 |
+| Untrusted surfaces hardening | ✅ It.67 foundation | shortcode/theme import + CSP; 58d Monaco UI follow-up |
 | JSON Schema registry for admin writes | 🟡 | `settings.overrides@1` shipped It.68; Monaco/all document types → follow-ups |
 
 ---
@@ -167,7 +167,7 @@ The Hybrid Engine must not weaken this baseline. New drivers use the existing do
 | File/memory cache | ✅ | unify in It.69 |
 | Redis | ❌ | optional It.69 driver |
 | HTTP validators | ❌ | `ETag`/`Last-Modified` in It.69 |
-| Git publishing | 🟡 content sync only | immediate/queued in It.70 |
+| Git publishing | 🟡 foundation shipped | immediate/queued via It.70 API; UI modal + It.48 hook deferred |
 | APM | ❌ | Performance Guard in It.71 |
 | S3 media | ❌ | It.72 |
 | Multi-locale document | ❌ | It.73 |

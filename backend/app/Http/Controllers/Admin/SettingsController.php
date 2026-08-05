@@ -7,6 +7,7 @@ namespace PaginiumCMS\Http\Controllers\Admin;
 use InvalidArgumentException;
 use PaginiumCMS\Core\Cache\CacheDriverFactory;
 use PaginiumCMS\Core\Cache\Services\CacheCapabilityProbe;
+use PaginiumCMS\Core\Git\Services\GitCapabilityProbe;
 use PaginiumCMS\Core\I18n\Services\SupportedLocalesRegistry;
 use PaginiumCMS\Core\Security\SecurityLogger;
 use PaginiumCMS\Core\Layout\PageLayoutCatalog;
@@ -57,6 +58,7 @@ final class SettingsController
         private CacheCapabilityProbe $cacheProbe,
         private CacheDriverFactory $cacheFactory,
         private StorageInterface $storage,
+        private GitCapabilityProbe $gitProbe,
     ) {
     }
 
@@ -651,7 +653,7 @@ final class SettingsController
     private function buildEngineMeta(array $engineValues): array
     {
         if (($engineValues['capabilityProbeEnabled'] ?? true) !== true) {
-            return ['capabilityProbe' => null, 'cacheProbe' => null];
+            return ['capabilityProbe' => null, 'cacheProbe' => null, 'gitProbe' => null];
         }
 
         return [
@@ -660,6 +662,7 @@ final class SettingsController
                 $this->cacheFactory->create(CacheDriverFactory::driverFromEngineSettings($engineValues)),
                 $engineValues
             ),
+            'gitProbe' => $this->gitProbe->probe(),
             'documentationUrl' => '/docs/en/architecture/HYBRID_ENGINE.md',
         ];
     }

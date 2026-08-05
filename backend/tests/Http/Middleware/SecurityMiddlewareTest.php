@@ -28,6 +28,9 @@ final class SecurityMiddlewareTest extends TestCase
 
         $this->assertStringContainsString('max-age=', $response->getHeaderLine('Strict-Transport-Security'));
         $this->assertStringContainsString("default-src 'self'", $response->getHeaderLine('Content-Security-Policy'));
+        $this->assertStringContainsString("frame-ancestors 'none'", $response->getHeaderLine('Content-Security-Policy'));
+        $this->assertStringContainsString("base-uri 'self'", $response->getHeaderLine('Content-Security-Policy'));
+        $this->assertStringContainsString("form-action 'self'", $response->getHeaderLine('Content-Security-Policy'));
         $this->assertSame('DENY', $response->getHeaderLine('X-Frame-Options'));
         $this->assertSame('1; mode=block', $response->getHeaderLine('X-XSS-Protection'));
         $this->assertSame('nosniff', $response->getHeaderLine('X-Content-Type-Options'));
@@ -76,6 +79,9 @@ final class SecurityMiddlewareTest extends TestCase
             'csp_img' => "img-src 'none'",
             'csp_font' => "font-src 'none'",
             'csp_connect' => "connect-src 'none'",
+            'csp_frame_ancestors' => "frame-ancestors 'none'",
+            'csp_base_uri' => "base-uri 'none'",
+            'csp_form_action' => "form-action 'none'",
         ]);
 
         $request = (new ServerRequestFactory())->createServerRequest('GET', '/');
@@ -87,7 +93,7 @@ final class SecurityMiddlewareTest extends TestCase
         $response = $middleware->process($request, $handler);
 
         $this->assertSame(
-            "default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'",
+            "default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'",
             $response->getHeaderLine('Content-Security-Policy')
         );
     }

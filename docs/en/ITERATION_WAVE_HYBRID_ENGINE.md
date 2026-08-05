@@ -1,6 +1,6 @@
 # Hybrid Engine — implementation wave It.68–77
 
-> **Status:** It.68–69 shipped in `[Unreleased]` · next code target It.67 / It.70  
+> **Status:** It.68–70 shipped in `[Unreleased]` · next code target It.71  
 > **Checkpoint:** `v2.1.0-beta.23` · August 2, 2026  
 > **Architecture baseline:** [Hybrid Engine](architecture/HYBRID_ENGINE.md) · [No-SQL mandate](architecture/NOSQL_MANDATE.md) · [deployment modes](architecture/DEPLOYMENT_MODES.md)
 
@@ -152,4 +152,4 @@ Phase 0 for this wave is ready when:
 - AI and translation remain proposal workflows requiring explicit confirmation,
 - no planned capability is presented as implemented.
 
-**Next implementation:** [It.67](ITERATION_67.md) untrusted surfaces / [It.70](ITERATION_70.md) Git publish modes.
+**Next implementation:** [It.71](ITERATION_71.md) Performance Guard · It.70 publish UI modal (follow-up).

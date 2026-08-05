@@ -1,6 +1,6 @@
 # PaginiumCMS — consolidated backlog
 
-> **Snapshot:** `v2.1.0-beta.23` · August 2, 2026  
+> **Snapshot:** `v2.1.0-beta.27` · August 5, 2026  
 > **Rule:** the active backlog contains only unshipped or precisely bounded remaining scope  
 > **No-SQL:** [architecture/NOSQL_MANDATE.md](architecture/NOSQL_MANDATE.md)
 
@@ -26,8 +26,8 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | 1 | Complete bilingual documentation | 🔴 | ✅ | It.18 consolidation shipped; SK detail catch-up deferred |
 | 2 | **It.68** Hybrid Engine foundation | 🔴 | ✅ | shipped in `[Unreleased]` — see [ITERATION_68](ITERATION_68.md) |
 | 3 | **It.69** Unified cache + Redis + HTTP validators | 🔴 | ✅ | shipped in `[Unreleased]` — see [ITERATION_69](ITERATION_69.md) |
-| 4 | **It.67** Untrusted surfaces hardening | 🔴 | ⏳ | imports, shortcodes, Monaco, themes, CSP |
-| 5 | **It.70** Git publish modes | 🟡 | ⏳ | immediate/queued distribution |
+| 4 | **It.67** Untrusted surfaces hardening | 🔴 | ✅ | shortcodes, themes, CSP, hostile fixtures — see [ITERATION_67](ITERATION_67.md) |
+| 5 | **It.70** Git publish modes | 🟡 | ✅ | local publisher + queued/immediate API — see [ITERATION_70](ITERATION_70.md) |
 | 6 | **It.71** Performance Guard | 🟡 | ⏳ | APM and safe fallbacks |
 | 7 | **It.72** Media drivers | 🟡 | ⏳ | local + S3/CDN |
 | 8 | **It.73** Multi-locale document | 🟡 | ⏳ | translation foundation |
@@ -63,14 +63,14 @@ See [ITERATION_68.md](ITERATION_68.md) and [ISS-121–123](../ISSUES.md#iss-121)
 
 See [ITERATION_69](ITERATION_69.md).
 
-### It.70 — Git publishing 🟡
+### It.70 — Git publishing ✅ (foundation)
 
-- immediate and queued strategies,
-- commit metadata and audit,
-- retry/idempotency,
-- outbound/network policy,
-- build/deployment webhook as a separate step,
-- alignment with It.48 static rendering.
+- local `immediate` and `queued` strategies via `GitPublishService`,
+- flat-file publish queue and `git.publish` scheduler handler,
+- admin API + `git:publish` permission; SSOT write hook without rollback on Git failure,
+- `github_api` publisher and full publish UI modal → deferred follow-up.
+
+See [ITERATION_70](ITERATION_70.md).
 
 ### It.71 — Performance Guard 🟡
 

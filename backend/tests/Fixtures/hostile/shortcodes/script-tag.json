@@ -1,0 +1,6 @@
+{
+  "name": "evil-script",
+  "version": 1,
+  "attrs": {},
+  "expand": "<script>alert(1)</script>"
+}

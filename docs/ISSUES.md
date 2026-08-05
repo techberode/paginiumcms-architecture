@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 3 August 2026 · register **ISS-001–ISS-123** · It.68 foundation in `[Unreleased]`
+> **Last updated:** 5 August 2026 · register **ISS-001–ISS-124** · It.67 + It.68 foundation in `[Unreleased]`
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -146,6 +146,7 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-121](#iss-121) | Invalid settings group shapes were silently dropped during normalization | Medium (data integrity) | ✅ **`[Unreleased]`** · It.68 fail-closed validation |
 | [ISS-122](#iss-122) | Storage read path did not enforce base-path containment (symlink escape) | Medium (security) | ✅ **`[Unreleased]`** · It.68 `LocalFlatFileStorage` |
 | [ISS-123](#iss-123) | Corrupt `settings.testing.json` leaked between HTTP PHPUnit tests | Low (tests) | ✅ **`[Unreleased]`** · `Http/TestCase` reset |
+| [ISS-124](#iss-124) | CSP retains `style-src 'unsafe-inline'` for React inline styles | Low (documented residual) | ℹ️ It.67 inventory · no script unsafe-inline |
 
 ## CI failures (GitHub Actions)
 
@@ -3537,4 +3538,32 @@ The initial It.68 `LocalFlatFileStorage` implementation called `assertWithinBase
 
 ```bash
 ./vendor/bin/phpunit backend/tests/Http/Controllers/Admin/SettingsControllerEngineTest.php
+```
+
+---
+
+<a id="iss-124"></a>
+
+## ISS-124 – CSP retains `style-src 'unsafe-inline'` for React inline styles
+
+[↑ Overview](#overview)
+
+**Severity:** Low (documented residual risk)  
+**Status:** ℹ️ Accepted · It.67 CSP inventory  
+**Iteration:** [It.67](en/ITERATION_67.md)
+
+### Operational synopsis
+
+`SecurityMiddleware` ships without `script-src 'unsafe-inline'` (XSS hardening). `style-src 'unsafe-inline'` remains required for React inline `style={{…}}` attributes and some third-party components. It.67 added `frame-ancestors 'none'`, `base-uri 'self'`, and `form-action 'self'` to the active middleware CSP. Tightening `style-src` requires a UI regression pass across admin and public surfaces.
+
+### Evidence and traceability
+
+- **Key technical identifiers:** `SecurityMiddleware`, `docs/deploy/NGINX_API.md`
+- **History:** [CHANGELOG](../CHANGELOG.md) `[Unreleased]` It.67
+
+### Verification or operational excerpts
+
+```bash
+curl -sI http://localhost:8080/api/settings/public | grep -i content-security-policy
+# Expect: script-src 'self' (no unsafe-inline); style-src 'self' 'unsafe-inline'
 ```

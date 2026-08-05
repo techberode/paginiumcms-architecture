@@ -34,6 +34,9 @@ final class SecurityMiddleware implements MiddlewareInterface
             'csp_img' => "img-src 'self' data: https:",
             'csp_font' => "font-src 'self' data:",
             'csp_connect' => "connect-src 'self'",
+            'csp_frame_ancestors' => "frame-ancestors 'none'",
+            'csp_base_uri' => "base-uri 'self'",
+            'csp_form_action' => "form-action 'self'",
             'frame_options' => 'DENY',
             'xss_protection' => '1; mode=block',
             'content_type' => 'nosniff',
@@ -83,6 +86,9 @@ final class SecurityMiddleware implements MiddlewareInterface
             $this->config['csp_img'],
             $this->config['csp_font'],
             $this->config['csp_connect'],
+            $this->config['csp_frame_ancestors'],
+            $this->config['csp_base_uri'],
+            $this->config['csp_form_action'],
         ]);
         $response = $response->withHeader('Content-Security-Policy', $csp);
 

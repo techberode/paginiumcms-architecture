@@ -10,8 +10,8 @@ icon: material/history
 
 | Field | Value |
 |---|---|
-| Status | ⏳ Planned |
-| Release / period | bez samostatného release |
+| Status | ✅ Shipped (foundation) |
+| Release / period | `v2.1.0-beta.27` |
 | Record type | historical security backlog record |
 
 ## Goal
@@ -34,4 +34,4 @@ The source is an open plan with no release. It depends on [It.66](ITERATION_66.m
 
 ## Current interpretation
 
-It.67 remains active security backlog. Its phases should ship with the corresponding product surface, especially 58d, so no functional Monaco save path exists without policy wiring.
+It.67 foundation is shipped: shortcode save/preview/registry, theme ZIP import with policy parity, CSP hardening, and hostile fixture regression pack. Full 58d Monaco UI and public shortcode render remain follow-ups.

@@ -1,0 +1,6 @@
+{
+  "name": "bad-class",
+  "version": 1,
+  "attrs": {},
+  "expand": "<div class=\"malicious\">x</div>"
+}
