@@ -20,6 +20,8 @@ export const dashboardSk: MessageTree = {
     unreadMessages: 'Neprečítané správy',
     media: 'Médiá',
     diskFree: 'Voľné miesto na disku',
+    demoStorageFree: 'Voľné miesto v demo sandboxe',
+    demoStorageQuota: 'z kvóty {quota}',
     realtimeVisitors: 'Realtime návštevníci',
     activeLocks: 'Aktívne zámky',
     conflicts: 'Konflikty',

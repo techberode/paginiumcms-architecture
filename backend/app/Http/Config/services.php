@@ -210,6 +210,7 @@ use PaginiumCMS\Modules\Demo\Commands\RunDemoResetCommand;
 use PaginiumCMS\Modules\Demo\Services\DemoDataProvider;
 use PaginiumCMS\Modules\Demo\Services\DemoLoginGuard;
 use PaginiumCMS\Modules\Demo\Services\DemoMode;
+use PaginiumCMS\Modules\Demo\Services\DemoStorageQuotaService;
 use PaginiumCMS\Modules\Demo\Services\DemoResetScheduler;
 use PaginiumCMS\Modules\Demo\Services\DemoStorageService;
 use PaginiumCMS\Modules\Security\Services\AclRepository;
@@ -957,8 +958,10 @@ return [
 
     // === Blok: Health checks (Iteration 7) ===
     SystemChecker::class => create(SystemChecker::class),
+    DemoStorageQuotaService::class => create(DemoStorageQuotaService::class)
+        ->constructor(get(DemoMode::class)),
     StorageChecker::class => create(StorageChecker::class)
-        ->constructor(dirname(__DIR__, 3) . '/storage'),
+        ->constructor(dirname(__DIR__, 3) . '/storage', get(DemoStorageQuotaService::class)),
     CacheChecker::class => create(CacheChecker::class)
         ->constructor(get(CacheManager::class)),
     SecurityChecker::class => create(SecurityChecker::class),

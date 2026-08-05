@@ -39,6 +39,7 @@ APP_URL=https://demo.paginiumcms.com
 DEMO_PUBLIC_URL=https://demo.paginiumcms.com
 VITE_PUBLIC_URL=https://demo.paginiumcms.com
 DEMO_AUTO_RESET_MINUTES=60
+# DEMO_STORAGE_QUOTA_BYTES=2147483648  # synthetic dashboard quota (default 2 GiB; never exposes host disk)
 SESSION_LIFETIME=14400
 ```
 

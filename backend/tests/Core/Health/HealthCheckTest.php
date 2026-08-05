@@ -7,6 +7,8 @@ namespace PaginiumCMS\Tests\Core\Health;
 use PaginiumCMS\Core\Health\Services\HealthCheckManager;
 use PaginiumCMS\Core\Health\Services\Checkers\SystemChecker;
 use PaginiumCMS\Core\Health\Services\Checkers\StorageChecker;
+use PaginiumCMS\Modules\Demo\Services\DemoMode;
+use PaginiumCMS\Modules\Demo\Services\DemoStorageQuotaService;
 use PHPUnit\Framework\TestCase;
 
 class HealthCheckTest extends TestCase
@@ -32,7 +34,7 @@ class HealthCheckTest extends TestCase
     public function testRunAllChecks(): void
     {
         $this->manager->addCheck(new SystemChecker());
-        $this->manager->addCheck(new StorageChecker(__DIR__ . '/../../../storage'));
+        $this->manager->addCheck($this->storageChecker());
 
         $report = $this->manager->run();
 
@@ -59,10 +61,15 @@ class HealthCheckTest extends TestCase
     public function testGetGroups(): void
     {
         $this->manager->addCheck(new SystemChecker());
-        $this->manager->addCheck(new StorageChecker(__DIR__ . '/../../../storage'));
+        $this->manager->addCheck($this->storageChecker());
 
         $groups = $this->manager->getGroups();
         $this->assertArrayHasKey('system', $groups);
         $this->assertArrayHasKey('storage', $groups);
+    }
+
+    private function storageChecker(): StorageChecker
+    {
+        return new StorageChecker(__DIR__ . '/../../../storage', new DemoStorageQuotaService(new DemoMode()));
     }
 }
