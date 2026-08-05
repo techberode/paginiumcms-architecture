@@ -9,6 +9,7 @@ export type SettingFieldType =
   | 'string'
   | 'text'
   | 'int'
+  | 'float'
   | 'bool'
   | 'email'
   | 'url'

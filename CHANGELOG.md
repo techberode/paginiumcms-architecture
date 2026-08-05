@@ -115,6 +115,10 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **`permissionsAdmin` default** — add `metrics:read` and `git:publish` so settings-backed ACL matches `PermissionCatalog` (ADMIN APM API was 403).
 - **`PerformanceRouteLabelResolver`** — catch missing Slim route context and fall back to sanitized path (unit tests + pre-routing).
 - **`PerformanceSampleStoreTest`** — JSON round-trip compares duration with `assertEquals` (int vs float).
+
+### Fixed
+
+- **Engine settings save with Performance Guard ([ISS-128](docs/ISSUES.md#iss-128))** — `performanceGuardSampleRate` (`float`) had no FE input and Zod treated `number` rules as string length; added `float` field type, numeric Zod validation, and aligned schema rule `numeric` → `number`.
 - **`ContentScheduledPublishServiceTest`** — OTP skip test asserts only the created slug (full-suite shared storage isolation); restores `workflows` settings in `finally`.
 
 ### Fixed

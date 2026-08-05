@@ -48,4 +48,13 @@ describe('zodFromRules', () => {
     expect(schema.safeParse({ port: 0 }).success).toBe(false);
     expect(schema.safeParse({ port: 70000 }).success).toBe(false);
   });
+
+  it('validates optional number (float) with min and max', () => {
+    const schema = zodFromRules({ performanceGuardSampleRate: ['number', 'min:0', 'max:1'] });
+
+    expect(schema.safeParse({ performanceGuardSampleRate: 1.0 }).success).toBe(true);
+    expect(schema.safeParse({ performanceGuardSampleRate: 0.5 }).success).toBe(true);
+    expect(schema.safeParse({ performanceGuardSampleRate: 1.5 }).success).toBe(false);
+    expect(schema.safeParse({ performanceGuardSampleRate: -0.1 }).success).toBe(false);
+  });
 });
