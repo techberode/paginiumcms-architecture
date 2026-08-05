@@ -1,6 +1,6 @@
 # Iterácia 71 — Performance Guard (aplikačné APM)
 
-> **Stav:** ⏳ plánované  
+> **Stav:** ✅ dodané (2026-08-05)  
 > **Priorita:** 🟡  
 > **Vlna:** [Hybrid Engine HE-4](ITERATION_WAVE_HYBRID_ENGINE.md)  
 > **Závisí od:** [It.69](ITERATION_69.md)  
@@ -135,13 +135,13 @@ Guard **nesmie automaticky zapnúť Redis**, ak neexistuje platná a overená Re
 
 ## Definition of Done
 
-- [ ] Staging zobrazuje p95 a breach trend bez content payloadov.
-- [ ] Umelo spomalená test route vytvorí deduplikovaný incident.
-- [ ] Default je `enabled=false`, `remediationMode=suggest`.
-- [ ] Automatic režim má capability gate, cooldown, rollback a audit.
-- [ ] Redis sa nikdy nezapne bez overenej konfigurácie.
-- [ ] It.46 a It.71 majú jasne oddelenú zodpovednosť.
-- [ ] Retencia, privacy a runbook sú v SK/EN dokumentácii.
+- [x] Staging zobrazuje p95 a breach trend bez content payloadov.
+- [x] Umelo spomalená test route vytvorí deduplikovaný incident.
+- [x] Default je `enabled=false`, `remediationMode=suggest`.
+- [x] Automatic režim má capability gate, cooldown, rollback a audit.
+- [x] Redis sa nikdy nezapne bez overenej konfigurácie.
+- [x] It.46 a It.71 majú jasne oddelenú zodpovednosť.
+- [x] Retencia, privacy a runbook sú v SK/EN dokumentácii.
 
 ## Súvisiace
 

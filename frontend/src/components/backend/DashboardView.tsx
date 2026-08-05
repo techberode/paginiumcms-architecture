@@ -19,10 +19,12 @@ import { useToast } from '../../hooks/useToast';
 import { useAdminListQuery } from '../../hooks/useAdminListQuery';
 import { queryKeys } from '../../api/queryKeys';
 import { getDashboardOverview, DashboardOverview } from '../../api/dashboard';
+import { getApmOverview, ApmOverview } from '../../api/metrics';
 import { AnalyticsChart } from '../dashboard/AnalyticsChart';
 import { LocksPanel } from '../dashboard/LocksPanel';
 import { ConflictsPanel } from '../dashboard/ConflictsPanel';
 import { HealthPanel } from '../dashboard/HealthPanel';
+import { PerformanceGuardPanel } from '../dashboard/PerformanceGuardPanel';
 import { LogsPanel } from '../dashboard/LogsPanel';
 import { DashboardActivityPanel } from '../dashboard/DashboardActivityPanel';
 import { DashboardDiskStructurePanel } from '../dashboard/DashboardDiskStructurePanel';
@@ -42,6 +44,7 @@ interface ContentStats {
 interface DashboardData {
   stats: ContentStats;
   overview: DashboardOverview | null;
+  apm: ApmOverview | null;
 }
 
 function formatStorageQuotaLabel(bytes: number): string {
@@ -67,7 +70,7 @@ export const DashboardView: React.FC = () => {
     queryKey: queryKeys.dashboard.stats,
     queryFn: async () => {
       try {
-        const [pagesRes, articlesRes, mediaRes, usersRes, backupsRes, auditRes, monitoring] =
+        const [pagesRes, articlesRes, mediaRes, usersRes, backupsRes, auditRes, monitoring, apm] =
           await Promise.all([
             get('/api/pages'),
             get('/api/articles'),
@@ -76,6 +79,7 @@ export const DashboardView: React.FC = () => {
             get<unknown[]>('/api/admin/backups'),
             get<{ recent_events?: Array<Record<string, unknown>> }>('/api/admin/audit/stats'),
             getDashboardOverview(),
+            getApmOverview(),
           ]);
 
         return {
@@ -97,6 +101,7 @@ export const DashboardView: React.FC = () => {
             recentActivity: auditRes.success ? auditRes.data?.recent_events || [] : [],
           },
           overview: monitoring,
+          apm,
         };
       } catch (error) {
         toast.error(t('dashboard.toast.loadFailed'));
@@ -116,6 +121,7 @@ export const DashboardView: React.FC = () => {
     recentActivity: [],
   };
   const overview = data?.overview ?? null;
+  const apm = data?.apm ?? null;
 
   const analytics = overview?.analytics;
   const counts = overview?.counts;
@@ -288,15 +294,17 @@ export const DashboardView: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <HealthPanel health={overview?.health ?? null} loading={false} />
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">{t('dashboard.chart.title')}</h2>
-            <Link to="/analytics" className="text-sm text-indigo-600 hover:underline">
-              {t('dashboard.chart.analyticsLink')}
-            </Link>
-          </div>
-          <AnalyticsChart data={analytics?.chart ?? []} loading={false} />
+        <PerformanceGuardPanel overview={apm} loading={false} />
+      </div>
+
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">{t('dashboard.chart.title')}</h2>
+          <Link to="/analytics" className="text-sm text-indigo-600 hover:underline">
+            {t('dashboard.chart.analyticsLink')}
+          </Link>
         </div>
+        <AnalyticsChart data={analytics?.chart ?? []} loading={false} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

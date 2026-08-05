@@ -129,6 +129,9 @@ export const settingsSk: MessageTree = {
     "gitProbeTitle": "Git publish — diagnostika",
     "gitProbeStatus": "Stav Git publish",
     "gitProbeStrategy": "Nastavená stratégia",
+    "performanceGuardTitle": "Performance Guard (APM)",
+    "performanceGuardIntro": "Meranie latencie a I/O v rámci requestu. Predvolene vypnuté — budgety nastavte podľa vlastného hardvéru. Nenahrádza host metriky (It.46).",
+    "performanceGuardOverhead": "Overhead rastie so sample rate; ring buffer drží posledných 500 route šablón bez content payloadov.",
     "docsLink": "Dokumentácia Hybrid Engine architektúry"
   },
   "appearance": {

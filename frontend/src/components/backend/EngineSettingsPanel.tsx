@@ -94,6 +94,12 @@ export const EngineSettingsPanel: React.FC<Props> = ({ meta }) => {
         </>
       ) : null}
 
+      <h5 className="mt-4 text-sm font-semibold text-gray-900 dark:text-white">
+        {t('settings.engine.performanceGuardTitle')}
+      </h5>
+      <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">{t('settings.engine.performanceGuardIntro')}</p>
+      <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">{t('settings.engine.performanceGuardOverhead')}</p>
+
       <ul className="mt-4 space-y-2 text-sm">
         {Object.entries(probe.capabilities).map(([key, row]) => (
           <li key={key} className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:gap-2">

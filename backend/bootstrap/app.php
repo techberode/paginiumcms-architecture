@@ -21,6 +21,7 @@ use PaginiumCMS\Http\Middleware\LocaleMiddleware;
 use PaginiumCMS\Http\Middleware\MaintenanceModeMiddleware;
 use PaginiumCMS\Http\Middleware\FirewallMiddleware;
 use PaginiumCMS\Http\Middleware\CsrfMiddleware;
+use PaginiumCMS\Http\Middleware\PerformanceGuardMiddleware;
 use PaginiumCMS\Http\Middleware\RequestLoggingMiddleware;
 use PaginiumCMS\Support\AppVersion;
 
@@ -544,6 +545,11 @@ if (is_array($monitoringServices)) {
     $containerBuilder->addDefinitions($monitoringServices);
 }
 
+$performanceServices = require __DIR__ . '/../app/Core/Performance/Config/services.php';
+if (is_array($performanceServices)) {
+    $containerBuilder->addDefinitions($performanceServices);
+}
+
 $schedulerServices = require __DIR__ . '/../app/Core/Scheduler/Config/services.php';
 if (is_array($schedulerServices)) {
     $containerBuilder->addDefinitions($schedulerServices);
@@ -882,6 +888,7 @@ if (DebugEventLogger::isEnabled()) {
     $app->add(new DebugRequestMiddleware());
 }
 
+$app->add($container->get(PerformanceGuardMiddleware::class));
 $app->add($container->get(RequestLoggingMiddleware::class));
 
 if (DebugEventLogger::isEnabled()) {

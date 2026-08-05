@@ -32,6 +32,7 @@ export * from './logs';
 export * from './maintenance';
 export * from './media';
 export * from './messages';
+export * from './metrics';
 export * from './navigation';
 export * from './newsletter';
 export * from './notifications';

@@ -101,6 +101,22 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+### Added (Iteration 71)
+
+- **Performance Guard (APM):** in-request latency/memory/I/O sampling via `PerformanceGuardMiddleware`; bounded ring buffer (`data/metrics/apm-samples.json`), breach incidents (`apm-breaches.json`), `PerformanceAggregator` (p50/p95/p99, error rate), `SafeRemediationService` (`suggest` default; `automatic` = allow-listed content cache purge only after capability probe — never auto-enables Redis).
+- **Settings → Engine:** `performanceGuardEnabled` (default `false`), sample rate, latency budgets, breach window, remediation mode.
+- **Admin API:** `GET /api/admin/metrics/apm`, `POST /api/admin/metrics/apm/clear` with `metrics:read` permission.
+- **Dashboard:** Performance Guard panel (p95, error rate, samples, breaches); Engine settings panel slice with overhead/retention help.
+- FE: `frontend/src/api/metrics.ts`; PHPUnit coverage for route sanitization, aggregator, ring buffer, middleware fast path, remediation gates, MetricsController.
+
+### Fixed (Iteration 71 hotfix)
+
+- **Performance Guard DI wiring ([ISS-127](docs/ISSUES.md#iss-127))** — explicit PHP-DI constructors in `Core/Performance/Config/services.php` for `MetricsController`, middleware, and related services (autowiring off → 233 PHPUnit errors + `bin/console` fatal).
+- **`permissionsAdmin` default** — add `metrics:read` and `git:publish` so settings-backed ACL matches `PermissionCatalog` (ADMIN APM API was 403).
+- **`PerformanceRouteLabelResolver`** — catch missing Slim route context and fall back to sanitized path (unit tests + pre-routing).
+- **`PerformanceSampleStoreTest`** — JSON round-trip compares duration with `assertEquals` (int vs float).
+- **`ContentScheduledPublishServiceTest`** — OTP skip test asserts only the created slug (full-suite shared storage isolation); restores `workflows` settings in `finally`.
+
 ### Fixed
 
 - **PHPUnit DEMO_MODE isolation ([ISS-125](docs/ISSUES.md#iss-125))** — force `DEMO_MODE=false` in `phpunit.xml` and `tests/bootstrap.php`; demo HTTP tests restore env and re-bootstrap in `try/finally`; `Http/TestCase` syncs `$_SERVER`, purges OTP challenges, adds `enableWorkflows()`; OTP and SystemUpdate tests assert prerequisites.

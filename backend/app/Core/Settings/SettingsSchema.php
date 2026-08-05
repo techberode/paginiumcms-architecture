@@ -214,6 +214,13 @@ final class SettingsSchema
                     ['key' => 'gitBranch', 'type' => 'string', 'label' => 'Git branch', 'default' => 'main', 'rules' => ['string', 'max:100'], 'help' => 'Allow-listed branch name for optional push.'],
                     ['key' => 'gitPushEnabled', 'type' => 'bool', 'label' => 'Push after commit', 'default' => false, 'rules' => ['bool'], 'help' => 'When enabled, successful commits attempt git push to configured remote/branch.'],
                     ['key' => 'gitCommitMessageTemplate', 'type' => 'string', 'label' => 'Commit message template', 'default' => 'content: publish {count} change(s)', 'rules' => ['required', 'string', 'max:200'], 'help' => 'Use {count} placeholder for number of staged files.'],
+                    ['key' => 'performanceGuardEnabled', 'type' => 'bool', 'label' => 'Enable Performance Guard (APM)', 'default' => false, 'rules' => ['bool'], 'help' => 'Iteration 71: lightweight in-request latency and I/O sampling. Disabled by default.'],
+                    ['key' => 'performanceGuardSampleRate', 'type' => 'float', 'label' => 'APM sample rate', 'default' => 1.0, 'rules' => ['numeric', 'min:0', 'max:1'], 'help' => '1.0 = every request when enabled; lower values reduce overhead.'],
+                    ['key' => 'performanceGuardLatencyMsWarning', 'type' => 'int', 'label' => 'Latency warning (ms)', 'default' => 200, 'rules' => ['required', 'int', 'min:50', 'max:60000']],
+                    ['key' => 'performanceGuardLatencyMsCritical', 'type' => 'int', 'label' => 'Latency critical (ms)', 'default' => 500, 'rules' => ['required', 'int', 'min:100', 'max:120000']],
+                    ['key' => 'performanceGuardBreachCount', 'type' => 'int', 'label' => 'Breaches before incident', 'default' => 3, 'rules' => ['required', 'int', 'min:1', 'max:100']],
+                    ['key' => 'performanceGuardWindowMinutes', 'type' => 'int', 'label' => 'Breach window (minutes)', 'default' => 10, 'rules' => ['required', 'int', 'min:1', 'max:1440']],
+                    ['key' => 'performanceGuardRemediationMode', 'type' => 'enum', 'label' => 'Remediation mode', 'default' => 'suggest', 'options' => ['off', 'suggest', 'automatic'], 'rules' => ['required', 'in:off,suggest,automatic'], 'help' => 'suggest = incidents only; automatic = allow-listed cache purge after capability probe (never enables Redis).'],
                 ],
             ],
             'comments' => [
@@ -387,7 +394,7 @@ final class SettingsSchema
                 'fields' => [
                     ['key' => 'pathAclEnabled', 'type' => 'bool', 'label' => 'Povoliť path ACL', 'default' => false, 'rules' => ['bool'], 'help' => 'Obmedzí prístup k vybraným cestám flat-file obsahu podľa rolí alebo oprávnení.'],
                     ['key' => 'pathAclRulesJson', 'type' => 'text', 'label' => 'Path ACL pravidlá (JSON)', 'default' => '[]', 'rules' => ['string', 'max:50000'], 'help' => 'Spravované cez vizuálny editor v administrácii.'],
-                    ['key' => 'permissionsAdmin', 'type' => 'text', 'label' => 'Oprávnenia ADMIN', 'default' => 'user:manage,content:manage,media:manage,settings:manage,gallery:manage,logs:view', 'rules' => ['required', 'string', 'max:5000']],
+                    ['key' => 'permissionsAdmin', 'type' => 'text', 'label' => 'Oprávnenia ADMIN', 'default' => 'user:manage,content:manage,media:manage,settings:manage,git:publish,gallery:manage,logs:view,metrics:read', 'rules' => ['required', 'string', 'max:5000']],
                     ['key' => 'permissionsEditor', 'type' => 'text', 'label' => 'Oprávnenia EDITOR', 'default' => 'content:create,content:edit,content:delete,media:upload,media:delete', 'rules' => ['required', 'string', 'max:5000']],
                     ['key' => 'permissionsUser', 'type' => 'text', 'label' => 'Oprávnenia USER', 'default' => 'content:view,profile:edit', 'rules' => ['required', 'string', 'max:5000']],
                 ],
