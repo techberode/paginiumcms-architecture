@@ -13,6 +13,7 @@ use PaginiumCMS\Core\FlatFile\Models\Content;
 use PaginiumCMS\Core\FlatFile\Models\Page;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Core\FlatFile\Exception\FileNotFoundException;
+use PaginiumCMS\Core\Git\Services\GitPublishDispatcher;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\Storage\Contracts\StorageInterface;
 use PaginiumCMS\Http\Support\PaginationQuery;
@@ -39,6 +40,7 @@ class ContentRepository implements ContentRepositoryInterface
         private JsonContentStorage $jsonStorage,
         private SettingsRepositoryInterface $settings,
         private StorageInterface $storageLayer,
+        private GitPublishDispatcher $gitPublishDispatcher,
     ) {
     }
 
@@ -208,6 +210,12 @@ class ContentRepository implements ContentRepositoryInterface
             $this->storageLayer->write($path, $serialized, true);
         } else {
             $this->writer->write($path, $serialized, true);
+        }
+
+        try {
+            $this->gitPublishDispatcher->afterContentStored($path, $serialized);
+        } catch (\Throwable) {
+            // SSOT write succeeded; Git distribution failures are handled separately.
         }
 
         $info = $this->reader->getInfo($path);

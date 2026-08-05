@@ -126,6 +126,9 @@ export const settingsEn: MessageTree = {
     "cacheProbeTitle": "Cache layer probe",
     "cacheDriver": "Cache driver",
     "cacheHealth": "Cache health",
+    "gitProbeTitle": "Git publish probe",
+    "gitProbeStatus": "Git publish status",
+    "gitProbeStrategy": "Configured strategy",
     "docsLink": "Hybrid Engine architecture documentation"
   },
   "appearance": {

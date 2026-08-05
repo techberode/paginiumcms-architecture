@@ -10,6 +10,7 @@ use PaginiumCMS\Core\CodeEditor\Services\FileBackup;
 use PaginiumCMS\Core\CodeEditor\Services\SyntaxChecker;
 use PaginiumCMS\Core\CodePolicy\Services\CodePolicyEngine;
 use PaginiumCMS\Core\CodePolicy\Services\SecurityScanner;
+use PaginiumCMS\Core\CodePolicy\Services\ShortcodeDefinitionPolicy;
 use PaginiumCMS\Core\Config\ConfigManager;
 use PaginiumCMS\Core\Developer\DeveloperMode;
 use PaginiumCMS\Core\Developer\DeveloperModeGate;
@@ -85,6 +86,8 @@ final class CodeEditorManagerTest extends TestCase
             'backend/app/Http/Extensions',
             'backend/resources/views/themes',
             'backend/config',
+            'data/shortcodes/definitions',
+            'data/layout',
         ]);
     }
 
@@ -142,6 +145,7 @@ final class CodeEditorManagerTest extends TestCase
             new FileBackup($this->projectRoot),
             $logger,
             $policy,
+            new ShortcodeDefinitionPolicy(),
             $this->projectRoot
         );
     }

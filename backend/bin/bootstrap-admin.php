@@ -30,7 +30,7 @@ if ($existing !== []) {
     exit(0);
 }
 
-$email = trim((string) (getenv('FIRST_ADMIN_EMAIL') ?: 'admin@localhost'));
+$email = trim((string) (getenv('FIRST_ADMIN_EMAIL') ?: 'admin@paginium.local'));
 $password = (string) (getenv('FIRST_ADMIN_PASSWORD') ?: 'Admin123!ChangeMe');
 $name = trim((string) (getenv('FIRST_ADMIN_NAME') ?: 'Administrator'));
 

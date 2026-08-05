@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.27`](#release-2-1-0-beta-27) | 2026-08-05 | Untrusted surfaces hardening (It.67) and Git publish modes (It.70) |
 | [`2.1.0-beta.26`](#release-2-1-0-beta-26) | 2026-08-03 | Unified cache, HTTP ETag/304 validators, audit hardening |
 | [`2.1.0-beta.23`](#release-2-1-0-beta-23) | 2026-07-30 | Layout Switch, layout settings, preview frame and page templates |
 | [`2.1.0-beta.22`](#release-2-1-0-beta-22) | 2026-07-30 | Security write-time gates and Feature Gallery Phase 3 |
@@ -99,6 +100,45 @@ This canonical history records release facts supported by the supplied `CHANGELO
 | [`1.0.0`](#release-1-0-0) | Initial structure | Initial repository structure |
 
 ## [Unreleased]
+
+<a id="release-2-1-0-beta-27"></a>
+
+## [2.1.0-beta.27] – 2026-08-05
+
+Untrusted surfaces hardening and Git publish distribution (Iterations 67 + 70)
+
+### Added (Iteration 67)
+
+- **Shortcode definitions (67a):** `ShortcodeDefinitionManager`, flat-file registry under `data/shortcodes/definitions/`, admin API (`GET/PUT/DELETE /api/admin/shortcodes`, `POST /api/admin/shortcodes/preview`); `ShortcodeDefinitionPolicy` on API save and Code Editor paths.
+- **Theme ZIP import (67b):** `ThemeImporter`, `ThemeManifestValidator`, `ThemeRegistry`; shared `UntrustedPolicyScanner` (plugin parity); admin API (`GET/POST /api/admin/themes/import`, `DELETE /api/admin/themes/{id}`).
+- **CSP hygiene (67c):** `SecurityMiddleware` adds `frame-ancestors 'none'`, `base-uri 'self'`, and `form-action 'self'`; residual `style-src 'unsafe-inline'` documented as [ISS-124](docs/ISSUES.md#iss-124).
+- **Hostile corpus (67d):** fixtures under `backend/tests/Fixtures/hostile/`; `scripts/security-regression.sh` extended and wired into `scripts/iteration-gate.sh`.
+- FE typed clients: `frontend/src/api/shortcodes.ts`, `frontend/src/api/themes.ts`; smoke script `scripts/smoke-it67.sh`.
+
+### Added (Iteration 70)
+
+- **Git publish modes:** `disabled` (Classic default), `immediate`, and `queued` strategies via `engine.git*` settings (`gitEnabled`, `gitPublishStrategy`, `gitPublisher`, `gitRepositoryPath`, `gitRemote`, `gitBranch`, `gitPushEnabled`, `gitCommitMessageTemplate`).
+- Core: `GitPublishService`, `LocalGitPublisher`, `PublishQueueStore` (`data/git/publish-queue.json`), `PublishPlanner`, `GitPublishDispatcher`, `GitPathValidator`, `GitCapabilityProbe`.
+- Scheduler: `git.publish` job via `GitPublishHandler`.
+- Admin API: `GET /api/admin/git/status`, `GET /api/admin/git/publish/preview`, `POST /api/admin/git/publish`, `POST /api/admin/git/publish/{jobId}/retry` (`git:publish` permission, ADMIN default).
+- Content SSOT writes hook through `GitPublishDispatcher` — Git failure does not roll back stored content.
+- FE: `frontend/src/api/git.ts`; Engine settings panel shows `gitProbe` (SK/EN).
+- Tests: `GitPublishServiceTest`, `GitPublishTestHelper`; smoke script `scripts/smoke-it70.sh`.
+
+### Fixed
+
+- **Bootstrap admin email** — default `admin@paginium.local` in `bootstrap-admin.php`, `.env.example`, and `scripts/first-run.sh` (PHP 8.5 rejects `admin@localhost` before password check).
+- **`PluginPolicyScanner`** — delegates to shared `UntrustedPolicyScanner` (no duplicate scan logic).
+
+### Documentation
+
+- [docs/en/ITERATION_67.md](docs/en/ITERATION_67.md), [docs/en/ITERATION_70.md](docs/en/ITERATION_70.md), backlog and Hybrid Engine wave updated; [ISS-124](docs/ISSUES.md#iss-124) for CSP residual risk.
+
+### Release facts
+
+- **Categories:** Added, Fixed, Documentation, Security
+- **Technical identifiers:** `ShortcodeDefinitionManager`, `ThemeImporter`, `UntrustedPolicyScanner`, `GitPublishService`, `GitPublishDispatcher`, `git:publish`, `AppVersion`
+- **Deferred follow-ups:** It.70 `github_api` publisher, publish release modal UI, It.48 static render hook; It.71 Performance Guard → next release
 
 <a id="release-2-1-0-beta-26"></a>
 

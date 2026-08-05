@@ -17,6 +17,7 @@ use PaginiumCMS\Core\Validation\Validator;
 use PaginiumCMS\Http\Extensions\Services\ExtensionManifestValidator;
 use PaginiumCMS\Http\Extensions\Services\PluginImporter;
 use PaginiumCMS\Http\Extensions\Services\PluginManager;
+use PaginiumCMS\Core\CodePolicy\Services\UntrustedPolicyScanner;
 use PaginiumCMS\Http\Extensions\Services\PluginPolicyScanner;
 use PaginiumCMS\Http\Extensions\Services\PluginRegistry;
 use PaginiumCMS\Support\JsonHelper;
@@ -48,7 +49,9 @@ final class PluginImporterTest extends TestCase
         $reader = new FileReader($validator);
         $writer = new FileWriter($validator);
         $registry = new PluginRegistry($reader, $writer, 'data/plugins.json');
-        $scanner = new PluginPolicyScanner($this->makePolicyEngine($reader, $writer));
+        $scanner = new PluginPolicyScanner(
+            new UntrustedPolicyScanner($this->makePolicyEngine($reader, $writer))
+        );
 
         $this->importer = new PluginImporter(
             $registry,

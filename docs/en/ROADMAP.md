@@ -3,7 +3,7 @@
 > **Documentation checkpoint:** August 2, 2026  
 > **Latest release recorded by this bundle:** `v2.1.0-beta.23`  
 > **Direction:** Hybrid Headless Content Engine · No-SQL file source of truth · API-first  
-> **Code status:** It.68–69 shipped in `[Unreleased]` · next target It.67 / It.70
+> **Code status:** It.67–70 shipped in `v2.1.0-beta.27` · next target It.71
 
 This roadmap is the canonical map of the **future direction**. Release history belongs in [`CHANGELOG.md`](../../CHANGELOG.md), detailed implementation specifications in `ITERATION_*.md`, and incidents in [`ISSUES.md`](ISSUES.md).
 

@@ -7,6 +7,7 @@ namespace PaginiumCMS\Core\CodeEditor\Services;
 use PaginiumCMS\Core\CodeEditor\Contracts\CodeEditorInterface;
 use PaginiumCMS\Core\CodePolicy\Contracts\CodePolicyEngineInterface;
 use PaginiumCMS\Core\CodePolicy\Exceptions\CodePolicyViolationException;
+use PaginiumCMS\Core\CodePolicy\Services\ShortcodeDefinitionPolicy;
 use RuntimeException;
 
 /**
@@ -22,6 +23,8 @@ final class CodeEditorManager implements CodeEditorInterface
         'backend/app/Http/Extensions',
         'backend/resources/views/themes',
         'backend/config',
+        'data/shortcodes/definitions',
+        'data/layout',
     ];
 
     /** @var list<string> */
@@ -36,6 +39,7 @@ final class CodeEditorManager implements CodeEditorInterface
         private FileBackup $backup,
         private CodeEditorLogger $logger,
         private CodePolicyEngineInterface $codePolicy,
+        private ShortcodeDefinitionPolicy $shortcodePolicy,
         ?string $projectRoot = null
     ) {
         $this->projectRoot = rtrim($projectRoot ?? dirname(__DIR__, 5), '/');
@@ -114,6 +118,10 @@ final class CodeEditorManager implements CodeEditorInterface
                 $this->codePolicy->validateUntrusted($path, $content);
             } else {
                 $this->codePolicy->validate($path, $content);
+            }
+
+            if ($this->isShortcodeDefinitionPath($path)) {
+                $this->shortcodePolicy->validateJson($content);
             }
         } catch (CodePolicyViolationException $e) {
             try {
@@ -360,5 +368,13 @@ final class CodeEditorManager implements CodeEditorInterface
             'yaml', 'yml' => 'yaml',
             default => 'plaintext',
         };
+    }
+
+    private function isShortcodeDefinitionPath(string $path): bool
+    {
+        $normalized = str_replace('\\', '/', $path);
+
+        return str_starts_with($normalized, 'data/shortcodes/definitions/')
+            && str_ends_with(strtolower($normalized), '.json');
     }
 }

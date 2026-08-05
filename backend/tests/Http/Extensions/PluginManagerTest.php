@@ -7,6 +7,7 @@ namespace PaginiumCMS\Tests\Http\Extensions;
 use PaginiumCMS\Core\CodeEditor\Services\SyntaxChecker;
 use PaginiumCMS\Core\CodePolicy\Services\CodePolicyEngine;
 use PaginiumCMS\Core\CodePolicy\Services\SecurityScanner;
+use PaginiumCMS\Core\CodePolicy\Services\UntrustedPolicyScanner;
 use PaginiumCMS\Core\FlatFile\Services\FileReader;
 use PaginiumCMS\Core\FlatFile\Services\FileValidator;
 use PaginiumCMS\Core\FlatFile\Services\FileWriter;
@@ -61,7 +62,7 @@ final class PluginManagerTest extends TestCase
         );
         $importer = new PluginImporter(
             $registry,
-            new PluginPolicyScanner($policy),
+            new PluginPolicyScanner(new UntrustedPolicyScanner($policy)),
             new ExtensionManifestValidator(),
             $this->extensionsRoot,
             $this->routesRoot,

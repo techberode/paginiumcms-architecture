@@ -19,8 +19,10 @@ use PaginiumCMS\Core\Editor\Services\TiptapHtmlRenderer;
 use PaginiumCMS\Core\Security\Services\ContentSecuritySanitizer;
 use PaginiumCMS\Core\FlatFile\Models\Page;
 use PaginiumCMS\Core\FlatFile\Models\Article;
+use PaginiumCMS\Core\Git\Services\GitPublishDispatcher;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Http\Support\PaginationQuery;
+use PaginiumCMS\Tests\Support\GitPublishTestHelper;
 use PHPUnit\Framework\TestCase;
 use org\bovigo\vfs\vfsStream;
 
@@ -76,7 +78,8 @@ class ContentRepositoryTest extends TestCase
             $markdownStorage,
             $jsonStorage,
             $settings,
-            \PaginiumCMS\Tests\Support\StorageTestHelper::localStorage($this->root . '/content')
+            \PaginiumCMS\Tests\Support\StorageTestHelper::localStorage($this->root . '/content'),
+            GitPublishTestHelper::disabledDispatcher($reader, $writer, $settings)
         );
     }
 

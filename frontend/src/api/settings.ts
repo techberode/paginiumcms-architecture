@@ -48,6 +48,11 @@ export interface EngineSettingsMeta {
     capabilities: Record<string, EngineCapabilityRow>;
     health: { ok: boolean; driver: string; latencyMs: number; message?: string };
   } | null;
+  gitProbe?: {
+    status: string;
+    message: string;
+    details: Record<string, unknown>;
+  } | null;
   documentationUrl?: string;
 }
 

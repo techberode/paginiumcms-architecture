@@ -126,6 +126,9 @@ export const settingsSk: MessageTree = {
     "cacheProbeTitle": "Cache vrstva — diagnostika",
     "cacheDriver": "Cache driver",
     "cacheHealth": "Stav cache",
+    "gitProbeTitle": "Git publish — diagnostika",
+    "gitProbeStatus": "Stav Git publish",
+    "gitProbeStrategy": "Nastavená stratégia",
     "docsLink": "Dokumentácia Hybrid Engine architektúry"
   },
   "appearance": {

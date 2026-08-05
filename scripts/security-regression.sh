@@ -5,8 +5,11 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-echo "=== CodePolicy pack ==="
-vendor/bin/phpunit --colors=always backend/tests/Core/CodePolicy/
+echo "=== CodePolicy + shortcode/theme hostile pack ==="
+vendor/bin/phpunit --colors=always \
+  backend/tests/Core/CodePolicy/ \
+  backend/tests/Core/Layout/ShortcodeDefinitionManagerTest.php \
+  backend/tests/Http/Themes/ThemeImporterTest.php
 
 echo "=== XSS / Zip / headers pack ==="
 vendor/bin/phpunit --colors=always \

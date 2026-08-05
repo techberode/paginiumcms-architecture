@@ -73,6 +73,27 @@ export const EngineSettingsPanel: React.FC<Props> = ({ meta }) => {
         </>
       ) : null}
 
+      {meta?.gitProbe ? (
+        <>
+          <h5 className="mt-4 text-sm font-semibold text-gray-900 dark:text-white">
+            {t('settings.engine.gitProbeTitle')}
+          </h5>
+          <dl className="mt-2 grid gap-3 text-sm sm:grid-cols-2">
+            <div>
+              <dt className="font-medium text-gray-700 dark:text-gray-200">{t('settings.engine.gitProbeStatus')}</dt>
+              <dd className="text-gray-600 dark:text-gray-300">{meta.gitProbe.status}</dd>
+            </div>
+            <div>
+              <dt className="font-medium text-gray-700 dark:text-gray-200">{t('settings.engine.gitProbeStrategy')}</dt>
+              <dd className="text-gray-600 dark:text-gray-300">
+                {String(meta.gitProbe.details.strategy ?? 'disabled')}
+              </dd>
+            </div>
+          </dl>
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{meta.gitProbe.message}</p>
+        </>
+      ) : null}
+
       <ul className="mt-4 space-y-2 text-sm">
         {Object.entries(probe.capabilities).map(([key, row]) => (
           <li key={key} className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:gap-2">

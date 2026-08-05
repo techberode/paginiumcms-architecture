@@ -39,6 +39,10 @@ use PaginiumCMS\Core\CodeEditor\Services\CodeEditorLogger;
 use PaginiumCMS\Core\CodePolicy\Contracts\CodePolicyEngineInterface;
 use PaginiumCMS\Core\CodePolicy\Services\CodePolicyEngine;
 use PaginiumCMS\Core\CodePolicy\Services\SecurityScanner;
+use PaginiumCMS\Core\CodePolicy\Services\ShortcodeDefinitionPolicy;
+use PaginiumCMS\Core\CodePolicy\Services\UntrustedPolicyScanner;
+use PaginiumCMS\Core\Layout\Services\ShortcodeDefinitionManager;
+use PaginiumCMS\Core\Layout\Services\ShortcodeRegistry;
 use PaginiumCMS\Core\CodeEditor\Services\SyntaxChecker;
 use PaginiumCMS\Core\CodeEditor\Services\FileBackup;
 use PaginiumCMS\Core\CodeEditor\Services\DiffGenerator;
@@ -54,7 +58,15 @@ use PaginiumCMS\Core\I18n\Services\LocaleScaffoldService;
 use PaginiumCMS\Core\I18n\Services\SupportedLocalesRegistry;
 use PaginiumCMS\Core\I18n\Services\TranslationFileManager;
 use PaginiumCMS\Core\I18n\Services\TranslationPolicyValidator;
-use PaginiumCMS\Core\GitHub\Services\GitHubService;
+use PaginiumCMS\Core\Git\Services\GitCapabilityProbe;
+use PaginiumCMS\Core\Git\Services\GitPathValidator;
+use PaginiumCMS\Core\Git\Services\GitPublishDispatcher;
+use PaginiumCMS\Core\Git\Services\GitPublishService;
+use PaginiumCMS\Core\Git\Services\GitPublishSettings;
+use PaginiumCMS\Core\Git\Services\LocalGitProcess;
+use PaginiumCMS\Core\Git\Services\LocalGitPublisher;
+use PaginiumCMS\Core\Git\Services\PublishPlanner;
+use PaginiumCMS\Core\Git\Services\PublishQueueStore;
 use PaginiumCMS\Core\Hook\HookManager;
 use PaginiumCMS\Core\Hook\Services\HookEmitter;
 use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
@@ -123,7 +135,10 @@ use PaginiumCMS\Http\Controllers\Analytics\AnalyticsPageviewController;
 use PaginiumCMS\Http\Controllers\Admin\AuditTrailController;
 use PaginiumCMS\Http\Controllers\Admin\DashboardController;
 use PaginiumCMS\Http\Controllers\Admin\HealthController;
+use PaginiumCMS\Core\GitHub\Services\GitHubService;
+use PaginiumCMS\Core\Scheduler\Handlers\GitPublishHandler;
 use PaginiumCMS\Http\Controllers\Admin\GitHubController;
+use PaginiumCMS\Http\Controllers\Admin\GitPublishController;
 use PaginiumCMS\Http\Controllers\Admin\MessageController;
 use PaginiumCMS\Http\Controllers\Admin\NotificationController;
 use PaginiumCMS\Http\Controllers\Admin\CodeEditorController;
@@ -131,6 +146,8 @@ use PaginiumCMS\Http\Controllers\Admin\DemoController;
 use PaginiumCMS\Http\Controllers\Admin\DeveloperController;
 use PaginiumCMS\Http\Controllers\Admin\GatedCodeEditorController;
 use PaginiumCMS\Http\Controllers\Admin\ExtensionsController;
+use PaginiumCMS\Http\Controllers\Admin\ShortcodeController;
+use PaginiumCMS\Http\Controllers\Admin\ThemesController;
 use PaginiumCMS\Http\Controllers\Admin\BlueprintController;
 use PaginiumCMS\Http\Controllers\Admin\AclController;
 use PaginiumCMS\Http\Controllers\Admin\SecurityAuditController;
@@ -163,6 +180,10 @@ use PaginiumCMS\Http\Extensions\Services\PluginImporter;
 use PaginiumCMS\Http\Extensions\Services\PluginManager;
 use PaginiumCMS\Http\Extensions\Services\PluginPolicyScanner;
 use PaginiumCMS\Http\Extensions\Services\PluginRegistry;
+use PaginiumCMS\Http\Themes\Services\ThemeImporter;
+use PaginiumCMS\Http\Themes\Services\ThemeManifestValidator;
+use PaginiumCMS\Http\Themes\Services\ThemeManager;
+use PaginiumCMS\Http\Themes\Services\ThemeRegistry;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Http\Controllers\Locking\LockController;
 use PaginiumCMS\Http\Controllers\Media\MediaController;
@@ -249,7 +270,8 @@ return [
             get(MarkdownContentStorage::class),
             get(JsonContentStorage::class),
             get(SettingsRepositoryInterface::class),
-            get(StorageInterface::class)
+            get(StorageInterface::class),
+            get(GitPublishDispatcher::class)
         ),
 
     // === Blok: Hybrid Engine storage (Iteration 68) ===
@@ -325,8 +347,49 @@ return [
             get(EngineCapabilityProbe::class),
             get(CacheCapabilityProbe::class),
             get(CacheDriverFactory::class),
-            get(StorageInterface::class)
+            get(StorageInterface::class),
+            get(GitCapabilityProbe::class)
         ),
+
+    GitPathValidator::class => create(GitPathValidator::class),
+    LocalGitProcess::class => create(LocalGitProcess::class),
+    GitPublishSettings::class => create(GitPublishSettings::class)
+        ->constructor(get(SettingsRepositoryInterface::class)),
+    PublishQueueStore::class => create(PublishQueueStore::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class)
+        ),
+    PublishPlanner::class => create(PublishPlanner::class)
+        ->constructor(get(SettingsRepositoryInterface::class)),
+    LocalGitPublisher::class => create(LocalGitPublisher::class)
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(LocalGitProcess::class),
+            get(GitPathValidator::class)
+        ),
+    GitPublishService::class => create(GitPublishService::class)
+        ->constructor(
+            get(GitPublishSettings::class),
+            get(PublishQueueStore::class),
+            get(PublishPlanner::class),
+            get(LocalGitPublisher::class),
+            get(GitPathValidator::class),
+            get(LoggerInterface::class)
+        ),
+    GitPublishDispatcher::class => create(GitPublishDispatcher::class)
+        ->constructor(get(GitPublishService::class)),
+    GitCapabilityProbe::class => create(GitCapabilityProbe::class)
+        ->constructor(
+            get(GitPublishSettings::class),
+            get(LocalGitProcess::class),
+            get(GitPathValidator::class),
+            get(SettingsRepositoryInterface::class)
+        ),
+    GitPublishController::class => create(GitPublishController::class)
+        ->constructor(get(GitPublishService::class), get(JsonResponder::class)),
+    GitPublishHandler::class => create(GitPublishHandler::class)
+        ->constructor(get(GitPublishService::class)),
 
     TranslationFileManagerInterface::class => create(TranslationFileManager::class)
         ->constructor(
@@ -725,8 +788,10 @@ return [
     HookEmitter::class => create(HookEmitter::class)
         ->constructor(get(HookManager::class)),
     ExtensionManifestValidator::class => create(ExtensionManifestValidator::class),
-    PluginPolicyScanner::class => create(PluginPolicyScanner::class)
+    UntrustedPolicyScanner::class => create(UntrustedPolicyScanner::class)
         ->constructor(get(CodePolicyEngineInterface::class)),
+    PluginPolicyScanner::class => create(PluginPolicyScanner::class)
+        ->constructor(get(UntrustedPolicyScanner::class)),
     PluginRegistry::class => create(PluginRegistry::class)
         ->constructor(
             get(FileReaderInterface::class),
@@ -756,6 +821,48 @@ return [
         ),
     ExtensionsController::class => create(ExtensionsController::class)
         ->constructor(get(PluginManagerInterface::class), get(JsonResponder::class)),
+    ShortcodeRegistry::class => create(ShortcodeRegistry::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class),
+            'data/shortcodes/registry.json'
+        ),
+    ShortcodeDefinitionPolicy::class => create(ShortcodeDefinitionPolicy::class),
+    ShortcodeDefinitionManager::class => create(ShortcodeDefinitionManager::class)
+        ->constructor(
+            get(ShortcodeDefinitionPolicy::class),
+            get(CodePolicyEngineInterface::class),
+            get(ShortcodeRegistry::class),
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class)
+        ),
+    ShortcodeController::class => create(ShortcodeController::class)
+        ->constructor(get(ShortcodeDefinitionManager::class), get(JsonResponder::class)),
+    ThemeManifestValidator::class => create(ThemeManifestValidator::class),
+    ThemeRegistry::class => create(ThemeRegistry::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class),
+            'data/themes.json'
+        ),
+    ThemeImporter::class => create(ThemeImporter::class)
+        ->constructor(
+            get(ThemeRegistry::class),
+            get(UntrustedPolicyScanner::class),
+            get(ThemeManifestValidator::class),
+            dirname(__DIR__, 3) . '/resources/views/themes',
+            dirname(__DIR__, 4) . '/frontend/src/themes',
+            dirname(__DIR__, 4)
+        ),
+    ThemeManager::class => create(ThemeManager::class)
+        ->constructor(
+            get(ThemeRegistry::class),
+            get(ThemeImporter::class),
+            dirname(__DIR__, 3) . '/resources/views/themes',
+            dirname(__DIR__, 4) . '/frontend/src/themes'
+        ),
+    ThemesController::class => create(ThemesController::class)
+        ->constructor(get(ThemeManager::class), get(JsonResponder::class)),
     DeveloperMode::class => create(DeveloperMode::class)
         ->constructor(
             get(ConfigManager::class),
@@ -773,16 +880,14 @@ return [
             get(SyntaxChecker::class),
             get(SecurityScanner::class)
         ),
-    \PaginiumCMS\Core\CodePolicy\Services\ShortcodeDefinitionPolicy::class => create(
-        \PaginiumCMS\Core\CodePolicy\Services\ShortcodeDefinitionPolicy::class
-    ),
     FileBackup::class => create(FileBackup::class),
     CodeEditorManager::class => create(CodeEditorManager::class)
         ->constructor(
             get(SyntaxChecker::class),
             get(FileBackup::class),
             get(CodeEditorLogger::class),
-            get(CodePolicyEngineInterface::class)
+            get(CodePolicyEngineInterface::class),
+            get(ShortcodeDefinitionPolicy::class)
         ),
     DiffGenerator::class => create(DiffGenerator::class),
     EnhancedVersionManager::class => create(EnhancedVersionManager::class)

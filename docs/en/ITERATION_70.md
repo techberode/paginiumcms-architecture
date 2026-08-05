@@ -1,8 +1,9 @@
 # Iteration 70 — Git publish modes
 
-> **Status:** ⏳ planned  
+> **Status:** ✅ Shipped (foundation)  
 > **Priority:** 🟡  
 > **Wave:** [Hybrid Engine HE-3](ITERATION_WAVE_HYBRID_ENGINE.md)  
+> **Release:** `v2.1.0-beta.27`  
 > **Depends on:** [It.68](ITERATION_68.md)  
 > **Extends:** the existing `GitHubService`; coordinates [It.48](ITERATION_48.md)
 
@@ -139,14 +140,28 @@ Remote push and static build are separate steps. It.48 may trigger a build only 
 
 ## Definition of Done
 
-- [ ] The local publisher and queue work without a remote service.
-- [ ] Immediate and queued strategies have end-to-end tests.
-- [ ] API/UI distinguishes stored/committed/pushed/failed.
-- [ ] Retry is idempotent and audited.
-- [ ] Command/path/remote security tests pass.
-- [ ] It.48 uses the same publish contract rather than a parallel pipeline.
-- [ ] The Classic default does not invoke Git.
-- [ ] SK/EN deployment and architecture documentation is updated.
+- [x] The local publisher and queue work without a remote service.
+- [x] Immediate and queued strategies have PHPUnit coverage (`GitPublishServiceTest`).
+- [x] Admin API distinguishes stored / pending_publish / committed / publish_failed states.
+- [ ] Full content-list UI and **Publish release** modal (API client shipped; admin UI deferred).
+- [x] Retry endpoint reuses idempotent queued release publish.
+- [x] Command/path/remote security validation (`GitPathValidator` + regression tests).
+- [ ] It.48 uses the same publish contract rather than a parallel pipeline (deferred).
+- [x] The Classic default does not invoke Git (`gitEnabled=false`).
+- [x] EN backlog, CHANGELOG, and engine probe documentation updated; SK detail catch-up deferred.
+
+## Shipped scope (foundation)
+
+| Area | Delivered |
+|------|-----------|
+| Core | `GitPublishService`, `LocalGitPublisher`, `PublishQueueStore`, `PublishPlanner`, `GitPublishDispatcher` |
+| Scheduler | `git.publish` handler via `GitPublishHandler` |
+| Admin API | `GET /api/admin/git/status`, preview, publish, retry (`git:publish`) |
+| Settings | `engine.git*` keys with encrypted-at-rest credentials pattern for future API publisher |
+| FE | `frontend/src/api/git.ts`, engine settings `gitProbe` in `EngineSettingsPanel` |
+| Tests | `GitPublishServiceTest`, `GitPublishTestHelper`, wiring in scheduler/content tests |
+
+**Deferred:** `github_api` publisher, remote push e2e in CI, content-list publish badges, It.48 static render hook.
 
 ## Related
 
