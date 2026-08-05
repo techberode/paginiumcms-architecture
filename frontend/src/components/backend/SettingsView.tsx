@@ -549,6 +549,16 @@ const SettingFieldRow: React.FC<RowProps> = ({ groupKey, field, register, watch,
             />
           )}
 
+          {field.type === 'float' && (
+            <input
+              id={inputId}
+              type="number"
+              step="any"
+              {...register(field.key, { valueAsNumber: true })}
+              className={`form-input w-full ${errorClass}`}
+            />
+          )}
+
           {(field.type === 'string' ||
             field.type === 'email' ||
             field.type === 'url' ||

@@ -95,6 +95,28 @@ function applyIntRules(rules: string[]): z.ZodTypeAny {
   return schema.optional();
 }
 
+function applyNumberRules(rules: string[]): z.ZodTypeAny {
+  const required = rules.includes('required');
+  let schema = z.coerce.number({ invalid_type_error: 'Musí byť číslo.' });
+
+  for (const rule of rules) {
+    if (rule.startsWith('min:')) {
+      schema = schema.min(Number(rule.split(':')[1]));
+    }
+    if (rule.startsWith('max:')) {
+      schema = schema.max(Number(rule.split(':')[1]));
+    }
+  }
+
+  if (required) {
+    return schema.refine((v) => v !== null && v !== undefined && !Number.isNaN(v), {
+      message: 'Pole je povinné.',
+    });
+  }
+
+  return schema.optional();
+}
+
 function fieldSchema(rules: string[]): z.ZodTypeAny {
   if (rules.includes('bool')) {
     return z.coerce.boolean();
@@ -102,6 +124,10 @@ function fieldSchema(rules: string[]): z.ZodTypeAny {
 
   if (rules.includes('int')) {
     return applyIntRules(rules);
+  }
+
+  if (rules.includes('number') || rules.includes('numeric')) {
+    return applyNumberRules(rules);
   }
 
   return applyStringRules(rules);

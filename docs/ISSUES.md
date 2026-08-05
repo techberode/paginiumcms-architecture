@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 5 August 2026 · register **ISS-001–ISS-127** · It.67 + It.68 + It.71 in `[Unreleased]`
+> **Last updated:** 5 August 2026 · register **ISS-001–ISS-128** · It.67 + It.68 + It.71 in `[Unreleased]`
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -150,6 +150,7 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-125](#iss-125) | DEMO_MODE leaked into HTTP PHPUnit after demo tests (4 failures post-beta.27) | Medium (CI) | ✅ **`[Unreleased]`** · test env hardening |
 | [ISS-126](#iss-126) | Post-beta.27 CI regressions (storage path, void mock, API barrel, demo disk metric) | Medium (CI / demo UX) | ✅ **`[Unreleased]`** · hotfix on `main` |
 | [ISS-127](#iss-127) | It.71 Performance Guard DI incomplete — 233 PHPUnit errors, console fatal | High (CI / bootstrap) | ✅ **`[Unreleased]`** · explicit DI + ACL default |
+| [ISS-128](#iss-128) | Engine Performance Guard settings could not be saved (`float` field / Zod) | Medium (admin UX) | ✅ **`[Unreleased]`** · float input + numeric Zod |
 
 ## CI failures (GitHub Actions)
 
@@ -3710,4 +3711,50 @@ APP_ENV=testing php -r "require 'vendor/autoload.php'; require 'backend/bootstra
 ### Ops note (existing installs)
 
 Instances that already saved **`accessControl.permissionsAdmin`** without `metrics:read` must add it in **Settings → Access control** (SUPER_ADMIN) or rely on SUPER_ADMIN role for APM API access until updated.
+
+<a id="iss-128"></a>
+
+## ISS-128 – Engine Performance Guard settings could not be saved (`float` field / Zod)
+
+[↑ Overview](#overview)
+
+**Severity:** Medium (admin UX)  
+**Status:** ✅ **`[Unreleased]`**  
+**Release context:** Reported on production after It.71 deploy — enabling **Performance Guard** in **Settings → Engine** and clicking **Save** had no effect (client-side validation blocked submit).
+
+### Operational synopsis
+
+It.71 added `performanceGuardSampleRate` to the **engine** settings group with schema type **`float`** and rules `numeric, min:0, max:1`.
+
+Two gaps prevented a successful save from the admin UI:
+
+1. **Frontend field rendering** — `SettingFieldRow` supported `bool`, `int`, `string`, etc., but not **`float`**. The sample-rate field was never registered in react-hook-form, while other Performance Guard fields were.
+2. **Client Zod mirror** — `zodFromRules()` only branched on `bool` and `int`. Rules without those tokens fell through to **`applyStringRules`**, so `min:0` / `max:1` were interpreted as **string length**, not numeric bounds. Loaded default `1.0` (number) failed validation silently before the PUT request.
+
+Backend `Validator.php` recognizes **`number`**, not **`numeric`** — schema used `numeric`, so server-side min/max for sample rate were also skipped when the field was sent.
+
+### Fix
+
+- Add **`float`** to `SettingFieldType` and render a number input (`step="any"`, `valueAsNumber`) in `SettingsView.tsx`.
+- Add **`applyNumberRules`** in `zodFromRules.ts` for `number` / `numeric` rules.
+- Change `SettingsSchema` rule **`numeric` → `number`** for `performanceGuardSampleRate`.
+- Regression: `SettingsControllerEngineTest::testEngineSettingsAcceptPerformanceGuardEnabledWithSampleRate`, Vitest for float sample rate.
+
+### Evidence and traceability
+
+- **Symptom:** User enables `performanceGuardEnabled` → Save appears to do nothing (Zod error on hidden/unrendered float field).
+- **Key files:** `SettingsSchema.php` (engine group), `frontend/src/validation/zodFromRules.ts`, `frontend/src/components/backend/SettingsView.tsx`, `frontend/src/api/settings.ts`
+- **History:** [CHANGELOG](../CHANGELOG.md) `[Unreleased]` · [ITERATION_71](en/ITERATION_71.md)
+
+### Verification
+
+```bash
+./scripts/iteration-gate.sh
+./vendor/bin/phpunit backend/tests/Http/Controllers/Admin/SettingsControllerEngineTest.php
+cd frontend && npm test -- zodFromRules.test.ts
+```
+
+### Ops note
+
+After deploy, **Settings → Engine → Enable Performance Guard** → **Save** should persist. Tune sample rate and latency budgets as needed; ensure **`metrics:read`** is on ADMIN ACL if the dashboard panel should be visible ([ISS-127](#iss-127)).
 

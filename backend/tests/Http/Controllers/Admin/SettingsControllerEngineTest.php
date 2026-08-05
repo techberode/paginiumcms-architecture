@@ -75,4 +75,40 @@ final class SettingsControllerEngineTest extends TestCase
         $this->assertFalse($data['success']);
         $this->assertArrayHasKey('errors', $data);
     }
+
+    public function testEngineSettingsAcceptPerformanceGuardEnabledWithSampleRate(): void
+    {
+        $this->loginAsSuperAdminUser();
+
+        $payload = [
+            'deploymentMode' => 'classic',
+            'storageDriver' => 'local',
+            'schemaValidationEnabled' => true,
+            'capabilityProbeEnabled' => true,
+            'cacheDriver' => 'auto',
+            'cacheDefaultTtlSeconds' => 300,
+            'httpValidatorsEnabled' => true,
+            'gitEnabled' => false,
+            'gitPublishStrategy' => 'disabled',
+            'gitPublisher' => 'local',
+            'gitCommitMessageTemplate' => 'content: publish {count} change(s)',
+            'performanceGuardEnabled' => true,
+            'performanceGuardSampleRate' => 1.0,
+            'performanceGuardLatencyMsWarning' => 200,
+            'performanceGuardLatencyMsCritical' => 500,
+            'performanceGuardBreachCount' => 3,
+            'performanceGuardWindowMinutes' => 10,
+            'performanceGuardRemediationMode' => 'suggest',
+        ];
+
+        $response = $this->handleRequest(
+            $this->createJsonRequest('PUT', '/api/admin/settings/engine', $payload)
+        );
+        $data = $this->getJsonResponse($response);
+
+        $this->assertSame(200, $response->getStatusCode(), json_encode($data, JSON_THROW_ON_ERROR));
+        $this->assertTrue($data['success']);
+        $this->assertTrue($data['data']['values']['performanceGuardEnabled'] ?? false);
+        $this->assertSame(1.0, $data['data']['values']['performanceGuardSampleRate'] ?? null);
+    }
 }
