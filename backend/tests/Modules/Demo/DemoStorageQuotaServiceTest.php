@@ -11,10 +11,14 @@ use PHPUnit\Framework\TestCase;
 final class DemoStorageQuotaServiceTest extends TestCase
 {
     private string $baseDir;
+    private string $previousDemoMode = '';
+    private string|false|null $previousQuotaBytes = null;
 
     protected function setUp(): void
     {
         parent::setUp();
+        $this->previousDemoMode = (string) (getenv('DEMO_MODE') ?: '');
+        $this->previousQuotaBytes = getenv('DEMO_STORAGE_QUOTA_BYTES');
         $this->baseDir = sys_get_temp_dir() . '/pag_demo_quota_' . uniqid('', true);
         mkdir($this->baseDir . '/app/demo/data', 0777, true);
         file_put_contents($this->baseDir . '/app/demo/data/settings.json', str_repeat('x', 1024));
@@ -23,6 +27,28 @@ final class DemoStorageQuotaServiceTest extends TestCase
     protected function tearDown(): void
     {
         $this->removeDir($this->baseDir);
+
+        if ($this->previousDemoMode !== '') {
+            putenv('DEMO_MODE=' . $this->previousDemoMode);
+            $_ENV['DEMO_MODE'] = $this->previousDemoMode;
+            $_SERVER['DEMO_MODE'] = $this->previousDemoMode;
+        } else {
+            putenv('DEMO_MODE=false');
+            $_ENV['DEMO_MODE'] = 'false';
+            $_SERVER['DEMO_MODE'] = 'false';
+        }
+
+        if ($this->previousQuotaBytes === false) {
+            putenv('DEMO_STORAGE_QUOTA_BYTES');
+            unset($_ENV['DEMO_STORAGE_QUOTA_BYTES']);
+        } elseif ($this->previousQuotaBytes !== null) {
+            putenv('DEMO_STORAGE_QUOTA_BYTES=' . $this->previousQuotaBytes);
+            $_ENV['DEMO_STORAGE_QUOTA_BYTES'] = $this->previousQuotaBytes;
+        } else {
+            putenv('DEMO_STORAGE_QUOTA_BYTES');
+            unset($_ENV['DEMO_STORAGE_QUOTA_BYTES']);
+        }
+
         parent::tearDown();
     }
 
@@ -32,6 +58,7 @@ final class DemoStorageQuotaServiceTest extends TestCase
         putenv('DEMO_STORAGE_QUOTA_BYTES=300000000');
         $_ENV['DEMO_MODE'] = 'true';
         $_ENV['DEMO_STORAGE_QUOTA_BYTES'] = '300000000';
+        $_SERVER['DEMO_MODE'] = 'true';
 
         $service = new DemoStorageQuotaService(new DemoMode());
         $metrics = $service->metrics($this->baseDir);
@@ -39,10 +66,6 @@ final class DemoStorageQuotaServiceTest extends TestCase
         $this->assertSame(300_000_000, $metrics['quota_bytes']);
         $this->assertGreaterThanOrEqual(1024, $metrics['used_space_bytes']);
         $this->assertSame(300_000_000 - $metrics['used_space_bytes'], $metrics['free_space_bytes']);
-
-        putenv('DEMO_MODE');
-        putenv('DEMO_STORAGE_QUOTA_BYTES');
-        unset($_ENV['DEMO_MODE'], $_ENV['DEMO_STORAGE_QUOTA_BYTES']);
     }
 
     public function testDirectorySizeIgnoresMissingPath(): void

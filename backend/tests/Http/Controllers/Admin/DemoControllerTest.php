@@ -51,18 +51,26 @@ final class DemoControllerTest extends TestCase
     {
         putenv('DEMO_MODE=true');
         $_ENV['DEMO_MODE'] = 'true';
+        $_SERVER['DEMO_MODE'] = 'true';
 
-        $this->app = require __DIR__ . '/../../../../bootstrap/app.php';
+        try {
+            $this->app = require __DIR__ . '/../../../../bootstrap/app.php';
 
-        $response = $this->handleRequest(
-            $this->createJsonRequest('GET', '/api/demo/public-info')
-        );
-        $data = $this->getJsonResponse($response);
+            $response = $this->handleRequest(
+                $this->createJsonRequest('GET', '/api/demo/public-info')
+            );
+            $data = $this->getJsonResponse($response);
 
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertTrue($data['data']['enabled']);
-        $this->assertSame('demo@paginiumcms.com', $data['data']['credentials']['email'] ?? null);
-        $this->assertSame('Demo123!', $data['data']['credentials']['password'] ?? null);
+            $this->assertSame(200, $response->getStatusCode());
+            $this->assertTrue($data['data']['enabled']);
+            $this->assertSame('demo@paginiumcms.com', $data['data']['credentials']['email'] ?? null);
+            $this->assertSame('Demo123!', $data['data']['credentials']['password'] ?? null);
+        } finally {
+            putenv('DEMO_MODE=false');
+            $_ENV['DEMO_MODE'] = 'false';
+            $_SERVER['DEMO_MODE'] = 'false';
+            $this->app = require __DIR__ . '/../../../../bootstrap/app.php';
+        }
     }
 
     public function testDemoQuickLoginForbiddenWhenDemoDisabled(): void
@@ -83,17 +91,29 @@ final class DemoControllerTest extends TestCase
 
         putenv('DEMO_MODE=true');
         $_ENV['DEMO_MODE'] = 'true';
+        $_SERVER['DEMO_MODE'] = 'true';
         putenv('APP_ENV=production');
         $_ENV['APP_ENV'] = 'production';
+        $_SERVER['APP_ENV'] = 'production';
 
-        $response = $this->handleRequest(
-            $this->createJsonRequest('GET', '/api/demo/public-info')
-        );
-        $data = $this->getJsonResponse($response);
+        try {
+            $response = $this->handleRequest(
+                $this->createJsonRequest('GET', '/api/demo/public-info')
+            );
+            $data = $this->getJsonResponse($response);
 
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertTrue($data['success']);
-        $this->assertFalse($data['data']['enabled']);
+            $this->assertSame(200, $response->getStatusCode());
+            $this->assertTrue($data['success']);
+            $this->assertFalse($data['data']['enabled']);
+        } finally {
+            putenv('APP_ENV=testing');
+            $_ENV['APP_ENV'] = 'testing';
+            $_SERVER['APP_ENV'] = 'testing';
+            putenv('DEMO_MODE=false');
+            $_ENV['DEMO_MODE'] = 'false';
+            $_SERVER['DEMO_MODE'] = 'false';
+            $this->app = require __DIR__ . '/../../../../bootstrap/app.php';
+        }
     }
 
     public function testDemoResetForbiddenWhenDemoDisabled(): void

@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 5 August 2026 · register **ISS-001–ISS-124** · It.67 + It.68 foundation in `[Unreleased]`
+> **Last updated:** 5 August 2026 · register **ISS-001–ISS-126** · It.67 + It.68 foundation in `[Unreleased]`
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -147,6 +147,8 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-122](#iss-122) | Storage read path did not enforce base-path containment (symlink escape) | Medium (security) | ✅ **`[Unreleased]`** · It.68 `LocalFlatFileStorage` |
 | [ISS-123](#iss-123) | Corrupt `settings.testing.json` leaked between HTTP PHPUnit tests | Low (tests) | ✅ **`[Unreleased]`** · `Http/TestCase` reset |
 | [ISS-124](#iss-124) | CSP retains `style-src 'unsafe-inline'` for React inline styles | Low (documented residual) | ℹ️ It.67 inventory · no script unsafe-inline |
+| [ISS-125](#iss-125) | DEMO_MODE leaked into HTTP PHPUnit after demo tests (4 failures post-beta.27) | Medium (CI) | ✅ **`[Unreleased]`** · test env hardening |
+| [ISS-126](#iss-126) | Post-beta.27 CI regressions (storage path, void mock, API barrel, demo disk metric) | Medium (CI / demo UX) | ✅ **`[Unreleased]`** · hotfix on `main` |
 
 ## CI failures (GitHub Actions)
 
@@ -162,6 +164,8 @@ Workflow: [`.github/workflows/ci.yml`](https://github.com/techberode/paginiumcms
 | `backend` | PHPStan level 8 | LocaleScaffoldService projectRoot failed PHPStan and PHPUnit | [ISS-045](#iss-045) |
 | `backend` | PHP bootstrap | services.php parse error caused all API requests to fail | [ISS-044](#iss-044) |
 | `backend` | PHPUnit | CI PHPUnit output exposed TOTP and 2FA secrets in GitHub job logs | [ISS-120](#iss-120) |
+| `backend` | PHPUnit | Four HTTP tests failed after beta.27 (OTP verify 403, SystemUpdate 401/403) | [ISS-125](#iss-125) |
+| `backend` | PHPUnit | Post-beta.27 storage/settings path and ScheduledJobRunner mock regressions | [ISS-126](#iss-126) |
 | `backend` | PHPUnit | PHPUnit suffered 429, 503, and OTP persistence failures | [ISS-015](#iss-015), [ISS-023](#iss-023) |
 | `backend` | PHPUnit | Content index tag, author, and date filters failed PHPUnit | [ISS-038](#iss-038) |
 | `backend` | PHPUnit | LogWriter tests failed on virtual files and corrupt JSON | [ISS-039](#iss-039) |
@@ -3527,7 +3531,7 @@ The initial It.68 `LocalFlatFileStorage` implementation called `assertWithinBase
 
 ### Operational synopsis
 
-`SettingsControllerEngineTest` wrote an intentionally corrupt `data/settings.testing.json` to assert API **422** behavior. Because later tests reused the same file, `Http\TestCase::applyTestSettingsOverrides()` failed during `setUp()` with `ValidationException`. The HTTP test base now deletes the testing settings file before applying overrides; the corrupt-state test restores `{}` in a `finally` block.
+`SettingsControllerEngineTest` wrote an intentionally corrupt `data/settings.testing.json` to assert API **422** behavior. Because later tests reused the same file, `Http\TestCase::applyTestSettingsOverrides()` failed during `setUp()` with `ValidationException`. The HTTP test base now deletes the testing settings file before applying overrides; the corrupt-state test **deletes** the file in a `finally` block (instead of writing `{}`).
 
 ### Evidence and traceability
 
@@ -3567,3 +3571,93 @@ The initial It.68 `LocalFlatFileStorage` implementation called `assertWithinBase
 curl -sI http://localhost:8080/api/settings/public | grep -i content-security-policy
 # Expect: script-src 'self' (no unsafe-inline); style-src 'self' 'unsafe-inline'
 ```
+
+---
+
+<a id="iss-125"></a>
+
+## ISS-125 – DEMO_MODE leaked into HTTP PHPUnit after demo tests (four failures post-beta.27)
+
+[↑ Overview](#overview)
+
+**Severity:** Medium (CI)  
+**Status:** ✅ **`[Unreleased]`** · PHPUnit / HTTP test env hardening  
+**Related:** [ISS-103](#iss-103) (original local `.env` pollution, beta.12)
+
+### Operational synopsis
+
+After **`v2.1.0-beta.27`**, GitHub Actions reported four PHPUnit failures that passed locally in isolation but failed in the full suite:
+
+| Test | Expected | Got | Symptom |
+|------|----------|-----|---------|
+| `AuthControllerTest::testRegisterWithOtpEnabled` | 201 (verify OTP) | 403 | OTP registration reported disabled at verify step |
+| `CommentsControllerTest::testApproveCommentWithOtpEnabled` | 202 (OTP challenge) | 200 | Comment approved without OTP |
+| `SystemUpdateControllerTest::testRunForbiddenWhenDeployDisabled` | 403 (deploy off) | 401 | Super-admin not authenticated |
+| `SystemUpdateControllerTest::testRunQueuesJobWhenEnabled` | 200 (queued) | 403 | Demo instance blocked system update |
+
+All four symptoms match **`DEMO_MODE=true`** leaking from demo-focused tests (`DemoControllerTest`, `DemoLoginIsolationTest`, `DemoStorageQuotaServiceTest`) into subsequent HTTP tests: `DemoLoginGuard` blocks non-demo logins (401), `SystemUpdateController` and `SystemDeployTriggerService` fail-closed on demo (403), and workflow OTP flags read as disabled when storage/bootstrap context is inconsistent.
+
+### Root cause
+
+Demo tests mutated `putenv('DEMO_MODE=true')` and sometimes re-bootstrapped `$this->app` without guaranteed restore before the next test. `Http/TestCase` reset env in `setUp`/`tearDown`, but **`phpunit.xml` did not force `DEMO_MODE=false`**, and **`$_SERVER['DEMO_MODE']` was unset rather than set to `false`**. New `DemoStorageQuotaServiceTest` (post-beta.27) set demo env without `tearDown` cleanup if an assertion failed mid-test.
+
+### Fix
+
+- `phpunit.xml`: `<env name="DEMO_MODE" value="false" force="true"/>`
+- `tests/bootstrap.php`: reset `APP_ENV` / `DEMO_MODE` before autoload
+- `Http/TestCase`: sync `$_SERVER['DEMO_MODE']`, purge `data/otp-challenges.json`, add `enableWorkflows()` helper
+- Demo HTTP tests: `try/finally` + re-bootstrap after env mutation
+- `DemoStorageQuotaServiceTest`: env restore in `tearDown`
+- OTP / SystemUpdate tests: assert workflow flags and login **200** before endpoint assertions
+- `SettingsControllerEngineTest`: delete corrupt settings file in `finally` (see [ISS-123](#iss-123))
+
+### Evidence and traceability
+
+- **Key technical identifiers:** `DemoLoginGuard`, `SystemUpdateController::run()`, `OtpWorkflowService`, `DemoMode::isEnabledFromEnv()`, `backend/tests/Http/TestCase.php`, `phpunit.xml`, `tests/bootstrap.php`
+- **History:** [CHANGELOG](../CHANGELOG.md) `[Unreleased]`
+
+### Verification or operational excerpts
+
+```bash
+./scripts/iteration-gate.sh
+DEMO_MODE=true ./vendor/bin/phpunit --filter 'testRegisterWithOtpEnabled|testRunQueuesJobWhenEnabled'
+```
+
+---
+
+<a id="iss-126"></a>
+
+## ISS-126 – Post-beta.27 CI regressions (storage path, void mock, API barrel, demo disk metric)
+
+[↑ Overview](#overview)
+
+**Severity:** Medium (CI / demo UX)  
+**Status:** ✅ **`[Unreleased]`** · hotfix commits on `main` (no new release tag)  
+**Release context:** Follow-up to **`v2.1.0-beta.27`** — deploy as **`origin/main` fix**, not a semver bump.
+
+### Operational synopsis
+
+CI and demo ops issues discovered immediately after the beta.27 tag:
+
+1. **`LocalFlatFileStorage::assertWithinBase()`** — logical paths such as `data/settings.testing.json` failed when intermediate directories did not exist yet (fresh CI checkout). Fixed to treat a missing base directory like a path outside base (allow first write).
+2. **`ScheduledJobRunnerTest`** — PHPUnit mock declared `createDirectory(): bool` but production `FileWriter::createDirectory()` is **`void`**; CI failed with incompatible return type. Mock updated to `willReturn(null)`.
+3. **Frontend API barrel (It.17)** — `git`, `shortcodes`, and `themes` clients were implemented but not exported from `frontend/src/api/index.ts`; `npm run lint:api-barrel` failed in CI.
+4. **Demo dashboard disk metric** — `DEMO_MODE=true` instances displayed the **host partition** free space on the admin dashboard instead of a sandbox quota. `DemoStorageQuotaService` now reports synthetic quota (default **2 GiB** from `DEMO_STORAGE_QUOTA_BYTES`) based on `storage/app/demo/` usage only.
+
+### Evidence and traceability
+
+- **Key technical identifiers:** `LocalFlatFileStorage`, `ScheduledJobRunnerTest`, `frontend/src/api/index.ts`, `DemoStorageQuotaService`, `StorageChecker`, `DashboardController`
+- **Commits:** `732ee44` (storage + barrel), `b7c13dd` (demo quota + related)
+- **History:** [CHANGELOG](../CHANGELOG.md) `[Unreleased]`
+
+### Verification or operational excerpts
+
+```bash
+./scripts/iteration-gate.sh
+./vendor/bin/phpunit backend/tests/Core/Scheduler/Services/ScheduledJobRunnerTest.php
+cd frontend && npm run lint:api-barrel
+```
+
+### Deploy note
+
+Apply with **`GIT_REF=origin/main`** on production and demo — **no new tag**. See [PRIVATE_DOMAIN_DEPLOY.md](../PRIVATE_DOMAIN_DEPLOY.md) or `scripts/deploy-instance-update.sh`.

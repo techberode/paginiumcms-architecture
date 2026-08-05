@@ -35,7 +35,7 @@ abstract class TestCase extends BaseTestCase
         // a developer .env (e.g. DEMO_MODE=true for demo.paginiumcms.com).
         putenv('DEMO_MODE=false');
         $_ENV['DEMO_MODE'] = 'false';
-        unset($_SERVER['DEMO_MODE']);
+        $_SERVER['DEMO_MODE'] = 'false';
 
         if (session_status() === PHP_SESSION_ACTIVE) {
             session_destroy();
@@ -47,6 +47,7 @@ abstract class TestCase extends BaseTestCase
         $this->currentUser = null;
 
         $this->container()->get(LoginAttemptTracker::class)->clearAll();
+        $this->purgeOtpChallenges();
         $this->applyTestSettingsOverrides();
     }
 
@@ -93,9 +94,27 @@ abstract class TestCase extends BaseTestCase
         $_SERVER['APP_ENV'] = 'testing';
         putenv('DEMO_MODE=false');
         $_ENV['DEMO_MODE'] = 'false';
-        unset($_SERVER['DEMO_MODE']);
+        $_SERVER['DEMO_MODE'] = 'false';
 
         parent::tearDown();
+    }
+
+    private function purgeOtpChallenges(): void
+    {
+        $storage = $this->container()->get(\PaginiumCMS\Core\Storage\Contracts\StorageInterface::class);
+        $challengeFile = 'data/otp-challenges.json';
+        if ($storage->exists($challengeFile)) {
+            $storage->delete($challengeFile, false);
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $workflows
+     */
+    protected function enableWorkflows(array $workflows): void
+    {
+        $settings = $this->container()->get(SettingsRepositoryInterface::class);
+        $settings->setGroup('workflows', array_merge($settings->group('workflows'), $workflows));
     }
 
     /**
