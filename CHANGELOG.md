@@ -101,6 +101,12 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+### Fixed
+
+- **`LocalFlatFileStorage::assertWithinBase()`** — allow logical paths when intermediate directories (e.g. `data/`) do not exist yet; fixes HTTP PHPUnit `settings.testing.json` failures in CI.
+- **API barrel (It.17)** — register `git`, `shortcodes`, and `themes` in `frontend/src/api/index.ts`.
+- **Demo dashboard storage metric** — `DEMO_MODE=true` no longer exposes host partition free space; `DemoStorageQuotaService` reports synthetic sandbox quota (default 2 GiB from `DEMO_STORAGE_QUOTA_BYTES`) based on `storage/app/demo/` usage only.
+
 <a id="release-2-1-0-beta-27"></a>
 
 ## [2.1.0-beta.27] – 2026-08-05

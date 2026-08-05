@@ -20,6 +20,8 @@ export const dashboardEn: MessageTree = {
     unreadMessages: 'Unread messages',
     media: 'Media',
     diskFree: 'Free disk space',
+    demoStorageFree: 'Demo sandbox free space',
+    demoStorageQuota: 'of {quota} demo quota',
     realtimeVisitors: 'Realtime visitors',
     activeLocks: 'Active locks',
     conflicts: 'Conflicts',

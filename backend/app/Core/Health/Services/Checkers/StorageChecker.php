@@ -6,13 +6,14 @@ namespace PaginiumCMS\Core\Health\Services\Checkers;
 
 use PaginiumCMS\Core\Health\Contracts\HealthCheckInterface;
 use PaginiumCMS\Core\Health\Models\HealthStatus;
+use PaginiumCMS\Modules\Demo\Services\DemoStorageQuotaService;
 
 class StorageChecker implements HealthCheckInterface
 {
-    private string $storagePath;
-
-    public function __construct(string $storagePath)
-    {
+    public function __construct(
+        private string $storagePath,
+        private DemoStorageQuotaService $demoQuota,
+    ) {
         $this->storagePath = rtrim($storagePath, '/');
     }
 
@@ -48,13 +49,26 @@ class StorageChecker implements HealthCheckInterface
             }
         }
 
-        // 2. Voľné miesto
-        $freeSpace = disk_free_space($this->storagePath);
-        $data['free_space'] = $freeSpace !== false ? $this->formatSize((float)$freeSpace) : 'N/A';
-        $data['free_space_bytes'] = $freeSpace;
+        // 2. Voľné miesto — demo: synthetic sandbox quota; production: host partition
+        if ($this->demoQuota->isActive()) {
+            $metrics = $this->demoQuota->metrics($this->storagePath);
+            $data['free_space'] = $metrics['free_space'];
+            $data['free_space_bytes'] = $metrics['free_space_bytes'];
+            $data['demo_synthetic'] = true;
+            $data['demo_quota_bytes'] = $metrics['quota_bytes'];
+            $data['demo_used_bytes'] = $metrics['used_space_bytes'];
 
-        if ($freeSpace !== false && $freeSpace < 104857600) { // 100 MB
-            $issues[] = 'Voľné miesto je menšie ako 100 MB';
+            if ($metrics['free_space_bytes'] < 104857600) {
+                $issues[] = 'Demo sandbox storage is nearly full';
+            }
+        } else {
+            $freeSpace = disk_free_space($this->storagePath);
+            $data['free_space'] = $freeSpace !== false ? $this->formatSize((float) $freeSpace) : 'N/A';
+            $data['free_space_bytes'] = $freeSpace;
+
+            if ($freeSpace !== false && $freeSpace < 104857600) {
+                $issues[] = 'Voľné miesto je menšie ako 100 MB';
+            }
         }
 
         $status = empty($issues) ? HealthStatus::STATUS_PASS : HealthStatus::STATUS_WARN;

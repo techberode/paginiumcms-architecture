@@ -45,6 +45,9 @@ export interface DashboardOverview {
   storage?: {
     free_space?: string | null;
     free_space_bytes?: number | null;
+    demo_synthetic?: boolean;
+    demo_quota_bytes?: number;
+    demo_used_bytes?: number;
     content?: {
       total_bytes: number;
       total_human: string;

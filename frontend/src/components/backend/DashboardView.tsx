@@ -28,6 +28,7 @@ import { DashboardActivityPanel } from '../dashboard/DashboardActivityPanel';
 import { DashboardDiskStructurePanel } from '../dashboard/DashboardDiskStructurePanel';
 import { AdminPageSkeleton } from '../ui/AdminPageSkeleton';
 import { useI18n } from '../../context/I18nContext';
+import { useSettings } from '../../hooks/useSettings';
 
 interface ContentStats {
   totalPages: number;
@@ -43,10 +44,24 @@ interface DashboardData {
   overview: DashboardOverview | null;
 }
 
+function formatStorageQuotaLabel(bytes: number): string {
+  if (bytes >= 1024 ** 3) {
+    return `${Math.round(bytes / 1024 ** 3)} GB`;
+  }
+
+  if (bytes >= 1024 ** 2) {
+    return `${Math.round(bytes / 1024 ** 2)} MB`;
+  }
+
+  return `${bytes} B`;
+}
+
 export const DashboardView: React.FC = () => {
   const { get } = useApi();
   const toast = useToast();
   const { t } = useI18n();
+  const { settings } = useSettings();
+  const isDemoInstance = settings.demo?.enabled === true;
 
   const { data, isLoading, isFetching, refetch } = useAdminListQuery<DashboardData>({
     queryKey: queryKeys.dashboard.stats,
@@ -105,6 +120,10 @@ export const DashboardView: React.FC = () => {
   const analytics = overview?.analytics;
   const counts = overview?.counts;
   const storageFree = overview?.storage?.free_space;
+  const demoStorageQuota =
+    overview?.storage?.demo_synthetic && overview.storage.demo_quota_bytes
+      ? formatStorageQuotaLabel(overview.storage.demo_quota_bytes)
+      : null;
   const contentStorage = overview?.storage?.content;
 
   if (loading) {
@@ -223,10 +242,17 @@ export const DashboardView: React.FC = () => {
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-bold uppercase text-slate-500">{t('dashboard.stats.diskFree')}</p>
+              <p className="text-xs font-bold uppercase text-slate-500">
+                {isDemoInstance ? t('dashboard.stats.demoStorageFree') : t('dashboard.stats.diskFree')}
+              </p>
               <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
                 {storageFree ?? '—'}
               </p>
+              {isDemoInstance && demoStorageQuota ? (
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  {t('dashboard.stats.demoStorageQuota', { quota: demoStorageQuota })}
+                </p>
+              ) : null}
             </div>
             <Database className="w-8 h-8 text-amber-500" />
           </div>

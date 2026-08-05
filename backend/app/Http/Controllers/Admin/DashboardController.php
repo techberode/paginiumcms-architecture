@@ -105,7 +105,13 @@ final class DashboardController
 
     /**
      * @param array<int|string, mixed> $healthReport
-     * @return array{free_space: ?string, free_space_bytes: ?int}
+     * @return array{
+     *     free_space: ?string,
+     *     free_space_bytes: ?int,
+     *     demo_synthetic?: bool,
+     *     demo_quota_bytes?: int,
+     *     demo_used_bytes?: int
+     * }
      */
     private function extractStorageSummary(array $healthReport): array
     {
@@ -130,11 +136,22 @@ final class DashboardController
             }
 
             $bytes = $data['free_space_bytes'] ?? null;
-
-            return [
+            $summary = [
                 'free_space' => isset($data['free_space']) ? (string) $data['free_space'] : null,
                 'free_space_bytes' => is_numeric($bytes) ? (int) $bytes : null,
             ];
+
+            if (($data['demo_synthetic'] ?? false) === true) {
+                $summary['demo_synthetic'] = true;
+                if (isset($data['demo_quota_bytes']) && is_numeric($data['demo_quota_bytes'])) {
+                    $summary['demo_quota_bytes'] = (int) $data['demo_quota_bytes'];
+                }
+                if (isset($data['demo_used_bytes']) && is_numeric($data['demo_used_bytes'])) {
+                    $summary['demo_used_bytes'] = (int) $data['demo_used_bytes'];
+                }
+            }
+
+            return $summary;
         }
 
         return ['free_space' => null, 'free_space_bytes' => null];
