@@ -18,6 +18,8 @@ import type { EditorProfileId } from '../../utils/editorProfiles';
 import { EditorProfilePicker } from './EditorProfilePicker';
 import { countContentStats } from '../../utils/contentEditorMeta';
 import { SeoMetadataPanel, type SeoFormValues } from './SeoMetadataPanel';
+import { SeoHealthBadge } from './SeoHealthBadge';
+import { getContentSeoHealthFromFields } from '../../utils/seoHealth';
 import { ArticleCommentsPanel } from './ArticleCommentsPanel';
 import type { ArticleCommentsSettings } from '../../utils/articleCommentsSettings';
 import { useOpenLinksInNewTab } from '../../hooks/useOpenLinksInNewTab';
@@ -130,6 +132,19 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
 }) => {
   const { t } = useI18n();
   const { settings } = useSettingsContext();
+  const seoHealth = useMemo(
+    () =>
+      getContentSeoHealthFromFields({
+        status,
+        checkAsPublished: true,
+        contentType: type,
+        seoTitle: seo.seoTitle,
+        seoDescription: seo.seoDescription,
+        ogImage: seo.ogImage,
+        tags: seo.tags,
+      }),
+    [status, type, seo.seoTitle, seo.seoDescription, seo.ogImage, seo.tags]
+  );
   const { user } = useAuth();
   const stats = countContentStats(content);
   const openInNewTab = useOpenLinksInNewTab();
@@ -408,10 +423,13 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
           <div className="rounded-xl border border-slate-200 dark:border-slate-800">
             <button
               type="button"
-              className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold text-slate-800 dark:text-slate-100"
+              className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm font-semibold text-slate-800 dark:text-slate-100"
               onClick={() => onSeoOpenChange(!seoOpen)}
             >
-              <span>{t('editor.shell.seoSettings')}</span>
+              <span className="inline-flex items-center gap-2">
+                {t('editor.shell.seoSettings')}
+                {!seoOpen ? <SeoHealthBadge level={seoHealth.level} issues={seoHealth.issues} /> : null}
+              </span>
               <span className="text-xs font-normal text-slate-400">
                 {seoOpen ? t('editor.shell.hide') : t('editor.shell.show')}
               </span>
@@ -424,6 +442,8 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
                   disabled={!canEdit}
                   showTags={type === 'article'}
                   compact
+                  contentStatus={status}
+                  contentType={type}
                 />
               </div>
             )}

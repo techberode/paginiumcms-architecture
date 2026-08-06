@@ -224,18 +224,18 @@ export const NewsletterSubscribersPanel: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-theme-text flex items-center gap-2">
-            <Mail className="h-7 w-7 text-theme-primary" />
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <Mail className="h-7 w-7 text-indigo-600 dark:text-indigo-400" />
             {t('newsletter.page.title')}
           </h1>
-          <p className="text-sm text-theme-text-muted mt-1">{t('newsletter.page.subtitle')}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{t('newsletter.page.subtitle')}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
             onClick={() => void load()}
             disabled={loading}
-            className="inline-flex items-center gap-2 rounded-xl border border-theme-border bg-theme-surface px-4 py-2 text-sm font-semibold text-theme-text hover:bg-theme-surface-elevated disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-60"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             {t('newsletter.actions.refresh')}
@@ -244,7 +244,7 @@ export const NewsletterSubscribersPanel: React.FC = () => {
             type="button"
             onClick={() => void handleExport()}
             disabled={exporting || items.length === 0}
-            className="inline-flex items-center gap-2 rounded-xl bg-theme-primary px-4 py-2 text-sm font-semibold text-theme-primary-foreground hover:opacity-90 disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
           >
             <Download className="h-4 w-4" />
             {t('newsletter.actions.exportCsv')}
@@ -257,9 +257,9 @@ export const NewsletterSubscribersPanel: React.FC = () => {
           {Object.entries(bySource).map(([source, count]) => (
             <span
               key={source}
-              className="inline-flex items-center gap-1 rounded-full border border-theme-border bg-theme-surface px-3 py-1 text-xs font-medium text-theme-text-muted"
+              className="inline-flex items-center gap-1 rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1 text-xs font-medium text-slate-500 dark:text-slate-400"
             >
-              {formatSource(source)}: <strong className="text-theme-text">{count}</strong>
+              {formatSource(source)}: <strong className="text-slate-900 dark:text-white">{count}</strong>
             </span>
           ))}
         </div>
@@ -268,19 +268,19 @@ export const NewsletterSubscribersPanel: React.FC = () => {
       <NewsletterSettingsPanel onSaved={() => void load()} />
 
       {sendStatus ? (
-        <div className="rounded-xl border border-theme-border bg-theme-surface p-4 space-y-4">
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 space-y-4">
           <div>
-            <h2 className="text-lg font-semibold text-theme-text">{t('newsletter.send.title')}</h2>
-            <p className="text-sm text-theme-text-muted mt-1">{t('newsletter.send.subtitle')}</p>
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">{t('newsletter.send.title')}</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{t('newsletter.send.subtitle')}</p>
           </div>
           <dl className="grid gap-2 sm:grid-cols-2 text-sm">
             <div className="flex justify-between gap-4 sm:block">
-              <dt className="text-theme-text-muted">{t('newsletter.send.configured')}</dt>
-              <dd className="font-medium text-theme-text">{formatBool(sendStatus.configured)}</dd>
+              <dt className="text-slate-500 dark:text-slate-400">{t('newsletter.send.configured')}</dt>
+              <dd className="font-medium text-slate-900 dark:text-white">{formatBool(sendStatus.configured)}</dd>
             </div>
             <div className="flex justify-between gap-4 sm:block sm:col-span-2">
-              <dt className="text-theme-text-muted">{t('newsletter.send.lastWeeklyDigestAt')}</dt>
-              <dd className="font-medium text-theme-text">
+              <dt className="text-slate-500 dark:text-slate-400">{t('newsletter.send.lastWeeklyDigestAt')}</dt>
+              <dd className="font-medium text-slate-900 dark:text-white">
                 {sendStatus.lastWeeklyDigestAt
                   ? new Date(sendStatus.lastWeeklyDigestAt).toLocaleString(dateLocale)
                   : t('newsletter.send.never')}
@@ -289,59 +289,59 @@ export const NewsletterSubscribersPanel: React.FC = () => {
           </dl>
 
           {isSuperAdmin ? (
-            <div className="flex flex-col gap-4 pt-2 border-t border-theme-border">
+            <div className="flex flex-col gap-4 pt-2 border-t border-slate-200 dark:border-slate-800">
               <button
                 type="button"
                 onClick={() => void handleSendWeeklyDigest()}
                 disabled={sendLoading}
-                className="inline-flex w-fit items-center gap-2 rounded-xl bg-theme-primary px-4 py-2 text-sm font-semibold text-theme-primary-foreground hover:opacity-90 disabled:opacity-60"
+                className="inline-flex w-fit items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
               >
                 <Send className="h-4 w-4" />
                 {t('newsletter.actions.sendWeeklyDigest')}
               </button>
 
-              <div className="rounded-lg border border-theme-border bg-theme-surface-elevated/40 p-4 space-y-3">
-                <h3 className="text-sm font-semibold text-theme-text">{t('newsletter.release.title')}</h3>
-                <p className="text-xs text-theme-text-muted">{t('newsletter.release.subtitle')}</p>
+              <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 p-4 space-y-3">
+                <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{t('newsletter.release.title')}</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{t('newsletter.release.subtitle')}</p>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <label className="flex flex-col gap-1 text-sm">
-                    <span className="font-medium text-theme-text">{t('newsletter.release.version')}</span>
+                    <span className="font-medium text-slate-900 dark:text-white">{t('newsletter.release.version')}</span>
                     <input
                       type="text"
                       value={releaseVersion}
                       onChange={(event) => setReleaseVersion(event.target.value)}
                       placeholder={t('newsletter.release.versionPlaceholder')}
-                      className="rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-theme-text"
+                      className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-slate-900 dark:text-white"
                     />
                   </label>
                   <label className="flex flex-col gap-1 text-sm sm:col-span-2">
-                    <span className="font-medium text-theme-text">{t('newsletter.release.releaseTitle')}</span>
+                    <span className="font-medium text-slate-900 dark:text-white">{t('newsletter.release.releaseTitle')}</span>
                     <input
                       type="text"
                       value={releaseTitle}
                       onChange={(event) => setReleaseTitle(event.target.value)}
                       placeholder={t('newsletter.release.titlePlaceholder')}
-                      className="rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-theme-text"
+                      className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-slate-900 dark:text-white"
                     />
                   </label>
                   <label className="flex flex-col gap-1 text-sm sm:col-span-2">
-                    <span className="font-medium text-theme-text">{t('newsletter.release.body')}</span>
+                    <span className="font-medium text-slate-900 dark:text-white">{t('newsletter.release.body')}</span>
                     <textarea
                       rows={4}
                       value={releaseBody}
                       onChange={(event) => setReleaseBody(event.target.value)}
                       placeholder={t('newsletter.release.bodyPlaceholder')}
-                      className="rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-theme-text"
+                      className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-slate-900 dark:text-white"
                     />
                   </label>
                   <label className="flex flex-col gap-1 text-sm sm:col-span-2">
-                    <span className="font-medium text-theme-text">{t('newsletter.release.url')}</span>
+                    <span className="font-medium text-slate-900 dark:text-white">{t('newsletter.release.url')}</span>
                     <input
                       type="url"
                       value={releaseUrl}
                       onChange={(event) => setReleaseUrl(event.target.value)}
                       placeholder={t('newsletter.release.urlPlaceholder')}
-                      className="rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-theme-text"
+                      className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-slate-900 dark:text-white"
                     />
                   </label>
                 </div>
@@ -349,7 +349,7 @@ export const NewsletterSubscribersPanel: React.FC = () => {
                   type="button"
                   onClick={() => void handleSendCmsRelease()}
                   disabled={sendLoading}
-                  className="inline-flex w-fit items-center gap-2 rounded-xl border border-theme-border bg-theme-surface px-4 py-2 text-sm font-semibold text-theme-text hover:bg-theme-surface-elevated disabled:opacity-60"
+                  className="inline-flex w-fit items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-60"
                 >
                   <Send className="h-4 w-4" />
                   {t('newsletter.actions.sendRelease')}
@@ -358,27 +358,27 @@ export const NewsletterSubscribersPanel: React.FC = () => {
 
               <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
                 <label className="flex flex-col gap-1 text-sm flex-1 max-w-md">
-                  <span className="font-medium text-theme-text">{t('newsletter.send.testEmailLabel')}</span>
+                  <span className="font-medium text-slate-900 dark:text-white">{t('newsletter.send.testEmailLabel')}</span>
                   <input
                     type="email"
                     value={testEmail}
                     onChange={(event) => setTestEmail(event.target.value)}
                     placeholder={t('newsletter.send.testEmailPlaceholder')}
-                    className="rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-theme-text"
+                    className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-slate-900 dark:text-white"
                   />
                 </label>
                 <button
                   type="button"
                   onClick={() => void handleSendTest()}
                   disabled={sendLoading || testEmail.trim() === ''}
-                  className="inline-flex items-center gap-2 rounded-xl border border-theme-border bg-theme-surface px-4 py-2 text-sm font-semibold text-theme-text hover:bg-theme-surface-elevated disabled:opacity-60"
+                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-60"
                 >
                   {t('newsletter.actions.sendTest')}
                 </button>
               </div>
             </div>
           ) : (
-            <p className="text-xs text-theme-text-muted">{t('newsletter.send.superAdminHint')}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">{t('newsletter.send.superAdminHint')}</p>
           )}
         </div>
       ) : null}
@@ -404,38 +404,38 @@ export const NewsletterSubscribersPanel: React.FC = () => {
         onSort={handleSort}
       />
 
-      <div className="overflow-hidden rounded-xl border border-theme-border bg-theme-surface">
-        <table className="min-w-full divide-y divide-theme-border text-sm">
-          <thead className="bg-theme-surface-elevated/60">
+      <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+        <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800 text-sm">
+          <thead className="bg-slate-50 dark:bg-slate-800/80">
             <tr>
-              <th className="px-4 py-3 text-left font-semibold text-theme-text-muted">{t('newsletter.table.email')}</th>
-              <th className="px-4 py-3 text-left font-semibold text-theme-text-muted">{t('newsletter.table.source')}</th>
-              <th className="px-4 py-3 text-left font-semibold text-theme-text-muted">{t('newsletter.table.preferences')}</th>
-              <th className="px-4 py-3 text-left font-semibold text-theme-text-muted">{t('newsletter.table.status')}</th>
-              <th className="px-4 py-3 text-left font-semibold text-theme-text-muted">{t('newsletter.table.date')}</th>
+              <th className="px-4 py-3 text-left font-semibold text-slate-500 dark:text-slate-400">{t('newsletter.table.email')}</th>
+              <th className="px-4 py-3 text-left font-semibold text-slate-500 dark:text-slate-400">{t('newsletter.table.source')}</th>
+              <th className="px-4 py-3 text-left font-semibold text-slate-500 dark:text-slate-400">{t('newsletter.table.preferences')}</th>
+              <th className="px-4 py-3 text-left font-semibold text-slate-500 dark:text-slate-400">{t('newsletter.table.status')}</th>
+              <th className="px-4 py-3 text-left font-semibold text-slate-500 dark:text-slate-400">{t('newsletter.table.date')}</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-theme-border">
+          <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
             {loading ? (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-theme-text-muted">
+                <td colSpan={5} className="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
                   {t('list.loading')}
                 </td>
               </tr>
             ) : listView.items.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-theme-text-muted">
+                <td colSpan={5} className="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
                   {t('newsletter.empty')}
                 </td>
               </tr>
             ) : (
               listView.items.map((row) => (
-                <tr key={row.id} className="hover:bg-theme-surface-elevated/40">
-                  <td className="px-4 py-3 font-medium text-theme-text">{row.email}</td>
-                  <td className="px-4 py-3 text-theme-text-muted">{formatSource(row.source)}</td>
-                  <td className="px-4 py-3 text-theme-text-muted">{formatPreferences(row.preferences)}</td>
-                  <td className="px-4 py-3 text-theme-text-muted">{formatStatus(row.status)}</td>
-                  <td className="px-4 py-3 text-theme-text-muted">
+                <tr key={row.id} className="hover:bg-slate-50 dark:bg-slate-800/60">
+                  <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{row.email}</td>
+                  <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{formatSource(row.source)}</td>
+                  <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{formatPreferences(row.preferences)}</td>
+                  <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{formatStatus(row.status)}</td>
+                  <td className="px-4 py-3 text-slate-500 dark:text-slate-400">
                     {row.subscribedAt
                       ? new Date(row.subscribedAt).toLocaleString(dateLocale)
                       : '—'}

@@ -28,6 +28,9 @@ export const publicSk: MessageTree = {
     notFoundCode: '404',
     pageNotFound: 'Stránka „:slug“ neexistuje.',
   },
+  backToTop: {
+    label: 'Späť hore',
+  },
   meta: {
     rssTitle: ':siteName RSS',
     sitemapTitle: ':siteName Sitemap',
@@ -44,6 +47,7 @@ export const publicSk: MessageTree = {
     tryCmsBody: 'Open-source flat-file CMS — vyskúšajte admin aj verejný web bez inštalácie.',
     madeWith: 'Navrhnuté s',
     forCreators: 'pre tvorcov obsahu',
+    cmsVersion: 'PaginiumCMS :version',
     newsletter: {
       title: 'Newsletter',
       hint: 'Prihláste sa na odber noviniek.',

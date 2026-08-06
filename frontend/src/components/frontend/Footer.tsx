@@ -20,6 +20,7 @@ export const Footer: React.FC = () => {
   const showDemoFooterLink = !isDemoInstance && settings.demo?.showFooterLink !== false;
   const footerNewsletterEnabled = settings.newsletter?.footerEnabled === true;
   const cookieConsent = useCookieConsentOptional();
+  const cmsVersion = settings.cmsInfo?.version?.trim() ?? '';
 
   const sortedNav = [...navigation].sort((a, b) => a.order - b.order);
 
@@ -32,7 +33,14 @@ export const Footer: React.FC = () => {
               <div className={`w-9 h-9 ${LOGO_FALLBACK}`}>
                 <Rocket className="w-5 h-5 text-theme-primary-foreground" />
               </div>
-              <span className="font-extrabold text-xl tracking-tight public-footer-heading">{siteTitle}</span>
+              <div className="min-w-0">
+                <span className="font-extrabold text-xl tracking-tight public-footer-heading block">{siteTitle}</span>
+                {cmsVersion !== '' ? (
+                  <span className="mt-1 inline-flex text-[11px] font-semibold uppercase tracking-wide opacity-70 public-footer-heading">
+                    {t('public.footer.cmsVersion', { version: cmsVersion })}
+                  </span>
+                ) : null}
+              </div>
             </div>
             <p className="text-sm leading-relaxed opacity-80">{siteTagline}</p>
             <div className="mt-6">

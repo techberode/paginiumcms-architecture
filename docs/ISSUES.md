@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 5 August 2026 · register **ISS-001–ISS-129** · It.67 + It.68 + It.71 in `[Unreleased]`
+> **Last updated:** 6 August 2026 · register **ISS-001–ISS-131** · It.67 + It.68 + It.71 + UX Phase A in `[Unreleased]`
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -152,6 +152,8 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-127](#iss-127) | It.71 Performance Guard DI incomplete — 233 PHPUnit errors, console fatal | High (CI / bootstrap) | ✅ **`[Unreleased]`** · explicit DI + ACL default |
 | [ISS-128](#iss-128) | Engine Performance Guard settings could not be saved (`float` field / Zod) | Medium (admin UX) | ✅ **`[Unreleased]`** · float input + numeric Zod |
 | [ISS-129](#iss-129) | FileDriver emitted PHP warning on read-only cache dir (CI PHPUnit) | Low (CI / cache) | ✅ **`[Unreleased]`** · writable guard + silent write fail |
+| [ISS-130](#iss-130) | Newsletter unreadable in light mode (admin + public modal) | Medium (UX) | ✅ **`[Unreleased]`** · theme token fix |
+| [ISS-131](#iss-131) | PHP_CodeSniffer blame-report command injection (CVE-2026-67434) | High (dev dep / CI) | ✅ **`[Unreleased]`** · PHPCS 4.0.4 |
 
 ## CI failures (GitHub Actions)
 
@@ -3801,4 +3803,81 @@ Higher-level services (`CacheCapabilityProbe`, `SafeRemediationService`) already
 ```
 
 Expected: **0 warnings**, remediation test still passes.
+
+<a id="iss-130"></a>
+
+## ISS-130 – Newsletter unreadable in light mode (admin + public modal)
+
+[↑ Overview](#overview)
+
+**Severity:** Medium (UX)  
+**Status:** ✅ **`[Unreleased]`**  
+**Release context:** Post–It.71 UX polish (Phase A) — reported on production and in local tests.
+
+### Operational synopsis
+
+Two separate surfaces shared the same root cause pattern: **low-contrast tokens on light backgrounds**.
+
+1. **Admin → Newsletter** — `NewsletterSubscribersPanel` and `NewsletterSettingsPanel` used `theme-*` CSS variables (`text-theme-text-muted`, `bg-theme-surface-elevated/60`) while the admin shell uses `bg-slate-50`. Cards and table headers blended into the page background.
+
+2. **Public newsletter modal** — `NewsletterPreferenceFields` used `border-white/10 bg-black/10` and `opacity-70` hint text, styled for dark footer overlays. Inside `NewsletterSubscribeModal` (`bg-theme-surface-elevated`, light mode) preference labels were nearly invisible. Success state used `text-emerald-100` on light green — also unreadable.
+
+### Fix
+
+- Admin panels: align with Analytics admin styling (`slate-*` + `dark:`).
+- Public preference cards: `text-theme-text`, `text-theme-text-muted`, `border-theme-border`, `bg-theme-surface`.
+- Modal / maintenance success banners: `text-emerald-900` + `bg-emerald-50` in light; keep dark variants.
+
+### Evidence and traceability
+
+- **Symptom:** User screenshot — “Čo chcete dostávať?” and option labels invisible in subscribe modal.
+- **Key files:** `NewsletterPreferenceFields.tsx`, `NewsletterSubscribeModal.tsx`, `NewsletterSubscribersPanel.tsx`, `NewsletterSettingsPanel.tsx`
+- **History:** [CHANGELOG](../CHANGELOG.md) `[Unreleased]` · UX Phase A
+
+### Verification
+
+Manual: Settings → enable footer newsletter → open modal on public site in **light** appearance; labels and hints must be readable. Admin → Newsletter table readable in light admin theme.
+
+<a id="iss-131"></a>
+
+## ISS-131 – PHP_CodeSniffer blame-report command injection (CVE-2026-67434)
+
+[↑ Overview](#overview)
+
+**Severity:** High (dev dependency / CI)  
+**Status:** ✅ **`[Unreleased]`**  
+**Release context:** `composer audit` in local `alltests` / CI after 6 Aug 2026 PHPCS advisory.
+
+### Operational synopsis
+
+**GHSA-hmqg-cxww-wqhq** / **CVE-2026-67434**: PHP_CodeSniffer `< 3.13.6` and `>= 4.0.0, < 4.0.2` — command injection when processing specially crafted filenames with **Gitblame / Hgblame / Svnblame** report formats.
+
+PaginiumCMS uses PHPCS only as a **dev** dependency (`composer.json` require-dev). Default project scripts do not invoke blame reports; risk is confined to CI/dev environments scanning untrusted trees with those report flags.
+
+Lock file had `squizlabs/php_codesniffer` **4.0.1** → flagged by `composer audit`.
+
+### Fix
+
+- Require `squizlabs/php_codesniffer`: `^4.0.2` in `composer.json`.
+- Updated lock to **4.0.4** (`composer update squizlabs/php_codesniffer`).
+- `composer audit` → **0 advisories**.
+
+### Evidence and traceability
+
+- **Advisory:** [GHSA-hmqg-cxww-wqhq](https://github.com/PHPCSStandards/PHP_CodeSniffer/security/advisories/GHSA-hmqg-cxww-wqhq)
+- **Key files:** `composer.json`, `composer.lock`
+- **History:** [CHANGELOG](../CHANGELOG.md) `[Unreleased]`
+
+### Verification
+
+```bash
+composer audit
+composer show squizlabs/php_codesniffer | grep versions
+```
+
+Expected: no advisories; version `>= 4.0.2`.
+
+### Ops note
+
+Production runtime is **not** affected (PHPCS is not installed in prod `composer install --no-dev`). Re-run `composer install` on dev/CI after pull.
 

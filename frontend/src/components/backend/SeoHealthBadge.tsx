@@ -1,6 +1,6 @@
 // frontend/src/components/backend/SeoHealthBadge.tsx
 import React from 'react';
-import { type SeoHealthLevel } from '../../utils/seoHealth';
+import { type SeoHealthLevel, type SeoIssue } from '../../utils/seoHealth';
 import { useI18n } from '../../context/I18nContext';
 
 const STYLE: Record<SeoHealthLevel, string> = {
@@ -11,17 +11,22 @@ const STYLE: Record<SeoHealthLevel, string> = {
 
 export interface SeoHealthBadgeProps {
   level: SeoHealthLevel;
+  issues?: SeoIssue[];
   className?: string;
 }
 
-export const SeoHealthBadge: React.FC<SeoHealthBadgeProps> = ({ level, className = '' }) => {
+export const SeoHealthBadge: React.FC<SeoHealthBadgeProps> = ({ level, issues = [], className = '' }) => {
   const { t } = useI18n();
   const label = t(`media.seo.${level}`);
+  const issueSummary =
+    issues.length > 0
+      ? issues.map((issue) => t(`editor.seo.issues.${issue.code}.title`)).join(' · ')
+      : label;
 
   return (
     <span
       className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${STYLE[level]} ${className}`}
-      title={label}
+      title={issueSummary}
     >
       {label}
     </span>

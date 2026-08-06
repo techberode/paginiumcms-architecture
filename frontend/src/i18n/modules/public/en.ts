@@ -28,6 +28,9 @@ export const publicEn: MessageTree = {
     notFoundCode: '404',
     pageNotFound: 'Page “:slug” does not exist.',
   },
+  backToTop: {
+    label: 'Back to top',
+  },
   meta: {
     rssTitle: ':siteName RSS',
     sitemapTitle: ':siteName Sitemap',
@@ -44,6 +47,7 @@ export const publicEn: MessageTree = {
     tryCmsBody: 'Open-source flat-file CMS — try the admin and public site without installation.',
     madeWith: 'Built with',
     forCreators: 'for content creators',
+    cmsVersion: 'PaginiumCMS :version',
     newsletter: {
       title: 'Newsletter',
       hint: 'Subscribe to our newsletter.',

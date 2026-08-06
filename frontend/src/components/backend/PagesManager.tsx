@@ -22,7 +22,7 @@ import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { contentApi } from '../../api/content';
 import { summarizeBulkResult } from '../../types/bulk';
-import { evaluateContentSeo } from '../../utils/seoHealth';
+import { getContentSeoHealth } from '../../utils/seoHealth';
 import { resolveAdminMediaPreviewUrl, resolvePublicMediaUrl } from '../../api/media';
 import type { ContentType } from '../../api/drafts';
 import { AdminListSkeleton } from '../ui/AdminListSkeleton';
@@ -227,16 +227,20 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
     return `badge ${classes[status as keyof typeof classes] || 'badge-info'}`;
   };
 
-  const visibleItems = items.filter((item) => {
-    if (!seoIssuesOnly) {
-      return true;
-    }
-    return evaluateContentSeo({
+  const itemSeoHealth = (item: (typeof items)[number]) =>
+    getContentSeoHealth({
       status: item.status,
       frontMatter: item.frontMatter,
       featuredImage: item.featuredImage,
       tags: item.tags,
-    }) !== 'ok';
+      contentType: type === 'articles' ? 'article' : 'page',
+    });
+
+  const visibleItems = items.filter((item) => {
+    if (!seoIssuesOnly) {
+      return true;
+    }
+    return itemSeoHealth(item).level !== 'ok';
   });
 
   const bulkSelection = useBulkSelection(
@@ -328,12 +332,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {visibleItems.map((item) => {
             const preview = previewImageForItem(item);
-            const seoLevel = evaluateContentSeo({
-              status: item.status,
-              frontMatter: item.frontMatter,
-              featuredImage: item.featuredImage,
-              tags: item.tags,
-            });
+            const seoHealth = itemSeoHealth(item);
             return (
               <div key={item.id} className={`card overflow-hidden flex flex-col ${bulkSelection.isSelected(item.slug) ? 'ring-2 ring-indigo-500' : ''}`}>
                 <div className="aspect-video bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden relative">
@@ -355,7 +354,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                 <div className="card-body space-y-2 flex-1 flex flex-col">
                   <div className="flex items-start justify-between gap-2">
                     <p className="font-medium truncate">{item.title}</p>
-                    <SeoHealthBadge level={seoLevel} />
+                    <SeoHealthBadge level={seoHealth.level} issues={seoHealth.issues} />
                   </div>
                   <p className="text-xs text-gray-500 truncate">/{item.slug}</p>
                   <span className={getStatusBadge(item.status)}>{statusLabel(item.status)}</span>
@@ -387,12 +386,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
       ) : isMobile ? (
         <div className="space-y-3">
           {visibleItems.map((item) => {
-            const seoLevel = evaluateContentSeo({
-              status: item.status,
-              frontMatter: item.frontMatter,
-              featuredImage: item.featuredImage,
-              tags: item.tags,
-            });
+            const seoHealth = itemSeoHealth(item);
             return (
               <ContentListMobileCard
                 key={item.id}
@@ -401,7 +395,8 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                 status={item.status}
                 statusBadgeClass={getStatusBadge(item.status)}
                 statusLabel={statusLabel(item.status as ContentItem['status'])}
-                seoLevel={seoLevel}
+                seoLevel={seoHealth.level}
+                seoIssues={seoHealth.issues}
                 updatedAt={item.updatedAt}
                 scheduledAt={
                   item.status === 'scheduled'
@@ -472,12 +467,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                 <tbody>
                   {visibleItems.map((item) => {
                     const preview = previewImageForItem(item);
-                    const seoLevel = evaluateContentSeo({
-                      status: item.status,
-                      frontMatter: item.frontMatter,
-                      featuredImage: item.featuredImage,
-                      tags: item.tags,
-                    });
+                    const seoHealth = itemSeoHealth(item);
                     return (
                       <tr key={item.id}>
                         <td>
@@ -511,7 +501,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                             : '—'}
                         </td>
                         <td>
-                          <SeoHealthBadge level={seoLevel} />
+                          <SeoHealthBadge level={seoHealth.level} issues={seoHealth.issues} />
                         </td>
                         <td className="text-sm text-gray-500 dark:text-gray-400 hide-tablet">
                           {formatDisplayDate(item.updatedAt, locale)}

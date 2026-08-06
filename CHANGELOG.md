@@ -122,6 +122,18 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **FileDriver read-only cache writes ([ISS-129](docs/ISSUES.md#iss-129))** — `file_put_contents` on non-writable cache dir emitted PHP warning (CI failure with 0 test failures); guard writability and return `false` silently via `writeFile()`.
 - **`ContentScheduledPublishServiceTest`** — OTP skip test asserts only the created slug (full-suite shared storage isolation); restores `workflows` settings in `finally`.
 
+### Added (UX polish — Phase A)
+
+- **Public footer:** CMS version badge next to site logo via `cmsInfo.version` on `GET /api/settings/public` (from `AppVersion::VERSION`).
+- **Back to top:** floating button on public pages (`BackToTopButton` in `PublicSiteLayout`).
+- **SEO health details:** `getContentSeoHealth()` issue codes with i18n hints; tooltips in content lists; live `SeoHealthChecklist` in editor SEO panel + badge on collapsed SEO section.
+
+### Fixed (UX polish — Phase A)
+
+- **Newsletter admin panels ([ISS-130](docs/ISSUES.md#iss-130))** — replace `theme-*` tokens with admin `slate-*` / `dark:` classes for readable light-mode tables and cards.
+- **Public newsletter modal ([ISS-130](docs/ISSUES.md#iss-130))** — preference cards used `bg-black/10` + low opacity text on light modal background; switch to `text-theme-text` / `theme-border` tokens; fix success message contrast in light mode.
+- **PHP_CodeSniffer dev dependency ([ISS-131](docs/ISSUES.md#iss-131))** — bump `squizlabs/php_codesniffer` to `^4.0.2` (installed 4.0.4) for CVE-2026-67434 / GHSA-hmqg-cxww-wqhq (blame-report command injection); `composer audit` clean.
+
 ### Fixed
 
 - **PHPUnit DEMO_MODE isolation ([ISS-125](docs/ISSUES.md#iss-125))** — force `DEMO_MODE=false` in `phpunit.xml` and `tests/bootstrap.php`; demo HTTP tests restore env and re-bootstrap in `try/finally`; `Http/TestCase` syncs `$_SERVER`, purges OTP challenges, adds `enableWorkflows()`; OTP and SystemUpdate tests assert prerequisites.

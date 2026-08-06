@@ -3,6 +3,9 @@ import React, { useState } from 'react';
 import { FolderOpen, X } from 'lucide-react';
 import { resolveAdminMediaPreviewUrl, resolvePublicMediaUrl } from '../../api/media';
 import { MediaPickerModal } from './MediaPickerModal';
+import { SeoHealthChecklist } from './SeoHealthChecklist';
+import type { ContentEditorStatus } from '../../utils/contentScheduling';
+import type { ContentType } from '../../api/drafts';
 import { useI18n } from '../../context/I18nContext';
 
 export interface SeoFormValues {
@@ -20,6 +23,8 @@ export interface SeoMetadataPanelProps {
   disabled?: boolean;
   showTags?: boolean;
   compact?: boolean;
+  contentStatus?: ContentEditorStatus;
+  contentType?: ContentType;
 }
 
 function seoImagePreviewSrc(url: string): string {
@@ -49,6 +54,8 @@ export const SeoMetadataPanel: React.FC<SeoMetadataPanelProps> = ({
   disabled = false,
   showTags = false,
   compact = false,
+  contentStatus = 'draft',
+  contentType = 'page',
 }) => {
   const { t } = useI18n();
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
@@ -58,6 +65,19 @@ export const SeoMetadataPanel: React.FC<SeoMetadataPanelProps> = ({
   return (
     <div className="space-y-4">
       {!compact && <p className="text-sm text-gray-500 dark:text-gray-400">{t('editor.seo.intro')}</p>}
+
+      <SeoHealthChecklist
+        compact={compact}
+        input={{
+          status: contentStatus,
+          checkAsPublished: true,
+          contentType,
+          seoTitle: values.seoTitle,
+          seoDescription: values.seoDescription,
+          ogImage: values.ogImage,
+          tags: values.tags,
+        }}
+      />
 
       <div className="form-group">
         <label className="form-label flex justify-between">

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { SeoHealthBadge } from './SeoHealthBadge';
-import type { SeoHealthLevel } from '../../utils/seoHealth';
+import type { SeoHealthLevel, SeoIssue } from '../../utils/seoHealth';
 import { useI18n } from '../../context/I18nContext';
 import { formatDisplayDate } from '../../utils/contentDates';
 
@@ -12,6 +12,7 @@ export interface ContentListMobileCardProps {
   statusBadgeClass: string;
   statusLabel: string;
   seoLevel: SeoHealthLevel;
+  seoIssues?: SeoIssue[];
   updatedAt: string;
   scheduledAt?: string;
   routeBase: string;
@@ -28,6 +29,7 @@ export const ContentListMobileCard: React.FC<ContentListMobileCardProps> = ({
   statusBadgeClass,
   statusLabel,
   seoLevel,
+  seoIssues = [],
   updatedAt,
   scheduledAt,
   routeBase,
@@ -56,7 +58,7 @@ export const ContentListMobileCard: React.FC<ContentListMobileCardProps> = ({
         <div className="min-w-0 flex-1 space-y-2">
           <div className="flex items-start justify-between gap-2">
             <p className="font-medium text-gray-900 dark:text-white break-words">{title}</p>
-            <SeoHealthBadge level={seoLevel} />
+            <SeoHealthBadge level={seoLevel} issues={seoIssues} />
           </div>
           <p className="text-xs text-gray-500 break-all">{slug}</p>
           <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
