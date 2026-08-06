@@ -9,6 +9,7 @@ use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
 use PaginiumCMS\Support\JsonHelper;
+use PaginiumCMS\Tests\Support\TestStorageCleaner;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -46,6 +47,7 @@ abstract class TestCase extends BaseTestCase
         $this->app = require __DIR__ . '/../../bootstrap/app.php';
         $this->currentUser = null;
 
+        TestStorageCleaner::purgeLoginAttempts();
         $this->container()->get(LoginAttemptTracker::class)->clearAll();
         $this->purgeOtpChallenges();
         $this->applyTestSettingsOverrides();
@@ -127,7 +129,11 @@ abstract class TestCase extends BaseTestCase
         ?array $data = null,
         array $headers = []
     ): ServerRequestInterface {
-        $request = (new ServerRequestFactory())->createServerRequest($method, $uri);
+        $octet = random_int(1, 254);
+
+        $request = (new ServerRequestFactory())->createServerRequest($method, $uri, [
+            'REMOTE_ADDR' => '10.255.' . $octet . '.' . random_int(1, 254),
+        ]);
 
         if ($data !== null) {
             $body = (new StreamFactory())->createStream(JsonHelper::encode($data));
