@@ -128,6 +128,10 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **Back to top:** floating button on public pages (`BackToTopButton` in `PublicSiteLayout`).
 - **SEO health details:** `getContentSeoHealth()` issue codes with i18n hints; tooltips in content lists; live `SeoHealthChecklist` in editor SEO panel + badge on collapsed SEO section.
 
+### Added (UX polish — Phase B)
+
+- **Analytics charts:** ranked horizontal bar charts and segment charts across all admin analytics tabs (Overview, Pages, Sources, Devices, Geo); daily trend chart shows visits + page views with legend; shared helpers in `analyticsChartData.ts` with Vitest coverage.
+
 ### Fixed (UX polish — Phase A)
 
 - **Newsletter admin panels ([ISS-130](docs/ISSUES.md#iss-130))** — replace `theme-*` tokens with admin `slate-*` / `dark:` classes for readable light-mode tables and cards.

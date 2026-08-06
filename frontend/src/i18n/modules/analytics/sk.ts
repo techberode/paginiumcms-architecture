@@ -59,5 +59,9 @@ export const analyticsSk: MessageTree = {
     noSources: 'Zatiaľ žiadne zdroje návštevnosti.',
     noGeo: 'Zatiaľ žiadne geografické dáta.',
   },
+  chart: {
+    visits: 'Návštevy',
+    pageViews: 'Zobrazenia',
+  },
   homeLabel: 'Domov',
 };
