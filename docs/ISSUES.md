@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 6 August 2026 · register **ISS-001–ISS-131** · It.67 + It.68 + It.71 + UX Phase A in `[Unreleased]`
+> **Last updated:** 6 August 2026 · register **ISS-001–ISS-131** · It.67 + It.68 + It.71 + UX Phases A–C in `[Unreleased]`
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
