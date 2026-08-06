@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 6 August 2026 · register **ISS-001–ISS-131** · It.67 + It.68 + It.71 + UX Phases A–C in `[Unreleased]`
+> **Last updated:** 6 August 2026 · register **ISS-001–ISS-133** · **`v2.1.0-beta.28`** shipped (It.71 + UX A–C)
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -143,17 +143,19 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-118](#iss-118) | security.txt was missing or swallowed by SPA fallback | Low (audit) | ✅ `frontend/public/.well-known/` + nginx |
 | [ISS-119](#iss-119) | Docker stack did not restart after host reboot | Medium (ops) | ✅ `restart: unless-stopped` v prod compose |
 | [ISS-120](#iss-120) | CI PHPUnit output exposed TOTP and 2FA secrets in GitHub job logs | Medium (security / CI) | ✅ sanitize wrapper + verify |
-| [ISS-121](#iss-121) | Invalid settings group shapes were silently dropped during normalization | Medium (data integrity) | ✅ **`[Unreleased]`** · It.68 fail-closed validation |
-| [ISS-122](#iss-122) | Storage read path did not enforce base-path containment (symlink escape) | Medium (security) | ✅ **`[Unreleased]`** · It.68 `LocalFlatFileStorage` |
-| [ISS-123](#iss-123) | Corrupt `settings.testing.json` leaked between HTTP PHPUnit tests | Low (tests) | ✅ **`[Unreleased]`** · `Http/TestCase` reset |
+| [ISS-121](#iss-121) | Invalid settings group shapes were silently dropped during normalization | Medium (data integrity) | ✅ **2.1.0-beta.28** · It.68 fail-closed validation |
+| [ISS-122](#iss-122) | Storage read path did not enforce base-path containment (symlink escape) | Medium (security) | ✅ **2.1.0-beta.28** · It.68 `LocalFlatFileStorage` |
+| [ISS-123](#iss-123) | Corrupt `settings.testing.json` leaked between HTTP PHPUnit tests | Low (tests) | ✅ **2.1.0-beta.28** · `Http/TestCase` reset |
 | [ISS-124](#iss-124) | CSP retains `style-src 'unsafe-inline'` for React inline styles | Low (documented residual) | ℹ️ It.67 inventory · no script unsafe-inline |
-| [ISS-125](#iss-125) | DEMO_MODE leaked into HTTP PHPUnit after demo tests (4 failures post-beta.27) | Medium (CI) | ✅ **`[Unreleased]`** · test env hardening |
-| [ISS-126](#iss-126) | Post-beta.27 CI regressions (storage path, void mock, API barrel, demo disk metric) | Medium (CI / demo UX) | ✅ **`[Unreleased]`** · hotfix on `main` |
-| [ISS-127](#iss-127) | It.71 Performance Guard DI incomplete — 233 PHPUnit errors, console fatal | High (CI / bootstrap) | ✅ **`[Unreleased]`** · explicit DI + ACL default |
-| [ISS-128](#iss-128) | Engine Performance Guard settings could not be saved (`float` field / Zod) | Medium (admin UX) | ✅ **`[Unreleased]`** · float input + numeric Zod |
-| [ISS-129](#iss-129) | FileDriver emitted PHP warning on read-only cache dir (CI PHPUnit) | Low (CI / cache) | ✅ **`[Unreleased]`** · writable guard + silent write fail |
-| [ISS-130](#iss-130) | Newsletter unreadable in light mode (admin + public modal) | Medium (UX) | ✅ **`[Unreleased]`** · theme token fix |
-| [ISS-131](#iss-131) | PHP_CodeSniffer blame-report command injection (CVE-2026-67434) | High (dev dep / CI) | ✅ **`[Unreleased]`** · PHPCS 4.0.4 |
+| [ISS-125](#iss-125) | DEMO_MODE leaked into HTTP PHPUnit after demo tests (4 failures post-beta.27) | Medium (CI) | ✅ **2.1.0-beta.28** · test env hardening |
+| [ISS-126](#iss-126) | Post-beta.27 CI regressions (storage path, void mock, API barrel, demo disk metric) | Medium (CI / demo UX) | ✅ **2.1.0-beta.28** · hotfix on `main` |
+| [ISS-127](#iss-127) | It.71 Performance Guard DI incomplete — 233 PHPUnit errors, console fatal | High (CI / bootstrap) | ✅ **2.1.0-beta.28** · explicit DI + ACL default |
+| [ISS-128](#iss-128) | Engine Performance Guard settings could not be saved (`float` field / Zod) | Medium (admin UX) | ✅ **2.1.0-beta.28** · float input + numeric Zod |
+| [ISS-129](#iss-129) | FileDriver emitted PHP warning on read-only cache dir (CI PHPUnit) | Low (CI / cache) | ✅ **2.1.0-beta.28** · writable guard + silent write fail |
+| [ISS-130](#iss-130) | Newsletter unreadable in light mode (admin + public modal) | Medium (UX) | ✅ **2.1.0-beta.28** · theme token fix |
+| [ISS-131](#iss-131) | PHP_CodeSniffer blame-report command injection (CVE-2026-67434) | High (dev dep / CI) | ✅ **2.1.0-beta.28** · PHPCS 4.0.4 |
+| [ISS-132](#iss-132) | `analyticsChartData.ts` wrong import depth (TS2307) after Phase B charts | Low (CI) | ✅ **2.1.0-beta.28** · import path fix |
+| [ISS-133](#iss-133) | BackToTopButton Vitest missing `I18nProvider` after admin wiring | Low (CI) | ✅ **2.1.0-beta.28** · `renderWithProviders` |
 
 ## CI failures (GitHub Actions)
 
@@ -172,6 +174,8 @@ Workflow: [`.github/workflows/ci.yml`](https://github.com/techberode/paginiumcms
 | `backend` | PHPUnit | Four HTTP tests failed after beta.27 (OTP verify 403, SystemUpdate 401/403) | [ISS-125](#iss-125) |
 | `backend` | PHPUnit | Post-beta.27 storage/settings path and ScheduledJobRunner mock regressions | [ISS-126](#iss-126) |
 | `backend` | PHPUnit / bootstrap | It.71 MetricsController DI unresolved — cascade 233 errors, `bin/console` fatal | [ISS-127](#iss-127) |
+| `frontend` | `tsc --noEmit` | `analyticsChartData.ts` import path TS2307 after Phase B | [ISS-132](#iss-132) |
+| `frontend` | Vitest | `BackToTopButton` / `ResponsiveLayout` tests without `I18nProvider` | [ISS-133](#iss-133) |
 | `backend` | PHPUnit | PHPUnit suffered 429, 503, and OTP persistence failures | [ISS-015](#iss-015), [ISS-023](#iss-023) |
 | `backend` | PHPUnit | Content index tag, author, and date filters failed PHPUnit | [ISS-038](#iss-038) |
 | `backend` | PHPUnit | LogWriter tests failed on virtual files and corrupt JSON | [ISS-039](#iss-039) |
@@ -3475,7 +3479,7 @@ Commit **`ee19806`** introduced sanitized PHPUnit output before publishing CI lo
 [↑ Overview](#overview)
 
 **Severity:** Medium (data integrity)  
-**Status:** ✅ **`[Unreleased]`** · Iteration 68 fail-closed validation  
+**Status:** ✅ **2.1.0-beta.28** · Iteration 68 fail-closed validation  
 **Iteration:** [It.68](en/ITERATION_68.md)
 
 ### Operational synopsis
@@ -3504,7 +3508,7 @@ Commit **`ee19806`** introduced sanitized PHPUnit output before publishing CI lo
 [↑ Overview](#overview)
 
 **Severity:** Medium (security)  
-**Status:** ✅ **`[Unreleased]`** · Iteration 68 storage driver  
+**Status:** ✅ **2.1.0-beta.28** · Iteration 68 storage driver  
 **Iteration:** [It.68](en/ITERATION_68.md)
 
 ### Operational synopsis
@@ -3532,7 +3536,7 @@ The initial It.68 `LocalFlatFileStorage` implementation called `assertWithinBase
 [↑ Overview](#overview)
 
 **Severity:** Low (tests / CI hygiene)  
-**Status:** ✅ **`[Unreleased]`** · HTTP test harness reset  
+**Status:** ✅ **2.1.0-beta.28** · HTTP test harness reset  
 **Iteration:** [It.68](en/ITERATION_68.md)
 
 ### Operational synopsis
@@ -3569,7 +3573,7 @@ The initial It.68 `LocalFlatFileStorage` implementation called `assertWithinBase
 ### Evidence and traceability
 
 - **Key technical identifiers:** `SecurityMiddleware`, `docs/deploy/NGINX_API.md`
-- **History:** [CHANGELOG](../CHANGELOG.md) `[Unreleased]` It.67
+- **History:** [CHANGELOG](../CHANGELOG.md#release-2-1-0-beta-28) · It.67
 
 ### Verification or operational excerpts
 
@@ -3587,7 +3591,7 @@ curl -sI http://localhost:8080/api/settings/public | grep -i content-security-po
 [↑ Overview](#overview)
 
 **Severity:** Medium (CI)  
-**Status:** ✅ **`[Unreleased]`** · PHPUnit / HTTP test env hardening  
+**Status:** ✅ **2.1.0-beta.28** · PHPUnit / HTTP test env hardening  
 **Related:** [ISS-103](#iss-103) (original local `.env` pollution, beta.12)
 
 ### Operational synopsis
@@ -3620,7 +3624,7 @@ Demo tests mutated `putenv('DEMO_MODE=true')` and sometimes re-bootstrapped `$th
 ### Evidence and traceability
 
 - **Key technical identifiers:** `DemoLoginGuard`, `SystemUpdateController::run()`, `OtpWorkflowService`, `DemoMode::isEnabledFromEnv()`, `backend/tests/Http/TestCase.php`, `phpunit.xml`, `tests/bootstrap.php`
-- **History:** [CHANGELOG](../CHANGELOG.md) `[Unreleased]`
+- **History:** [CHANGELOG](../CHANGELOG.md#release-2-1-0-beta-28)
 
 ### Verification or operational excerpts
 
@@ -3638,8 +3642,8 @@ DEMO_MODE=true ./vendor/bin/phpunit --filter 'testRegisterWithOtpEnabled|testRun
 [↑ Overview](#overview)
 
 **Severity:** Medium (CI / demo UX)  
-**Status:** ✅ **`[Unreleased]`** · hotfix commits on `main` (no new release tag)  
-**Release context:** Follow-up to **`v2.1.0-beta.27`** — deploy as **`origin/main` fix**, not a semver bump.
+**Status:** ✅ **2.1.0-beta.28** · hotfix commits included in release tag  
+**Release context:** Bundled into **`v2.1.0-beta.28`** (post-beta.27 hotfixes on `main`).
 
 ### Operational synopsis
 
@@ -3654,7 +3658,7 @@ CI and demo ops issues discovered immediately after the beta.27 tag:
 
 - **Key technical identifiers:** `LocalFlatFileStorage`, `ScheduledJobRunnerTest`, `frontend/src/api/index.ts`, `DemoStorageQuotaService`, `StorageChecker`, `DashboardController`
 - **Commits:** `732ee44` (storage + barrel), `b7c13dd` (demo quota + related)
-- **History:** [CHANGELOG](../CHANGELOG.md) `[Unreleased]`
+- **History:** [CHANGELOG](../CHANGELOG.md#release-2-1-0-beta-28)
 
 ### Verification or operational excerpts
 
@@ -3675,7 +3679,7 @@ Apply with **`GIT_REF=origin/main`** on production and demo — **no new tag**. 
 [↑ Overview](#overview)
 
 **Severity:** High (CI / bootstrap)  
-**Status:** ✅ **`[Unreleased]`**  
+**Status:** ✅ **2.1.0-beta.28**  
 **Release context:** Discovered in local **`alltests`** run after It.71 implementation (Performance Guard / APM).
 
 ### Operational synopsis
@@ -3701,7 +3705,7 @@ Secondary issues in the same bundle:
 
 - **Log:** `alltests_050826_1643.log` — PHPUnit `Errors: 233`, `bin/console` fatal on `MetricsController`.
 - **Key files:** `backend/app/Core/Performance/Config/services.php`, `backend/app/Http/Routes/metrics.php`, `SettingsSchema.php` (`permissionsAdmin`), `PerformanceRouteLabelResolver.php`
-- **History:** [CHANGELOG](../CHANGELOG.md) `[Unreleased]` · [ITERATION_71](en/ITERATION_71.md)
+- **History:** [CHANGELOG](../CHANGELOG.md#release-2-1-0-beta-28) · [ITERATION_71](en/ITERATION_71.md)
 
 ### Verification
 
@@ -3722,7 +3726,7 @@ Instances that already saved **`accessControl.permissionsAdmin`** without `metri
 [↑ Overview](#overview)
 
 **Severity:** Medium (admin UX)  
-**Status:** ✅ **`[Unreleased]`**  
+**Status:** ✅ **2.1.0-beta.28**  
 **Release context:** Reported on production after It.71 deploy — enabling **Performance Guard** in **Settings → Engine** and clicking **Save** had no effect (client-side validation blocked submit).
 
 ### Operational synopsis
@@ -3747,7 +3751,7 @@ Backend `Validator.php` recognizes **`number`**, not **`numeric`** — schema us
 
 - **Symptom:** User enables `performanceGuardEnabled` → Save appears to do nothing (Zod error on hidden/unrendered float field).
 - **Key files:** `SettingsSchema.php` (engine group), `frontend/src/validation/zodFromRules.ts`, `frontend/src/components/backend/SettingsView.tsx`, `frontend/src/api/settings.ts`
-- **History:** [CHANGELOG](../CHANGELOG.md) `[Unreleased]` · [ITERATION_71](en/ITERATION_71.md)
+- **History:** [CHANGELOG](../CHANGELOG.md#release-2-1-0-beta-28) · [ITERATION_71](en/ITERATION_71.md)
 
 ### Verification
 
@@ -3768,7 +3772,7 @@ After deploy, **Settings → Engine → Enable Performance Guard** → **Save** 
 [↑ Overview](#overview)
 
 **Severity:** Low (CI / cache)  
-**Status:** ✅ **`[Unreleased]`**  
+**Status:** ✅ **2.1.0-beta.28**  
 **Release context:** Local **`alltests`** / CI PHPUnit after It.71 — suite reported **0 failures** but **1 PHP warning**, failing the job.
 
 ### Operational synopsis
@@ -3792,7 +3796,7 @@ Higher-level services (`CacheCapabilityProbe`, `SafeRemediationService`) already
 
 - **Symptom:** PHPUnit summary `Warnings: 1` at `FileDriver.php:47`; triggered by `SafeRemediationServiceTest::testAutomaticSkipsWhenCacheCapabilityFails`.
 - **Key files:** `backend/app/Core/Cache/Drivers/FileDriver.php`, `backend/tests/Core/Performance/SafeRemediationServiceTest.php`
-- **History:** [CHANGELOG](../CHANGELOG.md) `[Unreleased]`
+- **History:** [CHANGELOG](../CHANGELOG.md#release-2-1-0-beta-28)
 
 ### Verification
 
@@ -3811,7 +3815,7 @@ Expected: **0 warnings**, remediation test still passes.
 [↑ Overview](#overview)
 
 **Severity:** Medium (UX)  
-**Status:** ✅ **`[Unreleased]`**  
+**Status:** ✅ **2.1.0-beta.28**  
 **Release context:** Post–It.71 UX polish (Phase A) — reported on production and in local tests.
 
 ### Operational synopsis
@@ -3832,7 +3836,7 @@ Two separate surfaces shared the same root cause pattern: **low-contrast tokens 
 
 - **Symptom:** User screenshot — “Čo chcete dostávať?” and option labels invisible in subscribe modal.
 - **Key files:** `NewsletterPreferenceFields.tsx`, `NewsletterSubscribeModal.tsx`, `NewsletterSubscribersPanel.tsx`, `NewsletterSettingsPanel.tsx`
-- **History:** [CHANGELOG](../CHANGELOG.md) `[Unreleased]` · UX Phase A
+- **History:** [CHANGELOG](../CHANGELOG.md#release-2-1-0-beta-28) · UX Phase A
 
 ### Verification
 
@@ -3845,7 +3849,7 @@ Manual: Settings → enable footer newsletter → open modal on public site in *
 [↑ Overview](#overview)
 
 **Severity:** High (dev dependency / CI)  
-**Status:** ✅ **`[Unreleased]`**  
+**Status:** ✅ **2.1.0-beta.28**  
 **Release context:** `composer audit` in local `alltests` / CI after 6 Aug 2026 PHPCS advisory.
 
 ### Operational synopsis
@@ -3866,7 +3870,7 @@ Lock file had `squizlabs/php_codesniffer` **4.0.1** → flagged by `composer aud
 
 - **Advisory:** [GHSA-hmqg-cxww-wqhq](https://github.com/PHPCSStandards/PHP_CodeSniffer/security/advisories/GHSA-hmqg-cxww-wqhq)
 - **Key files:** `composer.json`, `composer.lock`
-- **History:** [CHANGELOG](../CHANGELOG.md) `[Unreleased]`
+- **History:** [CHANGELOG](../CHANGELOG.md#release-2-1-0-beta-28)
 
 ### Verification
 
@@ -3880,4 +3884,81 @@ Expected: no advisories; version `>= 4.0.2`.
 ### Ops note
 
 Production runtime is **not** affected (PHPCS is not installed in prod `composer install --no-dev`). Re-run `composer install` on dev/CI after pull.
+
+<a id="iss-132"></a>
+
+## ISS-132 – `analyticsChartData.ts` wrong import depth (TS2307)
+
+[↑ Overview](#overview)
+
+**Severity:** Low (CI / frontend type-check)  
+**Status:** ✅ **2.1.0-beta.28**  
+**Release context:** GitHub Actions frontend job failed after Phase B analytics charts (`83546d7`).
+
+### Operational synopsis
+
+New helper `frontend/src/components/backend/analytics/analyticsChartData.ts` imported types from `../../api/analytics`. From `components/backend/analytics/`, the path to `src/api/analytics` requires **three** parent segments (`../../../api/analytics`), not two.
+
+CI `npm run type-check` reported:
+
+```text
+TS2307: Cannot find module '../../api/analytics'
+```
+
+### Fix
+
+- Change import to `../../../api/analytics` (`c429070`).
+
+### Evidence and traceability
+
+- **Key files:** `frontend/src/components/backend/analytics/analyticsChartData.ts`
+- **History:** [CHANGELOG](../CHANGELOG.md#release-2-1-0-beta-28) · [ITERATION_UX_POLISH](en/ITERATION_UX_POLISH.md)
+
+### Verification
+
+```bash
+cd frontend && npm run type-check
+```
+
+<a id="iss-133"></a>
+
+## ISS-133 – BackToTopButton Vitest missing `I18nProvider`
+
+[↑ Overview](#overview)
+
+**Severity:** Low (CI / Vitest)  
+**Status:** ✅ **2.1.0-beta.28**  
+**Release context:** After admin back-to-top in `ResponsiveLayout` (`d5140e1`), CI Vitest failed with context error.
+
+### Operational synopsis
+
+`BackToTopButton` calls `useI18n()` for `public.backToTop.label`. Tests that render `ResponsiveLayout` or `BackToTopButton` directly used plain `@testing-library/react` `render()` without `I18nProvider`:
+
+```text
+useI18n must be used within I18nProvider
+```
+
+Affected suites:
+
+- `BackToTopButton.test.tsx`
+- `ResponsiveLayout.test.tsx`
+- `adminRouteTransitions.test.tsx`
+
+### Fix
+
+Use shared `renderWithProviders()` from `frontend/src/test/renderWithProviders.tsx` (wraps `TestI18nProvider` + `TestSettingsProvider`) in all affected tests (`486debe`).
+
+### Evidence and traceability
+
+- **Key files:** `BackToTopButton.test.tsx`, `ResponsiveLayout.test.tsx`, `adminRouteTransitions.test.tsx`, `renderWithProviders.tsx`
+- **History:** [CHANGELOG](../CHANGELOG.md#release-2-1-0-beta-28) · [ITERATION_UX_POLISH](en/ITERATION_UX_POLISH.md)
+
+### Verification
+
+```bash
+cd frontend && npm test -- --run \
+  src/components/frontend/BackToTopButton.test.tsx \
+  src/components/layout/ResponsiveLayout.test.tsx \
+  src/test/adminRouteTransitions.test.tsx
+```
 
