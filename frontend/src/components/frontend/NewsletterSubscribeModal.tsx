@@ -144,7 +144,7 @@ export const NewsletterSubscribeModal: React.FC<NewsletterSubscribeModalProps> =
 
         <div className="px-6 py-5">
           {done ? (
-            <div className="rounded-xl border border-emerald-400/20 bg-emerald-500/10 px-4 py-4 text-sm text-emerald-100">
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-4 text-sm text-emerald-900 dark:border-emerald-400/20 dark:bg-emerald-500/10 dark:text-emerald-100">
               {pendingConfirmation
                 ? t('public.footer.newsletter.confirmationPending')
                 : t('public.footer.newsletter.success')}

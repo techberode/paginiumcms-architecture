@@ -88,6 +88,41 @@ export const editorSk: MessageTree = {
     tagsPlaceholder: 'tech, cms, flat-file',
     noIndex: 'Skryť pred vyhľadávačmi (noindex)',
     pickImageTitle: 'Vybrať náhľadový obrázok',
+    health: {
+      okTitle: 'SEO metadáta vyzerajú v poriadku',
+      okHint: 'Pred publikáciou skontrolujte titulok, popis a náhľadový obrázok.',
+      draftHint: 'Tieto body budú povinné alebo odporúčané po publikovaní.',
+      title: {
+        warning: 'SEO odporúčania',
+        critical: 'SEO chyby pred publikáciou',
+      },
+    },
+    issues: {
+      missing_description: {
+        title: 'Chýba meta popis',
+        hint: 'Doplňte krátky popis (120–160 znakov) pre vyhľadávače a sociálne siete.',
+      },
+      missing_seo_title: {
+        title: 'Chýba SEO titulok',
+        hint: 'Voliteľný alternatívny titulok; ak chýba, použije sa názov stránky.',
+      },
+      missing_og_image: {
+        title: 'Chýba náhľadový / OG obrázok',
+        hint: 'Pridajte obrázok pre zdieľanie na sociálnych sieťach a rich preview.',
+      },
+      missing_tags: {
+        title: 'Chýbajú tagy článku',
+        hint: 'Pridajte aspoň jeden tag pre lepšiu kategorizáciu a interné vyhľadávanie.',
+      },
+      title_too_long: {
+        title: 'SEO titulok je príliš dlhý',
+        hint: 'Odporúčame max. 60 znakov, aby sa titulok neorezal vo výsledkoch vyhľadávania.',
+      },
+      description_too_long: {
+        title: 'Meta popis je príliš dlhý',
+        hint: 'Odporúčame max. 160 znakov, aby sa popis zobrazil celý v SERP.',
+      },
+    },
   },
   metaSuggest: {
     title: 'Návrh meta údajov',

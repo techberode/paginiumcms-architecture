@@ -103,18 +103,18 @@ export const NewsletterSettingsPanel: React.FC<{
   };
 
   return (
-    <div className="rounded-xl border border-theme-border bg-theme-surface p-4 space-y-4">
+    <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-theme-text flex items-center gap-2">
-            <Settings2 className="h-5 w-5 text-theme-primary" />
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+            <Settings2 className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
             {t('newsletter.settings.title')}
           </h2>
-          <p className="text-sm text-theme-text-muted mt-1">{t('newsletter.settings.subtitle')}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{t('newsletter.settings.subtitle')}</p>
         </div>
         <Link
           to="/settings?category=system&group=newsletter"
-          className="inline-flex items-center gap-1 text-sm font-medium text-theme-primary hover:underline"
+          className="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
         >
           {t('newsletter.settings.openFull')}
           <ExternalLink className="h-4 w-4" />
@@ -122,27 +122,27 @@ export const NewsletterSettingsPanel: React.FC<{
       </div>
 
       {loading ? (
-        <p className="text-sm text-theme-text-muted">{t('list.loading')}</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">{t('list.loading')}</p>
       ) : (
         <>
           <div className="grid gap-3 sm:grid-cols-2">
             {boolFields.map((field) => (
               <label
                 key={field.key}
-                className="flex items-start gap-3 rounded-lg border border-theme-border bg-theme-surface-elevated/40 px-3 py-2 cursor-pointer"
+                className="flex items-start gap-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 px-3 py-2 cursor-pointer"
               >
                 <input
                   type="checkbox"
                   checked={values[field.key] === true}
                   onChange={(event) => setBool(field.key, event.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded border-theme-border text-theme-primary"
+                  className="mt-0.5 h-4 w-4 rounded border-slate-200 dark:border-slate-800 text-indigo-600 dark:text-indigo-400"
                 />
                 <span className="min-w-0">
-                  <span className="block text-sm font-medium text-theme-text">
+                  <span className="block text-sm font-medium text-slate-900 dark:text-white">
                     {translateSettingFieldLabel(t, 'newsletter', field.key, field.label)}
                   </span>
                   {field.help ? (
-                    <span className="block text-xs text-theme-text-muted mt-0.5">
+                    <span className="block text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                       {translateSettingFieldHelp(t, 'newsletter', field.key, field.help)}
                     </span>
                   ) : null}
@@ -153,7 +153,7 @@ export const NewsletterSettingsPanel: React.FC<{
 
           {textFields.map((field) => (
             <label key={field.key} className="block space-y-1">
-              <span className="text-sm font-medium text-theme-text">
+              <span className="text-sm font-medium text-slate-900 dark:text-white">
                 {translateSettingFieldLabel(t, 'newsletter', field.key, field.label)}
               </span>
               {field.type === 'text' ? (
@@ -161,18 +161,18 @@ export const NewsletterSettingsPanel: React.FC<{
                   rows={field.key === 'enabledPreferences' ? 4 : 2}
                   value={String(values[field.key] ?? '')}
                   onChange={(event) => setText(field.key, event.target.value)}
-                  className="w-full rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-sm text-theme-text"
+                  className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white"
                 />
               ) : (
                 <input
                   type="text"
                   value={String(values[field.key] ?? '')}
                   onChange={(event) => setText(field.key, event.target.value)}
-                  className="w-full rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-sm text-theme-text"
+                  className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white"
                 />
               )}
               {field.help ? (
-                <span className="block text-xs text-theme-text-muted">
+                <span className="block text-xs text-slate-500 dark:text-slate-400">
                   {translateSettingFieldHelp(t, 'newsletter', field.key, field.help)}
                 </span>
               ) : null}
@@ -183,7 +183,7 @@ export const NewsletterSettingsPanel: React.FC<{
             type="button"
             onClick={() => void handleSave()}
             disabled={saving}
-            className="inline-flex items-center gap-2 rounded-xl bg-theme-primary px-4 py-2 text-sm font-semibold text-theme-primary-foreground hover:opacity-90 disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
           >
             <Save className="h-4 w-4" />
             {saving ? t('newsletter.settings.saving') : t('newsletter.settings.save')}

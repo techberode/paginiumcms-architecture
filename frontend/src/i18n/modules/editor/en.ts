@@ -88,6 +88,41 @@ export const editorEn: MessageTree = {
     tagsPlaceholder: 'tech, cms, flat-file',
     noIndex: 'Hide from search engines (noindex)',
     pickImageTitle: 'Pick preview image',
+    health: {
+      okTitle: 'SEO metadata looks good',
+      okHint: 'Before publishing, double-check title, description, and preview image.',
+      draftHint: 'These items become required or recommended once published.',
+      title: {
+        warning: 'SEO recommendations',
+        critical: 'SEO issues before publish',
+      },
+    },
+    issues: {
+      missing_description: {
+        title: 'Missing meta description',
+        hint: 'Add a short summary (120–160 chars) for search engines and social previews.',
+      },
+      missing_seo_title: {
+        title: 'Missing SEO title',
+        hint: 'Optional alternate title; the page title is used when empty.',
+      },
+      missing_og_image: {
+        title: 'Missing preview / OG image',
+        hint: 'Add an image for social sharing and rich link previews.',
+      },
+      missing_tags: {
+        title: 'Missing article tags',
+        hint: 'Add at least one tag for categorization and internal discovery.',
+      },
+      title_too_long: {
+        title: 'SEO title is too long',
+        hint: 'Keep it under ~60 characters to avoid truncation in search results.',
+      },
+      description_too_long: {
+        title: 'Meta description is too long',
+        hint: 'Keep it under ~160 characters for full SERP display.',
+      },
+    },
   },
   metaSuggest: {
     title: 'Meta suggestions',

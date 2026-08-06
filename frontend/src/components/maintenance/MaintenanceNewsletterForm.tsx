@@ -81,7 +81,7 @@ export const MaintenanceNewsletterForm: React.FC<MaintenanceNewsletterFormProps>
 
   if (done) {
     return (
-      <div className="rounded-2xl border border-emerald-400/20 bg-emerald-500/10 px-5 py-4 text-sm text-emerald-100">
+      <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-900 dark:border-emerald-400/20 dark:bg-emerald-500/10 dark:text-emerald-100">
         {pendingConfirmation
           ? t('public.maintenance.newsletter.confirmationPending')
           : t('public.maintenance.newsletter.success')}

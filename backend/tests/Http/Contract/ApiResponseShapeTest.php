@@ -105,6 +105,9 @@ final class ApiResponseShapeTest extends TestCase
         ]);
         $this->assertContains($data['data']['appearance']['mode'], ['light', 'dark', 'system']);
         $this->assertArrayHasKey('layout', $data['data']);
+        $this->assertArrayHasKey('cmsInfo', $data['data']);
+        $this->assertArrayHasKey('version', $data['data']['cmsInfo']);
+        $this->assertIsString($data['data']['cmsInfo']['version']);
         $this->assertArrayHasKey('builderMode', $data['data']['layout']);
         $this->assertArrayHasKey('defaultTemplate', $data['data']['layout']);
         $this->assertContains($data['data']['layout']['builderMode'], [

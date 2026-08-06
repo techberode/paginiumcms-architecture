@@ -321,6 +321,9 @@ final class SettingsController
             'firewall' => [
                 'enabled' => (bool) ($all['firewall']['enabled'] ?? true),
             ],
+            'cmsInfo' => [
+                'version' => AppVersion::VERSION,
+            ],
         ];
     }
 

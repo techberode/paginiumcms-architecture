@@ -1,6 +1,6 @@
 // frontend/src/utils/seoHealth.test.ts
 import { describe, it, expect } from 'vitest';
-import { evaluateContentSeo, evaluateMediaSeo } from './seoHealth';
+import { evaluateContentSeo, evaluateMediaSeo, getContentSeoHealthFromFields } from './seoHealth';
 import type { MediaFile } from '../api/media';
 
 describe('seoHealth', () => {
@@ -38,5 +38,21 @@ describe('seoHealth', () => {
         tags: ['cms'],
       })
     ).toBe('ok');
+  });
+
+  it('getContentSeoHealthFromFields returns detailed issues', () => {
+    const health = getContentSeoHealthFromFields({
+      status: 'published',
+      checkAsPublished: true,
+      contentType: 'article',
+      seoTitle: '',
+      seoDescription: '',
+      ogImage: '',
+      tags: '',
+    });
+
+    expect(health.level).toBe('critical');
+    expect(health.issues.some((issue) => issue.code === 'missing_description')).toBe(true);
+    expect(health.issues.some((issue) => issue.code === 'missing_tags')).toBe(true);
   });
 });

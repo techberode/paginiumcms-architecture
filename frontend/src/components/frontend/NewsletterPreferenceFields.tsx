@@ -42,24 +42,24 @@ export const NewsletterPreferenceFields: React.FC<NewsletterPreferenceFieldsProp
 
   return (
     <div className={`space-y-3 ${className}`}>
-      <p className="text-xs font-semibold uppercase tracking-wide opacity-80">
+      <p className="text-xs font-semibold uppercase tracking-wide text-theme-text-muted">
         {t('public.newsletter.preferences.title')}
       </p>
       <div className="grid gap-2 sm:grid-cols-2">
         {enabledPreferences.map((key) => (
           <label
             key={key}
-            className="flex cursor-pointer items-start gap-2 rounded-lg border border-white/10 bg-black/10 px-3 py-2 text-sm"
+            className="flex cursor-pointer items-start gap-2 rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-sm text-theme-text shadow-sm transition hover:border-theme-primary/40 hover:bg-theme-surface-elevated/80"
           >
             <input
               type="checkbox"
-              className="mt-0.5"
+              className="mt-0.5 rounded border-theme-border text-theme-primary focus:ring-theme-primary"
               checked={selected.includes(key)}
               onChange={() => togglePreference(key)}
             />
-            <span>
-              <span className="font-medium">{t(preferenceLabelKey(key))}</span>
-              <span className="mt-0.5 block text-xs opacity-70">
+            <span className="min-w-0">
+              <span className="font-medium text-theme-text">{t(preferenceLabelKey(key))}</span>
+              <span className="mt-0.5 block text-xs text-theme-text-muted">
                 {t(`${preferenceLabelKey(key)}Hint`)}
               </span>
             </span>
@@ -67,10 +67,10 @@ export const NewsletterPreferenceFields: React.FC<NewsletterPreferenceFieldsProp
         ))}
       </div>
       {consentRequired ? (
-        <label className="flex cursor-pointer items-start gap-2 text-sm">
+        <label className="flex cursor-pointer items-start gap-2 text-sm text-theme-text">
           <input
             type="checkbox"
-            className="mt-0.5"
+            className="mt-0.5 rounded border-theme-border text-theme-primary focus:ring-theme-primary"
             checked={consentChecked}
             onChange={(event) => onConsentChange?.(event.target.checked)}
           />

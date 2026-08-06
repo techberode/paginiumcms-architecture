@@ -231,6 +231,9 @@ export interface PublicSettings {
     passwordRequireNumbers?: boolean;
     passwordRequireSpecialChars?: boolean;
   };
+  cmsInfo?: {
+    version?: string;
+  };
 }
 
 export async function getPublicSettings(): Promise<PublicSettings | null> {
