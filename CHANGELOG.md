@@ -125,8 +125,12 @@ This canonical history records release facts supported by the supplied `CHANGELO
 ### Added (UX polish — Phase A)
 
 - **Public footer:** CMS version badge next to site logo via `cmsInfo.version` on `GET /api/settings/public` (from `AppVersion::VERSION`).
-- **Back to top:** floating button on public pages (`BackToTopButton` in `PublicSiteLayout`).
+- **Back to top:** floating button on public pages (`PublicSiteLayout`) and admin shell (`ResponsiveLayout` — scroll-aware for the main `overflow-y-auto` pane).
 - **SEO health details:** `getContentSeoHealth()` issue codes with i18n hints; tooltips in content lists; live `SeoHealthChecklist` in editor SEO panel + badge on collapsed SEO section.
+
+### Fixed (UX polish — Phase B hotfix)
+
+- **`analyticsChartData.ts` import path** — three levels up to `src/api/analytics` (TS2307 in CI).
 
 ### Added (UX polish — Phase B)
 

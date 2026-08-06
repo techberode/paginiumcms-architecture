@@ -8,6 +8,7 @@ import { AdminSidebar } from '../backend/AdminSidebar';
 import { AdminHeader } from '../backend/AdminHeader';
 import { AdminCommandPalette } from '../backend/AdminCommandPalette';
 import { DemoModeBanner } from '../backend/DemoModeBanner';
+import { BackToTopButton } from '../frontend/BackToTopButton';
 import { useOpenLinksInNewTab } from '../../hooks/useOpenLinksInNewTab';
 import { openExternalUrl } from '../../utils/linkTarget';
 
@@ -103,6 +104,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) 
         <main className="p-6 sm:p-8 max-w-7xl mx-auto w-full flex-1 animate-fadeIn">
           {children}
         </main>
+        <BackToTopButton scrollContainerRef={scrollContainerRef} variant="admin" />
       </div>
 
       <ChangePasswordModal open={changePasswordOpen} onClose={() => setChangePasswordOpen(false)} />
