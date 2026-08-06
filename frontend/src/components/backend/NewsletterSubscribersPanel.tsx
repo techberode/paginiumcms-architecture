@@ -1,12 +1,16 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Download, Mail, RefreshCw, Send } from 'lucide-react';
+import { Download, Mail, RefreshCw, Send, Trash2, UserMinus } from 'lucide-react';
 import {
+  bulkDeleteNewsletterSubscribers,
+  bulkUnsubscribeNewsletterSubscribers,
+  deleteNewsletterSubscriber,
   exportNewsletterSubscribersCsv,
   fetchNewsletterSendStatus,
   listNewsletterSubscribers,
   sendNewsletterCmsRelease,
   sendNewsletterTestEmail,
   sendNewsletterWeeklyDigestNow,
+  unsubscribeNewsletterSubscriber,
   type NewsletterPreferenceKey,
   type NewsletterSendStatus,
   type NewsletterSubscriber,
@@ -15,10 +19,13 @@ import { useToast } from '../../hooks/useToast';
 import { useAuth } from '../../hooks/useAuth';
 import { useAdminListPageSize } from '../../hooks/useAdminListPageSize';
 import { useColumnSort } from '../../hooks/useColumnSort';
+import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { AdminListToolbar } from './AdminListToolbar';
 import { AdminListPagination } from './AdminListPagination';
 import { AdminListSortBar } from './SortableTableHeader';
+import { BulkActionBar } from './BulkActionBar';
 import { applyClientListView } from '../../utils/clientListView';
+import { summarizeBulkResult } from '../../types/bulk';
 import { useI18n } from '../../context/I18nContext';
 import { NewsletterSettingsPanel } from './NewsletterSettingsPanel';
 
@@ -28,7 +35,7 @@ export const NewsletterSubscribersPanel: React.FC = () => {
   const { t, locale } = useI18n();
   const { user } = useAuth();
   const dateLocale = locale === 'en' ? 'en-US' : 'sk-SK';
-  const { error: showError, success: showSuccess } = useToast();
+  const { error: showError, success: showSuccess, warning: showWarning } = useToast();
   const isSuperAdmin = user?.roles?.includes('SUPER_ADMIN') ?? false;
   const [items, setItems] = useState<NewsletterSubscriber[]>([]);
   const [bySource, setBySource] = useState<Record<string, number>>({});
@@ -42,7 +49,9 @@ export const NewsletterSubscribersPanel: React.FC = () => {
   const [releaseBody, setReleaseBody] = useState('');
   const [releaseUrl, setReleaseUrl] = useState('');
   const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [page, setPage] = useState(1);
+  const [bulkBusy, setBulkBusy] = useState(false);
   const [pageSize, setPageSize] = useAdminListPageSize('newsletter');
   const { sortField, sortDirection, handleSort } = useColumnSort('subscribedAt', 'desc');
 
@@ -69,11 +78,19 @@ export const NewsletterSubscribersPanel: React.FC = () => {
 
   useEffect(() => {
     setPage(1);
-  }, [search, sortField, sortDirection, pageSize]);
+  }, [search, sortField, sortDirection, pageSize, statusFilter]);
+
+  const filteredItems = useMemo(() => {
+    if (statusFilter === 'all') {
+      return items;
+    }
+
+    return items.filter((row) => (row.status ?? 'active') === statusFilter);
+  }, [items, statusFilter]);
 
   const listView = useMemo(
     () =>
-      applyClientListView(items, {
+      applyClientListView(filteredItems, {
         search,
         searchText: (row) =>
           `${row.email} ${row.source} ${(row.preferences ?? []).join(' ')} ${row.status ?? ''}`,
@@ -101,8 +118,111 @@ export const NewsletterSubscribersPanel: React.FC = () => {
         page,
         pageSize,
       }),
-    [items, page, pageSize, search, sortDirection, sortField, t]
+    [filteredItems, page, pageSize, search, sortDirection, sortField, t]
   );
+
+  const visibleIds = useMemo(() => listView.items.map((row) => row.id), [listView.items]);
+  const bulkSelection = useBulkSelection(
+    visibleIds,
+    `${page}:${search}:${sortField}:${sortDirection}:${pageSize}:${statusFilter}`
+  );
+
+  const statusOptions = useMemo(
+    () => [
+      { value: 'all', label: t('newsletter.filter.statusAll') },
+      { value: 'active', label: t('newsletter.status.active') },
+      { value: 'pending', label: t('newsletter.status.pending') },
+      { value: 'unsubscribed', label: t('newsletter.status.unsubscribed') },
+    ],
+    [t]
+  );
+
+  const handleBulk = async (action: 'unsubscribe' | 'delete') => {
+    if (bulkSelection.count === 0) {
+      return;
+    }
+
+    const confirmKey =
+      action === 'delete' ? 'newsletter.confirm.bulkDelete' : 'newsletter.confirm.bulkUnsubscribe';
+    if (!confirm(t(confirmKey, { count: String(bulkSelection.count) }))) {
+      return;
+    }
+
+    setBulkBusy(true);
+    try {
+      const result =
+        action === 'delete'
+          ? await bulkDeleteNewsletterSubscribers(bulkSelection.selectedIds)
+          : await bulkUnsubscribeNewsletterSubscribers(bulkSelection.selectedIds);
+
+      if (!result) {
+        showError(t('newsletter.toast.bulkFailed'));
+        return;
+      }
+
+      const summary = summarizeBulkResult(result, t);
+      if (result.failed > 0) {
+        showWarning(summary);
+      } else {
+        showSuccess(
+          action === 'delete'
+            ? t('newsletter.toast.bulkDeleted', { count: String(result.succeeded) })
+            : t('newsletter.toast.bulkUnsubscribed', { count: String(result.succeeded) })
+        );
+      }
+
+      bulkSelection.clear();
+      await load();
+    } catch {
+      showError(t('newsletter.toast.bulkFailed'));
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
+  const handleUnsubscribeOne = async (id: string) => {
+    if (!confirm(t('newsletter.confirm.unsubscribeOne'))) {
+      return;
+    }
+
+    setBulkBusy(true);
+    try {
+      const result = await unsubscribeNewsletterSubscriber(id);
+      if (result.ok) {
+        showSuccess(result.message ?? t('newsletter.toast.unsubscribed'));
+        bulkSelection.clear();
+        await load();
+      } else {
+        showError(result.message ?? t('newsletter.toast.bulkFailed'));
+      }
+    } catch {
+      showError(t('newsletter.toast.bulkFailed'));
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
+  const handleDeleteOne = async (id: string) => {
+    if (!confirm(t('newsletter.confirm.deleteOne'))) {
+      return;
+    }
+
+    setBulkBusy(true);
+    try {
+      const result = await deleteNewsletterSubscriber(id);
+      if (result.ok) {
+        showSuccess(result.message ?? t('newsletter.toast.deleted'));
+        bulkSelection.clear();
+        await load();
+      } else {
+        showError(result.message ?? t('newsletter.toast.bulkFailed'));
+      }
+    } catch {
+      showError(t('newsletter.toast.bulkFailed'));
+    } finally {
+      setBulkBusy(false);
+    }
+  };
 
   const handleExport = async () => {
     setExporting(true);
@@ -383,10 +503,35 @@ export const NewsletterSubscribersPanel: React.FC = () => {
         </div>
       ) : null}
 
+      <BulkActionBar
+        count={bulkSelection.count}
+        itemLabel={t('newsletter.bulk.itemLabel')}
+        onClear={bulkSelection.clear}
+        actions={[
+          {
+            id: 'unsubscribe',
+            label: t('newsletter.bulk.unsubscribe'),
+            variant: 'secondary',
+            disabled: bulkBusy,
+            onClick: () => void handleBulk('unsubscribe'),
+          },
+          {
+            id: 'delete',
+            label: t('newsletter.bulk.delete'),
+            variant: 'danger',
+            disabled: bulkBusy,
+            onClick: () => void handleBulk('delete'),
+          },
+        ]}
+      />
+
       <AdminListToolbar
         search={search}
         onSearchChange={setSearch}
         searchPlaceholder={t('newsletter.search.placeholder')}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
+        statusOptions={statusOptions}
         pageSize={pageSize}
         onPageSizeChange={setPageSize}
       />
@@ -408,29 +553,60 @@ export const NewsletterSubscribersPanel: React.FC = () => {
         <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800 text-sm">
           <thead className="bg-slate-50 dark:bg-slate-800/80">
             <tr>
+              <th className="px-4 py-3 w-10">
+                <input
+                  type="checkbox"
+                  checked={bulkSelection.allSelected}
+                  ref={(input) => {
+                    if (input) {
+                      input.indeterminate = bulkSelection.someSelected && !bulkSelection.allSelected;
+                    }
+                  }}
+                  onChange={bulkSelection.toggleAll}
+                  disabled={loading || listView.items.length === 0 || bulkBusy}
+                  aria-label={t('list.inbox.selectAllOnPage')}
+                  className="rounded border-slate-300 dark:border-slate-600"
+                />
+              </th>
               <th className="px-4 py-3 text-left font-semibold text-slate-500 dark:text-slate-400">{t('newsletter.table.email')}</th>
               <th className="px-4 py-3 text-left font-semibold text-slate-500 dark:text-slate-400">{t('newsletter.table.source')}</th>
               <th className="px-4 py-3 text-left font-semibold text-slate-500 dark:text-slate-400">{t('newsletter.table.preferences')}</th>
               <th className="px-4 py-3 text-left font-semibold text-slate-500 dark:text-slate-400">{t('newsletter.table.status')}</th>
               <th className="px-4 py-3 text-left font-semibold text-slate-500 dark:text-slate-400">{t('newsletter.table.date')}</th>
+              <th className="px-4 py-3 text-left font-semibold text-slate-500 dark:text-slate-400">{t('newsletter.table.actions')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
             {loading ? (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
+                <td colSpan={7} className="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
                   {t('list.loading')}
                 </td>
               </tr>
             ) : listView.items.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
+                <td colSpan={7} className="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
                   {t('newsletter.empty')}
                 </td>
               </tr>
             ) : (
               listView.items.map((row) => (
-                <tr key={row.id} className="hover:bg-slate-50 dark:bg-slate-800/60">
+                <tr
+                  key={row.id}
+                  className={`hover:bg-slate-50 dark:hover:bg-slate-800/60 ${
+                    bulkSelection.isSelected(row.id) ? 'bg-indigo-50/60 dark:bg-indigo-950/20' : ''
+                  }`}
+                >
+                  <td className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={bulkSelection.isSelected(row.id)}
+                      onChange={() => bulkSelection.toggle(row.id)}
+                      disabled={bulkBusy}
+                      aria-label={t('list.inbox.selectItem')}
+                      className="rounded border-slate-300 dark:border-slate-600"
+                    />
+                  </td>
                   <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{row.email}</td>
                   <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{formatSource(row.source)}</td>
                   <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{formatPreferences(row.preferences)}</td>
@@ -439,6 +615,32 @@ export const NewsletterSubscribersPanel: React.FC = () => {
                     {row.subscribedAt
                       ? new Date(row.subscribedAt).toLocaleString(dateLocale)
                       : '—'}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-wrap gap-2">
+                      {row.status !== 'unsubscribed' ? (
+                        <button
+                          type="button"
+                          onClick={() => void handleUnsubscribeOne(row.id)}
+                          disabled={bulkBusy}
+                          className="inline-flex items-center gap-1 rounded-lg border border-slate-200 dark:border-slate-700 px-2 py-1 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-60"
+                          title={t('newsletter.actions.unsubscribe')}
+                        >
+                          <UserMinus className="h-3.5 w-3.5" />
+                          {t('newsletter.actions.unsubscribe')}
+                        </button>
+                      ) : null}
+                      <button
+                        type="button"
+                        onClick={() => void handleDeleteOne(row.id)}
+                        disabled={bulkBusy}
+                        className="inline-flex items-center gap-1 rounded-lg border border-red-200 dark:border-red-900/50 px-2 py-1 text-xs font-semibold text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/30 disabled:opacity-60"
+                        title={t('newsletter.actions.delete')}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        {t('newsletter.actions.delete')}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))

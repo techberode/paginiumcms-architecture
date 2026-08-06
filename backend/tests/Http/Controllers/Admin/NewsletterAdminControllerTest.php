@@ -114,6 +114,66 @@ final class NewsletterAdminControllerTest extends TestCase
         $this->assertTrue($data['success']);
     }
 
+    public function testBulkUnsubscribeRequiresAuth(): void
+    {
+        $response = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/admin/newsletter/subscribers/bulk-unsubscribe', [
+                'ids' => ['nl_test'],
+            ])
+        );
+
+        $this->assertSame(401, $response->getStatusCode());
+    }
+
+    public function testBulkUnsubscribeRequiresIds(): void
+    {
+        $this->loginAsAdminUser();
+
+        $response = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/admin/newsletter/subscribers/bulk-unsubscribe', [
+                'ids' => [],
+            ])
+        );
+
+        $this->assertSame(400, $response->getStatusCode());
+    }
+
+    public function testBulkUnsubscribeAndDeleteSubscribers(): void
+    {
+        $this->loginAsAdminUser();
+        $subscriberId = $this->seedSubscriber('bulk@example.com');
+
+        $unsubResponse = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/admin/newsletter/subscribers/bulk-unsubscribe', [
+                'ids' => [$subscriberId],
+            ])
+        );
+        $unsubData = $this->getJsonResponse($unsubResponse);
+
+        $this->assertSame(200, $unsubResponse->getStatusCode());
+        $this->assertTrue($unsubData['success']);
+        $this->assertSame(1, $unsubData['data']['succeeded']);
+
+        $deleteResponse = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/admin/newsletter/subscribers/bulk-delete', [
+                'ids' => [$subscriberId],
+            ])
+        );
+        $deleteData = $this->getJsonResponse($deleteResponse);
+
+        $this->assertSame(200, $deleteResponse->getStatusCode());
+        $this->assertTrue($deleteData['success']);
+        $this->assertSame(1, $deleteData['data']['succeeded']);
+    }
+
+    private function seedSubscriber(string $email): string
+    {
+        $repo = $this->container()->get(\PaginiumCMS\Modules\Newsletter\Contracts\NewsletterRepositoryInterface::class);
+        $created = $repo->subscribe($email, 'footer', [NewsletterPreferences::WEEKLY_DIGEST]);
+
+        return $created['id'];
+    }
+
     private function wireEmailAdapter(bool $sendOk = false): void
     {
         $notifications = $this->container()->get(NotificationService::class);

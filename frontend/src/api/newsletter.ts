@@ -1,4 +1,5 @@
 import apiClient from './client';
+import type { BulkBatchResult } from '../types/bulk';
 
 export type NewsletterPreferenceKey =
   | 'weekly_digest'
@@ -195,4 +196,36 @@ export async function sendNewsletterCmsRelease(
     message: res.message ?? res.error,
     data: res.data ?? undefined,
   };
+}
+
+export async function unsubscribeNewsletterSubscriber(id: string): Promise<{ ok: boolean; message?: string }> {
+  const res = await apiClient.post<{ id: string; status: string }>(
+    `/api/admin/newsletter/subscribers/${encodeURIComponent(id)}/unsubscribe`
+  );
+  return {
+    ok: res.success === true,
+    message: res.message ?? res.error,
+  };
+}
+
+export async function deleteNewsletterSubscriber(id: string): Promise<{ ok: boolean; message?: string }> {
+  const res = await apiClient.delete<{ id: string }>(
+    `/api/admin/newsletter/subscribers/${encodeURIComponent(id)}`
+  );
+  return {
+    ok: res.success === true,
+    message: res.message ?? res.error,
+  };
+}
+
+export async function bulkUnsubscribeNewsletterSubscribers(ids: string[]): Promise<BulkBatchResult | null> {
+  const res = await apiClient.post<BulkBatchResult>('/api/admin/newsletter/subscribers/bulk-unsubscribe', {
+    ids,
+  });
+  return res.success && res.data ? res.data : null;
+}
+
+export async function bulkDeleteNewsletterSubscribers(ids: string[]): Promise<BulkBatchResult | null> {
+  const res = await apiClient.post<BulkBatchResult>('/api/admin/newsletter/subscribers/bulk-delete', { ids });
+  return res.success && res.data ? res.data : null;
 }

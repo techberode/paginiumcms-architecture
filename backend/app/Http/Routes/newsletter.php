@@ -40,6 +40,10 @@ return function (App $app): void {
     $app->group('/api/admin/newsletter', function (RouteCollectorProxy $group) use ($admin) {
         $group->get('/subscribers', [$admin, 'listSubscribers']);
         $group->get('/subscribers/export', [$admin, 'exportSubscribers']);
+        $group->post('/subscribers/bulk-unsubscribe', [$admin, 'bulkUnsubscribe']);
+        $group->post('/subscribers/bulk-delete', [$admin, 'bulkDelete']);
+        $group->post('/subscribers/{id}/unsubscribe', [$admin, 'unsubscribeSubscriber']);
+        $group->delete('/subscribers/{id}', [$admin, 'deleteSubscriber']);
         $group->get('/send/status', [$admin, 'sendStatus']);
     })->add(new RoleMiddleware($authz, ['ADMIN', 'SUPER_ADMIN']))
         ->add($container->get(TwoFactorMiddleware::class))

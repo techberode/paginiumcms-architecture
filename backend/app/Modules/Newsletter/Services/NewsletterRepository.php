@@ -6,6 +6,7 @@ namespace PaginiumCMS\Modules\Newsletter\Services;
 
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
+use PaginiumCMS\Http\Support\BulkBatchResult;
 use PaginiumCMS\Modules\Newsletter\Contracts\NewsletterRepositoryInterface;
 use PaginiumCMS\Modules\Newsletter\Support\NewsletterPreferences;
 use PaginiumCMS\Modules\Newsletter\Support\NewsletterTokenSupport;
@@ -349,6 +350,165 @@ final class NewsletterRepository implements NewsletterRepositoryInterface
                 'status' => (string) ($store[$index]['status'] ?? 'active'),
             ];
         });
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function unsubscribeById(string $id): array
+    {
+        $normalizedId = trim($id);
+        if ($normalizedId === '') {
+            return ['ok' => false, 'reason' => 'not_found'];
+        }
+
+        return $this->withLockedStore(function (array &$store) use ($normalizedId): array {
+            $index = $this->findIndexById($store, $normalizedId);
+            if ($index === null) {
+                return ['ok' => false, 'reason' => 'not_found'];
+            }
+
+            $entry = $store[$index];
+            $email = (string) ($entry['email'] ?? '');
+
+            if (($entry['status'] ?? '') === 'unsubscribed') {
+                return [
+                    'ok' => true,
+                    'reason' => 'already_unsubscribed',
+                    'email' => $email,
+                ];
+            }
+
+            $store[$index]['status'] = 'unsubscribed';
+            $store[$index]['unsubscribedAt'] = date('c');
+            unset($store[$index]['confirmTokenHash'], $store[$index]['confirmTokenExpires']);
+
+            return [
+                'ok' => true,
+                'email' => $email,
+            ];
+        });
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function deleteById(string $id): bool
+    {
+        $normalizedId = trim($id);
+        if ($normalizedId === '') {
+            return false;
+        }
+
+        return $this->withLockedStore(function (array &$store) use ($normalizedId): bool {
+            $index = $this->findIndexById($store, $normalizedId);
+            if ($index === null) {
+                return false;
+            }
+
+            array_splice($store, $index, 1);
+
+            return true;
+        });
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function bulkUnsubscribe(array $ids): BulkBatchResult
+    {
+        $batch = new BulkBatchResult();
+
+        $this->withLockedStore(function (array &$store) use ($ids, $batch): void {
+            foreach ($ids as $id) {
+                $normalizedId = trim($id);
+                if ($normalizedId === '') {
+                    continue;
+                }
+
+                $index = $this->findIndexById($store, $normalizedId);
+                if ($index === null) {
+                    $batch->addFailure($normalizedId, 'not_found');
+
+                    continue;
+                }
+
+                if (($store[$index]['status'] ?? '') === 'unsubscribed') {
+                    $batch->addSuccess($normalizedId);
+
+                    continue;
+                }
+
+                $store[$index]['status'] = 'unsubscribed';
+                $store[$index]['unsubscribedAt'] = date('c');
+                unset($store[$index]['confirmTokenHash'], $store[$index]['confirmTokenExpires']);
+                $batch->addSuccess($normalizedId);
+            }
+        });
+
+        return $batch;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function bulkDelete(array $ids): BulkBatchResult
+    {
+        $batch = new BulkBatchResult();
+
+        $this->withLockedStore(function (array &$store) use ($ids, $batch): void {
+            $idSet = [];
+            foreach ($ids as $id) {
+                $normalizedId = trim($id);
+                if ($normalizedId !== '') {
+                    $idSet[$normalizedId] = true;
+                }
+            }
+
+            if ($idSet === []) {
+                return;
+            }
+
+            $found = [];
+            $next = [];
+
+            foreach ($store as $entry) {
+                $entryId = (string) ($entry['id'] ?? '');
+                if ($entryId !== '' && isset($idSet[$entryId])) {
+                    $found[$entryId] = true;
+
+                    continue;
+                }
+
+                $next[] = $entry;
+            }
+
+            $store = $next;
+
+            foreach (array_keys($idSet) as $entryId) {
+                if (isset($found[$entryId])) {
+                    $batch->addSuccess($entryId);
+                } else {
+                    $batch->addFailure($entryId, 'not_found');
+                }
+            }
+        });
+
+        return $batch;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $store
+     */
+    private function findIndexById(array $store, string $id): ?int
+    {
+        foreach ($store as $index => $entry) {
+            if ((string) ($entry['id'] ?? '') === $id) {
+                return $index;
+            }
+        }
+
+        return null;
     }
 
     /**

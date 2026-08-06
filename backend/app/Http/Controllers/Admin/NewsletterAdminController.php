@@ -174,4 +174,101 @@ final class NewsletterAdminController
             'data' => $result,
         ], in_array($reason, ['no_subscribers'], true) ? 200 : 422);
     }
+
+    /**
+     * @param array<string, string> $args
+     */
+    public function unsubscribeSubscriber(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $id = trim((string) ($args['id'] ?? ''));
+        if ($id === '') {
+            return $this->json->error($response, Lang::get('admin.subscriber_not_found', [], 'newsletter'), 404);
+        }
+
+        $result = $this->newsletterRepository->unsubscribeById($id);
+        if (!$result['ok']) {
+            return $this->json->error($response, Lang::get('admin.subscriber_not_found', [], 'newsletter'), 404);
+        }
+
+        return $this->json->success(
+            $response,
+            ['id' => $id, 'status' => 'unsubscribed'],
+            200,
+            Lang::get('admin.subscriber_unsubscribed', [], 'newsletter')
+        );
+    }
+
+    /**
+     * @param array<string, string> $args
+     */
+    public function deleteSubscriber(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $id = trim((string) ($args['id'] ?? ''));
+        if ($id === '') {
+            return $this->json->error($response, Lang::get('admin.subscriber_not_found', [], 'newsletter'), 404);
+        }
+
+        if (!$this->newsletterRepository->deleteById($id)) {
+            return $this->json->error($response, Lang::get('admin.subscriber_not_found', [], 'newsletter'), 404);
+        }
+
+        return $this->json->success(
+            $response,
+            ['id' => $id],
+            200,
+            Lang::get('admin.subscriber_deleted', [], 'newsletter')
+        );
+    }
+
+    public function bulkUnsubscribe(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        return $this->bulkSubscriberAction($request, $response, 'unsubscribe');
+    }
+
+    public function bulkDelete(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        return $this->bulkSubscriberAction($request, $response, 'delete');
+    }
+
+    private function bulkSubscriberAction(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        string $action
+    ): ResponseInterface {
+        $payload = json_decode((string) $request->getBody(), true);
+        if (!is_array($payload)) {
+            return $this->json->error($response, Lang::get('invalid_payload', [], 'newsletter'), 400);
+        }
+
+        $ids = $this->normalizeIds($payload['ids'] ?? null);
+        if ($ids === []) {
+            return $this->json->error($response, Lang::get('admin.ids_required', [], 'newsletter'), 400);
+        }
+
+        $batch = $action === 'delete'
+            ? $this->newsletterRepository->bulkDelete($ids)
+            : $this->newsletterRepository->bulkUnsubscribe($ids);
+
+        $message = $action === 'delete'
+            ? Lang::get('admin.bulk_deleted', [], 'newsletter')
+            : Lang::get('admin.bulk_unsubscribed', [], 'newsletter');
+
+        return $this->json->success($response, $batch->toArray(), 200, $message);
+    }
+
+    /**
+     * @param mixed $value
+     * @return list<string>
+     */
+    private function normalizeIds(mixed $value): array
+    {
+        if (!is_array($value)) {
+            return [];
+        }
+
+        return array_values(array_filter(
+            array_map(static fn ($id) => trim((string) $id), $value),
+            static fn (string $id) => $id !== ''
+        ));
+    }
 }

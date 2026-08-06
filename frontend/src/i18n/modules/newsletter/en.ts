@@ -24,6 +24,7 @@ export const newsletterEn: MessageTree = {
     date: 'Subscribed at',
     preferences: 'Preferences',
     status: 'Status',
+    actions: 'Actions',
   },
   status: {
     active: 'Active',
@@ -48,6 +49,19 @@ export const newsletterEn: MessageTree = {
     sendWeeklyDigest: 'Send weekly digest now',
     sendTest: 'Send test email',
     sendRelease: 'Send release campaign',
+    unsubscribe: 'Unsubscribe',
+    delete: 'Delete',
+  },
+  bulk: {
+    itemLabel: 'subscribers selected',
+    unsubscribe: 'Unsubscribe selected',
+    delete: 'Delete selected',
+  },
+  confirm: {
+    bulkUnsubscribe: 'Unsubscribe {count} selected subscriber(s)? They will no longer receive emails.',
+    bulkDelete: 'Permanently delete {count} selected subscriber(s)? This cannot be undone.',
+    unsubscribeOne: 'Unsubscribe this subscriber?',
+    deleteOne: 'Permanently delete this subscriber?',
   },
   release: {
     title: 'CMS release campaign',
@@ -89,5 +103,13 @@ export const newsletterEn: MessageTree = {
     testFailed: 'Test email failed.',
     releaseSent: 'Release campaign sent.',
     releaseFailed: 'Release campaign was not sent.',
+    unsubscribed: 'Subscriber unsubscribed.',
+    deleted: 'Subscriber deleted.',
+    bulkFailed: 'Bulk action failed.',
+    bulkUnsubscribed: '{count} subscriber(s) unsubscribed.',
+    bulkDeleted: '{count} subscriber(s) deleted.',
+  },
+  filter: {
+    statusAll: 'All statuses',
   },
 };
