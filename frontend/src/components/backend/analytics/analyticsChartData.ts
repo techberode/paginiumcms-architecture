@@ -1,4 +1,4 @@
-import type { GeoStat, TopReferer } from '../../api/analytics';
+import type { GeoStat, TopReferer } from '../../../api/analytics';
 import type { RankedChartItem } from './AnalyticsRankedBarChart';
 
 export function refererBarClass(type?: string): string {
