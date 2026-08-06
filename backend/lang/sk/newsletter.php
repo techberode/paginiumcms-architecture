@@ -56,4 +56,10 @@ return [
     'admin.cms_release_disabled' => 'Kampane o vydaniach CMS sú v nastaveniach vypnuté.',
     'admin.no_cms_release_subscribers' => 'Žiadni aktívni odberatelia s preferenciou verzií CMS.',
     'admin.cms_release_sent' => 'Kampaň o vydaní CMS bola odoslaná.',
+    'admin.ids_required' => 'Vyberte aspoň jedného odberateľa.',
+    'admin.subscriber_not_found' => 'Odberateľ nebol nájdený.',
+    'admin.subscriber_unsubscribed' => 'Odberateľ bol odhlásený.',
+    'admin.subscriber_deleted' => 'Odberateľ bol vymazaný.',
+    'admin.bulk_unsubscribed' => 'Vybraní odberatelia boli odhlásení.',
+    'admin.bulk_deleted' => 'Vybraní odberatelia boli vymazaní.',
 ];

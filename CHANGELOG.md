@@ -132,6 +132,11 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 - **Analytics charts:** ranked horizontal bar charts and segment charts across all admin analytics tabs (Overview, Pages, Sources, Devices, Geo); daily trend chart shows visits + page views with legend; shared helpers in `analyticsChartData.ts` with Vitest coverage.
 
+### Added (UX polish — Phase C)
+
+- **Newsletter bulk actions:** checkbox selection, status filter, page size, bulk unsubscribe/delete, and per-row actions in admin subscribers panel.
+- **Newsletter admin API:** `POST /api/admin/newsletter/subscribers/bulk-unsubscribe`, `bulk-delete`, `POST …/{id}/unsubscribe`, `DELETE …/{id}` (ADMIN+ role, CSRF-protected).
+
 ### Fixed (UX polish — Phase A)
 
 - **Newsletter admin panels ([ISS-130](docs/ISSUES.md#iss-130))** — replace `theme-*` tokens with admin `slate-*` / `dark:` classes for readable light-mode tables and cards.

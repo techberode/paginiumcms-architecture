@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Modules\Newsletter\Contracts;
 
+use PaginiumCMS\Http\Support\BulkBatchResult;
+
 interface NewsletterRepositoryInterface
 {
     /**
@@ -101,4 +103,21 @@ interface NewsletterRepositoryInterface
      * }
      */
     public function updatePreferencesByToken(string $token, array $preferences): array;
+
+    /**
+     * @return array{ok: bool, reason?: string, email?: string}
+     */
+    public function unsubscribeById(string $id): array;
+
+    public function deleteById(string $id): bool;
+
+    /**
+     * @param list<string> $ids
+     */
+    public function bulkUnsubscribe(array $ids): BulkBatchResult;
+
+    /**
+     * @param list<string> $ids
+     */
+    public function bulkDelete(array $ids): BulkBatchResult;
 }

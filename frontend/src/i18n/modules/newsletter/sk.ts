@@ -24,6 +24,7 @@ export const newsletterSk: MessageTree = {
     date: 'Dátum prihlásenia',
     preferences: 'Preferencie',
     status: 'Stav',
+    actions: 'Akcie',
   },
   status: {
     active: 'Aktívny',
@@ -48,6 +49,19 @@ export const newsletterSk: MessageTree = {
     sendWeeklyDigest: 'Odoslať týždenný digest',
     sendTest: 'Odoslať test',
     sendRelease: 'Odoslať kampaň o vydaní',
+    unsubscribe: 'Odhlásiť',
+    delete: 'Vymazať',
+  },
+  bulk: {
+    itemLabel: 'vybraných odberateľov',
+    unsubscribe: 'Odhlásiť vybraných',
+    delete: 'Vymazať vybraných',
+  },
+  confirm: {
+    bulkUnsubscribe: 'Odhlásiť {count} vybraných odberateľov? Už nebudú dostávať e-maily.',
+    bulkDelete: 'Natrvalo vymazať {count} vybraných odberateľov? Túto akciu nemožno vrátiť.',
+    unsubscribeOne: 'Odhlásiť tohto odberateľa?',
+    deleteOne: 'Natrvalo vymazať tohto odberateľa?',
   },
   release: {
     title: 'Kampaň o vydaní CMS',
@@ -89,5 +103,13 @@ export const newsletterSk: MessageTree = {
     testFailed: 'Testovací e-mail zlyhal.',
     releaseSent: 'Kampaň o vydaní bola odoslaná.',
     releaseFailed: 'Kampaň o vydaní nebola odoslaná.',
+    unsubscribed: 'Odberateľ bol odhlásený.',
+    deleted: 'Odberateľ bol vymazaný.',
+    bulkFailed: 'Hromadná akcia zlyhala.',
+    bulkUnsubscribed: '{count} odberateľov bolo odhlásených.',
+    bulkDeleted: '{count} odberateľov bolo vymazaných.',
+  },
+  filter: {
+    statusAll: 'Všetky stavy',
   },
 };

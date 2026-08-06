@@ -56,4 +56,10 @@ return [
     'admin.cms_release_disabled' => 'CMS release campaigns are disabled in settings.',
     'admin.no_cms_release_subscribers' => 'No active subscribers with CMS release preference.',
     'admin.cms_release_sent' => 'CMS release campaign sent.',
+    'admin.ids_required' => 'Select at least one subscriber.',
+    'admin.subscriber_not_found' => 'Subscriber not found.',
+    'admin.subscriber_unsubscribed' => 'Subscriber was unsubscribed.',
+    'admin.subscriber_deleted' => 'Subscriber was deleted.',
+    'admin.bulk_unsubscribed' => 'Selected subscribers were unsubscribed.',
+    'admin.bulk_deleted' => 'Selected subscribers were deleted.',
 ];

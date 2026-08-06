@@ -112,6 +112,46 @@ final class NewsletterRepositoryTest extends TestCase
         $this->assertFalse($result['ok']);
     }
 
+    public function testUnsubscribeByIdMarksSubscriberUnsubscribed(): void
+    {
+        $repo = $this->repository();
+        $created = $repo->subscribe('admin@example.com', 'footer', [NewsletterPreferences::GENERAL_NEWS]);
+
+        $result = $repo->unsubscribeById($created['id']);
+        $this->assertTrue($result['ok']);
+        $this->assertSame([], $repo->findActiveByPreference(NewsletterPreferences::GENERAL_NEWS));
+
+        $all = $repo->findAll();
+        $this->assertSame('unsubscribed', $all[0]['status'] ?? null);
+    }
+
+    public function testDeleteByIdRemovesSubscriber(): void
+    {
+        $repo = $this->repository();
+        $created = $repo->subscribe('remove@example.com', 'footer', [NewsletterPreferences::GENERAL_NEWS]);
+
+        $this->assertTrue($repo->deleteById($created['id']));
+        $this->assertSame([], $repo->findAll());
+    }
+
+    public function testBulkUnsubscribeAndDeleteReturnBatchResults(): void
+    {
+        $repo = $this->repository();
+        $first = $repo->subscribe('one@example.com', 'footer', [NewsletterPreferences::GENERAL_NEWS]);
+        $second = $repo->subscribe('two@example.com', 'footer', [NewsletterPreferences::GENERAL_NEWS]);
+
+        $unsubBatch = $repo->bulkUnsubscribe([$first['id'], 'missing-id']);
+        $this->assertSame(2, $unsubBatch->processed());
+        $this->assertSame(1, $unsubBatch->succeeded());
+        $this->assertSame(1, $unsubBatch->failed());
+
+        $deleteBatch = $repo->bulkDelete([$first['id'], $second['id'], 'missing-id']);
+        $this->assertSame(3, $deleteBatch->processed());
+        $this->assertSame(2, $deleteBatch->succeeded());
+        $this->assertSame(1, $deleteBatch->failed());
+        $this->assertSame([], $repo->findAll());
+    }
+
     private function repository(): NewsletterRepository
     {
         $validator = new FileValidator($this->basePath);
