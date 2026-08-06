@@ -1,6 +1,7 @@
 # Iteration 71 — Performance Guard (application APM)
 
-> **Status:** ✅ shipped (2026-08-05)  
+> **Status:** ✅ shipped (2026-08-06)  
+> **Release:** `v2.1.0-beta.28`
 > **Priority:** 🟡  
 > **Wave:** [Hybrid Engine HE-4](ITERATION_WAVE_HYBRID_ENGINE.md)  
 > **Depends on:** [It.69](ITERATION_69.md)  

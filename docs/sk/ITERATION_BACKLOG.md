@@ -1,6 +1,6 @@
 # PaginiumCMS — konsolidovaný backlog
 
-> **Snapshot:** `v2.1.0-beta.23` · 2. august 2026  
+> **Snapshot:** `v2.1.0-beta.28` · 6. august 2026  
 > **Pravidlo:** aktívny backlog obsahuje iba nedodaný alebo presne ohraničený zostávajúci rozsah  
 > **No-SQL:** [architecture/NOSQL_MANDATE.md](architecture/NOSQL_MANDATE.md)
 
@@ -28,7 +28,7 @@ Tento dokument opravuje starý backlog, v ktorom sa miešali hotové iterácie, 
 | 3 | **It.69** Unified cache + Redis + HTTP validators | 🔴 | ⏳ | výkon a zjednotenie starých It.45/49 |
 | 4 | **It.67** Untrusted surfaces hardening | 🔴 | ⏳ | importy, shortcode, Monaco, témy, CSP |
 | 5 | **It.70** Git publish modes | 🟡 | ⏳ | immediate/queued distribúcia |
-| 6 | **It.71** Performance Guard | 🟡 | ⏳ | APM a bezpečné fallbacky |
+| 6 | **It.71** Performance Guard | 🟡 | ✅ | shipped v `2.1.0-beta.28` — pozri [ITERATION_71](../en/ITERATION_71.md) |
 | 7 | **It.72** Media drivers | 🟡 | ⏳ | local + S3/CDN |
 | 8 | **It.73** Multi-locale document | 🟡 | ⏳ | základ pre preklady |
 | 9 | **It.74** API keys/JWT | 🟡 | ⏳ | headless integrácie, aditívna auth |
@@ -68,7 +68,7 @@ Tento dokument opravuje starý backlog, v ktorom sa miešali hotové iterácie, 
 - build/deploy webhook ako oddelený krok,
 - zosúladenie s It.48 static render.
 
-### It.71 — Performance Guard 🟡
+### It.71 — Performance Guard ✅ shipped (`v2.1.0-beta.28`)
 
 - middleware timing a memory/I/O metrics,
 - budgety per route/workflow,

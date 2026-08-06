@@ -1,6 +1,6 @@
 # PaginiumCMS — consolidated backlog
 
-> **Snapshot:** `v2.1.0-beta.27` · August 5, 2026  
+> **Snapshot:** `v2.1.0-beta.28` · August 6, 2026  
 > **Rule:** the active backlog contains only unshipped or precisely bounded remaining scope  
 > **No-SQL:** [architecture/NOSQL_MANDATE.md](architecture/NOSQL_MANDATE.md)
 
@@ -24,11 +24,11 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | Order | Item | Priority | Status | Reason |
 |-------|------|----------|--------|--------|
 | 1 | Complete bilingual documentation | 🔴 | ✅ | It.18 consolidation shipped; SK detail catch-up deferred |
-| 2 | **It.68** Hybrid Engine foundation | 🔴 | ✅ | shipped in `[Unreleased]` — see [ITERATION_68](ITERATION_68.md) |
-| 3 | **It.69** Unified cache + Redis + HTTP validators | 🔴 | ✅ | shipped in `[Unreleased]` — see [ITERATION_69](ITERATION_69.md) |
+| 2 | **It.68** Hybrid Engine foundation | 🔴 | ✅ | shipped in `v2.1.0-beta.28` (It.68 bundle) — see [ITERATION_68](ITERATION_68.md) |
+| 3 | **It.69** Unified cache + Redis + HTTP validators | 🔴 | ✅ | shipped in `v2.1.0-beta.26` — see [ITERATION_69](ITERATION_69.md) |
 | 4 | **It.67** Untrusted surfaces hardening | 🔴 | ✅ | shortcodes, themes, CSP, hostile fixtures — see [ITERATION_67](ITERATION_67.md) |
 | 5 | **It.70** Git publish modes | 🟡 | ✅ | local publisher + queued/immediate API — see [ITERATION_70](ITERATION_70.md) |
-| 6 | **It.71** Performance Guard | 🟡 | ⏳ | APM and safe fallbacks |
+| 6 | **It.71** Performance Guard | 🟡 | ✅ | shipped in `v2.1.0-beta.28` — see [ITERATION_71](ITERATION_71.md) |
 | 7 | **It.72** Media drivers | 🟡 | ⏳ | local + S3/CDN |
 | 8 | **It.73** Multi-locale document | 🟡 | ⏳ | translation foundation |
 | 9 | **It.74** API keys/JWT | 🟡 | ⏳ | headless integrations, additive auth |
@@ -72,7 +72,7 @@ See [ITERATION_69](ITERATION_69.md).
 
 See [ITERATION_70](ITERATION_70.md).
 
-### It.71 — Performance Guard 🟡
+### It.71 — Performance Guard ✅ shipped (`v2.1.0-beta.28`)
 
 - middleware timing and memory/I/O metrics,
 - budgets per route/workflow,

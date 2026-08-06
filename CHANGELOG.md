@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.28`](#release-2-1-0-beta-28) | 2026-08-06 | Performance Guard (It.71), UX polish Phases A–C, post-beta.27 CI bundle |
 | [`2.1.0-beta.27`](#release-2-1-0-beta-27) | 2026-08-05 | Untrusted surfaces hardening (It.67) and Git publish modes (It.70) |
 | [`2.1.0-beta.26`](#release-2-1-0-beta-26) | 2026-08-03 | Unified cache, HTTP ETag/304 validators, audit hardening |
 | [`2.1.0-beta.23`](#release-2-1-0-beta-23) | 2026-07-30 | Layout Switch, layout settings, preview frame and page templates |
@@ -101,6 +102,14 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+_Nothing staged yet._
+
+<a id="release-2-1-0-beta-28"></a>
+
+## [2.1.0-beta.28] – 2026-08-06
+
+Performance Guard (It.71), UX polish Phases A–C, and post-beta.27 CI/incident bundle
+
 ### Added (Iteration 71)
 
 - **Performance Guard (APM):** in-request latency/memory/I/O sampling via `PerformanceGuardMiddleware`; bounded ring buffer (`data/metrics/apm-samples.json`), breach incidents (`apm-breaches.json`), `PerformanceAggregator` (p50/p95/p99, error rate), `SafeRemediationService` (`suggest` default; `automatic` = allow-listed content cache purge only after capability probe — never auto-enables Redis).
@@ -115,22 +124,13 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **`permissionsAdmin` default** — add `metrics:read` and `git:publish` so settings-backed ACL matches `PermissionCatalog` (ADMIN APM API was 403).
 - **`PerformanceRouteLabelResolver`** — catch missing Slim route context and fall back to sanitized path (unit tests + pre-routing).
 - **`PerformanceSampleStoreTest`** — JSON round-trip compares duration with `assertEquals` (int vs float).
-
-### Fixed
-
 - **Engine settings save with Performance Guard ([ISS-128](docs/ISSUES.md#iss-128))** — `performanceGuardSampleRate` (`float`) had no FE input and Zod treated `number` rules as string length; added `float` field type, numeric Zod validation, and aligned schema rule `numeric` → `number`.
-- **FileDriver read-only cache writes ([ISS-129](docs/ISSUES.md#iss-129))** — `file_put_contents` on non-writable cache dir emitted PHP warning (CI failure with 0 test failures); guard writability and return `false` silently via `writeFile()`.
-- **`ContentScheduledPublishServiceTest`** — OTP skip test asserts only the created slug (full-suite shared storage isolation); restores `workflows` settings in `finally`.
 
 ### Added (UX polish — Phase A)
 
 - **Public footer:** CMS version badge next to site logo via `cmsInfo.version` on `GET /api/settings/public` (from `AppVersion::VERSION`).
 - **Back to top:** floating button on public pages (`PublicSiteLayout`) and admin shell (`ResponsiveLayout` — scroll-aware for the main `overflow-y-auto` pane).
 - **SEO health details:** `getContentSeoHealth()` issue codes with i18n hints; tooltips in content lists; live `SeoHealthChecklist` in editor SEO panel + badge on collapsed SEO section.
-
-### Fixed (UX polish — Phase B hotfix)
-
-- **`analyticsChartData.ts` import path** — three levels up to `src/api/analytics` (TS2307 in CI).
 
 ### Added (UX polish — Phase B)
 
@@ -141,21 +141,34 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **Newsletter bulk actions:** checkbox selection, status filter, page size, bulk unsubscribe/delete, and per-row actions in admin subscribers panel.
 - **Newsletter admin API:** `POST /api/admin/newsletter/subscribers/bulk-unsubscribe`, `bulk-delete`, `POST …/{id}/unsubscribe`, `DELETE …/{id}` (ADMIN+ role, CSRF-protected).
 
-### Fixed (UX polish — Phase A)
+### Fixed (UX polish)
 
 - **Newsletter admin panels ([ISS-130](docs/ISSUES.md#iss-130))** — replace `theme-*` tokens with admin `slate-*` / `dark:` classes for readable light-mode tables and cards.
 - **Public newsletter modal ([ISS-130](docs/ISSUES.md#iss-130))** — preference cards used `bg-black/10` + low opacity text on light modal background; switch to `text-theme-text` / `theme-border` tokens; fix success message contrast in light mode.
 - **PHP_CodeSniffer dev dependency ([ISS-131](docs/ISSUES.md#iss-131))** — bump `squizlabs/php_codesniffer` to `^4.0.2` (installed 4.0.4) for CVE-2026-67434 / GHSA-hmqg-cxww-wqhq (blame-report command injection); `composer audit` clean.
 
-### Fixed
+### Fixed (CI / post-beta.27)
 
-- **PHPUnit DEMO_MODE isolation ([ISS-125](docs/ISSUES.md#iss-125))** — force `DEMO_MODE=false` in `phpunit.xml` and `tests/bootstrap.php`; demo HTTP tests restore env and re-bootstrap in `try/finally`; `Http/TestCase` syncs `$_SERVER`, purges OTP challenges, adds `enableWorkflows()`; OTP and SystemUpdate tests assert prerequisites.
-- **Post-beta.27 CI hotfix bundle ([ISS-126](docs/ISSUES.md#iss-126))** — see items below (no new release tag; deploy `origin/main`).
-- **`LocalFlatFileStorage::assertWithinBase()`** — allow logical paths when intermediate directories (e.g. `data/`) do not exist yet; fixes HTTP PHPUnit `settings.testing.json` failures in CI.
-- **API barrel (It.17)** — register `git`, `shortcodes`, and `themes` in `frontend/src/api/index.ts`.
-- **Demo dashboard storage metric** — `DEMO_MODE=true` no longer exposes host partition free space; `DemoStorageQuotaService` reports synthetic sandbox quota (default 2 GiB from `DEMO_STORAGE_QUOTA_BYTES`) based on `storage/app/demo/` usage only.
-- **`ScheduledJobRunnerTest`** — `createDirectory` mock matches void production signature (PHPUnit CI).
-- **`SettingsControllerEngineTest`** — corrupt settings file deleted in `finally` ([ISS-123](docs/ISSUES.md#iss-123)).
+- **FileDriver read-only cache writes ([ISS-129](docs/ISSUES.md#iss-129))** — `file_put_contents` on non-writable cache dir emitted PHP warning (CI failure with 0 test failures); guard writability and return `false` silently via `writeFile()`.
+- **PHPUnit DEMO_MODE isolation ([ISS-125](docs/ISSUES.md#iss-125))** — force `DEMO_MODE=false` in `phpunit.xml` and `tests/bootstrap.php`; demo HTTP tests restore env and re-bootstrap in `try/finally`; `Http/TestCase` syncs `$_SERVER`, purges OTP challenges, adds `enableWorkflows()`.
+- **Post-beta.27 CI hotfix bundle ([ISS-126](docs/ISSUES.md#iss-126))** — `LocalFlatFileStorage::assertWithinBase()` for missing intermediate dirs; API barrel exports; demo synthetic storage quota; `ScheduledJobRunnerTest` void mock; `SettingsControllerEngineTest` corrupt file cleanup.
+- **`analyticsChartData.ts` import path ([ISS-132](docs/ISSUES.md#iss-132))** — three levels up to `src/api/analytics` (TS2307 in CI after Phase B).
+- **BackToTopButton Vitest context ([ISS-133](docs/ISSUES.md#iss-133))** — wrap layout/route tests with `renderWithProviders` (`TestI18nProvider`) after admin back-to-top wiring.
+- **`ContentScheduledPublishServiceTest`** — OTP skip test asserts only the created slug (full-suite shared storage isolation); restores `workflows` settings in `finally`.
+
+### Documentation
+
+- [docs/en/RELEASE_2_1_0_BETA_28.md](docs/en/RELEASE_2_1_0_BETA_28.md), [docs/sk/RELEASE_2_1_0_BETA_28.md](docs/sk/RELEASE_2_1_0_BETA_28.md) — release scope, deploy, and incident index.
+- [docs/en/ITERATION_UX_POLISH.md](docs/en/ITERATION_UX_POLISH.md) — UX Phases A–C specification and verification.
+- [docs/en/ITERATION_71.md](docs/en/ITERATION_71.md) — release anchor `v2.1.0-beta.28`; ISS-121–133 disposition in [ISSUES.md](docs/ISSUES.md).
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.28`
+- **Categories:** Added, Fixed, Documentation, Security (dev dep)
+- **Technical identifiers:** `PerformanceGuardMiddleware`, `MetricsController`, `metrics:read`, `analyticsChartData`, `NewsletterAdminController` bulk routes, `BackToTopButton`, `AppVersion`
+- **Deploy:** `GIT_REF=v2.1.0-beta.28` (or matching commit SHA) + frontend build; enable Performance Guard in **Settings → Engine** after deploy if desired; add `metrics:read` to ADMIN ACL on instances with saved `permissionsAdmin` overrides ([ISS-127](docs/ISSUES.md#iss-127)).
+- **Deferred:** It.72 media storage drivers → next milestone.
 
 <a id="release-2-1-0-beta-27"></a>
 
