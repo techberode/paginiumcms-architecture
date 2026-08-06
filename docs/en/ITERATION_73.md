@@ -1,6 +1,6 @@
 # Iteration 73 — multi-locale content document
 
-> **Status:** ⏳ planned  
+> **Status:** 🚧 Phase 1 MVP (read model + public API locale)  
 > **Priority:** 🟡 · high migration impact  
 > **Wave:** [Hybrid Engine HE-6](ITERATION_WAVE_HYBRID_ENGINE.md)  
 > **Depends on:** [It.68](ITERATION_68.md)
@@ -148,8 +148,9 @@ Automatic merging of two files with ambiguous identity is prohibited. Such a cas
 
 ## Definition of Done
 
+- [x] Canonical read model and locale fallback locked for legacy + schema v2 shape.
 - [ ] Canonical schema and locale fallback are locked in SK/EN API documentation.
-- [ ] Legacy documents work without mandatory migration.
+- [x] Legacy documents work without mandatory migration (read-time normalization).
 - [ ] Demo SK+EN migration passes dry-run → convert → verify → rollback.
 - [ ] The editor manages both locales in one resource view.
 - [ ] Publish and cache are locale-aware.

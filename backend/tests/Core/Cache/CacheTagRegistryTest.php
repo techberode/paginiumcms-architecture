@@ -19,12 +19,13 @@ final class CacheTagRegistryTest extends TestCase
         $cache = new CacheManager($driver);
         $service = new ContentCacheService($cache);
 
-        $service->rememberPage('about', static fn (): array => ['slug' => 'about', 'title' => 'About']);
-        $this->assertSame(['slug' => 'about', 'title' => 'About'], $cache->get('content.page.payload.about'));
+        $service->rememberPage('about', 'test-locale', static fn (): array => ['slug' => 'about', 'title' => 'About']);
+        $cacheKey = 'content.page.payload.about.' . md5('test-locale');
+        $this->assertSame(['slug' => 'about', 'title' => 'About'], $cache->get($cacheKey));
 
         $service->invalidatePage('about');
 
-        $this->assertNull($cache->get('content.page.payload.about'));
+        $this->assertNull($cache->get($cacheKey));
     }
 
     public function testFileDriverTagInvalidation(): void

@@ -103,7 +103,7 @@ final class SeoControllerTest extends TestCase
         $repo->save($page);
 
         // Simulate ContentController writing an API array (and legacy shared key).
-        $cache->rememberPage($slug, static fn (): array => [
+        $cache->rememberPage($slug, 'seo-test', static fn (): array => [
             'path' => 'pages/' . $slug . '.md',
             'frontMatter' => ['title' => 'Collision Page', 'status' => 'published'],
             'content' => '# Collision',

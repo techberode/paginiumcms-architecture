@@ -80,6 +80,8 @@ This document canonically assigns It.73 to **HE-6**. The earlier draft inconsist
 
 | Item | Relationship to this wave | Rule |
 |------|---------------------------|------|
+| **It.79** DAM video | parallel after It.72 MVP | requires It.78 upload policy; self-hosted MP4/WebM only |
+| **It.78** unified upload security | security gate | complete before It.79 and any new upload MIME types |
 | **It.67** untrusted surfaces | security gate | complete before expanding generated/imported code surfaces |
 | **It.58d** layout remainder | parallel product stream | must not create a second content model or publish pipeline |
 | **It.48** static render | continuation of It.70 | a build trigger is a separate step after successful Git publish |
@@ -152,4 +154,17 @@ Phase 0 for this wave is ready when:
 - AI and translation remain proposal workflows requiring explicit confirmation,
 - no planned capability is presented as implemented.
 
-**Next implementation:** [It.71](ITERATION_71.md) Performance Guard · It.70 publish UI modal (follow-up).
+---
+
+## 7. Post-HE DAM & security (It.78–79)
+
+| It. | Title | Priority | Depends on |
+|-----|-------|----------|------------|
+| **78** | [Unified upload security](ITERATION_78.md) | 🟡 | It.24, It.67 |
+| **79** | [DAM video](ITERATION_79.md) | 🟡 | It.78, It.72 MVP, It.55 |
+
+Delivery order: **It.78 → It.79**. Video must not ship without the unified upload policy. Both iterations extend DAM (It.24) and reuse It.72 binary storage; they do not change the Hybrid Engine wave numbering It.68–77.
+
+---
+
+**Next implementation:** [It.73](ITERATION_73.md) multi-locale document · It.72 S3 remainder · [It.78](ITERATION_78.md) upload policy.

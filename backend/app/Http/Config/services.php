@@ -76,6 +76,9 @@ use PaginiumCMS\Core\FlatFile\Contracts\FrontMatterParserInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\MarkdownContentParserInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\MarkdownParserInterface;
 use PaginiumCMS\Core\Conflict\Contracts\ConflictLoggerInterface;
+use PaginiumCMS\Core\Content\LocalizedContentApplicator;
+use PaginiumCMS\Core\Content\LocalizedContentNormalizer;
+use PaginiumCMS\Core\Content\LocaleResolver;
 use PaginiumCMS\Core\Conflict\Services\ConflictLogger;
 use PaginiumCMS\Core\Drafts\Contracts\DraftManagerInterface;
 use PaginiumCMS\Core\Drafts\Services\DraftManager;
@@ -205,6 +208,8 @@ use PaginiumCMS\Modules\Gallery\Services\GalleryRepository;
 use PaginiumCMS\Modules\Gallery\Services\GalleryItemValidator;
 use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
 use PaginiumCMS\Modules\Media\Services\MediaRepository;
+use PaginiumCMS\Modules\Media\Services\MediaStorageCapabilityProbe;
+use PaginiumCMS\Modules\Media\Services\MediaStorageFactory;
 use PaginiumCMS\Modules\Media\Services\StockImageCatalog;
 use PaginiumCMS\Modules\Media\Services\StockImageImporter;
 use PaginiumCMS\Modules\Demo\Contracts\DemoDataProviderInterface;
@@ -355,7 +360,9 @@ return [
             get(CacheCapabilityProbe::class),
             get(CacheDriverFactory::class),
             get(StorageInterface::class),
-            get(GitCapabilityProbe::class)
+            get(GitCapabilityProbe::class),
+            get(MediaStorageFactory::class),
+            get(MediaStorageCapabilityProbe::class),
         ),
 
     GitPathValidator::class => create(GitPathValidator::class),
@@ -465,6 +472,15 @@ return [
     // Revízny odtlačok obsahu (optimistické zamykanie / detekcia konfliktov – Iterácia 2)
     ContentRevision::class => create(ContentRevision::class),
 
+    LocaleResolver::class => create(LocaleResolver::class)
+        ->constructor(
+            get(SupportedLocalesRegistry::class),
+            get(SettingsRepositoryInterface::class)
+        ),
+    LocalizedContentNormalizer::class => create(LocalizedContentNormalizer::class)
+        ->constructor(get(SettingsRepositoryInterface::class)),
+    LocalizedContentApplicator::class => create(LocalizedContentApplicator::class),
+
     // Log konfliktov obsahu (Iterácia 3) – flat-file data/conflicts.json
     ConflictLoggerInterface::class => create(ConflictLogger::class)
         ->constructor(
@@ -512,12 +528,20 @@ return [
         ),
 
     // Media module
+    MediaStorageFactory::class => create(MediaStorageFactory::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class)
+        ),
+    MediaStorageCapabilityProbe::class => create(MediaStorageCapabilityProbe::class),
+
     MediaRepositoryInterface::class => create(MediaRepository::class)
         ->constructor(
             get(FileReaderInterface::class),
             get(FileWriterInterface::class),
             get(SettingsRepositoryInterface::class),
-            get(UploadSecurityValidator::class)
+            get(UploadSecurityValidator::class),
+            get(MediaStorageFactory::class)
         ),
 
     StockImageCatalog::class => create(StockImageCatalog::class),
@@ -758,7 +782,10 @@ return [
             get(DynamicValidator::class),
             get(EditorContentValidator::class),
             get(ContentPathAclGuard::class),
-            get(HookEmitter::class)
+            get(HookEmitter::class),
+            get(LocaleResolver::class),
+            get(LocalizedContentNormalizer::class),
+            get(LocalizedContentApplicator::class),
         ),
     AdvancedSearchService::class => create(AdvancedSearchService::class)
         ->constructor(

@@ -29,13 +29,15 @@ Tento dokument opravuje starý backlog, v ktorom sa miešali hotové iterácie, 
 | 4 | **It.67** Untrusted surfaces hardening | 🔴 | ⏳ | importy, shortcode, Monaco, témy, CSP |
 | 5 | **It.70** Git publish modes | 🟡 | ⏳ | immediate/queued distribúcia |
 | 6 | **It.71** Performance Guard | 🟡 | ✅ | shipped v `2.1.0-beta.28` — pozri [ITERATION_71](../en/ITERATION_71.md) |
-| 7 | **It.72** Media drivers | 🟡 | ⏳ | local + S3/CDN |
+| 7 | **It.72** Media drivers | 🟡 | 🟡 partial | MVP local driver + probe; S3/migrácia neskôr |
 | 8 | **It.73** Multi-locale document | 🟡 | ⏳ | základ pre preklady |
-| 9 | **It.74** API keys/JWT | 🟡 | ⏳ | headless integrácie, aditívna auth |
-| 10 | **It.58d** Layout remainder | 🟡 | ⏳ | presne uzamknúť zostávajúce bloky |
-| 11 | **It.25** Setup wizard/update UX | 🟡 pre-Final | ⏳ | onboarding a GA polish |
+| 9 | **It.74** API keys/JWT | 🟡 | ⏳ | headless integrácie |
+| 10 | **It.58d** Layout remainder | 🟡 | ⏳ | zostávajúce bloky |
+| 11 | **It.25** Setup wizard/update UX | 🟡 pre-Final | ⏳ | onboarding a GA |
 | 12 | **It.76/77** Translation providers | 🔵 | ⏳ | po It.73 |
-| 13 | **It.75** AI agent | 🔵 | ⏳ | po content locale a provider vrstvách |
+| 13 | **It.75** AI agent | 🔵 | ⏳ | po locale a provider vrstvách |
+| 14 | **It.78** Unified upload security | 🟡 | ⏳ | bezpečnostná brána pred videom / novými MIME |
+| 15 | **It.79** DAM video | 🟡 | ⏳ | MP4/WebM + embed v editore; po It.78 |
 
 ---
 
@@ -76,14 +78,26 @@ Tento dokument opravuje starý backlog, v ktorom sa miešali hotové iterácie, 
 - dokumentované self-heal iba pre odvodené vrstvy,
 - žiadne automatické zmeny primárneho obsahu.
 
-### It.72 — media drivers 🟡
+### It.72 — media drivers 🟡 partial (MVP shipped)
 
-- `MediaStorageInterface`/Flysystem,
-- local driver ako default,
-- S3-compatible driver,
-- signed/public URL policy,
-- migrácia referencií bez straty obsahu,
-- MIME/path/security parity.
+- ✅ `MediaStorageDriverInterface`, local driver, factory, capability probe,
+- ✅ settings `media.storageDriver` + rezervované S3 polia,
+- ⏳ S3-compatible driver, migrácia, signed URLs.
+
+Pozri [ITERATION_72](../en/ITERATION_72.md).
+
+### It.78 — unified upload security 🟡
+
+- `UploadPolicyEngine` a profily pre každý upload povrch,
+- prienik MIME/veľkosti, Zip-Slip, SSRF, audit.
+
+Pozri [ITERATION_78](ITERATION_78.md).
+
+### It.79 — DAM video 🟡
+
+- MP4/WebM cez profil `media-video`, embed v editore, bez iframe.
+
+Pozri [ITERATION_79](ITERATION_79.md).
 
 ### It.73 — multi-locale content 🟡
 

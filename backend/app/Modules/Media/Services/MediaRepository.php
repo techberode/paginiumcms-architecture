@@ -11,6 +11,7 @@ use PaginiumCMS\Core\FlatFile\Models\MediaFile;
 use PaginiumCMS\Core\Security\Services\UploadSecurityValidator;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
+use PaginiumCMS\Modules\Media\Contracts\MediaStorageDriverInterface;
 use PaginiumCMS\Modules\Media\MediaFormats;
 use PaginiumCMS\Support\JsonHelper;
 
@@ -25,7 +26,8 @@ class MediaRepository implements MediaRepositoryInterface
         private FileReaderInterface $reader,
         private FileWriterInterface $writer,
         private SettingsRepositoryInterface $settings,
-        private UploadSecurityValidator $uploadSecurity
+        private UploadSecurityValidator $uploadSecurity,
+        private MediaStorageFactory $storageFactory,
     ) {
     }
 
@@ -96,11 +98,12 @@ class MediaRepository implements MediaRepositoryInterface
             throw new FlatFileException('Súbor presahuje maximálnu povolenú veľkosť');
         }
 
-        $this->writer->writeBinary($relativePath, $binary, true);
+        $storage = $this->storage();
+        $storage->put($relativePath, $binary);
 
         $media->setPath($relativePath);
         $media->setFileName($safeName);
-        $media->setUrl('/storage/app/content/' . $relativePath);
+        $media->setUrl($storage->publicUrl($relativePath));
         $media->setSizeBytes(strlen($binary));
         $media->setMimeType($mimeType);
         $media->setAltText($altText);
@@ -124,9 +127,7 @@ class MediaRepository implements MediaRepositoryInterface
                 continue;
             }
 
-            if ($this->reader->exists($path)) {
-                $this->writer->delete($path, true);
-            }
+            $this->storage()->delete($path);
 
             $sidecar = $this->sidecarPath($path);
             if ($this->reader->exists($sidecar)) {
@@ -457,5 +458,12 @@ class MediaRepository implements MediaRepositoryInterface
         }
 
         return $folder;
+    }
+
+    private function storage(): MediaStorageDriverInterface
+    {
+        return $this->storageFactory->create(
+            MediaStorageFactory::driverFromMediaSettings($this->settings->group('media'))
+        );
     }
 }
