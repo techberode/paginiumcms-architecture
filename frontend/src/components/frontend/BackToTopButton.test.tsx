@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { screen, fireEvent } from '@testing-library/react';
 import { BackToTopButton } from './BackToTopButton';
 import { useRef } from 'react';
+import { renderWithProviders } from '../../test/renderWithProviders';
 
 function ContainerHarness() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -31,7 +32,7 @@ describe('BackToTopButton', () => {
     const scrollTo = vi.fn();
     vi.spyOn(window, 'scrollTo').mockImplementation(scrollTo);
 
-    render(<BackToTopButton />);
+    renderWithProviders(<BackToTopButton />);
 
     fireEvent.click(screen.getByRole('button', { name: /späť hore|back to top/i }));
 
@@ -40,7 +41,7 @@ describe('BackToTopButton', () => {
 
   it('scrolls container when scrollContainerRef is provided', () => {
     const scrollTo = vi.fn();
-    render(<ContainerHarness />);
+    renderWithProviders(<ContainerHarness />);
 
     const root = screen.getByTestId('scroll-root');
     Object.defineProperty(root, 'scrollTop', { value: 500, configurable: true });

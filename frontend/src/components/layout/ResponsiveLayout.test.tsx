@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, Link } from 'react-router-dom';
 import { ResponsiveLayout } from './ResponsiveLayout';
+import { renderWithProviders } from '../../test/renderWithProviders';
 
 vi.mock('../../hooks/useAuth', () => ({
   useAuth: () => ({ twoFactorSetupPending: false }),
@@ -39,7 +40,7 @@ describe('ResponsiveLayout scroll restoration', () => {
   it('resets scroll container on pathname change', () => {
     const scrollTo = vi.spyOn(HTMLElement.prototype, 'scrollTo').mockImplementation(() => undefined);
 
-    render(
+    renderWithProviders(
       <MemoryRouter initialEntries={['/pages']}>
         <Routes>
           <Route

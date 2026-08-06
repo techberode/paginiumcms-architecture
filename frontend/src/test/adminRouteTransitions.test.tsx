@@ -1,8 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { ResponsiveLayout } from '../components/layout/ResponsiveLayout';
+import { renderWithProviders } from './renderWithProviders';
 
 vi.mock('../hooks/useAuth', () => ({
   useAuth: () => ({
@@ -46,7 +47,7 @@ describe('admin route transitions (It.53)', () => {
       defaultOptions: { queries: { retry: false } },
     });
 
-    render(
+    renderWithProviders(
       <QueryClientProvider client={queryClient}>
         <MemoryRouter initialEntries={['/pages']}>
           <Routes>
