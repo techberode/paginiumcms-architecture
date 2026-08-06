@@ -47,14 +47,14 @@ final class SystemUpdateControllerTest extends TestCase
 
     public function testRunForbiddenWhenDeployDisabled(): void
     {
+        $login = $this->loginAsSuperAdminUser();
+        $this->assertSame(200, $login['response']->getStatusCode());
+
         $settings = $this->container()->get(SettingsRepositoryInterface::class);
         $settings->setGroup('systemUpdate', array_merge($settings->group('systemUpdate'), [
             'deployEnabled' => false,
             'allowDeployTags' => true,
         ]));
-
-        $login = $this->loginAsSuperAdminUser();
-        $this->assertSame(200, $login['response']->getStatusCode());
 
         $response = $this->handleRequest(
             $this->createJsonRequest('POST', '/api/admin/system/update/run', [
@@ -67,15 +67,15 @@ final class SystemUpdateControllerTest extends TestCase
 
     public function testRunQueuesJobWhenEnabled(): void
     {
+        $login = $this->loginAsSuperAdminUser();
+        $this->assertSame(200, $login['response']->getStatusCode());
+
         $settings = $this->container()->get(SettingsRepositoryInterface::class);
         $settings->setGroup('systemUpdate', array_merge($settings->group('systemUpdate'), [
             'deployEnabled' => true,
             'allowDeployTags' => true,
             'allowDeployMain' => false,
         ]));
-
-        $login = $this->loginAsSuperAdminUser();
-        $this->assertSame(200, $login['response']->getStatusCode());
 
         $response = $this->handleRequest(
             $this->createJsonRequest('POST', '/api/admin/system/update/run', [
@@ -84,7 +84,7 @@ final class SystemUpdateControllerTest extends TestCase
         );
         $data = $this->getJsonResponse($response);
 
-        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame(200, $response->getStatusCode(), (string) json_encode($data, JSON_UNESCAPED_UNICODE));
         $this->assertTrue($data['success']);
         $this->assertTrue($data['data']['queued']);
         $this->assertSame('v2.1.0-beta.12', $data['data']['ref']);
@@ -92,14 +92,14 @@ final class SystemUpdateControllerTest extends TestCase
 
     public function testRunEmptyRefRequiresTagWhenBranchDeployDisabled(): void
     {
+        $this->loginAsSuperAdminUser();
+
         $settings = $this->container()->get(SettingsRepositoryInterface::class);
         $settings->setGroup('systemUpdate', array_merge($settings->group('systemUpdate'), [
             'deployEnabled' => true,
             'allowDeployTags' => true,
             'allowDeployMain' => false,
         ]));
-
-        $this->loginAsSuperAdminUser();
 
         $response = $this->handleRequest(
             $this->createJsonRequest('POST', '/api/admin/system/update/run', [])
