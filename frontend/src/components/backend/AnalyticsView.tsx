@@ -5,14 +5,11 @@ import {
   Clock3,
   Eye,
   FileText,
-  Laptop,
   Link2,
   MapPin,
   MonitorSmartphone,
   MousePointerClick,
   RefreshCw,
-  Smartphone,
-  Tablet,
   TrendingUp,
   Users,
 } from 'lucide-react';
@@ -23,10 +20,13 @@ import {
   type ChartPoint,
 } from '../../api/analytics';
 import { AnalyticsChart } from '../dashboard/AnalyticsChart';
+import { AnalyticsRankedBarChart } from './analytics/AnalyticsRankedBarChart';
+import { AnalyticsSegmentChart } from './analytics/AnalyticsSegmentChart';
+import { aggregateGeoByCountry, referersToChartItems } from './analytics/analyticsChartData';
 import { AdminPageSkeleton } from '../ui/AdminPageSkeleton';
 import { useI18n } from '../../context/I18nContext';
 import { useToast } from '../../hooks/useToast';
-import { countryCodeToFlag, refererTypeIcon } from '../../utils/countryFlag';
+import { countryCodeToFlag } from '../../utils/countryFlag';
 
 type AnalyticsTab = 'overview' | 'pages' | 'sources' | 'devices' | 'geo';
 type PeriodDays = 7 | 14 | 30;
@@ -51,13 +51,6 @@ function humanizeUri(uri: string, homeLabel: string): string {
   return slug.replace(/[-_]/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
-function deviceTotal(devices: AnalyticsPayload['devices'] | undefined): number {
-  if (!devices) {
-    return 0;
-  }
-  return devices.desktop + devices.mobile + devices.tablet + devices.unknown;
-}
-
 function refererTypeLabel(type: string | undefined, t: (key: string) => string): string {
   switch (type) {
     case 'direct':
@@ -71,13 +64,6 @@ function refererTypeLabel(type: string | undefined, t: (key: string) => string):
     default:
       return type ?? '';
   }
-}
-
-function devicePercent(value: number, total: number): number {
-  if (total <= 0) {
-    return 0;
-  }
-  return Math.round((value / total) * 100);
 }
 
 export const AnalyticsView: React.FC = () => {
@@ -111,7 +97,6 @@ export const AnalyticsView: React.FC = () => {
   }, [load]);
 
   const overview = payload?.overview;
-  const deviceTotalCount = deviceTotal(payload?.devices);
   const homeLabel = t('analytics.homeLabel');
 
   const tabs = useMemo(
@@ -124,6 +109,60 @@ export const AnalyticsView: React.FC = () => {
         { id: 'geo' as const, label: t('analytics.tabs.geo'), icon: MapPin },
       ] satisfies Array<{ id: AnalyticsTab; label: string; icon: typeof BarChart3 }>,
     [t]
+  );
+
+  const topPagesChart = useMemo(
+    () =>
+      (payload?.top_pages ?? []).map((page) => ({
+        key: page.uri,
+        label: humanizeUri(page.uri, homeLabel),
+        sublabel: page.uri,
+        value: page.views,
+      })),
+    [homeLabel, payload?.top_pages]
+  );
+
+  const topArticlesChart = useMemo(
+    () =>
+      (payload?.top_articles ?? []).map((article) => ({
+        key: article.uri,
+        label: article.title,
+        sublabel: article.uri,
+        value: article.views,
+        barClassName: 'bg-emerald-500 dark:bg-emerald-400',
+      })),
+    [payload?.top_articles]
+  );
+
+  const sourcesChart = useMemo(
+    () => referersToChartItems(payload?.top_referers ?? [], (type) => refererTypeLabel(type, t)),
+    [payload?.top_referers, t]
+  );
+
+  const deviceSegments = useMemo(
+    () => [
+      { key: 'desktop', label: t('analytics.devices.desktop'), value: payload?.devices.desktop ?? 0, colorClassName: 'bg-indigo-500' },
+      { key: 'mobile', label: t('analytics.devices.mobile'), value: payload?.devices.mobile ?? 0, colorClassName: 'bg-pink-500' },
+      { key: 'tablet', label: t('analytics.devices.tablet'), value: payload?.devices.tablet ?? 0, colorClassName: 'bg-violet-400' },
+      { key: 'unknown', label: t('analytics.devices.unknown'), value: payload?.devices.unknown ?? 0, colorClassName: 'bg-slate-400' },
+    ],
+    [payload?.devices, t]
+  );
+
+  const browsersChart = useMemo(
+    () =>
+      (payload?.browsers ?? []).map((browser) => ({
+        key: browser.browser,
+        label: browser.browser,
+        value: browser.visits,
+        barClassName: 'bg-sky-500 dark:bg-sky-400',
+      })),
+    [payload?.browsers]
+  );
+
+  const geoCountryChart = useMemo(
+    () => aggregateGeoByCountry(payload?.geo ?? []),
+    [payload?.geo]
   );
 
   const kpiCards = [
@@ -256,57 +295,18 @@ export const AnalyticsView: React.FC = () => {
                   <h3 className="text-sm font-black uppercase tracking-wider text-slate-500 mb-3">
                     {t('analytics.sections.topPages')}
                   </h3>
-                  <div className="space-y-2">
-                    {(payload?.top_pages ?? []).length === 0 ? (
-                      <p className="text-sm text-slate-500 py-4">{t('analytics.empty.noPages')}</p>
-                    ) : (
-                      (payload?.top_pages ?? []).slice(0, 5).map((page, index) => (
-                      <div
-                        key={page.uri}
-                        className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-3"
-                      >
-                        <div className="min-w-0">
-                          <div className="font-semibold text-slate-900 dark:text-white truncate">
-                            {humanizeUri(page.uri, homeLabel)}
-                          </div>
-                          <div className="text-xs text-slate-500 truncate">{page.uri}</div>
-                        </div>
-                        <div className="text-sm font-black text-indigo-600 shrink-0">
-                          {index + 1}. {page.views}
-                        </div>
-                      </div>
-                    ))
-                    )}
-                  </div>
+                  <AnalyticsRankedBarChart
+                    items={topPagesChart}
+                    loading={loading}
+                    emptyMessage={t('analytics.empty.noPages')}
+                    maxItems={5}
+                  />
                 </div>
                 <div>
                   <h3 className="text-sm font-black uppercase tracking-wider text-slate-500 mb-3">
                     {t('analytics.sections.devices')}
                   </h3>
-                  <div className="space-y-3">
-                    {[
-                      { key: 'desktop', label: t('analytics.devices.desktop'), value: payload?.devices.desktop ?? 0, icon: Laptop, color: 'bg-indigo-500' },
-                      { key: 'mobile', label: t('analytics.devices.mobile'), value: payload?.devices.mobile ?? 0, icon: Smartphone, color: 'bg-pink-500' },
-                      { key: 'tablet', label: t('analytics.devices.tablet'), value: payload?.devices.tablet ?? 0, icon: Tablet, color: 'bg-violet-400' },
-                    ].map((item) => {
-                      const Icon = item.icon;
-                      const percent = devicePercent(item.value, deviceTotalCount);
-                      return (
-                        <div key={item.key}>
-                          <div className="flex items-center justify-between text-sm font-semibold mb-1">
-                            <span className="inline-flex items-center gap-2">
-                              <Icon className="h-4 w-4 text-slate-500" />
-                              {item.label}
-                            </span>
-                            <span>{percent}%</span>
-                          </div>
-                          <div className="h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                            <div className={`h-full ${item.color}`} style={{ width: `${percent}%` }} />
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <AnalyticsSegmentChart items={deviceSegments} loading={loading} />
                 </div>
               </div>
             </div>
@@ -318,126 +318,75 @@ export const AnalyticsView: React.FC = () => {
                 <h3 className="text-sm font-black uppercase tracking-wider text-slate-500 mb-3">
                   {t('analytics.sections.topPages')}
                 </h3>
-                <div className="space-y-2">
-                  {(payload?.top_pages ?? []).length === 0 ? (
-                    <p className="text-sm text-slate-500 py-4">{t('analytics.empty.noPages')}</p>
-                  ) : (
-                    (payload?.top_pages ?? []).map((page, index) => (
-                    <div key={page.uri} className="flex items-center justify-between rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-3">
-                      <div>
-                        <div className="font-semibold">{humanizeUri(page.uri, homeLabel)}</div>
-                        <div className="text-xs text-slate-500">{page.uri}</div>
-                      </div>
-                      <span className="font-black text-indigo-600">{index + 1}. {page.views}</span>
-                    </div>
-                  ))
-                  )}
-                </div>
+                <AnalyticsRankedBarChart
+                  items={topPagesChart}
+                  loading={loading}
+                  emptyMessage={t('analytics.empty.noPages')}
+                  maxItems={12}
+                />
               </div>
               <div>
                 <h3 className="text-sm font-black uppercase tracking-wider text-slate-500 mb-3">
                   {t('analytics.sections.topArticles')}
                 </h3>
-                <div className="space-y-2">
-                  {(payload?.top_articles ?? []).map((article, index) => (
-                    <div key={article.uri} className="flex items-center justify-between rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-3">
-                      <div>
-                        <div className="font-semibold">{article.title}</div>
-                        <div className="text-xs text-slate-500">{article.uri}</div>
-                      </div>
-                      <span className="font-black text-emerald-600">{index + 1}. {article.views}</span>
-                    </div>
-                  ))}
-                </div>
+                <AnalyticsRankedBarChart
+                  items={topArticlesChart}
+                  loading={loading}
+                  emptyMessage={t('analytics.empty.noPages')}
+                  maxItems={12}
+                />
               </div>
             </div>
           )}
 
           {tab === 'sources' && (
-            <div className="space-y-2">
-              {(payload?.top_referers ?? []).length === 0 ? (
-                <p className="text-sm text-slate-500 py-4">{t('analytics.empty.noSources')}</p>
-              ) : (
-                (payload?.top_referers ?? []).map((source, index) => (
-                <div key={`${source.referer}-${index}`} className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-3">
-                  <div className="min-w-0">
-                    <div className="inline-flex items-center gap-2 font-semibold truncate">
-                      <span aria-hidden>{refererTypeIcon(source.type ?? 'referral')}</span>
-                      {source.source ?? source.referer}
-                    </div>
-                    {source.domain && source.type !== 'direct' && (
-                      <div className="text-xs text-slate-500 truncate">{source.domain}</div>
-                    )}
-                    {source.type && source.type !== 'direct' && (
-                      <div className="text-xs text-indigo-500 font-bold uppercase tracking-wide mt-0.5">
-                        {refererTypeLabel(source.type, t)}
-                      </div>
-                    )}
-                  </div>
-                  <span className="font-black text-indigo-600 shrink-0">{source.visits}</span>
-                </div>
-              ))
-              )}
+            <div>
+              <h3 className="text-sm font-black uppercase tracking-wider text-slate-500 mb-3">
+                {t('analytics.tabs.sources')}
+              </h3>
+              <AnalyticsRankedBarChart
+                items={sourcesChart}
+                loading={loading}
+                emptyMessage={t('analytics.empty.noSources')}
+                maxItems={15}
+              />
             </div>
           )}
 
           {tab === 'devices' && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="space-y-3">
-                <h3 className="text-sm font-black uppercase tracking-wider text-slate-500">{t('analytics.sections.devices')}</h3>
-                {[
-                  { label: t('analytics.devices.desktop'), value: payload?.devices.desktop ?? 0 },
-                  { label: t('analytics.devices.mobile'), value: payload?.devices.mobile ?? 0 },
-                  { label: t('analytics.devices.tablet'), value: payload?.devices.tablet ?? 0 },
-                  { label: t('analytics.devices.unknown'), value: payload?.devices.unknown ?? 0 },
-                ].map((item) => (
-                  <div key={item.label} className="flex items-center justify-between rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-3">
-                    <span>{item.label}</span>
-                    <span className="font-black">{item.value}</span>
-                  </div>
-                ))}
+              <div>
+                <h3 className="text-sm font-black uppercase tracking-wider text-slate-500 mb-3">
+                  {t('analytics.sections.devices')}
+                </h3>
+                <AnalyticsSegmentChart items={deviceSegments} loading={loading} />
               </div>
-              <div className="space-y-2">
-                <h3 className="text-sm font-black uppercase tracking-wider text-slate-500">{t('analytics.sections.browsers')}</h3>
-                {(payload?.browsers ?? []).map((browser) => (
-                  <div key={browser.browser} className="flex items-center justify-between rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-3">
-                    <span>{browser.browser}</span>
-                    <span className="font-black text-indigo-600">{browser.visits}</span>
-                  </div>
-                ))}
+              <div>
+                <h3 className="text-sm font-black uppercase tracking-wider text-slate-500 mb-3">
+                  {t('analytics.sections.browsers')}
+                </h3>
+                <AnalyticsRankedBarChart
+                  items={browsersChart}
+                  loading={loading}
+                  emptyMessage={t('analytics.empty.noData')}
+                  maxItems={10}
+                />
               </div>
             </div>
           )}
 
           {tab === 'geo' && (
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-              <div className="space-y-2">
+              <div>
                 <h3 className="text-sm font-black uppercase tracking-wider text-slate-500 mb-3">
                   {t('analytics.sections.geoSummary')}
                 </h3>
-                {(payload?.geo ?? []).length === 0 ? (
-                  <p className="text-sm text-slate-500 py-4">{t('analytics.empty.noGeo')}</p>
-                ) : (
-                  (payload?.geo ?? []).map((entry) => (
-                  <div key={`${entry.country}-${entry.countryCode ?? 'xx'}`} className="rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-3">
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="inline-flex items-center gap-2 font-semibold">
-                        <span className="text-xl" aria-hidden>{countryCodeToFlag(entry.countryCode)}</span>
-                        <span>
-                          {entry.country}
-                          {entry.city ? ` · ${entry.city}` : ''}
-                        </span>
-                      </span>
-                      <span className="font-black text-indigo-600">{entry.visits}</span>
-                    </div>
-                    {(entry.sample_ips ?? []).length > 0 && (
-                      <div className="mt-2 text-xs text-slate-500">
-                        {t('analytics.geo.sampleIps')}: {(entry.sample_ips ?? []).join(', ')}
-                      </div>
-                    )}
-                  </div>
-                ))
-                )}
+                <AnalyticsRankedBarChart
+                  items={geoCountryChart}
+                  loading={loading}
+                  emptyMessage={t('analytics.empty.noGeo')}
+                  maxItems={12}
+                />
               </div>
               <div className="space-y-2">
                 <h3 className="text-sm font-black uppercase tracking-wider text-slate-500 mb-3">

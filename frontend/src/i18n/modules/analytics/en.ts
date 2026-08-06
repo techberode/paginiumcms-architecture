@@ -59,5 +59,9 @@ export const analyticsEn: MessageTree = {
     noSources: 'No traffic sources recorded yet.',
     noGeo: 'No geographic data yet.',
   },
+  chart: {
+    visits: 'Visits',
+    pageViews: 'Page views',
+  },
   homeLabel: 'Home',
 };
