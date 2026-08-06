@@ -15,6 +15,9 @@ use PaginiumCMS\Core\FlatFile\Models\Page;
 use PaginiumCMS\Core\FlatFile\Services\ContentRevision;
 use PaginiumCMS\Core\Blueprint\Services\DynamicValidator;
 use PaginiumCMS\Core\Cache\ContentCacheService;
+use PaginiumCMS\Core\Content\LocalizedContentApplicator;
+use PaginiumCMS\Core\Content\LocalizedContentNormalizer;
+use PaginiumCMS\Core\Content\LocaleResolver;
 use PaginiumCMS\Core\Editor\Services\EditorContentValidator;
 use PaginiumCMS\Core\Hook\HookCatalog;
 use PaginiumCMS\Core\Hook\Services\HookEmitter;
@@ -54,7 +57,10 @@ class ContentController
         private DynamicValidator $dynamicValidator,
         private EditorContentValidator $editorContentValidator,
         private ContentPathAclGuard $pathAcl,
-        private HookEmitter $hookEmitter
+        private HookEmitter $hookEmitter,
+        private LocaleResolver $localeResolver,
+        private LocalizedContentNormalizer $localizedNormalizer,
+        private LocalizedContentApplicator $localizedApplicator,
     ) {
     }
 
@@ -67,13 +73,14 @@ class ContentController
  */public function getPage(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $slug = $args['slug'] ?? '';
-        $payload = $this->contentCache->rememberPage($slug, function () use ($slug): ?array {
+        $localeCacheKey = $this->localeCacheKey($request);
+        $payload = $this->contentCache->rememberPage($slug, $localeCacheKey, function () use ($slug, $request): ?array {
             $page = $this->repository->findBySlug($slug, 'page');
             if ($page === null) {
                 return null;
             }
 
-            return $this->serializeContent($page, 'page');
+            return $this->serializeContentForPublic($page, 'page', $request);
         });
 
         if (!is_array($payload)) {
@@ -89,7 +96,8 @@ class ContentController
         return $this->withPublicHttpCache(
             $request,
             $response,
-            $this->lastModifiedUnixFromPayload($payload)
+            $this->lastModifiedUnixFromPayload($payload),
+            true
         );
     }
 
@@ -125,13 +133,14 @@ class ContentController
  */public function getArticle(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $slug = $args['slug'] ?? '';
-        $payload = $this->contentCache->rememberArticle($slug, function () use ($slug): ?array {
+        $localeCacheKey = $this->localeCacheKey($request);
+        $payload = $this->contentCache->rememberArticle($slug, $localeCacheKey, function () use ($slug, $request): ?array {
             $article = $this->repository->findBySlug($slug, 'article');
             if ($article === null) {
                 return null;
             }
 
-            return $this->serializeContent($article, 'article');
+            return $this->serializeContentForPublic($article, 'article', $request);
         });
 
         if (!is_array($payload)) {
@@ -147,7 +156,8 @@ class ContentController
         return $this->withPublicHttpCache(
             $request,
             $response,
-            $this->lastModifiedUnixFromPayload($payload)
+            $this->lastModifiedUnixFromPayload($payload),
+            true
         );
     }
 
@@ -1108,14 +1118,71 @@ class ContentController
         ServerRequestInterface $request,
         ResponseInterface $response,
         ?int $lastModifiedUnix = null,
+        bool $varyOnLocale = false,
     ): ResponseInterface {
-        return HttpConditionalResponse::applyWhenEligible(
+        $response = HttpConditionalResponse::applyWhenEligible(
             $request,
             $response,
             $this->settings->group('engine'),
             !$this->isAuthenticated($request),
             $lastModifiedUnix
         );
+
+        if ($varyOnLocale) {
+            $response = $response->withHeader('Vary', $this->mergeVaryHeader($response, 'Accept-Language'));
+        }
+
+        return $response;
+    }
+
+    private function mergeVaryHeader(ResponseInterface $response, string $value): string
+    {
+        $existing = $response->getHeaderLine('Vary');
+        if ($existing === '') {
+            return $value;
+        }
+
+        $parts = array_map('trim', explode(',', $existing));
+        if (in_array($value, $parts, true)) {
+            return $existing;
+        }
+
+        return $existing . ', ' . $value;
+    }
+
+    /**
+     * @return array<int|string, mixed>
+     */
+    private function serializeContentForPublic(Content $content, string $type, ServerRequestInterface $request): array
+    {
+        if ($this->isAuthenticated($request)) {
+            return $this->serializeContent($content, $type);
+        }
+
+        $canonical = $this->localizedNormalizer->normalize($content);
+        /** @var array<string, array<string, mixed>> $localizedContent */
+        $localizedContent = $canonical['localizedContent'];
+        $resolution = $this->localeResolver->resolveForRequest(
+            $request,
+            array_keys($localizedContent),
+            (string) $canonical['defaultLocale']
+        );
+
+        /** @var array<string, mixed> $payload */
+        $payload = $this->serializeContent($content, $type);
+
+        return $this->localizedApplicator->apply($payload, $canonical, $resolution);
+    }
+
+    private function localeCacheKey(ServerRequestInterface $request): string
+    {
+        if ($this->isAuthenticated($request)) {
+            return 'admin-full';
+        }
+
+        $requested = $this->localeResolver->requestedFromQuery($request) ?? '_auto';
+
+        return $requested . '|' . $request->getHeaderLine('Accept-Language');
     }
 
     /**

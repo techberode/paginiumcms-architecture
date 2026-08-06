@@ -77,9 +77,9 @@ class ContentCacheService
     /**
      * Cache API payload array for a page (JSON-safe arrays only — never Content models).
      */
-    public function rememberPage(string $slug, callable $loader): mixed
+    public function rememberPage(string $slug, string $localeKey, callable $loader): mixed
     {
-        $key = 'content.page.payload.' . $slug;
+        $key = 'content.page.payload.' . $slug . '.' . md5($localeKey);
 
         $value = $this->cache->rememberLocked($key, $loader, self::TTL_ITEM);
         $this->cache->tagKey($key, [
@@ -93,9 +93,9 @@ class ContentCacheService
     /**
      * Cache API payload array for an article (JSON-safe arrays only — never Content models).
      */
-    public function rememberArticle(string $slug, callable $loader): mixed
+    public function rememberArticle(string $slug, string $localeKey, callable $loader): mixed
     {
-        $key = 'content.article.payload.' . $slug;
+        $key = 'content.article.payload.' . $slug . '.' . md5($localeKey);
 
         $value = $this->cache->rememberLocked($key, $loader, self::TTL_ITEM);
         $this->cache->tagKey($key, [

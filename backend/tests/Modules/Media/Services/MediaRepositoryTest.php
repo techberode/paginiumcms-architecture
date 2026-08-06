@@ -11,6 +11,7 @@ use PaginiumCMS\Core\FlatFile\Services\FileWriter;
 use PaginiumCMS\Core\Security\Services\UploadSecurityValidator;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Modules\Media\Services\MediaRepository;
+use PaginiumCMS\Modules\Media\Services\MediaStorageFactory;
 use PHPUnit\Framework\TestCase;
 use org\bovigo\vfs\vfsStream;
 
@@ -58,7 +59,8 @@ class MediaRepositoryTest extends TestCase
         });
 
         $uploadSecurity = new UploadSecurityValidator($settings);
-        $this->repository = new MediaRepository($reader, $writer, $settings, $uploadSecurity);
+        $storageFactory = new MediaStorageFactory($reader, $writer);
+        $this->repository = new MediaRepository($reader, $writer, $settings, $uploadSecurity, $storageFactory);
     }
 
     public function testFindAllReturnsEmptyWhenRegistryMissing(): void

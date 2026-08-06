@@ -102,7 +102,32 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
-_Nothing staged yet._
+### Added (Iteration 72 — media storage drivers MVP)
+
+- **`MediaStorageDriverInterface`** — binary contract: `put`, `read`, `delete`, `exists`, `checksum`, `publicUrl`, `health`.
+- **`LocalMediaStorageDriver`** — wraps existing flat-file binary I/O; parity with pre-It.72 `MediaRepository` behaviour.
+- **`MediaStorageFactory`** — allow-list `local | s3`; only `local` active; `s3` and unknown drivers fall back to `local`.
+- **`MediaStorageCapabilityProbe`** — settings meta probe (no secret leakage); exposed on `GET /api/admin/settings/media` as `meta.storageProbe`.
+- **Settings → Media:** `storageDriver` plus reserved S3 fields (`s3Endpoint`, `s3Region`, `s3Bucket`, `s3KeyId`, `s3Secret`, `s3PathStyle`, `s3PublicBaseUrl`, `s3Visibility`); `s3Secret` encrypted at-rest.
+- **`MediaRepository`** — registry/sidecars/folders stay flat-file; upload/delete binaries routed through the active driver.
+- PHPUnit: `MediaStorageFactoryTest`, `LocalMediaStorageDriverTest`, `MediaStorageCapabilityProbeTest`, `SettingsControllerMediaTest`; existing media suite updated.
+
+**Deferred:** S3 driver, migration CLI, signed URLs, Settings UI storage wizard.
+
+### Added (Iteration 73 — Phase 1 MVP)
+
+- **`LocaleResolver`** — deterministic order: `?locale=` → `Accept-Language` → resource/site default → fallback policy.
+- **`LocalizedContentNormalizer`** — legacy markdown/JSON and `schemaVersion: 2` read model without on-disk mutation.
+- **`LocalizedContentApplicator`** — applies resolved locale slice to public page/article API payloads (`_locale` meta).
+- **Settings → Content:** `localeFallbackEnabled`, `localeNegotiationEnabled`.
+- Locale-aware content cache keys; `Vary: Accept-Language` on public GET item responses.
+
+**Deferred (It.73 remainder):** editor locale tabs, migration CLI, per-locale publish UI, index facets, write path for v2 documents.
+
+### Planned (documentation)
+
+- **[It.78](docs/en/ITERATION_78.md)** — unified upload security policy for all upload surfaces.
+- **[It.79](docs/en/ITERATION_79.md)** — DAM video (MP4/WebM + editor embed).
 
 <a id="release-2-1-0-beta-28"></a>
 

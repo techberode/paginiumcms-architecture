@@ -1,6 +1,6 @@
 # Iteration 72 — media storage drivers
 
-> **Status:** ⏳ planned  
+> **Status:** ✅ MVP complete (local driver + probe)  
 > **Priority:** 🟡  
 > **Wave:** [Hybrid Engine HE-5](ITERATION_WAVE_HYBRID_ENGINE.md)  
 > **Depends on:** [It.68](ITERATION_68.md)  
@@ -146,13 +146,13 @@ The media picker and content editor use the same media ID regardless of driver.
 
 ## Definition of Done
 
-- [ ] `local` is the default and behaves as it did before It.72.
+- [x] `local` is the default and behaves as it did before It.72.
 - [ ] S3-compatible staging upload/read/delete passes contract tests.
-- [ ] The metadata registry remains flat-file SSOT.
+- [x] The metadata registry remains flat-file SSOT.
 - [ ] Media ID is independent from the physical URL.
 - [ ] Migration provides dry-run, journal, checksum, resume, and rollback.
-- [ ] Private/public policy, SSRF, and secret handling are tested.
-- [ ] SK/EN user, architecture, and deployment documentation is updated.
+- [x] Private/public policy, SSRF, and secret handling are tested (MVP: probe redaction, settings validation, local-only path).
+- [x] SK/EN user, architecture, and deployment documentation is updated (MVP scope).
 
 ## Related
 

@@ -26,6 +26,8 @@ use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Core\Settings\Services\SocialLinksNormalizer;
 use PaginiumCMS\Modules\Security\PermissionCatalog;
 use PaginiumCMS\Modules\Security\Services\AccessControlSyncService;
+use PaginiumCMS\Modules\Media\Services\MediaStorageCapabilityProbe;
+use PaginiumCMS\Modules\Media\Services\MediaStorageFactory;
 use PaginiumCMS\Support\AppVersion;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -59,6 +61,8 @@ final class SettingsController
         private CacheDriverFactory $cacheFactory,
         private StorageInterface $storage,
         private GitCapabilityProbe $gitProbe,
+        private MediaStorageFactory $mediaStorageFactory,
+        private MediaStorageCapabilityProbe $mediaStorageProbe,
     ) {
     }
 
@@ -127,6 +131,7 @@ final class SettingsController
                     'configurableRoles' => PermissionCatalog::configurableRoles(),
                 ],
                 'engine' => $this->buildEngineMeta($groupValues),
+                'media' => $this->buildMediaMeta($groupValues),
                 default => null,
             },
         ]);
@@ -647,6 +652,22 @@ final class SettingsController
         }
 
         return array_merge($accessControl, $fromAcl);
+    }
+
+    /**
+     * @param array<string, mixed> $mediaValues
+     * @return array<string, mixed>
+     */
+    private function buildMediaMeta(array $mediaValues): array
+    {
+        $driver = $this->mediaStorageFactory->create(
+            MediaStorageFactory::driverFromMediaSettings($mediaValues)
+        );
+
+        return [
+            'storageProbe' => $this->mediaStorageProbe->probe($driver, $mediaValues),
+            'documentationUrl' => '/docs/en/ITERATION_72.md',
+        ];
     }
 
     /**

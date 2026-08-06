@@ -29,13 +29,15 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | 4 | **It.67** Untrusted surfaces hardening | 🔴 | ✅ | shortcodes, themes, CSP, hostile fixtures — see [ITERATION_67](ITERATION_67.md) |
 | 5 | **It.70** Git publish modes | 🟡 | ✅ | local publisher + queued/immediate API — see [ITERATION_70](ITERATION_70.md) |
 | 6 | **It.71** Performance Guard | 🟡 | ✅ | shipped in `v2.1.0-beta.28` — see [ITERATION_71](ITERATION_71.md) |
-| 7 | **It.72** Media drivers | 🟡 | ⏳ | local + S3/CDN |
+| 7 | **It.72** Media drivers | 🟡 | 🟡 partial | MVP local driver + probe shipped; S3/migration deferred |
 | 8 | **It.73** Multi-locale document | 🟡 | ⏳ | translation foundation |
 | 9 | **It.74** API keys/JWT | 🟡 | ⏳ | headless integrations, additive auth |
 | 10 | **It.58d** Layout remainder | 🟡 | ⏳ | precisely freeze remaining blocks |
 | 11 | **It.25** Setup wizard/update UX | 🟡 pre-Final | ⏳ | onboarding and GA polish |
 | 12 | **It.76/77** Translation providers | 🔵 | ⏳ | after It.73 |
 | 13 | **It.75** AI agent | 🔵 | ⏳ | after locale and provider layers |
+| 14 | **It.78** Unified upload security | 🟡 | ⏳ | security gate before video / new MIME types |
+| 15 | **It.79** DAM video | 🟡 | ⏳ | self-hosted MP4/WebM + editor embed; after It.78 |
 
 ---
 
@@ -80,14 +82,35 @@ See [ITERATION_70](ITERATION_70.md).
 - documented self-heal only for derived layers,
 - no automatic primary-content changes.
 
-### It.72 — media drivers 🟡
+### It.72 — media drivers 🟡 partial (MVP shipped)
 
-- `MediaStorageInterface`/Flysystem,
-- local driver as default,
-- S3-compatible driver,
-- signed/public URL policy,
-- reference migration without content loss,
-- MIME/path/security parity.
+- ✅ `MediaStorageDriverInterface`, local driver, factory, capability probe (Iteration 72 MVP),
+- ✅ settings `media.storageDriver` + reserved S3 fields,
+- ⏳ S3-compatible driver,
+- ⏳ signed/public URL policy,
+- ⏳ reference migration without content loss,
+- ⏳ MIME/path/security parity for remote driver.
+
+See [ITERATION_72](ITERATION_72.md).
+
+### It.78 — unified upload security 🟡
+
+- `UploadPolicyEngine` and named profiles for every upload surface,
+- intersection semantics for MIME/size across settings groups,
+- shared magic-byte, filename, Zip-Slip, and SSRF guards,
+- upload audit without content/secrets in logs,
+- blocks ad-hoc upload paths before It.79 video.
+
+See [ITERATION_78](ITERATION_78.md).
+
+### It.79 — DAM video 🟡
+
+- MP4/WebM via `media-video` profile (It.78),
+- Media Library filter/preview + editor embed (Markdown + Tiptap),
+- sanitizer allow-list for self-hosted `<video>` only; no iframe embeds,
+- separate `media.maxVideoUploadSizeKb`.
+
+See [ITERATION_79](ITERATION_79.md).
 
 ### It.73 — multi-locale content 🟡
 
@@ -179,6 +202,7 @@ Remaining:
 | **It.48** static/dynamic rendering | ⏳ | combine design with It.70 publishing pipeline |
 | Remaining theme runtime | 🟡 | depends on It.67 and schema/policy gate |
 | Server metrics agent (remaining It.46) | ⏳ | coordinate with It.71 |
+| **It.79** DAM video | ⏳ | It.78 + It.72 MVP |
 | Scoped FileManager | ⏳ candidate | assign a new unique number after scope approval |
 | Frontend inline editing | ⏳ candidate | reuse existing lock/editor flow |
 | Finer comment moderation/CAPTCHA | ⏳ candidate | policy foundation is already shipped |
@@ -250,9 +274,11 @@ Docs gate
   → It.67 security hardening
   → It.70 / It.48 unified publishing design
   → It.71 + remaining It.46
-  → It.72
+  → It.72 (MVP done; S3/migration remainder)
   → It.73
   → It.74
+  → It.78 (upload security gate)
+  → It.79 (DAM video)
   → It.76 / It.77
   → It.75
 

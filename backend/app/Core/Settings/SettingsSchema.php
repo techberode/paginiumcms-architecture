@@ -88,6 +88,8 @@ final class SettingsSchema
                     ['key' => 'autoTagMax', 'type' => 'int', 'label' => 'Max. počet navrhovaných tagov', 'default' => 8, 'rules' => ['required', 'int', 'min:3', 'max:20'], 'help' => 'Koľko tagov vráti generátor naraz.'],
                     ['key' => 'autoDescriptionEnabled', 'type' => 'bool', 'label' => 'Generovanie meta popisu', 'default' => true, 'rules' => ['bool'], 'help' => 'Povolí tlačidlo „Generovať popis“ v editore (It.57).'],
                     ['key' => 'autoDescriptionMaxLength', 'type' => 'int', 'label' => 'Max. dĺžka meta popisu (znaky)', 'default' => 155, 'rules' => ['required', 'int', 'min:80', 'max:320'], 'help' => 'Odporúčané 150–160 znakov pre SEO.'],
+                    ['key' => 'localeFallbackEnabled', 'type' => 'bool', 'label' => 'Povoliť locale fallback', 'default' => true, 'rules' => ['bool'], 'help' => 'Iteration 73: keď požadovaný jazyk chýba, vráti sa defaultLocale resource alebo site.'],
+                    ['key' => 'localeNegotiationEnabled', 'type' => 'bool', 'label' => 'Accept-Language pre verejný obsah', 'default' => true, 'rules' => ['bool'], 'help' => 'Iteration 73: verejné GET stránok/článkov môže použiť Accept-Language ak chýba ?locale=.'],
                 ],
             ],
             'editor' => [
@@ -448,6 +450,15 @@ final class SettingsSchema
             'media' => [
                 'label' => 'Media / DAM',
                 'fields' => [
+                    ['key' => 'storageDriver', 'type' => 'enum', 'label' => 'Media storage driver', 'default' => 'local', 'options' => ['local', 's3'], 'rules' => ['required', 'in:local,s3'], 'help' => 'Iteration 72: local = flat-file binaries under media/. S3 appears in UI but falls back to local until the driver ships.'],
+                    ['key' => 's3Endpoint', 'type' => 'url', 'label' => 'S3 endpoint URL', 'default' => '', 'rules' => ['url', 'max:512'], 'help' => 'Reserved for S3-compatible driver (not active in MVP). Must pass OutboundUrlGuard when enabled.'],
+                    ['key' => 's3Region', 'type' => 'string', 'label' => 'S3 region', 'default' => '', 'rules' => ['string', 'max:64']],
+                    ['key' => 's3Bucket', 'type' => 'string', 'label' => 'S3 bucket', 'default' => '', 'rules' => ['string', 'max:255']],
+                    ['key' => 's3KeyId', 'type' => 'string', 'label' => 'S3 access key ID', 'default' => '', 'rules' => ['string', 'max:255']],
+                    ['key' => 's3Secret', 'type' => 'password', 'label' => 'S3 secret access key', 'default' => '', 'rules' => ['string', 'max:255']],
+                    ['key' => 's3PathStyle', 'type' => 'bool', 'label' => 'S3 path-style addressing', 'default' => false, 'rules' => ['bool']],
+                    ['key' => 's3PublicBaseUrl', 'type' => 'url', 'label' => 'S3 public base URL', 'default' => '', 'rules' => ['url', 'max:512'], 'help' => 'CDN or public bucket URL. Rejects javascript: and invalid schemes when validated.'],
+                    ['key' => 's3Visibility', 'type' => 'enum', 'label' => 'S3 default visibility', 'default' => 'private', 'options' => ['private', 'public'], 'rules' => ['required', 'in:private,public']],
                     ['key' => 'allowedMimeTypes', 'type' => 'text', 'label' => 'Povolené MIME typy', 'default' => 'image/jpeg,image/png,image/gif,image/webp,image/svg+xml,application/pdf', 'rules' => ['required', 'string', 'max:2000'], 'help' => 'Oddeľte čiarkou. Ovplyvňuje upload v Media Library.'],
                     ['key' => 'maxUploadSizeKb', 'type' => 'int', 'label' => 'Max. veľkosť uploadu (KB)', 'default' => 5120, 'rules' => ['required', 'int', 'min:64', 'max:51200'], 'help' => '5120 KB = 5 MB.'],
                     ['key' => 'stockImagesEnabled', 'type' => 'bool', 'label' => 'Povoliť stock knižnicu', 'default' => true, 'rules' => ['bool'], 'help' => 'Tlačidlo „Generovať z knižnice“ v Media Library.'],

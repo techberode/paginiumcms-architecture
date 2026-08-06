@@ -79,7 +79,9 @@
 | Lightbox preview | ✅ | strict binary handling |
 | Editor image upload | ✅ | Tiptap integration |
 | Public `/storage/` | ✅ | allow-list and safe content headers |
-| Flysystem/S3/CDN drivers | ⏳ | It.72; local driver remains default |
+| Flysystem/S3/CDN drivers | 🟡 partial | It.72 MVP local; S3 deferred |
+| Video in Media Library | ⏳ | It.79 after It.78 upload policy |
+| Unified upload security | ⏳ | It.78 — all upload surfaces |
 | Scoped Section FileManager | ⏳ candidate | remaining backlog without a reused iteration number |
 
 ---
@@ -169,7 +171,9 @@ The Hybrid Engine must not weaken this baseline. New drivers use the existing do
 | HTTP validators | ❌ | `ETag`/`Last-Modified` in It.69 |
 | Git publishing | 🟡 foundation shipped | immediate/queued via It.70 API; UI modal + It.48 hook deferred |
 | APM | ❌ | Performance Guard in It.71 |
-| S3 media | ❌ | It.72 |
+| S3 media | 🟡 partial | It.72 MVP local |
+| Video in media | ❌ | It.79 |
+| Unified upload security | ❌ | It.78 |
 | Multi-locale document | ❌ | It.73 |
 | API keys/JWT | ❌ | It.74 |
 | AI agent | ❌ | It.75 |

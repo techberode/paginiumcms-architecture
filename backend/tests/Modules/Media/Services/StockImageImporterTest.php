@@ -10,6 +10,7 @@ use PaginiumCMS\Core\FlatFile\Services\FileWriter;
 use PaginiumCMS\Core\Security\Services\UploadSecurityValidator;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Modules\Media\Services\MediaRepository;
+use PaginiumCMS\Modules\Media\Services\MediaStorageFactory;
 use PaginiumCMS\Modules\Media\Services\StockImageCatalog;
 use PaginiumCMS\Modules\Media\Services\StockImageImporter;
 use PHPUnit\Framework\TestCase;
@@ -42,7 +43,8 @@ class StockImageImporterTest extends TestCase
 
         $catalog = new StockImageCatalog(__DIR__ . '/Fixtures/stock-images-test.json');
         $uploadSecurity = new UploadSecurityValidator($settings);
-        $repository = new MediaRepository($reader, $writer, $settings, $uploadSecurity);
+        $storageFactory = new MediaStorageFactory($reader, $writer);
+        $repository = new MediaRepository($reader, $writer, $settings, $uploadSecurity, $storageFactory);
         $importer = new StockImageImporter($repository, $settings, $catalog);
 
         $media = $importer->import('', 'stock');

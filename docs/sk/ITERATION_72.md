@@ -1,6 +1,6 @@
 # Iterácia 72 — ovládače médiového úložiska
 
-> **Stav:** ⏳ plánované  
+> **Stav:** ✅ MVP hotové (local driver + probe)  
 > **Priorita:** 🟡  
 > **Vlna:** [Hybrid Engine HE-5](ITERATION_WAVE_HYBRID_ENGINE.md)  
 > **Závisí od:** [It.68](ITERATION_68.md)  
@@ -146,13 +146,13 @@ Media picker a content editor používajú rovnaké media ID bez ohľadu na driv
 
 ## Definition of Done
 
-- [ ] `local` je default a správa sa ako pred It.72.
+- [x] `local` je default a správa sa ako pred It.72.
 - [ ] S3-compatible staging upload/read/delete prejde contract testami.
-- [ ] Metadata registry zostáva flat-file SSOT.
+- [x] Metadata registry zostáva flat-file SSOT.
 - [ ] Media ID je nezávislé od fyzickej URL.
 - [ ] Migrácia má dry-run, journal, checksum, resume a rollback.
-- [ ] Private/public policy, SSRF a secret handling sú otestované.
-- [ ] SK/EN user, architecture a deploy dokumentácia je aktualizovaná.
+- [x] Private/public policy, SSRF a secret handling sú otestované (MVP: probe redaction, validácia settings, local-only path).
+- [x] SK/EN user, architecture a deploy dokumentácia je aktualizovaná (MVP rozsah).
 
 ## Súvisiace
 
