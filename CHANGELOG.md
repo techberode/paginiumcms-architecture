@@ -103,7 +103,21 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
-_No staged changes._
+### Fixed
+
+- **`ClassicSingleLocaleCompatibilityTest`** — seeds legacy `pages/home.md` from `DemoFixtures` when missing; CI has no committed pages tree (`backend/storage/app/content/pages/` is gitignored).
+
+### Security (Dependabot — closed in beta.29)
+
+GitHub Dependabot reported **7 open alerts** at push time; all **9** records are now **`fixed`** (rescanned 2026-08-08 after `v2.1.0-beta.29`):
+
+| Package | Alerts | Fix in beta.29 |
+|---------|--------|----------------|
+| `league/commonmark` | 6 (4 high, 2 moderate) | `composer.lock` → **2.9.0** |
+| `fast-uri` | 1 high | `frontend/package-lock.json` → **3.1.5** |
+| `brace-expansion` | 2 high | lockfile → **1.1.18** / **5.0.9** |
+
+Local checks: `composer audit` clean · `npm audit --audit-level=high` clean.
 
 <a id="release-2-1-0-beta-29"></a>
 
