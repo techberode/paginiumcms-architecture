@@ -28,13 +28,13 @@ final class FeedGenerator
         }
 
         $general = $this->settings->group('general');
-        $siteName = htmlspecialchars((string) ($feeds['title'] ?: $general['siteName'] ?? 'PaginiumCMS'), ENT_XML1);
+        $siteName = htmlspecialchars((string) (($feeds['title'] ?? '') !== '' ? $feeds['title'] : ($general['siteName'] ?? 'PaginiumCMS')), ENT_XML1);
         $siteUrl = rtrim((string) ($general['siteUrl'] ?? ''), '/');
         if ($siteUrl === '') {
             $siteUrl = 'http://localhost:3025';
         }
         $description = htmlspecialchars(
-            (string) ($feeds['description'] ?: $general['siteDescription'] ?? ''),
+            (string) (($feeds['description'] ?? '') !== '' ? $feeds['description'] : ($general['siteDescription'] ?? '')),
             ENT_XML1
         );
         $limit = min(100, max(1, (int) ($feeds['itemsLimit'] ?? 20)));

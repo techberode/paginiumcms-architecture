@@ -1,5 +1,5 @@
 // frontend/src/components/backend/PagesManager.tsx
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useApi } from '../../hooks/useApi';
 import { useToast } from '../../hooks/useToast';
@@ -28,6 +28,8 @@ import type { ContentType } from '../../api/drafts';
 import { AdminListSkeleton } from '../ui/AdminListSkeleton';
 import { useI18n } from '../../context/I18nContext';
 import { formatDisplayDate } from '../../utils/contentDates';
+import { LocaleStatusBadges } from './LocaleStatusBadges';
+import type { ContentEditorStatus } from '../../utils/contentScheduling';
 
 interface ContentItem {
   id: string;
@@ -42,6 +44,8 @@ interface ContentItem {
   featuredImage?: string;
   tags?: string[];
   ogImage?: string;
+  localeStatus?: Record<string, ContentEditorStatus>;
+  defaultLocale?: string;
 }
 
 interface PagesManagerProps {
@@ -128,6 +132,16 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
     const translated = t(key);
     return translated !== key ? translated : status;
   };
+
+  const editorStatusLabels = useMemo(
+    (): Record<ContentEditorStatus, string> => ({
+      draft: statusLabel('draft'),
+      published: statusLabel('published'),
+      archived: statusLabel('archived'),
+      scheduled: statusLabel('scheduled'),
+    }),
+    [t]
+  );
   const hasActiveFilters =
     debouncedSearch.length >= 2 ||
     statusFilter !== 'all' ||
@@ -357,7 +371,13 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                     <SeoHealthBadge level={seoHealth.level} issues={seoHealth.issues} />
                   </div>
                   <p className="text-xs text-gray-500 truncate">/{item.slug}</p>
-                  <span className={getStatusBadge(item.status)}>{statusLabel(item.status)}</span>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className={getStatusBadge(item.status)}>{statusLabel(item.status)}</span>
+                    <LocaleStatusBadges
+                      localeStatus={item.localeStatus}
+                      statusLabels={editorStatusLabels}
+                    />
+                  </div>
                   <div className="flex gap-2 mt-auto pt-2">
                     <Link to={`/${routeBase}/${item.slug}`} className="btn btn-secondary text-xs px-3 py-1">
                       {t('list.actions.edit')}
@@ -490,7 +510,13 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                         <td className="font-medium max-w-[240px] truncate">{item.title}</td>
                         <td className="text-gray-500 dark:text-gray-400 hide-mobile max-w-[180px] truncate">{item.slug}</td>
                         <td>
-                          <span className={getStatusBadge(item.status)}>{statusLabel(item.status)}</span>
+                          <div className="flex flex-col gap-1">
+                            <span className={getStatusBadge(item.status)}>{statusLabel(item.status)}</span>
+                            <LocaleStatusBadges
+                              localeStatus={item.localeStatus}
+                              statusLabels={editorStatusLabels}
+                            />
+                          </div>
                         </td>
                         <td className="text-sm text-gray-500 dark:text-gray-400 hide-tablet">
                           {item.status === 'scheduled'

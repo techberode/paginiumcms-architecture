@@ -7,6 +7,7 @@ export const editorSk: MessageTree = {
     editArticle: 'Upraviť článok',
     editPage: 'Upraviť stránku',
     newItem: 'Nová položka',
+    contentLocale: 'Jazyk obsahu',
     wysiwyg: 'WYSIWYG',
     preview: 'Náhľad',
     previewTitle: 'Náhľad celej stránky (header + obsah + footer)',
@@ -152,6 +153,8 @@ export const editorSk: MessageTree = {
       saved: 'Obsah bol uložený',
       autoMerged: 'Zmeny boli automaticky zlúčené so serverovou verziou.',
       conflict: 'Konflikt (:count) – vyriešte ho prosím manuálne.',
+      conflictWholeResource:
+        'Konflikt (:count) – na serveri sa zmenil celý dokument (všetky locale). Vyriešte ho manuálne.',
       saveFailed: 'Uloženie zlyhalo',
       conflictCancelled: 'Riešenie konfliktu zrušené. Vaše zmeny ostali neuložené.',
       published: 'Obsah bol publikovaný',
@@ -239,6 +242,7 @@ export const editorSk: MessageTree = {
     fullscreen: 'Celá obrazovka',
     close: 'Zavrieť náhľad',
     defaultAuthor: 'Redakcia',
+    localeHint: 'Náhľad locale :locale · stav :status (len náhľad, nie live publish)',
   },
   mediaMeta: {
     title: 'Upraviť metadáta',

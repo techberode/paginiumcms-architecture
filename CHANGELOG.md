@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.29`](#release-2-1-0-beta-29) | 2026-08-08 | It.72 media drivers MVP, It.73 multi-locale complete, security deps |
 | [`2.1.0-beta.28`](#release-2-1-0-beta-28) | 2026-08-06 | Performance Guard (It.71), UX polish Phases A–C, post-beta.27 CI bundle |
 | [`2.1.0-beta.27`](#release-2-1-0-beta-27) | 2026-08-05 | Untrusted surfaces hardening (It.67) and Git publish modes (It.70) |
 | [`2.1.0-beta.26`](#release-2-1-0-beta-26) | 2026-08-03 | Unified cache, HTTP ETag/304 validators, audit hardening |
@@ -102,32 +103,49 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+_No staged changes._
+
+<a id="release-2-1-0-beta-29"></a>
+
+## [2.1.0-beta.29] – 2026-08-08
+
+It.72 media storage drivers MVP, It.73 multi-locale content (HE-6 complete), CI/test hygiene, and dependency security
+
 ### Added (Iteration 72 — media storage drivers MVP)
 
-- **`MediaStorageDriverInterface`** — binary contract: `put`, `read`, `delete`, `exists`, `checksum`, `publicUrl`, `health`.
-- **`LocalMediaStorageDriver`** — wraps existing flat-file binary I/O; parity with pre-It.72 `MediaRepository` behaviour.
-- **`MediaStorageFactory`** — allow-list `local | s3`; only `local` active; `s3` and unknown drivers fall back to `local`.
-- **`MediaStorageCapabilityProbe`** — settings meta probe (no secret leakage); exposed on `GET /api/admin/settings/media` as `meta.storageProbe`.
-- **Settings → Media:** `storageDriver` plus reserved S3 fields (`s3Endpoint`, `s3Region`, `s3Bucket`, `s3KeyId`, `s3Secret`, `s3PathStyle`, `s3PublicBaseUrl`, `s3Visibility`); `s3Secret` encrypted at-rest.
-- **`MediaRepository`** — registry/sidecars/folders stay flat-file; upload/delete binaries routed through the active driver.
-- PHPUnit: `MediaStorageFactoryTest`, `LocalMediaStorageDriverTest`, `MediaStorageCapabilityProbeTest`, `SettingsControllerMediaTest`; existing media suite updated.
+- **`MediaStorageDriverInterface`**, **`LocalMediaStorageDriver`**, **`MediaStorageFactory`**, **`MediaStorageCapabilityProbe`** — `local` driver active; S3 reserved/fallback.
+- **Settings → Media:** `storageDriver` + encrypted S3 fields; probe on `GET /api/admin/settings/media`.
+- **`MediaRepository`** — binary I/O via active driver; metadata stays flat-file SSOT.
 
-**Deferred:** S3 driver, migration CLI, signed URLs, Settings UI storage wizard.
+### Added (Iteration 73 — multi-locale content, complete)
 
-### Added (Iteration 73 — Phase 1 MVP)
+- **Read path** — `LocaleResolver`, `LocalizedContentNormalizer`, `LocalizedContentApplicator`, public `_locale` metadata, locale cache keys / `Vary`.
+- **Write path** — locale-scoped POST/PUT, `LocalizedContentValidator`, `LocalizedContentWriter`, admin canonical GET.
+- **Publish + index** — per-locale `PATCH …/status`, `ContentIndexEntry` locale facets, `LocaleStatusBadges` in admin lists.
+- **Editor** — SK/EN tabs, scoped save, preview locale hint, whole-resource OCC conflict copy.
+- **Migration CLI** — `content:locale-migrate` (inventory, dry-run, run, rollback) + manifest backups under `data/migrations/<id>/`.
+- **Policy** — `LocaleContentProposalPolicy` blocks `proposalSource=translation|ai` from auto-publish.
+- **API docs** — [CONTENT_API.md](docs/en/architecture/CONTENT_API.md) §15 locked (EN + SK).
 
-- **`LocaleResolver`** — deterministic order: `?locale=` → `Accept-Language` → resource/site default → fallback policy.
-- **`LocalizedContentNormalizer`** — legacy markdown/JSON and `schemaVersion: 2` read model without on-disk mutation.
-- **`LocalizedContentApplicator`** — applies resolved locale slice to public page/article API payloads (`_locale` meta).
-- **Settings → Content:** `localeFallbackEnabled`, `localeNegotiationEnabled`.
-- Locale-aware content cache keys; `Vary: Accept-Language` on public GET item responses.
+### Fixed
 
-**Deferred (It.73 remainder):** editor locale tabs, migration CLI, per-locale publish UI, index facets, write path for v2 documents.
+- **Analytics dedupe test** — stable `REMOTE_ADDR` in pageview dedupe integration test after per-request IP isolation.
+- **FeedGenerator** — safe `$feeds` key access; `FeedGeneratorTest` mock no longer overrides `group()` map ([ISS feeds regression]).
+- **HTTP PHPUnit isolation ([ISS-134](docs/ISSUES.md#iss-134))** — login attempt purge, unique IPs, system-update settings order in tests.
 
-### Planned (documentation)
+### Security
 
-- **[It.78](docs/en/ITERATION_78.md)** — unified upload security policy for all upload surfaces.
-- **[It.79](docs/en/ITERATION_79.md)** — DAM video (MP4/WebM + editor embed).
+- **`react-router-dom@7.18.2`** + override **`react-router@7.18.2`** — [GHSA-qwww-vcr4-c8h2](https://github.com/advisories/GHSA-qwww-vcr4-c8h2) ([ISS-089](docs/ISSUES.md#iss-089), [ISS-117](docs/ISSUES.md#iss-117)); `npm audit` clean at `--audit-level=high`.
+
+### Documentation
+
+- [RELEASE_2_1_0_BETA_29.md](docs/en/RELEASE_2_1_0_BETA_29.md) (EN/SK), [ITERATION_73.md](docs/en/ITERATION_73.md), wave HE-6 status, [TESTING.md](docs/en/developer/TESTING.md) migration CLI notes, [ISS-134](docs/ISSUES.md#iss-134) / [ISS-135](docs/ISSUES.md#iss-135).
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.29`
+- **Deploy:** `GIT_REF=v2.1.0-beta.29` + `npm ci && npm run build:prod` in `frontend/`
+- **Deferred:** It.72 S3 driver · It.76+ translation Apply · It.73 migration resume/archive confirm · [ISS-135](docs/ISSUES.md#iss-135) shortcode allowlist
 
 <a id="release-2-1-0-beta-28"></a>
 

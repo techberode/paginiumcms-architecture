@@ -1,7 +1,7 @@
 # Hybrid Engine — implementation wave It.68–77
 
-> **Status:** It.68–70 shipped in `[Unreleased]` · next code target It.71  
-> **Checkpoint:** `v2.1.0-beta.23` · August 2, 2026  
+> **Status:** It.68–71 + UX shipped in **`v2.1.0-beta.28`** · It.72 MVP + **It.73 complete** in **`[Unreleased]`**  
+> **Checkpoint:** `v2.1.0-beta.28` · August 6, 2026  
 > **Architecture baseline:** [Hybrid Engine](architecture/HYBRID_ENGINE.md) · [No-SQL mandate](architecture/NOSQL_MANDATE.md) · [deployment modes](architecture/DEPLOYMENT_MODES.md)
 
 This wave turns the new PaginiumCMS direction into an implementable plan. The project is growing from an advanced flat-file CMS into a **Hybrid Headless Content Engine**, without changing its data foundation: content and configuration remain in files; the index, cache, Git, queues, and external services are derived, distribution, or optional layers.
@@ -49,11 +49,11 @@ The iteration number does not define delivery order. **It.75 is delivered after 
 |-------|------------|---------|
 | **Phase 0** | documentation | aligned SK/EN contract and locked invariants |
 | **HE-1 Foundation** | **It.68** | ✅ shipped — storage abstraction, schema registry, engine settings |
-| **HE-2 Read performance** | **It.69** | unified cache, Redis fallback, HTTP validators |
-| **HE-3 Distribution** | **It.70** + It.48 coordination | immediate/queued Git publish and later static build |
-| **HE-4 Observability** | **It.71** + It.46 remainder | PHP APM, budgets, incidents, and host metrics |
-| **HE-5 Integrations** | **It.72**, **It.74** | media drivers and additive headless authentication |
-| **HE-6 Localized workflows** | **It.73 → 76 → 77 → 75** | localized documents, translation, and a safe AI agent |
+| **HE-2 Read performance** | **It.69** | ✅ shipped — unified cache, Redis fallback, HTTP validators |
+| **HE-3 Distribution** | **It.70** | ✅ shipped — immediate/queued Git publish modes |
+| **HE-4 Observability** | **It.71** | ✅ **`v2.1.0-beta.28`** — PHP APM, budgets, incidents |
+| **HE-5 Integrations** | **It.72**, **It.74** | It.72 **MVP** (`local` driver + probe) in `[Unreleased]` |
+| **HE-6 Localized workflows** | **It.73 → 76 → 77 → 75** | It.73 **complete** (read/write/publish/migrate/docs) in `[Unreleased]` |
 
 This document canonically assigns It.73 to **HE-6**. The earlier draft inconsistently labelled it HE-5.
 
@@ -63,12 +63,12 @@ This document canonically assigns It.73 to **HE-6**. The earlier draft inconsist
 
 | It. | Title | Priority | Status | Required dependency | Absorbs / coordinates |
 |-----|-------|----------|--------|---------------------|------------------------|
-| **68** | [Hybrid Engine foundation](ITERATION_68.md) | 🔴 | ✅ `[Unreleased]` | Phase 0 | foundation for every later layer |
-| **69** | [Cache + HTTP conditional requests](ITERATION_69.md) | 🔴 | ✅ | It.68 | absorbs It.45 and It.49 |
-| **70** | [Git publish modes](ITERATION_70.md) | 🟡 | ⏳ | It.68 | extends `GitHubService`, coordinates It.48 |
-| **71** | [Performance Guard](ITERATION_71.md) | 🟡 | ⏳ | It.69 | complements It.7 and It.46 remainder |
-| **72** | [Media storage drivers](ITERATION_72.md) | 🟡 | ⏳ | It.68 | follows DAM It.24 |
-| **73** | [Multi-locale content document](ITERATION_73.md) | 🟡 | ⏳ | It.68 | foundation for It.76/77/75 |
+| **68** | [Hybrid Engine foundation](ITERATION_68.md) | 🔴 | ✅ shipped | Phase 0 | foundation for every later layer |
+| **69** | [Cache + HTTP conditional requests](ITERATION_69.md) | 🔴 | ✅ shipped | It.68 | absorbs It.45 and It.49 |
+| **70** | [Git publish modes](ITERATION_70.md) | 🟡 | ✅ shipped | It.68 | extends `GitHubService`, coordinates It.48 |
+| **71** | [Performance Guard](ITERATION_71.md) | 🟡 | ✅ **beta.28** | It.69 | complements It.7 and It.46 remainder |
+| **72** | [Media storage drivers](ITERATION_72.md) | 🟡 | ✅ MVP `[Unreleased]` | It.68 | follows DAM It.24; S3 deferred |
+| **73** | [Multi-locale content document](ITERATION_73.md) | 🟡 | ✅ **`[Unreleased]`** | It.68 | read/write/publish/migrate + API docs |
 | **74** | [API keys and JWT](ITERATION_74.md) | 🟡 | ⏳ | It.68; cached lookup from It.69 recommended | session auth remains |
 | **76** | [Self-hosted translation](ITERATION_76.md) | 🔵 | ⏳ | It.73 | creates the provider contract |
 | **77** | [Cloud translation](ITERATION_77.md) | 🔵 | ⏳ | It.76 | adds cloud drivers without a second UI |
@@ -131,13 +131,15 @@ After every iteration:
 
 The recommended approach is to ship vertical slices rather than one large merge:
 
-1. ✅ **It.68** with the local driver only and one migrated vertical slice (shipped in `[Unreleased]`).
-2. **It.69** with file/memory parity first, optional Redis second, and HTTP validators last.
-3. **It.70** with a local Git fixture, queued workflow, and then remote push.
-4. **It.71–74** as separate, disable-able capabilities.
-5. **It.73** with a dry-run migration and an extended beta window.
-6. **It.76/77** with one shared UI and provider registry.
-7. **It.75** only after tool contracts stabilize and pass a security review.
+1. ✅ **It.68** with the local driver only and one migrated vertical slice (shipped).
+2. ✅ **It.69** with file/memory parity first, optional Redis second, and HTTP validators last (shipped).
+3. ✅ **It.70** with a local Git fixture, queued workflow, and then remote push (shipped).
+4. ✅ **It.71** Performance Guard (`v2.1.0-beta.28`).
+5. **It.72** S3 driver + migration CLI (MVP: local driver shipped in `[Unreleased]`).
+6. **It.73** write path, editor tabs, migration CLI (Phase 1 read path shipped in `[Unreleased]`).
+7. **It.74** as a separate, disable-able capability.
+8. **It.76/77** with one shared UI and provider registry.
+9. **It.75** only after tool contracts stabilize and pass a security review.
 
 Final 1.0 does not have to wait for all of It.68–77. A separate release decision defines GA scope; the Classic profile must remain supported throughout the wave.
 

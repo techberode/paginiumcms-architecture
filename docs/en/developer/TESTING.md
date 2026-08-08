@@ -424,6 +424,25 @@ A flaky test is a gate failure, not folklore fixed by clicking “Re-run” a th
 
 Automatic retry can help diagnostics, but it must not convert a red first run into green release evidence without a visible note.
 
+### 10.1 HTTP integration test isolation (`Http/TestCase`)
+
+PaginiumCMS HTTP controller tests boot a real Slim app against shared flat-file storage under `backend/storage/app/content/`. Without explicit hygiene, **order-dependent flakes** appear in full-suite runs even when isolated tests pass.
+
+| Rule | Implementation | Incident |
+|------|----------------|----------|
+| Reset auth lockout state | `TestStorageCleaner::purgeLoginAttempts()` + `LoginAttemptTracker::clearAll()` in `setUp` | [ISS-073](../ISSUES.md#iss-073), [ISS-134](../ISSUES.md#iss-134) |
+| Avoid shared client IP | Set synthetic `REMOTE_ADDR` on every `createJsonRequest()` (do not rely on default `unknown`) | [ISS-134](../ISSUES.md#iss-134) |
+| Apply settings overrides after auth traffic | When a test mutates `settings.testing.json` and also calls register/login, write settings **after** the user session exists if middleware reads settings during auth | [ISS-134](../ISSUES.md#iss-134) |
+| Do not call `SettingsRepository::reset()` in HTTP `setUp` | Nested `flock` via `DocumentValidator` during locked writes can deadlock the suite | [ISS-134](../ISSUES.md#iss-134) |
+| Force demo/test env | `phpunit.xml` `DEMO_MODE=false force="true"`; sync `$_SERVER` in `Http/TestCase` | [ISS-125](../ISSUES.md#iss-125) |
+
+When debugging a suspected flake, run the failing class **twice in one PHPUnit process** (default order) and capture the JSON error body on assertion failure.
+
+```bash
+./vendor/bin/phpunit --filter 'testRunForbiddenWhenDeployDisabled|testRunQueuesJobWhenEnabled' \
+  backend/tests/Http/Controllers/Admin/SystemUpdateControllerTest.php
+```
+
 ## 11. Dependency, SCA, and supply-chain checks
 
 Minimum:
@@ -512,7 +531,10 @@ Run only safe post-deploy verification in production:
 ```bash
 curl --fail --silent https://example.test/api/health
 php backend/bin/console content:diagnose
+php backend/bin/console content:locale-migrate inventory
 ```
+
+Optional pre-migration operator check (It.73): `content:locale-migrate dry-run --default-locale=sk` before `run --yes`. Rollback: `content:locale-migrate rollback --migration-id=<id> --yes`.
 
 Run the full PHPUnit/Vitest suite in CI or a disposable environment, not against live production storage. A production server is a very expensive test fixture.
 

@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 6 August 2026 · register **ISS-001–ISS-133** · **`v2.1.0-beta.28`** shipped (It.71 + UX A–C)
+> **Last updated:** 8 August 2026 · register **ISS-001–ISS-135** · **`v2.1.0-beta.29`** shipped (It.72 MVP + It.73 complete + ISS-134/089/117)
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -111,7 +111,7 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-086](#iss-086) | Stored XSS survived strip_tags through dangerous attributes and schemes | **Critical (security)** | ✅ Fixed · **2.1.0-beta.6** |
 | [ISS-087](#iss-087) | LAN frontend deploy script contained hard-coded host, user, and port | Medium (ops / hygiene) | ✅ Fixed · **2.1.0-beta.6** |
 | [ISS-088](#iss-088) | Backup import was vulnerable to Zip-Slip through extractTo | Medium (security) | ✅ Fixed · **2.1.0-beta.6** |
-| [ISS-089](#iss-089) | React Router RSC-only advisory was accepted as not reachable in the SPA | Low (false positive SPA) | ℹ️ Not applicable · CI `--audit-level=critical` |
+| [ISS-089](#iss-089) | React Router RSC-only advisory was accepted as not reachable in the SPA | Low (dependency) | ✅ **2.1.0-beta.29** · `react-router-dom@7.18.2` (GHSA-qwww-vcr4-c8h2) |
 | [ISS-090](#iss-090) | eslint latest and npm audit fix caused dependency resolution failure | Low (CI/deps) | ✅ Fixed · **2.1.0-beta.7** |
 | [ISS-091](#iss-091) | React Router override and useOptimistic caused fourteen Vitest failures | Medium (CI) | ✅ Fixed · **2.1.0-beta.7** |
 | [ISS-092](#iss-092) | Deploy script mixed local environment assumptions with invalid :? syntax | Low (ops) | ✅ Fixed · **2.1.0-beta.7** |
@@ -139,7 +139,7 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-114](#iss-114) | CSRF exemption prefix lacked a slash boundary | Medium (audit) | ✅ `CsrfMiddleware::isExempt()` |
 | [ISS-115](#iss-115) | expose_php disclosed the PHP version | Low (audit) | ✅ `docker/php/php.ini` |
 | [ISS-116](#iss-116) | TRUSTED_PROXIES default contained a hard-coded LAN address | Low (audit) | ✅ default `127.0.0.1,::1` + `.env` |
-| [ISS-117](#iss-117) | React Router RSC advisory was not applicable to the SPA profile | Low (N/A SPA) | ℹ️ ISS-089 · CI `--audit-level=critical` |
+| [ISS-117](#iss-117) | React Router RSC advisory was not applicable to the SPA profile | Low (dependency) | ✅ **2.1.0-beta.29** · see [ISS-089](#iss-089) |
 | [ISS-118](#iss-118) | security.txt was missing or swallowed by SPA fallback | Low (audit) | ✅ `frontend/public/.well-known/` + nginx |
 | [ISS-119](#iss-119) | Docker stack did not restart after host reboot | Medium (ops) | ✅ `restart: unless-stopped` v prod compose |
 | [ISS-120](#iss-120) | CI PHPUnit output exposed TOTP and 2FA secrets in GitHub job logs | Medium (security / CI) | ✅ sanitize wrapper + verify |
@@ -156,6 +156,8 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-131](#iss-131) | PHP_CodeSniffer blame-report command injection (CVE-2026-67434) | High (dev dep / CI) | ✅ **2.1.0-beta.28** · PHPCS 4.0.4 |
 | [ISS-132](#iss-132) | `analyticsChartData.ts` wrong import depth (TS2307) after Phase B charts | Low (CI) | ✅ **2.1.0-beta.28** · import path fix |
 | [ISS-133](#iss-133) | BackToTopButton Vitest missing `I18nProvider` after admin wiring | Low (CI) | ✅ **2.1.0-beta.28** · `renderWithProviders` |
+| [ISS-134](#iss-134) | HTTP PHPUnit flaky auth/system-update (401/403/404) from settings race and shared login IP | Medium (CI) | ✅ **2.1.0-beta.29** · `Http/TestCase` + SystemUpdate test order |
+| [ISS-135](#iss-135) | Shortcode expand template uses regex denylist instead of full HTML allowlist | Low (defense-in-depth) | ⏳ Deferred · It.67+ hardening slice |
 
 ## CI failures (GitHub Actions)
 
@@ -176,6 +178,7 @@ Workflow: [`.github/workflows/ci.yml`](https://github.com/techberode/paginiumcms
 | `backend` | PHPUnit / bootstrap | It.71 MetricsController DI unresolved — cascade 233 errors, `bin/console` fatal | [ISS-127](#iss-127) |
 | `frontend` | `tsc --noEmit` | `analyticsChartData.ts` import path TS2307 after Phase B | [ISS-132](#iss-132) |
 | `frontend` | Vitest | `BackToTopButton` / `ResponsiveLayout` tests without `I18nProvider` | [ISS-133](#iss-133) |
+| `backend` | PHPUnit | Intermittent 401/403/404 on Backup, TwoFactor, SystemUpdate HTTP tests (full suite) | [ISS-134](#iss-134) |
 | `backend` | PHPUnit | PHPUnit suffered 429, 503, and OTP persistence failures | [ISS-015](#iss-015), [ISS-023](#iss-023) |
 | `backend` | PHPUnit | Content index tag, author, and date filters failed PHPUnit | [ISS-038](#iss-038) |
 | `backend` | PHPUnit | LogWriter tests failed on virtual files and corrupt JSON | [ISS-039](#iss-039) |
@@ -2579,28 +2582,32 @@ Direct archive extraction allowed traversal entries to escape the restore direct
 
 [↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-089)
 
-**Severity:** Low (false positive SPA)  
-**Status:** ℹ️ Not applicable · CI `--audit-level=critical`
+**Severity:** Low (dependency — RSC path not used in SPA)  
+**Status:** ✅ **2.1.0-beta.29** · `react-router-dom@7.18.2` + `react-router@7.18.2` override
 
 ### Operational synopsis
 
-The advisory **GHSA-qwww-vcr4-c8h2** (*React Router: RSC Mode CSRF Bypass Allows Action Execution Before 400 Response*) applies only when React Router runs in **React Server Components (RSC) mode** with server actions. PaginiumCMS uses a **React 18 client-side SPA** (`react-router-dom` 7.x, Vite build, no RSC pipeline). The vulnerable code path is not reachable; `npm audit fix --force` would downgrade to 7.11.0 and is rejected.
+The advisory **GHSA-qwww-vcr4-c8h2** (*React Router: RSC Mode CSRF Bypass Allows Action Execution Before 400 Response*) applies only when React Router runs in **React Server Components (RSC) mode** with server actions. PaginiumCMS uses a **React 18 client-side SPA** (Vite build, no RSC pipeline) — the vulnerable code path was never reachable.
+
+**Resolution (2.1.0-beta.29):** bump `react-router-dom` and the `react-router` npm override to **7.18.2** (patched upstream). Removes `npm audit` high findings without `npm audit fix --force`; `auditConfig.ignore` for this GHSA removed.
 
 ### Evidence and traceability
 
 - **Advisory:** [GHSA-qwww-vcr4-c8h2](https://github.com/advisories/GHSA-qwww-vcr4-c8h2)
 - **Related incidents:** [ISS-078](#iss-078), [ISS-083](#iss-083), [ISS-117](#iss-117)
-- **Key technical identifiers:** `npm audit`, `npm audit --audit-level=critical`, `frontend/package.json` (`react-router-dom@7.18.1`), `npm audit fix --force`
-- **History:** [CHANGELOG](../CHANGELOG.md)
+- **Key technical identifiers:** `frontend/package.json` (`react-router-dom@7.18.2`, override `react-router@7.18.2`)
+- **History:** [CHANGELOG](../CHANGELOG.md#release-2-1-0-beta-29)
 
 ### Verification or operational excerpts
 
 ```bash
-cd frontend && npm audit --audit-level=critical
-# Expected: exit 0 (high RSC advisory ignored by threshold)
+cd frontend && npm audit
+# Expected: found 0 vulnerabilities
 
 cd frontend && npm audit --audit-level=high
-# Expected: reports react-router GHSA-qwww-vcr4-c8h2 — documented N/A for SPA
+# Expected: exit 0
+
+cd frontend && npm run type-check && npm test
 ```
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
@@ -3364,12 +3371,12 @@ A project-specific LAN proxy address was shipped as a default. Only loopback is 
 
 [↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-117)
 
-**Severity:** Low (N/A SPA)  
-**Status:** ℹ️ ISS-089 · CI `--audit-level=critical`
+**Severity:** Low (dependency)  
+**Status:** ✅ **2.1.0-beta.29** · see [ISS-089](#iss-089)
 
 ### Operational synopsis
 
-Same as [ISS-089](#iss-089): **GHSA-qwww-vcr4-c8h2** (RSC-mode CSRF bypass) is **not applicable** to the PaginiumCMS SPA profile. See ISS-089 for advisory ID, verification commands, and rationale.
+Same as [ISS-089](#iss-089): **GHSA-qwww-vcr4-c8h2** patched in **`react-router-dom@7.18.2`**; RSC-mode CSRF bypass was never reachable in the PaginiumCMS SPA profile.
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
 
@@ -3961,4 +3968,107 @@ cd frontend && npm test -- --run \
   src/components/layout/ResponsiveLayout.test.tsx \
   src/test/adminRouteTransitions.test.tsx
 ```
+
+<a id="iss-134"></a>
+
+## ISS-134 – HTTP PHPUnit flaky auth and system-update tests (401/403/404)
+
+[↑ Overview](#overview)
+
+**Severity:** Medium (CI / test hygiene)  
+**Status:** ✅ **2.1.0-beta.29** · commits `e0d45d0`, `2c83615` on `main`  
+**Related:** [ISS-073](#iss-073) (login lockout persistence), [ISS-123](#iss-123) (settings test file), [ISS-125](#iss-125) (demo env pollution — distinct root cause)
+
+### Operational synopsis
+
+After It.72/73 landed on `main`, CI and local **full-suite** PHPUnit runs intermittently reported four HTTP controller failures that **passed in isolation**:
+
+| Test | Expected | Got | Symptom |
+|------|----------|-----|---------|
+| `BackupControllerTest::testDeleteBackup` | login 200 | 401 | Admin login failed before backup API |
+| `SystemUpdateControllerTest::testRunQueuesJobWhenEnabled` | run 200 | 403 | `System deploy is disabled in settings` |
+| `TwoFactorControllerTest::testDisableTwoFactor` | login 200 | 401 | User not authenticated mid-flow |
+| `TwoFactorControllerTest::testGetQRCode` | QR 200 | 404 | `findByEmail()` returned null after verify |
+
+Reproduction rate for `testRunForbiddenWhenDeployDisabled` → `testRunQueuesJobWhenEnabled` in one process was **~87% failure** before the fix.
+
+### Root cause
+
+Two independent pollution mechanisms:
+
+1. **`settings.testing.json` read/write race** — `SettingsRepository::setGroup()` writes under `flock(LOCK_EX)`, but `group()` read the file via unlocked `storage->read()`. When `systemUpdate.deployEnabled` was set **before** register/login, auth middleware read settings during HTTP requests and sometimes observed an empty or stale override set → effective `deployEnabled: false` (schema default).
+
+2. **Shared login-attempt key `ip:unknown`** — `Http/TestCase::createJsonRequest()` did not set `REMOTE_ADDR`. Failed login tests across the suite accumulated on the same IP bucket; combined with incomplete disk purge of `login_attempts.json`, later tests saw **401** (wrong credentials path) or **429** lockout depending on order.
+
+QR **404** on `getQrCode` was a downstream symptom: session user email did not resolve in `UserRepository` when auth/login failed or storage context was inconsistent after polluted state.
+
+### Fix
+
+- **`backend/tests/Http/TestCase.php`**
+  - `TestStorageCleaner::purgeLoginAttempts()` in `setUp` (before `LoginAttemptTracker::clearAll()`).
+  - Per-request synthetic `REMOTE_ADDR` (`10.255.x.x`) on all JSON requests.
+- **`SystemUpdateControllerTest`**
+  - Apply `systemUpdate` overrides **after** `loginAsSuperAdminUser()`, not before auth HTTP traffic.
+  - Same ordering for deploy-disabled and empty-ref cases.
+- Richer assertion message on run endpoint (JSON body) for faster CI diagnosis.
+
+**Not adopted:** `SettingsRepository::reset()` in every HTTP `setUp` — caused nested `flock` deadlock via `DocumentValidator` → `get()` during locked writes.
+
+### Evidence and traceability
+
+- **Commits:** `e969a86` (It.72/73), `e0d45d0` (test isolation)
+- **Key files:** `backend/tests/Http/TestCase.php`, `backend/tests/Http/Controllers/Admin/SystemUpdateControllerTest.php`, `data/settings.testing.json`, `data/security/login_attempts.json`
+- **History:** [CHANGELOG](../CHANGELOG.md#unreleased)
+
+### Verification
+
+```bash
+# Pair that previously flaked ~87%:
+for i in $(seq 1 20); do
+  ./vendor/bin/phpunit --filter 'testRunForbiddenWhenDeployDisabled|testRunQueuesJobWhenEnabled' \
+    backend/tests/Http/Controllers/Admin/SystemUpdateControllerTest.php || exit 1
+done
+
+# Previously failing controllers:
+./vendor/bin/phpunit \
+  backend/tests/Http/Controllers/Admin/BackupControllerTest.php \
+  backend/tests/Http/Controllers/Admin/SystemUpdateControllerTest.php \
+  backend/tests/Http/Controllers/Auth/TwoFactorControllerTest.php
+
+./scripts/iteration-gate.sh
+```
+
+---
+
+<a id="iss-135"></a>
+
+## ISS-135 – Shortcode expand template uses regex denylist instead of full HTML allowlist
+
+[↑ Overview](#overview)
+
+**Severity:** Low (defense-in-depth)  
+**Status:** ⏳ Deferred · It.67+ hardening slice
+
+### Operational synopsis
+
+Security audit flagged `ShortcodeDefinitionPolicy` expand-body validation as **denylist-first** (`FORBIDDEN_EXPAND_PATTERNS`: script, iframe, event handlers, PHP tags). CSS classes in `class=` attributes already use a **partial allowlist** (`pg-*`, `paginium-public-*`, `prose*`).
+
+**Risk today:** Low — definitions are admin-authored JSON, validated by `CodePolicyEngine`, never executed as PHP; expand output is sanitized at render time like other untrusted HTML.
+
+**Planned hardening:** Replace open-ended HTML in expand templates with a strict tag/attribute allowlist (mirroring public HTML sanitizer policy), or require expand bodies to reference only registered layout partials.
+
+### Evidence and traceability
+
+- **Key file:** `backend/app/Core/CodePolicy/Services/ShortcodeDefinitionPolicy.php`
+- **Related:** [ISS-086](#iss-086) (stored XSS), It.67 untrusted surfaces
+- **Tests:** `backend/tests/Core/CodePolicy/CodePolicyEngineTest.php` (shortcode policy cases)
+
+### Verification
+
+```bash
+./vendor/bin/phpunit backend/tests/Core/CodePolicy/CodePolicyEngineTest.php \
+  --filter ShortcodeDefinitionPolicy
+```
+
+---
 

@@ -7,6 +7,7 @@ export const editorEn: MessageTree = {
     editArticle: 'Edit article',
     editPage: 'Edit page',
     newItem: 'New item',
+    contentLocale: 'Content language',
     wysiwyg: 'WYSIWYG',
     preview: 'Preview',
     previewTitle: 'Full page preview (header + content + footer)',
@@ -152,6 +153,8 @@ export const editorEn: MessageTree = {
       saved: 'Content saved',
       autoMerged: 'Changes were automatically merged with the server version.',
       conflict: 'Conflict (:count) — please resolve manually.',
+      conflictWholeResource:
+        'Conflict (:count) — the whole document changed on the server (all locales). Resolve manually.',
       saveFailed: 'Save failed',
       conflictCancelled: 'Conflict resolution cancelled. Your changes remain unsaved.',
       published: 'Content published',
@@ -239,6 +242,7 @@ export const editorEn: MessageTree = {
     fullscreen: 'Full screen',
     close: 'Close preview',
     defaultAuthor: 'Editorial',
+    localeHint: 'Preview locale :locale · status :status (preview only, not live publish state)',
   },
   mediaMeta: {
     title: 'Edit metadata',

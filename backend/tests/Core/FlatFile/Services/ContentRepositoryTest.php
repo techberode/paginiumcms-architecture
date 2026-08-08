@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Tests\Core\FlatFile\Services;
 
+use PaginiumCMS\Core\Content\LocalizedContentNormalizer;
 use PaginiumCMS\Core\FlatFile\Services\ContentRepository;
 use PaginiumCMS\Core\FlatFile\Services\ContentIndexService;
 use PaginiumCMS\Core\FlatFile\Services\FileReader;
@@ -69,7 +70,11 @@ class ContentRepositoryTest extends TestCase
         $markdownParser = new MarkdownParser($frontMatterParser, $bodyRenderer);
         $markdownStorage = new MarkdownContentStorage($markdownParser);
         $jsonStorage = new JsonContentStorage($bodyRenderer);
-        $this->index = new ContentIndexService($reader, 'data/index/content.json');
+        $settings = $this->createMock(SettingsRepositoryInterface::class);
+        $settings->method('get')->willReturn('sk');
+        $settings->method('group')->willReturn([]);
+        $normalizer = new LocalizedContentNormalizer($settings);
+        $this->index = new ContentIndexService($reader, $normalizer, 'data/index/content.json');
 
         $this->repository = new ContentRepository(
             $reader,
