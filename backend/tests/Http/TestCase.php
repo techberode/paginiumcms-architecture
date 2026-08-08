@@ -122,18 +122,18 @@ abstract class TestCase extends BaseTestCase
     /**
      * @param array<int|string, mixed>|null $data
      * @param array<string, string> $headers
+     * @param array<string, mixed> $serverParams
      */
     protected function createJsonRequest(
         string $method,
         string $uri,
         ?array $data = null,
-        array $headers = []
+        array $headers = [],
+        array $serverParams = []
     ): ServerRequestInterface {
-        $octet = random_int(1, 254);
-
-        $request = (new ServerRequestFactory())->createServerRequest($method, $uri, [
-            'REMOTE_ADDR' => '10.255.' . $octet . '.' . random_int(1, 254),
-        ]);
+        $request = (new ServerRequestFactory())->createServerRequest($method, $uri, array_merge([
+            'REMOTE_ADDR' => '10.255.' . random_int(1, 254) . '.' . random_int(1, 254),
+        ], $serverParams));
 
         if ($data !== null) {
             $body = (new StreamFactory())->createStream(JsonHelper::encode($data));

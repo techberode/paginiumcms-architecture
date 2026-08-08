@@ -49,10 +49,12 @@ final class AnalyticsPageviewControllerTest extends TestCase
             'Content-Type' => 'application/json',
             'User-Agent' => 'PaginiumCMS-Test/1.0',
         ];
+        // Pageview dedupe keys on client IP + URI — both beacons must share the same REMOTE_ADDR.
+        $server = ['REMOTE_ADDR' => '203.0.113.44'];
 
-        $request1 = $this->createJsonRequest('POST', '/api/analytics/pageview', null, $headers)
+        $request1 = $this->createJsonRequest('POST', '/api/analytics/pageview', null, $headers, $server)
             ->withBody((new \Slim\Psr7\Factory\StreamFactory())->createStream($body));
-        $request2 = $this->createJsonRequest('POST', '/api/analytics/pageview', null, $headers)
+        $request2 = $this->createJsonRequest('POST', '/api/analytics/pageview', null, $headers, $server)
             ->withBody((new \Slim\Psr7\Factory\StreamFactory())->createStream($body));
 
         $first = $this->getJsonResponse($this->handleRequest($request1));
