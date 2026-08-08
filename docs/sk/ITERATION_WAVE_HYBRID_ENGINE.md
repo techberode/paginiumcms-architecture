@@ -69,7 +69,7 @@ It.73 je týmto dokumentom kanonicky zaradená do **HE-6**. V staršom návrhu b
 | **71** | [Performance Guard](ITERATION_71.md) | 🟡 | ✅ **beta.28** | It.69 | dopĺňa It.7 a remainder It.46 |
 | **72** | [Media storage drivers](ITERATION_72.md) | 🟡 | ✅ MVP `[Unreleased]` | It.68 | local driver + probe; S3 neskôr |
 | **73** | [Multi-locale content document](ITERATION_73.md) | 🟡 | ✅ **`[Unreleased]`** | It.68 | read/write/publish/migrate + API docs |
-| **74** | [API keys a JWT](ITERATION_74.md) | 🟡 | ⏳ | It.68; cache lookup z It.69 odporúčaný | session auth zostáva |
+| **74** | [API keys a JWT](ITERATION_74.md) | 🟡 | ✅ hotové `[Unreleased]` | It.68; cache lookup z It.69 odporúčaný | session auth zostáva |
 | **76** | [Self-hosted translation](ITERATION_76.md) | 🔵 | ⏳ | It.73 | vytvára provider kontrakt |
 | **77** | [Cloud translation](ITERATION_77.md) | 🔵 | ⏳ | It.76 | pridáva cloud drivers bez druhého UI |
 | **75** | [CMS-aware AI agent](ITERATION_75.md) | 🔵 | ⏳ | It.73 + stabilná provider/tool vrstva | používa It.29 queue a It.66 gates |

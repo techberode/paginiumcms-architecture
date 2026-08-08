@@ -21,6 +21,10 @@ use PaginiumCMS\Http\Middleware\LocaleMiddleware;
 use PaginiumCMS\Http\Middleware\MaintenanceModeMiddleware;
 use PaginiumCMS\Http\Middleware\FirewallMiddleware;
 use PaginiumCMS\Http\Middleware\CsrfMiddleware;
+use PaginiumCMS\Http\Middleware\InvalidBearerGuardMiddleware;
+use PaginiumCMS\Http\Middleware\BearerAuthMiddleware;
+use PaginiumCMS\Http\Middleware\ApiScopeMiddleware;
+use PaginiumCMS\Http\Middleware\ApiKeyRateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\PerformanceGuardMiddleware;
 use PaginiumCMS\Http\Middleware\RequestLoggingMiddleware;
 use PaginiumCMS\Support\AppVersion;
@@ -38,6 +42,12 @@ use PaginiumCMS\Modules\Security\Services\QRCodeGenerator;
 use PaginiumCMS\Modules\Security\Services\TwoFactorManager;
 use PaginiumCMS\Modules\Security\Services\UserIndexService;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
+use PaginiumCMS\Modules\Security\Services\ApiKeyStore;
+use PaginiumCMS\Modules\Security\Services\ApiKeyVerifier;
+use PaginiumCMS\Modules\Security\Services\ApiScopePolicy;
+use PaginiumCMS\Modules\Security\Services\ApiJwtDenylistStore;
+use PaginiumCMS\Modules\Security\Services\ApiJwtService;
+use PaginiumCMS\Modules\Security\Services\ApiBearerAuthenticator;
 use PaginiumCMS\Modules\Security\Contracts\AuthenticationInterface;
 use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
 use PaginiumCMS\Modules\Security\Contracts\CsrfProtectionInterface;
@@ -401,6 +411,48 @@ $containerBuilder->addDefinitions([
         );
     },
 
+    ApiKeyStore::class => function ($container) {
+        return new ApiKeyStore($container->get(FileReaderInterface::class));
+    },
+
+    ApiKeyVerifier::class => function ($container) {
+        $pepper = (string) (getenv('API_KEY_PEPPER') ?: ($_ENV['API_KEY_PEPPER'] ?? ''));
+        if ($pepper === '' && (getenv('APP_ENV') === 'testing' || ($_ENV['APP_ENV'] ?? '') === 'testing')) {
+            $pepper = 'paginium-test-api-key-pepper';
+        }
+
+        return new ApiKeyVerifier($container->get(ApiKeyStore::class), $pepper);
+    },
+
+    ApiJwtDenylistStore::class => function ($container) {
+        return new ApiJwtDenylistStore(
+            $container->get(FileReaderInterface::class)
+        );
+    },
+
+    ApiJwtService::class => function ($container) {
+        $key = (string) (getenv('API_JWT_KEY') ?: ($_ENV['API_JWT_KEY'] ?? ''));
+        if ($key === '' && (getenv('APP_ENV') === 'testing' || ($_ENV['APP_ENV'] ?? '') === 'testing')) {
+            $key = 'paginium-test-api-jwt-key-at-least-32-chars!!';
+        }
+
+        return new ApiJwtService(
+            $container->get(ApiJwtDenylistStore::class),
+            $key
+        );
+    },
+
+    ApiBearerAuthenticator::class => function ($container) {
+        return new ApiBearerAuthenticator(
+            $container->get(ApiKeyVerifier::class),
+            $container->get(ApiJwtService::class)
+        );
+    },
+
+    ApiScopePolicy::class => function () {
+        return new ApiScopePolicy();
+    },
+
     AuthenticationInterface::class => function ($container) {
         return new AuthenticationManager(
             $container->get(SessionManager::class),
@@ -469,6 +521,37 @@ $containerBuilder->addDefinitions([
     AuthMiddleware::class => function ($container) {
         return new AuthMiddleware(
             $container->get(AuthenticationInterface::class)
+        );
+    },
+
+    InvalidBearerGuardMiddleware::class => function ($container) {
+        return new InvalidBearerGuardMiddleware(
+            $container->get(ApiBearerAuthenticator::class)
+        );
+    },
+
+    BearerAuthMiddleware::class => function ($container) {
+        return new BearerAuthMiddleware(
+            $container->get(ApiBearerAuthenticator::class)
+        );
+    },
+
+    ApiScopeMiddleware::class => function ($container) {
+        return new ApiScopeMiddleware(
+            $container->get(\PaginiumCMS\Modules\Security\Services\ApiScopePolicy::class)
+        );
+    },
+
+    ApiKeyRateLimitMiddleware::class => function ($container) {
+        $isTesting = (getenv('APP_ENV') === 'testing');
+
+        return new ApiKeyRateLimitMiddleware(
+            $container->get(CacheManager::class),
+            maxRequests: $isTesting ? 100000 : 120,
+            window: 60,
+            excludedPaths: [],
+            excludedIps: $isTesting ? ['127.0.0.1', '::1'] : [],
+            trustedProxies: ClientIpResolver::trustedProxiesFromEnv()
         );
     },
 
@@ -682,6 +765,7 @@ $app->add($container->get(FirewallMiddleware::class));
 // CSRF (audit S3 / ISS-012): vynucuje synchronizer-token na mutujúcich
 // requestoch. V testing prostredí je no-op (viď CsrfMiddleware).
 $app->add(new CsrfMiddleware($container->get(CsrfProtectionInterface::class)));
+$app->add($container->get(InvalidBearerGuardMiddleware::class));
 $app->add($container->get(RateLimitMiddleware::class));
 $app->add($container->get(AnalyticsMiddleware::class));
 

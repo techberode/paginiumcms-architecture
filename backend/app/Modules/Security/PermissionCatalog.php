@@ -27,6 +27,7 @@ final class PermissionCatalog
         'gallery:manage',
         'logs:view',
         'metrics:read',
+        'api-keys:manage',
         'profile:edit',
     ];
 
@@ -50,9 +51,10 @@ final class PermissionCatalog
                 'settings:manage',
                 'git:publish',
                 'gallery:manage',
-                'logs:view',
-                'metrics:read',
-            ],
+        'logs:view',
+        'metrics:read',
+        'api-keys:manage',
+    ],
             AuthorizationInterface::ROLE_EDITOR => [
                 'content:create',
                 'content:edit',

@@ -160,6 +160,8 @@ use PaginiumCMS\Http\Controllers\Admin\ThemesController;
 use PaginiumCMS\Http\Controllers\Admin\BlueprintController;
 use PaginiumCMS\Http\Controllers\Admin\AclController;
 use PaginiumCMS\Http\Controllers\Admin\SecurityAuditController;
+use PaginiumCMS\Http\Controllers\Admin\ApiKeyController;
+use PaginiumCMS\Http\Controllers\Headless\HeadlessTokenController;
 use PaginiumCMS\Http\Controllers\Admin\SettingsController;
 use PaginiumCMS\Http\Controllers\Admin\TranslationController;
 use PaginiumCMS\Http\Controllers\Auth\SsoController;
@@ -1195,6 +1197,20 @@ return [
         ),
     SecurityAuditController::class => create(SecurityAuditController::class)
         ->constructor(get(SecurityAuditStore::class), get(JsonResponder::class)),
+    ApiKeyController::class => create(ApiKeyController::class)
+        ->constructor(
+            get(\PaginiumCMS\Modules\Security\Services\ApiKeyStore::class),
+            get(\PaginiumCMS\Modules\Security\Services\ApiKeyVerifier::class),
+            get(\PaginiumCMS\Modules\Security\Services\ApiJwtService::class),
+            get(SecurityAuditStore::class),
+            get(JsonResponder::class)
+        ),
+    HeadlessTokenController::class => create(HeadlessTokenController::class)
+        ->constructor(
+            get(\PaginiumCMS\Modules\Security\Services\ApiJwtService::class),
+            get(SecurityAuditStore::class),
+            get(JsonResponder::class)
+        ),
     AclController::class => create(AclController::class)
         ->constructor(get(AclRepository::class), get(SecurityLogger::class), get(JsonResponder::class)),
     SsoController::class => create(SsoController::class)

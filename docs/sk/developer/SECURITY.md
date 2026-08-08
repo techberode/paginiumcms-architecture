@@ -192,20 +192,25 @@ OAuth/OIDC integrácia musí overiť:
 
 ## 8. API autentifikácia It.74
 
-API keys a krátko žijúce JWT sú aditívny plán, nie náhrada admin session modelu.
+API keys a krátko žijúce JWT sú **implementované** ako aditívna headless vrstva; nenahrádzajú admin session model.
 
-Povinné vlastnosti:
+| Plocha | Auth | Poznámka |
+|--------|------|----------|
+| Admin SPA | Session + CSRF + RBAC + 2FA | bez zmeny |
+| `/api/headless/*` | Bearer API key alebo krátke JWT | CSRF exempt; allow-list cez `ApiScopePolicy` |
+| `/api/admin/platform/api-keys` | Session + `api-keys:manage` | create/list/revoke/rotate/audit; copy-once secret |
 
-- key secret sa zobrazí iba pri vytvorení a ukladá sa hash,
-- identifikátor, scopes, owner, created/last-used/expires/revoked metadata,
-- rotácia a okamžitá revokácia,
+Povinné vlastnosti (vynútené):
+
+- key secret sa zobrazí iba pri vytvorení/rotácii a ukladá sa ako HMAC verifier (`API_KEY_PEPPER`),
+- metadata v `data/api-keys.json`,
+- rotácia atomicky zruší starý kľúč; audit v `SecurityAuditStore`,
 - žiadny key v query stringu,
-- JWT krátka expirácia, stabilný issuer/audience a `jti` podľa threat modelu,
-- scope nesmie prekročiť oprávnenia vlastníka,
-- citlivé endpointy môžu vyžadovať session + 2FA a API key nepovoliť,
-- log zaznamená key ID, nie secret.
+- JWT: samostatný `API_JWT_KEY`, len HS256, max TTL 900s, povinné claims, voliteľný `jti` deny-list,
+- neplatný managed Bearer na ľubovoľnej trase → `401` bez session fallbacku,
+- log/audit nikdy neobsahuje secret.
 
-CSRF sa typicky nevzťahuje na bearer credential mimo cookie, ale XSS alebo únik tokenu zostáva hrozbou. Token preto neukladaj do dlhodobého browser localStorage bez jasného modelu.
+CSRF sa nevzťahuje na `/api/headless` bearer mutácie. Dlhodobé tokeny neukladaj do browser localStorage.
 
 ## 9. Autorizácia, RBAC a Path ACL
 
