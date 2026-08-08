@@ -34,6 +34,7 @@ use PaginiumCMS\Core\Cache\ContentCacheService;
 use PaginiumCMS\Core\Cache\Commands\PurgeContentCacheCommand;
 use PaginiumCMS\Core\Cache\Services\CacheAdminService;
 use PaginiumCMS\Core\FlatFile\Commands\ContentDiagnoseCommand;
+use PaginiumCMS\Core\FlatFile\Commands\ContentLocaleMigrateCommand;
 use PaginiumCMS\Core\CodeEditor\Services\CodeEditorManager;
 use PaginiumCMS\Core\CodeEditor\Services\CodeEditorLogger;
 use PaginiumCMS\Core\CodePolicy\Contracts\CodePolicyEngineInterface;
@@ -77,7 +78,10 @@ use PaginiumCMS\Core\FlatFile\Contracts\MarkdownContentParserInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\MarkdownParserInterface;
 use PaginiumCMS\Core\Conflict\Contracts\ConflictLoggerInterface;
 use PaginiumCMS\Core\Content\LocalizedContentApplicator;
+use PaginiumCMS\Core\Content\LocalizedContentMigrationService;
 use PaginiumCMS\Core\Content\LocalizedContentNormalizer;
+use PaginiumCMS\Core\Content\LocalizedContentValidator;
+use PaginiumCMS\Core\Content\LocalizedContentWriter;
 use PaginiumCMS\Core\Content\LocaleResolver;
 use PaginiumCMS\Core\Conflict\Services\ConflictLogger;
 use PaginiumCMS\Core\Drafts\Contracts\DraftManagerInterface;
@@ -267,6 +271,7 @@ return [
     ContentIndexService::class => create(ContentIndexService::class)
         ->constructor(
             get(FileReaderInterface::class),
+            get(LocalizedContentNormalizer::class),
             'data/index/content.json'
         ),
     JsonResponder::class => create(JsonResponder::class),
@@ -480,6 +485,21 @@ return [
     LocalizedContentNormalizer::class => create(LocalizedContentNormalizer::class)
         ->constructor(get(SettingsRepositoryInterface::class)),
     LocalizedContentApplicator::class => create(LocalizedContentApplicator::class),
+    LocalizedContentValidator::class => create(LocalizedContentValidator::class)
+        ->constructor(get(SupportedLocalesRegistry::class)),
+    LocalizedContentWriter::class => create(LocalizedContentWriter::class)
+        ->constructor(get(LocalizedContentNormalizer::class)),
+    LocalizedContentMigrationService::class => create(LocalizedContentMigrationService::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class),
+            get(ContentRepositoryInterface::class),
+            get(ContentIndexService::class),
+            get(ContentCacheService::class),
+            get(LocalizedContentNormalizer::class),
+            get(LocalizedContentWriter::class),
+            get(SettingsRepositoryInterface::class)
+        ),
 
     // Log konfliktov obsahu (Iterácia 3) – flat-file data/conflicts.json
     ConflictLoggerInterface::class => create(ConflictLogger::class)
@@ -786,6 +806,8 @@ return [
             get(LocaleResolver::class),
             get(LocalizedContentNormalizer::class),
             get(LocalizedContentApplicator::class),
+            get(LocalizedContentValidator::class),
+            get(LocalizedContentWriter::class),
         ),
     AdvancedSearchService::class => create(AdvancedSearchService::class)
         ->constructor(
@@ -1155,6 +1177,8 @@ return [
             get(ContentIndexService::class),
             get(ContentCacheService::class)
         ),
+    ContentLocaleMigrateCommand::class => create(ContentLocaleMigrateCommand::class)
+        ->constructor(get(LocalizedContentMigrationService::class)),
     SecurityAuditStore::class => create(SecurityAuditStore::class)
         ->constructor(get(FileReaderInterface::class)),
     AclRepository::class => create(AclRepository::class)

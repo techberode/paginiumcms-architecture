@@ -17,6 +17,8 @@ use PaginiumCMS\Core\Blueprint\Services\DynamicValidator;
 use PaginiumCMS\Core\Cache\ContentCacheService;
 use PaginiumCMS\Core\Content\LocalizedContentApplicator;
 use PaginiumCMS\Core\Content\LocalizedContentNormalizer;
+use PaginiumCMS\Core\Content\LocalizedContentValidator;
+use PaginiumCMS\Core\Content\LocalizedContentWriter;
 use PaginiumCMS\Core\Content\LocaleResolver;
 use PaginiumCMS\Core\Editor\Services\EditorContentValidator;
 use PaginiumCMS\Core\Hook\HookCatalog;
@@ -61,6 +63,8 @@ class ContentController
         private LocaleResolver $localeResolver,
         private LocalizedContentNormalizer $localizedNormalizer,
         private LocalizedContentApplicator $localizedApplicator,
+        private LocalizedContentValidator $localizedValidator,
+        private LocalizedContentWriter $localizedWriter,
     ) {
     }
 
@@ -270,6 +274,7 @@ class ContentController
                 $user,
                 $this->resolveCommitMessage($data)
             );
+            $this->invalidateContentCache($type, $content->getSlug());
 
             return $this->json->success(
                 $response,
@@ -361,7 +366,7 @@ class ContentController
                     return $this->json->error($response, 'Neprihlásený používateľ', 401);
                 }
 
-                $this->applyPayload($existing, $data, $newSlug);
+                $this->applyWritePayload($existing, $data, $newSlug);
                 $existing->setStatus('draft');
                 $this->emitContentHook(HookCatalog::CONTENT_BEFORE_SAVE, $existing, $type, 'update', $user);
                 $this->repository->save($existing);
@@ -381,7 +386,7 @@ class ContentController
                 ], 202);
             }
 
-            $this->applyPayload($existing, $data, $newSlug);
+            $this->applyWritePayload($existing, $data, $newSlug);
             $user = $this->resolveUser($request);
             $this->emitContentHook(HookCatalog::CONTENT_BEFORE_SAVE, $existing, $type, 'update', $user);
             $this->repository->save($existing);
@@ -393,6 +398,7 @@ class ContentController
                 $user,
                 $this->resolveCommitMessage($data)
             );
+            $this->invalidateContentCache($type, $newSlug);
 
             return $this->json->success(
                 $response,
@@ -597,15 +603,34 @@ class ContentController
         }
 
         $data = $this->parseJsonBody($request);
-        $status = $data['status'] ?? '';
+        $status = (string) ($data['status'] ?? '');
+        $locale = strtolower(trim((string) ($data['locale'] ?? '')));
 
         if (!in_array($status, $this->validStatuses, true)) {
             return $this->json->error($response, Lang::get('invalid_status', [], 'content'), 400);
         }
 
+        $canonical = $this->localizedNormalizer->normalize($content);
+
+        if ($locale !== '') {
+            try {
+                $this->localizedValidator->validateLocaleStatusChange($canonical, $locale, $status);
+            } catch (ValidationException $e) {
+                return $this->json->error(
+                    $response,
+                    $e->getFlatMessages()[0] ?? $e->getMessage(),
+                    422
+                );
+            }
+        }
+
+        $previousScopedStatus = $locale !== ''
+            ? (string) ($canonical['localeStatus'][$locale] ?? 'draft')
+            : $content->getStatus();
+
         if (
             $status === 'published'
-            && $content->getStatus() !== 'published'
+            && $previousScopedStatus !== 'published'
             && $this->otpWorkflow->isPublishApprovalOtpEnabled()
         ) {
             $user = $this->resolveUser($request);
@@ -633,12 +658,20 @@ class ContentController
 
         try {
             $previousStatus = $content->getStatus();
-            $content->setStatus($status);
+            if ($locale !== '') {
+                $this->localizedWriter->applyLocaleStatus($content, $locale, $status);
+            } else {
+                $content->setStatus($status);
+                if ((int) ($content->getFrontMatter()['schemaVersion'] ?? 1) >= 2) {
+                    $defaultLocale = (string) ($canonical['defaultLocale'] ?? 'sk');
+                    $this->localizedWriter->applyLocaleStatus($content, $defaultLocale, $status);
+                }
+            }
             $user = $this->resolveUser($request);
             $this->emitContentHook(HookCatalog::CONTENT_BEFORE_SAVE, $content, $type, 'status', $user);
             $this->repository->save($content);
             $this->emitContentHook(HookCatalog::CONTENT_AFTER_SAVE, $content, $type, 'status', $user);
-            if ($previousStatus !== $status) {
+            if ($previousStatus !== $content->getStatus()) {
                 $this->emitContentHook(
                     HookCatalog::CONTENT_AFTER_STATUS_CHANGE,
                     $content,
@@ -649,6 +682,7 @@ class ContentController
                 );
             }
             $this->versioning->recordChange($content, $type, 'status', $user);
+            $this->invalidateContentCache($type, $slug);
 
             return $this->json->success(
                 $response,
@@ -663,17 +697,105 @@ class ContentController
 
     /**
      * @param array<int|string, mixed> $data
- */private function buildContent(string $type, array $data): Content
+     */
+    private function applyWritePayload(Content $content, array $data, string $slug): void
+    {
+        if ($this->isLocaleScopedWrite($data)) {
+            $this->localizedWriter->applyLocalePayload($content, $data, $slug);
+            $this->applyGlobalContentFields($content, $data, $slug);
+
+            return;
+        }
+
+        $this->applyPayload($content, $data, $slug);
+    }
+
+    /**
+     * @param array<int|string, mixed> $data
+     */
+    private function isLocaleScopedWrite(array $data): bool
+    {
+        return trim((string) ($data['locale'] ?? '')) !== '';
+    }
+
+    /**
+     * Global metadata only — locale-scoped title/body/status/SEO are handled by LocalizedContentWriter.
+     *
+     * @param array<int|string, mixed> $data
+     */
+    private function applyGlobalContentFields(Content $content, array $data, string $slug): void
+    {
+        $content->setSlug($slug);
+
+        if (!empty($data['author'])) {
+            $content->setAuthor((string) $data['author']);
+        }
+
+        if ($content instanceof Page && !empty($data['template'])) {
+            $content->setTemplate((string) $data['template']);
+        }
+
+        if ($content instanceof Page && array_key_exists('layoutTemplate', $data)) {
+            $content->setLayoutTemplate((string) ($data['layoutTemplate'] ?? ''));
+        }
+
+        if ($content instanceof Article) {
+            if (!empty($data['featuredImage'])) {
+                $content->setFeaturedImage((string) $data['featuredImage']);
+            }
+            if (!empty($data['tags']) && is_array($data['tags'])) {
+                $content->setTags($data['tags']);
+            }
+            if (array_key_exists('commentsEnabled', $data)) {
+                $content->setCommentsEnabled((bool) $data['commentsEnabled']);
+            }
+            if (array_key_exists('commentsRequireApproval', $data)) {
+                $override = $data['commentsRequireApproval'];
+                $content->setCommentsRequireApproval(
+                    $override === null ? null : (bool) $override
+                );
+            }
+            if (array_key_exists('commentsAllowGuests', $data)) {
+                $override = $data['commentsAllowGuests'];
+                $content->setCommentsAllowGuests(
+                    $override === null ? null : (bool) $override
+                );
+            }
+        }
+
+        $frontMatter = $content->getFrontMatter();
+        if (!empty($data['contentFormat']) && in_array($data['contentFormat'], ['markdown', 'html', 'tiptap_json'], true)) {
+            $frontMatter['contentFormat'] = (string) $data['contentFormat'];
+        }
+        if (!empty($data['editorProfile']) && is_string($data['editorProfile'])) {
+            $frontMatter['editorProfile'] = trim($data['editorProfile']);
+        }
+        if (!empty($data['editorMode']) && in_array($data['editorMode'], ['markdown', 'wysiwyg'], true)) {
+            $frontMatter['editorMode'] = (string) $data['editorMode'];
+        }
+        if ($content instanceof Page && !empty($data['tags']) && is_array($data['tags'])) {
+            $content->setTags($data['tags']);
+        }
+        $content->setFrontMatter($frontMatter);
+
+        $this->applySchedulingFrontMatter($content, $data);
+    }
+
+    /**
+     * @param array<int|string, mixed> $data
+     */
+    private function buildContent(string $type, array $data): Content
     {
         $content = $type === 'article' ? new Article() : new Page();
-        $this->applyPayload($content, $data, (string) $data['slug']);
+        $this->applyWritePayload($content, $data, (string) $data['slug']);
 
         return $content;
     }
 
     /**
      * @param array<int|string, mixed> $data
- */private function applyPayload(Content $content, array $data, string $slug): void
+     */
+    private function applyPayload(Content $content, array $data, string $slug): void
     {
         $content->setSlug($slug);
         $content->setTitle((string) $data['title']);
@@ -855,6 +977,12 @@ class ContentController
         $scheduledAt = $content->getScheduledAt();
         $payload['scheduledAt'] = $scheduledAt !== null ? $scheduledAt->format('c') : '';
 
+        $canonical = $this->localizedNormalizer->normalize($content);
+        $payload['schemaVersion'] = $canonical['schemaVersion'];
+        $payload['defaultLocale'] = $canonical['defaultLocale'];
+        $payload['localizedContent'] = $canonical['localizedContent'];
+        $payload['localeStatus'] = $canonical['localeStatus'];
+
         return $payload;
     }
 
@@ -905,7 +1033,15 @@ class ContentController
             return $messages[0] ?? Lang::get('invalid_status', [], 'content');
         }
 
-        if (empty($data['title'])) {
+        if ($this->isLocaleScopedWrite($data)) {
+            try {
+                $this->localizedValidator->validateWritePayload($data);
+            } catch (ValidationException $e) {
+                $messages = $e->getFlatMessages();
+
+                return $messages[0] ?? Lang::get('invalid_status', [], 'content');
+            }
+        } elseif (empty($data['title'])) {
             return Lang::get('title_required', [], 'content');
         }
 
@@ -1273,6 +1409,19 @@ class ContentController
         $user = $request->getAttribute('user');
 
         return $user instanceof User ? $user : null;
+    }
+
+    private function invalidateContentCache(string $type, string $slug): void
+    {
+        if ($slug === '') {
+            return;
+        }
+
+        if ($type === 'page') {
+            $this->contentCache->invalidatePage($slug);
+        } else {
+            $this->contentCache->invalidateArticle($slug);
+        }
     }
 
     /**

@@ -31,6 +31,9 @@ export interface SitePreviewModalProps {
   open: boolean;
   onClose: () => void;
   draft: SitePreviewDraft | null;
+  /** Active editor locale tab — preview does not imply published status. */
+  previewLocale?: string;
+  previewLocaleStatus?: string;
 }
 
 const SCALE_VALUES: SitePreviewScale[] = ['fullscreen', '100', '75', '50'];
@@ -137,7 +140,13 @@ const ArticlePreviewBody: React.FC<{ article: Article; defaultAuthor: string }> 
   );
 };
 
-export const SitePreviewModal: React.FC<SitePreviewModalProps> = ({ open, onClose, draft }) => {
+export const SitePreviewModal: React.FC<SitePreviewModalProps> = ({
+  open,
+  onClose,
+  draft,
+  previewLocale,
+  previewLocaleStatus,
+}) => {
   const { t } = useI18n();
   const [scale, setScale] = useState<SitePreviewScale>('100');
   const untitled = t('editor.sitePreview.untitled');
@@ -173,6 +182,14 @@ export const SitePreviewModal: React.FC<SitePreviewModalProps> = ({ open, onClos
           <p className="text-sm font-semibold truncate max-w-[60vw]">
             {displayTitle} · {contentTypeLabel}
           </p>
+          {previewLocale && (
+            <p className="text-xs text-slate-400">
+              {t('editor.sitePreview.localeHint', {
+                locale: previewLocale.toUpperCase(),
+                status: previewLocaleStatus ?? 'draft',
+              })}
+            </p>
+          )}
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {SCALE_VALUES.map((value) => (

@@ -19,13 +19,18 @@ use DateTimeInterface;
  *     excerpt: string,
  *     tags: list<string>,
  *     updatedAt: string,
- *     createdAt: string
+ *     createdAt: string,
+ *     defaultLocale?: string,
+ *     locales?: list<string>,
+ *     localeStatus?: array<string, string>
  * }
  */
 final class ContentIndexEntry
 {
     /**
      * @param list<string> $tags
+     * @param list<string> $locales
+     * @param array<string, string> $localeStatus
      */
     public function __construct(
         public readonly string $slug,
@@ -37,12 +42,22 @@ final class ContentIndexEntry
         public readonly string $excerpt,
         public readonly array $tags,
         public readonly string $updatedAt,
-        public readonly string $createdAt
+        public readonly string $createdAt,
+        public readonly string $defaultLocale = 'sk',
+        public readonly array $locales = [],
+        public readonly array $localeStatus = [],
     ) {
     }
 
-    public static function fromContent(Content $content, string $type, string $excerpt = ''): self
-    {
+    /**
+     * @param array<string, mixed>|null $canonical LocalizedContentNormalizer output.
+     */
+    public static function fromContent(
+        Content $content,
+        string $type,
+        string $excerpt = '',
+        ?array $canonical = null,
+    ): self {
         $frontMatter = $content->getFrontMatter();
         $modifiedAt = $content->getModifiedAt() > 0
             ? date('c', $content->getModifiedAt())
@@ -65,6 +80,21 @@ final class ContentIndexEntry
             }
         }
 
+        $defaultLocale = 'sk';
+        $locales = [];
+        $localeStatus = [];
+        if (is_array($canonical)) {
+            $defaultLocale = (string) ($canonical['defaultLocale'] ?? 'sk');
+            /** @var array<string, array<string, mixed>> $localized */
+            $localized = is_array($canonical['localizedContent'] ?? null) ? $canonical['localizedContent'] : [];
+            $locales = array_keys($localized);
+            /** @var array<string, string> $rawStatus */
+            $rawStatus = is_array($canonical['localeStatus'] ?? null) ? $canonical['localeStatus'] : [];
+            foreach ($rawStatus as $code => $localeState) {
+                $localeStatus[(string) $code] = (string) $localeState;
+            }
+        }
+
         return new self(
             slug: $content->getSlug(),
             type: $type,
@@ -76,7 +106,37 @@ final class ContentIndexEntry
             tags: $tags,
             updatedAt: is_string($frontMatter['updatedAt'] ?? null) ? $frontMatter['updatedAt'] : $modifiedAt,
             createdAt: $createdAt,
+            defaultLocale: $defaultLocale,
+            locales: $locales,
+            localeStatus: $localeStatus,
         );
+    }
+
+    public function matchesStatusFilter(string $status, ?string $locale = null): bool
+    {
+        if ($status === '') {
+            return true;
+        }
+
+        if ($this->localeStatus !== []) {
+            if ($locale !== null && $locale !== '') {
+                return ($this->localeStatus[$locale] ?? 'draft') === $status;
+            }
+
+            if ($status === 'published') {
+                foreach ($this->localeStatus as $localeState) {
+                    if ($localeState === 'published') {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            return ($this->localeStatus[$this->defaultLocale] ?? $this->status) === $status;
+        }
+
+        return $this->status === $status;
     }
 
     /**
@@ -86,6 +146,15 @@ final class ContentIndexEntry
     {
         $rawTags = $data['tags'] ?? [];
         $tags = self::normalizeTags($rawTags);
+        /** @var list<string> $locales */
+        $locales = is_array($data['locales'] ?? null) ? array_values(array_map('strval', $data['locales'])) : [];
+        /** @var array<string, string> $localeStatus */
+        $localeStatus = [];
+        if (is_array($data['localeStatus'] ?? null)) {
+            foreach ($data['localeStatus'] as $code => $state) {
+                $localeStatus[(string) $code] = (string) $state;
+            }
+        }
 
         return new self(
             slug: (string) ($data['slug'] ?? ''),
@@ -98,6 +167,9 @@ final class ContentIndexEntry
             tags: $tags,
             updatedAt: (string) ($data['updatedAt'] ?? date('c')),
             createdAt: (string) ($data['createdAt'] ?? date('c')),
+            defaultLocale: (string) ($data['defaultLocale'] ?? 'sk'),
+            locales: $locales,
+            localeStatus: $localeStatus,
         );
     }
 
@@ -117,6 +189,9 @@ final class ContentIndexEntry
             'tags' => $this->tags,
             'updatedAt' => $this->updatedAt,
             'createdAt' => $this->createdAt,
+            'defaultLocale' => $this->defaultLocale,
+            'locales' => $this->locales,
+            'localeStatus' => $this->localeStatus,
         ];
     }
 
@@ -134,12 +209,13 @@ final class ContentIndexEntry
             'tags' => $this->tags,
             'updatedAt' => $this->updatedAt,
             'path' => $this->path,
+            'defaultLocale' => $this->defaultLocale,
+            'locales' => $this->locales,
+            'localeStatus' => $this->localeStatus,
         ];
     }
 
-    /**
-     * @return list<string>
-     */
+    /** @return list<string> */
     public static function normalizeTags(mixed $raw): array
     {
         if (is_array($raw)) {

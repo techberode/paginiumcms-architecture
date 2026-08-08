@@ -53,10 +53,20 @@ import {
 } from '../../utils/contentEditorApi';
 import {
   resolveScheduledAtForSave,
-  isoToDatetimeLocalValue,
   type ContentEditorStatus,
 } from '../../utils/contentScheduling';
 import { useI18n } from '../../context/I18nContext';
+import { SUPPORTED_LOCALES } from '../../i18n/types';
+import {
+  applyLocaleEditorState,
+  captureLocaleEditorState,
+  emptyLocaleEditorState,
+  hydrateLocaleEditorFromLoad,
+  normalizeContentLocale,
+  resolveInitialEditorLocale,
+  type ContentLocaleCode,
+  type LocaleEditorState,
+} from '../../utils/contentEditorLocale';
 
 interface MarkdownEditorProps {
   type?: ContentType;
@@ -113,10 +123,15 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
   const [previewHtml, setPreviewHtml] = useState<string | undefined>();
   const [loadedCreatedAt, setLoadedCreatedAt] = useState<string | undefined>();
   const [loadedUpdatedAt, setLoadedUpdatedAt] = useState<string | undefined>();
+  const [activeLocale, setActiveLocale] = useState<ContentLocaleCode>('sk');
+  const [localeStates, setLocaleStates] = useState<Partial<Record<ContentLocaleCode, LocaleEditorState>>>({});
+  const [localeStatusMap, setLocaleStatusMap] = useState<
+    Partial<Record<ContentLocaleCode, ContentEditorStatus>>
+  >({});
 
   const { get, post, put } = useApi();
   const toast = useToast();
-  const { t } = useI18n();
+  const { t, locale: adminUiLocale } = useI18n();
   const { settings } = useSettingsContext();
   const { user } = useAuth();
   const isNew = slug === 'new' || !slug;
@@ -135,6 +150,15 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
     () => getEditorProfile(editorProfile, settings.editor?.profiles),
     [editorProfile, settings.editor?.profiles]
   );
+
+  useEffect(() => {
+    if (isNew) {
+      const siteLocale = normalizeContentLocale(String(settings.general?.language ?? '')) ?? 'sk';
+      setActiveLocale(siteLocale);
+      setLocaleStates({ [siteLocale]: emptyLocaleEditorState() });
+      setLocaleStatusMap({ [siteLocale]: 'draft' });
+    }
+  }, [isNew, settings.general?.language]);
 
   useEffect(() => {
     if (isNew) {
@@ -198,6 +222,63 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
 
+  const applyLocaleFieldsToEditor = useCallback(
+    (state: LocaleEditorState, mode: EditorMode) => {
+      const applied = applyLocaleEditorState(state, mode);
+      setTitle(applied.title);
+      setContent(applied.content);
+      setContentFormat(applied.contentFormat);
+      setStatus(applied.status);
+      setScheduledAt(applied.scheduledAt);
+      setSeo(applied.seo);
+    },
+    []
+  );
+
+  const handleLocaleChange = useCallback(
+    (nextLocale: ContentLocaleCode) => {
+      if (nextLocale === activeLocale) {
+        return;
+      }
+
+      const captured = captureLocaleEditorState({
+        title,
+        content,
+        contentFormat,
+        status,
+        scheduledAt,
+        seo,
+      });
+      const mergedStates: Partial<Record<ContentLocaleCode, LocaleEditorState>> = {
+        ...localeStates,
+        [activeLocale]: captured,
+      };
+      const nextState = mergedStates[nextLocale] ?? emptyLocaleEditorState();
+      mergedStates[nextLocale] = nextState;
+
+      setLocaleStates(mergedStates);
+      setLocaleStatusMap((prev) => ({
+        ...prev,
+        [activeLocale]: status,
+        [nextLocale]: nextState.status,
+      }));
+      applyLocaleFieldsToEditor(nextState, editorMode);
+      setActiveLocale(nextLocale);
+    },
+    [
+      activeLocale,
+      applyLocaleFieldsToEditor,
+      content,
+      contentFormat,
+      editorMode,
+      localeStates,
+      scheduledAt,
+      seo,
+      status,
+      title,
+    ]
+  );
+
   const loadContent = async () => {
     setLoading(true);
     try {
@@ -223,7 +304,19 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         );
         setContent(valueForEditorMode(raw, format, loadedMode));
         setBaseContent(raw);
-        setTitle(response.data.title || '');
+
+        const hydrated = hydrateLocaleEditorFromLoad(response.data, loadedMode, format);
+        setLocaleStates(hydrated.localeStates);
+        setLocaleStatusMap(hydrated.localeStatus);
+
+        const initialTab = resolveInitialEditorLocale(hydrated.defaultLocale, adminUiLocale);
+        const initialState =
+          hydrated.localeStates[initialTab] ??
+          hydrated.localeStates[hydrated.defaultLocale] ??
+          emptyLocaleEditorState();
+        applyLocaleFieldsToEditor(initialState, loadedMode);
+        setActiveLocale(initialTab);
+
         setEditSlug(loadedSlug);
         setTemplate(String(response.data.template ?? fm.template ?? 'default'));
         setLayoutTemplate(
@@ -237,31 +330,9 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         setStoragePath(
           resolveStoragePath(type, loadedSlug, String(response.data.path ?? ''), storageFormat)
         );
-        setStatus((response.data.status as ContentEditorStatus) || 'draft');
-        setScheduledAt(
-          isoToDatetimeLocalValue(
-            String(response.data.scheduledAt ?? fm.scheduledAt ?? '')
-          )
-        );
         setLoadedCreatedAt(String(response.data.createdAt ?? ''));
         setLoadedUpdatedAt(String(response.data.updatedAt ?? ''));
         setBaseRevision(response.data.revision || '');
-        setSeo({
-          seoTitle: String(response.data.seoTitle ?? fm.seoTitle ?? fm.metaTitle ?? ''),
-          seoDescription: String(
-            response.data.seoDescription ?? fm.seoDescription ?? fm.description ?? ''
-          ),
-          canonical: String(response.data.canonical ?? fm.canonical ?? ''),
-          ogImage: String(
-            response.data.ogImage ?? response.data.featuredImage ?? fm.seoImage ?? ''
-          ),
-          noIndex: Boolean(response.data.noIndex ?? fm.noIndex ?? fm.noindex ?? false),
-          tags: Array.isArray(response.data.tags)
-            ? response.data.tags.join(', ')
-            : Array.isArray(fm.tags)
-              ? fm.tags.map(String).join(', ')
-              : '',
-        });
         if (type === 'article') {
           setArticleComments({
             commentsEnabled: response.data.commentsEnabled !== false,
@@ -308,6 +379,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
 
   const handleStatusChange = (value: ContentEditorStatus) => {
     setStatus(value);
+    setLocaleStatusMap((prev) => ({ ...prev, [activeLocale]: value }));
     if (value !== 'scheduled') {
       setScheduledAt('');
     }
@@ -327,7 +399,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
 
   const handleSave = useCallback(
     async (forceRevision?: string, contentOverride?: string) => {
-      if (!title.trim()) {
+      if (status === 'published' && !title.trim()) {
         toast.warning(t('editor.markdown.toast.titleRequired'));
         return;
       }
@@ -344,6 +416,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
       setSaving(true);
       try {
         const data: Record<string, unknown> = {
+          locale: activeLocale,
           title: title.trim(),
           content: stored.content,
           contentFormat: stored.contentFormat,
@@ -410,6 +483,23 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
           if (response.data?.revision) {
             setBaseRevision(response.data.revision);
           }
+          if (response.data?.localeStatus) {
+            setLocaleStatusMap(response.data.localeStatus as Partial<
+              Record<ContentLocaleCode, ContentEditorStatus>
+            >);
+          }
+          setLocaleStates((prev) => ({
+            ...prev,
+            [activeLocale]: captureLocaleEditorState({
+              title,
+              content: contentOverride ?? content,
+              contentFormat: stored.contentFormat,
+              status,
+              scheduledAt,
+              seo,
+            }),
+          }));
+          setLocaleStatusMap((prev) => ({ ...prev, [activeLocale]: status }));
           if (response.data?.path) {
             setStoragePath(
               resolveStoragePath(
@@ -442,7 +532,9 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
               theirs: c.serverContent,
               serverRevision: c.serverRevision,
             });
-            toast.error(t('editor.markdown.toast.conflict', { count: merge.conflictCount }));
+            toast.error(
+              t('editor.markdown.toast.conflictWholeResource', { count: merge.conflictCount })
+            );
           }
         } else {
           toast.error(response.error || t('editor.markdown.toast.saveFailed'));
@@ -474,6 +566,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
       editorProfile,
       storageFormat,
       articleComments,
+      activeLocale,
       post,
       put,
       navigate,
@@ -615,6 +708,10 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         seoOpen={seoOpen}
         autoSaveLabel={autoSaveLabel}
         lockIndicator={!isNew ? <LockIndicator resourceId={resourceId} onLockChange={setCanEdit} /> : null}
+        activeLocale={activeLocale}
+        localeOptions={[...SUPPORTED_LOCALES]}
+        localeStatusMap={localeStatusMap as Record<string, ContentEditorStatus>}
+        onLocaleChange={(code) => handleLocaleChange(code as ContentLocaleCode)}
         onTitleChange={setTitle}
         onSlugChange={(value) => {
           setSlugTouched(true);
@@ -710,6 +807,8 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         open={previewOpen}
         onClose={() => setPreviewOpen(false)}
         draft={previewDraft}
+        previewLocale={activeLocale}
+        previewLocaleStatus={localeStatusMap[activeLocale] ?? status}
       />
 
       <OtpConfirmModal

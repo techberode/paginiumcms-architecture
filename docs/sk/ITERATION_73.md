@@ -1,6 +1,6 @@
 # Iterácia 73 — viacjazyčný content dokument
 
-> **Stav:** ⏳ plánované  
+> **Stav:** ✅ Hotové v `[Unreleased]` (fázy 1–2e) · beta tag pending  
 > **Priorita:** 🟡 · vysoký migračný dopad  
 > **Vlna:** [Hybrid Engine HE-6](ITERATION_WAVE_HYBRID_ENGINE.md)  
 > **Závisí od:** [It.68](ITERATION_68.md)
@@ -61,7 +61,7 @@ Verejné API používa deterministické poradie:
 1. explicitný `?locale=` alebo route locale,
 2. podporovaný `Accept-Language`, ak endpoint túto voľbu povoľuje,
 3. `defaultLocale` resource/site,
-4. prvý publikovaný locale iba ak to povoľuje fallback policy,
+4. prvé dostupné locale na resource, ak `content.localeFallbackEnabled` je `true` (default),
 5. inak `404`/jasný no-translation stav.
 
 Odpoveď uvádza výsledný locale a či bol použitý fallback. Cache key a `Vary` z It.69 musia locale zahrnúť.
@@ -148,13 +148,16 @@ Automatické zlúčenie dvoch súborov s nejasnou identitou je zakázané. Taký
 
 ## Definition of Done
 
-- [ ] Canonical schema a locale fallback sú uzamknuté v SK/EN API dokumentácii.
-- [ ] Legacy dokumenty fungujú bez povinnej migrácie.
-- [ ] Demo migrácia SK+EN prejde dry-run → convert → verify → rollback.
-- [ ] Editor spravuje oba locale v jednom resource view.
-- [ ] Publish a cache sú locale-aware.
-- [ ] Preklad/AI nemôže automaticky publikovať locale.
-- [ ] No-SQL SSOT a Classic compatibility zostávajú zachované.
+- [x] Kanonický read model a locale fallback uzamknuté pre legacy + schema v2.
+- [x] Locale-scoped write path (`locale` payload → schema v2 merge, validator, writer).
+- [x] Canonical schema a locale fallback sú uzamknuté v SK/EN API dokumentácii ([CONTENT_API.md](architecture/CONTENT_API.md) §15).
+- [x] Legacy dokumenty fungujú bez povinnej migrácie.
+- [x] Migration CLI MVP (`content:locale-migrate`: inventory, dry-run, backup, convert, verify, rollback).
+- [x] Demo migrácia SK+EN prejde dry-run → convert → verify → rollback (`DemoLocaleMigrationIntegrationTest`).
+- [x] Editor spravuje oba locale v jednom resource view.
+- [x] Publish a cache sú locale-aware.
+- [x] Preklad/AI nemôže automaticky publikovať locale (`proposalSource` guard).
+- [x] No-SQL SSOT a Classic compatibility zostávajú zachované.
 
 ## Nadväzuje
 

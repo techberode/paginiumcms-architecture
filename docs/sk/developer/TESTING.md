@@ -424,6 +424,19 @@ Flaky test je zlyhanie gate-u, nie folklór, ktorý sa vyrieši tretím kliknut�
 
 Automatický retry môže pomôcť diagnostike, ale nesmie premeniť červený prvý beh na zelený release dôkaz bez viditeľnej poznámky.
 
+### 10.1 HTTP integračná izolácia (`Http/TestCase`)
+
+HTTP controller testy bootujú reálny Slim app proti zdieľanému flat-file storage. Bez explicitnej hygieny vznikajú **order-dependent flakes** v plnom suite, hoci izolovaný test prejde.
+
+| Pravidlo | Implementácia | Incident |
+|----------|---------------|----------|
+| Reset login lockout | `TestStorageCleaner::purgeLoginAttempts()` + `LoginAttemptTracker::clearAll()` v `setUp` | [ISS-073](../ISSUES.md#iss-073), [ISS-134](../ISSUES.md#iss-134) |
+| Unikátna IP klienta | Syntetické `REMOTE_ADDR` v každom `createJsonRequest()` | [ISS-134](../ISSUES.md#iss-134) |
+| Nastavenia až po auth | Ak test mení `settings.testing.json` a volá register/login, `setGroup()` až **po** session | [ISS-134](../ISSUES.md#iss-134) |
+| Nepoužívať `SettingsRepository::reset()` v HTTP `setUp` | Vnorený `flock` cez validátor → deadlock | [ISS-134](../ISSUES.md#iss-134) |
+
+Kanonický register: [ISS-134 v `docs/ISSUES.md`](../../ISSUES.md#iss-134) (anglická synopsa).
+
 ## 11. Dependency, SCA a supply-chain kontroly
 
 Minimálne:
@@ -512,7 +525,10 @@ Na produkcii spúšťaj iba bezpečné post-deploy overenie:
 ```bash
 curl --fail --silent https://example.test/api/health
 php backend/bin/console content:diagnose
+php backend/bin/console content:locale-migrate inventory
 ```
+
+Voliteľná operátorská kontrola pred migráciou (It.73): `content:locale-migrate dry-run --default-locale=sk` pred `run --yes`. Rollback: `content:locale-migrate rollback --migration-id=<id> --yes`.
 
 Plnú PHPUnit/Vitest sadu spúšťaj v CI alebo disposable prostredí, nie nad živým produkčným storage. Produkčný server nie je veľmi drahý test fixture.
 

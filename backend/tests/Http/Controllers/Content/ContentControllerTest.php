@@ -294,4 +294,123 @@ class ContentControllerTest extends TestCase
         );
         $this->assertSame(404, $public->getStatusCode());
     }
+
+    public function testCreatePageWithLocaleScopeWritesSchemaV2(): void
+    {
+        $this->loginAsAdminUser();
+        $slug = 'locale-create-' . uniqid('', true);
+
+        $response = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/pages', [
+                'locale' => 'en',
+                'title' => 'English title',
+                'slug' => $slug,
+                'status' => 'draft',
+                'content' => 'English body',
+            ])
+        );
+        $data = $this->getJsonResponse($response);
+
+        $this->assertSame(201, $response->getStatusCode());
+        $this->assertTrue($data['success']);
+        $this->assertSame(2, $data['data']['schemaVersion'] ?? null);
+        $this->assertSame('English title', $data['data']['localizedContent']['en']['title'] ?? null);
+        $this->assertSame('draft', $data['data']['localeStatus']['en'] ?? null);
+    }
+
+    public function testUpdatePageWithLocaleScopeMergesSecondLocale(): void
+    {
+        $this->loginAsAdminUser();
+        $slug = 'locale-merge-' . uniqid('', true);
+
+        $create = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/pages', [
+                'locale' => 'sk',
+                'title' => 'SK title',
+                'slug' => $slug,
+                'status' => 'published',
+                'content' => 'SK body',
+            ])
+        );
+        $created = $this->getJsonResponse($create);
+        $revision = $created['data']['revision'] ?? '';
+
+        $update = $this->handleRequest(
+            $this->createJsonRequest('PUT', '/api/pages/' . $slug, [
+                'locale' => 'en',
+                'title' => 'EN title',
+                'slug' => $slug,
+                'status' => 'draft',
+                'content' => 'EN body',
+                'baseRevision' => $revision,
+            ])
+        );
+        $updated = $this->getJsonResponse($update);
+
+        $this->assertSame(200, $update->getStatusCode());
+        $this->assertTrue($updated['success']);
+        $this->assertSame('SK title', $updated['data']['localizedContent']['sk']['title'] ?? null);
+        $this->assertSame('EN title', $updated['data']['localizedContent']['en']['title'] ?? null);
+        $this->assertSame('published', $updated['data']['localeStatus']['sk'] ?? null);
+        $this->assertSame('draft', $updated['data']['localeStatus']['en'] ?? null);
+    }
+
+    public function testPublishLocaleWithoutTitleReturns400(): void
+    {
+        $this->loginAsAdminUser();
+        $slug = 'locale-invalid-' . uniqid('', true);
+
+        $response = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/pages', [
+                'locale' => 'en',
+                'title' => '',
+                'slug' => $slug,
+                'status' => 'published',
+                'content' => '',
+            ])
+        );
+
+        $this->assertSame(400, $response->getStatusCode());
+    }
+
+    public function testPatchPageStatusWithLocaleScopeUpdatesLocaleStatusOnly(): void
+    {
+        $this->loginAsAdminUser();
+        $slug = 'locale-patch-' . uniqid('', true);
+
+        $create = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/pages', [
+                'locale' => 'sk',
+                'title' => 'SK title',
+                'slug' => $slug,
+                'status' => 'published',
+                'content' => 'SK body',
+            ])
+        );
+        $this->assertSame(201, $create->getStatusCode());
+
+        $this->handleRequest(
+            $this->createJsonRequest('PUT', '/api/pages/' . $slug, [
+                'locale' => 'en',
+                'title' => 'EN title',
+                'slug' => $slug,
+                'status' => 'draft',
+                'content' => 'EN body',
+                'baseRevision' => $this->getJsonResponse($create)['data']['revision'] ?? '',
+            ])
+        );
+
+        $patch = $this->handleRequest(
+            $this->createJsonRequest('PATCH', '/api/pages/' . $slug . '/status', [
+                'locale' => 'en',
+                'status' => 'published',
+            ])
+        );
+        $data = $this->getJsonResponse($patch);
+
+        $this->assertSame(200, $patch->getStatusCode());
+        $this->assertTrue($data['success']);
+        $this->assertSame('published', $data['data']['localeStatus']['en'] ?? null);
+        $this->assertSame('published', $data['data']['localeStatus']['sk'] ?? null);
+    }
 }

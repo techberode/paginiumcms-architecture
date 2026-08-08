@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Známe incidenty a opravy
 
-> **Posledná aktualizácia:** 2. august 2026 · dokumentačný snapshot **`v2.1.0-beta.23`** · register **ISS-001–ISS-120**
+> **Posledná aktualizácia:** 8. august 2026 · register **ISS-001–ISS-135** · **`v2.1.0-beta.29`** shipped · kanonický EN register: [`../ISSUES.md`](../ISSUES.md)
 
 Tento dokument je kanonický verejný register produkčných, integračných, bezpečnostných, prevádzkových a CI problémov zistených počas vývoja PaginiumCMS. Každé číslo incidentu v prehľade je klikateľné a smeruje na stabilný explicitný anchor s popisom, príčinou, riešením a dostupným overením.
 
@@ -4042,6 +4042,37 @@ Runbook: [deploy/DEPLOY.md](deploy/DEPLOY.md#f-boot-autostart-docker-restart-pol
 ```bash
 .github/scripts/run-backend-tests-ci.sh
 # očakávané: „CI log redaction verification: OK“, v konzole len [REDACTED] namiesto otpauth
+```
+
+---
+
+<a id="iss-134"></a>
+
+## ISS-134 – Flaky HTTP PHPUnit (401/403/404 pri auth a system-update)
+
+[↑ Prehľad](#overview) · kanonická EN synopsa: [ISS-134](../ISSUES.md#iss-134)
+
+**Závažnosť:** Stredná (CI)  
+**Stav:** ✅ **2.1.0-beta.29** · commity `e0d45d0`, `2c83615`
+
+### Symptóm
+
+V plnom PHPUnit suite občas padali `BackupControllerTest`, `SystemUpdateControllerTest` (403 deploy disabled), `TwoFactorControllerTest` (401 login, 404 QR). Izolované behy prechádzali.
+
+### Príčina
+
+1. **Race pri `settings.testing.json`** — zápis pod `flock`, čítanie bez zámku; `deployEnabled` nastavené pred register/login sa stratilo počas auth requestov.
+2. **Zdieľaná IP `unknown`** v login lockout trackeri bez purge súboru na disku.
+
+### Oprava
+
+- `Http/TestCase`: purge `login_attempts.json`, unikátne `REMOTE_ADDR`.
+- `SystemUpdateControllerTest`: `systemUpdate` overrides až po `loginAsSuperAdminUser()`.
+
+### Overenie
+
+```bash
+./scripts/iteration-gate.sh
 ```
 
 ---

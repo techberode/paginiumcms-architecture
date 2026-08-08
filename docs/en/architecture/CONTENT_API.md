@@ -6,7 +6,7 @@ icon: material/file-document-edit
 
 # 📝 Content API
 
-> **Status:** Public Beta contract with clearly marked It.68–77 extensions  
+> **Status:** Public Beta contract · It.73 locale schema locked in §15  
 > **SSOT:** Markdown/JSON content documents; index and cache are derived  
 > **Concurrency:** revision/OCC + edit lock + version history
 
@@ -63,7 +63,7 @@ Recommended explicit query contract:
 | `tag` / `filter[tag]` | — | exact normalized article tag |
 | `author` / `filter[author]` | — | documented match, not a free-form regex |
 | `date_from`, `date_to` | — | validated ISO date and unambiguous timezone policy |
-| `locale` | default locale | ⏳ It.73; fallback explicitly marked |
+| `locale` | site default | optional list filter; public `published` = any locale published unless pinned (It.73 §15) |
 
 A legacy request without `page` or `per_page` may return the entire list without `meta`. New frontend/headless clients should use paginated mode.
 
@@ -141,7 +141,7 @@ PUT /api/articles/{slug}
 | `status` | allow-list + permission; draft save and publish are separate use cases |
 | `baseRevision` | required for updates according to OCC policy |
 | `lockToken` | proof of an active lock when the workflow requires one |
-| `locale` | ⏳ explicit target locale; Apply must not overwrite another locale |
+| `locale` | required for multi-locale editor writes; scopes `title`/`content`/`status`/SEO to that locale; bulk `localizedContent` forbidden (§15.5) |
 
 The backend ignores client-supplied fields owned by the server, such as actor identity, audit actor, server timestamps, or computed revision. Rejecting unknown write fields by schema is preferred.
 
@@ -323,18 +323,213 @@ The API model remains stable regardless of disk format. Migration must not creat
 
 ---
 
-## 15. Locale-aware content — It.73
+## 15. Locale-aware content — It.73 (locked)
 
-The planned model must define:
+> **Status:** Delivered in `[Unreleased]` (Phases 1–2d). This section is the canonical HTTP and on-disk contract for multi-locale content.
 
-- supported/default locale allow-list,
-- explicit requested/effective/fallback locale in responses,
-- revision over the canonical multilingual document or a safe per-locale model without lost updates,
-- fallback for reads only, not persistence of fallback text as completed translation,
-- path ACL and publishing status per locale according to policy,
-- cache keys including locale and public/admin variant.
+### 15.1 Supported locales
 
-It.76–77 translation creates a proposal/diff; Apply is a separate authorized operation and automatic publishing is outside the base flow.
+| Source | Rule |
+|--------|------|
+| Allow-list | `config/i18n/locales.json` via `SupportedLocalesRegistry` |
+| Built-in MVP | `sk`, `en` (two-letter lowercase codes) |
+| Site default | `general.language` setting (fallback `sk`) |
+| Unsupported code on write | `422` with field errors |
+| Unsupported code on public read | ignored; resolver falls through to default/fallback |
+
+### 15.2 Canonical document shape (schema v2)
+
+One resource identity (`slug`, global metadata) with locale-scoped slices in SSOT (Markdown front matter or JSON):
+
+```json
+{
+  "schemaVersion": 2,
+  "slug": "about-us",
+  "defaultLocale": "sk",
+  "localizedContent": {
+    "sk": {
+      "title": "O nás",
+      "body": "# …",
+      "seo": {
+        "title": "",
+        "description": "",
+        "canonical": "",
+        "ogImage": "",
+        "noIndex": false
+      }
+    },
+    "en": {
+      "title": "About us",
+      "body": "# …",
+      "seo": {
+        "title": "",
+        "description": "",
+        "canonical": "",
+        "ogImage": "",
+        "noIndex": false
+      }
+    }
+  },
+  "localeStatus": { "sk": "published", "en": "draft" },
+  "revision": "<revision>",
+  "updatedAt": "2026-08-02T12:00:00+02:00"
+}
+```
+
+| Field | Scope | Rule |
+|-------|-------|------|
+| `schemaVersion` | global | `2` for persisted multi-locale documents |
+| `defaultLocale` | global | Must be supported; drives flat legacy fields |
+| `localizedContent.{locale}.title` | locale | Required to publish that locale |
+| `localizedContent.{locale}.body` | locale | Canonical body for that locale |
+| `localizedContent.{locale}.seo.*` | locale | SEO slice; default locale maps to flat `seoTitle`, `seoDescription`, etc. |
+| `localeStatus.{locale}` | locale | `draft`, `published`, `archived`, or `scheduled` |
+| Flat `title`, `content`, `status`, SEO fields | legacy compat | Synced from the **default locale** slice for index and single-locale readers |
+
+**Legacy schema v1** documents (`schemaVersion` missing or `< 2`) remain readable. `LocalizedContentNormalizer` synthesizes a single-locale canonical view at read time without mutating disk. Optional batch upgrade: `content:locale-migrate` (§15.9).
+
+### 15.3 Public read — locale resolution
+
+Applies to anonymous `GET /api/pages/{slug}` and `GET /api/articles/{slug}` (and their cached public variants).
+
+Deterministic order (`LocaleResolver`):
+
+1. Explicit `?locale=` when supported and present on the resource,
+2. `Accept-Language` when `content.localeNegotiationEnabled` is `true` (default),
+3. Resource `defaultLocale` when that slice exists,
+4. First available locale on the resource when `content.localeFallbackEnabled` is `true` (default),
+5. Otherwise site/resource default with `fallback: true` in `_locale` metadata.
+
+| Setting | Default | Effect |
+|---------|---------|--------|
+| `content.localeNegotiationEnabled` | `true` | Enables `Accept-Language` step |
+| `content.localeFallbackEnabled` | `true` | Enables cross-locale read fallback |
+
+The resolver **never persists** fallback text as a completed translation. Fallback affects the returned slice only.
+
+Public visibility uses the **resolved locale's** status (applied to top-level `status`). Anonymous clients receive `404` when that locale is not `published`.
+
+List endpoints accept optional `locale`. With `status=published` and per-locale status present, a resource matches when **any** locale is published unless `locale` pins the filter to one code.
+
+### 15.4 Public response locale metadata
+
+Public detail responses include `_locale` alongside flattened fields:
+
+```json
+{
+  "title": "About us",
+  "content": "# …",
+  "status": "published",
+  "_locale": {
+    "requested": "en",
+    "resolved": "sk",
+    "fallback": true,
+    "available": ["sk", "en"],
+    "defaultLocale": "sk",
+    "sliceFound": true
+  },
+  "schemaVersion": 2,
+  "defaultLocale": "sk"
+}
+```
+
+| `_locale` key | Meaning |
+|---------------|---------|
+| `requested` | From `?locale=` or negotiated header; `null` when none supplied |
+| `resolved` | Locale slice applied to top-level fields |
+| `fallback` | `true` when `requested` ≠ `resolved` or cross-locale fallback was used |
+| `available` | Locale codes present in `localizedContent` |
+| `defaultLocale` | Resource default |
+| `sliceFound` | `false` when the resolved slice is missing |
+
+Authenticated editor GET returns the **full** canonical object (`localizedContent`, `localeStatus`, all locales) without `_locale` overlay.
+
+HTTP caching (It.69): public responses may include `Vary: Accept-Language`. Cache keys include requested locale and `Accept-Language`.
+
+### 15.5 Locale-scoped writes
+
+`POST` / `PUT` accept a locale-scoped payload:
+
+```json
+{
+  "locale": "en",
+  "title": "About us",
+  "content": "# About us",
+  "status": "draft",
+  "seoTitle": "About us",
+  "seoDescription": "…",
+  "baseRevision": "<revision>"
+}
+```
+
+| Rule | Detail |
+|------|--------|
+| `locale` required | For locale-scoped writes; unsupported → `422` |
+| `proposalSource` | When `translation`, `ai`, or `machine_translation`, `status` must not be `published` → `422` |
+| Bulk forbidden | Clients must **not** send `localizedContent` or `localeStatus` → `422` |
+| Field scope | `title`, `content`, `status`, SEO fields apply to the given locale only |
+| OCC | Single document `revision` / `baseRevision` protects the whole resource |
+| Upgrade | Legacy documents upgrade to `schemaVersion: 2` on first locale-scoped save |
+| Flat sync | Default-locale flat fields updated after merge |
+
+Writes without `locale` retain legacy compatibility but are not used by the multi-locale editor.
+
+### 15.6 Per-locale publish
+
+```http
+PATCH /api/pages/{slug}/status
+PATCH /api/articles/{slug}/status
+```
+
+```json
+{ "locale": "en", "status": "published" }
+```
+
+| Payload | Behavior |
+|---------|----------|
+| `locale` + `status` | Updates one `localeStatus` entry |
+| `status` only on v2 doc | Updates default locale status |
+| Publish validation | Empty draft locale allowed; `published` requires non-empty locale `title` → `422` |
+| OTP | Publish-approval OTP applies when enabled |
+
+Publishing one locale does not publish others. Slug remains global.
+
+### 15.7 Index metadata
+
+Derived index entries expose `defaultLocale`, `locales`, and `localeStatus` for admin list badges and locale-aware filters. The index is rebuildable from SSOT.
+
+### 15.8 Locale-specific errors
+
+| Situation | Response |
+|-----------|----------|
+| Unsupported locale on write | `422` + field errors |
+| Bulk `localizedContent` in write body | `422` |
+| Publish locale without title | `422` |
+| Revision mismatch on locale save | `409` conflict (whole resource) |
+
+### 15.9 Migration CLI (optional)
+
+Read compatibility does not require migration. Operator commands:
+
+```bash
+php backend/bin/console content:locale-migrate inventory
+php backend/bin/console content:locale-migrate dry-run --default-locale=sk
+php backend/bin/console content:locale-migrate run --default-locale=sk --yes
+php backend/bin/console content:locale-migrate rollback --migration-id=<id> --yes
+```
+
+Backups and manifest live under `data/migrations/<id>/`. Automatic merge of ambiguous locale-copy file pairs is prohibited.
+
+See [ITERATION_73.md](../ITERATION_73.md) for migration DoD.
+
+### 15.10 Out of scope (It.73)
+
+- Per-locale slug/routing,
+- Locale-specific ACL,
+- Automatic translation publish (It.76–77),
+- Per-locale revision/OCC (MVP uses one document revision).
+
+It.76–77 translation produces a proposal/diff; Apply is a separate authorized operation and must not auto-publish.
 
 ---
 
@@ -375,7 +570,7 @@ After 401 the frontend must not automatically resend a write until session and C
 | versions | versions client | history, compare, restore |
 | OTP | workflows client | challenge modal without false success |
 | publish | content/Git client | local save vs distribution state |
-| locale/translation | ⏳ locale clients | requested/effective locale, diff/Apply |
+| locale/translation | content API + editor locale tabs | `_locale` on public reads; full canonical on admin GET; locale-scoped save (§15) |
 
 Specific filenames may change during refactoring; the public contract is behavior and typed interfaces, not today's import path.
 

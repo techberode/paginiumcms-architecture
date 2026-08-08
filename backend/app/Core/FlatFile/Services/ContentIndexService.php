@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\FlatFile\Services;
 
+use PaginiumCMS\Core\Content\LocalizedContentNormalizer;
 use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Models\Content;
@@ -23,6 +24,7 @@ final class ContentIndexService
 
     public function __construct(
         private FileReaderInterface $reader,
+        private LocalizedContentNormalizer $localizedNormalizer,
         private string $indexFile = 'data/index/content.json'
     ) {
         $this->absolutePath = rtrim($this->reader->getBasePath(), '/') . '/' . ltrim($this->indexFile, '/');
@@ -30,7 +32,8 @@ final class ContentIndexService
 
     public function upsertFromContent(Content $content, string $type): void
     {
-        $entry = ContentIndexEntry::fromContent($content, $type);
+        $canonical = $this->localizedNormalizer->normalize($content);
+        $entry = ContentIndexEntry::fromContent($content, $type, '', $canonical);
 
         $this->withLockedIndex(function (array &$items) use ($entry): void {
             $items = array_values(array_filter(
@@ -73,9 +76,10 @@ final class ContentIndexService
 
             if (!empty($query->filters['status'])) {
                 $status = $query->filters['status'];
+                $locale = isset($query->filters['locale']) ? (string) $query->filters['locale'] : null;
                 $entries = array_values(array_filter(
                     $entries,
-                    static fn (ContentIndexEntry $e): bool => $e->status === $status
+                    static fn (ContentIndexEntry $e): bool => $e->matchesStatusFilter($status, $locale)
                 ));
             }
 
@@ -203,11 +207,13 @@ final class ContentIndexService
         $items = [];
 
         foreach ($repository->findAllPages() as $page) {
-            $items[] = ContentIndexEntry::fromContent($page, 'page')->toArray();
+            $canonical = $this->localizedNormalizer->normalize($page);
+            $items[] = ContentIndexEntry::fromContent($page, 'page', '', $canonical)->toArray();
         }
 
         foreach ($repository->findAllArticles() as $article) {
-            $items[] = ContentIndexEntry::fromContent($article, 'article')->toArray();
+            $canonical = $this->localizedNormalizer->normalize($article);
+            $items[] = ContentIndexEntry::fromContent($article, 'article', '', $canonical)->toArray();
         }
 
         $this->withLockedIndex(function (array &$stored) use ($items): void {
@@ -299,9 +305,10 @@ final class ContentIndexService
     {
         if ($applyStatus && !empty($filters['status'])) {
             $status = $filters['status'];
+            $locale = isset($filters['locale']) ? (string) $filters['locale'] : null;
             $entries = array_values(array_filter(
                 $entries,
-                static fn (ContentIndexEntry $e): bool => $e->status === $status
+                static fn (ContentIndexEntry $e): bool => $e->matchesStatusFilter($status, $locale)
             ));
         }
 

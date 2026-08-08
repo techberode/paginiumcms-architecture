@@ -1,7 +1,7 @@
 # Hybrid Engine — implementačná vlna It.68–77
 
-> **Stav:** dokumentačná Fáza 0 · implementácia pozastavená do dokončenia SK/EN dokumentácie  
-> **Checkpoint:** `v2.1.0-beta.23` · 2. august 2026  
+> **Stav:** It.68–71 + UX v **`v2.1.0-beta.28`** · It.72 MVP + **It.73 hotové** v **`[Unreleased]`**  
+> **Checkpoint:** `v2.1.0-beta.28` · 6. august 2026  
 > **Architektonický základ:** [Hybrid Engine](architecture/HYBRID_ENGINE.md) · [No-SQL mandát](architecture/NOSQL_MANDATE.md) · [režimy nasadenia](architecture/DEPLOYMENT_MODES.md)
 
 Táto vlna premieňa nový smer PaginiumCMS na implementovateľný plán. Projekt rastie z pokročilého flat-file CMS na **Hybrid Headless Content Engine**, ale nemení svoj dátový základ: obsah a konfigurácia zostávajú v súboroch; index, cache, Git, fronty a externé služby sú odvodené, distribučné alebo voliteľné vrstvy.
@@ -48,12 +48,12 @@ flowchart LR
 | Fáza | Iterácie | Výsledok |
 |------|----------|----------|
 | **Fáza 0** | dokumentácia | jednotný SK/EN kontrakt a uzamknuté invarianty |
-| **HE-1 Foundation** | **It.68** | storage abstraction, schema registry, engine settings |
-| **HE-2 Read performance** | **It.69** | jednotná cache, Redis fallback, HTTP validators |
-| **HE-3 Distribution** | **It.70** + koordinácia It.48 | immediate/queued Git publish a neskôr statický build |
-| **HE-4 Observability** | **It.71** + remainder It.46 | PHP APM, budgety, incidenty a host metriky |
-| **HE-5 Integrations** | **It.72**, **It.74** | médiové ovládače a aditívna headless autentifikácia |
-| **HE-6 Localized workflows** | **It.73 → 76 → 77 → 75** | lokalizovaný dokument, preklady a bezpečný AI agent |
+| **HE-1 Foundation** | **It.68** | ✅ dodané |
+| **HE-2 Read performance** | **It.69** | ✅ dodané |
+| **HE-3 Distribution** | **It.70** | ✅ dodané |
+| **HE-4 Observability** | **It.71** | ✅ **beta.28** |
+| **HE-5 Integrations** | **It.72**, **It.74** | It.72 **MVP** v `[Unreleased]` |
+| **HE-6 Localized workflows** | **It.73 → 76 → 77 → 75** | It.73 **hotové** (read/write/publish/migrate/docs) v `[Unreleased]` |
 
 It.73 je týmto dokumentom kanonicky zaradená do **HE-6**. V staršom návrhu bola nejednotne označená ako HE-5.
 
@@ -63,12 +63,12 @@ It.73 je týmto dokumentom kanonicky zaradená do **HE-6**. V staršom návrhu b
 
 | It. | Názov | Priorita | Stav | Povinná závislosť | Absorbuje / koordinuje |
 |-----|-------|----------|------|--------------------|------------------------|
-| **68** | [Hybrid Engine foundation](ITERATION_68.md) | 🔴 | ⏸️ docs gate | Fáza 0 | základ pre všetky ďalšie vrstvy |
-| **69** | [Cache + HTTP conditional requests](ITERATION_69.md) | 🔴 | ⏳ | It.68 | absorbuje It.45 a It.49 |
-| **70** | [Git publish modes](ITERATION_70.md) | 🟡 | ⏳ | It.68 | rozširuje `GitHubService`, koordinuje It.48 |
-| **71** | [Performance Guard](ITERATION_71.md) | 🟡 | ⏳ | It.69 | dopĺňa It.7 a remainder It.46 |
-| **72** | [Media storage drivers](ITERATION_72.md) | 🟡 | ⏳ | It.68 | nadväzuje na DAM It.24 |
-| **73** | [Multi-locale content document](ITERATION_73.md) | 🟡 | ⏳ | It.68 | základ It.76/77/75 |
+| **68** | [Hybrid Engine foundation](ITERATION_68.md) | 🔴 | ✅ dodané | Fáza 0 | základ pre všetky ďalšie vrstvy |
+| **69** | [Cache + HTTP conditional requests](ITERATION_69.md) | 🔴 | ✅ dodané | It.68 | absorbuje It.45 a It.49 |
+| **70** | [Git publish modes](ITERATION_70.md) | 🟡 | ✅ dodané | It.68 | rozširuje `GitHubService` |
+| **71** | [Performance Guard](ITERATION_71.md) | 🟡 | ✅ **beta.28** | It.69 | dopĺňa It.7 a remainder It.46 |
+| **72** | [Media storage drivers](ITERATION_72.md) | 🟡 | ✅ MVP `[Unreleased]` | It.68 | local driver + probe; S3 neskôr |
+| **73** | [Multi-locale content document](ITERATION_73.md) | 🟡 | ✅ **`[Unreleased]`** | It.68 | read/write/publish/migrate + API docs |
 | **74** | [API keys a JWT](ITERATION_74.md) | 🟡 | ⏳ | It.68; cache lookup z It.69 odporúčaný | session auth zostáva |
 | **76** | [Self-hosted translation](ITERATION_76.md) | 🔵 | ⏳ | It.73 | vytvára provider kontrakt |
 | **77** | [Cloud translation](ITERATION_77.md) | 🔵 | ⏳ | It.76 | pridáva cloud drivers bez druhého UI |
@@ -80,6 +80,8 @@ It.73 je týmto dokumentom kanonicky zaradená do **HE-6**. V staršom návrhu b
 
 | Položka | Vzťah k vlne | Pravidlo |
 |---------|---------------|----------|
+| **It.78** unified upload security | bezpečnostný gate | pred It.79 a novými MIME |
+| **It.79** DAM video | paralelne po It.72 MVP | vyžaduje It.78 |
 | **It.67** untrusted surfaces | bezpečnostný gate | dokončiť pred rozšírením generovaného/importovaného kódu |
 | **It.58d** layout remainder | paralelný produktový prúd | nesmie vytvoriť druhý content model alebo druhú publish pipeline |
 | **It.48** static render | pokračovanie It.70 | build trigger je samostatný krok po úspešnom Git publish |
@@ -152,4 +154,4 @@ Fáza 0 pre túto vlnu je pripravená, keď:
 - AI/preklady sú návrhové workflow s explicitným potvrdením,
 - žiadna plánovaná schopnosť nie je označená ako implementovaná.
 
-**Nasledujúca implementácia:** It.68 až po dokončení celého dvojjazyčného dokumentačného gate rozhodnutím maintainera.
+**Nasledujúca implementácia:** It.72 S3 + migrácia · It.73 editor/write path · [It.78](ITERATION_78.md) upload policy · [It.79](ITERATION_79.md) video.

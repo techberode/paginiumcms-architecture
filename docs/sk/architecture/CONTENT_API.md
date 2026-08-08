@@ -6,7 +6,7 @@ icon: material/file-document-edit
 
 # 📝 Content API
 
-> **Stav:** Public Beta kontrakt + jasne označené rozšírenia It.68–77  
+> **Stav:** Public Beta kontrakt · It.73 locale schema uzamknutá v §15  
 > **SSOT:** Markdown/JSON content dokumenty; index a cache sú odvodené  
 > **Súbeh:** revision/OCC + edit lock + version history
 
@@ -63,7 +63,7 @@ Odporúčaný explicitný query kontrakt:
 | `tag` / `filter[tag]` | — | exact normalizovaný tag pre articles |
 | `author` / `filter[author]` | — | dokumentovaný match, nie voľný regex |
 | `date_from`, `date_to` | — | validovaný ISO dátum a jednoznačná timezone policy |
-| `locale` | default locale | ⏳ It.73; fallback explicitne označený |
+| `locale` | site default | voliteľný filter zoznamu; public `published` = ľubovoľný locale published, ak nie je pinned (It.73 §15) |
 
 Legacy request bez `page` alebo `per_page` môže vrátiť celý zoznam bez `meta`. Nový frontend/headless klient má používať stránkovaný režim.
 
@@ -141,7 +141,7 @@ PUT /api/articles/{slug}
 | `status` | allow-list + permission; save draft a publish sú odlišné use-cases |
 | `baseRevision` | povinná pri update podľa OCC policy |
 | `lockToken` | doklad aktívneho locku, ak workflow lock vyžaduje |
-| `locale` | ⏳ explicitná cieľová locale; Apply nesmie prepísať inú locale |
+| `locale` | povinné pre multi-locale editor write; scope `title`/`content`/`status`/SEO na daný locale; bulk `localizedContent` zakázané (§15.5) |
 
 Backend ignoruje klientom poslané fields, ktoré vlastní server, napríklad owner identity, audit actor, server timestamps alebo computed revision. Preferované je schema odmietnutie neznámych write fieldov.
 
@@ -323,18 +323,213 @@ API model zostáva stabilný bez ohľadu na disk formát. Migrácia nesmie vytvo
 
 ---
 
-## 15. Locale-aware content — It.73
+## 15. Locale-aware content — It.73 (locked)
 
-Plánovaný model musí definovať:
+> **Stav:** Doručené v `[Unreleased]` (fázy 1–2d). Táto sekcia je kanonický HTTP a on-disk kontrakt pre viacjazyčný obsah.
 
-- supported/default locale allow-list,
-- explicitnú requested/effective/fallback locale v response,
-- revision nad kanonickým viacjazyčným dokumentom alebo bezpečný per-locale model bez lost update,
-- fallback iba pri read, nie uloženie fallback textu ako hotového prekladu,
-- path ACL a publish status per locale podľa zvolenej policy,
-- cache key obsahujúci locale a public/admin variant.
+### 15.1 Podporované locale
 
-Translate z It.76–77 vytvára návrh/diff; Apply je samostatná autorizovaná operácia a automatický publish je mimo základného flow.
+| Zdroj | Pravidlo |
+|-------|----------|
+| Allow-list | `config/i18n/locales.json` cez `SupportedLocalesRegistry` |
+| Built-in MVP | `sk`, `en` (dvojpísmenové lowercase kódy) |
+| Site default | nastavenie `general.language` (fallback `sk`) |
+| Nepodporovaný kód pri write | `422` s field errors |
+| Nepodporovaný kód pri public read | ignorovaný; resolver padá na default/fallback |
+
+### 15.2 Kanonický tvar dokumentu (schema v2)
+
+Jedna identita resource (`slug`, globálne metadata) s locale slice v SSOT (Markdown front matter alebo JSON):
+
+```json
+{
+  "schemaVersion": 2,
+  "slug": "about-us",
+  "defaultLocale": "sk",
+  "localizedContent": {
+    "sk": {
+      "title": "O nás",
+      "body": "# …",
+      "seo": {
+        "title": "",
+        "description": "",
+        "canonical": "",
+        "ogImage": "",
+        "noIndex": false
+      }
+    },
+    "en": {
+      "title": "About us",
+      "body": "# …",
+      "seo": {
+        "title": "",
+        "description": "",
+        "canonical": "",
+        "ogImage": "",
+        "noIndex": false
+      }
+    }
+  },
+  "localeStatus": { "sk": "published", "en": "draft" },
+  "revision": "<revision>",
+  "updatedAt": "2026-08-02T12:00:00+02:00"
+}
+```
+
+| Pole | Scope | Pravidlo |
+|------|-------|----------|
+| `schemaVersion` | global | `2` pre perzistentné multi-locale dokumenty |
+| `defaultLocale` | global | Musí byť podporované; riadi flat legacy polia |
+| `localizedContent.{locale}.title` | locale | Povinné na publish daného locale |
+| `localizedContent.{locale}.body` | locale | Kanonické telo pre daný locale |
+| `localizedContent.{locale}.seo.*` | locale | SEO slice; default locale mapuje na flat `seoTitle`, `seoDescription`, … |
+| `localeStatus.{locale}` | locale | `draft`, `published`, `archived` alebo `scheduled` |
+| Flat `title`, `content`, `status`, SEO | legacy compat | Sync z **default locale** slice pre index a single-locale reader |
+
+**Legacy schema v1** (`schemaVersion` chýba alebo `< 2`) zostáva čitateľná. `LocalizedContentNormalizer` syntetizuje single-locale canonical view pri read bez mutácie disku. Voliteľný batch upgrade: `content:locale-migrate` (§15.9).
+
+### 15.3 Public read — locale resolution
+
+Platí pre anonymné `GET /api/pages/{slug}` a `GET /api/articles/{slug}` (a ich cacheované public varianty).
+
+Deterministické poradie (`LocaleResolver`):
+
+1. Explicitné `?locale=` ak je podporované a existuje na resource,
+2. `Accept-Language` ak `content.localeNegotiationEnabled` je `true` (default),
+3. Resource `defaultLocale` ak existuje príslušný slice,
+4. Prvé dostupné locale na resource ak `content.localeFallbackEnabled` je `true` (default),
+5. Inak site/resource default s `fallback: true` v `_locale` metadata.
+
+| Nastavenie | Default | Efekt |
+|------------|---------|-------|
+| `content.localeNegotiationEnabled` | `true` | Zapne krok `Accept-Language` |
+| `content.localeFallbackEnabled` | `true` | Zapne cross-locale read fallback |
+
+Resolver **nikdy neperzistuje** fallback text ako hotový preklad. Fallback ovplyvňuje len vrátený slice.
+
+Public viditeľnosť používa status **resolved locale** (aplikovaný do top-level `status`). Anonymný klient dostane `404`, ak dané locale nie je `published`.
+
+List endpointy akceptujú voliteľné `locale`. Pri `status=published` a per-locale status matchne resource, keď je **ľubovoľné** locale published, pokiaľ `locale` nepinne filter na jeden kód.
+
+### 15.4 Public response — locale metadata
+
+Public detail response obsahuje `_locale` popri flatten poliach:
+
+```json
+{
+  "title": "About us",
+  "content": "# …",
+  "status": "published",
+  "_locale": {
+    "requested": "en",
+    "resolved": "sk",
+    "fallback": true,
+    "available": ["sk", "en"],
+    "defaultLocale": "sk",
+    "sliceFound": true
+  },
+  "schemaVersion": 2,
+  "defaultLocale": "sk"
+}
+```
+
+| `_locale` kľúč | Význam |
+|----------------|--------|
+| `requested` | Z `?locale=` alebo negotiated header; `null` ak nič neprišlo |
+| `resolved` | Locale slice aplikovaný na top-level polia |
+| `fallback` | `true` keď `requested` ≠ `resolved` alebo bol použitý cross-locale fallback |
+| `available` | Locale kódy prítomné v `localizedContent` |
+| `defaultLocale` | Default resource |
+| `sliceFound` | `false` keď resolved slice chýba |
+
+Autentifikovaný editor GET vracia **plný** kanonický objekt (`localizedContent`, `localeStatus`, všetky locale) bez `_locale` overlay.
+
+HTTP cache (It.69): public response môže obsahovať `Vary: Accept-Language`. Cache key zahŕňa requested locale a `Accept-Language`.
+
+### 15.5 Locale-scoped writes
+
+`POST` / `PUT` akceptujú locale-scoped payload:
+
+```json
+{
+  "locale": "en",
+  "title": "About us",
+  "content": "# About us",
+  "status": "draft",
+  "seoTitle": "About us",
+  "seoDescription": "…",
+  "baseRevision": "<revision>"
+}
+```
+
+| Pravidlo | Detail |
+|----------|--------|
+| `locale` povinné | Pre locale-scoped write; unsupported → `422` |
+| `proposalSource` | Pri `translation`, `ai` alebo `machine_translation` nesmie byť `status` = `published` → `422` |
+| Bulk zakázané | Klient **nesmie** poslať `localizedContent` alebo `localeStatus` → `422` |
+| Scope polí | `title`, `content`, `status`, SEO platia len pre dané locale |
+| OCC | Jeden document `revision` / `baseRevision` chráni celý resource |
+| Upgrade | Legacy dokument upgrade na `schemaVersion: 2` pri prvom locale-scoped save |
+| Flat sync | Flat polia default locale sa aktualizujú po merge |
+
+Write bez `locale` zachováva legacy kompatibilitu, multi-locale editor ho nepoužíva.
+
+### 15.6 Per-locale publish
+
+```http
+PATCH /api/pages/{slug}/status
+PATCH /api/articles/{slug}/status
+```
+
+```json
+{ "locale": "en", "status": "published" }
+```
+
+| Payload | Správanie |
+|---------|-----------|
+| `locale` + `status` | Aktualizuje jeden záznam v `localeStatus` |
+| len `status` na v2 doc | Aktualizuje default locale status |
+| Publish validácia | Prázdny draft locale OK; `published` vyžaduje neprázdny locale `title` → `422` |
+| OTP | Publish-approval OTP podľa nastavenia |
+
+Publish jedného locale nepublikuje ostatné. Slug zostáva globálny.
+
+### 15.7 Index metadata
+
+Odvodené index entries obsahujú `defaultLocale`, `locales` a `localeStatus` pre admin badge a locale-aware filtre. Index je rebuildable zo SSOT.
+
+### 15.8 Locale-specific errors
+
+| Situácia | Response |
+|----------|----------|
+| Unsupported locale pri write | `422` + field errors |
+| Bulk `localizedContent` v body | `422` |
+| Publish locale bez title | `422` |
+| Revision mismatch pri locale save | `409` conflict (celý resource) |
+
+### 15.9 Migration CLI (voliteľné)
+
+Read kompatibilita nevyžaduje migráciu. Operátorské príkazy:
+
+```bash
+php backend/bin/console content:locale-migrate inventory
+php backend/bin/console content:locale-migrate dry-run --default-locale=sk
+php backend/bin/console content:locale-migrate run --default-locale=sk --yes
+php backend/bin/console content:locale-migrate rollback --migration-id=<id> --yes
+```
+
+Backup a manifest: `data/migrations/<id>/`. Automatický merge ambiguous locale-copy párov je zakázaný.
+
+Pozri [ITERATION_73.md](../ITERATION_73.md) pre migration DoD.
+
+### 15.10 Out of scope (It.73)
+
+- Per-locale slug/routing,
+- Locale-specific ACL,
+- Automatický translation publish (It.76–77),
+- Per-locale revision/OCC (MVP používa jednu document revision).
+
+It.76–77 translation vytvára proposal/diff; Apply je samostatná autorizovaná operácia a nesmie auto-publish.
 
 ---
 
@@ -375,7 +570,7 @@ Frontend nemá po 401 automaticky znovu odoslať write, kým bezpečne neobnoví
 | versions | versions client | history, compare, restore |
 | OTP | workflows client | challenge modal bez falošného success |
 | publish | content/Git client | local save vs distribution status |
-| locale/translation | ⏳ locale clients | requested/effective locale, diff/Apply |
+| locale/translation | content API + editor locale tabs | `_locale` pri public read; plný canonical pri admin GET; locale-scoped save (§15) |
 
 Konkrétne filenames sa môžu pri refaktore meniť; verejný kontrakt je behavior a typed interface, nie dnešný import path.
 

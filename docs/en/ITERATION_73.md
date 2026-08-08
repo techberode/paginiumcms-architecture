@@ -1,6 +1,6 @@
 # Iteration 73 — multi-locale content document
 
-> **Status:** 🚧 Phase 1 MVP (read model + public API locale)  
+> **Status:** ✅ Complete in `[Unreleased]` (Phases 1–2e) · beta tag pending  
 > **Priority:** 🟡 · high migration impact  
 > **Wave:** [Hybrid Engine HE-6](ITERATION_WAVE_HYBRID_ENGINE.md)  
 > **Depends on:** [It.68](ITERATION_68.md)
@@ -61,7 +61,7 @@ The public API uses deterministic order:
 1. explicit `?locale=` or route locale,
 2. supported `Accept-Language` when that endpoint allows negotiation,
 3. resource/site `defaultLocale`,
-4. first published locale only when allowed by fallback policy,
+4. first available locale on the resource when `content.localeFallbackEnabled` is `true` (default),
 5. otherwise `404` or a clear no-translation state.
 
 The response identifies the resolved locale and whether fallback occurred. It.69 cache keys and `Vary` include locale.
@@ -149,13 +149,15 @@ Automatic merging of two files with ambiguous identity is prohibited. Such a cas
 ## Definition of Done
 
 - [x] Canonical read model and locale fallback locked for legacy + schema v2 shape.
-- [ ] Canonical schema and locale fallback are locked in SK/EN API documentation.
+- [x] Locale-scoped write path (`locale` payload key → schema v2 merge, `LocalizedContentValidator`, `LocalizedContentWriter`).
+- [x] Canonical schema and locale fallback are locked in SK/EN API documentation ([CONTENT_API.md](architecture/CONTENT_API.md) §15).
 - [x] Legacy documents work without mandatory migration (read-time normalization).
-- [ ] Demo SK+EN migration passes dry-run → convert → verify → rollback.
-- [ ] The editor manages both locales in one resource view.
-- [ ] Publish and cache are locale-aware.
-- [ ] Translation/AI cannot automatically publish a locale.
-- [ ] No-SQL SSOT and Classic compatibility remain intact.
+- [x] Migration CLI MVP (`content:locale-migrate`: inventory, dry-run, backup, convert, verify, rollback).
+- [x] Demo SK+EN migration passes dry-run → convert → verify → rollback (`DemoLocaleMigrationIntegrationTest`).
+- [x] The editor manages both locales in one resource view (locale tabs + scoped save).
+- [x] Publish and cache are locale-aware.
+- [x] Translation/AI cannot automatically publish a locale (`proposalSource` guard + `LocaleContentProposalPolicy`).
+- [x] No-SQL SSOT and Classic compatibility remain intact (`ClassicSingleLocaleCompatibilityTest`).
 
 ## Follow-ups
 

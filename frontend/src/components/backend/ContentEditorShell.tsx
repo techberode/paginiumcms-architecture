@@ -85,6 +85,10 @@ interface ContentEditorShellProps {
   onArticleCommentsChange?: (value: ArticleCommentsSettings) => void;
   globalCommentsRequireApproval?: boolean;
   globalCommentsAllowGuests?: boolean;
+  activeLocale?: string;
+  localeOptions?: string[];
+  localeStatusMap?: Record<string, ContentEditorStatus>;
+  onLocaleChange?: (locale: string) => void;
 }
 
 export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
@@ -129,6 +133,10 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
   onArticleCommentsChange,
   globalCommentsRequireApproval = true,
   globalCommentsAllowGuests = true,
+  activeLocale,
+  localeOptions = [],
+  localeStatusMap = {},
+  onLocaleChange,
 }) => {
   const { t } = useI18n();
   const { settings } = useSettingsContext();
@@ -149,7 +157,10 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
   const stats = countContentStats(content);
   const openInNewTab = useOpenLinksInNewTab();
   const listPath = type === 'article' ? '/articles' : '/pages';
-  const previewPath = type === 'page' && !isNew && editSlug ? `/preview/${editSlug}` : null;
+  const previewPath =
+    type === 'page' && !isNew && editSlug
+      ? `/preview/${editSlug}${activeLocale ? `?locale=${encodeURIComponent(activeLocale)}` : ''}`
+      : null;
   const contextLabel =
     navigationMatches[0]?.label || title.trim() || editSlug || t('editor.shell.newItem');
 
@@ -195,6 +206,43 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
               </span>
             </div>
             <p className="font-mono text-xs text-slate-400 truncate">{storagePath}</p>
+            {localeOptions.length > 1 && onLocaleChange && activeLocale && (
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                  {t('editor.shell.contentLocale')}
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {localeOptions.map((code) => {
+                    const localeStatus = localeStatusMap[code] ?? 'draft';
+                    const isActive = code === activeLocale;
+                    return (
+                      <button
+                        key={code}
+                        type="button"
+                        disabled={!canEdit}
+                        onClick={() => onLocaleChange(code)}
+                        className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold transition ${
+                          isActive
+                            ? 'border-indigo-600 bg-indigo-600 text-white'
+                            : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300'
+                        }`}
+                      >
+                        <span>{code.toUpperCase()}</span>
+                        <span
+                          className={`rounded px-1 py-0.5 text-[10px] font-medium ${
+                            isActive
+                              ? 'bg-indigo-500/30 text-white'
+                              : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
+                          }`}
+                        >
+                          {statusLabels[localeStatus] ?? localeStatus}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
