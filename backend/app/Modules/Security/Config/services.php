@@ -12,6 +12,9 @@ use PaginiumCMS\Modules\Security\Services\QRCodeGenerator;
 use PaginiumCMS\Modules\Security\Services\TwoFactorManager;
 use PaginiumCMS\Modules\Security\Services\UserIndexService;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
+use PaginiumCMS\Modules\Security\Services\ApiKeyStore;
+use PaginiumCMS\Modules\Security\Services\ApiKeyVerifier;
+use PaginiumCMS\Modules\Security\Services\ApiScopePolicy;
 use PaginiumCMS\Modules\Security\Contracts\AuthenticationInterface;
 use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
 use PaginiumCMS\Modules\Security\Contracts\CsrfProtectionInterface;
@@ -78,4 +81,18 @@ return [
             get(UserRepository::class),
             get(SessionManager::class)
         ),
+
+    ApiKeyStore::class => create(ApiKeyStore::class)
+        ->constructor(get(FileReaderInterface::class)),
+
+    ApiKeyVerifier::class => function (\Psr\Container\ContainerInterface $container): ApiKeyVerifier {
+        $pepper = (string) (getenv('API_KEY_PEPPER') ?: ($_ENV['API_KEY_PEPPER'] ?? ''));
+        if ($pepper === '' && (getenv('APP_ENV') === 'testing' || ($_ENV['APP_ENV'] ?? '') === 'testing')) {
+            $pepper = 'paginium-test-api-key-pepper';
+        }
+
+        return new ApiKeyVerifier($container->get(ApiKeyStore::class), $pepper);
+    },
+
+    ApiScopePolicy::class => create(ApiScopePolicy::class),
 ];

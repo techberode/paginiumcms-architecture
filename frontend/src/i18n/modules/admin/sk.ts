@@ -30,6 +30,7 @@ export const adminSk: MessageTree = {
     systemUpdate: 'Aktualizácia systému',
     users: 'Používatelia',
     accountSecurity: 'Bezpečnosť účtu',
+    apiKeys: 'API kľúče',
     settings: 'Nastavenia',
     translations: 'Preklady',
   },

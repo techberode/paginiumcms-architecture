@@ -48,6 +48,7 @@ import { SecurityAuditManager } from './components/backend/SecurityAuditManager'
 import { BlueprintManager } from './components/backend/BlueprintManager';
 import { DemoManager } from './components/backend/DemoManager';
 import { SystemUpdateView } from './components/backend/SystemUpdateView';
+import { ApiKeysManager } from './components/backend/ApiKeysManager';
 import { debugLog } from './utils/debugLog';
 import { ADMIN_DEFAULT_ROUTE } from './config/adminNavSections';
 
@@ -183,6 +184,7 @@ function App() {
         <Route path="/notifications" element={<NotificationsOverview />} />
         <Route path="/scheduler" element={<SchedulerView />} />
         <Route path="/platform/update" element={<SystemUpdateView />} />
+        <Route path="/platform/api-keys" element={<ApiKeysManager />} />
         <Route path="/settings" element={<SettingsView />} />
         <Route path="/translations" element={<TranslationEditor />} />
         <Route path="/account/security" element={<AccountSecurityView />} />

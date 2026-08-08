@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.30`](#release-2-1-0-beta-30) | 2026-08-08 | It.74 API keys + short-lived JWT (headless) |
 | [`2.1.0-beta.29`](#release-2-1-0-beta-29) | 2026-08-08 | It.72 media drivers MVP, It.73 multi-locale complete, security deps |
 | [`2.1.0-beta.28`](#release-2-1-0-beta-28) | 2026-08-06 | Performance Guard (It.71), UX polish Phases A–C, post-beta.27 CI bundle |
 | [`2.1.0-beta.27`](#release-2-1-0-beta-27) | 2026-08-05 | Untrusted surfaces hardening (It.67) and Git publish modes (It.70) |
@@ -103,21 +104,47 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+<a id="release-2-1-0-beta-30"></a>
+
+## [2.1.0-beta.30] – 2026-08-08
+
+Iteration 74 — scoped API keys, headless read/write API, short-lived JWT, admin UI
+
+### Added (Iteration 74 — API keys + short-lived JWT)
+
+**Phase 74a — read-only headless keys**
+
+- **`ApiKeyStore`** — flat-file SSOT at `data/api-keys.json`; HMAC verifier at rest; create/list/revoke/rotate; copy-once `pgk_<id>_<secret>` token.
+- **`ApiKeyVerifier`** + **`ApiScopePolicy`** — `API_KEY_PEPPER` HMAC verify; explicit route allow-list for headless routes.
+- **Headless read API** — `GET /api/headless/pages|articles|settings/public` requires Bearer API key (`content:read`, `settings:read`).
+- **Admin API** — `GET/POST/DELETE /api/admin/platform/api-keys` (session + 2FA + `api-keys:manage`).
+- **Middleware** — `InvalidBearerGuardMiddleware` (no session fallback on bad managed Bearer), `BearerAuthMiddleware`, `ApiScopeMiddleware`, `ApiKeyRateLimitMiddleware`.
+
+**Phase 74b — write scopes + JWT**
+
+- **Write scopes** — `content:write` (plus reserved `media:write`, `git:publish`, `token:issue` in store/UI).
+- **Headless write** — `POST/PUT /api/headless/pages|articles` with `content:write`; path ACL bypass for scoped bearer writes.
+- **`ApiJwtService`** — HS256 JWT with `API_JWT_KEY`; mandatory claims; max TTL 900s; flat-file `jti` deny-list.
+- **Token issue** — `POST /api/headless/token` (API key + `token:issue`); `POST /api/admin/platform/api-keys/token` (admin session).
+- **Rotate + audit** — `POST /api/admin/platform/api-keys/{id}/rotate`; `GET /api/admin/platform/api-keys/audit`; `SecurityAuditStore` events `api_key_*`, `api_jwt_issued`.
+- **Admin UI** — `/platform/api-keys` wizard, copy-once panel, list, revoke/rotate, audit table (EN/SK).
+- **CSRF** — `/api/headless` prefix exempt (Bearer-only authority).
+- PHPUnit: `ApiKeyStoreTest`, `ApiScopePolicyTest`, `ApiJwtServiceTest`, `HeadlessApiIntegrationTest`.
+
 ### Fixed
 
-- **`ClassicSingleLocaleCompatibilityTest`** — seeds legacy `pages/home.md` from `DemoFixtures` when missing; CI has no committed pages tree (`backend/storage/app/content/pages/` is gitignored).
+- **`InvalidBearerGuardMiddleware`** — any `pgk_*` Bearer attempt returns `401` on public routes (no session fallback), including malformed secrets.
 
-### Security (Dependabot — closed in beta.29)
+### Documentation
 
-GitHub Dependabot reported **7 open alerts** at push time; all **9** records are now **`fixed`** (rescanned 2026-08-08 after `v2.1.0-beta.29`):
+- [ITERATION_74.md](docs/en/ITERATION_74.md) (EN/SK), [SECURITY.md](docs/en/developer/SECURITY.md) §8, wave HE-5 status, [RELEASE_2_1_0_BETA_30.md](docs/en/RELEASE_2_1_0_BETA_30.md).
 
-| Package | Alerts | Fix in beta.29 |
-|---------|--------|----------------|
-| `league/commonmark` | 6 (4 high, 2 moderate) | `composer.lock` → **2.9.0** |
-| `fast-uri` | 1 high | `frontend/package-lock.json` → **3.1.5** |
-| `brace-expansion` | 2 high | lockfile → **1.1.18** / **5.0.9** |
+### Release facts
 
-Local checks: `composer audit` clean · `npm audit --audit-level=high` clean.
+- **Tag:** `v2.1.0-beta.30`
+- **Deploy:** `GIT_REF=v2.1.0-beta.30` + `npm ci && npm run build:prod` in `frontend/`
+- **Production env (required):** `API_KEY_PEPPER`, `API_JWT_KEY` (separate secrets; root `.env` or `backend/.env`)
+- **Non-goal:** admin session + CSRF unchanged; no JWT in browser localStorage
 
 <a id="release-2-1-0-beta-29"></a>
 

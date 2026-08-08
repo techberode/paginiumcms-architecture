@@ -1,6 +1,6 @@
 # Iterácia 74 — API kľúče a krátko žijúce JWT
 
-> **Stav:** ⏳ plánované · aditívna autentifikácia potvrdená 2. augusta 2026  
+> **Stav:** ✅ dokončené v `[Unreleased]` (fázy 74a + 74b)  
 > **Priorita:** 🟡  
 > **Vlna:** [Hybrid Engine HE-5](ITERATION_WAVE_HYBRID_ENGINE.md)  
 > **Závisí od:** [It.68](ITERATION_68.md) · cache lookup z [It.69](ITERATION_69.md) je odporúčaný

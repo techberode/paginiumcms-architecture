@@ -1,6 +1,6 @@
 # Iteration 74 — API keys and short-lived JWT
 
-> **Status:** ⏳ planned · additive authentication confirmed on August 2, 2026  
+> **Status:** ✅ Complete in `[Unreleased]` (Phases 74a + 74b)  
 > **Priority:** 🟡  
 > **Wave:** [Hybrid Engine HE-5](ITERATION_WAVE_HYBRID_ENGINE.md)  
 > **Depends on:** [It.68](ITERATION_68.md) · cached lookup from [It.69](ITERATION_69.md) is recommended
@@ -83,7 +83,7 @@ The JWT issuing endpoint is available only to an authorized session or an API-ke
 ## CSRF and resolver rules
 
 - session mutation routes remain CSRF-protected,
-- Bearer routes do not use cookie session as authority and are CSRF-exempt,
+- Bearer routes do not use cookie session as authority and are CSRF-exempt (`/api/headless/*`),
 - a request with an invalid Bearer token must not silently fall back to another auth mechanism,
 - the admin SPA continues to use cookies/session; a JWT frontend refactor is a non-goal,
 - adding API keys does not automatically widen CORS policy.
@@ -100,6 +100,13 @@ The JWT issuing endpoint is available only to an authorized session or an API-ke
 - log sanitization masks tokens in headers and errors,
 - backup policy protects the key store; restore must not resurrect revoked keys without an incident procedure,
 - creating sensitive write scopes may require recent 2FA.
+
+Production env:
+
+```bash
+API_KEY_PEPPER=<long-random-secret>
+API_JWT_KEY=<separate-long-random-secret>
+```
 
 ---
 
@@ -146,13 +153,15 @@ Route `/platform/api-keys` provides:
 
 ## Definition of Done
 
-- [ ] An external client reads published content through a scoped API key.
-- [ ] The key is stored only as a safe verifier; the secret is copy-once.
-- [ ] Route/method allow-list and per-key rate limit are active.
-- [ ] Revoke/rotate/expiry/audit works end to end.
-- [ ] JWT uses a separate key, short TTL, and mandatory claim validation.
-- [ ] Session + CSRF + 2FA admin flow has no regression.
-- [ ] SK/EN API and security documentation is updated.
+- [x] An external client reads published content through a scoped API key (`/api/headless/*`).
+- [x] The key is stored only as a safe verifier; the secret is copy-once at create.
+- [x] Route/method allow-list and per-key rate limit are active.
+- [x] Revoke works end to end; list/create via admin API.
+- [x] Admin UI `/platform/api-keys` wizard.
+- [x] Rotate endpoint + audit export.
+- [x] JWT uses a separate key, short TTL, and mandatory claim validation (Phase 74b).
+- [x] Session + CSRF + 2FA admin flow has no regression (integration tests).
+- [x] SK/EN API and security documentation fully updated.
 
 ## Related
 

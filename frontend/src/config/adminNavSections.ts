@@ -27,6 +27,7 @@ import {
   Languages,
   BarChart3,
   ArrowUpCircle,
+  KeyRound,
 } from 'lucide-react';
 import type { AdminNavItemDef, AdminNavSectionDef } from './adminNavTypes';
 
@@ -79,6 +80,14 @@ export const ADMIN_NAV_SECTIONS: AdminNavSectionDef[] = [
       { id: 'settings', labelKey: 'admin.nav.settings', href: '/settings', icon: Settings },
       { id: 'translations', labelKey: 'admin.nav.translations', href: '/translations', icon: Languages, adminOnly: true },
       { id: 'users', labelKey: 'admin.nav.users', href: '/users', icon: Users, adminOnly: true },
+      {
+        id: 'api-keys',
+        labelKey: 'admin.nav.apiKeys',
+        href: '/platform/api-keys',
+        icon: KeyRound,
+        adminOnly: true,
+        superAdminOnly: true,
+      },
       { id: 'notifications', labelKey: 'admin.nav.notifications', href: '/notifications', icon: Bell },
       { id: 'scheduler', labelKey: 'admin.nav.scheduler', href: '/scheduler', icon: CalendarClock, adminOnly: true },
       {

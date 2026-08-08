@@ -34,6 +34,7 @@ use PaginiumCMS\Http\Support\PaginationMeta;
 use PaginiumCMS\Http\Support\PaginationQuery;
 use PaginiumCMS\Modules\Security\Contracts\AuthenticationInterface;
 use PaginiumCMS\Modules\Security\Exception\AuthorizationException;
+use PaginiumCMS\Modules\Security\Models\ApiBearerAuth;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Modules\Security\Services\ContentPathAclGuard;
 use PaginiumCMS\Support\AppTimezone;
@@ -1504,6 +1505,10 @@ class ContentController
         string $storagePath,
         string $permission
     ): ?ResponseInterface {
+        if ($this->isHeadlessContentWrite($request)) {
+            return null;
+        }
+
         try {
             $this->pathAcl->requireAccess($this->resolveUser($request), $storagePath, $permission);
         } catch (AuthorizationException $e) {
@@ -1511,5 +1516,12 @@ class ContentController
         }
 
         return null;
+    }
+
+    private function isHeadlessContentWrite(ServerRequestInterface $request): bool
+    {
+        $bearer = $request->getAttribute('api_bearer');
+
+        return $bearer instanceof ApiBearerAuth && $bearer->hasScope('content:write');
     }
 }

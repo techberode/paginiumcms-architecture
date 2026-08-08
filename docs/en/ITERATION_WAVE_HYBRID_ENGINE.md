@@ -69,7 +69,7 @@ This document canonically assigns It.73 to **HE-6**. The earlier draft inconsist
 | **71** | [Performance Guard](ITERATION_71.md) | 🟡 | ✅ **beta.28** | It.69 | complements It.7 and It.46 remainder |
 | **72** | [Media storage drivers](ITERATION_72.md) | 🟡 | ✅ MVP `[Unreleased]` | It.68 | follows DAM It.24; S3 deferred |
 | **73** | [Multi-locale content document](ITERATION_73.md) | 🟡 | ✅ **`[Unreleased]`** | It.68 | read/write/publish/migrate + API docs |
-| **74** | [API keys and JWT](ITERATION_74.md) | 🟡 | ⏳ | It.68; cached lookup from It.69 recommended | session auth remains |
+| **74** | [API keys and JWT](ITERATION_74.md) | 🟡 | ✅ complete `[Unreleased]` | It.68; cached lookup from It.69 recommended | session auth remains |
 | **76** | [Self-hosted translation](ITERATION_76.md) | 🔵 | ⏳ | It.73 | creates the provider contract |
 | **77** | [Cloud translation](ITERATION_77.md) | 🔵 | ⏳ | It.76 | adds cloud drivers without a second UI |
 | **75** | [CMS-aware AI agent](ITERATION_75.md) | 🔵 | ⏳ | It.73 + stable provider/tool layer | uses It.29 queue and It.66 gates |

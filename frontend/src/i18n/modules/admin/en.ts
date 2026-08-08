@@ -30,6 +30,7 @@ export const adminEn: MessageTree = {
     systemUpdate: 'System update',
     users: 'Users',
     accountSecurity: 'Account security',
+    apiKeys: 'API keys',
     settings: 'Settings',
     translations: 'Translations',
   },

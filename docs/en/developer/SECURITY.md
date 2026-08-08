@@ -192,20 +192,26 @@ OAuth/OIDC integration must verify:
 
 ## 8. API authentication It.74
 
-API keys and short-lived JWT are an additive plan, not a replacement for the admin session model.
+API keys and short-lived JWT are **implemented** as an additive headless layer; they do not replace the admin session model.
 
-Required properties:
+| Surface | Auth | Notes |
+|---------|------|-------|
+| Admin SPA | Session + CSRF + RBAC + 2FA | unchanged |
+| `/api/headless/*` | Bearer API key or short JWT | CSRF-exempt; route allow-list via `ApiScopePolicy` |
+| `/api/admin/platform/api-keys` | Session + `api-keys:manage` | create/list/revoke/rotate/audit; copy-once secret |
 
-- key secret is displayed only at creation and stored as a hash,
-- identifier, scopes, owner, created/last-used/expires/revoked metadata,
-- rotation and immediate revocation,
+Required properties (enforced):
+
+- key secret is displayed only at creation/rotation and stored as HMAC verifier (`API_KEY_PEPPER`),
+- identifier, scopes, owner, created/last-used/expires/revoked metadata in `data/api-keys.json`,
+- rotation revokes the old key atomically; audit events in `SecurityAuditStore`,
 - no key in a query string,
-- short JWT expiry, stable issuer/audience, and `jti` as required by the threat model,
-- scope cannot exceed owner permissions,
-- sensitive endpoints may require session + 2FA and reject API-key access,
-- logs record key ID, not secret.
+- JWT: separate `API_JWT_KEY`, HS256 only, max TTL 900s, mandatory `iss`/`aud`/`sub`/`jti`/`iat`/`nbf`/`exp`/`scope`, optional `jti` deny-list,
+- scope cannot exceed key allowance; JWT issue via `token:issue` is subset-only,
+- invalid managed Bearer on any route returns `401` without session fallback,
+- logs and audit record key ID / event type, never secret material.
 
-CSRF usually does not apply to bearer credentials outside cookies, but XSS and token leakage remain threats. Do not store long-lived tokens in browser localStorage without a clear model.
+CSRF does not apply to `/api/headless` bearer mutations. Do not store long-lived tokens in browser localStorage.
 
 ## 9. Authorization, RBAC, and Path ACL
 
