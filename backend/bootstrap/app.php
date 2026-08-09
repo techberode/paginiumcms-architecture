@@ -416,7 +416,7 @@ $containerBuilder->addDefinitions([
     },
 
     ApiKeyVerifier::class => function ($container) {
-        $pepper = (string) (getenv('API_KEY_PEPPER') ?: ($_ENV['API_KEY_PEPPER'] ?? ''));
+        $pepper = (string) (getenv('API_KEY_PEPPER') ?: ($_ENV['API_KEY_PEPPER'] ?? $_SERVER['API_KEY_PEPPER'] ?? ''));
         if ($pepper === '' && (getenv('APP_ENV') === 'testing' || ($_ENV['APP_ENV'] ?? '') === 'testing')) {
             $pepper = 'paginium-test-api-key-pepper';
         }
@@ -431,7 +431,7 @@ $containerBuilder->addDefinitions([
     },
 
     ApiJwtService::class => function ($container) {
-        $key = (string) (getenv('API_JWT_KEY') ?: ($_ENV['API_JWT_KEY'] ?? ''));
+        $key = (string) (getenv('API_JWT_KEY') ?: ($_ENV['API_JWT_KEY'] ?? $_SERVER['API_JWT_KEY'] ?? ''));
         if ($key === '' && (getenv('APP_ENV') === 'testing' || ($_ENV['APP_ENV'] ?? '') === 'testing')) {
             $key = 'paginium-test-api-jwt-key-at-least-32-chars!!';
         }

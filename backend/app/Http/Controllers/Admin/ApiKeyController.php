@@ -45,6 +45,10 @@ final class ApiKeyController
                 'write' => ApiKeyStore::WRITE_SCOPES,
                 'token' => ApiKeyStore::TOKEN_SCOPES,
             ],
+            'config' => [
+                'pepperConfigured' => $this->verifier->isConfigured(),
+                'jwtConfigured' => $this->jwtService->isConfigured(),
+            ],
         ]);
     }
 

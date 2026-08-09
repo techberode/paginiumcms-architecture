@@ -1,6 +1,6 @@
 # PaginiumCMS — consolidated backlog
 
-> **Snapshot:** `v2.1.0-beta.28` · August 6, 2026  
+> **Snapshot:** `v2.1.0-beta.31` · August 9, 2026  
 > **Rule:** the active backlog contains only unshipped or precisely bounded remaining scope  
 > **No-SQL:** [architecture/NOSQL_MANDATE.md](architecture/NOSQL_MANDATE.md)
 
@@ -31,13 +31,14 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | 6 | **It.71** Performance Guard | 🟡 | ✅ | shipped in `v2.1.0-beta.28` — see [ITERATION_71](ITERATION_71.md) |
 | 7 | **It.72** Media drivers | 🟡 | 🟡 partial | MVP local driver + probe shipped; S3/migration deferred |
 | 8 | **It.73** Multi-locale document | 🟡 | ⏳ | translation foundation |
-| 9 | **It.74** API keys/JWT | 🟡 | ⏳ | headless integrations, additive auth |
-| 10 | **It.58d** Layout remainder | 🟡 | ⏳ | precisely freeze remaining blocks |
-| 11 | **It.25** Setup wizard/update UX | 🟡 pre-Final | ⏳ | onboarding and GA polish |
-| 12 | **It.76/77** Translation providers | 🔵 | ⏳ | after It.73 |
-| 13 | **It.75** AI agent | 🔵 | ⏳ | after locale and provider layers |
-| 14 | **It.78** Unified upload security | 🟡 | ⏳ | security gate before video / new MIME types |
-| 15 | **It.79** DAM video | 🟡 | ⏳ | self-hosted MP4/WebM + editor embed; after It.78 |
+| 9 | **It.74** API keys/JWT | 🟡 | ✅ | shipped in `v2.1.0-beta.30` — see [ITERATION_74](ITERATION_74.md) |
+| 10 | **It.80** SEO, integrations & ops toolkit | 🟡 | ⏳ | redirects, 404 report, webhooks, GDPR, CLI — see [ITERATION_80](ITERATION_80.md) |
+| 11 | **It.58d** Layout remainder | 🟡 | ⏳ | precisely freeze remaining blocks |
+| 12 | **It.25** Setup wizard/update UX | 🟡 pre-Final | ⏳ | onboarding and GA polish |
+| 13 | **It.76/77** Translation providers | 🔵 | ⏳ | after It.73 |
+| 14 | **It.75** AI agent | 🔵 | ⏳ | after locale and provider layers |
+| 15 | **It.78** Unified upload security | 🟡 | ⏳ | security gate before video / new MIME types |
+| 16 | **It.79** DAM video | 🟡 | ⏳ | self-hosted MP4/WebM + editor embed; after It.78 |
 
 ---
 
@@ -120,13 +121,31 @@ See [ITERATION_79](ITERATION_79.md).
 - editor tabs/diff,
 - compatibility with legacy single-locale documents.
 
-### It.74 — API keys and JWT 🟡
+### It.74 — API keys and JWT 🟡 ✅ shipped (`v2.1.0-beta.30`)
 
 - scope-limited keys,
 - hash at rest, plaintext only at creation,
 - revoke/rotate/audit/rate limit,
 - JWT expiry and audience,
 - no regression to admin session + CSRF.
+
+See [ITERATION_74](ITERATION_74.md).
+
+### It.80 — SEO, integrations & operator toolkit 🟡 ⏳
+
+Checklist-driven product wave (sub-phases `80a`–`80g`):
+
+| Sub | Feature | Priority |
+|-----|---------|----------|
+| 80a | Redirect manager (301/302) | P1 |
+| 80b | 404 tracking report | P2 |
+| 80c | Comment spam heuristics | P3 |
+| 80d | Outbound webhooks | P4 |
+| 80e | GDPR export/anonymize | P5 |
+| 80f | CLI toolkit | P6 |
+| 80g | CMS import (WP/Jekyll/Ghost) | P7 |
+
+See [ITERATION_80](ITERATION_80.md). May ship across `beta.31+` slices; **80a** recommended first.
 
 ### It.75 — CMS-aware AI agent 🔵
 
@@ -205,7 +224,10 @@ Remaining:
 | **It.79** DAM video | ⏳ | It.78 + It.72 MVP |
 | Scoped FileManager | ⏳ candidate | assign a new unique number after scope approval |
 | Frontend inline editing | ⏳ candidate | reuse existing lock/editor flow |
-| Finer comment moderation/CAPTCHA | ⏳ candidate | policy foundation is already shipped |
+| Finer comment moderation/CAPTCHA | ↪ **It.80c** | honeypot + heuristics in [ITERATION_80](ITERATION_80.md) |
+| Redirect manager / 404 ops | ↪ **It.80a/b** | [ITERATION_80](ITERATION_80.md) |
+| Outbound content webhooks | ↪ **It.80d** | [ITERATION_80](ITERATION_80.md) |
+| GDPR export / CLI / CMS import | ↪ **It.80e/f/g** | [ITERATION_80](ITERATION_80.md) |
 | Contextual Actions | ⏳ candidate | the old “It.30” label must not be reused |
 | System overview polish | ⏳ candidate | may be part of It.71/ops dashboard |
 
@@ -276,13 +298,13 @@ Docs gate
   → It.71 + remaining It.46
   → It.72 (MVP done; S3/migration remainder)
   → It.73
-  → It.74
+  → It.74 ✅
   → It.78 (upload security gate)
   → It.79 (DAM video)
   → It.76 / It.77
   → It.75
 
-Parallel where safe: It.58d, beta fixes, community testing.
+Parallel where safe: It.80 (80a→80g by impact/effort), It.58d, beta fixes, community testing.
 Pre-Final: It.25 + GA gate.
 ```
 

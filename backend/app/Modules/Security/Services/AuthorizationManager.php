@@ -46,6 +46,13 @@ class AuthorizationManager implements AuthorizationInterface
                 PermissionCatalog::decodePermissions($encoded)
             );
 
+            if ($role === AuthorizationInterface::ROLE_ADMIN
+                && !in_array('api-keys:manage', $permissions, true)
+            ) {
+                $permissions[] = 'api-keys:manage';
+                $permissions = PermissionCatalog::normalizeList($permissions);
+            }
+
             if ($permissions !== []) {
                 $this->rolePermissions[$role] = $permissions;
             }

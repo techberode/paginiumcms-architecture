@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.31`](#release-2-1-0-beta-31) | 2026-08-09 | API keys UX hardening; It.80 backlog spec |
 | [`2.1.0-beta.30`](#release-2-1-0-beta-30) | 2026-08-08 | It.74 API keys + short-lived JWT (headless) |
 | [`2.1.0-beta.29`](#release-2-1-0-beta-29) | 2026-08-08 | It.72 media drivers MVP, It.73 multi-locale complete, security deps |
 | [`2.1.0-beta.28`](#release-2-1-0-beta-28) | 2026-08-06 | Performance Guard (It.71), UX polish Phases A–C, post-beta.27 CI bundle |
@@ -103,6 +104,30 @@ This canonical history records release facts supported by the supplied `CHANGELO
 | [`1.0.0`](#release-1-0-0) | Initial structure | Initial repository structure |
 
 ## [Unreleased]
+
+<a id="release-2-1-0-beta-31"></a>
+
+## [2.1.0-beta.31] – 2026-08-09
+
+Post–It.74 production UX hardening and Iteration 80 planning spec
+
+### Fixed
+
+- **API keys navigation** — Platform → API keys visible to `ADMIN` (removed `superAdminOnly` gate).
+- **ADMIN ACL** — `AuthorizationManager` auto-appends `api-keys:manage` for `ADMIN` when settings ACL omits it.
+- **Env resolution** — `API_KEY_PEPPER` / `API_JWT_KEY` DI reads `$_SERVER` fallback (Docker/php-fpm compatibility).
+- **API keys UI** — index exposes `config.pepperConfigured` / `jwtConfigured`; banner when pepper missing; Create disabled; create errors surface API message.
+
+### Added (documentation)
+
+- **[ITERATION_80](docs/en/ITERATION_80.md)** (EN/SK) — SEO redirects, 404 report, comment spam heuristics, outbound webhooks, GDPR export, CLI, CMS import (checklist `80a`–`80g`).
+- **Backlog** — [ITERATION_BACKLOG](docs/en/ITERATION_BACKLOG.md) snapshot `beta.30`, It.74 ✅, It.80 ⏳.
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.31`
+- **Deploy:** `GIT_REF=v2.1.0-beta.31` + `npm ci && npm run build:prod` in `frontend/`
+- **Deploy note:** after `.env` changes, recreate PHP container (`--force-recreate`), not plain restart.
 
 <a id="release-2-1-0-beta-30"></a>
 

@@ -399,6 +399,8 @@ export const platformEn: MessageTree = {
     title: 'API keys',
     subtitle: 'Scoped Bearer keys for headless integrations and CI — separate from admin session cookies.',
     secretWarning: 'Store secrets in a vault or CI variable. Never commit keys to Git or browser localStorage.',
+    pepperMissing:
+      'API_KEY_PEPPER is not configured on the server. Add it to the project root .env (or backend/.env), restart PHP, then try again.',
     refresh: 'Refresh',
     create: 'New key',
     createTitle: 'Create API key',
