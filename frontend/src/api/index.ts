@@ -7,6 +7,7 @@ export * from './analytics';
 export * from './analyticsPageview';
 export * from './audit';
 export * from './auth';
+export * from './apiKeys';
 export * from './backup';
 export * from './blueprint';
 export * from './cache';
@@ -36,6 +37,7 @@ export * from './metrics';
 export * from './navigation';
 export * from './newsletter';
 export * from './notifications';
+export * from './redirects';
 export * from './search';
 export * from './security';
 export * from './settings';
@@ -61,8 +63,9 @@ export type { RealtimeSnapshot } from './analytics';
 export type { AnalyticsOverview } from './analytics';
 export type { TopPage } from './analytics';
 
-import { auditApi } from './audit';
 import { authApi } from './auth';
+import { apiKeysApi } from './apiKeys';
+import { auditApi } from './audit';
 import { backupApi } from './backup';
 import { blueprintApi } from './blueprint';
 import { codeEditorApi } from './codeEditor';
@@ -73,6 +76,7 @@ import { firewallApi } from './firewall';
 import { gitApi } from './git';
 import { healthApi } from './health';
 import { logsApi } from './logs';
+import { redirectsApi } from './redirects';
 import { securityApi } from './security';
 import { shortcodesApi } from './shortcodes';
 import { translationsApi } from './translations';
@@ -84,6 +88,7 @@ import { versionApi } from './version';
 /** Typed API modules with object interface (`*Api`). Function-only modules stay as named exports. */
 export const api = {
   auth: authApi,
+  apiKeys: apiKeysApi,
   audit: auditApi,
   backup: backupApi,
   blueprint: blueprintApi,
@@ -95,6 +100,7 @@ export const api = {
   git: gitApi,
   health: healthApi,
   logs: logsApi,
+  redirects: redirectsApi,
   security: securityApi,
   shortcodes: shortcodesApi,
   themes: themesApi,

@@ -53,6 +53,13 @@ class AuthorizationManager implements AuthorizationInterface
                 $permissions = PermissionCatalog::normalizeList($permissions);
             }
 
+            if ($role === AuthorizationInterface::ROLE_ADMIN
+                && !in_array('redirects:manage', $permissions, true)
+            ) {
+                $permissions[] = 'redirects:manage';
+                $permissions = PermissionCatalog::normalizeList($permissions);
+            }
+
             if ($permissions !== []) {
                 $this->rolePermissions[$role] = $permissions;
             }

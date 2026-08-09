@@ -32,7 +32,7 @@ Iterácia je **checklist-driven**: každý riadok má status, pripomienky a acce
 
 | ID | Funkcia | Priorita | Stav | Dopad / náročnosť | Popis | Pripomienky / návrhy | Závisí od |
 |----|---------|----------|------|-------------------|-------|----------------------|-----------|
-| **80a** | Redirect manager (301/302) | 🟡 P1 | ⏳ plánované | **Vysoký / Nízky** | `data/redirects.json`; middleware pred 404; admin UI old→new slug. | Len interné cesty; detekcia slučiek; cache mapy v pamäti. | — |
+| **80a** | Redirect manager (301/302) | 🟡 P1 | ✅ hotové (`beta.32`) | **Vysoký / Nízky** | `data/redirects.json`; middleware; admin UI. | nginx hook voliteľný pre slug redirecty na produkcii. | — |
 | **80b** | 404 tracking report | 🟡 P2 | ⏳ plánované | **Stredný / Nízky** | Log 404 hitov; dashboard + CSV. | Vzor AccessLog / PerformanceSample; sanitizácia. | odporúčané **80a** |
 | **80c** | Spam heuristika komentárov | 🟡 P3 | ⏳ plánované | **Stredný / Nízky** | Honeypot + skóre v `CommentPolicyResolver`. | Bez CAPTCHA vendor lock-in v MVP. | comment policy |
 | **80d** | Outbound webhooks | 🟡 P4 | ⏳ plánované | **Stredný / Stredný** | `content.published`, `content.updated` → POST (Slack/Zapier). | `OutboundUrlGuard`, HMAC, retry queue. | Jobs · [It.74](ITERATION_74.md) |

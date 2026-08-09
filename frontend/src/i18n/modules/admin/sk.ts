@@ -31,6 +31,7 @@ export const adminSk: MessageTree = {
     users: 'Používatelia',
     accountSecurity: 'Bezpečnosť účtu',
     apiKeys: 'API kľúče',
+    redirects: 'Redirecty',
     settings: 'Nastavenia',
     translations: 'Preklady',
   },

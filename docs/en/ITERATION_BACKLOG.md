@@ -1,6 +1,6 @@
 # PaginiumCMS — consolidated backlog
 
-> **Snapshot:** `v2.1.0-beta.31` · August 9, 2026  
+> **Snapshot:** `v2.1.0-beta.32` · August 9, 2026  
 > **Rule:** the active backlog contains only unshipped or precisely bounded remaining scope  
 > **No-SQL:** [architecture/NOSQL_MANDATE.md](architecture/NOSQL_MANDATE.md)
 

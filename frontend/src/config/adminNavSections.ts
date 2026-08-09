@@ -28,6 +28,7 @@ import {
   BarChart3,
   ArrowUpCircle,
   KeyRound,
+  ArrowRightLeft,
 } from 'lucide-react';
 import type { AdminNavItemDef, AdminNavSectionDef } from './adminNavTypes';
 
@@ -85,6 +86,13 @@ export const ADMIN_NAV_SECTIONS: AdminNavSectionDef[] = [
         labelKey: 'admin.nav.apiKeys',
         href: '/platform/api-keys',
         icon: KeyRound,
+        adminOnly: true,
+      },
+      {
+        id: 'redirects',
+        labelKey: 'admin.nav.redirects',
+        href: '/platform/redirects',
+        icon: ArrowRightLeft,
         adminOnly: true,
       },
       { id: 'notifications', labelKey: 'admin.nav.notifications', href: '/notifications', icon: Bell },

@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.32`](#release-2-1-0-beta-32) | 2026-08-09 | It.80a redirect manager; API barrel fix |
 | [`2.1.0-beta.31`](#release-2-1-0-beta-31) | 2026-08-09 | API keys UX hardening; It.80 backlog spec |
 | [`2.1.0-beta.30`](#release-2-1-0-beta-30) | 2026-08-08 | It.74 API keys + short-lived JWT (headless) |
 | [`2.1.0-beta.29`](#release-2-1-0-beta-29) | 2026-08-08 | It.72 media drivers MVP, It.73 multi-locale complete, security deps |
@@ -104,6 +105,33 @@ This canonical history records release facts supported by the supplied `CHANGELO
 | [`1.0.0`](#release-1-0-0) | Initial structure | Initial repository structure |
 
 ## [Unreleased]
+
+<a id="release-2-1-0-beta-32"></a>
+
+## [2.1.0-beta.32] – 2026-08-09
+
+Iteration 80a — redirect manager + API barrel registration fix
+
+### Added (Iteration 80a — redirect manager)
+
+- **`RedirectStore`** — flat-file SSOT at `data/redirects.json`; 301/302 rules; loop detection; internal paths only.
+- **`RedirectMiddleware`** — applies rules on non-`/api/` GET/HEAD before route dispatch.
+- **Public resolve** — `GET /api/public/redirect-resolve?path=…` for nginx/subrequest integration.
+- **Admin API + UI** — `/api/admin/platform/redirects`, `/platform/redirects`; permission `redirects:manage`.
+- PHPUnit: `RedirectStoreTest`, `RedirectMiddlewareTest`.
+
+### Fixed
+
+- **API barrel** — register `apiKeys` and `redirects` in `frontend/src/api/index.ts` (`export *` + `api.apiKeys` / `api.redirects`) for `lint:api-barrel`.
+
+### Documentation
+
+- [ITERATION_80.md](docs/en/ITERATION_80.md) — 80a DoD + nginx deploy note, [RELEASE_2_1_0_BETA_32.md](docs/en/RELEASE_2_1_0_BETA_32.md).
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.32`
+- **Deploy:** `GIT_REF=v2.1.0-beta.32` + `npm ci && npm run build:prod` in `frontend/`
 
 <a id="release-2-1-0-beta-31"></a>
 
