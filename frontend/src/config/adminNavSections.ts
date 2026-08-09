@@ -86,7 +86,6 @@ export const ADMIN_NAV_SECTIONS: AdminNavSectionDef[] = [
         href: '/platform/api-keys',
         icon: KeyRound,
         adminOnly: true,
-        superAdminOnly: true,
       },
       { id: 'notifications', labelKey: 'admin.nav.notifications', href: '/notifications', icon: Bell },
       { id: 'scheduler', labelKey: 'admin.nav.scheduler', href: '/scheduler', icon: CalendarClock, adminOnly: true },

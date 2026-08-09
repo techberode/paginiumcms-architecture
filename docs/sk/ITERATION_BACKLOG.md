@@ -1,6 +1,6 @@
 # PaginiumCMS — konsolidovaný backlog
 
-> **Snapshot:** `v2.1.0-beta.28` · 6. august 2026  
+> **Snapshot:** `v2.1.0-beta.31` · 9. august 2026  
 > **Pravidlo:** aktívny backlog obsahuje iba nedodaný alebo presne ohraničený zostávajúci rozsah  
 > **No-SQL:** [architecture/NOSQL_MANDATE.md](architecture/NOSQL_MANDATE.md)
 
@@ -23,21 +23,22 @@ Tento dokument opravuje starý backlog, v ktorom sa miešali hotové iterácie, 
 
 | Poradie | Položka | Priorita | Stav | Dôvod |
 |---------|---------|----------|------|-------|
-| 1 | Dokončiť dvojjazyčnú dokumentáciu | 🔴 | 🚧 | gate pred zmenou jadra |
-| 2 | **It.68** Hybrid Engine foundation | 🔴 | ⏸️ | storage abstraction, schema registry, engine settings |
-| 3 | **It.69** Unified cache + Redis + HTTP validators | 🔴 | ⏳ | výkon a zjednotenie starých It.45/49 |
-| 4 | **It.67** Untrusted surfaces hardening | 🔴 | ⏳ | importy, shortcode, Monaco, témy, CSP |
-| 5 | **It.70** Git publish modes | 🟡 | ⏳ | immediate/queued distribúcia |
+| 1 | Dokončiť dvojjazyčnú dokumentáciu | 🔴 | ✅ | It.18 konsolidácia; SK detail catch-up odložený |
+| 2 | **It.68** Hybrid Engine foundation | 🔴 | ✅ | `v2.1.0-beta.28` — [ITERATION_68](../en/ITERATION_68.md) |
+| 3 | **It.69** Unified cache + Redis + HTTP validators | 🔴 | ✅ | `v2.1.0-beta.26` — [ITERATION_69](../en/ITERATION_69.md) |
+| 4 | **It.67** Untrusted surfaces hardening | 🔴 | ✅ | shortcodes, témy, CSP — [ITERATION_67](../en/ITERATION_67.md) |
+| 5 | **It.70** Git publish modes | 🟡 | ✅ | local publisher + queue — [ITERATION_70](../en/ITERATION_70.md) |
 | 6 | **It.71** Performance Guard | 🟡 | ✅ | shipped v `2.1.0-beta.28` — pozri [ITERATION_71](../en/ITERATION_71.md) |
 | 7 | **It.72** Media drivers | 🟡 | 🟡 partial | MVP local driver + probe; S3/migrácia neskôr |
 | 8 | **It.73** Multi-locale document | 🟡 | ⏳ | základ pre preklady |
-| 9 | **It.74** API keys/JWT | 🟡 | ⏳ | headless integrácie |
-| 10 | **It.58d** Layout remainder | 🟡 | ⏳ | zostávajúce bloky |
-| 11 | **It.25** Setup wizard/update UX | 🟡 pre-Final | ⏳ | onboarding a GA |
-| 12 | **It.76/77** Translation providers | 🔵 | ⏳ | po It.73 |
-| 13 | **It.75** AI agent | 🔵 | ⏳ | po locale a provider vrstvách |
-| 14 | **It.78** Unified upload security | 🟡 | ⏳ | bezpečnostná brána pred videom / novými MIME |
-| 15 | **It.79** DAM video | 🟡 | ⏳ | MP4/WebM + embed v editore; po It.78 |
+| 9 | **It.74** API keys/JWT | 🟡 | ✅ | `v2.1.0-beta.30` — [ITERATION_74](../en/ITERATION_74.md) |
+| 10 | **It.80** SEO, integrácie & ops toolkit | 🟡 | ⏳ | redirecty, 404, webhooks, GDPR, CLI — [ITERATION_80](ITERATION_80.md) |
+| 11 | **It.58d** Layout remainder | 🟡 | ⏳ | zostávajúce bloky |
+| 12 | **It.25** Setup wizard/update UX | 🟡 pre-Final | ⏳ | onboarding a GA |
+| 13 | **It.76/77** Translation providers | 🔵 | ⏳ | po It.73 |
+| 14 | **It.75** AI agent | 🔵 | ⏳ | po locale a provider vrstvách |
+| 15 | **It.78** Unified upload security | 🟡 | ⏳ | bezpečnostná brána pred videom / novými MIME |
+| 16 | **It.79** DAM video | 🟡 | ⏳ | MP4/WebM + embed v editore; po It.78 |
 
 ---
 
@@ -107,13 +108,15 @@ Pozri [ITERATION_79](ITERATION_79.md).
 - editor tabs/diff,
 - kompatibilita so starými single-locale dokumentmi.
 
-### It.74 — API keys a JWT 🟡
+### It.74 — API keys a JWT 🟡 ✅ shipped (`v2.1.0-beta.30`)
 
-- scope-limited keys,
-- hash-at-rest, plaintext iba pri vytvorení,
-- revoke/rotate/audit/rate limit,
-- JWT expiry a audience,
-- admin session + CSRF bez regresie.
+Pozri [ITERATION_74](../en/ITERATION_74.md).
+
+### It.80 — SEO, integrácie & operátorský toolkit 🟡 ⏳
+
+Checklist vlna `80a`–`80g`: redirecty, 404 report, spam heuristika, webhooks, GDPR, CLI, import CMS.
+
+Pozri [ITERATION_80](ITERATION_80.md) · detail EN [ITERATION_80.md](../en/ITERATION_80.md).
 
 ### It.75 — CMS-aware AI agent 🔵
 
@@ -191,7 +194,10 @@ Zostáva:
 | Server metrics agent (zvyšok It.46) | ⏳ | koordinovať s It.71 |
 | Scoped FileManager | ⏳ candidate | prideliť nové unikátne číslo až po scope approval |
 | Frontend inline edit | ⏳ candidate | používa existujúci lock/editor flow |
-| Jemnejšia comment moderácia/CAPTCHA | ⏳ candidate | základ policy už je dodaný |
+| Jemnejšia comment moderácia/CAPTCHA | ↪ **It.80c** | [ITERATION_80](ITERATION_80.md) |
+| Redirect manager / 404 ops | ↪ **It.80a/b** | [ITERATION_80](ITERATION_80.md) |
+| Outbound content webhooks | ↪ **It.80d** | [ITERATION_80](ITERATION_80.md) |
+| GDPR export / CLI / import CMS | ↪ **It.80e/f/g** | [ITERATION_80](ITERATION_80.md) |
 | Contextual Actions | ⏳ candidate | staré označenie „It.30“ sa nesmie použiť |
 | System overview polish | ⏳ candidate | môže byť súčasť It.71/ops dashboard |
 
@@ -262,11 +268,13 @@ Docs gate
   → It.71 + remaining It.46
   → It.72
   → It.73
-  → It.74
+  → It.74 ✅
+  → It.78 (upload security gate)
+  → It.79 (DAM video)
   → It.76 / It.77
   → It.75
 
-Parallel where safe: It.58d, beta fixes, community testing.
+Parallel where safe: It.80 (80a→80g podľa dopad/náročnosť), It.58d, beta fixes, community testing.
 Pre-Final: It.25 + GA gate.
 ```
 

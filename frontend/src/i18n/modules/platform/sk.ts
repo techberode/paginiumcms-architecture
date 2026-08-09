@@ -399,6 +399,8 @@ export const platformSk: MessageTree = {
     title: 'API kľúče',
     subtitle: 'Scoped Bearer kľúče pre headless integrácie a CI — oddelené od admin session cookies.',
     secretWarning: 'Uložte tajomstvá do trezora alebo CI premennej. Nikdy necommitujte kľúče do Gitu ani localStorage.',
+    pepperMissing:
+      'API_KEY_PEPPER nie je nastavený na serveri. Pridajte ho do .env v koreni projektu (alebo backend/.env), reštartujte PHP a skúste znova.',
     refresh: 'Obnoviť',
     create: 'Nový kľúč',
     createTitle: 'Vytvoriť API kľúč',

@@ -1,5 +1,5 @@
 // frontend/src/api/apiKeys.ts
-import apiClient from './client';
+import apiClient, { type ApiResponse } from './client';
 
 export interface ApiKeyMetadata {
   id: string;
@@ -34,6 +34,10 @@ export interface ApiKeysIndexResponse {
     write: string[];
     token: string[];
   };
+  config?: {
+    pepperConfigured: boolean;
+    jwtConfigured: boolean;
+  };
 }
 
 export interface ApiKeyCreateResponse {
@@ -66,9 +70,12 @@ export const apiKeysApi = {
     return response.success && response.data ? response.data.events : [];
   },
 
-  async create(payload: { label: string; scopes: string[]; expiresAt?: string | null }): Promise<ApiKeyCreateResponse | null> {
-    const response = await apiClient.post<ApiKeyCreateResponse>('/api/admin/platform/api-keys', payload);
-    return response.success && response.data ? response.data : null;
+  async create(payload: {
+    label: string;
+    scopes: string[];
+    expiresAt?: string | null;
+  }): Promise<ApiResponse<ApiKeyCreateResponse>> {
+    return apiClient.post<ApiKeyCreateResponse>('/api/admin/platform/api-keys', payload);
   },
 
   async rotate(id: string): Promise<ApiKeyRotateResponse | null> {
