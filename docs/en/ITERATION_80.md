@@ -32,7 +32,7 @@ This iteration is intentionally **checklist-driven**: each row has status, remar
 
 | ID | Feature | Priority | Status | Impact / effort | Description | Remarks / proposals | Depends on |
 |----|---------|----------|--------|-----------------|-------------|---------------------|------------|
-| **80a** | Redirect manager (301/302) | 🟡 P1 | ⏳ planned | **High / Low** | Flat-file map `data/redirects.json`; middleware before 404; admin UI for `old_path → new_path` (+ optional 302). | Match public path only; loop detection; no open redirect to external URL without allow-list. Cache hot map in memory with file mtime invalidation. | — |
+| **80a** | Redirect manager (301/302) | 🟡 P1 | ✅ shipped (`beta.32`) | **High / Low** | Flat-file map `data/redirects.json`; middleware before 404; admin UI for `old_path → new_path` (+ optional 302). | nginx SPA hook optional for slug-level prod redirects. | — |
 | **80b** | 404 tracking report | 🟡 P2 | ⏳ planned | **Med / Low** | Log anonymous 404 hits (path, referer sanitized, UA hash, day bucket); admin dashboard table + CSV export. | Reuse `AccessLogService` / `PerformanceSampleStore` / audit sanitization patterns. Skip admin/API paths noise. | **80a** (shared middleware hook) recommended |
 | **80c** | Comment spam heuristics | 🟡 P3 | ⏳ planned | **Med / Low** | Honeypot field + rate/heuristic score in `CommentPolicyResolver`; quarantine or reject before public scale. | No CAPTCHA vendor lock-in in MVP; optional Akismet-style adapter later. Regression tests for legit comments. | existing comment policy |
 | **80d** | Outbound webhooks | 🟡 P4 | ⏳ planned | **Med / Med** | Events `content.published`, `content.updated` → queued POST to registered URL (Slack/Discord/Zapier). | `OutboundUrlGuard` mandatory; HMAC signing secret; retry + dead-letter in flat-file queue; no payload secrets in logs. | Scheduler/Jobs · [It.74](ITERATION_74.md) optional for remote receivers |
@@ -90,10 +90,11 @@ This iteration is intentionally **checklist-driven**: each row has status, remar
 
 ### DoD (80a)
 
-- [ ] 301/302 from flat-file map works on public site.
-- [ ] Loop and self-redirect rejected at save time.
-- [ ] Admin CRUD + CSRF + RBAC.
-- [ ] PHPUnit: match, miss, loop detection, external URL blocked.
+- [x] 301/302 from flat-file map works on public site (PHP middleware + `/api/public/redirect-resolve`)
+- [x] Loop and self-redirect rejected at save time
+- [x] Admin CRUD + CSRF + RBAC (`redirects:manage`)
+- [x] PHPUnit: match, miss, loop detection, external URL blocked
+- [ ] Production nginx hook before SPA fallback (see deploy note below)
 
 ---
 
@@ -203,6 +204,22 @@ Slug collision policy: `import-{slug}` or map file in `data/migrations/import-{i
 | `AuthorizationManager` auto-append `api-keys:manage` for ADMIN | ✅ done | `v2.1.0-beta.31` |
 
 See [RELEASE_2_1_0_BETA_31.md](RELEASE_2_1_0_BETA_31.md).
+
+### Production nginx (80a remainder)
+
+Default nginx serves SPA `index.html` for public slugs without hitting PHP. For slug-level 301 on production, proxy a lookup before SPA fallback:
+
+```nginx
+location / {
+    set $redirect_check 0;
+    if ($request_method = GET) { set $redirect_check 1; }
+    if ($request_uri ~ ^/api/) { set $redirect_check 0; }
+    # Optional: auth_request / internal subrequest to /api/public/redirect-resolve?path=$uri
+    try_files $uri $uri/ /index.html;
+}
+```
+
+Until nginx is extended, redirects apply to requests that reach PHP (dev/proxy paths). Resolve endpoint: `GET /api/public/redirect-resolve?path=/old-slug`.
 
 ---
 

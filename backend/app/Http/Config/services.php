@@ -99,6 +99,7 @@ use PaginiumCMS\Core\FlatFile\Services\TrashService;
 use PaginiumCMS\Core\Feeds\Services\FeedGenerator;
 use PaginiumCMS\Core\Feeds\Services\RobotsTxtGenerator;
 use PaginiumCMS\Core\Feeds\Services\SitemapGenerator;
+use PaginiumCMS\Core\Seo\Services\RedirectStore;
 use PaginiumCMS\Core\Seo\Services\SeoMetaBuilder;
 use PaginiumCMS\Core\Security\ClientIpResolver;
 use PaginiumCMS\Core\Security\SecurityLogger;
@@ -161,6 +162,7 @@ use PaginiumCMS\Http\Controllers\Admin\BlueprintController;
 use PaginiumCMS\Http\Controllers\Admin\AclController;
 use PaginiumCMS\Http\Controllers\Admin\SecurityAuditController;
 use PaginiumCMS\Http\Controllers\Admin\ApiKeyController;
+use PaginiumCMS\Http\Controllers\Admin\RedirectController;
 use PaginiumCMS\Http\Controllers\Headless\HeadlessTokenController;
 use PaginiumCMS\Http\Controllers\Admin\SettingsController;
 use PaginiumCMS\Http\Controllers\Admin\TranslationController;
@@ -1166,6 +1168,8 @@ return [
         ),
     SeoMetaBuilder::class => create(SeoMetaBuilder::class)
         ->constructor(get(SettingsRepositoryInterface::class)),
+    RedirectStore::class => create(RedirectStore::class)
+        ->constructor(get(\PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface::class)),
     PurgeContentCacheCommand::class => create(PurgeContentCacheCommand::class)
         ->constructor(
             get(ContentCacheService::class),
@@ -1203,6 +1207,11 @@ return [
             get(\PaginiumCMS\Modules\Security\Services\ApiKeyVerifier::class),
             get(\PaginiumCMS\Modules\Security\Services\ApiJwtService::class),
             get(SecurityAuditStore::class),
+            get(JsonResponder::class)
+        ),
+    RedirectController::class => create(RedirectController::class)
+        ->constructor(
+            get(RedirectStore::class),
             get(JsonResponder::class)
         ),
     HeadlessTokenController::class => create(HeadlessTokenController::class)

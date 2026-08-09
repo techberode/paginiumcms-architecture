@@ -31,6 +31,7 @@ export const adminEn: MessageTree = {
     users: 'Users',
     accountSecurity: 'Account security',
     apiKeys: 'API keys',
+    redirects: 'Redirects',
     settings: 'Settings',
     translations: 'Translations',
   },
