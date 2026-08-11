@@ -589,6 +589,27 @@ final class SettingsController
             'cookieShowRejectButton' => (bool) (
                 $privacy['cookieShowRejectButton'] ?? $defaults['cookieShowRejectButton'] ?? true
             ),
+            'cookiePolicyPageTitle' => (string) ($privacy['cookiePolicyPageTitle'] ?? $defaults['cookiePolicyPageTitle'] ?? ''),
+            'cookiePolicyIntro' => (string) ($privacy['cookiePolicyIntro'] ?? $defaults['cookiePolicyIntro'] ?? ''),
+            'cookiePolicySectionsJson' => (string) (
+                $privacy['cookiePolicySectionsJson'] ?? $defaults['cookiePolicySectionsJson'] ?? '[]'
+            ),
+            'privacyContactName' => (string) ($privacy['privacyContactName'] ?? $defaults['privacyContactName'] ?? ''),
+            'privacyContactEmail' => (string) ($privacy['privacyContactEmail'] ?? $defaults['privacyContactEmail'] ?? ''),
+            'privacyContactPhone' => (string) ($privacy['privacyContactPhone'] ?? $defaults['privacyContactPhone'] ?? ''),
+            'privacyContactAddress' => (string) ($privacy['privacyContactAddress'] ?? $defaults['privacyContactAddress'] ?? ''),
+            'cookiePolicyShowCategoriesTable' => (bool) (
+                $privacy['cookiePolicyShowCategoriesTable'] ?? $defaults['cookiePolicyShowCategoriesTable'] ?? true
+            ),
+            'cookiePolicyShowStorageInventory' => (bool) (
+                $privacy['cookiePolicyShowStorageInventory'] ?? $defaults['cookiePolicyShowStorageInventory'] ?? true
+            ),
+            'cookiePolicyShowDefaultRights' => (bool) (
+                $privacy['cookiePolicyShowDefaultRights'] ?? $defaults['cookiePolicyShowDefaultRights'] ?? true
+            ),
+            'cookiePolicyShowManagePanel' => (bool) (
+                $privacy['cookiePolicyShowManagePanel'] ?? $defaults['cookiePolicyShowManagePanel'] ?? true
+            ),
         ];
     }
 

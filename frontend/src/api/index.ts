@@ -52,6 +52,7 @@ export * from './validation';
 export * from './version';
 export * from './versions';
 export * from './workflows';
+export * from './webhooks';
 
 export { queryKeys } from './queryKeys';
 
@@ -84,6 +85,7 @@ import { themesApi } from './themes';
 import { trashApi } from './trash';
 import { userApi } from './user';
 import { versionApi } from './version';
+import { webhooksApi } from './webhooks';
 
 /** Typed API modules with object interface (`*Api`). Function-only modules stay as named exports. */
 export const api = {
@@ -108,6 +110,7 @@ export const api = {
   trash: trashApi,
   user: userApi,
   version: versionApi,
+  webhooks: webhooksApi,
 };
 
 export default api;

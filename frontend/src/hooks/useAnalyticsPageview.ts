@@ -39,7 +39,7 @@ const ADMIN_PREFIXES = [
 ];
 
 function isTrackablePublicPath(pathname: string): boolean {
-  if (pathname.startsWith('/newsletter/')) {
+  if (pathname.startsWith('/newsletter/') || pathname === '/cookies') {
     return false;
   }
 

@@ -104,3 +104,44 @@ export function deriveUsername(email: string): string {
   const local = email.split('@')[0] ?? 'user';
   return local.toLowerCase().replace(/[^a-z0-9_-]/g, '') || 'user';
 }
+
+export interface GdprExportPayload {
+  exportedAt: string;
+  schemaVersion: number;
+  subjectUserId: string;
+  profile: User;
+  comments: Array<Record<string, unknown>>;
+  newsletter: Record<string, unknown> | null;
+  contactMessages: Array<Record<string, unknown>>;
+  limits: { note: string };
+}
+
+export interface GdprAnonymizeResult {
+  userId: string;
+  pseudonym: string;
+  commentsUpdated: number;
+  contactMessagesUpdated: number;
+  newsletterUpdated: boolean;
+}
+
+export async function exportUserGdprZip(userId: string): Promise<{ ok: true; blob: Blob } | { ok: false; error: string }> {
+  try {
+    const response = await fetch(`/api/admin/users/${encodeURIComponent(userId)}/gdpr/export?format=zip`, {
+      credentials: 'include',
+    });
+    if (!response.ok) {
+      return { ok: false, error: `Export failed (${response.status})` };
+    }
+    const blob = await response.blob();
+    return { ok: true, blob };
+  } catch {
+    return { ok: false, error: 'Export failed.' };
+  }
+}
+
+export async function anonymizeUserGdpr(userId: string): Promise<ApiResponse<{ result: GdprAnonymizeResult }>> {
+  return apiClient.post<{ result: GdprAnonymizeResult }>(
+    `/api/admin/users/${encodeURIComponent(userId)}/gdpr/anonymize`,
+    { confirm: true }
+  );
+}

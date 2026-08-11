@@ -102,6 +102,8 @@ use PaginiumCMS\Core\Feeds\Services\SitemapGenerator;
 use PaginiumCMS\Core\Seo\Services\NotFoundHitStore;
 use PaginiumCMS\Core\Seo\Services\RedirectStore;
 use PaginiumCMS\Core\Webhooks\Services\OutboundWebhookDispatcher;
+use PaginiumCMS\Core\Gdpr\Services\GdprExportService;
+use PaginiumCMS\Core\Gdpr\Services\GdprAnonymizeService;
 use PaginiumCMS\Core\Webhooks\Services\WebhookDeliveryService;
 use PaginiumCMS\Core\Webhooks\Services\WebhookDeliveryStore;
 use PaginiumCMS\Core\Webhooks\Services\WebhookHookRegistrar;
@@ -170,6 +172,7 @@ use PaginiumCMS\Http\Controllers\Admin\SecurityAuditController;
 use PaginiumCMS\Http\Controllers\Admin\ApiKeyController;
 use PaginiumCMS\Http\Controllers\Admin\NotFoundReportController;
 use PaginiumCMS\Http\Controllers\Admin\WebhookController;
+use PaginiumCMS\Http\Controllers\Admin\GdprController;
 use PaginiumCMS\Http\Controllers\Admin\RedirectController;
 use PaginiumCMS\Http\Controllers\Headless\HeadlessTokenController;
 use PaginiumCMS\Http\Controllers\Admin\SettingsController;
@@ -1271,6 +1274,28 @@ return [
             get(WebhookRegistryStore::class),
             get(WebhookDeliveryStore::class),
             get(OutboundWebhookDispatcher::class),
+            get(JsonResponder::class)
+        ),
+    GdprExportService::class => create(GdprExportService::class)
+        ->constructor(
+            get(\PaginiumCMS\Modules\Comments\Services\CommentsRepository::class),
+            get(\PaginiumCMS\Modules\Messages\Services\MessageRepository::class),
+            get(\PaginiumCMS\Modules\Newsletter\Contracts\NewsletterRepositoryInterface::class)
+        ),
+    GdprAnonymizeService::class => create(GdprAnonymizeService::class)
+        ->constructor(
+            get(UserRepository::class),
+            get(UserAvatarService::class),
+            get(\PaginiumCMS\Modules\Comments\Services\CommentsRepository::class),
+            get(\PaginiumCMS\Modules\Messages\Services\MessageRepository::class),
+            get(\PaginiumCMS\Modules\Newsletter\Contracts\NewsletterRepositoryInterface::class)
+        ),
+    GdprController::class => create(GdprController::class)
+        ->constructor(
+            get(UserRepository::class),
+            get(GdprExportService::class),
+            get(GdprAnonymizeService::class),
+            get(SecurityAuditStore::class),
             get(JsonResponder::class)
         ),
     HeadlessTokenController::class => create(HeadlessTokenController::class)

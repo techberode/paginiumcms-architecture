@@ -59,6 +59,7 @@ Complete index of the final bilingual PaginiumCMS documentation. Paths are relat
 - [Local Development Environment](developer/LOCAL_SETUP.md) — `docs/developer/LOCAL_SETUP.md`
 - [Release lifecycle and production gate](developer/RELEASE.md) — `docs/developer/RELEASE.md`
 - [Development Security Architecture](developer/SECURITY.md) — `docs/developer/SECURITY.md`
+- [Cookies & GDPR](COOKIES&GDPR.md) — `docs/en/COOKIES&GDPR.md` (consent banner, `/cookies`, admin export/anonymize)
 - [Testing and Quality Gates](developer/TESTING.md) — `docs/developer/TESTING.md`
 
 ## Deployment

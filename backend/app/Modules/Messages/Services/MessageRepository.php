@@ -46,6 +46,22 @@ class MessageRepository implements MessageRepositoryInterface
         return $messages;
     }
 
+    /**
+     * @return list<ContactMessage>
+     */
+    public function findByEmail(string $email): array
+    {
+        $normalized = strtolower(trim($email));
+        if ($normalized === '') {
+            return [];
+        }
+
+        return array_values(array_filter(
+            $this->findAll(),
+            static fn (ContactMessage $message): bool => strtolower(trim($message->getEmail())) === $normalized
+        ));
+    }
+
     public function findById(string $id): ?ContactMessage
     {
         $path = self::DIRECTORY . '/' . $id . '.json';

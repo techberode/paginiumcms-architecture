@@ -10,6 +10,8 @@ import {
   EyeOff,
   Check,
   Shield,
+  FileArchive,
+  UserX,
 } from 'lucide-react';
 import { User } from '../../api/types';
 import {
@@ -21,6 +23,8 @@ import {
   bulkDeleteUsers,
   uploadUserAvatar,
   removeUserAvatar,
+  exportUserGdprZip,
+  anonymizeUserGdpr,
   USER_ROLES,
   UserRole,
   CreateUserPayload,
@@ -70,6 +74,7 @@ export const UsersManager: React.FC = () => {
   const [twoFactorEnforced, setTwoFactorEnforced] = useState(false);
   const [twoFactorSecret, setTwoFactorSecret] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [gdprBusy, setGdprBusy] = useState(false);
   const [form, setForm] = useState<FormState>(emptyForm());
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [userRules, setUserRules] = useState<Record<string, string[]>>({});
@@ -270,6 +275,56 @@ export const UsersManager: React.FC = () => {
   const enforced =
     twoFactorEnforced || (requireTwoFactorStaff && isStaffRole(form.role as UserRole));
 
+  const isAnonymizedAccount = form.email.toLowerCase().endsWith('@anonymized.invalid');
+
+  const handleGdprExport = async () => {
+    if (!editingId) return;
+    setGdprBusy(true);
+    try {
+      const result = await exportUserGdprZip(editingId);
+      if (!result.ok) {
+        toastError(result.error || t('users.gdpr.exportFailed'));
+        return;
+      }
+      const url = URL.createObjectURL(result.blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = `gdpr-export-${editingId}.zip`;
+      anchor.click();
+      URL.revokeObjectURL(url);
+      success(t('users.gdpr.exportSuccess'));
+    } finally {
+      setGdprBusy(false);
+    }
+  };
+
+  const handleGdprAnonymize = async () => {
+    if (!editingId) return;
+    if (currentUser?.id === editingId) {
+      toastError(t('users.gdpr.selfBlocked'));
+      return;
+    }
+    if (isAnonymizedAccount) {
+      toastError(t('users.gdpr.alreadyAnonymized'));
+      return;
+    }
+    if (!confirm(t('users.gdpr.anonymizeConfirm', { email: form.email }))) return;
+
+    setGdprBusy(true);
+    try {
+      const res = await anonymizeUserGdpr(editingId);
+      if (res.success) {
+        success(t('users.gdpr.anonymizeSuccess'));
+        resetForm();
+        await load();
+      } else {
+        toastError(res.error || t('users.gdpr.anonymizeFailed'));
+      }
+    } finally {
+      setGdprBusy(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center py-16">
@@ -465,6 +520,40 @@ export const UsersManager: React.FC = () => {
               </div>
             )}
           </div>
+
+          {editingId && (
+            <div className="rounded-2xl border border-amber-200 dark:border-amber-900/60 bg-amber-50/70 dark:bg-amber-950/20 p-5 space-y-4">
+              <div>
+                <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Shield size={16} className="text-amber-600" />
+                  {t('users.gdpr.title')}
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{t('users.gdpr.hint')}</p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  disabled={gdprBusy}
+                  onClick={() => void handleGdprExport()}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-amber-300 dark:border-amber-800 text-sm font-semibold text-amber-900 dark:text-amber-200 disabled:opacity-50"
+                >
+                  <FileArchive size={16} />
+                  {t('users.gdpr.exportZip')}
+                </button>
+                {currentUser?.id !== editingId && !isAnonymizedAccount && (
+                  <button
+                    type="button"
+                    disabled={gdprBusy}
+                    onClick={() => void handleGdprAnonymize()}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-rose-300 dark:border-rose-800 text-sm font-semibold text-rose-700 dark:text-rose-300 disabled:opacity-50"
+                  >
+                    <UserX size={16} />
+                    {t('users.gdpr.anonymize')}
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="flex flex-wrap gap-3 pt-2">
             <button

@@ -144,6 +144,24 @@ class CommentsRepository implements CommentsRepositoryInterface
             return false;
         }
 
+        $emailFilter = isset($filters['email']) && is_string($filters['email']) && trim($filters['email']) !== ''
+            ? strtolower(trim($filters['email']))
+            : null;
+        $authorFilter = isset($filters['authorName']) && is_string($filters['authorName']) && trim($filters['authorName']) !== ''
+            ? strtolower(trim($filters['authorName']))
+            : null;
+
+        if ($emailFilter !== null || $authorFilter !== null) {
+            $emailMatch = $emailFilter !== null
+                && strtolower(trim($comment->getEmail())) === $emailFilter;
+            $authorMatch = $authorFilter !== null
+                && strtolower(trim($comment->getAuthor())) === $authorFilter;
+
+            if (!$emailMatch && !$authorMatch) {
+                return false;
+            }
+        }
+
         return true;
     }
 }

@@ -36,6 +36,11 @@ describe('settings i18n module', () => {
     expect(translate('en', 'settings.fields.login.backgroundPicker.pickFromMedia')).toBe(
       'Pick from media'
     );
+    expect(translate('sk', 'settings.privacy.panel.blocksTitle')).toBe('Vlastné GDPR bloky');
+    expect(translate('en', 'settings.privacy.panel.addBlock')).toBe('Add block');
+    expect(translate('sk', 'settings.fields.privacy.privacyContactName.label')).toBe(
+      'Meno alebo prevádzkovateľ'
+    );
   });
 
   it('falls back to schema labels when translation key is missing', () => {

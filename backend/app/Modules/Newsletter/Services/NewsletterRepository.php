@@ -103,6 +103,53 @@ final class NewsletterRepository implements NewsletterRepositoryInterface
     /**
      * {@inheritDoc}
      */
+    public function findByEmail(string $email): ?array
+    {
+        $normalized = strtolower(trim($email));
+        if ($normalized === '') {
+            return null;
+        }
+
+        foreach ($this->findAll() as $entry) {
+            if (strtolower($entry['email']) === $normalized) {
+                return $entry;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function anonymizeEmail(string $email, string $pseudonymEmail): bool
+    {
+        $normalized = strtolower(trim($email));
+        $replacement = strtolower(trim($pseudonymEmail));
+        if ($normalized === '' || $replacement === '') {
+            return false;
+        }
+
+        return $this->withLockedStore(function (array &$store) use ($normalized, $replacement): bool {
+            foreach ($store as $index => $entry) {
+                if (strtolower((string) ($entry['email'] ?? '')) !== $normalized) {
+                    continue;
+                }
+
+                $entry['email'] = $replacement;
+                unset($entry['confirmTokenHash'], $entry['confirmTokenExpires']);
+                $store[$index] = $entry;
+
+                return true;
+            }
+
+            return false;
+        });
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function countBySource(): array
     {
         $counts = [];

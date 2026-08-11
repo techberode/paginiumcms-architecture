@@ -393,6 +393,26 @@ Required properties:
 
 Audit should be harder to alter than a normal application log. Public Beta need not provide a cryptographic append-only ledger, but documentation must not call editable JSON irreversible evidence.
 
+### GDPR export and anonymization (It.80e)
+
+Admin-only tools under `/api/admin/users/{id}/gdpr/*` (ADMIN / SUPER_ADMIN + 2FA) provide:
+
+| Action | Scope in primary flat-file stores | Audit event |
+|---|---|---|
+| Export (JSON or ZIP) | User profile, comments matched by e-mail or display name, newsletter row, contact messages by e-mail | `gdpr_export` |
+| Anonymize | Replaces e-mail/name/username with stable pseudonym `anon_<hash>` and `@anonymized.invalid`; redacts linked comments, contact messages, newsletter row; deactivates account | `gdpr_anonymize` |
+
+**Retention limits (not erased by anonymize):**
+
+- Backup archives and trash exports created before anonymization,
+- Access/request logs, WAF incidents, and analytics samples until rotation,
+- Security audit events (including GDPR actions themselves),
+- Off-site webhook delivery logs and external provider copies.
+
+Operators must document their own backup restore and log retention policy. PaginiumCMS Public Beta does not provide a full DPA suite, consent registry, or automated erasure across cold storage.
+
+See [COOKIES&GDPR.md](../COOKIES&GDPR.md) for the full operator guide (cookie consent, `/cookies` policy page, Settings keys, and verification checklist).
+
 ## 19. Dependency and release supply chain
 
 The release gate includes:
