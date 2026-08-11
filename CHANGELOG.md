@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.33`](#release-2-1-0-beta-33) | 2026-08-11 | Deploy pipeline fix; AppVersion from git tag |
 | [`2.1.0-beta.32`](#release-2-1-0-beta-32) | 2026-08-09 | It.80a redirect manager; API barrel fix |
 | [`2.1.0-beta.31`](#release-2-1-0-beta-31) | 2026-08-09 | API keys UX hardening; It.80 backlog spec |
 | [`2.1.0-beta.30`](#release-2-1-0-beta-30) | 2026-08-08 | It.74 API keys + short-lived JWT (headless) |
@@ -105,6 +106,27 @@ This canonical history records release facts supported by the supplied `CHANGELO
 | [`1.0.0`](#release-1-0-0) | Initial structure | Initial repository structure |
 
 ## [Unreleased]
+
+<a id="release-2-1-0-beta-33"></a>
+
+## [2.1.0-beta.33] – 2026-08-11
+
+Deploy pipeline fix and health version from git tag
+
+### Fixed
+
+- **`AppVersion`** — `/api/health` resolves version from `git describe --tags` on checkout; fallback constant updated.
+- **Admin deploy** — Node 22 in `docker/php/Dockerfile` so `deploy-instance-update.sh` can run `npm ci && npm run build:prod` inside PHP container.
+- **Deploy script** — clear error when npm missing; `--force-recreate php` instead of plain restart.
+
+### Added
+
+- PHPUnit: `AppVersionTest`.
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.33`
+- **Deploy:** rebuild PHP image (`stack.sh up -d --build --force-recreate php`) or run deploy script with `GIT_REF=v2.1.0-beta.33`.
 
 <a id="release-2-1-0-beta-32"></a>
 
