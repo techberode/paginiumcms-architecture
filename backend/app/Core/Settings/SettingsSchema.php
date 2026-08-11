@@ -232,6 +232,11 @@ final class SettingsSchema
                     ['key' => 'requireApproval', 'type' => 'bool', 'label' => 'Globálne vyžadovať schválenie', 'default' => true, 'rules' => ['bool'], 'help' => 'Nové komentáre čakajú na schválenie v administrácii. Dá sa prepísať pri jednotlivom článku.'],
                     ['key' => 'allowGuestComments', 'type' => 'bool', 'label' => 'Povoliť komentáre od hostí', 'default' => true, 'rules' => ['bool'], 'help' => 'Neprihlásení návštevníci môžu pridávať komentáre. Dá sa prepísať pri jednotlivom článku.'],
                     ['key' => 'maxLength', 'type' => 'int', 'label' => 'Max. dĺžka komentára', 'default' => 2000, 'rules' => ['required', 'int', 'min:50', 'max:5000']],
+                    ['key' => 'spamHeuristicsEnabled', 'type' => 'bool', 'label' => 'Spam heuristika', 'default' => true, 'rules' => ['bool'], 'help' => 'Honeypot + skóre (linky, disposable e-mail, rýchlosť). Vypnutím zostáva len honeypot.'],
+                    ['key' => 'spamMaxLinks', 'type' => 'int', 'label' => 'Spam: max. linkov v texte', 'default' => 2, 'rules' => ['int', 'min:0', 'max:20']],
+                    ['key' => 'spamVelocityMaxPerHour', 'type' => 'int', 'label' => 'Spam: max. komentárov / IP / hod', 'default' => 5, 'rules' => ['int', 'min:1', 'max:100']],
+                    ['key' => 'spamQuarantineThreshold', 'type' => 'int', 'label' => 'Spam: hranica karantény (skóre)', 'default' => 50, 'rules' => ['int', 'min:1', 'max:200']],
+                    ['key' => 'spamRejectThreshold', 'type' => 'int', 'label' => 'Spam: hranica odmietnutia (skóre)', 'default' => 80, 'rules' => ['int', 'min:2', 'max:300']],
                 ],
             ],
             'maintenance' => [

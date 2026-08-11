@@ -15,7 +15,8 @@ final class CommentPolicyResolver
 {
     public function __construct(
         private SettingsRepositoryInterface $settingsRepository,
-        private ContentRepositoryInterface $contentRepository
+        private ContentRepositoryInterface $contentRepository,
+        private CommentSpamHeuristicService $spamHeuristic,
     ) {
     }
 
@@ -62,5 +63,18 @@ final class CommentPolicyResolver
             'requireApproval' => $requireApproval,
             'allowGuestComments' => $allowGuestComments,
         ];
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     */
+    public function evaluateSubmission(array $payload, string $clientIp): CommentSpamVerdict
+    {
+        return $this->spamHeuristic->evaluate($payload, $clientIp);
+    }
+
+    public function recordSubmission(string $clientIp): void
+    {
+        $this->spamHeuristic->recordSubmission($clientIp);
     }
 }

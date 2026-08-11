@@ -41,6 +41,8 @@ const statusBadgeClass = (status: CommentStatus): string => {
       return 'badge bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300';
     case 'rejected':
       return 'badge bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300';
+    case 'quarantine':
+      return 'badge bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300';
     default:
       return 'badge bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300';
   }
@@ -222,6 +224,7 @@ export const CommentsManager: React.FC = () => {
         statusOptions={[
           { value: 'all', label: t('comments.filter.all') },
           { value: 'pending', label: t('comments.filter.pending') },
+          { value: 'quarantine', label: t('comments.filter.quarantine') },
           { value: 'approved', label: t('comments.filter.approved') },
           { value: 'rejected', label: t('comments.filter.rejected') },
         ]}

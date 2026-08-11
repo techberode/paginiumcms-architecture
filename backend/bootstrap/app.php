@@ -19,6 +19,7 @@ use PaginiumCMS\Http\Middleware\OtpStartRateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\OtpVerifyRateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\LocaleMiddleware;
 use PaginiumCMS\Http\Middleware\MaintenanceModeMiddleware;
+use PaginiumCMS\Http\Middleware\NotFoundTrackingMiddleware;
 use PaginiumCMS\Http\Middleware\RedirectMiddleware;
 use PaginiumCMS\Http\Middleware\FirewallMiddleware;
 use PaginiumCMS\Http\Middleware\CsrfMiddleware;
@@ -282,6 +283,12 @@ $containerBuilder->addDefinitions([
     RedirectMiddleware::class => function ($container) {
         return new RedirectMiddleware(
             $container->get(\PaginiumCMS\Core\Seo\Services\RedirectStore::class)
+        );
+    },
+
+    NotFoundTrackingMiddleware::class => function ($container) {
+        return new NotFoundTrackingMiddleware(
+            $container->get(\PaginiumCMS\Core\Seo\Services\NotFoundHitStore::class)
         );
     },
 
@@ -768,6 +775,7 @@ $app->add(new SameOriginCorsMiddleware($corsOptions));
 $app->add($container->get(SecurityMiddleware::class));
 $app->add($container->get(MaintenanceModeMiddleware::class));
 $app->add($container->get(RedirectMiddleware::class));
+$app->add($container->get(NotFoundTrackingMiddleware::class));
 $app->add($container->get(LocaleMiddleware::class));
 $app->add($container->get(FirewallMiddleware::class));
 // CSRF (audit S3 / ISS-012): vynucuje synchronizer-token na mutujúcich

@@ -1,9 +1,13 @@
 // frontend/src/components/backend/AnalyticsView.tsx
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
+  ArrowRightLeft,
   BarChart3,
   Clock3,
+  Download,
   Eye,
+  FileQuestion,
   FileText,
   Link2,
   MapPin,
@@ -14,10 +18,13 @@ import {
   Users,
 } from 'lucide-react';
 import {
+  exportNotFoundCsv,
   getAnalyticsChart,
   getAnalyticsOverview,
+  getNotFoundReport,
   type AnalyticsPayload,
   type ChartPoint,
+  type NotFoundPathRow,
 } from '../../api/analytics';
 import { AnalyticsChart } from '../dashboard/AnalyticsChart';
 import { AnalyticsRankedBarChart } from './analytics/AnalyticsRankedBarChart';
@@ -28,7 +35,7 @@ import { useI18n } from '../../context/I18nContext';
 import { useToast } from '../../hooks/useToast';
 import { countryCodeToFlag } from '../../utils/countryFlag';
 
-type AnalyticsTab = 'overview' | 'pages' | 'sources' | 'devices' | 'geo';
+type AnalyticsTab = 'overview' | 'pages' | 'sources' | 'devices' | 'geo' | 'notFound';
 type PeriodDays = 7 | 14 | 30;
 
 function formatDuration(seconds: number): string {
@@ -73,6 +80,8 @@ export const AnalyticsView: React.FC = () => {
   const [tab, setTab] = useState<AnalyticsTab>('overview');
   const [payload, setPayload] = useState<AnalyticsPayload | null>(null);
   const [chart, setChart] = useState<ChartPoint[]>([]);
+  const [notFoundRows, setNotFoundRows] = useState<NotFoundPathRow[]>([]);
+  const [notFoundLoading, setNotFoundLoading] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
@@ -96,6 +105,38 @@ export const AnalyticsView: React.FC = () => {
     void load();
   }, [load]);
 
+  const loadNotFound = useCallback(async () => {
+    setNotFoundLoading(true);
+    try {
+      const report = await getNotFoundReport(period, 50);
+      setNotFoundRows(report?.paths ?? []);
+    } catch {
+      toastError(t('analytics.notFound.toast.loadFailed'));
+    } finally {
+      setNotFoundLoading(false);
+    }
+  }, [period, t, toastError]);
+
+  useEffect(() => {
+    if (tab === 'notFound') {
+      void loadNotFound();
+    }
+  }, [tab, loadNotFound]);
+
+  const handleNotFoundExport = async () => {
+    try {
+      const blob = await exportNotFoundCsv(period);
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = `not_found_${new Date().toISOString().slice(0, 10)}.csv`;
+      anchor.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toastError(t('analytics.notFound.toast.exportFailed'));
+    }
+  };
+
   const overview = payload?.overview;
   const homeLabel = t('analytics.homeLabel');
 
@@ -107,6 +148,7 @@ export const AnalyticsView: React.FC = () => {
         { id: 'sources' as const, label: t('analytics.tabs.sources'), icon: Link2 },
         { id: 'devices' as const, label: t('analytics.tabs.devices'), icon: MonitorSmartphone },
         { id: 'geo' as const, label: t('analytics.tabs.geo'), icon: MapPin },
+        { id: 'notFound' as const, label: t('analytics.tabs.notFound'), icon: FileQuestion },
       ] satisfies Array<{ id: AnalyticsTab; label: string; icon: typeof BarChart3 }>,
     [t]
   );
@@ -411,6 +453,91 @@ export const AnalyticsView: React.FC = () => {
                   </div>
                 ))
                 )}
+              </div>
+            </div>
+          )}
+
+          {tab === 'notFound' && (
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-sm text-slate-500 dark:text-slate-400">{t('analytics.notFound.subtitle')}</p>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => void loadNotFound()}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-sm font-bold"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                    {t('analytics.refresh')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void handleNotFoundExport()}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-bold"
+                  >
+                    <Download className="h-4 w-4" />
+                    {t('analytics.notFound.exportCsv')}
+                  </button>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">
+                <table className="min-w-full text-sm">
+                  <thead className="bg-slate-50 dark:bg-slate-950/60 text-left">
+                    <tr>
+                      <th className="px-4 py-3 font-bold uppercase tracking-wider text-xs text-slate-500">
+                        {t('analytics.notFound.columns.path')}
+                      </th>
+                      <th className="px-4 py-3 font-bold uppercase tracking-wider text-xs text-slate-500">
+                        {t('analytics.notFound.columns.hits')}
+                      </th>
+                      <th className="px-4 py-3 font-bold uppercase tracking-wider text-xs text-slate-500">
+                        {t('analytics.notFound.columns.lastSeen')}
+                      </th>
+                      <th className="px-4 py-3 font-bold uppercase tracking-wider text-xs text-slate-500">
+                        {t('analytics.notFound.columns.referer')}
+                      </th>
+                      <th className="px-4 py-3 font-bold uppercase tracking-wider text-xs text-slate-500">
+                        {t('analytics.notFound.columns.actions')}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {notFoundLoading ? (
+                      <tr>
+                        <td colSpan={5} className="px-4 py-8 text-slate-500">
+                          {t('analytics.notFound.loading')}
+                        </td>
+                      </tr>
+                    ) : notFoundRows.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="px-4 py-8 text-slate-500">
+                          {t('analytics.notFound.empty')}
+                        </td>
+                      </tr>
+                    ) : (
+                      notFoundRows.map((row) => (
+                        <tr key={row.path} className="border-t border-slate-100 dark:border-slate-800">
+                          <td className="px-4 py-3 font-mono text-xs">{row.path}</td>
+                          <td className="px-4 py-3 font-bold">{row.hits}</td>
+                          <td className="px-4 py-3 text-slate-500">
+                            {new Date(row.lastSeen).toLocaleString()}
+                          </td>
+                          <td className="px-4 py-3 text-slate-500">{row.topReferer ?? '—'}</td>
+                          <td className="px-4 py-3">
+                            <Link
+                              to={`/platform/redirects?from=${encodeURIComponent(row.path)}`}
+                              className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-700 text-xs font-bold"
+                            >
+                              <ArrowRightLeft className="h-3.5 w-3.5" />
+                              {t('analytics.notFound.createRedirect')}
+                            </Link>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
           )}

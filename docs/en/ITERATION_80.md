@@ -33,8 +33,8 @@ This iteration is intentionally **checklist-driven**: each row has status, remar
 | ID | Feature | Priority | Status | Impact / effort | Description | Remarks / proposals | Depends on |
 |----|---------|----------|--------|-----------------|-------------|---------------------|------------|
 | **80a** | Redirect manager (301/302) | 🟡 P1 | ✅ shipped (`beta.32`) | **High / Low** | Flat-file map `data/redirects.json`; middleware before 404; admin UI for `old_path → new_path` (+ optional 302). | nginx SPA hook optional for slug-level prod redirects. | — |
-| **80b** | 404 tracking report | 🟡 P2 | ⏳ planned | **Med / Low** | Log anonymous 404 hits (path, referer sanitized, UA hash, day bucket); admin dashboard table + CSV export. | Reuse `AccessLogService` / `PerformanceSampleStore` / audit sanitization patterns. Skip admin/API paths noise. | **80a** (shared middleware hook) recommended |
-| **80c** | Comment spam heuristics | 🟡 P3 | ⏳ planned | **Med / Low** | Honeypot field + rate/heuristic score in `CommentPolicyResolver`; quarantine or reject before public scale. | No CAPTCHA vendor lock-in in MVP; optional Akismet-style adapter later. Regression tests for legit comments. | existing comment policy |
+| **80b** | 404 tracking report | 🟡 P2 | ✅ shipped (`beta.34`) | **Med / Low** | Log anonymous 404 hits (path, referer sanitized, UA hash, day bucket); admin dashboard table + CSV export. | Reuse `AccessLogService` / `PerformanceSampleStore` / audit sanitization patterns. Skip admin/API paths noise. | **80a** (shared middleware hook) recommended |
+| **80c** | Comment spam heuristics | 🟡 P3 | ✅ shipped (`beta.35`) | **Med / Low** | Honeypot field + rate/heuristic score in `CommentPolicyResolver`; quarantine or reject before public scale. | No CAPTCHA vendor lock-in in MVP; optional Akismet-style adapter later. Regression tests for legit comments. | existing comment policy |
 | **80d** | Outbound webhooks | 🟡 P4 | ⏳ planned | **Med / Med** | Events `content.published`, `content.updated` → queued POST to registered URL (Slack/Discord/Zapier). | `OutboundUrlGuard` mandatory; HMAC signing secret; retry + dead-letter in flat-file queue; no payload secrets in logs. | Scheduler/Jobs · [It.74](ITERATION_74.md) optional for remote receivers |
 | **80e** | GDPR export / anonymize | 🔵 P5 | ⏳ planned | **Med / Med** | `GET /api/users/{id}/export` aggregates user data from flat-file sources; admin anonymize action for comments/newsletter/subscriber rows. | Not a full DPA product; document limits (backups, logs retention). Permission + audit on export. | user/newsletter/comment stores |
 | **80f** | CLI toolkit | 🔵 P6 | ⏳ planned | **Med / Med** | `bin/paginium` or extend `bin/console`: `content:import`, `content:export`, `user:create`, `redirect:validate`. | Prefer same validators as HTTP; no bypass of Path ACL unless `--system` + SUPER_ADMIN shell. Useful with It.74 keys in CI for HTTP path. | console bootstrap |
@@ -106,9 +106,10 @@ This iteration is intentionally **checklist-driven**: each row has status, remar
 
 ### DoD (80b)
 
-- [ ] 404 on public routes logged with sanitized fields.
-- [ ] Admin report renders top paths.
-- [ ] No PII/secrets in export.
+- [x] 404 on public routes logged with sanitized fields.
+- [x] Admin report renders top paths (`/analytics` → 404 tab).
+- [x] No PII/secrets in export (`LogSanitizer` in store + CSV cells).
+- [x] UX link to redirect form prefilled (`/platform/redirects?from=`).
 
 ---
 
@@ -121,8 +122,9 @@ This iteration is intentionally **checklist-driven**: each row has status, remar
 
 ### DoD (80c)
 
-- [ ] Obvious bot comments blocked; legit comment regression test passes.
-- [ ] Honeypot filled → silent reject or 422.
+- [x] Obvious bot comments blocked; legit comment regression test passes.
+- [x] Honeypot filled → silent reject or 422 (silent 201 like newsletter).
+- [x] Quarantine status visible in admin comments inbox.
 
 ---
 
@@ -236,9 +238,11 @@ Until nginx is extended, redirects apply to requests that reach PHP (dev/proxy p
 
 ```text
 beta.31  — ✅ API keys UX fix pack (shipped)
-beta.32  — 80a (+ optionally 80b)
-beta.33  — 80c + 80d
-beta.34+ — 80e / 80f / 80g by priority
+beta.32  — ✅ 80a redirect manager (shipped)
+beta.33  — ✅ deploy pipeline fix (shipped)
+beta.34  — ✅ 80b 404 tracking (shipped)
+beta.35  — ✅ 80c comment spam heuristics (shipped)
+beta.36+ — 80d / 80e / …
 ```
 
 Adjust after first slice estimate.

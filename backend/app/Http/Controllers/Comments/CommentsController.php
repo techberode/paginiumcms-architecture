@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Controllers\Comments;
 
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
+use PaginiumCMS\Core\Security\ClientIpResolver;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\Validation\ValidationException;
 use PaginiumCMS\Core\Validation\Validator;
@@ -89,6 +90,30 @@ class CommentsController
             return $this->json->error($response, 'Anonymné komentáre sú pre tento článok vypnuté', 403);
         }
 
+        $clientIp = ClientIpResolver::resolve($request->getServerParams(), ClientIpResolver::trustedProxiesFromEnv());
+        $spamVerdict = $this->commentPolicy->evaluateSubmission($data, $clientIp);
+
+        if ($spamVerdict->isRejectSilent()) {
+            return $this->json->success(
+                $response,
+                [
+                    'id' => 'hp_' . bin2hex(random_bytes(8)),
+                    'articleSlug' => $articleSlug,
+                    'author' => (string) $validated['author'],
+                    'content' => (string) $validated['content'],
+                    'status' => Comment::STATUS_PENDING,
+                    'createdAt' => date('c'),
+                    'approvedAt' => null,
+                ],
+                201,
+                Lang::get('submitted', [], 'comments')
+            );
+        }
+
+        if ($spamVerdict->isReject()) {
+            return $this->json->error($response, Lang::get('spam_rejected', [], 'comments'), 422);
+        }
+
         $comment = new Comment(
             $articleSlug,
             (string) $validated['author'],
@@ -96,11 +121,14 @@ class CommentsController
         );
         $comment->setEmail((string) ($validated['email'] ?? ''));
 
-        if (!$policy['requireApproval']) {
+        if ($spamVerdict->isQuarantine()) {
+            $comment->setStatus(Comment::STATUS_QUARANTINE);
+        } elseif (!$policy['requireApproval']) {
             $comment->setStatus(Comment::STATUS_APPROVED);
         }
 
         $this->commentsRepository->save($comment);
+        $this->commentPolicy->recordSubmission($clientIp);
 
         return $this->json->success(
             $response,
@@ -154,7 +182,7 @@ class CommentsController
 
         if (isset($data['status'])) {
             $status = (string) $data['status'];
-            if (!in_array($status, [Comment::STATUS_PENDING, Comment::STATUS_APPROVED, Comment::STATUS_REJECTED], true)) {
+            if (!in_array($status, [Comment::STATUS_PENDING, Comment::STATUS_APPROVED, Comment::STATUS_REJECTED, Comment::STATUS_QUARANTINE], true)) {
                 return $this->json->error($response, Lang::get('invalid_status', [], 'comments'), 422);
             }
 
@@ -244,7 +272,7 @@ class CommentsController
             return $this->json->error($response, Lang::get('ids_required', [], 'comments'), 400);
         }
 
-        if (!in_array($status, [Comment::STATUS_PENDING, Comment::STATUS_APPROVED, Comment::STATUS_REJECTED], true)) {
+        if (!in_array($status, [Comment::STATUS_PENDING, Comment::STATUS_APPROVED, Comment::STATUS_REJECTED, Comment::STATUS_QUARANTINE], true)) {
             return $this->json->error($response, Lang::get('invalid_status', [], 'comments'), 422);
         }
 

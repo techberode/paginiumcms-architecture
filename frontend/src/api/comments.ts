@@ -2,7 +2,7 @@
 import apiClient from './client';
 import type { BulkBatchResult } from '../types/bulk';
 
-export type CommentStatus = 'pending' | 'approved' | 'rejected';
+export type CommentStatus = 'pending' | 'approved' | 'rejected' | 'quarantine';
 
 export interface Comment {
   id: string;
@@ -32,6 +32,7 @@ export async function submitComment(payload: {
   author: string;
   email?: string;
   content: string;
+  _hp?: string;
 }): Promise<{ ok: true; comment: Comment } | { ok: false; error: string }> {
   const res = await apiClient.post<Comment>('/api/comments', payload);
   if (res.success && res.data) {

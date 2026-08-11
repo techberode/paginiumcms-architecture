@@ -26,6 +26,7 @@ export const analyticsEn: MessageTree = {
     sources: 'Sources',
     devices: 'Devices',
     geo: 'Geography',
+    notFound: '404 report',
   },
   sections: {
     dailyViews: 'Daily views for the last :days days',
@@ -58,6 +59,24 @@ export const analyticsEn: MessageTree = {
     noPages: 'No page views in this period.',
     noSources: 'No traffic sources recorded yet.',
     noGeo: 'No geographic data yet.',
+  },
+  notFound: {
+    subtitle: 'Aggregated 404 hits on public routes (admin/API paths excluded).',
+    exportCsv: 'Export CSV',
+    loading: 'Loading 404 report…',
+    empty: 'No 404 hits recorded in this period.',
+    createRedirect: 'Create redirect',
+    columns: {
+      path: 'Path',
+      hits: 'Hits',
+      lastSeen: 'Last seen',
+      referer: 'Top referer',
+      actions: 'Actions',
+    },
+    toast: {
+      loadFailed: 'Failed to load 404 report',
+      exportFailed: 'Failed to export CSV',
+    },
   },
   chart: {
     visits: 'Visits',

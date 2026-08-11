@@ -26,6 +26,7 @@ export const analyticsSk: MessageTree = {
     sources: 'Zdroje',
     devices: 'Zariadenia',
     geo: 'Geografia',
+    notFound: '404 report',
   },
   sections: {
     dailyViews: 'Denné zobrazenia za posledných :days dní',
@@ -58,6 +59,24 @@ export const analyticsSk: MessageTree = {
     noPages: 'V tomto období žiadne zobrazenia stránok.',
     noSources: 'Zatiaľ žiadne zdroje návštevnosti.',
     noGeo: 'Zatiaľ žiadne geografické dáta.',
+  },
+  notFound: {
+    subtitle: 'Agregované 404 zásahy na verejných trasách (admin/API cesty sa nepočítajú).',
+    exportCsv: 'Export CSV',
+    loading: 'Načítavam 404 report…',
+    empty: 'V tomto období nie sú zaznamenané žiadne 404.',
+    createRedirect: 'Vytvoriť redirect',
+    columns: {
+      path: 'Cesta',
+      hits: 'Zásahy',
+      lastSeen: 'Naposledy',
+      referer: 'Top referer',
+      actions: 'Akcie',
+    },
+    toast: {
+      loadFailed: 'Nepodarilo sa načítať 404 report',
+      exportFailed: 'Export CSV zlyhal',
+    },
   },
   chart: {
     visits: 'Návštevy',

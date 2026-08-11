@@ -15,6 +15,8 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.35`](#release-2-1-0-beta-35) | 2026-08-11 | It.80c comment spam heuristics |
+| [`2.1.0-beta.34`](#release-2-1-0-beta-34) | 2026-08-11 | It.80b 404 tracking report |
 | [`2.1.0-beta.33`](#release-2-1-0-beta-33) | 2026-08-11 | Deploy pipeline fix; AppVersion from git tag |
 | [`2.1.0-beta.32`](#release-2-1-0-beta-32) | 2026-08-09 | It.80a redirect manager; API barrel fix |
 | [`2.1.0-beta.31`](#release-2-1-0-beta-31) | 2026-08-09 | API keys UX hardening; It.80 backlog spec |
@@ -106,6 +108,46 @@ This canonical history records release facts supported by the supplied `CHANGELO
 | [`1.0.0`](#release-1-0-0) | Initial structure | Initial repository structure |
 
 ## [Unreleased]
+
+<a id="release-2-1-0-beta-35"></a>
+
+## [2.1.0-beta.35] – 2026-08-11
+
+It.80c — comment spam heuristics (honeypot + scoring)
+
+### Added
+
+- **`CommentSpamHeuristicService`** — honeypot (`_hp`), link count, disposable e-mail domains, repetition, IP velocity scoring.
+- **`CommentSubmissionVelocityStore`** — hourly counters in `data/metrics/comment_velocity.json`.
+- **`DisposableEmailDomainList`** — static list at `backend/config/spam/disposable_email_domains.txt`.
+- **Comment status `quarantine`** — admin inbox filter; obvious spam → 422, suspicious → quarantine.
+- **Settings** — `spamHeuristicsEnabled`, thresholds and velocity limits under comments group.
+- **Frontend** — hidden honeypot in public comment form; quarantine filter in Comments admin.
+- PHPUnit: `CommentSpamHeuristicServiceTest`; controller honeypot/spam regression tests.
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.35`
+- **Docs:** [ITERATION_80](docs/en/ITERATION_80.md) checklist 80c.
+
+<a id="release-2-1-0-beta-34"></a>
+
+## [2.1.0-beta.34] – 2026-08-11
+
+It.80b — aggregated 404 tracking and admin report
+
+### Added
+
+- **`NotFoundHitStore`** — day+path aggregated counters in `data/metrics/404_hits.json` (90-day retention, sanitized referer hosts).
+- **`NotFoundTrackingMiddleware`** — records GET/HEAD 404 on public routes; skips admin/auth/health/debug/storage noise.
+- **Admin API** — `GET /api/admin/analytics/not-found`, `GET /api/admin/analytics/not-found/export.csv`.
+- **Frontend** — Analytics → **404 report** tab with CSV export and link to prefilled redirect form (`/platform/redirects?from=`).
+- PHPUnit: `NotFoundHitStoreTest`, `NotFoundTrackingMiddlewareTest`.
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.34`
+- **Docs:** [ITERATION_80](docs/en/ITERATION_80.md) checklist 80b.
 
 <a id="release-2-1-0-beta-33"></a>
 
