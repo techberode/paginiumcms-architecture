@@ -108,6 +108,11 @@ if [[ "${SKIP_COMPOSER:-0}" != "1" ]]; then
 fi
 
 if [[ "${SKIP_FRONTEND:-0}" != "1" ]]; then
+  if ! command -v npm >/dev/null 2>&1; then
+    echo "ERROR: npm not found — rebuild PHP image (Node in docker/php/Dockerfile) or run with SKIP_FRONTEND=1 and build on host:" >&2
+    echo "  cd \$APP_ROOT/frontend && npm ci && npm run build:prod" >&2
+    exit 127
+  fi
   echo "→ frontend build:prod"
   cd frontend
   npm ci
@@ -116,8 +121,8 @@ if [[ "${SKIP_FRONTEND:-0}" != "1" ]]; then
 fi
 
 if [[ "${SKIP_RESTART:-0}" != "1" && -n "$STACK_DIR" && -x "$STACK_DIR/stack.sh" ]]; then
-  echo "→ restart PHP via $STACK_DIR/stack.sh"
-  "$STACK_DIR/stack.sh" restart php
+  echo "→ recreate PHP via $STACK_DIR/stack.sh (reload code + opcache)"
+  "$STACK_DIR/stack.sh" up -d --force-recreate php
   echo "→ waiting ${HEALTH_WAIT_SEC}s (502 right after restart is normal — ISS-096)"
   sleep "$HEALTH_WAIT_SEC"
 elif [[ "${SKIP_RESTART:-0}" != "1" && -n "$STACK_DIR" ]]; then
