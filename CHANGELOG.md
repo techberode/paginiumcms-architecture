@@ -134,7 +134,7 @@ It.80d — outbound webhooks for content lifecycle events
 ### Release facts
 
 - **Tag:** `v2.1.0-beta.36`
-- **Commit:** `d2ced77`
+- **Commit:** `94f75ae`
 - **Docs:** [ITERATION_80](docs/en/ITERATION_80.md) checklist 80d.
 
 <a id="release-2-1-0-beta-35"></a>
