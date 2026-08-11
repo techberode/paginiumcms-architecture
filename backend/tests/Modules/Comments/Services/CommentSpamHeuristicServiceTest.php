@@ -112,7 +112,7 @@ final class CommentSpamHeuristicServiceTest extends TestCase
         $clientHash = hash('sha256', $ip);
 
         for ($i = 0; $i < 5; $i++) {
-            $this->service->recordSubmission($ip);
+            $this->velocityStore->record($clientHash);
         }
 
         $this->assertGreaterThanOrEqual(

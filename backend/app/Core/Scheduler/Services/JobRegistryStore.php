@@ -175,6 +175,15 @@ final class JobRegistryStore
                     'system' => true,
                     'payload' => [],
                 ],
+                [
+                    'id' => 'webhook-deliver',
+                    'name' => 'Outbound webhook delivery',
+                    'handler' => 'webhook.deliver',
+                    'cron' => '* * * * *',
+                    'enabled' => true,
+                    'system' => true,
+                    'payload' => [],
+                ],
             ],
         ];
     }

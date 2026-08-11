@@ -44,8 +44,8 @@ final class CommentSubmissionVelocityStore
         $total = 0;
 
         for ($i = 0; $i < $hours; $i++) {
-            $hour = gmdate('Y-m-d-H', strtotime('-' . $i . ' hours UTC'));
-            $total += (int) (($buckets[$hour][$clientHash] ?? 0));
+            $hour = gmdate('Y-m-d-H', time() - ($i * 3600));
+            $total += (int) ($buckets[$hour][$clientHash] ?? 0);
         }
 
         return $total;

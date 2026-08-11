@@ -50,6 +50,7 @@ import { DemoManager } from './components/backend/DemoManager';
 import { SystemUpdateView } from './components/backend/SystemUpdateView';
 import { ApiKeysManager } from './components/backend/ApiKeysManager';
 import { RedirectsManager } from './components/backend/RedirectsManager';
+import { WebhooksManager } from './components/backend/WebhooksManager';
 import { debugLog } from './utils/debugLog';
 import { ADMIN_DEFAULT_ROUTE } from './config/adminNavSections';
 
@@ -187,6 +188,7 @@ function App() {
         <Route path="/platform/update" element={<SystemUpdateView />} />
         <Route path="/platform/api-keys" element={<ApiKeysManager />} />
         <Route path="/platform/redirects" element={<RedirectsManager />} />
+        <Route path="/platform/webhooks" element={<WebhooksManager />} />
         <Route path="/settings" element={<SettingsView />} />
         <Route path="/translations" element={<TranslationEditor />} />
         <Route path="/account/security" element={<AccountSecurityView />} />

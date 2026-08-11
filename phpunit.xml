@@ -23,5 +23,6 @@
         <env name="APP_ENV" value="testing" force="true"/>
         <env name="APP_DEBUG" value="true" force="true"/>
         <env name="DEMO_MODE" value="false" force="true"/>
+        <env name="APP_KEY" value="base64:BGtLQwdzAE7ajivCghMa98DyudMghYZEkXKw5PJ/aUE=" force="true"/>
     </php>
 </phpunit>

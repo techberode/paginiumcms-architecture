@@ -60,6 +60,13 @@ class AuthorizationManager implements AuthorizationInterface
                 $permissions = PermissionCatalog::normalizeList($permissions);
             }
 
+            if ($role === AuthorizationInterface::ROLE_ADMIN
+                && !in_array('webhooks:manage', $permissions, true)
+            ) {
+                $permissions[] = 'webhooks:manage';
+                $permissions = PermissionCatalog::normalizeList($permissions);
+            }
+
             if ($permissions !== []) {
                 $this->rolePermissions[$role] = $permissions;
             }

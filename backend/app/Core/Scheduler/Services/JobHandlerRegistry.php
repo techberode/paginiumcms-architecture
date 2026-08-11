@@ -10,6 +10,7 @@ use PaginiumCMS\Core\Scheduler\Handlers\ContentScheduledPublishHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\GitPublishHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\MonitoringPipelineHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\SystemDeployHandler;
+use PaginiumCMS\Core\Scheduler\Handlers\WebhookDeliveryHandler;
 use PaginiumCMS\Modules\Newsletter\Handlers\NewsletterWeeklyDigestHandler;
 
 /**
@@ -24,6 +25,7 @@ final class JobHandlerRegistry
         private SystemDeployHandler $systemDeploy,
         private NewsletterWeeklyDigestHandler $newsletterWeeklyDigest,
         private GitPublishHandler $gitPublish,
+        private WebhookDeliveryHandler $webhookDeliver,
     ) {
     }
 
@@ -36,6 +38,7 @@ final class JobHandlerRegistry
             'system.deploy' => $this->systemDeploy,
             'newsletter.weekly_digest' => $this->newsletterWeeklyDigest,
             'git.publish' => $this->gitPublish,
+            'webhook.deliver' => $this->webhookDeliver,
             default => null,
         };
     }
@@ -52,6 +55,7 @@ final class JobHandlerRegistry
             ['key' => $this->systemDeploy->key(), 'label' => $this->systemDeploy->label()],
             ['key' => $this->newsletterWeeklyDigest->key(), 'label' => $this->newsletterWeeklyDigest->label()],
             ['key' => $this->gitPublish->key(), 'label' => $this->gitPublish->label()],
+            ['key' => $this->webhookDeliver->key(), 'label' => $this->webhookDeliver->label()],
         ];
     }
 }

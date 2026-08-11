@@ -29,6 +29,7 @@ final class PermissionCatalog
         'metrics:read',
         'api-keys:manage',
         'redirects:manage',
+        'webhooks:manage',
         'profile:edit',
     ];
 
@@ -56,6 +57,7 @@ final class PermissionCatalog
                 'metrics:read',
                 'api-keys:manage',
                 'redirects:manage',
+                'webhooks:manage',
             ],
             AuthorizationInterface::ROLE_EDITOR => [
                 'content:create',

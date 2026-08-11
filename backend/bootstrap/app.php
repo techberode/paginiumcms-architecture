@@ -1005,5 +1005,6 @@ if (DebugEventLogger::isEnabled()) {
 $container->get(DemoStorageService::class)->ensureSeededSafely();
 
 $container->get(\PaginiumCMS\Modules\Newsletter\Services\NewsletterHookRegistrar::class)->register();
+$container->get(\PaginiumCMS\Core\Webhooks\Services\WebhookHookRegistrar::class)->register();
 
 return $app;

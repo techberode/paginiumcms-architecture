@@ -101,6 +101,11 @@ use PaginiumCMS\Core\Feeds\Services\RobotsTxtGenerator;
 use PaginiumCMS\Core\Feeds\Services\SitemapGenerator;
 use PaginiumCMS\Core\Seo\Services\NotFoundHitStore;
 use PaginiumCMS\Core\Seo\Services\RedirectStore;
+use PaginiumCMS\Core\Webhooks\Services\OutboundWebhookDispatcher;
+use PaginiumCMS\Core\Webhooks\Services\WebhookDeliveryService;
+use PaginiumCMS\Core\Webhooks\Services\WebhookDeliveryStore;
+use PaginiumCMS\Core\Webhooks\Services\WebhookHookRegistrar;
+use PaginiumCMS\Core\Webhooks\Services\WebhookRegistryStore;
 use PaginiumCMS\Core\Seo\Services\SeoMetaBuilder;
 use PaginiumCMS\Core\Security\ClientIpResolver;
 use PaginiumCMS\Core\Security\SecurityLogger;
@@ -164,6 +169,7 @@ use PaginiumCMS\Http\Controllers\Admin\AclController;
 use PaginiumCMS\Http\Controllers\Admin\SecurityAuditController;
 use PaginiumCMS\Http\Controllers\Admin\ApiKeyController;
 use PaginiumCMS\Http\Controllers\Admin\NotFoundReportController;
+use PaginiumCMS\Http\Controllers\Admin\WebhookController;
 use PaginiumCMS\Http\Controllers\Admin\RedirectController;
 use PaginiumCMS\Http\Controllers\Headless\HeadlessTokenController;
 use PaginiumCMS\Http\Controllers\Admin\SettingsController;
@@ -1186,6 +1192,31 @@ return [
         ->constructor(get(\PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface::class)),
     NotFoundHitStore::class => create(NotFoundHitStore::class)
         ->constructor(get(\PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface::class)),
+    WebhookRegistryStore::class => create(WebhookRegistryStore::class)
+        ->constructor(
+            get(\PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface::class),
+            get(\PaginiumCMS\Core\Security\Services\EncryptionService::class)
+        ),
+    WebhookDeliveryStore::class => create(WebhookDeliveryStore::class)
+        ->constructor(get(\PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface::class)),
+    WebhookDeliveryService::class => create(WebhookDeliveryService::class)
+        ->constructor(
+            get(WebhookRegistryStore::class),
+            get(WebhookDeliveryStore::class)
+        ),
+    OutboundWebhookDispatcher::class => create(OutboundWebhookDispatcher::class)
+        ->constructor(
+            get(WebhookRegistryStore::class),
+            get(WebhookDeliveryStore::class),
+            get(\PaginiumCMS\Core\Scheduler\Services\JobRegistryStore::class),
+            get(\PaginiumCMS\Core\Scheduler\Services\JobQueueStore::class),
+            get(\PaginiumCMS\Core\Scheduler\Services\JobWorker::class)
+        ),
+    WebhookHookRegistrar::class => create(WebhookHookRegistrar::class)
+        ->constructor(
+            get(HookManager::class),
+            get(OutboundWebhookDispatcher::class)
+        ),
     PurgeContentCacheCommand::class => create(PurgeContentCacheCommand::class)
         ->constructor(
             get(ContentCacheService::class),
@@ -1233,6 +1264,13 @@ return [
     NotFoundReportController::class => create(NotFoundReportController::class)
         ->constructor(
             get(NotFoundHitStore::class),
+            get(JsonResponder::class)
+        ),
+    WebhookController::class => create(WebhookController::class)
+        ->constructor(
+            get(WebhookRegistryStore::class),
+            get(WebhookDeliveryStore::class),
+            get(OutboundWebhookDispatcher::class),
             get(JsonResponder::class)
         ),
     HeadlessTokenController::class => create(HeadlessTokenController::class)

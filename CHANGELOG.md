@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.36`](#release-2-1-0-beta-36) | 2026-08-11 | It.80d outbound webhooks |
 | [`2.1.0-beta.35`](#release-2-1-0-beta-35) | 2026-08-11 | It.80b 404 tracking + It.80c comment spam (bundled; beta.34 slice skipped) |
 | [`2.1.0-beta.33`](#release-2-1-0-beta-33) | 2026-08-11 | Deploy pipeline fix; AppVersion from git tag |
 | [`2.1.0-beta.32`](#release-2-1-0-beta-32) | 2026-08-09 | It.80a redirect manager; API barrel fix |
@@ -107,6 +108,34 @@ This canonical history records release facts supported by the supplied `CHANGELO
 | [`1.0.0`](#release-1-0-0) | Initial structure | Initial repository structure |
 
 ## [Unreleased]
+
+<a id="release-2-1-0-beta-36"></a>
+
+## [2.1.0-beta.36] – 2026-08-11
+
+It.80d — outbound webhooks for content lifecycle events
+
+### Added — It.80d (outbound webhooks)
+
+- **`WebhookRegistryStore`** — flat-file registrations in `data/webhooks.json`; HTTPS URL via `OutboundUrlGuard`; signing secret encrypted at rest (`APP_KEY`).
+- **`WebhookDeliveryStore`** — delivery log + retry queue in `data/webhooks/deliveries.json` (exponential backoff, dead-letter after 5 attempts).
+- **Events** — `content.published`, `content.updated` from content hooks; `webhook.test` for admin ping.
+- **Job** — system job `webhook-deliver` / handler `webhook.deliver` (queue + cron retry).
+- **Admin API** — `GET/POST/PUT/DELETE /api/admin/platform/webhooks`, rotate secret, test ping, delivery history.
+- **Permission** — `webhooks:manage` (auto-appended for ADMIN like API keys / redirects).
+- **Frontend** — `/platform/webhooks` manager with copy-once secret, event toggles, test ping, delivery log.
+- PHPUnit: `WebhookRegistryStoreTest`, `WebhookControllerTest`.
+
+### Fixed
+
+- Restored inbound GitHub release webhook route (`POST /api/webhooks/github/release`) alongside admin outbound routes.
+- PHPUnit: `APP_KEY` in test bootstrap for webhook secret encryption; velocity store hour bucketing; webhook controller test isolation.
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.36`
+- **Commit:** `d2ced77`
+- **Docs:** [ITERATION_80](docs/en/ITERATION_80.md) checklist 80d.
 
 <a id="release-2-1-0-beta-35"></a>
 
