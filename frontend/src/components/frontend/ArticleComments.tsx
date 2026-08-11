@@ -30,6 +30,7 @@ export const ArticleComments: React.FC<ArticleCommentsProps> = ({
   const [author, setAuthor] = useState('');
   const [email, setEmail] = useState('');
   const [content, setContent] = useState('');
+  const [honeypot, setHoneypot] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
@@ -60,7 +61,7 @@ export const ArticleComments: React.FC<ArticleCommentsProps> = ({
     }
 
     setSubmitting(true);
-    const result = await submitComment({ articleSlug, author, email, content });
+    const result = await submitComment({ articleSlug, author, email, content, _hp: honeypot });
     setSubmitting(false);
     if (result.ok) {
       toast.success(
@@ -125,6 +126,16 @@ export const ArticleComments: React.FC<ArticleCommentsProps> = ({
           <button type="submit" className={`${BTN_PRIMARY} px-6 py-2.5`} disabled={submitting}>
             {submitting ? t('public.comments.form.submitting') : t('public.comments.form.submit')}
           </button>
+          <input
+            type="text"
+            name="_hp"
+            tabIndex={-1}
+            autoComplete="off"
+            className="hidden"
+            aria-hidden="true"
+            value={honeypot}
+            onChange={(e) => setHoneypot(e.target.value)}
+          />
         </form>
       ) : (
         <p className="text-sm text-theme-text-muted">

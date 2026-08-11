@@ -11,6 +11,7 @@ export const commentsSk: MessageTree = {
   filter: {
     all: 'Všetky',
     pending: 'Čakajúce',
+    quarantine: 'Karanténa',
     approved: 'Schválené',
     rejected: 'Zamietnuté',
   },
@@ -18,6 +19,7 @@ export const commentsSk: MessageTree = {
     pending: 'Čaká',
     approved: 'Schválené',
     rejected: 'Zamietnuté',
+    quarantine: 'Karanténa',
     archived: 'Archivované',
   },
   table: {

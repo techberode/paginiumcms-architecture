@@ -121,4 +121,36 @@ class CommentsControllerTest extends TestCase
         $this->assertTrue($verifyData['success']);
         $this->assertSame(Comment::STATUS_APPROVED, $verifyData['comment']['status'] ?? null);
     }
+
+    public function testHoneypotReturnsSilentSuccess(): void
+    {
+        $submitRequest = $this->createJsonRequest('POST', '/api/comments', [
+            'articleSlug' => 'hp-comment-' . uniqid('', true),
+            'author' => 'Bot',
+            'content' => 'spam payload',
+            '_hp' => 'filled',
+        ]);
+        $submitResponse = $this->handleRequest($submitRequest);
+        $submitData = $this->getJsonResponse($submitResponse);
+
+        $this->assertSame(201, $submitResponse->getStatusCode());
+        $this->assertTrue($submitData['success']);
+        $this->assertStringStartsWith('hp_', (string) ($submitData['data']['id'] ?? ''));
+    }
+
+    public function testObviousSpamIsRejected(): void
+    {
+        $submitRequest = $this->createJsonRequest('POST', '/api/comments', [
+            'articleSlug' => 'spam-comment-' . uniqid('', true),
+            'author' => 'Spammer',
+            'email' => 'bot@mailinator.com',
+            'content' => 'http://a.com http://b.com http://c.com http://d.com http://e.com buy now',
+            '_hp' => '',
+        ]);
+        $submitResponse = $this->handleRequest($submitRequest);
+        $submitData = $this->getJsonResponse($submitResponse);
+
+        $this->assertSame(422, $submitResponse->getStatusCode());
+        $this->assertFalse($submitData['success']);
+    }
 }

@@ -31,6 +31,10 @@ return function (App $app): void {
         $group->get('/overview', [$controller, 'overview']);
         $group->get('/chart', [$controller, 'chart']);
         $group->get('/realtime', [$controller, 'realtime']);
+
+        $notFound = $container->get(\PaginiumCMS\Http\Controllers\Admin\NotFoundReportController::class);
+        $group->get('/not-found', [$notFound, 'index']);
+        $group->get('/not-found/export.csv', [$notFound, 'export']);
     })
         ->add(new RoleMiddleware($container->get(AuthorizationInterface::class), ['ADMIN', 'SUPER_ADMIN']))
         ->add($container->get(TwoFactorMiddleware::class))

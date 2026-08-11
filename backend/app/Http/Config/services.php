@@ -99,6 +99,7 @@ use PaginiumCMS\Core\FlatFile\Services\TrashService;
 use PaginiumCMS\Core\Feeds\Services\FeedGenerator;
 use PaginiumCMS\Core\Feeds\Services\RobotsTxtGenerator;
 use PaginiumCMS\Core\Feeds\Services\SitemapGenerator;
+use PaginiumCMS\Core\Seo\Services\NotFoundHitStore;
 use PaginiumCMS\Core\Seo\Services\RedirectStore;
 use PaginiumCMS\Core\Seo\Services\SeoMetaBuilder;
 use PaginiumCMS\Core\Security\ClientIpResolver;
@@ -162,6 +163,7 @@ use PaginiumCMS\Http\Controllers\Admin\BlueprintController;
 use PaginiumCMS\Http\Controllers\Admin\AclController;
 use PaginiumCMS\Http\Controllers\Admin\SecurityAuditController;
 use PaginiumCMS\Http\Controllers\Admin\ApiKeyController;
+use PaginiumCMS\Http\Controllers\Admin\NotFoundReportController;
 use PaginiumCMS\Http\Controllers\Admin\RedirectController;
 use PaginiumCMS\Http\Controllers\Headless\HeadlessTokenController;
 use PaginiumCMS\Http\Controllers\Admin\SettingsController;
@@ -204,6 +206,9 @@ use PaginiumCMS\Http\Middleware\AnalyticsPageviewRateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\DeveloperModeMiddleware;
 use PaginiumCMS\Modules\Comments\Contracts\CommentsRepositoryInterface;
 use PaginiumCMS\Modules\Comments\Services\CommentPolicyResolver;
+use PaginiumCMS\Modules\Comments\Services\CommentSpamHeuristicService;
+use PaginiumCMS\Modules\Comments\Services\CommentSubmissionVelocityStore;
+use PaginiumCMS\Modules\Comments\Services\DisposableEmailDomainList;
 use PaginiumCMS\Modules\Comments\Services\CommentsRepository;
 use PaginiumCMS\Modules\Messages\Contracts\MessageRepositoryInterface;
 use PaginiumCMS\Modules\Messages\Services\MessageRepository;
@@ -617,7 +622,16 @@ return [
     CommentPolicyResolver::class => create(CommentPolicyResolver::class)
         ->constructor(
             get(SettingsRepositoryInterface::class),
-            get(ContentRepositoryInterface::class)
+            get(ContentRepositoryInterface::class),
+            get(CommentSpamHeuristicService::class)
+        ),
+    DisposableEmailDomainList::class => create(DisposableEmailDomainList::class),
+    CommentSubmissionVelocityStore::class => create(CommentSubmissionVelocityStore::class),
+    CommentSpamHeuristicService::class => create(CommentSpamHeuristicService::class)
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(DisposableEmailDomainList::class),
+            get(CommentSubmissionVelocityStore::class)
         ),
     CommentsController::class => create(CommentsController::class)
         ->constructor(
@@ -1170,6 +1184,8 @@ return [
         ->constructor(get(SettingsRepositoryInterface::class)),
     RedirectStore::class => create(RedirectStore::class)
         ->constructor(get(\PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface::class)),
+    NotFoundHitStore::class => create(NotFoundHitStore::class)
+        ->constructor(get(\PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface::class)),
     PurgeContentCacheCommand::class => create(PurgeContentCacheCommand::class)
         ->constructor(
             get(ContentCacheService::class),
@@ -1212,6 +1228,11 @@ return [
     RedirectController::class => create(RedirectController::class)
         ->constructor(
             get(RedirectStore::class),
+            get(JsonResponder::class)
+        ),
+    NotFoundReportController::class => create(NotFoundReportController::class)
+        ->constructor(
+            get(NotFoundHitStore::class),
             get(JsonResponder::class)
         ),
     HeadlessTokenController::class => create(HeadlessTokenController::class)

@@ -17,4 +17,5 @@ return [
     'bulk_updated' => 'Hromadná aktualizácia komentárov dokončená',
     'bulk_deleted' => 'Hromadné mazanie komentárov dokončené',
     'invalid_action' => 'Neplatná hromadná akcia',
+    'spam_rejected' => 'Komentár sa nepodarilo odoslať. Skontrolujte text a skúste znova.',
 ];

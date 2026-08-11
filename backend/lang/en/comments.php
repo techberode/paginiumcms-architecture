@@ -17,4 +17,5 @@ return [
     'bulk_updated' => 'Bulk comment update completed',
     'bulk_deleted' => 'Bulk comment delete completed',
     'invalid_action' => 'Invalid bulk action',
+    'spam_rejected' => 'Comment could not be submitted. Please review your message and try again.',
 ];

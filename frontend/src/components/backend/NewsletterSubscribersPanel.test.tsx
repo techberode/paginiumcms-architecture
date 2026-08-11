@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import { NewsletterSubscribersPanel } from './NewsletterSubscribersPanel';
 import { renderWithRouter } from '../../test/renderWithRouter';
@@ -7,6 +7,21 @@ const mocks = vi.hoisted(() => ({
   list: vi.fn(),
   exportCsv: vi.fn(),
   sendStatus: vi.fn(),
+}));
+
+vi.mock('../../utils/debugLog', () => ({
+  debugLog: vi.fn(),
+  debugLogApi: vi.fn(),
+  debugLogProvider: vi.fn(),
+  isDebugEnabled: () => false,
+  shouldSendDebugToBackend: () => false,
+  initDebugMonitoring: vi.fn(),
+  logFrontendStartup: vi.fn(),
+  resetDebugMonitoringForTests: vi.fn(),
+}));
+
+vi.mock('./NewsletterSettingsPanel', () => ({
+  NewsletterSettingsPanel: () => null,
 }));
 
 vi.mock('../../api/newsletter', () => ({
@@ -57,6 +72,10 @@ describe('NewsletterSubscribersPanel', () => {
       newArticleEnabled: false,
       lastWeeklyDigestAt: null,
     });
+  });
+
+  afterEach(async () => {
+    await Promise.resolve();
   });
 
   it('renders subscriber table', async () => {

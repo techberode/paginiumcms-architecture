@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { ArrowRightLeft, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import { redirectsApi, type RedirectRule } from '../../api/redirects';
 import { useToast } from '../../hooks/useToast';
@@ -7,6 +8,7 @@ import { useI18n } from '../../context/I18nContext';
 export const RedirectsManager: React.FC = () => {
   const { t } = useI18n();
   const toast = useToast();
+  const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [rules, setRules] = useState<RedirectRule[]>([]);
   const [showCreate, setShowCreate] = useState(false);
@@ -32,6 +34,14 @@ export const RedirectsManager: React.FC = () => {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    const prefilledFrom = searchParams.get('from')?.trim();
+    if (prefilledFrom) {
+      setFrom(prefilledFrom);
+      setShowCreate(true);
+    }
+  }, [searchParams]);
 
   const handleCreate = async () => {
     if (!from.trim() || !to.trim()) {

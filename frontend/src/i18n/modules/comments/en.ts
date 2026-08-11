@@ -11,6 +11,7 @@ export const commentsEn: MessageTree = {
   filter: {
     all: 'All',
     pending: 'Pending',
+    quarantine: 'Quarantine',
     approved: 'Approved',
     rejected: 'Rejected',
   },
@@ -18,6 +19,7 @@ export const commentsEn: MessageTree = {
     pending: 'Pending',
     approved: 'Approved',
     rejected: 'Rejected',
+    quarantine: 'Quarantine',
     archived: 'Archived',
   },
   table: {

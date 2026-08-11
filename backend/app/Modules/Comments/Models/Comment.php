@@ -11,6 +11,7 @@ class Comment implements JsonSerializable
     public const STATUS_PENDING = 'pending';
     public const STATUS_APPROVED = 'approved';
     public const STATUS_REJECTED = 'rejected';
+    public const STATUS_QUARANTINE = 'quarantine';
 
     private string $id;
     private string $articleSlug;

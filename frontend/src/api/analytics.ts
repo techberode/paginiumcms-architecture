@@ -104,3 +104,30 @@ export interface RealtimeSnapshot {
   active_page_views: number;
   top_active_pages: Array<{ uri: string; views: number }>;
 }
+
+export interface NotFoundPathRow {
+  path: string;
+  hits: number;
+  lastSeen: string;
+  topReferer: string | null;
+}
+
+export interface NotFoundReport {
+  days: number;
+  paths: NotFoundPathRow[];
+}
+
+export async function getNotFoundReport(days = 7, limit = 50): Promise<NotFoundReport | null> {
+  const res = await apiClient.get<NotFoundReport>('/api/admin/analytics/not-found', {
+    params: { days, limit },
+  });
+  return res.success && res.data ? res.data : null;
+}
+
+export async function exportNotFoundCsv(days = 7): Promise<Blob> {
+  const response = await apiClient.get('/api/admin/analytics/not-found/export.csv', {
+    params: { days },
+    responseType: 'blob',
+  });
+  return response.data as Blob;
+}
