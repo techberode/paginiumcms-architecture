@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Cookie, Settings2, X } from 'lucide-react';
 import { useCookieConsent } from '../../context/CookieConsentContext';
 import { useI18n } from '../../context/I18nContext';
 import { BTN_PRIMARY } from '../../theme/publicUiClasses';
+import { resolveCookiePolicyHref } from '../../utils/cookiePolicyUrl';
 
 export const CookieConsentBanner: React.FC = () => {
   const { t } = useI18n();
@@ -36,6 +38,7 @@ export const CookieConsentBanner: React.FC = () => {
   }
 
   const text = bannerText || t('public.cookies.defaultText');
+  const policy = resolveCookiePolicyHref(policyUrl);
 
   return (
     <>
@@ -51,16 +54,23 @@ export const CookieConsentBanner: React.FC = () => {
               <Cookie className="mt-0.5 h-5 w-5 shrink-0 text-theme-accent" />
               <div className="min-w-0">
                 <p className="text-sm text-theme-text leading-relaxed">{text}</p>
-                {policyUrl ? (
+                {policy.external ? (
                   <a
-                    href={policyUrl}
+                    href={policy.href}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="mt-1 inline-block text-xs font-medium text-theme-primary hover:underline"
                   >
                     {t('public.cookies.policyLink')}
                   </a>
-                ) : null}
+                ) : (
+                  <Link
+                    to={policy.href}
+                    className="mt-1 inline-block text-xs font-medium text-theme-primary hover:underline"
+                  >
+                    {t('public.cookies.policyLink')}
+                  </Link>
+                )}
               </div>
             </div>
             <div className="flex flex-wrap gap-2 shrink-0">

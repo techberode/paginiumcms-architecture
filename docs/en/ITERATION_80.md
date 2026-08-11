@@ -36,7 +36,7 @@ This iteration is intentionally **checklist-driven**: each row has status, remar
 | **80b** | 404 tracking report | 🟡 P2 | ✅ shipped (`beta.35`) | **Med / Low** | Log anonymous 404 hits (path, referer sanitized, UA hash, day bucket); admin dashboard table + CSV export. | Reuse `AccessLogService` / `PerformanceSampleStore` / audit sanitization patterns. Skip admin/API paths noise. | **80a** (shared middleware hook) recommended |
 | **80c** | Comment spam heuristics | 🟡 P3 | ✅ shipped (`beta.35`) | **Med / Low** | Honeypot field + rate/heuristic score in `CommentPolicyResolver`; quarantine or reject before public scale. | No CAPTCHA vendor lock-in in MVP; optional Akismet-style adapter later. Regression tests for legit comments. | existing comment policy |
 | **80d** | Outbound webhooks | 🟡 P4 | ✅ shipped (`beta.36`) | **Med / Med** | Events `content.published`, `content.updated` → queued POST to registered URL (Slack/Discord/Zapier). | `OutboundUrlGuard` mandatory; HMAC signing secret; retry + dead-letter in flat-file queue; no payload secrets in logs. | Scheduler/Jobs · [It.74](ITERATION_74.md) optional for remote receivers |
-| **80e** | GDPR export / anonymize | 🔵 P5 | ⏳ planned | **Med / Med** | `GET /api/users/{id}/export` aggregates user data from flat-file sources; admin anonymize action for comments/newsletter/subscriber rows. | Not a full DPA product; document limits (backups, logs retention). Permission + audit on export. | user/newsletter/comment stores |
+| **80e** | GDPR export / anonymize | 🔵 P5 | ✅ shipped (`beta.37`) | **Med / Med** | `GET /api/admin/users/{id}/gdpr/export` aggregates user data from flat-file sources; admin anonymize action for comments/newsletter/subscriber rows. | Not a full DPA product; document limits (backups, logs retention). Permission + audit on export. | user/newsletter/comment stores |
 | **80f** | CLI toolkit | 🔵 P6 | ⏳ planned | **Med / Med** | `bin/paginium` or extend `bin/console`: `content:import`, `content:export`, `user:create`, `redirect:validate`. | Prefer same validators as HTTP; no bypass of Path ACL unless `--system` + SUPER_ADMIN shell. Useful with It.74 keys in CI for HTTP path. | console bootstrap |
 | **80g** | Import from other CMS | 🔵 P7 | ⏳ planned | **High / High** | WordPress XML, Jekyll Markdown, Ghost JSON → flat-file pages/articles/media refs. | Phase 1: pages+posts only; dry-run; idempotent slug map; media URLs rewritten not downloaded in MVP. | **80f** CLI · [It.73](ITERATION_73.md) locale rules |
 
@@ -152,9 +152,9 @@ Events MVP: `content.published`, `content.updated` (page + article).
 
 ### DoD (80e)
 
-- [ ] Export downloadable by authorized admin.
-- [ ] Anonymize irreversible for email/name fields in primary stores.
-- [ ] Documented in `docs/en/developer/SECURITY.md` retention section.
+- [x] Export downloadable by authorized admin.
+- [x] Anonymize irreversible for email/name fields in primary stores.
+- [x] Documented in `docs/en/developer/SECURITY.md` retention section.
 
 ---
 
@@ -242,7 +242,7 @@ beta.32  — ✅ 80a redirect manager (shipped)
 beta.33  — ✅ deploy pipeline fix (shipped)
 beta.35  — ✅ 80b + 80c bundled (404 tracking + comment spam; planned beta.34 skipped)
 beta.36  — ✅ 80d outbound webhooks (shipped)
-beta.37+ — 80e / 80f / …
+beta.38+ — 80f / 80g / …
 ```
 
 Adjust after first slice estimate.

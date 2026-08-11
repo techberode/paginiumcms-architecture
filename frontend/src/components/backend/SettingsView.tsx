@@ -41,6 +41,7 @@ import { AppearanceSettingsPanel } from '../admin/AppearanceSettingsPanel';
 import { LayoutSettingsPanel } from '../admin/LayoutSettingsPanel';
 import { CmsInfoSettingsPanel } from './CmsInfoSettingsPanel';
 import { EngineSettingsPanel } from './EngineSettingsPanel';
+import { PrivacyCookieSettingsPanel } from './PrivacyCookieSettingsPanel';
 import { TimezoneSelect } from './TimezoneSelect';
 import { MaintenanceModeSelect } from './MaintenanceModeSelect';
 import { useAuth } from '../../hooks/useAuth';
@@ -361,6 +362,8 @@ export const SettingsView: React.FC = () => {
                     ))}
                     <EngineSettingsPanel meta={engineMeta} />
                   </>
+                ) : activeGroup === 'privacy' ? (
+                  <PrivacyCookieSettingsPanel register={register} watch={watch} setValue={setValue} />
                 ) : (
                   group.fields.map((field) => (
                     <SettingFieldRow

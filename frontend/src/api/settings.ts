@@ -170,6 +170,17 @@ export interface PublicSettings {
     cookieBannerText?: string;
     cookiePolicyUrl?: string;
     cookieShowRejectButton?: boolean;
+    cookiePolicyPageTitle?: string;
+    cookiePolicyIntro?: string;
+    cookiePolicySectionsJson?: string;
+    privacyContactName?: string;
+    privacyContactEmail?: string;
+    privacyContactPhone?: string;
+    privacyContactAddress?: string;
+    cookiePolicyShowCategoriesTable?: boolean;
+    cookiePolicyShowStorageInventory?: boolean;
+    cookiePolicyShowDefaultRights?: boolean;
+    cookiePolicyShowManagePanel?: boolean;
   };
   appearance?: {
     colorScheme: string;

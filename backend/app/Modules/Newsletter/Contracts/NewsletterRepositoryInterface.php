@@ -48,6 +48,25 @@ interface NewsletterRepositoryInterface
     public function findAll(): array;
 
     /**
+     * @return array{
+     *     id: string,
+     *     email: string,
+     *     subscribedAt: string,
+     *     source: string,
+     *     preferences: list<string>,
+     *     consentAt: ?string,
+     *     status: string,
+     *     unsubscribedAt: ?string
+     * }|null
+     */
+    public function findByEmail(string $email): ?array;
+
+    /**
+     * Replaces subscriber email with a pseudonym address (Irreversible for the original email).
+     */
+    public function anonymizeEmail(string $email, string $pseudonymEmail): bool;
+
+    /**
      * @return array<string, int>
      */
     public function countBySource(): array;

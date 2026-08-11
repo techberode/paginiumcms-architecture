@@ -248,6 +248,28 @@ export const settingsEn: MessageTree = {
       }
     }
   },
+  "privacy": {
+    "panel": {
+      "title": "Cookies & GDPR page editor",
+      "description": "Configure the public banner, /cookies page content, legal blocks, and contact details.",
+      "preview": "Preview policy page",
+      "bannerTitle": "Cookie banner",
+      "pageTitle": "Policy page header",
+      "blocksTitle": "Custom GDPR blocks",
+      "blocksHint": "Add legal sections (controller, legal basis, retention, subprocessors, etc.). Plain text only.",
+      "blocksEmpty": "No custom blocks yet.",
+      "addBlock": "Add block",
+      "blockLabel": "Block {index}",
+      "blockTitlePlaceholder": "Section title (e.g. Data controller)",
+      "blockBodyPlaceholder": "Section body — plain text, line breaks preserved.",
+      "removeBlock": "Remove block",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "contactTitle": "GDPR contact",
+      "contactHint": "Shown on /cookies. Empty fields fall back to Company settings where available.",
+      "sectionsTitle": "Built-in page sections"
+    }
+  },
   "accessControl": {
     "superAdminTitle": "Super administrator only",
     "superAdminHint": "Permission mapping for ADMIN, EDITOR, and USER roles plus path ACL rules can only be changed by SUPER_ADMIN. SUPER_ADMIN always has full access.",
@@ -676,11 +698,51 @@ export const settingsEn: MessageTree = {
       },
       "cookiePolicyUrl": {
         "label": "Cookie / privacy policy URL",
-        "help": "Optional link to your privacy policy page."
+        "help": "Optional. Empty = built-in page at /cookies. Relative path or external URL."
       },
       "cookieShowRejectButton": {
         "label": "Show “Reject optional” button",
         "help": "Enabled = visitors can reject optional cookies while keeping necessary ones."
+      },
+      "cookiePolicyPageTitle": {
+        "label": "Cookie page title",
+        "help": "Empty = default translated title on /cookies."
+      },
+      "cookiePolicyIntro": {
+        "label": "Cookie page intro",
+        "help": "Custom introduction shown under the page title. Empty = default i18n text."
+      },
+      "cookiePolicySectionsJson": {
+        "label": "GDPR content blocks (JSON)",
+        "help": "Managed by the visual block editor below."
+      },
+      "privacyContactName": {
+        "label": "Name or controller",
+        "help": "Displayed on /cookies. Empty = Company legal name or display name."
+      },
+      "privacyContactEmail": {
+        "label": "E-mail",
+        "help": "Empty = Company e-mail."
+      },
+      "privacyContactPhone": {
+        "label": "Phone",
+        "help": "Empty = Company phone."
+      },
+      "privacyContactAddress": {
+        "label": "GDPR contact — address",
+        "help": "Empty = Company settings address."
+      },
+      "cookiePolicyShowCategoriesTable": {
+        "label": "Show cookie categories table"
+      },
+      "cookiePolicyShowStorageInventory": {
+        "label": "Show technical storage inventory"
+      },
+      "cookiePolicyShowDefaultRights": {
+        "label": "Show “Your choices” section"
+      },
+      "cookiePolicyShowManagePanel": {
+        "label": "Show consent management panel"
       }
     },
     "login": {

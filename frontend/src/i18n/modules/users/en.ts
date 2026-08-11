@@ -88,4 +88,17 @@ export const usersEn: MessageTree = {
     badge: 'SuperAdmin mode',
     hint: 'You can assign the super administrator role and view 2FA secrets.',
   },
+  gdpr: {
+    title: 'GDPR tools',
+    hint: 'Export personal data held in primary flat-file stores or irreversibly anonymize this account.',
+    exportZip: 'Download ZIP export',
+    exportSuccess: 'GDPR export downloaded.',
+    exportFailed: 'GDPR export failed.',
+    anonymize: 'Anonymize account',
+    anonymizeConfirm: 'Irreversibly anonymize :email? Email and name will be replaced with a stable pseudonym across users, comments, newsletter, and contact messages.',
+    anonymizeSuccess: 'Account anonymized.',
+    anonymizeFailed: 'Anonymization failed.',
+    alreadyAnonymized: 'This account is already anonymized.',
+    selfBlocked: 'You cannot anonymize your own account.',
+  },
 };

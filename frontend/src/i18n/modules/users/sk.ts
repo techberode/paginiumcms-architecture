@@ -88,4 +88,17 @@ export const usersSk: MessageTree = {
     badge: 'SuperAdmin režim',
     hint: 'Môžete priraďovať rolu super administrátora a zobraziť 2FA secret.',
   },
+  gdpr: {
+    title: 'GDPR nástroje',
+    hint: 'Export osobných údajov z primárnych flat-file úložísk alebo nevratná anonymizácia účtu.',
+    exportZip: 'Stiahnuť ZIP export',
+    exportSuccess: 'GDPR export bol stiahnutý.',
+    exportFailed: 'GDPR export zlyhal.',
+    anonymize: 'Anonymizovať účet',
+    anonymizeConfirm: 'Nevratne anonymizovať :email? E-mail a meno budú nahradené stabilným pseudonymom v účtoch, komentároch, newsletteri a kontaktných správach.',
+    anonymizeSuccess: 'Účet bol anonymizovaný.',
+    anonymizeFailed: 'Anonymizácia zlyhala.',
+    alreadyAnonymized: 'Tento účet je už anonymizovaný.',
+    selfBlocked: 'Nemôžete anonymizovať vlastný účet.',
+  },
 };

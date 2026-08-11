@@ -36,6 +36,7 @@ import { ForgotPasswordModal } from './components/auth/ForgotPasswordModal';
 import { ResetPasswordModal } from './components/auth/ResetPasswordModal';
 import { NewsletterConfirmPage } from './components/frontend/NewsletterConfirmPage';
 import { NewsletterManagePage } from './components/frontend/NewsletterManagePage';
+import { CookiePolicyPage } from './components/frontend/CookiePolicyPage';
 import { NewsletterUnsubscribePage } from './components/frontend/NewsletterUnsubscribePage';
 import { useAuth } from './hooks/useAuth';
 import { AdminRoleGuard } from './components/auth/AdminRoleGuard';
@@ -210,6 +211,7 @@ function App() {
       <Route element={<PublicSiteLayout />}>
         <Route index element={<PublicHomePage />} />
         <Route path="features" element={<FeaturesPage />} />
+        <Route path="cookies" element={<CookiePolicyPage />} />
         <Route path="blog" element={<BlogRenderer />} />
         <Route path="blog/:slug" element={<BlogRenderer />} />
         <Route path=":slug" element={<PublicSlugPage />} />

@@ -248,6 +248,28 @@ export const settingsSk: MessageTree = {
       }
     }
   },
+  "privacy": {
+    "panel": {
+      "title": "Editor Cookies & GDPR",
+      "description": "Nastavte verejnú lištu, obsah stránky /cookies, právne bloky a kontakt.",
+      "preview": "Náhľad stránky",
+      "bannerTitle": "Cookie lišta",
+      "pageTitle": "Hlavička stránky",
+      "blocksTitle": "Vlastné GDPR bloky",
+      "blocksHint": "Pridajte právne sekcie (prevádzkovateľ, právny základ, retention…). Iba plain text.",
+      "blocksEmpty": "Zatiaľ žiadne bloky.",
+      "addBlock": "Pridať blok",
+      "blockLabel": "Blok {index}",
+      "blockTitlePlaceholder": "Nadpis sekcie (napr. Prevádzkovateľ)",
+      "blockBodyPlaceholder": "Text sekcie — plain text, zachované zalomenia riadkov.",
+      "removeBlock": "Odstrániť blok",
+      "moveUp": "Posunúť hore",
+      "moveDown": "Posunúť dole",
+      "contactTitle": "GDPR kontakt",
+      "contactHint": "Zobrazí sa na /cookies. Prázdne polia doplní nastavenia Company.",
+      "sectionsTitle": "Vstavané sekcie stránky"
+    }
+  },
   "accessControl": {
     "superAdminTitle": "Len pre super administrátora",
     "superAdminHint": "Mapovanie oprávnení rolí ADMIN, EDITOR a USER a path ACL pravidlá môže meniť iba SUPER_ADMIN. SUPER_ADMIN má vždy plný prístup.",
@@ -898,11 +920,51 @@ export const settingsSk: MessageTree = {
       },
       "cookiePolicyUrl": {
         "label": "URL zásad cookies / GDPR",
-        "help": "Voliteľný odkaz na stránku so zásadami ochrany súkromia."
+        "help": "Voliteľné. Prázdne = vestavná stránka /cookies. Relatívna cesta alebo externá URL."
       },
       "cookieShowRejectButton": {
         "label": "Tlačidlo „Odmietnuť voliteľné“",
         "help": "Zapnuté = návštevník môže odmietnuť voliteľné cookies okrem technicky nutných."
+      },
+      "cookiePolicyPageTitle": {
+        "label": "Nadpis stránky /cookies",
+        "help": "Prázdne = predvolený preklad podľa jazyka webu."
+      },
+      "cookiePolicyIntro": {
+        "label": "Úvodný text stránky /cookies",
+        "help": "Vlastný úvod pod nadpisom. Prázdne = predvolený i18n text."
+      },
+      "cookiePolicySectionsJson": {
+        "label": "GDPR bloky (JSON)",
+        "help": "Spravované vizuálnym editorom nižšie."
+      },
+      "privacyContactName": {
+        "label": "Meno alebo prevádzkovateľ",
+        "help": "Zobrazí sa na /cookies. Prázdne = právny alebo zobrazovaný názov z Company."
+      },
+      "privacyContactEmail": {
+        "label": "E-mail",
+        "help": "Prázdne = e-mail z nastavení Company."
+      },
+      "privacyContactPhone": {
+        "label": "Telefón",
+        "help": "Prázdne = telefón z nastavení Company."
+      },
+      "privacyContactAddress": {
+        "label": "Kontakt GDPR — adresa",
+        "help": "Prázdne = adresa z nastavení Company."
+      },
+      "cookiePolicyShowCategoriesTable": {
+        "label": "Zobraziť tabuľku kategórií cookies"
+      },
+      "cookiePolicyShowStorageInventory": {
+        "label": "Zobraziť technický inventár úložísk"
+      },
+      "cookiePolicyShowDefaultRights": {
+        "label": "Zobraziť sekciu „Vaše možnosti“"
+      },
+      "cookiePolicyShowManagePanel": {
+        "label": "Zobraziť panel správy súhlasu"
       }
     },
     "login": {

@@ -48,6 +48,13 @@ class Comment implements JsonSerializable
         return $this->author;
     }
 
+    public function setAuthor(string $author): self
+    {
+        $this->author = $author;
+
+        return $this;
+    }
+
     public function getEmail(): string
     {
         return $this->email;

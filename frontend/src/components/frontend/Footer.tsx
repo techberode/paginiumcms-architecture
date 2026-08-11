@@ -1,6 +1,6 @@
 // frontend/src/components/frontend/Footer.tsx
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Rocket, ShieldCheck, Zap, Heart, ExternalLink } from 'lucide-react';
 import { usePublicSite } from '../../context/PublicSiteContext';
 import { useSettingsContext } from '../../context/SettingsContext';
@@ -9,6 +9,7 @@ import { FooterNewsletter } from './FooterNewsletter';
 import { FooterSocialLinks } from './FooterSocialLinks';
 import { LOGO_FALLBACK } from '../../theme/publicUiClasses';
 import { useCookieConsentOptional } from '../../context/CookieConsentContext';
+import { resolveCookiePolicyHref } from '../../utils/cookiePolicyUrl';
 
 export const Footer: React.FC = () => {
   const { navigation, siteTitle, siteTagline, footerText } = usePublicSite();
@@ -20,6 +21,7 @@ export const Footer: React.FC = () => {
   const showDemoFooterLink = !isDemoInstance && settings.demo?.showFooterLink !== false;
   const footerNewsletterEnabled = settings.newsletter?.footerEnabled === true;
   const cookieConsent = useCookieConsentOptional();
+  const cookiePolicy = resolveCookiePolicyHref(settings.privacy?.cookiePolicyUrl ?? '');
   const cmsVersion = settings.cmsInfo?.version?.trim() ?? '';
 
   const sortedNav = [...navigation].sort((a, b) => a.order - b.order);
@@ -126,6 +128,20 @@ export const Footer: React.FC = () => {
                 {t('public.footer.cookieSettings')}
               </button>
             ) : null}
+            {cookiePolicy.external ? (
+              <a
+                href={cookiePolicy.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="public-footer-cookie-link font-medium"
+              >
+                {t('public.footer.cookiePolicy')}
+              </a>
+            ) : (
+              <Link to={cookiePolicy.href} className="public-footer-cookie-link font-medium">
+                {t('public.footer.cookiePolicy')}
+              </Link>
+            )}
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <span>{t('public.footer.madeWith')}</span>

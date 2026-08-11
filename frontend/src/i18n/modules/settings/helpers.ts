@@ -27,12 +27,13 @@ export function translateSettingFieldHelp(
   fieldKey: string,
   fallback: string | undefined
 ): string | undefined {
-  if (!fallback) {
-    return undefined;
-  }
   const key = `settings.fields.${groupKey}.${fieldKey}.help`;
   const value = t(key);
-  return value !== key ? value : fallback;
+  if (value !== key) {
+    return value;
+  }
+
+  return fallback;
 }
 
 export function translateSettingEnumOption(

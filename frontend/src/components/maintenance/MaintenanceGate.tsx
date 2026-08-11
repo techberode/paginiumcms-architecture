@@ -34,6 +34,7 @@ export const MaintenanceGate: React.FC<MaintenanceGateProps> = ({ children }) =>
     || pathname.startsWith('/newsletter/confirm')
     || pathname.startsWith('/newsletter/manage')
     || pathname.startsWith('/newsletter/unsubscribe')
+    || pathname === '/cookies'
   ) {
     return <>{children}</>;
   }

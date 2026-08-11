@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.37`](#release-2-1-0-beta-37) | 2026-08-11 | It.80e GDPR export/anonymize |
 | [`2.1.0-beta.36`](#release-2-1-0-beta-36) | 2026-08-11 | It.80d outbound webhooks |
 | [`2.1.0-beta.35`](#release-2-1-0-beta-35) | 2026-08-11 | It.80b 404 tracking + It.80c comment spam (bundled; beta.34 slice skipped) |
 | [`2.1.0-beta.33`](#release-2-1-0-beta-33) | 2026-08-11 | Deploy pipeline fix; AppVersion from git tag |
@@ -108,6 +109,32 @@ This canonical history records release facts supported by the supplied `CHANGELO
 | [`1.0.0`](#release-1-0-0) | Initial structure | Initial repository structure |
 
 ## [Unreleased]
+
+<a id="release-2-1-0-beta-37"></a>
+
+## [2.1.0-beta.37] – 2026-08-11
+
+It.80e — GDPR export and anonymization for CMS user accounts
+
+### Added — It.80e (GDPR export / anonymize)
+
+- **`GdprExportService`** — aggregates user profile, comments (by e-mail or display name), newsletter subscription, and contact messages into JSON; optional ZIP download.
+- **`GdprAnonymizeService`** — irreversibly replaces PII with stable pseudonym `anon_<hash>` and `@anonymized.invalid` e-mail across primary flat-file stores; deactivates account and clears 2FA/avatar.
+- **Admin API** — `GET /api/admin/users/{id}/gdpr/export` (`?format=zip`), `POST /api/admin/users/{id}/gdpr/anonymize` (`confirm: true`).
+- **Audit** — security events `gdpr_export`, `gdpr_anonymize` in `SecurityAuditStore`.
+- **Frontend** — GDPR tools panel in Users admin (ZIP export + anonymize with confirmation).
+- PHPUnit: `GdprPseudonymTest`, `GdprAnonymizeServiceTest`, `GdprControllerTest`.
+
+### Documentation
+
+- [SECURITY.md](docs/en/developer/SECURITY.md) — GDPR export/anonymize scope and retention limits.
+- [COOKIES&GDPR.md](docs/en/COOKIES&GDPR.md) — cookie consent, `/cookies` page, admin configuration.
+- [ITERATION_80](docs/en/ITERATION_80.md) checklist 80e.
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.37`
+- **Docs:** [ITERATION_80](docs/en/ITERATION_80.md) checklist 80e.
 
 <a id="release-2-1-0-beta-36"></a>
 

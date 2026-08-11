@@ -14,6 +14,7 @@ declare(strict_types=1);
  */
 
 use PaginiumCMS\Http\Controllers\Admin\UserController;
+use PaginiumCMS\Http\Controllers\Admin\GdprController;
 use PaginiumCMS\Http\Middleware\AuthMiddleware;
 use PaginiumCMS\Http\Middleware\RoleMiddleware;
 use PaginiumCMS\Http\Middleware\TwoFactorMiddleware;
@@ -27,9 +28,12 @@ return function (App $app): void {
 
     $app->group('/api/admin/users', function (RouteCollectorProxy $group) use ($container) {
         $controller = $container->get(UserController::class);
+        $gdprController = $container->get(GdprController::class);
 
         $group->get('', [$controller, 'index']);
         $group->post('/bulk-delete', [$controller, 'bulkDestroy']);
+        $group->get('/{id}/gdpr/export', [$gdprController, 'export']);
+        $group->post('/{id}/gdpr/anonymize', [$gdprController, 'anonymize']);
         $group->get('/{id}', [$controller, 'show']);
         $group->post('', [$controller, 'store']);
         $group->put('/{id}', [$controller, 'update']);
