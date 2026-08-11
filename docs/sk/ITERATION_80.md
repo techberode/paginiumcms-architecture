@@ -33,7 +33,7 @@ Iterácia je **checklist-driven**: každý riadok má status, pripomienky a acce
 | ID | Funkcia | Priorita | Stav | Dopad / náročnosť | Popis | Pripomienky / návrhy | Závisí od |
 |----|---------|----------|------|-------------------|-------|----------------------|-----------|
 | **80a** | Redirect manager (301/302) | 🟡 P1 | ✅ hotové (`beta.32`) | **Vysoký / Nízky** | `data/redirects.json`; middleware; admin UI. | nginx hook voliteľný pre slug redirecty na produkcii. | — |
-| **80b** | 404 tracking report | 🟡 P2 | ✅ hotové (`beta.34`) | **Stredný / Nízky** | Log 404 hitov; dashboard + CSV. | Vzor AccessLog / PerformanceSample; sanitizácia. | odporúčané **80a** |
+| **80b** | 404 tracking report | 🟡 P2 | ✅ hotové (`beta.35`) | **Stredný / Nízky** | Log 404 hitov; dashboard + CSV. | Vzor AccessLog / PerformanceSample; sanitizácia. | odporúčané **80a** |
 | **80c** | Spam heuristika komentárov | 🟡 P3 | ✅ hotové (`beta.35`) | **Stredný / Nízky** | Honeypot + skóre v `CommentPolicyResolver`. | Bez CAPTCHA lock-in; karanténa v admin inboxe. | comment policy |
 | **80d** | Outbound webhooks | 🟡 P4 | ⏳ plánované | **Stredný / Stredný** | `content.published`, `content.updated` → POST (Slack/Zapier). | `OutboundUrlGuard`, HMAC, retry queue. | Jobs · [It.74](ITERATION_74.md) |
 | **80e** | GDPR export / anonymizácia | 🔵 P5 | ⏳ plánované | **Stredný / Stredný** | Export JSON používateľa; anonymizácia PII. | Nie full DPA produkt; audit exportov. | user/comment/newsletter |
@@ -68,8 +68,7 @@ Iterácia je **checklist-driven**: každý riadok má status, pripomienky a acce
 beta.31  — ✅ API keys UX fix pack (shipped)
 beta.32  — ✅ 80a redirect manager (shipped)
 beta.33  — ✅ deploy pipeline fix (shipped)
-beta.34  — ✅ 80b 404 tracking (shipped)
-beta.35  — ✅ 80c spam heuristika (shipped)
+beta.35  — ✅ 80b + 80c spolu (404 + spam; plánovaná beta.34 preskočená)
 beta.36+ — 80d / 80e / …
 ```
 
