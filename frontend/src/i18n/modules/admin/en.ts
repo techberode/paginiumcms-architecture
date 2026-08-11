@@ -32,6 +32,7 @@ export const adminEn: MessageTree = {
     accountSecurity: 'Account security',
     apiKeys: 'API keys',
     redirects: 'Redirects',
+    webhooks: 'Webhooks',
     settings: 'Settings',
     translations: 'Translations',
   },

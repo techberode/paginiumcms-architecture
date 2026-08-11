@@ -28,6 +28,12 @@ use PaginiumCMS\Core\Scheduler\Handlers\BackupScheduledHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\ContentScheduledPublishHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\MonitoringPipelineHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\SystemDeployHandler;
+use PaginiumCMS\Core\Security\Services\EncryptionService;
+use PaginiumCMS\Core\Scheduler\Handlers\WebhookDeliveryHandler;
+use PaginiumCMS\Core\Webhooks\Services\WebhookDeliveryService;
+use PaginiumCMS\Core\Webhooks\Services\WebhookDeliveryStore;
+use PaginiumCMS\Core\Webhooks\Services\WebhookRegistryStore;
+use org\bovigo\vfs\vfsStream;
 use PaginiumCMS\Core\FlatFile\Services\FileReader;
 use PaginiumCMS\Core\FlatFile\Services\FileValidator;
 use PaginiumCMS\Core\FlatFile\Services\FileWriter;
@@ -105,7 +111,8 @@ final class ScheduledJobRunnerTest extends TestCase
             new ContentScheduledPublishHandler($scheduledPublish),
             $systemDeploy,
             new NewsletterWeeklyDigestHandler($this->makeNewsletterMailService($settings)),
-            GitPublishTestHelper::disabledHandler($reader, $writer, $settings)
+            GitPublishTestHelper::disabledHandler($reader, $writer, $settings),
+            $this->webhookDeliveryHandler()
         );
 
         $runner = new ScheduledJobRunner(
@@ -141,7 +148,8 @@ final class ScheduledJobRunnerTest extends TestCase
             new ContentScheduledPublishHandler($scheduledPublish),
             $systemDeploy,
             new NewsletterWeeklyDigestHandler($this->makeNewsletterMailService($settings)),
-            GitPublishTestHelper::disabledHandler($reader, $writer, $settings)
+            GitPublishTestHelper::disabledHandler($reader, $writer, $settings),
+            $this->webhookDeliveryHandler()
         );
 
         return new ScheduledJobRunner(
@@ -236,6 +244,22 @@ final class ScheduledJobRunnerTest extends TestCase
                 $settings,
                 new NewsletterUnsubscribeToken('test-key')
             )
+        );
+    }
+
+    private function webhookDeliveryHandler(): WebhookDeliveryHandler
+    {
+        vfsStream::setup('wh-scheduler-test', null, ['data' => ['webhooks' => []]]);
+        $root = vfsStream::url('wh-scheduler-test');
+        $validator = new FileValidator($root);
+        $reader = new FileReader($validator);
+        $encryption = new EncryptionService('base64:BGtLQwdzAE7ajivCghMa98DyudMghYZEkXKw5PJ/aUE=');
+        $registry = new WebhookRegistryStore($reader, $encryption);
+        $deliveries = new WebhookDeliveryStore($reader);
+
+        return new WebhookDeliveryHandler(
+            new WebhookDeliveryService($registry, $deliveries),
+            $deliveries
         );
     }
 }

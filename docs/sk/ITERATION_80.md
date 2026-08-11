@@ -35,7 +35,7 @@ Iterácia je **checklist-driven**: každý riadok má status, pripomienky a acce
 | **80a** | Redirect manager (301/302) | 🟡 P1 | ✅ hotové (`beta.32`) | **Vysoký / Nízky** | `data/redirects.json`; middleware; admin UI. | nginx hook voliteľný pre slug redirecty na produkcii. | — |
 | **80b** | 404 tracking report | 🟡 P2 | ✅ hotové (`beta.35`) | **Stredný / Nízky** | Log 404 hitov; dashboard + CSV. | Vzor AccessLog / PerformanceSample; sanitizácia. | odporúčané **80a** |
 | **80c** | Spam heuristika komentárov | 🟡 P3 | ✅ hotové (`beta.35`) | **Stredný / Nízky** | Honeypot + skóre v `CommentPolicyResolver`. | Bez CAPTCHA lock-in; karanténa v admin inboxe. | comment policy |
-| **80d** | Outbound webhooks | 🟡 P4 | ⏳ plánované | **Stredný / Stredný** | `content.published`, `content.updated` → POST (Slack/Zapier). | `OutboundUrlGuard`, HMAC, retry queue. | Jobs · [It.74](ITERATION_74.md) |
+| **80d** | Outbound webhooks | 🟡 P4 | ✅ hotové (`beta.36`) | **Stredný / Stredný** | `content.published`, `content.updated` → POST (Slack/Zapier). | `OutboundUrlGuard`, HMAC, retry queue. | Jobs · [It.74](ITERATION_74.md) |
 | **80e** | GDPR export / anonymizácia | 🔵 P5 | ⏳ plánované | **Stredný / Stredný** | Export JSON používateľa; anonymizácia PII. | Nie full DPA produkt; audit exportov. | user/comment/newsletter |
 | **80f** | CLI nástroje | 🔵 P6 | ⏳ plánované | **Stredný / Stredný** | `content:import/export`, `user:create`, `redirect:validate`. | Rovnaké validátory ako HTTP. | console |
 | **80g** | Import z CMS | 🔵 P7 | ⏳ plánované | **Vysoký / Vysoký** | WordPress XML, Jekyll, Ghost → flat-file. | Fáza 1: články/stránky; dry-run. | **80f** · [It.73](ITERATION_73.md) |
@@ -69,7 +69,8 @@ beta.31  — ✅ API keys UX fix pack (shipped)
 beta.32  — ✅ 80a redirect manager (shipped)
 beta.33  — ✅ deploy pipeline fix (shipped)
 beta.35  — ✅ 80b + 80c spolu (404 + spam; plánovaná beta.34 preskočená)
-beta.36+ — 80d / 80e / …
+beta.36  — ✅ 80d outbound webhooks (shipped)
+beta.37+ — 80e / 80f / …
 ```
 
 Detail EN: [ITERATION_80.md](../en/ITERATION_80.md)

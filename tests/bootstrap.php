@@ -10,6 +10,11 @@ putenv('DEMO_MODE=false');
 $_ENV['DEMO_MODE'] = 'false';
 $_SERVER['DEMO_MODE'] = 'false';
 
+// Encryption at-rest (webhook secrets, TOTP, settings passwords) in PHPUnit — .env is skipped when APP_ENV=testing.
+putenv('APP_KEY=base64:BGtLQwdzAE7ajivCghMa98DyudMghYZEkXKw5PJ/aUE=');
+$_ENV['APP_KEY'] = 'base64:BGtLQwdzAE7ajivCghMa98DyudMghYZEkXKw5PJ/aUE=';
+$_SERVER['APP_KEY'] = 'base64:BGtLQwdzAE7ajivCghMa98DyudMghYZEkXKw5PJ/aUE=';
+
 // 1. Načítanie UTF-8 nastavení (definuje utf8_normalize())
 require_once __DIR__ . '/../backend/bootstrap/utf8.php';
 
