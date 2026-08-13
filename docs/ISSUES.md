@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 13 August 2026 · register **ISS-001–ISS-140** · **`v2.1.0-beta.38`** shipped (It.80f API4 hardening + blog author settings)
+> **Last updated:** 13 August 2026 · register **ISS-001–ISS-141** · **`v2.1.0-beta.40`** hotfix (System Update deploy)
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -163,6 +163,7 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-138](#iss-138) | Blog author had no settings/editor path; fell back to i18n “Redakcia” | Medium (UX) | ✅ **2.1.0-beta.38** · Settings → Content + article author field |
 | [ISS-139](#iss-139) | GDPR re-export after anonymize re-aggregated pseudonym-linked comments | Medium (GDPR) | ✅ **2.1.0-beta.38** · skip related rows for anonymized accounts |
 | [ISS-140](#iss-140) | Public contact/comments lacked dedicated rate limits; bulk/import/export without caps (API4) | Medium (security) | ✅ **2.1.0-beta.38** · It.80f hardening |
+| [ISS-141](#iss-141) | System Update deploy returned 422 after BodyParsingMiddleware (empty JSON body) | High (deploy) | ✅ **2.1.0-beta.40** |
 
 ## CI failures (GitHub Actions)
 
@@ -4201,6 +4202,39 @@ OWASP API4-style gaps remained after global rate limiting: `POST /api/contact` h
 
 - **Docs:** [ITERATION_80](en/ITERATION_80.md) checklist 80f
 - **Tests:** `backend/tests/Http/Support/BulkOperationLimitsTest.php`
+
+---
+
+<a id="iss-141"></a>
+
+## ISS-141 – System Update deploy 422 after BodyParsingMiddleware (beta.39 regression)
+
+[↑ Overview](#overview)
+
+**Severity:** High (deploy)  
+**Status:** ✅ Fixed — **`v2.1.0-beta.40`**
+
+### Operational synopsis
+
+`v2.1.0-beta.39` added Slim `BodyParsingMiddleware` in `backend/bootstrap/app.php`. Controllers that read JSON only via `$request->getBody()` received an empty string on production PHP-FPM (`php://input` is not seekable after the middleware consumes it). `POST /api/admin/system/update/run` then saw a missing `ref` and returned HTTP 422 (“Validačná chyba” in admin logs). Admin UI could not deploy from beta.38 → beta.39+.
+
+### Resolution
+
+- `RequestJsonBody::decode()` — prefers `getParsedBody()`, falls back to raw stream.
+- `SystemUpdateController::run()`, `UserController::parseJsonBody()`, and **`CommentsController`** (submit/update/bulk JSON paths) migrated to the helper.
+- Regression tests: `RequestJsonBodyTest`, `SystemUpdateControllerTest::testRunUsesParsedBodyWhenStreamIsEmpty`, **`CommentsControllerTest::testApproveCommentUsesParsedBodyWhenStreamIsEmpty`**.
+- **Test harness:** `Http\TestCase::rebootstrapApplication()` restores `APP_ENV=testing` and re-applies `settings.testing.json` workflow defaults after demo tests re-bootstrap the app (fixes intermittent OTP workflow PHPUnit failures).
+
+### Workaround (before beta.40 on server)
+
+```bash
+APP_ROOT=/var/www/paginiumcms.com GIT_REF=v2.1.0-beta.40 ./scripts/deploy-instance-update.sh
+```
+
+### Evidence and traceability
+
+- **Release:** [CHANGELOG.md](../CHANGELOG.md#release-2-1-0-beta-40)
+- **Tests:** `backend/tests/Http/Support/RequestJsonBodyTest.php`, `backend/tests/Http/Controllers/Admin/SystemUpdateControllerTest.php`, `backend/tests/Http/Controllers/Comments/CommentsControllerTest.php`, `backend/tests/Core/Workflow/OtpWorkflowServiceTest.php`
 
 ---
 

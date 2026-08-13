@@ -16,7 +16,7 @@ final class DemoLoginIsolationTest extends TestCase
         $_SERVER['DEMO_MODE'] = 'true';
 
         try {
-            $this->app = require __DIR__ . '/../../../../bootstrap/app.php';
+            $this->rebootstrapApplication();
 
             $response = $this->handleRequest($this->createJsonRequest('POST', '/api/auth/login', [
                 'email' => 'admin@mycompany.sk',
@@ -31,7 +31,7 @@ final class DemoLoginIsolationTest extends TestCase
             putenv('DEMO_MODE=false');
             $_ENV['DEMO_MODE'] = 'false';
             $_SERVER['DEMO_MODE'] = 'false';
-            $this->app = require __DIR__ . '/../../../../bootstrap/app.php';
+            $this->rebootstrapApplication();
         }
     }
 
@@ -42,7 +42,7 @@ final class DemoLoginIsolationTest extends TestCase
         $_SERVER['DEMO_MODE'] = 'false';
 
         try {
-            $this->app = require __DIR__ . '/../../../../bootstrap/app.php';
+            $this->rebootstrapApplication();
 
             $response = $this->handleRequest($this->createJsonRequest('POST', '/api/auth/login', [
                 'email' => DemoFixtures::ADMIN_EMAIL,
@@ -54,7 +54,7 @@ final class DemoLoginIsolationTest extends TestCase
             $this->assertSame(401, $response->getStatusCode());
             $this->assertStringContainsString('DEMO_MODE=true', (string) ($data['error'] ?? ''));
         } finally {
-            $this->app = require __DIR__ . '/../../../../bootstrap/app.php';
+            $this->rebootstrapApplication();
         }
     }
 
@@ -65,7 +65,7 @@ final class DemoLoginIsolationTest extends TestCase
         $_SERVER['DEMO_MODE'] = 'true';
 
         try {
-            $this->app = require __DIR__ . '/../../../../bootstrap/app.php';
+            $this->rebootstrapApplication();
 
             for ($i = 0; $i < 6; ++$i) {
                 $response = $this->handleRequest($this->createJsonRequest('POST', '/api/auth/login', [
@@ -87,7 +87,7 @@ final class DemoLoginIsolationTest extends TestCase
             putenv('DEMO_MODE=false');
             $_ENV['DEMO_MODE'] = 'false';
             $_SERVER['DEMO_MODE'] = 'false';
-            $this->app = require __DIR__ . '/../../../../bootstrap/app.php';
+            $this->rebootstrapApplication();
         }
     }
 }

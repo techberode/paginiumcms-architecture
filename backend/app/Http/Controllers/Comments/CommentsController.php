@@ -13,6 +13,7 @@ use PaginiumCMS\Core\Workflow\Services\OtpWorkflowService;
 use PaginiumCMS\Http\Support\BulkBatchResult;
 use PaginiumCMS\Http\Support\BulkOperationLimits;
 use PaginiumCMS\Http\Support\JsonResponder;
+use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Modules\Comments\Contracts\CommentsRepositoryInterface;
 use PaginiumCMS\Modules\Comments\Models\Comment;
 use PaginiumCMS\Modules\Comments\Services\CommentPolicyResolver;
@@ -55,7 +56,7 @@ class CommentsController
 
     public function submit(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
         if (!is_array($data)) {
             return $this->json->error($response, Lang::get('invalid_payload', [], 'comments'), 400);
         }
@@ -176,7 +177,7 @@ class CommentsController
             return $this->json->error($response, Lang::get('not_found', [], 'comments'), 404);
         }
 
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
         if (!is_array($data)) {
             return $this->json->error($response, Lang::get('invalid_payload', [], 'comments'), 400);
         }
@@ -261,7 +262,7 @@ class CommentsController
 
     public function bulkUpdateStatus(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
         if (!is_array($data)) {
             return $this->json->error($response, Lang::get('invalid_payload', [], 'comments'), 400);
         }
@@ -310,8 +311,9 @@ class CommentsController
 
     public function bulkDelete(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
+        $payload = RequestJsonBody::decode($request);
         $ids = $this->normalizeIds(
-            (json_decode((string) $request->getBody(), true) ?: [])['ids'] ?? null
+            is_array($payload) ? ($payload['ids'] ?? null) : null
         );
 
         if ($ids === []) {
@@ -343,7 +345,7 @@ class CommentsController
 
     public function bulkWorkflow(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
         if (!is_array($data)) {
             return $this->json->error($response, Lang::get('invalid_payload', [], 'comments'), 400);
         }

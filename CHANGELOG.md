@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.40`](#release-2-1-0-beta-40) | 2026-08-13 | BodyParsing JSON body fix (deploy, avatar, comment OTP) |
 | [`2.1.0-beta.39`](#release-2-1-0-beta-39) | 2026-08-13 | It.80 complete — CLI toolkit + WordPress import |
 | [`2.1.0-beta.38`](#release-2-1-0-beta-38) | 2026-08-13 | It.80f API4 hardening + blog author settings |
 | [`2.1.0-beta.37`](#release-2-1-0-beta-37) | 2026-08-11 | It.80e GDPR export/anonymize |
@@ -112,6 +113,32 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+<a id="release-2-1-0-beta-40"></a>
+
+## [2.1.0-beta.40] – 2026-08-13
+
+Hotfix — JSON body reads after BodyParsingMiddleware (beta.39 regression)
+
+### Fixed
+
+- **`POST /api/admin/system/update/run`** — reads JSON via `RequestJsonBody` (`getParsedBody()` first, then raw stream). Slim `BodyParsingMiddleware` (added in beta.39) consumes non-seekable `php://input`; controllers that only called `getBody()` saw an empty body → missing `ref` → HTTP 422.
+- **Avatar `PUT /api/admin/users/{id}/avatar`** — same helper in `UserController::parseJsonBody()` for JSON `{ mediaId }` after media pick.
+- **Comment admin `PUT /api/admin/comments/{id}`** — `CommentsController` migrated to `RequestJsonBody` (all mutating JSON paths). Without this, approve-with-OTP returned HTTP 200 instead of 202 when the stream was empty but `parsedBody` held `status`.
+- **PHPUnit OTP workflow flakes** — `Http\TestCase::rebootstrapApplication()` re-applies `settings.testing.json` overrides after demo env toggles; OTP tests use `enableWorkflows()` with pre-flight asserts (prevents `APP_ENV` / settings-file mismatch).
+
+### Added
+
+- `backend/app/Http/Support/RequestJsonBody.php` + regression tests.
+- `CommentsControllerTest::testApproveCommentUsesParsedBodyWhenStreamIsEmpty`.
+- `scripts/deploy-instance-update.sh` — `assert_checkout_writable()` guard before `DEPLOY_FORCE=1` checkout.
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.40`
+- **Issue:** [ISS-141](docs/ISSUES.md#iss-141)
+
+---
+
 <a id="release-2-1-0-beta-39"></a>
 
 ## [2.1.0-beta.39] – 2026-08-13
@@ -141,7 +168,7 @@ It.80 complete — operator CLI toolkit + WordPress WXR import (80f/80g)
 
 <a id="release-2-1-0-beta-38"></a>
 
-## [2.1.0-beta.38] – 2026-08-13
+##[2.1.0-beta.38] – 2026-08-13 
 
 It.80f — API4 resource hardening, blog author settings, admin UX fixes
 

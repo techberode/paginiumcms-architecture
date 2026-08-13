@@ -7,6 +7,7 @@ namespace PaginiumCMS\Tests\Http\Controllers\Comments;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Modules\Comments\Models\Comment;
 use PaginiumCMS\Tests\Http\TestCase;
+use Slim\Psr7\Factory\StreamFactory;
 
 class CommentsControllerTest extends TestCase
 {
@@ -120,6 +121,36 @@ class CommentsControllerTest extends TestCase
         $this->assertEquals(200, $verifyResponse->getStatusCode());
         $this->assertTrue($verifyData['success']);
         $this->assertSame(Comment::STATUS_APPROVED, $verifyData['comment']['status'] ?? null);
+    }
+
+    public function testApproveCommentUsesParsedBodyWhenStreamIsEmpty(): void
+    {
+        putenv('APP_ENV=testing');
+        $_ENV['APP_ENV'] = 'testing';
+
+        $this->enableWorkflows(['commentApprovalOtpEnabled' => true]);
+
+        $articleSlug = 'otp-parsed-body-' . uniqid('', true);
+        $submitResponse = $this->handleRequest($this->createJsonRequest('POST', '/api/comments', [
+            'articleSlug' => $articleSlug,
+            'author' => 'Reader',
+            'email' => 'reader@example.com',
+            'content' => 'Approve via parsed body',
+        ]));
+        $commentId = $this->getJsonResponse($submitResponse)['data']['id'] ?? null;
+        $this->assertNotNull($commentId);
+
+        $this->loginAsAdminUser();
+
+        $request = $this->createJsonRequest('PUT', '/api/admin/comments/' . $commentId, null);
+        $request = $request->withBody((new StreamFactory())->createStream(''));
+        $request = $request->withParsedBody(['status' => Comment::STATUS_APPROVED]);
+
+        $response = $this->handleRequest($request);
+        $data = $this->getJsonResponse($response);
+
+        $this->assertSame(202, $response->getStatusCode(), (string) json_encode($data, JSON_UNESCAPED_UNICODE));
+        $this->assertTrue($data['requires_otp']);
     }
 
     public function testHoneypotReturnsSilentSuccess(): void

@@ -6,6 +6,7 @@ namespace PaginiumCMS\Tests\Http\Controllers\Admin;
 
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Tests\Http\TestCase;
+use Slim\Psr7\Factory\StreamFactory;
 
 final class SystemUpdateControllerTest extends TestCase
 {
@@ -88,6 +89,29 @@ final class SystemUpdateControllerTest extends TestCase
         $this->assertTrue($data['success']);
         $this->assertTrue($data['data']['queued']);
         $this->assertSame('v2.1.0-beta.12', $data['data']['ref']);
+    }
+
+    public function testRunUsesParsedBodyWhenStreamIsEmpty(): void
+    {
+        $this->loginAsSuperAdminUser();
+
+        $settings = $this->container()->get(SettingsRepositoryInterface::class);
+        $settings->setGroup('systemUpdate', array_merge($settings->group('systemUpdate'), [
+            'deployEnabled' => true,
+            'allowDeployTags' => true,
+            'allowDeployMain' => false,
+        ]));
+
+        $request = $this->createJsonRequest('POST', '/api/admin/system/update/run', null);
+        $request = $request->withBody((new StreamFactory())->createStream(''));
+        $request = $request->withParsedBody(['ref' => 'v2.1.0-beta.39']);
+
+        $response = $this->handleRequest($request);
+        $data = $this->getJsonResponse($response);
+
+        $this->assertSame(200, $response->getStatusCode(), (string) json_encode($data, JSON_UNESCAPED_UNICODE));
+        $this->assertTrue($data['success']);
+        $this->assertSame('v2.1.0-beta.39', $data['data']['ref']);
     }
 
     public function testRunEmptyRefRequiresTagWhenBranchDeployDisabled(): void

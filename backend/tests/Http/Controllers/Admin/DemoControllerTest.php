@@ -54,7 +54,7 @@ final class DemoControllerTest extends TestCase
         $_SERVER['DEMO_MODE'] = 'true';
 
         try {
-            $this->app = require __DIR__ . '/../../../../bootstrap/app.php';
+            $this->rebootstrapApplication();
 
             $response = $this->handleRequest(
                 $this->createJsonRequest('GET', '/api/demo/public-info')
@@ -69,7 +69,7 @@ final class DemoControllerTest extends TestCase
             putenv('DEMO_MODE=false');
             $_ENV['DEMO_MODE'] = 'false';
             $_SERVER['DEMO_MODE'] = 'false';
-            $this->app = require __DIR__ . '/../../../../bootstrap/app.php';
+            $this->rebootstrapApplication();
         }
     }
 
@@ -112,7 +112,7 @@ final class DemoControllerTest extends TestCase
             putenv('DEMO_MODE=false');
             $_ENV['DEMO_MODE'] = 'false';
             $_SERVER['DEMO_MODE'] = 'false';
-            $this->app = require __DIR__ . '/../../../../bootstrap/app.php';
+            $this->rebootstrapApplication();
         }
     }
 

@@ -12,6 +12,7 @@ use PaginiumCMS\Core\Validation\Validator;
 use PaginiumCMS\Http\Support\BulkBatchResult;
 use PaginiumCMS\Http\Support\BulkOperationLimits;
 use PaginiumCMS\Http\Support\JsonResponder;
+use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
 use PaginiumCMS\Modules\Security\Contracts\PasswordPolicyInterface;
 use PaginiumCMS\Modules\Security\Models\User;
@@ -503,8 +504,6 @@ final class UserController
      */
     private function parseJsonBody(ServerRequestInterface $request): array
     {
-        $data = json_decode((string) $request->getBody(), true);
-
-        return is_array($data) ? $data : [];
+        return RequestJsonBody::decode($request) ?? [];
     }
 }
