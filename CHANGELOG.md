@@ -134,7 +134,7 @@ Hotfix — production CSS bundle missing `pgLayout.css`
 ### Fixed
 
 - **PostCSS / Vite prod build** — moved `pgLayout.css` import from `index.css` (after `@tailwind`, invalid per CSS spec) to `main.tsx` so layout utilities ship in `dist/assets/*.css`.
-- **`AppVersion::VERSION`** — fallback bumped to `2.1.0-beta.41` (health showed beta.40 when git describe unavailable in Docker).
+- **`AppVersion::VERSION`** — fallback bumped to `2.1.0-beta.42` (health showed beta.40 when git describe unavailable in Docker).
 
 ### Release facts
 
