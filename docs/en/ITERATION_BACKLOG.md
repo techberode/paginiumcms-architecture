@@ -32,7 +32,7 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | 7 | **It.72** Media drivers | 🟡 | 🟡 partial | MVP local driver + probe shipped; S3/migration deferred |
 | 8 | **It.73** Multi-locale document | 🟡 | ⏳ | translation foundation |
 | 9 | **It.74** API keys/JWT | 🟡 | ✅ | shipped in `v2.1.0-beta.30` — see [ITERATION_74](ITERATION_74.md) |
-| 10 | **It.80** SEO, integrations & ops toolkit | 🟡 | ⏳ | redirects, 404 report, webhooks, GDPR, CLI — see [ITERATION_80](ITERATION_80.md) |
+| 10 | **It.80** SEO, integrations & ops toolkit | 🟡 | ✅ | shipped `beta.39` — see [ITERATION_80](en/ITERATION_80.md) |
 | 11 | **It.58d** Layout remainder | 🟡 | ⏳ | precisely freeze remaining blocks |
 | 12 | **It.25** Setup wizard/update UX | 🟡 pre-Final | ⏳ | onboarding and GA polish |
 | 13 | **It.76/77** Translation providers | 🔵 | ⏳ | after It.73 |
@@ -131,21 +131,21 @@ See [ITERATION_79](ITERATION_79.md).
 
 See [ITERATION_74](ITERATION_74.md).
 
-### It.80 — SEO, integrations & operator toolkit 🟡 ⏳
+### It.80 — SEO, integrations & operator toolkit 🟡 ✅
 
-Checklist-driven product wave (sub-phases `80a`–`80g`):
+Checklist-driven product wave (sub-phases `80a`–`80g`) — **shipped `v2.1.0-beta.39`**:
 
 | Sub | Feature | Priority |
 |-----|---------|----------|
-| 80a | Redirect manager (301/302) | P1 |
-| 80b | 404 tracking report | P2 |
-| 80c | Comment spam heuristics | P3 |
-| 80d | Outbound webhooks | P4 |
-| 80e | GDPR export/anonymize | P5 |
-| 80f | CLI toolkit | P6 |
-| 80g | CMS import (WP/Jekyll/Ghost) | P7 |
+| 80a | Redirect manager (301/302) | P1 ✅ |
+| 80b | 404 tracking report | P2 ✅ |
+| 80c | Comment spam heuristics | P3 ✅ |
+| 80d | Outbound webhooks | P4 ✅ |
+| 80e | GDPR export/anonymize | P5 ✅ |
+| 80f | CLI toolkit | P6 ✅ |
+| 80g | CMS import (WordPress WXR phase 1) | P7 ✅ |
 
-See [ITERATION_80](ITERATION_80.md). May ship across `beta.31+` slices; **80a** recommended first.
+See [ITERATION_80](ITERATION_80.md). Jekyll/Ghost import deferred to a future iteration.
 
 ### It.75 — CMS-aware AI agent 🔵
 

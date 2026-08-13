@@ -1,10 +1,10 @@
 # Iteration 80 — SEO redirects, ops integrations & operator toolkit
 
-> **Status:** ⏳ planned · checklist tracking active  
+> **Status:** ✅ complete (80a–80g shipped) · checklist tracking active  
 > **Priority:** 🟡 (high impact / moderate effort items first)  
 > **Wave:** Product & ops (post-HE-5) · independent of Hybrid Engine core  
 > **Depends on:** stable Classic/headless content model ([It.73](ITERATION_73.md), [It.74](ITERATION_74.md) recommended)  
-> **Snapshot:** 2026-08-09 · `v2.1.0-beta.30`
+> **Snapshot:** 2026-08-13 · `v2.1.0-beta.39`
 
 ## Goal
 
@@ -37,8 +37,8 @@ This iteration is intentionally **checklist-driven**: each row has status, remar
 | **80c** | Comment spam heuristics | 🟡 P3 | ✅ shipped (`beta.35`) | **Med / Low** | Honeypot field + rate/heuristic score in `CommentPolicyResolver`; quarantine or reject before public scale. | No CAPTCHA vendor lock-in in MVP; optional Akismet-style adapter later. Regression tests for legit comments. | existing comment policy |
 | **80d** | Outbound webhooks | 🟡 P4 | ✅ shipped (`beta.36`) | **Med / Med** | Events `content.published`, `content.updated` → queued POST to registered URL (Slack/Discord/Zapier). | `OutboundUrlGuard` mandatory; HMAC signing secret; retry + dead-letter in flat-file queue; no payload secrets in logs. | Scheduler/Jobs · [It.74](ITERATION_74.md) optional for remote receivers |
 | **80e** | GDPR export / anonymize | 🔵 P5 | ✅ shipped (`beta.37`) | **Med / Med** | `GET /api/admin/users/{id}/gdpr/export` aggregates user data from flat-file sources; admin anonymize action for comments/newsletter/subscriber rows. | Not a full DPA product; document limits (backups, logs retention). Permission + audit on export. | user/newsletter/comment stores |
-| **80f** | CLI toolkit + API4 hardening | 🔵 P6 | ✅ shipped (`beta.38`) | **Med / Med** | `redirect:validate` CLI; contact/comment rate limits; honeypot; bulk cap; backup import size cap; GDPR export caps. | Remaining CLI (`content:export`, `user:create`) in beta.39+. | console bootstrap |
-| **80g** | Import from other CMS | 🔵 P7 | ⏳ planned | **High / High** | WordPress XML, Jekyll Markdown, Ghost JSON → flat-file pages/articles/media refs. | Phase 1: pages+posts only; dry-run; idempotent slug map; media URLs rewritten not downloaded in MVP. | **80f** CLI · [It.73](ITERATION_73.md) locale rules |
+| **80f** | CLI toolkit + API4 hardening | 🔵 P6 | ✅ shipped (`beta.38` CLI core, `beta.39` export/import/user:create) | **Med / Med** | `redirect:validate`, `content:export`, `content:import`, `user:create`; contact/comment rate limits; honeypot; bulk cap. | Uses same validators/services as HTTP layer. | console bootstrap |
+| **80g** | Import from other CMS | 🔵 P7 | ✅ shipped (`beta.39` WP WXR phase 1) | **High / High** | WordPress WXR → pages/articles via `content:import --format=wordpress`. | Jekyll/Ghost planned later; media URLs kept as-is (not downloaded). | **80f** CLI · [It.73](ITERATION_73.md) locale rules |
 
 ### Status legend
 
@@ -175,9 +175,9 @@ Run as `www-data` or deploy user; uses same services as HTTP layer.
 
 - [x] `redirect:validate` shipped (`beta.38`); uses same `RedirectStore` validators as HTTP.
 - [x] API4 hardening shipped (`beta.38`): contact/comment rate limits, honeypot, bulk cap (100), backup import size cap, GDPR export row caps.
-- [ ] Remaining CLI (`content:export`, `content:import`, `user:create`) — planned `beta.39+`.
-- [ ] Documented in `docs/en/developer/TESTING.md` or dedicated CLI doc.
-- [ ] Import dry-run never writes; run requires flag.
+- [x] `content:export`, `content:import`, `user:create` shipped (`beta.39`).
+- [x] Documented in `docs/en/developer/TESTING.md` CLI section.
+- [x] Import dry-run by default; `--run` required to write SSOT.
 
 ---
 
@@ -195,8 +195,9 @@ Slug collision policy: `import-{slug}` or map file in `data/migrations/import-{i
 
 ### DoD (80g)
 
-- [ ] One reference importer (WordPress) end-to-end with dry-run.
-- [ ] Imported content visible in admin; no admin route auto-created.
+- [x] WordPress WXR importer end-to-end with dry-run (`content:import --format=wordpress`).
+- [x] Imported content visible in admin; slug collision → `import-{slug}`; no admin route auto-created.
+- [ ] Jekyll / Ghost importers (future iteration).
 
 ---
 
@@ -245,7 +246,9 @@ beta.32  — ✅ 80a redirect manager (shipped)
 beta.33  — ✅ deploy pipeline fix (shipped)
 beta.35  — ✅ 80b + 80c bundled (404 tracking + comment spam; planned beta.34 skipped)
 beta.36  — ✅ 80d outbound webhooks (shipped)
-beta.38+ — 80f API4 hardening + blog author settings; 80g / remaining CLI …
+beta.37  — ✅ 80e GDPR export/anonymize (shipped)
+beta.38  — ✅ 80f API4 hardening + blog author settings (shipped)
+beta.39  — ✅ 80f CLI complete + 80g WordPress WXR import (shipped)
 ```
 
 Adjust after first slice estimate.

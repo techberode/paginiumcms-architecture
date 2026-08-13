@@ -536,6 +536,37 @@ php backend/bin/console content:locale-migrate inventory
 
 Optional pre-migration operator check (It.73): `content:locale-migrate dry-run --default-locale=sk` before `run --yes`. Rollback: `content:locale-migrate rollback --migration-id=<id> --yes`.
 
+### 13.4 Operator CLI toolkit (It.80f / 80g)
+
+Run from repo root against the active storage tree (`DEMO_MODE` selects demo vs content):
+
+```bash
+# Redirect lint (80a)
+php backend/bin/console redirect:validate
+
+# Export all pages/articles to stdout JSON
+php backend/bin/console content:export --type=all
+
+# Export to directory (manifest.json + per-item files)
+php backend/bin/console content:export --output=/tmp/cms-export
+
+# Import preview (dry-run default — no writes)
+php backend/bin/console content:import --file=/path/export.json
+php backend/bin/console content:import --file=/path/wordpress.xml --format=wordpress
+
+# Persist import (requires explicit --run)
+php backend/bin/console content:import --file=/path/export.json --run
+
+# Bootstrap operator account (no HTTP session)
+php backend/bin/console user:create admin@example.test "Admin User" 'SecurePass1!' --role=ADMIN
+
+# Existing user helpers
+php backend/bin/console user:list
+php backend/bin/console user:reset-password admin@example.test 'NewSecurePass1!'
+```
+
+Import rules: slug collisions rename to `import-{slug}`; WordPress WXR imports posts as articles and pages as pages; media URLs in HTML are not downloaded in phase 1.
+
 Run the full PHPUnit/Vitest suite in CI or a disposable environment, not against live production storage. A production server is a very expensive test fixture.
 
 ## 14. Definition of Done for a change

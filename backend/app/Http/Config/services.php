@@ -34,6 +34,8 @@ use PaginiumCMS\Core\Cache\ContentCacheService;
 use PaginiumCMS\Core\Cache\Commands\PurgeContentCacheCommand;
 use PaginiumCMS\Core\Cache\Services\CacheAdminService;
 use PaginiumCMS\Core\FlatFile\Commands\ContentDiagnoseCommand;
+use PaginiumCMS\Core\FlatFile\Commands\ContentExportCommand;
+use PaginiumCMS\Core\FlatFile\Commands\ContentImportCommand;
 use PaginiumCMS\Core\FlatFile\Commands\ContentLocaleMigrateCommand;
 use PaginiumCMS\Core\CodeEditor\Services\CodeEditorManager;
 use PaginiumCMS\Core\CodeEditor\Services\CodeEditorLogger;
@@ -92,7 +94,10 @@ use PaginiumCMS\Core\Editor\Services\EditorContentValidator;
 use PaginiumCMS\Core\Editor\Services\EditorProfileService;
 use PaginiumCMS\Core\Editor\Services\TiptapHtmlRenderer;
 use PaginiumCMS\Core\Editor\Services\ContentBodyRenderer;
+use PaginiumCMS\Core\FlatFile\Services\ContentExportService;
+use PaginiumCMS\Core\FlatFile\Services\ContentImportService;
 use PaginiumCMS\Core\FlatFile\Services\ContentRepository;
+use PaginiumCMS\Core\Import\WordPressWxrImporter;
 use PaginiumCMS\Core\FlatFile\Services\ContentIndexService;
 use PaginiumCMS\Core\FlatFile\Services\JsonContentStorage;
 use PaginiumCMS\Core\FlatFile\Services\MarkdownContentStorage;
@@ -1238,6 +1243,18 @@ return [
             get(ContentIndexService::class),
             get(ContentCacheService::class)
         ),
+    ContentExportService::class => create(ContentExportService::class)
+        ->constructor(get(ContentRepositoryInterface::class)),
+    WordPressWxrImporter::class => create(WordPressWxrImporter::class),
+    ContentImportService::class => create(ContentImportService::class)
+        ->constructor(
+            get(ContentRepositoryInterface::class),
+            get(WordPressWxrImporter::class)
+        ),
+    ContentExportCommand::class => create(ContentExportCommand::class)
+        ->constructor(get(ContentExportService::class)),
+    ContentImportCommand::class => create(ContentImportCommand::class)
+        ->constructor(get(ContentImportService::class)),
     ContentLocaleMigrateCommand::class => create(ContentLocaleMigrateCommand::class)
         ->constructor(get(LocalizedContentMigrationService::class)),
     SecurityAuditStore::class => create(SecurityAuditStore::class)

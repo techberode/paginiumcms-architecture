@@ -2,6 +2,7 @@
 // === Users API (Iterácia 5, admin) ===
 import apiClient, { ApiResponse } from './client';
 import { User } from './types';
+import { resolvePublicMediaUrl, uploadMedia } from './media';
 
 export type UserRole = 'USER' | 'EDITOR' | 'ADMIN' | 'SUPER_ADMIN';
 
@@ -76,12 +77,42 @@ export async function bulkDeleteUsers(ids: string[]): Promise<import('../types/b
   return res.success && res.data ? res.data : null;
 }
 
-export async function uploadUserAvatar(id: string, file: File): Promise<ApiResponse<{ user: User }>> {
-  const form = new FormData();
-  form.append('avatar', file);
+export function resolveUserAvatarUrl(url: string | null | undefined): string {
+  const raw = url?.trim() ?? '';
+  if (raw === '') {
+    return '';
+  }
 
-  // Let the browser set multipart boundary — manual Content-Type breaks PHP upload parsing.
-  return apiClient.post<{ user: User }>(`/api/admin/users/${encodeURIComponent(id)}/avatar`, form);
+  if (raw.startsWith('http://') || raw.startsWith('https://')) {
+    return raw;
+  }
+
+  if (raw.startsWith('/storage/') || raw.startsWith('/api/media/file/')) {
+    return resolvePublicMediaUrl(raw);
+  }
+
+  if (raw.startsWith('media/')) {
+    return resolvePublicMediaUrl(`/storage/app/content/${raw}`);
+  }
+
+  return raw;
+}
+
+export async function assignUserAvatarFromUrl(
+  id: string,
+  url: string
+): Promise<ApiResponse<{ user: User }>> {
+  return apiClient.put<{ user: User }>(`/api/admin/users/${encodeURIComponent(id)}/avatar`, { url });
+}
+
+export async function uploadUserAvatar(id: string, file: File): Promise<ApiResponse<{ user: User }>> {
+  const folder = `avatars/${id}`;
+  const upload = await uploadMedia(file, file.name, folder);
+  if (!upload.ok) {
+    return { success: false, error: upload.error };
+  }
+
+  return assignUserAvatarFromUrl(id, resolvePublicMediaUrl(upload.media.url));
 }
 
 export async function removeUserAvatar(id: string): Promise<ApiResponse<{ user: User }>> {

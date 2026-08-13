@@ -38,6 +38,7 @@ return function (App $app): void {
         $group->post('', [$controller, 'store']);
         $group->put('/{id}', [$controller, 'update']);
         $group->delete('/{id}', [$controller, 'destroy']);
+        $group->put('/{id}/avatar', [$controller, 'assignAvatarFromUrl']);
         $group->post('/{id}/avatar', [$controller, 'uploadAvatar']);
         $group->delete('/{id}/avatar', [$controller, 'removeAvatar']);
     })

@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.39`](#release-2-1-0-beta-39) | 2026-08-13 | It.80 complete — CLI toolkit + WordPress import |
 | [`2.1.0-beta.38`](#release-2-1-0-beta-38) | 2026-08-13 | It.80f API4 hardening + blog author settings |
 | [`2.1.0-beta.37`](#release-2-1-0-beta-37) | 2026-08-11 | It.80e GDPR export/anonymize |
 | [`2.1.0-beta.36`](#release-2-1-0-beta-36) | 2026-08-11 | It.80d outbound webhooks |
@@ -110,6 +111,33 @@ This canonical history records release facts supported by the supplied `CHANGELO
 | [`1.0.0`](#release-1-0-0) | Initial structure | Initial repository structure |
 
 ## [Unreleased]
+
+<a id="release-2-1-0-beta-39"></a>
+
+## [2.1.0-beta.39] – 2026-08-13
+
+It.80 complete — operator CLI toolkit + WordPress WXR import (80f/80g)
+
+### Added — It.80f (CLI toolkit completion)
+
+- **`content:export`** — JSON export of pages/articles to stdout or directory (`--type=page|article|all`).
+- **`content:import`** — import from JSON export bundle or WordPress WXR XML; **dry-run by default**, `--run` to write SSOT.
+- **`user:create`** — bootstrap operator accounts from CLI (role, username, password policy).
+- **`user:list`** / **`user:reset-password`** — wired into `backend/bin/console` (existed, now registered).
+
+### Added — It.80g (CMS import phase 1)
+
+- **WordPress WXR importer** — `content:import --format=wordpress`; posts → articles, pages → pages; slug collision → `import-{slug}`.
+
+### Docs
+
+- [ITERATION_80](docs/en/ITERATION_80.md) marked **complete** (80a–80g).
+- CLI usage in [TESTING.md](docs/en/developer/TESTING.md) §13.4.
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.39`
+- **Iteration:** It.80 closed
 
 <a id="release-2-1-0-beta-38"></a>
 

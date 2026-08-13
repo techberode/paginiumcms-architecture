@@ -1,10 +1,10 @@
 # Iterácia 80 — SEO redirecty, integrácie a operátorský toolkit
 
-> **Stav:** ⏳ plánované · checklist aktívny  
+> **Stav:** ✅ hotové (80a–80g) · checklist aktívny  
 > **Priorita:** 🟡 (najprv vysoký dopad / primeraná náročnosť)  
 > **Vlna:** Produkt & ops (po HE-5) · nezávislé od Hybrid Engine jadra  
 > **Závisí od:** stabilný Classic/headless model ([It.73](ITERATION_73.md), [It.74](ITERATION_74.md) odporúčané)  
-> **Snapshot:** 2026-08-09 · `v2.1.0-beta.30`
+> **Snapshot:** 2026-08-13 · `v2.1.0-beta.39`
 
 ## Cieľ
 
@@ -37,8 +37,8 @@ Iterácia je **checklist-driven**: každý riadok má status, pripomienky a acce
 | **80c** | Spam heuristika komentárov | 🟡 P3 | ✅ hotové (`beta.35`) | **Stredný / Nízky** | Honeypot + skóre v `CommentPolicyResolver`. | Bez CAPTCHA lock-in; karanténa v admin inboxe. | comment policy |
 | **80d** | Outbound webhooks | 🟡 P4 | ✅ hotové (`beta.36`) | **Stredný / Stredný** | `content.published`, `content.updated` → POST (Slack/Zapier). | `OutboundUrlGuard`, HMAC, retry queue. | Jobs · [It.74](ITERATION_74.md) |
 | **80e** | GDPR export / anonymizácia | 🔵 P5 | ✅ hotové (`beta.37`) | **Stredný / Stredný** | Export JSON/ZIP používateľa; anonymizácia PII. | Nie full DPA produkt; audit exportov. | user/comment/newsletter |
-| **80f** | CLI nástroje + API4 hardening | 🔵 P6 | ✅ hotové (`beta.38`) | **Stredný / Stredný** | `redirect:validate` CLI; rate limit kontakt/komentáre; honeypot; bulk cap; backup import cap; GDPR export caps; blog author settings. | Zvyšok CLI (`content:export`, `user:create`) v beta.39+. | console |
-| **80g** | Import z CMS | 🔵 P7 | ⏳ plánované | **Vysoký / Vysoký** | WordPress XML, Jekyll, Ghost → flat-file. | Fáza 1: články/stránky; dry-run. | **80f** · [It.73](ITERATION_73.md) |
+| **80f** | CLI nástroje + API4 hardening | 🔵 P6 | ✅ hotové (`beta.38`–`39`) | **Stredný / Stredný** | `redirect:validate`, `content:export`, `content:import`, `user:create`; rate limit; honeypot; bulk cap. | Rovnaké validátory ako HTTP. | console |
+| **80g** | Import z CMS (WordPress WXR) | 🔵 P7 | ✅ hotové (`beta.39`) | **Vysoký / Vysoký** | `content:import --format=wordpress` → stránky/články. | Jekyll/Ghost neskôr; médiá sa nestahujú. | **80f** · [It.73](ITERATION_73.md) |
 
 ### Legenda stavu
 
@@ -72,7 +72,7 @@ beta.35  — ✅ 80b + 80c spolu (404 + spam; plánovaná beta.34 preskočená)
 beta.36  — ✅ 80d outbound webhooks (shipped)
 beta.37  — ✅ 80e GDPR export/anonymizácia (shipped)
 beta.38  — ✅ 80f API4 hardening + blog author settings (shipped)
-beta.39+ — zvyšok CLI / 80g import …
+beta.39  — ✅ 80f CLI complete + 80g WordPress import (shipped)
 ```
 
 Detail EN: [ITERATION_80.md](../en/ITERATION_80.md)

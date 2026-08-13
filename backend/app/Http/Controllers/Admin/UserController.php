@@ -342,6 +342,36 @@ final class UserController
     /**
      * @param array<string, string> $args
      */
+    public function assignAvatarFromUrl(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $user = $this->resolveUser((string) ($args['id'] ?? ''));
+        if ($user === null) {
+            return $this->json->error($response, 'Používateľ neexistuje', 404);
+        }
+
+        $payload = $this->parseJsonBody($request);
+        $url = trim((string) ($payload['url'] ?? $payload['avatarUrl'] ?? ''));
+        if ($url === '') {
+            return $this->json->error($response, 'URL avataru je povinná', 400);
+        }
+
+        try {
+            $resolved = $this->avatars->assignFromMediaUrl($url);
+            $user->setAvatarUrl($resolved);
+            $user->setUpdatedAt(time());
+            $this->users->save($user);
+
+            return $this->json->success($response, [
+                'user' => $user->jsonSerialize(),
+            ], 200, 'Avatar bol aktualizovaný');
+        } catch (\Throwable $e) {
+            return $this->json->error($response, $e->getMessage(), 400);
+        }
+    }
+
+    /**
+     * @param array<string, string> $args
+     */
     public function uploadAvatar(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $user = $this->resolveUser((string) ($args['id'] ?? ''));
