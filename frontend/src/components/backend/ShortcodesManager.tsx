@@ -313,7 +313,7 @@ export const ShortcodesManager: React.FC = () => {
           </ul>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-900 flex flex-col min-h-[420px]">
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-900 flex flex-col min-h-[520px]">
           <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 border-b border-slate-100 dark:border-slate-800">
             <div>
               <h2 className="font-bold text-slate-900 dark:text-white">
@@ -362,9 +362,9 @@ export const ShortcodesManager: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex-1 min-h-[360px]">
+          <div className="flex-1 min-h-[420px]">
             {loadingFile ? (
-              <div className="flex items-center justify-center h-full text-sm text-slate-500">
+              <div className="flex items-center justify-center h-[420px] text-sm text-slate-500">
                 {t('platform.shortcodes.loadingDefinition')}
               </div>
             ) : selectedName ? (
@@ -374,9 +374,11 @@ export const ShortcodesManager: React.FC = () => {
                 onChange={setContent}
                 language="json"
                 wordWrap
+                height={420}
+                path={`shortcode://${selectedName}`}
               />
             ) : (
-              <div className="flex items-center justify-center h-full text-sm text-slate-500 px-6 text-center">
+              <div className="flex items-center justify-center h-[420px] text-sm text-slate-500 px-6 text-center">
                 {t('platform.shortcodes.selectOne')}
               </div>
             )}
