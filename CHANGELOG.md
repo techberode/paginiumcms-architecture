@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.44`](#release-2-1-0-beta-44) | 2026-08-13 | Hotfix — ShortcodesManager Monaco editor height |
 | [`2.1.0-beta.43`](#release-2-1-0-beta-43) | 2026-08-13 | Hotfix — home page layout regression (landing grid) |
 | [`2.1.0-beta.42`](#release-2-1-0-beta-42) | 2026-08-13 | Hotfix — pgLayout.css prod build + AppVersion beta.41 |
 | [`2.1.0-beta.41`](#release-2-1-0-beta-41) | 2026-08-13 | It.58 shortcodes/layout — expander, admin UI, preview API, pgLayout CSS |
@@ -125,6 +126,23 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **ISS-141 follow-up** — all remaining `Http/Controllers/*` JSON mutating paths and OTP/contact rate-limit middleware now use `RequestJsonBody::decode()` (eliminates empty-body regressions site-wide after `BodyParsingMiddleware`).
 
 - **Shortcode expand + HTML sanitizer** — `allowedHtmlTags` now includes `div`, `article`, `section`, `aside`, `span` (required for It.58 expand templates); legacy settings merge missing layout tags on read; `role` attribute allowed on sanitized elements.
+
+<a id="release-2-1-0-beta-44"></a>
+
+## [2.1.0-beta.44] – 2026-08-13
+
+Hotfix — Shortcodes admin stuck on “Loading editor…”
+
+### Fixed
+
+- **`ShortcodesManager`** — Monaco editor uses explicit `420px` height (parent grid had no computed height, so `@monaco-editor/react` never finished mounting).
+- **`MonacoCodeEditor`** — optional `height` prop; wrapper `min-h-[360px]` when using percentage height.
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.44`
+
+---
 
 <a id="release-2-1-0-beta-43"></a>
 

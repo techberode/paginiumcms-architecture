@@ -22,6 +22,8 @@ interface MonacoCodeEditorProps {
   path?: string;
   wordWrap?: boolean;
   loading?: boolean;
+  /** Editor viewport height — use a pixel value when the parent has no explicit height. */
+  height?: string | number;
   markers?: MonacoEditorMarker[];
   markerOwner?: string;
 }
@@ -35,6 +37,7 @@ export const MonacoCodeEditor = forwardRef<MonacoCodeEditorHandle, MonacoCodeEdi
       path,
       wordWrap = false,
       loading = false,
+      height = '100%',
       markers = [],
       markerOwner = 'editor',
     },
@@ -113,30 +116,32 @@ export const MonacoCodeEditor = forwardRef<MonacoCodeEditorHandle, MonacoCodeEdi
     }
 
     return (
-      <Editor
-        key={path || 'empty'}
-        height="100%"
-        language={toMonacoLanguage(language)}
-        theme={isDark ? 'vs-dark' : 'vs-light'}
-        value={value}
-        onChange={(next) => onChange(next ?? '')}
-        onMount={handleMount}
-        loading={
-          <div className="flex h-full min-h-[400px] items-center justify-center bg-gray-50 dark:bg-gray-900 text-sm text-gray-500">
-            Loading editor…
-          </div>
-        }
-        options={{
-          readOnly: false,
-          wordWrap: wordWrap ? 'on' : 'off',
-          minimap: { enabled: false },
-          scrollBeyondLastLine: false,
-          automaticLayout: true,
-          fontSize: 14,
-          tabSize: 2,
-          padding: { top: 12 },
-        }}
-      />
+      <div className={height === '100%' ? 'h-full min-h-[360px] w-full' : 'w-full'}>
+        <Editor
+          key={path || 'empty'}
+          height={height}
+          language={toMonacoLanguage(language)}
+          theme={isDark ? 'vs-dark' : 'vs-light'}
+          value={value}
+          onChange={(next) => onChange(next ?? '')}
+          onMount={handleMount}
+          loading={
+            <div className="flex h-full min-h-[360px] items-center justify-center bg-gray-50 dark:bg-gray-900 text-sm text-gray-500">
+              Loading editor…
+            </div>
+          }
+          options={{
+            readOnly: false,
+            wordWrap: wordWrap ? 'on' : 'off',
+            minimap: { enabled: false },
+            scrollBeyondLastLine: false,
+            automaticLayout: true,
+            fontSize: 14,
+            tabSize: 2,
+            padding: { top: 12 },
+          }}
+        />
+      </div>
     );
   }
 );
