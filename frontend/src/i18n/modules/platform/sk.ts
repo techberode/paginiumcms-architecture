@@ -551,6 +551,7 @@ export const platformSk: MessageTree = {
     empty: 'Zatiaľ žiadne shortcodes — bundled katalóg sa seedne pri prvom načítaní.',
     selectOne: 'Vyberte shortcode zo zoznamu alebo vytvorte nový.',
     loadingDefinition: 'Načítavam definíciu…',
+    editorLabel: 'Definícia shortcode (JSON)',
     preview: 'Validovať',
     save: 'Uložiť',
     saving: 'Ukladám…',

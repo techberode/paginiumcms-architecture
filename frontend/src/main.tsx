@@ -14,6 +14,7 @@ import { I18nProvider } from './context/I18nContext';
 import { PublicSiteProvider } from './context/PublicSiteContext';
 import App from './App';
 import { SiteBrandingHead } from './components/branding/SiteBrandingHead';
+import './monacoSetup';
 import './index.css';
 import './theme/pgLayout.css';
 import { logFrontendStartup } from './utils/debugLog';

@@ -551,6 +551,7 @@ export const platformEn: MessageTree = {
     empty: 'No shortcodes yet — bundled catalog seeds on first load.',
     selectOne: 'Select a shortcode from the list or create a new one.',
     loadingDefinition: 'Loading definition…',
+    editorLabel: 'Shortcode definition (JSON)',
     preview: 'Validate',
     save: 'Save',
     saving: 'Saving…',

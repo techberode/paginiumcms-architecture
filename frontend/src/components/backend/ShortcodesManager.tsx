@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Code2, Plus, RefreshCw, Save, Trash2, Wand2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { MonacoCodeEditor, type MonacoCodeEditorHandle } from '../CodeEditor/MonacoCodeEditor';
 import { shortcodesApi, type ShortcodeListItem } from '../../api/shortcodes';
 import { useToast } from '../../hooks/useToast';
 import { useI18n } from '../../context/I18nContext';
@@ -22,7 +21,6 @@ const DEFAULT_DEFINITION = (name: string) =>
 export const ShortcodesManager: React.FC = () => {
   const { t } = useI18n();
   const toast = useToast();
-  const monacoRef = useRef<MonacoCodeEditorHandle>(null);
   const draftNameRef = useRef<string | null>(null);
 
   const [loading, setLoading] = useState(true);
@@ -368,14 +366,12 @@ export const ShortcodesManager: React.FC = () => {
                 {t('platform.shortcodes.loadingDefinition')}
               </div>
             ) : selectedName ? (
-              <MonacoCodeEditor
-                ref={monacoRef}
+              <textarea
                 value={content}
-                onChange={setContent}
-                language="json"
-                wordWrap
-                height={420}
-                path={`shortcode://${selectedName}`}
+                onChange={(event) => setContent(event.target.value)}
+                spellCheck={false}
+                aria-label={t('platform.shortcodes.editorLabel')}
+                className="w-full h-[420px] resize-y border-0 bg-slate-950 text-slate-100 font-mono text-sm leading-relaxed p-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-slate-950"
               />
             ) : (
               <div className="flex items-center justify-center h-[420px] text-sm text-slate-500 px-6 text-center">

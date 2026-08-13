@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 13 August 2026 · register **ISS-001–ISS-141** · **`v2.1.0-beta.40`** hotfix (System Update deploy)
+> **Last updated:** 13 August 2026 · register **ISS-001–ISS-146** · **`v2.1.0-beta.45`** hotfix (Shortcodes admin prod)
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -164,6 +164,11 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-139](#iss-139) | GDPR re-export after anonymize re-aggregated pseudonym-linked comments | Medium (GDPR) | ✅ **2.1.0-beta.38** · skip related rows for anonymized accounts |
 | [ISS-140](#iss-140) | Public contact/comments lacked dedicated rate limits; bulk/import/export without caps (API4) | Medium (security) | ✅ **2.1.0-beta.38** · It.80f hardening |
 | [ISS-141](#iss-141) | System Update deploy returned 422 after BodyParsingMiddleware (empty JSON body) | High (deploy) | ✅ **2.1.0-beta.40** |
+| [ISS-142](#iss-142) | `POST /api/admin/content/render-preview` 500 — `ContentMetaController` DI missing `ContentBodyRenderer` | High (editor preview) | ✅ **2.1.0-beta.41** |
+| [ISS-143](#iss-143) | Production CSS bundle missing `pgLayout.css` (PostCSS dropped `@import` after `@tailwind`) | High (layout) | ✅ **2.1.0-beta.42** |
+| [ISS-144](#iss-144) | Homepage squeezed to ~1/3 width after It.58 `PageLayoutShell` landing grid | High (public UX) | ✅ **2.1.0-beta.43** |
+| [ISS-145](#iss-145) | Shortcodes admin stuck on “Loading editor…” — Monaco zero-height mount | Medium (admin UX) | ✅ **2.1.0-beta.44** (partial) |
+| [ISS-146](#iss-146) | Shortcodes admin blank on production — Monaco CDN blocked by nginx CSP | High (admin UX) | ✅ **2.1.0-beta.45** |
 
 ## CI failures (GitHub Actions)
 
@@ -4236,6 +4241,146 @@ APP_ROOT=/var/www/paginiumcms.com GIT_REF=v2.1.0-beta.40 ./scripts/deploy-instan
 
 - **Release:** [CHANGELOG.md](../CHANGELOG.md#release-2-1-0-beta-40)
 - **Tests:** `backend/tests/Http/Support/RequestJsonBodyTest.php`, `backend/tests/Http/Controllers/Admin/SystemUpdateControllerTest.php`, `backend/tests/Http/Controllers/Comments/CommentsControllerTest.php`, `backend/tests/Core/Workflow/OtpWorkflowServiceTest.php`
+
+---
+
+<a id="iss-142"></a>
+
+## ISS-142 – Content preview API 500 (ContentMetaController DI)
+
+[↑ Overview](#overview)
+
+**Severity:** High (editor preview)  
+**Status:** ✅ Fixed — **`v2.1.0-beta.41`**
+
+### Operational synopsis
+
+It.58 added `POST /api/admin/content/render-preview` on `ContentMetaController` for server-side shortcode expansion in the admin preview modal. The controller constructor requires four services (`ContentMetaGenerator`, `ContentBodyRenderer`, `SettingsRepositoryInterface`, `JsonResponder`), but `services.php` still wired only three arguments. PHP DI failed at runtime → HTTP 500 on preview; frontend fell back to raw shortcode text or empty preview.
+
+### Resolution
+
+- `backend/app/Http/Config/services.php` — inject `ContentBodyRenderer` into `ContentMetaController`.
+- Regression covered by preview/render integration in It.58 tests.
+
+### Evidence and traceability
+
+- **Release:** [CHANGELOG.md](../CHANGELOG.md#release-2-1-0-beta-41)
+- **Controller:** `backend/app/Http/Controllers/Content/ContentMetaController.php`
+
+---
+
+<a id="iss-143"></a>
+
+## ISS-143 – Production build dropped pgLayout.css (PostCSS @import order)
+
+[↑ Overview](#overview)
+
+**Severity:** High (layout)  
+**Status:** ✅ Fixed — **`v2.1.0-beta.42`**
+
+### Operational synopsis
+
+It.58 introduced `frontend/src/theme/pgLayout.css` for shortcode grid/card utilities. It was `@import`ed from `index.css` **after** `@tailwind` directives. PostCSS/Vite production build silently drops invalid `@import` order per CSS spec → `dist/assets/*.css` lacked layout classes. Dev (HMR) still applied rules; production pages showed unstyled or single-column shortcode layouts.
+
+### Resolution
+
+- Move `pgLayout.css` import to `main.tsx` (side-effect import before app mount).
+- Remove invalid `@import` from `index.css`.
+
+### Evidence and traceability
+
+- **Release:** [CHANGELOG.md](../CHANGELOG.md#release-2-1-0-beta-42)
+- **CSS:** `frontend/src/theme/pgLayout.css`, `frontend/src/main.tsx`
+
+---
+
+<a id="iss-144"></a>
+
+## ISS-144 – Homepage squeezed after PageLayoutShell landing grid
+
+[↑ Overview](#overview)
+
+**Severity:** High (public UX)  
+**Status:** ✅ Fixed — **`v2.1.0-beta.43`**
+
+### Operational synopsis
+
+It.58 wrapped public pages in `PageLayoutShell` with `pg-landing-grid` (three-column shell). The home slug inherited the same shell, squeezing hero/content into ~1/3 viewport width on desktop. Mobile appeared acceptable; desktop regressed vs pre-It.58 full-width home.
+
+### Resolution
+
+- `PageRenderer` — `/` and `home` slug skip `PageLayoutShell`.
+- `pg-landing-grid` remains single-column at shell level; multi-column layout belongs inside shortcode body (`feature-grid`), not the page wrapper.
+
+### Evidence and traceability
+
+- **Release:** [CHANGELOG.md](../CHANGELOG.md#release-2-1-0-beta-43)
+- **Tests:** `frontend/src/layout/PageLayoutShell.test.tsx`
+
+---
+
+<a id="iss-145"></a>
+
+## ISS-145 – Shortcodes admin Monaco never mounted (zero height)
+
+[↑ Overview](#overview)
+
+**Severity:** Medium (admin UX)  
+**Status:** ✅ Fixed — **`v2.1.0-beta.44`** (height only; CSP follow-up in ISS-146)
+
+### Operational synopsis
+
+`/platform/shortcodes` showed perpetual “Loading definition…” / blank editor. `@monaco-editor/react` with default `height="100%"` inside a flex grid without explicit parent height never completed `onMount`. Dev sometimes masked the issue depending on layout timing.
+
+### Resolution
+
+- `ShortcodesManager` — explicit `420px` Monaco height (beta.44).
+- **Follow-up:** production still broken under CSP (ISS-146) → textarea editor in beta.45.
+
+### Evidence and traceability
+
+- **Release:** [CHANGELOG.md](../CHANGELOG.md#release-2-1-0-beta-44)
+- **Component:** `frontend/src/components/backend/ShortcodesManager.tsx`
+
+---
+
+<a id="iss-146"></a>
+
+## ISS-146 – Shortcodes admin blank on production (Monaco CDN vs CSP)
+
+[↑ Overview](#overview)
+
+**Severity:** High (admin UX)  
+**Status:** ✅ Fixed — **`v2.1.0-beta.45`**
+
+### Operational synopsis
+
+After beta.44 height fix, Shortcodes admin worked locally but not on production (`paginiumcms.com`). Production nginx CSP: `script-src 'self'; connect-src 'self'`. Default `@monaco-editor/loader` fetches Monaco from `cdn.jsdelivr.net` → blocked; editor stuck loading. Browser console: CSP violation on script/connect to CDN.
+
+### Resolution
+
+- **`ShortcodesManager`** — native JSON `<textarea>` (no Monaco, no CDN, CSP-safe).
+- **`monacoSetup.ts`** — self-hosted Monaco + Vite `?worker` bundles for Code Editor / TranslationEditor.
+- **CSP** — add `worker-src 'self' blob:` to `SecurityMiddleware`, `docker/nginx/security-headers.conf`, and deploy header templates.
+
+### Workaround (before beta.45)
+
+Use dev build locally for shortcode edits, or temporarily relax CSP (not recommended).
+
+### Deploy
+
+```bash
+APP_ROOT=/var/www/paginiumcms.com GIT_REF=v2.1.0-beta.45 ./scripts/deploy-instance-update.sh
+```
+
+Hard-refresh admin after deploy; verify `/platform/shortcodes` shows JSON in textarea.
+
+### Evidence and traceability
+
+- **Release:** [CHANGELOG.md](../CHANGELOG.md#release-2-1-0-beta-45)
+- **Frontend:** `frontend/src/monacoSetup.ts`, `frontend/src/components/backend/ShortcodesManager.tsx`
+- **CSP:** `backend/app/Http/Middleware/SecurityMiddleware.php`, `docker/nginx/security-headers.conf`
+- **Tests:** `backend/tests/Http/Middleware/SecurityMiddlewareTest.php`
 
 ---
 
