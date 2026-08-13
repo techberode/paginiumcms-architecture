@@ -15,6 +15,7 @@ import { PublicSiteProvider } from './context/PublicSiteContext';
 import App from './App';
 import { SiteBrandingHead } from './components/branding/SiteBrandingHead';
 import './index.css';
+import './theme/pgLayout.css';
 import { logFrontendStartup } from './utils/debugLog';
 import { DebugRouteTracker } from './components/debug/DebugRouteTracker';
 import './i18n/registerModules';
