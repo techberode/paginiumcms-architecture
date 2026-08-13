@@ -7,7 +7,7 @@ namespace PaginiumCMS\Core\Security\Firewall;
 /**
  * Decides whether mutating request bodies should be scanned by the WAF.
  *
- * Content-heavy editor routes are exempt to avoid false positives on markdown/SQL snippets.
+ * Content-heavy editor routes are exempt to avoid false positives on markdown/SQL/path snippets.
  */
 final class FirewallBodyScanPolicy
 {
@@ -17,6 +17,7 @@ final class FirewallBodyScanPolicy
         '/api/articles',
         '/api/drafts',
         '/api/admin/code-editor',
+        '/api/admin/content/',
         '/api/webhooks/',
         '/api/analytics/pageview',
     ];

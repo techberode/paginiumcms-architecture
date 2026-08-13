@@ -82,13 +82,33 @@ For a dynamic home address, adjust the narrow scenario or use an admin VPN rathe
 
 After deployment verify one request across access log, WAF incident, and application context.
 
-## 7. Storage and concurrency
+**Docker production:** PHP often sees a single hop IP (e.g. `192.168.16.x`) for all traffic. Add that hop to `TRUSTED_PROXIES` so bans target real clients from `X-Forwarded-For`, not the proxy. Banning the hop blocks the entire site ([ISS-147](../ISSUES.md#iss-147)).
+
+## 7. Storage paths (Classic layout)
+
+Ban and whitelist stores (production, non-demo):
+
+```text
+backend/storage/app/content/data/security/firewall/bans.json
+backend/storage/app/content/data/security/firewall/whitelist.json
+```
+
+Not `backend/data/…` ([ISS-148](../ISSUES.md#iss-148)).
+
+## 8. Editor body-scan exemptions
+
+Routes that POST full article/markdown bodies are exempt from WAF body scanning (false positives on `../`, SQL examples, etc.):
+
+- `/api/pages`, `/api/articles`, `/api/drafts`, `/api/admin/code-editor`
+- `/api/admin/content/` (`suggest-meta`, `render-preview`) — added after [ISS-147](../ISSUES.md#iss-147)
+
+## 9. Storage and concurrency
 
 Flat-file bans/incidents/whitelist require locks and atomic writes. Corrupt JSON must not silently fail open without an alert. Recovery should preserve the original file, create a valid new state, and emit audit/event records.
 
 These files must not be web-accessible or included in a public support ZIP.
 
-## 8. Administrator workflow
+## 10. Administrator workflow
 
 Typical screens:
 
@@ -97,7 +117,7 @@ Typical screens:
 
 Mutations require a privileged role, 2FA according to policy, and CSRF for session authentication. Manual ban/unban/whitelist actions must be audited.
 
-## 9. API contract
+## 11. API contract
 
 A concrete release may expose stats, incidents, bans, and whitelist endpoints. The client should support:
 
@@ -109,7 +129,7 @@ A concrete release may expose stats, incidents, bans, and whitelist endpoints. T
 
 Verify exact endpoints in [API documentation](../architecture/API.md).
 
-## 10. Relationship to other layers
+## 12. Relationship to other layers
 
 | Layer | Handles |
 |---|---|
@@ -123,7 +143,7 @@ Verify exact endpoints in [API documentation](../architecture/API.md).
 
 Never disable one layer because “we already have WAF”.
 
-## 11. False positives
+## 13. False positives
 
 When a legitimate request is blocked:
 
@@ -135,7 +155,7 @@ When a legitimate request is blocked:
 6. add a regression test,
 7. use whitelist only as a justified last resort.
 
-## 12. Emergency unlock
+## 14. Emergency unlock
 
 When an administrator is banned:
 
@@ -148,7 +168,7 @@ When an administrator is banned:
 
 Do not disable the firewall permanently and never expose a storage file through the web as “temporary diagnostics”.
 
-## 13. Testing
+## 15. Testing
 
 Safe smoke test on your own instance:
 
@@ -158,7 +178,7 @@ curl -i https://cms.example.test/wp-login.php
 
 Expected behavior depends on thresholds: an immediate incident or 403/jail. Then verify that ordinary `/api/health` and editor save remain functional from a non-banned address.
 
-## 14. Related documents
+## 16. Related documents
 
 - [Logging](LOGGING.md)
 - [Core hardening](../architecture/CORE_HARDENING.md)

@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.46`](#release-2-1-0-beta-46) | 2026-08-13 | Hotfix — WAF false positive on suggest-meta (ISS-147) |
 | [`2.1.0-beta.45`](#release-2-1-0-beta-45) | 2026-08-13 | Hotfix — Shortcodes admin prod (Monaco CSP), self-hosted Monaco workers |
 | [`2.1.0-beta.44`](#release-2-1-0-beta-44) | 2026-08-13 | Hotfix — ShortcodesManager Monaco editor height |
 | [`2.1.0-beta.43`](#release-2-1-0-beta-43) | 2026-08-13 | Hotfix — home page layout regression (landing grid) |
@@ -116,6 +117,8 @@ This canonical history records release facts supported by the supplied `CHANGELO
 | [`2.0.0`](#release-2-0-0) | 2026-07-14 | Flat-file core across the first five planned iterations |
 | [`1.0.0`](#release-1-0-0) | Initial structure | Initial repository structure |
 
+<a id="unreleased"></a>
+
 ## [Unreleased]
 
 ### Added
@@ -127,6 +130,29 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **ISS-141 follow-up** — all remaining `Http/Controllers/*` JSON mutating paths and OTP/contact rate-limit middleware now use `RequestJsonBody::decode()` (eliminates empty-body regressions site-wide after `BodyParsingMiddleware`).
 
 - **Shortcode expand + HTML sanitizer** — `allowedHtmlTags` now includes `div`, `article`, `section`, `aside`, `span` (required for It.58 expand templates); legacy settings merge missing layout tags on read; `role` attribute allowed on sanitized elements.
+
+<a id="release-2-1-0-beta-46"></a>
+
+## [2.1.0-beta.46] – 2026-08-13
+
+Hotfix — WAF false positive banned Docker proxy IP (production API 403)
+
+### Fixed
+
+- **`FirewallBodyScanPolicy`** — exempt `POST /api/admin/content/suggest-meta` and `render-preview` from WAF body scan (markdown with `../` triggered `path_traversal`; ban on proxy IP `192.168.16.1` blocked all API traffic).
+- **Docs** — [ISS-147](docs/ISSUES.md#iss-147), [ISS-148](docs/ISSUES.md#iss-148); [FIREWALL.md](docs/en/user/FIREWALL.md) Docker `TRUSTED_PROXIES` and storage paths.
+
+### Ops (production)
+
+- Set `TRUSTED_PROXIES=127.0.0.1,::1,<docker-nginx-hop>` in `.env`.
+- Firewall store: `backend/storage/app/content/data/security/firewall/` (not `backend/data/`).
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.46`
+- **Issue:** [ISS-147](docs/ISSUES.md#iss-147)
+
+---
 
 <a id="release-2-1-0-beta-45"></a>
 

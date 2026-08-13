@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 13 August 2026 · register **ISS-001–ISS-146** · **`v2.1.0-beta.45`** hotfix (Shortcodes admin prod)
+> **Last updated:** 13 August 2026 · register **ISS-001–ISS-148** · **`v2.1.0-beta.46`** hotfix (WAF ISS-147)
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -169,6 +169,8 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-144](#iss-144) | Homepage squeezed to ~1/3 width after It.58 `PageLayoutShell` landing grid | High (public UX) | ✅ **2.1.0-beta.43** |
 | [ISS-145](#iss-145) | Shortcodes admin stuck on “Loading editor…” — Monaco zero-height mount | Medium (admin UX) | ✅ **2.1.0-beta.44** (partial) |
 | [ISS-146](#iss-146) | Shortcodes admin blank on production — Monaco CDN blocked by nginx CSP | High (admin UX) | ✅ **2.1.0-beta.45** |
+| [ISS-147](#iss-147) | WAF false positive on `suggest-meta` banned Docker proxy IP → full site 403 | **Critical (prod)** | ✅ **2.1.0-beta.46** |
+| [ISS-148](#iss-148) | Recovery docs used wrong paths (`backend/data` vs `storage/app/content`) | Low (ops) | ✅ documented |
 
 ## CI failures (GitHub Actions)
 
@@ -4381,6 +4383,98 @@ Hard-refresh admin after deploy; verify `/platform/shortcodes` shows JSON in tex
 - **Frontend:** `frontend/src/monacoSetup.ts`, `frontend/src/components/backend/ShortcodesManager.tsx`
 - **CSP:** `backend/app/Http/Middleware/SecurityMiddleware.php`, `docker/nginx/security-headers.conf`
 - **Tests:** `backend/tests/Http/Middleware/SecurityMiddlewareTest.php`
+
+---
+
+<a id="iss-147"></a>
+
+## ISS-147 – WAF false positive on suggest-meta banned proxy IP (production outage)
+
+[↑ Overview](#overview)
+
+**Severity:** Critical (production)  
+**Status:** ✅ Fixed — **`v2.1.0-beta.46`**
+
+### Operational synopsis
+
+On **2026-08-13 ~11:27 UTC** production (`paginiumcms.com`) returned **403 `Access denied`** on all `/api/*` routes. Static SPA shell (nginx) still returned HTTP 200, so the site appeared “empty” / default home fallback while API data remained on disk.
+
+**WAF incident (confirmed in admin firewall log):**
+
+| Field | Value |
+|-------|--------|
+| Time | 2026-08-13 11:27:30 |
+| IP | `192.168.16.1` |
+| Scenario | `path_traversal` |
+| URI | `/api/admin/content/suggest-meta` |
+| User-Agent | Chrome 151 (admin editor — legitimate) |
+
+Root cause chain:
+
+1. Editor **Suggest meta / tags** (`POST /api/admin/content/suggest-meta`, It.57) sends full article `body` in JSON.
+2. `FirewallBodyScanPolicy` **did not exempt** this route (unlike `/api/pages`, `/api/articles`, `/api/admin/code-editor`).
+3. WAF `path_traversal` regex matched `../` inside markdown/content (e.g. relative paths in text) → incident recorded.
+4. Without `TRUSTED_PROXIES` for the Docker/nginx hop, **all requests appear as `192.168.16.1`** → ban on that IP blocks **every visitor**.
+5. `FirewallMiddleware` returns plain-text `Access denied` (not JSON) → public SPA loads zero pages.
+
+### Resolution (code)
+
+- `FirewallBodyScanPolicy` — exempt prefix `/api/admin/content/` (`suggest-meta`, `render-preview`).
+- Regression: `FirewallBodyScanPolicyTest::testExemptsContentMetaAdminRoutes`.
+
+### Resolution (operations — required on Docker prod)
+
+- Set `TRUSTED_PROXIES=127.0.0.1,::1,<docker-nginx-hop>` in `.env` (example prod hop: `192.168.16.1`).
+- Whitelist the proxy hop in `storage/app/content/data/security/firewall/whitelist.json` only if justified; prefer trusted proxies so real client IPs are jailed.
+- Firewall/store paths: **`backend/storage/app/content/data/security/firewall/`** (not `backend/data/`). See [ISS-148](#iss-148).
+
+### Workaround (during outage)
+
+```bash
+# Clear bans (correct path)
+echo '{"bans":{},"sin_scores":{},"recent_incidents":{}}' | sudo tee \
+  /var/www/paginiumcms.com/backend/storage/app/content/data/security/firewall/bans.json
+docker compose -f /var/lib/docker/compose/paginiumcms/docker-compose.prod.yml restart php
+```
+
+### Evidence and traceability
+
+- **Release:** [CHANGELOG.md](../CHANGELOG.md#release-2-1-0-beta-46)
+- **Policy:** `backend/app/Core/Security/Firewall/FirewallBodyScanPolicy.php`
+- **Scenarios:** `backend/config/firewall_scenarios.php` (`path_traversal`)
+- **Docs:** [FIREWALL.md](en/user/FIREWALL.md) §6 reverse proxy
+
+---
+
+<a id="iss-148"></a>
+
+## ISS-148 – Firewall/settings recovery used wrong flat-file paths (ops)
+
+[↑ Overview](#overview)
+
+**Severity:** Low (operations)  
+**Status:** ✅ Documented — companion to [ISS-147](#iss-147)
+
+### Operational synopsis
+
+During the 2026-08-13 production recovery, ad-hoc commands targeted `backend/data/security/firewall/bans.json` and `backend/data/settings.json`. Those paths **do not exist** on current Classic layout. Runtime SSOT lives under:
+
+```text
+backend/storage/app/content/data/
+  settings.json
+  security/firewall/bans.json
+  security/firewall/whitelist.json
+  pages/ …
+```
+
+`FileValidator` base path = `DemoMode::resolveContentBasePath(storage/app)` → `storage/app/content` in production.
+
+Creating only `{ "firewall": { "enabled": false } }` when `settings.json` was missing resets **settings overrides** to schema defaults (site looked “basic” until restore/hard refresh) while **content files** remained intact.
+
+### Resolution
+
+- Document correct paths in [ISS-147](#iss-147) and [FIREWALL.md](en/user/FIREWALL.md).
+- Restore `settings.json` from `.bak.*` when available.
 
 ---
 
