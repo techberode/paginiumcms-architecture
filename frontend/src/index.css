@@ -7,8 +7,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@import './theme/pgLayout.css';
-
 /* Globálne štýly */
 @layer base {
   * {

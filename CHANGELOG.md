@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.42`](#release-2-1-0-beta-42) | 2026-08-13 | Hotfix — pgLayout.css prod build + AppVersion beta.41 |
 | [`2.1.0-beta.41`](#release-2-1-0-beta-41) | 2026-08-13 | It.58 shortcodes/layout — expander, admin UI, preview API, pgLayout CSS |
 | [`2.1.0-beta.40`](#release-2-1-0-beta-40) | 2026-08-13 | BodyParsing JSON body fix (deploy, avatar, comment OTP) |
 | [`2.1.0-beta.39`](#release-2-1-0-beta-39) | 2026-08-13 | It.80 complete — CLI toolkit + WordPress import |
@@ -123,6 +124,23 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **ISS-141 follow-up** — all remaining `Http/Controllers/*` JSON mutating paths and OTP/contact rate-limit middleware now use `RequestJsonBody::decode()` (eliminates empty-body regressions site-wide after `BodyParsingMiddleware`).
 
 - **Shortcode expand + HTML sanitizer** — `allowedHtmlTags` now includes `div`, `article`, `section`, `aside`, `span` (required for It.58 expand templates); legacy settings merge missing layout tags on read; `role` attribute allowed on sanitized elements.
+
+<a id="release-2-1-0-beta-42"></a>
+
+## [2.1.0-beta.42] – 2026-08-13
+
+Hotfix — production CSS bundle missing `pgLayout.css`
+
+### Fixed
+
+- **PostCSS / Vite prod build** — moved `pgLayout.css` import from `index.css` (after `@tailwind`, invalid per CSS spec) to `main.tsx` so layout utilities ship in `dist/assets/*.css`.
+- **`AppVersion::VERSION`** — fallback bumped to `2.1.0-beta.41` (health showed beta.40 when git describe unavailable in Docker).
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.42`
+
+---
 
 <a id="release-2-1-0-beta-41"></a>
 
