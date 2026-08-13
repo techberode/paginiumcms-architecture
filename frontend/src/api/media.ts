@@ -152,9 +152,7 @@ export async function uploadMedia(
   form.append('altText', altText);
   form.append('folder', folder);
 
-  const res = await apiClient.post<MediaFile>('/api/media/upload', form, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
+  const res = await apiClient.post<MediaFile>('/api/media/upload', form);
 
   if (res.success && res.data) {
     return { ok: true, media: res.data };

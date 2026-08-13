@@ -369,6 +369,15 @@ The application WAF is an additional layer. It does not replace reverse-proxy li
 - multipart and code-editor body-scan exemptions are minimal,
 - an in-memory/file limiter may not be globally consistent on multi-node deployments; a distributed backend is a capability, not an automatic assumption.
 
+**Public-form budgets (It.80f, `beta.38`):**
+
+| Route | Limit | Notes |
+|---|---|---|
+| `POST /api/contact` | 5/h per IP, 3/day per e-mail | Honeypot `_hp` returns silent success |
+| `POST /api/comments` | 15/h per IP | Complements WAF + comment spam heuristics (80c) |
+
+Admin bulk mutations cap at **100** IDs per batch (`BulkOperationLimits`). Backup ZIP import size is capped via `uploadSecurity.backupImportMaxSizeKb` (default 100 MB).
+
 ## 18. Logging, audit, and monitoring
 
 Distinguish:
@@ -399,7 +408,7 @@ Admin-only tools under `/api/admin/users/{id}/gdpr/*` (ADMIN / SUPER_ADMIN + 2FA
 
 | Action | Scope in primary flat-file stores | Audit event |
 |---|---|---|
-| Export (JSON or ZIP) | User profile, comments matched by e-mail or display name, newsletter row, contact messages by e-mail | `gdpr_export` |
+| Export (JSON or ZIP) | User profile, comments matched by e-mail or display name, newsletter row, contact messages by e-mail. **After anonymize**, re-export omits related rows (account e-mail is `@anonymized.invalid`). Caps: 5000 comments / 2000 contact messages per payload (`beta.38`). | `gdpr_export` |
 | Anonymize | Replaces e-mail/name/username with stable pseudonym `anon_<hash>` and `@anonymized.invalid`; redacts linked comments, contact messages, newsletter row; deactivates account | `gdpr_anonymize` |
 
 **Retention limits (not erased by anonymize):**

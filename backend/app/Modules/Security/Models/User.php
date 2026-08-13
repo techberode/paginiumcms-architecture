@@ -18,6 +18,7 @@ class User implements JsonSerializable
     /** @var array<int|string, mixed> */
     private array $roles = [];
     private string $name = '';
+    private string $bio = '';
     private ?string $avatarUrl = null;
     private bool $active = true;
     private bool $twoFactorEnabled = false;
@@ -147,6 +148,18 @@ class User implements JsonSerializable
         return $this;
     }
 
+    public function getBio(): string
+    {
+        return $this->bio;
+    }
+
+    public function setBio(string $bio): self
+    {
+        $this->bio = trim($bio);
+
+        return $this;
+    }
+
     public function getAvatarUrl(): ?string
     {
         return $this->avatarUrl;
@@ -235,6 +248,7 @@ class User implements JsonSerializable
             'email' => $this->email,
             'username' => $this->getUsername(),
             'name' => $this->name,
+            'bio' => $this->bio,
             'avatarUrl' => $this->avatarUrl,
             'roles' => $this->roles,
             'active' => $this->active,

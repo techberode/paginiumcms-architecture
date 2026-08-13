@@ -11,6 +11,7 @@ use PaginiumCMS\Core\Validation\ValidationException;
 use PaginiumCMS\Core\Validation\Validator;
 use PaginiumCMS\Core\Workflow\Services\OtpWorkflowService;
 use PaginiumCMS\Http\Support\BulkBatchResult;
+use PaginiumCMS\Http\Support\BulkOperationLimits;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Comments\Contracts\CommentsRepositoryInterface;
 use PaginiumCMS\Modules\Comments\Models\Comment;
@@ -272,6 +273,11 @@ class CommentsController
             return $this->json->error($response, Lang::get('ids_required', [], 'comments'), 400);
         }
 
+        $limitResponse = $this->rejectIfBulkLimitExceeded($ids, $response);
+        if ($limitResponse !== null) {
+            return $limitResponse;
+        }
+
         if (!in_array($status, [Comment::STATUS_PENDING, Comment::STATUS_APPROVED, Comment::STATUS_REJECTED, Comment::STATUS_QUARANTINE], true)) {
             return $this->json->error($response, Lang::get('invalid_status', [], 'comments'), 422);
         }
@@ -312,6 +318,11 @@ class CommentsController
             return $this->json->error($response, Lang::get('ids_required', [], 'comments'), 400);
         }
 
+        $limitResponse = $this->rejectIfBulkLimitExceeded($ids, $response);
+        if ($limitResponse !== null) {
+            return $limitResponse;
+        }
+
         $batch = new BulkBatchResult();
         foreach ($ids as $id) {
             try {
@@ -342,6 +353,11 @@ class CommentsController
 
         if ($ids === []) {
             return $this->json->error($response, Lang::get('ids_required', [], 'comments'), 400);
+        }
+
+        $limitResponse = $this->rejectIfBulkLimitExceeded($ids, $response);
+        if ($limitResponse !== null) {
+            return $limitResponse;
         }
 
         if (!in_array($action, ['read', 'processed', 'archive'], true)) {
@@ -387,14 +403,21 @@ class CommentsController
      */
     private function normalizeIds(mixed $value): array
     {
-        if (!is_array($value)) {
-            return [];
+        return BulkOperationLimits::normalizeIds($value);
+    }
+
+    /**
+     * @param list<string> $ids
+     */
+    private function rejectIfBulkLimitExceeded(array $ids, ResponseInterface $response): ?ResponseInterface
+    {
+        try {
+            BulkOperationLimits::assertWithinLimit($ids);
+        } catch (ValidationException $e) {
+            return $this->json->validation($response, Lang::get('validation_failed', [], 'comments'), $e->getErrors());
         }
 
-        return array_values(array_filter(
-            array_map(static fn ($id): string => is_string($id) ? trim($id) : '', $value),
-            static fn (string $id): bool => $id !== ''
-        ));
+        return null;
     }
 
     /**

@@ -77,6 +77,10 @@ class ApiClient {
           config.headers['X-CSRF-TOKEN'] = csrfToken;
         }
 
+        if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
+          delete config.headers['Content-Type'];
+        }
+
         const url = String(config.url ?? '');
         debugLogApi('request', String(config.method ?? 'get'), url, {
           params: config.params ?? null,

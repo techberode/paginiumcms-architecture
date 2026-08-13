@@ -25,6 +25,7 @@ export const ContactForm: React.FC = () => {
   const [subjectChoice, setSubjectChoice] = useState(subjects[0] ?? '');
   const [customSubject, setCustomSubject] = useState('');
   const [message, setMessage] = useState('');
+  const [honeypot, setHoneypot] = useState('');
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
 
@@ -39,7 +40,7 @@ export const ContactForm: React.FC = () => {
     }
 
     setSending(true);
-    const result = await submitContactForm({ name, email, subject: resolvedSubject, message });
+    const result = await submitContactForm({ name, email, subject: resolvedSubject, message, _hp: honeypot });
     setSending(false);
 
     if (result.ok) {
@@ -143,6 +144,16 @@ export const ContactForm: React.FC = () => {
         placeholder={t('public.contact.fields.messagePlaceholder')}
         value={message}
         onChange={(e) => setMessage(e.target.value)}
+      />
+      <input
+        type="text"
+        name="_hp"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        className="hidden"
+        value={honeypot}
+        onChange={(e) => setHoneypot(e.target.value)}
       />
       <button type="submit" className={`${BTN_PRIMARY} w-full sm:w-auto px-6 py-2.5`} disabled={sending}>
         {sending ? <Loader2 className="w-4 h-4 animate-spin inline mr-2" /> : <Send className="w-4 h-4 inline mr-2" />}

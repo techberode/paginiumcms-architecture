@@ -6,6 +6,7 @@ export async function submitContactForm(payload: {
   email: string;
   subject?: string;
   message: string;
+  _hp?: string;
 }): Promise<{ ok: true; id: string; message?: string } | { ok: false; error: string }> {
   const res = await apiClient.post<{ id: string }>('/api/contact', payload);
   if (res.success && res.data?.id) {

@@ -6,7 +6,9 @@ namespace PaginiumCMS\Http\Controllers\Admin;
 
 use PaginiumCMS\Core\Backup\Contracts\BackupInterface;
 use PaginiumCMS\Core\Backup\Models\BackupMetadata;
+use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Http\Support\BulkBatchResult;
+use PaginiumCMS\Http\Support\BulkOperationLimits;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Support\FileHelper;
 use Psr\Http\Message\ResponseInterface;
@@ -17,7 +19,8 @@ class BackupController
 {
     public function __construct(
         private BackupInterface $backup,
-        private JsonResponder $json
+        private JsonResponder $json,
+        private SettingsRepositoryInterface $settings,
     ) {
     }
 
@@ -59,6 +62,17 @@ class BackupController
 
         if (!$file instanceof UploadedFileInterface || $file->getError() !== UPLOAD_ERR_OK) {
             return $this->json->error($response, 'ZIP súbor je povinný', 400);
+        }
+
+        $maxKb = max(1024, (int) ($this->settings->group('uploadSecurity')['backupImportMaxSizeKb'] ?? 102400));
+        $maxBytes = $maxKb * 1024;
+        $uploadSize = $file->getSize();
+        if ($uploadSize !== null && $uploadSize > $maxBytes) {
+            return $this->json->error(
+                $response,
+                sprintf('Backup ZIP exceeds maximum import size (%d KB).', $maxKb),
+                413
+            );
         }
 
         $tempPath = sys_get_temp_dir() . '/paginium_import_' . uniqid('', true) . '.zip';

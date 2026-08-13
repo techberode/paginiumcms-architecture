@@ -29,6 +29,15 @@ class ContactController
             return $this->json->error($response, Lang::get('invalid_payload', [], 'contact'), 400);
         }
 
+        if (trim((string) ($data['_hp'] ?? '')) !== '') {
+            return $this->json->success(
+                $response,
+                ['id' => 'hp_' . bin2hex(random_bytes(8))],
+                201,
+                Lang::get('submitted', [], 'contact')
+            );
+        }
+
         try {
             $validated = $this->validator->validate($data, [
                 'name' => ['required', 'string', 'min:2', 'max:120'],

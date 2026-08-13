@@ -37,7 +37,7 @@ This iteration is intentionally **checklist-driven**: each row has status, remar
 | **80c** | Comment spam heuristics | 🟡 P3 | ✅ shipped (`beta.35`) | **Med / Low** | Honeypot field + rate/heuristic score in `CommentPolicyResolver`; quarantine or reject before public scale. | No CAPTCHA vendor lock-in in MVP; optional Akismet-style adapter later. Regression tests for legit comments. | existing comment policy |
 | **80d** | Outbound webhooks | 🟡 P4 | ✅ shipped (`beta.36`) | **Med / Med** | Events `content.published`, `content.updated` → queued POST to registered URL (Slack/Discord/Zapier). | `OutboundUrlGuard` mandatory; HMAC signing secret; retry + dead-letter in flat-file queue; no payload secrets in logs. | Scheduler/Jobs · [It.74](ITERATION_74.md) optional for remote receivers |
 | **80e** | GDPR export / anonymize | 🔵 P5 | ✅ shipped (`beta.37`) | **Med / Med** | `GET /api/admin/users/{id}/gdpr/export` aggregates user data from flat-file sources; admin anonymize action for comments/newsletter/subscriber rows. | Not a full DPA product; document limits (backups, logs retention). Permission + audit on export. | user/newsletter/comment stores |
-| **80f** | CLI toolkit | 🔵 P6 | ⏳ planned | **Med / Med** | `bin/paginium` or extend `bin/console`: `content:import`, `content:export`, `user:create`, `redirect:validate`. | Prefer same validators as HTTP; no bypass of Path ACL unless `--system` + SUPER_ADMIN shell. Useful with It.74 keys in CI for HTTP path. | console bootstrap |
+| **80f** | CLI toolkit + API4 hardening | 🔵 P6 | ✅ shipped (`beta.38`) | **Med / Med** | `redirect:validate` CLI; contact/comment rate limits; honeypot; bulk cap; backup import size cap; GDPR export caps. | Remaining CLI (`content:export`, `user:create`) in beta.39+. | console bootstrap |
 | **80g** | Import from other CMS | 🔵 P7 | ⏳ planned | **High / High** | WordPress XML, Jekyll Markdown, Ghost JSON → flat-file pages/articles/media refs. | Phase 1: pages+posts only; dry-run; idempotent slug map; media URLs rewritten not downloaded in MVP. | **80f** CLI · [It.73](ITERATION_73.md) locale rules |
 
 ### Status legend
@@ -173,7 +173,10 @@ Run as `www-data` or deploy user; uses same services as HTTP layer.
 
 ### DoD (80f)
 
-- [ ] Documented in `docs/en/developer/TESTING.md` or CLI doc.
+- [x] `redirect:validate` shipped (`beta.38`); uses same `RedirectStore` validators as HTTP.
+- [x] API4 hardening shipped (`beta.38`): contact/comment rate limits, honeypot, bulk cap (100), backup import size cap, GDPR export row caps.
+- [ ] Remaining CLI (`content:export`, `content:import`, `user:create`) — planned `beta.39+`.
+- [ ] Documented in `docs/en/developer/TESTING.md` or dedicated CLI doc.
 - [ ] Import dry-run never writes; run requires flag.
 
 ---
@@ -242,7 +245,7 @@ beta.32  — ✅ 80a redirect manager (shipped)
 beta.33  — ✅ deploy pipeline fix (shipped)
 beta.35  — ✅ 80b + 80c bundled (404 tracking + comment spam; planned beta.34 skipped)
 beta.36  — ✅ 80d outbound webhooks (shipped)
-beta.38+ — 80f / 80g / …
+beta.38+ — 80f API4 hardening + blog author settings; 80g / remaining CLI …
 ```
 
 Adjust after first slice estimate.

@@ -77,6 +77,7 @@ use PaginiumCMS\Core\FlatFile\Contracts\FrontMatterParserInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\MarkdownContentParserInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\MarkdownParserInterface;
 use PaginiumCMS\Core\Conflict\Contracts\ConflictLoggerInterface;
+use PaginiumCMS\Core\Content\BlogAuthorSettings;
 use PaginiumCMS\Core\Content\LocalizedContentApplicator;
 use PaginiumCMS\Core\Content\LocalizedContentMigrationService;
 use PaginiumCMS\Core\Content\LocalizedContentNormalizer;
@@ -814,6 +815,9 @@ return [
     EditorContentValidator::class => create(EditorContentValidator::class)
         ->constructor(get(EditorProfileService::class), get(EditorComponentRegistry::class)),
 
+    BlogAuthorSettings::class => create(BlogAuthorSettings::class)
+        ->constructor(get(SettingsRepositoryInterface::class)),
+
     // HTTP controllers
     ContentController::class => create(ContentController::class)
         ->constructor(
@@ -835,6 +839,7 @@ return [
             get(LocalizedContentApplicator::class),
             get(LocalizedContentValidator::class),
             get(LocalizedContentWriter::class),
+            get(BlogAuthorSettings::class),
         ),
     AdvancedSearchService::class => create(AdvancedSearchService::class)
         ->constructor(

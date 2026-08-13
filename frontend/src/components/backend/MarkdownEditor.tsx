@@ -116,6 +116,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
     noIndex: false,
     tags: '',
   });
+  const [articleAuthor, setArticleAuthor] = useState('');
   const [articleComments, setArticleComments] = useState<ArticleCommentsSettings>(
     DEFAULT_ARTICLE_COMMENTS_SETTINGS
   );
@@ -339,6 +340,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
             commentsRequireApproval: triStateFromApi(response.data.commentsRequireApproval),
             commentsAllowGuests: triStateFromApi(response.data.commentsAllowGuests),
           });
+          setArticleAuthor(String(response.data.author ?? fm.author ?? ''));
         }
       }
 
@@ -451,6 +453,9 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
           data.commentsEnabled = articleComments.commentsEnabled;
           data.commentsRequireApproval = triStateToApi(articleComments.commentsRequireApproval);
           data.commentsAllowGuests = triStateToApi(articleComments.commentsAllowGuests);
+          if (articleAuthor.trim() !== '') {
+            data.author = articleAuthor.trim();
+          }
         }
 
         const response = isNew
@@ -612,7 +617,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
       template,
       content: stored.contentFormat === 'html' || stored.contentFormat === 'tiptap_json' ? '' : stored.content,
       html,
-      author: user?.name || t('editor.markdown.defaultAuthor'),
+      author: articleAuthor.trim() || String(settings.content?.blogAuthorName ?? settings.general?.siteName ?? t('editor.markdown.defaultAuthor')),
       tags: seo.tags
         .split(',')
         .map((tag) => tag.trim())
@@ -634,6 +639,9 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
     title,
     type,
     user?.name,
+    articleAuthor,
+    settings.content?.blogAuthorName,
+    settings.general?.siteName,
     t,
   ]);
 
@@ -738,6 +746,9 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         }}
         articleComments={type === 'article' ? articleComments : undefined}
         onArticleCommentsChange={type === 'article' ? setArticleComments : undefined}
+        articleAuthor={type === 'article' ? articleAuthor : undefined}
+        onArticleAuthorChange={type === 'article' ? setArticleAuthor : undefined}
+        defaultBlogAuthor={String(settings.content?.blogAuthorName ?? settings.general?.siteName ?? '')}
         globalCommentsRequireApproval={settings.comments?.requireApproval !== false}
         globalCommentsAllowGuests={settings.comments?.allowGuestComments !== false}
         footerExtra={

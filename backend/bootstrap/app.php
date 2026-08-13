@@ -9,6 +9,8 @@ use PaginiumCMS\Http\Middleware\SameOriginCorsMiddleware;
 
 // ---------- BEZPEČNOSTNÉ MIDDLEWARE ----------
 use PaginiumCMS\Http\Middleware\SecurityMiddleware;
+use PaginiumCMS\Http\Middleware\CommentSubmitRateLimitMiddleware;
+use PaginiumCMS\Http\Middleware\ContactRateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\ContentSuggestMetaRateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\RateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\LoginRateLimitMiddleware;
@@ -75,6 +77,7 @@ use PaginiumCMS\Core\Backup\Services\BackupManager;
 use PaginiumCMS\Core\Backup\Contracts\BackupInterface;
 use PaginiumCMS\Core\Backup\Services\BackupScheduler;
 use PaginiumCMS\Core\Backup\Commands\RunBackupScheduleCommand;
+use PaginiumCMS\Core\Seo\Commands\RedirectValidateCommand;
 use PaginiumCMS\Modules\Demo\Commands\RunDemoResetCommand;
 use PaginiumCMS\Modules\Security\Commands\ClearLoginLockoutsCommand;
 use PaginiumCMS\Modules\Demo\Services\DemoLoginGuard;
@@ -376,6 +379,20 @@ $containerBuilder->addDefinitions([
         );
     },
 
+    ContactRateLimitMiddleware::class => function ($container) {
+        return new ContactRateLimitMiddleware(
+            $container->get(CacheManager::class),
+            ClientIpResolver::trustedProxiesFromEnv()
+        );
+    },
+
+    CommentSubmitRateLimitMiddleware::class => function ($container) {
+        return new CommentSubmitRateLimitMiddleware(
+            $container->get(CacheManager::class),
+            ClientIpResolver::trustedProxiesFromEnv()
+        );
+    },
+
     // ============================================
     // 6. SESSION MANAGER (BEZPEČNÁ VERZIA)
     // ============================================
@@ -591,7 +608,8 @@ $containerBuilder->addDefinitions([
     BackupController::class => function ($container) {
         return new BackupController(
             $container->get(BackupInterface::class),
-            $container->get(JsonResponder::class)
+            $container->get(JsonResponder::class),
+            $container->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class),
         );
     },
 
@@ -601,6 +619,10 @@ $containerBuilder->addDefinitions([
 
     RunBackupScheduleCommand::class => function ($container) {
         return new RunBackupScheduleCommand($container->get(BackupScheduler::class));
+    },
+
+    RedirectValidateCommand::class => function ($container) {
+        return new RedirectValidateCommand($container->get(\PaginiumCMS\Core\Seo\Services\RedirectStore::class));
     },
 
     DemoResetScheduler::class => function ($container) {

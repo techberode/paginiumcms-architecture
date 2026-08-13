@@ -41,6 +41,7 @@ export interface ContentEditorLoadData {
   commentsEnabled?: boolean;
   commentsRequireApproval?: boolean | null;
   commentsAllowGuests?: boolean | null;
+  author?: string;
   schemaVersion?: number;
   defaultLocale?: string;
   localizedContent?: Record<string, LocalizedContentSlice>;
