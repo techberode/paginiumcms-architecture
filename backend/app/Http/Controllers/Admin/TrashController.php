@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Admin;
 
+use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Core\FlatFile\Services\ContentIndexService;
@@ -181,7 +182,7 @@ class TrashController
      */
     private function extractIds(ServerRequestInterface $request): ?array
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
         if (!is_array($data) || !isset($data['ids']) || !is_array($data['ids'])) {
             return null;
         }

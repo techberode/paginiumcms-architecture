@@ -1,6 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Calendar, Maximize2, Minimize2, Tag, User, X } from 'lucide-react';
 import type { Article, Page } from '../../api/types';
+import { contentApi } from '../../api/content';
 import { Navbar } from '../frontend/Navbar';
 import { Footer } from '../frontend/Footer';
 import { PageRenderer } from '../frontend/PageRenderer';
@@ -20,6 +21,7 @@ export interface SitePreviewDraft {
   template?: string;
   content: string;
   html?: string;
+  contentFormat?: 'markdown' | 'html' | 'tiptap_json';
   author?: string;
   tags?: string[];
   seoDescription?: string;
@@ -149,18 +151,68 @@ export const SitePreviewModal: React.FC<SitePreviewModalProps> = ({
 }) => {
   const { t } = useI18n();
   const [scale, setScale] = useState<SitePreviewScale>('100');
+  const [previewHtml, setPreviewHtml] = useState('');
+  const [previewLoading, setPreviewLoading] = useState(false);
   const untitled = t('editor.sitePreview.untitled');
   const defaultAuthor = t('editor.sitePreview.defaultAuthor');
 
-  const previewHtml = useMemo(() => {
+  const draftKey = useMemo(() => {
     if (!draft) {
       return '';
     }
-    if (draft.html?.trim()) {
-      return draft.html;
-    }
-    return markdownToHtml(draft.content);
+    return `${draft.type}:${draft.slug}:${draft.contentFormat ?? 'markdown'}:${draft.content}:${draft.html ?? ''}`;
   }, [draft]);
+
+  useEffect(() => {
+    if (!open || !draft) {
+      setPreviewHtml('');
+      setPreviewLoading(false);
+      return;
+    }
+
+    const bodyFormat = draft.contentFormat ?? (draft.html?.trim() && !draft.content.trim() ? 'html' : 'markdown');
+    const body =
+      bodyFormat === 'html'
+        ? draft.html ?? ''
+        : bodyFormat === 'tiptap_json'
+          ? draft.content
+          : draft.content;
+    const fallback = draft.html?.trim() || markdownToHtml(draft.content);
+
+    if (!body.trim() && !fallback.trim()) {
+      setPreviewHtml('');
+      return;
+    }
+
+    let cancelled = false;
+    setPreviewLoading(true);
+
+    void contentApi
+      .renderPreview({
+        body,
+        bodyFormat,
+        cachedHtml: bodyFormat === 'tiptap_json' ? draft.html : undefined,
+      })
+      .then((html) => {
+        if (!cancelled) {
+          setPreviewHtml(html || fallback);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setPreviewHtml(fallback);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setPreviewLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, draft, draftKey]);
 
   if (!open || !draft) {
     return null;
@@ -231,7 +283,8 @@ export const SitePreviewModal: React.FC<SitePreviewModalProps> = ({
         <div
           className={`mx-auto bg-slate-50 dark:bg-slate-950 shadow-2xl transition-all ${
             isFullscreen ? 'min-h-full w-full' : 'rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800'
-          }`}
+          } ${previewLoading ? 'opacity-70' : ''}`}
+          aria-busy={previewLoading}
           style={{
             width: '100%',
             maxWidth: frameMaxWidth ?? undefined,

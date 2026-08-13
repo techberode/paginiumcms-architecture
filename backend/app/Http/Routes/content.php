@@ -109,4 +109,9 @@ return function (App $app): void {
         ->add($container->get(\PaginiumCMS\Http\Middleware\ContentSuggestMetaRateLimitMiddleware::class))
         ->add(new PermissionMiddleware($authz, 'content:edit'))
         ->add($auth);
+
+    $app->post('/api/admin/content/render-preview', [$metaController, 'renderPreview'])
+        ->add($container->get(\PaginiumCMS\Http\Middleware\ContentSuggestMetaRateLimitMiddleware::class))
+        ->add(new PermissionMiddleware($authz, 'content:edit'))
+        ->add($auth);
 };

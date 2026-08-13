@@ -156,6 +156,36 @@ final class SettingsRepository implements SettingsRepositoryInterface
             }
         }
 
+        return $this->ensureShortcodeLayoutTags($effective);
+    }
+
+    /**
+     * It.58d — shortcode expand templates use div/article/section/aside/span.
+     *
+     * @param array<string, array<string, mixed>> $effective
+     * @return array<string, array<string, mixed>>
+     */
+    private function ensureShortcodeLayoutTags(array $effective): array
+    {
+        $raw = (string) ($effective['contentSecurity']['allowedHtmlTags'] ?? '');
+        $tags = array_values(array_filter(
+            array_map(static fn (string $tag): string => strtolower(trim($tag)), explode(',', $raw)),
+            static fn (string $tag): bool => $tag !== ''
+        ));
+
+        $layoutTags = ['div', 'article', 'section', 'aside', 'span'];
+        $changed = false;
+        foreach ($layoutTags as $tag) {
+            if (!in_array($tag, $tags, true)) {
+                $tags[] = $tag;
+                $changed = true;
+            }
+        }
+
+        if ($changed) {
+            $effective['contentSecurity']['allowedHtmlTags'] = implode(',', $tags);
+        }
+
         return $effective;
     }
 

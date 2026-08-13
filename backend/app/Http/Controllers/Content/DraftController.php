@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Content;
 
+use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\Drafts\Contracts\DraftManagerInterface;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Security\Exception\AuthorizationException;
@@ -109,7 +110,7 @@ final class DraftController
      */
     private function parseJsonBody(ServerRequestInterface $request): array
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
 
         return is_array($data) ? $data : [];
     }

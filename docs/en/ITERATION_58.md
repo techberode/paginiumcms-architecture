@@ -10,7 +10,7 @@ icon: material/history
 
 | Field | Value |
 |---|---|
-| Status | 🟡 Partially complete: 58b/58c ✅, 58d–58g ⏳ |
+| Status | 🟡 Partially complete: 58b/58c/58d/58e ✅, 58f–58g ⏳ |
 | Release / period | 58c: 2.1.0-beta.23 |
 | Record type | historical product and architecture record |
 
@@ -22,7 +22,11 @@ Deliver multiple layout builders selectable in Settings, all writing one canonic
 
 Delivered in 58b: five presets with light/dark tokens, `appearance` settings, swatches and `SchemePreviewFrame`, public application, and visitor toggle. Delivered in 58c: builder switch, template catalog, page template selection, and `LayoutPreviewFrame`; release [v2.1.0-beta.23](../../CHANGELOG.md#release-2-1-0-beta-23).
 
-Planned for 58d–58g: shortcode engine plus Monaco definitions, safe `pg-*` utilities, optional outline/DnD, and HTML compile/cache with It.48. The `featureGallery` block must reuse the It.65 API without a second store.
+Delivered in 58d: shortcode expand pipeline (`ShortcodeExpanderService` at render time), bundled catalog seeder, admin `ShortcodesManager` (Monaco JSON + policy preview), page-editor insert panel when builder mode is Shortcodes, and public `PageLayoutShell` wired from `layoutTemplate` front matter.
+
+Delivered in 58e: allow-listed `pg-*` layout utilities in `frontend/src/theme/pgLayout.css` for shortcode expand templates.
+
+Planned for 58f–58g: optional outline/DnD, and HTML compile/cache with It.48. The `featureGallery` block must reuse the It.65 API without a second store.
 
 ## Architecture and security boundaries
 
@@ -34,4 +38,4 @@ Decisions and the phased plan are in [ITERATION_58_ALTERNATIVES.md](ITERATION_58
 
 ## Current interpretation
 
-It.58 is not a closed iteration. Only 58b and 58c are complete; 58d–58g must not be presented as shipped in docs or UI. Compile/cache work must align with It.48/69, and public rendering must not load the admin bundle.
+It.58 is not a closed iteration. 58b, 58c, 58d, and 58e are complete; 58f (outline/DnD) and 58g (compile/cache) remain deferred. Compile/cache work must align with It.48/69, and public rendering must not load the admin bundle.

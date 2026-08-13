@@ -617,6 +617,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
       template,
       content: stored.contentFormat === 'html' || stored.contentFormat === 'tiptap_json' ? '' : stored.content,
       html,
+      contentFormat: stored.contentFormat,
       author: articleAuthor.trim() || String(settings.content?.blogAuthorName ?? settings.general?.siteName ?? t('editor.markdown.defaultAuthor')),
       tags: seo.tags
         .split(',')
@@ -729,6 +730,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         onScheduledAtChange={handleScheduledAtChange}
         onTemplateChange={setTemplate}
         onLayoutTemplateChange={setLayoutTemplate}
+        onInsertShortcode={(snippet) => setContent((prev) => `${prev}${snippet}`)}
         onDescriptionChange={(value) => setSeo((prev) => ({ ...prev, seoDescription: value }))}
         onSeoChange={setSeo}
         onSeoOpenChange={setSeoOpen}

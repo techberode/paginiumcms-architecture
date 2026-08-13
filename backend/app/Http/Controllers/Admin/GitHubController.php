@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Admin;
 
+use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\GitHub\Services\GitHubService;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Support\Lang;
@@ -25,7 +26,7 @@ class GitHubController
 
     public function export(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
         $message = is_array($data) ? (string) ($data['message'] ?? 'Export content') : 'Export content';
 
         $result = $this->gitHubService->export($message);
@@ -48,7 +49,7 @@ class GitHubController
 
     public function sync(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
         $message = is_array($data) ? (string) ($data['message'] ?? 'Content sync') : 'Content sync';
 
         $result = $this->gitHubService->sync($message);
@@ -61,7 +62,7 @@ class GitHubController
 
     public function setAutoSync(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
         if (!is_array($data) || !array_key_exists('enabled', $data)) {
             return $this->json->error($response, Lang::get('invalid_payload', [], 'github'), 400);
         }

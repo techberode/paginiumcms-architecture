@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Auth;
 
+use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Security\Contracts\AuthenticationInterface;
 use PaginiumCMS\Modules\Security\Contracts\TwoFactorInterface;
@@ -104,7 +105,7 @@ class TwoFactorController
             return $this->json->error($response, 'Používateľ nebol nájdený', 404);
         }
 
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
 
         if (!isset($data['code'])) {
             return $this->json->error($response, 'TOTP kód je povinný', 400);
@@ -200,7 +201,7 @@ class TwoFactorController
             return $this->json->error($response, 'Používateľ nebol nájdený', 404);
         }
 
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
 
         if (!isset($data['code'])) {
             return $this->json->error($response, 'TOTP kód je povinný', 400);

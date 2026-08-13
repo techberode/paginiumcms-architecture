@@ -30,6 +30,7 @@ import {
   KeyRound,
   ArrowRightLeft,
   Webhook,
+  Code2,
 } from 'lucide-react';
 import type { AdminNavItemDef, AdminNavSectionDef } from './adminNavTypes';
 
@@ -101,6 +102,13 @@ export const ADMIN_NAV_SECTIONS: AdminNavSectionDef[] = [
         labelKey: 'admin.nav.webhooks',
         href: '/platform/webhooks',
         icon: Webhook,
+        adminOnly: true,
+      },
+      {
+        id: 'shortcodes',
+        labelKey: 'admin.nav.shortcodes',
+        href: '/platform/shortcodes',
+        icon: Code2,
         adminOnly: true,
       },
       { id: 'notifications', labelKey: 'admin.nav.notifications', href: '/notifications', icon: Bell },

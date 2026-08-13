@@ -45,6 +45,8 @@ use PaginiumCMS\Core\CodePolicy\Services\SecurityScanner;
 use PaginiumCMS\Core\CodePolicy\Services\ShortcodeDefinitionPolicy;
 use PaginiumCMS\Core\CodePolicy\Services\UntrustedPolicyScanner;
 use PaginiumCMS\Core\Layout\Services\ShortcodeDefinitionManager;
+use PaginiumCMS\Core\Layout\Services\ShortcodeCatalogSeeder;
+use PaginiumCMS\Core\Layout\Services\ShortcodeExpanderService;
 use PaginiumCMS\Core\Layout\Services\ShortcodeRegistry;
 use PaginiumCMS\Core\CodeEditor\Services\SyntaxChecker;
 use PaginiumCMS\Core\CodeEditor\Services\FileBackup;
@@ -281,7 +283,8 @@ return [
         ->constructor(
             get(MarkdownContentParserInterface::class),
             get(TiptapHtmlRenderer::class),
-            get(ContentSecuritySanitizer::class)
+            get(ContentSecuritySanitizer::class),
+            get(ShortcodeExpanderService::class)
         ),
     MarkdownParserInterface::class => create(MarkdownParser::class)
         ->constructor(
@@ -861,6 +864,7 @@ return [
     ContentMetaController::class => create(ContentMetaController::class)
         ->constructor(
             get(ContentMetaGenerator::class),
+            get(ContentBodyRenderer::class),
             get(SettingsRepositoryInterface::class),
             get(JsonResponder::class)
         ),
@@ -929,8 +933,25 @@ return [
             get(FileReaderInterface::class),
             get(FileWriterInterface::class)
         ),
+    ShortcodeExpanderService::class => create(ShortcodeExpanderService::class)
+        ->constructor(
+            get(ShortcodeRegistry::class),
+            get(FileReaderInterface::class),
+            get(ContentSecuritySanitizer::class)
+        ),
+    ShortcodeCatalogSeeder::class => create(ShortcodeCatalogSeeder::class)
+        ->constructor(
+            get(ShortcodeDefinitionManager::class),
+            get(ShortcodeRegistry::class),
+            get(ContentCacheService::class)
+        ),
     ShortcodeController::class => create(ShortcodeController::class)
-        ->constructor(get(ShortcodeDefinitionManager::class), get(JsonResponder::class)),
+        ->constructor(
+            get(ShortcodeDefinitionManager::class),
+            get(ShortcodeCatalogSeeder::class),
+            get(ContentCacheService::class),
+            get(JsonResponder::class)
+        ),
     ThemeManifestValidator::class => create(ThemeManifestValidator::class),
     ThemeRegistry::class => create(ThemeRegistry::class)
         ->constructor(

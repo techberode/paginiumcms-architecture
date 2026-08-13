@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Admin;
 
+use PaginiumCMS\Http\Support\RequestJsonBody;
 use InvalidArgumentException;
 use PaginiumCMS\Core\Cache\CacheDriverFactory;
 use PaginiumCMS\Core\Cache\Services\CacheCapabilityProbe;
@@ -618,19 +619,12 @@ final class SettingsController
      */
     private function parseJsonBody(ServerRequestInterface $request): array
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
         if (!is_array($data)) {
             return [];
         }
 
-        $payload = [];
-        foreach ($data as $key => $value) {
-            if (is_string($key)) {
-                $payload[$key] = $value;
-            }
-        }
-
-        return $payload;
+        return $data;
     }
 
     private function isSuperAdmin(?User $user): bool

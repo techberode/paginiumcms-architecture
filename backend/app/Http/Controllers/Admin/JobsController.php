@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Admin;
 
+use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\Scheduler\Services\CronExpressionEvaluator;
 use PaginiumCMS\Core\Scheduler\Services\JobHandlerRegistry;
 use PaginiumCMS\Core\Scheduler\Services\JobQueueStore;
@@ -219,7 +220,7 @@ final class JobsController
      */
     private function parseBody(ServerRequestInterface $request): ?array
     {
-        $decoded = json_decode((string) $request->getBody(), true);
+        $decoded = RequestJsonBody::decode($request);
 
         return is_array($decoded) ? $decoded : null;
     }

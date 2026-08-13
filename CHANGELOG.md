@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.41`](#release-2-1-0-beta-41) | 2026-08-13 | It.58 shortcodes/layout — expander, admin UI, preview API, pgLayout CSS |
 | [`2.1.0-beta.40`](#release-2-1-0-beta-40) | 2026-08-13 | BodyParsing JSON body fix (deploy, avatar, comment OTP) |
 | [`2.1.0-beta.39`](#release-2-1-0-beta-39) | 2026-08-13 | It.80 complete — CLI toolkit + WordPress import |
 | [`2.1.0-beta.38`](#release-2-1-0-beta-38) | 2026-08-13 | It.80f API4 hardening + blog author settings |
@@ -112,6 +113,45 @@ This canonical history records release facts supported by the supplied `CHANGELO
 | [`1.0.0`](#release-1-0-0) | Initial structure | Initial repository structure |
 
 ## [Unreleased]
+
+### Added
+
+- **It.58d — Shortcodes + public layout shell** — `ShortcodeExpanderService` expands registered tags at render time in `ContentBodyRenderer`; bundled catalog seeder (`alert-box`, `feature-grid`, `feature-card`, `landing-hero`); admin `ShortcodesManager` at `/platform/shortcodes` (Monaco JSON, policy preview/save); page editor insert panel when layout builder mode is Shortcodes; public `PageLayoutShell` applies `layoutTemplate` from page front matter; `pg-*` CSS utilities (It.58e).
+
+### Fixed
+
+- **ISS-141 follow-up** — all remaining `Http/Controllers/*` JSON mutating paths and OTP/contact rate-limit middleware now use `RequestJsonBody::decode()` (eliminates empty-body regressions site-wide after `BodyParsingMiddleware`).
+
+- **Shortcode expand + HTML sanitizer** — `allowedHtmlTags` now includes `div`, `article`, `section`, `aside`, `span` (required for It.58 expand templates); legacy settings merge missing layout tags on read; `role` attribute allowed on sanitized elements.
+
+<a id="release-2-1-0-beta-41"></a>
+
+## [2.1.0-beta.41] – 2026-08-13
+
+Iteration 58 — shortcodes, layout builder, and public render pipeline
+
+### Added
+
+- **Shortcode expander** — `ShortcodeExpanderService` expands registered tags at render time; bundled catalog (`alert-box`, `feature-grid`, `feature-card`, `landing-hero`).
+- **Admin shortcodes UI** — `/platform/shortcodes` manager, insert panel in page editor (builder mode Shortcodes).
+- **Server preview API** — `POST /api/admin/content/render-preview`; `SitePreviewModal` uses backend HTML (shortcodes + markdown + sanitization).
+- **Layout shell** — `PageLayoutShell`, `pgLayout.css` (`pg-*` utilities for shortcode templates).
+
+### Fixed
+
+- **ContentMetaController DI** — `ContentBodyRenderer` wired in `services.php` (500 on routes load).
+- **Shortcode policy** — CSS class tokens with `{{` placeholders no longer fail validation.
+- **Content security** — allow-list `div`, `article`, `section`, `aside`, `span` for shortcode HTML.
+- **Markdown parser** — `html_input => allow` so expanded shortcode HTML is not escaped.
+- **FE sanitize** — DOMPurify allows layout tags on public render.
+- **pgLayout grid CSS** — mobile stack + desktop multi-column (specificity fix for `.paginium-prose .pg-grid-*`).
+- **Content cache** — invalidate page list when shortcodes are seeded or saved.
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.41`
+
+---
 
 <a id="release-2-1-0-beta-40"></a>
 

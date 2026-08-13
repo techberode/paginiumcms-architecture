@@ -51,6 +51,7 @@ export interface Page {
   createdAt: string;
   updatedAt: string;
   template?: string;
+  layoutTemplate?: string;
 }
 
 export interface Article extends Page {

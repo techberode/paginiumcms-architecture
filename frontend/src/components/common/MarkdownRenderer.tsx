@@ -11,7 +11,7 @@ interface MarkdownRendererProps {
 export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   content,
   html,
-  className = 'paginium-prose',
+  className = 'paginium-prose pg-shortcode-surface',
 }) => {
   if (html) {
     return (

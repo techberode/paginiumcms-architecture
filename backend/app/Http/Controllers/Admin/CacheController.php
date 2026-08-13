@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Admin;
 
+use PaginiumCMS\Http\Support\RequestJsonBody;
 use InvalidArgumentException;
 use PaginiumCMS\Core\Cache\Services\CacheAdminService;
 use PaginiumCMS\Core\Security\SecurityLogger;
@@ -34,7 +35,7 @@ final class CacheController
 
     public function purge(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $body = json_decode((string) $request->getBody(), true);
+        $body = RequestJsonBody::decode($request);
         $scope = is_array($body) && isset($body['scope'])
             ? (string) $body['scope']
             : CacheAdminService::SCOPE_CONTENT;

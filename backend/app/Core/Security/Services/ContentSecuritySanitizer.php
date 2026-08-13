@@ -70,6 +70,7 @@ final class ContentSecuritySanitizer
             return [
                 'p', 'br', 'strong', 'em', 'ul', 'ol', 'li', 'a', 'img', 'blockquote',
                 'code', 'pre', 'h1', 'h2', 'h3', 'h4', 'table', 'thead', 'tbody', 'tr', 'th', 'td',
+                'div', 'article', 'section', 'aside', 'span',
             ];
         }
 

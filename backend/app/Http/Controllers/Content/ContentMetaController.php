@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Content;
 
+use PaginiumCMS\Http\Support\RequestJsonBody;
+use PaginiumCMS\Core\Editor\Services\ContentBodyRenderer;
 use PaginiumCMS\Core\FlatFile\Services\ContentMetaGenerator;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Http\Support\JsonResponder;
@@ -17,6 +19,7 @@ final class ContentMetaController
 
     public function __construct(
         private ContentMetaGenerator $generator,
+        private ContentBodyRenderer $bodyRenderer,
         private SettingsRepositoryInterface $settings,
         private JsonResponder $json,
     ) {
@@ -24,7 +27,7 @@ final class ContentMetaController
 
     public function suggestMeta(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $payload = json_decode((string) $request->getBody(), true);
+        $payload = RequestJsonBody::decode($request);
         if (!is_array($payload)) {
             return $this->json->error($response, Lang::get('invalid_json', [], 'content'), 400);
         }
@@ -73,6 +76,32 @@ final class ContentMetaController
         return $this->json->success($response, [
             'tags' => $tags,
             'description' => $description,
+        ]);
+    }
+
+    public function renderPreview(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $payload = RequestJsonBody::decode($request);
+        if (!is_array($payload)) {
+            return $this->json->error($response, Lang::get('invalid_json', [], 'content'), 400);
+        }
+
+        $body = (string) ($payload['body'] ?? '');
+        if (strlen($body) > self::MAX_BODY_BYTES) {
+            return $this->json->error($response, Lang::get('body_too_large', [], 'content'), 413);
+        }
+
+        $bodyFormat = strtolower(trim((string) ($payload['bodyFormat'] ?? 'markdown')));
+        if (!in_array($bodyFormat, ['markdown', 'html', 'tiptap_json'], true)) {
+            return $this->json->error($response, Lang::get('invalid_body_format', [], 'content'), 400);
+        }
+
+        $cachedHtml = isset($payload['cachedHtml']) && is_string($payload['cachedHtml'])
+            ? $payload['cachedHtml']
+            : null;
+
+        return $this->json->success($response, [
+            'html' => $this->bodyRenderer->resolveHtml($body, $bodyFormat, $cachedHtml),
         ]);
     }
 }

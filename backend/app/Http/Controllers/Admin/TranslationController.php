@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Admin;
 
+use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\I18n\Contracts\TranslationFileManagerInterface;
 use PaginiumCMS\Core\I18n\Exception\TranslationPolicyViolationException;
 use PaginiumCMS\Http\Support\JsonResponder;
@@ -53,7 +54,7 @@ final class TranslationController
 
     public function saveFile(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
         if (!is_array($data)) {
             return $this->json->error($response, 'Invalid JSON body', 400);
         }
@@ -85,7 +86,7 @@ final class TranslationController
 
     public function validateFile(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
         if (!is_array($data)) {
             return $this->json->error($response, 'Invalid JSON body', 400);
         }
@@ -128,7 +129,7 @@ final class TranslationController
 
     public function restoreBackup(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
         if (!is_array($data)) {
             return $this->json->error($response, 'Invalid JSON body', 400);
         }
@@ -164,7 +165,7 @@ final class TranslationController
 
     public function createLocale(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
         if (!is_array($data)) {
             return $this->json->error($response, 'Invalid JSON body', 400);
         }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Maintenance;
 
+use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\Settings\MaintenanceMode;
 use PaginiumCMS\Core\Validation\ValidationException;
@@ -33,7 +34,7 @@ class MaintenanceController
             return $this->json->error($response, Lang::get('inactive', [], 'maintenance'), 403);
         }
 
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
         if (!is_array($data)) {
             return $this->json->error($response, Lang::get('invalid_payload', [], 'maintenance'), 400);
         }
@@ -95,7 +96,7 @@ class MaintenanceController
             return $this->json->error($response, Lang::get('contact_disabled', [], 'maintenance'), 403);
         }
 
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
         if (!is_array($data)) {
             return $this->json->error($response, Lang::get('invalid_payload', [], 'maintenance'), 400);
         }

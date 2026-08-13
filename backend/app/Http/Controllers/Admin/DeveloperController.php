@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Admin;
 
+use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\Developer\DeveloperMode;
 use PaginiumCMS\Core\Developer\DeveloperModeGate;
 use PaginiumCMS\Core\Developer\Services\DeveloperLogger;
@@ -46,7 +47,7 @@ class DeveloperController
             );
         }
 
-        $data = json_decode((string) $request->getBody(), true) ?: [];
+        $data = RequestJsonBody::decode($request) ?? [];
         $sessionUser = $request->getAttribute('user');
 
         if (!empty($data['token'])) {

@@ -33,6 +33,7 @@ export const adminSk: MessageTree = {
     apiKeys: 'API kľúče',
     redirects: 'Redirecty',
     webhooks: 'Webhooky',
+    shortcodes: 'Shortcodes',
     settings: 'Nastavenia',
     translations: 'Preklady',
   },

@@ -35,6 +35,7 @@ import {
   type LayoutBuilderMode,
 } from '../../layout/pageLayoutTemplates';
 import { LayoutPreviewFrame } from '../admin/LayoutPreviewFrame';
+import { ShortcodeInsertPanel } from './ShortcodeInsertPanel';
 import {
   DEFAULT_COLOR_SCHEME_ID,
   isColorSchemeId,
@@ -71,6 +72,7 @@ interface ContentEditorShellProps {
   onScheduledAtChange: (value: string) => void;
   onTemplateChange: (value: string) => void;
   onLayoutTemplateChange: (value: string) => void;
+  onInsertShortcode?: (snippet: string) => void;
   onDescriptionChange: (value: string) => void;
   onSeoChange: (values: SeoFormValues) => void;
   onSeoOpenChange: (open: boolean) => void;
@@ -122,6 +124,7 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
   onScheduledAtChange,
   onTemplateChange,
   onLayoutTemplateChange,
+  onInsertShortcode,
   onDescriptionChange,
   onSeoChange,
   onSeoOpenChange,
@@ -174,6 +177,7 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
   const developerRequiresAdmin = settings.layout?.developerRequiresAdmin !== false;
   const isAdmin = user?.roles?.some((role) => role === 'ADMIN' || role === 'SUPER_ADMIN') ?? false;
   const showLayoutTemplatePicker = type === 'page' && builderMode === 'templates';
+  const showShortcodePicker = type === 'page' && builderMode === 'shortcodes' && Boolean(onInsertShortcode);
   const showDeveloperHint =
     type === 'page' && builderMode === 'developer' && developerRequiresAdmin && !isAdmin;
 
@@ -392,6 +396,15 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
                   schemeId={schemeId}
                   mode={appearanceMode}
                   className="max-w-sm"
+                />
+              </div>
+            )}
+
+            {showShortcodePicker && onInsertShortcode && (
+              <div className="form-group md:col-span-2">
+                <ShortcodeInsertPanel
+                  disabled={!canEdit}
+                  onInsert={(snippet) => onInsertShortcode(snippet)}
                 />
               </div>
             )}

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Admin;
 
+use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\Logging\Models\LogSeverity;
 use PaginiumCMS\Core\Logging\Services\AccessLogService;
 use PaginiumCMS\Core\Logging\Services\ApplicationLogMessageFormatter;
@@ -88,7 +89,7 @@ final class LogController
 
     public function bulkAction(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
         if (!is_array($data)) {
             return $this->json->error($response, 'Neplatné dáta požiadavky', 400);
         }

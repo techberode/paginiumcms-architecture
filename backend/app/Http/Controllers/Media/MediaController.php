@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Media;
 
+use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Http\Support\JsonResponder;
@@ -124,7 +125,7 @@ class MediaController
 
     public function importStockImage(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
         if (!is_array($data)) {
             $data = [];
         }
@@ -155,7 +156,7 @@ class MediaController
 
     public function createFolder(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
         if (!is_array($data)) {
             return $this->json->error($response, Lang::get('folder_required', [], 'media'), 400);
         }
@@ -188,7 +189,7 @@ class MediaController
 
     public function bulkDeleteMedia(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
         if (!is_array($data) || !isset($data['paths']) || !is_array($data['paths'])) {
             return $this->json->error($response, Lang::get('paths_required', [], 'media'), 400);
         }
@@ -273,7 +274,7 @@ class MediaController
             return $this->json->error($response, $e->getMessage(), 403);
         }
 
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
         if (!is_array($data)) {
             return $this->json->error($response, Lang::get('updated', [], 'media'), 400);
         }

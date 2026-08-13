@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Locking;
 
+use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\Locking\Contracts\LockManagerInterface;
 use PaginiumCMS\Core\Locking\Exception\LockConflictException;
 use PaginiumCMS\Http\Support\JsonResponder;
@@ -139,7 +140,7 @@ final class LockController
      */
     private function parseJsonBody(ServerRequestInterface $request): array
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
 
         return is_array($data) ? $data : [];
     }

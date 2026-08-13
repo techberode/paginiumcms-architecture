@@ -396,7 +396,7 @@ final class SettingsSchema
                     ['key' => 'stripExternalEntities', 'type' => 'bool', 'label' => 'Blokovať externé XML entity', 'default' => true, 'rules' => ['bool'], 'help' => 'XXE ochrana pri parsovaní XML/SVG obsahu.'],
                     ['key' => 'allowSvgInline', 'type' => 'bool', 'label' => 'Povoliť inline SVG v obsahu', 'default' => false, 'rules' => ['bool'], 'help' => 'SVG môže obsahovať skript — odporúčame vypnuté.'],
                     ['key' => 'allowScriptTags', 'type' => 'bool', 'label' => 'Povoliť <script> v obsahu', 'default' => false, 'rules' => ['bool'], 'help' => 'Len pre dôveryhodných editorov; default off.'],
-                    ['key' => 'allowedHtmlTags', 'type' => 'text', 'label' => 'Povolené HTML tagy', 'default' => 'p,h1,h2,h3,h4,ul,ol,li,a,strong,em,blockquote,code,pre,img,table,thead,tbody,tr,th,td', 'rules' => ['required', 'string', 'max:2000'], 'help' => 'Čiarkou oddelený whitelist tagov.'],
+                    ['key' => 'allowedHtmlTags', 'type' => 'text', 'label' => 'Povolené HTML tagy', 'default' => 'p,h1,h2,h3,h4,ul,ol,li,a,strong,em,blockquote,code,pre,img,table,thead,tbody,tr,th,td,div,article,section,aside,span', 'rules' => ['required', 'string', 'max:2000'], 'help' => 'Čiarkou oddelený whitelist tagov. Layout shortcodes (It.58) vyžadujú div/article/section/aside/span.'],
                 ],
             ],
             'uploadSecurity' => [

@@ -94,7 +94,7 @@ final class ShortcodeDefinitionPolicy
             if (preg_match_all('/\bclass\s*=\s*["\']([^"\']+)["\']/', $expand, $matches) > 0) {
                 foreach ($matches[1] as $classList) {
                     foreach (preg_split('/\s+/', trim($classList)) ?: [] as $class) {
-                        if ($class === '') {
+                        if ($class === '' || str_contains($class, '{{')) {
                             continue;
                         }
                         if (!preg_match('/^pg-[a-z0-9:_-]+$/', $class)

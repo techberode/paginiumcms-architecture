@@ -1,8 +1,9 @@
 # PaginiumCMS — consolidated backlog
 
-> **Snapshot:** `v2.1.0-beta.32` · August 9, 2026  
+> **Snapshot:** `v2.1.0-beta.40` · August 13, 2026  
 > **Rule:** the active backlog contains only unshipped or precisely bounded remaining scope  
-> **No-SQL:** [architecture/NOSQL_MANDATE.md](architecture/NOSQL_MANDATE.md)
+> **No-SQL:** [architecture/NOSQL_MANDATE.md](architecture/NOSQL_MANDATE.md)  
+> **Latest hotfix:** [ISS-141](../ISSUES.md#iss-141) — `RequestJsonBody` after Slim `BodyParsingMiddleware` (`beta.40`)
 
 This document fixes the old backlog, which mixed shipped iterations, planned features, absorbed proposals, and reused numbers. Release history belongs in `CHANGELOG.md`; details of shipped capabilities belong in [FEATURE_OVERVIEW.md](FEATURE_OVERVIEW.md).
 
@@ -30,15 +31,15 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | 5 | **It.70** Git publish modes | 🟡 | ✅ | local publisher + queued/immediate API — see [ITERATION_70](ITERATION_70.md) |
 | 6 | **It.71** Performance Guard | 🟡 | ✅ | shipped in `v2.1.0-beta.28` — see [ITERATION_71](ITERATION_71.md) |
 | 7 | **It.72** Media drivers | 🟡 | 🟡 partial | MVP local driver + probe shipped; S3/migration deferred |
-| 8 | **It.73** Multi-locale document | 🟡 | ⏳ | translation foundation |
+| 8 | **It.73** Multi-locale document | 🟡 | ✅ | shipped in `v2.1.0-beta.29` — see [ITERATION_73](ITERATION_73.md) |
 | 9 | **It.74** API keys/JWT | 🟡 | ✅ | shipped in `v2.1.0-beta.30` — see [ITERATION_74](ITERATION_74.md) |
 | 10 | **It.80** SEO, integrations & ops toolkit | 🟡 | ✅ | shipped `beta.39` — see [ITERATION_80](en/ITERATION_80.md) |
-| 11 | **It.58d** Layout remainder | 🟡 | ⏳ | precisely freeze remaining blocks |
-| 12 | **It.25** Setup wizard/update UX | 🟡 pre-Final | ⏳ | onboarding and GA polish |
-| 13 | **It.76/77** Translation providers | 🔵 | ⏳ | after It.73 |
-| 14 | **It.75** AI agent | 🔵 | ⏳ | after locale and provider layers |
-| 15 | **It.78** Unified upload security | 🟡 | ⏳ | security gate before video / new MIME types |
-| 16 | **It.79** DAM video | 🟡 | ⏳ | self-hosted MP4/WebM + editor embed; after It.78 |
+| 11 | **It.58d** Layout remainder | 🟡 | ✅ | shortcodes + public layout shell shipped; 58f/58g deferred |
+| 12 | **It.78** Unified upload security | 🟡 | ⏳ | security gate before video / new MIME types |
+| 13 | **It.79** DAM video | 🟡 | ⏳ | self-hosted MP4/WebM + editor embed; after It.78 |
+| 14 | **It.25** Setup wizard/update UX | 🟡 pre-Final | ⏳ | onboarding and GA polish |
+| 15 | **It.76/77** Translation providers | 🔵 | ⏳ | after It.73 |
+| 16 | **It.75** AI agent | 🔵 | ⏳ | after locale and provider layers |
 
 ---
 
@@ -217,11 +218,12 @@ Remaining:
 
 | Item | Status | Note |
 |------|--------|------|
-| **It.58d** layout blocks/polish | ⏳ | must not create a second page model |
+| **It.58d** layout blocks/polish | ✅ | shortcode expand + admin UI + public `PageLayoutShell`; 58f/58g deferred |
 | **It.48** static/dynamic rendering | ⏳ | combine design with It.70 publishing pipeline |
 | Remaining theme runtime | 🟡 | depends on It.67 and schema/policy gate |
 | Server metrics agent (remaining It.46) | ⏳ | coordinate with It.71 |
 | **It.79** DAM video | ⏳ | It.78 + It.72 MVP |
+| **RequestJsonBody rollout** | ✅ | all HTTP controllers + OTP/contact rate-limit middleware (`post-beta.40`) |
 | Scoped FileManager | ⏳ candidate | assign a new unique number after scope approval |
 | Frontend inline editing | ⏳ candidate | reuse existing lock/editor flow |
 | Finer comment moderation/CAPTCHA | ↪ **It.80c** | honeypot + heuristics in [ITERATION_80](ITERATION_80.md) |
@@ -297,9 +299,9 @@ Docs gate
   → It.70 / It.48 unified publishing design
   → It.71 + remaining It.46
   → It.72 (MVP done; S3/migration remainder)
-  → It.73
+  → It.73 ✅
   → It.74 ✅
-  → It.78 (upload security gate)
+  → It.78 (upload security gate) — **next recommended product slice**
   → It.79 (DAM video)
   → It.76 / It.77
   → It.75

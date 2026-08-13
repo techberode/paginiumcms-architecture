@@ -4224,6 +4224,7 @@ OWASP API4-style gaps remained after global rate limiting: `POST /api/contact` h
 - `SystemUpdateController::run()`, `UserController::parseJsonBody()`, and **`CommentsController`** (submit/update/bulk JSON paths) migrated to the helper.
 - Regression tests: `RequestJsonBodyTest`, `SystemUpdateControllerTest::testRunUsesParsedBodyWhenStreamIsEmpty`, **`CommentsControllerTest::testApproveCommentUsesParsedBodyWhenStreamIsEmpty`**.
 - **Test harness:** `Http\TestCase::rebootstrapApplication()` restores `APP_ENV=testing` and re-applies `settings.testing.json` workflow defaults after demo tests re-bootstrap the app (fixes intermittent OTP workflow PHPUnit failures).
+- **Follow-up (post-beta.40):** all remaining `Http/Controllers/*` and OTP/contact rate-limit middleware migrated to `RequestJsonBody` (eliminates ISS-141 class site-wide).
 
 ### Workaround (before beta.40 on server)
 

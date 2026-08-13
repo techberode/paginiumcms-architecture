@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Gallery;
 
+use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Gallery\Contracts\GalleryRepositoryInterface;
@@ -219,7 +220,7 @@ final class GalleryAdminController
      */
     private function decodeBody(ServerRequestInterface $request): ?array
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
 
         return is_array($data) ? $data : null;
     }

@@ -103,6 +103,25 @@ final class ShortcodeDefinitionManagerTest extends TestCase
         $this->assertNotEmpty($this->manager->get('alert-box'));
     }
 
+    public function testSaveAcceptsDynamicPgClassPlaceholder(): void
+    {
+        $json = JsonHelper::encode([
+            'name' => 'alert-box',
+            'version' => 1,
+            'attrs' => [
+                'tone' => [
+                    'type' => 'enum',
+                    'options' => ['info', 'warn'],
+                ],
+            ],
+            'expand' => '<div class="pg-alert pg-alert-{{tone}}"><div class="pg-alert-body">{{content}}</div></div>',
+        ], JSON_UNESCAPED_UNICODE);
+
+        $saved = $this->manager->save('alert-box', $json);
+
+        $this->assertSame('alert-box', $saved['name']);
+    }
+
     private function removeDir(string $dir): void
     {
         if (!is_dir($dir)) {

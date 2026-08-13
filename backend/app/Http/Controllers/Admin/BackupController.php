@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Admin;
 
+use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\Backup\Contracts\BackupInterface;
 use PaginiumCMS\Core\Backup\Models\BackupMetadata;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
@@ -36,7 +37,7 @@ class BackupController
 
     public function createBackup(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
         $name = is_array($data) ? ($data['name'] ?? '') : '';
 
         if ($name === '') {
@@ -229,7 +230,7 @@ class BackupController
 
     public function scheduleBackup(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
         if (!is_array($data)) {
             return $this->json->error($response, 'Invalid JSON body', 400);
         }
@@ -250,7 +251,7 @@ class BackupController
      */
     private function normalizeIds(ServerRequestInterface $request): array
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
         if (!is_array($data) || !isset($data['ids']) || !is_array($data['ids'])) {
             return [];
         }

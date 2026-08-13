@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Admin;
 
+use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\Workflow\Services\OtpWorkflowService;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Security\Models\User;
@@ -31,7 +32,7 @@ final class WorkflowController
             return $this->json->error($response, 'Neprihlásený používateľ', 401);
         }
 
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
         if (!is_array($data) || !isset($data['challenge_id']) || !isset($data['code'])) {
             return $this->json->error($response, 'challenge_id a code sú povinné', 400);
         }
@@ -62,7 +63,7 @@ final class WorkflowController
             return $this->json->error($response, 'Neprihlásený používateľ', 401);
         }
 
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
         if (!is_array($data) || !isset($data['challenge_id'])) {
             return $this->json->error($response, 'challenge_id je povinný', 400);
         }
