@@ -77,7 +77,12 @@ use PaginiumCMS\Core\Backup\Services\BackupManager;
 use PaginiumCMS\Core\Backup\Contracts\BackupInterface;
 use PaginiumCMS\Core\Backup\Services\BackupScheduler;
 use PaginiumCMS\Core\Backup\Commands\RunBackupScheduleCommand;
+use PaginiumCMS\Core\FlatFile\Commands\ContentExportCommand;
+use PaginiumCMS\Core\FlatFile\Commands\ContentImportCommand;
 use PaginiumCMS\Core\Seo\Commands\RedirectValidateCommand;
+use PaginiumCMS\Modules\Security\Commands\ListUsersCommand;
+use PaginiumCMS\Modules\Security\Commands\ResetUserPasswordCommand;
+use PaginiumCMS\Modules\Security\Commands\UserCreateCommand;
 use PaginiumCMS\Modules\Demo\Commands\RunDemoResetCommand;
 use PaginiumCMS\Modules\Security\Commands\ClearLoginLockoutsCommand;
 use PaginiumCMS\Modules\Demo\Services\DemoLoginGuard;
@@ -625,6 +630,40 @@ $containerBuilder->addDefinitions([
         return new RedirectValidateCommand($container->get(\PaginiumCMS\Core\Seo\Services\RedirectStore::class));
     },
 
+    ContentExportCommand::class => function ($container) {
+        return $container->get(ContentExportCommand::class);
+    },
+
+    ContentImportCommand::class => function ($container) {
+        return $container->get(ContentImportCommand::class);
+    },
+
+    UserCreateCommand::class => function ($container) {
+        return new UserCreateCommand(
+            $container->get(UserRepository::class),
+            $container->get(PasswordPolicyInterface::class),
+            $container->get(FileReaderInterface::class),
+            $container->get(DemoMode::class)
+        );
+    },
+
+    ListUsersCommand::class => function ($container) {
+        return new ListUsersCommand(
+            $container->get(UserRepository::class),
+            $container->get(FileReaderInterface::class),
+            $container->get(DemoMode::class)
+        );
+    },
+
+    ResetUserPasswordCommand::class => function ($container) {
+        return new ResetUserPasswordCommand(
+            $container->get(UserRepository::class),
+            $container->get(PasswordPolicyInterface::class),
+            $container->get(FileReaderInterface::class),
+            $container->get(DemoMode::class)
+        );
+    },
+
     DemoResetScheduler::class => function ($container) {
         return new DemoResetScheduler(
             $container->get(DemoMode::class),
@@ -711,6 +750,7 @@ if (DebugEventLogger::isEnabled()) {
 
 AppFactory::setContainer($container);
 $app = AppFactory::create();
+$app->addBodyParsingMiddleware();
 
 // ============================================
 // 12. CORS (BEZPEČNOSTNÁ VERZIA)

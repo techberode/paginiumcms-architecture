@@ -1,5 +1,5 @@
 // frontend/src/api/client.ts
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
+import axios, { AxiosHeaders, AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import { debugLogApi } from '../utils/debugLog';
 import { resolveApiBaseUrl } from '../utils/apiBaseUrl';
 
@@ -78,7 +78,13 @@ class ApiClient {
         }
 
         if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
-          delete config.headers['Content-Type'];
+          if (config.headers instanceof AxiosHeaders) {
+            config.headers.delete('Content-Type');
+            config.headers.delete('content-type');
+          } else if (config.headers) {
+            delete config.headers['Content-Type'];
+            delete config.headers['content-type'];
+          }
         }
 
         const url = String(config.url ?? '');

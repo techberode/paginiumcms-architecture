@@ -21,8 +21,7 @@ import {
   deleteUser,
   getUser,
   bulkDeleteUsers,
-  uploadUserAvatar,
-  removeUserAvatar,
+  resolveUserAvatarUrl,
   exportUserGdprZip,
   anonymizeUserGdpr,
   USER_ROLES,
@@ -368,27 +367,12 @@ export const UsersManager: React.FC = () => {
         <div className="p-6 space-y-6">
           {editingId && (
             <UserAvatarPicker
+              userId={editingId}
               name={form.name || form.email}
               avatarUrl={editingAvatarUrl}
-              onUpload={async (file) => {
-                const res = await uploadUserAvatar(editingId, file);
-                if (!res.success || !res.data?.user) {
-                  toastError(res.error || t('users.avatar.failed'));
-                  return;
-                }
-                setEditingAvatarUrl(res.data.user.avatarUrl ?? null);
-                success(t('users.avatar.success'));
-                await load();
-              }}
-              onRemove={async () => {
-                const res = await removeUserAvatar(editingId);
-                if (!res.success) {
-                  toastError(res.error || t('users.avatar.failed'));
-                  return;
-                }
-                setEditingAvatarUrl(null);
-                success(t('users.avatar.removed'));
-                await load();
+              onAvatarUpdated={(url) => {
+                setEditingAvatarUrl(url);
+                void load();
               }}
             />
           )}
@@ -644,7 +628,11 @@ export const UsersManager: React.FC = () => {
                 <td className="p-4">
                   <div className="flex items-center gap-3">
                     {u.avatarUrl ? (
-                      <img src={u.avatarUrl} alt={u.name} className="h-10 w-10 rounded-xl object-cover" />
+                      <img
+                        src={resolveUserAvatarUrl(u.avatarUrl)}
+                        alt={u.name}
+                        className="h-10 w-10 rounded-xl object-cover"
+                      />
                     ) : (
                       <div className="h-10 w-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
                         <Users size={16} />
