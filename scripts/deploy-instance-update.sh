@@ -55,6 +55,36 @@ git() {
   command git -c safe.directory="$APP_ROOT" "$@"
 }
 
+assert_checkout_writable() {
+  local path blocked=()
+  while IFS= read -r path; do
+    [[ -z "$path" ]] && continue
+    if [[ -e "$path" && ! -w "$path" ]]; then
+      blocked+=("$path")
+    fi
+  done < <(
+    {
+      git diff --name-only 2>/dev/null || true
+      git diff --cached --name-only 2>/dev/null || true
+      git ls-files --others --exclude-standard 2>/dev/null || true
+    } | sort -u
+  )
+
+  if [[ ${#blocked[@]} -eq 0 ]]; then
+    return 0
+  fi
+
+  echo "ERROR: permission denied — paths not writable by $(whoami) (uid=$(id -u)):" >&2
+  printf '  %s\n' "${blocked[@]}" >&2
+  ls -la "${blocked[0]}" 2>/dev/null | sed 's/^/  /' >&2 || true
+  echo "" >&2
+  echo "Cause: admin UI deploy (www-data in Docker) or PHP touched files owned by another user." >&2
+  echo "Fix once on host (requires sudo), then rerun deploy:" >&2
+  echo "  APP_ROOT=$APP_ROOT ./scripts/bootstrap-deploy-permissions.sh" >&2
+  echo "  sudo usermod -aG www-data \$(whoami)   # new login if group was added" >&2
+  exit 1
+}
+
 prepare_checkout_for_ref() {
   local target_ref="$1"
   local backup_dir="$DEPLOY_CACHE_ROOT/pre-checkout-backup/$(date +%Y%m%d-%H%M%S)-${target_ref//\//_}"
@@ -78,6 +108,7 @@ prepare_checkout_for_ref() {
   done < <(git ls-files --others --exclude-standard -z)
 
   if [[ "${DEPLOY_FORCE:-0}" == "1" ]]; then
+    assert_checkout_writable
     git reset --hard HEAD
   fi
 }

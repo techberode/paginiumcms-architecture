@@ -53,6 +53,31 @@ abstract class TestCase extends BaseTestCase
         $this->applyTestSettingsOverrides();
     }
 
+    /**
+     * Re-bootstrap Slim after env toggles (demo tests) and restore isolated test settings.
+     */
+    protected function rebootstrapApplication(): void
+    {
+        $this->assertTestingEnvironment();
+
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_destroy();
+        }
+        session_start();
+        $_SESSION = [];
+
+        $this->app = require __DIR__ . '/../../bootstrap/app.php';
+        $this->currentUser = null;
+        $this->applyTestSettingsOverrides();
+    }
+
+    private function assertTestingEnvironment(): void
+    {
+        putenv('APP_ENV=testing');
+        $_ENV['APP_ENV'] = 'testing';
+        $_SERVER['APP_ENV'] = 'testing';
+    }
+
     protected function container(): ContainerInterface
     {
         return $this->app->getContainer();
@@ -60,6 +85,8 @@ abstract class TestCase extends BaseTestCase
 
     private function applyTestSettingsOverrides(): void
     {
+        $this->assertTestingEnvironment();
+
         $storage = $this->container()->get(\PaginiumCMS\Core\Storage\Contracts\StorageInterface::class);
         $settingsFile = 'data/settings.testing.json';
         if ($storage->exists($settingsFile)) {
@@ -91,9 +118,7 @@ abstract class TestCase extends BaseTestCase
             session_destroy();
         }
 
-        putenv('APP_ENV=testing');
-        $_ENV['APP_ENV'] = 'testing';
-        $_SERVER['APP_ENV'] = 'testing';
+        $this->assertTestingEnvironment();
         putenv('DEMO_MODE=false');
         $_ENV['DEMO_MODE'] = 'false';
         $_SERVER['DEMO_MODE'] = 'false';

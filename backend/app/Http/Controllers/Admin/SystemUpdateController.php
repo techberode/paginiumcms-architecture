@@ -13,6 +13,7 @@ use PaginiumCMS\Core\SystemUpdate\Services\SystemDeployTriggerService;
 use PaginiumCMS\Core\SystemUpdate\Services\SystemUpdateVersionMatcher;
 use PaginiumCMS\Core\SystemUpdate\Services\SystemUpdateWebhookService;
 use PaginiumCMS\Http\Support\JsonResponder;
+use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Modules\Demo\Services\DemoMode;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Support\AppVersion;
@@ -99,8 +100,8 @@ final class SystemUpdateController
             return $this->json->error($response, 'System update is disabled on demo instance', 403);
         }
 
-        $body = json_decode((string) $request->getBody(), true);
-        if (!is_array($body)) {
+        $body = RequestJsonBody::decode($request);
+        if ($body === null) {
             return $this->json->error($response, 'Invalid JSON body', 400);
         }
 

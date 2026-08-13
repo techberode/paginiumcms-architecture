@@ -13,12 +13,7 @@ class OtpWorkflowServiceTest extends TestCase
         putenv('APP_ENV=testing');
         $_ENV['APP_ENV'] = 'testing';
 
-        $settings = $this->app->getContainer()->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class);
-        $settings->setGroup('workflows', [
-            'registrationOtpEnabled' => true,
-            'otpTtlMinutes' => 15,
-            'otpMaxAttempts' => 5,
-        ]);
+        $this->enableWorkflows(['registrationOtpEnabled' => true]);
 
         $service = $this->app->getContainer()->get(\PaginiumCMS\Core\Workflow\Services\OtpWorkflowService::class);
         $email = 'otp_' . uniqid() . '@example.com';
@@ -37,8 +32,7 @@ class OtpWorkflowServiceTest extends TestCase
         putenv('APP_ENV=testing');
         $_ENV['APP_ENV'] = 'testing';
 
-        $settings = $this->app->getContainer()->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class);
-        $settings->setGroup('workflows', ['registrationOtpEnabled' => true]);
+        $this->enableWorkflows(['registrationOtpEnabled' => true]);
 
         $service = $this->app->getContainer()->get(\PaginiumCMS\Core\Workflow\Services\OtpWorkflowService::class);
         $email = 'otp_bad_' . uniqid() . '@example.com';
@@ -54,8 +48,10 @@ class OtpWorkflowServiceTest extends TestCase
         putenv('APP_ENV=testing');
         $_ENV['APP_ENV'] = 'testing';
 
+        $this->enableWorkflows(['commentApprovalOtpEnabled' => true]);
+
         $settings = $this->app->getContainer()->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class);
-        $settings->setGroup('workflows', ['commentApprovalOtpEnabled' => true]);
+        $this->assertTrue($settings->group('workflows')['commentApprovalOtpEnabled'] ?? false);
 
         $login = $this->loginAsAdminUser();
         $editor = $this->app->getContainer()->get(\PaginiumCMS\Modules\Security\Services\UserRepository::class)
@@ -67,6 +63,7 @@ class OtpWorkflowServiceTest extends TestCase
         $comments->save($comment);
 
         $service = $this->app->getContainer()->get(\PaginiumCMS\Core\Workflow\Services\OtpWorkflowService::class);
+        $this->assertTrue($service->isCommentApprovalOtpEnabled());
         $started = $service->startCommentApproval($editor, $comment->getId());
         $this->assertArrayHasKey('debug_code', $started);
 
@@ -79,8 +76,10 @@ class OtpWorkflowServiceTest extends TestCase
         putenv('APP_ENV=testing');
         $_ENV['APP_ENV'] = 'testing';
 
+        $this->enableWorkflows(['publishApprovalOtpEnabled' => true]);
+
         $settings = $this->app->getContainer()->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class);
-        $settings->setGroup('workflows', ['publishApprovalOtpEnabled' => true]);
+        $this->assertTrue($settings->group('workflows')['publishApprovalOtpEnabled'] ?? false);
 
         $login = $this->loginAsAdminUser();
         $editor = $this->app->getContainer()->get(\PaginiumCMS\Modules\Security\Services\UserRepository::class)
@@ -96,6 +95,7 @@ class OtpWorkflowServiceTest extends TestCase
         $repo->save($page);
 
         $service = $this->app->getContainer()->get(\PaginiumCMS\Core\Workflow\Services\OtpWorkflowService::class);
+        $this->assertTrue($service->isPublishApprovalOtpEnabled());
         $started = $service->startPublishApproval($editor, 'page', $page->getSlug());
         $this->assertArrayHasKey('debug_code', $started);
 
@@ -112,8 +112,7 @@ class OtpWorkflowServiceTest extends TestCase
         putenv('APP_ENV=testing');
         $_ENV['APP_ENV'] = 'testing';
 
-        $settings = $this->app->getContainer()->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class);
-        $settings->setGroup('workflows', [
+        $this->enableWorkflows([
             'registrationOtpEnabled' => true,
             'otpMaxAttempts' => 3,
             'otpMaxResends' => 3,
@@ -155,10 +154,7 @@ class OtpWorkflowServiceTest extends TestCase
         putenv('APP_ENV=testing');
         $_ENV['APP_ENV'] = 'testing';
 
-        $settings = $this->app->getContainer()->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class);
-        $settings->setGroup('workflows', [
-            'registrationOtpEnabled' => true,
-        ]);
+        $this->enableWorkflows(['registrationOtpEnabled' => true]);
 
         $service = $this->app->getContainer()->get(\PaginiumCMS\Core\Workflow\Services\OtpWorkflowService::class);
         $email = 'otp_max_resend_' . uniqid() . '@example.com';
