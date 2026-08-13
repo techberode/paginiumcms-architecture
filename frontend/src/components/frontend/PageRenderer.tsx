@@ -121,12 +121,16 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page }) => {
       {meta.layoutTemplate === 'hero-content' || isHome ? heroBlock : null}
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
-        <PageLayoutShell
-          layoutTemplate={meta.layoutTemplate}
-          hero={meta.layoutTemplate !== 'hero-content' && !isHome ? heroBlock : undefined}
-        >
-          {contentBlock}
-        </PageLayoutShell>
+        {isHome ? (
+          contentBlock
+        ) : (
+          <PageLayoutShell
+            layoutTemplate={meta.layoutTemplate}
+            hero={meta.layoutTemplate !== 'hero-content' && !isHome ? heroBlock : undefined}
+          >
+            {contentBlock}
+          </PageLayoutShell>
+        )}
 
         {isContact && (
           <div className="mt-12 space-y-8">

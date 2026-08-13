@@ -21,18 +21,6 @@
   grid-template-columns: minmax(0, 1fr);
 }
 
-@media (min-width: 768px) {
-  .pg-layout-landing .pg-landing-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 767.98px) {
-  .pg-layout-landing .pg-landing-grid {
-    grid-template-columns: minmax(0, 1fr) !important;
-  }
-}
-
 .pg-main {
   min-width: 0;
 }
