@@ -20,6 +20,7 @@ import {
   ChevronsRight,
 } from 'lucide-react';
 import { resolveContentPreviewImage } from '../../utils/contentPreviewImage';
+import { resolvePublicMediaUrl } from '../../api/media';
 import {
   buildBlogListPath,
   blogSortToApiSort,
@@ -242,10 +243,16 @@ export const BlogRenderer: React.FC = () => {
   }
 
   if (activeArticle) {
-    const author = activeArticle.author || String(activeArticle.frontMatter?.author ?? t('public.defaults.editorial'));
+    const defaultAuthorName = String(
+      settings.content?.blogAuthorName || settings.general?.siteName || t('public.defaults.editorial')
+    ).trim();
+    const author = activeArticle.author || defaultAuthorName;
+    const authorBio = String(activeArticle.authorBio ?? '').trim();
+    const showAuthorBox = activeArticle.showAuthorBox !== false && settings.content?.blogShowAuthorBox !== false;
+    const authorAvatarUrl = activeArticle.authorAvatarUrl
+      ? resolvePublicMediaUrl(activeArticle.authorAvatarUrl)
+      : '';
     const image = resolveContentPreviewImage(activeArticle);
-    const authorBio =
-      activeArticle.excerpt || String(activeArticle.frontMatter?.description ?? '');
     const dates = formatContentDateLabels(
       {
         createdAt: activeArticle.createdAt,
@@ -375,11 +382,19 @@ export const BlogRenderer: React.FC = () => {
             </nav>
           )}
 
-          {authorBio && (
+          {showAuthorBox && authorBio && (
             <div className="mt-12 bg-theme-primary/10 border border-theme-primary/20 rounded-3xl p-6 sm:p-8 flex items-center gap-6">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-theme-primary to-theme-accent flex items-center justify-center text-theme-primary-foreground font-extrabold text-2xl shrink-0 shadow-lg">
-                {author.charAt(0)}
-              </div>
+              {authorAvatarUrl ? (
+                <img
+                  src={authorAvatarUrl}
+                  alt={author}
+                  className="w-16 h-16 rounded-2xl object-cover shrink-0 shadow-lg border border-theme-border/50"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-theme-primary to-theme-accent flex items-center justify-center text-theme-primary-foreground font-extrabold text-2xl shrink-0 shadow-lg">
+                  {author.charAt(0)}
+                </div>
+              )}
               <div>
                 <h4 className="font-bold text-lg text-theme-text">
                   {t('public.blog.aboutAuthor', { author })}
@@ -482,7 +497,9 @@ export const BlogRenderer: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {paginatedArticles.map((article) => {
-            const author = article.author || String(article.frontMatter?.author ?? t('public.defaults.editorial'));
+            const author = article.author || String(
+              settings.content?.blogAuthorName || settings.general?.siteName || article.frontMatter?.author || t('public.defaults.editorial')
+            );
             const image = resolveContentPreviewImage(article);
             const desc = article.excerpt || String(article.frontMatter?.description ?? '');
             const dates = formatContentDateLabels(

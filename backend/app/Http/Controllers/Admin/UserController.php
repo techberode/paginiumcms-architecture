@@ -10,6 +10,7 @@ use PaginiumCMS\Core\Validation\ValidationException;
 use PaginiumCMS\Core\Validation\ValidationRules;
 use PaginiumCMS\Core\Validation\Validator;
 use PaginiumCMS\Http\Support\BulkBatchResult;
+use PaginiumCMS\Http\Support\BulkOperationLimits;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
 use PaginiumCMS\Modules\Security\Contracts\PasswordPolicyInterface;
@@ -137,6 +138,7 @@ final class UserController
         $user->setEmail($validated['email']);
         $user->setUsername($username);
         $user->setName($validated['name']);
+        $user->setBio(trim((string) ($payload['bio'] ?? '')));
         $user->setRoles([(string) $validated['role']]);
         $user->setActive((bool) ($payload['active'] ?? true));
         $user->setPassword($password);
@@ -176,12 +178,13 @@ final class UserController
             'email' => ['email', 'max:255'],
             'username' => ['string', 'min:2', 'max:64', 'slug'],
             'name' => ['string', 'min:2', 'max:120'],
+            'bio' => ['string', 'max:500'],
             'role' => ['in:USER,EDITOR,ADMIN,SUPER_ADMIN'],
             'active' => ['bool'],
         ];
 
         $validated = $this->validator->validate(
-            array_intersect_key($payload, array_flip(['email', 'username', 'name', 'role', 'active'])),
+            array_intersect_key($payload, array_flip(['email', 'username', 'name', 'bio', 'role', 'active'])),
             $rules
         );
 
@@ -202,6 +205,10 @@ final class UserController
 
         if (isset($validated['name'])) {
             $user->setName($validated['name']);
+        }
+
+        if (array_key_exists('bio', $validated)) {
+            $user->setBio((string) $validated['bio']);
         }
 
         if (isset($validated['role'])) {
@@ -287,15 +294,16 @@ final class UserController
     public function bulkDestroy(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $data = $this->parseJsonBody($request);
-        $ids = isset($data['ids']) && is_array($data['ids'])
-            ? array_values(array_filter(
-                array_map(static fn ($id): string => is_string($id) ? trim($id) : '', $data['ids']),
-                static fn (string $id): bool => $id !== ''
-            ))
-            : [];
+        $ids = BulkOperationLimits::normalizeIds($data['ids'] ?? null);
 
         if ($ids === []) {
             return $this->json->error($response, 'Vyžaduje sa aspoň jedno ID', 400);
+        }
+
+        try {
+            BulkOperationLimits::assertWithinLimit($ids);
+        } catch (ValidationException $e) {
+            return $this->json->validation($response, 'Bulk limit exceeded', $e->getErrors());
         }
 
         $actor = $request->getAttribute('user');
@@ -348,10 +356,12 @@ final class UserController
         }
 
         try {
+            $stream = $file->getStream();
+            $contents = $stream->isSeekable() ? $stream->getContents() : (string) $stream;
             $url = $this->avatars->assignFromUpload(
                 $user,
                 $file->getClientFilename() ?? 'avatar.png',
-                (string) $file->getStream(),
+                $contents,
                 $file->getClientMediaType() ?? 'application/octet-stream'
             );
             $user->setAvatarUrl($url);

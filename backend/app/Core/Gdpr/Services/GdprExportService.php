@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\Gdpr\Services;
 
+use PaginiumCMS\Core\Gdpr\GdprPseudonym;
 use PaginiumCMS\Modules\Comments\Models\Comment;
 use PaginiumCMS\Modules\Comments\Services\CommentsRepository;
 use PaginiumCMS\Modules\Messages\Models\ContactMessage;
@@ -18,6 +19,10 @@ use ZipArchive;
  */
 final class GdprExportService
 {
+    private const MAX_COMMENTS = 5000;
+
+    private const MAX_CONTACT_MESSAGES = 2000;
+
     public function __construct(
         private CommentsRepository $comments,
         private MessageRepository $messages,
@@ -33,10 +38,34 @@ final class GdprExportService
         $email = strtolower(trim($user->getEmail()));
         $displayName = trim($user->getName());
 
-        $matchedComments = $this->comments->findAll([
+        // Post-anonymize re-export: related rows were redacted to pseudonyms — do not re-aggregate.
+        if (GdprPseudonym::isAnonymizedEmail($email)) {
+            return [
+                'exportedAt' => date('c'),
+                'schemaVersion' => 1,
+                'subjectUserId' => $user->getId(),
+                'profile' => $user->jsonSerialize(),
+                'comments' => [],
+                'newsletter' => null,
+                'contactMessages' => [],
+                'limits' => [
+                    'commentsCap' => self::MAX_COMMENTS,
+                    'contactMessagesCap' => self::MAX_CONTACT_MESSAGES,
+                    'note' => 'Subject account is anonymized; related flat-file rows were redacted and are omitted from this export.',
+                ],
+            ];
+        }
+
+        $matchedComments = array_slice($this->comments->findAll([
             'email' => $email,
             'authorName' => $displayName !== '' ? $displayName : null,
-        ]);
+        ]), 0, self::MAX_COMMENTS);
+
+        $contactMessages = array_slice(
+            $this->messages->findByEmail($email),
+            0,
+            self::MAX_CONTACT_MESSAGES
+        );
 
         return [
             'exportedAt' => date('c'),
@@ -50,9 +79,11 @@ final class GdprExportService
             'newsletter' => $this->newsletter->findByEmail($email),
             'contactMessages' => array_map(
                 static fn (ContactMessage $message): array => $message->jsonSerialize(),
-                $this->messages->findByEmail($email)
+                $contactMessages
             ),
             'limits' => [
+                'commentsCap' => self::MAX_COMMENTS,
+                'contactMessagesCap' => self::MAX_CONTACT_MESSAGES,
                 'note' => 'This export covers primary flat-file stores only. Backups, access logs, security audit events, and analytics may retain historical identifiers until rotation or purge.',
             ],
         ];

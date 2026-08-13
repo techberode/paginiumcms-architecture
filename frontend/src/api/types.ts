@@ -4,6 +4,7 @@ export interface User {
   email: string;
   username?: string;
   name: string;
+  bio?: string;
   roles: string[];
   active?: boolean;
   twoFactorEnabled: boolean;
@@ -57,6 +58,9 @@ export interface Article extends Page {
   ogImage?: string;
   tags: string[];
   excerpt: string;
+  authorBio?: string;
+  authorAvatarUrl?: string;
+  showAuthorBox?: boolean;
   readingTime: number;
   commentsEnabled?: boolean;
   commentsRequireApproval?: boolean | null;

@@ -14,6 +14,7 @@ export interface CreateUserPayload {
   passwordConfirm?: string;
   active?: boolean;
   twoFactorEnabled?: boolean;
+  bio?: string;
 }
 
 export interface UpdateUserPayload {
@@ -25,6 +26,7 @@ export interface UpdateUserPayload {
   passwordConfirm?: string;
   active?: boolean;
   twoFactorEnabled?: boolean;
+  bio?: string;
 }
 
 export interface UsersListResponse {
@@ -78,9 +80,8 @@ export async function uploadUserAvatar(id: string, file: File): Promise<ApiRespo
   const form = new FormData();
   form.append('avatar', file);
 
-  return apiClient.post<{ user: User }>(`/api/admin/users/${encodeURIComponent(id)}/avatar`, form, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
+  // Let the browser set multipart boundary — manual Content-Type breaks PHP upload parsing.
+  return apiClient.post<{ user: User }>(`/api/admin/users/${encodeURIComponent(id)}/avatar`, form);
 }
 
 export async function removeUserAvatar(id: string): Promise<ApiResponse<{ user: User }>> {

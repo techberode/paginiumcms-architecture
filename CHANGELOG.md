@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.38`](#release-2-1-0-beta-38) | 2026-08-13 | It.80f API4 hardening + blog author settings |
 | [`2.1.0-beta.37`](#release-2-1-0-beta-37) | 2026-08-11 | It.80e GDPR export/anonymize |
 | [`2.1.0-beta.36`](#release-2-1-0-beta-36) | 2026-08-11 | It.80d outbound webhooks |
 | [`2.1.0-beta.35`](#release-2-1-0-beta-35) | 2026-08-11 | It.80b 404 tracking + It.80c comment spam (bundled; beta.34 slice skipped) |
@@ -109,6 +110,36 @@ This canonical history records release facts supported by the supplied `CHANGELO
 | [`1.0.0`](#release-1-0-0) | Initial structure | Initial repository structure |
 
 ## [Unreleased]
+
+<a id="release-2-1-0-beta-38"></a>
+
+## [2.1.0-beta.38] – 2026-08-13
+
+It.80f — API4 resource hardening, blog author settings, admin UX fixes
+
+### Added — It.80f (API4 / operator toolkit slice)
+
+- **`ContactRateLimitMiddleware`** — 5 req/h per IP + 3/day per e-mail on `POST /api/contact`; honeypot `_hp` (silent success).
+- **`CommentSubmitRateLimitMiddleware`** — 15 req/h per IP on `POST /api/comments`.
+- **`BulkOperationLimits`** — max **100** IDs per admin bulk mutation batch.
+- **Backup import size cap** — `uploadSecurity.backupImportMaxSizeKb` (default 100 MB).
+- **GDPR export caps** — 5000 comments / 2000 contact messages per export payload.
+- **CLI** — `redirect:validate` lints flat-file redirect map for loops and invalid targets.
+- **`BlogAuthorSettings`** — site-wide blog author name, bio, avatar URL, and “About author” toggle (**Settings → Content**).
+- **Article editor** — optional per-article author override field.
+
+### Fixed
+
+- [ISS-136](docs/ISSUES.md#iss-136) — “About author” no longer shows article excerpt/SEO description.
+- [ISS-137](docs/ISSUES.md#iss-137) — admin avatar upload (`FormData` / multipart boundary).
+- [ISS-138](docs/ISSUES.md#iss-138) — blog author configurable without CMS user “Redakcia”.
+- [ISS-139](docs/ISSUES.md#iss-139) — GDPR re-export after anonymize omits redacted related rows.
+- [ISS-140](docs/ISSUES.md#iss-140) — contact/comments rate limits and bulk/import/export bounds.
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.38`
+- **Docs:** [ITERATION_80](docs/en/ITERATION_80.md) checklist 80f · [ISSUES](docs/ISSUES.md) ISS-136–140
 
 <a id="release-2-1-0-beta-37"></a>
 

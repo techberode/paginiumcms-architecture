@@ -48,12 +48,14 @@ type FormState = CreateUserPayload & {
   passwordConfirm?: string;
   active: boolean;
   twoFactorEnabled: boolean;
+  bio: string;
 };
 
 const emptyForm = (): FormState => ({
   email: '',
   username: '',
   name: '',
+  bio: '',
   role: 'USER',
   password: '',
   passwordConfirm: '',
@@ -160,6 +162,7 @@ export const UsersManager: React.FC = () => {
           email: form.email,
           username: form.username,
           name: form.name,
+          bio: form.bio,
           role: form.role as UserRole,
           active: form.active,
           twoFactorEnabled: form.twoFactorEnabled,
@@ -200,6 +203,7 @@ export const UsersManager: React.FC = () => {
       email: user.email,
       username: user.username ?? deriveUsername(user.email),
       name: user.name,
+      bio: user.bio ?? '',
       role: (user.roles[0] as UserRole) || 'USER',
       password: '',
       passwordConfirm: '',
@@ -218,6 +222,7 @@ export const UsersManager: React.FC = () => {
         twoFactorEnabled: detail.user.twoFactorEnabled,
         active: detail.user.active ?? true,
         username: detail.user.username ?? prev.username,
+        bio: detail.user.bio ?? prev.bio,
       }));
     }
   };
@@ -408,6 +413,17 @@ export const UsersManager: React.FC = () => {
                 value={form.name}
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
               />
+            </Field>
+
+            <Field label={t('users.form.bio')} error={errors.bio?.[0]} className="md:col-span-2">
+              <textarea
+                className={`${inputClass(Boolean(errors.bio))} min-h-[96px] resize-y`}
+                value={form.bio}
+                maxLength={500}
+                placeholder={t('users.form.bioPlaceholder')}
+                onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))}
+              />
+              <p className="mt-1 text-xs text-slate-500">{t('users.form.bioHint')}</p>
             </Field>
 
             <Field label={t('users.form.email')} error={errors.email?.[0]}>
@@ -680,14 +696,16 @@ export const UsersManager: React.FC = () => {
 function Field({
   label,
   error,
+  className,
   children,
 }: {
   label: string;
   error?: string;
+  className?: string;
   children: React.ReactNode;
 }) {
   return (
-    <div>
+    <div className={className}>
       <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
         {label}
       </label>

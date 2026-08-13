@@ -73,6 +73,7 @@ final class GdprAnonymizeService
         $this->avatars->remove($user);
         $user->setEmail($pseudonymEmail);
         $user->setName($pseudonym);
+        $user->setBio('');
         $user->setUsername($this->resolveUniqueUsername($pseudonym, $user->getId()));
         $user->setAvatarUrl(null);
         $user->setActive(false);

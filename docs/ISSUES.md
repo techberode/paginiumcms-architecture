@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 8 August 2026 · register **ISS-001–ISS-135** · **`v2.1.0-beta.29`** shipped (It.72 MVP + It.73 complete + ISS-134/089/117)
+> **Last updated:** 13 August 2026 · register **ISS-001–ISS-140** · **`v2.1.0-beta.38`** shipped (It.80f API4 hardening + blog author settings)
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -158,6 +158,11 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-133](#iss-133) | BackToTopButton Vitest missing `I18nProvider` after admin wiring | Low (CI) | ✅ **2.1.0-beta.28** · `renderWithProviders` |
 | [ISS-134](#iss-134) | HTTP PHPUnit flaky auth/system-update (401/403/404) from settings race and shared login IP | Medium (CI) | ✅ **2.1.0-beta.29** · `Http/TestCase` + SystemUpdate test order |
 | [ISS-135](#iss-135) | Shortcode expand template uses regex denylist instead of full HTML allowlist | Low (defense-in-depth) | ⏳ Deferred · It.67+ hardening slice |
+| [ISS-136](#iss-136) | Blog “About author” showed article excerpt/SEO text instead of author bio | Medium (UX / content) | ✅ **2.1.0-beta.38** · settings-based `BlogAuthorSettings` |
+| [ISS-137](#iss-137) | Admin user avatar upload failed (`multipart` without boundary) | Medium (admin UX) | ✅ **2.1.0-beta.38** · axios FormData fix |
+| [ISS-138](#iss-138) | Blog author had no settings/editor path; fell back to i18n “Redakcia” | Medium (UX) | ✅ **2.1.0-beta.38** · Settings → Content + article author field |
+| [ISS-139](#iss-139) | GDPR re-export after anonymize re-aggregated pseudonym-linked comments | Medium (GDPR) | ✅ **2.1.0-beta.38** · skip related rows for anonymized accounts |
+| [ISS-140](#iss-140) | Public contact/comments lacked dedicated rate limits; bulk/import/export without caps (API4) | Medium (security) | ✅ **2.1.0-beta.38** · It.80f hardening |
 
 ## CI failures (GitHub Actions)
 
@@ -4069,6 +4074,133 @@ Security audit flagged `ShortcodeDefinitionPolicy` expand-body validation as **d
 ./vendor/bin/phpunit backend/tests/Core/CodePolicy/CodePolicyEngineTest.php \
   --filter ShortcodeDefinitionPolicy
 ```
+
+---
+
+<a id="iss-136"></a>
+
+## ISS-136 – Blog “About author” showed article excerpt/SEO text instead of author bio
+
+[↑ Overview](#overview)
+
+**Severity:** Medium (UX / content)  
+**Status:** ✅ Fixed — **`v2.1.0-beta.38`**
+
+### Operational synopsis
+
+Public article detail rendered the “About the author” block using `article.excerpt` or `frontMatter.description` (perex/SEO fields), so visitors saw truncated article body or meta description under the author heading.
+
+### Resolution
+
+- **`BlogAuthorSettings`** — site-wide author name, bio, avatar URL, and show/hide toggle under **Settings → Content**.
+- **`ContentController`** — exposes `authorBio`, `authorAvatarUrl`, `showAuthorBox` on article payloads from settings (optional per-article `authorBio` override in front matter).
+- **`BlogRenderer`** — uses API fields only; hides the box when bio is empty.
+
+### Evidence and traceability
+
+- **Key files:** `frontend/src/components/frontend/BlogRenderer.tsx`, `backend/app/Core/Content/BlogAuthorSettings.php`, `backend/app/Core/Settings/SettingsSchema.php`
+- **Tests:** `backend/tests/Core/Content/BlogAuthorSettingsTest.php`
+
+---
+
+<a id="iss-137"></a>
+
+## ISS-137 – Admin user avatar upload failed (multipart without boundary)
+
+[↑ Overview](#overview)
+
+**Severity:** Medium (admin UX)  
+**Status:** ✅ Fixed — **`v2.1.0-beta.38`**
+
+### Operational synopsis
+
+`uploadUserAvatar()` set `Content-Type: multipart/form-data` manually without a `boundary`, so PHP did not parse the upload. Admin saw HTTP 400 *“Súbor avataru je povinný”*.
+
+### Resolution
+
+- Remove manual `Content-Type` on FormData POSTs; axios/browser sets `multipart/form-data; boundary=…`.
+- **`api/client.ts`** — request interceptor deletes default JSON `Content-Type` when body is `FormData`.
+- Same fix applied to **`frontend/src/api/media.ts`** upload helper.
+
+### Evidence and traceability
+
+- **Key files:** `frontend/src/api/users.ts`, `frontend/src/api/client.ts`, `backend/app/Http/Controllers/Admin/UserController.php` (stream read hardening)
+
+---
+
+<a id="iss-138"></a>
+
+## ISS-138 – Blog author identity had no settings or editor path
+
+[↑ Overview](#overview)
+
+**Severity:** Medium (UX)  
+**Status:** ✅ Fixed — **`v2.1.0-beta.38`**
+
+### Operational synopsis
+
+Articles displayed author label from i18n default “Redakcia” / logged-in editor name in preview only. There was no admin settings field for public author identity and no **Author** field in the article editor. Operators assumed a CMS user account named “Redakcia” was required.
+
+### Resolution
+
+- Settings keys: `blogAuthorName`, `blogAuthorBio`, `blogAuthorAvatarUrl`, `blogShowAuthorBox`.
+- Article editor sidebar: optional **Author** override (empty = site default).
+- Author is **not** tied to CMS user accounts.
+
+---
+
+<a id="iss-139"></a>
+
+## ISS-139 – GDPR re-export after anonymize re-aggregated pseudonym-linked rows
+
+[↑ Overview](#overview)
+
+**Severity:** Medium (GDPR / data handling)  
+**Status:** ✅ Fixed — **`v2.1.0-beta.38`**
+
+### Operational synopsis
+
+After `GdprAnonymizeService` redacted comments/messages to the subject’s pseudonym e-mail and display name, `GdprExportService::buildExport()` matched those same pseudonym values on the anonymized user profile and returned non-empty `comments` / `contactMessages` arrays (PHPUnit regression in `GdprAnonymizeServiceTest`).
+
+### Resolution
+
+When `GdprPseudonym::isAnonymizedEmail()` is true for the subject account, export returns profile JSON only; related flat-file rows are omitted (already redacted in primary stores).
+
+### Evidence and traceability
+
+- **Key files:** `backend/app/Core/Gdpr/Services/GdprExportService.php`, `backend/app/Core/Gdpr/Services/GdprAnonymizeService.php` (also clears `bio`)
+- **Tests:** `backend/tests/Core/Gdpr/Services/GdprAnonymizeServiceTest.php`
+
+---
+
+<a id="iss-140"></a>
+
+## ISS-140 – API4 gaps: contact/comments abuse and unbounded bulk/import/export (It.80f)
+
+[↑ Overview](#overview)
+
+**Severity:** Medium (security / resource consumption)  
+**Status:** ✅ Fixed — **`v2.1.0-beta.38`** · It.80f
+
+### Operational synopsis
+
+OWASP API4-style gaps remained after global rate limiting: `POST /api/contact` had no honeypot or dedicated limit; `POST /api/comments` relied only on spam heuristics; admin bulk mutations accepted unbounded `ids` arrays; backup ZIP import had no size cap; GDPR export could aggregate unbounded comment/message volumes.
+
+### Resolution (It.80f)
+
+| Control | Detail |
+|---------|--------|
+| Contact | `ContactRateLimitMiddleware` (5/h IP, 3/day e-mail) + honeypot `_hp` |
+| Comments | `CommentSubmitRateLimitMiddleware` (15/h IP) |
+| Bulk | `BulkOperationLimits::MAX_IDS = 100` |
+| Backup import | `uploadSecurity.backupImportMaxSizeKb` (default 100 MB) |
+| GDPR export | caps 5000 comments / 2000 contact messages |
+| CLI | `php backend/bin/console redirect:validate` |
+
+### Evidence and traceability
+
+- **Docs:** [ITERATION_80](en/ITERATION_80.md) checklist 80f
+- **Tests:** `backend/tests/Http/Support/BulkOperationLimitsTest.php`
 
 ---
 

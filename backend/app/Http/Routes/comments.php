@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use PaginiumCMS\Http\Controllers\Comments\CommentsController;
 use PaginiumCMS\Http\Middleware\AuthMiddleware;
+use PaginiumCMS\Http\Middleware\CommentSubmitRateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\RoleMiddleware;
 use PaginiumCMS\Http\Middleware\TwoFactorMiddleware;
 use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
@@ -17,7 +18,8 @@ return function (App $app): void {
     $auth = $container->get(AuthMiddleware::class);
 
     $app->get('/api/comments', [$controller, 'listPublic']);
-    $app->post('/api/comments', [$controller, 'submit']);
+    $app->post('/api/comments', [$controller, 'submit'])
+        ->add($container->get(CommentSubmitRateLimitMiddleware::class));
 
     $app->group('/api/admin/comments', function (RouteCollectorProxy $group) use ($controller) {
         $group->get('', [$controller, 'listAdmin']);

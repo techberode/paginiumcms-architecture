@@ -76,6 +76,34 @@ final class RedirectStore
     }
 
     /**
+     * @return list<string>
+     */
+    public function validateAllRules(): array
+    {
+        $issues = [];
+        $rules = $this->loadRules();
+
+        foreach ($rules as $rule) {
+            $id = $rule['id'];
+            $label = $id !== '' ? $id : $rule['from'];
+
+            try {
+                $from = $this->normalizePath($rule['from']);
+                $to = $this->normalizePath($rule['to']);
+                $this->assertInternalTarget($to);
+                $this->assertValidStatus($rule['status']);
+                if ($rule['enabled'] === true) {
+                    $this->assertNoLoop($from, $to, $id !== '' ? $id : null);
+                }
+            } catch (InvalidArgumentException $e) {
+                $issues[] = sprintf('%s: %s', $label, $e->getMessage());
+            }
+        }
+
+        return $issues;
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function create(string $from, string $to, int $status = 301, string $note = ''): array

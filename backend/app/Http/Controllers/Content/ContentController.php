@@ -37,6 +37,7 @@ use PaginiumCMS\Modules\Security\Exception\AuthorizationException;
 use PaginiumCMS\Modules\Security\Models\ApiBearerAuth;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Modules\Security\Services\ContentPathAclGuard;
+use PaginiumCMS\Core\Content\BlogAuthorSettings;
 use PaginiumCMS\Support\AppTimezone;
 use PaginiumCMS\Support\Lang;
 use Psr\Http\Message\ResponseInterface;
@@ -66,6 +67,7 @@ class ContentController
         private LocalizedContentApplicator $localizedApplicator,
         private LocalizedContentValidator $localizedValidator,
         private LocalizedContentWriter $localizedWriter,
+        private BlogAuthorSettings $blogAuthor,
     ) {
     }
 
@@ -966,6 +968,12 @@ class ContentController
             $payload['commentsEnabled'] = $content->getCommentsEnabled();
             $payload['commentsRequireApproval'] = $content->getCommentsRequireApproval();
             $payload['commentsAllowGuests'] = $content->getCommentsAllowGuests();
+
+            $authorMeta = $this->blogAuthor->resolveForArticle($content);
+            $payload['author'] = $authorMeta['author'];
+            $payload['authorBio'] = $authorMeta['authorBio'];
+            $payload['authorAvatarUrl'] = $authorMeta['authorAvatarUrl'];
+            $payload['showAuthorBox'] = $authorMeta['showAuthorBox'];
         }
 
         $payload['seoTitle'] = (string) ($frontMatter['seoTitle'] ?? $frontMatter['metaTitle'] ?? '');
