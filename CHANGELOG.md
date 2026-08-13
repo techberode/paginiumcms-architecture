@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.43`](#release-2-1-0-beta-43) | 2026-08-13 | Hotfix — home page layout regression (landing grid) |
 | [`2.1.0-beta.42`](#release-2-1-0-beta-42) | 2026-08-13 | Hotfix — pgLayout.css prod build + AppVersion beta.41 |
 | [`2.1.0-beta.41`](#release-2-1-0-beta-41) | 2026-08-13 | It.58 shortcodes/layout — expander, admin UI, preview API, pgLayout CSS |
 | [`2.1.0-beta.40`](#release-2-1-0-beta-40) | 2026-08-13 | BodyParsing JSON body fix (deploy, avatar, comment OTP) |
@@ -124,6 +125,23 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **ISS-141 follow-up** — all remaining `Http/Controllers/*` JSON mutating paths and OTP/contact rate-limit middleware now use `RequestJsonBody::decode()` (eliminates empty-body regressions site-wide after `BodyParsingMiddleware`).
 
 - **Shortcode expand + HTML sanitizer** — `allowedHtmlTags` now includes `div`, `article`, `section`, `aside`, `span` (required for It.58 expand templates); legacy settings merge missing layout tags on read; `role` attribute allowed on sanitized elements.
+
+<a id="release-2-1-0-beta-43"></a>
+
+## [2.1.0-beta.43] – 2026-08-13
+
+Hotfix — homepage squeezed into 1/3 width after It.58 layout shell
+
+### Fixed
+
+- **`PageRenderer` home** — `/` and `home` slug skip `PageLayoutShell` (restores pre-It.58 full-width content).
+- **`pg-landing-grid`** — shell-level grid stays single column; multi-column layout belongs to `feature-grid` shortcode inside body, not the page shell wrapper.
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.43`
+
+---
 
 <a id="release-2-1-0-beta-42"></a>
 
