@@ -265,6 +265,7 @@ $containerBuilder->addDefinitions([
             'csp_img' => "img-src 'self' data: https:",
             'csp_font' => "font-src 'self' data:",
             'csp_connect' => "connect-src 'self'",
+            'csp_worker' => "worker-src 'self' blob:",
             'frame_options' => 'DENY',
             'xss_protection' => '1; mode=block',
             'content_type' => 'nosniff',

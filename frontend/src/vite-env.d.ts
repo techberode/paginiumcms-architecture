@@ -12,6 +12,11 @@ interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
 
+declare module '*?worker' {
+  const WorkerFactory: { new (): Worker };
+  export default WorkerFactory;
+}
+
 declare module 'turndown' {
   interface Options {
     headingStyle?: 'setext' | 'atx';

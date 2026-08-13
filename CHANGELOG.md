@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.45`](#release-2-1-0-beta-45) | 2026-08-13 | Hotfix — Shortcodes admin prod (Monaco CSP), self-hosted Monaco workers |
 | [`2.1.0-beta.44`](#release-2-1-0-beta-44) | 2026-08-13 | Hotfix — ShortcodesManager Monaco editor height |
 | [`2.1.0-beta.43`](#release-2-1-0-beta-43) | 2026-08-13 | Hotfix — home page layout regression (landing grid) |
 | [`2.1.0-beta.42`](#release-2-1-0-beta-42) | 2026-08-13 | Hotfix — pgLayout.css prod build + AppVersion beta.41 |
@@ -126,6 +127,25 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **ISS-141 follow-up** — all remaining `Http/Controllers/*` JSON mutating paths and OTP/contact rate-limit middleware now use `RequestJsonBody::decode()` (eliminates empty-body regressions site-wide after `BodyParsingMiddleware`).
 
 - **Shortcode expand + HTML sanitizer** — `allowedHtmlTags` now includes `div`, `article`, `section`, `aside`, `span` (required for It.58 expand templates); legacy settings merge missing layout tags on read; `role` attribute allowed on sanitized elements.
+
+<a id="release-2-1-0-beta-45"></a>
+
+## [2.1.0-beta.45] – 2026-08-13
+
+Hotfix — Shortcodes admin on production (Monaco blocked by CSP)
+
+### Fixed
+
+- **`ShortcodesManager`** — JSON editor uses a native `<textarea>` instead of Monaco (works under strict `script-src 'self'` nginx CSP; no CDN dependency).
+- **`monacoSetup.ts`** — self-hosts Monaco via Vite worker bundles for Code Editor / TranslationEditor (replaces default jsDelivr CDN loader).
+- **CSP** — `worker-src 'self' blob:` in `SecurityMiddleware`, nginx security headers, and deploy templates (Monaco language workers).
+- **Docs** — [ISS-142](docs/ISSUES.md#iss-142)–[ISS-146](docs/ISSUES.md#iss-146) (It.58/beta.41–44 production regressions).
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.45`
+
+---
 
 <a id="release-2-1-0-beta-44"></a>
 
