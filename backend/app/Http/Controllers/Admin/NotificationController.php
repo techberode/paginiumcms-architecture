@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Admin;
 
+use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\Analytics\Services\Reporter;
 use PaginiumCMS\Core\Monitoring\Services\MonitoringReportScheduler;
 use PaginiumCMS\Core\Monitoring\Services\MonitoringScheduler;
@@ -69,7 +70,7 @@ final class NotificationController
 
     public function sendReport(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $payload = json_decode((string) $request->getBody(), true);
+        $payload = RequestJsonBody::decode($request);
         $force = is_array($payload) && (bool) ($payload['force'] ?? false);
 
         try {
@@ -117,7 +118,7 @@ final class NotificationController
 
     public function testSend(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $payload = json_decode((string) $request->getBody(), true);
+        $payload = RequestJsonBody::decode($request);
         if (!is_array($payload)) {
             return $this->json->error($response, 'Invalid JSON body', 400);
         }
@@ -159,7 +160,7 @@ final class NotificationController
 
     public function testConnector(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $payload = json_decode((string) $request->getBody(), true);
+        $payload = RequestJsonBody::decode($request);
         if (!is_array($payload)) {
             return $this->json->error($response, 'Invalid JSON body', 400);
         }

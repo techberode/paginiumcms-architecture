@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Content;
 
+use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\Conflict\Contracts\ConflictLoggerInterface;
 use PaginiumCMS\Core\Conflict\Models\ConflictRecord;
 use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
@@ -999,7 +1000,7 @@ class ContentController
      * @return array<int|string, mixed>
  */    private function parseJsonBody(ServerRequestInterface $request): array
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
 
         return is_array($data) ? $data : [];
     }

@@ -30,15 +30,11 @@ export const shortcodesApi = {
       `/api/admin/shortcodes/${encodeURIComponent(name)}`
     ),
 
-  save: async (name: string, definitionJson: string) =>
-    apiClient.put<ShortcodeListItem>(`/api/admin/shortcodes/${encodeURIComponent(name)}`, definitionJson, {
-      headers: { 'Content-Type': 'application/json' },
-    }),
+  save: async (name: string, definition: unknown) =>
+    apiClient.put<ShortcodeListItem>(`/api/admin/shortcodes/${encodeURIComponent(name)}`, definition),
 
-  preview: async (definitionJson: string) =>
-    apiClient.post<ShortcodePreviewResult>('/api/admin/shortcodes/preview', definitionJson, {
-      headers: { 'Content-Type': 'application/json' },
-    }),
+  preview: async (definition: unknown) =>
+    apiClient.post<ShortcodePreviewResult>('/api/admin/shortcodes/preview', definition),
 
   delete: async (name: string) =>
     apiClient.delete(`/api/admin/shortcodes/${encodeURIComponent(name)}`),

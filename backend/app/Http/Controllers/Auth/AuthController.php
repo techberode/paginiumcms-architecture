@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Auth;
 
+use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\Notification\NotificationService;
 use PaginiumCMS\Core\Security\SecurityLogger;
 use PaginiumCMS\Core\Security\TwoFactorPolicy;
@@ -47,7 +48,7 @@ class AuthController
      */
     public function login(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
 
         if (!isset($data['email']) || !isset($data['password'])) {
             return $this->json->error($response, 'Email a heslo sú povinné', 400);
@@ -130,7 +131,7 @@ class AuthController
      */
     public function register(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
 
         if (!isset($data['email']) || !isset($data['password']) || !isset($data['name'])) {
             return $this->json->error($response, 'Email, heslo a meno sú povinné', 400);
@@ -203,7 +204,7 @@ class AuthController
      */
     public function verifyRegisterOtp(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
 
         if (!isset($data['challenge_id']) || !isset($data['code'])) {
             return $this->json->error($response, 'challenge_id a code sú povinné', 400);
@@ -235,7 +236,7 @@ class AuthController
      */
     public function resendRegisterOtp(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
 
         if (!isset($data['challenge_id'])) {
             return $this->json->error($response, 'challenge_id je povinný', 400);
@@ -272,7 +273,7 @@ class AuthController
             return $this->json->error($response, 'Neprihlásený používateľ', 401);
         }
 
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
 
         if (!isset($data['old_password']) || !isset($data['new_password'])) {
             return $this->json->error($response, 'Staré a nové heslo sú povinné', 400);
@@ -296,7 +297,7 @@ class AuthController
      */
     public function resetPassword(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
 
         if (!isset($data['email'])) {
             return $this->json->error($response, 'Email je povinný', 400);
@@ -367,7 +368,7 @@ class AuthController
      */
     public function verifyResetToken(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
 
         if (!isset($data['token']) || !isset($data['new_password'])) {
             return $this->json->error($response, 'Token a nové heslo sú povinné', 400);

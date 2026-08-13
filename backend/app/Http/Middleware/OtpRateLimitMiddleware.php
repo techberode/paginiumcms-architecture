@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Middleware;
 
 use PaginiumCMS\Core\Cache\CacheManager;
+use PaginiumCMS\Http\Support\RequestJsonBody;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
@@ -60,7 +61,7 @@ class OtpRateLimitMiddleware extends RateLimitMiddleware
     protected function getCacheKey(ServerRequestInterface $request): string
     {
         /** @var array<string, mixed> $data */
-        $data = json_decode((string) $request->getBody(), true) ?: [];
+        $data = RequestJsonBody::decode($request) ?? [];
         $ip = md5($this->getClientIp($request));
 
         if ($this->action === self::ACTION_START) {

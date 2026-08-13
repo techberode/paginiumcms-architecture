@@ -293,4 +293,14 @@ export const editorSk: MessageTree = {
     bannerLabel: 'Náhľad · stav:',
     edit: 'Upraviť',
   },
+  shortcodes: {
+    title: 'Vložiť shortcode',
+    description: 'Vloží registrovaný shortcode tag do tela stránky. Expanzia prebehne pri renderi na serveri.',
+    pick: 'Shortcode',
+    insert: 'Vložiť',
+    empty: 'Zatiaľ nie sú registrované shortcodes.',
+    toast: {
+      loadFailed: 'Nepodarilo sa načítať shortcodes',
+    },
+  },
 };

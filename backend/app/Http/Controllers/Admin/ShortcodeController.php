@@ -4,26 +4,38 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Admin;
 
+use PaginiumCMS\Core\Cache\ContentCacheService;
 use PaginiumCMS\Core\CodePolicy\Exceptions\CodePolicyViolationException;
+use PaginiumCMS\Core\Layout\Services\ShortcodeCatalogSeeder;
 use PaginiumCMS\Core\Layout\Services\ShortcodeDefinitionManager;
 use PaginiumCMS\Http\Support\JsonResponder;
+use PaginiumCMS\Http\Support\RequestJsonBody;
+use PaginiumCMS\Support\JsonHelper;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
 
 /**
- * Admin API for shortcode definitions (It.67a).
+ * Admin API for shortcode definitions (It.58d).
  */
 final class ShortcodeController
 {
     public function __construct(
         private ShortcodeDefinitionManager $shortcodes,
+        private ShortcodeCatalogSeeder $catalogSeeder,
+        private ContentCacheService $contentCache,
         private JsonResponder $json,
     ) {
     }
 
     public function index(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
+        try {
+            $this->catalogSeeder->seedIfEmpty();
+        } catch (CodePolicyViolationException $exception) {
+            return $this->json->validation($response, $exception->getMessage(), $exception->getErrors());
+        }
+
         return $this->json->success($response, [
             'shortcodes' => $this->shortcodes->list(),
         ]);
@@ -49,10 +61,16 @@ final class ShortcodeController
     public function save(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $name = (string) ($args['name'] ?? '');
-        $body = (string) $request->getBody();
+        $payload = RequestJsonBody::decode($request);
+        if (!is_array($payload)) {
+            return $this->json->error($response, 'Invalid JSON body', 400);
+        }
+
+        $body = JsonHelper::encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 
         try {
             $saved = $this->shortcodes->save($name, $body);
+            $this->contentCache->invalidatePage();
 
             return $this->json->success($response, $saved, 200, 'Shortcode definition saved');
         } catch (CodePolicyViolationException $exception) {
@@ -64,7 +82,12 @@ final class ShortcodeController
 
     public function preview(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $body = (string) $request->getBody();
+        $payload = RequestJsonBody::decode($request);
+        if (!is_array($payload)) {
+            return $this->json->error($response, 'Invalid JSON body', 400);
+        }
+
+        $body = JsonHelper::encode($payload, JSON_UNESCAPED_UNICODE);
 
         try {
             $definition = $this->shortcodes->preview($body);

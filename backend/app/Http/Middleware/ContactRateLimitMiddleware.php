@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Middleware;
 
 use PaginiumCMS\Core\Cache\CacheManager;
+use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Support\JsonHelper;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -62,7 +63,7 @@ final class ContactRateLimitMiddleware extends RateLimitMiddleware
             return $this->rateLimitResponse();
         }
 
-        $body = json_decode((string) $request->getBody(), true);
+        $body = RequestJsonBody::decode($request);
         if (is_array($body)) {
             $email = strtolower(trim((string) ($body['email'] ?? '')));
             if ($email !== '') {

@@ -13,7 +13,7 @@ use DOMElement;
 final class HtmlDomSanitizer
 {
     /** @var list<string> */
-    private const GLOBAL_ATTRS = ['class', 'title', 'lang', 'dir'];
+    private const GLOBAL_ATTRS = ['class', 'title', 'lang', 'dir', 'role'];
 
     /** @var array<string, list<string>> */
     private const TAG_ATTRS = [

@@ -30,6 +30,16 @@ export interface SuggestMetaResponse {
   description: string;
 }
 
+export interface RenderPreviewPayload {
+  body: string;
+  bodyFormat: 'markdown' | 'html' | 'tiptap_json';
+  cachedHtml?: string;
+}
+
+export interface RenderPreviewResponse {
+  html: string;
+}
+
 export const contentApi = {
   list: async <T extends ContentItem = Page>(
     type: ContentType,
@@ -112,5 +122,13 @@ export const contentApi = {
       throw new Error('suggest_meta_failed');
     }
     return res.data;
+  },
+
+  renderPreview: async (payload: RenderPreviewPayload): Promise<string> => {
+    const res = await apiClient.post<RenderPreviewResponse>('/api/admin/content/render-preview', payload);
+    if (!res.success || !res.data?.html) {
+      throw new Error('render_preview_failed');
+    }
+    return res.data.html;
   },
 };

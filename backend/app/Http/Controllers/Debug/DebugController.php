@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Debug;
 
+use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\Logging\Services\DebugEventLogger;
 use PaginiumCMS\Http\Support\JsonResponder;
 use Psr\Http\Message\ResponseInterface;
@@ -38,7 +39,7 @@ final class DebugController
      */
     private function parseJsonBody(ServerRequestInterface $request): array
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
 
         return is_array($data) ? $data : [];
     }

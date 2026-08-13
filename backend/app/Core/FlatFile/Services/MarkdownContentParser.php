@@ -21,7 +21,7 @@ class MarkdownContentParser implements MarkdownContentParserInterface
     public function __construct()
     {
         $config = [
-            'html_input' => 'escape',
+            'html_input' => 'allow',
             'allow_unsafe_links' => false,
             'max_nesting_level' => 100,
             'external_link' => [

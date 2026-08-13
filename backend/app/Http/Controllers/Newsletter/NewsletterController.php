@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Newsletter;
 
+use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Newsletter\Contracts\NewsletterRepositoryInterface;
@@ -29,7 +30,7 @@ final class NewsletterController
             return $this->json->error($response, Lang::get('disabled', [], 'newsletter'), 403);
         }
 
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
         if (!is_array($data)) {
             return $this->json->error($response, Lang::get('invalid_payload', [], 'newsletter'), 400);
         }
@@ -171,7 +172,7 @@ final class NewsletterController
 
     public function manageUpdate(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
         if (!is_array($data)) {
             return $this->json->error($response, Lang::get('invalid_payload', [], 'newsletter'), 400);
         }

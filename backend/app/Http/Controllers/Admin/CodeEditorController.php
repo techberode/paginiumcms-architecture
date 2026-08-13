@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Admin;
 
+use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\CodeEditor\Services\CodeEditorManager;
 use PaginiumCMS\Core\CodePolicy\Exceptions\CodePolicyViolationException;
 use PaginiumCMS\Http\Support\JsonResponder;
@@ -73,7 +74,7 @@ class CodeEditorController
 
     public function saveFile(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
         if (!is_array($data)) {
             return $this->json->error($response, 'Invalid JSON body', 400);
         }
@@ -106,7 +107,7 @@ class CodeEditorController
 
     public function createFile(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
         if (!is_array($data)) {
             return $this->json->error($response, 'Invalid JSON body', 400);
         }
@@ -144,7 +145,7 @@ class CodeEditorController
 
     public function restoreBackup(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
         if (!is_array($data)) {
             return $this->json->error($response, 'Invalid JSON body', 400);
         }

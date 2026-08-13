@@ -293,4 +293,14 @@ export const editorEn: MessageTree = {
     bannerLabel: 'Preview · status:',
     edit: 'Edit',
   },
+  shortcodes: {
+    title: 'Insert shortcode',
+    description: 'Inserts a registered shortcode tag into page body. Expansion runs at render time on the server.',
+    pick: 'Shortcode',
+    insert: 'Insert',
+    empty: 'No shortcodes registered yet.',
+    toast: {
+      loadFailed: 'Failed to load shortcodes',
+    },
+  },
 };

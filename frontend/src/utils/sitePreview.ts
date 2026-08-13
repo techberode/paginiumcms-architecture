@@ -34,6 +34,7 @@ export function buildSitePreviewDraft(
     template: String(data.template ?? fm.template ?? 'default'),
     content: isHtml || isTiptap ? '' : rawContent,
     html: isHtml ? rawContent : data.html,
+    contentFormat: (isHtml ? 'html' : isTiptap ? 'tiptap_json' : 'markdown') as SitePreviewDraft['contentFormat'],
     author: String(data.author ?? fm.author ?? 'Redakcia'),
     tags: Array.isArray(data.tags)
       ? data.tags.map(String)

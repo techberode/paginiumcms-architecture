@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Admin;
 
+use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\Versioning\Services\ContentVersioningService;
 use PaginiumCMS\Core\Versioning\Services\EnhancedVersionManager;
 use PaginiumCMS\Http\Support\JsonResponder;
@@ -63,7 +64,7 @@ class VersionController
 
     public function restoreVersion(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
         $contentId = is_array($data) ? (string) ($data['content_id'] ?? '') : '';
         $version = is_array($data) ? (int) ($data['version'] ?? 0) : 0;
 

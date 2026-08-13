@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Core\Editor\Services;
 
 use PaginiumCMS\Core\FlatFile\Contracts\MarkdownContentParserInterface;
+use PaginiumCMS\Core\Layout\Services\ShortcodeExpanderService;
 use PaginiumCMS\Core\Security\Services\ContentSecuritySanitizer;
 
 /**
@@ -15,25 +16,37 @@ final class ContentBodyRenderer
     public function __construct(
         private MarkdownContentParserInterface $markdownParser,
         private TiptapHtmlRenderer $tiptapRenderer,
-        private ContentSecuritySanitizer $contentSecurity
+        private ContentSecuritySanitizer $contentSecurity,
+        private ?ShortcodeExpanderService $shortcodeExpander = null,
     ) {
     }
 
     public function resolveHtml(string $body, string $contentFormat, ?string $cachedHtml = null): string
     {
+        $body = $this->expandShortcodes($body);
+
         if ($contentFormat === 'html') {
             return $this->contentSecurity->sanitizeHtml($body);
         }
 
         if ($contentFormat === 'tiptap_json') {
             if ($cachedHtml !== null && trim($cachedHtml) !== '') {
-                return $this->contentSecurity->sanitizeHtml($cachedHtml);
+                return $this->contentSecurity->sanitizeHtml($this->expandShortcodes($cachedHtml));
             }
 
             return $this->contentSecurity->sanitizeHtml($this->tiptapRenderer->render($body));
         }
 
         return $this->contentSecurity->sanitizeHtml($this->markdownParser->parse($body));
+    }
+
+    private function expandShortcodes(string $body): string
+    {
+        if ($this->shortcodeExpander === null) {
+            return $body;
+        }
+
+        return $this->shortcodeExpander->expand($body);
     }
 
     public function normalizeContentFormat(mixed $format, string $body): string

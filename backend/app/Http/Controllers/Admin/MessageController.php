@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Admin;
 
+use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Http\Support\BulkBatchResult;
 use PaginiumCMS\Http\Support\JsonResponder;
@@ -53,7 +54,7 @@ class MessageController
             return $this->json->error($response, Lang::get('not_found', [], 'messages'), 404);
         }
 
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
         if (!is_array($data)) {
             return $this->json->error($response, Lang::get('invalid_payload', [], 'messages'), 400);
         }
@@ -98,7 +99,7 @@ class MessageController
 
     public function bulkAction(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $data = json_decode((string) $request->getBody(), true);
+        $data = RequestJsonBody::decode($request);
         if (!is_array($data)) {
             return $this->json->error($response, Lang::get('invalid_payload', [], 'messages'), 400);
         }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Admin;
 
+use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\Validation\ValidationException;
 use PaginiumCMS\Core\Validation\Validator;
 use PaginiumCMS\Http\Support\JsonResponder;
@@ -82,7 +83,7 @@ final class NewsletterAdminController
 
     public function sendTest(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $payload = json_decode((string) $request->getBody(), true);
+        $payload = RequestJsonBody::decode($request);
         if (!is_array($payload)) {
             return $this->json->error($response, Lang::get('invalid_payload', [], 'newsletter'), 400);
         }
@@ -119,7 +120,7 @@ final class NewsletterAdminController
 
     public function sendCmsRelease(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $payload = json_decode((string) $request->getBody(), true);
+        $payload = RequestJsonBody::decode($request);
         if (!is_array($payload)) {
             return $this->json->error($response, Lang::get('invalid_payload', [], 'newsletter'), 400);
         }
@@ -235,7 +236,7 @@ final class NewsletterAdminController
         ResponseInterface $response,
         string $action
     ): ResponseInterface {
-        $payload = json_decode((string) $request->getBody(), true);
+        $payload = RequestJsonBody::decode($request);
         if (!is_array($payload)) {
             return $this->json->error($response, Lang::get('invalid_payload', [], 'newsletter'), 400);
         }
