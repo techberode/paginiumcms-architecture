@@ -43,4 +43,36 @@ final class AuthorizationManagerSettingsReloadTest extends TestCase
             $this->assertTrue($authz->hasPermission($user, $permission));
         }
     }
+
+    public function testReloadEnsuresContentManageForAdminWithoutContentPermissions(): void
+    {
+        $settings = $this->createMock(SettingsRepositoryInterface::class);
+        $settings->method('group')->with('accessControl')->willReturn([
+            'permissionsAdmin' => 'user:manage,settings:manage,media:manage',
+        ]);
+
+        $authz = new AuthorizationManager(null, $settings);
+
+        $user = new User();
+        $user->setRoles(['ADMIN']);
+
+        $this->assertTrue($authz->hasPermission($user, 'content:edit'));
+        $this->assertTrue($authz->hasPermission($user, 'content:create'));
+    }
+
+    public function testReloadEnsuresContentEditWhenEditorCanCreateOnly(): void
+    {
+        $settings = $this->createMock(SettingsRepositoryInterface::class);
+        $settings->method('group')->with('accessControl')->willReturn([
+            'permissionsEditor' => 'content:create,media:upload',
+        ]);
+
+        $authz = new AuthorizationManager(null, $settings);
+
+        $user = new User();
+        $user->setRoles(['EDITOR']);
+
+        $this->assertTrue($authz->hasPermission($user, 'content:create'));
+        $this->assertTrue($authz->hasPermission($user, 'content:edit'));
+    }
 }

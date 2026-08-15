@@ -141,11 +141,10 @@ export const contentApi = {
     slugs: string[],
     status: 'draft' | 'published' | 'archived' | 'scheduled'
   ) => {
-    const res = await apiClient.patch<import('../types/bulk').BulkBatchResult>(
+    return apiClient.patch<import('../types/bulk').BulkBatchResult>(
       `${endpoint(type)}/bulk-status`,
       { slugs, status }
     );
-    return res.success && res.data ? res.data : null;
   },
 
   bulkUpdateTags: async (

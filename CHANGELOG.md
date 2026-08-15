@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.49`](#release-2-1-0-beta-49) | 2026-08-15 | Hotfix — locale title/slug sync, empty slug repair, content permissions (ISS-149, ISS-150) |
 | [`2.1.0-beta.48`](#release-2-1-0-beta-48) | 2026-08-15 | Hotfix — AppVersion fallback + git describe parsing (health showed beta.46) |
 | [`2.1.0-beta.47`](#release-2-1-0-beta-47) | 2026-08-15 | It.81a–81e — duplicate, bulk tags, saved views, editorial calendar, stale content |
 | [`2.1.0-beta.46`](#release-2-1-0-beta-46) | 2026-08-13 | Hotfix — WAF false positive on suggest-meta (ISS-147) |
@@ -128,6 +129,32 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **ISS-141 follow-up** — all remaining `Http/Controllers/*` JSON mutating paths and OTP/contact rate-limit middleware now use `RequestJsonBody::decode()` (eliminates empty-body regressions site-wide after `BodyParsingMiddleware`).
 
 - **Shortcode expand + HTML sanitizer** — `allowedHtmlTags` now includes `div`, `article`, `section`, `aside`, `span` (required for It.58 expand templates); legacy settings merge missing layout tags on read; `role` attribute allowed on sanitized elements.
+
+<a id="release-2-1-0-beta-49"></a>
+
+## [2.1.0-beta.49] – 2026-08-15
+
+Hotfix — article list empty title/slug, corrupt slug repair, content admin permissions
+
+### Fixed
+
+- **Locale v2 flat-field sync** — `LocalizedContentWriter` seeds default locale on non-default writes; `hydrateFlatFieldsFromCanonical()` repairs list title/body on read ([ISS-149](docs/ISSUES.md#iss-149)).
+- **Empty slug guard + repair** — `ContentSlug` helper; `ContentRepository` rejects/persists valid slug, renames `blog/.json` orphans; `findBySlug` basename fallback; FE list title/slug fallbacks.
+- **Content permissions** — `AuthorizationManager` safety merges for ADMIN/EDITOR when `accessControl` overrides omit `content:*` ([ISS-150](docs/ISSUES.md#iss-150)).
+- **Lock release CSRF** — `useContentLock` uses authenticated `fetch` on page unload.
+- **Bulk status UX** — `PagesManager` shows API error text on bulk publish failure.
+- **Comment OTP test** — hardened `CommentsControllerTest::testApproveCommentUsesParsedBodyWhenStreamIsEmpty` (explicit `parsedBody`, workflow re-assert after login) to prevent intermittent 200 vs 202 in full suite.
+
+### Added
+
+- `backend/app/Core/Content/ContentSlug.php` + `ContentSlugTest.php`
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.49`
+- **Issues:** [ISS-149](docs/ISSUES.md#iss-149), [ISS-150](docs/ISSUES.md#iss-150)
+
+---
 
 <a id="release-2-1-0-beta-48"></a>
 

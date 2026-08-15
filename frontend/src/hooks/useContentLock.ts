@@ -137,10 +137,23 @@ export function useContentLock(resourceId: string, enabled = true): UseContentLo
     // Pri zatvorení karty sa pokúsime zámok uvoľniť "best-effort".
     const handleBeforeUnload = () => {
       const token = tokenRef.current;
-      if (token && navigator.sendBeacon) {
-        const blob = new Blob([JSON.stringify({ resourceId, token })], { type: 'application/json' });
-        navigator.sendBeacon('/api/locks/release', blob);
+      const csrfToken = typeof localStorage !== 'undefined'
+        ? localStorage.getItem('csrf_token')
+        : null;
+      if (!token || !csrfToken) {
+        return;
       }
+
+      void fetch('/api/locks/release', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': csrfToken,
+        },
+        body: JSON.stringify({ resourceId, token }),
+        keepalive: true,
+        credentials: 'include',
+      });
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
 

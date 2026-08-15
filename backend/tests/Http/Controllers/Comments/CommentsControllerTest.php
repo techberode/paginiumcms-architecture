@@ -130,6 +130,12 @@ class CommentsControllerTest extends TestCase
 
         $this->enableWorkflows(['commentApprovalOtpEnabled' => true]);
 
+        $settings = $this->app->getContainer()->get(SettingsRepositoryInterface::class);
+        $this->assertTrue(
+            (bool) ($settings->group('workflows')['commentApprovalOtpEnabled'] ?? false),
+            'commentApprovalOtpEnabled must be enabled before approve'
+        );
+
         $articleSlug = 'otp-parsed-body-' . uniqid('', true);
         $submitResponse = $this->handleRequest($this->createJsonRequest('POST', '/api/comments', [
             'articleSlug' => $articleSlug,
@@ -142,15 +148,36 @@ class CommentsControllerTest extends TestCase
 
         $this->loginAsAdminUser();
 
-        $request = $this->createJsonRequest('PUT', '/api/admin/comments/' . $commentId, null);
+        // Guard against settings reload flakes between login and approve.
+        $this->enableWorkflows(['commentApprovalOtpEnabled' => true]);
+        $this->assertTrue(
+            (bool) ($settings->group('workflows')['commentApprovalOtpEnabled'] ?? false),
+            'commentApprovalOtpEnabled must stay enabled after login'
+        );
+
+        $request = (new \Slim\Psr7\Factory\ServerRequestFactory())->createServerRequest(
+            'PUT',
+            '/api/admin/comments/' . $commentId
+        );
+        $request = $request->withHeader('Content-Type', 'application/json');
         $request = $request->withBody((new StreamFactory())->createStream(''));
         $request = $request->withParsedBody(['status' => Comment::STATUS_APPROVED]);
+        if ($this->currentUser !== null) {
+            $request = $request->withAttribute('user', $this->currentUser);
+        }
 
         $response = $this->handleRequest($request);
         $data = $this->getJsonResponse($response);
 
-        $this->assertSame(202, $response->getStatusCode(), (string) json_encode($data, JSON_UNESCAPED_UNICODE));
-        $this->assertTrue($data['requires_otp']);
+        $this->assertSame(
+            202,
+            $response->getStatusCode(),
+            'Expected OTP challenge (202); got '
+            . $response->getStatusCode()
+            . ' body='
+            . json_encode($data, JSON_UNESCAPED_UNICODE)
+        );
+        $this->assertTrue($data['requires_otp'] ?? false);
     }
 
     public function testHoneypotReturnsSilentSuccess(): void

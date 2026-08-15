@@ -318,7 +318,8 @@ return [
             get(JsonContentStorage::class),
             get(SettingsRepositoryInterface::class),
             get(StorageInterface::class),
-            get(GitPublishDispatcher::class)
+            get(GitPublishDispatcher::class),
+            get(LocalizedContentWriter::class)
         ),
     ContentDuplicationService::class => create(ContentDuplicationService::class)
         ->constructor(
