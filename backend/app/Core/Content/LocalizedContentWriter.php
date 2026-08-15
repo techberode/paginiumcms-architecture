@@ -142,6 +142,41 @@ final class LocalizedContentWriter
         return $changed;
     }
 
+    /**
+     * Syncs flat status and every locale row for bulk status changes (list actions).
+     * Does not overwrite title/body/SEO slices.
+     */
+    public function applyBulkStatus(Content $content, string $status): void
+    {
+        /** @var array<string, mixed> $canonical */
+        $canonical = $this->normalizer->normalize($content);
+        $defaultLocale = (string) $canonical['defaultLocale'];
+        /** @var array<string, array<string, mixed>> $localizedContent */
+        $localizedContent = $canonical['localizedContent'];
+        /** @var array<string, string> $localeStatus */
+        $localeStatus = $canonical['localeStatus'];
+
+        foreach (array_keys($localizedContent) as $locale) {
+            $localeStatus[(string) $locale] = $status;
+        }
+
+        if ($localeStatus === []) {
+            $localeStatus[$defaultLocale] = $status;
+        }
+
+        $frontMatter = $content->getFrontMatter();
+        $schemaVersion = (int) ($frontMatter['schemaVersion'] ?? 1);
+        if ($schemaVersion >= 2 || isset($frontMatter['localizedContent'])) {
+            $frontMatter['schemaVersion'] = max(2, $schemaVersion);
+            $frontMatter['defaultLocale'] = $defaultLocale;
+            $frontMatter['localeStatus'] = $localeStatus;
+            $frontMatter['updatedAt'] = AppTimezone::nowIso8601();
+            $content->setFrontMatter($frontMatter);
+        }
+
+        $content->setStatus($status);
+    }
+
     public function applyLocaleStatus(Content $content, string $locale, string $status): void
     {
         $locale = strtolower(trim($locale));

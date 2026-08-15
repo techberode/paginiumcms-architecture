@@ -76,11 +76,9 @@ class ContentRepository implements ContentRepositoryInterface
 
             $slugBeforeRepair = trim($object->getSlug());
             $documentRepaired = $this->localizedWriter->hydrateFlatFieldsFromCanonical($object);
-            if ($documentRepaired) {
-                if ($slugBeforeRepair === '' && $object->getSlug() !== '') {
-                    $this->persistRepairedIdentity($object);
-                }
-                $this->save($object);
+            // Repair in memory only — never persist on read (avoids revision bumps / 409 conflicts).
+            if ($documentRepaired && $slugBeforeRepair === '' && $object->getSlug() !== '') {
+                $this->persistRepairedIdentity($object);
             }
 
             return $object;
@@ -441,7 +439,9 @@ class ContentRepository implements ContentRepositoryInterface
         }
 
         $type = $content instanceof Article ? 'article' : 'page';
-        $this->index->remove($type, '');
+        if ($currentPath !== '') {
+            $this->index->removeByPath($type, $currentPath);
+        }
         $this->index->upsertFromContent($content, $type);
     }
 

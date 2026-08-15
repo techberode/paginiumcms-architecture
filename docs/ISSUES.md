@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 15 August 2026 · register **ISS-001–ISS-150** · **`v2.1.0-beta.49`** hotfix (content locale sync ISS-149)
+> **Last updated:** 15 August 2026 · register **ISS-001–ISS-151** · **`v2.1.0-beta.51`** hotfix (persist-on-read ISS-151)
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -173,6 +173,7 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-148](#iss-148) | Recovery docs used wrong paths (`backend/data` vs `storage/app/content`) | Low (ops) | ✅ documented |
 | [ISS-149](#iss-149) | Article list empty title/slug after locale-scoped write; corrupt `blog/.json` blocks editor | **Critical (prod)** | ✅ **2.1.0-beta.49** |
 | [ISS-150](#iss-150) | Bulk publish / lock release 403 when `accessControl` overrides omit `content:*` perms | High (admin) | ✅ **2.1.0-beta.49** |
+| [ISS-151](#iss-151) | Auto-save on read → 409 conflict, bulk publish drops items (localeStatus / index) | **Critical (prod)** | ✅ **2.1.0-beta.51** |
 
 ## CI failures (GitHub Actions)
 
@@ -4552,6 +4553,47 @@ Not a permissions regression — both SUPER_ADMIN and ADMIN were affected.
 
 - PHPUnit: `AuthorizationManagerSettingsReloadTest`
 - Manual: bulk publish as ADMIN with trimmed permission overrides
+
+---
+
+<a id="iss-151"></a>
+
+## ISS-151 – Auto-save on read causes 409 conflict; bulk publish hides or reverts status
+
+**Severity:** Critical (prod)  
+**Status:** ✅ Fixed — **`v2.1.0-beta.51`**
+
+### Symptom
+
+After beta.50 on production:
+
+- Saving an article as **Published** reverts to **Draft (Koncept)** or fails with **409 Conflict** (`PUT /api/articles/...`).
+- **Bulk publish** makes items disappear from the admin list or leaves `localeStatus` as draft while flat `status` is published.
+- Access log: `POST /api/locks/heartbeat → 403` (secondary; CSRF/session — does not require container recreate).
+
+### Root cause
+
+1. **Persist-on-read (beta.50)** — `findByPath()` called `save()` whenever metadata-leak repair ran, rewriting files on every list load and invalidating the editor's `baseRevision`.
+2. **Bulk status** — `bulkUpdateContentStatus()` updated flat `status` only; schema v2 list/filters use `localeStatus`, so items looked unpublished or vanished from filtered views.
+3. **Index repair** — `persistRepairedIdentity()` called `index->remove($type, '')`, removing **all** index rows with empty slug for that type.
+
+### Resolution
+
+- Read-path repair is **in-memory only**; slug identity repair still renames/patches files via `persistRepairedIdentity()` without full re-serialize on every GET.
+- **`applyBulkStatus()`** syncs flat status + all `localeStatus` keys.
+- **`removeByPath()`** for targeted index cleanup.
+
+### Production recovery (no container recreate)
+
+1. Deploy **`v2.1.0-beta.51`** via `deploy-instance-update.sh` (same as beta.50).
+2. Verify `/api/health` shows `2.1.0-beta.51`.
+3. Hard-refresh admin (Ctrl+F5).
+4. Open affected articles once and **Save** to persist cleaned body/locale fields if beta.49/50 auto-writes corrupted disk state.
+5. Check `data/index/content.json` for orphan `"slug": ""` rows; restore from backup if `content/blog/.json` exists.
+
+### Note: OTP publish workflow
+
+If **Settings → Workflows → OTP pri publikácii** is enabled, single-article publish saves as draft until email OTP is verified (HTTP **202**). This is expected — not a container issue.
 
 ---
 

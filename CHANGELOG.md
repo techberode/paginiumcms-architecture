@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.51`](#release-2-1-0-beta-51) | 2026-08-15 | Hotfix — no persist-on-read, bulk localeStatus sync, index repair (ISS-151) |
 | [`2.1.0-beta.50`](#release-2-1-0-beta-50) | 2026-08-15 | Hotfix — beta.49 read-path clobber + metadata leak in editor body (ISS-149 follow-up) |
 | [`2.1.0-beta.49`](#release-2-1-0-beta-49) | 2026-08-15 | Hotfix — locale title/slug sync, empty slug repair, content permissions (ISS-149, ISS-150) |
 | [`2.1.0-beta.48`](#release-2-1-0-beta-48) | 2026-08-15 | Hotfix — AppVersion fallback + git describe parsing (health showed beta.46) |
@@ -130,6 +131,28 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **ISS-141 follow-up** — all remaining `Http/Controllers/*` JSON mutating paths and OTP/contact rate-limit middleware now use `RequestJsonBody::decode()` (eliminates empty-body regressions site-wide after `BodyParsingMiddleware`).
 
 - **Shortcode expand + HTML sanitizer** — `allowedHtmlTags` now includes `div`, `article`, `section`, `aside`, `span` (required for It.58 expand templates); legacy settings merge missing layout tags on read; `role` attribute allowed on sanitized elements.
+
+<a id="release-2-1-0-beta-51"></a>
+
+## [2.1.0-beta.51] – 2026-08-15
+
+Hotfix — save/publish regression: persist-on-read, bulk status locale sync, index repair
+
+### Fixed
+
+- **No persist on read** — `ContentRepository::findByPath()` repairs metadata/slug in memory only; stops auto-`save()` on list/get that bumped `revision` and caused **409 Conflict** on editor PUT ([ISS-151](docs/ISSUES.md#iss-151)).
+- **Bulk publish status** — `LocalizedContentWriter::applyBulkStatus()` updates flat `status` and every `localeStatus` row (v2 schema); fixes “published → draft” and list filter hiding after bulk publish.
+- **Index slug repair** — `ContentIndexService::removeByPath()` replaces `remove($type, '')` that could drop all empty-slug index rows at once.
+- **OTP publish UX** — editor status dropdown reflects `draft` while publish OTP challenge is pending.
+- **ContentBodySanitizer regex** — `seo:` leak detection aligned with frontend (no blank line required before `title:`).
+- **MarkdownEditor** — missing `contentBodySanitizer` imports on article load path.
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.51`
+- **Issues:** [ISS-151](docs/ISSUES.md#iss-151)
+
+---
 
 <a id="release-2-1-0-beta-50"></a>
 

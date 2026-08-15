@@ -59,6 +59,22 @@ final class ContentIndexService
         });
     }
 
+    public function removeByPath(string $type, string $path): void
+    {
+        if ($path === '') {
+            return;
+        }
+
+        $this->withLockedIndex(function (array &$items) use ($type, $path): void {
+            $items = array_values(array_filter(
+                $items,
+                static fn (array $row): bool => !(
+                    ($row['path'] ?? '') === $path && ($row['type'] ?? '') === $type
+                )
+            ));
+        });
+    }
+
     /**
      * @return array{entries: list<ContentIndexEntry>, total: int}
      */

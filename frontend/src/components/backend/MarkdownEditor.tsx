@@ -58,6 +58,10 @@ import {
 import { useI18n } from '../../context/I18nContext';
 import { SUPPORTED_LOCALES } from '../../i18n/types';
 import {
+  bodyLooksLikeMetadataLeak,
+  stripEmbeddedMetadataLeak,
+} from '../../utils/contentBodySanitizer';
+import {
   applyLocaleEditorState,
   captureLocaleEditorState,
   emptyLocaleEditorState,
@@ -478,6 +482,8 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         const otpPending = extractOtpPending(responseObj);
         if (otpPending) {
           setPublishOtp({ challengeId: otpPending.challengeId, debugCode: otpPending.debugCode });
+          setStatus('draft');
+          setLocaleStatusMap((prev) => ({ ...prev, [activeLocale]: 'draft' }));
           toast.info(t('editor.markdown.toast.otpSent'));
           if (otpPending.debugCode) {
             toast.warning(t('editor.markdown.toast.devOtp', { code: otpPending.debugCode }));
