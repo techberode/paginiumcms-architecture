@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.48`](#release-2-1-0-beta-48) | 2026-08-15 | Hotfix — AppVersion fallback + git describe parsing (health showed beta.46) |
 | [`2.1.0-beta.47`](#release-2-1-0-beta-47) | 2026-08-15 | It.81a–81e — duplicate, bulk tags, saved views, editorial calendar, stale content |
 | [`2.1.0-beta.46`](#release-2-1-0-beta-46) | 2026-08-13 | Hotfix — WAF false positive on suggest-meta (ISS-147) |
 | [`2.1.0-beta.45`](#release-2-1-0-beta-45) | 2026-08-13 | Hotfix — Shortcodes admin prod (Monaco CSP), self-hosted Monaco workers |
@@ -127,6 +128,24 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **ISS-141 follow-up** — all remaining `Http/Controllers/*` JSON mutating paths and OTP/contact rate-limit middleware now use `RequestJsonBody::decode()` (eliminates empty-body regressions site-wide after `BodyParsingMiddleware`).
 
 - **Shortcode expand + HTML sanitizer** — `allowedHtmlTags` now includes `div`, `article`, `section`, `aside`, `span` (required for It.58 expand templates); legacy settings merge missing layout tags on read; `role` attribute allowed on sanitized elements.
+
+<a id="release-2-1-0-beta-48"></a>
+
+## [2.1.0-beta.48] – 2026-08-15
+
+Hotfix — `/api/health` and admin CMS info reported stale semver after beta.47 deploy
+
+### Fixed
+
+- **`AppVersion::VERSION`** — fallback bumped to `2.1.0-beta.48` (Docker checkout without usable `.git` still showed `2.1.0-beta.46`).
+- **`AppVersion::semverFromDescribe()`** — parses exact tags and `tag-N-gHASH` describe output; `resolveFromGit()` tries `--exact-match`, `--abbrev=0`, then `--always`.
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.48`
+- **Tests:** `AppVersionTest`
+
+---
 
 <a id="release-2-1-0-beta-47"></a>
 
