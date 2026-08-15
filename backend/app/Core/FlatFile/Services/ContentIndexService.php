@@ -35,12 +35,14 @@ final class ContentIndexService
     {
         $canonical = $this->localizedNormalizer->normalize($content);
         $entry = ContentIndexEntry::fromContent($content, $type, '', $canonical);
+        $path = $content->getPath();
 
-        $this->withLockedIndex(function (array &$items) use ($entry): void {
+        $this->withLockedIndex(function (array &$items) use ($entry, $path, $type): void {
             $items = array_values(array_filter(
                 $items,
                 static fn (array $row): bool => !(
-                    ($row['slug'] ?? '') === $entry->slug && ($row['type'] ?? '') === $entry->type
+                    (($row['slug'] ?? '') === $entry->slug && ($row['type'] ?? '') === $entry->type)
+                    || ($path !== '' && ($row['path'] ?? '') === $path && ($row['type'] ?? '') === $type)
                 )
             ));
             $items[] = $entry->toArray();

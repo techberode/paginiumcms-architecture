@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.53`](#release-2-1-0-beta-53) | 2026-08-15 | Hotfix — conservative locale flat-field sync, OTP/index/FE (ISS-153) |
 | [`2.1.0-beta.52`](#release-2-1-0-beta-52) | 2026-08-15 | Hotfix — deploy health retry, AppVersion fallback, admin DEPLOY_FORCE (ISS-152) |
 | [`2.1.0-beta.51`](#release-2-1-0-beta-51) | 2026-08-15 | Hotfix — no persist-on-read, bulk localeStatus sync, index repair (ISS-151) |
 | [`2.1.0-beta.50`](#release-2-1-0-beta-50) | 2026-08-15 | Hotfix — beta.49 read-path clobber + metadata leak in editor body (ISS-149 follow-up) |
@@ -132,6 +133,31 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **ISS-141 follow-up** — all remaining `Http/Controllers/*` JSON mutating paths and OTP/contact rate-limit middleware now use `RequestJsonBody::decode()` (eliminates empty-body regressions site-wide after `BodyParsingMiddleware`).
 
 - **Shortcode expand + HTML sanitizer** — `allowedHtmlTags` now includes `div`, `article`, `section`, `aside`, `span` (required for It.58 expand templates); legacy settings merge missing layout tags on read; `role` attribute allowed on sanitized elements.
+
+<a id="release-2-1-0-beta-53"></a>
+
+## [2.1.0-beta.53] – 2026-08-15
+
+Hotfix — content editor write-path regression (conservative flat-field sync)
+
+### Fixed
+
+- **Conservative flat-field sync** — `syncFlatFieldsFromDefaultLocale()` no longer clobbers flat title/body/SEO on every locale-scoped save; non-default locale writes preserve default-locale SSOT ([ISS-153](docs/ISSUES.md#iss-153)).
+- **Bulk publish hydrate** — `applyBulkStatus()` repairs empty flat fields from canonical slices before index write.
+- **Index dedup by path** — `upsertFromContent()` removes stale rows matching the same file path.
+- **OTP publish** — pending save sets locale status to draft; verify uses `applyBulkStatus()`; 202 response includes `revision`.
+- **Frontend** — OTP revision sync; reload after verify; content-aware initial locale tab; hydrate `scheduledAt`/`tags`.
+
+### Added
+
+- [docs/CONTENT_EDITOR_REGRESSION_AUDIT.md](docs/CONTENT_EDITOR_REGRESSION_AUDIT.md) — full beta.47→53 audit trace.
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.53`
+- **Issues:** [ISS-153](docs/ISSUES.md#iss-153)
+
+---
 
 <a id="release-2-1-0-beta-52"></a>
 

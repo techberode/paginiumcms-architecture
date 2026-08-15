@@ -318,7 +318,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         setLocaleStates(hydrated.localeStates);
         setLocaleStatusMap(hydrated.localeStatus);
 
-        const initialTab = resolveInitialEditorLocale(hydrated.defaultLocale, adminUiLocale);
+        const initialTab = resolveInitialEditorLocale(hydrated.defaultLocale, adminUiLocale, hydrated.localeStates);
         const initialState =
           hydrated.localeStates[initialTab] ??
           hydrated.localeStates[hydrated.defaultLocale] ??
@@ -484,6 +484,9 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
           setPublishOtp({ challengeId: otpPending.challengeId, debugCode: otpPending.debugCode });
           setStatus('draft');
           setLocaleStatusMap((prev) => ({ ...prev, [activeLocale]: 'draft' }));
+          if (typeof responseObj.revision === 'string' && responseObj.revision !== '') {
+            setBaseRevision(responseObj.revision);
+          }
           toast.info(t('editor.markdown.toast.otpSent'));
           if (otpPending.debugCode) {
             toast.warning(t('editor.markdown.toast.devOtp', { code: otpPending.debugCode }));
@@ -853,8 +856,9 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         debugCode={publishOtp?.debugCode}
         onClose={() => setPublishOtp(null)}
         onVerified={() => {
-          setStatus('published');
-          toast.success(t('editor.markdown.toast.published'));
+          void loadContent().then(() => {
+            toast.success(t('editor.markdown.toast.published'));
+          });
         }}
       />
     </div>

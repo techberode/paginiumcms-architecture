@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 15 August 2026 · register **ISS-001–ISS-152** · **`v2.1.0-beta.52`** hotfix (deploy ISS-152)
+> **Last updated:** 15 August 2026 · register **ISS-001–ISS-153** · **`v2.1.0-beta.53`** hotfix (editor sync ISS-153)
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -175,6 +175,7 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-150](#iss-150) | Bulk publish / lock release 403 when `accessControl` overrides omit `content:*` perms | High (admin) | ✅ **2.1.0-beta.49** |
 | [ISS-151](#iss-151) | Auto-save on read → 409 conflict, bulk publish drops items (localeStatus / index) | **Critical (prod)** | ✅ **2.1.0-beta.51** |
 | [ISS-152](#iss-152) | Deploy beta.51 appears to fail — health 502 abort, wrong version, no PHP restart from admin UI | High (ops) | ✅ **2.1.0-beta.52** |
+| [ISS-153](#iss-153) | Editor save clobbers title/body/SEO; published→draft; bulk/list broken (syncFlatFields) | **Critical (prod+dev)** | ✅ **2.1.0-beta.53** |
 
 ## CI failures (GitHub Actions)
 
@@ -4645,6 +4646,44 @@ BACKEND_PORT=8089 \
 If permission errors: `APP_ROOT=/var/www/paginiumcms.com ./scripts/bootstrap-deploy-permissions.sh`
 
 After deploy: `curl -s http://127.0.0.1:8089/api/health | jq '.data.version // .version'`
+
+---
+
+<a id="iss-153"></a>
+
+## ISS-153 – Editor save clobbers content; published reverts to draft (syncFlatFields regression)
+
+**Severity:** Critical (prod + dev)  
+**Status:** ✅ Fixed — **`v2.1.0-beta.53`**
+
+### Symptom
+
+After beta.49–52, on **both development and production**:
+
+- Saving an article wipes or resets title, body, SEO fields
+- Status **Published** reverts to **Koncept (draft)** after save/reload
+- Bulk publish makes items disappear or show empty title
+- PUT returns **409 Conflict** after OTP publish flow
+
+Works neither after deploy nor after container recreate — logic bug, not infrastructure.
+
+### Root cause
+
+**beta.49** introduced `LocalizedContentWriter::syncFlatFieldsFromDefaultLocale()` which **unconditionally** copied default-locale slice into flat SSOT fields on every write. Empty or desynced v2 slices overwrote good flat data. Subsequent hotfixes (beta.50–52) addressed read-path and deploy issues but not this write-path clobber.
+
+Secondary: OTP workflow left `localeStatus` and `baseRevision` out of sync; index upsert left orphan empty-slug rows.
+
+### Resolution
+
+See [docs/CONTENT_EDITOR_REGRESSION_AUDIT.md](CONTENT_EDITOR_REGRESSION_AUDIT.md).
+
+- Conservative sync (fill empty flat fields only; non-default locale writes don't clobber flat SSOT)
+- OTP + FE revision/reload fixes
+- Index dedup by path; bulk status hydrates flat fields
+
+### Verification
+
+Deploy **v2.1.0-beta.53**, run `content:diagnose --fix`, open affected articles and Save once.
 
 ---
 

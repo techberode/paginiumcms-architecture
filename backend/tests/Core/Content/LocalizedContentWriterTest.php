@@ -280,6 +280,82 @@ MD;
         $this->assertSame('SK body', $page->getContent());
     }
 
+    public function testApplyLocalePayloadOnDefaultLocaleSetsPublishedFlatStatus(): void
+    {
+        $page = new Page();
+        $page->setPath('pages/publish-sk.json');
+        $page->setFrontMatter([
+            'schemaVersion' => 2,
+            'defaultLocale' => 'sk',
+            'slug' => 'publish-sk',
+            'title' => 'Draft title',
+            'status' => 'draft',
+            'localizedContent' => [
+                'sk' => [
+                    'title' => 'Draft title',
+                    'body' => 'Body',
+                    'seo' => ['title' => '', 'description' => '', 'canonical' => '', 'ogImage' => '', 'noIndex' => false],
+                ],
+            ],
+            'localeStatus' => ['sk' => 'draft'],
+        ]);
+        $page->setContent('Body');
+
+        $writer = new LocalizedContentWriter(new LocalizedContentNormalizer($this->settingsMock()));
+        $writer->applyLocalePayload($page, [
+            'locale' => 'sk',
+            'title' => 'Published title',
+            'content' => 'Published body',
+            'status' => 'published',
+        ], 'publish-sk');
+
+        $this->assertSame('published', $page->getStatus());
+        $this->assertSame('Published title', $page->getTitle());
+        $this->assertSame('Published body', $page->getContent());
+    }
+
+    public function testApplyLocalePayloadOnNonDefaultLocaleDoesNotClobberFlatFields(): void
+    {
+        $page = new Page();
+        $page->setPath('pages/en-write.json');
+        $page->setFrontMatter([
+            'schemaVersion' => 2,
+            'defaultLocale' => 'sk',
+            'slug' => 'en-write',
+            'title' => 'SK flat title',
+            'status' => 'draft',
+            'localizedContent' => [
+                'sk' => [
+                    'title' => 'SK flat title',
+                    'body' => 'SK flat body',
+                    'seo' => ['title' => 'SK SEO', 'description' => '', 'canonical' => '', 'ogImage' => '', 'noIndex' => false],
+                ],
+                'en' => [
+                    'title' => '',
+                    'body' => '',
+                    'seo' => ['title' => '', 'description' => '', 'canonical' => '', 'ogImage' => '', 'noIndex' => false],
+                ],
+            ],
+            'localeStatus' => ['sk' => 'draft', 'en' => 'draft'],
+            'seoTitle' => 'SK SEO',
+        ]);
+        $page->setContent('SK flat body');
+
+        $writer = new LocalizedContentWriter(new LocalizedContentNormalizer($this->settingsMock()));
+        $writer->applyLocalePayload($page, [
+            'locale' => 'en',
+            'title' => 'EN title',
+            'content' => 'EN body',
+            'status' => 'published',
+        ], 'en-write');
+
+        $this->assertSame('SK flat title', $page->getTitle());
+        $this->assertSame('SK flat body', $page->getContent());
+        $this->assertSame('draft', $page->getStatus());
+        $this->assertSame('published', $page->getFrontMatter()['localeStatus']['en']);
+        $this->assertSame('SK SEO', $page->getFrontMatter()['seoTitle']);
+    }
+
     private function settingsMock(): SettingsRepositoryInterface
     {
         $settings = $this->createMock(SettingsRepositoryInterface::class);

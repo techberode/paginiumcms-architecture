@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\Workflow\Services;
 
+use PaginiumCMS\Core\Content\LocalizedContentWriter;
 use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Core\Notification\NotificationService;
@@ -31,7 +32,8 @@ final class OtpWorkflowService
         private UserRepository $users,
         private CommentsRepositoryInterface $comments,
         private ContentRepositoryInterface $content,
-        private ContentVersioningService $versioning
+        private ContentVersioningService $versioning,
+        private LocalizedContentWriter $localizedWriter,
     ) {
     }
 
@@ -309,7 +311,7 @@ final class OtpWorkflowService
         }
 
         try {
-            $existing->setStatus($targetStatus);
+            $this->localizedWriter->applyBulkStatus($existing, $targetStatus);
             $this->content->save($existing);
             $this->versioning->recordChange($existing, $contentType, 'status', $editor);
         } catch (FlatFileException $e) {

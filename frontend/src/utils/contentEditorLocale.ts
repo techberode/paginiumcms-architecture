@@ -177,6 +177,11 @@ export function hydrateLocaleEditorFromLoad(
     }
   }
 
+  if (localeStates[defaultLocale]) {
+    localeStates[defaultLocale]!.scheduledAt = isoToDatetimeLocalValue(String(data.scheduledAt ?? ''));
+    localeStates[defaultLocale]!.seo.tags = Array.isArray(data.tags) ? data.tags.join(', ') : '';
+  }
+
   return { defaultLocale, localeStates, localeStatus };
 }
 
@@ -226,7 +231,21 @@ export function normalizeContentLocale(value: string | undefined): ContentLocale
 
 export function resolveInitialEditorLocale(
   defaultLocale: ContentLocaleCode,
-  adminUiLocale: string
+  adminUiLocale: string,
+  localeStates: Partial<Record<ContentLocaleCode, LocaleEditorState>> = {}
 ): ContentLocaleCode {
-  return normalizeContentLocale(adminUiLocale) ?? defaultLocale;
+  const preferred = normalizeContentLocale(adminUiLocale) ?? defaultLocale;
+  const preferredState = localeStates[preferred];
+  if (preferredState && (preferredState.title.trim() !== '' || preferredState.content.trim() !== '')) {
+    return preferred;
+  }
+
+  for (const code of SUPPORTED_LOCALES) {
+    const state = localeStates[code];
+    if (state && (state.title.trim() !== '' || state.content.trim() !== '')) {
+      return code;
+    }
+  }
+
+  return defaultLocale;
 }
