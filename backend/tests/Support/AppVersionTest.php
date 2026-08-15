@@ -22,4 +22,19 @@ final class AppVersionTest extends TestCase
             AppVersion::current()
         );
     }
+
+    public function testSemverFromDescribeParsesTaggedAndDirtyOutput(): void
+    {
+        $this->assertSame('2.1.0-beta.47', AppVersion::semverFromDescribe('v2.1.0-beta.47'));
+        $this->assertSame('2.1.0-beta.47', AppVersion::semverFromDescribe('2.1.0-beta.47-1-g1224e3a'));
+        $this->assertNull(AppVersion::semverFromDescribe('1224e3a'));
+    }
+
+    public function testVersionConstantIsSemverShaped(): void
+    {
+        $this->assertMatchesRegularExpression(
+            '/^\d+\.\d+\.\d+(-[a-zA-Z0-9.]+)?$/',
+            AppVersion::VERSION
+        );
+    }
 }

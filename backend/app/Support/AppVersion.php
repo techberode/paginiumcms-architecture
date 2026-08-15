@@ -13,7 +13,7 @@ namespace PaginiumCMS\Support;
 final class AppVersion
 {
     /** Fallback when git tag cannot be resolved (e.g. exported tarball, CI without tags). */
-    public const VERSION = '2.1.0-beta.46';
+    public const VERSION = '2.1.0-beta.48';
 
     private static ?string $resolved = null;
 
@@ -34,6 +34,27 @@ final class AppVersion
         self::$resolved = null;
     }
 
+    /**
+     * Extract semver from `git describe` output (exact tag or `tag-N-gHASH`).
+     */
+    public static function semverFromDescribe(string $describe): ?string
+    {
+        $describe = trim($describe);
+        if ($describe === '') {
+            return null;
+        }
+
+        if (str_starts_with($describe, 'v') || str_starts_with($describe, 'V')) {
+            $describe = substr($describe, 1);
+        }
+
+        if (preg_match('/^(\d+\.\d+\.\d+(?:-[a-zA-Z0-9.]+)?)/', $describe, $matches) !== 1) {
+            return null;
+        }
+
+        return $matches[1];
+    }
+
     private static function resolveFromGit(): ?string
     {
         $root = AppRoot::resolve();
@@ -41,28 +62,27 @@ final class AppVersion
             return null;
         }
 
-        $command = 'git -C ' . escapeshellarg($root) . ' describe --tags --always 2>/dev/null';
-        $output = [];
-        $exitCode = 1;
-        exec($command, $output, $exitCode);
+        $rootArg = escapeshellarg($root);
+        $commands = [
+            'git -C ' . $rootArg . ' describe --tags --exact-match 2>/dev/null',
+            'git -C ' . $rootArg . ' describe --tags --abbrev=0 2>/dev/null',
+            'git -C ' . $rootArg . ' describe --tags --always 2>/dev/null',
+        ];
 
-        if ($exitCode !== 0 || !isset($output[0])) {
-            return null;
+        foreach ($commands as $command) {
+            $output = [];
+            $exitCode = 1;
+            exec($command, $output, $exitCode);
+            if ($exitCode !== 0 || !isset($output[0])) {
+                continue;
+            }
+
+            $semver = self::semverFromDescribe(trim($output[0]));
+            if ($semver !== null) {
+                return $semver;
+            }
         }
 
-        $describe = trim($output[0]);
-        if ($describe === '') {
-            return null;
-        }
-
-        if (str_starts_with($describe, 'v')) {
-            $describe = substr($describe, 1);
-        }
-
-        if (preg_match('/^\d+\.\d+\.\d+(-[a-zA-Z0-9.]+)?$/', $describe) !== 1) {
-            return null;
-        }
-
-        return $describe;
+        return null;
     }
 }
