@@ -94,6 +94,7 @@ final class SettingsSchema
                     ['key' => 'autoDescriptionMaxLength', 'type' => 'int', 'label' => 'Max. dĺžka meta popisu (znaky)', 'default' => 155, 'rules' => ['required', 'int', 'min:80', 'max:320'], 'help' => 'Odporúčané 150–160 znakov pre SEO.'],
                     ['key' => 'localeFallbackEnabled', 'type' => 'bool', 'label' => 'Povoliť locale fallback', 'default' => true, 'rules' => ['bool'], 'help' => 'Iteration 73: keď požadovaný jazyk chýba, vráti sa defaultLocale resource alebo site.'],
                     ['key' => 'localeNegotiationEnabled', 'type' => 'bool', 'label' => 'Accept-Language pre verejný obsah', 'default' => true, 'rules' => ['bool'], 'help' => 'Iteration 73: verejné GET stránok/článkov môže použiť Accept-Language ak chýba ?locale=.'],
+                    ['key' => 'staleReviewMonths', 'type' => 'int', 'label' => 'Prah zastarávajúceho obsahu (mesiace)', 'default' => 12, 'rules' => ['int', 'min:0', 'max:120'], 'help' => 'It.81e: publikovaný obsah starší ako tento počet mesiacov (od posledného review / úpravy / dátumu) sa označí ako zastaralý. 0 = vypnuté.'],
                 ],
             ],
             'editor' => [

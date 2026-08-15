@@ -22,6 +22,9 @@ export interface AdminListToolbarProps {
   seoIssuesOnly?: boolean;
   onSeoIssuesOnlyChange?: (value: boolean) => void;
   showSeoFilter?: boolean;
+  staleOnly?: boolean;
+  onStaleOnlyChange?: (value: boolean) => void;
+  showStaleFilter?: boolean;
   pageSize?: number;
   onPageSizeChange?: (value: number) => void;
   pageSizeOptions?: readonly number[];
@@ -46,6 +49,9 @@ export const AdminListToolbar: React.FC<AdminListToolbarProps> = ({
   seoIssuesOnly = false,
   onSeoIssuesOnlyChange,
   showSeoFilter = false,
+  staleOnly = false,
+  onStaleOnlyChange,
+  showStaleFilter = false,
   pageSize,
   onPageSizeChange,
   pageSizeOptions = DEFAULT_PAGE_SIZE_OPTIONS,
@@ -154,6 +160,18 @@ export const AdminListToolbar: React.FC<AdminListToolbarProps> = ({
                 className="rounded border-gray-300"
               />
               {t('list.toolbar.seoIssuesOnly')}
+            </label>
+          )}
+
+          {showStaleFilter && onStaleOnlyChange && (
+            <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap shrink-0">
+              <input
+                type="checkbox"
+                checked={staleOnly}
+                onChange={(e) => onStaleOnlyChange(e.target.checked)}
+                className="rounded border-gray-300"
+              />
+              {t('list.toolbar.staleOnly')}
             </label>
           )}
 

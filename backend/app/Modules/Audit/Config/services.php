@@ -17,8 +17,10 @@ use PaginiumCMS\Modules\Security\Contracts\CsrfProtectionInterface;
 use PaginiumCMS\Modules\Security\Contracts\PasswordPolicyInterface;
 use PaginiumCMS\Modules\Security\Contracts\TOTPGeneratorInterface;
 use PaginiumCMS\Modules\Security\Contracts\TwoFactorInterface;
+use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
+use PaginiumCMS\Core\FlatFile\Services\ContentStalenessService;
 use PaginiumCMS\Modules\Audit\Services\AuditEngine;
 use PaginiumCMS\Modules\Audit\Services\SecurityAuditor;
 use PaginiumCMS\Modules\Audit\Services\IntegrityAuditor;
@@ -61,7 +63,13 @@ return [
         ->constructor(__DIR__ . '/../../../../'),
 
     PerformanceAuditor::class => create(PerformanceAuditor::class)
-        ->constructor(__DIR__ . '/../../../../', 104857600, 52428800),
+        ->constructor(
+            __DIR__ . '/../../../../',
+            get(ContentRepositoryInterface::class),
+            get(ContentStalenessService::class),
+            104857600,
+            52428800
+        ),
 
     // Audit Engine
     AuditEngineInterface::class => create(AuditEngine::class)

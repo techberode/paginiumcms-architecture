@@ -13,6 +13,7 @@ import {
   Image as ImageIcon,
   Database,
   Settings,
+  Clock3,
 } from 'lucide-react';
 import { useApi } from '../../hooks/useApi';
 import { useToast } from '../../hooks/useToast';
@@ -216,7 +217,7 @@ export const DashboardView: React.FC = () => {
         })}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Link
           to="/messages"
           className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 hover:border-indigo-500/50 transition-all group"
@@ -229,6 +230,20 @@ export const DashboardView: React.FC = () => {
               </p>
             </div>
             <Mail className="w-8 h-8 text-indigo-500 group-hover:scale-110 transition-transform" />
+          </div>
+        </Link>
+        <Link
+          to="/pages?stale=1"
+          className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 hover:border-amber-500/50 transition-all group"
+        >
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold uppercase text-slate-500">{t('dashboard.stats.staleContent')}</p>
+              <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
+                {counts?.stale_content ?? 0}
+              </p>
+            </div>
+            <Clock3 className="w-8 h-8 text-amber-500 group-hover:scale-110 transition-transform" />
           </div>
         </Link>
         <Link

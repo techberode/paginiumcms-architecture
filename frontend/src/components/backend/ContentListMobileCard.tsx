@@ -15,10 +15,12 @@ export interface ContentListMobileCardProps {
   seoIssues?: SeoIssue[];
   updatedAt: string;
   scheduledAt?: string;
+  staleLabel?: string | null;
   routeBase: string;
   selected: boolean;
   onToggleSelect: () => void;
   onDelete: () => void;
+  onDuplicate?: () => void;
   onPreview?: () => void;
   previewLoading?: boolean;
 }
@@ -32,10 +34,12 @@ export const ContentListMobileCard: React.FC<ContentListMobileCardProps> = ({
   seoIssues = [],
   updatedAt,
   scheduledAt,
+  staleLabel,
   routeBase,
   selected,
   onToggleSelect,
   onDelete,
+  onDuplicate,
   onPreview,
   previewLoading = false,
 }) => {
@@ -63,6 +67,7 @@ export const ContentListMobileCard: React.FC<ContentListMobileCardProps> = ({
           <p className="text-xs text-gray-500 break-all">{slug}</p>
           <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
             <span className={statusBadgeClass}>{statusLabel}</span>
+            {staleLabel ? <span className="badge badge-warning">{staleLabel}</span> : null}
             <span>{formatDisplayDate(updatedAt, locale)}</span>
             {scheduledAt ? (
               <span>
@@ -82,6 +87,11 @@ export const ContentListMobileCard: React.FC<ContentListMobileCardProps> = ({
                 onClick={onPreview}
               >
                 {previewLoading ? t('list.actions.previewLoading') : t('list.actions.preview')}
+              </button>
+            )}
+            {onDuplicate && (
+              <button type="button" onClick={onDuplicate} className="btn btn-secondary text-xs px-3 py-1">
+                {t('content.duplicate.action')}
               </button>
             )}
             <button type="button" onClick={onDelete} className="btn btn-danger text-xs px-3 py-1">

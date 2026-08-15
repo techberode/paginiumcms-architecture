@@ -10,6 +10,7 @@ use PaginiumCMS\Core\Content\LocalizedContentNormalizer;
 use PaginiumCMS\Core\Content\LocalizedContentWriter;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Core\FlatFile\Services\ContentIndexService;
+use PaginiumCMS\Core\FlatFile\Services\ContentStalenessService;
 use PaginiumCMS\Core\FlatFile\Services\ContentRepository;
 use PaginiumCMS\Core\FlatFile\Services\FileReader;
 use PaginiumCMS\Core\FlatFile\Services\FileWriter;
@@ -72,7 +73,8 @@ final class LocalizedContentMigrationServiceTest extends TestCase
         $markdownStorage = new MarkdownContentStorage($markdownParser);
         $jsonStorage = new JsonContentStorage($bodyRenderer);
         $normalizer = new LocalizedContentNormalizer($settings);
-        $index = new ContentIndexService($reader, $normalizer, 'data/index/content.json');
+        $staleness = new ContentStalenessService($settings);
+        $index = new ContentIndexService($reader, $normalizer, $staleness, 'data/index/content.json');
 
         $this->repository = new ContentRepository(
             $reader,
@@ -185,7 +187,8 @@ final class LocalizedContentMigrationServiceTest extends TestCase
         $settings->method('get')->willReturn('sk');
         $settings->method('group')->willReturn([]);
         $normalizer = new LocalizedContentNormalizer($settings);
-        $index = new ContentIndexService($reader, $normalizer, 'data/index/content.json');
+        $staleness = new ContentStalenessService($settings);
+        $index = new ContentIndexService($reader, $normalizer, $staleness, 'data/index/content.json');
         $repository = new ContentRepository(
             $reader,
             $writer,

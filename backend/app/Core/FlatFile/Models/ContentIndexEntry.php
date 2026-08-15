@@ -20,6 +20,8 @@ use DateTimeInterface;
  *     tags: list<string>,
  *     updatedAt: string,
  *     createdAt: string,
+ *     scheduledAt?: string,
+ *     lastReviewedAt?: string,
  *     defaultLocale?: string,
  *     locales?: list<string>,
  *     localeStatus?: array<string, string>
@@ -43,6 +45,8 @@ final class ContentIndexEntry
         public readonly array $tags,
         public readonly string $updatedAt,
         public readonly string $createdAt,
+        public readonly string $scheduledAt = '',
+        public readonly string $lastReviewedAt = '',
         public readonly string $defaultLocale = 'sk',
         public readonly array $locales = [],
         public readonly array $localeStatus = [],
@@ -80,6 +84,20 @@ final class ContentIndexEntry
             }
         }
 
+        $scheduledAt = '';
+        $rawScheduledAt = $frontMatter['scheduledAt'] ?? null;
+        if (is_string($rawScheduledAt) && trim($rawScheduledAt) !== '') {
+            $scheduledAt = trim($rawScheduledAt);
+        } elseif ($content->getScheduledAt() !== null) {
+            $scheduledAt = $content->getScheduledAt()->format('c');
+        }
+
+        $lastReviewedAt = '';
+        $rawLastReviewedAt = $frontMatter['lastReviewedAt'] ?? null;
+        if (is_string($rawLastReviewedAt) && trim($rawLastReviewedAt) !== '') {
+            $lastReviewedAt = trim($rawLastReviewedAt);
+        }
+
         $defaultLocale = 'sk';
         $locales = [];
         $localeStatus = [];
@@ -106,6 +124,8 @@ final class ContentIndexEntry
             tags: $tags,
             updatedAt: is_string($frontMatter['updatedAt'] ?? null) ? $frontMatter['updatedAt'] : $modifiedAt,
             createdAt: $createdAt,
+            scheduledAt: $scheduledAt,
+            lastReviewedAt: $lastReviewedAt,
             defaultLocale: $defaultLocale,
             locales: $locales,
             localeStatus: $localeStatus,
@@ -140,6 +160,33 @@ final class ContentIndexEntry
     }
 
     /**
+     * Date used for editorial calendar placement (It.81d).
+     */
+    public function calendarDate(): string
+    {
+        if ($this->status === 'scheduled' && $this->scheduledAt !== '') {
+            $scheduled = self::normalizeIndexedDate($this->scheduledAt);
+            if ($scheduled !== null) {
+                return $scheduled;
+            }
+        }
+
+        if ($this->status === 'published') {
+            $published = self::normalizeIndexedDate($this->createdAt);
+            if ($published !== null) {
+                return $published;
+            }
+        }
+
+        $updated = self::normalizeIndexedDate($this->updatedAt);
+        if ($updated !== null) {
+            return $updated;
+        }
+
+        return self::normalizeIndexedDate($this->createdAt) ?? date('Y-m-d');
+    }
+
+    /**
      * @param array<string, mixed> $data
      */
     public static function fromArray(array $data): self
@@ -167,6 +214,8 @@ final class ContentIndexEntry
             tags: $tags,
             updatedAt: (string) ($data['updatedAt'] ?? date('c')),
             createdAt: (string) ($data['createdAt'] ?? date('c')),
+            scheduledAt: (string) ($data['scheduledAt'] ?? ''),
+            lastReviewedAt: (string) ($data['lastReviewedAt'] ?? ''),
             defaultLocale: (string) ($data['defaultLocale'] ?? 'sk'),
             locales: $locales,
             localeStatus: $localeStatus,
@@ -189,6 +238,8 @@ final class ContentIndexEntry
             'tags' => $this->tags,
             'updatedAt' => $this->updatedAt,
             'createdAt' => $this->createdAt,
+            'scheduledAt' => $this->scheduledAt,
+            'lastReviewedAt' => $this->lastReviewedAt,
             'defaultLocale' => $this->defaultLocale,
             'locales' => $this->locales,
             'localeStatus' => $this->localeStatus,

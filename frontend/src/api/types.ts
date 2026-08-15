@@ -52,6 +52,9 @@ export interface Page {
   updatedAt: string;
   template?: string;
   layoutTemplate?: string;
+  lastReviewedAt?: string;
+  isStale?: boolean;
+  monthsSinceReview?: number | null;
 }
 
 export interface Article extends Page {

@@ -15,6 +15,7 @@ export const dashboardEn: MessageTree = {
     users: 'Users',
     backups: 'Backups',
     visitsToday: 'Visits today',
+    staleContent: 'Stale content',
   },
   stats: {
     unreadMessages: 'Unread messages',

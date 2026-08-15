@@ -98,9 +98,12 @@ use PaginiumCMS\Core\Editor\Services\TiptapHtmlRenderer;
 use PaginiumCMS\Core\Editor\Services\ContentBodyRenderer;
 use PaginiumCMS\Core\FlatFile\Services\ContentExportService;
 use PaginiumCMS\Core\FlatFile\Services\ContentImportService;
+use PaginiumCMS\Core\FlatFile\Services\ContentBulkTagService;
+use PaginiumCMS\Core\FlatFile\Services\ContentDuplicationService;
 use PaginiumCMS\Core\FlatFile\Services\ContentRepository;
 use PaginiumCMS\Core\Import\WordPressWxrImporter;
 use PaginiumCMS\Core\FlatFile\Services\ContentIndexService;
+use PaginiumCMS\Core\FlatFile\Services\ContentStalenessService;
 use PaginiumCMS\Core\FlatFile\Services\JsonContentStorage;
 use PaginiumCMS\Core\FlatFile\Services\MarkdownContentStorage;
 use PaginiumCMS\Core\FlatFile\Services\TrashService;
@@ -204,6 +207,7 @@ use PaginiumCMS\Http\Controllers\Contact\ContactController;
 use PaginiumCMS\Http\Controllers\Navigation\NavigationController;
 use PaginiumCMS\Http\Controllers\Content\ContentController;
 use PaginiumCMS\Http\Controllers\Content\ContentMetaController;
+use PaginiumCMS\Http\Controllers\Content\EditorialCalendarController;
 use PaginiumCMS\Http\Controllers\Content\DraftController;
 use PaginiumCMS\Http\Controllers\Content\SearchController;
 use PaginiumCMS\Http\Extensions\Contracts\PluginManagerInterface;
@@ -299,8 +303,11 @@ return [
         ->constructor(
             get(FileReaderInterface::class),
             get(LocalizedContentNormalizer::class),
+            get(ContentStalenessService::class),
             'data/index/content.json'
         ),
+    ContentStalenessService::class => create(ContentStalenessService::class)
+        ->constructor(get(SettingsRepositoryInterface::class)),
     JsonResponder::class => create(JsonResponder::class),
     ContentRepositoryInterface::class => create(ContentRepository::class)
         ->constructor(
@@ -313,6 +320,12 @@ return [
             get(StorageInterface::class),
             get(GitPublishDispatcher::class)
         ),
+    ContentDuplicationService::class => create(ContentDuplicationService::class)
+        ->constructor(
+            get(ContentRepositoryInterface::class),
+            get(DynamicValidator::class)
+        ),
+    ContentBulkTagService::class => create(ContentBulkTagService::class),
 
     // === Blok: Hybrid Engine storage (Iteration 68) ===
     DocumentSchemaRegistry::class => function () {
@@ -848,6 +861,9 @@ return [
             get(LocalizedContentValidator::class),
             get(LocalizedContentWriter::class),
             get(BlogAuthorSettings::class),
+            get(ContentDuplicationService::class),
+            get(ContentBulkTagService::class),
+            get(ContentStalenessService::class),
         ),
     AdvancedSearchService::class => create(AdvancedSearchService::class)
         ->constructor(
@@ -859,6 +875,13 @@ return [
             get(ContentIndexService::class),
             get(ContentRepositoryInterface::class),
             get(AdvancedSearchService::class),
+            get(JsonResponder::class)
+        ),
+    EditorialCalendarController::class => create(EditorialCalendarController::class)
+        ->constructor(
+            get(ContentIndexService::class),
+            get(ContentRepositoryInterface::class),
+            get(ContentPathAclGuard::class),
             get(JsonResponder::class)
         ),
     ContentMetaController::class => create(ContentMetaController::class)

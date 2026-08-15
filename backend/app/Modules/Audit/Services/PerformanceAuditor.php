@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Modules\Audit\Services;
 
+use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
+use PaginiumCMS\Core\FlatFile\Services\ContentStalenessService;
 use PaginiumCMS\Modules\Audit\Contracts\AuditorInterface;
 use PaginiumCMS\Modules\Audit\Models\AuditIssue;
 use PaginiumCMS\Modules\Audit\Models\AuditSeverity;
@@ -19,6 +21,8 @@ class PerformanceAuditor implements AuditorInterface
 
     public function __construct(
         string $basePath,
+        private ContentRepositoryInterface $content,
+        private ContentStalenessService $staleness,
         int $maxCacheSize = 104857600, // 100 MB
         int $maxLogSize = 52428800 // 50 MB
     ) {
@@ -54,7 +58,43 @@ class PerformanceAuditor implements AuditorInterface
         // 3. Kontrola OPcache
         $issues = array_merge($issues, $this->checkOpcache());
 
+        // 4. Zastaralý publikovaný obsah (It.81e)
+        $issues = array_merge($issues, $this->checkStaleContent());
+
         return $issues;
+    }
+
+    /**
+     * @return list<AuditIssue>
+     */
+    private function checkStaleContent(): array
+    {
+        if ($this->staleness->thresholdMonths() === 0) {
+            return [];
+        }
+
+        $staleCount = $this->content->countIndexed('page', ['stale' => '1'])
+            + $this->content->countIndexed('article', ['stale' => '1']);
+
+        if ($staleCount === 0) {
+            return [
+                new AuditIssue(
+                    AuditSeverity::INFO,
+                    'performance',
+                    'Publikovaný obsah je aktuálny',
+                    'Žiadne stránky ani články neprekročili prah zastarávajúceho obsahu.'
+                ),
+            ];
+        }
+
+        return [
+            (new AuditIssue(
+                AuditSeverity::WARNING,
+                'performance',
+                'Zastaralý publikovaný obsah',
+                sprintf('%d položiek prekročilo prah review (%d mes.).', $staleCount, $this->staleness->thresholdMonths())
+            ))->setRecommendation('Skontrolujte zoznam s filtrom stale=1 alebo redakčný kalendár.'),
+        ];
     }
 
     /**

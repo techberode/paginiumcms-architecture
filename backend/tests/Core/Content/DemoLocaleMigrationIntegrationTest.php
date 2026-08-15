@@ -9,6 +9,7 @@ use PaginiumCMS\Core\Content\LocalizedContentMigrationService;
 use PaginiumCMS\Core\Content\LocalizedContentNormalizer;
 use PaginiumCMS\Core\Content\LocalizedContentWriter;
 use PaginiumCMS\Core\FlatFile\Services\ContentIndexService;
+use PaginiumCMS\Core\FlatFile\Services\ContentStalenessService;
 use PaginiumCMS\Core\FlatFile\Services\ContentRepository;
 use PaginiumCMS\Core\FlatFile\Services\FileReader;
 use PaginiumCMS\Core\FlatFile\Services\FileWriter;
@@ -70,7 +71,7 @@ final class DemoLocaleMigrationIntegrationTest extends TestCase
         $markdownStorage = new MarkdownContentStorage($markdownParser);
         $jsonStorage = new JsonContentStorage($bodyRenderer);
         $this->normalizer = new LocalizedContentNormalizer($settings);
-        $index = new ContentIndexService($reader, $this->normalizer, 'data/index/content.json');
+        $index = new ContentIndexService($reader, $this->normalizer, new ContentStalenessService($settings), 'data/index/content.json');
 
         $this->repository = new ContentRepository(
             $reader,

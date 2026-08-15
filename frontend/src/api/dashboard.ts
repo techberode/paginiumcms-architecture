@@ -39,7 +39,8 @@ export interface DashboardOverview {
     | 'newsletter'
     | 'trash'
     | 'users'
-    | 'firewall_jails',
+    | 'firewall_jails'
+    | 'stale_content',
     number
   >>;
   storage?: {

@@ -400,7 +400,11 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
   };
 
   const handleSave = useCallback(
-    async (forceRevision?: string, contentOverride?: string) => {
+    async (
+      forceRevision?: string,
+      contentOverride?: string,
+      options?: { markReviewed?: boolean }
+    ) => {
       if (status === 'published' && !title.trim()) {
         toast.warning(t('editor.markdown.toast.titleRequired'));
         return;
@@ -440,6 +444,10 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         };
 
         data.scheduledAt = resolveScheduledAtForSave(status, scheduledAt);
+
+        if (options?.markReviewed) {
+          data.lastReviewedAt = new Date().toISOString();
+        }
 
         if (type === 'page' && template.trim()) {
           data.template = template.trim();
@@ -518,7 +526,9 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
           if (!isNew && slug) {
             await discardDraft(type, slug);
           }
-          toast.success(t('editor.markdown.toast.saved'));
+          toast.success(
+            options?.markReviewed ? t('content.stale.reviewedToast') : t('editor.markdown.toast.saved')
+          );
           if (isNew && response.data?.slug) {
             navigate(`/${type === 'article' ? 'articles' : 'pages'}/${response.data.slug}`);
           }
@@ -738,6 +748,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         onEditorProfileChange={setEditorProfile}
         onCancel={() => navigate(type === 'article' ? '/articles' : '/pages')}
         onSave={() => void handleSave()}
+        onMarkReviewed={() => void handleSave(undefined, undefined, { markReviewed: true })}
         onOpenPreview={() => {
           setPreviewHtml(
             editorMode === 'wysiwyg'

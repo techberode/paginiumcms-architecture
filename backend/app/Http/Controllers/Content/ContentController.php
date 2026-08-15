@@ -12,8 +12,12 @@ use PaginiumCMS\Core\FlatFile\Exception\ContentConflictException;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Core\FlatFile\Models\Article;
 use PaginiumCMS\Core\FlatFile\Models\Content;
+use PaginiumCMS\Core\FlatFile\Models\ContentIndexEntry;
 use PaginiumCMS\Core\FlatFile\Models\Page;
+use PaginiumCMS\Core\FlatFile\Services\ContentBulkTagService;
+use PaginiumCMS\Core\FlatFile\Services\ContentDuplicationService;
 use PaginiumCMS\Core\FlatFile\Services\ContentRevision;
+use PaginiumCMS\Core\FlatFile\Services\ContentStalenessService;
 use PaginiumCMS\Core\Blueprint\Services\DynamicValidator;
 use PaginiumCMS\Core\Cache\ContentCacheService;
 use PaginiumCMS\Core\Content\LocalizedContentApplicator;
@@ -29,6 +33,7 @@ use PaginiumCMS\Core\Versioning\Services\ContentVersioningService;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\Workflow\Services\OtpWorkflowService;
 use PaginiumCMS\Http\Support\BulkBatchResult;
+use PaginiumCMS\Http\Support\BulkOperationLimits;
 use PaginiumCMS\Http\Support\HttpConditionalResponse;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Http\Support\PaginationMeta;
@@ -69,6 +74,9 @@ class ContentController
         private LocalizedContentValidator $localizedValidator,
         private LocalizedContentWriter $localizedWriter,
         private BlogAuthorSettings $blogAuthor,
+        private ContentDuplicationService $duplicationService,
+        private ContentBulkTagService $bulkTagService,
+        private ContentStalenessService $staleness,
     ) {
     }
 
@@ -210,6 +218,28 @@ class ContentController
     public function bulkUpdateArticleStatus(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         return $this->bulkUpdateContentStatus($request, $response, 'article');
+    }
+
+    public function bulkUpdatePageTags(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        return $this->bulkAssignContentTags($request, $response, 'page');
+    }
+
+    public function bulkUpdateArticleTags(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        return $this->bulkAssignContentTags($request, $response, 'article');
+    }
+
+    /** @param array<string, string> $args */
+    public function duplicatePage(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        return $this->duplicateContent($request, $response, $args['slug'] ?? '', 'page');
+    }
+
+    /** @param array<string, string> $args */
+    public function duplicateArticle(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        return $this->duplicateContent($request, $response, $args['slug'] ?? '', 'article');
     }
 
     private function createContent(ServerRequestInterface $request, ResponseInterface $response, string $type): ResponseInterface
@@ -584,6 +614,162 @@ class ContentController
         );
     }
 
+    private function bulkAssignContentTags(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        string $type
+    ): ResponseInterface {
+        $data = $this->parseJsonBody($request);
+        $slugs = $this->normalizeStringList($data['slugs'] ?? null);
+        $mode = (string) ($data['mode'] ?? 'add');
+        /** @var mixed $rawTags */
+        $rawTags = $data['tags'] ?? null;
+
+        if ($slugs === []) {
+            return $this->json->error($response, Lang::get('slugs_required', [], 'content'), 400);
+        }
+
+        try {
+            BulkOperationLimits::assertWithinLimit($slugs);
+            $mode = $this->bulkTagService->normalizeMode($mode);
+            $tags = $this->bulkTagService->normalizeTags($rawTags);
+            if ($mode !== 'remove' && $tags === []) {
+                throw new ValidationException([
+                    'tags' => [Lang::get('tags_required', [], 'content')],
+                ]);
+            }
+        } catch (ValidationException $e) {
+            $messages = $e->getFlatMessages();
+
+            return $this->json->error($response, $messages[0] ?? $e->getMessage(), 400);
+        }
+
+        $batch = new BulkBatchResult();
+        foreach ($slugs as $slug) {
+            $content = $this->repository->findBySlug($slug, $type);
+            if ($content === null) {
+                $batch->addFailure($slug, Lang::get('not_found', [], 'content'));
+
+                continue;
+            }
+
+            if (!$this->pathAcl->canAccess(
+                $this->resolveUser($request),
+                $content->getPath() !== '' ? $content->getPath() : $this->pathAcl->contentPathFromSlug($type, $slug),
+                'content:edit'
+            )) {
+                $batch->addFailure($slug, 'ACL denied for path');
+
+                continue;
+            }
+
+            try {
+                $this->bulkTagService->apply($content, $mode, $tags);
+                $user = $this->resolveUser($request);
+                $this->emitContentHook(HookCatalog::CONTENT_BEFORE_SAVE, $content, $type, 'bulk-tags', $user);
+                $this->repository->save($content);
+                $this->emitContentHook(HookCatalog::CONTENT_AFTER_SAVE, $content, $type, 'bulk-tags', $user);
+                $this->versioning->recordChange($content, $type, 'bulk-tags', $user);
+                if ($type === 'page') {
+                    $this->contentCache->invalidatePage($slug);
+                } else {
+                    $this->contentCache->invalidateArticle($slug);
+                }
+                $batch->addSuccess($slug);
+            } catch (ValidationException $e) {
+                $messages = $e->getFlatMessages();
+                $batch->addFailure($slug, $messages[0] ?? $e->getMessage());
+            } catch (FlatFileException $e) {
+                $batch->addFailure($slug, $e->getMessage());
+            }
+        }
+
+        return $this->json->success(
+            $response,
+            $batch->toArray(),
+            200,
+            Lang::get('bulk_tags_updated', [], 'content')
+        );
+    }
+
+    private function duplicateContent(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        string $slug,
+        string $type
+    ): ResponseInterface {
+        $source = $this->repository->findBySlug($slug, $type);
+
+        if ($source === null) {
+            return $this->json->error($response, Lang::get('not_found', [], 'content'), 404);
+        }
+
+        $sourcePath = $source->getPath() !== ''
+            ? $source->getPath()
+            : $this->pathAcl->contentPathFromSlug($type, $slug);
+
+        $aclDenied = $this->denyWriteUnlessPathAllowed(
+            $request,
+            $response,
+            $sourcePath,
+            'content:create'
+        );
+        if ($aclDenied !== null) {
+            return $aclDenied;
+        }
+
+        $data = $this->parseJsonBody($request);
+        /** @var array<string, mixed> $duplicateOptions */
+        $duplicateOptions = $data;
+
+        try {
+            $duplicate = $this->duplicationService->createDuplicate($source, $type, $duplicateOptions);
+        } catch (FlatFileException $e) {
+            return $this->json->error($response, $e->getMessage(), 400);
+        }
+
+        $targetDenied = $this->denyWriteUnlessPathAllowed(
+            $request,
+            $response,
+            $this->pathAcl->contentPathFromSlug($type, $duplicate->getSlug()),
+            'content:create'
+        );
+        if ($targetDenied !== null) {
+            return $targetDenied;
+        }
+
+        try {
+            $user = $this->resolveUser($request);
+            $this->emitContentHook(HookCatalog::CONTENT_BEFORE_SAVE, $duplicate, $type, 'duplicate', $user);
+            $this->repository->save($duplicate);
+            $this->emitContentHook(HookCatalog::CONTENT_AFTER_SAVE, $duplicate, $type, 'duplicate', $user);
+            $this->hookEmitter->emit(HookCatalog::CONTENT_AFTER_DUPLICATE, [
+                'type' => $type,
+                'slug' => $duplicate->getSlug(),
+                'sourceSlug' => $slug,
+                'status' => $duplicate->getStatus(),
+                'userId' => $user?->getId() ?? '',
+            ]);
+            $this->versioning->recordChange(
+                $duplicate,
+                $type,
+                'duplicate',
+                $user,
+                Lang::get('duplicated_from', ['slug' => $slug], 'content')
+            );
+            $this->invalidateContentCache($type, $duplicate->getSlug());
+
+            return $this->json->success(
+                $response,
+                $this->serializeContent($duplicate, $type),
+                201,
+                Lang::get('duplicated', [], 'content')
+            );
+        } catch (FlatFileException $e) {
+            return $this->json->error($response, $e->getMessage(), 500);
+        }
+    }
+
     private function updateStatus(
         ServerRequestInterface $request,
         ResponseInterface $response,
@@ -783,6 +969,7 @@ class ContentController
         $content->setFrontMatter($frontMatter);
 
         $this->applySchedulingFrontMatter($content, $data);
+        $this->applyReviewFrontMatter($content, $data);
     }
 
     /**
@@ -844,6 +1031,7 @@ class ContentController
 
         $this->applySeoFrontMatter($content, $data);
         $this->applySchedulingFrontMatter($content, $data);
+        $this->applyReviewFrontMatter($content, $data);
     }
 
     /**
@@ -930,8 +1118,34 @@ class ContentController
     }
 
     /**
+     * @param array<int|string, mixed> $data
+     */
+    private function applyReviewFrontMatter(Content $content, array $data): void
+    {
+        if (!array_key_exists('lastReviewedAt', $data)) {
+            return;
+        }
+
+        $frontMatter = $content->getFrontMatter();
+        $raw = trim((string) $data['lastReviewedAt']);
+        if ($raw === '') {
+            unset($frontMatter['lastReviewedAt']);
+        } elseif ($this->isValidIsoDateTime($raw)) {
+            try {
+                $reviewedAt = new \DateTimeImmutable($raw);
+                $frontMatter['lastReviewedAt'] = $reviewedAt->format('c');
+            } catch (\Exception) {
+                unset($frontMatter['lastReviewedAt']);
+            }
+        }
+
+        $content->setFrontMatter($frontMatter);
+    }
+
+    /**
      * @return array<int|string, mixed>
- */private function serializeContent(Content $content, string $type): array
+     */
+    private function serializeContent(Content $content, string $type): array
     {
         $frontMatter = $content->getFrontMatter();
         $modifiedAt = $content->getModifiedAt() > 0
@@ -986,6 +1200,24 @@ class ContentController
         $payload['editorMode'] = (string) ($frontMatter['editorMode'] ?? '');
         $scheduledAt = $content->getScheduledAt();
         $payload['scheduledAt'] = $scheduledAt !== null ? $scheduledAt->format('c') : '';
+        $payload['lastReviewedAt'] = (string) ($frontMatter['lastReviewedAt'] ?? '');
+
+        $publishedDate = (string) ($payload['createdAt'] ?? '');
+        if ($content instanceof Article) {
+            $articleDate = ContentIndexEntry::normalizeIndexedDate($frontMatter['date'] ?? null);
+            if ($articleDate !== null) {
+                $publishedDate = $articleDate;
+            }
+        }
+
+        $staleness = $this->staleness->evaluate(
+            $content->getStatus(),
+            $payload['lastReviewedAt'],
+            (string) ($payload['updatedAt'] ?? ''),
+            $publishedDate
+        );
+        $payload['isStale'] = $staleness['isStale'];
+        $payload['monthsSinceReview'] = $staleness['monthsSinceReview'];
 
         $canonical = $this->localizedNormalizer->normalize($content);
         $payload['schemaVersion'] = $canonical['schemaVersion'];

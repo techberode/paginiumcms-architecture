@@ -10,6 +10,7 @@ import {
 import { DashboardView } from './components/backend/DashboardView';
 import { AnalyticsView } from './components/backend/AnalyticsView';
 import { PagesManager } from './components/backend/PagesManager';
+import { EditorialCalendarView } from './components/backend/EditorialCalendarView';
 import { MarkdownEditor } from './components/backend/MarkdownEditor';
 import { BackupManager } from './components/backend/BackupManager';
 import { SettingsView } from './components/backend/SettingsView';
@@ -164,6 +165,7 @@ function App() {
         <Route path="/pages/:slug" element={<MarkdownEditor type="page" />} />
         <Route path="/articles" element={<PagesManager type="articles" />} />
         <Route path="/articles/:slug" element={<MarkdownEditor type="article" />} />
+        <Route path="/platform/editorial-calendar" element={<EditorialCalendarView />} />
         <Route path="/media" element={<MediaManager />} />
         <Route path="/navigation" element={<NavigationManager />} />
         <Route path="/comments" element={<CommentsManager />} />

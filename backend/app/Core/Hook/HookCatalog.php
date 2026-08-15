@@ -16,6 +16,7 @@ final class HookCatalog
     public const CONTENT_AFTER_DELETE = 'content.after_delete';
     public const CONTENT_AFTER_STATUS_CHANGE = 'content.after_status_change';
     public const CONTENT_AFTER_SCHEDULED_PUBLISH = 'content.after_scheduled_publish';
+    public const CONTENT_AFTER_DUPLICATE = 'content.duplicated';
 
     public const EXTENSION_BOOT = 'extension.boot';
     public const EXTENSION_ENABLED = 'extension.enabled';
@@ -32,6 +33,7 @@ final class HookCatalog
             self::CONTENT_AFTER_DELETE,
             self::CONTENT_AFTER_STATUS_CHANGE,
             self::CONTENT_AFTER_SCHEDULED_PUBLISH,
+            self::CONTENT_AFTER_DUPLICATE,
             self::EXTENSION_BOOT,
             self::EXTENSION_ENABLED,
             self::EXTENSION_DISABLED,
@@ -68,6 +70,10 @@ final class HookCatalog
             self::CONTENT_AFTER_SCHEDULED_PUBLISH => [
                 'description' => 'After cron job auto-published scheduled content.',
                 'payload' => ['type', 'slug', 'scheduledAt'],
+            ],
+            self::CONTENT_AFTER_DUPLICATE => [
+                'description' => 'After content was duplicated to a new draft slug.',
+                'payload' => ['type', 'slug', 'sourceSlug', 'userId'],
             ],
             self::EXTENSION_BOOT => [
                 'description' => 'During application boot for each enabled extension.',

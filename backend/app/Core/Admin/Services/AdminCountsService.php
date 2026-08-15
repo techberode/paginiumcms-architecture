@@ -44,6 +44,8 @@ final class AdminCountsService
             'articles' => count($this->content->findAllArticles()),
             'media' => count($this->media->findAll()),
             'backups' => count($this->backups->listBackups()),
+            'stale_content' => $this->content->countIndexed('page', ['stale' => '1'])
+                + $this->content->countIndexed('article', ['stale' => '1']),
         ];
 
         if ($this->viewerIsAdmin($viewer)) {
