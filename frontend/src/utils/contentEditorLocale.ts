@@ -103,6 +103,26 @@ export function hydrateLocaleEditorFromLoad(
     }
   }
 
+  const fallbackSlice = Object.values(localized).find(
+    (slice) => slice && (String(slice.title ?? '').trim() !== '' || String(slice.body ?? '').trim() !== '')
+  );
+  const defaultState = localeStates[defaultLocale];
+  if (
+    defaultState
+    && defaultState.title.trim() === ''
+    && defaultState.content.trim() === ''
+    && fallbackSlice
+  ) {
+    localeStates[defaultLocale] = localeStateFromSlice(
+      fallbackSlice,
+      (statusMap[defaultLocale] as ContentEditorStatus | undefined)
+        ?? (data.status as ContentEditorStatus | undefined)
+        ?? 'draft',
+      editorMode,
+      contentFormat
+    );
+  }
+
   if (!localeStates[defaultLocale]) {
     localeStates[defaultLocale] = localeStateFromSlice(
       {

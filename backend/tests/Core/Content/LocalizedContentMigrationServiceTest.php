@@ -84,7 +84,8 @@ final class LocalizedContentMigrationServiceTest extends TestCase
             $jsonStorage,
             $settings,
             StorageTestHelper::localStorage($this->root),
-            GitPublishTestHelper::disabledDispatcher($reader, $writer, $settings)
+            GitPublishTestHelper::disabledDispatcher($reader, $writer, $settings),
+            new LocalizedContentWriter($normalizer)
         );
 
         $cache = $this->createMock(ContentCacheService::class);
@@ -205,7 +206,8 @@ final class LocalizedContentMigrationServiceTest extends TestCase
             )),
             $settings,
             StorageTestHelper::localStorage($root),
-            GitPublishTestHelper::disabledDispatcher($reader, $writer, $settings)
+            GitPublishTestHelper::disabledDispatcher($reader, $writer, $settings),
+            new LocalizedContentWriter($normalizer)
         );
 
         return new LocalizedContentMigrationService(

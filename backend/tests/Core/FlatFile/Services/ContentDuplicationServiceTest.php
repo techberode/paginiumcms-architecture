@@ -7,6 +7,7 @@ namespace PaginiumCMS\Tests\Core\FlatFile\Services;
 use PaginiumCMS\Core\Blueprint\Services\BlueprintRepository;
 use PaginiumCMS\Core\Blueprint\Services\DynamicValidator;
 use PaginiumCMS\Core\Content\LocalizedContentNormalizer;
+use PaginiumCMS\Core\Content\LocalizedContentWriter;
 use PaginiumCMS\Core\FlatFile\Models\Article;
 use PaginiumCMS\Core\FlatFile\Models\Page;
 use PaginiumCMS\Core\FlatFile\Services\ContentDuplicationService;
@@ -85,7 +86,8 @@ final class ContentDuplicationServiceTest extends TestCase
             $jsonStorage,
             $settings,
             StorageTestHelper::localStorage($root . '/content'),
-            GitPublishTestHelper::disabledDispatcher($reader, $writer, $settings)
+            GitPublishTestHelper::disabledDispatcher($reader, $writer, $settings),
+            new LocalizedContentWriter($normalizer)
         );
         $index->rebuild($this->repository);
 

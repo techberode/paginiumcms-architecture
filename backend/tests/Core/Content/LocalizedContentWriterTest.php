@@ -46,6 +46,28 @@ final class LocalizedContentWriterTest extends TestCase
         $this->assertSame('SK body', $page->getContent());
     }
 
+    public function testFirstLocaleWriteToNonDefaultLocaleSeedsDefaultSlice(): void
+    {
+        $page = new Page();
+        $page->setPath('pages/new-en.json');
+        $page->setFrontMatter(['slug' => 'new-en', 'status' => 'draft']);
+
+        $writer = new LocalizedContentWriter(new LocalizedContentNormalizer($this->settingsMock()));
+        $writer->applyLocalePayload($page, [
+            'locale' => 'en',
+            'title' => 'English title',
+            'content' => 'English body',
+            'status' => 'published',
+        ], 'new-en');
+
+        $frontMatter = $page->getFrontMatter();
+        $this->assertSame('English title', $frontMatter['localizedContent']['sk']['title']);
+        $this->assertSame('English title', $frontMatter['localizedContent']['en']['title']);
+        $this->assertSame('published', $frontMatter['localeStatus']['sk']);
+        $this->assertSame('English title', $page->getTitle());
+        $this->assertSame('published', $page->getStatus());
+    }
+
     public function testLegacyDocumentUpgradesToSchemaV2OnLocaleWrite(): void
     {
         $page = new Page();
@@ -92,6 +114,58 @@ final class LocalizedContentWriterTest extends TestCase
         $this->assertSame('# About us', $frontMatter['localizedContent']['sk']['body']);
         $this->assertSame('published', $frontMatter['localeStatus']['sk']);
         $this->assertSame('About', $page->getTitle());
+    }
+
+    public function testHydrateFlatFieldsFromCanonicalRepairsMissingTopLevelTitle(): void
+    {
+        $page = new Page();
+        $page->setPath('pages/broken.json');
+        $page->setFrontMatter([
+            'schemaVersion' => 2,
+            'defaultLocale' => 'sk',
+            'slug' => 'broken',
+            'status' => 'draft',
+            'localizedContent' => [
+                'en' => [
+                    'title' => 'Recovered title',
+                    'body' => 'Recovered body',
+                    'seo' => ['title' => '', 'description' => '', 'canonical' => '', 'ogImage' => '', 'noIndex' => false],
+                ],
+            ],
+            'localeStatus' => ['en' => 'published'],
+        ]);
+
+        $writer = new LocalizedContentWriter(new LocalizedContentNormalizer($this->settingsMock()));
+        $writer->hydrateFlatFieldsFromCanonical($page);
+
+        $this->assertSame('Recovered title', $page->getTitle());
+        $this->assertSame('Recovered body', $page->getContent());
+        $this->assertSame('published', $page->getStatus());
+    }
+
+    public function testHydrateFlatFieldsFromCanonicalRepairsMissingSlugFromPath(): void
+    {
+        $page = new Page();
+        $page->setPath('pages/recovered.json');
+        $page->setFrontMatter([
+            'schemaVersion' => 2,
+            'defaultLocale' => 'sk',
+            'status' => 'draft',
+            'localizedContent' => [
+                'sk' => [
+                    'title' => 'Recovered title',
+                    'body' => 'Recovered body',
+                    'seo' => ['title' => '', 'description' => '', 'canonical' => '', 'ogImage' => '', 'noIndex' => false],
+                ],
+            ],
+            'localeStatus' => ['sk' => 'draft'],
+        ]);
+
+        $writer = new LocalizedContentWriter(new LocalizedContentNormalizer($this->settingsMock()));
+        $writer->hydrateFlatFieldsFromCanonical($page);
+
+        $this->assertSame('recovered', $page->getSlug());
+        $this->assertSame('Recovered title', $page->getTitle());
     }
 
     private function settingsMock(): SettingsRepositoryInterface

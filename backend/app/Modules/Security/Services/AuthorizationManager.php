@@ -67,6 +67,28 @@ class AuthorizationManager implements AuthorizationInterface
                 $permissions = PermissionCatalog::normalizeList($permissions);
             }
 
+            if ($role === AuthorizationInterface::ROLE_ADMIN
+                && !in_array('metrics:read', $permissions, true)
+            ) {
+                $permissions[] = 'metrics:read';
+                $permissions = PermissionCatalog::normalizeList($permissions);
+            }
+
+            if ($role === AuthorizationInterface::ROLE_ADMIN
+                && !$this->hasContentDomainPermission($permissions)
+            ) {
+                $permissions[] = 'content:manage';
+                $permissions = PermissionCatalog::normalizeList($permissions);
+            }
+
+            if ($role === AuthorizationInterface::ROLE_EDITOR
+                && in_array('content:create', $permissions, true)
+                && !$this->hasContentEditPermission($permissions)
+            ) {
+                $permissions[] = 'content:edit';
+                $permissions = PermissionCatalog::normalizeList($permissions);
+            }
+
             if ($permissions !== []) {
                 $this->rolePermissions[$role] = $permissions;
             }
@@ -198,5 +220,33 @@ class AuthorizationManager implements AuthorizationInterface
  */public function getRolePermissions(string $role): array
     {
         return $this->rolePermissions[$role] ?? [];
+    }
+
+    /**
+     * @param list<string> $permissions
+     */
+    private function hasContentDomainPermission(array $permissions): bool
+    {
+        foreach ($permissions as $permission) {
+            if ($permission === 'content:manage' || str_starts_with($permission, 'content:')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param list<string> $permissions
+     */
+    private function hasContentEditPermission(array $permissions): bool
+    {
+        if (in_array('content:manage', $permissions, true)
+            || in_array('content:edit', $permissions, true)
+        ) {
+            return true;
+        }
+
+        return false;
     }
 }

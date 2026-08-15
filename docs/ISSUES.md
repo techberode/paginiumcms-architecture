@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 13 August 2026 · register **ISS-001–ISS-148** · **`v2.1.0-beta.46`** hotfix (WAF ISS-147)
+> **Last updated:** 15 August 2026 · register **ISS-001–ISS-150** · **`v2.1.0-beta.49`** hotfix (content locale sync ISS-149)
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -171,6 +171,8 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-146](#iss-146) | Shortcodes admin blank on production — Monaco CDN blocked by nginx CSP | High (admin UX) | ✅ **2.1.0-beta.45** |
 | [ISS-147](#iss-147) | WAF false positive on `suggest-meta` banned Docker proxy IP → full site 403 | **Critical (prod)** | ✅ **2.1.0-beta.46** |
 | [ISS-148](#iss-148) | Recovery docs used wrong paths (`backend/data` vs `storage/app/content`) | Low (ops) | ✅ documented |
+| [ISS-149](#iss-149) | Article list empty title/slug after locale-scoped write; corrupt `blog/.json` blocks editor | **Critical (prod)** | ✅ **2.1.0-beta.49** |
+| [ISS-150](#iss-150) | Bulk publish / lock release 403 when `accessControl` overrides omit `content:*` perms | High (admin) | ✅ **2.1.0-beta.49** |
 
 ## CI failures (GitHub Actions)
 
@@ -4475,6 +4477,73 @@ Creating only `{ "firewall": { "enabled": false } }` when `settings.json` was mi
 
 - Document correct paths in [ISS-147](#iss-147) and [FIREWALL.md](en/user/FIREWALL.md).
 - Restore `settings.json` from `.bak.*` when available.
+
+---
+
+<a id="iss-149"></a>
+
+## ISS-149 – Article list shows empty title/slug; editor and bulk actions broken (locale v2)
+
+**Severity:** Critical (production)  
+**Status:** ✅ Fixed — **`v2.1.0-beta.49`**
+
+### Symptom
+
+After creating or editing an article (as SUPER_ADMIN or ADMIN), the blog list showed a row with **blank Názov and Slug**, no SEO image, status Koncept, and **Edit / Preview / Delete / bulk publish did nothing**. Browser network tab showed `PATCH /api/articles/bulk-status → 403/400` and broken links to `/articles/` (empty slug).
+
+### Root cause
+
+1. **Flat vs locale fields (schema v2):** Locale-scoped writes stored `title` in `localizedContent[locale]` but list/API read flat `frontMatter.title` from the default locale (`sk`). Writing to EN first (or an empty SK slice) left flat `title` empty in the index.
+2. **Empty slug persistence:** Saves with missing slug produced storage path `blog/.json` and index entries with `"slug": ""`. React router links to `/articles/`; delete/bulk APIs received empty slug → HTTP 400.
+
+Not a permissions regression — both SUPER_ADMIN and ADMIN were affected.
+
+### Resolution
+
+- **`LocalizedContentWriter`** — seed default locale when first write targets non-default locale; `hydrateFlatFieldsFromCanonical()` repairs flat title/body on read; slug repair via **`ContentSlug`**.
+- **`ContentRepository`** — hydrate on `findByPath()`; auto-persist repaired slug (rename `blog/.json` → valid path); guard empty slug on `save()`.
+- **`ContentController`** — normalize incoming slug from title on create/update.
+- **Frontend** — `resolveContentListTitle()` / `resolveContentListSlug()` fallbacks; disable actions when slug unrecoverable.
+
+### Verification
+
+- PHPUnit: `LocalizedContentWriterTest`, `ContentSlugTest`, `ContentRepositoryTest`
+- Manual: create article with locale EN → list shows title; open editor; bulk publish works after deploy
+
+### Production repair
+
+1. Deploy **`v2.1.0-beta.49`**
+2. Refresh article list (auto-repair on read may fix slug/title in memory)
+3. Open affected article → Save to persist
+4. If a ghost row remains: remove `content/blog/.json` (or `.md`) and the `"slug": ""` entry in `data/index/content.json`
+
+---
+
+<a id="iss-150"></a>
+
+## ISS-150 – Bulk publish and lock release 403 when accessControl strips content permissions
+
+**Severity:** High (admin workflow)  
+**Status:** ✅ Fixed — **`v2.1.0-beta.49`**
+
+### Symptom
+
+`PATCH /api/articles/bulk-status` returned **403**; `POST /api/locks/release` returned **403** for ADMIN users after custom **Settings → Access control** overrides removed `content:edit` / `content:manage` from saved role permission strings (same class as ISS-147 / `metrics:read` gap).
+
+### Root cause
+
+`AuthorizationManager::reloadFromSettings()` applied trimmed `permissionsAdmin` / `permissionsEditor` lists literally. Legacy installs with incomplete overrides dropped content mutations while UI still exposed content admin screens.
+
+### Resolution
+
+- **`AuthorizationManager`** — safety merges: ADMIN without any `content:*` permission receives `content:manage`; EDITOR with `content:create` only also receives `content:edit`; ADMIN receives `metrics:read` when missing.
+- **`useContentLock.ts`** — lock release on unload uses `fetch` + `X-CSRF-TOKEN` instead of `sendBeacon` (CSRF required).
+- **`PagesManager.tsx`** — bulk status surfaces server error message from API.
+
+### Verification
+
+- PHPUnit: `AuthorizationManagerSettingsReloadTest`
+- Manual: bulk publish as ADMIN with trimmed permission overrides
 
 ---
 

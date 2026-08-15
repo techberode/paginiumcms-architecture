@@ -24,4 +24,24 @@ describe('contentEditorLocale', () => {
     expect(hydrated.localeStates.en?.title).toBe('EN');
     expect(hydrated.localeStatus.en).toBe('draft');
   });
+
+  it('falls back to non-default locale slice when default locale is empty', () => {
+    const data: ContentEditorLoadData = {
+      title: '',
+      content: '',
+      status: 'draft',
+      defaultLocale: 'sk',
+      schemaVersion: 2,
+      localizedContent: {
+        sk: { title: '', body: '', seo: { title: '' } },
+        en: { title: 'EN only', body: 'EN body', seo: { title: 'EN SEO' } },
+      },
+      localeStatus: { sk: 'draft', en: 'published' },
+    };
+
+    const hydrated = hydrateLocaleEditorFromLoad(data, 'markdown', 'markdown');
+
+    expect(hydrated.localeStates.sk?.title).toBe('EN only');
+    expect(hydrated.localeStates.en?.title).toBe('EN only');
+  });
 });

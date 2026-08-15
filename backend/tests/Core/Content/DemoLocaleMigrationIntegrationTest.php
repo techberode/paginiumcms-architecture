@@ -81,7 +81,8 @@ final class DemoLocaleMigrationIntegrationTest extends TestCase
             $jsonStorage,
             $settings,
             StorageTestHelper::localStorage($this->root),
-            GitPublishTestHelper::disabledDispatcher($reader, $writer, $settings)
+            GitPublishTestHelper::disabledDispatcher($reader, $writer, $settings),
+            new LocalizedContentWriter($this->normalizer)
         );
 
         $this->writer = new LocalizedContentWriter($this->normalizer);

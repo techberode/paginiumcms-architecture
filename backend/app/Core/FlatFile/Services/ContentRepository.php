@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\FlatFile\Services;
 
+use PaginiumCMS\Core\Content\ContentSlug;
+use PaginiumCMS\Core\Content\LocalizedContentWriter;
 use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\ContentStorageInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
@@ -41,6 +43,7 @@ class ContentRepository implements ContentRepositoryInterface
         private SettingsRepositoryInterface $settings,
         private StorageInterface $storageLayer,
         private GitPublishDispatcher $gitPublishDispatcher,
+        private LocalizedContentWriter $localizedWriter,
     ) {
     }
 
@@ -70,6 +73,12 @@ class ContentRepository implements ContentRepositoryInterface
             $info = $this->reader->getInfo($relativePath);
             $object->setSize($info['size']);
             $object->setModifiedAt($info['mtime']);
+
+            $slugBeforeRepair = trim($object->getSlug());
+            $this->localizedWriter->hydrateFlatFieldsFromCanonical($object);
+            if ($slugBeforeRepair === '' && $object->getSlug() !== '') {
+                $this->persistRepairedIdentity($object);
+            }
 
             return $object;
         } catch (FileNotFoundException) {
@@ -112,6 +121,11 @@ class ContentRepository implements ContentRepositoryInterface
                 }
                 $page++;
             }
+        }
+
+        $byBasename = $this->findByPathBasename($slug, $type);
+        if ($byBasename !== null) {
+            return $byBasename;
         }
 
         return $this->findBySlugScanningDisk($slug, $type);
@@ -196,6 +210,18 @@ class ContentRepository implements ContentRepositoryInterface
      */
     public function save(Content $content): void
     {
+        $resolvedSlug = ContentSlug::resolveSlug(
+            $content->getSlug(),
+            $content->getTitle(),
+            $content->getPath()
+        );
+        if ($resolvedSlug === '') {
+            throw new FlatFileException('Obsah musí mať platný slug');
+        }
+        if ($resolvedSlug !== $content->getSlug()) {
+            $content->setSlug($resolvedSlug);
+        }
+
         $storage = $this->activeStorage();
         $path = $content->getPath();
 
@@ -360,6 +386,53 @@ class ContentRepository implements ContentRepositoryInterface
         }
 
         return $results;
+    }
+
+    private function findByPathBasename(string $slug, string $type): ?Content
+    {
+        $directory = $type === 'article' ? 'blog' : 'pages';
+        foreach ($this->listContentFiles($directory) as $file) {
+            $fullPath = $this->normalizeDirectoryPath($directory, $file);
+            $basename = ContentSlug::slugFromStoragePath($fullPath);
+            if ($basename === $slug) {
+                return $this->findByPath($fullPath);
+            }
+        }
+
+        return null;
+    }
+
+    private function persistRepairedIdentity(Content $content): void
+    {
+        $storage = $this->activeStorage();
+        $directory = $content instanceof Article ? 'blog' : 'pages';
+        $targetPath = $storage->buildPath($directory, $content->getSlug());
+        $currentPath = $content->getPath();
+
+        if ($currentPath !== '' && $currentPath !== $targetPath && $this->reader->exists($currentPath)) {
+            $raw = $this->reader->read($currentPath);
+            if ($storage->format() === 'json') {
+                $this->storageLayer->write($targetPath, $raw, true);
+            } else {
+                $this->writer->write($targetPath, $raw, true);
+            }
+            $this->writer->delete($currentPath, true);
+            $content->setPath($targetPath);
+        }
+
+        $serialized = $storage->serialize(
+            $this->normalizeFrontMatter($content->getFrontMatter()),
+            $content->getContent()
+        );
+        if ($storage->format() === 'json') {
+            $this->storageLayer->write($content->getPath(), $serialized, true);
+        } else {
+            $this->writer->write($content->getPath(), $serialized, true);
+        }
+
+        $type = $content instanceof Article ? 'article' : 'page';
+        $this->index->remove($type, '');
+        $this->index->upsertFromContent($content, $type);
     }
 
     private function findBySlugScanningDisk(string $slug, string $type): ?Content

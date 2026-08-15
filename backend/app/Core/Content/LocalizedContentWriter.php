@@ -39,6 +39,17 @@ final class LocalizedContentWriter
         ];
         $localeStatus[$locale] = (string) ($data['status'] ?? $localeStatus[$locale] ?? 'draft');
 
+        $writtenSlice = $localizedContent[$locale];
+        $defaultSlice = $localizedContent[$defaultLocale] ?? null;
+        if (
+            $locale !== $defaultLocale
+            && $this->sliceIsEmpty(is_array($defaultSlice) ? $defaultSlice : null)
+            && !$this->sliceIsEmpty($writtenSlice)
+        ) {
+            $localizedContent[$defaultLocale] = $writtenSlice;
+            $localeStatus[$defaultLocale] = $localeStatus[$locale];
+        }
+
         $frontMatter = $content->getFrontMatter();
         $frontMatter['schemaVersion'] = 2;
         $frontMatter['defaultLocale'] = $defaultLocale;
@@ -90,6 +101,37 @@ final class LocalizedContentWriter
 
         $content->setFrontMatter($frontMatter);
         $this->syncFlatFieldsFromDefaultLocale($content, $defaultLocale, $localizedContent, $localeStatus);
+    }
+
+    /**
+     * Repairs legacy/schema-v2 documents where flat title/body were not synced (read path).
+     */
+    public function hydrateFlatFieldsFromCanonical(Content $content): void
+    {
+        /** @var array<string, mixed> $canonical */
+        $canonical = $this->normalizer->normalize($content);
+        /** @var array<string, array<string, mixed>> $localizedContent */
+        $localizedContent = is_array($canonical['localizedContent'] ?? null)
+            ? $canonical['localizedContent']
+            : [];
+        /** @var array<string, string> $localeStatus */
+        $localeStatus = is_array($canonical['localeStatus'] ?? null) ? $canonical['localeStatus'] : [];
+
+        $this->syncFlatFieldsFromDefaultLocale(
+            $content,
+            (string) ($canonical['defaultLocale'] ?? 'sk'),
+            $localizedContent,
+            $localeStatus
+        );
+
+        $resolvedSlug = ContentSlug::resolveSlug(
+            $content->getSlug(),
+            $content->getTitle(),
+            $content->getPath()
+        );
+        if ($resolvedSlug !== $content->getSlug()) {
+            $content->setSlug($resolvedSlug);
+        }
     }
 
     public function applyLocaleStatus(Content $content, string $locale, string $status): void
@@ -156,21 +198,37 @@ final class LocalizedContentWriter
         array $localizedContent,
         array $localeStatus,
     ): void {
-        $defaultSlice = $localizedContent[$defaultLocale] ?? reset($localizedContent) ?: [
-            'title' => '',
-            'body' => '',
-            'seo' => [
+        $resolvedLocale = $defaultLocale;
+        $defaultSlice = $localizedContent[$defaultLocale] ?? null;
+
+        if ($this->sliceIsEmpty($defaultSlice)) {
+            $defaultSlice = null;
+            foreach ($localizedContent as $localeCode => $slice) {
+                if (!$this->sliceIsEmpty($slice)) {
+                    $defaultSlice = $slice;
+                    $resolvedLocale = (string) $localeCode;
+                    break;
+                }
+            }
+        }
+
+        if ($defaultSlice === null) {
+            $defaultSlice = [
                 'title' => '',
-                'description' => '',
-                'canonical' => '',
-                'ogImage' => '',
-                'noIndex' => false,
-            ],
-        ];
+                'body' => '',
+                'seo' => [
+                    'title' => '',
+                    'description' => '',
+                    'canonical' => '',
+                    'ogImage' => '',
+                    'noIndex' => false,
+                ],
+            ];
+        }
 
         $content->setTitle((string) ($defaultSlice['title'] ?? ''));
         $content->setContent((string) ($defaultSlice['body'] ?? ''));
-        $content->setStatus((string) ($localeStatus[$defaultLocale] ?? 'draft'));
+        $content->setStatus((string) ($localeStatus[$resolvedLocale] ?? $localeStatus[$defaultLocale] ?? 'draft'));
 
         $frontMatter = $content->getFrontMatter();
         /** @var array<string, mixed> $seo */
@@ -181,5 +239,20 @@ final class LocalizedContentWriter
         $frontMatter['seoImage'] = (string) ($seo['ogImage'] ?? '');
         $frontMatter['noIndex'] = ($seo['noIndex'] ?? false) === true;
         $content->setFrontMatter($frontMatter);
+    }
+
+    /**
+     * @param array<string, mixed>|null $slice
+     */
+    private function sliceIsEmpty(?array $slice): bool
+    {
+        if ($slice === null) {
+            return true;
+        }
+
+        $title = trim((string) ($slice['title'] ?? ''));
+        $body = trim((string) ($slice['body'] ?? ''));
+
+        return $title === '' && $body === '';
     }
 }

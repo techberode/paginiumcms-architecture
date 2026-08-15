@@ -41,12 +41,14 @@ interface ContentItem {
   id: string;
   title: string;
   slug: string;
+  path?: string;
   status: 'draft' | 'published' | 'archived' | 'scheduled';
   scheduledAt?: string;
   author: string;
   createdAt: string;
   updatedAt: string;
   frontMatter?: Record<string, unknown>;
+  localizedContent?: Record<string, { title?: string; body?: string }>;
   featuredImage?: string;
   tags?: string[];
   ogImage?: string;
@@ -101,6 +103,41 @@ const STATUS_BADGE_CLASS: Record<ContentItem['status'], string> = {
   scheduled: 'badge-info',
 };
 
+function resolveContentListTitle(item: ContentItem, untitled: string): string {
+  const direct = item.title?.trim();
+  if (direct) {
+    return direct;
+  }
+
+  const localized = item.localizedContent ?? {};
+  for (const slice of Object.values(localized)) {
+    const title = String(slice?.title ?? '').trim();
+    if (title !== '') {
+      return title;
+    }
+  }
+
+  return untitled;
+}
+
+function slugFromStoragePath(path: string): string {
+  const base = path.split('/').pop() ?? '';
+  return base.replace(/\.(json|md)$/i, '').trim();
+}
+
+function resolveContentListSlug(item: ContentItem): string {
+  const direct = item.slug?.trim();
+  if (direct) {
+    return direct;
+  }
+
+  if (item.path?.trim()) {
+    return slugFromStoragePath(item.path);
+  }
+
+  return '';
+}
+
 export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) => {
   const { t, locale } = useI18n();
   const queryClient = useQueryClient();
@@ -152,6 +189,17 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
   const label = t(`content.${contentScope}.title`);
   const previewType = type === 'articles' ? 'article' : 'page';
   const itemLabel = t(`content.${contentScope}.itemAccusative`);
+  const untitledLabel = t('editor.sitePreview.untitled');
+
+  const itemDisplayTitle = useCallback(
+    (item: ContentItem) => resolveContentListTitle(item, untitledLabel),
+    [untitledLabel]
+  );
+
+  const itemListSlug = useCallback(
+    (item: ContentItem) => resolveContentListSlug(item),
+    []
+  );
 
   const statusLabel = (status: ContentItem['status']): string => {
     const key = `list.status.${status}`;
@@ -184,9 +232,14 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
 
   const openListPreview = useCallback(
     async (item: ContentItem) => {
-      setPreviewLoadingSlug(item.slug);
+      const listSlug = itemListSlug(item);
+      if (!listSlug) {
+        toast.warning(t('editor.markdown.toast.slugRequired'));
+        return;
+      }
+      setPreviewLoadingSlug(listSlug);
       try {
-        const response = await get<ContentItem>(`${endpoint}/${item.slug}`);
+        const response = await get<ContentItem>(`${endpoint}/${listSlug}`);
         if (response.success && response.data) {
           setPreviewDraft(buildSitePreviewDraft(previewType as ContentType, response.data));
           setPreviewOpen(true);
@@ -199,7 +252,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
         setPreviewLoadingSlug(null);
       }
     },
-    [endpoint, get, previewType, t, toast]
+    [endpoint, get, itemListSlug, previewType, t, toast]
   );
 
   const listQueryKey = queryKeys.content.list(type, {
@@ -317,7 +370,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
   });
 
   const bulkSelection = useBulkSelection(
-    visibleItems.map((item) => item.slug),
+    visibleItems.map((item) => itemListSlug(item)).filter((slug) => slug !== ''),
     `${type}:${page}:${debouncedSearch}:${statusFilter}:${tagFilter}:${seoIssuesOnly}`
   );
 
@@ -343,12 +396,12 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
       return;
     }
     const result = await contentApi.bulkUpdateStatus(type, bulkSelection.selectedIds, status);
-    if (result) {
-      toast.success(summarizeBulkResult(result, t));
+    if (result.success && result.data) {
+      toast.success(summarizeBulkResult(result.data, t));
       bulkSelection.clear();
       await invalidateList();
     } else {
-      toast.error(t('content.bulk.statusFailed'));
+      toast.error(result.error || t('content.bulk.statusFailed'));
     }
   };
 
@@ -474,15 +527,18 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
           {visibleItems.map((item) => {
             const preview = previewImageForItem(item);
             const seoHealth = itemSeoHealth(item);
+            const listSlug = itemListSlug(item);
+            const actionsDisabled = listSlug === '';
             return (
-              <div key={item.id} className={`card overflow-hidden flex flex-col ${bulkSelection.isSelected(item.slug) ? 'ring-2 ring-indigo-500' : ''}`}>
+              <div key={item.id} className={`card overflow-hidden flex flex-col ${bulkSelection.isSelected(listSlug) ? 'ring-2 ring-indigo-500' : ''}`}>
                 <div className="aspect-video bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden relative">
                   <label className="absolute top-2 left-2 z-10 bg-white/90 dark:bg-gray-900/90 rounded p-1 cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={bulkSelection.isSelected(item.slug)}
-                      onChange={() => bulkSelection.toggle(item.slug)}
-                      aria-label={t('list.select.item', { title: item.title })}
+                      checked={bulkSelection.isSelected(listSlug)}
+                      onChange={() => bulkSelection.toggle(listSlug)}
+                      disabled={actionsDisabled}
+                      aria-label={t('list.select.item', { title: itemDisplayTitle(item) })}
                       className="rounded border-gray-300"
                     />
                   </label>
@@ -494,10 +550,10 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                 </div>
                 <div className="card-body space-y-2 flex-1 flex flex-col">
                   <div className="flex items-start justify-between gap-2">
-                    <p className="font-medium truncate">{item.title}</p>
+                    <p className="font-medium truncate">{itemDisplayTitle(item)}</p>
                     <SeoHealthBadge level={seoHealth.level} issues={seoHealth.issues} />
                   </div>
-                  <p className="text-xs text-gray-500 truncate">/{item.slug}</p>
+                  <p className="text-xs text-gray-500 truncate">/{listSlug || '—'}</p>
                   <div className="flex flex-wrap items-center gap-2">
                     <span className={getStatusBadge(item.status)}>{statusLabel(item.status)}</span>
                     <LocaleStatusBadges
@@ -506,31 +562,37 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                     />
                   </div>
                   <div className="flex gap-2 mt-auto pt-2">
-                    <Link to={`/${routeBase}/${item.slug}`} className="btn btn-secondary text-xs px-3 py-1">
+                    {actionsDisabled ? (
+                      <span className="text-xs text-amber-600 dark:text-amber-400">{t('editor.markdown.toast.slugRequired')}</span>
+                    ) : (
+                      <>
+                    <Link to={`/${routeBase}/${listSlug}`} className="btn btn-secondary text-xs px-3 py-1">
                       {t('list.actions.edit')}
                     </Link>
                     <button
                       type="button"
                       className="btn btn-secondary text-xs px-3 py-1"
-                      disabled={previewLoadingSlug === item.slug}
+                      disabled={previewLoadingSlug === listSlug}
                       onClick={() => void openListPreview(item)}
                     >
-                      {previewLoadingSlug === item.slug ? t('list.actions.previewLoading') : t('list.actions.preview')}
+                      {previewLoadingSlug === listSlug ? t('list.actions.previewLoading') : t('list.actions.preview')}
                     </button>
                     <button
                       type="button"
                       className="btn btn-secondary text-xs px-3 py-1"
-                      onClick={() => void handleDuplicate(item.slug)}
+                      onClick={() => void handleDuplicate(listSlug)}
                     >
                       {t('content.duplicate.action')}
                     </button>
                     <button
                       type="button"
                       className="btn btn-danger text-xs px-3 py-1"
-                      onClick={() => void handleDelete(item.slug)}
+                      onClick={() => void handleDelete(listSlug)}
                     >
                       {t('list.actions.delete')}
                     </button>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -541,11 +603,12 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
         <div className="space-y-3">
           {visibleItems.map((item) => {
             const seoHealth = itemSeoHealth(item);
+            const listSlug = itemListSlug(item);
             return (
               <ContentListMobileCard
                 key={item.id}
-                title={item.title}
-                slug={item.slug}
+                title={itemDisplayTitle(item)}
+                slug={listSlug}
                 status={item.status}
                 statusBadgeClass={getStatusBadge(item.status)}
                 statusLabel={statusLabel(item.status as ContentItem['status'])}
@@ -558,12 +621,13 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                     : undefined
                 }
                 routeBase={routeBase}
-                selected={bulkSelection.isSelected(item.slug)}
-                onToggleSelect={() => bulkSelection.toggle(item.slug)}
-                onDelete={() => void handleDelete(item.slug)}
-                onDuplicate={() => void handleDuplicate(item.slug)}
+                selected={bulkSelection.isSelected(listSlug)}
+                onToggleSelect={() => bulkSelection.toggle(listSlug)}
+                onDelete={() => void handleDelete(listSlug)}
+                onDuplicate={() => void handleDuplicate(listSlug)}
                 onPreview={() => void openListPreview(item)}
-                previewLoading={previewLoadingSlug === item.slug}
+                previewLoading={previewLoadingSlug === listSlug}
+                actionsDisabled={listSlug === ''}
                 staleLabel={staleBadgeLabel(item)}
               />
             );
@@ -624,14 +688,17 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                   {visibleItems.map((item) => {
                     const preview = previewImageForItem(item);
                     const seoHealth = itemSeoHealth(item);
+                    const listSlug = itemListSlug(item);
+                    const actionsDisabled = listSlug === '';
                     return (
                       <tr key={item.id}>
                         <td>
                           <input
                             type="checkbox"
-                            checked={bulkSelection.isSelected(item.slug)}
-                            onChange={() => bulkSelection.toggle(item.slug)}
-                            aria-label={t('list.select.item', { title: item.title })}
+                            checked={bulkSelection.isSelected(listSlug)}
+                            onChange={() => bulkSelection.toggle(listSlug)}
+                            disabled={actionsDisabled}
+                            aria-label={t('list.select.item', { title: itemDisplayTitle(item) })}
                           />
                         </td>
                         {viewMode === 'list-preview' && (
@@ -643,8 +710,8 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                             )}
                           </td>
                         )}
-                        <td className="font-medium max-w-[240px] truncate">{item.title}</td>
-                        <td className="text-gray-500 dark:text-gray-400 hide-mobile max-w-[180px] truncate">{item.slug}</td>
+                        <td className="font-medium max-w-[240px] truncate">{itemDisplayTitle(item)}</td>
+                        <td className="text-gray-500 dark:text-gray-400 hide-mobile max-w-[180px] truncate">{listSlug || '—'}</td>
                         <td>
                           <div className="flex flex-col gap-1">
                             <span className={getStatusBadge(item.status)}>{statusLabel(item.status)}</span>
@@ -673,8 +740,12 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                         </td>
                         <td>
                           <div className="flex flex-wrap gap-2">
+                            {actionsDisabled ? (
+                              <span className="text-xs text-amber-600 dark:text-amber-400">{t('editor.markdown.toast.slugRequired')}</span>
+                            ) : (
+                              <>
                             <Link
-                              to={`/${routeBase}/${item.slug}`}
+                              to={`/${routeBase}/${listSlug}`}
                               className="btn btn-secondary text-xs px-3 py-1"
                             >
                               {t('list.actions.edit')}
@@ -682,24 +753,26 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                             <button
                               type="button"
                               className="btn btn-secondary text-xs px-3 py-1 hide-mobile"
-                              disabled={previewLoadingSlug === item.slug}
+                              disabled={previewLoadingSlug === listSlug}
                               onClick={() => void openListPreview(item)}
                             >
-                              {previewLoadingSlug === item.slug ? t('list.actions.previewLoading') : t('list.actions.preview')}
+                              {previewLoadingSlug === listSlug ? t('list.actions.previewLoading') : t('list.actions.preview')}
                             </button>
                             <button
                               type="button"
                               className="btn btn-secondary text-xs px-3 py-1"
-                              onClick={() => void handleDuplicate(item.slug)}
+                              onClick={() => void handleDuplicate(listSlug)}
                             >
                               {t('content.duplicate.action')}
                             </button>
                             <button
-                              onClick={() => void handleDelete(item.slug)}
+                              onClick={() => void handleDelete(listSlug)}
                               className="btn btn-danger text-xs px-3 py-1"
                             >
                               {t('list.actions.delete')}
                             </button>
+                              </>
+                            )}
                           </div>
                         </td>
                       </tr>

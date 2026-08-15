@@ -20,6 +20,7 @@ use PaginiumCMS\Core\FlatFile\Services\ContentRevision;
 use PaginiumCMS\Core\FlatFile\Services\ContentStalenessService;
 use PaginiumCMS\Core\Blueprint\Services\DynamicValidator;
 use PaginiumCMS\Core\Cache\ContentCacheService;
+use PaginiumCMS\Core\Content\ContentSlug;
 use PaginiumCMS\Core\Content\LocalizedContentApplicator;
 use PaginiumCMS\Core\Content\LocalizedContentNormalizer;
 use PaginiumCMS\Core\Content\LocalizedContentValidator;
@@ -245,6 +246,12 @@ class ContentController
     private function createContent(ServerRequestInterface $request, ResponseInterface $response, string $type): ResponseInterface
     {
         $data = $this->parseJsonBody($request);
+        $data['slug'] = $this->normalizeIncomingSlug(
+            (string) ($data['slug'] ?? ''),
+            (string) ($data['title'] ?? ''),
+            '',
+            false
+        );
         $validation = $this->validatePayload($data, $type, true);
 
         if ($validation !== null) {
@@ -344,6 +351,11 @@ class ContentController
         }
 
         $data = $this->parseJsonBody($request);
+        $data['slug'] = $this->normalizeIncomingSlug(
+            (string) ($data['slug'] ?? $slug),
+            (string) ($data['title'] ?? $existing->getTitle()),
+            $existing->getPath()
+        );
         $validation = $this->validatePayload($data, $type, false);
 
         if ($validation !== null) {
@@ -362,7 +374,10 @@ class ContentController
             ]);
         }
 
-        $newSlug = (string) ($data['slug'] ?? $slug);
+        $newSlug = (string) $data['slug'];
+        if ($newSlug === '') {
+            return $this->json->error($response, Lang::get('slug_required', [], 'content'), 400);
+        }
         if ($newSlug !== $slug && $this->repository->findBySlug($newSlug, $type) !== null) {
             return $this->json->error(
                 $response,
@@ -1261,6 +1276,29 @@ class ContentController
             array_map(static fn ($item): string => is_string($item) ? trim($item) : '', $value),
             static fn (string $item): bool => $item !== ''
         ));
+    }
+
+    private function normalizeIncomingSlug(
+        string $slug,
+        string $title,
+        string $path,
+        bool $allowGeneratedFallback = true,
+    ): string {
+        $slug = trim($slug);
+        if ($slug !== '') {
+            return $slug;
+        }
+
+        $fromTitle = ContentSlug::slugifyTitle($title);
+        if ($fromTitle !== '') {
+            return $fromTitle;
+        }
+
+        if (!$allowGeneratedFallback) {
+            return '';
+        }
+
+        return ContentSlug::resolveSlug('', $title, $path);
     }
 
     /**

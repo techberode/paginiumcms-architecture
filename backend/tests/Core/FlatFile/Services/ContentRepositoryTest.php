@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Tests\Core\FlatFile\Services;
 
 use PaginiumCMS\Core\Content\LocalizedContentNormalizer;
+use PaginiumCMS\Core\Content\LocalizedContentWriter;
 use PaginiumCMS\Core\FlatFile\Services\ContentRepository;
 use PaginiumCMS\Core\FlatFile\Services\ContentIndexService;
 use PaginiumCMS\Core\FlatFile\Services\ContentStalenessService;
@@ -86,7 +87,8 @@ class ContentRepositoryTest extends TestCase
             $jsonStorage,
             $settings,
             \PaginiumCMS\Tests\Support\StorageTestHelper::localStorage($this->root . '/content'),
-            GitPublishTestHelper::disabledDispatcher($reader, $writer, $settings)
+            GitPublishTestHelper::disabledDispatcher($reader, $writer, $settings),
+            new LocalizedContentWriter($normalizer)
         );
     }
 
