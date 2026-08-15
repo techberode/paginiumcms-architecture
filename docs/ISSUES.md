@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 15 August 2026 · register **ISS-001–ISS-153** · **`v2.1.0-beta.53`** hotfix (editor sync ISS-153)
+> **Last updated:** 15 August 2026 · register **ISS-001–ISS-154** · front matter parser root-cause fix (ISS-154, behind ISS-149/151/153)
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -4684,6 +4684,40 @@ See [docs/CONTENT_EDITOR_REGRESSION_AUDIT.md](CONTENT_EDITOR_REGRESSION_AUDIT.md
 ### Verification
 
 Deploy **v2.1.0-beta.53**, run `content:diagnose --fix`, open affected articles and Save once.
+
+---
+
+## ISS-154 – Raw front matter leaks into article body (front matter parser splits on indented `---`)
+
+**Severity:** Critical (prod) — content publish/edit broken since beta.47  
+**Status:** ✅ Fixed — root cause behind ISS-149 / ISS-151 / ISS-153
+
+### Symptom
+
+Since the It.81 editorial workflow (beta.47), after saving an article the **public/rendered view shows raw YAML front matter as text** at the top:
+
+```
+title: 'testovaci clanok' slug: testovaci-clanok localeStatus: sk: draft updatedAt: '…' … editorMode: markdown
+```
+
+followed by the real content below it. **Opening the article in the editor wipes most of the body**, leaving only the first heading. Newly created articles are affected too — the whole CMS is broken for publishing.
+
+### Root cause
+
+Schema v2 (It.73/It.81) stores the **entire body inside the YAML front matter** (`localizedContent.<locale>.body`) as a multi-line literal block. Article bodies (release notes, etc.) frequently contain a Markdown horizontal rule `---`, which the YAML dumper writes as an **indented** `---` line inside that block.
+
+`FrontMatterParser::splitContent()` located the closing delimiter with `strpos($content, '---')`, which matches **any** `---` substring — including the indented one inside the literal block (and any `---` in the trailing body). The parser therefore cut the front matter at the wrong place: the remainder of the YAML (`localeStatus:`, `title:`, `slug:`, …) spilled into the parsed `content`, and on the next save that polluted body was written back to disk. The beta.50–53 "repair"/`stripEmbeddedMetadataLeak` heuristics fought the resulting symptoms (ISS-149/151/153) but never the parser itself.
+
+### Resolution
+
+`FrontMatterParser::splitContent()` now anchors the closing delimiter to a **line that contains only `---` (or YAML `...`)** at column 0, using a line-anchored regex (`/^---[ \t]*\R(.*?\R|)(?:---|\.\.\.)[ \t]*(?:\R|$)/s`). Indented `---` inside literal-block values is ignored, so front matter never leaks into the body again. Also tolerates blank lines before the front matter and empty front matter blocks.
+
+- File: `backend/app/Core/FlatFile/Services/FrontMatterParser.php`
+- Regression tests: `backend/tests/Core/FlatFile/Services/FrontMatterParserTest.php` — `testClosingDelimiterIgnoresHorizontalRuleInBody`, `testNestedLiteralBlockWithDashesRoundTrips`, `testEmptyFrontMatterBlockParses`.
+
+### Verification
+
+`vendor/bin/phpunit backend/tests/Core/FlatFile` (159 pass), PHPStan L8 clean. After deploy, existing articles that were **only mis-displayed** render correctly immediately. Any article that was **re-saved while broken** may still hold a polluted body — re-edit and Save once (parsing/saving is now correct) or restore from a version snapshot.
 
 ---
 

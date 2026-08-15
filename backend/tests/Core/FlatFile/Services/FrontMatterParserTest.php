@@ -109,4 +109,61 @@ class FrontMatterParserTest extends TestCase
         $content = "# Content without front matter";
         $this->assertFalse($this->parser->hasFrontMatter($content));
     }
+
+    /**
+     * Regresia (betas 47–53): telo obsahujúce Markdown `---` oddeľovač sa NESMIE
+     * považovať za koniec front matteru. Skôr `strpos('---')` našiel odsadený
+     * `---` vnútri YAML `body: |` (schema v2 localizedContent) aj `---` v samotnom
+     * tele → zvyšok YAML pretiekol do obsahu a rozbil články.
+     */
+    public function testClosingDelimiterIgnoresHorizontalRuleInBody(): void
+    {
+        $body = "# Nadpis\n\nOdsek jeden.\n\n---\n\nOdsek dva pod čiarou.";
+        $content = "---\ntitle: Release\nslug: release\nstatus: draft\n---\n" . $body;
+
+        $frontMatter = $this->parser->parse($content);
+        $this->assertSame('release', $frontMatter['slug']);
+        $this->assertSame('draft', $frontMatter['status']);
+
+        $extracted = $this->parser->extractContent($content);
+        $this->assertSame($body, $extracted);
+        $this->assertStringNotContainsString('slug:', $extracted);
+        $this->assertStringNotContainsString('status:', $extracted);
+    }
+
+    /**
+     * Regresia: front matter s vnoreným multi-line literal blokom (schema v2
+     * `localizedContent.*.body`), ktorý sám obsahuje odsadený `---`, sa musí
+     * korektne rozdeliť – uzatvárací delimiter je len `---` na začiatku riadku.
+     */
+    public function testNestedLiteralBlockWithDashesRoundTrips(): void
+    {
+        $body = "# Beta\n\n**Verzia:** v1\n\n---\n\nText pod čiarou.";
+        $frontMatter = [
+            'schemaVersion' => 2,
+            'defaultLocale' => 'sk',
+            'localizedContent' => [
+                'sk' => ['title' => 'Beta', 'body' => $body],
+            ],
+            'localeStatus' => ['sk' => 'draft'],
+            'slug' => 'beta',
+        ];
+
+        $file = $this->parser->serialize($frontMatter) . $body;
+
+        $parsedFm = $this->parser->parse($file);
+        $this->assertSame('beta', $parsedFm['slug']);
+        $this->assertSame('draft', $parsedFm['localeStatus']['sk']);
+        $this->assertSame($body, $parsedFm['localizedContent']['sk']['body']);
+
+        $this->assertSame($body, $this->parser->extractContent($file));
+        $this->assertStringNotContainsString('localeStatus:', $this->parser->extractContent($file));
+    }
+
+    public function testEmptyFrontMatterBlockParses(): void
+    {
+        $content = "---\n---\n# Content";
+        $this->assertTrue($this->parser->hasFrontMatter($content));
+        $this->assertSame('# Content', $this->parser->extractContent($content));
+    }
 }

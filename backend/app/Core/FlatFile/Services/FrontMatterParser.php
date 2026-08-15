@@ -107,36 +107,34 @@ class FrontMatterParser implements FrontMatterParserInterface
      */
     private function splitContent(string $content): ?array
     {
-        // Odstránenie BOM
+        // Odstránenie BOM + tolerancia prázdnych riadkov pred front matterom.
         $content = preg_replace('/^\xEF\xBB\xBF/', '', $content) ?? $content;
+        $content = ltrim($content, "\r\n");
 
-        // Kontrola, či začína delimiterom
-        if (!str_starts_with(trim($content), self::DELIMITER)) {
+        // Front matter musí začínať samostatným delimiterom `---` na prvom riadku.
+        // Uzatvárací delimiter je PRVÝ ĎALŠÍ riadok, ktorý obsahuje LEN `---`
+        // (alebo YAML `...`). KRITICKÉ: `---` odsadené vnútri YAML hodnôt (napr.
+        // multi-line `body: |` slice s Markdown `---` oddeľovačmi v localizedContent)
+        // sa NESMIE považovať za koniec front matteru – inak zvyšok YAML pretečie
+        // do tela dokumentu (regresia It.73/It.81, betas 47–53).
+        $matched = preg_match(
+            '/^---[ \t]*\R(.*?\R|)(?:---|\.\.\.)[ \t]*(?:\R|$)/s',
+            $content,
+            $matches,
+            PREG_OFFSET_CAPTURE
+        );
+
+        if ($matched !== 1) {
             return null;
         }
 
-        // Nájdenie konca prvého delimitera
-        $firstDelimiterPos = strpos($content, self::DELIMITER);
-        if ($firstDelimiterPos === false) {
-            return null;
-        }
-
-        // Nájdenie konca druhého delimitera
-        $secondDelimiterPos = strpos($content, self::DELIMITER, $firstDelimiterPos + strlen(self::DELIMITER));
-        if ($secondDelimiterPos === false) {
-            return null;
-        }
-
-        $frontMatterStart = $firstDelimiterPos + strlen(self::DELIMITER);
-        $frontMatterEnd = $secondDelimiterPos;
-
-        $frontMatter = trim(substr($content, $frontMatterStart, $frontMatterEnd - $frontMatterStart));
-        $contentStart = $secondDelimiterPos + strlen(self::DELIMITER);
-        $content = ltrim(substr($content, $contentStart));
+        $frontMatter = trim($matches[1][0]);
+        $consumed = (int) $matches[0][1] + strlen((string) $matches[0][0]);
+        $rest = ltrim(substr($content, $consumed));
 
         return [
             'frontMatter' => $frontMatter,
-            'content' => $content,
+            'content' => $rest,
         ];
     }
 }
