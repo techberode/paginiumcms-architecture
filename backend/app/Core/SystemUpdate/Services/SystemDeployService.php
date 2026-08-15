@@ -76,6 +76,7 @@ final class SystemDeployService
             'BACKEND_PORT' => getenv('BACKEND_PORT') ?: ($_ENV['BACKEND_PORT'] ?? '8089'),
             'DEPLOY_CACHE_ROOT' => $cacheRoot,
             'COMPOSER_HOME' => $cacheRoot . '/composer',
+            'DEPLOY_FORCE' => '1',
         ];
 
         $command = $this->buildCommand($script, $env);

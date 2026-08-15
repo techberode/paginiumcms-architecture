@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 15 August 2026 · register **ISS-001–ISS-151** · **`v2.1.0-beta.51`** hotfix (persist-on-read ISS-151)
+> **Last updated:** 15 August 2026 · register **ISS-001–ISS-152** · **`v2.1.0-beta.52`** hotfix (deploy ISS-152)
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -174,6 +174,7 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-149](#iss-149) | Article list empty title/slug after locale-scoped write; corrupt `blog/.json` blocks editor | **Critical (prod)** | ✅ **2.1.0-beta.49** |
 | [ISS-150](#iss-150) | Bulk publish / lock release 403 when `accessControl` overrides omit `content:*` perms | High (admin) | ✅ **2.1.0-beta.49** |
 | [ISS-151](#iss-151) | Auto-save on read → 409 conflict, bulk publish drops items (localeStatus / index) | **Critical (prod)** | ✅ **2.1.0-beta.51** |
+| [ISS-152](#iss-152) | Deploy beta.51 appears to fail — health 502 abort, wrong version, no PHP restart from admin UI | High (ops) | ✅ **2.1.0-beta.52** |
 
 ## CI failures (GitHub Actions)
 
@@ -4594,6 +4595,56 @@ After beta.50 on production:
 ### Note: OTP publish workflow
 
 If **Settings → Workflows → OTP pri publikácii** is enabled, single-article publish saves as draft until email OTP is verified (HTTP **202**). This is expected — not a container issue.
+
+---
+
+<a id="iss-152"></a>
+
+## ISS-152 – Deploy appears to fail (health 502, version stuck, PHP not restarted)
+
+**Severity:** High (ops)  
+**Status:** ✅ Fixed — **`v2.1.0-beta.52`**
+
+### Symptom
+
+Repeated deploy of **beta.51** via SSH or Admin → System Update:
+
+- Script exits with error at **health** step (502 right after PHP restart).
+- `/api/health` still shows **`2.1.0-beta.50`** even after checkout.
+- Article editor fixes from beta.51 not visible until manual PHP restart.
+
+### Root cause
+
+1. **`curl -sf` + `set -e`** — single health failure aborted deploy though git/composer/build succeeded (ISS-096 transient 502).
+2. **`AppVersion::VERSION`** fallback left at `beta.50` in beta.51 release — misleading health when `git describe` fails in container.
+3. **Admin UI deploy** — `SystemDeployService` did not pass `DEPLOY_FORCE=1`; `STACK_DIR` is a **host path** unavailable from PHP container → code updated on disk but **PHP/opcache not restarted**.
+
+### Resolution
+
+- Health retry loop; warn instead of hard-fail on transient 502.
+- Bump `AppVersion::VERSION` each release.
+- Admin deploy sets `DEPLOY_FORCE=1`.
+- `scripts/deploy-diagnose.sh` for server troubleshooting.
+
+### Production deploy (always SSH on host)
+
+```bash
+cd /var/www/paginiumcms.com
+APP_ROOT=/var/www/paginiumcms.com \
+STACK_DIR=/var/lib/docker/compose/paginiumcms \
+BACKEND_PORT=8089 \
+./scripts/deploy-diagnose.sh
+
+DEPLOY_FORCE=1 GIT_REF=v2.1.0-beta.52 \
+APP_ROOT=/var/www/paginiumcms.com \
+STACK_DIR=/var/lib/docker/compose/paginiumcms \
+BACKEND_PORT=8089 \
+./scripts/deploy-instance-update.sh
+```
+
+If permission errors: `APP_ROOT=/var/www/paginiumcms.com ./scripts/bootstrap-deploy-permissions.sh`
+
+After deploy: `curl -s http://127.0.0.1:8089/api/health | jq '.data.version // .version'`
 
 ---
 

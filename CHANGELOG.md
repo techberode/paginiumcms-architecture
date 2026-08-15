@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.52`](#release-2-1-0-beta-52) | 2026-08-15 | Hotfix — deploy health retry, AppVersion fallback, admin DEPLOY_FORCE (ISS-152) |
 | [`2.1.0-beta.51`](#release-2-1-0-beta-51) | 2026-08-15 | Hotfix — no persist-on-read, bulk localeStatus sync, index repair (ISS-151) |
 | [`2.1.0-beta.50`](#release-2-1-0-beta-50) | 2026-08-15 | Hotfix — beta.49 read-path clobber + metadata leak in editor body (ISS-149 follow-up) |
 | [`2.1.0-beta.49`](#release-2-1-0-beta-49) | 2026-08-15 | Hotfix — locale title/slug sync, empty slug repair, content permissions (ISS-149, ISS-150) |
@@ -131,6 +132,26 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **ISS-141 follow-up** — all remaining `Http/Controllers/*` JSON mutating paths and OTP/contact rate-limit middleware now use `RequestJsonBody::decode()` (eliminates empty-body regressions site-wide after `BodyParsingMiddleware`).
 
 - **Shortcode expand + HTML sanitizer** — `allowedHtmlTags` now includes `div`, `article`, `section`, `aside`, `span` (required for It.58 expand templates); legacy settings merge missing layout tags on read; `role` attribute allowed on sanitized elements.
+
+<a id="release-2-1-0-beta-52"></a>
+
+## [2.1.0-beta.52] – 2026-08-15
+
+Hotfix — production deploy reliability (health retry, version fallback, admin UI force checkout)
+
+### Fixed
+
+- **`AppVersion::VERSION`** fallback bumped to `2.1.0-beta.52` — health could still report `beta.50` after beta.51 deploy when `git describe` fails in container ([ISS-152](docs/ISSUES.md#iss-152)).
+- **`deploy-instance-update.sh`** — health check retries 6× (502 after PHP restart is normal); no longer aborts entire deploy on transient health failure; warns when `STACK_DIR` missing (admin UI cannot restart PHP on host).
+- **`SystemDeployService`** — passes `DEPLOY_FORCE=1` for admin-triggered deploys (tag checkout blocked by tracked server diffs).
+- **`scripts/deploy-diagnose.sh`** — server-side checklist (git ref, writable paths, beta markers, health, stack).
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.52`
+- **Issues:** [ISS-152](docs/ISSUES.md#iss-152)
+
+---
 
 <a id="release-2-1-0-beta-51"></a>
 
