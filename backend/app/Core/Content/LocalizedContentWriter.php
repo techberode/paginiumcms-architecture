@@ -63,7 +63,7 @@ final class LocalizedContentWriter
         $content->setFrontMatter($frontMatter);
         $content->setSlug($slug);
 
-        $this->syncFlatFieldsFromDefaultLocale($content, $defaultLocale, $localizedContent, $localeStatus);
+        $this->syncFlatFieldsFromDefaultLocale($content, $defaultLocale, $localizedContent, $localeStatus, $locale);
     }
 
     /**
@@ -175,6 +175,7 @@ final class LocalizedContentWriter
         }
 
         $content->setStatus($status);
+        $this->hydrateFlatFieldsFromCanonical($content);
     }
 
     public function applyLocaleStatus(Content $content, string $locale, string $status): void
@@ -389,29 +390,60 @@ final class LocalizedContentWriter
     /**
      * @param array<string, array<string, mixed>> $localizedContent
      * @param array<string, string> $localeStatus
+     * @param string|null $writtenLocale Locale code from the current write, if any.
      */
     private function syncFlatFieldsFromDefaultLocale(
         Content $content,
         string $defaultLocale,
         array $localizedContent,
         array $localeStatus,
+        ?string $writtenLocale = null,
     ): void {
         $resolved = $this->resolveDefaultLocaleSlice($defaultLocale, $localizedContent);
         $defaultSlice = $resolved['slice'];
         $resolvedLocale = $resolved['locale'];
 
-        $content->setTitle((string) ($defaultSlice['title'] ?? ''));
-        $content->setContent((string) ($defaultSlice['body'] ?? ''));
-        $content->setStatus((string) ($localeStatus[$resolvedLocale] ?? $localeStatus[$defaultLocale] ?? 'draft'));
+        $sliceTitle = trim((string) ($defaultSlice['title'] ?? ''));
+        $sliceBody = trim((string) ($defaultSlice['body'] ?? ''));
+        $writingDefault = $writtenLocale !== null && $writtenLocale === $defaultLocale;
+
+        if ($writingDefault || $writtenLocale === null) {
+            if ($sliceTitle !== '' || trim($content->getTitle()) === '') {
+                $content->setTitle((string) ($defaultSlice['title'] ?? ''));
+            }
+            if ($sliceBody !== '' || trim($content->getContent()) === '') {
+                $content->setContent((string) ($defaultSlice['body'] ?? ''));
+            }
+        } else {
+            if (trim($content->getTitle()) === '' && $sliceTitle !== '') {
+                $content->setTitle($sliceTitle);
+            }
+            if (trim($content->getContent()) === '' && $sliceBody !== '') {
+                $content->setContent($sliceBody);
+            }
+        }
+
+        $content->setStatus((string) ($localeStatus[$defaultLocale] ?? $localeStatus[$resolvedLocale] ?? 'draft'));
 
         $frontMatter = $content->getFrontMatter();
         /** @var array<string, mixed> $seo */
         $seo = is_array($defaultSlice['seo'] ?? null) ? $defaultSlice['seo'] : [];
-        $frontMatter['seoTitle'] = (string) ($seo['title'] ?? '');
-        $frontMatter['seoDescription'] = (string) ($seo['description'] ?? '');
-        $frontMatter['canonical'] = (string) ($seo['canonical'] ?? '');
-        $frontMatter['seoImage'] = (string) ($seo['ogImage'] ?? '');
-        $frontMatter['noIndex'] = ($seo['noIndex'] ?? false) === true;
+
+        if (trim((string) ($frontMatter['seoTitle'] ?? '')) === '' || trim((string) ($seo['title'] ?? '')) !== '') {
+            $frontMatter['seoTitle'] = (string) ($seo['title'] ?? '');
+        }
+        if (trim((string) ($frontMatter['seoDescription'] ?? '')) === '' || trim((string) ($seo['description'] ?? '')) !== '') {
+            $frontMatter['seoDescription'] = (string) ($seo['description'] ?? '');
+        }
+        if (trim((string) ($frontMatter['canonical'] ?? '')) === '' || trim((string) ($seo['canonical'] ?? '')) !== '') {
+            $frontMatter['canonical'] = (string) ($seo['canonical'] ?? '');
+        }
+        if (trim((string) ($frontMatter['seoImage'] ?? '')) === '' || trim((string) ($seo['ogImage'] ?? '')) !== '') {
+            $frontMatter['seoImage'] = (string) ($seo['ogImage'] ?? '');
+        }
+        if (!($frontMatter['noIndex'] ?? false) && ($seo['noIndex'] ?? false) === true) {
+            $frontMatter['noIndex'] = true;
+        }
         $content->setFrontMatter($frontMatter);
     }
 

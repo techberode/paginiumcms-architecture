@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { hydrateLocaleEditorFromLoad } from './contentEditorLocale';
+import { hydrateLocaleEditorFromLoad, resolveInitialEditorLocale } from './contentEditorLocale';
 import type { ContentEditorLoadData } from './contentEditorApi';
 
 describe('contentEditorLocale', () => {
@@ -43,5 +43,23 @@ describe('contentEditorLocale', () => {
 
     expect(hydrated.localeStates.sk?.title).toBe('EN only');
     expect(hydrated.localeStates.en?.title).toBe('EN only');
+  });
+
+  it('resolveInitialEditorLocale prefers locale with content over empty admin UI locale', () => {
+    const data: ContentEditorLoadData = {
+      title: 'SK',
+      content: 'SK body',
+      status: 'published',
+      defaultLocale: 'sk',
+      schemaVersion: 2,
+      localizedContent: {
+        sk: { title: 'SK', body: 'SK body', seo: { title: '' } },
+        en: { title: '', body: '', seo: { title: '' } },
+      },
+      localeStatus: { sk: 'published', en: 'draft' },
+    };
+
+    const hydrated = hydrateLocaleEditorFromLoad(data, 'markdown', 'markdown');
+    expect(resolveInitialEditorLocale('sk', 'en', hydrated.localeStates)).toBe('sk');
   });
 });

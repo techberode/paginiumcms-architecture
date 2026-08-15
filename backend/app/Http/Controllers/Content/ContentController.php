@@ -416,7 +416,12 @@ class ContentController
                 }
 
                 $this->applyWritePayload($existing, $data, $newSlug);
-                $existing->setStatus('draft');
+                $writeLocale = strtolower(trim((string) ($data['locale'] ?? '')));
+                if ($writeLocale !== '') {
+                    $this->localizedWriter->applyLocaleStatus($existing, $writeLocale, 'draft');
+                } else {
+                    $existing->setStatus('draft');
+                }
                 $this->emitContentHook(HookCatalog::CONTENT_BEFORE_SAVE, $existing, $type, 'update', $user);
                 $this->repository->save($existing);
                 $this->emitContentHook(HookCatalog::CONTENT_AFTER_SAVE, $existing, $type, 'update', $user);
@@ -432,6 +437,7 @@ class ContentController
                     'debug_code' => $otp['debug_code'] ?? null,
                     'slug' => $newSlug,
                     'content_type' => $type,
+                    'revision' => $this->revision->forContent($existing),
                 ], 202);
             }
 
