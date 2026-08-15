@@ -75,9 +75,12 @@ class ContentRepository implements ContentRepositoryInterface
             $object->setModifiedAt($info['mtime']);
 
             $slugBeforeRepair = trim($object->getSlug());
-            $this->localizedWriter->hydrateFlatFieldsFromCanonical($object);
-            if ($slugBeforeRepair === '' && $object->getSlug() !== '') {
-                $this->persistRepairedIdentity($object);
+            $documentRepaired = $this->localizedWriter->hydrateFlatFieldsFromCanonical($object);
+            if ($documentRepaired) {
+                if ($slugBeforeRepair === '' && $object->getSlug() !== '') {
+                    $this->persistRepairedIdentity($object);
+                }
+                $this->save($object);
             }
 
             return $object;
@@ -409,30 +412,74 @@ class ContentRepository implements ContentRepositoryInterface
         $targetPath = $storage->buildPath($directory, $content->getSlug());
         $currentPath = $content->getPath();
 
-        if ($currentPath !== '' && $currentPath !== $targetPath && $this->reader->exists($currentPath)) {
-            $raw = $this->reader->read($currentPath);
-            if ($storage->format() === 'json') {
-                $this->storageLayer->write($targetPath, $raw, true);
-            } else {
-                $this->writer->write($targetPath, $raw, true);
-            }
-            $this->writer->delete($currentPath, true);
+        if ($currentPath === '') {
             $content->setPath($targetPath);
+            $currentPath = $targetPath;
         }
 
-        $serialized = $storage->serialize(
-            $this->normalizeFrontMatter($content->getFrontMatter()),
-            $content->getContent()
-        );
-        if ($storage->format() === 'json') {
-            $this->storageLayer->write($content->getPath(), $serialized, true);
-        } else {
-            $this->writer->write($content->getPath(), $serialized, true);
+        if ($this->reader->exists($currentPath)) {
+            $raw = $this->reader->read($currentPath);
+            if ($currentPath !== $targetPath) {
+                if ($storage->format() === 'json') {
+                    $this->storageLayer->write($targetPath, $raw, true);
+                } else {
+                    $this->writer->write($targetPath, $raw, true);
+                }
+                $this->writer->delete($currentPath, true);
+                $content->setPath($targetPath);
+                $currentPath = $targetPath;
+            }
+
+            $patched = $this->patchSlugInStoredDocument($raw, $content->getSlug(), $storage->format());
+            if ($patched !== null) {
+                if ($storage->format() === 'json') {
+                    $this->storageLayer->write($currentPath, $patched, true);
+                } else {
+                    $this->writer->write($currentPath, $patched, true);
+                }
+            }
         }
 
         $type = $content instanceof Article ? 'article' : 'page';
         $this->index->remove($type, '');
         $this->index->upsertFromContent($content, $type);
+    }
+
+    private function patchSlugInStoredDocument(string $raw, string $slug, string $format): ?string
+    {
+        if ($format === 'json') {
+            $decoded = json_decode($raw, true);
+            if (!is_array($decoded)) {
+                return null;
+            }
+            $decoded['slug'] = $slug;
+
+            return \PaginiumCMS\Support\JsonHelper::encode(
+                $decoded,
+                JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+            );
+        }
+
+        if (!preg_match('/^---\s*\R(.*?)\R---\s*\R/s', $raw, $matches, PREG_OFFSET_CAPTURE)) {
+            return null;
+        }
+
+        $frontMatterBlock = $matches[1][0];
+        $rest = substr($raw, (int) $matches[0][1] + strlen($matches[0][0]));
+        $lines = preg_split('/\R/', $frontMatterBlock) ?: [];
+        $found = false;
+        foreach ($lines as $index => $line) {
+            if (str_starts_with($line, 'slug:')) {
+                $lines[$index] = 'slug: ' . $slug;
+                $found = true;
+                break;
+            }
+        }
+        if (!$found) {
+            $lines[] = 'slug: ' . $slug;
+        }
+
+        return '---' . "\n" . implode("\n", $lines) . "\n---\n" . $rest;
     }
 
     private function findBySlugScanningDisk(string $slug, string $type): ?Content

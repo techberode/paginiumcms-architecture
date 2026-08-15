@@ -5,6 +5,7 @@ import type { ContentEditorLoadData, LocalizedContentSlice } from './contentEdit
 import type { ContentEditorStatus } from './contentScheduling';
 import { isoToDatetimeLocalValue } from './contentScheduling';
 import { SUPPORTED_LOCALES } from '../i18n/types';
+import { bodyLooksLikeMetadataLeak, stripEmbeddedMetadataLeak } from './contentBodySanitizer';
 
 export type ContentLocaleCode = (typeof SUPPORTED_LOCALES)[number];
 
@@ -53,17 +54,28 @@ export function localeStateFromSlice(
   slice: LocalizedContentSlice | undefined,
   localeStatus: ContentEditorStatus,
   editorMode: EditorMode,
-  fallbackFormat: ContentFormat = 'markdown'
+  fallbackFormat: ContentFormat = 'markdown',
+  fallback?: { title?: string; body?: string }
 ): LocaleEditorState {
   if (!slice) {
     return { ...emptyLocaleEditorState(), status: localeStatus };
   }
 
-  const rawBody = String(slice.body ?? '');
+  let rawBody = String(slice.body ?? '');
+  const fallbackBody = String(fallback?.body ?? '');
+  if (bodyLooksLikeMetadataLeak(rawBody)) {
+    rawBody = stripEmbeddedMetadataLeak(rawBody);
+  }
+  if (rawBody.trim() === '' && fallbackBody.trim() !== '' && !bodyLooksLikeMetadataLeak(fallbackBody)) {
+    rawBody = fallbackBody;
+  }
+
+  const fallbackTitle = String(fallback?.title ?? '').trim();
+  const title = String(slice.title ?? '').trim() !== '' ? String(slice.title ?? '') : fallbackTitle;
   const format = fallbackFormat;
 
   return {
-    title: String(slice.title ?? ''),
+    title,
     content: valueForEditorMode(rawBody, format, editorMode),
     contentFormat: format,
     status: localeStatus,
@@ -94,12 +106,24 @@ export function hydrateLocaleEditorFromLoad(
   const localized = data.localizedContent ?? {};
   const statusMap = data.localeStatus ?? {};
   const localeStates: Partial<Record<ContentLocaleCode, LocaleEditorState>> = {};
+  const flatFallback = {
+    title: data.title ?? '',
+    body: bodyLooksLikeMetadataLeak(String(data.content ?? ''))
+      ? stripEmbeddedMetadataLeak(String(data.content ?? ''))
+      : String(data.content ?? ''),
+  };
 
   for (const code of SUPPORTED_LOCALES) {
     const slice = localized[code];
     const localeStatus = (statusMap[code] as ContentEditorStatus | undefined) ?? 'draft';
     if (slice || code === defaultLocale) {
-      localeStates[code] = localeStateFromSlice(slice, localeStatus, editorMode, contentFormat);
+      localeStates[code] = localeStateFromSlice(
+        slice,
+        localeStatus,
+        editorMode,
+        contentFormat,
+        code === defaultLocale ? flatFallback : undefined
+      );
     }
   }
 

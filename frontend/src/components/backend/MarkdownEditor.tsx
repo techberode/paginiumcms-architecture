@@ -303,8 +303,12 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
             ? getEditorProfile(loadedProfileRaw).id
             : resolveDefaultProfileId(type, settings.editor as Record<string, unknown>)
         );
-        setContent(valueForEditorMode(raw, format, loadedMode));
-        setBaseContent(raw);
+        setContent(valueForEditorMode(
+          bodyLooksLikeMetadataLeak(raw) ? stripEmbeddedMetadataLeak(raw) : raw,
+          format,
+          loadedMode
+        ));
+        setBaseContent(bodyLooksLikeMetadataLeak(raw) ? stripEmbeddedMetadataLeak(raw) : raw);
 
         const hydrated = hydrateLocaleEditorFromLoad(response.data, loadedMode, format);
         setLocaleStates(hydrated.localeStates);

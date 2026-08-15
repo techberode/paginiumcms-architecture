@@ -79,9 +79,14 @@ final class LocalizedContentNormalizer
                 continue;
             }
 
+            $body = (string) ($slice['body'] ?? $slice['content'] ?? '');
+            if ($body === '' && $code === $defaultLocale) {
+                $body = $content->getContent();
+            }
+
             $localizedContent[$code] = [
                 'title' => (string) ($slice['title'] ?? $content->getTitle()),
-                'body' => (string) ($slice['body'] ?? $slice['content'] ?? ''),
+                'body' => $body,
                 'seo' => $this->normalizeSeoSlice(is_array($slice['seo'] ?? null) ? $slice['seo'] : [], $frontMatter),
             ];
             $localeStatus[$code] = (string) ($localeStatus[$code] ?? $content->getStatus() ?: 'draft');
