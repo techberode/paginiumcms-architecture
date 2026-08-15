@@ -157,13 +157,41 @@ if [[ "${SKIP_RESTART:-0}" != "1" && -n "$STACK_DIR" && -x "$STACK_DIR/stack.sh"
   echo "→ waiting ${HEALTH_WAIT_SEC}s (502 right after restart is normal — ISS-096)"
   sleep "$HEALTH_WAIT_SEC"
 elif [[ "${SKIP_RESTART:-0}" != "1" && -n "$STACK_DIR" ]]; then
-  echo "→ SKIP_RESTART: stack.sh not reachable from this environment (restart PHP on host)"
+  echo "→ WARN: stack.sh not executable at $STACK_DIR — PHP was NOT restarted (opcache may serve old code)" >&2
+  echo "→ Fix: cd $STACK_DIR && ./stack.sh up -d --force-recreate php" >&2
+elif [[ "${SKIP_RESTART:-0}" != "1" && -z "$STACK_DIR" ]]; then
+  echo "→ WARN: STACK_DIR unset — PHP was NOT restarted (admin UI deploy from Docker cannot reach host stack)" >&2
+  echo "→ Fix on host: STACK_DIR=/var/lib/docker/compose/paginiumcms ./scripts/deploy-instance-update.sh" >&2
+  echo "→ Or: cd /var/lib/docker/compose/paginiumcms && ./stack.sh up -d --force-recreate php" >&2
 fi
 
 HEALTH_URL="http://127.0.0.1:${BACKEND_PORT}/api/health"
 echo "→ health: $HEALTH_URL"
-curl -sf "$HEALTH_URL" | head -c 400
-echo ""
+HEALTH_OK=0
+HEALTH_BODY=""
+for attempt in 1 2 3 4 5 6; do
+  if HEALTH_BODY="$(curl -sf "$HEALTH_URL" 2>/dev/null)"; then
+    HEALTH_OK=1
+    break
+  fi
+  echo "   attempt $attempt/6 failed (502 after restart is normal — ISS-096), retry in 5s..."
+  sleep 5
+done
+
+if [[ "$HEALTH_OK" == "1" ]]; then
+  echo "$HEALTH_BODY" | head -c 400
+  echo ""
+  if [[ "$GIT_REF" =~ ^v[0-9] ]]; then
+    EXPECTED="${GIT_REF#v}"
+    if ! echo "$HEALTH_BODY" | grep -q "$EXPECTED"; then
+      echo "→ WARN: health response may not show $EXPECTED (git describe fallback — check AppVersion::VERSION)" >&2
+    fi
+  fi
+else
+  echo "→ WARN: health check failed after retries — code may still be on disk; verify manually:" >&2
+  curl -s "$HEALTH_URL" 2>/dev/null | head -c 400 || echo "(no response)"
+  echo ""
+fi
 
 # Optional CORS smoke for demo (ISS-098) — set SMOKE_DEMO_CORS=1 or DEMO_MODE=true in .env
 if [[ "${SMOKE_DEMO_CORS:-0}" == "1" ]] || grep -q '^DEMO_MODE=true' "$APP_ROOT/.env" 2>/dev/null; then
