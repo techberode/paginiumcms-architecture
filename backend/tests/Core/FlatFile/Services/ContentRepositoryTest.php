@@ -203,4 +203,22 @@ class ContentRepositoryTest extends TestCase
         $this->assertSame(['news', 'php'], $tags);
         $this->assertSame(2, $this->repository->countIndexed('article', ['status' => 'published']));
     }
+
+    public function testFindByPathDoesNotPersistMetadataRepair(): void
+    {
+        $leak = "# Article\n\nBody text.\nlocaleStatus:\n  sk: published\n";
+        $path = 'pages/leak-read.md';
+        $fullPath = $this->root . '/content/' . $path;
+        $before = "---\ntitle: Article\nslug: leak-read\nstatus: published\n---\n" . $leak;
+        file_put_contents($fullPath, $before);
+        clearstatcache(true, $fullPath);
+        $mtimeBefore = filemtime($fullPath);
+
+        $content = $this->repository->findByPath($path);
+        $this->assertNotNull($content);
+        $this->assertStringNotContainsString('localeStatus:', $content->getContent());
+        clearstatcache(true, $fullPath);
+        $this->assertSame($mtimeBefore, filemtime($fullPath));
+        $this->assertSame($before, file_get_contents($fullPath));
+    }
 }

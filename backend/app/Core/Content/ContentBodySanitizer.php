@@ -15,7 +15,7 @@ final class ContentBodySanitizer
             return false;
         }
 
-        return preg_match('/\Rseo:\R[ \t]*\R[ \t]+title:/', $body) === 1
+        return preg_match('/\Rseo:\R[ \t]+title:/', $body) === 1
             || str_contains($body, "localeStatus:")
             || str_contains($body, 'seoTitle:')
             || preg_match('/\Rslug:[ \t]+\S+[ \t]+title:/', $body) === 1
@@ -29,7 +29,7 @@ final class ContentBodySanitizer
         }
 
         $patterns = [
-            '/\Rseo:\R[ \t]*\R[ \t]+title:/',
+            '/\Rseo:\R[ \t]+title:/',
             '/\RlocaleStatus:/',
             '/\Rslug:[ \t]+\S+[ \t]+title:/',
             '/\RupdatedAt:[ \t]+[\'"]/',

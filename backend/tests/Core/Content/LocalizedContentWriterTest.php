@@ -242,6 +242,44 @@ MD;
         $this->assertStringNotContainsString('localeStatus:', (string) ($page->getFrontMatter()['localizedContent']['sk']['body'] ?? ''));
     }
 
+    public function testApplyBulkStatusSyncsEveryLocaleStatus(): void
+    {
+        $page = new Page();
+        $page->setPath('pages/bulk-status.json');
+        $page->setFrontMatter([
+            'schemaVersion' => 2,
+            'defaultLocale' => 'sk',
+            'slug' => 'bulk-status',
+            'title' => 'Bulk',
+            'status' => 'draft',
+            'localizedContent' => [
+                'sk' => [
+                    'title' => 'SK title',
+                    'body' => 'SK body',
+                    'seo' => ['title' => '', 'description' => '', 'canonical' => '', 'ogImage' => '', 'noIndex' => false],
+                ],
+                'en' => [
+                    'title' => 'EN title',
+                    'body' => 'EN body',
+                    'seo' => ['title' => '', 'description' => '', 'canonical' => '', 'ogImage' => '', 'noIndex' => false],
+                ],
+            ],
+            'localeStatus' => ['sk' => 'draft', 'en' => 'draft'],
+        ]);
+        $page->setContent('SK body');
+        $page->setStatus('draft');
+
+        $writer = new LocalizedContentWriter(new LocalizedContentNormalizer($this->settingsMock()));
+        $writer->applyBulkStatus($page, 'published');
+
+        $this->assertSame('published', $page->getStatus());
+        $frontMatter = $page->getFrontMatter();
+        $this->assertSame('published', $frontMatter['localeStatus']['sk']);
+        $this->assertSame('published', $frontMatter['localeStatus']['en']);
+        $this->assertSame('Bulk', $page->getTitle());
+        $this->assertSame('SK body', $page->getContent());
+    }
+
     private function settingsMock(): SettingsRepositoryInterface
     {
         $settings = $this->createMock(SettingsRepositoryInterface::class);

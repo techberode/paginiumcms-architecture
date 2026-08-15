@@ -594,7 +594,7 @@ class ContentController
 
             try {
                 $previousStatus = $content->getStatus();
-                $content->setStatus($status);
+                $this->localizedWriter->applyBulkStatus($content, $status);
                 $user = $this->resolveUser($request);
                 $this->emitContentHook(HookCatalog::CONTENT_BEFORE_SAVE, $content, $type, 'status', $user);
                 $this->repository->save($content);
