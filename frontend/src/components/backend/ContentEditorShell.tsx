@@ -80,6 +80,7 @@ interface ContentEditorShellProps {
   onEditorProfileChange: (profileId: EditorProfileId) => void;
   onCancel: () => void;
   onSave: () => void;
+  onMarkReviewed?: () => void;
   onOpenPreview?: () => void;
   children: React.ReactNode;
   footerExtra?: React.ReactNode;
@@ -132,6 +133,7 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
   onEditorProfileChange,
   onCancel,
   onSave,
+  onMarkReviewed,
   onOpenPreview,
   children,
   footerExtra,
@@ -280,6 +282,16 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
               >
                 <Eye size={14} />
                 {t('editor.shell.preview')}
+              </button>
+            )}
+            {!isNew && status === 'published' && onMarkReviewed && (
+              <button
+                type="button"
+                onClick={onMarkReviewed}
+                disabled={!canEdit || saving}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100 disabled:opacity-60 dark:border-amber-900 dark:bg-amber-950/60 dark:text-amber-200"
+              >
+                {t('content.stale.markReviewed')}
               </button>
             )}
             {previewPath && (

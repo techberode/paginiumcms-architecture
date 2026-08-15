@@ -1,9 +1,9 @@
 # PaginiumCMS — consolidated backlog
 
-> **Snapshot:** `v2.1.0-beta.40` · August 13, 2026  
+> **Snapshot:** `v2.1.0-beta.45` · August 13, 2026  
 > **Rule:** the active backlog contains only unshipped or precisely bounded remaining scope  
 > **No-SQL:** [architecture/NOSQL_MANDATE.md](architecture/NOSQL_MANDATE.md)  
-> **Latest hotfix:** [ISS-141](../ISSUES.md#iss-141) — `RequestJsonBody` after Slim `BodyParsingMiddleware` (`beta.40`)
+> **Latest hotfix:** [ISS-146](../ISSUES.md#iss-146) — Shortcodes admin Monaco CDN blocked by CSP (`beta.45`)
 
 This document fixes the old backlog, which mixed shipped iterations, planned features, absorbed proposals, and reused numbers. Release history belongs in `CHANGELOG.md`; details of shipped capabilities belong in [FEATURE_OVERVIEW.md](FEATURE_OVERVIEW.md).
 
@@ -35,11 +35,12 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | 9 | **It.74** API keys/JWT | 🟡 | ✅ | shipped in `v2.1.0-beta.30` — see [ITERATION_74](ITERATION_74.md) |
 | 10 | **It.80** SEO, integrations & ops toolkit | 🟡 | ✅ | shipped `beta.39` — see [ITERATION_80](en/ITERATION_80.md) |
 | 11 | **It.58d** Layout remainder | 🟡 | ✅ | shortcodes + public layout shell shipped; 58f/58g deferred |
-| 12 | **It.78** Unified upload security | 🟡 | ⏳ | security gate before video / new MIME types |
-| 13 | **It.79** DAM video | 🟡 | ⏳ | self-hosted MP4/WebM + editor embed; after It.78 |
-| 14 | **It.25** Setup wizard/update UX | 🟡 pre-Final | ⏳ | onboarding and GA polish |
-| 15 | **It.76/77** Translation providers | 🔵 | ⏳ | after It.73 |
-| 16 | **It.75** AI agent | 🔵 | ⏳ | after locale and provider layers |
+| 12 | **It.81** Editorial workflow & content ops | 🟡 | 🚧 | 81a–81e shipped; 81f remains — [ITERATION_81](ITERATION_81.md) |
+| 13 | **It.78** Unified upload security | 🟡 | ⏳ | security gate before video / new MIME types |
+| 14 | **It.79** DAM video | 🟡 | ⏳ | self-hosted MP4/WebM + editor embed; after It.78 |
+| 15 | **It.25** Setup wizard/update UX | 🟡 pre-Final | ⏳ | onboarding and GA polish |
+| 16 | **It.76/77** Translation providers | 🔵 | ⏳ | after It.73 |
+| 17 | **It.75** AI agent | 🔵 | ⏳ | after locale and provider layers |
 
 ---
 
@@ -148,6 +149,23 @@ Checklist-driven product wave (sub-phases `80a`–`80g`) — **shipped `v2.1.0-b
 
 See [ITERATION_80](ITERATION_80.md). Jekyll/Ghost import deferred to a future iteration.
 
+### It.81 — Editorial workflow & content ops 🟡 ⏳
+
+Checklist-driven editor productivity wave (sub-phases `81a`–`81f`) — **planned post-`beta.45`**:
+
+| Sub | Feature | Priority |
+|-----|---------|----------|
+| 81a | Duplicate page/article as draft | P1 ⏳ |
+| 81b | Bulk assign tags (add/remove/replace) | P2 ⏳ |
+| 81c | Saved filters / pinned list views | P3 ⏳ |
+| 81d | Editorial calendar (week/month; not job scheduler) | P4 ✅ |
+| 81e | Stale content flag + dashboard widget | P5 ✅ |
+| 81f | Reusable snippet library (shortcode reference) | P6 ⏳ |
+
+Code gaps verified 2026-08-13 (no duplicate API, no bulk tags, `SchedulerView` = cron jobs). See [ITERATION_81.md](ITERATION_81.md).
+
+Suggested releases: `beta.46` (81a+81b) → `beta.47` (81c+81d) → `beta.48` (81e+81f).
+
 ### It.75 — CMS-aware AI agent 🔵
 
 - tool allow-list,
@@ -219,6 +237,7 @@ Remaining:
 | Item | Status | Note |
 |------|--------|------|
 | **It.58d** layout blocks/polish | ✅ | shortcode expand + admin UI + public `PageLayoutShell`; 58f/58g deferred |
+| **It.81** editorial workflow | ⏳ | [ITERATION_81](ITERATION_81.md) — duplicate, bulk tags, calendar, snippets |
 | **It.48** static/dynamic rendering | ⏳ | combine design with It.70 publishing pipeline |
 | Remaining theme runtime | 🟡 | depends on It.67 and schema/policy gate |
 | Server metrics agent (remaining It.46) | ⏳ | coordinate with It.71 |
@@ -301,12 +320,13 @@ Docs gate
   → It.72 (MVP done; S3/migration remainder)
   → It.73 ✅
   → It.74 ✅
-  → It.78 (upload security gate) — **next recommended product slice**
+  → It.81 (81a→81f editorial workflow) — **recommended next product slice after upload gate**
+  → It.78 (upload security gate)
   → It.79 (DAM video)
   → It.76 / It.77
   → It.75
 
-Parallel where safe: It.80 (80a→80g by impact/effort), It.58d, beta fixes, community testing.
+Parallel where safe: It.81 sub-phases, It.58f/58g remainder, beta fixes, community testing.
 Pre-Final: It.25 + GA gate.
 ```
 

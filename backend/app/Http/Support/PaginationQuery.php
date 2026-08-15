@@ -73,6 +73,27 @@ final class PaginationQuery
             $filters['date_to'] = $dateTo;
         }
 
+        $calendarFrom = self::readFilterValue($params, 'calendar_from');
+        if ($calendarFrom === '') {
+            $calendarFrom = self::readFilterValue($params, 'calendarFrom');
+        }
+        if ($calendarFrom !== '') {
+            $filters['calendar_from'] = $calendarFrom;
+        }
+
+        $calendarTo = self::readFilterValue($params, 'calendar_to');
+        if ($calendarTo === '') {
+            $calendarTo = self::readFilterValue($params, 'calendarTo');
+        }
+        if ($calendarTo !== '') {
+            $filters['calendar_to'] = $calendarTo;
+        }
+
+        $stale = self::readFilterValue($params, 'stale');
+        if ($stale === '1') {
+            $filters['stale'] = '1';
+        }
+
         return $filters;
     }
 

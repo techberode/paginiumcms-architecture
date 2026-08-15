@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.47`](#release-2-1-0-beta-47) | 2026-08-15 | It.81a–81e — duplicate, bulk tags, saved views, editorial calendar, stale content |
 | [`2.1.0-beta.46`](#release-2-1-0-beta-46) | 2026-08-13 | Hotfix — WAF false positive on suggest-meta (ISS-147) |
 | [`2.1.0-beta.45`](#release-2-1-0-beta-45) | 2026-08-13 | Hotfix — Shortcodes admin prod (Monaco CSP), self-hosted Monaco workers |
 | [`2.1.0-beta.44`](#release-2-1-0-beta-44) | 2026-08-13 | Hotfix — ShortcodesManager Monaco editor height |
@@ -121,15 +122,32 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
-### Added
-
-- **It.58d — Shortcodes + public layout shell** — `ShortcodeExpanderService` expands registered tags at render time in `ContentBodyRenderer`; bundled catalog seeder (`alert-box`, `feature-grid`, `feature-card`, `landing-hero`); admin `ShortcodesManager` at `/platform/shortcodes` (Monaco JSON, policy preview/save); page editor insert panel when layout builder mode is Shortcodes; public `PageLayoutShell` applies `layoutTemplate` from page front matter; `pg-*` CSS utilities (It.58e).
-
 ### Fixed
 
 - **ISS-141 follow-up** — all remaining `Http/Controllers/*` JSON mutating paths and OTP/contact rate-limit middleware now use `RequestJsonBody::decode()` (eliminates empty-body regressions site-wide after `BodyParsingMiddleware`).
 
 - **Shortcode expand + HTML sanitizer** — `allowedHtmlTags` now includes `div`, `article`, `section`, `aside`, `span` (required for It.58 expand templates); legacy settings merge missing layout tags on read; `role` attribute allowed on sanitized elements.
+
+<a id="release-2-1-0-beta-47"></a>
+
+## [2.1.0-beta.47] – 2026-08-15
+
+It.81 editorial workflow — duplicate, bulk tags, saved views, calendar, stale content
+
+### Added
+
+- **It.81a — Duplicate content as draft** — `POST /api/pages/{slug}/duplicate` and `/api/articles/{slug}/duplicate`; `ContentDuplicationService`; list UI action; hook `content.duplicated`.
+- **It.81b — Bulk tag assign** — `PATCH /api/pages/bulk-tags` and `/api/articles/bulk-tags` (add/remove/replace); `ContentBulkTagService`; bulk toolbar modal.
+- **It.81c — Saved content list views** — `localStorage` presets; default chips; `ContentSavedViewsBar` in `PagesManager`.
+- **It.81d — Editorial calendar** — `GET /api/admin/content/editorial-calendar`; month grid at `/platform/editorial-calendar` (distinct from job scheduler).
+- **It.81e — Stale content review flag** — `content.staleReviewMonths` setting; computed `isStale` / `monthsSinceReview`; `lastReviewedAt` + editor action; list filter and dashboard widget.
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.47`
+- **Docs:** [RELEASE_2_1_0_BETA_47.md](docs/en/RELEASE_2_1_0_BETA_47.md), [ITERATION_81.md](docs/en/ITERATION_81.md)
+
+---
 
 <a id="release-2-1-0-beta-46"></a>
 

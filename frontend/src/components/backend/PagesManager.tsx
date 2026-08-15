@@ -5,12 +5,18 @@ import { useApi } from '../../hooks/useApi';
 import { useToast } from '../../hooks/useToast';
 import { useAdminListQuery } from '../../hooks/useAdminListQuery';
 import { queryKeys } from '../../api/queryKeys';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import type { PaginationMeta } from '../../api/client';
 import { AdminListFilterBar } from './AdminListFilterBar';
 import { AdminListPagination } from './AdminListPagination';
 import { ContentListMobileCard } from './ContentListMobileCard';
 import { BulkActionBar } from './BulkActionBar';
+import { BulkTagsModal, type BulkTagMode } from './BulkTagsModal';
+import { ContentSavedViewsBar } from './ContentSavedViewsBar';
+import { SaveContentViewModal } from './SaveContentViewModal';
+import { useAuth } from '../../hooks/useAuth';
+import { useContentSavedViews } from '../../hooks/useContentSavedViews';
+import { normalizeContentFilterPreset } from '../../utils/contentSavedViews';
 import { SeoHealthBadge } from './SeoHealthBadge';
 import { useAdminViewMode } from '../../hooks/useAdminViewMode';
 import { useAdminListPageSize } from '../../hooks/useAdminListPageSize';
@@ -46,6 +52,9 @@ interface ContentItem {
   ogImage?: string;
   localeStatus?: Record<string, ContentEditorStatus>;
   defaultLocale?: string;
+  lastReviewedAt?: string;
+  isStale?: boolean;
+  monthsSinceReview?: number | null;
 }
 
 interface PagesManagerProps {
@@ -101,6 +110,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
     debouncedSearch,
     statusFilter,
     seoIssuesOnly,
+    staleOnly,
     sortField,
     sortDirection,
     handleSort,
@@ -108,15 +118,31 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
     setPage,
     setStatusFilter,
     setSeoIssuesOnly,
+    setStaleOnly,
     resetFilters,
+    applyFilterPreset,
+    getCurrentFilterPreset,
+    tagFilter,
   } = useAdminListQueryParams('updatedAt', 'desc');
   const section = type === 'articles' ? 'articles' : 'pages';
   const [pageSize, setPageSize] = useAdminListPageSize(section);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewDraft, setPreviewDraft] = useState<ReturnType<typeof buildSitePreviewDraft> | null>(null);
   const [previewLoadingSlug, setPreviewLoadingSlug] = useState<string | null>(null);
+  const [bulkTagsOpen, setBulkTagsOpen] = useState(false);
+  const [saveViewOpen, setSaveViewOpen] = useState(false);
+  const { user } = useAuth();
   const { get, delete: del } = useApi();
   const toast = useToast();
+  const navigate = useNavigate();
+  const {
+    views: savedViews,
+    saveCurrentView,
+    deleteView,
+    renameView,
+    hideDefaultView,
+    isViewActive,
+  } = useContentSavedViews(user?.id, type);
   const isMobile = useMediaQuery('(max-width: 767px)');
   const { mode: viewMode, setMode: setViewMode } = useAdminViewMode(section, 'list');
 
@@ -145,7 +171,9 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
   const hasActiveFilters =
     debouncedSearch.length >= 2 ||
     statusFilter !== 'all' ||
+    tagFilter !== '' ||
     seoIssuesOnly ||
+    staleOnly ||
     sortField !== 'updatedAt' ||
     sortDirection !== 'desc' ||
     page > 1;
@@ -179,6 +207,8 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
     pageSize,
     search: debouncedSearch,
     status: statusFilter,
+    tag: tagFilter,
+    staleOnly,
     sortField,
     sortDirection,
   });
@@ -196,6 +226,12 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
       }
       if (statusFilter !== 'all') {
         params.set('status', statusFilter);
+      }
+      if (type === 'articles' && tagFilter.trim() !== '') {
+        params.set('tag', tagFilter.trim());
+      }
+      if (staleOnly) {
+        params.set('stale', '1');
       }
 
       const response = await get<ContentItem[]>(`${endpoint}?${params.toString()}`);
@@ -236,9 +272,32 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
     }
   };
 
+  const handleDuplicate = async (slug: string) => {
+    try {
+      const result = await contentApi.duplicate(type, slug);
+      if (result?.slug) {
+        toast.success(t('content.duplicate.success'));
+        await invalidateList();
+        navigate(`/${routeBase}/${result.slug}`);
+        return;
+      }
+      toast.error(t('content.duplicate.failed'));
+    } catch (error) {
+      toast.error(t('content.duplicate.failed'));
+      console.error(error);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const classes = STATUS_BADGE_CLASS;
     return `badge ${classes[status as keyof typeof classes] || 'badge-info'}`;
+  };
+
+  const staleBadgeLabel = (item: ContentItem): string | null => {
+    if (!item.isStale) {
+      return null;
+    }
+    return t('content.stale.badge', { count: item.monthsSinceReview ?? 0 });
   };
 
   const itemSeoHealth = (item: (typeof items)[number]) =>
@@ -259,7 +318,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
 
   const bulkSelection = useBulkSelection(
     visibleItems.map((item) => item.slug),
-    `${type}:${page}:${debouncedSearch}:${statusFilter}:${seoIssuesOnly}`
+    `${type}:${page}:${debouncedSearch}:${statusFilter}:${tagFilter}:${seoIssuesOnly}`
   );
 
   const handleBulkDelete = async () => {
@@ -293,6 +352,46 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
     }
   };
 
+  const handleBulkTags = async (mode: BulkTagMode, tags: string[]) => {
+    if (bulkSelection.count === 0) {
+      return;
+    }
+    const result = await contentApi.bulkUpdateTags(type, bulkSelection.selectedIds, mode, tags);
+    if (result) {
+      toast.success(summarizeBulkResult(result, t));
+      bulkSelection.clear();
+      await invalidateList();
+      return;
+    }
+    toast.error(t('content.bulkTags.failed'));
+  };
+
+  const currentFilterPreset = getCurrentFilterPreset();
+
+  const handleSaveCurrentView = async (name: string) => {
+    const result = saveCurrentView(name, currentFilterPreset);
+    if (result.error === 'limit') {
+      toast.error(t('content.savedViews.limitReached'));
+      return;
+    }
+    if (result.error === 'name') {
+      toast.error(t('content.savedViews.nameRequired'));
+      return;
+    }
+    if (result.view) {
+      toast.success(t('content.savedViews.saved'));
+    }
+  };
+
+  const handleRenameView = (viewId: string, name: string) => {
+    const result = renameView(viewId, name);
+    if (result.error === 'name') {
+      toast.error(t('content.savedViews.nameRequired'));
+      return;
+    }
+    toast.success(t('content.savedViews.renamed'));
+  };
+
   if (loading) {
     return <AdminListSkeleton rows={8} />;
   }
@@ -318,11 +417,31 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
         seoIssuesOnly={seoIssuesOnly}
         onSeoIssuesOnlyChange={setSeoIssuesOnly}
         showSeoFilter
+        staleOnly={staleOnly}
+        onStaleOnlyChange={setStaleOnly}
+        showStaleFilter
         pageSize={pageSize}
         onPageSizeChange={setPageSize}
         pageSizeOptions={[5, 10, 20, 50]}
         showResetFilters={hasActiveFilters}
         onResetFilters={resetFilters}
+      />
+
+      <ContentSavedViewsBar
+        views={savedViews}
+        activePreset={normalizeContentFilterPreset(currentFilterPreset)}
+        isViewActive={isViewActive}
+        onApply={(view) => applyFilterPreset(view.preset)}
+        onSaveCurrent={() => setSaveViewOpen(true)}
+        onHideDefault={hideDefaultView}
+        onRename={handleRenameView}
+        onDelete={deleteView}
+      />
+
+      <SaveContentViewModal
+        open={saveViewOpen}
+        onClose={() => setSaveViewOpen(false)}
+        onSave={handleSaveCurrentView}
       />
 
       <BulkActionBar
@@ -332,8 +451,16 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
           { id: 'publish', label: t('content.bulk.publish'), variant: 'primary', onClick: () => void handleBulkStatus('published') },
           { id: 'draft', label: t('content.bulk.draft'), variant: 'secondary', onClick: () => void handleBulkStatus('draft') },
           { id: 'archive', label: t('content.bulk.archive'), variant: 'secondary', onClick: () => void handleBulkStatus('archived') },
+          { id: 'tags', label: t('content.bulkTags.action'), variant: 'secondary', onClick: () => setBulkTagsOpen(true) },
           { id: 'delete', label: t('content.bulk.delete'), variant: 'danger', onClick: () => void handleBulkDelete() },
         ]}
+      />
+
+      <BulkTagsModal
+        open={bulkTagsOpen}
+        count={bulkSelection.count}
+        onClose={() => setBulkTagsOpen(false)}
+        onSubmit={handleBulkTags}
       />
 
       {visibleItems.length === 0 ? (
@@ -392,6 +519,13 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                     </button>
                     <button
                       type="button"
+                      className="btn btn-secondary text-xs px-3 py-1"
+                      onClick={() => void handleDuplicate(item.slug)}
+                    >
+                      {t('content.duplicate.action')}
+                    </button>
+                    <button
+                      type="button"
                       className="btn btn-danger text-xs px-3 py-1"
                       onClick={() => void handleDelete(item.slug)}
                     >
@@ -427,8 +561,10 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                 selected={bulkSelection.isSelected(item.slug)}
                 onToggleSelect={() => bulkSelection.toggle(item.slug)}
                 onDelete={() => void handleDelete(item.slug)}
+                onDuplicate={() => void handleDuplicate(item.slug)}
                 onPreview={() => void openListPreview(item)}
                 previewLoading={previewLoadingSlug === item.slug}
+                staleLabel={staleBadgeLabel(item)}
               />
             );
           })}
@@ -516,6 +652,9 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                               localeStatus={item.localeStatus}
                               statusLabels={editorStatusLabels}
                             />
+                            {staleBadgeLabel(item) ? (
+                              <span className="badge badge-warning text-[10px]">{staleBadgeLabel(item)}</span>
+                            ) : null}
                           </div>
                         </td>
                         <td className="text-sm text-gray-500 dark:text-gray-400 hide-tablet">
@@ -547,6 +686,13 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                               onClick={() => void openListPreview(item)}
                             >
                               {previewLoadingSlug === item.slug ? t('list.actions.previewLoading') : t('list.actions.preview')}
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-secondary text-xs px-3 py-1"
+                              onClick={() => void handleDuplicate(item.slug)}
+                            >
+                              {t('content.duplicate.action')}
                             </button>
                             <button
                               onClick={() => void handleDelete(item.slug)}

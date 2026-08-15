@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 use PaginiumCMS\Http\Controllers\Content\ContentController;
 use PaginiumCMS\Http\Controllers\Content\ContentMetaController;
+use PaginiumCMS\Http\Controllers\Content\EditorialCalendarController;
 use PaginiumCMS\Http\Controllers\Content\SearchController;
 use PaginiumCMS\Http\Middleware\AuthMiddleware;
 use PaginiumCMS\Http\Middleware\PermissionMiddleware;
@@ -23,6 +24,7 @@ return function (App $app): void {
     $controller = $container->get(ContentController::class);
     $metaController = $container->get(ContentMetaController::class);
     $searchController = $container->get(SearchController::class);
+    $calendarController = $container->get(EditorialCalendarController::class);
     $auth = $container->get(AuthMiddleware::class);
     $authz = $container->get(AuthorizationInterface::class);
 
@@ -75,6 +77,7 @@ return function (App $app): void {
 
     $app->group('/api/pages', function (RouteCollectorProxy $group) use ($controller) {
         $group->patch('/bulk-status', [$controller, 'bulkUpdatePageStatus']);
+        $group->patch('/bulk-tags', [$controller, 'bulkUpdatePageTags']);
     })
         ->add(new PermissionMiddleware($authz, 'content:edit'))
         ->add($auth);
@@ -101,8 +104,21 @@ return function (App $app): void {
 
     $app->group('/api/articles', function (RouteCollectorProxy $group) use ($controller) {
         $group->patch('/bulk-status', [$controller, 'bulkUpdateArticleStatus']);
+        $group->patch('/bulk-tags', [$controller, 'bulkUpdateArticleTags']);
     })
         ->add(new PermissionMiddleware($authz, 'content:edit'))
+        ->add($auth);
+
+    $app->group('/api/pages', function (RouteCollectorProxy $group) use ($controller) {
+        $group->post('/{slug}/duplicate', [$controller, 'duplicatePage']);
+    })
+        ->add(new PermissionMiddleware($authz, 'content:create'))
+        ->add($auth);
+
+    $app->group('/api/articles', function (RouteCollectorProxy $group) use ($controller) {
+        $group->post('/{slug}/duplicate', [$controller, 'duplicateArticle']);
+    })
+        ->add(new PermissionMiddleware($authz, 'content:create'))
         ->add($auth);
 
     $app->post('/api/admin/content/suggest-meta', [$metaController, 'suggestMeta'])
@@ -112,6 +128,10 @@ return function (App $app): void {
 
     $app->post('/api/admin/content/render-preview', [$metaController, 'renderPreview'])
         ->add($container->get(\PaginiumCMS\Http\Middleware\ContentSuggestMetaRateLimitMiddleware::class))
+        ->add(new PermissionMiddleware($authz, 'content:edit'))
+        ->add($auth);
+
+    $app->get('/api/admin/content/editorial-calendar', [$calendarController, 'index'])
         ->add(new PermissionMiddleware($authz, 'content:edit'))
         ->add($auth);
 };

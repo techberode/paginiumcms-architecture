@@ -1,13 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import type { SortDirection } from './useColumnSort';
+import type { ContentFilterPreset } from '../utils/contentSavedViews';
+import { normalizeContentFilterPreset } from '../utils/contentSavedViews';
 
 export interface AdminListQueryState {
   page: number;
   search: string;
   debouncedSearch: string;
   statusFilter: string;
+  tagFilter: string;
   seoIssuesOnly: boolean;
+  staleOnly: boolean;
   sortField: string;
   sortDirection: SortDirection;
 }
@@ -16,9 +20,15 @@ export interface AdminListQueryActions {
   setSearch: (value: string) => void;
   setPage: (page: number) => void;
   setStatusFilter: (value: string) => void;
+  setTagFilter: (value: string) => void;
   setSeoIssuesOnly: (value: boolean) => void;
+  setStaleOnly: (value: boolean) => void;
   handleSort: (field: string) => void;
   resetFilters: () => void;
+  applyFilterPreset: (preset: ContentFilterPreset) => void;
+  getCurrentFilterPreset: (
+    defaults?: Partial<Pick<ContentFilterPreset, 'sortField' | 'sortDirection'>>
+  ) => ContentFilterPreset;
 }
 
 function parsePositiveInt(value: string | null, fallback: number): number {
@@ -54,7 +64,9 @@ export function useAdminListQueryParams(
 
   const page = parsePositiveInt(searchParams.get('page'), 1);
   const statusFilter = searchParams.get('status') ?? 'all';
+  const tagFilter = searchParams.get('tag') ?? '';
   const seoIssuesOnly = searchParams.get('seo') === '1';
+  const staleOnly = searchParams.get('stale') === '1';
   const { sortField, sortDirection } = useMemo(
     () => parseSortParam(searchParams.get('sort'), defaultSortField, defaultSortDirection),
     [searchParams, defaultSortField, defaultSortDirection]
@@ -65,7 +77,9 @@ export function useAdminListQueryParams(
       page?: number;
       q?: string;
       status?: string;
+      tag?: string;
       seo?: boolean;
+      stale?: boolean;
       sortField?: string;
       sortDirection?: SortDirection;
       resetPage?: boolean;
@@ -89,11 +103,28 @@ export function useAdminListQueryParams(
         }
       }
 
+      if (patch.tag !== undefined) {
+        const trimmedTag = patch.tag.trim();
+        if (trimmedTag === '') {
+          next.delete('tag');
+        } else {
+          next.set('tag', trimmedTag);
+        }
+      }
+
       if (patch.seo !== undefined) {
         if (patch.seo) {
           next.set('seo', '1');
         } else {
           next.delete('seo');
+        }
+      }
+
+      if (patch.stale !== undefined) {
+        if (patch.stale) {
+          next.set('stale', '1');
+        } else {
+          next.delete('stale');
         }
       }
 
@@ -163,6 +194,54 @@ export function useAdminListQueryParams(
     [patchParams]
   );
 
+  const setStaleOnly = useCallback(
+    (value: boolean) => {
+      patchParams({ stale: value, resetPage: true });
+    },
+    [patchParams]
+  );
+
+  const setTagFilter = useCallback(
+    (value: string) => {
+      patchParams({ tag: value, resetPage: true });
+    },
+    [patchParams]
+  );
+
+  const applyFilterPreset = useCallback(
+    (presetInput: ContentFilterPreset) => {
+      const preset = normalizeContentFilterPreset(presetInput);
+      setSearchState(preset.search);
+      setDebouncedSearch(preset.search);
+      patchParams({
+        q: preset.search,
+        status: preset.status,
+        tag: preset.tag,
+        seo: preset.seoIssuesOnly,
+        stale: preset.staleOnly,
+        sortField: preset.sortField,
+        sortDirection: preset.sortDirection,
+        resetPage: true,
+      });
+    },
+    [patchParams]
+  );
+
+  const getCurrentFilterPreset = useCallback(
+    (defaults?: Partial<Pick<ContentFilterPreset, 'sortField' | 'sortDirection'>>): ContentFilterPreset =>
+      normalizeContentFilterPreset({
+        status: statusFilter,
+        search: debouncedSearch,
+        tag: tagFilter,
+        seoIssuesOnly,
+        staleOnly,
+        sortField: sortField,
+        sortDirection,
+        ...defaults,
+      }),
+    [debouncedSearch, seoIssuesOnly, staleOnly, sortDirection, sortField, statusFilter, tagFilter]
+  );
+
   const handleSort = useCallback(
     (field: string) => {
       if (sortField === field) {
@@ -189,15 +268,21 @@ export function useAdminListQueryParams(
     search,
     debouncedSearch,
     statusFilter,
+    tagFilter,
     seoIssuesOnly,
+    staleOnly,
     sortField,
     sortDirection,
     setSearch,
     setPage,
     setStatusFilter,
+    setTagFilter,
     setSeoIssuesOnly,
+    setStaleOnly,
     handleSort,
     resetFilters,
+    applyFilterPreset,
+    getCurrentFilterPreset,
   };
 }
 

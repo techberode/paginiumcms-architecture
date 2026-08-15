@@ -7,6 +7,7 @@ namespace PaginiumCMS\Tests\Core\FlatFile\Services;
 use PaginiumCMS\Core\Content\LocalizedContentNormalizer;
 use PaginiumCMS\Core\FlatFile\Services\ContentRepository;
 use PaginiumCMS\Core\FlatFile\Services\ContentIndexService;
+use PaginiumCMS\Core\FlatFile\Services\ContentStalenessService;
 use PaginiumCMS\Core\FlatFile\Services\FileReader;
 use PaginiumCMS\Core\FlatFile\Services\FileWriter;
 use PaginiumCMS\Core\FlatFile\Services\FileValidator;
@@ -74,7 +75,8 @@ class ContentRepositoryTest extends TestCase
         $settings->method('get')->willReturn('sk');
         $settings->method('group')->willReturn([]);
         $normalizer = new LocalizedContentNormalizer($settings);
-        $this->index = new ContentIndexService($reader, $normalizer, 'data/index/content.json');
+        $staleness = new ContentStalenessService($settings);
+        $this->index = new ContentIndexService($reader, $normalizer, $staleness, 'data/index/content.json');
 
         $this->repository = new ContentRepository(
             $reader,

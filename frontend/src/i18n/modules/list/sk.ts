@@ -15,6 +15,7 @@ export const listSk: MessageTree = {
     pageSizeAria: 'Počet položiek na stránku',
     perPage: ':count / stránku',
     seoIssuesOnly: 'Len SEO problémy',
+    staleOnly: 'Len zastaralé',
     clearFilters: 'Vymazať filtre',
   },
   pagination: {

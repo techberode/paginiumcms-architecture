@@ -10,6 +10,7 @@ use PaginiumCMS\Core\Feeds\Services\SitemapGenerator;
 use PaginiumCMS\Core\FlatFile\Models\Article;
 use PaginiumCMS\Core\FlatFile\Models\Page;
 use PaginiumCMS\Core\FlatFile\Services\ContentIndexService;
+use PaginiumCMS\Core\FlatFile\Services\ContentStalenessService;
 use PaginiumCMS\Core\FlatFile\Services\FileReader;
 use PaginiumCMS\Core\FlatFile\Services\FileValidator;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
@@ -32,7 +33,8 @@ final class FeedGeneratorTest extends TestCase
         $this->settings = $this->createMock(SettingsRepositoryInterface::class);
         $this->settings->method('get')->willReturn('sk');
         $normalizer = new LocalizedContentNormalizer($this->settings);
-        $this->index = new ContentIndexService($reader, $normalizer, 'data/index/content.json');
+        $staleness = new ContentStalenessService($this->settings);
+        $this->index = new ContentIndexService($reader, $normalizer, $staleness, 'data/index/content.json');
     }
 
     public function testRssContainsOnlyPublishedArticles(): void

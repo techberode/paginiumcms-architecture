@@ -1,6 +1,6 @@
 # PaginiumCMS — konsolidovaný backlog
 
-> **Snapshot:** `v2.1.0-beta.32` · 9. august 2026  
+> **Snapshot:** `v2.1.0-beta.45` · 13. august 2026  
 > **Pravidlo:** aktívny backlog obsahuje iba nedodaný alebo presne ohraničený zostávajúci rozsah  
 > **No-SQL:** [architecture/NOSQL_MANDATE.md](architecture/NOSQL_MANDATE.md)
 
@@ -32,13 +32,14 @@ Tento dokument opravuje starý backlog, v ktorom sa miešali hotové iterácie, 
 | 7 | **It.72** Media drivers | 🟡 | 🟡 partial | MVP local driver + probe; S3/migrácia neskôr |
 | 8 | **It.73** Multi-locale document | 🟡 | ⏳ | základ pre preklady |
 | 9 | **It.74** API keys/JWT | 🟡 | ✅ | `v2.1.0-beta.30` — [ITERATION_74](../en/ITERATION_74.md) |
-| 10 | **It.80** SEO, integrácie & ops toolkit | 🟡 | ⏳ | redirecty, 404, webhooks, GDPR, CLI — [ITERATION_80](ITERATION_80.md) |
-| 11 | **It.58d** Layout remainder | 🟡 | ⏳ | zostávajúce bloky |
-| 12 | **It.25** Setup wizard/update UX | 🟡 pre-Final | ⏳ | onboarding a GA |
-| 13 | **It.76/77** Translation providers | 🔵 | ⏳ | po It.73 |
-| 14 | **It.75** AI agent | 🔵 | ⏳ | po locale a provider vrstvách |
-| 15 | **It.78** Unified upload security | 🟡 | ⏳ | bezpečnostná brána pred videom / novými MIME |
-| 16 | **It.79** DAM video | 🟡 | ⏳ | MP4/WebM + embed v editore; po It.78 |
+| 10 | **It.80** SEO, integrácie & ops toolkit | 🟡 | ✅ | `beta.39` — [ITERATION_80](../en/ITERATION_80.md) |
+| 11 | **It.58d** Layout remainder | 🟡 | ✅ | shortcodes + layout shell; 58f/58g odložené |
+| 12 | **It.81** Redakčný workflow & content ops | 🟡 | 🚧 | 81a–81e hotové; 81f zostáva — [ITERATION_81](../en/ITERATION_81.md) |
+| 13 | **It.78** Unified upload security | 🟡 | ⏳ | bezpečnostná brána pred videom / novými MIME |
+| 14 | **It.79** DAM video | 🟡 | ⏳ | MP4/WebM + embed v editore; po It.78 |
+| 15 | **It.25** Setup wizard/update UX | 🟡 pre-Final | ⏳ | onboarding a GA |
+| 16 | **It.76/77** Translation providers | 🔵 | ⏳ | po It.73 |
+| 17 | **It.75** AI agent | 🔵 | ⏳ | po locale a provider vrstvách |
 
 ---
 
@@ -188,7 +189,8 @@ Zostáva:
 
 | Položka | Stav | Poznámka |
 |---------|------|----------|
-| **It.58d** layout blocks/polish | ⏳ | nesmie vytvoriť druhý page model |
+| **It.58d** layout blocks/polish | ✅ | shortcodes + layout shell; 58f/58g odložené |
+| **It.81** redakčný workflow | ⏳ | [ITERATION_81](../en/ITERATION_81.md) |
 | **It.48** static/dynamic render | ⏳ | spojiť návrh s It.70 publish pipeline |
 | Zostávajúci theme runtime | 🟡 | závisí od It.67 a schema/policy gate |
 | Server metrics agent (zvyšok It.46) | ⏳ | koordinovať s It.71 |
@@ -269,12 +271,13 @@ Docs gate
   → It.72
   → It.73
   → It.74 ✅
+  → It.81 (81a→81f redakčný workflow)
   → It.78 (upload security gate)
   → It.79 (DAM video)
   → It.76 / It.77
   → It.75
 
-Parallel where safe: It.80 (80a→80g podľa dopad/náročnosť), It.58d, beta fixes, community testing.
+Parallel where safe: It.81 sub-fázy, It.58f/58g, beta fixes, community testing.
 Pre-Final: It.25 + GA gate.
 ```
 

@@ -25,6 +25,7 @@ final class ContentIndexService
     public function __construct(
         private FileReaderInterface $reader,
         private LocalizedContentNormalizer $localizedNormalizer,
+        private ContentStalenessService $staleness,
         private string $indexFile = 'data/index/content.json'
     ) {
         $this->absolutePath = rtrim($this->reader->getBasePath(), '/') . '/' . ltrim($this->indexFile, '/');
@@ -202,6 +203,64 @@ final class ContentIndexService
         });
     }
 
+    /**
+     * Editorial calendar slice — entries whose derived calendar date falls in [from, to] (It.81d).
+     *
+     * @param array<string, string> $filters
+     * @return list<ContentIndexEntry>
+     */
+    public function queryEditorialCalendar(
+        string $from,
+        string $to,
+        ?string $type = null,
+        array $filters = []
+    ): array {
+        $fromDate = $this->normalizeFilterDate($from);
+        $toDate = $this->normalizeFilterDate($to);
+        if ($fromDate === null || $toDate === null || $fromDate > $toDate) {
+            return [];
+        }
+
+        return $this->withLockedIndex(function (array &$items) use ($fromDate, $toDate, $type, $filters): array {
+            $entries = array_values(array_map(
+                fn (array $row): ContentIndexEntry => ContentIndexEntry::fromArray($row),
+                $items
+            ));
+
+            if ($type === 'page' || $type === 'article') {
+                $entries = array_values(array_filter(
+                    $entries,
+                    static fn (ContentIndexEntry $e): bool => $e->type === $type
+                ));
+            }
+
+            $entries = $this->applyIndexFilters($entries, $filters, false);
+
+            $entries = array_values(array_filter(
+                $entries,
+                static function (ContentIndexEntry $e) use ($fromDate, $toDate): bool {
+                    $calendarDate = $e->calendarDate();
+                    if ($calendarDate === '') {
+                        return false;
+                    }
+
+                    return $calendarDate >= $fromDate && $calendarDate <= $toDate;
+                }
+            ));
+
+            usort($entries, static function (ContentIndexEntry $a, ContentIndexEntry $b): int {
+                $dateCmp = strcmp($a->calendarDate(), $b->calendarDate());
+                if ($dateCmp !== 0) {
+                    return $dateCmp;
+                }
+
+                return strcasecmp($a->title, $b->title);
+            });
+
+            return $entries;
+        });
+    }
+
     public function rebuild(ContentRepositoryInterface $repository): void
     {
         $items = [];
@@ -356,6 +415,17 @@ final class ContentIndexService
 
                     return true;
                 }
+            ));
+        }
+
+        if (($filters['stale'] ?? '') === '1') {
+            if ($this->staleness->thresholdMonths() === 0) {
+                return [];
+            }
+
+            $entries = array_values(array_filter(
+                $entries,
+                fn (ContentIndexEntry $e): bool => $this->staleness->entryIsStale($e)
             ));
         }
 

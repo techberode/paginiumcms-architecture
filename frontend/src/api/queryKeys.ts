@@ -10,6 +10,8 @@ export const queryKeys = {
         pageSize: number;
         search: string;
         status: string;
+        tag: string;
+        staleOnly: boolean;
         sortField: string;
         sortDirection: string;
       }

@@ -40,6 +40,26 @@ export interface RenderPreviewResponse {
   html: string;
 }
 
+export interface EditorialCalendarEntry {
+  slug: string;
+  title: string;
+  type: 'page' | 'article';
+  status: string;
+  author: string;
+  tags: string[];
+  calendarDate: string;
+  scheduledAt: string;
+  updatedAt: string;
+}
+
+export interface EditorialCalendarParams {
+  from: string;
+  to: string;
+  type?: 'all' | 'page' | 'article';
+  author?: string;
+  tag?: string;
+}
+
 export const contentApi = {
   list: async <T extends ContentItem = Page>(
     type: ContentType,
@@ -96,6 +116,18 @@ export const contentApi = {
     return Boolean(res.success);
   },
 
+  duplicate: async (
+    type: ContentType,
+    slug: string,
+    payload: { newSlug?: string; newTitle?: string } = {}
+  ): Promise<ContentItem | null> => {
+    const res = await apiClient.post<ContentItem>(
+      `${endpoint(type)}/${encodeURIComponent(slug)}/duplicate`,
+      payload
+    );
+    return res.success && res.data ? res.data : null;
+  },
+
   bulkDelete: async (type: ContentType, slugs: string[]) => {
     const res = await apiClient.post<import('../types/bulk').BulkBatchResult>(
       `${endpoint(type)}/bulk-delete`,
@@ -116,6 +148,19 @@ export const contentApi = {
     return res.success && res.data ? res.data : null;
   },
 
+  bulkUpdateTags: async (
+    type: ContentType,
+    slugs: string[],
+    mode: 'add' | 'remove' | 'replace',
+    tags: string[]
+  ) => {
+    const res = await apiClient.patch<import('../types/bulk').BulkBatchResult>(
+      `${endpoint(type)}/bulk-tags`,
+      { slugs, mode, tags }
+    );
+    return res.success && res.data ? res.data : null;
+  },
+
   suggestMeta: async (payload: SuggestMetaPayload): Promise<SuggestMetaResponse> => {
     const res = await apiClient.post<SuggestMetaResponse>('/api/admin/content/suggest-meta', payload);
     if (!res.success || !res.data) {
@@ -130,5 +175,32 @@ export const contentApi = {
       throw new Error('render_preview_failed');
     }
     return res.data.html;
+  },
+
+  editorialCalendar: async (
+    params: EditorialCalendarParams
+  ): Promise<{ items: EditorialCalendarEntry[]; error?: string }> => {
+    const searchParams = new URLSearchParams({
+      from: params.from,
+      to: params.to,
+    });
+    if (params.type && params.type !== 'all') {
+      searchParams.set('type', params.type);
+    }
+    if (params.author) {
+      searchParams.set('author', params.author);
+    }
+    if (params.tag) {
+      searchParams.set('tag', params.tag);
+    }
+
+    const res = await apiClient.get<EditorialCalendarEntry[]>(
+      `/api/admin/content/editorial-calendar?${searchParams.toString()}`
+    );
+
+    return {
+      items: res.success && Array.isArray(res.data) ? res.data : [],
+      error: res.success ? undefined : res.error ?? res.message,
+    };
   },
 };

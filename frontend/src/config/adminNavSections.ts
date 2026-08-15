@@ -23,6 +23,7 @@ import {
   HardDrive,
   Trash2,
   CalendarClock,
+  CalendarDays,
   Puzzle,
   Languages,
   BarChart3,
@@ -62,6 +63,12 @@ export const ADMIN_NAV_SECTIONS: AdminNavSectionDef[] = [
     items: [
       { id: 'pages', labelKey: 'admin.nav.pages', href: '/pages', icon: FileText },
       { id: 'articles', labelKey: 'admin.nav.articles', href: '/articles', icon: BookOpen },
+      {
+        id: 'editorial-calendar',
+        labelKey: 'admin.nav.editorialCalendar',
+        href: '/platform/editorial-calendar',
+        icon: CalendarDays,
+      },
       { id: 'media', labelKey: 'admin.nav.media', href: '/media', icon: ImageIcon },
       { id: 'gallery', labelKey: 'admin.nav.gallery', href: '/gallery', icon: LayoutGrid, adminOnly: true },
       { id: 'navigation', labelKey: 'admin.nav.navigation', href: '/navigation', icon: Database },

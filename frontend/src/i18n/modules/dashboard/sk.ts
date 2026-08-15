@@ -15,6 +15,7 @@ export const dashboardSk: MessageTree = {
     users: 'Používatelia',
     backups: 'Zálohy',
     visitsToday: 'Návštevy dnes',
+    staleContent: 'Zastaralý obsah',
   },
   stats: {
     unreadMessages: 'Neprečítané správy',

@@ -15,6 +15,7 @@ export const listEn: MessageTree = {
     pageSizeAria: 'Items per page',
     perPage: ':count / page',
     seoIssuesOnly: 'SEO issues only',
+    staleOnly: 'Stale only',
     clearFilters: 'Clear filters',
   },
   pagination: {

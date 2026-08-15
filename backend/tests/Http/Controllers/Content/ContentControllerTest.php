@@ -413,4 +413,154 @@ class ContentControllerTest extends TestCase
         $this->assertSame('published', $data['data']['localeStatus']['en'] ?? null);
         $this->assertSame('published', $data['data']['localeStatus']['sk'] ?? null);
     }
+
+    public function testDuplicatePageRequiresAuth(): void
+    {
+        $response = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/pages/home/duplicate', [])
+        );
+
+        $this->assertSame(401, $response->getStatusCode());
+    }
+
+    public function testDuplicatePageCreatesDraftCopy(): void
+    {
+        $this->loginAsAdminUser();
+
+        $slug = 'dup-source-' . uniqid();
+        $repo = $this->app->getContainer()->get(ContentRepositoryInterface::class);
+        $page = new Page();
+        $page->setSlug($slug);
+        $page->setFrontMatter([
+            'title' => 'Duplicate me',
+            'slug' => $slug,
+            'status' => 'published',
+            'tags' => ['news'],
+            'scheduledAt' => '2026-08-01T10:00:00+02:00',
+            'date' => '2026-01-01 10:00:00',
+        ]);
+        $page->setContent("# Duplicate\n");
+        $repo->save($page);
+
+        $response = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/pages/' . $slug . '/duplicate', [])
+        );
+        $data = $this->getJsonResponse($response);
+
+        $this->assertSame(201, $response->getStatusCode());
+        $this->assertTrue($data['success']);
+        $this->assertSame($slug . '-copy', $data['data']['slug'] ?? null);
+        $this->assertSame('draft', $data['data']['status'] ?? null);
+        $this->assertSame('Duplicate me (copy)', $data['data']['title'] ?? null);
+
+        $stored = $repo->findBySlug($slug . '-copy', 'page');
+        $this->assertNotNull($stored);
+        $this->assertSame('draft', $stored->getStatus());
+    }
+
+    public function testDuplicateUnknownPageReturns404(): void
+    {
+        $this->loginAsAdminUser();
+
+        $response = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/pages/missing-' . uniqid('', true) . '/duplicate', [])
+        );
+
+        $this->assertSame(404, $response->getStatusCode());
+    }
+
+    public function testBulkTagsPagesRequiresAuth(): void
+    {
+        $response = $this->handleRequest(
+            $this->createJsonRequest('PATCH', '/api/pages/bulk-tags', [
+                'slugs' => ['test-slug'],
+                'mode' => 'add',
+                'tags' => ['news'],
+            ])
+        );
+
+        $this->assertSame(401, $response->getStatusCode());
+    }
+
+    public function testBulkTagsPagesAddAndRemove(): void
+    {
+        $this->loginAsAdminUser();
+
+        $repo = $this->app->getContainer()->get(ContentRepositoryInterface::class);
+        $slugA = 'bulk-tags-a-' . uniqid();
+        $slugB = 'bulk-tags-b-' . uniqid();
+
+        foreach ([$slugA, $slugB] as $slug) {
+            $page = new Page();
+            $page->setSlug($slug);
+            $page->setFrontMatter([
+                'title' => 'Bulk tags ' . $slug,
+                'slug' => $slug,
+                'status' => 'draft',
+                'tags' => ['news'],
+            ]);
+            $page->setContent("# Bulk tags\n");
+            $repo->save($page);
+        }
+
+        $addResponse = $this->handleRequest(
+            $this->createJsonRequest('PATCH', '/api/pages/bulk-tags', [
+                'slugs' => [$slugA, $slugB],
+                'mode' => 'add',
+                'tags' => ['reviewed', 'news'],
+            ])
+        );
+        $addData = $this->getJsonResponse($addResponse);
+
+        $this->assertSame(200, $addResponse->getStatusCode());
+        $this->assertTrue($addData['success']);
+        $this->assertSame(2, $addData['data']['succeeded']);
+
+        $storedA = $repo->findBySlug($slugA, 'page');
+        $this->assertNotNull($storedA);
+        $this->assertSame(['news', 'reviewed'], $storedA->getTags());
+
+        $removeResponse = $this->handleRequest(
+            $this->createJsonRequest('PATCH', '/api/pages/bulk-tags', [
+                'slugs' => [$slugA],
+                'mode' => 'remove',
+                'tags' => ['news'],
+            ])
+        );
+        $removeData = $this->getJsonResponse($removeResponse);
+
+        $this->assertSame(200, $removeResponse->getStatusCode());
+        $this->assertTrue($removeData['success']);
+        $this->assertSame(['reviewed'], $repo->findBySlug($slugA, 'page')?->getTags());
+    }
+
+    public function testBulkTagsRejectsInvalidMode(): void
+    {
+        $this->loginAsAdminUser();
+
+        $response = $this->handleRequest(
+            $this->createJsonRequest('PATCH', '/api/pages/bulk-tags', [
+                'slugs' => ['home'],
+                'mode' => 'merge',
+                'tags' => ['news'],
+            ])
+        );
+
+        $this->assertSame(400, $response->getStatusCode());
+    }
+
+    public function testBulkTagsRejectsEmptyTagsForAdd(): void
+    {
+        $this->loginAsAdminUser();
+
+        $response = $this->handleRequest(
+            $this->createJsonRequest('PATCH', '/api/pages/bulk-tags', [
+                'slugs' => ['home'],
+                'mode' => 'add',
+                'tags' => [],
+            ])
+        );
+
+        $this->assertSame(400, $response->getStatusCode());
+    }
 }
