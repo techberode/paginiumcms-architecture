@@ -168,6 +168,80 @@ final class LocalizedContentWriterTest extends TestCase
         $this->assertSame('Recovered title', $page->getTitle());
     }
 
+    public function testHydrateDoesNotClobberExistingFlatContentOrSeoWhenSliceEmpty(): void
+    {
+        $page = new Page();
+        $page->setPath('pages/live-article.json');
+        $page->setFrontMatter([
+            'schemaVersion' => 2,
+            'defaultLocale' => 'sk',
+            'slug' => 'live-article',
+            'title' => 'Flat title',
+            'seoTitle' => 'Flat SEO title',
+            'seoDescription' => 'Flat SEO description',
+            'seoImage' => '/media/hero.jpg',
+            'localizedContent' => [
+                'sk' => [
+                    'title' => '',
+                    'body' => '',
+                    'seo' => ['title' => '', 'description' => '', 'canonical' => '', 'ogImage' => '', 'noIndex' => false],
+                ],
+            ],
+            'localeStatus' => ['sk' => 'published'],
+        ]);
+        $page->setContent('# Existing body');
+
+        $writer = new LocalizedContentWriter(new LocalizedContentNormalizer($this->settingsMock()));
+        $writer->hydrateFlatFieldsFromCanonical($page);
+
+        $frontMatter = $page->getFrontMatter();
+        $this->assertSame('Flat title', $page->getTitle());
+        $this->assertSame('# Existing body', $page->getContent());
+        $this->assertSame('Flat SEO title', $frontMatter['seoTitle']);
+        $this->assertSame('Flat SEO description', $frontMatter['seoDescription']);
+        $this->assertSame('/media/hero.jpg', $frontMatter['seoImage']);
+    }
+
+    public function testHydrateStripsEmbeddedMetadataLeakFromFlatAndLocaleSlice(): void
+    {
+        $leak = <<<'MD'
+# Article
+
+Body text.
+seo:
+  title: beta38
+  description: leaked
+localeStatus:
+  sk: published
+MD;
+
+        $page = new Page();
+        $page->setPath('pages/leaked.json');
+        $page->setFrontMatter([
+            'schemaVersion' => 2,
+            'defaultLocale' => 'sk',
+            'slug' => 'leaked',
+            'title' => 'Article',
+            'localizedContent' => [
+                'sk' => [
+                    'title' => 'Article',
+                    'body' => $leak,
+                    'seo' => ['title' => '', 'description' => '', 'canonical' => '', 'ogImage' => '', 'noIndex' => false],
+                ],
+            ],
+            'localeStatus' => ['sk' => 'published'],
+        ]);
+        $page->setContent($leak);
+
+        $writer = new LocalizedContentWriter(new LocalizedContentNormalizer($this->settingsMock()));
+        $changed = $writer->hydrateFlatFieldsFromCanonical($page);
+
+        $this->assertTrue($changed);
+        $this->assertStringContainsString('Body text.', $page->getContent());
+        $this->assertStringNotContainsString('localeStatus:', $page->getContent());
+        $this->assertStringNotContainsString('localeStatus:', (string) ($page->getFrontMatter()['localizedContent']['sk']['body'] ?? ''));
+    }
+
     private function settingsMock(): SettingsRepositoryInterface
     {
         $settings = $this->createMock(SettingsRepositoryInterface::class);

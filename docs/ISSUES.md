@@ -4512,10 +4512,18 @@ Not a permissions regression — both SUPER_ADMIN and ADMIN were affected.
 
 ### Production repair
 
-1. Deploy **`v2.1.0-beta.49`**
+1. Deploy **`v2.1.0-beta.49`** (or **`v2.1.0-beta.50`** if content/SEO clobber regression occurred — see follow-up below)
 2. Refresh article list (auto-repair on read may fix slug/title in memory)
 3. Open affected article → Save to persist
 4. If a ghost row remains: remove `content/blog/.json` (or `.md`) and the `"slug": ""` entry in `data/index/content.json`
+
+### Follow-up regression (beta.49 → beta.50)
+
+**Symptom:** After beta.49, opening/saving articles reset body to empty/default and dropped SEO title/description/image on production.
+
+**Cause:** `hydrateFlatFieldsFromCanonical()` on every read called full `syncFlatFieldsFromDefaultLocale()`, overwriting flat `title`/`content`/`seo*` with empty `localizedContent.sk` slices when v2 files still stored SSOT in flat JSON fields.
+
+**Fix (beta.50):** Read-path hydrate is **conservative** (fills only empty flat fields); slug repair patches raw file instead of re-serializing from memory; normalizer falls back to flat `content` for default locale when slice `body` is empty.
 
 ---
 

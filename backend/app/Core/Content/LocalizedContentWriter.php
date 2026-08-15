@@ -105,9 +105,14 @@ final class LocalizedContentWriter
 
     /**
      * Repairs legacy/schema-v2 documents where flat title/body were not synced (read path).
+     * Never overwrites existing flat SSOT fields with empty locale slices.
+     *
+     * @return bool True when document was modified in memory (caller may persist).
      */
-    public function hydrateFlatFieldsFromCanonical(Content $content): void
+    public function hydrateFlatFieldsFromCanonical(Content $content): bool
     {
+        $changed = $this->repairEmbeddedMetadataLeaks($content);
+
         /** @var array<string, mixed> $canonical */
         $canonical = $this->normalizer->normalize($content);
         /** @var array<string, array<string, mixed>> $localizedContent */
@@ -117,7 +122,7 @@ final class LocalizedContentWriter
         /** @var array<string, string> $localeStatus */
         $localeStatus = is_array($canonical['localeStatus'] ?? null) ? $canonical['localeStatus'] : [];
 
-        $this->syncFlatFieldsFromDefaultLocale(
+        $this->repairEmptyFlatFieldsFromCanonical(
             $content,
             (string) ($canonical['defaultLocale'] ?? 'sk'),
             $localizedContent,
@@ -131,7 +136,10 @@ final class LocalizedContentWriter
         );
         if ($resolvedSlug !== $content->getSlug()) {
             $content->setSlug($resolvedSlug);
+            $changed = true;
         }
+
+        return $changed;
     }
 
     public function applyLocaleStatus(Content $content, string $locale, string $status): void
@@ -192,12 +200,126 @@ final class LocalizedContentWriter
      * @param array<string, array<string, mixed>> $localizedContent
      * @param array<string, string> $localeStatus
      */
-    private function syncFlatFieldsFromDefaultLocale(
+    private function repairEmptyFlatFieldsFromCanonical(
         Content $content,
         string $defaultLocale,
         array $localizedContent,
         array $localeStatus,
     ): void {
+        $resolved = $this->resolveDefaultLocaleSlice($defaultLocale, $localizedContent);
+        $defaultSlice = $resolved['slice'];
+        $resolvedLocale = $resolved['locale'];
+
+        if (trim($content->getTitle()) === '' && trim((string) ($defaultSlice['title'] ?? '')) !== '') {
+            $content->setTitle((string) $defaultSlice['title']);
+        }
+
+        if (trim($content->getContent()) === '' && trim((string) ($defaultSlice['body'] ?? '')) !== '') {
+            $content->setContent((string) $defaultSlice['body']);
+        }
+
+        $currentStatus = trim($content->getStatus());
+        if ($currentStatus === '' || $currentStatus === 'draft') {
+            $resolvedStatus = (string) ($localeStatus[$resolvedLocale] ?? $localeStatus[$defaultLocale] ?? '');
+            if ($resolvedStatus !== '' && $resolvedStatus !== 'draft') {
+                $content->setStatus($resolvedStatus);
+            }
+        }
+
+        /** @var array<string, mixed> $seo */
+        $seo = is_array($defaultSlice['seo'] ?? null) ? $defaultSlice['seo'] : [];
+        $frontMatter = $content->getFrontMatter();
+
+        if (trim((string) ($frontMatter['seoTitle'] ?? '')) === '' && trim((string) ($seo['title'] ?? '')) !== '') {
+            $frontMatter['seoTitle'] = (string) $seo['title'];
+        }
+        if (trim((string) ($frontMatter['seoDescription'] ?? '')) === '' && trim((string) ($seo['description'] ?? '')) !== '') {
+            $frontMatter['seoDescription'] = (string) $seo['description'];
+        }
+        if (trim((string) ($frontMatter['canonical'] ?? '')) === '' && trim((string) ($seo['canonical'] ?? '')) !== '') {
+            $frontMatter['canonical'] = (string) $seo['canonical'];
+        }
+        if (trim((string) ($frontMatter['seoImage'] ?? '')) === '' && trim((string) ($seo['ogImage'] ?? '')) !== '') {
+            $frontMatter['seoImage'] = (string) $seo['ogImage'];
+        }
+        if (!($frontMatter['noIndex'] ?? false) && ($seo['noIndex'] ?? false) === true) {
+            $frontMatter['noIndex'] = true;
+        }
+
+        $content->setFrontMatter($frontMatter);
+    }
+
+    private function repairEmbeddedMetadataLeaks(Content $content): bool
+    {
+        $changed = false;
+
+        $cleanBody = ContentBodySanitizer::stripEmbeddedMetadataLeak($content->getContent());
+        if ($cleanBody !== $content->getContent()) {
+            $content->setContent($cleanBody);
+            $changed = true;
+        }
+
+        $frontMatter = $content->getFrontMatter();
+        if (!is_array($frontMatter['localizedContent'] ?? null)) {
+            return $changed;
+        }
+
+        /** @var array<string, mixed> $localized */
+        $localized = $frontMatter['localizedContent'];
+        $defaultLocale = (string) ($frontMatter['defaultLocale'] ?? 'sk');
+        $flatBody = $content->getContent();
+        $flatTitle = trim($content->getTitle());
+
+        foreach ($localized as $locale => $slice) {
+            if (!is_array($slice)) {
+                continue;
+            }
+
+            $localeKey = (string) $locale;
+            $sliceBody = (string) ($slice['body'] ?? '');
+            $repairedBody = ContentBodySanitizer::stripEmbeddedMetadataLeak($sliceBody);
+            if ($repairedBody !== $sliceBody) {
+                $localized[$localeKey] = $slice;
+                $localized[$localeKey]['body'] = $repairedBody;
+                $changed = true;
+            }
+        }
+
+        $defaultSlice = $localized[$defaultLocale] ?? null;
+        if (is_array($defaultSlice)) {
+            $defaultBody = trim((string) ($localized[$defaultLocale]['body'] ?? ''));
+            if ($defaultBody === '' && trim($flatBody) !== '') {
+                $localized[$defaultLocale]['body'] = $flatBody;
+                $changed = true;
+            } elseif (
+                ContentBodySanitizer::looksLikeMetadataLeak($defaultBody)
+                && trim($flatBody) !== ''
+                && !ContentBodySanitizer::looksLikeMetadataLeak($flatBody)
+            ) {
+                $localized[$defaultLocale]['body'] = $flatBody;
+                $changed = true;
+            }
+
+            if (trim((string) ($localized[$defaultLocale]['title'] ?? '')) === '' && $flatTitle !== '') {
+                $localized[$defaultLocale]['title'] = $flatTitle;
+                $changed = true;
+            }
+        }
+
+        if ($changed) {
+            $frontMatter['localizedContent'] = $localized;
+            $content->setFrontMatter($frontMatter);
+        }
+
+        return $changed;
+    }
+
+    /**
+     * @param array<string, array<string, mixed>> $localizedContent
+     * @return array{slice: array<string, mixed>, locale: string}
+     */
+    private function resolveDefaultLocaleSlice(string $defaultLocale, array $localizedContent): array
+    {
         $resolvedLocale = $defaultLocale;
         $defaultSlice = $localizedContent[$defaultLocale] ?? null;
 
@@ -225,6 +347,23 @@ final class LocalizedContentWriter
                 ],
             ];
         }
+
+        return ['slice' => $defaultSlice, 'locale' => $resolvedLocale];
+    }
+
+    /**
+     * @param array<string, array<string, mixed>> $localizedContent
+     * @param array<string, string> $localeStatus
+     */
+    private function syncFlatFieldsFromDefaultLocale(
+        Content $content,
+        string $defaultLocale,
+        array $localizedContent,
+        array $localeStatus,
+    ): void {
+        $resolved = $this->resolveDefaultLocaleSlice($defaultLocale, $localizedContent);
+        $defaultSlice = $resolved['slice'];
+        $resolvedLocale = $resolved['locale'];
 
         $content->setTitle((string) ($defaultSlice['title'] ?? ''));
         $content->setContent((string) ($defaultSlice['body'] ?? ''));

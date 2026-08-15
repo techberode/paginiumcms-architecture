@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.50`](#release-2-1-0-beta-50) | 2026-08-15 | Hotfix — beta.49 read-path clobber + metadata leak in editor body (ISS-149 follow-up) |
 | [`2.1.0-beta.49`](#release-2-1-0-beta-49) | 2026-08-15 | Hotfix — locale title/slug sync, empty slug repair, content permissions (ISS-149, ISS-150) |
 | [`2.1.0-beta.48`](#release-2-1-0-beta-48) | 2026-08-15 | Hotfix — AppVersion fallback + git describe parsing (health showed beta.46) |
 | [`2.1.0-beta.47`](#release-2-1-0-beta-47) | 2026-08-15 | It.81a–81e — duplicate, bulk tags, saved views, editorial calendar, stale content |
@@ -129,6 +130,31 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **ISS-141 follow-up** — all remaining `Http/Controllers/*` JSON mutating paths and OTP/contact rate-limit middleware now use `RequestJsonBody::decode()` (eliminates empty-body regressions site-wide after `BodyParsingMiddleware`).
 
 - **Shortcode expand + HTML sanitizer** — `allowedHtmlTags` now includes `div`, `article`, `section`, `aside`, `span` (required for It.58 expand templates); legacy settings merge missing layout tags on read; `role` attribute allowed on sanitized elements.
+
+<a id="release-2-1-0-beta-50"></a>
+
+## [2.1.0-beta.50] – 2026-08-15
+
+Hotfix — beta.49 editor regression: content/SEO clobber and metadata leak in body
+
+### Fixed
+
+- **Conservative read-path hydrate** — `hydrateFlatFieldsFromCanonical()` fills only empty flat title/body/SEO; never overwrites existing SSOT ([ISS-149](docs/ISSUES.md#iss-149) follow-up).
+- **Metadata leak in editor body** — `ContentBodySanitizer` strips embedded YAML/front-matter (`seo:`, `localeStatus:`, etc.) from `content` and locale slices; auto-persist on read when corruption detected.
+- **Normalizer body fallback** — default-locale slice uses flat `content` when `localizedContent.*.body` is empty.
+- **Slug repair** — patches raw JSON/MD slug in place instead of full re-serialize from memory.
+- **Frontend** — editor/load locale hydration prefers clean flat body over corrupted locale slice.
+
+### Added
+
+- `ContentBodySanitizer.php` + BE/FE tests
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.50`
+- **Issues:** [ISS-149](docs/ISSUES.md#iss-149) follow-up
+
+---
 
 <a id="release-2-1-0-beta-49"></a>
 
