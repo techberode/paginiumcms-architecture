@@ -30,10 +30,13 @@ final class StaleContentFeatureProbe extends AbstractFeatureProbe
             return $this->missing('Content staleness service is not registered.');
         }
 
-        if (!$this->support->anyRouteFileContains("'stale'")) {
-            return $this->partial('Staleness service exists; list filter wiring should be verified.');
+        $listFilter = $this->support->appSourceContains('Http/Support/PaginationQuery.php', "'stale'");
+        $detailFlags = $this->support->appSourceContains('Http/Controllers/Content/ContentController.php', 'isStale');
+
+        if (!$listFilter || !$detailFlags) {
+            return $this->partial('Staleness service exists; list filter or detail flags should be verified.');
         }
 
-        return $this->implemented('Stale content service and list filter are wired.', '2.1.0-beta.47');
+        return $this->implemented('Stale content service, list filter, and detail flags are wired.', '2.1.0-beta.47');
     }
 }

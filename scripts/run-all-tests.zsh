@@ -1,6 +1,7 @@
 #!/usr/bin/env zsh
 # scripts/run-all-tests.zsh
 # Kompletná testovacia sada PaginiumCMS + súhrn Failed/Error/Skipped na konci.
+# Na záver: prefix-only cleanup cez `dev:hygiene --confirm` (qa-*, PHPUnit, @example.com).
 #
 # Použitie (z ľubovoľného podadresára projektu):
 #   ./scripts/run-all-tests.zsh
@@ -364,15 +365,15 @@ run_test_storage_cleanup() {
 
   print "" | tee -a "$LOG_FILE"
   print "==================================================" | tee -a "$LOG_FILE"
-  print "⚙️ ${CLEANUP_STEP}/${CLEANUP_STEP} Cleanup test artefaktov (iba generické / @example.com)" | tee -a "$LOG_FILE"
+  print "⚙️ Cleanup test artefaktov (prefix qa-* / PHPUnit / @example.com — reálny obsah ostáva)" | tee -a "$LOG_FILE"
   print "----------------" >> "$LOG_FILE"
 
-  report=$(cd "$PROJECT_ROOT" && php backend/bin/test-artifacts.php --purge 2>&1) || rc=$?
+  report=$(cd "$PROJECT_ROOT" && php backend/bin/console dev:hygiene --confirm 2>&1) || rc=$?
   print -r -- "$report" | tee -a "$LOG_FILE"
 
   elapsed=$(( SECONDS - start_ts ))
-  stats=$(print -r -- "$report" | grep -E 'Po cleanup|test_users|Reálne účty' | head -3 | tr '\n' ' ' | sed 's/[[:space:]]*$//')
-  [[ -z "$stats" ]] && stats="purge completed"
+  stats=$(print -r -- "$report" | grep -E 'After:|Preserved|Content index rebuilt|test_pages|test_users' | head -5 | tr '\n' ' ' | sed 's/[[:space:]]*$//')
+  [[ -z "$stats" ]] && stats="prefix-only purge completed"
 
   if (( rc != 0 )); then
     print "❌ ZLYHALO: Cleanup test artefaktov (exit ${rc}, ${elapsed}s)" | tee -a "$LOG_FILE"
@@ -606,7 +607,7 @@ else
 fi
 
 # ==================================================
-# CLEANUP — až po všetkých 11 testovacích krokoch
+# CLEANUP — až po všetkých testovacích krokoch (prefix-only dev:hygiene)
 # ==================================================
 run_test_storage_cleanup
 

@@ -22,6 +22,7 @@ use PaginiumCMS\Core\FlatFile\Commands\ContentLocaleMigrateCommand;
 use PaginiumCMS\Modules\Demo\Commands\RunDemoResetCommand;
 use PaginiumCMS\Core\SystemUpdate\Commands\SystemDeployCommand;
 use PaginiumCMS\Modules\Security\Commands\ClearLoginLockoutsCommand;
+use PaginiumCMS\Support\Commands\DevHygieneCommand;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
@@ -47,4 +48,5 @@ $application->addCommand($container->get(ContentImportCommand::class));
 $application->addCommand($container->get(UserCreateCommand::class));
 $application->addCommand($container->get(ListUsersCommand::class));
 $application->addCommand($container->get(ResetUserPasswordCommand::class));
+$application->addCommand($container->get(DevHygieneCommand::class));
 $application->run();

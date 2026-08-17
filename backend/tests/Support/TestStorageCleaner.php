@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Tests\Support;
 
+use PaginiumCMS\Support\TestArtifactNaming;
+
 /**
  * Vyčistí artefakty integračných testov z backend/storage.
  * Volá sa na konci `run-all-tests.zsh` (krok 12).
@@ -14,14 +16,6 @@ namespace PaginiumCMS\Tests\Support;
  */
 final class TestStorageCleaner
 {
-    /** @var non-empty-string */
-    private const TEST_PAGE_SLUG_PATTERN =
-        '/^(bulk-[ab]-|bulk-trash-|purge-trash-|trash-test-|seo-test-|seo-draft-|editor-page-|otp-page-|forbidden-)/';
-
-    /** @var non-empty-string */
-    private const TEST_MEDIA_NAME_PATTERN =
-        '/^(test-upload|hardening-test|folder-meta-test|campaign-test|sample\.)/i';
-
     public static function storageRoot(): string
     {
         return dirname(__DIR__, 2) . '/storage';
@@ -50,6 +44,9 @@ final class TestStorageCleaner
         self::purgeTestContentPages();
         self::pruneTestEntriesFromContentIndex();
         self::purgeTestMedia();
+        self::purgeTestDrafts();
+        self::purgeTestVersions();
+        self::purgeTestBackups();
         self::purgeTestSettingsFile();
         self::purgeCodeEditorBackups();
         self::purgeCodeEditorTestModules();
@@ -89,7 +86,7 @@ final class TestStorageCleaner
             $originalPath = (string) ($meta['originalPath'] ?? '');
             $slug = basename($originalPath);
             $slug = preg_replace('/\.(md|json)$/i', '', $slug) ?? $slug;
-            if (preg_match(self::TEST_PAGE_SLUG_PATTERN, $slug) !== 1) {
+            if (!TestArtifactNaming::isTestContentSlug($slug)) {
                 continue;
             }
 
@@ -211,23 +208,106 @@ final class TestStorageCleaner
 
     public static function purgeTestContentPages(): void
     {
-        foreach (['pages', 'blog/articles'] as $subdir) {
-            $dir = self::contentRoot() . '/' . $subdir;
-            if (!is_dir($dir)) {
+        foreach (['pages', 'blog'] as $subdir) {
+            self::purgeTestContentInDir(self::contentRoot() . '/' . $subdir);
+        }
+    }
+
+    public static function purgeTestDrafts(): void
+    {
+        $dir = self::contentRoot() . '/data/drafts';
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)
+        );
+
+        foreach ($iterator as $file) {
+            if (!$file instanceof \SplFileInfo || !$file->isFile()) {
                 continue;
             }
 
-            foreach (glob($dir . '/*') ?: [] as $file) {
-                if (!is_file($file)) {
-                    continue;
-                }
+            $slug = TestArtifactNaming::slugFromBasename($file->getFilename());
+            if (TestArtifactNaming::isTestContentSlug($slug)) {
+                @unlink($file->getPathname());
+            }
+        }
+    }
 
-                $basename = basename($file);
-                $slug = preg_replace('/\.(md|json)$/i', '', $basename) ?? $basename;
-                if (preg_match(self::TEST_PAGE_SLUG_PATTERN, $slug) === 1) {
-                    @unlink($file);
-                    self::deleteMatchingBackups($file);
-                }
+    public static function purgeTestVersions(): void
+    {
+        $dir = self::contentRoot() . '/data/versions';
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        foreach (glob($dir . '/*.json') ?: [] as $file) {
+            $raw = @file_get_contents($file);
+            if ($raw === false) {
+                continue;
+            }
+
+            $data = json_decode($raw, true);
+            $contentId = is_array($data) ? (string) ($data['contentId'] ?? '') : '';
+            if ($contentId !== '' && TestArtifactNaming::isTestContentReference($contentId)) {
+                @unlink($file);
+            }
+        }
+    }
+
+    public static function purgeTestBackups(): void
+    {
+        $dir = self::storageRoot() . '/backups';
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)
+        );
+
+        foreach ($iterator as $file) {
+            if (!$file instanceof \SplFileInfo || !$file->isFile()) {
+                continue;
+            }
+
+            $name = $file->getFilename();
+            if (!str_ends_with(strtolower($name), '.zip')) {
+                continue;
+            }
+
+            $stem = preg_replace('/\.zip$/i', '', $name) ?? $name;
+            if (self::isTestBackupStem($stem)) {
+                @unlink($file->getPathname());
+            }
+        }
+    }
+
+    private static function purgeTestContentInDir(string $dir): void
+    {
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)
+        );
+
+        foreach ($iterator as $file) {
+            if (!$file instanceof \SplFileInfo || !$file->isFile()) {
+                continue;
+            }
+
+            if (str_contains($file->getFilename(), '.backup.')) {
+                continue;
+            }
+
+            $slug = TestArtifactNaming::slugFromBasename($file->getFilename());
+            if (TestArtifactNaming::isTestContentSlug($slug)) {
+                @unlink($file->getPathname());
+                self::deleteMatchingBackups($file->getPathname());
             }
         }
     }
@@ -261,7 +341,7 @@ final class TestStorageCleaner
 
                 $slug = (string) ($row['slug'] ?? '');
 
-                return preg_match(self::TEST_PAGE_SLUG_PATTERN, $slug) !== 1;
+                return !TestArtifactNaming::isTestContentSlug($slug);
             }
         ));
 
@@ -295,7 +375,7 @@ final class TestStorageCleaner
                     }
 
                     $fileName = (string) ($entry['fileName'] ?? basename((string) ($entry['path'] ?? '')));
-                    if (self::isTestMediaFileName($fileName)) {
+                    if (TestArtifactNaming::isTestMediaFileName($fileName)) {
                         $relativePath = (string) ($entry['path'] ?? '');
                         if ($relativePath !== '') {
                             $absolute = self::contentRoot() . '/' . ltrim($relativePath, '/');
@@ -330,7 +410,7 @@ final class TestStorageCleaner
                 continue;
             }
 
-            if (self::isTestMediaFileName($name)) {
+            if (TestArtifactNaming::isTestMediaFileName($name)) {
                 @unlink($file->getPathname());
             }
         }
@@ -367,7 +447,10 @@ final class TestStorageCleaner
      *   media_files: int,
      *   test_pages: int,
      *   contact_messages: int,
-     *   test_page_backups: int
+     *   test_page_backups: int,
+     *   test_drafts: int,
+     *   test_versions: int,
+     *   test_backups: int
      * }
      */
     public static function scanTestArtifacts(): array
@@ -381,6 +464,9 @@ final class TestStorageCleaner
             'test_pages' => self::countTestPages(),
             'contact_messages' => self::countTestMessages(),
             'test_page_backups' => self::countTestPageBackups(),
+            'test_drafts' => self::countTestDrafts(),
+            'test_versions' => self::countTestVersions(),
+            'test_backups' => self::countTestBackupArchives(),
         ];
     }
 
@@ -417,6 +503,9 @@ final class TestStorageCleaner
             sprintf('  • test pages (seo-test-*, bulk-*, …) .. %d', $before['test_pages']),
             sprintf('  • page backups (test slug) ............ %d', $before['test_page_backups']),
             sprintf('  • contact messages (data/messages) .... %d', $before['contact_messages']),
+            sprintf('  • test drafts ......................... %d', $before['test_drafts']),
+            sprintf('  • test versions ....................... %d', $before['test_versions']),
+            sprintf('  • test backup zips .................... %d', $before['test_backups']),
             '',
             'Po cleanup (zvyšok test artefaktov):',
             sprintf('  • test_users .......................... %d', $report['after']['test_users']),
@@ -531,7 +620,7 @@ final class TestStorageCleaner
             if ($name === '.gitkeep' || $name === 'registry.json' || $name === 'folders.json') {
                 continue;
             }
-            if (self::isTestMediaFileName($name)) {
+            if (TestArtifactNaming::isTestMediaFileName($name)) {
                 ++$count;
             }
         }
@@ -561,7 +650,7 @@ final class TestStorageCleaner
             $originalPath = (string) ($meta['originalPath'] ?? '');
             $slug = basename($originalPath);
             $slug = preg_replace('/\.(md|json)$/i', '', $slug) ?? $slug;
-            if (preg_match(self::TEST_PAGE_SLUG_PATTERN, $slug) === 1) {
+            if (TestArtifactNaming::isTestContentSlug($slug)) {
                 ++$count;
             }
         }
@@ -590,17 +679,27 @@ final class TestStorageCleaner
     private static function countTestPages(): int
     {
         $count = 0;
-        foreach (['pages', 'blog/articles'] as $subdir) {
+        foreach (['pages', 'blog'] as $subdir) {
             $dir = self::contentRoot() . '/' . $subdir;
             if (!is_dir($dir)) {
                 continue;
             }
-            foreach (glob($dir . '/*') ?: [] as $file) {
-                if (!is_file($file) || str_contains(basename($file), '.backup.')) {
+
+            $iterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)
+            );
+
+            foreach ($iterator as $file) {
+                if (!$file instanceof \SplFileInfo || !$file->isFile()) {
                     continue;
                 }
-                $slug = preg_replace('/\.(md|json)$/i', '', basename($file)) ?? '';
-                if (preg_match(self::TEST_PAGE_SLUG_PATTERN, $slug) === 1) {
+
+                if (str_contains($file->getFilename(), '.backup.')) {
+                    continue;
+                }
+
+                $slug = TestArtifactNaming::slugFromBasename($file->getFilename());
+                if (TestArtifactNaming::isTestContentSlug($slug)) {
                     ++$count;
                 }
             }
@@ -612,21 +711,124 @@ final class TestStorageCleaner
     private static function countTestPageBackups(): int
     {
         $count = 0;
-        foreach (['pages', 'blog/articles'] as $subdir) {
+        foreach (['pages', 'blog'] as $subdir) {
             $dir = self::contentRoot() . '/' . $subdir;
             if (!is_dir($dir)) {
                 continue;
             }
-            foreach (glob($dir . '/*.backup.*') ?: [] as $file) {
-                $base = preg_replace('/\.backup\.[^.]+$/', '', basename($file)) ?? '';
-                $slug = preg_replace('/\.(md|json)$/i', '', $base) ?? '';
-                if (preg_match(self::TEST_PAGE_SLUG_PATTERN, $slug) === 1) {
+
+            $iterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)
+            );
+
+            foreach ($iterator as $file) {
+                if (!$file instanceof \SplFileInfo || !$file->isFile()) {
+                    continue;
+                }
+
+                if (!str_contains($file->getFilename(), '.backup.')) {
+                    continue;
+                }
+
+                $base = preg_replace('/\.backup\.[^.]+$/', '', $file->getFilename()) ?? '';
+                $slug = TestArtifactNaming::slugFromBasename($base);
+                if (TestArtifactNaming::isTestContentSlug($slug)) {
                     ++$count;
                 }
             }
         }
 
         return $count;
+    }
+
+    private static function countTestDrafts(): int
+    {
+        $dir = self::contentRoot() . '/data/drafts';
+        if (!is_dir($dir)) {
+            return 0;
+        }
+
+        $count = 0;
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)
+        );
+
+        foreach ($iterator as $file) {
+            if (!$file instanceof \SplFileInfo || !$file->isFile()) {
+                continue;
+            }
+
+            $slug = TestArtifactNaming::slugFromBasename($file->getFilename());
+            if (TestArtifactNaming::isTestContentSlug($slug)) {
+                ++$count;
+            }
+        }
+
+        return $count;
+    }
+
+    private static function countTestVersions(): int
+    {
+        $dir = self::contentRoot() . '/data/versions';
+        if (!is_dir($dir)) {
+            return 0;
+        }
+
+        $count = 0;
+        foreach (glob($dir . '/*.json') ?: [] as $file) {
+            $raw = @file_get_contents($file);
+            if ($raw === false) {
+                continue;
+            }
+
+            $data = json_decode($raw, true);
+            $contentId = is_array($data) ? (string) ($data['contentId'] ?? '') : '';
+            if ($contentId !== '' && TestArtifactNaming::isTestContentReference($contentId)) {
+                ++$count;
+            }
+        }
+
+        return $count;
+    }
+
+    private static function countTestBackupArchives(): int
+    {
+        $dir = self::storageRoot() . '/backups';
+        if (!is_dir($dir)) {
+            return 0;
+        }
+
+        $count = 0;
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)
+        );
+
+        foreach ($iterator as $file) {
+            if (!$file instanceof \SplFileInfo || !$file->isFile()) {
+                continue;
+            }
+
+            $name = $file->getFilename();
+            if (!str_ends_with(strtolower($name), '.zip')) {
+                continue;
+            }
+
+            $stem = preg_replace('/\.zip$/i', '', $name) ?? $name;
+            if (self::isTestBackupStem($stem)) {
+                ++$count;
+            }
+        }
+
+        return $count;
+    }
+
+    private static function isTestBackupStem(string $stem): bool
+    {
+        if (TestArtifactNaming::isTestContentSlug($stem)) {
+            return true;
+        }
+
+        return preg_match('/[_-](qa-|seo-test-|bulk-[ab]-|trash-test-|purge-trash-|bulk-trash-)/', $stem) === 1;
     }
 
     private static function isTestUserPayload(string $raw): bool
@@ -657,11 +859,6 @@ final class TestStorageCleaner
         }
 
         return str_ends_with(strtolower($email), '@example.com');
-    }
-
-    private static function isTestMediaFileName(string $fileName): bool
-    {
-        return preg_match(self::TEST_MEDIA_NAME_PATTERN, $fileName) === 1;
     }
 
     private static function deleteUserBackups(string $userJsonPath): void

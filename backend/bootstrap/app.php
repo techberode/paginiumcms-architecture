@@ -85,6 +85,7 @@ use PaginiumCMS\Modules\Security\Commands\ResetUserPasswordCommand;
 use PaginiumCMS\Modules\Security\Commands\UserCreateCommand;
 use PaginiumCMS\Modules\Demo\Commands\RunDemoResetCommand;
 use PaginiumCMS\Modules\Security\Commands\ClearLoginLockoutsCommand;
+use PaginiumCMS\Support\Commands\DevHygieneCommand;
 use PaginiumCMS\Modules\Demo\Services\DemoLoginGuard;
 use PaginiumCMS\Modules\Demo\Services\DemoMode;
 use PaginiumCMS\Modules\Origin\Services\OriginPanelMode;
@@ -685,6 +686,8 @@ $containerBuilder->addDefinitions([
             $container->get(CacheManager::class)
         );
     },
+
+    DevHygieneCommand::class => static fn (): DevHygieneCommand => new DevHygieneCommand(),
 
 ]);
 
