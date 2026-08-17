@@ -121,6 +121,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
     tags: '',
   });
   const [articleAuthor, setArticleAuthor] = useState('');
+  const [articleCategory, setArticleCategory] = useState('');
   const [articleComments, setArticleComments] = useState<ArticleCommentsSettings>(
     DEFAULT_ARTICLE_COMMENTS_SETTINGS
   );
@@ -349,6 +350,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
             commentsAllowGuests: triStateFromApi(response.data.commentsAllowGuests),
           });
           setArticleAuthor(String(response.data.author ?? fm.author ?? ''));
+          setArticleCategory(String(response.data.category ?? fm.category ?? ''));
         }
       }
 
@@ -472,6 +474,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
           if (articleAuthor.trim() !== '') {
             data.author = articleAuthor.trim();
           }
+          data.category = articleCategory.trim();
         }
 
         const response = isNew
@@ -774,6 +777,8 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         onArticleCommentsChange={type === 'article' ? setArticleComments : undefined}
         articleAuthor={type === 'article' ? articleAuthor : undefined}
         onArticleAuthorChange={type === 'article' ? setArticleAuthor : undefined}
+        articleCategory={type === 'article' ? articleCategory : undefined}
+        onArticleCategoryChange={type === 'article' ? setArticleCategory : undefined}
         defaultBlogAuthor={String(settings.content?.blogAuthorName ?? settings.general?.siteName ?? '')}
         globalCommentsRequireApproval={settings.comments?.requireApproval !== false}
         globalCommentsAllowGuests={settings.comments?.allowGuestComments !== false}

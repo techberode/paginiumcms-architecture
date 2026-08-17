@@ -87,6 +87,9 @@ use PaginiumCMS\Core\FlatFile\Contracts\MarkdownContentParserInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\MarkdownParserInterface;
 use PaginiumCMS\Core\Conflict\Contracts\ConflictLoggerInterface;
 use PaginiumCMS\Core\Content\BlogAuthorSettings;
+use PaginiumCMS\Core\Content\Services\BlogSidebarService;
+use PaginiumCMS\Core\Content\Services\CategoryCatalogSeeder;
+use PaginiumCMS\Core\Content\Services\CategoryRepository;
 use PaginiumCMS\Core\Content\LocalizedContentApplicator;
 use PaginiumCMS\Core\Content\LocalizedContentMigrationService;
 use PaginiumCMS\Core\Content\LocalizedContentNormalizer;
@@ -212,6 +215,8 @@ use PaginiumCMS\Http\Controllers\Validation\ValidationController;
 use PaginiumCMS\Http\Controllers\Comments\CommentsController;
 use PaginiumCMS\Http\Controllers\Contact\ContactController;
 use PaginiumCMS\Http\Controllers\Navigation\NavigationController;
+use PaginiumCMS\Http\Controllers\Content\BlogSidebarController;
+use PaginiumCMS\Http\Controllers\Content\CategoriesController;
 use PaginiumCMS\Http\Controllers\Content\ContentController;
 use PaginiumCMS\Http\Controllers\Content\ContentMetaController;
 use PaginiumCMS\Http\Controllers\Content\EditorialCalendarController;
@@ -280,6 +285,9 @@ use PaginiumCMS\Modules\Security\Contracts\PasswordPolicyInterface;
 use PaginiumCMS\Modules\Security\Contracts\TwoFactorInterface;
 use PaginiumCMS\Modules\Security\Services\UserAvatarService;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
+use PaginiumCMS\Modules\Security\Services\RoleCatalogSeeder;
+use PaginiumCMS\Modules\Security\Services\RoleRepository;
+use PaginiumCMS\Http\Controllers\Admin\RolesController;
 
 use function DI\create;
 use function DI\get;
@@ -403,6 +411,25 @@ return [
     },
     AccessControlSyncService::class => create(AccessControlSyncService::class)
         ->constructor(get(AclRepository::class)),
+
+    RoleRepository::class => create(RoleRepository::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class),
+        ),
+
+    RoleCatalogSeeder::class => create(RoleCatalogSeeder::class)
+        ->constructor(get(RoleRepository::class)),
+
+    RolesController::class => create(RolesController::class)
+        ->constructor(
+            get(RoleRepository::class),
+            get(RoleCatalogSeeder::class),
+            get(UserRepository::class),
+            get(AuthorizationManager::class),
+            get(JsonResponder::class),
+        ),
+
     SettingsController::class => create(SettingsController::class)
         ->constructor(
             get(SettingsRepositoryInterface::class),
@@ -412,6 +439,7 @@ return [
             get(EditorProfileService::class),
             get(EditorComponentRegistry::class),
             get(AccessControlSyncService::class),
+            get(RoleCatalogSeeder::class),
             get(AuthorizationInterface::class),
             get(SupportedLocalesRegistry::class),
             get(EngineCapabilityProbe::class),
@@ -522,6 +550,8 @@ return [
             get(UserRepository::class),
             get(UserAvatarService::class),
             get(SettingsRepositoryInterface::class),
+            get(RoleRepository::class),
+            get(RoleCatalogSeeder::class),
             get(Validator::class),
             get(PasswordPolicyInterface::class),
             get(JsonResponder::class)
@@ -636,6 +666,7 @@ return [
         ->constructor(
             get(NavigationRepositoryInterface::class),
             get(NavigationRichFieldValidator::class),
+            get(SettingsRepositoryInterface::class),
             get(JsonResponder::class)
         ),
 
@@ -852,6 +883,39 @@ return [
     BlogAuthorSettings::class => create(BlogAuthorSettings::class)
         ->constructor(get(SettingsRepositoryInterface::class)),
 
+    BlogSidebarService::class => create(BlogSidebarService::class)
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(ContentRepositoryInterface::class),
+            get(ReporterInterface::class),
+            get(CategoryRepository::class),
+            get(CategoryCatalogSeeder::class),
+        ),
+
+    CategoryRepository::class => create(CategoryRepository::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class),
+        ),
+
+    CategoryCatalogSeeder::class => create(CategoryCatalogSeeder::class)
+        ->constructor(get(CategoryRepository::class)),
+
+    CategoriesController::class => create(CategoriesController::class)
+        ->constructor(
+            get(CategoryRepository::class),
+            get(CategoryCatalogSeeder::class),
+            get(JsonResponder::class),
+        ),
+
+    BlogSidebarController::class => create(BlogSidebarController::class)
+        ->constructor(
+            get(BlogSidebarService::class),
+            get(ContentCacheService::class),
+            get(JsonResponder::class),
+            get(SettingsRepositoryInterface::class),
+        ),
+
     // HTTP controllers
     ContentController::class => create(ContentController::class)
         ->constructor(
@@ -877,6 +941,7 @@ return [
             get(ContentDuplicationService::class),
             get(ContentBulkTagService::class),
             get(ContentStalenessService::class),
+            get(BlogSidebarService::class),
         ),
     AdvancedSearchService::class => create(AdvancedSearchService::class)
         ->constructor(

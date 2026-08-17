@@ -38,6 +38,7 @@ export interface ContentEditorLoadData {
   featuredImage?: string;
   noIndex?: boolean;
   tags?: string[];
+  category?: string;
   commentsEnabled?: boolean;
   commentsRequireApproval?: boolean | null;
   commentsAllowGuests?: boolean | null;

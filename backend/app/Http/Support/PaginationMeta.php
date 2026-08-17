@@ -13,6 +13,7 @@ namespace PaginiumCMS\Http\Support;
  *     total: int,
  *     total_pages: int,
  *     tags?: list<string>,
+ *     categories?: list<string>,
  *     total_published?: int
  * }
  */

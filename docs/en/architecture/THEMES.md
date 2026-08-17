@@ -253,6 +253,14 @@ The current color-scheme UI must therefore not be presented in user documentatio
 
 ---
 
+## 14. Planned reference theme (It.83)
+
+The first shipped theme package after the stabilization phase is **`terminal-breach`** (“Terminal Breach”): a cyber-security / hacking aesthetic implemented as a professional dark SOC-terminal shell — monospace typography, green secure accent, red alert accent, CSP-safe CSS effects only.
+
+It will be switchable from **Extensions → Themes** once [ITERATION_83.md](../ITERATION_83.md) lands. Until then, admins use **Settings → Appearance** color schemes only; optional stabilization prep may add a matching **`terminal-breach` color scheme** without activating a full theme package.
+
+---
+
 ## Related documents
 
 - [Theme user guide](../user/THEMES.md)
@@ -261,3 +269,4 @@ The current color-scheme UI must therefore not be presented in user documentatio
 - [Frontend](./FRONTEND.md)
 - [Settings](./SETTINGS.md)
 - [Extension Code Policy](../developer/EXTENSION_CODE_POLICY.md)
+- [Iteration 83 — Theme runtime](../ITERATION_83.md)

@@ -18,6 +18,7 @@ use DateTimeInterface;
  *     path: string,
  *     excerpt: string,
  *     tags: list<string>,
+ *     category?: string,
  *     updatedAt: string,
  *     createdAt: string,
  *     scheduledAt?: string,
@@ -45,6 +46,7 @@ final class ContentIndexEntry
         public readonly array $tags,
         public readonly string $updatedAt,
         public readonly string $createdAt,
+        public readonly string $category = '',
         public readonly string $scheduledAt = '',
         public readonly string $lastReviewedAt = '',
         public readonly string $defaultLocale = 'sk',
@@ -71,6 +73,8 @@ final class ContentIndexEntry
         if ($content instanceof Article) {
             $tags = self::normalizeTags($content->getTags());
         }
+
+        $category = trim($content->getCategory());
 
         if ($excerpt === '' && $content instanceof Article) {
             $excerpt = $content->getExcerpt(160);
@@ -124,6 +128,7 @@ final class ContentIndexEntry
             tags: $tags,
             updatedAt: is_string($frontMatter['updatedAt'] ?? null) ? $frontMatter['updatedAt'] : $modifiedAt,
             createdAt: $createdAt,
+            category: $category,
             scheduledAt: $scheduledAt,
             lastReviewedAt: $lastReviewedAt,
             defaultLocale: $defaultLocale,
@@ -214,6 +219,7 @@ final class ContentIndexEntry
             tags: $tags,
             updatedAt: (string) ($data['updatedAt'] ?? date('c')),
             createdAt: (string) ($data['createdAt'] ?? date('c')),
+            category: trim((string) ($data['category'] ?? '')),
             scheduledAt: (string) ($data['scheduledAt'] ?? ''),
             lastReviewedAt: (string) ($data['lastReviewedAt'] ?? ''),
             defaultLocale: (string) ($data['defaultLocale'] ?? 'sk'),
@@ -236,6 +242,7 @@ final class ContentIndexEntry
             'path' => $this->path,
             'excerpt' => $this->excerpt,
             'tags' => $this->tags,
+            'category' => $this->category,
             'updatedAt' => $this->updatedAt,
             'createdAt' => $this->createdAt,
             'scheduledAt' => $this->scheduledAt,
@@ -258,6 +265,7 @@ final class ContentIndexEntry
             'status' => $this->status,
             'excerpt' => $this->excerpt,
             'tags' => $this->tags,
+            'category' => $this->category,
             'updatedAt' => $this->updatedAt,
             'path' => $this->path,
             'defaultLocale' => $this->defaultLocale,

@@ -55,7 +55,8 @@ final class ClassicSingleLocaleCompatibilityTest extends TestCase
     private function ensureLegacyHomePageExists(): void
     {
         $repo = $this->app->getContainer()->get(ContentRepositoryInterface::class);
-        if ($repo->findBySlug('home', 'page') !== null) {
+        $existing = $repo->findBySlug('home', 'page');
+        if ($existing !== null && (int) ($existing->getFrontMatter()['schemaVersion'] ?? 1) < 2) {
             return;
         }
 

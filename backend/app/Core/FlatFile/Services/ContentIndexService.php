@@ -201,6 +201,40 @@ final class ContentIndexService
 
     /**
      * @param array<string, string> $filters
+     * @return list<string>
+     */
+    public function listDistinctCategories(string $type, array $filters = []): array
+    {
+        return $this->withLockedIndex(function (array &$items) use ($type, $filters): array {
+            $entries = array_map(
+                fn (array $row): ContentIndexEntry => ContentIndexEntry::fromArray($row),
+                $items
+            );
+
+            $entries = array_values(array_filter(
+                $entries,
+                static fn (ContentIndexEntry $e): bool => $e->type === $type
+            ));
+
+            $entries = $this->applyIndexFilters($entries, $filters);
+
+            $categories = [];
+            foreach ($entries as $entry) {
+                $slug = trim($entry->category);
+                if ($slug !== '') {
+                    $categories[$slug] = true;
+                }
+            }
+
+            $unique = array_keys($categories);
+            sort($unique, SORT_NATURAL | SORT_FLAG_CASE);
+
+            return $unique;
+        });
+    }
+
+    /**
+     * @param array<string, string> $filters
      */
     public function countMatching(string $type, array $filters = []): int
     {
@@ -402,6 +436,14 @@ final class ContentIndexService
 
                     return false;
                 }
+            ));
+        }
+
+        if (!empty($filters['category'])) {
+            $needle = mb_strtolower(trim($filters['category']));
+            $entries = array_values(array_filter(
+                $entries,
+                static fn (ContentIndexEntry $e): bool => mb_strtolower(trim($e->category)) === $needle
             ));
         }
 

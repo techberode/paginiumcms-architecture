@@ -138,6 +138,12 @@ export interface PublicSettings {
     maxTooltipWidthPx?: number;
     enableHoverAnimations?: boolean;
   };
+  navigation?: {
+    placement?: 'top' | 'side' | 'both';
+    sideBreakpoint?: 'sm' | 'md' | 'lg' | 'xl';
+    expandAnimation?: boolean;
+    maxDepth?: number;
+  };
   content: Record<string, unknown>;
   editor: Record<string, unknown>;
   notifications?: {

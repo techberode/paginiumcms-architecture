@@ -13,6 +13,8 @@ use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Security\Contracts\PasswordPolicyInterface;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Modules\Security\Services\PasswordPolicy;
+use PaginiumCMS\Modules\Security\Services\RoleCatalogSeeder;
+use PaginiumCMS\Modules\Security\Services\RoleRepository;
 use PaginiumCMS\Modules\Security\Services\UserAvatarService;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
 use PHPUnit\Framework\TestCase;
@@ -46,6 +48,8 @@ class UserControllerTest extends TestCase
                 new Validator(),
                 'settings.json'
             ),
+            new RoleRepository(new FileReader(new FileValidator($this->baseDir . '/data')), new FileWriter(new FileValidator($this->baseDir . '/data'))),
+            new RoleCatalogSeeder(new RoleRepository(new FileReader(new FileValidator($this->baseDir . '/data')), new FileWriter(new FileValidator($this->baseDir . '/data')))),
             new Validator(),
             new PasswordPolicy(),
             new JsonResponder()

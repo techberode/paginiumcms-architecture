@@ -5,7 +5,7 @@ declare(strict_types=1);
 return [
     'updated' => 'Navigácia bola aktualizovaná',
     'invalid_payload' => 'Neplatné telo požiadavky',
-    'max_depth_exceeded' => 'Menu podporuje maximálne 3 úrovne (Menu → Submenu → Submenu)',
+    'max_depth_exceeded' => 'Menu podporuje maximálne :max úrovní.',
     'description_too_long' => 'Popis položky menu je príliš dlhý (max. 160 znakov).',
     'invalid_icon_type' => 'Neplatný typ ikony (none, lucide, media).',
     'icon_value_required' => 'Pri zvolenom type ikony je potrebná hodnota ikony.',

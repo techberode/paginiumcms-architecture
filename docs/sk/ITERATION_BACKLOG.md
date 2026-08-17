@@ -41,6 +41,8 @@ Tento dokument opravuje starý backlog, v ktorom sa miešali hotové iterácie, 
 | 16 | **It.25** Setup wizard/update UX | 🟡 pre-Final | ⏳ | **blokátor stabilnej verzie** — povinné pred septembrom 2026; [STABILIZATION_PHASE.md](../STABILIZATION_PHASE.md) |
 | 17 | **It.76/77** Translation providers | 🔵 | ⏳ | po It.73 |
 | 18 | **It.75** AI agent | 🔵 | ⏳ | po locale a provider vrstvách |
+| 19 | **It.83** Theme runtime + Terminal Breach | 🟡 | ⏸️ | po stabilnom releasi — [ITERATION_83](../en/ITERATION_83.md) |
+| 20 | **It.84** Kategórie, blog sidebar, landing, role, menu | 🟡 | ✅ | **84a–84e** hotové — [ITERATION_84](../en/ITERATION_84.md) |
 
 ---
 
@@ -196,7 +198,8 @@ Zostáva:
 | **It.81** redakčný workflow | ✅ | [ITERATION_81](../en/ITERATION_81.md) — hotové (`81f` v `beta.55`) |
 | **It.82** Origin Panel | ✅ | [ITERATION_82](../en/ITERATION_82.md) — hotové `beta.56`; mimo archívu |
 | **It.48** static/dynamic render | ⏳ | spojiť návrh s It.70 publish pipeline |
-| Zostávajúci theme runtime | 🟡 | závisí od It.67 a schema/policy gate |
+| **It.83** theme runtime + Terminal Breach | ⏸️ | [ITERATION_83](../en/ITERATION_83.md) — po stabilizácii; základ It.67b import hotový |
+| **It.84** prezentácia a prístup | ✅ | [ITERATION_84](../en/ITERATION_84.md) — 84a–84e hotové (2026-08-17) |
 | Server metrics agent (zvyšok It.46) | ⏳ | koordinovať s It.71 |
 | Scoped FileManager | ⏳ candidate | prideliť nové unikátne číslo až po scope approval |
 | Frontend inline edit | ⏳ candidate | používa existujúci lock/editor flow |

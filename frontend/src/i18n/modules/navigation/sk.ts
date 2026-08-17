@@ -3,7 +3,8 @@ import type { MessageTree } from '../../types';
 export const navigationSk: MessageTree = {
   page: {
     title: 'Menu',
-    subtitle: 'Úrovne: hlavné menu → submenu → submenu (max. :depth). Popis, ikony a hover náhľad (It.56).',
+    subtitle: 'Úrovne: hlavné menu → submenu → vnorené položky (max. :depth). Popis, ikony a hover náhľad (It.56).',
+    layoutSettingsLink: 'Layout navigácie (hore / bok / hĺbka)',
   },
   empty: 'Zatiaľ žiadne položky menu.',
   level: 'Úroveň :depth',

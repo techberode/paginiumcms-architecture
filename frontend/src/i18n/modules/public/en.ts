@@ -14,6 +14,7 @@ export const publicEn: MessageTree = {
     adminButton: 'Paginium Admin',
     architectureTagline: 'FlatFile Architecture',
     previewBanner: 'Preview — navigation is inactive',
+    sideMenu: 'Site navigation',
   },
   layout: {
     noHomePage: 'No home page has been published yet (slug: home).',
@@ -322,6 +323,16 @@ export const publicEn: MessageTree = {
       newest: 'Newest',
       oldest: 'Oldest',
       title: 'By title (A–Z)',
+      popular: 'Most read',
+    },
+    sidebar: {
+      tags: 'Tags',
+      allTags: 'All',
+      categories: 'Categories',
+      allCategories: 'All categories',
+      latest: 'Latest',
+      popular: 'Most read',
+      views: ':count views',
     },
     articleNav: {
       ariaLabel: 'Article navigation',

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Controllers\Navigation;
 
 use PaginiumCMS\Http\Support\RequestJsonBody;
+use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Core\FlatFile\Models\Navigation;
 use PaginiumCMS\Core\FlatFile\Models\NavigationItem;
@@ -20,6 +21,7 @@ class NavigationController
     public function __construct(
         private NavigationRepositoryInterface $navigationRepository,
         private NavigationRichFieldValidator $richFieldValidator,
+        private SettingsRepositoryInterface $settings,
         private JsonResponder $json
     ) {
     }
@@ -55,7 +57,8 @@ class NavigationController
 
         try {
             $navigation = $this->buildNavigation($itemsPayload);
-            $depthError = $this->validateMaxDepth($navigation, 3);
+            $maxDepth = $this->resolveMaxDepth();
+            $depthError = $this->validateMaxDepth($navigation, $maxDepth);
             if ($depthError !== null) {
                 return $this->json->error($response, $depthError, 422);
             }
@@ -98,11 +101,18 @@ class NavigationController
         foreach ($navigation->getItems() as $item) {
             $depth = $this->itemDepth($navigation, $item->getId(), 1);
             if ($depth > $maxLevels) {
-                return Lang::get('max_depth_exceeded', [], 'navigation');
+                return Lang::get('max_depth_exceeded', ['max' => (string) $maxLevels], 'navigation');
             }
         }
 
         return null;
+    }
+
+    private function resolveMaxDepth(): int
+    {
+        $depth = (int) $this->settings->get('navigation.maxDepth', 3);
+
+        return max(3, min(4, $depth));
     }
 
     private function itemDepth(Navigation $navigation, string $itemId, int $depth): int

@@ -28,6 +28,8 @@ import {
   UserRole,
   CreateUserPayload,
   isStaffRole,
+  isKnownUserRole,
+  isValidUserRole,
   deriveUsername,
 } from '../../api/users';
 import { validate, validatePasswordPolicy, validatePasswordConfirmation, ValidationErrors } from '../../utils/validation';
@@ -68,6 +70,7 @@ export const UsersManager: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [requireTwoFactorStaff, setRequireTwoFactorStaff] = useState(true);
   const [actorIsSuperAdmin, setActorIsSuperAdmin] = useState(false);
+  const [assignableRoles, setAssignableRoles] = useState<UserRole[]>(USER_ROLES);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -96,6 +99,9 @@ export const UsersManager: React.FC = () => {
       setUsers(data.users);
       setRequireTwoFactorStaff(data.meta?.require_two_factor_staff ?? true);
       setActorIsSuperAdmin(data.meta?.actor_is_super_admin ?? false);
+      setAssignableRoles(
+        data.meta?.assignable_roles?.length ? data.meta.assignable_roles : USER_ROLES
+      );
     } finally {
       setLoading(false);
     }
@@ -116,7 +122,7 @@ export const UsersManager: React.FC = () => {
       email: ['required', 'email', 'max:255'],
       username: ['required', 'string', 'min:2', 'max:64'],
       name: ['required', 'string', 'min:2', 'max:120'],
-      role: ['required', 'in:USER,EDITOR,ADMIN,SUPER_ADMIN'],
+      role: ['required', 'string', 'max:32'],
     };
 
     const result = validate(
@@ -125,6 +131,10 @@ export const UsersManager: React.FC = () => {
     );
 
     const allErrors = { ...result.errors };
+
+    if (!isValidUserRole(form.role) || !assignableRoles.includes(form.role)) {
+      allErrors.role = [t('users.errors.invalidRole')];
+    }
 
     if (!editingId || form.password) {
       const pw = form.password ?? '';
@@ -239,13 +249,10 @@ export const UsersManager: React.FC = () => {
 
   const needsPasswordConfirm = !editingId || Boolean(form.password?.trim());
 
-  const availableRoles = useMemo(
-    () =>
-      actorIsSuperAdmin
-        ? USER_ROLES
-        : USER_ROLES.filter((role) => role !== 'SUPER_ADMIN'),
-    [actorIsSuperAdmin]
-  );
+  const availableRoles = useMemo(() => assignableRoles, [assignableRoles]);
+
+  const roleDisplay = (role: UserRole): string =>
+    isKnownUserRole(role) ? t(`users.roles.${role}`) : role;
 
   const handleRoleChange = (role: UserRole) => {
     const enforced = requireTwoFactorStaff && isStaffRole(role);
@@ -469,7 +476,7 @@ export const UsersManager: React.FC = () => {
               >
                 {availableRoles.map((r) => (
                   <option key={r} value={r}>
-                    {t(`users.roles.${r}`)}
+                    {roleDisplay(r)}
                   </option>
                 ))}
               </select>
@@ -645,7 +652,7 @@ export const UsersManager: React.FC = () => {
                   </div>
                 </td>
                 <td className="p-4">{u.email}</td>
-                <td className="p-4">{t(`users.roles.${u.roles[0] as UserRole}`)}</td>
+                <td className="p-4">{roleDisplay(u.roles[0] as UserRole)}</td>
                 <td className="p-4">
                   {(u.active ?? true) ? (
                     <span className="text-emerald-600 font-medium">{t('users.table.active')}</span>

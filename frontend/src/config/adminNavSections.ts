@@ -27,6 +27,7 @@ import {
   Puzzle,
   Languages,
   BarChart3,
+  Hash,
   ArrowUpCircle,
   KeyRound,
   ArrowRightLeft,
@@ -65,6 +66,13 @@ export const ADMIN_NAV_SECTIONS: AdminNavSectionDef[] = [
     items: [
       { id: 'pages', labelKey: 'admin.nav.pages', href: '/pages', icon: FileText },
       { id: 'articles', labelKey: 'admin.nav.articles', href: '/articles', icon: BookOpen },
+      {
+        id: 'categories',
+        labelKey: 'admin.nav.categories',
+        href: '/categories',
+        icon: Hash,
+        adminOnly: true,
+      },
       {
         id: 'editorial-calendar',
         labelKey: 'admin.nav.editorialCalendar',
@@ -175,6 +183,7 @@ export const ADMIN_NAV_SECTIONS: AdminNavSectionDef[] = [
       { id: 'logs', labelKey: 'admin.nav.logs', href: '/logs', icon: ScrollText, adminOnly: true },
       { id: 'audit', labelKey: 'admin.nav.audit', href: '/audit', icon: History },
       { id: 'security-audit', labelKey: 'admin.nav.securityAudit', href: '/security/audit', icon: ShieldAlert, adminOnly: true },
+      { id: 'roles', labelKey: 'admin.nav.roles', href: '/security/roles', icon: KeyRound, superAdminOnly: true },
     ],
   },
   {

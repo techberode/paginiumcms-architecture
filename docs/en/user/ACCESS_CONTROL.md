@@ -26,6 +26,8 @@ A user must pass both layers when Path ACL is active. A frontend route guard is 
 | `ADMIN` | manage platform and users |
 | `SUPER_ADMIN` | full administrative and policy access |
 
+Since **It.84d**, SUPER_ADMIN can define **custom roles** stored in `data/roles.json` (`id`, `name`, `permissions[]`, `system`). Built-in roles `ADMIN`, `EDITOR`, and `USER` remain system roles (editable, not deletable). Permission IDs must exist in the backend `PermissionCatalog`. Manage roles at **Security → Custom roles** (`/security/roles`) or sync system-role permissions via **Settings → Access control**.
+
 SUPER_ADMIN bypass is a powerful exception. Use the account for policy/extension tasks, not routine article writing.
 
 ## 3. Permission catalog

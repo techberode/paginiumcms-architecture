@@ -9,32 +9,19 @@ import { useI18n } from '../../context/I18nContext';
 import { SiteLogo } from '../branding/SiteLogo';
 import { PublicThemeToggle } from './PublicThemeToggle';
 import { usePublicAppearanceContext } from '../../context/PublicAppearanceProvider';
-import { NavDropdownEntry, NavMenuVisual } from './NavMenuVisual';
-import { navigationItemHasVisual } from '../../utils/navigationRich';
+import { NavDropdownEntry } from './NavMenuVisual';
+import { NavItemContent } from './navbarShared';
+import { SideNav } from './SideNav';
+import type { NavigationLayoutSettings } from '../../utils/navigationLayoutSettings';
+import { sideNavDrawerBreakpointClass } from '../../utils/navigationLayoutSettings';
 import { BTN_PRIMARY_GRADIENT, LOGO_FALLBACK, NAV_LINK_ACTIVE, NAV_LINK_IDLE } from '../../theme/publicUiClasses';
 
 interface NavbarProps {
   onOpenSearch: () => void;
   previewMode?: boolean;
+  showPrimaryNav?: boolean;
+  navLayout?: NavigationLayoutSettings;
 }
-
-const NavItemContent: React.FC<{
-  item: PublicNavItem;
-  labelClassName?: string;
-  descriptionClassName?: string;
-}> = ({ item, labelClassName = 'text-sm font-semibold', descriptionClassName = 'text-xs' }) => (
-  <>
-    {navigationItemHasVisual(item.iconType, item.iconValue) ? <NavMenuVisual item={item} /> : null}
-    <span className="min-w-0 text-left">
-      <span className={`block ${labelClassName}`}>{item.label}</span>
-      {item.description ? (
-        <span className={`block font-normal text-theme-text-muted ${descriptionClassName}`}>
-          {item.description}
-        </span>
-      ) : null}
-    </span>
-  </>
-);
 
 const NavLinkButton: React.FC<{
   item: PublicNavItem;
@@ -51,6 +38,41 @@ const NavLinkButton: React.FC<{
   >
     <NavItemContent item={item} />
   </button>
+);
+
+const DesktopDropdownTree: React.FC<{
+  items: PublicNavItem[];
+  depth: number;
+  isPathActive: (path: string) => boolean;
+  onNavigate: (path: string) => void;
+  navUi: {
+    defaultPreviewScale: number;
+    maxTooltipWidthPx: number;
+    enableHoverAnimations: boolean;
+  };
+}> = ({ items, depth, isPathActive, onNavigate, navUi }) => (
+  <>
+    {items.map((child) => (
+      <div key={child.id}>
+        <NavDropdownEntry
+          item={child}
+          onNavigate={onNavigate}
+          isActive={isPathActive(child.path)}
+          compact={depth > 0}
+          navUi={navUi}
+        />
+        {child.children && child.children.length > 0 ? (
+          <DesktopDropdownTree
+            items={child.children}
+            depth={depth + 1}
+            isPathActive={isPathActive}
+            onNavigate={onNavigate}
+            navUi={navUi}
+          />
+        ) : null}
+      </div>
+    ))}
+  </>
 );
 
 const DesktopNavItem: React.FC<{
@@ -88,26 +110,13 @@ const DesktopNavItem: React.FC<{
       {open ? (
         <div className="absolute left-0 top-full pt-2 min-w-[240px] z-50">
           <div className="rounded-xl border border-theme-border bg-theme-surface-elevated shadow-xl py-2">
-            {item.children?.map((child) => (
-              <div key={child.id}>
-                <NavDropdownEntry
-                  item={child}
-                  onNavigate={onNavigate}
-                  isActive={isPathActive(child.path)}
-                  navUi={navUi}
-                />
-                {child.children?.map((grand) => (
-                  <NavDropdownEntry
-                    key={grand.id}
-                    item={grand}
-                    onNavigate={onNavigate}
-                    isActive={isPathActive(grand.path)}
-                    compact
-                    navUi={navUi}
-                  />
-                ))}
-              </div>
-            ))}
+            <DesktopDropdownTree
+              items={item.children ?? []}
+              depth={0}
+              isPathActive={isPathActive}
+              onNavigate={onNavigate}
+              navUi={navUi}
+            />
           </div>
         </div>
       ) : null}
@@ -146,7 +155,12 @@ const MobileNavItems: React.FC<{
   </>
 );
 
-export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, previewMode = false }) => {
+export const Navbar: React.FC<NavbarProps> = ({
+  onOpenSearch,
+  previewMode = false,
+  showPrimaryNav = true,
+  navLayout,
+}) => {
   const { navigation } = usePublicSite();
   const { get } = useSettingsContext();
   const { user } = useAuth();
@@ -177,6 +191,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, previewMode = fals
     setMobileMenuOpen(false);
   };
 
+  const useSideDrawer =
+    navLayout !== undefined &&
+    (navLayout.placement === 'side' || navLayout.placement === 'both');
+
+  const mobileDrawerClass = navLayout ? sideNavDrawerBreakpointClass(navLayout.sideBreakpoint) : 'md:hidden';
+
   return (
     <header className="backdrop-blur-md border-b border-theme-border bg-theme-surface-elevated/90 sticky top-0 z-40 transition-colors">
       {previewMode && (
@@ -199,17 +219,21 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, previewMode = fals
           />
         </button>
 
-        <nav className="hidden md:flex items-center gap-1">
-          {sortedNav.map((item) => (
-            <DesktopNavItem
-              key={item.id}
-              item={item}
-              isPathActive={isPathActive}
-              onNavigate={handleNavigate}
-              navUi={navUi}
-            />
-          ))}
-        </nav>
+        {showPrimaryNav ? (
+          <nav className="hidden md:flex items-center gap-1">
+            {sortedNav.map((item) => (
+              <DesktopNavItem
+                key={item.id}
+                item={item}
+                isPathActive={isPathActive}
+                onNavigate={handleNavigate}
+                navUi={navUi}
+              />
+            ))}
+          </nav>
+        ) : (
+          <div className="flex-1" />
+        )}
 
         <div className="flex items-center gap-2 sm:gap-3">
           {allowUserToggle ? (
@@ -248,7 +272,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, previewMode = fals
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 text-theme-text hover:bg-theme-surface rounded-xl transition-colors"
+            className={`${useSideDrawer ? mobileDrawerClass : 'md:hidden'} p-2 text-theme-text hover:bg-theme-surface rounded-xl transition-colors`}
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -256,10 +280,16 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, previewMode = fals
       </div>
 
       {mobileMenuOpen ? (
-        <div className="md:hidden border-t border-theme-border bg-theme-surface-elevated px-4 py-6 shadow-xl animate-fadeIn">
-          <div className="flex flex-col gap-2">
-            <MobileNavItems items={sortedNav} isPathActive={isPathActive} onNavigate={handleNavigate} />
-          </div>
+        <div
+          className={`${useSideDrawer ? mobileDrawerClass : 'md:hidden'} border-t border-theme-border bg-theme-surface-elevated px-4 py-6 shadow-xl animate-fadeIn`}
+        >
+          {useSideDrawer && navLayout ? (
+            <SideNav items={sortedNav} layout={navLayout} onNavigate={handleNavigate} />
+          ) : (
+            <div className="flex flex-col gap-2">
+              <MobileNavItems items={sortedNav} isPathActive={isPathActive} onNavigate={handleNavigate} />
+            </div>
+          )}
         </div>
       ) : null}
     </header>

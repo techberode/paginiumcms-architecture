@@ -14,6 +14,7 @@ export const publicSk: MessageTree = {
     adminButton: 'Paginium Admin',
     architectureTagline: 'FlatFile Architecture',
     previewBanner: 'Náhľad — navigácia je neaktívna',
+    sideMenu: 'Navigácia stránky',
   },
   layout: {
     noHomePage: 'Zatiaľ nie je publikovaná domovská stránka (slug: home).',
@@ -295,6 +296,16 @@ export const publicSk: MessageTree = {
       newest: 'Najnovšie',
       oldest: 'Najstaršie',
       title: 'Podľa názvu (A–Z)',
+      popular: 'Najčítanejšie',
+    },
+    sidebar: {
+      tags: 'Tagy',
+      allTags: 'Všetky',
+      categories: 'Kategórie',
+      allCategories: 'Všetky kategórie',
+      latest: 'Posledné',
+      popular: 'Najčítanejšie',
+      views: ':count zobrazení',
     },
     articleNav: {
       ariaLabel: 'Navigácia medzi článkami',

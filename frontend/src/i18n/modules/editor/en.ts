@@ -271,6 +271,12 @@ export const editorEn: MessageTree = {
     ariaLabel: 'New tag',
     add: 'Add tag',
   },
+  category: {
+    title: 'Category',
+    none: 'No category',
+    hint: 'Optional taxonomy bucket for blog filters and sidebar widgets.',
+    manageLink: 'Manage categories',
+  },
   profiles: {
     label: 'Editor profile',
     company: {
