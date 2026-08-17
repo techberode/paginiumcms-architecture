@@ -28,6 +28,7 @@ use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Core\Settings\Services\SocialLinksNormalizer;
 use PaginiumCMS\Modules\Security\PermissionCatalog;
 use PaginiumCMS\Modules\Security\Services\AccessControlSyncService;
+use PaginiumCMS\Modules\Security\Services\RoleCatalogSeeder;
 use PaginiumCMS\Modules\Media\Services\MediaStorageCapabilityProbe;
 use PaginiumCMS\Modules\Media\Services\MediaStorageFactory;
 use PaginiumCMS\Support\AppVersion;
@@ -56,6 +57,7 @@ final class SettingsController
         private EditorProfileService $editorProfiles,
         private EditorComponentRegistry $editorComponents,
         private AccessControlSyncService $accessControlSync,
+        private RoleCatalogSeeder $roleCatalogSeeder,
         private AuthorizationInterface $authorization,
         private SupportedLocalesRegistry $localesRegistry,
         private EngineCapabilityProbe $engineProbe,
@@ -197,8 +199,11 @@ final class SettingsController
                 return $this->json->error($response, $e->getMessage(), 422);
             }
 
+            $this->roleCatalogSeeder->syncSystemRolesFromSettings($values);
+
             if ($this->authorization instanceof \PaginiumCMS\Modules\Security\Services\AuthorizationManager) {
                 $this->authorization->reloadFromSettings();
+                $this->authorization->reloadFromRoles();
             }
         }
 
@@ -259,6 +264,12 @@ final class SettingsController
                 'defaultPreviewScale' => ((int) ($all['navigationUi']['defaultPreviewScale'] ?? 15)) / 10.0,
                 'maxTooltipWidthPx' => (int) ($all['navigationUi']['maxTooltipWidthPx'] ?? 280),
                 'enableHoverAnimations' => (bool) ($all['navigationUi']['enableHoverAnimations'] ?? true),
+            ],
+            'navigation' => [
+                'placement' => (string) ($all['navigation']['placement'] ?? 'top'),
+                'sideBreakpoint' => (string) ($all['navigation']['sideBreakpoint'] ?? 'lg'),
+                'expandAnimation' => (bool) ($all['navigation']['expandAnimation'] ?? true),
+                'maxDepth' => max(3, min(4, (int) ($all['navigation']['maxDepth'] ?? 3))),
             ],
             'content' => $all['content'] ?? [],
             'editor' => array_merge($all['editor'] ?? [], [

@@ -20,10 +20,12 @@ class AuthorizationManager implements AuthorizationInterface
 
     public function __construct(
         private ?SecurityAuditStore $securityAudit = null,
-        private ?SettingsRepositoryInterface $settings = null
+        private ?SettingsRepositoryInterface $settings = null,
+        private ?RoleRepository $roles = null,
     ) {
         $this->rolePermissions = PermissionCatalog::defaultRolePermissions();
         $this->reloadFromSettings();
+        $this->reloadFromRoles();
     }
 
     public function reloadFromSettings(): void
@@ -45,49 +47,22 @@ class AuthorizationManager implements AuthorizationInterface
             $permissions = PermissionCatalog::normalizeList(
                 PermissionCatalog::decodePermissions($encoded)
             );
+            $permissions = $this->applyRoleGuards($role, $permissions);
 
-            if ($role === AuthorizationInterface::ROLE_ADMIN
-                && !in_array('api-keys:manage', $permissions, true)
-            ) {
-                $permissions[] = 'api-keys:manage';
-                $permissions = PermissionCatalog::normalizeList($permissions);
+            if ($permissions !== []) {
+                $this->rolePermissions[$role] = $permissions;
             }
+        }
+    }
 
-            if ($role === AuthorizationInterface::ROLE_ADMIN
-                && !in_array('redirects:manage', $permissions, true)
-            ) {
-                $permissions[] = 'redirects:manage';
-                $permissions = PermissionCatalog::normalizeList($permissions);
-            }
+    public function reloadFromRoles(): void
+    {
+        if ($this->roles === null) {
+            return;
+        }
 
-            if ($role === AuthorizationInterface::ROLE_ADMIN
-                && !in_array('webhooks:manage', $permissions, true)
-            ) {
-                $permissions[] = 'webhooks:manage';
-                $permissions = PermissionCatalog::normalizeList($permissions);
-            }
-
-            if ($role === AuthorizationInterface::ROLE_ADMIN
-                && !in_array('metrics:read', $permissions, true)
-            ) {
-                $permissions[] = 'metrics:read';
-                $permissions = PermissionCatalog::normalizeList($permissions);
-            }
-
-            if ($role === AuthorizationInterface::ROLE_ADMIN
-                && !$this->hasContentDomainPermission($permissions)
-            ) {
-                $permissions[] = 'content:manage';
-                $permissions = PermissionCatalog::normalizeList($permissions);
-            }
-
-            if ($role === AuthorizationInterface::ROLE_EDITOR
-                && in_array('content:create', $permissions, true)
-                && !$this->hasContentEditPermission($permissions)
-            ) {
-                $permissions[] = 'content:edit';
-                $permissions = PermissionCatalog::normalizeList($permissions);
-            }
+        foreach ($this->roles->permissionsMap() as $role => $permissions) {
+            $permissions = $this->applyRoleGuards($role, $permissions);
 
             if ($permissions !== []) {
                 $this->rolePermissions[$role] = $permissions;
@@ -220,6 +195,58 @@ class AuthorizationManager implements AuthorizationInterface
  */public function getRolePermissions(string $role): array
     {
         return $this->rolePermissions[$role] ?? [];
+    }
+
+    /**
+     * @param list<string> $permissions
+     * @return list<string>
+     */
+    private function applyRoleGuards(string $role, array $permissions): array
+    {
+        if ($role === AuthorizationInterface::ROLE_ADMIN
+            && !in_array('api-keys:manage', $permissions, true)
+        ) {
+            $permissions[] = 'api-keys:manage';
+            $permissions = PermissionCatalog::normalizeList($permissions);
+        }
+
+        if ($role === AuthorizationInterface::ROLE_ADMIN
+            && !in_array('redirects:manage', $permissions, true)
+        ) {
+            $permissions[] = 'redirects:manage';
+            $permissions = PermissionCatalog::normalizeList($permissions);
+        }
+
+        if ($role === AuthorizationInterface::ROLE_ADMIN
+            && !in_array('webhooks:manage', $permissions, true)
+        ) {
+            $permissions[] = 'webhooks:manage';
+            $permissions = PermissionCatalog::normalizeList($permissions);
+        }
+
+        if ($role === AuthorizationInterface::ROLE_ADMIN
+            && !in_array('metrics:read', $permissions, true)
+        ) {
+            $permissions[] = 'metrics:read';
+            $permissions = PermissionCatalog::normalizeList($permissions);
+        }
+
+        if ($role === AuthorizationInterface::ROLE_ADMIN
+            && !$this->hasContentDomainPermission($permissions)
+        ) {
+            $permissions[] = 'content:manage';
+            $permissions = PermissionCatalog::normalizeList($permissions);
+        }
+
+        if ($role === AuthorizationInterface::ROLE_EDITOR
+            && in_array('content:create', $permissions, true)
+            && !$this->hasContentEditPermission($permissions)
+        ) {
+            $permissions[] = 'content:edit';
+            $permissions = PermissionCatalog::normalizeList($permissions);
+        }
+
+        return $permissions;
     }
 
     /**

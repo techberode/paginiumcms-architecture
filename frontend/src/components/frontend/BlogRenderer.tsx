@@ -32,6 +32,9 @@ import {
 import { formatContentDateLabels } from '../../utils/contentDates';
 import { formatReadingTime, resolveShowReadingTime } from '../../utils/readingTime';
 import { BTN_PRIMARY, INPUT_THEME, PUBLIC_CARD, PUBLIC_SPINNER } from '../../theme/publicUiClasses';
+import { blogSidebarApi, type BlogSidebarPayload } from '../../api/blogSidebar';
+import { BlogSidebar } from './BlogSidebar';
+import { resolveBlogSidebarSettings } from '../../utils/blogSidebarSettings';
 
 export const BlogRenderer: React.FC = () => {
   const { t, locale } = useI18n();
@@ -41,6 +44,7 @@ export const BlogRenderer: React.FC = () => {
         { value: 'newest' as const, label: t('public.blog.sort.newest') },
         { value: 'oldest' as const, label: t('public.blog.sort.oldest') },
         { value: 'title' as const, label: t('public.blog.sort.title') },
+        { value: 'popular' as const, label: t('public.blog.sort.popular') },
       ] satisfies { value: BlogSort; label: string }[],
     [t]
   );
@@ -51,7 +55,12 @@ export const BlogRenderer: React.FC = () => {
 
   const itemsPerPage = resolveBlogItemsPerPage(settings.content);
   const showReadingTime = resolveShowReadingTime(settings.content);
+  const sidebarSettings = useMemo(
+    () => resolveBlogSidebarSettings(settings.content),
+    [settings.content]
+  );
   const selectedTag = searchParams.get('tag');
+  const selectedCategory = searchParams.get('category');
   const sort = parseBlogSort(searchParams.get('sort'));
   const currentPage = Math.max(1, Number.parseInt(searchParams.get('page') ?? '1', 10) || 1);
 
@@ -61,6 +70,28 @@ export const BlogRenderer: React.FC = () => {
   const [activeArticle, setActiveArticle] = useState<Article | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [navArticles, setNavArticles] = useState<Article[]>([]);
+  const [sidebarData, setSidebarData] = useState<BlogSidebarPayload | null>(null);
+
+  useEffect(() => {
+    if (!sidebarSettings.enabled) {
+      setSidebarData(null);
+      return;
+    }
+
+    let cancelled = false;
+    const loadSidebar = async () => {
+      const payload = await blogSidebarApi.fetch();
+      if (!cancelled) {
+        setSidebarData(payload);
+      }
+    };
+
+    void loadSidebar();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [sidebarSettings.enabled]);
 
   useEffect(() => {
     if (slug) {
@@ -78,6 +109,9 @@ export const BlogRenderer: React.FC = () => {
         });
         if (selectedTag) {
           params.set('tag', selectedTag);
+        }
+        if (selectedCategory) {
+          params.set('category', selectedCategory);
         }
 
         const response = await apiClient.get<Article[]>(`/api/articles?${params.toString()}`);
@@ -103,7 +137,7 @@ export const BlogRenderer: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [slug, currentPage, itemsPerPage, selectedTag, sort]);
+  }, [slug, currentPage, itemsPerPage, selectedTag, selectedCategory, sort]);
 
   useEffect(() => {
     if (!slug) {
@@ -169,12 +203,18 @@ export const BlogRenderer: React.FC = () => {
 
   const hasPrev = safePage > 1;
   const hasNext = safePage < totalPages;
-  const listPath = buildBlogListPath({ page: safePage, tag: selectedTag, sort });
+  const listPath = buildBlogListPath({ page: safePage, tag: selectedTag, category: selectedCategory, sort });
 
-  const updateListParams = (patch: { page?: number; tag?: string | null; sort?: BlogSort }) => {
+  const updateListParams = (patch: {
+    page?: number;
+    tag?: string | null;
+    category?: string | null;
+    sort?: BlogSort;
+  }) => {
     const next = new URLSearchParams(searchParams);
     const nextPage = patch.page ?? safePage;
     const nextTag = patch.tag !== undefined ? patch.tag : selectedTag;
+    const nextCategory = patch.category !== undefined ? patch.category : selectedCategory;
     const nextSort = patch.sort ?? sort;
 
     if (nextPage <= 1) {
@@ -189,6 +229,12 @@ export const BlogRenderer: React.FC = () => {
       next.delete('tag');
     }
 
+    if (nextCategory) {
+      next.set('category', nextCategory);
+    } else {
+      next.delete('category');
+    }
+
     if (nextSort === 'newest') {
       next.delete('sort');
     } else {
@@ -196,6 +242,45 @@ export const BlogRenderer: React.FC = () => {
     }
 
     setSearchParams(next, { replace: true });
+  };
+
+  const sidebarActive = sidebarSettings.enabled && sidebarData?.enabled === true;
+  const sidebarElement = sidebarActive ? (
+    <BlogSidebar
+      data={sidebarData}
+      selectedTag={selectedTag}
+      selectedCategory={selectedCategory}
+      onSelectTag={(tag) => updateListParams({ page: 1, tag })}
+      onSelectCategory={(category) => updateListParams({ page: 1, category })}
+      onOpenArticle={(articleSlug) => navigate(`/blog/${articleSlug}`)}
+      settings={{
+        showTags: sidebarSettings.showTags,
+        showCategories: sidebarSettings.showCategories,
+        showLatest: sidebarSettings.showLatest,
+        showPopular: sidebarSettings.showPopular,
+      }}
+    />
+  ) : null;
+
+  const wrapWithSidebar = (content: React.ReactNode, wide = false) => {
+    if (!sidebarActive || !sidebarElement) {
+      return content;
+    }
+
+    const maxWidth = wide ? 'max-w-7xl' : 'max-w-4xl';
+
+    return (
+      <div className={`${maxWidth} mx-auto px-4 sm:px-6 lg:px-8`}>
+        <div
+          className={`pg-blog-with-sidebar ${
+            sidebarSettings.placement === 'left' ? 'pg-blog-sidebar-left' : ''
+          }`}
+        >
+          <div className="pg-blog-main">{content}</div>
+          {sidebarElement}
+        </div>
+      </div>
+    );
   };
 
   const { prev: prevArticle, next: nextArticle } = useMemo(() => {
@@ -275,18 +360,20 @@ export const BlogRenderer: React.FC = () => {
 
     return (
       <div className="min-h-screen bg-theme-surface text-theme-text pb-24 transition-colors">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
-          <button
-            type="button"
-            onClick={() => navigate(listPath)}
-            className="inline-flex items-center gap-2 text-sm font-bold text-theme-text-muted hover:text-theme-primary transition-colors cursor-pointer mb-6"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>{t('public.blog.backToList')}</span>
-          </button>
-        </div>
+        {wrapWithSidebar(
+          <>
+            <div className="pt-10">
+              <button
+                type="button"
+                onClick={() => navigate(listPath)}
+                className="inline-flex items-center gap-2 text-sm font-bold text-theme-text-muted hover:text-theme-primary transition-colors cursor-pointer mb-6"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>{t('public.blog.backToList')}</span>
+              </button>
+            </div>
 
-        <header className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <header className="py-6">
           <div className="flex flex-wrap items-center gap-2 mb-4">
             {activeArticle.tags?.map((tag) => (
               <span
@@ -339,7 +426,7 @@ export const BlogRenderer: React.FC = () => {
           )}
         </header>
 
-        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
+            <main className="mt-10">
           <div className={`${PUBLIC_CARD} p-8 sm:p-12`}>
             <MarkdownRenderer content={activeArticle.content} html={activeArticle.html} />
           </div>
@@ -410,7 +497,10 @@ export const BlogRenderer: React.FC = () => {
             allowGuests={allowGuests}
             requireApproval={requireApproval}
           />
-        </main>
+            </main>
+          </>,
+          true
+        )}
       </div>
     );
   }
@@ -442,7 +532,7 @@ export const BlogRenderer: React.FC = () => {
           <div className="mt-8 flex flex-wrap justify-center gap-2">
             <button
               type="button"
-              onClick={() => updateListParams({ page: 1, tag: null })}
+              onClick={() => updateListParams({ page: 1, tag: null, category: null })}
               className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
                 selectedTag === null
                   ? `${BTN_PRIMARY} shadow-md`
@@ -451,21 +541,23 @@ export const BlogRenderer: React.FC = () => {
             >
               {t('public.blog.list.allArticles', { count: totalPublished })}
             </button>
-            {allTags.map((tag) => (
-              <button
-                key={tag}
-                type="button"
-                onClick={() => updateListParams({ page: 1, tag: selectedTag === tag ? null : tag })}
-                className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  selectedTag === tag
-                    ? `${BTN_PRIMARY} shadow-md`
-                    : 'bg-theme-surface hover:bg-theme-surface-elevated text-theme-text-muted'
-                }`}
-              >
-                <Tag className="w-3 h-3" />
-                <span>{tag}</span>
-              </button>
-            ))}
+            {!sidebarActive || !sidebarSettings.showTags
+              ? allTags.map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => updateListParams({ page: 1, tag: selectedTag === tag ? null : tag })}
+                    className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
+                      selectedTag === tag
+                        ? `${BTN_PRIMARY} shadow-md`
+                        : 'bg-theme-surface hover:bg-theme-surface-elevated text-theme-text-muted'
+                    }`}
+                  >
+                    <Tag className="w-3 h-3" />
+                    <span>{tag}</span>
+                  </button>
+                ))
+              : null}
           </div>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <label htmlFor="blog-sort" className="text-xs font-bold text-theme-text-muted uppercase tracking-wide">
@@ -488,6 +580,8 @@ export const BlogRenderer: React.FC = () => {
       </div>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16">
+        {wrapWithSidebar(
+          <>
         {filteredTotal > 0 && (
           <p className="text-center text-xs font-semibold text-theme-text-muted mb-8">
             {t('public.blog.list.range', { start: rangeStart, end: rangeEnd, total: filteredTotal })}
@@ -495,7 +589,11 @@ export const BlogRenderer: React.FC = () => {
           </p>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div
+          className={`grid grid-cols-1 gap-8 ${
+            sidebarActive ? 'md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3'
+          }`}
+        >
           {paginatedArticles.map((article) => {
             const author = article.author || String(
               settings.content?.blogAuthorName || settings.general?.siteName || article.frontMatter?.author || t('public.defaults.editorial')
@@ -582,7 +680,7 @@ export const BlogRenderer: React.FC = () => {
             <h3 className="text-2xl font-bold">{t('public.blog.list.emptyTitle')}</h3>
             <button
               type="button"
-              onClick={() => updateListParams({ page: 1, tag: null })}
+              onClick={() => updateListParams({ page: 1, tag: null, category: null })}
               className={`mt-6 ${BTN_PRIMARY} px-6 py-2.5 text-sm`}
             >
               {t('public.blog.list.showAll')}
@@ -644,6 +742,9 @@ export const BlogRenderer: React.FC = () => {
               <ChevronsRight className="w-5 h-5" />
             </button>
           </div>
+        )}
+          </>,
+          true
         )}
       </main>
     </div>

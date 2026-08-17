@@ -67,6 +67,7 @@ export const settingsEn: MessageTree = {
     "content": "Content",
     "editor": "Editor",
     "navigationUi": "Navigation (UI)",
+    "navigation": "Navigation layout",
     "smtp": "Email / SMTP",
     "notifications": "Toast notifications",
     "connectors": "Notification connectors",
@@ -272,7 +273,8 @@ export const settingsEn: MessageTree = {
   },
   "accessControl": {
     "superAdminTitle": "Super administrator only",
-    "superAdminHint": "Permission mapping for ADMIN, EDITOR, and USER roles plus path ACL rules can only be changed by SUPER_ADMIN. SUPER_ADMIN always has full access.",
+    "superAdminHint": "Permission mapping for ADMIN, EDITOR, and USER roles plus path ACL rules can only be changed by SUPER_ADMIN. SUPER_ADMIN always has full access. Manage custom roles in",
+    "rolesManagerLink": "Security → Custom roles",
     "restrictedTitle": "Restricted access",
     "restrictedHint": "This settings group is visible only to the super administrator.",
     "rolesTitle": "Permissions by role",
@@ -474,6 +476,24 @@ export const settingsEn: MessageTree = {
       "enableHoverAnimations": {
         "label": "Hover preview animations",
         "help": "Respects prefers-reduced-motion — static preview when disabled."
+      }
+    },
+    "navigation": {
+      "placement": {
+        "label": "Menu placement",
+        "help": "Top bar, side cascade tree, or both on desktop (It.84e)."
+      },
+      "sideBreakpoint": {
+        "label": "Side nav breakpoint",
+        "help": "Below this width the side column hides; mobile drawer stays in the header."
+      },
+      "expandAnimation": {
+        "label": "Expand/collapse animation",
+        "help": "Cascade motion in the side menu. Respects prefers-reduced-motion."
+      },
+      "maxDepth": {
+        "label": "Maximum menu depth",
+        "help": "SUPER_ADMIN may set 4 levels; default is 3."
       }
     },
     "comments": {

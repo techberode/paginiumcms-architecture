@@ -1,7 +1,7 @@
 import type { Article } from '../api/types';
 import { contentDateToTimestamp, resolveContentDate } from './contentDates';
 
-export type BlogSort = 'newest' | 'oldest' | 'title';
+export type BlogSort = 'newest' | 'oldest' | 'title' | 'popular';
 
 export function blogSortToApiSort(sort: BlogSort): string {
   switch (sort) {
@@ -9,6 +9,8 @@ export function blogSortToApiSort(sort: BlogSort): string {
       return 'createdAt';
     case 'title':
       return 'title';
+    case 'popular':
+      return '-popular';
     case 'newest':
     default:
       return '-createdAt';
@@ -16,7 +18,7 @@ export function blogSortToApiSort(sort: BlogSort): string {
 }
 
 export function parseBlogSort(value: string | null): BlogSort {
-  if (value === 'oldest' || value === 'title') {
+  if (value === 'oldest' || value === 'title' || value === 'popular') {
     return value;
   }
   return 'newest';
@@ -58,6 +60,7 @@ export function getAdjacentArticles(
 export function buildBlogListPath(options: {
   page?: number;
   tag?: string | null;
+  category?: string | null;
   sort?: BlogSort;
 }): string {
   const params = new URLSearchParams();
@@ -66,6 +69,9 @@ export function buildBlogListPath(options: {
   }
   if (options.tag) {
     params.set('tag', options.tag);
+  }
+  if (options.category) {
+    params.set('category', options.category);
   }
   if (options.sort && options.sort !== 'newest') {
     params.set('sort', options.sort);

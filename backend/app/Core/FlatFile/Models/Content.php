@@ -185,6 +185,25 @@ abstract class Content implements JsonSerializable
         return $this;
     }
 
+    public function getCategory(): string
+    {
+        $raw = $this->frontMatter['category'] ?? '';
+
+        return is_string($raw) ? trim($raw) : '';
+    }
+
+    public function setCategory(string $category): self
+    {
+        $category = trim($category);
+        if ($category === '') {
+            unset($this->frontMatter['category']);
+        } else {
+            $this->frontMatter['category'] = $category;
+        }
+
+        return $this;
+    }
+
     public function isPublished(): bool
     {
         return $this->getStatus() === 'published';

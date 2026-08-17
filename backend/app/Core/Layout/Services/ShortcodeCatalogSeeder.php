@@ -101,6 +101,81 @@ final class ShortcodeCatalogSeeder
                 ],
                 'expand' => '<section class="pg-hero"><div class="pg-hero-inner"><h1 class="pg-hero-title">{{title}}</h1><p class="pg-hero-subtitle">{{subtitle}}</p><a class="pg-btn pg-btn-primary" href="{{href}}">{{cta}}</a></div></section>',
             ],
+            'cta-banner' => [
+                'name' => 'cta-banner',
+                'version' => 1,
+                'attrs' => [
+                    'title' => ['type' => 'string'],
+                    'subtitle' => ['type' => 'string'],
+                    'cta' => ['type' => 'string'],
+                    'href' => ['type' => 'string'],
+                    'tone' => [
+                        'type' => 'enum',
+                        'options' => ['primary', 'muted'],
+                    ],
+                ],
+                'expand' => '<section class="pg-cta pg-cta-{{tone}}"><div class="pg-cta-inner"><h2 class="pg-cta-title">{{title}}</h2><p class="pg-cta-subtitle">{{subtitle}}</p><a class="pg-btn pg-btn-primary pg-cta-link" href="{{href}}">{{cta}}</a></div></section>',
+            ],
+            'stats-row' => [
+                'name' => 'stats-row',
+                'version' => 1,
+                'attrs' => [],
+                'expand' => '<div class="pg-stats">{{content}}</div>',
+            ],
+            'stat-item' => [
+                'name' => 'stat-item',
+                'version' => 1,
+                'attrs' => [
+                    'value' => ['type' => 'string'],
+                    'label' => ['type' => 'string'],
+                ],
+                'expand' => '<div class="pg-stat"><span class="pg-stat-value">{{value}}</span><span class="pg-stat-label">{{label}}</span></div>',
+            ],
+            'testimonial' => [
+                'name' => 'testimonial',
+                'version' => 1,
+                'attrs' => [
+                    'quote' => ['type' => 'string'],
+                    'author' => ['type' => 'string'],
+                    'role' => ['type' => 'string'],
+                ],
+                'expand' => '<blockquote class="pg-testimonial"><p class="pg-testimonial-quote">{{quote}}</p><footer class="pg-testimonial-meta"><cite class="pg-testimonial-author">{{author}}</cite><span class="pg-testimonial-role">{{role}}</span></footer></blockquote>',
+            ],
+            'pricing-table' => [
+                'name' => 'pricing-table',
+                'version' => 1,
+                'attrs' => [
+                    'columns' => [
+                        'type' => 'enum',
+                        'options' => ['2', '3'],
+                    ],
+                ],
+                'expand' => '<div class="pg-pricing pg-pricing-cols-{{columns}}">{{content}}</div>',
+            ],
+            'pricing-plan' => [
+                'name' => 'pricing-plan',
+                'version' => 1,
+                'attrs' => [
+                    'name' => ['type' => 'string'],
+                    'price' => ['type' => 'string'],
+                    'period' => ['type' => 'string'],
+                    'cta' => ['type' => 'string'],
+                    'href' => ['type' => 'string'],
+                    'variant' => [
+                        'type' => 'enum',
+                        'options' => ['default', 'featured'],
+                    ],
+                ],
+                'expand' => '<article class="pg-plan pg-plan-{{variant}}"><h3 class="pg-plan-name">{{name}}</h3><p class="pg-plan-price"><span class="pg-plan-amount">{{price}}</span><span class="pg-plan-period">{{period}}</span></p><ul class="pg-plan-list">{{content}}</ul><a class="pg-btn pg-btn-primary pg-plan-cta" href="{{href}}">{{cta}}</a></article>',
+            ],
+            'pricing-feature' => [
+                'name' => 'pricing-feature',
+                'version' => 1,
+                'attrs' => [
+                    'text' => ['type' => 'string'],
+                ],
+                'expand' => '<li class="pg-plan-feature">{{text}}</li>',
+            ],
         ];
 
         $encoded = [];

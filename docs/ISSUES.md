@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 15 August 2026 · register **ISS-001–ISS-154** · front matter parser root-cause fix (ISS-154, behind ISS-149/151/153)
+> **Last updated:** 17 August 2026 · register **ISS-001–ISS-157** · It.84 complete; gate regressions ISS-155–157
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -176,6 +176,10 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-151](#iss-151) | Auto-save on read → 409 conflict, bulk publish drops items (localeStatus / index) | **Critical (prod)** | ✅ **2.1.0-beta.51** |
 | [ISS-152](#iss-152) | Deploy beta.51 appears to fail — health 502 abort, wrong version, no PHP restart from admin UI | High (ops) | ✅ **2.1.0-beta.52** |
 | [ISS-153](#iss-153) | Editor save clobbers title/body/SEO; published→draft; bulk/list broken (syncFlatFields) | **Critical (prod+dev)** | ✅ **2.1.0-beta.53** |
+| [ISS-154](#iss-154) | Raw front matter leaks into article body (parser splits on indented `---`) | **Critical (prod)** | ✅ Fixed (root cause ISS-149/151/153) |
+| [ISS-155](#iss-155) | `NavigationManager` undefined `NAVIGATION_MAX_DEPTH` — tsc + Vitest fail (It.84e) | Medium (CI) | ✅ Fixed (It.84) |
+| [ISS-156](#iss-156) | User create rejected valid role when `roles.json` empty (It.84d seed gap) | Medium (CI/admin) | ✅ Fixed (It.84) |
+| [ISS-157](#iss-157) | Legacy home compatibility test failed when schema v2 home already on disk | Low (CI) | ✅ Fixed (It.84) |
 
 ## CI failures (GitHub Actions)
 
@@ -4718,6 +4722,84 @@ Schema v2 (It.73/It.81) stores the **entire body inside the YAML front matter** 
 ### Verification
 
 `vendor/bin/phpunit backend/tests/Core/FlatFile` (159 pass), PHPStan L8 clean. After deploy, existing articles that were **only mis-displayed** render correctly immediately. Any article that was **re-saved while broken** may still hold a polluted body — re-edit and Save once (parsing/saving is now correct) or restore from a version snapshot.
+
+---
+
+<a id="iss-155"></a>
+
+## ISS-155 – NavigationManager referenced undefined NAVIGATION_MAX_DEPTH (It.84e regression)
+
+**Severity:** Medium (CI) — `tsc --noEmit` + Vitest  
+**Status:** ✅ Fixed — It.84 complete
+
+### Symptom
+
+After It.84e (settings-driven navigation depth), `./scripts/iteration-gate.sh` failed:
+
+- `NavigationManager.tsx`: `TS2304: Cannot find name 'NAVIGATION_MAX_DEPTH'`
+- `NavigationManager.test.tsx`: unable to find input with display value `Home` (component crashed during render)
+
+### Root cause
+
+Submenu button still used removed constant `NAVIGATION_MAX_DEPTH` instead of `maxDepth` from `resolveNavigationLayout(settings)`.
+
+### Resolution
+
+Replace `NAVIGATION_MAX_DEPTH` with `maxDepth` in `NavigationManager.tsx`.
+
+### Verification
+
+`npm run type-check`; Vitest `NavigationManager.test.tsx`.
+
+---
+
+<a id="iss-156"></a>
+
+## ISS-156 – User create failed when roles registry not seeded (It.84d)
+
+**Severity:** Medium (CI / admin UX)  
+**Status:** ✅ Fixed — It.84 complete
+
+### Symptom
+
+`UserControllerTest::testStoreCreatesUser` threw `ValidationException` for role `EDITOR`. Admin user creation could fail on fresh installs before any call to `/api/admin/users` or `/api/admin/roles`.
+
+### Root cause
+
+It.84d changed `assertValidRole()` to require the role in `data/roles.json`, but `RoleCatalogSeeder::seedIfEmpty()` ran only in `UserController::index()`, not before store/update validation.
+
+### Resolution
+
+Call `$this->roleCatalogSeeder->seedIfEmpty($this->settings)` inside `assertValidRole()` before existence check.
+
+### Verification
+
+PHPUnit `UserControllerTest`; manual create user on empty registry.
+
+---
+
+<a id="iss-157"></a>
+
+## ISS-157 – Classic single-locale test skipped legacy re-seed when home was schema v2
+
+**Severity:** Low (CI)  
+**Status:** ✅ Fixed — It.84 complete
+
+### Symptom
+
+`ClassicSingleLocaleCompatibilityTest::testPublicHomePageRemainsReadableWithoutSchemaV2` failed with `assertNotSame(2, 2)` when a schema v2 `home` page already existed from another test or migration.
+
+### Root cause
+
+`ensureLegacyHomePageExists()` returned early if **any** `home` page existed, without checking `schemaVersion`.
+
+### Resolution
+
+Re-seed legacy `pages/home.md` fixture when existing home has `schemaVersion >= 2`.
+
+### Verification
+
+PHPUnit `ClassicSingleLocaleCompatibilityTest`.
 
 ---
 

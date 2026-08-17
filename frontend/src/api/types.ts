@@ -61,6 +61,7 @@ export interface Article extends Page {
   featuredImage: string;
   ogImage?: string;
   tags: string[];
+  category?: string;
   excerpt: string;
   authorBio?: string;
   authorAvatarUrl?: string;

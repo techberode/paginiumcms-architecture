@@ -41,6 +41,12 @@ const DEFAULT_PUBLIC: PublicSettings = {
     maxTooltipWidthPx: 280,
     enableHoverAnimations: true,
   },
+  navigation: {
+    placement: 'top',
+    sideBreakpoint: 'lg',
+    expandAnimation: true,
+    maxDepth: 3,
+  },
   comments: {
     enabled: true,
     requireApproval: true,

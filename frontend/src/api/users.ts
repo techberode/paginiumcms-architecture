@@ -4,7 +4,7 @@ import apiClient, { ApiResponse } from './client';
 import { User } from './types';
 import { resolvePublicMediaUrl, uploadMedia } from './media';
 
-export type UserRole = 'USER' | 'EDITOR' | 'ADMIN' | 'SUPER_ADMIN';
+export type UserRole = string;
 
 export interface CreateUserPayload {
   email: string;
@@ -35,6 +35,7 @@ export interface UsersListResponse {
   meta?: {
     require_two_factor_staff?: boolean;
     actor_is_super_admin?: boolean;
+    assignable_roles?: string[];
   };
 }
 
@@ -121,7 +122,11 @@ export async function removeUserAvatar(id: string): Promise<ApiResponse<{ user: 
 
 export const USER_ROLES: UserRole[] = ['USER', 'EDITOR', 'ADMIN', 'SUPER_ADMIN'];
 
-export const USER_ROLE_LABELS: Record<UserRole, string> = {
+export function isKnownUserRole(role: string): role is 'USER' | 'EDITOR' | 'ADMIN' | 'SUPER_ADMIN' {
+  return USER_ROLES.includes(role);
+}
+
+export const USER_ROLE_LABELS: Record<string, string> = {
   USER: 'USER',
   EDITOR: 'EDITOR',
   ADMIN: 'ADMIN',
@@ -130,6 +135,10 @@ export const USER_ROLE_LABELS: Record<UserRole, string> = {
 
 export function isStaffRole(role: UserRole): boolean {
   return role === 'EDITOR' || role === 'ADMIN' || role === 'SUPER_ADMIN';
+}
+
+export function isValidUserRole(role: string): boolean {
+  return /^(SUPER_ADMIN|[A-Z][A-Z0-9_]{1,31})$/.test(role);
 }
 
 export function deriveUsername(email: string): string {

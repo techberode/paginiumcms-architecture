@@ -24,6 +24,7 @@ import { ArticleCommentsPanel } from './ArticleCommentsPanel';
 import type { ArticleCommentsSettings } from '../../utils/articleCommentsSettings';
 import { useOpenLinksInNewTab } from '../../hooks/useOpenLinksInNewTab';
 import { ArticleTagsEditor } from './ArticleTagsEditor';
+import { ArticleCategoryPicker } from './ArticleCategoryPicker';
 import { ContentMetaSuggestPanel } from './ContentMetaSuggestPanel';
 import { linkTargetProps } from '../../utils/linkTarget';
 import { useI18n } from '../../context/I18nContext';
@@ -89,6 +90,8 @@ interface ContentEditorShellProps {
   onArticleCommentsChange?: (value: ArticleCommentsSettings) => void;
   articleAuthor?: string;
   onArticleAuthorChange?: (value: string) => void;
+  articleCategory?: string;
+  onArticleCategoryChange?: (value: string) => void;
   defaultBlogAuthor?: string;
   globalCommentsRequireApproval?: boolean;
   globalCommentsAllowGuests?: boolean;
@@ -142,6 +145,8 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
   onArticleCommentsChange,
   articleAuthor,
   onArticleAuthorChange,
+  articleCategory = '',
+  onArticleCategoryChange,
   defaultBlogAuthor = '',
   globalCommentsRequireApproval = true,
   globalCommentsAllowGuests = true,
@@ -525,6 +530,14 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
               disabled={!canEdit}
             />
           )}
+
+          {type === 'article' && onArticleCategoryChange ? (
+            <ArticleCategoryPicker
+              value={articleCategory}
+              onChange={onArticleCategoryChange}
+              disabled={!canEdit}
+            />
+          ) : null}
 
           <div className="rounded-xl border border-slate-200 dark:border-slate-800">
             <button

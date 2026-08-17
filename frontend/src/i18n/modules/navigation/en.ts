@@ -3,7 +3,8 @@ import type { MessageTree } from '../../types';
 export const navigationEn: MessageTree = {
   page: {
     title: 'Navigation',
-    subtitle: 'Levels: main menu → submenu → submenu (max. :depth). Description, icons, hover preview (It.56).',
+    subtitle: 'Levels: main menu → submenu → nested items (max. :depth). Description, icons, hover preview (It.56).',
+    layoutSettingsLink: 'Navigation layout (top / side / depth)',
   },
   empty: 'No menu items yet.',
   level: 'Level :depth',

@@ -58,6 +58,11 @@ final class PaginationQuery
             $filters['tag'] = $tag;
         }
 
+        $category = self::readFilterValue($params, 'category');
+        if ($category !== '') {
+            $filters['category'] = $category;
+        }
+
         $author = self::readFilterValue($params, 'author');
         if ($author !== '') {
             $filters['author'] = $author;

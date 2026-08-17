@@ -36,6 +36,9 @@ export const usersSk: MessageTree = {
   validation: {
     passwordRequired: 'Heslo je povinné pri vytváraní používateľa.',
   },
+  errors: {
+    invalidRole: 'Neplatná alebo nedostupná rola.',
+  },
   avatar: {
     title: 'Profilová fotka',
     hint: 'JPEG, PNG, WebP alebo GIF. Nahrajte súbor alebo vyberte z knižnice médií.',

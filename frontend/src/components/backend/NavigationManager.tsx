@@ -1,13 +1,13 @@
 // frontend/src/components/backend/NavigationManager.tsx
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Navigation, Plus, Trash2, ArrowUp, ArrowDown, Save, CornerDownRight } from 'lucide-react';
+import { Navigation, Plus, Trash2, ArrowUp, ArrowDown, Save, CornerDownRight, Settings2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { getNavigation, NavigationItem, updateNavigation } from '../../api/navigation';
 import { useToast } from '../../hooks/useToast';
 import { useI18n } from '../../context/I18nContext';
 import { MediaPickerModal } from './MediaPickerModal';
 import { NavigationItemRichFields } from './NavigationItemRichFields';
 import {
-  NAVIGATION_MAX_DEPTH,
   buildNavigationTree,
   collectDescendantIds,
   flattenNavigationTree,
@@ -15,6 +15,8 @@ import {
   normalizeNavigationOrders,
   reorderSibling,
 } from '../../utils/navigationTree';
+import { resolveNavigationLayout } from '../../utils/navigationLayoutSettings';
+import { useSettingsContext } from '../../context/SettingsContext';
 
 const createItem = (label: string, path: string, parentId: string | null, order: number): NavigationItem => ({
   id: `nav_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
@@ -34,6 +36,8 @@ const createItem = (label: string, path: string, parentId: string | null, order:
 export const NavigationManager: React.FC = () => {
   const { error: showError, success: showSuccess } = useToast();
   const { t } = useI18n();
+  const { settings } = useSettingsContext();
+  const maxDepth = resolveNavigationLayout(settings).maxDepth;
   const [items, setItems] = useState<NavigationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -88,8 +92,8 @@ export const NavigationManager: React.FC = () => {
 
   const addChildItem = (parentId: string) => {
     const depth = getNavigationDepth(items, parentId);
-    if (depth >= NAVIGATION_MAX_DEPTH) {
-      showError(t('navigation.toast.maxDepth', { depth: String(NAVIGATION_MAX_DEPTH) }));
+    if (depth >= maxDepth) {
+      showError(t('navigation.toast.maxDepth', { depth: String(maxDepth) }));
       return;
     }
 
@@ -132,7 +136,13 @@ export const NavigationManager: React.FC = () => {
             {t('navigation.page.title')}
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            {t('navigation.page.subtitle', { depth: String(NAVIGATION_MAX_DEPTH) })}
+            {t('navigation.page.subtitle', { depth: String(maxDepth) })}
+          </p>
+          <p className="text-xs text-gray-500 mt-2">
+            <Link to="/settings?category=site&group=navigation" className="inline-flex items-center gap-1 text-indigo-600 hover:underline">
+              <Settings2 className="w-3.5 h-3.5" />
+              {t('navigation.page.layoutSettingsLink')}
+            </Link>
           </p>
         </div>
         <button type="button" className="btn btn-primary" disabled={saving} onClick={() => void handleSave()}>
@@ -176,7 +186,7 @@ export const NavigationManager: React.FC = () => {
                 </div>
 
                 <div className="flex flex-wrap gap-2 shrink-0">
-                  {node.depth < NAVIGATION_MAX_DEPTH ? (
+                  {node.depth < maxDepth ? (
                     <button
                       type="button"
                       className="btn btn-secondary text-xs px-2 py-1"

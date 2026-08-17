@@ -67,6 +67,7 @@ export const settingsSk: MessageTree = {
     "content": "Obsah",
     "editor": "Editor",
     "navigationUi": "Navigácia (UI)",
+    "navigation": "Layout navigácie",
     "smtp": "Email / SMTP",
     "notifications": "Toast notifications",
     "connectors": "Notification connectors",
@@ -272,7 +273,8 @@ export const settingsSk: MessageTree = {
   },
   "accessControl": {
     "superAdminTitle": "Len pre super administrátora",
-    "superAdminHint": "Mapovanie oprávnení rolí ADMIN, EDITOR a USER a path ACL pravidlá môže meniť iba SUPER_ADMIN. SUPER_ADMIN má vždy plný prístup.",
+    "superAdminHint": "Mapovanie oprávnení rolí ADMIN, EDITOR a USER a path ACL pravidlá môže meniť iba SUPER_ADMIN. SUPER_ADMIN má vždy plný prístup. Vlastné role spravujte v",
+    "rolesManagerLink": "Bezpečnosť → Vlastné role",
     "restrictedTitle": "Obmedzený prístup",
     "restrictedHint": "Táto skupina nastavení je viditeľná len pre super administrátora.",
     "rolesTitle": "Oprávnenia podľa rolí",
@@ -474,6 +476,24 @@ export const settingsSk: MessageTree = {
       "enableHoverAnimations": {
         "label": "Animácie hover náhľadu",
         "help": "Respektuje prefers-reduced-motion — pri vypnutí statický náhľad."
+      }
+    },
+    "navigation": {
+      "placement": {
+        "label": "Umiestnenie menu",
+        "help": "Horný panel, bočný strom alebo oboje na desktope (It.84e)."
+      },
+      "sideBreakpoint": {
+        "label": "Breakpoint bočného menu",
+        "help": "Pod touto šírkou sa bočný stĺpec skryje; mobilný drawer zostáva v hlavičke."
+      },
+      "expandAnimation": {
+        "label": "Animácia rozbaľovania",
+        "help": "Cascade motion v bočnom menu. Respektuje prefers-reduced-motion."
+      },
+      "maxDepth": {
+        "label": "Max. hĺbka menu",
+        "help": "SUPER_ADMIN môže nastaviť 4 úrovne; predvolene 3."
       }
     },
     "smtp": {

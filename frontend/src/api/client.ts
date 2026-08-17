@@ -39,6 +39,7 @@ export interface PaginationMeta {
   total: number;
   total_pages: number;
   tags?: string[];
+  categories?: string[];
   total_published?: number;
 }
 

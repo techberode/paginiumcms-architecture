@@ -43,6 +43,8 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | 16 | **It.25** Setup wizard/update UX | 🟡 pre-Final | ⏳ | **stable-release blocker** — required before first stable tag; see [STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) §5.1 |
 | 17 | **It.76/77** Translation providers | 🔵 | ⏸️ | stabilization freeze |
 | 18 | **It.75** AI agent | 🔵 | ⏸️ | stabilization freeze |
+| 19 | **It.83** Theme runtime + Terminal Breach | 🟡 | ⏸️ | post-stable first slice — [ITERATION_83](ITERATION_83.md) |
+| 20 | **It.84** Categories, blog sidebar, landing, roles, nav | 🟡 | ✅ | **84a–84e** complete — [ITERATION_84](ITERATION_84.md) |
 
 ---
 
@@ -248,7 +250,8 @@ Remaining:
 | **It.81** editorial workflow | ✅ | [ITERATION_81](ITERATION_81.md) — complete (81f snippets) |
 | **It.82** Origin Panel | ✅ | [ITERATION_82](ITERATION_82.md) — shipped `beta.56`; excluded from archive |
 | **It.48** static/dynamic rendering | ⏳ | combine design with It.70 publishing pipeline |
-| Remaining theme runtime | 🟡 | depends on It.67 and schema/policy gate |
+| **It.83** theme runtime + Terminal Breach | ⏸️ | [ITERATION_83](ITERATION_83.md) — post-stable; It.67b import foundation shipped |
+| **It.84** presentation & access expansion | ✅ | [ITERATION_84](ITERATION_84.md) — 84a–84e complete (2026-08-17) |
 | Server metrics agent (remaining It.46) | ⏳ | coordinate with It.71 |
 | **It.79** DAM video | ⏳ | It.78 + It.72 MVP |
 | **RequestJsonBody rollout** | ✅ | all HTTP controllers + OTP/contact rate-limit middleware (`post-beta.40`) |

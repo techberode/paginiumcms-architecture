@@ -131,7 +131,19 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+### Added
+
+- **It.84c marketing shortcodes** — bundled catalog adds `cta-banner`, `stats-row`, `stat-item`, `testimonial`, `pricing-table`, `pricing-plan`, `pricing-feature`; `pgLayout.css` styles; demo page `/paginium-cms`; [LANDING_PAGE.md](docs/en/user/LANDING_PAGE.md).
+- **It.84b blog sidebar** — settings `content.blogSidebar*`; public `GET /api/blog/sidebar`; `BlogSidebar` on `/blog` list + detail; sort **Most read** (`-popular`); demo profile enables sidebar by default.
+- **It.84a content categories** — optional `category` front matter on articles/pages; flat-file registry `data/taxonomy/categories.json`; index facet + `GET /api/articles?category=` filter; public `GET /api/categories`; admin CRUD `/api/admin/categories`; editor category picker; sidebar categories widget with labels.
+- **It.84e navigation layout** — settings `navigation.placement` (`top` \| `side` \| `both`), `sideBreakpoint`, `expandAnimation`, `maxDepth` (3–4); public `SideNav` cascade; recursive top dropdown; layout link in Navigation manager.
+- **It.84d custom roles** — flat-file registry `data/roles.json`; `RoleRepository` + `AuthorizationManager` dynamic merge; SUPER_ADMIN CRUD `/api/admin/roles` (2FA); admin `RolesManager` UI; settings matrix migrates to system roles; dynamic assignable roles in user management.
+
 ### Fixed
+
+- **ISS-155** — `NavigationManager` referenced undefined `NAVIGATION_MAX_DEPTH` after It.84e settings-driven `maxDepth`; broke `tsc` and Vitest (submenu button crash). Fixed: use `maxDepth` from `resolveNavigationLayout()`.
+- **ISS-156** — `UserController::store` rejected `EDITOR`/`ADMIN`/`USER` when `data/roles.json` was empty (84d `assertValidRole` without seed). Fixed: `RoleCatalogSeeder::seedIfEmpty()` in `assertValidRole()`.
+- **ISS-157** — `ClassicSingleLocaleCompatibilityTest` falsely failed when a schema v2 `home` page already existed from a prior test run. Fixed: re-seed legacy fixture when existing home has `schemaVersion >= 2`.
 
 - **ISS-141 follow-up** — all remaining `Http/Controllers/*` JSON mutating paths and OTP/contact rate-limit middleware now use `RequestJsonBody::decode()` (eliminates empty-body regressions site-wide after `BodyParsingMiddleware`).
 

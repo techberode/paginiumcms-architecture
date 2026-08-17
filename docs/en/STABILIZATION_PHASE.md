@@ -46,6 +46,7 @@ Aligned with [PHILOSOPHY.md](PHILOSOPHY.md): thin core, optional hybrid layers, 
 | **It.72** S3 / remote media driver | Local driver MVP is enough for stabilization |
 | **It.70** GitHub API publisher UI | Local Git foundation shipped |
 | **It.82d** Origin host metrics | Maintainer optional |
+| **It.83** theme runtime + Terminal Breach | Post-stable slice; design in [ITERATION_83](ITERATION_83.md) |
 | **New admin modules** | Unless hotfix for shipped feature |
 
 Candidates in backlog §4 (`Scoped FileManager`, inline editing, etc.) remain **unnamed icebox** — no numbers recycled.
@@ -189,10 +190,11 @@ Until first stable: **no new iteration numbers** except **It.25**, only stabiliz
 | Docs | STABILIZATION, LOCAL_SETUP, deploy runbooks |
 | Tests | Regressions for S5–S9, It.25 smoke, shortcode policy |
 | Basic completion | Seed `coming-soon` shortcode + pgLayout block; deployment profile doc as settings preset |
+| **It.83 prep (docs/CSS only)** | [ITERATION_83](ITERATION_83.md) spec; S12 cyber-styled `pg-*` utilities; optional `terminal-breach` **color scheme tokens** in Settings (not theme activate) |
 
 | Not allowed | Examples |
 |-------------|----------|
-| New modules | Video, AI, outline builder |
+| New modules | Video, AI, outline builder, **It.83 theme activate/runtime** |
 | Schema breaks | New required settings without defaults |
 | Maintainer-only expansion | Origin 82d, host agent |
 
@@ -219,6 +221,7 @@ Target: **beta patches every 2–4 weeks** in August; **one stable tag in Septem
 | [HYBRID_ENGINE.md](architecture/HYBRID_ENGINE.md) | Long-term direction — not active build list |
 | [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) | Frozen items marked ⏸️ stabilization |
 | [ITERATION_25.md](ITERATION_25.md) | **Stable-release blocker** — setup wizard + update UX |
+| [ITERATION_83.md](ITERATION_83.md) | Post-stable theme runtime + Terminal Breach (design only during freeze) |
 | [CHECKLIST.md](CHECKLIST.md) | Human release gate before tag |
 
 ---

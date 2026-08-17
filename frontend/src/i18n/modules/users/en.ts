@@ -36,6 +36,9 @@ export const usersEn: MessageTree = {
   validation: {
     passwordRequired: 'Password is required when creating a user.',
   },
+  errors: {
+    invalidRole: 'Invalid or unavailable role.',
+  },
   avatar: {
     title: 'Profile photo',
     hint: 'JPEG, PNG, WebP or GIF. Upload a new file or pick from the media library.',

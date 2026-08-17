@@ -45,6 +45,8 @@ use PaginiumCMS\Modules\Security\Models\ApiBearerAuth;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Modules\Security\Services\ContentPathAclGuard;
 use PaginiumCMS\Core\Content\BlogAuthorSettings;
+use PaginiumCMS\Core\Content\Models\CategoryRecord;
+use PaginiumCMS\Core\Content\Services\BlogSidebarService;
 use PaginiumCMS\Support\AppTimezone;
 use PaginiumCMS\Support\Lang;
 use Psr\Http\Message\ResponseInterface;
@@ -78,6 +80,7 @@ class ContentController
         private ContentDuplicationService $duplicationService,
         private ContentBulkTagService $bulkTagService,
         private ContentStalenessService $staleness,
+        private BlogSidebarService $blogSidebar,
     ) {
     }
 
@@ -972,6 +975,11 @@ class ContentController
                     $override === null ? null : (bool) $override
                 );
             }
+            $this->applyCategoryField($content, $data);
+        }
+
+        if ($content instanceof Page) {
+            $this->applyCategoryField($content, $data);
         }
 
         $frontMatter = $content->getFrontMatter();
@@ -1048,6 +1056,11 @@ class ContentController
                     $override === null ? null : (bool) $override
                 );
             }
+            $this->applyCategoryField($content, $data);
+        }
+
+        if ($content instanceof Page) {
+            $this->applyCategoryField($content, $data);
         }
 
         $this->applySeoFrontMatter($content, $data);
@@ -1194,11 +1207,13 @@ class ContentController
         if ($content instanceof Page) {
             $payload['template'] = $content->getTemplate();
             $payload['layoutTemplate'] = $content->getLayoutTemplate();
+            $payload['category'] = $content->getCategory();
         }
 
         if ($content instanceof Article) {
             $payload['featuredImage'] = $content->getFeaturedImage();
             $payload['tags'] = $content->getTags();
+            $payload['category'] = $content->getCategory();
             $payload['excerpt'] = $content->getExcerpt();
             $payload['readingTime'] = $content->getReadingTime();
             $payload['commentsEnabled'] = $content->getCommentsEnabled();
@@ -1467,9 +1482,13 @@ class ContentController
         ];
 
         $loader = function () use ($type, $query, $request): array {
-            $result = $type === 'article'
-                ? $this->repository->findArticlesPaginated($query)
-                : $this->repository->findPagesPaginated($query);
+            if ($type === 'article' && in_array($query->sort, ['-popular', 'popular'], true)) {
+                $result = $this->blogSidebar->findArticlesByPopularity($query);
+            } else {
+                $result = $type === 'article'
+                    ? $this->repository->findArticlesPaginated($query)
+                    : $this->repository->findPagesPaginated($query);
+            }
 
             $items = $this->filterContentByAcl($request, $result['items'], $type);
 
@@ -1486,13 +1505,20 @@ class ContentController
         $metaExtra = [];
         if ($type === 'article') {
             $facetFilters = $query->filters;
-            unset($facetFilters['tag'], $facetFilters['author'], $facetFilters['date_from'], $facetFilters['date_to']);
+            unset(
+                $facetFilters['tag'],
+                $facetFilters['category'],
+                $facetFilters['author'],
+                $facetFilters['date_from'],
+                $facetFilters['date_to']
+            );
 
             if (!$this->isAuthenticated($request)) {
                 $facetFilters['status'] = 'published';
             }
 
             $metaExtra['tags'] = $this->repository->listDistinctTags('article', $facetFilters);
+            $metaExtra['categories'] = $this->repository->listDistinctCategories('article', $facetFilters);
             if (!$this->isAuthenticated($request)) {
                 $metaExtra['total_published'] = $this->repository->countIndexed('article', $facetFilters);
             }
@@ -1665,6 +1691,19 @@ class ContentController
         }
 
         return $result;
+    }
+
+    /**
+     * @param array<int|string, mixed> $data
+     */
+    private function applyCategoryField(Content $content, array $data): void
+    {
+        if (!array_key_exists('category', $data)) {
+            return;
+        }
+
+        $slug = CategoryRecord::normalizeSlug((string) $data['category']);
+        $content->setCategory($slug);
     }
 
     private function emitContentHook(

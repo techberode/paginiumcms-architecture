@@ -103,6 +103,59 @@ final class ShortcodeExpanderServiceTest extends TestCase
         $this->assertStringContainsString('Warn body', $html);
     }
 
+    public function testExpandsMarketingShortcodes(): void
+    {
+        $ctaJson = <<<'JSON'
+{
+  "name": "cta-banner",
+  "version": 1,
+  "attrs": {
+    "title": {"type": "string"},
+    "subtitle": {"type": "string"},
+    "cta": {"type": "string"},
+    "href": {"type": "string"},
+    "tone": {"type": "enum", "options": ["primary", "muted"]}
+  },
+  "expand": "<section class=\"pg-cta pg-cta-{{tone}}\"><div class=\"pg-cta-inner\"><h2 class=\"pg-cta-title\">{{title}}</h2><p class=\"pg-cta-subtitle\">{{subtitle}}</p><a class=\"pg-btn pg-btn-primary pg-cta-link\" href=\"{{href}}\">{{cta}}</a></div></section>"
+}
+JSON;
+        $this->manager->save('cta-banner', $ctaJson);
+
+        $statsRowJson = <<<'JSON'
+{
+  "name": "stats-row",
+  "version": 1,
+  "attrs": {},
+  "expand": "<div class=\"pg-stats\">{{content}}</div>"
+}
+JSON;
+        $this->manager->save('stats-row', $statsRowJson);
+
+        $statItemJson = <<<'JSON'
+{
+  "name": "stat-item",
+  "version": 1,
+  "attrs": {
+    "value": {"type": "string"},
+    "label": {"type": "string"}
+  },
+  "expand": "<div class=\"pg-stat\"><span class=\"pg-stat-value\">{{value}}</span><span class=\"pg-stat-label\">{{label}}</span></div>"
+}
+JSON;
+        $this->manager->save('stat-item', $statItemJson);
+
+        $body = '[cta-banner title="Ship content" subtitle="Flat-file CMS" cta="Start" href="/contact" tone="primary"/]'
+            . '[stats-row][stat-item value="100%" label="SSOT"/][/stats-row]';
+
+        $result = $this->expander->expand($body);
+
+        $this->assertStringContainsString('pg-cta', $result);
+        $this->assertStringContainsString('Ship content', $result);
+        $this->assertStringContainsString('pg-stats', $result);
+        $this->assertStringContainsString('pg-stat-value', $result);
+        $this->assertStringNotContainsString('[cta-banner', $result);
+    }
+
     private function removeDir(string $dir): void
     {
         if (!is_dir($dir)) {

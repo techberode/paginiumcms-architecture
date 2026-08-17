@@ -271,6 +271,12 @@ export const editorSk: MessageTree = {
     ariaLabel: 'Nový tag',
     add: 'Pridať tag',
   },
+  category: {
+    title: 'Kategória',
+    none: 'Bez kategórie',
+    hint: 'Voliteľná taxonomická skupina pre filtre blogu a sidebar widgety.',
+    manageLink: 'Spravovať kategórie',
+  },
   profiles: {
     label: 'Profil editora',
     company: {

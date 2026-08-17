@@ -53,6 +53,8 @@ import { SystemUpdateView } from './components/backend/SystemUpdateView';
 import { ApiKeysManager } from './components/backend/ApiKeysManager';
 import { RedirectsManager } from './components/backend/RedirectsManager';
 import { ShortcodesManager } from './components/backend/ShortcodesManager';
+import { CategoriesManager } from './components/backend/CategoriesManager';
+import { RolesManager } from './components/backend/RolesManager';
 import { SnippetsManager } from './components/backend/SnippetsManager';
 import { OriginPanelView } from './components/backend/OriginPanelView';
 import { WebhooksManager } from './components/backend/WebhooksManager';
@@ -167,6 +169,7 @@ function App() {
         <Route path="/pages/:slug" element={<MarkdownEditor type="page" />} />
         <Route path="/articles" element={<PagesManager type="articles" />} />
         <Route path="/articles/:slug" element={<MarkdownEditor type="article" />} />
+        <Route path="/categories" element={<CategoriesManager />} />
         <Route path="/platform/editorial-calendar" element={<EditorialCalendarView />} />
         <Route path="/media" element={<MediaManager />} />
         <Route path="/navigation" element={<NavigationManager />} />
@@ -185,6 +188,7 @@ function App() {
         <Route path="/audit/content/:contentId" element={<AuditTrail />} />
         <Route path="/audit/user/:userId" element={<AuditTrail />} />
         <Route path="/security/audit" element={<SecurityAuditManager />} />
+        <Route path="/security/roles" element={<RolesManager />} />
         <Route path="/security/acl" element={<Navigate to="/settings?category=security&group=accessControl" replace />} />
         <Route path="/blueprints" element={<BlueprintManager />} />
         <Route path="/extensions" element={<ExtensionsManager />} />

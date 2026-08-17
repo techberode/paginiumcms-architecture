@@ -18,6 +18,8 @@ use PaginiumCMS\Modules\Security\Contracts\PasswordPolicyInterface;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Modules\Security\Services\UserAvatarService;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
+use PaginiumCMS\Modules\Security\Services\RoleCatalogSeeder;
+use PaginiumCMS\Modules\Security\Services\RoleRepository;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UploadedFileInterface;
@@ -30,14 +32,6 @@ use RuntimeException;
 final class UserController
 {
     /** @var list<string> */
-    private const ALLOWED_ROLES = [
-        AuthorizationInterface::ROLE_USER,
-        AuthorizationInterface::ROLE_EDITOR,
-        AuthorizationInterface::ROLE_ADMIN,
-        AuthorizationInterface::ROLE_SUPER_ADMIN,
-    ];
-
-    /** @var list<string> */
     private const STAFF_ROLES = [
         AuthorizationInterface::ROLE_EDITOR,
         AuthorizationInterface::ROLE_ADMIN,
@@ -48,6 +42,8 @@ final class UserController
         private UserRepository $users,
         private UserAvatarService $avatars,
         private SettingsRepositoryInterface $settings,
+        private RoleRepository $roles,
+        private RoleCatalogSeeder $roleCatalogSeeder,
         private Validator $validator,
         private PasswordPolicyInterface $passwordPolicy,
         private JsonResponder $json
@@ -57,6 +53,7 @@ final class UserController
     public function index(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $actor = $this->resolveActor($request);
+        $this->roleCatalogSeeder->seedIfEmpty($this->settings);
         $list = array_map(
             static fn (User $user): array => $user->jsonSerialize(),
             $this->users->findAll()
@@ -67,6 +64,7 @@ final class UserController
             'meta' => [
                 'require_two_factor_staff' => $this->requireTwoFactorStaff(),
                 'actor_is_super_admin' => $actor?->isSuperAdmin() ?? false,
+                'assignable_roles' => $this->assignableRoles($actor?->isSuperAdmin() ?? false),
             ],
         ]);
     }
@@ -180,7 +178,7 @@ final class UserController
             'username' => ['string', 'min:2', 'max:64', 'slug'],
             'name' => ['string', 'min:2', 'max:120'],
             'bio' => ['string', 'max:500'],
-            'role' => ['in:USER,EDITOR,ADMIN,SUPER_ADMIN'],
+            'role' => ['string', 'max:32', 'regex:/^(SUPER_ADMIN|[A-Z][A-Z0-9_]{1,31})$/'],
             'active' => ['bool'],
         ];
 
@@ -456,9 +454,30 @@ final class UserController
 
     private function assertValidRole(string $role): void
     {
-        if (!in_array($role, self::ALLOWED_ROLES, true)) {
+        if ($role === AuthorizationInterface::ROLE_SUPER_ADMIN) {
+            return;
+        }
+
+        $this->roleCatalogSeeder->seedIfEmpty($this->settings);
+
+        if (!$this->roles->exists($role)) {
             throw new ValidationException(['role' => ['Neprípustná rola.']]);
         }
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function assignableRoles(bool $includeSuperAdmin): array
+    {
+        $roles = $this->roles->assignableIds();
+        if ($includeSuperAdmin) {
+            $roles[] = AuthorizationInterface::ROLE_SUPER_ADMIN;
+        }
+
+        sort($roles);
+
+        return array_values(array_unique($roles));
     }
 
     private function requireTwoFactorStaff(): bool
