@@ -6,6 +6,7 @@ namespace PaginiumCMS\Core\Layout\Services;
 
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\Security\Services\ContentSecuritySanitizer;
+use PaginiumCMS\Core\Snippets\Services\SnippetRepository;
 use PaginiumCMS\Support\JsonHelper;
 
 /**
@@ -21,6 +22,7 @@ final class ShortcodeExpanderService
         private ShortcodeRegistry $registry,
         private FileReaderInterface $reader,
         private ContentSecuritySanitizer $sanitizer,
+        private ?SnippetRepository $snippets = null,
         private string $definitionsRelativeDir = 'data/shortcodes/definitions',
     ) {
     }
@@ -61,6 +63,10 @@ final class ShortcodeExpanderService
     private function renderShortcode(string $rawName, string $rawAttrs, string $inner): string
     {
         $name = trim($rawName);
+        if ($name === 'snippet') {
+            return $this->renderSnippetReference($rawAttrs);
+        }
+
         $definition = $this->loadDefinition($name);
         if ($definition === null) {
             return '[' . $name . $rawAttrs . ']' . $inner . ($inner === '' ? '' : '[/' . $name . ']');
@@ -78,6 +84,30 @@ final class ShortcodeExpanderService
         }
 
         return $this->sanitizer->sanitizeHtml($rendered);
+    }
+
+    private function renderSnippetReference(string $rawAttrs): string
+    {
+        if ($this->snippets === null) {
+            return '[snippet' . $rawAttrs . '/]';
+        }
+
+        if (!preg_match('/\bname\s*=\s*"([^"]+)"/', $rawAttrs, $matches)
+            && !preg_match("/\bname\s*=\s*'([^']+)'/", $rawAttrs, $matches)) {
+            return '[snippet' . $rawAttrs . '/]';
+        }
+
+        $snippetName = trim($matches[1]);
+        if ($snippetName === '' || !preg_match('/^[a-z][a-z0-9_-]{0,39}$/', $snippetName)) {
+            return '[snippet' . $rawAttrs . '/]';
+        }
+
+        $body = $this->snippets->resolveBody($snippetName);
+        if ($body === '') {
+            return '[snippet' . $rawAttrs . '/]';
+        }
+
+        return $this->expand($body);
     }
 
     /**

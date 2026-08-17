@@ -95,6 +95,12 @@ STORAGE_DIRS=(
 for dir in "${STORAGE_DIRS[@]}"; do
   mkdir -p "$dir"
 done
+
+LOCKS_JSON="$ROOT/backend/storage/app/content/data/locks.json"
+if [[ ! -f "$LOCKS_JSON" ]]; then
+  printf '[]\n' > "$LOCKS_JSON"
+fi
+
 ok "Storage directories ready (${#STORAGE_DIRS[@]} paths)"
 
 # ------------------------------------------------------------------ composer

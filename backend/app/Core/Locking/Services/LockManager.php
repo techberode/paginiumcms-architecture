@@ -275,6 +275,10 @@ final class LockManager implements LockManagerInterface
         if ($dir !== '' && $dir !== '.') {
             $this->writer->createDirectory($dir);
         }
+
+        if (!is_file($this->absoluteLockPath)) {
+            $this->writer->write($this->lockFile, "[]\n", false);
+        }
     }
 
     /**

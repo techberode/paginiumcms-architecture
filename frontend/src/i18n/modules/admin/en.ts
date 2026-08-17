@@ -35,6 +35,7 @@ export const adminEn: MessageTree = {
     redirects: 'Redirects',
     webhooks: 'Webhooks',
     shortcodes: 'Shortcodes',
+    snippets: 'Snippets',
     settings: 'Settings',
     translations: 'Translations',
   },

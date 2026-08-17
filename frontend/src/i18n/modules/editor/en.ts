@@ -303,4 +303,14 @@ export const editorEn: MessageTree = {
       loadFailed: 'Failed to load shortcodes',
     },
   },
+  snippets: {
+    title: 'Insert snippet',
+    description: 'Inserts a reusable snippet reference. Body is loaded from the snippet library at render time.',
+    pick: 'Snippet',
+    insert: 'Insert',
+    empty: 'No snippets in the library yet.',
+    toast: {
+      loadFailed: 'Failed to load snippets',
+    },
+  },
 };

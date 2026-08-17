@@ -1,6 +1,6 @@
 # Iteration 81 — Editorial workflow & content ops
 
-> **Status:** 🚧 in progress (`81a`–`81e` shipped in `beta.47`; `81f` planned)  
+> **Status:** ✅ complete (`81a`–`81f` shipped in `beta.55`)  
 > **Priority:** 🟡 (high editor impact / moderate effort)  
 > **Wave:** Product & editorial (post-It.58 shortcodes, post-It.80 ops toolkit)  
 > **Depends on:** flat-file content model, existing bulk batch pattern (`BulkBatchResult`), scheduled publishing (It.59), shortcode expander (It.58d)  
@@ -55,7 +55,7 @@ Gaps confirmed directly in the repository before this spec was written:
 | **81c** | Saved filters / pinned views | 🟡 P3 | ✅ done | **Med / Low** | `beta.47` |
 | **81d** | Editorial calendar (week/month) | 🟡 P4 | ✅ done | **Med / Med** | `beta.47`–`beta.48` |
 | **81e** | Stale content flag + dashboard | 🔵 P5 | ✅ done | **Med / Low** | `beta.48` |
-| **81f** | Reusable snippet library | 🔵 P6 | ⏳ planned | **High / Med** | `beta.48`+ |
+| **81f** | Reusable snippet library | 🔵 P6 | ✅ done | **High / Med** | `beta.55` |
 
 ### Status legend
 
@@ -259,8 +259,8 @@ Gaps confirmed directly in the repository before this spec was written:
 
 ### Reference in content
 
-- Shortcode expander (It.58d): e.g. `[snippet name="author-bio"]` → expand stored body through same sanitizer/expander pipeline
-- Admin: `SnippetsManager` (can mirror ShortcodesManager textarea pattern) or extend Shortcodes with `type: snippet` — **pick one store**, document in spec before coding
+- Shortcode expander (It.58d): e.g. `[snippet name="author-bio"/]` → expand stored body through the same sanitizer/expander pipeline (recursive nested shortcodes allowed).
+- Admin: **`SnippetsManager`** at `/platform/snippets` — separate store from shortcode JSON definitions (see [Snippets vs shortcodes](#snippets-vs-shortcodes-vs-blueprints) below).
 
 ### Change propagation
 
@@ -274,10 +274,65 @@ Gaps confirmed directly in the repository before this spec was written:
 
 ### Definition of Done
 
-- [ ] CRUD admin + seeder for 1–2 bundled snippets (author-bio, cta-banner)
-- [ ] Expand at render + preview API
-- [ ] Insert panel in editor (reuse shortcode insert UX)
-- [ ] Invalidation tests
+- [x] CRUD admin + seeder for 1–2 bundled snippets (author-bio, cta-banner)
+- [x] Expand at render + preview API
+- [x] Insert panel in editor (reuse shortcode insert UX)
+- [x] Invalidation tests
+- [x] Admin live preview (`AdminBodyPreviewPanel` beside snippet editor; shortcode preview below JSON)
+- [x] Draft mode on create (local concept until first save — same pattern as `ShortcodesManager`)
+
+---
+
+## Snippets vs shortcodes vs blueprints
+
+Editors and integrators often confuse these three concepts. They are **complementary**, not interchangeable.
+
+| | **Snippets (81f)** | **Shortcodes (It.58d)** | **Blueprints (It.12)** |
+|---|---|---|---|
+| **Purpose** | Reusable **content** block (SSOT copy) | Reusable **layout/component** template | **Form schema** for a content type |
+| **What you edit** | Title + body (Markdown or HTML) | JSON definition: `expand` template, `attrs` schema | Field list (types, validation rules) |
+| **Storage** | `data/snippets/{name}.json` + registry | `data/shortcodes/definitions/{name}.json` + registry | Blueprint flat-file under `data/blueprints/` |
+| **Embed syntax** | `[snippet name="author-bio"/]` (reference only) | `[alert-box tone="info"]…[/alert-box]` or self-closing | N/A — drives admin form, not inline tags |
+| **Expansion** | Loads stored `body`; may recurse through expander | Renders HTML from `expand` + attribute placeholders | Does not expand in public HTML |
+| **Change propagation** | **Yes** — edit snippet once, all references update on render | Definition change affects all uses of that tag | Schema change affects new/edited records only |
+| **Admin UI** | `/platform/snippets` (textarea) | `/platform/shortcodes` (JSON + CodePolicy) | Blueprint engine in platform settings |
+| **Typical use** | Author bio, legal disclaimer, CTA copy | Feature grid, alert box, landing hero | Article vs page field sets |
+| **Permission** | `content:edit` | `settings:manage` | Blueprint/settings workflows |
+
+### Restaurant metaphor (Hosť / Čašník / Kuchár)
+
+- **Snippet** — one prepared dish in the kitchen fridge; many tables get the **same** portion when ordered (`[snippet name="…"/]`). Update the recipe in one place.
+- **Shortcode** — a **plating template** (“serve as alert-box, tone info, fill with guest text”). Structure and CSS classes live in the definition, not in every article.
+- **Blueprint** — the **menu form** (which fields the waiter writes down for “article” vs “page”). It is not served to the guest as HTML.
+
+### Runtime pipeline (shared expander)
+
+Both snippets and layout shortcodes pass through `ShortcodeExpanderService`:
+
+1. **Snippet tag** — resolve `name` → read `data/snippets/{name}.json` → inject `body` → recurse (nested shortcodes inside snippet body work).
+2. **Layout shortcode** — resolve tag name → read JSON definition → apply `expand` template + validated attrs → sanitize HTML.
+
+Snippets are **not** stored as shortcode definitions (`type: snippet` was considered and rejected — separate store keeps content editing simple and avoids CodePolicy JSON for prose).
+
+### When to choose which
+
+| Need | Use |
+|------|-----|
+| Same paragraph/bio/CTA in 20 articles | **Snippet** |
+| Grid, card, alert, hero with parameters | **Shortcode** |
+| New fields on article edit form | **Blueprint** |
+| One-off styled block inside a single page | Shortcode or raw Markdown — not a snippet unless reuse is likely |
+
+### Bundled examples (shipped)
+
+| Kind | Name | Role |
+|------|------|------|
+| Snippet | `author-bio` | Markdown bio block |
+| Snippet | `cta-banner` | HTML CTA card |
+| Shortcode | `alert-box` | Tone-parameterized alert |
+| Shortcode | `feature-grid` | Column layout wrapper |
+
+See [ITERATION_58.md](ITERATION_58.md) for shortcode expander details and [ITERATION_12.md](ITERATION_12.md) for blueprints.
 
 ---
 

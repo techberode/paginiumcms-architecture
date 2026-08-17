@@ -48,6 +48,11 @@ use PaginiumCMS\Core\Layout\Services\ShortcodeDefinitionManager;
 use PaginiumCMS\Core\Layout\Services\ShortcodeCatalogSeeder;
 use PaginiumCMS\Core\Layout\Services\ShortcodeExpanderService;
 use PaginiumCMS\Core\Layout\Services\ShortcodeRegistry;
+use PaginiumCMS\Core\Snippets\Services\SnippetCatalogSeeder;
+use PaginiumCMS\Core\Snippets\Services\SnippetInvalidationService;
+use PaginiumCMS\Core\Snippets\Services\SnippetReferenceScanner;
+use PaginiumCMS\Core\Snippets\Services\SnippetRegistry;
+use PaginiumCMS\Core\Snippets\Services\SnippetRepository;
 use PaginiumCMS\Core\CodeEditor\Services\SyntaxChecker;
 use PaginiumCMS\Core\CodeEditor\Services\FileBackup;
 use PaginiumCMS\Core\CodeEditor\Services\DiffGenerator;
@@ -176,6 +181,7 @@ use PaginiumCMS\Http\Controllers\Admin\DeveloperController;
 use PaginiumCMS\Http\Controllers\Admin\GatedCodeEditorController;
 use PaginiumCMS\Http\Controllers\Admin\ExtensionsController;
 use PaginiumCMS\Http\Controllers\Admin\ShortcodeController;
+use PaginiumCMS\Http\Controllers\Admin\SnippetController;
 use PaginiumCMS\Http\Controllers\Admin\ThemesController;
 use PaginiumCMS\Http\Controllers\Admin\BlueprintController;
 use PaginiumCMS\Http\Controllers\Admin\AclController;
@@ -961,7 +967,41 @@ return [
         ->constructor(
             get(ShortcodeRegistry::class),
             get(FileReaderInterface::class),
+            get(ContentSecuritySanitizer::class),
+            get(SnippetRepository::class)
+        ),
+    SnippetRegistry::class => create(SnippetRegistry::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class),
+            'data/snippets/registry.json'
+        ),
+    SnippetRepository::class => create(SnippetRepository::class)
+        ->constructor(
+            get(SnippetRegistry::class),
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class),
             get(ContentSecuritySanitizer::class)
+        ),
+    SnippetReferenceScanner::class => create(SnippetReferenceScanner::class)
+        ->constructor(get(FileReaderInterface::class)),
+    SnippetInvalidationService::class => create(SnippetInvalidationService::class)
+        ->constructor(
+            get(SnippetReferenceScanner::class),
+            get(ContentCacheService::class)
+        ),
+    SnippetCatalogSeeder::class => create(SnippetCatalogSeeder::class)
+        ->constructor(
+            get(SnippetRepository::class),
+            get(SnippetRegistry::class)
+        ),
+    SnippetController::class => create(SnippetController::class)
+        ->constructor(
+            get(SnippetRepository::class),
+            get(SnippetCatalogSeeder::class),
+            get(SnippetInvalidationService::class),
+            get(ShortcodeExpanderService::class),
+            get(JsonResponder::class)
         ),
     ShortcodeCatalogSeeder::class => create(ShortcodeCatalogSeeder::class)
         ->constructor(
