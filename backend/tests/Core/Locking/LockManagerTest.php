@@ -63,6 +63,19 @@ class LockManagerTest extends TestCase
         $this->assertCount(1, $this->manager->getAllLocks());
     }
 
+    public function testEnsureStorageCreatesLockRegistryFile(): void
+    {
+        $lockPath = $this->baseDir . '/data/locks.json';
+        $this->assertFileDoesNotExist($lockPath);
+
+        $this->manager->acquire('page:nova', $this->user('user_1', 'Ján'));
+
+        $this->assertFileExists($lockPath);
+        $raw = file_get_contents($lockPath);
+        $this->assertIsString($raw);
+        $this->assertStringContainsString('page:nova', $raw);
+    }
+
     public function testAcquireByAnotherUserConflicts(): void
     {
         $this->manager->acquire('page:o-nas', $this->user('user_1', 'Ján'));

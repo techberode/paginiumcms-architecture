@@ -5,6 +5,8 @@ import { shortcodesApi, type ShortcodeListItem } from '../../api/shortcodes';
 import { useToast } from '../../hooks/useToast';
 import { useI18n } from '../../context/I18nContext';
 import { AdminHintCard } from './AdminHintCard';
+import { AdminBodyPreviewPanel } from './AdminBodyPreviewPanel';
+import { buildShortcodeSampleMarkup } from '../../utils/shortcodeSampleMarkup';
 
 const DEFAULT_DEFINITION = (name: string) =>
   JSON.stringify(
@@ -371,14 +373,26 @@ export const ShortcodesManager: React.FC = () => {
                 onChange={(event) => setContent(event.target.value)}
                 spellCheck={false}
                 aria-label={t('platform.shortcodes.editorLabel')}
-                className="w-full h-[420px] resize-y border-0 bg-slate-950 text-slate-100 font-mono text-sm leading-relaxed p-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-slate-950"
+                className="w-full h-[280px] resize-y border-0 bg-slate-950 text-slate-100 font-mono text-sm leading-relaxed p-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-slate-950"
               />
             ) : (
-              <div className="flex items-center justify-center h-[420px] text-sm text-slate-500 px-6 text-center">
+              <div className="flex items-center justify-center h-[280px] text-sm text-slate-500 px-6 text-center">
                 {t('platform.shortcodes.selectOne')}
               </div>
             )}
           </div>
+
+          {selectedName && !loadingFile && (
+            <div className="border-t border-slate-100 dark:border-slate-800 p-4 space-y-2">
+              {isDirty ? (
+                <p className="text-xs text-amber-700 dark:text-amber-300">{t('platform.preview.staleSaved')}</p>
+              ) : null}
+              <AdminBodyPreviewPanel
+                body={buildShortcodeSampleMarkup(selectedName)}
+                bodyFormat="markdown"
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

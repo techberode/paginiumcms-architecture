@@ -35,12 +35,13 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | 9 | **It.74** API keys/JWT | 🟡 | ✅ | shipped in `v2.1.0-beta.30` — see [ITERATION_74](ITERATION_74.md) |
 | 10 | **It.80** SEO, integrations & ops toolkit | 🟡 | ✅ | shipped `beta.39` — see [ITERATION_80](en/ITERATION_80.md) |
 | 11 | **It.58d** Layout remainder | 🟡 | ✅ | shortcodes + public layout shell shipped; 58f/58g deferred |
-| 12 | **It.81** Editorial workflow & content ops | 🟡 | 🚧 | 81a–81e shipped; 81f remains — [ITERATION_81](ITERATION_81.md) |
-| 13 | **It.78** Unified upload security | 🟡 | ⏳ | security gate before video / new MIME types |
-| 14 | **It.79** DAM video | 🟡 | ⏳ | self-hosted MP4/WebM + editor embed; after It.78 |
-| 15 | **It.25** Setup wizard/update UX | 🟡 pre-Final | ⏳ | onboarding and GA polish |
-| 16 | **It.76/77** Translation providers | 🔵 | ⏳ | after It.73 |
-| 17 | **It.75** AI agent | 🔵 | ⏳ | after locale and provider layers |
+| 12 | **It.81** Editorial workflow & content ops | 🟡 | ✅ | 81a–81f shipped — [ITERATION_81](ITERATION_81.md) |
+| 13 | **It.82** Origin Panel (maintainer cockpit) | 🔵 | ⏳ | env-gated; excluded from customer archive — [ITERATION_82](ITERATION_82.md) |
+| 14 | **It.78** Unified upload security | 🟡 | ⏳ | security gate before video / new MIME types |
+| 15 | **It.79** DAM video | 🟡 | ⏳ | self-hosted MP4/WebM + editor embed; after It.78 |
+| 16 | **It.25** Setup wizard/update UX | 🟡 pre-Final | ⏳ | onboarding and GA polish |
+| 17 | **It.76/77** Translation providers | 🔵 | ⏳ | after It.73 |
+| 18 | **It.75** AI agent | 🔵 | ⏳ | after locale and provider layers |
 
 ---
 
@@ -149,22 +150,36 @@ Checklist-driven product wave (sub-phases `80a`–`80g`) — **shipped `v2.1.0-b
 
 See [ITERATION_80](ITERATION_80.md). Jekyll/Ghost import deferred to a future iteration.
 
-### It.81 — Editorial workflow & content ops 🟡 ⏳
+### It.81 — Editorial workflow & content ops 🟡 ✅
 
-Checklist-driven editor productivity wave (sub-phases `81a`–`81f`) — **planned post-`beta.45`**:
+Checklist-driven editor productivity wave (sub-phases `81a`–`81f`) — **complete in `beta.55`**:
 
 | Sub | Feature | Priority |
 |-----|---------|----------|
-| 81a | Duplicate page/article as draft | P1 ⏳ |
-| 81b | Bulk assign tags (add/remove/replace) | P2 ⏳ |
-| 81c | Saved filters / pinned list views | P3 ⏳ |
+| 81a | Duplicate page/article as draft | P1 ✅ |
+| 81b | Bulk assign tags (add/remove/replace) | P2 ✅ |
+| 81c | Saved filters / pinned list views | P3 ✅ |
 | 81d | Editorial calendar (week/month; not job scheduler) | P4 ✅ |
 | 81e | Stale content flag + dashboard widget | P5 ✅ |
-| 81f | Reusable snippet library (shortcode reference) | P6 ⏳ |
+| 81f | Reusable snippet library (shortcode reference) | P6 ✅ |
 
-Code gaps verified 2026-08-13 (no duplicate API, no bulk tags, `SchedulerView` = cron jobs). See [ITERATION_81.md](ITERATION_81.md).
+Shipped: `beta.47` (81a–81d) → `beta.48+` (81e) → **`beta.55` (81f + admin preview + create draft fix)**. See [ITERATION_81.md](ITERATION_81.md).
 
-Suggested releases: `beta.46` (81a+81b) → `beta.47` (81c+81d) → `beta.48` (81e+81f).
+### It.82 — Origin Panel (maintainer cockpit) 🔵 ⏳
+
+Maintainer-only admin module — **not shipped in customer install archives** (same exclusion tier as Demo module):
+
+| Sub | Feature | Priority |
+|-----|---------|----------|
+| 82a | `OriginPanelMode` env gate + packaging exclusion | P1 ⏳ |
+| 82b | Feature probe registry + auto-checklist UI (no manual toggles) | P2 ⏳ |
+| 82c | Dashboard metrics lite (reuse APM/analytics) | P3 ⏳ optional |
+| 82d | Host metrics hook | P4 ⏸️ deferred (It.46 remainder) |
+
+**Enabled only on:** maintainer dev machine + `paginiumcms.com` production (`ORIGIN_PANEL=true`).  
+**Disabled on:** demo instance, all customer self-hosted installs, distribution tarball.
+
+See [ITERATION_82](ITERATION_82.md).
 
 ### It.75 — CMS-aware AI agent 🔵
 
@@ -237,7 +252,8 @@ Remaining:
 | Item | Status | Note |
 |------|--------|------|
 | **It.58d** layout blocks/polish | ✅ | shortcode expand + admin UI + public `PageLayoutShell`; 58f/58g deferred |
-| **It.81** editorial workflow | ⏳ | [ITERATION_81](ITERATION_81.md) — duplicate, bulk tags, calendar, snippets |
+| **It.81** editorial workflow | ✅ | [ITERATION_81](ITERATION_81.md) — complete (81f snippets) |
+| **It.82** Origin Panel | ⏳ | [ITERATION_82](ITERATION_82.md) — maintainer-only; excluded from archive |
 | **It.48** static/dynamic rendering | ⏳ | combine design with It.70 publishing pipeline |
 | Remaining theme runtime | 🟡 | depends on It.67 and schema/policy gate |
 | Server metrics agent (remaining It.46) | ⏳ | coordinate with It.71 |
@@ -323,10 +339,11 @@ Docs gate
   → It.81 (81a→81f editorial workflow) — **recommended next product slice after upload gate**
   → It.78 (upload security gate)
   → It.79 (DAM video)
+  → It.82 (Origin Panel — maintainer dev + paginiumcms.com only; parallel OK)
   → It.76 / It.77
   → It.75
 
-Parallel where safe: It.81 sub-phases, It.58f/58g remainder, beta fixes, community testing.
+Parallel where safe: It.81 sub-phases, It.82 (no customer impact), It.58f/58g remainder, beta fixes, community testing.
 Pre-Final: It.25 + GA gate.
 ```
 

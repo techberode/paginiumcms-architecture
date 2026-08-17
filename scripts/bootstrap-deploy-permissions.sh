@@ -39,6 +39,15 @@ sudo mkdir -p "$CACHE/composer" "$CACHE/npm"
 sudo chown -R "$GROUP:$GROUP" "$CACHE"
 sudo chmod -R 2775 "$CACHE"
 
+DATA="$APP_ROOT/backend/storage/app/content/data"
+sudo mkdir -p "$DATA"
+if [[ ! -f "$DATA/locks.json" ]]; then
+  printf '[]\n' | sudo tee "$DATA/locks.json" >/dev/null
+fi
+sudo chown -R "$OWNER:$GROUP" "$DATA"
+sudo find "$DATA" -type d -exec chmod 2775 {} \;
+sudo find "$DATA" -type f -exec chmod 664 {} \;
+
 echo "→ Done. In app .env (Docker mount) set:"
 echo "   APP_ROOT=/var/www/html"
 echo "   STACK_DIR=/var/lib/docker/compose/paginiumcms   # host path; restart may be manual from UI deploy"

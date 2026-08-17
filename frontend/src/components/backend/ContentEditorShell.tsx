@@ -36,6 +36,7 @@ import {
 } from '../../layout/pageLayoutTemplates';
 import { LayoutPreviewFrame } from '../admin/LayoutPreviewFrame';
 import { ShortcodeInsertPanel } from './ShortcodeInsertPanel';
+import { SnippetInsertPanel } from './SnippetInsertPanel';
 import {
   DEFAULT_COLOR_SCHEME_ID,
   isColorSchemeId,
@@ -415,6 +416,15 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
             {showShortcodePicker && onInsertShortcode && (
               <div className="form-group md:col-span-2">
                 <ShortcodeInsertPanel
+                  disabled={!canEdit}
+                  onInsert={(snippet) => onInsertShortcode(snippet)}
+                />
+              </div>
+            )}
+
+            {onInsertShortcode && (
+              <div className="form-group md:col-span-2">
+                <SnippetInsertPanel
                   disabled={!canEdit}
                   onInsert={(snippet) => onInsertShortcode(snippet)}
                 />

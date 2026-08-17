@@ -1,8 +1,9 @@
 # Iterácia 81 — Redakčný workflow a content ops
 
-> **Stav:** 🚧 prebieha (`81a`–`81e` hotové; `81f` plánované)  
+> **Stav:** ✅ hotové (`81a`–`81f` v `beta.55`)  
 > **Priorita:** 🟡  
-> **Kanónická špecifikácia (EN):** [../en/ITERATION_81.md](../en/ITERATION_81.md)
+> **Kanónická špecifikácia (EN):** [../en/ITERATION_81.md](../en/ITERATION_81.md)  
+> **Snippety vs shortcodes:** [../en/ITERATION_81.md#snippets-vs-shortcodes-vs-blueprints](../en/ITERATION_81.md#snippets-vs-shortcodes-vs-blueprints)
 
 ## Cieľ
 
@@ -28,6 +29,6 @@ Balík editor-facing funkcií: duplikácia obsahu, hromadné tagy, uložené poh
 | **81c** | Uložené filtre/pohľady | `beta.47` ✅ |
 | **81d** | Editoriálny kalendár | `beta.47`–`48` ✅ |
 | **81e** | Flag zastarávajúceho obsahu | `beta.48` ✅ |
-| **81f** | Knižnica snippetov (shortcode) | `beta.48`+ |
+| **81f** | Knižnica snippetov (shortcode) | `beta.55` ✅ |
 
 Detail API, bezpečnosť a Definition of Done → anglická špecifikácia.

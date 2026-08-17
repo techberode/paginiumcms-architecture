@@ -32,6 +32,7 @@ import {
   ArrowRightLeft,
   Webhook,
   Code2,
+  BookMarked,
 } from 'lucide-react';
 import type { AdminNavItemDef, AdminNavSectionDef } from './adminNavTypes';
 
@@ -116,6 +117,13 @@ export const ADMIN_NAV_SECTIONS: AdminNavSectionDef[] = [
         labelKey: 'admin.nav.shortcodes',
         href: '/platform/shortcodes',
         icon: Code2,
+        adminOnly: true,
+      },
+      {
+        id: 'snippets',
+        labelKey: 'admin.nav.snippets',
+        href: '/platform/snippets',
+        icon: BookMarked,
         adminOnly: true,
       },
       { id: 'notifications', labelKey: 'admin.nav.notifications', href: '/notifications', icon: Bell },

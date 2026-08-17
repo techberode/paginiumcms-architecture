@@ -24,9 +24,9 @@ export const LockIndicator: React.FC<LockIndicatorProps> = ({ resourceId, enable
   const { locale } = useI18n();
   const { status, lock, error, retry } = useContentLock(resourceId, enabled);
 
-  // Oznámime rodičovi, či používateľ smie editovať (drží zámok).
+  // Blokujeme editáciu len keď zámok drží niekto iný. Pri chybe registra (500/503) fail-open.
   React.useEffect(() => {
-    onLockChange?.(status === 'locked-by-me');
+    onLockChange?.(status !== 'locked-by-other');
   }, [status, onLockChange]);
 
   const relative = (ts?: number): string =>
@@ -79,13 +79,13 @@ export const LockIndicator: React.FC<LockIndicatorProps> = ({ resourceId, enable
 
     case 'error':
       return (
-        <span className="inline-flex items-center gap-2 rounded-md bg-red-100 px-3 py-1.5 text-sm text-red-700 dark:bg-red-900/40 dark:text-red-300">
+        <span className="inline-flex items-center gap-2 rounded-md bg-amber-100 px-3 py-1.5 text-sm text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
           <AlertTriangle className="h-4 w-4" />
-          {error || 'Chyba zámku'}
+          {error || 'Zámok nie je k dispozícii'} · úprava povolená
           <button
             type="button"
             onClick={() => void retry()}
-            className="ml-1 inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs hover:bg-red-200/60 dark:hover:bg-red-800/40"
+            className="ml-1 inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs hover:bg-amber-200/60 dark:hover:bg-amber-800/40"
           >
             <RefreshCw className="h-3 w-3" />
             Skúsiť znova

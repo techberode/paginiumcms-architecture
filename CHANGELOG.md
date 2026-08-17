@@ -15,6 +15,8 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.55`](#release-2-1-0-beta-55) | 2026-08-17 | It.81f snippet library, admin body preview, lock fail-open |
+| [`2.1.0-beta.54`](#release-2-1-0-beta-54) | 2026-08-15 | Hotfix — front matter parser root cause: raw YAML leaked into article body (ISS-154) |
 | [`2.1.0-beta.53`](#release-2-1-0-beta-53) | 2026-08-15 | Hotfix — conservative locale flat-field sync, OTP/index/FE (ISS-153) |
 | [`2.1.0-beta.52`](#release-2-1-0-beta-52) | 2026-08-15 | Hotfix — deploy health retry, AppVersion fallback, admin DEPLOY_FORCE (ISS-152) |
 | [`2.1.0-beta.51`](#release-2-1-0-beta-51) | 2026-08-15 | Hotfix — no persist-on-read, bulk localeStatus sync, index repair (ISS-151) |
@@ -128,11 +130,61 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+### Planned
+
+- **It.82 Origin Panel** — maintainer-only admin cockpit (auto feature checklist + lightweight metrics). Enabled via `ORIGIN_PANEL` on dev machine and `paginiumcms.com` only; **excluded from customer install archive** (same tier as Demo module). Spec: [docs/en/ITERATION_82.md](docs/en/ITERATION_82.md).
+
 ### Fixed
 
 - **ISS-141 follow-up** — all remaining `Http/Controllers/*` JSON mutating paths and OTP/contact rate-limit middleware now use `RequestJsonBody::decode()` (eliminates empty-body regressions site-wide after `BodyParsingMiddleware`).
 
 - **Shortcode expand + HTML sanitizer** — `allowedHtmlTags` now includes `div`, `article`, `section`, `aside`, `span` (required for It.58 expand templates); legacy settings merge missing layout tags on read; `role` attribute allowed on sanitized elements.
+
+<a id="release-2-1-0-beta-55"></a>
+
+## [2.1.0-beta.55] – 2026-08-17
+
+It.81 complete — reusable snippet library (`81f`), admin preview panels, lock registry resilience
+
+### Added
+
+- **It.81f — Reusable snippet library** — flat-file snippets at `data/snippets/`, registry + repository, admin CRUD at `/platform/snippets` (`content:edit`), `[snippet name="…"/]` expansion in `ShortcodeExpanderService`, editor insert panel, reference scanner + cache invalidation on save, bundled `author-bio` and `cta-banner` seeds via `SnippetCatalogSeeder`.
+- **Admin body preview** — `AdminBodyPreviewPanel` reuses content preview API for live Markdown/HTML preview in `SnippetsManager` and saved-definition preview in `ShortcodesManager` (stale warning when JSON unsaved).
+- **It.82 spec** — [docs/en/ITERATION_82.md](docs/en/ITERATION_82.md) (Origin Panel; maintainer-only, not in customer archive).
+
+### Fixed
+
+- **Snippets create flow** — `SnippetsManager` draft mode (mirrors shortcodes): new snippets stay local until first save; no spurious `GET` 404 on create.
+- **Content lock fail-open** — when `data/locks.json` is missing or unwritable, `LockIndicator` no longer blocks editing; `LockController` returns `503` instead of `500`; `LockManager::ensureStorage()` creates writable store; deploy/first-run scripts grant `data/locks.json` permissions.
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.55`
+- **Iteration:** [It.81](docs/en/ITERATION_81.md) complete (`81a`–`81f`)
+
+---
+
+<a id="release-2-1-0-beta-54"></a>
+
+## [2.1.0-beta.54] – 2026-08-15
+
+Hotfix — front matter parser root cause behind the beta.47→53 content-editor regressions
+
+### Fixed
+
+- **Front matter parser** — `FrontMatterParser::splitContent()` now anchors the closing delimiter to a line containing only `---` (or YAML `...`) at column 0, instead of matching any `---` substring via `strpos()`. Schema v2 stores article bodies inside YAML front matter (`localizedContent.<locale>.body`); a Markdown `---` rule inside that literal block was matched as the delimiter, so the rest of the YAML (`localeStatus:`, `title:`, `slug:`, …) leaked into the parsed body — breaking article display/editing and corrupting files on re-save. Root cause behind [ISS-149](docs/ISSUES.md#iss-149) / [ISS-151](docs/ISSUES.md#iss-151) / [ISS-153](docs/ISSUES.md#iss-153) ([ISS-154](docs/ISSUES.md#iss-154)).
+- Parser now also tolerates leading blank lines before the front matter and empty front matter blocks (`---\n---\n`).
+
+### Added
+
+- Regression tests in `backend/tests/Core/FlatFile/Services/FrontMatterParserTest.php` — horizontal rule in body, nested literal block with `---`, and empty front matter block.
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.54`
+- **Issues:** [ISS-154](docs/ISSUES.md#iss-154)
+
+---
 
 <a id="release-2-1-0-beta-53"></a>
 

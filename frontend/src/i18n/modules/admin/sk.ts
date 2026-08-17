@@ -35,6 +35,7 @@ export const adminSk: MessageTree = {
     redirects: 'Redirecty',
     webhooks: 'Webhooky',
     shortcodes: 'Shortcodes',
+    snippets: 'Snippety',
     settings: 'Nastavenia',
     translations: 'Preklady',
   },

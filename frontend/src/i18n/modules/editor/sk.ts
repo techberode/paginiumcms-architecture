@@ -303,4 +303,14 @@ export const editorSk: MessageTree = {
       loadFailed: 'Nepodarilo sa načítať shortcodes',
     },
   },
+  snippets: {
+    title: 'Vložiť snippet',
+    description: 'Vloží referenciu na znovupoužiteľný snippet. Telo sa načíta z knižnice pri renderi.',
+    pick: 'Snippet',
+    insert: 'Vložiť',
+    empty: 'Knižnica snippetov je prázdna.',
+    toast: {
+      loadFailed: 'Nepodarilo sa načítať snippety',
+    },
+  },
 };

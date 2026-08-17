@@ -11,6 +11,7 @@ use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Security\Models\User;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use RuntimeException;
 
 /**
  * === Controller: LockController ===
@@ -60,6 +61,12 @@ final class LockController
             return $this->json->conflict($response, $e->getMessage(), [
                 'lock' => $e->getCurrentLock()->jsonSerialize(),
             ]);
+        } catch (RuntimeException $e) {
+            return $this->json->error(
+                $response,
+                'Register zámkov nie je zapisovateľný (data/locks.json). Skontrolujte oprávnenia úložiska.',
+                503
+            );
         }
     }
 
@@ -84,6 +91,12 @@ final class LockController
             return $this->json->conflict($response, $e->getMessage(), [
                 'lock' => $e->getCurrentLock()->jsonSerialize(),
             ]);
+        } catch (RuntimeException $e) {
+            return $this->json->error(
+                $response,
+                'Register zámkov nie je zapisovateľný (data/locks.json). Skontrolujte oprávnenia úložiska.',
+                503
+            );
         }
     }
 
