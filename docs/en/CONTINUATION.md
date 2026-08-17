@@ -77,43 +77,30 @@ Inventory: [FEATURE_OVERVIEW.md](FEATURE_OVERVIEW.md).
 
 ---
 
-## 5. Next implementation target — It.69
+## 5. Active phase — stabilization (August 2026)
 
-It.69 is the next Hybrid Engine code iteration after the shipped It.68 foundation. Before the first commit, confirm:
+**Do not start new iteration scope.** See [STABILIZATION_PHASE.md](STABILIZATION_PHASE.md).
 
-- the unified cache contract and key namespace (tenant/locale aware),
-- Redis as an optional driver with safe Classic fallback,
-- HTTP `ETag` / `Last-Modified` validators on read-heavy public routes,
-- cache invalidation hooks after SSOT writes,
-- zero requirement for Redis in Classic mode.
+Focus: onboarding (S1–S4), content path (S5–S9), layout basic (S10–S14), platform (S15–S20), Classic profile (S21–S24), quality gate (S25–S28). **Active feature slice: [It.25](ITERATION_25.md)** (stable-release blocker). Target: first stable tag **September 2026** when §5.1–5.2 in [STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) are met.
 
-### Expected It.69 output
-
-1. cache interface + file/memory baseline and optional Redis driver,
-2. admin diagnostics for cache status and rebuild,
-3. HTTP conditional request support on selected public endpoints,
-4. integration tests with cache on/off and Redis unavailable,
-5. updated architecture, API, testing, and user documentation.
+Historical note: It.69+ were the Hybrid Engine build targets before stabilization; foundations shipped in beta.26–beta.30 — remainder is profile documentation and polish, not new drivers during freeze.
 
 ---
 
-## 6. Order after It.68
+## 6. Historical Hybrid order (pre-stabilization)
 
 ```text
-It.68 storage/schema/settings
-  └─► It.69 cache + Redis + HTTP validators
-        ├─► It.70 Git publish
-        ├─► It.71 Performance Guard
-        └─► It.72 media drivers
-              └─► It.73 locale document
-                    ├─► It.76 LibreTranslate
-                    ├─► It.77 cloud translation
-                    └─► It.75 AI agent
-
-It.74 API keys/JWT may begin after the It.68 auth/storage contract is stable.
+It.68 storage/schema/settings ✅
+  └─► It.69 cache + HTTP validators ✅
+        ├─► It.70 Git publish ✅ foundation
+        ├─► It.71 Performance Guard ✅
+        └─► It.72 media drivers 🟡 local MVP
+              └─► It.73 locale ✅
+                    ├─► It.76/77 translation ⏸️
+                    └─► It.75 AI agent ⏸️
 ```
 
-It.58d and It.67 may proceed in parallel, but they must not alter the same abstractions without coordination.
+Resume new work only after [STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) §5 exit criteria.
 
 ---
 

@@ -250,10 +250,31 @@ Decide what you intend to reset:
 | Containers + ephemeral volumes | `docker compose down -v` only when the volume contains no needed SSOT |
 | Frontend dependencies | remove `frontend/node_modules`, then `npm ci` |
 | Backend dependencies | remove `vendor`, then `composer install` |
-| Index/cache | use the diagnostic/rebuild command |
-| All local content | manually, only after backup and path verification |
+| Index/cache | `php backend/bin/console content:diagnose --fix` |
+| PHPUnit / prefixed test artefacts | `./scripts/dev-hygiene.sh scan` then `./scripts/dev-hygiene.sh purge` — only slugs with `qa-*` or known test prefixes; `@example.com` users |
+| All local content | manually, only after backup and path verification — **never** `rm -rf backend/storage` |
 
 Do not put `rm -rf backend/storage` into a generic “fix everything” alias. Such aliases have a suspicious talent for running in exactly the wrong terminal.
+
+### Test artefact naming (mandatory for safe cleanup)
+
+Integration tests and **manual QA on dev** should create disposable content with the `qa-` prefix:
+
+```php
+// PHPUnit HTTP tests
+$slug = $this->uniqueTestSlug('article'); // qa-article-…
+
+// Manual admin QA — use slug like qa-preview-home when creating test pages
+```
+
+`./scripts/dev-hygiene.sh purge` deletes **only**:
+
+- slugs matching `qa-*` or legacy PHPUnit prefixes (`seo-test-*`, `bulk-a-*`, …),
+- users/comments/messages with `@example.com`,
+- test media uploads (`test-upload.*`, `qa-*`, …),
+- related drafts, versions, and trash entries for those slugs.
+
+Real pages (`about-us`, `blog`, …), production media, real users, settings, and backup ZIPs without test prefixes are **never** targeted.
 
 ## 12. Common problems
 

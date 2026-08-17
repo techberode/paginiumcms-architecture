@@ -38,7 +38,7 @@ Tento dokument opravuje starý backlog, v ktorom sa miešali hotové iterácie, 
 | 13 | **It.82** Origin Panel (maintainer cockpit) | 🔵 | ✅ | env gate; mimo zákazníckeho archívu — [ITERATION_82](../en/ITERATION_82.md) |
 | 14 | **It.78** Unified upload security | 🟡 | ⏳ | bezpečnostná brána pred videom / novými MIME |
 | 15 | **It.79** DAM video | 🟡 | ⏳ | MP4/WebM + embed v editore; po It.78 |
-| 16 | **It.25** Setup wizard/update UX | 🟡 pre-Final | ⏳ | onboarding a GA |
+| 16 | **It.25** Setup wizard/update UX | 🟡 pre-Final | ⏳ | **blokátor stabilnej verzie** — povinné pred septembrom 2026; [STABILIZATION_PHASE.md](../STABILIZATION_PHASE.md) |
 | 17 | **It.76/77** Translation providers | 🔵 | ⏳ | po It.73 |
 | 18 | **It.75** AI agent | 🔵 | ⏳ | po locale a provider vrstvách |
 
@@ -149,9 +149,11 @@ Pozri [ITERATION_80](ITERATION_80.md) · detail EN [ITERATION_80.md](../en/ITERA
 
 ## 3. Pre-Final backlog
 
-### It.25 — setup wizard a zjednodušený update UX 🟡
+### It.25 — setup wizard a zjednodušený update UX 🟡 ⏳ **blokátor stabilnej verzie**
 
-Dodaný základ:
+**Povinné pred prvou stabilnou verziou** ([STABILIZATION_PHASE.md](../STABILIZATION_PHASE.md) §5.1). Nie voliteľné pre produkčný release v septembri 2026.
+
+Základ už dodaný:
 
 - `first-run.sh`,
 - admin bootstrap,

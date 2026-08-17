@@ -9,6 +9,7 @@ use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
 use PaginiumCMS\Support\JsonHelper;
+use PaginiumCMS\Support\TestArtifactNaming;
 use PaginiumCMS\Tests\Support\TestStorageCleaner;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 use Psr\Container\ContainerInterface;
@@ -190,6 +191,11 @@ abstract class TestCase extends BaseTestCase
         $decoded = json_decode((string) $response->getBody(), true);
 
         return is_array($decoded) ? $decoded : [];
+    }
+
+    protected function uniqueTestSlug(string $label = 'page'): string
+    {
+        return TestArtifactNaming::uniqueSlug($label);
     }
 
     /**

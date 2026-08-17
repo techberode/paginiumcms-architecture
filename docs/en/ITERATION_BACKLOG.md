@@ -1,6 +1,7 @@
 # PaginiumCMS — consolidated backlog
 
-> **Snapshot:** `v2.1.0-beta.45` · August 13, 2026  
+> **Snapshot:** `v2.1.0-beta.56` · August 17, 2026  
+> **🔒 Stabilization phase active:** [STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) — freeze new iterations until exit criteria met  
 > **Rule:** the active backlog contains only unshipped or precisely bounded remaining scope  
 > **No-SQL:** [architecture/NOSQL_MANDATE.md](architecture/NOSQL_MANDATE.md)  
 > **Latest hotfix:** [ISS-146](../ISSUES.md#iss-146) — Shortcodes admin Monaco CDN blocked by CSP (`beta.45`)
@@ -37,11 +38,11 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | 11 | **It.58d** Layout remainder | 🟡 | ✅ | shortcodes + public layout shell shipped; 58f/58g deferred |
 | 12 | **It.81** Editorial workflow & content ops | 🟡 | ✅ | 81a–81f shipped — [ITERATION_81](ITERATION_81.md) |
 | 13 | **It.82** Origin Panel (maintainer cockpit) | 🔵 | ✅ | env-gated; excluded from customer archive — [ITERATION_82](ITERATION_82.md) |
-| 14 | **It.78** Unified upload security | 🟡 | ⏳ | security gate before video / new MIME types |
-| 15 | **It.79** DAM video | 🟡 | ⏳ | self-hosted MP4/WebM + editor embed; after It.78 |
-| 16 | **It.25** Setup wizard/update UX | 🟡 pre-Final | ⏳ | onboarding and GA polish |
-| 17 | **It.76/77** Translation providers | 🔵 | ⏳ | after It.73 |
-| 18 | **It.75** AI agent | 🔵 | ⏳ | after locale and provider layers |
+| 14 | **It.78** Unified upload security | 🟡 | ⏸️ | stabilization freeze — after S16 media baseline |
+| 15 | **It.79** DAM video | 🟡 | ⏸️ | stabilization freeze — after It.78 |
+| 16 | **It.25** Setup wizard/update UX | 🟡 pre-Final | ⏳ | **stable-release blocker** — required before first stable tag; see [STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) §5.1 |
+| 17 | **It.76/77** Translation providers | 🔵 | ⏸️ | stabilization freeze |
+| 18 | **It.75** AI agent | 🔵 | ⏸️ | stabilization freeze |
 
 ---
 
@@ -200,7 +201,9 @@ See [ITERATION_82](ITERATION_82.md).
 
 ## 3. Pre-Final backlog
 
-### It.25 — setup wizard and simplified update UX 🟡
+### It.25 — setup wizard and simplified update UX 🟡 ⏳ **stable-release blocker**
+
+**Required before first stable tag** ([STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) §5.1). Not optional for September 2026 production release.
 
 Shipped foundation:
 
@@ -241,7 +244,7 @@ Remaining:
 
 | Item | Status | Note |
 |------|--------|------|
-| **It.58d** layout blocks/polish | ✅ | shortcode expand + admin UI + public `PageLayoutShell`; 58f/58g deferred |
+| **It.58d** layout blocks/polish | ✅ | 58f/58g ⏸️ stabilization freeze |
 | **It.81** editorial workflow | ✅ | [ITERATION_81](ITERATION_81.md) — complete (81f snippets) |
 | **It.82** Origin Panel | ✅ | [ITERATION_82](ITERATION_82.md) — shipped `beta.56`; excluded from archive |
 | **It.48** static/dynamic rendering | ⏳ | combine design with It.70 publishing pipeline |
