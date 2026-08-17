@@ -22,6 +22,7 @@ use PaginiumCMS\Http\Support\HttpConditionalResponse;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Demo\Data\DemoFixtures;
 use PaginiumCMS\Modules\Demo\Services\DemoMode;
+use PaginiumCMS\Modules\Origin\Services\OriginPanelMode;
 use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Core\Settings\Services\SocialLinksNormalizer;
@@ -214,7 +215,7 @@ final class SettingsController
      */
     public function publicSettings(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $payload = $this->buildPublicSettingsPayload();
+        $payload = $this->buildPublicSettingsPayload($request->getUri()->getHost());
         $response = $this->json->success($response, $payload);
 
         return HttpConditionalResponse::applyWhenEligible(
@@ -228,7 +229,7 @@ final class SettingsController
     /**
      * @return array<string, mixed>
      */
-    private function buildPublicSettingsPayload(): array
+    private function buildPublicSettingsPayload(string $requestHost = ''): array
     {
         $all = $this->settings->all();
 
@@ -298,6 +299,7 @@ final class SettingsController
                 'passwordRequireSpecialChars' => (bool) ($all['security']['passwordRequireSpecialChars'] ?? true),
             ],
             'demo' => $this->publicDemoSettings($all['marketing'] ?? []),
+            'origin' => $this->publicOriginSettings($requestHost),
             'social' => $this->publicSocialSettings($all['marketing'] ?? []),
             'gallery' => $this->publicGallerySettings($all['gallery'] ?? []),
             'comments' => [
@@ -491,6 +493,16 @@ final class SettingsController
             'url' => $demoUrl,
             'showFooterLink' => (bool) ($marketing['demoFooterLinkEnabled'] ?? $defaults['demoFooterLinkEnabled'] ?? true),
             'autoResetMinutes' => null,
+        ];
+    }
+
+    /**
+     * @return array{enabled: bool}
+     */
+    private function publicOriginSettings(string $requestHost): array
+    {
+        return [
+            'enabled' => OriginPanelMode::isActive($requestHost),
         ];
     }
 

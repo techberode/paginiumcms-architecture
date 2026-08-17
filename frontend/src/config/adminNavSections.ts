@@ -33,6 +33,7 @@ import {
   Webhook,
   Code2,
   BookMarked,
+  Radar,
 } from 'lucide-react';
 import type { AdminNavItemDef, AdminNavSectionDef } from './adminNavTypes';
 
@@ -128,6 +129,15 @@ export const ADMIN_NAV_SECTIONS: AdminNavSectionDef[] = [
       },
       { id: 'notifications', labelKey: 'admin.nav.notifications', href: '/notifications', icon: Bell },
       { id: 'scheduler', labelKey: 'admin.nav.scheduler', href: '/scheduler', icon: CalendarClock, adminOnly: true },
+      {
+        id: 'origin-panel',
+        labelKey: 'admin.nav.originPanel',
+        href: '/platform/origin',
+        icon: Radar,
+        superAdminOnly: true,
+        originOnly: true,
+        hideOnDemoInstance: true,
+      },
       {
         id: 'system-update',
         labelKey: 'admin.nav.systemUpdate',

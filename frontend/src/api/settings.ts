@@ -213,6 +213,9 @@ export interface PublicSettings {
     showFooterLink?: boolean;
     autoResetMinutes?: number | null;
   };
+  origin?: {
+    enabled?: boolean;
+  };
   social?: {
     enabled?: boolean;
     links?: Array<{ platform: string; url: string; label: string }>;

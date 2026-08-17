@@ -43,6 +43,8 @@ import { galleryEn } from './modules/gallery/en';
 import { gallerySk } from './modules/gallery/sk';
 import { publicEn } from './modules/public/en';
 import { publicSk } from './modules/public/sk';
+import { originEn } from './modules/origin/en';
+import { originSk } from './modules/origin/sk';
 
 export function registerAllI18nModules(): void {
   registerModuleMessages('sk', 'admin', adminSk);
@@ -87,6 +89,8 @@ export function registerAllI18nModules(): void {
   registerModuleMessages('en', 'audit', auditEn);
   registerModuleMessages('sk', 'public', publicSk);
   registerModuleMessages('en', 'public', publicEn);
+  registerModuleMessages('sk', 'origin', originSk);
+  registerModuleMessages('en', 'origin', originEn);
 }
 
 registerAllI18nModules();

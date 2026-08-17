@@ -29,6 +29,7 @@ export const adminEn: MessageTree = {
     notifications: 'Notifications',
     scheduler: 'Scheduler',
     systemUpdate: 'System update',
+    originPanel: 'Origin Panel',
     users: 'Users',
     accountSecurity: 'Account security',
     apiKeys: 'API keys',

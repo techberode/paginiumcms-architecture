@@ -98,6 +98,14 @@ fi
 ok "Basic wiring checks passed"
 
 echo
+echo "--- Project catalog manifest ---"
+if ./scripts/validate-project-catalog.sh; then
+  ok "Project catalog validation passed"
+else
+  fail "Project catalog validation failed"
+fi
+
+echo
 echo "--- Security regression pack ---"
 if ./scripts/security-regression.sh; then
   ok "Security regression pack passed"

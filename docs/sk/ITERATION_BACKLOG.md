@@ -35,7 +35,7 @@ Tento dokument opravuje starý backlog, v ktorom sa miešali hotové iterácie, 
 | 10 | **It.80** SEO, integrácie & ops toolkit | 🟡 | ✅ | `beta.39` — [ITERATION_80](../en/ITERATION_80.md) |
 | 11 | **It.58d** Layout remainder | 🟡 | ✅ | shortcodes + layout shell; 58f/58g odložené |
 | 12 | **It.81** Redakčný workflow & content ops | 🟡 | ✅ | 81a–81f hotové — [ITERATION_81](../en/ITERATION_81.md) |
-| 13 | **It.82** Origin Panel (maintainer cockpit) | 🔵 | ⏳ | env gate; mimo zákazníckeho archívu — [ITERATION_82](../en/ITERATION_82.md) |
+| 13 | **It.82** Origin Panel (maintainer cockpit) | 🔵 | ✅ | env gate; mimo zákazníckeho archívu — [ITERATION_82](../en/ITERATION_82.md) |
 | 14 | **It.78** Unified upload security | 🟡 | ⏳ | bezpečnostná brána pred videom / novými MIME |
 | 15 | **It.79** DAM video | 🟡 | ⏳ | MP4/WebM + embed v editore; po It.78 |
 | 16 | **It.25** Setup wizard/update UX | 🟡 pre-Final | ⏳ | onboarding a GA |
@@ -192,7 +192,7 @@ Zostáva:
 |---------|------|----------|
 | **It.58d** layout blocks/polish | ✅ | shortcodes + layout shell; 58f/58g odložené |
 | **It.81** redakčný workflow | ✅ | [ITERATION_81](../en/ITERATION_81.md) — hotové (`81f` v `beta.55`) |
-| **It.82** Origin Panel | ⏳ | [ITERATION_82](../en/ITERATION_82.md) — len maintainer; mimo archívu |
+| **It.82** Origin Panel | ✅ | [ITERATION_82](../en/ITERATION_82.md) — hotové `beta.56`; mimo archívu |
 | **It.48** static/dynamic render | ⏳ | spojiť návrh s It.70 publish pipeline |
 | Zostávajúci theme runtime | 🟡 | závisí od It.67 a schema/policy gate |
 | Server metrics agent (zvyšok It.46) | ⏳ | koordinovať s It.71 |

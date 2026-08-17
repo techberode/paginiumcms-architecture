@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.56`](#release-2-1-0-beta-56) | 2026-08-17 | It.82 Origin Panel — maintainer cockpit, probes, project catalog |
 | [`2.1.0-beta.55`](#release-2-1-0-beta-55) | 2026-08-17 | It.81f snippet library, admin body preview, lock fail-open |
 | [`2.1.0-beta.54`](#release-2-1-0-beta-54) | 2026-08-15 | Hotfix — front matter parser root cause: raw YAML leaked into article body (ISS-154) |
 | [`2.1.0-beta.53`](#release-2-1-0-beta-53) | 2026-08-15 | Hotfix — conservative locale flat-field sync, OTP/index/FE (ISS-153) |
@@ -130,15 +131,31 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
-### Planned
-
-- **It.82 Origin Panel** — maintainer-only admin cockpit (auto feature checklist + lightweight metrics). Enabled via `ORIGIN_PANEL` on dev machine and `paginiumcms.com` only; **excluded from customer install archive** (same tier as Demo module). Spec: [docs/en/ITERATION_82.md](docs/en/ITERATION_82.md).
-
 ### Fixed
 
 - **ISS-141 follow-up** — all remaining `Http/Controllers/*` JSON mutating paths and OTP/contact rate-limit middleware now use `RequestJsonBody::decode()` (eliminates empty-body regressions site-wide after `BodyParsingMiddleware`).
 
 - **Shortcode expand + HTML sanitizer** — `allowedHtmlTags` now includes `div`, `article`, `section`, `aside`, `span` (required for It.58 expand templates); legacy settings merge missing layout tags on read; `role` attribute allowed on sanitized elements.
+
+<a id="release-2-1-0-beta-56"></a>
+
+## [2.1.0-beta.56] – 2026-08-17
+
+It.82 complete — Origin Panel maintainer cockpit (env gate, runtime probes, project catalog progress)
+
+### Added
+
+- **It.82 Origin Panel** — env-gated maintainer module (`ORIGIN_PANEL`, fail-closed on demo/customer profiles); `OriginPanelMode` with development LAN auto-allow; public settings `origin.enabled`; SUPER_ADMIN API `/api/admin/origin/*`; admin route `/platform/origin`.
+- **Runtime feature probes** — 11 auto-checked wiring probes (locking, shortcodes, locale, API keys, redirects, It.81 slices, snippets); no manual checkboxes in UI.
+- **Project catalog SSOT** — `docs/manifest/project-catalog.json` merged with probe results for iteration progress %, sub-item breakdown, and release timeline in Origin Panel.
+- **Packaging notes** — [docs/en/ORIGIN_PANEL_PACKAGING.md](docs/en/ORIGIN_PANEL_PACKAGING.md) (exclude Origin module from customer install archives, same tier as Demo).
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.56`
+- **Iteration:** [It.82](docs/en/ITERATION_82.md) complete (`82a`–`82c`, `82e`; `82d` deferred)
+
+---
 
 <a id="release-2-1-0-beta-55"></a>
 
