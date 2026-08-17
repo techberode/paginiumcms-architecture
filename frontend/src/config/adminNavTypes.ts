@@ -10,6 +10,8 @@ export interface AdminNavItemDef {
   hideOnDemoInstance?: boolean;
   /** Visible only to SUPER_ADMIN (e.g. system update deploy). */
   superAdminOnly?: boolean;
+  /** Visible only when Origin Panel is active (`settings.origin.enabled`). */
+  originOnly?: boolean;
 }
 
 export interface AdminNavSectionDef {

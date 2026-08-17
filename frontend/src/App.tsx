@@ -54,6 +54,7 @@ import { ApiKeysManager } from './components/backend/ApiKeysManager';
 import { RedirectsManager } from './components/backend/RedirectsManager';
 import { ShortcodesManager } from './components/backend/ShortcodesManager';
 import { SnippetsManager } from './components/backend/SnippetsManager';
+import { OriginPanelView } from './components/backend/OriginPanelView';
 import { WebhooksManager } from './components/backend/WebhooksManager';
 import { debugLog } from './utils/debugLog';
 import { ADMIN_DEFAULT_ROUTE } from './config/adminNavSections';
@@ -196,6 +197,7 @@ function App() {
         <Route path="/platform/webhooks" element={<WebhooksManager />} />
         <Route path="/platform/shortcodes" element={<ShortcodesManager />} />
         <Route path="/platform/snippets" element={<SnippetsManager />} />
+        <Route path="/platform/origin" element={<OriginPanelView />} />
         <Route path="/settings" element={<SettingsView />} />
         <Route path="/translations" element={<TranslationEditor />} />
         <Route path="/account/security" element={<AccountSecurityView />} />

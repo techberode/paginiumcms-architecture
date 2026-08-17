@@ -29,6 +29,7 @@ export const adminSk: MessageTree = {
     notifications: 'Notifikácie',
     scheduler: 'Plánovač',
     systemUpdate: 'Aktualizácia systému',
+    originPanel: 'Origin Panel',
     users: 'Používatelia',
     accountSecurity: 'Bezpečnosť účtu',
     apiKeys: 'API kľúče',

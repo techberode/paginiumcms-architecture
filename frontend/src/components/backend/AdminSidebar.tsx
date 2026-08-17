@@ -43,6 +43,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   const isAdmin = user?.roles?.some((r) => r === 'ADMIN' || r === 'SUPER_ADMIN') ?? false;
   const isSuperAdmin = user?.roles?.includes('SUPER_ADMIN') ?? false;
   const isDemoInstance = settings?.demo?.enabled === true;
+  const isOriginPanelEnabled = settings?.origin?.enabled === true;
   const [openSections, setOpenSections] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(ADMIN_NAV_SECTIONS.map((section) => [section.id, true]))
   );
@@ -87,10 +88,13 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           if (item.hideOnDemoInstance && isDemoInstance) {
             return false;
           }
+          if (item.originOnly && !isOriginPanelEnabled) {
+            return false;
+          }
           return true;
         }),
       })).filter((section) => section.items.length > 0),
-    [isAdmin, isSuperAdmin, isDemoInstance]
+    [isAdmin, isSuperAdmin, isDemoInstance, isOriginPanelEnabled]
   );
 
   const displayName = user?.name || t('admin.sidebar.userFallback');

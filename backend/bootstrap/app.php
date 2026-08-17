@@ -87,6 +87,7 @@ use PaginiumCMS\Modules\Demo\Commands\RunDemoResetCommand;
 use PaginiumCMS\Modules\Security\Commands\ClearLoginLockoutsCommand;
 use PaginiumCMS\Modules\Demo\Services\DemoLoginGuard;
 use PaginiumCMS\Modules\Demo\Services\DemoMode;
+use PaginiumCMS\Modules\Origin\Services\OriginPanelMode;
 use PaginiumCMS\Modules\Demo\Services\DemoResetScheduler;
 use PaginiumCMS\Modules\Demo\Services\DemoStorageService;
 use PaginiumCMS\Core\Logging\Services\Logger;
@@ -123,6 +124,7 @@ if ($appEnvForDotenv !== 'testing' && class_exists(\Dotenv\Dotenv::class)) {
 require_once __DIR__ . '/timezone.php';
 
 DemoMode::warnIfMisconfigured();
+OriginPanelMode::warnIfMisconfigured();
 
 // ---------- SESSION BEZPEČNOSŤ ----------
 if (file_exists(__DIR__ . '/session.php')) {

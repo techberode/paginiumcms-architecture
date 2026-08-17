@@ -184,6 +184,7 @@ use PaginiumCMS\Http\Controllers\Admin\ShortcodeController;
 use PaginiumCMS\Http\Controllers\Admin\SnippetController;
 use PaginiumCMS\Http\Controllers\Admin\ThemesController;
 use PaginiumCMS\Http\Controllers\Admin\BlueprintController;
+use PaginiumCMS\Http\Controllers\Origin\OriginController;
 use PaginiumCMS\Http\Controllers\Admin\AclController;
 use PaginiumCMS\Http\Controllers\Admin\SecurityAuditController;
 use PaginiumCMS\Http\Controllers\Admin\ApiKeyController;
@@ -257,6 +258,11 @@ use PaginiumCMS\Modules\Demo\Commands\RunDemoResetCommand;
 use PaginiumCMS\Modules\Demo\Services\DemoDataProvider;
 use PaginiumCMS\Modules\Demo\Services\DemoLoginGuard;
 use PaginiumCMS\Modules\Demo\Services\DemoMode;
+use PaginiumCMS\Modules\Origin\Services\FeatureProbeRegistry;
+use PaginiumCMS\Modules\Origin\Services\ProjectCatalogMergeService;
+use PaginiumCMS\Modules\Origin\Services\ProjectCatalogReader;
+use PaginiumCMS\Modules\Origin\Services\OriginPanelMode;
+use PaginiumCMS\Modules\Origin\Services\ProbeSupport;
 use PaginiumCMS\Modules\Demo\Services\DemoStorageQuotaService;
 use PaginiumCMS\Modules\Demo\Services\DemoResetScheduler;
 use PaginiumCMS\Modules\Demo\Services\DemoStorageService;
@@ -1449,4 +1455,19 @@ return [
         ->constructor(get(DemoMode::class), get(DemoStorageService::class)),
     RunDemoResetCommand::class => create(RunDemoResetCommand::class)
         ->constructor(get(DemoResetScheduler::class)),
+    OriginPanelMode::class => create(OriginPanelMode::class),
+    ProbeSupport::class => create(ProbeSupport::class),
+    FeatureProbeRegistry::class => create(FeatureProbeRegistry::class)
+        ->constructor(get(ProbeSupport::class)),
+    ProjectCatalogReader::class => create(ProjectCatalogReader::class),
+    ProjectCatalogMergeService::class => create(ProjectCatalogMergeService::class)
+        ->constructor(get(ProjectCatalogReader::class)),
+    OriginController::class => create(OriginController::class)
+        ->constructor(
+            get(FeatureProbeRegistry::class),
+            get(ProjectCatalogMergeService::class),
+            get(HealthCheckManager::class),
+            get(AdminCountsService::class),
+            get(JsonResponder::class)
+        ),
 ];
