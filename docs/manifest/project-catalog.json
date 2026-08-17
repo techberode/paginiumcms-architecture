@@ -127,6 +127,24 @@
       ]
     },
     {
+      "id": "it.84",
+      "titleKey": "origin.catalog.it84",
+      "phase": "shipped",
+      "since": "2.1.0-beta.57",
+      "doc": "docs/en/ITERATION_84.md",
+      "priority": "medium",
+      "items": [
+        { "id": "84a", "titleKey": "origin.catalog.it84_categories", "phase": "shipped", "weight": 1 },
+        { "id": "84b", "titleKey": "origin.catalog.it84_sidebar", "phase": "shipped", "weight": 1 },
+        { "id": "84c", "titleKey": "origin.catalog.it84_landing", "phase": "shipped", "weight": 1 },
+        { "id": "84d", "titleKey": "origin.catalog.it84_roles", "phase": "shipped", "weight": 1 },
+        { "id": "84e", "titleKey": "origin.catalog.it84_nav", "phase": "shipped", "weight": 1 }
+      ],
+      "history": [
+        { "version": "2.1.0-beta.57", "date": "2026-08-17", "summaryKey": "origin.timeline.it84" }
+      ]
+    },
+    {
       "id": "it.78",
       "titleKey": "origin.catalog.it78",
       "phase": "planned",
@@ -152,6 +170,7 @@
     }
   ],
   "timeline": [
+    { "version": "2.1.0-beta.57", "date": "2026-08-17", "summaryKey": "origin.timeline.beta57" },
     { "version": "2.1.0-beta.55", "date": "2026-08-17", "summaryKey": "origin.timeline.beta55" },
     { "version": "2.1.0-beta.47", "date": "2026-08-15", "summaryKey": "origin.timeline.beta47" },
     { "version": "2.1.0-beta.39", "date": "2026-08-13", "summaryKey": "origin.timeline.beta39" },
