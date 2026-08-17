@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.57`](#release-2-1-0-beta-57) | 2026-08-17 | It.84 — categories, blog sidebar, landing shortcodes, custom roles, nav layout |
 | [`2.1.0-beta.56`](#release-2-1-0-beta-56) | 2026-08-17 | It.82 Origin Panel — maintainer cockpit, probes, project catalog |
 | [`2.1.0-beta.55`](#release-2-1-0-beta-55) | 2026-08-17 | It.81f snippet library, admin body preview, lock fail-open |
 | [`2.1.0-beta.54`](#release-2-1-0-beta-54) | 2026-08-15 | Hotfix — front matter parser root cause: raw YAML leaked into article body (ISS-154) |
@@ -131,6 +132,18 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+### Fixed
+
+- **ISS-141 follow-up** — all remaining `Http/Controllers/*` JSON mutating paths and OTP/contact rate-limit middleware now use `RequestJsonBody::decode()` (eliminates empty-body regressions site-wide after `BodyParsingMiddleware`).
+
+- **Shortcode expand + HTML sanitizer** — `allowedHtmlTags` now includes `div`, `article`, `section`, `aside`, `span` (required for It.58 expand templates); legacy settings merge missing layout tags on read; `role` attribute allowed on sanitized elements.
+
+<a id="release-2-1-0-beta-57"></a>
+
+## [2.1.0-beta.57] – 2026-08-17
+
+It.84 complete — content presentation, blog sidebar, landing shortcodes, custom roles, navigation layout
+
 ### Added
 
 - **It.84c marketing shortcodes** — bundled catalog adds `cta-banner`, `stats-row`, `stat-item`, `testimonial`, `pricing-table`, `pricing-plan`, `pricing-feature`; `pgLayout.css` styles; demo page `/paginium-cms`; [LANDING_PAGE.md](docs/en/user/LANDING_PAGE.md).
@@ -141,13 +154,16 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ### Fixed
 
-- **ISS-155** — `NavigationManager` referenced undefined `NAVIGATION_MAX_DEPTH` after It.84e settings-driven `maxDepth`; broke `tsc` and Vitest (submenu button crash). Fixed: use `maxDepth` from `resolveNavigationLayout()`.
-- **ISS-156** — `UserController::store` rejected `EDITOR`/`ADMIN`/`USER` when `data/roles.json` was empty (84d `assertValidRole` without seed). Fixed: `RoleCatalogSeeder::seedIfEmpty()` in `assertValidRole()`.
-- **ISS-157** — `ClassicSingleLocaleCompatibilityTest` falsely failed when a schema v2 `home` page already existed from a prior test run. Fixed: re-seed legacy fixture when existing home has `schemaVersion >= 2`.
+- **ISS-155** — `NavigationManager` referenced undefined `NAVIGATION_MAX_DEPTH` after It.84e settings-driven `maxDepth`; broke `tsc` and Vitest. Fixed: use `maxDepth` from `resolveNavigationLayout()`.
+- **ISS-156** — `UserController::store` rejected `EDITOR`/`ADMIN`/`USER` when `data/roles.json` was empty (84d seed gap). Fixed: `RoleCatalogSeeder::seedIfEmpty()` in `assertValidRole()`.
+- **ISS-157** — `ClassicSingleLocaleCompatibilityTest` falsely failed when a schema v2 `home` page already existed. Fixed: re-seed legacy fixture when existing home has `schemaVersion >= 2`.
 
-- **ISS-141 follow-up** — all remaining `Http/Controllers/*` JSON mutating paths and OTP/contact rate-limit middleware now use `RequestJsonBody::decode()` (eliminates empty-body regressions site-wide after `BodyParsingMiddleware`).
+### Release facts
 
-- **Shortcode expand + HTML sanitizer** — `allowedHtmlTags` now includes `div`, `article`, `section`, `aside`, `span` (required for It.58 expand templates); legacy settings merge missing layout tags on read; `role` attribute allowed on sanitized elements.
+- **Tag:** `v2.1.0-beta.57`
+- **Iteration:** [It.84](docs/en/ITERATION_84.md) complete (`84a`–`84e`)
+
+---
 
 <a id="release-2-1-0-beta-56"></a>
 

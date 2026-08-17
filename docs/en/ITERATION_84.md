@@ -4,7 +4,7 @@
 > **Priority:** 🟡 medium (product polish + admin power; no Hybrid Engine dependency)  
 > **Wave:** Content ops & public presentation (extends It.44 blog, It.56 nav, It.58 layout, It.81 editorial)  
 > **Depends on:** shipped content index, shortcode pipeline, `PermissionCatalog`, `navigation.json`, analytics pageviews (admin)  
-> **Snapshot:** 2026-08-17 · scope approved by maintainer; implement in slices after gate stays green per slice
+> **Snapshot:** 2026-08-17 · shipped in `v2.1.0-beta.57`
 
 ## Goal
 
