@@ -50,7 +50,9 @@ class TwoFactorManagerTest extends TestCase
 
     protected function tearDown(): void
     {
-        session_destroy();
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_destroy();
+        }
         parent::tearDown();
     }
 

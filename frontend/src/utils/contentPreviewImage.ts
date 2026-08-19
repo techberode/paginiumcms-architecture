@@ -1,4 +1,8 @@
-import { resolveMediaUrl, resolvePublicMediaUrl } from '../api/media';
+import {
+  appendThumbnailQuery,
+  resolveMediaUrl,
+  resolvePublicMediaUrl,
+} from '../api/media';
 
 type ContentImageSource = {
   featuredImage?: string | null;
@@ -54,6 +58,8 @@ export function resolveContentImageUrl(raw: string): string {
   return resolveMediaUrl(value);
 }
 
-export function resolveContentPreviewImage(source: ContentImageSource): string {
-  return resolveContentImageUrl(pickContentImageRaw(source));
+export function resolveContentPreviewImage(source: ContentImageSource, width = 0): string {
+  const url = resolveContentImageUrl(pickContentImageRaw(source));
+
+  return width > 0 ? appendThumbnailQuery(url, width) : url;
 }

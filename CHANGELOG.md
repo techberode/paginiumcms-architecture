@@ -2,6 +2,12 @@
 
 This canonical history records release facts supported by the supplied `CHANGELOG.md`. Detailed incident analysis remains in [ISSUES.md](docs/ISSUES.md); the latest exact source snapshot is preserved in `docs/meta/it18/SOURCE_UPDATES/CHANGELOG.md` when present locally.
 
+## Unreleased
+
+### Planned
+
+- **It.85 — Request diagnostics** — planned slices: `size_bytes` in access logs (85a), `storage_ms` in APM (85b), `session_lock_ms` (85c), optional `Server-Timing` header (85d), `apm_lock_wait_ms` (85e). See [docs/en/ITERATION_85.md](docs/en/ITERATION_85.md).
+
 ## History rules
 
 - Semantic-version order, newest first.
@@ -15,6 +21,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.58`](#release-2-1-0-beta-58) | 2026-08-19 | Hotfix — session lock, media streaming/thumbnails, Performance Guard p95 |
 | [`2.1.0-beta.57`](#release-2-1-0-beta-57) | 2026-08-17 | It.84 — categories, blog sidebar, landing shortcodes, custom roles, nav layout |
 | [`2.1.0-beta.56`](#release-2-1-0-beta-56) | 2026-08-17 | It.82 Origin Panel — maintainer cockpit, probes, project catalog |
 | [`2.1.0-beta.55`](#release-2-1-0-beta-55) | 2026-08-17 | It.81f snippet library, admin body preview, lock fail-open |
@@ -137,6 +144,32 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **ISS-141 follow-up** — all remaining `Http/Controllers/*` JSON mutating paths and OTP/contact rate-limit middleware now use `RequestJsonBody::decode()` (eliminates empty-body regressions site-wide after `BodyParsingMiddleware`).
 
 - **Shortcode expand + HTML sanitizer** — `allowedHtmlTags` now includes `div`, `article`, `section`, `aside`, `span` (required for It.58 expand templates); legacy settings merge missing layout tags on read; `role` attribute allowed on sanitized elements.
+
+<a id="release-2-1-0-beta-58"></a>
+
+## [2.1.0-beta.58] – 2026-08-19
+
+Hotfix — PHP session lock contention, media serving, and Performance Guard p95 skew
+
+### Added
+
+- **Media thumbnails** — `GET /storage/...?w=480` generates cached WebP/JPEG previews (GD); blog cards, heroes, gallery grids use reduced width. Requires PHP image rebuild (`docker compose build php`).
+- **SessionReleaseMiddleware** — early `session_write_close()` on GET/HEAD/OPTIONS so parallel SPA requests do not serialize on one `PHPSESSID`.
+
+### Fixed
+
+- **Session write lock** — `SessionManager::releaseWriteLock()` after session touches/writes; fixes dashboard `Promise.all` appearing as ~3 s latency and inflated Performance Guard p95.
+- **Lazy session start** — PHP session opens only when read/written, not on every `/storage/` media request.
+- **Media serving** — `/storage/` skips analytics pageview tracking; files stream with `Content-Length` instead of loading entire PNG into memory; `Cache-Control` extended to 7 days.
+- **Performance Guard p95** — `/storage/` media requests excluded from APM sampling (ISS-158).
+- **Blog layout** — article view without sidebar keeps `max-w-4xl` centered column (It.84 regression fix).
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.58`
+- **Ops:** rebuild PHP image for GD thumbnails — `docker compose build php && docker compose up -d --force-recreate php`
+
+---
 
 <a id="release-2-1-0-beta-57"></a>
 

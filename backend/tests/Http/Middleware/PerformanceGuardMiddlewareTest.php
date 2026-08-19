@@ -93,6 +93,23 @@ final class PerformanceGuardMiddlewareTest extends TestCase
         $this->assertNotSame('', $rows[0]['route']);
     }
 
+    public function testStoragePathsAreNotSampled(): void
+    {
+        $middleware = $this->makeMiddleware(['performanceGuardEnabled' => true]);
+        $request = (new ServerRequestFactory())->createServerRequest(
+            'GET',
+            '/storage/app/content/media/sample.png'
+        );
+        $expected = (new ResponseFactory())->createResponse(200);
+
+        $handler = $this->createMock(RequestHandlerInterface::class);
+        $handler->expects($this->once())->method('handle')->willReturn($expected);
+
+        $middleware->process($request, $handler);
+
+        $this->assertSame([], $this->samples->all());
+    }
+
     /**
      * @param array<string, mixed> $engine
      */

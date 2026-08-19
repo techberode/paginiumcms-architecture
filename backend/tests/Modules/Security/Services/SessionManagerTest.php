@@ -126,4 +126,14 @@ class SessionManagerTest extends TestCase
         $this->assertFalse($this->session->isAuthenticated());
         $this->assertEmpty($_SESSION);
     }
+
+    public function testReleaseWriteLockKeepsInMemoryReads(): void
+    {
+        $this->session->set('test_key', 'still-readable');
+
+        $this->session->releaseWriteLock();
+
+        $this->assertTrue($this->session->isWriteLockReleased());
+        $this->assertSame('still-readable', $this->session->get('test_key'));
+    }
 }

@@ -29,11 +29,10 @@ use PaginiumCMS\Http\Middleware\InvalidBearerGuardMiddleware;
 use PaginiumCMS\Http\Middleware\BearerAuthMiddleware;
 use PaginiumCMS\Http\Middleware\ApiScopeMiddleware;
 use PaginiumCMS\Http\Middleware\ApiKeyRateLimitMiddleware;
+use PaginiumCMS\Http\Middleware\SessionReleaseMiddleware;
 use PaginiumCMS\Http\Middleware\PerformanceGuardMiddleware;
 use PaginiumCMS\Http\Middleware\RequestLoggingMiddleware;
 use PaginiumCMS\Support\AppVersion;
-
-// ---------- PÔVODNÉ IMPORTY ----------
 use PaginiumCMS\Modules\Security\Services\AuthenticationManager;
 use PaginiumCMS\Modules\Security\Services\AuthorizationManager;
 use PaginiumCMS\Modules\Security\Services\CsrfProtectionManager;
@@ -836,6 +835,7 @@ if ($corsOriginServer !== null) {
     $corsOptions['origin.server'] = $corsOriginServer;
 }
 
+$app->add(new SessionReleaseMiddleware($container->get(SessionManager::class)));
 $app->add(new SameOriginCorsMiddleware($corsOptions));
 
 // ============================================

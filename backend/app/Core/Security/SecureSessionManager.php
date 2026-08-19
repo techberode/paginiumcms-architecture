@@ -54,12 +54,14 @@ final class SecureSessionManager extends SessionManager
     {
         parent::setUser($user);
 
+        $this->ensureSessionActive();
         $_SESSION[self::IP_KEY] = ClientIpResolver::resolve(null, $this->trustedProxies);
         $_SESSION[self::UA_KEY] = $_SERVER['HTTP_USER_AGENT'] ?? 'unknown';
         $_SESSION[self::CREATED_KEY] = time();
         $_SESSION[self::LAST_ACTIVITY_KEY] = time();
         $this->validated = true;
         $this->refreshCookieLifetime();
+        $this->releaseWriteLock();
     }
 
     /**
@@ -71,12 +73,16 @@ final class SecureSessionManager extends SessionManager
             return;
         }
 
+        $this->ensureSessionActive();
         $_SESSION[self::LAST_ACTIVITY_KEY] = time();
         $this->refreshCookieLifetime();
+        $this->releaseWriteLock();
     }
 
     private function validateSession(): bool
     {
+        $this->ensureSessionActive();
+
         if ($this->strictBinding) {
             $currentIp = ClientIpResolver::resolve(null, $this->trustedProxies);
             $storedIp = $_SESSION[self::IP_KEY] ?? null;

@@ -34,7 +34,7 @@ final class PerformanceGuardMiddleware implements MiddlewareInterface
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        if (!$this->settings->enabled() || !$this->policy->shouldSample()) {
+        if (!$this->settings->enabled() || !$this->policy->shouldSample() || !$this->shouldSamplePath($request)) {
             return $handler->handle($request);
         }
 
@@ -80,5 +80,17 @@ final class PerformanceGuardMiddleware implements MiddlewareInterface
         $this->samples->append($sample);
         $this->incidents->recordLatencyBreach($route, $durationMs);
         $this->context->deactivate();
+    }
+
+    private function shouldSamplePath(ServerRequestInterface $request): bool
+    {
+        $path = $request->getUri()->getPath();
+
+        // Large binary/media responses are not API latency — they skew p95 (ISS-158).
+        if (str_starts_with($path, '/storage/')) {
+            return false;
+        }
+
+        return true;
     }
 }

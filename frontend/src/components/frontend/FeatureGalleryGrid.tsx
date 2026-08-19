@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import type { GalleryItem } from '../../api/gallery';
-import { resolvePublicMediaUrl } from '../../api/media';
+import { MEDIA_THUMB_WIDTH, resolvePublicMediaThumbnailUrl } from '../../api/media';
 import { useI18n } from '../../context/I18nContext';
 import { FeatureGalleryModal } from './FeatureGalleryModal';
 
@@ -54,7 +54,7 @@ export const FeatureGalleryGrid: React.FC<FeatureGalleryGridProps> = ({
           >
             <div className="aspect-video overflow-hidden bg-theme-surface">
               <img
-                src={resolvePublicMediaUrl(item.mediaPath)}
+                src={resolvePublicMediaThumbnailUrl(item.mediaPath, MEDIA_THUMB_WIDTH.gallery)}
                 alt={item.title}
                 className="h-full w-full object-cover object-top transition group-hover:scale-[1.02]"
                 loading="lazy"
