@@ -15,10 +15,41 @@ class SessionManager
     private const SESSION_KEY = 'paginium_user';
     private const TOTP_VERIFIED_KEY = 'paginium_totp_verified';
 
+    private bool $writeLockReleased = false;
+
     public function __construct()
     {
+    }
+
+    /**
+     * Drops the exclusive session file lock while keeping $_SESSION in memory.
+     *
+     * Safe after reads or once pending session writes for this request are done.
+     */
+    public function releaseWriteLock(): void
+    {
+        if ($this->writeLockReleased || session_status() !== PHP_SESSION_ACTIVE) {
+            return;
+        }
+
+        session_write_close();
+        $this->writeLockReleased = true;
+    }
+
+    public function isWriteLockReleased(): bool
+    {
+        return $this->writeLockReleased;
+    }
+
+    protected function ensureSessionActive(): void
+    {
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            return;
+        }
+
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
+            $this->writeLockReleased = false;
         }
     }
 
@@ -29,8 +60,10 @@ class SessionManager
      */
     public function setUser(User $user): void
     {
+        $this->ensureSessionActive();
         $_SESSION[self::SESSION_KEY] = serialize($user);
         $this->regenerate();
+        $this->releaseWriteLock();
     }
 
     /**
@@ -38,7 +71,9 @@ class SessionManager
      */
     public function updateUser(User $user): void
     {
+        $this->ensureSessionActive();
         $_SESSION[self::SESSION_KEY] = serialize($user);
+        $this->releaseWriteLock();
     }
 
     /**
@@ -48,6 +83,8 @@ class SessionManager
      */
     public function getUser(): ?User
     {
+        $this->ensureSessionActive();
+
         if (!isset($_SESSION[self::SESSION_KEY])) {
             return null;
         }
@@ -64,9 +101,11 @@ class SessionManager
      */
     public function clearUser(): void
     {
+        $this->ensureSessionActive();
         unset($_SESSION[self::SESSION_KEY]);
         unset($_SESSION[self::TOTP_VERIFIED_KEY]);
         $this->regenerate();
+        $this->releaseWriteLock();
     }
 
     /**
@@ -86,6 +125,8 @@ class SessionManager
      */
     public function isTotpVerified(): bool
     {
+        $this->ensureSessionActive();
+
         return isset($_SESSION[self::TOTP_VERIFIED_KEY]) && $_SESSION[self::TOTP_VERIFIED_KEY] === true;
     }
 
@@ -94,7 +135,9 @@ class SessionManager
      */
     public function setTotpVerified(): void
     {
+        $this->ensureSessionActive();
         $_SESSION[self::TOTP_VERIFIED_KEY] = true;
+        $this->releaseWriteLock();
     }
 
     /**
@@ -102,7 +145,9 @@ class SessionManager
      */
     public function clearTotpVerified(): void
     {
+        $this->ensureSessionActive();
         unset($_SESSION[self::TOTP_VERIFIED_KEY]);
+        $this->releaseWriteLock();
     }
 
     /**
@@ -163,6 +208,7 @@ class SessionManager
      */
     public function regenerate(): void
     {
+        $this->ensureSessionActive();
         session_regenerate_id(true);
     }
 
@@ -171,6 +217,10 @@ class SessionManager
      */
     public function destroy(): void
     {
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            return;
+        }
+
         $_SESSION = [];
         session_destroy();
     }
@@ -183,7 +233,9 @@ class SessionManager
      */
     public function set(string $key, $value): void
     {
+        $this->ensureSessionActive();
         $_SESSION[$key] = $value;
+        $this->releaseWriteLock();
     }
 
     /**
@@ -195,6 +247,8 @@ class SessionManager
      */
     public function get(string $key, $default = null)
     {
+        $this->ensureSessionActive();
+
         return $_SESSION[$key] ?? $default;
     }
 
@@ -205,6 +259,8 @@ class SessionManager
      */
     public function remove(string $key): void
     {
+        $this->ensureSessionActive();
         unset($_SESSION[$key]);
+        $this->releaseWriteLock();
     }
 }

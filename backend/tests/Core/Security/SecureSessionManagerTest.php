@@ -60,6 +60,24 @@ final class SecureSessionManagerTest extends TestCase
         $this->assertNotNull($session->getUser());
     }
 
+    public function testTouchReleasesSessionWriteLock(): void
+    {
+        $session = new SecureSessionManager();
+
+        $user = new User();
+        $user->setEmail('editor@example.com');
+        $user->setName('Editor');
+        $session->setUser($user);
+
+        $this->assertTrue($session->isWriteLockReleased());
+
+        $session->touch();
+
+        $this->assertTrue($session->isWriteLockReleased());
+        $this->assertTrue($session->isAuthenticated());
+        $this->assertNotNull($session->getUser());
+    }
+
     public function testStrictBindingDestroysSessionOnIpChange(): void
     {
         putenv('SESSION_STRICT=true');

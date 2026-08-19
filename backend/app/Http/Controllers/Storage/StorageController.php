@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Storage;
 
+use PaginiumCMS\Modules\Media\Services\MediaThumbnailService;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Slim\Psr7\Stream;
 
 /**
  * Servuje VÝHRADNE verejné statické médiá z backend/storage/.
@@ -30,7 +32,8 @@ class StorageController
     ];
 
     public function __construct(
-        private string $storageRoot
+        private string $storageRoot,
+        private ?MediaThumbnailService $thumbnails = null,
     ) {
     }
 
@@ -63,13 +66,22 @@ class StorageController
         }
 
         $mime = mime_content_type($realPath) ?: 'application/octet-stream';
+        $maxWidth = $this->resolveThumbnailWidth($request);
+        if ($maxWidth > 0 && MediaThumbnailService::isSupportedRasterMime($mime)) {
+            $thumbPath = $this->thumbnailService()->ensure($realPath, $maxWidth);
+            if ($thumbPath !== null && is_file($thumbPath)) {
+                $realPath = $thumbPath;
+                $mime = mime_content_type($realPath) ?: 'image/webp';
+            }
+        }
+
+        $size = filesize($realPath);
         $stream = fopen($realPath, 'rb');
         if ($stream === false) {
             return $response->withStatus(500);
         }
 
-        $response->getBody()->write((string) stream_get_contents($stream));
-        fclose($stream);
+        $body = new Stream($stream);
 
         // Aktívny obsah (SVG/HTML/XML) sa nikdy neservíruje inline v same-origin
         // kontexte, inak by vložený <script> spustil stored XSS.
@@ -78,9 +90,14 @@ class StorageController
             || str_contains($mime, 'xml');
 
         $response = $response
+            ->withBody($body)
             ->withHeader('Content-Type', $mime)
             ->withHeader('X-Content-Type-Options', 'nosniff')
-            ->withHeader('Cache-Control', 'public, max-age=86400');
+            ->withHeader('Cache-Control', 'public, max-age=604800, immutable');
+
+        if ($size !== false) {
+            $response = $response->withHeader('Content-Length', (string) $size);
+        }
 
         if ($isActiveMime) {
             $response = $response
@@ -89,6 +106,25 @@ class StorageController
         }
 
         return $response;
+    }
+
+    private function thumbnailService(): MediaThumbnailService
+    {
+        return $this->thumbnails ??= new MediaThumbnailService();
+    }
+
+    private function resolveThumbnailWidth(ServerRequestInterface $request): int
+    {
+        $raw = $request->getQueryParams()['w'] ?? $request->getQueryParams()['width'] ?? null;
+        if ($raw === null || $raw === '') {
+            return 0;
+        }
+
+        if (!is_numeric($raw)) {
+            return 0;
+        }
+
+        return max(0, min(1920, (int) $raw));
     }
 
     /**

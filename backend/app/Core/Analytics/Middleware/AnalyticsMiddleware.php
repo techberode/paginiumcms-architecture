@@ -35,6 +35,10 @@ final class AnalyticsMiddleware implements MiddlewareInterface
             return false;
         }
 
+        if (str_starts_with($path, '/storage/')) {
+            return false;
+        }
+
         $skip = ['/favicon.ico', '/assets/', '/health'];
         foreach ($skip as $prefix) {
             if (str_starts_with($path, $prefix)) {

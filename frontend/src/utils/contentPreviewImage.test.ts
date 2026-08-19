@@ -43,4 +43,15 @@ describe('contentPreviewImage', () => {
       })
     ).toBe('/storage/app/content/media/hero.jpg');
   });
+
+  it('appends thumbnail width query when requested', () => {
+    expect(
+      resolveContentPreviewImage(
+        {
+          ogImage: '/storage/app/content/media/hero.jpg',
+        },
+        480
+      )
+    ).toBe('/storage/app/content/media/hero.jpg?w=480');
+  });
 });

@@ -10,6 +10,8 @@ import { normalizePageLayoutTemplateId } from '../../layout/pageLayoutTemplates'
 import { Calendar, User, FileText, ArrowRight } from 'lucide-react';
 import { useI18n } from '../../context/I18nContext';
 import { formatDisplayDate, resolveContentDate } from '../../utils/contentDates';
+import { MEDIA_THUMB_WIDTH } from '../../api/media';
+import { resolveContentPreviewImage } from '../../utils/contentPreviewImage';
 import { BTN_PRIMARY, PUBLIC_CARD } from '../../theme/publicUiClasses';
 
 interface PageRendererProps {
@@ -34,6 +36,10 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page }) => {
   const { t, locale } = useI18n();
   const navigate = useNavigate();
   const meta = pageMeta(page, t('public.defaults.editorial'));
+  const featuredImageUrl = resolveContentPreviewImage(
+    { featuredImage: meta.featuredImage, frontMatter: page.frontMatter ?? {} },
+    MEDIA_THUMB_WIDTH.hero
+  );
   const isHome = meta.template === 'home' || page.slug === 'home';
   const isContact = meta.template === 'contact' || page.slug === 'contact';
   const isServices = meta.template === 'services' || page.slug === 'sluzby' || page.slug === 'services';
@@ -43,7 +49,7 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page }) => {
     <div className="relative overflow-hidden public-hero pt-20 pb-28">
       <div className="absolute inset-0 z-0 opacity-20">
         {meta.featuredImage && (
-          <img src={meta.featuredImage} alt={t('public.page.hero.imageAlt')} className="w-full h-full object-cover" />
+          <img src={featuredImageUrl} alt={t('public.page.hero.imageAlt')} className="w-full h-full object-cover" loading="lazy" decoding="async" />
         )}
         <div className="absolute inset-0 bg-theme-text/80 backdrop-blur-sm" />
       </div>
@@ -103,7 +109,7 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page }) => {
         </p>
         {meta.featuredImage && !isAbout && !isServices && (
           <div className="mt-8 rounded-3xl overflow-hidden shadow-xl max-h-[400px]">
-            <img src={meta.featuredImage} alt={page.title} className="w-full h-full object-cover" />
+            <img src={featuredImageUrl} alt={page.title} className="w-full h-full object-cover" loading="lazy" decoding="async" />
           </div>
         )}
       </div>

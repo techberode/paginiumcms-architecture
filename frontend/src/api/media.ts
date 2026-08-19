@@ -53,6 +53,34 @@ export function resolvePublicMediaUrl(url: string): string {
   return resolveStorageUrl(url);
 }
 
+/** Preset widths for on-demand `/storage/...?w=` thumbnails (backend GD). */
+export const MEDIA_THUMB_WIDTH = {
+  card: 480,
+  hero: 960,
+  avatar: 128,
+  gallery: 640,
+} as const;
+
+/** Append width query for server-side thumbnail generation. */
+export function appendThumbnailQuery(url: string, width: number): string {
+  if (!url || width <= 0) {
+    return url;
+  }
+
+  if ((url.startsWith('http://') || url.startsWith('https://')) && !url.includes('/storage/')) {
+    return url;
+  }
+
+  const separator = url.includes('?') ? '&' : '?';
+
+  return `${url}${separator}w=${width}`;
+}
+
+/** Same-origin storage URL with optional thumbnail width. */
+export function resolvePublicMediaThumbnailUrl(url: string, width: number): string {
+  return appendThumbnailQuery(resolvePublicMediaUrl(url), width);
+}
+
 /** Human-readable file size. */
 export function formatMediaSize(bytes: number): string {
   if (bytes < 1024) {

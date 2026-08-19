@@ -6,6 +6,9 @@ import { renderWithProviders } from '../../test/renderWithProviders';
 
 vi.mock('../../api/media', () => ({
   resolvePublicMediaUrl: (path: string) => path,
+  resolvePublicMediaThumbnailUrl: (path: string, width: number) =>
+    width > 0 ? `${path}?w=${width}` : path,
+  MEDIA_THUMB_WIDTH: { card: 480, hero: 960, avatar: 128, gallery: 640 },
 }));
 
 describe('FeatureGalleryGrid', () => {

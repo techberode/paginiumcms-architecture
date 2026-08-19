@@ -6,7 +6,11 @@ RUN apt-get update \
         git \
         unzip \
         libzip-dev \
-    && docker-php-ext-install zip \
+        libpng-dev \
+        libjpeg62-turbo-dev \
+        libwebp-dev \
+    && docker-php-ext-configure gd --with-jpeg --with-webp \
+    && docker-php-ext-install zip gd \
     && rm -rf /var/lib/apt/lists/*
 
 # Node 22 for `npm ci && npm run build:prod` inside deploy-instance-update.sh (admin UI deploy).

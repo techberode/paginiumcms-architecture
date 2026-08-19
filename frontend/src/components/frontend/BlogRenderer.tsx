@@ -20,7 +20,7 @@ import {
   ChevronsRight,
 } from 'lucide-react';
 import { resolveContentPreviewImage } from '../../utils/contentPreviewImage';
-import { resolvePublicMediaUrl } from '../../api/media';
+import { MEDIA_THUMB_WIDTH, resolvePublicMediaThumbnailUrl } from '../../api/media';
 import {
   buildBlogListPath,
   blogSortToApiSort,
@@ -263,11 +263,15 @@ export const BlogRenderer: React.FC = () => {
   ) : null;
 
   const wrapWithSidebar = (content: React.ReactNode, wide = false) => {
-    if (!sidebarActive || !sidebarElement) {
-      return content;
-    }
-
     const maxWidth = wide ? 'max-w-7xl' : 'max-w-4xl';
+
+    if (!sidebarActive || !sidebarElement) {
+      return (
+        <div className={`${maxWidth} mx-auto px-4 sm:px-6 lg:px-8`}>
+          {content}
+        </div>
+      );
+    }
 
     return (
       <div className={`${maxWidth} mx-auto px-4 sm:px-6 lg:px-8`}>
@@ -335,9 +339,9 @@ export const BlogRenderer: React.FC = () => {
     const authorBio = String(activeArticle.authorBio ?? '').trim();
     const showAuthorBox = activeArticle.showAuthorBox !== false && settings.content?.blogShowAuthorBox !== false;
     const authorAvatarUrl = activeArticle.authorAvatarUrl
-      ? resolvePublicMediaUrl(activeArticle.authorAvatarUrl)
+      ? resolvePublicMediaThumbnailUrl(activeArticle.authorAvatarUrl, MEDIA_THUMB_WIDTH.avatar)
       : '';
-    const image = resolveContentPreviewImage(activeArticle);
+    const image = resolveContentPreviewImage(activeArticle, MEDIA_THUMB_WIDTH.hero);
     const dates = formatContentDateLabels(
       {
         createdAt: activeArticle.createdAt,
@@ -598,7 +602,7 @@ export const BlogRenderer: React.FC = () => {
             const author = article.author || String(
               settings.content?.blogAuthorName || settings.general?.siteName || article.frontMatter?.author || t('public.defaults.editorial')
             );
-            const image = resolveContentPreviewImage(article);
+            const image = resolveContentPreviewImage(article, MEDIA_THUMB_WIDTH.card);
             const desc = article.excerpt || String(article.frontMatter?.description ?? '');
             const dates = formatContentDateLabels(
               {
@@ -621,6 +625,8 @@ export const BlogRenderer: React.FC = () => {
                     <img
                       src={image}
                       alt={article.title}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   )}
