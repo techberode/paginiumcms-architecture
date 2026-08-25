@@ -39,6 +39,14 @@ export const platformEn: MessageTree = {
     remove: 'Remove',
     empty: 'No records',
     docsHint: 'Full documentation:',
+    bulkUnban: 'Unban selected',
+    bulkRemoveWhitelist: 'Remove selected',
+    bulkItemLabelBans: 'IPs selected',
+    bulkItemLabelWhitelist: 'entries selected',
+    confirm: {
+      bulkUnban: 'Unban :count selected IP(s)?',
+      bulkRemoveWhitelist: 'Remove :count IP(s) from whitelist?',
+    },
     toast: {
       loadFailed: 'Failed to load firewall',
       unbanConfirm: 'Unban IP :ip?',
@@ -53,6 +61,8 @@ export const platformEn: MessageTree = {
       whitelistRemoveConfirm: 'Remove :ip from whitelist?',
       whitelistRemoved: ':ip removed from whitelist',
       removeFailed: 'Removal failed',
+      bulkUnbanFailed: 'Bulk unban failed',
+      bulkRemoveWhitelistFailed: 'Bulk whitelist removal failed',
     },
   },
   scheduler: {
@@ -86,6 +96,47 @@ export const platformEn: MessageTree = {
     outcomeSkipped: 'Skipped',
     outcomeFailed: 'Failed',
     runLogWarning: 'Job ran but run history was not saved',
+    runMessages: {
+      backupCreated: 'Backup created',
+      backupNotDue: 'Backup not due yet',
+      noScheduledContent: 'No scheduled content due',
+      scheduledItemsSkipped: 'Scheduled items skipped',
+      noWebhookDeliveries: 'No webhook deliveries due',
+      gitPublishCompleted: 'Git publish completed',
+      gitPublishFailed: 'Git publish failed',
+      deployCompleted: 'Deploy completed',
+      deployDemoDisabled: 'Deploy disabled on demo instance',
+      deployDisabled: 'System deploy disabled in settings',
+      deployMissingAppRoot: 'APP_ROOT not configured',
+      deployMissingScript: 'Deploy script missing',
+      deployScriptFailed: 'Deploy script failed (exit :code)',
+      newsletterSendDisabled: 'Newsletter sending disabled in settings',
+      emailNotConfigured: 'Email channel not configured',
+      noDigestArticles: 'No new articles for weekly digest',
+      noDigestSubscribers: 'No weekly digest subscribers',
+      publishedScheduled: 'Published :count scheduled item(s)',
+      monitoringPipeline: 'Report: :report · Log notifications: :count',
+      webhookProcessed: 'Processed :processed webhook delivery(ies): :ok ok, :failed failed',
+      weeklyDigestStats: 'Weekly digest: sent=:sent failed=:failed skipped=:skipped',
+      unknownHandler: 'Unknown handler: :handler',
+      reportStatus: {
+        sent: 'sent',
+        skipped: 'skipped',
+      },
+    },
+    runReasons: {
+      notDue: 'Not due yet',
+      noSchedule: 'No schedule configured',
+      disabled: 'Disabled',
+      nothingDue: 'Nothing due',
+      someItemsSkipped: 'Some items skipped',
+      demoDisabled: 'Disabled on demo',
+      missingAppRoot: 'APP_ROOT missing',
+      missingScript: 'Deploy script missing',
+      scriptFailed: 'Script failed',
+      strategyOrConfig: 'Strategy or config error',
+      nothingSent: 'Nothing sent',
+    },
     toast: {
       jobDisabled: 'Job disabled',
       jobEnabled: 'Job enabled',
@@ -202,6 +253,11 @@ export const platformEn: MessageTree = {
     enabled: 'Enabled',
     disabled: 'Disabled',
     uninstall: 'Uninstall',
+    bulkUninstall: 'Uninstall selected',
+    bulkItemLabel: 'extensions selected',
+    confirm: {
+      bulkUninstall: 'Uninstall :count selected extension(s)? Files will be deleted from disk.',
+    },
     toast: {
       imported: 'Extension :name imported',
       importFailed: 'Import failed — check ZIP and code policy',
@@ -211,6 +267,7 @@ export const platformEn: MessageTree = {
       uninstallConfirm: 'Uninstall extension “:name”? Files will be deleted from disk.',
       uninstalled: ':name uninstalled',
       uninstallFailed: 'Uninstall failed',
+      bulkUninstallFailed: 'Bulk uninstall failed',
     },
   },
   securityAudit: {
@@ -422,6 +479,9 @@ export const platformEn: MessageTree = {
     curlExample: 'Example:\ncurl -H "Authorization: Bearer pgk_…" https://your-site/api/headless/pages/home',
     rotate: 'Rotate',
     revoke: 'Revoke',
+    purgeInactive: 'Purge inactive',
+    purgeAllInactive: 'Purge all inactive',
+    bulkItemLabel: 'keys selected',
     auditTitle: 'Key lifecycle audit',
     auditEmpty: 'No API key audit events yet.',
     fields: {
@@ -465,6 +525,8 @@ export const platformEn: MessageTree = {
     confirm: {
       revoke: 'Revoke key “:label”? Integrations using it will stop working.',
       rotate: 'Rotate key “:label”? The old secret stops working immediately.',
+      bulkPurge: 'Permanently remove :count inactive key(s) from storage?',
+      purgeAllInactive: 'Permanently remove all revoked and expired keys from storage?',
     },
     toast: {
       loadFailed: 'Failed to load API keys',
@@ -478,6 +540,7 @@ export const platformEn: MessageTree = {
       revokeFailed: 'Revoke failed',
       rotated: 'API key rotated',
       rotateFailed: 'Rotate failed',
+      purgeFailed: 'Failed to purge inactive keys',
     },
   },
   webhooks: {
@@ -523,6 +586,7 @@ export const platformEn: MessageTree = {
     confirm: {
       delete: 'Delete webhook “:label”?',
       rotate: 'Rotate secret for “:label”? Receivers must update immediately.',
+      bulkDelete: 'Delete :count selected webhook(s)?',
     },
     toast: {
       loadFailed: 'Failed to load webhooks',
@@ -536,6 +600,7 @@ export const platformEn: MessageTree = {
       updateFailed: 'Failed to update webhook',
       deleteFailed: 'Failed to delete webhook',
       deleted: 'Webhook deleted',
+      bulkFailed: 'Bulk delete failed.',
       rotateFailed: 'Failed to rotate secret',
       rotated: 'Webhook secret rotated',
       testOk: 'Test ping delivered',
@@ -566,6 +631,9 @@ export const platformEn: MessageTree = {
       actions: 'Actions',
     },
     confirmDelete: 'Delete category “:label”? Existing articles keep the slug until you change them.',
+    confirm: {
+      bulkDelete: 'Delete :count selected categories?',
+    },
     toast: {
       loadFailed: 'Failed to load categories',
       labelRequired: 'Label is required',
@@ -576,6 +644,7 @@ export const platformEn: MessageTree = {
       updated: 'Category updated',
       deleteFailed: 'Failed to delete category',
       deleted: 'Category deleted',
+      bulkFailed: 'Bulk delete failed.',
     },
   },
   roles: {
@@ -601,6 +670,9 @@ export const platformEn: MessageTree = {
     loading: 'Loading…',
     empty: 'No roles yet — system roles seed on first API load.',
     confirmDelete: 'Delete role “:id”? Users must be reassigned first.',
+    bulkDelete: 'Delete selected',
+    bulkItemLabel: 'roles selected',
+    confirmBulkDelete: 'Delete :count selected role(s)? Users must be reassigned first.',
     toast: {
       loadFailed: 'Failed to load roles',
       nameRequired: 'Display name is required',
@@ -612,6 +684,7 @@ export const platformEn: MessageTree = {
       updated: 'Role updated',
       deleteFailed: 'Failed to delete role',
       deleted: 'Role deleted',
+      bulkDeleteFailed: 'Bulk delete failed',
     },
   },
   shortcodes: {
@@ -639,6 +712,9 @@ export const platformEn: MessageTree = {
     disabled: 'Disabled',
     updatedAt: 'Updated :date',
     confirmDelete: 'Delete shortcode “:name”? This removes the definition file.',
+    bulkDelete: 'Delete selected',
+    bulkItemLabel: 'shortcodes selected',
+    confirmBulkDelete: 'Delete :count selected shortcode(s)?',
     toast: {
       loadFailed: 'Failed to load shortcodes',
       loadDefinitionFailed: 'Failed to load definition',
@@ -651,6 +727,7 @@ export const platformEn: MessageTree = {
       previewOk: 'Definition passes policy checks',
       deleteFailed: 'Failed to delete shortcode',
       deleted: 'Shortcode deleted',
+      bulkDeleteFailed: 'Bulk delete failed',
     },
   },
   snippets: {
@@ -676,6 +753,9 @@ export const platformEn: MessageTree = {
     delete: 'Delete',
     insertHint: 'Insert in content: {tag}',
     confirmDelete: 'Delete snippet “:name”? Pages referencing it will keep the tag until edited.',
+    bulkDelete: 'Delete selected',
+    bulkItemLabel: 'snippets selected',
+    confirmBulkDelete: 'Delete :count selected snippet(s)?',
     toast: {
       loadFailed: 'Failed to load snippets',
       nameInvalid: 'Name must start with a letter and use lowercase letters, digits, - or _',
@@ -684,6 +764,7 @@ export const platformEn: MessageTree = {
       saved: 'Snippet saved',
       deleteFailed: 'Failed to delete snippet',
       deleted: 'Snippet deleted',
+      bulkDeleteFailed: 'Bulk delete failed',
     },
   },
   redirects: {
@@ -708,6 +789,9 @@ export const platformEn: MessageTree = {
     off: 'Off',
     delete: 'Delete',
     confirmDelete: 'Delete redirect from “:from”?',
+    confirm: {
+      bulkDelete: 'Delete :count selected redirect(s)?',
+    },
     toast: {
       loadFailed: 'Failed to load redirects',
       pathsRequired: 'From and to paths are required',
@@ -716,6 +800,7 @@ export const platformEn: MessageTree = {
       updateFailed: 'Failed to update redirect',
       deleteFailed: 'Failed to delete redirect',
       deleted: 'Redirect deleted',
+      bulkFailed: 'Bulk delete failed.',
     },
   },
   demoBanner: {

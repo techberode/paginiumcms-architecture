@@ -3,7 +3,10 @@ import { useSearchParams } from 'react-router-dom';
 import { ArrowRightLeft, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import { redirectsApi, type RedirectRule } from '../../api/redirects';
 import { useToast } from '../../hooks/useToast';
+import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { useI18n } from '../../context/I18nContext';
+import { BulkActionBar } from './BulkActionBar';
+import { summarizeBulkResult } from '../../types/bulk';
 
 export const RedirectsManager: React.FC = () => {
   const { t } = useI18n();
@@ -18,6 +21,11 @@ export const RedirectsManager: React.FC = () => {
   const [note, setNote] = useState('');
   const [creating, setCreating] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+
+  const bulkSelection = useBulkSelection(
+    rules.map((rule) => rule.id),
+    String(rules.length)
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -81,6 +89,28 @@ export const RedirectsManager: React.FC = () => {
         toast.error(updated.error || t('platform.redirects.toast.updateFailed'));
         return;
       }
+      await load();
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (bulkSelection.count === 0) {
+      return;
+    }
+    if (!window.confirm(t('platform.redirects.confirm.bulkDelete', { count: String(bulkSelection.count) }))) {
+      return;
+    }
+    setBusyId('bulk');
+    try {
+      const result = await redirectsApi.bulkDelete(bulkSelection.selectedIds);
+      if (!result) {
+        toast.error(t('platform.redirects.toast.bulkFailed'));
+        return;
+      }
+      toast.success(summarizeBulkResult(result, t));
+      bulkSelection.clear();
       await load();
     } finally {
       setBusyId(null);
@@ -199,10 +229,34 @@ export const RedirectsManager: React.FC = () => {
         </div>
       )}
 
+      <BulkActionBar
+        count={bulkSelection.count}
+        onClear={bulkSelection.clear}
+        actions={[
+          {
+            id: 'delete',
+            label: t('platform.redirects.delete'),
+            variant: 'danger',
+            disabled: busyId === 'bulk',
+            onClick: () => void handleBulkDelete(),
+          },
+        ]}
+      />
+
       <div className="rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
         <table className="min-w-full text-sm">
           <thead className="bg-slate-50 dark:bg-slate-800/60 text-left">
             <tr>
+              <th className="px-4 py-3 w-10">
+                {!loading && rules.length > 0 ? (
+                  <input
+                    type="checkbox"
+                    checked={bulkSelection.allSelected}
+                    onChange={() => bulkSelection.toggleAll()}
+                    aria-label={t('platform.redirects.delete')}
+                  />
+                ) : null}
+              </th>
               <th className="px-4 py-3">{t('platform.redirects.from')}</th>
               <th className="px-4 py-3">{t('platform.redirects.to')}</th>
               <th className="px-4 py-3">{t('platform.redirects.status')}</th>
@@ -213,19 +267,27 @@ export const RedirectsManager: React.FC = () => {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-slate-500">
+                <td colSpan={6} className="px-4 py-6 text-slate-500">
                   {t('platform.redirects.loading')}
                 </td>
               </tr>
             ) : rules.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-slate-500">
+                <td colSpan={6} className="px-4 py-6 text-slate-500">
                   {t('platform.redirects.empty')}
                 </td>
               </tr>
             ) : (
               rules.map((rule) => (
                 <tr key={rule.id} className="border-t border-slate-100 dark:border-slate-800">
+                  <td className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={bulkSelection.isSelected(rule.id)}
+                      onChange={() => bulkSelection.toggle(rule.id)}
+                      aria-label={rule.from}
+                    />
+                  </td>
                   <td className="px-4 py-3 font-mono text-xs">{rule.from}</td>
                   <td className="px-4 py-3 font-mono text-xs">{rule.to}</td>
                   <td className="px-4 py-3">{rule.status}</td>

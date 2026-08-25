@@ -49,6 +49,8 @@ use Psr\Http\Message\ServerRequestInterface;
  */
 final class SettingsController
 {
+    private const REPOSITORY_URL = 'https://github.com/techberode/paginiumcms-architecture';
+
     public function __construct(
         private SettingsRepositoryInterface $settings,
         private JsonResponder $json,
@@ -704,7 +706,7 @@ final class SettingsController
 
         return [
             'storageProbe' => $this->mediaStorageProbe->probe($driver, $mediaValues),
-            'documentationUrl' => '/docs/en/ITERATION_72.md',
+            'documentationUrl' => $this->repositoryDocsBlob('docs/en/ITERATION_72.md'),
         ];
     }
 
@@ -725,7 +727,7 @@ final class SettingsController
                 $engineValues
             ),
             'gitProbe' => $this->gitProbe->probe(),
-            'documentationUrl' => '/docs/en/architecture/HYBRID_ENGINE.md',
+            'documentationUrl' => $this->repositoryDocsBlob('docs/en/architecture/HYBRID_ENGINE.md'),
         ];
     }
 
@@ -746,7 +748,7 @@ final class SettingsController
      */
     private function buildCmsInfoMeta(): array
     {
-        $repositoryUrl = 'https://github.com/techberode/paginiumcms-architecture';
+        $repositoryUrl = self::REPOSITORY_URL;
 
         return [
             'productName' => 'PaginiumCMS',
@@ -765,5 +767,10 @@ final class SettingsController
             ],
             'locales' => $this->localesRegistry->all(),
         ];
+    }
+
+    private function repositoryDocsBlob(string $path): string
+    {
+        return self::REPOSITORY_URL . '/blob/main/' . ltrim($path, '/');
     }
 }

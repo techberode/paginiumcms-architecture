@@ -30,6 +30,7 @@ return function (App $app): void {
     $app->group('/api/admin/platform/webhooks', function (RouteCollectorProxy $group) use ($admin): void {
         $group->get('', [$admin, 'index']);
         $group->post('', [$admin, 'create']);
+        $group->post('/bulk-delete', [$admin, 'bulkDelete']);
         $group->put('/{id}', [$admin, 'update']);
         $group->delete('/{id}', [$admin, 'delete']);
         $group->post('/{id}/rotate', [$admin, 'rotate']);

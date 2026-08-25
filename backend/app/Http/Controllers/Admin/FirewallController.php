@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Admin;
 
+use PaginiumCMS\Http\Support\BulkBatchResult;
+use PaginiumCMS\Http\Support\BulkIdsParser;
 use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\Security\Firewall\FirewallService;
 use PaginiumCMS\Http\Support\JsonResponder;
@@ -80,6 +82,29 @@ final class FirewallController
         return $this->json->success($response, ['ip' => $ip], 200, 'IP adresa odblokovaná');
     }
 
+    public function bulkUnban(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $ips = BulkIdsParser::fromRequest($request);
+        if ($ips === []) {
+            return $this->json->error($response, 'No IP addresses selected', 400);
+        }
+
+        $batch = new BulkBatchResult();
+        foreach ($ips as $ip) {
+            if (filter_var($ip, FILTER_VALIDATE_IP) === false) {
+                $batch->addFailure($ip, 'Invalid IP');
+                continue;
+            }
+            if (!$this->firewall->unban($ip)) {
+                $batch->addFailure($ip, 'Ban not found');
+                continue;
+            }
+            $batch->addSuccess($ip);
+        }
+
+        return $this->json->success($response, $batch->toArray(), 200, 'Bulk unban completed');
+    }
+
     public function whitelist(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         return $this->json->success($response, [
@@ -115,6 +140,29 @@ final class FirewallController
         }
 
         return $this->json->success($response, ['ip' => $ip], 200, 'IP odstránená z whitelistu');
+    }
+
+    public function bulkRemoveWhitelist(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $ips = BulkIdsParser::fromRequest($request);
+        if ($ips === []) {
+            return $this->json->error($response, 'No IP addresses selected', 400);
+        }
+
+        $batch = new BulkBatchResult();
+        foreach ($ips as $ip) {
+            if (filter_var($ip, FILTER_VALIDATE_IP) === false) {
+                $batch->addFailure($ip, 'Invalid IP');
+                continue;
+            }
+            if (!$this->firewall->removeWhitelist($ip)) {
+                $batch->addFailure($ip, 'Not on whitelist');
+                continue;
+            }
+            $batch->addSuccess($ip);
+        }
+
+        return $this->json->success($response, $batch->toArray(), 200, 'Bulk whitelist removal completed');
     }
 
     /**

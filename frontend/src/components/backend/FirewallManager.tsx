@@ -20,11 +20,15 @@ import {
   type FirewallStats,
 } from '../../api/firewall';
 import { useToast } from '../../hooks/useToast';
+import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { useColumnSort } from '../../hooks/useColumnSort';
 import { SortableTableHeader } from './SortableTableHeader';
 import { AdminListToolbar } from './AdminListToolbar';
+import { BulkActionBar } from './BulkActionBar';
 import { applyClientListView } from '../../utils/clientListView';
 import { useI18n } from '../../context/I18nContext';
+import { repositoryDoc } from '../../config/repositoryDocs';
+import { summarizeBulkResult } from '../../types/bulk';
 
 type TabId = 'incidents' | 'bans' | 'whitelist';
 
@@ -154,6 +158,18 @@ export const FirewallManager: React.FC = () => {
     [whitelist, search, t]
   );
 
+  const activeBanIps = useMemo(
+    () => banView.items.filter((ban) => ban.active).map((ban) => ban.ip),
+    [banView.items]
+  );
+  const banBulkSelection = useBulkSelection(
+    activeBanIps,
+    `${tab}:bans:${search}:${sortField}:${sortDirection}`
+  );
+
+  const whitelistIps = useMemo(() => whitelistView.items.map((item) => item.ip), [whitelistView.items]);
+  const whitelistBulkSelection = useBulkSelection(whitelistIps, `${tab}:whitelist:${search}`);
+
   const handleUnban = async (ip: string) => {
     if (!confirm(t('platform.firewall.toast.unbanConfirm', { ip }))) {
       return;
@@ -228,6 +244,54 @@ export const FirewallManager: React.FC = () => {
       } else {
         toast.error(t('platform.firewall.toast.removeFailed'));
       }
+    } finally {
+      setBusyIp(null);
+    }
+  };
+
+  const handleBulkUnban = async () => {
+    if (banBulkSelection.count === 0) {
+      return;
+    }
+    if (!confirm(t('platform.firewall.confirm.bulkUnban', { count: String(banBulkSelection.count) }))) {
+      return;
+    }
+    setBusyIp('bulk-unban');
+    try {
+      const result = await firewallApi.bulkUnban(banBulkSelection.selectedIds);
+      if (!result) {
+        toast.error(t('platform.firewall.toast.bulkUnbanFailed'));
+        return;
+      }
+      toast.success(summarizeBulkResult(result, t));
+      banBulkSelection.clear();
+      await loadAll();
+    } finally {
+      setBusyIp(null);
+    }
+  };
+
+  const handleBulkRemoveWhitelist = async () => {
+    if (whitelistBulkSelection.count === 0) {
+      return;
+    }
+    if (
+      !confirm(
+        t('platform.firewall.confirm.bulkRemoveWhitelist', { count: String(whitelistBulkSelection.count) })
+      )
+    ) {
+      return;
+    }
+    setBusyIp('bulk-whitelist');
+    try {
+      const result = await firewallApi.bulkRemoveWhitelist(whitelistBulkSelection.selectedIds);
+      if (!result) {
+        toast.error(t('platform.firewall.toast.bulkRemoveWhitelistFailed'));
+        return;
+      }
+      toast.success(summarizeBulkResult(result, t));
+      whitelistBulkSelection.clear();
+      await loadAll();
     } finally {
       setBusyIp(null);
     }
@@ -341,6 +405,38 @@ export const FirewallManager: React.FC = () => {
             </div>
           ) : (
             <div className="overflow-x-auto">
+              {tab === 'bans' && (
+                <BulkActionBar
+                  count={banBulkSelection.count}
+                  itemLabel={t('platform.firewall.bulkItemLabelBans')}
+                  onClear={banBulkSelection.clear}
+                  actions={[
+                    {
+                      id: 'unban',
+                      label: t('platform.firewall.bulkUnban'),
+                      variant: 'danger',
+                      disabled: busyIp === 'bulk-unban',
+                      onClick: () => void handleBulkUnban(),
+                    },
+                  ]}
+                />
+              )}
+              {tab === 'whitelist' && (
+                <BulkActionBar
+                  count={whitelistBulkSelection.count}
+                  itemLabel={t('platform.firewall.bulkItemLabelWhitelist')}
+                  onClear={whitelistBulkSelection.clear}
+                  actions={[
+                    {
+                      id: 'remove',
+                      label: t('platform.firewall.bulkRemoveWhitelist'),
+                      variant: 'danger',
+                      disabled: busyIp === 'bulk-whitelist',
+                      onClick: () => void handleBulkRemoveWhitelist(),
+                    },
+                  ]}
+                />
+              )}
               {tab === 'incidents' && (
                 <table className="w-full text-sm">
                   <thead>
@@ -400,6 +496,14 @@ export const FirewallManager: React.FC = () => {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-slate-100 bg-slate-50/80">
+                      <th className="px-4 py-3 w-10">
+                        <input
+                          type="checkbox"
+                          checked={banBulkSelection.allSelected}
+                          onChange={() => banBulkSelection.toggleAll()}
+                          aria-label={t('platform.firewall.bulkUnban')}
+                        />
+                      </th>
                       <SortableTableHeader
                         label={t('platform.firewall.columns.ip')}
                         field="ip"
@@ -428,6 +532,16 @@ export const FirewallManager: React.FC = () => {
                   <tbody>
                     {banView.items.map((item) => (
                       <tr key={item.ip} className="border-b border-slate-50 hover:bg-slate-50/50">
+                        <td className="px-4 py-3">
+                          {item.active && (
+                            <input
+                              type="checkbox"
+                              checked={banBulkSelection.isSelected(item.ip)}
+                              onChange={() => banBulkSelection.toggle(item.ip)}
+                              aria-label={item.ip}
+                            />
+                          )}
+                        </td>
                         <td className="px-4 py-3 font-mono text-xs">{item.ip}</td>
                         <td className="px-4 py-3">{item.reason}</td>
                         <td className="px-4 py-3">
@@ -469,6 +583,14 @@ export const FirewallManager: React.FC = () => {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-slate-100 bg-slate-50/80">
+                      <th className="px-4 py-3 w-10">
+                        <input
+                          type="checkbox"
+                          checked={whitelistBulkSelection.allSelected}
+                          onChange={() => whitelistBulkSelection.toggleAll()}
+                          aria-label={t('platform.firewall.bulkRemoveWhitelist')}
+                        />
+                      </th>
                       <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">
                         {t('platform.firewall.columns.ip')}
                       </th>
@@ -480,6 +602,14 @@ export const FirewallManager: React.FC = () => {
                   <tbody>
                     {whitelistView.items.map((item) => (
                       <tr key={item.ip} className="border-b border-slate-50 hover:bg-slate-50/50">
+                        <td className="px-4 py-3">
+                          <input
+                            type="checkbox"
+                            checked={whitelistBulkSelection.isSelected(item.ip)}
+                            onChange={() => whitelistBulkSelection.toggle(item.ip)}
+                            aria-label={item.ip}
+                          />
+                        </td>
                         <td className="px-4 py-3 font-mono text-xs">{item.ip}</td>
                         <td className="px-4 py-3 text-right">
                           <button
@@ -509,11 +639,11 @@ export const FirewallManager: React.FC = () => {
         <p className="text-xs text-slate-400">
           {t('platform.firewall.docsHint')}{' '}
           <a
-            href="/docs/user/FIREWALL.md"
+            href={repositoryDoc('docs/en/user/FIREWALL.md')}
             className="text-indigo-600 hover:underline"
             {...linkTargetProps(openInNewTab)}
           >
-            docs/user/FIREWALL.md
+            docs/en/user/FIREWALL.md
           </a>
         </p>
       </div>

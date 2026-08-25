@@ -119,6 +119,17 @@ Nespúšťaj dlhý job opakovane len preto, že UI nereaguje. Najprv over worker
 
 Záloha musí pokryť autoritatívny obsah, nastavenia, potrebné keys a namespaced dáta rozšírení. Cache a index sú obnoviteľné; nemusíš ich považovať za jediný recovery zdroj.
 
+### Automatické plánované zálohy
+
+Plánované zálohy **nebežia** len z prehliadača. Zapni všetky kroky:
+
+1. **Nastavenia → Plánovač jobov** — hlavný vypínač zapnutý.
+2. **Platforma → Plánovač** — zapni job `backup-scheduled` (predvolený cron: denne o 02:00).
+3. **Cron na hostiteľovi** — `php backend/bin/console scheduler:run` každú minútu (viď `docs/deploy/CRON.md`).
+4. **Platforma → Zálohy** — sekcia **Automatické zálohy**, interval a retencia, uložiť.
+
+UI zobrazí `next_run` / `last_run` po uložení plánu. **Spustiť teraz** na jobe je na test; produkcia stále potrebuje cron.
+
 Bezpečný restore:
 
 1. over checksum a kompatibilitu,
@@ -152,8 +163,20 @@ Správa prekladov admin UI nie je to isté ako viacjazyčný content dokument. C
 - [Firewall](FIREWALL.md) blokuje definované probe scenáre a spravuje jaily.
 - [Logy](LOGGING.md) pomáhajú diagnostikovať requesty a runtime udalosti.
 - Audit eviduje významné používateľské a systémové zmeny.
+- [Code policy](../architecture/CODE_POLICY.md) riadi pluginy, témy a nedôveryhodné PHP/JSON plochy (fail-closed pri importe a ukladaní).
 
 Tieto vrstvy sa dopĺňajú, ale nie sú navzájom zameniteľné. Audit nemá byť zaplavovaný každým read requestom a request log nemá nahradiť doménový audit.
+
+### Bezpečnostný checklist (operátor)
+
+| Oblasť | Kde overiť |
+|--------|------------|
+| RBAC + 2FA pre staff | Nastavenia → Bezpečnosť, Bezpečnosť účtu |
+| API kľúče / webhook secret | Platforma → API kľúče / Webhooks; vyžaduje `APP_KEY` / pepper v `.env` |
+| Code policy pre rozšírenia | Nastavenia → Code policy; sken pri každom importe pluginu/témy |
+| Upload + sanitizácia obsahu | Nastavenia → Upload security, Content security |
+| Firewall + outbound URL guard | Platforma → Firewall; SSRF ochrana na konfigurovateľných URL |
+| Zálohy + scheduler cron | Platforma → Zálohy, Plánovač; potrebný cron na hostiteľovi |
 
 ## 18. Code Editor, Developer Mode a extensions
 

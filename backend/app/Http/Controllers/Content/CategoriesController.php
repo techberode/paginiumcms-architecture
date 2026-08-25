@@ -7,6 +7,8 @@ namespace PaginiumCMS\Http\Controllers\Content;
 use PaginiumCMS\Core\Content\Models\CategoryRecord;
 use PaginiumCMS\Core\Content\Services\CategoryCatalogSeeder;
 use PaginiumCMS\Core\Content\Services\CategoryRepository;
+use PaginiumCMS\Http\Support\BulkBatchResult;
+use PaginiumCMS\Http\Support\BulkIdsParser;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Http\Support\RequestJsonBody;
 use Psr\Http\Message\ResponseInterface;
@@ -101,5 +103,31 @@ final class CategoriesController
         }
 
         return $this->json->success($response, ['slug' => $slug, 'removed' => true]);
+    }
+
+    public function bulkDelete(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $slugs = BulkIdsParser::fromRequest($request);
+        if ($slugs === []) {
+            return $this->json->error($response, 'No categories selected', 400);
+        }
+
+        $batch = new BulkBatchResult();
+        foreach ($slugs as $slug) {
+            $normalized = CategoryRecord::normalizeSlug($slug);
+            if ($normalized === '' || $this->categories->get($normalized) === null) {
+                $batch->addFailure($slug, 'Category not found');
+                continue;
+            }
+
+            try {
+                $this->categories->delete($normalized);
+                $batch->addSuccess($normalized);
+            } catch (RuntimeException $exception) {
+                $batch->addFailure($normalized, $exception->getMessage());
+            }
+        }
+
+        return $this->json->success($response, $batch->toArray(), 200, 'Categories deleted');
     }
 }

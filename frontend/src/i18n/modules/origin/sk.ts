@@ -100,6 +100,7 @@ export const originSk = {
     it79_editor_embed: 'Editor video embed',
   },
   timeline: {
+    beta59: 'APM dashboard, Server-Timing, settings UX cleanup',
     beta55: 'It.81f snippet library + admin preview',
     beta47: 'It.81a–81d redakčný workflow',
     beta39: 'It.80 SEO & ops toolkit',

@@ -235,6 +235,12 @@ class BackupController
             return $this->json->error($response, 'Invalid JSON body', 400);
         }
 
+        if (array_key_exists('enabled', $data) && $data['enabled'] === false) {
+            $this->backup->clearSchedule();
+
+            return $this->json->success($response, ['enabled' => false], 200, 'Backup schedule disabled');
+        }
+
         $interval = (string) ($data['interval'] ?? '');
         if (!in_array($interval, ['daily', 'weekly', 'monthly'], true)) {
             return $this->json->error($response, 'Interval must be daily, weekly or monthly', 422);

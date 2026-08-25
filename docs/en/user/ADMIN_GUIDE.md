@@ -119,6 +119,17 @@ Do not trigger a long job repeatedly just because the UI appears unresponsive. C
 
 A backup must cover authoritative content, settings, required keys, and namespaced extension data. Cache and index are rebuildable and should not be the sole recovery source.
 
+### Automatic scheduled backups
+
+Scheduled backups do **not** run from the browser alone. Enable all of the following:
+
+1. **Settings → Job scheduler** — master switch on.
+2. **Platform → Scheduler** — enable the `backup-scheduled` job (default cron: daily at 02:00).
+3. **Host cron** — run `php backend/bin/console scheduler:run` every minute (see `docs/deploy/CRON.md`).
+4. **Platform → Backups** — open **Automatic backups**, choose interval and retention, save.
+
+The UI shows `next_run` / `last_run` after the schedule is saved. Manual **Run now** on the job is useful for testing; production still needs cron.
+
 Safe restore:
 
 1. verify checksum and compatibility,
@@ -152,8 +163,20 @@ Admin UI translation management is not the same as a multilingual content docume
 - [Firewall](FIREWALL.md) blocks defined probe scenarios and manages jails.
 - [Logs](LOGGING.md) diagnose requests and runtime events.
 - Audit records meaningful user and system changes.
+- [Code policy](../architecture/CODE_POLICY.md) governs plugins, themes, and untrusted PHP/JSON surfaces (fail-closed on import and save).
 
 These layers complement each other but are not interchangeable. Audit should not be flooded with every read request, and request logs must not replace domain audit.
+
+### Security baseline checklist (operator)
+
+| Area | Where to verify |
+|------|-----------------|
+| RBAC + 2FA for staff | Settings → Security, Account security |
+| API keys / webhooks secrets | Platform → API keys / Webhooks; requires `APP_KEY` / pepper in `.env` |
+| Code policy for extensions | Settings → Code policy; scan runs on every plugin/theme import |
+| Upload + content sanitization | Settings → Upload security, Content security |
+| Firewall + outbound URL guard | Platform → Firewall; SSRF guard on configurable URLs |
+| Backups + scheduler cron | Platform → Backups, Scheduler; host cron required |
 
 ## 18. Code Editor, Developer Mode, and extensions
 

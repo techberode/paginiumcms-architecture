@@ -39,6 +39,14 @@ export const platformSk: MessageTree = {
     remove: 'Odstrániť',
     empty: 'Žiadne záznamy',
     docsHint: 'Podrobná dokumentácia:',
+    bulkUnban: 'Odblokovať vybrané',
+    bulkRemoveWhitelist: 'Odstrániť vybrané',
+    bulkItemLabelBans: 'IP vybraných',
+    bulkItemLabelWhitelist: 'položiek vybraných',
+    confirm: {
+      bulkUnban: 'Odblokovať :count vybraných IP?',
+      bulkRemoveWhitelist: 'Odstrániť :count IP z whitelistu?',
+    },
     toast: {
       loadFailed: 'Nepodarilo sa načítať firewall',
       unbanConfirm: 'Odblokovať IP :ip?',
@@ -53,6 +61,8 @@ export const platformSk: MessageTree = {
       whitelistRemoveConfirm: 'Odstrániť :ip z whitelistu?',
       whitelistRemoved: ':ip odstránená z whitelistu',
       removeFailed: 'Odstránenie zlyhalo',
+      bulkUnbanFailed: 'Hromadný unban zlyhal',
+      bulkRemoveWhitelistFailed: 'Hromadné odstránenie z whitelistu zlyhalo',
     },
   },
   scheduler: {
@@ -65,7 +75,7 @@ export const platformSk: MessageTree = {
     schedulerLabel: 'Plánovač:',
     enabled: 'Zapnutý',
     disabled: 'Vypnutý',
-    settingsLink: 'Settings → Job scheduler',
+    settingsLink: 'Nastavenia → Plánovač jobov',
     registeredJobs: 'Registrované joby',
     recentRuns: 'Posledné behy',
     jobEnabled: 'Zapnuté',
@@ -86,6 +96,47 @@ export const platformSk: MessageTree = {
     outcomeSkipped: 'Preskočené',
     outcomeFailed: 'Zlyhanie',
     runLogWarning: 'Beh prebehol, ale história sa neuložila',
+    runMessages: {
+      backupCreated: 'Záloha vytvorená',
+      backupNotDue: 'Záloha ešte nie je na rade',
+      noScheduledContent: 'Žiadny plánovaný obsah na publikovanie',
+      scheduledItemsSkipped: 'Plánované položky preskočené',
+      noWebhookDeliveries: 'Žiadne webhook doručenia na spracovanie',
+      gitPublishCompleted: 'Git publish dokončený',
+      gitPublishFailed: 'Git publish zlyhal',
+      deployCompleted: 'Deploy dokončený',
+      deployDemoDisabled: 'Deploy vypnutý na demo inštancii',
+      deployDisabled: 'Systémový deploy vypnutý v nastaveniach',
+      deployMissingAppRoot: 'APP_ROOT nie je nakonfigurovaný',
+      deployMissingScript: 'Deploy skript chýba',
+      deployScriptFailed: 'Deploy skript zlyhal (exit :code)',
+      newsletterSendDisabled: 'Odosielanie newsletteru vypnuté v nastaveniach',
+      emailNotConfigured: 'E-mailový kanál nie je nakonfigurovaný',
+      noDigestArticles: 'Žiadne nové články pre týždenný digest',
+      noDigestSubscribers: 'Žiadni odberatelia týždenného digestu',
+      publishedScheduled: 'Publikovaných :count plánovaných položiek',
+      monitoringPipeline: 'Report: :report · Log notifikácie: :count',
+      webhookProcessed: 'Spracovaných :processed webhook doručení: :ok ok, :failed zlyhalo',
+      weeklyDigestStats: 'Týždenný digest: odoslané=:sent zlyhalo=:failed preskočené=:skipped',
+      unknownHandler: 'Neznámy handler: :handler',
+      reportStatus: {
+        sent: 'odoslaný',
+        skipped: 'preskočený',
+      },
+    },
+    runReasons: {
+      notDue: 'Ešte nie je na rade',
+      noSchedule: 'Plán nie je nastavený',
+      disabled: 'Vypnuté',
+      nothingDue: 'Nič na spracovanie',
+      someItemsSkipped: 'Niektoré položky preskočené',
+      demoDisabled: 'Vypnuté na demo',
+      missingAppRoot: 'Chýba APP_ROOT',
+      missingScript: 'Chýba deploy skript',
+      scriptFailed: 'Skript zlyhal',
+      strategyOrConfig: 'Chyba stratégie alebo konfigurácie',
+      nothingSent: 'Nič neodoslané',
+    },
     toast: {
       jobDisabled: 'Job vypnutý',
       jobEnabled: 'Job zapnutý',
@@ -202,6 +253,11 @@ export const platformSk: MessageTree = {
     enabled: 'Zapnuté',
     disabled: 'Vypnuté',
     uninstall: 'Odinštalovať',
+    bulkUninstall: 'Odinštalovať vybrané',
+    bulkItemLabel: 'rozšírení vybraných',
+    confirm: {
+      bulkUninstall: 'Odinštalovať :count vybraných rozšírení? Súbory sa vymažú z disku.',
+    },
     toast: {
       imported: 'Rozšírenie :name bolo importované',
       importFailed: 'Import zlyhal – skontroluj ZIP a politiku kódu',
@@ -211,6 +267,7 @@ export const platformSk: MessageTree = {
       uninstallConfirm: 'Odinštalovať rozšírenie „:name“? Súbory sa vymažú z disku.',
       uninstalled: ':name odinštalované',
       uninstallFailed: 'Odinštalovanie zlyhalo',
+      bulkUninstallFailed: 'Hromadné odinštalovanie zlyhalo',
     },
   },
   securityAudit: {
@@ -422,6 +479,9 @@ export const platformSk: MessageTree = {
     curlExample: 'Príklad:\ncurl -H "Authorization: Bearer pgk_…" https://vas-web/api/headless/pages/home',
     rotate: 'Rotovať',
     revoke: 'Zrušiť',
+    purgeInactive: 'Odstrániť neaktívne',
+    purgeAllInactive: 'Odstrániť všetky neaktívne',
+    bulkItemLabel: 'vybraných kľúčov',
     auditTitle: 'Audit životného cyklu kľúčov',
     auditEmpty: 'Zatiaľ žiadne audit udalosti API kľúčov.',
     fields: {
@@ -465,6 +525,8 @@ export const platformSk: MessageTree = {
     confirm: {
       revoke: 'Zrušiť kľúč „:label“? Integrácie prestanú fungovať.',
       rotate: 'Rotovať kľúč „:label“? Starý secret okamžite prestane platiť.',
+      bulkPurge: 'Natrvalo odstrániť :count neaktívnych kľúčov z úložiska?',
+      purgeAllInactive: 'Natrvalo odstrániť všetky zrušené a expirované kľúče z úložiska?',
     },
     toast: {
       loadFailed: 'Nepodarilo sa načítať API kľúče',
@@ -478,6 +540,7 @@ export const platformSk: MessageTree = {
       revokeFailed: 'Zrušenie zlyhalo',
       rotated: 'API kľúč rotovaný',
       rotateFailed: 'Rotácia zlyhala',
+      purgeFailed: 'Odstránenie neaktívnych kľúčov zlyhalo',
     },
   },
   webhooks: {
@@ -523,6 +586,7 @@ export const platformSk: MessageTree = {
     confirm: {
       delete: 'Zmazať webhook „:label“?',
       rotate: 'Rotovať secret pre „:label“? Prijímače musia okamžite aktualizovať secret.',
+      bulkDelete: 'Zmazať :count vybraných webhookov?',
     },
     toast: {
       loadFailed: 'Nepodarilo sa načítať webhooky',
@@ -536,6 +600,7 @@ export const platformSk: MessageTree = {
       updateFailed: 'Nepodarilo sa aktualizovať webhook',
       deleteFailed: 'Zmazanie zlyhalo',
       deleted: 'Webhook zmazaný',
+      bulkFailed: 'Hromadné mazanie zlyhalo.',
       rotateFailed: 'Rotácia secretu zlyhala',
       rotated: 'Secret webhooku rotovaný',
       testOk: 'Test ping doručený',
@@ -566,6 +631,9 @@ export const platformSk: MessageTree = {
       actions: 'Akcie',
     },
     confirmDelete: 'Zmazať kategóriu „:label“? Existujúce články si ponechajú slug, kým ho nezmeníte.',
+    confirm: {
+      bulkDelete: 'Zmazať :count vybraných kategórií?',
+    },
     toast: {
       loadFailed: 'Nepodarilo sa načítať kategórie',
       labelRequired: 'Názov je povinný',
@@ -576,6 +644,7 @@ export const platformSk: MessageTree = {
       updated: 'Kategória uložená',
       deleteFailed: 'Zmazanie zlyhalo',
       deleted: 'Kategória zmazaná',
+      bulkFailed: 'Hromadné mazanie zlyhalo.',
     },
   },
   roles: {
@@ -601,6 +670,9 @@ export const platformSk: MessageTree = {
     loading: 'Načítavam…',
     empty: 'Zatiaľ žiadne role — systémové role sa seednú pri prvom API načítaní.',
     confirmDelete: 'Zmazať rolu „:id“? Najprv musíte používateľom priradiť inú rolu.',
+    bulkDelete: 'Zmazať vybrané',
+    bulkItemLabel: 'rolí vybraných',
+    confirmBulkDelete: 'Zmazať :count vybraných rolí? Najprv musíte používateľom priradiť inú rolu.',
     toast: {
       loadFailed: 'Nepodarilo sa načítať role',
       nameRequired: 'Zobrazovaný názov je povinný',
@@ -612,6 +684,7 @@ export const platformSk: MessageTree = {
       updated: 'Rola uložená',
       deleteFailed: 'Zmazanie zlyhalo',
       deleted: 'Rola zmazaná',
+      bulkDeleteFailed: 'Hromadné mazanie zlyhalo',
     },
   },
   shortcodes: {
@@ -639,6 +712,9 @@ export const platformSk: MessageTree = {
     disabled: 'Vypnutý',
     updatedAt: 'Aktualizované :date',
     confirmDelete: 'Zmazať shortcode „:name“? Odstráni sa aj súbor definície.',
+    bulkDelete: 'Zmazať vybrané',
+    bulkItemLabel: 'shortcodes vybraných',
+    confirmBulkDelete: 'Zmazať :count vybraných shortcodes?',
     toast: {
       loadFailed: 'Nepodarilo sa načítať shortcodes',
       loadDefinitionFailed: 'Nepodarilo sa načítať definíciu',
@@ -651,6 +727,7 @@ export const platformSk: MessageTree = {
       previewOk: 'Definícia prešla policy kontrolou',
       deleteFailed: 'Zmazanie zlyhalo',
       deleted: 'Shortcode zmazaný',
+      bulkDeleteFailed: 'Hromadné mazanie zlyhalo',
     },
   },
   snippets: {
@@ -676,6 +753,9 @@ export const platformSk: MessageTree = {
     delete: 'Zmazať',
     insertHint: 'Vloženie do obsahu: {tag}',
     confirmDelete: 'Zmazať snippet „:name“? Stránky s referenciou ponechajú tag, kým ich neupravíte.',
+    bulkDelete: 'Zmazať vybrané',
+    bulkItemLabel: 'snippetov vybraných',
+    confirmBulkDelete: 'Zmazať :count vybraných snippetov?',
     toast: {
       loadFailed: 'Nepodarilo sa načítať snippety',
       nameInvalid: 'Názov musí začínať písmenom a obsahovať malé písmená, číslice, - alebo _',
@@ -684,6 +764,7 @@ export const platformSk: MessageTree = {
       saved: 'Snippet uložený',
       deleteFailed: 'Zmazanie zlyhalo',
       deleted: 'Snippet zmazaný',
+      bulkDeleteFailed: 'Hromadné mazanie zlyhalo',
     },
   },
   redirects: {
@@ -708,6 +789,9 @@ export const platformSk: MessageTree = {
     off: 'Vyp',
     delete: 'Zmazať',
     confirmDelete: 'Zmazať redirect z “:from”?',
+    confirm: {
+      bulkDelete: 'Zmazať :count vybraných redirectov?',
+    },
     toast: {
       loadFailed: 'Nepodarilo sa načítať redirecty',
       pathsRequired: 'Cesty Z a NA sú povinné',
@@ -716,6 +800,7 @@ export const platformSk: MessageTree = {
       updateFailed: 'Nepodarilo sa aktualizovať redirect',
       deleteFailed: 'Zmazanie zlyhalo',
       deleted: 'Redirect zmazaný',
+      bulkFailed: 'Hromadné mazanie zlyhalo.',
     },
   },
   demoBanner: {

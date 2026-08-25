@@ -8,6 +8,9 @@ import {
 } from '../../api/apiKeys';
 import { useToast } from '../../hooks/useToast';
 import { useI18n } from '../../context/I18nContext';
+import { useBulkSelection } from '../../hooks/useBulkSelection';
+import { BulkActionBar } from './BulkActionBar';
+import { summarizeBulkResult } from '../../types/bulk';
 
 const SCOPE_LABEL_KEYS: Record<string, string> = {
   'content:read': 'platform.apiKeys.scopes.contentRead',
@@ -36,6 +39,16 @@ export const ApiKeysManager: React.FC = () => {
   const scopeGroups = useMemo(
     () => index?.scopeGroups ?? { read: [], write: [], token: [] },
     [index]
+  );
+
+  const inactiveKeys = useMemo(
+    () => (index?.keys ?? []).filter((key) => key.status === 'revoked' || key.status === 'expired'),
+    [index]
+  );
+
+  const bulkSelection = useBulkSelection(
+    inactiveKeys.map((key) => key.id),
+    String(inactiveKeys.length)
   );
 
   const load = useCallback(async () => {
@@ -140,6 +153,50 @@ export const ApiKeysManager: React.FC = () => {
     }
   };
 
+  const handleBulkPurge = async () => {
+    if (bulkSelection.count === 0) {
+      return;
+    }
+    if (!window.confirm(t('platform.apiKeys.confirm.bulkPurge', { count: String(bulkSelection.count) }))) {
+      return;
+    }
+    setBusyId('bulk');
+    try {
+      const result = await apiKeysApi.bulkPurge({ ids: bulkSelection.selectedIds });
+      if (!result) {
+        toast.error(t('platform.apiKeys.toast.purgeFailed'));
+        return;
+      }
+      toast.success(summarizeBulkResult(result, t));
+      bulkSelection.clear();
+      await load();
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handlePurgeAllInactive = async () => {
+    if (inactiveKeys.length === 0) {
+      return;
+    }
+    if (!window.confirm(t('platform.apiKeys.confirm.purgeAllInactive'))) {
+      return;
+    }
+    setBusyId('bulk-all');
+    try {
+      const result = await apiKeysApi.bulkPurge({ mode: 'all_inactive' });
+      if (!result) {
+        toast.error(t('platform.apiKeys.toast.purgeFailed'));
+        return;
+      }
+      toast.success(summarizeBulkResult(result, t));
+      bulkSelection.clear();
+      await load();
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   const renderScopeLabel = (scope: string) => {
     const key = SCOPE_LABEL_KEYS[scope];
     return key ? t(key) : scope;
@@ -178,6 +235,17 @@ export const ApiKeysManager: React.FC = () => {
             <RefreshCw className="w-4 h-4" />
             {t('platform.apiKeys.refresh')}
           </button>
+          {inactiveKeys.length > 0 && (
+            <button
+              type="button"
+              disabled={busyId === 'bulk-all'}
+              onClick={() => void handlePurgeAllInactive()}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-rose-200 text-rose-700 dark:border-rose-800 dark:text-rose-300 text-sm font-bold disabled:opacity-50"
+            >
+              <Trash2 className="w-4 h-4" />
+              {t('platform.apiKeys.purgeAllInactive')}
+            </button>
+          )}
           <button
             type="button"
             onClick={() => setShowCreate(true)}
@@ -284,10 +352,32 @@ export const ApiKeysManager: React.FC = () => {
       {loading ? (
         <div className="py-12 text-center text-slate-500">{t('platform.apiKeys.loading')}</div>
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">
+        <>
+          <BulkActionBar
+            count={bulkSelection.count}
+            itemLabel={t('platform.apiKeys.bulkItemLabel')}
+            onClear={bulkSelection.clear}
+            actions={[
+              {
+                id: 'purge',
+                label: t('platform.apiKeys.purgeInactive'),
+                variant: 'danger',
+                onClick: () => void handleBulkPurge(),
+              },
+            ]}
+          />
+          <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">
           <table className="min-w-full text-sm">
             <thead className="bg-slate-50 dark:bg-slate-900/80 text-left">
               <tr>
+                <th className="px-4 py-3 w-10">
+                  <input
+                    type="checkbox"
+                    checked={bulkSelection.allSelected}
+                    onChange={() => bulkSelection.toggleAll()}
+                    aria-label={t('platform.apiKeys.purgeInactive')}
+                  />
+                </th>
                 <th className="px-4 py-3">{t('platform.apiKeys.columns.label')}</th>
                 <th className="px-4 py-3">{t('platform.apiKeys.columns.prefix')}</th>
                 <th className="px-4 py-3">{t('platform.apiKeys.columns.scopes')}</th>
@@ -300,6 +390,16 @@ export const ApiKeysManager: React.FC = () => {
             <tbody>
               {(index?.keys ?? []).map((key) => (
                 <tr key={key.id} className="border-t border-slate-100 dark:border-slate-800 align-top">
+                  <td className="px-4 py-3">
+                    {(key.status === 'revoked' || key.status === 'expired') && (
+                      <input
+                        type="checkbox"
+                        checked={bulkSelection.isSelected(key.id)}
+                        onChange={() => bulkSelection.toggle(key.id)}
+                        aria-label={key.label}
+                      />
+                    )}
+                  </td>
                   <td className="px-4 py-3 font-semibold">{key.label}</td>
                   <td className="px-4 py-3 font-mono text-xs">{key.idPrefix}_…</td>
                   <td className="px-4 py-3">
@@ -346,7 +446,7 @@ export const ApiKeysManager: React.FC = () => {
               ))}
               {(index?.keys ?? []).length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
+                  <td colSpan={8} className="px-4 py-8 text-center text-slate-500">
                     {t('platform.apiKeys.empty')}
                   </td>
                 </tr>
@@ -354,6 +454,7 @@ export const ApiKeysManager: React.FC = () => {
             </tbody>
           </table>
         </div>
+        </>
       )}
 
       <div className="space-y-3">

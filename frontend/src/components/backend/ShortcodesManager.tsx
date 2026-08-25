@@ -3,10 +3,13 @@ import { Code2, Plus, RefreshCw, Save, Trash2, Wand2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { shortcodesApi, type ShortcodeListItem } from '../../api/shortcodes';
 import { useToast } from '../../hooks/useToast';
+import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { useI18n } from '../../context/I18nContext';
 import { AdminHintCard } from './AdminHintCard';
 import { AdminBodyPreviewPanel } from './AdminBodyPreviewPanel';
+import { BulkActionBar } from './BulkActionBar';
 import { buildShortcodeSampleMarkup } from '../../utils/shortcodeSampleMarkup';
+import { summarizeBulkResult } from '../../types/bulk';
 
 const DEFAULT_DEFINITION = (name: string) =>
   JSON.stringify(
@@ -102,6 +105,9 @@ export const ShortcodesManager: React.FC = () => {
     () => items.find((item) => item.name === selectedName) ?? null,
     [items, selectedName]
   );
+
+  const shortcodeNames = useMemo(() => items.map((item) => item.name), [items]);
+  const bulkSelection = useBulkSelection(shortcodeNames, String(items.length));
 
   const handleCreate = () => {
     const normalized = newName.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-');
@@ -205,6 +211,33 @@ export const ShortcodesManager: React.FC = () => {
     }
   };
 
+  const handleBulkDelete = async () => {
+    if (bulkSelection.count === 0) {
+      return;
+    }
+    if (!window.confirm(t('platform.shortcodes.confirmBulkDelete', { count: String(bulkSelection.count) }))) {
+      return;
+    }
+    setBusyName('bulk');
+    try {
+      const result = await shortcodesApi.bulkDelete(bulkSelection.selectedIds);
+      if (!result) {
+        toast.error(t('platform.shortcodes.toast.bulkDeleteFailed'));
+        return;
+      }
+      toast.success(summarizeBulkResult(result, t));
+      if (selectedName && bulkSelection.selectedIds.includes(selectedName)) {
+        setSelectedName(null);
+        setContent('');
+        setOriginalContent('');
+      }
+      bulkSelection.clear();
+      await loadList();
+    } finally {
+      setBusyName(null);
+    }
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -278,9 +311,32 @@ export const ShortcodesManager: React.FC = () => {
 
       <div className="grid gap-4 lg:grid-cols-[240px_minmax(0,1fr)]">
         <div className="rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-900">
-          <div className="px-3 py-2 text-xs font-bold uppercase tracking-wide text-slate-500 border-b border-slate-100 dark:border-slate-800">
-            {t('platform.shortcodes.registry')}
+          <div className="px-3 py-2 text-xs font-bold uppercase tracking-wide text-slate-500 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+            <span>{t('platform.shortcodes.registry')}</span>
+            {items.length > 0 && (
+              <input
+                type="checkbox"
+                checked={bulkSelection.allSelected}
+                onChange={() => bulkSelection.toggleAll()}
+                aria-label={t('platform.shortcodes.bulkDelete')}
+                className="rounded"
+              />
+            )}
           </div>
+          <BulkActionBar
+            count={bulkSelection.count}
+            itemLabel={t('platform.shortcodes.bulkItemLabel')}
+            onClear={bulkSelection.clear}
+            actions={[
+              {
+                id: 'delete',
+                label: t('platform.shortcodes.bulkDelete'),
+                variant: 'danger',
+                disabled: busyName === 'bulk',
+                onClick: () => void handleBulkDelete(),
+              },
+            ]}
+          />
           <ul className="max-h-[480px] overflow-y-auto">
             {loading ? (
               <li className="px-3 py-4 text-sm text-slate-500">{t('platform.shortcodes.loading')}</li>
@@ -288,7 +344,16 @@ export const ShortcodesManager: React.FC = () => {
               <li className="px-3 py-4 text-sm text-slate-500">{t('platform.shortcodes.empty')}</li>
             ) : (
               items.map((item) => (
-                <li key={item.name}>
+                <li key={item.name} className="flex items-stretch border-b border-slate-50 dark:border-slate-800">
+                  <label className="flex items-center px-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={bulkSelection.isSelected(item.name)}
+                      onChange={() => bulkSelection.toggle(item.name)}
+                      aria-label={item.name}
+                      className="rounded"
+                    />
+                  </label>
                   <button
                     type="button"
                     onClick={() => {
@@ -296,7 +361,7 @@ export const ShortcodesManager: React.FC = () => {
                       setDraftName(null);
                       setSelectedName(item.name);
                     }}
-                    className={`w-full text-left px-3 py-2.5 text-sm border-b border-slate-50 dark:border-slate-800 transition ${
+                    className={`flex-1 text-left px-3 py-2.5 text-sm transition ${
                       selectedName === item.name
                         ? 'bg-indigo-50 text-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-200'
                         : 'hover:bg-slate-50 dark:hover:bg-slate-800/60'

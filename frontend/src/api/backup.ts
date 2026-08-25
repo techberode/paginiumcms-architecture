@@ -82,12 +82,13 @@ export const backupApi = {
     return response.success && response.data ? response.data : null;
   },
 
-  schedule: async (interval: 'daily' | 'weekly' | 'monthly', keep: number): Promise<boolean> => {
-    const response = await apiClient.post('/api/admin/backups/schedule', {
-      interval,
-      keep,
-    });
-    return Boolean(response.success);
+  schedule: async (payload: {
+    enabled?: boolean;
+    interval?: 'daily' | 'weekly' | 'monthly';
+    keep?: number;
+  }): Promise<ScheduleInfo | null> => {
+    const response = await apiClient.post<ScheduleInfo>('/api/admin/backups/schedule', payload);
+    return response.success && response.data ? response.data : null;
   },
 
   getSchedule: async (): Promise<ScheduleInfo | null> => {

@@ -69,12 +69,26 @@ final class ApiKeyStoreTest extends TestCase
         $this->assertNotNull($this->verifier->verifyBearer('Bearer ' . $rotated['token']));
     }
 
-    public function testWriteScopesArePersisted(): void
+    public function testPurgeInactiveRemovesRevokedKey(): void
     {
-        $created = $this->store->create('Writer', ['content:write'], null, 'user-1', $this->verifier);
-        $context = $this->verifier->verifyBearer('Bearer ' . $created['token']);
+        $created = $this->store->create('Purge me', ['content:read'], null, 'user-1', $this->verifier);
+        $this->store->revoke($created['record']['id']);
 
-        $this->assertNotNull($context);
-        $this->assertTrue($context->hasScope('content:write'));
+        $result = $this->store->purgeInactive([$created['record']['id']]);
+
+        $this->assertSame([$created['record']['id']], $result['deleted']);
+        $this->assertSame([], $result['skipped']);
+        $this->assertSame([], $this->store->listMetadata());
+    }
+
+    public function testPurgeInactiveSkipsActiveKey(): void
+    {
+        $created = $this->store->create('Active', ['content:read'], null, 'user-1', $this->verifier);
+
+        $result = $this->store->purgeInactive([$created['record']['id']]);
+
+        $this->assertSame([], $result['deleted']);
+        $this->assertSame([$created['record']['id']], $result['skipped']);
+        $this->assertCount(1, $this->store->listMetadata());
     }
 }

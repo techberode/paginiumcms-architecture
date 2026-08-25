@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Gallery;
 
+use PaginiumCMS\Http\Support\BulkBatchResult;
+use PaginiumCMS\Http\Support\BulkIdsParser;
 use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Http\Support\JsonResponder;
@@ -117,6 +119,26 @@ final class GalleryAdminController
         } catch (FlatFileException $e) {
             return $this->json->error($response, $e->getMessage(), 404);
         }
+    }
+
+    public function bulkDelete(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $ids = BulkIdsParser::fromRequest($request);
+        if ($ids === []) {
+            return $this->json->error($response, Lang::get('invalid_payload', [], 'gallery'), 400);
+        }
+
+        $batch = new BulkBatchResult();
+        foreach ($ids as $id) {
+            try {
+                $this->repository->delete($id);
+                $batch->addSuccess($id);
+            } catch (FlatFileException $e) {
+                $batch->addFailure($id, $e->getMessage());
+            }
+        }
+
+        return $this->json->success($response, $batch->toArray(), 200, Lang::get('deleted', [], 'gallery'));
     }
 
     public function reorder(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface

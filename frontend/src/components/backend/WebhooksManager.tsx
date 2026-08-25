@@ -7,7 +7,10 @@ import {
   type WebhooksIndexResponse,
 } from '../../api/webhooks';
 import { useToast } from '../../hooks/useToast';
+import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { useI18n } from '../../context/I18nContext';
+import { BulkActionBar } from './BulkActionBar';
+import { summarizeBulkResult } from '../../types/bulk';
 
 const EVENT_LABEL_KEYS: Record<string, string> = {
   'content.published': 'platform.webhooks.events.contentPublished',
@@ -30,6 +33,12 @@ export const WebhooksManager: React.FC = () => {
   const [deliveries, setDeliveries] = useState<WebhookDelivery[]>([]);
 
   const availableEvents = useMemo(() => index?.availableEvents ?? [], [index]);
+  const webhooks = useMemo(() => index?.webhooks ?? [], [index]);
+
+  const bulkSelection = useBulkSelection(
+    webhooks.map((webhook) => webhook.id),
+    String(webhooks.length)
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -107,6 +116,28 @@ export const WebhooksManager: React.FC = () => {
         toast.error(updated.error || t('platform.webhooks.toast.updateFailed'));
         return;
       }
+      await load();
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (bulkSelection.count === 0) {
+      return;
+    }
+    if (!window.confirm(t('platform.webhooks.confirm.bulkDelete', { count: String(bulkSelection.count) }))) {
+      return;
+    }
+    setBusyId('bulk');
+    try {
+      const result = await webhooksApi.bulkDelete(bulkSelection.selectedIds);
+      if (!result) {
+        toast.error(t('platform.webhooks.toast.bulkFailed'));
+        return;
+      }
+      toast.success(summarizeBulkResult(result, t));
+      bulkSelection.clear();
       await load();
     } finally {
       setBusyId(null);
@@ -309,21 +340,43 @@ export const WebhooksManager: React.FC = () => {
 
       {loading ? (
         <p className="text-sm text-slate-500">{t('platform.webhooks.loading')}</p>
-      ) : (index?.webhooks ?? []).length === 0 ? (
+      ) : webhooks.length === 0 ? (
         <p className="text-sm text-slate-500">{t('platform.webhooks.empty')}</p>
       ) : (
         <div className="space-y-3">
-          {(index?.webhooks ?? []).map((webhook) => (
+          <BulkActionBar
+            count={bulkSelection.count}
+            onClear={bulkSelection.clear}
+            actions={[
+              {
+                id: 'delete',
+                label: t('platform.webhooks.delete'),
+                variant: 'danger',
+                disabled: busyId === 'bulk',
+                onClick: () => void handleBulkDelete(),
+              },
+            ]}
+          />
+          {webhooks.map((webhook) => (
             <div
               key={webhook.id}
               className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden"
             >
               <div className="p-4 flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <div className="font-bold text-slate-900 dark:text-white">{webhook.label}</div>
-                  <div className="text-xs text-slate-500 break-all">{webhook.url}</div>
-                  <div className="text-xs mt-1 text-slate-600 dark:text-slate-300">
-                    {webhook.events.map(eventLabel).join(' · ')}
+                <div className="flex items-start gap-3 min-w-0">
+                  <input
+                    type="checkbox"
+                    className="mt-1 shrink-0"
+                    checked={bulkSelection.isSelected(webhook.id)}
+                    onChange={() => bulkSelection.toggle(webhook.id)}
+                    aria-label={webhook.label}
+                  />
+                  <div className="min-w-0">
+                    <div className="font-bold text-slate-900 dark:text-white">{webhook.label}</div>
+                    <div className="text-xs text-slate-500 break-all">{webhook.url}</div>
+                    <div className="text-xs mt-1 text-slate-600 dark:text-slate-300">
+                      {webhook.events.map(eventLabel).join(' · ')}
+                    </div>
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2">

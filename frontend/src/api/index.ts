@@ -9,8 +9,10 @@ export * from './audit';
 export * from './auth';
 export * from './apiKeys';
 export * from './backup';
+export * from './blogSidebar';
 export * from './blueprint';
 export * from './cache';
+export * from './categories';
 export * from './codeEditor';
 export * from './comments';
 export * from './conflicts';
@@ -37,11 +39,14 @@ export * from './metrics';
 export * from './navigation';
 export * from './newsletter';
 export * from './notifications';
+export * from './origin';
 export * from './redirects';
+export * from './roles';
 export * from './search';
 export * from './security';
 export * from './settings';
 export * from './shortcodes';
+export * from './snippets';
 export * from './systemUpdate';
 export * from './themes';
 export * from './translations';
@@ -68,7 +73,9 @@ import { authApi } from './auth';
 import { apiKeysApi } from './apiKeys';
 import { auditApi } from './audit';
 import { backupApi } from './backup';
+import { blogSidebarApi } from './blogSidebar';
 import { blueprintApi } from './blueprint';
+import { categoriesApi } from './categories';
 import { codeEditorApi } from './codeEditor';
 import { contentApi } from './content';
 import { demoApi } from './demo';
@@ -77,9 +84,12 @@ import { firewallApi } from './firewall';
 import { gitApi } from './git';
 import { healthApi } from './health';
 import { logsApi } from './logs';
+import { originApi } from './origin';
 import { redirectsApi } from './redirects';
+import { rolesApi } from './roles';
 import { securityApi } from './security';
 import { shortcodesApi } from './shortcodes';
+import { snippetsApi } from './snippets';
 import { translationsApi } from './translations';
 import { themesApi } from './themes';
 import { trashApi } from './trash';
@@ -93,7 +103,9 @@ export const api = {
   apiKeys: apiKeysApi,
   audit: auditApi,
   backup: backupApi,
+  blogSidebar: blogSidebarApi,
   blueprint: blueprintApi,
+  categories: categoriesApi,
   codeEditor: codeEditorApi,
   content: contentApi,
   demo: demoApi,
@@ -102,9 +114,12 @@ export const api = {
   git: gitApi,
   health: healthApi,
   logs: logsApi,
+  origin: originApi,
   redirects: redirectsApi,
+  roles: rolesApi,
   security: securityApi,
   shortcodes: shortcodesApi,
+  snippets: snippetsApi,
   themes: themesApi,
   translations: translationsApi,
   trash: trashApi,

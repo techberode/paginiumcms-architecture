@@ -63,6 +63,23 @@ describe('settings i18n module', () => {
     expect(translate('sk', 'settings.fields.privacy.privacyContactName.label')).toBe(
       'Meno alebo prevádzkovateľ'
     );
+    expect(translate('sk', 'settings.fields.engine.storageDriver.label')).toBe('Ovládač úložiska');
+    expect(translate('sk', 'settings.fields.engine.schemaValidationEnabled.label')).toBe(
+      'Validácia JSON Schema'
+    );
+    expect(translate('en', 'settings.fields.engine.storageDriver.label')).toBe('Storage driver');
+    expect(translate('sk', 'settings.enum.cacheDriver.auto')).toBe('Automaticky');
+    expect(translate('en', 'settings.enum.gitPublishStrategy.disabled')).toBe('Disabled');
+  });
+
+  it('exposes extended tooltips for complex engine settings', () => {
+    registerModuleMessages('en', 'settings', settingsEn);
+    registerModuleMessages('sk', 'settings', settingsSk);
+
+    expect(translate('en', 'settings.fields.engine.performanceGuardEnabled.tooltip')).toContain('Dashboard');
+    expect(translate('sk', 'settings.fields.engine.performanceGuardEnabled.tooltip')).toContain('Dashboard');
+    expect(translate('en', 'settings.helpTooltip.toggle')).toBe('Show detailed help');
+    expect(translate('sk', 'settings.helpTooltip.toggle')).toBe('Zobraziť podrobnú nápovedu');
   });
 
   it('covers all RBAC permission labels (sk + en)', () => {

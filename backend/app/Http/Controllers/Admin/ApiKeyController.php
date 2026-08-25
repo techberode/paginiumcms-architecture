@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Admin;
 
+use PaginiumCMS\Http\Support\BulkBatchResult;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Modules\Security\Services\ApiJwtService;
@@ -264,6 +265,47 @@ final class ApiKeyController
         );
 
         return $this->json->success($response, ['revoked' => true, 'id' => $id]);
+    }
+
+    public function bulkPurge(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $body = $this->parseBody($request);
+        $mode = is_string($body['mode'] ?? null) ? trim($body['mode']) : '';
+        $ids = is_array($body['ids'] ?? null)
+            ? array_values(array_filter($body['ids'], static fn ($id): bool => is_string($id) && $id !== ''))
+            : [];
+
+        if ($mode === 'all_inactive') {
+            $ids = $this->store->listInactiveIds();
+        }
+
+        if ($ids === []) {
+            return $this->json->validation($response, 'Validation failed', ['ids' => 'No inactive keys selected']);
+        }
+
+        $result = $this->store->purgeInactive($ids);
+        $batch = new BulkBatchResult();
+        foreach ($result['deleted'] as $id) {
+            $batch->addSuccess($id);
+        }
+        foreach ($result['skipped'] as $id) {
+            $batch->addFailure($id, 'Key is active or missing');
+        }
+
+        $user = $request->getAttribute('user');
+        if ($result['deleted'] !== []) {
+            $this->audit->append(
+                'api_key_revoked',
+                'INFO',
+                'Inactive API keys purged from storage',
+                $user instanceof User ? (string) $user->getId() : $this->creatorId($request),
+                $user instanceof User ? $user->getEmail() : null,
+                null,
+                ['purgedIds' => $result['deleted'], 'skippedIds' => $result['skipped']]
+            );
+        }
+
+        return $this->json->success($response, $batch->toArray(), 200, 'Inactive API keys purged');
     }
 
     /**

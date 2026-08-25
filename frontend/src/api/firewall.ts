@@ -1,5 +1,6 @@
 // frontend/src/api/firewall.ts
 import apiClient from './client';
+import type { BulkBatchResult } from '../types/bulk';
 
 export interface FirewallStats {
   active_jails: number;
@@ -77,5 +78,15 @@ export const firewallApi = {
     const encoded = encodeURIComponent(ip);
     const res = await apiClient.delete<{ ip: string }>(`/api/admin/firewall/whitelist/${encoded}`);
     return res.success;
+  },
+
+  bulkUnban: async (ids: string[]): Promise<BulkBatchResult | null> => {
+    const res = await apiClient.post<BulkBatchResult>('/api/admin/firewall/bans/bulk-unban', { ids });
+    return res.success && res.data ? res.data : null;
+  },
+
+  bulkRemoveWhitelist: async (ids: string[]): Promise<BulkBatchResult | null> => {
+    const res = await apiClient.post<BulkBatchResult>('/api/admin/firewall/whitelist/bulk-remove', { ids });
+    return res.success && res.data ? res.data : null;
   },
 };

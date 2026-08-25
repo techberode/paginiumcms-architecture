@@ -26,6 +26,7 @@ return function (App $app): void {
         $group->get('/export', [$admin, 'export']);
         $group->post('/import', [$admin, 'import']);
         $group->post('', [$admin, 'create']);
+        $group->post('/bulk-delete', [$admin, 'bulkDelete']);
         $group->put('/reorder', [$admin, 'reorder']);
         $group->put('/{id}', [$admin, 'update']);
         $group->delete('/{id}', [$admin, 'delete']);

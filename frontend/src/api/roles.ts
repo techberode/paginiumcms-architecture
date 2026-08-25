@@ -1,4 +1,5 @@
 import apiClient from './client';
+import type { BulkBatchResult } from '../types/bulk';
 
 export interface CustomRole {
   id: string;
@@ -38,6 +39,11 @@ export const rolesApi = {
       `/api/admin/roles/${encodeURIComponent(id)}`
     );
     return response.success;
+  },
+
+  bulkDelete: async (ids: string[]): Promise<BulkBatchResult | null> => {
+    const response = await apiClient.post<BulkBatchResult>('/api/admin/roles/bulk-delete', { ids });
+    return response.success && response.data ? response.data : null;
   },
 };
 

@@ -1,4 +1,5 @@
 import { apiClient } from './client';
+import type { BulkBatchResult } from '../types/bulk';
 
 export interface ShortcodeListItem {
   name: string;
@@ -38,4 +39,9 @@ export const shortcodesApi = {
 
   delete: async (name: string) =>
     apiClient.delete(`/api/admin/shortcodes/${encodeURIComponent(name)}`),
+
+  bulkDelete: async (ids: string[]): Promise<BulkBatchResult | null> => {
+    const response = await apiClient.post<BulkBatchResult>('/api/admin/shortcodes/bulk-delete', { ids });
+    return response.success && response.data ? response.data : null;
+  },
 };

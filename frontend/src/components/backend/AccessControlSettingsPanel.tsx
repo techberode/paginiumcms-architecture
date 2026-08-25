@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { Lock, Plus, Trash2 } from 'lucide-react';
 import { useI18n } from '../../context/I18nContext';
 import { AdminHintCard } from './AdminHintCard';
+import { SettingFieldLabel } from './SettingHelpTooltip';
+import { translateSettingFieldTooltip } from '../../i18n/modules/settings/helpers';
 
 export interface PathAclRule {
   id: string;
@@ -136,16 +138,22 @@ export const AccessControlSettingsPanel: React.FC<AccessControlSettingsPanelProp
           <h3 className="text-sm font-bold uppercase tracking-wide text-slate-500">
             {t('settings.accessControl.pathAclTitle')}
           </h3>
-          <label className="inline-flex items-center gap-2 text-sm font-semibold">
+          <div className="inline-flex items-center gap-2 text-sm font-semibold">
             <input
               type="checkbox"
+              id="setting-pathAclEnabled"
               checked={pathAclEnabled}
               onChange={(event) =>
                 setValue('pathAclEnabled', event.target.checked, { shouldDirty: true, shouldValidate: true })
               }
+              className="h-4 w-4 rounded border-gray-300 text-indigo-600 shrink-0"
             />
-            {t('settings.accessControl.pathAclEnabled')}
-          </label>
+            <SettingFieldLabel
+              htmlFor="setting-pathAclEnabled"
+              label={t('settings.accessControl.pathAclEnabled')}
+              tooltip={translateSettingFieldTooltip(t, 'accessControl', 'pathAclEnabled')}
+            />
+          </div>
         </div>
 
         <p className="text-xs text-slate-500">{t('settings.accessControl.pathAclHint')}</p>

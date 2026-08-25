@@ -145,6 +145,68 @@ final class ApiKeyStore
         return $found;
     }
 
+    /**
+     * Permanently remove revoked or expired keys from flat-file storage.
+     *
+     * @param list<string> $ids
+     * @return array{deleted: list<string>, skipped: list<string>}
+     */
+    public function purgeInactive(array $ids): array
+    {
+        $deleted = [];
+        $skipped = [];
+
+        $this->withLockedStore(function (array $store) use ($ids, &$deleted, &$skipped): array {
+            $keys = is_array($store['keys'] ?? null) ? $store['keys'] : [];
+
+            foreach ($ids as $id) {
+                if (!isset($keys[$id]) || !is_array($keys[$id])) {
+                    $skipped[] = $id;
+                    continue;
+                }
+
+                $normalized = $this->normalizeRecord($keys[$id]);
+                if ($normalized === null) {
+                    unset($keys[$id]);
+                    $deleted[] = $id;
+                    continue;
+                }
+
+                $metadata = $this->toPublicMetadata($normalized);
+                $status = (string) ($metadata['status'] ?? '');
+                if ($status !== 'revoked' && $status !== 'expired') {
+                    $skipped[] = $id;
+                    continue;
+                }
+
+                unset($keys[$id]);
+                $deleted[] = $id;
+            }
+
+            $store['keys'] = $keys;
+
+            return $store;
+        });
+
+        return ['deleted' => $deleted, 'skipped' => $skipped];
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function listInactiveIds(): array
+    {
+        $ids = [];
+        foreach ($this->listMetadata() as $row) {
+            $status = (string) ($row['status'] ?? '');
+            if ($status === 'revoked' || $status === 'expired') {
+                $ids[] = (string) $row['id'];
+            }
+        }
+
+        return $ids;
+    }
+
     public function revoke(string $id): bool
     {
         $updated = false;

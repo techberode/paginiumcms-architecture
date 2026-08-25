@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Admin;
 
+use PaginiumCMS\Http\Support\BulkBatchResult;
+use PaginiumCMS\Http\Support\BulkIdsParser;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Modules\Security\Models\RoleRecord;
@@ -128,6 +130,39 @@ final class RolesController
         $this->authorization->reloadFromRoles();
 
         return $this->json->success($response, ['id' => $id, 'removed' => true]);
+    }
+
+    public function bulkDelete(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $ids = BulkIdsParser::fromRequest($request);
+        if ($ids === []) {
+            return $this->json->error($response, 'No roles selected', 400);
+        }
+
+        $batch = new BulkBatchResult();
+        foreach ($ids as $id) {
+            $normalized = RoleRecord::normalizeId($id);
+            if ($normalized === '' || $this->roles->get($normalized) === null) {
+                $batch->addFailure($id, 'Role not found');
+                continue;
+            }
+
+            if ($this->countUsersWithRole($normalized) > 0) {
+                $batch->addFailure($normalized, 'Role is assigned to users');
+                continue;
+            }
+
+            try {
+                $this->roles->delete($normalized);
+                $batch->addSuccess($normalized);
+            } catch (RuntimeException $exception) {
+                $batch->addFailure($normalized, $exception->getMessage());
+            }
+        }
+
+        $this->authorization->reloadFromRoles();
+
+        return $this->json->success($response, $batch->toArray(), 200, 'Roles deleted');
     }
 
     private function countUsersWithRole(string $roleId): int

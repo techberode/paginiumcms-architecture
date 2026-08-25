@@ -1,5 +1,6 @@
 // frontend/src/api/apiKeys.ts
 import apiClient, { type ApiResponse } from './client';
+import type { BulkBatchResult } from '../types/bulk';
 
 export interface ApiKeyMetadata {
   id: string;
@@ -94,6 +95,14 @@ export const apiKeysApi = {
 
   async issueJwt(payload: { scopes: string[]; ttl?: number }): Promise<JwtIssueResponse | null> {
     const response = await apiClient.post<JwtIssueResponse>('/api/admin/platform/api-keys/token', payload);
+    return response.success && response.data ? response.data : null;
+  },
+
+  async bulkPurge(payload: { ids?: string[]; mode?: 'all_inactive' }): Promise<BulkBatchResult | null> {
+    const response = await apiClient.post<BulkBatchResult>(
+      '/api/admin/platform/api-keys/bulk-purge',
+      payload
+    );
     return response.success && response.data ? response.data : null;
   },
 };

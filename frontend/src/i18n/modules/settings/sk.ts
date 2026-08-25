@@ -11,6 +11,9 @@ export const settingsSk: MessageTree = {
     "saveFailed": "Uloženie zlyhalo",
     "groupCount": ":count skupín"
   },
+  "helpTooltip": {
+    "toggle": "Zobraziť podrobnú nápovedu"
+  },
   "twoFactor": {
     "title": "Dvojfaktorové overenie (2FA)",
     "description": "Nastavenie QR kódu a TOTP autentifikátora je v samostatnej sekcii bezpečnosti účtu.",
@@ -69,13 +72,13 @@ export const settingsSk: MessageTree = {
     "navigationUi": "Navigácia (UI)",
     "navigation": "Layout navigácie",
     "smtp": "Email / SMTP",
-    "notifications": "Toast notifications",
-    "connectors": "Notification connectors",
-    "monitoring": "Monitoring & incidents",
-    "scheduler": "Job scheduler",
+    "notifications": "Toast notifikácie",
+    "connectors": "Notifikačné konektory",
+    "monitoring": "Monitoring a incidenty",
+    "scheduler": "Plánovač jobov",
     "systemUpdate": "Aktualizácia systému (deploy)",
-    "codePolicy": "Code policy",
-    "engine": "Hybrid Engine",
+    "codePolicy": "Politika kódu",
+    "engine": "Hybridný engine",
     "comments": "Komentáre",
     "contact": "Kontaktný formulár",
     "newsletter": "Newsletter",
@@ -90,7 +93,7 @@ export const settingsSk: MessageTree = {
     "logging": "Logy",
     "feeds": "RSS & Sitemap",
     "seo": "SEO",
-    "media": "Media / DAM",
+    "media": "Médiá / DAM",
     "sso": "SSO / OAuth",
     "contentSecurity": "Bezpečnosť obsahu (XML/HTML)",
     "uploadSecurity": "Bezpečnosť uploadu",
@@ -120,20 +123,20 @@ export const settingsSk: MessageTree = {
     "footer": "Verzia sa aktualizuje pri release tagu. Táto sekcia je len na čítanie."
   },
   "engine": {
-    "probeTitle": "Capability probe enginu",
-    "probeIntro": "Aktuálny deployment profil a nainštalované schopnosti Hybrid Engine. Budúce režimy sú zobrazené ako nedostupné — nie ako funkčné prepínače.",
+    "probeTitle": "Diagnostika schopností enginu",
+    "probeIntro": "Aktuálny profil nasadenia a nainštalované schopnosti hybridného enginu. Budúce režimy sú zobrazené ako nedostupné — nie ako funkčné prepínače.",
     "deploymentMode": "Režim nasadenia",
-    "storageDriver": "Storage driver",
+    "storageDriver": "Ovládač úložiska",
     "cacheProbeTitle": "Cache vrstva — diagnostika",
-    "cacheDriver": "Cache driver",
+    "cacheDriver": "Ovládač cache",
     "cacheHealth": "Stav cache",
     "gitProbeTitle": "Git publish — diagnostika",
     "gitProbeStatus": "Stav Git publish",
     "gitProbeStrategy": "Nastavená stratégia",
     "performanceGuardTitle": "Performance Guard (APM)",
-    "performanceGuardIntro": "Meranie latencie a I/O v rámci requestu. Predvolene vypnuté — budgety nastavte podľa vlastného hardvéru. Nenahrádza host metriky (It.46).",
+    "performanceGuardIntro": "Meranie latencie a I/O v rámci requestu. Predvolene vypnuté — budgety nastavte podľa vlastného hardvéru. Nenahrádza metriky hostiteľa.",
     "performanceGuardOverhead": "Overhead rastie so sample rate; ring buffer drží posledných 500 route šablón bez content payloadov.",
-    "docsLink": "Dokumentácia Hybrid Engine architektúry"
+    "docsLink": "Dokumentácia architektúry hybridného enginu"
   },
   "appearance": {
     "defaultBadge": "Predvolená",
@@ -186,7 +189,7 @@ export const settingsSk: MessageTree = {
       },
       "shortcodes": {
         "name": "Shortcodes",
-        "description": "Skladanie cez shortcodes v Markdown / WYSIWYG (It.58d)."
+        "description": "Skladanie cez shortcodes v Markdown / WYSIWYG."
       },
       "outline": {
         "name": "Outline blokov",
@@ -350,7 +353,8 @@ export const settingsSk: MessageTree = {
     "maintenance": {
       "mode": {
         "label": "Aktívny režim",
-        "help": "Naraz môže byť zapnutý iba jeden režim."
+        "help": "Naraz môže byť zapnutý iba jeden režim.",
+        "tooltip": "Vypnuté = verejný web beží normálne. Coming Soon = teaser s voliteľným newsletterom; admin a prihlásenie fungujú. Údržba = návštevníci vidia maintenance stránku; registrácia je blokovaná a verejné API môže vracať 503 podľa middleware."
       },
       "heroImageUrl": {
         "label": "Pozadie (URL)",
@@ -410,7 +414,7 @@ export const settingsSk: MessageTree = {
       },
       "storageFormat": {
         "label": "Formát úložiska obsahu",
-        "help": "md = YAML front matter + Markdown; json = čistý JSON súbor (Iterácia 19)."
+        "help": "md = YAML front matter + Markdown; json = čistý JSON súbor."
       },
       "defaultStatus": {
         "label": "Predvolený stav obsahu",
@@ -418,15 +422,15 @@ export const settingsSk: MessageTree = {
       },
       "autoSaveInterval": {
         "label": "Interval auto-save (s)",
-        "help": "Ako často sa ukladá koncept (Iterácia 2)."
+        "help": "Ako často sa ukladá koncept."
       },
       "lockTtl": {
         "label": "Platnosť zámku obsahu (s)",
-        "help": "Auto-release zámku po nečinnosti (Iterácia 1)."
+        "help": "Auto-release zámku po nečinnosti."
       },
       "autoTagEnabled": {
         "label": "Navrhovanie tagov v editore",
-        "help": "Povolí tlačidlo „Navrhnúť tagy“ v editore článkov (It.57)."
+        "help": "Povolí tlačidlo „Navrhnúť tagy“ v editore článkov."
       },
       "autoTagMax": {
         "label": "Max. počet navrhovaných tagov",
@@ -434,11 +438,25 @@ export const settingsSk: MessageTree = {
       },
       "autoDescriptionEnabled": {
         "label": "Generovanie meta popisu",
-        "help": "Povolí tlačidlo „Generovať popis“ v editore (It.57)."
+        "help": "Povolí tlačidlo „Generovať popis“ v editore."
       },
       "autoDescriptionMaxLength": {
         "label": "Max. dĺžka meta popisu (znaky)",
         "help": "Odporúčané 150–160 znakov pre SEO."
+      },
+      "localeFallbackEnabled": {
+        "label": "Povoliť locale fallback",
+        "help": "Ak chýba požadovaný jazyk, použije sa defaultLocale alebo jazyk stránky.",
+        "tooltip": "Platí len pre verejné čítanie obsahu. Ak článok nemá slovenskú variantu, CMS môže vrátiť dokument v predvolenom jazyku namiesto 404. Neprekladá automaticky — použije existujúci locale súbor."
+      },
+      "localeNegotiationEnabled": {
+        "label": "Accept-Language pre verejný obsah",
+        "help": "Verejné GET môže zvoliť locale z hlavičky Accept-Language ak chýba ?locale=.",
+        "tooltip": "Prehliadače posielajú Accept-Language pri prvej návšteve. Zapnuté = zoznamy a detail môžu zvoliť najlepší jazyk pred pravidlami fallbacku."
+      },
+      "staleReviewMonths": {
+        "label": "Prah zastarávajúceho obsahu (mesiace)",
+        "help": "Publikovaný obsah starší ako tento počet mesiacov sa označí ako zastaralý. 0 = vypnuté."
       }
     },
     "editor": {
@@ -448,11 +466,11 @@ export const settingsSk: MessageTree = {
       },
       "defaultProfilePage": {
         "label": "Predvolený profil (stránky)",
-        "help": "Modulárny toolbar pre stránky (Iterácia 54)."
+        "help": "Modulárny toolbar pre stránky."
       },
       "defaultProfileArticle": {
         "label": "Predvolený profil (články)",
-        "help": "Modulárny toolbar pre články (Iterácia 54)."
+        "help": "Modulárny toolbar pre články."
       },
       "spellcheck": {
         "label": "Kontrola pravopisu",
@@ -463,7 +481,7 @@ export const settingsSk: MessageTree = {
       },
       "customComponentsEnabled": {
         "label": "Povoliť custom komponenty editora",
-        "help": "Pluginy môžu registrovať vlastné bloky pre Markdown a WYSIWYG (It.60)."
+        "help": "Pluginy môžu registrovať vlastné bloky pre Markdown a WYSIWYG."
       },
       "profileCustomComponents": {
         "label": "Custom komponenty podľa profilu (JSON)",
@@ -473,7 +491,7 @@ export const settingsSk: MessageTree = {
     "navigationUi": {
       "defaultPreviewScale": {
         "label": "Predvolená mierka hover náhľadu (×10)",
-        "help": "Hodnota 15 = mierka 1.5× pri hover ikony v menu (It.56)."
+        "help": "Hodnota 15 = mierka 1.5× pri hover ikony v menu."
       },
       "maxTooltipWidthPx": {
         "label": "Max. šírka tooltipu (px)",
@@ -487,7 +505,7 @@ export const settingsSk: MessageTree = {
     "navigation": {
       "placement": {
         "label": "Umiestnenie menu",
-        "help": "Horný panel, bočný strom alebo oboje na desktope (It.84e)."
+        "help": "Horný panel, bočný strom alebo oboje na desktope."
       },
       "sideBreakpoint": {
         "label": "Breakpoint bočného menu",
@@ -504,204 +522,377 @@ export const settingsSk: MessageTree = {
     },
     "smtp": {
       "enabled": {
-        "label": "Enable SMTP",
+        "label": "Zapnúť SMTP",
         "help": "Zapnuté = systém odosiela e-maily (OTP, notifikácie, kontakt). Vypnuté = odosielanie vypnuté."
       },
       "host": {
-        "label": "SMTP host"
+        "label": "SMTP server"
       },
       "port": {
         "label": "SMTP port"
       },
       "encryption": {
-        "label": "Encryption"
+        "label": "Šifrovanie"
       },
       "username": {
-        "label": "SMTP username"
+        "label": "SMTP používateľ"
       },
       "password": {
-        "label": "SMTP password",
-        "help": "Stored in settings.json; never exposed via public API."
+        "label": "SMTP heslo",
+        "help": "Uložené v settings.json; nikdy nie cez verejné API."
       },
       "fromEmail": {
-        "label": "From email"
+        "label": "Odosielateľ (e-mail)"
       },
       "fromName": {
-        "label": "From name"
+        "label": "Odosielateľ (meno)"
       }
     },
     "notifications": {
       "toastEnabled": {
-        "label": "Enable toast notifications",
+        "label": "Zapnúť toast notifikácie",
         "help": "Zapnuté = krátke hlášky pri ukladaní a chybách v admin rozhraní. Vypnuté = bez toastov."
       },
       "toastPosition": {
-        "label": "Toast position"
+        "label": "Pozícia toastov"
       },
       "toastDuration": {
-        "label": "Default duration (ms)"
+        "label": "Predvolené trvanie (ms)"
       },
       "toastDebugMode": {
-        "label": "Debug mode (longer toasts, console log)",
-        "help": "Useful when developing modules, code editor, and content workflows."
+        "label": "Debug režim (dlhšie toasty, log do konzoly)",
+        "help": "Užitočné pri vývoji modulov, code editora a obsahových workflow."
       }
     },
     "connectors": {
       "emailEnabled": {
-        "label": "Email channel (SMTP)",
+        "label": "E-mailový kanál (SMTP)",
         "help": "Zapnuté = incidenty a reporty môžu ísť e-mailom (vyžaduje zapnuté SMTP). Vypnuté = kanál e-mail sa nepoužije."
       },
       "ntfyEnabled": {
-        "label": "Enable ntfy",
+        "label": "Zapnúť ntfy",
         "help": "Zapnuté = push notifikácie cez ntfy. Vypnuté = kanál ntfy vypnutý."
       },
       "ntfyServer": {
-        "label": "ntfy server URL"
+        "label": "URL ntfy servera"
       },
       "ntfyTopic": {
         "label": "ntfy topic"
       },
       "ntfyAuthMode": {
-        "label": "ntfy authentication",
-        "help": "Use token for ntfy.sh ACL topics or Basic for self-hosted instances."
+        "label": "ntfy autentifikácia",
+        "help": "Token pre ntfy.sh ACL topic alebo Basic pre self-hosted inštanciu."
       },
       "ntfyAccessToken": {
-        "label": "ntfy access token"
+        "label": "ntfy prístupový token"
       },
       "ntfyUsername": {
-        "label": "ntfy username (Basic auth)"
+        "label": "ntfy používateľ (Basic auth)"
       },
       "ntfyPassword": {
-        "label": "ntfy password (Basic auth)"
+        "label": "ntfy heslo (Basic auth)"
       },
       "discordEnabled": {
-        "label": "Enable Discord webhook",
+        "label": "Zapnúť Discord webhook",
         "help": "Zapnuté = incidenty sa posielajú na Discord webhook. Vypnuté = webhook sa nevolá."
       },
       "discordWebhookUrl": {
-        "label": "Discord webhook URL"
+        "label": "URL Discord webhooku"
       },
       "telegramEnabled": {
-        "label": "Enable Telegram bot",
+        "label": "Zapnúť Telegram bota",
         "help": "Zapnuté = incidenty do Telegram chatu. Vypnuté = bot sa nepoužije."
       },
       "telegramBotToken": {
-        "label": "Telegram bot token"
+        "label": "Token Telegram bota"
       },
       "telegramChatId": {
         "label": "Telegram chat ID"
       },
       "webhookEnabled": {
-        "label": "Enable generic webhook",
+        "label": "Zapnúť generický webhook",
         "help": "Zapnuté = incidenty na vlastný HTTP webhook. Vypnuté = webhook vypnutý."
       },
       "webhookUrl": {
-        "label": "Webhook URL"
+        "label": "URL webhooku"
       },
       "webhookSecret": {
-        "label": "Webhook secret (optional)"
+        "label": "Webhook secret (voliteľné)"
       },
       "webhookAuthHeader": {
-        "label": "Webhook auth header name",
-        "help": "HTTP header used to send webhookSecret when set."
+        "label": "Názov auth hlavičky webhooku",
+        "help": "HTTP hlavička pre odoslanie webhookSecret ak je nastavený."
       }
     },
     "monitoring": {
       "alertsEnabled": {
-        "label": "Enable incident alerts",
+        "label": "Zapnúť incident alerty",
         "help": "Zapnuté = systém posiela alerty pri incidentoch cez zapnuté kanály. Vypnuté = žiadne automatické alerty."
       },
       "alertEmail": {
-        "label": "Fallback alert email",
-        "help": "Used when connectors are off; defaults to admin email."
+        "label": "Záložný e-mail pre alerty",
+        "help": "Použije sa keď sú konektory vypnuté; predvolene admin e-mail."
       },
       "notifyFailedLogin": {
-        "label": "Alert on failed login",
+        "label": "Alert pri neúspešnom prihlásení",
         "help": "Zapnuté = upozornenie pri neúspešnom prihlásení. Vypnuté = udalosť sa nehlási."
       },
       "notifySecurityIncident": {
-        "label": "Alert on security audit events",
+        "label": "Alert pri bezpečnostných audit udalostiach",
         "help": "Zapnuté = upozornenie pri bezpečnostných audit udalostiach. Vypnuté = neposiela sa."
       },
       "notifyTrafficSpike": {
-        "label": "Alert on traffic spike",
+        "label": "Alert pri náhlej návštevnosti",
         "help": "Zapnuté = alert pri prekročení prahu návštevnosti. Vypnuté = traffic spike sa ignoruje."
       },
       "trafficSpikeThreshold": {
-        "label": "Traffic spike threshold (visits/hour)"
+        "label": "Prah návštevnosti (návštevy/hod)"
       },
       "minSeverity": {
-        "label": "Minimum audit severity"
+        "label": "Minimálna závažnosť auditu"
       },
       "reportsEnabled": {
-        "label": "Enable scheduled monitoring reports",
-        "help": "Requires cron: php backend/bin/console monitoring:run-schedule"
+        "label": "Zapnúť plánované monitoring reporty",
+        "help": "Vyžaduje cron: php backend/bin/console monitoring:run-schedule"
       },
       "reportInterval": {
-        "label": "Report interval"
+        "label": "Interval reportu"
       },
       "reportTime": {
-        "label": "Send time (HH:MM)",
-        "help": "Used for daily and weekly reports (site timezone)."
+        "label": "Čas odoslania (HH:MM)",
+        "help": "Pre denné a týždenné reporty (časové pásmo webu)."
       },
       "reportWeekday": {
-        "label": "Weekly report day"
+        "label": "Deň týždenného reportu"
       },
       "reportMinute": {
-        "label": "Hourly report minute (0–59)",
-        "help": "For hourly interval – minute past each hour."
+        "label": "Minúta hodinového reportu (0–59)",
+        "help": "Pre hodinový interval — minúta v rámci každej hodiny."
       },
       "reportConnector": {
-        "label": "Report connector"
+        "label": "Konektor pre reporty"
       },
       "reportIncludeAnalytics": {
-        "label": "Report: analytics stats",
+        "label": "Report: analytika",
         "help": "Zapnuté = report obsahuje štatistiky návštevnosti. Vypnuté = bez analytiky."
       },
       "reportIncludeHealth": {
-        "label": "Report: system health",
+        "label": "Report: stav systému",
         "help": "Zapnuté = report obsahuje stav zdravia systému. Vypnuté = bez health sekcie."
       },
       "reportIncludeFlatFile": {
-        "label": "Report: flat-file counts",
+        "label": "Report: počty flat-file",
         "help": "Zapnuté = report obsahuje počty stránok/článkov. Vypnuté = bez štatistík obsahu."
       },
       "notifyLogErrors": {
-        "label": "Alert on log ERROR/CRITICAL",
+        "label": "Alert pri ERROR/CRITICAL v logu",
         "help": "Zapnuté = ERROR/CRITICAL v logu spustí alert. Vypnuté = chyby v logu sa nehlásia."
       },
       "notifyLogWarnings": {
-        "label": "Alert on log WARNING",
+        "label": "Alert pri WARNING v logu",
         "help": "Zapnuté = WARNING v logu spustí alert. Vypnuté = varovania sa nehlásia."
       },
       "logIncidentConnector": {
-        "label": "Log incident connector"
+        "label": "Konektor pre log incidenty"
       }
     },
     "scheduler": {
       "enabled": {
-        "label": "Enable job scheduler",
+        "label": "Zapnúť plánovač jobov",
         "help": "Hlavný vypínač pre scheduler:run CLI. Jednotlivé joby sa dajú stále prepínať v Plánovači."
       },
       "retainRuns": {
-        "label": "Retain run history entries"
+        "label": "Počet záznamov histórie behov"
+      }
+    },
+    "engine": {
+      "deploymentMode": {
+        "label": "Režim nasadenia",
+        "help": "Aktívny je len režim Classic. Hybrid a Git headless sa zobrazia ako neinštalované.",
+        "tooltip": "Classic = flat-file SSOT na disku (predvolené). Hybrid/Git sú rezervované pre budúce iterácie — zmena režimu automaticky nemigruje dáta."
+      },
+      "storageDriver": {
+        "label": "Ovládač úložiska",
+        "help": "Lokálny flat-file ovládač (predvolený). Vzdialené ovládače prídu v neskorších iteráciách.",
+        "tooltip": "Classic SSOT = JSON/Markdown na disku pod data/. Vzdialené úložisko nie je v tomto release aktívne."
+      },
+      "schemaValidationEnabled": {
+        "label": "Validácia JSON Schema",
+        "help": "Zapnuté = admin JSON dokumenty sa pred zápisom overia proti registrovaným schémam.",
+        "tooltip": "Chráni flat-file dáta pred neplatným JSON tvarom. Odporúčané nechať zapnuté na produkcii."
+      },
+      "capabilityProbeEnabled": {
+        "label": "Zapnúť capability probe",
+        "help": "Zobrazí diagnostiku schopností enginu v nastaveniach.",
+        "tooltip": "Panel nižšie ukazuje dostupnosť cache, Git a storage. Vypnutím skryjete probe — správanie enginu sa nemení."
+      },
+      "cacheDriver": {
+        "label": "Ovládač cache",
+        "help": "auto = reťazec memory + file. Redis sa zobrazí ako neinštalovaný, ak nie je dostupný.",
+        "tooltip": "auto zvolí najlepší dostupný driver za behu. file prežije medzi requestmi; memory len v rámci procesu. Redis vyžaduje extension a env — panel nižšie ukazuje aktívny driver."
+      },
+      "cacheDefaultTtlSeconds": {
+        "label": "Predvolená TTL cache (s)",
+        "help": "Platí pre nové cache kľúče, ak nie je uvedené inak (60–86400)."
+      },
+      "httpValidatorsEnabled": {
+        "label": "HTTP ETag / Last-Modified",
+        "help": "Podmienené requesty na bezpečných verejných GET endpointoch (napr. /api/settings/public).",
+        "tooltip": "Klient môže poslať If-None-Match / If-Modified-Since a dostať 304 bez tela. Znižuje traffic pre verejné nastavenia."
+      },
+      "gitEnabled": {
+        "label": "Povoliť Git publish distribúciu",
+        "help": "Git je len distribúcia; SSOT zostáva na disku. Predvolene vypnuté.",
+        "tooltip": "Zapnuté = zápisy obsahu môžu vytvárať Git commity v pracovnom strome. Nenahrádza flat-file úložisko — zlyhanie Git operácie nevracia CMS zápis späť."
+      },
+      "gitPublishStrategy": {
+        "label": "Stratégia Git publish",
+        "help": "disabled = bez Git volaní; immediate = commit pri zápise; queued = dávkový release commit.",
+        "tooltip": "immediate pridáva latenciu každému mutujúcemu save; queued zoskupí commity pred deployom. Push vyžaduje gitPushEnabled a platné credentials na serveri."
+      },
+      "gitPublisher": {
+        "label": "Ovládač Git publish",
+        "help": "local = git binary na serveri. github_api je v tomto release odložené.",
+        "tooltip": "Publish beží len na serveri. github_api vyžaduje token a outbound sieť — zatiaľ nie je aktívne."
+      },
+      "gitRepositoryPath": {
+        "label": "Cesta k Git repozitáru",
+        "help": "Absolútna serverová cesta k working tree so pages/ a blog/. Nikdy nie vo frontend API.",
+        "tooltip": "Musí byť zapisovateľná pre PHP usera. Prázdna = Git publish sa preskočí aj keď je zapnutý."
+      },
+      "gitRemote": {
+        "label": "Názov Git remote",
+        "help": "Povolený názov remote (napr. origin)."
+      },
+      "gitBranch": {
+        "label": "Git vetva",
+        "help": "Povolený názov vetvy pre voliteľný push."
+      },
+      "gitPushEnabled": {
+        "label": "Push po commite",
+        "help": "Po úspešnom commite sa pokúsi git push na nakonfigurovaný remote/branch.",
+        "tooltip": "Beží len na serveri. Vyžaduje SSH kľúče alebo credentials pre PHP usera v Dockeri — nikdy nie v admin UI."
+      },
+      "gitCommitMessageTemplate": {
+        "label": "Šablóna commit správy",
+        "help": "Použite placeholder {count} pre počet staged súborov."
+      },
+      "performanceGuardEnabled": {
+        "label": "Povoliť Performance Guard (APM)",
+        "help": "Ľahke vzorkovanie latencie a I/O v rámci requestu. Predvolene vypnuté.",
+        "tooltip": "Ukladá časy podľa route do ring bufferu na Dashboarde. Overhead rastie so sample rate; obsah a nastavenia nemení automaticky okrem allow-list cache purge v remediation režime."
+      },
+      "performanceGuardSampleRate": {
+        "label": "APM sample rate",
+        "help": "1.0 = každý request keď je zapnuté; nižšie hodnoty znižujú overhead.",
+        "tooltip": "Na vyťažených weboch skúste 0.1–0.3. Media/static trasy sú vylúčené zo skreslenia p95."
+      },
+      "performanceGuardLatencyMsWarning": {
+        "label": "Varovanie latencie (ms)"
+      },
+      "performanceGuardLatencyMsCritical": {
+        "label": "Kritická latencia (ms)"
+      },
+      "performanceGuardBreachCount": {
+        "label": "Porušení pred incidentom"
+      },
+      "performanceGuardWindowMinutes": {
+        "label": "Okno porušení (min)"
+      },
+      "performanceGuardRemediationMode": {
+        "label": "Remediation režim",
+        "help": "suggest = len incidenty; automatic = allow-list cache purge po probe.",
+        "tooltip": "automatic nikdy nezapne Redis ani nemení engine režim — len bezpečné vymazanie cache po opakovaných porušeniach budgetu. suggest = manuálna kontrola incidentov."
+      },
+      "performanceGuardServerTiming": {
+        "label": "Server-Timing hlavička",
+        "help": "Fázy sess-lock/storage/app v DevTools (tiež pri APP_DEBUG).",
+        "tooltip": "Pridá W3C Server-Timing do HTTP odpovedí. Viditeľné v Network tab prehliadača — na produkcii vypnite ak nechcete zverejňovať rozklad fáz klientom."
+      }
+    },
+    "contentSecurity": {
+      "sanitizeHtmlOnSave": {
+        "label": "Sanitizovať HTML pri ukladaní",
+        "help": "Odstráni nebezpečné tagy a atribúty z HTML/WYSIWYG výstupu."
+      },
+      "stripExternalEntities": {
+        "label": "Odstrániť externé entity (XXE)",
+        "help": "Pri parsovaní XML/HTML blokuje externé DTD a entity — odporúčané zapnuté."
+      },
+      "allowSvgInline": {
+        "label": "Povoliť inline SVG v obsahu",
+        "help": "SVG môže obsahovať skript — odporúčame vypnuté.",
+        "tooltip": "Inline SVG môže niesť JavaScript a externé referencie. Nechajte vypnuté pokiaľ editori nie sú plne dôveryhodní."
+      },
+      "allowScriptTags": {
+        "label": "Povoliť <script> v obsahu",
+        "help": "Len pre dôveryhodných editorov; predvolene vypnuté.",
+        "tooltip": "Script tagy v HTML obídu väčšinu XSS ochrany pri renderi. Verejný web vykoná JavaScript od editora."
+      },
+      "allowedHtmlTags": {
+        "label": "Povolené HTML tagy",
+        "help": "Whitelist oddelený čiarkou. Layout shortcodes potrebujú div/article/section/aside/span.",
+        "tooltip": "Tagy mimo zoznamu sa pri save odstránia ak je sanitizácia zapnutá. Príliš voľný zoznam (iframe, object) zvyšuje XSS riziko."
+      }
+    },
+    "uploadSecurity": {
+      "scanMagicBytes": {
+        "label": "Kontrolovať magic bytes súboru",
+        "help": "Porovná hlavičku súboru s deklarovaným MIME typom.",
+        "tooltip": "Blokuje premenované executable (napr. shell.php ako image/jpeg). Odporúčané zapnuté na internetovom upload povrchu."
+      },
+      "blockDoubleExtensions": {
+        "label": "Blokovať dvojité prípony",
+        "help": "Napr. shell.php.jpg — bežný upload útok.",
+        "tooltip": "Odmietne názvy s viacerými príponami kde vnútorná segment je spustiteľný. Dopĺňa MIME a magic-byte kontrolu."
+      },
+      "blockExecutables": {
+        "label": "Blokovať spustiteľné súbory",
+        "help": "Odmieta upload PHP, shell skriptov a podobných typov bez ohľadu na príponu."
+      },
+      "allowedExtensions": {
+        "label": "Povolené prípony",
+        "help": "Bez bodky, oddelené čiarkou.",
+        "tooltip": "Platí spolu s MIME typmi a media nastaveniami. Sprísnite pred povolením SVG/PDF ak uploadujú nedôveryhodní používatelia."
+      },
+      "maxUploadSizeKb": {
+        "label": "Max. veľkosť uploadu (KB)"
+      },
+      "backupImportMaxSizeKb": {
+        "label": "Max. veľkosť importu zálohy (KB)",
+        "help": "Limit pre ZIP import zálohy cez administráciu."
+      },
+      "allowedMimeTypes": {
+        "label": "Povolené MIME typy (upload)",
+        "help": "Oddelené čiarkou. Dopĺňa kontrolu prípon a magic bytes."
+      }
+    },
+    "accessControl": {
+      "pathAclEnabled": {
+        "label": "Povoliť path ACL",
+        "help": "Obmedzí prístup k vybraným flat-file cestám podľa role alebo oprávnenia.",
+        "tooltip": "Po zapnutí sa pravidlá vyhodnocujú pred read/write API obsahu. Cesty používajú glob pod content/pages a content/articles. SUPER_ADMIN path ACL obíde."
       }
     },
     "codePolicy": {
       "enabled": {
-        "label": "Enable code policy checks",
-        "help": "Zapnuté = pred uložením PHP súborov sa kontrolujú zakázané funkcie a veľkosť. Vypnuté = kontrola vypnutá."
+        "label": "Zapnúť kontrolu politiky kódu (jadro)",
+        "help": "Platí pre zápisy v Code Editore jadra. Nedôveryhodné cesty (pluginy, témy, shortcodes) sa kontrolujú vždy, aj keď je toto vypnuté."
       },
       "strictMode": {
-        "label": "Strict extension namespace rules",
+        "label": "Prísne pravidlá pre namespaces rozšírení",
         "help": "Zapnuté = prísnejšie pravidlá pre namespaces rozšírení. Vypnuté = uvoľnené pravidlá."
       },
       "maxFileSizeKb": {
-        "label": "Max file size (KB)"
+        "label": "Max. veľkosť súboru (KB)"
+      },
+      "untrustedMaxFileSizeKb": {
+        "label": "Max. veľkosť nedôveryhodného súboru (KB)",
+        "help": "Limit pre pluginy, témy a layout shortcodes. Nemôže prekročiť max. veľkosť súboru vyššie."
       },
       "forbiddenPhpFunctions": {
-        "label": "Forbidden PHP functions",
-        "help": "Comma-separated list scanned before save."
+        "label": "Zakázané PHP funkcie",
+        "help": "Zoznam oddelený čiarkou kontrolovaný pred uložením."
       }
     },
     "comments": {
@@ -719,6 +910,22 @@ export const settingsSk: MessageTree = {
       },
       "maxLength": {
         "label": "Max. dĺžka komentára"
+      },
+      "spamHeuristicsEnabled": {
+        "label": "Spam heuristika",
+        "help": "Honeypot + skóre (linky, disposable e-mail, rýchlosť). Vypnutím zostáva len honeypot."
+      },
+      "spamMaxLinks": {
+        "label": "Spam: max. linkov v texte"
+      },
+      "spamVelocityMaxPerHour": {
+        "label": "Spam: max. komentárov / IP / hod"
+      },
+      "spamQuarantineThreshold": {
+        "label": "Spam: hranica karantény (skóre)"
+      },
+      "spamRejectThreshold": {
+        "label": "Spam: hranica odmietnutia (skóre)"
       }
     },
     "contact": {
@@ -851,7 +1058,8 @@ export const settingsSk: MessageTree = {
     "workflows": {
       "registrationOtpEnabled": {
         "label": "OTP pri registrácii",
-        "help": "Nový účet vznikne až po overení e-mailového kódu (Iterácia 41)."
+        "help": "Nový účet vznikne až po overení e-mailového kódu.",
+        "tooltip": "Registrácia uloží pending usera kým neoverí OTP z mailu. Vyžaduje funkčný SMTP/notifikácie — inak registrácie visia v pending stave."
       },
       "commentApprovalOtpEnabled": {
         "label": "OTP pri schválení komentára",
@@ -859,7 +1067,8 @@ export const settingsSk: MessageTree = {
       },
       "publishApprovalOtpEnabled": {
         "label": "OTP pri publikácii",
-        "help": "Editor musí potvrdiť publikáciu príspevku kódom z mailu."
+        "help": "Editor musí potvrdiť publikáciu príspevku kódom z mailu.",
+        "tooltip": "Platí pri zmene stavu na published. Druhý faktor cez e-mail pred akceptovaním publish zápisu — vhodné pre regulované redakčné workflow."
       },
       "otpTtlMinutes": {
         "label": "Platnosť OTP kódu (min)"
@@ -871,7 +1080,7 @@ export const settingsSk: MessageTree = {
     "ui": {
       "showListCounts": {
         "label": "Zobraziť počty v sidebari",
-        "help": "Badge s počtom položiek pri moduloch v administrácii (Iterácia 42)."
+        "help": "Badge s počtom položiek pri moduloch v administrácii."
       },
       "adminListPageSize": {
         "label": "Položiek na stránku (admin)",
@@ -892,7 +1101,8 @@ export const settingsSk: MessageTree = {
       },
       "requireTwoFactorStaff": {
         "label": "Vynútiť 2FA pre editorov a adminov",
-        "help": "Pri zapnutí nie je možné vypnúť 2FA pre roly EDITOR, ADMIN a SUPER_ADMIN."
+        "help": "Pri zapnutí nie je možné vypnúť 2FA pre roly EDITOR, ADMIN a SUPER_ADMIN.",
+        "tooltip": "Editori a admini bez autentifikátora budú pri ďalšom prihlásení vyzvaní na nastavenie 2FA. Neovplyvňuje návštevníkov ani rolu USER."
       },
       "passwordMinLength": {
         "label": "Min. dĺžka hesla",
@@ -1029,7 +1239,8 @@ export const settingsSk: MessageTree = {
       },
       "scanRequestBody": {
         "label": "Skenuj POST/JSON telo",
-        "help": "Zapnuté = WAF kontroluje telo mutujúcich requestov (editor API je vyňaté). Vypnuté = skenuje sa len URI a hlavičky."
+        "help": "Zapnuté = WAF kontroluje telo mutujúcich requestov (editor API je vyňaté). Vypnuté = skenuje sa len URI a hlavičky.",
+        "tooltip": "Skenuje JSON telá POST/PUT/PATCH na injection vzory. Editor trasy (/api/pages, /api/articles, drafts, code-editor) a multipart uploady sú vyňaté kvôli false positive na legitímny HTML/Markdown."
       },
       "jailMinutes": {
         "label": "Dĺžka jail (min)",
@@ -1045,11 +1256,13 @@ export const settingsSk: MessageTree = {
       },
       "jailMode": {
         "label": "Jail odpoveď",
-        "help": "Režim HTTP odpovede pre zablokované IP. Tarpit spomaľuje botov (max 2 s)."
+        "help": "Režim HTTP odpovede pre zablokované IP. Tarpit spomaľuje botov (max 2 s).",
+        "tooltip": "forbidden = HTTP 403 JSON; empty = minimálne telo; tarpit = zámerné oneskorenie (viaže PHP-FPM worker — tarpitSeconds ≤ 2)."
       },
       "tarpitSeconds": {
         "label": "Tarpit oneskorenie (s)",
-        "help": "Platí len pri jailMode=tarpit. Neodporúčame >2 s (FPM worker)."
+        "help": "Platí len pri jailMode=tarpit. Neodporúčame >2 s (FPM worker).",
+        "tooltip": "Každý blokovaný request čaká v PHP pred odpoveďou. Vysoké hodnoty znižujú throughput pri bot floode ale spotrebujú worker sloty."
       },
       "logRetention": {
         "label": "Max. incidentov v logu"
@@ -1079,6 +1292,11 @@ export const settingsSk: MessageTree = {
       "logAuthEndpoints": {
         "label": "Logovať auth endpointy",
         "help": "Login/register cesty — bez tela, len metadata (IP, status)."
+      },
+      "includeResponseSize": {
+        "label": "Logovať veľkosť odpovede (size_bytes)",
+        "help": "Pridá size_bytes do http_access logu (Content-Length alebo veľkosť tela).",
+        "tooltip": "Diagnostika odozvy. Pomáha odhaliť pomalé odpovede s malým objemom dát (session lock, cache miss). Net loguje telo odpovede — len počet bajtov."
       }
     },
     "feeds": {
@@ -1128,6 +1346,35 @@ export const settingsSk: MessageTree = {
       }
     },
     "media": {
+      "storageDriver": {
+        "label": "Ovládač úložiska médií",
+        "help": "local = binárne súbory pod media/. S3 sa zobrazí v UI, ale fallbackuje na local, kým driver nie je aktívny."
+      },
+      "s3Endpoint": {
+        "label": "S3 endpoint URL"
+      },
+      "s3Region": {
+        "label": "S3 región"
+      },
+      "s3Bucket": {
+        "label": "S3 bucket"
+      },
+      "s3KeyId": {
+        "label": "S3 access key ID"
+      },
+      "s3Secret": {
+        "label": "S3 secret key"
+      },
+      "s3PathStyle": {
+        "label": "S3 path-style URLs",
+        "help": "Zapnuté pre MinIO a kompatibilné služby bez virtuálneho hostovania bucketu."
+      },
+      "s3PublicBaseUrl": {
+        "label": "Verejná base URL pre S3 objekty"
+      },
+      "s3Visibility": {
+        "label": "S3 viditeľnosť objektov"
+      },
       "allowedMimeTypes": {
         "label": "Povolené MIME typy",
         "help": "Oddeľte čiarkou. Ovplyvňuje upload v Media Library."
@@ -1148,7 +1395,8 @@ export const settingsSk: MessageTree = {
     "sso": {
       "enabled": {
         "label": "Povoliť SSO prihlásenie",
-        "help": "Zapnuté = externé prihlásenie je dostupné (podľa zapnutých providerov). Vypnuté = len lokálne účty."
+        "help": "Zapnuté = externé prihlásenie je dostupné (podľa zapnutých providerov). Vypnuté = len lokálne účty.",
+        "tooltip": "Vypnuté = len e-mail/heslo. Zapnuté = OAuth provideri na login stránke; noví SSO používatelia dostanú predvolenú rolu nižšie."
       },
       "defaultRole": {
         "label": "Predvolená rola (nový účet)"
@@ -1188,12 +1436,191 @@ export const settingsSk: MessageTree = {
       "genericScope": {
         "label": "OAuth scope"
       }
+    },
+    "gallery": {
+      "enabled": {
+        "label": "Zapnúť galériu na verejnom webe",
+        "help": "Hlavný prepínač pre sekciu so screenshotmi administrácie."
+      },
+      "placement": {
+        "label": "Umiestnenie",
+        "help": "Kde sa galéria zobrazí: domovská stránka, samostatná route, oboje, alebo vypnuté."
+      },
+      "publicRoute": {
+        "label": "Verejná route",
+        "help": "Jednosegmentová cesta bez domény, napr. /features alebo /funkcie."
+      },
+      "layout": {
+        "label": "Layout",
+        "help": "Grid = dlaždice; slider = carousel s autoplay; hero-strip = široký pás screenshotov."
+      },
+      "effectPreset": {
+        "label": "Efekt (preset)",
+        "help": "subtle = fade+scale; cinematic = crossfade+vignette; minimal = okamžitá výmena (bez animácie)."
+      },
+      "autoplayEnabled": {
+        "label": "Autoplay slidera",
+        "help": "Platí pre layout slider a hero-strip. Pauza pri hover/focus; vypnuté pri prefers-reduced-motion."
+      },
+      "autoplayIntervalMs": {
+        "label": "Autoplay interval (ms)",
+        "help": "Interval medzi slidmi (4000–15000 ms)."
+      },
+      "showFeatureTags": {
+        "label": "Zobraziť tagy modulov",
+        "help": "Badge s názvom modulu (Analytics, Newsletter, …) pri položkách galérie."
+      },
+      "modalCaptionStyle": {
+        "label": "Štýl popisu v modale",
+        "help": "below = pod obrázkom; overlay = cez spodok; side = vedľa (široké obrazovky)."
+      }
+    },
+    "systemUpdate": {
+      "deployEnabled": {
+        "label": "Povoliť admin deploy",
+        "help": "SUPER_ADMIN môže spustiť deploy kódu z Platform → System update. Ignorované keď DEMO_MODE=true."
+      },
+      "githubOwner": {
+        "label": "GitHub owner"
+      },
+      "githubRepo": {
+        "label": "GitHub repozitár"
+      },
+      "githubToken": {
+        "label": "GitHub token (repo read)",
+        "help": "Fine-grained alebo classic token s read prístupom ku kódu a release."
+      },
+      "defaultBranch": {
+        "label": "Predvolená vetva"
+      },
+      "allowDeployMain": {
+        "label": "Povoliť deploy z vetvy (origin/…)"
+      },
+      "allowDeployTags": {
+        "label": "Povoliť deploy zo semver tagov"
+      },
+      "webhookDeployEnabled": {
+        "label": "Zapnúť GitHub release webhook deploy",
+        "help": "Po zapnutí POST /api/webhooks/github/release zaradí deploy pri publikovaní release (vyžaduje HMAC secret)."
+      },
+      "githubWebhookSecret": {
+        "label": "GitHub webhook secret",
+        "help": "Rovnaký secret ako v GitHub → Settings → Webhooks. Nikdy sa neloguje."
+      }
     }
   },
   "enum": {
     "language": {
       "sk": "Slovenčina",
       "en": "English"
+    },
+    "deploymentMode": {
+      "classic": "Classic",
+      "hybrid": "Hybrid",
+      "git_headless": "Git headless"
+    },
+    "storageDriver": {
+      "local": "Lokálny"
+    },
+    "cacheDriver": {
+      "auto": "Automaticky",
+      "memory": "Pamäť",
+      "file": "Súbor",
+      "redis": "Redis"
+    },
+    "gitPublishStrategy": {
+      "disabled": "Vypnuté",
+      "immediate": "Okamžite",
+      "queued": "Dávkovo"
+    },
+    "gitPublisher": {
+      "local": "Lokálny git",
+      "github_api": "GitHub API"
+    },
+    "performanceGuardRemediationMode": {
+      "off": "Vypnuté",
+      "suggest": "Len návrhy",
+      "automatic": "Automatické"
+    },
+    "encryption": {
+      "none": "Bez šifrovania",
+      "tls": "TLS",
+      "ssl": "SSL"
+    },
+    "toastPosition": {
+      "top-right": "Vpravo hore",
+      "top-left": "Vľavo hore",
+      "bottom-right": "Vpravo dole",
+      "bottom-left": "Vľavo dole"
+    },
+    "logIncidentConnector": {
+      "email": "E-mail",
+      "ntfy": "ntfy",
+      "discord": "Discord",
+      "telegram": "Telegram",
+      "webhook": "Webhook",
+      "all": "Všetky kanály"
+    },
+    "reportConnector": {
+      "email": "E-mail",
+      "ntfy": "ntfy",
+      "discord": "Discord",
+      "telegram": "Telegram",
+      "webhook": "Webhook",
+      "all": "Všetky kanály"
+    },
+    "reportInterval": {
+      "hourly": "Každú hodinu",
+      "daily": "Denne",
+      "weekly": "Týždenne"
+    },
+    "minSeverity": {
+      "debug": "Debug",
+      "info": "Info",
+      "notice": "Notice",
+      "warning": "Warning",
+      "error": "Error",
+      "critical": "Critical"
+    },
+    "defaultStatus": {
+      "draft": "Koncept",
+      "published": "Publikované"
+    },
+    "storageFormat": {
+      "md": "Markdown + YAML",
+      "json": "JSON"
+    },
+    "defaultEditor": {
+      "markdown": "Markdown",
+      "wysiwyg": "WYSIWYG"
+    },
+    "jailMode": {
+      "forbidden": "403 Forbidden",
+      "empty": "Prázdna odpoveď",
+      "tarpit": "Tarpit"
+    },
+    "placement": {
+      "home": "Domovská stránka",
+      "route": "Samostatná route",
+      "both": "Oboje",
+      "off": "Vypnuté",
+      "top": "Horné menu",
+      "side": "Bočné menu"
+    },
+    "layout": {
+      "grid": "Mriežka",
+      "slider": "Slider",
+      "hero-strip": "Hero pás"
+    },
+    "effectPreset": {
+      "subtle": "Jemný",
+      "cinematic": "Filmový",
+      "minimal": "Minimálny"
+    },
+    "modalCaptionStyle": {
+      "below": "Pod obrázkom",
+      "overlay": "Overlay",
+      "side": "Bočne"
     }
   },
   "maintenance": {
@@ -1203,11 +1630,11 @@ export const settingsSk: MessageTree = {
         "description": "Verejný web beží normálne."
       },
       "comingSoon": {
-        "title": "Coming Soon",
+        "title": "Už čoskoro",
         "description": "Nová stránka pred spustením — teaser s newsletterom."
       },
       "underMaintenance": {
-        "title": "Under Maintenance",
+        "title": "Údržba",
         "description": "Dočasná údržba existujúceho webu so správou pre návštevníkov."
       }
     }

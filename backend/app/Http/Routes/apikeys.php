@@ -24,6 +24,7 @@ return function (App $app): void {
         $group->post('', [$controller, 'create']);
         $group->post('/token', [$controller, 'issueToken']);
         $group->post('/{id}/rotate', [$controller, 'rotate']);
+        $group->post('/bulk-purge', [$controller, 'bulkPurge']);
         $group->delete('/{id}', [$controller, 'revoke']);
     })
         ->add(new PermissionMiddleware($authz, 'api-keys:manage'))

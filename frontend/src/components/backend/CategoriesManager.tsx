@@ -3,7 +3,10 @@ import { Link } from 'react-router-dom';
 import { Hash, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import { categoriesApi, type ContentCategory } from '../../api/categories';
 import { useToast } from '../../hooks/useToast';
+import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { useI18n } from '../../context/I18nContext';
+import { BulkActionBar } from './BulkActionBar';
+import { summarizeBulkResult } from '../../types/bulk';
 import { slugifyTitle } from '../../utils/contentEditorMeta';
 
 function isValidCategorySlug(slug: string): boolean {
@@ -22,6 +25,11 @@ export const CategoriesManager: React.FC = () => {
   const [creating, setCreating] = useState(false);
   const [busySlug, setBusySlug] = useState<string | null>(null);
   const [editingLabels, setEditingLabels] = useState<Record<string, string>>({});
+
+  const bulkSelection = useBulkSelection(
+    categories.map((category) => category.slug),
+    String(categories.length)
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -94,6 +102,28 @@ export const CategoriesManager: React.FC = () => {
         return;
       }
       toast.success(t('platform.categories.toast.updated'));
+      await load();
+    } finally {
+      setBusySlug(null);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (bulkSelection.count === 0) {
+      return;
+    }
+    if (!window.confirm(t('platform.categories.confirm.bulkDelete', { count: String(bulkSelection.count) }))) {
+      return;
+    }
+    setBusySlug('bulk');
+    try {
+      const result = await categoriesApi.bulkDelete(bulkSelection.selectedIds);
+      if (!result) {
+        toast.error(t('platform.categories.toast.bulkFailed'));
+        return;
+      }
+      toast.success(summarizeBulkResult(result, t));
+      bulkSelection.clear();
       await load();
     } finally {
       setBusySlug(null);
@@ -196,6 +226,20 @@ export const CategoriesManager: React.FC = () => {
         </div>
       ) : null}
 
+      <BulkActionBar
+        count={bulkSelection.count}
+        onClear={bulkSelection.clear}
+        actions={[
+          {
+            id: 'delete',
+            label: t('platform.categories.delete'),
+            variant: 'danger',
+            disabled: busySlug === 'bulk',
+            onClick: () => void handleBulkDelete(),
+          },
+        ]}
+      />
+
       <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 overflow-hidden">
         {loading ? (
           <p className="px-4 py-6 text-sm text-slate-500">{t('platform.categories.loading')}</p>
@@ -205,6 +249,14 @@ export const CategoriesManager: React.FC = () => {
           <table className="min-w-full text-sm">
             <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500 dark:bg-slate-900">
               <tr>
+                <th className="px-4 py-3 w-10">
+                  <input
+                    type="checkbox"
+                    checked={bulkSelection.allSelected}
+                    onChange={() => bulkSelection.toggleAll()}
+                    aria-label={t('platform.categories.delete')}
+                  />
+                </th>
                 <th className="px-4 py-3">{t('platform.categories.table.label')}</th>
                 <th className="px-4 py-3">{t('platform.categories.table.slug')}</th>
                 <th className="px-4 py-3 text-right">{t('platform.categories.table.actions')}</th>
@@ -213,6 +265,14 @@ export const CategoriesManager: React.FC = () => {
             <tbody>
               {categories.map((category) => (
                 <tr key={category.slug} className="border-t border-slate-100 dark:border-slate-800">
+                  <td className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={bulkSelection.isSelected(category.slug)}
+                      onChange={() => bulkSelection.toggle(category.slug)}
+                      aria-label={category.label}
+                    />
+                  </td>
                   <td className="px-4 py-3">
                     <input
                       type="text"
