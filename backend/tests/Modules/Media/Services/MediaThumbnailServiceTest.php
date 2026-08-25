@@ -28,7 +28,7 @@ final class MediaThumbnailServiceTest extends TestCase
             $this->markTestSkipped('GD extension is not available.');
         }
 
-        $source = $this->fixtureDir . '/source.jpg';
+        $source = $this->fixtureDir . '/source.png';
         $image = imagecreatetruecolor(800, 400);
         for ($y = 0; $y < 400; ++$y) {
             for ($x = 0; $x < 800; ++$x) {
@@ -38,7 +38,7 @@ final class MediaThumbnailServiceTest extends TestCase
                 }
             }
         }
-        imagejpeg($image, $source, 95);
+        imagepng($image, $source, 0);
         imagedestroy($image);
 
         $service = new MediaThumbnailService();
@@ -46,7 +46,11 @@ final class MediaThumbnailServiceTest extends TestCase
 
         $this->assertNotNull($thumbPath);
         $this->assertFileExists($thumbPath);
-        $this->assertGreaterThan(filesize($thumbPath), filesize($source));
+        $this->assertLessThan(
+            filesize($source),
+            filesize($thumbPath),
+            'Thumbnail should be smaller than the source image.',
+        );
 
         $info = getimagesize($thumbPath);
         $this->assertIsArray($info);
