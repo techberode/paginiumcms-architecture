@@ -206,8 +206,8 @@ export const editorSk: MessageTree = {
       quote: 'citát',
     },
     modes: {
-      edit: 'Edit',
-      split: 'Split',
+      edit: 'Úprava',
+      split: 'Rozdelený',
       preview: 'Náhľad',
     },
     placeholder: 'Píšte v Markdown… (# nadpis, **tučné**, [odkaz](url))',

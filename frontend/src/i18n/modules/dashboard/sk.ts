@@ -81,6 +81,13 @@ export const dashboardSk: MessageTree = {
       errorRate: 'Chybovosť',
       samples: 'Vzorky',
       breaches: 'Porušenia',
+      clearSamples: 'Vymazať vzorky',
+      clearConfirm: 'Vymazať všetky APM vzorky a nedávne porušenia latencie? Ring buffer sa vynuluje — p95 sa prepočíta z nového trafficu.',
+      clearSuccess: 'APM vzorky boli vymazané.',
+      clearFailed: 'APM vzorky sa nepodarilo vymazať.',
+      clearing: 'Mažem…',
+      storageP95: 'Storage p95',
+      sessionLockP95: 'Session lock p95',
     },
     logs: {
       title: 'Logy (:hours h)',

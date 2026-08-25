@@ -292,7 +292,13 @@ export const settingsEn: MessageTree = {
       "media:upload": "Upload media",
       "media:delete": "Delete media",
       "settings:manage": "Manage settings",
+      "git:publish": "Git publish",
+      "gallery:manage": "Manage gallery",
       "logs:view": "View logs",
+      "metrics:read": "Read metrics",
+      "api-keys:manage": "Manage API keys",
+      "redirects:manage": "Manage redirects",
+      "webhooks:manage": "Manage webhooks",
       "profile:edit": "Edit profile"
     }
   },

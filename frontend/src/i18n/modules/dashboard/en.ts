@@ -81,6 +81,13 @@ export const dashboardEn: MessageTree = {
       errorRate: 'Error rate',
       samples: 'Samples',
       breaches: 'Breaches',
+      clearSamples: 'Clear samples',
+      clearConfirm: 'Clear all APM samples and recent latency breaches? The ring buffer resets — p95 will rebuild from new traffic.',
+      clearSuccess: 'APM samples cleared.',
+      clearFailed: 'Failed to clear APM samples.',
+      clearing: 'Clearing…',
+      storageP95: 'Storage p95',
+      sessionLockP95: 'Session lock p95',
     },
     logs: {
       title: 'Logs (:hours h)',

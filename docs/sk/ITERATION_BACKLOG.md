@@ -43,7 +43,7 @@ Tento dokument opravuje starý backlog, v ktorom sa miešali hotové iterácie, 
 | 18 | **It.75** AI agent | 🔵 | ⏳ | po locale a provider vrstvách |
 | 19 | **It.83** Theme runtime + Terminal Breach | 🟡 | ⏸️ | po stabilnom releasi — [ITERATION_83](../en/ITERATION_83.md) |
 | 20 | **It.84** Kategórie, blog sidebar, landing, role, menu | 🟡 | ✅ | **84a–84e** hotové — [ITERATION_84](../en/ITERATION_84.md) |
-| 21 | **It.85** Request diagnostics (latency decomposition) | 🟡 | ⏳ | **85a–85e** plán — [ITERATION_85](../en/ITERATION_85.md); prerekvizita: beta.58 hotfix (session lock) |
+| 21 | **It.85** Request diagnostics + admin APM clear | 🟡 | ✅ | **85a–85f** hotové — [ITERATION_85](../en/ITERATION_85.md); `v2.1.0-beta.59` |
 
 ---
 
@@ -201,7 +201,7 @@ Zostáva:
 | **It.48** static/dynamic render | ⏳ | spojiť návrh s It.70 publish pipeline |
 | **It.83** theme runtime + Terminal Breach | ⏸️ | [ITERATION_83](../en/ITERATION_83.md) — po stabilizácii; základ It.67b import hotový |
 | **It.84** prezentácia a prístup | ✅ | [ITERATION_84](../en/ITERATION_84.md) — 84a–84e hotové (2026-08-17) |
-| **It.85** request diagnostics | ⏳ | [ITERATION_85](../en/ITERATION_85.md) — size_bytes, storage_ms, session_lock_ms, Server-Timing |
+| **It.85** request diagnostics + APM clear UI | ✅ | [ITERATION_85](../en/ITERATION_85.md) — beta.59 (2026-08-25) |
 | Server metrics agent (zvyšok It.46) | ⏳ | koordinovať s It.71 |
 | Scoped FileManager | ⏳ candidate | prideliť nové unikátne číslo až po scope approval |
 | Frontend inline edit | ⏳ candidate | používa existujúci lock/editor flow |

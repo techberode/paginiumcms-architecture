@@ -14,17 +14,26 @@ final class CommentSubmissionVelocityStore
 {
     private const RETENTION_HOURS = 48;
 
+    /** @var callable(): int */
+    private $nowFn;
+
+    /**
+     * @param callable(): int|null $nowFn Unix timestamp supplier (tests inject fixed clock).
+     */
     public function __construct(
         private string $storeFile = '',
+        ?callable $nowFn = null,
     ) {
         if ($this->storeFile === '') {
             $this->storeFile = dirname(__DIR__, 4) . '/data/metrics/comment_velocity.json';
         }
+
+        $this->nowFn = $nowFn ?? static fn (): int => time();
     }
 
     public function record(string $clientHash): void
     {
-        $hour = gmdate('Y-m-d-H');
+        $hour = $this->hourKey(0);
         $this->withLockedStore(function (array $store) use ($hour, $clientHash): array {
             /** @var array<string, array<string, int>> $buckets */
             $buckets = is_array($store['buckets'] ?? null) ? $store['buckets'] : [];
@@ -44,11 +53,16 @@ final class CommentSubmissionVelocityStore
         $total = 0;
 
         for ($i = 0; $i < $hours; $i++) {
-            $hour = gmdate('Y-m-d-H', time() - ($i * 3600));
+            $hour = $this->hourKey($i * 3600);
             $total += (int) ($buckets[$hour][$clientHash] ?? 0);
         }
 
         return $total;
+    }
+
+    private function hourKey(int $offsetSeconds): string
+    {
+        return gmdate('Y-m-d-H', ($this->nowFn)() - $offsetSeconds);
     }
 
     /**
@@ -57,7 +71,7 @@ final class CommentSubmissionVelocityStore
      */
     private function prune(array $buckets): array
     {
-        $cutoff = gmdate('Y-m-d-H', strtotime('-' . self::RETENTION_HOURS . ' hours UTC'));
+        $cutoff = gmdate('Y-m-d-H', ($this->nowFn)() - (self::RETENTION_HOURS * 3600));
         $pruned = [];
 
         foreach ($buckets as $hour => $counts) {
@@ -74,6 +88,8 @@ final class CommentSubmissionVelocityStore
      */
     private function loadStore(): array
     {
+        clearstatcache(true, $this->storeFile);
+
         if (!is_file($this->storeFile)) {
             return ['schemaVersion' => 1, 'buckets' => []];
         }
@@ -108,6 +124,7 @@ final class CommentSubmissionVelocityStore
                 throw new RuntimeException('Cannot lock comment velocity store');
             }
 
+            rewind($handle);
             $raw = stream_get_contents($handle);
             $store = is_string($raw) && $raw !== ''
                 ? (json_decode($raw, true) ?: ['schemaVersion' => 1, 'buckets' => []])

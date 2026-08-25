@@ -430,8 +430,8 @@ export const platformSk: MessageTree = {
       expiresAt: 'Platnosť do (voliteľné)',
     },
     scopeGroups: {
-      read: 'Read scopes',
-      write: 'Write scopes',
+      read: 'Čítacie scopes',
+      write: 'Zapisovacie scopes',
       token: 'Token scopes',
     },
     scopes: {

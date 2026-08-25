@@ -33,7 +33,11 @@ final class PerformanceSampleStore
      *     storage_reads: int,
      *     storage_writes: int,
      *     cache_hits: int,
-     *     cache_misses: int
+     *     cache_misses: int,
+     *     storage_ms?: float,
+     *     session_lock_ms?: float,
+     *     session_held_ms?: float,
+     *     apm_lock_wait_ms?: float
      * } $sample
      */
     public function append(array $sample): void
@@ -44,9 +48,12 @@ final class PerformanceSampleStore
         }
 
         try {
+            $lockStarted = hrtime(true);
             if (!flock($handle, LOCK_EX)) {
                 return;
             }
+
+            $sample['apm_lock_wait_ms'] = round((hrtime(true) - $lockStarted) / 1_000_000, 2);
 
             $samples = $this->readHandle($handle);
             $samples[] = $sample;

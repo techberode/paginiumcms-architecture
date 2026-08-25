@@ -73,6 +73,9 @@ final class PerformanceGuardMiddleware implements MiddlewareInterface
             'memory_delta_mb' => round((memory_get_usage(true) - $memoryStart) / 1024 / 1024, 2),
             'storage_reads' => $this->context->storageReads(),
             'storage_writes' => $this->context->storageWrites(),
+            'storage_ms' => $this->context->storageMs(),
+            'session_lock_ms' => $this->context->sessionLockMs(),
+            'session_held_ms' => $this->context->sessionHeldMs(),
             'cache_hits' => $cacheMetrics['hits'],
             'cache_misses' => $cacheMetrics['misses'],
         ];

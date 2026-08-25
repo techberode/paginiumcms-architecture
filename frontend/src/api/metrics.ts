@@ -9,6 +9,7 @@ export interface ApmConfig {
   breach_count: number;
   window_minutes: number;
   remediation_mode: string;
+  server_timing?: boolean;
 }
 
 export interface ApmSummary {
@@ -21,6 +22,9 @@ export interface ApmSummary {
   cache_misses: number;
   storage_reads: number;
   storage_writes: number;
+  storage_ms_p95?: number | null;
+  session_lock_ms_p95?: number | null;
+  apm_lock_wait_ms_max?: number | null;
   by_route: Array<{ route: string; count: number; p95_ms: number | null }>;
 }
 

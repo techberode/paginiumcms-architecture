@@ -24,7 +24,7 @@ return function (App $app): void {
         $controller = $container->get(MetricsController::class);
 
         $group->get('', [$controller, 'summary']);
-        $group->post('/clear', [$controller, 'clear']);
+        $group->post('/clear', [$controller, 'clearSamples']);
     })
         ->add(new PermissionMiddleware($authz, 'metrics:read'))
         ->add(new RoleMiddleware($authz, ['ADMIN', 'SUPER_ADMIN']))

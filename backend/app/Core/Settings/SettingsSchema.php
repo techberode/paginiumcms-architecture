@@ -246,6 +246,7 @@ final class SettingsSchema
                     ['key' => 'performanceGuardBreachCount', 'type' => 'int', 'label' => 'Breaches before incident', 'default' => 3, 'rules' => ['required', 'int', 'min:1', 'max:100']],
                     ['key' => 'performanceGuardWindowMinutes', 'type' => 'int', 'label' => 'Breach window (minutes)', 'default' => 10, 'rules' => ['required', 'int', 'min:1', 'max:1440']],
                     ['key' => 'performanceGuardRemediationMode', 'type' => 'enum', 'label' => 'Remediation mode', 'default' => 'suggest', 'options' => ['off', 'suggest', 'automatic'], 'rules' => ['required', 'in:off,suggest,automatic'], 'help' => 'suggest = incidents only; automatic = allow-listed cache purge after capability probe (never enables Redis).'],
+                    ['key' => 'performanceGuardServerTiming', 'type' => 'bool', 'label' => 'Server-Timing header', 'default' => false, 'rules' => ['bool'], 'help' => 'Iteration 85: expose sess-lock/storage/app phases in Server-Timing (also on when APP_DEBUG). Off by default in production.'],
                 ],
             ],
             'comments' => [
@@ -463,6 +464,7 @@ final class SettingsSchema
                     ['key' => 'retentionDays', 'type' => 'int', 'label' => 'Retencia logov (dni)', 'default' => 30, 'rules' => ['required', 'int', 'min:1', 'max:365'], 'help' => 'Staršie denné súbory sa vymažú (purge v admin Logy).'],
                     ['key' => 'slowRequestMs', 'type' => 'int', 'label' => 'Pomalý request (ms)', 'default' => 2000, 'rules' => ['required', 'int', 'min:100', 'max:60000'], 'help' => 'Requesty nad tento limit sa logujú ako WARNING.'],
                     ['key' => 'logAuthEndpoints', 'type' => 'bool', 'label' => 'Logovať auth endpointy', 'default' => false, 'rules' => ['bool'], 'help' => 'Login/register cesty — bez tela, len metadata (IP, status).'],
+                    ['key' => 'includeResponseSize', 'type' => 'bool', 'label' => 'Logovať veľkosť odpovede (size_bytes)', 'default' => true, 'rules' => ['bool'], 'help' => 'Iteration 85: pridá size_bytes do http_access logu (Content-Length alebo telo).'],
                 ],
             ],
             'feeds' => [

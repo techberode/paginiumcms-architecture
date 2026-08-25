@@ -21,35 +21,57 @@ final class InstrumentedStorage implements StorageInterface
 
     public function read(string $logicalPath): string
     {
-        $this->context->recordStorageRead();
+        $started = hrtime(true);
 
-        return $this->inner->read($logicalPath);
+        try {
+            return $this->inner->read($logicalPath);
+        } finally {
+            $this->context->recordStorageReadDuration(hrtime(true) - $started);
+        }
     }
 
     public function write(string $logicalPath, string $content, bool $createBackup = false): void
     {
-        $this->context->recordStorageWrite();
-        $this->inner->write($logicalPath, $content, $createBackup);
+        $started = hrtime(true);
+
+        try {
+            $this->inner->write($logicalPath, $content, $createBackup);
+        } finally {
+            $this->context->recordStorageWriteDuration(hrtime(true) - $started);
+        }
     }
 
     public function exists(string $logicalPath): bool
     {
-        $this->context->recordStorageRead();
+        $started = hrtime(true);
 
-        return $this->inner->exists($logicalPath);
+        try {
+            return $this->inner->exists($logicalPath);
+        } finally {
+            $this->context->recordStorageReadDuration(hrtime(true) - $started);
+        }
     }
 
     public function delete(string $logicalPath, bool $moveToTrash = true): void
     {
-        $this->context->recordStorageWrite();
-        $this->inner->delete($logicalPath, $moveToTrash);
+        $started = hrtime(true);
+
+        try {
+            $this->inner->delete($logicalPath, $moveToTrash);
+        } finally {
+            $this->context->recordStorageWriteDuration(hrtime(true) - $started);
+        }
     }
 
     public function list(string $logicalDirectory, string $pattern = '*'): array
     {
-        $this->context->recordStorageRead();
+        $started = hrtime(true);
 
-        return $this->inner->list($logicalDirectory, $pattern);
+        try {
+            return $this->inner->list($logicalDirectory, $pattern);
+        } finally {
+            $this->context->recordStorageReadDuration(hrtime(true) - $started);
+        }
     }
 
     public function getBasePath(): string

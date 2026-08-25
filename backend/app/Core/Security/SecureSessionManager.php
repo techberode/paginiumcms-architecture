@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\Security;
 
+use PaginiumCMS\Core\Performance\PerformanceContext;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Modules\Security\Services\SessionManager;
 
@@ -27,9 +28,9 @@ final class SecureSessionManager extends SessionManager
 
     private bool $validated = false;
 
-    public function __construct()
+    public function __construct(?PerformanceContext $performance = null)
     {
-        parent::__construct();
+        parent::__construct($performance);
 
         $this->trustedProxies = ClientIpResolver::trustedProxiesFromEnv();
         $this->strictBinding = self::isStrictBindingEnabled();

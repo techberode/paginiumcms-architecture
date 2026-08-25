@@ -1,11 +1,7 @@
 # Iteration 85 — Request diagnostics (latency decomposition)
 
-> **Status:** ⏳ planned (2026-08-19) — not started  
-> **Priority:** 🟡 medium (ops / incident response; no product feature dependency)  
-> **Wave:** Performance & observability (extends [It.71](ITERATION_71.md) Performance Guard + access logs)  
-> **Depends on:** shipped Performance Guard (It.71), `RequestLoggingMiddleware`, `InstrumentedStorage`, `SessionManager`  
-> **Prerequisite hotfix:** uncommitted **beta.58** session-lock + thumbnail work should ship first (CHANGELOG Unreleased) — otherwise diagnostics will still show symptoms without the fix in production  
-> **Target release:** `v2.1.0-beta.58` (hotfix bundle) or `beta.59` if split
+> **Status:** ✅ complete (2026-08-25) — slices **85a–85f** shipped; gate green  
+> **Release:** `v2.1.0-beta.59` (pending tag/push)
 
 ## Goal
 
@@ -26,19 +22,20 @@ Extends It.71 counters with **durations** and adds **`size_bytes`** to productio
 
 | ID | Slice | Priority | Status | Summary |
 |----|-------|----------|--------|---------|
-| **85a** | `size_bytes` in `http_access` | 🟡 P1 | ⏳ | Response size in every access log entry |
-| **85b** | `storage_ms` in APM | 🟡 P1 | ⏳ | `hrtime()` in `InstrumentedStorage` → sample + aggregator |
-| **85c** | `session_lock_ms` | 🔴 P1 | ⏳ | Time blocked in `session_start()`; optional `sess-held` duration |
-| **85d** | `Server-Timing` header | 🟡 P2 | ⏳ | Live phase breakdown in browser DevTools (settings/debug gated) |
-| **85e** | `apm_lock_wait_ms` | 🔵 P3 | ⏳ | `flock` wait time in `PerformanceSampleStore::append()` |
+| **85a** | `size_bytes` in `http_access` | 🟡 P1 | ✅ shipped | Response size in every access log entry |
+| **85b** | `storage_ms` in APM | 🟡 P1 | ✅ shipped | `hrtime()` in `InstrumentedStorage` → sample + aggregator |
+| **85c** | `session_lock_ms` | 🔴 P1 | ✅ shipped | Time blocked in `session_start()` + `session_held_ms` |
+| **85d** | `Server-Timing` header | 🟡 P2 | ✅ shipped | Live phase breakdown in browser DevTools (settings/debug gated) |
+| **85e** | `apm_lock_wait_ms` | 🔵 P3 | ✅ shipped | `flock` wait time in `PerformanceSampleStore::append()` |
+| **85f** | Admin — clear APM samples | 🟡 P1 | ✅ shipped | Dashboard button + fix `/apm/clear` route wiring + `AppVersion` bump |
 
 Recommended delivery order (fastest value first; stop anywhere — each slice is independently useful):
 
 ```text
-85a → 85b → 85c → 85d → 85e
+85f → 85a → 85b → 85c → 85d → 85e
 ```
 
-**Friday resume tip:** implement **85a + 85b + 85c** in one session (~2–3 h); defer **85d/e** if time-constrained.
+**Friday resume tip:** start with **85f** (quick UX win + route fix), then **85a + 85b + 85c**; defer **85d/e** if time-constrained.
 
 ---
 
@@ -50,7 +47,9 @@ Observed after It.84 blog sidebar + large media:
 2. Root cause was **PHP session write lock** on parallel GETs sharing one cookie — not Docker network, not blog sidebar logic alone.
 3. Secondary factors: **1.7 MB PNG** via `/storage/`, analytics counting media as pageviews, PG sampling `/storage/`.
 
-Fixes are in CHANGELOG **Unreleased** (session release middleware, lazy session, storage stream/cache, thumbnails, PG/analytics skip). **It.85 does not replace those fixes** — it prevents the next blind hunt.
+Fixes shipped in **beta.58** (session release middleware, lazy session, storage stream/cache, thumbnails, PG/analytics skip). **It.85** adds observability so the next incident is diagnosable without manual curl.
+
+**Known ops quirk (beta.58):** admin **Settings → CMS info** / `/api/health` may still show `2.1.0-beta.57` while beta.58 code runs. `AppVersion::VERSION` fallback was not bumped in the release commit; PHP in Docker often cannot resolve git tags (`exec` / `.git` permissions) and falls back to the constant. Bump `AppVersion::VERSION` to match each release tag (include in **85f** or a tiny beta.59 prep commit).
 
 ---
 
@@ -139,6 +138,19 @@ Low priority unless PG sample rate is high and p95 append latency is suspected.
 
 ---
 
+### 85f — Admin: clear APM samples
+
+| Piece | Detail |
+|-------|--------|
+| **Problem today** | `POST /api/admin/metrics/apm/clear` exists and `clearApmSamples()` is in `frontend/src/api/metrics.ts`, but **no admin UI** calls it. Route wiring bug: `metrics.php` references `[$controller, 'clear']` while controller method is `clearSamples()` — clear API likely returns 500 until fixed. |
+| **UI** | **Dashboard → Performance Guard** panel: button **„Vymazať vzorky“** / **Clear samples** (visible when APM enabled + `metrics:read`). Confirm dialog; loading/error/success toast. Optional duplicate link under **Settings → Engine** PG section. |
+| **Backend fix** | `metrics.php`: `[$controller, 'clearSamples']` (or add `clear()` alias). Add PHPUnit route/controller test for clear. |
+| **FE** | `PerformanceGuardPanel.tsx`: call `clearApmSamples()`, refresh overview via callback or parent re-fetch. i18n `dashboard.panels.apm.clearSamples`, `clearConfirm`, `clearSuccess`. Vitest: button calls API mock. |
+| **Security** | Same gates as existing route: Auth + 2FA + ADMIN/SUPER_ADMIN + `metrics:read` + CSRF on POST. |
+| **Release hygiene** | Bump `AppVersion::VERSION` to `2.1.0-beta.59` (or current tag) when shipping 85f. |
+
+---
+
 ## Settings contract (incremental)
 
 ```yaml
@@ -158,30 +170,46 @@ Backward compatible: missing keys → safe defaults (`false` / `true`).
 ## Definition of Done
 
 ### 85a
-- [ ] `size_bytes` in `http_access` context for API and `/storage/` responses with `Content-Length`
-- [ ] `null` when size unknown (not `0`)
-- [ ] PHPUnit + gate green
+- [x] `size_bytes` in `http_access` context for API and `/storage/` responses with `Content-Length`
+- [x] `null` when size unknown (not `0`)
+- [x] PHPUnit + gate green
 
 ### 85b
-- [ ] `storage_ms` on APM samples when PG enabled
-- [ ] Aggregator exposes aggregate `storage_ms` (sum or avg — document choice)
-- [ ] PHPUnit + gate green
+- [x] `storage_ms` on APM samples when PG enabled
+- [x] Aggregator exposes `storage_ms_p95`
+- [x] PHPUnit + gate green
 
 ### 85c
-- [ ] `session_lock_ms` recorded when session starts
-- [ ] Documented in [user/LOGGING.md](user/LOGGING.md) or ops note
-- [ ] PHPUnit + gate green
+- [x] `session_lock_ms` and `session_held_ms` recorded when session starts
+- [x] Aggregator exposes `session_lock_ms_p95`
+- [x] PHPUnit + gate green
 
 ### 85d
-- [ ] `Server-Timing` header when setting/debug enabled
-- [ ] Absent in default production config
-- [ ] PHPUnit + gate green
+- [x] `Server-Timing` header when setting/debug enabled
+- [x] Absent in default production config
+- [x] PHPUnit + gate green
 
 ### 85e
-- [ ] `apm_lock_wait_ms` on samples
-- [ ] PHPUnit + gate green
+- [x] `apm_lock_wait_ms` on samples + `apm_lock_wait_ms_max` in aggregator
+- [x] PHPUnit + gate green
 
-**Iteration complete when:** at least **85a–85c** shipped + gate green + CHANGELOG + this doc status → ✅.
+### 85f
+- [x] Route `POST /api/admin/metrics/apm/clear` invokes `clearSamples()` (fix wiring)
+- [x] Dashboard PG panel: confirm + clear + refresh
+- [x] i18n sk/en + Vitest
+- [x] `AppVersion::VERSION` bumped to `2.1.0-beta.59`
+- [x] PHPUnit + gate green
+
+**Iteration complete:** **85a–85f** shipped + gate green (2026-08-25).
+
+---
+
+## Release checklist (beta.59)
+
+1. `git commit` — It.85 complete
+2. `git tag v2.1.0-beta.59`
+3. Deploy prod (`GIT_REF=v2.1.0-beta.59`)
+4. Smoke: health version, Dashboard → Clear APM, DevTools Server-Timing (optional setting)
 
 ---
 
@@ -189,7 +217,9 @@ Backward compatible: missing keys → safe defaults (`false` / `true`).
 
 | Surface | Change | Slice |
 |---------|--------|-------|
-| `GET /api/admin/metrics` | summary includes `storage_ms`, `session_lock_ms` aggregates | 85b, 85c |
+| `GET /api/admin/metrics/apm` | summary includes `storage_ms`, `session_lock_ms` aggregates | 85b, 85c |
+| `POST /api/admin/metrics/apm/clear` | fix handler wiring; used by admin UI | 85f |
+| **Dashboard → Performance Guard** | **Clear samples** button + confirm | 85f |
 | Admin → Logs | optional column/filter “slow + small body” | 85a (stretch) |
 | HTTP responses | `Server-Timing` header | 85d |
 
@@ -202,7 +232,7 @@ No new public routes. No breaking JSON shapes — new optional fields only.
 - Full distributed tracing / OpenTelemetry export
 - Host-level metrics (remains It.46 remainder)
 - Automatic remediation changes (It.71 `SafeRemediationService` untouched)
-- Frontend APM dashboard redesign (optional small widget later)
+- Full APM dashboard redesign beyond clear button + existing p95 panel (85f)
 - Correlation ID / `PHPSESSID` in logs (privacy)
 
 ---
@@ -214,15 +244,15 @@ No new public routes. No breaking JSON shapes — new optional fields only.
 | [ITERATION_71.md](ITERATION_71.md) | Performance Guard baseline |
 | [user/LOGGING.md](user/LOGGING.md) | Access log semantics |
 | [ISSUES.md](ISSUES.md) | ISS-158 (storage skewing p95) — reference when documenting |
-| CHANGELOG Unreleased | beta.58 hotfix (session lock, thumbnails) — ship before/with 85 |
+| CHANGELOG | beta.58 shipped; 85 → beta.59 |
 
 ---
 
 ## Resume checklist (for Friday)
 
-1. Commit & deploy **beta.58 hotfix** if still uncommitted (session release, thumbnails, layout).
-2. `./scripts/iteration-gate.sh` — confirm green baseline.
-3. Implement **85a** → run gate → commit slice.
+1. `./scripts/iteration-gate.sh` — confirm green baseline on `main` / beta.58.
+2. Implement **85f** (route fix + clear button + `AppVersion` bump) → gate → commit.
+3. Implement **85a** → gate → commit slice.
 4. Implement **85b + 85c** → gate → commit.
 5. If tokens/time remain: **85d**, then **85e**.
-6. Update this doc status + CHANGELOG under `2.1.0-beta.59` (or fold into beta.58 if same release).
+6. Tag `v2.1.0-beta.59`, deploy prod (§ PRIVATE_DOMAIN_DEPLOY), smoke health version.

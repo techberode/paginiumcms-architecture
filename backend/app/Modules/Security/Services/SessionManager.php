@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Modules\Security\Services;
 
+use PaginiumCMS\Core\Performance\PerformanceContext;
 use PaginiumCMS\Modules\Demo\Services\DemoMode;
 use PaginiumCMS\Modules\Security\Models\User;
 
@@ -17,8 +18,9 @@ class SessionManager
 
     private bool $writeLockReleased = false;
 
-    public function __construct()
-    {
+    public function __construct(
+        protected ?PerformanceContext $performance = null,
+    ) {
     }
 
     /**
@@ -32,6 +34,7 @@ class SessionManager
             return;
         }
 
+        $this->performance?->recordSessionReleased();
         session_write_close();
         $this->writeLockReleased = true;
     }
@@ -48,7 +51,10 @@ class SessionManager
         }
 
         if (session_status() === PHP_SESSION_NONE) {
+            $lockStarted = hrtime(true);
             session_start();
+            $this->performance?->recordSessionLockDuration(hrtime(true) - $lockStarted);
+            $this->performance?->markSessionActive();
             $this->writeLockReleased = false;
         }
     }

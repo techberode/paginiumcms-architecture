@@ -40,6 +40,7 @@ final class PerformanceSampleStoreTest extends TestCase
         $this->assertCount(PerformanceSampleStore::MAX_SAMPLES, $all);
         $this->assertEquals(6.0, $all[0]['duration_ms']);
         $this->assertEquals((float) (PerformanceSampleStore::MAX_SAMPLES + 5), $all[array_key_last($all)]['duration_ms']);
+        $this->assertArrayHasKey('apm_lock_wait_ms', $all[array_key_last($all)]);
     }
 
     public function testClearRemovesSamples(): void

@@ -67,6 +67,7 @@ final class RequestLoggingMiddleware implements MiddlewareInterface
             [
                 'query' => $request->getUri()->getQuery(),
                 'user_agent' => mb_substr($request->getHeaderLine('User-Agent'), 0, 256),
+                'size_bytes' => $this->resolveResponseSize($response),
             ]
         );
 
@@ -76,6 +77,21 @@ final class RequestLoggingMiddleware implements MiddlewareInterface
     private function durationMs(float $started): float
     {
         return round((microtime(true) - $started) * 1000, 2);
+    }
+
+    private function resolveResponseSize(ResponseInterface $response): ?int
+    {
+        $contentLength = $response->getHeaderLine('Content-Length');
+        if ($contentLength !== '' && ctype_digit($contentLength)) {
+            return (int) $contentLength;
+        }
+
+        $size = $response->getBody()->getSize();
+        if ($size !== null && $size >= 0) {
+            return $size;
+        }
+
+        return null;
     }
 
     private function resolveClientIp(ServerRequestInterface $request): string

@@ -25,6 +25,9 @@ final class PerformanceAggregator
      *     cache_misses: int,
      *     storage_reads: int,
      *     storage_writes: int,
+     *     storage_ms_p95: float|null,
+     *     session_lock_ms_p95: float|null,
+     *     apm_lock_wait_ms_max: float|null,
      *     by_route: list<array<string, mixed>>
      * }
      */
@@ -32,6 +35,9 @@ final class PerformanceAggregator
     {
         $rows = $this->samples->all();
         $durations = [];
+        $storageMsValues = [];
+        $sessionLockMsValues = [];
+        $apmLockWaitMsMax = null;
         $errors = 0;
         $cacheHits = 0;
         $cacheMisses = 0;
@@ -51,6 +57,21 @@ final class PerformanceAggregator
             $cacheMisses += (int) ($row['cache_misses'] ?? 0);
             $storageReads += (int) ($row['storage_reads'] ?? 0);
             $storageWrites += (int) ($row['storage_writes'] ?? 0);
+
+            if (isset($row['storage_ms']) && is_numeric($row['storage_ms'])) {
+                $storageMsValues[] = (float) $row['storage_ms'];
+            }
+
+            if (isset($row['session_lock_ms']) && is_numeric($row['session_lock_ms'])) {
+                $sessionLockMsValues[] = (float) $row['session_lock_ms'];
+            }
+
+            if (isset($row['apm_lock_wait_ms']) && is_numeric($row['apm_lock_wait_ms'])) {
+                $lockWait = (float) $row['apm_lock_wait_ms'];
+                $apmLockWaitMsMax = $apmLockWaitMsMax === null
+                    ? $lockWait
+                    : max($apmLockWaitMsMax, $lockWait);
+            }
 
             $route = (string) ($row['route'] ?? 'unknown');
             if (!isset($routeBuckets[$route])) {
@@ -86,6 +107,9 @@ final class PerformanceAggregator
             'cache_misses' => $cacheMisses,
             'storage_reads' => $storageReads,
             'storage_writes' => $storageWrites,
+            'storage_ms_p95' => $this->percentile($storageMsValues, 95),
+            'session_lock_ms_p95' => $this->percentile($sessionLockMsValues, 95),
+            'apm_lock_wait_ms_max' => $apmLockWaitMsMax,
             'by_route' => array_slice($byRoute, 0, max(1, $topRoutes)),
         ];
     }
