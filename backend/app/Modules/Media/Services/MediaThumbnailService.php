@@ -44,6 +44,22 @@ final class MediaThumbnailService
         }
 
         $maxWidth = max(self::MIN_WIDTH, min(self::MAX_WIDTH, $maxWidth));
+
+        $mime = mime_content_type($sourcePath) ?: '';
+        if (!self::isSupportedRasterMime($mime)) {
+            return null;
+        }
+
+        $dimensions = @getimagesize($sourcePath);
+        if ($dimensions === false) {
+            return null;
+        }
+
+        $srcW = (int) $dimensions[0];
+        if ($srcW <= $maxWidth) {
+            return null;
+        }
+
         $sourceMtime = filemtime($sourcePath);
         if ($sourceMtime === false) {
             return null;
@@ -56,11 +72,6 @@ final class MediaThumbnailService
             && filemtime($thumbPath) >= $sourceMtime
         ) {
             return $thumbPath;
-        }
-
-        $mime = mime_content_type($sourcePath) ?: '';
-        if (!self::isSupportedRasterMime($mime)) {
-            return null;
         }
 
         $thumbDir = dirname($thumbPath);
