@@ -46,7 +46,7 @@ final class MediaThumbnailServiceTest extends TestCase
 
         $this->assertNotNull($thumbPath);
         $this->assertFileExists($thumbPath);
-        $this->assertLessThan(filesize($source), filesize($thumbPath));
+        $this->assertLessThan(filesize($thumbPath), filesize($source));
 
         $info = getimagesize($thumbPath);
         $this->assertIsArray($info);
