@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
+  bulkDeleteGalleryItems,
   createGalleryItem,
   deleteGalleryItem,
   exportGalleryJson,
@@ -26,7 +27,10 @@ import {
 } from '../../api/gallery';
 import { resolvePublicMediaUrl } from '../../api/media';
 import { useToast } from '../../hooks/useToast';
+import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { useI18n } from '../../context/I18nContext';
+import { BulkActionBar } from './BulkActionBar';
+import { summarizeBulkResult } from '../../types/bulk';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { FeatureGallerySection } from '../frontend/FeatureGallerySection';
 import { normalizeGalleryPublicPath } from '../../utils/galleryPublicRoute';
@@ -64,6 +68,11 @@ export const GalleryManager: React.FC = () => {
   const [previewOpen, setPreviewOpen] = useState(true);
   const [importing, setImporting] = useState(false);
   const importInputRef = useRef<HTMLInputElement>(null);
+
+  const bulkSelection = useBulkSelection(
+    items.map((item) => item.id),
+    String(items.length)
+  );
 
   const publishedItems = useMemo(
     () => items.filter((item) => item.status === 'published'),
@@ -191,6 +200,23 @@ export const GalleryManager: React.FC = () => {
 
     showSuccess(editingId ? t('gallery.toast.updated') : t('gallery.toast.created'));
     closeForm();
+    void load();
+  };
+
+  const handleBulkDelete = async () => {
+    if (bulkSelection.count === 0) {
+      return;
+    }
+    if (!confirm(t('gallery.confirm.bulkDelete', { count: String(bulkSelection.count) }))) {
+      return;
+    }
+    const result = await bulkDeleteGalleryItems(bulkSelection.selectedIds);
+    if (!result) {
+      showError(t('gallery.toast.bulkFailed'));
+      return;
+    }
+    showSuccess(summarizeBulkResult(result, t));
+    bulkSelection.clear();
     void load();
   };
 
@@ -326,23 +352,47 @@ export const GalleryManager: React.FC = () => {
           {t('gallery.empty')}
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <>
+          <BulkActionBar
+            count={bulkSelection.count}
+            onClear={bulkSelection.clear}
+            actions={[
+              {
+                id: 'delete',
+                label: t('gallery.actions.delete'),
+                variant: 'danger',
+                onClick: () => void handleBulkDelete(),
+              },
+            ]}
+          />
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {items.map((item, index) => (
             <article
               key={item.id}
               className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-sm"
             >
-              <button
-                type="button"
-                className="block w-full aspect-video bg-slate-100 dark:bg-slate-800 overflow-hidden"
-                onClick={() => openEdit(item)}
-              >
-                <img
-                  src={resolvePublicMediaUrl(item.mediaPath)}
-                  alt={item.title}
-                  className="h-full w-full object-cover object-top"
-                />
-              </button>
+              <div className="relative">
+                <label className="absolute top-3 left-3 z-10">
+                  <input
+                    type="checkbox"
+                    className="rounded border-slate-300 dark:border-slate-600"
+                    checked={bulkSelection.isSelected(item.id)}
+                    onChange={() => bulkSelection.toggle(item.id)}
+                    aria-label={item.title}
+                  />
+                </label>
+                <button
+                  type="button"
+                  className="block w-full aspect-video bg-slate-100 dark:bg-slate-800 overflow-hidden"
+                  onClick={() => openEdit(item)}
+                >
+                  <img
+                    src={resolvePublicMediaUrl(item.mediaPath)}
+                    alt={item.title}
+                    className="h-full w-full object-cover object-top"
+                  />
+                </button>
+              </div>
               <div className="p-4 space-y-3">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
@@ -419,6 +469,7 @@ export const GalleryManager: React.FC = () => {
             </article>
           ))}
         </div>
+        </>
       )}
 
       {formOpen ? (

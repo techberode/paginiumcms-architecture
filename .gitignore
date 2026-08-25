@@ -7,6 +7,7 @@
 # Private local docs (NEVER commit) — personal ops / QA checklists only
 ###############################################################################
 SECURITY_ISSUES.md
+stable-release-audit.canvas.tsx
 PRIVATE_OPS_CHECKLIST.md
 LOCAL_PROJECT_CHECKLIST.md
 PRIVATE_DOMAIN_DEPLOY.md
@@ -105,6 +106,7 @@ backend/app/storage/
 backend/data/users/
 backend/data/drafts/
 backend/data/*.json
+backend/data/metrics/
 !backend/data/.gitkeep
 
 # Screenshots from manual QA

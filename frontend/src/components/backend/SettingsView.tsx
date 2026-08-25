@@ -20,8 +20,10 @@ import {
   translateSettingEnumOption,
   translateSettingFieldHelp,
   translateSettingFieldLabel,
+  translateSettingFieldTooltip,
   translateSettingGroup,
 } from '../../i18n/modules/settings/helpers';
+import { SettingFieldLabel } from './SettingHelpTooltip';
 import { zodFromRules } from '../../validation/zodFromRules';
 import { applyApiValidationErrors } from '../../validation/mapApiErrors';
 import {
@@ -419,6 +421,7 @@ const SettingFieldRow: React.FC<RowProps> = ({ groupKey, field, register, watch,
   const errorClass = error ? 'border-red-500 focus:ring-red-500' : '';
   const label = translateSettingFieldLabel(t, groupKey, field.key, field.label);
   const help = translateSettingFieldHelp(t, groupKey, field.key, field.help);
+  const tooltip = translateSettingFieldTooltip(t, groupKey, field.key);
 
   if (groupKey === 'branding' && (field.key === 'logoUrl' || field.key === 'faviconUrl')) {
     const currentValue = String(watch(field.key) ?? '');
@@ -505,22 +508,22 @@ const SettingFieldRow: React.FC<RowProps> = ({ groupKey, field, register, watch,
   return (
     <div>
       {field.type === 'bool' ? (
-        <label htmlFor={inputId} className="flex items-center gap-3 cursor-pointer">
+        <div className="flex items-center gap-3">
           <input
             id={inputId}
             type="checkbox"
             {...register(field.key, {
               setValueAs: (v) => v === true || v === 'on' || v === 'true' || v === 1,
             })}
-            className="h-4 w-4 rounded border-gray-300 text-indigo-600"
+            className="h-4 w-4 rounded border-gray-300 text-indigo-600 shrink-0"
           />
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{label}</span>
-        </label>
+          <SettingFieldLabel htmlFor={inputId} label={label} tooltip={tooltip} />
+        </div>
       ) : (
         <>
-          <label htmlFor={inputId} className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-            {label}
-          </label>
+          <div className="mb-1">
+            <SettingFieldLabel htmlFor={inputId} label={label} tooltip={tooltip} />
+          </div>
 
           {field.type === 'text' && (
             <textarea

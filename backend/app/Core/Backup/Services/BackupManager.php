@@ -326,6 +326,7 @@ class BackupManager implements BackupInterface
     public function scheduleBackup(string $interval, int $keep = 7): void
     {
         $schedule = [
+            'enabled' => true,
             'interval' => $interval,
             'keep' => $keep,
             'last_run' => null,
@@ -349,7 +350,21 @@ class BackupManager implements BackupInterface
         }
 
         $data = JsonHelper::decode(FileHelper::read($schedulePath));
-        return $data !== [] ? $data : ['enabled' => false];
+        if ($data === []) {
+            return ['enabled' => false];
+        }
+
+        $data['enabled'] = true;
+
+        return $data;
+    }
+
+    public function clearSchedule(): void
+    {
+        $schedulePath = $this->backupPath . '/schedule.json';
+        if (is_file($schedulePath)) {
+            unlink($schedulePath);
+        }
     }
 
     /**

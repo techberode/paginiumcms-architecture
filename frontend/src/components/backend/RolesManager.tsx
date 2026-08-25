@@ -4,8 +4,11 @@ import { Lock, Plus, RefreshCw, Shield, Trash2 } from 'lucide-react';
 import { rolesApi, type CustomRole, isValidRoleId, normalizeRoleId } from '../../api/roles';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
+import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { useI18n } from '../../context/I18nContext';
 import { AdminHintCard } from './AdminHintCard';
+import { BulkActionBar } from './BulkActionBar';
+import { summarizeBulkResult } from '../../types/bulk';
 
 function roleLabel(role: CustomRole, t: (key: string) => string): string {
   const known = t(`users.roles.${role.id}`);
@@ -54,6 +57,12 @@ export const RolesManager: React.FC = () => {
   useEffect(() => {
     void load();
   }, [load]);
+
+  const deletableRoleIds = useMemo(
+    () => roles.filter((role) => !role.system).map((role) => role.id),
+    [roles]
+  );
+  const bulkSelection = useBulkSelection(deletableRoleIds, String(roles.length));
 
   const suggestedId = useMemo(() => normalizeRoleId(newName), [newName]);
 
@@ -168,6 +177,29 @@ export const RolesManager: React.FC = () => {
       }
 
       toast.success(t('platform.roles.toast.deleted'));
+      await load();
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (bulkSelection.count === 0) {
+      return;
+    }
+    if (!confirm(t('platform.roles.confirmBulkDelete', { count: String(bulkSelection.count) }))) {
+      return;
+    }
+
+    setBusyId('bulk');
+    try {
+      const result = await rolesApi.bulkDelete(bulkSelection.selectedIds);
+      if (!result) {
+        toast.error(t('platform.roles.toast.bulkDeleteFailed'));
+        return;
+      }
+      toast.success(summarizeBulkResult(result, t));
+      bulkSelection.clear();
       await load();
     } finally {
       setBusyId(null);
@@ -293,6 +325,31 @@ export const RolesManager: React.FC = () => {
         <p className="text-sm text-slate-500">{t('platform.roles.empty')}</p>
       ) : (
         <div className="space-y-4">
+          <BulkActionBar
+            count={bulkSelection.count}
+            itemLabel={t('platform.roles.bulkItemLabel')}
+            onClear={bulkSelection.clear}
+            actions={[
+              {
+                id: 'delete',
+                label: t('platform.roles.bulkDelete'),
+                variant: 'danger',
+                disabled: busyId === 'bulk',
+                onClick: () => void handleBulkDelete(),
+              },
+            ]}
+          />
+          {deletableRoleIds.length > 0 && (
+            <label className="inline-flex items-center gap-2 text-sm font-semibold">
+              <input
+                type="checkbox"
+                checked={bulkSelection.allSelected}
+                onChange={() => bulkSelection.toggleAll()}
+                aria-label={t('platform.roles.bulkDelete')}
+              />
+              {t('platform.roles.bulkDelete')}
+            </label>
+          )}
           {roles.map((role) => {
             const draft = drafts[role.id] ?? { name: role.name, permissions: role.permissions };
             const dirty =
@@ -307,6 +364,15 @@ export const RolesManager: React.FC = () => {
               >
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
+                    {!role.system && (
+                      <input
+                        type="checkbox"
+                        checked={bulkSelection.isSelected(role.id)}
+                        onChange={() => bulkSelection.toggle(role.id)}
+                        aria-label={role.id}
+                        className="h-4 w-4 rounded border-gray-300 text-indigo-600"
+                      />
+                    )}
                     <Lock className="w-4 h-4 text-indigo-500" />
                     <div>
                       <h3 className="text-sm font-black text-slate-900 dark:text-white">

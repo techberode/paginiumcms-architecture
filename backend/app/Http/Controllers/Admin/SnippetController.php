@@ -8,6 +8,8 @@ use PaginiumCMS\Core\Layout\Services\ShortcodeExpanderService;
 use PaginiumCMS\Core\Snippets\Services\SnippetCatalogSeeder;
 use PaginiumCMS\Core\Snippets\Services\SnippetInvalidationService;
 use PaginiumCMS\Core\Snippets\Services\SnippetRepository;
+use PaginiumCMS\Http\Support\BulkBatchResult;
+use PaginiumCMS\Http\Support\BulkIdsParser;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Http\Support\RequestJsonBody;
 use Psr\Http\Message\ResponseInterface;
@@ -116,5 +118,26 @@ final class SnippetController
         }
 
         return $this->json->success($response, ['name' => $name, 'removed' => true]);
+    }
+
+    public function bulkDelete(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $names = BulkIdsParser::fromRequest($request);
+        if ($names === []) {
+            return $this->json->error($response, 'No snippets selected', 400);
+        }
+
+        $batch = new BulkBatchResult();
+        foreach ($names as $name) {
+            try {
+                $this->snippets->delete($name);
+                $this->invalidation->invalidateForSnippet($name);
+                $batch->addSuccess($name);
+            } catch (RuntimeException $exception) {
+                $batch->addFailure($name, $exception->getMessage());
+            }
+        }
+
+        return $this->json->success($response, $batch->toArray(), 200, 'Snippets deleted');
     }
 }

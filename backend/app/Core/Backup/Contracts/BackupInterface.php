@@ -87,7 +87,9 @@ interface BackupInterface
      *
      * @return array Informácie o pláne.
  * @return array<int|string, mixed>
- */public function getScheduleInfo(): array;
+ */    public function getScheduleInfo(): array;
+
+    public function clearSchedule(): void;
 
     /**
      * Spustí zálohu podľa schedule.json, ak je termín splnený.

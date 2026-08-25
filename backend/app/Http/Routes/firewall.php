@@ -22,9 +22,11 @@ return function (App $app): void {
         $group->get('/incidents', [$controller, 'incidents']);
         $group->get('/bans', [$controller, 'bans']);
         $group->post('/bans', [$controller, 'createBan']);
+        $group->post('/bans/bulk-unban', [$controller, 'bulkUnban']);
         $group->delete('/bans/{ip}', [$controller, 'deleteBan']);
         $group->get('/whitelist', [$controller, 'whitelist']);
         $group->post('/whitelist', [$controller, 'addWhitelist']);
+        $group->post('/whitelist/bulk-remove', [$controller, 'bulkRemoveWhitelist']);
         $group->delete('/whitelist/{ip}', [$controller, 'removeWhitelist']);
     })
         ->add(new RoleMiddleware($authz, ['ADMIN', 'SUPER_ADMIN']))

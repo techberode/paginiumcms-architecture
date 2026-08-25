@@ -26,6 +26,7 @@ return function (App $app): void {
     $app->group('/api/admin/categories', function (RouteCollectorProxy $group) use ($controller) {
         $group->get('', [$controller, 'index']);
         $group->post('', [$controller, 'store']);
+        $group->post('/bulk-delete', [$controller, 'bulkDelete']);
         $group->put('/{slug}', [$controller, 'update']);
         $group->delete('/{slug}', [$controller, 'delete']);
     })

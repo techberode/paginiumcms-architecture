@@ -8,6 +8,8 @@ use PaginiumCMS\Core\Cache\ContentCacheService;
 use PaginiumCMS\Core\CodePolicy\Exceptions\CodePolicyViolationException;
 use PaginiumCMS\Core\Layout\Services\ShortcodeCatalogSeeder;
 use PaginiumCMS\Core\Layout\Services\ShortcodeDefinitionManager;
+use PaginiumCMS\Http\Support\BulkBatchResult;
+use PaginiumCMS\Http\Support\BulkIdsParser;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Support\JsonHelper;
@@ -117,5 +119,26 @@ final class ShortcodeController
         }
 
         return $this->json->success($response, ['name' => $name, 'removed' => true]);
+    }
+
+    public function bulkDelete(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $names = BulkIdsParser::fromRequest($request);
+        if ($names === []) {
+            return $this->json->error($response, 'No shortcodes selected', 400);
+        }
+
+        $batch = new BulkBatchResult();
+        foreach ($names as $name) {
+            try {
+                $this->shortcodes->delete($name);
+                $this->contentCache->invalidatePage();
+                $batch->addSuccess($name);
+            } catch (RuntimeException $exception) {
+                $batch->addFailure($name, $exception->getMessage());
+            }
+        }
+
+        return $this->json->success($response, $batch->toArray(), 200, 'Shortcodes deleted');
     }
 }

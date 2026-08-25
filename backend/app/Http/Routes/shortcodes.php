@@ -30,6 +30,7 @@ return function (App $app): void {
 
         $group->get('', [$controller, 'index']);
         $group->post('/preview', [$controller, 'preview']);
+        $group->post('/bulk-delete', [$controller, 'bulkDelete']);
         $group->get('/{name}', [$controller, 'show']);
         $group->put('/{name}', [$controller, 'save']);
         $group->delete('/{name}', [$controller, 'delete']);

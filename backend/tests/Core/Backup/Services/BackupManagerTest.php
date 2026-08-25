@@ -133,6 +133,16 @@ class BackupManagerTest extends TestCase
         $schedule = $this->backupManager->getScheduleInfo();
         $this->assertEquals('daily', $schedule['interval']);
         $this->assertEquals(7, $schedule['keep']);
+        $this->assertTrue($schedule['enabled']);
+    }
+
+    public function testClearScheduleRemovesPlan(): void
+    {
+        $this->backupManager->scheduleBackup('daily', 7);
+        $this->backupManager->clearSchedule();
+
+        $schedule = $this->backupManager->getScheduleInfo();
+        $this->assertFalse($schedule['enabled']);
     }
 
     public function testGetScheduleInfo(): void
@@ -145,6 +155,7 @@ class BackupManagerTest extends TestCase
         $schedule = $this->backupManager->getScheduleInfo();
         $this->assertEquals('weekly', $schedule['interval']);
         $this->assertEquals(14, $schedule['keep']);
+        $this->assertTrue($schedule['enabled']);
     }
 
     public function testRunScheduledBackupIfDueWithoutSchedule(): void

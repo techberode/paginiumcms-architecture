@@ -1,4 +1,5 @@
 import apiClient from './client';
+import type { BulkBatchResult } from '../types/bulk';
 
 export type GalleryItemStatus = 'draft' | 'published';
 
@@ -70,6 +71,11 @@ export async function deleteGalleryItem(
     return { ok: true };
   }
   return { ok: false, error: res.error ?? 'Failed to delete gallery item.' };
+}
+
+export async function bulkDeleteGalleryItems(ids: string[]): Promise<BulkBatchResult | null> {
+  const res = await apiClient.post<BulkBatchResult>('/api/admin/gallery/bulk-delete', { ids });
+  return res.success && res.data ? res.data : null;
 }
 
 export async function reorderGalleryItems(

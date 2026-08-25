@@ -1,4 +1,5 @@
 import { apiClient } from './client';
+import type { BulkBatchResult } from '../types/bulk';
 
 export interface ExtensionRecord {
   id: string;
@@ -32,6 +33,11 @@ export const extensionsApi = {
   disable: async (id: string) => apiClient.put(`/api/admin/extensions/${encodeURIComponent(id)}/disable`),
 
   uninstall: async (id: string) => apiClient.delete(`/api/admin/extensions/${encodeURIComponent(id)}`),
+
+  bulkUninstall: async (ids: string[]): Promise<BulkBatchResult | null> => {
+    const response = await apiClient.post<BulkBatchResult>('/api/admin/extensions/bulk-uninstall', { ids });
+    return response.success && response.data ? response.data : null;
+  },
 
   importArchive: async (file: File): Promise<ExtensionImportResult | null> => {
     const formData = new FormData();

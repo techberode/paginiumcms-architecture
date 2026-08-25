@@ -81,5 +81,28 @@ export const backupsSk: MessageTree = {
     deleteFailed: 'Mazanie zálohy zlyhalo.',
     bulkDeleteFailed: 'Hromadné mazanie zlyhalo.',
     bulkRestoreFailed: 'Hromadná obnova zlyhala.',
+    scheduleSaved: 'Plán automatickej zálohy bol uložený.',
+    scheduleDisabled: 'Automatická záloha bola vypnutá.',
+    scheduleFailed: 'Uloženie plánu zálohy zlyhalo.',
+  },
+  schedule: {
+    title: 'Automatické zálohy',
+    intro:
+      'Plánované zálohy bežia mimo prehliadača cez plánovač jobov a cron na serveri. Nastavte všetky tri kroky — inak sa nič automaticky nespustí.',
+    stepScheduler: 'Zapnite plánovač jobov a job backup-scheduled v Platforma → Plánovač.',
+    stepCron: 'Pridajte cron na hostiteľovi (viď docs/deploy/CRON.md) — typicky scheduler:run každú minútu.',
+    stepHere: 'Tu zvoľte interval a retenciu a uložte.',
+    enabled: 'Zapnúť automatické zálohy',
+    interval: 'Interval',
+    keep: 'Ponechať posledných záloh',
+    intervals: {
+      daily: 'Denne',
+      weekly: 'Týždenne',
+      monthly: 'Mesačne',
+    },
+    nextRun: 'Ďalší beh: :at',
+    lastRun: 'Posledný beh: :at',
+    save: 'Uložiť plán',
+    saving: 'Ukladám…',
   },
 };

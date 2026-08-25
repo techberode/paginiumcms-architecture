@@ -6,8 +6,11 @@ import {
   type SnippetListItem,
 } from '../../api/snippets';
 import { useToast } from '../../hooks/useToast';
+import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { useI18n } from '../../context/I18nContext';
 import { AdminBodyPreviewPanel } from './AdminBodyPreviewPanel';
+import { BulkActionBar } from './BulkActionBar';
+import { summarizeBulkResult } from '../../types/bulk';
 
 const emptySnippet = (name: string): SnippetDocument => ({
   name,
@@ -34,6 +37,9 @@ export const SnippetsManager: React.FC = () => {
   const [newName, setNewName] = useState('');
   const [draftName, setDraftName] = useState<string | null>(null);
   draftNameRef.current = draftName;
+
+  const snippetNames = useMemo(() => items.map((item) => item.name), [items]);
+  const bulkSelection = useBulkSelection(snippetNames, String(items.length));
 
   const isDirty = useMemo(() => JSON.stringify(snippet) !== JSON.stringify(original), [snippet, original]);
 
@@ -170,6 +176,31 @@ export const SnippetsManager: React.FC = () => {
     }
   };
 
+  const handleBulkDelete = async () => {
+    if (bulkSelection.count === 0) {
+      return;
+    }
+    if (!window.confirm(t('platform.snippets.confirmBulkDelete', { count: String(bulkSelection.count) }))) {
+      return;
+    }
+    try {
+      const result = await snippetsApi.bulkDelete(bulkSelection.selectedIds);
+      if (!result) {
+        toast.error(t('platform.snippets.toast.bulkDeleteFailed'));
+        return;
+      }
+      toast.success(summarizeBulkResult(result, t));
+      if (snippet && bulkSelection.selectedIds.includes(snippet.name)) {
+        setSnippet(null);
+        setOriginal(null);
+      }
+      bulkSelection.clear();
+      await loadList();
+    } catch {
+      toast.error(t('platform.snippets.toast.bulkDeleteFailed'));
+    }
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -222,15 +253,48 @@ export const SnippetsManager: React.FC = () => {
 
       <div className="grid gap-6 lg:grid-cols-[16rem,1fr]">
         <aside className="rounded-xl border border-slate-200 dark:border-slate-700">
-          <div className="border-b px-4 py-3 text-xs font-bold uppercase tracking-wide text-slate-500">
-            {t('platform.snippets.registry')}
+          <div className="border-b px-4 py-3 text-xs font-bold uppercase tracking-wide text-slate-500 flex items-center justify-between gap-2">
+            <span>{t('platform.snippets.registry')}</span>
+            {items.length > 0 && (
+              <input
+                type="checkbox"
+                checked={bulkSelection.allSelected}
+                onChange={() => bulkSelection.toggleAll()}
+                aria-label={t('platform.snippets.bulkDelete')}
+                className="rounded"
+              />
+            )}
           </div>
+          <BulkActionBar
+            count={bulkSelection.count}
+            itemLabel={t('platform.snippets.bulkItemLabel')}
+            onClear={bulkSelection.clear}
+            actions={[
+              {
+                id: 'delete',
+                label: t('platform.snippets.bulkDelete'),
+                variant: 'danger',
+                onClick: () => void handleBulkDelete(),
+              },
+            ]}
+          />
           <ul className="max-h-[32rem] overflow-auto p-2">
             {sidebarItems.length === 0 ? (
               <li className="px-2 py-4 text-xs text-slate-500">{t('platform.snippets.empty')}</li>
             ) : (
               sidebarItems.map((item) => (
-                <li key={item.name}>
+                <li key={item.name} className="flex items-stretch gap-1">
+                  {items.some((saved) => saved.name === item.name) && (
+                    <label className="flex items-center px-1 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={bulkSelection.isSelected(item.name)}
+                        onChange={() => bulkSelection.toggle(item.name)}
+                        aria-label={item.name}
+                        className="rounded"
+                      />
+                    </label>
+                  )}
                   <button
                     type="button"
                     onClick={() => {
@@ -239,7 +303,7 @@ export const SnippetsManager: React.FC = () => {
                       }
                       setSelectedName(item.name);
                     }}
-                    className={`w-full rounded-lg px-3 py-2 text-left text-sm ${
+                    className={`flex-1 rounded-lg px-3 py-2 text-left text-sm ${
                       selectedName === item.name
                         ? 'bg-indigo-600 text-white'
                         : 'hover:bg-slate-100 dark:hover:bg-slate-800'

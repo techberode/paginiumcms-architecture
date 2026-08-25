@@ -1,4 +1,5 @@
 import { apiClient } from './client';
+import type { BulkBatchResult } from '../types/bulk';
 
 export interface SnippetListItem {
   name: string;
@@ -36,6 +37,11 @@ export const snippetsApi = {
     ),
 
   delete: async (name: string) => apiClient.delete(`/api/admin/snippets/${encodeURIComponent(name)}`),
+
+  bulkDelete: async (ids: string[]): Promise<BulkBatchResult | null> => {
+    const response = await apiClient.post<BulkBatchResult>('/api/admin/snippets/bulk-delete', { ids });
+    return response.success && response.data ? response.data : null;
+  },
 };
 
 export function buildSnippetInsertTag(name: string): string {

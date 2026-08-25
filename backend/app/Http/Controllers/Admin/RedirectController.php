@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Controllers\Admin;
 
 use PaginiumCMS\Core\Seo\Services\RedirectStore;
+use PaginiumCMS\Http\Support\BulkBatchResult;
+use PaginiumCMS\Http\Support\BulkIdsParser;
 use PaginiumCMS\Http\Support\JsonResponder;
 use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
@@ -95,6 +97,26 @@ final class RedirectController
         }
 
         return $this->json->success($response, ['deleted' => true]);
+    }
+
+    public function bulkDelete(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $ids = BulkIdsParser::fromRequest($request);
+        if ($ids === []) {
+            return $this->json->error($response, 'No redirect rules selected', 400);
+        }
+
+        $batch = new BulkBatchResult();
+        foreach ($ids as $id) {
+            try {
+                $this->store->delete($id);
+                $batch->addSuccess($id);
+            } catch (InvalidArgumentException $exception) {
+                $batch->addFailure($id, $exception->getMessage());
+            }
+        }
+
+        return $this->json->success($response, $batch->toArray(), 200, 'Redirect rules deleted');
     }
 
     public function resolve(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface

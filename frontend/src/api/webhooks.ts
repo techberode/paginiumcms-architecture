@@ -1,4 +1,5 @@
 import apiClient, { type ApiResponse } from './client';
+import type { BulkBatchResult } from '../types/bulk';
 
 export interface WebhookMetadata {
   id: string;
@@ -84,5 +85,11 @@ export const webhooksApi = {
     return apiClient
       .get<{ deliveries: WebhookDelivery[] }>(`/api/admin/platform/webhooks/${encodeURIComponent(id)}/deliveries`)
       .then((r) => r.data?.deliveries ?? []);
+  },
+
+  bulkDelete(ids: string[]): Promise<BulkBatchResult | null> {
+    return apiClient
+      .post<BulkBatchResult>('/api/admin/platform/webhooks/bulk-delete', { ids })
+      .then((r) => (r.success && r.data ? r.data : null));
   },
 };

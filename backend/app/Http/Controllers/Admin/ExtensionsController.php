@@ -6,6 +6,8 @@ namespace PaginiumCMS\Http\Controllers\Admin;
 
 use PaginiumCMS\Core\CodePolicy\Exceptions\CodePolicyViolationException;
 use PaginiumCMS\Http\Extensions\Contracts\PluginManagerInterface;
+use PaginiumCMS\Http\Support\BulkBatchResult;
+use PaginiumCMS\Http\Support\BulkIdsParser;
 use PaginiumCMS\Http\Support\JsonResponder;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -103,5 +105,25 @@ final class ExtensionsController
         }
 
         return $this->json->success($response, ['id' => $id, 'removed' => true]);
+    }
+
+    public function bulkUninstall(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $ids = BulkIdsParser::fromRequest($request);
+        if ($ids === []) {
+            return $this->json->error($response, 'No extensions selected', 400);
+        }
+
+        $batch = new BulkBatchResult();
+        foreach ($ids as $id) {
+            try {
+                $this->plugins->uninstall($id);
+                $batch->addSuccess($id);
+            } catch (RuntimeException $exception) {
+                $batch->addFailure($id, $exception->getMessage());
+            }
+        }
+
+        return $this->json->success($response, $batch->toArray(), 200, 'Extensions uninstalled');
     }
 }

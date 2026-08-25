@@ -43,6 +43,7 @@ export const galleryEn: MessageTree = {
   confirm: {
     delete: 'Delete this gallery item?',
     importReplace: 'Import will replace all current gallery items. Continue?',
+    bulkDelete: 'Delete :count selected gallery item(s)?',
   },
   toast: {
     loadFailed: 'Failed to load gallery items.',
@@ -52,6 +53,7 @@ export const galleryEn: MessageTree = {
     reordered: 'Gallery order updated.',
     saveFailed: 'Failed to save gallery item.',
     deleteFailed: 'Failed to delete gallery item.',
+    bulkFailed: 'Bulk delete failed.',
     exported: 'Gallery export downloaded.',
     imported: 'Imported {count} gallery items.',
     importFailed: 'Failed to import gallery JSON.',

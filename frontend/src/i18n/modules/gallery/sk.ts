@@ -43,6 +43,7 @@ export const gallerySk: MessageTree = {
   confirm: {
     delete: 'Odstrániť túto položku galérie?',
     importReplace: 'Import nahradí všetky aktuálne položky galérie. Pokračovať?',
+    bulkDelete: 'Odstrániť :count vybraných položiek galérie?',
   },
   toast: {
     loadFailed: 'Nepodarilo sa načítať galériu.',
@@ -52,6 +53,7 @@ export const gallerySk: MessageTree = {
     reordered: 'Poradie galérie bolo aktualizované.',
     saveFailed: 'Nepodarilo sa uložiť položku.',
     deleteFailed: 'Nepodarilo sa odstrániť položku.',
+    bulkFailed: 'Hromadné mazanie zlyhalo.',
     exported: 'Export galérie bol stiahnutý.',
     imported: 'Importovaných {count} položiek galérie.',
     importFailed: 'Import JSON galérie zlyhal.',

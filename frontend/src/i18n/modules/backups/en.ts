@@ -81,5 +81,28 @@ export const backupsEn: MessageTree = {
     deleteFailed: 'Failed to delete backup.',
     bulkDeleteFailed: 'Bulk delete failed.',
     bulkRestoreFailed: 'Bulk restore failed.',
+    scheduleSaved: 'Automatic backup schedule saved.',
+    scheduleDisabled: 'Automatic backup schedule disabled.',
+    scheduleFailed: 'Failed to save backup schedule.',
+  },
+  schedule: {
+    title: 'Automatic backups',
+    intro:
+      'Scheduled backups run outside the browser via the job scheduler and server cron. Configure all three steps — otherwise nothing runs automatically.',
+    stepScheduler: 'Enable job scheduler and the backup-scheduled job in Platform → Scheduler.',
+    stepCron: 'Add cron on the host (see docs/deploy/CRON.md) — typically scheduler:run every minute.',
+    stepHere: 'Choose interval and retention here, then save.',
+    enabled: 'Enable automatic backups',
+    interval: 'Interval',
+    keep: 'Keep latest backups',
+    intervals: {
+      daily: 'Daily',
+      weekly: 'Weekly',
+      monthly: 'Monthly',
+    },
+    nextRun: 'Next run: :at',
+    lastRun: 'Last run: :at',
+    save: 'Save schedule',
+    saving: 'Saving…',
   },
 };

@@ -28,12 +28,17 @@ final class MediaThumbnailServiceTest extends TestCase
             $this->markTestSkipped('GD extension is not available.');
         }
 
-        $source = $this->fixtureDir . '/source.png';
+        $source = $this->fixtureDir . '/source.jpg';
         $image = imagecreatetruecolor(800, 400);
-        $color = imagecolorallocate($image, 220, 40, 80);
-        $this->assertNotFalse($color);
-        imagefilledrectangle($image, 0, 0, 799, 399, $color);
-        imagepng($image, $source);
+        for ($y = 0; $y < 400; ++$y) {
+            for ($x = 0; $x < 800; ++$x) {
+                $color = imagecolorallocate($image, ($x + $y) % 256, ($x * 3) % 256, ($y * 5) % 256);
+                if ($color !== false) {
+                    imagesetpixel($image, $x, $y, $color);
+                }
+            }
+        }
+        imagejpeg($image, $source, 95);
         imagedestroy($image);
 
         $service = new MediaThumbnailService();

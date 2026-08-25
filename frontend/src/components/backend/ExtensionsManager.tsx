@@ -1,12 +1,15 @@
-import React, { useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Puzzle, RefreshCw, Trash2, Upload } from 'lucide-react';
 import { extensionsApi, ExtensionRecord } from '../../api/extensions';
 import { queryKeys } from '../../api/queryKeys';
 import { useAdminListQuery } from '../../hooks/useAdminListQuery';
+import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { useToast } from '../../hooks/useToast';
 import { AdminListSkeleton } from '../ui/AdminListSkeleton';
+import { BulkActionBar } from './BulkActionBar';
 import { useI18n } from '../../context/I18nContext';
+import { summarizeBulkResult } from '../../types/bulk';
 
 export const ExtensionsManager: React.FC = () => {
   const { t } = useI18n();
@@ -20,6 +23,9 @@ export const ExtensionsManager: React.FC = () => {
     queryKey: queryKeys.extensions.list,
     queryFn: () => extensionsApi.list(),
   });
+
+  const extensionIds = useMemo(() => items.map((item) => item.id), [items]);
+  const bulkSelection = useBulkSelection(extensionIds, String(items.length));
 
   const handleImport = async (file: File) => {
     setImporting(true);
@@ -80,6 +86,29 @@ export const ExtensionsManager: React.FC = () => {
     }
   };
 
+  const handleBulkUninstall = async () => {
+    if (bulkSelection.count === 0) {
+      return;
+    }
+    if (!window.confirm(t('platform.extensions.confirm.bulkUninstall', { count: String(bulkSelection.count) }))) {
+      return;
+    }
+
+    setBusyId('bulk');
+    try {
+      const result = await extensionsApi.bulkUninstall(bulkSelection.selectedIds);
+      if (!result) {
+        toastError(t('platform.extensions.toast.bulkUninstallFailed'));
+        return;
+      }
+      success(summarizeBulkResult(result, t));
+      bulkSelection.clear();
+      await queryClient.invalidateQueries({ queryKey: queryKeys.extensions.list });
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -132,11 +161,45 @@ export const ExtensionsManager: React.FC = () => {
           {t('platform.extensions.empty')}
         </div>
       ) : (
-        <div className="grid gap-4">
+        <>
+          <BulkActionBar
+            count={bulkSelection.count}
+            itemLabel={t('platform.extensions.bulkItemLabel')}
+            onClear={bulkSelection.clear}
+            actions={[
+              {
+                id: 'uninstall',
+                label: t('platform.extensions.bulkUninstall'),
+                variant: 'danger',
+                disabled: busyId === 'bulk',
+                onClick: () => void handleBulkUninstall(),
+              },
+            ]}
+          />
+          {items.length > 0 && (
+            <label className="inline-flex items-center gap-2 text-sm font-semibold">
+              <input
+                type="checkbox"
+                checked={bulkSelection.allSelected}
+                onChange={() => bulkSelection.toggleAll()}
+                aria-label={t('platform.extensions.bulkUninstall')}
+              />
+              {t('platform.extensions.bulkUninstall')}
+            </label>
+          )}
+          <div className="grid gap-4">
           {items.map((item) => (
             <article key={item.id} className="rounded-lg border bg-white dark:bg-gray-900 p-4 shadow-sm">
               <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    checked={bulkSelection.isSelected(item.id)}
+                    onChange={() => bulkSelection.toggle(item.id)}
+                    aria-label={item.name}
+                    className="mt-1 rounded"
+                  />
+                  <div>
                   <h2 className="text-lg font-semibold">{item.name}</h2>
                   <p className="text-sm text-gray-500">
                     {item.id} · v{item.version || '—'}
@@ -159,6 +222,7 @@ export const ExtensionsManager: React.FC = () => {
                         {t('platform.extensions.frontend')}
                       </span>
                     ) : null}
+                  </div>
                   </div>
                 </div>
 
@@ -189,6 +253,7 @@ export const ExtensionsManager: React.FC = () => {
             </article>
           ))}
         </div>
+        </>
       )}
     </div>
   );

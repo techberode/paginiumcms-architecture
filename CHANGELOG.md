@@ -4,7 +4,17 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## Unreleased
 
-_(none)_
+### Admin UX & platform hygiene
+
+- Settings help/tooltips: removed internal iteration references from operator-facing copy; Slovak locale fully translated for monitoring, SMTP, connectors, and scheduler fields.
+- **Backups:** automatic schedule UI in Backup Manager (interval, retention, enable/disable); `enabled` flag in schedule API response.
+- **API keys:** bulk purge of revoked/expired keys from flat-file storage (`POST /api/admin/platform/api-keys/bulk-purge`).
+- **Scheduler:** localized recent-run messages in admin UI via i18n mapping.
+- **Bulk actions:** extended to Gallery, Categories, Webhooks, Redirects, Extensions, Firewall, Shortcodes, Snippets, and custom Roles (BE `BulkIdsParser` + FE `BulkActionBar` pattern).
+- **Code policy:** documented in `docs/en/architecture/CODE_POLICY.md`; settings i18n for `untrustedMaxFileSizeKb`.
+- **Settings i18n:** Hybrid Engine / code policy / gallery / system-update field labels and enum options fully localized (SK/EN parity).
+- **CI:** API barrel exports (`categories`, `origin`, `roles`, `snippets`, `blogSidebar`); fix `adminNavSections.test.ts` import paths; robust `MediaThumbnailServiceTest` fixture (noisy JPEG).
+- Docs: automatic backup activation steps in `docs/*/user/ADMIN_GUIDE.md`; security checklist in admin guide; Origin panel timeline entry for beta.59.
 
 ## History rules
 

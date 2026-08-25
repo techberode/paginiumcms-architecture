@@ -11,6 +11,9 @@ export const settingsEn: MessageTree = {
     "saveFailed": "Save failed",
     "groupCount": ":count groups"
   },
+  "helpTooltip": {
+    "toggle": "Show detailed help"
+  },
   "twoFactor": {
     "title": "Two-factor authentication (2FA)",
     "description": "QR code and TOTP authenticator setup lives in the account security section.",
@@ -131,7 +134,7 @@ export const settingsEn: MessageTree = {
     "gitProbeStatus": "Git publish status",
     "gitProbeStrategy": "Configured strategy",
     "performanceGuardTitle": "Performance Guard (APM)",
-    "performanceGuardIntro": "In-request latency and I/O sampling. Disabled by default — tune budgets for your hardware. Does not replace host metrics (It.46).",
+    "performanceGuardIntro": "In-request latency and I/O sampling. Disabled by default — tune budgets for your hardware. Does not replace host metrics.",
     "performanceGuardOverhead": "Overhead grows with sample rate; ring buffer retains the latest 500 route templates without content payloads.",
     "docsLink": "Hybrid Engine architecture documentation"
   },
@@ -186,7 +189,7 @@ export const settingsEn: MessageTree = {
       },
       "shortcodes": {
         "name": "Shortcodes",
-        "description": "Compose with shortcodes in Markdown / WYSIWYG (It.58d)."
+        "description": "Compose with shortcodes in Markdown / WYSIWYG."
       },
       "outline": {
         "name": "Block outline",
@@ -350,7 +353,8 @@ export const settingsEn: MessageTree = {
     "maintenance": {
       "mode": {
         "label": "Active mode",
-        "help": "Only one mode can be active at a time."
+        "help": "Only one mode can be active at a time.",
+        "tooltip": "Off = public site runs normally. Coming Soon = teaser page with optional newsletter; login and admin still work. Under Maintenance = visitors see the maintenance page; registration is blocked and the public API may return 503 for non-admin routes depending on middleware."
       },
       "heroImageUrl": {
         "label": "Background image (URL)",
@@ -410,7 +414,7 @@ export const settingsEn: MessageTree = {
       },
       "storageFormat": {
         "label": "Content storage format",
-        "help": "md = YAML front matter + Markdown; json = pure JSON file (Iteration 19)."
+        "help": "md = YAML front matter + Markdown; json = pure JSON file."
       },
       "defaultStatus": {
         "label": "Default content status",
@@ -418,15 +422,15 @@ export const settingsEn: MessageTree = {
       },
       "autoSaveInterval": {
         "label": "Auto-save interval (s)",
-        "help": "How often drafts are saved (Iteration 2)."
+        "help": "How often drafts are saved."
       },
       "lockTtl": {
         "label": "Content lock TTL (s)",
-        "help": "Auto-release lock after inactivity (Iteration 1)."
+        "help": "Auto-release lock after inactivity."
       },
       "autoTagEnabled": {
         "label": "Tag suggestions in editor",
-        "help": "Enables “Suggest tags” in the article editor (It.57)."
+        "help": "Enables “Suggest tags” in the article editor."
       },
       "autoTagMax": {
         "label": "Max suggested tags",
@@ -434,11 +438,25 @@ export const settingsEn: MessageTree = {
       },
       "autoDescriptionEnabled": {
         "label": "Meta description generator",
-        "help": "Enables “Generate description” in the editor (It.57)."
+        "help": "Enables “Generate description” in the editor."
       },
       "autoDescriptionMaxLength": {
         "label": "Max meta description length (chars)",
         "help": "Recommended 150–160 characters for SEO."
+      },
+      "localeFallbackEnabled": {
+        "label": "Enable locale fallback",
+        "help": "When a requested language is missing, fall back to defaultLocale or site language.",
+        "tooltip": "Affects public content reads only. If an article has no Slovak variant, the CMS can serve the default locale document instead of 404. Does not auto-translate — it reuses an existing locale file."
+      },
+      "localeNegotiationEnabled": {
+        "label": "Accept-Language for public content",
+        "help": "Public GET may pick locale from Accept-Language when ?locale= is absent.",
+        "tooltip": "Browsers send Accept-Language on first visit. When enabled, listing and detail endpoints may choose the best matching locale before fallback rules apply."
+      },
+      "staleReviewMonths": {
+        "label": "Stale content threshold (months)",
+        "help": "Published content older than this (since last review/edit) is flagged stale. 0 = off."
       }
     },
     "editor": {
@@ -448,11 +466,11 @@ export const settingsEn: MessageTree = {
       },
       "defaultProfilePage": {
         "label": "Default profile (pages)",
-        "help": "Modular toolbar for pages (Iteration 54)."
+        "help": "Modular toolbar for pages."
       },
       "defaultProfileArticle": {
         "label": "Default profile (articles)",
-        "help": "Modular toolbar for articles (Iteration 54)."
+        "help": "Modular toolbar for articles."
       },
       "spellcheck": {
         "label": "Spellcheck",
@@ -463,7 +481,7 @@ export const settingsEn: MessageTree = {
       },
       "customComponentsEnabled": {
         "label": "Enable custom editor components",
-        "help": "Plugins can register custom blocks for Markdown and WYSIWYG (It.60)."
+        "help": "Plugins can register custom blocks for Markdown and WYSIWYG."
       },
       "profileCustomComponents": {
         "label": "Custom components by profile (JSON)",
@@ -473,7 +491,7 @@ export const settingsEn: MessageTree = {
     "navigationUi": {
       "defaultPreviewScale": {
         "label": "Default hover preview scale (×10)",
-        "help": "Value 15 = 1.5× scale on menu icon hover (It.56)."
+        "help": "Value 15 = 1.5× scale on menu icon hover."
       },
       "maxTooltipWidthPx": {
         "label": "Max tooltip width (px)",
@@ -487,7 +505,7 @@ export const settingsEn: MessageTree = {
     "navigation": {
       "placement": {
         "label": "Menu placement",
-        "help": "Top bar, side cascade tree, or both on desktop (It.84e)."
+        "help": "Top bar, side cascade tree, or both on desktop."
       },
       "sideBreakpoint": {
         "label": "Side nav breakpoint",
@@ -517,6 +535,22 @@ export const settingsEn: MessageTree = {
       },
       "maxLength": {
         "label": "Max comment length"
+      },
+      "spamHeuristicsEnabled": {
+        "label": "Spam heuristics",
+        "help": "Honeypot + score (links, disposable email, velocity). When off, honeypot remains."
+      },
+      "spamMaxLinks": {
+        "label": "Spam: max links in text"
+      },
+      "spamVelocityMaxPerHour": {
+        "label": "Spam: max comments / IP / hour"
+      },
+      "spamQuarantineThreshold": {
+        "label": "Spam: quarantine threshold (score)"
+      },
+      "spamRejectThreshold": {
+        "label": "Spam: reject threshold (score)"
       }
     },
     "contact": {
@@ -649,7 +683,7 @@ export const settingsEn: MessageTree = {
     "ui": {
       "showListCounts": {
         "label": "Show counts in sidebar",
-        "help": "Badge counts on admin modules (Iteration 42)."
+        "help": "Badge counts on admin modules."
       },
       "adminListPageSize": {
         "label": "Items per page (admin)",
@@ -670,7 +704,8 @@ export const settingsEn: MessageTree = {
       },
       "requireTwoFactorStaff": {
         "label": "Require 2FA for editors and admins",
-        "help": "When enabled, 2FA cannot be disabled for EDITOR, ADMIN and SUPER_ADMIN roles."
+        "help": "When enabled, 2FA cannot be disabled for EDITOR, ADMIN and SUPER_ADMIN roles.",
+        "tooltip": "Editors and admins without a configured authenticator will be prompted to set up 2FA on next login. Does not affect public visitors or USER role accounts."
       },
       "passwordMinLength": {
         "label": "Minimum password length",
@@ -807,7 +842,8 @@ export const settingsEn: MessageTree = {
       },
       "scanRequestBody": {
         "label": "Scan POST/JSON body",
-        "help": "Enabled = WAF checks body of mutating requests (editor API is excluded). Disabled = URI and headers only."
+        "help": "Enabled = WAF checks body of mutating requests (editor API is excluded). Disabled = URI and headers only.",
+        "tooltip": "When enabled, JSON bodies on POST/PUT/PATCH are scanned for injection patterns. Content editor routes (/api/pages, /api/articles, drafts, code-editor) and multipart uploads are exempt to avoid false positives on legitimate HTML/Markdown saves."
       },
       "jailMinutes": {
         "label": "Jail duration (min)",
@@ -823,11 +859,13 @@ export const settingsEn: MessageTree = {
       },
       "jailMode": {
         "label": "Jail response",
-        "help": "HTTP response mode for blocked IPs. Tarpit slows bots (max 2 s)."
+        "help": "HTTP response mode for blocked IPs. Tarpit slows bots (max 2 s).",
+        "tooltip": "forbidden = HTTP 403 JSON; empty = connection close with minimal body; tarpit = intentional delay before response (ties up a PHP-FPM worker — keep tarpitSeconds ≤ 2)."
       },
       "tarpitSeconds": {
         "label": "Tarpit delay (s)",
-        "help": "Only when jailMode=tarpit. Not recommended >2 s (FPM worker)."
+        "help": "Only when jailMode=tarpit. Not recommended >2 s (FPM worker).",
+        "tooltip": "Each blocked request waits this many seconds inside PHP before responding. High values reduce throughput under bot floods but also consume worker slots."
       },
       "logRetention": {
         "label": "Max incidents in log"
@@ -857,6 +895,11 @@ export const settingsEn: MessageTree = {
       "logAuthEndpoints": {
         "label": "Log auth endpoints",
         "help": "Login/register paths — metadata only (IP, status), no body."
+      },
+      "includeResponseSize": {
+        "label": "Log response size (size_bytes)",
+        "help": "Adds size_bytes to http_access log entries (Content-Length or body size).",
+        "tooltip": "Response-size diagnostic. Helps spot slow responses that still transfer little data (session lock, cache miss). Does not log response bodies — only byte count."
       }
     },
     "feeds": {
@@ -906,6 +949,35 @@ export const settingsEn: MessageTree = {
       }
     },
     "media": {
+      "storageDriver": {
+        "label": "Media storage driver",
+        "help": "local = flat-file binaries under media/. S3 appears in UI but falls back to local until the driver ships."
+      },
+      "s3Endpoint": {
+        "label": "S3 endpoint URL"
+      },
+      "s3Region": {
+        "label": "S3 region"
+      },
+      "s3Bucket": {
+        "label": "S3 bucket"
+      },
+      "s3KeyId": {
+        "label": "S3 access key ID"
+      },
+      "s3Secret": {
+        "label": "S3 secret key"
+      },
+      "s3PathStyle": {
+        "label": "S3 path-style URLs",
+        "help": "Enable for MinIO and compatible services without virtual-hosted bucket URLs."
+      },
+      "s3PublicBaseUrl": {
+        "label": "Public base URL for S3 objects"
+      },
+      "s3Visibility": {
+        "label": "S3 object visibility"
+      },
       "allowedMimeTypes": {
         "label": "Allowed MIME types",
         "help": "Comma-separated. Affects Media Library upload."
@@ -926,7 +998,8 @@ export const settingsEn: MessageTree = {
     "sso": {
       "enabled": {
         "label": "Enable SSO login",
-        "help": "Enabled = external login is available (per enabled providers). Disabled = local accounts only."
+        "help": "Enabled = external login is available (per enabled providers). Disabled = local accounts only.",
+        "tooltip": "When off, only email/password login works. When on, configured OAuth providers appear on the login page; new SSO users receive the default role below unless mapped otherwise."
       },
       "defaultRole": {
         "label": "Default role (new account)"
@@ -1152,10 +1225,179 @@ export const settingsEn: MessageTree = {
         "label": "Retain run history entries"
       }
     },
+    "engine": {
+      "deploymentMode": {
+        "label": "Deployment mode",
+        "help": "Only Classic mode is active. Hybrid and Git headless appear as not installed.",
+        "tooltip": "Classic = flat-file SSOT on disk (default). Hybrid/Git modes are reserved for future engine iterations — changing this does not migrate data automatically."
+      },
+      "storageDriver": {
+        "label": "Storage driver",
+        "help": "Local flat-file driver (default). Remote drivers require later iterations.",
+        "tooltip": "Classic SSOT = JSON/Markdown on disk under data/. Remote storage is not active in this release."
+      },
+      "schemaValidationEnabled": {
+        "label": "JSON Schema validation",
+        "help": "When enabled, admin JSON documents are validated against registered schemas before write.",
+        "tooltip": "Protects flat-file data from invalid JSON shapes. Recommended on for production."
+      },
+      "capabilityProbeEnabled": {
+        "label": "Enable capability probe",
+        "help": "Expose engine capability diagnostics in admin settings.",
+        "tooltip": "The panel below shows cache, Git, and storage availability. Disabling hides the probe — engine behavior is unchanged."
+      },
+      "cacheDriver": {
+        "label": "Cache driver",
+        "help": "auto = memory + file chain. Redis appears as not installed when unavailable.",
+        "tooltip": "auto picks the best available driver at runtime. file persists across requests; memory is per-process only. Redis requires extension and correct env — probe panel below shows active driver."
+      },
+      "cacheDefaultTtlSeconds": {
+        "label": "Default cache TTL (seconds)",
+        "help": "Applies to new cache keys when no other TTL is specified (60–86400)."
+      },
+      "httpValidatorsEnabled": {
+        "label": "Enable HTTP ETag / Last-Modified",
+        "help": "Conditional requests on safe public GET endpoints (e.g. /api/settings/public).",
+        "tooltip": "Clients may send If-None-Match / If-Modified-Since and receive 304 with no body. Reduces traffic for public settings."
+      },
+      "gitEnabled": {
+        "label": "Enable Git publish distribution",
+        "help": "Git is distribution only; SSOT stays on disk. Default off.",
+        "tooltip": "When enabled, content writes can create Git commits in a configured working tree. It does not replace flat-file storage — failed Git operations do not roll back CMS writes."
+      },
+      "gitPublishStrategy": {
+        "label": "Git publish strategy",
+        "help": "disabled = no Git calls; immediate = commit per write; queued = batch release commit.",
+        "tooltip": "immediate adds latency to each mutating save; queued batches commits for deploy windows. Push still requires gitPushEnabled and valid credentials on the server."
+      },
+      "gitPublisher": {
+        "label": "Git publisher driver",
+        "help": "local = server git binary. github_api deferred in this release.",
+        "tooltip": "Publish runs on the server filesystem only. github_api requires token and outbound network — not active yet."
+      },
+      "gitRepositoryPath": {
+        "label": "Git repository path",
+        "help": "Absolute server path to a Git working tree containing pages/ and blog/ content. Never exposed to the frontend.",
+        "tooltip": "Must be writable by the PHP user. Empty = Git publish is skipped even when enabled."
+      },
+      "gitRemote": {
+        "label": "Git remote name",
+        "help": "Allow-listed remote name (e.g. origin)."
+      },
+      "gitBranch": {
+        "label": "Git branch",
+        "help": "Allow-listed branch name for optional push."
+      },
+      "gitPushEnabled": {
+        "label": "Push after commit",
+        "help": "When enabled, successful commits attempt git push to configured remote/branch.",
+        "tooltip": "Runs on the server filesystem only. Requires SSH keys or credentials available to the PHP user inside Docker — never exposed to the admin UI."
+      },
+      "gitCommitMessageTemplate": {
+        "label": "Commit message template",
+        "help": "Use {count} placeholder for number of staged files."
+      },
+      "performanceGuardEnabled": {
+        "label": "Enable Performance Guard (APM)",
+        "help": "Lightweight in-request latency and I/O sampling. Disabled by default.",
+        "tooltip": "Records per-route timings to a ring buffer shown on Dashboard. Overhead grows with sample rate; does not modify content or settings automatically unless remediation mode allows cache purge."
+      },
+      "performanceGuardSampleRate": {
+        "label": "APM sample rate",
+        "help": "1.0 = every request when enabled; lower values reduce overhead.",
+        "tooltip": "Use 0.1–0.3 on busy sites. Media/static routes are already excluded from skewing p95."
+      },
+      "performanceGuardLatencyMsWarning": {
+        "label": "Latency warning (ms)"
+      },
+      "performanceGuardLatencyMsCritical": {
+        "label": "Latency critical (ms)"
+      },
+      "performanceGuardBreachCount": {
+        "label": "Breaches before incident"
+      },
+      "performanceGuardWindowMinutes": {
+        "label": "Breach window (minutes)"
+      },
+      "performanceGuardRemediationMode": {
+        "label": "Remediation mode",
+        "help": "suggest = incidents only; automatic = allow-listed cache purge after probe.",
+        "tooltip": "automatic never enables Redis or changes engine mode — only safe cache/content-cache purges after repeated budget breaches. suggest logs incidents for manual review."
+      },
+      "performanceGuardServerTiming": {
+        "label": "Server-Timing header",
+        "help": "Expose sess-lock/storage/app phases in DevTools (also on when APP_DEBUG).",
+        "tooltip": "Adds W3C Server-Timing to HTTP responses for admins/debug. Visible in browser Network tab — disable on production if you prefer not to expose phase breakdown to clients."
+      }
+    },
+    "contentSecurity": {
+      "sanitizeHtmlOnSave": {
+        "label": "Sanitize HTML on save",
+        "help": "Removes dangerous tags and attributes from HTML/WYSIWYG output."
+      },
+      "stripExternalEntities": {
+        "label": "Strip external entities (XXE)",
+        "help": "Blocks external DTD and entities when parsing XML/HTML — recommended on."
+      },
+      "allowSvgInline": {
+        "label": "Allow inline SVG in content",
+        "help": "SVG may contain script — recommended off.",
+        "tooltip": "Inline SVG can carry JavaScript and external references. Keep disabled unless editors are fully trusted and you accept XSS review overhead."
+      },
+      "allowScriptTags": {
+        "label": "Allow <script> in content",
+        "help": "For trusted editors only; default off.",
+        "tooltip": "Enabling script tags in article/page HTML bypasses most XSS protections on render. Public pages will execute editor-supplied JavaScript."
+      },
+      "allowedHtmlTags": {
+        "label": "Allowed HTML tags",
+        "help": "Comma-separated whitelist. Layout shortcodes need div/article/section/aside/span.",
+        "tooltip": "Tags not in this list are stripped on save when sanitization is on. Overly permissive lists (iframe, object) increase XSS risk."
+      }
+    },
+    "uploadSecurity": {
+      "scanMagicBytes": {
+        "label": "Verify file magic bytes",
+        "help": "Compares file header with declared MIME type.",
+        "tooltip": "Blocks renamed executables (e.g. shell.php uploaded as image/jpeg). Recommended on for any internet-facing upload surface."
+      },
+      "blockDoubleExtensions": {
+        "label": "Block double extensions",
+        "help": "e.g. shell.php.jpg — common upload attack.",
+        "tooltip": "Rejects filenames with multiple extensions where the inner segment is executable. Complements MIME and magic-byte checks."
+      },
+      "blockExecutables": {
+        "label": "Block executable uploads",
+        "help": "Rejects PHP, shell scripts, and similar types regardless of extension."
+      },
+      "allowedExtensions": {
+        "label": "Allowed extensions",
+        "help": "Without dot, comma-separated.",
+        "tooltip": "Applied together with allowed MIME types and media settings. Tighten this list before enabling SVG or PDF if untrusted users can upload."
+      },
+      "maxUploadSizeKb": {
+        "label": "Max upload size (KB)"
+      },
+      "backupImportMaxSizeKb": {
+        "label": "Max backup import size (KB)",
+        "help": "Limit for ZIP backup import via admin."
+      },
+      "allowedMimeTypes": {
+        "label": "Allowed MIME types (upload)",
+        "help": "Comma-separated. Complements extension and magic-byte checks."
+      }
+    },
+    "accessControl": {
+      "pathAclEnabled": {
+        "label": "Enable path ACL",
+        "help": "Restrict access to selected flat-file content paths by role or permission.",
+        "tooltip": "When enabled, rules below are evaluated before content read/write APIs. Paths use glob semantics under content/pages and content/articles. SUPER_ADMIN bypasses path ACL."
+      }
+    },
     "codePolicy": {
       "enabled": {
-        "label": "Enable code policy checks",
-        "help": "Enabled = forbidden functions and file size checked before saving PHP files. Disabled = checks off."
+        "label": "Enable code policy checks (core)",
+        "help": "Applies to core Code Editor writes. Untrusted paths (plugins, themes, shortcodes) are always checked even when this is off."
       },
       "strictMode": {
         "label": "Strict extension namespace rules",
@@ -1163,6 +1405,10 @@ export const settingsEn: MessageTree = {
       },
       "maxFileSizeKb": {
         "label": "Max file size (KB)"
+      },
+      "untrustedMaxFileSizeKb": {
+        "label": "Max untrusted file size (KB)",
+        "help": "Size cap for plugins, themes, and layout shortcode files. Cannot exceed max file size above."
       },
       "forbiddenPhpFunctions": {
         "label": "Forbidden PHP functions",
@@ -1172,7 +1418,8 @@ export const settingsEn: MessageTree = {
     "workflows": {
       "registrationOtpEnabled": {
         "label": "OTP on registration",
-        "help": "New accounts are created only after email code verification (Iteration 41)."
+        "help": "New accounts are created only after email code verification.",
+        "tooltip": "Registration stores a pending user until the OTP from email is verified. Requires working SMTP/notification channel; otherwise registrations stall in pending state."
       },
       "commentApprovalOtpEnabled": {
         "label": "OTP for comment approval",
@@ -1180,7 +1427,8 @@ export const settingsEn: MessageTree = {
       },
       "publishApprovalOtpEnabled": {
         "label": "OTP for publishing",
-        "help": "Editors must confirm publishing with a code from email."
+        "help": "Editors must confirm publishing with a code from email.",
+        "tooltip": "Applies when an editor changes content status to published. Adds a second factor via email before the publish write is accepted — useful for regulated workflows."
       },
       "otpTtlMinutes": {
         "label": "OTP code validity (min)"
@@ -1188,12 +1436,191 @@ export const settingsEn: MessageTree = {
       "otpMaxAttempts": {
         "label": "Max OTP attempts"
       }
+    },
+    "gallery": {
+      "enabled": {
+        "label": "Enable gallery on public site",
+        "help": "Master switch for the admin screenshots section."
+      },
+      "placement": {
+        "label": "Placement",
+        "help": "Where the gallery appears: home page, dedicated route, both, or off."
+      },
+      "publicRoute": {
+        "label": "Public route",
+        "help": "Single-segment path without domain, e.g. /features."
+      },
+      "layout": {
+        "label": "Layout",
+        "help": "Grid = tiles; slider = carousel with autoplay; hero-strip = wide screenshot strip."
+      },
+      "effectPreset": {
+        "label": "Effect preset",
+        "help": "subtle = fade+scale; cinematic = crossfade+vignette; minimal = instant swap (no animation)."
+      },
+      "autoplayEnabled": {
+        "label": "Slider autoplay",
+        "help": "Applies to slider and hero-strip layouts. Pauses on hover/focus; off when prefers-reduced-motion."
+      },
+      "autoplayIntervalMs": {
+        "label": "Autoplay interval (ms)",
+        "help": "Time between slides (4000–15000 ms)."
+      },
+      "showFeatureTags": {
+        "label": "Show module tags",
+        "help": "Badge with module name (Analytics, Newsletter, …) on gallery items."
+      },
+      "modalCaptionStyle": {
+        "label": "Modal caption style",
+        "help": "below = under image; overlay = over bottom; side = beside image on wide screens."
+      }
+    },
+    "systemUpdate": {
+      "deployEnabled": {
+        "label": "Enable admin deploy",
+        "help": "SUPER_ADMIN can enqueue code deploy from Platform → System update. Ignored when DEMO_MODE=true."
+      },
+      "githubOwner": {
+        "label": "GitHub owner"
+      },
+      "githubRepo": {
+        "label": "GitHub repository"
+      },
+      "githubToken": {
+        "label": "GitHub token (repo read)",
+        "help": "Fine-grained or classic token with read access to code and releases."
+      },
+      "defaultBranch": {
+        "label": "Default branch"
+      },
+      "allowDeployMain": {
+        "label": "Allow deploy from branch (origin/…)"
+      },
+      "allowDeployTags": {
+        "label": "Allow deploy from semver tags"
+      },
+      "webhookDeployEnabled": {
+        "label": "Enable GitHub release webhook deploy",
+        "help": "When enabled, POST /api/webhooks/github/release queues deploy on release published (HMAC secret required)."
+      },
+      "githubWebhookSecret": {
+        "label": "GitHub webhook secret",
+        "help": "Same secret as configured in GitHub → Settings → Webhooks. Never logged."
+      }
     }
   },
   "enum": {
     "language": {
       "sk": "Slovak",
       "en": "English"
+    },
+    "deploymentMode": {
+      "classic": "Classic",
+      "hybrid": "Hybrid",
+      "git_headless": "Git headless"
+    },
+    "storageDriver": {
+      "local": "Local"
+    },
+    "cacheDriver": {
+      "auto": "Auto",
+      "memory": "Memory",
+      "file": "File",
+      "redis": "Redis"
+    },
+    "gitPublishStrategy": {
+      "disabled": "Disabled",
+      "immediate": "Immediate",
+      "queued": "Queued"
+    },
+    "gitPublisher": {
+      "local": "Local git",
+      "github_api": "GitHub API"
+    },
+    "performanceGuardRemediationMode": {
+      "off": "Off",
+      "suggest": "Suggest only",
+      "automatic": "Automatic"
+    },
+    "encryption": {
+      "none": "None",
+      "tls": "TLS",
+      "ssl": "SSL"
+    },
+    "toastPosition": {
+      "top-right": "Top right",
+      "top-left": "Top left",
+      "bottom-right": "Bottom right",
+      "bottom-left": "Bottom left"
+    },
+    "logIncidentConnector": {
+      "email": "Email",
+      "ntfy": "ntfy",
+      "discord": "Discord",
+      "telegram": "Telegram",
+      "webhook": "Webhook",
+      "all": "All channels"
+    },
+    "reportConnector": {
+      "email": "Email",
+      "ntfy": "ntfy",
+      "discord": "Discord",
+      "telegram": "Telegram",
+      "webhook": "Webhook",
+      "all": "All channels"
+    },
+    "reportInterval": {
+      "hourly": "Hourly",
+      "daily": "Daily",
+      "weekly": "Weekly"
+    },
+    "minSeverity": {
+      "debug": "Debug",
+      "info": "Info",
+      "notice": "Notice",
+      "warning": "Warning",
+      "error": "Error",
+      "critical": "Critical"
+    },
+    "defaultStatus": {
+      "draft": "Draft",
+      "published": "Published"
+    },
+    "storageFormat": {
+      "md": "Markdown + YAML",
+      "json": "JSON"
+    },
+    "defaultEditor": {
+      "markdown": "Markdown",
+      "wysiwyg": "WYSIWYG"
+    },
+    "jailMode": {
+      "forbidden": "403 Forbidden",
+      "empty": "Empty response",
+      "tarpit": "Tarpit"
+    },
+    "placement": {
+      "home": "Home page",
+      "route": "Dedicated route",
+      "both": "Both",
+      "off": "Off",
+      "top": "Top bar",
+      "side": "Side menu"
+    },
+    "layout": {
+      "grid": "Grid",
+      "slider": "Slider",
+      "hero-strip": "Hero strip"
+    },
+    "effectPreset": {
+      "subtle": "Subtle",
+      "cinematic": "Cinematic",
+      "minimal": "Minimal"
+    },
+    "modalCaptionStyle": {
+      "below": "Below image",
+      "overlay": "Overlay",
+      "side": "Side"
     }
   },
   "maintenance": {

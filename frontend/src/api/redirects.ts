@@ -1,5 +1,6 @@
 // frontend/src/api/redirects.ts
 import apiClient, { type ApiResponse } from './client';
+import type { BulkBatchResult } from '../types/bulk';
 
 export interface RedirectRule {
   id: string;
@@ -44,5 +45,10 @@ export const redirectsApi = {
       `/api/admin/platform/redirects/${encodeURIComponent(id)}`
     );
     return response.success;
+  },
+
+  async bulkDelete(ids: string[]): Promise<BulkBatchResult | null> {
+    const response = await apiClient.post<BulkBatchResult>('/api/admin/platform/redirects/bulk-delete', { ids });
+    return response.success && response.data ? response.data : null;
   },
 };

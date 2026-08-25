@@ -1,8 +1,8 @@
 // frontend/src/components/backend/BackupManager.tsx
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ShieldCheck, Upload } from 'lucide-react';
+import { CalendarClock, ShieldCheck, Upload } from 'lucide-react';
 import { backupApi } from '../../api/backup';
-import type { Backup } from '../../api/types';
+import type { Backup, ScheduleInfo } from '../../api/types';
 import { useToast } from '../../hooks/useToast';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { useAdminListPageSize } from '../../hooks/useAdminListPageSize';
@@ -26,6 +26,11 @@ export const BackupManager: React.FC = () => {
   const [importName, setImportName] = useState('');
   const importInputRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
+  const [schedule, setSchedule] = useState<ScheduleInfo | null>(null);
+  const [scheduleEnabled, setScheduleEnabled] = useState(false);
+  const [scheduleInterval, setScheduleInterval] = useState<'daily' | 'weekly' | 'monthly'>('daily');
+  const [scheduleKeep, setScheduleKeep] = useState(7);
+  const [savingSchedule, setSavingSchedule] = useState(false);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useAdminListPageSize('backups');
@@ -34,7 +39,20 @@ export const BackupManager: React.FC = () => {
   const loadBackups = useCallback(async () => {
     setLoading(true);
     try {
-      setBackups(await backupApi.getAll());
+      const [items, scheduleInfo] = await Promise.all([backupApi.getAll(), backupApi.getSchedule()]);
+      setBackups(items);
+      setSchedule(scheduleInfo);
+      if (scheduleInfo?.enabled) {
+        setScheduleEnabled(true);
+        if (scheduleInfo.interval) {
+          setScheduleInterval(scheduleInfo.interval);
+        }
+        if (typeof scheduleInfo.keep === 'number') {
+          setScheduleKeep(scheduleInfo.keep);
+        }
+      } else {
+        setScheduleEnabled(false);
+      }
     } catch {
       toast.error(t('backups.toast.loadFailed'));
     } finally {
@@ -214,6 +232,29 @@ export const BackupManager: React.FC = () => {
     }
   };
 
+  const handleSaveSchedule = async () => {
+    setSavingSchedule(true);
+    try {
+      const saved = await backupApi.schedule(
+        scheduleEnabled
+          ? { enabled: true, interval: scheduleInterval, keep: scheduleKeep }
+          : { enabled: false }
+      );
+      if (!saved) {
+        toast.error(t('backups.toast.scheduleFailed'));
+        return;
+      }
+      setSchedule(saved);
+      toast.success(
+        scheduleEnabled ? t('backups.toast.scheduleSaved') : t('backups.toast.scheduleDisabled')
+      );
+    } catch {
+      toast.error(t('backups.toast.scheduleFailed'));
+    } finally {
+      setSavingSchedule(false);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const classes = {
       completed: 'badge-success',
@@ -298,6 +339,71 @@ export const BackupManager: React.FC = () => {
               </p>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-header flex items-center gap-2">
+          <CalendarClock className="w-5 h-5 text-indigo-500" />
+          {t('backups.schedule.title')}
+        </div>
+        <div className="card-body space-y-4">
+          <p className="text-sm text-gray-600 dark:text-gray-300">{t('backups.schedule.intro')}</p>
+          <ol className="text-sm text-gray-600 dark:text-gray-300 list-decimal list-inside space-y-1">
+            <li>{t('backups.schedule.stepScheduler')}</li>
+            <li>{t('backups.schedule.stepCron')}</li>
+            <li>{t('backups.schedule.stepHere')}</li>
+          </ol>
+          <label className="inline-flex items-center gap-2 text-sm font-semibold">
+            <input
+              type="checkbox"
+              checked={scheduleEnabled}
+              onChange={(e) => setScheduleEnabled(e.target.checked)}
+              className="rounded"
+            />
+            {t('backups.schedule.enabled')}
+          </label>
+          {scheduleEnabled && (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <label className="block text-sm">
+                <span className="font-semibold">{t('backups.schedule.interval')}</span>
+                <select
+                  value={scheduleInterval}
+                  onChange={(e) => setScheduleInterval(e.target.value as 'daily' | 'weekly' | 'monthly')}
+                  className="form-input mt-1 w-full"
+                >
+                  <option value="daily">{t('backups.schedule.intervals.daily')}</option>
+                  <option value="weekly">{t('backups.schedule.intervals.weekly')}</option>
+                  <option value="monthly">{t('backups.schedule.intervals.monthly')}</option>
+                </select>
+              </label>
+              <label className="block text-sm">
+                <span className="font-semibold">{t('backups.schedule.keep')}</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={365}
+                  value={scheduleKeep}
+                  onChange={(e) => setScheduleKeep(Math.max(1, Math.min(365, Number(e.target.value) || 1)))}
+                  className="form-input mt-1 w-full"
+                />
+              </label>
+            </div>
+          )}
+          {schedule?.enabled && schedule.next_run && (
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              {t('backups.schedule.nextRun', { at: schedule.next_run })}
+              {schedule.last_run ? ` · ${t('backups.schedule.lastRun', { at: schedule.last_run })}` : ''}
+            </p>
+          )}
+          <button
+            type="button"
+            disabled={savingSchedule}
+            onClick={() => void handleSaveSchedule()}
+            className="btn btn-primary"
+          >
+            {savingSchedule ? t('backups.schedule.saving') : t('backups.schedule.save')}
+          </button>
         </div>
       </div>
 

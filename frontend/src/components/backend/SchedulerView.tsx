@@ -17,6 +17,7 @@ import { useToast } from '../../hooks/useToast';
 import { settingsGroupPath } from '../../utils/adminDeepLinks';
 import { useI18n } from '../../context/I18nContext';
 import { interpretJobRunOutcome, outcomeBadgeClass, type JobOutcome } from '../../utils/jobRunOutcome';
+import { translateJobRunMessage } from '../../utils/jobRunMessage';
 
 export const SchedulerView: React.FC = () => {
   const { t } = useI18n();
@@ -246,7 +247,7 @@ function RecentRunRow({ run }: { run: JobRunEntry }) {
           {outcomeLabel(outcome, t)}
         </span>
         <span className="font-mono text-xs text-indigo-600 shrink-0">{run.job_id}</span>
-        <span className="text-slate-600 dark:text-slate-300 truncate">{run.message}</span>
+        <span className="text-slate-600 dark:text-slate-300 truncate">{translateJobRunMessage(run, t)}</span>
       </span>
       <span className="shrink-0 text-xs text-slate-400 font-mono">{run.finished_at?.slice(0, 19) ?? '—'}</span>
     </li>

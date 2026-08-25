@@ -29,6 +29,7 @@ return function (App $app): void {
 
         $group->get('', [$controller, 'index']);
         $group->post('/import', [$controller, 'import']);
+        $group->post('/bulk-uninstall', [$controller, 'bulkUninstall']);
         $group->put('/{id}/enable', [$controller, 'enable']);
         $group->put('/{id}/disable', [$controller, 'disable']);
         $group->delete('/{id}', [$controller, 'uninstall']);

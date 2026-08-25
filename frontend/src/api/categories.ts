@@ -1,4 +1,5 @@
 import apiClient from './client';
+import type { BulkBatchResult } from '../types/bulk';
 
 export interface ContentCategory {
   slug: string;
@@ -33,5 +34,10 @@ export const categoriesApi = {
       `/api/admin/categories/${encodeURIComponent(slug)}`
     );
     return response.success;
+  },
+
+  bulkDelete: async (ids: string[]): Promise<BulkBatchResult | null> => {
+    const response = await apiClient.post<BulkBatchResult>('/api/admin/categories/bulk-delete', { ids });
+    return response.success && response.data ? response.data : null;
   },
 };
