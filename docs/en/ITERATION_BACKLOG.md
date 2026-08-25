@@ -1,6 +1,6 @@
 # PaginiumCMS — consolidated backlog
 
-> **Snapshot:** `v2.1.0-beta.57` · August 17, 2026  
+> **Snapshot:** `v2.1.0-beta.59` · August 25, 2026  
 > **🔒 Stabilization phase active:** [STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) — freeze new iterations until exit criteria met  
 > **Rule:** the active backlog contains only unshipped or precisely bounded remaining scope  
 > **No-SQL:** [architecture/NOSQL_MANDATE.md](architecture/NOSQL_MANDATE.md)  

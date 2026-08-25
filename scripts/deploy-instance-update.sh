@@ -152,8 +152,8 @@ if [[ "${SKIP_FRONTEND:-0}" != "1" ]]; then
 fi
 
 if [[ "${SKIP_RESTART:-0}" != "1" && -n "$STACK_DIR" && -x "$STACK_DIR/stack.sh" ]]; then
-  echo "→ recreate PHP via $STACK_DIR/stack.sh (reload code + opcache)"
-  "$STACK_DIR/stack.sh" up -d --force-recreate php
+  echo "→ recreate stack via $STACK_DIR/stack.sh (reload code + opcache + nginx mounts)"
+  "$STACK_DIR/stack.sh" up -d --force-recreate
   echo "→ waiting ${HEALTH_WAIT_SEC}s (502 right after restart is normal — ISS-096)"
   sleep "$HEALTH_WAIT_SEC"
 elif [[ "${SKIP_RESTART:-0}" != "1" && -n "$STACK_DIR" ]]; then

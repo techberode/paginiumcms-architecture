@@ -101,23 +101,52 @@ When health and login return `500` and the demo data tree is missing, follow [IS
 
 ## 6. Deploying a demo release
 
+Use the same host deploy script as production, with demo paths and port **8091**:
+
 ```bash
-APP_ROOT=/var/www/paginiumcms-demo
-STACK_DIR=/var/lib/docker/compose/paginiumcms-demo
-RELEASE_REF=v2.1.0-beta.23
+cd /var/www/paginiumcms-demo
+git fetch origin --tags
 
-cd "$APP_ROOT"
-git fetch origin --tags --prune
-git checkout --detach "$RELEASE_REF"
-
-composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
-cd frontend && npm ci && npm run build:prod && cd ..
-
-"$STACK_DIR/stack.sh" config --quiet
-"$STACK_DIR/stack.sh" up -d --build
+DEPLOY_FORCE=1 \
+APP_ROOT=/var/www/paginiumcms-demo \
+STACK_DIR=/var/lib/docker/compose/paginiumcms-demo \
+BACKEND_PORT=8091 \
+GIT_REF=v2.1.0-beta.59 \
+./scripts/deploy-instance-update.sh
 ```
 
-Run seed/reset after deployment when needed. Demo reset is a data operation, not a substitute for code deployment.
+The deploy script recreates **both** PHP and nginx (`stack.sh up -d --force-recreate`). Nginx must be recreated when `docker-compose.prod.yml` gains new bind mounts (e.g. `security-headers.conf`); restarting PHP alone leaves API on **502** while the SPA still returns 200.
+
+After deploy, run seed/reset when needed:
+
+```bash
+/var/lib/docker/compose/paginiumcms-demo/stack.sh \
+  exec -T -u www-data php \
+  php backend/bin/console demo:reset-if-due
+```
+
+Demo reset is a data operation, not a substitute for code deployment.
+
+### 502 on `/api/*` while `/` returns 200
+
+Typical cause: **demo nginx container crash loop** — `default.conf` includes `security-headers.conf`, but the running container was created without the bind mount.
+
+Check:
+
+```bash
+/var/lib/docker/compose/paginiumcms-demo/stack.sh ps
+docker logs paginiumcms-demo-nginx-1 --tail 20
+curl -sS http://127.0.0.1:8091/api/health
+```
+
+Fix:
+
+```bash
+cd /var/lib/docker/compose/paginiumcms-demo
+./stack.sh up -d --force-recreate
+```
+
+Ensure `docker-compose.prod.yml` mounts `${APP_ROOT}/docker/nginx/security-headers.conf` (copy from `docs/deploy/docker-compose.prod.yml` on the release tag).
 
 ## 7. CORS and [ISS-098](../ISSUES.md#iss-098)
 
