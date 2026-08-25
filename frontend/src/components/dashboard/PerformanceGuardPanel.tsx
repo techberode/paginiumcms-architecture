@@ -1,16 +1,43 @@
 // frontend/src/components/dashboard/PerformanceGuardPanel.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useI18n } from '../../context/I18nContext';
-import type { ApmOverview } from '../../api/metrics';
+import { useToast } from '../../hooks/useToast';
+import { clearApmSamples, type ApmOverview } from '../../api/metrics';
 
 interface Props {
   overview: ApmOverview | null;
   loading?: boolean;
+  onRefresh?: () => void;
 }
 
-export const PerformanceGuardPanel: React.FC<Props> = ({ overview, loading }) => {
+export const PerformanceGuardPanel: React.FC<Props> = ({ overview, loading, onRefresh }) => {
   const { t } = useI18n();
+  const toast = useToast();
+  const [clearing, setClearing] = useState(false);
+
+  const handleClearSamples = async () => {
+    if (!window.confirm(t('dashboard.panels.apm.clearConfirm'))) {
+      return;
+    }
+
+    setClearing(true);
+    try {
+      const ok = await clearApmSamples();
+      if (ok) {
+        toast.success(t('dashboard.panels.apm.clearSuccess'));
+        onRefresh?.();
+      } else {
+        toast.error(t('dashboard.panels.apm.clearFailed'));
+      }
+    } finally {
+      setClearing(false);
+    }
+  };
+
+  const canClear =
+    overview?.config.enabled === true &&
+    (overview.summary.sample_count > 0 || overview.recent_breaches.length > 0);
 
   return (
     <div className="card">
@@ -50,7 +77,35 @@ export const PerformanceGuardPanel: React.FC<Props> = ({ overview, loading }) =>
                 <dd className="text-lg font-semibold">{overview.recent_breaches.length}</dd>
               </div>
             </dl>
-            <p className="text-xs text-gray-500 dark:text-gray-400">{overview.host_metrics_note}</p>
+            {(overview.summary.storage_ms_p95 != null || overview.summary.session_lock_ms_p95 != null) && (
+              <dl className="grid grid-cols-2 gap-3 text-center mb-4">
+                {overview.summary.storage_ms_p95 != null && (
+                  <div>
+                    <dt className="text-xs text-gray-500">{t('dashboard.panels.apm.storageP95')}</dt>
+                    <dd className="text-lg font-semibold">{overview.summary.storage_ms_p95} ms</dd>
+                  </div>
+                )}
+                {overview.summary.session_lock_ms_p95 != null && (
+                  <div>
+                    <dt className="text-xs text-gray-500">{t('dashboard.panels.apm.sessionLockP95')}</dt>
+                    <dd className="text-lg font-semibold">{overview.summary.session_lock_ms_p95} ms</dd>
+                  </div>
+                )}
+              </dl>
+            )}
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs text-gray-500 dark:text-gray-400">{overview.host_metrics_note}</p>
+              {canClear ? (
+                <button
+                  type="button"
+                  className="text-xs text-red-600 hover:underline shrink-0 disabled:opacity-50"
+                  disabled={clearing}
+                  onClick={() => void handleClearSamples()}
+                >
+                  {clearing ? t('dashboard.panels.apm.clearing') : t('dashboard.panels.apm.clearSamples')}
+                </button>
+              ) : null}
+            </div>
           </>
         )}
       </div>

@@ -4,9 +4,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## Unreleased
 
-### Planned
-
-- **It.85 — Request diagnostics** — planned slices: `size_bytes` in access logs (85a), `storage_ms` in APM (85b), `session_lock_ms` (85c), optional `Server-Timing` header (85d), `apm_lock_wait_ms` (85e). See [docs/en/ITERATION_85.md](docs/en/ITERATION_85.md).
+_(none)_
 
 ## History rules
 
@@ -21,6 +19,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.59`](#release-2-1-0-beta-59) | 2026-08-25 | It.85 — request diagnostics, APM clear UI, Server-Timing |
 | [`2.1.0-beta.58`](#release-2-1-0-beta-58) | 2026-08-19 | Hotfix — session lock, media streaming/thumbnails, Performance Guard p95 |
 | [`2.1.0-beta.57`](#release-2-1-0-beta-57) | 2026-08-17 | It.84 — categories, blog sidebar, landing shortcodes, custom roles, nav layout |
 | [`2.1.0-beta.56`](#release-2-1-0-beta-56) | 2026-08-17 | It.82 Origin Panel — maintainer cockpit, probes, project catalog |
@@ -144,6 +143,35 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **ISS-141 follow-up** — all remaining `Http/Controllers/*` JSON mutating paths and OTP/contact rate-limit middleware now use `RequestJsonBody::decode()` (eliminates empty-body regressions site-wide after `BodyParsingMiddleware`).
 
 - **Shortcode expand + HTML sanitizer** — `allowedHtmlTags` now includes `div`, `article`, `section`, `aside`, `span` (required for It.58 expand templates); legacy settings merge missing layout tags on read; `role` attribute allowed on sanitized elements.
+
+<a id="release-2-1-0-beta-59"></a>
+
+## [2.1.0-beta.59] – 2026-08-25
+
+It.85 complete — request diagnostics (latency decomposition) + admin APM clear
+
+### Added
+
+- **It.85a `size_bytes` in access logs** — `http_access` context includes response size (`Content-Length` or body size); setting `logging.includeResponseSize` (default on).
+- **It.85b `storage_ms` in APM** — `InstrumentedStorage` times flat-file I/O; samples + aggregator `storage_ms_p95`.
+- **It.85c `session_lock_ms`** — measures `session_start()` lock wait + `session_held_ms`; aggregator `session_lock_ms_p95`.
+- **It.85d `Server-Timing` header** — `sess-lock`, `storage`, `app` phases in DevTools when `engine.performanceGuardServerTiming` or `APP_DEBUG`.
+- **It.85e `apm_lock_wait_ms`** — metrics ring-buffer file lock wait on each sample.
+- **It.85f Clear APM in admin** — Dashboard → Performance Guard → **Vymazať vzorky**; fixes `/api/admin/metrics/apm/clear` route wiring.
+
+### Fixed
+
+- **`AppVersion::VERSION`** fallback bumped to `2.1.0-beta.59` (admin health/CMS info no longer stuck on beta.57 after deploy).
+- **RBAC permission labels (FE i18n)** — six missing admin translations for access-control checklists (`git:publish`, `gallery:manage`, `metrics:read`, `api-keys:manage`, `redirects:manage`, `webhooks:manage`).
+- **Comment velocity test** — injectable clock in `CommentSubmissionVelocityStore` fixes flaky hour-boundary PHPUnit failure.
+- **Server-Timing locale** — numeric values use `.` decimal separator (SK locale no longer breaks middleware test / header format).
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.59`
+- **Iteration:** [It.85](docs/en/ITERATION_85.md) complete (`85a`–`85f`)
+
+---
 
 <a id="release-2-1-0-beta-58"></a>
 

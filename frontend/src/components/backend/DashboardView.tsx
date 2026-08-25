@@ -309,7 +309,7 @@ export const DashboardView: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <HealthPanel health={overview?.health ?? null} loading={false} />
-        <PerformanceGuardPanel overview={apm} loading={false} />
+        <PerformanceGuardPanel overview={apm} loading={false} onRefresh={() => void refetch()} />
       </div>
 
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">

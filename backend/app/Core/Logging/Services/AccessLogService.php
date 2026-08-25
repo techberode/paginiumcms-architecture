@@ -94,15 +94,44 @@ final class AccessLogService
             $entry->setUserId($userId);
         }
 
+        $sizeContext = $this->responseSizeContext($context);
+
         $entry->setContext(array_merge([
             'method' => strtoupper($method),
             'path' => $path,
             'status' => $status,
             'duration_ms' => round($durationMs, 2),
             'timestamp_utc' => gmdate('c'),
-        ], LogSanitizer::context($context)));
+        ], $sizeContext, LogSanitizer::context($context)));
 
         $this->writer->write($entry);
+    }
+
+    /**
+     * @param array<string, mixed> $context
+     * @return array<string, int|null>
+     */
+    private function responseSizeContext(array &$context): array
+    {
+        if (!$this->includeResponseSize() || !array_key_exists('size_bytes', $context)) {
+            return [];
+        }
+
+        $sizeBytes = $context['size_bytes'];
+        unset($context['size_bytes']);
+
+        if ($sizeBytes !== null && !is_int($sizeBytes)) {
+            return [];
+        }
+
+        return ['size_bytes' => $sizeBytes];
+    }
+
+    private function includeResponseSize(): bool
+    {
+        $logging = $this->settings->group('logging');
+
+        return (bool) ($logging['includeResponseSize'] ?? true);
     }
 
     public function purgeOldLogs(): int

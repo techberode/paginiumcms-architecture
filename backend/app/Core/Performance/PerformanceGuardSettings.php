@@ -64,6 +64,11 @@ final class PerformanceGuardSettings
             : self::REMEDIATION_SUGGEST;
     }
 
+    public function serverTimingEnabled(): bool
+    {
+        return (bool) ($this->engine()['performanceGuardServerTiming'] ?? false);
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -77,6 +82,7 @@ final class PerformanceGuardSettings
             'breach_count' => $this->breachCount(),
             'window_minutes' => $this->windowMinutes(),
             'remediation_mode' => $this->remediationMode(),
+            'server_timing' => $this->serverTimingEnabled(),
         ];
     }
 

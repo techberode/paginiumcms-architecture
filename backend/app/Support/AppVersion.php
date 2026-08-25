@@ -13,7 +13,7 @@ namespace PaginiumCMS\Support;
 final class AppVersion
 {
     /** Fallback when git tag cannot be resolved (e.g. exported tarball, CI without tags). */
-    public const VERSION = '2.1.0-beta.57';
+    public const VERSION = '2.1.0-beta.59';
 
     private static ?string $resolved = null;
 

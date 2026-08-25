@@ -31,7 +31,11 @@ final class CommentSpamHeuristicServiceTest extends TestCase
         $this->domains = new DisposableEmailDomainList($this->domainFile);
 
         $this->velocityFile = sys_get_temp_dir() . '/paginium_comment_velocity_' . uniqid('', true) . '.json';
-        $this->velocityStore = new CommentSubmissionVelocityStore($this->velocityFile);
+        $fixedNow = strtotime('2026-08-25T12:30:00+00:00');
+        $this->velocityStore = new CommentSubmissionVelocityStore(
+            $this->velocityFile,
+            static fn (): int => $fixedNow
+        );
 
         $settings = $this->createMock(SettingsRepositoryInterface::class);
         $settings->method('group')->with('comments')->willReturn([

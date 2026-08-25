@@ -23,6 +23,7 @@ use PaginiumCMS\Core\Security\SecurityLogger;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Http\Controllers\Admin\MetricsController;
 use PaginiumCMS\Http\Middleware\PerformanceGuardMiddleware;
+use PaginiumCMS\Http\Middleware\ServerTimingMiddleware;
 use PaginiumCMS\Http\Support\JsonResponder;
 use function DI\create;
 use function DI\get;
@@ -77,6 +78,11 @@ return [
             get(PerformanceRouteLabelResolver::class),
             get(PerformanceIncidentService::class),
             get(CacheManager::class)
+        ),
+    ServerTimingMiddleware::class => create(ServerTimingMiddleware::class)
+        ->constructor(
+            get(PerformanceGuardSettings::class),
+            get(PerformanceContext::class)
         ),
     MetricsController::class => create(MetricsController::class)
         ->constructor(

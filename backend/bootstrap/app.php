@@ -32,6 +32,7 @@ use PaginiumCMS\Http\Middleware\ApiKeyRateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\SessionReleaseMiddleware;
 use PaginiumCMS\Http\Middleware\PerformanceGuardMiddleware;
 use PaginiumCMS\Http\Middleware\RequestLoggingMiddleware;
+use PaginiumCMS\Http\Middleware\ServerTimingMiddleware;
 use PaginiumCMS\Support\AppVersion;
 use PaginiumCMS\Modules\Security\Services\AuthenticationManager;
 use PaginiumCMS\Modules\Security\Services\AuthorizationManager;
@@ -406,10 +407,12 @@ $containerBuilder->addDefinitions([
     // 6. SESSION MANAGER (BEZPEČNÁ VERZIA)
     // ============================================
 
-    SessionManager::class => function () {
+    SessionManager::class => function ($container) {
         static $instance = null;
         if ($instance === null) {
-            $instance = new \PaginiumCMS\Core\Security\SecureSessionManager();
+            $instance = new \PaginiumCMS\Core\Security\SecureSessionManager(
+                $container->get(\PaginiumCMS\Core\Performance\PerformanceContext::class)
+            );
         }
 
         return $instance;
@@ -1059,6 +1062,7 @@ if (DebugEventLogger::isEnabled()) {
 }
 
 $app->add($container->get(PerformanceGuardMiddleware::class));
+$app->add($container->get(ServerTimingMiddleware::class));
 $app->add($container->get(RequestLoggingMiddleware::class));
 
 if (DebugEventLogger::isEnabled()) {

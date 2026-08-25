@@ -292,7 +292,13 @@ export const settingsSk: MessageTree = {
       "media:upload": "Upload médií",
       "media:delete": "Mazanie médií",
       "settings:manage": "Správa nastavení",
+      "git:publish": "Publikovanie cez Git",
+      "gallery:manage": "Správa galérie",
       "logs:view": "Prehliadanie logov",
+      "metrics:read": "Čítanie metrik",
+      "api-keys:manage": "Správa API kľúčov",
+      "redirects:manage": "Správa presmerovaní",
+      "webhooks:manage": "Správa webhookov",
       "profile:edit": "Úprava profilu"
     }
   },

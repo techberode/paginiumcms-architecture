@@ -102,4 +102,15 @@ final class AccessLogServiceTest extends TestCase
         $this->assertCount(1, $entries);
         $this->assertSame(LogSeverity::ERROR, $entries[0]['severity'] ?? null);
     }
+
+    public function testStoresResponseSizeBytesWhenProvided(): void
+    {
+        $this->service->logRequest('127.0.0.1', 'GET', '/storage/app/content/media/a.png', 200, 45.0, null, [
+            'size_bytes' => 1_700_000,
+        ]);
+
+        $entries = $this->readEntries();
+        $this->assertCount(1, $entries);
+        $this->assertSame(1_700_000, $entries[0]['context']['size_bytes'] ?? null);
+    }
 }
