@@ -6,8 +6,10 @@ declare(strict_types=1);
  * Theme package admin API (It.67b). Auto-discovered from bootstrap/app.php.
  *
  *  - GET    /api/admin/themes
+ *  - POST   /api/admin/themes/deactivate
  *  - GET    /api/admin/themes/starter-package/{id}
  *  - POST   /api/admin/themes/import
+ *  - POST   /api/admin/themes/{id}/activate
  *  - DELETE /api/admin/themes/{id}
  */
 
@@ -28,8 +30,10 @@ return function (App $app): void {
         $controller = $container->get(ThemesController::class);
 
         $group->get('', [$controller, 'index']);
+        $group->post('/deactivate', [$controller, 'deactivate']);
         $group->get('/starter-package/{id}', [$controller, 'downloadStarter']);
         $group->post('/import', [$controller, 'import']);
+        $group->post('/{id}/activate', [$controller, 'activate']);
         $group->delete('/{id}', [$controller, 'uninstall']);
     })->add(new PermissionMiddleware($authz, 'settings:manage'))
         ->add($container->get(TwoFactorMiddleware::class))

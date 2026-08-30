@@ -137,6 +137,7 @@ export const PublicSiteLayout: React.FC = () => {
   const { getPageBySlug, getArticleBySlug, navigation } = usePublicSite();
   const { settings } = useSettingsContext();
   const siteName = String(settings?.general?.siteName ?? 'PaginiumCMS');
+  const activeThemeId = settings?.appearance?.activeThemeId ?? 'paginium-core';
   const navLayout = useMemo(() => resolveNavigationLayout(settings), [settings]);
   const showTopNav = navLayout.placement === 'top' || navLayout.placement === 'both';
   const showSideNav = navLayout.placement === 'side' || navLayout.placement === 'both';
@@ -209,7 +210,10 @@ export const PublicSiteLayout: React.FC = () => {
   return (
     <MaintenanceGate>
       <CookieConsentProvider>
-      <div className="min-h-screen flex flex-col bg-theme-surface text-theme-text transition-colors">
+      <div
+        className="min-h-screen flex flex-col bg-theme-surface text-theme-text transition-colors"
+        data-active-theme={activeThemeId}
+      >
       <DemoPublicStrip />
       {showCmsBar && <CMSBar currentDoc={currentDoc} />}
       <Navbar

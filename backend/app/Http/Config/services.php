@@ -233,6 +233,7 @@ use PaginiumCMS\Http\Themes\Services\ThemeManager;
 use PaginiumCMS\Http\Themes\Services\ThemeManifestValidator;
 use PaginiumCMS\Http\Themes\Services\ThemeStarterPackageService;
 use PaginiumCMS\Http\Themes\Services\ThemeRegistry;
+use PaginiumCMS\Http\Themes\Services\ThemeRuntimeService;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Http\Controllers\Locking\LockController;
 use PaginiumCMS\Http\Controllers\Media\MediaController;
@@ -450,6 +451,7 @@ return [
             get(GitCapabilityProbe::class),
             get(MediaStorageFactory::class),
             get(MediaStorageCapabilityProbe::class),
+            get(ThemeRuntimeService::class),
         ),
 
     GitPathValidator::class => create(GitPathValidator::class),
@@ -1106,10 +1108,18 @@ return [
         ),
     ThemeStarterPackageService::class => create(ThemeStarterPackageService::class)
         ->constructor(dirname(__DIR__, 3) . '/resources/theme-packages'),
+    ThemeRuntimeService::class => create(ThemeRuntimeService::class)
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(ThemeRegistry::class),
+            get(ContentCacheService::class),
+            dirname(__DIR__, 3) . '/resources/views/themes'
+        ),
     ThemeManager::class => create(ThemeManager::class)
         ->constructor(
             get(ThemeRegistry::class),
             get(ThemeImporter::class),
+            get(ThemeRuntimeService::class),
             dirname(__DIR__, 3) . '/resources/views/themes',
             dirname(__DIR__, 4) . '/frontend/src/themes'
         ),

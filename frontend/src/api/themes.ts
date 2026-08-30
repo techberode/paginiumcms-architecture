@@ -5,8 +5,15 @@ export interface ThemeRecord {
   name: string;
   version: string;
   enabled: boolean;
+  active?: boolean;
   installedAt: string;
   present: boolean;
+}
+
+export interface ThemeListResponse {
+  themes: ThemeRecord[];
+  activeThemeId: string;
+  coreThemeId: string;
 }
 
 export interface ThemeImportResult {
@@ -24,10 +31,24 @@ export interface ThemeImportResponse {
 }
 
 export const themesApi = {
-  list: async (): Promise<ThemeRecord[]> => {
-    const response = await apiClient.get<{ themes: ThemeRecord[] }>('/api/admin/themes');
-    return response.success && response.data ? response.data.themes : [];
+  list: async (): Promise<ThemeListResponse> => {
+    const response = await apiClient.get<ThemeListResponse>('/api/admin/themes');
+    if (response.success && response.data) {
+      return response.data;
+    }
+
+    return { themes: [], activeThemeId: 'paginium-core', coreThemeId: 'paginium-core' };
   },
+
+  activate: async (id: string) => apiClient.post<{ activeThemeId: string; previousThemeId: string | null }>(
+    `/api/admin/themes/${encodeURIComponent(id)}/activate`,
+    {},
+  ),
+
+  deactivate: async () => apiClient.post<{ activeThemeId: string; previousThemeId: string | null }>(
+    '/api/admin/themes/deactivate',
+    {},
+  ),
 
   uninstall: async (id: string) => apiClient.delete(`/api/admin/themes/${encodeURIComponent(id)}`),
 

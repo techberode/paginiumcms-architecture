@@ -64,6 +64,8 @@ final class SettingsSchema
                     ['key' => 'mode', 'type' => 'enum', 'label' => 'Režim zobrazenia', 'default' => 'system', 'options' => ['light', 'dark', 'system'], 'rules' => ['required', 'in:light,dark,system'], 'help' => 'Predvolený svetlý / tmavý režim alebo podľa systému.'],
                     ['key' => 'allowUserToggle', 'type' => 'bool', 'label' => 'Povoliť prepínač témy návštevníkom', 'default' => true, 'rules' => ['bool'], 'help' => 'Zobrazí prepínač svetlý/tmavý vo verejnom menu (localStorage).'],
                     ['key' => 'previewTemplate', 'type' => 'enum', 'label' => 'Náhľadová šablóna', 'default' => 'hero-content', 'options' => ['hero-content', 'single', 'two-column', 'landing', 'blog-article'], 'rules' => ['required', 'in:hero-content,single,two-column,landing,blog-article'], 'help' => 'Wireframe pre náhľad schémy v administrácii (It.58b/58c).'],
+                    ['key' => 'activeThemeId', 'type' => 'string', 'label' => 'Aktívna téma', 'default' => 'paginium-core', 'rules' => ['string', 'max:64'], 'help' => 'ID aktívneho theme balíka pre verejný shell. Default paginium-core = vstavaný layout.'],
+                    ['key' => 'previousThemeId', 'type' => 'string', 'label' => 'Predchádzajúca téma', 'default' => '', 'rules' => ['string', 'max:64'], 'help' => 'Posledná téma pred prepnutím (rollback hint pre admin).'],
                 ],
             ],
             'layout' => [

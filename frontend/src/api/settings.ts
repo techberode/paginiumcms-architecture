@@ -193,6 +193,7 @@ export interface PublicSettings {
     mode: 'light' | 'dark' | 'system';
     allowUserToggle: boolean;
     previewTemplate?: string;
+    activeThemeId?: string;
   };
   layout?: {
     builderMode: 'templates' | 'shortcodes' | 'outline' | 'developer';

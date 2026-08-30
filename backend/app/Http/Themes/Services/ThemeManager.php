@@ -15,6 +15,7 @@ final class ThemeManager
     public function __construct(
         private ThemeRegistry $registry,
         private ThemeImporter $importer,
+        private ThemeRuntimeService $runtime,
         private string $themesRoot,
         private string $frontendThemesRoot,
     ) {
@@ -27,6 +28,7 @@ final class ThemeManager
      */
     public function list(): array
     {
+        $activeThemeId = $this->runtime->resolveActiveThemeId();
         $items = [];
         foreach ($this->registry->all() as $id => $record) {
             $manifest = $this->readManifestIfPresent($id);
@@ -35,6 +37,7 @@ final class ThemeManager
                 'name' => (string) ($manifest['name'] ?? $id),
                 'version' => (string) ($manifest['version'] ?? ''),
                 'enabled' => $record->enabled,
+                'active' => $id === $activeThemeId,
                 'installedAt' => $record->installedAt,
                 'present' => is_dir($this->themesRoot . '/' . $id),
             ];
@@ -43,6 +46,11 @@ final class ThemeManager
         usort($items, static fn (array $a, array $b): int => strcmp((string) $a['id'], (string) $b['id']));
 
         return $items;
+    }
+
+    public function getActiveThemeId(): string
+    {
+        return $this->runtime->resolveActiveThemeId();
     }
 
     /**
@@ -60,9 +68,27 @@ final class ThemeManager
             throw new RuntimeException('Theme not found: ' . $id);
         }
 
+        $this->runtime->assertNotActive($id);
+
         $this->removeDir($this->themesRoot . '/' . $id);
         $this->removeDir($this->frontendThemesRoot . '/' . $id);
         $this->registry->remove($id);
+    }
+
+    /**
+     * @return array{activeThemeId: string, previousThemeId: string|null}
+     */
+    public function activate(string $id): array
+    {
+        return $this->runtime->activate($id);
+    }
+
+    /**
+     * @return array{activeThemeId: string, previousThemeId: string|null}
+     */
+    public function deactivate(): array
+    {
+        return $this->runtime->deactivate();
     }
 
     /**
