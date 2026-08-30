@@ -1,0 +1,13 @@
+{
+  "manifestVersion": 1,
+  "id": "terminal-breach",
+  "name": "Terminal Breach",
+  "version": "1.0.0",
+  "minCmsVersion": "2.1.0",
+  "description": "SOC-terminal public shell — monospace chrome, secure green accent, CSP-safe CSS only.",
+  "defaultColorScheme": "terminal-breach",
+  "defaultMode": "dark",
+  "slots": ["header", "main", "footer"],
+  "templates": ["default", "article", "landing-page"],
+  "supports": ["appearance-tokens", "branding", "navigation", "layout-templates"]
+}

@@ -1,0 +1,14 @@
+/**
+ * Terminal Breach — appearance token overrides (It.83e).
+ */
+:root {
+  --color-primary: #00e676;
+  --color-primary-foreground: #0a0e14;
+  --color-secondary: #6e7681;
+  --color-surface: #0a0e14;
+  --color-surface-elevated: #121820;
+  --color-text: #c9d1d9;
+  --color-text-muted: #6e7681;
+  --color-accent: #ff1744;
+  --color-border: #21262d;
+}

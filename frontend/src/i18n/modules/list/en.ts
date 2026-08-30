@@ -26,6 +26,7 @@ export const listEn: MessageTree = {
   },
   bulk: {
     selectedItems: 'selected items',
+    selectedOfTotal: ':selected of :total selected',
     clearSelection: 'Clear selection',
     allSucceeded: ':count item(s) updated',
     partialResult: ':succeeded succeeded, :failed failed',

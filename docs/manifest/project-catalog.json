@@ -1,7 +1,67 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-08-17",
+  "updatedAt": "2026-08-30",
+  "checklistDoc": "docs/manifest/implementation-checklist.json",
   "iterations": [
+    {
+      "id": "it.87",
+      "titleKey": "origin.catalog.it87",
+      "phase": "planned",
+      "targetVersion": "2.2.0",
+      "doc": "docs/en/ITERATION_87.md",
+      "priority": "high",
+      "items": [
+        { "id": "87e", "titleKey": "origin.catalog.it87_plan_schema", "phase": "planned", "weight": 1 },
+        { "id": "87f", "titleKey": "origin.catalog.it87_plan_api", "phase": "planned", "weight": 1 },
+        { "id": "87g", "titleKey": "origin.catalog.it87_planner_panel", "phase": "planned", "weight": 1 },
+        { "id": "87h", "titleKey": "origin.catalog.it87_content_deadlines", "phase": "planned", "weight": 1 },
+        { "id": "87i", "titleKey": "origin.catalog.it87_content_sync", "phase": "planned", "weight": 1 },
+        { "id": "87j", "titleKey": "origin.catalog.it87_dashboard_widgets", "phase": "planned", "weight": 1 },
+        { "id": "87a", "titleKey": "origin.catalog.it87_srcset", "phase": "planned", "weight": 1 },
+        { "id": "87b", "titleKey": "origin.catalog.it87_skeletons", "phase": "planned", "weight": 1 },
+        { "id": "87c", "titleKey": "origin.catalog.it87_empty_states", "phase": "planned", "weight": 1 },
+        { "id": "87d", "titleKey": "origin.catalog.it87_onboarding", "phase": "planned", "weight": 1 },
+        { "id": "87k", "titleKey": "origin.catalog.it87_theme_js_allowlist", "phase": "planned", "weight": 1 },
+        { "id": "87l", "titleKey": "origin.catalog.it87_theme_js_sri", "phase": "planned", "weight": 1 },
+        { "id": "87m", "titleKey": "origin.catalog.it87_theme_js_csp", "phase": "planned", "weight": 1 }
+      ],
+      "history": []
+    },
+    {
+      "id": "it.86",
+      "titleKey": "origin.catalog.it86",
+      "phase": "partial",
+      "since": "2.1.0-beta.60",
+      "targetVersion": "2.1.0-beta.60",
+      "doc": "CHANGELOG.md",
+      "priority": "medium",
+      "items": [
+        { "id": "86a", "titleKey": "origin.catalog.it86_admin_search", "probeId": "it.86.admin_search", "phase": "shipped", "weight": 1 },
+        { "id": "86b", "titleKey": "origin.catalog.it86_article_print", "probeId": "it.86.article_print", "phase": "shipped", "weight": 1 },
+        { "id": "86c", "titleKey": "origin.catalog.it86_bulk_selection", "probeId": "it.86.bulk_selection", "phase": "shipped", "weight": 1 },
+        { "id": "86d", "titleKey": "origin.catalog.it86_ux_audit", "phase": "deferred", "weight": 0 }
+      ],
+      "history": [
+        { "version": "2.1.0-beta.60", "date": "2026-08-30", "summaryKey": "origin.timeline.it86" }
+      ]
+    },
+    {
+      "id": "it.83",
+      "titleKey": "origin.catalog.it83",
+      "phase": "partial",
+      "since": "2.1.0-beta.59",
+      "doc": "CHANGELOG.md",
+      "priority": "medium",
+      "items": [
+        { "id": "83a", "titleKey": "origin.catalog.it83_theme_runtime", "probeId": "it.83.theme_runtime", "phase": "shipped", "weight": 1 },
+        { "id": "83b", "titleKey": "origin.catalog.it83_theme_packages", "probeId": "it.83.theme_packages", "phase": "shipped", "weight": 1 },
+        { "id": "83c", "titleKey": "origin.catalog.it83_landing_seed", "phase": "shipped", "weight": 1 },
+        { "id": "83d", "titleKey": "origin.catalog.it83_terminal_breach", "phase": "shipped", "weight": 1 }
+      ],
+      "history": [
+        { "version": "2.1.0-beta.59", "date": "2026-08-30", "summaryKey": "origin.timeline.it83" }
+      ]
+    },
     {
       "id": "it.67",
       "titleKey": "origin.catalog.it67",
@@ -170,6 +230,9 @@
     }
   ],
   "timeline": [
+    { "version": "2.1.0-beta.60", "date": "2026-08-30", "summaryKey": "origin.timeline.it86" },
+    { "version": "planned", "date": "2026-08-30", "summaryKey": "origin.timeline.it87" },
+    { "version": "2.1.0-beta.59", "date": "2026-08-30", "summaryKey": "origin.timeline.it83" },
     { "version": "2.1.0-beta.57", "date": "2026-08-17", "summaryKey": "origin.timeline.beta57" },
     { "version": "2.1.0-beta.55", "date": "2026-08-17", "summaryKey": "origin.timeline.beta55" },
     { "version": "2.1.0-beta.47", "date": "2026-08-15", "summaryKey": "origin.timeline.beta47" },

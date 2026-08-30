@@ -1,7 +1,7 @@
 // frontend/src/components/backend/AdminHeader.tsx
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Database, Globe, LogOut, Shield, Zap, Key, Menu, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { Database, Globe, LogOut, Shield, Zap, Key, Menu, PanelLeftClose, PanelLeftOpen, Search } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useCachePurge } from '../../hooks/useCachePurge';
 import { useI18n } from '../../context/I18nContext';
@@ -10,6 +10,7 @@ interface AdminHeaderProps {
   onGoToWebsite: () => void;
   onOpenMobileMenu?: () => void;
   onOpenChangePassword?: () => void;
+  onOpenCommandPalette?: () => void;
   sidebarCollapsed?: boolean;
   onToggleSidebar?: () => void;
 }
@@ -23,6 +24,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
   onGoToWebsite,
   onOpenMobileMenu,
   onOpenChangePassword,
+  onOpenCommandPalette,
   sidebarCollapsed = false,
   onToggleSidebar,
 }) => {
@@ -82,6 +84,21 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
       </div>
 
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        {onOpenCommandPalette && (
+          <button
+            type="button"
+            onClick={onOpenCommandPalette}
+            title={t('platform.commandPalette.openShortcut')}
+            className="hidden md:flex items-center gap-2 min-w-[12rem] lg:min-w-[14rem] px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 text-xs font-semibold transition-colors"
+          >
+            <Search className="w-4 h-4 shrink-0 text-indigo-500" />
+            <span className="truncate flex-1 text-left">{t('platform.commandPalette.headerPlaceholder')}</span>
+            <kbd className="hidden lg:inline text-[10px] font-bold px-1.5 py-0.5 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-400">
+              Ctrl+Shift+K
+            </kbd>
+          </button>
+        )}
+
         <span className="hidden lg:flex items-center gap-1.5 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 px-3 py-1.5 rounded-xl text-xs font-extrabold border border-emerald-200/60 dark:border-emerald-800/80">
           <Zap className="w-3.5 h-3.5 text-emerald-500 fill-emerald-500" />
           <span>{t('admin.header.apiMode')}</span>

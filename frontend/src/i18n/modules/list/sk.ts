@@ -26,6 +26,7 @@ export const listSk: MessageTree = {
   },
   bulk: {
     selectedItems: 'vybraných položiek',
+    selectedOfTotal: ':selected z :total vybraných',
     clearSelection: 'Zrušiť výber',
     allSucceeded: ':count položiek aktualizovaných',
     partialResult: ':succeeded úspešných, :failed zlyhalo',

@@ -13,12 +13,29 @@ import {
   originApi,
   type FeatureProbeStatus,
   type OriginCatalogIteration,
+  type OriginChecklistSlice,
+  type OriginDeployStatus,
   type OriginFeatureProbe,
   type OriginOverview,
 } from '../../api/origin';
 import { useI18n } from '../../context/I18nContext';
 import { useSettings } from '../../hooks/useSettings';
 import { useToast } from '../../hooks/useToast';
+
+const DEPLOY_STYLE: Record<string, string> = {
+  live: 'bg-emerald-100 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100',
+  partial_live: 'bg-teal-100 text-teal-900 dark:bg-teal-950/40 dark:text-teal-100',
+  pending_deploy: 'bg-amber-100 text-amber-950 dark:bg-amber-950/40 dark:text-amber-100',
+  unreleased: 'bg-violet-100 text-violet-900 dark:bg-violet-950/40 dark:text-violet-100',
+  in_progress: 'bg-indigo-100 text-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-100',
+  planned: 'bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
+};
+
+const CHECKLIST_ITEM_STYLE: Record<string, string> = {
+  done: 'bg-emerald-100 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100',
+  partial: 'bg-amber-100 text-amber-950 dark:bg-amber-950/40 dark:text-amber-100',
+  pending: 'bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
+};
 
 const STATUS_STYLE: Record<FeatureProbeStatus, string> = {
   implemented: 'bg-emerald-100 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100',
@@ -99,6 +116,45 @@ export const OriginPanelView: React.FC = () => {
 
   const catalog = overview?.catalog;
 
+  const deployLabel = (status: OriginDeployStatus | undefined) =>
+    status ? t(`origin.deploy.${status}`) : t('origin.deploy.planned');
+
+  const renderChecklistSlice = (slice: OriginChecklistSlice) => (
+    <li key={slice.id} className="rounded-lg border border-slate-200 p-3 dark:border-slate-700 space-y-3">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <div className="text-sm font-bold font-mono">{slice.id}</div>
+          {slice.catalogIterationIds.length > 0 ? (
+            <div className="text-[11px] text-slate-500 mt-1">{slice.catalogIterationIds.join(' · ')}</div>
+          ) : null}
+          {slice.issues.length > 0 ? (
+            <div className="text-[11px] text-slate-500 mt-1">{slice.issues.join(', ')}</div>
+          ) : null}
+        </div>
+        <div className="flex flex-col items-end gap-1">
+          <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${DEPLOY_STYLE[slice.deployStatus] ?? DEPLOY_STYLE.planned}`}>
+            {deployLabel(slice.deployStatus)}
+          </span>
+          <div className="text-lg font-black text-indigo-600">{slice.percentComplete}%</div>
+        </div>
+      </div>
+      <ProgressBar
+        percent={slice.percentComplete}
+        tone={slice.percentComplete >= 100 ? 'emerald' : slice.percentComplete > 0 ? 'amber' : 'indigo'}
+      />
+      <ul className="space-y-1.5">
+        {slice.items.map((item) => (
+          <li key={item.id} className="flex flex-wrap items-center justify-between gap-2 text-xs">
+            <span>{t(item.labelKey)}</span>
+            <span className={`rounded-full px-2 py-0.5 font-bold ${CHECKLIST_ITEM_STYLE[item.status]}`}>
+              {t(`origin.checklistItem.${item.status}`)}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </li>
+  );
+
   const renderIteration = (iteration: OriginCatalogIteration) => (
     <li key={iteration.id} className="rounded-lg border border-slate-200 p-3 dark:border-slate-700 space-y-3">
       <div className="flex flex-wrap items-start justify-between gap-2">
@@ -113,7 +169,14 @@ export const OriginPanelView: React.FC = () => {
             <div className="text-[11px] text-slate-500 mt-1">{t(`origin.phase.${iteration.phase}`)}</div>
           )}
         </div>
-        <div className="text-right">
+        <div className="flex flex-col items-end gap-1">
+          {iteration.deployStatus ? (
+            <span
+              className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${DEPLOY_STYLE[iteration.deployStatus] ?? DEPLOY_STYLE.planned}`}
+            >
+              {deployLabel(iteration.deployStatus)}
+            </span>
+          ) : null}
           <div className="text-lg font-black text-indigo-600">{iteration.percentComplete}%</div>
         </div>
       </div>
@@ -164,6 +227,17 @@ export const OriginPanelView: React.FC = () => {
         <>
           <section className="rounded-xl border border-slate-200 p-4 dark:border-slate-700 space-y-3">
             <h2 className="text-sm font-bold">{t('origin.sections.progress')}</h2>
+            {catalog.runtime ? (
+              <div className="flex flex-wrap gap-4 text-xs text-slate-600 dark:text-slate-300">
+                <div>
+                  {t('origin.runtime.appVersion')}:{' '}
+                  <strong className="font-mono">{catalog.runtime.appVersion}</strong>
+                </div>
+                <div>
+                  {t('origin.runtime.environment')}: <strong>{catalog.runtime.environment}</strong>
+                </div>
+              </div>
+            ) : null}
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
                 <div className="text-xs uppercase tracking-wide text-slate-500">{t('origin.summary.overall')}</div>
@@ -174,7 +248,7 @@ export const OriginPanelView: React.FC = () => {
               </div>
             </div>
             <ProgressBar percent={catalog.progress.percent} />
-            <div className="grid gap-3 sm:grid-cols-3 text-sm">
+            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-5 text-sm">
               <div>
                 {t('origin.summary.shippedIterations')}: <strong>{catalog.progress.shipped}</strong>
               </div>
@@ -184,8 +258,31 @@ export const OriginPanelView: React.FC = () => {
               <div>
                 {t('origin.summary.plannedIterations')}: <strong>{catalog.progress.planned}</strong>
               </div>
+              {typeof catalog.progress.liveOnInstance === 'number' ? (
+                <div>
+                  {t('origin.runtime.liveIterations')}: <strong>{catalog.progress.liveOnInstance}</strong>
+                </div>
+              ) : null}
+              {typeof catalog.progress.pendingDeploy === 'number' ? (
+                <div>
+                  {t('origin.runtime.pendingDeploy')}: <strong>{catalog.progress.pendingDeploy}</strong>
+                </div>
+              ) : null}
             </div>
           </section>
+
+          {catalog.checklist && catalog.checklist.slices.length > 0 ? (
+            <section className="rounded-xl border border-slate-200 p-4 dark:border-slate-700 space-y-4">
+              <h2 className="text-sm font-bold flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4" />
+                {t('origin.sections.operatorSlices')}
+              </h2>
+              <p className="text-xs text-slate-500">
+                {t('origin.checklistUpdated')}: {catalog.checklist.updatedAt}
+              </p>
+              <ul className="space-y-3">{catalog.checklist.slices.map(renderChecklistSlice)}</ul>
+            </section>
+          ) : null}
 
           <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">

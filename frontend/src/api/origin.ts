@@ -19,6 +19,45 @@ export interface OriginProbeSummary {
   total: number;
 }
 
+export type OriginDeployStatus =
+  | 'live'
+  | 'partial_live'
+  | 'pending_deploy'
+  | 'unreleased'
+  | 'in_progress'
+  | 'planned';
+
+export type OriginChecklistItemStatus = 'done' | 'partial' | 'pending';
+
+export interface OriginCatalogRuntime {
+  appVersion: string;
+  environment: string;
+}
+
+export interface OriginChecklistItem {
+  id: string;
+  labelKey: string;
+  phase: string;
+  status: OriginChecklistItemStatus;
+  probeId: string | null;
+  issues: string[];
+}
+
+export interface OriginChecklistSlice {
+  id: string;
+  status: string;
+  catalogIterationIds: string[];
+  issues: string[];
+  percentComplete: number;
+  deployStatus: OriginDeployStatus;
+  items: OriginChecklistItem[];
+}
+
+export interface OriginOperatorChecklist {
+  updatedAt: string;
+  slices: OriginChecklistSlice[];
+}
+
 export interface OriginCatalogItem {
   id: string;
   titleKey: string;
@@ -34,9 +73,11 @@ export interface OriginCatalogIteration {
   titleKey: string;
   phase: string;
   since: string | null;
+  targetVersion?: string | null;
   doc: string;
   priority: string;
   percentComplete: number;
+  deployStatus?: OriginDeployStatus;
   items: OriginCatalogItem[];
   history: Array<{ version: string; date: string; summaryKey: string }>;
 }
@@ -47,6 +88,8 @@ export interface OriginCatalogProgress {
   partial: number;
   planned: number;
   total: number;
+  liveOnInstance?: number;
+  pendingDeploy?: number;
 }
 
 export interface OriginTimelineEntry {
@@ -58,9 +101,11 @@ export interface OriginTimelineEntry {
 export interface OriginCatalog {
   schemaVersion: number;
   updatedAt: string;
+  runtime?: OriginCatalogRuntime;
   progress: OriginCatalogProgress;
   iterations: OriginCatalogIteration[];
   timeline: OriginTimelineEntry[];
+  checklist?: OriginOperatorChecklist;
 }
 
 export interface OriginOverview {

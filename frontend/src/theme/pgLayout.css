@@ -927,3 +927,51 @@
     animation: none;
   }
 }
+
+/* Article print — toggled via content.articlePrintEnabled (Nastavenia → Obsah). */
+@media print {
+  body {
+    background: #fff !important;
+    color: #111 !important;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  .pg-no-print {
+    display: none !important;
+  }
+
+  .pg-print-article,
+  .pg-print-article * {
+    visibility: visible;
+  }
+
+  .pg-print-article {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+
+  .pg-print-body {
+    box-shadow: none !important;
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+  }
+
+  .pg-print-article img {
+    max-height: 280px;
+    object-fit: cover;
+    break-inside: avoid;
+  }
+
+  .pg-print-article a[href]::after {
+    content: ' (' attr(href) ')';
+    font-size: 0.85em;
+    color: #444;
+  }
+}

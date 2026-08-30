@@ -170,6 +170,8 @@ Example manifest:
 
 A theme manifest must not contain secrets or arbitrary remote script URLs.
 
+**Planned (It.87 Track C):** opt-in allow-list for static `.js` under `assets/` only — declared in `theme.json`, served with **SRI** and **CSP script hashes**; site setting `appearance.themeScriptsEnabled` default **false**. See [ITERATION_87.md](../ITERATION_87.md#track-c--theme-static-js-allow-list-87k87m). This does **not** enable inline scripts, content `<script>`, or CDN URLs.
+
 ---
 
 ## 9. Theme security policy

@@ -847,9 +847,12 @@ export const platformEn: MessageTree = {
   },
   commandPalette: {
     ariaLabel: 'Quick search',
-    placeholder: 'Search pages, media, modules… (Ctrl+K)',
+    placeholder: 'Search pages, media, modules… (Ctrl+Shift+K)',
+    headerPlaceholder: 'Quick search…',
+    openShortcut: 'Open quick search (Ctrl+Shift+K)',
     close: 'Close',
     recent: 'Recent jumps',
+    modules: 'Admin modules',
     noResults: 'No results for “:query”',
     footer: '↑↓ navigate · Enter jump · Esc close',
     searching: 'Searching…',

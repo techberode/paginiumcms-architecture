@@ -29,6 +29,7 @@ import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { contentApi } from '../../api/content';
 import { summarizeBulkResult } from '../../types/bulk';
 import { getContentSeoHealth } from '../../utils/seoHealth';
+import { bulkSelectionCounts } from '../../utils/bulkSelectionLabel';
 import { resolveAdminMediaPreviewUrl, resolvePublicMediaUrl } from '../../api/media';
 import type { ContentType } from '../../api/drafts';
 import { AdminListSkeleton } from '../ui/AdminListSkeleton';
@@ -373,12 +374,13 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
     visibleItems.map((item) => itemListSlug(item)).filter((slug) => slug !== ''),
     `${type}:${page}:${debouncedSearch}:${statusFilter}:${tagFilter}:${seoIssuesOnly}`
   );
+  const bulkListTotal = seoIssuesOnly ? visibleItems.length : meta.total;
 
   const handleBulkDelete = async () => {
     if (bulkSelection.count === 0) {
       return;
     }
-    if (!confirm(t('content.confirm.bulkDelete', { count: bulkSelection.count }))) {
+    if (!confirm(t('content.confirm.bulkDelete', bulkSelectionCounts(bulkSelection.count, bulkListTotal)))) {
       return;
     }
     const result = await contentApi.bulkDelete(type, bulkSelection.selectedIds);
@@ -393,6 +395,15 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
 
   const handleBulkStatus = async (status: ContentItem['status']) => {
     if (bulkSelection.count === 0) {
+      return;
+    }
+    const confirmKey =
+      status === 'published'
+        ? 'content.confirm.bulkPublish'
+        : status === 'draft'
+          ? 'content.confirm.bulkDraft'
+          : 'content.confirm.bulkArchive';
+    if (!confirm(t(confirmKey, bulkSelectionCounts(bulkSelection.count, bulkListTotal)))) {
       return;
     }
     const result = await contentApi.bulkUpdateStatus(type, bulkSelection.selectedIds, status);
@@ -499,6 +510,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
 
       <BulkActionBar
         count={bulkSelection.count}
+        totalCount={bulkListTotal}
         onClear={bulkSelection.clear}
         actions={[
           { id: 'publish', label: t('content.bulk.publish'), variant: 'primary', onClick: () => void handleBulkStatus('published') },

@@ -33,6 +33,19 @@ The dashboard is an orientation view, not a monitoring system with guaranteed co
 
 When a panel fails, inspect its individual API endpoint and logs. Analytics availability must not block authoritative content editing.
 
+### Quick search (command palette)
+
+It.43 admin search lets staff jump to pages, articles, media, and admin modules.
+
+| Action | How |
+|--------|-----|
+| Open palette | **Ctrl+Shift+K** (recommended on Firefox/Linux) or **Ctrl+K** in Chromium; or click **Quick search…** in the admin header |
+| Navigate results | ↑↓ select, **Enter** open, **Esc** close |
+| Empty query | Shows recent jumps + admin module shortcuts (sidebar catalog) |
+| Search | Type ≥2 characters — hits content index, media, and routes you are allowed to open |
+
+Requires an active admin session. If search returns nothing, check the browser network tab for `GET /api/search?scope=admin` (must be **200**, not 401). See [ISS-158](../ISSUES.md#iss-158) for the historical 401 bug.
+
 ## 4. Pages
 
 **Pages** manage public site pages.
@@ -51,6 +64,10 @@ A slug is part of the URL and file identity. Changing it may require redirects a
 ## 5. Articles
 
 Articles use the same editor core and can additionally contain excerpt, tags, featured image, publication time, and comment policy. Scheduled publication requires a functioning scheduler/worker for the concrete release.
+
+**Bulk actions:** When you select rows, the bulk bar shows **“X of Y selected”** (Y = total records matching current filters). Confirm dialogs for publish, draft, archive, and delete repeat that ratio (e.g. “Publish 3 of 47 selected items?”). Always verify filters before bulk publish or delete.
+
+**Print on public blog:** Settings → Content → **Enable article print** (`content.articlePrintEnabled`, default off). When on, visitors see **Print article** on blog detail; printing hides navigation, comments, and chrome.
 
 Use bulk actions only after checking filters and item counts. With soft delete, inspect trash and retention before permanent removal.
 
@@ -77,6 +94,8 @@ Navigation defines the public link tree, order, parent relationships, and target
 
 **Comments** support moderation under global and per-content policy. **Messages** form the contact inbox.
 
+Bulk workflow (read, processed, archive, delete) uses the same **“X of Y selected”** bar and confirmation pattern as content lists.
+
 - do not export personal data without a valid reason,
 - combine rate limits, WAF, and moderation for spam,
 - an urgent label does not replace a notification channel,
@@ -89,7 +108,7 @@ Settings are divided into groups. Typical areas:
 | Area | Examples |
 |---|---|
 | Site | name, URL, language, timezone, branding |
-| Content/SEO | editor, pagination, metadata, feeds |
+| Content/SEO | editor, pagination, metadata, feeds, **article print toggle** |
 | Accounts/Security | registration, passwords, 2FA, upload policy |
 | Access control | RBAC and Path ACL for SUPER_ADMIN |
 | Integrations | SMTP, ntfy, webhook, or another provider |

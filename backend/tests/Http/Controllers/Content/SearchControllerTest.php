@@ -87,4 +87,24 @@ final class SearchControllerTest extends TestCase
         );
         $this->assertContains($slug, $slugs);
     }
+
+    public function testAdminSearchResolvesUserFromSessionWithoutRequestAttribute(): void
+    {
+        $login = $this->loginAsAdminUser();
+        $this->assertSame(200, $login['response']->getStatusCode());
+
+        $this->currentUser = null;
+
+        $request = (new \Slim\Psr7\Factory\ServerRequestFactory())->createServerRequest(
+            'GET',
+            '/api/search?q=set&scope=admin&types=route'
+        );
+
+        $response = $this->handleRequest($request);
+        $data = $this->getJsonResponse($response);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertTrue($data['success']);
+        $this->assertSame('admin', $data['data']['scope'] ?? null);
+    }
 }

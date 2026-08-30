@@ -51,10 +51,23 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) 
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
-        event.preventDefault();
-        setCommandPaletteOpen(true);
+      const key = event.key.toLowerCase();
+      if (!(event.ctrlKey || event.metaKey) || key !== 'k') {
+        return;
       }
+
+      const target = event.target;
+      if (
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement ||
+        (target instanceof HTMLElement && target.isContentEditable)
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      setCommandPaletteOpen((open) => !open);
     };
 
     window.addEventListener('keydown', onKeyDown);
@@ -88,6 +101,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) 
           onGoToWebsite={() => openExternalUrl(publicSiteUrl, openInNewTab)}
           onOpenMobileMenu={() => setMobileMenuOpen(true)}
           onOpenChangePassword={() => setChangePasswordOpen(true)}
+          onOpenCommandPalette={() => setCommandPaletteOpen(true)}
           sidebarCollapsed={sidebarCollapsed}
           onToggleSidebar={() => setSidebarCollapsed((value) => !value)}
         />

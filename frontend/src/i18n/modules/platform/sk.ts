@@ -847,9 +847,12 @@ export const platformSk: MessageTree = {
   },
   commandPalette: {
     ariaLabel: 'Rýchle vyhľadávanie',
-    placeholder: 'Hľadať stránky, médiá, moduly… (Ctrl+K)',
+    placeholder: 'Hľadať stránky, médiá, moduly… (Ctrl+Shift+K)',
+    headerPlaceholder: 'Rýchle vyhľadávanie…',
+    openShortcut: 'Otvoriť rýchle vyhľadávanie (Ctrl+Shift+K)',
     close: 'Zavrieť',
     recent: 'Posledné skoky',
+    modules: 'Moduly administrácie',
     noResults: 'Nenašli sa výsledky pre „:query“',
     footer: '↑↓ navigácia · Enter skok · Esc zavrieť',
     searching: 'Hľadám…',

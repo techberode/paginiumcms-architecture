@@ -50,7 +50,10 @@ export const messagesEn: MessageTree = {
   },
   confirm: {
     deleteOne: 'Delete this message?',
-    bulkDelete: 'Delete :count selected messages?',
+    bulkDelete: 'Delete :selected of :total selected messages?',
+    bulkArchive: 'Archive :selected of :total selected messages?',
+    bulkRead: 'Mark :selected of :total messages as read?',
+    bulkProcessed: 'Mark :selected of :total messages as processed?',
   },
   toast: {
     loadFailed: 'Failed to load messages.',

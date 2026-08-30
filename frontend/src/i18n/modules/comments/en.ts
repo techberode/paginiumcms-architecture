@@ -57,7 +57,10 @@ export const commentsEn: MessageTree = {
   },
   confirm: {
     deleteOne: 'Delete this comment?',
-    bulkDelete: 'Delete :count selected comments?',
+    bulkDelete: 'Delete :selected of :total selected comments?',
+    bulkArchive: 'Archive :selected of :total selected comments?',
+    bulkRead: 'Mark :selected of :total comments as read?',
+    bulkProcessed: 'Mark :selected of :total comments as processed?',
   },
   toast: {
     loadFailed: 'Failed to load comments.',

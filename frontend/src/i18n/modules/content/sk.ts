@@ -55,7 +55,10 @@ export const contentSk: MessageTree = {
   },
   confirm: {
     deleteOne: 'Naozaj chcete zmazať túto :item?',
-    bulkDelete: 'Zmazať :count vybraných položiek?',
+    bulkDelete: 'Zmazať :selected z :total vybraných položiek?',
+    bulkPublish: 'Publikovať :selected z :total vybraných položiek?',
+    bulkDraft: 'Presunúť :selected z :total vybraných položiek do konceptov?',
+    bulkArchive: 'Archivovať :selected z :total vybraných položiek?',
   },
   toast: {
     deleted: ':item bol zmazaný',

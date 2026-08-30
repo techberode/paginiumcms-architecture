@@ -222,3 +222,39 @@ Pri neimplementovanej schopnosti označ `NOT_APPLICABLE`.
 - [Release lifecycle](developer/RELEASE.md)
 - [Deploy](deploy/DEPLOY.md)
 - [Register incidentov](ISSUES.md)
+
+## 18. Origin manifest slices (2026-08-30)
+
+Strojovo čitateľný SSOT: [`docs/manifest/project-catalog.json`](../manifest/project-catalog.json) + [`docs/manifest/implementation-checklist.json`](../manifest/implementation-checklist.json). Origin Panel spája tieto súbory s runtime probes a `AppVersion::current()` pre deploy badge.
+
+### It.83 — Theme runtime a marketing (`since: 2.1.0-beta.59`)
+
+- [x] `ThemeRuntimeService` activate/deactivate + nastavenie `themes.activeTheme`
+- [x] Bundled témy `clean-journal`, `terminal-breach` + PublicShell wiring
+- [x] Landing seed `paginium-cms-landing.sk.md`
+- [x] Probes `it.83.theme_runtime`, `it.83.theme_packages` registrované
+- [ ] Produkčný deploy na `2.1.0-beta.59+` (Origin ukáže **live**, keď verzia inštancie ≥ tag)
+
+### It.86 — Admin UX polish (`targetVersion: 2.1.0-beta.60`)
+
+- [x] Admin command palette session auth ([ISS-158](ISSUES.md#iss-158), [ISS-159](ISSUES.md#iss-159))
+- [x] Nastavenie tlače `content.articlePrintEnabled` + tlačidlo na webe
+- [x] Bulk counter „X z Y“ na stránkach/článkoch, správach, komentároch
+- [x] `./scripts/iteration-gate.sh` zelený pred tagom
+- [x] Tag `v2.1.0-beta.60` (2026-08-30)
+- [ ] Produkčný deploy (Origin **live** keď inštancia ≥ tag)
+
+### Origin automatizácia
+
+- [x] `CatalogDeployStatusResolver` — `live` / `pending_deploy` / `partial_live` z `since` / `targetVersion`
+- [x] `implementation-checklist.json` slices v Origin Paneli **Release slices**
+- [x] `./scripts/validate-project-catalog.sh` validuje probeIds + checklist iteration refs
+
+## 19. Plánovaná iterácia 87 (post-stable)
+
+Špecifikácia: [`docs/en/ITERATION_87.md`](../en/ITERATION_87.md) · SK: [`docs/sk/ITERATION_87.md`](../sk/ITERATION_87.md)
+
+- [x] Špecifikácia It.87 (Plánovač projektu + UX audit)
+- [ ] MVP plánovača (`87e`–`87h`) v plnej verzii CMS
+- [ ] UX audit (`87a`–`87d`) alebo explicitný defer v ISSUES
+- [ ] Voliteľný Track C: allow-list JS v `themes/{id}/assets/` + SRI + CSP (`87k`–`87m`) — default vypnuté

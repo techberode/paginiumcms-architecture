@@ -279,6 +279,7 @@ export const publicSk: MessageTree = {
     backToBlog: 'Späť na blog',
     backToList: 'Späť na prehľad článkov',
     editorialAuthor: 'Autor redakcie Paginium',
+    printArticle: 'Tlačiť článok',
     aboutAuthor: 'O autorovi: :author',
     list: {
       title: 'Magazín & Novinky',
