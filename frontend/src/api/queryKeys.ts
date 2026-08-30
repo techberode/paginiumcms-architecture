@@ -20,5 +20,8 @@ export const queryKeys = {
   extensions: {
     list: ['admin', 'extensions', 'list'] as const,
   },
+  themes: {
+    list: ['admin', 'themes', 'list'] as const,
+  },
   adminCounts: (userId: string | undefined) => ['admin', 'counts', userId ?? 'guest'] as const,
 };

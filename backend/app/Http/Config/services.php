@@ -229,8 +229,9 @@ use PaginiumCMS\Http\Extensions\Services\PluginManager;
 use PaginiumCMS\Http\Extensions\Services\PluginPolicyScanner;
 use PaginiumCMS\Http\Extensions\Services\PluginRegistry;
 use PaginiumCMS\Http\Themes\Services\ThemeImporter;
-use PaginiumCMS\Http\Themes\Services\ThemeManifestValidator;
 use PaginiumCMS\Http\Themes\Services\ThemeManager;
+use PaginiumCMS\Http\Themes\Services\ThemeManifestValidator;
+use PaginiumCMS\Http\Themes\Services\ThemeStarterPackageService;
 use PaginiumCMS\Http\Themes\Services\ThemeRegistry;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Http\Controllers\Locking\LockController;
@@ -1103,6 +1104,8 @@ return [
             dirname(__DIR__, 4) . '/frontend/src/themes',
             dirname(__DIR__, 4)
         ),
+    ThemeStarterPackageService::class => create(ThemeStarterPackageService::class)
+        ->constructor(dirname(__DIR__, 3) . '/resources/theme-packages'),
     ThemeManager::class => create(ThemeManager::class)
         ->constructor(
             get(ThemeRegistry::class),
@@ -1111,7 +1114,11 @@ return [
             dirname(__DIR__, 4) . '/frontend/src/themes'
         ),
     ThemesController::class => create(ThemesController::class)
-        ->constructor(get(ThemeManager::class), get(JsonResponder::class)),
+        ->constructor(
+            get(ThemeManager::class),
+            get(ThemeStarterPackageService::class),
+            get(JsonResponder::class)
+        ),
     DeveloperMode::class => create(DeveloperMode::class)
         ->constructor(
             get(ConfigManager::class),

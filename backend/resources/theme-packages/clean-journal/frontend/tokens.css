@@ -1,0 +1,26 @@
+/**
+ * Clean Journal — optional appearance token overrides.
+ * Consumed when the theme runtime is active (It.83+).
+ */
+:root {
+  --color-primary: var(--pg-scheme-primary, #4338ca);
+  --color-primary-foreground: var(--pg-scheme-primary-foreground, #ffffff);
+  --color-surface: var(--pg-scheme-surface, #ffffff);
+  --color-surface-elevated: var(--pg-scheme-surface-elevated, #f8fafc);
+  --color-text: var(--pg-scheme-text, #0f172a);
+  --color-text-muted: var(--pg-scheme-text-muted, #64748b);
+  --color-border: var(--pg-scheme-border, #e2e8f0);
+}
+
+.pg-theme-clean-journal .pg-main {
+  max-width: 72rem;
+  margin-inline: auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+.pg-theme-clean-journal .pg-header__inner,
+.pg-theme-clean-journal .pg-footer__inner {
+  max-width: 72rem;
+  margin-inline: auto;
+  padding: 1rem;
+}

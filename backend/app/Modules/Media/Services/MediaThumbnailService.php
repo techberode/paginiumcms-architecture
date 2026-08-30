@@ -101,8 +101,6 @@ final class MediaThumbnailService
         $srcH = imagesy($source);
 
         if ($srcW <= $maxWidth) {
-            imagedestroy($source);
-
             return false;
         }
 
@@ -111,8 +109,6 @@ final class MediaThumbnailService
 
         $target = imagecreatetruecolor($targetW, $targetH);
         if ($target === false) {
-            imagedestroy($source);
-
             return false;
         }
 
@@ -120,13 +116,10 @@ final class MediaThumbnailService
         imagesavealpha($target, true);
 
         imagecopyresampled($target, $source, 0, 0, 0, 0, $targetW, $targetH, $srcW, $srcH);
-        imagedestroy($source);
 
         $saved = function_exists('imagewebp')
             ? imagewebp($target, $thumbPath, 82)
             : imagejpeg($target, $thumbPath, 82);
-
-        imagedestroy($target);
 
         return $saved;
     }

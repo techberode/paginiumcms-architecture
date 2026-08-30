@@ -7,6 +7,7 @@ namespace PaginiumCMS\Http\Controllers\Admin;
 use PaginiumCMS\Core\CodePolicy\Exceptions\CodePolicyViolationException;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Http\Themes\Services\ThemeManager;
+use PaginiumCMS\Http\Themes\Services\ThemeStarterPackageService;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UploadedFileInterface;
@@ -19,6 +20,7 @@ final class ThemesController
 {
     public function __construct(
         private ThemeManager $themes,
+        private ThemeStarterPackageService $starterPackages,
         private JsonResponder $json,
     ) {
     }
@@ -71,5 +73,44 @@ final class ThemesController
         }
 
         return $this->json->success($response, ['id' => $id, 'removed' => true]);
+    }
+
+    /**
+     * @param array<string, string> $args
+     */
+    public function downloadStarter(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $id = (string) ($args['id'] ?? '');
+
+        try {
+            $zipPath = $this->starterPackages->buildZipPath($id);
+        } catch (RuntimeException $exception) {
+            return $this->json->error($response, $exception->getMessage(), 404);
+        }
+
+        $stream = fopen($zipPath, 'rb');
+        if ($stream === false) {
+            @unlink($zipPath);
+
+            return $this->json->error($response, 'Unable to read starter package.', 500);
+        }
+
+        $body = $response->getBody();
+        while (!feof($stream)) {
+            $chunk = fread($stream, 8192);
+            if ($chunk === false) {
+                break;
+            }
+            $body->write($chunk);
+        }
+        fclose($stream);
+        @unlink($zipPath);
+
+        $filename = $id . '-starter.zip';
+
+        return $response
+            ->withHeader('Content-Type', 'application/zip')
+            ->withHeader('Content-Disposition', 'attachment; filename="' . addslashes($filename) . '"')
+            ->withHeader('X-Content-Type-Options', 'nosniff');
     }
 }

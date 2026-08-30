@@ -39,7 +39,6 @@ final class MediaThumbnailServiceTest extends TestCase
             }
         }
         imagepng($image, $source, 0);
-        imagedestroy($image);
 
         $service = new MediaThumbnailService();
         $thumbPath = $service->ensure($source, 480);
@@ -66,7 +65,6 @@ final class MediaThumbnailServiceTest extends TestCase
         $source = $this->fixtureDir . '/small.jpg';
         $image = imagecreatetruecolor(320, 200);
         imagejpeg($image, $source, 90);
-        imagedestroy($image);
 
         $service = new MediaThumbnailService();
         $this->assertNull($service->ensure($source, 480));

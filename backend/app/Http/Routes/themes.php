@@ -6,6 +6,7 @@ declare(strict_types=1);
  * Theme package admin API (It.67b). Auto-discovered from bootstrap/app.php.
  *
  *  - GET    /api/admin/themes
+ *  - GET    /api/admin/themes/starter-package/{id}
  *  - POST   /api/admin/themes/import
  *  - DELETE /api/admin/themes/{id}
  */
@@ -27,6 +28,7 @@ return function (App $app): void {
         $controller = $container->get(ThemesController::class);
 
         $group->get('', [$controller, 'index']);
+        $group->get('/starter-package/{id}', [$controller, 'downloadStarter']);
         $group->post('/import', [$controller, 'import']);
         $group->delete('/{id}', [$controller, 'uninstall']);
     })->add(new PermissionMiddleware($authz, 'settings:manage'))

@@ -25,6 +25,7 @@ import {
   CalendarClock,
   CalendarDays,
   Puzzle,
+  Palette,
   Languages,
   BarChart3,
   Hash,
@@ -165,6 +166,7 @@ export const ADMIN_NAV_SECTIONS: AdminNavSectionDef[] = [
       { id: 'code-editor', labelKey: 'admin.nav.codeEditor', href: '/code-editor', icon: Code },
       { id: 'blueprints', labelKey: 'admin.nav.blueprints', href: '/blueprints', icon: Layers, adminOnly: true },
       { id: 'extensions', labelKey: 'admin.nav.extensions', href: '/extensions', icon: Puzzle, adminOnly: true },
+      { id: 'themes', labelKey: 'admin.nav.themes', href: '/themes', icon: Palette, adminOnly: true },
       {
         id: 'demo',
         labelKey: 'admin.nav.demo',

@@ -30,6 +30,7 @@ const ADMIN_PREFIXES = [
   '/security',
   '/blueprints',
   '/extensions',
+  '/themes',
   '/demo',
   '/account',
   '/login',

@@ -88,7 +88,7 @@ final class ShortcodeCatalogSeeder
                 'attrs' => [
                     'title' => ['type' => 'string'],
                 ],
-                'expand' => '<article class="pg-card"><h3 class="pg-card-title">{{title}}</h3><div class="pg-card-body">{{content}}</div></article>',
+                'expand' => '<article class="pg-card pg-reveal"><h3 class="pg-card-title">{{title}}</h3><div class="pg-card-body">{{content}}</div></article>',
             ],
             'landing-hero' => [
                 'name' => 'landing-hero',
@@ -120,7 +120,7 @@ final class ShortcodeCatalogSeeder
                 'name' => 'stats-row',
                 'version' => 1,
                 'attrs' => [],
-                'expand' => '<div class="pg-stats">{{content}}</div>',
+                'expand' => '<div class="pg-stats pg-reveal">{{content}}</div>',
             ],
             'stat-item' => [
                 'name' => 'stat-item',
@@ -175,6 +175,46 @@ final class ShortcodeCatalogSeeder
                     'text' => ['type' => 'string'],
                 ],
                 'expand' => '<li class="pg-plan-feature">{{text}}</li>',
+            ],
+            'section-head' => [
+                'name' => 'section-head',
+                'version' => 1,
+                'attrs' => [
+                    'anchor' => ['type' => 'string'],
+                    'eyebrow' => ['type' => 'string'],
+                    'title' => ['type' => 'string'],
+                    'subtitle' => ['type' => 'string'],
+                ],
+                'expand' => '<header class="pg-section-head pg-reveal" id="{{anchor}}"><p class="pg-section-eyebrow">{{eyebrow}}</p><h2 class="pg-section-title">{{title}}</h2><p class="pg-section-subtitle">{{subtitle}}</p></header>',
+            ],
+            'showcase-hero' => [
+                'name' => 'showcase-hero',
+                'version' => 1,
+                'attrs' => [
+                    'badge' => ['type' => 'string'],
+                    'title' => ['type' => 'string'],
+                    'subtitle' => ['type' => 'string'],
+                    'terminal' => ['type' => 'string'],
+                    'cta' => ['type' => 'string'],
+                    'href' => ['type' => 'string'],
+                    'cta2' => ['type' => 'string'],
+                    'href2' => ['type' => 'string'],
+                ],
+                'expand' => '<section class="pg-showcase-hero pg-reveal"><div class="pg-showcase-hero-inner"><p class="pg-showcase-badge">{{badge}}</p><h1 class="pg-showcase-title">{{title}}</h1><p class="pg-showcase-subtitle">{{subtitle}}</p><pre class="pg-showcase-terminal" aria-label="Terminal preview"><code>$ {{terminal}}</code></pre><div class="pg-showcase-actions"><a class="pg-btn pg-btn-primary" href="{{href}}">{{cta}}</a><a class="pg-btn pg-btn-ghost" href="{{href2}}">{{cta2}}</a></div></div></section>',
+            ],
+            'stack-grid' => [
+                'name' => 'stack-grid',
+                'version' => 1,
+                'attrs' => [],
+                'expand' => '<div class="pg-stack-grid pg-reveal">{{content}}</div>',
+            ],
+            'stack-tag' => [
+                'name' => 'stack-tag',
+                'version' => 1,
+                'attrs' => [
+                    'label' => ['type' => 'string'],
+                ],
+                'expand' => '<span class="pg-stack-tag">{{label}}</span>',
             ],
         ];
 

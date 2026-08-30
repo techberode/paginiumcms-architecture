@@ -18,6 +18,7 @@ const ADMIN_ROUTE_PREFIXES = [
   '/security',
   '/blueprints',
   '/extensions',
+  '/themes',
   '/demo',
   '/notifications',
   '/scheduler',

@@ -1,5 +1,5 @@
 // frontend/src/components/frontend/PageRenderer.tsx
-import React from 'react';
+import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Page } from '../../api/types';
 import { ContactForm } from './ContactForm';
@@ -13,6 +13,7 @@ import { formatDisplayDate, resolveContentDate } from '../../utils/contentDates'
 import { MEDIA_THUMB_WIDTH } from '../../api/media';
 import { resolveContentPreviewImage } from '../../utils/contentPreviewImage';
 import { BTN_PRIMARY, PUBLIC_CARD } from '../../theme/publicUiClasses';
+import { useLandingReveal } from '../../hooks/useLandingReveal';
 
 interface PageRendererProps {
   page: Page;
@@ -44,6 +45,9 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page }) => {
   const isContact = meta.template === 'contact' || page.slug === 'contact';
   const isServices = meta.template === 'services' || page.slug === 'sluzby' || page.slug === 'services';
   const isAbout = meta.template === 'about' || page.slug === 'about';
+  const isLandingLayout = meta.layoutTemplate === 'landing';
+  const landingContentRef = useRef<HTMLDivElement>(null);
+  useLandingReveal(landingContentRef, isLandingLayout);
 
   const heroBlock = isHome ? (
     <div className="relative overflow-hidden public-hero pt-20 pb-28">
@@ -116,7 +120,11 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page }) => {
     </div>
   );
 
-  const contentBlock = (
+  const contentBlock = isLandingLayout ? (
+    <div ref={landingContentRef} className="pg-landing-content paginium-prose max-w-none">
+      <MarkdownRenderer content={page.content} html={page.html} />
+    </div>
+  ) : (
     <div className={`${PUBLIC_CARD} p-8 sm:p-12`}>
       <MarkdownRenderer content={page.content} html={page.html} />
     </div>
@@ -126,13 +134,15 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page }) => {
     <div className="min-h-screen bg-theme-surface text-theme-text pb-20 transition-colors">
       {meta.layoutTemplate === 'hero-content' || isHome ? heroBlock : null}
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
+      <main className={`mx-auto px-4 sm:px-6 lg:px-8 ${isLandingLayout ? 'max-w-6xl mt-4' : 'max-w-4xl mt-12'}`}>
         {isHome ? (
           contentBlock
         ) : (
           <PageLayoutShell
             layoutTemplate={meta.layoutTemplate}
-            hero={meta.layoutTemplate !== 'hero-content' && !isHome ? heroBlock : undefined}
+            hero={
+              meta.layoutTemplate !== 'hero-content' && !isHome && !isLandingLayout ? heroBlock : undefined
+            }
           >
             {contentBlock}
           </PageLayoutShell>
