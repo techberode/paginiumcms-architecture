@@ -32,6 +32,7 @@ const ADMIN_ROUTES = new Set([
   '/code-editor',
   '/blueprints',
   '/extensions',
+  '/themes',
   '/demo',
   '/firewall',
   '/logs',

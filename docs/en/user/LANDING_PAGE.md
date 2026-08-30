@@ -21,7 +21,9 @@ PaginiumCMS landing pages are **markdown + shortcodes** — no drag-and-drop bui
 4. Publish the page.
 5. Open **Shortcodes** insert panel in the editor and compose sections (see §3).
 
-Demo installs include a sample page at `/paginium-cms` when demo mode seeds content.
+**Bundled seed:** copy `backend/resources/content-seeds/paginium-cms-landing.sk.md` into your content tree as `pages/paginium-cms.md`, or create the page in admin and paste the body from that file.
+
+Demo installs include a sample page at `/paginium-cms` when demo mode seeds content (dark `mono-zinc` appearance).
 
 ---
 

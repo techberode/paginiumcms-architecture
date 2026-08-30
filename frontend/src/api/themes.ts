@@ -17,6 +17,12 @@ export interface ThemeImportResult {
   installedAt: string;
 }
 
+export interface ThemeImportResponse {
+  ok: boolean;
+  data: ThemeImportResult | null;
+  error?: string;
+}
+
 export const themesApi = {
   list: async (): Promise<ThemeRecord[]> => {
     const response = await apiClient.get<{ themes: ThemeRecord[] }>('/api/admin/themes');
@@ -25,7 +31,7 @@ export const themesApi = {
 
   uninstall: async (id: string) => apiClient.delete(`/api/admin/themes/${encodeURIComponent(id)}`),
 
-  importArchive: async (file: File): Promise<ThemeImportResult | null> => {
+  importArchive: async (file: File): Promise<ThemeImportResponse> => {
     const formData = new FormData();
     formData.append('file', file);
 
@@ -36,6 +42,21 @@ export const themesApi = {
     });
 
     const payload = await response.json();
-    return payload.success && payload.data ? (payload.data as ThemeImportResult) : null;
+    if (payload.success && payload.data) {
+      return { ok: true, data: payload.data as ThemeImportResult };
+    }
+
+    const error =
+      typeof payload.error === 'string'
+        ? payload.error
+        : typeof payload.message === 'string'
+          ? payload.message
+          : undefined;
+
+    return { ok: false, data: null, error };
+  },
+
+  downloadStarterPackage: (id: string): void => {
+    window.location.assign(`/api/admin/themes/starter-package/${encodeURIComponent(id)}`);
   },
 };

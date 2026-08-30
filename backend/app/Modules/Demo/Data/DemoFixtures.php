@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Modules\Demo\Data;
 
+use PaginiumCMS\Support\ContentSeedLoader;
+
 /**
  * Isolated demo flat-file seed data (Iteration 13 v3).
  * Used only when DEMO_MODE=true — never in production content tree.
@@ -105,9 +107,11 @@ createdAt: 2026-07-01T08:00:00+02:00
 updatedAt: 2026-07-01T08:00:00+02:00
 ---
 
-# Vitajte v Demo režime PaginiumCMS
+# Vitajte v PaginiumCMS
 
-Toto je **predvádzacie vozidlo** — plnohodnotný CMS na vyskúšanie adminu aj verejného webu.
+Pre **prezentáciu platformy** otvorte [PaginiumCMS landing](/paginium-cms) — hero, stats, tech stack a sekcie postavené zo shortcodes.
+
+Toto je **demo domov** — plnohodnotný CMS na vyskúšanie adminu aj verejného webu.
 
 ## Čo vyskúšať
 
@@ -117,58 +121,7 @@ Toto je **predvádzacie vozidlo** — plnohodnotný CMS na vyskúšanie adminu a
 
 > Produkčný obsah na `paginiumcms.com` sa **nikdy** neprepíše.
 MD,
-            'pages/paginium-cms.md' => <<<'MD'
----
-title: PaginiumCMS
-slug: paginium-cms
-status: published
-template: landing
-layoutTemplate: landing
-author: Demo Admin
-createdAt: 2026-08-17T10:00:00+02:00
-updatedAt: 2026-08-17T10:00:00+02:00
-description: Flat-file hybrid CMS — presentation landing built from shortcodes.
----
-
-[landing-hero title="PaginiumCMS" subtitle="No-SQL hybrid headless content engine. Files are the source of truth — admin, API, and public site stay in sync." cta="Explore the blog" href="/blog"/]
-
-[stats-row]
-[stat-item value="Flat-file" label="Source of truth"/]
-[stat-item value="Session" label="Admin auth"/]
-[stat-item value="CSRF" label="Mutations protected"/]
-[stat-item value="Open" label="Source available"/]
-[/stats-row]
-
-[feature-grid columns="3"]
-[feature-card title="Content ops"]Pages, articles, media, locks, and editorial workflow in one admin.[/feature-card]
-[feature-card title="Layout & shortcodes"]Pick a layout template and compose landing sections without a page builder.[/feature-card]
-[feature-card title="Deploy your way"]Classic local profile today — optional Redis, Git publish, and cache layers when you need them.[/feature-card]
-[/feature-grid]
-
-[testimonial quote="We finally ship content without babysitting a database migration for every copy change." author="Dev team lead" role="Self-hosted PaginiumCMS"/]
-
-[pricing-table columns="3"]
-[pricing-plan name="Classic" price="Free" period="" cta="Self-host" href="/contact" variant="default"]
-[pricing-feature text="Flat-file storage"/]
-[pricing-feature text="Admin + public SPA"/]
-[pricing-feature text="Local backup"/]
-[/pricing-plan]
-[pricing-plan name="Team" price="OSS" period="" cta="Read docs" href="/about" variant="featured"]
-[pricing-feature text="Everything in Classic"/]
-[pricing-feature text="Shortcodes & snippets"/]
-[pricing-feature text="Role-based access"/]
-[/pricing-plan]
-[pricing-plan name="Hybrid" price="Later" period="" cta="Roadmap" href="/blog" variant="default"]
-[pricing-feature text="Cache drivers"/]
-[pricing-feature text="Git publish"/]
-[pricing-feature text="API keys"/]
-[/pricing-plan]
-[/pricing-table]
-
-[cta-banner title="Try the demo admin" subtitle="Edit this page — shortcodes expand on the public site at render time." cta="Open contact" href="/contact" tone="primary"/]
-
-[alert-box tone="info"]Demo mode resets periodically. Production content is never overwritten.[/alert-box]
-MD,
+            'pages/paginium-cms.md' => ContentSeedLoader::load('paginium-cms-landing.sk.md'),
             'pages/about.md' => <<<'MD'
 ---
 title: O demo module
@@ -301,9 +254,10 @@ MD,
                 'address' => 'Demo ulica 1, Bratislava',
             ],
             'appearance' => [
-                'colorScheme' => 'indigo-classic',
-                'mode' => 'system',
+                'colorScheme' => 'mono-zinc',
+                'mode' => 'dark',
                 'allowUserToggle' => true,
+                'previewTemplate' => 'landing',
             ],
             'content' => [
                 'blogSidebarEnabled' => true,
@@ -330,7 +284,7 @@ MD,
                 'page',
                 'PaginiumCMS',
                 'pages/paginium-cms.md',
-                'Flat-file hybrid CMS — presentation landing built from shortcodes.',
+                'Hybrid flat-file CMS — admin SPA, bezpečný API, shortcodes pre marketing bez SQL.',
                 '2026-08-17T10:00:00+02:00'
             ),
             self::indexEntry('about', 'page', 'O demo module', 'pages/about.md', '', '2026-07-01T09:00:00+02:00'),
@@ -361,10 +315,11 @@ MD,
     public static function navigationJson(): string
     {
         return json_encode([
-            ['id' => 'nav_home', 'label' => 'Domov', 'path' => '/', 'order' => 1],
-            ['id' => 'nav_about', 'label' => 'O nás', 'path' => '/about', 'order' => 2],
-            ['id' => 'nav_contact', 'label' => 'Kontakt', 'path' => '/contact', 'order' => 3],
-            ['id' => 'nav_blog', 'label' => 'Blog', 'path' => '/blog', 'order' => 4],
+            ['id' => 'nav_paginium', 'label' => 'PaginiumCMS', 'path' => '/paginium-cms', 'order' => 1],
+            ['id' => 'nav_home', 'label' => 'Domov', 'path' => '/', 'order' => 2],
+            ['id' => 'nav_about', 'label' => 'O nás', 'path' => '/about', 'order' => 3],
+            ['id' => 'nav_contact', 'label' => 'Kontakt', 'path' => '/contact', 'order' => 4],
+            ['id' => 'nav_blog', 'label' => 'Blog', 'path' => '/blog', 'order' => 5],
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
     }
 

@@ -4,6 +4,10 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## Unreleased
 
+### CI & media
+
+- **Media thumbnails:** remove `imagedestroy()` calls for PHP 8.5 compatibility (`failOnDeprecation` in PHPUnit CI).
+
 ### Admin UX & platform hygiene
 
 - Settings help/tooltips: removed internal iteration references from operator-facing copy; Slovak locale fully translated for monitoring, SMTP, connectors, and scheduler fields.
@@ -11,7 +15,8 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **API keys:** bulk purge of revoked/expired keys from flat-file storage (`POST /api/admin/platform/api-keys/bulk-purge`).
 - **Scheduler:** localized recent-run messages in admin UI via i18n mapping.
 - **Bulk actions:** extended to Gallery, Categories, Webhooks, Redirects, Extensions, Firewall, Shortcodes, Snippets, and custom Roles (BE `BulkIdsParser` + FE `BulkActionBar` pattern).
-- **Code policy:** documented in `docs/en/architecture/CODE_POLICY.md`; settings i18n for `untrustedMaxFileSizeKb`.
+- **Themes:** admin UI for ZIP import/uninstall; starter package `clean-journal`; code policy scan on import; download starter from admin.
+- **Marketing landing:** bundled seed `paginium-cms-landing.sk.md`; landing layout renders full-width shortcodes; kinetic-style hero CSS on `layoutTemplate: landing`.
 - **Settings i18n:** Hybrid Engine / code policy / gallery / system-update field labels and enum options fully localized (SK/EN parity).
 - **CI:** API barrel exports (`categories`, `origin`, `roles`, `snippets`, `blogSidebar`); fix `adminNavSections.test.ts` import paths; robust `MediaThumbnailServiceTest` fixture (noisy JPEG).
 - Docs: automatic backup activation steps in `docs/*/user/ADMIN_GUIDE.md`; security checklist in admin guide; Origin panel timeline entry for beta.59.
