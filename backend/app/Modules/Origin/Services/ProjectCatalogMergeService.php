@@ -13,6 +13,7 @@ final class ProjectCatalogMergeService
         private ProjectCatalogReader $reader,
         private CatalogDeployStatusResolver $deployStatus,
         private ImplementationChecklistReader $checklistReader,
+        private OriginCatalogLabelResolver $labels,
     ) {
     }
 
@@ -98,9 +99,12 @@ final class ProjectCatalogMergeService
                 ++$plannedCount;
             }
 
+            $iterationTitleKey = (string) ($iteration['titleKey'] ?? '');
+
             $iterations[] = [
                 'id' => (string) ($iteration['id'] ?? ''),
-                'titleKey' => (string) ($iteration['titleKey'] ?? ''),
+                'titleKey' => $iterationTitleKey,
+                'titleLabel' => $this->labels->resolve($iterationTitleKey),
                 'phase' => $iterationPhase,
                 'since' => isset($iteration['since']) ? (string) $iteration['since'] : null,
                 'targetVersion' => isset($iteration['targetVersion']) ? (string) $iteration['targetVersion'] : null,
@@ -180,9 +184,12 @@ final class ProjectCatalogMergeService
                 };
                 $scoreTotal += $score * $weight;
 
+                $labelKey = (string) ($item['labelKey'] ?? '');
+
                 $items[] = [
                     'id' => (string) ($item['id'] ?? ''),
-                    'labelKey' => (string) ($item['labelKey'] ?? ''),
+                    'labelKey' => $labelKey,
+                    'labelLabel' => $this->labels->resolve($labelKey),
                     'phase' => (string) ($item['phase'] ?? 'pending'),
                     'status' => $itemStatus,
                     'probeId' => isset($item['probeId']) ? (string) $item['probeId'] : null,
@@ -268,7 +275,13 @@ final class ProjectCatalogMergeService
                 continue;
             }
 
-            $entries[] = $entry;
+            $summaryKey = (string) ($entry['summaryKey'] ?? '');
+
+            $entries[] = [
+                ...$entry,
+                'summaryKey' => $summaryKey,
+                'summaryLabel' => $this->labels->resolve($summaryKey),
+            ];
         }
 
         return $entries;
@@ -305,9 +318,12 @@ final class ProjectCatalogMergeService
      */
     private function normalizeItem(array $item, string $status, ?string $runtimeMessage, int $percent): array
     {
+        $titleKey = (string) ($item['titleKey'] ?? '');
+
         return [
             'id' => (string) ($item['id'] ?? ''),
-            'titleKey' => (string) ($item['titleKey'] ?? ''),
+            'titleKey' => $titleKey,
+            'titleLabel' => $this->labels->resolve($titleKey),
             'probeId' => isset($item['probeId']) ? (string) $item['probeId'] : null,
             'phase' => (string) ($item['phase'] ?? 'planned'),
             'status' => $status,

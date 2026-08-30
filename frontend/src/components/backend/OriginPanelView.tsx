@@ -37,6 +37,9 @@ const CHECKLIST_ITEM_STYLE: Record<string, string> = {
   pending: 'bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
 };
 
+const originLabel = (t: (key: string) => string, key: string, resolved?: string) =>
+  resolved && resolved !== key ? resolved : t(key);
+
 const STATUS_STYLE: Record<FeatureProbeStatus, string> = {
   implemented: 'bg-emerald-100 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100',
   partial: 'bg-amber-100 text-amber-950 dark:bg-amber-950/40 dark:text-amber-100',
@@ -145,7 +148,7 @@ export const OriginPanelView: React.FC = () => {
       <ul className="space-y-1.5">
         {slice.items.map((item) => (
           <li key={item.id} className="flex flex-wrap items-center justify-between gap-2 text-xs">
-            <span>{t(item.labelKey)}</span>
+            <span>{originLabel(t, item.labelKey, item.labelLabel)}</span>
             <span className={`rounded-full px-2 py-0.5 font-bold ${CHECKLIST_ITEM_STYLE[item.status]}`}>
               {t(`origin.checklistItem.${item.status}`)}
             </span>
@@ -159,7 +162,7 @@ export const OriginPanelView: React.FC = () => {
     <li key={iteration.id} className="rounded-lg border border-slate-200 p-3 dark:border-slate-700 space-y-3">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <div className="text-sm font-bold">{t(iteration.titleKey)}</div>
+          <div className="text-sm font-bold">{originLabel(t, iteration.titleKey, iteration.titleLabel)}</div>
           <div className="text-xs text-slate-500 font-mono">{iteration.id}</div>
           {iteration.since ? (
             <div className="text-[11px] text-slate-500 mt-1">
@@ -187,7 +190,7 @@ export const OriginPanelView: React.FC = () => {
       <ul className="space-y-1.5">
         {iteration.items.map((item) => (
           <li key={item.id} className="flex flex-wrap items-center justify-between gap-2 text-xs">
-            <span>{t(item.titleKey)}</span>
+            <span>{originLabel(t, item.titleKey, item.titleLabel)}</span>
             <span className={`rounded-full px-2 py-0.5 font-bold ${STATUS_STYLE[item.status]}`}>
               {item.percentComplete}%
             </span>
@@ -347,7 +350,9 @@ export const OriginPanelView: React.FC = () => {
                     <div className="font-bold font-mono">{entry.version}</div>
                     <div className="text-xs text-slate-500">{entry.date}</div>
                   </div>
-                  <div className="text-xs text-slate-600 dark:text-slate-300 max-w-md">{t(entry.summaryKey)}</div>
+                  <div className="text-xs text-slate-600 dark:text-slate-300 max-w-md">
+                    {originLabel(t, entry.summaryKey, entry.summaryLabel)}
+                  </div>
                 </li>
               ))}
             </ul>
@@ -374,7 +379,7 @@ export const OriginPanelView: React.FC = () => {
                       className="rounded-lg border border-slate-200 px-3 py-2 dark:border-slate-700 flex flex-wrap items-start justify-between gap-2"
                     >
                       <div>
-                        <div className="text-sm font-semibold">{t(probe.labelKey)}</div>
+                        <div className="text-sm font-semibold">{originLabel(t, probe.labelKey, probe.labelLabel)}</div>
                         <div className="text-xs text-slate-500 font-mono">{probe.id}</div>
                         <div className="text-xs text-slate-600 dark:text-slate-300 mt-1">{probe.message}</div>
                       </div>

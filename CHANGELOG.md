@@ -21,6 +21,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.61`](#release-2-1-0-beta-61) | 2026-08-30 | Hotfix — Origin Panel backend catalog labels on production |
 | [`2.1.0-beta.60`](#release-2-1-0-beta-60) | 2026-08-30 | It.86 admin UX, Origin manifest automation, ISS-158/159 |
 | [`2.1.0-beta.59`](#release-2-1-0-beta-59) | 2026-08-25 | It.85 — request diagnostics, APM clear UI, Server-Timing |
 | [`2.1.0-beta.58`](#release-2-1-0-beta-58) | 2026-08-19 | Hotfix — session lock, media streaming/thumbnails, Performance Guard p95 |
@@ -147,6 +148,30 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 - **Shortcode expand + HTML sanitizer** — `allowedHtmlTags` now includes `div`, `article`, `section`, `aside`, `span` (required for It.58 expand templates); legacy settings merge missing layout tags on read; `role` attribute allowed on sanitized elements.
 
+<a id="release-2-1-0-beta-61"></a>
+
+## [2.1.0-beta.61] – 2026-08-30
+
+Origin Panel — backend catalog labels hotfix (production)
+
+### Fixed
+
+- **Origin Panel raw i18n keys on production:** When the admin JS bundle lags the manifest, iteration titles showed keys like `origin.catalog.it87` instead of human-readable labels. Origin API now resolves `titleLabel`, `labelLabel`, and `summaryLabel` from `backend/lang/{locale}/origin.php` via `OriginCatalogLabelResolver`; frontend prefers API labels with `t(titleKey)` fallback.
+- **Manifest validation:** `./scripts/validate-project-catalog.sh` also checks `backend/lang/sk|en/origin.php` catalog keys.
+
+### Added
+
+- **`OriginCatalogLabelResolver`** — locale from `general.language`; mirrors FE origin catalog/timeline/probes/checklist strings on the backend.
+- **Tests:** `OriginCatalogLabelResolverTest`, extended `ProjectCatalogMergeServiceTest` for `titleLabel`.
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.61`
+- **Release note:** [RELEASE_2_1_0_BETA_61.md](docs/en/RELEASE_2_1_0_BETA_61.md)
+- **Ops:** Rebuild admin assets (`npm run build:prod`) on deploy for full FE i18n parity; backend labels fix the panel immediately.
+
+---
+
 <a id="release-2-1-0-beta-60"></a>
 
 ## [2.1.0-beta.60] – 2026-08-30
@@ -155,7 +180,7 @@ It.86 admin UX polish + Origin Panel manifest automation (It.82e)
 
 ### Added
 
-- **Command palette (It.86 / It.43 follow-up):** Admin header search; module shortcuts when query empty; **Ctrl+Shift+K** (Firefox-safe); Chromium still accepts Ctrl+K when focus not in input.
+- **Command palette (It.86 / It.43 follow-up):** Admin header search; module shortcuts when query empty; **Ctrl+Shift+K** (Fireox-safe); Chromium still accepts Ctrl+K when focus not in input.
 - **Article print:** Setting `content.articlePrintEnabled` (default off); public **Print article** button; `@media print` CSS in `pgLayout.css`.
 - **Bulk selection counter:** `BulkActionBar` optional `totalCount` — **“:selected of :total selected”** on pages/articles, messages, comments; confirm dialogs include ratio.
 - **Origin deploy badges:** `CatalogDeployStatusResolver` — `live`, `pending_deploy`, `partial_live` from `since` / `targetVersion` vs `AppVersion::current()`.

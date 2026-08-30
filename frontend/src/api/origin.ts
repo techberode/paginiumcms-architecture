@@ -6,6 +6,7 @@ export interface OriginFeatureProbe {
   id: string;
   group: string;
   labelKey: string;
+  labelLabel?: string;
   status: FeatureProbeStatus;
   message: string;
   since: string | null;
@@ -37,6 +38,7 @@ export interface OriginCatalogRuntime {
 export interface OriginChecklistItem {
   id: string;
   labelKey: string;
+  labelLabel?: string;
   phase: string;
   status: OriginChecklistItemStatus;
   probeId: string | null;
@@ -61,6 +63,7 @@ export interface OriginOperatorChecklist {
 export interface OriginCatalogItem {
   id: string;
   titleKey: string;
+  titleLabel?: string;
   probeId: string | null;
   phase: string;
   status: FeatureProbeStatus;
@@ -71,6 +74,7 @@ export interface OriginCatalogItem {
 export interface OriginCatalogIteration {
   id: string;
   titleKey: string;
+  titleLabel?: string;
   phase: string;
   since: string | null;
   targetVersion?: string | null;
@@ -96,6 +100,7 @@ export interface OriginTimelineEntry {
   version: string;
   date: string;
   summaryKey: string;
+  summaryLabel?: string;
 }
 
 export interface OriginCatalog {

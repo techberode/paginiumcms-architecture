@@ -7,17 +7,19 @@ CATALOG="$ROOT/docs/manifest/project-catalog.json"
 CHECKLIST="$ROOT/docs/manifest/implementation-checklist.json"
 PROBES_DIR="$ROOT/backend/app/Modules/Origin/Probes"
 ORIGIN_I18N="$ROOT/frontend/src/i18n/modules/origin/en.ts"
+ORIGIN_LANG_SK="$ROOT/backend/lang/sk/origin.php"
+ORIGIN_LANG_EN="$ROOT/backend/lang/en/origin.php"
 
 if [[ ! -f "$CATALOG" ]]; then
   echo "validate-project-catalog: missing $CATALOG" >&2
   exit 1
 fi
 
-python3 - <<'PY' "$CATALOG" "$CHECKLIST" "$PROBES_DIR" "$ORIGIN_I18N"
+python3 - <<'PY' "$CATALOG" "$CHECKLIST" "$PROBES_DIR" "$ORIGIN_I18N" "$ORIGIN_LANG_SK" "$ORIGIN_LANG_EN"
 import json, re, sys
 from pathlib import Path
 
-catalog_path, checklist_path, probes_dir, i18n_path = sys.argv[1:5]
+catalog_path, checklist_path, probes_dir, i18n_path, lang_sk, lang_en = sys.argv[1:7]
 
 with open(catalog_path, encoding='utf-8') as f:
     catalog = json.load(f)
@@ -74,6 +76,26 @@ def i18n_key_present(key: str) -> bool:
 missing_i18n = sorted(k for k in title_keys if not i18n_key_present(k))
 if missing_i18n:
     raise SystemExit(f'validate-project-catalog: missing origin i18n keys: {missing_i18n[:5]}… ({len(missing_i18n)} total)')
+
+def lang_catalog_keys(path: str) -> set[str]:
+    text = Path(path).read_text(encoding='utf-8')
+    if "'catalog'" not in text:
+        return set()
+    return set(re.findall(r"'(\w+)'\s*=>\s*'", text))
+
+for lang_path in (lang_sk, lang_en):
+    if not Path(lang_path).is_file():
+        raise SystemExit(f'validate-project-catalog: missing backend lang file {lang_path}')
+    catalog_keys = lang_catalog_keys(lang_path)
+    missing_lang = sorted(
+        k for k in title_keys
+        if k.startswith('origin.catalog.')
+        and k.rsplit('.', 1)[-1] not in catalog_keys
+    )
+    if missing_lang:
+        raise SystemExit(
+            f'validate-project-catalog: missing backend/lang catalog keys in {lang_path}: {missing_lang[:5]}… ({len(missing_lang)} total)'
+        )
 
 print(f'validate-project-catalog: {len(catalog_probe_ids)} probeId(s), {len(catalog.get("iterations", []))} iteration(s) OK')
 PY

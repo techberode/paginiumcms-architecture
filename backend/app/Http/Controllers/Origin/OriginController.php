@@ -9,6 +9,7 @@ use PaginiumCMS\Core\Health\Services\HealthCheckManager;
 use PaginiumCMS\Support\LogSanitizer;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Origin\Services\FeatureProbeRegistry;
+use PaginiumCMS\Modules\Origin\Services\OriginCatalogLabelResolver;
 use PaginiumCMS\Modules\Origin\Services\ProjectCatalogMergeService;
 use PaginiumCMS\Modules\Origin\Services\OriginPanelMode;
 use PaginiumCMS\Modules\Security\Models\User;
@@ -23,6 +24,7 @@ final class OriginController
     public function __construct(
         private FeatureProbeRegistry $probes,
         private ProjectCatalogMergeService $catalog,
+        private OriginCatalogLabelResolver $labels,
         private HealthCheckManager $health,
         private AdminCountsService $counts,
         private JsonResponder $json,
@@ -40,13 +42,7 @@ final class OriginController
         $user = $viewer instanceof User ? $viewer : null;
         $healthReport = $this->health->run();
         $probeRows = $this->probes->runAll();
-        $sanitizedProbes = array_map(
-            static fn (array $row): array => [
-                ...$row,
-                'message' => LogSanitizer::value($row['message']),
-            ],
-            $probeRows
-        );
+        $sanitizedProbes = $this->enrichProbes($probeRows);
 
         return $this->json->success($response, [
             'health' => $healthReport->toArray(),
@@ -64,13 +60,7 @@ final class OriginController
             return $inactive;
         }
 
-        $probeRows = array_map(
-            static fn (array $row): array => [
-                ...$row,
-                'message' => LogSanitizer::value($row['message']),
-            ],
-            $this->probes->runAll()
-        );
+        $probeRows = $this->enrichProbes($this->probes->runAll());
 
         return $this->json->success($response, [
             'probes' => $probeRows,
@@ -86,36 +76,34 @@ final class OriginController
             return $inactive;
         }
 
-        $probeRows = array_map(
-            static fn (array $row): array => [
-                ...$row,
-                'message' => LogSanitizer::value($row['message']),
-            ],
-            $this->probes->runAll()
-        );
-
-        return $this->json->success($response, $this->catalogPayload($probeRows));
+        return $this->json->success($response, $this->catalogPayload($this->enrichProbes($this->probes->runAll())));
     }
 
     /**
      * @param list<array{id: string, status: string, message: string, since: string|null, group: string, labelKey: string}> $probes
      *
+     * @return list<array{id: string, status: string, message: string, since: string|null, group: string, labelKey: string, labelLabel: string}>
+     */
+    private function enrichProbes(array $probes): array
+    {
+        return array_map(
+            fn (array $row): array => [
+                ...$row,
+                'message' => LogSanitizer::value($row['message']),
+                'labelLabel' => $this->labels->resolve($row['labelKey']),
+            ],
+            $probes
+        );
+    }
+
+    /**
+     * @param list<array{id: string, status: string, message: string, since: string|null, group: string, labelKey: string, labelLabel: string}> $probes
+     *
      * @return array<string, mixed>
      */
     private function catalogPayload(array $probes): array
     {
-        $merged = $this->catalog->merge($probes);
-
-        return [
-            ...$merged,
-            'timeline' => array_map(
-                static fn (array $entry): array => [
-                    ...$entry,
-                    'summaryKey' => (string) ($entry['summaryKey'] ?? ''),
-                ],
-                $merged['timeline']
-            ),
-        ];
+        return $this->catalog->merge($probes);
     }
 
     private function inactiveResponse(ServerRequestInterface $request, ResponseInterface $response): ?ResponseInterface
