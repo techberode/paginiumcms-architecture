@@ -4,6 +4,7 @@ export const COLOR_SCHEME_IDS = [
   'forest-sage',
   'sunset-rose',
   'mono-zinc',
+  'terminal-breach',
 ] as const;
 
 export type ColorSchemeId = (typeof COLOR_SCHEME_IDS)[number];
@@ -166,6 +167,33 @@ export const COLOR_SCHEMES: ColorSchemeDefinition[] = [
       textMuted: '#a1a1aa',
       accent: '#d4d4d8',
       border: '#3f3f46',
+    },
+  },
+  {
+    id: 'terminal-breach',
+    nameKey: 'settings.appearance.schemes.terminalBreach.name',
+    descriptionKey: 'settings.appearance.schemes.terminalBreach.description',
+    light: {
+      primary: '#00c853',
+      primaryForeground: '#0a0e14',
+      secondary: '#6e7681',
+      surface: '#f0f3f6',
+      surfaceElevated: '#ffffff',
+      text: '#0a0e14',
+      textMuted: '#57606a',
+      accent: '#d50000',
+      border: '#d0d7de',
+    },
+    dark: {
+      primary: '#00e676',
+      primaryForeground: '#0a0e14',
+      secondary: '#6e7681',
+      surface: '#0a0e14',
+      surfaceElevated: '#121820',
+      text: '#c9d1d9',
+      textMuted: '#6e7681',
+      accent: '#ff1744',
+      border: '#21262d',
     },
   },
 ];

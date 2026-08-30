@@ -228,6 +228,7 @@ use PaginiumCMS\Http\Extensions\Services\PluginImporter;
 use PaginiumCMS\Http\Extensions\Services\PluginManager;
 use PaginiumCMS\Http\Extensions\Services\PluginPolicyScanner;
 use PaginiumCMS\Http\Extensions\Services\PluginRegistry;
+use PaginiumCMS\Http\Themes\Services\ThemeCatalogSeeder;
 use PaginiumCMS\Http\Themes\Services\ThemeImporter;
 use PaginiumCMS\Http\Themes\Services\ThemeManager;
 use PaginiumCMS\Http\Themes\Services\ThemeManifestValidator;
@@ -1108,6 +1109,12 @@ return [
         ),
     ThemeStarterPackageService::class => create(ThemeStarterPackageService::class)
         ->constructor(dirname(__DIR__, 3) . '/resources/theme-packages'),
+    ThemeCatalogSeeder::class => create(ThemeCatalogSeeder::class)
+        ->constructor(
+            get(ThemeRegistry::class),
+            dirname(__DIR__, 3) . '/resources/theme-packages',
+            dirname(__DIR__, 3) . '/resources/views/themes'
+        ),
     ThemeRuntimeService::class => create(ThemeRuntimeService::class)
         ->constructor(
             get(SettingsRepositoryInterface::class),
@@ -1120,6 +1127,7 @@ return [
             get(ThemeRegistry::class),
             get(ThemeImporter::class),
             get(ThemeRuntimeService::class),
+            get(ThemeCatalogSeeder::class),
             dirname(__DIR__, 3) . '/resources/views/themes',
             dirname(__DIR__, 4) . '/frontend/src/themes'
         ),

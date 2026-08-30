@@ -11,9 +11,12 @@ This canonical history records release facts supported by the supplied `CHANGELO
 ### Theme runtime (It.83a–83d)
 
 - **Settings:** `appearance.activeThemeId` + `previousThemeId` with safe fallback to `paginium-core`.
-- **API:** `POST /api/admin/themes/{id}/activate`, `POST /api/admin/themes/deactivate`; block uninstall of active theme.
-- **Admin:** Themes manager activate/deactivate + core shell row.
-- **Public:** `data-active-theme` on public layout root; starter CSS hooks for `clean-journal`.
+- **API:** `POST /api/admin/themes/{id}/activate`, `POST /api/admin/themes/deactivate`, `POST /api/admin/themes/rollback`; block uninstall of active/bundled themes.
+- **Admin:** Themes manager activate/deactivate, rollback, bundled badges, core shell row.
+- **Public:** `PublicShell` registry for `terminal-breach` and `clean-journal`; `ThemeShellBoundary` fail-safe fallback.
+- **83e:** Bundled `terminal-breach` theme + `terminal-breach` color scheme (6th preset).
+- **Shortcode:** `coming-soon` block with terminal-breach styling hooks.
+- **Seeder:** `ThemeCatalogSeeder` auto-installs bundled themes on admin list.
 
 ### Admin UX & platform hygiene
 

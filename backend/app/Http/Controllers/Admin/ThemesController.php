@@ -31,6 +31,7 @@ final class ThemesController
         return $this->json->success($response, [
             'themes' => $this->themes->list(),
             'activeThemeId' => $this->themes->getActiveThemeId(),
+            'previousThemeId' => $this->themes->getPreviousThemeId(),
             'coreThemeId' => ThemeRuntimeService::CORE_THEME_ID,
         ]);
     }
@@ -103,6 +104,17 @@ final class ThemesController
         }
 
         return $this->json->success($response, $result, 200, 'Theme deactivated');
+    }
+
+    public function rollback(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        try {
+            $result = $this->themes->rollback();
+        } catch (RuntimeException $exception) {
+            return $this->json->error($response, $exception->getMessage(), 422);
+        }
+
+        return $this->json->success($response, $result, 200, 'Theme rolled back');
     }
 
     /**

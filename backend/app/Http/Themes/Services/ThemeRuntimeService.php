@@ -7,6 +7,7 @@ namespace PaginiumCMS\Http\Themes\Services;
 use PaginiumCMS\Http\Themes\Models\ThemeRecord;
 use PaginiumCMS\Core\Cache\ContentCacheService;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
+use PaginiumCMS\Support\JsonHelper;
 use RuntimeException;
 
 /**
@@ -82,6 +83,28 @@ final class ThemeRuntimeService
         return $this->applyActivation(self::CORE_THEME_ID);
     }
 
+    /**
+     * @return array{activeThemeId: string, previousThemeId: string|null}
+     */
+    public function rollback(): array
+    {
+        $appearance = $this->settings->group('appearance');
+        $previous = trim((string) ($appearance['previousThemeId'] ?? ''));
+        if ($previous === '' || $previous === self::CORE_THEME_ID) {
+            return $this->deactivate();
+        }
+
+        return $this->activate($previous);
+    }
+
+    public function getPreviousThemeId(): ?string
+    {
+        $appearance = $this->settings->group('appearance');
+        $previous = trim((string) ($appearance['previousThemeId'] ?? ''));
+
+        return $previous !== '' ? $previous : null;
+    }
+
     public function assertNotActive(string $id): void
     {
         if ($this->resolveActiveThemeId() === $id) {
@@ -109,6 +132,7 @@ final class ThemeRuntimeService
             'previousThemeId' => $previous,
         ]);
 
+        $this->applyManifestAppearanceDefaults($targetId);
         $this->syncRegistryEnabled($targetId);
         $this->contentCache->purgeAll();
 
@@ -143,5 +167,52 @@ final class ThemeRuntimeService
     private function isValidThemeId(string $id): bool
     {
         return preg_match('/^[a-z][a-z0-9-]{0,63}$/', $id) === 1;
+    }
+
+    private function applyManifestAppearanceDefaults(string $targetId): void
+    {
+        if ($targetId === self::CORE_THEME_ID) {
+            return;
+        }
+
+        $manifest = $this->readManifest($targetId);
+        if ($manifest === []) {
+            return;
+        }
+
+        $patch = [];
+        $scheme = trim((string) ($manifest['defaultColorScheme'] ?? ''));
+        if ($scheme !== '') {
+            $patch['colorScheme'] = $scheme;
+        }
+
+        $mode = trim((string) ($manifest['defaultMode'] ?? ''));
+        if (in_array($mode, ['light', 'dark', 'system'], true)) {
+            $patch['mode'] = $mode;
+        }
+
+        if ($patch !== []) {
+            $this->settings->setGroup('appearance', $patch);
+        }
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function readManifest(string $id): array
+    {
+        $path = $this->themesRoot . '/' . $id . '/theme.json';
+        if (!is_file($path)) {
+            return [];
+        }
+
+        try {
+            /** @var array<string, mixed> $decoded */
+            $decoded = JsonHelper::decode((string) file_get_contents($path));
+
+            return $decoded;
+        } catch (\JsonException) {
+            return [];
+        }
     }
 }

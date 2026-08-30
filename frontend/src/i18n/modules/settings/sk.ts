@@ -171,6 +171,10 @@ export const settingsSk: MessageTree = {
       "monoZinc": {
         "name": "Mono Zinc",
         "description": "Zinc neutrals + accent — editorial, minimal, portfólio."
+      },
+      "terminalBreach": {
+        "name": "Terminal Breach",
+        "description": "SOC terminál — zelená na tmavom slate, bezpečnostná prezentácia."
       }
     }
   },

@@ -867,7 +867,63 @@
   letter-spacing: 0.01em;
 }
 
-[data-active-theme='clean-journal'] .public-hero,
-[data-active-theme='clean-journal'] .pg-showcase-hero {
-  border-bottom: 1px solid color-mix(in srgb, var(--pg-theme-shell-accent) 25%, transparent);
+[data-active-theme='clean-journal'] header,
+[data-active-theme='clean-journal'] footer {
+  max-width: 72rem;
+  margin-inline: auto;
+  width: 100%;
+}
+
+/* coming-soon + terminal-breach shortcode polish (It.83e / S12). */
+.pg-coming-soon {
+  margin: 2rem 0;
+  padding: 1.5rem 1.25rem;
+  border: 1px dashed color-mix(in srgb, var(--color-border) 80%, transparent);
+  border-left: 3px solid var(--color-accent);
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--color-surface-elevated) 88%, transparent);
+}
+
+.pg-coming-soon-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin: 0 0 0.5rem;
+}
+
+.pg-coming-soon-title {
+  margin: 0 0 0.35rem;
+  font-size: 1.25rem;
+}
+
+.pg-coming-soon-subtitle {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+[data-active-theme='terminal-breach'] .pg-alert-warn {
+  border-left-color: #ffb300;
+}
+
+[data-active-theme='terminal-breach'] .pg-alert-warn .pg-alert-body::before {
+  content: '⚠ THREAT ADVISORY · ';
+  color: #ffb300;
+  font-weight: 700;
+}
+
+[data-active-theme='terminal-breach'] .pg-coming-soon {
+  border-left-color: #ff1744;
+  animation: pg-tb-scan 6s linear infinite;
+}
+
+@keyframes pg-tb-scan {
+  0%, 100% { box-shadow: inset 0 0 0 0 rgba(255, 23, 68, 0); }
+  50% { box-shadow: inset 0 0 0 1px rgba(255, 23, 68, 0.25); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-active-theme='terminal-breach'] .pg-coming-soon {
+    animation: none;
+  }
 }

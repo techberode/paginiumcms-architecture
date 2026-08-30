@@ -251,6 +251,8 @@ export const platformEn: MessageTree = {
     missingOnDisk: 'Missing on disk',
     active: 'Active',
     activate: 'Activate',
+    rollback: 'Rollback',
+    bundled: 'Bundled',
     useCore: 'Use core shell',
     coreFallback: 'Built-in fallback',
     coreDescription: 'Default PaginiumCMS public shell (header, nav, footer).',
@@ -272,6 +274,8 @@ export const platformEn: MessageTree = {
       activateFailed: 'Activation failed',
       deactivated: 'Reverted to Paginium Core shell',
       deactivateFailed: 'Deactivation failed',
+      rolledBack: 'Restored previous theme shell',
+      rollbackFailed: 'Rollback failed',
     },
   },
   extensions: {

@@ -6,6 +6,7 @@ export interface ThemeRecord {
   version: string;
   enabled: boolean;
   active?: boolean;
+  bundled?: boolean;
   installedAt: string;
   present: boolean;
 }
@@ -13,6 +14,7 @@ export interface ThemeRecord {
 export interface ThemeListResponse {
   themes: ThemeRecord[];
   activeThemeId: string;
+  previousThemeId: string | null;
   coreThemeId: string;
 }
 
@@ -37,7 +39,7 @@ export const themesApi = {
       return response.data;
     }
 
-    return { themes: [], activeThemeId: 'paginium-core', coreThemeId: 'paginium-core' };
+    return { themes: [], activeThemeId: 'paginium-core', previousThemeId: null, coreThemeId: 'paginium-core' };
   },
 
   activate: async (id: string) => apiClient.post<{ activeThemeId: string; previousThemeId: string | null }>(
@@ -47,6 +49,11 @@ export const themesApi = {
 
   deactivate: async () => apiClient.post<{ activeThemeId: string; previousThemeId: string | null }>(
     '/api/admin/themes/deactivate',
+    {},
+  ),
+
+  rollback: async () => apiClient.post<{ activeThemeId: string; previousThemeId: string | null }>(
+    '/api/admin/themes/rollback',
     {},
   ),
 

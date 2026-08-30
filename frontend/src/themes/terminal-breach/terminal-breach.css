@@ -1,0 +1,114 @@
+/* Terminal Breach public shell (It.83e) — monospace SOC chrome, CSP-safe. */
+
+.pg-tb-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  font-family: ui-monospace, 'JetBrains Mono', 'IBM Plex Mono', 'Cascadia Code', monospace;
+}
+
+.pg-tb-chrome {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.55rem 1rem;
+  background: #080a10;
+  border-bottom: 1px solid #21262d;
+  color: #6e7681;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+}
+
+.pg-tb-chrome__inner {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.pg-tb-prompt {
+  color: #00e676;
+  font-weight: 600;
+}
+
+.pg-tb-path {
+  color: #c9d1d9;
+}
+
+.pg-tb-cursor {
+  width: 0.55rem;
+  height: 1rem;
+  margin-left: 0.15rem;
+  background: #00e676;
+  animation: pg-tb-blink 1.1s step-end infinite;
+}
+
+@keyframes pg-tb-blink {
+  50% { opacity: 0; }
+}
+
+.pg-tb-site {
+  color: #6e7681;
+  white-space: nowrap;
+}
+
+.pg-tb-main {
+  position: relative;
+}
+
+.pg-tb-main::before {
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  opacity: 0.04;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 230, 118, 0.15) 2px,
+    rgba(0, 230, 118, 0.15) 3px
+  );
+}
+
+.pg-tb-status {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding: 0.65rem 1rem;
+  font-size: 0.72rem;
+  color: #6e7681;
+  background: #080a10;
+  border-top: 1px solid #21262d;
+}
+
+.pg-tb-status span:first-child {
+  color: #00e676;
+}
+
+[data-active-theme='terminal-breach'] .pg-showcase-hero,
+[data-active-theme='terminal-breach'] .pg-hero {
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 0%, rgba(0, 230, 118, 0.08), transparent 70%),
+    linear-gradient(180deg, #0a0e14 0%, #121820 100%);
+}
+
+[data-active-theme='terminal-breach'] .pg-card,
+[data-active-theme='terminal-breach'] .pg-plan,
+[data-active-theme='terminal-breach'] .pg-testimonial {
+  border-left: 3px solid #21262d;
+}
+
+[data-active-theme='terminal-breach'] .pg-card:hover,
+[data-active-theme='terminal-breach'] .pg-plan:hover {
+  border-left-color: #00e676;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pg-tb-cursor {
+    animation: none;
+    opacity: 0.65;
+  }
+}

@@ -413,7 +413,7 @@ final class SettingsController
     private function publicAppearanceSettings(array $appearance): array
     {
         $defaults = SettingsSchema::defaults()['appearance'] ?? [];
-        $allowedSchemes = ['indigo-classic', 'ocean-slate', 'forest-sage', 'sunset-rose', 'mono-zinc'];
+        $allowedSchemes = ['indigo-classic', 'ocean-slate', 'forest-sage', 'sunset-rose', 'mono-zinc', 'terminal-breach'];
         $allowedModes = ['light', 'dark', 'system'];
 
         $colorScheme = (string) ($appearance['colorScheme'] ?? $defaults['colorScheme'] ?? 'indigo-classic');
