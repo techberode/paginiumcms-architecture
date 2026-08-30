@@ -222,3 +222,38 @@ Mark an unimplemented capability `NOT_APPLICABLE`.
 - [Release lifecycle](developer/RELEASE.md)
 - [Deployment](deploy/DEPLOY.md)
 - [Incident register](ISSUES.md)
+
+## 18. Origin manifest slices (2026-08-30)
+
+Machine-readable SSOT: [`docs/manifest/project-catalog.json`](../manifest/project-catalog.json) + [`docs/manifest/implementation-checklist.json`](../manifest/implementation-checklist.json). Origin Panel merges these with runtime probes and `AppVersion::current()` for deploy badges.
+
+### It.83 — Theme runtime & marketing (`since: 2.1.0-beta.59`)
+
+- [x] `ThemeRuntimeService` activate/deactivate + settings `themes.activeTheme`
+- [x] Bundled themes `clean-journal`, `terminal-breach` + PublicShell wiring
+- [x] Landing seed `paginium-cms-landing.sk.md`
+- [x] Probes `it.83.theme_runtime`, `it.83.theme_packages` registered
+- [ ] Production deploy at `2.1.0-beta.59+` (Origin shows **live** when instance version ≥ tag)
+
+### It.86 — Admin UX polish (`targetVersion: 2.1.0-beta.60`)
+
+- [x] Admin command palette session auth ([ISS-158](ISSUES.md#iss-158), [ISS-159](ISSUES.md#iss-159))
+- [x] Article print setting `content.articlePrintEnabled` + public print button
+- [x] Bulk selection counter “X of Y” on pages/articles, messages, comments
+- [x] `./scripts/iteration-gate.sh` green before tag
+- [ ] Tag `v2.1.0-beta.60` and production deploy (Origin **live** when instance ≥ tag)
+
+### Origin automation
+
+- [x] `CatalogDeployStatusResolver` — `live` / `pending_deploy` / `partial_live` from `since` / `targetVersion`
+- [x] `implementation-checklist.json` slices exposed in Origin Panel **Release slices**
+- [x] `./scripts/validate-project-catalog.sh` validates probeIds + checklist iteration refs
+
+## 19. Planned iteration 87 (post-stable)
+
+Spec: [`docs/en/ITERATION_87.md`](../en/ITERATION_87.md) · SK: [`docs/sk/ITERATION_87.md`](../sk/ITERATION_87.md)
+
+- [x] It.87 specification (Project Site Planner + UX audit)
+- [ ] Planner MVP (`87e`–`87h`) in Full CMS
+- [ ] UX audit (`87a`–`87d`) or explicit defer in ISSUES
+- [ ] Optional Track C: theme `assets/` JS allow-list + SRI + CSP (`87k`–`87m`) — default off

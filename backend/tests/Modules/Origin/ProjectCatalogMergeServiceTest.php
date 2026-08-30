@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Tests\Modules\Origin;
 
+use PaginiumCMS\Modules\Origin\Services\CatalogDeployStatusResolver;
 use PaginiumCMS\Modules\Origin\Services\FeatureProbeRegistry;
+use PaginiumCMS\Modules\Origin\Services\ImplementationChecklistReader;
 use PaginiumCMS\Modules\Origin\Services\ProjectCatalogMergeService;
 use PaginiumCMS\Modules\Origin\Services\ProjectCatalogReader;
 use PaginiumCMS\Modules\Origin\Services\ProbeSupport;
@@ -12,16 +14,27 @@ use PHPUnit\Framework\TestCase;
 
 final class ProjectCatalogMergeServiceTest extends TestCase
 {
+    private function service(): ProjectCatalogMergeService
+    {
+        return new ProjectCatalogMergeService(
+            new ProjectCatalogReader(),
+            new CatalogDeployStatusResolver(),
+            new ImplementationChecklistReader(),
+        );
+    }
+
     public function testMergeComputesPercentFromProbesAndCatalog(): void
     {
         $probes = (new FeatureProbeRegistry(new ProbeSupport()))->runAll();
-        $service = new ProjectCatalogMergeService(new ProjectCatalogReader());
-        $merged = $service->merge($probes);
+        $merged = $this->service()->merge($probes);
 
         $this->assertSame(1, $merged['schemaVersion']);
         $this->assertNotEmpty($merged['iterations']);
         $this->assertGreaterThanOrEqual(0, $merged['progress']['percent']);
         $this->assertGreaterThan(0, $merged['progress']['total']);
+        $this->assertNotSame('', $merged['runtime']['appVersion']);
+        $this->assertGreaterThanOrEqual(0, $merged['progress']['liveOnInstance']);
+        $this->assertNotEmpty($merged['checklist']['slices']);
 
         $it81 = null;
         foreach ($merged['iterations'] as $iteration) {
@@ -33,6 +46,7 @@ final class ProjectCatalogMergeServiceTest extends TestCase
 
         $this->assertIsArray($it81);
         $this->assertSame(100, $it81['percentComplete']);
+        $this->assertArrayHasKey('deployStatus', $it81);
         $this->assertCount(6, $it81['items']);
     }
 }

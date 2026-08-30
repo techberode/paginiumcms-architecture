@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Známe incidenty a opravy
 
-> **Posledná aktualizácia:** 13. august 2026 · register **ISS-001–ISS-140** · **`v2.1.0-beta.38`** shipped · kanonický EN register: [`../ISSUES.md`](../ISSUES.md)
+> **Posledná aktualizácia:** 30. august 2026 · kanonický EN register **ISS-001–ISS-159**: [`../ISSUES.md`](../ISSUES.md) · ISS-158/159 fixed in **2.1.0-beta.60**
 
 Tento dokument je kanonický verejný register produkčných, integračných, bezpečnostných, prevádzkových a CI problémov zistených počas vývoja PaginiumCMS. Každé číslo incidentu v prehľade je klikateľné a smeruje na stabilný explicitný anchor s popisom, príčinou, riešením a dostupným overením.
 

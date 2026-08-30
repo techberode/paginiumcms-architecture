@@ -33,6 +33,19 @@ Dashboard je orientačný prehľad, nie monitoringový systém s garantovanou ú
 
 Ak panel zlyhá, over jednotlivý API endpoint a log. Nedostupnosť analytiky nesmie blokovať editovanie autoritatívneho obsahu.
 
+### Rýchle vyhľadávanie (command palette)
+
+It.43 admin search umožňuje skoky na stránky, články, médiá a admin moduly.
+
+| Akcia | Ako |
+|--------|-----|
+| Otvoriť paletu | **Ctrl+Shift+K** (odporúčané vo Firefoxe/Linuxe) alebo **Ctrl+K** v Chromium; alebo tlačidlo **Rýchle vyhľadávanie…** v hlavičke |
+| Navigácia vo výsledkoch | ↑↓ výber, **Enter** skok, **Esc** zavrieť |
+| Prázdna query | Posledné skoky + skratky admin modulov |
+| Vyhľadávanie | ≥2 znaky — index obsahu, médiá, trasy podľa oprávnení |
+
+Vyžaduje aktívnu admin session. Pri 401 na `GET /api/search?scope=admin` pozri [ISS-158](../ISSUES.md#iss-158).
+
 ## 4. Stránky
 
 **Stránky** spravujú podstránky verejného webu.
@@ -51,6 +64,10 @@ Slug je súčasť URL a identity súboru. Jeho zmena môže vyžadovať redirect
 ## 5. Články
 
 Články používajú rovnaké jadro editora, navyše môžu mať excerpt, tagy, featured image, dátum publikovania a komentáre. Scheduled publish vyžaduje funkčný scheduler/worker podľa release.
+
+**Bulk akcie:** Pri výbere riadkov lišta ukáže **„X z Y vybraných“** (Y = celkový počet záznamov podľa aktuálnych filtrov). Potvrdzovacie dialógy pri publikovaní, koncepte, archivácii a mazaní používajú rovnaký pomer.
+
+**Tlač na verejnom blogu:** Nastavenia → Obsah → **Povoliť tlač článkov** (`content.articlePrintEnabled`, predvolene vypnuté). Po zapnutí sa na detaile článku zobrazí **Tlačiť článok**; tlač skryje navigáciu, komentáre a chrome.
 
 Bulk akciu používaj iba po filtrovaní a kontrole počtu položiek. Pri soft delete over kôš a retenciu pred permanentným zmazaním.
 
@@ -77,6 +94,8 @@ Navigácia definuje strom verejných odkazov, poradie, parent väzby a target. P
 
 **Komentáre** podporujú moderáciu podľa globálnej a content policy. **Správy** predstavujú kontaktný inbox.
 
+Hromadné akcie (prečítané, vybavené, archivovať, zmazať) používajú rovnaký vzor **„X z Y vybraných“** a potvrdenia ako zoznamy obsahu.
+
 - osobné údaje neexportuj bez právneho dôvodu,
 - pri spame kombinuj rate limit, WAF a moderáciu,
 - urgentný label nie je náhradou za notifikačný kanál,
@@ -89,7 +108,7 @@ Nastavenia sú rozdelené do skupín. Typické oblasti:
 | Oblasť | Príklady |
 |---|---|
 | Site | názov, URL, jazyk, timezone, branding |
-| Content/SEO | editor, pagination, meta, feedy |
+| Content/SEO | editor, pagination, meta, feedy, **prepínač tlače článkov** |
 | Accounts/Security | registrácia, heslá, 2FA, upload policy |
 | Access control | RBAC a Path ACL pre SUPER_ADMIN |
 | Integrations | SMTP, ntfy, webhook alebo ďalší provider |

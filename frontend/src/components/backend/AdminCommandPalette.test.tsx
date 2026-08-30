@@ -36,6 +36,12 @@ vi.mock('../../api/search', () => ({
   }),
 }));
 
+vi.mock('../../hooks/useAuth', () => ({
+  useAuth: () => ({
+    user: { roles: ['ADMIN'] },
+  }),
+}));
+
 describe('AdminCommandPalette', () => {
   beforeEach(() => {
     mockNavigate.mockReset();
@@ -45,13 +51,13 @@ describe('AdminCommandPalette', () => {
   it('renders search input when open', () => {
     renderWithRouter(<AdminCommandPalette isOpen onClose={() => undefined} />);
 
-    expect(screen.getByPlaceholderText(/Ctrl\+K/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/Ctrl\+Shift\+K/i)).toBeInTheDocument();
   });
 
   it('navigates on result click after search', async () => {
     renderWithRouter(<AdminCommandPalette isOpen onClose={() => undefined} />);
 
-    fireEvent.change(screen.getByPlaceholderText(/Ctrl\+K/i), { target: { value: 'set' } });
+    fireEvent.change(screen.getByPlaceholderText(/Ctrl\+Shift\+K/i), { target: { value: 'set' } });
 
     expect(await screen.findByText('Nastavenia')).toBeInTheDocument();
 

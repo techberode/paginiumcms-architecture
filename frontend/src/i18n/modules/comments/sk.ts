@@ -57,7 +57,10 @@ export const commentsSk: MessageTree = {
   },
   confirm: {
     deleteOne: 'Vymazať tento komentár?',
-    bulkDelete: 'Vymazať :count označených komentárov?',
+    bulkDelete: 'Vymazať :selected z :total označených komentárov?',
+    bulkArchive: 'Archivovať :selected z :total označených komentárov?',
+    bulkRead: 'Označiť :selected z :total komentárov ako prečítané?',
+    bulkProcessed: 'Označiť :selected z :total komentárov ako vybavené?',
   },
   toast: {
     loadFailed: 'Nepodarilo sa načítať komentáre.',

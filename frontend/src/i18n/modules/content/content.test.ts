@@ -14,6 +14,6 @@ describe('content i18n module', () => {
 
     expect(translate('sk', 'content.pages.title')).toBe('Podstránky');
     expect(translate('en', 'content.articles.empty')).toBe('No articles found');
-    expect(translate('sk', 'content.confirm.bulkDelete', { count: 3 })).toContain('3');
+    expect(translate('sk', 'content.confirm.bulkDelete', { selected: '3', total: '12', count: '3' })).toContain('3 z 12');
   });
 });

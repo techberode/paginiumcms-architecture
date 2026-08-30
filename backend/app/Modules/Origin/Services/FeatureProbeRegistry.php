@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace PaginiumCMS\Modules\Origin\Services;
 
 use PaginiumCMS\Modules\Origin\Contracts\FeatureProbeInterface;
+use PaginiumCMS\Modules\Origin\Probes\AdminCommandPaletteFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\ApiKeysFeatureProbe;
+use PaginiumCMS\Modules\Origin\Probes\ArticlePrintFeatureProbe;
+use PaginiumCMS\Modules\Origin\Probes\BulkSelectionUxFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\DuplicateContentFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\LockingFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\MultiLocaleFeatureProbe;
@@ -15,6 +18,8 @@ use PaginiumCMS\Modules\Origin\Probes\ScheduledPublishFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\ShortcodesFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\SnippetLibraryFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\StaleContentFeatureProbe;
+use PaginiumCMS\Modules\Origin\Probes\ThemePackagesFeatureProbe;
+use PaginiumCMS\Modules\Origin\Probes\ThemeRuntimeFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\UntrustedSurfacesFeatureProbe;
 
 final class FeatureProbeRegistry
@@ -36,6 +41,11 @@ final class FeatureProbeRegistry
             new DuplicateContentFeatureProbe($support),
             new StaleContentFeatureProbe($support),
             new SnippetLibraryFeatureProbe($support),
+            new ThemeRuntimeFeatureProbe($support),
+            new ThemePackagesFeatureProbe($support),
+            new AdminCommandPaletteFeatureProbe($support),
+            new ArticlePrintFeatureProbe($support),
+            new BulkSelectionUxFeatureProbe($support),
         ];
     }
 

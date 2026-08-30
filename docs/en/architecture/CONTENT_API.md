@@ -286,7 +286,9 @@ GET /api/search?q=home&scope=public&types=page,article&limit=20
 GET /api/search?q=set&scope=admin&types=page,article,media,route&limit=8
 ```
 
-Requires a session and returns only results the actor may view/open. `adminPath` is a navigation hint, not authorization. The It.43 admin search is treated as a delivered foundation at this checkpoint, not “unreleased.”
+Requires an **authenticated session** (`scope=admin` returns 401 when anonymous). The route is intentionally **without** route-level `AuthMiddleware`; the controller resolves the actor via `AuthenticationInterface::getCurrentUser()` from the session (see [ISS-158](../ISSUES.md#iss-158)). Explicit DI wiring for `SearchController` must list all constructor dependencies including `AuthenticationInterface` before `JsonResponder` ([ISS-159](../ISSUES.md#iss-159)).
+
+Returns only results the actor may view/open. `adminPath` is a navigation hint, not authorization. FE shortcuts: **Ctrl+Shift+K** (Firefox-safe), header quick-search button, client-side module catalog when query length &lt; 2.
 
 ---
 

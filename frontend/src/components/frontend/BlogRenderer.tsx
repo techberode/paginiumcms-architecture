@@ -18,6 +18,7 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  Printer,
 } from 'lucide-react';
 import { resolveContentPreviewImage } from '../../utils/contentPreviewImage';
 import { MEDIA_THUMB_WIDTH, resolvePublicMediaThumbnailUrl } from '../../api/media';
@@ -55,6 +56,7 @@ export const BlogRenderer: React.FC = () => {
 
   const itemsPerPage = resolveBlogItemsPerPage(settings.content);
   const showReadingTime = resolveShowReadingTime(settings.content);
+  const articlePrintEnabled = settings.content?.articlePrintEnabled === true;
   const sidebarSettings = useMemo(
     () => resolveBlogSidebarSettings(settings.content),
     [settings.content]
@@ -366,7 +368,7 @@ export const BlogRenderer: React.FC = () => {
       <div className="min-h-screen bg-theme-surface text-theme-text pb-24 transition-colors">
         {wrapWithSidebar(
           <>
-            <div className="pt-10">
+            <div className="pt-10 pg-no-print">
               <button
                 type="button"
                 onClick={() => navigate(listPath)}
@@ -377,8 +379,9 @@ export const BlogRenderer: React.FC = () => {
               </button>
             </div>
 
+            <article className="pg-print-article">
             <header className="py-6">
-          <div className="flex flex-wrap items-center gap-2 mb-4">
+          <div className="flex flex-wrap items-center gap-2 mb-4 pg-no-print">
             {activeArticle.tags?.map((tag) => (
               <span
                 key={tag}
@@ -421,6 +424,20 @@ export const BlogRenderer: React.FC = () => {
                   </span>
                 </>
               )}
+              {articlePrintEnabled && (
+                <>
+                  <span className="text-theme-border pg-no-print">•</span>
+                  <button
+                    type="button"
+                    onClick={() => window.print()}
+                    className="pg-no-print inline-flex items-center gap-1.5 font-semibold text-theme-primary hover:text-theme-accent transition-colors"
+                    title={t('public.blog.printArticle')}
+                  >
+                    <Printer className="w-4 h-4" />
+                    <span>{t('public.blog.printArticle')}</span>
+                  </button>
+                </>
+              )}
             </div>
           </div>
           {image && (
@@ -431,13 +448,37 @@ export const BlogRenderer: React.FC = () => {
         </header>
 
             <main className="mt-10">
-          <div className={`${PUBLIC_CARD} p-8 sm:p-12`}>
+          <div className={`${PUBLIC_CARD} p-8 sm:p-12 pg-print-body`}>
             <MarkdownRenderer content={activeArticle.content} html={activeArticle.html} />
           </div>
 
+          {showAuthorBox && authorBio && (
+            <div className="mt-12 bg-theme-primary/10 border border-theme-primary/20 rounded-3xl p-6 sm:p-8 flex items-center gap-6">
+              {authorAvatarUrl ? (
+                <img
+                  src={authorAvatarUrl}
+                  alt={author}
+                  className="w-16 h-16 rounded-2xl object-cover shrink-0 shadow-lg border border-theme-border/50"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-theme-primary to-theme-accent flex items-center justify-center text-theme-primary-foreground font-extrabold text-2xl shrink-0 shadow-lg">
+                  {author.charAt(0)}
+                </div>
+              )}
+              <div>
+                <h4 className="font-bold text-lg text-theme-text">
+                  {t('public.blog.aboutAuthor', { author })}
+                </h4>
+                <p className="text-xs sm:text-sm text-theme-text-muted mt-1">{authorBio}</p>
+              </div>
+            </div>
+          )}
+            </main>
+            </article>
+
           {(prevArticle || nextArticle) && (
             <nav
-              className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4"
+              className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4 pg-no-print"
               aria-label={t('public.blog.articleNav.ariaLabel')}
             >
               {prevArticle ? (
@@ -473,35 +514,14 @@ export const BlogRenderer: React.FC = () => {
             </nav>
           )}
 
-          {showAuthorBox && authorBio && (
-            <div className="mt-12 bg-theme-primary/10 border border-theme-primary/20 rounded-3xl p-6 sm:p-8 flex items-center gap-6">
-              {authorAvatarUrl ? (
-                <img
-                  src={authorAvatarUrl}
-                  alt={author}
-                  className="w-16 h-16 rounded-2xl object-cover shrink-0 shadow-lg border border-theme-border/50"
-                />
-              ) : (
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-theme-primary to-theme-accent flex items-center justify-center text-theme-primary-foreground font-extrabold text-2xl shrink-0 shadow-lg">
-                  {author.charAt(0)}
-                </div>
-              )}
-              <div>
-                <h4 className="font-bold text-lg text-theme-text">
-                  {t('public.blog.aboutAuthor', { author })}
-                </h4>
-                <p className="text-xs sm:text-sm text-theme-text-muted mt-1">{authorBio}</p>
-              </div>
-            </div>
-          )}
-
+          <div className="pg-no-print">
           <ArticleComments
             articleSlug={activeArticle.slug}
             enabled={commentsEnabled}
             allowGuests={allowGuests}
             requireApproval={requireApproval}
           />
-            </main>
+          </div>
           </>,
           true
         )}

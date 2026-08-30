@@ -28,6 +28,7 @@ import {
   AdminInboxRow,
 } from './AdminInboxList';
 import { inboxPriorityBadgeClass } from '../../utils/adminInboxPriority';
+import { bulkSelectionCounts } from '../../utils/bulkSelectionLabel';
 import { applyClientListView } from '../../utils/clientListView';
 import { messagePriorityWeight } from '../../constants/messageSubjects';
 import { summarizeBulkResult } from '../../types/bulk';
@@ -112,7 +113,16 @@ export const MessagesViewer: React.FC = () => {
     if (bulkSelection.count === 0) {
       return;
     }
-    if (action === 'delete' && !confirm(t('messages.confirm.bulkDelete', { count: String(bulkSelection.count) }))) {
+    const counts = bulkSelectionCounts(bulkSelection.count, listView.total);
+    const confirmKey =
+      action === 'delete'
+        ? 'messages.confirm.bulkDelete'
+        : action === 'archive'
+          ? 'messages.confirm.bulkArchive'
+          : action === 'read'
+            ? 'messages.confirm.bulkRead'
+            : 'messages.confirm.bulkProcessed';
+    if (!confirm(t(confirmKey, counts))) {
       return;
     }
     const result = await bulkMessageAction(bulkSelection.selectedIds, action);
@@ -179,6 +189,7 @@ export const MessagesViewer: React.FC = () => {
 
       <BulkActionBar
         count={bulkSelection.count}
+        totalCount={listView.total}
         itemLabel={t('messages.bulk.itemLabel')}
         onClear={bulkSelection.clear}
         actions={[

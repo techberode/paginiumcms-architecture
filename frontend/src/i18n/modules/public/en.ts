@@ -306,6 +306,7 @@ export const publicEn: MessageTree = {
     backToBlog: 'Back to blog',
     backToList: 'Back to article list',
     editorialAuthor: 'Paginium editorial author',
+    printArticle: 'Print article',
     aboutAuthor: 'About the author: :author',
     list: {
       title: 'Magazine & News',

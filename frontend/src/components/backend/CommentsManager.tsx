@@ -23,6 +23,7 @@ import { useAdminListPageSize } from '../../hooks/useAdminListPageSize';
 import { useAdminListQueryParams } from '../../hooks/useAdminListQueryParams';
 import { AdminListSortBar } from './SortableTableHeader';
 import { BulkActionBar } from './BulkActionBar';
+import { bulkSelectionCounts } from '../../utils/bulkSelectionLabel';
 import { AdminListToolbar } from './AdminListToolbar';
 import { AdminListPagination } from './AdminListPagination';
 import {
@@ -140,6 +141,16 @@ export const CommentsManager: React.FC = () => {
     if (bulkSelection.count === 0) {
       return;
     }
+    const counts = bulkSelectionCounts(bulkSelection.count, listView.total);
+    const confirmKey =
+      action === 'archive'
+        ? 'comments.confirm.bulkArchive'
+        : action === 'read'
+          ? 'comments.confirm.bulkRead'
+          : 'comments.confirm.bulkProcessed';
+    if (!confirm(t(confirmKey, counts))) {
+      return;
+    }
     const result = await bulkCommentWorkflow(bulkSelection.selectedIds, action);
     if (result) {
       showSuccess(summarizeBulkResult(result, t));
@@ -154,7 +165,7 @@ export const CommentsManager: React.FC = () => {
     if (bulkSelection.count === 0) {
       return;
     }
-    if (!confirm(t('comments.confirm.bulkDelete', { count: String(bulkSelection.count) }))) {
+    if (!confirm(t('comments.confirm.bulkDelete', bulkSelectionCounts(bulkSelection.count, listView.total)))) {
       return;
     }
     const result = await bulkDeleteComments(bulkSelection.selectedIds);
@@ -250,6 +261,7 @@ export const CommentsManager: React.FC = () => {
 
       <BulkActionBar
         count={bulkSelection.count}
+        totalCount={listView.total}
         itemLabel={t('comments.bulk.itemLabel')}
         onClear={bulkSelection.clear}
         actions={[

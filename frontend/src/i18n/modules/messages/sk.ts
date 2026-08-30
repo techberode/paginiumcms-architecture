@@ -50,7 +50,10 @@ export const messagesSk: MessageTree = {
   },
   confirm: {
     deleteOne: 'Vymazať túto správu?',
-    bulkDelete: 'Vymazať :count označených správ?',
+    bulkDelete: 'Vymazať :selected z :total označených správ?',
+    bulkArchive: 'Archivovať :selected z :total označených správ?',
+    bulkRead: 'Označiť :selected z :total správ ako prečítané?',
+    bulkProcessed: 'Označiť :selected z :total správ ako vybavené?',
   },
   toast: {
     loadFailed: 'Nepodarilo sa načítať správy.',

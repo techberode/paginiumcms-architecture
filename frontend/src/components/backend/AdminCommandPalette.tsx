@@ -1,5 +1,5 @@
 // frontend/src/components/backend/AdminCommandPalette.tsx
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Search,
@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import { searchAdmin, AdminSearchResultItem } from '../../api/search';
 import { useI18n } from '../../context/I18nContext';
+import { useAuth } from '../../hooks/useAuth';
+import { buildLocalAdminRouteItems } from '../../utils/adminCommandPaletteRoutes';
 
 const RECENT_KEY = 'paginium_admin_search_recent';
 const MAX_RECENT = 8;
@@ -55,6 +57,7 @@ function typeIcon(type: AdminSearchResultItem['type']) {
 
 export const AdminCommandPalette: React.FC<AdminCommandPaletteProps> = ({ isOpen, onClose }) => {
   const { t } = useI18n();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<AdminSearchResultItem[]>([]);
@@ -121,7 +124,29 @@ export const AdminCommandPalette: React.FC<AdminCommandPaletteProps> = ({ isOpen
     };
   }, [isOpen, query]);
 
-  const visibleItems = query.trim().length >= 2 ? results : recent;
+  const localRoutes = useMemo(
+    () => buildLocalAdminRouteItems(t, query, user?.roles ?? []),
+    [query, t, user?.roles]
+  );
+
+  const visibleItems = useMemo(() => {
+    const trimmed = query.trim();
+    if (trimmed.length >= 2) {
+      return results.length > 0 ? results : localRoutes;
+    }
+
+    if (trimmed.length === 1) {
+      return localRoutes;
+    }
+
+    if (recent.length > 0) {
+      const recentPaths = new Set(recent.map((row) => row.adminPath));
+      const extraRoutes = localRoutes.filter((row) => !recentPaths.has(row.adminPath));
+      return [...recent, ...extraRoutes].slice(0, 12);
+    }
+
+    return localRoutes.slice(0, 12);
+  }, [localRoutes, query, recent, results]);
 
   const selectItem = useCallback(
     (item: AdminSearchResultItem) => {
@@ -208,6 +233,12 @@ export const AdminCommandPalette: React.FC<AdminCommandPaletteProps> = ({ isOpen
           {query.trim().length < 2 && recent.length > 0 && (
             <div className="px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">
               {t('platform.commandPalette.recent')}
+            </div>
+          )}
+
+          {query.trim().length < 2 && recent.length === 0 && localRoutes.length > 0 && (
+            <div className="px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              {t('platform.commandPalette.modules')}
             </div>
           )}
 

@@ -55,7 +55,10 @@ export const contentEn: MessageTree = {
   },
   confirm: {
     deleteOne: 'Delete this :item?',
-    bulkDelete: 'Delete :count selected items?',
+    bulkDelete: 'Delete :selected of :total selected items?',
+    bulkPublish: 'Publish :selected of :total selected items?',
+    bulkDraft: 'Move :selected of :total selected items to draft?',
+    bulkArchive: 'Archive :selected of :total selected items?',
   },
   toast: {
     deleted: ':item was deleted',

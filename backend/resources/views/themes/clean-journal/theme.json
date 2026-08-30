@@ -1,0 +1,11 @@
+{
+  "manifestVersion": 1,
+  "id": "clean-journal",
+  "name": "Clean Journal",
+  "version": "1.0.0",
+  "minCmsVersion": "2.1.0",
+  "description": "Starter appearance theme with semantic slots and token-ready CSS.",
+  "slots": ["header", "main", "sidebar", "footer"],
+  "templates": ["default", "article", "landing-page"],
+  "supports": ["appearance-tokens", "branding", "navigation"]
+}

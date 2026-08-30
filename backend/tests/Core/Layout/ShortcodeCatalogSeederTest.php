@@ -78,6 +78,7 @@ final class ShortcodeCatalogSeederTest extends TestCase
         $this->assertSame(
             [
                 'alert-box',
+                'coming-soon',
                 'cta-banner',
                 'feature-card',
                 'feature-grid',
@@ -104,6 +105,7 @@ final class ShortcodeCatalogSeederTest extends TestCase
 
         $this->assertCount(16, $this->manager->list());
         $this->assertNotEmpty($this->manager->get('landing-hero'));
+        $this->assertNotEmpty($this->manager->get('coming-soon'));
     }
 
     private function removeDir(string $dir): void

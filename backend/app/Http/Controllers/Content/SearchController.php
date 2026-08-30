@@ -8,6 +8,7 @@ use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
 use PaginiumCMS\Core\FlatFile\Services\ContentIndexService;
 use PaginiumCMS\Core\Search\Services\AdvancedSearchService;
 use PaginiumCMS\Http\Support\JsonResponder;
+use PaginiumCMS\Modules\Security\Contracts\AuthenticationInterface;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Support\Lang;
 use Psr\Http\Message\ResponseInterface;
@@ -22,6 +23,7 @@ final class SearchController
         private ContentIndexService $index,
         private ContentRepositoryInterface $repository,
         private AdvancedSearchService $advancedSearch,
+        private AuthenticationInterface $auth,
         private JsonResponder $json
     ) {
     }
@@ -55,7 +57,7 @@ final class SearchController
         }
 
         if ($scope === 'admin') {
-            $user = $request->getAttribute('user');
+            $user = $this->resolveUser($request);
             if (!$user instanceof User) {
                 return $this->json->error($response, Lang::get('unauthorized', [], 'auth'), 401);
             }
@@ -93,5 +95,15 @@ final class SearchController
         }
 
         return $types;
+    }
+
+    private function resolveUser(ServerRequestInterface $request): ?User
+    {
+        $user = $request->getAttribute('user');
+        if ($user instanceof User) {
+            return $user;
+        }
+
+        return $this->auth->isAuthenticated() ? $this->auth->getCurrentUser() : null;
     }
 }

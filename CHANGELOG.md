@@ -4,32 +4,9 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## Unreleased
 
-### CI & media
+### Iteration 87 (planning only)
 
-- **Media thumbnails:** remove `imagedestroy()` calls for PHP 8.5 compatibility (`failOnDeprecation` in PHPUnit CI).
-
-### Theme runtime (It.83a–83d)
-
-- **Settings:** `appearance.activeThemeId` + `previousThemeId` with safe fallback to `paginium-core`.
-- **API:** `POST /api/admin/themes/{id}/activate`, `POST /api/admin/themes/deactivate`, `POST /api/admin/themes/rollback`; block uninstall of active/bundled themes.
-- **Admin:** Themes manager activate/deactivate, rollback, bundled badges, core shell row.
-- **Public:** `PublicShell` registry for `terminal-breach` and `clean-journal`; `ThemeShellBoundary` fail-safe fallback.
-- **83e:** Bundled `terminal-breach` theme + `terminal-breach` color scheme (6th preset).
-- **Shortcode:** `coming-soon` block with terminal-breach styling hooks.
-- **Seeder:** `ThemeCatalogSeeder` auto-installs bundled themes on admin list.
-
-### Admin UX & platform hygiene
-
-- Settings help/tooltips: removed internal iteration references from operator-facing copy; Slovak locale fully translated for monitoring, SMTP, connectors, and scheduler fields.
-- **Backups:** automatic schedule UI in Backup Manager (interval, retention, enable/disable); `enabled` flag in schedule API response.
-- **API keys:** bulk purge of revoked/expired keys from flat-file storage (`POST /api/admin/platform/api-keys/bulk-purge`).
-- **Scheduler:** localized recent-run messages in admin UI via i18n mapping.
-- **Bulk actions:** extended to Gallery, Categories, Webhooks, Redirects, Extensions, Firewall, Shortcodes, Snippets, and custom Roles (BE `BulkIdsParser` + FE `BulkActionBar` pattern).
-- **Themes:** admin UI for ZIP import/uninstall; starter package `clean-journal`; code policy scan on import; download starter from admin.
-- **Marketing landing:** bundled seed `paginium-cms-landing.sk.md`; landing layout renders full-width shortcodes; kinetic-style hero CSS on `layoutTemplate: landing`.
-- **Settings i18n:** Hybrid Engine / code policy / gallery / system-update field labels and enum options fully localized (SK/EN parity).
-- **CI:** API barrel exports (`categories`, `origin`, `roles`, `snippets`, `blogSidebar`); fix `adminNavSections.test.ts` import paths; robust `MediaThumbnailServiceTest` fixture (noisy JPEG).
-- Docs: automatic backup activation steps in `docs/*/user/ADMIN_GUIDE.md`; security checklist in admin guide; Origin panel timeline entry for beta.59.
+- **Spec:** [ITERATION_87.md](docs/en/ITERATION_87.md) — Project Site Planner (Full CMS), UX audit deferrals (It.86d → 87a–87d), optional theme static JS allow-list (`87k`–`87m`).
 
 ## History rules
 
@@ -44,6 +21,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.60`](#release-2-1-0-beta-60) | 2026-08-30 | It.86 admin UX, Origin manifest automation, ISS-158/159 |
 | [`2.1.0-beta.59`](#release-2-1-0-beta-59) | 2026-08-25 | It.85 — request diagnostics, APM clear UI, Server-Timing |
 | [`2.1.0-beta.58`](#release-2-1-0-beta-58) | 2026-08-19 | Hotfix — session lock, media streaming/thumbnails, Performance Guard p95 |
 | [`2.1.0-beta.57`](#release-2-1-0-beta-57) | 2026-08-17 | It.84 — categories, blog sidebar, landing shortcodes, custom roles, nav layout |
@@ -168,6 +146,37 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **ISS-141 follow-up** — all remaining `Http/Controllers/*` JSON mutating paths and OTP/contact rate-limit middleware now use `RequestJsonBody::decode()` (eliminates empty-body regressions site-wide after `BodyParsingMiddleware`).
 
 - **Shortcode expand + HTML sanitizer** — `allowedHtmlTags` now includes `div`, `article`, `section`, `aside`, `span` (required for It.58 expand templates); legacy settings merge missing layout tags on read; `role` attribute allowed on sanitized elements.
+
+<a id="release-2-1-0-beta-60"></a>
+
+## [2.1.0-beta.60] – 2026-08-30
+
+It.86 admin UX polish + Origin Panel manifest automation (It.82e)
+
+### Added
+
+- **Command palette (It.86 / It.43 follow-up):** Admin header search; module shortcuts when query empty; **Ctrl+Shift+K** (Firefox-safe); Chromium still accepts Ctrl+K when focus not in input.
+- **Article print:** Setting `content.articlePrintEnabled` (default off); public **Print article** button; `@media print` CSS in `pgLayout.css`.
+- **Bulk selection counter:** `BulkActionBar` optional `totalCount` — **“:selected of :total selected”** on pages/articles, messages, comments; confirm dialogs include ratio.
+- **Origin deploy badges:** `CatalogDeployStatusResolver` — `live`, `pending_deploy`, `partial_live` from `since` / `targetVersion` vs `AppVersion::current()`.
+- **Origin checklist slices:** `docs/manifest/implementation-checklist.json` merged into overview; release slice UI in Origin Panel.
+- **Origin probes:** `it.83.theme_runtime`, `it.83.theme_packages`, `it.86.admin_search`, `it.86.article_print`, `it.86.bulk_selection`.
+- **Manifest validation:** `./scripts/validate-project-catalog.sh` — probeIds, checklist refs, nested i18n keys.
+- **Planning docs:** [ITERATION_87.md](docs/en/ITERATION_87.md) (Project Site Planner + theme JS allow-list spec); CHECKLIST §18–19.
+
+### Fixed
+
+- **[ISS-158](docs/ISSUES.md#iss-158):** Admin `GET /api/search?scope=admin` returned **401** for logged-in users — `SearchController` now resolves user from session via `AuthenticationInterface`.
+- **[ISS-159](docs/ISSUES.md#iss-159):** HTTP **500** after ISS-158 — PHP-DI factory for `SearchController` missing `AuthenticationInterface` binding (positional arg shift).
+- **Tests:** `ShortcodeCatalogSeederTest` expects bundled `coming-soon` shortcode; `AdminCommandPalette.test.tsx` mocks `useAuth`; `ProjectCatalogMergeService` PHPDoc + PHPStan clean.
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.60`
+- **Release note:** [RELEASE_2_1_0_BETA_60.md](docs/en/RELEASE_2_1_0_BETA_60.md)
+- **Deferred:** It.86d UX audit → [It.87](docs/en/ITERATION_87.md)
+
+---
 
 <a id="release-2-1-0-beta-59"></a>
 

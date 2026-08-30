@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 17 August 2026 · register **ISS-001–ISS-157** · It.84 complete; gate regressions ISS-155–157
+> **Last updated:** 30 August 2026 · register **ISS-001–ISS-159** · admin command palette auth/DI fixes (ISS-158–159)
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -180,6 +180,8 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-155](#iss-155) | `NavigationManager` undefined `NAVIGATION_MAX_DEPTH` — tsc + Vitest fail (It.84e) | Medium (CI) | ✅ Fixed (It.84) |
 | [ISS-156](#iss-156) | User create rejected valid role when `roles.json` empty (It.84d seed gap) | Medium (CI/admin) | ✅ Fixed (It.84) |
 | [ISS-157](#iss-157) | Legacy home compatibility test failed when schema v2 home already on disk | Low (CI) | ✅ Fixed (It.84) |
+| [ISS-158](#iss-158) | Admin command palette search returned 401 for logged-in users | High (admin UX) | ✅ Fixed (2.1.0-beta.60) |
+| [ISS-159](#iss-159) | SearchController DI misconfiguration caused HTTP 500 after ISS-158 fix | **Critical (admin)** | ✅ Fixed (2.1.0-beta.60) |
 
 ## CI failures (GitHub Actions)
 
@@ -4800,6 +4802,85 @@ Re-seed legacy `pages/home.md` fixture when existing home has `schemaVersion >= 
 ### Verification
 
 PHPUnit `ClassicSingleLocaleCompatibilityTest`.
+
+---
+
+<a id="iss-158"></a>
+
+## ISS-158 – Admin command palette search returned 401 for logged-in users
+
+**Severity:** High (admin UX) — quick search / Ctrl+K appeared broken  
+**Status:** ✅ Fixed — `2.1.0-beta.60` (2026-08-30)
+
+### Symptom
+
+After logging into the admin UI, **Ctrl+K** (or the command palette search field) opened the palette, but typing a query (≥2 characters) returned **no results**. Public site search (`scope=public`) worked. Operators reported that admin quick navigation was non-functional.
+
+Network tab showed `GET /api/search?scope=admin&…` → **401 Unauthorized** despite a valid session cookie on other `/api/*` routes.
+
+### Root cause
+
+`GET /api/search` is registered **without** `AuthMiddleware` so anonymous clients can use `scope=public`. For `scope=admin`, `SearchController` required `$request->getAttribute('user')` to be a `User` instance — but that attribute is only set by auth middleware on protected route groups, not on this shared endpoint.
+
+PHPUnit tests passed because `TestCase::createJsonRequest()` manually attaches `$this->currentUser` to every request after `loginAsAdminUser()`, masking the production gap.
+
+### Resolution
+
+- Inject `AuthenticationInterface` into `SearchController`.
+- Add `resolveUser()`: use request attribute when present; otherwise `auth->isAuthenticated()` → `auth->getCurrentUser()`.
+- Regression test: `SearchControllerTest::testAdminSearchResolvesUserFromSessionWithoutRequestAttribute` (session login, `currentUser = null`, raw request without attribute).
+
+**Key files:** `backend/app/Http/Controllers/Content/SearchController.php`, `backend/tests/Http/Controllers/Content/SearchControllerTest.php`
+
+### Verification
+
+`./vendor/bin/phpunit backend/tests/Http/Controllers/Content/SearchControllerTest.php` — all tests pass. Manual: admin → Ctrl+Shift+K → search `set` → routes/pages appear.
+
+---
+
+<a id="iss-159"></a>
+
+## ISS-159 – SearchController DI misconfiguration caused HTTP 500 (follow-up to ISS-158)
+
+**Severity:** Critical (admin) — entire API bootstrap failed on container resolution  
+**Status:** ✅ Fixed — `2.1.0-beta.60` (2026-08-30)
+
+### Symptom
+
+Immediately after deploying the ISS-158 fix, **every** API request that bootstrapped routes could fail with HTTP **500**. PHP error log:
+
+```text
+Entry "PaginiumCMS\Http\Controllers\Content\SearchController" cannot be resolved:
+Parameter $json of __construct() has no value defined or guessable
+  $auth = get(PaginiumCMS\Http\Support\JsonResponder)
+  $json = #UNDEFINED#
+```
+
+Observed on `POST /api/debug/client-event` and any route loading `content.php` (which resolves `SearchController` from the container at bootstrap).
+
+### Root cause
+
+`SearchController` is **explicitly wired** in `backend/app/Http/Config/services.php` (not pure autowire). The factory listed four constructor arguments for the pre-ISS-158 signature. Adding `AuthenticationInterface $auth` as the fifth parameter without updating the factory caused PHP-DI to bind positional arguments incorrectly: `$auth` received `JsonResponder`, and `$json` had no binding.
+
+### Resolution
+
+Update `SearchController::class` factory:
+
+```php
+->constructor(
+    get(ContentIndexService::class),
+    get(ContentRepositoryInterface::class),
+    get(AdvancedSearchService::class),
+    get(AuthenticationInterface::class),  // added
+    get(JsonResponder::class),
+),
+```
+
+**Rule:** Any controller with an explicit `->constructor(...)` in `services.php` must be updated whenever the PHP constructor signature changes.
+
+### Verification
+
+Container resolves `SearchController`; `./scripts/iteration-gate.sh` green; admin loads without 500.
 
 ---
 

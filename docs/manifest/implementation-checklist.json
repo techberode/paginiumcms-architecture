@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-08-30",
+  "description": "Operator checklist mirrored for Origin Panel automation. Progress percent and deploy badges are computed from project-catalog.json + runtime probes.",
+  "catalogPath": "docs/manifest/project-catalog.json",
+  "releaseReadinessDoc": "docs/en/CHECKLIST.md",
+  "issuesRegister": "docs/ISSUES.md",
+  "slices": [
+    {
+      "id": "slice-2026-08-30-it87-planner",
+      "catalogIterationIds": ["it.87"],
+      "targetVersion": "2.2.0",
+      "status": "planned",
+      "items": [
+        {
+          "id": "87-spec",
+          "labelKey": "origin.catalog.it87",
+          "phase": "shipped",
+          "artifact": "docs/en/ITERATION_87.md"
+        },
+        {
+          "id": "87-mvp",
+          "labelKey": "origin.catalog.it87_planner_panel",
+          "phase": "pending",
+          "dependsOnVersion": "2.2.0"
+        },
+        {
+          "id": "87-theme-js",
+          "labelKey": "origin.catalog.it87_theme_js_csp",
+          "phase": "pending",
+          "dependsOnVersion": "2.2.0"
+        }
+      ]
+    },
+    {
+      "id": "slice-2026-08-30-admin-ux",
+      "catalogIterationIds": ["it.86"],
+      "targetVersion": "2.1.0-beta.60",
+      "status": "in_progress",
+      "issues": ["ISS-158", "ISS-159"],
+      "items": [
+        {
+          "id": "86-gate",
+          "labelKey": "origin.checklist.gate_green",
+          "phase": "required",
+          "verify": "./scripts/iteration-gate.sh"
+        },
+        {
+          "id": "86-admin-search",
+          "labelKey": "origin.catalog.it86_admin_search",
+          "phase": "shipped",
+          "probeId": "it.86.admin_search",
+          "issues": ["ISS-158", "ISS-159"]
+        },
+        {
+          "id": "86-article-print",
+          "labelKey": "origin.catalog.it86_article_print",
+          "phase": "shipped",
+          "probeId": "it.86.article_print",
+          "settingKey": "content.articlePrintEnabled"
+        },
+        {
+          "id": "86-bulk-counter",
+          "labelKey": "origin.catalog.it86_bulk_selection",
+          "phase": "shipped",
+          "probeId": "it.86.bulk_selection"
+        },
+        {
+          "id": "86-deploy-prod",
+          "labelKey": "origin.checklist.deploy_production",
+          "phase": "pending",
+          "dependsOnVersion": "2.1.0-beta.60"
+        }
+      ]
+    },
+    {
+      "id": "slice-2026-08-30-themes",
+      "catalogIterationIds": ["it.83"],
+      "since": "2.1.0-beta.59",
+      "status": "partial_live",
+      "items": [
+        {
+          "id": "83-theme-runtime",
+          "labelKey": "origin.catalog.it83_theme_runtime",
+          "phase": "shipped",
+          "probeId": "it.83.theme_runtime"
+        },
+        {
+          "id": "83-theme-packages",
+          "labelKey": "origin.catalog.it83_theme_packages",
+          "phase": "shipped",
+          "probeId": "it.83.theme_packages"
+        },
+        {
+          "id": "83-landing-seed",
+          "labelKey": "origin.catalog.it83_landing_seed",
+          "phase": "shipped",
+          "artifact": "backend/resources/content-seeds/paginium-cms-landing.sk.md"
+        },
+        {
+          "id": "83-deploy-prod",
+          "labelKey": "origin.checklist.deploy_production",
+          "phase": "pending",
+          "dependsOnVersion": "2.1.0-beta.59"
+        }
+      ]
+    }
+  ]
+}

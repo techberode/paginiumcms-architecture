@@ -45,6 +45,8 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | 18 | **It.75** AI agent | 🔵 | ⏸️ | stabilization freeze |
 | 19 | **It.83** Theme runtime + Terminal Breach | 🟡 | ⏸️ | post-stable first slice — [ITERATION_83](ITERATION_83.md) |
 | 20 | **It.84** Categories, blog sidebar, landing, roles, nav | 🟡 | ✅ | **84a–84e** complete — [ITERATION_84](ITERATION_84.md) |
+| 21 | **It.87** Project site planner + UX audit completion | 🟡 P1 | ⏳ | post-stable Full CMS — [ITERATION_87](ITERATION_87.md) |
+| 22 | **It.86** Admin UX polish (search, print, bulk) | 🟡 | ✅ | shipped **2.1.0-beta.60** — ISS-158/159; 86d → It.87 |
 
 ---
 

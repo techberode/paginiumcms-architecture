@@ -70,6 +70,26 @@ final class ProbeSupport
         return is_string($contents) && str_contains($contents, $needle);
     }
 
+    /**
+     * @param non-empty-string $relativePath path under frontend/src/ (e.g. components/backend/BulkActionBar.tsx)
+     */
+    public function frontendSourceContains(string $relativePath, string $needle): bool
+    {
+        $root = AppRoot::resolve();
+        $base = $root !== null
+            ? $root . '/frontend/src'
+            : dirname(__DIR__, 5) . '/frontend/src';
+
+        $path = $base . '/' . ltrim(str_replace('\\', '/', $relativePath), '/');
+        if (!is_readable($path)) {
+            return false;
+        }
+
+        $contents = file_get_contents($path);
+
+        return is_string($contents) && str_contains($contents, $needle);
+    }
+
     private function routesDirectory(): string
     {
         if ($this->routesDir !== null) {
