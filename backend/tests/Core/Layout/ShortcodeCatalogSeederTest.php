@@ -102,7 +102,7 @@ final class ShortcodeCatalogSeederTest extends TestCase
         $this->seeder->seedIfEmpty();
         $this->seeder->seedMissingBundled();
 
-        $this->assertCount(15, $this->manager->list());
+        $this->assertCount(16, $this->manager->list());
         $this->assertNotEmpty($this->manager->get('landing-hero'));
     }
 

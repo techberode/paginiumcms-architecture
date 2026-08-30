@@ -251,6 +251,8 @@ export const platformSk: MessageTree = {
     missingOnDisk: 'Chýba na disku',
     active: 'Aktívna',
     activate: 'Aktivovať',
+    rollback: 'Rollback',
+    bundled: 'Bundled',
     useCore: 'Použiť core shell',
     coreFallback: 'Vstavaný fallback',
     coreDescription: 'Predvolený verejný shell PaginiumCMS (header, navigácia, pätička).',
@@ -272,6 +274,8 @@ export const platformSk: MessageTree = {
       activateFailed: 'Aktivácia zlyhala',
       deactivated: 'Vrátené na Paginium Core shell',
       deactivateFailed: 'Deaktivácia zlyhala',
+      rolledBack: 'Obnovená predchádzajúca téma',
+      rollbackFailed: 'Rollback zlyhal',
     },
   },
   extensions: {

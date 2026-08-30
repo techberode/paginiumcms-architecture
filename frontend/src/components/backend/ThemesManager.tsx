@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Download, Palette, Power, RefreshCw, ShieldCheck, Trash2, Upload } from 'lucide-react';
+import { Download, History, Palette, Power, RefreshCw, ShieldCheck, Trash2, Upload } from 'lucide-react';
 import { themesApi, ThemeRecord } from '../../api/themes';
 import { queryKeys } from '../../api/queryKeys';
 import { useAdminListQuery } from '../../hooks/useAdminListQuery';
@@ -27,6 +27,7 @@ export const ThemesManager: React.FC = () => {
 
   const items = data?.themes ?? [];
   const activeThemeId = data?.activeThemeId ?? 'paginium-core';
+  const previousThemeId = data?.previousThemeId ?? null;
   const coreThemeId = data?.coreThemeId ?? 'paginium-core';
 
   const handleImport = async (file: File) => {
@@ -107,6 +108,24 @@ export const ThemesManager: React.FC = () => {
     }
   };
 
+  const handleRollback = async () => {
+    setBusyId('rollback');
+    try {
+      const response = await themesApi.rollback();
+      if (response.success) {
+        success(t('platform.themes.toast.rolledBack'));
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: queryKeys.themes.list }),
+          reloadPublicSettings(),
+        ]);
+      } else {
+        toastError(response.error ?? t('platform.themes.toast.rollbackFailed'));
+      }
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -157,6 +176,17 @@ export const ThemesManager: React.FC = () => {
             <RefreshCw className="h-4 w-4" />
             {t('platform.themes.refresh')}
           </button>
+          {previousThemeId && previousThemeId !== activeThemeId ? (
+            <button
+              type="button"
+              className="btn btn-secondary inline-flex items-center gap-2"
+              disabled={busyId === 'rollback'}
+              onClick={() => void handleRollback()}
+            >
+              <History className="h-4 w-4" />
+              {t('platform.themes.rollback')}
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -213,6 +243,7 @@ export const ThemesManager: React.FC = () => {
                 <div className="text-sm text-gray-500 dark:text-gray-400 font-mono">{item.id}</div>
                 <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   v{item.version || '—'} · {t('platform.themes.installedAt', { date: item.installedAt })}
+                  {item.bundled ? ` · ${t('platform.themes.bundled')}` : ''}
                 </div>
                 {!item.present && (
                   <div className="text-xs text-amber-600 dark:text-amber-400 mt-1">
@@ -240,6 +271,7 @@ export const ThemesManager: React.FC = () => {
                     {t('platform.themes.activate')}
                   </button>
                 ) : null}
+                {!item.bundled ? (
                 <button
                   type="button"
                   className="btn btn-danger btn-sm inline-flex items-center gap-1"
@@ -249,6 +281,7 @@ export const ThemesManager: React.FC = () => {
                   <Trash2 className="h-4 w-4" />
                   {t('platform.themes.uninstall')}
                 </button>
+                ) : null}
               </div>
             </li>
           ))}

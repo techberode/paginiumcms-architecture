@@ -1,0 +1,44 @@
+/* Clean Journal public shell (It.83g). */
+
+.pg-cj-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.pg-cj-brandbar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
+  background: color-mix(in srgb, var(--color-surface-elevated) 92%, transparent);
+}
+
+.pg-cj-brandbar__label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.pg-cj-brandbar__hint {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.pg-cj-main {
+  max-width: 72rem;
+  width: 100%;
+  margin-inline: auto;
+}
+
+[data-active-theme='clean-journal'] header,
+[data-active-theme='clean-journal'] footer {
+  max-width: 72rem;
+  margin-inline: auto;
+  width: 100%;
+}

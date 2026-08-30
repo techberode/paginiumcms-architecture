@@ -26,6 +26,8 @@ import {
   resolveNavigationLayout,
   sideNavBreakpointClass,
 } from '../../utils/navigationLayoutSettings';
+import { resolveThemeShell } from '../../theme/themeShellRegistry';
+import { ThemeShellBoundary } from './ThemeShellBoundary';
 
 const ADMIN_PREFIXES = [
   '/dashboard',
@@ -138,6 +140,11 @@ export const PublicSiteLayout: React.FC = () => {
   const { settings } = useSettingsContext();
   const siteName = String(settings?.general?.siteName ?? 'PaginiumCMS');
   const activeThemeId = settings?.appearance?.activeThemeId ?? 'paginium-core';
+  const [shellFailed, setShellFailed] = React.useState(false);
+  React.useEffect(() => {
+    setShellFailed(false);
+  }, [activeThemeId]);
+  const ThemeShell = !shellFailed ? resolveThemeShell(activeThemeId) : null;
   const navLayout = useMemo(() => resolveNavigationLayout(settings), [settings]);
   const showTopNav = navLayout.placement === 'top' || navLayout.placement === 'both';
   const showSideNav = navLayout.placement === 'side' || navLayout.placement === 'both';
@@ -207,6 +214,31 @@ export const PublicSiteLayout: React.FC = () => {
     sitemapLink.title = t('public.meta.sitemapTitle', { siteName });
   }, [settings?.feeds, siteName, t]);
 
+  const mainColumn = (
+    <div className="flex-1 flex min-h-0">
+      {showSideNav && !ThemeShell ? (
+        <div className={`pg-public-side-column ${sideNavBreakpointClass(navLayout.sideBreakpoint)}`}>
+          <SideNav items={navigation} layout={navLayout} className="pg-public-side-nav-sticky" />
+        </div>
+      ) : null}
+      <div className="flex-1 min-w-0">
+        <Outlet />
+      </div>
+    </div>
+  );
+
+  const coreChrome = (
+    <>
+      <Navbar
+        onOpenSearch={() => setSearchOpen(true)}
+        showPrimaryNav={showTopNav}
+        navLayout={navLayout}
+      />
+      {mainColumn}
+      <Footer />
+    </>
+  );
+
   return (
     <MaintenanceGate>
       <CookieConsentProvider>
@@ -216,22 +248,24 @@ export const PublicSiteLayout: React.FC = () => {
       >
       <DemoPublicStrip />
       {showCmsBar && <CMSBar currentDoc={currentDoc} />}
-      <Navbar
-        onOpenSearch={() => setSearchOpen(true)}
-        showPrimaryNav={showTopNav}
-        navLayout={navLayout}
-      />
-      <div className="flex-1 flex min-h-0">
-        {showSideNav ? (
-          <div className={`pg-public-side-column ${sideNavBreakpointClass(navLayout.sideBreakpoint)}`}>
-            <SideNav items={navigation} layout={navLayout} className="pg-public-side-nav-sticky" />
-          </div>
-        ) : null}
-        <div className="flex-1 min-w-0">
-          <Outlet />
-        </div>
-      </div>
-      <Footer />
+      {ThemeShell ? (
+        <ThemeShellBoundary
+          themeId={activeThemeId}
+          fallback={coreChrome}
+          onShellError={() => setShellFailed(true)}
+        >
+          <ThemeShell
+            siteName={siteName}
+            onOpenSearch={() => setSearchOpen(true)}
+            showPrimaryNav={showTopNav}
+            navLayout={navLayout}
+          >
+            {mainColumn}
+          </ThemeShell>
+        </ThemeShellBoundary>
+      ) : (
+        coreChrome
+      )}
       <BackToTopButton />
       <CookieConsentBanner />
       <SiteSearchModal

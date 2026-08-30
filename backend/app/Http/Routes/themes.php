@@ -7,6 +7,7 @@ declare(strict_types=1);
  *
  *  - GET    /api/admin/themes
  *  - POST   /api/admin/themes/deactivate
+ *  - POST   /api/admin/themes/rollback
  *  - GET    /api/admin/themes/starter-package/{id}
  *  - POST   /api/admin/themes/import
  *  - POST   /api/admin/themes/{id}/activate
@@ -31,6 +32,7 @@ return function (App $app): void {
 
         $group->get('', [$controller, 'index']);
         $group->post('/deactivate', [$controller, 'deactivate']);
+        $group->post('/rollback', [$controller, 'rollback']);
         $group->get('/starter-package/{id}', [$controller, 'downloadStarter']);
         $group->post('/import', [$controller, 'import']);
         $group->post('/{id}/activate', [$controller, 'activate']);

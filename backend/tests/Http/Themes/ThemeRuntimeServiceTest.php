@@ -73,6 +73,15 @@ final class ThemeRuntimeServiceTest extends TestCase
 
     public function testActivateThemePersistsSettingsAndMarksRegistryEnabled(): void
     {
+        $manifestDir = $this->themesRoot . '/clean-journal';
+        if (!is_dir($manifestDir)) {
+            mkdir($manifestDir, 0777, true);
+        }
+        file_put_contents($manifestDir . '/theme.json', json_encode([
+            'defaultColorScheme' => 'mono-zinc',
+            'defaultMode' => 'dark',
+        ], JSON_THROW_ON_ERROR));
+
         $result = $this->runtime->activate('clean-journal');
 
         $this->assertSame('clean-journal', $result['activeThemeId']);
@@ -82,6 +91,17 @@ final class ThemeRuntimeServiceTest extends TestCase
         $appearance = $this->settings->group('appearance');
         $this->assertSame('clean-journal', $appearance['activeThemeId']);
         $this->assertSame(ThemeRuntimeService::CORE_THEME_ID, $appearance['previousThemeId']);
+        $this->assertSame('mono-zinc', $appearance['colorScheme']);
+        $this->assertSame('dark', $appearance['mode']);
+    }
+
+    public function testRollbackRestoresPreviousTheme(): void
+    {
+        $this->runtime->activate('clean-journal');
+        $result = $this->runtime->rollback();
+
+        $this->assertSame(ThemeRuntimeService::CORE_THEME_ID, $result['activeThemeId']);
+        $this->assertSame(ThemeRuntimeService::CORE_THEME_ID, $this->runtime->resolveActiveThemeId());
     }
 
     public function testDeactivateRestoresCoreTheme(): void

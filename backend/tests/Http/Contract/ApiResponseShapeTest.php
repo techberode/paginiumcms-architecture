@@ -102,7 +102,9 @@ final class ApiResponseShapeTest extends TestCase
             'forest-sage',
             'sunset-rose',
             'mono-zinc',
+            'terminal-breach',
         ]);
+        $this->assertArrayHasKey('activeThemeId', $data['data']['appearance']);
         $this->assertContains($data['data']['appearance']['mode'], ['light', 'dark', 'system']);
         $this->assertArrayHasKey('layout', $data['data']);
         $this->assertArrayHasKey('cmsInfo', $data['data']);

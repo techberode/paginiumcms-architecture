@@ -16,6 +16,7 @@ final class ThemeManager
         private ThemeRegistry $registry,
         private ThemeImporter $importer,
         private ThemeRuntimeService $runtime,
+        private ThemeCatalogSeeder $catalogSeeder,
         private string $themesRoot,
         private string $frontendThemesRoot,
     ) {
@@ -28,6 +29,8 @@ final class ThemeManager
      */
     public function list(): array
     {
+        $this->catalogSeeder->seedMissingBundled();
+
         $activeThemeId = $this->runtime->resolveActiveThemeId();
         $items = [];
         foreach ($this->registry->all() as $id => $record) {
@@ -38,6 +41,7 @@ final class ThemeManager
                 'version' => (string) ($manifest['version'] ?? ''),
                 'enabled' => $record->enabled,
                 'active' => $id === $activeThemeId,
+                'bundled' => $this->catalogSeeder->isBundled($id),
                 'installedAt' => $record->installedAt,
                 'present' => is_dir($this->themesRoot . '/' . $id),
             ];
@@ -53,6 +57,11 @@ final class ThemeManager
         return $this->runtime->resolveActiveThemeId();
     }
 
+    public function getPreviousThemeId(): ?string
+    {
+        return $this->runtime->getPreviousThemeId();
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -66,6 +75,10 @@ final class ThemeManager
         $id = trim($id);
         if ($this->registry->get($id) === null) {
             throw new RuntimeException('Theme not found: ' . $id);
+        }
+
+        if ($this->catalogSeeder->isBundled($id)) {
+            throw new RuntimeException('Bundled themes cannot be uninstalled. Deactivate instead.');
         }
 
         $this->runtime->assertNotActive($id);
@@ -89,6 +102,14 @@ final class ThemeManager
     public function deactivate(): array
     {
         return $this->runtime->deactivate();
+    }
+
+    /**
+     * @return array{activeThemeId: string, previousThemeId: string|null}
+     */
+    public function rollback(): array
+    {
+        return $this->runtime->rollback();
     }
 
     /**

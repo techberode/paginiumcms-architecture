@@ -216,6 +216,15 @@ final class ShortcodeCatalogSeeder
                 ],
                 'expand' => '<span class="pg-stack-tag">{{label}}</span>',
             ],
+            'coming-soon' => [
+                'name' => 'coming-soon',
+                'version' => 1,
+                'attrs' => [
+                    'title' => ['type' => 'string'],
+                    'subtitle' => ['type' => 'string'],
+                ],
+                'expand' => '<aside class="pg-coming-soon pg-reveal"><p class="pg-coming-soon-label">ACCESS RESTRICTED</p><h3 class="pg-coming-soon-title">{{title}}</h3><p class="pg-coming-soon-subtitle">{{subtitle}}</p></aside>',
+            ],
         ];
 
         $encoded = [];
