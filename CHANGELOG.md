@@ -8,6 +8,13 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 - **Media thumbnails:** remove `imagedestroy()` calls for PHP 8.5 compatibility (`failOnDeprecation` in PHPUnit CI).
 
+### Theme runtime (It.83a–83d)
+
+- **Settings:** `appearance.activeThemeId` + `previousThemeId` with safe fallback to `paginium-core`.
+- **API:** `POST /api/admin/themes/{id}/activate`, `POST /api/admin/themes/deactivate`; block uninstall of active theme.
+- **Admin:** Themes manager activate/deactivate + core shell row.
+- **Public:** `data-active-theme` on public layout root; starter CSS hooks for `clean-journal`.
+
 ### Admin UX & platform hygiene
 
 - Settings help/tooltips: removed internal iteration references from operator-facing copy; Slovak locale fully translated for monitoring, SMTP, connectors, and scheduler fields.

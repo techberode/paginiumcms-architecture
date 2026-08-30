@@ -7,6 +7,7 @@ namespace PaginiumCMS\Http\Controllers\Admin;
 use PaginiumCMS\Core\CodePolicy\Exceptions\CodePolicyViolationException;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Http\Themes\Services\ThemeManager;
+use PaginiumCMS\Http\Themes\Services\ThemeRuntimeService;
 use PaginiumCMS\Http\Themes\Services\ThemeStarterPackageService;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -29,6 +30,8 @@ final class ThemesController
     {
         return $this->json->success($response, [
             'themes' => $this->themes->list(),
+            'activeThemeId' => $this->themes->getActiveThemeId(),
+            'coreThemeId' => ThemeRuntimeService::CORE_THEME_ID,
         ]);
     }
 
@@ -73,6 +76,33 @@ final class ThemesController
         }
 
         return $this->json->success($response, ['id' => $id, 'removed' => true]);
+    }
+
+    /**
+     * @param array<string, string> $args
+     */
+    public function activate(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $id = (string) ($args['id'] ?? '');
+
+        try {
+            $result = $this->themes->activate($id);
+        } catch (RuntimeException $exception) {
+            return $this->json->error($response, $exception->getMessage(), 422);
+        }
+
+        return $this->json->success($response, $result, 200, 'Theme activated');
+    }
+
+    public function deactivate(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        try {
+            $result = $this->themes->deactivate();
+        } catch (RuntimeException $exception) {
+            return $this->json->error($response, $exception->getMessage(), 422);
+        }
+
+        return $this->json->success($response, $result, 200, 'Theme deactivated');
     }
 
     /**

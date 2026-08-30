@@ -856,3 +856,18 @@
     animation: none;
   }
 }
+
+/* It.83 — active theme shell hooks (data-active-theme on public layout root). */
+[data-active-theme='clean-journal'] {
+  --pg-theme-shell-accent: #4338ca;
+}
+
+[data-active-theme='clean-journal'] header,
+[data-active-theme='clean-journal'] footer {
+  letter-spacing: 0.01em;
+}
+
+[data-active-theme='clean-journal'] .public-hero,
+[data-active-theme='clean-journal'] .pg-showcase-hero {
+  border-bottom: 1px solid color-mix(in srgb, var(--pg-theme-shell-accent) 25%, transparent);
+}

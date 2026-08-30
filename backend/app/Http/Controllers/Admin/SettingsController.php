@@ -29,6 +29,7 @@ use PaginiumCMS\Core\Settings\Services\SocialLinksNormalizer;
 use PaginiumCMS\Modules\Security\PermissionCatalog;
 use PaginiumCMS\Modules\Security\Services\AccessControlSyncService;
 use PaginiumCMS\Modules\Security\Services\RoleCatalogSeeder;
+use PaginiumCMS\Http\Themes\Services\ThemeRuntimeService;
 use PaginiumCMS\Modules\Media\Services\MediaStorageCapabilityProbe;
 use PaginiumCMS\Modules\Media\Services\MediaStorageFactory;
 use PaginiumCMS\Support\AppVersion;
@@ -69,6 +70,7 @@ final class SettingsController
         private GitCapabilityProbe $gitProbe,
         private MediaStorageFactory $mediaStorageFactory,
         private MediaStorageCapabilityProbe $mediaStorageProbe,
+        private ThemeRuntimeService $themeRuntime,
     ) {
     }
 
@@ -406,7 +408,7 @@ final class SettingsController
 
     /**
      * @param array<string, mixed> $appearance
-     * @return array{colorScheme: string, mode: string, allowUserToggle: bool, previewTemplate: string}
+     * @return array{colorScheme: string, mode: string, allowUserToggle: bool, previewTemplate: string, activeThemeId: string}
      */
     private function publicAppearanceSettings(array $appearance): array
     {
@@ -431,6 +433,7 @@ final class SettingsController
             'previewTemplate' => PageLayoutCatalog::normalizeTemplate(
                 (string) ($appearance['previewTemplate'] ?? $defaults['previewTemplate'] ?? PageLayoutCatalog::DEFAULT_TEMPLATE)
             ),
+            'activeThemeId' => $this->themeRuntime->resolveActiveThemeId(),
         ];
     }
 

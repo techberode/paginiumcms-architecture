@@ -85,6 +85,7 @@ const DEFAULT_PUBLIC: PublicSettings = {
     mode: 'system',
     allowUserToggle: true,
     previewTemplate: 'hero-content',
+    activeThemeId: 'paginium-core',
   },
   layout: {
     builderMode: 'templates',
