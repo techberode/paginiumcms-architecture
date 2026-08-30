@@ -269,6 +269,7 @@ use PaginiumCMS\Modules\Demo\Services\DemoMode;
 use PaginiumCMS\Modules\Origin\Services\FeatureProbeRegistry;
 use PaginiumCMS\Modules\Origin\Services\CatalogDeployStatusResolver;
 use PaginiumCMS\Modules\Origin\Services\ImplementationChecklistReader;
+use PaginiumCMS\Modules\Origin\Services\OriginCatalogLabelResolver;
 use PaginiumCMS\Modules\Origin\Services\ProjectCatalogMergeService;
 use PaginiumCMS\Modules\Origin\Services\ProjectCatalogReader;
 use PaginiumCMS\Modules\Origin\Services\OriginPanelMode;
@@ -1555,16 +1556,20 @@ return [
     ProjectCatalogReader::class => create(ProjectCatalogReader::class),
     CatalogDeployStatusResolver::class => create(CatalogDeployStatusResolver::class),
     ImplementationChecklistReader::class => create(ImplementationChecklistReader::class),
+    OriginCatalogLabelResolver::class => create(OriginCatalogLabelResolver::class)
+        ->constructor(get(SettingsRepositoryInterface::class)),
     ProjectCatalogMergeService::class => create(ProjectCatalogMergeService::class)
         ->constructor(
             get(ProjectCatalogReader::class),
             get(CatalogDeployStatusResolver::class),
             get(ImplementationChecklistReader::class),
+            get(OriginCatalogLabelResolver::class),
         ),
     OriginController::class => create(OriginController::class)
         ->constructor(
             get(FeatureProbeRegistry::class),
             get(ProjectCatalogMergeService::class),
+            get(OriginCatalogLabelResolver::class),
             get(HealthCheckManager::class),
             get(AdminCountsService::class),
             get(JsonResponder::class)
