@@ -150,6 +150,35 @@ final class TestStorageCleaner
         }
     }
 
+    /**
+     * Wipes all user flat-files — only for PHPUnit setup/fresh-install tests.
+     * Unlike purgeTestUsers(), removes production emails too when APP_ENV=testing.
+     */
+    public static function purgeAllUsersForTesting(): void
+    {
+        if (($_ENV['APP_ENV'] ?? getenv('APP_ENV') ?: '') !== 'testing') {
+            return;
+        }
+
+        $dir = self::contentRoot() . '/data/users';
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        foreach (glob($dir . '/user_*.json') ?: [] as $file) {
+            if (str_contains(basename($file), '.backup.')) {
+                continue;
+            }
+
+            @unlink($file);
+            self::deleteUserBackups($file);
+        }
+
+        foreach (glob($dir . '/user_*.json.backup.*') ?: [] as $backup) {
+            @unlink($backup);
+        }
+    }
+
     public static function purgeTestMessages(): void
     {
         $dir = self::contentRoot() . '/data/messages';

@@ -435,6 +435,7 @@ export const platformSk: MessageTree = {
     commitMessage: 'Správa',
     deployLatestTag: 'Nasadiť najnovší tag ({tag})',
     deployLatestConfirm: 'Nasadiť {tag} teraz? Web sa aktualizuje z GitHubu — počítajte s pár minútami.',
+    backupBeforeDeployConfirm: 'Nasadiť {ref} teraz? Ak ste nedávno nevytvorili zálohu, urobte ju najprv v module Zálohy.',
     deployUpToDate: 'Inštancia je aktuálna — deploy nie je potrebný, pokiaľ nechcete znovu nasadiť rovnakú verziu.',
     webhookTitle: 'GitHub release webhook',
     webhookHint: 'Nastavte v GitHub → Settings → Webhooks. Udalosť: Release → len Published.',

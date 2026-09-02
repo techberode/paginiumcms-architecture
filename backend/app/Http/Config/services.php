@@ -187,6 +187,9 @@ use PaginiumCMS\Http\Controllers\Admin\ShortcodeController;
 use PaginiumCMS\Http\Controllers\Admin\SnippetController;
 use PaginiumCMS\Http\Controllers\Admin\ThemesController;
 use PaginiumCMS\Http\Controllers\Admin\BlueprintController;
+use PaginiumCMS\Core\Setup\Services\FirstAdminBootstrapService;
+use PaginiumCMS\Core\Setup\Services\SetupStatusService;
+use PaginiumCMS\Http\Controllers\Setup\SetupController;
 use PaginiumCMS\Http\Controllers\Origin\OriginController;
 use PaginiumCMS\Http\Controllers\Admin\AclController;
 use PaginiumCMS\Http\Controllers\Admin\SecurityAuditController;
@@ -1564,6 +1567,25 @@ return [
             get(CatalogDeployStatusResolver::class),
             get(ImplementationChecklistReader::class),
             get(OriginCatalogLabelResolver::class),
+        ),
+    SetupStatusService::class => create(SetupStatusService::class)
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(UserRepository::class),
+        ),
+    FirstAdminBootstrapService::class => create(FirstAdminBootstrapService::class)
+        ->constructor(
+            get(UserRepository::class),
+            get(PasswordPolicyInterface::class),
+        ),
+    SetupController::class => create(SetupController::class)
+        ->constructor(
+            get(SetupStatusService::class),
+            get(FirstAdminBootstrapService::class),
+            get(SettingsRepositoryInterface::class),
+            get(AuthenticationInterface::class),
+            get(Validator::class),
+            get(JsonResponder::class),
         ),
     OriginController::class => create(OriginController::class)
         ->constructor(

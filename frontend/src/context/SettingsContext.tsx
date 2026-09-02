@@ -16,6 +16,7 @@ const DEFAULT_PUBLIC: PublicSettings = {
     itemsPerPage: 20,
     blogItemsPerPage: 6,
     showReadingTime: true,
+    articlePrintEnabled: false,
     defaultStatus: 'draft',
     autoSaveInterval: 60,
     lockTtl: 300,

@@ -29,6 +29,7 @@ import { PerformanceGuardPanel } from '../dashboard/PerformanceGuardPanel';
 import { LogsPanel } from '../dashboard/LogsPanel';
 import { DashboardActivityPanel } from '../dashboard/DashboardActivityPanel';
 import { DashboardDiskStructurePanel } from '../dashboard/DashboardDiskStructurePanel';
+import { SystemUpdateBanner } from '../dashboard/SystemUpdateBanner';
 import { AdminPageSkeleton } from '../ui/AdminPageSkeleton';
 import { useI18n } from '../../context/I18nContext';
 import { useSettings } from '../../hooks/useSettings';
@@ -154,6 +155,8 @@ export const DashboardView: React.FC = () => {
 
   return (
     <div className="space-y-8 animate-fadeIn pb-16">
+      <SystemUpdateBanner />
+
       <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-8 sm:p-10 text-white shadow-xl relative overflow-hidden border border-slate-800">
         <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">

@@ -18,6 +18,7 @@ final class HttpConditionalResponseTest extends TestCase
 
         $this->assertSame(200, $response->getStatusCode());
         $this->assertNotSame('', $etag);
+        $this->assertStringContainsString('must-revalidate', $response->getHeaderLine('Cache-Control'));
 
         $conditional = $this->handleRequest(
             $this->createJsonRequest('GET', '/api/settings/public')->withHeader('If-None-Match', $etag)

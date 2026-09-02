@@ -1,0 +1,31 @@
+import type { MessageTree } from '../../types';
+
+export const setupSk: MessageTree = {
+  title: 'Vitajte v PaginiumCMS',
+  subtitle: 'Dokončite nastavenie — vytvorte administrátora a základné nastavenia webu.',
+  stepAdmin: 'Administrátor',
+  stepSite: 'Web',
+  stepFinish: 'Hotovo',
+  adminHeading: 'Prvý administrátor',
+  adminHint: 'Účet dostane oprávnenie SUPER_ADMIN. Heslo si zmeňte po prvom prihlásení.',
+  siteHeading: 'Identita webu',
+  siteHint: 'Tieto údaje môžete neskôr upraviť v Nastaveniach.',
+  name: 'Meno',
+  email: 'E-mail',
+  password: 'Heslo',
+  passwordConfirm: 'Potvrdenie hesla',
+  siteName: 'Názov webu',
+  language: 'Jazyk administrácie',
+  languageSk: 'Slovenčina',
+  languageEn: 'Angličtina',
+  back: 'Späť',
+  next: 'Pokračovať',
+  finish: 'Dokončiť nastavenie',
+  finishing: 'Nastavujem…',
+  toast: {
+    success: 'Nastavenie dokončené — vitajte!',
+    failed: 'Nastavenie zlyhalo',
+    fillRequired: 'Vyplňte všetky povinné polia',
+    passwordMismatch: 'Heslá sa nezhodujú',
+  },
+};

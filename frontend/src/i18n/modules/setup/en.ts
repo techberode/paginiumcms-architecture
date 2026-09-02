@@ -1,0 +1,31 @@
+import type { MessageTree } from '../../types';
+
+export const setupEn: MessageTree = {
+  title: 'Welcome to PaginiumCMS',
+  subtitle: 'Complete setup to create your administrator account and site settings.',
+  stepAdmin: 'Administrator',
+  stepSite: 'Site',
+  stepFinish: 'Finish',
+  adminHeading: 'Create the first administrator',
+  adminHint: 'This account receives SUPER_ADMIN rights. Change the password after first login.',
+  siteHeading: 'Site identity',
+  siteHint: 'You can change these later under Settings.',
+  name: 'Display name',
+  email: 'Email',
+  password: 'Password',
+  passwordConfirm: 'Confirm password',
+  siteName: 'Site name',
+  language: 'Admin language',
+  languageSk: 'Slovak',
+  languageEn: 'English',
+  back: 'Back',
+  next: 'Continue',
+  finish: 'Complete setup',
+  finishing: 'Setting up…',
+  toast: {
+    success: 'Setup complete — welcome!',
+    failed: 'Setup failed',
+    fillRequired: 'Fill in all required fields',
+    passwordMismatch: 'Passwords do not match',
+  },
+};

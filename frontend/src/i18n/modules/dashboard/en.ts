@@ -50,6 +50,13 @@ export const dashboardEn: MessageTree = {
   toast: {
     loadFailed: 'Failed to load dashboard data',
   },
+  updateBanner: {
+    title: 'System update available',
+    message: 'Version {version} is available. Review release notes and create a backup before deploying.',
+    action: 'Update now',
+    refresh: 'Recheck',
+    dismiss: 'Dismiss',
+  },
   panels: {
     locks: {
       title: 'Active locks',

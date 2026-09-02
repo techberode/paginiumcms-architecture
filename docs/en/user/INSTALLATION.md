@@ -113,6 +113,17 @@ See [deployment documentation](../deploy/NGINX_API.md) and the [Storage contract
 
 ## 7. First-run and bootstrap account
 
+From **v2.2.0** onward, a fresh instance can be finished in the browser at **`/setup`** (It.25 setup wizard):
+
+1. Open the site root; when no administrator exists, the SPA redirects to `/setup`.
+2. Create the first **SUPER_ADMIN** account (email, name, password).
+3. Set site name and admin locale; completion writes `general.installed = true` and signs you in.
+4. You land on the dashboard — change the password and enable 2FA before exposing the host.
+
+The wizard is **CSRF-exempt** for the initial POST only (`POST /api/setup/complete`). Existing instances with user accounts are treated as installed even without the `installed` flag (legacy CLI bootstrap).
+
+### CLI fallback (optional / advanced)
+
 Depending on the release, `first-run.sh` may:
 
 - create `.env` from `.env.example`,

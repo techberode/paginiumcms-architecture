@@ -258,7 +258,12 @@ export interface PublicSettings {
 }
 
 export async function getPublicSettings(): Promise<PublicSettings | null> {
-  const res = await apiClient.get<PublicSettings>('/api/settings/public');
+  const res = await apiClient.get<PublicSettings>('/api/settings/public', {
+    headers: {
+      'Cache-Control': 'no-cache',
+      Pragma: 'no-cache',
+    },
+  });
   return res.success && res.data ? res.data : null;
 }
 
