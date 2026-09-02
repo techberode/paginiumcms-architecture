@@ -45,6 +45,8 @@ import { publicEn } from './modules/public/en';
 import { publicSk } from './modules/public/sk';
 import { originEn } from './modules/origin/en';
 import { originSk } from './modules/origin/sk';
+import { setupEn } from './modules/setup/en';
+import { setupSk } from './modules/setup/sk';
 
 export function registerAllI18nModules(): void {
   registerModuleMessages('sk', 'admin', adminSk);
@@ -91,6 +93,8 @@ export function registerAllI18nModules(): void {
   registerModuleMessages('en', 'public', publicEn);
   registerModuleMessages('sk', 'origin', originSk);
   registerModuleMessages('en', 'origin', originEn);
+  registerModuleMessages('sk', 'setup', setupSk);
+  registerModuleMessages('en', 'setup', setupEn);
 }
 
 registerAllI18nModules();

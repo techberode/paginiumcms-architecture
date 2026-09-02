@@ -7,7 +7,7 @@
         "php": "^8.5",
         "symfony/console": "^7.0",
         "symfony/yaml": "^7.0",
-        "league/commonmark": "^2.0",
+        "league/commonmark": "^2.10",
         "spomky-labs/otphp": "^11.0",
         "bacon/bacon-qr-code": "^3.1",
         "php-di/php-di": "^7.1",

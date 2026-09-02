@@ -115,6 +115,13 @@ export const SystemUpdateView: React.FC = () => {
       toastError(t('platform.systemUpdate.toast.refRequired'));
       return;
     }
+    if (
+      !window.confirm(
+        t('platform.systemUpdate.backupBeforeDeployConfirm', { ref: deployRef })
+      )
+    ) {
+      return;
+    }
     setDeploying(true);
     try {
       const { data: result, error } = await runSystemUpdate(deployRef);

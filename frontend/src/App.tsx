@@ -59,6 +59,8 @@ import { RolesManager } from './components/backend/RolesManager';
 import { SnippetsManager } from './components/backend/SnippetsManager';
 import { OriginPanelView } from './components/backend/OriginPanelView';
 import { WebhooksManager } from './components/backend/WebhooksManager';
+import { SetupWizardView } from './components/setup/SetupWizardView';
+import { useSetupStatus } from './hooks/useSetupStatus';
 import { debugLog } from './utils/debugLog';
 import { ADMIN_DEFAULT_ROUTE } from './config/adminNavSections';
 
@@ -116,6 +118,7 @@ function AdminShell() {
 
 function App() {
   const { loading, user, pendingTwoFactor } = useAuth();
+  const { loading: setupLoading, needsSetup } = useSetupStatus();
   const location = useLocation();
 
   React.useEffect(() => {
@@ -128,8 +131,25 @@ function App() {
     }
   }, [loading, user, pendingTwoFactor, location.pathname]);
 
-  if (loading) {
+  if (loading || setupLoading) {
     return <LoadingScreen />;
+  }
+
+  if (needsSetup) {
+    if (location.pathname !== '/setup') {
+      return <Navigate to="/setup" replace />;
+    }
+
+    return (
+      <Routes>
+        <Route path="/setup" element={<SetupWizardView />} />
+        <Route path="*" element={<Navigate to="/setup" replace />} />
+      </Routes>
+    );
+  }
+
+  if (location.pathname === '/setup') {
+    return <Navigate to={user && !pendingTwoFactor ? ADMIN_DEFAULT_ROUTE : '/login'} replace />;
   }
 
   return (
@@ -159,6 +179,7 @@ function App() {
         }
       />
       <Route path="/reset-password" element={<ResetPasswordModal />} />
+      <Route path="/setup" element={<Navigate to={user && !pendingTwoFactor ? ADMIN_DEFAULT_ROUTE : '/login'} replace />} />
       <Route path="/newsletter/confirm" element={<NewsletterConfirmPage />} />
       <Route path="/newsletter/manage" element={<NewsletterManagePage />} />
       <Route path="/newsletter/unsubscribe" element={<NewsletterUnsubscribePage />} />

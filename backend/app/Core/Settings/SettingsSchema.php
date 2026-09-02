@@ -48,6 +48,7 @@ final class SettingsSchema
                     ['key' => 'timezone', 'type' => 'timezone', 'label' => 'Časové pásmo', 'default' => 'Europe/Bratislava', 'rules' => ['required', 'string', 'timezone'], 'help' => 'Platí pre logy, audit a naplánované reporty.'],
                     ['key' => 'timezoneDst', 'type' => 'bool', 'label' => 'Letný čas (DST)', 'default' => true, 'rules' => ['bool'], 'help' => 'Zapnuté = automatická korekcia letného času podľa zvoleného pásma. Vypnuté = stály zimný čas bez posunu.'],
                     ['key' => 'allowRegistration', 'type' => 'bool', 'label' => 'Povoliť registráciu', 'default' => true, 'rules' => ['bool'], 'help' => 'Vypnutím zablokujete POST /api/auth/register. Počas režimu údržby je registrácia vždy vypnutá.'],
+                    ['key' => 'installed', 'type' => 'bool', 'label' => 'CMS nainštalované', 'default' => false, 'rules' => ['bool'], 'help' => 'Nastaví sa automaticky po dokončení setup wizardu (It.25). Inštancie s existujúcimi účtmi sa považujú za nainštalované aj bez tohto príznaku.'],
                 ],
             ],
             'branding' => [

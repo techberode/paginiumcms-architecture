@@ -232,7 +232,7 @@ final class SettingsController
             $response,
             $this->settings->group('engine'),
             true
-        );
+        )->withHeader('Cache-Control', 'private, no-cache, must-revalidate');
     }
 
     /**

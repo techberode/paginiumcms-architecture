@@ -10,23 +10,18 @@ declare(strict_types=1);
  *   FIRST_ADMIN_EMAIL, FIRST_ADMIN_PASSWORD, FIRST_ADMIN_NAME
  */
 
-use PaginiumCMS\Modules\Security\Contracts\PasswordPolicyInterface;
-use PaginiumCMS\Modules\Security\Models\User;
-use PaginiumCMS\Modules\Security\Services\UserRepository;
+use PaginiumCMS\Core\Setup\Services\FirstAdminBootstrapService;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
 $app = require __DIR__ . '/../bootstrap/app.php';
 $container = $app->getContainer();
 
-/** @var UserRepository $users */
-$users = $container->get(UserRepository::class);
-/** @var PasswordPolicyInterface $passwordPolicy */
-$passwordPolicy = $container->get(PasswordPolicyInterface::class);
+/** @var FirstAdminBootstrapService $firstAdmin */
+$firstAdmin = $container->get(FirstAdminBootstrapService::class);
 
-$existing = $users->findAll();
-if ($existing !== []) {
-    fwrite(STDOUT, "Admin bootstrap skipped: " . count($existing) . " user(s) already exist.\n");
+if ($firstAdmin->hasUsers()) {
+    fwrite(STDOUT, "Admin bootstrap skipped: users already exist.\n");
     exit(0);
 }
 
@@ -40,19 +35,14 @@ if ($email === '' || $name === '') {
 }
 
 try {
-    $passwordPolicy->requireValid($password);
+    $firstAdmin->createFirstAdmin($email, $password, $name);
+} catch (\InvalidArgumentException $e) {
+    fwrite(STDERR, 'Admin bootstrap failed: ' . $e->getMessage() . PHP_EOL);
+    exit(1);
 } catch (\Throwable $e) {
-    fwrite(STDERR, 'Invalid FIRST_ADMIN_PASSWORD: ' . $e->getMessage() . PHP_EOL);
+    fwrite(STDERR, 'Admin bootstrap failed: ' . $e->getMessage() . PHP_EOL);
     exit(1);
 }
-
-$user = new User();
-$user->setEmail($email);
-$user->setPassword($password);
-$user->setName($name);
-$user->setRoles(['SUPER_ADMIN', 'ADMIN', 'EDITOR']);
-
-$users->save($user);
 
 fwrite(STDOUT, "Created first admin user: {$email}\n");
 fwrite(STDOUT, "Roles: SUPER_ADMIN, ADMIN, EDITOR\n");

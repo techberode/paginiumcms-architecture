@@ -435,6 +435,7 @@ export const platformEn: MessageTree = {
     commitMessage: 'Message',
     deployLatestTag: 'Deploy latest tag ({tag})',
     deployLatestConfirm: 'Deploy {tag} now? The site will update from GitHub — allow a few minutes.',
+    backupBeforeDeployConfirm: 'Deploy {ref} now? Create a backup under Backups first if you have not done so recently.',
     deployUpToDate: 'Instance is up to date — deploy is not required unless you want to redeploy the same version.',
     webhookTitle: 'GitHub release webhook',
     webhookHint: 'Configure in GitHub → Settings → Webhooks. Event: Release → Published only.',

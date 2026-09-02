@@ -113,6 +113,17 @@ Pozri [deployment dokumentáciu](../deploy/NGINX_API.md) a [Storage kontrakt](..
 
 ## 7. First-run a bootstrap účet
 
+Od **v2.2.0** môžeš čistú inštanciu dokončiť v prehliadači na **`/setup`** (It.25 setup wizard):
+
+1. Otvor koreň webu; ak neexistuje administrátor, SPA presmeruje na `/setup`.
+2. Vytvor prvý účet **SUPER_ADMIN** (e-mail, meno, heslo).
+3. Nastav názov webu a jazyk administrácie; dokončenie zapíše `general.installed = true` a prihlási ťa.
+4. Skončíš na dashboarde — zmeň heslo a zapni 2FA pred sprístupnením hosta.
+
+Wizard je **CSRF-exempt** len pre počiatočný POST (`POST /api/setup/complete`). Existujúce inštancie s účtami sa považujú za nainštalované aj bez príznaku `installed` (legacy CLI bootstrap).
+
+### CLI fallback (voliteľné / pokročilé)
+
 `first-run.sh` môže podľa release:
 
 - vytvoriť `.env` z `.env.example`,

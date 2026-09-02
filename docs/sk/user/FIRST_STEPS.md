@@ -10,6 +10,10 @@ icon: material/rocket-launch
 
 ## 1. Prvé prihlásenie
 
+**Setup v prehliadači (odporúčané):** po [inštalácii](INSTALLATION.md) otvor na čistej inštancii `/setup`, dokonči wizard a systém ťa prihlási automaticky.
+
+**CLI bootstrap:** ak si použil `first-run.sh` / `bootstrap-admin.php`:
+
 1. Otvor produkčnú cestu `/login` na kanonickej HTTPS URL.
 2. Prihlás sa bootstrap účtom vytvoreným počas first-run.
 3. Okamžite zmeň známe alebo dočasné heslo.

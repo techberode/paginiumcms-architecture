@@ -50,6 +50,13 @@ export const dashboardSk: MessageTree = {
   toast: {
     loadFailed: 'Nepodarilo sa načítať dashboard',
   },
+  updateBanner: {
+    title: 'Dostupná aktualizácia systému',
+    message: 'Verzia {version} je dostupná. Prečítajte si release notes a pred deployom vytvorte zálohu.',
+    action: 'Aktualizovať',
+    refresh: 'Skontrolovať znova',
+    dismiss: 'Skryť',
+  },
   panels: {
     locks: {
       title: 'Aktívne zámky',

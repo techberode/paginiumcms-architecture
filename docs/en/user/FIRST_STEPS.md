@@ -10,6 +10,10 @@ icon: material/rocket-launch
 
 ## 1. First login
 
+**Browser setup (recommended):** after [installation](INSTALLATION.md), open `/setup` on a fresh instance, complete the wizard, and you are signed in automatically.
+
+**CLI bootstrap:** if you used `first-run.sh` / `bootstrap-admin.php` instead:
+
 1. Open `/login` on the canonical production HTTPS URL.
 2. Sign in with the bootstrap account created during first-run.
 3. Immediately replace any known or temporary password.

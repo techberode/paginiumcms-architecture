@@ -32,6 +32,7 @@ import {
 } from '../../utils/blogArticles';
 import { formatContentDateLabels } from '../../utils/contentDates';
 import { formatReadingTime, resolveShowReadingTime } from '../../utils/readingTime';
+import { resolveArticlePrintEnabled } from '../../utils/contentPublicSettings';
 import { BTN_PRIMARY, INPUT_THEME, PUBLIC_CARD, PUBLIC_SPINNER } from '../../theme/publicUiClasses';
 import { blogSidebarApi, type BlogSidebarPayload } from '../../api/blogSidebar';
 import { BlogSidebar } from './BlogSidebar';
@@ -56,7 +57,7 @@ export const BlogRenderer: React.FC = () => {
 
   const itemsPerPage = resolveBlogItemsPerPage(settings.content);
   const showReadingTime = resolveShowReadingTime(settings.content);
-  const articlePrintEnabled = settings.content?.articlePrintEnabled === true;
+  const articlePrintEnabled = resolveArticlePrintEnabled(settings.content);
   const sidebarSettings = useMemo(
     () => resolveBlogSidebarSettings(settings.content),
     [settings.content]
