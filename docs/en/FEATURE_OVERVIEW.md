@@ -121,7 +121,7 @@
 | GitHub content sync | ✅ partial toward target | content integration; not the full It.70 Git publisher |
 | System update | ✅ | version check, tag deployment, optional webhook |
 | Demo sandbox | ✅ | isolated demo mode and reset |
-| Setup wizard | ⏳ | It.25 pre-Final; `first-run.sh` is current onboarding |
+| Setup wizard | ✅ basic | It.25 `beta.62` — `/setup` browser onboarding; `first-run.sh` CLI fallback |
 | Performance Guard | ⏳ | It.71 |
 
 ---

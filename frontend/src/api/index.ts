@@ -2,6 +2,7 @@
 // Barrel export for all typed API modules (Iteration 17 / Wave 5e).
 export * from './client';
 export * from './types';
+export * from './setup';
 
 export * from './analytics';
 export * from './analyticsPageview';

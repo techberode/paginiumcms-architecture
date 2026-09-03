@@ -38,7 +38,7 @@ Tento dokument opravuje starý backlog, v ktorom sa miešali hotové iterácie, 
 | 13 | **It.82** Origin Panel (maintainer cockpit) | 🔵 | ✅ | env gate; mimo zákazníckeho archívu — [ITERATION_82](../en/ITERATION_82.md) |
 | 14 | **It.78** Unified upload security | 🟡 | ⏳ | bezpečnostná brána pred videom / novými MIME |
 | 15 | **It.79** DAM video | 🟡 | ⏳ | MP4/WebM + embed v editore; po It.78 |
-| 16 | **It.25** Setup wizard/update UX | 🟡 pre-Final | ⏳ | **blokátor stabilnej verzie** — povinné pred septembrom 2026; [STABILIZATION_PHASE.md](../STABILIZATION_PHASE.md) |
+| 16 | **It.25** Setup wizard/update UX | 🟡 pre-Final | ✅ basic | **blokátor stabilnej verzie** — dodané `beta.62` (§5.1 R1–R6); odložené: stock seed, git checklist krok |
 | 17 | **It.76/77** Translation providers | 🔵 | ⏳ | po It.73 |
 | 18 | **It.75** AI agent | 🔵 | ⏳ | po locale a provider vrstvách |
 | 19 | **It.83** Theme runtime + Terminal Breach | 🟡 | ⏸️ | po stabilnom releasi — [ITERATION_83](../en/ITERATION_83.md) |
@@ -152,25 +152,25 @@ Pozri [ITERATION_80](ITERATION_80.md) · detail EN [ITERATION_80.md](../en/ITERA
 
 ## 3. Pre-Final backlog
 
-### It.25 — setup wizard a zjednodušený update UX 🟡 ⏳ **blokátor stabilnej verzie**
+### It.25 — setup wizard a zjednodušený update UX 🟡 ✅ **základná fáza dodaná (`beta.62`)**
 
-**Povinné pred prvou stabilnou verziou** ([STABILIZATION_PHASE.md](../STABILIZATION_PHASE.md) §5.1). Nie voliteľné pre produkčný release v septembri 2026.
+**Povinné pred prvou stabilnou verziou** ([STABILIZATION_PHASE.md](../STABILIZATION_PHASE.md) §5.1). Základná fáza **dodaná vo `v2.1.0-beta.62`**.
 
-Základ už dodaný:
+Dodané:
 
-- `first-run.sh`,
-- admin bootstrap,
-- system update engine/panel,
-- installation a first steps docs.
+- **Wizard `/setup`** — prvý SUPER_ADMIN, názov webu/jazyk, `general.installed`, auto-login, redirect na dashboard.
+- **Setup API** — `GET /api/setup/status`, `POST /api/setup/complete` (CSRF-exempt počiatočný POST).
+- **CLI fallback** — `first-run.sh` / `bootstrap-admin.php` zostávajú pre pokročilú cestu.
+- **Dashboard update banner** — SUPER_ADMIN, skryté v demo.
+- **Backup prompt** pred deployom v System Update.
+- **Docs** — INSTALLATION + FIRST_STEPS SK/EN; smoke `scripts/smoke-it25.sh`.
+- **Testy** — `SetupControllerTest`, PHPUnit izolácia fresh install.
 
-Zostáva:
+Odložené (po základnej fáze):
 
-- `/setup` iba pre nenainštalovaný stav,
-- admin/site profile krok,
-- bezpečné dokončenie s installed flag,
-- dashboard update banner a jednoduchý „Update now“,
-- rollback/backup pre update UX,
-- test čistého install a update z podporovanej beta verzie.
+- voliteľný stock-image seed vo wizardi,
+- git/package detekcia a deployment checklist krok,
+- plné rollback UI nad rámec backup promptu.
 
 ### Komunitné beta testovanie 🔴
 

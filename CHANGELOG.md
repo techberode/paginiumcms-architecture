@@ -8,6 +8,38 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 - **Spec:** [ITERATION_87.md](docs/en/ITERATION_87.md) — Project Site Planner (Full CMS), UX audit deferrals (It.86d → 87a–87d), optional theme static JS allow-list (`87k`–`87m`).
 
+<a id="release-2-1-0-beta-62"></a>
+
+## [2.1.0-beta.62] – 2026-09-03
+
+It.25 — browser-first setup wizard and dashboard update UX (stable-blocker basic phase)
+
+### Added
+
+- **Setup wizard (`/setup`):** Pre-auth flow when no administrator exists — create first SUPER_ADMIN, site name, admin locale; writes `general.installed = true` and auto-login; legacy instances with existing users remain installed without the flag.
+- **Setup API:** `GET /api/setup/status`, `POST /api/setup/complete` (CSRF-exempt for initial POST only).
+- **Dashboard update banner:** SUPER_ADMIN sees “Update available” with link to **Platform → System update**; hidden in demo mode.
+- **Backup prompt:** Explicit confirmation before deploy in System Update view.
+- **Smoke:** `scripts/smoke-it25.sh`.
+
+### Fixed
+
+- **API barrel:** Export `setup` module from `frontend/src/api/index.ts` (CI `lint-api-barrel`).
+- **Article print setting:** Public settings cache uses `must-revalidate`; FE fetches public settings with no-cache headers.
+- **Setup tests:** `purgeAllUsersForTesting()` for PHPUnit fresh-install simulation on dev storage with real accounts.
+
+### Security
+
+- **`league/commonmark` 2.9.0 → 2.10.0** — four Sep 2026 advisories (XSS/DoS); `composer audit` clean.
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.62`
+- **Release note:** [RELEASE_2_1_0_BETA_62.md](docs/en/RELEASE_2_1_0_BETA_62.md)
+- **Deferred (post-basic It.25):** optional stock-image seed, git/deploy checklist wizard step, full rollback UI beyond backup prompt.
+
+---
+
 ## History rules
 
 - Semantic-version order, newest first.
@@ -21,6 +53,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.62`](#release-2-1-0-beta-62) | 2026-09-03 | It.25 — setup wizard, update banner, commonmark 2.10 |
 | [`2.1.0-beta.61`](#release-2-1-0-beta-61) | 2026-08-30 | Hotfix — Origin Panel backend catalog labels on production |
 | [`2.1.0-beta.60`](#release-2-1-0-beta-60) | 2026-08-30 | It.86 admin UX, Origin manifest automation, ISS-158/159 |
 | [`2.1.0-beta.59`](#release-2-1-0-beta-59) | 2026-08-25 | It.85 — request diagnostics, APM clear UI, Server-Timing |
