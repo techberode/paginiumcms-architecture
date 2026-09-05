@@ -8,6 +8,35 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 - **Spec:** [ITERATION_87.md](docs/en/ITERATION_87.md) — Project Site Planner (Full CMS), UX audit deferrals (It.86d → 87a–87d), optional theme static JS allow-list (`87k`–`87m`).
 
+<a id="release-2-1-0-beta-64"></a>
+
+## [2.1.0-beta.64] – 2026-09-05
+
+Admin system update — deploy readiness, dashboard banner, reliable STACK_DIR from settings
+
+### Added
+
+- **Settings:** `stackDir` + `backendPort` in System update — admin deploy passes host stack path to `deploy-instance-update.sh` (no longer env-only).
+- **API:** `deploy_readiness` with machine-readable blockers on `GET /status` and `POST /check`.
+- **Dashboard banner:** auto GitHub release check on load; **Deploy {tag}** when ready; configure-deploy link when blockers exist.
+- **Deploy blockers UI** on Platform → System update and dashboard.
+
+### Fixed
+
+- **Admin deploy UX** — deploy buttons disabled until readiness is green; clear blocker messages ([ISS-161](docs/ISSUES.md#iss-161)).
+- **TS6133** — unused variable in `SystemUpdateBanner.tsx`.
+
+### Docs
+
+- **DEPLOY.md §12.5** — admin UI deploy checklist (settings + dashboard flow).
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.64`
+- **Release note:** [RELEASE_2_1_0_BETA_64.md](docs/en/RELEASE_2_1_0_BETA_64.md)
+
+---
+
 <a id="release-2-1-0-beta-63"></a>
 
 ## [2.1.0-beta.63] – 2026-09-05
@@ -82,6 +111,7 @@ It.25 — browser-first setup wizard and dashboard update UX (stable-blocker bas
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.64`](#release-2-1-0-beta-64) | 2026-09-05 | Admin deploy readiness, dashboard update banner |
 | [`2.1.0-beta.63`](#release-2-1-0-beta-63) | 2026-09-05 | npm security — Tiptap 3.31.x, auth/setup fixes, DEPLOY §12 |
 | [`2.1.0-beta.62`](#release-2-1-0-beta-62) | 2026-09-03 | It.25 — setup wizard, update banner, commonmark 2.10 |
 | [`2.1.0-beta.61`](#release-2-1-0-beta-61) | 2026-08-30 | Hotfix — Origin Panel backend catalog labels on production |

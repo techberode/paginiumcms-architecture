@@ -16,6 +16,21 @@ export interface SystemUpdateConfig {
   defaultBranch?: string;
   allowDeployMain?: boolean;
   allowDeployTags?: boolean;
+  stackDir?: string;
+  backendPort?: string;
+}
+
+export interface SystemUpdateDeployReadiness {
+  ready: boolean;
+  blockers: string[];
+  stack_dir?: string;
+  stack_dir_configured?: boolean;
+  stack_script_executable?: boolean;
+  backend_port?: string;
+  deploy_script_exists?: boolean;
+  app_root_configured?: boolean;
+  deploy_enabled?: boolean;
+  allow_deploy_tags?: boolean;
 }
 
 export interface SystemUpdateWebhookConfig {
@@ -30,6 +45,7 @@ export interface SystemUpdateStatus {
   git: SystemUpdateGitStatus;
   config: SystemUpdateConfig;
   job_registered: boolean;
+  deploy_readiness?: SystemUpdateDeployReadiness;
   webhook?: SystemUpdateWebhookConfig;
   recent_runs: Array<Record<string, unknown>>;
 }
@@ -72,6 +88,7 @@ export interface SystemUpdateCheckResult {
     current_tag?: string | null;
     latest_tag?: string | null;
   };
+  deploy_readiness?: SystemUpdateDeployReadiness;
   release_notes?: string | null;
   release_url?: string | null;
 }

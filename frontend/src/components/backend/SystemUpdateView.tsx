@@ -15,6 +15,7 @@ import {
   type SystemUpdateStatus,
 } from '../../api/systemUpdate';
 import { settingsGroupPath } from '../../utils/adminDeepLinks';
+import { DeployBlockersList } from '../dashboard/DeployBlockersList';
 
 export const SystemUpdateView: React.FC = () => {
   const { t } = useI18n();
@@ -110,6 +111,10 @@ export const SystemUpdateView: React.FC = () => {
       warning(t('platform.systemUpdate.toast.deployDisabled'));
       return;
     }
+    if (!deployReady) {
+      warning(t('platform.systemUpdate.toast.deployNotReady'));
+      return;
+    }
     const deployRef = (overrideRef ?? ref).trim();
     if (deployRef === '') {
       toastError(t('platform.systemUpdate.toast.refRequired'));
@@ -154,11 +159,14 @@ export const SystemUpdateView: React.FC = () => {
   };
 
   const compareCommits = remoteCheck?.remote.compare?.commits ?? [];
+  const readiness = remoteCheck?.deploy_readiness ?? data?.deploy_readiness ?? null;
+  const deployReady = readiness?.ready === true;
   const canDeployLatestTag =
     Boolean(latestTag) &&
     updateStatus === 'update_available' &&
     data?.config?.deployEnabled === true &&
-    data?.job_registered === true;
+    data?.job_registered === true &&
+    deployReady;
 
   const webhookPath = data?.webhook?.path ?? '/api/webhooks/github/release';
   const webhookUrl =
@@ -335,6 +343,7 @@ export const SystemUpdateView: React.FC = () => {
 
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm space-y-3">
             <h2 className="font-semibold text-slate-800">{t('platform.systemUpdate.deployTitle')}</h2>
+            <DeployBlockersList readiness={readiness} />
             {updateStatus === 'current' && (
               <p className="text-sm text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
                 {t('platform.systemUpdate.deployUpToDate')}
@@ -372,7 +381,7 @@ export const SystemUpdateView: React.FC = () => {
               ) : null}
               <button
                 type="button"
-                disabled={deploying || !data?.job_registered}
+                disabled={deploying || !data?.job_registered || !deployReady}
                 onClick={() => void handleDeploy()}
                 className={canDeployLatestTag ? 'btn-secondary inline-flex items-center gap-2' : 'btn-primary inline-flex items-center gap-2'}
               >

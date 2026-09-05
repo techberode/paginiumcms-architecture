@@ -1503,6 +1503,14 @@ export const settingsEn: MessageTree = {
       "allowDeployTags": {
         "label": "Allow deploy from semver tags"
       },
+      "stackDir": {
+        "label": "Docker stack directory (host path)",
+        "help": "Absolute path on the host, e.g. /var/lib/docker/compose/paginiumcms — required for admin UI deploy to restart PHP. Falls back to STACK_DIR env when empty."
+      },
+      "backendPort": {
+        "label": "Backend health port",
+        "help": "Port for post-deploy health check (default 8089). Falls back to BACKEND_PORT env."
+      },
       "webhookDeployEnabled": {
         "label": "Enable GitHub release webhook deploy",
         "help": "When enabled, POST /api/webhooks/github/release queues deploy on release published (HMAC secret required)."

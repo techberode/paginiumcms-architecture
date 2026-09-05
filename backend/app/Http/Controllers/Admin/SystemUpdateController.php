@@ -9,6 +9,7 @@ use PaginiumCMS\Core\Scheduler\Services\JobRunStore;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\SystemUpdate\Services\GitHubReleaseClient;
 use PaginiumCMS\Core\SystemUpdate\Services\GitRepositoryInspector;
+use PaginiumCMS\Core\SystemUpdate\Services\SystemDeployReadinessService;
 use PaginiumCMS\Core\SystemUpdate\Services\SystemDeployTriggerService;
 use PaginiumCMS\Core\SystemUpdate\Services\SystemUpdateVersionMatcher;
 use PaginiumCMS\Core\SystemUpdate\Services\SystemUpdateWebhookService;
@@ -36,6 +37,7 @@ final class SystemUpdateController
         private JobRunStore $runs,
         private SystemUpdateWebhookService $webhook,
         private SystemUpdateVersionMatcher $versionMatcher,
+        private SystemDeployReadinessService $deployReadiness,
         private JsonResponder $json
     ) {
     }
@@ -44,13 +46,15 @@ final class SystemUpdateController
     {
         $gitStatus = $this->git->status();
         $config = $this->publicConfig($this->settings->group('systemUpdate'));
+        $jobRegistered = $this->registry->find(self::JOB_ID) !== null;
 
         return $this->json->success($response, [
             'app_version' => AppVersion::current(),
             'demo_mode' => DemoMode::isEnabledFromEnv(),
             'git' => $gitStatus,
             'config' => $config,
-            'job_registered' => $this->registry->find(self::JOB_ID) !== null,
+            'job_registered' => $jobRegistered,
+            'deploy_readiness' => $this->deployReadiness->evaluate($jobRegistered),
             'webhook' => $this->webhook->publicWebhookConfig(),
             'recent_runs' => $this->runs->forJob(self::JOB_ID, 10),
         ]);
@@ -87,6 +91,9 @@ final class SystemUpdateController
             'git' => $gitStatus,
             'remote' => $remote,
             'update' => $update,
+            'deploy_readiness' => $this->deployReadiness->evaluate(
+                $this->registry->find(self::JOB_ID) !== null
+            ),
             'release_notes' => is_string($remote['latest_release_body'] ?? null) && $update['status'] === 'update_available'
                 ? $remote['latest_release_body']
                 : null,
