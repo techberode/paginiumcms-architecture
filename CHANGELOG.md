@@ -8,6 +8,35 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 - **Spec:** [ITERATION_87.md](docs/en/ITERATION_87.md) — Project Site Planner (Full CMS), UX audit deferrals (It.86d → 87a–87d), optional theme static JS allow-list (`87k`–`87m`).
 
+<a id="release-2-1-0-beta-63"></a>
+
+## [2.1.0-beta.63] – 2026-09-05
+
+Frontend npm security — synchronized Tiptap 3.31.x (Dependabot / GH advisories)
+
+### Security
+
+- **`@tiptap/*` 3.28/3.29 → 3.31.1** (including explicit `@tiptap/core`) — fixes GHSA-cp6q-959q-f8rh (`mergeAttributes` / `__proto__`); bump entire TipTap family in one lockfile refresh per [ISS-081](docs/ISSUES.md#iss-081).
+- **Transitive `fast-uri`** — resolved via lockfile refresh; `npm audit` → **0 vulnerabilities** (moderate+).
+
+### Fixed
+
+- **Auth login info panel** — description and bullet text readable on light-on-dark schemes (e.g. Mono Zinc); removed broken Tailwind opacity on CSS-variable colors ([ISS-160](docs/ISSUES.md#iss-160)).
+- **Setup orphan recovery** — `needsSetup=true` when zero user accounts exist even if `general.installed=true`; redirects to `/setup` after PHPUnit/dev purge instead of a dead-end login.
+- **Test user purge** — `purgeAllUsersForTesting()` and `purgeTestUsers()` rebuild `data/index/users.json` so `user:create` is not blocked by stale `admin` username entries.
+
+### Docs
+
+- **DEPLOY.md §12** — deploy permissions bootstrap (`bootstrap-deploy-permissions.sh`), when to re-run vs per-release deploy.
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.63`
+- **Release note:** [RELEASE_2_1_0_BETA_63.md](docs/en/RELEASE_2_1_0_BETA_63.md)
+- **Deferred:** ESLint 10 ([ISS-083](docs/ISSUES.md#iss-083)), Symfony YAML 8 ([ISS-082](docs/ISSUES.md#iss-082)) — separate major upgrades.
+
+---
+
 <a id="release-2-1-0-beta-62"></a>
 
 ## [2.1.0-beta.62] – 2026-09-03
@@ -53,6 +82,7 @@ It.25 — browser-first setup wizard and dashboard update UX (stable-blocker bas
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.63`](#release-2-1-0-beta-63) | 2026-09-05 | npm security — Tiptap 3.31.x, auth/setup fixes, DEPLOY §12 |
 | [`2.1.0-beta.62`](#release-2-1-0-beta-62) | 2026-09-03 | It.25 — setup wizard, update banner, commonmark 2.10 |
 | [`2.1.0-beta.61`](#release-2-1-0-beta-61) | 2026-08-30 | Hotfix — Origin Panel backend catalog labels on production |
 | [`2.1.0-beta.60`](#release-2-1-0-beta-60) | 2026-08-30 | It.86 admin UX, Origin manifest automation, ISS-158/159 |

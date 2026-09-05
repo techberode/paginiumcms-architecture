@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 30 August 2026 · register **ISS-001–ISS-159** · admin command palette auth/DI fixes (ISS-158–159)
+> **Last updated:** 5 September 2026 · register **ISS-001–ISS-160** · auth/setup orphan recovery (ISS-160)
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -182,6 +182,7 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-157](#iss-157) | Legacy home compatibility test failed when schema v2 home already on disk | Low (CI) | ✅ Fixed (It.84) |
 | [ISS-158](#iss-158) | Admin command palette search returned 401 for logged-in users | High (admin UX) | ✅ Fixed (2.1.0-beta.60) |
 | [ISS-159](#iss-159) | SearchController DI misconfiguration caused HTTP 500 after ISS-158 fix | **Critical (admin)** | ✅ Fixed (2.1.0-beta.60) |
+| [ISS-160](#iss-160) | PHPUnit user purge left orphan index; login blocked, setup wizard skipped | High (dev/DX) | ✅ Fixed · **2.1.0-beta.63** |
 
 ## CI failures (GitHub Actions)
 
@@ -4881,6 +4882,42 @@ Update `SearchController::class` factory:
 ### Verification
 
 Container resolves `SearchController`; `./scripts/iteration-gate.sh` green; admin loads without 500.
+
+---
+
+<a id="iss-160"></a>
+
+## ISS-160 – PHPUnit user purge left orphan index; login blocked, setup wizard skipped
+
+| Field | Value |
+|---|---|
+| **Severity** | High (dev/DX) |
+| **Status** | ✅ Fixed · **2.1.0-beta.63** |
+| **Area** | Auth / setup / PHPUnit storage hygiene |
+
+### Symptom
+
+After running `./scripts/iteration-gate.sh` or PHPUnit locally against the shared `backend/storage/app/content` tree:
+
+- `php backend/bin/console user:list` → **no users**
+- `user:create` → **Username already exists: admin** (stale index entry)
+- `/login` fails; `/setup` not shown when `general.installed=true`
+
+### Root cause
+
+`TestStorageCleaner::purgeAllUsersForTesting()` deleted `data/users/*.json` but **did not rebuild** `data/index/users.json`. `UserRepository::existsByUsername()` consults the index; `findAll()` skips missing files → inconsistent state. `SetupStatusService` treated `general.installed=true` as complete even with zero accounts.
+
+### Fix
+
+- Rebuild user index after `purgeAllUsersForTesting()` and `purgeTestUsers()`.
+- `SetupStatusService::needsSetup()` returns `true` when no user accounts exist (orphan recovery → `/setup`).
+- Auth login info panel: use `opacity-*` instead of `/90` Tailwind modifiers on CSS-variable colors (Mono Zinc unreadable text).
+
+### Verification
+
+- `SetupControllerTest` — empty index after fresh install purge; orphan `installed=true` + zero users → `needsSetup=true`.
+- `SetupStatusServiceTest` — unit coverage for orphan recovery.
+- Manual: `user:create` succeeds after gate on dev storage.
 
 ---
 

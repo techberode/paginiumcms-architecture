@@ -20,7 +20,7 @@ final class CatalogDeployStatusResolverTest extends TestCase
     {
         $resolver = new CatalogDeployStatusResolver();
         $status = $resolver->resolveForIteration([
-            'since' => AppVersion::VERSION,
+            'since' => AppVersion::current(),
             'phase' => 'partial',
         ], 100);
 
@@ -42,7 +42,7 @@ final class CatalogDeployStatusResolverTest extends TestCase
     {
         $resolver = new CatalogDeployStatusResolver();
         $status = $resolver->resolveForIteration([
-            'since' => AppVersion::VERSION,
+            'since' => AppVersion::current(),
             'phase' => 'partial',
         ], 50);
 
