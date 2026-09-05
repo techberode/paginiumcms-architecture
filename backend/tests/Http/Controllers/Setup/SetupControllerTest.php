@@ -31,6 +31,27 @@ final class SetupControllerTest extends TestCase
         $this->assertTrue($data['data']['needsSetup']);
         $this->assertFalse($data['data']['installed']);
         $this->assertFalse($data['data']['hasUsers']);
+        $this->assertUserIndexIsEmpty();
+    }
+
+    public function testStatusWhenInstalledFlagSetButNoUsersNeedsSetup(): void
+    {
+        TestStorageCleaner::purgeAllUsersForTesting();
+
+        $settings = $this->container()->get(SettingsRepositoryInterface::class);
+        $settings->setGroup('general', array_merge($settings->group('general'), [
+            'installed' => true,
+        ]));
+
+        $response = $this->handleRequest(
+            $this->createJsonRequest('GET', '/api/setup/status')
+        );
+        $data = $this->getJsonResponse($response);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertTrue($data['data']['needsSetup']);
+        $this->assertTrue($data['data']['installed']);
+        $this->assertFalse($data['data']['hasUsers']);
     }
 
     public function testCompleteCreatesAdminAndMarksInstalled(): void
@@ -117,5 +138,16 @@ final class SetupControllerTest extends TestCase
             'installed' => false,
             'allowRegistration' => true,
         ]));
+    }
+
+    private function assertUserIndexIsEmpty(): void
+    {
+        $indexPath = TestStorageCleaner::contentRoot() . '/data/index/users.json';
+        $this->assertFileExists($indexPath);
+        $index = json_decode((string) file_get_contents($indexPath), true);
+        $this->assertIsArray($index);
+        $this->assertSame([], $index['by_id'] ?? null);
+        $this->assertSame([], $index['by_email'] ?? null);
+        $this->assertSame([], $index['by_username'] ?? null);
     }
 }

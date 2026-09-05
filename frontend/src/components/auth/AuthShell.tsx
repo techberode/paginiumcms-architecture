@@ -39,7 +39,7 @@ export const AuthShell: React.FC<AuthShellProps> = ({
 
   const infoPanel = (
     <div
-      className={`relative flex flex-col justify-center p-8 sm:p-10 lg:p-12 text-white overflow-hidden transition-all duration-700 ease-out
+      className={`relative flex flex-col justify-center p-8 sm:p-10 lg:p-12 text-theme-primary-foreground overflow-hidden transition-all duration-700 ease-out
         ${infoLeft ? 'auth-info-panel-left' : 'auth-info-panel-right'}
         bg-gradient-to-br from-theme-primary via-theme-accent to-theme-primary`}
     >
@@ -53,17 +53,17 @@ export const AuthShell: React.FC<AuthShellProps> = ({
         </div>
         <div>
           <h1 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight text-theme-primary-foreground">{branding.title}</h1>
-          <p className="mt-3 text-sm sm:text-base text-theme-primary-foreground/90 leading-relaxed">{branding.description}</p>
+          <p className="mt-3 text-sm sm:text-base text-theme-primary-foreground opacity-90 leading-relaxed">{branding.description}</p>
         </div>
         <ul className="space-y-3">
           {branding.bullets.map((bullet) => (
-            <li key={bullet} className="flex items-start gap-3 text-sm text-theme-primary-foreground/95">
-              <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5 text-emerald-300" />
+            <li key={bullet} className="flex items-start gap-3 text-sm text-theme-primary-foreground">
+              <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5 text-emerald-500 dark:text-emerald-300" />
               <span>{bullet}</span>
             </li>
           ))}
         </ul>
-        <p className="text-xs text-theme-primary-foreground/70 flex items-center gap-1.5 pt-2">
+        <p className="text-xs text-theme-primary-foreground opacity-70 flex items-center gap-1.5 pt-2">
           <Sparkles className="w-3.5 h-3.5" />
           {t('public.auth.shell.tagline')}
         </p>

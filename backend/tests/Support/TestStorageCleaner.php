@@ -148,6 +148,8 @@ final class TestStorageCleaner
                 @unlink($backup);
             }
         }
+
+        self::rebuildUserIndex();
     }
 
     /**
@@ -177,6 +179,8 @@ final class TestStorageCleaner
         foreach (glob($dir . '/user_*.json.backup.*') ?: [] as $backup) {
             @unlink($backup);
         }
+
+        self::rebuildUserIndex();
     }
 
     public static function purgeTestMessages(): void
@@ -895,6 +899,72 @@ final class TestStorageCleaner
         foreach (glob($userJsonPath . '.backup.*') ?: [] as $backup) {
             @unlink($backup);
         }
+    }
+
+    /**
+     * Rebuilds `data/index/users.json` from remaining flat-files (prevents orphan index after purge).
+     */
+    private static function rebuildUserIndex(): void
+    {
+        $usersDir = self::contentRoot() . '/data/users';
+        $indexPath = self::contentRoot() . '/data/index/users.json';
+        $byId = [];
+        $byEmail = [];
+        $byUsername = [];
+
+        foreach (glob($usersDir . '/user_*.json') ?: [] as $file) {
+            if (str_contains(basename($file), '.backup.')) {
+                continue;
+            }
+
+            $raw = @file_get_contents($file);
+            if ($raw === false) {
+                continue;
+            }
+
+            $data = json_decode($raw, true);
+            if (
+                !is_array($data)
+                || !isset($data['id'], $data['email'])
+                || !is_string($data['id'])
+                || !is_string($data['email'])
+                || $data['id'] === ''
+                || trim($data['email']) === ''
+            ) {
+                continue;
+            }
+
+            $id = $data['id'];
+            $email = strtolower(trim($data['email']));
+            $username = strtolower(trim((string) ($data['username'] ?? '')));
+            $byId[$id] = [
+                'id' => $id,
+                'email' => $email,
+                'username' => $username,
+                'resetTokenHash' => isset($data['resetTokenHash']) ? (string) $data['resetTokenHash'] : null,
+                'resetTokenExpires' => isset($data['resetTokenExpires']) ? (int) $data['resetTokenExpires'] : null,
+            ];
+            $byEmail[$email] = $id;
+            if ($username !== '') {
+                $byUsername[$username] = $id;
+            }
+        }
+
+        $indexDir = dirname($indexPath);
+        if (!is_dir($indexDir)) {
+            mkdir($indexDir, 0755, true);
+        }
+
+        file_put_contents(
+            $indexPath,
+            json_encode([
+                'version' => 1,
+                'updated_at' => date('c'),
+                'by_id' => $byId,
+                'by_email' => $byEmail,
+                'by_username' => $byUsername,
+            ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+        );
     }
 
     private static function deleteMatchingBackups(string $filePath): void

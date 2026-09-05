@@ -224,7 +224,63 @@ Adapt the deploy user to the server. Verify writes under the same identity used 
   sh -lc 'touch backend/storage/.deploy-write-test && rm backend/storage/.deploy-write-test'
 ```
 
-## 12. Upgrade, backup, and rollback
+## 12. Deploy permissions bootstrap (SSH user + Docker `www-data`)
+
+Production uses **two writers** on the same git checkout:
+
+| Identity | Typical actions |
+|----------|-----------------|
+| SSH deploy user | `git fetch`, `deploy-instance-update.sh`, `composer`, `npm` |
+| `www-data` in PHP container | storage, scheduler, admin UI deploy, theme/extension imports |
+
+If `www-data` creates a file the deploy user cannot move or overwrite, `DEPLOY_FORCE=1` fails with `Permission denied` (for example an untracked `README.md` under `backend/resources/views/themes/` after a theme import).
+
+**This is not caused by a new CMS release tag.** It is caused by mixed ownership on the checkout tree.
+
+### One-time bootstrap (recommended on every new server or `APP_ROOT`)
+
+Run **once** on the host (sudo required), not inside the PHP container:
+
+```bash
+APP_ROOT=/var/www/paginiumcms.com ./scripts/bootstrap-deploy-permissions.sh
+sudo usermod -aG www-data "$(whoami)"   # if not already in group www-data
+```
+
+Then start a **new SSH session** (or `newgrp www-data`).
+
+The script sets checkout owner to the current user, group `www-data`, directories `2775` (setgid), files `664`, and prepares `backend/storage/app/deploy-cache` for Composer/npm caches used by deploy.
+
+### When you do **not** need to re-run bootstrap
+
+- Every new beta tag or iteration (`beta.62`, `beta.63`, …) — run `./scripts/deploy-instance-update.sh` only.
+- New git-tracked code pulled by deploy — normal checkout.
+- New files under `backend/storage/` when storage already follows the shared model.
+
+### When to re-run bootstrap (or fix ownership)
+
+| Situation | Action |
+|-----------|--------|
+| New server or fresh clone at a new path | Run bootstrap once on that `APP_ROOT` |
+| Deploy fails: `mv: … Permission denied` during `pre-checkout-backup` | `ls -la` on the path; `sudo rm` or `sudo chown deploy-user:www-data` on the blocker; re-run deploy |
+| Someone ran `sudo chown root:…` or another user on the checkout | Re-run bootstrap |
+| Repeated orphan files outside `storage/` with owner `www-data` only | Re-run bootstrap; ensure deploy user is in group `www-data` |
+
+### Quick unblock (single orphan file)
+
+```bash
+cd /var/www/paginiumcms.com
+ls -la backend/resources/views/themes/clean-journal/README.md   # example
+sudo rm -f backend/resources/views/themes/clean-journal/README.md
+# or: sudo chown "$(whoami):www-data" path/to/blocker
+
+DEPLOY_FORCE=1 APP_ROOT=/var/www/paginiumcms.com \
+  STACK_DIR=/var/lib/docker/compose/paginiumcms BACKEND_PORT=8089 \
+  GIT_REF=v2.1.0-beta.62 ./scripts/deploy-instance-update.sh
+```
+
+See also [ISS-094](../ISSUES.md#iss-094) (scheduler storage) and [ISS-099](../ISSUES.md#iss-099) (demo CLI vs `www-data`).
+
+## 13. Upgrade, backup, and rollback
 
 Before deployment create:
 
@@ -246,7 +302,7 @@ cd frontend && npm ci && npm run build:prod && cd ..
 
 If the new version changed authoritative data incompatibly, checking out code is insufficient. Use the documented restore or a forward fix. Every future migration must state backward compatibility and its rollback boundary.
 
-## 13. Docker autostart
+## 14. Docker autostart
 
 The production override uses `restart: unless-stopped`, which restarts containers after host boot when the Docker daemon starts automatically. Verify:
 
@@ -258,7 +314,7 @@ systemctl is-enabled docker
 
 This covers the operational part of [ISS-119](../ISSUES.md#iss-119). `depends_on` does not prove application readiness; readiness is established by health and smoke checks.
 
-## 14. Admin “System update”
+## 15. Admin “System update”
 
 Admin-triggered application updates remain a planned capability, not a current safe production mechanism. They must not reuse the content `GitHubService` or execute as an unrestricted web shell.
 
@@ -273,7 +329,7 @@ The future contract requires:
 - immutable release reference and checksum,
 - automatic health/smoke checks and a rollback boundary.
 
-## 15. Deployment evidence
+## 16. Deployment evidence
 
 After a successful deployment retain outside the web root:
 
@@ -293,7 +349,7 @@ rollback reference
 
 The record may be short, but it must establish what was deployed.
 
-## 16. Related documents
+## 17. Related documents
 
 - [RELEASE.md](../developer/RELEASE.md) — release gate and decision
 - [INSTALLATION.md](../user/INSTALLATION.md) — first installation
