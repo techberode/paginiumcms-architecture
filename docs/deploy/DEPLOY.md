@@ -280,6 +280,38 @@ DEPLOY_FORCE=1 APP_ROOT=/var/www/paginiumcms.com \
 
 See also [ISS-094](../ISSUES.md#iss-094) (scheduler storage) and [ISS-099](../ISSUES.md#iss-099) (demo CLI vs `www-data`).
 
+## 12.5 Admin UI deploy (Platform → System update + Dashboard banner)
+
+Admin deploy uses the same `scripts/deploy-instance-update.sh` as SSH, but PHP must know the **host stack path** to restart containers after checkout.
+
+### Required settings (SUPER_ADMIN → Settings → System update)
+
+| Setting | Example | Purpose |
+|---------|---------|---------|
+| **Enable admin deploy** | on | Allows `POST /api/admin/system/update/run` |
+| **Allow deploy from semver tags** | on | Tag deploy (`v2.1.0-beta.63`) |
+| **Docker stack directory** | `/var/lib/docker/compose/paginiumcms` | Passed as `STACK_DIR` — **PHP restart** |
+| **Backend health port** | `8089` | Post-deploy health check |
+| **GitHub owner/repo/token** | … | Remote version check (Dashboard auto-check) |
+
+Without **stack directory**, deploy may pull code but skip `stack.sh up -d --force-recreate` → old PHP/opcache keeps running (ISS-152).
+
+### Dashboard banner (SUPER_ADMIN)
+
+On load, the dashboard **automatically checks GitHub** for a newer release. When an update is available:
+
+- shows version + **Deploy {tag}** when all blockers are green,
+- shows **Configure deploy** with a blocker list when something is missing,
+- links to **Platform → System update** for details.
+
+### Verify after admin deploy
+
+```bash
+curl -s http://127.0.0.1:8089/api/health | jq '.data.version // .version'
+```
+
+If version is stale but files updated → set stack directory in settings and redeploy, or run SSH deploy with `STACK_DIR=…`.
+
 ## 13. Upgrade, backup, and rollback
 
 Before deployment create:

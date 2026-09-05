@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 5 September 2026 · register **ISS-001–ISS-160** · auth/setup orphan recovery (ISS-160)
+> **Last updated:** 5 September 2026 · register **ISS-001–ISS-161** · admin deploy readiness (ISS-161)
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -183,6 +183,7 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-158](#iss-158) | Admin command palette search returned 401 for logged-in users | High (admin UX) | ✅ Fixed (2.1.0-beta.60) |
 | [ISS-159](#iss-159) | SearchController DI misconfiguration caused HTTP 500 after ISS-158 fix | **Critical (admin)** | ✅ Fixed (2.1.0-beta.60) |
 | [ISS-160](#iss-160) | PHPUnit user purge left orphan index; login blocked, setup wizard skipped | High (dev/DX) | ✅ Fixed · **2.1.0-beta.63** |
+| [ISS-161](#iss-161) | Admin UI deploy showed update but failed without STACK_DIR / blockers hidden | High (ops) | ✅ Fixed · **2.1.0-beta.64** |
 
 ## CI failures (GitHub Actions)
 
@@ -4918,6 +4919,40 @@ After running `./scripts/iteration-gate.sh` or PHPUnit locally against the share
 - `SetupControllerTest` — empty index after fresh install purge; orphan `installed=true` + zero users → `needsSetup=true`.
 - `SetupStatusServiceTest` — unit coverage for orphan recovery.
 - Manual: `user:create` succeeds after gate on dev storage.
+
+---
+
+<a id="iss-161"></a>
+
+## ISS-161 – Admin UI deploy showed update but failed without STACK_DIR / blockers hidden
+
+| Field | Value |
+|---|---|
+| **Severity** | High (ops) |
+| **Status** | ✅ Fixed · **2.1.0-beta.64** |
+| **Area** | System update / deploy |
+
+### Symptom
+
+Dashboard or Platform → System update showed **update available**, but deploy returned 403, did nothing, or pulled code without restarting PHP. Manual SSH deploy with explicit `STACK_DIR=…` worked.
+
+### Root cause
+
+1. **Check ≠ deploy** — GitHub compare only needs token; deploy needs `deployEnabled`, scheduler job, and host `STACK_DIR`.
+2. **`STACK_DIR` only from env** — PHP-FPM/container often had empty env → script skipped stack recreate (ISS-152).
+3. **UI** — deploy buttons active while blockers existed; no dashboard auto-check or one-click deploy.
+
+### Resolution
+
+- Settings fields **`stackDir`** + **`backendPort`** (fallback to env).
+- **`SystemDeployReadinessService`** — machine-readable blockers on status/check APIs.
+- **Dashboard banner** — auto-check on load, deploy latest tag when ready, configure link when blocked.
+- **DEPLOY.md §12.5** — admin UI deploy checklist.
+
+### Verification
+
+- `SystemDeployReadinessServiceTest`, extended `SystemUpdateControllerTest`.
+- Production: set stack directory in settings → dashboard shows green deploy → health version matches tag after run.
 
 ---
 

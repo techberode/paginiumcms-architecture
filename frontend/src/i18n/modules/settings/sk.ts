@@ -1503,6 +1503,14 @@ export const settingsSk: MessageTree = {
       "allowDeployTags": {
         "label": "Povoliť deploy zo semver tagov"
       },
+      "stackDir": {
+        "label": "Docker stack directory (host path)",
+        "help": "Absolútna cesta na hoste, napr. /var/lib/docker/compose/paginiumcms — potrebné pre admin deploy a reštart PHP. Ak je prázdne, použije sa STACK_DIR z env."
+      },
+      "backendPort": {
+        "label": "Backend health port",
+        "help": "Port pre health check po deployi (predvolene 8089). Ak je prázdne, použije sa BACKEND_PORT z env."
+      },
       "webhookDeployEnabled": {
         "label": "Zapnúť GitHub release webhook deploy",
         "help": "Po zapnutí POST /api/webhooks/github/release zaradí deploy pri publikovaní release (vyžaduje HMAC secret)."

@@ -68,16 +68,7 @@ final class SystemDeployService
             return new JobRunResult(false, 'Deploy script missing', ['ref' => $ref], 'missing_script');
         }
 
-        $cacheRoot = $root . '/backend/storage/app/deploy-cache';
-        $env = [
-            'APP_ROOT' => $root,
-            'GIT_REF' => $ref,
-            'STACK_DIR' => getenv('STACK_DIR') ?: ($_ENV['STACK_DIR'] ?? ''),
-            'BACKEND_PORT' => getenv('BACKEND_PORT') ?: ($_ENV['BACKEND_PORT'] ?? '8089'),
-            'DEPLOY_CACHE_ROOT' => $cacheRoot,
-            'COMPOSER_HOME' => $cacheRoot . '/composer',
-            'DEPLOY_FORCE' => '1',
-        ];
+        $env = $this->buildDeployEnvironment($config, $root, $ref);
 
         $command = $this->buildCommand($script, $env);
         $outputLines = [];
@@ -129,6 +120,59 @@ final class SystemDeployService
         }
 
         throw new InvalidArgumentException('Deploy ref must be origin/branch or semver tag');
+    }
+
+    /**
+     * @param array<string, mixed> $config
+     */
+    public function resolvedStackDir(array $config): string
+    {
+        $fromSettings = trim((string) ($config['stackDir'] ?? ''));
+        if ($fromSettings !== '') {
+            return rtrim($fromSettings, '/');
+        }
+
+        $fromEnv = trim((string) (getenv('STACK_DIR') ?: ($_ENV['STACK_DIR'] ?? '')));
+
+        return $fromEnv !== '' ? rtrim($fromEnv, '/') : '';
+    }
+
+    /**
+     * @param array<string, mixed> $config
+     */
+    public function resolvedBackendPort(array $config): string
+    {
+        $fromSettings = trim((string) ($config['backendPort'] ?? ''));
+        if ($fromSettings !== '' && preg_match('/^\d{2,5}$/', $fromSettings) === 1) {
+            return $fromSettings;
+        }
+
+        $fromEnv = trim((string) (getenv('BACKEND_PORT') ?: ($_ENV['BACKEND_PORT'] ?? '')));
+        if ($fromEnv !== '' && preg_match('/^\d{2,5}$/', $fromEnv) === 1) {
+            return $fromEnv;
+        }
+
+        return '8089';
+    }
+
+    /**
+     * @param array<string, mixed> $config
+     * @return array<string, string>
+     */
+    public function buildDeployEnvironment(array $config, string $root, string $ref): array
+    {
+        $cacheRoot = $root . '/backend/storage/app/deploy-cache';
+        $env = [
+            'APP_ROOT' => $root,
+            'GIT_REF' => $ref,
+            'STACK_DIR' => $this->resolvedStackDir($config),
+            'BACKEND_PORT' => $this->resolvedBackendPort($config),
+            'DEPLOY_CACHE_ROOT' => $cacheRoot,
+            'COMPOSER_HOME' => $cacheRoot . '/composer',
+            'DEPLOY_FORCE' => '1',
+        ];
+
+        return array_filter($env, static fn (string $value): bool => $value !== '');
     }
 
     /**

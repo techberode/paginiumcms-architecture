@@ -545,6 +545,8 @@ final class SettingsSchema
                     ['key' => 'defaultBranch', 'type' => 'string', 'label' => 'Default branch', 'default' => 'main', 'rules' => ['required', 'string', 'max:120']],
                     ['key' => 'allowDeployMain', 'type' => 'bool', 'label' => 'Allow deploy from branch (origin/…)', 'default' => false, 'rules' => ['bool']],
                     ['key' => 'allowDeployTags', 'type' => 'bool', 'label' => 'Allow deploy from semver tags', 'default' => true, 'rules' => ['bool']],
+                    ['key' => 'stackDir', 'type' => 'string', 'label' => 'Docker stack directory (host path)', 'default' => '', 'rules' => ['string', 'max:512'], 'help' => 'Absolute path to compose stack on the host, e.g. /var/lib/docker/compose/paginiumcms — required for admin UI deploy to restart PHP. Falls back to STACK_DIR env when empty.'],
+                    ['key' => 'backendPort', 'type' => 'string', 'label' => 'Backend health port', 'default' => '8089', 'rules' => ['string', 'max:8'], 'help' => 'Port for post-deploy health check (default 8089). Falls back to BACKEND_PORT env.'],
                     ['key' => 'webhookDeployEnabled', 'type' => 'bool', 'label' => 'Enable GitHub release webhook deploy', 'default' => false, 'rules' => ['bool'], 'help' => 'When enabled, POST /api/webhooks/github/release queues deploy on release published (HMAC secret required).'],
                     ['key' => 'githubWebhookSecret', 'type' => 'password', 'label' => 'GitHub webhook secret', 'default' => '', 'rules' => ['string', 'max:255'], 'help' => 'Same secret as configured in GitHub → Settings → Webhooks → Secret. Never logged.'],
                 ],

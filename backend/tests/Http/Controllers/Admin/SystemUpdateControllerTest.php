@@ -44,6 +44,9 @@ final class SystemUpdateControllerTest extends TestCase
         $this->assertArrayHasKey('app_version', $data['data']);
         $this->assertArrayHasKey('git', $data['data']);
         $this->assertArrayHasKey('job_registered', $data['data']);
+        $this->assertArrayHasKey('deploy_readiness', $data['data']);
+        $this->assertIsArray($data['data']['deploy_readiness']);
+        $this->assertArrayHasKey('blockers', $data['data']['deploy_readiness']);
     }
 
     public function testRunForbiddenWhenDeployDisabled(): void
@@ -160,6 +163,7 @@ final class SystemUpdateControllerTest extends TestCase
         $this->assertArrayHasKey('git', $data['data']);
         $this->assertArrayHasKey('remote', $data['data']);
         $this->assertArrayHasKey('update', $data['data']);
+        $this->assertArrayHasKey('deploy_readiness', $data['data']);
         $this->assertContains(
             $data['data']['update']['status'] ?? '',
             ['current', 'update_available', 'unknown']
