@@ -14,6 +14,7 @@ use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
 use PaginiumCMS\Modules\Media\Contracts\MediaStorageDriverInterface;
 use PaginiumCMS\Modules\Media\MediaFormats;
 use PaginiumCMS\Support\JsonHelper;
+use PaginiumCMS\Support\Lang;
 
 class MediaRepository implements MediaRepositoryInterface
 {
@@ -28,6 +29,8 @@ class MediaRepository implements MediaRepositoryInterface
         private SettingsRepositoryInterface $settings,
         private UploadSecurityValidator $uploadSecurity,
         private MediaStorageFactory $storageFactory,
+        private MediaImageOptimizer $imageOptimizer,
+        private MediaOptimizePreviewStore $optimizePreviewStore,
     ) {
     }
 
@@ -190,6 +193,212 @@ class MediaRepository implements MediaRepositoryInterface
 
         $this->saveRegistry($registry);
         $this->writeSidecar($file);
+    }
+
+    public function inspectRaster(string $path): array
+    {
+        $media = $this->requireMediaWithBinary($path);
+        $binary = $this->readBinary($path);
+        $info = $this->imageOptimizer->inspect($binary);
+
+        return [
+            'width' => $info['width'],
+            'height' => $info['height'],
+            'mimeType' => $info['mimeType'],
+            'sizeBytes' => $media->getSizeBytes(),
+        ];
+    }
+
+    public function readBinary(string $path): string
+    {
+        $storage = $this->storage();
+        if (!$storage->exists($path)) {
+            throw new FlatFileException('Médium nebolo nájdené');
+        }
+
+        return $storage->read($path);
+    }
+
+    public function optimizeRaster(string $path, ?int $targetWidth = null, ?int $targetHeight = null): array
+    {
+        $media = $this->requireMediaWithBinary($path);
+        $result = $this->runOptimize($path, $media->getMimeType(), $targetWidth, $targetHeight);
+
+        return $this->persistOptimizeResult($media, $result);
+    }
+
+    public function previewOptimizeRaster(
+        string $path,
+        string $ownerUserId,
+        ?int $targetWidth = null,
+        ?int $targetHeight = null,
+    ): array {
+        $media = $this->requireMediaWithBinary($path);
+        $result = $this->runOptimize($path, $media->getMimeType(), $targetWidth, $targetHeight);
+
+        $stats = $this->optimizeStatsPayload($result);
+        $token = $this->optimizePreviewStore->store(
+            $path,
+            $ownerUserId,
+            $result['mimeType'],
+            $result['binary'],
+            $stats
+        );
+
+        return array_merge(['previewToken' => $token], $stats);
+    }
+
+    public function applyOptimizePreview(string $path, string $previewToken, string $ownerUserId): array
+    {
+        $media = $this->requireMediaWithBinary($path);
+        $preview = $this->optimizePreviewStore->consume($previewToken, $path, $ownerUserId);
+        if ($preview === null) {
+            throw new FlatFileException(Lang::get('optimize_preview_expired', [], 'media'));
+        }
+
+        $stats = $preview['stats'];
+
+        $result = [
+            'binary' => $preview['binary'],
+            'mimeType' => $preview['mimeType'],
+            'beforeBytes' => (int) ($stats['beforeBytes'] ?? $media->getSizeBytes()),
+            'afterBytes' => (int) ($stats['afterBytes'] ?? strlen($preview['binary'])),
+            'savedBytes' => (int) ($stats['savedBytes'] ?? 0),
+            'savedPercent' => (float) ($stats['savedPercent'] ?? 0.0),
+            'beforeWidth' => (int) ($stats['beforeWidth'] ?? 0),
+            'beforeHeight' => (int) ($stats['beforeHeight'] ?? 0),
+            'width' => (int) ($stats['width'] ?? 0),
+            'height' => (int) ($stats['height'] ?? 0),
+        ];
+
+        return $this->persistOptimizeResult($media, $result);
+    }
+
+    public function readOptimizePreview(string $previewToken, string $ownerUserId): ?array
+    {
+        $preview = $this->optimizePreviewStore->readForUser($previewToken, $ownerUserId);
+        if ($preview === null) {
+            return null;
+        }
+
+        return [
+            'mimeType' => $preview['mimeType'],
+            'binary' => $preview['binary'],
+            'mediaPath' => $preview['mediaPath'],
+        ];
+    }
+
+    /**
+     * @return array{
+     *     binary: string,
+     *     mimeType: string,
+     *     beforeBytes: int,
+     *     afterBytes: int,
+     *     savedBytes: int,
+     *     savedPercent: float,
+     *     beforeWidth: int,
+     *     beforeHeight: int,
+     *     width: int,
+     *     height: int
+     * }
+     */
+    private function runOptimize(
+        string $path,
+        string $mimeType,
+        ?int $targetWidth,
+        ?int $targetHeight,
+    ): array {
+        $binary = $this->readBinary($path);
+
+        return $this->imageOptimizer->optimize($binary, $mimeType, $targetWidth, $targetHeight);
+    }
+
+    /**
+     * @param array{
+     *     binary: string,
+     *     mimeType: string,
+     *     beforeBytes: int,
+     *     afterBytes: int,
+     *     savedBytes: int,
+     *     savedPercent: float,
+     *     beforeWidth: int,
+     *     beforeHeight: int,
+     *     width: int,
+     *     height: int
+     * } $result
+     * @return array{
+     *     media: array<string, mixed>,
+     *     beforeBytes: int,
+     *     afterBytes: int,
+     *     savedBytes: int,
+     *     savedPercent: float,
+     *     beforeWidth: int,
+     *     beforeHeight: int,
+     *     width: int,
+     *     height: int
+     * }
+     */
+    private function persistOptimizeResult(MediaFile $media, array $result): array
+    {
+        $this->storage()->put($media->getPath(), $result['binary']);
+        $media->setSizeBytes($result['afterBytes']);
+        $media->setMimeType($result['mimeType']);
+        $this->update($media);
+
+        return array_merge(
+            ['media' => $media->jsonSerialize()],
+            $this->optimizeStatsPayload($result)
+        );
+    }
+
+    /**
+     * @param array{
+     *     beforeBytes: int,
+     *     afterBytes: int,
+     *     savedBytes: int,
+     *     savedPercent: float,
+     *     beforeWidth: int,
+     *     beforeHeight: int,
+     *     width: int,
+     *     height: int
+     * } $result
+     * @return array{
+     *     beforeBytes: int,
+     *     afterBytes: int,
+     *     savedBytes: int,
+     *     savedPercent: float,
+     *     beforeWidth: int,
+     *     beforeHeight: int,
+     *     width: int,
+     *     height: int
+     * }
+     */
+    private function optimizeStatsPayload(array $result): array
+    {
+        return [
+            'beforeBytes' => $result['beforeBytes'],
+            'afterBytes' => $result['afterBytes'],
+            'savedBytes' => $result['savedBytes'],
+            'savedPercent' => $result['savedPercent'],
+            'beforeWidth' => $result['beforeWidth'],
+            'beforeHeight' => $result['beforeHeight'],
+            'width' => $result['width'],
+            'height' => $result['height'],
+        ];
+    }
+
+    private function requireMediaWithBinary(string $path): MediaFile
+    {
+        $media = $this->findByPath($path);
+        if ($media === null) {
+            throw new FlatFileException('Médium nebolo nájdené');
+        }
+
+        if (!$this->storage()->exists($path)) {
+            throw new FlatFileException('Médium nebolo nájdené');
+        }
+
+        return $media;
     }
 
     public function listFolders(): array
@@ -415,9 +624,26 @@ class MediaRepository implements MediaRepositoryInterface
      *     previewableMimeTypes: list<string>
      * }
      */
+    /**
+     * @return array{
+     *     mimeTypes: list<string>,
+     *     extensions: list<string>,
+     *     accept: string,
+     *     previewableMimeTypes: list<string>,
+     *     imageOptimization: array{
+     *         available: bool,
+     *         jpeg: bool,
+     *         png: bool,
+     *         webp: bool
+     *     }
+     * }
+     */
     public function formatsPayload(): array
     {
-        return MediaFormats::toApiPayload($this->resolveAllowedMimeTypes());
+        return array_merge(
+            MediaFormats::toApiPayload($this->resolveAllowedMimeTypes()),
+            ['imageOptimization' => MediaImageOptimizer::capabilities()]
+        );
     }
 
     /**

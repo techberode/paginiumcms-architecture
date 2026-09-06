@@ -311,9 +311,24 @@ It.25 — browser-first setup wizard and dashboard update UX (stable-blocker bas
 | [`2.0.0`](#release-2-0-0) | 2026-07-14 | Flat-file core across the first five planned iterations |
 | [`1.0.0`](#release-1-0-0) | Initial structure | Initial repository structure |
 
+<a id="release-2-1-0-beta-67"></a>
+
+## [2.1.0-beta.67] – 2026-09-06
+
+Media optimization, avatar normalization, metadata modal image info
+
+### Added
+
+- **Media library — manual image optimization** — `POST /api/media/{path}/optimize` re-encodes JPEG/PNG/WebP (GD) to reduce file size; quick optimize on media card.
+- **Media metadata modal — image info + resize** — `GET /api/media/{path}/image-info`; size, resolution, MIME, upload date; proportional width/height with presets (1920/1280/1080/960).
+- **Media optimization preview before save** — `POST /api/media/{path}/optimize/preview` + `POST .../optimize/apply` with preview token; side-by-side original vs optimized and estimated size before commit.
+- **Avatar uploads auto-normalized** — larger profile photos downscaled/re-encoded server-side (max 512×512, 512 KB); FE accepts up to 2 MB.
+
 <a id="unreleased"></a>
 
 ## [Unreleased]
+
+### Added
 
 ### Fixed
 

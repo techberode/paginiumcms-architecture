@@ -10,6 +10,8 @@ use PaginiumCMS\Core\FlatFile\Services\FileValidator;
 use PaginiumCMS\Core\FlatFile\Services\FileWriter;
 use PaginiumCMS\Core\Security\Services\UploadSecurityValidator;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
+use PaginiumCMS\Modules\Media\Services\MediaImageOptimizer;
+use PaginiumCMS\Modules\Media\Services\MediaOptimizePreviewStore;
 use PaginiumCMS\Modules\Media\Services\MediaRepository;
 use PaginiumCMS\Modules\Media\Services\MediaStorageFactory;
 use PHPUnit\Framework\TestCase;
@@ -60,7 +62,17 @@ class MediaRepositoryTest extends TestCase
 
         $uploadSecurity = new UploadSecurityValidator($settings);
         $storageFactory = new MediaStorageFactory($reader, $writer);
-        $this->repository = new MediaRepository($reader, $writer, $settings, $uploadSecurity, $storageFactory);
+        $imageOptimizer = new MediaImageOptimizer();
+        $previewStore = new MediaOptimizePreviewStore($reader, $writer);
+        $this->repository = new MediaRepository(
+            $reader,
+            $writer,
+            $settings,
+            $uploadSecurity,
+            $storageFactory,
+            $imageOptimizer,
+            $previewStore
+        );
     }
 
     public function testFindAllReturnsEmptyWhenRegistryMissing(): void

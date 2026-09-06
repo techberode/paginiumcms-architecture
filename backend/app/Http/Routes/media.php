@@ -23,6 +23,8 @@ return function (App $app): void {
         $group->get('', [$controller, 'listMedia']);
         $group->get('/folders', [$controller, 'listFolders']);
         $group->get('/stock-topics', [$controller, 'listStockTopics']);
+        $group->get('/optimize-preview/{token}', [$controller, 'serveOptimizePreview']);
+        $group->get('/{path:.+}/image-info', [$controller, 'imageInfo']);
     })
         ->add(new RoleMiddleware($authz, ['EDITOR', 'ADMIN', 'SUPER_ADMIN']))
         ->add($auth);
@@ -32,6 +34,9 @@ return function (App $app): void {
         $group->post('/upload', [$controller, 'uploadMedia']);
         $group->post('/bulk-delete', [$controller, 'bulkDeleteMedia']);
         $group->post('/stock-import', [$controller, 'importStockImage']);
+        $group->post('/{path:.+}/optimize/preview', [$controller, 'previewOptimizeMedia']);
+        $group->post('/{path:.+}/optimize/apply', [$controller, 'applyOptimizeMedia']);
+        $group->post('/{path:.+}/optimize', [$controller, 'optimizeMedia']);
         $group->patch('/{path:.+}', [$controller, 'updateMedia']);
     })
         ->add(new PermissionMiddleware($authz, 'media:upload'))

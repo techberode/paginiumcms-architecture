@@ -26,12 +26,16 @@ import {
   formatMediaSize,
   importStockImage,
   isImageMedia,
+  isOptimizableMedia,
   isPreviewableMedia,
   listMedia,
   listMediaFolders,
   listMediaFormats,
   listStockImageTopics,
   MediaFile,
+  ImageOptimizationCapabilities,
+  optimizeMedia,
+  OptimizeMediaOptions,
   resolveAdminMediaPreviewUrl,
   resolvePublicMediaUrl,
   StockImageTopic,
@@ -92,6 +96,7 @@ export const MediaManager: React.FC = () => {
   const [editAlt, setEditAlt] = useState('');
   const [editTitle, setEditTitle] = useState('');
   const [savingMeta, setSavingMeta] = useState(false);
+  const [optimizingPath, setOptimizingPath] = useState<string | null>(null);
   const [stockTopics, setStockTopics] = useState<StockImageTopic[]>([]);
   const [stockTopic, setStockTopic] = useState('tech');
   const [stockImporting, setStockImporting] = useState(false);
@@ -101,6 +106,12 @@ export const MediaManager: React.FC = () => {
     'image/jpeg,image/png,image/gif,image/webp,image/svg+xml,application/pdf'
   );
   const [previewableMimeTypes, setPreviewableMimeTypes] = useState<string[]>([]);
+  const [imageOptimization, setImageOptimization] = useState<ImageOptimizationCapabilities>({
+    available: false,
+    jpeg: false,
+    png: false,
+    webp: false,
+  });
   const [pageSize, setPageSize] = useAdminListPageSize('media');
   const { mode: viewMode, setMode: setViewMode } = useAdminViewMode('media', 'preview');
   const hasActiveFilters =
@@ -128,6 +139,9 @@ export const MediaManager: React.FC = () => {
         setUploadAccept(formats.accept);
       }
       setPreviewableMimeTypes(formats.previewableMimeTypes);
+      if (formats.imageOptimization) {
+        setImageOptimization(formats.imageOptimization);
+      }
     })();
   }, []);
 
@@ -396,6 +410,49 @@ export const MediaManager: React.FC = () => {
     }
   };
 
+  const handleOptimize = async (file: MediaFile, options: OptimizeMediaOptions = {}) => {
+    if (!isOptimizableMedia(file, imageOptimization)) {
+      toast.error(t('media.toast.optimizeGdUnavailable'));
+      return;
+    }
+
+    const isQuickOptimize = options.targetWidth === undefined && options.targetHeight === undefined;
+    if (isQuickOptimize && !confirm(t('media.confirm.optimize', { name: file.fileName }))) {
+      return;
+    }
+
+    setOptimizingPath(file.path);
+    try {
+      const result = await optimizeMedia(file.path, options);
+      if (result.ok) {
+        const resized =
+          result.data.beforeWidth !== result.data.width ||
+          result.data.beforeHeight !== result.data.height;
+        toast.success(
+          resized
+            ? t('media.toast.optimizedResize', {
+                from: `${result.data.beforeWidth}×${result.data.beforeHeight}`,
+                to: `${result.data.width}×${result.data.height}`,
+                saved: formatMediaSize(result.data.savedBytes),
+                percent: String(result.data.savedPercent),
+              })
+            : t('media.toast.optimized', {
+                saved: formatMediaSize(result.data.savedBytes),
+                percent: String(result.data.savedPercent),
+              })
+        );
+        if (editingFile?.path === file.path) {
+          setEditingFile(result.data.media);
+        }
+        await loadMedia();
+      } else {
+        toast.error(t('media.toast.optimizeFailed', { error: result.error }));
+      }
+    } finally {
+      setOptimizingPath(null);
+    }
+  };
+
   const childFolders = folders.filter(
     (folder) =>
       folder !== '' &&
@@ -631,6 +688,9 @@ export const MediaManager: React.FC = () => {
               onCopyUrl={() => handleCopyUrl(file)}
               onPreview={() => openPreview(file)}
               onPreviewNative={() => openPreview(file, 'native')}
+              onOptimize={() => void handleOptimize(file)}
+              optimizing={optimizingPath === file.path}
+              canOptimize={isOptimizableMedia(file, imageOptimization)}
               onDelete={() => handleDelete(file)}
             />
           ))}
@@ -671,8 +731,13 @@ export const MediaManager: React.FC = () => {
         title={editTitle}
         altText={editAlt}
         saving={savingMeta}
+        imageOptimization={imageOptimization}
         onTitleChange={setEditTitle}
         onAltChange={setEditAlt}
+        onOptimized={(media) => {
+          setEditingFile(media);
+          void loadMedia();
+        }}
         onSave={() => {
           if (editingFile) {
             void saveEditMeta(editingFile.path);
@@ -710,6 +775,9 @@ interface MediaCardProps {
   onCopyUrl: () => void;
   onPreview: () => void;
   onPreviewNative: () => void;
+  onOptimize: () => void;
+  optimizing?: boolean;
+  canOptimize?: boolean;
   onDelete: () => void;
 }
 
@@ -728,6 +796,9 @@ const MediaCard: React.FC<MediaCardProps> = ({
   onCopyUrl,
   onPreview,
   onPreviewNative,
+  onOptimize,
+  optimizing = false,
+  canOptimize = false,
   onDelete,
 }) => {
   const { t } = useI18n();
@@ -843,6 +914,17 @@ const MediaCard: React.FC<MediaCardProps> = ({
                 1:1
               </button>
             </>
+          )}
+          {!editing && canOptimize && (
+            <button
+              type="button"
+              className="btn btn-secondary text-xs px-2 py-1"
+              title={t('media.actions.optimize')}
+              onClick={onOptimize}
+              disabled={optimizing}
+            >
+              {optimizing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Zap className="w-3 h-3" />}
+            </button>
           )}
           {!editing && (
             <button

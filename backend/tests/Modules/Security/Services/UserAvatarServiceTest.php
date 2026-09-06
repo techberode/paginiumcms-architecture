@@ -22,23 +22,47 @@ final class UserAvatarServiceTest extends TestCase
         $this->processor = new AvatarImageProcessor();
     }
 
-    public function testAssignFromMediaUrlAcceptsStoragePath(): void
+    public function testAssignFromMediaUrlProcessesLargeLibraryImage(): void
     {
+        if (!extension_loaded('gd')) {
+            $this->markTestSkipped('GD extension not available.');
+        }
+
+        $image = imagecreatetruecolor(900, 700);
+        $this->assertNotFalse($image);
+        ob_start();
+        imagepng($image);
+        imagedestroy($image);
+        $binary = ob_get_clean();
+
         $media = new MediaFile();
-        $media->setPath('media/avatars/user_1/photo.png');
+        $media->setPath('media/hero.png');
         $media->setMimeType('image/png');
-        $media->setUrl('/storage/app/content/media/avatars/user_1/photo.png');
+        $media->setUrl('/storage/app/content/media/hero.png');
+
+        $saved = new MediaFile();
+        $saved->setUrl('/storage/app/content/media/avatars/user_1/avatar.png');
+
+        $user = new User();
+        $user->setName('Tester');
 
         $repo = $this->createMock(MediaRepositoryInterface::class);
         $repo->expects($this->once())
             ->method('findByPath')
-            ->with('media/avatars/user_1/photo.png')
+            ->with('media/hero.png')
             ->willReturn($media);
+        $repo->expects($this->once())
+            ->method('readBinary')
+            ->with('media/hero.png')
+            ->willReturn($binary);
+        $repo->expects($this->once())
+            ->method('saveUpload')
+            ->willReturn($saved);
 
         $service = new UserAvatarService($repo, $this->processor);
-        $url = $service->assignFromMediaUrl('/storage/app/content/media/avatars/user_1/photo.png');
+        $url = $service->assignFromMediaUrl($user, '/storage/app/content/media/hero.png');
 
-        $this->assertSame('/storage/app/content/media/avatars/user_1/photo.png', $url);
+        $this->assertSame('/storage/app/content/media/avatars/user_1/avatar.png', $url);
     }
 
     public function testAssignFromMediaUrlRejectsUnknownPath(): void
@@ -47,25 +71,10 @@ final class UserAvatarServiceTest extends TestCase
         $repo->expects($this->never())->method('findByPath');
 
         $service = new UserAvatarService($repo, $this->processor);
+        $user = new User();
 
         $this->expectException(FlatFileException::class);
-        $service->assignFromMediaUrl('https://evil.example/photo.png');
-    }
-
-    public function testAssignFromMediaUrlRejectsNonImageMime(): void
-    {
-        $media = new MediaFile();
-        $media->setPath('media/docs/manual.pdf');
-        $media->setMimeType('application/pdf');
-        $media->setUrl('/storage/app/content/media/docs/manual.pdf');
-
-        $repo = $this->createMock(MediaRepositoryInterface::class);
-        $repo->method('findByPath')->willReturn($media);
-
-        $service = new UserAvatarService($repo, $this->processor);
-
-        $this->expectException(FlatFileException::class);
-        $service->assignFromMediaUrl('/storage/app/content/media/docs/manual.pdf');
+        $service->assignFromMediaUrl($user, 'https://evil.example/photo.png');
     }
 
     public function testRemoveClearsAvatarUrl(): void

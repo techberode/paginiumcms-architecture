@@ -9,6 +9,8 @@ use PaginiumCMS\Core\FlatFile\Services\FileValidator;
 use PaginiumCMS\Core\FlatFile\Services\FileWriter;
 use PaginiumCMS\Core\Security\Services\UploadSecurityValidator;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
+use PaginiumCMS\Modules\Media\Services\MediaImageOptimizer;
+use PaginiumCMS\Modules\Media\Services\MediaOptimizePreviewStore;
 use PaginiumCMS\Modules\Media\Services\MediaRepository;
 use PaginiumCMS\Modules\Media\Services\MediaStorageFactory;
 use PaginiumCMS\Modules\Media\Services\StockImageCatalog;
@@ -44,7 +46,15 @@ class StockImageImporterTest extends TestCase
         $catalog = new StockImageCatalog(__DIR__ . '/Fixtures/stock-images-test.json');
         $uploadSecurity = new UploadSecurityValidator($settings);
         $storageFactory = new MediaStorageFactory($reader, $writer);
-        $repository = new MediaRepository($reader, $writer, $settings, $uploadSecurity, $storageFactory);
+        $repository = new MediaRepository(
+            $reader,
+            $writer,
+            $settings,
+            $uploadSecurity,
+            $storageFactory,
+            new MediaImageOptimizer(),
+            new MediaOptimizePreviewStore($reader, $writer)
+        );
         $importer = new StockImageImporter($repository, $settings, $catalog);
 
         $media = $importer->import('', 'stock');

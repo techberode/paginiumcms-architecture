@@ -262,6 +262,8 @@ use PaginiumCMS\Modules\Gallery\Contracts\GalleryRepositoryInterface;
 use PaginiumCMS\Modules\Gallery\Services\GalleryRepository;
 use PaginiumCMS\Modules\Gallery\Services\GalleryItemValidator;
 use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
+use PaginiumCMS\Modules\Media\Services\MediaImageOptimizer;
+use PaginiumCMS\Modules\Media\Services\MediaOptimizePreviewStore;
 use PaginiumCMS\Modules\Media\Services\MediaRepository;
 use PaginiumCMS\Modules\Media\Services\MediaStorageCapabilityProbe;
 use PaginiumCMS\Modules\Media\Services\MediaStorageFactory;
@@ -656,13 +658,23 @@ return [
         ),
     MediaStorageCapabilityProbe::class => create(MediaStorageCapabilityProbe::class),
 
+    MediaImageOptimizer::class => create(MediaImageOptimizer::class),
+
+    MediaOptimizePreviewStore::class => create(MediaOptimizePreviewStore::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class)
+        ),
+
     MediaRepositoryInterface::class => create(MediaRepository::class)
         ->constructor(
             get(FileReaderInterface::class),
             get(FileWriterInterface::class),
             get(SettingsRepositoryInterface::class),
             get(UploadSecurityValidator::class),
-            get(MediaStorageFactory::class)
+            get(MediaStorageFactory::class),
+            get(MediaImageOptimizer::class),
+            get(MediaOptimizePreviewStore::class)
         ),
 
     StockImageCatalog::class => create(StockImageCatalog::class),

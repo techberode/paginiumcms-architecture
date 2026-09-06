@@ -51,7 +51,7 @@ export const usersEn: MessageTree = {
     removed: 'Avatar removed',
     failed: 'Avatar upload failed',
     invalidType: 'Unsupported image type. Use JPEG, PNG or WebP.',
-    limitsHint: 'Max. 512×512 px and 512 KB (JPEG, PNG, WebP).',
+    limitsHint: 'The server automatically downscales larger files to max. 512×512 px and 512 KB (JPEG, PNG, WebP).',
     resetDefault: 'Restore default avatar',
     errors: {
       invalidType: 'Unsupported image type. Use JPEG, PNG or WebP.',
