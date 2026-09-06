@@ -155,8 +155,9 @@ class MediaFile implements JsonSerializable
 
     /**
      * {@inheritDoc}
- * @return array<int|string, mixed>
- */public function jsonSerialize(): array
+     * @return array<string, mixed>
+     */
+    public function jsonSerialize(): array
     {
         return [
             'id' => $this->id,

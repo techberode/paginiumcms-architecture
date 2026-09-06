@@ -259,6 +259,185 @@ class MediaController
     /**
      * @param array<int|string, mixed> $args
      */
+    public function imageInfo(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $path = urldecode((string) ($args['path'] ?? ''));
+        $media = $this->mediaRepository->findByPath($path);
+
+        if ($media === null) {
+            return $this->json->error($response, Lang::get('not_found', [], 'media'), 404);
+        }
+
+        try {
+            $this->pathAcl->requireAccess($this->resolveUser($request), $path, 'media:upload');
+            $info = $this->mediaRepository->inspectRaster($path);
+
+            return $this->json->success($response, $info);
+        } catch (FlatFileException $e) {
+            return $this->json->error($response, $e->getMessage(), 400);
+        } catch (AuthorizationException $e) {
+            return $this->json->error($response, $e->getMessage(), 403);
+        }
+    }
+
+    /**
+     * @param array<int|string, mixed> $args
+     */
+    public function serveOptimizePreview(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $user = $this->resolveUser($request);
+        if ($user === null) {
+            return $response->withStatus(401);
+        }
+
+        $token = (string) ($args['token'] ?? '');
+        $preview = $this->mediaRepository->readOptimizePreview($token, $user->getId());
+        if ($preview === null) {
+            return $response->withStatus(404);
+        }
+
+        try {
+            $this->pathAcl->requireAccess($user, $preview['mediaPath'], 'media:upload');
+        } catch (AuthorizationException) {
+            return $response->withStatus(403);
+        }
+
+        $binary = $preview['binary'];
+        $response->getBody()->write($binary);
+
+        return $response
+            ->withHeader('Content-Type', $preview['mimeType'])
+            ->withHeader('Content-Length', (string) strlen($binary))
+            ->withHeader('X-Content-Type-Options', 'nosniff')
+            ->withHeader('Cache-Control', 'private, no-store, max-age=0');
+    }
+
+    /**
+     * @param array<int|string, mixed> $args
+     */
+    public function previewOptimizeMedia(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $path = urldecode((string) ($args['path'] ?? ''));
+        $media = $this->mediaRepository->findByPath($path);
+
+        if ($media === null) {
+            return $this->json->error($response, Lang::get('not_found', [], 'media'), 404);
+        }
+
+        $user = $this->resolveUser($request);
+        if ($user === null) {
+            return $this->json->error($response, Lang::get('not_found', [], 'media'), 401);
+        }
+
+        [$targetWidth, $targetHeight] = $this->parseOptimizeTargets($request);
+
+        try {
+            $this->pathAcl->requireAccess($user, $path, 'media:upload');
+            $result = $this->mediaRepository->previewOptimizeRaster(
+                $path,
+                $user->getId(),
+                $targetWidth,
+                $targetHeight
+            );
+
+            return $this->json->success($response, $result);
+        } catch (FlatFileException $e) {
+            return $this->json->error($response, $e->getMessage(), 400);
+        } catch (AuthorizationException $e) {
+            return $this->json->error($response, $e->getMessage(), 403);
+        }
+    }
+
+    /**
+     * @param array<int|string, mixed> $args
+     */
+    public function applyOptimizeMedia(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $path = urldecode((string) ($args['path'] ?? ''));
+        $media = $this->mediaRepository->findByPath($path);
+
+        if ($media === null) {
+            return $this->json->error($response, Lang::get('not_found', [], 'media'), 404);
+        }
+
+        $user = $this->resolveUser($request);
+        if ($user === null) {
+            return $this->json->error($response, Lang::get('not_found', [], 'media'), 401);
+        }
+
+        $data = RequestJsonBody::decode($request);
+        if (!is_array($data)) {
+            return $this->json->error($response, Lang::get('optimize_preview_expired', [], 'media'), 400);
+        }
+
+        $previewToken = trim((string) ($data['previewToken'] ?? ''));
+        if ($previewToken === '') {
+            return $this->json->error($response, Lang::get('optimize_preview_expired', [], 'media'), 400);
+        }
+
+        try {
+            $this->pathAcl->requireAccess($user, $path, 'media:upload');
+            $result = $this->mediaRepository->applyOptimizePreview($path, $previewToken, $user->getId());
+
+            return $this->json->success($response, $result, 200, Lang::get('optimized', [], 'media'));
+        } catch (FlatFileException $e) {
+            return $this->json->error($response, $e->getMessage(), 400);
+        } catch (AuthorizationException $e) {
+            return $this->json->error($response, $e->getMessage(), 403);
+        }
+    }
+
+    /**
+     * @param array<int|string, mixed> $args
+     */
+    public function optimizeMedia(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $path = urldecode((string) ($args['path'] ?? ''));
+        $media = $this->mediaRepository->findByPath($path);
+
+        if ($media === null) {
+            return $this->json->error($response, Lang::get('not_found', [], 'media'), 404);
+        }
+
+        [$targetWidth, $targetHeight] = $this->parseOptimizeTargets($request);
+
+        try {
+            $this->pathAcl->requireAccess($this->resolveUser($request), $path, 'media:upload');
+            $result = $this->mediaRepository->optimizeRaster($path, $targetWidth, $targetHeight);
+
+            return $this->json->success($response, $result, 200, Lang::get('optimized', [], 'media'));
+        } catch (FlatFileException $e) {
+            return $this->json->error($response, $e->getMessage(), 400);
+        } catch (AuthorizationException $e) {
+            return $this->json->error($response, $e->getMessage(), 403);
+        }
+    }
+
+    /**
+     * @return array{0: ?int, 1: ?int}
+     */
+    private function parseOptimizeTargets(ServerRequestInterface $request): array
+    {
+        $data = RequestJsonBody::decode($request);
+        if (!is_array($data)) {
+            return [null, null];
+        }
+
+        $targetWidth = isset($data['targetWidth']) ? (int) $data['targetWidth'] : null;
+        $targetHeight = isset($data['targetHeight']) ? (int) $data['targetHeight'] : null;
+        if ($targetWidth !== null && $targetWidth <= 0) {
+            $targetWidth = null;
+        }
+        if ($targetHeight !== null && $targetHeight <= 0) {
+            $targetHeight = null;
+        }
+
+        return [$targetWidth, $targetHeight];
+    }
+
+    /**
+     * @param array<int|string, mixed> $args
+     */
     public function updateMedia(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $path = urldecode($args['path'] ?? '');

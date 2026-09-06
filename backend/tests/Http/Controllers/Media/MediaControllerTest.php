@@ -302,4 +302,210 @@ class MediaControllerTest extends TestCase
         $this->assertSame('image/png', $serveResponse->getHeaderLine('Content-Type'));
         $this->assertSame($pngBytes, (string) $serveResponse->getBody());
     }
+
+    public function testOptimizeMediaRequiresAuth(): void
+    {
+        $request = $this->createJsonRequest('POST', '/api/media/media/test.png/optimize');
+        $response = $this->handleRequest($request);
+
+        $this->assertEquals(401, $response->getStatusCode());
+    }
+
+    public function testOptimizeMediaReducesLargePng(): void
+    {
+        if (!extension_loaded('gd')) {
+            $this->markTestSkipped('GD extension not available.');
+        }
+
+        $login = $this->loginAsAdminUser();
+        $this->assertEquals(200, $login['response']->getStatusCode());
+
+        $image = imagecreatetruecolor(640, 480);
+        $this->assertNotFalse($image);
+        $color = imagecolorallocate($image, 20, 120, 220);
+        $this->assertNotFalse($color);
+        imagefilledrectangle($image, 0, 0, 639, 479, $color);
+        ob_start();
+        imagepng($image, null, 0);
+        imagedestroy($image);
+        $pngBytes = ob_get_clean();
+        $this->assertGreaterThan(10_000, strlen($pngBytes));
+
+        $stream = (new StreamFactory())->createStream($pngBytes);
+        $uploadedFile = new UploadedFile(
+            $stream,
+            'large-photo.png',
+            'image/png',
+            strlen($pngBytes),
+            UPLOAD_ERR_OK
+        );
+
+        $uploadRequest = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/api/media/upload')
+            ->withUploadedFiles(['file' => $uploadedFile]);
+
+        if ($this->currentUser !== null) {
+            $uploadRequest = $uploadRequest->withAttribute('user', $this->currentUser);
+        }
+
+        $uploadResponse = $this->handleRequest($uploadRequest);
+        $uploadData = $this->getJsonResponse($uploadResponse);
+        $path = $uploadData['data']['path'] ?? null;
+        $this->assertNotNull($path);
+
+        $optimizeRequest = $this->createJsonRequest(
+            'POST',
+            '/api/media/' . rawurlencode($path) . '/optimize'
+        );
+        $optimizeResponse = $this->handleRequest($optimizeRequest);
+        $optimizeData = $this->getJsonResponse($optimizeResponse);
+
+        $this->assertEquals(200, $optimizeResponse->getStatusCode());
+        $this->assertTrue($optimizeData['success']);
+        $this->assertIsArray($optimizeData['data']);
+        $this->assertLessThan($optimizeData['data']['beforeBytes'], $optimizeData['data']['afterBytes']);
+        $this->assertGreaterThan(0, $optimizeData['data']['savedBytes']);
+        $this->assertSame(640, $optimizeData['data']['width']);
+        $this->assertSame(480, $optimizeData['data']['height']);
+        $this->assertSame(640, $optimizeData['data']['beforeWidth']);
+        $this->assertSame(480, $optimizeData['data']['beforeHeight']);
+    }
+
+    public function testOptimizeMediaWithResize(): void
+    {
+        if (!extension_loaded('gd')) {
+            $this->markTestSkipped('GD extension not available.');
+        }
+
+        $login = $this->loginAsAdminUser();
+        $this->assertEquals(200, $login['response']->getStatusCode());
+
+        $image = imagecreatetruecolor(800, 600);
+        $this->assertNotFalse($image);
+        $color = imagecolorallocate($image, 20, 120, 220);
+        $this->assertNotFalse($color);
+        imagefilledrectangle($image, 0, 0, 799, 599, $color);
+        ob_start();
+        imagepng($image, null, 0);
+        imagedestroy($image);
+        $pngBytes = ob_get_clean();
+        $this->assertGreaterThan(10_000, strlen($pngBytes));
+
+        $stream = (new StreamFactory())->createStream($pngBytes);
+        $uploadedFile = new UploadedFile(
+            $stream,
+            'resize-me.png',
+            'image/png',
+            strlen($pngBytes),
+            UPLOAD_ERR_OK
+        );
+
+        $uploadRequest = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/api/media/upload')
+            ->withUploadedFiles(['file' => $uploadedFile]);
+
+        if ($this->currentUser !== null) {
+            $uploadRequest = $uploadRequest->withAttribute('user', $this->currentUser);
+        }
+
+        $uploadResponse = $this->handleRequest($uploadRequest);
+        $uploadData = $this->getJsonResponse($uploadResponse);
+        $path = $uploadData['data']['path'] ?? null;
+        $this->assertNotNull($path);
+
+        $infoRequest = $this->createJsonRequest('GET', '/api/media/' . rawurlencode($path) . '/image-info');
+        $infoResponse = $this->handleRequest($infoRequest);
+        $infoData = $this->getJsonResponse($infoResponse);
+        $this->assertEquals(200, $infoResponse->getStatusCode());
+        $this->assertSame(800, $infoData['data']['width']);
+        $this->assertSame(600, $infoData['data']['height']);
+
+        $optimizeRequest = $this->createJsonRequest(
+            'POST',
+            '/api/media/' . rawurlencode($path) . '/optimize',
+            ['targetWidth' => 400]
+        );
+        $optimizeResponse = $this->handleRequest($optimizeRequest);
+        $optimizeData = $this->getJsonResponse($optimizeResponse);
+
+        $this->assertEquals(200, $optimizeResponse->getStatusCode());
+        $this->assertTrue($optimizeData['success']);
+        $this->assertSame(400, $optimizeData['data']['width']);
+        $this->assertSame(300, $optimizeData['data']['height']);
+    }
+
+    public function testOptimizePreviewAndApply(): void
+    {
+        if (!extension_loaded('gd')) {
+            $this->markTestSkipped('GD extension not available.');
+        }
+
+        $login = $this->loginAsAdminUser();
+        $this->assertEquals(200, $login['response']->getStatusCode());
+
+        $image = imagecreatetruecolor(800, 600);
+        $this->assertNotFalse($image);
+        $color = imagecolorallocate($image, 20, 120, 220);
+        $this->assertNotFalse($color);
+        imagefilledrectangle($image, 0, 0, 799, 599, $color);
+        ob_start();
+        imagepng($image, null, 0);
+        imagedestroy($image);
+        $pngBytes = ob_get_clean();
+
+        $stream = (new StreamFactory())->createStream($pngBytes);
+        $uploadedFile = new UploadedFile(
+            $stream,
+            'preview-flow.png',
+            'image/png',
+            strlen($pngBytes),
+            UPLOAD_ERR_OK
+        );
+
+        $uploadRequest = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/api/media/upload')
+            ->withUploadedFiles(['file' => $uploadedFile]);
+
+        if ($this->currentUser !== null) {
+            $uploadRequest = $uploadRequest->withAttribute('user', $this->currentUser);
+        }
+
+        $uploadResponse = $this->handleRequest($uploadRequest);
+        $uploadData = $this->getJsonResponse($uploadResponse);
+        $path = $uploadData['data']['path'] ?? null;
+        $this->assertNotNull($path);
+        $beforeBytes = (int) ($uploadData['data']['sizeBytes'] ?? 0);
+
+        $previewRequest = $this->createJsonRequest(
+            'POST',
+            '/api/media/' . rawurlencode($path) . '/optimize/preview',
+            ['targetWidth' => 400]
+        );
+        $previewResponse = $this->handleRequest($previewRequest);
+        $previewData = $this->getJsonResponse($previewResponse);
+
+        $this->assertEquals(200, $previewResponse->getStatusCode());
+        $this->assertTrue($previewData['success']);
+        $token = $previewData['data']['previewToken'] ?? '';
+        $this->assertNotSame('', $token);
+        $this->assertLessThan($beforeBytes, (int) ($previewData['data']['afterBytes'] ?? $beforeBytes));
+
+        $serveRequest = $this->createJsonRequest('GET', '/api/media/optimize-preview/' . $token);
+        $serveResponse = $this->handleRequest($serveRequest);
+        $this->assertEquals(200, $serveResponse->getStatusCode());
+        $this->assertSame('image/png', $serveResponse->getHeaderLine('Content-Type'));
+
+        $applyRequest = $this->createJsonRequest(
+            'POST',
+            '/api/media/' . rawurlencode($path) . '/optimize/apply',
+            ['previewToken' => $token]
+        );
+        $applyResponse = $this->handleRequest($applyRequest);
+        $applyData = $this->getJsonResponse($applyResponse);
+
+        $this->assertEquals(200, $applyResponse->getStatusCode());
+        $this->assertTrue($applyData['success']);
+        $this->assertSame(400, $applyData['data']['width']);
+        $this->assertLessThan($beforeBytes, (int) ($applyData['data']['afterBytes'] ?? $beforeBytes));
+    }
 }

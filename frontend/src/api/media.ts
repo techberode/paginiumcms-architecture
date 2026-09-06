@@ -4,6 +4,7 @@
 import apiClient from './client';
 import {
   resolveAdminMediaFileUrl,
+  resolveApiBaseUrl,
   resolveMediaUrl as resolveMediaUrlFromBase,
   resolveStorageUrl,
 } from '../utils/apiBaseUrl';
@@ -36,6 +37,14 @@ export interface MediaFormatsPayload {
   extensions: string[];
   accept: string;
   previewableMimeTypes: string[];
+  imageOptimization?: ImageOptimizationCapabilities;
+}
+
+export interface ImageOptimizationCapabilities {
+  available: boolean;
+  jpeg: boolean;
+  png: boolean;
+  webp: boolean;
 }
 
 /** Resolve a backend-relative media URL to an absolute URL for public embeds. */
@@ -96,6 +105,44 @@ export function isImageMedia(file: MediaFile): boolean {
   return file.mimeType.startsWith('image/');
 }
 
+const OPTIMIZABLE_MIME_TYPES = new Set([
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/webp',
+]);
+
+/** Raster images that can be re-encoded at the same resolution to save bytes. */
+export function isOptimizableMedia(
+  file: MediaFile,
+  capabilities?: ImageOptimizationCapabilities
+): boolean {
+  if (capabilities !== undefined && !capabilities.available) {
+    return false;
+  }
+
+  const mime = file.mimeType.toLowerCase();
+  if (!OPTIMIZABLE_MIME_TYPES.has(mime)) {
+    return false;
+  }
+
+  if (capabilities === undefined) {
+    return true;
+  }
+
+  if (mime === 'image/jpeg' || mime === 'image/jpg') {
+    return capabilities.jpeg;
+  }
+  if (mime === 'image/png') {
+    return capabilities.png;
+  }
+  if (mime === 'image/webp') {
+    return capabilities.webp;
+  }
+
+  return false;
+}
+
 export function isPreviewableMedia(
   file: MediaFile,
   previewableMimeTypes?: string[]
@@ -127,6 +174,12 @@ export async function listMediaFormats(): Promise<MediaFormatsPayload> {
       'image/webp',
       'image/svg+xml',
     ],
+    imageOptimization: {
+      available: false,
+      jpeg: false,
+      png: false,
+      webp: false,
+    },
   };
 
   const res = await apiClient.get<MediaFormatsPayload>('/api/media/formats');
@@ -213,6 +266,161 @@ export async function updateMediaAlt(path: string, altText: string): Promise<boo
 export async function deleteMedia(path: string): Promise<boolean> {
   const res = await apiClient.delete(`/api/media/${encodeURIComponent(path)}`);
   return res.success;
+}
+
+export interface OptimizeMediaOptions {
+  targetWidth?: number;
+  targetHeight?: number;
+}
+
+export interface MediaImageInfo {
+  width: number;
+  height: number;
+  mimeType: string;
+  sizeBytes: number;
+}
+
+export interface OptimizeMediaPayload {
+  media: MediaFile;
+  beforeBytes: number;
+  afterBytes: number;
+  savedBytes: number;
+  savedPercent: number;
+  beforeWidth: number;
+  beforeHeight: number;
+  width: number;
+  height: number;
+}
+
+export type OptimizeMediaResult =
+  | { ok: true; data: OptimizeMediaPayload }
+  | { ok: false; error: string };
+
+export interface OptimizePreviewPayload {
+  previewToken: string;
+  beforeBytes: number;
+  afterBytes: number;
+  savedBytes: number;
+  savedPercent: number;
+  beforeWidth: number;
+  beforeHeight: number;
+  width: number;
+  height: number;
+}
+
+export type OptimizePreviewResult =
+  | { ok: true; data: OptimizePreviewPayload }
+  | { ok: false; error: string };
+
+/** Same-origin URL for a short-lived optimized preview image. */
+export function resolveOptimizePreviewUrl(previewToken: string): string {
+  return `${resolveApiBaseUrl()}/api/media/optimize-preview/${encodeURIComponent(previewToken)}`;
+}
+
+/**
+ * Load raster dimensions and size for a media file.
+ */
+export async function getMediaImageInfo(path: string): Promise<MediaImageInfo | null> {
+  const res = await apiClient.get<MediaImageInfo>(
+    `/api/media/${encodeURIComponent(path)}/image-info`
+  );
+
+  return res.success && res.data ? res.data : null;
+}
+
+/** Scale dimensions proportionally when one axis changes. */
+export function scaleMediaDimensions(
+  originalWidth: number,
+  originalHeight: number,
+  changedAxis: 'width' | 'height',
+  newValue: number
+): { width: number; height: number } {
+  if (originalWidth <= 0 || originalHeight <= 0 || newValue <= 0) {
+    return { width: originalWidth, height: originalHeight };
+  }
+
+  if (changedAxis === 'width') {
+    const width = Math.max(1, Math.min(originalWidth, Math.round(newValue)));
+    const height = Math.max(1, Math.round((originalHeight * width) / originalWidth));
+    return { width, height };
+  }
+
+  const height = Math.max(1, Math.min(originalHeight, Math.round(newValue)));
+  const width = Math.max(1, Math.round((originalWidth * height) / originalHeight));
+  return { width, height };
+}
+
+/**
+ * Re-encode a raster image; optional proportional downscale via targetWidth/targetHeight.
+ */
+export async function optimizeMedia(
+  path: string,
+  options: OptimizeMediaOptions = {}
+): Promise<OptimizeMediaResult> {
+  const body: OptimizeMediaOptions = {};
+  if (options.targetWidth !== undefined && options.targetWidth > 0) {
+    body.targetWidth = options.targetWidth;
+  }
+  if (options.targetHeight !== undefined && options.targetHeight > 0) {
+    body.targetHeight = options.targetHeight;
+  }
+
+  const res = await apiClient.post<OptimizeMediaPayload>(
+    `/api/media/${encodeURIComponent(path)}/optimize`,
+    body
+  );
+
+  if (res.success && res.data) {
+    return { ok: true, data: res.data };
+  }
+
+  return { ok: false, error: res.error ?? 'Optimization failed.' };
+}
+
+/**
+ * Generate optimization preview without saving (returns preview token + stats).
+ */
+export async function previewOptimizeMedia(
+  path: string,
+  options: OptimizeMediaOptions = {}
+): Promise<OptimizePreviewResult> {
+  const body: OptimizeMediaOptions = {};
+  if (options.targetWidth !== undefined && options.targetWidth > 0) {
+    body.targetWidth = options.targetWidth;
+  }
+  if (options.targetHeight !== undefined && options.targetHeight > 0) {
+    body.targetHeight = options.targetHeight;
+  }
+
+  const res = await apiClient.post<OptimizePreviewPayload>(
+    `/api/media/${encodeURIComponent(path)}/optimize/preview`,
+    body
+  );
+
+  if (res.success && res.data) {
+    return { ok: true, data: res.data };
+  }
+
+  return { ok: false, error: res.error ?? 'Optimization preview failed.' };
+}
+
+/**
+ * Persist a previously generated optimization preview.
+ */
+export async function applyOptimizeMedia(
+  path: string,
+  previewToken: string
+): Promise<OptimizeMediaResult> {
+  const res = await apiClient.post<OptimizeMediaPayload>(
+    `/api/media/${encodeURIComponent(path)}/optimize/apply`,
+    { previewToken }
+  );
+
+  if (res.success && res.data) {
+    return { ok: true, data: res.data };
+  }
+
+  return { ok: false, error: res.error ?? 'Optimization apply failed.' };
 }
 
 /** Bulk delete media files by storage paths. */

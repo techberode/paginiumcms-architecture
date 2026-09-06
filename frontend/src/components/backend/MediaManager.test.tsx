@@ -16,6 +16,10 @@ const mocks = vi.hoisted(() => ({
   bulkDeleteMedia: vi.fn(),
   createMediaFolder: vi.fn(),
   updateMediaMetadata: vi.fn(),
+  getMediaImageInfo: vi.fn(),
+  previewOptimizeMedia: vi.fn(),
+  applyOptimizeMedia: vi.fn(),
+  optimizeMedia: vi.fn(),
   useAdminViewMode: vi.fn(() => ({
     mode: 'preview' as 'list' | 'list-preview' | 'preview',
     setMode: vi.fn(),
@@ -45,12 +49,38 @@ vi.mock('../../api/media', () => ({
   createMediaFolder: mocks.createMediaFolder,
   updateMediaMetadata: mocks.updateMediaMetadata,
   updateMediaAlt: mocks.updateMediaMetadata,
+  getMediaImageInfo: mocks.getMediaImageInfo,
+  previewOptimizeMedia: mocks.previewOptimizeMedia,
+  applyOptimizeMedia: mocks.applyOptimizeMedia,
+  optimizeMedia: mocks.optimizeMedia,
   resolveAdminMediaPreviewUrl: (path: string) => `/api/media/file/${path}`,
   resolvePublicMediaUrl: (url: string) => url,
   resolveMediaUrl: (url: string) => url,
+  resolveOptimizePreviewUrl: (token: string) => `/api/media/optimize-preview/${token}`,
   formatMediaSize: (bytes: number) => `${bytes} B`,
+  scaleMediaDimensions: (
+    originalWidth: number,
+    originalHeight: number,
+    changedAxis: 'width' | 'height',
+    newValue: number
+  ) => {
+    if (changedAxis === 'width') {
+      const width = Math.max(1, Math.min(originalWidth, Math.round(newValue)));
+      const height = Math.max(1, Math.round((originalHeight * width) / originalWidth));
+      return { width, height };
+    }
+    const height = Math.max(1, Math.min(originalHeight, Math.round(newValue)));
+    const width = Math.max(1, Math.round((originalWidth * height) / originalHeight));
+    return { width, height };
+  },
   isImageMedia: (file: { mimeType: string }) => file.mimeType.startsWith('image/'),
   isPreviewableMedia: (file: { mimeType: string }) => file.mimeType.startsWith('image/'),
+  isOptimizableMedia: (file: { mimeType: string }, capabilities?: { available: boolean }) => {
+    if (capabilities !== undefined && !capabilities.available) {
+      return false;
+    }
+    return ['image/jpeg', 'image/png', 'image/webp'].includes(file.mimeType.toLowerCase());
+  },
 }));
 
 vi.mock('../../api/settings', () => ({
@@ -95,7 +125,22 @@ describe('MediaManager', () => {
       extensions: ['png'],
       accept: 'image/png',
       previewableMimeTypes: ['image/png'],
+      imageOptimization: {
+        available: true,
+        jpeg: true,
+        png: true,
+        webp: true,
+      },
     });
+    mocks.getMediaImageInfo.mockResolvedValue({
+      width: 1920,
+      height: 1080,
+      mimeType: 'image/png',
+      sizeBytes: 4096,
+    });
+    mocks.previewOptimizeMedia.mockResolvedValue({ ok: false, error: 'Preview not used in test.' });
+    mocks.applyOptimizeMedia.mockResolvedValue({ ok: false, error: 'Apply not used in test.' });
+    mocks.optimizeMedia.mockResolvedValue({ ok: false, error: 'Optimize not used in test.' });
     mocks.importStockImage.mockResolvedValue({ ok: true, media: sampleFile });
     mocks.uploadMedia.mockResolvedValue({ ok: true, media: sampleFile });
     mocks.deleteMedia.mockResolvedValue(true);
@@ -143,9 +188,9 @@ describe('MediaManager', () => {
 
   it('opens folder when child folder card is clicked', async () => {
     renderWithRouter(<MediaManager />);
-    expect(await screen.findByText('campaigns')).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /^campaigns$/i })).toBeInTheDocument();
 
-    await fastUser.click(screen.getByText('campaigns'));
+    await fastUser.click(screen.getByRole('button', { name: /^campaigns$/i }));
 
     await waitFor(() => {
       expect(mocks.listMedia).toHaveBeenCalledWith(expect.objectContaining({ folder: 'campaigns' }));
@@ -158,7 +203,7 @@ describe('MediaManager', () => {
     renderWithRouter(<MediaManager />);
     expect(await screen.findByRole('checkbox', { name: /Select hero\.png/i })).toBeInTheDocument();
 
-    await fastUser.click(screen.getByRole('button', { name: 'Upraviť metadáta' }));
+    await fastUser.click(screen.getByRole('button', { name: /Upraviť metadáta/i }));
     const dialog = await screen.findByRole('dialog');
     expect(dialog).toBeInTheDocument();
 

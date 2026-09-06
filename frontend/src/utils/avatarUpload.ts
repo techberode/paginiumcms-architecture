@@ -1,6 +1,9 @@
 /** Avatar upload limits (profile + per-article override). */
 export const AVATAR_MAX_BYTES = 512 * 1024;
 
+/** Server accepts up to 2 MB and normalizes via GD. */
+export const AVATAR_MAX_UPLOAD_BYTES = 2 * 1024 * 1024;
+
 export const AVATAR_MAX_DIMENSION = 512;
 
 export const AVATAR_ACCEPT = 'image/jpeg,image/png,image/webp';
@@ -17,7 +20,7 @@ export interface AvatarValidationResult {
 
 export interface AvatarValidationError {
   ok: false;
-  messageKey: 'invalidType' | 'tooLarge' | 'dimensions';
+  messageKey: 'invalidType' | 'tooLarge';
 }
 
 export type AvatarValidation = AvatarValidationResult | AvatarValidationError;
@@ -27,33 +30,9 @@ export async function validateAvatarFile(file: File): Promise<AvatarValidation> 
     return { ok: false, messageKey: 'invalidType' };
   }
 
-  if (file.size > AVATAR_MAX_BYTES) {
+  if (file.size > AVATAR_MAX_UPLOAD_BYTES) {
     return { ok: false, messageKey: 'tooLarge' };
   }
 
-  const dimensions = await readImageDimensions(file);
-  if (
-    dimensions &&
-    (dimensions.width > AVATAR_MAX_DIMENSION || dimensions.height > AVATAR_MAX_DIMENSION)
-  ) {
-    return { ok: false, messageKey: 'dimensions' };
-  }
-
   return { ok: true, file };
-}
-
-function readImageDimensions(file: File): Promise<{ width: number; height: number } | null> {
-  return new Promise((resolve) => {
-    const url = URL.createObjectURL(file);
-    const img = new Image();
-    img.onload = () => {
-      URL.revokeObjectURL(url);
-      resolve({ width: img.naturalWidth, height: img.naturalHeight });
-    };
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
-      resolve(null);
-    };
-    img.src = url;
-  });
 }

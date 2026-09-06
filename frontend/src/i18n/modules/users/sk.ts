@@ -50,7 +50,7 @@ export const usersSk: MessageTree = {
     success: 'Avatar bol aktualizovaný',
     removed: 'Avatar bol odstránený',
     failed: 'Nahranie avataru zlyhalo',
-    limitsHint: 'Max. 512×512 px a 512 KB (JPEG, PNG, WebP).',
+    limitsHint: 'Server automaticky zmenší väčšie súbory na max. 512×512 px a 512 KB (JPEG, PNG, WebP).',
     resetDefault: 'Obnoviť predvolený avatar',
     errors: {
       invalidType: 'Nepodporovaný typ obrázka. Použite JPEG, PNG alebo WebP.',

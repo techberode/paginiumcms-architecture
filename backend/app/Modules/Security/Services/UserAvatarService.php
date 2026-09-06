@@ -56,10 +56,11 @@ final class UserAvatarService
 
     /**
      * Assign avatar from an existing media-library URL (Settings pickers, media modal).
+     * Large images are normalized server-side (resize/compress) before storage.
      *
      * @throws FlatFileException
      */
-    public function assignFromMediaUrl(string $url): string
+    public function assignFromMediaUrl(User $user, string $url): string
     {
         $path = $this->resolveMediaStoragePath($url);
         if ($path === null) {
@@ -71,12 +72,15 @@ final class UserAvatarService
             throw new FlatFileException('Médium neexistuje v knižnici');
         }
 
-        $mimeType = strtolower($media->getMimeType());
-        if (!in_array($mimeType, AvatarImageProcessor::ALLOWED_MIMES, true)) {
-            throw new FlatFileException('Avatar musí byť JPEG, PNG alebo WebP.');
-        }
+        $binary = $this->media->readBinary($path);
+        $processed = $this->avatarImages->process($binary, $media->getMimeType());
 
-        return $media->getUrl();
+        return $this->assignFromUpload(
+            $user,
+            'avatar.' . $processed['extension'],
+            $processed['binary'],
+            $processed['mimeType']
+        );
     }
 
     public function remove(User $user): void

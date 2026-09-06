@@ -355,7 +355,7 @@ final class UserController
         }
 
         try {
-            $resolved = $this->avatars->assignFromMediaUrl($url);
+            $resolved = $this->avatars->assignFromMediaUrl($user, $url);
             $user->setAvatarUrl($resolved);
             $user->setUpdatedAt(time());
             $this->users->save($user);
