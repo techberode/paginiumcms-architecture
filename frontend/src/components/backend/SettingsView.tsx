@@ -36,6 +36,7 @@ import { CacheManagerPanel } from './CacheManagerPanel';
 import { AdminHintCard } from './AdminHintCard';
 import { LoginBackgroundImagePicker } from './LoginBackgroundImagePicker';
 import { BrandingImagePicker } from './BrandingImagePicker';
+import { AuthorAvatarField } from './AuthorAvatarField';
 import { AccessControlSettingsPanel } from './AccessControlSettingsPanel';
 import { SocialLinksSettingsPanel } from './SocialLinksSettingsPanel';
 import { EditorCustomComponentsPanel, type EditorComponentMeta } from './EditorCustomComponentsPanel';
@@ -422,6 +423,31 @@ const SettingFieldRow: React.FC<RowProps> = ({ groupKey, field, register, watch,
   const label = translateSettingFieldLabel(t, groupKey, field.key, field.label);
   const help = translateSettingFieldHelp(t, groupKey, field.key, field.help);
   const tooltip = translateSettingFieldTooltip(t, groupKey, field.key);
+
+  if (groupKey === 'content' && field.key === 'blogAuthorAvatarUrl') {
+    const currentValue = String(watch(field.key) ?? '');
+
+    return (
+      <div>
+        <label htmlFor={inputId} className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+          {label}
+        </label>
+        <AuthorAvatarField
+          value={currentValue}
+          onChange={(url) =>
+            setValue(field.key, url, { shouldDirty: true, shouldValidate: true })
+          }
+          disabled={false}
+          mode="media-only"
+          previewName={label}
+        />
+        {help && !error && (
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{help}</p>
+        )}
+        {error && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>}
+      </div>
+    );
+  }
 
   if (groupKey === 'branding' && (field.key === 'logoUrl' || field.key === 'faviconUrl')) {
     const currentValue = String(watch(field.key) ?? '');

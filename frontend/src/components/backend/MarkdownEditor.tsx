@@ -28,6 +28,14 @@ import {
   type ArticleCommentsSettings,
 } from '../../utils/articleCommentsSettings';
 import {
+  DEFAULT_ARTICLE_AUTHOR,
+  articleAuthorFromFrontMatter,
+  articleAuthorToPayload,
+  resolvePreviewAuthorName,
+  type ArticleAuthorSettings,
+} from '../../utils/articleAuthorSettings';
+import { resolveUserAvatarUrl } from '../../api/users';
+import {
   type ContentFormat,
   type EditorMode,
   convertForModeSwitch,
@@ -120,7 +128,9 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
     noIndex: false,
     tags: '',
   });
-  const [articleAuthor, setArticleAuthor] = useState('');
+  const [articleAuthorSettings, setArticleAuthorSettings] = useState<ArticleAuthorSettings>(
+    DEFAULT_ARTICLE_AUTHOR
+  );
   const [articleCategory, setArticleCategory] = useState('');
   const [articleComments, setArticleComments] = useState<ArticleCommentsSettings>(
     DEFAULT_ARTICLE_COMMENTS_SETTINGS
@@ -144,6 +154,25 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
   const endpoint = type === 'article' ? '/api/articles' : '/api/pages';
   const resourceId = useMemo(() => `${type}:${slug ?? ''}`, [type, slug]);
   const storageFormat = settings.content?.storageFormat === 'json' ? 'json' : 'md';
+
+  useEffect(() => {
+    if (!isNew || type !== 'article' || !user?.id) {
+      return;
+    }
+
+    setArticleAuthorSettings((current) => {
+      if (current.authorId !== '' || current.author !== '') {
+        return current;
+      }
+
+      return {
+        authorId: user.id,
+        author: user.name?.trim() ?? '',
+        authorBio: user.bio?.trim() ?? '',
+        authorAvatarUrl: user.avatarUrl?.trim() ?? '',
+      };
+    });
+  }, [isNew, type, user?.bio, user?.avatarUrl, user?.id, user?.name]);
 
   const autoSave = useAutoSave({
     type,
@@ -349,7 +378,13 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
             commentsRequireApproval: triStateFromApi(response.data.commentsRequireApproval),
             commentsAllowGuests: triStateFromApi(response.data.commentsAllowGuests),
           });
-          setArticleAuthor(String(response.data.author ?? fm.author ?? ''));
+          setArticleAuthorSettings(
+            articleAuthorFromFrontMatter(fm, {
+              authorId: String(response.data.authorId ?? ''),
+              authorBioStored: String(response.data.authorBioStored ?? ''),
+              authorAvatarUrlStored: String(response.data.authorAvatarUrlStored ?? ''),
+            })
+          );
           setArticleCategory(String(response.data.category ?? fm.category ?? ''));
         }
       }
@@ -471,9 +506,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
           data.commentsEnabled = articleComments.commentsEnabled;
           data.commentsRequireApproval = triStateToApi(articleComments.commentsRequireApproval);
           data.commentsAllowGuests = triStateToApi(articleComments.commentsAllowGuests);
-          if (articleAuthor.trim() !== '') {
-            data.author = articleAuthor.trim();
-          }
+          Object.assign(data, articleAuthorToPayload(articleAuthorSettings));
           data.category = articleCategory.trim();
         }
 
@@ -597,6 +630,8 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
       editorProfile,
       storageFormat,
       articleComments,
+      articleAuthorSettings,
+      articleCategory,
       activeLocale,
       post,
       put,
@@ -636,6 +671,17 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
           ? undefined
           : markdownToHtml(content));
 
+    const fallbackAuthor = String(
+      settings.content?.blogAuthorName ?? settings.general?.siteName ?? t('editor.markdown.defaultAuthor')
+    );
+    const previewAuthor = resolvePreviewAuthorName(articleAuthorSettings, fallbackAuthor);
+    const previewAvatarRaw =
+      articleAuthorSettings.authorAvatarUrl.trim() !== ''
+        ? articleAuthorSettings.authorAvatarUrl.trim()
+        : user?.avatarUrl && articleAuthorSettings.authorId === user.id
+          ? resolveUserAvatarUrl(user.avatarUrl)
+          : '';
+
     return {
       type,
       title,
@@ -644,7 +690,9 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
       content: stored.contentFormat === 'html' || stored.contentFormat === 'tiptap_json' ? '' : stored.content,
       html,
       contentFormat: stored.contentFormat,
-      author: articleAuthor.trim() || String(settings.content?.blogAuthorName ?? settings.general?.siteName ?? t('editor.markdown.defaultAuthor')),
+      author: previewAuthor,
+      authorBio: articleAuthorSettings.authorBio,
+      authorAvatarUrl: previewAvatarRaw,
       tags: seo.tags
         .split(',')
         .map((tag) => tag.trim())
@@ -654,6 +702,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
       updatedAt: loadedUpdatedAt,
     };
   }, [
+    articleAuthorSettings,
     content,
     editSlug,
     editorMode,
@@ -662,13 +711,13 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
     previewHtml,
     seo.seoDescription,
     seo.tags,
+    settings.content?.blogAuthorName,
+    settings.general?.siteName,
     template,
     title,
     type,
-    user?.name,
-    articleAuthor,
-    settings.content?.blogAuthorName,
-    settings.general?.siteName,
+    user?.avatarUrl,
+    user?.id,
     t,
   ]);
 
@@ -775,8 +824,8 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         }}
         articleComments={type === 'article' ? articleComments : undefined}
         onArticleCommentsChange={type === 'article' ? setArticleComments : undefined}
-        articleAuthor={type === 'article' ? articleAuthor : undefined}
-        onArticleAuthorChange={type === 'article' ? setArticleAuthor : undefined}
+        articleAuthorSettings={type === 'article' ? articleAuthorSettings : undefined}
+        onArticleAuthorSettingsChange={type === 'article' ? setArticleAuthorSettings : undefined}
         articleCategory={type === 'article' ? articleCategory : undefined}
         onArticleCategoryChange={type === 'article' ? setArticleCategory : undefined}
         defaultBlogAuthor={String(settings.content?.blogAuthorName ?? settings.general?.siteName ?? '')}

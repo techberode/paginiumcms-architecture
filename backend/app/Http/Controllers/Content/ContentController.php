@@ -941,7 +941,9 @@ class ContentController
     {
         $content->setSlug($slug);
 
-        if (!empty($data['author'])) {
+        if ($content instanceof Article) {
+            $this->applyArticleAuthorFields($content, $data);
+        } elseif (array_key_exists('author', $data)) {
             $content->setAuthor((string) $data['author']);
         }
 
@@ -1022,7 +1024,9 @@ class ContentController
         $content->setContent((string) ($data['content'] ?? ''));
         $content->setStatus((string) ($data['status'] ?? 'draft'));
 
-        if (!empty($data['author'])) {
+        if ($content instanceof Article) {
+            $this->applyArticleAuthorFields($content, $data);
+        } elseif (array_key_exists('author', $data)) {
             $content->setAuthor((string) $data['author']);
         }
 
@@ -1066,6 +1070,31 @@ class ContentController
         $this->applySeoFrontMatter($content, $data);
         $this->applySchedulingFrontMatter($content, $data);
         $this->applyReviewFrontMatter($content, $data);
+    }
+
+    /**
+     * @param array<int|string, mixed> $data
+     */
+    private function applyArticleAuthorFields(Article $article, array $data): void
+    {
+        if (array_key_exists('authorId', $data)) {
+            $raw = $data['authorId'];
+            $article->setAuthorId($raw === null || $raw === '' ? null : (string) $raw);
+        }
+
+        if (array_key_exists('author', $data)) {
+            $article->setAuthor(trim((string) $data['author']));
+        }
+
+        if (array_key_exists('authorBio', $data)) {
+            $article->setAuthorBio(trim((string) $data['authorBio']));
+        }
+
+        if (array_key_exists('authorAvatarUrl', $data)) {
+            $article->setAuthorAvatarUrl(trim((string) $data['authorAvatarUrl']));
+        }
+
+        $this->blogAuthor->syncStoredAuthorName($article);
     }
 
     /**
@@ -1219,6 +1248,9 @@ class ContentController
             $payload['commentsEnabled'] = $content->getCommentsEnabled();
             $payload['commentsRequireApproval'] = $content->getCommentsRequireApproval();
             $payload['commentsAllowGuests'] = $content->getCommentsAllowGuests();
+            $payload['authorId'] = $content->getAuthorId();
+            $payload['authorBioStored'] = $content->getAuthorBio();
+            $payload['authorAvatarUrlStored'] = $content->getAuthorAvatarUrl();
 
             $authorMeta = $this->blogAuthor->resolveForArticle($content);
             $payload['author'] = $authorMeta['author'];

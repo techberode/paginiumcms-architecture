@@ -103,7 +103,7 @@ Zapisuj presnú verziu, commit a deploy režim.
 
 ## 6. Známe hranice, ktoré nie sú regresiou
 
-- Setup wizard It.25 ešte nie je dodaný; onboarding používa `first-run.sh` a príručky.
+- **It.25 setup wizard** je dodaný (`beta.62`–`beta.65`): onboarding cez `/setup` s preflight serverom; `first-run.sh` zostáva CLI cesta.
 - Full Hybrid/Git-headless engine It.68–77 je plán, nie beta.23 feature.
 - Redis, S3, cloud translation a AI agent nie sú povinné ani aktívne.
 - Niektoré integrácie sú použiteľné až po administrátorskej a infra konfigurácii.
@@ -152,6 +152,6 @@ Najbližší smer po dokončení dokumentácie:
 - It.67 untrusted surfaces hardening,
 - It.58d layout polish,
 - komunitné beta opravy,
-- It.25 pre-Final onboarding/update UX.
+- It.25 onboarding/update UX — ✅ dodané (`beta.62`–`beta.65`, vrátane M1+ preflight).
 
 Roadmapa: [ROADMAP.md](ROADMAP.md) · Aktívny handoff: [CONTINUATION.md](CONTINUATION.md).

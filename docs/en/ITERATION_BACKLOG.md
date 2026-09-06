@@ -40,7 +40,7 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | 13 | **It.82** Origin Panel (maintainer cockpit) | 🔵 | ✅ | env-gated; excluded from customer archive — [ITERATION_82](ITERATION_82.md) |
 | 14 | **It.78** Unified upload security | 🟡 | ⏸️ | stabilization freeze — after S16 media baseline |
 | 15 | **It.79** DAM video | 🟡 | ⏸️ | stabilization freeze — after It.78 |
-| 16 | **It.25** Setup wizard/update UX | 🟡 pre-Final | ✅ basic | **stable-release blocker** — shipped `beta.62` (§5.1 R1–R6); deferred: stock seed, git checklist step — [ITERATION_25](ITERATION_25.md) |
+| 16 | **It.25** Setup wizard/update UX | 🟡 pre-Final | ✅ basic + M1+ | **stable-release blocker** — `beta.62`–`beta.65` (preflight, infra); [ITERATION_25](ITERATION_25.md) |
 | 17 | **It.76/77** Translation providers | 🔵 | ⏸️ | stabilization freeze |
 | 18 | **It.75** AI agent | 🔵 | ⏸️ | stabilization freeze |
 | 19 | **It.83** Theme runtime + Terminal Breach | 🟡 | ⏸️ | post-stable first slice — [ITERATION_83](ITERATION_83.md) |
@@ -205,11 +205,11 @@ See [ITERATION_82](ITERATION_82.md).
 
 ## 3. Pre-Final backlog
 
-### It.25 — setup wizard and simplified update UX 🟡 ✅ **basic phase shipped (`beta.62`)**
+### It.25 — setup wizard and simplified update UX 🟡 ✅ **basic + M1+ shipped (`beta.62`–`beta.65`)**
 
-**Required before first stable tag** ([STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) §5.1). Basic phase **delivered in `v2.1.0-beta.62`**.
+**Required before first stable tag** ([STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) §5.1).
 
-Shipped:
+Shipped (basic — `beta.62`):
 
 - **`/setup` wizard** — first SUPER_ADMIN, site name/locale, `general.installed`, auto-login, redirect to dashboard.
 - **Setup API** — `GET /api/setup/status`, `POST /api/setup/complete` (CSRF-exempt initial POST).
@@ -219,10 +219,17 @@ Shipped:
 - **Docs** — INSTALLATION + FIRST_STEPS SK/EN; smoke `scripts/smoke-it25.sh`.
 - **Tests** — `SetupControllerTest`, PHPUnit fresh-install isolation.
 
-Deferred (post-basic / stretch):
+Shipped (M1+ — `beta.65`):
+
+- **`GET /api/setup/preflight`** — read-only server checks + Ubuntu/Debian install hints (no web auto-install).
+- **Wizard steps** — Server → Admin → Site → Infra → Finish.
+- **Infra defaults** — `backendPort`, `media.storageDriver` at setup.
+- **ISS-162** — documented security contract for preflight.
+
+Deferred (post-M1+ / stretch):
 
 - optional stock-image seed in wizard,
-- git/package detection and deployment-permissions checklist step,
+- auto-install OS packages from web (**rejected**),
 - full rollback UI beyond backup prompt.
 
 ### Community beta testing 🔴

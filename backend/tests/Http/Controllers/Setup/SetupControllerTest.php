@@ -36,7 +36,11 @@ final class SetupControllerTest extends TestCase
 
     public function testStatusWhenInstalledFlagSetButNoUsersNeedsSetup(): void
     {
-        TestStorageCleaner::purgeAllUsersForTesting();
+        if (!TestStorageCleaner::purgeAllUsersForTesting()) {
+            $this->markTestSkipped(
+                'Shared dev storage contains non-test users; refusing destructive purge (protect local admin accounts).'
+            );
+        }
 
         $settings = $this->container()->get(SettingsRepositoryInterface::class);
         $settings->setGroup('general', array_merge($settings->group('general'), [
@@ -69,6 +73,8 @@ final class SetupControllerTest extends TestCase
                 'name' => 'Setup Admin',
                 'siteName' => 'My Paginium Site',
                 'language' => 'sk',
+                'backendPort' => '8099',
+                'storageDriver' => 'local',
             ])
         );
         $data = $this->getJsonResponse($response);
@@ -76,17 +82,42 @@ final class SetupControllerTest extends TestCase
         $this->assertSame(200, $response->getStatusCode());
         $this->assertTrue($data['success']);
         $this->assertTrue($data['installed']);
-        $this->assertSame($email, $data['user']['email']);
-        $this->assertContains('SUPER_ADMIN', $data['user']['roles']);
+        $this->assertTrue($data['loginRequired']);
+        $this->assertSame('/login', $data['redirectTo']);
+        $this->assertArrayNotHasKey('user', $data);
 
         $settings = $this->container()->get(SettingsRepositoryInterface::class);
         $this->assertTrue($settings->get('general.installed'));
         $this->assertSame('My Paginium Site', $settings->get('general.siteName'));
         $this->assertSame('sk', $settings->get('general.language'));
         $this->assertFalse($settings->get('general.allowRegistration'));
+        $this->assertSame('8099', $settings->get('systemUpdate.backendPort'));
+        $this->assertSame('local', $settings->get('media.storageDriver'));
 
         $users = $this->container()->get(UserRepository::class)->findAll();
         $this->assertCount(1, $users);
+
+        $meResponse = $this->handleRequest(
+            $this->createJsonRequest('GET', '/api/auth/me')
+        );
+        $this->assertSame(401, $meResponse->getStatusCode());
+    }
+
+    public function testPreflightReturnsChecks(): void
+    {
+        $this->prepareFreshInstall();
+
+        $response = $this->handleRequest(
+            $this->createJsonRequest('GET', '/api/setup/preflight')
+        );
+        $data = $this->getJsonResponse($response);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertTrue($data['success']);
+        $this->assertArrayHasKey('ready', $data['data']);
+        $this->assertArrayHasKey('checks', $data['data']);
+        $this->assertIsArray($data['data']['checks']);
+        $this->assertNotSame([], $data['data']['checks']);
     }
 
     public function testCompleteRejectedWhenAlreadyInstalled(): void
@@ -131,7 +162,11 @@ final class SetupControllerTest extends TestCase
 
     private function prepareFreshInstall(): void
     {
-        TestStorageCleaner::purgeAllUsersForTesting();
+        if (!TestStorageCleaner::purgeAllUsersForTesting()) {
+            $this->markTestSkipped(
+                'Shared dev storage contains non-test users; refusing destructive purge (protect local admin accounts).'
+            );
+        }
 
         $settings = $this->container()->get(SettingsRepositoryInterface::class);
         $settings->setGroup('general', array_merge($settings->group('general'), [

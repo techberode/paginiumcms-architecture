@@ -14,6 +14,7 @@ return function (App $app): void {
     $container = RouteBootstrap::container($app);
     $controller = $container->get(SetupController::class);
 
+    $app->get('/api/setup/preflight', [$controller, 'preflight']);
     $app->get('/api/setup/status', [$controller, 'status']);
     $app->post('/api/setup/complete', [$controller, 'complete']);
 };

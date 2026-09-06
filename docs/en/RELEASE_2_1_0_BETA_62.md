@@ -43,8 +43,10 @@ After deploy on an **existing** instance: no `/setup` redirect (users already ex
 
 - [ ] `./scripts/iteration-gate.sh` green on tag commit
 - [ ] `./scripts/smoke-it25.sh` (status endpoint; `FRESH_INSTALL=1` on empty users dir)
-- [ ] Clean clone → `/setup` → dashboard
-- [ ] SUPER_ADMIN dashboard shows update banner when remote check reports newer tag (non-demo)
+- [ ] Clean clone → `/setup` → preflight green → dashboard
+- [ ] `./scripts/smoke-it25.sh` includes `GET /api/setup/preflight` (since `beta.65`)
+
+**Extended in `v2.1.0-beta.65`:** server preflight + infra step — [RELEASE_2_1_0_BETA_65.md](RELEASE_2_1_0_BETA_65.md).
 
 ---
 
@@ -52,4 +54,5 @@ After deploy on an **existing** instance: no `/setup` redirect (users already ex
 
 - [CHANGELOG.md](../../CHANGELOG.md#release-2-1-0-beta-62)
 - [STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) §5.1
+- [RELEASE_2_1_0_BETA_65.md](RELEASE_2_1_0_BETA_65.md) — M1+ server preflight (follow-up)
 - [RELEASE_2_1_0_BETA_61.md](RELEASE_2_1_0_BETA_61.md) — previous release

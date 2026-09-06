@@ -75,6 +75,7 @@ export const settingsSk: MessageTree = {
     "notifications": "Toast notifikácie",
     "connectors": "Notifikačné konektory",
     "monitoring": "Monitoring a incidenty",
+    "analytics": "Retencia analytiky",
     "scheduler": "Plánovač jobov",
     "systemUpdate": "Aktualizácia systému (deploy)",
     "codePolicy": "Politika kódu",
@@ -700,6 +701,12 @@ export const settingsSk: MessageTree = {
         "label": "Konektor pre log incidenty"
       }
     },
+    "analytics": {
+      "retentionDays": {
+        "label": "Retencia analytických dát (dni)",
+        "help": "Staršie visit/daily/visitor súbory sa mažú schedulerom maintenance.cleanup (predvolene 90 dní)."
+      }
+    },
     "scheduler": {
       "enabled": {
         "label": "Zapnúť plánovač jobov",
@@ -1270,6 +1277,14 @@ export const settingsSk: MessageTree = {
       },
       "logRetention": {
         "label": "Max. incidentov v logu"
+      },
+      "blockEmptyUserAgent": {
+        "label": "Blokovať prázdny User-Agent",
+        "help": "Zapnuté = požiadavky bez User-Agent hlavičky sú WAF incident (typické u scraperov)."
+      },
+      "blockScraperTools": {
+        "label": "Blokovať scraper nástroje (curl, wget…)",
+        "help": "Zapnuté = WAF blokuje známe CLI/scraper User-Agent reťazce. Vyhľadávacie boty (Googlebot…) sa nikdy neblokujú."
       }
     },
     "logging": {
@@ -1287,7 +1302,7 @@ export const settingsSk: MessageTree = {
       },
       "retentionDays": {
         "label": "Retencia logov (dni)",
-        "help": "Staršie denné súbory sa vymažú (purge v admin Logy)."
+        "help": "Staršie denné súbory sa vymažú manuálne (Logy) aj schedulerom maintenance.cleanup (app, audit, event, user)."
       },
       "slowRequestMs": {
         "label": "Pomalý request (ms)",

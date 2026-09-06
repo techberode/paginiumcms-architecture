@@ -612,9 +612,12 @@ $containerBuilder->addDefinitions([
     BackupInterface::class => function ($container) {
         return new BackupManager(
             $container->get(FileReaderInterface::class),
-                                 $container->get(FileWriterInterface::class),
-                                 __DIR__ . '/../storage/backups',
-                                 DemoMode::resolveContentBasePath(__DIR__ . '/../storage/app')
+            $container->get(FileWriterInterface::class),
+            __DIR__ . '/../storage/backups',
+            DemoMode::resolveContentBasePath(__DIR__ . '/../storage/app'),
+            $container->get(\PaginiumCMS\Core\Cache\ContentCacheService::class),
+            $container->get(\PaginiumCMS\Core\FlatFile\Services\ContentIndexService::class),
+            $container->get(\PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface::class),
         );
     },
 

@@ -41,7 +41,7 @@ export const usersSk: MessageTree = {
   },
   avatar: {
     title: 'Profilová fotka',
-    hint: 'JPEG, PNG, WebP alebo GIF. Nahrajte súbor alebo vyberte z knižnice médií.',
+    hint: 'JPEG, PNG alebo WebP do 512×512 px a 512 KB. Nahrajte súbor alebo vyberte z médií.',
     upload: 'Nahrať fotku',
     pickFromMedia: 'Vybrať z médií',
     mediaModalTitle: 'Vyberte profilovú fotku',
@@ -50,7 +50,14 @@ export const usersSk: MessageTree = {
     success: 'Avatar bol aktualizovaný',
     removed: 'Avatar bol odstránený',
     failed: 'Nahranie avataru zlyhalo',
-    invalidType: 'Nepodporovaný typ obrázka. Použite JPEG, PNG, WebP alebo GIF.',
+    limitsHint: 'Max. 512×512 px a 512 KB (JPEG, PNG, WebP).',
+    resetDefault: 'Obnoviť predvolený avatar',
+    errors: {
+      invalidType: 'Nepodporovaný typ obrázka. Použite JPEG, PNG alebo WebP.',
+      tooLarge: 'Obrázok je príliš veľký (max. 512 KB).',
+      dimensions: 'Obrázok je príliš veľký (max. 512×512 px).',
+      upload_failed: 'Nahranie zlyhalo.',
+    },
   },
   roles: {
     USER: '👤 Používateľ – základný prístup',

@@ -2,6 +2,20 @@
 import apiClient from './client';
 import type { Backup, BackupVerifyResult, ScheduleInfo } from './types';
 import type { BulkBatchResult } from '../types/bulk';
+import { resolveApiBaseUrl } from '../utils/apiBaseUrl';
+
+export type BackupImportResult = {
+  ok: boolean;
+  backup?: Backup;
+  error?: string;
+  message?: string;
+};
+
+export type BackupRestoreResult = {
+  ok: boolean;
+  error?: string;
+  message?: string;
+};
 
 export const backupApi = {
   getAll: async (): Promise<Backup[]> => {
@@ -17,40 +31,52 @@ export const backupApi = {
     return response.success && response.data ? response.data : null;
   },
 
-  importArchive: async (file: File, name?: string): Promise<Backup | null> => {
+  importArchive: async (file: File, name?: string): Promise<BackupImportResult> => {
     const formData = new FormData();
     formData.append('file', file);
     if (name?.trim()) {
       formData.append('name', name.trim());
     }
 
-    const response = await fetch('/api/admin/backups/import', {
-      method: 'POST',
-      body: formData,
-      credentials: 'include',
+    const response = await apiClient.post<Backup>('/api/admin/backups/import', formData, {
+      timeout: 120000,
     });
-    const payload = await response.json();
-    return payload.success && payload.data ? (payload.data as Backup) : null;
+
+    if (response.success && response.data) {
+      return {
+        ok: true,
+        backup: response.data,
+        message: response.message,
+      };
+    }
+
+    return {
+      ok: false,
+      error: response.error || response.message || 'Import failed',
+    };
   },
 
   download: async (id: string, filename: string): Promise<{ ok: boolean; sha256?: string }> => {
     try {
-      const response = await fetch(`/api/admin/backups/${encodeURIComponent(id)}/download`, {
-        credentials: 'include',
-      });
-      if (!response.ok) {
-        return { ok: false };
-      }
-      const blob = await response.blob();
-      const sha256 = response.headers.get('X-Backup-SHA256') ?? undefined;
-      const url = window.URL.createObjectURL(blob);
+      const verify = await apiClient.get<BackupVerifyResult>(
+        `/api/admin/backups/${encodeURIComponent(id)}/verify`
+      );
+      const sha256 =
+        verify.success && verify.data?.actual
+          ? verify.data.actual
+          : verify.success && verify.data?.expected
+            ? verify.data.expected
+            : undefined;
+
+      const url = `${resolveApiBaseUrl()}/api/admin/backups/${encodeURIComponent(id)}/download`;
       const anchor = document.createElement('a');
       anchor.href = url;
       anchor.download = `${filename}.zip`;
+      anchor.rel = 'noopener';
       document.body.appendChild(anchor);
       anchor.click();
-      window.URL.revokeObjectURL(url);
       document.body.removeChild(anchor);
+
       return { ok: true, sha256 };
     } catch {
       return { ok: false };
@@ -62,9 +88,16 @@ export const backupApi = {
     return response.success && response.data ? response.data : null;
   },
 
-  restore: async (id: string): Promise<boolean> => {
-    const response = await apiClient.post(`/api/admin/backups/${encodeURIComponent(id)}/restore`);
-    return Boolean(response.success);
+  restore: async (id: string): Promise<BackupRestoreResult> => {
+    const response = await apiClient.post<null>(`/api/admin/backups/${encodeURIComponent(id)}/restore`, {}, {
+      timeout: 120000,
+    });
+
+    return {
+      ok: Boolean(response.success),
+      message: response.message,
+      error: response.error || response.message,
+    };
   },
 
   delete: async (id: string): Promise<boolean> => {

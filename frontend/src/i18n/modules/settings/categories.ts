@@ -21,6 +21,7 @@ export const SETTINGS_CATEGORIES: SettingsCategoryDef[] = [
       'logging',
       'adminUi',
       'monitoring',
+      'analytics',
       'notifications',
       'connectors',
       'smtp',

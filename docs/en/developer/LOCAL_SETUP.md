@@ -66,6 +66,10 @@ INSTALL_FRONTEND=1 ./scripts/first-run.sh
 
 Never reuse a bootstrap password from a screenshot or old guide on a public instance. Change it after the first login and test 2FA for staff workflows.
 
+**Shared dev storage:** PHPUnit setup tests wipe users only when no real (non-`@example.com`) accounts exist. After you create a dev admin via `/setup`, `./scripts/iteration-gate.sh` skips destructive setup tests instead of deleting your account. Do not use `@example.com` for a real dev admin — `dev:hygiene` treats those as test artefacts.
+
+If the SPA always redirects to `/setup` (`needsSetup: true`, `hasUsers: false`), user files were removed (often after PHPUnit) while `general.installed` stayed true. Fix: complete `/setup` again or run `php backend/bin/console user:create` with a non-`@example.com` email.
+
 ## 4. What first-run should do
 
 The concrete script is authoritative. Expected safe contract:
@@ -80,6 +84,20 @@ The concrete script is authoritative. Expected safe contract:
 8. avoid writing secrets to persistent logs.
 
 Do not change `APP_KEY` after encrypted data exists. Losing the key can mean losing TOTP/settings secrets.
+
+## 4.1 Browser setup wizard (alternative to CLI bootstrap)
+
+When **no user accounts exist**, you can skip `bootstrap-admin.php` output and finish onboarding in the browser:
+
+1. Start backend + frontend (Docker or native — see below).
+2. Open `http://127.0.0.1:3025/setup` (Vite) or the production URL `/setup`.
+3. Complete **Server → Administrator → Site → Infrastructure**.
+4. Fix any **hard** preflight failures using the displayed Ubuntu/Debian commands — the wizard does not install packages automatically.
+5. You land on the dashboard signed in as SUPER_ADMIN.
+
+API checks: `curl http://127.0.0.1:8080/api/setup/preflight | jq .`
+
+See [INSTALLATION.md](../user/INSTALLATION.md) §7 and [ITERATION_25.md](../ITERATION_25.md).
 
 ## 5. Docker Compose profile
 
@@ -239,6 +257,16 @@ php backend/bin/console content:diagnose --fix
 ```
 
 Use `--fix` only after reading diagnostics and, for important local data, creating a backup. Index/cache are rebuildable; do not delete authoritative content as the first troubleshooting step.
+
+### After a failed backup restore
+
+If restore reported success but articles/pages are missing:
+
+1. Check for a duplicate tree: `ls backend/storage/app/content/content/blog` — files here are **not** served ([ISS-163](../ISSUES.md#iss-163)).
+2. Upgrade to ≥ 2.1.0-beta.65, remove the orphan `content/content/` tree only after a good restore, then re-run restore.
+3. Inspect the ZIP: `unzip -l storage/backups/*.zip | grep content/blog` — legacy backups may lack pages/blog entirely.
+
+Runbook: [BACKUP_RESTORE.md](BACKUP_RESTORE.md).
 
 ## 11. Resetting the local environment
 

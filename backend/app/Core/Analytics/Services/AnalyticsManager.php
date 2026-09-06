@@ -29,7 +29,9 @@ final class AnalyticsManager
 
     public function trackPageView(string $uri, ?string $referer = null): void
     {
-        $visit = $this->buildVisit($uri, $referer, 0, $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0', $_SERVER['HTTP_USER_AGENT'] ?? '');
+        $trustedProxies = ClientIpResolver::trustedProxiesFromEnv();
+        $ip = ClientIpResolver::resolve(null, $trustedProxies);
+        $visit = $this->buildVisit($uri, $referer, 0, $ip, $_SERVER['HTTP_USER_AGENT'] ?? '');
 
         $this->tracker->track($visit);
         $this->checkTrafficSpike();

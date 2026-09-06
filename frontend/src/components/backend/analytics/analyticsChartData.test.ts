@@ -12,6 +12,7 @@ describe('analyticsChartData', () => {
     expect(items).toHaveLength(2);
     expect(items[0]?.label).toBe('Slovakia');
     expect(items[0]?.value).toBe(15);
+    expect(items[0]?.countryCode).toBe('SK');
   });
 
   it('maps referers to ranked chart items', () => {

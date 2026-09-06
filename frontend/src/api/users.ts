@@ -2,7 +2,10 @@
 // === Users API (Iterácia 5, admin) ===
 import apiClient, { ApiResponse } from './client';
 import { User } from './types';
-import { resolvePublicMediaUrl, uploadMedia } from './media';
+import { resolvePublicMediaUrl } from './media';
+import { validateAvatarFile } from '../utils/avatarUpload';
+
+export type { User };
 
 export type UserRole = string;
 
@@ -107,13 +110,33 @@ export async function assignUserAvatarFromUrl(
 }
 
 export async function uploadUserAvatar(id: string, file: File): Promise<ApiResponse<{ user: User }>> {
-  const folder = `avatars/${id}`;
-  const upload = await uploadMedia(file, file.name, folder);
-  if (!upload.ok) {
-    return { success: false, error: upload.error };
+  const validation = await validateAvatarFile(file);
+  if (!validation.ok) {
+    return { success: false, error: 'Invalid avatar file.' };
   }
 
-  return assignUserAvatarFromUrl(id, resolvePublicMediaUrl(upload.media.url));
+  const form = new FormData();
+  form.append('avatar', validation.file);
+
+  return apiClient.post<{ user: User }>(`/api/admin/users/${encodeURIComponent(id)}/avatar`, form, {
+    timeout: 120_000,
+  });
+}
+
+/** Upload a validated avatar image into media/overrides for article author overrides. */
+export async function uploadAuthorOverrideAvatar(file: File): Promise<{ ok: true; url: string } | { ok: false; error: string }> {
+  const validation = await validateAvatarFile(file);
+  if (!validation.ok) {
+    return { ok: false, error: validation.messageKey };
+  }
+
+  const { uploadMedia, resolvePublicMediaUrl } = await import('./media');
+  const upload = await uploadMedia(validation.file, 'Author avatar', 'avatars/overrides');
+  if (!upload.ok) {
+    return { ok: false, error: upload.error ?? 'upload_failed' };
+  }
+
+  return { ok: true, url: resolvePublicMediaUrl(upload.media.url) };
 }
 
 export async function removeUserAvatar(id: string): Promise<ApiResponse<{ user: User }>> {

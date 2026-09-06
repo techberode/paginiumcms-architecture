@@ -86,7 +86,7 @@ final class SettingsSchema
                     ['key' => 'articlePrintEnabled', 'type' => 'bool', 'label' => 'Povoliť tlač článkov', 'default' => false, 'rules' => ['bool'], 'help' => 'Zapnuté = na detaile článku sa zobrazí tlačidlo Tlačiť (iba obsah článku, bez menu a komentárov).'],
                     ['key' => 'blogAuthorName', 'type' => 'string', 'label' => 'Predvolené meno autora (blog)', 'default' => '', 'rules' => ['string', 'max:120'], 'help' => 'Zobrazí sa pri článkoch, ak autor nie je vyplnený v editore. Prázdne = názov stránky.'],
                     ['key' => 'blogAuthorBio', 'type' => 'text', 'label' => 'Popis autora (blog)', 'default' => '', 'rules' => ['string', 'max:500'], 'help' => 'Sekcia „O autorovi“ na detaile článku. Nastavte v Nastaveniach → Obsah, nie cez používateľský účet.'],
-                    ['key' => 'blogAuthorAvatarUrl', 'type' => 'url', 'label' => 'Avatar autora (URL)', 'default' => '', 'rules' => ['string', 'max:512'], 'help' => 'Voliteľný obrázok autora (napr. z Media knižnice).'],
+                    ['key' => 'blogAuthorAvatarUrl', 'type' => 'url', 'label' => 'Avatar autora (predvolený)', 'default' => '/storage/app/content/media/defaults/author-avatar.png', 'rules' => ['string', 'max:512'], 'help' => 'Predvolená fotografia autora pre blog. Vyberte z médií alebo obnovte výchozí PNG — priame nahrávanie tu nie je (upload len v profile používateľa).'],
                     ['key' => 'blogShowAuthorBox', 'type' => 'bool', 'label' => 'Zobraziť sekciu O autorovi', 'default' => true, 'rules' => ['bool'], 'help' => 'Skryte, ak nechcete box autora pod článkom.'],
                     ['key' => 'blogSidebarEnabled', 'type' => 'bool', 'label' => 'Blog — bočný panel', 'default' => false, 'rules' => ['bool'], 'help' => 'zobrazí sidebar na /blog (tagy, najnovšie, najčítanejšie).'],
                     ['key' => 'blogSidebarPlacement', 'type' => 'enum', 'label' => 'Blog sidebar — umiestnenie', 'default' => 'right', 'options' => ['left', 'right'], 'rules' => ['in:left,right'], 'help' => 'Bočný panel vľavo alebo vpravo od obsahu blogu.'],
@@ -205,6 +205,12 @@ final class SettingsSchema
                     ['key' => 'notifyLogErrors', 'type' => 'bool', 'label' => 'Alert on log ERROR/CRITICAL', 'default' => true, 'rules' => ['bool'], 'help' => 'Zapnuté = ERROR/CRITICAL v logu spustí alert. Vypnuté = chyby v logu sa nehlásia.'],
                     ['key' => 'notifyLogWarnings', 'type' => 'bool', 'label' => 'Alert on log WARNING', 'default' => false, 'rules' => ['bool'], 'help' => 'Zapnuté = WARNING v logu spustí alert. Vypnuté = varovania sa nehlásia.'],
                     ['key' => 'logIncidentConnector', 'type' => 'enum', 'label' => 'Log incident connector', 'default' => 'all', 'options' => ['email', 'ntfy', 'discord', 'telegram', 'webhook', 'all'], 'rules' => ['required', 'in:email,ntfy,discord,telegram,webhook,all']],
+                ],
+            ],
+            'analytics' => [
+                'label' => 'Analytika',
+                'fields' => [
+                    ['key' => 'retentionDays', 'type' => 'int', 'label' => 'Retencia analytických dát (dni)', 'default' => 90, 'rules' => ['required', 'int', 'min:7', 'max:365'], 'help' => 'Staršie visit/daily/visitor súbory sa automaticky mažú schedulerom (maintenance.cleanup).'],
                 ],
             ],
             'scheduler' => [
@@ -457,6 +463,8 @@ final class SettingsSchema
                     ['key' => 'jailMode', 'type' => 'enum', 'label' => 'Jail odpoveď', 'default' => 'forbidden', 'options' => ['forbidden', 'empty', 'tarpit'], 'rules' => ['required', 'in:forbidden,empty,tarpit'], 'help' => 'Režim HTTP odpovede pre zablokované IP. Tarpit spomaľuje botov (max 2 s).'],
                     ['key' => 'tarpitSeconds', 'type' => 'int', 'label' => 'Tarpit oneskorenie (s)', 'default' => 0, 'rules' => ['int', 'min:0', 'max:2'], 'help' => 'Platí len pri jailMode=tarpit. Neodporúčame >2 s (FPM worker).'],
                     ['key' => 'logRetention', 'type' => 'int', 'label' => 'Max. incidentov v logu', 'default' => 500, 'rules' => ['required', 'int', 'min:50', 'max:5000']],
+                    ['key' => 'blockEmptyUserAgent', 'type' => 'bool', 'label' => 'Blokovať prázdny User-Agent', 'default' => true, 'rules' => ['bool'], 'help' => 'Zapnuté = požiadavky bez User-Agent hlavičky sú WAF incident (typické u scraperov).'],
+                    ['key' => 'blockScraperTools', 'type' => 'bool', 'label' => 'Blokovať scraper nástroje (curl, wget…)', 'default' => false, 'rules' => ['bool'], 'help' => 'Zapnuté = WAF blokuje známe CLI/scraper User-Agent reťazce. Vyhľadávacie boty (Googlebot…) sa nikdy neblokujú.'],
                 ],
             ],
             'logging' => [
@@ -465,7 +473,7 @@ final class SettingsSchema
                     ['key' => 'enabled', 'type' => 'bool', 'label' => 'Zapnúť logovanie', 'default' => true, 'rules' => ['bool'], 'help' => 'Master prepínač structured logov (app, audit, event, user).'],
                     ['key' => 'requestLogging', 'type' => 'bool', 'label' => 'Logovať HTTP requesty', 'default' => true, 'rules' => ['bool'], 'help' => 'API requesty → záznam s timestamp, IP, status, duration. Výnimky: /api/health, /api/debug/client-event, /api/admin/logs*. 404 = INFO (nie WARNING).'],
                     ['key' => 'minSeverity', 'type' => 'enum', 'label' => 'Min. úroveň zápisu', 'default' => 'debug', 'options' => ['debug', 'info', 'warning', 'error', 'critical'], 'rules' => ['required', 'in:debug,info,warning,error,critical'], 'help' => 'Nižšie úrovne sa neukladajú (HTTP access log).'],
-                    ['key' => 'retentionDays', 'type' => 'int', 'label' => 'Retencia logov (dni)', 'default' => 30, 'rules' => ['required', 'int', 'min:1', 'max:365'], 'help' => 'Staršie denné súbory sa vymažú (purge v admin Logy).'],
+                    ['key' => 'retentionDays', 'type' => 'int', 'label' => 'Retencia logov (dni)', 'default' => 30, 'rules' => ['required', 'int', 'min:1', 'max:365'], 'help' => 'Staršie denné súbory sa vymažú (app, audit, event, user) — manuálne aj cez scheduler maintenance.cleanup.'],
                     ['key' => 'slowRequestMs', 'type' => 'int', 'label' => 'Pomalý request (ms)', 'default' => 2000, 'rules' => ['required', 'int', 'min:100', 'max:60000'], 'help' => 'Requesty nad tento limit sa logujú ako WARNING.'],
                     ['key' => 'logAuthEndpoints', 'type' => 'bool', 'label' => 'Logovať auth endpointy', 'default' => false, 'rules' => ['bool'], 'help' => 'Login/register cesty — bez tela, len metadata (IP, status).'],
                     ['key' => 'includeResponseSize', 'type' => 'bool', 'label' => 'Logovať veľkosť odpovede (size_bytes)', 'default' => true, 'rules' => ['bool'], 'help' => 'pridá size_bytes do http_access logu (Content-Length alebo telo).'],

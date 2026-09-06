@@ -113,14 +113,28 @@ See [deployment documentation](../deploy/NGINX_API.md) and the [Storage contract
 
 ## 7. First-run and bootstrap account
 
-From **v2.2.0** onward, a fresh instance can be finished in the browser at **`/setup`** (It.25 setup wizard):
+From **`v2.1.0-beta.62`** onward, a fresh instance can be finished in the browser at **`/setup`** (It.25 setup wizard). **`v2.1.0-beta.65`** adds a **server preflight** step and **infra defaults** (see [ITERATION_25.md](../en/ITERATION_25.md)).
+
+### Browser wizard (recommended)
 
 1. Open the site root; when no administrator exists, the SPA redirects to `/setup`.
-2. Create the first **SUPER_ADMIN** account (email, name, password).
-3. Set site name and admin locale; completion writes `general.installed = true` and signs you in.
-4. You land on the dashboard — change the password and enable 2FA before exposing the host.
+2. **Server** — the wizard runs read-only checks (PHP ≥8.5, required extensions, writable `storage/`, optional git/composer/vendor). Fix **hard** failures using the displayed Ubuntu/Debian commands, then **Refresh check**. The wizard does **not** install packages automatically.
+3. **Administrator** — create the first **SUPER_ADMIN** (email, name, password).
+4. **Site** — set site name and admin locale.
+5. **Infrastructure** — set backend health port (default `8089`) and media storage driver (`local`).
+6. Completion writes `general.installed = true`, optional `systemUpdate.backendPort` and `media.storageDriver`, signs you in, and redirects to the dashboard.
 
-The wizard is **CSRF-exempt** for the initial POST only (`POST /api/setup/complete`). Existing instances with user accounts are treated as installed even without the `installed` flag (legacy CLI bootstrap).
+Change the password and enable 2FA before exposing the host to the Internet.
+
+### Setup API (pre-auth)
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | `/api/setup/status` | Install state (`needsSetup`, `installed`, `hasUsers`) |
+| GET | `/api/setup/preflight` | Server prerequisite checks + install hints |
+| POST | `/api/setup/complete` | One-time bootstrap (admin + settings) |
+
+Routes under `/api/setup/` are **CSRF-exempt** for the initial bootstrap only. Existing instances with user accounts are treated as installed even without the `installed` flag (legacy CLI bootstrap).
 
 ### CLI fallback (optional / advanced)
 

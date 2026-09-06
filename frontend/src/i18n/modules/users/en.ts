@@ -41,7 +41,7 @@ export const usersEn: MessageTree = {
   },
   avatar: {
     title: 'Profile photo',
-    hint: 'JPEG, PNG, WebP or GIF. Upload a new file or pick from the media library.',
+    hint: 'JPEG, PNG or WebP up to 512×512 px and 512 KB. Upload here or pick from media.',
     upload: 'Upload photo',
     pickFromMedia: 'Pick from media',
     mediaModalTitle: 'Choose profile photo',
@@ -50,7 +50,15 @@ export const usersEn: MessageTree = {
     success: 'Avatar updated',
     removed: 'Avatar removed',
     failed: 'Avatar upload failed',
-    invalidType: 'Unsupported image type. Use JPEG, PNG, WebP or GIF.',
+    invalidType: 'Unsupported image type. Use JPEG, PNG or WebP.',
+    limitsHint: 'Max. 512×512 px and 512 KB (JPEG, PNG, WebP).',
+    resetDefault: 'Restore default avatar',
+    errors: {
+      invalidType: 'Unsupported image type. Use JPEG, PNG or WebP.',
+      tooLarge: 'Image is too large (max. 512 KB).',
+      dimensions: 'Image is too large (max. 512×512 px).',
+      upload_failed: 'Upload failed.',
+    },
   },
   roles: {
     USER: '👤 User – basic access',

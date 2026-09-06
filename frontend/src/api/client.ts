@@ -29,6 +29,10 @@ export interface ApiResponse<T = unknown> {
   conflict?: unknown;
   // Doplnkové pole prítomné pri 422 validačnej chybe (jednotný Error Handler, Iterácia 4).
   errors?: Record<string, string[]>;
+  // Setup wizard complete (flat respond payload).
+  installed?: boolean;
+  loginRequired?: boolean;
+  redirectTo?: string;
   // Stránkovanie (Iterácia 19).
   meta?: PaginationMeta;
 }

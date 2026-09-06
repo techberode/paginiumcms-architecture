@@ -113,14 +113,28 @@ Pozri [deployment dokumentáciu](../deploy/NGINX_API.md) a [Storage kontrakt](..
 
 ## 7. First-run a bootstrap účet
 
-Od **v2.2.0** môžeš čistú inštanciu dokončiť v prehliadači na **`/setup`** (It.25 setup wizard):
+Od **`v2.1.0-beta.62`** môžeš čistú inštanciu dokončiť v prehliadači na **`/setup`** (It.25 setup wizard). **`v2.1.0-beta.65`** pridáva krok **Server** (preflight) a **Infra** (port, storage driver) — pozri [ITERATION_25.md](../sk/ITERATION_25.md).
+
+### Wizard v prehliadači (odporúčané)
 
 1. Otvor koreň webu; ak neexistuje administrátor, SPA presmeruje na `/setup`.
-2. Vytvor prvý účet **SUPER_ADMIN** (e-mail, meno, heslo).
-3. Nastav názov webu a jazyk administrácie; dokončenie zapíše `general.installed = true` a prihlási ťa.
-4. Skončíš na dashboarde — zmeň heslo a zapni 2FA pred sprístupnením hosta.
+2. **Server** — read-only kontrola PHP ≥8.5, rozšírení, zapisovateľného `storage/`, voliteľne git/composer/vendor. Pri **hard** chybách oprav podľa zobrazených príkazov (Ubuntu/Debian) a klikni **Obnoviť kontrolu**. Wizard **neinštaluje** balíky automaticky.
+3. **Administrátor** — prvý **SUPER_ADMIN** (e-mail, meno, heslo).
+4. **Web** — názov webu a jazyk administrácie.
+5. **Infra** — backend health port (predvolene `8089`) a storage driver médií (`local`).
+6. Dokončenie zapíše `general.installed = true`, voliteľne `systemUpdate.backendPort` a `media.storageDriver`, prihlási ťa a presmeruje na dashboard.
 
-Wizard je **CSRF-exempt** len pre počiatočný POST (`POST /api/setup/complete`). Existujúce inštancie s účtami sa považujú za nainštalované aj bez príznaku `installed` (legacy CLI bootstrap).
+Zmeň heslo a zapni 2FA pred sprístupnením hosta.
+
+### Setup API (pre-auth)
+
+| Metóda | Cesta | Účel |
+|--------|-------|------|
+| GET | `/api/setup/status` | Stav inštalácie |
+| GET | `/api/setup/preflight` | Kontrola servera + návod inštalácie |
+| POST | `/api/setup/complete` | Jednorazový bootstrap |
+
+Trasy `/api/setup/*` sú **CSRF-exempt** len pre počiatočný bootstrap. Existujúce inštancie s účtami sa považujú za nainštalované aj bez príznaku `installed` (legacy CLI bootstrap).
 
 ### CLI fallback (voliteľné / pokročilé)
 

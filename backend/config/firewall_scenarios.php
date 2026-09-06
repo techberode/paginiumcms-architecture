@@ -64,12 +64,4 @@ return [
         'severity' => 'high',
         'enabled' => true,
     ],
-    'bad_bot_ua' => [
-        'id' => 'bad_bot_ua',
-        'label' => 'Suspicious empty user-agent',
-        'targets' => ['user_agent'],
-        'pattern' => '#^$#',
-        'severity' => 'medium',
-        'enabled' => true,
-    ],
 ];

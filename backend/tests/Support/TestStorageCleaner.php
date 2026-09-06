@@ -153,18 +153,26 @@ final class TestStorageCleaner
     }
 
     /**
-     * Wipes all user flat-files — only for PHPUnit setup/fresh-install tests.
-     * Unlike purgeTestUsers(), removes production emails too when APP_ENV=testing.
+     * Wipes all user flat-files — only for PHPUnit fresh-install tests on isolated or empty storage.
+     * Unlike purgeTestUsers(), removes production emails too when allowed.
+     *
+     * Returns false when shared dev storage contains a non-test (@example.com) account — caller should skip.
      */
-    public static function purgeAllUsersForTesting(): void
+    public static function purgeAllUsersForTesting(): bool
     {
         if (($_ENV['APP_ENV'] ?? getenv('APP_ENV') ?: '') !== 'testing') {
-            return;
+            return false;
+        }
+
+        if (self::hasNonTestUserFiles()) {
+            return false;
         }
 
         $dir = self::contentRoot() . '/data/users';
         if (!is_dir($dir)) {
-            return;
+            self::rebuildUserIndex();
+
+            return true;
         }
 
         foreach (glob($dir . '/user_*.json') ?: [] as $file) {
@@ -181,6 +189,36 @@ final class TestStorageCleaner
         }
 
         self::rebuildUserIndex();
+
+        return true;
+    }
+
+    /**
+     * True when at least one user flat-file is not a PHPUnit/@example.com test artifact.
+     */
+    public static function hasNonTestUserFiles(): bool
+    {
+        $dir = self::contentRoot() . '/data/users';
+        if (!is_dir($dir)) {
+            return false;
+        }
+
+        foreach (glob($dir . '/user_*.json') ?: [] as $file) {
+            if (str_contains(basename($file), '.backup.')) {
+                continue;
+            }
+
+            $raw = @file_get_contents($file);
+            if ($raw === false) {
+                continue;
+            }
+
+            if (!self::isTestUserPayload($raw)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public static function purgeTestMessages(): void

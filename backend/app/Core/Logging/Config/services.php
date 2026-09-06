@@ -8,10 +8,12 @@ use PaginiumCMS\Core\Logging\Services\LogWriter;
 use PaginiumCMS\Core\Logging\Services\AuditLogger;
 use PaginiumCMS\Core\Logging\Services\UserLogger;
 use PaginiumCMS\Core\Logging\Services\EventLogger;
+use PaginiumCMS\Core\Logging\Services\LogRetentionService;
 use PaginiumCMS\Core\Logging\Contracts\LoggerInterface;
 use PaginiumCMS\Core\Logging\Contracts\LogWriterInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
+use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 
 use function DI\create;
 use function DI\get;
@@ -29,7 +31,8 @@ return [
     LoggerInterface::class => create(Logger::class)
         ->constructor(
             get(LogWriterInterface::class),
-            'app'
+            'app',
+            get(SettingsRepositoryInterface::class)
         ),
 
     // Audit Logger
@@ -43,7 +46,8 @@ return [
                             get(FileWriterInterface::class),
                             LogStoragePaths::audit()
                         ),
-                    'audit'
+                    'audit',
+                    get(SettingsRepositoryInterface::class)
                 )
         ),
 
@@ -58,7 +62,8 @@ return [
                             get(FileWriterInterface::class),
                             LogStoragePaths::user()
                         ),
-                    'user'
+                    'user',
+                    get(SettingsRepositoryInterface::class)
                 )
         ),
 
@@ -73,7 +78,15 @@ return [
                             get(FileWriterInterface::class),
                             LogStoragePaths::event()
                         ),
-                    'event'
+                    'event',
+                    get(SettingsRepositoryInterface::class)
                 )
+        ),
+
+    LogRetentionService::class => create(LogRetentionService::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class),
+            get(SettingsRepositoryInterface::class)
         ),
 ];

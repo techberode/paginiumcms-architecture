@@ -6,6 +6,8 @@ namespace PaginiumCMS\Core\Analytics\Services;
 
 use PaginiumCMS\Core\Analytics\Contracts\ReporterInterface;
 use PaginiumCMS\Core\Analytics\Contracts\TrackerInterface;
+use PaginiumCMS\Core\Security\BotClassification;
+use PaginiumCMS\Core\Security\UserAgentBotClassifier;
 
 /**
  * Analytics reports built on top of Tracker flat-file data (Iteration 6).
@@ -26,26 +28,30 @@ final class Reporter implements ReporterInterface
     {
         $days = $this->resolvePeriodDays($period);
         if ($days > 1) {
-            return $this->getAggregatedOverviewForDays($days, $period);
+            $overview = $this->getAggregatedOverviewForDays($days, $period);
+        } else {
+            $date = $this->resolveDate($period);
+            $stats = $this->tracker->getDailyStats($date);
+            $realtime = $this->tracker->getRealtimeVisitors();
+            $visits = $this->tracker->getVisits($date, 10000);
+            $avgDuration = $this->averageDuration($visits);
+
+            $overview = [
+                'period' => $period,
+                'date' => $date,
+                'days' => 1,
+                'visits' => (int) ($stats['visits'] ?? 0),
+                'page_views' => (int) ($stats['page_views'] ?? 0),
+                'unique_visitors' => $this->countUniqueVisitors($visits),
+                'bounce_rate' => $this->calculateBounceRate($visits),
+                'avg_duration_seconds' => $avgDuration,
+                'realtime_visitors' => count($realtime),
+            ];
         }
 
-        $date = $this->resolveDate($period);
-        $stats = $this->tracker->getDailyStats($date);
-        $realtime = $this->tracker->getRealtimeVisitors();
-        $visits = $this->tracker->getVisits($date, 10000);
-        $avgDuration = $this->averageDuration($visits);
+        $overview['trends'] = $this->buildTrends($days);
 
-        return [
-            'period' => $period,
-            'date' => $date,
-            'days' => 1,
-            'visits' => (int) ($stats['visits'] ?? 0),
-            'page_views' => (int) ($stats['page_views'] ?? 0),
-            'unique_visitors' => $this->countUniqueVisitors($visits),
-            'bounce_rate' => $this->calculateBounceRate($visits),
-            'avg_duration_seconds' => $avgDuration,
-            'realtime_visitors' => count($realtime),
-        ];
+        return $overview;
     }
 
     /**
@@ -140,6 +146,36 @@ final class Reporter implements ReporterInterface
     }
 
     /**
+     * @return list<array{platform: string, visits: int}>
+     */
+    public function getPlatformStats(string $period = 'today'): array
+    {
+        $visits = $this->collectVisitsForPeriod($period, 5000);
+        $counts = [];
+
+        foreach ($visits as $visit) {
+            $platform = trim((string) ($visit['platformLabel'] ?? ''));
+            if ($platform === '') {
+                $ua = isset($visit['userAgent']) && is_string($visit['userAgent']) ? $visit['userAgent'] : null;
+                $platform = (new DeviceDetector($ua))->getPlatformLabel();
+            }
+            if ($platform === '') {
+                $platform = 'Unknown';
+            }
+            $counts[$platform] = ($counts[$platform] ?? 0) + 1;
+        }
+
+        arsort($counts);
+
+        $top = [];
+        foreach ($counts as $platform => $count) {
+            $top[] = ['platform' => $platform, 'visits' => $count];
+        }
+
+        return $top;
+    }
+
+    /**
      * @return list<array{country: string, countryCode: string|null, city: string|null, visits: int, sample_ips: list<string>}>
      */
     public function getGeoStats(string $period = 'today'): array
@@ -220,6 +256,101 @@ final class Reporter implements ReporterInterface
                 'requestUri' => (string) ($visit['requestUri'] ?? '/'),
                 'timestamp' => (string) ($visit['timestamp'] ?? ''),
             ];
+        }
+
+        return $rows;
+    }
+
+    /**
+     * @return array{human: int, bot: int, bot_share: float}
+     */
+    public function getBotSummary(string $period = 'today'): array
+    {
+        $visits = $this->collectVisitsForPeriod($period, 5000);
+        $human = 0;
+        $bot = 0;
+
+        foreach ($visits as $visit) {
+            if ($this->botMetaForVisit($visit)->isBot()) {
+                ++$bot;
+            } else {
+                ++$human;
+            }
+        }
+
+        $total = $human + $bot;
+
+        return [
+            'human' => $human,
+            'bot' => $bot,
+            'bot_share' => $total > 0 ? round(($bot / $total) * 100, 1) : 0.0,
+        ];
+    }
+
+    /**
+     * @return list<array{botName: string, botKind: string, visits: int}>
+     */
+    public function getTopBots(int $limit = 12, string $period = 'today'): array
+    {
+        $visits = $this->collectVisitsForPeriod($period, 5000);
+        /** @var array<string, array{botName: string, botKind: string, visits: int}> $counts */
+        $counts = [];
+
+        foreach ($visits as $visit) {
+            $meta = $this->botMetaForVisit($visit);
+            if (!$meta->isBot()) {
+                continue;
+            }
+
+            $name = $meta->botName ?? 'Unknown bot';
+            $kind = $meta->botKind ?? 'generic';
+            $key = $kind . '|' . $name;
+            if (!isset($counts[$key])) {
+                $counts[$key] = [
+                    'botName' => $name,
+                    'botKind' => $kind,
+                    'visits' => 0,
+                ];
+            }
+            $counts[$key]['visits']++;
+        }
+
+        uasort($counts, static fn (array $a, array $b): int => $b['visits'] <=> $a['visits']);
+
+        return array_values(array_slice($counts, 0, $limit));
+    }
+
+    /**
+     * @return list<array{botName: string, botKind: string, requestUri: string, ip: string, ip_masked: string, timestamp: string, blockRecommended: bool}>
+     */
+    public function getRecentBotVisits(int $limit = 15, string $period = 'today'): array
+    {
+        $visits = $this->collectVisitsForPeriod($period, 2000);
+        usort(
+            $visits,
+            static fn (array $a, array $b): int => strcmp((string) ($b['timestamp'] ?? ''), (string) ($a['timestamp'] ?? ''))
+        );
+
+        $rows = [];
+        foreach ($visits as $visit) {
+            $meta = $this->botMetaForVisit($visit);
+            if (!$meta->isBot()) {
+                continue;
+            }
+
+            $rows[] = [
+                'botName' => $meta->botName ?? 'Unknown bot',
+                'botKind' => $meta->botKind ?? 'generic',
+                'requestUri' => (string) ($visit['requestUri'] ?? '/'),
+                'ip' => (string) ($visit['ip'] ?? ''),
+                'ip_masked' => AnalyticsIpMasker::mask(isset($visit['ip']) ? (string) $visit['ip'] : null),
+                'timestamp' => (string) ($visit['timestamp'] ?? ''),
+                'blockRecommended' => $meta->shouldBlock,
+            ];
+
+            if (count($rows) >= $limit) {
+                break;
+            }
         }
 
         return $rows;
@@ -511,5 +642,97 @@ final class Reporter implements ReporterInterface
         }
 
         return round(($bounces / count($counts)) * 100, 1);
+    }
+
+    /**
+     * @param array<string, mixed> $visit
+     */
+    private function botMetaForVisit(array $visit): BotClassification
+    {
+        $storedType = isset($visit['visitorType']) && is_string($visit['visitorType'])
+            ? $visit['visitorType']
+            : null;
+
+        if ($storedType === 'human' || $storedType === 'bot') {
+            $userAgent = isset($visit['userAgent']) && is_string($visit['userAgent']) ? $visit['userAgent'] : null;
+            $classified = UserAgentBotClassifier::classify($userAgent);
+
+            return new BotClassification(
+                $storedType,
+                isset($visit['botName']) && is_string($visit['botName']) ? $visit['botName'] : $classified->botName,
+                isset($visit['botKind']) && is_string($visit['botKind']) ? $visit['botKind'] : $classified->botKind,
+                $classified->shouldBlock
+            );
+        }
+
+        return UserAgentBotClassifier::classify(
+            isset($visit['userAgent']) && is_string($visit['userAgent']) ? $visit['userAgent'] : null
+        );
+    }
+
+    /**
+     * @return array<string, array{delta: float, percent: float, direction: string}>
+     */
+    private function buildTrends(int $days): array
+    {
+        $currentVisits = $this->collectVisitsForWindow($days, 0);
+        $previousVisits = $this->collectVisitsForWindow($days, $days);
+
+        $current = [
+            'page_views' => count($currentVisits),
+            'unique_visitors' => $this->countUniqueVisitors($currentVisits),
+            'bounce_rate' => $this->calculateBounceRate($currentVisits),
+            'avg_duration_seconds' => $this->averageDuration($currentVisits),
+        ];
+        $previous = [
+            'page_views' => count($previousVisits),
+            'unique_visitors' => $this->countUniqueVisitors($previousVisits),
+            'bounce_rate' => $this->calculateBounceRate($previousVisits),
+            'avg_duration_seconds' => $this->averageDuration($previousVisits),
+        ];
+
+        return [
+            'page_views' => $this->trendDelta((float) $current['page_views'], (float) $previous['page_views']),
+            'unique_visitors' => $this->trendDelta((float) $current['unique_visitors'], (float) $previous['unique_visitors']),
+            'bounce_rate' => $this->trendDelta($current['bounce_rate'], $previous['bounce_rate']),
+            'avg_duration_seconds' => $this->trendDelta(
+                (float) $current['avg_duration_seconds'],
+                (float) $previous['avg_duration_seconds']
+            ),
+        ];
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function collectVisitsForWindow(int $days, int $offsetDays): array
+    {
+        $all = [];
+        for ($i = $offsetDays; $i < $offsetDays + $days; $i++) {
+            $all = [...$all, ...$this->tracker->getVisits($this->dateDaysAgo($i), 10000)];
+        }
+
+        return $all;
+    }
+
+    /**
+     * @return array{delta: float, percent: float, direction: string}
+     */
+    private function trendDelta(float $current, float $previous): array
+    {
+        $delta = $current - $previous;
+        if ($previous <= 0.0) {
+            return [
+                'delta' => $delta,
+                'percent' => $current > 0.0 ? 100.0 : 0.0,
+                'direction' => $delta >= 0.0 ? 'up' : 'down',
+            ];
+        }
+
+        return [
+            'delta' => round($delta, 1),
+            'percent' => round(($delta / $previous) * 100, 1),
+            'direction' => $delta >= 0.0 ? 'up' : 'down',
+        ];
     }
 }

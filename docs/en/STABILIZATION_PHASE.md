@@ -133,7 +133,7 @@ See [ITERATION_25.md](ITERATION_25.md) and backlog §3. **Done** means:
 
 | # | Deliverable | Basic done means |
 |---|-------------|------------------|
-| R1 | **Setup wizard** | `/setup` (or equivalent) only when not installed; steps: admin, site name/locale, completion writes settings + `installed: true`; redirect to dashboard |
+| R1 | **Setup wizard** | `/setup` when not installed; steps: **server preflight**, admin, site name/locale, **infra (port/storage)**, completion writes settings + `installed: true`; redirect to dashboard |
 | R2 | **No CLI required for first use** | Fresh install reachable via browser without reading shell docs (CLI path documented as optional/advanced) |
 | R3 | **Update UX** | SUPER_ADMIN dashboard: “Update available” + explicit “Update now” using existing It.63 engine; backup prompt before apply; hidden in `DEMO_MODE` |
 | R4 | **Safety** | SUPER_ADMIN + 2FA where enabled; CSRF; no arbitrary shell; secrets encrypted |
@@ -158,7 +158,7 @@ Run once before September stable tag (you do not need to test the whole CMS manu
 
 | # | Smoke step | Pass |
 |---|------------|------|
-| M1 | **It.25 wizard** on clean instance → first admin → site settings → dashboard | ☐ |
+| M1 | **It.25 wizard** on clean instance → preflight green → first admin → site + infra → dashboard | ☐ |
 | M2 | Create and **publish** one page; open on **public** URL | ☐ |
 | M3 | Insert one **shortcode** (e.g. `alert-box` or `landing-hero`); public render matches preview | ☐ |
 | M4 | **Backup** create + download from admin | ☐ |

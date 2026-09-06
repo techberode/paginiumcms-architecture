@@ -131,7 +131,7 @@ Poradie je **It.73 → It.76/77 → It.75**. AI agent smie iba navrhovať zmeny;
 |------|------|------|
 | **It.58d** — zostávajúce layout bloky/polish | ⏳ | po dokumentácii; môže bežať popri skorom Hybrid Engine |
 | **It.67** — untrusted surfaces defense-in-depth | 🔴 | pred rozšírením importov, tém a generovaného kódu |
-| **It.25** — setup wizard a zjednodušený update UX | 🟡 pre-Final | po stabilizácii beta feedbacku, pred 1.0 |
+| **It.25** — setup wizard a zjednodušený update UX | ✅ M1+ dodané | `beta.62`–`beta.65` — preflight + update banner; pred stabilným tagom |
 | **It.48** — static/dynamic render | 🟡 | zosúladiť s It.70, aby nevznikli dve publish pipeline |
 | Komunitné beta testovanie | 🔴 | priebežne pred 1.0 |
 | Dokumentácia a bezpečnostná revízia | 🔴 | pri každej vydanej vlne |

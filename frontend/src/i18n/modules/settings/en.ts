@@ -75,6 +75,7 @@ export const settingsEn: MessageTree = {
     "notifications": "Toast notifications",
     "connectors": "Notification connectors",
     "monitoring": "Monitoring & incidents",
+    "analytics": "Analytics retention",
     "scheduler": "Job scheduler",
     "systemUpdate": "System update (deploy)",
     "codePolicy": "Code policy",
@@ -873,6 +874,14 @@ export const settingsEn: MessageTree = {
       },
       "logRetention": {
         "label": "Max incidents in log"
+      },
+      "blockEmptyUserAgent": {
+        "label": "Block empty User-Agent",
+        "help": "Enabled = requests without a User-Agent header are logged as WAF incidents (common for scrapers)."
+      },
+      "blockScraperTools": {
+        "label": "Block scraper tools (curl, wget…)",
+        "help": "Enabled = WAF blocks known CLI/scraper User-Agent strings. Search bots (Googlebot…) are never blocked."
       }
     },
     "logging": {
@@ -890,7 +899,7 @@ export const settingsEn: MessageTree = {
       },
       "retentionDays": {
         "label": "Log retention (days)",
-        "help": "Older daily files are purged (admin Logs)."
+        "help": "Older daily files are purged manually (Logs) and by scheduler job maintenance.cleanup (app, audit, event, user)."
       },
       "slowRequestMs": {
         "label": "Slow request (ms)",
@@ -1218,6 +1227,12 @@ export const settingsEn: MessageTree = {
       },
       "logIncidentConnector": {
         "label": "Log incident connector"
+      }
+    },
+    "analytics": {
+      "retentionDays": {
+        "label": "Analytics data retention (days)",
+        "help": "Visit, daily, and stale visitor files older than this are deleted by scheduler job maintenance.cleanup (default 90)."
       }
     },
     "scheduler": {

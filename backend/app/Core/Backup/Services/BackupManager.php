@@ -6,8 +6,11 @@ namespace PaginiumCMS\Core\Backup\Services;
 
 use PaginiumCMS\Core\Backup\Contracts\BackupInterface;
 use PaginiumCMS\Core\Backup\Models\BackupMetadata;
+use PaginiumCMS\Core\Cache\ContentCacheService;
+use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
+use PaginiumCMS\Core\FlatFile\Services\ContentIndexService;
 use PaginiumCMS\Core\Security\Services\ZipEntryGuard;
 use PaginiumCMS\Support\FileHelper;
 use PaginiumCMS\Support\JsonHelper;
@@ -30,7 +33,10 @@ class BackupManager implements BackupInterface
         FileReaderInterface $reader,
         FileWriterInterface $writer,
         string $backupPath = 'storage/backups',
-        string $contentPath = 'storage/app/content'
+        string $contentPath = 'storage/app/content',
+        private ?ContentCacheService $contentCache = null,
+        private ?ContentIndexService $contentIndex = null,
+        private ?ContentRepositoryInterface $contentRepository = null,
     ) {
         $this->reader = $reader;
         $this->writer = $writer;
@@ -65,13 +71,13 @@ class BackupManager implements BackupInterface
         // Pridanie metadát
         $zip->addFromString('backup.json', JsonHelper::encode($metadata->jsonSerialize()));
 
-        // Pridanie obsahu
-        foreach ($metadata->getIncludes() as $include) {
-            $this->addDirectoryToZip($zip, $this->contentPath . '/' . $include, $include);
-        }
+        // Pridanie obsahu (pages, blog, media, data, …)
+        $this->addContentIncludesToZip($zip, $metadata->getIncludes());
 
         // Pridanie konfigurácie
-        $this->addConfigToZip($zip);
+        if (in_array('config', $metadata->getIncludes(), true)) {
+            $this->addConfigToZip($zip);
+        }
 
         $zip->close();
 
@@ -228,10 +234,16 @@ class BackupManager implements BackupInterface
         $zip->extractTo($tempDir);
         $zip->close();
 
-        // Obnova obsahu
+        // Obnova obsahu — current format: content/{pages,blog,media,data,…}
         $contentDir = $tempDir . '/content';
         if (is_dir($contentDir)) {
             $this->restoreDirectory($contentDir, $this->contentPath);
+        }
+
+        // Legacy backups (≤ beta.65): only data/ at ZIP root — settings, indexes, analytics
+        $legacyDataDir = $tempDir . '/data';
+        if (is_dir($legacyDataDir)) {
+            $this->restoreDirectory($legacyDataDir, $this->contentPath . '/data');
         }
 
         // Obnova konfigurácie
@@ -242,6 +254,8 @@ class BackupManager implements BackupInterface
 
         // Vyčistenie
         $this->removeDirectory($tempDir);
+
+        $this->afterContentRestore();
 
         return true;
     }
@@ -410,6 +424,38 @@ class BackupManager implements BackupInterface
         }
     }
 
+    /**
+     * @param array<int|string, mixed> $includes
+     */
+    private function addContentIncludesToZip(\ZipArchive $zip, array $includes): void
+    {
+        if (in_array('content', $includes, true)) {
+            $this->addDirectoryToZip($zip, $this->contentPath, 'content');
+
+            return;
+        }
+
+        $contentSubtrees = ['pages', 'blog', 'media', 'data', 'navigation', 'trash'];
+        foreach ($contentSubtrees as $subdir) {
+            if (!in_array($subdir, $includes, true)) {
+                continue;
+            }
+
+            $absolute = $this->contentPath . '/' . $subdir;
+            if (is_dir($absolute)) {
+                $this->addDirectoryToZip($zip, $absolute, 'content/' . $subdir);
+            }
+        }
+
+        // Legacy include flag: flat data/ prefix (pre-fix backups)
+        if (in_array('data', $includes, true) && !in_array('content', $includes, true)) {
+            $dataPath = $this->contentPath . '/data';
+            if (is_dir($dataPath)) {
+                $this->addDirectoryToZip($zip, $dataPath, 'data');
+            }
+        }
+    }
+
     private function addDirectoryToZip(\ZipArchive $zip, string $dir, string $prefix): void
     {
         if (!is_dir($dir)) {
@@ -547,12 +593,23 @@ class BackupManager implements BackupInterface
 
     private function toContentRelativePath(string $absolutePath): ?string
     {
-        $contentRoot = rtrim($this->contentPath, '/') . '/';
-        if (!str_starts_with($absolutePath, $contentRoot)) {
+        // FileWriter paths are relative to contentPath (same base as FileValidator).
+        $contentRoot = rtrim($this->contentPath, '/') . DIRECTORY_SEPARATOR;
+        $normalized = str_replace('/', DIRECTORY_SEPARATOR, $absolutePath);
+        if (!str_starts_with($normalized, $contentRoot)) {
             return null;
         }
 
-        return substr($absolutePath, strlen($contentRoot));
+        return str_replace('\\', '/', substr($normalized, strlen($contentRoot)));
+    }
+
+    private function afterContentRestore(): void
+    {
+        if ($this->contentIndex !== null && $this->contentRepository !== null) {
+            $this->contentIndex->rebuild($this->contentRepository);
+        }
+
+        $this->contentCache?->purgeAll();
     }
 
     private function calculateNextRun(string $interval): string

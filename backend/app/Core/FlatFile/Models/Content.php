@@ -145,7 +145,13 @@ abstract class Content implements JsonSerializable
 
     public function setAuthor(string $author): self
     {
-        $this->frontMatter['author'] = $author;
+        $author = trim($author);
+        if ($author === '') {
+            unset($this->frontMatter['author']);
+        } else {
+            $this->frontMatter['author'] = $author;
+        }
+
         return $this;
     }
 

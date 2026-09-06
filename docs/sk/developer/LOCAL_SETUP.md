@@ -81,6 +81,23 @@ Konkrétny skript je zdroj pravdy. Očakávaný bezpečný kontrakt:
 
 `APP_KEY` po vzniku šifrovaných dát nemeň. Strata kľúča môže znamenať stratu TOTP/settings secrets.
 
+**Zdieľané dev storage:** PHPUnit setup testy vymažú userov len keď neexistuje reálny (ne-`@example.com`) účet. Po vytvorení admina cez `/setup` gate testy preskočí namiesto mazania účtu. Pre dev admin **nepoužívaj** `@example.com` — `dev:hygiene` ho považuje za test artefakt.
+
+Ak SPA stále presmeruje na `/setup` (`needsSetup: true`, `hasUsers: false`), súbory userov chýbajú (často po PHPUnit), ale `general.installed` zostalo `true`. Oprava: znova dokonči `/setup` alebo `php backend/bin/console user:create` s e-mailom mimo `@example.com`.
+
+## 4.1 Setup wizard v prehliadači (alternatíva k CLI bootstrap)
+
+Keď **neexistujú žiadne user účty**, môžeš onboarding dokončiť v prehliadači:
+
+1. Spusti backend + frontend (Docker alebo natívne — nižšie).
+2. Otvor `http://127.0.0.1:3025/setup` (Vite) alebo produkčné `/setup`.
+3. Dokonči **Server → Administrátor → Web → Infra**; hard chyby preflightu oprav podľa zobrazených príkazov (bez auto-inštalácie).
+4. Skončíš na dashboarde prihlásený ako SUPER_ADMIN.
+
+API: `curl http://127.0.0.1:8080/api/setup/preflight | jq .`
+
+Pozri [INSTALLATION.md](../user/INSTALLATION.md) §7 a [ITERATION_25.md](../ITERATION_25.md).
+
 ## 5. Docker Compose profil
 
 Typický štart backendu:

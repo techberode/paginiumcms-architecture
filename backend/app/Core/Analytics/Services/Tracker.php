@@ -9,6 +9,7 @@ use PaginiumCMS\Core\Analytics\Models\Visit;
 use PaginiumCMS\Core\Analytics\Models\Visitor;
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
+use PaginiumCMS\Core\Security\UserAgentBotClassifier;
 use PaginiumCMS\Support\FileHelper;
 use PaginiumCMS\Support\JsonHelper;
 
@@ -150,11 +151,17 @@ class Tracker implements TrackerInterface
         $visitData = $visit->toArray();
         $location = $this->geoIP->getLocation($visit->getIp());
         $deviceInfo = (new DeviceDetector($visit->getUserAgent() ?? ''))->getAll();
+        $bot = UserAgentBotClassifier::classify($visit->getUserAgent());
         $visitData['deviceType'] = $deviceInfo['deviceType'];
         $visitData['browser'] = $deviceInfo['browser'];
+        $visitData['platformLabel'] = $deviceInfo['platformLabel'];
+        $visitData['os'] = $deviceInfo['os'];
         $visitData['country'] = $location ? $location->getCountry() : 'Unknown';
         $visitData['countryCode'] = $location ? $location->getCountryCode() : null;
         $visitData['city'] = $location ? $location->getCity() : null;
+        $visitData['visitorType'] = $bot->visitorType;
+        $visitData['botName'] = $bot->botName;
+        $visitData['botKind'] = $bot->botKind;
 
         $visits[] = $visitData;
         if (count($visits) > 10000) {
@@ -179,6 +186,7 @@ class Tracker implements TrackerInterface
             'visitCount' => 1,
             'ip' => $visit->getIp(),
             'country' => $location ? $location->getCountry() : null,
+            'countryCode' => $location ? $location->getCountryCode() : null,
             'city' => $location ? $location->getCity() : null,
             'device' => $deviceInfo['device'],
             'deviceType' => $deviceInfo['deviceType'],
@@ -193,6 +201,9 @@ class Tracker implements TrackerInterface
                 $visitorData['firstVisit'] = $existing['firstVisit'] ?? $visit->getTimestamp();
                 if (empty($visitorData['country']) && !empty($existing['country'])) {
                     $visitorData['country'] = $existing['country'];
+                }
+                if (empty($visitorData['countryCode']) && !empty($existing['countryCode'])) {
+                    $visitorData['countryCode'] = $existing['countryCode'];
                 }
             }
         }

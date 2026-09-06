@@ -31,6 +31,7 @@ return function (App $app): void {
         $group->get('/overview', [$controller, 'overview']);
         $group->get('/chart', [$controller, 'chart']);
         $group->get('/realtime', [$controller, 'realtime']);
+        $group->post('/bots/ban', [$controller, 'banBot']);
 
         $notFound = $container->get(\PaginiumCMS\Http\Controllers\Admin\NotFoundReportController::class);
         $group->get('/not-found', [$notFound, 'index']);

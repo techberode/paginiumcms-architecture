@@ -10,7 +10,7 @@ icon: material/rocket-launch
 
 ## 1. Prvé prihlásenie
 
-**Setup v prehliadači (odporúčané):** po [inštalácii](INSTALLATION.md) otvor na čistej inštancii `/setup`, dokonči wizard a systém ťa prihlási automaticky.
+**Setup v prehliadači (odporúčané):** po [inštalácii](INSTALLATION.md) otvor na čistej inštancii `/setup`. Dokonči kroky (**Server → Administrátor → Web → Infra**), pri hard chybách preflightu oprav podľa zobrazených príkazov — potom ťa presmeruje na **`/login`** a musíš sa prihlásiť novým admin účtom.
 
 **CLI bootstrap:** ak si použil `first-run.sh` / `bootstrap-admin.php`:
 
@@ -128,6 +128,8 @@ Po prvých zmenách by si mal vedieť nájsť:
 - HTTP request záznam bez secrets,
 - firewall incident iba pri reálnom scenári,
 - úspešne vytvorenú zálohu s overením integrity.
+
+**Obnova (odporúčané na dev):** vytvor zálohu → vymaž jeden článok (soft delete) → obnov zálohu → článok sa musí vrátiť. Ak nie, pozri [BACKUP_RESTORE.md](../../en/developer/BACKUP_RESTORE.md) ([ISS-163](../../ISSUES.md#iss-163)).
 
 ## 12. Čo ešte nie je automatické
 

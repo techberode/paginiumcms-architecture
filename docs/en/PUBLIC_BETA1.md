@@ -103,7 +103,7 @@ Record the exact version, commit, and deployment mode.
 
 ## 6. Known boundaries that are not regressions
 
-- The It.25 setup wizard is not shipped; onboarding uses `first-run.sh` and guides.
+- **It.25 setup wizard** is shipped (`beta.62`–`beta.65`): browser onboarding at `/setup` with server preflight; `first-run.sh` remains the CLI/maintainer path.
 - The It.68 foundation (`StorageInterface`, schema registry, engine settings) is shipped in `[Unreleased]`; full It.69–77 Hybrid/Git-headless capabilities are not part of `beta.23`.
 - Redis, S3, cloud translation, and the AI agent are neither mandatory nor active.
 - Some integrations become usable only after admin and infrastructure configuration.
@@ -151,6 +151,6 @@ The nearest direction after documentation completion:
 - It.67 untrusted surfaces hardening,
 - It.58d layout polish,
 - community beta fixes,
-- It.25 pre-Final onboarding/update UX.
+- It.25 onboarding/update UX — ✅ shipped (`beta.62`–`beta.65`, including M1+ preflight).
 
 Roadmap: [ROADMAP.md](ROADMAP.md) · Active handoff: [CONTINUATION.md](CONTINUATION.md).

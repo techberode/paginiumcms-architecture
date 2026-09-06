@@ -41,7 +41,10 @@ class UserControllerTest extends TestCase
         $this->repo = new UserRepository(new FileReader($validator), new FileWriter($validator), 'users');
         $this->controller = new UserController(
             $this->repo,
-            new UserAvatarService($this->createMock(\PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface::class)),
+            new UserAvatarService(
+                $this->createMock(\PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface::class),
+                new \PaginiumCMS\Core\Content\AvatarImageProcessor(),
+            ),
             new \PaginiumCMS\Core\Settings\Services\SettingsRepository(
                 new FileWriter(new FileValidator($this->baseDir . '/data')),
                 \PaginiumCMS\Tests\Support\StorageTestHelper::localStorage($this->baseDir . '/data'),

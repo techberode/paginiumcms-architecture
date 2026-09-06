@@ -9,6 +9,7 @@ use PaginiumCMS\Core\Logging\Services\LogWriter;
 use PaginiumCMS\Core\Logging\Models\LogSeverity;
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
+use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PHPUnit\Framework\TestCase;
 use org\bovigo\vfs\vfsStream;
 
@@ -137,6 +138,18 @@ class LoggerTest extends TestCase
 
         $logger = new Logger($this->writer, 'test');
         $logger->clearOldEntries(30);
+    }
+
+    public function testSkipsWritesWhenLoggingDisabled(): void
+    {
+        $settings = $this->createMock(SettingsRepositoryInterface::class);
+        $settings->method('group')->with('logging')->willReturn(['enabled' => false]);
+
+        $this->writer = $this->createMock(LogWriter::class);
+        $this->writer->expects($this->never())->method('write');
+
+        $logger = new Logger($this->writer, 'test', $settings);
+        $logger->info('must not be written');
     }
 
     public function testSkipsWritesInTestingWithoutAllowFlag(): void
