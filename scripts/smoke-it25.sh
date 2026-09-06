@@ -40,6 +40,16 @@ status_code="$(curl -sS -o /tmp/pag-smoke-it25-status.json -w '%{http_code}' \
 [[ "$status_code" == "200" ]] || fail "Setup status failed (HTTP $status_code): $(cat /tmp/pag-smoke-it25-status.json)"
 ok "GET /api/setup/status"
 
+preflight_code="$(curl -sS -o /tmp/pag-smoke-it25-preflight.json -w '%{http_code}' \
+  "$BASE_URL/api/setup/preflight")"
+[[ "$preflight_code" == "200" ]] || fail "Setup preflight failed (HTTP $preflight_code): $(cat /tmp/pag-smoke-it25-preflight.json)"
+ok "GET /api/setup/preflight"
+
+preflight_ready="$(jq -r '.data.ready // .ready // empty' /tmp/pag-smoke-it25-preflight.json)"
+preflight_checks="$(jq -r '.data.checks | length // 0' /tmp/pag-smoke-it25-preflight.json)"
+echo "  preflight ready=$preflight_ready checks=$preflight_checks"
+[[ "$preflight_checks" =~ ^[0-9]+$ ]] && (( preflight_checks > 0 )) || fail "Setup preflight returned no checks"
+
 needs_setup="$(jq -r '.data.needsSetup // .needsSetup // empty' /tmp/pag-smoke-it25-status.json)"
 installed="$(jq -r '.data.installed // .installed // empty' /tmp/pag-smoke-it25-status.json)"
 echo "  needsSetup=$needs_setup installed=$installed"

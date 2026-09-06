@@ -4,9 +4,18 @@ export interface CookiePolicySection {
   body: string;
 }
 
+export interface ParseCookiePolicySectionsOptions {
+  /** Keep blocks with empty title and body (admin editor drafts). */
+  keepEmpty?: boolean;
+}
+
 export const MAX_COOKIE_POLICY_SECTIONS = 20;
 
-export function parseCookiePolicySectionsJson(raw: string | undefined | null): CookiePolicySection[] {
+export function parseCookiePolicySectionsJson(
+  raw: string | undefined | null,
+  options: ParseCookiePolicySectionsOptions = {}
+): CookiePolicySection[] {
+  const keepEmpty = options.keepEmpty === true;
   if (!raw || raw.trim() === '') {
     return [];
   }
@@ -26,7 +35,7 @@ export function parseCookiePolicySectionsJson(raw: string | undefined | null): C
       const record = item as Record<string, unknown>;
       const title = typeof record.title === 'string' ? record.title.trim() : '';
       const body = typeof record.body === 'string' ? record.body.trim() : '';
-      if (title === '' && body === '') {
+      if (!keepEmpty && title === '' && body === '') {
         continue;
       }
 
@@ -59,7 +68,6 @@ export function serializeCookiePolicySectionsJson(sections: CookiePolicySection[
       title: section.title.trim().slice(0, 200),
       body: section.body.trim().slice(0, 5000),
     }))
-    .filter((section) => section.title !== '' || section.body !== '')
     .slice(0, MAX_COOKIE_POLICY_SECTIONS);
 
   return JSON.stringify(normalized);

@@ -21,7 +21,7 @@ class SystemChecker implements HealthCheckInterface
 
         // 1. PHP verzia
         $phpVersion = PHP_VERSION;
-        $requiredVersion = '8.4.0';
+        $requiredVersion = '8.5.0';
         if (version_compare($phpVersion, $requiredVersion, '<')) {
             $issues[] = "PHP verzia $phpVersion je nižšia ako požadovaná $requiredVersion";
         }

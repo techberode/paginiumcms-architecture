@@ -8,6 +8,7 @@ use PaginiumCMS\Core\Scheduler\Commands\RunSchedulerCommand;
 use PaginiumCMS\Core\Scheduler\Handlers\BackupScheduledHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\ContentScheduledPublishHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\GitPublishHandler;
+use PaginiumCMS\Core\Scheduler\Handlers\MaintenanceCleanupHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\MonitoringPipelineHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\SystemDeployHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\WebhookDeliveryHandler;
@@ -46,6 +47,11 @@ return [
         ->constructor(get(\PaginiumCMS\Core\Backup\Contracts\BackupInterface::class)),
     MonitoringPipelineHandler::class => create(MonitoringPipelineHandler::class)
         ->constructor(get(\PaginiumCMS\Core\Monitoring\Services\MonitoringScheduler::class)),
+    MaintenanceCleanupHandler::class => create(MaintenanceCleanupHandler::class)
+        ->constructor(
+            get(\PaginiumCMS\Core\Analytics\Services\AnalyticsRetentionService::class),
+            get(\PaginiumCMS\Core\Logging\Services\LogRetentionService::class)
+        ),
     ContentScheduledPublishHandler::class => create(ContentScheduledPublishHandler::class)
         ->constructor(get(\PaginiumCMS\Core\FlatFile\Services\ContentScheduledPublishService::class)),
     SystemDeployHandler::class => create(SystemDeployHandler::class)
@@ -63,6 +69,7 @@ return [
         ->constructor(
             get(BackupScheduledHandler::class),
             get(MonitoringPipelineHandler::class),
+            get(MaintenanceCleanupHandler::class),
             get(ContentScheduledPublishHandler::class),
             get(SystemDeployHandler::class),
             get(NewsletterWeeklyDigestHandler::class),

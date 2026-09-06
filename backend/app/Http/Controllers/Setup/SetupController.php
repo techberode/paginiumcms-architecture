@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Controllers\Setup;
 
 use PaginiumCMS\Core\Setup\Services\FirstAdminBootstrapService;
+use PaginiumCMS\Core\Setup\Services\SetupPreflightService;
 use PaginiumCMS\Core\Setup\Services\SetupStatusService;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\Validation\ValidationException;
 use PaginiumCMS\Core\Validation\Validator;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Http\Support\RequestJsonBody;
-use PaginiumCMS\Modules\Security\Contracts\AuthenticationInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -22,12 +22,17 @@ final class SetupController
 {
     public function __construct(
         private SetupStatusService $setupStatus,
+        private SetupPreflightService $preflight,
         private FirstAdminBootstrapService $firstAdmin,
         private SettingsRepositoryInterface $settings,
-        private AuthenticationInterface $auth,
         private Validator $validator,
         private JsonResponder $json,
     ) {
+    }
+
+    public function preflight(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        return $this->json->success($response, $this->preflight->run());
     }
 
     public function status(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -58,6 +63,8 @@ final class SetupController
                 'name' => ['required', 'string', 'min:2', 'max:120'],
                 'siteName' => ['required', 'string', 'min:2', 'max:120'],
                 'language' => ['required', 'in:sk,en'],
+                'backendPort' => ['nullable', 'string', 'max:8'],
+                'storageDriver' => ['nullable', 'in:local'],
             ]);
         } catch (ValidationException $e) {
             return $this->json->validation($response, 'Validation failed', $e->getErrors());
@@ -91,28 +98,25 @@ final class SetupController
             'allowRegistration' => false,
         ]);
 
-        try {
-            $loggedIn = $this->auth->login($email, $password);
-        } catch (\Throwable) {
-            return $this->json->error(
-                $response,
-                'Setup completed but login failed. Use the login page with your new account.',
-                500
-            );
+        $backendPort = trim((string) ($validated['backendPort'] ?? ''));
+        if ($backendPort !== '') {
+            $this->settings->setGroup('systemUpdate', [
+                'backendPort' => $backendPort,
+            ]);
         }
 
-        if (!$this->auth->isAuthenticated()) {
-            return $this->json->error(
-                $response,
-                'Setup completed but session could not be started. Log in manually.',
-                500
-            );
+        $storageDriver = trim((string) ($validated['storageDriver'] ?? ''));
+        if ($storageDriver !== '') {
+            $this->settings->setGroup('media', [
+                'storageDriver' => $storageDriver,
+            ]);
         }
 
         return $this->json->respond($response, [
             'success' => true,
             'installed' => true,
-            'user' => $loggedIn->jsonSerialize(),
+            'loginRequired' => true,
+            'redirectTo' => '/login',
         ]);
     }
 }

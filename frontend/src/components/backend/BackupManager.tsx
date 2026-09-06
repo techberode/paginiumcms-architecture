@@ -22,6 +22,7 @@ export const BackupManager: React.FC = () => {
   const [creating, setCreating] = useState(false);
   const [importing, setImporting] = useState(false);
   const [verifyingId, setVerifyingId] = useState<string | null>(null);
+  const [restoringId, setRestoringId] = useState<string | null>(null);
   const [backupName, setBackupName] = useState('');
   const [importName, setImportName] = useState('');
   const importInputRef = useRef<HTMLInputElement>(null);
@@ -119,13 +120,19 @@ export const BackupManager: React.FC = () => {
   const handleImportBackup = async (file: File) => {
     setImporting(true);
     try {
-      const imported = await backupApi.importArchive(file, importName.trim() || undefined);
-      if (imported) {
-        toast.success(t('backups.toast.importSuccess'));
+      const result = await backupApi.importArchive(file, importName.trim() || undefined);
+      if (result.ok && result.backup) {
+        toast.success(
+          t('backups.toast.importSuccessNamed', { name: result.backup.name })
+        );
         setImportName('');
         await loadBackups();
       } else {
-        toast.error(t('backups.toast.importFailed'));
+        toast.error(
+          t('backups.toast.importFailedDetail', {
+            reason: result.error ?? t('backups.toast.importFailed'),
+          })
+        );
       }
     } catch {
       toast.error(t('backups.toast.importFailed'));
@@ -172,16 +179,29 @@ export const BackupManager: React.FC = () => {
     }
   };
 
-  const handleRestoreBackup = async (id: string) => {
+  const handleRestoreBackup = async (backup: Backup) => {
     if (!confirm(t('backups.confirm.restoreOne'))) {
       return;
     }
-    const ok = await backupApi.restore(id);
-    if (ok) {
-      toast.success(t('backups.toast.restoreSuccess'));
-      await loadBackups();
-    } else {
+
+    setRestoringId(backup.id);
+    toast.info(t('backups.toast.restoreInProgress', { name: backup.name }));
+    try {
+      const result = await backupApi.restore(backup.id);
+      if (result.ok) {
+        toast.success(t('backups.toast.restoreSuccessNamed', { name: backup.name }));
+        await loadBackups();
+      } else {
+        toast.error(
+          t('backups.toast.restoreFailedDetail', {
+            reason: result.error ?? t('backups.toast.restoreFailed'),
+          })
+        );
+      }
+    } catch {
       toast.error(t('backups.toast.restoreFailed'));
+    } finally {
+      setRestoringId(null);
     }
   };
 
@@ -222,6 +242,7 @@ export const BackupManager: React.FC = () => {
     if (!confirm(t('backups.confirm.bulkRestore', { count: String(bulkSelection.count) }))) {
       return;
     }
+    toast.info(t('backups.toast.bulkRestoreInProgress', { count: String(bulkSelection.count) }));
     const result = await backupApi.bulkRestore(bulkSelection.selectedIds);
     if (result) {
       toast.success(summarizeBulkResult(result, t));
@@ -544,11 +565,13 @@ export const BackupManager: React.FC = () => {
                           </button>
                           <button
                             type="button"
-                            onClick={() => void handleRestoreBackup(backup.id)}
+                            onClick={() => void handleRestoreBackup(backup)}
                             className="btn btn-success text-xs px-2 py-1"
-                            disabled={backup.status !== 'completed'}
+                            disabled={backup.status !== 'completed' || restoringId === backup.id}
                           >
-                            {t('backups.actions.restore')}
+                            {restoringId === backup.id
+                              ? t('backups.actions.restoring')
+                              : t('backups.actions.restore')}
                           </button>
                           <button
                             type="button"

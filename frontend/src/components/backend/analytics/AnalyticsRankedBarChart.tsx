@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { useI18n } from '../../../context/I18nContext';
+import { countryCodeToFlag } from '../../../utils/countryFlag';
 
 export interface RankedChartItem {
   key: string;
@@ -7,6 +8,7 @@ export interface RankedChartItem {
   value: number;
   sublabel?: string;
   barClassName?: string;
+  countryCode?: string | null;
 }
 
 interface AnalyticsRankedBarChartProps {
@@ -60,7 +62,12 @@ export const AnalyticsRankedBarChart: React.FC<AnalyticsRankedBarChartProps> = (
           <div key={item.key} className="space-y-1">
             <div className="flex items-start justify-between gap-3 text-sm">
               <div className="min-w-0">
-                <div className="font-semibold text-slate-900 dark:text-white truncate">{item.label}</div>
+                <div className="font-semibold text-slate-900 dark:text-white inline-flex items-center gap-2 min-w-0">
+                  {item.countryCode ? (
+                    <span aria-hidden className="shrink-0">{countryCodeToFlag(item.countryCode)}</span>
+                  ) : null}
+                  <span className="truncate">{item.label}</span>
+                </div>
                 {item.sublabel ? (
                   <div className="text-xs text-slate-500 dark:text-slate-400 truncate">{item.sublabel}</div>
                 ) : null}

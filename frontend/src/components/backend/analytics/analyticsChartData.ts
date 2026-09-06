@@ -30,7 +30,8 @@ export function aggregateGeoByCountry(geo: GeoStat[]): RankedChartItem[] {
       key,
       label: entry.country,
       value: entry.visits,
-      sublabel: entry.countryCode ? entry.countryCode.toUpperCase() : undefined,
+      countryCode: entry.countryCode ? entry.countryCode.toUpperCase() : null,
+      sublabel: entry.city ?? undefined,
     });
   }
 

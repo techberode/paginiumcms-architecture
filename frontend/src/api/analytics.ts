@@ -2,6 +2,20 @@
 // === Analytics API (Iteration 6) ===
 import apiClient from './client';
 
+export type AnalyticsTrendDirection = 'up' | 'down';
+
+export interface AnalyticsTrend {
+  delta: number;
+  percent: number;
+  direction: AnalyticsTrendDirection;
+}
+
+export type AnalyticsTrendKey =
+  | 'page_views'
+  | 'unique_visitors'
+  | 'bounce_rate'
+  | 'avg_duration_seconds';
+
 export interface AnalyticsOverview {
   period: string;
   date: string;
@@ -12,6 +26,7 @@ export interface AnalyticsOverview {
   bounce_rate: number;
   avg_duration_seconds?: number;
   realtime_visitors: number;
+  trends?: Partial<Record<AnalyticsTrendKey, AnalyticsTrend>>;
 }
 
 export interface TopArticle {
@@ -62,15 +77,46 @@ export interface DeviceStats {
   unknown: number;
 }
 
+export interface PlatformStat {
+  platform: string;
+  visits: number;
+}
+
+export interface BotSummary {
+  human: number;
+  bot: number;
+  bot_share: number;
+}
+
+export interface BotStat {
+  botName: string;
+  botKind: string;
+  visits: number;
+}
+
+export interface BotVisit {
+  botName: string;
+  botKind: string;
+  requestUri: string;
+  ip?: string;
+  ip_masked: string;
+  timestamp: string;
+  blockRecommended: boolean;
+}
+
 export interface AnalyticsPayload {
   overview: AnalyticsOverview;
   top_pages: TopPage[];
   top_articles?: TopArticle[];
   top_referers: TopReferer[];
   devices: DeviceStats;
+  platforms?: PlatformStat[];
   browsers?: BrowserStat[];
   geo?: GeoStat[];
   geo_visits?: GeoVisit[];
+  bot_summary?: BotSummary;
+  top_bots?: BotStat[];
+  bot_visits?: BotVisit[];
 }
 
 export interface ChartPoint {
@@ -120,6 +166,18 @@ export interface NotFoundReport {
 export async function getNotFoundReport(days = 7, limit = 50): Promise<NotFoundReport | null> {
   const res = await apiClient.get<NotFoundReport>('/api/admin/analytics/not-found', {
     params: { days, limit },
+  });
+  return res.success && res.data ? res.data : null;
+}
+
+export interface BotBanResult {
+  ban: Record<string, unknown>;
+}
+
+export async function banBotIp(ip: string, botName: string): Promise<BotBanResult | null> {
+  const res = await apiClient.post<BotBanResult>('/api/admin/analytics/bots/ban', {
+    ip,
+    bot_name: botName,
   });
   return res.success && res.data ? res.data : null;
 }

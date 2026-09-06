@@ -121,7 +121,7 @@
 | GitHub content sync | ✅ partial toward target | content integration; not the full It.70 Git publisher |
 | System update | ✅ | version check, tag deployment, optional webhook |
 | Demo sandbox | ✅ | isolated demo mode and reset |
-| Setup wizard | ✅ basic | It.25 `beta.62` — `/setup` browser onboarding; `first-run.sh` CLI fallback |
+| Setup wizard | ✅ M1+ | It.25 `beta.62`–`beta.65` — `/setup` with server preflight, infra defaults; `first-run.sh` CLI fallback |
 | Performance Guard | ⏳ | It.71 |
 
 ---
@@ -207,8 +207,7 @@ cd frontend && npm run type-check && npm run lint && npm test
 
 - Host cron must be configured on every instance; the existence of jobs alone is not enough.
 - SSO, webhook deployment, and external connectors require correct secret configuration and outbound policy.
-- Classic mode is the current safe base; It.68 foundation is in `[Unreleased]`; full Hybrid/Git-headless capability remains planned.
-- The setup wizard, final theme model, and It.69–77 are not part of `beta.23`.
+- Classic mode is the current safe base; It.68 foundation shipped; full Hybrid/Git-headless capability remains planned.
 - Verify individual incident status in `ISSUES.md`; this overview is not an incident tracker.
 
 ---

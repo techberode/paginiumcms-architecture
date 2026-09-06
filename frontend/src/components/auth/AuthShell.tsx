@@ -1,6 +1,5 @@
 // frontend/src/components/auth/AuthShell.tsx
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { Shield, Sparkles, CheckCircle2 } from 'lucide-react';
 import { useAuthBranding } from '../../hooks/useAuthBranding';
 import { useI18n } from '../../context/I18nContext';
@@ -89,9 +88,9 @@ export const AuthShell: React.FC<AuthShellProps> = ({
         {children}
         {footer}
         <p className="text-center mt-8 text-xs text-theme-text-muted">
-          <Link to="/" className="hover:text-theme-primary transition-colors">
+          <a href="/" className="hover:text-theme-primary transition-colors">
             {t('public.auth.shell.backToSite')}
-          </Link>
+          </a>
         </p>
       </div>
     </div>

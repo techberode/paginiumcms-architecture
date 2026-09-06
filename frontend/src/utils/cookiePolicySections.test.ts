@@ -28,10 +28,23 @@ describe('cookiePolicySections', () => {
     sections[0].title = 'Controller';
 
     const raw = serializeCookiePolicySectionsJson(sections);
-    const parsed = parseCookiePolicySectionsJson(raw);
+    const parsed = parseCookiePolicySectionsJson(raw, { keepEmpty: true });
 
     expect(parsed).toHaveLength(2);
     expect(parsed[0]?.title).toBe('Controller');
     expect(parsed[1]?.title).toBe('Retention');
+  });
+
+  it('keeps empty draft blocks in admin editor round-trip', () => {
+    const sections = [createEmptyCookiePolicySection()];
+
+    const raw = serializeCookiePolicySectionsJson(sections);
+    const adminParsed = parseCookiePolicySectionsJson(raw, { keepEmpty: true });
+    const publicParsed = parseCookiePolicySectionsJson(raw);
+
+    expect(adminParsed).toHaveLength(1);
+    expect(adminParsed[0]?.title).toBe('');
+    expect(adminParsed[0]?.body).toBe('');
+    expect(publicParsed).toHaveLength(0);
   });
 });

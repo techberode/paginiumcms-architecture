@@ -397,9 +397,17 @@ export const BlogRenderer: React.FC = () => {
           </h1>
           <div className="mt-6 flex items-center gap-6 text-xs text-theme-text-muted border-y border-theme-border/80 py-4">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-theme-primary to-theme-accent flex items-center justify-center text-theme-primary-foreground font-bold text-xs">
-                {author.charAt(0)}
-              </div>
+              {authorAvatarUrl ? (
+                <img
+                  src={authorAvatarUrl}
+                  alt={author}
+                  className="h-8 w-8 rounded-full object-cover ring-1 ring-theme-border/80"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-theme-primary to-theme-accent flex items-center justify-center text-theme-primary-foreground font-bold text-xs">
+                  {author.charAt(0)}
+                </div>
+              )}
               <div>
                 <div className="font-bold text-theme-text">{author}</div>
                 <div>{t('public.blog.editorialAuthor')}</div>

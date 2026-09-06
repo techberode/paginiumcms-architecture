@@ -195,7 +195,32 @@ Versions and drafts need not share the same retention as live content. Backup po
 - plugin registry and required extension files,
 - migration journals.
 
-Cache, temporary files, and a rebuildable index may be excluded if restore rebuilds the index.
+### Backup ZIP layout (admin `BackupManager`)
+
+Current archives (≥ 2.1.0-beta.65) store the live tree under a `content/` prefix inside the ZIP:
+
+```text
+content/pages/
+content/blog/
+content/media/
+content/data/
+config/          (optional)
+backup.json
+```
+
+Legacy archives may contain only root `data/`; restore merges that into `content/data/` but **does not** recover pages/articles unless they were present in the ZIP. See [BACKUP_RESTORE.md](../developer/BACKUP_RESTORE.md).
+
+### Restore guarantees
+
+After admin restore:
+
+1. Files are written with paths relative to `storage/app/content/` (never `content/content/`).
+2. Content index is rebuilt from disk.
+3. Content list/payload caches are purged.
+
+Operators should run a **delete → restore** drill on a non-production copy. Incident reference: [ISS-163](../ISSUES.md#iss-163).
+
+Cache, temporary files, and a rebuildable index may be excluded from long-term retention if restore rebuilds the index.
 
 ---
 
@@ -254,3 +279,4 @@ Rollback = restore previous DI bindings; no flat-file conversion required.
 - [ITERATION_68](../ITERATION_68.md)
 - [ITERATION_69](../ITERATION_69.md)
 - [ITERATION_72](../ITERATION_72.md)
+- [BACKUP_RESTORE.md](../developer/BACKUP_RESTORE.md)

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Tests\Modules\Security\Services;
 
+use PaginiumCMS\Core\Content\AvatarImageProcessor;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Core\FlatFile\Models\MediaFile;
 use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
@@ -13,6 +14,14 @@ use PHPUnit\Framework\TestCase;
 
 final class UserAvatarServiceTest extends TestCase
 {
+    private AvatarImageProcessor $processor;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->processor = new AvatarImageProcessor();
+    }
+
     public function testAssignFromMediaUrlAcceptsStoragePath(): void
     {
         $media = new MediaFile();
@@ -26,7 +35,7 @@ final class UserAvatarServiceTest extends TestCase
             ->with('media/avatars/user_1/photo.png')
             ->willReturn($media);
 
-        $service = new UserAvatarService($repo);
+        $service = new UserAvatarService($repo, $this->processor);
         $url = $service->assignFromMediaUrl('/storage/app/content/media/avatars/user_1/photo.png');
 
         $this->assertSame('/storage/app/content/media/avatars/user_1/photo.png', $url);
@@ -37,7 +46,7 @@ final class UserAvatarServiceTest extends TestCase
         $repo = $this->createMock(MediaRepositoryInterface::class);
         $repo->expects($this->never())->method('findByPath');
 
-        $service = new UserAvatarService($repo);
+        $service = new UserAvatarService($repo, $this->processor);
 
         $this->expectException(FlatFileException::class);
         $service->assignFromMediaUrl('https://evil.example/photo.png');
@@ -53,7 +62,7 @@ final class UserAvatarServiceTest extends TestCase
         $repo = $this->createMock(MediaRepositoryInterface::class);
         $repo->method('findByPath')->willReturn($media);
 
-        $service = new UserAvatarService($repo);
+        $service = new UserAvatarService($repo, $this->processor);
 
         $this->expectException(FlatFileException::class);
         $service->assignFromMediaUrl('/storage/app/content/media/docs/manual.pdf');
@@ -64,7 +73,7 @@ final class UserAvatarServiceTest extends TestCase
         $user = new User();
         $user->setAvatarUrl('/storage/app/content/media/avatars/user_1/photo.png');
 
-        $service = new UserAvatarService($this->createMock(MediaRepositoryInterface::class));
+        $service = new UserAvatarService($this->createMock(MediaRepositoryInterface::class), $this->processor);
         $service->remove($user);
 
         $this->assertNull($user->getAvatarUrl());

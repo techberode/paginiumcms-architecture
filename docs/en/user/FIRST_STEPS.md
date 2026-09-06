@@ -10,7 +10,7 @@ icon: material/rocket-launch
 
 ## 1. First login
 
-**Browser setup (recommended):** after [installation](INSTALLATION.md), open `/setup` on a fresh instance, complete the wizard, and you are signed in automatically.
+**Browser setup (recommended):** after [installation](INSTALLATION.md), open `/setup` on a fresh instance. Complete the wizard steps (**Server → Administrator → Site → Infrastructure**), fix any hard preflight failures using the displayed commands, then finish — you are redirected to **`/login`** and must sign in with the administrator account you just created.
 
 **CLI bootstrap:** if you used `first-run.sh` / `bootstrap-admin.php` instead:
 
@@ -128,6 +128,8 @@ After the first changes you should be able to locate:
 - an HTTP request record without secrets,
 - firewall incidents only for real scenarios,
 - a successfully created backup with integrity verification.
+
+**Restore drill (recommended on dev/staging):** create a backup, soft-delete one article, restore, confirm the article reappears. If restore “succeeds” but content is missing, see [BACKUP_RESTORE.md](../developer/BACKUP_RESTORE.md) (wrong path `content/content/`, legacy ZIP without `blog/`, or stale cache — [ISS-163](../ISSUES.md#iss-163)).
 
 ## 12. What is not automatic
 

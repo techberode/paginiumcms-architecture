@@ -104,4 +104,61 @@ class Article extends Content
 
         return $this;
     }
+
+    public function getAuthorId(): string
+    {
+        $raw = $this->frontMatter['authorId'] ?? '';
+
+        return is_string($raw) ? trim($raw) : '';
+    }
+
+    public function setAuthorId(?string $authorId): self
+    {
+        $authorId = trim((string) $authorId);
+        if ($authorId === '') {
+            unset($this->frontMatter['authorId']);
+        } else {
+            $this->frontMatter['authorId'] = $authorId;
+        }
+
+        return $this;
+    }
+
+    public function getAuthorBio(): string
+    {
+        $raw = $this->frontMatter['authorBio'] ?? '';
+
+        return is_string($raw) ? trim($raw) : '';
+    }
+
+    public function setAuthorBio(?string $bio): self
+    {
+        $bio = trim((string) $bio);
+        if ($bio === '') {
+            unset($this->frontMatter['authorBio']);
+        } else {
+            $this->frontMatter['authorBio'] = $bio;
+        }
+
+        return $this;
+    }
+
+    public function getAuthorAvatarUrl(): string
+    {
+        $raw = $this->frontMatter['authorAvatarUrl'] ?? '';
+
+        return is_string($raw) ? trim($raw) : '';
+    }
+
+    public function setAuthorAvatarUrl(?string $url): self
+    {
+        $url = trim((string) $url);
+        if ($url === '') {
+            unset($this->frontMatter['authorAvatarUrl']);
+        } else {
+            $this->frontMatter['authorAvatarUrl'] = $url;
+        }
+
+        return $this;
+    }
 }

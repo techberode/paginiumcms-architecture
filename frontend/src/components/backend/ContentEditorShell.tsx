@@ -25,6 +25,8 @@ import type { ArticleCommentsSettings } from '../../utils/articleCommentsSetting
 import { useOpenLinksInNewTab } from '../../hooks/useOpenLinksInNewTab';
 import { ArticleTagsEditor } from './ArticleTagsEditor';
 import { ArticleCategoryPicker } from './ArticleCategoryPicker';
+import { ArticleAuthorPicker } from './ArticleAuthorPicker';
+import type { ArticleAuthorSettings } from '../../utils/articleAuthorSettings';
 import { ContentMetaSuggestPanel } from './ContentMetaSuggestPanel';
 import { linkTargetProps } from '../../utils/linkTarget';
 import { useI18n } from '../../context/I18nContext';
@@ -88,8 +90,8 @@ interface ContentEditorShellProps {
   footerExtra?: React.ReactNode;
   articleComments?: ArticleCommentsSettings;
   onArticleCommentsChange?: (value: ArticleCommentsSettings) => void;
-  articleAuthor?: string;
-  onArticleAuthorChange?: (value: string) => void;
+  articleAuthorSettings?: ArticleAuthorSettings;
+  onArticleAuthorSettingsChange?: (value: ArticleAuthorSettings) => void;
   articleCategory?: string;
   onArticleCategoryChange?: (value: string) => void;
   defaultBlogAuthor?: string;
@@ -143,8 +145,8 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
   footerExtra,
   articleComments,
   onArticleCommentsChange,
-  articleAuthor,
-  onArticleAuthorChange,
+  articleAuthorSettings,
+  onArticleAuthorSettingsChange,
   articleCategory = '',
   onArticleCategoryChange,
   defaultBlogAuthor = '',
@@ -506,21 +508,13 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
             </div>
           </div>
 
-          {type === 'article' && onArticleAuthorChange && (
-            <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-4 space-y-2">
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                {t('editor.shell.articleAuthor')}
-              </label>
-              <input
-                type="text"
-                className="form-input w-full"
-                value={articleAuthor ?? ''}
-                disabled={!canEdit}
-                placeholder={defaultBlogAuthor || t('editor.shell.articleAuthorPlaceholder')}
-                onChange={(e) => onArticleAuthorChange(e.target.value)}
-              />
-              <p className="text-xs text-slate-500">{t('editor.shell.articleAuthorHint')}</p>
-            </div>
+          {type === 'article' && onArticleAuthorSettingsChange && articleAuthorSettings && (
+            <ArticleAuthorPicker
+              value={articleAuthorSettings}
+              onChange={onArticleAuthorSettingsChange}
+              disabled={!canEdit}
+              defaultAuthorName={defaultBlogAuthor}
+            />
           )}
 
           {type === 'article' && (

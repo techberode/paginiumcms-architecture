@@ -46,6 +46,17 @@ cd ..
 
 Use development-only secrets. Do not copy production `.env`, production `APP_KEY`, SMTP passwords, or OAuth tokens into development.
 
+### Browser setup wizard (fresh instance)
+
+When no users exist, finish onboarding at **`/setup`** instead of relying on CLI bootstrap alone:
+
+1. Start backend (`php -S 127.0.0.1:8080` in `backend/public`) and frontend (`npm run dev`).
+2. Open `http://127.0.0.1:3025/setup`.
+3. Complete **Server → Administrator → Site → Infrastructure**; fix hard preflight items using displayed commands (no auto-install).
+4. Verify API: `curl -s http://127.0.0.1:8080/api/setup/preflight | jq .`
+
+See [INSTALLATION.md](../en/user/INSTALLATION.md) §7 and [ITERATION_25.md](../en/ITERATION_25.md).
+
 ## 3. Backend development server
 
 Reference command retained from the source documentation:

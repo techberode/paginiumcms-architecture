@@ -55,7 +55,10 @@ final class GdprAnonymizeServiceTest extends TestCase
 
         $this->service = new GdprAnonymizeService(
             $this->users,
-            new UserAvatarService($this->createMock(\PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface::class)),
+            new UserAvatarService(
+                $this->createMock(\PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface::class),
+                new \PaginiumCMS\Core\Content\AvatarImageProcessor(),
+            ),
             $this->comments,
             $this->messages,
             $this->newsletter

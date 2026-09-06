@@ -8,6 +8,86 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 - **Spec:** [ITERATION_87.md](docs/en/ITERATION_87.md) — Project Site Planner (Full CMS), UX audit deferrals (It.86d → 87a–87d), optional theme static JS allow-list (`87k`–`87m`).
 
+<a id="release-2-1-0-beta-66"></a>
+
+## [2.1.0-beta.66] – 2026-09-06
+
+Analytics production readiness — retention, trends, bots, geo, WAF ban from admin
+
+> **Note:** If you never deployed **`v2.1.0-beta.65`**, this tag also includes setup preflight ([ISS-162](docs/ISSUES.md#iss-162)), backup restore ([ISS-163](docs/ISSUES.md#iss-163)), and article author picker — see [RELEASE_2_1_0_BETA_65.md](docs/en/RELEASE_2_1_0_BETA_65.md).
+
+### Added
+
+- **Analytics retention** — `analytics.retentionDays` (default 90) in Settings; scheduler job `maintenance.cleanup` purges old visit/daily/visitor files nightly.
+- **Log retention (all sources)** — manual purge and scheduler now cover app, audit, event, and user logs via `LogRetentionService`.
+- **Analytics trend KPIs** — overview cards show percent change vs the previous period of equal length.
+- **Platform detection** — visits store OS/platform labels (Mobile, PC Windows, macOS, Linux…); new chart on Devices tab.
+- **Ban bot from Analytics** — `POST /api/admin/analytics/bots/ban` adds IP to temporary WAF jail with `analytics_bot_ban` incident.
+- **Bot analytics tab** — human/bot share, top bots, recent bot visits with block hints and manual ban action.
+- **WAF bot settings** — `blockEmptyUserAgent` (default on), `blockScraperTools` (default off); search/social bots always allowed.
+
+### Fixed
+
+- **GDPR custom blocks editor** — empty draft blocks no longer disappear in admin; public `/cookies` still hides empty blocks ([ISS-165](docs/ISSUES.md#iss-165)).
+- **Analytics geo country** — GeoIP via HTTPS `ipapi.co`; flags in geo chart and recent visits ([ISS-164](docs/ISSUES.md#iss-164)).
+- **Analytics bot identification** — visits store `visitorType`, `botName`, `botKind`.
+- **`logging.enabled` master switch** — when disabled, structured loggers skip writes entirely.
+- **Analytics retention purge** — directory scan via `scandir()` instead of `glob()` for reliable purge ([ISS-166](docs/ISSUES.md#iss-166)).
+- **Article author editor types** — `ContentEditorLoadData` includes `authorId` / bio / avatar fields ([ISS-167](docs/ISSUES.md#iss-167)).
+
+### Docs
+
+- [RELEASE_2_1_0_BETA_66.md](docs/en/RELEASE_2_1_0_BETA_66.md), [RELEASE_2_1_0_BETA_65.md](docs/en/RELEASE_2_1_0_BETA_65.md), [BACKUP_RESTORE.md](docs/en/developer/BACKUP_RESTORE.md).
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.66`
+- **Release note:** [RELEASE_2_1_0_BETA_66.md](docs/en/RELEASE_2_1_0_BETA_66.md)
+
+---
+
+## [2.1.0-beta.65] – 2026-09-05
+
+Setup wizard — server preflight, infra defaults, install hints (no auto-install)
+
+### Added
+
+- **API:** `GET /api/setup/preflight` — read-only server checks (PHP ≥8.5, extensions, writable storage, vendor/git/composer hints).
+- **Wizard:** steps **Server → Admin → Site → Infra → Finish**; hard blockers disable Continue; Ubuntu/Debian install procedure copy-paste.
+- **Complete:** optional `backendPort` → `systemUpdate`, `storageDriver` → `media` (`local` only).
+- **Smoke:** `scripts/smoke-it25.sh` validates preflight endpoint.
+
+### Changed
+
+- **`SystemChecker`** — PHP minimum requirement aligned to **8.5.0** (matches `first-run.sh`).
+- **Setup complete** — no auto-login; response includes `loginRequired` + `redirectTo: /login`; FE full-navigates to login with optional email prefill.
+
+### Security
+
+- No shell execution from setup; no auto-install of OS packages from web ([ISS-162](docs/ISSUES.md#iss-162)).
+- Setup no longer creates an authenticated session — administrator must sign in explicitly after wizard finish.
+
+### Fixed
+
+- **Backup create/restore (ISS-163):** ZIP now includes the full `content/` tree (`pages`, `blog`, `media`, `data`, …); legacy root `data/` archives still import; restore writes to correct paths under `storage/app/content/` (not `content/content/`); post-restore **index rebuild** + **content cache purge**; admin download/import/restore UX (CSRF on import, direct download link, clearer toasts).
+- **Setup UX:** password show/hide toggle; “Back to public site” link after install; one-time setup-complete toast (no loop on `/login`).
+
+### Added
+
+- **Article author picker:** assign a CMS user or custom name/bio/avatar per article in the editor; public byline and author box use resolved photo ([`ArticleAuthorPicker`](frontend/src/components/backend/ArticleAuthorPicker.tsx), `authorId` front matter).
+
+### Docs
+
+- [RELEASE_2_1_0_BETA_65.md](docs/en/RELEASE_2_1_0_BETA_65.md), [ITERATION_25.md](docs/en/ITERATION_25.md), INSTALLATION/FIRST_STEPS SK/EN.
+- [BACKUP_RESTORE.md](docs/en/developer/BACKUP_RESTORE.md) — ZIP layout, restore contract, troubleshooting ([ISS-163](docs/ISSUES.md#iss-163)).
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.65`
+- **Release note:** [RELEASE_2_1_0_BETA_65.md](docs/en/RELEASE_2_1_0_BETA_65.md)
+
+---
+
 <a id="release-2-1-0-beta-64"></a>
 
 ## [2.1.0-beta.64] – 2026-09-05

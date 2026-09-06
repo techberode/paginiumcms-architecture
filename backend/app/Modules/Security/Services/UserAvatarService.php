@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Modules\Security\Services;
 
+use PaginiumCMS\Core\Content\AvatarImageProcessor;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Modules\Media\MediaFormats;
 use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
@@ -14,11 +15,9 @@ use PaginiumCMS\Modules\Security\Models\User;
  */
 final class UserAvatarService
 {
-    /** @var list<string> */
-    private const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-
     public function __construct(
-        private MediaRepositoryInterface $media
+        private MediaRepositoryInterface $media,
+        private AvatarImageProcessor $avatarImages,
     ) {
     }
 
@@ -31,21 +30,26 @@ final class UserAvatarService
         string $binary,
         string $mimeType
     ): string {
-        $mimeType = strtolower(trim($mimeType));
-        if (!in_array($mimeType, self::ALLOWED_MIMES, true)) {
-            throw new FlatFileException('Avatar musí byť obrázok (JPEG, PNG, WebP alebo GIF)');
-        }
+        $processed = $this->avatarImages->process($binary, $mimeType);
+        $binary = $processed['binary'];
+        $mimeType = $processed['mimeType'];
 
         MediaFormats::validate(
-            $originalName,
+            'avatar.' . $processed['extension'],
             $binary,
             $mimeType,
-            self::ALLOWED_MIMES,
+            AvatarImageProcessor::ALLOWED_MIMES,
             true
         );
 
         $folder = 'avatars/' . $user->getId();
-        $media = $this->media->saveUpload($originalName, $binary, $mimeType, $user->getName(), $folder);
+        $media = $this->media->saveUpload(
+            'avatar.' . $processed['extension'],
+            $binary,
+            $mimeType,
+            $user->getName(),
+            $folder
+        );
 
         return $media->getUrl();
     }
@@ -68,8 +72,8 @@ final class UserAvatarService
         }
 
         $mimeType = strtolower($media->getMimeType());
-        if (!in_array($mimeType, self::ALLOWED_MIMES, true)) {
-            throw new FlatFileException('Avatar musí byť obrázok (JPEG, PNG, WebP alebo GIF)');
+        if (!in_array($mimeType, AvatarImageProcessor::ALLOWED_MIMES, true)) {
+            throw new FlatFileException('Avatar musí byť JPEG, PNG alebo WebP.');
         }
 
         return $media->getUrl();
@@ -95,6 +99,8 @@ final class UserAvatarService
         $storagePrefix = '/storage/app/content/';
         if (str_starts_with($path, $storagePrefix)) {
             $relative = ltrim(substr($path, strlen($storagePrefix)), '/');
+        } elseif (str_starts_with($path, '/api/media/file/')) {
+            $relative = urldecode(substr($path, strlen('/api/media/file/')));
         } elseif (str_starts_with($path, '/media/')) {
             $relative = ltrim(substr($path, 1), '/');
         } elseif (str_starts_with($path, 'media/')) {

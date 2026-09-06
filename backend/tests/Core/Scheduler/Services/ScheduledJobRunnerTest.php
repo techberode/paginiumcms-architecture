@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Tests\Core\Scheduler\Services;
 
+use PaginiumCMS\Core\Analytics\Services\AnalyticsRetentionService;
 use PaginiumCMS\Core\Backup\Contracts\BackupInterface;
 use PaginiumCMS\Core\Analytics\Contracts\ReporterInterface;
 use PaginiumCMS\Core\Conflict\Contracts\ConflictLoggerInterface;
@@ -14,6 +15,7 @@ use PaginiumCMS\Core\FlatFile\Services\TrashService;
 use PaginiumCMS\Core\Health\Services\HealthCheckManager;
 use PaginiumCMS\Core\Locking\Contracts\LockManagerInterface;
 use PaginiumCMS\Core\Logging\Contracts\LogWriterInterface;
+use PaginiumCMS\Core\Logging\Services\LogRetentionService;
 use PaginiumCMS\Core\Monitoring\Services\FlatFileStatsCollector;
 use PaginiumCMS\Core\Monitoring\Services\LogIncidentScanner;
 use PaginiumCMS\Core\Monitoring\Services\MonitoringReportBuilder;
@@ -26,6 +28,7 @@ use PaginiumCMS\Modules\Security\Services\UserRepository;
 use PaginiumCMS\Core\FlatFile\Services\ContentScheduledPublishService;
 use PaginiumCMS\Core\Scheduler\Handlers\BackupScheduledHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\ContentScheduledPublishHandler;
+use PaginiumCMS\Core\Scheduler\Handlers\MaintenanceCleanupHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\MonitoringPipelineHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\SystemDeployHandler;
 use PaginiumCMS\Core\Security\Services\EncryptionService;
@@ -108,6 +111,7 @@ final class ScheduledJobRunnerTest extends TestCase
         $handlers = new JobHandlerRegistry(
             new BackupScheduledHandler($backup),
             new MonitoringPipelineHandler($this->buildMonitoringScheduler()),
+            $this->makeMaintenanceCleanupHandler($settings, $reader, $writer),
             new ContentScheduledPublishHandler($scheduledPublish),
             $systemDeploy,
             new NewsletterWeeklyDigestHandler($this->makeNewsletterMailService($settings)),
@@ -145,6 +149,7 @@ final class ScheduledJobRunnerTest extends TestCase
         $handlers = new JobHandlerRegistry(
             new BackupScheduledHandler($backup),
             new MonitoringPipelineHandler($this->buildMonitoringScheduler()),
+            $this->makeMaintenanceCleanupHandler($settings, $reader, $writer),
             new ContentScheduledPublishHandler($scheduledPublish),
             $systemDeploy,
             new NewsletterWeeklyDigestHandler($this->makeNewsletterMailService($settings)),
@@ -260,6 +265,21 @@ final class ScheduledJobRunnerTest extends TestCase
         return new WebhookDeliveryHandler(
             new WebhookDeliveryService($registry, $deliveries),
             $deliveries
+        );
+    }
+
+    private function makeMaintenanceCleanupHandler(
+        SettingsRepositoryInterface $settings,
+        FileReaderInterface $reader,
+        FileWriterInterface $writer
+    ): MaintenanceCleanupHandler {
+        return new MaintenanceCleanupHandler(
+            new AnalyticsRetentionService($reader, $settings),
+            new LogRetentionService(
+                new FileReader(new FileValidator('/tmp/paginium-maintenance-test')),
+                new FileWriter(new FileValidator('/tmp/paginium-maintenance-test')),
+                $settings
+            )
         );
     }
 }

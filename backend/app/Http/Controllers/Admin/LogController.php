@@ -6,9 +6,9 @@ namespace PaginiumCMS\Http\Controllers\Admin;
 
 use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\Logging\Models\LogSeverity;
-use PaginiumCMS\Core\Logging\Services\AccessLogService;
 use PaginiumCMS\Core\Logging\Services\ApplicationLogMessageFormatter;
 use PaginiumCMS\Core\Logging\Services\ApplicationLogReader;
+use PaginiumCMS\Core\Logging\Services\LogRetentionService;
 use PaginiumCMS\Http\Support\JsonResponder;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -18,7 +18,7 @@ final class LogController
     public function __construct(
         private ApplicationLogReader $logReader,
         private ApplicationLogMessageFormatter $logFormatter,
-        private AccessLogService $accessLog,
+        private LogRetentionService $logRetention,
         private JsonResponder $json
     ) {
     }
@@ -77,7 +77,7 @@ final class LogController
 
     public function purge(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $removed = $this->accessLog->purgeOldLogs();
+        $removed = $this->logRetention->purgeOldLogs();
 
         return $this->json->success(
             $response,

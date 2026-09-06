@@ -184,6 +184,15 @@ final class JobRegistryStore
                     'system' => true,
                     'payload' => [],
                 ],
+                [
+                    'id' => 'maintenance-cleanup',
+                    'name' => 'Analytics + log retention purge',
+                    'handler' => 'maintenance.cleanup',
+                    'cron' => '30 3 * * *',
+                    'enabled' => true,
+                    'system' => true,
+                    'payload' => [],
+                ],
             ],
         ];
     }

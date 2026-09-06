@@ -8,6 +8,7 @@ use PaginiumCMS\Core\Logging\Contracts\LoggerInterface;
 use PaginiumCMS\Core\Logging\Contracts\LogWriterInterface;
 use PaginiumCMS\Core\Logging\Models\LogEntry;
 use PaginiumCMS\Core\Logging\Models\LogSeverity;
+use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 
 /**
  * Hlavný logger.
@@ -16,11 +17,16 @@ class Logger implements LoggerInterface
 {
     private LogWriterInterface $writer;
     private string $category;
+    private ?SettingsRepositoryInterface $settings;
 
-    public function __construct(LogWriterInterface $writer, string $category = 'app')
-    {
+    public function __construct(
+        LogWriterInterface $writer,
+        string $category = 'app',
+        ?SettingsRepositoryInterface $settings = null
+    ) {
         $this->writer = $writer;
         $this->category = $category;
+        $this->settings = $settings;
     }
 
     /**
@@ -68,6 +74,10 @@ class Logger implements LoggerInterface
      */
     public function log(string $severity, string $message, array $context = []): void
     {
+        if (!$this->isMasterEnabled()) {
+            return;
+        }
+
         // PHPUnit must not pollute real flat-file app logs (Security failed-login WARNINGs, etc.).
         if ($this->isTestingEnvironment()) {
             return;
@@ -93,6 +103,10 @@ class Logger implements LoggerInterface
 
     public function writeEntry(LogEntry $entry): void
     {
+        if (!$this->isMasterEnabled()) {
+            return;
+        }
+
         if ($this->isTestingEnvironment()) {
             return;
         }
@@ -169,5 +183,16 @@ class Logger implements LoggerInterface
         return getenv('APP_ENV') === 'testing'
             || ($_ENV['APP_ENV'] ?? '') === 'testing'
             || ($_SERVER['APP_ENV'] ?? '') === 'testing';
+    }
+
+    private function isMasterEnabled(): bool
+    {
+        if ($this->settings === null) {
+            return true;
+        }
+
+        $logging = $this->settings->group('logging');
+
+        return (bool) ($logging['enabled'] ?? true);
     }
 }

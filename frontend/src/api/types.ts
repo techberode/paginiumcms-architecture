@@ -66,6 +66,9 @@ export interface Article extends Page {
   authorBio?: string;
   authorAvatarUrl?: string;
   showAuthorBox?: boolean;
+  authorId?: string;
+  authorBioStored?: string;
+  authorAvatarUrlStored?: string;
   readingTime: number;
   commentsEnabled?: boolean;
   commentsRequireApproval?: boolean | null;

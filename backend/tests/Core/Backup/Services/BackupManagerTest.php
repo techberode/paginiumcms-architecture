@@ -41,7 +41,7 @@ class BackupManagerTest extends TestCase
         $this->backupPath = $this->root . '/storage/backups';
         $this->contentPath = $this->root . '/storage/app/content';
 
-        $validator = new FileValidator($this->root . '/storage/app');
+        $validator = new FileValidator($this->contentPath);
         $reader = new FileReader($validator);
         $writer = new FileWriter($validator);
 
@@ -176,6 +176,112 @@ class BackupManagerTest extends TestCase
         $this->assertSame('not_due', $result['reason'] ?? null);
     }
 
+    public function testCreateAndRestoreRoundTripIncludesPages(): void
+    {
+        if (!class_exists(\ZipArchive::class)) {
+            $this->markTestSkipped('ZipArchive extension is required.');
+        }
+
+        $tempRoot = sys_get_temp_dir() . '/paginium_backup_rt_' . uniqid('', true);
+        $backupPath = $tempRoot . '/backups';
+        $contentPath = $tempRoot . '/content';
+        mkdir($backupPath, 0755, true);
+        mkdir($contentPath . '/pages', 0755, true);
+        mkdir($contentPath . '/blog', 0755, true);
+        mkdir($contentPath . '/data', 0755, true);
+        file_put_contents($contentPath . '/pages/home.md', "---\ntitle: Home\n---\n# Home");
+        file_put_contents($contentPath . '/blog/post.md', "---\ntitle: Post\n---\n# Post");
+        file_put_contents($contentPath . '/data/settings.json', '{"general":{"siteName":"Test"}}');
+
+        $validator = new FileValidator($contentPath);
+        $reader = new FileReader($validator);
+        $writer = new FileWriter($validator);
+        $manager = new BackupManager($reader, $writer, $backupPath, $contentPath);
+
+        try {
+            $backup = $manager->create('roundtrip', ['includes' => ['content', 'config', 'data']]);
+            $this->assertSame('completed', $backup->getStatus());
+
+            unlink($contentPath . '/pages/home.md');
+            unlink($contentPath . '/blog/post.md');
+            unlink($contentPath . '/data/settings.json');
+
+            $this->assertTrue($manager->restore($backup->getId()));
+            $this->assertFileExists($contentPath . '/pages/home.md');
+            $this->assertFileExists($contentPath . '/blog/post.md');
+            $this->assertFileExists($contentPath . '/data/settings.json');
+            $this->assertDirectoryDoesNotExist($contentPath . '/content');
+        } finally {
+            $this->removeDirectory($tempRoot);
+        }
+    }
+
+    public function testCreateAndRestoreAfterSoftDeleteToTrash(): void
+    {
+        if (!class_exists(\ZipArchive::class)) {
+            $this->markTestSkipped('ZipArchive extension is required.');
+        }
+
+        $tempRoot = sys_get_temp_dir() . '/paginium_backup_trash_' . uniqid('', true);
+        $backupPath = $tempRoot . '/backups';
+        $contentPath = $tempRoot . '/content';
+        mkdir($backupPath, 0755, true);
+        mkdir($contentPath . '/blog', 0755, true);
+        file_put_contents($contentPath . '/blog/deleted-post.md', "---\ntitle: Deleted\n---\n# Deleted");
+
+        $validator = new FileValidator($contentPath);
+        $reader = new FileReader($validator);
+        $writer = new FileWriter($validator);
+        $manager = new BackupManager($reader, $writer, $backupPath, $contentPath);
+
+        try {
+            $backup = $manager->create('before-delete', ['includes' => ['content']]);
+            $writer->delete('blog/deleted-post.md', true);
+            $this->assertFileDoesNotExist($contentPath . '/blog/deleted-post.md');
+
+            $this->assertTrue($manager->restore($backup->getId()));
+            $this->assertFileExists($contentPath . '/blog/deleted-post.md');
+            $this->assertDirectoryDoesNotExist($contentPath . '/content');
+        } finally {
+            $this->removeDirectory($tempRoot);
+        }
+    }
+
+    public function testRestoreLegacyDataOnlyBackup(): void
+    {
+        if (!class_exists(\ZipArchive::class)) {
+            $this->markTestSkipped('ZipArchive extension is required.');
+        }
+
+        $tempRoot = sys_get_temp_dir() . '/paginium_backup_legacy_' . uniqid('', true);
+        $backupPath = $tempRoot . '/backups';
+        $contentPath = $tempRoot . '/content';
+        mkdir($backupPath, 0755, true);
+        mkdir($contentPath . '/data', 0755, true);
+        file_put_contents($contentPath . '/data/settings.json', '{"general":{"siteName":"Legacy"}}');
+
+        $zipPath = $backupPath . '/legacy.zip';
+        $zip = new \ZipArchive();
+        $this->assertTrue($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE));
+        $zip->addFromString('data/settings.json', '{"general":{"siteName":"Legacy"}}');
+        $zip->close();
+
+        unlink($contentPath . '/data/settings.json');
+
+        $validator = new FileValidator($contentPath);
+        $reader = new FileReader($validator);
+        $writer = new FileWriter($validator);
+        $manager = new BackupManager($reader, $writer, $backupPath, $contentPath);
+
+        try {
+            $this->assertTrue($manager->importBackup($zipPath));
+            $this->assertFileExists($contentPath . '/data/settings.json');
+            $this->assertDirectoryDoesNotExist($contentPath . '/content');
+        } finally {
+            $this->removeDirectory($tempRoot);
+        }
+    }
+
     public function testRunScheduledBackupIfDueWhenPastDue(): void
     {
         if (!class_exists(\ZipArchive::class)) {
@@ -189,7 +295,7 @@ class BackupManagerTest extends TestCase
         mkdir($contentPath . '/pages', 0755, true);
         file_put_contents($contentPath . '/pages/home.md', "---\ntitle: Home\n---\n# Home");
 
-        $validator = new FileValidator($tempRoot);
+        $validator = new FileValidator($contentPath);
         $reader = new FileReader($validator);
         $writer = new FileWriter($validator);
         $manager = new BackupManager($reader, $writer, $backupPath, $contentPath);

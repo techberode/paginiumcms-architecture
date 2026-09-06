@@ -43,6 +43,9 @@ export interface ContentEditorLoadData {
   commentsRequireApproval?: boolean | null;
   commentsAllowGuests?: boolean | null;
   author?: string;
+  authorId?: string;
+  authorBioStored?: string;
+  authorAvatarUrlStored?: string;
   schemaVersion?: number;
   defaultLocale?: string;
   localizedContent?: Record<string, LocalizedContentSlice>;

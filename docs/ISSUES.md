@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 5 September 2026 · register **ISS-001–ISS-161** · admin deploy readiness (ISS-161)
+> **Last updated:** 6 September 2026 · register **ISS-001–ISS-167** · analytics retention + geo/bots (ISS-164–167)
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -184,6 +184,12 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-159](#iss-159) | SearchController DI misconfiguration caused HTTP 500 after ISS-158 fix | **Critical (admin)** | ✅ Fixed (2.1.0-beta.60) |
 | [ISS-160](#iss-160) | PHPUnit user purge left orphan index; login blocked, setup wizard skipped | High (dev/DX) | ✅ Fixed · **2.1.0-beta.63** |
 | [ISS-161](#iss-161) | Admin UI deploy showed update but failed without STACK_DIR / blockers hidden | High (ops) | ✅ Fixed · **2.1.0-beta.64** |
+| [ISS-162](#iss-162) | Setup wizard lacked server prerequisite checks and infra defaults | Medium (onboarding) | ✅ Fixed · **2.1.0-beta.65** |
+| [ISS-163](#iss-163) | Backup restore wrote content to wrong path; list cache stale; legacy ZIPs incomplete | High (data integrity) | ✅ Fixed · **2.1.0-beta.65** |
+| [ISS-164](#iss-164) | Analytics geo always Unknown — ip-api.com HTTPS blocked on free tier | Medium (analytics) | ✅ Fixed · **2.1.0-beta.66** |
+| [ISS-165](#iss-165) | GDPR custom blocks vanished immediately in admin Privacy editor | Medium (admin UX) | ✅ Fixed · **2.1.0-beta.66** |
+| [ISS-166](#iss-166) | Analytics retention purge deleted 0 files — glob unreliable | Low (CI/ops) | ✅ Fixed · **2.1.0-beta.66** |
+| [ISS-167](#iss-167) | Article author API fields missing from ContentEditorLoadData (TS) | Low (CI) | ✅ Fixed · **2.1.0-beta.66** |
 
 ## CI failures (GitHub Actions)
 
@@ -4953,6 +4959,216 @@ Dashboard or Platform → System update showed **update available**, but deploy 
 
 - `SystemDeployReadinessServiceTest`, extended `SystemUpdateControllerTest`.
 - Production: set stack directory in settings → dashboard shows green deploy → health version matches tag after run.
+
+---
+
+<a id="iss-162"></a>
+
+## ISS-162 – Setup wizard lacked server prerequisite checks and infra defaults
+
+| Field | Value |
+|---|---|
+| **Severity** | Medium (onboarding) |
+| **Status** | ✅ Fixed · **2.1.0-beta.65** |
+| **Area** | Setup wizard / It.25 M1+ |
+
+### Symptom
+
+Fresh `/setup` wizard only collected admin + site fields. Operators had no in-browser signal when PHP extensions, storage permissions, or Composer vendor were missing — failures surfaced later during use or deploy.
+
+### Root cause
+
+It.25 basic phase intentionally deferred stretch goals (package detection, infra defaults). No pre-auth preflight API existed.
+
+### Resolution
+
+- **`SetupPreflightService`** — read-only checks (PHP ≥8.5, required extensions, writable storage, vendor/git/composer hints). No shell execution from web.
+- **`GET /api/setup/preflight`** — structured checks with hardcoded Ubuntu/Debian install steps for missing items.
+- **Wizard** — server step blocks on hard failures; infra step sets `systemUpdate.backendPort` and `media.storageDriver`.
+- **`SystemChecker`** — PHP minimum aligned to 8.5.0.
+
+### Verification
+
+- PHPUnit: `SetupPreflightServiceTest`, extended `SetupControllerTest`.
+- Smoke: `scripts/smoke-it25.sh` hits preflight endpoint.
+
+---
+
+<a id="iss-163"></a>
+
+## ISS-163 – Backup restore wrote content to wrong path; list cache stale; legacy ZIPs incomplete
+
+| Field | Value |
+|---|---|
+| **Severity** | High (data integrity / ops) |
+| **Status** | ✅ Fixed · **2.1.0-beta.65** |
+| **Area** | Backups / `BackupManager` / admin Backups UI |
+
+### Symptom
+
+Operators reported multiple backup failures on dev and staging:
+
+1. **Delete → restore drill:** create backup, soft-delete an article, restore — article did not reappear in admin or public lists (file sometimes missing from `content/blog/`).
+2. **Prod → dev restore:** restored production ZIP on dev — settings/index updated but no pages or articles.
+3. **Admin UX:** backup download dialog stuck; import returned 403; restore success toast without visible content change.
+
+### Root cause
+
+Several independent defects in create/restore and FE wiring:
+
+| Defect | Effect |
+|--------|--------|
+| **Create** looked for non-existent `content/content` subtrees instead of zipping `storage/app/content/` | New ZIPs lacked `pages/`, `blog/`, `media/` (only `data/` or empty content) |
+| **Restore** expected `content/` prefix; legacy ZIPs had root `data/` only | Silent partial restore; API still returned success |
+| **`toContentRelativePath()`** used `storage/app` as FileWriter base | Files written to `storage/app/content/content/blog/` — CMS reads `storage/app/content/blog/` |
+| **No post-restore hook** | Content list/payload cache served stale lists after successful file restore |
+| **FE import** used raw `fetch` without CSRF | `403 csrf_invalid` on `POST /api/admin/backups/import` |
+| **FE download** revoked blob URL immediately | Browser save dialog hung |
+
+Soft delete moves files to `trash/` and removes index rows; restore must write back to `blog/` **and** invalidate cache/index — otherwise UI still hides restored items.
+
+### Resolution
+
+**Backend (`BackupManager`):**
+
+- `addContentIncludesToZip()` — zip full `contentPath` as `content/{pages,blog,media,data,…}`.
+- `importBackup()` — merge `content/`; support legacy root `data/` → `content/data/`.
+- `toContentRelativePath()` — paths relative to `contentPath` (`blog/post.md`, not `content/blog/post.md`).
+- `afterContentRestore()` — `ContentIndexService::rebuild()` + `ContentCacheService::purgeAll()` (injected via DI).
+
+**Frontend:**
+
+- Import via `apiClient.post` with CSRF and extended timeout.
+- Download via direct authenticated link (no immediate `revokeObjectURL`).
+- Clearer restore progress/success/error toasts.
+
+**Tests:** `BackupManagerTest::testCreateAndRestoreRoundTripIncludesPages`, `testCreateAndRestoreAfterSoftDeleteToTrash`, `testRestoreLegacyDataOnlyBackup` (FileValidator base aligned with production).
+
+### Operator recovery
+
+1. Upgrade to fixed release.
+2. Remove orphan tree if present: `rm -rf backend/storage/app/content/content` (only after verifying live files under `content/blog/`).
+3. **Create a new backup** on production — old ZIPs may not contain pages/blog.
+4. Re-run restore on dev/staging; verify with delete → restore drill.
+
+### Verification
+
+- PHPUnit: `tests/Core/Backup/Services/BackupManagerTest.php` (round-trip + soft-delete scenarios).
+- Manual: [BACKUP_RESTORE.md](en/developer/BACKUP_RESTORE.md) checklist.
+- Gate: `./scripts/iteration-gate.sh`.
+
+### Key technical identifiers
+
+- `BackupManager::addContentIncludesToZip()`, `importBackup()`, `toContentRelativePath()`, `afterContentRestore()`
+- `storage/app/content/content/` (wrong path — do not use)
+- `ContentCacheService::purgeAll()`, `ContentIndexService::rebuild()`
+- `POST /api/admin/backups/import`, `POST /api/admin/backups/{id}/restore`
+- `frontend/src/api/backup.ts`, `BackupManager.tsx`
+
+---
+
+<a id="iss-164"></a>
+
+## ISS-164 – Analytics geo always Unknown — ip-api.com HTTPS blocked on free tier
+
+| Field | Value |
+|---|---|
+| **Severity** | Medium (analytics) |
+| **Status** | ✅ Fixed · **2.1.0-beta.66** |
+| **Area** | Analytics / `GeoIPService` |
+
+### Symptom
+
+Admin Analytics → Geography showed all visits as **Unknown**; no country flags in charts or recent visits.
+
+### Root cause
+
+`GeoIPService` called `http://ip-api.com` over HTTPS. The free tier rejects HTTPS without a paid key, so every lookup failed silently and visits stored empty geo fields.
+
+### Resolution
+
+- Primary provider switched to **`https://ipapi.co/{ip}/json/`** (HTTPS-friendly free tier with rate limits).
+- `Tracker` persists `country`, `countryCode`, `city`; FE shows flag emoji via `countryCodeToFlag`.
+- PHPUnit: extended `GeoIPServiceTest`.
+
+### Key technical identifiers
+
+- `GeoIPService`, `Tracker`, `AnalyticsRankedBarChart`, `aggregateGeoByCountry`
+
+---
+
+<a id="iss-165"></a>
+
+## ISS-165 – GDPR custom blocks vanished immediately in admin Privacy editor
+
+| Field | Value |
+|---|---|
+| **Severity** | Medium (admin UX) |
+| **Area** | Settings → Privacy / `cookiePolicySections.ts` |
+
+### Symptom
+
+Adding a new custom GDPR block in **Settings → Privacy & cookies** removed the row immediately; operators could not fill title/body.
+
+### Root cause
+
+`serializeCookiePolicySectionsJson()` filtered empty blocks on parse in admin path; draft blocks with empty title/body were dropped before save.
+
+### Resolution
+
+- Admin parse uses `keepEmpty: true` for drafts.
+- Public `/cookies` page still omits empty blocks from display.
+- Vitest: `cookiePolicySections.test.ts`.
+
+---
+
+<a id="iss-166"></a>
+
+## ISS-166 – Analytics retention purge deleted 0 files — glob unreliable
+
+| Field | Value |
+|---|---|
+| **Severity** | Low (CI / ops) |
+| **Status** | ✅ Fixed · **2.1.0-beta.66** |
+| **Area** | `AnalyticsRetentionService` |
+
+### Symptom
+
+PHPUnit `AnalyticsRetentionServiceTest` expected 1 deleted visit file but got `0`. Scheduled purge could skip files on some filesystems.
+
+### Root cause
+
+`purgeDatedJsonFiles()` used `glob($dir . '/*.json')`, which returns empty on vfsStream and some constrained environments.
+
+### Resolution
+
+- Replaced with `scandir()` + `listJsonFiles()` helper.
+- Test uses fixed old date `2020-01-01` for stability.
+
+---
+
+<a id="iss-167"></a>
+
+## ISS-167 – Article author API fields missing from ContentEditorLoadData (TS)
+
+| Field | Value |
+|---|---|
+| **Severity** | Low (CI) |
+| **Status** | ✅ Fixed · **2.1.0-beta.66** |
+| **Area** | Frontend types / article editor |
+
+### Symptom
+
+`tsc --noEmit` failed in `MarkdownEditor.tsx`: `authorId`, `authorBioStored`, `authorAvatarUrlStored` not on `ContentEditorLoadData`. `ArticleAuthorPicker` could not import exported `User` type.
+
+### Root cause
+
+Backend `ContentController` already returned author fields; FE `contentEditorApi.ts` type lagged. `users.ts` imported `User` without re-export.
+
+### Resolution
+
+- Extended `ContentEditorLoadData` with author fields.
+- `export type { User }` from `users.ts`; removed unused `uploadMedia` static import.
 
 ---
 

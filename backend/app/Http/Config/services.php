@@ -11,6 +11,7 @@ use PaginiumCMS\Core\Backup\Contracts\BackupInterface;
 use PaginiumCMS\Core\Analytics\Contracts\TrackerInterface;
 use PaginiumCMS\Core\Analytics\Middleware\AnalyticsMiddleware;
 use PaginiumCMS\Core\Analytics\Services\AnalyticsManager;
+use PaginiumCMS\Core\Analytics\Services\AnalyticsRetentionService;
 use PaginiumCMS\Core\Analytics\Services\GeoIPService;
 use PaginiumCMS\Core\Analytics\Services\RealtimeTracker;
 use PaginiumCMS\Core\Analytics\Services\Reporter;
@@ -142,6 +143,7 @@ use PaginiumCMS\Core\Logging\LogStoragePaths;
 use PaginiumCMS\Core\Logging\Services\ApplicationLogMessageFormatter;
 use PaginiumCMS\Core\Logging\Services\ApplicationLogReader;
 use PaginiumCMS\Core\Logging\Services\AccessLogService;
+use PaginiumCMS\Core\Logging\Services\LogRetentionService;
 use PaginiumCMS\Core\Logging\Contracts\LogWriterInterface;
 use PaginiumCMS\Core\FlatFile\Services\ContentMetaGenerator;
 use PaginiumCMS\Core\FlatFile\Services\ContentRevision;
@@ -188,6 +190,7 @@ use PaginiumCMS\Http\Controllers\Admin\SnippetController;
 use PaginiumCMS\Http\Controllers\Admin\ThemesController;
 use PaginiumCMS\Http\Controllers\Admin\BlueprintController;
 use PaginiumCMS\Core\Setup\Services\FirstAdminBootstrapService;
+use PaginiumCMS\Core\Setup\Services\SetupPreflightService;
 use PaginiumCMS\Core\Setup\Services\SetupStatusService;
 use PaginiumCMS\Http\Controllers\Setup\SetupController;
 use PaginiumCMS\Http\Controllers\Origin\OriginController;
@@ -292,6 +295,7 @@ use PaginiumCMS\Modules\Security\Contracts\AuthenticationInterface;
 use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
 use PaginiumCMS\Modules\Security\Contracts\PasswordPolicyInterface;
 use PaginiumCMS\Modules\Security\Contracts\TwoFactorInterface;
+use PaginiumCMS\Core\Content\AvatarImageProcessor;
 use PaginiumCMS\Modules\Security\Services\UserAvatarService;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
 use PaginiumCMS\Modules\Security\Services\RoleCatalogSeeder;
@@ -512,7 +516,11 @@ return [
     LocaleScaffoldService::class => create(LocaleScaffoldService::class)
         ->constructor(get(SupportedLocalesRegistry::class)),
     UserAvatarService::class => create(UserAvatarService::class)
-        ->constructor(get(MediaRepositoryInterface::class)),
+        ->constructor(
+            get(MediaRepositoryInterface::class),
+            get(AvatarImageProcessor::class),
+        ),
+    AvatarImageProcessor::class => create(AvatarImageProcessor::class),
     TranslationPolicyValidator::class => create(TranslationPolicyValidator::class)
         ->constructor(get(SyntaxChecker::class)),
     TranslationController::class => create(TranslationController::class)
@@ -891,7 +899,10 @@ return [
         ->constructor(get(EditorProfileService::class), get(EditorComponentRegistry::class)),
 
     BlogAuthorSettings::class => create(BlogAuthorSettings::class)
-        ->constructor(get(SettingsRepositoryInterface::class)),
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(\PaginiumCMS\Modules\Security\Services\UserRepository::class),
+        ),
 
     BlogSidebarService::class => create(BlogSidebarService::class)
         ->constructor(
@@ -1192,6 +1203,12 @@ return [
         ),
     ReporterInterface::class => create(Reporter::class)
         ->constructor(get(TrackerInterface::class)),
+    AnalyticsRetentionService::class => create(AnalyticsRetentionService::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(SettingsRepositoryInterface::class),
+            'data/analytics'
+        ),
     NotificationService::class => function ($container) {
         return NotificationFactory::create($container->get(SettingsRepositoryInterface::class));
     },
@@ -1217,6 +1234,7 @@ return [
         ->constructor(
             get(ReporterInterface::class),
             get(RealtimeTracker::class),
+            get(\PaginiumCMS\Core\Security\Firewall\FirewallService::class),
             get(JsonResponder::class)
         ),
     AnalyticsPageviewController::class => create(AnalyticsPageviewController::class)
@@ -1371,7 +1389,7 @@ return [
         ->constructor(
             get(ApplicationLogReader::class),
             get(ApplicationLogMessageFormatter::class),
-            get(AccessLogService::class),
+            get(LogRetentionService::class),
             get(JsonResponder::class)
         ),
     FeedGenerator::class => create(FeedGenerator::class)
@@ -1573,6 +1591,11 @@ return [
             get(SettingsRepositoryInterface::class),
             get(UserRepository::class),
         ),
+    SetupPreflightService::class => create(SetupPreflightService::class)
+        ->constructor(
+            __DIR__ . '/../../../storage',
+            null,
+        ),
     FirstAdminBootstrapService::class => create(FirstAdminBootstrapService::class)
         ->constructor(
             get(UserRepository::class),
@@ -1581,9 +1604,9 @@ return [
     SetupController::class => create(SetupController::class)
         ->constructor(
             get(SetupStatusService::class),
+            get(SetupPreflightService::class),
             get(FirstAdminBootstrapService::class),
             get(SettingsRepositoryInterface::class),
-            get(AuthenticationInterface::class),
             get(Validator::class),
             get(JsonResponder::class),
         ),

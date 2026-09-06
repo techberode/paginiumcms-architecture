@@ -132,7 +132,7 @@ The order is **It.73 → It.76/77 → It.75**. The AI agent may only propose cha
 |-------|--------|--------|
 | **It.58d** — remaining layout blocks/polish | ⏳ | after docs; may run alongside early Hybrid Engine work |
 | **It.67** — untrusted surfaces defense-in-depth | 🔴 | before expanding imports, themes, and generated code |
-| **It.25** — setup wizard and simplified update UX | 🟡 pre-Final | after beta feedback stabilizes, before 1.0 |
+| **It.25** — setup wizard and simplified update UX | ✅ M1+ shipped | `beta.62`–`beta.65` — preflight + update banner; before stable tag |
 | **It.48** — static/dynamic rendering | 🟡 | align with It.70 to avoid two publishing pipelines |
 | Community beta testing | 🔴 | ongoing before 1.0 |
 | Documentation and security review | 🔴 | with every shipped wave |

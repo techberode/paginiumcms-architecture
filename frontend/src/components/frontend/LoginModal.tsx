@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
+import { useNotification } from '../../context/NotificationContext';
 import { securityApi, type SsoProvider } from '../../api/security';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { isMaintenanceActive } from '../../api/maintenance';
@@ -32,6 +33,7 @@ export const LoginModal: React.FC = () => {
   const [ssoProviders, setSsoProviders] = useState<SsoProvider[]>([]);
   const { login, verifyTwoFactorLogin, pendingTwoFactor, twoFactorSetupPending, user, refreshUser } = useAuth();
   const navigate = useNavigate();
+  const { success: showSuccessToast } = useNotification();
   const toast = useToast();
   const { t } = useI18n();
   const { settings } = useSettingsContext();
@@ -53,6 +55,29 @@ export const LoginModal: React.FC = () => {
       }
     });
   }, [isDemoInstance]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('setup') !== 'complete') {
+      return;
+    }
+
+    const setupEmail = params.get('email');
+    if (setupEmail) {
+      setEmail(decodeURIComponent(setupEmail));
+    }
+
+    const toastKey = `paginium_setup_complete_toast:${setupEmail ?? 'admin'}`;
+    if (!sessionStorage.getItem(toastKey)) {
+      sessionStorage.setItem(toastKey, '1');
+      showSuccessToast(t('setup.toast.loginAfterSetup'));
+    }
+
+    params.delete('setup');
+    params.delete('email');
+    const qs = params.toString();
+    window.history.replaceState(null, '', qs ? `/login?${qs}` : '/login');
+  }, [showSuccessToast, t]);
 
   useEffect(() => {
     void (async () => {

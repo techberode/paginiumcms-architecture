@@ -48,11 +48,10 @@ final class FirewallScannerTest extends TestCase
         $this->assertNull($match);
     }
 
-    public function testDetectsEmptyUserAgentScenario(): void
+    public function testDoesNotDetectEmptyUserAgentInScanner(): void
     {
         $match = $this->scanner->scan('/api/health', '', '');
-        $this->assertNotNull($match);
-        $this->assertSame('bad_bot_ua', $match['id'] ?? null);
+        $this->assertNull($match);
     }
 
     public function testDetectsSqlInjectionInRequestBody(): void

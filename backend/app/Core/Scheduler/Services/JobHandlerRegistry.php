@@ -8,6 +8,7 @@ use PaginiumCMS\Core\Scheduler\Contracts\JobHandlerInterface;
 use PaginiumCMS\Core\Scheduler\Handlers\BackupScheduledHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\ContentScheduledPublishHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\GitPublishHandler;
+use PaginiumCMS\Core\Scheduler\Handlers\MaintenanceCleanupHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\MonitoringPipelineHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\SystemDeployHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\WebhookDeliveryHandler;
@@ -21,6 +22,7 @@ final class JobHandlerRegistry
     public function __construct(
         private BackupScheduledHandler $backup,
         private MonitoringPipelineHandler $monitoring,
+        private MaintenanceCleanupHandler $maintenanceCleanup,
         private ContentScheduledPublishHandler $scheduledPublish,
         private SystemDeployHandler $systemDeploy,
         private NewsletterWeeklyDigestHandler $newsletterWeeklyDigest,
@@ -34,6 +36,7 @@ final class JobHandlerRegistry
         return match ($key) {
             'backup.scheduled' => $this->backup,
             'monitoring.pipeline' => $this->monitoring,
+            'maintenance.cleanup' => $this->maintenanceCleanup,
             'content.scheduled_publish' => $this->scheduledPublish,
             'system.deploy' => $this->systemDeploy,
             'newsletter.weekly_digest' => $this->newsletterWeeklyDigest,
@@ -51,6 +54,7 @@ final class JobHandlerRegistry
         return [
             ['key' => $this->backup->key(), 'label' => $this->backup->label()],
             ['key' => $this->monitoring->key(), 'label' => $this->monitoring->label()],
+            ['key' => $this->maintenanceCleanup->key(), 'label' => $this->maintenanceCleanup->label()],
             ['key' => $this->scheduledPublish->key(), 'label' => $this->scheduledPublish->label()],
             ['key' => $this->systemDeploy->key(), 'label' => $this->systemDeploy->label()],
             ['key' => $this->newsletterWeeklyDigest->key(), 'label' => $this->newsletterWeeklyDigest->label()],

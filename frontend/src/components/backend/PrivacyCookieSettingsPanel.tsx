@@ -23,7 +23,7 @@ interface Props {
 
 function readSections(watch: UseFormWatch<Record<string, unknown>>): CookiePolicySection[] {
   const raw = watch('cookiePolicySectionsJson');
-  return parseCookiePolicySectionsJson(typeof raw === 'string' ? raw : '');
+  return parseCookiePolicySectionsJson(typeof raw === 'string' ? raw : '', { keepEmpty: true });
 }
 
 function FieldBlock({

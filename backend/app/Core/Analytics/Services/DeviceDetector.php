@@ -135,6 +135,60 @@ class DeviceDetector
         return 'Unknown';
     }
 
+    public function getPlatformLabel(): string
+    {
+        $ua = $this->userAgent;
+        if ($ua === '') {
+            return 'Unknown';
+        }
+
+        if (preg_match('/iPad/i', $ua) === 1) {
+            return 'Tablet (iPad)';
+        }
+
+        if (preg_match('/iPhone|iOS/i', $ua) === 1) {
+            return 'Mobile (iPhone)';
+        }
+
+        if (preg_match('/Android/i', $ua) === 1) {
+            if (preg_match('/Mobile/i', $ua) === 1) {
+                return 'Mobile (Android)';
+            }
+
+            return 'Tablet (Android)';
+        }
+
+        if (preg_match('/Mobile|Phone/i', $ua) === 1) {
+            return 'Mobile';
+        }
+
+        if (preg_match('/Tablet|Kindle/i', $ua) === 1) {
+            return 'Tablet';
+        }
+
+        if (preg_match('/Windows NT/i', $ua) === 1) {
+            return 'PC (Windows)';
+        }
+
+        if (preg_match('/Macintosh|Mac OS X/i', $ua) === 1) {
+            return 'PC (macOS)';
+        }
+
+        if (preg_match('/CrOS/i', $ua) === 1) {
+            return 'PC (Chrome OS)';
+        }
+
+        if (preg_match('/Ubuntu/i', $ua) === 1) {
+            return 'PC (Linux/Ubuntu)';
+        }
+
+        if (preg_match('/Linux/i', $ua) === 1) {
+            return 'PC (Linux)';
+        }
+
+        return 'Desktop';
+    }
+
     /**
      * @return array<int|string, mixed>
      */
@@ -143,6 +197,7 @@ class DeviceDetector
         return [
             'device' => $this->getDevice(),
             'deviceType' => $this->getDeviceType(),
+            'platformLabel' => $this->getPlatformLabel(),
             'os' => $this->getOs(),
             'browser' => $this->getBrowser(),
         ];

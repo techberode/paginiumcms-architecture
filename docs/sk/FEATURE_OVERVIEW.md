@@ -121,7 +121,7 @@
 | GitHub content sync | ✅ čiastočne k cieľu | obsahová integrácia; nie plný It.70 Git publish |
 | System update | ✅ | version check, tag deploy, voliteľný webhook |
 | Demo sandbox | ✅ | izolovaný demo režim a reset |
-| Setup wizard | ✅ basic | It.25 `beta.62` — onboarding cez `/setup`; `first-run.sh` CLI fallback |
+| Setup wizard | ✅ M1+ | It.25 `beta.62`–`beta.65` — `/setup` s preflight serverom a infra; `first-run.sh` CLI fallback |
 | Performance Guard | ⏳ | It.71 |
 
 ---

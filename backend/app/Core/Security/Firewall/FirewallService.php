@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\Security\Firewall;
 
+use PaginiumCMS\Core\Security\UserAgentBotClassifier;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 
 /**
@@ -56,10 +57,60 @@ final class FirewallService
         }
 
         $scenario = $this->scanner->scan($uriPath, $queryString, $userAgent, $requestBody, $scanBody);
-        if ($scenario === null) {
-            return null;
+        if ($scenario !== null) {
+            return $this->recordViolation($ip, $scenario, $uriPath, $queryString, $userAgent, $scanBody, $requestBody);
         }
 
+        $botScenario = $this->inspectBotUserAgent($userAgent);
+        if ($botScenario !== null) {
+            return $this->recordViolation($ip, $botScenario, $uriPath, $queryString, $userAgent, $scanBody, $requestBody);
+        }
+
+        return null;
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function inspectBotUserAgent(string $userAgent): ?array
+    {
+        $firewall = $this->settings->group('firewall');
+        $classification = UserAgentBotClassifier::classify($userAgent);
+
+        if ((bool) ($firewall['blockEmptyUserAgent'] ?? true) && trim($userAgent) === '') {
+            return [
+                'id' => 'bad_bot_ua',
+                'label' => 'Empty user-agent',
+                'severity' => 'medium',
+            ];
+        }
+
+        if ((bool) ($firewall['blockScraperTools'] ?? false) && $classification->shouldBlock) {
+            return [
+                'id' => 'scraper_tool_bot',
+                'label' => 'Scraper or tool user-agent',
+                'severity' => 'medium',
+                'bot_name' => $classification->botName,
+                'bot_kind' => $classification->botKind,
+            ];
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array<string, mixed> $scenario
+     * @return array<string, mixed>
+     */
+    private function recordViolation(
+        string $ip,
+        array $scenario,
+        string $uriPath,
+        string $queryString,
+        string $userAgent,
+        bool $scanBody,
+        ?string $requestBody
+    ): array {
         $scenarioId = (string) ($scenario['id'] ?? 'unknown');
         $this->incidentLogger->log($ip, $scenarioId, [
             'uri' => $uriPath . ($queryString !== '' ? '?' . $queryString : ''),
@@ -167,5 +218,20 @@ final class FirewallService
         $firewall = $this->settings->group('firewall');
 
         return ($firewall['scanRequestBody'] ?? true) === true;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function banFromAnalytics(string $ip, string $reason, ?string $botName = null): array
+    {
+        $ban = $this->banStore->applyManualBan($ip, false, $reason);
+        $this->incidentLogger->log($ip, 'analytics_bot_ban', [
+            'uri' => 'analytics:manual-ban',
+            'user_agent' => $botName ?? '',
+            'reason' => $reason,
+        ]);
+
+        return $ban;
     }
 }
