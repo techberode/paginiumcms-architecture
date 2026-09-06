@@ -1,9 +1,9 @@
 # PaginiumCMS — project roadmap
 
 > **Documentation checkpoint:** August 6, 2026  
-> **Latest release recorded by this bundle:** `v2.1.0-beta.28`  
+> **Latest release:** see [`CHANGELOG.md`](../../CHANGELOG.md) (currently `v2.1.0-beta.67`) · handoff: [CONTINUATION.md](CONTINUATION.md)  
 > **Direction:** Hybrid Headless Content Engine · No-SQL file source of truth · API-first  
-> **Code status:** It.67–71 + UX Phases A–C shipped in `v2.1.0-beta.28` · next target It.72
+> **Code status:** Stabilization phase — It.25 M1+ shipped; next target `v2.2.0` stable
 
 This roadmap is the canonical map of the **future direction**. Release history belongs in [`CHANGELOG.md`](../../CHANGELOG.md), detailed implementation specifications in `ITERATION_*.md`, and incidents in [`ISSUES.md`](ISSUES.md).
 

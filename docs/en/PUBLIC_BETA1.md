@@ -1,7 +1,7 @@
 # PaginiumCMS — Public Beta 1
 
 > **Release family:** `v2.1.0-beta.*`  
-> **Recommended tag in this documentation snapshot:** **`v2.1.0-beta.23`**  
+> **Recommended tag for new installs:** use the **latest** `v2.1.0-beta.*` from [`CHANGELOG.md`](../../CHANGELOG.md) (currently **`v2.1.0-beta.67`**)  
 > **Status:** public beta for technical testers, early adopters, and security review  
 > **Data model:** no SQL database; files are the source of truth
 
@@ -58,7 +58,7 @@ Complete inventory: [FEATURE_OVERVIEW.md](FEATURE_OVERVIEW.md).
 Example:
 
 ```bash
-git checkout v2.1.0-beta.23
+git checkout v2.1.0-beta.67
 ./scripts/first-run.sh
 docker compose up -d
 curl -s http://localhost:8080/api/health

@@ -84,6 +84,10 @@ Administrátor kontroluje:
 - referencie pred zmazaním,
 - proxy/storage konfiguráciu pri 404.
 
+**Optimalizácia obrázkov (`v2.1.0-beta.67`):** Pre JPEG, PNG a WebP otvor metadata modal — zobrazí veľkosť a rozlíšenie. **Náhľad optimalizácie** ukáže originál vs re-enkód a odhad úspory pred uložením. Presety (1920 / 1280 / 1080 / 960 px šírka) škálujú výšku proporcionálne. Rýchla **⚡ optimalizácia** na karte média uloží hneď, ak je k dispozícii GD. Správa „už optimálne komprimované“ znamená, že ďalšie stlačenie nepomôže — skús zmenšiť rozlíšenie. Vyžaduje PHP **GD** s podporou JPEG/PNG/WebP.
+
+**Avatary** profilu sa normalizujú na serveri (max 512×512 px, 512 KB); UI môže prijať upload do 2 MB.
+
 Budúci local/S3 driver z It.72 nemení pravidlo: autoritatívne metadata zostávajú pod kontrolou CMS a migrácia musí byť overiteľná.
 
 ## 7. Navigácia

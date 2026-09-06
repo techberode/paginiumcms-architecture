@@ -1,7 +1,7 @@
 # PaginiumCMS — development continuation context
 
 > **Purpose:** concise, current handoff for the next development session  
-> **Checkpoint:** September 6, 2026 · `v2.1.0-beta.66`  
+> **Checkpoint:** September 6, 2026 · `v2.1.0-beta.67`  
 > **Active phase:** Stabilization — It.25 M1+ shipped; target first stable tag **September 2026**
 
 This document replaces the old chronological “log of everything.” Historical detail remains in [`CHANGELOG.md`](../../CHANGELOG.md), [`ISSUES.md`](ISSUES.md), and individual `ITERATION_*.md` files.
@@ -18,7 +18,7 @@ PaginiumCMS is a **No-SQL Hybrid Headless Content Engine**: the React/Vite admin
 
 | Area | Status |
 |------|--------|
-| Latest release | ✅ `v2.1.0-beta.66` — analytics retention, bots, geo, trends |
+| Latest release | ✅ `v2.1.0-beta.67` — media image optimize/resize, avatar normalization |
 | It.25 setup wizard | ✅ basic (`beta.62`) + M1+ preflight/infra (`beta.65`/`beta.66`) |
 | It.25 update UX | ✅ dashboard banner + deploy blockers (`beta.64`) |
 | Stabilization M1–M5 smoke | 🟡 M1/M5 user-confirmed OK; M2–M4 pending |
@@ -70,6 +70,7 @@ curl -s http://127.0.0.1:8080/api/setup/preflight | jq .
 | Doc | Content |
 |-----|---------|
 | [ITERATION_25.md](ITERATION_25.md) | Delivery record + wizard steps |
+| [RELEASE_2_1_0_BETA_67.md](RELEASE_2_1_0_BETA_67.md) | Media optimization release note |
 | [RELEASE_2_1_0_BETA_65.md](RELEASE_2_1_0_BETA_65.md) | M1+ release note |
 | [INSTALLATION.md](user/INSTALLATION.md) §7 | User install + wizard |
 | [FIRST_STEPS.md](user/FIRST_STEPS.md) | Post-install checklist |

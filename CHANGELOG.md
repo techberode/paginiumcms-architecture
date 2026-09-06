@@ -2,11 +2,176 @@
 
 This canonical history records release facts supported by the supplied `CHANGELOG.md`. Detailed incident analysis remains in [ISSUES.md](docs/ISSUES.md); the latest exact source snapshot is preserved in `docs/meta/it18/SOURCE_UPDATES/CHANGELOG.md` when present locally.
 
-## Unreleased
+## History rules
 
-### Iteration 87 (planning only)
+- Semantic-version order, newest first.
+- One stable explicit anchor per release.
+- Issue references point to canonical `docs/ISSUES.md#iss-xxx` anchors.
+- Commit links appear only when the supplied source names them.
+- No dedicated source entries exist for `2.0.15` and `2.0.41`; no history is invented.
+- Long implementation narratives are intentionally kept outside this canonical index.
+
+## Release index
+
+| Release | Date | Scope |
+|---|---:|---|
+| [`2.1.0-beta.67`](#release-2-1-0-beta-67) | 2026-09-06 | Media optimization, avatar normalization, metadata modal |
+| [`2.1.0-beta.66`](#release-2-1-0-beta-66) | 2026-09-06 | Analytics retention, trends, bots, geo, WAF ban from admin |
+| [`2.1.0-beta.65`](#release-2-1-0-beta-65) | 2026-09-05 | Setup preflight, backup restore, article author picker |
+| [`2.1.0-beta.64`](#release-2-1-0-beta-64) | 2026-09-05 | Admin deploy readiness, dashboard update banner |
+| [`2.1.0-beta.63`](#release-2-1-0-beta-63) | 2026-09-05 | npm security — Tiptap 3.31.x, auth/setup fixes, DEPLOY §12 |
+| [`2.1.0-beta.62`](#release-2-1-0-beta-62) | 2026-09-03 | It.25 — setup wizard, update banner, commonmark 2.10 |
+| [`2.1.0-beta.61`](#release-2-1-0-beta-61) | 2026-08-30 | Hotfix — Origin Panel backend catalog labels on production |
+| [`2.1.0-beta.60`](#release-2-1-0-beta-60) | 2026-08-30 | It.86 admin UX, Origin manifest automation, ISS-158/159 |
+| [`2.1.0-beta.59`](#release-2-1-0-beta-59) | 2026-08-25 | It.85 — request diagnostics, APM clear UI, Server-Timing |
+| [`2.1.0-beta.58`](#release-2-1-0-beta-58) | 2026-08-19 | Hotfix — session lock, media streaming/thumbnails, Performance Guard p95 |
+| [`2.1.0-beta.57`](#release-2-1-0-beta-57) | 2026-08-17 | It.84 — categories, blog sidebar, landing shortcodes, custom roles, nav layout |
+| [`2.1.0-beta.56`](#release-2-1-0-beta-56) | 2026-08-17 | It.82 Origin Panel — maintainer cockpit, probes, project catalog |
+| [`2.1.0-beta.55`](#release-2-1-0-beta-55) | 2026-08-17 | It.81f snippet library, admin body preview, lock fail-open |
+| [`2.1.0-beta.54`](#release-2-1-0-beta-54) | 2026-08-15 | Hotfix — front matter parser root cause: raw YAML leaked into article body (ISS-154) |
+| [`2.1.0-beta.53`](#release-2-1-0-beta-53) | 2026-08-15 | Hotfix — conservative locale flat-field sync, OTP/index/FE (ISS-153) |
+| [`2.1.0-beta.52`](#release-2-1-0-beta-52) | 2026-08-15 | Hotfix — deploy health retry, AppVersion fallback, admin DEPLOY_FORCE (ISS-152) |
+| [`2.1.0-beta.51`](#release-2-1-0-beta-51) | 2026-08-15 | Hotfix — no persist-on-read, bulk localeStatus sync, index repair (ISS-151) |
+| [`2.1.0-beta.50`](#release-2-1-0-beta-50) | 2026-08-15 | Hotfix — beta.49 read-path clobber + metadata leak in editor body (ISS-149 follow-up) |
+| [`2.1.0-beta.49`](#release-2-1-0-beta-49) | 2026-08-15 | Hotfix — locale title/slug sync, empty slug repair, content permissions (ISS-149, ISS-150) |
+| [`2.1.0-beta.48`](#release-2-1-0-beta-48) | 2026-08-15 | Hotfix — AppVersion fallback + git describe parsing (health showed beta.46) |
+| [`2.1.0-beta.47`](#release-2-1-0-beta-47) | 2026-08-15 | It.81a–81e — duplicate, bulk tags, saved views, editorial calendar, stale content |
+| [`2.1.0-beta.46`](#release-2-1-0-beta-46) | 2026-08-13 | Hotfix — WAF false positive on suggest-meta (ISS-147) |
+| [`2.1.0-beta.45`](#release-2-1-0-beta-45) | 2026-08-13 | Hotfix — Shortcodes admin prod (Monaco CSP), self-hosted Monaco workers |
+| [`2.1.0-beta.44`](#release-2-1-0-beta-44) | 2026-08-13 | Hotfix — ShortcodesManager Monaco editor height |
+| [`2.1.0-beta.43`](#release-2-1-0-beta-43) | 2026-08-13 | Hotfix — home page layout regression (landing grid) |
+| [`2.1.0-beta.42`](#release-2-1-0-beta-42) | 2026-08-13 | Hotfix — pgLayout.css prod build + AppVersion beta.41 |
+| [`2.1.0-beta.41`](#release-2-1-0-beta-41) | 2026-08-13 | It.58 shortcodes/layout — expander, admin UI, preview API, pgLayout CSS |
+| [`2.1.0-beta.40`](#release-2-1-0-beta-40) | 2026-08-13 | BodyParsing JSON body fix (deploy, avatar, comment OTP) |
+| [`2.1.0-beta.39`](#release-2-1-0-beta-39) | 2026-08-13 | It.80 complete — CLI toolkit + WordPress import |
+| [`2.1.0-beta.38`](#release-2-1-0-beta-38) | 2026-08-13 | It.80f API4 hardening + blog author settings |
+| [`2.1.0-beta.37`](#release-2-1-0-beta-37) | 2026-08-11 | It.80e GDPR export/anonymize |
+| [`2.1.0-beta.36`](#release-2-1-0-beta-36) | 2026-08-11 | It.80d outbound webhooks |
+| [`2.1.0-beta.35`](#release-2-1-0-beta-35) | 2026-08-11 | It.80b 404 tracking + It.80c comment spam (bundled; beta.34 slice skipped) |
+| [`2.1.0-beta.33`](#release-2-1-0-beta-33) | 2026-08-11 | Deploy pipeline fix; AppVersion from git tag |
+| [`2.1.0-beta.32`](#release-2-1-0-beta-32) | 2026-08-09 | It.80a redirect manager; API barrel fix |
+| [`2.1.0-beta.31`](#release-2-1-0-beta-31) | 2026-08-09 | API keys UX hardening; It.80 backlog spec |
+| [`2.1.0-beta.30`](#release-2-1-0-beta-30) | 2026-08-08 | It.74 API keys + short-lived JWT (headless) |
+| [`2.1.0-beta.29`](#release-2-1-0-beta-29) | 2026-08-08 | It.72 media drivers MVP, It.73 multi-locale complete, security deps |
+| [`2.1.0-beta.28`](#release-2-1-0-beta-28) | 2026-08-06 | Performance Guard (It.71), UX polish Phases A–C, post-beta.27 CI bundle |
+| [`2.1.0-beta.27`](#release-2-1-0-beta-27) | 2026-08-05 | Untrusted surfaces hardening (It.67) and Git publish modes (It.70) |
+| [`2.1.0-beta.26`](#release-2-1-0-beta-26) | 2026-08-03 | Unified cache, HTTP ETag/304 validators, audit hardening |
+| [`2.1.0-beta.23`](#release-2-1-0-beta-23) | 2026-07-30 | Layout Switch, layout settings, preview frame and page templates |
+| [`2.1.0-beta.22`](#release-2-1-0-beta-22) | 2026-07-30 | Security write-time gates and Feature Gallery Phase 3 |
+| [`2.1.0-beta.21`](#release-2-1-0-beta-21) | 2026-07-30 | Feature Gallery Phase 2 and production SEO/logging hardening |
+| [`2.1.0-beta.20`](#release-2-1-0-beta-20) | 2026-07-29 | Feature Gallery Phase 1 and footer UX polish |
+| [`2.1.0-beta.19`](#release-2-1-0-beta-19) | 2026-07-29 | Footer social links, SPA analytics beacon and LAN/CORS fixes |
+| [`2.1.0-beta.18`](#release-2-1-0-beta-18) | 2026-07-29 | Inline newsletter footer and System Update compare/deploy automation |
+| [`2.1.0-beta.17`](#release-2-1-0-beta-17) | 2026-07-28 | Newsletter preferences, release campaigns, subscribe modal and cookie consent |
+| [`2.1.0-beta.16`](#release-2-1-0-beta-16) | 2026-07-28 | Newsletter v2 phases 1–3, BE↔FE wiring and test hygiene |
+| [`2.1.0-beta.15`](#release-2-1-0-beta-15) | 2026-07-27 | System Update remote version check and audit fixes |
+| [`2.1.0-beta.14`](#release-2-1-0-beta-14) | 2026-07-27 | Docker admin deployment permissions and cache hardening |
+| [`2.1.0-beta.13`](#release-2-1-0-beta-13) | 2026-07-27 | Docker deployment path resolution hotfix and update UX |
+| [`2.1.0-beta.12`](#release-2-1-0-beta-12) | 2026-07-27 | Admin System Update MVP and test-environment isolation |
+| [`2.1.0-beta.11`](#release-2-1-0-beta-11) | 2026-07-27 | Demo security polish and editor profile normalization |
+| [`2.1.0-beta.10`](#release-2-1-0-beta-10) | 2026-07-27 | Full-trial isolated demo sandbox |
+| [`2.1.0-beta.9`](#release-2-1-0-beta-9) | 2026-07-27 | Production hardening, analytics/editor work, newsletter admin and demo deployment |
+| [`2.1.0-beta.8`](#release-2-1-0-beta-8) | 2026-07-26 | Color schemes, appearance mode and themed public site |
+| [`2.1.0-beta.7`](#release-2-1-0-beta-7) | 2026-07-26 | Dependency, CI, Vitest, ESLint and deployment-environment fixes |
+| [`2.1.0-beta.6`](#release-2-1-0-beta-6) | 2026-07-24 | Stored-XSS hardening, backup Zip-Slip protection and deploy-script hygiene |
+| [`2.1.0-beta.5`](#release-2-1-0-beta-5) | 2026-07-24 | Rich navigation, editor-save fix and sliding-session hardening |
+| [`2.1.0-beta.4`](#release-2-1-0-beta-4) | 2026-07-24 | Automatic tags and meta-description generator with safe dependency updates |
+| [`2.1.0-beta.3`](#release-2-1-0-beta-3) | 2026-07-24 | React Router security patch and PaginiumCMS information panel |
+| [`2.1.0-beta.2`](#release-2-1-0-beta-2) | 2026-07-23 | Public Beta security gate and audit CSV sanitization |
+| [`2.1.0-beta.1`](#release-2-1-0-beta-1) | 2026-07-23 | Public Beta 1 tester release |
+| [`2.0.58`](#release-2-0-58) | 2026-07-23 | Beta infrastructure and maintainer readiness gate |
+| [`2.0.57`](#release-2-0-57) | 2026-07-23 | Docker onboarding and user-documentation synchronization |
+| [`2.0.56`](#release-2-0-56) | 2026-07-23 | Password confirmation in registration and admin user management |
+| [`2.0.55`](#release-2-0-55) | 2026-07-23 | Contribution checklist, complete API barrel and CI lint |
+| [`2.0.54`](#release-2-0-54) | 2026-07-23 | Core hook emitters, reference plugin and extension code policy |
+| [`2.0.53`](#release-2-0-53) | 2026-07-23 | Scheduled content publishing |
+| [`2.0.52`](#release-2-0-52) | 2026-07-23 | Branding, settings-based ACL and CI regression fixes |
+| [`2.0.51`](#release-2-0-51) | 2026-07-23 | Date/timezone/DST handling, maintenance and admin log UX |
+| [`2.0.50`](#release-2-0-50) | 2026-07-22 | Public-site localization according to the configured locale |
+| [`2.0.49`](#release-2-0-49) | 2026-07-22 | Localized audit messages |
+| [`2.0.48`](#release-2-0-48) | 2026-07-22 | Security audit hardening across encryption, SSRF, ACL, WAF and OTP |
+| [`2.0.47`](#release-2-0-47) | 2026-07-22 | Operations, platform and editor localization with test-wrapper hotfix |
+| [`2.0.46`](#release-2-0-46) | 2026-07-21 | Media/navigation/dashboard localization, analytics and logging fixes |
+| [`2.0.45`](#release-2-0-45) | 2026-07-21 | Security settings, custom locales, avatars and authentication UX |
+| [`2.0.44`](#release-2-0-44) | 2026-07-21 | Admin UI localization, grouped navigation and settings organization |
+| [`2.0.43`](#release-2-0-43) | 2026-07-20 | Tiptap JSON storage, rendered HTML cache and editor image upload |
+| [`2.0.42`](#release-2-0-42) | 2026-07-20 | Modular Markdown and WYSIWYG editor profiles |
+| [`2.0.40`](#release-2-0-40) | 2026-07-20 | Frontend TypeScript CI hotfix |
+| [`2.0.39`](#release-2-0-39) | 2026-07-20 | Smooth SPA reload and admin navigation |
+| [`2.0.38`](#release-2-0-38) | 2026-07-20 | External plugin import, registry, hooks and routes |
+| [`2.0.37`](#release-2-0-37) | 2026-07-20 | Content API filters and server-side public blog |
+| [`2.0.36`](#release-2-0-36) | 2026-07-20 | Company information and contact-page map |
+| [`2.0.35`](#release-2-0-35) | 2026-07-20 | Contact-form subjects and test coverage |
+| [`2.0.34`](#release-2-0-34) | 2026-07-20 | Dashboard v2 KPI row and enriched overview API |
+| [`2.0.33`](#release-2-0-33) | 2026-07-20 | Admin deep links and frontend/backend alignment |
+| [`2.0.32`](#release-2-0-32) | 2026-07-20 | URL-synchronized filters, preview modal and reading time |
+| [`2.0.31`](#release-2-0-31) | 2026-07-20 | Public blog pagination, admin filters and optional new-tab links |
+| [`2.0.30`](#release-2-0-30) | 2026-07-19 | 2FA setup/login separation and authentication UX fixes |
+| [`2.0.29`](#release-2-0-29) | 2026-07-19 | Session stability, cache administration, auth hardening and deployment fixes |
+| [`2.0.28`](#release-2-0-28) | 2026-07-19 | Blueprint engine, Demo sandbox v2 and project philosophy |
+| [`2.0.27`](#release-2-0-27) | 2026-07-19 | SSO, path ACL, search, OTP workflows, counts, connector auth and feeds |
+| [`2.0.26`](#release-2-0-26) | 2026-07-19 | Internal WAF, structured logging, admin Logs and CI incident fixes |
+| [`2.0.25`](#release-2-0-25) | 2026-07-19 | Admin list UX, inboxes, comment policy, navigation and PHPStan compatibility |
+| [`2.0.24`](#release-2-0-24) | 2026-07-19 | Post-audit security hardening and QA cleanup |
+| [`2.0.23`](#release-2-0-23) | 2026-07-18 | SEO preview image from Media and blog preview fix |
+| [`2.0.22`](#release-2-0-22) | 2026-07-18 | Code Editor create, delete and restore |
+| [`2.0.21`](#release-2-0-21) | 2026-07-18 | Code Editor, 2FA UX and developer-unlock fixes |
+| [`2.0.20`](#release-2-0-20) | 2026-07-18 | Content cache correctness and admin content-list improvements |
+| [`2.0.19`](#release-2-0-19) | 2026-07-18 | Admin user management and staff 2FA policy |
+| [`2.0.18`](#release-2-0-18) | 2026-07-18 | Cron planner and Job Queue |
+| [`2.0.17`](#release-2-0-17) | 2026-07-18 | Scheduled monitoring reports and log-incident scanning |
+| [`2.0.16`](#release-2-0-16) | 2026-07-18 | Shared bulk-actions platform |
+| [`2.0.14`](#release-2-0-14) | 2026-07-18 | Binary-safe media I/O and strict format validation |
+| [`2.0.13`](#release-2-0-13) | 2026-07-18 | Media preview lightbox |
+| [`2.0.12`](#release-2-0-12) | 2026-07-18 | Folder-aware media storage and metadata sidecars |
+| [`2.0.11`](#release-2-0-11) | 2026-07-17 | SEO metadata engine |
+| [`2.0.10`](#release-2-0-10) | 2026-07-17 | Trash management, brute-force lockout, RSS and sitemap |
+| [`2.0.9`](#release-2-0-9) | 2026-07-17 | Unified API response contract |
+| [`2.0.8`](#release-2-0-8) | 2026-07-16 | RBAC and maintenance-mode middleware |
+| [`2.0.7`](#release-2-0-7) | 2026-07-16 | Flat-file content index, pagination and search API |
+| [`2.0.6`](#release-2-0-6) | 2026-07-16 | PHPStan Level 8 backend compliance and safe I/O helpers |
+| [`2.0.5`](#release-2-0-5) | 2026-07-15 | Navigation, comments and contact modules |
+| [`2.0.4`](#release-2-0-4) | 2026-07-15 | Media Manager frontend |
+| [`2.0.3`](#release-2-0-3) | 2026-07-15 | Code policy and Code Editor foundation |
+| [`2.0.2`](#release-2-0-2) | 2026-07-15 | Admin dashboard, monitoring and realtime analytics |
+| [`2.0.1`](#release-2-0-1) | 2026-07-15 | Settings schema for SMTP, notifications, connectors and monitoring |
+| [`2.0.0`](#release-2-0-0) | 2026-07-14 | Flat-file core across the first five planned iterations |
+| [`1.0.0`](#release-1-0-0) | Initial structure | Initial repository structure |
+
+<a id="unreleased"></a>
+
+## [Unreleased]
+
+### Planning
 
 - **Spec:** [ITERATION_87.md](docs/en/ITERATION_87.md) — Project Site Planner (Full CMS), UX audit deferrals (It.86d → 87a–87d), optional theme static JS allow-list (`87k`–`87m`).
+
+### Fixed
+
+- **ISS-141 follow-up** — all remaining `Http/Controllers/*` JSON mutating paths and OTP/contact rate-limit middleware now use `RequestJsonBody::decode()` (eliminates empty-body regressions site-wide after `BodyParsingMiddleware`).
+- **Shortcode expand + HTML sanitizer** — `allowedHtmlTags` now includes `div`, `article`, `section`, `aside`, `span` (required for It.58 expand templates); legacy settings merge missing layout tags on read; `role` attribute allowed on sanitized elements.
+
+---
+
+<a id="release-2-1-0-beta-67"></a>
+
+## [2.1.0-beta.67] – 2026-09-06
+
+Media optimization, avatar normalization, metadata modal image info
+
+### Added
+
+- **Media library — manual image optimization** — `POST /api/media/{path}/optimize` re-encodes JPEG/PNG/WebP (GD) to reduce file size; quick optimize on media card.
+- **Media metadata modal — image info + resize** — `GET /api/media/{path}/image-info`; size, resolution, MIME, upload date; proportional width/height with presets (1920/1280/1080/960).
+- **Media optimization preview before save** — `POST /api/media/{path}/optimize/preview` + `POST .../optimize/apply` with preview token; side-by-side original vs optimized and estimated size before commit.
+- **Avatar uploads auto-normalized** — larger profile photos downscaled/re-encoded server-side (max 512×512, 512 KB); FE accepts up to 2 MB.
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.67`
+- **Release note:** [RELEASE_2_1_0_BETA_67.md](docs/en/RELEASE_2_1_0_BETA_67.md)
+
+---
 
 <a id="release-2-1-0-beta-66"></a>
 
@@ -45,6 +210,8 @@ Analytics production readiness — retention, trends, bots, geo, WAF ban from ad
 - **Release note:** [RELEASE_2_1_0_BETA_66.md](docs/en/RELEASE_2_1_0_BETA_66.md)
 
 ---
+
+<a id="release-2-1-0-beta-65"></a>
 
 ## [2.1.0-beta.65] – 2026-09-05
 
@@ -178,168 +345,9 @@ It.25 — browser-first setup wizard and dashboard update UX (stable-blocker bas
 
 ---
 
-## History rules
-
-- Semantic-version order, newest first.
-- One stable explicit anchor per release.
-- Issue references point to canonical `docs/ISSUES.md#iss-xxx` anchors.
-- Commit links appear only when the supplied source names them.
-- No dedicated source entries exist for `2.0.15` and `2.0.41`; no history is invented.
-- Long implementation narratives are intentionally kept outside this canonical index.
-
-## Release index
-
-| Release | Date | Scope |
-|---|---:|---|
-| [`2.1.0-beta.64`](#release-2-1-0-beta-64) | 2026-09-05 | Admin deploy readiness, dashboard update banner |
-| [`2.1.0-beta.63`](#release-2-1-0-beta-63) | 2026-09-05 | npm security — Tiptap 3.31.x, auth/setup fixes, DEPLOY §12 |
-| [`2.1.0-beta.62`](#release-2-1-0-beta-62) | 2026-09-03 | It.25 — setup wizard, update banner, commonmark 2.10 |
-| [`2.1.0-beta.61`](#release-2-1-0-beta-61) | 2026-08-30 | Hotfix — Origin Panel backend catalog labels on production |
-| [`2.1.0-beta.60`](#release-2-1-0-beta-60) | 2026-08-30 | It.86 admin UX, Origin manifest automation, ISS-158/159 |
-| [`2.1.0-beta.59`](#release-2-1-0-beta-59) | 2026-08-25 | It.85 — request diagnostics, APM clear UI, Server-Timing |
-| [`2.1.0-beta.58`](#release-2-1-0-beta-58) | 2026-08-19 | Hotfix — session lock, media streaming/thumbnails, Performance Guard p95 |
-| [`2.1.0-beta.57`](#release-2-1-0-beta-57) | 2026-08-17 | It.84 — categories, blog sidebar, landing shortcodes, custom roles, nav layout |
-| [`2.1.0-beta.56`](#release-2-1-0-beta-56) | 2026-08-17 | It.82 Origin Panel — maintainer cockpit, probes, project catalog |
-| [`2.1.0-beta.55`](#release-2-1-0-beta-55) | 2026-08-17 | It.81f snippet library, admin body preview, lock fail-open |
-| [`2.1.0-beta.54`](#release-2-1-0-beta-54) | 2026-08-15 | Hotfix — front matter parser root cause: raw YAML leaked into article body (ISS-154) |
-| [`2.1.0-beta.53`](#release-2-1-0-beta-53) | 2026-08-15 | Hotfix — conservative locale flat-field sync, OTP/index/FE (ISS-153) |
-| [`2.1.0-beta.52`](#release-2-1-0-beta-52) | 2026-08-15 | Hotfix — deploy health retry, AppVersion fallback, admin DEPLOY_FORCE (ISS-152) |
-| [`2.1.0-beta.51`](#release-2-1-0-beta-51) | 2026-08-15 | Hotfix — no persist-on-read, bulk localeStatus sync, index repair (ISS-151) |
-| [`2.1.0-beta.50`](#release-2-1-0-beta-50) | 2026-08-15 | Hotfix — beta.49 read-path clobber + metadata leak in editor body (ISS-149 follow-up) |
-| [`2.1.0-beta.49`](#release-2-1-0-beta-49) | 2026-08-15 | Hotfix — locale title/slug sync, empty slug repair, content permissions (ISS-149, ISS-150) |
-| [`2.1.0-beta.48`](#release-2-1-0-beta-48) | 2026-08-15 | Hotfix — AppVersion fallback + git describe parsing (health showed beta.46) |
-| [`2.1.0-beta.47`](#release-2-1-0-beta-47) | 2026-08-15 | It.81a–81e — duplicate, bulk tags, saved views, editorial calendar, stale content |
-| [`2.1.0-beta.46`](#release-2-1-0-beta-46) | 2026-08-13 | Hotfix — WAF false positive on suggest-meta (ISS-147) |
-| [`2.1.0-beta.45`](#release-2-1-0-beta-45) | 2026-08-13 | Hotfix — Shortcodes admin prod (Monaco CSP), self-hosted Monaco workers |
-| [`2.1.0-beta.44`](#release-2-1-0-beta-44) | 2026-08-13 | Hotfix — ShortcodesManager Monaco editor height |
-| [`2.1.0-beta.43`](#release-2-1-0-beta-43) | 2026-08-13 | Hotfix — home page layout regression (landing grid) |
-| [`2.1.0-beta.42`](#release-2-1-0-beta-42) | 2026-08-13 | Hotfix — pgLayout.css prod build + AppVersion beta.41 |
-| [`2.1.0-beta.41`](#release-2-1-0-beta-41) | 2026-08-13 | It.58 shortcodes/layout — expander, admin UI, preview API, pgLayout CSS |
-| [`2.1.0-beta.40`](#release-2-1-0-beta-40) | 2026-08-13 | BodyParsing JSON body fix (deploy, avatar, comment OTP) |
-| [`2.1.0-beta.39`](#release-2-1-0-beta-39) | 2026-08-13 | It.80 complete — CLI toolkit + WordPress import |
-| [`2.1.0-beta.38`](#release-2-1-0-beta-38) | 2026-08-13 | It.80f API4 hardening + blog author settings |
-| [`2.1.0-beta.37`](#release-2-1-0-beta-37) | 2026-08-11 | It.80e GDPR export/anonymize |
-| [`2.1.0-beta.36`](#release-2-1-0-beta-36) | 2026-08-11 | It.80d outbound webhooks |
-| [`2.1.0-beta.35`](#release-2-1-0-beta-35) | 2026-08-11 | It.80b 404 tracking + It.80c comment spam (bundled; beta.34 slice skipped) |
-| [`2.1.0-beta.33`](#release-2-1-0-beta-33) | 2026-08-11 | Deploy pipeline fix; AppVersion from git tag |
-| [`2.1.0-beta.32`](#release-2-1-0-beta-32) | 2026-08-09 | It.80a redirect manager; API barrel fix |
-| [`2.1.0-beta.31`](#release-2-1-0-beta-31) | 2026-08-09 | API keys UX hardening; It.80 backlog spec |
-| [`2.1.0-beta.30`](#release-2-1-0-beta-30) | 2026-08-08 | It.74 API keys + short-lived JWT (headless) |
-| [`2.1.0-beta.29`](#release-2-1-0-beta-29) | 2026-08-08 | It.72 media drivers MVP, It.73 multi-locale complete, security deps |
-| [`2.1.0-beta.28`](#release-2-1-0-beta-28) | 2026-08-06 | Performance Guard (It.71), UX polish Phases A–C, post-beta.27 CI bundle |
-| [`2.1.0-beta.27`](#release-2-1-0-beta-27) | 2026-08-05 | Untrusted surfaces hardening (It.67) and Git publish modes (It.70) |
-| [`2.1.0-beta.26`](#release-2-1-0-beta-26) | 2026-08-03 | Unified cache, HTTP ETag/304 validators, audit hardening |
-| [`2.1.0-beta.23`](#release-2-1-0-beta-23) | 2026-07-30 | Layout Switch, layout settings, preview frame and page templates |
-| [`2.1.0-beta.22`](#release-2-1-0-beta-22) | 2026-07-30 | Security write-time gates and Feature Gallery Phase 3 |
-| [`2.1.0-beta.21`](#release-2-1-0-beta-21) | 2026-07-30 | Feature Gallery Phase 2 and production SEO/logging hardening |
-| [`2.1.0-beta.20`](#release-2-1-0-beta-20) | 2026-07-29 | Feature Gallery Phase 1 and footer UX polish |
-| [`2.1.0-beta.19`](#release-2-1-0-beta-19) | 2026-07-29 | Footer social links, SPA analytics beacon and LAN/CORS fixes |
-| [`2.1.0-beta.18`](#release-2-1-0-beta-18) | 2026-07-29 | Inline newsletter footer and System Update compare/deploy automation |
-| [`2.1.0-beta.17`](#release-2-1-0-beta-17) | 2026-07-28 | Newsletter preferences, release campaigns, subscribe modal and cookie consent |
-| [`2.1.0-beta.16`](#release-2-1-0-beta-16) | 2026-07-28 | Newsletter v2 phases 1–3, BE↔FE wiring and test hygiene |
-| [`2.1.0-beta.15`](#release-2-1-0-beta-15) | 2026-07-27 | System Update remote version check and audit fixes |
-| [`2.1.0-beta.14`](#release-2-1-0-beta-14) | 2026-07-27 | Docker admin deployment permissions and cache hardening |
-| [`2.1.0-beta.13`](#release-2-1-0-beta-13) | 2026-07-27 | Docker deployment path resolution hotfix and update UX |
-| [`2.1.0-beta.12`](#release-2-1-0-beta-12) | 2026-07-27 | Admin System Update MVP and test-environment isolation |
-| [`2.1.0-beta.11`](#release-2-1-0-beta-11) | 2026-07-27 | Demo security polish and editor profile normalization |
-| [`2.1.0-beta.10`](#release-2-1-0-beta-10) | 2026-07-27 | Full-trial isolated demo sandbox |
-| [`2.1.0-beta.9`](#release-2-1-0-beta-9) | 2026-07-27 | Production hardening, analytics/editor work, newsletter admin and demo deployment |
-| [`2.1.0-beta.8`](#release-2-1-0-beta-8) | 2026-07-26 | Color schemes, appearance mode and themed public site |
-| [`2.1.0-beta.7`](#release-2-1-0-beta-7) | 2026-07-26 | Dependency, CI, Vitest, ESLint and deployment-environment fixes |
-| [`2.1.0-beta.6`](#release-2-1-0-beta-6) | 2026-07-24 | Stored-XSS hardening, backup Zip-Slip protection and deploy-script hygiene |
-| [`2.1.0-beta.5`](#release-2-1-0-beta-5) | 2026-07-24 | Rich navigation, editor-save fix and sliding-session hardening |
-| [`2.1.0-beta.4`](#release-2-1-0-beta-4) | 2026-07-24 | Automatic tags and meta-description generator with safe dependency updates |
-| [`2.1.0-beta.3`](#release-2-1-0-beta-3) | 2026-07-24 | React Router security patch and PaginiumCMS information panel |
-| [`2.1.0-beta.2`](#release-2-1-0-beta-2) | 2026-07-23 | Public Beta security gate and audit CSV sanitization |
-| [`2.1.0-beta.1`](#release-2-1-0-beta-1) | 2026-07-23 | Public Beta 1 tester release |
-| [`2.0.58`](#release-2-0-58) | 2026-07-23 | Beta infrastructure and maintainer readiness gate |
-| [`2.0.57`](#release-2-0-57) | 2026-07-23 | Docker onboarding and user-documentation synchronization |
-| [`2.0.56`](#release-2-0-56) | 2026-07-23 | Password confirmation in registration and admin user management |
-| [`2.0.55`](#release-2-0-55) | 2026-07-23 | Contribution checklist, complete API barrel and CI lint |
-| [`2.0.54`](#release-2-0-54) | 2026-07-23 | Core hook emitters, reference plugin and extension code policy |
-| [`2.0.53`](#release-2-0-53) | 2026-07-23 | Scheduled content publishing |
-| [`2.0.52`](#release-2-0-52) | 2026-07-23 | Branding, settings-based ACL and CI regression fixes |
-| [`2.0.51`](#release-2-0-51) | 2026-07-23 | Date/timezone/DST handling, maintenance and admin log UX |
-| [`2.0.50`](#release-2-0-50) | 2026-07-22 | Public-site localization according to the configured locale |
-| [`2.0.49`](#release-2-0-49) | 2026-07-22 | Localized audit messages |
-| [`2.0.48`](#release-2-0-48) | 2026-07-22 | Security audit hardening across encryption, SSRF, ACL, WAF and OTP |
-| [`2.0.47`](#release-2-0-47) | 2026-07-22 | Operations, platform and editor localization with test-wrapper hotfix |
-| [`2.0.46`](#release-2-0-46) | 2026-07-21 | Media/navigation/dashboard localization, analytics and logging fixes |
-| [`2.0.45`](#release-2-0-45) | 2026-07-21 | Security settings, custom locales, avatars and authentication UX |
-| [`2.0.44`](#release-2-0-44) | 2026-07-21 | Admin UI localization, grouped navigation and settings organization |
-| [`2.0.43`](#release-2-0-43) | 2026-07-20 | Tiptap JSON storage, rendered HTML cache and editor image upload |
-| [`2.0.42`](#release-2-0-42) | 2026-07-20 | Modular Markdown and WYSIWYG editor profiles |
-| [`2.0.40`](#release-2-0-40) | 2026-07-20 | Frontend TypeScript CI hotfix |
-| [`2.0.39`](#release-2-0-39) | 2026-07-20 | Smooth SPA reload and admin navigation |
-| [`2.0.38`](#release-2-0-38) | 2026-07-20 | External plugin import, registry, hooks and routes |
-| [`2.0.37`](#release-2-0-37) | 2026-07-20 | Content API filters and server-side public blog |
-| [`2.0.36`](#release-2-0-36) | 2026-07-20 | Company information and contact-page map |
-| [`2.0.35`](#release-2-0-35) | 2026-07-20 | Contact-form subjects and test coverage |
-| [`2.0.34`](#release-2-0-34) | 2026-07-20 | Dashboard v2 KPI row and enriched overview API |
-| [`2.0.33`](#release-2-0-33) | 2026-07-20 | Admin deep links and frontend/backend alignment |
-| [`2.0.32`](#release-2-0-32) | 2026-07-20 | URL-synchronized filters, preview modal and reading time |
-| [`2.0.31`](#release-2-0-31) | 2026-07-20 | Public blog pagination, admin filters and optional new-tab links |
-| [`2.0.30`](#release-2-0-30) | 2026-07-19 | 2FA setup/login separation and authentication UX fixes |
-| [`2.0.29`](#release-2-0-29) | 2026-07-19 | Session stability, cache administration, auth hardening and deployment fixes |
-| [`2.0.28`](#release-2-0-28) | 2026-07-19 | Blueprint engine, Demo sandbox v2 and project philosophy |
-| [`2.0.27`](#release-2-0-27) | 2026-07-19 | SSO, path ACL, search, OTP workflows, counts, connector auth and feeds |
-| [`2.0.26`](#release-2-0-26) | 2026-07-19 | Internal WAF, structured logging, admin Logs and CI incident fixes |
-| [`2.0.25`](#release-2-0-25) | 2026-07-19 | Admin list UX, inboxes, comment policy, navigation and PHPStan compatibility |
-| [`2.0.24`](#release-2-0-24) | 2026-07-19 | Post-audit security hardening and QA cleanup |
-| [`2.0.23`](#release-2-0-23) | 2026-07-18 | SEO preview image from Media and blog preview fix |
-| [`2.0.22`](#release-2-0-22) | 2026-07-18 | Code Editor create, delete and restore |
-| [`2.0.21`](#release-2-0-21) | 2026-07-18 | Code Editor, 2FA UX and developer-unlock fixes |
-| [`2.0.20`](#release-2-0-20) | 2026-07-18 | Content cache correctness and admin content-list improvements |
-| [`2.0.19`](#release-2-0-19) | 2026-07-18 | Admin user management and staff 2FA policy |
-| [`2.0.18`](#release-2-0-18) | 2026-07-18 | Cron planner and Job Queue |
-| [`2.0.17`](#release-2-0-17) | 2026-07-18 | Scheduled monitoring reports and log-incident scanning |
-| [`2.0.16`](#release-2-0-16) | 2026-07-18 | Shared bulk-actions platform |
-| [`2.0.14`](#release-2-0-14) | 2026-07-18 | Binary-safe media I/O and strict format validation |
-| [`2.0.13`](#release-2-0-13) | 2026-07-18 | Media preview lightbox |
-| [`2.0.12`](#release-2-0-12) | 2026-07-18 | Folder-aware media storage and metadata sidecars |
-| [`2.0.11`](#release-2-0-11) | 2026-07-17 | SEO metadata engine |
-| [`2.0.10`](#release-2-0-10) | 2026-07-17 | Trash management, brute-force lockout, RSS and sitemap |
-| [`2.0.9`](#release-2-0-9) | 2026-07-17 | Unified API response contract |
-| [`2.0.8`](#release-2-0-8) | 2026-07-16 | RBAC and maintenance-mode middleware |
-| [`2.0.7`](#release-2-0-7) | 2026-07-16 | Flat-file content index, pagination and search API |
-| [`2.0.6`](#release-2-0-6) | 2026-07-16 | PHPStan Level 8 backend compliance and safe I/O helpers |
-| [`2.0.5`](#release-2-0-5) | 2026-07-15 | Navigation, comments and contact modules |
-| [`2.0.4`](#release-2-0-4) | 2026-07-15 | Media Manager frontend |
-| [`2.0.3`](#release-2-0-3) | 2026-07-15 | Code policy and Code Editor foundation |
-| [`2.0.2`](#release-2-0-2) | 2026-07-15 | Admin dashboard, monitoring and realtime analytics |
-| [`2.0.1`](#release-2-0-1) | 2026-07-15 | Settings schema for SMTP, notifications, connectors and monitoring |
-| [`2.0.0`](#release-2-0-0) | 2026-07-14 | Flat-file core across the first five planned iterations |
-| [`1.0.0`](#release-1-0-0) | Initial structure | Initial repository structure |
-
-<a id="release-2-1-0-beta-67"></a>
-
-## [2.1.0-beta.67] – 2026-09-06
-
-Media optimization, avatar normalization, metadata modal image info
-
-### Added
-
-- **Media library — manual image optimization** — `POST /api/media/{path}/optimize` re-encodes JPEG/PNG/WebP (GD) to reduce file size; quick optimize on media card.
-- **Media metadata modal — image info + resize** — `GET /api/media/{path}/image-info`; size, resolution, MIME, upload date; proportional width/height with presets (1920/1280/1080/960).
-- **Media optimization preview before save** — `POST /api/media/{path}/optimize/preview` + `POST .../optimize/apply` with preview token; side-by-side original vs optimized and estimated size before commit.
-- **Avatar uploads auto-normalized** — larger profile photos downscaled/re-encoded server-side (max 512×512, 512 KB); FE accepts up to 2 MB.
-
-<a id="unreleased"></a>
-
-## [Unreleased]
-
-### Added
-
-### Fixed
-
-- **ISS-141 follow-up** — all remaining `Http/Controllers/*` JSON mutating paths and OTP/contact rate-limit middleware now use `RequestJsonBody::decode()` (eliminates empty-body regressions site-wide after `BodyParsingMiddleware`).
-
-- **Shortcode expand + HTML sanitizer** — `allowedHtmlTags` now includes `div`, `article`, `section`, `aside`, `span` (required for It.58 expand templates); legacy settings merge missing layout tags on read; `role` attribute allowed on sanitized elements.
-
 <a id="release-2-1-0-beta-61"></a>
 
 ## [2.1.0-beta.61] – 2026-08-30
-
 Origin Panel — backend catalog labels hotfix (production)
 
 ### Fixed

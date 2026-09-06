@@ -2,7 +2,7 @@
 
 > **Final consolidation:** the complete index is in [NAVIGATION.md](NAVIGATION.md). Status claims distinguish implemented, transitional, and planned capabilities.
 
-> **Version:** 2.1.0-beta.23 · **Last updated:** August 2026  
+> **Version:** 2.1.0-beta.67 · **Last updated:** September 2026  
 > **Hybrid Headless Content Engine** — No-SQL file source of truth, API-first administration, and a public React site.
 
 ---
@@ -60,7 +60,7 @@ Bilingual documentation rules:
 | **Git distribution** | 🟡 Partial | GitHub API sync; full publishing workflow → It.70 |
 | **Public and admin frontend** | ✅ Shipped | React, TypeScript, Vite 8, SK/EN i18n |
 | **Automated tests** | ✅ 838+ PHPUnit | PHPStan L8; frontend gate in `developer/TESTING.md` |
-| **Latest documented release** | ✅ `v2.1.0-beta.23` | It.58c Layout Switch |
+| **Latest documented release** | ✅ `v2.1.0-beta.67` | Media optimization; see [CHANGELOG.md](../CHANGELOG.md) |
 | **Next code work** | ⏸️ Paused | resumes after the bilingual documentation pass |
 | **First Hybrid Engine implementation** | ⏳ It.68 | storage abstraction + schema registry + engine settings |
 

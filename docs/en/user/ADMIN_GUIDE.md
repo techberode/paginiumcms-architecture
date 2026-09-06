@@ -84,6 +84,10 @@ An administrator checks:
 - references before deletion,
 - proxy/storage configuration when a file returns 404.
 
+**Image optimization (`v2.1.0-beta.67`):** For JPEG, PNG, and WebP rasters, open the metadata modal to inspect file size and dimensions. Use **Preview optimize** to compare original vs re-encoded output and estimated savings before saving. Presets (1920 / 1280 / 1080 / 960 px width) scale height proportionally. A quick **⚡ optimize** on the media card applies immediate re-encode when GD is available. If the API returns “already optimally compressed”, the file will not shrink further — try resize instead. Requires PHP **GD** with JPEG/PNG/WebP support in the backend container.
+
+Profile **avatars** are normalized server-side (max 512×512 px, 512 KB); the UI may accept uploads up to 2 MB.
+
 A future local/S3 driver from It.72 does not change the rule that authoritative metadata remains under CMS control and migration must be verifiable.
 
 ## 7. Navigation

@@ -1,7 +1,7 @@
 # PaginiumCMS — feature overview
 
 > **Purpose:** one living inventory of what is shipped, partial, and planned  
-> **Snapshot:** `v2.1.0-beta.23` · August 2, 2026  
+> **Snapshot:** `v2.1.0-beta.23` · August 2, 2026 *(historical inventory; current release: see [CONTINUATION.md](CONTINUATION.md) or [CHANGELOG.md](../../CHANGELOG.md))*  
 > **Architecture:** React/Vite SPA ↔ Slim REST API ↔ PHP Core ↔ No-SQL file SSOT
 
 **Related:** [ROADMAP.md](ROADMAP.md) · [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) · [PUBLIC_BETA1.md](PUBLIC_BETA1.md) · [architecture/HYBRID_ENGINE.md](architecture/HYBRID_ENGINE.md)
