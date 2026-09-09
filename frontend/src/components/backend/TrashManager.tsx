@@ -48,7 +48,14 @@ export const TrashManager: React.FC = () => {
     setPage,
     resetFilters,
   } = useAdminListQueryParams('deletedAt', 'desc');
-  const [pageSize, setPageSize] = useAdminListPageSize('trash');
+  const [pageSize, setStoredPageSize] = useAdminListPageSize('trash');
+  const setPageSize = useCallback(
+    (value: number) => {
+      setStoredPageSize(value);
+      setPage(1);
+    },
+    [setStoredPageSize, setPage]
+  );
   const hasActiveFilters =
     search.trim().length >= 2 ||
     sortField !== 'deletedAt' ||
@@ -71,10 +78,6 @@ export const TrashManager: React.FC = () => {
   useEffect(() => {
     void loadItems();
   }, [loadItems]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [pageSize, setPage]);
 
   const listView = useMemo(
     () =>

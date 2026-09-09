@@ -93,6 +93,10 @@ export const mediaSk: MessageTree = {
   pagination: {
     itemLabel: 'súborov',
   },
+  empty: {
+    title: 'V priečinku :folder nie sú žiadne súbory',
+    hint: 'Nahrajte obrázky alebo dokumenty do tohto priečinka.',
+  },
   seo: {
     ok: 'SEO OK',
     warning: 'SEO varovanie',

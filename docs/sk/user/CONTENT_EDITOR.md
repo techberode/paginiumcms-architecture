@@ -17,6 +17,10 @@ icon: material/file-edit
 
 Blueprint alebo extension môže pridať polia. Neznáme polia musí migrácia a API spracovať deterministicky; editor ich nesmie potichu zahodiť.
 
+### 1.1 Admin zoznamy
+
+Stránky a články zdieľajú jeden zoznam (`PagesManager` na `/pages` a `/articles`). Stránkovanie je server-side: `GET /api/pages|articles?page=&per_page=`. Admin URL drží `page`, `q`, `status`, `sort` a súvisiace filtre. **Previous** / **Next** je dole v tabuľke. Zdieľateľný odkaz `/pages?page=2` musí otvoriť stranu 2; Next nesmie skočiť späť na 1 ([ISS-169](../../ISSUES.md#iss-169)). Zmena hľadania, stavu, zoradenia alebo veľkosti stránky resetuje na stranu 1. Médiá, komentáre a kôš používajú rovnaký kontrakt `page` v URL.
+
 ## 2. Režimy editora
 
 - **Markdown**: priama editácia textového zdroja a preview.
@@ -157,3 +161,4 @@ Save do SSOT je lokálny úspech. Git publish podľa It.70 má vlastný stav a m
 - [Verzovanie](../architecture/VERSIONING.md)
 - [Médiá a storage](../architecture/STORAGE.md)
 - [Oprávnenia](ACCESS_CONTROL.md)
+- [Plánovač projektu](PROJECT_PLANNER.md)

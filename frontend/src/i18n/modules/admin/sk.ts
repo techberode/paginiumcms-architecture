@@ -67,6 +67,8 @@ export const adminSk: MessageTree = {
       pages: 'Správa Podstránok',
       articles: 'Správa Blogových Článkov',
       'editorial-calendar': 'Redakčný kalendár',
+      'project-planner': 'Plánovač projektu',
+      origin: 'Origin Panel',
       media: 'Knižnica Mediálnych Súborov',
       navigation: 'Správa Navigácie',
       comments: 'Správa Komentárov',

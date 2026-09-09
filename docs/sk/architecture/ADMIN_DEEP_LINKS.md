@@ -42,6 +42,9 @@ Dokument nefixuje neoverenú detail route len podľa hypotézy. Route registry a
 - multi-value filter má jeden zdokumentovaný tvar,
 - prázdny search sa z URL odstráni,
 - zmena filtra zvyčajne resetne `page=1`,
+- zmena **veľkosti stránky** resetne `page=1`,
+- **Ďalej/Späť** mení len `page` a nesmie skočiť späť na 1 pri tom istom kliknutí,
+- záložka `?page=N` prežije prvý mount aj reload,
 - UI musí rešpektovať browser back/forward.
 
 Do URL nikdy nepatrí password, CSRF, session ID, API key, reset token, OAuth code po spracovaní, celý content, raw provider prompt alebo interná storage cesta.

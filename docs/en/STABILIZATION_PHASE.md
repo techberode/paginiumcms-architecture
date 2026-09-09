@@ -1,9 +1,15 @@
 # Stabilization phase — freeze expansion, harden what exists
 
-> **Decision:** August 17, 2026  
-> **Status:** 🔒 **Active** — no new iteration scope until exit criteria in §5 are met  
-> **First stable release target:** **September 2026** — tag only when §5 exit criteria are met (including **It.25**)  
-> **Supersedes for planning:** open “recommended next slice” rows in [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) until this phase closes
+> **Status:** ⏹️ **Closed** — September 9, 2026  
+> **Original decision:** August 17, 2026  
+> **Superseded by:** [CONTINUATION.md](CONTINUATION.md) — full planned-iteration development; no `v2.2.0` stable gate  
+> **Why closed:** solo-maintainer product; no tester pool; first-stable tag is not a near-term goal. It.25 already shipped. Historical rules below are **not** active.
+
+---
+
+# Historical record (August–September 2026)
+
+> The following sections describe the freeze as it was. Do not treat them as current planning rules.
 
 ---
 
@@ -228,4 +234,4 @@ Target: **beta patches every 2–4 weeks** in August; **one stable tag in Septem
 
 ## 10. Current interpretation
 
-**Stabilization is the product strategy.** The first stable release is **September 2026** (target, not deadline-at-all-costs). **It.25 is the single mandatory feature slice** before that tag; Hybrid Engine remainder stays documented, not built. Success = newcomer completes wizard and thinks *“This is exactly the CMS I want to use”* — not iteration count.
+**Superseded (2026-09-09).** Current product strategy is to implement the remaining planned iterations (It.87 → 78 → 79 → …). See [CONTINUATION.md](CONTINUATION.md).

@@ -12,6 +12,8 @@ export interface AdminNavItemDef {
   superAdminOnly?: boolean;
   /** Visible only when Origin Panel is active (`settings.origin.enabled`). */
   originOnly?: boolean;
+  /** Visible only when the project planner is enabled (`settings.projectPlanner.enabled`). */
+  projectPlannerOnly?: boolean;
 }
 
 export interface AdminNavSectionDef {

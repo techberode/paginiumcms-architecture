@@ -23,6 +23,8 @@ import { useAdminListPageSize } from '../../hooks/useAdminListPageSize';
 import { useAdminListQueryParams } from '../../hooks/useAdminListQueryParams';
 import { AdminListSortBar } from './SortableTableHeader';
 import { BulkActionBar } from './BulkActionBar';
+import { AdminListSkeleton } from '../ui/AdminListSkeleton';
+import { AdminEmptyState } from '../ui/AdminEmptyState';
 import { bulkSelectionCounts } from '../../utils/bulkSelectionLabel';
 import { AdminListToolbar } from './AdminListToolbar';
 import { AdminListPagination } from './AdminListPagination';
@@ -70,7 +72,14 @@ export const CommentsManager: React.FC = () => {
     setStatusFilter: setFilter,
     resetFilters,
   } = useAdminListQueryParams('createdAt', 'desc');
-  const [pageSize, setPageSize] = useAdminListPageSize('comments');
+  const [pageSize, setStoredPageSize] = useAdminListPageSize('comments');
+  const setPageSize = useCallback(
+    (value: number) => {
+      setStoredPageSize(value);
+      setPage(1);
+    },
+    [setStoredPageSize, setPage]
+  );
   const hasActiveFilters =
     search.trim().length >= 2 ||
     filter !== 'all' ||
@@ -100,10 +109,6 @@ export const CommentsManager: React.FC = () => {
   useEffect(() => {
     void load();
   }, [load]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [pageSize, setPage]);
 
   const listView = useMemo(
     () =>
@@ -273,11 +278,12 @@ export const CommentsManager: React.FC = () => {
       />
 
       {loading ? (
-        <div className="flex justify-center py-16">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600" />
-        </div>
+        <AdminListSkeleton rows={8} />
       ) : listView.total === 0 ? (
-        <div className="card card-body text-center text-gray-500 py-12">{t('comments.empty.none')}</div>
+        <AdminEmptyState
+          title={t('comments.empty.none')}
+          description={t('comments.empty.filter')}
+        />
       ) : (
         <>
           <AdminInboxList>

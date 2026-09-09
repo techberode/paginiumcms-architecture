@@ -22,6 +22,8 @@ Podporované veľkosti stránky: **5 / 10 / 20 / 50**. Predvolená hodnota poch�
 
 Verejný blog používa vlastné publikované filtre a nesmie v anonymnom scope vrátiť draft alebo private obsah.
 
+URL `?page=` je zdroj pravdy pre admin stránky/články (a rovnaký hook pre médiá, komentáre, kôš). **Ďalej** zapíše `page=2` (alebo vyššie) a musí tam ostať. Zmena hľadania, stavu, zoradenia alebo veľkosti stránky resetuje na stranu 1. Reload `/pages?page=2` musí otvoriť stranu 2 ([ISS-169](../ISSUES.md#iss-169)).
+
 ---
 
 ## 2. Globálne nastavenia komentárov ✅

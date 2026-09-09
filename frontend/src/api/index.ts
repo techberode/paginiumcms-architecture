@@ -41,6 +41,7 @@ export * from './navigation';
 export * from './newsletter';
 export * from './notifications';
 export * from './origin';
+export * from './projectPlanner';
 export * from './redirects';
 export * from './roles';
 export * from './search';
@@ -86,6 +87,7 @@ import { gitApi } from './git';
 import { healthApi } from './health';
 import { logsApi } from './logs';
 import { originApi } from './origin';
+import { projectPlannerApi } from './projectPlanner';
 import { redirectsApi } from './redirects';
 import { rolesApi } from './roles';
 import { securityApi } from './security';
@@ -116,6 +118,7 @@ export const api = {
   health: healthApi,
   logs: logsApi,
   origin: originApi,
+  projectPlanner: projectPlannerApi,
   redirects: redirectsApi,
   roles: rolesApi,
   security: securityApi,

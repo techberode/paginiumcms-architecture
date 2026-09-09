@@ -1,6 +1,6 @@
 # Iterácia 87 — Plánovač projektu stránky a dokončenie UX auditu
 
-> **Stav:** ⏳ plánované — **prvá produktová iterácia po stabilnom vydaní** (po It.25 + tag `v2.2.0`)  
+> **Stav:** ✅ hotové v **`v2.1.0-beta.68`** — **87a–87m**  
 > **Priorita:** 🟡 **P1** (Plánovač projektu — plná verzia CMS); 🟡 **P2** (UX audit z It.86d)  
 > **Kanónická špecifikácia (EN):** [../en/ITERATION_87.md](../en/ITERATION_87.md)
 
@@ -20,16 +20,16 @@
 
 ## Priorita a poradie
 
-| Sub | Názov | Priorita |
-|-----|-------|----------|
-| **87e** | Flat-file schéma plánu | 🟡 P1 |
-| **87f** | API + RBAC | 🟡 P1 |
-| **87g** | Panel plánovača (UI) | 🟡 P1 |
-| **87h** | Termíny podľa typu obsahu | 🟡 P1 |
-| **87i** | Prepojenie na content + auto stav | 🟡 P2 |
-| **87j** | Widgety (meškanie, tento týždeň) | 🔵 P2 |
-| **87a–87d** | UX audit | 🟡 P2 / 🔵 P3 |
-| **87k–87m** | Téma: allow-list JS + SRI + CSP | 🔵 P3 (voliteľné) |
+| Sub | Názov | Priorita | Stav |
+|-----|-------|----------|------|
+| **87e** | Flat-file schéma plánu | 🟡 P1 | ✅ |
+| **87f** | API + RBAC | 🟡 P1 | ✅ |
+| **87g** | Panel plánovača (UI) | 🟡 P1 | ✅ |
+| **87h** | Termíny podľa typu obsahu | 🟡 P1 | ✅ |
+| **87i** | Prepojenie na content + auto stav | 🟡 P2 | ✅ |
+| **87j** | Widgety (meškanie, tento týždeň) | 🔵 P2 | ✅ |
+| **87a–87d** | UX audit | 🟡 P2 / 🔵 P3 | ✅ |
+| **87k–87m** | Téma: allow-list JS + SRI + CSP | 🔵 P3 | ✅ |
 
 Odporúčané: `87e → 87f → 87g → 87h`, potom zvyšok. Track C až po MVP plánovača alebo ako samostatný patch.
 

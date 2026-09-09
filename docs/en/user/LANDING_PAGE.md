@@ -140,6 +140,7 @@ Nest self-closing `stat-item` tags inside `stats-row`:
 | Unstyled block | Production build must include `pgLayout.css` (imported in `main.tsx`) |
 | Nested shortcodes not expanding | Max 8 expand passes — avoid extremely deep nesting |
 | Layout looks narrow | Set **Layout template** to `landing` or `hero-content` |
+| Hero image from SEO is missing | The **OG / preview image** in the SEO panel is the landing hero. Re-save the page after selecting media so `seoImage` is stored; public `showcase-hero` / `landing-hero` then use it as the background. |
 
 ---
 

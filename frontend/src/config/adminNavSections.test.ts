@@ -10,6 +10,7 @@ const ADMIN_ROUTES = new Set([
   '/articles',
   '/categories',
   '/platform/editorial-calendar',
+  '/platform/project-planner',
   '/media',
   '/gallery',
   '/navigation',

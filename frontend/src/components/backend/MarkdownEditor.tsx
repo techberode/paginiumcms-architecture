@@ -51,6 +51,8 @@ import {
 } from '../../utils/editorProfiles';
 import {
   findNavigationMatches,
+  isSlugCollisionHttp,
+  resolveEditorSlug,
   resolvePublicPath,
   resolveStoragePath,
   slugifyTitle,
@@ -457,9 +459,10 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
 
       const effectiveContent = contentOverride ?? content;
       const stored = storagePayloadFromEditor(effectiveContent, editorMode);
-      const nextSlug = isNew ? slugifyTitle(editSlug || title) : slug;
+      const nextSlug = resolveEditorSlug(editSlug, title);
+      const slugRenamed = !isNew && Boolean(slug) && nextSlug !== slug;
 
-      if (isNew && !nextSlug) {
+      if (!nextSlug) {
         toast.warning(t('editor.markdown.toast.slugRequired'));
         return;
       }
@@ -578,9 +581,14 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
           toast.success(
             options?.markReviewed ? t('content.stale.reviewedToast') : t('editor.markdown.toast.saved')
           );
-          if (isNew && response.data?.slug) {
+          if (slugRenamed) {
+            toast.warning(t('editor.markdown.toast.slugChanged', { slug: nextSlug }));
+            navigate(`/${type === 'article' ? 'articles' : 'pages'}/${nextSlug}`);
+          } else if (isNew && response.data?.slug) {
             navigate(`/${type === 'article' ? 'articles' : 'pages'}/${response.data.slug}`);
           }
+        } else if (isSlugCollisionHttp(response.status ?? 0, Boolean(response.conflict))) {
+          toast.error(t('editor.markdown.toast.slugExists', { slug: nextSlug }));
         } else if (response.status === 409 && response.conflict) {
           const c = response.conflict as { serverContent: string; serverRevision: string };
           const merge = merge3(effectiveContent, baseContent, c.serverContent);
@@ -775,6 +783,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         isNew={isNew}
         title={title}
         editSlug={editSlug}
+        originalSlug={isNew ? '' : (slug ?? '')}
         status={status}
         scheduledAt={scheduledAt}
         template={template}

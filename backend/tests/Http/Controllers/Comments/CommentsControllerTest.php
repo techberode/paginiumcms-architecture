@@ -101,6 +101,12 @@ class CommentsControllerTest extends TestCase
         $login = $this->loginAsAdminUser();
         $this->assertEquals(200, $login['response']->getStatusCode());
 
+        $this->enableWorkflows(['commentApprovalOtpEnabled' => true]);
+        $this->assertTrue(
+            $this->app->getContainer()->get(\PaginiumCMS\Core\Workflow\Services\OtpWorkflowService::class)->isCommentApprovalOtpEnabled(),
+            'commentApprovalOtpEnabled must stay enabled after login'
+        );
+
         $approveRequest = $this->createJsonRequest('PUT', '/api/admin/comments/' . $commentId, [
             'status' => Comment::STATUS_APPROVED,
         ]);

@@ -42,6 +42,9 @@ This document does not freeze an unverified detail route by assumption. The rout
 - multi-value filters have one documented representation,
 - an empty search is removed from the URL,
 - changing a filter generally resets `page=1`,
+- changing **page size** resets `page=1`,
+- **Next/Previous** updates `page` only and must not snap back to 1 on the same navigation,
+- a bookmarked `?page=N` survives first mount and reload,
 - UI respects browser back/forward.
 
 A URL must never contain a password, CSRF token, session ID, API key, reset token, processed OAuth code, full content, raw provider prompt, or internal storage path.

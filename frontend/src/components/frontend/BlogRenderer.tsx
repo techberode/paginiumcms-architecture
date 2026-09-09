@@ -20,7 +20,7 @@ import {
   ChevronsRight,
   Printer,
 } from 'lucide-react';
-import { resolveContentPreviewImage } from '../../utils/contentPreviewImage';
+import { resolveContentPreviewImage, resolveContentPreviewSrcSet } from '../../utils/contentPreviewImage';
 import { MEDIA_THUMB_WIDTH, resolvePublicMediaThumbnailUrl } from '../../api/media';
 import {
   buildBlogListPath,
@@ -345,6 +345,10 @@ export const BlogRenderer: React.FC = () => {
       ? resolvePublicMediaThumbnailUrl(activeArticle.authorAvatarUrl, MEDIA_THUMB_WIDTH.avatar)
       : '';
     const image = resolveContentPreviewImage(activeArticle, MEDIA_THUMB_WIDTH.hero);
+    const imageSrcSet = resolveContentPreviewSrcSet(activeArticle, [
+      MEDIA_THUMB_WIDTH.card,
+      MEDIA_THUMB_WIDTH.hero,
+    ]);
     const dates = formatContentDateLabels(
       {
         createdAt: activeArticle.createdAt,
@@ -451,7 +455,13 @@ export const BlogRenderer: React.FC = () => {
           </div>
           {image && (
             <div className="mt-8 rounded-3xl overflow-hidden shadow-2xl max-h-[480px]">
-              <img src={image} alt={activeArticle.title} className="w-full h-full object-cover" />
+              <img
+                src={image}
+                srcSet={imageSrcSet || undefined}
+                sizes="(max-width: 768px) 100vw, 896px"
+                alt={activeArticle.title}
+                className="w-full h-full object-cover"
+              />
             </div>
           )}
         </header>
@@ -632,6 +642,10 @@ export const BlogRenderer: React.FC = () => {
               settings.content?.blogAuthorName || settings.general?.siteName || article.frontMatter?.author || t('public.defaults.editorial')
             );
             const image = resolveContentPreviewImage(article, MEDIA_THUMB_WIDTH.card);
+            const imageSrcSet = resolveContentPreviewSrcSet(article, [
+              MEDIA_THUMB_WIDTH.card,
+              MEDIA_THUMB_WIDTH.hero,
+            ]);
             const desc = article.excerpt || String(article.frontMatter?.description ?? '');
             const dates = formatContentDateLabels(
               {
@@ -653,6 +667,8 @@ export const BlogRenderer: React.FC = () => {
                   {image && (
                     <img
                       src={image}
+                      srcSet={imageSrcSet || undefined}
+                      sizes="(max-width: 768px) 100vw, 400px"
                       alt={article.title}
                       loading="lazy"
                       decoding="async"

@@ -22,4 +22,15 @@ final class PermissionCatalogTest extends TestCase
         $this->assertSame('permissionsEditor', PermissionCatalog::settingsKeyForRole('EDITOR'));
         $this->assertSame('permissionsUser', PermissionCatalog::settingsKeyForRole('USER'));
     }
+
+    public function testCatalogIncludesProjectPlanPermissions(): void
+    {
+        $this->assertContains('project-plan:read', PermissionCatalog::ALL);
+        $this->assertContains('project-plan:manage', PermissionCatalog::ALL);
+        $admin = PermissionCatalog::defaultRolePermissions()['ADMIN'];
+        $this->assertContains('project-plan:manage', $admin);
+        $editor = PermissionCatalog::defaultRolePermissions()['EDITOR'];
+        $this->assertContains('project-plan:read', $editor);
+        $this->assertContains('project-plan:manage', $editor);
+    }
 }

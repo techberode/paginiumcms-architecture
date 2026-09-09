@@ -5,6 +5,7 @@ import React from 'react';
 import {
   formatSortParam,
   parseSortParam,
+  useAdminListQueryParams,
   useMediaListQueryParams,
 } from './useAdminListQueryParams';
 
@@ -74,5 +75,73 @@ describe('useMediaListQueryParams', () => {
       result.current.resetFilters();
     });
     expect(latestParams).toBe('');
+  });
+});
+
+describe('useAdminListQueryParams pagination', () => {
+  it('keeps page=2 after setPage and a rerender', () => {
+    let latestParams = '';
+
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <MemoryRouter initialEntries={['/pages']}>
+        {children}
+        <SearchParamsProbe onChange={(value) => { latestParams = value; }} />
+      </MemoryRouter>
+    );
+
+    const { result, rerender } = renderHook(
+      () => useAdminListQueryParams('updatedAt', 'desc'),
+      { wrapper }
+    );
+
+    act(() => {
+      result.current.setPage(2);
+    });
+    expect(result.current.page).toBe(2);
+    expect(latestParams).toContain('page=2');
+
+    rerender();
+    expect(result.current.page).toBe(2);
+    expect(latestParams).toContain('page=2');
+  });
+
+  it('preserves a bookmarked page on mount', () => {
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <MemoryRouter initialEntries={['/pages?page=3']}>
+        {children}
+      </MemoryRouter>
+    );
+
+    const { result } = renderHook(
+      () => useAdminListQueryParams('updatedAt', 'desc'),
+      { wrapper }
+    );
+
+    expect(result.current.page).toBe(3);
+  });
+
+  it('resets page when a status filter changes', () => {
+    let latestParams = '';
+
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <MemoryRouter initialEntries={['/pages?page=2']}>
+        {children}
+        <SearchParamsProbe onChange={(value) => { latestParams = value; }} />
+      </MemoryRouter>
+    );
+
+    const { result } = renderHook(
+      () => useAdminListQueryParams('updatedAt', 'desc'),
+      { wrapper }
+    );
+
+    expect(result.current.page).toBe(2);
+
+    act(() => {
+      result.current.setStatusFilter('draft');
+    });
+    expect(result.current.page).toBe(1);
+    expect(latestParams).not.toMatch(/(?:^|&)page=/);
+    expect(latestParams).toContain('status=draft');
   });
 });

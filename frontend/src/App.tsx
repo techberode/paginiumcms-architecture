@@ -58,6 +58,8 @@ import { CategoriesManager } from './components/backend/CategoriesManager';
 import { RolesManager } from './components/backend/RolesManager';
 import { SnippetsManager } from './components/backend/SnippetsManager';
 import { OriginPanelView } from './components/backend/OriginPanelView';
+import { ProjectPlannerView } from './components/backend/ProjectPlannerView';
+import { ProjectPlanDetailView } from './components/backend/ProjectPlanDetailView';
 import { WebhooksManager } from './components/backend/WebhooksManager';
 import { SetupWizardView } from './components/setup/SetupWizardView';
 import { useSetupStatus } from './hooks/useSetupStatus';
@@ -193,6 +195,8 @@ function App() {
         <Route path="/articles/:slug" element={<MarkdownEditor type="article" />} />
         <Route path="/categories" element={<CategoriesManager />} />
         <Route path="/platform/editorial-calendar" element={<EditorialCalendarView />} />
+        <Route path="/platform/project-planner" element={<ProjectPlannerView />} />
+        <Route path="/platform/project-planner/:planId" element={<ProjectPlanDetailView />} />
         <Route path="/media" element={<MediaManager />} />
         <Route path="/navigation" element={<NavigationManager />} />
         <Route path="/comments" element={<CommentsManager />} />

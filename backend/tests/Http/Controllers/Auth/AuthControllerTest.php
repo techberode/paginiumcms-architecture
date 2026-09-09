@@ -102,6 +102,9 @@ class AuthControllerTest extends TestCase
 
         $settings = $this->container()->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class);
         $this->assertTrue($settings->group('workflows')['registrationOtpEnabled'] ?? false);
+        $this->assertTrue(
+            $this->container()->get(\PaginiumCMS\Core\Workflow\Services\OtpWorkflowService::class)->isRegistrationOtpEnabled()
+        );
 
         $email = 'otp_reg_' . uniqid() . '@example.com';
         $password = 'StrongP@ssw0rd123!';
@@ -116,7 +119,12 @@ class AuthControllerTest extends TestCase
         $registerResponse = $this->handleRequest($registerRequest);
         $registerData = $this->getJsonResponse($registerResponse);
 
-        $this->assertEquals(202, $registerResponse->getStatusCode());
+        $this->assertEquals(
+            202,
+            $registerResponse->getStatusCode(),
+            'Expected OTP challenge (202); got ' . $registerResponse->getStatusCode()
+            . ' body=' . json_encode($registerData, JSON_UNESCAPED_UNICODE)
+        );
         $this->assertTrue($registerData['requires_otp']);
         $this->assertNotEmpty($registerData['challenge_id']);
         $this->assertArrayHasKey('debug_code', $registerData);

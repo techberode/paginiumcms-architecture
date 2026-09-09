@@ -9,6 +9,8 @@ export const contentEn: MessageTree = {
     itemAccusative: 'page',
     searchPlaceholder: 'Search pages…',
     empty: 'No pages found',
+    emptyHint: 'Create the first page to start the public site.',
+    emptyCta: 'Create page',
     loadError: 'Failed to load pages',
   },
   articles: {
@@ -17,6 +19,8 @@ export const contentEn: MessageTree = {
     itemAccusative: 'article',
     searchPlaceholder: 'Search articles…',
     empty: 'No articles found',
+    emptyHint: 'Write the first article when you are ready to publish.',
+    emptyCta: 'Create article',
     loadError: 'Failed to load articles',
   },
   table: {
@@ -37,6 +41,7 @@ export const contentEn: MessageTree = {
     deleteFailed: 'Bulk delete failed.',
     statusFailed: 'Bulk status update failed.',
   },
+  emptyFilter: 'No items match the current filters.',
   bulkTags: {
     action: 'Tags…',
     title: 'Bulk tags (:count items)',

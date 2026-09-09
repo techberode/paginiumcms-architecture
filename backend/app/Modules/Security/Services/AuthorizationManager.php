@@ -232,6 +232,14 @@ class AuthorizationManager implements AuthorizationInterface
         }
 
         if ($role === AuthorizationInterface::ROLE_ADMIN
+            && !in_array('project-plan:manage', $permissions, true)
+        ) {
+            $permissions[] = 'project-plan:read';
+            $permissions[] = 'project-plan:manage';
+            $permissions = PermissionCatalog::normalizeList($permissions);
+        }
+
+        if ($role === AuthorizationInterface::ROLE_ADMIN
             && !$this->hasContentDomainPermission($permissions)
         ) {
             $permissions[] = 'content:manage';
@@ -243,6 +251,15 @@ class AuthorizationManager implements AuthorizationInterface
             && !$this->hasContentEditPermission($permissions)
         ) {
             $permissions[] = 'content:edit';
+            $permissions = PermissionCatalog::normalizeList($permissions);
+        }
+
+        if ($role === AuthorizationInterface::ROLE_EDITOR
+            && $this->hasContentEditPermission($permissions)
+            && !in_array('project-plan:manage', $permissions, true)
+        ) {
+            $permissions[] = 'project-plan:read';
+            $permissions[] = 'project-plan:manage';
             $permissions = PermissionCatalog::normalizeList($permissions);
         }
 

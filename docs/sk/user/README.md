@@ -22,7 +22,7 @@ PaginiumCMS sa vyvíja smerom k **Hybrid Headless Content Engineu**, ale povinn�
 | 6 | [Firewall](FIREWALL.md) a [Logy](LOGGING.md) | prevádzka a incident response |
 | 7 | [Beta tester](BETA_TESTER.md) | funkčné a bezpečnostné testovanie |
 
-Doplňujúce používateľské príručky pokrývajú [branding](BRANDING.md), [pluginy](PLUGINS.md), [témy](THEMES.md), [Code Editor](CODE_EDITOR.md) a [Developer Mode](DEVELOPER_MODE.md).
+Doplňujúce používateľské príručky pokrývajú [branding](BRANDING.md), [pluginy](PLUGINS.md), [témy](THEMES.md), [Code Editor](CODE_EDITOR.md), [Developer Mode](DEVELOPER_MODE.md) a [plánovač projektu](PROJECT_PLANNER.md).
 
 ## 2. Stavové označenia
 

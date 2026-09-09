@@ -50,6 +50,12 @@ export const dashboardSk: MessageTree = {
   toast: {
     loadFailed: 'Nepodarilo sa načítať dashboard',
   },
+  empty: {
+    title: 'Zatiaľ žiadny obsah',
+    body: 'Vytvorte prvú stránku alebo článok a spustite verejný web.',
+    createPage: 'Vytvoriť stránku',
+    createArticle: 'Vytvoriť článok',
+  },
   updateBanner: {
     title: 'Dostupná aktualizácia systému',
     titleCurrent: 'Systém je aktuálny',

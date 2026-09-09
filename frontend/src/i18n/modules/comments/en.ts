@@ -50,6 +50,7 @@ export const commentsEn: MessageTree = {
   },
   empty: {
     none: 'No comments yet.',
+    filter: 'No comments match the current filter.',
   },
   otp: {
     title: 'Approve comment',

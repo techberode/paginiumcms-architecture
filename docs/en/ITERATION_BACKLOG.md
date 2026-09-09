@@ -1,7 +1,7 @@
 # PaginiumCMS — consolidated backlog
 
-> **Snapshot:** `v2.1.0-beta.59` · August 25, 2026  
-> **🔒 Stabilization phase active:** [STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) — freeze new iterations until exit criteria met  
+> **Snapshot:** `v2.1.0-beta.68` · September 9, 2026  
+> **Phase:** planned-iteration development — [CONTINUATION.md](CONTINUATION.md) (stabilization freeze **closed**)  
 > **Rule:** the active backlog contains only unshipped or precisely bounded remaining scope  
 > **No-SQL:** [architecture/NOSQL_MANDATE.md](architecture/NOSQL_MANDATE.md)  
 > **Latest hotfix:** [ISS-146](../ISSUES.md#iss-146) — Shortcodes admin Monaco CDN blocked by CSP (`beta.45`)
@@ -38,15 +38,16 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | 11 | **It.58d** Layout remainder | 🟡 | ✅ | shortcodes + public layout shell shipped; 58f/58g deferred |
 | 12 | **It.81** Editorial workflow & content ops | 🟡 | ✅ | 81a–81f shipped — [ITERATION_81](ITERATION_81.md) |
 | 13 | **It.82** Origin Panel (maintainer cockpit) | 🔵 | ✅ | env-gated; excluded from customer archive — [ITERATION_82](ITERATION_82.md) |
-| 14 | **It.78** Unified upload security | 🟡 | ⏸️ | stabilization freeze — after S16 media baseline |
-| 15 | **It.79** DAM video | 🟡 | ⏸️ | stabilization freeze — after It.78 |
-| 16 | **It.25** Setup wizard/update UX | 🟡 pre-Final | ✅ basic + M1+ | **stable-release blocker** — `beta.62`–`beta.65` (preflight, infra); [ITERATION_25](ITERATION_25.md) |
-| 17 | **It.76/77** Translation providers | 🔵 | ⏸️ | stabilization freeze |
-| 18 | **It.75** AI agent | 🔵 | ⏸️ | stabilization freeze |
-| 19 | **It.83** Theme runtime + Terminal Breach | 🟡 | ⏸️ | post-stable first slice — [ITERATION_83](ITERATION_83.md) |
-| 20 | **It.84** Categories, blog sidebar, landing, roles, nav | 🟡 | ✅ | **84a–84e** complete — [ITERATION_84](ITERATION_84.md) |
-| 21 | **It.87** Project site planner + UX audit completion | 🟡 P1 | ⏳ | post-stable Full CMS — [ITERATION_87](ITERATION_87.md) |
-| 22 | **It.86** Admin UX polish (search, print, bulk) | 🟡 | ✅ | shipped **2.1.0-beta.60** — ISS-158/159; 86d → It.87 |
+| 14 | **It.87** Project site planner + UX audit completion | 🟡 P1 | ✅ shipped | [ITERATION_87](ITERATION_87.md) — 87a–87m |
+| 15 | **It.88** Theme Studio (Monaco, policy, preview, thumbnail) | 🟡 P1 | ⏳ | after 87k for JS tab — [ITERATION_88](ITERATION_88.md) |
+| 16 | **It.78** Unified upload security | 🟡 | ⏳ | before video / new MIME — [ITERATION_78](ITERATION_78.md) |
+| 17 | **It.79** DAM video | 🟡 | ⏳ | after It.78 — [ITERATION_79](ITERATION_79.md) |
+| 18 | **It.25** Setup wizard/update UX | 🟡 | ✅ basic + M1+ | shipped `beta.62`–`beta.65`; not a release blocker anymore |
+| 19 | **It.76/77** Translation providers | 🔵 | ⏳ | after It.73 (shipped) |
+| 20 | **It.75** AI agent | 🔵 | ⏳ | after locale + translation providers |
+| 21 | **It.83** Theme runtime + Terminal Breach | 🟡 | ✅ | shipped `beta.59` — [ITERATION_83](ITERATION_83.md) |
+| 22 | **It.84** Categories, blog sidebar, landing, roles, nav | 🟡 | ✅ | **84a–84e** complete — [ITERATION_84](ITERATION_84.md) |
+| 23 | **It.86** Admin UX polish (search, print, bulk) | 🟡 | ✅ | shipped **2.1.0-beta.60** — ISS-158/159; 86d → It.87 |
 
 ---
 
@@ -207,7 +208,7 @@ See [ITERATION_82](ITERATION_82.md).
 
 ### It.25 — setup wizard and simplified update UX 🟡 ✅ **basic + M1+ shipped (`beta.62`–`beta.65`)**
 
-**Required before first stable tag** ([STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) §5.1).
+Shipped. A September `v2.2.0` stable tag is **not** an active gate ([CONTINUATION.md](CONTINUATION.md)).
 
 Shipped (basic — `beta.62`):
 
@@ -255,11 +256,11 @@ Deferred (post-M1+ / stretch):
 
 | Item | Status | Note |
 |------|--------|------|
-| **It.58d** layout blocks/polish | ✅ | 58f/58g ⏸️ stabilization freeze |
+| **It.58d** layout blocks/polish | ✅ | 58f/58g ⏳ planned remainder |
 | **It.81** editorial workflow | ✅ | [ITERATION_81](ITERATION_81.md) — complete (81f snippets) |
 | **It.82** Origin Panel | ✅ | [ITERATION_82](ITERATION_82.md) — shipped `beta.56`; excluded from archive |
 | **It.48** static/dynamic rendering | ⏳ | combine design with It.70 publishing pipeline |
-| **It.83** theme runtime + Terminal Breach | ⏸️ | [ITERATION_83](ITERATION_83.md) — post-stable; It.67b import foundation shipped |
+| **It.83** theme runtime + Terminal Breach | ✅ | [ITERATION_83](ITERATION_83.md) — shipped `beta.59` |
 | **It.84** presentation & access expansion | ✅ | [ITERATION_84](ITERATION_84.md) — 84a–84e complete (2026-08-17) |
 | Server metrics agent (remaining It.46) | ⏳ | coordinate with It.71 |
 | **It.79** DAM video | ⏳ | It.78 + It.72 MVP |

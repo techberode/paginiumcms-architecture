@@ -81,8 +81,39 @@ final class ThemeManifestValidator
         }
 
         $this->rejectRemoteScriptUrls($manifest);
+        $this->validateAssetScripts($manifest);
 
         return $id;
+    }
+
+    /**
+     * @param array<string, mixed> $manifest
+     */
+    private function validateAssetScripts(array $manifest): void
+    {
+        if (!array_key_exists('assets', $manifest)) {
+            return;
+        }
+        if (!is_array($manifest['assets'])) {
+            throw new RuntimeException('theme.json assets must be an object.');
+        }
+        $scripts = $manifest['assets']['scripts'] ?? [];
+        if (!is_array($scripts)) {
+            throw new RuntimeException('theme.json assets.scripts must be an array.');
+        }
+        foreach ($scripts as $index => $script) {
+            if (!is_array($script)) {
+                throw new RuntimeException('theme.json assets.scripts[' . $index . '] must be an object.');
+            }
+            $path = trim((string) ($script['path'] ?? ''));
+            if (preg_match('#^assets/[a-zA-Z0-9/_-]+\.js$#', $path) !== 1) {
+                throw new RuntimeException('Theme script path must match assets/*.js: ' . $path);
+            }
+            $load = (string) ($script['load'] ?? 'defer');
+            if (!in_array($load, ['defer', 'async', 'blocking'], true)) {
+                throw new RuntimeException('Theme script load must be defer, async, or blocking.');
+            }
+        }
     }
 
     /**

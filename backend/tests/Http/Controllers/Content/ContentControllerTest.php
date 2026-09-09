@@ -549,6 +549,82 @@ class ContentControllerTest extends TestCase
         $this->assertSame(400, $response->getStatusCode());
     }
 
+    public function testUpdatePageRenamesSlug(): void
+    {
+        $this->loginAsAdminUser();
+        $slug = 'rename-from-' . uniqid('', true);
+        $newSlug = 'rename-to-' . uniqid('', true);
+
+        $create = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/pages', [
+                'title' => 'Rename me',
+                'slug' => $slug,
+                'status' => 'draft',
+                'content' => 'Body',
+            ])
+        );
+        $this->assertSame(201, $create->getStatusCode());
+        $revision = $this->getJsonResponse($create)['data']['revision'] ?? '';
+
+        $update = $this->handleRequest(
+            $this->createJsonRequest('PUT', '/api/pages/' . $slug, [
+                'title' => 'Rename me',
+                'slug' => $newSlug,
+                'status' => 'draft',
+                'content' => 'Body',
+                'baseRevision' => $revision,
+            ])
+        );
+        $updated = $this->getJsonResponse($update);
+
+        $this->assertSame(200, $update->getStatusCode());
+        $this->assertTrue($updated['success']);
+        $this->assertSame($newSlug, $updated['data']['slug'] ?? null);
+
+        $old = $this->handleRequest($this->createJsonRequest('GET', '/api/pages/' . $slug));
+        $this->assertSame(404, $old->getStatusCode());
+    }
+
+    public function testUpdatePageRejectsExistingSlug(): void
+    {
+        $this->loginAsAdminUser();
+        $first = 'taken-' . uniqid('', true);
+        $second = 'other-' . uniqid('', true);
+
+        $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/pages', [
+                'title' => 'Taken',
+                'slug' => $first,
+                'status' => 'draft',
+                'content' => 'A',
+            ])
+        );
+        $create = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/pages', [
+                'title' => 'Other',
+                'slug' => $second,
+                'status' => 'draft',
+                'content' => 'B',
+            ])
+        );
+        $revision = $this->getJsonResponse($create)['data']['revision'] ?? '';
+
+        $update = $this->handleRequest(
+            $this->createJsonRequest('PUT', '/api/pages/' . $second, [
+                'title' => 'Other',
+                'slug' => $first,
+                'status' => 'draft',
+                'content' => 'B',
+                'baseRevision' => $revision,
+            ])
+        );
+        $body = $this->getJsonResponse($update);
+
+        $this->assertSame(409, $update->getStatusCode());
+        $this->assertFalse($body['success'] ?? true);
+        $this->assertArrayNotHasKey('conflict', $body);
+    }
+
     public function testBulkTagsRejectsEmptyTagsForAdd(): void
     {
         $this->loginAsAdminUser();

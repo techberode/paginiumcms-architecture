@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.68`](#release-2-1-0-beta-68) | 2026-09-09 | It.87 Project Site Planner, admin list pagination (ISS-169), landing SEO hero |
 | [`2.1.0-beta.67`](#release-2-1-0-beta-67) | 2026-09-06 | Media optimization, avatar normalization, metadata modal |
 | [`2.1.0-beta.66`](#release-2-1-0-beta-66) | 2026-09-06 | Analytics retention, trends, bots, geo, WAF ban from admin |
 | [`2.1.0-beta.65`](#release-2-1-0-beta-65) | 2026-09-05 | Setup preflight, backup restore, article author picker |
@@ -144,12 +145,44 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ### Planning
 
-- **Spec:** [ITERATION_87.md](docs/en/ITERATION_87.md) — Project Site Planner (Full CMS), UX audit deferrals (It.86d → 87a–87d), optional theme static JS allow-list (`87k`–`87m`).
+- **Stabilization freeze closed (2026-09-09)** — no `v2.2.0` stable gate; continue planned iterations. Queue: **It.88 Theme Studio** → 78 → 79 → 72 remainder → 58f/g → 70 GitHub UI → 76/77 → 75 → 48. Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+- **Spec:** [ITERATION_88.md](docs/en/ITERATION_88.md) — Theme Studio: Monaco HTML/CSS/JS, Code Policy validation, sandboxed preview, thumbnail, normalize-from-paste (not unrestricted HTML import). Next slice: **88a**.
+
+---
+
+<a id="release-2-1-0-beta-68"></a>
+
+## [2.1.0-beta.68] – 2026-09-09
+
+It.87 Project Site Planner and editorial UX, admin list pagination hotfix, landing SEO hero
+
+### Added
+
+- **It.87e — Project plan store** — flat-file SSOT `data/project-plans/{id}.json` (`project-plan@1`): path-safe IDs, schema validation, default-plan uniqueness, computed progress/variance. Guide: [PROJECT_PLANNER.md](docs/en/architecture/PROJECT_PLANNER.md).
+- **It.87f — Project planner API** — `/api/admin/project-plans` CRUD + items + overview; RBAC `project-plan:read` / `project-plan:manage` (ADMIN+EDITOR default); CSRF on mutations; `projectPlanner.enabled` (default true). Typed FE client `projectPlanner.ts`.
+- **It.87g — Project planner panel** — `/platform/project-planner` cockpit (progress, timeline, variance badges) and plan detail with add-item (page/article templates). Workspace nav; hidden when `projectPlanner.enabled=false`. Guide: [PROJECT_PLANNER.md](docs/en/user/PROJECT_PLANNER.md).
+- **It.87h — Content-type deadline templates** — add-item chips with default due offsets (page 14d, article 7d, …) and a milestone pack (1–20 items, one due date). SK/EN `projectPlanner.summary.*` keys completed.
+- **It.87i — Content linking + auto-done** — plan items can bind a page/article slug; publish (API, OTP, scheduled) marks the item `done`. Hook registrar + `ProjectPlanContentSyncService`.
+- **It.87j — Dashboard planner KPIs** — overdue / due-soon / progress strip on admin home (`GET /api/admin/project-plans/overview`). Hidden on 403/404 or when the module is disabled.
+- **It.87a — Public `srcset`** — `BlogRenderer` / `PageRenderer` heroes and cards use `?w=` srcset for same-origin media.
+- **It.87b — Admin list skeletons** — messages and comments use `AdminListSkeleton` (pages/media already did).
+- **It.87c — Empty states with CTAs** — pages/articles, media, dashboard zero-content strip.
+- **It.87d — Getting-started tour** — post-login overlay (localStorage per user); not the It.25 setup wizard.
+- **It.87k–m — Theme JS allow-list** — `assets.scripts[]` in `theme.json`; undeclared `.js` rejected at import; SHA-384 SRI sealed on install and checked on activate; `GET /theme-assets/{id}/assets/*.js` + CSP hashes. Setting `appearance.themeScriptsEnabled` defaults **false**.
+- **Content editor — change slug after create** — page/article slug stays editable; save sends the new slug (already supported by the API). Toast on collision (`409` without OCC payload) and after a successful rename (old public URL + navigation paths stay until updated).
 
 ### Fixed
 
+- **ISS-169** — Admin list pagination (pages, articles, media, comments, trash) snapped back to page 1 after Next/Previous. URL `page` updates now use a stable `setSearchParams` functional updater; page size changes still reset to page 1; bookmarked `?page=N` survives first mount.
+- **ISS-168** — Landing / home pages ignored the SEO OG image for the public hero. `PageRenderer` now reads `seoImage` / `ogImage` (not only `featuredImage`), shows it in `.public-hero` (readable overlay instead of 20% opacity), paints it on `showcase-hero` / `landing-hero`, and wraps home+landing in `PageLayoutShell`. Page save mirrors OG image to `featuredImage` in front matter.
 - **ISS-141 follow-up** — all remaining `Http/Controllers/*` JSON mutating paths and OTP/contact rate-limit middleware now use `RequestJsonBody::decode()` (eliminates empty-body regressions site-wide after `BodyParsingMiddleware`).
 - **Shortcode expand + HTML sanitizer** — `allowedHtmlTags` now includes `div`, `article`, `section`, `aside`, `span` (required for It.58 expand templates); legacy settings merge missing layout tags on read; `role` attribute allowed on sanitized elements.
+- **PHPUnit OTP / GD hygiene** — registration helpers no longer clobber `workflows.*` OTP flags; removed deprecated `imagedestroy()` under PHP 8.5 `failOnDeprecation`.
+
+### Release facts
+
+- **Tag:** `v2.1.0-beta.68`
+- **Release note:** [RELEASE_2_1_0_BETA_68.md](docs/en/RELEASE_2_1_0_BETA_68.md)
 
 ---
 

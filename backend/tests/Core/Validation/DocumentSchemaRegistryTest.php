@@ -17,6 +17,8 @@ final class DocumentSchemaRegistryTest extends TestCase
 
         $this->assertTrue($registry->has(DocumentSchemaRegistry::TYPE_SETTINGS_OVERRIDES, 1));
         $this->assertSame(1, $registry->latestVersion(DocumentSchemaRegistry::TYPE_SETTINGS_OVERRIDES));
+        $this->assertTrue($registry->has(DocumentSchemaRegistry::TYPE_PROJECT_PLAN, 1));
+        $this->assertSame(1, $registry->latestVersion(DocumentSchemaRegistry::TYPE_PROJECT_PLAN));
     }
 
     public function testUnknownSchemaVersionThrowsOnValidate(): void

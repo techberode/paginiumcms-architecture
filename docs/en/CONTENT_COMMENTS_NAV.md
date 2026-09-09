@@ -22,6 +22,8 @@ Supported page sizes: **5 / 10 / 20 / 50**. The default comes from `settings.ui.
 
 The public blog uses published-only filters and must not expose draft or private content in anonymous scope.
 
+URL `?page=` is the source of truth for admin pages/articles (and the same hook for media, comments, trash). **Next** writes `page=2` (or higher) and must stay there. Changing search, status, sort, or page size resets to page 1. Reloading `/pages?page=2` must open page 2 ([ISS-169](../ISSUES.md#iss-169)).
+
 ---
 
 ## 2. Global comment settings ✅

@@ -153,18 +153,14 @@ final class MediaImageOptimizer
             throw new FlatFileException(Lang::get('optimize_decode_failed', [], 'media'));
         }
 
-        try {
-            $encoded = $this->renderImage(
-                $source,
-                $beforeWidth,
-                $beforeHeight,
-                $targetW,
-                $targetH,
-                $detectedMime
-            );
-        } finally {
-            imagedestroy($source);
-        }
+        $encoded = $this->renderImage(
+            $source,
+            $beforeWidth,
+            $beforeHeight,
+            $targetW,
+            $targetH,
+            $detectedMime
+        );
 
         if ($encoded === '') {
             throw new FlatFileException(Lang::get('optimize_encode_failed', [], 'media'));
@@ -330,14 +326,12 @@ final class MediaImageOptimizer
             imagesavealpha($canvas, true);
             $transparent = imagecolorallocatealpha($canvas, 0, 0, 0, 127);
             if ($transparent === false) {
-                imagedestroy($canvas);
                 throw new FlatFileException(Lang::get('optimize_encode_failed', [], 'media'));
             }
             imagefilledrectangle($canvas, 0, 0, $targetW, $targetH, $transparent);
         } else {
             $background = imagecolorallocate($canvas, 255, 255, 255);
             if ($background === false) {
-                imagedestroy($canvas);
                 throw new FlatFileException(Lang::get('optimize_encode_failed', [], 'media'));
             }
             imagefilledrectangle($canvas, 0, 0, $targetW, $targetH, $background);
@@ -356,8 +350,6 @@ final class MediaImageOptimizer
             'image/webp' => imagewebp($canvas, null, self::WEBP_QUALITY),
             default => false,
         };
-
-        imagedestroy($canvas);
 
         $encoded = ob_get_clean();
         if ($saved === false) {

@@ -52,6 +52,7 @@ export interface Page {
   updatedAt: string;
   template?: string;
   layoutTemplate?: string;
+  ogImage?: string;
   lastReviewedAt?: string;
   isStale?: boolean;
   monthsSinceReview?: number | null;

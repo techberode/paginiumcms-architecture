@@ -11,7 +11,12 @@ import { Calendar, User, FileText, ArrowRight } from 'lucide-react';
 import { useI18n } from '../../context/I18nContext';
 import { formatDisplayDate, resolveContentDate } from '../../utils/contentDates';
 import { MEDIA_THUMB_WIDTH } from '../../api/media';
-import { resolveContentPreviewImage } from '../../utils/contentPreviewImage';
+import {
+  pickContentImageRaw,
+  resolveContentPreviewImage,
+  resolveContentPreviewSrcSet,
+  toCssBackgroundImage,
+} from '../../utils/contentPreviewImage';
 import { BTN_PRIMARY, PUBLIC_CARD } from '../../theme/publicUiClasses';
 import { useLandingReveal } from '../../hooks/useLandingReveal';
 
@@ -33,14 +38,40 @@ function pageMeta(page: Page, defaultAuthor: string) {
   };
 }
 
+function pageHeroImageUrl(page: Page, featuredImage: string): string {
+  return resolveContentPreviewImage(
+    {
+      featuredImage,
+      ogImage: page.ogImage,
+      frontMatter: page.frontMatter ?? {},
+    },
+    MEDIA_THUMB_WIDTH.hero
+  );
+}
+
+function pageHeroSrcSet(page: Page, featuredImage: string): string {
+  return resolveContentPreviewSrcSet(
+    {
+      featuredImage,
+      ogImage: page.ogImage,
+      frontMatter: page.frontMatter ?? {},
+    },
+    [MEDIA_THUMB_WIDTH.card, MEDIA_THUMB_WIDTH.hero]
+  );
+}
+
 export const PageRenderer: React.FC<PageRendererProps> = ({ page }) => {
   const { t, locale } = useI18n();
   const navigate = useNavigate();
   const meta = pageMeta(page, t('public.defaults.editorial'));
-  const featuredImageUrl = resolveContentPreviewImage(
-    { featuredImage: meta.featuredImage, frontMatter: page.frontMatter ?? {} },
-    MEDIA_THUMB_WIDTH.hero
-  );
+  const featuredImageUrl = pageHeroImageUrl(page, meta.featuredImage);
+  const featuredImageSrcSet = pageHeroSrcSet(page, meta.featuredImage);
+  const hasHeroImage = pickContentImageRaw({
+    featuredImage: meta.featuredImage,
+    ogImage: page.ogImage,
+    frontMatter: page.frontMatter ?? {},
+  }) !== '';
+  const heroBackground = hasHeroImage ? toCssBackgroundImage(featuredImageUrl) : '';
   const isHome = meta.template === 'home' || page.slug === 'home';
   const isContact = meta.template === 'contact' || page.slug === 'contact';
   const isServices = meta.template === 'services' || page.slug === 'sluzby' || page.slug === 'services';
@@ -50,12 +81,24 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page }) => {
   useLandingReveal(landingContentRef, isLandingLayout);
 
   const heroBlock = isHome ? (
-    <div className="relative overflow-hidden public-hero pt-20 pb-28">
-      <div className="absolute inset-0 z-0 opacity-20">
-        {meta.featuredImage && (
-          <img src={featuredImageUrl} alt={t('public.page.hero.imageAlt')} className="w-full h-full object-cover" loading="lazy" decoding="async" />
+    <div className="relative overflow-hidden public-hero pt-20 pb-28 min-h-[22rem]">
+      <div className={`absolute inset-0 z-0 ${hasHeroImage ? '' : 'opacity-20'}`}>
+        {hasHeroImage ? (
+          <>
+            <img
+              src={featuredImageUrl}
+              srcSet={featuredImageSrcSet || undefined}
+              sizes="100vw"
+              alt={t('public.page.hero.imageAlt')}
+              className="w-full h-full object-cover"
+              loading="eager"
+              decoding="async"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-theme-surface/35 via-theme-surface/55 to-theme-surface/80" />
+          </>
+        ) : (
+          <div className="absolute inset-0 bg-theme-text/80 backdrop-blur-sm" />
         )}
-        <div className="absolute inset-0 bg-theme-text/80 backdrop-blur-sm" />
       </div>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-theme-primary/20 text-theme-primary-foreground font-bold text-xs mb-8 border border-theme-primary/30 backdrop-blur-md">
@@ -111,9 +154,17 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page }) => {
         <p className="mt-4 text-base sm:text-lg text-theme-text-muted font-normal leading-relaxed max-w-3xl">
           {meta.description}
         </p>
-        {meta.featuredImage && !isAbout && !isServices && (
+        {hasHeroImage && !isAbout && !isServices && (
           <div className="mt-8 rounded-3xl overflow-hidden shadow-xl max-h-[400px]">
-            <img src={featuredImageUrl} alt={page.title} className="w-full h-full object-cover" loading="lazy" decoding="async" />
+            <img
+              src={featuredImageUrl}
+              srcSet={featuredImageSrcSet || undefined}
+              sizes="(max-width: 768px) 100vw, 896px"
+              alt={page.title}
+              className="w-full h-full object-cover"
+              loading="lazy"
+              decoding="async"
+            />
           </div>
         )}
       </div>
@@ -121,7 +172,28 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page }) => {
   );
 
   const contentBlock = isLandingLayout ? (
-    <div ref={landingContentRef} className="pg-landing-content paginium-prose max-w-none">
+    <div
+      ref={landingContentRef}
+      className="pg-landing-content paginium-prose max-w-none"
+      data-has-hero-image={hasHeroImage ? 'true' : 'false'}
+      style={
+        heroBackground
+          ? ({ ['--pg-hero-image']: heroBackground } as React.CSSProperties)
+          : undefined
+      }
+    >
+      {hasHeroImage ? (
+        <div className="pg-landing-seo-hero">
+          <img
+            src={featuredImageUrl}
+            srcSet={featuredImageSrcSet || undefined}
+            sizes="(max-width: 768px) 100vw, 1152px"
+            alt={page.title}
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+      ) : null}
       <MarkdownRenderer content={page.content} html={page.html} />
     </div>
   ) : (
@@ -132,10 +204,10 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page }) => {
 
   return (
     <div className="min-h-screen bg-theme-surface text-theme-text pb-20 transition-colors">
-      {meta.layoutTemplate === 'hero-content' || isHome ? heroBlock : null}
+      {!isLandingLayout && (meta.layoutTemplate === 'hero-content' || isHome) ? heroBlock : null}
 
       <main className={`mx-auto px-4 sm:px-6 lg:px-8 ${isLandingLayout ? 'max-w-6xl mt-4' : 'max-w-4xl mt-12'}`}>
-        {isHome ? (
+        {isHome && !isLandingLayout ? (
           contentBlock
         ) : (
           <PageLayoutShell

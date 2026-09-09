@@ -10,6 +10,7 @@ namespace PaginiumCMS\Core\Validation;
 final class DocumentSchemaRegistry
 {
     public const TYPE_SETTINGS_OVERRIDES = 'settings.overrides';
+    public const TYPE_PROJECT_PLAN = 'project-plan';
 
     /** @var array<string, array<int, array<string, mixed>>> */
     private array $schemas = [];
@@ -64,6 +65,7 @@ final class DocumentSchemaRegistry
     {
         $registry = new self();
         $registry->register(self::TYPE_SETTINGS_OVERRIDES, 1, self::settingsOverridesSchemaV1());
+        $registry->register(self::TYPE_PROJECT_PLAN, 1, self::projectPlanSchemaV1());
 
         return $registry;
     }
@@ -80,6 +82,20 @@ final class DocumentSchemaRegistry
                 'type' => 'object',
                 'additionalProperties' => true,
             ],
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function projectPlanSchemaV1(): array
+    {
+        return [
+            '$schema' => 'https://json-schema.org/draft/2020-12/schema',
+            '$id' => 'project-plan@1',
+            'type' => 'object',
+            'required' => ['schemaVersion', 'id', 'title', 'timezone', 'createdAt', 'updatedAt', 'phases', 'items'],
+            'additionalProperties' => true,
         ];
     }
 }

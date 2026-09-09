@@ -152,6 +152,16 @@ final class CsrfMiddlewareTest extends TestCase
         $this->assertStringContainsString('csrf_invalid', (string) $response->getBody());
     }
 
+    public function testProjectPlanMutationsAreNotCsrfExempt(): void
+    {
+        $response = $this->makeMiddleware()->process(
+            $this->request('POST', '/api/admin/project-plans'),
+            $this->handler()
+        );
+        $this->assertSame(403, $response->getStatusCode());
+        $this->assertStringContainsString('csrf_invalid', (string) $response->getBody());
+    }
+
     public function testProtectedPostWithInvalidTokenIsRejected(): void
     {
         $response = $this->makeMiddleware()->process(

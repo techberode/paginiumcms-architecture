@@ -327,7 +327,6 @@ class MediaControllerTest extends TestCase
         imagefilledrectangle($image, 0, 0, 639, 479, $color);
         ob_start();
         imagepng($image, null, 0);
-        imagedestroy($image);
         $pngBytes = ob_get_clean();
         $this->assertGreaterThan(10_000, strlen($pngBytes));
 
@@ -387,7 +386,6 @@ class MediaControllerTest extends TestCase
         imagefilledrectangle($image, 0, 0, 799, 599, $color);
         ob_start();
         imagepng($image, null, 0);
-        imagedestroy($image);
         $pngBytes = ob_get_clean();
         $this->assertGreaterThan(10_000, strlen($pngBytes));
 
@@ -450,7 +448,6 @@ class MediaControllerTest extends TestCase
         imagefilledrectangle($image, 0, 0, 799, 599, $color);
         ob_start();
         imagepng($image, null, 0);
-        imagedestroy($image);
         $pngBytes = ob_get_clean();
 
         $stream = (new StreamFactory())->createStream($pngBytes);

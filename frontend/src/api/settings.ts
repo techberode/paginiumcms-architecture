@@ -194,6 +194,8 @@ export interface PublicSettings {
     allowUserToggle: boolean;
     previewTemplate?: string;
     activeThemeId?: string;
+    themeScriptsEnabled?: boolean;
+    themeScripts?: Array<{ src: string; integrity: string; load: string }>;
   };
   layout?: {
     builderMode: 'templates' | 'shortcodes' | 'outline' | 'developer';
@@ -221,6 +223,9 @@ export interface PublicSettings {
     autoResetMinutes?: number | null;
   };
   origin?: {
+    enabled?: boolean;
+  };
+  projectPlanner?: {
     enabled?: boolean;
   };
   social?: {

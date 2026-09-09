@@ -30,6 +30,7 @@ use PaginiumCMS\Modules\Security\PermissionCatalog;
 use PaginiumCMS\Modules\Security\Services\AccessControlSyncService;
 use PaginiumCMS\Modules\Security\Services\RoleCatalogSeeder;
 use PaginiumCMS\Http\Themes\Services\ThemeRuntimeService;
+use PaginiumCMS\Http\Themes\Services\ThemeScriptIntegrityService;
 use PaginiumCMS\Modules\Media\Services\MediaStorageCapabilityProbe;
 use PaginiumCMS\Modules\Media\Services\MediaStorageFactory;
 use PaginiumCMS\Support\AppVersion;
@@ -71,6 +72,7 @@ final class SettingsController
         private MediaStorageFactory $mediaStorageFactory,
         private MediaStorageCapabilityProbe $mediaStorageProbe,
         private ThemeRuntimeService $themeRuntime,
+        private ?ThemeScriptIntegrityService $themeScripts = null,
     ) {
     }
 
@@ -315,6 +317,9 @@ final class SettingsController
             ],
             'demo' => $this->publicDemoSettings($all['marketing'] ?? []),
             'origin' => $this->publicOriginSettings($requestHost),
+            'projectPlanner' => [
+                'enabled' => (bool) ($all['projectPlanner']['enabled'] ?? true),
+            ],
             'social' => $this->publicSocialSettings($all['marketing'] ?? []),
             'gallery' => $this->publicGallerySettings($all['gallery'] ?? []),
             'comments' => [
@@ -408,7 +413,15 @@ final class SettingsController
 
     /**
      * @param array<string, mixed> $appearance
-     * @return array{colorScheme: string, mode: string, allowUserToggle: bool, previewTemplate: string, activeThemeId: string}
+     * @return array{
+     *     colorScheme: string,
+     *     mode: string,
+     *     allowUserToggle: bool,
+     *     previewTemplate: string,
+     *     activeThemeId: string,
+     *     themeScriptsEnabled: bool,
+     *     themeScripts: list<array{src: string, integrity: string, load: string}>
+     * }
      */
     private function publicAppearanceSettings(array $appearance): array
     {
@@ -426,6 +439,9 @@ final class SettingsController
             $mode = 'system';
         }
 
+        $scriptsEnabled = (bool) ($appearance['themeScriptsEnabled'] ?? $defaults['themeScriptsEnabled'] ?? false);
+        $themeId = $this->themeRuntime->resolveActiveThemeId();
+
         return [
             'colorScheme' => $colorScheme,
             'mode' => $mode,
@@ -433,7 +449,11 @@ final class SettingsController
             'previewTemplate' => PageLayoutCatalog::normalizeTemplate(
                 (string) ($appearance['previewTemplate'] ?? $defaults['previewTemplate'] ?? PageLayoutCatalog::DEFAULT_TEMPLATE)
             ),
-            'activeThemeId' => $this->themeRuntime->resolveActiveThemeId(),
+            'activeThemeId' => $themeId,
+            'themeScriptsEnabled' => $scriptsEnabled,
+            'themeScripts' => $scriptsEnabled && $this->themeScripts !== null
+                ? $this->themeScripts->publicScripts($themeId)
+                : [],
         ];
     }
 

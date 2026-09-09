@@ -101,6 +101,7 @@ export const settingsSk: MessageTree = {
     "branding": "Logo a favicon",
     "appearance": "Vzhľad",
     "layout": "Rozloženie stránky",
+    "projectPlanner": "Plánovač projektu",
     "accessControl": "Oprávnenia rolí",
     "cmsInfo": "PaginiumCMS – info"
   },
@@ -307,6 +308,8 @@ export const settingsSk: MessageTree = {
       "api-keys:manage": "Správa API kľúčov",
       "redirects:manage": "Správa presmerovaní",
       "webhooks:manage": "Správa webhookov",
+      "project-plan:read": "Zobrazenie plánovača projektu",
+      "project-plan:manage": "Správa plánovača projektu",
       "profile:edit": "Úprava profilu"
     }
   },
@@ -1155,6 +1158,18 @@ export const settingsSk: MessageTree = {
         "uploadAlt": "Branding upload",
         "invalidType": "Nepodporovaný typ súboru",
         "uploadFailed": "Upload zlyhal"
+      }
+    },
+    "appearance": {
+      "themeScriptsEnabled": {
+        "label": "Povoliť JS témy (allow-list)",
+        "help": "Fail-closed. Zapnuté = verejný web načíta len deklarované assets/*.js s SRI. Vypnuté = žiadne skripty z témy (predvolené)."
+      }
+    },
+    "projectPlanner": {
+      "enabled": {
+        "label": "Zapnúť plánovač projektu",
+        "help": "Modul Full CMS na míľniky. Vypnite len pre orezané demo. Nie je to Origin Panel."
       }
     },
     "privacy": {

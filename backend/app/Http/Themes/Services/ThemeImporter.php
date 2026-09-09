@@ -20,6 +20,7 @@ final class ThemeImporter
         private ThemeRegistry $registry,
         private UntrustedPolicyScanner $policyScanner,
         private ThemeManifestValidator $manifestValidator,
+        private ThemeScriptIntegrityService $integrity,
         private string $themesRoot,
         private string $frontendThemesRoot,
         private string $projectRoot,
@@ -63,7 +64,10 @@ final class ThemeImporter
                 throw new CodePolicyViolationException($this->mapScanErrors($errors));
             }
 
+            $this->integrity->assertJsAllowList($themeRoot, $manifest);
+
             $this->installThemeFiles($themeRoot, $id);
+            $this->integrity->sealManifest($this->themesRoot . '/' . $id, $this->readManifest($this->themesRoot . '/' . $id . '/theme.json'));
 
             $record = new ThemeRecord($id, false, gmdate('c'));
             $this->registry->upsert($record);

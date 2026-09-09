@@ -21,6 +21,7 @@ import {
 import { useI18n } from '../../context/I18nContext';
 import { useSettings } from '../../hooks/useSettings';
 import { useToast } from '../../hooks/useToast';
+import { ProgressBar } from './ProgressBar';
 
 const DEPLOY_STYLE: Record<string, string> = {
   live: 'bg-emerald-100 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100',
@@ -45,20 +46,6 @@ const STATUS_STYLE: Record<FeatureProbeStatus, string> = {
   partial: 'bg-amber-100 text-amber-950 dark:bg-amber-950/40 dark:text-amber-100',
   missing: 'bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-200',
   unknown: 'bg-slate-100 text-slate-600 dark:bg-slate-900 dark:text-slate-300',
-};
-
-const ProgressBar: React.FC<{ percent: number; tone?: 'indigo' | 'emerald' | 'amber' }> = ({
-  percent,
-  tone = 'indigo',
-}) => {
-  const toneClass =
-    tone === 'emerald' ? 'bg-emerald-500' : tone === 'amber' ? 'bg-amber-500' : 'bg-indigo-500';
-
-  return (
-    <div className="h-2 w-full rounded-full bg-slate-200 dark:bg-slate-800">
-      <div className={`h-2 rounded-full ${toneClass}`} style={{ width: `${Math.max(0, Math.min(100, percent))}%` }} />
-    </div>
-  );
 };
 
 export const OriginPanelView: React.FC = () => {

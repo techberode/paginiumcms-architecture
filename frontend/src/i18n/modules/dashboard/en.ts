@@ -48,7 +48,13 @@ export const dashboardEn: MessageTree = {
     totalContent: 'Total content: :size • :count documents',
   },
   toast: {
-    loadFailed: 'Failed to load dashboard data',
+    loadFailed: 'Could not load dashboard data.',
+  },
+  empty: {
+    title: 'No content yet',
+    body: 'Create a first page or article to start the public site.',
+    createPage: 'Create page',
+    createArticle: 'Create article',
   },
   updateBanner: {
     title: 'System update available',

@@ -72,6 +72,8 @@ export function useAdminListQueryParams(
     [searchParams, defaultSortField, defaultSortDirection]
   );
 
+  // Functional updater keeps this callback stable so URL `page` changes do not
+  // retrigger filter-sync effects that would snap the list back to page 1.
   const patchParams = useCallback(
     (patch: {
       page?: number;
@@ -84,72 +86,86 @@ export function useAdminListQueryParams(
       sortDirection?: SortDirection;
       resetPage?: boolean;
     }) => {
-      const next = new URLSearchParams(searchParams);
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        let queryChanged = false;
 
-      if (patch.q !== undefined) {
-        const trimmed = patch.q.trim();
-        if (trimmed.length >= 2) {
-          next.set('q', trimmed);
-        } else {
-          next.delete('q');
+        if (patch.q !== undefined) {
+          const trimmed = patch.q.trim();
+          const nextQ = trimmed.length >= 2 ? trimmed : '';
+          const prevQ = prev.get('q') ?? '';
+          queryChanged = nextQ !== prevQ;
+          if (nextQ !== '') {
+            next.set('q', nextQ);
+          } else {
+            next.delete('q');
+          }
         }
-      }
 
-      if (patch.status !== undefined) {
-        if (patch.status === 'all' || patch.status === '') {
-          next.delete('status');
-        } else {
-          next.set('status', patch.status);
+        if (patch.status !== undefined) {
+          if (patch.status === 'all' || patch.status === '') {
+            next.delete('status');
+          } else {
+            next.set('status', patch.status);
+          }
         }
-      }
 
-      if (patch.tag !== undefined) {
-        const trimmedTag = patch.tag.trim();
-        if (trimmedTag === '') {
-          next.delete('tag');
-        } else {
-          next.set('tag', trimmedTag);
+        if (patch.tag !== undefined) {
+          const trimmedTag = patch.tag.trim();
+          if (trimmedTag === '') {
+            next.delete('tag');
+          } else {
+            next.set('tag', trimmedTag);
+          }
         }
-      }
 
-      if (patch.seo !== undefined) {
-        if (patch.seo) {
-          next.set('seo', '1');
-        } else {
-          next.delete('seo');
+        if (patch.seo !== undefined) {
+          if (patch.seo) {
+            next.set('seo', '1');
+          } else {
+            next.delete('seo');
+          }
         }
-      }
 
-      if (patch.stale !== undefined) {
-        if (patch.stale) {
-          next.set('stale', '1');
-        } else {
-          next.delete('stale');
+        if (patch.stale !== undefined) {
+          if (patch.stale) {
+            next.set('stale', '1');
+          } else {
+            next.delete('stale');
+          }
         }
-      }
 
-      if (patch.sortField !== undefined && patch.sortDirection !== undefined) {
-        const sortValue = formatSortParam(patch.sortField, patch.sortDirection);
-        if (sortValue === formatSortParam(defaultSortField, defaultSortDirection)) {
-          next.delete('sort');
-        } else {
-          next.set('sort', sortValue);
+        if (patch.sortField !== undefined && patch.sortDirection !== undefined) {
+          const sortValue = formatSortParam(patch.sortField, patch.sortDirection);
+          if (sortValue === formatSortParam(defaultSortField, defaultSortDirection)) {
+            next.delete('sort');
+          } else {
+            next.set('sort', sortValue);
+          }
         }
-      }
 
-      if (patch.page !== undefined) {
-        if (patch.page <= 1) {
-          next.delete('page');
-        } else {
-          next.set('page', String(patch.page));
+        if (patch.page !== undefined) {
+          if (patch.page <= 1) {
+            next.delete('page');
+          } else {
+            next.set('page', String(patch.page));
+          }
+        } else if (patch.resetPage) {
+          const filterFieldsChanged =
+            patch.status !== undefined ||
+            patch.tag !== undefined ||
+            patch.seo !== undefined ||
+            patch.stale !== undefined ||
+            patch.sortField !== undefined;
+          if (filterFieldsChanged || queryChanged || patch.q === undefined) {
+            next.delete('page');
+          }
         }
-      } else if (patch.resetPage) {
-        next.delete('page');
-      }
 
-      setSearchParams(next, { replace: true });
+        return next.toString() === prev.toString() ? prev : next;
+      }, { replace: true });
     },
-    [defaultSortDirection, defaultSortField, searchParams, setSearchParams]
+    [defaultSortDirection, defaultSortField, setSearchParams]
   );
 
   useEffect(() => {
@@ -160,14 +176,8 @@ export function useAdminListQueryParams(
   }, [search]);
 
   useEffect(() => {
-    const trimmed = debouncedSearch;
-    const currentQ = searchParams.get('q') ?? '';
-    const normalizedQ = trimmed.length >= 2 ? trimmed : '';
-    if (normalizedQ === currentQ) {
-      return;
-    }
-    patchParams({ q: trimmed, resetPage: true });
-  }, [debouncedSearch, patchParams, searchParams]);
+    patchParams({ q: debouncedSearch, resetPage: true });
+  }, [debouncedSearch, patchParams]);
 
   const setSearch = useCallback((value: string) => {
     setSearchState(value);
@@ -311,32 +321,34 @@ export function useMediaListQueryParams(
 
   const patchMediaParams = useCallback(
     (patch: { folder?: string; type?: MediaTypeFilter; resetPage?: boolean }) => {
-      const next = new URLSearchParams(searchParams);
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
 
-      if (patch.folder !== undefined) {
-        const normalized = patch.folder.trim();
-        if (normalized === '') {
-          next.delete('folder');
-        } else {
-          next.set('folder', normalized);
+        if (patch.folder !== undefined) {
+          const normalized = patch.folder.trim();
+          if (normalized === '') {
+            next.delete('folder');
+          } else {
+            next.set('folder', normalized);
+          }
         }
-      }
 
-      if (patch.type !== undefined) {
-        if (patch.type === 'image') {
-          next.set('type', 'image');
-        } else {
-          next.delete('type');
+        if (patch.type !== undefined) {
+          if (patch.type === 'image') {
+            next.set('type', 'image');
+          } else {
+            next.delete('type');
+          }
         }
-      }
 
-      if (patch.resetPage !== false) {
-        next.delete('page');
-      }
+        if (patch.resetPage !== false) {
+          next.delete('page');
+        }
 
-      setSearchParams(next, { replace: true });
+        return next.toString() === prev.toString() ? prev : next;
+      }, { replace: true });
     },
-    [searchParams, setSearchParams]
+    [setSearchParams]
   );
 
   const setFolder = useCallback(

@@ -1,6 +1,7 @@
 # PaginiumCMS — konsolidovaný backlog
 
-> **Snapshot:** `v2.1.0-beta.59` · 25. august 2026  
+> **Snapshot:** `v2.1.0-beta.68` · 9. september 2026  
+> **Fáza:** plný vývoj naplánovaných iterácií — [CONTINUATION](../en/CONTINUATION.md) (stabilizačný freeze **ukončený**)  
 > **Pravidlo:** aktívny backlog obsahuje iba nedodaný alebo presne ohraničený zostávajúci rozsah  
 > **No-SQL:** [architecture/NOSQL_MANDATE.md](architecture/NOSQL_MANDATE.md)
 
@@ -36,14 +37,16 @@ Tento dokument opravuje starý backlog, v ktorom sa miešali hotové iterácie, 
 | 11 | **It.58d** Layout remainder | 🟡 | ✅ | shortcodes + layout shell; 58f/58g odložené |
 | 12 | **It.81** Redakčný workflow & content ops | 🟡 | ✅ | 81a–81f hotové — [ITERATION_81](../en/ITERATION_81.md) |
 | 13 | **It.82** Origin Panel (maintainer cockpit) | 🔵 | ✅ | env gate; mimo zákazníckeho archívu — [ITERATION_82](../en/ITERATION_82.md) |
-| 14 | **It.78** Unified upload security | 🟡 | ⏳ | bezpečnostná brána pred videom / novými MIME |
-| 15 | **It.79** DAM video | 🟡 | ⏳ | MP4/WebM + embed v editore; po It.78 |
-| 16 | **It.25** Setup wizard/update UX | 🟡 pre-Final | ✅ basic + M1+ | **blokátor stabilnej verzie** — `beta.62`–`beta.65` (preflight, infra); [ITERATION_25](../en/ITERATION_25.md) |
-| 17 | **It.76/77** Translation providers | 🔵 | ⏳ | po It.73 |
-| 18 | **It.75** AI agent | 🔵 | ⏳ | po locale a provider vrstvách |
-| 19 | **It.83** Theme runtime + Terminal Breach | 🟡 | ⏸️ | po stabilnom releasi — [ITERATION_83](../en/ITERATION_83.md) |
-| 20 | **It.84** Kategórie, blog sidebar, landing, role, menu | 🟡 | ✅ | **84a–84e** hotové — [ITERATION_84](../en/ITERATION_84.md) |
-| 21 | **It.85** Request diagnostics + admin APM clear | 🟡 | ✅ | **85a–85f** hotové — [ITERATION_85](../en/ITERATION_85.md); `v2.1.0-beta.59` |
+| 14 | **It.87** Project site planner + UX | 🟡 P1 | ✅ shipped | [ITERATION_87](../en/ITERATION_87.md) |
+| 15 | **It.88** Theme Studio (Monaco, politika, náhľad) | 🟡 P1 | ⏳ | po 87k pre JS — [ITERATION_88](../en/ITERATION_88.md) |
+| 16 | **It.78** Unified upload security | 🟡 | ⏳ | pred videom / novými MIME |
+| 17 | **It.79** DAM video | 🟡 | ⏳ | po It.78 |
+| 18 | **It.25** Setup wizard/update UX | 🟡 | ✅ basic + M1+ | dodané; už nie je gate na stable tag |
+| 19 | **It.76/77** Translation providers | 🔵 | ⏳ | po It.73 |
+| 20 | **It.75** AI agent | 🔵 | ⏳ | po locale a provider vrstvách |
+| 21 | **It.83** Theme runtime + Terminal Breach | 🟡 | ✅ | `beta.59` — [ITERATION_83](../en/ITERATION_83.md) |
+| 22 | **It.84** Kategórie, blog sidebar, landing, role, menu | 🟡 | ✅ | **84a–84e** hotové — [ITERATION_84](../en/ITERATION_84.md) |
+| 23 | **It.85** Request diagnostics + admin APM clear | 🟡 | ✅ | **85a–85f** hotové — [ITERATION_85](../en/ITERATION_85.md); `v2.1.0-beta.59` |
 
 ---
 

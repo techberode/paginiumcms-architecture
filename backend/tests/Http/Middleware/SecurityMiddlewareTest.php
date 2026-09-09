@@ -100,4 +100,24 @@ final class SecurityMiddlewareTest extends TestCase
             $response->getHeaderLine('Content-Security-Policy')
         );
     }
+
+    public function testAppendsThemeScriptHashesToScriptSrc(): void
+    {
+        $contributor = $this->createMock(\PaginiumCMS\Http\Security\CspScriptSrcContributorInterface::class);
+        $contributor->method('extraScriptSrcTokens')->willReturn(["'sha384-abc'"]);
+
+        $middleware = new SecurityMiddleware([], $contributor);
+        $request = (new ServerRequestFactory())->createServerRequest('GET', '/');
+        $inner = (new ResponseFactory())->createResponse(200);
+
+        $handler = $this->createMock(RequestHandlerInterface::class);
+        $handler->method('handle')->willReturn($inner);
+
+        $response = $middleware->process($request, $handler);
+
+        $csp = $response->getHeaderLine('Content-Security-Policy');
+        $this->assertStringContainsString("script-src 'self' 'sha384-abc'", $csp);
+        preg_match('/script-src ([^;]+)/', $csp, $scriptSrc);
+        $this->assertStringNotContainsString('unsafe-inline', $scriptSrc[1] ?? '');
+    }
 }

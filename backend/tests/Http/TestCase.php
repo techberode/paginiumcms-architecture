@@ -146,6 +146,22 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
+     * Register/login helpers must not clobber OTP flags written by enableWorkflows().
+     *
+     * @param array<string, mixed> $workflows
+     */
+    private function restoreWorkflows(array $workflows): void
+    {
+        $this->container()->get(SettingsRepositoryInterface::class)->setGroup('workflows', [
+            'registrationOtpEnabled' => (bool) ($workflows['registrationOtpEnabled'] ?? false),
+            'commentApprovalOtpEnabled' => (bool) ($workflows['commentApprovalOtpEnabled'] ?? false),
+            'publishApprovalOtpEnabled' => (bool) ($workflows['publishApprovalOtpEnabled'] ?? false),
+            'otpTtlMinutes' => (int) ($workflows['otpTtlMinutes'] ?? 15),
+            'otpMaxAttempts' => (int) ($workflows['otpMaxAttempts'] ?? 5),
+        ]);
+    }
+
+    /**
      * @param array<int|string, mixed>|null $data
      * @param array<string, string> $headers
      * @param array<string, mixed> $serverParams
@@ -215,6 +231,7 @@ abstract class TestCase extends BaseTestCase
         $email = $email ?? 'test_' . uniqid() . '@example.com';
         $password = $password ?? 'StrongP@ssw0rd123!';
         $name = $name ?? 'Test User';
+        $workflows = $this->container()->get(SettingsRepositoryInterface::class)->group('workflows');
 
         $request = $this->createJsonRequest('POST', '/api/auth/register', [
             'email' => $email,
@@ -225,6 +242,7 @@ abstract class TestCase extends BaseTestCase
 
         $response = $this->handleRequest($request);
         $data = $this->getJsonResponse($response);
+        $this->restoreWorkflows($workflows);
 
         return [
             'email' => $email,

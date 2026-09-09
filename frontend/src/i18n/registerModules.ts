@@ -47,6 +47,10 @@ import { originEn } from './modules/origin/en';
 import { originSk } from './modules/origin/sk';
 import { setupEn } from './modules/setup/en';
 import { setupSk } from './modules/setup/sk';
+import { projectPlannerEn } from './modules/projectPlanner/en';
+import { projectPlannerSk } from './modules/projectPlanner/sk';
+import { onboardingEn } from './modules/onboarding/en';
+import { onboardingSk } from './modules/onboarding/sk';
 
 export function registerAllI18nModules(): void {
   registerModuleMessages('sk', 'admin', adminSk);
@@ -95,6 +99,10 @@ export function registerAllI18nModules(): void {
   registerModuleMessages('en', 'origin', originEn);
   registerModuleMessages('sk', 'setup', setupSk);
   registerModuleMessages('en', 'setup', setupEn);
+  registerModuleMessages('sk', 'projectPlanner', projectPlannerSk);
+  registerModuleMessages('en', 'projectPlanner', projectPlannerEn);
+  registerModuleMessages('sk', 'onboarding', onboardingSk);
+  registerModuleMessages('en', 'onboarding', onboardingEn);
 }
 
 registerAllI18nModules();

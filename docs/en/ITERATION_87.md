@@ -1,6 +1,6 @@
 # Iteration 87 — Project site planner & editorial UX completion
 
-> **Status:** ⏳ planned — **first post-stable product slice** (after It.25 + `v2.2.0` stable tag)  
+> **Status:** ✅ shipped in **`v2.1.0-beta.68`** — **87a–87m** complete  
 > **Priority:** 🟡 **P1** (Project Site Planner — Full CMS); 🟡 **P2** (UX audit deferrals from It.86d)  
 > **Wave:** Editorial product (extends It.81d editorial calendar, contrasts with It.82 Origin Panel)  
 > **Depends on:** It.25 setup/onboarding baseline, It.81 content index + editorial calendar, flat-file SSOT, RBAC  
@@ -64,19 +64,19 @@ Ship **87e–87h** as MVP for beta.61; **87i–87j** and UX track can follow in 
 
 | ID | Slice | Priority | Status | Summary |
 |----|-------|----------|--------|---------|
-| **87a** | Responsive `srcset` on public content images | 🟡 P2 | ⏳ planned | Audit deferral; `BlogRenderer` / media helpers |
-| **87b** | Skeleton loading states (admin lists) | 🟡 P2 | ⏳ planned | Pages, messages, comments, media — consistent pattern |
-| **87c** | Empty states (“Create first article”) | 🔵 P3 | ⏳ planned | List + dashboard zero-data UX |
-| **87d** | Getting-started / onboarding tour | 🟡 P2 | ⏳ planned | Coordinate with [It.25](ITERATION_25.md); checklist-driven, not blocking wizard |
-| **87e** | Plan flat-file schema + repository | 🟡 P1 | ⏳ planned | `data/project-plans/` SSOT |
-| **87f** | Planner API + permissions | 🟡 P1 | ⏳ planned | CRUD, CSRF, AuthZ |
-| **87g** | **Project Planner panel** (admin UI) | 🟡 P1 | ⏳ planned | Progress bars, timeline, variance badges |
-| **87h** | Milestones & content-type deadlines | 🟡 P1 | ⏳ planned | page / article / landing / media / custom |
-| **87i** | Link plan items ↔ content + sync status | 🟡 P2 | ⏳ planned | Optional slug binding; auto-`done` on publish |
-| **87j** | Dashboard widgets (overdue, this week) | 🔵 P2 | ⏳ planned | Admin home KPI strip |
-| **87k** | Theme `assets/` JS allow-list + manifest | 🔵 P3 | ⏳ planned | Only declared paths; import policy scan |
-| **87l** | SRI (`integrity`) at import/activate | 🔵 P3 | ⏳ planned | SHA-384 stored in theme manifest |
-| **87m** | CSP hash/nonce for theme scripts | 🔵 P3 | ⏳ planned | `script-src` hashes; dedicated static route |
+| **87a** | Responsive `srcset` on public content images | 🟡 P2 | ✅ shipped | Audit deferral; `BlogRenderer` / media helpers |
+| **87b** | Skeleton loading states (admin lists) | 🟡 P2 | ✅ shipped | Pages, messages, comments, media — consistent pattern |
+| **87c** | Empty states (“Create first article”) | 🔵 P3 | ✅ shipped | List + dashboard zero-data UX |
+| **87d** | Getting-started / onboarding tour | 🟡 P2 | ✅ shipped | Coordinate with [It.25](ITERATION_25.md); checklist-driven, not blocking wizard |
+| **87e** | Plan flat-file schema + repository | 🟡 P1 | ✅ shipped | `data/project-plans/` SSOT — [PROJECT_PLANNER.md](architecture/PROJECT_PLANNER.md) |
+| **87f** | Planner API + permissions | 🟡 P1 | ✅ shipped | CRUD, CSRF, AuthZ |
+| **87g** | **Project Planner panel** (admin UI) | 🟡 P1 | ✅ shipped | Progress bars, timeline, variance badges |
+| **87h** | Milestones & content-type deadlines | 🟡 P1 | ✅ shipped | page / article / landing / media / custom |
+| **87i** | Link plan items ↔ content + sync status | 🟡 P2 | ✅ shipped | Optional slug binding; auto-`done` on publish |
+| **87j** | Dashboard widgets (overdue, this week) | 🔵 P2 | ✅ shipped | Admin home KPI strip |
+| **87k** | Theme `assets/` JS allow-list + manifest | 🔵 P3 | ✅ shipped | Only declared paths; import policy scan |
+| **87l** | SRI (`integrity`) at import/activate | 🔵 P3 | ✅ shipped | SHA-384 stored in theme manifest |
+| **87m** | CSP hash/nonce for theme scripts | 🔵 P3 | ✅ shipped | `script-src` hashes; dedicated static route |
 
 ---
 
@@ -288,6 +288,7 @@ Deferred from [CHANGELOG Unreleased](CHANGELOG.md) / It.86 item `86d`:
 
 - [ITERATION_67.md](ITERATION_67.md) — untrusted surfaces baseline
 - [ITERATION_83.md](ITERATION_83.md) — theme runtime
+- [ITERATION_88.md](ITERATION_88.md) — Theme Studio consumes Track C for the JS tab
 - [EXTENSION_CODE_POLICY.md](developer/EXTENSION_CODE_POLICY.md)
 
 ---
@@ -309,12 +310,12 @@ Document in a short **`PROJECT_PLANNER.md`** (or admin guide section) that the p
 
 ### MVP (87e–87h)
 
-- [ ] Create/edit/delete plans and items via API with tests
-- [ ] `/platform/project-planner` shows progress %, phase list, variance badges
-- [ ] At least one content-type template (article + page) in add-item flow
+- [x] Create/edit/delete plans and items via API with tests
+- [x] `/platform/project-planner` shows progress %, phase list, variance badges
+- [x] At least one content-type template (article + page) in add-item flow
 - [ ] `./scripts/iteration-gate.sh` green
-- [ ] Admin guide section (EN) + SK mirror
-- [ ] CHANGELOG + `project-catalog.json` it.87 probes when shipped
+- [x] Admin guide section (EN) + SK mirror
+- [x] CHANGELOG + `project-catalog.json` it.87 probes when shipped
 
 ### Full iteration (+ 87i–87j, 87a–87d)
 
@@ -333,6 +334,7 @@ Document in a short **`PROJECT_PLANNER.md`** (or admin guide section) that the p
 
 ## Related documents
 
+- [architecture/PROJECT_PLANNER.md](architecture/PROJECT_PLANNER.md) — plan store SSOT (87e)
 - [ITERATION_81.md](ITERATION_81.md) — editorial calendar (81d)
 - [ITERATION_82.md](ITERATION_82.md) — Origin Panel (maintainer)
 - [ITERATION_25.md](ITERATION_25.md) — setup wizard / onboarding
