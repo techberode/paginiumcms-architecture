@@ -12,6 +12,23 @@ export const backupsEn: MessageTree = {
     button: 'Create Backup',
     creating: 'Creating…',
   },
+  scope: {
+    title: 'What to include',
+    hint: 'Used for both a manual backup and the automatic schedule. Full content tree includes pages, articles, media, settings data, navigation, and trash.',
+    content: 'Entire content tree',
+    pages: 'Pages',
+    blog: 'Articles',
+    media: 'Media library',
+    data: 'CMS data (settings, users, indexes)',
+    navigation: 'Navigation',
+    trash: 'Trash',
+    config: 'App config (storage/app/config)',
+    modeTitle: 'Backup type',
+    modeFull: 'Full snapshot (every selected file)',
+    modeIncremental: 'Incremental (changed files only, rsync-style)',
+    modeHint:
+      'Incremental stores a SHA-256 manifest and zips only new, changed, or deleted files since the last backup with the same scope. The first run is always a full snapshot. Restore applies the full baseline plus later deltas. This does not call the rsync binary.',
+  },
   import: {
     title: 'Import Backup ZIP',
     placeholder: 'Optional display name…',
@@ -26,6 +43,8 @@ export const backupsEn: MessageTree = {
     name: 'Name',
     created: 'Created',
     size: 'Size',
+    scope: 'Scope',
+    mode: 'Type',
     hash: 'SHA-256',
     status: 'Status',
     actions: 'Actions',
@@ -58,6 +77,8 @@ export const backupsEn: MessageTree = {
   },
   confirm: {
     restoreOne: 'Restore this backup? Current content will be overwritten.',
+    restoreIncremental:
+      'This is an incremental backup. Restore will apply the full baseline first, then this delta (including file deletions). Continue?',
     deleteOne: 'Delete this backup?',
     bulkRestore: 'Restore :count selected backup(s)? Current content will be overwritten.',
     bulkDelete: 'Delete :count selected backup(s)?',
@@ -65,6 +86,7 @@ export const backupsEn: MessageTree = {
   toast: {
     loadFailed: 'Failed to load backups.',
     nameRequired: 'Please enter a backup name.',
+    scopeRequired: 'Select at least one backup scope.',
     createSuccess: 'Backup created successfully.',
     createFailed: 'Failed to create backup.',
     importSuccess: 'Backup imported into library.',
@@ -98,7 +120,7 @@ export const backupsEn: MessageTree = {
       'Scheduled backups run outside the browser via the job scheduler and server cron. Configure all three steps — otherwise nothing runs automatically.',
     stepScheduler: 'Enable job scheduler and the backup-scheduled job in Platform → Scheduler.',
     stepCron: 'Add cron on the host (see docs/deploy/CRON.md) — typically scheduler:run every minute.',
-    stepHere: 'Choose interval and retention here, then save.',
+    stepHere: 'Choose interval, retention, and the shared scope/type above, then save.',
     enabled: 'Enable automatic backups',
     interval: 'Interval',
     keep: 'Keep latest backups',

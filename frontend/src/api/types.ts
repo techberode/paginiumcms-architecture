@@ -86,6 +86,10 @@ export interface Backup {
   status: 'in_progress' | 'completed' | 'failed';
   includes: string[];
   sha256?: string;
+  mode?: 'full' | 'incremental';
+  baseBackupId?: string | null;
+  filesPacked?: number;
+  filesTotal?: number;
 }
 
 export interface BackupVerifyResult {
@@ -228,4 +232,6 @@ export interface ScheduleInfo {
   keep?: number;
   next_run?: string;
   last_run?: string;
+  includes?: string[];
+  mode?: 'full' | 'incremental';
 }

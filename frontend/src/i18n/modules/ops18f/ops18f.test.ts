@@ -35,6 +35,7 @@ describe('It.18f i18n modules', () => {
     registerModuleMessages('en', 'backups', backupsEn);
     expect(translate('sk', 'backups.create.button')).toBe('Vytvoriť zálohu');
     expect(translate('en', 'backups.status.completed')).toBe('Completed');
+    expect(translate('en', 'backups.scope.modeIncremental')).toContain('Incremental');
   });
 
   it('registers trash catalogs', () => {

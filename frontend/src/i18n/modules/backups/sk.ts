@@ -12,6 +12,23 @@ export const backupsSk: MessageTree = {
     button: 'Vytvoriť zálohu',
     creating: 'Vytváram…',
   },
+  scope: {
+    title: 'Čo zahrnúť',
+    hint: 'Platí pre ručnú zálohu aj pre automatický plán. Celý strom obsahu zahŕňa stránky, články, médiá, dátové súbory CMS, navigáciu a kôš.',
+    content: 'Celý strom obsahu',
+    pages: 'Stránky',
+    blog: 'Články',
+    media: 'Knižnica médií',
+    data: 'Dáta CMS (nastavenia, používatelia, indexy)',
+    navigation: 'Navigácia',
+    trash: 'Kôš',
+    config: 'Konfigurácia aplikácie (storage/app/config)',
+    modeTitle: 'Typ zálohy',
+    modeFull: 'Úplný snímok (všetky vybrané súbory)',
+    modeIncremental: 'Prírastková (len zmenené súbory, ako rsync)',
+    modeHint:
+      'Prírastková záloha uloží SHA-256 manifest a do ZIP dá len nové, zmenené alebo zmazané súbory od poslednej zálohy s rovnakým rozsahom. Prvý beh je vždy úplný snímok. Obnova najprv načíta baseline a potom delty. Nespúšťa sa binárka rsync.',
+  },
   import: {
     title: 'Importovať ZIP zálohu',
     placeholder: 'Voliteľný zobrazovaný názov…',
@@ -26,6 +43,8 @@ export const backupsSk: MessageTree = {
     name: 'Názov',
     created: 'Vytvorené',
     size: 'Veľkosť',
+    scope: 'Rozsah',
+    mode: 'Typ',
     hash: 'SHA-256',
     status: 'Stav',
     actions: 'Akcie',
@@ -58,6 +77,8 @@ export const backupsSk: MessageTree = {
   },
   confirm: {
     restoreOne: 'Obnoviť túto zálohu? Aktuálny obsah bude prepísaný.',
+    restoreIncremental:
+      'Toto je prírastková záloha. Obnova najprv načíta úplný baseline a potom túto deltu (vrátane zmazaných súborov). Pokračovať?',
     deleteOne: 'Vymazať túto zálohu?',
     bulkRestore: 'Obnoviť :count vybraných záloh? Aktuálny obsah bude prepísaný.',
     bulkDelete: 'Vymazať :count vybraných záloh?',
@@ -65,6 +86,7 @@ export const backupsSk: MessageTree = {
   toast: {
     loadFailed: 'Nepodarilo sa načítať zálohy.',
     nameRequired: 'Zadajte názov zálohy.',
+    scopeRequired: 'Vyberte aspoň jednu oblasť zálohy.',
     createSuccess: 'Záloha bola vytvorená.',
     createFailed: 'Vytvorenie zálohy zlyhalo.',
     importSuccess: 'Záloha importovaná do knižnice.',
@@ -98,7 +120,7 @@ export const backupsSk: MessageTree = {
       'Plánované zálohy bežia mimo prehliadača cez plánovač jobov a cron na serveri. Nastavte všetky tri kroky — inak sa nič automaticky nespustí.',
     stepScheduler: 'Zapnite plánovač jobov a job backup-scheduled v Platforma → Plánovač.',
     stepCron: 'Pridajte cron na hostiteľovi (viď docs/deploy/CRON.md) — typicky scheduler:run každú minútu.',
-    stepHere: 'Tu zvoľte interval a retenciu a uložte.',
+    stepHere: 'Tu zvoľte interval, retenciu a spoločný rozsah/typ vyššie a uložte.',
     enabled: 'Zapnúť automatické zálohy',
     interval: 'Interval',
     keep: 'Ponechať posledných záloh',

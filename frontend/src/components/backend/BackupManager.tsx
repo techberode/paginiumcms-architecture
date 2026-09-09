@@ -15,6 +15,31 @@ import { applyClientListView } from '../../utils/clientListView';
 import { summarizeBulkResult } from '../../types/bulk';
 import { useI18n } from '../../context/I18nContext';
 
+const CONTENT_SCOPE_KEYS = ['pages', 'blog', 'media', 'data', 'navigation', 'trash'] as const;
+const DEFAULT_SCOPE_FLAGS: Record<(typeof CONTENT_SCOPE_KEYS)[number] | 'config', boolean> = {
+  pages: true,
+  blog: true,
+  media: true,
+  data: true,
+  navigation: true,
+  trash: true,
+  config: true,
+};
+
+function includesFromSelection(
+  includeContent: boolean,
+  flags: typeof DEFAULT_SCOPE_FLAGS
+): string[] {
+  if (includeContent) {
+    return flags.config ? ['content', 'config'] : ['content'];
+  }
+  const selected: string[] = CONTENT_SCOPE_KEYS.filter((key) => flags[key]);
+  if (flags.config) {
+    selected.push('config');
+  }
+  return selected;
+}
+
 export const BackupManager: React.FC = () => {
   const { t } = useI18n();
   const [backups, setBackups] = useState<Backup[]>([]);
@@ -31,6 +56,9 @@ export const BackupManager: React.FC = () => {
   const [scheduleEnabled, setScheduleEnabled] = useState(false);
   const [scheduleInterval, setScheduleInterval] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [scheduleKeep, setScheduleKeep] = useState(7);
+  const [includeContent, setIncludeContent] = useState(true);
+  const [includeFlags, setIncludeFlags] = useState(DEFAULT_SCOPE_FLAGS);
+  const [backupMode, setBackupMode] = useState<'full' | 'incremental'>('full');
   const [savingSchedule, setSavingSchedule] = useState(false);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -50,6 +78,22 @@ export const BackupManager: React.FC = () => {
         }
         if (typeof scheduleInfo.keep === 'number') {
           setScheduleKeep(scheduleInfo.keep);
+        }
+        if (scheduleInfo.mode === 'incremental' || scheduleInfo.mode === 'full') {
+          setBackupMode(scheduleInfo.mode);
+        }
+        if (Array.isArray(scheduleInfo.includes) && scheduleInfo.includes.length > 0) {
+          const set = new Set(scheduleInfo.includes);
+          setIncludeContent(set.has('content'));
+          setIncludeFlags({
+            pages: set.has('pages') || set.has('content'),
+            blog: set.has('blog') || set.has('content'),
+            media: set.has('media') || set.has('content'),
+            data: set.has('data') || set.has('content'),
+            navigation: set.has('navigation') || set.has('content'),
+            trash: set.has('trash') || set.has('content'),
+            config: set.has('config'),
+          });
         }
       } else {
         setScheduleEnabled(false);
@@ -73,7 +117,8 @@ export const BackupManager: React.FC = () => {
     () =>
       applyClientListView(backups, {
         search,
-        searchText: (backup) => `${backup.name} ${backup.status} ${backup.sha256 ?? ''}`,
+        searchText: (backup) =>
+          `${backup.name} ${backup.status} ${backup.sha256 ?? ''} ${(backup.includes ?? []).join(' ')} ${backup.mode ?? ''}`,
         sortField,
         sortDirection,
         sortFields: [
@@ -99,10 +144,15 @@ export const BackupManager: React.FC = () => {
       toast.warning(t('backups.toast.nameRequired'));
       return;
     }
+    const includes = includesFromSelection(includeContent, includeFlags);
+    if (includes.length === 0) {
+      toast.warning(t('backups.toast.scopeRequired'));
+      return;
+    }
 
     setCreating(true);
     try {
-      const created = await backupApi.create(backupName.trim());
+      const created = await backupApi.create(backupName.trim(), includes, backupMode);
       if (created) {
         toast.success(t('backups.toast.createSuccess'));
         setBackupName('');
@@ -180,7 +230,8 @@ export const BackupManager: React.FC = () => {
   };
 
   const handleRestoreBackup = async (backup: Backup) => {
-    if (!confirm(t('backups.confirm.restoreOne'))) {
+    const incremental = backup.mode === 'incremental';
+    if (!confirm(incremental ? t('backups.confirm.restoreIncremental') : t('backups.confirm.restoreOne'))) {
       return;
     }
 
@@ -256,9 +307,20 @@ export const BackupManager: React.FC = () => {
   const handleSaveSchedule = async () => {
     setSavingSchedule(true);
     try {
+      const includes = includesFromSelection(includeContent, includeFlags);
+      if (scheduleEnabled && includes.length === 0) {
+        toast.warning(t('backups.toast.scopeRequired'));
+        return;
+      }
       const saved = await backupApi.schedule(
         scheduleEnabled
-          ? { enabled: true, interval: scheduleInterval, keep: scheduleKeep }
+          ? {
+              enabled: true,
+              interval: scheduleInterval,
+              keep: scheduleKeep,
+              includes,
+              mode: backupMode,
+            }
           : { enabled: false }
       );
       if (!saved) {
@@ -297,6 +359,71 @@ export const BackupManager: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center flex-wrap gap-4">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('backups.page.title')}</h1>
+      </div>
+
+      <div className="card">
+        <div className="card-header">{t('backups.scope.title')}</div>
+        <div className="card-body space-y-4">
+          <p className="text-sm text-gray-600 dark:text-gray-300">{t('backups.scope.hint')}</p>
+          <label className="inline-flex items-center gap-2 text-sm font-semibold">
+            <input
+              type="checkbox"
+              checked={includeContent}
+              onChange={(e) => setIncludeContent(e.target.checked)}
+              className="rounded"
+            />
+            {t('backups.scope.content')}
+          </label>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {CONTENT_SCOPE_KEYS.map((key) => (
+              <label key={key} className="inline-flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={includeContent || includeFlags[key]}
+                  disabled={includeContent}
+                  onChange={(e) =>
+                    setIncludeFlags((current) => ({ ...current, [key]: e.target.checked }))
+                  }
+                  className="rounded"
+                />
+                {t(`backups.scope.${key}`)}
+              </label>
+            ))}
+            <label className="inline-flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={includeFlags.config}
+                onChange={(e) =>
+                  setIncludeFlags((current) => ({ ...current, config: e.target.checked }))
+                }
+                className="rounded"
+              />
+              {t('backups.scope.config')}
+            </label>
+          </div>
+          <fieldset className="space-y-2">
+            <legend className="text-sm font-semibold">{t('backups.scope.modeTitle')}</legend>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="radio"
+                name="backup-mode"
+                checked={backupMode === 'full'}
+                onChange={() => setBackupMode('full')}
+              />
+              {t('backups.scope.modeFull')}
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="radio"
+                name="backup-mode"
+                checked={backupMode === 'incremental'}
+                onChange={() => setBackupMode('incremental')}
+              />
+              {t('backups.scope.modeIncremental')}
+            </label>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{t('backups.scope.modeHint')}</p>
+          </fieldset>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -510,6 +637,8 @@ export const BackupManager: React.FC = () => {
                         direction={sortDirection}
                         onSort={handleSort}
                       />
+                      <th className="hide-tablet">{t('backups.table.scope')}</th>
+                      <th className="hide-tablet">{t('backups.table.mode')}</th>
                       <th className="hide-tablet">{t('backups.table.hash')}</th>
                       <SortableTableHeader
                         label={t('backups.table.status')}
@@ -536,6 +665,16 @@ export const BackupManager: React.FC = () => {
                       <td className="font-medium">{backup.name}</td>
                       <td>{new Date(backup.createdAt).toLocaleString()}</td>
                       <td>{backup.sizeFormatted}</td>
+                      <td className="text-xs hide-tablet">
+                        {(backup.includes ?? []).join(', ') || '—'}
+                      </td>
+                      <td className="hide-tablet">
+                        {t(
+                          backup.mode === 'incremental'
+                            ? 'backups.scope.modeIncremental'
+                            : 'backups.scope.modeFull'
+                        )}
+                      </td>
                       <td className="font-mono text-xs max-w-[140px] truncate" title={backup.sha256 || '—'}>
                         {backup.sha256 ? `${backup.sha256.slice(0, 12)}…` : '—'}
                       </td>

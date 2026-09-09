@@ -38,6 +38,38 @@ class BackupControllerTest extends TestCase
         $this->assertTrue($data['success']);
         $this->assertArrayHasKey('data', $data);
         $this->assertEquals('Test Backup API', $data['data']['name']);
+        $this->assertSame(['content', 'config'], $data['data']['includes']);
+        $this->assertSame('full', $data['data']['mode']);
+    }
+
+    public function testCreateBackupRejectsEmptyIncludes(): void
+    {
+        $userData = $this->loginAsAdminUser();
+        $this->assertEquals(200, $userData['response']->getStatusCode());
+
+        $request = $this->createJsonRequest('POST', '/api/admin/backups', [
+            'name' => 'Empty scope',
+            'includes' => ['not-a-scope'],
+        ]);
+        $response = $this->handleRequest($request);
+        $this->assertEquals(422, $response->getStatusCode());
+    }
+
+    public function testCreateBackupWithGranularIncludes(): void
+    {
+        $userData = $this->loginAsAdminUser();
+        $this->assertEquals(200, $userData['response']->getStatusCode());
+
+        $request = $this->createJsonRequest('POST', '/api/admin/backups', [
+            'name' => 'Pages only API',
+            'includes' => ['pages', 'config'],
+            'mode' => 'full',
+        ]);
+        $response = $this->handleRequest($request);
+        $data = $this->getJsonResponse($response);
+
+        $this->assertEquals(201, $response->getStatusCode());
+        $this->assertSame(['pages', 'config'], $data['data']['includes']);
     }
 
     public function testCreateBackupWithoutName(): void

@@ -49,40 +49,76 @@ class BackupManager implements BackupInterface
      */
     public function create(string $name, array $options = []): BackupMetadata
     {
+        $includes = BackupScope::normalizeIncludes(
+            isset($options['includes']) && is_array($options['includes'])
+                ? $options['includes']
+                : BackupScope::DEFAULT_INCLUDES
+        );
+        $requestedMode = BackupScope::normalizeMode($options['mode'] ?? BackupScope::MODE_FULL);
+
+        $liveFiles = $this->collectScopedFiles($includes);
+        $baselineHashes = [];
+        $base = null;
+        $mode = $requestedMode;
+        if ($mode === BackupScope::MODE_INCREMENTAL) {
+            $base = $this->findIncrementalBase($includes);
+            if ($base === null) {
+                $mode = BackupScope::MODE_FULL;
+            } else {
+                $baselineHashes = $this->loadManifestHashes($base);
+            }
+        }
+
         $metadata = new BackupMetadata();
         $metadata->setName($name);
-        $metadata->setIncludes($options['includes'] ?? ['content', 'config', 'data']);
+        $metadata->setIncludes($includes);
+        $metadata->setMode($mode);
+        $metadata->setBaseBackupId($base !== null ? $base->getId() : '');
+        $metadata->setFilesTotal(count($liveFiles));
 
         $timestamp = date('Y-m-d_H-i-s');
         $filename = $timestamp . '_' . $this->sanitizeName($name) . '.zip';
         $fullPath = $this->backupPath . '/' . $filename;
 
-        // Vytvorenie adresára
         if (!is_dir($this->backupPath)) {
             mkdir($this->backupPath, 0755, true);
         }
 
-        // Vytvorenie ZIP archívu
         $zip = new \ZipArchive();
         if ($zip->open($fullPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
             throw new \RuntimeException('Nepodarilo sa vytvoriť ZIP archív');
         }
 
-        // Pridanie metadát
+        $packed = 0;
+        foreach ($liveFiles as $zipPath => $info) {
+            $unchanged = $mode === BackupScope::MODE_INCREMENTAL
+                && isset($baselineHashes[$zipPath])
+                && hash_equals($baselineHashes[$zipPath], $info['sha256']);
+            if ($unchanged) {
+                continue;
+            }
+            $zip->addFile($info['absolute'], $zipPath);
+            $packed++;
+        }
+
+        $deletes = [];
+        if ($mode === BackupScope::MODE_INCREMENTAL) {
+            foreach ($baselineHashes as $zipPath => $_hash) {
+                if (!isset($liveFiles[$zipPath])) {
+                    $deletes[] = $zipPath;
+                }
+            }
+        }
+
+        $metadata->setFilesPacked($packed);
         $zip->addFromString('backup.json', JsonHelper::encode($metadata->jsonSerialize()));
-
-        // Pridanie obsahu (pages, blog, media, data, …)
-        $this->addContentIncludesToZip($zip, $metadata->getIncludes());
-
-        // Pridanie konfigurácie
-        if (in_array('config', $metadata->getIncludes(), true)) {
-            $this->addConfigToZip($zip);
+        $zip->addFromString('manifest.json', JsonHelper::encode($this->manifestPayload($liveFiles, $deletes)));
+        if ($deletes !== []) {
+            $zip->addFromString('deletes.json', JsonHelper::encode(['paths' => $deletes]));
         }
 
         $zip->close();
 
-        // Kontrola, či súbor existuje a má správnu veľkosť
-        // Kontrola veľkosti súboru
         $size = 0;
         if (file_exists($fullPath)) {
             clearstatcache(true, $fullPath);
@@ -91,16 +127,13 @@ class BackupManager implements BackupInterface
                 $size = 0;
             }
         }
-        $metadata->setSize((int)$size);
-
-        // Aktualizácia metadát
+        $metadata->setSize((int) $size);
         $metadata->setFilePath($fullPath);
-        $metadata->setSize($size);
         $metadata->setStatus('completed');
         $metadata->setSha256(hash_file('sha256', $fullPath) ?: '');
 
-        // Uloženie metadát
         $this->saveMetadata($metadata);
+        $this->saveManifestSidecar($metadata, $liveFiles, $deletes);
 
         return $metadata;
     }
@@ -125,7 +158,13 @@ class BackupManager implements BackupInterface
             return false;
         }
 
-        return $this->importBackup($zipPath);
+        foreach ($this->resolveRestoreChain($metadata) as $item) {
+            if (!$this->importBackup($item->getFilePath())) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -137,9 +176,14 @@ class BackupManager implements BackupInterface
         $metadataFiles = glob($this->backupPath . '/*.json') ?: [];
 
         foreach ($metadataFiles as $file) {
+            $basename = basename($file);
+            if ($basename === 'schedule.json' || str_ends_with($basename, '.manifest.json')) {
+                continue;
+            }
+
             try {
                 $data = JsonHelper::decode(FileHelper::read($file));
-                if ($data === []) {
+                if ($data === [] || !isset($data['id'], $data['filePath'])) {
                     continue;
                 }
 
@@ -193,6 +237,11 @@ class BackupManager implements BackupInterface
         $metadataPath = $this->backupPath . '/' . $backupId . '.json';
         if (file_exists($metadataPath)) {
             unlink($metadataPath);
+        }
+
+        $manifestPath = $this->backupPath . '/' . $backupId . '.manifest.json';
+        if (file_exists($manifestPath)) {
+            unlink($manifestPath);
         }
 
         return true;
@@ -251,6 +300,8 @@ class BackupManager implements BackupInterface
         if (is_dir($configDir)) {
             $this->restoreDirectory($configDir, dirname($this->contentPath) . '/config');
         }
+
+        $this->applyDeclaredDeletes($tempDir . '/deletes.json');
 
         // Vyčistenie
         $this->removeDirectory($tempDir);
@@ -337,19 +388,28 @@ class BackupManager implements BackupInterface
         ];
     }
 
-    public function scheduleBackup(string $interval, int $keep = 7): void
+    public function scheduleBackup(string $interval, int $keep = 7, array $options = []): void
     {
+        $includes = BackupScope::normalizeIncludes(
+            isset($options['includes']) && is_array($options['includes'])
+                ? $options['includes']
+                : BackupScope::DEFAULT_INCLUDES
+        );
+        $mode = BackupScope::normalizeMode($options['mode'] ?? BackupScope::MODE_FULL);
+
         $schedule = [
             'enabled' => true,
             'interval' => $interval,
             'keep' => $keep,
+            'includes' => $includes,
+            'mode' => $mode,
             'last_run' => null,
             'next_run' => $this->calculateNextRun($interval),
         ];
 
         file_put_contents(
             $this->backupPath . '/schedule.json',
-            json_encode($schedule, JSON_PRETTY_PRINT)
+            JsonHelper::encode($schedule)
         );
     }
 
@@ -369,6 +429,12 @@ class BackupManager implements BackupInterface
         }
 
         $data['enabled'] = true;
+        $data['includes'] = BackupScope::normalizeIncludes(
+            isset($data['includes']) && is_array($data['includes'])
+                ? $data['includes']
+                : BackupScope::DEFAULT_INCLUDES
+        );
+        $data['mode'] = BackupScope::normalizeMode($data['mode'] ?? BackupScope::MODE_FULL);
 
         return $data;
     }
@@ -397,10 +463,22 @@ class BackupManager implements BackupInterface
             return ['ran' => false, 'reason' => 'not_due'];
         }
 
-        $backup = $this->create('scheduled_' . date('Y-m-d_H-i-s'));
+        $includes = BackupScope::normalizeIncludes(
+            isset($schedule['includes']) && is_array($schedule['includes'])
+                ? $schedule['includes']
+                : BackupScope::DEFAULT_INCLUDES
+        );
+        $mode = BackupScope::normalizeMode($schedule['mode'] ?? BackupScope::MODE_FULL);
+
+        $backup = $this->create('scheduled_' . date('Y-m-d_H-i-s'), [
+            'includes' => $includes,
+            'mode' => $mode,
+        ]);
         $schedule['last_run'] = date('Y-m-d H:i:s');
         $schedule['next_run'] = $this->calculateNextRun((string) ($schedule['interval'] ?? 'daily'));
-        file_put_contents($schedulePath, json_encode($schedule, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        $schedule['includes'] = $includes;
+        $schedule['mode'] = $mode;
+        file_put_contents($schedulePath, JsonHelper::encode($schedule));
 
         $keep = max(1, (int) ($schedule['keep'] ?? 7));
         $this->pruneOldBackups($keep);
@@ -415,81 +493,285 @@ class BackupManager implements BackupInterface
             return;
         }
 
-        usort($backups, static function (BackupMetadata $a, BackupMetadata $b): int {
-            return strcmp($b->getCreatedAt(), $a->getCreatedAt());
-        });
+        $protected = [];
+        foreach (array_slice($backups, 0, $keep) as $kept) {
+            $protected[$kept->getId()] = true;
+            foreach ($this->ancestorIds($kept) as $ancestorId) {
+                $protected[$ancestorId] = true;
+            }
+        }
 
-        foreach (array_slice($backups, $keep) as $old) {
+        foreach ($backups as $old) {
+            if (isset($protected[$old->getId()])) {
+                continue;
+            }
             $this->deleteBackup($old->getId());
         }
     }
 
     /**
      * @param array<int|string, mixed> $includes
+     * @return array<string, array{absolute: string, sha256: string, size: int}>
      */
-    private function addContentIncludesToZip(\ZipArchive $zip, array $includes): void
+    private function collectScopedFiles(array $includes): array
     {
+        $files = [];
         if (in_array('content', $includes, true)) {
-            $this->addDirectoryToZip($zip, $this->contentPath, 'content');
-
-            return;
-        }
-
-        $contentSubtrees = ['pages', 'blog', 'media', 'data', 'navigation', 'trash'];
-        foreach ($contentSubtrees as $subdir) {
-            if (!in_array($subdir, $includes, true)) {
-                continue;
-            }
-
-            $absolute = $this->contentPath . '/' . $subdir;
-            if (is_dir($absolute)) {
-                $this->addDirectoryToZip($zip, $absolute, 'content/' . $subdir);
+            $this->collectDirectoryFiles($this->contentPath, 'content', $files);
+        } else {
+            foreach (BackupScope::CONTENT_SUBTREES as $subdir) {
+                if (!in_array($subdir, $includes, true)) {
+                    continue;
+                }
+                $absolute = $this->contentPath . '/' . $subdir;
+                if (is_dir($absolute)) {
+                    $this->collectDirectoryFiles($absolute, 'content/' . $subdir, $files);
+                }
             }
         }
 
-        // Legacy include flag: flat data/ prefix (pre-fix backups)
-        if (in_array('data', $includes, true) && !in_array('content', $includes, true)) {
-            $dataPath = $this->contentPath . '/data';
-            if (is_dir($dataPath)) {
-                $this->addDirectoryToZip($zip, $dataPath, 'data');
+        if (in_array('config', $includes, true)) {
+            $configPath = dirname($this->contentPath) . '/config';
+            if (is_dir($configPath)) {
+                $this->collectDirectoryFiles($configPath, 'config', $files);
             }
         }
+
+        return $files;
     }
 
-    private function addDirectoryToZip(\ZipArchive $zip, string $dir, string $prefix): void
+    /**
+     * @param array<string, array{absolute: string, sha256: string, size: int}> $files
+     */
+    private function collectDirectoryFiles(string $dir, string $prefix, array &$files): void
     {
         if (!is_dir($dir)) {
             return;
         }
 
-        $files = scandir($dir);
-        foreach ($files as $file) {
+        $entries = scandir($dir);
+        if ($entries === false) {
+            return;
+        }
+
+        foreach ($entries as $file) {
             if ($file === '.' || $file === '..') {
                 continue;
             }
 
             $path = $dir . '/' . $file;
             $relativePath = $prefix . '/' . $file;
-
-            // Kontrola vylúčenia
             if ($this->isExcluded($relativePath)) {
                 continue;
             }
 
             if (is_file($path)) {
-                $zip->addFile($path, $relativePath);
+                $hash = hash_file('sha256', $path) ?: '';
+                $size = filesize($path);
+                $files[$relativePath] = [
+                    'absolute' => $path,
+                    'sha256' => $hash,
+                    'size' => $size === false ? 0 : $size,
+                ];
             } elseif (is_dir($path)) {
-                $zip->addEmptyDir($relativePath);
-                $this->addDirectoryToZip($zip, $path, $relativePath);
+                $this->collectDirectoryFiles($path, $relativePath, $files);
             }
         }
     }
 
-    private function addConfigToZip(\ZipArchive $zip): void
+    /**
+     * @param list<string> $includes
+     */
+    private function findIncrementalBase(array $includes): ?BackupMetadata
     {
-        $configPath = dirname($this->contentPath) . '/config';
-        if (is_dir($configPath)) {
-            $this->addDirectoryToZip($zip, $configPath, 'config');
+        $signature = BackupScope::includesSignature($includes);
+        foreach ($this->listBackups() as $backup) {
+            if ($backup->getStatus() !== 'completed') {
+                continue;
+            }
+            if (BackupScope::includesSignature($backup->getIncludes()) !== $signature) {
+                continue;
+            }
+
+            return $backup;
+        }
+
+        return null;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function loadManifestHashes(BackupMetadata $backup): array
+    {
+        $sidecar = $this->backupPath . '/' . $backup->getId() . '.manifest.json';
+        if (is_file($sidecar)) {
+            $decoded = JsonHelper::decode(FileHelper::read($sidecar));
+            return $this->hashesFromManifest($decoded);
+        }
+
+        $zipPath = $backup->getFilePath();
+        if (!is_file($zipPath)) {
+            return [];
+        }
+
+        $zip = new \ZipArchive();
+        if ($zip->open($zipPath) !== true) {
+            return [];
+        }
+        $raw = $zip->getFromName('manifest.json');
+        $zip->close();
+        if (!is_string($raw) || $raw === '') {
+            return [];
+        }
+
+        $decoded = JsonHelper::decode($raw);
+
+        return $this->hashesFromManifest($decoded);
+    }
+
+    /**
+     * @param array<int|string, mixed> $manifest
+     * @return array<string, string>
+     */
+    private function hashesFromManifest(array $manifest): array
+    {
+        $files = $manifest['files'] ?? null;
+        if (!is_array($files)) {
+            return [];
+        }
+
+        $hashes = [];
+        foreach ($files as $path => $info) {
+            if (!is_string($path) || $path === '') {
+                continue;
+            }
+            if (is_array($info) && isset($info['sha256']) && is_string($info['sha256'])) {
+                $hashes[$path] = $info['sha256'];
+            }
+        }
+
+        return $hashes;
+    }
+
+    /**
+     * @param array<string, array{absolute: string, sha256: string, size: int}> $liveFiles
+     * @param list<string> $deletes
+     * @return array{files: array<string, array{sha256: string, size: int}>, deletes: list<string>}
+     */
+    private function manifestPayload(array $liveFiles, array $deletes): array
+    {
+        $files = [];
+        foreach ($liveFiles as $zipPath => $info) {
+            $files[$zipPath] = [
+                'sha256' => $info['sha256'],
+                'size' => $info['size'],
+            ];
+        }
+
+        return ['files' => $files, 'deletes' => $deletes];
+    }
+
+    /**
+     * @param array<string, array{absolute: string, sha256: string, size: int}> $liveFiles
+     * @param list<string> $deletes
+     */
+    private function saveManifestSidecar(BackupMetadata $metadata, array $liveFiles, array $deletes): void
+    {
+        $path = $this->backupPath . '/' . $metadata->getId() . '.manifest.json';
+        file_put_contents($path, JsonHelper::encode($this->manifestPayload($liveFiles, $deletes)));
+    }
+
+    /**
+     * @return list<BackupMetadata>
+     */
+    private function resolveRestoreChain(BackupMetadata $tip): array
+    {
+        $chain = [];
+        $seen = [];
+        $current = $tip;
+        while (true) {
+            if (isset($seen[$current->getId()])) {
+                throw new \RuntimeException('Incremental backup chain contains a cycle');
+            }
+            $seen[$current->getId()] = true;
+            array_unshift($chain, $current);
+            if ($current->getMode() !== BackupScope::MODE_INCREMENTAL || $current->getBaseBackupId() === '') {
+                break;
+            }
+            $parent = $this->getBackup($current->getBaseBackupId());
+            if ($parent === null) {
+                throw new \RuntimeException('Incremental backup is missing its full baseline');
+            }
+            $current = $parent;
+        }
+
+        return $chain;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function ancestorIds(BackupMetadata $backup): array
+    {
+        $ids = [];
+        $current = $backup;
+        $seen = [];
+        while ($current->getMode() === BackupScope::MODE_INCREMENTAL && $current->getBaseBackupId() !== '') {
+            $parentId = $current->getBaseBackupId();
+            if (isset($seen[$parentId])) {
+                break;
+            }
+            $seen[$parentId] = true;
+            $ids[] = $parentId;
+            $parent = $this->getBackup($parentId);
+            if ($parent === null) {
+                break;
+            }
+            $current = $parent;
+        }
+
+        return $ids;
+    }
+
+    private function applyDeclaredDeletes(string $deletesFile): void
+    {
+        if (!is_file($deletesFile)) {
+            return;
+        }
+
+        $decoded = JsonHelper::decode(FileHelper::read($deletesFile));
+        $paths = $decoded['paths'] ?? [];
+        if (!is_array($paths)) {
+            return;
+        }
+
+        $zipGuard = new ZipEntryGuard();
+        $contentRoot = rtrim($this->contentPath, '/') . DIRECTORY_SEPARATOR;
+        $configRoot = rtrim(dirname($this->contentPath) . '/config', '/') . DIRECTORY_SEPARATOR;
+
+        foreach ($paths as $zipPath) {
+            if (!is_string($zipPath) || !$zipGuard->isSafeEntry($zipPath)) {
+                continue;
+            }
+
+            $absolute = null;
+            if (str_starts_with($zipPath, 'content/')) {
+                $absolute = $this->contentPath . '/' . substr($zipPath, strlen('content/'));
+            } elseif (str_starts_with($zipPath, 'config/')) {
+                $absolute = dirname($this->contentPath) . '/config/' . substr($zipPath, strlen('config/'));
+            }
+            if ($absolute === null || !is_file($absolute)) {
+                continue;
+            }
+
+            $normalized = str_replace('/', DIRECTORY_SEPARATOR, $absolute);
+            $allowed = str_starts_with($normalized, $contentRoot) || str_starts_with($normalized, $configRoot);
+            if (!$allowed) {
+                continue;
+            }
+
+            @unlink($absolute);
         }
     }
 
@@ -570,6 +852,10 @@ class BackupManager implements BackupInterface
             $metadata->setIncludes($data['includes']);
         }
         $metadata->setSha256((string) ($data['sha256'] ?? ''));
+        $metadata->setMode((string) ($data['mode'] ?? 'full'));
+        $metadata->setBaseBackupId((string) ($data['baseBackupId'] ?? ''));
+        $metadata->setFilesPacked((int) ($data['filesPacked'] ?? 0));
+        $metadata->setFilesTotal((int) ($data['filesTotal'] ?? 0));
 
         return $metadata;
     }
