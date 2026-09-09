@@ -1,31 +1,34 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-08-30",
+  "updatedAt": "2026-09-09",
   "checklistDoc": "docs/manifest/implementation-checklist.json",
   "iterations": [
     {
       "id": "it.87",
       "titleKey": "origin.catalog.it87",
-      "phase": "planned",
-      "targetVersion": "2.2.0",
+      "phase": "shipped",
+      "since": "2.1.0-beta.68",
+      "targetVersion": "2.1.0-beta.68",
       "doc": "docs/en/ITERATION_87.md",
       "priority": "high",
       "items": [
-        { "id": "87e", "titleKey": "origin.catalog.it87_plan_schema", "phase": "planned", "weight": 1 },
-        { "id": "87f", "titleKey": "origin.catalog.it87_plan_api", "phase": "planned", "weight": 1 },
-        { "id": "87g", "titleKey": "origin.catalog.it87_planner_panel", "phase": "planned", "weight": 1 },
-        { "id": "87h", "titleKey": "origin.catalog.it87_content_deadlines", "phase": "planned", "weight": 1 },
-        { "id": "87i", "titleKey": "origin.catalog.it87_content_sync", "phase": "planned", "weight": 1 },
-        { "id": "87j", "titleKey": "origin.catalog.it87_dashboard_widgets", "phase": "planned", "weight": 1 },
-        { "id": "87a", "titleKey": "origin.catalog.it87_srcset", "phase": "planned", "weight": 1 },
-        { "id": "87b", "titleKey": "origin.catalog.it87_skeletons", "phase": "planned", "weight": 1 },
-        { "id": "87c", "titleKey": "origin.catalog.it87_empty_states", "phase": "planned", "weight": 1 },
-        { "id": "87d", "titleKey": "origin.catalog.it87_onboarding", "phase": "planned", "weight": 1 },
-        { "id": "87k", "titleKey": "origin.catalog.it87_theme_js_allowlist", "phase": "planned", "weight": 1 },
-        { "id": "87l", "titleKey": "origin.catalog.it87_theme_js_sri", "phase": "planned", "weight": 1 },
-        { "id": "87m", "titleKey": "origin.catalog.it87_theme_js_csp", "phase": "planned", "weight": 1 }
+        { "id": "87e", "titleKey": "origin.catalog.it87_plan_schema", "phase": "shipped", "weight": 1 },
+        { "id": "87f", "titleKey": "origin.catalog.it87_plan_api", "phase": "shipped", "weight": 1 },
+        { "id": "87g", "titleKey": "origin.catalog.it87_planner_panel", "phase": "shipped", "weight": 1 },
+        { "id": "87h", "titleKey": "origin.catalog.it87_content_deadlines", "phase": "shipped", "weight": 1 },
+        { "id": "87i", "titleKey": "origin.catalog.it87_content_sync", "phase": "shipped", "weight": 1 },
+        { "id": "87j", "titleKey": "origin.catalog.it87_dashboard_widgets", "phase": "shipped", "weight": 1 },
+        { "id": "87a", "titleKey": "origin.catalog.it87_srcset", "phase": "shipped", "weight": 1 },
+        { "id": "87b", "titleKey": "origin.catalog.it87_skeletons", "phase": "shipped", "weight": 1 },
+        { "id": "87c", "titleKey": "origin.catalog.it87_empty_states", "phase": "shipped", "weight": 1 },
+        { "id": "87d", "titleKey": "origin.catalog.it87_onboarding", "phase": "shipped", "weight": 1 },
+        { "id": "87k", "titleKey": "origin.catalog.it87_theme_js_allowlist", "phase": "shipped", "weight": 1 },
+        { "id": "87l", "titleKey": "origin.catalog.it87_theme_js_sri", "phase": "shipped", "weight": 1 },
+        { "id": "87m", "titleKey": "origin.catalog.it87_theme_js_csp", "phase": "shipped", "weight": 1 }
       ],
-      "history": []
+      "history": [
+        { "version": "2.1.0-beta.68", "date": "2026-09-09", "summaryKey": "origin.timeline.it87" }
+      ]
     },
     {
       "id": "it.86",

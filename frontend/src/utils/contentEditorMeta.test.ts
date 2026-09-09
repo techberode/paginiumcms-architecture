@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   findNavigationMatches,
+  isSlugCollisionHttp,
+  resolveEditorSlug,
   resolvePreviewPath,
   resolvePublicPath,
   resolveStoragePath,
@@ -10,6 +12,17 @@ import {
 describe('contentEditorMeta', () => {
   it('slugifies titles', () => {
     expect(slugifyTitle('PaginiumCMS | Budúcnosť')).toBe('paginiumcms-buducnost');
+  });
+
+  it('resolves editor slug from typed value or title', () => {
+    expect(resolveEditorSlug('Moja Stránka', 'Ignored')).toBe('moja-stranka');
+    expect(resolveEditorSlug('  ', 'Úvod CMS')).toBe('uvod-cms');
+  });
+
+  it('treats 409 without OCC payload as a slug collision', () => {
+    expect(isSlugCollisionHttp(409, false)).toBe(true);
+    expect(isSlugCollisionHttp(409, true)).toBe(false);
+    expect(isSlugCollisionHttp(400, false)).toBe(false);
   });
 
   it('resolves public paths', () => {

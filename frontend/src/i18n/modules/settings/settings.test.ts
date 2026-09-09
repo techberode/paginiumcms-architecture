@@ -26,6 +26,8 @@ const RBAC_PERMISSIONS = [
   'api-keys:manage',
   'redirects:manage',
   'webhooks:manage',
+  'project-plan:read',
+  'project-plan:manage',
   'profile:edit',
 ] as const;
 

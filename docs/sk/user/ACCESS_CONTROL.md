@@ -46,6 +46,8 @@ Aktuálny build môže obsahovať napríklad:
 | `settings:manage` | správa povolených nastavení |
 | `logs:view` | čítanie prevádzkových logov |
 | `profile:edit` | vlastný profil |
+| `project-plan:read` | zobrazenie plánov projektu |
+| `project-plan:manage` | vytváranie a úprava plánov a položiek |
 
 Za kanonický zoznam považuj backend `PermissionCatalog`/API metadata konkrétneho release. Dokumentácia nesmie byť jediným zdrojom názvov.
 

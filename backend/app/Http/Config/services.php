@@ -210,6 +210,7 @@ use PaginiumCMS\Http\Controllers\Admin\FirewallController;
 use PaginiumCMS\Http\Controllers\Admin\LogController;
 use PaginiumCMS\Http\Controllers\Gallery\GalleryAdminController;
 use PaginiumCMS\Http\Controllers\Gallery\GalleryPublicController;
+use PaginiumCMS\Http\Controllers\ProjectPlanner\ProjectPlanController;
 use PaginiumCMS\Http\Controllers\Feeds\FeedController;
 use PaginiumCMS\Http\Controllers\Seo\SeoController;
 use PaginiumCMS\Http\Controllers\Admin\VersionController;
@@ -241,6 +242,10 @@ use PaginiumCMS\Http\Themes\Services\ThemeManifestValidator;
 use PaginiumCMS\Http\Themes\Services\ThemeStarterPackageService;
 use PaginiumCMS\Http\Themes\Services\ThemeRegistry;
 use PaginiumCMS\Http\Themes\Services\ThemeRuntimeService;
+use PaginiumCMS\Http\Themes\Services\ThemeScriptIntegrityService;
+use PaginiumCMS\Http\Themes\Services\ThemeCspScriptSrcContributor;
+use PaginiumCMS\Http\Controllers\Themes\ThemeAssetController;
+use PaginiumCMS\Http\Security\CspScriptSrcContributorInterface;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Http\Controllers\Locking\LockController;
 use PaginiumCMS\Http\Controllers\Media\MediaController;
@@ -261,6 +266,13 @@ use PaginiumCMS\Modules\Navigation\Services\NavigationRichFieldValidator;
 use PaginiumCMS\Modules\Gallery\Contracts\GalleryRepositoryInterface;
 use PaginiumCMS\Modules\Gallery\Services\GalleryRepository;
 use PaginiumCMS\Modules\Gallery\Services\GalleryItemValidator;
+use PaginiumCMS\Modules\ProjectPlanner\Contracts\ProjectPlanRepositoryInterface;
+use PaginiumCMS\Modules\ProjectPlanner\Repositories\ProjectPlanRepository;
+use PaginiumCMS\Modules\ProjectPlanner\Services\ProjectPlanDocumentValidator;
+use PaginiumCMS\Modules\ProjectPlanner\Services\ProjectPlanProgressService;
+use PaginiumCMS\Modules\ProjectPlanner\Services\ProjectPlanApiPresenter;
+use PaginiumCMS\Modules\ProjectPlanner\Services\ProjectPlanContentSyncService;
+use PaginiumCMS\Modules\ProjectPlanner\Services\ProjectPlanHookRegistrar;
 use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
 use PaginiumCMS\Modules\Media\Services\MediaImageOptimizer;
 use PaginiumCMS\Modules\Media\Services\MediaOptimizePreviewStore;
@@ -465,6 +477,7 @@ return [
             get(MediaStorageFactory::class),
             get(MediaStorageCapabilityProbe::class),
             get(ThemeRuntimeService::class),
+            get(ThemeScriptIntegrityService::class),
         ),
 
     GitPathValidator::class => create(GitPathValidator::class),
@@ -717,6 +730,32 @@ return [
             get(GalleryRepositoryInterface::class),
             get(SettingsRepositoryInterface::class),
             get(JsonResponder::class)
+        ),
+
+    ProjectPlanDocumentValidator::class => create(ProjectPlanDocumentValidator::class),
+    ProjectPlanProgressService::class => create(ProjectPlanProgressService::class),
+    ProjectPlanApiPresenter::class => create(ProjectPlanApiPresenter::class)
+        ->constructor(get(ProjectPlanProgressService::class)),
+    ProjectPlanRepositoryInterface::class => create(ProjectPlanRepository::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class),
+            get(ProjectPlanDocumentValidator::class)
+        ),
+    ProjectPlanController::class => create(ProjectPlanController::class)
+        ->constructor(
+            get(ProjectPlanRepositoryInterface::class),
+            get(ProjectPlanApiPresenter::class),
+            get(SettingsRepositoryInterface::class),
+            get(AuditTrailService::class),
+            get(JsonResponder::class)
+        ),
+    ProjectPlanContentSyncService::class => create(ProjectPlanContentSyncService::class)
+        ->constructor(get(ProjectPlanRepositoryInterface::class)),
+    ProjectPlanHookRegistrar::class => create(ProjectPlanHookRegistrar::class)
+        ->constructor(
+            get(HookManager::class),
+            get(ProjectPlanContentSyncService::class)
         ),
 
     CommentsRepositoryInterface::class => create(CommentsRepository::class)
@@ -1133,6 +1172,7 @@ return [
             get(ThemeRegistry::class),
             get(UntrustedPolicyScanner::class),
             get(ThemeManifestValidator::class),
+            get(ThemeScriptIntegrityService::class),
             dirname(__DIR__, 3) . '/resources/views/themes',
             dirname(__DIR__, 4) . '/frontend/src/themes',
             dirname(__DIR__, 4)
@@ -1150,7 +1190,23 @@ return [
             get(SettingsRepositoryInterface::class),
             get(ThemeRegistry::class),
             get(ContentCacheService::class),
-            dirname(__DIR__, 3) . '/resources/views/themes'
+            dirname(__DIR__, 3) . '/resources/views/themes',
+            get(ThemeScriptIntegrityService::class)
+        ),
+    ThemeScriptIntegrityService::class => create(ThemeScriptIntegrityService::class)
+        ->constructor(dirname(__DIR__, 3) . '/resources/views/themes'),
+    CspScriptSrcContributorInterface::class => create(ThemeCspScriptSrcContributor::class)
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(ThemeRuntimeService::class),
+            get(ThemeScriptIntegrityService::class)
+        ),
+    ThemeAssetController::class => create(ThemeAssetController::class)
+        ->constructor(
+            dirname(__DIR__, 3) . '/resources/views/themes',
+            get(SettingsRepositoryInterface::class),
+            get(ThemeRuntimeService::class),
+            get(ThemeScriptIntegrityService::class)
         ),
     ThemeManager::class => create(ThemeManager::class)
         ->constructor(

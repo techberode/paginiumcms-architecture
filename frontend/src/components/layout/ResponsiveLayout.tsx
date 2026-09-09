@@ -8,6 +8,7 @@ import { AdminSidebar } from '../backend/AdminSidebar';
 import { AdminHeader } from '../backend/AdminHeader';
 import { AdminCommandPalette } from '../backend/AdminCommandPalette';
 import { DemoModeBanner } from '../backend/DemoModeBanner';
+import { OnboardingTour } from '../backend/OnboardingTour';
 import { BackToTopButton } from '../frontend/BackToTopButton';
 import { useOpenLinksInNewTab } from '../../hooks/useOpenLinksInNewTab';
 import { openExternalUrl } from '../../utils/linkTarget';
@@ -106,6 +107,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) 
           onToggleSidebar={() => setSidebarCollapsed((value) => !value)}
         />
         <DemoModeBanner />
+        <OnboardingTour />
         {twoFactorSetupPending && location.pathname !== '/account/security' && (
           <div className="mx-6 sm:mx-8 mt-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-100">
             Dokončite nastavenie 2FA — naskenujte QR kód a zadajte overovací kód v{' '}

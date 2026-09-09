@@ -28,6 +28,7 @@ import {
 } from '../../utils/navigationLayoutSettings';
 import { resolveThemeShell } from '../../theme/themeShellRegistry';
 import { ThemeShellBoundary } from './ThemeShellBoundary';
+import { ThemeScriptLoader } from '../frontend/ThemeScriptLoader';
 
 const ADMIN_PREFIXES = [
   '/dashboard',
@@ -247,6 +248,7 @@ export const PublicSiteLayout: React.FC = () => {
         data-active-theme={activeThemeId}
       >
       <DemoPublicStrip />
+      <ThemeScriptLoader />
       {showCmsBar && <CMSBar currentDoc={currentDoc} />}
       {ThemeShell ? (
         <ThemeShellBoundary

@@ -50,6 +50,7 @@ import { AdminListToolbar } from './AdminListToolbar';
 import { AdminListPagination } from './AdminListPagination';
 import { BulkActionBar } from './BulkActionBar';
 import { AdminListSkeleton } from '../ui/AdminListSkeleton';
+import { AdminEmptyState } from '../ui/AdminEmptyState';
 import { MediaMetadataModal } from './MediaMetadataModal';
 import { SeoHealthBadge } from './SeoHealthBadge';
 import { useAdminViewMode } from '../../hooks/useAdminViewMode';
@@ -112,7 +113,14 @@ export const MediaManager: React.FC = () => {
     png: false,
     webp: false,
   });
-  const [pageSize, setPageSize] = useAdminListPageSize('media');
+  const [pageSize, setStoredPageSize] = useAdminListPageSize('media');
+  const setPageSize = useCallback(
+    (value: number) => {
+      setStoredPageSize(value);
+      setPage(1);
+    },
+    [setStoredPageSize, setPage]
+  );
   const { mode: viewMode, setMode: setViewMode } = useAdminViewMode('media', 'preview');
   const hasActiveFilters =
     search.trim().length >= 2 ||
@@ -267,10 +275,6 @@ export const MediaManager: React.FC = () => {
 
     return true;
   });
-
-  useEffect(() => {
-    setPage(1);
-  }, [pageSize, setPage]);
 
   const listView = applyClientListView(filteredItems, {
     search,
@@ -664,11 +668,15 @@ export const MediaManager: React.FC = () => {
       {loading ? (
         <AdminListSkeleton rows={8} />
       ) : listView.total === 0 ? (
-        <div className="card">
-          <div className="card-body text-center py-12 text-gray-500 dark:text-gray-400">
-            V priečinku {folderLabel(currentFolder)} nie sú žiadne súbory.
-          </div>
-        </div>
+        <AdminEmptyState
+          title={t('media.empty.title', { folder: folderLabel(currentFolder) })}
+          description={t('media.empty.hint')}
+          action={
+            <button type="button" className="btn btn-primary" onClick={() => fileInputRef.current?.click()}>
+              {t('media.actions.upload')}
+            </button>
+          }
+        />
       ) : viewMode === 'preview' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {pagedItems.map((file) => (

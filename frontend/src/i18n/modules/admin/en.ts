@@ -67,6 +67,8 @@ export const adminEn: MessageTree = {
       pages: 'Page management',
       articles: 'Blog article management',
       'editorial-calendar': 'Editorial calendar',
+      'project-planner': 'Project planner',
+      origin: 'Origin Panel',
       media: 'Media library',
       navigation: 'Navigation management',
       comments: 'Comment moderation',

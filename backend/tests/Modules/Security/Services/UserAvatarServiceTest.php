@@ -32,7 +32,6 @@ final class UserAvatarServiceTest extends TestCase
         $this->assertNotFalse($image);
         ob_start();
         imagepng($image);
-        imagedestroy($image);
         $binary = ob_get_clean();
 
         $media = new MediaFile();

@@ -61,6 +61,8 @@ Bežné workflow:
 
 Slug je súčasť URL a identity súboru. Jeho zmena môže vyžadovať redirect a kontrolu interných odkazov. Detail: [CONTENT_EDITOR.md](CONTENT_EDITOR.md).
 
+**Stránkovanie zoznamu:** Tabuľka stránok (a článkov — rovnaký komponent) má dole Previous/Next. Aktuálna strana je v URL (`/pages?page=2`). Zmena filtra alebo veľkosti stránky vráti na stranu 1; Next/Previous nesmie skočiť späť na prvú stranu ([ISS-169](../../ISSUES.md#iss-169)).
+
 ## 5. Články
 
 Články používajú rovnaké jadro editora, navyše môžu mať excerpt, tagy, featured image, dátum publikovania a komentáre. Scheduled publish vyžaduje funkčný scheduler/worker podľa release.
@@ -70,6 +72,12 @@ Slug je súčasť URL a identity súboru. Jeho zmena môže vyžadovať redirect
 **Tlač na verejnom blogu:** Nastavenia → Obsah → **Povoliť tlač článkov** (`content.articlePrintEnabled`, predvolene vypnuté). Po zapnutí sa na detaile článku zobrazí **Tlačiť článok**; tlač skryje navigáciu, komentáre a chrome.
 
 Bulk akciu používaj iba po filtrovaní a kontrole počtu položiek. Pri soft delete over kôš a retenciu pred permanentným zmazaním.
+
+## 5.1 Plánovač projektu stránky
+
+**Workspace → Plánovač projektu** (`/platform/project-planner`) je nástenka míľnikov v plnej verzii CMS: fázy, termíny a odznaky načas / meškanie. Nenahrádza redakčný kalendár ani Origin Panel.
+
+Editori s `project-plan:manage` môžu vytvárať plány a položky (šablóny stránka/článok). Vypnutie: Nastavenia → Stránka → Plánovač projektu. Pozri [PROJECT_PLANNER.md](PROJECT_PLANNER.md).
 
 ## 6. Médiá
 

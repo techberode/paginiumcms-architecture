@@ -9,6 +9,8 @@ export const contentSk: MessageTree = {
     itemAccusative: 'podstránku',
     searchPlaceholder: 'Hľadať podstránky…',
     empty: 'Nenašli sa žiadne podstránky',
+    emptyHint: 'Vytvorte prvú podstránku a spustite verejný web.',
+    emptyCta: 'Vytvoriť podstránku',
     loadError: 'Nepodarilo sa načítať podstránky',
   },
   articles: {
@@ -17,6 +19,8 @@ export const contentSk: MessageTree = {
     itemAccusative: 'článok',
     searchPlaceholder: 'Hľadať články…',
     empty: 'Nenašli sa žiadne články',
+    emptyHint: 'Napíšte prvý článok, keď budete pripravení publikovať.',
+    emptyCta: 'Vytvoriť článok',
     loadError: 'Nepodarilo sa načítať články',
   },
   table: {
@@ -37,6 +41,7 @@ export const contentSk: MessageTree = {
     deleteFailed: 'Hromadné mazanie zlyhalo.',
     statusFailed: 'Hromadná zmena stavu zlyhala.',
   },
+  emptyFilter: 'Žiadne položky pre aktuálne filtre.',
   bulkTags: {
     action: 'Tagy…',
     title: 'Hromadné tagy (:count položiek)',

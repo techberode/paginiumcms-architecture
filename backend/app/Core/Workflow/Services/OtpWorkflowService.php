@@ -7,6 +7,8 @@ namespace PaginiumCMS\Core\Workflow\Services;
 use PaginiumCMS\Core\Content\LocalizedContentWriter;
 use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
+use PaginiumCMS\Core\Hook\HookCatalog;
+use PaginiumCMS\Core\Hook\Services\HookEmitter;
 use PaginiumCMS\Core\Notification\NotificationService;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\Versioning\Services\ContentVersioningService;
@@ -34,6 +36,7 @@ final class OtpWorkflowService
         private ContentRepositoryInterface $content,
         private ContentVersioningService $versioning,
         private LocalizedContentWriter $localizedWriter,
+        private ?HookEmitter $hookEmitter = null,
     ) {
     }
 
@@ -310,6 +313,8 @@ final class OtpWorkflowService
             throw new RuntimeException('Obsah neexistuje');
         }
 
+        $previousStatus = $existing->getStatus();
+
         try {
             $this->localizedWriter->applyBulkStatus($existing, $targetStatus);
             $this->content->save($existing);
@@ -320,6 +325,16 @@ final class OtpWorkflowService
         }
 
         $this->store->delete($challengeId);
+
+        $date = $existing->getDate();
+        $this->hookEmitter?->emit(HookCatalog::CONTENT_AFTER_STATUS_CHANGE, [
+            'type' => $contentType,
+            'slug' => $slug,
+            'status' => $targetStatus,
+            'previousStatus' => $previousStatus,
+            'userId' => $editor->getId(),
+            'completedAt' => $date !== null ? $date->format('c') : date('c'),
+        ]);
 
         return [
             'content_type' => $contentType,

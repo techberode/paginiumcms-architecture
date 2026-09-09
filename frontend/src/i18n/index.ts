@@ -78,7 +78,9 @@ export function translate(
   const lookupKey = rest.length > 0 ? itemKey : key;
 
   const localeCatalog = moduleCatalog[locale] ?? moduleCatalog[DEFAULT_LOCALE] ?? {};
-  const moduleMessage = resolve(localeCatalog[group] ?? {}, lookupKey);
+  const moduleMessage =
+    resolve(localeCatalog[group] ?? {}, lookupKey) ??
+    (locale !== 'en' ? resolve(moduleCatalog.en[group] ?? {}, lookupKey) : undefined);
   if (moduleMessage) {
     return applyParams(moduleMessage, params);
   }

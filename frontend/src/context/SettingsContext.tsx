@@ -87,6 +87,8 @@ const DEFAULT_PUBLIC: PublicSettings = {
     allowUserToggle: true,
     previewTemplate: 'hero-content',
     activeThemeId: 'paginium-core',
+    themeScriptsEnabled: false,
+    themeScripts: [],
   },
   layout: {
     builderMode: 'templates',
@@ -108,6 +110,9 @@ const DEFAULT_PUBLIC: PublicSettings = {
   },
   demo: {
     enabled: false,
+  },
+  projectPlanner: {
+    enabled: true,
   },
   social: {
     enabled: true,

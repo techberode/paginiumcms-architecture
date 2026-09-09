@@ -11,6 +11,15 @@ export function slugifyTitle(title: string): string {
     .replace(/^-+|-+$/g, '');
 }
 
+/** Slug sent on save — typed value wins, otherwise derived from the title. */
+export function resolveEditorSlug(editSlug: string, title: string): string {
+  return slugifyTitle(editSlug.trim() !== '' ? editSlug : title);
+}
+
+export function isSlugCollisionHttp(status: number, hasConflict: boolean): boolean {
+  return status === 409 && !hasConflict;
+}
+
 export function resolvePublicPath(type: ContentType, slug: string): string {
   const clean = slug.trim().replace(/^\/+/, '');
   if (!clean) {

@@ -61,6 +61,8 @@ Typical workflow:
 
 A slug is part of the URL and file identity. Changing it may require redirects and link verification. See [CONTENT_EDITOR.md](CONTENT_EDITOR.md).
 
+**List pagination:** The pages table (and the articles table, same component) uses Previous/Next at the bottom. The current page is in the URL (`/pages?page=2`). Changing filters or page size returns you to page 1; Next/Previous must not snap back to the first page ([ISS-169](../../ISSUES.md#iss-169)).
+
 ## 5. Articles
 
 Articles use the same editor core and can additionally contain excerpt, tags, featured image, publication time, and comment policy. Scheduled publication requires a functioning scheduler/worker for the concrete release.
@@ -70,6 +72,12 @@ Articles use the same editor core and can additionally contain excerpt, tags, fe
 **Print on public blog:** Settings → Content → **Enable article print** (`content.articlePrintEnabled`, default off). When on, visitors see **Print article** on blog detail; printing hides navigation, comments, and chrome.
 
 Use bulk actions only after checking filters and item counts. With soft delete, inspect trash and retention before permanent removal.
+
+## 5.1 Project site planner
+
+**Workspace → Project planner** (`/platform/project-planner`) is the Full CMS milestone board: phases, due dates, and on-time / late / overdue badges. It does **not** replace the editorial calendar (already-scheduled content) or Origin Panel (maintainer catalog).
+
+Editors with `project-plan:manage` can create plans and items (page/article templates in the add-item flow). Disable via Settings → Site → Project planner. See [PROJECT_PLANNER.md](PROJECT_PLANNER.md).
 
 ## 6. Media
 

@@ -1,9 +1,9 @@
 # PaginiumCMS — project roadmap
 
-> **Documentation checkpoint:** August 6, 2026  
-> **Latest release:** see [`CHANGELOG.md`](../../CHANGELOG.md) (currently `v2.1.0-beta.67`) · handoff: [CONTINUATION.md](CONTINUATION.md)  
+> **Documentation checkpoint:** September 9, 2026  
+> **Latest release:** see [`CHANGELOG.md`](../../CHANGELOG.md) (currently `v2.1.0-beta.68`) · handoff: [CONTINUATION.md](CONTINUATION.md)  
 > **Direction:** Hybrid Headless Content Engine · No-SQL file source of truth · API-first  
-> **Code status:** Stabilization phase — It.25 M1+ shipped; next target `v2.2.0` stable
+> **Code status:** Stabilization freeze **closed** — implement remaining planned iterations (It.88 Theme Studio next)
 
 This roadmap is the canonical map of the **future direction**. Release history belongs in [`CHANGELOG.md`](../../CHANGELOG.md), detailed implementation specifications in `ITERATION_*.md`, and incidents in [`ISSUES.md`](ISSUES.md).
 
@@ -132,9 +132,9 @@ The order is **It.73 → It.76/77 → It.75**. The AI agent may only propose cha
 |-------|--------|--------|
 | **It.58d** — remaining layout blocks/polish | ⏳ | after docs; may run alongside early Hybrid Engine work |
 | **It.67** — untrusted surfaces defense-in-depth | 🔴 | before expanding imports, themes, and generated code |
-| **It.25** — setup wizard and simplified update UX | ✅ M1+ shipped | `beta.62`–`beta.65` — preflight + update banner; before stable tag |
+| **It.25** — setup wizard and simplified update UX | ✅ M1+ shipped | `beta.62`–`beta.65`; not a stable-tag blocker |
 | **It.48** — static/dynamic rendering | 🟡 | align with It.70 to avoid two publishing pipelines |
-| Community beta testing | 🔴 | ongoing before 1.0 |
+| Community beta testing | ⏸️ | not a gate — solo-maintainer product |
 | Documentation and security review | 🔴 | with every shipped wave |
 
 ---
@@ -142,24 +142,24 @@ The order is **It.73 → It.76/77 → It.75**. The AI agent may only propose cha
 ## 7. Path to Final 1.0
 
 ```text
-It.68 foundation (shipped)
-    → It.69 cache + HTTP validators
-    → first Hybrid Engine stabilization releases
-    → It.67 security gate
-    → community beta and fixes
-    → It.25 onboarding/update UX
-    → final documentation + SECURITY_REVIEW
-    → 1.0.0 GA
+It.87 Project Site Planner (shipped)
+    → It.88 Theme Studio
+    → It.78 upload security → It.79 DAM video
+    → It.72 S3 remainder
+    → It.58f/g layout remainder
+    → It.70 GitHub publish UI
+    → It.76/77 translation → It.75 AI agent (human-approved)
+    → It.48 static/Jamstack (shared design with It.70)
 ```
 
-Final 1.0 **does not require every It.68–77 capability to ship**. GA scope must be frozen by a separate release decision. Minimum gate:
+A `v2.2.0` / 1.0.0 GA tag is **not** an active planning gate (solo-maintainer product). If a stable tag is wanted later, freeze scope in a separate decision. Informal minimum if tagged:
 
 - no open critical security defects,
 - reproducible clean installation,
 - working backup/restore and diagnostics,
 - documented cron and update procedures,
 - verified Classic fallback,
-- beta smoke tests performed outside the maintainer's development environment.
+- iteration gate green on the tagged commit.
 
 ---
 

@@ -456,6 +456,9 @@ class ContentController
                 $user,
                 $this->resolveCommitMessage($data)
             );
+            if ($newSlug !== $slug) {
+                $this->invalidateContentCache($type, $slug);
+            }
             $this->invalidateContentCache($type, $newSlug);
 
             return $this->json->success(
@@ -1121,7 +1124,12 @@ class ContentController
         if (array_key_exists('ogImage', $data)) {
             $image = trim((string) $data['ogImage']);
             $frontMatter['seoImage'] = $image;
-            if ($content instanceof Article && $image !== '') {
+            if ($image !== '') {
+                $frontMatter['featuredImage'] = $image;
+            } else {
+                unset($frontMatter['featuredImage']);
+            }
+            if ($content instanceof Article) {
                 $content->setFeaturedImage($image);
             }
         }
@@ -1746,12 +1754,14 @@ class ContentController
         ?User $user,
         ?string $previousStatus = null
     ): void {
+        $date = $content->getDate();
         $context = [
             'type' => $type,
             'slug' => $content->getSlug(),
             'status' => $content->getStatus(),
             'action' => $action,
             'userId' => $user?->getId() ?? '',
+            'completedAt' => $date !== null ? $date->format('c') : date('c'),
         ];
 
         if ($previousStatus !== null) {

@@ -22,6 +22,8 @@ import { AdminListToolbar } from './AdminListToolbar';
 import { AdminListPagination } from './AdminListPagination';
 import { AdminListSortBar } from './SortableTableHeader';
 import { BulkActionBar } from './BulkActionBar';
+import { AdminListSkeleton } from '../ui/AdminListSkeleton';
+import { AdminEmptyState } from '../ui/AdminEmptyState';
 import {
   AdminInboxList,
   AdminInboxListHeader,
@@ -201,13 +203,11 @@ export const MessagesViewer: React.FC = () => {
       />
 
       {loading ? (
-        <div className="flex justify-center py-16">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600" />
-        </div>
+        <AdminListSkeleton rows={8} />
       ) : listView.total === 0 ? (
-        <div className="card card-body text-center text-gray-500 py-12">
-          {items.length === 0 ? t('messages.empty.none') : t('messages.empty.filter')}
-        </div>
+        <AdminEmptyState
+          title={items.length === 0 ? t('messages.empty.none') : t('messages.empty.filter')}
+        />
       ) : (
         <>
           <AdminInboxList>

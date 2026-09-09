@@ -22,7 +22,7 @@ PaginiumCMS is evolving into a **Hybrid Headless Content Engine**, while files r
 | 6 | [Firewall](FIREWALL.md) and [Logging](LOGGING.md) | operations and incident response |
 | 7 | [Beta tester](BETA_TESTER.md) | functional and security testing |
 
-Additional guides cover [branding](BRANDING.md), [plugins](PLUGINS.md), [themes](THEMES.md), [Code Editor](CODE_EDITOR.md), and [Developer Mode](DEVELOPER_MODE.md).
+Additional guides cover [branding](BRANDING.md), [plugins](PLUGINS.md), [themes](THEMES.md), [Code Editor](CODE_EDITOR.md), [Developer Mode](DEVELOPER_MODE.md), and the [project site planner](PROJECT_PLANNER.md).
 
 ## 2. Status labels
 

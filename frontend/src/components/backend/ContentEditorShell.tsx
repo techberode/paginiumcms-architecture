@@ -16,7 +16,7 @@ import type { NavigationItem } from '../../api/navigation';
 import type { EditorMode, ContentFormat } from '../../utils/contentEditor';
 import type { EditorProfileId } from '../../utils/editorProfiles';
 import { EditorProfilePicker } from './EditorProfilePicker';
-import { countContentStats } from '../../utils/contentEditorMeta';
+import { countContentStats, resolveEditorSlug } from '../../utils/contentEditorMeta';
 import { SeoMetadataPanel, type SeoFormValues } from './SeoMetadataPanel';
 import { SeoHealthBadge } from './SeoHealthBadge';
 import { getContentSeoHealthFromFields } from '../../utils/seoHealth';
@@ -53,6 +53,7 @@ interface ContentEditorShellProps {
   isNew: boolean;
   title: string;
   editSlug: string;
+  originalSlug?: string;
   status: ContentEditorStatus;
   scheduledAt: string;
   template: string;
@@ -108,6 +109,7 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
   isNew,
   title,
   editSlug,
+  originalSlug = '',
   status,
   scheduledAt,
   template,
@@ -342,11 +344,18 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
                 type="text"
                 value={editSlug}
                 onChange={(e) => onSlugChange(e.target.value)}
-                disabled={!canEdit || !isNew}
+                disabled={!canEdit}
                 className="form-input font-mono text-sm"
                 placeholder="home"
               />
-              {!isNew && <p className="mt-1 text-xs text-slate-400">{t('editor.shell.slugHint')}</p>}
+              <p className="mt-1 text-xs text-slate-400">{t('editor.shell.slugHint')}</p>
+              {!isNew &&
+                originalSlug !== '' &&
+                resolveEditorSlug(editSlug, title) !== originalSlug && (
+                  <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+                    {t('editor.shell.slugChangeWarning')}
+                  </p>
+                )}
             </div>
 
             <div className="form-group">

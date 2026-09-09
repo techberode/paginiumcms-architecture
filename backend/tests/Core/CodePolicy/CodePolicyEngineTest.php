@@ -77,6 +77,20 @@ final class CodePolicyEngineTest extends TestCase
         self::assertFalse($engine->isUntrustedPath('backend/app/Modules/Gallery/Services/GalleryRepository.php'));
     }
 
+    public function testUntrustedJavascriptBansEval(): void
+    {
+        $engine = $this->makeEngine();
+        $this->expectException(CodePolicyViolationException::class);
+        $engine->validate('themes/acme/assets/nav.js', 'eval("alert(1)");');
+    }
+
+    public function testUntrustedJavascriptAllowsClassToggle(): void
+    {
+        $engine = $this->makeEngine();
+        $engine->validate('themes/acme/assets/nav.js', 'document.documentElement.classList.add("pg-open");');
+        $this->addToAssertionCount(1);
+    }
+
     public function testShortcodeDefinitionPolicyAcceptsSafeExpand(): void
     {
         $policy = new ShortcodeDefinitionPolicy();

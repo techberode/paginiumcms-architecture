@@ -67,6 +67,7 @@ final class SettingsSchema
                     ['key' => 'previewTemplate', 'type' => 'enum', 'label' => 'Náhľadová šablóna', 'default' => 'hero-content', 'options' => ['hero-content', 'single', 'two-column', 'landing', 'blog-article'], 'rules' => ['required', 'in:hero-content,single,two-column,landing,blog-article'], 'help' => 'Wireframe pre náhľad schémy v administrácii (It.58b/58c).'],
                     ['key' => 'activeThemeId', 'type' => 'string', 'label' => 'Aktívna téma', 'default' => 'paginium-core', 'rules' => ['string', 'max:64'], 'help' => 'ID aktívneho theme balíka pre verejný shell. Default paginium-core = vstavaný layout.'],
                     ['key' => 'previousThemeId', 'type' => 'string', 'label' => 'Predchádzajúca téma', 'default' => '', 'rules' => ['string', 'max:64'], 'help' => 'Posledná téma pred prepnutím (rollback hint pre admin).'],
+                    ['key' => 'themeScriptsEnabled', 'type' => 'bool', 'label' => 'Povoliť JS témy (allow-list)', 'default' => false, 'rules' => ['bool'], 'help' => 'Fail-closed. Zapnuté = verejný web načíta len deklarované assets/*.js s SRI. Vypnuté = žiadne skripty z témy (predvolené).'],
                 ],
             ],
             'layout' => [
@@ -75,6 +76,12 @@ final class SettingsSchema
                     ['key' => 'builderMode', 'type' => 'enum', 'label' => 'Predvolený layout builder', 'default' => 'templates', 'options' => ['templates', 'shortcodes', 'outline', 'developer'], 'rules' => ['required', 'in:templates,shortcodes,outline,developer'], 'help' => 'Ktorý editor layoutu sa použije v admin chrome. Shortcodes/outline/developer sa aktivujú v ďalších slice.'],
                     ['key' => 'defaultTemplate', 'type' => 'enum', 'label' => 'Predvolená layout šablóna', 'default' => 'hero-content', 'options' => ['single', 'hero-content', 'two-column', 'landing', 'blog-article'], 'rules' => ['required', 'in:single,hero-content,two-column,landing,blog-article'], 'help' => 'Štruktúra pre nové stránky a LayoutPreviewFrame (nie chrome template home/contact).'],
                     ['key' => 'developerRequiresAdmin', 'type' => 'bool', 'label' => 'Developer režim len pre ADMIN+', 'default' => true, 'rules' => ['bool'], 'help' => 'Ak je zapnuté, builderMode=developer môžu vybrať len ADMIN / SUPER_ADMIN.'],
+                ],
+            ],
+            'projectPlanner' => [
+                'label' => 'Plánovač projektu',
+                'fields' => [
+                    ['key' => 'enabled', 'type' => 'bool', 'label' => 'Zapnúť plánovač projektu', 'default' => true, 'rules' => ['bool'], 'help' => 'Full CMS modul na plánovanie míľnikov. Vypnite len pre orezané demo inštancie. Nie je to Origin Panel.'],
                 ],
             ],
             'content' => [
@@ -447,8 +454,8 @@ final class SettingsSchema
                 'fields' => [
                     ['key' => 'pathAclEnabled', 'type' => 'bool', 'label' => 'Povoliť path ACL', 'default' => false, 'rules' => ['bool'], 'help' => 'Obmedzí prístup k vybraným cestám flat-file obsahu podľa rolí alebo oprávnení.'],
                     ['key' => 'pathAclRulesJson', 'type' => 'text', 'label' => 'Path ACL pravidlá (JSON)', 'default' => '[]', 'rules' => ['string', 'max:50000'], 'help' => 'Spravované cez vizuálny editor v administrácii.'],
-                    ['key' => 'permissionsAdmin', 'type' => 'text', 'label' => 'Oprávnenia ADMIN', 'default' => 'user:manage,content:manage,media:manage,settings:manage,git:publish,gallery:manage,logs:view,metrics:read', 'rules' => ['required', 'string', 'max:5000']],
-                    ['key' => 'permissionsEditor', 'type' => 'text', 'label' => 'Oprávnenia EDITOR', 'default' => 'content:create,content:edit,content:delete,media:upload,media:delete', 'rules' => ['required', 'string', 'max:5000']],
+                    ['key' => 'permissionsAdmin', 'type' => 'text', 'label' => 'Oprávnenia ADMIN', 'default' => 'user:manage,content:manage,media:manage,settings:manage,git:publish,gallery:manage,project-plan:read,project-plan:manage,logs:view,metrics:read', 'rules' => ['required', 'string', 'max:5000']],
+                    ['key' => 'permissionsEditor', 'type' => 'text', 'label' => 'Oprávnenia EDITOR', 'default' => 'content:create,content:edit,content:delete,media:upload,media:delete,project-plan:read,project-plan:manage', 'rules' => ['required', 'string', 'max:5000']],
                     ['key' => 'permissionsUser', 'type' => 'text', 'label' => 'Oprávnenia USER', 'default' => 'content:view,profile:edit', 'rules' => ['required', 'string', 'max:5000']],
                 ],
             ],

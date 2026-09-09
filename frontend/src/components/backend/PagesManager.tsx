@@ -1,5 +1,5 @@
 // frontend/src/components/backend/PagesManager.tsx
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useApi } from '../../hooks/useApi';
 import { useToast } from '../../hooks/useToast';
@@ -33,6 +33,7 @@ import { bulkSelectionCounts } from '../../utils/bulkSelectionLabel';
 import { resolveAdminMediaPreviewUrl, resolvePublicMediaUrl } from '../../api/media';
 import type { ContentType } from '../../api/drafts';
 import { AdminListSkeleton } from '../ui/AdminListSkeleton';
+import { AdminEmptyState } from '../ui/AdminEmptyState';
 import { useI18n } from '../../context/I18nContext';
 import { formatDisplayDate } from '../../utils/contentDates';
 import { LocaleStatusBadges } from './LocaleStatusBadges';
@@ -163,7 +164,14 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
     tagFilter,
   } = useAdminListQueryParams('updatedAt', 'desc');
   const section = type === 'articles' ? 'articles' : 'pages';
-  const [pageSize, setPageSize] = useAdminListPageSize(section);
+  const [pageSize, setStoredPageSize] = useAdminListPageSize(section);
+  const setPageSize = useCallback(
+    (value: number) => {
+      setStoredPageSize(value);
+      setPage(1);
+    },
+    [setStoredPageSize, setPage]
+  );
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewDraft, setPreviewDraft] = useState<ReturnType<typeof buildSitePreviewDraft> | null>(null);
   const [previewLoadingSlug, setPreviewLoadingSlug] = useState<string | null>(null);
@@ -226,10 +234,6 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
     sortField !== 'updatedAt' ||
     sortDirection !== 'desc' ||
     page > 1;
-
-  useEffect(() => {
-    setPage(1);
-  }, [type, pageSize, setPage]);
 
   const openListPreview = useCallback(
     async (item: ContentItem) => {
@@ -529,11 +533,17 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
       />
 
       {visibleItems.length === 0 ? (
-        <div className="card">
-          <div className="card-body text-center py-8 text-gray-500 dark:text-gray-400">
-            {t(`content.${contentScope}.empty`)}
-          </div>
-        </div>
+        <AdminEmptyState
+          title={t(`content.${contentScope}.empty`)}
+          description={items.length === 0 ? t(`content.${contentScope}.emptyHint`) : t('content.emptyFilter')}
+          action={
+            items.length === 0 ? (
+              <Link to={`/${routeBase}/new`} className="btn btn-primary">
+                {t(`content.${contentScope}.emptyCta`)}
+              </Link>
+            ) : null
+          }
+        />
       ) : viewMode === 'preview' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {visibleItems.map((item) => {

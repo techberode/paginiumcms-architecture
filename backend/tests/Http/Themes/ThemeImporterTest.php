@@ -17,6 +17,7 @@ use PaginiumCMS\Core\Validation\Validator;
 use PaginiumCMS\Http\Themes\Services\ThemeImporter;
 use PaginiumCMS\Http\Themes\Services\ThemeManifestValidator;
 use PaginiumCMS\Http\Themes\Services\ThemeRegistry;
+use PaginiumCMS\Http\Themes\Services\ThemeScriptIntegrityService;
 use PaginiumCMS\Support\JsonHelper;
 use PaginiumCMS\Tests\Support\StorageTestHelper;
 use PHPUnit\Framework\TestCase;
@@ -60,6 +61,7 @@ final class ThemeImporterTest extends TestCase
             $registry,
             $scanner,
             new ThemeManifestValidator(),
+            new ThemeScriptIntegrityService($this->themesRoot),
             $this->themesRoot,
             $this->frontendRoot,
             $this->baseDir
@@ -117,6 +119,70 @@ final class ThemeImporterTest extends TestCase
 
         $this->expectException(\RuntimeException::class);
         $this->importer->importZip($zipPath);
+    }
+
+    public function testImportRejectsUndeclaredJavascript(): void
+    {
+        $zipPath = $this->createZip([
+            'sneaky-js/theme.json' => JsonHelper::encode([
+                'id' => 'sneaky-js',
+                'name' => 'Sneaky',
+                'version' => '1.0.0',
+            ]),
+            'sneaky-js/assets/evil.js' => 'console.log("nope");',
+        ]);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Undeclared theme JavaScript');
+        $this->importer->importZip($zipPath);
+    }
+
+    public function testImportRejectsEvalInDeclaredJavascript(): void
+    {
+        $zipPath = $this->createZip([
+            'eval-js/theme.json' => JsonHelper::encode([
+                'id' => 'eval-js',
+                'name' => 'Eval',
+                'version' => '1.0.0',
+                'assets' => [
+                    'scripts' => [
+                        ['path' => 'assets/nav.js', 'load' => 'defer'],
+                    ],
+                ],
+            ]),
+            'eval-js/assets/nav.js' => 'eval("alert(1)");',
+        ]);
+
+        $this->expectException(CodePolicyViolationException::class);
+        $this->importer->importZip($zipPath);
+    }
+
+    public function testImportSealsSriForDeclaredJavascript(): void
+    {
+        $js = 'document.documentElement.classList.add("pg-theme");';
+        $zipPath = $this->createZip([
+            'ok-js/theme.json' => JsonHelper::encode([
+                'id' => 'ok-js',
+                'name' => 'OK JS',
+                'version' => '1.0.0',
+                'assets' => [
+                    'scripts' => [
+                        ['path' => 'assets/nav.js', 'load' => 'defer'],
+                    ],
+                ],
+            ]),
+            'ok-js/assets/nav.js' => $js,
+        ]);
+
+        $result = $this->importer->importZip($zipPath);
+        $this->assertSame('ok-js', $result['id']);
+
+        $sealed = JsonHelper::decode((string) file_get_contents($this->themesRoot . '/ok-js/theme.json'));
+        $integrity = $sealed['assets']['scripts'][0]['integrity'] ?? '';
+        $this->assertIsString($integrity);
+        $this->assertStringStartsWith('sha384-', $integrity);
+        $expected = 'sha384-' . base64_encode(hash('sha384', $js, true));
+        $this->assertSame($expected, $integrity);
     }
 
     /**

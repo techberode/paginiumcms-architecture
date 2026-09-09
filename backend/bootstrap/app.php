@@ -251,7 +251,8 @@ $containerBuilder->addDefinitions([
             $container->get(\PaginiumCMS\Modules\Comments\Contracts\CommentsRepositoryInterface::class),
             $container->get(\PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface::class),
             $container->get(\PaginiumCMS\Core\Versioning\Services\ContentVersioningService::class),
-            $container->get(\PaginiumCMS\Core\Content\LocalizedContentWriter::class)
+            $container->get(\PaginiumCMS\Core\Content\LocalizedContentWriter::class),
+            $container->get(\PaginiumCMS\Core\Hook\Services\HookEmitter::class)
         );
     },
 
@@ -259,7 +260,7 @@ $containerBuilder->addDefinitions([
     // 5. SECURITY MIDDLEWARE
     // ============================================
 
-    SecurityMiddleware::class => function () {
+    SecurityMiddleware::class => function ($container) {
         return new SecurityMiddleware([
             'hsts_max_age' => 31536000,
             'csp_default' => "default-src 'self'",
@@ -275,7 +276,7 @@ $containerBuilder->addDefinitions([
             'content_type' => 'nosniff',
             'referrer_policy' => 'strict-origin-when-cross-origin',
             'remove_server_headers' => true,
-        ]);
+        ], $container->get(\PaginiumCMS\Http\Security\CspScriptSrcContributorInterface::class));
     },
 
     LocaleMiddleware::class => function ($container) {
@@ -1083,5 +1084,6 @@ $container->get(DemoStorageService::class)->ensureSeededSafely();
 
 $container->get(\PaginiumCMS\Modules\Newsletter\Services\NewsletterHookRegistrar::class)->register();
 $container->get(\PaginiumCMS\Core\Webhooks\Services\WebhookHookRegistrar::class)->register();
+$container->get(\PaginiumCMS\Modules\ProjectPlanner\Services\ProjectPlanHookRegistrar::class)->register();
 
 return $app;

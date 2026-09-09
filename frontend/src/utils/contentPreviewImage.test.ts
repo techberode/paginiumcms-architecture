@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildResponsiveSrcSet,
   pickContentImageRaw,
   resolveContentImageUrl,
   resolveContentPreviewImage,
+  toCssBackgroundImage,
 } from './contentPreviewImage';
 
 describe('contentPreviewImage', () => {
@@ -44,6 +46,14 @@ describe('contentPreviewImage', () => {
     ).toBe('/storage/app/content/media/hero.jpg');
   });
 
+  it('builds a quoted CSS url() and rejects non-http relative schemes', () => {
+    expect(toCssBackgroundImage('/storage/app/content/media/hero.jpg?w=960')).toBe(
+      'url("/storage/app/content/media/hero.jpg?w=960")'
+    );
+    expect(toCssBackgroundImage('javascript:alert(1)')).toBe('');
+    expect(toCssBackgroundImage('')).toBe('');
+  });
+
   it('appends thumbnail width query when requested', () => {
     expect(
       resolveContentPreviewImage(
@@ -53,5 +63,12 @@ describe('contentPreviewImage', () => {
         480
       )
     ).toBe('/storage/app/content/media/hero.jpg?w=480');
+  });
+
+  it('builds a responsive srcset for storage URLs', () => {
+    expect(buildResponsiveSrcSet('/storage/app/content/media/hero.jpg', [480, 960])).toBe(
+      '/storage/app/content/media/hero.jpg?w=480 480w, /storage/app/content/media/hero.jpg?w=960 960w'
+    );
+    expect(buildResponsiveSrcSet('https://cdn.example/hero.jpg', [480, 960])).toBe('');
   });
 });

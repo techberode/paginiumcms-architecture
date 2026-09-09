@@ -24,7 +24,6 @@ final class MediaImageOptimizerTest extends TestCase
 
         ob_start();
         imagepng($image, null, 0);
-        imagedestroy($image);
         $binary = ob_get_clean();
         $this->assertGreaterThan(10_000, strlen($binary));
 
@@ -59,7 +58,6 @@ final class MediaImageOptimizerTest extends TestCase
 
         ob_start();
         imagepng($image, null, 0);
-        imagedestroy($image);
         $binary = ob_get_clean();
         $this->assertGreaterThan(10_000, strlen($binary));
 
@@ -81,7 +79,6 @@ final class MediaImageOptimizerTest extends TestCase
         $this->assertNotFalse($image);
         ob_start();
         imagepng($image);
-        imagedestroy($image);
         $binary = ob_get_clean();
 
         $optimizer = new MediaImageOptimizer();

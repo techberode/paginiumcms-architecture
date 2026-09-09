@@ -17,6 +17,10 @@ icon: material/file-edit
 
 A blueprint or extension may add fields. Migrations and the API must handle unknown fields deterministically; the editor must not silently discard them.
 
+### 1.1 Admin lists
+
+Pages and articles share one list (`PagesManager` on `/pages` and `/articles`). Pagination is server-side: `GET /api/pages|articles?page=&per_page=`. The admin URL stores `page`, `q`, `status`, `sort`, and related filters. Use **Previous** / **Next** at the bottom of the table. A shareable `/pages?page=2` link must open page 2; Next must not snap back to page 1 ([ISS-169](../../ISSUES.md#iss-169)). Changing search, status, sort, or page size resets to page 1. Media, comments, and trash use the same URL `page` contract.
+
 ## 2. Editor modes
 
 - **Markdown**: direct source editing with preview.
@@ -27,15 +31,15 @@ Switching between Markdown and WYSIWYG may be lossy for unsupported HTML or exte
 
 ## 3. Slug and identity
 
-A slug should be stable, URL-safe, and unique within its type/locale. Changing it may:
+A slug should be stable, URL-safe, and unique within its type/locale. On create it is generated from the title; you can edit it then or later. Changing it may:
 
-- change the physical/logical document path,
-- break internal links,
+- change the public URL and the document path on disk,
+- break internal links and navigation items (they are **not** rewritten automatically),
 - require a redirect,
 - change Path ACL matching,
 - appear as a rename in Git history.
 
-The editor should not rewrite external links automatically without a clear report.
+If the new slug is already taken, save is rejected with HTTP 409 and a toast. After a successful rename the admin editor navigates to the new slug. The editor does not rewrite menu or external links automatically.
 
 ## 4. Draft, published, and archived
 
@@ -157,3 +161,4 @@ Saving to SSOT is a local success. It.70 Git publishing has its own state and ma
 - [Versioning](../architecture/VERSIONING.md)
 - [Media and storage](../architecture/STORAGE.md)
 - [Permissions](ACCESS_CONTROL.md)
+- [Project site planner](PROJECT_PLANNER.md)

@@ -93,6 +93,10 @@ export const mediaEn: MessageTree = {
   pagination: {
     itemLabel: 'files',
   },
+  empty: {
+    title: 'No files in :folder',
+    hint: 'Upload images or documents to this folder.',
+  },
   seo: {
     ok: 'SEO OK',
     warning: 'SEO warning',

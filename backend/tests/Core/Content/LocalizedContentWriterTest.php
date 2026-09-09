@@ -200,6 +200,44 @@ final class LocalizedContentWriterTest extends TestCase
         $this->assertSame('Flat SEO title', $frontMatter['seoTitle']);
         $this->assertSame('Flat SEO description', $frontMatter['seoDescription']);
         $this->assertSame('/media/hero.jpg', $frontMatter['seoImage']);
+        $this->assertSame('/media/hero.jpg', $frontMatter['featuredImage']);
+    }
+
+    public function testDefaultLocaleOgImageMirrorsToFeaturedImage(): void
+    {
+        $page = new Page();
+        $page->setPath('pages/landing.json');
+        $page->setFrontMatter([
+            'schemaVersion' => 2,
+            'defaultLocale' => 'sk',
+            'slug' => 'landing',
+            'localizedContent' => [
+                'sk' => [
+                    'title' => 'Landing',
+                    'body' => 'Body',
+                    'seo' => ['title' => '', 'description' => '', 'canonical' => '', 'ogImage' => '', 'noIndex' => false],
+                ],
+            ],
+            'localeStatus' => ['sk' => 'published'],
+        ]);
+        $page->setContent('Body');
+
+        $writer = new LocalizedContentWriter(new LocalizedContentNormalizer($this->settingsMock()));
+        $writer->applyLocalePayload($page, [
+            'locale' => 'sk',
+            'title' => 'Landing',
+            'content' => 'Body',
+            'status' => 'published',
+            'ogImage' => '/storage/app/content/media/hero.jpg',
+        ], 'landing');
+
+        $frontMatter = $page->getFrontMatter();
+        $this->assertSame('/storage/app/content/media/hero.jpg', $frontMatter['seoImage']);
+        $this->assertSame('/storage/app/content/media/hero.jpg', $frontMatter['featuredImage']);
+        $this->assertSame(
+            '/storage/app/content/media/hero.jpg',
+            $frontMatter['localizedContent']['sk']['seo']['ogImage']
+        );
     }
 
     public function testHydrateStripsEmbeddedMetadataLeakFromFlatAndLocaleSlice(): void

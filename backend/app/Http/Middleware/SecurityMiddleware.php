@@ -8,6 +8,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use PaginiumCMS\Http\Security\CspScriptSrcContributorInterface;
 use Slim\Psr7\Response;
 
 /**
@@ -21,8 +22,10 @@ final class SecurityMiddleware implements MiddlewareInterface
     /**
      * @param array<int|string, mixed> $config
      */
-    public function __construct(array $config = [])
-    {
+    public function __construct(
+        array $config = [],
+        private ?CspScriptSrcContributorInterface $scriptSrcContributor = null,
+    ) {
         $this->config = array_merge([
             'hsts_max_age' => 31536000,
             'csp_default' => "default-src 'self'",
@@ -80,9 +83,15 @@ final class SecurityMiddleware implements MiddlewareInterface
         }
 
         // CSP (Content Security Policy)
+        $scriptSrc = $this->config['csp_script'];
+        $extra = $this->scriptSrcContributor?->extraScriptSrcTokens() ?? [];
+        if ($extra !== []) {
+            $scriptSrc .= ' ' . implode(' ', $extra);
+        }
+
         $csp = implode('; ', [
             $this->config['csp_default'],
-            $this->config['csp_script'],
+            $scriptSrc,
             $this->config['csp_style'],
             $this->config['csp_img'],
             $this->config['csp_font'],

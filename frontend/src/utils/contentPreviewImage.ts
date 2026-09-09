@@ -63,3 +63,41 @@ export function resolveContentPreviewImage(source: ContentImageSource, width = 0
 
   return width > 0 ? appendThumbnailQuery(url, width) : url;
 }
+
+/**
+ * Comma-separated `srcset` for same-origin `/storage/` images (It.87a).
+ * Remote URLs are skipped — the backend `?w=` pipeline only applies to storage.
+ */
+export function buildResponsiveSrcSet(url: string, widths: number[]): string {
+  const value = url.trim();
+  if (value === '' || widths.length === 0) {
+    return '';
+  }
+  if ((value.startsWith('http://') || value.startsWith('https://')) && !value.includes('/storage/')) {
+    return '';
+  }
+
+  const unique = [...new Set(widths.filter((width) => width > 0))].sort((a, b) => a - b);
+  return unique.map((width) => `${appendThumbnailQuery(value, width)} ${width}w`).join(', ');
+}
+
+export function resolveContentPreviewSrcSet(source: ContentImageSource, widths: number[]): string {
+  return buildResponsiveSrcSet(resolveContentImageUrl(pickContentImageRaw(source)), widths);
+}
+
+/**
+ * Safe `background-image` value for CSS custom properties.
+ * Quoted via JSON.stringify so a path cannot break out of `url(...)`.
+ */
+export function toCssBackgroundImage(url: string): string {
+  const value = url.trim();
+  if (value === '') {
+    return '';
+  }
+
+  if (!/^(https?:\/\/|\/)/i.test(value)) {
+    return '';
+  }
+
+  return `url(${JSON.stringify(value)})`;
+}

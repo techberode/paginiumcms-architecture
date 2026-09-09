@@ -23,4 +23,10 @@ describe('i18n security/core', () => {
     registerModuleMessages('en', 'content', { slug_exists: 'Slug :slug already exists' });
     expect(translate('en', 'content.slug_exists', { slug: 'home' })).toBe('Slug home already exists');
   });
+
+  it('falls back to the English module catalog when a locale key is missing', () => {
+    registerModuleMessages('en', 'demoNs', { nested: { label: 'Hello' } });
+    registerModuleMessages('sk', 'demoNs', {});
+    expect(translate('sk', 'demoNs.nested.label')).toBe('Hello');
+  });
 });

@@ -129,7 +129,6 @@ final class AvatarImageProcessor
         $targetH = max(1, (int) round($height * $scale));
 
         $resized = $this->render($source, $width, $height, $targetW, $targetH, 'image/png', 6);
-        imagedestroy($source);
 
         if ($resized === '') {
             throw new FlatFileException('Nepodarilo sa exportovať avatar.');
@@ -161,8 +160,6 @@ final class AvatarImageProcessor
                 break;
             }
         }
-
-        imagedestroy($source);
 
         if ($best === '') {
             throw new FlatFileException('Nepodarilo sa skomprimovať avatar.');
@@ -197,16 +194,12 @@ final class AvatarImageProcessor
             imagesavealpha($canvas, true);
             $transparent = imagecolorallocatealpha($canvas, 0, 0, 0, 127);
             if ($transparent === false) {
-                imagedestroy($canvas);
-
                 return '';
             }
             imagefilledrectangle($canvas, 0, 0, $targetW, $targetH, $transparent);
         } else {
             $background = imagecolorallocate($canvas, 255, 255, 255);
             if ($background === false) {
-                imagedestroy($canvas);
-
                 return '';
             }
             imagefilledrectangle($canvas, 0, 0, $targetW, $targetH, $background);
@@ -226,8 +219,6 @@ final class AvatarImageProcessor
                 : false,
             default => imagepng($canvas, null, max(0, min(9, $quality))),
         };
-        imagedestroy($canvas);
-
         $encoded = ob_get_clean();
         if ($saved === false) {
             return '';

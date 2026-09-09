@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 6 September 2026 · register **ISS-001–ISS-167** · analytics retention + geo/bots (ISS-164–167)
+> **Last updated:** 9 September 2026 · register **ISS-001–ISS-169** · admin list pagination (ISS-169)
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -190,6 +190,8 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-165](#iss-165) | GDPR custom blocks vanished immediately in admin Privacy editor | Medium (admin UX) | ✅ Fixed · **2.1.0-beta.66** |
 | [ISS-166](#iss-166) | Analytics retention purge deleted 0 files — glob unreliable | Low (CI/ops) | ✅ Fixed · **2.1.0-beta.66** |
 | [ISS-167](#iss-167) | Article author API fields missing from ContentEditorLoadData (TS) | Low (CI) | ✅ Fixed · **2.1.0-beta.66** |
+| [ISS-168](#iss-168) | Landing page ignored SEO / OG hero image | Medium (public UX) | ✅ Fixed · **2.1.0-beta.68** |
+| [ISS-169](#iss-169) | Admin list pagination stayed on page 1 | Medium (admin UX) | ✅ Fixed · **2.1.0-beta.68** |
 
 ## CI failures (GitHub Actions)
 
@@ -5169,6 +5171,65 @@ Backend `ContentController` already returned author fields; FE `contentEditorApi
 
 - Extended `ContentEditorLoadData` with author fields.
 - `export type { User }` from `users.ts`; removed unused `uploadMedia` static import.
+
+---
+
+<a id="iss-168"></a>
+
+## ISS-168 – Landing page ignored SEO / OG hero image
+
+| Field | Value |
+|---|---|
+| **Severity** | Medium (public UX) |
+| **Status** | ✅ Fixed · **2.1.0-beta.68** |
+| **Area** | Public landing / `PageRenderer` / content SEO |
+
+### Symptom
+
+Administrator selected an OG / preview image in the page SEO panel. Production landing showed an empty dark hero (`showcase-hero`) — the photo never appeared.
+
+### Root cause
+
+1. SEO save writes `frontMatter.seoImage` / API `ogImage`. For **pages** it did not also set `featuredImage` (articles already did).
+2. `PageRenderer` only treated `frontMatter.featuredImage` as a visible `<img>`; `template: home` pages (e.g. production `/paginium-cms`) therefore rendered `.public-hero` with **zero images**.
+3. Even when a featured image existed, home hero CSS used `opacity-20` plus an 80% overlay — the photo looked like an empty grey slab.
+4. Home + landing layout skipped `PageLayoutShell`, so showcase-hero landing CSS did not apply.
+
+### Resolution
+
+- Resolve hero from `featuredImage` **or** `ogImage` / `seoImage`.
+- Set `--pg-hero-image` on `.pg-landing-content` and paint `showcase-hero` / `landing-hero`; fallback `<img>` when those shortcodes are absent.
+- Always wrap landing (including home) in `PageLayoutShell`.
+- Mirror `ogImage` → `featuredImage` on page save and locale sync.
+
+---
+
+<a id="iss-169"></a>
+
+## ISS-169 – Admin list pagination stayed on page 1
+
+| Field | Value |
+|---|---|
+| **Severity** | Medium (admin UX) |
+| **Status** | ✅ Fixed · **2.1.0-beta.68** |
+| **Area** | Admin lists / `useAdminListQueryParams` / pages, articles, media, comments, trash |
+
+### Symptom
+
+In **Pages** (and the same table for articles), clicking **Next** left the list on page 1. The URL might flash `?page=2` and then snap back. The same loop affected every admin list that syncs `page` into the query string (media, comments, trash).
+
+### Root cause
+
+1. `useAdminListQueryParams` rebuilt `patchParams` whenever `searchParams` changed, so `setPage` got a new identity after every URL write.
+2. A debounce/`q` sync effect depended on that callback and called `resetPage: true`, wiping `page` after Next.
+3. `PagesManager`, `MediaManager`, `CommentsManager`, and `TrashManager` ran `useEffect(() => setPage(1), [pageSize, setPage])`. After Next, the new `setPage` identity fired the effect and forced page 1 again.
+
+### Resolution
+
+- Patch the URL with a **functional** `setSearchParams((prev) => …)` updater so `patchParams` / `setPage` stay stable.
+- Reset to page 1 only when search/filters actually change, or when the user changes page size (wrapped setter — not a mount effect).
+- Keep bookmarked `/pages?page=N` on first mount.
+- Regression: `useAdminListQueryParams.test.tsx` (setPage + rerender, bookmark, status filter reset).
 
 ---
 

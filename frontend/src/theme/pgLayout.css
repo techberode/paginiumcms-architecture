@@ -75,6 +75,41 @@
   opacity: 0.65;
 }
 
+.pg-landing-content[data-has-hero-image='true'] .pg-showcase-hero,
+.pg-landing-content[data-has-hero-image='true'] .pg-hero {
+  background-image:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-surface) 38%, transparent) 0%,
+      color-mix(in srgb, var(--color-surface) 68%, transparent) 52%,
+      var(--color-surface) 100%
+    ),
+    var(--pg-hero-image);
+  background-size: cover, cover;
+  background-position: center, center;
+  background-repeat: no-repeat, no-repeat;
+}
+
+.pg-landing-seo-hero {
+  margin: 0 0 1.5rem;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  max-height: min(52vh, 28rem);
+  border: 1px solid var(--color-border);
+}
+
+.pg-landing-seo-hero img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pg-landing-content:has(.pg-showcase-hero) .pg-landing-seo-hero,
+.pg-landing-content:has(.pg-hero) .pg-landing-seo-hero {
+  display: none;
+}
+
 .pg-showcase-hero-inner {
   width: min(100%, 52rem);
   margin: 0 auto;

@@ -120,6 +120,12 @@ final class CodePolicyEngine implements CodePolicyEngineInterface
         }
 
         $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        if ($extension === 'js' && $untrusted) {
+            foreach ($this->scanUntrustedJavascript($content) as $violation) {
+                $errors['security'][] = $violation;
+            }
+        }
+
         if ($extension === 'php' || str_ends_with(strtolower($path), '.php')) {
             $forbidden = $this->parseForbiddenList((string) ($policy['forbiddenPhpFunctions'] ?? ''));
             if ($untrusted) {
@@ -152,6 +158,29 @@ final class CodePolicyEngine implements CodePolicyEngineInterface
         if ($errors !== []) {
             throw new CodePolicyViolationException($errors);
         }
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function scanUntrustedJavascript(string $content): array
+    {
+        $banned = [
+            'eval(',
+            'Function(',
+            'new Function',
+            'document.cookie',
+            'document.write',
+            '.innerHTML',
+        ];
+        $violations = [];
+        foreach ($banned as $token) {
+            if (stripos($content, $token) !== false) {
+                $violations[] = 'Forbidden JavaScript token: ' . $token;
+            }
+        }
+
+        return $violations;
     }
 
     /**

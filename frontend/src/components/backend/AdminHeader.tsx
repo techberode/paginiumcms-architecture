@@ -16,8 +16,12 @@ interface AdminHeaderProps {
 }
 
 function resolveTabId(pathname: string): string {
-  const segment = pathname.split('/').filter(Boolean)[0] || 'dashboard';
-  return segment;
+  const parts = pathname.split('/').filter(Boolean);
+  if (parts[0] === 'platform' && parts[1]) {
+    return parts[1];
+  }
+
+  return parts[0] || 'dashboard';
 }
 
 export const AdminHeader: React.FC<AdminHeaderProps> = ({

@@ -48,6 +48,8 @@ A current build may include:
 | `settings:manage` | manage allowed settings |
 | `logs:view` | read operational logs |
 | `profile:edit` | own profile |
+| `project-plan:read` | view project planner plans |
+| `project-plan:manage` | create and edit project planner plans and items |
 
 Treat the backend `PermissionCatalog`/API metadata of the concrete release as canonical. Documentation must not be the only source of names.
 

@@ -101,6 +101,7 @@ export const settingsEn: MessageTree = {
     "branding": "Logo & favicon",
     "appearance": "Appearance",
     "layout": "Page layout",
+    "projectPlanner": "Project planner",
     "accessControl": "Role permissions",
     "cmsInfo": "PaginiumCMS – info"
   },
@@ -307,6 +308,8 @@ export const settingsEn: MessageTree = {
       "api-keys:manage": "Manage API keys",
       "redirects:manage": "Manage redirects",
       "webhooks:manage": "Manage webhooks",
+      "project-plan:read": "View project planner",
+      "project-plan:manage": "Manage project planner",
       "profile:edit": "Edit profile"
     }
   },
@@ -752,6 +755,18 @@ export const settingsEn: MessageTree = {
         "uploadAlt": "Branding upload",
         "invalidType": "Unsupported file type",
         "uploadFailed": "Upload failed"
+      }
+    },
+    "appearance": {
+      "themeScriptsEnabled": {
+        "label": "Allow theme JavaScript (allow-list)",
+        "help": "Fail-closed. On = public site loads only declared assets/*.js with SRI. Off = no theme scripts (default)."
+      }
+    },
+    "projectPlanner": {
+      "enabled": {
+        "label": "Enable project planner",
+        "help": "Full CMS milestone planner. Turn off only for stripped demo instances. This is not Origin Panel."
       }
     },
     "privacy": {

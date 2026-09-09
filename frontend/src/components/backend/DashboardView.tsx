@@ -30,7 +30,9 @@ import { LogsPanel } from '../dashboard/LogsPanel';
 import { DashboardActivityPanel } from '../dashboard/DashboardActivityPanel';
 import { DashboardDiskStructurePanel } from '../dashboard/DashboardDiskStructurePanel';
 import { SystemUpdateBanner } from '../dashboard/SystemUpdateBanner';
+import { ProjectPlannerSummaryWidget } from './ProjectPlannerSummaryWidget';
 import { AdminPageSkeleton } from '../ui/AdminPageSkeleton';
+import { AdminEmptyState } from '../ui/AdminEmptyState';
 import { useI18n } from '../../context/I18nContext';
 import { useSettings } from '../../hooks/useSettings';
 
@@ -157,6 +159,23 @@ export const DashboardView: React.FC = () => {
     <div className="space-y-8 animate-fadeIn pb-16">
       <SystemUpdateBanner />
 
+      {stats.totalPages === 0 && stats.totalArticles === 0 ? (
+        <AdminEmptyState
+          title={t('dashboard.empty.title')}
+          description={t('dashboard.empty.body')}
+          action={
+            <div className="flex flex-wrap justify-center gap-2">
+              <Link to="/pages/new" className="btn btn-primary">
+                {t('dashboard.empty.createPage')}
+              </Link>
+              <Link to="/articles/new" className="btn btn-secondary">
+                {t('dashboard.empty.createArticle')}
+              </Link>
+            </div>
+          }
+        />
+      ) : null}
+
       <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-8 sm:p-10 text-white shadow-xl relative overflow-hidden border border-slate-800">
         <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
@@ -219,6 +238,8 @@ export const DashboardView: React.FC = () => {
           );
         })}
       </div>
+
+      <ProjectPlannerSummaryWidget />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Link

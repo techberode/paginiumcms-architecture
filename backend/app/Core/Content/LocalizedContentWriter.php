@@ -278,6 +278,7 @@ final class LocalizedContentWriter
         if (trim((string) ($frontMatter['seoImage'] ?? '')) === '' && trim((string) ($seo['ogImage'] ?? '')) !== '') {
             $frontMatter['seoImage'] = (string) $seo['ogImage'];
         }
+        $frontMatter = $this->mirrorSeoImageToFeatured($frontMatter);
         if (!($frontMatter['noIndex'] ?? false) && ($seo['noIndex'] ?? false) === true) {
             $frontMatter['noIndex'] = true;
         }
@@ -441,10 +442,28 @@ final class LocalizedContentWriter
         if (trim((string) ($frontMatter['seoImage'] ?? '')) === '' || trim((string) ($seo['ogImage'] ?? '')) !== '') {
             $frontMatter['seoImage'] = (string) ($seo['ogImage'] ?? '');
         }
+        $frontMatter = $this->mirrorSeoImageToFeatured($frontMatter);
         if (!($frontMatter['noIndex'] ?? false) && ($seo['noIndex'] ?? false) === true) {
             $frontMatter['noIndex'] = true;
         }
         $content->setFrontMatter($frontMatter);
+    }
+
+    /**
+     * Pages have no featuredImage setter — keep SEO / OG image on the same front-matter key
+     * that public renderers already read for heroes.
+     *
+     * @param array<int|string, mixed> $frontMatter
+     * @return array<int|string, mixed>
+     */
+    private function mirrorSeoImageToFeatured(array $frontMatter): array
+    {
+        $seoImage = trim((string) ($frontMatter['seoImage'] ?? ''));
+        if ($seoImage !== '') {
+            $frontMatter['featuredImage'] = $seoImage;
+        }
+
+        return $frontMatter;
     }
 
     /**

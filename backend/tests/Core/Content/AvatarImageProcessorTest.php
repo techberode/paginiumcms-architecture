@@ -23,7 +23,6 @@ final class AvatarImageProcessorTest extends TestCase
         imagefilledrectangle($image, 0, 0, 1199, 899, $color);
         ob_start();
         imagejpeg($image, null, 90);
-        imagedestroy($image);
         $binary = ob_get_clean();
         $this->assertGreaterThan(1000, strlen($binary));
 

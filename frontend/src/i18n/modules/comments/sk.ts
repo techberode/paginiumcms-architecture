@@ -50,6 +50,7 @@ export const commentsSk: MessageTree = {
   },
   empty: {
     none: 'Žiadne komentáre.',
+    filter: 'Žiadne komentáre pre aktuálny filter.',
   },
   otp: {
     title: 'Schválenie komentára',

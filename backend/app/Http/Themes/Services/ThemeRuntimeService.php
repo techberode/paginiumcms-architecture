@@ -22,6 +22,7 @@ final class ThemeRuntimeService
         private ThemeRegistry $registry,
         private ContentCacheService $contentCache,
         private string $themesRoot,
+        private ?ThemeScriptIntegrityService $integrity = null,
     ) {
         $this->themesRoot = rtrim($themesRoot, '/');
     }
@@ -71,6 +72,8 @@ final class ThemeRuntimeService
         if (!$this->isThemePresent($id)) {
             throw new RuntimeException('Theme files missing on disk: ' . $id);
         }
+
+        $this->integrity?->assertActivation($id);
 
         return $this->applyActivation($id);
     }
