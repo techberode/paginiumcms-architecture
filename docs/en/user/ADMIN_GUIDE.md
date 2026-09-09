@@ -150,6 +150,8 @@ Do not trigger a long job repeatedly just because the UI appears unresponsive. C
 
 A backup must cover authoritative content, settings, required keys, and namespaced extension data. Cache and index are rebuildable and should not be the sole recovery source.
 
+On **Platform → Backups** you can include the whole content tree or only pages, articles, media, CMS data, navigation, trash, and/or app config. **Incremental** backups store only files that changed since the last snapshot of the same scope (hash comparison, not the `rsync` binary). Restore of an incremental needs the matching full baseline in the library.
+
 ### Automatic scheduled backups
 
 Scheduled backups do **not** run from the browser alone. Enable all of the following:
@@ -157,7 +159,7 @@ Scheduled backups do **not** run from the browser alone. Enable all of the follo
 1. **Settings → Job scheduler** — master switch on.
 2. **Platform → Scheduler** — enable the `backup-scheduled` job (default cron: daily at 02:00).
 3. **Host cron** — run `php backend/bin/console scheduler:run` every minute (see `docs/deploy/CRON.md`).
-4. **Platform → Backups** — open **Automatic backups**, choose interval and retention, save.
+4. **Platform → Backups** — choose **what to include** and **full vs incremental**, then open **Automatic backups**, set interval and retention, save. Scheduled runs use the same scope and type.
 
 The UI shows `next_run` / `last_run` after the schedule is saved. Manual **Run now** on the job is useful for testing; production still needs cron.
 

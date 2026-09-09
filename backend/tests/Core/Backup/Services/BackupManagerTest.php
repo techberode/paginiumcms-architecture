@@ -134,6 +134,8 @@ class BackupManagerTest extends TestCase
         $this->assertEquals('daily', $schedule['interval']);
         $this->assertEquals(7, $schedule['keep']);
         $this->assertTrue($schedule['enabled']);
+        $this->assertSame(['content', 'config'], $schedule['includes']);
+        $this->assertSame('full', $schedule['mode']);
     }
 
     public function testClearScheduleRemovesPlan(): void
@@ -315,6 +317,114 @@ class BackupManagerTest extends TestCase
         } finally {
             $this->removeDirectory($tempRoot);
         }
+    }
+
+    public function testCreateRespectsGranularIncludes(): void
+    {
+        if (!class_exists(\ZipArchive::class)) {
+            $this->markTestSkipped('ZipArchive extension is required.');
+        }
+
+        $tempRoot = sys_get_temp_dir() . '/paginium_backup_scope_' . uniqid('', true);
+        $backupPath = $tempRoot . '/backups';
+        $contentPath = $tempRoot . '/content';
+        mkdir($backupPath, 0755, true);
+        mkdir($contentPath . '/pages', 0755, true);
+        mkdir($contentPath . '/blog', 0755, true);
+        file_put_contents($contentPath . '/pages/home.md', "# Home");
+        file_put_contents($contentPath . '/blog/post.md', "# Post");
+
+        $validator = new FileValidator($contentPath);
+        $manager = new BackupManager(new FileReader($validator), new FileWriter($validator), $backupPath, $contentPath);
+
+        try {
+            $backup = $manager->create('pages-only', ['includes' => ['pages']]);
+            $this->assertSame(['pages'], $backup->getIncludes());
+            $names = $this->zipEntryNames($backup->getFilePath());
+            $this->assertContains('content/pages/home.md', $names);
+            $this->assertNotContains('content/blog/post.md', $names);
+        } finally {
+            $this->removeDirectory($tempRoot);
+        }
+    }
+
+    public function testIncrementalBackupSkipsUnchangedFilesAndRestoresDelta(): void
+    {
+        if (!class_exists(\ZipArchive::class)) {
+            $this->markTestSkipped('ZipArchive extension is required.');
+        }
+
+        $tempRoot = sys_get_temp_dir() . '/paginium_backup_inc_' . uniqid('', true);
+        $backupPath = $tempRoot . '/backups';
+        $contentPath = $tempRoot . '/content';
+        mkdir($backupPath, 0755, true);
+        mkdir($contentPath . '/pages', 0755, true);
+        file_put_contents($contentPath . '/pages/home.md', "# Home");
+        file_put_contents($contentPath . '/pages/stable.md', "# Stable");
+
+        $validator = new FileValidator($contentPath);
+        $manager = new BackupManager(new FileReader($validator), new FileWriter($validator), $backupPath, $contentPath);
+
+        try {
+            $full = $manager->create('full', [
+                'includes' => ['pages'],
+                'mode' => 'full',
+            ]);
+            $this->assertSame('full', $full->getMode());
+
+            file_put_contents($contentPath . '/pages/home.md', "# Home changed");
+            file_put_contents($contentPath . '/pages/new.md', "# New");
+            unlink($contentPath . '/pages/stable.md');
+
+            $incremental = $manager->create('delta', [
+                'includes' => ['pages'],
+                'mode' => 'incremental',
+            ]);
+            $this->assertSame('incremental', $incremental->getMode());
+            $this->assertSame($full->getId(), $incremental->getBaseBackupId());
+            $names = $this->zipEntryNames($incremental->getFilePath());
+            $this->assertContains('content/pages/home.md', $names);
+            $this->assertContains('content/pages/new.md', $names);
+            $this->assertNotContains('content/pages/stable.md', $names);
+            $this->assertContains('deletes.json', $names);
+
+            file_put_contents($contentPath . '/pages/home.md', "# dirty");
+            $this->assertTrue($manager->restore($incremental->getId()));
+            $this->assertSame("# Home changed", file_get_contents($contentPath . '/pages/home.md'));
+            $this->assertFileExists($contentPath . '/pages/new.md');
+            $this->assertFileDoesNotExist($contentPath . '/pages/stable.md');
+        } finally {
+            $this->removeDirectory($tempRoot);
+        }
+    }
+
+    public function testSchedulePersistsIncludesAndMode(): void
+    {
+        $this->backupManager->scheduleBackup('weekly', 5, [
+            'includes' => ['pages', 'blog'],
+            'mode' => 'incremental',
+        ]);
+
+        $schedule = $this->backupManager->getScheduleInfo();
+        $this->assertSame(['pages', 'blog'], $schedule['includes']);
+        $this->assertSame('incremental', $schedule['mode']);
+        $this->assertSame(5, $schedule['keep']);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function zipEntryNames(string $zipPath): array
+    {
+        $zip = new \ZipArchive();
+        $this->assertTrue($zip->open($zipPath));
+        $names = [];
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $names[] = (string) $zip->getNameIndex($i);
+        }
+        $zip->close();
+
+        return $names;
     }
 
     private function removeDirectory(string $dir): void

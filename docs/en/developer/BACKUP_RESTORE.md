@@ -33,22 +33,44 @@ Restore is **not** a Git rollback and does not revert PHP code or frontend asset
 | `content/navigation/` | `storage/app/content/navigation/` | When present |
 | `config/` | `storage/app/config/` | Optional when `includes` contains `config` |
 | `backup.json` | — | Metadata snapshot at create time |
+| `manifest.json` | — | Per-file SHA-256 map of the selected scope (full tree state) |
+| `deletes.json` | — | Incremental only: ZIP paths removed since the baseline |
+
+Allowed `includes` flags: `content` (entire `storage/app/content/` tree), `pages`, `blog`, `media`, `data`, `navigation`, `trash`, `config`. If `content` is set, granular content flags are ignored. Default: `["content", "config"]`.
+
+### Incremental (rsync-style) backups
+
+`POST /api/admin/backups` and `POST /api/admin/backups/schedule` accept `"mode": "full" | "incremental"`.
+
+Incremental does **not** invoke the `rsync` binary. It compares SHA-256 hashes against the latest completed backup with the **same scope** and writes only changed/new files into the ZIP. Deleted files are listed in `deletes.json`. The first incremental with no matching baseline is stored as a **full** snapshot.
+
+Restore of `mode=incremental` walks `baseBackupId` to the full baseline, restores that ZIP, then each delta (merge + deletes). Retention (`keep`) never drops a baseline still required by a kept incremental.
+
+Scheduled backups persist `includes` and `mode` in `storage/backups/schedule.json`.
+
+---
+
+## Create backup
+
+**API:** `POST /api/admin/backups`
+
+```json
+{
+  "name": "nightly",
+  "includes": ["content", "config"],
+  "mode": "full"
+}
+```
+
+Granular example: `{ "includes": ["pages", "blog", "config"], "mode": "incremental" }`.
+
+**Integrity:** each backup stores `sha256` in metadata. Use **Verify** in admin or `GET /api/admin/backups/{id}/verify`.
 
 ### Legacy format (pre-fix backups)
 
 Older archives may contain only `data/` at the **ZIP root** (no `content/` tree). Restore still accepts these: `data/` is merged into `storage/app/content/data/`.
 
 **Important:** legacy backups created before the content-tree fix often **do not contain** `pages/`, `blog/`, or `media/`. Restoring them updates settings/indexes but **will not bring back articles or pages**. Create a **new backup** after upgrading to a fixed release before relying on restore for content disaster recovery.
-
----
-
-## Create backup
-
-**API:** `POST /api/admin/backups` with `{ "name": "…", "includes": ["content", "config", "data"] }` (default includes).
-
-Default `includes: ["content", "config", "data"]` zips the full `content/` subtree plus app config. Scheduled backups use the same manager.
-
-**Integrity:** each backup stores `sha256` in metadata. Use **Verify** in admin or `GET /api/admin/backups/{id}/verify`.
 
 ---
 
@@ -123,6 +145,9 @@ Never delete `backend/storage/app/content/` itself.
 On an isolated dev/staging instance:
 
 - [ ] Create backup with default includes.
+- [ ] Create a pages-only backup and confirm the ZIP has `content/pages/` but not `content/blog/`.
+- [ ] Create a full backup, change one file, create incremental; ZIP should omit unchanged files.
+- [ ] Restore the incremental; changed file and deletes match.
 - [ ] Inspect ZIP: `unzip -l backup.zip | egrep 'content/(blog|pages)/'` shows `.md` files.
 - [ ] Soft-delete one article (moves to trash).
 - [ ] Restore the backup.
@@ -130,7 +155,7 @@ On an isolated dev/staging instance:
 - [ ] No new files under `storage/app/content/content/`.
 - [ ] `./scripts/iteration-gate.sh` green after code changes.
 
-PHPUnit regression: `BackupManagerTest::testCreateAndRestoreRoundTripIncludesPages`, `testCreateAndRestoreAfterSoftDeleteToTrash`.
+PHPUnit regression: `BackupManagerTest::testCreateAndRestoreRoundTripIncludesPages`, `testCreateAndRestoreAfterSoftDeleteToTrash`, `testCreateRespectsGranularIncludes`, `testIncrementalBackupSkipsUnchangedFilesAndRestoresDelta`.
 
 ---
 

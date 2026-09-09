@@ -148,6 +148,10 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **Stabilization freeze closed (2026-09-09)** — no `v2.2.0` stable gate; continue planned iterations. Queue: **It.88 Theme Studio** → 78 → 79 → 72 remainder → 58f/g → 70 GitHub UI → 76/77 → 75 → 48. Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
 - **Spec:** [ITERATION_88.md](docs/en/ITERATION_88.md) — Theme Studio: Monaco HTML/CSS/JS, Code Policy validation, sandboxed preview, thumbnail, normalize-from-paste (not unrestricted HTML import). Next slice: **88a**.
 
+### Added
+
+- **Backup scope + incremental snapshots** — Platform → Backups: choose what to include (full content tree, or pages / articles / media / CMS data / navigation / trash / config) for **manual** and **scheduled** backups. Incremental mode stores a SHA-256 file manifest and zips only new/changed files plus a `deletes.json` list (rsync-style deltas, no `rsync`/`exec`). Restore of an incremental applies the full baseline chain first. Guide: [BACKUP_RESTORE.md](docs/en/developer/BACKUP_RESTORE.md).
+
 ---
 
 <a id="release-2-1-0-beta-68"></a>

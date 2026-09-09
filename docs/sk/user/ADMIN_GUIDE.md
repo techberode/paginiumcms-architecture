@@ -150,6 +150,8 @@ Nespúšťaj dlhý job opakovane len preto, že UI nereaguje. Najprv over worker
 
 Záloha musí pokryť autoritatívny obsah, nastavenia, potrebné keys a namespaced dáta rozšírení. Cache a index sú obnoviteľné; nemusíš ich považovať za jediný recovery zdroj.
 
+V **Platforma → Zálohy** vieš zahrnúť celý strom obsahu alebo len stránky, články, médiá, dáta CMS, navigáciu, kôš a/alebo config. **Prírastková** záloha uloží len súbory zmenené od posledného snímku s rovnakým rozsahom (porovnanie hashov, nie binárka `rsync`). Obnova prírastkovej zálohy potrebuje v knižnici aj úplný baseline.
+
 ### Automatické plánované zálohy
 
 Plánované zálohy **nebežia** len z prehliadača. Zapni všetky kroky:
@@ -157,7 +159,7 @@ Plánované zálohy **nebežia** len z prehliadača. Zapni všetky kroky:
 1. **Nastavenia → Plánovač jobov** — hlavný vypínač zapnutý.
 2. **Platforma → Plánovač** — zapni job `backup-scheduled` (predvolený cron: denne o 02:00).
 3. **Cron na hostiteľovi** — `php backend/bin/console scheduler:run` každú minútu (viď `docs/deploy/CRON.md`).
-4. **Platforma → Zálohy** — sekcia **Automatické zálohy**, interval a retencia, uložiť.
+4. **Platforma → Zálohy** — zvoľ **čo zahrnúť** a **úplná vs prírastková**, potom **Automatické zálohy**, interval a retenciu, ulož. Plánovaný beh používa rovnaký rozsah a typ.
 
 UI zobrazí `next_run` / `last_run` po uložení plánu. **Spustiť teraz** na jobe je na test; produkcia stále potrebuje cron.
 

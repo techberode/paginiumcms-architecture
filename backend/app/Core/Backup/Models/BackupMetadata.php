@@ -18,6 +18,10 @@ class BackupMetadata implements JsonSerializable
     private string $version;
     private string $status;
     private string $sha256 = '';
+    private string $mode = 'full';
+    private string $baseBackupId = '';
+    private int $filesPacked = 0;
+    private int $filesTotal = 0;
 
     public function __construct()
     {
@@ -133,6 +137,54 @@ class BackupMetadata implements JsonSerializable
         return $this;
     }
 
+    public function getMode(): string
+    {
+        return $this->mode;
+    }
+
+    public function setMode(string $mode): self
+    {
+        $this->mode = $mode === 'incremental' ? 'incremental' : 'full';
+
+        return $this;
+    }
+
+    public function getBaseBackupId(): string
+    {
+        return $this->baseBackupId;
+    }
+
+    public function setBaseBackupId(string $baseBackupId): self
+    {
+        $this->baseBackupId = $baseBackupId;
+
+        return $this;
+    }
+
+    public function getFilesPacked(): int
+    {
+        return $this->filesPacked;
+    }
+
+    public function setFilesPacked(int $filesPacked): self
+    {
+        $this->filesPacked = max(0, $filesPacked);
+
+        return $this;
+    }
+
+    public function getFilesTotal(): int
+    {
+        return $this->filesTotal;
+    }
+
+    public function setFilesTotal(int $filesTotal): self
+    {
+        $this->filesTotal = max(0, $filesTotal);
+
+        return $this;
+    }
+
     public function isCompleted(): bool
     {
         return $this->status === 'completed';
@@ -171,6 +223,10 @@ class BackupMetadata implements JsonSerializable
             'version' => $this->version,
             'status' => $this->status,
             'sha256' => $this->sha256,
+            'mode' => $this->mode,
+            'baseBackupId' => $this->baseBackupId !== '' ? $this->baseBackupId : null,
+            'filesPacked' => $this->filesPacked,
+            'filesTotal' => $this->filesTotal,
         ];
     }
 }

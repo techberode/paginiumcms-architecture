@@ -80,7 +80,10 @@ interface BackupInterface
      * @param string $interval Interval (daily, weekly, monthly).
      * @param int $keep Počet záloh na uchovanie.
      */
-    public function scheduleBackup(string $interval, int $keep = 7): void;
+    /**
+     * @param array<int|string, mixed> $options
+     */
+    public function scheduleBackup(string $interval, int $keep = 7, array $options = []): void;
 
     /**
      * Získa informácie o naplánovaných zálohách.

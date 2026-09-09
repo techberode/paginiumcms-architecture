@@ -206,7 +206,11 @@ content/media/
 content/data/
 config/          (optional)
 backup.json
+manifest.json    (per-file SHA-256 of the selected scope)
+deletes.json     (incremental only)
 ```
+
+Create/schedule accept `includes` (`content`, `pages`, `blog`, `media`, `data`, `navigation`, `trash`, `config`) and `mode` (`full` | `incremental`). Incremental ZIPs contain only files whose hash changed since the last backup of the same scope. See [BACKUP_RESTORE.md](../developer/BACKUP_RESTORE.md).
 
 Legacy archives may contain only root `data/`; restore merges that into `content/data/` but **does not** recover pages/articles unless they were present in the ZIP. See [BACKUP_RESTORE.md](../developer/BACKUP_RESTORE.md).
 

@@ -23,10 +23,15 @@ export const backupApi = {
     return response.success && Array.isArray(response.data) ? response.data : [];
   },
 
-  create: async (name: string, includes?: string[]): Promise<Backup | null> => {
+  create: async (
+    name: string,
+    includes?: string[],
+    mode: 'full' | 'incremental' = 'full'
+  ): Promise<Backup | null> => {
     const response = await apiClient.post<Backup>('/api/admin/backups', {
       name,
-      includes: includes || ['content', 'config', 'data'],
+      includes: includes && includes.length > 0 ? includes : ['content', 'config'],
+      mode,
     });
     return response.success && response.data ? response.data : null;
   },
@@ -119,6 +124,8 @@ export const backupApi = {
     enabled?: boolean;
     interval?: 'daily' | 'weekly' | 'monthly';
     keep?: number;
+    includes?: string[];
+    mode?: 'full' | 'incremental';
   }): Promise<ScheduleInfo | null> => {
     const response = await apiClient.post<ScheduleInfo>('/api/admin/backups/schedule', payload);
     return response.success && response.data ? response.data : null;
