@@ -7,6 +7,7 @@ namespace PaginiumCMS\Http\Controllers\Admin;
 use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\Backup\Contracts\BackupInterface;
 use PaginiumCMS\Core\Backup\Models\BackupMetadata;
+use PaginiumCMS\Core\Backup\Services\BackupScope;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Http\Support\BulkBatchResult;
 use PaginiumCMS\Http\Support\BulkOperationLimits;
@@ -45,10 +46,21 @@ class BackupController
         }
 
         try {
-            $includes = is_array($data) && isset($data['includes']) && is_array($data['includes'])
-                ? $data['includes']
-                : ['content', 'config', 'data'];
-            $backup = $this->backup->create((string) $name, ['includes' => $includes]);
+            $includes = BackupScope::DEFAULT_INCLUDES;
+            if (is_array($data) && array_key_exists('includes', $data)) {
+                if (!is_array($data['includes'])) {
+                    return $this->json->error($response, 'includes must be an array of scope flags', 422);
+                }
+                $includes = BackupScope::sanitizeIncludes($data['includes']);
+                if ($includes === []) {
+                    return $this->json->error($response, 'Select at least one backup scope', 422);
+                }
+            }
+            $mode = BackupScope::normalizeMode(is_array($data) ? ($data['mode'] ?? BackupScope::MODE_FULL) : BackupScope::MODE_FULL);
+            $backup = $this->backup->create((string) $name, [
+                'includes' => $includes,
+                'mode' => $mode,
+            ]);
 
             return $this->json->success($response, $backup->jsonSerialize(), 201);
         } catch (\Exception $e) {
@@ -247,7 +259,21 @@ class BackupController
         }
 
         $keep = max(1, min(365, (int) ($data['keep'] ?? 7)));
-        $this->backup->scheduleBackup($interval, $keep);
+        $includes = BackupScope::DEFAULT_INCLUDES;
+        if (array_key_exists('includes', $data)) {
+            if (!is_array($data['includes'])) {
+                return $this->json->error($response, 'includes must be an array of scope flags', 422);
+            }
+            $includes = BackupScope::sanitizeIncludes($data['includes']);
+            if ($includes === []) {
+                return $this->json->error($response, 'Select at least one backup scope', 422);
+            }
+        }
+        $mode = BackupScope::normalizeMode($data['mode'] ?? BackupScope::MODE_FULL);
+        $this->backup->scheduleBackup($interval, $keep, [
+            'includes' => $includes,
+            'mode' => $mode,
+        ]);
 
         return $this->json->success($response, $this->backup->getScheduleInfo(), 200, 'Backup schedule saved');
     }
