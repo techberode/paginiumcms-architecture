@@ -14,14 +14,14 @@ Nie je to pixel builder a nie je to „vlož Themeforest HTML a spusti ho ako je
 | ID | Čo |
 |----|-----|
 | **88a** | Admin shell, Monaco záložky | ✅ |
-| **88b** | `POST …/themes/validate` → markery, bez zápisu |
+| **88b** | `POST …/themes/validate` → markery, bez zápisu | ✅ |
 | **88c** | `POST …/themes/normalize` — strip/rewrite + report |
 | **88d** | Sandbox iframe náhľad |
 | **88e** | Thumbnail upload / voliteľný capture |
 | **88f** | Mapovanie slotov header/main/footer |
 | **88g** | Uloženie balíka + aktivácia (existujúce theme API) |
 
-JS záložka až po **87k–m** (infra už je v Core). Do **88b** ostáva záložka JS zatvorená.
+JS záložka až po **87k–m** (infra už je v Core). **88b** otvorí JS na lokálnu úpravu + validate; zápis ostáva 88g.
 
 Kanónický popis 88a: [en/ITERATION_88.md](../en/ITERATION_88.md) (API `GET …/files` a `GET …/file`, RBAC `themes:read` / `themes:edit`).
 

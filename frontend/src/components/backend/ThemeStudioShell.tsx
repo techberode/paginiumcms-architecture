@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { ArrowLeft, Palette, Save, Eye } from 'lucide-react';
-import { MonacoCodeEditor, type MonacoCodeEditorHandle } from '../CodeEditor/MonacoCodeEditor';
+import { MonacoCodeEditor, type MonacoCodeEditorHandle, type MonacoEditorMarker } from '../CodeEditor/MonacoCodeEditor';
 import { themesApi, type ThemeFileListItem } from '../../api/themes';
 import { useI18n } from '../../context/I18nContext';
 import { AdminListSkeleton } from '../ui/AdminListSkeleton';
@@ -9,7 +9,8 @@ import { THEME_STUDIO_DRAFT_ID, themeStudioDraftFiles } from '../../utils/themeS
 import { isThemeStudioTab, type ThemeStudioTab } from '../../utils/themeStudioFiles';
 
 const EDITOR_HEIGHT = 520;
-const JS_TAB_ENABLED = false;
+const VALIDATE_DEBOUNCE_MS = 450;
+const JS_TAB_ENABLED = true;
 
 const TAB_ORDER: ThemeStudioTab[] = ['html', 'css', 'js', 'manifest', 'other'];
 
@@ -34,6 +35,8 @@ export const ThemeStudioShell: React.FC = () => {
   const [fileError, setFileError] = useState<string | null>(null);
   const [tab, setTab] = useState<ThemeStudioTab>('html');
   const [wordWrap, setWordWrap] = useState(true);
+  const [markers, setMarkers] = useState<MonacoEditorMarker[]>([]);
+  const [policyValid, setPolicyValid] = useState<boolean | null>(null);
 
   const loadCatalog = useCallback(async () => {
     if (isDraft) {
@@ -155,6 +158,50 @@ export const ThemeStudioShell: React.FC = () => {
   const hasDirtyBuffers = Object.keys(buffers).some((path) => buffers[path] !== (originals[path] ?? ''));
   const jsTabDisabled = !JS_TAB_ENABLED;
   const visibleTabs = TAB_ORDER.filter((id) => id !== 'other' || files.some((file) => file.tab === 'other'));
+  const currentPathRef = useRef(currentPath);
+  currentPathRef.current = currentPath;
+
+  useEffect(() => {
+    setMarkers([]);
+    setPolicyValid(null);
+  }, [currentPath]);
+
+  useEffect(() => {
+    if (currentPath === '' || loadingFile || buffersRef.current[currentPath] === undefined) {
+      return;
+    }
+
+    const path = currentPath;
+    const body = buffersRef.current[path];
+    const id = themeId === THEME_STUDIO_DRAFT_ID ? 'untitled-theme' : themeId;
+    const handle = window.setTimeout(() => {
+      void (async () => {
+        const outcome = await themesApi.validate({
+          themeId: id,
+          relativePath: path,
+          content: body,
+        });
+        if (path !== currentPathRef.current) {
+          return;
+        }
+        if (outcome.result) {
+          setMarkers(
+            outcome.result.markers.map((marker) => ({
+              line: marker.line,
+              message: marker.message,
+              endLine: marker.endLine,
+            })),
+          );
+          setPolicyValid(outcome.result.valid);
+        } else {
+          setMarkers([]);
+          setPolicyValid(null);
+        }
+      })();
+    }, VALIDATE_DEBOUNCE_MS);
+
+    return () => window.clearTimeout(handle);
+  }, [currentPath, content, loadingFile, themeId]);
 
   const handleTabChange = (next: ThemeStudioTab) => {
     if (next === 'js' && jsTabDisabled) {
@@ -295,14 +342,26 @@ export const ThemeStudioShell: React.FC = () => {
                 {currentPath || t('platform.themes.studio.emptyEditor')}
                 {isDirty ? ' *' : ''}
               </div>
-              <label className="inline-flex items-center gap-2 text-xs text-gray-500">
-                <input
-                  type="checkbox"
-                  checked={wordWrap}
-                  onChange={(event) => setWordWrap(event.target.checked)}
-                />
-                {t('platform.themes.studio.wordWrap')}
-              </label>
+              <div className="flex items-center gap-3 shrink-0">
+                {policyValid === true ? (
+                  <span className="text-xs text-emerald-700 dark:text-emerald-300">
+                    {t('platform.themes.studio.policyOk')}
+                  </span>
+                ) : null}
+                {policyValid === false ? (
+                  <span className="text-xs text-amber-700 dark:text-amber-300">
+                    {t('platform.themes.studio.policyFail', { count: markers.length })}
+                  </span>
+                ) : null}
+                <label className="inline-flex items-center gap-2 text-xs text-gray-500">
+                  <input
+                    type="checkbox"
+                    checked={wordWrap}
+                    onChange={(event) => setWordWrap(event.target.checked)}
+                  />
+                  {t('platform.themes.studio.wordWrap')}
+                </label>
+              </div>
             </div>
 
             {tab === 'js' && jsTabDisabled ? (
@@ -325,6 +384,7 @@ export const ThemeStudioShell: React.FC = () => {
                 wordWrap={wordWrap}
                 loading={loadingFile}
                 height={EDITOR_HEIGHT}
+                markers={markers}
                 markerOwner="theme-studio"
               />
             ) : (

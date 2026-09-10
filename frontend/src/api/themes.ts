@@ -53,6 +53,18 @@ export interface ThemeFileContent {
   size: number;
 }
 
+export interface ThemeValidateMarker {
+  line: number;
+  message: string;
+  endLine?: number;
+}
+
+export interface ThemeValidateResult {
+  valid: boolean;
+  relativePath: string;
+  markers: ThemeValidateMarker[];
+}
+
 export const themesApi = {
   list: async (): Promise<ThemeListResponse> => {
     const response = await apiClient.get<ThemeListResponse>('/api/admin/themes');
@@ -116,4 +128,21 @@ export const themesApi = {
     apiClient.get<ThemeFileContent>(`/api/admin/themes/${encodeURIComponent(id)}/file`, {
       params: { path },
     }),
+
+  validate: async (input: {
+    themeId: string;
+    relativePath: string;
+    content: string;
+  }): Promise<{ ok: boolean; result: ThemeValidateResult | null; error?: string }> => {
+    const response = await apiClient.post<ThemeValidateResult>('/api/admin/themes/validate', input);
+    if (response.data && Array.isArray(response.data.markers)) {
+      return {
+        ok: response.success && response.data.valid,
+        result: response.data,
+        error: response.success ? undefined : (response.error ?? undefined),
+      };
+    }
+
+    return { ok: false, result: null, error: response.error };
+  },
 };

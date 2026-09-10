@@ -289,7 +289,7 @@ export const platformEn: MessageTree = {
       preview: 'Preview',
       previewLater: 'Sandboxed preview ships in 88d.',
       readOnlyHint:
-        'Theme Studio 88a is a read + local-edit shell. Validation (88b), preview (88d), and disk save (88g) are next. The JS tab stays closed until the policy API is wired.',
+        'Theme Studio validates buffers with the same untrusted code policy as ZIP import. Save and preview still wait for later slices. JS is checked but not written to disk.',
       tabs: {
         html: 'Layout HTML',
         css: 'CSS',
@@ -298,7 +298,9 @@ export const platformEn: MessageTree = {
         other: 'Docs',
       },
       jsDisabled:
-        'The JS tab is closed in this slice. Theme script allow-list, SRI, and CSP (87k–m) are already in Core; editing JS waits for the 88b validate API so Monaco is not a weaker write path.',
+        'No JavaScript files in this package. Theme scripts must be declared in theme.json (87k–m) before they can ship; 88g persist is still disabled.',
+      policyOk: 'Policy OK',
+      policyFail: ':count policy issue(s)',
       emptyTab: 'No files in this tab.',
       emptyEditor: 'Select a file from the list.',
       wordWrap: 'Word wrap',

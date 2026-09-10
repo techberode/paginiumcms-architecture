@@ -95,7 +95,7 @@ This cannot turn an arbitrary commercial HTML template into a pixel-perfect Pagi
 | ID | Slice | Priority | Status | Summary |
 |----|-------|----------|--------|---------|
 | **88a** | Theme Studio shell (admin) | 🟡 P1 | ✅ | Themes → **Edit / New**; Monaco tabs; AuthZ `themes:read` (mutations later `themes:edit`) |
-| **88b** | Policy + syntax API | 🟡 P1 | ⏳ | `POST /api/admin/themes/validate` — HTML/CSS/JS/JSON; Monaco markers; no persist |
+| **88b** | Policy + syntax API | 🟡 P1 | ✅ | `POST /api/admin/themes/validate` — HTML/CSS/JS/JSON; Monaco markers; no persist |
 | **88c** | Normalize from paste/ZIP-of-files | 🟡 P1 | ⏳ | `POST /api/admin/themes/normalize`; report + rewritten buffers |
 | **88d** | Sandboxed preview | 🟡 P1 | ⏳ | iframe; same sanitizer as public; block on policy fail |
 | **88e** | Thumbnail save | 🟡 P2 | ⏳ | upload required; optional capture from preview |
@@ -108,7 +108,7 @@ This cannot turn an arbitrary commercial HTML template into a pixel-perfect Pagi
 88b → 88a → 88d → 88c → 88g → 88e → 88f
 ```
 
-JS tab ships **after or with** `87k`–`87m` (infra already shipped). Until **88b**, the JS tab stays disabled so Monaco is not a weaker write path.
+JS tab ships **after or with** `87k`–`87m` (infra already shipped). **88b** opens the JS tab for local edit + validate; persist is still 88g.
 
 ---
 
@@ -126,6 +126,16 @@ AuthN + 2FA + `PermissionMiddleware('themes:read')`. Existing import/activate/un
 **Not in 88a:** validate markers, normalize, preview iframe, thumbnail, persist. Local Monaco buffers are tab-only and discarded on leave.
 
 **Reuse:** `MonacoCodeEditor` (same as Translation Editor). **Not reused:** Shortcodes textarea, Code Editor `/code-editor` (Developer Mode).
+
+---
+
+## 88b — shipped (2026-09-10)
+
+**API:** `POST /api/admin/themes/validate` `{ themeId, relativePath, content }` — CSRF + `themes:edit`. Response 200 `{ valid: true, markers: [] }` or 422 `{ valid: false, markers: [{ line, message }] }`. Never writes disk.
+
+**Policy:** same `CodePolicyEngine::validateUntrusted` as ZIP import. HTML/CSS hostile markup (`<script>`, `on*`, `javascript:`, remote `@import`, `url(javascript:)`) lives in `UntrustedMarkupScanner` so Monaco is not a weaker path. `theme.json` also runs `ThemeManifestValidator`. Logs only sanitized id/path/marker count.
+
+**Admin UI:** debounce (~450 ms) paints Monaco markers; JS tab is open for local edit + validate. Save remains disabled (88g).
 
 ---
 
