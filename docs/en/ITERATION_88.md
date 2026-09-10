@@ -1,6 +1,6 @@
 # Iteration 88 — Theme Studio (Monaco authoring, policy, preview, thumbnail)
 
-> **Status:** ✅ shipped (2026-09-10) — 88a–88g complete  
+> **Status:** ✅ shipped in **`v2.1.0-beta.69`** (2026-09-10) — 88a–88g complete  
 > **Priority:** 🟡 **P1** for HTML/CSS studio + preview; 🔵 **P2** JS tab (depends on [It.87 Track C](ITERATION_87.md) `87k`–`87m`)  
 > **Wave:** Themes & layout (extends It.83 runtime, It.67 policy, It.16 Monaco, It.58 preview)  
 > **Depends on:** It.83 activate/PublicShell, It.67 `UntrustedPolicyScanner` + `CodePolicyEngine`, existing `MonacoCodeEditor`  

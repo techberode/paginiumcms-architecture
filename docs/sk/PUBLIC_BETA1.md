@@ -1,7 +1,7 @@
 # PaginiumCMS — Public Beta 1
 
 > **Release rodina:** `v2.1.0-beta.*`  
-> **Odporúčaný tag pre nové inštalácie:** najnovší `v2.1.0-beta.*` z [`CHANGELOG.md`](../../CHANGELOG.md) (aktuálne **`v2.1.0-beta.68`**)  
+> **Odporúčaný tag pre nové inštalácie:** najnovší `v2.1.0-beta.*` z [`CHANGELOG.md`](../../CHANGELOG.md) (aktuálne **`v2.1.0-beta.69`**)  
 > **Stav:** verejná beta pre technických testerov, early adopters a bezpečnostnú revíziu  
 > **Dátový model:** bez SQL databázy; súbory sú zdroj pravdy
 
@@ -58,7 +58,7 @@ Kompletný inventár: [FEATURE_OVERVIEW.md](FEATURE_OVERVIEW.md).
 Príklad:
 
 ```bash
-git checkout v2.1.0-beta.68
+git checkout v2.1.0-beta.69
 ./scripts/first-run.sh
 docker compose up -d
 curl -s http://localhost:8080/api/health

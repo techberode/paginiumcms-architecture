@@ -181,6 +181,7 @@ export const originSk = {
     it83: 'Theme runtime, terminal-breach, landing seed',
     it86: 'Oprava admin search, tlač článkov, bulk X z Y',
     it87: 'Plánovač projektu stránky, UX audit (srcset, skeletony)',
+    it88: 'Theme Studio: Monaco, politika, náhľad, uloženie, thumbnail, sloty',
   },
   readOnlyHint: 'Runtime probes sa overujú automaticky — progres spája probes + manifest SSOT.',
   catalogUpdated: 'Katalóg aktualizovaný',
