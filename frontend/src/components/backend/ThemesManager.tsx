@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Download, History, Palette, Power, RefreshCw, ShieldCheck, Trash2, Upload } from 'lucide-react';
+import { Download, History, Palette, Pencil, Plus, Power, RefreshCw, ShieldCheck, Trash2, Upload } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { themesApi, ThemeRecord } from '../../api/themes';
 import { queryKeys } from '../../api/queryKeys';
 import { useAdminListQuery } from '../../hooks/useAdminListQuery';
@@ -167,6 +168,13 @@ export const ThemesManager: React.FC = () => {
             <Upload className="h-4 w-4" />
             {importing ? t('platform.themes.importing') : t('platform.themes.importZip')}
           </button>
+          <Link
+            to="/themes/new"
+            className="btn btn-primary inline-flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            {t('platform.themes.studio.newTheme')}
+          </Link>
           <button
             type="button"
             className="btn btn-secondary inline-flex items-center gap-2"
@@ -260,6 +268,15 @@ export const ThemesManager: React.FC = () => {
                 }`}>
                   {item.active ? t('platform.themes.active') : t('platform.themes.registered')}
                 </span>
+                {item.present ? (
+                  <Link
+                    to={`/themes/${encodeURIComponent(item.id)}/edit`}
+                    className="btn btn-secondary btn-sm inline-flex items-center gap-1"
+                  >
+                    <Pencil className="h-4 w-4" />
+                    {t('platform.themes.studio.edit')}
+                  </Link>
+                ) : null}
                 {!item.active && item.present ? (
                   <button
                     type="button"

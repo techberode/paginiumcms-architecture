@@ -3,7 +3,8 @@
 declare(strict_types=1);
 
 /**
- * Theme package admin API (It.67b). Auto-discovered from bootstrap/app.php.
+ * Theme package admin API (It.67b) + Theme Studio read API (It.88a).
+ * Auto-discovered from bootstrap/app.php.
  *
  *  - GET    /api/admin/themes
  *  - POST   /api/admin/themes/deactivate
@@ -12,9 +13,12 @@ declare(strict_types=1);
  *  - POST   /api/admin/themes/import
  *  - POST   /api/admin/themes/{id}/activate
  *  - DELETE /api/admin/themes/{id}
+ *  - GET    /api/admin/themes/{id}/files   (themes:read)
+ *  - GET    /api/admin/themes/{id}/file    (themes:read)
  */
 
 use PaginiumCMS\Http\Controllers\Admin\ThemesController;
+use PaginiumCMS\Http\Controllers\Admin\ThemeStudioController;
 use PaginiumCMS\Http\Middleware\AuthMiddleware;
 use PaginiumCMS\Http\Middleware\PermissionMiddleware;
 use PaginiumCMS\Http\Middleware\TwoFactorMiddleware;
@@ -26,6 +30,15 @@ use Slim\Routing\RouteCollectorProxy;
 return function (App $app): void {
     $container = RouteBootstrap::container($app);
     $authz = $container->get(AuthorizationInterface::class);
+
+    $app->group('/api/admin/themes', function (RouteCollectorProxy $group) use ($container) {
+        $studio = $container->get(ThemeStudioController::class);
+
+        $group->get('/{id}/files', [$studio, 'listFiles']);
+        $group->get('/{id}/file', [$studio, 'getFile']);
+    })->add(new PermissionMiddleware($authz, 'themes:read'))
+        ->add($container->get(TwoFactorMiddleware::class))
+        ->add($container->get(AuthMiddleware::class));
 
     $app->group('/api/admin/themes', function (RouteCollectorProxy $group) use ($container) {
         $controller = $container->get(ThemesController::class);

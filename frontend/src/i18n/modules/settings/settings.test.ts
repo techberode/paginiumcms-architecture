@@ -28,6 +28,8 @@ const RBAC_PERMISSIONS = [
   'webhooks:manage',
   'project-plan:read',
   'project-plan:manage',
+  'themes:read',
+  'themes:edit',
   'profile:edit',
 ] as const;
 

@@ -1,6 +1,6 @@
 # Iteration 88 — Theme Studio (Monaco authoring, policy, preview, thumbnail)
 
-> **Status:** ⏳ planned — **new product slice** (recorded 2026-09-09 from maintainer request)  
+> **Status:** ⏳ in progress — **88a shipped** (2026-09-10); remaining slices 88b–88g  
 > **Priority:** 🟡 **P1** for HTML/CSS studio + preview; 🔵 **P2** JS tab (depends on [It.87 Track C](ITERATION_87.md) `87k`–`87m`)  
 > **Wave:** Themes & layout (extends It.83 runtime, It.67 policy, It.16 Monaco, It.58 preview)  
 > **Depends on:** It.83 activate/PublicShell, It.67 `UntrustedPolicyScanner` + `CodePolicyEngine`, existing `MonacoCodeEditor`  
@@ -94,7 +94,7 @@ This cannot turn an arbitrary commercial HTML template into a pixel-perfect Pagi
 
 | ID | Slice | Priority | Status | Summary |
 |----|-------|----------|--------|---------|
-| **88a** | Theme Studio shell (admin) | 🟡 P1 | ⏳ | Extensions → Themes → **Edit / New**; Monaco tabs; AuthZ `themes:edit` |
+| **88a** | Theme Studio shell (admin) | 🟡 P1 | ✅ | Themes → **Edit / New**; Monaco tabs; AuthZ `themes:read` (mutations later `themes:edit`) |
 | **88b** | Policy + syntax API | 🟡 P1 | ⏳ | `POST /api/admin/themes/validate` — HTML/CSS/JS/JSON; Monaco markers; no persist |
 | **88c** | Normalize from paste/ZIP-of-files | 🟡 P1 | ⏳ | `POST /api/admin/themes/normalize`; report + rewritten buffers |
 | **88d** | Sandboxed preview | 🟡 P1 | ⏳ | iframe; same sanitizer as public; block on policy fail |
@@ -108,7 +108,24 @@ This cannot turn an arbitrary commercial HTML template into a pixel-perfect Pagi
 88b → 88a → 88d → 88c → 88g → 88e → 88f
 ```
 
-JS tab ships **after or with** `87k`–`87m`. Until then, normalize **drops** scripts and the JS tab is read-only “removed by policy”.
+JS tab ships **after or with** `87k`–`87m` (infra already shipped). Until **88b**, the JS tab stays disabled so Monaco is not a weaker write path.
+
+---
+
+## 88a — shipped (2026-09-10)
+
+**Admin UI:** Build → Themes → **Edit** (installed packages present on disk) or **New** (local draft buffers). Route `/themes/:themeId/edit` and `/themes/new`. Monaco tabs: Layout HTML, CSS, Manifest (`theme.json`). JS tab closed with copy pointing at 87k–m + 88b. Save and Preview buttons are visible but disabled (88g / 88d).
+
+**API (read-only):**
+
+- `GET /api/admin/themes/{id}/files` — allow-listed tree (`html`, `css`, `js`, `json`, `md`) under `backend/resources/views/themes/{id}/`
+- `GET /api/admin/themes/{id}/file?path=` — file body; `realpath` + prefix check; max 512 KiB
+
+AuthN + 2FA + `PermissionMiddleware('themes:read')`. Existing import/activate/uninstall stay on `settings:manage`. Catalog permissions `themes:read` / `themes:edit` (ADMIN default). Path traversal rejected; logs use `LogSanitizer` (id/path only).
+
+**Not in 88a:** validate markers, normalize, preview iframe, thumbnail, persist. Local Monaco buffers are tab-only and discarded on leave.
+
+**Reuse:** `MonacoCodeEditor` (same as Translation Editor). **Not reused:** Shortcodes textarea, Code Editor `/code-editor` (Developer Mode).
 
 ---
 

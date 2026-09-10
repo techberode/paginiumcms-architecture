@@ -22,6 +22,7 @@ export const queryKeys = {
   },
   themes: {
     list: ['admin', 'themes', 'list'] as const,
+    files: (themeId: string) => ['admin', 'themes', 'files', themeId] as const,
   },
   adminCounts: (userId: string | undefined) => ['admin', 'counts', userId ?? 'guest'] as const,
 };

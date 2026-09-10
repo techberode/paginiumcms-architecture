@@ -32,6 +32,27 @@ export interface ThemeImportResponse {
   error?: string;
 }
 
+export interface ThemeFileListItem {
+  relativePath: string;
+  language: string;
+  tab: string;
+  size: number;
+  tooLarge: boolean;
+}
+
+export interface ThemeFileListResponse {
+  themeId: string;
+  files: ThemeFileListItem[];
+}
+
+export interface ThemeFileContent {
+  relativePath: string;
+  content: string;
+  language: string;
+  tab: string;
+  size: number;
+}
+
 export const themesApi = {
   list: async (): Promise<ThemeListResponse> => {
     const response = await apiClient.get<ThemeListResponse>('/api/admin/themes');
@@ -87,4 +108,12 @@ export const themesApi = {
   downloadStarterPackage: (id: string): void => {
     window.location.assign(`/api/admin/themes/starter-package/${encodeURIComponent(id)}`);
   },
+
+  listFiles: (id: string) =>
+    apiClient.get<ThemeFileListResponse>(`/api/admin/themes/${encodeURIComponent(id)}/files`),
+
+  getFile: (id: string, path: string) =>
+    apiClient.get<ThemeFileContent>(`/api/admin/themes/${encodeURIComponent(id)}/file`, {
+      params: { path },
+    }),
 };

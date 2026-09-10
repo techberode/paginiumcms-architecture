@@ -88,11 +88,13 @@ A cache or static-publish profile may require invalidation/rebuild/publish accor
 
 ---
 
-## 6. External themes
+## 6. Theme packages and Theme Studio
 
-A theme-template directory and architecture proposal exist, but a universal ZIP theme lifecycle is not marked complete. Do not manually upload an unknown PHP template to production and expect it to appear as a safely installable theme.
+Installed appearance packages live under **Build → Themes** (`/themes`): ZIP import (code policy), activate, rollback, uninstall.
 
-When the theme-package system is implemented, it will remain separate from color scheme selection and will provide a manifest, preview, compatibility checks, activation, and rollback.
+**Theme Studio (It.88a):** **Edit** opens Monaco for layout HTML, CSS, and `theme.json`. **New** starts a local draft. Save to disk and live preview are not enabled yet (later 88 slices). The JavaScript tab stays closed until the validate API (88b). Core JS allow-list / SRI / CSP from It.87 already exist for declared `assets.scripts[]`.
+
+Do not paste an unknown PHP/HTML template into production and expect it to run as-is. Studio normalize (88c) will strip hostile markup; it will not turn a commercial theme into a pixel-perfect Paginium site automatically.
 
 ---
 
