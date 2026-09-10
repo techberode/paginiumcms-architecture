@@ -146,7 +146,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 ### Planning
 
 - **Stabilization freeze closed (2026-09-09)** — no `v2.2.0` stable gate; continue planned iterations. Queue: **It.88 Theme Studio** → 78 → 79 → 72 remainder → 58f/g → 70 GitHub UI → 76/77 → 75 → 48. Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
-- **Spec:** [ITERATION_88.md](docs/en/ITERATION_88.md) — Theme Studio: Monaco HTML/CSS/JS, Code Policy validation, sandboxed preview, thumbnail, normalize-from-paste (not unrestricted HTML import). Next slice: **88c**.
+- **Spec:** [ITERATION_88.md](docs/en/ITERATION_88.md) — Theme Studio: Monaco HTML/CSS/JS, Code Policy validation, sandboxed preview, thumbnail, normalize-from-paste (not unrestricted HTML import). Next slice: **88g**.
 
 ### Added
 
@@ -154,6 +154,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **It.88a — Theme Studio shell** — Build → Themes → Edit / New (`/themes/:id/edit`, `/themes/new`). Monaco tabs for layout HTML, CSS, and `theme.json`. JS tab stays closed until 88b. Read-only API `GET /api/admin/themes/{id}/files` and `GET …/file?path=` (path-safe, 512 KiB cap). RBAC `themes:read` / `themes:edit` (ADMIN default). Save and preview are disabled until 88g / 88d. Existing ZIP import/activate stay on `settings:manage`.
 - **It.88b — Theme Studio validate** — `POST /api/admin/themes/validate` runs the same untrusted Code Policy as ZIP import (HTML/CSS hostile markup + JS tokens + `theme.json` manifest). Monaco markers; 422 on fail; no disk write. JS tab is open for local edit. CSRF + `themes:edit`.
 - **It.88d — Theme Studio sandboxed preview** — `POST /api/admin/themes/preview` validates HTML/CSS/JS buffers, expands `{{> partials}}`, sanitizes with the public HTML sanitizer, and returns a CSP srcdoc (`script-src 'none'`). Admin iframe uses empty `sandbox` (no scripts, no same-origin). Policy fail → 422, empty document, no disk write. Theme JS is never executed in the admin origin.
+- **It.88c — Theme Studio normalize** — `POST /api/admin/themes/normalize` strips hostile markup from pasted HTML/CSS/JS and rewrites semantic `<header>`/`<main>`/`<footer>` into CMS slot partials. PHP/Blade/Twig reject the whole import. Dropped scripts/CDN/`url(javascript:)` are listed in the report. Passing JS is kept with SRI. CSRF + `themes:edit`; no disk write.
 
 ---
 

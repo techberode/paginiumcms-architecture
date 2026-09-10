@@ -12,7 +12,7 @@
       "items": [
         { "id": "88a", "titleKey": "origin.catalog.it88_studio_shell", "phase": "shipped", "weight": 1 },
         { "id": "88b", "titleKey": "origin.catalog.it88_validate", "phase": "shipped", "weight": 1 },
-        { "id": "88c", "titleKey": "origin.catalog.it88_normalize", "phase": "planned", "weight": 1 },
+        { "id": "88c", "titleKey": "origin.catalog.it88_normalize", "phase": "shipped", "weight": 1 },
         { "id": "88d", "titleKey": "origin.catalog.it88_preview", "phase": "shipped", "weight": 1 },
         { "id": "88e", "titleKey": "origin.catalog.it88_thumbnail", "phase": "planned", "weight": 1 },
         { "id": "88f", "titleKey": "origin.catalog.it88_slots", "phase": "planned", "weight": 1 },

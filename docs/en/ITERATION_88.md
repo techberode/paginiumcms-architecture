@@ -1,6 +1,6 @@
 # Iteration 88 — Theme Studio (Monaco authoring, policy, preview, thumbnail)
 
-> **Status:** ⏳ in progress — **88a–88d shipped** (2026-09-10); remaining slices 88c, 88e–88g  
+> **Status:** ⏳ in progress — **88a–88d shipped** (2026-09-10); remaining slices 88e–88g  
 > **Priority:** 🟡 **P1** for HTML/CSS studio + preview; 🔵 **P2** JS tab (depends on [It.87 Track C](ITERATION_87.md) `87k`–`87m`)  
 > **Wave:** Themes & layout (extends It.83 runtime, It.67 policy, It.16 Monaco, It.58 preview)  
 > **Depends on:** It.83 activate/PublicShell, It.67 `UntrustedPolicyScanner` + `CodePolicyEngine`, existing `MonacoCodeEditor`  
@@ -96,7 +96,7 @@ This cannot turn an arbitrary commercial HTML template into a pixel-perfect Pagi
 |----|-------|----------|--------|---------|
 | **88a** | Theme Studio shell (admin) | 🟡 P1 | ✅ | Themes → **Edit / New**; Monaco tabs; AuthZ `themes:read` (mutations later `themes:edit`) |
 | **88b** | Policy + syntax API | 🟡 P1 | ✅ | `POST /api/admin/themes/validate` — HTML/CSS/JS/JSON; Monaco markers; no persist |
-| **88c** | Normalize from paste/ZIP-of-files | 🟡 P1 | ⏳ | `POST /api/admin/themes/normalize`; report + rewritten buffers |
+| **88c** | Normalize from paste/ZIP-of-files | 🟡 P1 | ✅ | `POST /api/admin/themes/normalize`; report + rewritten buffers |
 | **88d** | Sandboxed preview | 🟡 P1 | ✅ | iframe; same sanitizer as public; block on policy fail |
 | **88e** | Thumbnail save | 🟡 P2 | ⏳ | upload required; optional capture from preview |
 | **88f** | Slot/block mapping UI | 🟡 P2 | ⏳ | highlight header/main/footer; optional insert of bundled shortcodes into `main` |
@@ -147,7 +147,17 @@ AuthN + 2FA + `PermissionMiddleware('themes:read')`. Existing import/activate/un
 
 **Admin UI:** Preview opens an iframe with `sandbox=""` (no `allow-scripts`, no `allow-same-origin`) and `referrerPolicy=no-referrer`. Policy failure keeps the iframe empty and surfaces markers in Monaco.
 
-**Not in 88d:** persist (88g), normalize (88c), thumbnail (88e), executing theme JS.
+**Not in 88d:** persist (88g), thumbnail (88e), executing theme JS.
+
+---
+
+## 88c — shipped (2026-09-10)
+
+**API:** `POST /api/admin/themes/normalize` `{ themeId, html?, css?, js?, files? }` — CSRF + `themes:edit`. Never writes disk. Never executes JS.
+
+**Pipeline:** ingest → report → strip/rewrite → package. Full HTML maps `<header>` / `<main>` / `<footer>` / `<aside>` onto slot partials; `<script>`, `<iframe>`, `on*`, `javascript:`, remote `@import`, and CDN stylesheets are dropped and listed. CSS `url(javascript:)` and remote `url(http…)` are stripped. JS that passes the 88b scanner is kept as `assets/theme.js` with SRI in `theme.json`; hostile JS is dropped. PHP / Blade / Twig / foreign `{{` engines **reject the entire import** (422, empty `files`).
+
+**Admin UI:** Normalize rewrites current Monaco buffers and shows the dropped report. Save remains 88g.
 
 ---
 

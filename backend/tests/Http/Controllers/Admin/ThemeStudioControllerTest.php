@@ -262,4 +262,64 @@ final class ThemeStudioControllerTest extends TestCase
         $this->assertNotEmpty($payload['data']['issues']);
         $this->assertSame($onDisk, file_get_contents($path));
     }
+
+    public function testNormalizeRequiresAuth(): void
+    {
+        $response = $this->handleRequest($this->createJsonRequest('POST', '/api/admin/themes/normalize', [
+            'themeId' => 'untitled-theme',
+            'html' => '<html><body><header>H</header><main>M</main><footer>F</footer></body></html>',
+        ]));
+
+        $this->assertSame(401, $response->getStatusCode());
+    }
+
+    public function testUserRoleCannotNormalizeThemeBuffers(): void
+    {
+        $userData = $this->createTestUser();
+        $this->loginTestUser($userData['email'], $userData['password']);
+
+        $response = $this->handleRequest($this->createJsonRequest('POST', '/api/admin/themes/normalize', [
+            'themeId' => 'untitled-theme',
+            'html' => '<html><body><header>H</header><main>M</main><footer>F</footer></body></html>',
+        ]));
+
+        $this->assertSame(403, $response->getStatusCode());
+    }
+
+    public function testNormalizeDropsScriptsAndDoesNotWriteDisk(): void
+    {
+        $this->loginAsSuperAdminUser();
+        $path = dirname(__DIR__, 4) . '/resources/views/themes/clean-journal/templates/default.html';
+        $onDisk = (string) file_get_contents($path);
+
+        $response = $this->handleRequest($this->createJsonRequest('POST', '/api/admin/themes/normalize', [
+            'themeId' => 'untitled-theme',
+            'html' => '<html><body><header>H</header><main><script>alert(1)</script></main><footer>F</footer></body></html>',
+        ]));
+
+        $this->assertSame(200, $response->getStatusCode());
+        $payload = $this->getJsonResponse($response);
+        $this->assertTrue($payload['success']);
+        $this->assertFalse($payload['data']['rejected']);
+        $this->assertArrayHasKey('templates/default.html', $payload['data']['files']);
+        $this->assertStringNotContainsString('<script', strtolower((string) $payload['data']['files']['templates/default.html']));
+        $this->assertNotEmpty($payload['data']['dropped']);
+        $this->assertSame($onDisk, file_get_contents($path));
+    }
+
+    public function testNormalizeRejectsPhpImport(): void
+    {
+        $this->loginAsSuperAdminUser();
+
+        $response = $this->handleRequest($this->createJsonRequest('POST', '/api/admin/themes/normalize', [
+            'themeId' => 'untitled-theme',
+            'html' => '<html><body><?php echo 1; ?></body></html>',
+        ]));
+
+        $this->assertSame(422, $response->getStatusCode());
+        $payload = $this->getJsonResponse($response);
+        $this->assertFalse($payload['success']);
+        $this->assertTrue($payload['data']['rejected']);
+        $this->assertSame([], $payload['data']['files']);
+    }
 }

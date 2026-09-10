@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
-import { ArrowLeft, Palette, Save, Eye } from 'lucide-react';
+import { ArrowLeft, Palette, Save, Eye, Wand2 } from 'lucide-react';
 import { MonacoCodeEditor, type MonacoCodeEditorHandle, type MonacoEditorMarker } from '../CodeEditor/MonacoCodeEditor';
 import { themesApi, type ThemeFileListItem } from '../../api/themes';
 import { useI18n } from '../../context/I18nContext';
@@ -12,6 +12,7 @@ import {
   THEME_STUDIO_PREVIEW_REFERRER,
   THEME_STUDIO_PREVIEW_SANDBOX,
 } from '../../utils/themeStudioPreview';
+import { applyNormalizedThemeFiles } from '../../utils/themeStudioNormalize';
 
 const EDITOR_HEIGHT = 520;
 const VALIDATE_DEBOUNCE_MS = 450;
@@ -47,6 +48,9 @@ export const ThemeStudioShell: React.FC = () => {
   const [previewDocument, setPreviewDocument] = useState('');
   const [previewBlocked, setPreviewBlocked] = useState(false);
   const [previewError, setPreviewError] = useState<string | null>(null);
+  const [normalizeLoading, setNormalizeLoading] = useState(false);
+  const [normalizeError, setNormalizeError] = useState<string | null>(null);
+  const [normalizeDropped, setNormalizeDropped] = useState<string[]>([]);
 
   const loadCatalog = useCallback(async () => {
     if (isDraft) {
@@ -213,6 +217,39 @@ export const ThemeStudioShell: React.FC = () => {
     return () => window.clearTimeout(handle);
   }, [currentPath, content, loadingFile, themeId]);
 
+  const collectAllBuffers = useCallback(async (): Promise<
+    { ok: true; buffers: Record<string, string> } | { ok: false; error: string }
+  > => {
+    const collected: Record<string, string> = { ...buffersRef.current };
+    for (const file of filesRef.current) {
+      if (file.tooLarge) {
+        return { ok: false, error: t('platform.themes.studio.tooLarge') };
+      }
+      if (collected[file.relativePath] !== undefined) {
+        continue;
+      }
+      if (isDraft) {
+        continue;
+      }
+
+      const response = await themesApi.getFile(themeId, file.relativePath);
+      if (!response.success || !response.data) {
+        return { ok: false, error: response.error ?? t('platform.themes.studio.loadFileFailed') };
+      }
+
+      const body = response.data.content;
+      collected[file.relativePath] = body;
+      setBuffers((prev) => ({ ...prev, [file.relativePath]: body }));
+      setOriginals((prev) => (
+        prev[file.relativePath] !== undefined ? prev : { ...prev, [file.relativePath]: body }
+      ));
+    }
+
+    return { ok: true, buffers: collected };
+  }, [isDraft, t, themeId]);
+
+  const studioThemeId = themeId === THEME_STUDIO_DRAFT_ID ? 'untitled-theme' : themeId;
+
   const handlePreview = useCallback(async () => {
     setPreviewOpen(true);
     setPreviewLoading(true);
@@ -221,42 +258,18 @@ export const ThemeStudioShell: React.FC = () => {
     setPreviewBlocked(false);
 
     try {
-      const collected: Record<string, string> = { ...buffersRef.current };
-      for (const file of filesRef.current) {
-        if (file.tooLarge) {
-          setPreviewBlocked(true);
-          setPreviewDocument('');
-          setPreviewError(t('platform.themes.studio.tooLarge'));
-          return;
-        }
-        if (collected[file.relativePath] !== undefined) {
-          continue;
-        }
-        if (isDraft) {
-          continue;
-        }
-
-        const response = await themesApi.getFile(themeId, file.relativePath);
-        if (!response.success || !response.data) {
-          setPreviewBlocked(true);
-          setPreviewDocument('');
-          setPreviewError(response.error ?? t('platform.themes.studio.loadFileFailed'));
-          return;
-        }
-
-        const body = response.data.content;
-        collected[file.relativePath] = body;
-        setBuffers((prev) => ({ ...prev, [file.relativePath]: body }));
-        setOriginals((prev) => (
-          prev[file.relativePath] !== undefined ? prev : { ...prev, [file.relativePath]: body }
-        ));
+      const collected = await collectAllBuffers();
+      if (!collected.ok) {
+        setPreviewBlocked(true);
+        setPreviewDocument('');
+        setPreviewError(collected.error);
+        return;
       }
 
-      const id = themeId === THEME_STUDIO_DRAFT_ID ? 'untitled-theme' : themeId;
       const outcome = await themesApi.preview({
-        themeId: id,
+        themeId: studioThemeId,
         template: previewTemplateForPath(currentPathRef.current),
-        files: collected,
+        files: collected.buffers,
       });
 
       if (!outcome.result || outcome.result.blocked) {
@@ -283,7 +296,64 @@ export const ThemeStudioShell: React.FC = () => {
     } finally {
       setPreviewLoading(false);
     }
-  }, [isDraft, t, themeId]);
+  }, [collectAllBuffers, studioThemeId, t]);
+
+  const handleNormalize = useCallback(async () => {
+    setNormalizeLoading(true);
+    setNormalizeError(null);
+
+    try {
+      const collected = await collectAllBuffers();
+      if (!collected.ok) {
+        setNormalizeError(collected.error);
+        return;
+      }
+
+      const outcome = await themesApi.normalize({
+        themeId: studioThemeId,
+        files: collected.buffers,
+      });
+
+      if (!outcome.result || outcome.result.rejected) {
+        setNormalizeDropped(outcome.result?.dropped ?? []);
+        setNormalizeError(outcome.error ?? t('platform.themes.studio.normalizeRejected'));
+        const first = outcome.result?.markers[0];
+        if (first) {
+          setMarkers([{
+            line: first.line,
+            message: first.message,
+            endLine: undefined,
+          }]);
+          setPolicyValid(false);
+        }
+        return;
+      }
+
+      const applied = applyNormalizedThemeFiles(filesRef.current, collected.buffers, outcome.result.files);
+      setFiles(applied.files);
+      setBuffers(applied.buffers);
+      setNormalizeDropped(outcome.result.dropped);
+      setNormalizeError(null);
+
+      const nextPath = applied.files.find((file) => file.relativePath === 'templates/default.html')
+        ?.relativePath
+        ?? applied.files.find((file) => file.tab === 'html')?.relativePath
+        ?? currentPathRef.current;
+      setCurrentPath(nextPath);
+      setTab('html');
+
+      const forCurrent = outcome.result.markers.filter((marker) => marker.relativePath === nextPath);
+      setMarkers(
+        (forCurrent.length > 0 ? forCurrent : outcome.result.markers).map((marker) => ({
+          line: marker.line,
+          message: marker.message,
+        })),
+      );
+      setPolicyValid(outcome.result.markers.length === 0);
+    } finally {
+      setNormalizeLoading(false);
+    }
+  }, [collectAllBuffers, studioThemeId, t]);
 
   const handleTabChange = (next: ThemeStudioTab) => {
     if (next === 'js' && jsTabDisabled) {
@@ -337,7 +407,17 @@ export const ThemeStudioShell: React.FC = () => {
           <button
             type="button"
             className="btn btn-secondary inline-flex items-center gap-2"
-            disabled={previewLoading || loading}
+            disabled={normalizeLoading || previewLoading || loading}
+            title={t('platform.themes.studio.normalizeHint')}
+            onClick={() => void handleNormalize()}
+          >
+            <Wand2 className="h-4 w-4" />
+            {normalizeLoading ? t('platform.themes.studio.normalizeLoading') : t('platform.themes.studio.normalize')}
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary inline-flex items-center gap-2"
+            disabled={previewLoading || normalizeLoading || loading}
             title={t('platform.themes.studio.previewHint')}
             onClick={() => void handlePreview()}
           >
@@ -360,6 +440,25 @@ export const ThemeStudioShell: React.FC = () => {
       <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-950 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-100">
         {t('platform.themes.studio.readOnlyHint')}
       </div>
+
+      {normalizeError || normalizeDropped.length > 0 ? (
+        <div className={`rounded-lg border p-4 text-sm ${
+          normalizeError
+            ? 'border-amber-200 bg-amber-50 text-amber-950 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100'
+            : 'border-gray-200 bg-gray-50 text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200'
+        }`}>
+          {normalizeError ? <p>{normalizeError}</p> : (
+            <p>{t('platform.themes.studio.normalizeOk', { count: normalizeDropped.length })}</p>
+          )}
+          {normalizeDropped.length > 0 ? (
+            <ul className="mt-2 list-disc pl-5 space-y-1 text-xs">
+              {normalizeDropped.map((item, index) => (
+                <li key={`${index}-${item}`}>{item}</li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
+      ) : null}
 
       {loading ? (
         <AdminListSkeleton rows={6} />
