@@ -259,7 +259,15 @@ The current color-scheme UI must therefore not be presented in user documentatio
 
 The first shipped theme package after the stabilization phase is **`terminal-breach`** (“Terminal Breach”): a cyber-security / hacking aesthetic implemented as a professional dark SOC-terminal shell — monospace typography, green secure accent, red alert accent, CSP-safe CSS effects only.
 
-It will be switchable from **Extensions → Themes** once [ITERATION_83.md](../ITERATION_83.md) lands. Until then, admins use **Settings → Appearance** color schemes only; optional stabilization prep may add a matching **`terminal-breach` color scheme** without activating a full theme package.
+It will be switchable from **Build → Themes**. Admins still use **Settings → Appearance** for color schemes; theme packages are a separate layer.
+
+---
+
+## 15. Theme Studio (It.88)
+
+Read-only authoring shell (88a): `GET /api/admin/themes/{id}/files` and `GET …/file?path=` under the theme directory (`realpath` + prefix). Admin UI: `/themes/:id/edit` with `MonacoCodeEditor`. Persist (88g), validate (88b), and sandboxed preview (88d) are later slices — Monaco must not become a weaker write path than ZIP import.
+
+RBAC: `themes:read` for the file API; `themes:edit` reserved for mutations. ZIP import/activate remain `settings:manage`.
 
 ---
 

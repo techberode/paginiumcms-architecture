@@ -21,6 +21,7 @@ import { NotificationsOverview } from './components/backend/NotificationsOvervie
 import { SchedulerView } from './components/backend/SchedulerView';
 import { ExtensionsManager } from './components/backend/ExtensionsManager';
 import { ThemesManager } from './components/backend/ThemesManager';
+import { ThemeStudioShell } from './components/backend/ThemeStudioShell';
 import { MediaManager } from './components/backend/MediaManager';
 import { NavigationManager } from './components/backend/NavigationManager';
 import { CommentsManager } from './components/backend/CommentsManager';
@@ -219,6 +220,8 @@ function App() {
         <Route path="/blueprints" element={<BlueprintManager />} />
         <Route path="/extensions" element={<ExtensionsManager />} />
         <Route path="/themes" element={<ThemesManager />} />
+        <Route path="/themes/new" element={<ThemeStudioShell />} />
+        <Route path="/themes/:themeId/edit" element={<ThemeStudioShell />} />
         <Route path="/demo" element={<DemoManager />} />
         <Route path="/notifications" element={<NotificationsOverview />} />
         <Route path="/scheduler" element={<SchedulerView />} />

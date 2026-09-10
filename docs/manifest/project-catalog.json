@@ -1,8 +1,25 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-09-09",
+  "updatedAt": "2026-09-10",
   "checklistDoc": "docs/manifest/implementation-checklist.json",
   "iterations": [
+    {
+      "id": "it.88",
+      "titleKey": "origin.catalog.it88",
+      "phase": "partial",
+      "doc": "docs/en/ITERATION_88.md",
+      "priority": "high",
+      "items": [
+        { "id": "88a", "titleKey": "origin.catalog.it88_studio_shell", "phase": "shipped", "weight": 1 },
+        { "id": "88b", "titleKey": "origin.catalog.it88_validate", "phase": "planned", "weight": 1 },
+        { "id": "88c", "titleKey": "origin.catalog.it88_normalize", "phase": "planned", "weight": 1 },
+        { "id": "88d", "titleKey": "origin.catalog.it88_preview", "phase": "planned", "weight": 1 },
+        { "id": "88e", "titleKey": "origin.catalog.it88_thumbnail", "phase": "planned", "weight": 1 },
+        { "id": "88f", "titleKey": "origin.catalog.it88_slots", "phase": "planned", "weight": 1 },
+        { "id": "88g", "titleKey": "origin.catalog.it88_persist", "phase": "planned", "weight": 1 }
+      ],
+      "history": []
+    },
     {
       "id": "it.87",
       "titleKey": "origin.catalog.it87",

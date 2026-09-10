@@ -310,6 +310,8 @@ export const settingsEn: MessageTree = {
       "webhooks:manage": "Manage webhooks",
       "project-plan:read": "View project planner",
       "project-plan:manage": "Manage project planner",
+      "themes:read": "View theme studio",
+      "themes:edit": "Edit themes",
       "profile:edit": "Edit profile"
     }
   },

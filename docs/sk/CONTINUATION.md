@@ -22,6 +22,6 @@ Stabilizačná fáza je **ukončená**. Nie je tester pool ani blízky tag `v2.2
 6. **It.76/77** → **It.75**  
 7. **It.48** static/Jamstack  
 
-Ďalší slice: **88a** — Theme Studio (HTML/CSS); JS tab používa 87k–m.
+Ďalší slice: **88b** — Theme Studio validate API (markery, bez zápisu).
 
-Najnovší tag: **`v2.1.0-beta.68`** (It.87 planner, oprava stránkovania admin zoznamov ISS-169).
+Najnovší tag: **`v2.1.0-beta.68`**. Unreleased v strome: **88a** Theme Studio shell.

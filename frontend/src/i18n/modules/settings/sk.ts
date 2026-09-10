@@ -310,6 +310,8 @@ export const settingsSk: MessageTree = {
       "webhooks:manage": "Správa webhookov",
       "project-plan:read": "Zobrazenie plánovača projektu",
       "project-plan:manage": "Správa plánovača projektu",
+      "themes:read": "Zobrazenie Theme Studio",
+      "themes:edit": "Úprava tém",
       "profile:edit": "Úprava profilu"
     }
   },

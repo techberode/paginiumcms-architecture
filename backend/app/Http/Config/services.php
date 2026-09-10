@@ -188,6 +188,7 @@ use PaginiumCMS\Http\Controllers\Admin\ExtensionsController;
 use PaginiumCMS\Http\Controllers\Admin\ShortcodeController;
 use PaginiumCMS\Http\Controllers\Admin\SnippetController;
 use PaginiumCMS\Http\Controllers\Admin\ThemesController;
+use PaginiumCMS\Http\Controllers\Admin\ThemeStudioController;
 use PaginiumCMS\Http\Controllers\Admin\BlueprintController;
 use PaginiumCMS\Core\Setup\Services\FirstAdminBootstrapService;
 use PaginiumCMS\Core\Setup\Services\SetupPreflightService;
@@ -238,6 +239,7 @@ use PaginiumCMS\Http\Extensions\Services\PluginRegistry;
 use PaginiumCMS\Http\Themes\Services\ThemeCatalogSeeder;
 use PaginiumCMS\Http\Themes\Services\ThemeImporter;
 use PaginiumCMS\Http\Themes\Services\ThemeManager;
+use PaginiumCMS\Http\Themes\Services\ThemeStudioService;
 use PaginiumCMS\Http\Themes\Services\ThemeManifestValidator;
 use PaginiumCMS\Http\Themes\Services\ThemeStarterPackageService;
 use PaginiumCMS\Http\Themes\Services\ThemeRegistry;
@@ -1221,6 +1223,16 @@ return [
         ->constructor(
             get(ThemeManager::class),
             get(ThemeStarterPackageService::class),
+            get(JsonResponder::class)
+        ),
+    ThemeStudioService::class => create(ThemeStudioService::class)
+        ->constructor(
+            dirname(__DIR__, 3) . '/resources/views/themes',
+            get(LoggerInterface::class)
+        ),
+    ThemeStudioController::class => create(ThemeStudioController::class)
+        ->constructor(
+            get(ThemeStudioService::class),
             get(JsonResponder::class)
         ),
     DeveloperMode::class => create(DeveloperMode::class)
