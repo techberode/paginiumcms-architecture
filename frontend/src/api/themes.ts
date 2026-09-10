@@ -78,6 +78,19 @@ export interface ThemePreviewResult {
   issues: ThemePreviewIssue[];
 }
 
+export interface ThemeNormalizeMarker {
+  line: number;
+  message: string;
+  relativePath?: string;
+}
+
+export interface ThemeNormalizeResult {
+  rejected: boolean;
+  files: Record<string, string>;
+  dropped: string[];
+  markers: ThemeNormalizeMarker[];
+}
+
 export const themesApi = {
   list: async (): Promise<ThemeListResponse> => {
     const response = await apiClient.get<ThemeListResponse>('/api/admin/themes');
@@ -168,6 +181,25 @@ export const themesApi = {
     if (response.data && typeof response.data.document === 'string') {
       return {
         ok: response.success && !response.data.blocked,
+        result: response.data,
+        error: response.success ? undefined : (response.error ?? undefined),
+      };
+    }
+
+    return { ok: false, result: null, error: response.error };
+  },
+
+  normalize: async (input: {
+    themeId: string;
+    files?: Record<string, string>;
+    html?: string;
+    css?: string;
+    js?: string;
+  }): Promise<{ ok: boolean; result: ThemeNormalizeResult | null; error?: string }> => {
+    const response = await apiClient.post<ThemeNormalizeResult>('/api/admin/themes/normalize', input);
+    if (response.data && Array.isArray(response.data.dropped) && response.data.files) {
+      return {
+        ok: response.success && !response.data.rejected,
         result: response.data,
         error: response.success ? undefined : (response.error ?? undefined),
       };

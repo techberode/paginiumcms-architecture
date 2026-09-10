@@ -269,7 +269,9 @@ Read-only authoring shell (88a): `GET /api/admin/themes/{id}/files` and `GET …
 
 **Validate (88b):** `POST /api/admin/themes/validate` uses `CodePolicyEngine::validateUntrusted` plus `UntrustedMarkupScanner` (HTML/CSS) so Monaco is not a weaker write path than ZIP import.
 
-**Preview (88d):** `POST /api/admin/themes/preview` reuses those validators on HTML/CSS/JS buffers, sanitizes layout HTML, and returns a CSP srcdoc. The admin UI paints it in an iframe with `sandbox=""` (no `allow-scripts` / no `allow-same-origin`). Persist (88g) and normalize (88c) remain later slices.
+**Preview (88d):** `POST /api/admin/themes/preview` reuses those validators on HTML/CSS/JS buffers, sanitizes layout HTML, and returns a CSP srcdoc. The admin UI paints it in an iframe with `sandbox=""` (no `allow-scripts` / no `allow-same-origin`).
+
+**Normalize (88c):** `POST /api/admin/themes/normalize` strips hostile markup and rewrites pasted HTML into slot partials. PHP/Blade/foreign engines reject the import. Persist (88g) remains a later slice.
 
 RBAC: `themes:read` for the file API; `themes:edit` for validate (and later mutations). ZIP import/activate remain `settings:manage`.
 

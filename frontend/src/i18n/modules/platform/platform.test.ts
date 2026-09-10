@@ -21,5 +21,6 @@ describe('platform i18n module', () => {
     expect(translate('en', 'platform.themes.studio.previewBlocked')).toBe(
       'Preview blocked — fix policy markers in Monaco first.',
     );
+    expect(translate('en', 'platform.themes.studio.normalize')).toBe('Normalize');
   });
 });

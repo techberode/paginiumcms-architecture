@@ -282,7 +282,7 @@ export const platformSk: MessageTree = {
       newTheme: 'Nová téma',
       newTitle: 'Nová téma (koncept)',
       editTitle: 'Theme Studio — :id',
-      subtitle: 'Uprav layout HTML, CSS a theme.json v Monaco. Náhľad je sandbox iframe; uloženie príde v 88g.',
+      subtitle: 'Uprav layout HTML, CSS a theme.json v Monaco. Normalizuj vložený kód, potom náhľad v sandboxe. Uloženie príde v 88g.',
       back: 'Späť na témy',
       save: 'Uložiť',
       saveLater: 'Zápis na disk ešte nie je zapnutý (88g). Lokálne úpravy ostávajú v tejto karte.',
@@ -291,8 +291,13 @@ export const platformSk: MessageTree = {
       previewLoading: 'Pripravujem náhľad…',
       previewBlocked: 'Náhľad zablokovaný — najprv oprav markery politiky v Monaco.',
       previewFrame: 'Sandbox náhľad Theme Studio',
+      normalize: 'Normalizovať',
+      normalizeHint: 'Odstráni hostile markup a prepíše vložené HTML/CSS na CMS sloty. Na disk nezapisuje.',
+      normalizeLoading: 'Normalizujem…',
+      normalizeRejected: 'Normalizácia import odmietla (PHP, Blade alebo cudzí šablónovací engine).',
+      normalizeOk: 'Normalizované. Vypustených :count položiek — pred uložením skontroluj Monaco.',
       readOnlyHint:
-        'Theme Studio overí buffery rovnakou untrusted code policy ako ZIP import. Náhľad beží až po tejto bráne. JS sa kontroluje, ale v admin origíne sa nespúšťa. Uloženie stále čaká na 88g.',
+        'Theme Studio overí buffery rovnakou untrusted code policy ako ZIP import. Normalizácia stripne hostile markup na východiskový balík; náhľad beží až po tejto bráne. JS sa kontroluje, ale v admin origíne sa nespúšťa. Uloženie stále čaká na 88g.',
       tabs: {
         html: 'Layout HTML',
         css: 'CSS',

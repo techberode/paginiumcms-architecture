@@ -7,6 +7,7 @@ namespace PaginiumCMS\Http\Controllers\Admin;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Http\Themes\Exceptions\ThemeStudioException;
+use PaginiumCMS\Http\Themes\Services\ThemeStudioNormalizeService;
 use PaginiumCMS\Http\Themes\Services\ThemeStudioPreviewService;
 use PaginiumCMS\Http\Themes\Services\ThemeStudioService;
 use PaginiumCMS\Http\Themes\Services\ThemeStudioValidator;
@@ -14,7 +15,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
- * Theme Studio file API (It.88a), validate (It.88b), sandboxed preview (It.88d). Persist is 88g.
+ * Theme Studio file API (It.88a), validate (It.88b), preview (It.88d), normalize (It.88c). Persist is 88g.
  */
 final class ThemeStudioController
 {
@@ -22,6 +23,7 @@ final class ThemeStudioController
         private ThemeStudioService $studio,
         private ThemeStudioValidator $validator,
         private ThemeStudioPreviewService $preview,
+        private ThemeStudioNormalizeService $normalizer,
         private JsonResponder $json,
     ) {
     }
@@ -125,6 +127,39 @@ final class ThemeStudioController
             return $this->json->respond($response, [
                 'success' => false,
                 'error' => 'Theme preview blocked by policy',
+                'data' => $result,
+            ], 422);
+        }
+
+        return $this->json->success($response, $result);
+    }
+
+    public function normalize(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $data = RequestJsonBody::decode($request);
+        if ($data === null) {
+            return $this->json->error($response, 'Invalid JSON body', 400);
+        }
+
+        $themeId = isset($data['themeId']) && is_string($data['themeId']) ? $data['themeId'] : '';
+        $html = isset($data['html']) && is_string($data['html']) ? $data['html'] : '';
+        $css = isset($data['css']) && is_string($data['css']) ? $data['css'] : '';
+        $js = isset($data['js']) && is_string($data['js']) ? $data['js'] : '';
+        $files = $data['files'] ?? [];
+        if (!is_array($files)) {
+            return $this->json->error($response, 'files must be an object', 400);
+        }
+
+        try {
+            $result = $this->normalizer->normalize($themeId, $files, $html, $css, $js);
+        } catch (ThemeStudioException $exception) {
+            return $this->json->error($response, $exception->getMessage(), $exception->httpStatus());
+        }
+
+        if ($result['rejected']) {
+            return $this->json->respond($response, [
+                'success' => false,
+                'error' => 'Theme normalize rejected the import',
                 'data' => $result,
             ], 422);
         }

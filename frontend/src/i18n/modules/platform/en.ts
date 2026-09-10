@@ -282,7 +282,7 @@ export const platformEn: MessageTree = {
       newTheme: 'New theme',
       newTitle: 'New theme (draft)',
       editTitle: 'Theme studio — :id',
-      subtitle: 'Edit layout HTML, CSS, and theme.json in Monaco. Preview is a sandboxed iframe; save ships in 88g.',
+      subtitle: 'Edit layout HTML, CSS, and theme.json in Monaco. Normalize pasted markup, then preview in a sandbox. Save ships in 88g.',
       back: 'Back to themes',
       save: 'Save',
       saveLater: 'Persist is not enabled yet (88g). Local edits stay in this browser tab.',
@@ -291,8 +291,13 @@ export const platformEn: MessageTree = {
       previewLoading: 'Building preview…',
       previewBlocked: 'Preview blocked — fix policy markers in Monaco first.',
       previewFrame: 'Theme Studio sandboxed preview',
+      normalize: 'Normalize',
+      normalizeHint: 'Strip hostile markup and rewrite pasted HTML/CSS into CMS slots. Does not save to disk.',
+      normalizeLoading: 'Normalizing…',
+      normalizeRejected: 'Normalize rejected the import (PHP, Blade, or a foreign template engine).',
+      normalizeOk: 'Normalized. Dropped :count item(s) — review Monaco before save.',
       readOnlyHint:
-        'Theme Studio validates buffers with the same untrusted code policy as ZIP import. Preview runs only after that gate. JS is checked but never executed in the admin origin. Save still waits for 88g.',
+        'Theme Studio validates buffers with the same untrusted code policy as ZIP import. Normalize strips hostile markup into a starting package; preview runs only after that gate. JS is checked but never executed in the admin origin. Save still waits for 88g.',
       tabs: {
         html: 'Layout HTML',
         css: 'CSS',
