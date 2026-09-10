@@ -1,7 +1,7 @@
 # PaginiumCMS — development continuation context
 
 > **Purpose:** concise, current handoff for the next development session  
-> **Checkpoint:** September 9, 2026 · `v2.1.0-beta.68`  
+> **Checkpoint:** September 10, 2026 · `v2.1.0-beta.69`  
 > **Active phase:** **Full planned-iteration development** — stabilization freeze lifted
 
 This document replaces the old chronological “log of everything.” Historical detail remains in [`CHANGELOG.md`](../../CHANGELOG.md), [`ISSUES.md`](ISSUES.md), and individual `ITERATION_*.md` files.
@@ -28,8 +28,8 @@ Historical freeze record: [STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) (supe
 
 | Area | Status |
 |------|--------|
-| Latest tag | ✅ `v2.1.0-beta.68` — It.87 planner, ISS-169 list pagination, ISS-168 landing hero |
-| Unreleased (this tree) | **It.88 Theme Studio complete** (88a–88g: shell, validate, preview, normalize, persist, thumbnail, slots) |
+| Latest tag | ✅ `v2.1.0-beta.69` — It.88 Theme Studio, backup scope + incremental snapshots |
+| Unreleased (this tree) | — next: **It.78** unified upload security |
 | It.25 setup wizard | ✅ basic + M1+ (`beta.62`–`beta.66`) |
 | It.83 theme runtime | ✅ shipped `beta.59` (`terminal-breach`, `clean-journal`) |
 | It.84 / It.86 | ✅ shipped |

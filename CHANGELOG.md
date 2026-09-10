@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.69`](#release-2-1-0-beta-69) | 2026-09-10 | It.88 Theme Studio, backup scope + incremental snapshots |
 | [`2.1.0-beta.68`](#release-2-1-0-beta-68) | 2026-09-09 | It.87 Project Site Planner, admin list pagination (ISS-169), landing SEO hero |
 | [`2.1.0-beta.67`](#release-2-1-0-beta-67) | 2026-09-06 | Media optimization, avatar normalization, metadata modal |
 | [`2.1.0-beta.66`](#release-2-1-0-beta-66) | 2026-09-06 | Analytics retention, trends, bots, geo, WAF ban from admin |
@@ -145,13 +146,20 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ### Planning
 
-- **Stabilization freeze closed (2026-09-09)** — no `v2.2.0` stable gate; continue planned iterations. Queue: **It.88 Theme Studio** → 78 → 79 → 72 remainder → 58f/g → 70 GitHub UI → 76/77 → 75 → 48. Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
-- **Spec:** [ITERATION_88.md](docs/en/ITERATION_88.md) — Theme Studio complete (88a–88g). Next: **It.78**.
+- **Stabilization freeze closed (2026-09-09)** — no `v2.2.0` stable gate; continue planned iterations. Queue: **It.78** unified upload security → 79 → 72 remainder → 58f/g → 70 GitHub UI → 76/77 → 75 → 48. Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+
+---
+
+<a id="release-2-1-0-beta-69"></a>
+
+## [2.1.0-beta.69] – 2026-09-10
+
+It.88 Theme Studio (Monaco authoring, policy, preview, persist) and selectable backup scope with incremental snapshots
 
 ### Added
 
 - **Backup scope + incremental snapshots** — Platform → Backups: choose what to include (full content tree, or pages / articles / media / CMS data / navigation / trash / config) for **manual** and **scheduled** backups. Incremental mode stores a SHA-256 file manifest and zips only new/changed files plus a `deletes.json` list (rsync-style deltas, no `rsync`/`exec`). Restore of an incremental applies the full baseline chain first. Guide: [BACKUP_RESTORE.md](docs/en/developer/BACKUP_RESTORE.md).
-- **It.88a — Theme Studio shell** — Build → Themes → Edit / New (`/themes/:id/edit`, `/themes/new`). Monaco tabs for layout HTML, CSS, and `theme.json`. JS tab stays closed until 88b. Read-only API `GET /api/admin/themes/{id}/files` and `GET …/file?path=` (path-safe, 512 KiB cap). RBAC `themes:read` / `themes:edit` (ADMIN default). Save and preview are disabled until 88g / 88d. Existing ZIP import/activate stay on `settings:manage`.
+- **It.88a — Theme Studio shell** — Build → Themes → Edit / New (`/themes/:id/edit`, `/themes/new`). Monaco tabs for layout HTML, CSS, and `theme.json`. Read-only API `GET /api/admin/themes/{id}/files` and `GET …/file?path=` (path-safe, 512 KiB cap). RBAC `themes:read` / `themes:edit` (ADMIN default). Existing ZIP import/activate stay on `settings:manage`.
 - **It.88b — Theme Studio validate** — `POST /api/admin/themes/validate` runs the same untrusted Code Policy as ZIP import (HTML/CSS hostile markup + JS tokens + `theme.json` manifest). Monaco markers; 422 on fail; no disk write. JS tab is open for local edit. CSRF + `themes:edit`.
 - **It.88d — Theme Studio sandboxed preview** — `POST /api/admin/themes/preview` validates HTML/CSS/JS buffers, expands `{{> partials}}`, sanitizes with the public HTML sanitizer, and returns a CSP srcdoc (`script-src 'none'`). Admin iframe uses empty `sandbox` (no scripts, no same-origin). Policy fail → 422, empty document, no disk write. Theme JS is never executed in the admin origin.
 - **It.88c — Theme Studio normalize** — `POST /api/admin/themes/normalize` strips hostile markup from pasted HTML/CSS/JS and rewrites semantic `<header>`/`<main>`/`<footer>` into CMS slot partials. PHP/Blade/Twig reject the whole import. Dropped scripts/CDN/`url(javascript:)` are listed in the report. Passing JS is kept with SRI. CSRF + `themes:edit`; no disk write.

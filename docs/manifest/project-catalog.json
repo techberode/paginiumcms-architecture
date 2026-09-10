@@ -7,6 +7,8 @@
       "id": "it.88",
       "titleKey": "origin.catalog.it88",
       "phase": "shipped",
+      "since": "2.1.0-beta.69",
+      "targetVersion": "2.1.0-beta.69",
       "doc": "docs/en/ITERATION_88.md",
       "priority": "high",
       "items": [
@@ -18,7 +20,9 @@
         { "id": "88f", "titleKey": "origin.catalog.it88_slots", "phase": "shipped", "weight": 1 },
         { "id": "88g", "titleKey": "origin.catalog.it88_persist", "phase": "shipped", "weight": 1 }
       ],
-      "history": []
+      "history": [
+        { "version": "2.1.0-beta.69", "date": "2026-09-10", "summaryKey": "origin.timeline.it88" }
+      ]
     },
     {
       "id": "it.87",

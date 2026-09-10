@@ -2,7 +2,7 @@
 
 > **Finálna konsolidácia:** úplný index je v [NAVIGATION.md](NAVIGATION.md). Stavové tvrdenia rozlišujú implementované, prechodné a plánované schopnosti.
 
-> **Verzia:** 2.1.0-beta.68 · **Posledná aktualizácia:** september 2026  
+> **Verzia:** 2.1.0-beta.69 · **Posledná aktualizácia:** september 2026  
 > **Hybrid Headless Content Engine** — No-SQL súborový zdroj pravdy, API-first administrácia a verejný React web.
 
 ---
@@ -60,7 +60,7 @@ Pravidlá dvojjazyčnej dokumentácie:
 | **Git distribúcia** | 🟡 Čiastočná | GitHub API sync; plný publish workflow → It.70 |
 | **Verejný a admin frontend** | ✅ Dodané | React, TypeScript, Vite 8, SK/EN i18n |
 | **Automatické testy** | ✅ 838+ PHPUnit | PHPStan L8; frontend gate podľa `developer/TESTING.md` |
-| **Najnovšie zdokumentované vydanie** | ✅ `v2.1.0-beta.68` | It.87 planner, stránkovanie admin zoznamov |
+| **Najnovšie zdokumentované vydanie** | ✅ `v2.1.0-beta.69` | It.88 Theme Studio, prírastkové zálohy |
 | **Nasledujúci kód** | ⏸️ Pozastavený | pokračuje po dokončení dvojjazyčnej dokumentácie |
 | **Prvá Hybrid Engine implementácia** | ⏳ It.68 | storage abstraction + schema registry + engine settings |
 

@@ -1,6 +1,6 @@
 # PaginiumCMS — konsolidovaný backlog
 
-> **Snapshot:** `v2.1.0-beta.68` · 9. september 2026  
+> **Snapshot:** `v2.1.0-beta.69` · 10. september 2026  
 > **Fáza:** plný vývoj naplánovaných iterácií — [CONTINUATION](../en/CONTINUATION.md) (stabilizačný freeze **ukončený**)  
 > **Pravidlo:** aktívny backlog obsahuje iba nedodaný alebo presne ohraničený zostávajúci rozsah  
 > **No-SQL:** [architecture/NOSQL_MANDATE.md](architecture/NOSQL_MANDATE.md)

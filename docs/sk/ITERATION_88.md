@@ -1,6 +1,6 @@
 # Iterácia 88 — Theme Studio (Monaco, politika, náhľad, náhľadový obrázok)
 
-> **Stav:** ✅ hotové (10. 9. 2026) — 88a–88g  
+> **Stav:** ✅ hotové v **`v2.1.0-beta.69`** (10. 9. 2026) — 88a–88g  
 > **Kanónická špecifikácia (EN):** [../en/ITERATION_88.md](../en/ITERATION_88.md)
 
 ## Cieľ

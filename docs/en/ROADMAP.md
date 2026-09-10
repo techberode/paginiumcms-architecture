@@ -1,9 +1,9 @@
 # PaginiumCMS — project roadmap
 
 > **Documentation checkpoint:** September 9, 2026  
-> **Latest release:** see [`CHANGELOG.md`](../../CHANGELOG.md) (currently `v2.1.0-beta.68`) · handoff: [CONTINUATION.md](CONTINUATION.md)  
+> **Latest release:** see [`CHANGELOG.md`](../../CHANGELOG.md) (currently `v2.1.0-beta.69`) · handoff: [CONTINUATION.md](CONTINUATION.md)  
 > **Direction:** Hybrid Headless Content Engine · No-SQL file source of truth · API-first  
-> **Code status:** Stabilization freeze **closed** — implement remaining planned iterations (It.88 Theme Studio next)
+> **Code status:** Stabilization freeze **closed** — implement remaining planned iterations (It.78 unified upload security next)
 
 This roadmap is the canonical map of the **future direction**. Release history belongs in [`CHANGELOG.md`](../../CHANGELOG.md), detailed implementation specifications in `ITERATION_*.md`, and incidents in [`ISSUES.md`](ISSUES.md).
 

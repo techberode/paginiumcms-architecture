@@ -181,6 +181,7 @@ export const originEn = {
     it83: 'Theme runtime, terminal-breach, landing seed',
     it86: 'Admin search fix, article print, bulk X-of-Y counter',
     it87: 'Project site planner, UX audit completion (srcset, skeletons)',
+    it88: 'Theme Studio: Monaco, policy, preview, persist, thumbnail, slots',
   },
   readOnlyHint: 'Runtime probes are auto-checked — catalog progress merges probes + manifest SSOT.',
   catalogUpdated: 'Catalog updated',

@@ -1,7 +1,7 @@
 # PaginiumCMS — kontext pre pokračovanie vývoja
 
 > **Účel:** stručný handoff pre ďalšiu reláciu  
-> **Checkpoint:** 9. september 2026 · **`v2.1.0-beta.68`**  
+> **Checkpoint:** 10. september 2026 · **`v2.1.0-beta.69`**  
 > **Aktívna fáza:** **plný vývoj naplánovaných iterácií** — stabilizačný freeze zrušený
 
 Anglický master: [en/CONTINUATION.md](../en/CONTINUATION.md)
@@ -23,4 +23,4 @@ Stabilizačná fáza je **ukončená**. Nie je tester pool ani blízky tag `v2.2
 
 Ďalší slice: **It.78** — jednotná upload security policy.
 
-Najnovší tag: **`v2.1.0-beta.68`**. Unreleased v strome: **It.88 Theme Studio** (88a–88g).
+Najnovší tag: **`v2.1.0-beta.69`**. Ďalší slice: **It.78**.

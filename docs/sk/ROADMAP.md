@@ -1,7 +1,7 @@
 # PaginiumCMS — roadmapa projektu
 
 > **Dokumentačný checkpoint:** 2. august 2026  
-> **Najnovšie vydanie:** `v2.1.0-beta.68` · handoff: [CONTINUATION.md](CONTINUATION.md)  
+> **Najnovšie vydanie:** `v2.1.0-beta.69` · handoff: [CONTINUATION.md](CONTINUATION.md)  
 > **Smerovanie:** Hybrid Headless Content Engine · No-SQL súborový zdroj pravdy · API-first  
 > **Stav kódu:** implementácia It.68+ je pozastavená do dokončenia dvojjazyčnej dokumentácie
 
