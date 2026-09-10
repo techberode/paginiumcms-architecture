@@ -265,9 +265,11 @@ It will be switchable from **Build → Themes**. Admins still use **Settings →
 
 ## 15. Theme Studio (It.88)
 
-Read-only authoring shell (88a): `GET /api/admin/themes/{id}/files` and `GET …/file?path=` under the theme directory (`realpath` + prefix). Admin UI: `/themes/:id/edit` with `MonacoCodeEditor`. Persist (88g), validate (88b), and sandboxed preview (88d) are later slices — Monaco must not become a weaker write path than ZIP import.
+Read-only authoring shell (88a): `GET /api/admin/themes/{id}/files` and `GET …/file?path=` under the theme directory (`realpath` + prefix). Admin UI: `/themes/:id/edit` with `MonacoCodeEditor`.
 
-RBAC: `themes:read` for the file API; `themes:edit` reserved for mutations. ZIP import/activate remain `settings:manage`.
+**Validate (88b):** `POST /api/admin/themes/validate` uses `CodePolicyEngine::validateUntrusted` plus `UntrustedMarkupScanner` (HTML/CSS) so Monaco is not a weaker write path than ZIP import. Persist (88g), normalize (88c), and sandboxed preview (88d) remain later slices.
+
+RBAC: `themes:read` for the file API; `themes:edit` for validate (and later mutations). ZIP import/activate remain `settings:manage`.
 
 ---
 

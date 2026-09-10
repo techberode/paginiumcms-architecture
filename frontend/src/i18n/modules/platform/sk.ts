@@ -289,7 +289,7 @@ export const platformSk: MessageTree = {
       preview: 'Náhľad',
       previewLater: 'Sandbox náhľad príde v 88d.',
       readOnlyHint:
-        'Theme Studio 88a je shell na čítanie a lokálne úpravy. Validácia (88b), náhľad (88d) a zápis (88g) sú ďalšie slice. Záložka JS ostáva zatvorená, kým nebude policy API.',
+        'Theme Studio overí buffery rovnakou untrusted code policy ako ZIP import. Uloženie a náhľad ešte čakajú. JS sa kontroluje, ale na disk sa nezapisuje.',
       tabs: {
         html: 'Layout HTML',
         css: 'CSS',
@@ -298,7 +298,9 @@ export const platformSk: MessageTree = {
         other: 'Dokumentácia',
       },
       jsDisabled:
-        'Záložka JS je v tomto slice zatvorená. Allow-list, SRI a CSP pre skripty témy (87k–m) už v Core sú; úprava JS čaká na 88b validate API, aby Monaco nebola slabšia cesta zápisu.',
+        'V tomto balíku nie sú JavaScript súbory. Skripty témy musia byť deklarované v theme.json (87k–m); zápis 88g je stále vypnutý.',
+      policyOk: 'Politika OK',
+      policyFail: ':count problém(ov) politiky',
       emptyTab: 'V tejto záložke nie sú súbory.',
       emptyEditor: 'Vyber súbor zo zoznamu.',
       wordWrap: 'Zalamovanie riadkov',

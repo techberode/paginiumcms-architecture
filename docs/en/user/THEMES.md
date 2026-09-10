@@ -92,7 +92,7 @@ A cache or static-publish profile may require invalidation/rebuild/publish accor
 
 Installed appearance packages live under **Build → Themes** (`/themes`): ZIP import (code policy), activate, rollback, uninstall.
 
-**Theme Studio (It.88a):** **Edit** opens Monaco for layout HTML, CSS, and `theme.json`. **New** starts a local draft. Save to disk and live preview are not enabled yet (later 88 slices). The JavaScript tab stays closed until the validate API (88b). Core JS allow-list / SRI / CSP from It.87 already exist for declared `assets.scripts[]`.
+**Theme Studio (It.88):** **Edit** opens Monaco for layout HTML, CSS, optional JS, and `theme.json`. Buffers are checked live against the same code policy as ZIP import (`<script>`, event handlers, and `javascript:` URLs fail closed). **New** starts a local draft. Save to disk and live preview are not enabled yet (later 88 slices). Core JS allow-list / SRI / CSP from It.87 already exist for declared `assets.scripts[]`.
 
 Do not paste an unknown PHP/HTML template into production and expect it to run as-is. Studio normalize (88c) will strip hostile markup; it will not turn a commercial theme into a pixel-perfect Paginium site automatically.
 

@@ -15,6 +15,7 @@ declare(strict_types=1);
  *  - DELETE /api/admin/themes/{id}
  *  - GET    /api/admin/themes/{id}/files   (themes:read)
  *  - GET    /api/admin/themes/{id}/file    (themes:read)
+ *  - POST   /api/admin/themes/validate     (themes:edit, no persist)
  */
 
 use PaginiumCMS\Http\Controllers\Admin\ThemesController;
@@ -37,6 +38,14 @@ return function (App $app): void {
         $group->get('/{id}/files', [$studio, 'listFiles']);
         $group->get('/{id}/file', [$studio, 'getFile']);
     })->add(new PermissionMiddleware($authz, 'themes:read'))
+        ->add($container->get(TwoFactorMiddleware::class))
+        ->add($container->get(AuthMiddleware::class));
+
+    $app->group('/api/admin/themes', function (RouteCollectorProxy $group) use ($container) {
+        $studio = $container->get(ThemeStudioController::class);
+
+        $group->post('/validate', [$studio, 'validate']);
+    })->add(new PermissionMiddleware($authz, 'themes:edit'))
         ->add($container->get(TwoFactorMiddleware::class))
         ->add($container->get(AuthMiddleware::class));
 

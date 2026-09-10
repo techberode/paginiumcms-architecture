@@ -15,9 +15,9 @@ use SplFileInfo;
 /**
  * Read-only allow-listed access to theme package files on disk (It.88a).
  *
- * Persist / validate / preview ship in later 88 slices. This service never writes.
- */
-final class ThemeStudioService
+     * Persist / preview ship in later 88 slices. Path checks are also used by validate (88b).
+     */
+    final class ThemeStudioService
 {
     public const MAX_FILE_BYTES = 524288;
 
@@ -127,6 +127,20 @@ final class ThemeStudioService
             'tab' => $this->tabForExtension($extension),
             'size' => $size,
         ];
+    }
+
+    /**
+     * Normalize an in-memory studio path without touching disk (It.88b).
+     */
+    public function assertBufferPath(string $relativePath): string
+    {
+        $path = $this->normalizeRelativePath($relativePath);
+        $extension = $this->extensionOf($path);
+        if (!in_array($extension, self::ALLOWED_EXTENSIONS, true)) {
+            throw new ThemeStudioException('Theme file type is not allowed.', 400);
+        }
+
+        return $path;
     }
 
     public static function isValidThemeId(string $id): bool

@@ -5,18 +5,21 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Controllers\Admin;
 
 use PaginiumCMS\Http\Support\JsonResponder;
+use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Http\Themes\Exceptions\ThemeStudioException;
 use PaginiumCMS\Http\Themes\Services\ThemeStudioService;
+use PaginiumCMS\Http\Themes\Services\ThemeStudioValidator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
- * Read-only Theme Studio file API (It.88a). Persist is 88g.
+ * Theme Studio file API (It.88a) + in-memory validate (It.88b). Persist is 88g.
  */
 final class ThemeStudioController
 {
     public function __construct(
         private ThemeStudioService $studio,
+        private ThemeStudioValidator $validator,
         private JsonResponder $json,
     ) {
     }
@@ -57,5 +60,42 @@ final class ThemeStudioController
         }
 
         return $this->json->success($response, $file);
+    }
+
+    public function validate(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $data = RequestJsonBody::decode($request);
+        if ($data === null) {
+            return $this->json->error($response, 'Invalid JSON body', 400);
+        }
+
+        $themeId = isset($data['themeId']) && is_string($data['themeId']) ? $data['themeId'] : '';
+        $relativePath = '';
+        if (isset($data['relativePath']) && is_string($data['relativePath'])) {
+            $relativePath = $data['relativePath'];
+        } elseif (isset($data['path']) && is_string($data['path'])) {
+            $relativePath = $data['path'];
+        }
+        $content = isset($data['content']) && is_string($data['content']) ? $data['content'] : '';
+
+        if ($relativePath === '') {
+            return $this->json->error($response, 'relativePath is required', 400);
+        }
+
+        try {
+            $result = $this->validator->validate($themeId, $relativePath, $content);
+        } catch (ThemeStudioException $exception) {
+            return $this->json->error($response, $exception->getMessage(), $exception->httpStatus());
+        }
+
+        if ($result['valid']) {
+            return $this->json->success($response, $result);
+        }
+
+        return $this->json->respond($response, [
+            'success' => false,
+            'error' => 'Theme policy validation failed',
+            'data' => $result,
+        ], 422);
     }
 }

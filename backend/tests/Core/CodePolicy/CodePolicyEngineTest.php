@@ -91,6 +91,30 @@ final class CodePolicyEngineTest extends TestCase
         $this->addToAssertionCount(1);
     }
 
+    public function testUntrustedHtmlRejectsScriptTag(): void
+    {
+        $engine = $this->makeEngine();
+        $this->expectException(CodePolicyViolationException::class);
+        $engine->validate('themes/acme/templates/default.html', '<main>{{content}}</main><script>alert(1)</script>');
+    }
+
+    public function testUntrustedCssRejectsJavascriptUrl(): void
+    {
+        $engine = $this->makeEngine();
+        $this->expectException(CodePolicyViolationException::class);
+        $engine->validate('themes/acme/assets/theme.css', 'body{background:url(javascript:alert(1));}');
+    }
+
+    public function testUntrustedHtmlAllowsSlotMarkup(): void
+    {
+        $engine = $this->makeEngine();
+        $engine->validate(
+            'themes/acme/templates/default.html',
+            "<body>\n  {{> header}}\n  <main>{{content}}</main>\n  {{> footer}}\n</body>\n"
+        );
+        $this->addToAssertionCount(1);
+    }
+
     public function testShortcodeDefinitionPolicyAcceptsSafeExpand(): void
     {
         $policy = new ShortcodeDefinitionPolicy();

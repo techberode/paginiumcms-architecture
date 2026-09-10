@@ -60,11 +60,15 @@ final class CodePolicyEngine implements CodePolicyEngineInterface
 
     private const EXTENSION_PATH_MARKER = 'backend/app/Http/Extensions/';
 
+    private UntrustedMarkupScanner $markupScanner;
+
     public function __construct(
         private SettingsRepositoryInterface $settings,
         private SyntaxChecker $syntaxChecker,
-        private SecurityScanner $securityScanner
+        private SecurityScanner $securityScanner,
+        ?UntrustedMarkupScanner $markupScanner = null,
     ) {
+        $this->markupScanner = $markupScanner ?? new UntrustedMarkupScanner();
     }
 
     public function validate(string $path, string $content): void
@@ -123,6 +127,12 @@ final class CodePolicyEngine implements CodePolicyEngineInterface
         if ($extension === 'js' && $untrusted) {
             foreach ($this->scanUntrustedJavascript($content) as $violation) {
                 $errors['security'][] = $violation;
+            }
+        }
+
+        if ($untrusted && in_array($extension, ['html', 'htm', 'css'], true)) {
+            foreach ($this->markupScanner->scan($path, $content) as $marker) {
+                $errors['security'][] = $marker['message'];
             }
         }
 

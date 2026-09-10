@@ -16,6 +16,7 @@ describe('platform i18n module', () => {
     expect(translate('en', 'platform.scheduler.title')).toBe('Scheduler');
     expect(translate('sk', 'platform.commandPalette.types.article')).toBe('Článok');
     expect(translate('en', 'platform.themes.studio.edit')).toBe('Edit');
-    expect(translate('sk', 'platform.themes.studio.jsDisabled')).toContain('88b');
+    expect(translate('en', 'platform.themes.studio.policyOk')).toBe('Policy OK');
+    expect(translate('sk', 'platform.themes.studio.policyOk')).toBe('Politika OK');
   });
 });

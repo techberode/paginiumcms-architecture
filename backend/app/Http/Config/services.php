@@ -44,6 +44,7 @@ use PaginiumCMS\Core\CodePolicy\Contracts\CodePolicyEngineInterface;
 use PaginiumCMS\Core\CodePolicy\Services\CodePolicyEngine;
 use PaginiumCMS\Core\CodePolicy\Services\SecurityScanner;
 use PaginiumCMS\Core\CodePolicy\Services\ShortcodeDefinitionPolicy;
+use PaginiumCMS\Core\CodePolicy\Services\UntrustedMarkupScanner;
 use PaginiumCMS\Core\CodePolicy\Services\UntrustedPolicyScanner;
 use PaginiumCMS\Core\Layout\Services\ShortcodeDefinitionManager;
 use PaginiumCMS\Core\Layout\Services\ShortcodeCatalogSeeder;
@@ -240,6 +241,7 @@ use PaginiumCMS\Http\Themes\Services\ThemeCatalogSeeder;
 use PaginiumCMS\Http\Themes\Services\ThemeImporter;
 use PaginiumCMS\Http\Themes\Services\ThemeManager;
 use PaginiumCMS\Http\Themes\Services\ThemeStudioService;
+use PaginiumCMS\Http\Themes\Services\ThemeStudioValidator;
 use PaginiumCMS\Http\Themes\Services\ThemeManifestValidator;
 use PaginiumCMS\Http\Themes\Services\ThemeStarterPackageService;
 use PaginiumCMS\Http\Themes\Services\ThemeRegistry;
@@ -1230,9 +1232,18 @@ return [
             dirname(__DIR__, 3) . '/resources/views/themes',
             get(LoggerInterface::class)
         ),
+    ThemeStudioValidator::class => create(ThemeStudioValidator::class)
+        ->constructor(
+            get(ThemeStudioService::class),
+            get(CodePolicyEngineInterface::class),
+            get(ThemeManifestValidator::class),
+            get(UntrustedMarkupScanner::class),
+            get(LoggerInterface::class)
+        ),
     ThemeStudioController::class => create(ThemeStudioController::class)
         ->constructor(
             get(ThemeStudioService::class),
+            get(ThemeStudioValidator::class),
             get(JsonResponder::class)
         ),
     DeveloperMode::class => create(DeveloperMode::class)
@@ -1246,11 +1257,13 @@ return [
         ->constructor(get(LoggerInterface::class), get(DeveloperMode::class)),
     SyntaxChecker::class => create(SyntaxChecker::class),
     SecurityScanner::class => create(SecurityScanner::class),
+    UntrustedMarkupScanner::class => create(UntrustedMarkupScanner::class),
     CodePolicyEngineInterface::class => create(CodePolicyEngine::class)
         ->constructor(
             get(SettingsRepositoryInterface::class),
             get(SyntaxChecker::class),
-            get(SecurityScanner::class)
+            get(SecurityScanner::class),
+            get(UntrustedMarkupScanner::class)
         ),
     FileBackup::class => create(FileBackup::class),
     CodeEditorManager::class => create(CodeEditorManager::class)
