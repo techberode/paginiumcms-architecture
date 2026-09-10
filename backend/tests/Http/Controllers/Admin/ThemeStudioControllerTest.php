@@ -4,10 +4,28 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Tests\Http\Controllers\Admin;
 
+use PaginiumCMS\Http\Themes\Services\ThemeRegistry;
 use PaginiumCMS\Tests\Http\TestCase;
+use Slim\Psr7\Factory\ServerRequestFactory;
+use Slim\Psr7\Factory\StreamFactory;
+use Slim\Psr7\UploadedFile;
 
 final class ThemeStudioControllerTest extends TestCase
 {
+    private const PNG_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+
+    /** @var list<string> */
+    private array $createdThemeIds = [];
+
+    protected function tearDown(): void
+    {
+        foreach ($this->createdThemeIds as $id) {
+            $this->removePersistedTheme($id);
+        }
+        $this->createdThemeIds = [];
+        parent::tearDown();
+    }
+
     public function testListFilesRequiresAuth(): void
     {
         $response = $this->handleRequest(
@@ -49,6 +67,7 @@ final class ThemeStudioControllerTest extends TestCase
         );
         $this->assertContains('theme.json', $paths);
         $this->assertContains('templates/default.html', $paths);
+        $this->assertIsBool($payload['data']['hasThumbnail']);
     }
 
     public function testSuperAdminCanReadThemeFile(): void
@@ -321,5 +340,210 @@ final class ThemeStudioControllerTest extends TestCase
         $this->assertFalse($payload['success']);
         $this->assertTrue($payload['data']['rejected']);
         $this->assertSame([], $payload['data']['files']);
+    }
+
+    public function testSaveRequiresAuth(): void
+    {
+        $response = $this->handleRequest($this->createJsonRequest('POST', '/api/admin/themes/save', [
+            'themeId' => 'studio-it88-tmp',
+            'files' => $this->safeStudioFiles('studio-it88-tmp'),
+        ]));
+
+        $this->assertSame(401, $response->getStatusCode());
+    }
+
+    public function testUserRoleCannotSaveTheme(): void
+    {
+        $userData = $this->createTestUser();
+        $this->loginTestUser($userData['email'], $userData['password']);
+
+        $response = $this->handleRequest($this->createJsonRequest('POST', '/api/admin/themes/save', [
+            'themeId' => 'studio-it88-tmp',
+            'files' => $this->safeStudioFiles('studio-it88-tmp'),
+        ]));
+
+        $this->assertSame(403, $response->getStatusCode());
+        $this->assertDirectoryDoesNotExist($this->themePackageDir('studio-it88-tmp'));
+    }
+
+    public function testSaveWritesPackageWithoutActivating(): void
+    {
+        $this->loginAsSuperAdminUser();
+        $id = 'studio-it88-' . substr(bin2hex(random_bytes(4)), 0, 8);
+        $this->createdThemeIds[] = $id;
+
+        $response = $this->handleRequest($this->createJsonRequest('POST', '/api/admin/themes/save', [
+            'themeId' => $id,
+            'files' => $this->safeStudioFiles($id),
+        ]));
+
+        $this->assertSame(200, $response->getStatusCode());
+        $payload = $this->getJsonResponse($response);
+        $this->assertTrue($payload['success']);
+        $this->assertFalse($payload['data']['blocked']);
+        $this->assertSame($id, $payload['data']['themeId']);
+        $this->assertContains('theme.json', $payload['data']['written']);
+        $this->assertFileExists($this->themePackageDir($id) . '/templates/default.html');
+
+        $record = $this->container()->get(ThemeRegistry::class)->get($id);
+        $this->assertNotNull($record);
+        $this->assertFalse($record->enabled);
+    }
+
+    public function testSaveHostileHtmlDoesNotWriteAndLeavesBundledTheme(): void
+    {
+        $this->loginAsSuperAdminUser();
+        $bundled = (string) file_get_contents(
+            $this->themePackageDir('clean-journal') . '/templates/default.html'
+        );
+        $id = 'studio-it88-' . substr(bin2hex(random_bytes(4)), 0, 8);
+
+        $files = $this->safeStudioFiles($id);
+        $files['templates/default.html'] = '<script>alert(1)</script>';
+
+        $response = $this->handleRequest($this->createJsonRequest('POST', '/api/admin/themes/save', [
+            'themeId' => $id,
+            'files' => $files,
+        ]));
+
+        $this->assertSame(422, $response->getStatusCode());
+        $payload = $this->getJsonResponse($response);
+        $this->assertFalse($payload['success']);
+        $this->assertTrue($payload['data']['blocked']);
+        $this->assertSame([], $payload['data']['written']);
+        $this->assertDirectoryDoesNotExist($this->themePackageDir($id));
+        $this->assertSame(
+            $bundled,
+            file_get_contents($this->themePackageDir('clean-journal') . '/templates/default.html')
+        );
+    }
+
+    public function testThumbnailRequiresAuth(): void
+    {
+        $response = $this->handleRequest(
+            $this->createJsonRequest('GET', '/api/admin/themes/clean-journal/thumbnail')
+        );
+
+        $this->assertSame(401, $response->getStatusCode());
+    }
+
+    public function testThumbnailRejectsNonPng(): void
+    {
+        $this->loginAsSuperAdminUser();
+        $id = 'studio-it88-' . substr(bin2hex(random_bytes(4)), 0, 8);
+        $this->createdThemeIds[] = $id;
+
+        $save = $this->handleRequest($this->createJsonRequest('POST', '/api/admin/themes/save', [
+            'themeId' => $id,
+            'files' => $this->safeStudioFiles($id),
+        ]));
+        $this->assertSame(200, $save->getStatusCode());
+
+        $response = $this->handleRequest($this->thumbnailRequest($id, '<svg xmlns="http://www.w3.org/2000/svg"></svg>', 'image/svg+xml'));
+        $this->assertSame(400, $response->getStatusCode());
+    }
+
+    public function testThumbnailUploadAndGet(): void
+    {
+        $this->loginAsSuperAdminUser();
+        $id = 'studio-it88-' . substr(bin2hex(random_bytes(4)), 0, 8);
+        $this->createdThemeIds[] = $id;
+
+        $save = $this->handleRequest($this->createJsonRequest('POST', '/api/admin/themes/save', [
+            'themeId' => $id,
+            'files' => $this->safeStudioFiles($id),
+        ]));
+        $this->assertSame(200, $save->getStatusCode());
+
+        $png = $this->pngBytes();
+        $uploaded = $this->handleRequest($this->thumbnailRequest($id, $png, 'image/png'));
+        $this->assertSame(200, $uploaded->getStatusCode());
+        $payload = $this->getJsonResponse($uploaded);
+        $this->assertTrue($payload['success']);
+        $this->assertTrue($payload['data']['hasThumbnail']);
+
+        $get = $this->handleRequest(
+            $this->createJsonRequest('GET', '/api/admin/themes/' . $id . '/thumbnail')
+        );
+        $this->assertSame(200, $get->getStatusCode());
+        $this->assertSame('image/png', $get->getHeaderLine('Content-Type'));
+        $this->assertSame($png, (string) $get->getBody());
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function safeStudioFiles(string $id): array
+    {
+        $manifest = <<<JSON
+{
+  "manifestVersion": 1,
+  "id": "{$id}",
+  "name": "Studio temp",
+  "version": "0.1.0",
+  "slots": ["header", "main", "footer"],
+  "templates": ["default"]
+}
+JSON;
+
+        return [
+            'theme.json' => $manifest,
+            'templates/default.html' => "<body>\n  {{> header}}\n  <main>{{content}}</main>\n  {{> footer}}\n</body>\n",
+            'partials/header.html' => '<header><a href="/">{{siteName}}</a></header>',
+            'partials/footer.html' => '<footer><p>{{siteName}}</p></footer>',
+            'assets/theme.css' => "body { margin: 0; }\n",
+        ];
+    }
+
+    private function pngBytes(): string
+    {
+        $bytes = base64_decode(self::PNG_BASE64, true);
+        $this->assertNotFalse($bytes);
+
+        return $bytes;
+    }
+
+    private function thumbnailRequest(string $id, string $bytes, string $mime): \Psr\Http\Message\ServerRequestInterface
+    {
+        $stream = (new StreamFactory())->createStream($bytes);
+        $uploadedFile = new UploadedFile($stream, 'preview.png', $mime, strlen($bytes), UPLOAD_ERR_OK);
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/api/admin/themes/' . $id . '/thumbnail')
+            ->withUploadedFiles(['file' => $uploadedFile]);
+
+        if ($this->currentUser !== null) {
+            $request = $request->withAttribute('user', $this->currentUser);
+        }
+
+        return $request;
+    }
+
+    private function themePackageDir(string $id): string
+    {
+        return dirname(__DIR__, 4) . '/resources/views/themes/' . $id;
+    }
+
+    private function removePersistedTheme(string $id): void
+    {
+        $dir = $this->themePackageDir($id);
+        if (is_dir($dir)) {
+            $this->removeDir($dir);
+        }
+        $this->container()->get(ThemeRegistry::class)->remove($id);
+    }
+
+    private function removeDir(string $dir): void
+    {
+        if (!is_dir($dir)) {
+            return;
+        }
+        foreach (scandir($dir) ?: [] as $item) {
+            if ($item === '.' || $item === '..') {
+                continue;
+            }
+            $path = $dir . '/' . $item;
+            is_dir($path) ? $this->removeDir($path) : @unlink($path);
+        }
+        @rmdir($dir);
     }
 }

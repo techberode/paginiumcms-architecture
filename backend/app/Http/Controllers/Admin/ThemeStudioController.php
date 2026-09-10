@@ -8,14 +8,17 @@ use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Http\Themes\Exceptions\ThemeStudioException;
 use PaginiumCMS\Http\Themes\Services\ThemeStudioNormalizeService;
+use PaginiumCMS\Http\Themes\Services\ThemeStudioPersistService;
 use PaginiumCMS\Http\Themes\Services\ThemeStudioPreviewService;
 use PaginiumCMS\Http\Themes\Services\ThemeStudioService;
 use PaginiumCMS\Http\Themes\Services\ThemeStudioValidator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\UploadedFileInterface;
+use Slim\Psr7\Stream;
 
 /**
- * Theme Studio file API (It.88a), validate (It.88b), preview (It.88d), normalize (It.88c). Persist is 88g.
+ * Theme Studio file API (It.88a–g): read, validate, preview, normalize, persist, thumbnail.
  */
 final class ThemeStudioController
 {
@@ -24,6 +27,7 @@ final class ThemeStudioController
         private ThemeStudioValidator $validator,
         private ThemeStudioPreviewService $preview,
         private ThemeStudioNormalizeService $normalizer,
+        private ThemeStudioPersistService $persist,
         private JsonResponder $json,
     ) {
     }
@@ -45,6 +49,7 @@ final class ThemeStudioController
         return $this->json->success($response, [
             'themeId' => $id,
             'files' => $files,
+            'hasThumbnail' => $this->studio->hasPreviewPng($id),
         ]);
     }
 
@@ -165,5 +170,90 @@ final class ThemeStudioController
         }
 
         return $this->json->success($response, $result);
+    }
+
+    public function save(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $data = RequestJsonBody::decode($request);
+        if ($data === null) {
+            return $this->json->error($response, 'Invalid JSON body', 400);
+        }
+
+        $themeId = isset($data['themeId']) && is_string($data['themeId']) ? $data['themeId'] : '';
+        $files = $data['files'] ?? null;
+        if (!is_array($files)) {
+            return $this->json->error($response, 'files is required', 400);
+        }
+
+        try {
+            $result = $this->persist->save($themeId, $files);
+        } catch (ThemeStudioException $exception) {
+            return $this->json->error($response, $exception->getMessage(), $exception->httpStatus());
+        }
+
+        if ($result['blocked']) {
+            return $this->json->respond($response, [
+                'success' => false,
+                'error' => 'Theme save blocked by policy',
+                'data' => $result,
+            ], 422);
+        }
+
+        return $this->json->success($response, $result);
+    }
+
+    /**
+     * @param array<string, string> $args
+     */
+    public function getThumbnail(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        unset($request);
+        $id = (string) ($args['id'] ?? '');
+
+        try {
+            $bytes = $this->studio->readPreviewPng($id);
+        } catch (ThemeStudioException $exception) {
+            return $this->json->error($response, $exception->getMessage(), $exception->httpStatus());
+        }
+
+        $stream = fopen('php://temp', 'wb+');
+        if ($stream === false) {
+            return $this->json->error($response, 'Unable to read theme thumbnail.', 500);
+        }
+        fwrite($stream, $bytes);
+        rewind($stream);
+
+        return $response
+            ->withStatus(200)
+            ->withHeader('Content-Type', 'image/png')
+            ->withHeader('X-Content-Type-Options', 'nosniff')
+            ->withHeader('Content-Disposition', 'inline; filename="preview.png"')
+            ->withHeader('Cache-Control', 'private, no-store')
+            ->withBody(new Stream($stream));
+    }
+
+    /**
+     * @param array<string, string> $args
+     */
+    public function saveThumbnail(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $id = (string) ($args['id'] ?? '');
+        $file = $request->getUploadedFiles()['file'] ?? null;
+        if (!$file instanceof UploadedFileInterface || $file->getError() !== UPLOAD_ERR_OK) {
+            return $this->json->error($response, 'PNG file is required', 400);
+        }
+
+        $bytes = (string) $file->getStream()->getContents();
+
+        try {
+            $this->studio->writePreviewPng($id, $bytes);
+        } catch (ThemeStudioException $exception) {
+            return $this->json->error($response, $exception->getMessage(), $exception->httpStatus());
+        }
+
+        return $this->json->success($response, [
+            'themeId' => $id,
+            'hasThumbnail' => true,
+        ]);
     }
 }

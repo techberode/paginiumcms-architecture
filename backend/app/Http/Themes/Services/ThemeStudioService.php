@@ -13,13 +13,17 @@ use RecursiveIteratorIterator;
 use SplFileInfo;
 
 /**
- * Read-only allow-listed access to theme package files on disk (It.88a).
+ * Allow-listed theme package file access (It.88a) plus persist helpers (It.88g/e).
  *
-     * Persist / preview ship in later 88 slices. Path checks are also used by validate (88b).
-     */
-    final class ThemeStudioService
+ * Path checks are shared with validate (88b). Text writes never leave the theme id directory.
+ */
+final class ThemeStudioService
 {
     public const MAX_FILE_BYTES = 524288;
+
+    public const MAX_THUMBNAIL_BYTES = 524288;
+
+    public const CORE_THEME_ID = 'paginium-core';
 
     /** @var list<string> */
     private const ALLOWED_EXTENSIONS = ['html', 'css', 'js', 'json', 'md'];
@@ -143,9 +147,121 @@ use SplFileInfo;
         return $path;
     }
 
+    public function hasPreviewPng(string $themeId): bool
+    {
+        return $this->previewPngPath($themeId) !== null;
+    }
+
+    public function readPreviewPng(string $themeId): string
+    {
+        $path = $this->previewPngPath($themeId);
+        if ($path === null) {
+            throw new ThemeStudioException('Theme thumbnail not found.', 404);
+        }
+
+        $bytes = file_get_contents($path);
+        if ($bytes === false) {
+            throw new ThemeStudioException('Unable to read theme thumbnail.', 500);
+        }
+
+        return $bytes;
+    }
+
+    public function writePreviewPng(string $themeId, string $bytes): void
+    {
+        $this->assertSafeThemeId($themeId);
+        $this->assertPngThumbnail($bytes);
+        $themeReal = $this->resolveThemeDirectory($themeId);
+        $target = $themeReal . DIRECTORY_SEPARATOR . 'preview.png';
+        if (@file_put_contents($target, $bytes, LOCK_EX) === false) {
+            throw new ThemeStudioException('Unable to write theme thumbnail.', 500);
+        }
+
+        $real = realpath($target);
+        if ($real === false || !$this->isPathInside($themeReal, $real)) {
+            @unlink($target);
+            $this->logRejected($themeId, 'preview.png', 'path escape');
+            throw new ThemeStudioException('Invalid theme file path.', 400);
+        }
+    }
+
+    /**
+     * @param array<string, string> $files
+     * @return list<string>
+     */
+    public function writeTextFiles(string $themeId, array $files): array
+    {
+        $this->assertSafeThemeId($themeId);
+        $themeReal = $this->ensureThemeDirectory($themeId);
+        $written = [];
+
+        foreach ($files as $relativePath => $content) {
+            $relative = $this->assertBufferPath($relativePath);
+            if (strlen($content) > self::MAX_FILE_BYTES) {
+                throw new ThemeStudioException('Theme file is too large to open in the studio.', 413);
+            }
+
+            $target = $themeReal . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relative);
+            $parent = dirname($target);
+            $this->ensureDirectory($parent);
+            $parentReal = realpath($parent);
+            if ($parentReal === false || !$this->isPathInside($themeReal, $parentReal)) {
+                $this->logRejected($themeId, $relative, 'path escape');
+                throw new ThemeStudioException('Invalid theme file path.', 400);
+            }
+
+            if (@file_put_contents($target, $content, LOCK_EX) === false) {
+                throw new ThemeStudioException('Unable to write theme file.', 500);
+            }
+
+            $fileReal = realpath($target);
+            if ($fileReal === false || !$this->isPathInside($themeReal, $fileReal)) {
+                @unlink($target);
+                $this->logRejected($themeId, $relative, 'path escape');
+                throw new ThemeStudioException('Invalid theme file path.', 400);
+            }
+
+            $written[] = $relative;
+        }
+
+        sort($written, SORT_STRING);
+
+        return $written;
+    }
+
+    public function ensureThemeDirectory(string $themeId): string
+    {
+        $this->assertSafeThemeId($themeId);
+        $rootReal = realpath($this->themesRoot);
+        if ($rootReal === false || !is_dir($rootReal)) {
+            throw new ThemeStudioException('Theme storage is not available.', 500);
+        }
+
+        $candidate = $this->themesRoot . DIRECTORY_SEPARATOR . $themeId;
+        if (!is_dir($candidate) && !@mkdir($candidate, 0775, true) && !is_dir($candidate)) {
+            throw new ThemeStudioException('Unable to create theme directory.', 500);
+        }
+
+        $real = realpath($candidate);
+        if ($real === false || !$this->isPathInside($rootReal, $real)) {
+            $this->logRejected($themeId, '', 'theme directory escape');
+            throw new ThemeStudioException('Invalid theme id.', 400);
+        }
+
+        return $real;
+    }
+
     public static function isValidThemeId(string $id): bool
     {
         return preg_match('/^[a-z][a-z0-9-]{0,63}$/', $id) === 1;
+    }
+
+    public function assertSafeThemeId(string $themeId): void
+    {
+        $id = trim($themeId);
+        if ($id === '' || !self::isValidThemeId($id) || $id === 'new' || $id === self::CORE_THEME_ID) {
+            throw new ThemeStudioException('Invalid theme id.', 400);
+        }
     }
 
     private function resolveThemeDirectory(string $themeId): string
@@ -168,6 +284,56 @@ use SplFileInfo;
         }
 
         return $real;
+    }
+
+    private function previewPngPath(string $themeId): ?string
+    {
+        try {
+            $themeReal = $this->resolveThemeDirectory($themeId);
+        } catch (ThemeStudioException) {
+            return null;
+        }
+
+        $candidate = $themeReal . DIRECTORY_SEPARATOR . 'preview.png';
+        $real = realpath($candidate);
+        if ($real === false || !is_file($real) || !$this->isPathInside($themeReal, $real)) {
+            return null;
+        }
+
+        return $real;
+    }
+
+    private function assertPngThumbnail(string $bytes): void
+    {
+        if ($bytes === '' || strlen($bytes) > self::MAX_THUMBNAIL_BYTES) {
+            throw new ThemeStudioException('Theme thumbnail is too large.', 413);
+        }
+
+        if (!str_starts_with($bytes, "\x89PNG\r\n\x1a\n")) {
+            throw new ThemeStudioException('Theme thumbnail must be a PNG image.', 400);
+        }
+
+        $info = @getimagesizefromstring($bytes);
+        if ($info === false || $info[2] !== IMAGETYPE_PNG) {
+            throw new ThemeStudioException('Theme thumbnail must be a PNG image.', 400);
+        }
+
+        $width = $info[0];
+        $height = $info[1];
+        if ($width < 1 || $height < 1 || $width > 2048 || $height > 2048) {
+            throw new ThemeStudioException('Theme thumbnail dimensions are not allowed.', 400);
+        }
+    }
+
+    private function ensureDirectory(string $path): void
+    {
+        if (is_dir($path)) {
+            return;
+        }
+
+        if (!@mkdir($path, 0775, true) && !is_dir($path)) {
+            throw new ThemeStudioException('Unable to create theme directory.', 500);
+        }
     }
 
     private function normalizeRelativePath(string $relativePath): string

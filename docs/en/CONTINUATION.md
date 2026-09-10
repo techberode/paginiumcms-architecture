@@ -29,7 +29,7 @@ Historical freeze record: [STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) (supe
 | Area | Status |
 |------|--------|
 | Latest tag | ✅ `v2.1.0-beta.68` — It.87 planner, ISS-169 list pagination, ISS-168 landing hero |
-| Unreleased (this tree) | **88a–88d** Theme Studio (shell, validate, preview, normalize; save later) |
+| Unreleased (this tree) | **It.88 Theme Studio complete** (88a–88g: shell, validate, preview, normalize, persist, thumbnail, slots) |
 | It.25 setup wizard | ✅ basic + M1+ (`beta.62`–`beta.66`) |
 | It.83 theme runtime | ✅ shipped `beta.59` (`terminal-breach`, `clean-journal`) |
 | It.84 / It.86 | ✅ shipped |
@@ -43,19 +43,18 @@ Do **not** invent new iteration numbers. Finish specs that already exist.
 
 | Order | Item | Why this order |
 |------:|------|----------------|
-| 1 | **It.88** Theme Studio | Monaco + policy + preview + thumbnail + normalize — [ITERATION_88.md](ITERATION_88.md); JS tab uses 87k–m |
-| 2 | **It.78** Unified upload security | Gate before video / new MIME |
-| 3 | **It.79** DAM video | Depends on It.78 |
-| 4 | **It.72** S3 / remote media remainder | Local driver already shipped |
-| 5 | **It.58f / 58g** layout builder remainder | Page blocks (not theme studio) |
-| 6 | **It.70** GitHub API publisher UI | Local Git already shipped |
-| 7 | **It.76 / 77** translation providers | After It.73 (shipped) |
-| 8 | **It.75** CMS-aware AI agent | Last: proposals only, human apply |
-| 9 | **It.48** static / Jamstack output | Align with It.70; do not fork publish pipelines |
+| 1 | **It.78** Unified upload security | Gate before video / new MIME |
+| 2 | **It.79** DAM video | Depends on It.78 |
+| 3 | **It.72** S3 / remote media remainder | Local driver already shipped |
+| 4 | **It.58f / 58g** layout builder remainder | Page blocks (not theme studio) |
+| 5 | **It.70** GitHub API publisher UI | Local Git already shipped |
+| 6 | **It.76 / 77** translation providers | After It.73 (shipped) |
+| 7 | **It.75** CMS-aware AI agent | Last: proposals only, human apply |
+| 8 | **It.48** static / Jamstack output | Align with It.70; do not fork publish pipelines |
 
 **Optional / later:** It.82d Origin host metrics.
 
-**Next slice to open:** **88g** — persist theme tree + registry; reuse activate API.
+**Next slice to open:** **It.78** — unified upload security policy.
 
 ---
 
@@ -87,9 +86,9 @@ curl -s http://127.0.0.1:8080/api/setup/preflight | jq .
 
 | Doc | Content |
 |-----|---------|
-| [ITERATION_88.md](ITERATION_88.md) | **Next** — Theme Studio |
+| [ITERATION_78.md](ITERATION_78.md) / [ITERATION_79.md](ITERATION_79.md) | **Next** — upload policy → video |
+| [ITERATION_88.md](ITERATION_88.md) | Theme Studio (shipped) |
 | [ITERATION_87.md](ITERATION_87.md) | Project planner + UX remainder (shipped) |
-| [ITERATION_78.md](ITERATION_78.md) / [ITERATION_79.md](ITERATION_79.md) | Upload policy → video |
 | [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) | Full remaining scope |
 | [STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) | Closed historical freeze |
 | [ISSUES.md](ISSUES.md#iss-169) | Admin list pagination (ISS-169); landing SEO hero (ISS-168) |

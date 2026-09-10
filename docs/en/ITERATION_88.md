@@ -1,6 +1,6 @@
 # Iteration 88 — Theme Studio (Monaco authoring, policy, preview, thumbnail)
 
-> **Status:** ⏳ in progress — **88a–88d shipped** (2026-09-10); remaining slices 88e–88g  
+> **Status:** ✅ shipped (2026-09-10) — 88a–88g complete  
 > **Priority:** 🟡 **P1** for HTML/CSS studio + preview; 🔵 **P2** JS tab (depends on [It.87 Track C](ITERATION_87.md) `87k`–`87m`)  
 > **Wave:** Themes & layout (extends It.83 runtime, It.67 policy, It.16 Monaco, It.58 preview)  
 > **Depends on:** It.83 activate/PublicShell, It.67 `UntrustedPolicyScanner` + `CodePolicyEngine`, existing `MonacoCodeEditor`  
@@ -98,9 +98,9 @@ This cannot turn an arbitrary commercial HTML template into a pixel-perfect Pagi
 | **88b** | Policy + syntax API | 🟡 P1 | ✅ | `POST /api/admin/themes/validate` — HTML/CSS/JS/JSON; Monaco markers; no persist |
 | **88c** | Normalize from paste/ZIP-of-files | 🟡 P1 | ✅ | `POST /api/admin/themes/normalize`; report + rewritten buffers |
 | **88d** | Sandboxed preview | 🟡 P1 | ✅ | iframe; same sanitizer as public; block on policy fail |
-| **88e** | Thumbnail save | 🟡 P2 | ⏳ | upload required; optional capture from preview |
-| **88f** | Slot/block mapping UI | 🟡 P2 | ⏳ | highlight header/main/footer; optional insert of bundled shortcodes into `main` |
-| **88g** | Persist + activate | 🟡 P1 | ⏳ | write theme tree + registry; reuse activate API; Developer Mode if writing frontend theme CSS |
+| **88e** | Thumbnail save | 🟡 P2 | ✅ | PNG upload to `preview.png`; capture from sandbox blocked |
+| **88f** | Slot/block mapping UI | 🟡 P2 | ✅ | header/main/footer/sidebar panel; insert bundled shortcode into main |
+| **88g** | Persist + activate | 🟡 P1 | ✅ | write theme tree + registry; reuse activate API; Developer Mode if writing frontend theme CSS |
 
 **Recommended order:**
 
@@ -108,13 +108,13 @@ This cannot turn an arbitrary commercial HTML template into a pixel-perfect Pagi
 88b → 88a → 88d → 88c → 88g → 88e → 88f
 ```
 
-JS tab ships **after or with** `87k`–`87m` (infra already shipped). **88b** opens the JS tab for local edit + validate; persist is still 88g.
+JS tab ships **after or with** `87k`–`87m` (infra already shipped). **88b** opens the JS tab for local edit + validate; persist is 88g.
 
 ---
 
 ## 88a — shipped (2026-09-10)
 
-**Admin UI:** Build → Themes → **Edit** (installed packages present on disk) or **New** (local draft buffers). Route `/themes/:themeId/edit` and `/themes/new`. Monaco tabs: Layout HTML, CSS, Manifest (`theme.json`). JS tab closed with copy pointing at 87k–m + 88b. Save is visible but disabled (88g). Preview ships in 88d.
+**Admin UI:** Build → Themes → **Edit** (installed packages present on disk) or **New** (local draft buffers). Route `/themes/:themeId/edit` and `/themes/new`. Monaco tabs: Layout HTML, CSS, Manifest (`theme.json`). JS tab closed with copy pointing at 87k–m + 88b. Save ships in 88g. Preview ships in 88d.
 
 **API (read-only):**
 
@@ -135,7 +135,7 @@ AuthN + 2FA + `PermissionMiddleware('themes:read')`. Existing import/activate/un
 
 **Policy:** same `CodePolicyEngine::validateUntrusted` as ZIP import. HTML/CSS hostile markup (`<script>`, `on*`, `javascript:`, remote `@import`, `url(javascript:)`) lives in `UntrustedMarkupScanner` so Monaco is not a weaker path. `theme.json` also runs `ThemeManifestValidator`. Logs only sanitized id/path/marker count.
 
-**Admin UI:** debounce (~450 ms) paints Monaco markers; JS tab is open for local edit + validate. Save remains disabled (88g). Preview is 88d.
+**Admin UI:** debounce (~450 ms) paints Monaco markers; JS tab is open for local edit + validate. Preview is 88d. Persist is 88g.
 
 ---
 
@@ -157,7 +157,31 @@ AuthN + 2FA + `PermissionMiddleware('themes:read')`. Existing import/activate/un
 
 **Pipeline:** ingest → report → strip/rewrite → package. Full HTML maps `<header>` / `<main>` / `<footer>` / `<aside>` onto slot partials; `<script>`, `<iframe>`, `on*`, `javascript:`, remote `@import`, and CDN stylesheets are dropped and listed. CSS `url(javascript:)` and remote `url(http…)` are stripped. JS that passes the 88b scanner is kept as `assets/theme.js` with SRI in `theme.json`; hostile JS is dropped. PHP / Blade / Twig / foreign `{{` engines **reject the entire import** (422, empty `files`).
 
-**Admin UI:** Normalize rewrites current Monaco buffers and shows the dropped report. Save remains 88g.
+**Admin UI:** Normalize rewrites current Monaco buffers and shows the dropped report. Persist is 88g.
+
+---
+
+## 88g — shipped (2026-09-10)
+
+**API:** `POST /api/admin/themes/save` `{ themeId, files: { relativePath: content } }` — CSRF + `themes:edit`. Validates every HTML/CSS/JS/`theme.json` buffer with the 88b policy **before** any write. Fail-closed: 422 `{ blocked: true, written: [], issues }` and no files on disk. Manifest `id` must equal the folder id. Undeclared `.js` (not in `assets.scripts[]`) is 400. Core `paginium-core` cannot be overwritten.
+
+On success: write allow-listed text files under `backend/resources/views/themes/{id}/`, seal SRI if scripts are declared, upsert `data/themes.json` (keeps existing `enabled`). Optional frontend CSS copy only when Developer Mode is unlocked **and** `frontend/src/themes/{id}/` already exists — never writes `PublicShell.tsx`. Activate is **not** inside save; the studio checkbox calls existing `POST /api/admin/themes/{id}/activate` (`settings:manage`).
+
+**Admin UI:** Save collects Monaco buffers. A new draft (`/themes/new`) uses `theme.json` `id`, then navigates to `/themes/{id}/edit`.
+
+---
+
+## 88e — shipped (2026-09-10)
+
+**API:** `POST /api/admin/themes/{id}/thumbnail` (multipart `file`, `themes:edit`) writes `preview.png` after PNG magic + `getimagesize` + size/dimension caps (512 KiB, 2048×2048). `GET …/{id}/thumbnail` (`themes:read`) serves `image/png` with `nosniff` + `inline`. SVG/JPEG/HTML rejected.
+
+**Admin UI:** upload PNG. Capture from the preview iframe is **disabled** — empty `sandbox` without `allow-same-origin` cannot be read (`html2canvas` would fail).
+
+---
+
+## 88f — shipped (2026-09-10)
+
+Studio aside lists header / main / footer / sidebar as found or missing (`{{> header}}`, `{{content}}`, `{{> footer}}`, `{{> sidebar}}` or semantic tags). Click opens the matching partial or `templates/default.html`. Insert places a bundled shortcode sample before `{{content}}`.
 
 ---
 

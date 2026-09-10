@@ -146,7 +146,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 ### Planning
 
 - **Stabilization freeze closed (2026-09-09)** — no `v2.2.0` stable gate; continue planned iterations. Queue: **It.88 Theme Studio** → 78 → 79 → 72 remainder → 58f/g → 70 GitHub UI → 76/77 → 75 → 48. Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
-- **Spec:** [ITERATION_88.md](docs/en/ITERATION_88.md) — Theme Studio: Monaco HTML/CSS/JS, Code Policy validation, sandboxed preview, thumbnail, normalize-from-paste (not unrestricted HTML import). Next slice: **88g**.
+- **Spec:** [ITERATION_88.md](docs/en/ITERATION_88.md) — Theme Studio complete (88a–88g). Next: **It.78**.
 
 ### Added
 
@@ -155,6 +155,9 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **It.88b — Theme Studio validate** — `POST /api/admin/themes/validate` runs the same untrusted Code Policy as ZIP import (HTML/CSS hostile markup + JS tokens + `theme.json` manifest). Monaco markers; 422 on fail; no disk write. JS tab is open for local edit. CSRF + `themes:edit`.
 - **It.88d — Theme Studio sandboxed preview** — `POST /api/admin/themes/preview` validates HTML/CSS/JS buffers, expands `{{> partials}}`, sanitizes with the public HTML sanitizer, and returns a CSP srcdoc (`script-src 'none'`). Admin iframe uses empty `sandbox` (no scripts, no same-origin). Policy fail → 422, empty document, no disk write. Theme JS is never executed in the admin origin.
 - **It.88c — Theme Studio normalize** — `POST /api/admin/themes/normalize` strips hostile markup from pasted HTML/CSS/JS and rewrites semantic `<header>`/`<main>`/`<footer>` into CMS slot partials. PHP/Blade/Twig reject the whole import. Dropped scripts/CDN/`url(javascript:)` are listed in the report. Passing JS is kept with SRI. CSRF + `themes:edit`; no disk write.
+- **It.88g — Theme Studio persist** — `POST /api/admin/themes/save` writes allow-listed HTML/CSS/JS/JSON under the theme package after the same untrusted policy as ZIP import. Fail-closed 422 writes nothing. Registry upsert keeps `enabled`. Optional activate is the existing Themes API (`settings:manage`). Developer Mode may copy CSS into an existing `frontend/src/themes/{id}/` folder; never writes `PublicShell.tsx`.
+- **It.88e — Theme thumbnail** — `POST /api/admin/themes/{id}/thumbnail` accepts PNG only (`preview.png`); `GET` serves `image/png` with `nosniff`. Capture from the sandboxed preview iframe is disabled (no `allow-same-origin`).
+- **It.88f — Slot mapping** — Studio aside shows header/main/footer/sidebar found vs missing and can insert a bundled shortcode sample before `{{content}}`.
 
 ---
 

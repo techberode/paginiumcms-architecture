@@ -18,6 +18,9 @@ declare(strict_types=1);
  *  - POST   /api/admin/themes/validate     (themes:edit, no persist)
  *  - POST   /api/admin/themes/preview      (themes:edit, no persist)
  *  - POST   /api/admin/themes/normalize    (themes:edit, no persist)
+ *  - POST   /api/admin/themes/save         (themes:edit, persist)
+ *  - GET    /api/admin/themes/{id}/thumbnail
+ *  - POST   /api/admin/themes/{id}/thumbnail
  */
 
 use PaginiumCMS\Http\Controllers\Admin\ThemesController;
@@ -39,6 +42,7 @@ return function (App $app): void {
 
         $group->get('/{id}/files', [$studio, 'listFiles']);
         $group->get('/{id}/file', [$studio, 'getFile']);
+        $group->get('/{id}/thumbnail', [$studio, 'getThumbnail']);
     })->add(new PermissionMiddleware($authz, 'themes:read'))
         ->add($container->get(TwoFactorMiddleware::class))
         ->add($container->get(AuthMiddleware::class));
@@ -49,6 +53,8 @@ return function (App $app): void {
         $group->post('/validate', [$studio, 'validate']);
         $group->post('/preview', [$studio, 'preview']);
         $group->post('/normalize', [$studio, 'normalize']);
+        $group->post('/save', [$studio, 'save']);
+        $group->post('/{id}/thumbnail', [$studio, 'saveThumbnail']);
     })->add(new PermissionMiddleware($authz, 'themes:edit'))
         ->add($container->get(TwoFactorMiddleware::class))
         ->add($container->get(AuthMiddleware::class));
