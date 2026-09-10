@@ -267,7 +267,9 @@ It will be switchable from **Build → Themes**. Admins still use **Settings →
 
 Read-only authoring shell (88a): `GET /api/admin/themes/{id}/files` and `GET …/file?path=` under the theme directory (`realpath` + prefix). Admin UI: `/themes/:id/edit` with `MonacoCodeEditor`.
 
-**Validate (88b):** `POST /api/admin/themes/validate` uses `CodePolicyEngine::validateUntrusted` plus `UntrustedMarkupScanner` (HTML/CSS) so Monaco is not a weaker write path than ZIP import. Persist (88g), normalize (88c), and sandboxed preview (88d) remain later slices.
+**Validate (88b):** `POST /api/admin/themes/validate` uses `CodePolicyEngine::validateUntrusted` plus `UntrustedMarkupScanner` (HTML/CSS) so Monaco is not a weaker write path than ZIP import.
+
+**Preview (88d):** `POST /api/admin/themes/preview` reuses those validators on HTML/CSS/JS buffers, sanitizes layout HTML, and returns a CSP srcdoc. The admin UI paints it in an iframe with `sandbox=""` (no `allow-scripts` / no `allow-same-origin`). Persist (88g) and normalize (88c) remain later slices.
 
 RBAC: `themes:read` for the file API; `themes:edit` for validate (and later mutations). ZIP import/activate remain `settings:manage`.
 

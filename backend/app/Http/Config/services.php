@@ -240,6 +240,7 @@ use PaginiumCMS\Http\Extensions\Services\PluginRegistry;
 use PaginiumCMS\Http\Themes\Services\ThemeCatalogSeeder;
 use PaginiumCMS\Http\Themes\Services\ThemeImporter;
 use PaginiumCMS\Http\Themes\Services\ThemeManager;
+use PaginiumCMS\Http\Themes\Services\ThemeStudioPreviewService;
 use PaginiumCMS\Http\Themes\Services\ThemeStudioService;
 use PaginiumCMS\Http\Themes\Services\ThemeStudioValidator;
 use PaginiumCMS\Http\Themes\Services\ThemeManifestValidator;
@@ -1240,10 +1241,18 @@ return [
             get(UntrustedMarkupScanner::class),
             get(LoggerInterface::class)
         ),
+    ThemeStudioPreviewService::class => create(ThemeStudioPreviewService::class)
+        ->constructor(
+            get(ThemeStudioService::class),
+            get(ThemeStudioValidator::class),
+            get(ContentSecuritySanitizer::class),
+            get(LoggerInterface::class)
+        ),
     ThemeStudioController::class => create(ThemeStudioController::class)
         ->constructor(
             get(ThemeStudioService::class),
             get(ThemeStudioValidator::class),
+            get(ThemeStudioPreviewService::class),
             get(JsonResponder::class)
         ),
     DeveloperMode::class => create(DeveloperMode::class)

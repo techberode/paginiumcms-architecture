@@ -1,6 +1,6 @@
 # Iteration 88 — Theme Studio (Monaco authoring, policy, preview, thumbnail)
 
-> **Status:** ⏳ in progress — **88a shipped** (2026-09-10); remaining slices 88b–88g  
+> **Status:** ⏳ in progress — **88a–88d shipped** (2026-09-10); remaining slices 88c, 88e–88g  
 > **Priority:** 🟡 **P1** for HTML/CSS studio + preview; 🔵 **P2** JS tab (depends on [It.87 Track C](ITERATION_87.md) `87k`–`87m`)  
 > **Wave:** Themes & layout (extends It.83 runtime, It.67 policy, It.16 Monaco, It.58 preview)  
 > **Depends on:** It.83 activate/PublicShell, It.67 `UntrustedPolicyScanner` + `CodePolicyEngine`, existing `MonacoCodeEditor`  
@@ -97,7 +97,7 @@ This cannot turn an arbitrary commercial HTML template into a pixel-perfect Pagi
 | **88a** | Theme Studio shell (admin) | 🟡 P1 | ✅ | Themes → **Edit / New**; Monaco tabs; AuthZ `themes:read` (mutations later `themes:edit`) |
 | **88b** | Policy + syntax API | 🟡 P1 | ✅ | `POST /api/admin/themes/validate` — HTML/CSS/JS/JSON; Monaco markers; no persist |
 | **88c** | Normalize from paste/ZIP-of-files | 🟡 P1 | ⏳ | `POST /api/admin/themes/normalize`; report + rewritten buffers |
-| **88d** | Sandboxed preview | 🟡 P1 | ⏳ | iframe; same sanitizer as public; block on policy fail |
+| **88d** | Sandboxed preview | 🟡 P1 | ✅ | iframe; same sanitizer as public; block on policy fail |
 | **88e** | Thumbnail save | 🟡 P2 | ⏳ | upload required; optional capture from preview |
 | **88f** | Slot/block mapping UI | 🟡 P2 | ⏳ | highlight header/main/footer; optional insert of bundled shortcodes into `main` |
 | **88g** | Persist + activate | 🟡 P1 | ⏳ | write theme tree + registry; reuse activate API; Developer Mode if writing frontend theme CSS |
@@ -114,7 +114,7 @@ JS tab ships **after or with** `87k`–`87m` (infra already shipped). **88b** op
 
 ## 88a — shipped (2026-09-10)
 
-**Admin UI:** Build → Themes → **Edit** (installed packages present on disk) or **New** (local draft buffers). Route `/themes/:themeId/edit` and `/themes/new`. Monaco tabs: Layout HTML, CSS, Manifest (`theme.json`). JS tab closed with copy pointing at 87k–m + 88b. Save and Preview buttons are visible but disabled (88g / 88d).
+**Admin UI:** Build → Themes → **Edit** (installed packages present on disk) or **New** (local draft buffers). Route `/themes/:themeId/edit` and `/themes/new`. Monaco tabs: Layout HTML, CSS, Manifest (`theme.json`). JS tab closed with copy pointing at 87k–m + 88b. Save is visible but disabled (88g). Preview ships in 88d.
 
 **API (read-only):**
 
@@ -135,7 +135,19 @@ AuthN + 2FA + `PermissionMiddleware('themes:read')`. Existing import/activate/un
 
 **Policy:** same `CodePolicyEngine::validateUntrusted` as ZIP import. HTML/CSS hostile markup (`<script>`, `on*`, `javascript:`, remote `@import`, `url(javascript:)`) lives in `UntrustedMarkupScanner` so Monaco is not a weaker path. `theme.json` also runs `ThemeManifestValidator`. Logs only sanitized id/path/marker count.
 
-**Admin UI:** debounce (~450 ms) paints Monaco markers; JS tab is open for local edit + validate. Save remains disabled (88g).
+**Admin UI:** debounce (~450 ms) paints Monaco markers; JS tab is open for local edit + validate. Save remains disabled (88g). Preview is 88d.
+
+---
+
+## 88d — shipped (2026-09-10)
+
+**API:** `POST /api/admin/themes/preview` `{ themeId, files: { relativePath: content }, template? }` — CSRF + `themes:edit`. Runs 88b validators on HTML/CSS/JS buffers first (fail-closed). Never writes disk. Never puts theme JS into the document.
+
+**Response:** 200 `{ blocked: false, document, template, issues: [] }` or 422 `{ blocked: true, document: "", issues: [{ relativePath, markers }] }`. `document` is a complete srcdoc: CSP `script-src 'none'`, sanitized layout HTML (public `ContentSecuritySanitizer` / `HtmlDomSanitizer` plus header/main/nav), concatenated CSS in a controlled `<style>` block. Sample `{{content}}` / `{{title}}` / `{{siteName}}`; `{{> partial}}` expands from submitted `partials/*.html` only (no `..`).
+
+**Admin UI:** Preview opens an iframe with `sandbox=""` (no `allow-scripts`, no `allow-same-origin`) and `referrerPolicy=no-referrer`. Policy failure keeps the iframe empty and surfaces markers in Monaco.
+
+**Not in 88d:** persist (88g), normalize (88c), thumbnail (88e), executing theme JS.
 
 ---
 

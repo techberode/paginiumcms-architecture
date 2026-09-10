@@ -1,6 +1,6 @@
 # Iterácia 88 — Theme Studio (Monaco, politika, náhľad, náhľadový obrázok)
 
-> **Stav:** ⏳ prebieha — **88a hotové** (10. 9. 2026); ostáva 88b–88g  
+> **Stav:** ⏳ prebieha — **88a–88d hotové** (10. 9. 2026); ostáva 88c, 88e–88g  
 > **Kanónická špecifikácia (EN):** [../en/ITERATION_88.md](../en/ITERATION_88.md)
 
 ## Cieľ
@@ -11,15 +11,15 @@ Nie je to pixel builder a nie je to „vlož Themeforest HTML a spusti ho ako je
 
 ## Zhrnutie sliceov
 
-| ID | Čo |
-|----|-----|
+| ID | Čo | Stav |
+|----|-----|------|
 | **88a** | Admin shell, Monaco záložky | ✅ |
 | **88b** | `POST …/themes/validate` → markery, bez zápisu | ✅ |
-| **88c** | `POST …/themes/normalize` — strip/rewrite + report |
-| **88d** | Sandbox iframe náhľad |
-| **88e** | Thumbnail upload / voliteľný capture |
-| **88f** | Mapovanie slotov header/main/footer |
-| **88g** | Uloženie balíka + aktivácia (existujúce theme API) |
+| **88c** | `POST …/themes/normalize` — strip/rewrite + report | ⏳ |
+| **88d** | Sandbox iframe náhľad (`POST …/themes/preview`) | ✅ |
+| **88e** | Thumbnail upload / voliteľný capture | ⏳ |
+| **88f** | Mapovanie slotov header/main/footer | ⏳ |
+| **88g** | Uloženie balíka + aktivácia (existujúce theme API) | ⏳ |
 
 JS záložka až po **87k–m** (infra už je v Core). **88b** otvorí JS na lokálnu úpravu + validate; zápis ostáva 88g.
 

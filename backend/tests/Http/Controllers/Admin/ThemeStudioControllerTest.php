@@ -181,4 +181,85 @@ final class ThemeStudioControllerTest extends TestCase
 
         $this->assertSame(422, $response->getStatusCode());
     }
+
+    public function testPreviewRequiresAuth(): void
+    {
+        $response = $this->handleRequest($this->createJsonRequest('POST', '/api/admin/themes/preview', [
+            'themeId' => 'clean-journal',
+            'files' => [
+                'templates/default.html' => '<main>{{content}}</main>',
+            ],
+        ]));
+
+        $this->assertSame(401, $response->getStatusCode());
+    }
+
+    public function testUserRoleCannotPreviewThemeBuffers(): void
+    {
+        $userData = $this->createTestUser();
+        $this->loginTestUser($userData['email'], $userData['password']);
+
+        $response = $this->handleRequest($this->createJsonRequest('POST', '/api/admin/themes/preview', [
+            'themeId' => 'clean-journal',
+            'files' => [
+                'templates/default.html' => '<main>{{content}}</main>',
+            ],
+        ]));
+
+        $this->assertSame(403, $response->getStatusCode());
+    }
+
+    public function testPreviewReturnsSandboxedDocumentForSafeBuffers(): void
+    {
+        $this->loginAsSuperAdminUser();
+        $onDisk = (string) file_get_contents(
+            dirname(__DIR__, 4) . '/resources/views/themes/clean-journal/templates/default.html'
+        );
+
+        $response = $this->handleRequest($this->createJsonRequest('POST', '/api/admin/themes/preview', [
+            'themeId' => 'clean-journal',
+            'template' => 'templates/default.html',
+            'files' => [
+                'templates/default.html' => $onDisk,
+                'partials/header.html' => '<header><a href="/">{{siteName}}</a></header>',
+                'partials/footer.html' => '<footer><p>{{siteName}}</p></footer>',
+                'assets/theme.css' => 'main { display: block; }',
+            ],
+        ]));
+
+        $this->assertSame(200, $response->getStatusCode());
+        $payload = $this->getJsonResponse($response);
+        $this->assertTrue($payload['success']);
+        $this->assertFalse($payload['data']['blocked']);
+        $this->assertStringContainsString('script-src \'none\'', $payload['data']['document']);
+        $this->assertStringContainsString('Sample content', $payload['data']['document']);
+        $this->assertStringContainsString('main { display: block; }', $payload['data']['document']);
+        $this->assertStringNotContainsString('<script', strtolower((string) $payload['data']['document']));
+        $this->assertSame(
+            $onDisk,
+            file_get_contents(dirname(__DIR__, 4) . '/resources/views/themes/clean-journal/templates/default.html')
+        );
+    }
+
+    public function testPreviewBlocksHostileHtmlAndDoesNotWriteDisk(): void
+    {
+        $this->loginAsSuperAdminUser();
+        $path = dirname(__DIR__, 4) . '/resources/views/themes/clean-journal/templates/default.html';
+        $onDisk = (string) file_get_contents($path);
+
+        $response = $this->handleRequest($this->createJsonRequest('POST', '/api/admin/themes/preview', [
+            'themeId' => 'clean-journal',
+            'files' => [
+                'templates/default.html' => "<img src=x onerror=alert(1)>\n<script>alert(1)</script>\n",
+            ],
+        ]));
+
+        $this->assertSame(422, $response->getStatusCode());
+        $payload = $this->getJsonResponse($response);
+        $this->assertFalse($payload['success']);
+        $this->assertTrue($payload['data']['blocked']);
+        $this->assertSame('', $payload['data']['document']);
+        $this->assertNotEmpty($payload['data']['issues']);
+        $this->assertSame($onDisk, file_get_contents($path));
+    }
 }
