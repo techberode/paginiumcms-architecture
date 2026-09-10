@@ -271,9 +271,15 @@ Read-only authoring shell (88a): `GET /api/admin/themes/{id}/files` and `GET …
 
 **Preview (88d):** `POST /api/admin/themes/preview` reuses those validators on HTML/CSS/JS buffers, sanitizes layout HTML, and returns a CSP srcdoc. The admin UI paints it in an iframe with `sandbox=""` (no `allow-scripts` / no `allow-same-origin`).
 
-**Normalize (88c):** `POST /api/admin/themes/normalize` strips hostile markup and rewrites pasted HTML into slot partials. PHP/Blade/foreign engines reject the import. Persist (88g) remains a later slice.
+**Normalize (88c):** `POST /api/admin/themes/normalize` strips hostile markup and rewrites pasted HTML into slot partials. PHP/Blade/foreign engines reject the import.
 
-RBAC: `themes:read` for the file API; `themes:edit` for validate (and later mutations). ZIP import/activate remain `settings:manage`.
+**Persist (88g):** `POST /api/admin/themes/save` writes the package after the same untrusted policy. 422 writes nothing. Activate stays on `POST /api/admin/themes/{id}/activate` (`settings:manage`). Developer Mode may copy CSS into an existing frontend theme folder.
+
+**Thumbnail (88e):** `GET/POST /api/admin/themes/{id}/thumbnail` — PNG `preview.png` only. Capture from the preview iframe is not possible (`sandbox=""`).
+
+**Slots (88f):** studio aside maps header/main/footer/sidebar and can insert a bundled shortcode before `{{content}}`.
+
+RBAC: `themes:read` for files and thumbnail GET; `themes:edit` for validate/preview/normalize/save/thumbnail POST. ZIP import/activate remain `settings:manage`.
 
 ---
 

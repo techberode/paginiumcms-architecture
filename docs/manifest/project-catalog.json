@@ -6,7 +6,7 @@
     {
       "id": "it.88",
       "titleKey": "origin.catalog.it88",
-      "phase": "partial",
+      "phase": "shipped",
       "doc": "docs/en/ITERATION_88.md",
       "priority": "high",
       "items": [
@@ -14,9 +14,9 @@
         { "id": "88b", "titleKey": "origin.catalog.it88_validate", "phase": "shipped", "weight": 1 },
         { "id": "88c", "titleKey": "origin.catalog.it88_normalize", "phase": "shipped", "weight": 1 },
         { "id": "88d", "titleKey": "origin.catalog.it88_preview", "phase": "shipped", "weight": 1 },
-        { "id": "88e", "titleKey": "origin.catalog.it88_thumbnail", "phase": "planned", "weight": 1 },
-        { "id": "88f", "titleKey": "origin.catalog.it88_slots", "phase": "planned", "weight": 1 },
-        { "id": "88g", "titleKey": "origin.catalog.it88_persist", "phase": "planned", "weight": 1 }
+        { "id": "88e", "titleKey": "origin.catalog.it88_thumbnail", "phase": "shipped", "weight": 1 },
+        { "id": "88f", "titleKey": "origin.catalog.it88_slots", "phase": "shipped", "weight": 1 },
+        { "id": "88g", "titleKey": "origin.catalog.it88_persist", "phase": "shipped", "weight": 1 }
       ],
       "history": []
     },

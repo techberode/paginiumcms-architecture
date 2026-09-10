@@ -1,11 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useLocation, useParams } from 'react-router-dom';
-import { ArrowLeft, Palette, Save, Eye, Wand2 } from 'lucide-react';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { ArrowLeft, ImagePlus, Palette, Save, Eye, Wand2 } from 'lucide-react';
 import { MonacoCodeEditor, type MonacoCodeEditorHandle, type MonacoEditorMarker } from '../CodeEditor/MonacoCodeEditor';
-import { themesApi, type ThemeFileListItem } from '../../api/themes';
+import { shortcodesApi, type ShortcodeListItem } from '../../api/shortcodes';
+import { themesApi, themeThumbnailUrl, type ThemeFileListItem } from '../../api/themes';
 import { useI18n } from '../../context/I18nContext';
+import { useToast } from '../../hooks/useToast';
 import { AdminListSkeleton } from '../ui/AdminListSkeleton';
 import { THEME_STUDIO_DRAFT_ID, themeStudioDraftFiles } from '../../utils/themeStudioDraft';
+import { persistThemeId } from '../../utils/themeStudioPersist';
 import { isThemeStudioTab, type ThemeStudioTab } from '../../utils/themeStudioFiles';
 import {
   previewTemplateForPath,
@@ -13,6 +16,8 @@ import {
   THEME_STUDIO_PREVIEW_SANDBOX,
 } from '../../utils/themeStudioPreview';
 import { applyNormalizedThemeFiles } from '../../utils/themeStudioNormalize';
+import { detectThemeStudioSlots, insertIntoMainContent } from '../../utils/themeStudioSlots';
+import { buildShortcodeSampleMarkup } from '../../utils/shortcodeSampleMarkup';
 
 const EDITOR_HEIGHT = 520;
 const VALIDATE_DEBOUNCE_MS = 450;
@@ -22,9 +27,12 @@ const TAB_ORDER: ThemeStudioTab[] = ['html', 'css', 'js', 'manifest', 'other'];
 
 export const ThemeStudioShell: React.FC = () => {
   const { t } = useI18n();
+  const toast = useToast();
   const location = useLocation();
+  const navigate = useNavigate();
   const params = useParams<{ themeId: string }>();
   const monacoRef = useRef<MonacoCodeEditorHandle>(null);
+  const thumbnailInputRef = useRef<HTMLInputElement>(null);
 
   const isDraft = location.pathname === '/themes/new' || params.themeId === THEME_STUDIO_DRAFT_ID;
   const themeId = isDraft ? THEME_STUDIO_DRAFT_ID : (params.themeId ?? '');
@@ -51,6 +59,13 @@ export const ThemeStudioShell: React.FC = () => {
   const [normalizeLoading, setNormalizeLoading] = useState(false);
   const [normalizeError, setNormalizeError] = useState<string | null>(null);
   const [normalizeDropped, setNormalizeDropped] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [activateAfterSave, setActivateAfterSave] = useState(false);
+  const [hasThumbnail, setHasThumbnail] = useState(false);
+  const [thumbnailBust, setThumbnailBust] = useState(0);
+  const [thumbnailUploading, setThumbnailUploading] = useState(false);
+  const [shortcodes, setShortcodes] = useState<ShortcodeListItem[]>([]);
+  const [selectedShortcode, setSelectedShortcode] = useState('');
 
   const loadCatalog = useCallback(async () => {
     if (isDraft) {
@@ -72,6 +87,7 @@ export const ThemeStudioShell: React.FC = () => {
       setBuffers(nextBuffers);
       setOriginals(nextOriginals);
       setCurrentPath(list[0]?.relativePath ?? '');
+      setHasThumbnail(false);
       setLoading(false);
       setForbidden(false);
       setMissing(false);
@@ -109,6 +125,7 @@ export const ThemeStudioShell: React.FC = () => {
     setFiles(response.data.files);
     setBuffers({});
     setOriginals({});
+    setHasThumbnail(response.data.hasThumbnail === true);
     const firstHtml = response.data.files.find((file) => file.tab === 'html');
     setCurrentPath(firstHtml?.relativePath ?? response.data.files[0]?.relativePath ?? '');
     setLoading(false);
@@ -117,6 +134,15 @@ export const ThemeStudioShell: React.FC = () => {
   useEffect(() => {
     void loadCatalog();
   }, [loadCatalog]);
+
+  useEffect(() => {
+    void (async () => {
+      const items = await shortcodesApi.list();
+      const enabled = items.filter((item) => item.enabled);
+      setShortcodes(enabled);
+      setSelectedShortcode((prev) => prev || enabled[0]?.name || '');
+    })();
+  }, []);
 
   const filesRef = useRef(files);
   filesRef.current = files;
@@ -174,6 +200,11 @@ export const ThemeStudioShell: React.FC = () => {
   const visibleTabs = TAB_ORDER.filter((id) => id !== 'other' || files.some((file) => file.tab === 'other'));
   const currentPathRef = useRef(currentPath);
   currentPathRef.current = currentPath;
+  const slots = useMemo(() => detectThemeStudioSlots(buffers), [buffers]);
+  const busy = saving || normalizeLoading || previewLoading || loading || thumbnailUploading;
+  const thumbnailSrc = !isDraft && hasThumbnail && themeId !== ''
+    ? themeThumbnailUrl(themeId, thumbnailBust)
+    : '';
 
   useEffect(() => {
     setMarkers([]);
@@ -355,6 +386,104 @@ export const ThemeStudioShell: React.FC = () => {
     }
   }, [collectAllBuffers, studioThemeId, t]);
 
+  const handleSave = useCallback(async () => {
+    setSaving(true);
+    try {
+      const collected = await collectAllBuffers();
+      if (!collected.ok) {
+        toast.error(collected.error);
+        return;
+      }
+
+      const persistId = persistThemeId(themeId, collected.buffers);
+      if (persistId === null) {
+        toast.error(t('platform.themes.studio.saveIdMismatch'));
+        return;
+      }
+
+      const outcome = await themesApi.save({
+        themeId: persistId,
+        files: collected.buffers,
+      });
+
+      if (!outcome.result || outcome.result.blocked) {
+        toast.error(outcome.error ?? t('platform.themes.studio.saveBlocked'));
+        const issue = outcome.result?.issues.find((item) => item.relativePath === currentPathRef.current)
+          ?? outcome.result?.issues[0];
+        if (issue) {
+          setMarkers(issue.markers.map((marker) => ({
+            line: marker.line,
+            message: marker.message,
+          })));
+          setPolicyValid(false);
+        }
+        return;
+      }
+
+      setOriginals(collected.buffers);
+      toast.success(t('platform.themes.studio.saved'));
+
+      if (activateAfterSave) {
+        const activated = await themesApi.activate(persistId);
+        if (!activated.success) {
+          toast.error(activated.error ?? t('platform.themes.studio.activateFailed'));
+        }
+      }
+
+      if (isDraft || persistId !== themeId) {
+        navigate(`/themes/${encodeURIComponent(persistId)}/edit`);
+      }
+    } finally {
+      setSaving(false);
+    }
+  }, [activateAfterSave, collectAllBuffers, isDraft, navigate, t, themeId, toast]);
+
+  const handleThumbnailUpload = useCallback(async (file: File | undefined) => {
+    if (!file) {
+      return;
+    }
+    if (isDraft) {
+      toast.error(t('platform.themes.studio.thumbnailNeedSave'));
+      return;
+    }
+    if (file.type !== 'image/png') {
+      toast.error(t('platform.themes.studio.thumbnailFailed'));
+      return;
+    }
+
+    setThumbnailUploading(true);
+    try {
+      const outcome = await themesApi.uploadThumbnail(themeId, file);
+      if (!outcome.ok) {
+        toast.error(outcome.error ?? t('platform.themes.studio.thumbnailFailed'));
+        return;
+      }
+      setHasThumbnail(true);
+      setThumbnailBust(Date.now());
+    } finally {
+      setThumbnailUploading(false);
+      if (thumbnailInputRef.current) {
+        thumbnailInputRef.current.value = '';
+      }
+    }
+  }, [isDraft, t, themeId, toast]);
+
+  const handleInsertShortcode = useCallback(async () => {
+    if (selectedShortcode === '') {
+      return;
+    }
+    const markup = buildShortcodeSampleMarkup(selectedShortcode);
+    const mainPath = slots.find((slot) => slot.id === 'main')?.sourcePath ?? 'templates/default.html';
+    if (buffersRef.current[mainPath] === undefined) {
+      await openFile(mainPath);
+    }
+    const current = buffersRef.current[mainPath] ?? '';
+    const next = insertIntoMainContent(current, markup);
+    setBuffers((prev) => ({ ...prev, [mainPath]: next }));
+    setCurrentPath(mainPath);
+    setTab('html');
+  }, [openFile, selectedShortcode, slots]);
+
   const handleTabChange = (next: ThemeStudioTab) => {
     if (next === 'js' && jsTabDisabled) {
       setTab('js');
@@ -365,6 +494,11 @@ export const ThemeStudioShell: React.FC = () => {
     if (first) {
       setCurrentPath(first.relativePath);
     }
+  };
+
+  const openSlot = (relativePath: string) => {
+    setTab('html');
+    setCurrentPath(relativePath);
   };
 
   if (forbidden) {
@@ -404,10 +538,18 @@ export const ThemeStudioShell: React.FC = () => {
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('platform.themes.studio.subtitle')}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <label className="inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+            <input
+              type="checkbox"
+              checked={activateAfterSave}
+              onChange={(event) => setActivateAfterSave(event.target.checked)}
+            />
+            {t('platform.themes.studio.activateAfterSave')}
+          </label>
           <button
             type="button"
             className="btn btn-secondary inline-flex items-center gap-2"
-            disabled={normalizeLoading || previewLoading || loading}
+            disabled={busy}
             title={t('platform.themes.studio.normalizeHint')}
             onClick={() => void handleNormalize()}
           >
@@ -417,7 +559,7 @@ export const ThemeStudioShell: React.FC = () => {
           <button
             type="button"
             className="btn btn-secondary inline-flex items-center gap-2"
-            disabled={previewLoading || normalizeLoading || loading}
+            disabled={busy}
             title={t('platform.themes.studio.previewHint')}
             onClick={() => void handlePreview()}
           >
@@ -427,11 +569,11 @@ export const ThemeStudioShell: React.FC = () => {
           <button
             type="button"
             className="btn btn-primary inline-flex items-center gap-2"
-            disabled
-            title={t('platform.themes.studio.saveLater')}
+            disabled={busy}
+            onClick={() => void handleSave()}
           >
             <Save className="h-4 w-4" />
-            {t('platform.themes.studio.save')}
+            {saving ? t('platform.themes.studio.saving') : t('platform.themes.studio.save')}
             {hasDirtyBuffers ? ' •' : ''}
           </button>
         </div>
@@ -516,6 +658,103 @@ export const ThemeStudioShell: React.FC = () => {
                 })}
               </ul>
             )}
+
+            <div className="border-t border-gray-200 dark:border-gray-800 pt-3 space-y-2">
+              <h2 className="text-xs font-semibold text-gray-700 dark:text-gray-200">
+                {t('platform.themes.studio.slots')}
+              </h2>
+              <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
+                {t('platform.themes.studio.slotsHint')}
+              </p>
+              <ul className="space-y-1">
+                {slots.map((slot) => (
+                  <li key={slot.id}>
+                    <button
+                      type="button"
+                      className="w-full flex items-center justify-between gap-2 text-left text-xs rounded px-2 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-800"
+                      onClick={() => openSlot(slot.sourcePath)}
+                    >
+                      <span className="font-mono">{slot.id}</span>
+                      <span className={slot.found
+                        ? 'text-emerald-700 dark:text-emerald-300'
+                        : 'text-amber-700 dark:text-amber-300'}
+                      >
+                        {slot.found
+                          ? t('platform.themes.studio.slotFound')
+                          : t('platform.themes.studio.slotMissing')}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <label className="block text-[11px] text-gray-500 dark:text-gray-400">
+                {t('platform.themes.studio.insertShortcode')}
+                <select
+                  className="mt-1 w-full rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950 text-xs px-2 py-1"
+                  value={selectedShortcode}
+                  disabled={shortcodes.length === 0}
+                  onChange={(event) => setSelectedShortcode(event.target.value)}
+                >
+                  {shortcodes.length === 0 ? (
+                    <option value="">{t('platform.themes.studio.noShortcodes')}</option>
+                  ) : shortcodes.map((item) => (
+                    <option key={item.name} value={item.name}>{item.name}</option>
+                  ))}
+                </select>
+              </label>
+              <button
+                type="button"
+                className="btn btn-secondary w-full text-xs"
+                disabled={selectedShortcode === '' || busy}
+                title={t('platform.themes.studio.insertShortcodeHint')}
+                onClick={() => void handleInsertShortcode()}
+              >
+                {t('platform.themes.studio.insertShortcode')}
+              </button>
+            </div>
+
+            <div className="border-t border-gray-200 dark:border-gray-800 pt-3 space-y-2">
+              <h2 className="text-xs font-semibold text-gray-700 dark:text-gray-200">
+                {t('platform.themes.studio.thumbnail')}
+              </h2>
+              <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
+                {t('platform.themes.studio.thumbnailHint')}
+              </p>
+              {thumbnailSrc ? (
+                <img
+                  src={thumbnailSrc}
+                  alt={t('platform.themes.studio.thumbnail')}
+                  className="w-full rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-950 object-contain max-h-32"
+                />
+              ) : null}
+              <input
+                ref={thumbnailInputRef}
+                type="file"
+                accept="image/png"
+                className="hidden"
+                onChange={(event) => void handleThumbnailUpload(event.target.files?.[0])}
+              />
+              <button
+                type="button"
+                className="btn btn-secondary w-full inline-flex items-center justify-center gap-2 text-xs"
+                disabled={busy || isDraft}
+                title={isDraft ? t('platform.themes.studio.thumbnailNeedSave') : t('platform.themes.studio.thumbnailUpload')}
+                onClick={() => thumbnailInputRef.current?.click()}
+              >
+                <ImagePlus className="h-3.5 w-3.5" />
+                {thumbnailUploading
+                  ? t('platform.themes.studio.thumbnailUploading')
+                  : t('platform.themes.studio.thumbnailUpload')}
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary w-full text-xs opacity-60"
+                disabled
+                title={t('platform.themes.studio.captureBlocked')}
+              >
+                {t('platform.themes.studio.capture')}
+              </button>
+            </div>
           </aside>
 
           <section className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden">

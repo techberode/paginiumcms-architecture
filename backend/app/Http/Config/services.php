@@ -241,6 +241,7 @@ use PaginiumCMS\Http\Themes\Services\ThemeCatalogSeeder;
 use PaginiumCMS\Http\Themes\Services\ThemeImporter;
 use PaginiumCMS\Http\Themes\Services\ThemeManager;
 use PaginiumCMS\Http\Themes\Services\ThemeStudioNormalizeService;
+use PaginiumCMS\Http\Themes\Services\ThemeStudioPersistService;
 use PaginiumCMS\Http\Themes\Services\ThemeStudioPreviewService;
 use PaginiumCMS\Http\Themes\Services\ThemeStudioService;
 use PaginiumCMS\Http\Themes\Services\ThemeStudioValidator;
@@ -1256,12 +1257,24 @@ return [
             get(ThemeScriptIntegrityService::class),
             get(LoggerInterface::class)
         ),
+    ThemeStudioPersistService::class => create(ThemeStudioPersistService::class)
+        ->constructor(
+            get(ThemeStudioService::class),
+            get(ThemeStudioValidator::class),
+            get(ThemeManifestValidator::class),
+            get(ThemeScriptIntegrityService::class),
+            get(ThemeRegistry::class),
+            dirname(__DIR__, 4) . '/frontend/src/themes',
+            get(DeveloperModeGate::class),
+            get(LoggerInterface::class)
+        ),
     ThemeStudioController::class => create(ThemeStudioController::class)
         ->constructor(
             get(ThemeStudioService::class),
             get(ThemeStudioValidator::class),
             get(ThemeStudioPreviewService::class),
             get(ThemeStudioNormalizeService::class),
+            get(ThemeStudioPersistService::class),
             get(JsonResponder::class)
         ),
     DeveloperMode::class => create(DeveloperMode::class)

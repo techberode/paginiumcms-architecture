@@ -43,6 +43,20 @@ export interface ThemeFileListItem {
 export interface ThemeFileListResponse {
   themeId: string;
   files: ThemeFileListItem[];
+  hasThumbnail?: boolean;
+}
+
+export interface ThemeSaveResult {
+  blocked: boolean;
+  themeId: string;
+  written: string[];
+  frontendCssCopied: boolean;
+  issues: ThemePreviewIssue[];
+}
+
+export function themeThumbnailUrl(id: string, bust = 0): string {
+  const query = bust > 0 ? `?t=${bust}` : '';
+  return `/api/admin/themes/${encodeURIComponent(id)}/thumbnail${query}`;
 }
 
 export interface ThemeFileContent {
@@ -206,5 +220,38 @@ export const themesApi = {
     }
 
     return { ok: false, result: null, error: response.error };
+  },
+
+  save: async (input: {
+    themeId: string;
+    files: Record<string, string>;
+  }): Promise<{ ok: boolean; result: ThemeSaveResult | null; error?: string }> => {
+    const response = await apiClient.post<ThemeSaveResult>('/api/admin/themes/save', input);
+    if (response.data && Array.isArray(response.data.written) && Array.isArray(response.data.issues)) {
+      return {
+        ok: response.success && !response.data.blocked,
+        result: response.data,
+        error: response.success ? undefined : (response.error ?? undefined),
+      };
+    }
+
+    return { ok: false, result: null, error: response.error };
+  },
+
+  uploadThumbnail: async (
+    id: string,
+    file: File,
+  ): Promise<{ ok: boolean; hasThumbnail: boolean; error?: string }> => {
+    const form = new FormData();
+    form.append('file', file);
+    const response = await apiClient.post<{ themeId: string; hasThumbnail: boolean }>(
+      `/api/admin/themes/${encodeURIComponent(id)}/thumbnail`,
+      form,
+    );
+    if (response.success && response.data?.hasThumbnail) {
+      return { ok: true, hasThumbnail: true };
+    }
+
+    return { ok: false, hasThumbnail: false, error: response.error };
   },
 };

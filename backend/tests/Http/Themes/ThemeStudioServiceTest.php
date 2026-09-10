@@ -123,6 +123,25 @@ final class ThemeStudioServiceTest extends TestCase
         }
     }
 
+    public function testWritePreviewPngAcceptsTinyPng(): void
+    {
+        $png = base64_decode(
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+            true
+        );
+        $this->assertNotFalse($png);
+
+        $this->studio->writePreviewPng('sample-theme', $png);
+        $this->assertTrue($this->studio->hasPreviewPng('sample-theme'));
+        $this->assertSame($png, $this->studio->readPreviewPng('sample-theme'));
+    }
+
+    public function testWritePreviewPngRejectsNonPng(): void
+    {
+        $this->expectException(ThemeStudioException::class);
+        $this->studio->writePreviewPng('sample-theme', '<svg xmlns="http://www.w3.org/2000/svg"></svg>');
+    }
+
     private function removeDir(string $dir): void
     {
         if (!is_dir($dir)) {

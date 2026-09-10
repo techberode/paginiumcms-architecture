@@ -14,7 +14,6 @@ const DRAFT_THEME_JSON = `{
   "id": "untitled-theme",
   "name": "Untitled theme",
   "version": "0.1.0",
-  "minCmsVersion": "2.1.0",
   "description": "",
   "slots": ["header", "main", "footer"],
   "templates": ["default"],
@@ -46,7 +45,7 @@ const DRAFT_FOOTER_HTML = `<footer class="pg-footer">
 </footer>
 `;
 
-const DRAFT_CSS = `/* Theme tokens and layout — persist ships in 88g. */
+const DRAFT_CSS = `/* Theme tokens and layout. */
 body {
   margin: 0;
   font-family: system-ui, sans-serif;
