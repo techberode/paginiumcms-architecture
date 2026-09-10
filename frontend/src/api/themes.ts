@@ -65,6 +65,19 @@ export interface ThemeValidateResult {
   markers: ThemeValidateMarker[];
 }
 
+export interface ThemePreviewIssue {
+  relativePath: string;
+  valid: boolean;
+  markers: ThemeValidateMarker[];
+}
+
+export interface ThemePreviewResult {
+  blocked: boolean;
+  document: string;
+  template: string;
+  issues: ThemePreviewIssue[];
+}
+
 export const themesApi = {
   list: async (): Promise<ThemeListResponse> => {
     const response = await apiClient.get<ThemeListResponse>('/api/admin/themes');
@@ -138,6 +151,23 @@ export const themesApi = {
     if (response.data && Array.isArray(response.data.markers)) {
       return {
         ok: response.success && response.data.valid,
+        result: response.data,
+        error: response.success ? undefined : (response.error ?? undefined),
+      };
+    }
+
+    return { ok: false, result: null, error: response.error };
+  },
+
+  preview: async (input: {
+    themeId: string;
+    files: Record<string, string>;
+    template?: string;
+  }): Promise<{ ok: boolean; result: ThemePreviewResult | null; error?: string }> => {
+    const response = await apiClient.post<ThemePreviewResult>('/api/admin/themes/preview', input);
+    if (response.data && typeof response.data.document === 'string') {
+      return {
+        ok: response.success && !response.data.blocked,
         result: response.data,
         error: response.success ? undefined : (response.error ?? undefined),
       };

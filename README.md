@@ -86,7 +86,7 @@ cd frontend && npm run type-check && npm run lint && npm run lint:api-barrel && 
 | Public Beta | ✅ latest tag `v2.1.0-beta.68` — see [CHANGELOG.md](CHANGELOG.md) |
 | Hybrid Engine foundation | ✅ It.68–74 shipped (local storage, cache/ETag, Git publish, APM, media local, locales, API keys) |
 | Stabilization freeze | ⏹️ closed 2026-09-09 — no `v2.2.0` gate |
-| Next implementation | ⏳ It.88 Theme Studio (`88d` preview) — [docs/en/CONTINUATION.md](docs/en/CONTINUATION.md) |
+| Next implementation | ⏳ It.88 Theme Studio (`88c` normalize) — [docs/en/CONTINUATION.md](docs/en/CONTINUATION.md) |
 
 ### Target model
 

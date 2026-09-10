@@ -18,5 +18,8 @@ describe('platform i18n module', () => {
     expect(translate('en', 'platform.themes.studio.edit')).toBe('Edit');
     expect(translate('en', 'platform.themes.studio.policyOk')).toBe('Policy OK');
     expect(translate('sk', 'platform.themes.studio.policyOk')).toBe('Politika OK');
+    expect(translate('en', 'platform.themes.studio.previewBlocked')).toBe(
+      'Preview blocked — fix policy markers in Monaco first.',
+    );
   });
 });

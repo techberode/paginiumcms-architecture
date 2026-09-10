@@ -7,6 +7,11 @@ import { useI18n } from '../../context/I18nContext';
 import { AdminListSkeleton } from '../ui/AdminListSkeleton';
 import { THEME_STUDIO_DRAFT_ID, themeStudioDraftFiles } from '../../utils/themeStudioDraft';
 import { isThemeStudioTab, type ThemeStudioTab } from '../../utils/themeStudioFiles';
+import {
+  previewTemplateForPath,
+  THEME_STUDIO_PREVIEW_REFERRER,
+  THEME_STUDIO_PREVIEW_SANDBOX,
+} from '../../utils/themeStudioPreview';
 
 const EDITOR_HEIGHT = 520;
 const VALIDATE_DEBOUNCE_MS = 450;
@@ -37,6 +42,11 @@ export const ThemeStudioShell: React.FC = () => {
   const [wordWrap, setWordWrap] = useState(true);
   const [markers, setMarkers] = useState<MonacoEditorMarker[]>([]);
   const [policyValid, setPolicyValid] = useState<boolean | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewDocument, setPreviewDocument] = useState('');
+  const [previewBlocked, setPreviewBlocked] = useState(false);
+  const [previewError, setPreviewError] = useState<string | null>(null);
 
   const loadCatalog = useCallback(async () => {
     if (isDraft) {
@@ -203,6 +213,78 @@ export const ThemeStudioShell: React.FC = () => {
     return () => window.clearTimeout(handle);
   }, [currentPath, content, loadingFile, themeId]);
 
+  const handlePreview = useCallback(async () => {
+    setPreviewOpen(true);
+    setPreviewLoading(true);
+    setPreviewError(null);
+    setPreviewDocument('');
+    setPreviewBlocked(false);
+
+    try {
+      const collected: Record<string, string> = { ...buffersRef.current };
+      for (const file of filesRef.current) {
+        if (file.tooLarge) {
+          setPreviewBlocked(true);
+          setPreviewDocument('');
+          setPreviewError(t('platform.themes.studio.tooLarge'));
+          return;
+        }
+        if (collected[file.relativePath] !== undefined) {
+          continue;
+        }
+        if (isDraft) {
+          continue;
+        }
+
+        const response = await themesApi.getFile(themeId, file.relativePath);
+        if (!response.success || !response.data) {
+          setPreviewBlocked(true);
+          setPreviewDocument('');
+          setPreviewError(response.error ?? t('platform.themes.studio.loadFileFailed'));
+          return;
+        }
+
+        const body = response.data.content;
+        collected[file.relativePath] = body;
+        setBuffers((prev) => ({ ...prev, [file.relativePath]: body }));
+        setOriginals((prev) => (
+          prev[file.relativePath] !== undefined ? prev : { ...prev, [file.relativePath]: body }
+        ));
+      }
+
+      const id = themeId === THEME_STUDIO_DRAFT_ID ? 'untitled-theme' : themeId;
+      const outcome = await themesApi.preview({
+        themeId: id,
+        template: previewTemplateForPath(currentPathRef.current),
+        files: collected,
+      });
+
+      if (!outcome.result || outcome.result.blocked) {
+        setPreviewBlocked(true);
+        setPreviewDocument('');
+        setPreviewError(outcome.error ?? t('platform.themes.studio.previewBlocked'));
+        const issue = outcome.result?.issues.find((item) => item.relativePath === currentPathRef.current);
+        if (issue) {
+          setMarkers(
+            issue.markers.map((marker) => ({
+              line: marker.line,
+              message: marker.message,
+              endLine: marker.endLine,
+            })),
+          );
+          setPolicyValid(false);
+        }
+        return;
+      }
+
+      setPreviewBlocked(false);
+      setPreviewDocument(outcome.result.document);
+      setPreviewError(null);
+    } finally {
+      setPreviewLoading(false);
+    }
+  }, [isDraft, t, themeId]);
+
   const handleTabChange = (next: ThemeStudioTab) => {
     if (next === 'js' && jsTabDisabled) {
       setTab('js');
@@ -255,11 +337,12 @@ export const ThemeStudioShell: React.FC = () => {
           <button
             type="button"
             className="btn btn-secondary inline-flex items-center gap-2"
-            disabled
-            title={t('platform.themes.studio.previewLater')}
+            disabled={previewLoading || loading}
+            title={t('platform.themes.studio.previewHint')}
+            onClick={() => void handlePreview()}
           >
             <Eye className="h-4 w-4" />
-            {t('platform.themes.studio.preview')}
+            {previewLoading ? t('platform.themes.studio.previewLoading') : t('platform.themes.studio.preview')}
           </button>
           <button
             type="button"
@@ -395,6 +478,36 @@ export const ThemeStudioShell: React.FC = () => {
           </section>
         </div>
       )}
+
+      {previewOpen ? (
+        <section className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-800">
+            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+              {t('platform.themes.studio.preview')}
+            </h2>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              {t('platform.themes.studio.previewHint')}
+            </p>
+          </div>
+          {previewLoading ? (
+            <div className="flex h-[28rem] items-center justify-center text-sm text-gray-500">
+              {t('platform.themes.studio.previewLoading')}
+            </div>
+          ) : previewBlocked || previewDocument === '' ? (
+            <div className="flex h-[12rem] items-center justify-center text-sm text-amber-700 dark:text-amber-300 px-6 text-center">
+              {previewError ?? t('platform.themes.studio.previewBlocked')}
+            </div>
+          ) : (
+            <iframe
+              title={t('platform.themes.studio.previewFrame')}
+              sandbox={THEME_STUDIO_PREVIEW_SANDBOX}
+              srcDoc={previewDocument}
+              referrerPolicy={THEME_STUDIO_PREVIEW_REFERRER}
+              className="w-full h-[28rem] bg-white"
+            />
+          )}
+        </section>
+      ) : null}
     </div>
   );
 };

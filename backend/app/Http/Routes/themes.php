@@ -16,6 +16,7 @@ declare(strict_types=1);
  *  - GET    /api/admin/themes/{id}/files   (themes:read)
  *  - GET    /api/admin/themes/{id}/file    (themes:read)
  *  - POST   /api/admin/themes/validate     (themes:edit, no persist)
+ *  - POST   /api/admin/themes/preview      (themes:edit, no persist)
  */
 
 use PaginiumCMS\Http\Controllers\Admin\ThemesController;
@@ -45,6 +46,7 @@ return function (App $app): void {
         $studio = $container->get(ThemeStudioController::class);
 
         $group->post('/validate', [$studio, 'validate']);
+        $group->post('/preview', [$studio, 'preview']);
     })->add(new PermissionMiddleware($authz, 'themes:edit'))
         ->add($container->get(TwoFactorMiddleware::class))
         ->add($container->get(AuthMiddleware::class));

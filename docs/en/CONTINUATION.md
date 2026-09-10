@@ -29,7 +29,7 @@ Historical freeze record: [STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) (supe
 | Area | Status |
 |------|--------|
 | Latest tag | ✅ `v2.1.0-beta.68` — It.87 planner, ISS-169 list pagination, ISS-168 landing hero |
-| Unreleased (this tree) | **88a–88b** Theme Studio shell + validate API (normalize/preview/save later) |
+| Unreleased (this tree) | **88a–88d** Theme Studio shell + validate + sandboxed preview (normalize/save later) |
 | It.25 setup wizard | ✅ basic + M1+ (`beta.62`–`beta.66`) |
 | It.83 theme runtime | ✅ shipped `beta.59` (`terminal-breach`, `clean-journal`) |
 | It.84 / It.86 | ✅ shipped |
@@ -55,7 +55,7 @@ Do **not** invent new iteration numbers. Finish specs that already exist.
 
 **Optional / later:** It.82d Origin host metrics.
 
-**Next slice to open:** **88d** — sandboxed live preview iframe (same sanitizer as public; block on policy fail).
+**Next slice to open:** **88c** — normalize from paste/ZIP-of-files (`POST /api/admin/themes/normalize`; report + rewritten buffers).
 
 ---
 
