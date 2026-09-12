@@ -19,6 +19,8 @@ final class PermissionCatalog
         'content:edit',
         'content:delete',
         'content:view',
+        'content:trusted-html',
+        'content:embed-external',
         'media:manage',
         'media:upload',
         'media:delete',
@@ -53,6 +55,8 @@ final class PermissionCatalog
             AuthorizationInterface::ROLE_ADMIN => [
                 'user:manage',
                 'content:manage',
+                'content:trusted-html',
+                'content:embed-external',
                 'media:manage',
                 'settings:manage',
                 'themes:read',

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\Editor\Services;
 
+use PaginiumCMS\Modules\Security\Models\User;
+
 /**
  * Validates stored content for security threats (scripts, raw HTML in Markdown).
  *
@@ -14,14 +16,18 @@ final class EditorContentValidator
 {
     public function __construct(
         private EditorProfileService $profiles,
-        private EditorComponentRegistry $components
+        private EditorComponentRegistry $components,
+        private TrustedHtmlContentService $trustedHtml,
+        private ExternalEmbedContentService $externalEmbed,
+        private HtmlSafeShortcode $htmlSafeShortcode = new HtmlSafeShortcode(),
+        private CalloutShortcode $calloutShortcode = new CalloutShortcode(),
     ) {
     }
 
     /**
      * @param array<string, mixed> $payload
      */
-    public function validate(string $contentType, array $payload): ?string
+    public function validate(string $contentType, array $payload, ?User $user = null): ?string
     {
         $content = (string) ($payload['content'] ?? '');
         if (trim($content) === '') {
@@ -53,9 +59,24 @@ final class EditorContentValidator
         }
 
         if ($format === 'markdown') {
+            $trustedError = $this->trustedHtml->validateMarkdown($content, $user);
+            if ($trustedError !== null) {
+                return $trustedError;
+            }
+
+            $embedError = $this->externalEmbed->validateMarkdown($content, $user);
+            if ($embedError !== null) {
+                return $embedError;
+            }
+
             $videoError = $this->validateVideoShortcodes($content);
             if ($videoError !== null) {
                 return $videoError;
+            }
+
+            $calloutError = $this->validateCalloutShortcodes($content);
+            if ($calloutError !== null) {
+                return $calloutError;
             }
         }
 
@@ -74,7 +95,12 @@ final class EditorContentValidator
         $allowed = $this->profiles->getAllowedCustomComponents($profileId);
 
         foreach ($matches[1] as $directive) {
-            if ($directive === 'video') {
+            if (
+                $directive === 'video'
+                || $directive === HtmlSafeShortcode::DIRECTIVE
+                || $directive === ExternalEmbedShortcode::DIRECTIVE
+                || in_array($directive, CalloutShortcode::TYPES, true)
+            ) {
                 continue;
             }
 
@@ -142,6 +168,11 @@ final class EditorContentValidator
         return null;
     }
 
+    private function validateCalloutShortcodes(string $content): ?string
+    {
+        return $this->calloutShortcode->validateBlocks($content);
+    }
+
     private function validateVideoShortcodes(string $content): ?string
     {
         $expander = new VideoEmbedShortcode();
@@ -175,13 +206,15 @@ final class EditorContentValidator
 
     private function validateMarkdownSecurity(string $content): ?string
     {
-        $lower = strtolower($content);
+        $withoutCallouts = $this->calloutShortcode->stripBlocks($content);
+        $lower = strtolower($withoutCallouts);
 
         if (str_contains($lower, '<script') || str_contains($lower, '<iframe')) {
             return 'Obsah nepovoľuje vložené skripty alebo iframe.';
         }
 
-        if (preg_match('/<[a-z][^>]*>/i', $content) === 1) {
+        $withoutTrustedBlocks = $this->htmlSafeShortcode->stripBlocks($withoutCallouts);
+        if (preg_match('/<[a-z][^>]*>/i', $withoutTrustedBlocks) === 1) {
             return 'Markdown obsah nesmie obsahovať raw HTML tagy.';
         }
 

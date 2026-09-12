@@ -1,5 +1,8 @@
 import { marked } from 'marked';
 import TurndownService from 'turndown';
+import { deferCalloutShortcodes, restoreDeferredCallouts } from './calloutShortcode';
+import { deferEmbedShortcodes, restoreDeferredEmbeds } from './embedShortcode';
+import { expandHtmlSafeShortcodes } from './htmlSafeShortcode';
 import { expandVideoShortcodes } from './videoShortcode';
 
 marked.setOptions({
@@ -80,9 +83,18 @@ export function markdownToHtml(markdown: string): string {
     return '';
   }
 
-  const withVideo = expandVideoShortcodes(markdown);
+  const withHtml = expandHtmlSafeShortcodes(markdown);
+  const { markdown: withCalloutPlaceholders, renders: calloutRenders } =
+    deferCalloutShortcodes(withHtml);
+  const { markdown: withEmbedPlaceholders, renders: embedRenders } =
+    deferEmbedShortcodes(withCalloutPlaceholders);
+  const withVideo = expandVideoShortcodes(withEmbedPlaceholders);
 
-  return marked.parse(withVideo, { async: false }) as string;
+  let html = marked.parse(withVideo, { async: false }) as string;
+  html = restoreDeferredCallouts(html, calloutRenders);
+  html = restoreDeferredEmbeds(html, embedRenders);
+
+  return html;
 }
 
 export function htmlToMarkdown(html: string): string {

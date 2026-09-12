@@ -13,6 +13,7 @@ export type EditorCapability =
   | 'image'
   | 'video'
   | 'table'
+  | 'callout'
   | 'horizontalRule'
   | 'color';
 
@@ -42,6 +43,7 @@ export const EDITOR_CAPABILITIES: EditorCapability[] = [
   'image',
   'video',
   'table',
+  'callout',
   'horizontalRule',
   'color',
 ];
@@ -70,6 +72,7 @@ export const BUILTIN_EDITOR_PROFILES: EditorProfileDefinition[] = [
       'video',
       'code',
       'codeBlock',
+      'callout',
     ],
     modes: ['markdown', 'wysiwyg'],
   },
@@ -223,7 +226,87 @@ export function resolveEffectiveEditorProfile(
   return { ...profile, capabilities };
 }
 
-/** Optional toolbar features toggled in Settings → Editor (beyond profile defaults). */
+/** Built-in tools available on the Markdown toolbar (It.90). */
+export const MARKDOWN_TOOLBAR_CAPABILITIES: EditorCapability[] = [
+  'bold',
+  'italic',
+  'heading',
+  'bulletList',
+  'orderedList',
+  'blockquote',
+  'code',
+  'codeBlock',
+  'link',
+  'image',
+  'video',
+  'table',
+  'callout',
+];
+
+/** Built-in tools available on the WYSIWYG toolbar (It.90). */
+export const WYSIWYG_TOOLBAR_CAPABILITIES: EditorCapability[] = [...EDITOR_CAPABILITIES];
+
+export function parseToolbarList(raw: unknown): EditorCapability[] {
+  if (typeof raw !== 'string' || raw.trim() === '') {
+    return [];
+  }
+
+  const seen = new Set<EditorCapability>();
+  const ordered: EditorCapability[] = [];
+  for (const part of raw.split(',')) {
+    const capability = part.trim();
+    if (!isEditorCapability(capability) || seen.has(capability)) {
+      continue;
+    }
+    seen.add(capability);
+    ordered.push(capability);
+  }
+
+  return ordered;
+}
+
+export function serializeToolbarList(capabilities: Iterable<EditorCapability>): string {
+  return [...capabilities].join(',');
+}
+
+export function toolbarPresetForProfile(profileId: EditorProfileId): {
+  markdown: EditorCapability[];
+  wysiwyg: EditorCapability[];
+} {
+  const profile = getEditorProfile(profileId);
+  const markdown = profile.capabilities.filter((cap) => MARKDOWN_TOOLBAR_CAPABILITIES.includes(cap));
+  const wysiwyg = profile.capabilities.filter((cap) => WYSIWYG_TOOLBAR_CAPABILITIES.includes(cap));
+
+  return { markdown, wysiwyg };
+}
+
+/**
+ * Site-wide toolbar from Settings (It.90). Falls back to legacy profile + optional extras when unset.
+ */
+export function resolveEditorToolbar(
+  settings: Record<string, unknown> | undefined,
+  mode: 'markdown' | 'wysiwyg',
+  contentType: 'page' | 'article' = 'article'
+): EditorProfileDefinition {
+  const toolbarKey = mode === 'markdown' ? 'markdownToolbar' : 'wysiwygToolbar';
+  const configured = parseToolbarList(settings?.[toolbarKey]);
+
+  if (configured.length > 0) {
+    return {
+      id: 'developer',
+      label: 'Site toolbar',
+      description: 'Configured in Settings → Editor',
+      capabilities: configured,
+      modes: ['markdown', 'wysiwyg'],
+    };
+  }
+
+  const profileId = resolveDefaultProfileId(contentType, settings);
+  const profile = getEditorProfile(profileId, settings?.profiles);
+
+  return resolveEffectiveEditorProfile(profile, settings, mode);
+}
+
 export const OPTIONAL_MARKDOWN_CAPABILITIES: EditorCapability[] = [
   'heading',
   'bulletList',
@@ -266,6 +349,8 @@ export function countMarkdownToolbarActions(profile: EditorProfileDefinition): n
     blockquote: 1,
     code: 1,
     codeBlock: 1,
+    table: 1,
+    callout: 1,
   };
 
   return profile.capabilities.reduce((sum, cap) => sum + (map[cap] ?? 0), 0);

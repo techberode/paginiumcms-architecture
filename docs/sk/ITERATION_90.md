@@ -1,6 +1,6 @@
 # Iterácia 90 — Editor Workbench (toolbar builder + sprievodcovia publikovania)
 
-> **Stav:** ⏳ plánované  
+> **Stav:** 🟡 partial — **90a + 90b hotové**; **90c** mermaid čaká  
 > **Priorita:** 🟡 P1 — UX publikovania pre netechnických autorov  
 > **Vlna:** Editor & obsah (po It.79)  
 > **Plná špecifikácia (EN):** [../en/ITERATION_90.md](../en/ITERATION_90.md)
@@ -45,4 +45,4 @@ V editore článku **žiadny výber profilu**.
 
 ## Súvisiace
 
-[It.79](ITERATION_79.md) · [It.55](../ITERATION_55.md) · [It.89](../en/ITERATION_89.md)
+[It.91](ITERATION_91.md) trusted HTML · [It.79](ITERATION_79.md) · [It.55](../ITERATION_55.md) · [It.89](../en/ITERATION_89.md)

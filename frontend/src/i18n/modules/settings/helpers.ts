@@ -46,6 +46,16 @@ export function translateSettingFieldTooltip(
   return value !== key ? value : undefined;
 }
 
+export function translateSettingFieldNote(
+  t: TranslateFn,
+  groupKey: string,
+  fieldKey: string
+): string | undefined {
+  const key = `settings.fields.${groupKey}.${fieldKey}.note`;
+  const value = t(key);
+  return value !== key ? value : undefined;
+}
+
 export function translateSettingEnumOption(
   t: TranslateFn,
   fieldKey: string,

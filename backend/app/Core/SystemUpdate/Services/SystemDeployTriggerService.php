@@ -61,7 +61,7 @@ final class SystemDeployTriggerService
             return $this->fail('System deploy is disabled in settings', 403);
         }
 
-        $ref = trim($ref);
+        $ref = $this->deploy->normalizeDeployRef(trim($ref));
         if ($ref === '') {
             return $this->fail('Deploy ref is required', 422);
         }

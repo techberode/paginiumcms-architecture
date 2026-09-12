@@ -33,8 +33,8 @@ export function useSystemUpdateFlow(enabled: boolean): SystemUpdateFlowState {
   const readiness = check?.deploy_readiness ?? status?.deploy_readiness ?? null;
 
   const latestTag =
-    check?.update?.latest_tag ??
     check?.remote.latest_release_tag ??
+    check?.update?.latest_tag ??
     null;
 
   const updateStatus = check?.update?.status ?? null;

@@ -20,6 +20,7 @@ import {
   translateSettingEnumOption,
   translateSettingFieldHelp,
   translateSettingFieldLabel,
+  translateSettingFieldNote,
   translateSettingFieldTooltip,
   translateSettingGroup,
 } from '../../i18n/modules/settings/helpers';
@@ -40,7 +41,7 @@ import { AuthorAvatarField } from './AuthorAvatarField';
 import { AccessControlSettingsPanel } from './AccessControlSettingsPanel';
 import { SocialLinksSettingsPanel } from './SocialLinksSettingsPanel';
 import { EditorCustomComponentsPanel, type EditorComponentMeta } from './EditorCustomComponentsPanel';
-import { EditorExtensionsPanel } from './EditorExtensionsPanel';
+import { EditorToolbarBuilder } from './EditorToolbarBuilder';
 import { AppearanceSettingsPanel } from '../admin/AppearanceSettingsPanel';
 import { LayoutSettingsPanel } from '../admin/LayoutSettingsPanel';
 import { CmsInfoSettingsPanel } from './CmsInfoSettingsPanel';
@@ -319,7 +320,9 @@ export const SettingsView: React.FC = () => {
                         (field) =>
                           field.key !== 'profileCustomComponents' &&
                           field.key !== 'markdownExtraCapabilities' &&
-                          field.key !== 'wysiwygExtraCapabilities'
+                          field.key !== 'wysiwygExtraCapabilities' &&
+                          field.key !== 'markdownToolbar' &&
+                          field.key !== 'wysiwygToolbar'
                       )
                       .map((field) => (
                         <SettingFieldRow
@@ -332,7 +335,9 @@ export const SettingsView: React.FC = () => {
                           error={errors[field.key]?.message as string | undefined}
                         />
                       ))}
-                    <EditorExtensionsPanel watch={watch} setValue={setValue} />
+                    <EditorToolbarBuilder watch={watch} setValue={setValue} />
+                    <input type="hidden" {...register('markdownToolbar')} />
+                    <input type="hidden" {...register('wysiwygToolbar')} />
                     <input type="hidden" {...register('markdownExtraCapabilities')} />
                     <input type="hidden" {...register('wysiwygExtraCapabilities')} />
                     <EditorCustomComponentsPanel
@@ -431,6 +436,7 @@ const SettingFieldRow: React.FC<RowProps> = ({ groupKey, field, register, watch,
   const errorClass = error ? 'border-red-500 focus:ring-red-500' : '';
   const label = translateSettingFieldLabel(t, groupKey, field.key, field.label);
   const help = translateSettingFieldHelp(t, groupKey, field.key, field.help);
+  const note = translateSettingFieldNote(t, groupKey, field.key);
   const tooltip = translateSettingFieldTooltip(t, groupKey, field.key);
 
   if (groupKey === 'content' && field.key === 'blogAuthorAvatarUrl') {
@@ -625,6 +631,9 @@ const SettingFieldRow: React.FC<RowProps> = ({ groupKey, field, register, watch,
 
       {help && !error && (
         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{help}</p>
+      )}
+      {note && !error && (
+        <p className="mt-1 text-xs text-amber-700 dark:text-amber-300/90">{note}</p>
       )}
       {error && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>}
     </div>

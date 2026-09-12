@@ -104,6 +104,11 @@ use PaginiumCMS\Core\Drafts\Services\DraftManager;
 use PaginiumCMS\Core\Editor\Services\EditorComponentRegistry;
 use PaginiumCMS\Core\Editor\Services\EditorContentValidator;
 use PaginiumCMS\Core\Editor\Services\EditorProfileService;
+use PaginiumCMS\Core\Editor\Services\ExternalEmbedContentService;
+use PaginiumCMS\Core\Editor\Services\ExternalEmbedShortcode;
+use PaginiumCMS\Core\Editor\Services\HtmlSafeShortcode;
+use PaginiumCMS\Core\Editor\Services\TrustedHtmlContentService;
+use PaginiumCMS\Core\Security\Services\TrustedHtmlPurifier;
 use PaginiumCMS\Core\Editor\Services\TiptapHtmlRenderer;
 use PaginiumCMS\Core\Editor\Services\ContentBodyRenderer;
 use PaginiumCMS\Core\FlatFile\Services\ContentExportService;
@@ -996,8 +1001,31 @@ return [
         ->constructor(get(PluginManagerInterface::class)),
     EditorProfileService::class => create(EditorProfileService::class)
         ->constructor(get(SettingsRepositoryInterface::class), get(EditorComponentRegistry::class)),
+    HtmlSafeShortcode::class => create(HtmlSafeShortcode::class),
+    ExternalEmbedShortcode::class => create(ExternalEmbedShortcode::class),
+    TrustedHtmlPurifier::class => create(TrustedHtmlPurifier::class)
+        ->constructor(get(SettingsRepositoryInterface::class)),
+    TrustedHtmlContentService::class => create(TrustedHtmlContentService::class)
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(\PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface::class),
+            get(TrustedHtmlPurifier::class),
+            get(HtmlSafeShortcode::class),
+        ),
+    ExternalEmbedContentService::class => create(ExternalEmbedContentService::class)
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(\PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface::class),
+            get(ExternalEmbedShortcode::class),
+        ),
     EditorContentValidator::class => create(EditorContentValidator::class)
-        ->constructor(get(EditorProfileService::class), get(EditorComponentRegistry::class)),
+        ->constructor(
+            get(EditorProfileService::class),
+            get(EditorComponentRegistry::class),
+            get(TrustedHtmlContentService::class),
+            get(ExternalEmbedContentService::class),
+            get(HtmlSafeShortcode::class),
+        ),
 
     BlogAuthorSettings::class => create(BlogAuthorSettings::class)
         ->constructor(
@@ -1052,6 +1080,7 @@ return [
             get(OtpWorkflowService::class),
             get(DynamicValidator::class),
             get(EditorContentValidator::class),
+            get(TrustedHtmlContentService::class),
             get(ContentPathAclGuard::class),
             get(HookEmitter::class),
             get(LocaleResolver::class),

@@ -27,6 +27,7 @@ use PaginiumCMS\Core\Content\LocalizedContentValidator;
 use PaginiumCMS\Core\Content\LocalizedContentWriter;
 use PaginiumCMS\Core\Content\LocaleResolver;
 use PaginiumCMS\Core\Editor\Services\EditorContentValidator;
+use PaginiumCMS\Core\Editor\Services\TrustedHtmlContentService;
 use PaginiumCMS\Core\Hook\HookCatalog;
 use PaginiumCMS\Core\Hook\Services\HookEmitter;
 use PaginiumCMS\Core\Validation\ValidationException;
@@ -69,6 +70,7 @@ class ContentController
         private OtpWorkflowService $otpWorkflow,
         private DynamicValidator $dynamicValidator,
         private EditorContentValidator $editorContentValidator,
+        private TrustedHtmlContentService $trustedHtmlContent,
         private ContentPathAclGuard $pathAcl,
         private HookEmitter $hookEmitter,
         private LocaleResolver $localeResolver,
@@ -255,11 +257,14 @@ class ContentController
             '',
             false
         );
-        $validation = $this->validatePayload($data, $type, true);
+        $user = $this->resolveUser($request);
+        $validation = $this->validatePayload($data, $type, true, $user);
 
         if ($validation !== null) {
             return $this->json->error($response, $validation, 400);
         }
+
+        $this->normalizeEditorContentPayload($data, $user);
 
         $slug = (string) $data['slug'];
         if ($this->repository->findBySlug($slug, $type) !== null) {
@@ -307,7 +312,6 @@ class ContentController
                 ], 202);
             }
 
-            $user = $this->resolveUser($request);
             $this->emitContentHook(HookCatalog::CONTENT_BEFORE_SAVE, $content, $type, 'create', $user);
             $this->repository->save($content);
             $this->emitContentHook(HookCatalog::CONTENT_AFTER_SAVE, $content, $type, 'create', $user);
@@ -359,11 +363,14 @@ class ContentController
             (string) ($data['title'] ?? $existing->getTitle()),
             $existing->getPath()
         );
-        $validation = $this->validatePayload($data, $type, false);
+        $user = $this->resolveUser($request);
+        $validation = $this->validatePayload($data, $type, false, $user);
 
         if ($validation !== null) {
             return $this->json->error($response, $validation, 400);
         }
+
+        $this->normalizeEditorContentPayload($data, $user);
 
         // === Blok: Optimistické zamykanie / detekcia konfliktu (Iterácia 2) ===
         // Ak klient poslal `baseRevision`, overíme, či sa súbor na disku medzičasom nezmenil.
@@ -1364,7 +1371,7 @@ class ContentController
 
     /**
      * @param array<int|string, mixed> $data
-     */private function validatePayload(array $data, string $type, bool $requireSlug): ?string
+     */private function validatePayload(array $data, string $type, bool $requireSlug, ?User $user = null): ?string
     {
         try {
             $this->dynamicValidator->validate($type, $this->normalizeValidationData($data));
@@ -1401,13 +1408,36 @@ class ContentController
 
         $profileError = $this->editorContentValidator->validate(
             $type,
-            $this->normalizeValidationData($data)
+            $this->normalizeValidationData($data),
+            $user
         );
         if ($profileError !== null) {
             return $profileError;
         }
 
         return null;
+    }
+
+    /**
+     * @param array<int|string, mixed> $data
+     */
+    private function normalizeEditorContentPayload(array &$data, ?User $user): void
+    {
+        if (!$this->trustedHtmlContent->canUseTrustedHtml($user)) {
+            return;
+        }
+
+        $format = (string) ($data['contentFormat'] ?? 'markdown');
+        if ($format !== 'markdown') {
+            return;
+        }
+
+        $content = (string) ($data['content'] ?? '');
+        if ($content === '') {
+            return;
+        }
+
+        $data['content'] = $this->trustedHtmlContent->normalizeMarkdown($content);
     }
 
     /**

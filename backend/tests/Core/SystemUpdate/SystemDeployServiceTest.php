@@ -39,6 +39,29 @@ final class SystemDeployServiceTest extends TestCase
         $this->addToAssertionCount(1);
     }
 
+    public function testAssertAllowedRefAcceptsSemverTagWithoutVPrefix(): void
+    {
+        $settings = $this->container()->get(SettingsRepositoryInterface::class);
+        $service = new SystemDeployService($settings);
+
+        $service->assertAllowedRef('2.1.0-beta.71', [
+            'allowDeployTags' => true,
+            'allowDeployMain' => false,
+        ]);
+
+        $this->addToAssertionCount(1);
+    }
+
+    public function testNormalizeDeployRefAddsVPrefixForSemverTags(): void
+    {
+        $settings = $this->container()->get(SettingsRepositoryInterface::class);
+        $service = new SystemDeployService($settings);
+
+        $this->assertSame('v2.1.0-beta.71', $service->normalizeDeployRef('2.1.0-beta.71'));
+        $this->assertSame('v2.1.0-beta.71', $service->normalizeDeployRef('v2.1.0-beta.71'));
+        $this->assertSame('origin/main', $service->normalizeDeployRef('origin/main'));
+    }
+
     public function testAssertAllowedRefRejectsBranchWhenDisabled(): void
     {
         $settings = $this->container()->get(SettingsRepositoryInterface::class);

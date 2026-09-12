@@ -39,16 +39,17 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | 12 | **It.81** Editorial workflow & content ops | 🟡 | ✅ | 81a–81f shipped — [ITERATION_81](ITERATION_81.md) |
 | 13 | **It.82** Origin Panel (maintainer cockpit) | 🔵 | ✅ | env-gated; excluded from customer archive — [ITERATION_82](ITERATION_82.md) |
 | 14 | **It.87** Project site planner + UX audit completion | 🟡 P1 | ✅ shipped | [ITERATION_87](ITERATION_87.md) — 87a–87m |
-| 15 | **It.88** Theme Studio (Monaco, policy, preview, thumbnail) | 🟡 P1 | ⏳ | after 87k for JS tab — [ITERATION_88](ITERATION_88.md) |
+| 15 | **It.88** Theme Studio (Monaco, policy, preview, thumbnail) | 🟡 P1 | ✅ | shipped `beta.69` — [ITERATION_88](ITERATION_88.md) |
 | 16 | **It.78** Unified upload security | 🟡 | ✅ | shipped `beta.70` — [ITERATION_78](ITERATION_78.md) |
 | 17 | **It.79** DAM video | 🟡 | ✅ | shipped `beta.71` — [ITERATION_79](ITERATION_79.md) |
 | 18 | **It.90** Editor Workbench (toolbar + wizards, MD + Tiptap) | 🟡 P1 | ⏳ | after It.79 — [ITERATION_90](ITERATION_90.md) |
-| 19 | **It.25** Setup wizard/update UX | 🟡 | ✅ basic + M1+ | shipped `beta.62`–`beta.65`; not a release blocker anymore |
-| 20 | **It.76/77** Translation providers | 🔵 | ⏳ | after It.73 (shipped) |
-| 21 | **It.75** AI agent | 🔵 | ⏳ | after locale + translation providers |
-| 22 | **It.83** Theme runtime + Terminal Breach | 🟡 | ✅ | shipped `beta.59` — [ITERATION_83](ITERATION_83.md) |
-| 23 | **It.84** Categories, blog sidebar, landing, roles, nav | 🟡 | ✅ | **84a–84e** complete — [ITERATION_84](ITERATION_84.md) |
-| 24 | **It.86** Admin UX polish (search, print, bulk) | 🟡 | ✅ | shipped **2.1.0-beta.60** — ISS-158/159; 86d → It.87 |
+| 19 | **It.91** Trusted HTML & external embeds | 🟡 P1 | ⏳ 91a | role-based HTMLPurifier + `:::embed` — [ITERATION_91](ITERATION_91.md) |
+| 20 | **It.25** Setup wizard/update UX | 🟡 | ✅ basic + M1+ | shipped `beta.62`–`beta.65`; not a release blocker anymore |
+| 21 | **It.76/77** Translation providers | 🔵 | ⏳ | after It.73 (shipped) |
+| 22 | **It.75** AI agent | 🔵 | ⏳ | after locale + translation providers |
+| 23 | **It.83** Theme runtime + Terminal Breach | 🟡 | ✅ | shipped `beta.59` — [ITERATION_83](ITERATION_83.md) |
+| 24 | **It.84** Categories, blog sidebar, landing, roles, nav | 🟡 | ✅ | **84a–84e** complete — [ITERATION_84](ITERATION_84.md) |
+| 25 | **It.86** Admin UX polish (search, print, bulk) | 🟡 | ✅ | shipped **2.1.0-beta.60** — ISS-158/159; 86d → It.87 |
 
 ---
 
@@ -131,6 +132,15 @@ See [ITERATION_79](ITERATION_79.md).
 - profiles become optional presets only.
 
 See [ITERATION_90](ITERATION_90.md).
+
+### It.91 — Trusted HTML & external embeds 🟡 ⏳ (91a)
+
+- RBAC `content:trusted-html`, `content:embed-external`,
+- `:::html-safe` + HTMLPurifier; `:::embed` YouTube/Vimeo,
+- FE “Insert HTML block” / embed wizard (permission-gated),
+- never raw iframe paste; audit on trusted saves.
+
+See [ITERATION_91](ITERATION_91.md).
 
 ### It.73 — multi-locale content 🟡
 
@@ -274,7 +284,8 @@ Deferred (post-M1+ / stretch):
 | **It.84** presentation & access expansion | ✅ | [ITERATION_84](ITERATION_84.md) — 84a–84e complete (2026-08-17) |
 | Server metrics agent (remaining It.46) | ⏳ | coordinate with It.71 |
 | **It.79** DAM video | ✅ | shipped `beta.71` — [ITERATION_79](ITERATION_79.md) |
-| **It.90** Editor Workbench | ⏳ | after It.79 — [ITERATION_90](ITERATION_90.md) |
+| **It.90** Editor Workbench | ⏳ | [ITERATION_90](ITERATION_90.md) |
+| **It.91** Trusted HTML & embeds | ⏳ 91a | [ITERATION_91](ITERATION_91.md) |
 | **RequestJsonBody rollout** | ✅ | all HTTP controllers + OTP/contact rate-limit middleware (`post-beta.40`) |
 | Scoped FileManager | ⏳ candidate | assign a new unique number after scope approval |
 | Frontend inline editing | ⏳ candidate | reuse existing lock/editor flow |
@@ -357,6 +368,7 @@ Docs gate
   → It.78 (upload security gate) ✅
   → It.79 (DAM video) ✅
   → It.90 (Editor Workbench — toolbar builder + wizards)
+  → It.91 (Trusted HTML + external embeds)
   → It.82 (Origin Panel — maintainer dev + paginiumcms.com only; parallel OK)
   → It.76 / It.77
   → It.75

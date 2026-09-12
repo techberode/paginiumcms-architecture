@@ -1,9 +1,9 @@
 # PaginiumCMS — project roadmap
 
-> **Documentation checkpoint:** September 9, 2026  
-> **Latest release:** see [`CHANGELOG.md`](../../CHANGELOG.md) (currently `v2.1.0-beta.69`) · handoff: [CONTINUATION.md](CONTINUATION.md)  
+> **Documentation checkpoint:** September 12, 2026  
+> **Latest release:** see [`CHANGELOG.md`](../../CHANGELOG.md) (currently `v2.1.0-beta.71`) · handoff: [CONTINUATION.md](CONTINUATION.md)  
 > **Direction:** Hybrid Headless Content Engine · No-SQL file source of truth · API-first  
-> **Code status:** Stabilization freeze **closed** — implement remaining planned iterations (It.78 unified upload security next)
+> **Code status:** Stabilization freeze **closed** — active: **It.91a** trusted HTML · **It.90** Editor Workbench
 
 This roadmap is the canonical map of the **future direction**. Release history belongs in [`CHANGELOG.md`](../../CHANGELOG.md), detailed implementation specifications in `ITERATION_*.md`, and incidents in [`ISSUES.md`](ISSUES.md).
 
@@ -144,7 +144,7 @@ The order is **It.73 → It.76/77 → It.75**. The AI agent may only propose cha
 ```text
 It.87 Project Site Planner (shipped)
     → It.88 Theme Studio
-    → It.78 upload security → It.79 DAM video
+    → It.78 upload security ✅ → It.79 DAM video ✅ → It.90 Editor Workbench → It.91 trusted HTML
     → It.72 S3 remainder
     → It.58f/g layout remainder
     → It.70 GitHub publish UI

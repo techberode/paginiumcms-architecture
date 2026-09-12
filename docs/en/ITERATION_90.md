@@ -1,6 +1,6 @@
 # Iteration 90 — Editor Workbench (toolbar builder + publishing wizards)
 
-> **Status:** ⏳ planned  
+> **Status:** 🟡 partial — **90a + 90b shipped**; **90c** mermaid pending  
 > **Priority:** 🟡 P1 — publishing UX for non-technical authors  
 > **Wave:** Editor & content authoring (post It.79)  
 > **Depends on:** [It.55](ITERATION_55.md) Tiptap · [It.79](ITERATION_79.md) DAM video · [It.60](ITERATION_60.md) editor component registry · [It.78](ITERATION_78.md) upload policy  
@@ -179,9 +179,9 @@ editor:
 
 ---
 
-## Out of scope
+## Out of scope (moved to It.91)
 
-- YouTube/Vimeo iframe embeds.
+- Trusted HTML blocks and YouTube/Vimeo embeds → [It.91](ITERATION_91.md) (`:::html-safe`, `:::embed`).
 - Full MDX / React-in-content.
 - Arbitrary user JavaScript in articles.
 - Removing `editorProfile` from front matter in one release (deprecate gradually).

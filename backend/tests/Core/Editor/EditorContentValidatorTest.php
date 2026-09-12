@@ -7,6 +7,12 @@ namespace PaginiumCMS\Tests\Core\Editor;
 use PaginiumCMS\Core\Editor\Services\EditorComponentRegistry;
 use PaginiumCMS\Core\Editor\Services\EditorContentValidator;
 use PaginiumCMS\Core\Editor\Services\EditorProfileService;
+use PaginiumCMS\Core\Editor\Services\ExternalEmbedContentService;
+use PaginiumCMS\Core\Editor\Services\ExternalEmbedShortcode;
+use PaginiumCMS\Core\Editor\Services\HtmlSafeShortcode;
+use PaginiumCMS\Core\Editor\Services\TrustedHtmlContentService;
+use PaginiumCMS\Core\Security\Services\TrustedHtmlPurifier;
+use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
 use PaginiumCMS\Core\FlatFile\Services\FileReader;
 use PaginiumCMS\Core\FlatFile\Services\FileValidator;
 use PaginiumCMS\Core\FlatFile\Services\FileWriter;
@@ -36,9 +42,16 @@ final class EditorContentValidatorTest extends TestCase
         $plugins = $this->createMock(PluginManagerInterface::class);
         $plugins->method('listEnabledEditorComponents')->willReturn([]);
         $components = new EditorComponentRegistry($plugins);
+        $auth = $this->createMock(AuthorizationInterface::class);
+        $auth->method('hasPermission')->willReturn(false);
+        $trustedHtml = new TrustedHtmlContentService($settings, $auth, new TrustedHtmlPurifier($settings));
+        $externalEmbed = new ExternalEmbedContentService($settings, $auth, new ExternalEmbedShortcode());
         $this->validator = new EditorContentValidator(
             new EditorProfileService($settings, $components),
-            $components
+            $components,
+            $trustedHtml,
+            $externalEmbed,
+            new HtmlSafeShortcode(),
         );
     }
 
@@ -148,6 +161,56 @@ final class EditorContentValidatorTest extends TestCase
         ]);
 
         $this->assertSame('Markdown obsah nesmie obsahovať raw HTML tagy.', $error);
+    }
+
+    public function testMarkdownRejectsHtmlSafeBlockWithoutPermission(): void
+    {
+        $error = $this->validator->validate('article', [
+            'content' => ":::html-safe\n<div>ok</div>\n:::\n",
+            'contentFormat' => 'markdown',
+            'editorProfile' => 'developer',
+        ]);
+
+        $this->assertSame(
+            'Trusted HTML bloky nie sú povolené pre tento účet alebo sú vypnuté v nastaveniach.',
+            $error
+        );
+    }
+
+    public function testMarkdownAllowsCalloutBlock(): void
+    {
+        $error = $this->validator->validate('article', [
+            'content' => ":::note\nSafe text\n:::\n",
+            'contentFormat' => 'markdown',
+            'editorProfile' => 'blog',
+        ]);
+
+        $this->assertNull($error);
+    }
+
+    public function testMarkdownRejectsCalloutWithScript(): void
+    {
+        $error = $this->validator->validate('article', [
+            'content' => ":::warning\n<script>x</script>\n:::\n",
+            'contentFormat' => 'markdown',
+            'editorProfile' => 'developer',
+        ]);
+
+        $this->assertSame('Callout bloky nepovoľujú skripty ani iframe.', $error);
+    }
+
+    public function testMarkdownRejectsEmbedBlockWithoutPermission(): void
+    {
+        $error = $this->validator->validate('article', [
+            'content' => ":::embed\nprovider: youtube\nid: dQw4w9WgXcQ\n:::\n",
+            'contentFormat' => 'markdown',
+            'editorProfile' => 'developer',
+        ]);
+
+        $this->assertSame(
+            'Externé embed bloky nie sú povolené pre tento účet alebo sú vypnuté v nastaveniach.',
+            $error
+        );
     }
 
     public function testHtmlRejectsScriptTag(): void

@@ -15,6 +15,7 @@ import { PublicSiteProvider } from './context/PublicSiteContext';
 import App from './App';
 import { SiteBrandingHead } from './components/branding/SiteBrandingHead';
 import './monacoSetup';
+import './fonts.css';
 import './index.css';
 import './theme/pgLayout.css';
 import { logFrontendStartup } from './utils/debugLog';

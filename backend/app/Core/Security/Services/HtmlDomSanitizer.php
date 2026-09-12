@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\Security\Services;
 
+use PaginiumCMS\Core\Editor\Services\ExternalEmbedShortcode;
 use DOMDocument;
 use DOMElement;
 
@@ -27,6 +28,18 @@ final class HtmlDomSanitizer
         'blockquote' => ['cite'],
         'code' => ['class'],
         'pre' => ['class'],
+        'iframe' => [
+            'src',
+            'title',
+            'width',
+            'height',
+            'loading',
+            'allow',
+            'allowfullscreen',
+            'referrerpolicy',
+            'sandbox',
+            'frameborder',
+        ],
     ];
 
     /**
@@ -83,6 +96,10 @@ final class HtmlDomSanitizer
             }
 
             $this->sanitizeAttributes($child);
+            if ($tag === 'iframe' && !$this->isAllowedEmbedIframe($child)) {
+                $toRemove[] = $child;
+                continue;
+            }
             $this->sanitizeChildren($child, $allowedTags);
         }
 
@@ -141,5 +158,12 @@ final class HtmlDomSanitizer
 
         // Relative paths without scheme (e.g. blog/post)
         return preg_match('~^[a-z][a-z0-9+\-.]*:~i', $value) !== 1;
+    }
+
+    private function isAllowedEmbedIframe(DOMElement $iframe): bool
+    {
+        $src = trim($iframe->getAttribute('src'));
+
+        return $src !== '' && ExternalEmbedShortcode::isAllowedIframeSrc($src);
     }
 }

@@ -1,9 +1,31 @@
 // frontend/src/api/drafts.ts
 // === Drafts API (Iterácia 2) ===
 // Typované volania auto-save konceptov /api/drafts/{type}/{slug}.
+import type { ArticleAuthorSettings } from '../utils/articleAuthorSettings';
+import type { ArticleCommentsSettings } from '../utils/articleCommentsSettings';
+import type { EditorMode } from '../utils/contentEditor';
+import type { ContentLocaleCode, LocaleEditorState } from '../utils/contentEditorLocale';
+import type { ContentEditorStatus } from '../utils/contentScheduling';
+import type { EditorProfileId } from '../utils/editorProfiles';
 import apiClient from './client';
 
 export type ContentType = 'page' | 'article';
+
+/** Voliteľný rozšírený stav editora (Nastavenia → Obsah → draftFullEditorState). */
+export interface DraftEditorSnapshot {
+  activeLocale: ContentLocaleCode;
+  localeStates: Partial<Record<ContentLocaleCode, LocaleEditorState>>;
+  localeStatusMap?: Partial<Record<ContentLocaleCode, ContentEditorStatus>>;
+  editorMode?: EditorMode;
+  editorProfile?: EditorProfileId;
+  template?: string;
+  layoutTemplate?: string;
+  editSlug?: string;
+  scheduledAt?: string;
+  articleCategory?: string;
+  articleComments?: ArticleCommentsSettings;
+  articleAuthorSettings?: ArticleAuthorSettings;
+}
 
 export interface Draft {
   type: ContentType;
@@ -14,6 +36,7 @@ export interface Draft {
   baseRevision: string;
   savedBy: string;
   savedAt: number;
+  editorSnapshot?: DraftEditorSnapshot;
 }
 
 export interface DraftPayload {
@@ -21,6 +44,7 @@ export interface DraftPayload {
   content: string;
   status: string;
   baseRevision: string;
+  editorSnapshot?: DraftEditorSnapshot;
 }
 
 /**

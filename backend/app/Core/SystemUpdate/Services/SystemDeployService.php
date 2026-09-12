@@ -51,6 +51,7 @@ final class SystemDeployService
                 $ref = 'origin/' . $defaultBranch;
             }
         }
+        $ref = $this->normalizeDeployRef($ref);
 
         try {
             $this->assertAllowedRef($ref, $config);
@@ -94,11 +95,26 @@ final class SystemDeployService
         );
     }
 
+    public function normalizeDeployRef(string $ref): string
+    {
+        $ref = trim($ref);
+        if ($ref === '') {
+            return '';
+        }
+
+        if (preg_match('/^\d+\.\d+\.\d+(-[a-zA-Z0-9.]+)?$/', $ref) === 1) {
+            return 'v' . $ref;
+        }
+
+        return $ref;
+    }
+
     /**
      * @param array<string, mixed> $config
      */
     public function assertAllowedRef(string $ref, array $config): void
     {
+        $ref = $this->normalizeDeployRef($ref);
         if ($ref === '' || preg_match('/[^a-zA-Z0-9._\\/-]/', $ref) === 1) {
             throw new InvalidArgumentException('Invalid deploy ref');
         }

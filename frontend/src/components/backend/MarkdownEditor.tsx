@@ -47,10 +47,11 @@ import {
 import {
   getEditorProfile,
   resolveDefaultProfileId,
-  resolveEffectiveEditorProfile,
+  resolveEditorToolbar,
   type EditorProfileId,
 } from '../../utils/editorProfiles';
 import { buildVideoShortcode } from '../../utils/videoShortcode';
+import type { ExternalEmbedProvider } from '../../utils/embedShortcode';
 import {
   findNavigationMatches,
   isSlugCollisionHttp,
@@ -83,6 +84,7 @@ import {
   type ContentLocaleCode,
   type LocaleEditorState,
 } from '../../utils/contentEditorLocale';
+import { applyDraftEditorSnapshot, buildDraftEditorSnapshot } from '../../utils/draftEditorSnapshot';
 
 interface MarkdownEditorProps {
   type?: ContentType;
@@ -179,26 +181,111 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
     });
   }, [isNew, type, user?.bio, user?.avatarUrl, user?.id, user?.name]);
 
+  const draftFullEditorState = settings.content?.draftFullEditorState === true;
+
+  const draftPayload = useMemo(() => {
+    const base = { title, content, status, baseRevision };
+    if (!draftFullEditorState) {
+      return base;
+    }
+
+    return {
+      ...base,
+      editorSnapshot: buildDraftEditorSnapshot({
+        type,
+        activeLocale,
+        localeStates,
+        localeStatusMap,
+        title,
+        content,
+        contentFormat,
+        status,
+        scheduledAt,
+        seo,
+        editorMode,
+        editorProfile,
+        template,
+        layoutTemplate,
+        editSlug,
+        articleCategory,
+        articleComments,
+        articleAuthorSettings,
+      }),
+    };
+  }, [
+    activeLocale,
+    articleAuthorSettings,
+    articleCategory,
+    articleComments,
+    baseRevision,
+    content,
+    contentFormat,
+    draftFullEditorState,
+    editSlug,
+    editorMode,
+    editorProfile,
+    layoutTemplate,
+    localeStates,
+    localeStatusMap,
+    scheduledAt,
+    seo,
+    status,
+    template,
+    title,
+    type,
+  ]);
+
+  const handleLeaveSaved = useCallback(() => {
+    toast.info(t('editor.markdown.autoSave.leaveSaved'));
+  }, [toast, t]);
+
   const autoSave = useAutoSave({
     type,
     slug: slug ?? '',
-    data: { title, content, status, baseRevision },
+    data: draftPayload,
     enabled: !isNew && canEdit,
+    onLeaveSaved: handleLeaveSaved,
   });
 
-  const editorProfileDefinition = useMemo(
-    () => getEditorProfile(editorProfile, settings.editor?.profiles),
-    [editorProfile, settings.editor?.profiles]
-  );
+  const prevEditorLoadingRef = useRef(true);
+  useEffect(() => {
+    if (prevEditorLoadingRef.current && !loading && !isNew && canEdit) {
+      autoSave.syncBaseline();
+    }
+    prevEditorLoadingRef.current = loading;
+  }, [autoSave.syncBaseline, canEdit, isNew, loading]);
+
   const editorSettings = settings.editor as Record<string, unknown> | undefined;
   const markdownEditorProfile = useMemo(
-    () => resolveEffectiveEditorProfile(editorProfileDefinition, editorSettings, 'markdown'),
-    [editorProfileDefinition, editorSettings]
+    () => resolveEditorToolbar(editorSettings, 'markdown', type),
+    [editorSettings, type]
   );
   const wysiwygEditorProfile = useMemo(
-    () => resolveEffectiveEditorProfile(editorProfileDefinition, editorSettings, 'wysiwyg'),
-    [editorProfileDefinition, editorSettings]
+    () => resolveEditorToolbar(editorSettings, 'wysiwyg', type),
+    [editorSettings, type]
   );
+  const canUseTrustedHtml = useMemo(() => {
+    const enabled = Boolean(editorSettings?.trustedHtmlEnabled);
+    const permissions = user?.permissions ?? [];
+
+    return enabled && permissions.includes('content:trusted-html');
+  }, [editorSettings?.trustedHtmlEnabled, user?.permissions]);
+
+  const embedProviders = useMemo((): ExternalEmbedProvider[] => {
+    const raw = String(editorSettings?.embedProvidersEnabled ?? 'youtube,vimeo');
+    const parsed = raw
+      .split(',')
+      .map((part) => part.trim().toLowerCase())
+      .filter((part): part is ExternalEmbedProvider => part === 'youtube' || part === 'vimeo');
+
+    return parsed.length > 0 ? parsed : ['youtube', 'vimeo'];
+  }, [editorSettings?.embedProvidersEnabled]);
+
+  const canUseExternalEmbed = useMemo(() => {
+    const permissions = user?.permissions ?? [];
+
+    return embedProviders.length > 0 && permissions.includes('content:embed-external');
+  }, [embedProviders.length, user?.permissions]);
 
   useEffect(() => {
     if (isNew) {
@@ -421,6 +508,40 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
     if (!slug) return;
     const draft = await loadDraft(type, slug);
     if (draft) {
+      if (draftFullEditorState && draft.editorSnapshot) {
+        const restored = applyDraftEditorSnapshot(draft.editorSnapshot, editorMode);
+        if (restored) {
+          setLocaleStates(restored.localeStates);
+          setLocaleStatusMap(restored.localeStatusMap);
+          setActiveLocale(restored.activeLocale);
+          setEditorMode(restored.editorMode);
+          setEditorProfile(restored.editorProfile);
+          setTemplate(restored.template);
+          setLayoutTemplate(restored.layoutTemplate);
+          setEditSlug(restored.editSlug);
+          setScheduledAt(restored.scheduledAt);
+          setContentFormat(restored.applied.contentFormat);
+          setTitle(restored.applied.title);
+          setContent(restored.applied.content);
+          setStatus(restored.applied.status);
+          setSeo(restored.applied.seo);
+          if (type === 'article') {
+            if (restored.articleCategory !== undefined) {
+              setArticleCategory(restored.articleCategory);
+            }
+            if (restored.articleComments) {
+              setArticleComments(restored.articleComments);
+            }
+            if (restored.articleAuthorSettings) {
+              setArticleAuthorSettings(restored.articleAuthorSettings);
+            }
+          }
+          toast.info(t('editor.markdown.toast.draftRestoredFull'));
+          setPendingDraftAt(null);
+          return;
+        }
+      }
+
       const format = inferContentFormat(draft.content);
       setTitle(draft.title);
       setContentFormat(format);
@@ -590,6 +711,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
           if (!isNew && slug) {
             await discardDraft(type, slug);
           }
+          autoSave.syncBaseline();
           toast.success(
             options?.markReviewed ? t('content.stale.reviewedToast') : t('editor.markdown.toast.saved')
           );
@@ -658,6 +780,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
       navigate,
       toast,
       t,
+      autoSave.syncBaseline,
     ]
   );
 
@@ -748,7 +871,18 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         ? t('editor.markdown.autoSave.saved')
         : autoSave.status === 'error'
           ? t('editor.markdown.autoSave.error')
-          : '';
+          : autoSave.isDirty
+            ? t('editor.markdown.autoSave.unsaved')
+            : '';
+
+  const autoSaveLabelTone =
+    autoSave.status === 'error'
+      ? 'error'
+      : autoSave.status === 'saved'
+        ? 'success'
+        : autoSave.isDirty
+          ? 'warning'
+          : 'default';
 
   if (loading) {
     return (
@@ -803,7 +937,6 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         content={content}
         contentFormat={contentFormat}
         editorMode={editorMode}
-        editorProfile={editorProfile}
         seo={seo}
         storagePath={resolvedStoragePath}
         publicPath={publicPath}
@@ -812,6 +945,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         saving={saving}
         seoOpen={seoOpen}
         autoSaveLabel={autoSaveLabel}
+        autoSaveLabelTone={autoSaveLabelTone}
         lockIndicator={!isNew ? <LockIndicator resourceId={resourceId} onLockChange={setCanEdit} /> : null}
         activeLocale={activeLocale}
         localeOptions={[...SUPPORTED_LOCALES]}
@@ -831,7 +965,6 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         onSeoChange={setSeo}
         onSeoOpenChange={setSeoOpen}
         onEditorModeChange={switchEditorMode}
-        onEditorProfileChange={setEditorProfile}
         onCancel={() => navigate(type === 'article' ? '/articles' : '/pages')}
         onSave={() => void handleSave()}
         onMarkReviewed={() => void handleSave(undefined, undefined, { markReviewed: true })}
@@ -901,6 +1034,9 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
               setMediaPickerOpen(true);
             }}
             profile={markdownEditorProfile}
+            canUseTrustedHtml={canUseTrustedHtml}
+            canUseExternalEmbed={canUseExternalEmbed}
+            embedProviders={embedProviders}
             onBlockedAction={(message) => toast.warning(message)}
           />
         )}

@@ -117,6 +117,29 @@ final class SystemUpdateControllerTest extends TestCase
         $this->assertSame('v2.1.0-beta.39', $data['data']['ref']);
     }
 
+    public function testRunAcceptsSemverTagWithoutVPrefix(): void
+    {
+        $this->loginAsSuperAdminUser();
+
+        $settings = $this->container()->get(SettingsRepositoryInterface::class);
+        $settings->setGroup('systemUpdate', array_merge($settings->group('systemUpdate'), [
+            'deployEnabled' => true,
+            'allowDeployTags' => true,
+            'allowDeployMain' => false,
+        ]));
+
+        $response = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/admin/system/update/run', [
+                'ref' => '2.1.0-beta.71',
+            ])
+        );
+        $data = $this->getJsonResponse($response);
+
+        $this->assertSame(200, $response->getStatusCode(), (string) json_encode($data, JSON_UNESCAPED_UNICODE));
+        $this->assertTrue($data['success']);
+        $this->assertSame('v2.1.0-beta.71', $data['data']['ref']);
+    }
+
     public function testRunEmptyRefRequiresTagWhenBranchDeployDisabled(): void
     {
         $this->loginAsSuperAdminUser();

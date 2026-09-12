@@ -13,7 +13,16 @@ import {
   Quote,
   Sparkles,
   SquareCode,
+  FileCode2,
+  Youtube,
+  Table2,
+  Megaphone,
 } from 'lucide-react';
+import { CalloutInsertModal } from './CalloutInsertModal';
+import { EmbedInsertModal } from './EmbedInsertModal';
+import { HtmlBlockInsertModal } from './HtmlBlockInsertModal';
+import { TableInsertModal } from './TableInsertModal';
+import type { ExternalEmbedProvider } from '../../utils/embedShortcode';
 import { markdownToHtml, wrapSelection, insertAtCursor } from '../../utils/contentEditor';
 import { sanitizePublicHtml } from '../../utils/sanitizeHtml';
 import {
@@ -32,6 +41,9 @@ interface MarkdownContentEditorProps {
   tabSize?: number;
   onPickMedia?: () => void;
   onPickVideo?: () => void;
+  canUseTrustedHtml?: boolean;
+  canUseExternalEmbed?: boolean;
+  embedProviders?: ExternalEmbedProvider[];
   profile: EditorProfileDefinition;
   onBlockedAction?: (message: string) => void;
 }
@@ -46,6 +58,9 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
   tabSize = 2,
   onPickMedia,
   onPickVideo,
+  canUseTrustedHtml = false,
+  canUseExternalEmbed = false,
+  embedProviders = ['youtube', 'vimeo'],
   profile,
   onBlockedAction,
 }) => {
@@ -55,6 +70,10 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [previewMode, setPreviewMode] = useState<PreviewMode>('split');
   const [customComponents, setCustomComponents] = useState<EditorComponentRegistration[]>([]);
+  const [htmlBlockOpen, setHtmlBlockOpen] = useState(false);
+  const [embedOpen, setEmbedOpen] = useState(false);
+  const [tableOpen, setTableOpen] = useState(false);
+  const [calloutOpen, setCalloutOpen] = useState(false);
 
   useEffect(() => {
     void loadAllowedEditorComponents(profile, editorSettings).then(setCustomComponents);
@@ -190,6 +209,22 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
                 wrapSelection(text, start, end, '```\n', '\n```', 'code')
               )
             )}
+          {canUseTrustedHtml &&
+            toolbarButton(t('editor.htmlBlock.toolbar'), <FileCode2 size={16} />, () =>
+              setHtmlBlockOpen(true)
+            )}
+          {canUseExternalEmbed &&
+            toolbarButton(t('editor.embed.toolbar'), <Youtube size={16} />, () =>
+              setEmbedOpen(true)
+            )}
+          {profileAllows(profile, 'table') &&
+            toolbarButton(t('editor.tableInsert.toolbar'), <Table2 size={16} />, () =>
+              setTableOpen(true)
+            )}
+          {profileAllows(profile, 'callout') &&
+            toolbarButton(t('editor.callout.toolbar'), <Megaphone size={16} />, () =>
+              setCalloutOpen(true)
+            )}
           {customComponents.length > 0 && (
             <span className="w-px h-6 bg-slate-300 dark:bg-slate-600 mx-1" />
           )}
@@ -262,6 +297,36 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
           </div>
         )}
       </div>
+
+      <HtmlBlockInsertModal
+        open={htmlBlockOpen}
+        onClose={() => setHtmlBlockOpen(false)}
+        onInsert={(block) =>
+          applyEdit((text, start, end) => insertAtCursor(text, start, end, block))
+        }
+      />
+      <EmbedInsertModal
+        open={embedOpen}
+        enabledProviders={embedProviders}
+        onClose={() => setEmbedOpen(false)}
+        onInsert={(block) =>
+          applyEdit((text, start, end) => insertAtCursor(text, start, end, block))
+        }
+      />
+      <TableInsertModal
+        open={tableOpen}
+        onClose={() => setTableOpen(false)}
+        onInsert={(block) =>
+          applyEdit((text, start, end) => insertAtCursor(text, start, end, block))
+        }
+      />
+      <CalloutInsertModal
+        open={calloutOpen}
+        onClose={() => setCalloutOpen(false)}
+        onInsert={(block) =>
+          applyEdit((text, start, end) => insertAtCursor(text, start, end, block))
+        }
+      />
     </div>
   );
 };

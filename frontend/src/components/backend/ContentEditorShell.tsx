@@ -14,8 +14,6 @@ import type { ContentType } from '../../api/drafts';
 import type { ContentEditorStatus } from '../../utils/contentScheduling';
 import type { NavigationItem } from '../../api/navigation';
 import type { EditorMode, ContentFormat } from '../../utils/contentEditor';
-import type { EditorProfileId } from '../../utils/editorProfiles';
-import { EditorProfilePicker } from './EditorProfilePicker';
 import { countContentStats, resolveEditorSlug } from '../../utils/contentEditorMeta';
 import { SeoMetadataPanel, type SeoFormValues } from './SeoMetadataPanel';
 import { SeoHealthBadge } from './SeoHealthBadge';
@@ -61,7 +59,6 @@ interface ContentEditorShellProps {
   content: string;
   contentFormat: ContentFormat;
   editorMode: EditorMode;
-  editorProfile: EditorProfileId;
   seo: SeoFormValues;
   storagePath: string;
   publicPath: string;
@@ -70,6 +67,7 @@ interface ContentEditorShellProps {
   saving: boolean;
   seoOpen: boolean;
   autoSaveLabel?: string;
+  autoSaveLabelTone?: 'default' | 'warning' | 'success' | 'error';
   lockIndicator?: React.ReactNode;
   onTitleChange: (value: string) => void;
   onSlugChange: (value: string) => void;
@@ -82,7 +80,6 @@ interface ContentEditorShellProps {
   onSeoChange: (values: SeoFormValues) => void;
   onSeoOpenChange: (open: boolean) => void;
   onEditorModeChange: (mode: EditorMode) => void;
-  onEditorProfileChange: (profileId: EditorProfileId) => void;
   onCancel: () => void;
   onSave: () => void;
   onMarkReviewed?: () => void;
@@ -117,7 +114,6 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
   content,
   contentFormat,
   editorMode,
-  editorProfile,
   seo,
   storagePath,
   publicPath,
@@ -126,6 +122,7 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
   saving,
   seoOpen,
   autoSaveLabel,
+  autoSaveLabelTone = 'default',
   lockIndicator,
   onTitleChange,
   onSlugChange,
@@ -138,7 +135,6 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
   onSeoChange,
   onSeoOpenChange,
   onEditorModeChange,
-  onEditorProfileChange,
   onCancel,
   onSave,
   onMarkReviewed,
@@ -269,7 +265,21 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
 
           <div className="flex flex-wrap items-center gap-2">
             {lockIndicator}
-            {autoSaveLabel && <span className="text-xs text-slate-400">{autoSaveLabel}</span>}
+            {autoSaveLabel && (
+              <span
+                className={`text-xs ${
+                  autoSaveLabelTone === 'warning'
+                    ? 'font-medium text-amber-600 dark:text-amber-400'
+                    : autoSaveLabelTone === 'success'
+                      ? 'text-emerald-600 dark:text-emerald-400'
+                      : autoSaveLabelTone === 'error'
+                        ? 'text-red-600 dark:text-red-400'
+                        : 'text-slate-400'
+                }`}
+              >
+                {autoSaveLabel}
+              </span>
+            )}
             <button
               type="button"
               className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition ${
@@ -581,14 +591,7 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
             />
           ) : null}
 
-          <div className="space-y-3">
-            <EditorProfilePicker
-              value={editorProfile}
-              onChange={onEditorProfileChange}
-              disabled={!canEdit}
-            />
-            <div>{children}</div>
-          </div>
+          <div className="space-y-3">{children}</div>
 
           {footerExtra}
         </div>

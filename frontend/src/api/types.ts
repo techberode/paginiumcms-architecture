@@ -6,6 +6,7 @@ export interface User {
   name: string;
   bio?: string;
   roles: string[];
+  permissions?: string[];
   active?: boolean;
   twoFactorEnabled: boolean;
   twoFactorSecret?: string;

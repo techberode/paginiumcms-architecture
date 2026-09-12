@@ -35,6 +35,9 @@ final class DraftManager implements DraftManagerInterface
      */
     public function save(string $type, string $slug, array $payload, string $userId): Draft
     {
+        $snapshot = $payload['editorSnapshot'] ?? null;
+        $editorSnapshot = is_array($snapshot) && $snapshot !== [] ? $snapshot : null;
+
         $draft = new Draft(
             $this->normalizeType($type),
             $slug,
@@ -43,7 +46,8 @@ final class DraftManager implements DraftManagerInterface
             (string) ($payload['status'] ?? 'draft'),
             (string) ($payload['baseRevision'] ?? ''),
             $userId,
-            time()
+            time(),
+            $editorSnapshot
         );
 
         // createBackup=false: koncepty sa prepisujú často (každých 60 s), zálohy netreba.
