@@ -52,6 +52,13 @@ final class EditorContentValidator
             return $securityError;
         }
 
+        if ($format === 'markdown') {
+            $videoError = $this->validateVideoShortcodes($content);
+            if ($videoError !== null) {
+                return $videoError;
+            }
+        }
+
         return match ($format) {
             'tiptap_json' => $this->validateCustomTiptapComponents($content, $profileId),
             default => $this->validateCustomMarkdownComponents($content, $profileId),
@@ -67,6 +74,10 @@ final class EditorContentValidator
         $allowed = $this->profiles->getAllowedCustomComponents($profileId);
 
         foreach ($matches[1] as $directive) {
+            if ($directive === 'video') {
+                continue;
+            }
+
             $definition = $this->components->getByMarkdownDirective($directive);
             if ($definition === null) {
                 return 'Neznámy custom komponent v Markdown: ' . $directive . '.';
@@ -125,6 +136,37 @@ final class EditorContentValidator
             $childError = $this->validateTiptapCustomNodes($child, $allowed, $customNodeTypes);
             if ($childError !== null) {
                 return $childError;
+            }
+        }
+
+        return null;
+    }
+
+    private function validateVideoShortcodes(string $content): ?string
+    {
+        $expander = new VideoEmbedShortcode();
+
+        if (preg_match_all('/:::video\s*\n\s*src:\s*(\S+)(?:\n\s*poster:\s*(\S+))?\s*\n\s*:::/', $content, $blockMatches, PREG_SET_ORDER)) {
+            foreach ($blockMatches as $match) {
+                if ($expander->sanitizeMediaUrl($match[1]) === '') {
+                    return 'Video shortcode obsahuje neplatnú alebo externú URL — použite súbor z Media Library.';
+                }
+                $poster = trim($match[2] ?? '');
+                if ($poster !== '' && $expander->sanitizeMediaUrl($poster) === '') {
+                    return 'Video poster URL musí viesť na súbor z Media Library.';
+                }
+            }
+        }
+
+        if (preg_match_all('/:::video\s+src="([^"]+)"(?:\s+poster="([^"]+)")?\s*:::/', $content, $inlineMatches, PREG_SET_ORDER)) {
+            foreach ($inlineMatches as $match) {
+                if ($expander->sanitizeMediaUrl($match[1]) === '') {
+                    return 'Video shortcode obsahuje neplatnú alebo externú URL — použite súbor z Media Library.';
+                }
+                $poster = trim($match[2] ?? '');
+                if ($poster !== '' && $expander->sanitizeMediaUrl($poster) === '') {
+                    return 'Video poster URL musí viesť na súbor z Media Library.';
+                }
             }
         }
 

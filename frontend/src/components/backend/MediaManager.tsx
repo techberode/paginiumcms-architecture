@@ -26,6 +26,7 @@ import {
   formatMediaSize,
   importStockImage,
   isImageMedia,
+  isVideoMedia,
   isOptimizableMedia,
   isPreviewableMedia,
   listMedia,
@@ -61,8 +62,6 @@ import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { applyClientListView } from '../../utils/clientListView';
 import { evaluateMediaSeo } from '../../utils/seoHealth';
 import { useI18n } from '../../context/I18nContext';
-
-type TypeFilter = 'all' | 'image';
 
 export const MediaManager: React.FC = () => {
   const toast = useToast();
@@ -157,8 +156,8 @@ export const MediaManager: React.FC = () => {
     setLoading(true);
     try {
       const filters =
-        typeFilter === 'image'
-          ? { type: 'image' as const, folder: currentFolder }
+        typeFilter === 'image' || typeFilter === 'video'
+          ? { type: typeFilter, folder: currentFolder }
           : { folder: currentFolder };
       const [files, folderList] = await Promise.all([
         listMedia(filters),
@@ -641,12 +640,13 @@ export const MediaManager: React.FC = () => {
         >
           <select
             value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value as TypeFilter)}
+            onChange={(e) => setTypeFilter(e.target.value as typeof typeFilter)}
             className="form-input w-full sm:min-w-[140px]"
             aria-label={t('media.filter.typeLabel')}
           >
             <option value="all">{t('media.filter.all')}</option>
             <option value="image">{t('media.filter.images')}</option>
+            <option value="video">{t('media.filter.videos')}</option>
           </select>
         </AdminListToolbar>
       </div>
@@ -814,6 +814,7 @@ const MediaCard: React.FC<MediaCardProps> = ({
   const fallbackUrl = resolvePublicMediaUrl(file.url);
   const [thumbnailSrc, setThumbnailSrc] = useState(previewUrl);
   const isImage = isImageMedia(file);
+  const isVideo = isVideoMedia(file);
 
   useEffect(() => {
     setThumbnailSrc(resolveAdminMediaPreviewUrl(file.path));
@@ -831,7 +832,21 @@ const MediaCard: React.FC<MediaCardProps> = ({
             className="rounded border-gray-300"
           />
         </label>
-        {isImage ? (
+        {isVideo ? (
+          <button
+            type="button"
+            className="w-full h-full"
+            onClick={onPreview}
+            aria-label={`Preview ${file.fileName}`}
+          >
+            <video
+              src={previewUrl}
+              className="w-full h-full object-cover"
+              muted
+              preload="metadata"
+            />
+          </button>
+        ) : isImage ? (
           <button
             type="button"
             className="w-full h-full group/preview relative"
@@ -1058,7 +1073,11 @@ const MediaListTable: React.FC<MediaListTableProps> = ({
                 </td>
                 {showThumbnail && (
                   <td>
-                    {isImageMedia(file) ? (
+                    {isVideoMedia(file) ? (
+                      <button type="button" onClick={() => onPreview(file)} className="block w-16 h-12 rounded overflow-hidden bg-gray-100">
+                        <video src={thumb} className="w-full h-full object-cover" muted preload="metadata" />
+                      </button>
+                    ) : isImageMedia(file) ? (
                       <button type="button" onClick={() => onPreview(file)} className="block w-16 h-12 rounded overflow-hidden bg-gray-100">
                         <img
                           src={thumb}

@@ -511,7 +511,8 @@ export const platformSk: MessageTree = {
       demo_mode: 'Demo inštancia — použite SSH deploy na hoste.',
       job_not_registered: 'System deploy job nie je registrovaný v plánovači.',
       stack_dir_missing: 'Nastavte Docker stack directory (host path), napr. /var/lib/docker/compose/paginiumcms.',
-      stack_script_missing: 'stack.sh chýba alebo nie je spustiteľný v nastavenom stack adresári.',
+      stack_script_missing:
+        'stack.sh chýba alebo nie je spustiteľný pre www-data v PHP kontajneri — na hoste spustite scripts/bootstrap-stack-permissions.sh (DEPLOY.md §12.5).',
       stack_dir_not_visible:
         'Stack adresár nie je z PHP kontajnera viditeľný — namontujte ho do docker-compose.prod.yml alebo skopírujte stack.sh do APP_ROOT.',
       app_root_missing: 'Koreň aplikácie (APP_ROOT) sa na serveri nepodarilo rozlíšiť.',

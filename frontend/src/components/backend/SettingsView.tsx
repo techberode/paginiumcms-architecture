@@ -40,6 +40,7 @@ import { AuthorAvatarField } from './AuthorAvatarField';
 import { AccessControlSettingsPanel } from './AccessControlSettingsPanel';
 import { SocialLinksSettingsPanel } from './SocialLinksSettingsPanel';
 import { EditorCustomComponentsPanel, type EditorComponentMeta } from './EditorCustomComponentsPanel';
+import { EditorExtensionsPanel } from './EditorExtensionsPanel';
 import { AppearanceSettingsPanel } from '../admin/AppearanceSettingsPanel';
 import { LayoutSettingsPanel } from '../admin/LayoutSettingsPanel';
 import { CmsInfoSettingsPanel } from './CmsInfoSettingsPanel';
@@ -314,7 +315,12 @@ export const SettingsView: React.FC = () => {
                 ) : activeGroup === 'editor' ? (
                   <>
                     {group.fields
-                      .filter((field) => field.key !== 'profileCustomComponents')
+                      .filter(
+                        (field) =>
+                          field.key !== 'profileCustomComponents' &&
+                          field.key !== 'markdownExtraCapabilities' &&
+                          field.key !== 'wysiwygExtraCapabilities'
+                      )
                       .map((field) => (
                         <SettingFieldRow
                           key={field.key}
@@ -326,6 +332,9 @@ export const SettingsView: React.FC = () => {
                           error={errors[field.key]?.message as string | undefined}
                         />
                       ))}
+                    <EditorExtensionsPanel watch={watch} setValue={setValue} />
+                    <input type="hidden" {...register('markdownExtraCapabilities')} />
+                    <input type="hidden" {...register('wysiwygExtraCapabilities')} />
                     <EditorCustomComponentsPanel
                       components={editorComponents}
                       watch={watch}

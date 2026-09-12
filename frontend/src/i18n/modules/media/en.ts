@@ -33,6 +33,7 @@ export const mediaEn: MessageTree = {
     typeLabel: 'File type filter',
     all: 'All files',
     images: 'Images only',
+    videos: 'Videos only',
   },
   stock: {
     topicLabel: 'Stock image topic',

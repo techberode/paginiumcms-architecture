@@ -25,6 +25,7 @@ final class EditorCapabilities
         'codeBlock',
         'link',
         'image',
+        'video',
         'table',
         'horizontalRule',
         'color',

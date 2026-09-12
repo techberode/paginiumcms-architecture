@@ -193,6 +193,7 @@ export const editorSk: MessageTree = {
       heading: 'Nadpis H2',
       link: 'Odkaz',
       image: 'Obrázok',
+      video: 'Video z knižnice',
       bulletList: 'Zoznam',
       orderedList: 'Číslovaný zoznam',
       blockquote: 'Citácia',
@@ -217,14 +218,20 @@ export const editorSk: MessageTree = {
     previewLabel: 'Náhľad',
     previewEmpty: 'Náhľad sa zobrazí po napísaní obsahu.',
     blockedHtmlPaste: 'Profil editora nepovoľuje vloženie raw HTML.',
+    videoPickerRequired: 'Vyberte video z Media Library (zapnite Video v Nastavenia → Editor → voliteľné rozšírenia).',
   },
   wysiwyg: {
     loading: 'Načítavanie editora…',
     prompts: {
       linkUrl: 'URL odkazu',
     },
+    toolbar: {
+      image: 'Vložiť obrázok z knižnice',
+      video: 'Vložiť video z knižnice',
+    },
     blocked: {
       images: 'Profil editora nepovoľuje obrázky.',
+      videos: 'Profil editora nepovoľuje vloženie videa.',
       tables: 'Profil editora nepovoľuje tabuľky.',
       codeBlock: 'Profil editora nepovoľuje bloky kódu.',
       scripts: 'Profil editora nepovoľuje vložené skripty alebo iframe.',

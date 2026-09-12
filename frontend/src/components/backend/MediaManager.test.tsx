@@ -74,7 +74,13 @@ vi.mock('../../api/media', () => ({
     return { width, height };
   },
   isImageMedia: (file: { mimeType: string }) => file.mimeType.startsWith('image/'),
-  isPreviewableMedia: (file: { mimeType: string }) => file.mimeType.startsWith('image/'),
+  isVideoMedia: (file: { mimeType: string }) => file.mimeType.startsWith('video/'),
+  isPreviewableMedia: (file: { mimeType: string }, previewableMimeTypes?: string[]) => {
+    if (previewableMimeTypes && previewableMimeTypes.length > 0) {
+      return previewableMimeTypes.includes(file.mimeType);
+    }
+    return file.mimeType.startsWith('image/');
+  },
   isOptimizableMedia: (file: { mimeType: string }, capabilities?: { available: boolean }) => {
     if (capabilities !== undefined && !capabilities.available) {
       return false;

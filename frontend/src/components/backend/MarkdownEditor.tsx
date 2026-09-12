@@ -47,8 +47,10 @@ import {
 import {
   getEditorProfile,
   resolveDefaultProfileId,
+  resolveEffectiveEditorProfile,
   type EditorProfileId,
 } from '../../utils/editorProfiles';
+import { buildVideoShortcode } from '../../utils/videoShortcode';
 import {
   findNavigationMatches,
   isSlugCollisionHttp,
@@ -118,6 +120,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
   const [editorProfile, setEditorProfile] = useState<EditorProfileId>('company');
   const [contentFormat, setContentFormat] = useState<ContentFormat>('markdown');
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
+  const [mediaPickerMode, setMediaPickerMode] = useState<'image' | 'video'>('image');
   const [seoOpen, setSeoOpen] = useState(false);
   const [publishOtp, setPublishOtp] = useState<{ challengeId: string; debugCode?: string } | null>(null);
   const [navigationItems, setNavigationItems] = useState<Awaited<ReturnType<typeof getNavigation>>>([]);
@@ -186,6 +189,15 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
   const editorProfileDefinition = useMemo(
     () => getEditorProfile(editorProfile, settings.editor?.profiles),
     [editorProfile, settings.editor?.profiles]
+  );
+  const editorSettings = settings.editor as Record<string, unknown> | undefined;
+  const markdownEditorProfile = useMemo(
+    () => resolveEffectiveEditorProfile(editorProfileDefinition, editorSettings, 'markdown'),
+    [editorProfileDefinition, editorSettings]
+  );
+  const wysiwygEditorProfile = useMemo(
+    () => resolveEffectiveEditorProfile(editorProfileDefinition, editorSettings, 'wysiwyg'),
+    [editorProfileDefinition, editorSettings]
   );
 
   useEffect(() => {
@@ -861,9 +873,16 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
             storedFormat={contentFormat}
             onChange={setContent}
             readOnly={!canEdit}
-            onPickMedia={() => setMediaPickerOpen(true)}
+            onPickMedia={() => {
+              setMediaPickerMode('image');
+              setMediaPickerOpen(true);
+            }}
+            onPickVideo={() => {
+              setMediaPickerMode('video');
+              setMediaPickerOpen(true);
+            }}
             onUploadImage={handleEditorImageUpload}
-            profile={editorProfileDefinition}
+            profile={wysiwygEditorProfile}
             onBlockedAction={(message) => toast.warning(message)}
           />
         ) : (
@@ -873,8 +892,15 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
             readOnly={!canEdit}
             spellCheck={Boolean(settings.editor?.spellcheck ?? true)}
             tabSize={Number(settings.editor?.tabSize ?? 2)}
-            onPickMedia={() => setMediaPickerOpen(true)}
-            profile={editorProfileDefinition}
+            onPickMedia={() => {
+              setMediaPickerMode('image');
+              setMediaPickerOpen(true);
+            }}
+            onPickVideo={() => {
+              setMediaPickerMode('video');
+              setMediaPickerOpen(true);
+            }}
+            profile={markdownEditorProfile}
             onBlockedAction={(message) => toast.warning(message)}
           />
         )}
@@ -882,9 +908,19 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         <MediaPickerModal
           open={mediaPickerOpen}
           onClose={() => setMediaPickerOpen(false)}
+          mediaMode={mediaPickerMode}
           onSelect={(url, alt) => {
             if (editorMode === 'wysiwyg') {
-              wysiwygRef.current?.insertImage(url, alt);
+              if (mediaPickerMode === 'video') {
+                wysiwygRef.current?.insertVideo(url);
+              } else {
+                wysiwygRef.current?.insertImage(url, alt);
+              }
+            } else if (mediaPickerMode === 'video') {
+              const storageUrl = url.includes('/storage/')
+                ? url.slice(url.indexOf('/storage/'))
+                : resolvePublicMediaUrl(url);
+              setContent((prev) => `${prev}${buildVideoShortcode(storageUrl)}`);
             } else {
               setContent((prev) => `${prev}\n\n![${alt}](${url})\n`);
             }

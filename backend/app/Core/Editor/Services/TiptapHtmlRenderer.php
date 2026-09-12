@@ -53,6 +53,7 @@ final class TiptapHtmlRenderer
             'tableHeader' => '<th>' . $inner . '</th>',
             'tableCell' => '<td>' . $inner . '</td>',
             'image' => $this->renderImage($node),
+            'video' => $this->renderVideo($node),
             default => $inner,
         };
     }
@@ -73,13 +74,32 @@ final class TiptapHtmlRenderer
      */
     private function renderImage(array $node): string
     {
-        $src = $this->sanitizeUrl((string) ($node['attrs']['src'] ?? ''));
+        $src = $this->sanitizeMediaUrl((string) ($node['attrs']['src'] ?? ''));
         if ($src === '') {
             return '';
         }
         $alt = htmlspecialchars((string) ($node['attrs']['alt'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
         return '<img src="' . htmlspecialchars($src, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '" alt="' . $alt . '" />';
+    }
+
+    /**
+     * @param array<string, mixed> $node
+     */
+    private function renderVideo(array $node): string
+    {
+        $src = $this->sanitizeMediaUrl((string) ($node['attrs']['src'] ?? ''));
+        if ($src === '') {
+            return '';
+        }
+
+        $poster = $this->sanitizeMediaUrl((string) ($node['attrs']['poster'] ?? ''));
+        $attrs = ' controls playsinline preload="metadata"';
+        if ($poster !== '') {
+            $attrs .= ' poster="' . htmlspecialchars($poster, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '"';
+        }
+
+        return '<video src="' . htmlspecialchars($src, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '"' . $attrs . '></video>';
     }
 
     /**
@@ -162,5 +182,36 @@ final class TiptapHtmlRenderer
         }
 
         return $url;
+    }
+
+    private function sanitizeMediaUrl(string $url): string
+    {
+        $url = trim($url);
+        if ($url === '') {
+            return '';
+        }
+
+        if ($this->isAllowedMediaPath($url)) {
+            return $url;
+        }
+
+        $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
+        if (!in_array($scheme, ['http', 'https'], true)) {
+            return '';
+        }
+
+        $path = (string) parse_url($url, PHP_URL_PATH);
+
+        return $this->isAllowedMediaPath($path) ? $url : '';
+    }
+
+    private function isAllowedMediaPath(string $url): bool
+    {
+        if (!str_starts_with($url, '/')) {
+            return false;
+        }
+
+        return str_starts_with($url, '/storage/')
+            || str_starts_with($url, '/api/media/file/');
     }
 }

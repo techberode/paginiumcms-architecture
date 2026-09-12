@@ -329,6 +329,32 @@ export const settingsSk: MessageTree = {
     "profile": "Profil",
     "toggle": "Povoliť {component} pre {profile}"
   },
+  "editorExtensions": {
+    "title": "Voliteľné rozšírenia editora",
+    "help": "Pridá funkcie toolbaru navyše k profilu obsahu (stránka/článok). Napr. Video pri firemnom profile bez prepnutia na Blog.",
+    "markdownTitle": "Markdown editor",
+    "markdownHelp": "Extra tlačidlá v Markdown toolbar-e (režim split/náhľad).",
+    "wysiwygTitle": "WYSIWYG (Tiptap) editor",
+    "wysiwygHelp": "Extra tlačidlá vo vizuálnom editore.",
+    "capability": {
+      "bold": "Tučné",
+      "italic": "Kurzíva",
+      "underline": "Podčiarknutie",
+      "strike": "Prečiarknutie",
+      "heading": "Nadpisy",
+      "bulletList": "Odrážky",
+      "orderedList": "Číslovaný zoznam",
+      "blockquote": "Citácia",
+      "code": "Inline kód",
+      "codeBlock": "Blok kódu",
+      "link": "Odkazy",
+      "image": "Obrázky",
+      "video": "Video (Media Library)",
+      "table": "Tabuľky",
+      "horizontalRule": "Horizontálna čiara",
+      "color": "Farba textu"
+    }
+  },
   "fields": {
     "general": {
       "siteName": {
@@ -1417,7 +1443,15 @@ export const settingsSk: MessageTree = {
       },
       "maxUploadSizeKb": {
         "label": "Max. veľkosť uploadu (KB)",
-        "help": "5120 KB = 5 MB."
+        "help": "5120 KB = 5 MB. Platí pre obrázky a PDF, nie video."
+      },
+      "maxVideoUploadSizeKb": {
+        "label": "Max. veľkosť video uploadu (KB)",
+        "help": "102400 KB = 100 MB. Samostatný limit pre video/mp4 a video/webm."
+      },
+      "videoPosterRequired": {
+        "label": "Vyžadovať poster pre video v editore",
+        "help": "Rezervované pre budúcu validáciu v editore (It.79)."
       },
       "stockImagesEnabled": {
         "label": "Povoliť stock knižnicu",

@@ -5,6 +5,7 @@ import {
   Eye,
   Heading2,
   Image as ImageIcon,
+  Video as VideoIcon,
   Italic,
   Link as LinkIcon,
   List,
@@ -30,6 +31,7 @@ interface MarkdownContentEditorProps {
   spellCheck?: boolean;
   tabSize?: number;
   onPickMedia?: () => void;
+  onPickVideo?: () => void;
   profile: EditorProfileDefinition;
   onBlockedAction?: (message: string) => void;
 }
@@ -43,6 +45,7 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
   spellCheck = true,
   tabSize = 2,
   onPickMedia,
+  onPickVideo,
   profile,
   onBlockedAction,
 }) => {
@@ -135,6 +138,14 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
                   `\n\n![${t('editor.markdownContent.insert.imageAlt')}](${url})\n`
                 )
               );
+            })}
+          {profileAllows(profile, 'video') &&
+            toolbarButton(t('editor.markdownContent.toolbar.video'), <VideoIcon size={16} />, () => {
+              if (onPickVideo) {
+                onPickVideo();
+                return;
+              }
+              onBlockedAction?.(t('editor.markdownContent.videoPickerRequired'));
             })}
           {profileAllows(profile, 'bulletList') &&
             toolbarButton(t('editor.markdownContent.toolbar.bulletList'), <List size={16} />, () =>

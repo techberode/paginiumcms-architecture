@@ -1,5 +1,6 @@
 import { marked } from 'marked';
 import TurndownService from 'turndown';
+import { expandVideoShortcodes } from './videoShortcode';
 
 marked.setOptions({
   gfm: true,
@@ -79,7 +80,9 @@ export function markdownToHtml(markdown: string): string {
     return '';
   }
 
-  return marked.parse(markdown, { async: false }) as string;
+  const withVideo = expandVideoShortcodes(markdown);
+
+  return marked.parse(withVideo, { async: false }) as string;
 }
 
 export function htmlToMarkdown(html: string): string {

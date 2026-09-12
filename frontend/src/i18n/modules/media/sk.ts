@@ -33,6 +33,7 @@ export const mediaSk: MessageTree = {
     typeLabel: 'Filter typu súboru',
     all: 'Všetky súbory',
     images: 'Len obrázky',
+    videos: 'Len videá',
   },
   stock: {
     topicLabel: 'Téma stock obrázka',

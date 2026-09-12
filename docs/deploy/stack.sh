@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # PaginiumCMS — Docker stack wrapper for production/demo.
-# Install in /var/lib/docker/compose/paginiumcms[-demo]/stack.sh and chmod 0750.
+# Install in /var/lib/docker/compose/paginiumcms[-demo]/stack.sh.
+# After copy, run scripts/bootstrap-stack-permissions.sh (root:www-data, 750) so
+# PHP-FPM (www-data) passes admin deploy readiness — plain sudo cp leaves root:root.
 # The adjacent .env is trusted operator configuration; keep it root/deploy-owned
 # and never writable by the web application.
 set -euo pipefail

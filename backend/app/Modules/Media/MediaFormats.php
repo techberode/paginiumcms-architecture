@@ -21,6 +21,8 @@ final class MediaFormats
         'image/webp' => ['extensions' => ['webp'], 'previewable' => true],
         'image/svg+xml' => ['extensions' => ['svg'], 'previewable' => true],
         'application/pdf' => ['extensions' => ['pdf'], 'previewable' => false],
+        'video/mp4' => ['extensions' => ['mp4'], 'previewable' => false],
+        'video/webm' => ['extensions' => ['webm'], 'previewable' => false],
     ];
 
     /**
@@ -81,6 +83,22 @@ final class MediaFormats
         return str_starts_with(strtolower(trim($mimeType)), 'image/') && self::isKnownMime($mimeType);
     }
 
+    public static function isVideoMime(string $mimeType): bool
+    {
+        return str_starts_with(strtolower(trim($mimeType)), 'video/') && self::isKnownMime($mimeType);
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function defaultVideoMimeTypes(): array
+    {
+        return array_values(array_filter(
+            self::defaultMimeTypes(),
+            static fn (string $mime): bool => self::isVideoMime($mime)
+        ));
+    }
+
     public static function isPreviewableMime(string $mimeType): bool
     {
         $mimeType = strtolower(trim($mimeType));
@@ -128,7 +146,22 @@ final class MediaFormats
             throw new FlatFileException('Obsah súboru nezodpovedá deklarovanému typu');
         }
 
+        if ($verifyContent && self::isVideoMime($declaredMime)) {
+            self::assertNoEmbeddedHtmlMarkers($bytes);
+        }
+
         return $declaredMime;
+    }
+
+    public static function contentMatchesMime(string $bytes, string $mimeType): bool
+    {
+        $mimeType = strtolower(trim($mimeType));
+
+        if ($bytes === '' || !self::isKnownMime($mimeType)) {
+            return false;
+        }
+
+        return self::matchContentToMime($bytes, $mimeType);
     }
 
     private static function extensionMatchesMime(string $extension, string $mimeType): bool
@@ -136,12 +169,8 @@ final class MediaFormats
         return in_array($extension, self::FORMATS[$mimeType]['extensions'], true);
     }
 
-    private static function contentMatchesMime(string $bytes, string $mimeType): bool
+    private static function matchContentToMime(string $bytes, string $mimeType): bool
     {
-        if ($bytes === '') {
-            return false;
-        }
-
         return match ($mimeType) {
             'image/jpeg' => str_starts_with($bytes, "\xFF\xD8\xFF"),
             'image/png' => str_starts_with($bytes, "\x89PNG\r\n\x1a\n"),
@@ -151,8 +180,34 @@ final class MediaFormats
                 && substr($bytes, 8, 4) === 'WEBP',
             'image/svg+xml' => self::looksLikeSvg($bytes),
             'application/pdf' => str_starts_with($bytes, '%PDF-'),
+            'video/mp4' => self::looksLikeMp4($bytes),
+            'video/webm' => self::looksLikeWebm($bytes),
             default => false,
         };
+    }
+
+    private static function looksLikeMp4(string $bytes): bool
+    {
+        if (strlen($bytes) < 12) {
+            return false;
+        }
+
+        return substr($bytes, 4, 4) === 'ftyp';
+    }
+
+    private static function looksLikeWebm(string $bytes): bool
+    {
+        return str_starts_with($bytes, "\x1A\x45\xDF\xA3");
+    }
+
+    private static function assertNoEmbeddedHtmlMarkers(string $bytes): void
+    {
+        $sample = strtolower(substr($bytes, 0, 65536));
+        foreach (['<script', '<html', '<?php', 'javascript:'] as $marker) {
+            if (str_contains($sample, $marker)) {
+                throw new FlatFileException('Video súbor obsahuje podozrivé HTML/script značky');
+            }
+        }
     }
 
     private static function looksLikeSvg(string $bytes): bool

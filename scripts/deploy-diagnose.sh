@@ -53,11 +53,19 @@ curl -sS "http://127.0.0.1:${BACKEND_PORT}/api/health" 2>/dev/null | head -c 500
 echo ""
 echo ""
 
-if [[ -n "$STACK_DIR" && -x "$STACK_DIR/stack.sh" ]]; then
-  echo "→ docker stack ($STACK_DIR)"
-  (cd "$STACK_DIR" && ./stack.sh ps) 2>/dev/null || echo "  stack.sh ps failed"
+if [[ -n "$STACK_DIR" && -f "$STACK_DIR/stack.sh" ]]; then
+  echo "→ stack.sh $(stat -c '%U:%G %a' "$STACK_DIR/stack.sh" 2>/dev/null || echo '?')"
+  if [[ ! -x "$STACK_DIR/stack.sh" ]]; then
+    echo "  not executable for $(whoami) — admin UI checks www-data in PHP container"
+    echo "  fix: STACK_DIR=$STACK_DIR APP_ROOT=$APP_ROOT ./scripts/bootstrap-stack-permissions.sh"
+  fi
+  if [[ -x "$STACK_DIR/stack.sh" ]]; then
+    echo "→ docker stack ($STACK_DIR)"
+    (cd "$STACK_DIR" && ./stack.sh ps) 2>/dev/null || echo "  stack.sh ps failed"
+  fi
 else
   echo "→ STACK_DIR/stack.sh not available — PHP restart must be done on host"
+  echo "  fix: STACK_DIR=${STACK_DIR:-/var/lib/docker/compose/paginiumcms} APP_ROOT=$APP_ROOT ./scripts/bootstrap-stack-permissions.sh"
 fi
 
 echo ""

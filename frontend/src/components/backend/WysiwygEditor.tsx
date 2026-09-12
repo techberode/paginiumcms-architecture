@@ -22,11 +22,13 @@ import {
 import { loadAllowedEditorComponents, type EditorComponentRegistration } from '../../utils/editorComponents';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { useI18n } from '../../context/I18nContext';
+import { PaginiumVideo } from './tiptapVideoExtension';
 
-type WysiwygBlockedReason = 'images' | 'tables' | 'codeBlock' | 'scripts' | 'links' | 'uploadUnavailable';
+type WysiwygBlockedReason = 'images' | 'videos' | 'tables' | 'codeBlock' | 'scripts' | 'links' | 'uploadUnavailable';
 
 export interface WysiwygEditorHandle {
   insertImage: (url: string, alt?: string) => void;
+  insertVideo: (url: string, poster?: string) => void;
   insertLink: (url: string, label?: string) => void;
   focus: () => void;
   getHtml: () => string;
@@ -38,6 +40,7 @@ interface WysiwygEditorProps {
   onChange: (value: string) => void;
   readOnly?: boolean;
   onPickMedia?: () => void;
+  onPickVideo?: () => void;
   onUploadImage?: (file: File) => Promise<{ url: string; alt?: string } | null>;
   profile: EditorProfileDefinition;
   onBlockedAction?: (message: string) => void;
@@ -81,6 +84,10 @@ function buildExtensions(
     );
   }
 
+  if (profileAllows(profile, 'video')) {
+    extensions.push(PaginiumVideo);
+  }
+
   if (profileAllows(profile, 'underline')) {
     extensions.push(Underline);
   }
@@ -105,6 +112,9 @@ function detectBlockedHtml(html: string, profile: EditorProfileDefinition): Wysi
   const lower = html.toLowerCase();
   if (!profileAllows(profile, 'image') && lower.includes('<img')) {
     return 'images';
+  }
+  if (!profileAllows(profile, 'video') && lower.includes('<video')) {
+    return 'videos';
   }
   if (!profileAllows(profile, 'table') && lower.includes('<table')) {
     return 'tables';
@@ -137,6 +147,7 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
     onChange,
     readOnly = false,
     onPickMedia,
+    onPickVideo,
     onUploadImage,
     profile,
     onBlockedAction,
@@ -234,6 +245,16 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
         return;
       }
       editor?.chain().focus().setImage({ src: url, alt }).run();
+    },
+    insertVideo: (url: string, poster?: string) => {
+      if (!profileAllows(profile, 'video')) {
+        onBlockedAction?.(blockedMessage('videos'));
+        return;
+      }
+      editor?.chain().focus().insertContent({
+        type: 'video',
+        attrs: { src: url, poster: poster ?? null },
+      }).run();
     },
     insertLink: (url: string, label?: string) => {
       if (!profileAllows(profile, 'link')) {
@@ -354,7 +375,10 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
             {'</>'}
           </button>
         )}
-        {(profileAllows(profile, 'link') || profileAllows(profile, 'image') || profileAllows(profile, 'table')) && (
+        {(profileAllows(profile, 'link') ||
+          profileAllows(profile, 'image') ||
+          profileAllows(profile, 'video') ||
+          profileAllows(profile, 'table')) && (
           <span className="w-px h-6 bg-slate-300 dark:bg-slate-600 mx-1" />
         )}
         {profileAllows(profile, 'link') && (
@@ -386,10 +410,27 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
                 fileInputRef.current?.click();
               }}
               className={btn(false)}
+              title={t('editor.wysiwyg.toolbar.image')}
             >
               🖼️
             </button>
           </>
+        )}
+        {profileAllows(profile, 'video') && (
+          <button
+            type="button"
+            onClick={() => {
+              if (onPickVideo) {
+                onPickVideo();
+                return;
+              }
+              onBlockedAction?.(blockedMessage('uploadUnavailable'));
+            }}
+            className={btn(editor.isActive('video'))}
+            title={t('editor.wysiwyg.toolbar.video')}
+          >
+            ▶
+          </button>
         )}
         {profileAllows(profile, 'table') && (
           <button

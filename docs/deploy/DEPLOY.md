@@ -250,6 +250,13 @@ Then start a **new SSH session** (or `newgrp www-data`).
 
 The script sets checkout owner to the current user, group `www-data`, directories `2775` (setgid), files `664`, and prepares `backend/storage/app/deploy-cache` for Composer/npm caches used by deploy.
 
+Then bootstrap the **stack wrapper** (separate path on the host — see §12.5):
+
+```bash
+STACK_DIR=/var/lib/docker/compose/paginiumcms APP_ROOT=/var/www/paginiumcms.com \
+./scripts/bootstrap-stack-permissions.sh
+```
+
 ### When you do **not** need to re-run bootstrap
 
 - Every new beta tag or iteration (`beta.62`, `beta.63`, …) — run `./scripts/deploy-instance-update.sh` only.
@@ -298,14 +305,27 @@ Without **stack directory**, deploy may pull code but skip `stack.sh up -d --for
 
 ### Host stack wrapper (`stack.sh`)
 
-The stack directory must contain an executable **`stack.sh`** (copy from `docs/deploy/stack.sh` on first setup):
+The stack directory must contain an executable **`stack.sh`**. Admin **deploy readiness** runs in PHP-FPM as **`www-data`** and calls `is_executable()` — a plain `sudo cp` + `chmod 750` leaves **`root:root`**, which blocks www-data and shows **`stack_script_missing`** even when `docker compose exec php ls` (as root) looks fine.
+
+**Recommended (one-time per server, or after every `sudo cp` of stack.sh):**
+
+```bash
+STACK_DIR=/var/lib/docker/compose/paginiumcms \
+APP_ROOT=/var/www/paginiumcms.com \
+./scripts/bootstrap-stack-permissions.sh
+```
+
+The script installs `stack.sh` when missing, sets `root:www-data` + `750` on the stack directory and wrapper, and prints a www-data smoke command.
+
+Manual equivalent:
 
 ```bash
 sudo cp "$APP_ROOT/docs/deploy/stack.sh" "$STACK_DIR/stack.sh"
-sudo chmod 750 "$STACK_DIR/stack.sh"
+sudo chown root:www-data "$STACK_DIR" "$STACK_DIR/stack.sh"
+sudo chmod 750 "$STACK_DIR" "$STACK_DIR/stack.sh"
 ```
 
-Admin **deploy readiness** runs inside the PHP container and checks `is_file("$STACK_DIR/stack.sh")`. The host path is invisible unless mounted. In `docs/deploy/docker-compose.prod.yml`, uncomment (and adjust) the optional volume on the `php` service:
+The host path is invisible to PHP unless mounted. In `docs/deploy/docker-compose.prod.yml`, uncomment (and adjust) the optional volume on the **`php`** service (not nginx):
 
 ```yaml
 - /var/lib/docker/compose/paginiumcms:/var/lib/docker/compose/paginiumcms:ro
@@ -319,7 +339,7 @@ Readiness blockers:
 |---------|---------|
 | `stack_dir_missing` | Settings/env `stackDir` empty |
 | `stack_dir_not_visible` | Path set but not mounted into PHP container |
-| `stack_script_missing` | Directory visible but `stack.sh` missing or not executable |
+| `stack_script_missing` | Directory visible but `stack.sh` missing or not executable **for www-data** — run `bootstrap-stack-permissions.sh` |
 
 ### Dashboard banner (SUPER_ADMIN)
 

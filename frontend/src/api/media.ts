@@ -23,7 +23,7 @@ export interface MediaFile {
 }
 
 export interface ListMediaFilters {
-  type?: 'image';
+  type?: 'image' | 'video';
   mimeType?: string;
   folder?: string;
 }
@@ -37,6 +37,7 @@ export interface MediaFormatsPayload {
   extensions: string[];
   accept: string;
   previewableMimeTypes: string[];
+  maxVideoUploadSizeKb?: number;
   imageOptimization?: ImageOptimizationCapabilities;
 }
 
@@ -99,6 +100,10 @@ export function formatMediaSize(bytes: number): string {
     return `${(bytes / 1024).toFixed(1)} KB`;
   }
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+export function isVideoMedia(file: MediaFile): boolean {
+  return file.mimeType.startsWith('video/');
 }
 
 export function isImageMedia(file: MediaFile): boolean {

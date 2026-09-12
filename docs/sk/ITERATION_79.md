@@ -1,6 +1,6 @@
 # Iterácia 79 — DAM video (bezpečný upload + vloženie do obsahu)
 
-> **Stav:** ⏳ plánované  
+> **Stav:** ✅ dodané (september 2026) — viď [en/ITERATION_79.md](../en/ITERATION_79.md)  
 > **Priorita:** 🟡  
 > **Vlna:** Post-HE DAM & security (It.78–79)  
 > **Závisí od:** [It.72](ITERATION_72.md) media storage MVP · [It.78](ITERATION_78.md) unified upload policy · [It.24](ITERATION_24.md) DAM · [It.55](ITERATION_55.md) Tiptap  
