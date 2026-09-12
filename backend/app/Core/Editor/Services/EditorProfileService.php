@@ -194,6 +194,7 @@ final class EditorProfileService
                     'video',
                     'code',
                     'codeBlock',
+                    'callout',
                 ])
             ),
             'minimal' => new EditorProfile(

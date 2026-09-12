@@ -157,6 +157,7 @@ export const editorEn: MessageTree = {
       otpSent: 'Verification code for publishing was sent to your email',
       devOtp: 'Dev OTP: :code',
       saved: 'Content saved',
+      draftRestoredFull: 'Draft restored (including locales, SEO, and other fields)',
       autoMerged: 'Changes were automatically merged with the server version.',
       conflict: 'Conflict (:count) — please resolve manually.',
       conflictWholeResource:
@@ -169,6 +170,8 @@ export const editorEn: MessageTree = {
       saving: 'Saving draft…',
       saved: 'Draft saved',
       error: 'Failed to save draft',
+      unsaved: 'Unsaved changes',
+      leaveSaved: 'Unsaved changes were saved as a draft',
     },
     draftBanner: {
       message: 'An unsaved draft was found. Restore it?',
@@ -344,5 +347,55 @@ export const editorEn: MessageTree = {
     toast: {
       loadFailed: 'Failed to load snippets',
     },
+  },
+  htmlBlock: {
+    title: 'Insert HTML block',
+    hint: 'HTML is stored in a guarded :::html-safe block and sanitized on save. Scripts and iframes are never allowed.',
+    placeholder: '<div class="my-block">\n  …\n</div>',
+    insert: 'Insert block',
+    cancel: 'Cancel',
+    toolbar: 'Insert HTML block',
+  },
+  embed: {
+    title: 'Insert external embed',
+    hint: 'YouTube or Vimeo players are stored in a guarded :::embed block. Only the video ID is saved — no raw iframe HTML.',
+    providerLabel: 'Provider',
+    idLabel: 'Video ID',
+    idPlaceholder: {
+      youtube: 'dQw4w9WgXcQ',
+      vimeo: '123456789',
+    },
+    providers: {
+      youtube: 'YouTube',
+      vimeo: 'Vimeo',
+    },
+    insert: 'Insert embed',
+    cancel: 'Cancel',
+    toolbar: 'Insert YouTube/Vimeo',
+  },
+  tableInsert: {
+    title: 'Insert table',
+    hint: 'Creates a GitHub-flavored Markdown table with placeholder cells you can edit.',
+    columns: 'Columns',
+    rows: 'Data rows',
+    includeHeader: 'Include header row',
+    insert: 'Insert table',
+    cancel: 'Cancel',
+    toolbar: 'Insert table',
+  },
+  callout: {
+    title: 'Insert callout',
+    hint: 'Note, tip, or warning box stored as a guarded shortcode block.',
+    typeLabel: 'Type',
+    bodyLabel: 'Text',
+    bodyPlaceholder: 'Callout message…',
+    types: {
+      note: 'Note',
+      tip: 'Tip',
+      warning: 'Warning',
+    },
+    insert: 'Insert callout',
+    cancel: 'Cancel',
+    toolbar: 'Insert callout',
   },
 };

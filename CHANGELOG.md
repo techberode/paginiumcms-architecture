@@ -148,8 +148,33 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ### Planning
 
-- **It.90 Editor Workbench** — Settings-driven Markdown + Tiptap toolbars, insert wizards (table, callout, mermaid, chart), plugin editor tools; profiles become presets only. Spec: [ITERATION_90.md](docs/en/ITERATION_90.md).
-- **Queue:** It.90a → It.72 remainder → It.89 → 58f/g → 70 GitHub UI → 76/77 → 75 → 48. Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+- **It.91c–d** — Tiptap parity, audit log, hostile fixtures. Spec: [ITERATION_91.md](docs/en/ITERATION_91.md).
+- **It.90c** — Mermaid shortcode. Spec: [ITERATION_90.md](docs/en/ITERATION_90.md).
+- **Queue:** It.90c → It.72 remainder → It.89 → 58f/g → 70 → 76/77 → 75 → 48. Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+
+---
+
+<a id="release-2-1-0-beta-72"></a>
+
+## [2.1.0-beta.72] – 2026-09-12
+
+Editor workbench (It.90a/b), trusted HTML & embeds (It.91a/b), leave autosave, deploy/CSP hotfix
+
+### Added
+
+- **Editor leave autosave** — existing articles/pages flush draft on navigation away; amber “Unsaved changes” toolbar hint; toast on leave save; restore banner unchanged.
+- **Settings: draft full editor state** — optional `content.draftFullEditorState` (default off) stores full editor snapshot in draft JSON (`editorSnapshot`); recommendation note via `settings.fields.content.draftFullEditorState.note`.
+- **It.90b Table & callout wizards** — GFM table insert modal; `:::note` / `:::tip` / `:::warning` callouts with BE renderer + validator.
+- **It.90a Editor toolbar builder** — Settings → Editor: ordered Markdown/WYSIWYG toolbar lists; profile presets; article editor no longer shows profile picker.
+- **It.91b External embeds** — `:::embed` shortcode for YouTube/Vimeo; `ExternalEmbedContentService` + `content:embed-external`; FE embed insert modal.
+- **It.91a Trusted HTML** — `:::html-safe` + HTMLPurifier; FE HTML block modal; `/api/auth/me` returns `permissions[]`.
+- **Docs** — [SETTINGS_I18N.md](docs/en/SETTINGS_I18N.md): settings field i18n helpers and Translation Editor workflow.
+
+### Fixed
+
+- **Deploy hotfix** — system update deploy accepts semver tags without a `v` prefix; FE prefers raw GitHub `latest_release_tag`.
+- **CSP / fonts** — self-host Inter, JetBrains Mono, and Plus Jakarta Sans via `@fontsource/*`.
+- **HTMLPurifier** — PHPUnit warning from bare `img` tag definition in trusted HTML config.
 
 ---
 

@@ -329,6 +329,20 @@ export const settingsSk: MessageTree = {
     "profile": "Profil",
     "toggle": "Povoliť {component} pre {profile}"
   },
+  "editorToolbar": {
+    "title": "Toolbar editora",
+    "help": "Vyberte, ktoré nástroje sa zobrazia v Markdown a WYSIWYG toolbar-e pre celý web. Editor článku už nepýta profil — nástroje nastavíte tu.",
+    "presetLabel": "Načítať preset",
+    "presetPlaceholder": "Bývalý profil…",
+    "markdownTitle": "Markdown toolbar",
+    "markdownHelp": "Nástroje v Markdown editore (split / náhľad). Poradie zodpovedá toolbar-u zhora nadol.",
+    "wysiwygTitle": "WYSIWYG toolbar",
+    "wysiwygHelp": "Nástroje vo vizuálnom Tiptap editore.",
+    "moveUp": "Posunúť hore",
+    "moveDown": "Posunúť dole",
+    "remove": "Odstrániť",
+    "empty": "Žiadne nástroje — načítajte preset alebo pridajte nástroje nižšie."
+  },
   "editorExtensions": {
     "title": "Voliteľné rozšírenia editora",
     "help": "Pridá funkcie toolbaru navyše k profilu obsahu (stránka/článok). Napr. Video pri firemnom profile bez prepnutia na Blog.",
@@ -351,6 +365,7 @@ export const settingsSk: MessageTree = {
       "image": "Obrázky",
       "video": "Video (Media Library)",
       "table": "Tabuľky",
+      "callout": "Callout bloky (note/tip/warning)",
       "horizontalRule": "Horizontálna čiara",
       "color": "Farba textu"
     }
@@ -459,6 +474,11 @@ export const settingsSk: MessageTree = {
       "autoSaveInterval": {
         "label": "Interval auto-save (s)",
         "help": "Ako často sa ukladá koncept."
+      },
+      "draftFullEditorState": {
+        "label": "Auto-save — celý stav editora",
+        "help": "Ukladá do konceptu aj ostatné jazyky, SEO, šablóny a ďalšie polia (nie len titulok a obsah aktívnej locale).",
+        "note": "Odporúčané pri viacjazyčnom obsahu alebo keď často upravujete SEO a metadáta."
       },
       "lockTtl": {
         "label": "Platnosť zámku obsahu (s)",

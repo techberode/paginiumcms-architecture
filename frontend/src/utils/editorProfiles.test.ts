@@ -7,7 +7,10 @@ import {
   normalizeEditorProfile,
   profileAllows,
   resolveDefaultProfileId,
+  resolveEditorToolbar,
   resolveEffectiveEditorProfile,
+  serializeToolbarList,
+  toolbarPresetForProfile,
 } from './editorProfiles';
 
 describe('editorProfiles', () => {
@@ -74,5 +77,36 @@ describe('editorProfiles', () => {
     expect(profileAllows(company, 'video')).toBe(false);
     expect(profileAllows(effective, 'video')).toBe(true);
     expect(profileAllows(effective, 'image')).toBe(true);
+  });
+
+  it('resolveEditorToolbar uses configured markdownToolbar when set', () => {
+    const toolbar = resolveEditorToolbar(
+      { markdownToolbar: serializeToolbarList(['bold', 'link', 'video']) },
+      'markdown',
+      'page'
+    );
+
+    expect(profileAllows(toolbar, 'bold')).toBe(true);
+    expect(profileAllows(toolbar, 'video')).toBe(true);
+    expect(profileAllows(toolbar, 'heading')).toBe(false);
+  });
+
+  it('toolbarPresetForProfile maps blog capabilities to both surfaces', () => {
+    const preset = toolbarPresetForProfile('blog');
+
+    expect(preset.markdown).toContain('image');
+    expect(preset.wysiwyg).toContain('codeBlock');
+  });
+
+  it('resolveEditorToolbar falls back to legacy profile when toolbar empty', () => {
+    const toolbar = resolveEditorToolbar(
+      { defaultProfileArticle: 'minimal', markdownExtraCapabilities: 'video' },
+      'markdown',
+      'article'
+    );
+
+    expect(profileAllows(toolbar, 'bold')).toBe(true);
+    expect(profileAllows(toolbar, 'video')).toBe(true);
+    expect(profileAllows(toolbar, 'image')).toBe(false);
   });
 });

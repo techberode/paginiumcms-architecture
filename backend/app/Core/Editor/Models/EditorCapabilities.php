@@ -27,6 +27,7 @@ final class EditorCapabilities
         'image',
         'video',
         'table',
+        'callout',
         'horizontalRule',
         'color',
     ];

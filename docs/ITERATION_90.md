@@ -21,4 +21,4 @@ Replace rigid **editor profiles** with **Settings-driven toolbars** for **Markdo
 
 ## Related
 
-[It.79](ITERATION_79.md) · [It.55](ITERATION_55.md) · [It.89](ITERATION_89.md)
+[It.91](ITERATION_91.md) trusted HTML & embeds · [It.79](ITERATION_79.md) · [It.55](ITERATION_55.md) · [It.89](ITERATION_89.md)

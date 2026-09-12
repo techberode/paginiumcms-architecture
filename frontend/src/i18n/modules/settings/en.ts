@@ -329,6 +329,20 @@ export const settingsEn: MessageTree = {
     "profile": "Profile",
     "toggle": "Enable {component} for {profile}"
   },
+  "editorToolbar": {
+    "title": "Editor toolbar",
+    "help": "Choose which tools appear in the Markdown and WYSIWYG toolbars site-wide. Article editor no longer asks for a profile — configure tools here.",
+    "presetLabel": "Load preset",
+    "presetPlaceholder": "Former profile…",
+    "markdownTitle": "Markdown toolbar",
+    "markdownHelp": "Tools in the Markdown editor (split / preview mode). Order is top-to-bottom in the toolbar.",
+    "wysiwygTitle": "WYSIWYG toolbar",
+    "wysiwygHelp": "Tools in the Tiptap visual editor.",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "remove": "Remove",
+    "empty": "No tools selected — load a preset or add tools below."
+  },
   "editorExtensions": {
     "title": "Optional editor extensions",
     "help": "Adds toolbar features on top of the content profile (page/article). Example: enable Video on the Company profile without switching to Blog.",
@@ -351,6 +365,7 @@ export const settingsEn: MessageTree = {
       "image": "Images",
       "video": "Video (Media Library)",
       "table": "Tables",
+      "callout": "Callouts (note/tip/warning)",
       "horizontalRule": "Horizontal rule",
       "color": "Text color"
     }
@@ -459,6 +474,11 @@ export const settingsEn: MessageTree = {
       "autoSaveInterval": {
         "label": "Auto-save interval (s)",
         "help": "How often drafts are saved."
+      },
+      "draftFullEditorState": {
+        "label": "Auto-save — full editor state",
+        "help": "Also stores other locales, SEO, templates, and other editor fields in the draft (not just the active locale title and body).",
+        "note": "Recommended for multilingual content or when you often edit SEO and metadata."
       },
       "lockTtl": {
         "label": "Content lock TTL (s)",

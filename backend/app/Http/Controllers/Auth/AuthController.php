@@ -15,6 +15,7 @@ use PaginiumCMS\Core\Workflow\Services\OtpWorkflowService;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Demo\Services\DemoLoginGuard;
 use PaginiumCMS\Modules\Security\Contracts\AuthenticationInterface;
+use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
 use PaginiumCMS\Modules\Security\Contracts\CsrfProtectionInterface;
 use PaginiumCMS\Modules\Security\Contracts\PasswordPolicyInterface;
 use PaginiumCMS\Modules\Security\Models\User;
@@ -29,6 +30,7 @@ class AuthController
 {
     public function __construct(
         private AuthenticationInterface $auth,
+        private AuthorizationInterface $authorization,
         private CsrfProtectionInterface $csrf,
         private PasswordPolicyInterface $passwordPolicy,
         private UserRepository $userRepository,
@@ -398,9 +400,12 @@ class AuthController
             return $this->json->error($response, 'Neprihlásený používateľ', 401);
         }
 
+        $payload = $user->jsonSerialize();
+        $payload['permissions'] = $this->authorization->permissionsFor($user);
+
         return $this->json->respond($response, [
             'success' => true,
-            'user' => $user->jsonSerialize(),
+            'user' => $payload,
         ]);
     }
 

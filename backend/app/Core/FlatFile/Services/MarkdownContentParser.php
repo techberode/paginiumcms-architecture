@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace PaginiumCMS\Core\FlatFile\Services;
 
 use function utf8_normalize;
+use PaginiumCMS\Core\Editor\Services\CalloutShortcode;
+use PaginiumCMS\Core\Editor\Services\ExternalEmbedShortcode;
+use PaginiumCMS\Core\Editor\Services\HtmlSafeShortcode;
 use PaginiumCMS\Core\Editor\Services\VideoEmbedShortcode;
 use PaginiumCMS\Core\FlatFile\Contracts\MarkdownContentParserInterface;
 use League\CommonMark\Environment\Environment;
@@ -21,6 +24,9 @@ class MarkdownContentParser implements MarkdownContentParserInterface
 
     public function __construct(
         private VideoEmbedShortcode $videoShortcode = new VideoEmbedShortcode(),
+        private HtmlSafeShortcode $htmlSafeShortcode = new HtmlSafeShortcode(),
+        private ExternalEmbedShortcode $externalEmbedShortcode = new ExternalEmbedShortcode(),
+        private CalloutShortcode $calloutShortcode = new CalloutShortcode(),
     ) {
         $config = [
             'html_input' => 'allow',
@@ -48,9 +54,15 @@ class MarkdownContentParser implements MarkdownContentParserInterface
 
     public function parse(string $markdown): string
     {
-        $prepared = $this->videoShortcode->expand($markdown);
+        [$prepared, $deferredEmbeds] = $this->externalEmbedShortcode->deferBlocks($markdown);
+        [$prepared, $deferredCallouts] = $this->calloutShortcode->deferBlocks($prepared);
+        $prepared = $this->htmlSafeShortcode->expand($prepared);
+        $prepared = $this->videoShortcode->expand($prepared);
 
-        return $this->converter->convert($prepared)->getContent();
+        $html = $this->converter->convert($prepared)->getContent();
+        $html = $this->calloutShortcode->restoreDeferred($html, $deferredCallouts);
+
+        return $this->externalEmbedShortcode->restoreDeferred($html, $deferredEmbeds);
     }
 
     public function parseInline(string $markdown): string

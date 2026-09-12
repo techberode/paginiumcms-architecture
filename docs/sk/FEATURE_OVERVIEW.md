@@ -80,8 +80,9 @@
 | Editor image upload | ✅ | Tiptap integration |
 | Verejné `/storage/` | ✅ | allow-list a bezpečné content headers |
 | Flysystem/S3/CDN drivers | 🟡 partial | It.72 MVP local; S3 neskôr |
-| Video v Media Library | ⏳ | It.79 po It.78 upload policy |
-| Unified upload security | ⏳ | It.78 — všetky upload povrchy |
+| Video v Media Library | ✅ | It.79 — MP4/WebM, `:::video` shortcode (`beta.71`) |
+| Unified upload security | ✅ | It.78 — UploadPolicyEngine (`beta.70`) |
+| Trusted HTML / YouTube embed | ⏳ | It.91 — role-based `:::html-safe`, `:::embed` |
 | Scoped Section FileManager | ⏳ kandidát | zostávajúci backlog bez prideleného nového čísla |
 
 ---
@@ -172,7 +173,7 @@ Hybrid Engine nesmie znížiť tento baseline. Nové ovládače používajú exi
 | Git publish | 🟡 iba content sync | immediate/queued It.70 |
 | APM | ❌ | Performance Guard It.71 |
 | S3 media | 🟡 partial | It.72 MVP local |
-| Video v médiách | ❌ | It.79 |
+| Video v médiách | ✅ | It.79 (`beta.71`) |
 | Unified upload security | ❌ | It.78 |
 | Multi-locale document | ❌ | It.73 |
 | API keys/JWT | ❌ | It.74 |

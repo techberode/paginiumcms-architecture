@@ -95,4 +95,28 @@ class DraftManagerTest extends TestCase
         $draft = $this->manager->get('page', '../../etc/passwd');
         $this->assertNotNull($draft, 'Očistený slug musí byť konzistentný pri save aj get');
     }
+
+    public function testSaveAndGetWithEditorSnapshot(): void
+    {
+        $snapshot = [
+            'activeLocale' => 'sk',
+            'localeStates' => [
+                'sk' => ['title' => 'SK titulok', 'content' => '# Obsah'],
+            ],
+            'editorMode' => 'markdown',
+        ];
+
+        $this->manager->save('page', 'snapshot-page', [
+            'title' => 'SK titulok',
+            'content' => '# Obsah',
+            'status' => 'draft',
+            'baseRevision' => 'rev-1',
+            'editorSnapshot' => $snapshot,
+        ], 'user_1');
+
+        $draft = $this->manager->get('page', 'snapshot-page');
+
+        $this->assertNotNull($draft);
+        $this->assertSame($snapshot, $draft->getEditorSnapshot());
+    }
 }

@@ -125,6 +125,21 @@ class AuthorizationManager implements AuthorizationInterface
     }
 
     /**
+     * @return list<string>
+     */
+    public function permissionsFor(User $user): array
+    {
+        $granted = [];
+        foreach (PermissionCatalog::ALL as $permission) {
+            if ($this->hasPermission($user, $permission)) {
+                $granted[] = $permission;
+            }
+        }
+
+        return $granted;
+    }
+
+    /**
      * @return array<int|string, mixed>
      */
     public function getRoles(User $user): array

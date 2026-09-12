@@ -381,7 +381,7 @@ export const SystemUpdateView: React.FC = () => {
               ) : null}
               <button
                 type="button"
-                disabled={deploying || !data?.job_registered || !deployReady}
+                disabled={deploying || !data?.job_registered || !deployReady || ref.trim() === ''}
                 onClick={() => void handleDeploy()}
                 className={canDeployLatestTag ? 'btn-secondary inline-flex items-center gap-2' : 'btn-primary inline-flex items-center gap-2'}
               >

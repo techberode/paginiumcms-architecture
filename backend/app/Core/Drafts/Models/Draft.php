@@ -12,17 +12,21 @@ use JsonSerializable;
  * `data/drafts/{type}/{slug}.json`, oddelene od publikovaného obsahu.
  *
  * Anatómia:
- *  - type         : 'page' | 'article'
- *  - slug         : identifikátor obsahu
- *  - title        : rozpracovaný titulok
- *  - content      : rozpracovaný markdown
- *  - status       : draft/published/archived (rozpracovaný stav)
- *  - baseRevision : revízia publikovaného obsahu, z ktorej koncept vychádza (pre detekciu konfliktu)
- *  - savedBy      : ID používateľa
- *  - savedAt      : čas posledného auto-save (unix)
+ *  - type            : 'page' | 'article'
+ *  - slug            : identifikátor obsahu
+ *  - title           : rozpracovaný titulok (aktívna locale)
+ *  - content         : rozpracovaný obsah (aktívna locale)
+ *  - status          : draft/published/archived (rozpracovaný stav)
+ *  - baseRevision    : revízia publikovaného obsahu, z ktorej koncept vychádza
+ *  - editorSnapshot  : voliteľný JSON stav editora (locale, SEO, …) ak je zapnuté v nastaveniach
+ *  - savedBy         : ID používateľa
+ *  - savedAt         : čas posledného auto-save (unix)
  */
 final class Draft implements JsonSerializable
 {
+    /**
+     * @param array<string, mixed>|null $editorSnapshot
+     */
     public function __construct(
         private string $type,
         private string $slug,
@@ -31,14 +35,18 @@ final class Draft implements JsonSerializable
         private string $status,
         private string $baseRevision,
         private string $savedBy,
-        private int $savedAt
+        private int $savedAt,
+        private ?array $editorSnapshot = null
     ) {
     }
 
     /**
      * @param array<int|string, mixed> $data
- */public static function fromArray(array $data): self
+     */
+    public static function fromArray(array $data): self
     {
+        $snapshot = $data['editorSnapshot'] ?? null;
+
         return new self(
             (string) ($data['type'] ?? 'page'),
             (string) ($data['slug'] ?? ''),
@@ -47,7 +55,8 @@ final class Draft implements JsonSerializable
             (string) ($data['status'] ?? 'draft'),
             (string) ($data['baseRevision'] ?? ''),
             (string) ($data['savedBy'] ?? ''),
-            (int) ($data['savedAt'] ?? 0)
+            (int) ($data['savedAt'] ?? 0),
+            is_array($snapshot) ? $snapshot : null
         );
     }
 
@@ -72,10 +81,19 @@ final class Draft implements JsonSerializable
     }
 
     /**
-     * @return array<int|string, mixed>
- */public function jsonSerialize(): array
+     * @return array<string, mixed>|null
+     */
+    public function getEditorSnapshot(): ?array
     {
-        return [
+        return $this->editorSnapshot;
+    }
+
+    /**
+     * @return array<int|string, mixed>
+     */
+    public function jsonSerialize(): array
+    {
+        $payload = [
             'type' => $this->type,
             'slug' => $this->slug,
             'title' => $this->title,
@@ -85,5 +103,11 @@ final class Draft implements JsonSerializable
             'savedBy' => $this->savedBy,
             'savedAt' => $this->savedAt,
         ];
+
+        if ($this->editorSnapshot !== null && $this->editorSnapshot !== []) {
+            $payload['editorSnapshot'] = $this->editorSnapshot;
+        }
+
+        return $payload;
     }
 }

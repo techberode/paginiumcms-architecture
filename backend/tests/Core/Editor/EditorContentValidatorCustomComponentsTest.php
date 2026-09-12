@@ -8,6 +8,12 @@ use PaginiumCMS\Core\Editor\Models\EditorComponentDefinition;
 use PaginiumCMS\Core\Editor\Services\EditorComponentRegistry;
 use PaginiumCMS\Core\Editor\Services\EditorContentValidator;
 use PaginiumCMS\Core\Editor\Services\EditorProfileService;
+use PaginiumCMS\Core\Editor\Services\ExternalEmbedContentService;
+use PaginiumCMS\Core\Editor\Services\ExternalEmbedShortcode;
+use PaginiumCMS\Core\Editor\Services\HtmlSafeShortcode;
+use PaginiumCMS\Core\Editor\Services\TrustedHtmlContentService;
+use PaginiumCMS\Core\Security\Services\TrustedHtmlPurifier;
+use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
 use PaginiumCMS\Core\FlatFile\Services\FileReader;
 use PaginiumCMS\Core\FlatFile\Services\FileValidator;
 use PaginiumCMS\Core\FlatFile\Services\FileWriter;
@@ -49,7 +55,11 @@ final class EditorContentValidatorCustomComponentsTest extends TestCase
         $components = new EditorComponentRegistry($plugins);
 
         $profiles = new EditorProfileService($this->settings, $components);
-        $this->validator = new EditorContentValidator($profiles, $components);
+        $auth = $this->createMock(AuthorizationInterface::class);
+        $auth->method('hasPermission')->willReturn(false);
+        $trustedHtml = new TrustedHtmlContentService($this->settings, $auth, new TrustedHtmlPurifier($this->settings));
+        $externalEmbed = new ExternalEmbedContentService($this->settings, $auth, new ExternalEmbedShortcode());
+        $this->validator = new EditorContentValidator($profiles, $components, $trustedHtml, $externalEmbed, new HtmlSafeShortcode());
     }
 
     public function testRejectsUnknownMarkdownDirective(): void

@@ -157,6 +157,7 @@ export const editorSk: MessageTree = {
       otpSent: 'Overovací kód pre publikáciu bol odoslaný na email',
       devOtp: 'Dev OTP: :code',
       saved: 'Obsah bol uložený',
+      draftRestoredFull: 'Koncept bol obnovený (vrátane jazykov, SEO a ďalších polí)',
       autoMerged: 'Zmeny boli automaticky zlúčené so serverovou verziou.',
       conflict: 'Konflikt (:count) – vyriešte ho prosím manuálne.',
       conflictWholeResource:
@@ -169,6 +170,8 @@ export const editorSk: MessageTree = {
       saving: 'Ukladám koncept…',
       saved: 'Koncept uložený',
       error: 'Koncept sa nepodarilo uložiť',
+      unsaved: 'Neuložené zmeny',
+      leaveSaved: 'Neuložené zmeny boli uložené ako koncept',
     },
     draftBanner: {
       message: 'Našiel sa neuložený koncept. Chcete ho obnoviť?',
@@ -344,5 +347,55 @@ export const editorSk: MessageTree = {
     toast: {
       loadFailed: 'Nepodarilo sa načítať snippety',
     },
+  },
+  htmlBlock: {
+    title: 'Vložiť HTML blok',
+    hint: 'HTML sa uloží do chráneného bloku :::html-safe a pri uložení sa sanitizuje. Skripty a iframe nie sú povolené.',
+    placeholder: '<div class="my-block">\n  …\n</div>',
+    insert: 'Vložiť blok',
+    cancel: 'Zrušiť',
+    toolbar: 'Vložiť HTML blok',
+  },
+  embed: {
+    title: 'Vložiť externý embed',
+    hint: 'Prehrávač YouTube alebo Vimeo sa uloží do chráneného bloku :::embed. Ukladá sa len ID videa — nie raw iframe HTML.',
+    providerLabel: 'Poskytovateľ',
+    idLabel: 'ID videa',
+    idPlaceholder: {
+      youtube: 'dQw4w9WgXcQ',
+      vimeo: '123456789',
+    },
+    providers: {
+      youtube: 'YouTube',
+      vimeo: 'Vimeo',
+    },
+    insert: 'Vložiť embed',
+    cancel: 'Zrušiť',
+    toolbar: 'Vložiť YouTube/Vimeo',
+  },
+  tableInsert: {
+    title: 'Vložiť tabuľku',
+    hint: 'Vytvorí GFM tabuľku s placeholder bunkami na úpravu.',
+    columns: 'Stĺpce',
+    rows: 'Riadky dát',
+    includeHeader: 'Riadok hlavičky',
+    insert: 'Vložiť tabuľku',
+    cancel: 'Zrušiť',
+    toolbar: 'Vložiť tabuľku',
+  },
+  callout: {
+    title: 'Vložiť callout',
+    hint: 'Poznámka, tip alebo varovanie uložené ako chránený shortcode blok.',
+    typeLabel: 'Typ',
+    bodyLabel: 'Text',
+    bodyPlaceholder: 'Text calloutu…',
+    types: {
+      note: 'Poznámka',
+      tip: 'Tip',
+      warning: 'Varovanie',
+    },
+    insert: 'Vložiť callout',
+    cancel: 'Zrušiť',
+    toolbar: 'Vložiť callout',
   },
 };

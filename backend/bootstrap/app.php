@@ -541,6 +541,7 @@ $containerBuilder->addDefinitions([
     AuthController::class => function ($container) {
         return new AuthController(
             $container->get(AuthenticationInterface::class),
+            $container->get(AuthorizationInterface::class),
             $container->get(CsrfProtectionInterface::class),
             $container->get(PasswordPolicyInterface::class),
             $container->get(UserRepository::class),

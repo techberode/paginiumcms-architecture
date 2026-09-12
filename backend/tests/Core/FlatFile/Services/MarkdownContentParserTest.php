@@ -135,4 +135,31 @@ MD;
         $this->assertStringContainsString('<video src="/storage/app/content/media/clip.mp4"', $html);
         $this->assertStringContainsString('controls', $html);
     }
+
+    public function testParseExternalEmbedShortcode(): void
+    {
+        $markdown = <<<MD
+:::embed
+provider: youtube
+id: dQw4w9WgXcQ
+:::
+MD;
+        $html = $this->parser->parse($markdown);
+
+        $this->assertStringContainsString('youtube-nocookie.com/embed/dQw4w9WgXcQ', $html);
+        $this->assertStringContainsString('<iframe', $html);
+    }
+
+    public function testParseCalloutShortcode(): void
+    {
+        $markdown = <<<MD
+:::tip
+Remember to save.
+:::
+MD;
+        $html = $this->parser->parse($markdown);
+
+        $this->assertStringContainsString('paginium-callout--tip', $html);
+        $this->assertStringContainsString('Remember to save.', $html);
+    }
 }

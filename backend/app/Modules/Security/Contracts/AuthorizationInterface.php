@@ -37,6 +37,13 @@ interface AuthorizationInterface
     public function hasPermission(User $user, string $permission): bool;
 
     /**
+     * Effective permission strings for session/UI gating.
+     *
+     * @return list<string>
+     */
+    public function permissionsFor(User $user): array;
+
+    /**
      * Získa zoznam rolí používateľa.
      *
      * @param User $user Používateľ.

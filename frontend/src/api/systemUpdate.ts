@@ -1,4 +1,5 @@
 import apiClient from './client';
+import { normalizeDeployRef } from '../utils/deployRef';
 
 export interface SystemUpdateGitStatus {
   available: boolean;
@@ -114,9 +115,10 @@ export async function checkSystemUpdate(): Promise<SystemUpdateCheckResult | nul
 export async function runSystemUpdate(
   ref: string
 ): Promise<{ data: SystemUpdateRunResult | null; error?: string }> {
+  const normalizedRef = normalizeDeployRef(ref);
   const res = await apiClient.post<SystemUpdateRunResult>(
     '/api/admin/system/update/run',
-    { ref },
+    { ref: normalizedRef },
     { timeout: 600_000 }
   );
   if (res.success && res.data) {

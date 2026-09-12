@@ -80,7 +80,9 @@
 | Editor image upload | ✅ | Tiptap integration |
 | Public `/storage/` | ✅ | allow-list and safe content headers |
 | Flysystem/S3/CDN drivers | 🟡 partial | It.72 MVP local; S3 deferred |
-| Video in Media Library | ⏳ | It.79 after It.78 upload policy |
+| Video in Media Library | ✅ | It.79 — MP4/WebM, `:::video` shortcode (`beta.71`) |
+| Unified upload security | ✅ | It.78 — UploadPolicyEngine (`beta.70`) |
+| Trusted HTML / YouTube embed | ⏳ | It.91 — role-based `:::html-safe`, `:::embed` |
 | Unified upload security | ⏳ | It.78 — all upload surfaces |
 | Scoped Section FileManager | ⏳ candidate | remaining backlog without a reused iteration number |
 
@@ -111,7 +113,7 @@
 | Dashboard and analytics | ✅ | KPI, activity, referrer/device/geo enrichment, SPA beacon |
 | Admin search and navigation | ✅ | `Ctrl+K`, deep links, sidebar counts |
 | Settings engine | ✅ | schema-driven forms, encrypted secrets |
-| Admin i18n | ✅ | SK/EN + translation editor |
+| Admin i18n | ✅ | SK/EN + translation editor; settings field labels/help/notes — [SETTINGS_I18N.md](SETTINGS_I18N.md) |
 | Scheduler and queue | ✅ | registry, CLI, UI, outcome history |
 | Backups and trash | ✅ | create/restore/import/hash/verify, soft delete |
 | Audit and logs | ✅ | sanitization, CSV, app/HTTP/security views |
@@ -172,7 +174,7 @@ The Hybrid Engine must not weaken this baseline. New drivers use the existing do
 | Git publishing | 🟡 foundation shipped | immediate/queued via It.70 API; UI modal + It.48 hook deferred |
 | APM | ❌ | Performance Guard in It.71 |
 | S3 media | 🟡 partial | It.72 MVP local |
-| Video in media | ❌ | It.79 |
+| Video in media | ✅ | It.79 (`beta.71`) |
 | Unified upload security | ❌ | It.78 |
 | Multi-locale document | ❌ | It.73 |
 | API keys/JWT | ❌ | It.74 |
