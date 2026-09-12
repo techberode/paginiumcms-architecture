@@ -29,7 +29,7 @@ Historical freeze record: [STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) (supe
 | Area | Status |
 |------|--------|
 | Latest tag | ✅ `v2.1.0-beta.69` — It.88 Theme Studio, backup scope + incremental snapshots |
-| Unreleased (this tree) | — next: **It.78** unified upload security |
+| Unreleased (this tree) | — **It.78** shipped; hotfixes: update banner i18n + semver check; next: **It.79** video · **It.89** plugin capabilities |
 | It.25 setup wizard | ✅ basic + M1+ (`beta.62`–`beta.66`) |
 | It.83 theme runtime | ✅ shipped `beta.59` (`terminal-breach`, `clean-journal`) |
 | It.84 / It.86 | ✅ shipped |
@@ -43,18 +43,17 @@ Do **not** invent new iteration numbers. Finish specs that already exist.
 
 | Order | Item | Why this order |
 |------:|------|----------------|
-| 1 | **It.78** Unified upload security | Gate before video / new MIME |
-| 2 | **It.79** DAM video | Depends on It.78 |
-| 3 | **It.72** S3 / remote media remainder | Local driver already shipped |
-| 4 | **It.58f / 58g** layout builder remainder | Page blocks (not theme studio) |
-| 5 | **It.70** GitHub API publisher UI | Local Git already shipped |
-| 6 | **It.76 / 77** translation providers | After It.73 (shipped) |
-| 7 | **It.75** CMS-aware AI agent | Last: proposals only, human apply |
-| 8 | **It.48** static / Jamstack output | Align with It.70; do not fork publish pipelines |
+| 1 | **It.79** DAM video | Depends on It.78 (shipped) |
+| 2 | **It.72** S3 / remote media remainder | Local driver already shipped |
+| 3 | **It.58f / 58g** layout builder remainder | Page blocks (not theme studio) |
+| 4 | **It.70** GitHub API publisher UI | Local Git already shipped |
+| 5 | **It.76 / 77** translation providers | After It.73 (shipped) |
+| 6 | **It.75** CMS-aware AI agent | Last: proposals only, human apply |
+| 7 | **It.48** static / Jamstack output | Align with It.70; do not fork publish pipelines |
 
 **Optional / later:** It.82d Origin host metrics.
 
-**Next slice to open:** **It.78** — unified upload security policy.
+**Next slice to open:** **It.79** — DAM video (`media-video` profile).
 
 ---
 

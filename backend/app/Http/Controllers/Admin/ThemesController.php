@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Controllers\Admin;
 
 use PaginiumCMS\Core\CodePolicy\Exceptions\CodePolicyViolationException;
+use PaginiumCMS\Core\Security\Upload\UploadPolicyEngine;
+use PaginiumCMS\Core\Security\Upload\UploadPolicyException;
+use PaginiumCMS\Core\Security\Upload\UploadSurfaceRegistry;
+use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Http\Themes\Services\ThemeManager;
 use PaginiumCMS\Http\Themes\Services\ThemeRuntimeService;
@@ -23,6 +27,7 @@ final class ThemesController
         private ThemeManager $themes,
         private ThemeStarterPackageService $starterPackages,
         private JsonResponder $json,
+        private UploadPolicyEngine $uploadPolicy,
     ) {
     }
 
@@ -45,13 +50,24 @@ final class ThemesController
             return $this->json->error($response, 'ZIP file is required', 400);
         }
 
+        $clientName = $file->getClientFilename() ?? 'theme.zip';
+        $uploadSize = (int) ($file->getSize() ?? 0);
         $tempPath = sys_get_temp_dir() . '/pag_theme_upload_' . uniqid('', true) . '.zip';
         $file->moveTo($tempPath);
 
         try {
+            $this->uploadPolicy->enforceArchive(
+                UploadSurfaceRegistry::SURFACE_THEME_IMPORT,
+                $clientName,
+                $uploadSize > 0 ? $uploadSize : (int) filesize($tempPath),
+                $tempPath,
+                $this->resolveUserId($request)
+            );
             $theme = $this->themes->import($tempPath);
 
             return $this->json->success($response, $theme, 201, 'Theme package imported');
+        } catch (UploadPolicyException $exception) {
+            return $this->json->error($response, $exception->getMessage(), 413);
         } catch (CodePolicyViolationException $exception) {
             return $this->json->validation($response, $exception->getMessage(), $exception->getErrors());
         } catch (RuntimeException $exception) {
@@ -61,6 +77,13 @@ final class ThemesController
                 @unlink($tempPath);
             }
         }
+    }
+
+    private function resolveUserId(ServerRequestInterface $request): ?string
+    {
+        $user = $request->getAttribute('user');
+
+        return $user instanceof User ? $user->getId() : null;
     }
 
     /**

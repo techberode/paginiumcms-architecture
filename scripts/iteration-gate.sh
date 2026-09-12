@@ -95,6 +95,16 @@ if grep -R "workflows/otp" backend/app/Http/Routes/ >/dev/null 2>&1; then
     || fail "Route workflows/otp without WorkflowController::verifyOtp"
 fi
 
+for surface in media.upload avatar.upload backup.import extension.import theme.import stock.import; do
+  grep -q "'$surface'" backend/app/Core/Security/Upload/UploadSurfaceRegistry.php \
+    || fail "UploadSurfaceRegistry missing surface: $surface"
+done
+
+for key in unifiedPolicyEnabled auditUploads dailyQuotaBytesPerUser; do
+  grep -q "'$key'" backend/app/Core/Settings/SettingsSchema.php \
+    || fail "SettingsSchema missing uploadSecurity key: $key"
+done
+
 ok "Basic wiring checks passed"
 
 echo

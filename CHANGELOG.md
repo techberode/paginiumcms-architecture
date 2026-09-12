@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.70`](#release-2-1-0-beta-70) | 2026-09-12 | It.78 upload policy, system update banner/deploy readiness fixes |
 | [`2.1.0-beta.69`](#release-2-1-0-beta-69) | 2026-09-10 | It.88 Theme Studio, backup scope + incremental snapshots |
 | [`2.1.0-beta.68`](#release-2-1-0-beta-68) | 2026-09-09 | It.87 Project Site Planner, admin list pagination (ISS-169), landing SEO hero |
 | [`2.1.0-beta.67`](#release-2-1-0-beta-67) | 2026-09-06 | Media optimization, avatar normalization, metadata modal |
@@ -146,7 +147,26 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ### Planning
 
-- **Stabilization freeze closed (2026-09-09)** — no `v2.2.0` stable gate; continue planned iterations. Queue: **It.78** unified upload security → 79 → 72 remainder → 58f/g → 70 GitHub UI → 76/77 → 75 → 48. Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+- **Stabilization freeze closed (2026-09-09)** — no `v2.2.0` stable gate; continue planned iterations. Queue: **It.79** DAM video → **It.89** plugin capabilities → 72 remainder → 58f/g → 70 GitHub UI → 76/77 → 75 → 48. Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+
+---
+
+<a id="release-2-1-0-beta-70"></a>
+
+## [2.1.0-beta.70] – 2026-09-12
+
+It.78 unified upload security and admin system-update hotfixes (banner i18n, semver compare, deploy readiness)
+
+### Added
+
+- **It.78 Unified upload security** — `UploadPolicyEngine` with named profiles (`media`, `avatar`, `backup-archive`, `extension-archive`, `stock-import`, `media-video` placeholder) wired to media upload, avatar, backup ZIP import, extension/theme ZIP import, and stock import audit; `UploadSurfaceRegistry`, magic-byte/archive/quota/audit guards; settings `uploadSecurity.unifiedPolicyEnabled`, `auditUploads`, `dailyQuotaBytesPerUser`; iteration gate + security regression pack.
+- **It.89 spec (planned)** — plugin capability model (3-layer security); see [ITERATION_89.md](docs/en/ITERATION_89.md).
+
+### Fixed
+
+- **System update banner** — i18n `{version}` placeholders now interpolate (dashboard deploy message no longer shows literal `{version}`).
+- **Remote version check** — local checkout ahead of GitHub `latest_release` (e.g. beta.69 deployed while beta.68 is still “latest”) reports `current`, not `update_available`.
+- **Deploy readiness** — new blocker `stack_dir_not_visible` when host `stackDir` is not mounted into the PHP container; `stack_script_missing` when `stack.sh` is absent; documented in [DEPLOY.md](docs/deploy/DEPLOY.md) §12.5.
 
 ---
 

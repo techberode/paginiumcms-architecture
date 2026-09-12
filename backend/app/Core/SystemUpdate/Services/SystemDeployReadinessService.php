@@ -25,6 +25,7 @@ final class SystemDeployReadinessService
      *     blockers: list<string>,
      *     stack_dir: string,
      *     stack_dir_configured: bool,
+     *     stack_dir_accessible: bool,
      *     stack_script_executable: bool,
      *     backend_port: string,
      *     deploy_script_exists: bool,
@@ -53,14 +54,20 @@ final class SystemDeployReadinessService
 
         $stackDir = $this->deploy->resolvedStackDir($config);
         $stackDirConfigured = $stackDir !== '';
+        $stackDirAccessible = false;
         if (!$stackDirConfigured) {
             $blockers[] = 'stack_dir_missing';
         }
 
-        $stackScriptExecutable = $stackDirConfigured
+        $stackDirAccessible = $stackDirConfigured && is_dir($stackDir);
+        if ($stackDirConfigured && !$stackDirAccessible) {
+            $blockers[] = 'stack_dir_not_visible';
+        }
+
+        $stackScriptExecutable = $stackDirAccessible
             && is_file($stackDir . '/stack.sh')
             && is_executable($stackDir . '/stack.sh');
-        if ($stackDirConfigured && !$stackScriptExecutable) {
+        if ($stackDirAccessible && !$stackScriptExecutable) {
             $blockers[] = 'stack_script_missing';
         }
 
@@ -86,6 +93,7 @@ final class SystemDeployReadinessService
             'blockers' => $blockers,
             'stack_dir' => $stackDir,
             'stack_dir_configured' => $stackDirConfigured,
+            'stack_dir_accessible' => $stackDirAccessible,
             'stack_script_executable' => $stackScriptExecutable,
             'backend_port' => $this->deploy->resolvedBackendPort($config),
             'deploy_script_exists' => $deployScriptExists,

@@ -135,6 +135,14 @@ use PaginiumCMS\Core\Security\SecurityLogger;
 use PaginiumCMS\Core\Security\Services\ContentSecuritySanitizer;
 use PaginiumCMS\Core\Security\Services\LoginAttemptTracker;
 use PaginiumCMS\Core\Security\Services\UploadSecurityValidator;
+use PaginiumCMS\Core\Security\Services\ZipEntryGuard;
+use PaginiumCMS\Core\Security\Upload\UploadArchiveValidator;
+use PaginiumCMS\Core\Security\Upload\UploadAuditLogger;
+use PaginiumCMS\Core\Security\Upload\UploadFilenameGuard;
+use PaginiumCMS\Core\Security\Upload\UploadMagicByteInspector;
+use PaginiumCMS\Core\Security\Upload\UploadPolicyEngine;
+use PaginiumCMS\Core\Security\Upload\UploadPolicyProfile;
+use PaginiumCMS\Core\Security\Upload\UploadQuotaGuard;
 use PaginiumCMS\Core\Security\Firewall\FirewallBanStore;
 use PaginiumCMS\Core\Security\Firewall\FirewallIncidentLogger;
 use PaginiumCMS\Core\Security\Firewall\FirewallScenarioRegistry;
@@ -335,8 +343,40 @@ return [
     TiptapHtmlRenderer::class => create(TiptapHtmlRenderer::class),
     ContentSecuritySanitizer::class => create(ContentSecuritySanitizer::class)
         ->constructor(get(SettingsRepositoryInterface::class)),
-    UploadSecurityValidator::class => create(UploadSecurityValidator::class)
+    ZipEntryGuard::class => create(ZipEntryGuard::class),
+    UploadMagicByteInspector::class => create(UploadMagicByteInspector::class),
+    UploadFilenameGuard::class => create(UploadFilenameGuard::class)
         ->constructor(get(SettingsRepositoryInterface::class)),
+    UploadPolicyProfile::class => create(UploadPolicyProfile::class)
+        ->constructor(get(SettingsRepositoryInterface::class)),
+    UploadArchiveValidator::class => create(UploadArchiveValidator::class)
+        ->constructor(get(ZipEntryGuard::class)),
+    UploadQuotaGuard::class => create(UploadQuotaGuard::class)
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class)
+        ),
+    UploadAuditLogger::class => create(UploadAuditLogger::class)
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(SecurityAuditStore::class)
+        ),
+    UploadPolicyEngine::class => create(UploadPolicyEngine::class)
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(UploadPolicyProfile::class),
+            get(UploadFilenameGuard::class),
+            get(UploadMagicByteInspector::class),
+            get(UploadArchiveValidator::class),
+            get(UploadQuotaGuard::class),
+            get(UploadAuditLogger::class)
+        ),
+    UploadSecurityValidator::class => create(UploadSecurityValidator::class)
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(UploadPolicyEngine::class)
+        ),
     ContentBodyRenderer::class => create(ContentBodyRenderer::class)
         ->constructor(
             get(MarkdownContentParserInterface::class),
@@ -541,6 +581,7 @@ return [
         ->constructor(
             get(MediaRepositoryInterface::class),
             get(AvatarImageProcessor::class),
+            get(UploadPolicyEngine::class),
         ),
     AvatarImageProcessor::class => create(AvatarImageProcessor::class),
     TranslationPolicyValidator::class => create(TranslationPolicyValidator::class)
@@ -692,6 +733,7 @@ return [
             get(FileWriterInterface::class),
             get(SettingsRepositoryInterface::class),
             get(UploadSecurityValidator::class),
+            get(UploadPolicyEngine::class),
             get(MediaStorageFactory::class),
             get(MediaImageOptimizer::class),
             get(MediaOptimizePreviewStore::class)
@@ -703,7 +745,8 @@ return [
         ->constructor(
             get(MediaRepositoryInterface::class),
             get(SettingsRepositoryInterface::class),
-            get(StockImageCatalog::class)
+            get(StockImageCatalog::class),
+            get(UploadPolicyEngine::class)
         ),
 
     NavigationRepositoryInterface::class => create(NavigationRepository::class)
@@ -1098,7 +1141,11 @@ return [
             dirname(__DIR__, 4) . '/frontend/src/extensions'
         ),
     ExtensionsController::class => create(ExtensionsController::class)
-        ->constructor(get(PluginManagerInterface::class), get(JsonResponder::class)),
+        ->constructor(
+            get(PluginManagerInterface::class),
+            get(JsonResponder::class),
+            get(UploadPolicyEngine::class)
+        ),
     ShortcodeRegistry::class => create(ShortcodeRegistry::class)
         ->constructor(
             get(FileReaderInterface::class),
@@ -1228,7 +1275,8 @@ return [
         ->constructor(
             get(ThemeManager::class),
             get(ThemeStarterPackageService::class),
-            get(JsonResponder::class)
+            get(JsonResponder::class),
+            get(UploadPolicyEngine::class)
         ),
     ThemeStudioService::class => create(ThemeStudioService::class)
         ->constructor(

@@ -8,7 +8,10 @@ use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\Backup\Contracts\BackupInterface;
 use PaginiumCMS\Core\Backup\Models\BackupMetadata;
 use PaginiumCMS\Core\Backup\Services\BackupScope;
-use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
+use PaginiumCMS\Core\Security\Upload\UploadPolicyEngine;
+use PaginiumCMS\Core\Security\Upload\UploadPolicyException;
+use PaginiumCMS\Core\Security\Upload\UploadSurfaceRegistry;
+use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Http\Support\BulkBatchResult;
 use PaginiumCMS\Http\Support\BulkOperationLimits;
 use PaginiumCMS\Http\Support\JsonResponder;
@@ -22,7 +25,7 @@ class BackupController
     public function __construct(
         private BackupInterface $backup,
         private JsonResponder $json,
-        private SettingsRepositoryInterface $settings,
+        private UploadPolicyEngine $uploadPolicy,
     ) {
     }
 
@@ -77,19 +80,27 @@ class BackupController
             return $this->json->error($response, 'ZIP súbor je povinný', 400);
         }
 
-        $maxKb = max(1024, (int) ($this->settings->group('uploadSecurity')['backupImportMaxSizeKb'] ?? 102400));
-        $maxBytes = $maxKb * 1024;
-        $uploadSize = $file->getSize();
-        if ($uploadSize !== null && $uploadSize > $maxBytes) {
-            return $this->json->error(
-                $response,
-                sprintf('Backup ZIP exceeds maximum import size (%d KB).', $maxKb),
-                413
-            );
-        }
+        $uploadSize = (int) ($file->getSize() ?? 0);
+        $clientName = $file->getClientFilename() ?? 'imported-backup.zip';
 
         $tempPath = sys_get_temp_dir() . '/paginium_import_' . uniqid('', true) . '.zip';
         $file->moveTo($tempPath);
+
+        try {
+            $this->uploadPolicy->enforceArchive(
+                UploadSurfaceRegistry::SURFACE_BACKUP_IMPORT,
+                $clientName,
+                $uploadSize > 0 ? $uploadSize : (int) filesize($tempPath),
+                $tempPath,
+                $this->resolveUserId($request)
+            );
+        } catch (UploadPolicyException $exception) {
+            if (is_file($tempPath)) {
+                @unlink($tempPath);
+            }
+
+            return $this->json->error($response, $exception->getMessage(), 413);
+        }
 
         $parsedBody = $request->getParsedBody();
         $name = is_array($parsedBody) ? trim((string) ($parsedBody['name'] ?? '')) : '';
@@ -292,5 +303,12 @@ class BackupController
             array_map(static fn ($id): string => is_string($id) ? trim($id) : '', $data['ids']),
             static fn (string $id): bool => $id !== ''
         ));
+    }
+
+    private function resolveUserId(ServerRequestInterface $request): ?string
+    {
+        $user = $request->getAttribute('user');
+
+        return $user instanceof User ? $user->getId() : null;
     }
 }

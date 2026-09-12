@@ -59,4 +59,18 @@ final class SystemUpdateVersionMatcherTest extends TestCase
 
         $this->assertSame('current', $result['status']);
     }
+
+    public function testCurrentWhenLocalIsAheadOfGithubLatestRelease(): void
+    {
+        $result = $this->matcher->evaluate(
+            '2.1.0-beta.69',
+            'v2.1.0-beta.69',
+            'v2.1.0-beta.68',
+            'abc',
+            'def',
+            0
+        );
+
+        $this->assertSame('current', $result['status']);
+    }
 }

@@ -9,6 +9,7 @@ use PaginiumCMS\Core\FlatFile\Services\FileReader;
 use PaginiumCMS\Core\FlatFile\Services\FileValidator;
 use PaginiumCMS\Core\FlatFile\Services\FileWriter;
 use PaginiumCMS\Core\Security\Services\UploadSecurityValidator;
+use PaginiumCMS\Tests\Support\UploadPolicyEngineTestFactory;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Modules\Media\Services\MediaImageOptimizer;
 use PaginiumCMS\Modules\Media\Services\MediaOptimizePreviewStore;
@@ -57,10 +58,15 @@ class MediaRepositoryTest extends TestCase
                 ];
             }
 
+            if ($group === 'uploadSecurity') {
+                return ['unifiedPolicyEnabled' => false];
+            }
+
             return [];
         });
 
-        $uploadSecurity = new UploadSecurityValidator($settings);
+        $policyEngine = UploadPolicyEngineTestFactory::create($settings, $this->root);
+        $uploadSecurity = new UploadSecurityValidator($settings, $policyEngine);
         $storageFactory = new MediaStorageFactory($reader, $writer);
         $imageOptimizer = new MediaImageOptimizer();
         $previewStore = new MediaOptimizePreviewStore($reader, $writer);
@@ -69,6 +75,7 @@ class MediaRepositoryTest extends TestCase
             $writer,
             $settings,
             $uploadSecurity,
+            $policyEngine,
             $storageFactory,
             $imageOptimizer,
             $previewStore

@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Controllers\Admin;
 
 use PaginiumCMS\Core\CodePolicy\Exceptions\CodePolicyViolationException;
+use PaginiumCMS\Core\Security\Upload\UploadPolicyEngine;
+use PaginiumCMS\Core\Security\Upload\UploadPolicyException;
+use PaginiumCMS\Core\Security\Upload\UploadSurfaceRegistry;
+use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Http\Extensions\Contracts\PluginManagerInterface;
 use PaginiumCMS\Http\Support\BulkBatchResult;
 use PaginiumCMS\Http\Support\BulkIdsParser;
@@ -22,6 +26,7 @@ final class ExtensionsController
     public function __construct(
         private PluginManagerInterface $plugins,
         private JsonResponder $json,
+        private UploadPolicyEngine $uploadPolicy,
     ) {
     }
 
@@ -41,13 +46,24 @@ final class ExtensionsController
             return $this->json->error($response, 'ZIP súbor je povinný', 400);
         }
 
+        $clientName = $file->getClientFilename() ?? 'extension.zip';
+        $uploadSize = (int) ($file->getSize() ?? 0);
         $tempPath = sys_get_temp_dir() . '/pag_extension_upload_' . uniqid('', true) . '.zip';
         $file->moveTo($tempPath);
 
         try {
+            $this->uploadPolicy->enforceArchive(
+                UploadSurfaceRegistry::SURFACE_EXTENSION_IMPORT,
+                $clientName,
+                $uploadSize > 0 ? $uploadSize : (int) filesize($tempPath),
+                $tempPath,
+                $this->resolveUserId($request)
+            );
             $extension = $this->plugins->import($tempPath);
 
             return $this->json->success($response, $extension, 201, 'Rozšírenie bolo importované');
+        } catch (UploadPolicyException $exception) {
+            return $this->json->error($response, $exception->getMessage(), 413);
         } catch (CodePolicyViolationException $exception) {
             return $this->json->validation($response, $exception->getMessage(), $exception->getErrors());
         } catch (RuntimeException $exception) {
@@ -125,5 +141,12 @@ final class ExtensionsController
         }
 
         return $this->json->success($response, $batch->toArray(), 200, 'Extensions uninstalled');
+    }
+
+    private function resolveUserId(ServerRequestInterface $request): ?string
+    {
+        $user = $request->getAttribute('user');
+
+        return $user instanceof User ? $user->getId() : null;
     }
 }

@@ -24,6 +24,15 @@ describe('i18n security/core', () => {
     expect(translate('en', 'content.slug_exists', { slug: 'home' })).toBe('Slug home already exists');
   });
 
+  it('replaces brace-style placeholders used by dashboard update banner', () => {
+    registerModuleMessages('sk', 'dashboard', {
+      updateBanner: { message: 'Verzia {version} je dostupná.' },
+    });
+    expect(translate('sk', 'dashboard.updateBanner.message', { version: '2.1.0-beta.69' })).toBe(
+      'Verzia 2.1.0-beta.69 je dostupná.'
+    );
+  });
+
   it('falls back to the English module catalog when a locale key is missing', () => {
     registerModuleMessages('en', 'demoNs', { nested: { label: 'Hello' } });
     registerModuleMessages('sk', 'demoNs', {});

@@ -1,6 +1,6 @@
 # Iteration 78 — unified upload security policy
 
-> **Status:** ⏳ planned  
+> **Status:** ✅ shipped (unreleased)  
 > **Priority:** 🟡 · security gate before new media types  
 > **Wave:** Post-HE DAM & security (It.78–79)  
 > **Depends on:** [It.24](ITERATION_24.md) DAM · [It.67](ITERATION_67.md) untrusted surfaces  
@@ -116,13 +116,13 @@ Aligns with workspace security rules and [CORE_HARDENING.md](architecture/CORE_H
 
 ## Definition of Done
 
-- [ ] `UploadPolicyEngine` is the single entry point for all listed upload surfaces.
-- [ ] `UploadSurfaceRegistry` documents every surface; iteration gate wiring check passes.
-- [ ] Intersection semantics for MIME/size are tested and documented.
-- [ ] Archive and outbound-import paths share Zip-Slip / SSRF guards.
-- [ ] Upload audit events are sanitized and permission-gated.
-- [ ] SK/EN security and architecture docs updated.
-- [ ] It.79 can add `media-video` profile without new one-off validators.
+- [x] `UploadPolicyEngine` is the single entry point for all listed upload surfaces.
+- [x] `UploadSurfaceRegistry` documents every surface; iteration gate wiring check passes.
+- [x] Intersection semantics for MIME/size are tested and documented.
+- [x] Archive and outbound-import paths share Zip-Slip / SSRF guards.
+- [x] Upload audit events are sanitized and permission-gated.
+- [x] SK/EN security and architecture docs updated.
+- [x] It.79 can add `media-video` profile without new one-off validators.
 
 ## Related
 

@@ -134,12 +134,13 @@ class MediaController
         $folder = trim((string) ($data['folder'] ?? ''));
 
         try {
+            $user = $this->resolveUser($request);
             $this->pathAcl->requireAccess(
-                $this->resolveUser($request),
+                $user,
                 $this->pathAcl->mediaFolderPath($folder),
                 'media:upload'
             );
-            $media = $this->stockImageImporter->import($topic, $folder);
+            $media = $this->stockImageImporter->import($topic, $folder, $user?->getId());
 
             return $this->json->success(
                 $response,
@@ -235,8 +236,9 @@ class MediaController
         $folder = is_array($parsedBody) ? (string) ($parsedBody['folder'] ?? '') : '';
 
         try {
+            $user = $this->resolveUser($request);
             $this->pathAcl->requireAccess(
-                $this->resolveUser($request),
+                $user,
                 $this->pathAcl->mediaFolderPath($folder),
                 'media:upload'
             );
@@ -245,7 +247,8 @@ class MediaController
                 (string) $file->getStream(),
                 $file->getClientMediaType() ?? 'application/octet-stream',
                 $altText,
-                $folder
+                $folder,
+                $user?->getId()
             );
 
             return $this->json->success($response, $media->jsonSerialize(), 201);

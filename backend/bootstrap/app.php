@@ -626,7 +626,7 @@ $containerBuilder->addDefinitions([
         return new BackupController(
             $container->get(BackupInterface::class),
             $container->get(JsonResponder::class),
-            $container->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class),
+            $container->get(\PaginiumCMS\Core\Security\Upload\UploadPolicyEngine::class),
         );
     },
 

@@ -6,6 +6,9 @@ namespace PaginiumCMS\Modules\Security\Services;
 
 use PaginiumCMS\Core\Content\AvatarImageProcessor;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
+use PaginiumCMS\Core\Security\Upload\UploadPolicyEngine;
+use PaginiumCMS\Core\Security\Upload\UploadPolicyException;
+use PaginiumCMS\Core\Security\Upload\UploadSurfaceRegistry;
 use PaginiumCMS\Modules\Media\MediaFormats;
 use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
 use PaginiumCMS\Modules\Security\Models\User;
@@ -18,6 +21,7 @@ final class UserAvatarService
     public function __construct(
         private MediaRepositoryInterface $media,
         private AvatarImageProcessor $avatarImages,
+        private UploadPolicyEngine $uploadPolicy,
     ) {
     }
 
@@ -30,17 +34,33 @@ final class UserAvatarService
         string $binary,
         string $mimeType
     ): string {
+        if ($this->uploadPolicy->isUnifiedEnabled()) {
+            try {
+                $mimeType = $this->uploadPolicy->enforceBinary(
+                    UploadSurfaceRegistry::SURFACE_AVATAR_UPLOAD,
+                    $originalName,
+                    $binary,
+                    $mimeType,
+                    $user->getId()
+                );
+            } catch (UploadPolicyException $exception) {
+                throw new FlatFileException($exception->getMessage(), 0, $exception);
+            }
+        }
+
         $processed = $this->avatarImages->process($binary, $mimeType);
         $binary = $processed['binary'];
         $mimeType = $processed['mimeType'];
 
-        MediaFormats::validate(
-            'avatar.' . $processed['extension'],
-            $binary,
-            $mimeType,
-            AvatarImageProcessor::ALLOWED_MIMES,
-            true
-        );
+        if (!$this->uploadPolicy->isUnifiedEnabled()) {
+            MediaFormats::validate(
+                'avatar.' . $processed['extension'],
+                $binary,
+                $mimeType,
+                AvatarImageProcessor::ALLOWED_MIMES,
+                true
+            );
+        }
 
         $folder = 'avatars/' . $user->getId();
         $media = $this->media->saveUpload(
@@ -48,7 +68,8 @@ final class UserAvatarService
             $binary,
             $mimeType,
             $user->getName(),
-            $folder
+            $folder,
+            $user->getId()
         );
 
         return $media->getUrl();
