@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import {
+  isVideoMedia,
   listMedia,
   MediaFile,
   resolveAdminMediaPreviewUrl,
@@ -17,6 +18,8 @@ interface MediaPickerModalProps {
   onSelect: (url: string, altText: string) => void;
   title?: string;
   urlFormat?: MediaPickerUrlFormat;
+  /** When `video`, lists only video/* assets from the library (It.79). */
+  mediaMode?: 'image' | 'video';
 }
 
 export const MediaPickerModal: React.FC<MediaPickerModalProps> = ({
@@ -25,6 +28,7 @@ export const MediaPickerModal: React.FC<MediaPickerModalProps> = ({
   onSelect,
   title,
   urlFormat = 'absolute',
+  mediaMode = 'image',
 }) => {
   const { t } = useI18n();
   const resolvedTitle = title ?? t('editor.mediaPicker.defaultTitle');
@@ -34,10 +38,10 @@ export const MediaPickerModal: React.FC<MediaPickerModalProps> = ({
   useEffect(() => {
     if (!open) return;
     setLoading(true);
-    void listMedia({ type: 'image' })
+    void listMedia({ type: mediaMode })
       .then(setItems)
       .finally(() => setLoading(false));
-  }, [open]);
+  }, [open, mediaMode]);
 
   if (!open) return null;
 
@@ -77,11 +81,20 @@ export const MediaPickerModal: React.FC<MediaPickerModalProps> = ({
                   }}
                 >
                   <div className="aspect-video bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                    <img
-                      src={resolveAdminMediaPreviewUrl(file.path)}
-                      alt={file.altText || file.fileName}
-                      className="w-full h-full object-cover"
-                    />
+                    {isVideoMedia(file) ? (
+                      <video
+                        src={resolveAdminMediaPreviewUrl(file.path)}
+                        className="w-full h-full object-cover"
+                        muted
+                        preload="metadata"
+                      />
+                    ) : (
+                      <img
+                        src={resolveAdminMediaPreviewUrl(file.path)}
+                        alt={file.altText || file.fileName}
+                        className="w-full h-full object-cover"
+                      />
+                    )}
                   </div>
                   <p className="p-2 text-xs truncate font-medium">{file.fileName}</p>
                 </button>

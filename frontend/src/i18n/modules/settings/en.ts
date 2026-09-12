@@ -329,6 +329,32 @@ export const settingsEn: MessageTree = {
     "profile": "Profile",
     "toggle": "Enable {component} for {profile}"
   },
+  "editorExtensions": {
+    "title": "Optional editor extensions",
+    "help": "Adds toolbar features on top of the content profile (page/article). Example: enable Video on the Company profile without switching to Blog.",
+    "markdownTitle": "Markdown editor",
+    "markdownHelp": "Extra buttons in the Markdown toolbar (split/preview mode).",
+    "wysiwygTitle": "WYSIWYG (Tiptap) editor",
+    "wysiwygHelp": "Extra buttons in the visual editor toolbar.",
+    "capability": {
+      "bold": "Bold",
+      "italic": "Italic",
+      "underline": "Underline",
+      "strike": "Strikethrough",
+      "heading": "Headings",
+      "bulletList": "Bullet list",
+      "orderedList": "Numbered list",
+      "blockquote": "Quote",
+      "code": "Inline code",
+      "codeBlock": "Code block",
+      "link": "Links",
+      "image": "Images",
+      "video": "Video (Media Library)",
+      "table": "Tables",
+      "horizontalRule": "Horizontal rule",
+      "color": "Text color"
+    }
+  },
   "fields": {
     "general": {
       "siteName": {
@@ -1014,7 +1040,15 @@ export const settingsEn: MessageTree = {
       },
       "maxUploadSizeKb": {
         "label": "Max upload size (KB)",
-        "help": "5120 KB = 5 MB."
+        "help": "5120 KB = 5 MB. Applies to images and PDF, not video."
+      },
+      "maxVideoUploadSizeKb": {
+        "label": "Max video upload size (KB)",
+        "help": "102400 KB = 100 MB. Separate limit for video/mp4 and video/webm."
+      },
+      "videoPosterRequired": {
+        "label": "Require poster image for video embeds",
+        "help": "Reserved for future editor validation (It.79)."
       },
       "stockImagesEnabled": {
         "label": "Enable stock library",

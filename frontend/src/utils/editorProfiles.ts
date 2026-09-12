@@ -11,6 +11,7 @@ export type EditorCapability =
   | 'codeBlock'
   | 'link'
   | 'image'
+  | 'video'
   | 'table'
   | 'horizontalRule'
   | 'color';
@@ -39,6 +40,7 @@ export const EDITOR_CAPABILITIES: EditorCapability[] = [
   'codeBlock',
   'link',
   'image',
+  'video',
   'table',
   'horizontalRule',
   'color',
@@ -65,6 +67,7 @@ export const BUILTIN_EDITOR_PROFILES: EditorProfileDefinition[] = [
       'blockquote',
       'link',
       'image',
+      'video',
       'code',
       'codeBlock',
     ],
@@ -192,6 +195,64 @@ export function profileAllows(
   return profile.capabilities.includes(capability);
 }
 
+export function parseExtraCapabilities(raw: unknown): EditorCapability[] {
+  if (typeof raw !== 'string' || raw.trim() === '') {
+    return [];
+  }
+
+  return raw
+    .split(',')
+    .map((part) => part.trim())
+    .filter(isEditorCapability);
+}
+
+export function serializeExtraCapabilities(capabilities: Iterable<EditorCapability>): string {
+  return [...new Set(capabilities)].join(',');
+}
+
+/** Merges site-wide optional extensions from Settings on top of the content profile. */
+export function resolveEffectiveEditorProfile(
+  profile: EditorProfileDefinition,
+  settings: Record<string, unknown> | undefined,
+  mode: 'markdown' | 'wysiwyg'
+): EditorProfileDefinition {
+  const key = mode === 'markdown' ? 'markdownExtraCapabilities' : 'wysiwygExtraCapabilities';
+  const extra = parseExtraCapabilities(settings?.[key]);
+  const capabilities = [...new Set([...profile.capabilities, ...extra])].filter(isEditorCapability);
+
+  return { ...profile, capabilities };
+}
+
+/** Optional toolbar features toggled in Settings → Editor (beyond profile defaults). */
+export const OPTIONAL_MARKDOWN_CAPABILITIES: EditorCapability[] = [
+  'heading',
+  'bulletList',
+  'orderedList',
+  'blockquote',
+  'code',
+  'codeBlock',
+  'link',
+  'image',
+  'video',
+];
+
+export const OPTIONAL_WYSIWYG_CAPABILITIES: EditorCapability[] = [
+  'heading',
+  'bulletList',
+  'orderedList',
+  'blockquote',
+  'code',
+  'codeBlock',
+  'link',
+  'image',
+  'video',
+  'table',
+  'underline',
+  'strike',
+  'color',
+  'horizontalRule',
+];
+
 export function countMarkdownToolbarActions(profile: EditorProfileDefinition): number {
   const map: Partial<Record<EditorCapability, number>> = {
     bold: 1,
@@ -199,6 +260,7 @@ export function countMarkdownToolbarActions(profile: EditorProfileDefinition): n
     heading: 1,
     link: 1,
     image: 1,
+    video: 1,
     bulletList: 1,
     orderedList: 1,
     blockquote: 1,
@@ -222,6 +284,7 @@ export function countWysiwygToolbarActions(profile: EditorProfileDefinition): nu
     codeBlock: 1,
     link: 2,
     image: 1,
+    video: 1,
     table: 1,
   };
 

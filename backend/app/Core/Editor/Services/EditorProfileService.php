@@ -191,6 +191,7 @@ final class EditorProfileService
                     'blockquote',
                     'link',
                     'image',
+                    'video',
                     'code',
                     'codeBlock',
                 ])

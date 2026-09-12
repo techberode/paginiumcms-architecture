@@ -1,6 +1,6 @@
 # Iteration 79 — DAM video (secure upload + content embed)
 
-> **Status:** ⏳ planned  
+> **Status:** ✅ shipped (September 2026) — see [en/ITERATION_79.md](en/ITERATION_79.md)  
 > **Priority:** 🟡  
 > **Wave:** Post-HE DAM & security (It.78–79)  
 > **Depends on:** [It.72](ITERATION_72.md) media storage MVP · [It.78](ITERATION_78.md) unified upload policy · [It.24](ITERATION_24.md) DAM · [It.55](ITERATION_55.md) Tiptap editor  
@@ -125,12 +125,13 @@ Private/signed URL policy aligns with It.72 remainder when S3 driver ships.
 
 ## Definition of Done
 
-- [ ] MP4 and WebM upload through Media Library with It.78 policy profile.
-- [ ] Video embeddable in Markdown and WYSIWYG from library picker only.
-- [ ] Public render shows controls; no autoplay; sanitizers agree BE/FE.
-- [ ] Separate video size setting documented and enforced.
-- [ ] PHPUnit + Vitest coverage for upload, render, and sanitizer bypass attempts.
-- [ ] SK/EN docs and CHANGELOG updated.
+- [x] MP4 and WebM upload through Media Library with It.78 policy profile.
+- [x] Video embeddable in Markdown (`:::video` shortcode) and WYSIWYG from library picker only.
+- [x] Public render shows controls; no autoplay; sanitizers agree BE/FE.
+- [x] Separate video size setting documented and enforced.
+- [x] Optional editor extensions in Settings (Markdown / WYSIWYG) merge on top of profile.
+- [x] PHPUnit + Vitest coverage for upload, render, shortcode, and sanitizer bypass attempts.
+- [x] SK/EN docs and CHANGELOG updated.
 
 ## Related
 

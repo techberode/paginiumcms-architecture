@@ -11,6 +11,8 @@ final class UploadSurfaceRegistry
 {
     public const SURFACE_MEDIA_UPLOAD = 'media.upload';
 
+    public const SURFACE_MEDIA_VIDEO_UPLOAD = 'media.video.upload';
+
     public const SURFACE_AVATAR_UPLOAD = 'avatar.upload';
 
     public const SURFACE_BACKUP_IMPORT = 'backup.import';
@@ -28,6 +30,7 @@ final class UploadSurfaceRegistry
     {
         return [
             self::SURFACE_MEDIA_UPLOAD => UploadPolicyProfileId::MEDIA,
+            self::SURFACE_MEDIA_VIDEO_UPLOAD => UploadPolicyProfileId::MEDIA_VIDEO,
             self::SURFACE_AVATAR_UPLOAD => UploadPolicyProfileId::AVATAR,
             self::SURFACE_BACKUP_IMPORT => UploadPolicyProfileId::BACKUP_ARCHIVE,
             self::SURFACE_EXTENSION_IMPORT => UploadPolicyProfileId::EXTENSION_ARCHIVE,

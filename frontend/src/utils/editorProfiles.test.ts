@@ -7,6 +7,7 @@ import {
   normalizeEditorProfile,
   profileAllows,
   resolveDefaultProfileId,
+  resolveEffectiveEditorProfile,
 } from './editorProfiles';
 
 describe('editorProfiles', () => {
@@ -64,5 +65,14 @@ describe('editorProfiles', () => {
 
     expect(profileAllows(profile, 'bold')).toBe(true);
     expect(profileAllows(profile, 'italic')).toBe(false);
+  });
+
+  it('merges optional extensions from settings on top of profile', () => {
+    const company = getEditorProfile('company');
+    const effective = resolveEffectiveEditorProfile(company, { markdownExtraCapabilities: 'video,image' }, 'markdown');
+
+    expect(profileAllows(company, 'video')).toBe(false);
+    expect(profileAllows(effective, 'video')).toBe(true);
+    expect(profileAllows(effective, 'image')).toBe(true);
   });
 });

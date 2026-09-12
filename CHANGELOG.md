@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.71`](#release-2-1-0-beta-71) | 2026-09-12 | It.79 DAM video, stack bootstrap permissions, editor extensions |
 | [`2.1.0-beta.70`](#release-2-1-0-beta-70) | 2026-09-12 | It.78 upload policy, system update banner/deploy readiness fixes |
 | [`2.1.0-beta.69`](#release-2-1-0-beta-69) | 2026-09-10 | It.88 Theme Studio, backup scope + incremental snapshots |
 | [`2.1.0-beta.68`](#release-2-1-0-beta-68) | 2026-09-09 | It.87 Project Site Planner, admin list pagination (ISS-169), landing SEO hero |
@@ -147,7 +148,25 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ### Planning
 
-- **Stabilization freeze closed (2026-09-09)** — no `v2.2.0` stable gate; continue planned iterations. Queue: **It.79** DAM video → **It.89** plugin capabilities → 72 remainder → 58f/g → 70 GitHub UI → 76/77 → 75 → 48. Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+- **It.90 Editor Workbench** — Settings-driven Markdown + Tiptap toolbars, insert wizards (table, callout, mermaid, chart), plugin editor tools; profiles become presets only. Spec: [ITERATION_90.md](docs/en/ITERATION_90.md).
+- **Queue:** It.90a → It.72 remainder → It.89 → 58f/g → 70 GitHub UI → 76/77 → 75 → 48. Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+
+---
+
+<a id="release-2-1-0-beta-71"></a>
+
+## [2.1.0-beta.71] – 2026-09-12
+
+It.79 DAM video (secure upload + embed), stack bootstrap permissions, optional editor extensions
+
+### Added
+
+- **It.79 DAM video** — `video/mp4` + `video/webm` in `MediaFormats`; `media-video` upload profile + separate `media.maxVideoUploadSizeKb`; Media Library `type=video` filter and video preview; Tiptap `PaginiumVideo` extension; `:::video` Markdown shortcode with BE `VideoEmbedShortcode`; Settings → optional Markdown/WYSIWYG extensions (`markdownExtraCapabilities`, `wysiwygExtraCapabilities` via `EditorExtensionsPanel`); BE/FE sanitizer allow-list for `video`/`source`.
+- **`scripts/bootstrap-stack-permissions.sh`** — one-time `root:www-data` + `750` on stack dir and `stack.sh` so admin deploy readiness (`is_executable` as www-data) does not fail after `sudo cp`; documented in DEPLOY.md §12.5, deploy diagnose, and platform blocker copy.
+
+### Fixed
+
+- **MediaManager Vitest** — mock `isVideoMedia` after It.79 video card branch.
 
 ---
 

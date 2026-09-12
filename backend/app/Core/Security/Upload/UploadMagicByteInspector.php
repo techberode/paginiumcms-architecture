@@ -23,7 +23,7 @@ final class UploadMagicByteInspector
             return false;
         }
 
-        return $this->contentMatchesKnownMime($bytes, $mimeType);
+        return MediaFormats::contentMatchesMime($bytes, $mimeType);
     }
 
     public function looksLikeZip(string $bytes): bool
@@ -37,37 +37,4 @@ final class UploadMagicByteInspector
             || str_starts_with($bytes, "PK\x07\x08");
     }
 
-    private function contentMatchesKnownMime(string $bytes, string $mimeType): bool
-    {
-        if ($bytes === '') {
-            return false;
-        }
-
-        return match ($mimeType) {
-            'image/jpeg' => str_starts_with($bytes, "\xFF\xD8\xFF"),
-            'image/png' => str_starts_with($bytes, "\x89PNG\r\n\x1a\n"),
-            'image/gif' => str_starts_with($bytes, 'GIF87a') || str_starts_with($bytes, 'GIF89a'),
-            'image/webp' => strlen($bytes) >= 12
-                && str_starts_with($bytes, 'RIFF')
-                && substr($bytes, 8, 4) === 'WEBP',
-            'image/svg+xml' => $this->looksLikeSvg($bytes),
-            'application/pdf' => str_starts_with($bytes, '%PDF-'),
-            default => false,
-        };
-    }
-
-    private function looksLikeSvg(string $bytes): bool
-    {
-        $sample = ltrim(substr($bytes, 0, 4096));
-
-        if ($sample === '') {
-            return false;
-        }
-
-        if (str_starts_with($sample, '<?xml') || str_starts_with($sample, '<svg')) {
-            return stripos($sample, '<svg') !== false;
-        }
-
-        return false;
-    }
 }

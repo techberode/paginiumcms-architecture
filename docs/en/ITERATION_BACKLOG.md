@@ -1,6 +1,6 @@
 # PaginiumCMS — consolidated backlog
 
-> **Snapshot:** `v2.1.0-beta.69` · September 10, 2026  
+> **Snapshot:** `v2.1.0-beta.71` · September 12, 2026  
 > **Phase:** planned-iteration development — [CONTINUATION.md](CONTINUATION.md) (stabilization freeze **closed**)  
 > **Rule:** the active backlog contains only unshipped or precisely bounded remaining scope  
 > **No-SQL:** [architecture/NOSQL_MANDATE.md](architecture/NOSQL_MANDATE.md)  
@@ -40,14 +40,15 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | 13 | **It.82** Origin Panel (maintainer cockpit) | 🔵 | ✅ | env-gated; excluded from customer archive — [ITERATION_82](ITERATION_82.md) |
 | 14 | **It.87** Project site planner + UX audit completion | 🟡 P1 | ✅ shipped | [ITERATION_87](ITERATION_87.md) — 87a–87m |
 | 15 | **It.88** Theme Studio (Monaco, policy, preview, thumbnail) | 🟡 P1 | ⏳ | after 87k for JS tab — [ITERATION_88](ITERATION_88.md) |
-| 16 | **It.78** Unified upload security | 🟡 | ⏳ | before video / new MIME — [ITERATION_78](ITERATION_78.md) |
-| 17 | **It.79** DAM video | 🟡 | ⏳ | after It.78 — [ITERATION_79](ITERATION_79.md) |
-| 18 | **It.25** Setup wizard/update UX | 🟡 | ✅ basic + M1+ | shipped `beta.62`–`beta.65`; not a release blocker anymore |
-| 19 | **It.76/77** Translation providers | 🔵 | ⏳ | after It.73 (shipped) |
-| 20 | **It.75** AI agent | 🔵 | ⏳ | after locale + translation providers |
-| 21 | **It.83** Theme runtime + Terminal Breach | 🟡 | ✅ | shipped `beta.59` — [ITERATION_83](ITERATION_83.md) |
-| 22 | **It.84** Categories, blog sidebar, landing, roles, nav | 🟡 | ✅ | **84a–84e** complete — [ITERATION_84](ITERATION_84.md) |
-| 23 | **It.86** Admin UX polish (search, print, bulk) | 🟡 | ✅ | shipped **2.1.0-beta.60** — ISS-158/159; 86d → It.87 |
+| 16 | **It.78** Unified upload security | 🟡 | ✅ | shipped `beta.70` — [ITERATION_78](ITERATION_78.md) |
+| 17 | **It.79** DAM video | 🟡 | ✅ | shipped `beta.71` — [ITERATION_79](ITERATION_79.md) |
+| 18 | **It.90** Editor Workbench (toolbar + wizards, MD + Tiptap) | 🟡 P1 | ⏳ | after It.79 — [ITERATION_90](ITERATION_90.md) |
+| 19 | **It.25** Setup wizard/update UX | 🟡 | ✅ basic + M1+ | shipped `beta.62`–`beta.65`; not a release blocker anymore |
+| 20 | **It.76/77** Translation providers | 🔵 | ⏳ | after It.73 (shipped) |
+| 21 | **It.75** AI agent | 🔵 | ⏳ | after locale + translation providers |
+| 22 | **It.83** Theme runtime + Terminal Breach | 🟡 | ✅ | shipped `beta.59` — [ITERATION_83](ITERATION_83.md) |
+| 23 | **It.84** Categories, blog sidebar, landing, roles, nav | 🟡 | ✅ | **84a–84e** complete — [ITERATION_84](ITERATION_84.md) |
+| 24 | **It.86** Admin UX polish (search, print, bulk) | 🟡 | ✅ | shipped **2.1.0-beta.60** — ISS-158/159; 86d → It.87 |
 
 ---
 
@@ -103,7 +104,7 @@ See [ITERATION_70](ITERATION_70.md).
 
 See [ITERATION_72](ITERATION_72.md).
 
-### It.78 — unified upload security 🟡
+### It.78 — unified upload security 🟡 ✅ shipped (`beta.70`)
 
 - `UploadPolicyEngine` and named profiles for every upload surface,
 - intersection semantics for MIME/size across settings groups,
@@ -113,7 +114,7 @@ See [ITERATION_72](ITERATION_72.md).
 
 See [ITERATION_78](ITERATION_78.md).
 
-### It.79 — DAM video 🟡
+### It.79 — DAM video 🟡 ✅ shipped (`beta.71`)
 
 - MP4/WebM via `media-video` profile (It.78),
 - Media Library filter/preview + editor embed (Markdown + Tiptap),
@@ -121,6 +122,15 @@ See [ITERATION_78](ITERATION_78.md).
 - separate `media.maxVideoUploadSizeKb`.
 
 See [ITERATION_79](ITERATION_79.md).
+
+### It.90 — Editor Workbench 🟡 ⏳
+
+- Settings-driven Markdown + Tiptap toolbars (replace profile picker UX),
+- insert wizards: table, callout, mermaid, chart,
+- plugin editor tools via manifest (aligned with It.89),
+- profiles become optional presets only.
+
+See [ITERATION_90](ITERATION_90.md).
 
 ### It.73 — multi-locale content 🟡
 
@@ -263,7 +273,8 @@ Deferred (post-M1+ / stretch):
 | **It.83** theme runtime + Terminal Breach | ✅ | [ITERATION_83](ITERATION_83.md) — shipped `beta.59` |
 | **It.84** presentation & access expansion | ✅ | [ITERATION_84](ITERATION_84.md) — 84a–84e complete (2026-08-17) |
 | Server metrics agent (remaining It.46) | ⏳ | coordinate with It.71 |
-| **It.79** DAM video | ⏳ | It.78 + It.72 MVP |
+| **It.79** DAM video | ✅ | shipped `beta.71` — [ITERATION_79](ITERATION_79.md) |
+| **It.90** Editor Workbench | ⏳ | after It.79 — [ITERATION_90](ITERATION_90.md) |
 | **RequestJsonBody rollout** | ✅ | all HTTP controllers + OTP/contact rate-limit middleware (`post-beta.40`) |
 | Scoped FileManager | ⏳ candidate | assign a new unique number after scope approval |
 | Frontend inline editing | ⏳ candidate | reuse existing lock/editor flow |
@@ -343,8 +354,9 @@ Docs gate
   → It.73 ✅
   → It.74 ✅
   → It.81 (81a→81f editorial workflow) — **recommended next product slice after upload gate**
-  → It.78 (upload security gate)
-  → It.79 (DAM video)
+  → It.78 (upload security gate) ✅
+  → It.79 (DAM video) ✅
+  → It.90 (Editor Workbench — toolbar builder + wizards)
   → It.82 (Origin Panel — maintainer dev + paginiumcms.com only; parallel OK)
   → It.76 / It.77
   → It.75

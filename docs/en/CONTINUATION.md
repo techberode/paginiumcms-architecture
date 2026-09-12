@@ -1,7 +1,7 @@
 # PaginiumCMS — development continuation context
 
 > **Purpose:** concise, current handoff for the next development session  
-> **Checkpoint:** September 10, 2026 · `v2.1.0-beta.69`  
+> **Checkpoint:** September 12, 2026 · `v2.1.0-beta.71`  
 > **Active phase:** **Full planned-iteration development** — stabilization freeze lifted
 
 This document replaces the old chronological “log of everything.” Historical detail remains in [`CHANGELOG.md`](../../CHANGELOG.md), [`ISSUES.md`](ISSUES.md), and individual `ITERATION_*.md` files.
@@ -28,8 +28,8 @@ Historical freeze record: [STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) (supe
 
 | Area | Status |
 |------|--------|
-| Latest tag | ✅ `v2.1.0-beta.69` — It.88 Theme Studio, backup scope + incremental snapshots |
-| Unreleased (this tree) | — **It.78** shipped; hotfixes: update banner i18n + semver check; next: **It.79** video · **It.89** plugin capabilities |
+| Latest tag | ✅ `v2.1.0-beta.71` — It.79 DAM video, stack bootstrap permissions |
+| Unreleased (this tree) | — **It.90** Editor Workbench spec · **It.72** / **It.89** next |
 | It.25 setup wizard | ✅ basic + M1+ (`beta.62`–`beta.66`) |
 | It.83 theme runtime | ✅ shipped `beta.59` (`terminal-breach`, `clean-journal`) |
 | It.84 / It.86 | ✅ shipped |
@@ -43,17 +43,18 @@ Do **not** invent new iteration numbers. Finish specs that already exist.
 
 | Order | Item | Why this order |
 |------:|------|----------------|
-| 1 | **It.79** DAM video | Depends on It.78 (shipped) |
+| 1 | **It.90** Editor Workbench (toolbar builder + wizards) | Publishing UX; extends It.79 editor extensions |
 | 2 | **It.72** S3 / remote media remainder | Local driver already shipped |
-| 3 | **It.58f / 58g** layout builder remainder | Page blocks (not theme studio) |
-| 4 | **It.70** GitHub API publisher UI | Local Git already shipped |
-| 5 | **It.76 / 77** translation providers | After It.73 (shipped) |
-| 6 | **It.75** CMS-aware AI agent | Last: proposals only, human apply |
-| 7 | **It.48** static / Jamstack output | Align with It.70; do not fork publish pipelines |
+| 3 | **It.89** Plugin capability model | Safe editor-tool plugins (90e) |
+| 4 | **It.58f / 58g** layout builder remainder | Page blocks (not theme studio) |
+| 5 | **It.70** GitHub API publisher UI | Local Git already shipped |
+| 6 | **It.76 / 77** translation providers | After It.73 (shipped) |
+| 7 | **It.75** CMS-aware AI agent | Last: proposals only, human apply |
+| 8 | **It.48** static / Jamstack output | Align with It.70; do not fork publish pipelines |
 
 **Optional / later:** It.82d Origin host metrics.
 
-**Next slice to open:** **It.79** — DAM video (`media-video` profile).
+**Next slice to open:** **It.90a** — toolbar builder (Markdown + Tiptap) + preset migration (It.79 shipped in `beta.71`).
 
 ---
 

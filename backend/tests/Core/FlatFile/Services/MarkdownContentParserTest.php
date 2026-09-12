@@ -122,4 +122,17 @@ class MarkdownContentParserTest extends TestCase
         $this->assertStringContainsString('checked', $html);
         $this->assertStringContainsString('Pending', $html);
     }
+
+    public function testParseVideoShortcode(): void
+    {
+        $markdown = <<<MD
+:::video
+src: /storage/app/content/media/clip.mp4
+:::
+MD;
+        $html = $this->parser->parse($markdown);
+
+        $this->assertStringContainsString('<video src="/storage/app/content/media/clip.mp4"', $html);
+        $this->assertStringContainsString('controls', $html);
+    }
 }

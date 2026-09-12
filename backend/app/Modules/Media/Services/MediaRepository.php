@@ -86,7 +86,7 @@ class MediaRepository implements MediaRepositoryInterface
         if ($this->uploadPolicy->isUnifiedEnabled()) {
             try {
                 $mimeType = $this->uploadPolicy->enforceBinary(
-                    UploadSurfaceRegistry::SURFACE_MEDIA_UPLOAD,
+                    $this->resolveMediaUploadSurface($mimeType),
                     $originalName,
                     $binary,
                     $mimeType,
@@ -116,7 +116,11 @@ class MediaRepository implements MediaRepositoryInterface
         $relativePath = $prefix . '/' . $media->getId() . '_' . $safeName;
 
         if (!$this->uploadPolicy->isUnifiedEnabled()) {
-            $maxBytes = $this->uploadSecurity->resolveMaxUploadBytes($this->resolveMediaMaxUploadBytes());
+            $maxBytes = $this->uploadSecurity->resolveMaxUploadBytes(
+                MediaFormats::isVideoMime($mimeType)
+                    ? $this->resolveMediaMaxVideoUploadBytes()
+                    : $this->resolveMediaMaxUploadBytes()
+            );
             if (strlen($binary) > $maxBytes) {
                 throw new FlatFileException('Súbor presahuje maximálnu povolenú veľkosť');
             }
@@ -583,6 +587,10 @@ class MediaRepository implements MediaRepositoryInterface
             return false;
         }
 
+        if (isset($filters['type']) && $filters['type'] === 'video' && !MediaFormats::isVideoMime($file->getMimeType())) {
+            return false;
+        }
+
         return true;
     }
 
@@ -661,9 +669,14 @@ class MediaRepository implements MediaRepositoryInterface
      */
     public function formatsPayload(): array
     {
+        $media = $this->settings->group('media');
+
         return array_merge(
             MediaFormats::toApiPayload($this->resolveAllowedMimeTypes()),
-            ['imageOptimization' => MediaImageOptimizer::capabilities()]
+            [
+                'imageOptimization' => MediaImageOptimizer::capabilities(),
+                'maxVideoUploadSizeKb' => max(1024, (int) ($media['maxVideoUploadSizeKb'] ?? 102400)),
+            ]
         );
     }
 
@@ -692,6 +705,21 @@ class MediaRepository implements MediaRepositoryInterface
         return max(64, $maxKb) * 1024;
     }
 
+    private function resolveMediaMaxVideoUploadBytes(): int
+    {
+        $maxKb = (int) ($this->settings->group('media')['maxVideoUploadSizeKb'] ?? 102400);
+
+        return max(1024, min(524288, $maxKb)) * 1024;
+    }
+
+    private function resolveMediaUploadSurface(string $declaredMime): string
+    {
+        if (MediaFormats::isVideoMime($declaredMime)) {
+            return UploadSurfaceRegistry::SURFACE_MEDIA_VIDEO_UPLOAD;
+        }
+
+        return UploadSurfaceRegistry::SURFACE_MEDIA_UPLOAD;
+    }
 
     private function normalizeFolder(string $folder): string
     {

@@ -511,7 +511,8 @@ export const platformEn: MessageTree = {
       demo_mode: 'Demo instance — use SSH deploy on the host.',
       job_not_registered: 'System deploy job is not registered in the scheduler.',
       stack_dir_missing: 'Set Docker stack directory (host path), e.g. /var/lib/docker/compose/paginiumcms.',
-      stack_script_missing: 'stack.sh is missing or not executable in the configured stack directory.',
+      stack_script_missing:
+        'stack.sh is missing or not executable for www-data in the PHP container — run scripts/bootstrap-stack-permissions.sh on the host (DEPLOY.md §12.5).',
       stack_dir_not_visible:
         'Stack directory is not visible from the PHP container — mount it in docker-compose.prod.yml or install stack.sh on the host.',
       app_root_missing: 'Application root (APP_ROOT) could not be resolved on the server.',

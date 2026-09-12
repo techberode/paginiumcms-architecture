@@ -25,6 +25,12 @@ describe('contentEditor', () => {
     expect(markdownToHtml('**bold**')).toContain('<strong>bold</strong>');
   });
 
+  it('expands video shortcode in markdown preview', () => {
+    const html = markdownToHtml(':::video\nsrc: /storage/app/content/media/x.mp4\n:::');
+    expect(html).toContain('<video src="/storage/app/content/media/x.mp4"');
+    expect(html).toContain('controls');
+  });
+
   it('converts html to markdown', () => {
     expect(htmlToMarkdown('<h2>Title</h2><p>Text</p>')).toContain('## Title');
   });

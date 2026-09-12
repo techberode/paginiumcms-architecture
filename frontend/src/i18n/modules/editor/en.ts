@@ -193,6 +193,7 @@ export const editorEn: MessageTree = {
       heading: 'Heading H2',
       link: 'Link',
       image: 'Image',
+      video: 'Video from library',
       bulletList: 'Bullet list',
       orderedList: 'Numbered list',
       blockquote: 'Quote',
@@ -217,14 +218,20 @@ export const editorEn: MessageTree = {
     previewLabel: 'Preview',
     previewEmpty: 'Preview appears after you write content.',
     blockedHtmlPaste: 'Editor profile does not allow raw HTML paste.',
+    videoPickerRequired: 'Pick a video from the Media Library (enable Video in Settings → Editor extensions).',
   },
   wysiwyg: {
     loading: 'Loading editor…',
     prompts: {
       linkUrl: 'Link URL',
     },
+    toolbar: {
+      image: 'Insert image from library',
+      video: 'Insert video from library',
+    },
     blocked: {
       images: 'Editor profile does not allow images.',
+      videos: 'Editor profile does not allow video embeds.',
       tables: 'Editor profile does not allow tables.',
       codeBlock: 'Editor profile does not allow code blocks.',
       scripts: 'Editor profile does not allow embedded scripts or iframes.',

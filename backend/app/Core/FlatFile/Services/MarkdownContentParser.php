@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Core\FlatFile\Services;
 
 use function utf8_normalize;
+use PaginiumCMS\Core\Editor\Services\VideoEmbedShortcode;
 use PaginiumCMS\Core\FlatFile\Contracts\MarkdownContentParserInterface;
 use League\CommonMark\Environment\Environment;
 use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
@@ -18,8 +19,9 @@ class MarkdownContentParser implements MarkdownContentParserInterface
 {
     private MarkdownConverter $converter;
 
-    public function __construct()
-    {
+    public function __construct(
+        private VideoEmbedShortcode $videoShortcode = new VideoEmbedShortcode(),
+    ) {
         $config = [
             'html_input' => 'allow',
             'allow_unsafe_links' => false,
@@ -46,7 +48,9 @@ class MarkdownContentParser implements MarkdownContentParserInterface
 
     public function parse(string $markdown): string
     {
-        return $this->converter->convert($markdown)->getContent();
+        $prepared = $this->videoShortcode->expand($markdown);
+
+        return $this->converter->convert($prepared)->getContent();
     }
 
     public function parseInline(string $markdown): string

@@ -24,9 +24,9 @@ final class UploadPolicyProfile
     public function allowedMimeTypes(string $profileId): array
     {
         return match ($profileId) {
-            UploadPolicyProfileId::MEDIA => $this->intersectMimeTypes($this->resolveMediaMimeTypes()),
+            UploadPolicyProfileId::MEDIA => $this->nonVideoMediaMimeTypes(),
             UploadPolicyProfileId::AVATAR => AvatarImageProcessor::ALLOWED_MIMES,
-            UploadPolicyProfileId::MEDIA_VIDEO => $this->intersectMimeTypes($this->resolveMediaMimeTypes()),
+            UploadPolicyProfileId::MEDIA_VIDEO => $this->intersectMimeTypes($this->resolveVideoMimeTypes()),
             UploadPolicyProfileId::BACKUP_ARCHIVE,
             UploadPolicyProfileId::EXTENSION_ARCHIVE => ['application/zip', 'application/x-zip-compressed'],
             UploadPolicyProfileId::STOCK_IMPORT => $this->intersectMimeTypes($this->resolveMediaMimeTypes()),
@@ -62,7 +62,7 @@ final class UploadPolicyProfile
         $profileMax = match ($profileId) {
             UploadPolicyProfileId::MEDIA => $this->resolveMediaMaxUploadBytes(),
             UploadPolicyProfileId::AVATAR => AvatarImageProcessor::MAX_UPLOAD_BYTES,
-            UploadPolicyProfileId::MEDIA_VIDEO => $this->resolveMediaMaxUploadBytes(),
+            UploadPolicyProfileId::MEDIA_VIDEO => $this->resolveMediaMaxVideoUploadBytes(),
             UploadPolicyProfileId::BACKUP_ARCHIVE => max(1024, (int) ($this->settings->group('uploadSecurity')['backupImportMaxSizeKb'] ?? 102400)) * 1024,
             UploadPolicyProfileId::EXTENSION_ARCHIVE => 52_428_800,
             UploadPolicyProfileId::STOCK_IMPORT => $this->resolveMediaMaxUploadBytes(),
@@ -146,6 +146,37 @@ final class UploadPolicyProfile
         $mediaKb = (int) ($this->settings->group('media')['maxUploadSizeKb'] ?? 5120);
 
         return max(64, $mediaKb) * 1024;
+    }
+
+    private function resolveMediaMaxVideoUploadBytes(): int
+    {
+        $videoKb = (int) ($this->settings->group('media')['maxVideoUploadSizeKb'] ?? 102400);
+
+        return max(1024, min(524288, $videoKb)) * 1024;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function nonVideoMediaMimeTypes(): array
+    {
+        return array_values(array_filter(
+            $this->intersectMimeTypes($this->resolveMediaMimeTypes()),
+            static fn (string $mime): bool => !MediaFormats::isVideoMime($mime)
+        ));
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function resolveVideoMimeTypes(): array
+    {
+        $configured = array_values(array_filter(
+            $this->resolveMediaMimeTypes(),
+            static fn (string $mime): bool => MediaFormats::isVideoMime($mime)
+        ));
+
+        return $configured !== [] ? $configured : MediaFormats::defaultVideoMimeTypes();
     }
 
     /**

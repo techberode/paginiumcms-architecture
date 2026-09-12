@@ -158,7 +158,8 @@ if [[ "${SKIP_RESTART:-0}" != "1" && -n "$STACK_DIR" && -x "$STACK_DIR/stack.sh"
   sleep "$HEALTH_WAIT_SEC"
 elif [[ "${SKIP_RESTART:-0}" != "1" && -n "$STACK_DIR" ]]; then
   echo "→ WARN: stack.sh not executable at $STACK_DIR — PHP was NOT restarted (opcache may serve old code)" >&2
-  echo "→ Fix: cd $STACK_DIR && ./stack.sh up -d --force-recreate php" >&2
+  echo "→ Fix: STACK_DIR=$STACK_DIR APP_ROOT=$APP_ROOT ./scripts/bootstrap-stack-permissions.sh" >&2
+  echo "→ Then: cd $STACK_DIR && ./stack.sh up -d --force-recreate php" >&2
 elif [[ "${SKIP_RESTART:-0}" != "1" && -z "$STACK_DIR" ]]; then
   echo "→ WARN: STACK_DIR unset — PHP was NOT restarted (admin UI deploy from Docker cannot reach host stack)" >&2
   echo "→ Fix on host: STACK_DIR=/var/lib/docker/compose/paginiumcms ./scripts/deploy-instance-update.sh" >&2
