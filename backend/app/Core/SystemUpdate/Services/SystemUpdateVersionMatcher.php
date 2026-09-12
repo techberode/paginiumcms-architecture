@@ -34,7 +34,14 @@ final class SystemUpdateVersionMatcher
         $status = 'unknown';
 
         if ($latestTag !== null && $latestTag !== '') {
-            $status = $currentTag === $latestTag ? 'current' : 'update_available';
+            if ($currentTag === $latestTag) {
+                $status = 'current';
+            } elseif ($currentTag !== '' && $this->isSemverNewer($latestTag, $currentTag)) {
+                $status = 'update_available';
+            } else {
+                // Local checkout is ahead of GitHub "latest release" (e.g. beta.69 deployed, beta.68 still "latest").
+                $status = 'current';
+            }
         } elseif ($localCommit !== null && $remoteCommit !== null && $localCommit !== '' && $remoteCommit !== '') {
             if ($this->commitsMatch($localCommit, $remoteCommit)) {
                 $status = 'current';
@@ -87,5 +94,17 @@ final class SystemUpdateVersionMatcher
         }
 
         return str_starts_with($remote, $local) || str_starts_with($local, $remote);
+    }
+
+    private function isSemverNewer(string $candidate, string $baseline): bool
+    {
+        $candidate = $this->normalizeVersion($candidate);
+        $baseline = $this->normalizeVersion($baseline);
+
+        if ($candidate === '' || $baseline === '') {
+            return false;
+        }
+
+        return version_compare($candidate, $baseline, '>');
     }
 }

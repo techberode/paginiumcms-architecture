@@ -512,6 +512,8 @@ export const platformEn: MessageTree = {
       job_not_registered: 'System deploy job is not registered in the scheduler.',
       stack_dir_missing: 'Set Docker stack directory (host path), e.g. /var/lib/docker/compose/paginiumcms.',
       stack_script_missing: 'stack.sh is missing or not executable in the configured stack directory.',
+      stack_dir_not_visible:
+        'Stack directory is not visible from the PHP container — mount it in docker-compose.prod.yml or install stack.sh on the host.',
       app_root_missing: 'Application root (APP_ROOT) could not be resolved on the server.',
       deploy_script_missing: 'scripts/deploy-instance-update.sh is missing in the application root.',
       tag_deploy_disabled: 'Tag deploy is disabled — enable “Allow deploy from semver tags”.',

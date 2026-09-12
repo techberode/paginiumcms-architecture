@@ -17,6 +17,11 @@ vendor/bin/phpunit --colors=always \
   backend/tests/Core/Security/Services/ZipEntryGuardTest.php \
   backend/tests/Http/Middleware/SecurityMiddlewareTest.php
 
+echo "=== Upload policy pack (It.78) ==="
+vendor/bin/phpunit --colors=always \
+  backend/tests/Core/Security/Upload/ \
+  backend/tests/Core/Security/Services/UploadSecurityValidatorTest.php
+
 echo "=== Static outbound hygiene ==="
 ./scripts/security-static-grep.sh
 

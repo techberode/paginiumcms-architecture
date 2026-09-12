@@ -6,6 +6,8 @@ namespace PaginiumCMS\Modules\Media\Services;
 
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Core\FlatFile\Models\MediaFile;
+use PaginiumCMS\Core\Security\Upload\UploadPolicyEngine;
+use PaginiumCMS\Core\Security\Upload\UploadSurfaceRegistry;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
 
@@ -24,11 +26,12 @@ final class StockImageImporter
     public function __construct(
         private MediaRepositoryInterface $mediaRepository,
         private SettingsRepositoryInterface $settings,
-        private StockImageCatalog $catalog
+        private StockImageCatalog $catalog,
+        private UploadPolicyEngine $uploadPolicy,
     ) {
     }
 
-    public function import(string $topic = '', string $folder = ''): MediaFile
+    public function import(string $topic = '', string $folder = '', ?string $userId = null): MediaFile
     {
         $mediaSettings = $this->settings->group('media');
         if (($mediaSettings['stockImagesEnabled'] ?? true) === false) {
@@ -45,20 +48,43 @@ final class StockImageImporter
         }
 
         $entry = $this->catalog->pickRandom($topic);
-        $binary = $this->resolveBinary($entry);
+
+        try {
+            $binary = $this->resolveBinary($entry);
+        } catch (FlatFileException $exception) {
+            $this->uploadPolicy->logOutboundImport(
+                UploadSurfaceRegistry::SURFACE_STOCK_IMPORT,
+                $userId,
+                $entry['url'],
+                0,
+                false,
+                $exception->getMessage()
+            );
+
+            throw $exception;
+        }
 
         $media = $this->mediaRepository->saveUpload(
             $entry['fileName'],
             $binary,
             $entry['mimeType'],
             $entry['altText'],
-            $folder
+            $folder,
+            $userId
         );
 
         if ($entry['title'] !== '') {
             $media->setTitle($entry['title']);
             $this->mediaRepository->update($media);
         }
+
+        $this->uploadPolicy->logOutboundImport(
+            UploadSurfaceRegistry::SURFACE_STOCK_IMPORT,
+            $userId,
+            $entry['url'],
+            strlen($binary),
+            true
+        );
 
         return $media;
     }
@@ -105,7 +131,7 @@ final class StockImageImporter
 
         $binary = @file_get_contents($url, false, $context);
         if (!is_string($binary) || $binary === '') {
-            throw new FlatFileException('Nepodarilo sa stiahnuť stock obrázok. Skontrolujte sieť alebo firewall.');
+            throw new FlatFileException('Nepodarilo sa stiahnuť stock obrázok');
         }
 
         return $binary;

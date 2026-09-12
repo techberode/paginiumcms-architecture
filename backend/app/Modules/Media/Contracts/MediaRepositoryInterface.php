@@ -30,7 +30,8 @@ interface MediaRepositoryInterface
         $contents,
         string $mimeType,
         string $altText = '',
-        string $folder = ''
+        string $folder = '',
+        ?string $userId = null
     ): MediaFile;
 
     /**

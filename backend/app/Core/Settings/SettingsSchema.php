@@ -446,6 +446,9 @@ final class SettingsSchema
                     ['key' => 'maxUploadSizeKb', 'type' => 'int', 'label' => 'Max. veľkosť uploadu (KB)', 'default' => 5120, 'rules' => ['required', 'int', 'min:64', 'max:51200'], 'help' => '5120 KB = 5 MB.'],
                     ['key' => 'backupImportMaxSizeKb', 'type' => 'int', 'label' => 'Max. veľkosť importu zálohy (KB)', 'default' => 102400, 'rules' => ['required', 'int', 'min:1024', 'max:2097152'], 'help' => '102400 KB = 100 MB. It.80f API4 limit pred zápisom ZIP.'],
                     ['key' => 'allowedMimeTypes', 'type' => 'text', 'label' => 'Povolené MIME typy', 'default' => 'image/jpeg,image/png,image/gif,image/webp,image/svg+xml,application/pdf', 'rules' => ['required', 'string', 'max:2000'], 'help' => 'Oddeľte čiarkou.'],
+                    ['key' => 'unifiedPolicyEnabled', 'type' => 'bool', 'label' => 'Unified upload policy (It.78)', 'default' => true, 'rules' => ['bool'], 'help' => 'Jednotná upload policy pre media, avatar, zálohy a importy.'],
+                    ['key' => 'auditUploads', 'type' => 'bool', 'label' => 'Auditovať uploady', 'default' => true, 'rules' => ['bool'], 'help' => 'Zapisuje sanitizované upload udalosti do security auditu.'],
+                    ['key' => 'dailyQuotaBytesPerUser', 'type' => 'int', 'label' => 'Denný upload limit na používateľa (B)', 'default' => 0, 'rules' => ['int', 'min:0', 'max:1073741824'], 'help' => '0 = vypnuté. Flat-file quota counter.'],
                 ],
             ],
             'accessControl' => [

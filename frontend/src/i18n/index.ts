@@ -57,10 +57,13 @@ function applyParams(message: string, params?: Record<string, string | number>):
 
   return Object.entries(params)
     .sort(([left], [right]) => right.length - left.length)
-    .reduce(
-      (result, [name, value]) => result.replaceAll(`:${name}`, String(value)),
-      message
-    );
+    .reduce((result, [name, value]) => {
+      const replacement = String(value);
+
+      return result
+        .replaceAll(`{${name}}`, replacement)
+        .replaceAll(`:${name}`, replacement);
+    }, message);
 }
 
 /**

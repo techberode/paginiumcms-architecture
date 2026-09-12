@@ -44,6 +44,12 @@ class UserControllerTest extends TestCase
             new UserAvatarService(
                 $this->createMock(\PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface::class),
                 new \PaginiumCMS\Core\Content\AvatarImageProcessor(),
+                \PaginiumCMS\Tests\Support\UploadPolicyEngineTestFactory::create(
+                    $this->createConfiguredMock(
+                        \PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class,
+                        ['group' => ['unifiedPolicyEnabled' => false]]
+                    )
+                ),
             ),
             new \PaginiumCMS\Core\Settings\Services\SettingsRepository(
                 new FileWriter(new FileValidator($this->baseDir . '/data')),

@@ -9,6 +9,9 @@ use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Core\FlatFile\Models\MediaFile;
 use PaginiumCMS\Core\Security\Services\UploadSecurityValidator;
+use PaginiumCMS\Core\Security\Upload\UploadPolicyEngine;
+use PaginiumCMS\Core\Security\Upload\UploadPolicyException;
+use PaginiumCMS\Core\Security\Upload\UploadSurfaceRegistry;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
 use PaginiumCMS\Modules\Media\Contracts\MediaStorageDriverInterface;
@@ -28,6 +31,7 @@ class MediaRepository implements MediaRepositoryInterface
         private FileWriterInterface $writer,
         private SettingsRepositoryInterface $settings,
         private UploadSecurityValidator $uploadSecurity,
+        private UploadPolicyEngine $uploadPolicy,
         private MediaStorageFactory $storageFactory,
         private MediaImageOptimizer $imageOptimizer,
         private MediaOptimizePreviewStore $optimizePreviewStore,
@@ -71,23 +75,38 @@ class MediaRepository implements MediaRepositoryInterface
         $contents,
         string $mimeType,
         string $altText = '',
-        string $folder = ''
+        string $folder = '',
+        ?string $userId = null
     ): MediaFile {
         $binary = is_resource($contents) ? stream_get_contents($contents) : $contents;
         if (!is_string($binary) || $binary === '') {
             throw new FlatFileException('Prázdny alebo neplatný súbor');
         }
 
-        $this->uploadSecurity->assertFilenameAllowed($originalName);
+        if ($this->uploadPolicy->isUnifiedEnabled()) {
+            try {
+                $mimeType = $this->uploadPolicy->enforceBinary(
+                    UploadSurfaceRegistry::SURFACE_MEDIA_UPLOAD,
+                    $originalName,
+                    $binary,
+                    $mimeType,
+                    $userId
+                );
+            } catch (UploadPolicyException $exception) {
+                throw new FlatFileException($exception->getMessage(), 0, $exception);
+            }
+        } else {
+            $this->uploadSecurity->assertFilenameAllowed($originalName);
 
-        $allowedMimeTypes = $this->uploadSecurity->resolveAllowedMimeTypes($this->resolveMediaMimeTypes());
-        $mimeType = MediaFormats::validate(
-            $originalName,
-            $binary,
-            $mimeType,
-            $allowedMimeTypes,
-            $this->uploadSecurity->shouldScanMagicBytes()
-        );
+            $allowedMimeTypes = $this->uploadSecurity->resolveAllowedMimeTypes($this->resolveMediaMimeTypes());
+            $mimeType = MediaFormats::validate(
+                $originalName,
+                $binary,
+                $mimeType,
+                $allowedMimeTypes,
+                $this->uploadSecurity->shouldScanMagicBytes()
+            );
+        }
 
         $folder = $this->normalizeFolder($folder);
         $safeName = $this->sanitizeFileName($originalName);
@@ -96,9 +115,11 @@ class MediaRepository implements MediaRepositoryInterface
         $prefix = self::MEDIA_DIR . ($folder !== '' ? '/' . $folder : '');
         $relativePath = $prefix . '/' . $media->getId() . '_' . $safeName;
 
-        $maxBytes = $this->uploadSecurity->resolveMaxUploadBytes($this->resolveMediaMaxUploadBytes());
-        if (strlen($binary) > $maxBytes) {
-            throw new FlatFileException('Súbor presahuje maximálnu povolenú veľkosť');
+        if (!$this->uploadPolicy->isUnifiedEnabled()) {
+            $maxBytes = $this->uploadSecurity->resolveMaxUploadBytes($this->resolveMediaMaxUploadBytes());
+            if (strlen($binary) > $maxBytes) {
+                throw new FlatFileException('Súbor presahuje maximálnu povolenú veľkosť');
+            }
         }
 
         $storage = $this->storage();

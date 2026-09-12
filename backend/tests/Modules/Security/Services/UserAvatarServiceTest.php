@@ -9,7 +9,9 @@ use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Core\FlatFile\Models\MediaFile;
 use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
 use PaginiumCMS\Modules\Security\Models\User;
+use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Modules\Security\Services\UserAvatarService;
+use PaginiumCMS\Tests\Support\UploadPolicyEngineTestFactory;
 use PHPUnit\Framework\TestCase;
 
 final class UserAvatarServiceTest extends TestCase
@@ -58,7 +60,7 @@ final class UserAvatarServiceTest extends TestCase
             ->method('saveUpload')
             ->willReturn($saved);
 
-        $service = new UserAvatarService($repo, $this->processor);
+        $service = new UserAvatarService($repo, $this->processor, $this->policyEngine());
         $url = $service->assignFromMediaUrl($user, '/storage/app/content/media/hero.png');
 
         $this->assertSame('/storage/app/content/media/avatars/user_1/avatar.png', $url);
@@ -69,7 +71,7 @@ final class UserAvatarServiceTest extends TestCase
         $repo = $this->createMock(MediaRepositoryInterface::class);
         $repo->expects($this->never())->method('findByPath');
 
-        $service = new UserAvatarService($repo, $this->processor);
+        $service = new UserAvatarService($repo, $this->processor, $this->policyEngine());
         $user = new User();
 
         $this->expectException(FlatFileException::class);
@@ -81,9 +83,21 @@ final class UserAvatarServiceTest extends TestCase
         $user = new User();
         $user->setAvatarUrl('/storage/app/content/media/avatars/user_1/photo.png');
 
-        $service = new UserAvatarService($this->createMock(MediaRepositoryInterface::class), $this->processor);
+        $service = new UserAvatarService(
+            $this->createMock(MediaRepositoryInterface::class),
+            $this->processor,
+            $this->policyEngine()
+        );
         $service->remove($user);
 
         $this->assertNull($user->getAvatarUrl());
+    }
+
+    private function policyEngine(): \PaginiumCMS\Core\Security\Upload\UploadPolicyEngine
+    {
+        $settings = $this->createMock(SettingsRepositoryInterface::class);
+        $settings->method('group')->willReturn(['unifiedPolicyEnabled' => false]);
+
+        return UploadPolicyEngineTestFactory::create($settings);
     }
 }

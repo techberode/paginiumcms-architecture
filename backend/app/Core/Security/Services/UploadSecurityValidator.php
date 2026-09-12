@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace PaginiumCMS\Core\Security\Services;
 
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
+use PaginiumCMS\Core\Security\Upload\UploadPolicyEngine;
+use PaginiumCMS\Core\Security\Upload\UploadPolicyException;
+use PaginiumCMS\Core\Security\Upload\UploadSurfaceRegistry;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Modules\Media\MediaFormats;
 
 /**
- * Upload hardening driven by settings.uploadSecurity (It.19b).
+ * Upload hardening driven by settings.uploadSecurity (It.19b) and UploadPolicyEngine (It.78).
  */
 final class UploadSecurityValidator
 {
@@ -22,7 +25,8 @@ final class UploadSecurityValidator
     ];
 
     public function __construct(
-        private SettingsRepositoryInterface $settings
+        private SettingsRepositoryInterface $settings,
+        private UploadPolicyEngine $policyEngine,
     ) {
     }
 
@@ -30,6 +34,55 @@ final class UploadSecurityValidator
      * @throws FlatFileException
      */
     public function assertFilenameAllowed(string $filename): void
+    {
+        if ($this->policyEngine->isUnifiedEnabled()) {
+            try {
+                $this->policyEngine->assertFilenameAllowed(UploadSurfaceRegistry::SURFACE_MEDIA_UPLOAD, $filename);
+            } catch (UploadPolicyException $exception) {
+                throw new FlatFileException($exception->getMessage(), 0, $exception);
+            }
+
+            return;
+        }
+
+        $this->assertFilenameAllowedLegacy($filename);
+    }
+
+    public function shouldScanMagicBytes(): bool
+    {
+        return $this->policyEngine->shouldScanMagicBytes();
+    }
+
+    /**
+     * @param list<string> $mediaMimeTypes
+     *
+     * @return list<string>
+     */
+    public function resolveAllowedMimeTypes(array $mediaMimeTypes): array
+    {
+        if ($this->policyEngine->isUnifiedEnabled()) {
+            return $this->policyEngine->resolveAllowedMimeTypes(
+                UploadSurfaceRegistry::SURFACE_MEDIA_UPLOAD,
+                $mediaMimeTypes
+            );
+        }
+
+        return $this->resolveAllowedMimeTypesLegacy($mediaMimeTypes);
+    }
+
+    public function resolveMaxUploadBytes(int $mediaMaxBytes): int
+    {
+        if ($this->policyEngine->isUnifiedEnabled()) {
+            return $this->policyEngine->resolveMaxUploadBytes(UploadSurfaceRegistry::SURFACE_MEDIA_UPLOAD);
+        }
+
+        return $this->resolveMaxUploadBytesLegacy($mediaMaxBytes);
+    }
+
+    /**
+     * @throws FlatFileException
+     */
+    private function assertFilenameAllowedLegacy(string $filename): void
     {
         $cfg = $this->settings->group('uploadSecurity');
 
@@ -44,19 +97,12 @@ final class UploadSecurityValidator
         $this->assertExtensionWhitelisted($filename, $cfg);
     }
 
-    public function shouldScanMagicBytes(): bool
-    {
-        $cfg = $this->settings->group('uploadSecurity');
-
-        return $this->isTruthy($cfg['scanMagicBytes'] ?? true);
-    }
-
     /**
      * @param list<string> $mediaMimeTypes
      *
      * @return list<string>
      */
-    public function resolveAllowedMimeTypes(array $mediaMimeTypes): array
+    private function resolveAllowedMimeTypesLegacy(array $mediaMimeTypes): array
     {
         $securityTypes = $this->parseCsv((string) ($this->settings->group('uploadSecurity')['allowedMimeTypes'] ?? ''));
         if ($securityTypes === []) {
@@ -72,12 +118,10 @@ final class UploadSecurityValidator
             return $securityTypes;
         }
 
-        $intersection = array_intersect($mediaMimeTypes, $securityTypes);
-
-        return $intersection !== [] ? array_values($intersection) : $securityTypes;
+        return array_values(array_intersect($mediaMimeTypes, $securityTypes));
     }
 
-    public function resolveMaxUploadBytes(int $mediaMaxBytes): int
+    private function resolveMaxUploadBytesLegacy(int $mediaMaxBytes): int
     {
         $securityKb = (int) ($this->settings->group('uploadSecurity')['maxUploadSizeKb'] ?? 0);
         if ($securityKb <= 0) {

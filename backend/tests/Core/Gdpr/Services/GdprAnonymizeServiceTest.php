@@ -58,6 +58,12 @@ final class GdprAnonymizeServiceTest extends TestCase
             new UserAvatarService(
                 $this->createMock(\PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface::class),
                 new \PaginiumCMS\Core\Content\AvatarImageProcessor(),
+                \PaginiumCMS\Tests\Support\UploadPolicyEngineTestFactory::create(
+                    $this->createConfiguredMock(
+                        \PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class,
+                        ['group' => ['unifiedPolicyEnabled' => false]]
+                    )
+                ),
             ),
             $this->comments,
             $this->messages,

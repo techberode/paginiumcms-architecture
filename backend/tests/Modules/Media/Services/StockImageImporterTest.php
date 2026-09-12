@@ -8,6 +8,7 @@ use PaginiumCMS\Core\FlatFile\Services\FileReader;
 use PaginiumCMS\Core\FlatFile\Services\FileValidator;
 use PaginiumCMS\Core\FlatFile\Services\FileWriter;
 use PaginiumCMS\Core\Security\Services\UploadSecurityValidator;
+use PaginiumCMS\Tests\Support\UploadPolicyEngineTestFactory;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Modules\Media\Services\MediaImageOptimizer;
 use PaginiumCMS\Modules\Media\Services\MediaOptimizePreviewStore;
@@ -40,22 +41,28 @@ class StockImageImporterTest extends TestCase
                 ];
             }
 
+            if ($group === 'uploadSecurity') {
+                return ['unifiedPolicyEnabled' => false];
+            }
+
             return [];
         });
 
         $catalog = new StockImageCatalog(__DIR__ . '/Fixtures/stock-images-test.json');
-        $uploadSecurity = new UploadSecurityValidator($settings);
+        $policyEngine = UploadPolicyEngineTestFactory::create($settings, $root);
+        $uploadSecurity = new UploadSecurityValidator($settings, $policyEngine);
         $storageFactory = new MediaStorageFactory($reader, $writer);
         $repository = new MediaRepository(
             $reader,
             $writer,
             $settings,
             $uploadSecurity,
+            $policyEngine,
             $storageFactory,
             new MediaImageOptimizer(),
             new MediaOptimizePreviewStore($reader, $writer)
         );
-        $importer = new StockImageImporter($repository, $settings, $catalog);
+        $importer = new StockImageImporter($repository, $settings, $catalog, $policyEngine);
 
         $media = $importer->import('', 'stock');
 
@@ -69,14 +76,25 @@ class StockImageImporterTest extends TestCase
     public function testImportDisabledInSettingsThrows(): void
     {
         $settings = $this->createMock(SettingsRepositoryInterface::class);
-        $settings->method('group')->with('media')->willReturn([
-            'stockImagesEnabled' => false,
-            'stockImageTopic' => 'general',
-        ]);
+        $settings->method('group')->willReturnCallback(function (string $group): array {
+            if ($group === 'media') {
+                return [
+                    'stockImagesEnabled' => false,
+                    'stockImageTopic' => 'general',
+                ];
+            }
+
+            if ($group === 'uploadSecurity') {
+                return ['unifiedPolicyEnabled' => false];
+            }
+
+            return [];
+        });
 
         $catalog = new StockImageCatalog(__DIR__ . '/Fixtures/stock-images-test.json');
         $mediaRepo = $this->createMock(\PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface::class);
-        $importer = new StockImageImporter($mediaRepo, $settings, $catalog);
+        $policyEngine = UploadPolicyEngineTestFactory::create($settings);
+        $importer = new StockImageImporter($mediaRepo, $settings, $catalog, $policyEngine);
 
         $this->expectException(\PaginiumCMS\Core\FlatFile\Exception\FlatFileException::class);
         $importer->import('food');

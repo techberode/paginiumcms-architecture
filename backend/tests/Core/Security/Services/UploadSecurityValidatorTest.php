@@ -7,6 +7,7 @@ namespace PaginiumCMS\Tests\Core\Security\Services;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Core\Security\Services\UploadSecurityValidator;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
+use PaginiumCMS\Tests\Support\UploadPolicyEngineTestFactory;
 use PHPUnit\Framework\TestCase;
 
 class UploadSecurityValidatorTest extends TestCase
@@ -62,9 +63,15 @@ class UploadSecurityValidatorTest extends TestCase
     {
         $settings = $this->createMock(SettingsRepositoryInterface::class);
         $settings->method('group')->willReturnCallback(
-            static fn (string $group): array => $group === 'uploadSecurity' ? $uploadSecurity : []
+            static function (string $group) use ($uploadSecurity): array {
+                if ($group === 'uploadSecurity') {
+                    return array_merge(['unifiedPolicyEnabled' => false], $uploadSecurity);
+                }
+
+                return [];
+            }
         );
 
-        return new UploadSecurityValidator($settings);
+        return new UploadSecurityValidator($settings, UploadPolicyEngineTestFactory::create($settings));
     }
 }

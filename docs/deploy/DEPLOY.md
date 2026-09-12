@@ -296,6 +296,31 @@ Admin deploy uses the same `scripts/deploy-instance-update.sh` as SSH, but PHP m
 
 Without **stack directory**, deploy may pull code but skip `stack.sh up -d --force-recreate` → old PHP/opcache keeps running (ISS-152).
 
+### Host stack wrapper (`stack.sh`)
+
+The stack directory must contain an executable **`stack.sh`** (copy from `docs/deploy/stack.sh` on first setup):
+
+```bash
+sudo cp "$APP_ROOT/docs/deploy/stack.sh" "$STACK_DIR/stack.sh"
+sudo chmod 750 "$STACK_DIR/stack.sh"
+```
+
+Admin **deploy readiness** runs inside the PHP container and checks `is_file("$STACK_DIR/stack.sh")`. The host path is invisible unless mounted. In `docs/deploy/docker-compose.prod.yml`, uncomment (and adjust) the optional volume on the `php` service:
+
+```yaml
+- /var/lib/docker/compose/paginiumcms:/var/lib/docker/compose/paginiumcms:ro
+```
+
+Then recreate PHP: `"$STACK_DIR/stack.sh" up -d --force-recreate php`.
+
+Readiness blockers:
+
+| Blocker | Meaning |
+|---------|---------|
+| `stack_dir_missing` | Settings/env `stackDir` empty |
+| `stack_dir_not_visible` | Path set but not mounted into PHP container |
+| `stack_script_missing` | Directory visible but `stack.sh` missing or not executable |
+
 ### Dashboard banner (SUPER_ADMIN)
 
 On load, the dashboard **automatically checks GitHub** for a newer release. When an update is available:

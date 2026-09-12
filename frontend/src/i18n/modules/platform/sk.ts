@@ -512,6 +512,8 @@ export const platformSk: MessageTree = {
       job_not_registered: 'System deploy job nie je registrovaný v plánovači.',
       stack_dir_missing: 'Nastavte Docker stack directory (host path), napr. /var/lib/docker/compose/paginiumcms.',
       stack_script_missing: 'stack.sh chýba alebo nie je spustiteľný v nastavenom stack adresári.',
+      stack_dir_not_visible:
+        'Stack adresár nie je z PHP kontajnera viditeľný — namontujte ho do docker-compose.prod.yml alebo skopírujte stack.sh do APP_ROOT.',
       app_root_missing: 'Koreň aplikácie (APP_ROOT) sa na serveri nepodarilo rozlíšiť.',
       deploy_script_missing: 'scripts/deploy-instance-update.sh chýba v koreni aplikácie.',
       tag_deploy_disabled: 'Deploy tagov je vypnutý — zapnite „Povoliť deploy zo semver tagov“.',

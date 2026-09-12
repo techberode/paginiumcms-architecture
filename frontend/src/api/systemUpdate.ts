@@ -25,6 +25,7 @@ export interface SystemUpdateDeployReadiness {
   blockers: string[];
   stack_dir?: string;
   stack_dir_configured?: boolean;
+  stack_dir_accessible?: boolean;
   stack_script_executable?: boolean;
   backend_port?: string;
   deploy_script_exists?: boolean;
