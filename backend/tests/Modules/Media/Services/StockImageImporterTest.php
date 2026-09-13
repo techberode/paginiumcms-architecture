@@ -7,6 +7,7 @@ namespace PaginiumCMS\Tests\Modules\Media\Services;
 use PaginiumCMS\Core\FlatFile\Services\FileReader;
 use PaginiumCMS\Core\FlatFile\Services\FileValidator;
 use PaginiumCMS\Core\FlatFile\Services\FileWriter;
+use PaginiumCMS\Core\Security\Services\OutboundUrlGuard;
 use PaginiumCMS\Core\Security\Services\UploadSecurityValidator;
 use PaginiumCMS\Tests\Support\UploadPolicyEngineTestFactory;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
@@ -14,6 +15,8 @@ use PaginiumCMS\Modules\Media\Services\MediaImageOptimizer;
 use PaginiumCMS\Modules\Media\Services\MediaOptimizePreviewStore;
 use PaginiumCMS\Modules\Media\Services\MediaRepository;
 use PaginiumCMS\Modules\Media\Services\MediaStorageFactory;
+use PaginiumCMS\Modules\Media\Services\MediaUrlResolver;
+use PaginiumCMS\Modules\Media\Services\S3MediaFilesystemFactory;
 use PaginiumCMS\Modules\Media\Services\StockImageCatalog;
 use PaginiumCMS\Modules\Media\Services\StockImageImporter;
 use PHPUnit\Framework\TestCase;
@@ -51,7 +54,14 @@ class StockImageImporterTest extends TestCase
         $catalog = new StockImageCatalog(__DIR__ . '/Fixtures/stock-images-test.json');
         $policyEngine = UploadPolicyEngineTestFactory::create($settings, $root);
         $uploadSecurity = new UploadSecurityValidator($settings, $policyEngine);
-        $storageFactory = new MediaStorageFactory($reader, $writer);
+        $storageFactory = new MediaStorageFactory(
+            $reader,
+            $writer,
+            $settings,
+            new OutboundUrlGuard(true, true),
+            new S3MediaFilesystemFactory(),
+            new MediaUrlResolver(),
+        );
         $repository = new MediaRepository(
             $reader,
             $writer,

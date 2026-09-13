@@ -43,17 +43,16 @@ Do **not** invent new iteration numbers. Finish specs that already exist.
 
 | Order | Item | Why this order |
 |------:|------|----------------|
-| 1 | **It.72** S3 / remote media remainder | Local driver already shipped |
-| 2 | **It.89** Plugin capability model | Safe editor-tool plugins (It.90e SDK overlap) |
-| 4 | **It.58f / 58g** layout builder remainder | Page blocks (not theme studio) |
-| 6 | **It.70** GitHub API publisher UI | Local Git already shipped |
-| 7 | **It.76 / 77** translation providers | After It.73 (shipped) |
-| 8 | **It.75** CMS-aware AI agent | Last: proposals only, human apply |
-| 9 | **It.48** static / Jamstack output | Align with It.70; do not fork publish pipelines |
+| 1 | **It.89** Plugin capability model | Safe editor-tool plugins (It.90e SDK overlap) |
+| 2 | **It.58f / 58g** layout builder remainder | Page blocks (not theme studio) |
+| 3 | **It.70** GitHub API publisher UI | Local Git already shipped |
+| 4 | **It.76 / 77** translation providers | After It.73 (shipped) |
+| 5 | **It.75** CMS-aware AI agent | Last: proposals only, human apply |
+| 6 | **It.48** static / Jamstack output | Align with It.70; do not fork publish pipelines |
 
 **Optional / later:** It.82d Origin host metrics.
 
-**Active slice:** **It.72** S3 remainder (or **It.89** plugin SDK). Settings field i18n: [SETTINGS_I18N.md](SETTINGS_I18N.md).
+**Active slice:** **It.89** plugin SDK (or **It.58f/58g** layout remainder). Settings field i18n: [SETTINGS_I18N.md](SETTINGS_I18N.md).
 
 ---
 

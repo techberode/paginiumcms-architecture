@@ -8,6 +8,7 @@ use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Core\FlatFile\Services\FileReader;
 use PaginiumCMS\Core\FlatFile\Services\FileValidator;
 use PaginiumCMS\Core\FlatFile\Services\FileWriter;
+use PaginiumCMS\Core\Security\Services\OutboundUrlGuard;
 use PaginiumCMS\Core\Security\Services\UploadSecurityValidator;
 use PaginiumCMS\Tests\Support\UploadPolicyEngineTestFactory;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
@@ -15,6 +16,8 @@ use PaginiumCMS\Modules\Media\Services\MediaImageOptimizer;
 use PaginiumCMS\Modules\Media\Services\MediaOptimizePreviewStore;
 use PaginiumCMS\Modules\Media\Services\MediaRepository;
 use PaginiumCMS\Modules\Media\Services\MediaStorageFactory;
+use PaginiumCMS\Modules\Media\Services\MediaUrlResolver;
+use PaginiumCMS\Modules\Media\Services\S3MediaFilesystemFactory;
 use PHPUnit\Framework\TestCase;
 use org\bovigo\vfs\vfsStream;
 
@@ -67,7 +70,14 @@ class MediaRepositoryTest extends TestCase
 
         $policyEngine = UploadPolicyEngineTestFactory::create($settings, $this->root);
         $uploadSecurity = new UploadSecurityValidator($settings, $policyEngine);
-        $storageFactory = new MediaStorageFactory($reader, $writer);
+        $storageFactory = new MediaStorageFactory(
+            $reader,
+            $writer,
+            $settings,
+            new OutboundUrlGuard(true, true),
+            new S3MediaFilesystemFactory(),
+            new MediaUrlResolver(),
+        );
         $imageOptimizer = new MediaImageOptimizer();
         $previewStore = new MediaOptimizePreviewStore($reader, $writer);
         $this->repository = new MediaRepository(

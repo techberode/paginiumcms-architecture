@@ -31,7 +31,7 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | 4 | **It.67** Untrusted surfaces hardening | 🔴 | ✅ | shortcodes, themes, CSP, hostile fixtures — see [ITERATION_67](ITERATION_67.md) |
 | 5 | **It.70** Git publish modes | 🟡 | ✅ | local publisher + queued/immediate API — see [ITERATION_70](ITERATION_70.md) |
 | 6 | **It.71** Performance Guard | 🟡 | ✅ | shipped in `v2.1.0-beta.28` — see [ITERATION_71](ITERATION_71.md) |
-| 7 | **It.72** Media drivers | 🟡 | 🟡 partial | MVP local driver + probe shipped; S3/migration deferred |
+| 7 | **It.72** Media drivers | 🟡 | ✅ | shipped `beta.76` — local + S3 + migration CLI |
 | 8 | **It.73** Multi-locale document | 🟡 | ✅ | shipped in `v2.1.0-beta.29` — see [ITERATION_73](ITERATION_73.md) |
 | 9 | **It.74** API keys/JWT | 🟡 | ✅ | shipped in `v2.1.0-beta.30` — see [ITERATION_74](ITERATION_74.md) |
 | 10 | **It.80** SEO, integrations & ops toolkit | 🟡 | ✅ | shipped `beta.39` — see [ITERATION_80](en/ITERATION_80.md) |
@@ -94,14 +94,12 @@ See [ITERATION_70](ITERATION_70.md).
 - documented self-heal only for derived layers,
 - no automatic primary-content changes.
 
-### It.72 — media drivers 🟡 partial (MVP shipped)
+### It.72 — media drivers ✅ shipped (`beta.76`)
 
-- ✅ `MediaStorageDriverInterface`, local driver, factory, capability probe (Iteration 72 MVP),
-- ✅ settings `media.storageDriver` + reserved S3 fields,
-- ⏳ S3-compatible driver,
-- ⏳ signed/public URL policy,
-- ⏳ reference migration without content loss,
-- ⏳ MIME/path/security parity for remote driver.
+- ✅ `MediaStorageDriverInterface`, local + S3 drivers, factory, capability probe,
+- ✅ settings `media.storageDriver` + S3 fields with SSRF/secret handling,
+- ✅ stable URL resolver (`/api/media/file/...` for private S3),
+- ✅ migration journal, dry-run, batched copy/resume, verify, cutover, rollback CLI.
 
 See [ITERATION_72](ITERATION_72.md).
 

@@ -524,8 +524,8 @@ final class SettingsSchema
             'media' => [
                 'label' => 'Media / DAM',
                 'fields' => [
-                    ['key' => 'storageDriver', 'type' => 'enum', 'label' => 'Media storage driver', 'default' => 'local', 'options' => ['local', 's3'], 'rules' => ['required', 'in:local,s3'], 'help' => 'local = flat-file binaries under media/. S3 appears in UI but falls back to local until the driver ships.'],
-                    ['key' => 's3Endpoint', 'type' => 'url', 'label' => 'S3 endpoint URL', 'default' => '', 'rules' => ['url', 'max:512'], 'help' => 'Reserved for S3-compatible driver (not active in MVP). Must pass OutboundUrlGuard when enabled.'],
+                    ['key' => 'storageDriver', 'type' => 'enum', 'label' => 'Media storage driver', 'default' => 'local', 'options' => ['local', 's3'], 'rules' => ['required', 'in:local,s3'], 'help' => 'local = flat-file binaries under media/. s3 = S3-compatible object storage when bucket, region, and credentials are configured; otherwise falls back to local.'],
+                    ['key' => 's3Endpoint', 'type' => 'url', 'label' => 'S3 endpoint URL', 'default' => '', 'rules' => ['url', 'max:512'], 'help' => 'Optional custom endpoint (MinIO, R2, etc.). Must pass OutboundUrlGuard. Leave empty for AWS.'],
                     ['key' => 's3Region', 'type' => 'string', 'label' => 'S3 region', 'default' => '', 'rules' => ['string', 'max:64']],
                     ['key' => 's3Bucket', 'type' => 'string', 'label' => 'S3 bucket', 'default' => '', 'rules' => ['string', 'max:255']],
                     ['key' => 's3KeyId', 'type' => 'string', 'label' => 'S3 access key ID', 'default' => '', 'rules' => ['string', 'max:255']],

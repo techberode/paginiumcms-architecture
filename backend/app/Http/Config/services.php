@@ -142,6 +142,7 @@ use PaginiumCMS\Core\Security\ClientIpResolver;
 use PaginiumCMS\Core\Security\SecurityLogger;
 use PaginiumCMS\Core\Security\Services\ContentSecuritySanitizer;
 use PaginiumCMS\Core\Security\Services\LoginAttemptTracker;
+use PaginiumCMS\Core\Security\Services\OutboundUrlGuard;
 use PaginiumCMS\Core\Security\Services\UploadSecurityValidator;
 use PaginiumCMS\Core\Security\Services\ZipEntryGuard;
 use PaginiumCMS\Core\Security\Upload\UploadArchiveValidator;
@@ -300,8 +301,17 @@ use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
 use PaginiumCMS\Modules\Media\Services\MediaImageOptimizer;
 use PaginiumCMS\Modules\Media\Services\MediaOptimizePreviewStore;
 use PaginiumCMS\Modules\Media\Services\MediaRepository;
+use PaginiumCMS\Modules\Media\Commands\MediaMigrateCommand;
+use PaginiumCMS\Modules\Media\Commands\MediaMigrateRollbackCommand;
+use PaginiumCMS\Modules\Media\Commands\MediaMigrateVerifyCommand;
+use PaginiumCMS\Modules\Media\Commands\MediaStorageProbeCommand;
+use PaginiumCMS\Modules\Media\Services\MediaMigrationJournalStore;
+use PaginiumCMS\Modules\Media\Services\MediaMigrationService;
 use PaginiumCMS\Modules\Media\Services\MediaStorageCapabilityProbe;
 use PaginiumCMS\Modules\Media\Services\MediaStorageFactory;
+use PaginiumCMS\Modules\Media\Services\MediaUrlResolver;
+use PaginiumCMS\Modules\Media\Contracts\S3MediaFilesystemFactoryInterface;
+use PaginiumCMS\Modules\Media\Services\S3MediaFilesystemFactory;
 use PaginiumCMS\Modules\Media\Services\StockImageCatalog;
 use PaginiumCMS\Modules\Media\Services\StockImageImporter;
 use PaginiumCMS\Modules\Demo\Contracts\DemoDataProviderInterface;
@@ -385,6 +395,7 @@ return [
             get(SettingsRepositoryInterface::class),
             get(UploadPolicyEngine::class)
         ),
+    OutboundUrlGuard::class => static fn (): OutboundUrlGuard => OutboundUrlGuard::fromEnv(),
     ContentBodyRenderer::class => create(ContentBodyRenderer::class)
         ->constructor(
             get(MarkdownContentParserInterface::class),
@@ -732,12 +743,48 @@ return [
         ),
 
     // Media module
+    MediaUrlResolver::class => create(MediaUrlResolver::class),
+    S3MediaFilesystemFactoryInterface::class => get(S3MediaFilesystemFactory::class),
+    S3MediaFilesystemFactory::class => create(S3MediaFilesystemFactory::class),
     MediaStorageFactory::class => create(MediaStorageFactory::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class),
+            get(SettingsRepositoryInterface::class),
+            get(OutboundUrlGuard::class),
+            get(S3MediaFilesystemFactoryInterface::class),
+            get(MediaUrlResolver::class)
+        ),
+    MediaStorageCapabilityProbe::class => create(MediaStorageCapabilityProbe::class)
+        ->constructor(
+            get(MediaStorageFactory::class),
+            get(OutboundUrlGuard::class)
+        ),
+    MediaStorageProbeCommand::class => create(MediaStorageProbeCommand::class)
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(MediaStorageFactory::class),
+            get(MediaStorageCapabilityProbe::class)
+        ),
+    MediaMigrationJournalStore::class => create(MediaMigrationJournalStore::class)
         ->constructor(
             get(FileReaderInterface::class),
             get(FileWriterInterface::class)
         ),
-    MediaStorageCapabilityProbe::class => create(MediaStorageCapabilityProbe::class),
+    MediaMigrationService::class => create(MediaMigrationService::class)
+        ->constructor(
+            get(MediaRepositoryInterface::class),
+            get(MediaStorageFactory::class),
+            get(MediaStorageCapabilityProbe::class),
+            get(MediaMigrationJournalStore::class),
+            get(SettingsRepositoryInterface::class)
+        ),
+    MediaMigrateCommand::class => create(MediaMigrateCommand::class)
+        ->constructor(get(MediaMigrationService::class)),
+    MediaMigrateVerifyCommand::class => create(MediaMigrateVerifyCommand::class)
+        ->constructor(get(MediaMigrationService::class)),
+    MediaMigrateRollbackCommand::class => create(MediaMigrateRollbackCommand::class)
+        ->constructor(get(MediaMigrationService::class)),
 
     MediaImageOptimizer::class => create(MediaImageOptimizer::class),
 
@@ -1151,7 +1198,6 @@ return [
     MediaController::class => create(MediaController::class)
         ->constructor(
             get(MediaRepositoryInterface::class),
-            get(FileReaderInterface::class),
             get(StockImageCatalog::class),
             get(StockImageImporter::class),
             get(JsonResponder::class),

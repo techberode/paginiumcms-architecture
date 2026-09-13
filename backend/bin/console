@@ -23,6 +23,10 @@ use PaginiumCMS\Modules\Demo\Commands\RunDemoResetCommand;
 use PaginiumCMS\Core\SystemUpdate\Commands\SystemDeployCommand;
 use PaginiumCMS\Modules\Security\Commands\ClearLoginLockoutsCommand;
 use PaginiumCMS\Support\Commands\DevHygieneCommand;
+use PaginiumCMS\Modules\Media\Commands\MediaMigrateCommand;
+use PaginiumCMS\Modules\Media\Commands\MediaMigrateRollbackCommand;
+use PaginiumCMS\Modules\Media\Commands\MediaMigrateVerifyCommand;
+use PaginiumCMS\Modules\Media\Commands\MediaStorageProbeCommand;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
@@ -49,4 +53,8 @@ $application->addCommand($container->get(UserCreateCommand::class));
 $application->addCommand($container->get(ListUsersCommand::class));
 $application->addCommand($container->get(ResetUserPasswordCommand::class));
 $application->addCommand($container->get(DevHygieneCommand::class));
+$application->addCommand($container->get(MediaStorageProbeCommand::class));
+$application->addCommand($container->get(MediaMigrateCommand::class));
+$application->addCommand($container->get(MediaMigrateVerifyCommand::class));
+$application->addCommand($container->get(MediaMigrateRollbackCommand::class));
 $application->run();
