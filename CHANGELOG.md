@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.76`](#release-2-1-0-beta-76) | 2026-09-13 | It.72 complete — S3 driver + migration CLI |
 | [`2.1.0-beta.75`](#release-2-1-0-beta-75) | 2026-09-13 | It.91d complete; runtime i18n; translations WAF fix |
 | [`2.1.0-beta.74`](#release-2-1-0-beta-74) | 2026-09-13 | It.91c Tiptap trusted parity + audit; deploy UI hotfix |
 | [`2.1.0-beta.73`](#release-2-1-0-beta-73) | 2026-09-13 | It.90c–e Mermaid, charts, CodeMirror 6 |
@@ -155,6 +156,36 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **It.91c–d** — Tiptap parity, audit log, hostile fixtures. Spec: [ITERATION_91.md](docs/en/ITERATION_91.md).
 - **It.89** — Plugin capability model + Editor Tool SDK (manifest-registered custom tools). Spec: [ITERATION_89.md](docs/en/ITERATION_89.md).
 - **Queue:** It.72 remainder → It.89 → 58f/g → 70 → 76/77 → 75 → 48. Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+
+---
+
+<a id="release-2-1-0-beta-76"></a>
+
+## [2.1.0-beta.76] – 2026-09-13
+
+It.72 — S3-compatible media storage driver + migration CLI (Flysystem)
+
+### Added
+
+- **`S3MediaStorageDriver`** — Flysystem + AWS SDK adapter for S3-compatible object storage; shared contract with local driver (`put`, `read`, `delete`, `exists`, `checksum`, `publicUrl`, `health`).
+- **`S3MediaStorageConfig`** — settings validation, `OutboundUrlGuard` on endpoint/CDN URL, redacted probe summary (no secrets).
+- **`MediaUrlResolver`** — stable API URLs for private S3 (`/api/media/file/...`); CDN base URL for public buckets.
+- **`MediaStoragePathGuard`** — rejects traversal/null-byte keys before driver I/O.
+- **`MediaMigrationService`** — inventory, dry-run, batched copy with resume, checksum verify, cutover (registry URL rewrite + driver switch), rollback (restore URLs + delete target copies; local originals preserved).
+- **`MediaMigrationJournalStore`** — flat-file journal at `media/migration/journal.json`.
+- **CLI** — `media:storage:probe`; `media:migrate` (inventory, dry-run, start, copy, cutover); `media:migrate:verify`; `media:migrate:rollback`.
+- **Composer** — `league/flysystem`, `league/flysystem-aws-s3-v3`, `aws/aws-sdk-php`.
+
+### Changed
+
+- **`MediaStorageFactory`** — activates `s3` when bucket/region/credentials are complete; safe fallback to `local` on misconfiguration or outage.
+- **`MediaStorageCapabilityProbe`** — reports S3 configured/active/failing state with redacted summary.
+- **`MediaController::serveFile`** — reads binaries via `MediaRepository` storage driver (S3-aware).
+
+### Tests
+
+- Shared driver contract trait (local + in-memory S3), `S3MediaStorageConfigTest`, updated factory/probe tests.
+- `MediaMigrationServiceTest` — full copy → verify → cutover → rollback flow; resume batches.
 
 ---
 

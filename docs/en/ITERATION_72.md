@@ -1,6 +1,6 @@
 # Iteration 72 — media storage drivers
 
-> **Status:** ✅ MVP complete (local driver + probe)  
+> **Status:** ✅ Complete (local + S3 drivers + migration CLI)  
 > **Priority:** 🟡  
 > **Wave:** [Hybrid Engine HE-5](ITERATION_WAVE_HYBRID_ENGINE.md)  
 > **Depends on:** [It.68](ITERATION_68.md)  
@@ -147,10 +147,10 @@ The media picker and content editor use the same media ID regardless of driver.
 ## Definition of Done
 
 - [x] `local` is the default and behaves as it did before It.72.
-- [ ] S3-compatible staging upload/read/delete passes contract tests.
+- [x] S3-compatible staging upload/read/delete passes contract tests (It.72b: in-memory adapter + config validation).
 - [x] The metadata registry remains flat-file SSOT.
-- [ ] Media ID is independent from the physical URL.
-- [ ] Migration provides dry-run, journal, checksum, resume, and rollback.
+- [x] Media ID is independent from the physical URL (It.72b: private S3 uses `/api/media/file/...`; local unchanged).
+- [x] Migration provides dry-run, journal, checksum, resume, and rollback (It.72c).
 - [x] Private/public policy, SSRF, and secret handling are tested (MVP: probe redaction, settings validation, local-only path).
 - [x] SK/EN user, architecture, and deployment documentation is updated (MVP scope).
 

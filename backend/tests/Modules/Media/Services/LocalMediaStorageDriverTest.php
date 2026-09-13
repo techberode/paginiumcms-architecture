@@ -8,11 +8,14 @@ use PaginiumCMS\Core\FlatFile\Services\FileReader;
 use PaginiumCMS\Core\FlatFile\Services\FileValidator;
 use PaginiumCMS\Core\FlatFile\Services\FileWriter;
 use PaginiumCMS\Modules\Media\Services\LocalMediaStorageDriver;
+use PaginiumCMS\Modules\Media\Services\MediaUrlResolver;
 use PHPUnit\Framework\TestCase;
 use org\bovigo\vfs\vfsStream;
 
 final class LocalMediaStorageDriverTest extends TestCase
 {
+    use MediaStorageDriverContractTestTrait;
+
     private LocalMediaStorageDriver $driver;
 
     protected function setUp(): void
@@ -20,21 +23,16 @@ final class LocalMediaStorageDriverTest extends TestCase
         vfsStream::setup('storage', null, ['content' => []]);
         $root = vfsStream::url('storage/content');
         $validator = new FileValidator($root);
-        $this->driver = new LocalMediaStorageDriver(new FileReader($validator), new FileWriter($validator));
+        $this->driver = new LocalMediaStorageDriver(
+            new FileReader($validator),
+            new FileWriter($validator),
+            new MediaUrlResolver(),
+        );
     }
 
-    public function testPutReadDeleteAndChecksum(): void
+    protected function createDriver(): LocalMediaStorageDriver
     {
-        $path = 'media/test.bin';
-        $payload = 'binary-payload';
-
-        $this->driver->put($path, $payload);
-        $this->assertTrue($this->driver->exists($path));
-        $this->assertSame($payload, $this->driver->read($path));
-        $this->assertSame(hash('sha256', $payload), $this->driver->checksum($path));
-
-        $this->driver->delete($path);
-        $this->assertFalse($this->driver->exists($path));
+        return $this->driver;
     }
 
     public function testPublicUrlUsesStoragePrefix(): void
@@ -45,12 +43,8 @@ final class LocalMediaStorageDriverTest extends TestCase
         );
     }
 
-    public function testHealthProbeSucceeds(): void
+    public function testHealthProbeDriverName(): void
     {
-        $health = $this->driver->health();
-
-        $this->assertTrue($health['ok']);
-        $this->assertSame('local', $health['driver']);
-        $this->assertGreaterThanOrEqual(0, $health['latencyMs']);
+        $this->assertSame('local', $this->driver->health()['driver']);
     }
 }

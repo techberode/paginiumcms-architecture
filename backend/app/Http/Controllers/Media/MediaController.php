@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Controllers\Media;
 
 use PaginiumCMS\Http\Support\RequestJsonBody;
-use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
@@ -23,7 +22,6 @@ class MediaController
 {
     public function __construct(
         private MediaRepositoryInterface $mediaRepository,
-        private FileReaderInterface $fileReader,
         private StockImageCatalog $stockImageCatalog,
         private StockImageImporter $stockImageImporter,
         private JsonResponder $json,
@@ -47,12 +45,12 @@ class MediaController
         }
 
         $media = $this->mediaRepository->findByPath($path);
-        if ($media === null || !$this->fileReader->exists($path)) {
+        if ($media === null) {
             return $response->withStatus(404);
         }
 
         try {
-            $binary = $this->fileReader->readBinary($path);
+            $binary = $this->mediaRepository->readBinary($path);
         } catch (FlatFileException) {
             return $response->withStatus(404);
         }

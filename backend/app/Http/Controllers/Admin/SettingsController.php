@@ -723,9 +723,7 @@ final class SettingsController
      */
     private function buildMediaMeta(array $mediaValues): array
     {
-        $driver = $this->mediaStorageFactory->create(
-            MediaStorageFactory::driverFromMediaSettings($mediaValues)
-        );
+        $driver = $this->mediaStorageFactory->create(null, true, $mediaValues);
 
         return [
             'storageProbe' => $this->mediaStorageProbe->probe($driver, $mediaValues),

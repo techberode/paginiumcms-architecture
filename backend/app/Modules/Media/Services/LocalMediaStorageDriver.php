@@ -15,6 +15,7 @@ final class LocalMediaStorageDriver implements MediaStorageDriverInterface
     public function __construct(
         private FileReaderInterface $reader,
         private FileWriterInterface $writer,
+        private MediaUrlResolver $urlResolver,
     ) {
     }
 
@@ -47,7 +48,7 @@ final class LocalMediaStorageDriver implements MediaStorageDriverInterface
 
     public function publicUrl(string $relativePath): string
     {
-        return '/storage/app/content/' . ltrim($relativePath, '/');
+        return $this->urlResolver->localPublicUrl($relativePath);
     }
 
     public function health(): array

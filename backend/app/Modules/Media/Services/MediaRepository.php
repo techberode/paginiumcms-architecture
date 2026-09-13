@@ -737,8 +737,6 @@ class MediaRepository implements MediaRepositoryInterface
 
     private function storage(): MediaStorageDriverInterface
     {
-        return $this->storageFactory->create(
-            MediaStorageFactory::driverFromMediaSettings($this->settings->group('media'))
-        );
+        return $this->storageFactory->create(null, true, $this->settings->group('media'));
     }
 }

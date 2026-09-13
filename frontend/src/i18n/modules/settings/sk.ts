@@ -1440,7 +1440,7 @@ export const settingsSk: MessageTree = {
     "media": {
       "storageDriver": {
         "label": "Ovládač úložiska médií",
-        "help": "local = binárne súbory pod media/. S3 sa zobrazí v UI, ale fallbackuje na local, kým driver nie je aktívny."
+        "help": "local = binárne súbory pod media/. s3 = S3-compatible úložisko pri vyplnenom buckete, regióne a credentials; inak fallback na local."
       },
       "s3Endpoint": {
         "label": "S3 endpoint URL"

@@ -1037,7 +1037,7 @@ export const settingsEn: MessageTree = {
     "media": {
       "storageDriver": {
         "label": "Media storage driver",
-        "help": "local = flat-file binaries under media/. S3 appears in UI but falls back to local until the driver ships."
+        "help": "local = flat-file binaries under media/. s3 = S3-compatible storage when bucket, region, and credentials are set; otherwise falls back to local."
       },
       "s3Endpoint": {
         "label": "S3 endpoint URL"
