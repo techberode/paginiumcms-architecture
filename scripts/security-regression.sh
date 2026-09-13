@@ -11,6 +11,11 @@ vendor/bin/phpunit --colors=always \
   backend/tests/Core/Layout/ShortcodeDefinitionManagerTest.php \
   backend/tests/Http/Themes/ThemeImporterTest.php
 
+echo "=== Trusted content hostile pack (It.91d) ==="
+vendor/bin/phpunit --colors=always \
+  backend/tests/Core/Editor/TrustedContentHostileFixturesTest.php \
+  backend/tests/Core/Editor/TrustedContentDetectorTest.php
+
 echo "=== XSS / Zip / headers pack ==="
 vendor/bin/phpunit --colors=always \
   backend/tests/Core/Security/Services/ContentSecuritySanitizerTest.php \

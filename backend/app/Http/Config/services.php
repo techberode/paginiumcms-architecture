@@ -67,9 +67,12 @@ use PaginiumCMS\Core\Developer\Services\DeveloperLogger;
 use PaginiumCMS\Core\Event\EventDispatcher;
 use PaginiumCMS\Core\I18n\Contracts\TranslationFileManagerInterface;
 use PaginiumCMS\Core\I18n\Services\LocaleScaffoldService;
+use PaginiumCMS\Core\I18n\Services\RuntimeI18nOverridesService;
 use PaginiumCMS\Core\I18n\Services\SupportedLocalesRegistry;
 use PaginiumCMS\Core\I18n\Services\TranslationFileManager;
+use PaginiumCMS\Core\I18n\Services\TranslationMessageTreeParser;
 use PaginiumCMS\Core\I18n\Services\TranslationPolicyValidator;
+use PaginiumCMS\Http\Controllers\I18nRuntimeController;
 use PaginiumCMS\Core\Git\Services\GitCapabilityProbe;
 use PaginiumCMS\Core\Git\Services\GitPathValidator;
 use PaginiumCMS\Core\Git\Services\GitPublishDispatcher;
@@ -596,6 +599,19 @@ return [
             get(TranslationFileManagerInterface::class),
             get(JsonResponder::class)
         ),
+    TranslationMessageTreeParser::class => create(TranslationMessageTreeParser::class),
+    RuntimeI18nOverridesService::class => create(RuntimeI18nOverridesService::class)
+        ->constructor(
+            get(TranslationMessageTreeParser::class),
+            get(SupportedLocalesRegistry::class)
+        ),
+    I18nRuntimeController::class => create(I18nRuntimeController::class)
+        ->constructor(
+            get(RuntimeI18nOverridesService::class),
+            get(SupportedLocalesRegistry::class),
+            get(JsonResponder::class)
+        ),
+
     WorkflowController::class => create(WorkflowController::class)
         ->constructor(
             get(OtpWorkflowService::class),

@@ -43,7 +43,7 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | 16 | **It.78** Unified upload security | 🟡 | ✅ | shipped `beta.70` — [ITERATION_78](ITERATION_78.md) |
 | 17 | **It.79** DAM video | 🟡 | ✅ | shipped `beta.71` — [ITERATION_79](ITERATION_79.md) |
 | 18 | **It.90** Editor Workbench (toolbar + wizards, MD + Tiptap) | 🟡 P1 | ✅ | shipped `beta.72`–`73` — [ITERATION_90](ITERATION_90.md) |
-| 19 | **It.91** Trusted HTML & external embeds | 🟡 P1 | 🟡 91c | 91a/b shipped `beta.72`; Tiptap parity pending — [ITERATION_91](ITERATION_91.md) |
+| 19 | **It.91** Trusted HTML & external embeds | 🟡 P1 | ✅ | shipped `beta.75` — [ITERATION_91](ITERATION_91.md) |
 | 20 | **It.25** Setup wizard/update UX | 🟡 | ✅ basic + M1+ | shipped `beta.62`–`beta.65`; not a release blocker anymore |
 | 21 | **It.76/77** Translation providers | 🔵 | ⏳ | after It.73 (shipped) |
 | 22 | **It.75** AI agent | 🔵 | ⏳ | after locale + translation providers |
@@ -131,10 +131,9 @@ See [ITERATION_79](ITERATION_79.md).
 
 See [ITERATION_90](ITERATION_90.md) · [RELEASE_2_1_0_BETA_73](RELEASE_2_1_0_BETA_73.md).
 
-### It.91 — Trusted HTML & external embeds 🟡 (91c remainder)
+### It.91 — Trusted HTML & external embeds ✅ (`beta.75`)
 
-- Shipped `beta.72` (91a/b): RBAC, `:::html-safe`, `:::embed`, FE modals.
-- Pending: Tiptap parity, audit log, hostile fixtures (91c–d).
+- Shipped `beta.72`–`75`: RBAC, shortcodes, Tiptap parity, audit log, hostile fixtures, runtime i18n.
 
 See [ITERATION_91](ITERATION_91.md).
 
@@ -281,7 +280,7 @@ Deferred (post-M1+ / stretch):
 | Server metrics agent (remaining It.46) | ⏳ | coordinate with It.71 |
 | **It.79** DAM video | ✅ | shipped `beta.71` — [ITERATION_79](ITERATION_79.md) |
 | **It.90** Editor Workbench | ✅ | shipped `beta.72`–`73` — [ITERATION_90](ITERATION_90.md) |
-| **It.91** Trusted HTML & embeds | 🟡 91c | 91a/b shipped `beta.72` — [ITERATION_91](ITERATION_91.md) |
+| **It.91** Trusted HTML & embeds | ✅ | shipped `beta.75` — [ITERATION_91](ITERATION_91.md) |
 | **RequestJsonBody rollout** | ✅ | all HTTP controllers + OTP/contact rate-limit middleware (`post-beta.40`) |
 | Scoped FileManager | ⏳ candidate | assign a new unique number after scope approval |
 | Frontend inline editing | ⏳ candidate | reuse existing lock/editor flow |

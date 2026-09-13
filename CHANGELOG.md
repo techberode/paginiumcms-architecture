@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.75`](#release-2-1-0-beta-75) | 2026-09-13 | It.91d complete; runtime i18n; translations WAF fix |
 | [`2.1.0-beta.74`](#release-2-1-0-beta-74) | 2026-09-13 | It.91c Tiptap trusted parity + audit; deploy UI hotfix |
 | [`2.1.0-beta.73`](#release-2-1-0-beta-73) | 2026-09-13 | It.90c–e Mermaid, charts, CodeMirror 6 |
 | [`2.1.0-beta.72`](#release-2-1-0-beta-72) | 2026-09-12 | It.90a/b, It.91a/b, editor leave autosave, deploy/CSP hotfix |
@@ -154,6 +155,27 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **It.91c–d** — Tiptap parity, audit log, hostile fixtures. Spec: [ITERATION_91.md](docs/en/ITERATION_91.md).
 - **It.89** — Plugin capability model + Editor Tool SDK (manifest-registered custom tools). Spec: [ITERATION_89.md](docs/en/ITERATION_89.md).
 - **Queue:** It.72 remainder → It.89 → 58f/g → 70 → 76/77 → 75 → 48. Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+
+---
+
+<a id="release-2-1-0-beta-75"></a>
+
+## [2.1.0-beta.75] – 2026-09-13
+
+It.91d — hostile regression pack, runtime admin i18n, translations editor fixes
+
+### Added
+
+- **It.91d Hostile fixtures** — `backend/tests/Fixtures/hostile/trusted-content/` + `TrustedContentHostileFixturesTest` (purifier strips script/on* / `javascript:`; embed provider/id rejection; raw HTML outside blocks still denied); wired into `security-regression.sh`.
+- **Runtime admin i18n** — `GET /api/i18n/frontend-catalog` parses on-disk FE catalogs; `I18nProvider` merges at boot and after Translation Editor save (no rebuild required on production).
+
+### Fixed
+
+- **Translations save 403** — WAF body-scan exempt for `/api/admin/translations` (same pattern as code editor).
+
+### Tests
+
+- PHPUnit: `TrustedContentHostileFixturesTest`, `TranslationMessageTreeParserTest`, `I18nRuntimeControllerTest`.
 
 ---
 

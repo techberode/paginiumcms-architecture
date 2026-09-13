@@ -36,6 +36,14 @@ export function registerModuleMessages(locale: Locale, namespace: string, messag
   };
 }
 
+/** Runtime merge for core catalog (Translation Editor → disk → SPA without rebuild). */
+export function registerCoreMessages(locale: Locale, messages: MessageTree): void {
+  coreCatalog[locale] = {
+    ...(coreCatalog[locale] ?? {}),
+    ...messages,
+  };
+}
+
 function resolve(tree: MessageTree, key: string): string | undefined {
   const parts = key.split('.');
   let current: MessageTree | string | undefined = tree;

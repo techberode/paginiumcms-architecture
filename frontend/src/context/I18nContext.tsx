@@ -1,5 +1,6 @@
 // frontend/src/context/I18nContext.tsx
-import React, { createContext, useContext, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { loadRuntimeI18nOverrides } from '../i18n/loadRuntimeOverrides';
 import { normalizeLocale, translate, type Locale } from '../i18n';
 import { useSettings } from '../hooks/useSettings';
 
@@ -13,13 +14,37 @@ const I18nContext = createContext<I18nContextValue | undefined>(undefined);
 export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { get } = useSettings();
   const locale = normalizeLocale(get('general.language', 'sk'));
+  const [runtimeRevision, setRuntimeRevision] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const applyRuntimeOverrides = async (): Promise<void> => {
+      await loadRuntimeI18nOverrides(locale);
+      if (!cancelled) {
+        setRuntimeRevision((value) => value + 1);
+      }
+    };
+
+    void applyRuntimeOverrides();
+
+    const onReload = (): void => {
+      void applyRuntimeOverrides();
+    };
+    window.addEventListener('paginium:i18n-runtime-reload', onReload);
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener('paginium:i18n-runtime-reload', onReload);
+    };
+  }, [locale]);
 
   const value = useMemo<I18nContextValue>(
     () => ({
       locale,
       t: (key, params) => translate(locale, key, params),
     }),
-    [locale]
+    [locale, runtimeRevision]
   );
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;

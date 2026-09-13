@@ -17,6 +17,7 @@ final class FirewallBodyScanPolicy
         '/api/articles',
         '/api/drafts',
         '/api/admin/code-editor',
+        '/api/admin/translations',
         '/api/admin/content/',
         '/api/webhooks/',
         '/api/analytics/pageview',
