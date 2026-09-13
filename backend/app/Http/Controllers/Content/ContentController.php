@@ -27,6 +27,7 @@ use PaginiumCMS\Core\Content\LocalizedContentValidator;
 use PaginiumCMS\Core\Content\LocalizedContentWriter;
 use PaginiumCMS\Core\Content\LocaleResolver;
 use PaginiumCMS\Core\Editor\Services\EditorContentValidator;
+use PaginiumCMS\Core\Editor\Services\TrustedContentAuditLogger;
 use PaginiumCMS\Core\Editor\Services\TrustedHtmlContentService;
 use PaginiumCMS\Core\Hook\HookCatalog;
 use PaginiumCMS\Core\Hook\Services\HookEmitter;
@@ -71,6 +72,7 @@ class ContentController
         private DynamicValidator $dynamicValidator,
         private EditorContentValidator $editorContentValidator,
         private TrustedHtmlContentService $trustedHtmlContent,
+        private TrustedContentAuditLogger $trustedContentAudit,
         private ContentPathAclGuard $pathAcl,
         private HookEmitter $hookEmitter,
         private LocaleResolver $localeResolver,
@@ -265,6 +267,13 @@ class ContentController
         }
 
         $this->normalizeEditorContentPayload($data, $user);
+        $this->trustedContentAudit->logContentSave(
+            $user,
+            $type,
+            (string) $data['slug'],
+            (string) ($data['contentFormat'] ?? 'markdown'),
+            (string) ($data['content'] ?? '')
+        );
 
         $slug = (string) $data['slug'];
         if ($this->repository->findBySlug($slug, $type) !== null) {
@@ -371,6 +380,13 @@ class ContentController
         }
 
         $this->normalizeEditorContentPayload($data, $user);
+        $this->trustedContentAudit->logContentSave(
+            $user,
+            $type,
+            (string) ($data['slug'] ?? $slug),
+            (string) ($data['contentFormat'] ?? 'markdown'),
+            (string) ($data['content'] ?? '')
+        );
 
         // === Blok: Optimistické zamykanie / detekcia konfliktu (Iterácia 2) ===
         // Ak klient poslal `baseRevision`, overíme, či sa súbor na disku medzičasom nezmenil.

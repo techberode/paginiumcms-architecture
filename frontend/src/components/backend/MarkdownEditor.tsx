@@ -1016,6 +1016,9 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
             }}
             onUploadImage={handleEditorImageUpload}
             profile={wysiwygEditorProfile}
+            canUseTrustedHtml={canUseTrustedHtml}
+            canUseExternalEmbed={canUseExternalEmbed}
+            embedProviders={embedProviders}
             onBlockedAction={(message) => toast.warning(message)}
           />
         ) : (

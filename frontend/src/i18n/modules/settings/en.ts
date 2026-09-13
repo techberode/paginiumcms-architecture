@@ -541,6 +541,10 @@ export const settingsEn: MessageTree = {
         "label": "Markdown surface",
         "help": "native = plain textarea; codemirror6 = syntax highlight and line numbers (same stored Markdown)."
       },
+      "auditTrustedContent": {
+        "label": "Audit trusted HTML / embed saves",
+        "help": "When enabled, security audit logs each save that contains :::html-safe or :::embed blocks (counts and body hash only — never block body)."
+      },
       "customComponentsEnabled": {
         "label": "Enable custom editor components",
         "help": "Plugins can register custom blocks for Markdown and WYSIWYG."

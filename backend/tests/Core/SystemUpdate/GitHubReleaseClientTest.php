@@ -59,4 +59,15 @@ final class GitHubReleaseClientTest extends TestCase
 
         $this->assertSame([], $result);
     }
+
+    public function testPickLatestPublishedReleaseSkipsDraftsAndPrefersFirst(): void
+    {
+        $picked = GitHubReleaseClient::pickLatestPublishedRelease([
+            ['tag_name' => 'v2.1.0-beta.73', 'draft' => false],
+            ['tag_name' => 'v2.1.0-beta.72', 'draft' => true],
+        ]);
+
+        $this->assertIsArray($picked);
+        $this->assertSame('v2.1.0-beta.73', $picked['tag_name'] ?? null);
+    }
 }

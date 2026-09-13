@@ -1,6 +1,6 @@
 # Iterácia 91 — Trusted HTML a externé embedy (role-based)
 
-> **Stav:** ⏳ plánované (91a rozpracované)  
+> **Stav:** 🟡 čiastočne — **91a–91c** v **`v2.1.0-beta.74`**; **91d** zostáva  
 > **Priorita:** 🟡 P1  
 > **Plná špecifikácia (EN):** [../en/ITERATION_91.md](../en/ITERATION_91.md)
 

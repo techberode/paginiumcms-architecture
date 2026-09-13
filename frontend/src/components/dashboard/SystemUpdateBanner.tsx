@@ -85,6 +85,10 @@ export const SystemUpdateBanner: React.FC = () => {
       toastError(outcome.error ?? t('platform.systemUpdate.toast.deployFailed'));
       return;
     }
+    if (outcome.skipped) {
+      warning(t('platform.systemUpdate.toast.deploySkipped'));
+      return;
+    }
     success(t('platform.systemUpdate.toast.deployStarted'));
   };
 

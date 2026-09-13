@@ -95,11 +95,23 @@ export interface SystemUpdateCheckResult {
   release_url?: string | null;
 }
 
+export interface SystemUpdateJobRunPayload {
+  success?: boolean;
+  message?: string;
+  reason?: string;
+  data?: {
+    output?: string;
+    ref?: string;
+  };
+}
+
 export interface SystemUpdateRunResult {
-  queued: boolean;
+  queued?: boolean;
+  skipped?: boolean;
+  reason?: string;
   queue_id?: string;
   ref: string;
-  result?: Record<string, unknown> | null;
+  result?: SystemUpdateJobRunPayload | null;
 }
 
 export async function getSystemUpdateStatus(): Promise<SystemUpdateStatus | null> {

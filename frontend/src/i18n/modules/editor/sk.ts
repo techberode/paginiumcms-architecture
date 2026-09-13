@@ -231,6 +231,8 @@ export const editorSk: MessageTree = {
     toolbar: {
       image: 'Vložiť obrázok z knižnice',
       video: 'Vložiť video z knižnice',
+      htmlBlock: 'Vložiť trusted HTML blok',
+      embed: 'Vložiť externý embed (YouTube/Vimeo)',
     },
     blocked: {
       images: 'Profil editora nepovoľuje obrázky.',

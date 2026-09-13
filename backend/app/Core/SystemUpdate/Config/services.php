@@ -34,6 +34,7 @@ return [
         ->constructor(
             get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class),
             get(SystemDeployService::class),
+            get(SystemDeployReadinessService::class),
             get(\PaginiumCMS\Core\Scheduler\Services\JobRegistryStore::class),
             get(\PaginiumCMS\Core\Scheduler\Services\JobQueueStore::class),
             get(\PaginiumCMS\Core\Scheduler\Services\JobWorker::class),

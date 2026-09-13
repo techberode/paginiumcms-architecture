@@ -1,6 +1,6 @@
 # Iteration 91 — Trusted HTML & external embeds (role-based)
 
-> **Status:** 🟡 partial — **91a + 91b shipped** (trusted HTML + YouTube/Vimeo embeds); **91c** Tiptap/audit pending  
+> **Status:** 🟡 partial — **91a–91c shipped** (`v2.1.0-beta.74`); **91d** hostile fixtures + runtime i18n pending  
 > **Priority:** 🟡 P1 — developer/admin authoring without lowering public XSS bar  
 > **Wave:** Editor security & embeds (post It.79, parallel with It.90)  
 > **Depends on:** [It.79](ITERATION_79.md) DAM video · [It.55](ITERATION_55.md) Tiptap · [It.19](ITERATION_19.md) content security settings · RBAC (`PermissionCatalog`)  
@@ -212,9 +212,12 @@ It.90 toolbar builder can add `htmlBlock` / `externalEmbed` as optional tools ga
 - [x] `:::html-safe` + HTMLPurifier on save and expand (91a).
 - [x] `:::embed` YouTube/Vimeo with BE-only iframe HTML (91b).
 - [x] FE “Insert HTML block” modal gated by permission + setting (91a).
-- [ ] Audit log for trusted HTML saves (91c).
+- [x] Audit log for trusted HTML saves (91c).
 - [x] PHPUnit regression for purifier/validator; iteration gate green (91a).
-- [ ] Full DoD including 91b–91d + CHANGELOG release section.
+- [x] Tiptap `htmlSafeBlock` / `externalEmbed` nodes + export to shortcodes (91c).
+- [ ] Hostile fixtures + security regression pack (91d).
+- [ ] Runtime FE i18n merge after Translation Editor save (91d).
+- [ ] Full DoD including 91d + CHANGELOG `beta.75`.
 
 ## Related
 

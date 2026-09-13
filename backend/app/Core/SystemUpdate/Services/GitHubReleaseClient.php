@@ -45,12 +45,7 @@ final class GitHubReleaseClient
             );
             $latestSha = is_string($latestCommit['sha'] ?? null) ? $latestCommit['sha'] : null;
 
-            $latestRelease = null;
-            try {
-                $latestRelease = $this->request($base . '/releases/latest', $token);
-            } catch (RuntimeException) {
-                // No releases yet — optional for compare.
-            }
+            $latestRelease = $this->resolveLatestRelease($base, $token);
 
             $compare = null;
             $compareCommit = $localCommitFull ?? $localCommit;
@@ -105,6 +100,85 @@ final class GitHubReleaseClient
                 'error' => $e->getMessage(),
             ];
         }
+    }
+
+    /**
+     * Latest release tag — includes pre-releases (beta.*) when GitHub has no stable /releases/latest.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function resolveLatestRelease(string $base, string $token): ?array
+    {
+        try {
+            $latest = $this->request($base . '/releases/latest', $token);
+            if (is_string($latest['tag_name'] ?? null) && trim($latest['tag_name']) !== '') {
+                return $latest;
+            }
+        } catch (RuntimeException) {
+            // No stable latest — fall back to pre-releases / tag list.
+        }
+
+        try {
+            $releaseList = self::coerceObjectList($this->request($base . '/releases?per_page=30', $token));
+            $picked = self::pickLatestPublishedRelease($releaseList);
+            if ($picked !== null) {
+                return $picked;
+            }
+        } catch (RuntimeException) {
+            // Optional — compare can still use branch HEAD.
+        }
+
+        try {
+            $tagList = self::coerceObjectList($this->request($base . '/tags?per_page=1', $token));
+            $firstTag = $tagList[0] ?? null;
+            if ($firstTag !== null) {
+                $tagName = trim((string) ($firstTag['name'] ?? ''));
+                if ($tagName !== '') {
+                    return ['tag_name' => $tagName];
+                }
+            }
+        } catch (RuntimeException) {
+            return null;
+        }
+
+        return null;
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private static function coerceObjectList(mixed $raw): array
+    {
+        if (!is_array($raw) || !array_is_list($raw)) {
+            return [];
+        }
+
+        $out = [];
+        foreach ($raw as $item) {
+            if (is_array($item)) {
+                $out[] = $item;
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param list<array<string, mixed>> $releases
+     * @return array<string, mixed>|null
+     */
+    public static function pickLatestPublishedRelease(array $releases): ?array
+    {
+        foreach ($releases as $release) {
+            if (($release['draft'] ?? false) === true) {
+                continue;
+            }
+            if (is_string($release['tag_name'] ?? null) && trim($release['tag_name']) !== '') {
+                return $release;
+            }
+        }
+
+        return null;
     }
 
     /**

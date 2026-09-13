@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.74`](#release-2-1-0-beta-74) | 2026-09-13 | It.91c Tiptap trusted parity + audit; deploy UI hotfix |
 | [`2.1.0-beta.73`](#release-2-1-0-beta-73) | 2026-09-13 | It.90c–e Mermaid, charts, CodeMirror 6 |
 | [`2.1.0-beta.72`](#release-2-1-0-beta-72) | 2026-09-12 | It.90a/b, It.91a/b, editor leave autosave, deploy/CSP hotfix |
 | [`2.1.0-beta.71`](#release-2-1-0-beta-71) | 2026-09-12 | It.79 DAM video, stack bootstrap permissions, editor extensions |
@@ -153,6 +154,28 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **It.91c–d** — Tiptap parity, audit log, hostile fixtures. Spec: [ITERATION_91.md](docs/en/ITERATION_91.md).
 - **It.89** — Plugin capability model + Editor Tool SDK (manifest-registered custom tools). Spec: [ITERATION_89.md](docs/en/ITERATION_89.md).
 - **Queue:** It.72 remainder → It.89 → 58f/g → 70 → 76/77 → 75 → 48. Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+
+---
+
+<a id="release-2-1-0-beta-74"></a>
+
+## [2.1.0-beta.74] – 2026-09-13
+
+It.91c — WYSIWYG trusted HTML/embed parity, security audit; system update deploy UX hotfix
+
+### Added
+
+- **It.91c Tiptap trusted nodes** — `htmlSafeBlock` and `externalEmbed` atom nodes in WYSIWYG; toolbar buttons gated by `content:trusted-html` / `content:embed-external`; save exports trusted nodes to `:::html-safe` / `:::embed` Markdown shortcodes (`tiptapTrustedExport`, `storagePayloadFromEditor`).
+- **It.91c Security audit** — `TrustedContentAuditLogger` writes `trusted_content_save` events (block counts + SHA-256 body hash, no block body); Settings `editor.auditTrustedContent` (default on).
+
+### Fixed
+
+- **System update deploy UI** — `GitHubReleaseClient` falls back to pre-release tags when no stable release exists; deploy readiness check before trigger; FE surfaces real deploy script errors instead of false success (`deployRunResult`, `SystemUpdateView`, banner hook).
+
+### Tests
+
+- PHPUnit: `TrustedContentAuditLoggerTest`.
+- Vitest: `tiptapTrustedExport.test.ts`, `deployRunResult.test.ts`.
 
 ---
 

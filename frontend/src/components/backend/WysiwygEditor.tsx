@@ -1,4 +1,5 @@
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import { FileCode2, Youtube } from 'lucide-react';
 import { useEditor, EditorContent, type Extensions } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Link } from '@tiptap/extension-link';
@@ -23,6 +24,11 @@ import { loadAllowedEditorComponents, type EditorComponentRegistration } from '.
 import { useSettingsContext } from '../../context/SettingsContext';
 import { useI18n } from '../../context/I18nContext';
 import { PaginiumVideo } from './tiptapVideoExtension';
+import { PaginiumHtmlSafeBlock } from './tiptapHtmlSafeBlock';
+import { PaginiumExternalEmbed } from './tiptapExternalEmbed';
+import { HtmlBlockInsertModal } from './HtmlBlockInsertModal';
+import { EmbedInsertModal } from './EmbedInsertModal';
+import type { ExternalEmbedProvider } from '../../utils/embedShortcode';
 
 type WysiwygBlockedReason = 'images' | 'videos' | 'tables' | 'codeBlock' | 'scripts' | 'links' | 'uploadUnavailable';
 
@@ -43,12 +49,17 @@ interface WysiwygEditorProps {
   onPickVideo?: () => void;
   onUploadImage?: (file: File) => Promise<{ url: string; alt?: string } | null>;
   profile: EditorProfileDefinition;
+  canUseTrustedHtml?: boolean;
+  canUseExternalEmbed?: boolean;
+  embedProviders?: ExternalEmbedProvider[];
   onBlockedAction?: (message: string) => void;
 }
 
 function buildExtensions(
   profile: EditorProfileDefinition,
-  customExtensions: Extensions = []
+  customExtensions: Extensions = [],
+  canUseTrustedHtml = false,
+  canUseExternalEmbed = false
 ): Extensions {
   const extensions: Extensions = [
     StarterKit.configure({
@@ -105,6 +116,14 @@ function buildExtensions(
     );
   }
 
+  if (canUseTrustedHtml) {
+    extensions.push(PaginiumHtmlSafeBlock);
+  }
+
+  if (canUseExternalEmbed) {
+    extensions.push(PaginiumExternalEmbed);
+  }
+
   return [...extensions, ...customExtensions];
 }
 
@@ -150,6 +169,9 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
     onPickVideo,
     onUploadImage,
     profile,
+    canUseTrustedHtml = false,
+    canUseExternalEmbed = false,
+    embedProviders = ['youtube', 'vimeo'],
     onBlockedAction,
   },
   ref
@@ -160,6 +182,8 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
   const blockedMessage = (reason: WysiwygBlockedReason) => t(`editor.wysiwyg.blocked.${reason}`);
   const [customComponents, setCustomComponents] = useState<EditorComponentRegistration[]>([]);
   const [customExtensions, setCustomExtensions] = useState<Extensions>([]);
+  const [htmlBlockOpen, setHtmlBlockOpen] = useState(false);
+  const [embedOpen, setEmbedOpen] = useState(false);
 
   useEffect(() => {
     void loadAllowedEditorComponents(profile, editorSettings).then(async (components) => {
@@ -170,8 +194,8 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
   }, [profile, editorSettings]);
 
   const extensions = useMemo(
-    () => buildExtensions(profile, customExtensions),
-    [profile, customExtensions]
+    () => buildExtensions(profile, customExtensions, canUseTrustedHtml, canUseExternalEmbed),
+    [profile, customExtensions, canUseTrustedHtml, canUseExternalEmbed]
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadHandlerRef = useRef<(file: File) => Promise<void>>(async () => undefined);
@@ -441,6 +465,29 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
             ⊞
           </button>
         )}
+        {(canUseTrustedHtml || canUseExternalEmbed) && (
+          <span className="w-px h-6 bg-slate-300 dark:bg-slate-600 mx-1" />
+        )}
+        {canUseTrustedHtml && (
+          <button
+            type="button"
+            title={t('editor.wysiwyg.toolbar.htmlBlock')}
+            onClick={() => setHtmlBlockOpen(true)}
+            className={btn(editor.isActive('htmlSafeBlock'))}
+          >
+            <FileCode2 size={16} />
+          </button>
+        )}
+        {canUseExternalEmbed && (
+          <button
+            type="button"
+            title={t('editor.wysiwyg.toolbar.embed')}
+            onClick={() => setEmbedOpen(true)}
+            className={btn(editor.isActive('externalEmbed'))}
+          >
+            <Youtube size={16} />
+          </button>
+        )}
         {customComponents.length > 0 && (
           <span className="w-px h-6 bg-slate-300 dark:bg-slate-600 mx-1" />
         )}
@@ -476,6 +523,40 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
       <EditorContent
         editor={editor}
         className="prose dark:prose-invert max-w-none p-4 min-h-[420px] focus:outline-none [&_.ProseMirror]:min-h-[380px] [&_.ProseMirror]:outline-none"
+      />
+
+      <HtmlBlockInsertModal
+        open={htmlBlockOpen}
+        onClose={() => setHtmlBlockOpen(false)}
+        onInsert={(block) => {
+          const match = block.match(/:::html-safe\s*\n([\s\S]*?)\n\s*:::/);
+          const html = match?.[1]?.trim() ?? '';
+          if (html !== '') {
+            editor.chain().focus().insertContent({ type: 'htmlSafeBlock', attrs: { html } }).run();
+          }
+          setHtmlBlockOpen(false);
+        }}
+      />
+      <EmbedInsertModal
+        open={embedOpen}
+        enabledProviders={embedProviders}
+        onClose={() => setEmbedOpen(false)}
+        onInsert={(block) => {
+          const blockMatch = block.match(
+            /:::embed\s*\n\s*provider:\s*(\S+)\s*\n\s*id:\s*(\S+)\s*\n\s*:::/
+          );
+          const inlineMatch = block.match(/:::embed\s+provider="([^"]+)"\s+id="([^"]+)"\s*:::/);
+          const provider = (blockMatch?.[1] ?? inlineMatch?.[1] ?? '').trim();
+          const id = (blockMatch?.[2] ?? inlineMatch?.[2] ?? '').trim();
+          if (provider !== '' && id !== '') {
+            editor
+              .chain()
+              .focus()
+              .insertContent({ type: 'externalEmbed', attrs: { provider, id } })
+              .run();
+          }
+          setEmbedOpen(false);
+        }}
       />
     </div>
   );

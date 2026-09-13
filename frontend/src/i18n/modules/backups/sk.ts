@@ -24,7 +24,7 @@ export const backupsSk: MessageTree = {
     trash: 'Kôš',
     config: 'Konfigurácia aplikácie (storage/app/config)',
     modeTitle: 'Typ zálohy',
-    modeFull: 'Úplný snímok (všetky vybrané súbory)',
+    modeFull: 'Úplná záloha (všetky vybrané súbory)',
     modeIncremental: 'Prírastková (len zmenené súbory, ako rsync)',
     modeHint:
       'Prírastková záloha uloží SHA-256 manifest a do ZIP dá len nové, zmenené alebo zmazané súbory od poslednej zálohy s rovnakým rozsahom. Prvý beh je vždy úplný snímok. Obnova najprv načíta baseline a potom delty. Nespúšťa sa binárka rsync.',

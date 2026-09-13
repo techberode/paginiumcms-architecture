@@ -12,6 +12,24 @@ final class GitHubReleaseWebhookControllerTest extends TestCase
 {
     private const SECRET = 'test-webhook-secret-63';
 
+    /** @var list<string> */
+    private array $tempStackDirs = [];
+
+    protected function tearDown(): void
+    {
+        foreach ($this->tempStackDirs as $dir) {
+            if (is_file($dir . '/stack.sh')) {
+                unlink($dir . '/stack.sh');
+            }
+            if (is_dir($dir)) {
+                rmdir($dir);
+            }
+        }
+        $this->tempStackDirs = [];
+
+        parent::tearDown();
+    }
+
     public function testReleaseWebhookRequiresValidSignature(): void
     {
         $this->enableWebhookDeploy();
@@ -27,6 +45,7 @@ final class GitHubReleaseWebhookControllerTest extends TestCase
     public function testReleaseWebhookQueuesDeployOnPublishedRelease(): void
     {
         $this->enableWebhookDeploy();
+        $this->configureDeployReady();
 
         $body = $this->releasePayload('v2.1.0-beta.18');
         $response = $this->handleRequest(
@@ -83,6 +102,21 @@ final class GitHubReleaseWebhookControllerTest extends TestCase
             'allowDeployMain' => false,
             'webhookDeployEnabled' => true,
             'githubWebhookSecret' => self::SECRET,
+        ]));
+    }
+
+    private function configureDeployReady(): void
+    {
+        $stackDir = sys_get_temp_dir() . '/paginium-deploy-test-' . uniqid('', true);
+        mkdir($stackDir, 0777, true);
+        file_put_contents($stackDir . '/stack.sh', "#!/usr/bin/env bash\n");
+        chmod($stackDir . '/stack.sh', 0755);
+        $this->tempStackDirs[] = $stackDir;
+
+        $settings = $this->container()->get(SettingsRepositoryInterface::class);
+        $settings->setGroup('systemUpdate', array_merge($settings->group('systemUpdate'), [
+            'stackDir' => $stackDir,
+            'backendPort' => '8089',
         ]));
     }
 

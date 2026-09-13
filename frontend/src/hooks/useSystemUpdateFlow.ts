@@ -7,6 +7,7 @@ import {
   type SystemUpdateDeployReadiness,
   type SystemUpdateStatus,
 } from '../api/systemUpdate';
+import { interpretDeployRunResult } from '../utils/deployRunResult';
 
 export interface SystemUpdateFlowState {
   status: SystemUpdateStatus | null;
@@ -20,7 +21,7 @@ export interface SystemUpdateFlowState {
   canDeploy: boolean;
   refreshStatus: () => Promise<void>;
   refreshCheck: () => Promise<SystemUpdateCheckResult | null>;
-  deployLatest: (tag: string) => Promise<{ ok: boolean; error?: string }>;
+  deployLatest: (tag: string) => Promise<{ ok: boolean; skipped?: boolean; error?: string }>;
 }
 
 export function useSystemUpdateFlow(enabled: boolean): SystemUpdateFlowState {
@@ -42,7 +43,9 @@ export function useSystemUpdateFlow(enabled: boolean): SystemUpdateFlowState {
   const canDeploy =
     Boolean(latestTag) &&
     updateStatus === 'update_available' &&
-    readiness?.ready === true;
+    readiness?.ready === true &&
+    status?.config?.deployEnabled === true &&
+    status?.job_registered === true;
 
   const refreshStatus = useCallback(async () => {
     if (!enabled) {
@@ -87,9 +90,13 @@ export function useSystemUpdateFlow(enabled: boolean): SystemUpdateFlowState {
         if (!data) {
           return { ok: false, error: error ?? 'deploy_failed' };
         }
+        const outcome = interpretDeployRunResult(data);
+        if (!outcome.ok) {
+          return { ok: false, error: outcome.error ?? error ?? 'deploy_failed' };
+        }
         await refreshStatus();
         await refreshCheck();
-        return { ok: true };
+        return { ok: true, skipped: outcome.skipped };
       } finally {
         setDeploying(false);
       }

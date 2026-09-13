@@ -231,6 +231,8 @@ export const editorEn: MessageTree = {
     toolbar: {
       image: 'Insert image from library',
       video: 'Insert video from library',
+      htmlBlock: 'Insert trusted HTML block',
+      embed: 'Insert external embed (YouTube/Vimeo)',
     },
     blocked: {
       images: 'Editor profile does not allow images.',

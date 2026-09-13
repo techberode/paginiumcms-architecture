@@ -133,6 +133,7 @@ final class SettingsSchema
                     ['key' => 'markdownExtraCapabilities', 'type' => 'string', 'label' => 'Markdown — voliteľné rozšírenia (legacy)', 'default' => '', 'rules' => ['string', 'max:512'], 'help' => 'Deprecated — používajte markdownToolbar (It.90). Zachované pre spätnú kompatibilitu.'],
                     ['key' => 'wysiwygExtraCapabilities', 'type' => 'string', 'label' => 'WYSIWYG — voliteľné rozšírenia (legacy)', 'default' => '', 'rules' => ['string', 'max:512'], 'help' => 'Deprecated — používajte wysiwygToolbar (It.90).'],
                     ['key' => 'trustedHtmlEnabled', 'type' => 'bool', 'label' => 'Povoliť trusted HTML bloky (It.91)', 'default' => false, 'rules' => ['bool'], 'help' => 'ADMIN/SUPER_ADMIN s oprávnením content:trusted-html môžu vkladať :::html-safe bloky.'],
+                    ['key' => 'auditTrustedContent', 'type' => 'bool', 'label' => 'Audit trusted HTML / embed saves (It.91c)', 'default' => true, 'rules' => ['bool'], 'help' => 'Zapnuté = udalosť do security audit pri uložení :::html-safe / :::embed (bez tela bloku).'],
                     ['key' => 'embedProvidersEnabled', 'type' => 'string', 'label' => 'Povolení poskytovatelia embedov', 'default' => 'youtube,vimeo', 'rules' => ['string', 'max:256'], 'help' => 'It.91 — čiarkou oddelené (youtube,vimeo). Vyžaduje content:embed-external.'],
                 ],
             ],
