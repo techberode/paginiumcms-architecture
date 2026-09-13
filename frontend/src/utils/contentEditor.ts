@@ -4,6 +4,7 @@ import { deferCalloutShortcodes, restoreDeferredCallouts } from './calloutShortc
 import { deferEmbedShortcodes, restoreDeferredEmbeds } from './embedShortcode';
 import { deferChartShortcodes, restoreDeferredCharts } from './chartShortcode';
 import { deferMermaidShortcodes, restoreDeferredMermaid } from './mermaidShortcode';
+import { exportTiptapDocToMarkdown, tiptapDocHasTrustedNodes } from './tiptapTrustedExport';
 import { expandHtmlSafeShortcodes } from './htmlSafeShortcode';
 import { expandVideoShortcodes } from './videoShortcode';
 
@@ -168,6 +169,13 @@ export function storagePayloadFromEditor(
   if (mode === 'wysiwyg') {
     if (looksLikeHtml(editorValue) && !looksLikeTiptapJson(editorValue)) {
       return { content: editorValue, contentFormat: 'html' };
+    }
+
+    if (tiptapDocHasTrustedNodes(editorValue)) {
+      return {
+        content: exportTiptapDocToMarkdown(editorValue),
+        contentFormat: 'markdown',
+      };
     }
 
     return { content: editorValue, contentFormat: 'tiptap_json' };

@@ -10,6 +10,42 @@ use Slim\Psr7\Factory\StreamFactory;
 
 final class SystemUpdateControllerTest extends TestCase
 {
+    /** @var list<string> */
+    private array $tempStackDirs = [];
+
+    protected function tearDown(): void
+    {
+        foreach ($this->tempStackDirs as $dir) {
+            if (is_file($dir . '/stack.sh')) {
+                unlink($dir . '/stack.sh');
+            }
+            if (is_dir($dir)) {
+                rmdir($dir);
+            }
+        }
+        $this->tempStackDirs = [];
+
+        parent::tearDown();
+    }
+
+    private function configureDeployReady(): void
+    {
+        $stackDir = sys_get_temp_dir() . '/paginium-deploy-test-' . uniqid('', true);
+        mkdir($stackDir, 0777, true);
+        file_put_contents($stackDir . '/stack.sh', "#!/usr/bin/env bash\n");
+        chmod($stackDir . '/stack.sh', 0755);
+        $this->tempStackDirs[] = $stackDir;
+
+        $settings = $this->container()->get(SettingsRepositoryInterface::class);
+        $settings->setGroup('systemUpdate', array_merge($settings->group('systemUpdate'), [
+            'deployEnabled' => true,
+            'allowDeployTags' => true,
+            'allowDeployMain' => false,
+            'stackDir' => $stackDir,
+            'backendPort' => '8089',
+        ]));
+    }
+
     public function testStatusRequiresAuth(): void
     {
         $response = $this->handleRequest(
@@ -74,12 +110,7 @@ final class SystemUpdateControllerTest extends TestCase
         $login = $this->loginAsSuperAdminUser();
         $this->assertSame(200, $login['response']->getStatusCode());
 
-        $settings = $this->container()->get(SettingsRepositoryInterface::class);
-        $settings->setGroup('systemUpdate', array_merge($settings->group('systemUpdate'), [
-            'deployEnabled' => true,
-            'allowDeployTags' => true,
-            'allowDeployMain' => false,
-        ]));
+        $this->configureDeployReady();
 
         $response = $this->handleRequest(
             $this->createJsonRequest('POST', '/api/admin/system/update/run', [
@@ -97,13 +128,7 @@ final class SystemUpdateControllerTest extends TestCase
     public function testRunUsesParsedBodyWhenStreamIsEmpty(): void
     {
         $this->loginAsSuperAdminUser();
-
-        $settings = $this->container()->get(SettingsRepositoryInterface::class);
-        $settings->setGroup('systemUpdate', array_merge($settings->group('systemUpdate'), [
-            'deployEnabled' => true,
-            'allowDeployTags' => true,
-            'allowDeployMain' => false,
-        ]));
+        $this->configureDeployReady();
 
         $request = $this->createJsonRequest('POST', '/api/admin/system/update/run', null);
         $request = $request->withBody((new StreamFactory())->createStream(''));
@@ -120,13 +145,7 @@ final class SystemUpdateControllerTest extends TestCase
     public function testRunAcceptsSemverTagWithoutVPrefix(): void
     {
         $this->loginAsSuperAdminUser();
-
-        $settings = $this->container()->get(SettingsRepositoryInterface::class);
-        $settings->setGroup('systemUpdate', array_merge($settings->group('systemUpdate'), [
-            'deployEnabled' => true,
-            'allowDeployTags' => true,
-            'allowDeployMain' => false,
-        ]));
+        $this->configureDeployReady();
 
         $response = $this->handleRequest(
             $this->createJsonRequest('POST', '/api/admin/system/update/run', [
@@ -138,6 +157,30 @@ final class SystemUpdateControllerTest extends TestCase
         $this->assertSame(200, $response->getStatusCode(), (string) json_encode($data, JSON_UNESCAPED_UNICODE));
         $this->assertTrue($data['success']);
         $this->assertSame('v2.1.0-beta.71', $data['data']['ref']);
+    }
+
+    public function testRunReturns503WhenStackDirMissing(): void
+    {
+        $this->loginAsSuperAdminUser();
+
+        $settings = $this->container()->get(SettingsRepositoryInterface::class);
+        $settings->setGroup('systemUpdate', array_merge($settings->group('systemUpdate'), [
+            'deployEnabled' => true,
+            'allowDeployTags' => true,
+            'allowDeployMain' => false,
+            'stackDir' => '',
+        ]));
+
+        $response = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/admin/system/update/run', [
+                'ref' => 'v2.1.0-beta.12',
+            ])
+        );
+        $data = $this->getJsonResponse($response);
+
+        $this->assertSame(503, $response->getStatusCode());
+        $this->assertFalse($data['success']);
+        $this->assertStringContainsString('stack_dir_missing', (string) ($data['error'] ?? ''));
     }
 
     public function testRunEmptyRefRequiresTagWhenBranchDeployDisabled(): void

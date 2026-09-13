@@ -541,6 +541,10 @@ export const settingsSk: MessageTree = {
         "label": "Markdown surface",
         "help": "native = obyčajný textarea; codemirror6 = zvýraznenie syntaxe a čísla riadkov (rovnaký uložený Markdown)."
       },
+      "auditTrustedContent": {
+        "label": "Audit trusted HTML / embed uložení",
+        "help": "Zapnuté = security audit pri každom uložení s :::html-safe alebo :::embed (počty a hash tela — nikdy telo bloku)."
+      },
       "customComponentsEnabled": {
         "label": "Povoliť custom komponenty editora",
         "help": "Pluginy môžu registrovať vlastné bloky pre Markdown a WYSIWYG."

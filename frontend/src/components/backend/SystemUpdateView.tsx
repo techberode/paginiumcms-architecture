@@ -16,6 +16,7 @@ import {
 } from '../../api/systemUpdate';
 import { settingsGroupPath } from '../../utils/adminDeepLinks';
 import { DeployBlockersList } from '../dashboard/DeployBlockersList';
+import { interpretDeployRunResult } from '../../utils/deployRunResult';
 
 export const SystemUpdateView: React.FC = () => {
   const { t } = useI18n();
@@ -47,8 +48,8 @@ export const SystemUpdateView: React.FC = () => {
 
   const updateStatus = remoteCheck?.update?.status;
   const latestTag =
-    remoteCheck?.update?.latest_tag ??
     remoteCheck?.remote.latest_release_tag ??
+    remoteCheck?.update?.latest_tag ??
     null;
 
   const load = useCallback(async () => {
@@ -134,7 +135,16 @@ export const SystemUpdateView: React.FC = () => {
         toastError(error ?? t('platform.systemUpdate.toast.deployFailed'));
         return;
       }
-      success(t('platform.systemUpdate.toast.deployStarted'));
+      const outcome = interpretDeployRunResult(result);
+      if (!outcome.ok) {
+        toastError(outcome.error ?? t('platform.systemUpdate.toast.deployFailed'));
+        return;
+      }
+      if (outcome.skipped) {
+        warning(t('platform.systemUpdate.toast.deploySkipped'));
+      } else {
+        success(t('platform.systemUpdate.toast.deployStarted'));
+      }
       await load();
     } finally {
       setDeploying(false);

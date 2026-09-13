@@ -596,7 +596,6 @@ return [
             get(TranslationFileManagerInterface::class),
             get(JsonResponder::class)
         ),
-
     WorkflowController::class => create(WorkflowController::class)
         ->constructor(
             get(OtpWorkflowService::class),
@@ -1012,6 +1011,17 @@ return [
             get(TrustedHtmlPurifier::class),
             get(HtmlSafeShortcode::class),
         ),
+    \PaginiumCMS\Core\Editor\Services\TrustedContentDetector::class => create(
+        \PaginiumCMS\Core\Editor\Services\TrustedContentDetector::class
+    ),
+    \PaginiumCMS\Core\Editor\Services\TrustedContentAuditLogger::class => create(
+        \PaginiumCMS\Core\Editor\Services\TrustedContentAuditLogger::class
+    )
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(\PaginiumCMS\Core\Editor\Services\TrustedContentDetector::class),
+            get(SecurityAuditStore::class),
+        ),
     ExternalEmbedContentService::class => create(ExternalEmbedContentService::class)
         ->constructor(
             get(SettingsRepositoryInterface::class),
@@ -1081,6 +1091,7 @@ return [
             get(DynamicValidator::class),
             get(EditorContentValidator::class),
             get(TrustedHtmlContentService::class),
+            get(\PaginiumCMS\Core\Editor\Services\TrustedContentAuditLogger::class),
             get(ContentPathAclGuard::class),
             get(HookEmitter::class),
             get(LocaleResolver::class),

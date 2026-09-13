@@ -24,6 +24,7 @@ final class SystemDeployTriggerService
     public function __construct(
         private SettingsRepositoryInterface $settings,
         private SystemDeployService $deploy,
+        private SystemDeployReadinessService $readiness,
         private JobRegistryStore $registry,
         private JobQueueStore $queue,
         private JobWorker $worker,
@@ -72,8 +73,17 @@ final class SystemDeployTriggerService
             return $this->fail($e->getMessage(), 422);
         }
 
-        if ($this->registry->find(self::JOB_ID) === null) {
+        $jobRegistered = $this->registry->find(self::JOB_ID) !== null;
+        if (!$jobRegistered) {
             return $this->fail('System deploy job is not registered', 503);
+        }
+
+        $readiness = $this->readiness->evaluate($jobRegistered);
+        if ($readiness['ready'] !== true) {
+            return $this->fail(
+                'Deploy is not ready: ' . implode(', ', $readiness['blockers']),
+                503
+            );
         }
 
         if ($this->hasRecentSuccessfulRun($ref)) {
@@ -90,6 +100,19 @@ final class SystemDeployTriggerService
         $queueId = $this->queue->enqueue(self::JOB_ID, $payload);
         $processed = $this->worker->process(1);
         $result = $processed['results'][0] ?? null;
+
+        if (!$this->isTesting() && is_array($result) && ($result['success'] ?? false) !== true) {
+            $message = is_string($result['message'] ?? null) ? $result['message'] : 'Deploy failed';
+            $output = '';
+            if (is_array($result['data'] ?? null) && is_string($result['data']['output'] ?? null)) {
+                $output = trim($result['data']['output']);
+            }
+
+            return $this->fail(
+                $output !== '' ? $message . "\n" . $output : $message,
+                502
+            );
+        }
 
         $this->audit->append(
             $auditEvent,
@@ -136,5 +159,10 @@ final class SystemDeployTriggerService
             'http_status' => $httpStatus,
             'error' => $message,
         ];
+    }
+
+    private function isTesting(): bool
+    {
+        return (getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? '')) === 'testing';
     }
 }
