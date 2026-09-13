@@ -21,6 +21,8 @@ final class EditorContentValidator
         private ExternalEmbedContentService $externalEmbed,
         private HtmlSafeShortcode $htmlSafeShortcode = new HtmlSafeShortcode(),
         private CalloutShortcode $calloutShortcode = new CalloutShortcode(),
+        private MermaidShortcode $mermaidShortcode = new MermaidShortcode(),
+        private ChartShortcode $chartShortcode = new ChartShortcode(),
     ) {
     }
 
@@ -78,6 +80,16 @@ final class EditorContentValidator
             if ($calloutError !== null) {
                 return $calloutError;
             }
+
+            $mermaidError = $this->validateMermaidShortcodes($content);
+            if ($mermaidError !== null) {
+                return $mermaidError;
+            }
+
+            $chartError = $this->validateChartShortcodes($content);
+            if ($chartError !== null) {
+                return $chartError;
+            }
         }
 
         return match ($format) {
@@ -100,6 +112,8 @@ final class EditorContentValidator
                 || $directive === HtmlSafeShortcode::DIRECTIVE
                 || $directive === ExternalEmbedShortcode::DIRECTIVE
                 || in_array($directive, CalloutShortcode::TYPES, true)
+                || $directive === MermaidShortcode::DIRECTIVE
+                || $directive === ChartShortcode::DIRECTIVE
             ) {
                 continue;
             }
@@ -173,6 +187,16 @@ final class EditorContentValidator
         return $this->calloutShortcode->validateBlocks($content);
     }
 
+    private function validateMermaidShortcodes(string $content): ?string
+    {
+        return $this->mermaidShortcode->validateBlocks($content);
+    }
+
+    private function validateChartShortcodes(string $content): ?string
+    {
+        return $this->chartShortcode->validateBlocks($content);
+    }
+
     private function validateVideoShortcodes(string $content): ?string
     {
         $expander = new VideoEmbedShortcode();
@@ -207,13 +231,15 @@ final class EditorContentValidator
     private function validateMarkdownSecurity(string $content): ?string
     {
         $withoutCallouts = $this->calloutShortcode->stripBlocks($content);
-        $lower = strtolower($withoutCallouts);
+        $withoutDiagrams = $this->mermaidShortcode->stripBlocks($withoutCallouts);
+        $withoutCharts = $this->chartShortcode->stripBlocks($withoutDiagrams);
+        $lower = strtolower($withoutCharts);
 
         if (str_contains($lower, '<script') || str_contains($lower, '<iframe')) {
             return 'Obsah nepovoľuje vložené skripty alebo iframe.';
         }
 
-        $withoutTrustedBlocks = $this->htmlSafeShortcode->stripBlocks($withoutCallouts);
+        $withoutTrustedBlocks = $this->htmlSafeShortcode->stripBlocks($withoutCharts);
         if (preg_match('/<[a-z][^>]*>/i', $withoutTrustedBlocks) === 1) {
             return 'Markdown obsah nesmie obsahovať raw HTML tagy.';
         }

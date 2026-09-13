@@ -1,6 +1,6 @@
 # Iteration 90 — Editor Workbench (toolbar builder + publishing wizards)
 
-> **Status:** ⏳ planned  
+> **Status:** ✅ shipped (`beta.72`–`beta.73`; plugin SDK → It.89)  
 > **Priority:** 🟡 P1  
 > **Wave:** Editor & content authoring (post It.79)  
 > **Full spec (EN):** [en/ITERATION_90.md](en/ITERATION_90.md)

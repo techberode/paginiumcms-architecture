@@ -86,6 +86,21 @@ class ContentSecuritySanitizerTest extends TestCase
         $this->assertStringNotContainsString('data:', $result);
     }
 
+    public function testPreservesTrustedMermaidFigureSvg(): void
+    {
+        $sanitizer = $this->makeSanitizer([
+            'sanitizeHtmlOnSave' => true,
+            'allowScriptTags' => false,
+            'allowSvgInline' => false,
+        ]);
+
+        $figure = '<figure class="paginium-mermaid" role="img"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10"/></svg></figure>';
+        $result = $sanitizer->sanitizeHtml($figure);
+
+        $this->assertStringContainsString('paginium-mermaid', $result);
+        $this->assertStringContainsString('<svg', $result);
+    }
+
     /**
      * @param array<string, mixed> $contentSecurity
      */

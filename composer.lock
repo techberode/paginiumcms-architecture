@@ -4,8 +4,232 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b48d60ade100323952973748e84befcb",
+    "content-hash": "8b4a957648b8a179e14d29b205767fd9",
     "packages": [
+        {
+            "name": "atelier/diagram",
+            "version": "v0.7.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ateliersvg/diagram.git",
+                "reference": "1c6f43059316c83de4b6be53b0691d54b9520b1d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ateliersvg/diagram/zipball/1c6f43059316c83de4b6be53b0691d54b9520b1d",
+                "reference": "1c6f43059316c83de4b6be53b0691d54b9520b1d",
+                "shasum": ""
+            },
+            "require": {
+                "atelier/layout": "^0.7",
+                "atelier/svg": "^1.0",
+                "ext-mbstring": "*",
+                "php": ">=8.3"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.94",
+                "phpstan/phpstan": "^2.1",
+                "phpunit/phpunit": "^12.5"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "0.7.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Atelier\\Diagram\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Simon André",
+                    "email": "smn.andre@gmail.com"
+                }
+            ],
+            "description": "PHP library for modeling, parsing, rendering, and round-tripping diagrams as SVG and Mermaid",
+            "homepage": "https://github.com/ateliersvg/diagram",
+            "keywords": [
+                "architecture-diagram",
+                "block-diagram",
+                "c4-diagram",
+                "chart",
+                "class-diagram",
+                "diagram",
+                "er-diagram",
+                "flowchart",
+                "git-graph",
+                "graph",
+                "kanban-diagram",
+                "layout",
+                "mermaid",
+                "mindmap",
+                "parser",
+                "requirement-diagram",
+                "sequence-diagram",
+                "state-diagram",
+                "svg",
+                "timeline-diagram",
+                "uml",
+                "venn-diagram",
+                "visualization"
+            ],
+            "support": {
+                "issues": "https://github.com/ateliersvg/diagram/issues",
+                "source": "https://github.com/ateliersvg/diagram"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/smnandre",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-08-07T19:22:30+00:00"
+        },
+        {
+            "name": "atelier/layout",
+            "version": "v0.7.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ateliersvg/layout.git",
+                "reference": "6a5fc88febb7fa7b3bcc958d45a9adeccfe220ad"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ateliersvg/layout/zipball/6a5fc88febb7fa7b3bcc958d45a9adeccfe220ad",
+                "reference": "6a5fc88febb7fa7b3bcc958d45a9adeccfe220ad",
+                "shasum": ""
+            },
+            "require": {
+                "ext-mbstring": "*",
+                "php": ">=8.3"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.94",
+                "phpstan/phpstan": "^2.1",
+                "phpunit/phpunit": "^12.5"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "0.7.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Atelier\\Layout\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Simon André",
+                    "email": "smn.andre@gmail.com"
+                }
+            ],
+            "description": "Renderer-agnostic spatial composition primitives: geometry, box constraints, grids, text layout, and links between boxes",
+            "homepage": "https://github.com/ateliersvg/layout",
+            "keywords": [
+                "composition",
+                "constraints",
+                "flex",
+                "geometry",
+                "grid",
+                "layout",
+                "spatial",
+                "text-layout"
+            ],
+            "support": {
+                "issues": "https://github.com/ateliersvg/layout/issues",
+                "source": "https://github.com/ateliersvg/layout"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/smnandre",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-08-07T16:43:40+00:00"
+        },
+        {
+            "name": "atelier/svg",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ateliersvg/svg.git",
+                "reference": "c2c097f16f2c3370c8134ffb09fa72b44f21bf9d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ateliersvg/svg/zipball/c2c097f16f2c3370c8134ffb09fa72b44f21bf9d",
+                "reference": "c2c097f16f2c3370c8134ffb09fa72b44f21bf9d",
+                "shasum": ""
+            },
+            "require": {
+                "ext-dom": "*",
+                "ext-xml": "*",
+                "php": ">=8.3"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.94",
+                "phpstan/phpstan": "^2.1",
+                "phpunit/phpunit": "^12.5",
+                "rector/rector": "^2.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Atelier\\Svg\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Simon André",
+                    "email": "smn.andre@gmail.com"
+                }
+            ],
+            "description": "PHP library for SVG manipulation, optimization, and morphing: parsing, building, styling, transforms, validation, and sanitization",
+            "homepage": "https://github.com/ateliersvg/svg",
+            "keywords": [
+                "accessibility",
+                "animation",
+                "filter",
+                "gradient",
+                "manipulation",
+                "morphing",
+                "optimization",
+                "parser",
+                "path",
+                "sanitization",
+                "svg",
+                "transform",
+                "validation",
+                "vector-graphics"
+            ],
+            "support": {
+                "issues": "https://github.com/ateliersvg/svg/issues",
+                "source": "https://github.com/ateliersvg/svg"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/smnandre",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-05-20T21:15:22+00:00"
+        },
         {
             "name": "bacon/bacon-qr-code",
             "version": "v3.1.1",

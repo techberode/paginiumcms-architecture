@@ -42,8 +42,8 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | 15 | **It.88** Theme Studio (Monaco, policy, preview, thumbnail) | 🟡 P1 | ✅ | shipped `beta.69` — [ITERATION_88](ITERATION_88.md) |
 | 16 | **It.78** Unified upload security | 🟡 | ✅ | shipped `beta.70` — [ITERATION_78](ITERATION_78.md) |
 | 17 | **It.79** DAM video | 🟡 | ✅ | shipped `beta.71` — [ITERATION_79](ITERATION_79.md) |
-| 18 | **It.90** Editor Workbench (toolbar + wizards, MD + Tiptap) | 🟡 P1 | ⏳ | after It.79 — [ITERATION_90](ITERATION_90.md) |
-| 19 | **It.91** Trusted HTML & external embeds | 🟡 P1 | ⏳ 91a | role-based HTMLPurifier + `:::embed` — [ITERATION_91](ITERATION_91.md) |
+| 18 | **It.90** Editor Workbench (toolbar + wizards, MD + Tiptap) | 🟡 P1 | ✅ | shipped `beta.72`–`73` — [ITERATION_90](ITERATION_90.md) |
+| 19 | **It.91** Trusted HTML & external embeds | 🟡 P1 | 🟡 91c | 91a/b shipped `beta.72`; Tiptap parity pending — [ITERATION_91](ITERATION_91.md) |
 | 20 | **It.25** Setup wizard/update UX | 🟡 | ✅ basic + M1+ | shipped `beta.62`–`beta.65`; not a release blocker anymore |
 | 21 | **It.76/77** Translation providers | 🔵 | ⏳ | after It.73 (shipped) |
 | 22 | **It.75** AI agent | 🔵 | ⏳ | after locale + translation providers |
@@ -124,21 +124,17 @@ See [ITERATION_78](ITERATION_78.md).
 
 See [ITERATION_79](ITERATION_79.md).
 
-### It.90 — Editor Workbench 🟡 ⏳
+### It.90 — Editor Workbench ✅
 
-- Settings-driven Markdown + Tiptap toolbars (replace profile picker UX),
-- insert wizards: table, callout, mermaid, chart,
-- plugin editor tools via manifest (aligned with It.89),
-- profiles become optional presets only.
+- Shipped `beta.72` (90a/b) + `beta.73` (90c–e): toolbar builder, table/callout/mermaid/chart wizards, CodeMirror 6 opt-in.
+- Plugin editor tools via manifest → **It.89** (remainder).
 
-See [ITERATION_90](ITERATION_90.md).
+See [ITERATION_90](ITERATION_90.md) · [RELEASE_2_1_0_BETA_73](RELEASE_2_1_0_BETA_73.md).
 
-### It.91 — Trusted HTML & external embeds 🟡 ⏳ (91a)
+### It.91 — Trusted HTML & external embeds 🟡 (91c remainder)
 
-- RBAC `content:trusted-html`, `content:embed-external`,
-- `:::html-safe` + HTMLPurifier; `:::embed` YouTube/Vimeo,
-- FE “Insert HTML block” / embed wizard (permission-gated),
-- never raw iframe paste; audit on trusted saves.
+- Shipped `beta.72` (91a/b): RBAC, `:::html-safe`, `:::embed`, FE modals.
+- Pending: Tiptap parity, audit log, hostile fixtures (91c–d).
 
 See [ITERATION_91](ITERATION_91.md).
 
@@ -284,8 +280,8 @@ Deferred (post-M1+ / stretch):
 | **It.84** presentation & access expansion | ✅ | [ITERATION_84](ITERATION_84.md) — 84a–84e complete (2026-08-17) |
 | Server metrics agent (remaining It.46) | ⏳ | coordinate with It.71 |
 | **It.79** DAM video | ✅ | shipped `beta.71` — [ITERATION_79](ITERATION_79.md) |
-| **It.90** Editor Workbench | ⏳ | [ITERATION_90](ITERATION_90.md) |
-| **It.91** Trusted HTML & embeds | ⏳ 91a | [ITERATION_91](ITERATION_91.md) |
+| **It.90** Editor Workbench | ✅ | shipped `beta.72`–`73` — [ITERATION_90](ITERATION_90.md) |
+| **It.91** Trusted HTML & embeds | 🟡 91c | 91a/b shipped `beta.72` — [ITERATION_91](ITERATION_91.md) |
 | **RequestJsonBody rollout** | ✅ | all HTTP controllers + OTP/contact rate-limit middleware (`post-beta.40`) |
 | Scoped FileManager | ⏳ candidate | assign a new unique number after scope approval |
 | Frontend inline editing | ⏳ candidate | reuse existing lock/editor flow |

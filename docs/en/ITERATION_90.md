@@ -1,6 +1,6 @@
 # Iteration 90 — Editor Workbench (toolbar builder + publishing wizards)
 
-> **Status:** 🟡 partial — **90a + 90b shipped**; **90c** mermaid pending  
+> **Status:** 🟢 **90a–90e MVP shipped** — plugin Editor Tool SDK remains It.89 overlap  
 > **Priority:** 🟡 P1 — publishing UX for non-technical authors  
 > **Wave:** Editor & content authoring (post It.79)  
 > **Depends on:** [It.55](ITERATION_55.md) Tiptap · [It.79](ITERATION_79.md) DAM video · [It.60](ITERATION_60.md) editor component registry · [It.78](ITERATION_78.md) upload policy  
@@ -202,13 +202,13 @@ editor:
 
 ## Definition of Done (full iteration)
 
-- [ ] Toolbar builder replaces profile picker as primary authoring UX (MD + Tiptap).
-- [ ] Presets available; existing content opens without migration.
-- [ ] Table + callout wizards shipped.
-- [ ] Mermaid shortcode with BE SVG render.
-- [ ] Chart shortcode MVP + extension point for plugin tools.
-- [ ] Optional CodeMirror 6 markdown surface.
-- [ ] PHPUnit + Vitest + iteration gate green; SK/EN docs; CHANGELOG.
+- [x] Toolbar builder replaces profile picker as primary authoring UX (MD + Tiptap) — `beta.72`.
+- [x] Presets available; existing content opens without migration.
+- [x] Table + callout wizards shipped — `beta.72`.
+- [x] Mermaid shortcode with BE SVG render — `beta.73`.
+- [x] Chart shortcode MVP + extension point for plugin tools — `beta.73` (SDK → It.89).
+- [x] Optional CodeMirror 6 markdown surface — `beta.73`.
+- [x] PHPUnit + Vitest + iteration gate green; SK/EN docs; CHANGELOG.
 
 ## Related
 

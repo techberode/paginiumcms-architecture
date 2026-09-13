@@ -1,6 +1,6 @@
 # Iterácia 90 — Editor Workbench (toolbar builder + sprievodcovia publikovania)
 
-> **Stav:** 🟡 partial — **90a + 90b hotové**; **90c** mermaid čaká  
+> **Stav:** 🟢 **90a–90e MVP hotové** — plugin Editor Tool SDK zostáva v It.89  
 > **Priorita:** 🟡 P1 — UX publikovania pre netechnických autorov  
 > **Vlna:** Editor & obsah (po It.79)  
 > **Plná špecifikácia (EN):** [../en/ITERATION_90.md](../en/ITERATION_90.md)

@@ -2,6 +2,8 @@ import { marked } from 'marked';
 import TurndownService from 'turndown';
 import { deferCalloutShortcodes, restoreDeferredCallouts } from './calloutShortcode';
 import { deferEmbedShortcodes, restoreDeferredEmbeds } from './embedShortcode';
+import { deferChartShortcodes, restoreDeferredCharts } from './chartShortcode';
+import { deferMermaidShortcodes, restoreDeferredMermaid } from './mermaidShortcode';
 import { expandHtmlSafeShortcodes } from './htmlSafeShortcode';
 import { expandVideoShortcodes } from './videoShortcode';
 
@@ -88,10 +90,16 @@ export function markdownToHtml(markdown: string): string {
     deferCalloutShortcodes(withHtml);
   const { markdown: withEmbedPlaceholders, renders: embedRenders } =
     deferEmbedShortcodes(withCalloutPlaceholders);
-  const withVideo = expandVideoShortcodes(withEmbedPlaceholders);
+  const { markdown: withMermaidPlaceholders, renders: mermaidRenders } =
+    deferMermaidShortcodes(withEmbedPlaceholders);
+  const { markdown: withChartPlaceholders, renders: chartRenders } =
+    deferChartShortcodes(withMermaidPlaceholders);
+  const withVideo = expandVideoShortcodes(withChartPlaceholders);
 
   let html = marked.parse(withVideo, { async: false }) as string;
   html = restoreDeferredCallouts(html, calloutRenders);
+  html = restoreDeferredMermaid(html, mermaidRenders);
+  html = restoreDeferredCharts(html, chartRenders);
   html = restoreDeferredEmbeds(html, embedRenders);
 
   return html;

@@ -366,6 +366,8 @@ export const settingsSk: MessageTree = {
       "video": "Video (Media Library)",
       "table": "Tabuľky",
       "callout": "Callout bloky (note/tip/warning)",
+      "mermaid": "Mermaid diagramy",
+      "chart": "Grafy (stĺpec/čiara)",
       "horizontalRule": "Horizontálna čiara",
       "color": "Farba textu"
     }
@@ -534,6 +536,10 @@ export const settingsSk: MessageTree = {
       },
       "tabSize": {
         "label": "Veľkosť tabulátora"
+      },
+      "markdownSurface": {
+        "label": "Markdown surface",
+        "help": "native = obyčajný textarea; codemirror6 = zvýraznenie syntaxe a čísla riadkov (rovnaký uložený Markdown)."
       },
       "customComponentsEnabled": {
         "label": "Povoliť custom komponenty editora",
@@ -1691,6 +1697,10 @@ export const settingsSk: MessageTree = {
     "defaultEditor": {
       "markdown": "Markdown",
       "wysiwyg": "WYSIWYG"
+    },
+    "markdownSurface": {
+      "native": "Natívny textarea",
+      "codemirror6": "CodeMirror 6"
     },
     "jailMode": {
       "forbidden": "403 Forbidden",
