@@ -35,7 +35,7 @@ The helpers are **TypeScript only** — they are not translated. Only the messag
 5. Edit the nested object under `fields.{group}.{fieldKey}` (e.g. `fields.content.draftFullEditorState.note`).
 6. Save — file path: `frontend/src/i18n/modules/settings/{locale}.ts`.
 
-After save, reload Settings (or any admin page) to see the new copy. No PHP or schema change is required when only wording changes.
+After save, **Frontend (Admin UI)** strings merge at runtime via `GET /api/i18n/frontend-catalog` (no `npm run build` required). Reload the admin page or save again from Translations to refresh the UI. **Backend (API)** files under `backend/lang/` apply immediately to PHP `Lang::get()` responses.
 
 ---
 

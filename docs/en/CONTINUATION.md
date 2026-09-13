@@ -1,7 +1,7 @@
 # PaginiumCMS — development continuation context
 
 > **Purpose:** concise, current handoff for the next development session  
-> **Checkpoint:** September 13, 2026 · `v2.1.0-beta.74`  
+> **Checkpoint:** September 13, 2026 · `v2.1.0-beta.75`  
 > **Active phase:** **Full planned-iteration development** — stabilization freeze lifted
 
 This document replaces the old chronological “log of everything.” Historical detail remains in [`CHANGELOG.md`](../../CHANGELOG.md), [`ISSUES.md`](ISSUES.md), and individual `ITERATION_*.md` files.
@@ -28,8 +28,8 @@ Historical freeze record: [STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) (supe
 
 | Area | Status |
 |------|--------|
-| Latest tag | ✅ `v2.1.0-beta.74` — It.91c Tiptap trusted parity + audit; deploy UI hotfix |
-| Unreleased (this tree) | — **It.91d** · **It.72** S3 · **It.89** plugin SDK |
+| Latest tag | ✅ `v2.1.0-beta.75` — It.91 complete (trusted HTML/embeds + runtime i18n) |
+| Unreleased (this tree) | — **It.72** S3 remainder · **It.89** plugin SDK |
 | It.25 setup wizard | ✅ basic + M1+ (`beta.62`–`beta.66`) |
 | It.83 theme runtime | ✅ shipped `beta.59` (`terminal-breach`, `clean-journal`) |
 | It.84 / It.86 | ✅ shipped |
@@ -43,9 +43,8 @@ Do **not** invent new iteration numbers. Finish specs that already exist.
 
 | Order | Item | Why this order |
 |------:|------|----------------|
-| 1 | **It.91d** hostile fixtures + runtime i18n | Remainder after 91c `beta.74` |
-| 2 | **It.72** S3 / remote media remainder | Local driver already shipped |
-| 3 | **It.89** Plugin capability model | Safe editor-tool plugins (It.90e SDK overlap) |
+| 1 | **It.72** S3 / remote media remainder | Local driver already shipped |
+| 2 | **It.89** Plugin capability model | Safe editor-tool plugins (It.90e SDK overlap) |
 | 4 | **It.58f / 58g** layout builder remainder | Page blocks (not theme studio) |
 | 6 | **It.70** GitHub API publisher UI | Local Git already shipped |
 | 7 | **It.76 / 77** translation providers | After It.73 (shipped) |
@@ -54,7 +53,7 @@ Do **not** invent new iteration numbers. Finish specs that already exist.
 
 **Optional / later:** It.82d Origin host metrics.
 
-**Active slice:** **It.91d** — hostile fixtures + runtime i18n. **Next:** It.72 or It.89. Settings field i18n: [SETTINGS_I18N.md](SETTINGS_I18N.md).
+**Active slice:** **It.72** S3 remainder (or **It.89** plugin SDK). Settings field i18n: [SETTINGS_I18N.md](SETTINGS_I18N.md).
 
 ---
 

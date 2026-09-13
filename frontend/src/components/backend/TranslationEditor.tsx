@@ -214,6 +214,9 @@ export const TranslationEditor: React.FC = () => {
         setPolicyErrors([]);
         setPolicyErrorIndex(0);
         setRejectedPath(null);
+        if (source === 'frontend') {
+          window.dispatchEvent(new CustomEvent('paginium:i18n-runtime-reload'));
+        }
         toast.success(t('translations.toast.saveSuccess'));
         const backupList = await translationsApi.getBackups(currentPath);
         setBackups(backupList);

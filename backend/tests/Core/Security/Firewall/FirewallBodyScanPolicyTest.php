@@ -38,6 +38,7 @@ final class FirewallBodyScanPolicyTest extends TestCase
         $this->assertFalse($this->policy->shouldScan('PUT', '/api/articles/my-slug', true));
         $this->assertFalse($this->policy->shouldScan('PUT', '/api/drafts/page/foo', true));
         $this->assertFalse($this->policy->shouldScan('POST', '/api/admin/code-editor/save', true));
+        $this->assertFalse($this->policy->shouldScan('POST', '/api/admin/translations/save', true));
     }
 
     public function testExemptsContentMetaAdminRoutes(): void
