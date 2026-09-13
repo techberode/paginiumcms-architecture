@@ -23,6 +23,8 @@ final class ContentSecuritySanitizer
             return $html;
         }
 
+        [$html, $trustedFigures] = $this->preserveTrustedEditorFigures($html);
+
         if ($this->isTruthy($cfg['stripExternalEntities'] ?? true)) {
             $html = preg_replace('/<!DOCTYPE[^>]*>/i', '', $html) ?? $html;
             $html = preg_replace('/<!ENTITY[^>]*>/i', '', $html) ?? $html;
@@ -39,7 +41,44 @@ final class ContentSecuritySanitizer
             $sanitized = preg_replace('/<script\b[^>]*>.*?<\/script>/is', '', $sanitized) ?? $sanitized;
         }
 
-        return $sanitized;
+        return $this->restoreTrustedEditorFigures($sanitized, $trustedFigures);
+    }
+
+    /**
+     * @return array{0: string, 1: array<string, string>}
+     */
+    private function preserveTrustedEditorFigures(string $html): array
+    {
+        /** @var array<string, string> $blocks */
+        $blocks = [];
+        $index = 0;
+
+        $result = preg_replace_callback(
+            '/<figure\s+class="paginium-(?:mermaid|chart)"[^>]*>[\s\S]*?<\/figure>/i',
+            static function (array $matches) use (&$blocks, &$index): string {
+                $key = '<!-- paginium-editor-figure-preserve:' . $index . ' -->';
+                $blocks[$key] = $matches[0];
+                $index++;
+
+                return $key;
+            },
+            $html
+        );
+
+        return [is_string($result) ? $result : $html, $blocks];
+    }
+
+    /**
+     * @param array<string, string> $blocks
+     */
+    private function restoreTrustedEditorFigures(string $html, array $blocks): string
+    {
+        foreach ($blocks as $key => $fragment) {
+            $html = str_replace($key, $fragment, $html);
+            $html = str_replace('<p>' . $key . '</p>', $fragment, $html);
+        }
+
+        return $html;
     }
 
     /**

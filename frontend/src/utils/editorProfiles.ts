@@ -14,6 +14,8 @@ export type EditorCapability =
   | 'video'
   | 'table'
   | 'callout'
+  | 'mermaid'
+  | 'chart'
   | 'horizontalRule'
   | 'color';
 
@@ -44,6 +46,8 @@ export const EDITOR_CAPABILITIES: EditorCapability[] = [
   'video',
   'table',
   'callout',
+  'mermaid',
+  'chart',
   'horizontalRule',
   'color',
 ];
@@ -241,6 +245,8 @@ export const MARKDOWN_TOOLBAR_CAPABILITIES: EditorCapability[] = [
   'video',
   'table',
   'callout',
+  'mermaid',
+  'chart',
 ];
 
 /** Built-in tools available on the WYSIWYG toolbar (It.90). */
@@ -351,6 +357,8 @@ export function countMarkdownToolbarActions(profile: EditorProfileDefinition): n
     codeBlock: 1,
     table: 1,
     callout: 1,
+    mermaid: 1,
+    chart: 1,
   };
 
   return profile.capabilities.reduce((sum, cap) => sum + (map[cap] ?? 0), 0);

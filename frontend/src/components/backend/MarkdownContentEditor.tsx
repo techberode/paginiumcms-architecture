@@ -17,11 +17,19 @@ import {
   Youtube,
   Table2,
   Megaphone,
+  GitBranch,
+  BarChart2,
 } from 'lucide-react';
 import { CalloutInsertModal } from './CalloutInsertModal';
+import { ChartInsertModal } from './ChartInsertModal';
 import { EmbedInsertModal } from './EmbedInsertModal';
 import { HtmlBlockInsertModal } from './HtmlBlockInsertModal';
 import { TableInsertModal } from './TableInsertModal';
+import { MermaidInsertModal } from './MermaidInsertModal';
+import {
+  MarkdownCodeMirrorEditor,
+  type MarkdownEditorSurfaceHandle,
+} from './MarkdownCodeMirrorEditor';
 import type { ExternalEmbedProvider } from '../../utils/embedShortcode';
 import { markdownToHtml, wrapSelection, insertAtCursor } from '../../utils/contentEditor';
 import { sanitizePublicHtml } from '../../utils/sanitizeHtml';
@@ -68,12 +76,16 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
   const { settings } = useSettingsContext();
   const editorSettings = settings.editor as Record<string, unknown>;
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const surfaceRef = useRef<MarkdownEditorSurfaceHandle>(null);
+  const useCodeMirror = editorSettings?.markdownSurface === 'codemirror6';
   const [previewMode, setPreviewMode] = useState<PreviewMode>('split');
   const [customComponents, setCustomComponents] = useState<EditorComponentRegistration[]>([]);
   const [htmlBlockOpen, setHtmlBlockOpen] = useState(false);
   const [embedOpen, setEmbedOpen] = useState(false);
   const [tableOpen, setTableOpen] = useState(false);
   const [calloutOpen, setCalloutOpen] = useState(false);
+  const [mermaidOpen, setMermaidOpen] = useState(false);
+  const [chartOpen, setChartOpen] = useState(false);
 
   useEffect(() => {
     void loadAllowedEditorComponents(profile, editorSettings).then(setCustomComponents);
@@ -83,11 +95,21 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
 
   const applyEdit = (mutator: (text: string, start: number, end: number) => { next: string; cursor: number }) => {
     const el = textareaRef.current;
-    const start = el?.selectionStart ?? value.length;
-    const end = el?.selectionEnd ?? value.length;
-    const { next, cursor } = mutator(value, start, end);
+    const selection =
+      useCodeMirror && surfaceRef.current
+        ? surfaceRef.current.getSelection()
+        : {
+            start: el?.selectionStart ?? value.length,
+            end: el?.selectionEnd ?? value.length,
+          };
+    const { next, cursor } = mutator(value, selection.start, selection.end);
     onChange(next);
     requestAnimationFrame(() => {
+      if (useCodeMirror && surfaceRef.current) {
+        surfaceRef.current.setCursor(cursor);
+        surfaceRef.current.focus();
+        return;
+      }
       if (!el) return;
       el.focus();
       el.setSelectionRange(cursor, cursor);
@@ -225,6 +247,14 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
             toolbarButton(t('editor.callout.toolbar'), <Megaphone size={16} />, () =>
               setCalloutOpen(true)
             )}
+          {profileAllows(profile, 'mermaid') &&
+            toolbarButton(t('editor.mermaid.toolbar'), <GitBranch size={16} />, () =>
+              setMermaidOpen(true)
+            )}
+          {profileAllows(profile, 'chart') &&
+            toolbarButton(t('editor.chart.toolbar'), <BarChart2 size={16} />, () =>
+              setChartOpen(true)
+            )}
           {customComponents.length > 0 && (
             <span className="w-px h-6 bg-slate-300 dark:bg-slate-600 mx-1" />
           )}
@@ -260,25 +290,40 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
           previewMode === 'split' ? 'md:grid-cols-2' : 'grid-cols-1'
         } min-h-[420px]`}
       >
-        {previewMode !== 'preview' && (
-          <textarea
-            ref={textareaRef}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            onPaste={(event) => {
-              const pasted = event.clipboardData.getData('text/plain');
-              if (/<[a-z][^>]*>/i.test(pasted)) {
-                event.preventDefault();
-                onBlockedAction?.(t('editor.markdownContent.blockedHtmlPaste'));
-              }
-            }}
-            disabled={readOnly}
-            spellCheck={spellCheck}
-            className="w-full h-full min-h-[420px] resize-y p-4 font-mono text-sm bg-transparent outline-none border-0 border-r dark:border-slate-800"
-            style={{ tabSize }}
-            placeholder={t('editor.markdownContent.placeholder')}
-          />
-        )}
+        {previewMode !== 'preview' &&
+          (useCodeMirror ? (
+            <div className="min-h-[420px] border-r dark:border-slate-800 p-2">
+              <MarkdownCodeMirrorEditor
+                ref={surfaceRef}
+                value={value}
+                onChange={onChange}
+                readOnly={readOnly}
+                tabSize={tabSize}
+                placeholder={t('editor.markdownContent.placeholder')}
+                onPasteBlocked={() =>
+                  onBlockedAction?.(t('editor.markdownContent.blockedHtmlPaste'))
+                }
+              />
+            </div>
+          ) : (
+            <textarea
+              ref={textareaRef}
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              onPaste={(event) => {
+                const pasted = event.clipboardData.getData('text/plain');
+                if (/<[a-z][^>]*>/i.test(pasted)) {
+                  event.preventDefault();
+                  onBlockedAction?.(t('editor.markdownContent.blockedHtmlPaste'));
+                }
+              }}
+              disabled={readOnly}
+              spellCheck={spellCheck}
+              className="w-full h-full min-h-[420px] resize-y p-4 font-mono text-sm bg-transparent outline-none border-0 border-r dark:border-slate-800"
+              style={{ tabSize }}
+              placeholder={t('editor.markdownContent.placeholder')}
+            />
+          ))}
 
         {previewMode !== 'edit' && (
           <div className="p-4 overflow-y-auto bg-slate-50/70 dark:bg-slate-900/40">
@@ -323,6 +368,20 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
       <CalloutInsertModal
         open={calloutOpen}
         onClose={() => setCalloutOpen(false)}
+        onInsert={(block) =>
+          applyEdit((text, start, end) => insertAtCursor(text, start, end, block))
+        }
+      />
+      <MermaidInsertModal
+        open={mermaidOpen}
+        onClose={() => setMermaidOpen(false)}
+        onInsert={(block) =>
+          applyEdit((text, start, end) => insertAtCursor(text, start, end, block))
+        }
+      />
+      <ChartInsertModal
+        open={chartOpen}
+        onClose={() => setChartOpen(false)}
         onInsert={(block) =>
           applyEdit((text, start, end) => insertAtCursor(text, start, end, block))
         }

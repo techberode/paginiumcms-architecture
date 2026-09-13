@@ -1,7 +1,7 @@
 # PaginiumCMS — development continuation context
 
 > **Purpose:** concise, current handoff for the next development session  
-> **Checkpoint:** September 12, 2026 · `v2.1.0-beta.72`  
+> **Checkpoint:** September 13, 2026 · `v2.1.0-beta.73`  
 > **Active phase:** **Full planned-iteration development** — stabilization freeze lifted
 
 This document replaces the old chronological “log of everything.” Historical detail remains in [`CHANGELOG.md`](../../CHANGELOG.md), [`ISSUES.md`](ISSUES.md), and individual `ITERATION_*.md` files.
@@ -28,8 +28,8 @@ Historical freeze record: [STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) (supe
 
 | Area | Status |
 |------|--------|
-| Latest tag | ✅ `v2.1.0-beta.72` — It.90a/b, It.91a/b, editor leave autosave, deploy/CSP hotfix |
-| Unreleased (this tree) | — **It.90c** Mermaid · **It.91c** Tiptap parity · **It.72** / **It.89** |
+| Latest tag | ✅ `v2.1.0-beta.73` — It.90c–e (Mermaid, charts, CodeMirror 6) |
+| Unreleased (this tree) | — **It.91c** Tiptap parity · **It.72** S3 remainder · **It.89** plugin SDK |
 | It.25 setup wizard | ✅ basic + M1+ (`beta.62`–`beta.66`) |
 | It.83 theme runtime | ✅ shipped `beta.59` (`terminal-breach`, `clean-journal`) |
 | It.84 / It.86 | ✅ shipped |
@@ -43,11 +43,10 @@ Do **not** invent new iteration numbers. Finish specs that already exist.
 
 | Order | Item | Why this order |
 |------:|------|----------------|
-| 1 | **It.91** Trusted HTML & external embeds | Admin/dev HTML + YouTube; parallel with It.90 |
-| 2 | **It.90** Editor Workbench (toolbar builder + wizards) | Publishing UX; extends It.79 editor extensions |
-| 3 | **It.72** S3 / remote media remainder | Local driver already shipped |
-| 4 | **It.89** Plugin capability model | Safe editor-tool plugins (90e) |
-| 5 | **It.58f / 58g** layout builder remainder | Page blocks (not theme studio) |
+| 1 | **It.91c–d** Tiptap parity + audit log | Remainder after 91a/b shipped `beta.72` |
+| 2 | **It.72** S3 / remote media remainder | Local driver already shipped |
+| 3 | **It.89** Plugin capability model | Safe editor-tool plugins (It.90e SDK overlap) |
+| 4 | **It.58f / 58g** layout builder remainder | Page blocks (not theme studio) |
 | 6 | **It.70** GitHub API publisher UI | Local Git already shipped |
 | 7 | **It.76 / 77** translation providers | After It.73 (shipped) |
 | 8 | **It.75** CMS-aware AI agent | Last: proposals only, human apply |
@@ -55,7 +54,7 @@ Do **not** invent new iteration numbers. Finish specs that already exist.
 
 **Optional / later:** It.82d Origin host metrics.
 
-**Active slice:** **It.90c** — Mermaid shortcode + BE SVG. **Next:** It.91c Tiptap parity + audit log. Settings field i18n: [SETTINGS_I18N.md](SETTINGS_I18N.md).
+**Active slice:** **It.91c** — Tiptap parity + audit log. **Next:** It.72 or It.89. Settings field i18n: [SETTINGS_I18N.md](SETTINGS_I18N.md).
 
 ---
 
@@ -88,7 +87,9 @@ curl -s http://127.0.0.1:8080/api/setup/preflight | jq .
 | Doc | Content |
 |-----|---------|
 | [ITERATION_78.md](ITERATION_78.md) / [ITERATION_79.md](ITERATION_79.md) | Upload policy + DAM video (shipped `beta.70`–`71`) |
-| [ITERATION_90.md](ITERATION_90.md) / [ITERATION_91.md](ITERATION_91.md) | Editor Workbench · trusted HTML & embeds |
+| [ITERATION_90.md](ITERATION_90.md) | Editor Workbench (shipped `beta.72`–`73`) |
+| [ITERATION_91.md](ITERATION_91.md) | Trusted HTML & embeds (91a/b shipped `beta.72`; 91c pending) |
+| [RELEASE_2_1_0_BETA_73.md](RELEASE_2_1_0_BETA_73.md) | Latest release notes |
 | [ITERATION_88.md](ITERATION_88.md) | Theme Studio (shipped `beta.69`) |
 | [ITERATION_87.md](ITERATION_87.md) | Project planner + UX remainder (shipped) |
 | [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) | Full remaining scope |

@@ -366,6 +366,8 @@ export const settingsEn: MessageTree = {
       "video": "Video (Media Library)",
       "table": "Tables",
       "callout": "Callouts (note/tip/warning)",
+      "mermaid": "Mermaid diagrams",
+      "chart": "Charts (bar/line)",
       "horizontalRule": "Horizontal rule",
       "color": "Text color"
     }
@@ -534,6 +536,10 @@ export const settingsEn: MessageTree = {
       },
       "tabSize": {
         "label": "Tab size"
+      },
+      "markdownSurface": {
+        "label": "Markdown surface",
+        "help": "native = plain textarea; codemirror6 = syntax highlight and line numbers (same stored Markdown)."
       },
       "customComponentsEnabled": {
         "label": "Enable custom editor components",
@@ -1691,6 +1697,10 @@ export const settingsEn: MessageTree = {
     "defaultEditor": {
       "markdown": "Markdown",
       "wysiwyg": "WYSIWYG"
+    },
+    "markdownSurface": {
+      "native": "Native textarea",
+      "codemirror6": "CodeMirror 6"
     },
     "jailMode": {
       "forbidden": "403 Forbidden",

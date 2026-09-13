@@ -8,6 +8,8 @@ use function utf8_normalize;
 use PaginiumCMS\Core\Editor\Services\CalloutShortcode;
 use PaginiumCMS\Core\Editor\Services\ExternalEmbedShortcode;
 use PaginiumCMS\Core\Editor\Services\HtmlSafeShortcode;
+use PaginiumCMS\Core\Editor\Services\ChartShortcode;
+use PaginiumCMS\Core\Editor\Services\MermaidShortcode;
 use PaginiumCMS\Core\Editor\Services\VideoEmbedShortcode;
 use PaginiumCMS\Core\FlatFile\Contracts\MarkdownContentParserInterface;
 use League\CommonMark\Environment\Environment;
@@ -27,6 +29,8 @@ class MarkdownContentParser implements MarkdownContentParserInterface
         private HtmlSafeShortcode $htmlSafeShortcode = new HtmlSafeShortcode(),
         private ExternalEmbedShortcode $externalEmbedShortcode = new ExternalEmbedShortcode(),
         private CalloutShortcode $calloutShortcode = new CalloutShortcode(),
+        private MermaidShortcode $mermaidShortcode = new MermaidShortcode(),
+        private ChartShortcode $chartShortcode = new ChartShortcode(),
     ) {
         $config = [
             'html_input' => 'allow',
@@ -56,11 +60,15 @@ class MarkdownContentParser implements MarkdownContentParserInterface
     {
         [$prepared, $deferredEmbeds] = $this->externalEmbedShortcode->deferBlocks($markdown);
         [$prepared, $deferredCallouts] = $this->calloutShortcode->deferBlocks($prepared);
+        [$prepared, $deferredMermaid] = $this->mermaidShortcode->deferBlocks($prepared);
+        [$prepared, $deferredCharts] = $this->chartShortcode->deferBlocks($prepared);
         $prepared = $this->htmlSafeShortcode->expand($prepared);
         $prepared = $this->videoShortcode->expand($prepared);
 
         $html = $this->converter->convert($prepared)->getContent();
         $html = $this->calloutShortcode->restoreDeferred($html, $deferredCallouts);
+        $html = $this->mermaidShortcode->restoreDeferred($html, $deferredMermaid);
+        $html = $this->chartShortcode->restoreDeferred($html, $deferredCharts);
 
         return $this->externalEmbedShortcode->restoreDeferred($html, $deferredEmbeds);
     }

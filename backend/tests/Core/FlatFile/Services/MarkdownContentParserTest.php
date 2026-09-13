@@ -162,4 +162,31 @@ MD;
         $this->assertStringContainsString('paginium-callout--tip', $html);
         $this->assertStringContainsString('Remember to save.', $html);
     }
+
+    public function testParseMermaidShortcode(): void
+    {
+        $markdown = <<<MD
+:::mermaid
+flowchart TD
+    A --> B
+:::
+MD;
+        $html = $this->parser->parse($markdown);
+
+        $this->assertStringContainsString('paginium-mermaid', $html);
+        $this->assertStringContainsString('<svg', $html);
+    }
+
+    public function testParseChartShortcode(): void
+    {
+        $markdown = <<<MD
+:::chart
+{"type":"bar","labels":["A","B"],"values":[10,20]}
+:::
+MD;
+        $html = $this->parser->parse($markdown);
+
+        $this->assertStringContainsString('paginium-chart', $html);
+        $this->assertStringContainsString('<svg', $html);
+    }
 }

@@ -28,6 +28,8 @@ final class EditorCapabilities
         'video',
         'table',
         'callout',
+        'mermaid',
+        'chart',
         'horizontalRule',
         'color',
     ];

@@ -15,6 +15,8 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.73`](#release-2-1-0-beta-73) | 2026-09-13 | It.90c–e Mermaid, charts, CodeMirror 6 |
+| [`2.1.0-beta.72`](#release-2-1-0-beta-72) | 2026-09-12 | It.90a/b, It.91a/b, editor leave autosave, deploy/CSP hotfix |
 | [`2.1.0-beta.71`](#release-2-1-0-beta-71) | 2026-09-12 | It.79 DAM video, stack bootstrap permissions, editor extensions |
 | [`2.1.0-beta.70`](#release-2-1-0-beta-70) | 2026-09-12 | It.78 upload policy, system update banner/deploy readiness fixes |
 | [`2.1.0-beta.69`](#release-2-1-0-beta-69) | 2026-09-10 | It.88 Theme Studio, backup scope + incremental snapshots |
@@ -149,8 +151,27 @@ This canonical history records release facts supported by the supplied `CHANGELO
 ### Planning
 
 - **It.91c–d** — Tiptap parity, audit log, hostile fixtures. Spec: [ITERATION_91.md](docs/en/ITERATION_91.md).
-- **It.90c** — Mermaid shortcode. Spec: [ITERATION_90.md](docs/en/ITERATION_90.md).
-- **Queue:** It.90c → It.72 remainder → It.89 → 58f/g → 70 → 76/77 → 75 → 48. Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+- **It.89** — Plugin capability model + Editor Tool SDK (manifest-registered custom tools). Spec: [ITERATION_89.md](docs/en/ITERATION_89.md).
+- **Queue:** It.72 remainder → It.89 → 58f/g → 70 → 76/77 → 75 → 48. Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+
+---
+
+<a id="release-2-1-0-beta-73"></a>
+
+## [2.1.0-beta.73] – 2026-09-13
+
+It.90c–e — Mermaid diagrams, chart blocks, optional CodeMirror 6 markdown surface
+
+### Added
+
+- **It.90c Mermaid diagrams** — `:::mermaid` shortcode; server-side SVG via `atelier/diagram` (`MermaidDiagramRenderer`, `MermaidSvgSanitizer`); `MermaidInsertModal`; trusted SVG preserved through `ContentSecuritySanitizer`; toolbar capability `mermaid`.
+- **It.90d CodeMirror 6 surface** — Settings `editor.markdownSurface` (`native` | `codemirror6`); optional syntax highlight + line numbers via `@uiw/react-codemirror`; same Markdown SSOT.
+- **It.90e Chart blocks** — `:::chart` shortcode with validated JSON schema (bar/line, max 12 points); server SVG via `ChartSvgRenderer`; `ChartInsertModal`; toolbar capability `chart`.
+
+### Tests
+
+- PHPUnit: `MermaidShortcodeTest`, `MermaidDiagramRendererTest`, `ChartShortcodeTest`, `ChartSvgRendererTest`; parser + sanitizer regressions.
+- Vitest: `mermaidShortcode.test.ts`, `chartShortcode.test.ts`.
 
 ---
 
