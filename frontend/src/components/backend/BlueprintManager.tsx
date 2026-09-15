@@ -1,6 +1,6 @@
 // frontend/src/components/backend/BlueprintManager.tsx
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Layers, Plus, Save, Trash2 } from 'lucide-react';
+import { Layers, Plus, Trash2 } from 'lucide-react';
 import {
   blueprintApi,
   type BlueprintDefinition,
@@ -10,6 +10,7 @@ import {
 import { DynamicForm } from '../blueprint/DynamicForm';
 import { useToast } from '../../hooks/useToast';
 import { useI18n } from '../../context/I18nContext';
+import { AdminFormActions } from './AdminFormActions';
 
 export const BlueprintManager: React.FC = () => {
   const { t } = useI18n();
@@ -214,14 +215,12 @@ export const BlueprintManager: React.FC = () => {
               </div>
             ))}
 
-            <button
-              type="button"
-              disabled={saving}
-              onClick={() => void handleSave()}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white font-bold"
-            >
-              <Save size={16} /> {t('platform.blueprint.save')}
-            </button>
+            <AdminFormActions
+              onSave={() => void handleSave()}
+              saveLabel={t('platform.blueprint.save')}
+              saveDisabled={saving}
+              saveBusy={saving}
+            />
           </section>
 
           <section className="rounded-2xl border border-slate-200 dark:border-slate-700 p-5 space-y-4">

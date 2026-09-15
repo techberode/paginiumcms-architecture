@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ADMIN_NAV_ANALYTICS_ITEM, ADMIN_NAV_PRIMARY_ITEM, ADMIN_NAV_SECTIONS } from './adminNavSections';
 import { repositoryDoc } from './repositoryDocs';
+import { isAdminAppRoute } from '../utils/appRoutes';
 
 /** Routes registered under AdminShell in App.tsx (keep in sync when adding nav items). */
 const ADMIN_ROUTES = new Set([
@@ -11,6 +12,7 @@ const ADMIN_ROUTES = new Set([
   '/categories',
   '/platform/editorial-calendar',
   '/platform/project-planner',
+  '/platform/time-tracker',
   '/media',
   '/gallery',
   '/navigation',
@@ -20,16 +22,22 @@ const ADMIN_ROUTES = new Set([
   '/settings',
   '/translations',
   '/users',
+  '/platform/teams',
+  '/platform/events',
   '/platform/api-keys',
   '/platform/redirects',
   '/platform/webhooks',
   '/platform/shortcodes',
+  '/platform/widgets',
   '/platform/snippets',
   '/notifications',
   '/scheduler',
   '/platform/update',
   '/platform/origin',
+  '/account',
+  '/account/public',
   '/account/security',
+  '/account/preferences',
   '/code-editor',
   '/blueprints',
   '/extensions',
@@ -55,6 +63,12 @@ describe('admin navigation wiring', () => {
 
     for (const href of hrefs) {
       expect(ADMIN_ROUTES.has(href), `missing route for nav href ${href}`).toBe(true);
+    }
+  });
+
+  it('keeps every registered admin route classified as an admin app route', () => {
+    for (const href of ADMIN_ROUTES) {
+      expect(isAdminAppRoute(href), href).toBe(true);
     }
   });
 

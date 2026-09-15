@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navbar } from '../../components/frontend/Navbar';
 import { Footer } from '../../components/frontend/Footer';
+import { PublicHeaderStack } from '../../components/layout/PublicHeaderStack';
 import type { ThemeShellProps } from '../../theme/themeShellRegistry';
 import './terminal-breach.css';
 
@@ -10,6 +11,10 @@ export const TerminalBreachShell: React.FC<ThemeShellProps> = ({
   onOpenSearch,
   showPrimaryNav,
   navLayout,
+  chrome,
+  secondaryItems,
+  wideHeader,
+  headerPrefix,
 }) => (
   <div className="pg-tb-shell">
     <div className="pg-tb-chrome" aria-hidden="false">
@@ -21,11 +26,17 @@ export const TerminalBreachShell: React.FC<ThemeShellProps> = ({
       </div>
       <span className="pg-tb-site">{siteName}</span>
     </div>
-    <Navbar
-      onOpenSearch={onOpenSearch}
-      showPrimaryNav={showPrimaryNav}
-      navLayout={navLayout}
-    />
+    <PublicHeaderStack>
+      {headerPrefix}
+      <Navbar
+        onOpenSearch={onOpenSearch}
+        showPrimaryNav={showPrimaryNav}
+        navLayout={navLayout}
+        chrome={chrome}
+        secondaryItems={secondaryItems}
+        wideHeader={wideHeader}
+      />
+    </PublicHeaderStack>
     <div className="pg-tb-main flex-1 min-w-0">{children}</div>
     <Footer />
     <div className="pg-tb-status" role="status">

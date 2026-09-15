@@ -85,4 +85,20 @@ final class SystemDeployServiceTest extends TestCase
             'allowDeployMain' => true,
         ]);
     }
+
+    public function testBuildDeployEnvironmentPassesGithubTokenForHttpsFetch(): void
+    {
+        $settings = $this->container()->get(SettingsRepositoryInterface::class);
+        $service = new SystemDeployService($settings, dirname(__DIR__, 4));
+        $config = array_merge($settings->group('systemUpdate'), [
+            'githubToken' => 'ghp_test_token',
+            'stackDir' => '/var/lib/docker/compose/paginiumcms',
+        ]);
+
+        $env = $service->buildDeployEnvironment($config, dirname(__DIR__, 4), 'v2.1.0-beta.76');
+
+        $this->assertSame('ghp_test_token', $env['GITHUB_DEPLOY_TOKEN'] ?? null);
+        $this->assertSame('1', $env['DEPLOY_FORCE'] ?? null);
+        $this->assertArrayNotHasKey('githubToken', $env);
+    }
 }

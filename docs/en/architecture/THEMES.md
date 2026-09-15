@@ -170,7 +170,24 @@ Example manifest:
 
 A theme manifest must not contain secrets or arbitrary remote script URLs.
 
-**Planned (It.87 Track C):** opt-in allow-list for static `.js` under `assets/` only — declared in `theme.json`, served with **SRI** and **CSP script hashes**; site setting `appearance.themeScriptsEnabled` default **false**. See [ITERATION_87.md](../ITERATION_87.md#track-c--theme-static-js-allow-list-87k87m). This does **not** enable inline scripts, content `<script>`, or CDN URLs.
+**Shipped (It.87 Track C):** opt-in allow-list for static `.js` under `assets/` only — declared in `theme.json`, served with **SRI** and **CSP script hashes**; site setting `appearance.themeScriptsEnabled` default **false**. See [ITERATION_87.md](../ITERATION_87.md#track-c--theme-static-js-allow-list-87k87m). This does **not** enable inline scripts, content `<script>`, or CDN URLs.
+
+### Zero-JS theme chrome (default)
+
+Visual effects in a theme or layout shortcode **must not** require JavaScript. Keep `themeScriptsEnabled` off unless there is a reviewed, allow-listed file that cannot be expressed in CSS.
+
+| Effect | Do this | Do not do this |
+|--------|---------|----------------|
+| Hover / focus animations | CSS `transition`, `@keyframes`, `:hover`, `:focus-visible` | Theme `.js` animation libraries |
+| Dropdown / hamburger / simple modal | HTML + `:focus-within` or `<details>` / `<dialog>` where the platform allows; `:checked` only as a last resort | `fetch-cloud.js`, Workers, or Core widget iframe |
+| Dark mode as a **theme skin** | Tokens + `html[data-theme]` already applied by Core; optional `:has()` / media `prefers-color-scheme` | Extra theme script that writes `localStorage` |
+| Parallax / scroll candy | Prefer none or a light `background-attachment` / `@media (prefers-reduced-motion: reduce)` | JS scroll listeners in the theme |
+
+**Honest limits:** the public site is already a Core React SPA (`script-src 'self'`). Zero-JS means **themes, snippets, and author HTML** add no extra executable surface — not that the browser downloads zero bytes of JS. Checkbox-hack menus are acceptable for decorative chrome; accessible dialogs (focus trap, Escape, `aria-modal`) belong in Core components, not in untrusted CSS hacks.
+
+Do **not** send a hamburger menu or dark-mode toggle to an isolated origin / Cloudflare Worker. That track is live data and untrusted compute, not CSS.
+
+See also isolated widgets: [ISOLATED_ORIGIN.md](ISOLATED_ORIGIN.md). It.93 is Falcon-inspired **admin** (chrome + apps), not theme JS.
 
 ---
 

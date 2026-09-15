@@ -54,6 +54,7 @@ final class CodePolicyEngine implements CodePolicyEngineInterface
         'themes/',
         'data/layout/',
         'data/shortcodes/',
+        'data/widgets/',
         'data/plugins/',
         'untrusted://',
     ];

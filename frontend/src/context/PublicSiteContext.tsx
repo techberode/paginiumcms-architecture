@@ -1,7 +1,7 @@
 // frontend/src/context/PublicSiteContext.tsx
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import apiClient from '../api/client';
-import { getNavigation } from '../api/navigation';
+import { getNavigation, getSecondaryNavigation } from '../api/navigation';
 import { Article, Page } from '../api/types';
 import { useSettingsContext } from './SettingsContext';
 import { debugLogProvider } from '../utils/debugLog';
@@ -22,6 +22,7 @@ export interface PublicNavItem {
   previewOnHover?: boolean;
   previewScale?: number;
   thumbnailSize?: 'sm' | 'md' | 'lg';
+  enabled?: boolean;
   children?: PublicNavItem[];
 }
 
@@ -30,6 +31,7 @@ interface PublicSiteContextType {
   articles: Article[];
   loading: boolean;
   navigation: PublicNavItem[];
+  secondaryNavigation: PublicNavItem[];
   siteTitle: string;
   siteTagline: string;
   footerText: string;
@@ -79,15 +81,17 @@ export const PublicSiteProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [pages, setPages] = useState<Page[]>([]);
   const [articles, setArticles] = useState<Article[]>([]);
   const [navigationItems, setNavigationItems] = useState<NavigationItem[]>([]);
+  const [secondaryItems, setSecondaryItems] = useState<NavigationItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
     setLoading(true);
     debugLogProvider('publicSite', 'refresh.start');
     try {
-      const [pagesRes, navItems] = await Promise.all([
+      const [pagesRes, navItems, secondaryNav] = await Promise.all([
         apiClient.get<Page[]>('/api/pages'),
         getNavigation(),
+        getSecondaryNavigation(),
       ]);
       const publishedPages = pagesRes.success ? (pagesRes.data || []).filter((p) => p.status === 'published') : [];
       if (pagesRes.success) {
@@ -99,6 +103,7 @@ export const PublicSiteProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       } else {
         setNavigationItems([]);
       }
+      setSecondaryItems(secondaryNav);
       debugLogProvider('publicSite', 'refresh.done', {
         pages: publishedPages.length,
         articles: 0,
@@ -140,12 +145,18 @@ export const PublicSiteProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     return buildNavigation(pages, locale).map((item) => ({ ...item, children: [] }));
   }, [navigationItems, pages, locale]);
 
+  const secondaryNavigation = useMemo(
+    () => mapNavigationTreeToPublic(buildNavigationTree(secondaryItems)),
+    [secondaryItems]
+  );
+
   const value = useMemo(
     () => ({
       pages,
       articles,
       loading,
       navigation,
+      secondaryNavigation,
       siteTitle: siteName,
       siteTagline: String(general?.siteDescription ?? translate(locale, 'public.defaults.siteTagline')),
       footerText: translate(locale, 'public.footer.copyright', {
@@ -156,7 +167,19 @@ export const PublicSiteProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       getPageBySlug,
       getArticleBySlug,
     }),
-    [pages, articles, loading, navigation, general, locale, siteName, refresh, getPageBySlug, getArticleBySlug]
+    [
+      pages,
+      articles,
+      loading,
+      navigation,
+      secondaryNavigation,
+      general,
+      locale,
+      siteName,
+      refresh,
+      getPageBySlug,
+      getArticleBySlug,
+    ]
   );
 
   return <PublicSiteContext.Provider value={value}>{children}</PublicSiteContext.Provider>;

@@ -264,6 +264,28 @@ class UserRepository
                 $user->setName($value);
             } elseif ($key === 'bio') {
                 $user->setBio(is_string($value) ? $value : '');
+            } elseif ($key === 'jobTitle') {
+                $user->setJobTitle(is_string($value) ? $value : '');
+            } elseif ($key === 'phone') {
+                $user->setPhone(is_string($value) ? $value : '');
+            } elseif ($key === 'timezone') {
+                $user->setTimezone(is_string($value) ? $value : '');
+            } elseif ($key === 'locale') {
+                $user->setLocale(is_string($value) ? $value : '');
+            } elseif ($key === 'notifyFailedLogin') {
+                $user->setNotifyFailedLogin((bool) $value);
+            } elseif ($key === 'notifySecurityIncident') {
+                $user->setNotifySecurityIncident((bool) $value);
+            } elseif ($key === 'address') {
+                $user->setAddress(UserProfileFields::normalizeAddress($value));
+            } elseif ($key === 'experience') {
+                $user->setExperience(UserProfileFields::normalizeExperience($value));
+            } elseif ($key === 'education') {
+                $user->setEducation(UserProfileFields::normalizeEducation($value));
+            } elseif ($key === 'socialAccounts') {
+                $user->setSocialAccounts(UserProfileFields::normalizeSocialAccounts($value));
+            } elseif ($key === 'publish') {
+                $user->setPublish(UserProfileFields::normalizePublish($value));
             } elseif ($key === 'avatarUrl') {
                 $user->setAvatarUrl(is_string($value) ? $value : null);
             } elseif ($key === 'username') {
@@ -308,6 +330,17 @@ class UserRepository
             'roles' => $user->getRoles(),
             'name' => $user->getName(),
             'bio' => $user->getBio(),
+            'jobTitle' => $user->getJobTitle(),
+            'phone' => $user->getPhone(),
+            'timezone' => $user->getTimezone(),
+            'locale' => $user->getLocale(),
+            'notifyFailedLogin' => $user->getNotifyFailedLogin(),
+            'notifySecurityIncident' => $user->getNotifySecurityIncident(),
+            'address' => $user->getAddress(),
+            'experience' => $user->getExperience(),
+            'education' => $user->getEducation(),
+            'socialAccounts' => $user->getSocialAccounts(),
+            'publish' => $user->getPublish(),
             'avatarUrl' => $user->getAvatarUrl(),
             'active' => $user->isActive(),
             'twoFactorEnabled' => $user->isTwoFactorEnabled(),

@@ -1,6 +1,7 @@
 import React from 'react';
 import type { NavigationItem, NavigationIconType, NavigationThumbnailSize } from '../../api/navigation';
 import { resolveMediaUrl } from '../../api/media';
+import { LucideIconPicker } from './LucideIconPicker';
 import { resolveNavigationIconComponent } from '../../utils/navigationRich';
 import { useI18n } from '../../context/I18nContext';
 
@@ -12,7 +13,6 @@ interface NavigationItemRichFieldsProps {
 
 const ICON_TYPES: NavigationIconType[] = ['none', 'lucide', 'media'];
 const THUMBNAIL_SIZES: NavigationThumbnailSize[] = ['sm', 'md', 'lg'];
-const LUCIDE_SUGGESTIONS = ['Home', 'BookOpen', 'FileText', 'Mail', 'Newspaper', 'Sparkles'];
 
 export const NavigationItemRichFields: React.FC<NavigationItemRichFieldsProps> = ({
   item,
@@ -58,21 +58,10 @@ export const NavigationItemRichFields: React.FC<NavigationItemRichFieldsProps> =
       </div>
 
       {iconType === 'lucide' ? (
-        <div>
-          <label className="form-label text-xs">{t('navigation.fields.iconValueLucide')}</label>
-          <input
-            className="form-input text-sm font-mono"
-            list="nav-lucide-icons"
-            value={item.iconValue ?? ''}
-            onChange={(e) => onChange({ iconValue: e.target.value })}
-            placeholder="Home"
-          />
-          <datalist id="nav-lucide-icons">
-            {LUCIDE_SUGGESTIONS.map((name) => (
-              <option key={name} value={name} />
-            ))}
-          </datalist>
-        </div>
+        <LucideIconPicker
+          value={item.iconValue ?? ''}
+          onChange={(iconValue) => onChange({ iconValue })}
+        />
       ) : null}
 
       {iconType === 'media' ? (

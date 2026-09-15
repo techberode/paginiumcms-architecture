@@ -6,6 +6,15 @@ export const publicSk: MessageTree = {
     siteTagline: 'FlatFile CMS',
     editorial: 'Redakcia',
   },
+  comingSoon: {
+    badge: 'Čoskoro',
+    units: {
+      days: 'Dni',
+      hours: 'Hod',
+      minutes: 'Min',
+      seconds: 'Sek',
+    },
+  },
   nav: {
     home: 'Domov',
     blog: 'Blog',
@@ -15,6 +24,10 @@ export const publicSk: MessageTree = {
     architectureTagline: 'FlatFile Architecture',
     previewBanner: 'Náhľad — navigácia je neaktívna',
     sideMenu: 'Navigácia stránky',
+    primaryMenu: 'Hlavné menu',
+    secondaryMenu: 'Katalógové menu',
+    openMenu: 'Otvoriť menu',
+    closeMenu: 'Zavrieť menu',
   },
   layout: {
     noHomePage: 'Zatiaľ nie je publikovaná domovská stránka (slug: home).',
@@ -228,6 +241,20 @@ export const publicSk: MessageTree = {
       ctaButton: 'Dohodnúť si bezplatnú konzultáciu',
     },
   },
+  share: {
+    label: 'Zdieľať',
+    facebook: 'Zdieľať na Facebooku',
+    x: 'Zdieľať na X',
+    linkedin: 'Zdieľať na LinkedIn',
+    email: 'Zdieľať e-mailom',
+    copy: 'Kopírovať odkaz',
+    copied: 'Odkaz skopírovaný',
+  },
+  staff: {
+    contactsTitle: 'Kontaktné osoby',
+    supportTitle: 'Support tím',
+    chat: 'Priamy chat',
+  },
   contact: {
     title: 'Kontaktný formulár',
     subtitle: 'Správy sa ukladajú do admin inboxu.',
@@ -280,6 +307,7 @@ export const publicSk: MessageTree = {
     backToList: 'Späť na prehľad článkov',
     editorialAuthor: 'Autor redakcie Paginium',
     printArticle: 'Tlačiť článok',
+    share: 'Zdieľať',
     aboutAuthor: 'O autorovi: :author',
     list: {
       title: 'Magazín & Novinky',

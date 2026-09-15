@@ -12,6 +12,11 @@ import { OnboardingTour } from '../backend/OnboardingTour';
 import { BackToTopButton } from '../frontend/BackToTopButton';
 import { useOpenLinksInNewTab } from '../../hooks/useOpenLinksInNewTab';
 import { openExternalUrl } from '../../utils/linkTarget';
+import { useI18n } from '../../context/I18nContext';
+import { useTheme } from '../../context/ThemeContext';
+import { useSettings } from '../../hooks/useSettings';
+import { AdminTopNav } from '../backend/AdminTopNav';
+import { adminChromeCssVars, resolveAdminChrome } from '../../theme/adminChrome';
 
 interface ResponsiveLayoutProps {
   children: React.ReactNode;
@@ -20,6 +25,11 @@ interface ResponsiveLayoutProps {
 const SIDEBAR_COLLAPSED_KEY = 'paginium.admin.sidebarCollapsed';
 
 export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) => {
+  const { t } = useI18n();
+  const { isDark } = useTheme();
+  const { settings } = useSettings();
+  const chrome = resolveAdminChrome(settings.ui);
+  const useTopNav = chrome.navPlacement === 'top';
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     if (typeof window === 'undefined') {
       return false;
@@ -80,47 +90,66 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) 
     (typeof window !== 'undefined' ? window.location.origin : '/');
 
   return (
-    <div className="flex h-screen bg-slate-50 dark:bg-slate-950 font-sans overflow-hidden selection:bg-indigo-500 selection:text-white transition-colors">
-      <AdminSidebar
-        collapsed={sidebarCollapsed}
-        onToggleCollapse={() => setSidebarCollapsed((value) => !value)}
-        mobileOpen={mobileMenuOpen}
-        onMobileClose={() => setMobileMenuOpen(false)}
-      />
+    <div
+      data-testid="admin-shell"
+      data-admin-nav={chrome.navPlacement}
+      className={`admin-shell flex h-screen bg-admin-canvas font-sans overflow-hidden selection:bg-admin-primary selection:text-white transition-colors ${isDark ? 'dark' : ''}`}
+      style={adminChromeCssVars(chrome) as React.CSSProperties}
+    >
+      {!useTopNav && (
+        <AdminSidebar
+          collapsed={sidebarCollapsed}
+          onToggleCollapse={() => setSidebarCollapsed((value) => !value)}
+          mobileOpen={mobileMenuOpen}
+          onMobileClose={() => setMobileMenuOpen(false)}
+        />
+      )}
 
-      {mobileMenuOpen && (
+      {mobileMenuOpen && !useTopNav && (
         <button
           type="button"
           className="fixed inset-0 z-40 bg-black/50 lg:hidden"
-          aria-label="Close menu"
+          aria-label={t('admin.header.closeMenu')}
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
 
-      <div ref={scrollContainerRef} className="flex-1 flex flex-col min-w-0 overflow-y-auto">
-        <AdminHeader
-          onGoToWebsite={() => openExternalUrl(publicSiteUrl, openInNewTab)}
-          onOpenMobileMenu={() => setMobileMenuOpen(true)}
-          onOpenChangePassword={() => setChangePasswordOpen(true)}
-          onOpenCommandPalette={() => setCommandPaletteOpen(true)}
-          sidebarCollapsed={sidebarCollapsed}
-          onToggleSidebar={() => setSidebarCollapsed((value) => !value)}
-        />
-        <DemoModeBanner />
-        <OnboardingTour />
-        {twoFactorSetupPending && location.pathname !== '/account/security' && (
-          <div className="mx-6 sm:mx-8 mt-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-100">
-            Dokončite nastavenie 2FA — naskenujte QR kód a zadajte overovací kód v{' '}
-            <Link to="/account/security" className="font-semibold underline">
-              bezpečnosti účtu
-            </Link>
-            .
-          </div>
-        )}
-        <main className="p-6 sm:p-8 max-w-7xl mx-auto w-full flex-1 animate-fadeIn">
-          {children}
-        </main>
-        <BackToTopButton scrollContainerRef={scrollContainerRef} variant="admin" />
+      <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-visible">
+        <div className="relative z-50 shrink-0 overflow-visible">
+          <AdminHeader
+            onGoToWebsite={() => openExternalUrl(publicSiteUrl, openInNewTab)}
+            onOpenMobileMenu={() => setMobileMenuOpen((open) => !open)}
+            onOpenChangePassword={() => setChangePasswordOpen(true)}
+            onOpenCommandPalette={() => setCommandPaletteOpen(true)}
+            sidebarCollapsed={sidebarCollapsed}
+            onToggleSidebar={() => setSidebarCollapsed((value) => !value)}
+            navPlacement={chrome.navPlacement}
+          />
+          {useTopNav && (
+            <AdminTopNav mobileOpen={mobileMenuOpen} onNavigate={() => setMobileMenuOpen(false)} />
+          )}
+        </div>
+        <div
+          ref={scrollContainerRef}
+          data-testid="admin-scroll-pane"
+          className="relative z-0 flex-1 min-h-0 overflow-y-auto"
+        >
+          <DemoModeBanner />
+          <OnboardingTour />
+          {twoFactorSetupPending && location.pathname !== '/account/security' && (
+            <div className="mx-6 sm:mx-8 mt-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100">
+              {t('admin.header.twoFactorPending')}{' '}
+              <Link to="/account/security" className="font-semibold underline">
+                {t('admin.header.twoFactorLink')}
+              </Link>
+              .
+            </div>
+          )}
+          <main className="p-4 sm:p-6 max-w-[90rem] mx-auto w-full flex-1 animate-fadeIn">
+            {children}
+          </main>
+          <BackToTopButton scrollContainerRef={scrollContainerRef} variant="admin" />
+        </div>
       </div>
 
       <ChangePasswordModal open={changePasswordOpen} onClose={() => setChangePasswordOpen(false)} />

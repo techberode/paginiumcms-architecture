@@ -27,6 +27,7 @@ class NavigationItem implements JsonSerializable
     private bool $previewOnHover = false;
     private float $previewScale = 1.5;
     private string $thumbnailSize = 'sm';
+    private bool $enabled = true;
 
     public function __construct(string $label, string $path)
     {
@@ -66,6 +67,7 @@ class NavigationItem implements JsonSerializable
         $item->previewOnHover = self::toBool($entry['previewOnHover'] ?? false);
         $item->previewScale = self::normalizePreviewScale($entry['previewScale'] ?? 1.5);
         $item->thumbnailSize = self::normalizeThumbnailSize((string) ($entry['thumbnailSize'] ?? 'sm'));
+        $item->enabled = array_key_exists('enabled', $entry) ? self::toBool($entry['enabled']) : true;
 
         if ($item->iconType === 'none' && array_key_exists('icon', $entry) && $entry['icon'] !== null && $entry['icon'] !== '') {
             $legacy = trim((string) $entry['icon']);
@@ -183,6 +185,18 @@ class NavigationItem implements JsonSerializable
         return $this->thumbnailSize;
     }
 
+    public function isEnabled(): bool
+    {
+        return $this->enabled;
+    }
+
+    public function setEnabled(bool $enabled): self
+    {
+        $this->enabled = $enabled;
+
+        return $this;
+    }
+
     public function isExternalLink(): bool
     {
         return str_starts_with($this->path, 'http://') || str_starts_with($this->path, 'https://');
@@ -211,6 +225,7 @@ class NavigationItem implements JsonSerializable
             'previewOnHover' => $this->previewOnHover,
             'previewScale' => $this->previewScale,
             'thumbnailSize' => $this->thumbnailSize,
+            'enabled' => $this->enabled,
         ];
     }
 

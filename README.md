@@ -3,7 +3,7 @@
 > **Final consolidated edition — 2026-08-02.** This tree contains the complete English documentation, historical iterations, the Hybrid Engine design, and the latest security changes including ISS-120. [Open the complete navigation](docs/NAVIGATION.md).
 > **Slovenská dokumentácia:** [docs/sk/NAVIGATION.md](docs/sk/NAVIGATION.md)
 
-> **Version:** 2.1.0-beta.70 · **Public Beta** · September 2026  
+> **Version:** 2.1.0-beta.77 · **Public Beta** · September 2026  
 > **Direction:** Hybrid Headless Content Engine · No-SQL file source of truth · API-first
 
 PaginiumCMS is an open-source **Hybrid Headless Content Engine** built with PHP 8.5, Slim 4, and a React administration SPA powered by Vite 8.
@@ -86,7 +86,7 @@ cd frontend && npm run type-check && npm run lint && npm run lint:api-barrel && 
 | Public Beta | ✅ latest tag `v2.1.0-beta.70` — see [CHANGELOG.md](CHANGELOG.md) |
 | Hybrid Engine foundation | ✅ It.68–74 shipped (local storage, cache/ETag, Git publish, APM, media local, locales, API keys) |
 | Stabilization freeze | ⏹️ closed 2026-09-09 — no `v2.2.0` gate |
-| Next implementation | ⏳ It.79 DAM video · It.89 plugin capabilities — [docs/en/CONTINUATION.md](docs/en/CONTINUATION.md) |
+| Next implementation | ⏳ It.89 plugin capabilities · It.92 query index — [docs/en/CONTINUATION.md](docs/en/CONTINUATION.md) |
 
 ### Target model
 

@@ -57,10 +57,11 @@ flowchart TB
     subgraph services [Domain and Core services]
         CONTENT[Content services]
         IDX[Index service]
+        QIDX[Query index JSON or SQLite]
         CACHE[Cache manager + drivers]
         VER[Versioning / OCC / locks]
         JOBS[Scheduler + queue]
-        MON[Performance Guard - planned]
+        MON[Performance Guard]
     end
 
     subgraph abstraction [Abstractions]
@@ -71,6 +72,7 @@ flowchart TB
 
     subgraph implementations [Drivers and distribution]
         LOCAL[LocalFlatFileStorage]
+        SQLITE[SQLite query index - optional]
         REDIS[Redis cache]
         GIT[GitPublisher]
         S3[S3 / Flysystem media]
@@ -85,6 +87,7 @@ flowchart TB
     SLIM --> MW
     MW --> CONTENT
     CONTENT --> IDX
+    CONTENT --> QIDX
     CONTENT --> CACHE
     CONTENT --> VER
     CONTENT --> STORAGE
@@ -92,6 +95,7 @@ flowchart TB
     MON -. measures .-> CONTENT
     STORAGE --> LOCAL
     LOCAL --> FILES
+    QIDX -. optional derived .-> SQLITE
     CACHE -. derived reads .-> FILES
     CACHE -. optionally .-> REDIS
     PUBLISH -. distribution .-> GIT
@@ -105,11 +109,13 @@ flowchart TB
 | **Documents** | Authoritative content, settings, and file-based operational state | ✅ Yes |
 | **Storage abstraction** | Read, validated write, atomic operations, locks, and path handling | No; it mediates the SSOT |
 | **Index** | Aggregated metadata for listings, filters, and search | ❌ Derived |
+| **Query index (It.92)** | Optional SQLite (or JSON) driver for the same catalog queries | ❌ Derived; never SSOT |
 | **Cache** | Hot reads, short-lived results, and HTTP conditional responses | ❌ Derived |
 | **Domain services** | Content rules, workflows, conflicts, versioning, and events | No |
 | **API** | Authentication, authorization, validation, responses, and HTTP contract | No |
 | **Distribution** | Git commit/push, build hook, and static output | Pipeline |
 | **Observability** | Latency, memory, I/O, errors, and alerts | Logs and metrics |
+| **Isolated origin widgets** | Optional iframe to operator origin (widget JS never on CMS) | ❌ Not CMS SSOT |
 
 ---
 
@@ -117,7 +123,7 @@ flowchart TB
 
 Every implementation wave must preserve these rules:
 
-1. **Files are authoritative.** Neither an index, cache, nor external service may hold the only copy of primary content.
+1. **Files are authoritative.** Neither an index, cache, SQLite query file, nor external service may hold the only copy of primary content.
 2. **Writes are atomic.** A source document is committed safely before derived layers are updated.
 3. **Cache is disposable.** Losing it must not lose content or configuration.
 4. **Indexes are rebuildable.** Diagnostics and a complete rebuild path must exist.
@@ -158,6 +164,7 @@ When keys are absent, the system must preserve compatible **Classic** behavior.
 | No-SQL SSOT (JSON / Markdown) | ✅ Shipped | `ContentRepository`, `STORAGE.md` |
 | Safe writes with `flock` | ✅ Shipped | settings, index, locks, newsletter, and other stores |
 | Content index `content.json` | ✅ Shipped | `ContentIndexService` |
+| Optional SQLite query index | ⏳ Planned | **It.92** — derived listings/search; Guard advisor; never SSOT |
 | File and memory cache | ✅ Shipped | `ChainedDriver`, `ContentCacheService` |
 | Unified Redis cache | ⏳ Planned | It.49 absorbed into **It.69** |
 | OCC and HTTP 409 conflicts | ✅ Shipped | `ContentRevision`, `ContentConflictException` |
@@ -176,6 +183,7 @@ When keys are absent, the system must preserve compatible **Classic** behavior.
 | Assisted translation through LibreTranslate | ⏳ Planned | **It.76** |
 | Assisted translation through cloud providers | ⏳ Planned | **It.77** |
 | JSON Schema for admin documents | ✅ Shipped (partial) | **It.68** — `settings.overrides@1`; Monaco/all types in follow-ups |
+| Isolated origin widgets | ❌ cancelled | Archive [ISOLATED_ORIGIN.md](ISOLATED_ORIGIN.md) — never implemented; number 93 reused for admin chrome |
 
 ---
 

@@ -11,6 +11,7 @@ use PaginiumCMS\Modules\Newsletter\Contracts\NewsletterRepositoryInterface;
 use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Modules\Security\Services\UserAvatarService;
+use PaginiumCMS\Modules\Security\Services\UserProfileFields;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
 use RuntimeException;
 
@@ -74,6 +75,15 @@ final class GdprAnonymizeService
         $user->setEmail($pseudonymEmail);
         $user->setName($pseudonym);
         $user->setBio('');
+        $user->setJobTitle('');
+        $user->setPhone('');
+        $user->setTimezone('');
+        $user->setLocale('');
+        $user->setAddress(UserProfileFields::emptyAddress());
+        $user->setExperience([]);
+        $user->setEducation([]);
+        $user->setSocialAccounts([]);
+        $user->setPublish(UserProfileFields::emptyPublish());
         $user->setUsername($this->resolveUniqueUsername($pseudonym, $user->getId()));
         $user->setAvatarUrl(null);
         $user->setActive(false);

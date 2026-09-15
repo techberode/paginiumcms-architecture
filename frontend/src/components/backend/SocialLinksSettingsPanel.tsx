@@ -8,6 +8,8 @@ import {
   defaultSocialLinks,
   parseSocialLinksJson,
   serializeSocialLinksJson,
+  socialBrandColor,
+  socialBrandTint,
   socialPlatformIcon,
   type SocialLinkItem,
   type SocialPlatform,
@@ -105,7 +107,14 @@ export const SocialLinksSettingsPanel: React.FC<Props> = ({ register, watch, set
               className="grid grid-cols-1 md:grid-cols-[auto_1fr_1fr_auto] gap-3 items-start rounded-lg border border-gray-100 dark:border-gray-800 p-3"
             >
               <div className="flex items-center gap-2">
-                <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600">
+                <span
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-lg border"
+                  style={{
+                    color: socialBrandColor(link.platform),
+                    backgroundColor: socialBrandTint(link.platform, true),
+                    borderColor: 'transparent',
+                  }}
+                >
                   <Icon className="h-5 w-5" aria-hidden="true" />
                 </span>
                 <div className="flex flex-col gap-1">

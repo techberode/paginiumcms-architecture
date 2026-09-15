@@ -1,9 +1,10 @@
 // frontend/src/components/backend/AclManager.tsx
 import React, { useEffect, useState } from 'react';
-import { Lock, Plus, Save, Trash2 } from 'lucide-react';
+import { Lock, Plus, Trash2 } from 'lucide-react';
 import { securityApi, type AclRule } from '../../api/security';
 import { useToast } from '../../hooks/useToast';
 import { useI18n } from '../../context/I18nContext';
+import { AdminFormActions } from './AdminFormActions';
 
 const emptyRule = (): AclRule => ({
   id: `acl_${Date.now()}`,
@@ -126,7 +127,7 @@ export const AclManager: React.FC = () => {
         ))}
       </div>
 
-      <div className="flex gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <button
           type="button"
           onClick={() => setRules([...rules, emptyRule()])}
@@ -135,15 +136,12 @@ export const AclManager: React.FC = () => {
           <Plus className="w-4 h-4" />
           {t('platform.acl.addRule')}
         </button>
-        <button
-          type="button"
-          disabled={saving}
-          onClick={() => void handleSave()}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-bold disabled:opacity-60"
-        >
-          <Save className="w-4 h-4" />
-          {t('platform.acl.save')}
-        </button>
+        <AdminFormActions
+          onSave={() => void handleSave()}
+          saveLabel={t('platform.acl.save')}
+          saveDisabled={saving}
+          saveBusy={saving}
+        />
       </div>
     </div>
   );

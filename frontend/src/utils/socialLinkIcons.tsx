@@ -11,6 +11,8 @@ import {
   Mail,
   Rss,
   MessageCircle,
+  Phone,
+  Send,
   Share2,
   type LucideIcon,
 } from 'lucide-react';
@@ -44,10 +46,11 @@ export const SOCIAL_PLATFORMS: SocialPlatform[] = [
   'rss',
 ];
 
-const ICONS: Record<SocialPlatform, LucideIcon> = {
+const ICONS: Record<string, LucideIcon> = {
   github: Github,
   gitlab: Gitlab,
   twitter: Twitter,
+  x: Twitter,
   facebook: Facebook,
   instagram: Instagram,
   linkedin: Linkedin,
@@ -57,10 +60,41 @@ const ICONS: Record<SocialPlatform, LucideIcon> = {
   website: Globe,
   email: Mail,
   rss: Rss,
+  telegram: Send,
+  whatsapp: Phone,
+  messenger: MessageCircle,
+};
+
+const BRAND_COLORS: Record<string, string> = {
+  github: '#181717',
+  gitlab: '#FC6D26',
+  twitter: '#1D9BF0',
+  x: '#111111',
+  facebook: '#1877F2',
+  instagram: '#E4405F',
+  linkedin: '#0A66C2',
+  youtube: '#FF0000',
+  mastodon: '#6364FF',
+  discord: '#5865F2',
+  website: '#0EA5E9',
+  email: '#EA4335',
+  rss: '#F26522',
+  telegram: '#26A5E4',
+  whatsapp: '#25D366',
+  messenger: '#0084FF',
 };
 
 export function socialPlatformIcon(platform: string): LucideIcon {
-  return ICONS[platform as SocialPlatform] ?? Globe;
+  return ICONS[platform] ?? Globe;
+}
+
+export function socialBrandColor(platform: string): string {
+  return BRAND_COLORS[platform] ?? '#748194';
+}
+
+export function socialBrandTint(platform: string, strong = false): string {
+  const color = socialBrandColor(platform);
+  return `${color}${strong ? '26' : '16'}`;
 }
 
 export function isSocialPlatform(value: string): value is SocialPlatform {

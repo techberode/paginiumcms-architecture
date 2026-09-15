@@ -29,6 +29,8 @@ describe('public i18n module', () => {
     expect(translate('en', 'public.nav.home')).toBe('Home');
     expect(translate('sk', 'public.blog.readingTime.one')).toBe('1 min čítania');
     expect(translate('en', 'public.auth.login.title')).toBe('Sign in');
+    expect(translate('sk', 'public.share.label')).toBe('Zdieľať');
+    expect(translate('en', 'public.staff.supportTitle')).toBe('Support team');
   });
 
   it('keeps SK/EN key parity', () => {

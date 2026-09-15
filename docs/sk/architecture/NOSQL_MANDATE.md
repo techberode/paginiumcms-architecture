@@ -26,8 +26,9 @@ Primárne dáta musia zostať uložené v prenositeľných súboroch, ktoré mo�
 | Metadáta a nastavenia | JSON | `data/settings.json`, `data/index/*.json` |
 | Používatelia a bezpečnostný stav | JSON so šifrovanými citlivými poľami | `data/users/`, auditné úložiská |
 | Binárne médiá | Súbory na disku alebo objektové úložisko | `media/`, prípadne S3 cez ovládač |
-| Odvodené indexy | JSON vytvorený zo zdrojových súborov | `data/index/content.json` |
+| Odvodené indexy | JSON zo zdrojových súborov; voliteľná SQLite query projekcia (It.92) | `data/index/content.json`, voliteľne `data/index/content.sqlite` |
 | Cache | Súbor, pamäť, APCu alebo Redis | **Iba odvodená vrstva — nikdy SSOT** |
+| Izolovaný origin (odložené) | JSON/SQLite **len v aplikácii operátora** pre widgety | Mimo CMS `data/`; nikdy stránky, useri ani CMS settings |
 
 **Redis, APCu a in-memory vrstvy** sú povolené iba ako:
 
@@ -64,6 +65,8 @@ Ich obsah musí byť možné zahodiť a obnoviť bez straty primárnych CMS dát
 - **Externé API**, napríklad GitHub, webhooky, SMTP, ntfy alebo prekladové služby, ak nepreberú úlohu primárneho CMS úložiska.
 - **Redis cache**, rate limiting, front úloh alebo dočasnú koordináciu.
 - **Voliteľné integračné moduly**, ktoré exportujú alebo synchronizujú dáta do databázy tretej strany, ak jadro zostáva plne funkčné bez nich.
+- **Voliteľný SQLite query index (It.92)** ako obnoviteľná projekcia katalógu (listingy, filtre, FTS). Nesmie byť jedinou kópiou dokumentu, používateľa, nastavenia ani tajomstva. Classic režim musí bežať s `queryIndexDriver=json` bez `.sqlite`. Zapnutie je akcia operátora po probe — nikdy skrytá závislosť jadra a nikdy automatická remediácia Performance Guard.
+- **Zrušený nápad izolovaného origínu** ([ISOLATED_ORIGIN.md](../en/architecture/ISOLATED_ORIGIN.md)): aplikácia operátora môže mať SQLite alebo súbory **vo svojej** appke. To nie je CMS SSOT. **Nie je vo fronte.**
 
 ---
 
@@ -72,7 +75,8 @@ Ich obsah musí byť možné zahodiť a obnoviť bez straty primárnych CMS dát
 Nasledujúce návrhy porušujú mandát:
 
 - uloženie obsahu iba do SQL tabuľky a vytváranie Markdown súborov až pri exporte,
-- povinný MongoDB alebo Elasticsearch backend pre čítanie bežného obsahu,
+- povinný MongoDB, Elasticsearch alebo SQLite backend pre čítanie bežného obsahu,
+- katalóg existujúci iba v SQLite, takže zmazanie `content.sqlite` stratí publikované články,
 - používateľské účty existujúce iba v Redis alebo externej databáze bez súborového autoritatívneho záznamu,
 - cache, z ktorej nemožno bezpečne prejsť späť na súborové dáta,
 - funkcia jadra, ktorá prestane pracovať po odpojení povinnej databázovej služby,

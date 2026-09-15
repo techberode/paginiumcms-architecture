@@ -9,6 +9,9 @@ const mocks = vi.hoisted(() => ({
   getSettings: vi.fn(),
   updateSettingsGroup: vi.fn(),
   reloadGlobalSettings: vi.fn(),
+  applyPreview: vi.fn(),
+  clearPreview: vi.fn(),
+  clearPreviewGroup: vi.fn(),
   toast: {
     success: vi.fn(),
     error: vi.fn(),
@@ -18,7 +21,13 @@ const mocks = vi.hoisted(() => ({
 vi.mock('../../api/settings', () => ({
   getSettings: mocks.getSettings,
   updateSettingsGroup: mocks.updateSettingsGroup,
-  rulesFromSchema: () => ({}),
+  rulesFromSchema: (group: { fields?: Array<{ key: string; type?: string }> }) => {
+    const rules: Record<string, string[]> = {};
+    for (const field of group.fields ?? []) {
+      rules[field.key] = field.type ? [field.type] : ['string'];
+    }
+    return rules;
+  },
 }));
 
 vi.mock('../../hooks/useToast', () => ({
@@ -26,7 +35,14 @@ vi.mock('../../hooks/useToast', () => ({
 }));
 
 vi.mock('../../hooks/useSettings', () => ({
-  useSettings: () => ({ reload: mocks.reloadGlobalSettings, settings: { general: { siteName: 'Paginium' } } }),
+  useSettings: () => ({
+    reload: mocks.reloadGlobalSettings,
+    applyPreview: mocks.applyPreview,
+    clearPreview: mocks.clearPreview,
+    clearPreviewGroup: mocks.clearPreviewGroup,
+    hasUnsavedPreview: false,
+    settings: { general: { siteName: 'Paginium' } },
+  }),
 }));
 
 vi.mock('../../hooks/useAuth', () => ({
@@ -67,7 +83,7 @@ describe('SettingsView deep links', () => {
     renderSettings('/settings?category=system&group=logging');
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Logy' })).toHaveClass('border-indigo-600');
+      expect(screen.getByRole('button', { name: 'Logy' })).toHaveClass('admin-tab-on');
     });
     expect(screen.getByLabelText('Retencia logov (dni)')).toBeInTheDocument();
   });
@@ -86,7 +102,7 @@ describe('SettingsView deep links', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Všeobecné' })).toHaveClass('border-indigo-600');
+      expect(screen.getByRole('button', { name: 'Všeobecné' })).toHaveClass('admin-tab-on');
     });
 
     await fastUser.click(screen.getByRole('button', { name: 'Logy' }));
@@ -94,6 +110,60 @@ describe('SettingsView deep links', () => {
     await waitFor(() => {
       expect(latestSearch).toBe('category=system&group=logging');
     });
+  });
+});
+
+describe('SettingsView apply preview', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.getSettings.mockResolvedValue({
+      schema,
+      values: {
+        general: { siteName: 'Paginium' },
+        logging: { retentionDays: 14 },
+      },
+    });
+    mocks.updateSettingsGroup.mockResolvedValue({
+      success: true,
+      data: { values: { siteName: 'Paginium' } },
+    });
+  });
+
+  it('applies a live preview without calling the save API', async () => {
+    const view = renderSettings('/settings?category=system&group=general');
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('button', { name: /použiť/i }).length).toBeGreaterThan(0);
+      expect(screen.getByDisplayValue('Paginium')).toBeInTheDocument();
+    });
+
+    await fastUser.click(screen.getAllByRole('button', { name: /použiť/i })[0]);
+
+    await waitFor(() => {
+      expect(mocks.applyPreview).toHaveBeenCalledWith({ general: { siteName: 'Paginium' } });
+    });
+    expect(mocks.updateSettingsGroup).not.toHaveBeenCalled();
+    expect(mocks.toast.success).toHaveBeenCalled();
+
+    view.unmount();
+    expect(mocks.clearPreview).toHaveBeenCalled();
+  });
+
+  it('persists with save and reloads public settings', async () => {
+    renderSettings('/settings?category=system&group=general');
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('button', { name: /uložiť zmeny/i }).length).toBeGreaterThan(0);
+      expect(screen.getByDisplayValue('Paginium')).toBeInTheDocument();
+    });
+
+    await fastUser.click(screen.getAllByRole('button', { name: /uložiť zmeny/i })[0]);
+
+    await waitFor(() => {
+      expect(mocks.updateSettingsGroup).toHaveBeenCalledWith('general', { siteName: 'Paginium' });
+    });
+    expect(mocks.clearPreviewGroup).toHaveBeenCalledWith('general');
+    expect(mocks.reloadGlobalSettings).toHaveBeenCalled();
   });
 });
 

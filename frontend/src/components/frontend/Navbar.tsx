@@ -13,7 +13,7 @@ import { NavDropdownEntry } from './NavMenuVisual';
 import { NavItemContent } from './navbarShared';
 import { SideNav } from './SideNav';
 import type { NavigationLayoutSettings } from '../../utils/navigationLayoutSettings';
-import { sideNavDrawerBreakpointClass } from '../../utils/navigationLayoutSettings';
+import type { PublicNavChrome } from '../../utils/publicNavChrome';
 import { BTN_PRIMARY_GRADIENT, LOGO_FALLBACK, NAV_LINK_ACTIVE, NAV_LINK_IDLE } from '../../theme/publicUiClasses';
 
 interface NavbarProps {
@@ -21,6 +21,9 @@ interface NavbarProps {
   previewMode?: boolean;
   showPrimaryNav?: boolean;
   navLayout?: NavigationLayoutSettings;
+  chrome?: PublicNavChrome;
+  secondaryItems?: PublicNavItem[];
+  wideHeader?: boolean;
 }
 
 const NavLinkButton: React.FC<{
@@ -108,7 +111,7 @@ const DesktopNavItem: React.FC<{
         <ChevronDown className="w-4 h-4 shrink-0 mt-0.5" />
       </button>
       {open ? (
-        <div className="absolute left-0 top-full pt-2 min-w-[240px] z-50">
+        <div className="absolute left-0 top-full pt-2 min-w-[240px] max-w-[min(18rem,calc(100vw-1.5rem))] z-50 pg-public-top-dropdown">
           <div className="rounded-xl border border-theme-border bg-theme-surface-elevated shadow-xl py-2">
             <DesktopDropdownTree
               items={item.children ?? []}
@@ -160,6 +163,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   previewMode = false,
   showPrimaryNav = true,
   navLayout,
+  chrome,
+  secondaryItems = [],
+  wideHeader = false,
 }) => {
   const { navigation } = usePublicSite();
   const { get } = useSettingsContext();
@@ -191,20 +197,21 @@ export const Navbar: React.FC<NavbarProps> = ({
     setMobileMenuOpen(false);
   };
 
-  const useSideDrawer =
-    navLayout !== undefined &&
-    (navLayout.placement === 'side' || navLayout.placement === 'both');
-
-  const mobileDrawerClass = navLayout ? sideNavDrawerBreakpointClass(navLayout.sideBreakpoint) : 'md:hidden';
+  const showDesktopPrimary = Boolean(showPrimaryNav && (chrome ? chrome.showTopPrimary : true));
+  const hamburgerClass = chrome?.hamburgerClass ?? 'md:hidden';
+  const desktopNavClass = chrome?.topNavClass ?? 'hidden md:flex';
+  const headerInnerClass = wideHeader
+    ? 'w-full px-3 sm:px-6 lg:px-8 min-h-16 py-2 flex items-center justify-between gap-2 sm:gap-3 min-w-0'
+    : 'max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 min-h-16 py-2 flex items-center justify-between gap-2 sm:gap-3 min-w-0';
 
   return (
-    <header className="backdrop-blur-md border-b border-theme-border bg-theme-surface-elevated/90 sticky top-0 z-40 transition-colors">
+    <header className="pg-public-header backdrop-blur-md border-b border-theme-border bg-theme-surface-elevated/90 transition-colors">
       {previewMode && (
         <div className="bg-amber-500 text-amber-950 text-center text-[11px] font-bold py-1">
           {t('public.nav.previewBanner')}
         </div>
       )}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      <div className={headerInnerClass}>
         <button
           type="button"
           onClick={() => navigate('/')}
@@ -219,8 +226,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           />
         </button>
 
-        {showPrimaryNav ? (
-          <nav className="hidden md:flex items-center gap-1">
+        {showDesktopPrimary ? (
+          <nav className={`${desktopNavClass} items-center gap-1 flex-wrap overflow-visible pg-public-top-nav`}>
             {sortedNav.map((item) => (
               <DesktopNavItem
                 key={item.id}
@@ -272,7 +279,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className={`${useSideDrawer ? mobileDrawerClass : 'md:hidden'} p-2 text-theme-text hover:bg-theme-surface rounded-xl transition-colors`}
+            className={`${hamburgerClass} p-2 text-theme-text hover:bg-theme-surface rounded-xl transition-colors shrink-0`}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="pg-public-mobile-nav"
+            aria-label={mobileMenuOpen ? t('public.nav.closeMenu') : t('public.nav.openMenu')}
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -281,15 +291,39 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {mobileMenuOpen ? (
         <div
-          className={`${useSideDrawer ? mobileDrawerClass : 'md:hidden'} border-t border-theme-border bg-theme-surface-elevated px-4 py-6 shadow-xl animate-fadeIn`}
+          id="pg-public-mobile-nav"
+          className={`${hamburgerClass} border-t border-theme-border bg-theme-surface-elevated px-4 py-6 shadow-xl animate-fadeIn max-h-[min(70vh,32rem)] overflow-y-auto`}
         >
-          {useSideDrawer && navLayout ? (
-            <SideNav items={sortedNav} layout={navLayout} onNavigate={handleNavigate} />
-          ) : (
-            <div className="flex flex-col gap-2">
-              <MobileNavItems items={sortedNav} isPathActive={isPathActive} onNavigate={handleNavigate} />
-            </div>
-          )}
+          <div className="flex flex-col gap-6">
+            {showPrimaryNav || chrome?.showSidePrimary ? (
+              <section aria-label={t('public.nav.primaryMenu')}>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-theme-text-muted mb-2">
+                  {t('public.nav.primaryMenu')}
+                </p>
+                {navLayout && (chrome?.showSidePrimary || navLayout.placement === 'side') ? (
+                  <SideNav items={sortedNav} layout={navLayout} onNavigate={handleNavigate} />
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <MobileNavItems items={sortedNav} isPathActive={isPathActive} onNavigate={handleNavigate} />
+                  </div>
+                )}
+              </section>
+            ) : null}
+            {chrome?.showSideSecondary && secondaryItems.length > 0 && navLayout ? (
+              <section aria-label={t('public.nav.secondaryMenu')}>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-theme-text-muted mb-2">
+                  {t('public.nav.secondaryMenu')}
+                </p>
+                <SideNav
+                  items={secondaryItems}
+                  layout={navLayout}
+                  onNavigate={handleNavigate}
+                  accordion={chrome.secondary.position === 'sticky'}
+                  ariaLabel={t('public.nav.secondaryMenu')}
+                />
+              </section>
+            ) : null}
+          </div>
         </div>
       ) : null}
     </header>

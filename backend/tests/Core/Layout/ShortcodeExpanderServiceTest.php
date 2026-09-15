@@ -103,6 +103,22 @@ final class ShortcodeExpanderServiceTest extends TestCase
         $this->assertStringContainsString('Warn body', $html);
     }
 
+    public function testExpandsWidgetShortcode(): void
+    {
+        $result = $this->expander->expand('[widget type="kpi" title="Visitors" value="12k" delta="+8%" /]');
+
+        $this->assertStringContainsString('pg-widget-kpi', $result);
+        $this->assertStringContainsString('Visitors', $result);
+        $this->assertStringNotContainsString('[widget', $result);
+    }
+
+    public function testUnknownWidgetLeavesTicket(): void
+    {
+        $result = $this->expander->expand('[widget type="falcon-sales" title="X" /]');
+
+        $this->assertStringContainsString('[widget type="falcon-sales"', $result);
+    }
+
     public function testExpandsMarketingShortcodes(): void
     {
         $ctaJson = <<<'JSON'

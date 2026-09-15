@@ -77,7 +77,7 @@ export const AdminListToolbar: React.FC<AdminListToolbarProps> = ({
   );
 
   return (
-    <div className="w-full space-y-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/40 p-3 sm:p-4">
+    <div className="w-full space-y-3 rounded-lg border border-admin-border bg-admin-card shadow-admin p-3 sm:p-4">
       <div className="flex flex-col gap-3 md:flex-row md:items-center">
         <div className="flex-1 min-w-0">
           <input
@@ -109,7 +109,7 @@ export const AdminListToolbar: React.FC<AdminListToolbarProps> = ({
       <div className="flex flex-col gap-3 xl:flex-row xl:flex-wrap xl:items-center">
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3 min-w-0">
           {onPageSizeChange && pageSize !== undefined && pageSizeInputMode === 'number' && (
-            <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 shrink-0">
+            <label className="flex items-center gap-2 text-sm text-admin-muted shrink-0">
               <span className="whitespace-nowrap">{t('list.toolbar.pageSizeAria')}</span>
               <input
                 type="number"
@@ -152,7 +152,7 @@ export const AdminListToolbar: React.FC<AdminListToolbarProps> = ({
           )}
 
           {showSeoFilter && onSeoIssuesOnlyChange && (
-            <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap shrink-0">
+            <label className="flex items-center gap-2 text-sm text-admin-muted whitespace-nowrap shrink-0">
               <input
                 type="checkbox"
                 checked={seoIssuesOnly}
@@ -164,7 +164,7 @@ export const AdminListToolbar: React.FC<AdminListToolbarProps> = ({
           )}
 
           {showStaleFilter && onStaleOnlyChange && (
-            <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap shrink-0">
+            <label className="flex items-center gap-2 text-sm text-admin-muted whitespace-nowrap shrink-0">
               <input
                 type="checkbox"
                 checked={staleOnly}

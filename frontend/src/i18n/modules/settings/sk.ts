@@ -3,6 +3,11 @@ import type { MessageTree } from '../../types';
 export const settingsSk: MessageTree = {
   "page": {
     "title": "Nastavenia",
+    "apply": "Použiť",
+    "applied": "Náhľad použitý. Uložte zmeny, inak sa pri odchode zahodia.",
+    "applyUnavailable": "Táto skupina nemá živý náhľad — použite Uložiť.",
+    "previewActive": "Aktívny náhľad (neuložené)",
+    "previewActiveBody": "Zmeny sú teraz viditeľné v administrácii. Ak prejdete do inej sekcie bez uloženia, náhľad sa vráti na uložené hodnoty.",
     "save": "Uložiť zmeny",
     "saving": "Ukladám...",
     "loadFailed": "Nepodarilo sa načítať nastavenia",
@@ -71,6 +76,7 @@ export const settingsSk: MessageTree = {
     "editor": "Editor",
     "navigationUi": "Navigácia (UI)",
     "navigation": "Layout navigácie",
+    "secondaryNav": "Katalógové bočné menu",
     "smtp": "Email / SMTP",
     "notifications": "Toast notifikácie",
     "connectors": "Notifikačné konektory",
@@ -199,7 +205,7 @@ export const settingsSk: MessageTree = {
       },
       "outline": {
         "name": "Outline blokov",
-        "description": "Presúvanie sekcií bez kódu (neskorší slice)."
+        "description": "Vizuálne bloky s formulármi — bez písania shortcode tagov."
       },
       "developer": {
         "name": "Developer",
@@ -310,6 +316,7 @@ export const settingsSk: MessageTree = {
       "webhooks:manage": "Správa webhookov",
       "project-plan:read": "Zobrazenie plánovača projektu",
       "project-plan:manage": "Správa plánovača projektu",
+      "time-entry:manage": "Správa vlastných časových záznamov",
       "themes:read": "Zobrazenie Theme Studio",
       "themes:edit": "Úprava tém",
       "profile:edit": "Úprava profilu"
@@ -465,6 +472,33 @@ export const settingsSk: MessageTree = {
         "label": "Zobraziť odhadovaný čas čítania",
         "help": "Na blog kartách a detaile článku (počítané z dĺžky textu)."
       },
+      "shareEnabled": {
+        "label": "Zdieľanie obsahu",
+        "help": "Zobrazí tlačidlá Facebook, X, LinkedIn, e-mail a kopírovanie odkazu. Len intent URL — bez SDK tretích strán."
+      },
+      "shareOnArticles": {
+        "label": "Zdieľať články",
+        "help": "Tlačidlá na detaile publikovaného článku."
+      },
+      "shareOnPages": {
+        "label": "Zdieľať podstránky",
+        "help": "Tlačidlá na publikovaných stránkach (nie na úvodnej)."
+      },
+      "shareFacebook": {
+        "label": "Zdieľať na Facebook"
+      },
+      "shareX": {
+        "label": "Zdieľať na X (Twitter)"
+      },
+      "shareLinkedin": {
+        "label": "Zdieľať na LinkedIn"
+      },
+      "shareEmail": {
+        "label": "Zdieľať e-mailom"
+      },
+      "shareCopy": {
+        "label": "Kopírovať odkaz"
+      },
       "storageFormat": {
         "label": "Formát úložiska obsahu",
         "help": "md = YAML front matter + Markdown; json = čistý JSON súbor."
@@ -583,7 +617,25 @@ export const settingsSk: MessageTree = {
       },
       "maxDepth": {
         "label": "Max. hĺbka menu",
-        "help": "SUPER_ADMIN môže nastaviť 4 úrovne; predvolene 3."
+        "help": "SUPER_ADMIN môže nastaviť 4 úrovne; predvolene 3. Pri zapnutom katalógovom menu ostáva horné menu primárne — bočný stĺpec sa neduplikuje."
+      }
+    },
+    "secondaryNav": {
+      "enabled": {
+        "label": "Zapnúť katalógové menu",
+        "help": "Samostatný strom (kategória → podkategória → položka). Nezobrazuje tie isté odkazy ako horné menu."
+      },
+      "maxDepth": {
+        "label": "Max. úroveň",
+        "help": "1–6 úrovní. Napr. náradie → podkategória → produkt."
+      },
+      "side": {
+        "label": "Umiestnenie",
+        "help": "Vľavo alebo vpravo od obsahu. Na mobile je v hamburgeri pod hlavným menu."
+      },
+      "position": {
+        "label": "Pri scrollovaní",
+        "help": "scroll = ide so stránkou; sticky = ostane v zobrazení a ukáže len otvorenú vetvu."
       }
     },
     "smtp": {
@@ -1161,6 +1213,27 @@ export const settingsSk: MessageTree = {
       "openLinksInNewTab": {
         "label": "Otvárať náhľady a externé odkazy v novej karte",
         "help": "Platí pre náhľad obsahu, prechod na verejný web z adminu, media download a externé odkazy vo footeri. Vypnuté = rovnaká karta / SPA navigácia."
+      },
+      "sidebarColor": {
+        "label": "Farba bočného menu",
+        "help": "Len paleta administrácie — verejný web sa nemení. Predvolená farba kopíruje svetlý/tmavý režim adminu."
+      },
+      "topbarColor": {
+        "label": "Farba hornej lišty",
+        "help": "Nepriehľadná horná lišta. Nezávislá od farby menu."
+      },
+      "chromeGradient": {
+        "label": "Gradient na menu a lište",
+        "help": "Jemný prechod z vybranej farby do tmavšieho tónu. Smer vyberte nižšie.",
+        "directionLabel": "Smer prechodu"
+      },
+      "chromeGradientDirection": {
+        "label": "Smer gradientu",
+        "help": "Platí pre bočné menu aj hornú lištu."
+      },
+      "navPlacement": {
+        "label": "Umiestnenie admin menu",
+        "help": "Bočný panel, alebo horné rozbaľovacie menu podľa sekcií."
       }
     },
     "security": {
@@ -1733,6 +1806,31 @@ export const settingsSk: MessageTree = {
       "below": "Pod obrázkom",
       "overlay": "Overlay",
       "side": "Bočne"
+    },
+    "sidebarColor": {
+      "default": "Predvolená (Falcon)",
+      "navy": "Námornícka",
+      "slate": "Bridlicová",
+      "indigo": "Indigo",
+      "ocean": "Oceán",
+      "forest": "Lesná",
+      "wine": "Vínová",
+      "charcoal": "Uhlová"
+    },
+    "navPlacement": {
+      "side": "Bočné menu",
+      "sideHint": "Klasický ľavý panel so zbaľovacími sekciami.",
+      "top": "Horné rozbaľovacie menu",
+      "topHint": "Vodorovný pás pod lištou; každá sekcia otvorí dropdown.",
+      "active": "Aktívne"
+    },
+    "chromeGradientDirection": {
+      "to-bottom": "Nadol",
+      "to-top": "Nahor",
+      "to-right": "Doprava",
+      "to-left": "Doľava",
+      "to-bottom-right": "Šikmo doprava nadol",
+      "to-bottom-left": "Šikmo doľava nadol"
     }
   },
   "maintenance": {

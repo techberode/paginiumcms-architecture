@@ -31,6 +31,7 @@ final class PermissionCatalog
         'gallery:manage',
         'project-plan:read',
         'project-plan:manage',
+        'time-entry:manage',
         'logs:view',
         'metrics:read',
         'api-keys:manage',
@@ -65,6 +66,7 @@ final class PermissionCatalog
                 'gallery:manage',
                 'project-plan:read',
                 'project-plan:manage',
+                'time-entry:manage',
                 'logs:view',
                 'metrics:read',
                 'api-keys:manage',
@@ -79,6 +81,7 @@ final class PermissionCatalog
                 'media:delete',
                 'project-plan:read',
                 'project-plan:manage',
+                'time-entry:manage',
             ],
             AuthorizationInterface::ROLE_USER => [
                 'content:view',

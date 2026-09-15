@@ -36,6 +36,8 @@ import { resolveArticlePrintEnabled } from '../../utils/contentPublicSettings';
 import { BTN_PRIMARY, INPUT_THEME, PUBLIC_CARD, PUBLIC_SPINNER } from '../../theme/publicUiClasses';
 import { blogSidebarApi, type BlogSidebarPayload } from '../../api/blogSidebar';
 import { BlogSidebar } from './BlogSidebar';
+import { ContentShareBar } from './ContentShareBar';
+import { ComingSoonCountdown } from './ComingSoonCountdown';
 import { resolveBlogSidebarSettings } from '../../utils/blogSidebarSettings';
 
 export const BlogRenderer: React.FC = () => {
@@ -385,6 +387,7 @@ export const BlogRenderer: React.FC = () => {
             </div>
 
             <article className="pg-print-article">
+            <ComingSoonCountdown kind="article" slug={activeArticle.slug} />
             <header className="py-6">
           <div className="flex flex-wrap items-center gap-2 mb-4 pg-no-print">
             {activeArticle.tags?.map((tag) => (
@@ -470,6 +473,8 @@ export const BlogRenderer: React.FC = () => {
           <div className={`${PUBLIC_CARD} p-8 sm:p-12 pg-print-body`}>
             <MarkdownRenderer content={activeArticle.content} html={activeArticle.html} />
           </div>
+
+          <ContentShareBar title={activeArticle.title} surface="article" />
 
           {showAuthorBox && authorBio && (
             <div className="mt-12 bg-theme-primary/10 border border-theme-primary/20 rounded-3xl p-6 sm:p-8 flex items-center gap-6">
@@ -634,7 +639,7 @@ export const BlogRenderer: React.FC = () => {
 
         <div
           className={`grid grid-cols-1 gap-8 ${
-            sidebarActive ? 'md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3'
+            sidebarActive ? 'sm:grid-cols-2' : 'sm:grid-cols-2 xl:grid-cols-3'
           }`}
         >
           {paginatedArticles.map((article) => {

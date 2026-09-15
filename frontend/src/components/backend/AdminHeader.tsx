@@ -1,10 +1,12 @@
 // frontend/src/components/backend/AdminHeader.tsx
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Database, Globe, LogOut, Shield, Zap, Key, Menu, PanelLeftClose, PanelLeftOpen, Search } from 'lucide-react';
+import { Database, Globe, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Search, Zap } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useCachePurge } from '../../hooks/useCachePurge';
 import { useI18n } from '../../context/I18nContext';
+import { AdminThemeToggle } from './AdminThemeToggle';
+import { AdminAccountMenu } from './AdminAccountMenu';
 
 interface AdminHeaderProps {
   onGoToWebsite: () => void;
@@ -13,6 +15,7 @@ interface AdminHeaderProps {
   onOpenCommandPalette?: () => void;
   sidebarCollapsed?: boolean;
   onToggleSidebar?: () => void;
+  navPlacement?: 'side' | 'top';
 }
 
 function resolveTabId(pathname: string): string {
@@ -31,6 +34,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
   onOpenCommandPalette,
   sidebarCollapsed = false,
   onToggleSidebar,
+  navPlacement = 'side',
 }) => {
   const { t } = useI18n();
   const location = useLocation();
@@ -52,13 +56,16 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
   };
 
   return (
-    <header className="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 sm:px-8 flex items-center justify-between gap-4 sticky top-0 z-30 transition-colors">
+    <header
+      data-testid="admin-topbar"
+      className="admin-topbar h-16 shrink-0 px-4 sm:px-6 flex items-center justify-between gap-4 z-40"
+    >
       <div className="flex items-center gap-3 min-w-0">
-        {onToggleSidebar && (
+        {navPlacement === 'side' && onToggleSidebar && (
           <button
             type="button"
             onClick={onToggleSidebar}
-            className="hidden lg:inline-flex p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500"
+            className="admin-topbar-ghost hidden lg:inline-flex p-2 rounded-lg"
             title={sidebarCollapsed ? t('admin.sidebar.expandPanel') : t('admin.sidebar.collapsePanel')}
             aria-label={sidebarCollapsed ? t('admin.sidebar.expandPanel') : t('admin.sidebar.collapsePanel')}
           >
@@ -69,19 +76,19 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
           <button
             type="button"
             onClick={onOpenMobileMenu}
-            className="lg:hidden p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500"
+            className="admin-topbar-ghost lg:hidden p-2 rounded-lg"
             aria-label={t('admin.header.openMenu')}
           >
             <Menu className="w-5 h-5" />
           </button>
         )}
         <div className="min-w-0">
-          <div className="flex items-center gap-2 text-[11px] font-bold tracking-wider text-slate-400 uppercase">
+          <div className="admin-topbar-kicker flex items-center gap-2 text-[11px] font-semibold tracking-wider uppercase">
             <span>{t('admin.header.engineBrand')}</span>
             <span>/</span>
-            <span className="text-indigo-600 dark:text-indigo-400 font-extrabold">{tabId}</span>
+            <span className="admin-topbar-accent font-bold">{tabId}</span>
           </div>
-          <h1 className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight mt-0.5 truncate">
+          <h1 className="admin-topbar-title text-lg sm:text-xl font-bold tracking-tight mt-0.5 truncate">
             {tabLabel}
           </h1>
         </div>
@@ -93,17 +100,19 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
             type="button"
             onClick={onOpenCommandPalette}
             title={t('platform.commandPalette.openShortcut')}
-            className="hidden md:flex items-center gap-2 min-w-[12rem] lg:min-w-[14rem] px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 text-xs font-semibold transition-colors"
+            className="hidden md:flex items-center gap-2 min-w-[12rem] lg:min-w-[16rem] px-3 py-2 rounded-lg border border-admin-border bg-admin-canvas text-admin-muted hover:text-admin-text text-xs font-medium transition-colors"
           >
-            <Search className="w-4 h-4 shrink-0 text-indigo-500" />
+            <Search className="w-4 h-4 shrink-0 text-admin-primary" />
             <span className="truncate flex-1 text-left">{t('platform.commandPalette.headerPlaceholder')}</span>
-            <kbd className="hidden lg:inline text-[10px] font-bold px-1.5 py-0.5 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-400">
-              Ctrl+Shift+K
+            <kbd className="hidden lg:inline text-[10px] font-bold px-1.5 py-0.5 rounded bg-admin-card border border-admin-border text-admin-muted">
+              Ctrl+K
             </kbd>
           </button>
         )}
 
-        <span className="hidden lg:flex items-center gap-1.5 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 px-3 py-1.5 rounded-xl text-xs font-extrabold border border-emerald-200/60 dark:border-emerald-800/80">
+        <AdminThemeToggle />
+
+        <span className="hidden lg:flex items-center gap-1.5 bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 px-3 py-1.5 rounded-lg text-xs font-bold border border-emerald-200 dark:border-emerald-800">
           <Zap className="w-3.5 h-3.5 text-emerald-500 fill-emerald-500" />
           <span>{t('admin.header.apiMode')}</span>
         </span>
@@ -113,9 +122,9 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
           onClick={() => void purge('content')}
           disabled={isPurging}
           title={t('admin.header.purgeCacheTitle')}
-          className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-3 sm:px-4 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer disabled:opacity-60"
+          className="flex items-center gap-2 bg-admin-canvas hover:bg-admin-sidebar-hover text-admin-text px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer disabled:opacity-60 border border-admin-border"
         >
-          <Database className={`w-4 h-4 text-indigo-600 dark:text-indigo-400 ${isPurging ? 'animate-pulse' : ''}`} />
+          <Database className={`w-4 h-4 text-admin-primary ${isPurging ? 'animate-pulse' : ''}`} />
           <span className="hidden sm:inline">
             {isPurging ? t('settings.cache.purging') : t('admin.header.purgeCache')}
           </span>
@@ -124,35 +133,19 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
         <button
           type="button"
           onClick={onGoToWebsite}
-          className="flex items-center gap-2 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 px-4 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer"
+          className="admin-btn-primary flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer"
         >
-          <Globe className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+          <Globe className="w-4 h-4" />
           <span className="hidden sm:inline">{t('admin.header.viewWebsite')}</span>
         </button>
 
-        {onOpenChangePassword && (
-          <button
-            type="button"
-            onClick={onOpenChangePassword}
-            title={t('admin.header.changePassword')}
-            className="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-colors"
-          >
-            <Key className="w-5 h-5" />
-          </button>
-        )}
-
-        <div className="hidden sm:flex items-center gap-2.5 pl-2 border-l border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200">
-          <div className="w-8 h-8 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center shadow">
-            <Shield className="w-4 h-4" />
-          </div>
-          <span className="hidden xl:inline">{t('admin.header.administrator')}</span>
-        </div>
+        <AdminAccountMenu variant="header" onOpenChangePassword={onOpenChangePassword} />
 
         <button
           type="button"
           onClick={() => void handleLogout()}
           title={t('admin.header.logout')}
-          className="p-2 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
+          className="admin-topbar-ghost p-2 rounded-lg transition-colors cursor-pointer"
         >
           <LogOut className="w-5 h-5" />
         </button>

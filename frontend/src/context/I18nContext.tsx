@@ -3,6 +3,7 @@ import React, { createContext, useContext, useEffect, useMemo, useState } from '
 import { loadRuntimeI18nOverrides } from '../i18n/loadRuntimeOverrides';
 import { normalizeLocale, translate, type Locale } from '../i18n';
 import { useSettings } from '../hooks/useSettings';
+import { AuthContext } from './AuthContext';
 
 interface I18nContextValue {
   locale: Locale;
@@ -13,7 +14,10 @@ const I18nContext = createContext<I18nContextValue | undefined>(undefined);
 
 export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { get } = useSettings();
-  const locale = normalizeLocale(get('general.language', 'sk'));
+  const auth = useContext(AuthContext);
+  const siteLocale = normalizeLocale(get('general.language', 'sk'));
+  const preferred = typeof auth?.user?.locale === 'string' ? auth.user.locale.trim() : '';
+  const locale = preferred === 'sk' || preferred === 'en' ? preferred : siteLocale;
   const [runtimeRevision, setRuntimeRevision] = useState(0);
 
   useEffect(() => {

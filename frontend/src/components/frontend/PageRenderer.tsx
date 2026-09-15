@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { Page } from '../../api/types';
 import { ContactForm } from './ContactForm';
 import { CompanyInfoPanel, CompanyMapEmbed } from './CompanyInfoPanel';
+import { ContentShareBar } from './ContentShareBar';
+import { StaffDirectory } from './StaffDirectory';
 import { MarkdownRenderer } from '../common/MarkdownRenderer';
 import { PageLayoutShell } from '../../layout/PageLayoutShell';
 import { normalizePageLayoutTemplateId } from '../../layout/pageLayoutTemplates';
@@ -19,6 +21,7 @@ import {
 } from '../../utils/contentPreviewImage';
 import { BTN_PRIMARY, PUBLIC_CARD } from '../../theme/publicUiClasses';
 import { useLandingReveal } from '../../hooks/useLandingReveal';
+import { ComingSoonCountdown } from './ComingSoonCountdown';
 
 interface PageRendererProps {
   page: Page;
@@ -207,6 +210,7 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page }) => {
       {!isLandingLayout && (meta.layoutTemplate === 'hero-content' || isHome) ? heroBlock : null}
 
       <main className={`mx-auto px-4 sm:px-6 lg:px-8 ${isLandingLayout ? 'max-w-6xl mt-4' : 'max-w-4xl mt-12'}`}>
+        <ComingSoonCountdown kind="page" slug={page.slug} />
         {isHome && !isLandingLayout ? (
           contentBlock
         ) : (
@@ -217,6 +221,7 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page }) => {
             }
           >
             {contentBlock}
+            <ContentShareBar title={page.title} surface="page" isHome={isHome} />
           </PageLayoutShell>
         )}
 
@@ -226,6 +231,7 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page }) => {
               <CompanyInfoPanel />
               <ContactForm />
             </div>
+            <StaffDirectory />
             <CompanyMapEmbed />
           </div>
         )}

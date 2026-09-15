@@ -32,6 +32,9 @@ final class PermissionCatalogTest extends TestCase
         $editor = PermissionCatalog::defaultRolePermissions()['EDITOR'];
         $this->assertContains('project-plan:read', $editor);
         $this->assertContains('project-plan:manage', $editor);
+        $this->assertContains('time-entry:manage', PermissionCatalog::ALL);
+        $this->assertContains('time-entry:manage', $admin);
+        $this->assertContains('time-entry:manage', $editor);
     }
 
     public function testCatalogIncludesThemeStudioPermissions(): void

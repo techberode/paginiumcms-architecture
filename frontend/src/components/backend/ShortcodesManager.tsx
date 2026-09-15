@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Code2, Plus, RefreshCw, Save, Trash2, Wand2 } from 'lucide-react';
+import { Code2, Plus, RefreshCw, Trash2, Wand2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { shortcodesApi, type ShortcodeListItem } from '../../api/shortcodes';
 import { useToast } from '../../hooks/useToast';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { useI18n } from '../../context/I18nContext';
 import { AdminHintCard } from './AdminHintCard';
+import { AdminFormActions } from './AdminFormActions';
 import { AdminBodyPreviewPanel } from './AdminBodyPreviewPanel';
 import { BulkActionBar } from './BulkActionBar';
 import { buildShortcodeSampleMarkup } from '../../utils/shortcodeSampleMarkup';
@@ -404,26 +405,25 @@ export const ShortcodesManager: React.FC = () => {
                 <Wand2 className="w-3.5 h-3.5" />
                 {t('platform.shortcodes.preview')}
               </button>
-              <button
-                type="button"
-                disabled={!selectedName || !isDirty || saving || loadingFile}
-                onClick={() => void handleSave()}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold disabled:opacity-50"
-              >
-                <Save className="w-3.5 h-3.5" />
-                {saving ? t('platform.shortcodes.saving') : t('platform.shortcodes.save')}
-              </button>
-              {selectedName && (
-                <button
-                  type="button"
-                  disabled={busyName === selectedName}
-                  onClick={() => void handleDelete(selectedName)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-xs font-bold disabled:opacity-50"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  {t('platform.shortcodes.delete')}
-                </button>
-              )}
+              <AdminFormActions
+                onSave={() => void handleSave()}
+                saveLabel={saving ? t('platform.shortcodes.saving') : t('platform.shortcodes.save')}
+                saveDisabled={!selectedName || !isDirty || saving || loadingFile}
+                saveBusy={saving}
+                extra={
+                  selectedName ? (
+                    <button
+                      type="button"
+                      disabled={busyName === selectedName}
+                      onClick={() => void handleDelete(selectedName)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-xs font-bold disabled:opacity-50"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      {t('platform.shortcodes.delete')}
+                    </button>
+                  ) : null
+                }
+              />
             </div>
           </div>
 

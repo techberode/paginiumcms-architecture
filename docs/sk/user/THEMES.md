@@ -88,11 +88,25 @@ Pri cache alebo statickom publish profile môže byť potrebná invalidácia/reb
 
 ---
 
-## 6. Externé témy
+## 6. Externé témy a Theme Studio
 
-Priečinok pre theme templates a architektonický návrh existujú, ale univerzálny ZIP theme lifecycle nie je v tejto dokumentácii označený ako hotový. Nenahrávaj neznámu PHP šablónu ručne do produkcie a neočakávaj, že sa objaví ako bezpečne inštalovateľná téma.
+Inštalované balíky: **Build → Témy** (`/themes`) — ZIP import, aktivácia, rollback.
 
-Keď bude theme package systém implementovaný, bude oddelený od výberu farebnej schémy a bude mať manifest, preview, kompatibilitu, aktiváciu a rollback.
+**Theme Studio:** **Upraviť** / **Nová** — Monaco (HTML/CSS), politika ako pri ZIP (žiadny `<script>` v layoute). **Normalizovať** z vloženého HTML spraví bezpečný balík, **nie** pixel-perfect kópiu TemplateMo. **Náhľad** je sandbox bez skriptov.
+
+### Ako nahraviť voľnú HTML šablónu (bez programovania)
+
+Paginium má vlastné menu, stránky a články. Demo na TemplateMo je často **jeden obraz**. Live URL (`/live/templatemo_620_compression`) **nie je** téma — sú tam reklamy. Stiahni **ZIP** z produktovej stránky.
+
+**Compression (620)** je vhodná: panely na hover a overlaye `:target` sú **čisté CSS** (žiadny jQuery).
+
+1. Rozbaľ ZIP. Otvor `index.html` a CSS. JS súbory pre túto šablónu nepotrebuješ.
+2. **Build → Témy → Nová.** CSS do záložky CSS. Markup piatich panelov do HTML (slot **main**). Ak Normalizovať rozbije panely na header/main/footer, vráť zmenu a vlož len panely do main.
+3. **Náhľad** → hover musí žiť z CSS. **Uložiť** → **Aktivovať**.
+4. Core menu môže prekryť full-screen layout — v CSS témy ho skry/uprav, ak chceš pôvodný vzhľad.
+5. Texty webu daj do Paginium stránok (Úvod, Práca, O nás, Kontakt). Overlaye v ZIP sú makety, nie CMS.
+
+Šablóny s Bootstrap/jQuery sliderom po Normalizácii **prídu o** tie efekty (skripty sa vyhodia). Nerieš to vkladaním `custom.js` do článku.
 
 ---
 

@@ -2,7 +2,7 @@
 import React from 'react';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { useI18n } from '../../context/I18nContext';
-import { socialPlatformIcon } from '../../utils/socialLinkIcons';
+import { SocialBrandLink } from '../ui/SocialBrandIcon';
 
 function socialHref(platform: string, url: string): string {
   if (platform === 'email') {
@@ -31,22 +31,18 @@ export const FooterSocialLinks: React.FC<{ className?: string }> = ({ className 
         aria-label={t('public.footer.socialAria')}
       >
         {social.links.map((link) => {
-          const Icon = socialPlatformIcon(link.platform);
           const href = socialHref(link.platform, link.url);
           const external = link.platform !== 'email';
 
           return (
-            <a
+            <SocialBrandLink
               key={`${link.platform}-${link.url}`}
+              platform={link.platform}
               href={href}
               target={external && openInNewTab ? '_blank' : undefined}
               rel={external ? 'noopener noreferrer' : undefined}
               title={link.label}
-              aria-label={link.label}
-              className="public-footer-social-link inline-flex h-9 w-9 items-center justify-center rounded-full transition-colors"
-            >
-              <Icon className="h-4 w-4" aria-hidden="true" />
-            </a>
+            />
           );
         })}
       </nav>

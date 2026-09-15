@@ -11,7 +11,8 @@ use PaginiumCMS\Modules\Media\Contracts\MediaStorageDriverInterface;
 
 final class S3MediaStorageDriver implements MediaStorageDriverInterface
 {
-    private const PROBE_PREFIX = '.storage-probe-';
+    /** Must start with an alphanumeric segment — PathGuard rejects leading-dot keys. */
+    private const PROBE_PREFIX = 'media/.storage-probe-';
 
     public function __construct(
         private FilesystemOperator $filesystem,

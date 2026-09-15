@@ -17,6 +17,7 @@ import { VersionHistory } from '../CodeEditor/VersionHistory';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { useAuth } from '../../hooks/useAuth';
 import { ContentEditorShell } from './ContentEditorShell';
+import { PageOutlineEditor } from './PageOutlineEditor';
 import { SitePreviewModal } from './SitePreviewModal';
 import { OtpConfirmModal } from './OtpConfirmModal';
 import { extractOtpPending } from '../../api/workflows';
@@ -85,6 +86,7 @@ import {
   type LocaleEditorState,
 } from '../../utils/contentEditorLocale';
 import { applyDraftEditorSnapshot, buildDraftEditorSnapshot } from '../../utils/draftEditorSnapshot';
+import { normalizeLayoutBuilderMode } from '../../layout/pageLayoutTemplates';
 
 interface MarkdownEditorProps {
   type?: ContentType;
@@ -875,6 +877,8 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
             ? t('editor.markdown.autoSave.unsaved')
             : '';
 
+  const builderMode = normalizeLayoutBuilderMode(settings.layout?.builderMode);
+  const useOutlineEditor = type === 'page' && builderMode === 'outline';
   const autoSaveLabelTone =
     autoSave.status === 'error'
       ? 'error'
@@ -999,7 +1003,9 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
           </div>
         }
       >
-        {editorMode === 'wysiwyg' ? (
+        {useOutlineEditor ? (
+          <PageOutlineEditor value={content} onChange={setContent} disabled={!canEdit} />
+        ) : editorMode === 'wysiwyg' ? (
           <WysiwygEditor
             ref={wysiwygRef}
             value={content}

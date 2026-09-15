@@ -3,11 +3,18 @@ import type { MessageTree } from '../../types';
 export const navigationSk: MessageTree = {
   page: {
     title: 'Menu',
-    subtitle: 'Úrovne: hlavné menu → submenu → vnorené položky (max. :depth). Popis, ikony a hover náhľad (It.56).',
-    layoutSettingsLink: 'Layout navigácie (hore / bok / hĺbka)',
+    subtitle: 'Horné hlavné menu a voliteľné katalógové bočné menu. Nikdy nezobrazujú tie isté odkazy naraz.',
+    layoutSettingsLink: 'Layout navigácie (hore / bok / sekundárne)',
+    tabs: {
+      primary: 'Horné menu',
+      secondary: 'Katalógové menu',
+    },
+    secondaryHint:
+      'Samostatný strom (napr. náradie → podkategória → produkt). Zapnite ho v Nastaveniach, potom pridajte úrovne. Položku zapnete/vypnete, ikona ako pri hornom menu, popis a hover náhľad obrázka. Ľavá/pravá strana a sticky/scroll sú v Nastaveniach.',
   },
   empty: 'Zatiaľ žiadne položky menu.',
   level: 'Úroveň :depth',
+  enabled: 'Aktívna',
   fields: {
     label: 'Názov',
     labelPlaceholder: 'Názov',
@@ -22,6 +29,11 @@ export const navigationSk: MessageTree = {
     thumbnailSize: 'Veľkosť miniatúry',
     previewOnHover: 'Hover náhľad (desktop)',
     previewScale: 'Mierka náhľadu',
+  },
+  iconPicker: {
+    placeholder: 'Vybrať ikonu…',
+    search: 'Hľadať (Home, Mail…)',
+    empty: 'Žiadna ikona s týmto názvom.',
   },
   iconTypes: {
     none: 'Žiadna',
@@ -53,5 +65,6 @@ export const navigationSk: MessageTree = {
     saved: 'Menu bolo uložené.',
     saveFailed: 'Uloženie menu zlyhalo.',
     maxDepth: 'Maximálne :depth úrovne menu.',
+    secondarySaved: 'Katalógové menu bolo uložené.',
   },
 };

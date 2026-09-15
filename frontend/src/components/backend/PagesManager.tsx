@@ -35,6 +35,7 @@ import type { ContentType } from '../../api/drafts';
 import { AdminListSkeleton } from '../ui/AdminListSkeleton';
 import { AdminEmptyState } from '../ui/AdminEmptyState';
 import { useI18n } from '../../context/I18nContext';
+import { ADMIN_PAGE_TITLE } from '../../theme/adminUiClasses';
 import { formatDisplayDate } from '../../utils/contentDates';
 import { LocaleStatusBadges } from './LocaleStatusBadges';
 import type { ContentEditorStatus } from '../../utils/contentScheduling';
@@ -467,7 +468,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center flex-wrap gap-4">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{label}</h1>
+        <h1 className={ADMIN_PAGE_TITLE}>{label}</h1>
         <Link to={`/${routeBase}/new`} className="btn btn-primary w-full sm:w-auto justify-center">
           + {t('content.newItem')}
         </Link>
@@ -552,7 +553,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
             const listSlug = itemListSlug(item);
             const actionsDisabled = listSlug === '';
             return (
-              <div key={item.id} className={`card overflow-hidden flex flex-col ${bulkSelection.isSelected(listSlug) ? 'ring-2 ring-indigo-500' : ''}`}>
+              <div key={item.id} className={`card overflow-hidden flex flex-col ${bulkSelection.isSelected(listSlug) ? 'ring-2 ring-admin-primary' : ''}`}>
                 <div className="aspect-video bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden relative">
                   <label className="absolute top-2 left-2 z-10 bg-white/90 dark:bg-gray-900/90 rounded p-1 cursor-pointer">
                     <input

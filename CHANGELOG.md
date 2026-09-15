@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.77`](#release-2-1-0-beta-77) | 2026-09-15 | It.93 Falcon admin (chrome + apps) — teams, account, events, time, widgets, catalog menu |
 | [`2.1.0-beta.76`](#release-2-1-0-beta-76) | 2026-09-13 | It.72 complete — S3 driver + migration CLI |
 | [`2.1.0-beta.75`](#release-2-1-0-beta-75) | 2026-09-13 | It.91d complete; runtime i18n; translations WAF fix |
 | [`2.1.0-beta.74`](#release-2-1-0-beta-74) | 2026-09-13 | It.91c Tiptap trusted parity + audit; deploy UI hotfix |
@@ -151,11 +152,54 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+### Added
+
+- **It.58f-a** — Page outline parse/serialize (`frontend/src/utils/pageOutline.ts`): top-level shortcodes, `:::video`, callouts; unclosed paired tags stay `raw`; Vitest round-trip. Spec: [ITERATION_58f.md](docs/en/ITERATION_58f.md).
+- **It.58f-b** — Outline palette + attr forms in the page editor (`PageOutlineEditor`) when `layout.builderMode=outline`. Canonical body stays Markdown.
+
 ### Planning
 
-- **It.91c–d** — Tiptap parity, audit log, hostile fixtures. Spec: [ITERATION_91.md](docs/en/ITERATION_91.md).
+- **It.58f** — Visual page blocks (outline + forms + live preview; DAM hero video). **58f-a/b done;** next **58f-d** live preview. Spec: [ITERATION_58f.md](docs/en/ITERATION_58f.md).
+- **It.93** remainder — **93l** support desk, **93m** domain IMAP inbox. Chrome + teams/account/events/time/widgets/catalog shipped in `beta.77`. Spec: [ITERATION_93.md](docs/en/ITERATION_93.md).
 - **It.89** — Plugin capability model + Editor Tool SDK (manifest-registered custom tools). Spec: [ITERATION_89.md](docs/en/ITERATION_89.md).
-- **Queue:** It.72 remainder → It.89 → 58f/g → 70 → 76/77 → 75 → 48. Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+- **It.92** — Hybrid Engine SQLite **query index** (derived, optional) + Performance Guard advisor (suggest only, never auto-enable). Spec: [ITERATION_92.md](docs/en/ITERATION_92.md).
+- **Queue:** **It.58f** remainder → **It.93** 93l/93m → It.89 → It.92 → 70 → 76/77 → 75 → 48 (58g with 48). Isolated-origin widgets: **cancelled** as an iteration (archive only). Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+
+---
+
+<a id="release-2-1-0-beta-77"></a>
+
+## [2.1.0-beta.77] – 2026-09-15
+
+It.93 Falcon-inspired admin — chrome + daily apps (teams, account, events, time tracker, widgets, catalog menu). Support desk and domain mail remain.
+
+### Added
+
+- **It.93g** — Admin light/dark toggle in the topbar (`AdminThemeToggle`); preference in `localStorage` (`paginium.admin.theme`), independent of public appearance. Dark tokens on `.admin-shell`.
+- **It.93 Wave 2** — Analytics KPI/tabs on admin kit; workspace/inbox list chrome (`AdminListToolbar`, `AdminInboxList`); Settings/Navigation side nav + form cards; content editor shell tokens. Cards/buttons/inputs inside `.admin-shell` use Falcon admin tokens.
+- **It.93t** — Public **Widgets**: built-in visual catalog (`WidgetCatalog`) expands `[widget type="kpi" … /]` like snippets; admin `/platform/widgets` gallery + markdown insert. CoreUI/Konrix inspired look only — no vendored UI. Spec: [ITERATION_93.md](docs/en/ITERATION_93.md).
+- **It.93t-e** — Operators can add **custom widget types** in the Widgets editor (HTML template + fields, `pg-*` classes, CodePolicy). Stored under `data/widgets/definitions/`.
+- **It.93k** — **Teams** (`data/teams/{id}.json`, `team@1`): editorial / support / ops / custom grouping with member user ids. ADMIN+ manage at `/platform/teams`. Custom type requires a free-text team name; built-in types use the type label. Does not replace RBAC; Support type is the agent pool for 93l.
+- **It.93o** — Extended **account** at `/account` (Profile / Public card / Security / Preferences). Self-service `PUT /api/auth/me` plus own avatar; new fields `jobTitle`, `phone`, `timezone`, `locale`, notify toggles, optional address/experience/education/socials with per-field **publish** flags on the user JSON (`?? ''` / default true for notify, publish defaults **false**). Account is opened from the header/sidebar/top-nav user menu (self-edit only), not Platform nav. Security tab reuses existing 2FA; GDPR export includes the new profile keys. Per-user locale overrides site language. Public opt-in cards: `GET /api/public/staff`.
+- **It.93o share** — Content share bar (Facebook / X / LinkedIn / email / copy link) on articles by default; pages optional. Per-network toggles in Settings → Content. Intent URLs only — no third-party SDKs.
+- **It.93n** — **Events planner** (`data/events/{id}.json`, `site-event@1`): title, slug, start/end, location, Markdown body, draft/published, optional project plan id. ADMIN+ CRUD at `/platform/events` (table + month calendar). Public listing later; editorial calendar stays content scheduling.
+- **It.93p** — **Time tracker** (`data/time-entries/{id}.json`, `time-entry@1`): one running timer per user on a plan item, site event, or page/article. Own today/week table; permission `time-entry:manage`; ADMIN sees team totals. Does not write progress % into the plan document.
+- **It.93u** — **Catalog side menu** (`data/secondary-navigation.json`): independent multi-level tree (enable per item, Lucide/media icon, description, hover image). Left/right, scroll or sticky accordion. Never duplicates the header menu; hamburger and desktop header share one breakpoint.
+- **It.93v** — **Coming-soon countdown** (`data/coming-soon/{id}.json`, `coming-soon@1`) linked to a page or article and embedded on that page until go-live. Managed from Time tracker.
+- **It.93w** — Public chrome: sticky header stack publishes `--pg-public-header-height`; hamburger and desktop header share one breakpoint; catalog side column never duplicates primary links. Grids step down on tablet when the side nav is on.
+
+### Fixed
+
+- **It.93 chrome** — Admin topbar is a flex sibling (not sticky inside the scroller) with an opaque `admin-topbar` background, so editor/settings text no longer mixes with the header in light or dark. Primary chips (`admin-chip-on`) and `.btn-primary` keep white text on the brand fill; dark `--admin-sidebar-active` is solid (not rgba).
+- **It.93s** — Settings **Apply** (live preview, not persisted) next to **Save**; preview is discarded when leaving admin settings. Floating Apply/Save dock sits above the Back-to-top control so operators do not scroll to confirm. Same floating Save on navigation, content editor, newsletter settings, widgets, shortcodes, snippets, teams, users, gallery, blueprints, ACL, backups, translations, and Theme Studio. Dock follows the admin scroll pane and stretches full-width on narrow screens.
+- **It.93g** — Admin light/dark toggle ignored `/categories` and `/gallery` (not in the admin-route list), so those pages kept the **public** color scheme and looked stuck in dark. Prefixes now come from sidebar hrefs; Categories uses admin tokens.
+- **S3 media health** — probe object key now uses `media/.storage-probe-*` so `MediaStoragePathGuard` accepts it (leading-dot keys were rejected; migration tests could not start).
+- **PHPStan** — `scripts/run-all-tests.zsh` now passes `--memory-limit=512M` (same as iteration-gate; PHP default 256M OOM). `UserProfileFields` dropped a redundant empty-URL check after the early continue.
+
+### Tests
+
+- PHPUnit: teams, events, time entries, coming-soon, widgets, secondary navigation, staff directory, user profile fields, admin chrome schema.
+- Vitest: public nav chrome breakpoints, admin top nav / form actions / widgets / account, staff directory, content share.
 
 ---
 

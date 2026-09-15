@@ -80,6 +80,46 @@ class NavigationControllerTest extends TestCase
         $this->assertSame('media', $data['data'][0]['iconType']);
     }
 
+    public function testSecondaryNavigationIsEmptyWhenDisabled(): void
+    {
+        $request = $this->createJsonRequest('GET', '/api/navigation/secondary');
+        $response = $this->handleRequest($request);
+        $data = $this->getJsonResponse($response);
+
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertTrue($data['success']);
+        $this->assertSame([], $data['data']);
+    }
+
+    public function testUpdateSecondaryNavigationAsAdmin(): void
+    {
+        $login = $this->loginAsAdminUser();
+        $this->assertEquals(200, $login['response']->getStatusCode());
+
+        $request = $this->createJsonRequest('PUT', '/api/admin/navigation/secondary', [
+            'items' => [
+                [
+                    'label' => 'Náradie',
+                    'path' => '/naradie',
+                    'order' => 0,
+                    'enabled' => true,
+                    'description' => 'Hlavné kategórie',
+                    'iconType' => 'lucide',
+                    'iconValue' => 'Wrench',
+                    'previewOnHover' => true,
+                ],
+            ],
+        ]);
+        $response = $this->handleRequest($request);
+        $data = $this->getJsonResponse($response);
+
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertTrue($data['success']);
+        $this->assertSame('Náradie', $data['data'][0]['label']);
+        $this->assertTrue($data['data'][0]['enabled']);
+        $this->assertSame('lucide', $data['data'][0]['iconType']);
+    }
+
     public function testUpdateNavigationRejectsLongDescription(): void
     {
         $login = $this->loginAsAdminUser();

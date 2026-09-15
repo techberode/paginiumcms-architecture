@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ExternalLink, Save, Settings2 } from 'lucide-react';
+import { ExternalLink, Settings2 } from 'lucide-react';
 import {
   getSettings,
   updateSettingsGroup,
@@ -9,6 +9,9 @@ import {
 } from '../../api/settings';
 import { useToast } from '../../hooks/useToast';
 import { useI18n } from '../../context/I18nContext';
+import { useSettings } from '../../hooks/useSettings';
+import { AdminFormActions } from './AdminFormActions';
+import { previewPatchFromGroup } from '../../utils/settingsPreview';
 import {
   translateSettingFieldHelp,
   translateSettingFieldLabel,
@@ -29,6 +32,7 @@ export const NewsletterSettingsPanel: React.FC<{
 }> = ({ onSaved }) => {
   const { t } = useI18n();
   const { success, error: showError } = useToast();
+  const { applyPreview, clearPreviewGroup, reload: reloadPublicSettings } = useSettings();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [fields, setFields] = useState<SettingField[]>([]);
@@ -59,6 +63,10 @@ export const NewsletterSettingsPanel: React.FC<{
     void load();
   }, [load]);
 
+  useEffect(() => () => {
+    clearPreviewGroup('newsletter');
+  }, [clearPreviewGroup]);
+
   const boolFields = useMemo(
     () => fields.filter((field) => field.type === 'bool' && BOOL_KEYS.includes(field.key as (typeof BOOL_KEYS)[number])),
     [fields]
@@ -77,6 +85,16 @@ export const NewsletterSettingsPanel: React.FC<{
     setValues((current) => ({ ...current, [key]: value }));
   };
 
+  const handleApply = () => {
+    const patch = previewPatchFromGroup('newsletter', values);
+    if (!patch) {
+      showError(t('newsletter.settings.applyUnavailable'));
+      return;
+    }
+    applyPreview(patch);
+    success(t('newsletter.settings.applied'));
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -92,6 +110,8 @@ export const NewsletterSettingsPanel: React.FC<{
         return;
       }
 
+      clearPreviewGroup('newsletter');
+      await reloadPublicSettings();
       success(t('newsletter.settings.saved'));
       await load();
       onSaved?.();
@@ -179,15 +199,16 @@ export const NewsletterSettingsPanel: React.FC<{
             </label>
           ))}
 
-          <button
-            type="button"
-            onClick={() => void handleSave()}
-            disabled={saving}
-            className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
-          >
-            <Save className="h-4 w-4" />
-            {saving ? t('newsletter.settings.saving') : t('newsletter.settings.save')}
-          </button>
+          <AdminFormActions
+            showApply
+            onApply={handleApply}
+            onSave={() => void handleSave()}
+            applyLabel={t('newsletter.settings.apply')}
+            saveLabel={saving ? t('newsletter.settings.saving') : t('newsletter.settings.save')}
+            applyDisabled={saving}
+            saveDisabled={saving}
+            saveBusy={saving}
+          />
         </>
       )}
     </div>

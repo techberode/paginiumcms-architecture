@@ -92,6 +92,11 @@ final class ApiResponseShapeTest extends TestCase
         $this->assertArrayHasKey('company', $data['data']);
         $this->assertArrayHasKey('showOnContactPage', $data['data']['company']);
         $this->assertArrayHasKey('mapEmbedUrl', $data['data']['company']);
+        $this->assertArrayHasKey('ui', $data['data']);
+        $this->assertContains($data['data']['ui']['navPlacement'] ?? 'side', ['side', 'top']);
+        $this->assertContains($data['data']['ui']['sidebarColor'] ?? 'default', [
+            'default', 'navy', 'slate', 'indigo', 'ocean', 'forest', 'wine', 'charcoal',
+        ]);
         $this->assertArrayHasKey('appearance', $data['data']);
         $this->assertArrayHasKey('colorScheme', $data['data']['appearance']);
         $this->assertArrayHasKey('mode', $data['data']['appearance']);

@@ -282,6 +282,58 @@ class AuthControllerTest extends TestCase
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals($userData['email'], $data['user']['email']);
         $this->assertEquals($userData['name'], $data['user']['name']);
+        $this->assertSame('', $data['user']['jobTitle'] ?? null);
+        $this->assertSame('', $data['user']['phone'] ?? null);
+        $this->assertSame('', $data['user']['timezone'] ?? null);
+        $this->assertSame('', $data['user']['locale'] ?? null);
+        $this->assertTrue($data['user']['notifyFailedLogin']);
+        $this->assertTrue($data['user']['notifySecurityIncident']);
+    }
+
+    public function testUpdateCurrentUserProfile(): void
+    {
+        $userData = $this->createTestUser();
+        $this->loginTestUser($userData['email'], $userData['password']);
+
+        $response = $this->handleRequest($this->createJsonRequest('PUT', '/api/auth/me', [
+            'name' => 'Ada Profile',
+            'jobTitle' => 'Editor',
+            'phone' => '+421 900 123 456',
+            'timezone' => 'Europe/Bratislava',
+            'locale' => 'en',
+            'bio' => 'Writes the docs',
+            'notifyFailedLogin' => false,
+            'notifySecurityIncident' => true,
+        ]));
+        $data = $this->getJsonResponse($response);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertTrue($data['success']);
+        $user = $data['data']['user'] ?? [];
+        $this->assertSame('Ada Profile', $user['name'] ?? null);
+        $this->assertSame('Editor', $user['jobTitle'] ?? null);
+        $this->assertSame('+421 900 123 456', $user['phone'] ?? null);
+        $this->assertSame('Europe/Bratislava', $user['timezone'] ?? null);
+        $this->assertSame('en', $user['locale'] ?? null);
+        $this->assertFalse($user['notifyFailedLogin'] ?? true);
+        $this->assertTrue($user['notifySecurityIncident'] ?? false);
+
+        $me = $this->getJsonResponse($this->handleRequest($this->createJsonRequest('GET', '/api/auth/me')));
+        $this->assertSame('Ada Profile', $me['user']['name'] ?? null);
+        $this->assertSame('en', $me['user']['locale'] ?? null);
+        $this->assertFalse($me['user']['notifyFailedLogin'] ?? true);
+    }
+
+    public function testUpdateCurrentUserRejectsInvalidTimezone(): void
+    {
+        $userData = $this->createTestUser();
+        $this->loginTestUser($userData['email'], $userData['password']);
+
+        $response = $this->handleRequest($this->createJsonRequest('PUT', '/api/auth/me', [
+            'timezone' => 'Not/A/Zone',
+        ]));
+
+        $this->assertSame(422, $response->getStatusCode());
     }
 
     public function testChangePasswordSuccess(): void

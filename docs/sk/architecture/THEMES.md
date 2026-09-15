@@ -170,6 +170,8 @@ Príklad manifestu:
 
 Theme manifest nesmie obsahovať tajomstvá ani svojvoľný remote script URL.
 
+**Zero-JS (predvolené):** vizuálny chrome témy (animácie, hover, `:focus-within`, `@keyframes`, `<details>`) ide v HTML/CSS. `themeScriptsEnabled` ostáva vypnuté. Hamburger ani dark mode nepatria do Cloudflare/izolovaného origínu. Verejný web už má Core React SPA — Zero-JS znamená **žiadny extra JS z témy/obsahu**, nie nula bajtov JS v prehliadači. It.93 je Falcon admin (chrome + aplikácie), nie téma.
+
 ---
 
 ## 9. Theme bezpečnostná politika

@@ -15,6 +15,7 @@ export * from './blueprint';
 export * from './cache';
 export * from './categories';
 export * from './codeEditor';
+export * from './comingSoon';
 export * from './comments';
 export * from './conflicts';
 export * from './contact';
@@ -24,6 +25,7 @@ export * from './dashboard';
 export * from './demo';
 export * from './developer';
 export * from './drafts';
+export * from './events';
 export * from './extensions';
 export * from './firewall';
 export * from './github';
@@ -49,8 +51,11 @@ export * from './security';
 export * from './settings';
 export * from './shortcodes';
 export * from './snippets';
+export * from './staff';
 export * from './systemUpdate';
+export * from './teams';
 export * from './themes';
+export * from './timeEntries';
 export * from './translations';
 export * from './trash';
 export * from './user';
@@ -60,6 +65,7 @@ export * from './version';
 export * from './versions';
 export * from './workflows';
 export * from './webhooks';
+export * from './widgets';
 
 export { queryKeys } from './queryKeys';
 
@@ -81,6 +87,7 @@ import { categoriesApi } from './categories';
 import { codeEditorApi } from './codeEditor';
 import { contentApi } from './content';
 import { demoApi } from './demo';
+import { eventsApi } from './events';
 import { extensionsApi } from './extensions';
 import { firewallApi } from './firewall';
 import { gitApi } from './git';
@@ -94,11 +101,14 @@ import { securityApi } from './security';
 import { shortcodesApi } from './shortcodes';
 import { snippetsApi } from './snippets';
 import { translationsApi } from './translations';
+import { teamsApi } from './teams';
 import { themesApi } from './themes';
+import { timeEntriesApi } from './timeEntries';
 import { trashApi } from './trash';
 import { userApi } from './user';
 import { versionApi } from './version';
 import { webhooksApi } from './webhooks';
+import { widgetsApi } from './widgets';
 
 /** Typed API modules with object interface (`*Api`). Function-only modules stay as named exports. */
 export const api = {
@@ -112,6 +122,7 @@ export const api = {
   codeEditor: codeEditorApi,
   content: contentApi,
   demo: demoApi,
+  events: eventsApi,
   extensions: extensionsApi,
   firewall: firewallApi,
   git: gitApi,
@@ -124,12 +135,15 @@ export const api = {
   security: securityApi,
   shortcodes: shortcodesApi,
   snippets: snippetsApi,
+  teams: teamsApi,
   themes: themesApi,
+  timeEntries: timeEntriesApi,
   translations: translationsApi,
   trash: trashApi,
   user: userApi,
   version: versionApi,
   webhooks: webhooksApi,
+  widgets: widgetsApi,
 };
 
 export default api;

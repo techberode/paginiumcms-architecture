@@ -1,6 +1,7 @@
 /* frontend/src/index.css */
 
 @import './theme/defaultTokens.css';
+@import './theme/adminTokens.css';
 
 /* Import Tailwind CSS */
 @tailwind base;
@@ -159,6 +160,59 @@
 
   .badge-warning {
     @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200;
+  }
+
+  /* It.93 — Falcon-inspired admin chrome. Plain CSS vars: @apply cannot see JIT admin-* utilities. */
+  .admin-shell .btn-primary {
+    background-color: var(--admin-primary);
+    color: var(--admin-on-primary, #ffffff);
+    --tw-ring-color: var(--admin-primary);
+  }
+
+  .admin-shell .btn-primary:hover {
+    background-color: var(--admin-primary-hover);
+    color: var(--admin-on-primary, #ffffff);
+  }
+
+  .admin-shell .card {
+    background-color: var(--admin-card);
+    border-color: var(--admin-border);
+    color: var(--admin-text);
+    box-shadow: var(--admin-shadow);
+  }
+
+  .admin-shell .card-header {
+    border-color: var(--admin-border);
+    color: var(--admin-text);
+  }
+
+  .admin-shell .form-input {
+    border-color: var(--admin-border);
+    background-color: var(--admin-card);
+    color: var(--admin-text);
+    --tw-ring-color: var(--admin-primary);
+  }
+
+  .admin-shell .form-label {
+    color: var(--admin-text);
+  }
+
+  .admin-shell .table-container {
+    border-color: var(--admin-border);
+    box-shadow: var(--admin-shadow);
+  }
+
+  .admin-shell .table th {
+    background-color: var(--admin-canvas);
+    color: var(--admin-muted);
+  }
+
+  .admin-shell .table td {
+    color: var(--admin-text);
+  }
+
+  .admin-shell .table tbody tr:hover {
+    background-color: var(--admin-row-hover);
   }
 
   .badge-info {

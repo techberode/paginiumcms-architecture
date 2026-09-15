@@ -22,6 +22,10 @@ final class GdprControllerTest extends TestCase
         $repo = $this->container()->get(\PaginiumCMS\Modules\Security\Services\UserRepository::class);
         $user = $repo->findByEmail($subject['email']);
         $this->assertNotNull($user);
+        $user->setJobTitle('Editor');
+        $user->setPhone('+421900000000');
+        $user->setTimezone('Europe/Bratislava');
+        $repo->save($user);
 
         $response = $this->handleRequest(
             $this->createJsonRequest('GET', '/api/admin/users/' . rawurlencode($user->getId()) . '/gdpr/export')
@@ -31,6 +35,9 @@ final class GdprControllerTest extends TestCase
         $payload = $this->getJsonResponse($response);
         $this->assertTrue($payload['success'] ?? false);
         $this->assertSame($user->getId(), $payload['data']['export']['subjectUserId'] ?? null);
+        $this->assertSame('Editor', $payload['data']['export']['profile']['jobTitle'] ?? null);
+        $this->assertSame('+421900000000', $payload['data']['export']['profile']['phone'] ?? null);
+        $this->assertSame('Europe/Bratislava', $payload['data']['export']['profile']['timezone'] ?? null);
 
         $audit = $this->container()->get(SecurityAuditStore::class);
         $events = $audit->list(['type' => 'gdpr_export'], 5);

@@ -35,6 +35,7 @@ import { applyClientListView } from '../../utils/clientListView';
 import { messagePriorityWeight } from '../../constants/messageSubjects';
 import { summarizeBulkResult } from '../../types/bulk';
 import { useI18n } from '../../context/I18nContext';
+import { ADMIN_PAGE_SUBTITLE, ADMIN_PAGE_TITLE } from '../../theme/adminUiClasses';
 
 const truncate = (text: string, max = 90): string =>
   text.length <= max ? text : `${text.slice(0, max).trim()}…`;
@@ -160,11 +161,11 @@ export const MessagesViewer: React.FC = () => {
   return (
     <div className="space-y-6 w-full max-w-none">
       <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Mail className="w-6 h-6 text-violet-500" />
+        <h1 className={`${ADMIN_PAGE_TITLE} flex items-center gap-2`}>
+          <Mail className="w-6 h-6 text-admin-primary" />
           {t('messages.page.title')} ({listView.total})
         </h1>
-        <p className="text-sm text-gray-500 mt-1">{t('messages.page.unread', { count: String(unread) })}</p>
+        <p className={ADMIN_PAGE_SUBTITLE}>{t('messages.page.unread', { count: String(unread) })}</p>
       </div>
 
       <AdminListToolbar

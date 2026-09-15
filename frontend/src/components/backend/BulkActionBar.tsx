@@ -38,7 +38,7 @@ export const BulkActionBar: React.FC<BulkActionBarProps> = ({
   }
 
   return (
-    <div className="sticky top-0 z-20 flex flex-wrap items-center gap-3 rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/40 px-4 py-3">
+    <div className="sticky top-0 z-20 flex flex-wrap items-center gap-3 rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950 px-4 py-3">
       <p className="text-sm font-medium text-indigo-900 dark:text-indigo-100">
         {selectionLabel}
       </p>

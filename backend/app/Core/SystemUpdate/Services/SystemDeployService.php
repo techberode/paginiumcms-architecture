@@ -188,6 +188,12 @@ final class SystemDeployService
             'DEPLOY_FORCE' => '1',
         ];
 
+        $githubToken = trim((string) ($config['githubToken'] ?? ''));
+        if ($githubToken !== '') {
+            // Used by deploy-instance-update.sh for HTTPS git fetch when ssh is unavailable (admin UI / Docker).
+            $env['GITHUB_DEPLOY_TOKEN'] = $githubToken;
+        }
+
         return array_filter($env, static fn (string $value): bool => $value !== '');
     }
 

@@ -96,6 +96,28 @@ Installed appearance packages live under **Build → Themes** (`/themes`): ZIP i
 
 Do not paste an unknown PHP/HTML template into production and expect it to run as-is. Studio normalize (88c) will strip hostile markup; it will not turn a commercial theme into a pixel-perfect Paginium site automatically.
 
+### Importing a free HTML template (non-developer)
+
+Paginium is a CMS with its own menu, pages, and articles. A TemplateMo/HTML5 demo is often a **one-screen art piece**. You can get close to the look; you cannot drop the live demo URL into the CMS and have every component auto-wire.
+
+**Compression (TemplateMo 620)** is a good candidate: kinetic panels and `:target` overlays are **CSS-only** (no jQuery). Still use the **ZIP**, not `templatemo.com/live/…` (that page is ads + Google tags, not the theme).
+
+1. Download the free ZIP from the template’s product page. Keep the author’s credit as the license requires.
+2. Unzip. Open `index.html` and the `.css` file(s) in a text editor. Ignore `*.js` unless you later use the Theme Studio JS tab + `appearance.themeScriptsEnabled` (default off — leave it off for Compression).
+3. In admin: **Build → Themes → New**. Paste CSS into the CSS tab. Paste the **body** markup (the five panels) into the layout HTML — prefer the **main** slot. If **Normalize** splits a full document into header/main/footer and the five-panel layout breaks, undo and paste only the panel markup into main.
+4. **Preview** (sandbox, no scripts). Hover panels and `:target` links should still move if the CSS survived.
+5. **Save**, then **Activate**. Check the public site. Core navbar/footer may sit on top of a full-viewport template — hide or restyle them in the theme CSS if you want the original full-bleed look.
+6. Put **your** text in Paginium: landing page / Work / About / Contact as normal pages. The template’s overlay pages are demos; they are not a CMS. Either keep short overlay copy in the theme HTML, or replace `:target` links with real Paginium navigation items (look will drift; content becomes editable).
+
+| Same as the demo? | Compression |
+|-------------------|-------------|
+| Dark industrial colors, Anton / Space Mono, hover expand/compress, grayscale idle panels | Yes, if CSS + panel HTML stay together |
+| Work / About / Contact as CSS `:target` modals | Yes, while that HTML stays in the theme |
+| Editable articles, blog, newsletter, cookie bar, CMS menu | Those are Paginium, not the ZIP — they will not appear until you add them as pages/settings |
+| Pixel-identical mobile + every overlay | Only if you accept the template as a mostly-static shell |
+
+Templates that need Bootstrap + jQuery sliders/counters will **lose** those effects after Normalize (scripts stripped). Recreate them with CSS, a Core component, or an [isolated origin iframe](../architecture/ISOLATED_ORIGIN.md) — do not paste `custom.js` into a page.
+
 ---
 
 ## 7. Troubleshooting

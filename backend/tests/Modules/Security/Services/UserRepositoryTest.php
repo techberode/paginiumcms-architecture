@@ -268,4 +268,28 @@ class UserRepositoryTest extends TestCase
         $this->assertCount(1, $all);
         $this->assertSame('real@example.com', $all[0]->getEmail());
     }
+
+    public function testHydrateUsesProfileDefaultsWhenKeysMissing(): void
+    {
+        $user = new User();
+        $user->setEmail('legacy@example.com');
+        $user->setPassword('StrongP@ssw0rd123!');
+        $user->setName('Legacy');
+        $this->repository->save($user);
+
+        $path = $this->root . '/data/users/' . $user->getId() . '.json';
+        $raw = FileHelper::readJson($path);
+        unset($raw['jobTitle'], $raw['phone'], $raw['timezone'], $raw['locale'], $raw['notifyFailedLogin'], $raw['notifySecurityIncident']);
+        file_put_contents($path, json_encode($raw, JSON_PRETTY_PRINT));
+
+        $found = $this->repository->findByEmail('legacy@example.com');
+        $this->assertNotNull($found);
+        $this->assertSame('', $found->getJobTitle());
+        $this->assertSame('', $found->getPhone());
+        $this->assertSame('', $found->getTimezone());
+        $this->assertSame('', $found->getLocale());
+        $this->assertTrue($found->getNotifyFailedLogin());
+        $this->assertTrue($found->getNotifySecurityIncident());
+        $this->assertArrayHasKey('jobTitle', $found->jsonSerialize());
+    }
 }

@@ -8,6 +8,15 @@ vi.mock('../../hooks/useAuth', () => ({
   useAuth: () => ({ twoFactorSetupPending: false }),
 }));
 
+vi.mock('../../context/ThemeContext', () => ({
+  useTheme: () => ({
+    isDark: false,
+    theme: 'light',
+    setTheme: () => undefined,
+    toggleTheme: () => undefined,
+  }),
+}));
+
 vi.mock('../../hooks/useMediaQuery', () => ({
   useMediaQuery: () => false,
 }));
@@ -59,5 +68,29 @@ describe('ResponsiveLayout scroll restoration', () => {
 
     expect(scrollTo).toHaveBeenCalledWith({ top: 0, behavior: 'auto' });
     scrollTo.mockRestore();
+  });
+
+  it('keeps the admin header outside the scrolling pane', () => {
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/pages']}>
+        <Routes>
+          <Route
+            path="*"
+            element={
+              <ResponsiveLayout>
+                <div>Page body</div>
+              </ResponsiveLayout>
+            }
+          />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    const header = screen.getByText('Header');
+    const scrollPane = screen.getByTestId('admin-scroll-pane');
+
+    expect(scrollPane).not.toContainElement(header);
+    expect(scrollPane).toHaveTextContent('Page body');
+    expect(screen.getByTestId('admin-shell')).toHaveAttribute('data-admin-nav', 'side');
   });
 });

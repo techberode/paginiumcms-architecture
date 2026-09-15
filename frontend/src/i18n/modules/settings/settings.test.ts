@@ -28,6 +28,7 @@ const RBAC_PERMISSIONS = [
   'webhooks:manage',
   'project-plan:read',
   'project-plan:manage',
+  'time-entry:manage',
   'themes:read',
   'themes:edit',
   'profile:edit',
@@ -44,6 +45,8 @@ describe('settings i18n module', () => {
 
     expect(translate('sk', 'settings.page.title')).toBe('Nastavenia');
     expect(translate('en', 'settings.page.title')).toBe('Settings');
+    expect(translate('sk', 'settings.page.apply')).toBe('Použiť');
+    expect(translate('en', 'settings.page.apply')).toBe('Apply');
     expect(translate('en', 'settings.groups.general')).toBe('General');
     expect(translate('en', 'settings.fields.general.language.label')).toBe('Admin language');
     expect(translate('en', 'settings.enum.language.sk')).toBe('Slovak');
@@ -74,6 +77,8 @@ describe('settings i18n module', () => {
     expect(translate('en', 'settings.fields.engine.storageDriver.label')).toBe('Storage driver');
     expect(translate('sk', 'settings.enum.cacheDriver.auto')).toBe('Automaticky');
     expect(translate('en', 'settings.enum.gitPublishStrategy.disabled')).toBe('Disabled');
+    expect(translate('sk', 'settings.fields.content.shareEnabled.label')).toBe('Zdieľanie obsahu');
+    expect(translate('en', 'settings.fields.content.shareX.label')).toBe('Share on X (Twitter)');
   });
 
   it('exposes extended tooltips for complex engine settings', () => {
@@ -82,6 +87,10 @@ describe('settings i18n module', () => {
 
     expect(translate('en', 'settings.fields.engine.performanceGuardEnabled.tooltip')).toContain('Dashboard');
     expect(translate('sk', 'settings.fields.engine.performanceGuardEnabled.tooltip')).toContain('Dashboard');
+    expect(translate('sk', 'settings.fields.ui.sidebarColor.label')).toBe('Farba bočného menu');
+    expect(translate('en', 'settings.enum.navPlacement.top')).toBe('Top dropdown menu');
+    expect(translate('sk', 'settings.enum.navPlacement.active')).toBe('Aktívne');
+    expect(translate('en', 'settings.enum.chromeGradientDirection.to-right')).toBe('Right');
     expect(translate('en', 'settings.helpTooltip.toggle')).toBe('Show detailed help');
     expect(translate('sk', 'settings.helpTooltip.toggle')).toBe('Zobraziť podrobnú nápovedu');
   });

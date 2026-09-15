@@ -26,8 +26,9 @@ Primary data must remain in portable files that can be backed up, versioned, aud
 | Metadata and settings | JSON | `data/settings.json`, `data/index/*.json` |
 | Users and security state | JSON with sensitive fields encrypted at rest | `data/users/`, audit stores |
 | Media binaries | Files on disk or object storage | `media/`, optionally S3 through a driver |
-| Derived indexes | JSON built from source files | `data/index/content.json` |
+| Derived indexes | JSON built from source files; optional SQLite query projection (It.92) | `data/index/content.json`, optional `data/index/content.sqlite` |
 | Cache | File, memory, APCu, or Redis | **Derived only — never SSOT** |
+| Isolated origin (deferred) | Operator app may use JSON/SQLite for **its** widget config | Outside CMS `data/`; never pages, users, or CMS settings |
 
 **Redis, APCu, and in-memory layers** are permitted only for:
 
@@ -64,6 +65,8 @@ Their contents must be disposable and rebuildable without losing primary CMS dat
 - **External APIs**, such as GitHub, webhooks, SMTP, ntfy, or translation services, when they do not become primary CMS storage.
 - **Redis cache**, rate limiting, job queues, or temporary coordination.
 - **Optional integration modules** that export or synchronize data to a third-party database while the Core remains fully functional without them.
+- **Optional SQLite query index (It.92)** as a rebuildable projection of the content catalog (listings, filters, FTS). It must not hold the only copy of a document, user, setting, or secret. Classic mode must run with `queryIndexDriver=json` and no `.sqlite` file. Enabling SQLite is an operator action after a capability probe — never a hidden Core dependency and never an automatic Performance Guard remediation.
+- **Cancelled isolated-origin idea** ([ISOLATED_ORIGIN.md](ISOLATED_ORIGIN.md)): an operator widget app may use SQLite or files **inside that app**. That store is not CMS SSOT. Compromising it must not grant write access to CMS `data/` or `storage/`. Core would only emit a sandboxed iframe — **not scheduled**.
 
 ---
 
@@ -72,7 +75,8 @@ Their contents must be disposable and rebuildable without losing primary CMS dat
 The following designs violate the mandate:
 
 - storing content only in SQL tables and generating Markdown files only during export,
-- requiring MongoDB or Elasticsearch to read ordinary content,
+- requiring MongoDB, Elasticsearch, or SQLite to read ordinary content,
+- storing catalog entries only in SQLite so that deleting `content.sqlite` loses published articles,
 - storing user accounts only in Redis or an external database without an authoritative file record,
 - using a cache from which the system cannot safely fall back to file data,
 - adding a Core feature that stops working when a mandatory database service is disconnected,

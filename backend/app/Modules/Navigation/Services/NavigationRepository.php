@@ -13,22 +13,21 @@ use PaginiumCMS\Modules\Navigation\Contracts\NavigationRepositoryInterface;
 
 class NavigationRepository implements NavigationRepositoryInterface
 {
-    private const REGISTRY = 'data/navigation.json';
-
     public function __construct(
         private FileReaderInterface $reader,
-        private FileWriterInterface $writer
+        private FileWriterInterface $writer,
+        private string $registry = 'data/navigation.json',
     ) {
     }
 
     public function load(): Navigation
     {
-        if (!$this->reader->exists(self::REGISTRY)) {
+        if (!$this->reader->exists($this->registry)) {
             return $this->defaultNavigation();
         }
 
         try {
-            $content = $this->reader->read(self::REGISTRY);
+            $content = $this->reader->read($this->registry);
             $data = json_decode($content, true);
             if (!is_array($data)) {
                 return $this->defaultNavigation();
@@ -60,10 +59,10 @@ class NavigationRepository implements NavigationRepositoryInterface
             throw new FlatFileException('Failed to serialize navigation');
         }
 
-        $this->writer->write(self::REGISTRY, $json, true);
+        $this->writer->write($this->registry, $json, true);
     }
 
-    private function defaultNavigation(): Navigation
+    protected function defaultNavigation(): Navigation
     {
         $defaults = [
             ['id' => 'nav-home', 'label' => 'Home', 'path' => '/', 'order' => 0],

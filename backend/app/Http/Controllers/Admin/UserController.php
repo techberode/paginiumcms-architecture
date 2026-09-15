@@ -17,6 +17,7 @@ use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
 use PaginiumCMS\Modules\Security\Contracts\PasswordPolicyInterface;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Modules\Security\Services\UserAvatarService;
+use PaginiumCMS\Modules\Security\Services\UserProfileFields;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
 use PaginiumCMS\Modules\Security\Services\RoleCatalogSeeder;
 use PaginiumCMS\Modules\Security\Services\RoleRepository;
@@ -138,6 +139,7 @@ final class UserController
         $user->setUsername($username);
         $user->setName($validated['name']);
         $user->setBio(trim((string) ($payload['bio'] ?? '')));
+        UserProfileFields::apply($user, array_intersect_key($payload, array_flip(['jobTitle', 'phone', 'timezone'])));
         $user->setRoles([(string) $validated['role']]);
         $user->setActive((bool) ($payload['active'] ?? true));
         $user->setPassword($password);
@@ -209,6 +211,8 @@ final class UserController
         if (array_key_exists('bio', $validated)) {
             $user->setBio((string) $validated['bio']);
         }
+
+        UserProfileFields::apply($user, array_intersect_key($payload, array_flip(['jobTitle', 'phone', 'timezone'])));
 
         if (isset($validated['role'])) {
             $this->assertCanAssignRole($request, (string) $validated['role']);

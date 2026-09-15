@@ -1,6 +1,6 @@
 # PaginiumCMS — konsolidovaný backlog
 
-> **Snapshot:** `v2.1.0-beta.69` · 10. september 2026  
+> **Snapshot:** `v2.1.0-beta.77` · 15. september 2026  
 > **Fáza:** plný vývoj naplánovaných iterácií — [CONTINUATION](../en/CONTINUATION.md) (stabilizačný freeze **ukončený**)  
 > **Pravidlo:** aktívny backlog obsahuje iba nedodaný alebo presne ohraničený zostávajúci rozsah  
 > **No-SQL:** [architecture/NOSQL_MANDATE.md](architecture/NOSQL_MANDATE.md)
@@ -34,7 +34,7 @@ Tento dokument opravuje starý backlog, v ktorom sa miešali hotové iterácie, 
 | 8 | **It.73** Multi-locale document | 🟡 | ⏳ | základ pre preklady |
 | 9 | **It.74** API keys/JWT | 🟡 | ✅ | `v2.1.0-beta.30` — [ITERATION_74](../en/ITERATION_74.md) |
 | 10 | **It.80** SEO, integrácie & ops toolkit | 🟡 | ✅ | `beta.39` — [ITERATION_80](../en/ITERATION_80.md) |
-| 11 | **It.58d** Layout remainder | 🟡 | ✅ | shortcodes + layout shell; 58f/58g odložené |
+| 11 | **It.58d** Layout remainder | 🟡 | ✅ | shortcodes + layout shell; **58f-a** parser hotový; 58f-b–g / 58g ostávajú |
 | 12 | **It.81** Redakčný workflow & content ops | 🟡 | ✅ | 81a–81f hotové — [ITERATION_81](../en/ITERATION_81.md) |
 | 13 | **It.82** Origin Panel (maintainer cockpit) | 🔵 | ✅ | env gate; mimo zákazníckeho archívu — [ITERATION_82](../en/ITERATION_82.md) |
 | 14 | **It.87** Project site planner + UX | 🟡 P1 | ✅ shipped | [ITERATION_87](../en/ITERATION_87.md) |
@@ -47,6 +47,9 @@ Tento dokument opravuje starý backlog, v ktorom sa miešali hotové iterácie, 
 | 21 | **It.83** Theme runtime + Terminal Breach | 🟡 | ✅ | `beta.59` — [ITERATION_83](../en/ITERATION_83.md) |
 | 22 | **It.84** Kategórie, blog sidebar, landing, role, menu | 🟡 | ✅ | **84a–84e** hotové — [ITERATION_84](../en/ITERATION_84.md) |
 | 23 | **It.85** Request diagnostics + admin APM clear | 🟡 | ✅ | **85a–85f** hotové — [ITERATION_85](../en/ITERATION_85.md); `v2.1.0-beta.59` |
+| 24 | **It.89** Plugin capability model | 🟡 | ⏳ | [ITERATION_89](../en/ITERATION_89.md) |
+| 25 | **It.92** SQLite query index + Guard advisor | 🟡 | ⏳ | odvodený katalóg — [ITERATION_92](ITERATION_92.md) |
+| 26 | **It.93** Admin v štýle Falcon (chrome + aplikácie) | 🟡 P1 | 🟡 čiastočné `beta.77` | chrome + tímy/účet/udalosti/čas/widgety/katalóg; **93l/93m** ostávajú — [ITERATION_93](ITERATION_93.md) |
 
 ---
 
@@ -205,7 +208,7 @@ Odložené (po M1+):
 
 | Položka | Stav | Poznámka |
 |---------|------|----------|
-| **It.58d** layout blocks/polish | ✅ | shortcodes + layout shell; 58f/58g odložené |
+| **It.58d** layout blocks/polish | ✅ | shortcodes + layout shell; 58f-a ✅; 58f-b–g / 58g ostávajú |
 | **It.81** redakčný workflow | ✅ | [ITERATION_81](../en/ITERATION_81.md) — hotové (`81f` v `beta.55`) |
 | **It.82** Origin Panel | ✅ | [ITERATION_82](../en/ITERATION_82.md) — hotové `beta.56`; mimo archívu |
 | **It.48** static/dynamic render | ⏳ | spojiť návrh s It.70 publish pipeline |

@@ -29,7 +29,7 @@ export const Footer: React.FC = () => {
   return (
     <footer className="public-footer transition-colors pt-16 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 pb-16 border-b border-white/10">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-12 pb-16 border-b border-white/10">
           <div className="md:col-span-1">
             <div className="flex items-center gap-3 mb-4">
               <div className={`w-9 h-9 ${LOGO_FALLBACK}`}>

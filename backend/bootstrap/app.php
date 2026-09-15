@@ -67,6 +67,7 @@ use PaginiumCMS\Core\Cache\CacheManager;
 use PaginiumCMS\Core\Cache\Drivers\FileDriver;
 use PaginiumCMS\Core\Analytics\Middleware\AnalyticsMiddleware;
 use PaginiumCMS\Http\Controllers\Auth\AuthController;
+use PaginiumCMS\Http\Controllers\Auth\AccountController;
 use PaginiumCMS\Http\Controllers\Auth\TwoFactorController;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Http\Controllers\Admin\BackupController;
@@ -870,6 +871,7 @@ $app->add($container->get(AnalyticsMiddleware::class));
 // ---------- AUTH ROUTY ----------
 $app->group('/api/auth', function (RouteCollectorProxy $group) use ($container) {
     $authController = $container->get(AuthController::class);
+    $accountController = $container->get(AccountController::class);
     $twoFactorController = $container->get(TwoFactorController::class);
 
     $group->post('/register', [$authController, 'register'])
@@ -886,10 +888,14 @@ $app->group('/api/auth', function (RouteCollectorProxy $group) use ($container) 
     $group->post('/verify-reset-token', [$authController, 'verifyResetToken']);
     $group->get('/csrf-token', [$authController, 'getCsrfToken']);
 
-    $group->group('', function (RouteCollectorProxy $protected) use ($authController, $twoFactorController) {
+    $group->group('', function (RouteCollectorProxy $protected) use ($authController, $accountController, $twoFactorController) {
         $protected->post('/logout', [$authController, 'logout']);
         $protected->post('/change-password', [$authController, 'changePassword']);
         $protected->get('/me', [$authController, 'getCurrentUser']);
+        $protected->put('/me', [$accountController, 'update']);
+        $protected->post('/me/avatar', [$accountController, 'uploadAvatar']);
+        $protected->put('/me/avatar', [$accountController, 'assignAvatarFromUrl']);
+        $protected->delete('/me/avatar', [$accountController, 'removeAvatar']);
 
         $protected->post('/2fa/enable', [$twoFactorController, 'enable']);
         $protected->post('/2fa/disable', [$twoFactorController, 'disable']);
