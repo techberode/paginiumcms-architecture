@@ -37,6 +37,8 @@ export const adminEn: MessageTree = {
     teams: 'Teams',
     events: 'Events',
     timeTracker: 'Time tracker',
+    kanban: 'Kanban',
+    mail: 'Mail',
     accountSecurity: 'Account',
     apiKeys: 'API keys',
     redirects: 'Redirects',

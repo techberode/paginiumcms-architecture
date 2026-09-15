@@ -1,6 +1,7 @@
 import { describe, expect, it, afterEach } from 'vitest';
 import { settingsEn } from './en';
 import { settingsSk } from './sk';
+import { SETTINGS_CATEGORIES } from './categories';
 import {
   translateSettingFieldLabel,
   translateSettingGroup,
@@ -29,6 +30,9 @@ const RBAC_PERMISSIONS = [
   'project-plan:read',
   'project-plan:manage',
   'time-entry:manage',
+  'support-ticket:manage',
+  'mail:read-own',
+  'mail:read-all',
   'themes:read',
   'themes:edit',
   'profile:edit',
@@ -48,6 +52,11 @@ describe('settings i18n module', () => {
     expect(translate('sk', 'settings.page.apply')).toBe('Použiť');
     expect(translate('en', 'settings.page.apply')).toBe('Apply');
     expect(translate('en', 'settings.groups.general')).toBe('General');
+    expect(translate('en', 'settings.groups.imap')).toBe('Email / IMAP');
+    expect(translate('sk', 'settings.groups.imap')).toBe('Email / IMAP');
+    expect(SETTINGS_CATEGORIES.find((category) => category.id === 'system')?.groups).toContain(
+      'imap'
+    );
     expect(translate('en', 'settings.fields.general.language.label')).toBe('Admin language');
     expect(translate('en', 'settings.enum.language.sk')).toBe('Slovak');
     expect(translate('sk', 'settings.fields.login.backgroundPicker.pickFromMedia')).toBe(

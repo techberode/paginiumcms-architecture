@@ -59,6 +59,8 @@ import { WidgetsManager } from './components/backend/WidgetsManager';
 import { TeamsManager } from './components/backend/TeamsManager';
 import { EventsManager } from './components/backend/EventsManager';
 import { TimeTrackerView } from './components/backend/TimeTrackerView';
+import { KanbanBoardView } from './components/backend/KanbanBoardView';
+import { MailInboxView } from './components/backend/MailInboxView';
 import { CategoriesManager } from './components/backend/CategoriesManager';
 import { RolesManager } from './components/backend/RolesManager';
 import { SnippetsManager } from './components/backend/SnippetsManager';
@@ -247,6 +249,8 @@ function App() {
         <Route path="/platform/teams" element={<TeamsManager />} />
         <Route path="/platform/events" element={<EventsManager />} />
         <Route path="/platform/time-tracker" element={<TimeTrackerView />} />
+        <Route path="/platform/kanban" element={<KanbanBoardView />} />
+        <Route path="/platform/mail" element={<MailInboxView />} />
         <Route path="/developer/logs" element={<DeveloperLogsViewer />} />
       </Route>
 

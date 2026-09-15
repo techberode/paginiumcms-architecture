@@ -78,6 +78,7 @@ export const settingsSk: MessageTree = {
     "navigation": "Layout navigácie",
     "secondaryNav": "Katalógové bočné menu",
     "smtp": "Email / SMTP",
+    "imap": "Email / IMAP",
     "notifications": "Toast notifikácie",
     "connectors": "Notifikačné konektory",
     "monitoring": "Monitoring a incidenty",
@@ -317,6 +318,9 @@ export const settingsSk: MessageTree = {
       "project-plan:read": "Zobrazenie plánovača projektu",
       "project-plan:manage": "Správa plánovača projektu",
       "time-entry:manage": "Správa vlastných časových záznamov",
+      "support-ticket:manage": "Správa support ticketov",
+      "mail:read-own": "Čítanie vlastnej schránky na doméne webu",
+      "mail:read-all": "Čítanie všetkých schránok na doméne webu",
       "themes:read": "Zobrazenie Theme Studio",
       "themes:edit": "Úprava tém",
       "profile:edit": "Úprava profilu"
@@ -664,6 +668,30 @@ export const settingsSk: MessageTree = {
       },
       "fromName": {
         "label": "Odosielateľ (meno)"
+      }
+    },
+    "imap": {
+      "enabled": {
+        "label": "Zapnúť IMAP schránku",
+        "help": "Zapnuté = prihlásení operátori čítajú poštu @doména-webu. Vypnuté = Mail modul je tichý. Gmail a cudzie domény sú zakázané."
+      },
+      "allowedDomain": {
+        "label": "Doména schránok",
+        "help": "Verejná doména pošty, napr. webland.fun. Povinné, keď URL webu je LAN IP (192.168.x). Nie Gmail."
+      },
+      "host": {
+        "label": "IMAP server",
+        "help": "Len host na doméne webu, napr. mail.example.com. Nie Gmail."
+      },
+      "port": {
+        "label": "IMAP port"
+      },
+      "encryption": {
+        "label": "Šifrovanie"
+      },
+      "spamFolder": {
+        "label": "Priečinok spamu",
+        "help": "Názov serverového priečinka Junk/Spam. Správy sa tam presúvajú, do data/ sa neukladajú."
       }
     },
     "notifications": {

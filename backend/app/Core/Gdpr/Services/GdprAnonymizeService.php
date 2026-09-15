@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace PaginiumCMS\Core\Gdpr\Services;
 
 use PaginiumCMS\Core\Gdpr\GdprPseudonym;
+use PaginiumCMS\Core\Mail\Services\MailboxSecretRepository;
+use PaginiumCMS\Core\Mail\Services\MailClientStateRepository;
 use PaginiumCMS\Modules\Comments\Services\CommentsRepository;
 use PaginiumCMS\Modules\Messages\Services\MessageRepository;
 use PaginiumCMS\Modules\Newsletter\Contracts\NewsletterRepositoryInterface;
@@ -26,6 +28,8 @@ final class GdprAnonymizeService
         private CommentsRepository $comments,
         private MessageRepository $messages,
         private NewsletterRepositoryInterface $newsletter,
+        private ?MailboxSecretRepository $mailSecrets = null,
+        private ?MailClientStateRepository $mailClient = null,
     ) {
     }
 
@@ -71,6 +75,8 @@ final class GdprAnonymizeService
 
         $newsletterUpdated = $this->newsletter->anonymizeEmail($originalEmail, $pseudonymEmail);
 
+        $this->mailSecrets?->delete($user->getId());
+        $this->mailClient?->delete($user->getId());
         $this->avatars->remove($user);
         $user->setEmail($pseudonymEmail);
         $user->setName($pseudonym);

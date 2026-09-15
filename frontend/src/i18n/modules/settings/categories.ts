@@ -25,6 +25,7 @@ export const SETTINGS_CATEGORIES: SettingsCategoryDef[] = [
       'notifications',
       'connectors',
       'smtp',
+      'imap',
       'scheduler',
       'workflows',
       'codePolicy',

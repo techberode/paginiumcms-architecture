@@ -78,6 +78,7 @@ export const settingsEn: MessageTree = {
     "navigation": "Navigation layout",
     "secondaryNav": "Catalog side menu",
     "smtp": "Email / SMTP",
+    "imap": "Email / IMAP",
     "notifications": "Toast notifications",
     "connectors": "Notification connectors",
     "monitoring": "Monitoring & incidents",
@@ -317,6 +318,9 @@ export const settingsEn: MessageTree = {
       "project-plan:read": "View project planner",
       "project-plan:manage": "Manage project planner",
       "time-entry:manage": "Manage own time entries",
+      "support-ticket:manage": "Manage support tickets",
+      "mail:read-own": "Read own site-domain mailbox",
+      "mail:read-all": "Read all site-domain mailboxes",
       "themes:read": "View theme studio",
       "themes:edit": "Edit themes",
       "profile:edit": "Edit profile"
@@ -1233,6 +1237,30 @@ export const settingsEn: MessageTree = {
       },
       "fromName": {
         "label": "From name"
+      }
+    },
+    "imap": {
+      "enabled": {
+        "label": "Enable IMAP inbox",
+        "help": "Enabled = signed-in operators read mail @the-site-domain. Disabled = Mail stays quiet. Gmail and foreign domains are rejected."
+      },
+      "allowedDomain": {
+        "label": "Mailbox domain",
+        "help": "Public mail domain, e.g. webland.fun. Required when Site URL is a LAN IP (192.168.x). Not Gmail."
+      },
+      "host": {
+        "label": "IMAP host",
+        "help": "Only a host on the site domain, e.g. mail.example.com. Not Gmail."
+      },
+      "port": {
+        "label": "IMAP port"
+      },
+      "encryption": {
+        "label": "Encryption"
+      },
+      "spamFolder": {
+        "label": "Spam folder",
+        "help": "Server Junk/Spam folder name. Messages move there; they are not stored under data/."
       }
     },
     "notifications": {

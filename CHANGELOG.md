@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.78`](#release-2-1-0-beta-78) | 2026-09-15 | It.93l/93m — Support Kanban + domain IMAP mail client |
 | [`2.1.0-beta.77`](#release-2-1-0-beta-77) | 2026-09-15 | It.93 Falcon admin (chrome + apps) — teams, account, events, time, widgets, catalog menu |
 | [`2.1.0-beta.76`](#release-2-1-0-beta-76) | 2026-09-13 | It.72 complete — S3 driver + migration CLI |
 | [`2.1.0-beta.75`](#release-2-1-0-beta-75) | 2026-09-13 | It.91d complete; runtime i18n; translations WAF fix |
@@ -160,10 +161,34 @@ This canonical history records release facts supported by the supplied `CHANGELO
 ### Planning
 
 - **It.58f** — Visual page blocks (outline + forms + live preview; DAM hero video). **58f-a/b done;** next **58f-d** live preview. Spec: [ITERATION_58f.md](docs/en/ITERATION_58f.md).
-- **It.93** remainder — **93l** support desk, **93m** domain IMAP inbox. Chrome + teams/account/events/time/widgets/catalog shipped in `beta.77`. Spec: [ITERATION_93.md](docs/en/ITERATION_93.md).
+- **It.93** — Falcon admin complete in this tree; **93l-2** canned replies / SLA notes remain listed in [ITERATION_93.md](docs/en/ITERATION_93.md).
 - **It.89** — Plugin capability model + Editor Tool SDK (manifest-registered custom tools). Spec: [ITERATION_89.md](docs/en/ITERATION_89.md).
 - **It.92** — Hybrid Engine SQLite **query index** (derived, optional) + Performance Guard advisor (suggest only, never auto-enable). Spec: [ITERATION_92.md](docs/en/ITERATION_92.md).
-- **Queue:** **It.58f** remainder → **It.93** 93l/93m → It.89 → It.92 → 70 → 76/77 → 75 → 48 (58g with 48). Isolated-origin widgets: **cancelled** as an iteration (archive only). Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+- **Queue:** **It.58f** remainder → It.89 → It.92 → 70 → 76/77 → 75 → 48 (58g with 48). Isolated-origin widgets: **cancelled** as an iteration (archive only). Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+
+---
+
+<a id="release-2-1-0-beta-78"></a>
+
+## [2.1.0-beta.78] – 2026-09-15
+
+It.93 remainder — Support Kanban and domain IMAP mail client.
+
+### Added
+
+- **It.93l** — Support **Kanban** (`data/support-board.json` + `data/support-tickets/{id}.json`): one admin item at `/platform/kanban` with board + column/label settings. Assignee pool is the Support team. Permission `support-ticket:manage`.
+- **It.93m** — Domain **IMAP** inbox at `/platform/mail`. Only `@site-domain` mailboxes; IMAP host must be on that domain (apex family, so `mail.example.com` ↔ `@example.com`). LAN Site URL is skipped; fallback is IMAP `allowedDomain`, company website, then IMAP host. Gmail/public providers stay rejected. Categories = folders, tags = IMAP flags, spam = server Junk/Spam. Passwords encrypted in `data/mail-secrets/`. No `.eml` dump into `data/`. Settings group `imap`. Permissions `mail:read-own` / `mail:read-all`. Compose/reply uses the existing SMTP group; From is the working mailbox. Operators can add extra `@site` mailboxes and switch the active one. Floating **New message** control stays visible while scrolling.
+- **It.93h** — SK/EN strings, Origin catalog, RBAC labels, tests for 93l/93m.
+
+### Fixed
+
+- **It.93m** — IMAP settings group is listed under Settings → System (next to SMTP), so operators can enable host/port/encryption.
+- **It.93l** — Kanban ticket dialog uses an opaque `admin-modal-panel` (not a transparent Tailwind `bg-admin-card` over the board).
+
+### Tests
+
+- PHPUnit: Kanban repository/controller, domain mail (IMAP guard, secrets, MIME, SMTP send, extra mailboxes).
+- Vitest: Kanban board, mail inbox (accordion, sandboxed HTML, compose/reply, account switch, floating compose).
 
 ---
 

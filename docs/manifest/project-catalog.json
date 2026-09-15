@@ -22,7 +22,7 @@
     {
       "id": "it.93",
       "titleKey": "origin.catalog.it93",
-      "phase": "partial",
+      "phase": "shipped",
       "since": "2.1.0-beta.77",
       "doc": "docs/en/ITERATION_93.md",
       "priority": "high",
@@ -40,12 +40,12 @@
         { "id": "93u", "titleKey": "origin.catalog.it93_secondary_nav", "phase": "shipped", "weight": 1 },
         { "id": "93v", "titleKey": "origin.catalog.it93_coming_soon", "phase": "shipped", "weight": 1 },
         { "id": "93w", "titleKey": "origin.catalog.it93_responsive_chrome", "phase": "shipped", "weight": 1 },
-        { "id": "93l", "titleKey": "origin.catalog.it93_support", "phase": "planned", "weight": 1 },
-        { "id": "93m", "titleKey": "origin.catalog.it93_mail", "phase": "planned", "weight": 1 },
+        { "id": "93l", "titleKey": "origin.catalog.it93_support", "phase": "shipped", "weight": 1 },
+        { "id": "93m", "titleKey": "origin.catalog.it93_mail", "phase": "shipped", "weight": 1 },
         { "id": "93d", "titleKey": "origin.catalog.it93_forms", "phase": "shipped", "weight": 1 },
         { "id": "93e", "titleKey": "origin.catalog.it93_editor", "phase": "shipped", "weight": 1 },
         { "id": "93g", "titleKey": "origin.catalog.it93_dark", "phase": "shipped", "weight": 1 },
-        { "id": "93h", "titleKey": "origin.catalog.it93_tests", "phase": "planned", "weight": 1 }
+        { "id": "93h", "titleKey": "origin.catalog.it93_tests", "phase": "shipped", "weight": 1 }
       ],
       "history": []
     },

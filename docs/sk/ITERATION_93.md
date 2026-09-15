@@ -1,6 +1,6 @@
 # Iterácia 93 — Admin v štýle Falcon (chrome + denné aplikácie)
 
-> **Stav:** ⏳ čiastočné (Wave 1–3 chrome + tímy + účet + udalosti + časovač + widgety + katalóg v `beta.77`; ďalej support / pošta)  
+> **Stav:** ✅ hotové (Wave 1–5 v strome; **93l-2** interné poznámky / SLA ostáva ako listed remainder)  
 > **Kanónická špecifikácia (EN):** [../en/ITERATION_93.md](../en/ITERATION_93.md)  
 > **Vzory:** [Falcon dashboard](https://prium.github.io/falcon/v3.26.0/index.html) · [Aurora account](https://aurora.themewagon.com/pages/account) · [Aurora time tracker](https://aurora.themewagon.com/apps/time-tracker) — inšpirácia, nie kópia
 
@@ -18,7 +18,7 @@ Pôvodná It.93 (izolovaný origin) je **zrušená**. Archív: [ISOLATED_ORIGIN.
 | App → Events | Firemné udalosti (zoznam + vytvorenie). Editoriálny kalendár ostáva na publikovanie obsahu |
 | Aurora account | Rozšírený profil používateľa (záložky) |
 | Time tracker | Čas na položku projektového plánu alebo udalosť |
-| Modules (forms/tables/charts/widgets) | Spoločný admin kit (`AdminOfferCard` katalóg). Nie e-shop, LMS, kanban, sociálne |
+| Modules (forms/tables/charts/widgets) | Spoločný admin kit (`AdminOfferCard` katalóg). Nie e-shop, LMS, sociálne. Support Kanban je naša tabuľa. |
 
 Komentáre ostávajú komentármi. Chat z Falconu nerobíme.
 

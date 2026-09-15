@@ -216,6 +216,12 @@ use PaginiumCMS\Http\Controllers\Admin\TimeEntryController;
 use PaginiumCMS\Core\TimeTracking\Services\TimeEntryRepository;
 use PaginiumCMS\Core\ComingSoon\Services\ComingSoonRepository;
 use PaginiumCMS\Http\Controllers\Admin\ComingSoonController;
+use PaginiumCMS\Core\Support\Services\SupportKanbanRepository;
+use PaginiumCMS\Http\Controllers\Admin\SupportKanbanController;
+use PaginiumCMS\Core\Mail\Services\MailboxSecretRepository;
+use PaginiumCMS\Core\Mail\Services\MailClientStateRepository;
+use PaginiumCMS\Core\Mail\Services\DomainMailService;
+use PaginiumCMS\Http\Controllers\Admin\MailController;
 use PaginiumCMS\Http\Controllers\Auth\AccountController;
 use PaginiumCMS\Modules\Security\Services\PublishedStaffDirectory;
 use PaginiumCMS\Http\Controllers\PublicApi\StaffDirectoryController;
@@ -1401,6 +1407,41 @@ return [
             get(ContentRepositoryInterface::class),
             get(JsonResponder::class)
         ),
+    SupportKanbanRepository::class => create(SupportKanbanRepository::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class)
+        ),
+    SupportKanbanController::class => create(SupportKanbanController::class)
+        ->constructor(
+            get(SupportKanbanRepository::class),
+            get(TeamRepository::class),
+            get(UserRepository::class),
+            get(JsonResponder::class)
+        ),
+    MailboxSecretRepository::class => create(MailboxSecretRepository::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class),
+            get(\PaginiumCMS\Core\Security\Services\EncryptionService::class)
+        ),
+    MailClientStateRepository::class => create(MailClientStateRepository::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class)
+        ),
+    DomainMailService::class => create(DomainMailService::class)
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(MailboxSecretRepository::class),
+            get(SecurityAuditStore::class),
+            get(MailClientStateRepository::class)
+        ),
+    MailController::class => create(MailController::class)
+        ->constructor(
+            get(DomainMailService::class),
+            get(JsonResponder::class)
+        ),
     AccountController::class => create(AccountController::class)
         ->constructor(
             get(UserRepository::class),
@@ -1891,7 +1932,9 @@ return [
             get(UserAvatarService::class),
             get(\PaginiumCMS\Modules\Comments\Services\CommentsRepository::class),
             get(\PaginiumCMS\Modules\Messages\Services\MessageRepository::class),
-            get(\PaginiumCMS\Modules\Newsletter\Contracts\NewsletterRepositoryInterface::class)
+            get(\PaginiumCMS\Modules\Newsletter\Contracts\NewsletterRepositoryInterface::class),
+            get(MailboxSecretRepository::class),
+            get(MailClientStateRepository::class)
         ),
     GdprController::class => create(GdprController::class)
         ->constructor(

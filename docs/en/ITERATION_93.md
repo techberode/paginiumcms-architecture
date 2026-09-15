@@ -1,6 +1,6 @@
 # Iteration 93 — Falcon-inspired admin (chrome + daily apps)
 
-> **Status:** ⏳ partial (Wave 1–2 chrome + 93k Teams + **93o account** + **93n events** + **93p time tracker** + **93u catalog menu** + **93v coming soon** + **93w responsive chrome** shipped; Wave 4–5 support/mail remain)  
+> **Status:** ✅ complete (Wave 1–5 shipped in tree; **93l-2** canned replies / SLA notes remain as a listed remainder, not a new iteration)  
 > **Priority:** 🟡 **P1 operator UX** — after [It.58f](ITERATION_58f.md) publishing blocks  
 > **Wave:** Admin chrome, then Falcon-like **apps** on our data  
 > **Depends on:** `ResponsiveLayout`, dashboard/analytics APIs, users/roles (It.84), project planner (It.87), comments/messages, SMTP settings  
@@ -178,7 +178,7 @@ Not Falcon’s demo mailbox. A **logged-in** mail viewer for mailboxes **under t
 | CSRF        | Mutating send uses global CSRF.                                                                                                                                       |
 
 
-v1: list folders + message list + read pane (Falcon inbox layout). Send can reuse SMTP in a follow-up inside 93m if the read path is green.
+v1: list folders + message list + read pane (Falcon inbox layout). Send/reply reuse the existing SMTP group; From is the operator mailbox.
 
 **Not v1:** fetching the whole internet, shared JWT to Roundcube, storing `.eml` in git, wildcards `*@`*.
 
@@ -216,20 +216,20 @@ v1: list folders + message list + read pane (Falcon inbox layout). Send can reus
 | **93u** | Catalog side menu (levels, hover preview, left/right, sticky; no clash with header)                       | ✅                                                              |     |
 | **93v** | Coming-soon countdown linked to a page/article and published as part of that page                         | ✅                                                              |     |
 | **93w** | Viewport audit: header/side/hamburger never overlap; grids adapt with side column                         | ✅                                                              |     |
-| **93l** | Support desk foundation (tickets + agents)                                                                | ⏳                                                              |     |
-| **93m** | Domain IMAP inbox (rules above)                                                                           | ⏳                                                              |     |
+| **93l** | Support desk foundation (tickets + agents)                                                                | ✅ Kanban board + settings (our tickets; not Falcon vendoring) |
+| **93m** | Domain IMAP inbox (rules above)                                                                           | ✅ folders / tags / Junk / SMTP send+reply; own `@site` mailbox only |
 | **93d** | Settings / navigation form chrome                                                                         | ✅                                                              |     |
 | **93e** | Content editor shell chrome                                                                               | ✅                                                              |     |
 | **93g** | Dark-mode token parity + admin light/dark toggle                                                          | ✅                                                              |     |
 | **93r** | Admin chrome colors (8) + gradient + top dropdown nav                                                     | ✅                                                              |     |
 | **93s** | Settings Apply preview + floating Apply/Save dock                                                         | ✅                                                              |     |
 | **93t** | Public **Widgets** (visual catalog + markdown insert) — CoreUI/Konrix *inspired*, not vendored            | ✅ a–c (d later)                                                |     |
-| **93h** | SK/EN leftovers, gate                                                                                     | ⏳                                                              |     |
+| **93h** | SK/EN leftovers, gate                                                                                     | ✅                                                              |     |
 
 
 Order: **Wave 1** `a → q → f → g` · **Wave 2** `b → j → c → d → e` · **Wave 3** `k → o → n → p` · **Wave 4–5** `l → m` · `h` with each wave.
 
-`93l` may ship foundation only; remainder stays listed in this spec (no new iteration number).
+`93l` foundation is the Kanban board (columns/labels + tickets assigned to the Support team). **93l-2** (internal notes, canned replies, SLA dueAt UI) stays listed here; no new iteration number.
 
 ### 93t — Public widgets (stepped)
 
@@ -257,7 +257,7 @@ Do **not** vendor CoreUI/Konrix. Existing landing shortcodes (`stats-row`, `cta-
 
 - Vendoring Falcon / Aurora source
 - Public theme restyle
-- LMS, e-commerce, kanban, social, chat app
+- LMS, e-commerce, social, chat app (support Kanban is **in** — our tickets, not Falcon’s board)
 - Isolated origin widgets (cancelled)
 - Inventing metrics the analytics API does not expose
 - IMAP for third-party domains or anonymous access
@@ -269,5 +269,5 @@ Do **not** vendor CoreUI/Konrix. Existing landing shortcodes (`stats-row`, `cta-
 ## Definition of Done (iteration)
 
 Wave 1–2: daily admin (shell, dashboard, analytics, lists) looks Falcon-like on **our** data.  
-Wave 3–5: teams, richer user profile, events, time log, support tickets, domain mail — with the mail rules above — gate green.  
+Wave 3–5: teams, richer user profile, events, time log, support Kanban, domain mail — with the mail rules above — gate green.  
 Public site identity unchanged. No ThemeWagon files in git.
