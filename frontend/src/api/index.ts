@@ -85,6 +85,7 @@ import { blogSidebarApi } from './blogSidebar';
 import { blueprintApi } from './blueprint';
 import { categoriesApi } from './categories';
 import { codeEditorApi } from './codeEditor';
+import { comingSoonApi } from './comingSoon';
 import { contentApi } from './content';
 import { demoApi } from './demo';
 import { eventsApi } from './events';
@@ -120,6 +121,7 @@ export const api = {
   blueprint: blueprintApi,
   categories: categoriesApi,
   codeEditor: codeEditorApi,
+  comingSoon: comingSoonApi,
   content: contentApi,
   demo: demoApi,
   events: eventsApi,
