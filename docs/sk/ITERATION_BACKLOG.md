@@ -1,6 +1,6 @@
 # PaginiumCMS — konsolidovaný backlog
 
-> **Snapshot:** `v2.1.0-beta.77` · 15. september 2026  
+> **Snapshot:** `v2.1.0-beta.78` · 15. september 2026  
 > **Fáza:** plný vývoj naplánovaných iterácií — [CONTINUATION](../en/CONTINUATION.md) (stabilizačný freeze **ukončený**)  
 > **Pravidlo:** aktívny backlog obsahuje iba nedodaný alebo presne ohraničený zostávajúci rozsah  
 > **No-SQL:** [architecture/NOSQL_MANDATE.md](architecture/NOSQL_MANDATE.md)
@@ -49,7 +49,7 @@ Tento dokument opravuje starý backlog, v ktorom sa miešali hotové iterácie, 
 | 23 | **It.85** Request diagnostics + admin APM clear | 🟡 | ✅ | **85a–85f** hotové — [ITERATION_85](../en/ITERATION_85.md); `v2.1.0-beta.59` |
 | 24 | **It.89** Plugin capability model | 🟡 | ⏳ | [ITERATION_89](../en/ITERATION_89.md) |
 | 25 | **It.92** SQLite query index + Guard advisor | 🟡 | ⏳ | odvodený katalóg — [ITERATION_92](ITERATION_92.md) |
-| 26 | **It.93** Admin v štýle Falcon (chrome + aplikácie) | 🟡 P1 | 🟡 čiastočné `beta.77` | chrome + tímy/účet/udalosti/čas/widgety/katalóg; **93l/93m** ostávajú — [ITERATION_93](ITERATION_93.md) |
+| 26 | **It.93** Admin v štýle Falcon (chrome + aplikácie) | 🟡 P1 | ✅ shipped | chrome v `beta.77`; **93l** Kanban + **93m** IMAP v `beta.78` — [ITERATION_93](ITERATION_93.md) |
 
 ---
 

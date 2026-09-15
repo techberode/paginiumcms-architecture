@@ -262,6 +262,21 @@ class AuthorizationManager implements AuthorizationInterface
         }
 
         if ($role === AuthorizationInterface::ROLE_ADMIN
+            && !in_array('support-ticket:manage', $permissions, true)
+        ) {
+            $permissions[] = 'support-ticket:manage';
+            $permissions = PermissionCatalog::normalizeList($permissions);
+        }
+
+        if ($role === AuthorizationInterface::ROLE_ADMIN
+            && !in_array('mail:read-all', $permissions, true)
+        ) {
+            $permissions[] = 'mail:read-own';
+            $permissions[] = 'mail:read-all';
+            $permissions = PermissionCatalog::normalizeList($permissions);
+        }
+
+        if ($role === AuthorizationInterface::ROLE_ADMIN
             && !$this->hasContentDomainPermission($permissions)
         ) {
             $permissions[] = 'content:manage';
@@ -290,6 +305,22 @@ class AuthorizationManager implements AuthorizationInterface
             && !in_array('time-entry:manage', $permissions, true)
         ) {
             $permissions[] = 'time-entry:manage';
+            $permissions = PermissionCatalog::normalizeList($permissions);
+        }
+
+        if ($role === AuthorizationInterface::ROLE_EDITOR
+            && $this->hasContentEditPermission($permissions)
+            && !in_array('support-ticket:manage', $permissions, true)
+        ) {
+            $permissions[] = 'support-ticket:manage';
+            $permissions = PermissionCatalog::normalizeList($permissions);
+        }
+
+        if ($role === AuthorizationInterface::ROLE_EDITOR
+            && $this->hasContentEditPermission($permissions)
+            && !in_array('mail:read-own', $permissions, true)
+        ) {
+            $permissions[] = 'mail:read-own';
             $permissions = PermissionCatalog::normalizeList($permissions);
         }
 

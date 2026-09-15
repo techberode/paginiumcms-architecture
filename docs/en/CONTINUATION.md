@@ -1,7 +1,7 @@
 # PaginiumCMS — development continuation context
 
 > **Purpose:** concise, current handoff for the next development session  
-> **Checkpoint:** September 15, 2026 · `v2.1.0-beta.77`  
+> **Checkpoint:** September 15, 2026 · `v2.1.0-beta.78`  
 > **Active phase:** **Full planned-iteration development** — stabilization freeze lifted
 
 This document replaces the old chronological “log of everything.” Historical detail remains in [`CHANGELOG.md`](../../CHANGELOG.md), [`ISSUES.md`](ISSUES.md), and individual `ITERATION_*.md` files.
@@ -28,8 +28,8 @@ Historical freeze record: [STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) (supe
 
 | Area | Status |
 |------|--------|
-| Latest tag | ✅ `v2.1.0-beta.77` — It.93 chrome + apps (teams, account, events, time, widgets, catalog menu) |
-| Unreleased (this tree) | — **It.58f** visual page blocks (**58f-a/b** done) · **It.93** remainder **93l/93m** · **It.89** plugin SDK · **It.92** SQLite |
+| Latest tag | ✅ `v2.1.0-beta.78` — It.93l Support Kanban + It.93m domain IMAP mail |
+| Unreleased (this tree) | — **It.58f** visual page blocks (**58f-a/b** done) · **It.89** plugin SDK · **It.92** SQLite |
 | It.25 setup wizard | ✅ basic + M1+ (`beta.62`–`beta.66`) |
 | It.83 theme runtime | ✅ shipped `beta.59` (`terminal-breach`, `clean-journal`) |
 | It.84 / It.86 | ✅ shipped |
@@ -44,7 +44,7 @@ Do **not** invent new iteration numbers. Finish specs that already exist.
 | Order | Item | Why this order |
 |------:|------|----------------|
 | 1 | **It.58f** Visual page blocks | Dual amateur/developer publishing — [ITERATION_58f.md](ITERATION_58f.md) |
-| 2 | **It.93** Falcon-inspired admin (chrome + apps) | Dashboard/analytics look, teams, support, domain mail, events, time tracker — [ITERATION_93.md](ITERATION_93.md) |
+| 2 | **It.93** Falcon-inspired admin (chrome + apps) | Dashboard/analytics look, teams, support Kanban, domain mail, events, time tracker — [ITERATION_93.md](ITERATION_93.md) **shipped `beta.77`–`78`** |
 | 3 | **It.89** Plugin capability model | Safe editor-tool plugins (It.90e SDK overlap) |
 | 4 | **It.92** SQLite query index + Guard advisor | Derived catalog index; files stay SSOT — [ITERATION_92.md](ITERATION_92.md) |
 | 5 | **It.70** GitHub API publisher UI | Local Git already shipped |
@@ -54,7 +54,7 @@ Do **not** invent new iteration numbers. Finish specs that already exist.
 
 **Optional / later:** It.82d Origin host metrics. Isolated-origin widgets are **not** queued (cancelled iteration; archive only: [ISOLATED_ORIGIN.md](architecture/ISOLATED_ORIGIN.md)).
 
-**Active slice:** **It.93** Wave 4 next **93l** support desk (chrome + teams/account/events/time/widgets/catalog shipped in `beta.77`). Parallel: **It.58f-d** live preview. Settings field i18n: [SETTINGS_I18N.md](SETTINGS_I18N.md).
+**Active slice:** **It.58f-d** live preview. It.93 (including **93l** Kanban + **93m** domain IMAP) shipped in `v2.1.0-beta.78`. Settings field i18n: [SETTINGS_I18N.md](SETTINGS_I18N.md).
 
 ---
 
@@ -89,7 +89,7 @@ curl -s http://127.0.0.1:8080/api/setup/preflight | jq .
 | [ITERATION_78.md](ITERATION_78.md) / [ITERATION_79.md](ITERATION_79.md) | Upload policy + DAM video (shipped `beta.70`–`71`) |
 | [ITERATION_90.md](ITERATION_90.md) | Editor Workbench (shipped `beta.72`–`73`) |
 | [ITERATION_91.md](ITERATION_91.md) | Trusted HTML & embeds (shipped `beta.75`) |
-| [RELEASE_2_1_0_BETA_77.md](RELEASE_2_1_0_BETA_77.md) | Latest release notes |
+| [RELEASE_2_1_0_BETA_78.md](RELEASE_2_1_0_BETA_78.md) | Latest release notes |
 | [ITERATION_89.md](ITERATION_89.md) | Plugin capability model (planned) |
 | [ITERATION_92.md](ITERATION_92.md) | SQLite query index + Guard advisor (planned) |
 | [ITERATION_93.md](ITERATION_93.md) | Falcon-inspired admin (chrome + teams, support, domain mail, events, time tracker) |

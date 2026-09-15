@@ -35,6 +35,14 @@ final class PermissionCatalogTest extends TestCase
         $this->assertContains('time-entry:manage', PermissionCatalog::ALL);
         $this->assertContains('time-entry:manage', $admin);
         $this->assertContains('time-entry:manage', $editor);
+        $this->assertContains('support-ticket:manage', PermissionCatalog::ALL);
+        $this->assertContains('support-ticket:manage', $admin);
+        $this->assertContains('support-ticket:manage', $editor);
+        $this->assertContains('mail:read-own', PermissionCatalog::ALL);
+        $this->assertContains('mail:read-own', $admin);
+        $this->assertContains('mail:read-all', $admin);
+        $this->assertContains('mail:read-own', $editor);
+        $this->assertNotContains('mail:read-all', $editor);
     }
 
     public function testCatalogIncludesThemeStudioPermissions(): void

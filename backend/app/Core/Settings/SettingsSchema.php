@@ -185,6 +185,17 @@ final class SettingsSchema
                     ['key' => 'fromName', 'type' => 'string', 'label' => 'From name', 'default' => 'PaginiumCMS', 'rules' => ['string', 'max:120']],
                 ],
             ],
+            'imap' => [
+                'label' => 'Email / IMAP',
+                'fields' => [
+                    ['key' => 'enabled', 'type' => 'bool', 'label' => 'Zapnúť IMAP schránku', 'default' => false, 'rules' => ['bool'], 'help' => 'Zapnuté = prihlásení operátori čítajú poštu @doména-webu. Vypnuté = Mail modul je tichý. Gmail a cudzie domény sú zakázané.'],
+                    ['key' => 'allowedDomain', 'type' => 'string', 'label' => 'Doména schránok', 'default' => '', 'rules' => ['string', 'max:255'], 'help' => 'Verejná doména pošty, napr. webland.fun. Povinné, keď URL webu je LAN IP (192.168.x). Nie Gmail.'],
+                    ['key' => 'host', 'type' => 'string', 'label' => 'IMAP host', 'default' => '', 'rules' => ['string', 'max:255'], 'help' => 'Len host na doméne webu, napr. mail.example.com. Nie Gmail.'],
+                    ['key' => 'port', 'type' => 'int', 'label' => 'IMAP port', 'default' => 993, 'rules' => ['int', 'min:1', 'max:65535']],
+                    ['key' => 'encryption', 'type' => 'enum', 'label' => 'Šifrovanie', 'default' => 'ssl', 'options' => ['none', 'tls', 'ssl'], 'rules' => ['in:none,tls,ssl']],
+                    ['key' => 'spamFolder', 'type' => 'string', 'label' => 'Priečinok spamu', 'default' => 'Junk', 'rules' => ['string', 'max:40'], 'help' => 'Názov serverového priečinka Junk/Spam. Správy sa tam presúvajú, neukladajú sa do data/.'],
+                ],
+            ],
             'notifications' => [
                 'label' => 'Toast notifications',
                 'fields' => [

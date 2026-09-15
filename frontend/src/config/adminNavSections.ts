@@ -39,6 +39,7 @@ import {
   Boxes,
   Radar,
   Users2,
+  Columns,
 } from 'lucide-react';
 import type { AdminNavItemDef, AdminNavSectionDef } from './adminNavTypes';
 
@@ -107,6 +108,8 @@ export const ADMIN_NAV_SECTIONS: AdminNavSectionDef[] = [
     items: [
       { id: 'comments', labelKey: 'admin.nav.comments', href: '/comments', icon: MessageSquare, adminOnly: true },
       { id: 'messages', labelKey: 'admin.nav.messages', href: '/messages', icon: Mail, adminOnly: true },
+      { id: 'kanban', labelKey: 'admin.nav.kanban', href: '/platform/kanban', icon: Columns },
+      { id: 'mail', labelKey: 'admin.nav.mail', href: '/platform/mail', icon: Mail },
       { id: 'newsletter', labelKey: 'admin.nav.newsletter', href: '/newsletter', icon: Newspaper, adminOnly: true },
     ],
   },

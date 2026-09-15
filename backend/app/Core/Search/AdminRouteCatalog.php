@@ -36,6 +36,8 @@ final class AdminRouteCatalog
             ['id' => 'users', 'title' => 'Používatelia', 'path' => '/users', 'keywords' => 'users pouzivatelia accounts', 'adminOnly' => true],
             ['id' => 'events', 'title' => 'Udalosti', 'path' => '/platform/events', 'keywords' => 'events udalosti calendar planner', 'adminOnly' => true],
             ['id' => 'time-tracker', 'title' => 'Časovač', 'path' => '/platform/time-tracker', 'keywords' => 'time tracker casovac timer', 'adminOnly' => false],
+            ['id' => 'kanban', 'title' => 'Kanban', 'path' => '/platform/kanban', 'keywords' => 'kanban support tickets tabula', 'adminOnly' => false],
+            ['id' => 'mail', 'title' => 'Pošta', 'path' => '/platform/mail', 'keywords' => 'mail imap inbox posta', 'adminOnly' => false],
             ['id' => 'account', 'title' => 'Účet', 'path' => '/account', 'keywords' => 'account ucet profil 2fa password security public card', 'adminOnly' => false],
             ['id' => 'settings', 'title' => 'Nastavenia', 'path' => '/settings', 'keywords' => 'settings nastavenia smtp config', 'adminOnly' => false],
             ['id' => 'security-audit', 'title' => 'Bezpeč. audit', 'path' => '/security/audit', 'keywords' => 'security audit bezpecnost', 'adminOnly' => true],

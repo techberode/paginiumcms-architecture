@@ -37,6 +37,8 @@ export const adminSk: MessageTree = {
     teams: 'Tímy',
     events: 'Udalosti',
     timeTracker: 'Časovač',
+    kanban: 'Kanban',
+    mail: 'Pošta',
     accountSecurity: 'Účet',
     apiKeys: 'API kľúče',
     redirects: 'Redirecty',

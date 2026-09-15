@@ -24,6 +24,8 @@ const ADMIN_ROUTES = new Set([
   '/users',
   '/platform/teams',
   '/platform/events',
+  '/platform/kanban',
+  '/platform/mail',
   '/platform/api-keys',
   '/platform/redirects',
   '/platform/webhooks',
