@@ -15,7 +15,7 @@ import { MarkdownEditor } from './components/backend/MarkdownEditor';
 import { BackupManager } from './components/backend/BackupManager';
 import { SettingsView } from './components/backend/SettingsView';
 import { TranslationEditor } from './components/backend/TranslationEditor';
-import { AccountSecurityView } from './components/backend/AccountSecurityView';
+import { AccountView } from './components/backend/AccountView';
 import { UsersManager } from './components/backend/UsersManager';
 import { NotificationsOverview } from './components/backend/NotificationsOverview';
 import { SchedulerView } from './components/backend/SchedulerView';
@@ -55,6 +55,10 @@ import { SystemUpdateView } from './components/backend/SystemUpdateView';
 import { ApiKeysManager } from './components/backend/ApiKeysManager';
 import { RedirectsManager } from './components/backend/RedirectsManager';
 import { ShortcodesManager } from './components/backend/ShortcodesManager';
+import { WidgetsManager } from './components/backend/WidgetsManager';
+import { TeamsManager } from './components/backend/TeamsManager';
+import { EventsManager } from './components/backend/EventsManager';
+import { TimeTrackerView } from './components/backend/TimeTrackerView';
 import { CategoriesManager } from './components/backend/CategoriesManager';
 import { RolesManager } from './components/backend/RolesManager';
 import { SnippetsManager } from './components/backend/SnippetsManager';
@@ -230,12 +234,19 @@ function App() {
         <Route path="/platform/redirects" element={<RedirectsManager />} />
         <Route path="/platform/webhooks" element={<WebhooksManager />} />
         <Route path="/platform/shortcodes" element={<ShortcodesManager />} />
+        <Route path="/platform/widgets" element={<WidgetsManager />} />
         <Route path="/platform/snippets" element={<SnippetsManager />} />
         <Route path="/platform/origin" element={<OriginPanelView />} />
         <Route path="/settings" element={<SettingsView />} />
         <Route path="/translations" element={<TranslationEditor />} />
-        <Route path="/account/security" element={<AccountSecurityView />} />
+        <Route path="/account" element={<AccountView />} />
+        <Route path="/account/public" element={<AccountView />} />
+        <Route path="/account/security" element={<AccountView />} />
+        <Route path="/account/preferences" element={<AccountView />} />
         <Route path="/users" element={<UsersManager />} />
+        <Route path="/platform/teams" element={<TeamsManager />} />
+        <Route path="/platform/events" element={<EventsManager />} />
+        <Route path="/platform/time-tracker" element={<TimeTrackerView />} />
         <Route path="/developer/logs" element={<DeveloperLogsViewer />} />
       </Route>
 

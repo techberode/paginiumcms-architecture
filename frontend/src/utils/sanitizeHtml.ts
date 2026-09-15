@@ -3,7 +3,7 @@ import DOMPurify from 'dompurify';
 const ALLOWED_TAGS = [
   'p', 'br', 'strong', 'em', 'ul', 'ol', 'li', 'a', 'img', 'video', 'source', 'blockquote',
   'code', 'pre', 'h1', 'h2', 'h3', 'h4', 'table', 'thead', 'tbody', 'tr', 'th', 'td',
-  'div', 'article', 'section', 'aside', 'span', 'iframe',
+  'div', 'article', 'section', 'aside', 'span', 'footer', 'cite', 'iframe',
 ];
 
 const ALLOWED_ATTR = [

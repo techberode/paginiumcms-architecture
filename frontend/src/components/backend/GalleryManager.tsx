@@ -30,6 +30,7 @@ import { useToast } from '../../hooks/useToast';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { useI18n } from '../../context/I18nContext';
 import { BulkActionBar } from './BulkActionBar';
+import { AdminFormActions } from './AdminFormActions';
 import { summarizeBulkResult } from '../../types/bulk';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { FeatureGallerySection } from '../frontend/FeatureGallerySection';
@@ -553,14 +554,17 @@ export const GalleryManager: React.FC = () => {
               </select>
             </label>
 
-            <div className="flex justify-end gap-2 pt-2">
-              <button type="button" className="btn btn-secondary" onClick={closeForm} disabled={saving}>
-                {t('gallery.actions.cancel')}
-              </button>
-              <button type="button" className="btn btn-primary" onClick={() => void handleSave()} disabled={saving}>
-                {t('gallery.actions.save')}
-              </button>
-            </div>
+            <AdminFormActions
+              onSave={() => void handleSave()}
+              saveLabel={t('gallery.actions.save')}
+              saveDisabled={saving}
+              saveBusy={saving}
+              extra={
+                <button type="button" className="btn btn-secondary" onClick={closeForm} disabled={saving}>
+                  {t('gallery.actions.cancel')}
+                </button>
+              }
+            />
           </div>
         </div>
       ) : null}

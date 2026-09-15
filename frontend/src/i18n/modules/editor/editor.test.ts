@@ -22,5 +22,9 @@ describe('editor i18n module', () => {
     expect(translate('en', 'editor.sitePreview.title')).toBe('Page preview');
     expect(translate('sk', 'editor.shell.statusLabels.scheduled')).toBe('Naplánované');
     expect(translate('en', 'editor.shell.scheduledAt')).toBe('Publish at');
+    expect(translate('sk', 'editor.outline.title')).toBe('Bloky stránky');
+    expect(translate('en', 'editor.outline.blocks.landing-hero')).toBe('Hero');
+    expect(translate('sk', 'editor.widgets.insert')).toBe('Vložiť widget');
+    expect(translate('en', 'editor.widgets.title')).toBe('Insert widget');
   });
 });

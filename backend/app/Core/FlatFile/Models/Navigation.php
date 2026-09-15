@@ -137,12 +137,67 @@ class Navigation implements JsonSerializable
     }
 
     /**
-     * {@inheritDoc}
- * @return array<int|string, mixed>
- */public function jsonSerialize(): array
+     * Public payload: drop disabled items and any child whose ancestor is off.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function toPublicPayload(): array
     {
-        return array_map(function (NavigationItem $item): array {
+        $all = $this->jsonSerialize();
+        $byId = [];
+        foreach ($all as $item) {
+            $id = (string) ($item['id'] ?? '');
+            if ($id !== '') {
+                $byId[$id] = $item;
+            }
+        }
+
+        $public = [];
+        foreach ($all as $item) {
+            if (!$this->isChainEnabled($item, $byId)) {
+                continue;
+            }
+            $public[] = $item;
+        }
+
+        return $public;
+    }
+
+    /**
+     * @param array<string, mixed> $item
+     * @param array<string, array<string, mixed>> $byId
+     */
+    private function isChainEnabled(array $item, array $byId): bool
+    {
+        $current = $item;
+        $guard = 0;
+        while ($guard < 12) {
+            $rawEnabled = $current['enabled'] ?? true;
+            if ($rawEnabled === false || $rawEnabled === 0 || $rawEnabled === '0' || $rawEnabled === 'false') {
+                return false;
+            }
+            $parentId = $current['parentId'] ?? null;
+            if (!is_string($parentId) || $parentId === '') {
+                return true;
+            }
+            if (!isset($byId[$parentId])) {
+                return true;
+            }
+            $current = $byId[$parentId];
+            $guard++;
+        }
+
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     * @return list<array<string, mixed>>
+     */
+    public function jsonSerialize(): array
+    {
+        return array_values(array_map(static function (NavigationItem $item): array {
             return $item->jsonSerialize();
-        }, $this->items);
+        }, $this->items));
     }
 }

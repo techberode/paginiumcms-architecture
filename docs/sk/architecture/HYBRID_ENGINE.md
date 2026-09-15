@@ -110,6 +110,7 @@ flowchart TB
 | **API** | Autentifikácia, autorizácia, validácia, odpovede a HTTP kontrakt | Nie |
 | **Distribúcia** | Git commit/push, build hook, statický výstup | Pipeline |
 | **Pozorovateľnosť** | Latencia, pamäť, I/O, chybovosť, alerty | Logy a metriky |
+| **Izolovaný origin** | Voliteľný iframe na origin operátora (widget JS nikdy v CMS) | ❌ Nie CMS SSOT |
 
 ---
 
@@ -176,6 +177,7 @@ Ak kľúče chýbajú, systém musí zachovať kompatibilné **Classic** správa
 | Asistovaný preklad cez LibreTranslate | ⏳ Plán | **It.76** |
 | Asistovaný preklad cez cloud providerov | ⏳ Plán | **It.77** |
 | JSON Schema pre všetky Monaco zápisy | ⏳ Plán | registry schém v **It.68** |
+| Widgety na izolovanom origíne | ❌ Zrušené | [ISOLATED_ORIGIN.md](../en/architecture/ISOLATED_ORIGIN.md) — nikdy sa neimplementovalo; 93 = Falcon admin |
 
 ---
 

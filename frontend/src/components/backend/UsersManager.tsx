@@ -8,7 +8,6 @@ import {
   KeyRound,
   Eye,
   EyeOff,
-  Check,
   Shield,
   FileArchive,
   UserX,
@@ -37,11 +36,13 @@ import { getValidationRulesFor } from '../../api/validation';
 import { useToast } from '../../hooks/useToast';
 import { useAuth } from '../../hooks/useAuth';
 import { useI18n } from '../../context/I18nContext';
+import { AdminFormActions } from './AdminFormActions';
 import { usePasswordPolicy } from '../../hooks/usePasswordPolicy';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { BulkActionBar } from './BulkActionBar';
 import { AdminHintCard } from './AdminHintCard';
 import { UserAvatarPicker } from './UserAvatarPicker';
+import { TimezoneSelect } from './TimezoneSelect';
 import { summarizeBulkResult } from '../../types/bulk';
 
 type FormState = CreateUserPayload & {
@@ -50,6 +51,9 @@ type FormState = CreateUserPayload & {
   active: boolean;
   twoFactorEnabled: boolean;
   bio: string;
+  jobTitle: string;
+  phone: string;
+  timezone: string;
 };
 
 const emptyForm = (): FormState => ({
@@ -57,6 +61,9 @@ const emptyForm = (): FormState => ({
   username: '',
   name: '',
   bio: '',
+  jobTitle: '',
+  phone: '',
+  timezone: '',
   role: 'USER',
   password: '',
   passwordConfirm: '',
@@ -172,6 +179,9 @@ export const UsersManager: React.FC = () => {
           username: form.username,
           name: form.name,
           bio: form.bio,
+          jobTitle: form.jobTitle,
+          phone: form.phone,
+          timezone: form.timezone,
           role: form.role as UserRole,
           active: form.active,
           twoFactorEnabled: form.twoFactorEnabled,
@@ -213,6 +223,9 @@ export const UsersManager: React.FC = () => {
       username: user.username ?? deriveUsername(user.email),
       name: user.name,
       bio: user.bio ?? '',
+      jobTitle: user.jobTitle ?? '',
+      phone: user.phone ?? '',
+      timezone: user.timezone ?? '',
       role: (user.roles[0] as UserRole) || 'USER',
       password: '',
       passwordConfirm: '',
@@ -232,6 +245,9 @@ export const UsersManager: React.FC = () => {
         active: detail.user.active ?? true,
         username: detail.user.username ?? prev.username,
         bio: detail.user.bio ?? prev.bio,
+        jobTitle: detail.user.jobTitle ?? prev.jobTitle,
+        phone: detail.user.phone ?? prev.phone,
+        timezone: detail.user.timezone ?? prev.timezone,
       }));
     }
   };
@@ -417,6 +433,32 @@ export const UsersManager: React.FC = () => {
               <p className="mt-1 text-xs text-slate-500">{t('users.form.bioHint')}</p>
             </Field>
 
+            <Field label={t('users.form.jobTitle')} error={errors.jobTitle?.[0]}>
+              <input
+                className={inputClass(Boolean(errors.jobTitle))}
+                value={form.jobTitle}
+                onChange={(e) => setForm((f) => ({ ...f, jobTitle: e.target.value }))}
+              />
+            </Field>
+
+            <Field label={t('users.form.phone')} error={errors.phone?.[0]}>
+              <input
+                className={inputClass(Boolean(errors.phone))}
+                value={form.phone}
+                onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+              />
+            </Field>
+
+            <div className="md:col-span-2">
+              <TimezoneSelect
+                value={form.timezone}
+                onChange={(timezone) => setForm((f) => ({ ...f, timezone }))}
+                label={t('users.form.timezone')}
+                help={t('users.form.timezoneHint')}
+                error={errors.timezone?.[0]}
+              />
+            </div>
+
             <Field label={t('users.form.email')} error={errors.email?.[0]}>
               <div className="relative">
                 <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -562,17 +604,14 @@ export const UsersManager: React.FC = () => {
             </div>
           )}
 
-          <div className="flex flex-wrap gap-3 pt-2">
-            <button
-              type="button"
-              onClick={() => void handleSave()}
-              disabled={saving}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white text-sm font-bold shadow-lg shadow-indigo-500/20 disabled:opacity-50"
-            >
-              <Check size={16} />
-              {saving ? t('users.form.saving') : editingId ? t('users.form.save') : t('users.form.create')}
-            </button>
-            {editingId && (
+          <div className="flex flex-wrap items-center gap-3 pt-2">
+            <AdminFormActions
+              onSave={() => void handleSave()}
+              saveLabel={saving ? t('users.form.saving') : editingId ? t('users.form.save') : t('users.form.create')}
+              saveDisabled={saving}
+              saveBusy={saving}
+            />
+            {editingId ? (
               <button
                 type="button"
                 onClick={resetForm}
@@ -580,7 +619,7 @@ export const UsersManager: React.FC = () => {
               >
                 {t('users.form.cancel')}
               </button>
-            )}
+            ) : null}
           </div>
         </div>
       </section>

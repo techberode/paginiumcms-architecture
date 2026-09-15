@@ -1,8 +1,71 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-09-10",
+  "updatedAt": "2026-09-15",
   "checklistDoc": "docs/manifest/implementation-checklist.json",
   "iterations": [
+    {
+      "id": "it.92",
+      "titleKey": "origin.catalog.it92",
+      "phase": "planned",
+      "doc": "docs/en/ITERATION_92.md",
+      "priority": "medium",
+      "items": [
+        { "id": "92a", "titleKey": "origin.catalog.it92_json_adapter", "phase": "planned", "weight": 1 },
+        { "id": "92b", "titleKey": "origin.catalog.it92_sqlite_driver", "phase": "planned", "weight": 1 },
+        { "id": "92c", "titleKey": "origin.catalog.it92_switch", "phase": "planned", "weight": 1 },
+        { "id": "92d", "titleKey": "origin.catalog.it92_advisor", "phase": "planned", "weight": 1 },
+        { "id": "92e", "titleKey": "origin.catalog.it92_admin", "phase": "planned", "weight": 1 },
+        { "id": "92f", "titleKey": "origin.catalog.it92_tests", "phase": "planned", "weight": 1 }
+      ],
+      "history": []
+    },
+    {
+      "id": "it.93",
+      "titleKey": "origin.catalog.it93",
+      "phase": "partial",
+      "since": "2.1.0-beta.77",
+      "doc": "docs/en/ITERATION_93.md",
+      "priority": "high",
+      "items": [
+        { "id": "93a", "titleKey": "origin.catalog.it93_shell", "phase": "shipped", "weight": 1 },
+        { "id": "93q", "titleKey": "origin.catalog.it93_kit", "phase": "shipped", "weight": 1 },
+        { "id": "93f", "titleKey": "origin.catalog.it93_ux", "phase": "shipped", "weight": 1 },
+        { "id": "93b", "titleKey": "origin.catalog.it93_dashboard", "phase": "shipped", "weight": 1 },
+        { "id": "93j", "titleKey": "origin.catalog.it93_analytics", "phase": "shipped", "weight": 1 },
+        { "id": "93c", "titleKey": "origin.catalog.it93_lists", "phase": "shipped", "weight": 1 },
+        { "id": "93k", "titleKey": "origin.catalog.it93_teams", "phase": "shipped", "weight": 1 },
+        { "id": "93o", "titleKey": "origin.catalog.it93_account", "phase": "shipped", "weight": 1 },
+        { "id": "93n", "titleKey": "origin.catalog.it93_events", "phase": "shipped", "weight": 1 },
+        { "id": "93p", "titleKey": "origin.catalog.it93_time", "phase": "shipped", "weight": 1 },
+        { "id": "93u", "titleKey": "origin.catalog.it93_secondary_nav", "phase": "shipped", "weight": 1 },
+        { "id": "93v", "titleKey": "origin.catalog.it93_coming_soon", "phase": "shipped", "weight": 1 },
+        { "id": "93w", "titleKey": "origin.catalog.it93_responsive_chrome", "phase": "shipped", "weight": 1 },
+        { "id": "93l", "titleKey": "origin.catalog.it93_support", "phase": "planned", "weight": 1 },
+        { "id": "93m", "titleKey": "origin.catalog.it93_mail", "phase": "planned", "weight": 1 },
+        { "id": "93d", "titleKey": "origin.catalog.it93_forms", "phase": "shipped", "weight": 1 },
+        { "id": "93e", "titleKey": "origin.catalog.it93_editor", "phase": "shipped", "weight": 1 },
+        { "id": "93g", "titleKey": "origin.catalog.it93_dark", "phase": "shipped", "weight": 1 },
+        { "id": "93h", "titleKey": "origin.catalog.it93_tests", "phase": "planned", "weight": 1 }
+      ],
+      "history": []
+    },
+    {
+      "id": "it.58f",
+      "titleKey": "origin.catalog.it58f",
+      "phase": "partial",
+      "doc": "docs/en/ITERATION_58f.md",
+      "priority": "high",
+      "items": [
+        { "id": "58f-a", "titleKey": "origin.catalog.it58f_parse", "phase": "shipped", "weight": 1 },
+        { "id": "58f-b", "titleKey": "origin.catalog.it58f_palette", "phase": "shipped", "weight": 1 },
+        { "id": "58f-c", "titleKey": "origin.catalog.it58f_dnd", "phase": "planned", "weight": 1 },
+        { "id": "58f-d", "titleKey": "origin.catalog.it58f_preview", "phase": "planned", "weight": 1 },
+        { "id": "58f-e", "titleKey": "origin.catalog.it58f_hero", "phase": "planned", "weight": 1 },
+        { "id": "58f-f", "titleKey": "origin.catalog.it58f_gallery", "phase": "planned", "weight": 1 },
+        { "id": "58f-g", "titleKey": "origin.catalog.it58f_tests", "phase": "planned", "weight": 1 }
+      ],
+      "history": []
+    },
     {
       "id": "it.88",
       "titleKey": "origin.catalog.it88",

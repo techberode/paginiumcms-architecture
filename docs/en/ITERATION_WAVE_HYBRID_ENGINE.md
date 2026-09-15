@@ -31,6 +31,7 @@ flowchart LR
     I68 --> I69[It.69 Cache + HTTP]
     I68 --> I70[It.70 Git publish]
     I69 --> I71[It.71 Performance Guard]
+    I71 --> I92[It.92 Query index SQLite advisor]
     I68 --> I72[It.72 Media drivers]
     I68 --> I73[It.73 Multi-locale model]
     I68 --> I74[It.74 API keys + JWT]
@@ -86,6 +87,8 @@ This document canonically assigns It.73 to **HE-6**. The earlier draft inconsist
 | **It.58d** layout remainder | parallel product stream | must not create a second content model or publish pipeline |
 | **It.48** static render | continuation of It.70 | a build trigger is a separate step after successful Git publish |
 | **It.46** host metrics remainder | complement to It.71 | host agent and in-request PHP APM remain separate layers |
+| **It.92** SQLite query index | continuation of It.19 + It.71 | derived only; Guard suggests, never auto-enables |
+| Isolated origin widgets | cancelled (archive) | [ISOLATED_ORIGIN.md](architecture/ISOLATED_ORIGIN.md) — not on the queue |
 | **It.25** setup/update UX | pre-Final | the wizard must label optional services as optional |
 | Community beta | continuous gate | clean install, upgrade, rollback, and non-maintainer UX |
 

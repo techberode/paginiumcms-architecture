@@ -15,13 +15,13 @@ import {
   ScrollText,
   Shield,
   ShieldAlert,
-  ShieldCheck,
   Layers,
   FlaskConical,
   Bell,
   GitBranch,
   HardDrive,
   Trash2,
+  Timer,
   CalendarClock,
   CalendarDays,
   ListChecks,
@@ -36,7 +36,9 @@ import {
   Webhook,
   Code2,
   BookMarked,
+  Boxes,
   Radar,
+  Users2,
 } from 'lucide-react';
 import type { AdminNavItemDef, AdminNavSectionDef } from './adminNavTypes';
 
@@ -88,6 +90,12 @@ export const ADMIN_NAV_SECTIONS: AdminNavSectionDef[] = [
         icon: ListChecks,
         projectPlannerOnly: true,
       },
+      {
+        id: 'time-tracker',
+        labelKey: 'admin.nav.timeTracker',
+        href: '/platform/time-tracker',
+        icon: Timer,
+      },
       { id: 'media', labelKey: 'admin.nav.media', href: '/media', icon: ImageIcon },
       { id: 'gallery', labelKey: 'admin.nav.gallery', href: '/gallery', icon: LayoutGrid, adminOnly: true },
       { id: 'navigation', labelKey: 'admin.nav.navigation', href: '/navigation', icon: Database },
@@ -109,6 +117,20 @@ export const ADMIN_NAV_SECTIONS: AdminNavSectionDef[] = [
       { id: 'settings', labelKey: 'admin.nav.settings', href: '/settings', icon: Settings },
       { id: 'translations', labelKey: 'admin.nav.translations', href: '/translations', icon: Languages, adminOnly: true },
       { id: 'users', labelKey: 'admin.nav.users', href: '/users', icon: Users, adminOnly: true },
+      {
+        id: 'teams',
+        labelKey: 'admin.nav.teams',
+        href: '/platform/teams',
+        icon: Users2,
+        adminOnly: true,
+      },
+      {
+        id: 'events',
+        labelKey: 'admin.nav.events',
+        href: '/platform/events',
+        icon: CalendarDays,
+        adminOnly: true,
+      },
       {
         id: 'api-keys',
         labelKey: 'admin.nav.apiKeys',
@@ -138,6 +160,13 @@ export const ADMIN_NAV_SECTIONS: AdminNavSectionDef[] = [
         adminOnly: true,
       },
       {
+        id: 'widgets',
+        labelKey: 'admin.nav.widgets',
+        href: '/platform/widgets',
+        icon: Boxes,
+        adminOnly: true,
+      },
+      {
         id: 'snippets',
         labelKey: 'admin.nav.snippets',
         href: '/platform/snippets',
@@ -164,7 +193,6 @@ export const ADMIN_NAV_SECTIONS: AdminNavSectionDef[] = [
         superAdminOnly: true,
         hideOnDemoInstance: true,
       },
-      { id: 'account-security', labelKey: 'admin.nav.accountSecurity', href: '/account/security', icon: ShieldCheck },
     ],
   },
   {

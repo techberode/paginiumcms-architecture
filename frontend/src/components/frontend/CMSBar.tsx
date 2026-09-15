@@ -31,7 +31,7 @@ export const CMSBar: React.FC<CMSBarProps> = ({ currentDoc }) => {
 
   return (
     <div
-      className="px-4 py-2 sticky top-0 z-50 shadow-md text-xs font-medium flex flex-wrap items-center justify-between gap-2 border-b"
+      className="px-3 sm:px-4 py-2 text-xs font-medium flex flex-nowrap items-center justify-between gap-2 border-b overflow-x-auto"
       style={{
         background: 'color-mix(in srgb, var(--color-text) 92%, var(--color-primary))',
         color: 'var(--color-surface-elevated)',
@@ -51,29 +51,37 @@ export const CMSBar: React.FC<CMSBarProps> = ({ currentDoc }) => {
           <button
             type="button"
             onClick={handleEditCurrent}
+            title={currentDoc.type === 'page' ? t('public.cmsBar.editPage') : t('public.cmsBar.editArticle')}
+            aria-label={currentDoc.type === 'page' ? t('public.cmsBar.editPage') : t('public.cmsBar.editArticle')}
             className={`flex items-center gap-1.5 px-3 py-1 rounded-lg shadow-sm cursor-pointer font-semibold ${BTN_PRIMARY}`}
           >
             <Edit3 className="w-3.5 h-3.5" />
-            {currentDoc.type === 'page' ? t('public.cmsBar.editPage') : t('public.cmsBar.editArticle')}
+            <span className="hidden sm:inline">
+              {currentDoc.type === 'page' ? t('public.cmsBar.editPage') : t('public.cmsBar.editArticle')}
+            </span>
           </button>
         )}
 
         <button
           type="button"
           onClick={() => navigate('/articles')}
+          title={t('public.cmsBar.newArticle')}
+          aria-label={t('public.cmsBar.newArticle')}
           className="flex items-center gap-1.5 bg-theme-text/20 hover:bg-theme-text/30 px-3 py-1 rounded-lg border border-theme-primary-foreground/20 transition-colors cursor-pointer"
         >
           <PlusCircle className="w-3.5 h-3.5 text-emerald-400" />
-          {t('public.cmsBar.newArticle')}
+          <span className="hidden sm:inline">{t('public.cmsBar.newArticle')}</span>
         </button>
 
         <button
           type="button"
           onClick={() => navigate('/dashboard')}
+          title={t('public.cmsBar.administration')}
+          aria-label={t('public.cmsBar.administration')}
           className="flex items-center gap-1.5 bg-theme-text/20 hover:bg-theme-text/30 px-3 py-1 rounded-lg border border-theme-primary-foreground/20 transition-colors cursor-pointer"
         >
           <LayoutDashboard className="w-3.5 h-3.5 text-theme-accent" />
-          {t('public.cmsBar.administration')}
+          <span className="hidden sm:inline">{t('public.cmsBar.administration')}</span>
         </button>
 
         <button

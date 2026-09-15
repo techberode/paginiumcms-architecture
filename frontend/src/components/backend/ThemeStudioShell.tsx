@@ -1,12 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, ImagePlus, Palette, Save, Eye, Wand2 } from 'lucide-react';
+import { ArrowLeft, ImagePlus, Palette, Eye, Wand2 } from 'lucide-react';
 import { MonacoCodeEditor, type MonacoCodeEditorHandle, type MonacoEditorMarker } from '../CodeEditor/MonacoCodeEditor';
 import { shortcodesApi, type ShortcodeListItem } from '../../api/shortcodes';
 import { themesApi, themeThumbnailUrl, type ThemeFileListItem } from '../../api/themes';
 import { useI18n } from '../../context/I18nContext';
 import { useToast } from '../../hooks/useToast';
 import { AdminListSkeleton } from '../ui/AdminListSkeleton';
+import { AdminFormActions } from './AdminFormActions';
 import { THEME_STUDIO_DRAFT_ID, themeStudioDraftFiles } from '../../utils/themeStudioDraft';
 import { persistThemeId } from '../../utils/themeStudioPersist';
 import { isThemeStudioTab, type ThemeStudioTab } from '../../utils/themeStudioFiles';
@@ -566,16 +567,16 @@ export const ThemeStudioShell: React.FC = () => {
             <Eye className="h-4 w-4" />
             {previewLoading ? t('platform.themes.studio.previewLoading') : t('platform.themes.studio.preview')}
           </button>
-          <button
-            type="button"
-            className="btn btn-primary inline-flex items-center gap-2"
-            disabled={busy}
-            onClick={() => void handleSave()}
-          >
-            <Save className="h-4 w-4" />
-            {saving ? t('platform.themes.studio.saving') : t('platform.themes.studio.save')}
-            {hasDirtyBuffers ? ' •' : ''}
-          </button>
+          <AdminFormActions
+            onSave={() => void handleSave()}
+            saveLabel={
+              saving
+                ? t('platform.themes.studio.saving')
+                : `${t('platform.themes.studio.save')}${hasDirtyBuffers ? ' •' : ''}`
+            }
+            saveDisabled={busy}
+            saveBusy={saving}
+          />
         </div>
       </div>
 

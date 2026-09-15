@@ -8,6 +8,73 @@ export const NAVIGATION_THUMBNAIL_CLASS: Record<NavigationThumbnailSize, string>
   lg: 'w-10 h-10',
 };
 
+export const NAV_LUCIDE_DEFAULTS = [
+  'Home',
+  'Mail',
+  'Phone',
+  'MapPin',
+  'FileText',
+  'BookOpen',
+  'Newspaper',
+  'Calendar',
+  'Image',
+  'Camera',
+  'Users',
+  'Settings',
+  'Info',
+  'HelpCircle',
+  'Globe',
+  'Search',
+  'Menu',
+  'MessageSquare',
+  'Heart',
+  'Star',
+  'ShoppingBag',
+  'Briefcase',
+  'Download',
+  'Link',
+  'Folder',
+  'LayoutGrid',
+  'Sparkles',
+  'Bell',
+  'Shield',
+  'Lock',
+  'Clock',
+  'Map',
+  'Navigation',
+] as const;
+
+let lucideCatalogCache: string[] | null = null;
+
+export function lucideIconCatalog(): string[] {
+  if (lucideCatalogCache) {
+    return lucideCatalogCache;
+  }
+
+  lucideCatalogCache = Object.keys(icons)
+    .filter((name) => /^[A-Z]/.test(name) && icons[name as keyof typeof icons] != null)
+    .sort((a, b) => a.localeCompare(b));
+
+  return lucideCatalogCache;
+}
+
+function lucideSearchHaystack(name: string): string {
+  const kebab = name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+  const spaced = kebab.replace(/-/g, ' ');
+  return `${name.toLowerCase()} ${kebab} ${spaced}`;
+}
+
+export function filterLucideIconCatalog(query: string, limit = 80): string[] {
+  const catalog = lucideIconCatalog();
+  const needle = query.trim().toLowerCase().replace(/[\s_]+/g, '-');
+
+  if (needle === '') {
+    return NAV_LUCIDE_DEFAULTS.filter((name) => catalog.includes(name));
+  }
+
+  return catalog.filter((name) => lucideSearchHaystack(name).includes(needle)).slice(0, limit);
+}
+
 export function normalizeLucideIconName(name: string): string {
   const trimmed = name.trim();
   if (trimmed === '') {

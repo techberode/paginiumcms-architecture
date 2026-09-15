@@ -19,6 +19,9 @@ export interface CreateUserPayload {
   active?: boolean;
   twoFactorEnabled?: boolean;
   bio?: string;
+  jobTitle?: string;
+  phone?: string;
+  timezone?: string;
 }
 
 export interface UpdateUserPayload {
@@ -31,6 +34,9 @@ export interface UpdateUserPayload {
   active?: boolean;
   twoFactorEnabled?: boolean;
   bio?: string;
+  jobTitle?: string;
+  phone?: string;
+  timezone?: string;
 }
 
 export interface UsersListResponse {

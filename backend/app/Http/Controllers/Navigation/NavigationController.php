@@ -12,6 +12,7 @@ use PaginiumCMS\Core\FlatFile\Models\NavigationItem;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Navigation\Contracts\NavigationRepositoryInterface;
 use PaginiumCMS\Modules\Navigation\Services\NavigationRichFieldValidator;
+use PaginiumCMS\Modules\Navigation\Services\SecondaryNavigationRepository;
 use PaginiumCMS\Support\Lang;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -20,6 +21,7 @@ class NavigationController
 {
     public function __construct(
         private NavigationRepositoryInterface $navigationRepository,
+        private SecondaryNavigationRepository $secondaryNavigation,
         private NavigationRichFieldValidator $richFieldValidator,
         private SettingsRepositoryInterface $settings,
         private JsonResponder $json
@@ -30,11 +32,44 @@ class NavigationController
     {
         $navigation = $this->navigationRepository->load();
 
-        return $this->json->success($response, $navigation->jsonSerialize());
+        return $this->json->success($response, $navigation->toPublicPayload());
+    }
+
+    public function getAdminNavigation(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        return $this->json->success($response, $this->navigationRepository->load()->jsonSerialize());
+    }
+
+    public function getSecondaryNavigation(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        if (!$this->secondaryEnabled()) {
+            return $this->json->success($response, []);
+        }
+
+        return $this->json->success($response, $this->secondaryNavigation->load()->toPublicPayload());
+    }
+
+    public function getAdminSecondaryNavigation(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        return $this->json->success($response, $this->secondaryNavigation->load()->jsonSerialize());
     }
 
     public function updateNavigation(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
+        return $this->persist($request, $response, $this->navigationRepository, $this->resolvePrimaryMaxDepth());
+    }
+
+    public function updateSecondaryNavigation(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        return $this->persist($request, $response, $this->secondaryNavigation, $this->resolveSecondaryMaxDepth());
+    }
+
+    private function persist(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        NavigationRepositoryInterface $repository,
+        int $maxDepth
+    ): ResponseInterface {
         $data = RequestJsonBody::decode($request);
         if (!is_array($data)) {
             return $this->json->error($response, Lang::get('invalid_payload', [], 'navigation'), 400);
@@ -57,12 +92,11 @@ class NavigationController
 
         try {
             $navigation = $this->buildNavigation($itemsPayload);
-            $maxDepth = $this->resolveMaxDepth();
             $depthError = $this->validateMaxDepth($navigation, $maxDepth);
             if ($depthError !== null) {
                 return $this->json->error($response, $depthError, 422);
             }
-            $this->navigationRepository->save($navigation);
+            $repository->save($navigation);
 
             return $this->json->success(
                 $response,
@@ -108,11 +142,23 @@ class NavigationController
         return null;
     }
 
-    private function resolveMaxDepth(): int
+    private function resolvePrimaryMaxDepth(): int
     {
         $depth = (int) $this->settings->get('navigation.maxDepth', 3);
 
         return max(3, min(4, $depth));
+    }
+
+    private function resolveSecondaryMaxDepth(): int
+    {
+        $depth = (int) $this->settings->get('secondaryNav.maxDepth', 3);
+
+        return max(1, min(6, $depth));
+    }
+
+    private function secondaryEnabled(): bool
+    {
+        return (bool) $this->settings->get('secondaryNav.enabled', false);
     }
 
     private function itemDepth(Navigation $navigation, string $itemId, int $depth): int

@@ -1,0 +1,311 @@
+/* Falcon-inspired admin chrome. Scoped so public theme tokens stay independent. */
+
+.admin-shell {
+  --admin-canvas: #edf2f9;
+  --admin-sidebar: #ffffff;
+  --admin-sidebar-muted: #9da9bb;
+  --admin-sidebar-text: #5e6e82;
+  --admin-sidebar-hover: #f5f7fa;
+  --admin-sidebar-active: #e9f2fc;
+  --admin-sidebar-active-text: #2c7be5;
+  --admin-primary: #2c7be5;
+  --admin-primary-hover: #1a68d1;
+  --admin-card: #ffffff;
+  --admin-border: #d8e2ef;
+  --admin-topbar: #ffffff;
+  --admin-topbar-text: #344050;
+  --admin-topbar-muted: #748194;
+  --admin-topbar-accent: var(--admin-primary);
+  --admin-topbar-gradient: none;
+  --admin-topbar-ink-shadow: none;
+  --admin-sidebar-gradient: none;
+  --admin-text: #344050;
+  --admin-muted: #748194;
+  --admin-on-primary: #ffffff;
+  --admin-shadow: 0 7px 14px 0 rgba(65, 69, 88, 0.1), 0 3px 6px 0 rgba(0, 0, 0, 0.07);
+  --admin-row-hover: color-mix(in srgb, var(--admin-text) 4.5%, var(--admin-card));
+  color: var(--admin-text);
+  background-color: var(--admin-canvas);
+}
+
+.admin-shell.dark,
+.dark .admin-shell {
+  --admin-canvas: #0b1727;
+  --admin-sidebar: #121e2d;
+  --admin-sidebar-muted: #748194;
+  --admin-sidebar-text: #9da9bb;
+  --admin-sidebar-hover: #1a2940;
+  --admin-sidebar-active: #1b3a57;
+  --admin-sidebar-active-text: #4c9aff;
+  --admin-primary: #3c8ff0;
+  --admin-primary-hover: #2c7be5;
+  --admin-card: #121e2d;
+  --admin-border: #243049;
+  --admin-topbar: #121e2d;
+  --admin-topbar-text: #d8e2ef;
+  --admin-topbar-muted: #9da9bb;
+  --admin-topbar-accent: #d8e2ef;
+  --admin-topbar-gradient: none;
+  --admin-topbar-ink-shadow: none;
+  --admin-sidebar-gradient: none;
+  --admin-text: #d8e2ef;
+  --admin-muted: #9da9bb;
+  --admin-on-primary: #ffffff;
+  --admin-shadow: 0 7px 14px 0 rgba(0, 0, 0, 0.35);
+  --admin-row-hover: color-mix(in srgb, var(--admin-text) 7%, var(--admin-card));
+}
+
+/* Unlayered so Tailwind utilities cannot steal topbar ink on colored/gradient chrome. */
+.admin-shell .admin-topbar {
+  --admin-topbar-hover: color-mix(in srgb, var(--admin-topbar-text) 12%, transparent);
+  background-color: var(--admin-topbar);
+  background-image: var(--admin-topbar-gradient, none);
+  color: var(--admin-topbar-text);
+  border-bottom: 1px solid color-mix(in srgb, var(--admin-topbar-text) 16%, transparent);
+  overflow: visible;
+}
+
+.admin-shell .admin-topbar h1,
+.admin-shell .admin-topbar .admin-topbar-title,
+.admin-shell .admin-topbar .text-admin-topbar-text,
+.admin-shell .admin-topbar .text-admin-text {
+  color: var(--admin-topbar-text);
+  text-shadow: var(--admin-topbar-ink-shadow, none);
+}
+
+.admin-shell .admin-topbar .admin-topbar-kicker,
+.admin-shell .admin-topbar .text-admin-topbar-muted,
+.admin-shell .admin-topbar .text-admin-muted {
+  color: var(--admin-topbar-muted);
+  text-shadow: var(--admin-topbar-ink-shadow, none);
+}
+
+.admin-shell .admin-topbar .admin-topbar-accent,
+.admin-shell .admin-topbar .text-admin-primary {
+  color: var(--admin-topbar-accent);
+  text-shadow: var(--admin-topbar-ink-shadow, none);
+}
+
+.admin-shell .admin-topbar .admin-topbar-ghost {
+  color: var(--admin-topbar-muted);
+  background-color: transparent;
+}
+
+.admin-shell .admin-topbar .admin-topbar-ghost:hover {
+  color: var(--admin-topbar-text);
+  background-color: var(--admin-topbar-hover);
+}
+
+.admin-shell .admin-topbar .admin-topbar-identity {
+  color: var(--admin-topbar-text);
+  border-left-color: color-mix(in srgb, var(--admin-topbar-text) 22%, transparent);
+  text-shadow: var(--admin-topbar-ink-shadow, none);
+}
+
+.admin-shell .admin-sidebar {
+  background-color: var(--admin-sidebar);
+  background-image: var(--admin-sidebar-gradient, none);
+  color: var(--admin-sidebar-text);
+}
+
+.admin-shell .admin-sidebar .text-admin-text,
+.admin-shell .admin-sidebar .text-admin-sidebar-text {
+  color: var(--admin-sidebar-text);
+}
+
+.admin-shell .admin-sidebar .text-admin-muted,
+.admin-shell .admin-sidebar .text-admin-sidebar-muted {
+  color: var(--admin-sidebar-muted);
+}
+
+.admin-shell .admin-topnav {
+  background-color: var(--admin-sidebar);
+  background-image: var(--admin-sidebar-gradient, none);
+  color: var(--admin-sidebar-text);
+  border-bottom: 1px solid var(--admin-border);
+  overflow: visible;
+}
+
+.admin-shell .admin-topnav-bar .text-admin-sidebar-text,
+.admin-shell .admin-topnav-bar .text-admin-text {
+  color: var(--admin-sidebar-text);
+}
+
+.admin-shell .admin-topnav-bar .text-admin-sidebar-muted,
+.admin-shell .admin-topnav-bar .text-admin-muted {
+  color: var(--admin-sidebar-muted);
+}
+
+.admin-shell .admin-topnav-menu {
+  z-index: 80;
+  background-color: var(--admin-card);
+  color: var(--admin-text);
+  border: 1px solid var(--admin-border);
+  box-shadow: var(--admin-shadow);
+}
+
+.admin-shell .admin-topnav-menu a,
+.admin-shell .admin-topnav-menu .text-admin-sidebar-text,
+.admin-shell .admin-topnav-menu .text-admin-text {
+  color: var(--admin-text);
+}
+
+.admin-shell .admin-topnav-menu a:hover {
+  background-color: var(--admin-canvas);
+  color: var(--admin-text);
+}
+
+/* Account popover lives inside colored/gradient topbar — keep an opaque card + canvas ink. */
+.admin-shell .admin-account-dropdown {
+  z-index: 90;
+  background-color: var(--admin-card);
+  background-image: none;
+  color: var(--admin-text);
+  border: 1px solid var(--admin-border);
+  box-shadow: var(--admin-shadow);
+}
+
+.admin-shell .admin-account-dropdown button {
+  color: var(--admin-text);
+  text-shadow: none;
+}
+
+.admin-shell .admin-account-dropdown button:hover {
+  background-color: var(--admin-canvas);
+  color: var(--admin-text);
+}
+
+.admin-shell .admin-account-dropdown .admin-account-dropdown-logout,
+.admin-shell .admin-account-dropdown .admin-account-dropdown-logout:hover {
+  color: #e11d48;
+}
+
+.admin-shell .admin-popover {
+  z-index: 80;
+  background-color: var(--admin-card);
+  background-image: none;
+  color: var(--admin-text);
+  border: 1px solid var(--admin-border);
+  box-shadow: var(--admin-shadow);
+}
+
+.admin-shell .admin-popover button {
+  color: var(--admin-text);
+  background-color: transparent;
+  text-shadow: none;
+}
+
+.admin-shell .admin-popover button:hover {
+  background-color: var(--admin-canvas);
+  color: var(--admin-text);
+}
+
+.admin-shell .admin-popover .admin-popover-active,
+.admin-shell .admin-popover .admin-popover-active:hover {
+  background-color: var(--admin-sidebar-active);
+  color: var(--admin-sidebar-active-text);
+}
+
+.admin-shell .admin-chip,
+.admin-shell .admin-chip-on,
+.admin-shell .admin-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  border-style: solid;
+  border-width: 1px;
+}
+
+.admin-shell .admin-chip {
+  background-color: var(--admin-card);
+  color: var(--admin-muted);
+  border-color: var(--admin-border);
+}
+
+.admin-shell .table tbody tr:hover,
+.admin-shell .admin-row-hover:hover {
+  background-color: var(--admin-row-hover);
+}
+
+.admin-shell .admin-chip-on,
+.admin-shell .admin-btn-primary,
+.admin-shell .bg-admin-primary {
+  background-color: var(--admin-primary);
+  color: var(--admin-on-primary, #ffffff);
+  border-color: var(--admin-primary);
+}
+
+.admin-shell .admin-btn-primary:hover,
+.admin-shell .hover\:bg-admin-primary-hover:hover {
+  background-color: var(--admin-primary-hover);
+  color: var(--admin-on-primary, #ffffff);
+}
+
+.admin-shell .admin-tab-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.125rem;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.admin-shell .admin-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: -1px;
+  padding: 0.5rem 0.75rem;
+  border: 0;
+  border-radius: 0.5rem 0.5rem 0 0;
+  background-color: transparent;
+  color: var(--admin-muted);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25;
+  text-decoration: none;
+  transition: color 160ms ease, background-color 160ms ease;
+}
+
+.admin-shell .admin-tab .admin-tab-label {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  background-size: 0 1px;
+  padding-bottom: 1px;
+  transition: background-size 180ms ease;
+}
+
+.admin-shell .admin-tab:hover {
+  color: var(--admin-text);
+  background-color: color-mix(in srgb, var(--admin-text) 6%, transparent);
+}
+
+.admin-shell .admin-tab:hover .admin-tab-label {
+  background-size: 100% 1px;
+}
+
+.admin-shell .admin-tab-on {
+  color: var(--admin-primary);
+  background-color: color-mix(in srgb, var(--admin-primary) 11%, var(--admin-card));
+}
+
+.admin-shell .admin-tab-on .admin-tab-label {
+  background-size: 100% 1px;
+}
+
+.admin-shell .admin-tab-on:hover {
+  color: var(--admin-primary-hover);
+  background-color: color-mix(in srgb, var(--admin-primary) 16%, var(--admin-card));
+}
+
+.admin-shell.dark .admin-tab-on,
+.dark .admin-shell .admin-tab-on {
+  color: color-mix(in srgb, var(--admin-primary) 72%, #ffffff);
+  background-color: color-mix(in srgb, var(--admin-primary) 22%, transparent);
+}
+
+.admin-shell.dark .admin-tab-on:hover,
+.dark .admin-shell .admin-tab-on:hover {
+  color: #ffffff;
+  background-color: color-mix(in srgb, var(--admin-primary) 30%, transparent);
+}

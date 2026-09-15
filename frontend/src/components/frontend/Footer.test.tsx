@@ -46,6 +46,10 @@ function mockSettings(overrides: Partial<PublicSettings> = {}) {
     loading: false,
     get: vi.fn(),
     reload: vi.fn(),
+    applyPreview: vi.fn(),
+    clearPreview: vi.fn(),
+    clearPreviewGroup: vi.fn(),
+    hasUnsavedPreview: false,
   };
 }
 

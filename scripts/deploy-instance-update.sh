@@ -50,9 +50,27 @@ export HOME="${HOME:-$DEPLOY_CACHE_ROOT}"
 export GIT_CONFIG_COUNT=1
 export GIT_CONFIG_KEY_0=safe.directory
 export GIT_CONFIG_VALUE_0="$APP_ROOT"
+export GIT_TERMINAL_PROMPT=0
+
+# Extra git -c flags for fetch/pull (admin UI in Docker often has no ssh binary).
+GIT_DEPLOY_EXTRA_CONFIG=()
+
+configure_git_fetch_transport() {
+  GIT_DEPLOY_EXTRA_CONFIG=(-c "safe.directory=$APP_ROOT")
+
+  if ! command -v ssh >/dev/null 2>&1; then
+    echo "→ ssh unavailable; git fetch/pull will use HTTPS insteadOf for GitHub"
+    GIT_DEPLOY_EXTRA_CONFIG+=(-c "url.https://github.com/.insteadOf=git@github.com:")
+    GIT_DEPLOY_EXTRA_CONFIG+=(-c "url.https://github.com/.insteadOf=ssh://git@github.com/")
+  fi
+
+  if [[ -n "${GITHUB_DEPLOY_TOKEN:-}" ]]; then
+    GIT_DEPLOY_EXTRA_CONFIG+=(-c "http.https://github.com/.extraHeader=Authorization: Bearer ${GITHUB_DEPLOY_TOKEN}")
+  fi
+}
 
 git() {
-  command git -c safe.directory="$APP_ROOT" "$@"
+  command git "${GIT_DEPLOY_EXTRA_CONFIG[@]}" "$@"
 }
 
 assert_checkout_writable() {
@@ -117,7 +135,8 @@ echo "→ PaginiumCMS deploy update"
 echo "   APP_ROOT=$APP_ROOT"
 echo "   GIT_REF=$GIT_REF"
 
-git fetch origin --tags
+configure_git_fetch_transport
+git fetch origin --tags --prune
 
 if [[ "$GIT_REF" == origin/* ]]; then
   BRANCH="${GIT_REF#origin/}"

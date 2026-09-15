@@ -50,6 +50,9 @@ use PaginiumCMS\Core\Layout\Services\ShortcodeDefinitionManager;
 use PaginiumCMS\Core\Layout\Services\ShortcodeCatalogSeeder;
 use PaginiumCMS\Core\Layout\Services\ShortcodeExpanderService;
 use PaginiumCMS\Core\Layout\Services\ShortcodeRegistry;
+use PaginiumCMS\Core\Layout\Services\WidgetCatalog;
+use PaginiumCMS\Core\Layout\Services\WidgetDefinitionPolicy;
+use PaginiumCMS\Core\Layout\Services\WidgetDefinitionRepository;
 use PaginiumCMS\Core\Snippets\Services\SnippetCatalogSeeder;
 use PaginiumCMS\Core\Snippets\Services\SnippetInvalidationService;
 use PaginiumCMS\Core\Snippets\Services\SnippetReferenceScanner;
@@ -204,6 +207,18 @@ use PaginiumCMS\Http\Controllers\Admin\DeveloperController;
 use PaginiumCMS\Http\Controllers\Admin\GatedCodeEditorController;
 use PaginiumCMS\Http\Controllers\Admin\ExtensionsController;
 use PaginiumCMS\Http\Controllers\Admin\ShortcodeController;
+use PaginiumCMS\Http\Controllers\Admin\WidgetController;
+use PaginiumCMS\Http\Controllers\Admin\TeamController;
+use PaginiumCMS\Core\Teams\Services\TeamRepository;
+use PaginiumCMS\Http\Controllers\Admin\EventController;
+use PaginiumCMS\Core\Events\Services\EventRepository;
+use PaginiumCMS\Http\Controllers\Admin\TimeEntryController;
+use PaginiumCMS\Core\TimeTracking\Services\TimeEntryRepository;
+use PaginiumCMS\Core\ComingSoon\Services\ComingSoonRepository;
+use PaginiumCMS\Http\Controllers\Admin\ComingSoonController;
+use PaginiumCMS\Http\Controllers\Auth\AccountController;
+use PaginiumCMS\Modules\Security\Services\PublishedStaffDirectory;
+use PaginiumCMS\Http\Controllers\PublicApi\StaffDirectoryController;
 use PaginiumCMS\Http\Controllers\Admin\SnippetController;
 use PaginiumCMS\Http\Controllers\Admin\ThemesController;
 use PaginiumCMS\Http\Controllers\Admin\ThemeStudioController;
@@ -287,6 +302,7 @@ use PaginiumCMS\Modules\Newsletter\Contracts\NewsletterRepositoryInterface;
 use PaginiumCMS\Modules\Navigation\Contracts\NavigationRepositoryInterface;
 use PaginiumCMS\Modules\Navigation\Services\NavigationRepository;
 use PaginiumCMS\Modules\Navigation\Services\NavigationRichFieldValidator;
+use PaginiumCMS\Modules\Navigation\Services\SecondaryNavigationRepository;
 use PaginiumCMS\Modules\Gallery\Contracts\GalleryRepositoryInterface;
 use PaginiumCMS\Modules\Gallery\Services\GalleryRepository;
 use PaginiumCMS\Modules\Gallery\Services\GalleryItemValidator;
@@ -822,9 +838,15 @@ return [
             get(FileWriterInterface::class)
         ),
     NavigationRichFieldValidator::class => create(NavigationRichFieldValidator::class),
+    SecondaryNavigationRepository::class => create(SecondaryNavigationRepository::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class)
+        ),
     NavigationController::class => create(NavigationController::class)
         ->constructor(
             get(NavigationRepositoryInterface::class),
+            get(SecondaryNavigationRepository::class),
             get(NavigationRichFieldValidator::class),
             get(SettingsRepositoryInterface::class),
             get(JsonResponder::class)
@@ -1263,12 +1285,23 @@ return [
             get(FileReaderInterface::class),
             get(FileWriterInterface::class)
         ),
+    WidgetDefinitionPolicy::class => create(WidgetDefinitionPolicy::class),
+    WidgetDefinitionRepository::class => create(WidgetDefinitionRepository::class)
+        ->constructor(
+            get(WidgetDefinitionPolicy::class),
+            get(CodePolicyEngineInterface::class),
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class)
+        ),
+    WidgetCatalog::class => create(WidgetCatalog::class)
+        ->constructor(get(WidgetDefinitionRepository::class)),
     ShortcodeExpanderService::class => create(ShortcodeExpanderService::class)
         ->constructor(
             get(ShortcodeRegistry::class),
             get(FileReaderInterface::class),
             get(ContentSecuritySanitizer::class),
-            get(SnippetRepository::class)
+            get(SnippetRepository::class),
+            get(WidgetCatalog::class)
         ),
     SnippetRegistry::class => create(SnippetRegistry::class)
         ->constructor(
@@ -1314,6 +1347,74 @@ return [
             get(ShortcodeDefinitionManager::class),
             get(ShortcodeCatalogSeeder::class),
             get(ContentCacheService::class),
+            get(JsonResponder::class)
+        ),
+    WidgetController::class => create(WidgetController::class)
+        ->constructor(
+            get(WidgetCatalog::class),
+            get(WidgetDefinitionRepository::class),
+            get(ContentCacheService::class),
+            get(JsonResponder::class)
+        ),
+    TeamRepository::class => create(TeamRepository::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class)
+        ),
+    TeamController::class => create(TeamController::class)
+        ->constructor(
+            get(TeamRepository::class),
+            get(UserRepository::class),
+            get(JsonResponder::class)
+        ),
+    EventRepository::class => create(EventRepository::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class)
+        ),
+    EventController::class => create(EventController::class)
+        ->constructor(
+            get(EventRepository::class),
+            get(JsonResponder::class)
+        ),
+    TimeEntryRepository::class => create(TimeEntryRepository::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class)
+        ),
+    TimeEntryController::class => create(TimeEntryController::class)
+        ->constructor(
+            get(TimeEntryRepository::class),
+            get(EventRepository::class),
+            get(ProjectPlanRepositoryInterface::class),
+            get(ContentRepositoryInterface::class),
+            get(JsonResponder::class)
+        ),
+    ComingSoonRepository::class => create(ComingSoonRepository::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class)
+        ),
+    ComingSoonController::class => create(ComingSoonController::class)
+        ->constructor(
+            get(ComingSoonRepository::class),
+            get(ContentRepositoryInterface::class),
+            get(JsonResponder::class)
+        ),
+    AccountController::class => create(AccountController::class)
+        ->constructor(
+            get(UserRepository::class),
+            get(UserAvatarService::class),
+            get(SessionManager::class),
+            get(AuthorizationInterface::class),
+            get(Validator::class),
+            get(JsonResponder::class)
+        ),
+    PublishedStaffDirectory::class => create(PublishedStaffDirectory::class)
+        ->constructor(get(UserRepository::class)),
+    StaffDirectoryController::class => create(StaffDirectoryController::class)
+        ->constructor(
+            get(PublishedStaffDirectory::class),
             get(JsonResponder::class)
         ),
     ThemeManifestValidator::class => create(ThemeManifestValidator::class),

@@ -11,8 +11,10 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('../../api/navigation', () => ({
-  getNavigation: mocks.getNavigation,
+  getAdminNavigation: mocks.getNavigation,
+  getAdminSecondaryNavigation: mocks.getNavigation,
   updateNavigation: mocks.updateNavigation,
+  updateSecondaryNavigation: mocks.updateNavigation,
 }));
 
 vi.mock('../../hooks/useToast', () => ({

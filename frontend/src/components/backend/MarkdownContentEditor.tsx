@@ -19,9 +19,11 @@ import {
   Megaphone,
   GitBranch,
   BarChart2,
+  LayoutGrid,
 } from 'lucide-react';
 import { CalloutInsertModal } from './CalloutInsertModal';
 import { ChartInsertModal } from './ChartInsertModal';
+import { WidgetInsertModal } from './WidgetInsertModal';
 import { EmbedInsertModal } from './EmbedInsertModal';
 import { HtmlBlockInsertModal } from './HtmlBlockInsertModal';
 import { TableInsertModal } from './TableInsertModal';
@@ -86,6 +88,7 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
   const [calloutOpen, setCalloutOpen] = useState(false);
   const [mermaidOpen, setMermaidOpen] = useState(false);
   const [chartOpen, setChartOpen] = useState(false);
+  const [widgetOpen, setWidgetOpen] = useState(false);
 
   useEffect(() => {
     void loadAllowedEditorComponents(profile, editorSettings).then(setCustomComponents);
@@ -127,15 +130,15 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
       title={label}
       disabled={readOnly}
       onClick={action}
-      className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-40"
+      className="p-1.5 rounded-lg text-admin-text hover:bg-admin-sidebar-hover disabled:opacity-40"
     >
       {icon}
     </button>
   );
 
   return (
-    <div className="border rounded-2xl overflow-hidden dark:border-slate-700 bg-white dark:bg-slate-950">
-      <div className="flex flex-wrap items-center justify-between gap-2 bg-slate-50 dark:bg-slate-900 px-3 py-2 border-b dark:border-slate-700">
+    <div className="border border-admin-border rounded-2xl overflow-hidden bg-admin-card text-admin-text">
+      <div className="flex flex-wrap items-center justify-between gap-2 bg-admin-canvas px-3 py-2 border-b border-admin-border">
         <div className="flex flex-wrap items-center gap-0.5">
           {profileAllows(profile, 'bold') &&
             toolbarButton(t('editor.markdownContent.toolbar.bold'), <Bold size={16} />, () =>
@@ -255,8 +258,11 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
             toolbarButton(t('editor.chart.toolbar'), <BarChart2 size={16} />, () =>
               setChartOpen(true)
             )}
+          {toolbarButton(t('editor.markdownContent.toolbar.widget'), <LayoutGrid size={16} />, () =>
+            setWidgetOpen(true)
+          )}
           {customComponents.length > 0 && (
-            <span className="w-px h-6 bg-slate-300 dark:bg-slate-600 mx-1" />
+            <span className="w-px h-6 bg-admin-border mx-1" />
           )}
           {customComponents.map((component) =>
             toolbarButton(component.label, <Sparkles size={16} />, () =>
@@ -274,9 +280,7 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
               type="button"
               onClick={() => setPreviewMode(mode)}
               className={`px-2.5 py-1 rounded-lg font-semibold capitalize ${
-                previewMode === mode
-                  ? 'bg-indigo-600 text-white'
-                  : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800'
+                previewMode === mode ? 'admin-chip-on' : 'admin-chip'
               }`}
             >
               {t(`editor.markdownContent.modes.${mode}`)}
@@ -292,7 +296,7 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
       >
         {previewMode !== 'preview' &&
           (useCodeMirror ? (
-            <div className="min-h-[420px] border-r dark:border-slate-800 p-2">
+            <div className="min-h-[420px] border-r border-admin-border p-2">
               <MarkdownCodeMirrorEditor
                 ref={surfaceRef}
                 value={value}
@@ -319,15 +323,15 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
               }}
               disabled={readOnly}
               spellCheck={spellCheck}
-              className="w-full h-full min-h-[420px] resize-y p-4 font-mono text-sm bg-transparent outline-none border-0 border-r dark:border-slate-800"
+              className="w-full h-full min-h-[420px] resize-y p-4 font-mono text-sm bg-transparent text-admin-text outline-none border-0 border-r border-admin-border"
               style={{ tabSize }}
               placeholder={t('editor.markdownContent.placeholder')}
             />
           ))}
 
         {previewMode !== 'edit' && (
-          <div className="p-4 overflow-y-auto bg-slate-50/70 dark:bg-slate-900/40">
-            <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-slate-400 mb-3">
+          <div className="p-4 overflow-y-auto bg-admin-canvas">
+            <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-admin-muted mb-3">
               <Eye size={14} />
               {t('editor.markdownContent.previewLabel')}
             </div>
@@ -382,6 +386,13 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
       <ChartInsertModal
         open={chartOpen}
         onClose={() => setChartOpen(false)}
+        onInsert={(block) =>
+          applyEdit((text, start, end) => insertAtCursor(text, start, end, block))
+        }
+      />
+      <WidgetInsertModal
+        open={widgetOpen}
+        onClose={() => setWidgetOpen(false)}
         onInsert={(block) =>
           applyEdit((text, start, end) => insertAtCursor(text, start, end, block))
         }

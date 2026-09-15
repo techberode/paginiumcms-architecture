@@ -3,11 +3,18 @@ import type { MessageTree } from '../../types';
 export const navigationEn: MessageTree = {
   page: {
     title: 'Navigation',
-    subtitle: 'Levels: main menu → submenu → nested items (max. :depth). Description, icons, hover preview (It.56).',
-    layoutSettingsLink: 'Navigation layout (top / side / depth)',
+    subtitle: 'Primary header menu and optional catalog side menu. They never show the same links at once.',
+    layoutSettingsLink: 'Navigation layout (top / side / secondary)',
+    tabs: {
+      primary: 'Header menu',
+      secondary: 'Catalog side menu',
+    },
+    secondaryHint:
+      'Independent tree (e.g. tools → subcategory → product). Enable it in Settings, then add levels here. Per-item on/off, Lucide/media icon, description, hover image preview. Placement left/right and sticky/scroll are in Settings.',
   },
   empty: 'No menu items yet.',
   level: 'Level :depth',
+  enabled: 'Active',
   fields: {
     label: 'Label',
     labelPlaceholder: 'Label',
@@ -22,6 +29,11 @@ export const navigationEn: MessageTree = {
     thumbnailSize: 'Thumbnail size',
     previewOnHover: 'Hover preview (desktop)',
     previewScale: 'Preview scale',
+  },
+  iconPicker: {
+    placeholder: 'Choose icon…',
+    search: 'Search (Home, Mail…)',
+    empty: 'No icons match that name.',
   },
   iconTypes: {
     none: 'None',
@@ -53,5 +65,6 @@ export const navigationEn: MessageTree = {
     saved: 'Navigation saved.',
     saveFailed: 'Failed to save navigation.',
     maxDepth: 'Maximum :depth menu levels.',
+    secondarySaved: 'Catalog menu saved.',
   },
 };

@@ -5,6 +5,33 @@ export interface User {
   username?: string;
   name: string;
   bio?: string;
+  jobTitle?: string;
+  phone?: string;
+  timezone?: string;
+  locale?: string;
+  notifyFailedLogin?: boolean;
+  notifySecurityIncident?: boolean;
+  address?: { street?: string; city?: string; postal?: string; country?: string };
+  experience?: Array<{ id?: string; org: string; role: string; years?: string }>;
+  education?: Array<{ id?: string; school: string; field: string; years?: string }>;
+  socialAccounts?: Array<{
+    id?: string;
+    platform: string;
+    url: string;
+    label?: string;
+    directChat?: boolean;
+    notify?: boolean;
+  }>;
+  publish?: {
+    address?: boolean;
+    experience?: boolean;
+    education?: boolean;
+    phone?: boolean;
+    email?: boolean;
+    socials?: boolean;
+    contact?: boolean;
+    support?: boolean;
+  };
   roles: string[];
   permissions?: string[];
   active?: boolean;

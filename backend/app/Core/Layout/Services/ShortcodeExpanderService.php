@@ -23,6 +23,7 @@ final class ShortcodeExpanderService
         private FileReaderInterface $reader,
         private ContentSecuritySanitizer $sanitizer,
         private ?SnippetRepository $snippets = null,
+        private ?WidgetCatalog $widgets = null,
         private string $definitionsRelativeDir = 'data/shortcodes/definitions',
     ) {
     }
@@ -65,6 +66,15 @@ final class ShortcodeExpanderService
         $name = trim($rawName);
         if ($name === 'snippet') {
             return $this->renderSnippetReference($rawAttrs);
+        }
+
+        if ($name === 'widget') {
+            $html = ($this->widgets ?? new WidgetCatalog())->render($rawAttrs, $inner);
+            if (str_starts_with($html, '[widget')) {
+                return $html;
+            }
+
+            return $this->sanitizer->sanitizeHtml($html);
         }
 
         $definition = $this->loadDefinition($name);

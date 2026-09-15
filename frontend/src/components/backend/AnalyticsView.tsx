@@ -37,6 +37,10 @@ import { AnalyticsRankedBarChart } from './analytics/AnalyticsRankedBarChart';
 import { AnalyticsSegmentChart } from './analytics/AnalyticsSegmentChart';
 import { aggregateGeoByCountry, referersToChartItems } from './analytics/analyticsChartData';
 import { AdminPageSkeleton } from '../ui/AdminPageSkeleton';
+import { AdminKpiCard } from '../ui/AdminKpiCard';
+import { AdminToolbar } from '../ui/AdminToolbar';
+import { AdminTabs } from '../ui/AdminTabs';
+import { ADMIN_CARD, ADMIN_PAGE_SUBTITLE, ADMIN_PAGE_TITLE, ADMIN_PILL_ACTIVE, ADMIN_PILL_IDLE } from '../../theme/adminUiClasses';
 import { useI18n } from '../../context/I18nContext';
 import { useToast } from '../../hooks/useToast';
 import { countryCodeToFlag } from '../../utils/countryFlag';
@@ -319,35 +323,30 @@ export const AnalyticsView: React.FC = () => {
     label: string;
     value: string | number;
     icon: typeof Eye;
-    accent: string;
     trendKey: AnalyticsTrendKey;
   }> = [
     {
       label: t('analytics.kpi.pageViews'),
       value: overview?.page_views ?? 0,
       icon: Eye,
-      accent: 'text-indigo-600',
       trendKey: 'page_views',
     },
     {
       label: t('analytics.kpi.uniqueVisitors'),
       value: overview?.unique_visitors ?? 0,
       icon: Users,
-      accent: 'text-violet-600',
       trendKey: 'unique_visitors',
     },
     {
       label: t('analytics.kpi.avgDuration'),
       value: formatDuration(overview?.avg_duration_seconds ?? 0),
       icon: Clock3,
-      accent: 'text-emerald-600',
       trendKey: 'avg_duration_seconds',
     },
     {
       label: t('analytics.kpi.bounceRate'),
       value: `${Math.round(overview?.bounce_rate ?? 0)}%`,
       icon: MousePointerClick,
-      accent: 'text-rose-600',
       trendKey: 'bounce_rate',
     },
   ];
@@ -358,14 +357,14 @@ export const AnalyticsView: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-16 animate-fadeIn">
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <AdminToolbar>
         <div>
-          <div className="inline-flex items-center gap-2 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 px-3 py-1.5 text-indigo-700 dark:text-indigo-300 text-sm font-bold mb-3">
+          <div className="inline-flex items-center gap-2 rounded-lg bg-admin-sidebar-active px-3 py-1.5 text-admin-sidebar-active-text text-sm font-semibold mb-3">
             <BarChart3 className="h-4 w-4" />
             {t('analytics.badge')}
           </div>
-          <h1 className="text-3xl font-black text-slate-900 dark:text-white">{t('analytics.title')}</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{t('analytics.subtitle')}</p>
+          <h1 className={ADMIN_PAGE_TITLE}>{t('analytics.title')}</h1>
+          <p className={ADMIN_PAGE_SUBTITLE}>{t('analytics.subtitle')}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {[7, 14, 30].map((days) => (
@@ -373,10 +372,8 @@ export const AnalyticsView: React.FC = () => {
               key={days}
               type="button"
               onClick={() => setPeriod(days as PeriodDays)}
-              className={`px-4 py-2 rounded-xl text-sm font-bold transition ${
-                period === days
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-                  : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300'
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+                period === days ? ADMIN_PILL_ACTIVE : ADMIN_PILL_IDLE
               }`}
             >
               {t(`analytics.period.${days}`)}
@@ -385,74 +382,54 @@ export const AnalyticsView: React.FC = () => {
           <button
             type="button"
             onClick={() => void load()}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-sm font-bold"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-admin-border bg-admin-card text-admin-text text-sm font-semibold"
           >
             <RefreshCw className="h-4 w-4" />
             {t('analytics.refresh')}
           </button>
         </div>
-      </div>
+      </AdminToolbar>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {kpiCards.map((card) => {
-          const Icon = card.icon;
           const trend = overview?.trends?.[card.trendKey];
           const tone = trendTone(card.trendKey, trend);
           const TrendIcon = trend?.direction === 'down' ? TrendingDown : TrendingUp;
           return (
-            <div
+            <AdminKpiCard
               key={card.label}
-              className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-wider text-slate-500">{card.label}</p>
-                  <p className="text-3xl font-black text-slate-900 dark:text-white mt-2">{card.value}</p>
-                </div>
-                <div className={`rounded-2xl bg-slate-50 dark:bg-slate-950 p-3 ${card.accent}`}>
-                  <Icon className="h-5 w-5" />
-                </div>
-              </div>
-              <div
-                className={`mt-3 inline-flex items-center gap-1 text-xs font-bold ${trendClassName(tone)}`}
-                title={t('analytics.trendVsPrevious')}
-              >
-                {trend && (trend.percent !== 0 || trend.delta !== 0) ? (
-                  <>
-                    <TrendIcon className="h-3.5 w-3.5" />
-                    {trend.direction === 'up' ? '+' : '−'}
-                    {formatTrendPercent(trend.percent)}
-                  </>
-                ) : (
-                  <span>{t('analytics.trendFlat')}</span>
-                )}
-              </div>
-            </div>
+              title={card.label}
+              value={card.value}
+              icon={card.icon}
+              footer={
+                <span className={trendClassName(tone)} title={t('analytics.trendVsPrevious')}>
+                  {trend && (trend.percent !== 0 || trend.delta !== 0) ? (
+                    <span className="inline-flex items-center gap-1">
+                      <TrendIcon className="h-3.5 w-3.5" />
+                      {trend.direction === 'up' ? '+' : '−'}
+                      {formatTrendPercent(trend.percent)}
+                    </span>
+                  ) : (
+                    t('analytics.trendFlat')
+                  )}
+                </span>
+              }
+            />
           );
         })}
       </div>
 
-      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-        <div className="flex flex-wrap gap-1 border-b border-slate-200 dark:border-slate-800 px-4 pt-4">
-          {tabs.map((item) => {
-            const TabIcon = item.icon;
-            return (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setTab(item.id)}
-              className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-bold border-b-2 transition ${
-                tab === item.id
-                  ? 'border-indigo-600 text-indigo-600'
-                  : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-              }`}
-            >
-              <TabIcon className="h-4 w-4" />
-              {item.label}
-            </button>
-            );
-          })}
-        </div>
+      <div className={`${ADMIN_CARD} overflow-hidden`}>
+        <AdminTabs
+          className="px-4 pt-4"
+          activeId={tab}
+          onSelect={(id) => setTab(id as AnalyticsTab)}
+          items={tabs.map((item) => ({
+            id: item.id,
+            label: item.label,
+            icon: item.icon,
+          }))}
+        />
 
         <div className="p-6">
           {tab === 'overview' && (
@@ -692,7 +669,7 @@ export const AnalyticsView: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => void loadNotFound()}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-sm font-bold"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-admin-border bg-admin-card text-sm font-semibold"
                   >
                     <RefreshCw className="h-4 w-4" />
                     {t('analytics.refresh')}
@@ -700,7 +677,7 @@ export const AnalyticsView: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => void handleNotFoundExport()}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-bold"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-admin-primary text-white text-sm font-semibold"
                   >
                     <Download className="h-4 w-4" />
                     {t('analytics.notFound.exportCsv')}
@@ -708,23 +685,23 @@ export const AnalyticsView: React.FC = () => {
                 </div>
               </div>
 
-              <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">
+              <div className="overflow-x-auto rounded-lg border border-admin-border">
                 <table className="min-w-full text-sm">
-                  <thead className="bg-slate-50 dark:bg-slate-950/60 text-left">
+                  <thead className="bg-admin-canvas text-left">
                     <tr>
-                      <th className="px-4 py-3 font-bold uppercase tracking-wider text-xs text-slate-500">
+                      <th className="px-4 py-3 font-semibold uppercase tracking-wider text-xs text-admin-muted">
                         {t('analytics.notFound.columns.path')}
                       </th>
-                      <th className="px-4 py-3 font-bold uppercase tracking-wider text-xs text-slate-500">
+                      <th className="px-4 py-3 font-semibold uppercase tracking-wider text-xs text-admin-muted">
                         {t('analytics.notFound.columns.hits')}
                       </th>
-                      <th className="px-4 py-3 font-bold uppercase tracking-wider text-xs text-slate-500">
+                      <th className="px-4 py-3 font-semibold uppercase tracking-wider text-xs text-admin-muted">
                         {t('analytics.notFound.columns.lastSeen')}
                       </th>
-                      <th className="px-4 py-3 font-bold uppercase tracking-wider text-xs text-slate-500">
+                      <th className="px-4 py-3 font-semibold uppercase tracking-wider text-xs text-admin-muted">
                         {t('analytics.notFound.columns.referer')}
                       </th>
-                      <th className="px-4 py-3 font-bold uppercase tracking-wider text-xs text-slate-500">
+                      <th className="px-4 py-3 font-semibold uppercase tracking-wider text-xs text-admin-muted">
                         {t('analytics.notFound.columns.actions')}
                       </th>
                     </tr>

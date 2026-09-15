@@ -11,7 +11,6 @@ import {
   ArrowUpRight,
   Mail,
   Image as ImageIcon,
-  Database,
   Settings,
   Clock3,
 } from 'lucide-react';
@@ -33,8 +32,13 @@ import { SystemUpdateBanner } from '../dashboard/SystemUpdateBanner';
 import { ProjectPlannerSummaryWidget } from './ProjectPlannerSummaryWidget';
 import { AdminPageSkeleton } from '../ui/AdminPageSkeleton';
 import { AdminEmptyState } from '../ui/AdminEmptyState';
+import { AdminKpiCard } from '../ui/AdminKpiCard';
+import { AdminWidgetCard } from '../ui/AdminWidgetCard';
+import { AdminToolbar } from '../ui/AdminToolbar';
 import { useI18n } from '../../context/I18nContext';
 import { useSettings } from '../../hooks/useSettings';
+import { storageUsedPercent } from '../../utils/adminStorageMeter';
+import { ProgressBar } from './ProgressBar';
 
 interface ContentStats {
   totalPages: number;
@@ -141,22 +145,22 @@ export const DashboardView: React.FC = () => {
   }
 
   const kpiCards = [
-    { id: 'pages', title: t('dashboard.kpi.pages'), value: stats.totalPages, icon: FileText, to: '/pages', color: 'indigo' },
-    { id: 'articles', title: t('dashboard.kpi.articles'), value: stats.totalArticles, icon: BookOpen, to: '/articles', color: 'emerald' },
-    { id: 'users', title: t('dashboard.kpi.users'), value: stats.totalUsers, icon: Users, to: '/users', color: 'violet' },
-    { id: 'backups', title: t('dashboard.kpi.backups'), value: stats.totalBackups, icon: HardDrive, to: '/backups', color: 'amber' },
+    { id: 'pages', title: t('dashboard.kpi.pages'), value: stats.totalPages, icon: FileText, to: '/pages' },
+    { id: 'articles', title: t('dashboard.kpi.articles'), value: stats.totalArticles, icon: BookOpen, to: '/articles' },
+    { id: 'media', title: t('dashboard.kpi.media'), value: counts?.media ?? stats.totalMedia, icon: ImageIcon, to: '/media' },
     {
       id: 'visits',
       title: t('dashboard.kpi.visitsToday'),
       value: analytics?.overview.visits ?? 0,
       icon: ArrowUpRight,
       to: '/analytics',
-      color: 'cyan',
     },
+    { id: 'users', title: t('dashboard.kpi.users'), value: stats.totalUsers, icon: Users, to: '/users' },
   ];
+  const usedPercent = storageUsedPercent(overview?.storage);
 
   return (
-    <div className="space-y-8 animate-fadeIn pb-16">
+    <div className="space-y-6 animate-fadeIn pb-16">
       <SystemUpdateBanner />
 
       {stats.totalPages === 0 && stats.totalArticles === 0 ? (
@@ -176,174 +180,125 @@ export const DashboardView: React.FC = () => {
         />
       ) : null}
 
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-8 sm:p-10 text-white shadow-xl relative overflow-hidden border border-slate-800">
-        <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="max-w-xl">
-            <div className="inline-flex items-center gap-2 bg-indigo-500/20 text-indigo-300 font-extrabold text-xs px-3 py-1 rounded-full mb-4 border border-indigo-500/30">
-              <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-              <span>{t('dashboard.hero.badge')}</span>
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight">
-              {t('dashboard.hero.title')}
-            </h2>
-            <p className="mt-3 text-indigo-100 text-sm sm:text-base leading-relaxed">
-              {t('dashboard.hero.subtitle')}
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <Link
-              to="/articles"
-              className="bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold px-6 py-3.5 rounded-2xl shadow-lg shadow-indigo-600/30 transition-all flex items-center gap-2 text-sm"
-            >
-              <PlusCircle className="w-4 h-4" />
-              <span>{t('dashboard.hero.newPost')}</span>
-            </Link>
-            <button
-              type="button"
-              onClick={() => void refetch()}
-              disabled={isFetching}
-              className="bg-slate-800/80 hover:bg-slate-800 text-slate-200 font-bold px-5 py-3.5 rounded-2xl border border-slate-700 transition-all text-sm disabled:opacity-60"
-            >
-              {isFetching ? t('dashboard.hero.refreshing') : t('dashboard.hero.refresh')}
-            </button>
-          </div>
+      <AdminToolbar>
+        <div className="min-w-0">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-admin-primary">{t('dashboard.hero.badge')}</p>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-admin-text mt-1">
+            {t('dashboard.hero.title')}
+          </h2>
+          <p className="mt-1 text-sm text-admin-muted max-w-2xl">{t('dashboard.hero.subtitle')}</p>
         </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            to="/articles"
+            className="bg-admin-primary hover:bg-admin-primary-hover text-white font-bold px-5 py-2.5 rounded-lg transition-all flex items-center gap-2 text-sm"
+          >
+            <PlusCircle className="w-4 h-4" />
+            <span>{t('dashboard.hero.newPost')}</span>
+          </Link>
+          <button
+            type="button"
+            onClick={() => void refetch()}
+            disabled={isFetching}
+            className="bg-admin-card hover:bg-admin-sidebar-hover text-admin-text font-semibold px-4 py-2.5 rounded-lg border border-admin-border transition-all text-sm disabled:opacity-60"
+          >
+            {isFetching ? t('dashboard.hero.refreshing') : t('dashboard.hero.refresh')}
+          </button>
+        </div>
+      </AdminToolbar>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5 gap-4">
+        {kpiCards.map((card) => (
+          <AdminKpiCard
+            key={card.id}
+            title={card.title}
+            value={card.value}
+            icon={card.icon}
+            to={card.to}
+          />
+        ))}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
-        {kpiCards.map((card) => {
-          const Icon = card.icon;
-          return (
-            <Link
-              key={card.id}
-              to={card.to}
-              className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-xl hover:border-indigo-500/50 transition-all group flex flex-col justify-between"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
-                  <Icon className="w-6 h-6" />
-                </div>
-                <ArrowUpRight className="w-5 h-5 text-slate-300 dark:text-slate-600 group-hover:text-indigo-500 transition-colors" />
-              </div>
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        <AdminWidgetCard
+          className="xl:col-span-2"
+          title={t('dashboard.chart.title')}
+          action={
+            <Link to="/analytics" className="text-sm font-semibold text-admin-primary hover:underline">
+              {t('dashboard.chart.analyticsLink')}
+            </Link>
+          }
+        >
+          <AnalyticsChart data={analytics?.chart ?? []} loading={false} />
+        </AdminWidgetCard>
+        <div className="space-y-4">
+          <ProjectPlannerSummaryWidget />
+          <AdminWidgetCard title={t('dashboard.storage.title')}>
+            <div className="flex items-start justify-between gap-3 mb-3">
               <div>
-                <div className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-                  {card.value}
-                </div>
-                <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mt-1">
-                  {card.title}
-                </div>
-              </div>
-            </Link>
-          );
-        })}
-      </div>
-
-      <ProjectPlannerSummaryWidget />
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Link
-          to="/messages"
-          className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 hover:border-indigo-500/50 transition-all group"
-        >
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs font-bold uppercase text-slate-500">{t('dashboard.stats.unreadMessages')}</p>
-              <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
-                {counts?.messages_unread ?? 0}
-              </p>
-            </div>
-            <Mail className="w-8 h-8 text-indigo-500 group-hover:scale-110 transition-transform" />
-          </div>
-        </Link>
-        <Link
-          to="/pages?stale=1"
-          className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 hover:border-amber-500/50 transition-all group"
-        >
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs font-bold uppercase text-slate-500">{t('dashboard.stats.staleContent')}</p>
-              <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
-                {counts?.stale_content ?? 0}
-              </p>
-            </div>
-            <Clock3 className="w-8 h-8 text-amber-500 group-hover:scale-110 transition-transform" />
-          </div>
-        </Link>
-        <Link
-          to="/media"
-          className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 hover:border-indigo-500/50 transition-all group"
-        >
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs font-bold uppercase text-slate-500">{t('dashboard.stats.media')}</p>
-              <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
-                {counts?.media ?? stats.totalMedia}
-              </p>
-            </div>
-            <ImageIcon className="w-8 h-8 text-emerald-500 group-hover:scale-110 transition-transform" />
-          </div>
-        </Link>
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs font-bold uppercase text-slate-500">
-                {isDemoInstance ? t('dashboard.stats.demoStorageFree') : t('dashboard.stats.diskFree')}
-              </p>
-              <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
-                {storageFree ?? '—'}
-              </p>
-              {isDemoInstance && demoStorageQuota ? (
-                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                  {t('dashboard.stats.demoStorageQuota', { quota: demoStorageQuota })}
+                <p className="text-2xl font-bold text-admin-text">
+                  {isDemoInstance ? t('dashboard.stats.demoStorageFree') : t('dashboard.stats.diskFree')}
                 </p>
-              ) : null}
+                <p className="text-sm text-admin-muted mt-1">{storageFree ?? '—'}</p>
+                {isDemoInstance && demoStorageQuota ? (
+                  <p className="mt-1 text-xs text-admin-muted">
+                    {t('dashboard.stats.demoStorageQuota', { quota: demoStorageQuota })}
+                  </p>
+                ) : null}
+              </div>
+              <HardDrive className="w-8 h-8 text-admin-primary shrink-0" />
             </div>
-            <Database className="w-8 h-8 text-amber-500" />
-          </div>
+            {usedPercent !== null ? (
+              <>
+                <ProgressBar percent={usedPercent} tone="indigo" />
+                <p className="mt-2 text-xs font-semibold text-admin-muted">
+                  {t('dashboard.storage.used', { percent: usedPercent })}
+                </p>
+              </>
+            ) : (
+              <p className="text-xs text-admin-muted">{t('dashboard.storage.free', { free: storageFree ?? '—' })}</p>
+            )}
+          </AdminWidgetCard>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
-          <p className="text-xs font-bold uppercase text-slate-500">{t('dashboard.stats.realtimeVisitors')}</p>
-          <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
-            {analytics?.realtime.active_visitors ?? 0}
-          </p>
-        </div>
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
-          <p className="text-xs font-bold uppercase text-slate-500">{t('dashboard.stats.activeLocks')}</p>
-          <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
-            {overview?.locks_count ?? 0}
-          </p>
-        </div>
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
-          <p className="text-xs font-bold uppercase text-slate-500">{t('dashboard.stats.conflicts')}</p>
-          <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
-            {overview?.conflicts_count ?? 0}
-          </p>
-        </div>
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
-          <p className="text-xs font-bold uppercase text-slate-500">{t('dashboard.stats.systemStatus')}</p>
-          <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 capitalize">
-            {overview?.health?.status ?? 'unknown'}
-          </p>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <Link to="/messages">
+          <AdminKpiCard
+            title={t('dashboard.stats.unreadMessages')}
+            value={counts?.messages_unread ?? 0}
+            icon={Mail}
+          />
+        </Link>
+        <Link to="/pages?stale=1">
+          <AdminKpiCard
+            title={t('dashboard.stats.staleContent')}
+            value={counts?.stale_content ?? 0}
+            icon={Clock3}
+          />
+        </Link>
+        <AdminKpiCard title={t('dashboard.kpi.backups')} value={stats.totalBackups} icon={HardDrive} to="/backups" />
+        <AdminKpiCard
+          title={t('dashboard.stats.realtimeVisitors')}
+          value={analytics?.realtime.active_visitors ?? 0}
+          icon={ArrowUpRight}
+          to="/analytics"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <AdminKpiCard title={t('dashboard.stats.activeLocks')} value={overview?.locks_count ?? 0} icon={HardDrive} />
+        <AdminKpiCard title={t('dashboard.stats.conflicts')} value={overview?.conflicts_count ?? 0} icon={Settings} />
+        <AdminKpiCard
+          title={t('dashboard.stats.systemStatus')}
+          value={overview?.health?.status ?? 'unknown'}
+          icon={Sparkles}
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <HealthPanel health={overview?.health ?? null} loading={false} />
         <PerformanceGuardPanel overview={apm} loading={false} onRefresh={() => void refetch()} />
-      </div>
-
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">{t('dashboard.chart.title')}</h2>
-          <Link to="/analytics" className="text-sm text-indigo-600 hover:underline">
-            {t('dashboard.chart.analyticsLink')}
-          </Link>
-        </div>
-        <AnalyticsChart data={analytics?.chart ?? []} loading={false} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -376,13 +331,13 @@ export const DashboardView: React.FC = () => {
             <Link
               key={link.to}
               to={link.to}
-              className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-5 hover:border-indigo-500/50 hover:shadow-lg transition-all group"
+              className="bg-admin-card rounded-lg border border-admin-border shadow-admin p-5 hover:border-admin-primary transition-all group"
             >
               <div className="flex items-center gap-3">
-                <div className="rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 p-3 text-indigo-600 group-hover:scale-110 transition-transform">
+                <div className="rounded-lg bg-admin-sidebar-active p-3 text-admin-primary group-hover:scale-105 transition-transform">
                   <Icon className="w-5 h-5" />
                 </div>
-                <span className="font-bold text-slate-900 dark:text-white">{link.label}</span>
+                <span className="font-semibold text-admin-text">{link.label}</span>
               </div>
             </Link>
           );

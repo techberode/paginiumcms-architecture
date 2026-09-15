@@ -315,12 +315,12 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
   }
 
   const btn = (active: boolean) =>
-    `p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 ${
-      active ? 'bg-slate-200 dark:bg-slate-700' : ''
+    `p-1.5 rounded-lg text-admin-text hover:bg-admin-sidebar-hover ${
+      active ? 'bg-admin-sidebar-active text-admin-sidebar-active-text' : ''
     }`;
 
   return (
-    <div className="border rounded-2xl overflow-hidden dark:border-slate-700 bg-white dark:bg-slate-950">
+    <div className="border border-admin-border rounded-2xl overflow-hidden bg-admin-card text-admin-text">
       <input
         ref={fileInputRef}
         type="file"
@@ -334,7 +334,7 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
           event.target.value = '';
         }}
       />
-      <div className="flex flex-wrap items-center gap-0.5 bg-slate-50 dark:bg-slate-900 px-3 py-2 border-b dark:border-slate-700">
+      <div className="flex flex-wrap items-center gap-0.5 bg-admin-canvas px-3 py-2 border-b border-admin-border">
         {profileAllows(profile, 'bold') && (
           <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className={btn(editor.isActive('bold'))}>
             <strong>B</strong>
@@ -360,7 +360,7 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
           profileAllows(profile, 'underline') ||
           profileAllows(profile, 'strike')) &&
           profileAllows(profile, 'heading') && (
-            <span className="w-px h-6 bg-slate-300 dark:bg-slate-600 mx-1" />
+            <span className="w-px h-6 bg-admin-border mx-1" />
           )}
         {profileAllows(profile, 'heading') &&
           [1, 2, 3].map((level) => (
@@ -377,7 +377,7 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
           profileAllows(profile, 'orderedList') ||
           profileAllows(profile, 'blockquote') ||
           profileAllows(profile, 'codeBlock')) && (
-          <span className="w-px h-6 bg-slate-300 dark:bg-slate-600 mx-1" />
+          <span className="w-px h-6 bg-admin-border mx-1" />
         )}
         {profileAllows(profile, 'bulletList') && (
           <button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()} className={btn(editor.isActive('bulletList'))}>
@@ -403,7 +403,7 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
           profileAllows(profile, 'image') ||
           profileAllows(profile, 'video') ||
           profileAllows(profile, 'table')) && (
-          <span className="w-px h-6 bg-slate-300 dark:bg-slate-600 mx-1" />
+          <span className="w-px h-6 bg-admin-border mx-1" />
         )}
         {profileAllows(profile, 'link') && (
           <>
@@ -466,7 +466,7 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
           </button>
         )}
         {(canUseTrustedHtml || canUseExternalEmbed) && (
-          <span className="w-px h-6 bg-slate-300 dark:bg-slate-600 mx-1" />
+          <span className="w-px h-6 bg-admin-border mx-1" />
         )}
         {canUseTrustedHtml && (
           <button
@@ -489,7 +489,7 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
           </button>
         )}
         {customComponents.length > 0 && (
-          <span className="w-px h-6 bg-slate-300 dark:bg-slate-600 mx-1" />
+          <span className="w-px h-6 bg-admin-border mx-1" />
         )}
         {customComponents.map((component) => (
           <button
@@ -511,7 +511,7 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
             ✦
           </button>
         ))}
-        <span className="w-px h-6 bg-slate-300 dark:bg-slate-600 mx-1" />
+        <span className="w-px h-6 bg-admin-border mx-1" />
         <button type="button" onClick={() => editor.chain().focus().undo().run()} className={btn(false)}>
           ↩
         </button>
@@ -522,7 +522,7 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
 
       <EditorContent
         editor={editor}
-        className="prose dark:prose-invert max-w-none p-4 min-h-[420px] focus:outline-none [&_.ProseMirror]:min-h-[380px] [&_.ProseMirror]:outline-none"
+        className="prose dark:prose-invert max-w-none p-4 min-h-[420px] text-admin-text focus:outline-none [&_.ProseMirror]:min-h-[380px] [&_.ProseMirror]:outline-none"
       />
 
       <HtmlBlockInsertModal

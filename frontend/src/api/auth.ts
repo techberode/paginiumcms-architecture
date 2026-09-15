@@ -1,7 +1,8 @@
 // frontend/src/api/auth.ts
 // === Auth API (Iterácia 5 – session/HttpOnly cookie, bez Bearer tokenu) ===
-import apiClient from './client';
+import apiClient, { type ApiResponse } from './client';
 import { User, LoginRequest, RegisterRequest } from './types';
+import { validateAvatarFile } from '../utils/avatarUpload';
 
 export interface LoginResult {
   success: boolean;
@@ -18,6 +19,24 @@ export interface RegisterResult {
   expiresAt?: number;
   debugCode?: string;
   error?: string;
+}
+
+export interface AccountProfilePayload {
+  email?: string;
+  username?: string;
+  name?: string;
+  bio?: string;
+  jobTitle?: string;
+  phone?: string;
+  timezone?: string;
+  locale?: string;
+  notifyFailedLogin?: boolean;
+  notifySecurityIncident?: boolean;
+  address?: User['address'];
+  experience?: User['experience'];
+  education?: User['education'];
+  socialAccounts?: User['socialAccounts'];
+  publish?: User['publish'];
 }
 
 export const authApi = {
@@ -148,6 +167,32 @@ export const authApi = {
       new_password: newPassword,
     });
     return Boolean(res.success);
+  },
+
+  updateProfile: async (payload: AccountProfilePayload): Promise<ApiResponse<{ user: User }>> => {
+    return apiClient.put<{ user: User }>('/api/auth/me', payload);
+  },
+
+  assignMyAvatarFromUrl: async (url: string): Promise<ApiResponse<{ user: User }>> => {
+    return apiClient.put<{ user: User }>('/api/auth/me/avatar', { url });
+  },
+
+  uploadMyAvatar: async (file: File): Promise<ApiResponse<{ user: User }>> => {
+    const validation = await validateAvatarFile(file);
+    if (!validation.ok) {
+      return { success: false, error: 'Invalid avatar file.' };
+    }
+
+    const form = new FormData();
+    form.append('avatar', validation.file);
+
+    return apiClient.post<{ user: User }>('/api/auth/me/avatar', form, {
+      timeout: 120_000,
+    });
+  },
+
+  removeMyAvatar: async (): Promise<ApiResponse<{ user: User }>> => {
+    return apiClient.delete<{ user: User }>('/api/auth/me/avatar');
   },
 
   resetPassword: async (email: string): Promise<{ success: boolean; token?: string }> => {

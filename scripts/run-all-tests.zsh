@@ -408,7 +408,7 @@ run_step 1 "PHPUnit (backend testy)" \
   'vendor/bin/phpunit --colors=always'
 
 run_step 2 "PHPStan (statická analýza, Level 8)" \
-  'vendor/bin/phpstan analyse backend --level=8 --ansi'
+  'vendor/bin/phpstan analyse backend --level=8 --memory-limit=512M --ansi'
 
 run_step 3 "Composer Audit (bezpečnosť PHP závislostí)" \
   'composer audit'

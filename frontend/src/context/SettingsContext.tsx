@@ -6,6 +6,11 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import { getPublicSettings, PublicSettings } from '../api/settings';
 import { useAuth } from '../hooks/useAuth';
 import { debugLogProvider } from '../utils/debugLog';
+import {
+  mergePublicSettings,
+  mergeSettingsPatch,
+  omitPreviewGroup,
+} from '../utils/settingsPreview';
 
 /** Predvolené hodnoty – fallback ak API zlyhá alebo používateľ nie je prihlásený. */
 const DEFAULT_PUBLIC: PublicSettings = {
@@ -17,6 +22,14 @@ const DEFAULT_PUBLIC: PublicSettings = {
     blogItemsPerPage: 6,
     showReadingTime: true,
     articlePrintEnabled: false,
+    shareEnabled: true,
+    shareOnArticles: true,
+    shareOnPages: false,
+    shareFacebook: true,
+    shareX: true,
+    shareLinkedin: true,
+    shareEmail: true,
+    shareCopy: true,
     defaultStatus: 'draft',
     autoSaveInterval: 60,
     lockTtl: 300,
@@ -36,6 +49,11 @@ const DEFAULT_PUBLIC: PublicSettings = {
     showListCounts: true,
     adminListPageSize: 20,
     openLinksInNewTab: false,
+    sidebarColor: 'default',
+    topbarColor: 'default',
+    chromeGradient: false,
+    chromeGradientDirection: 'to-bottom',
+    navPlacement: 'side',
   },
   navigationUi: {
     defaultPreviewScale: 1.5,
@@ -126,21 +144,57 @@ const DEFAULT_PUBLIC: PublicSettings = {
   },
 };
 
-interface SettingsContextType {
+export interface SettingsContextType {
   settings: PublicSettings;
   loading: boolean;
   /** Bodková notácia: get('content.autoSaveInterval') */
   get: (key: string, fallback?: unknown) => unknown;
   reload: () => Promise<void>;
+  /** Overlay public settings in-memory (Apply). Discarded on clearPreview / leaving Settings. */
+  applyPreview: (patch: Partial<PublicSettings>) => void;
+  clearPreview: () => void;
+  clearPreviewGroup: (group: string) => void;
+  hasUnsavedPreview: boolean;
 }
+
+export const SETTINGS_PREVIEW_NOOP: Pick<
+  SettingsContextType,
+  'applyPreview' | 'clearPreview' | 'clearPreviewGroup' | 'hasUnsavedPreview'
+> = {
+  applyPreview: () => undefined,
+  clearPreview: () => undefined,
+  clearPreviewGroup: () => undefined,
+  hasUnsavedPreview: false,
+};
 
 export const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
-  const [settings, setSettings] = useState<PublicSettings>(DEFAULT_PUBLIC);
+  const [persisted, setPersisted] = useState<PublicSettings>(DEFAULT_PUBLIC);
+  const [previewPatch, setPreviewPatch] = useState<Partial<PublicSettings> | null>(null);
   const [loading, setLoading] = useState(true);
   const hasLoadedRef = useRef(false);
+
+  const settings = useMemo(
+    () => (previewPatch ? mergePublicSettings(persisted, previewPatch) : persisted),
+    [persisted, previewPatch]
+  );
+  const hasUnsavedPreview = Boolean(previewPatch && Object.keys(previewPatch).length > 0);
+
+  const applyPreview = useCallback((patch: Partial<PublicSettings>) => {
+    setPreviewPatch((prev) =>
+      mergeSettingsPatch((prev ?? {}) as Record<string, unknown>, patch as Record<string, unknown>) as Partial<PublicSettings>
+    );
+  }, []);
+
+  const clearPreview = useCallback(() => {
+    setPreviewPatch(null);
+  }, []);
+
+  const clearPreviewGroup = useCallback((group: string) => {
+    setPreviewPatch((prev) => (prev ? omitPreviewGroup(prev, group) : null));
+  }, []);
 
   const reload = useCallback(async () => {
     if (!hasLoadedRef.current) {
@@ -150,18 +204,18 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     try {
       const payload = await getPublicSettings();
       if (payload) {
-        setSettings(payload);
+        setPersisted(payload);
         debugLogProvider('settings', 'reload.done', {
           source: 'api',
           siteName: payload.general?.siteName,
         });
       } else if (!user) {
-        setSettings(DEFAULT_PUBLIC);
+        setPersisted(DEFAULT_PUBLIC);
         debugLogProvider('settings', 'reload.fallback', { source: 'default_public' });
       }
     } catch (error) {
       if (!user) {
-        setSettings(DEFAULT_PUBLIC);
+        setPersisted(DEFAULT_PUBLIC);
       }
       debugLogProvider('settings', 'reload.error', {
         message: error instanceof Error ? error.message : 'unknown',
@@ -193,8 +247,17 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   );
 
   const value = useMemo(
-    () => ({ settings, loading, get, reload }),
-    [settings, loading, get, reload]
+    () => ({
+      settings,
+      loading,
+      get,
+      reload,
+      applyPreview,
+      clearPreview,
+      clearPreviewGroup,
+      hasUnsavedPreview,
+    }),
+    [settings, loading, get, reload, applyPreview, clearPreview, clearPreviewGroup, hasUnsavedPreview]
   );
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
@@ -225,6 +288,10 @@ export const TestSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ 
         return current ?? fallback;
       },
       reload: async () => undefined,
+      applyPreview: SETTINGS_PREVIEW_NOOP.applyPreview,
+      clearPreview: SETTINGS_PREVIEW_NOOP.clearPreview,
+      clearPreviewGroup: SETTINGS_PREVIEW_NOOP.clearPreviewGroup,
+      hasUnsavedPreview: false,
     }),
     []
   );

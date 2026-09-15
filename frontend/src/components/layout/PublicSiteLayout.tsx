@@ -22,13 +22,12 @@ import { BackToTopButton } from '../frontend/BackToTopButton';
 import { useAnalyticsPageview } from '../../hooks/useAnalyticsPageview';
 import { galleryPublicSlug } from '../../utils/galleryPublicRoute';
 import { BTN_PRIMARY, PUBLIC_SPINNER } from '../../theme/publicUiClasses';
-import {
-  resolveNavigationLayout,
-  sideNavBreakpointClass,
-} from '../../utils/navigationLayoutSettings';
+import { resolveNavigationLayout } from '../../utils/navigationLayoutSettings';
+import { resolvePublicNavChrome } from '../../utils/publicNavChrome';
 import { resolveThemeShell } from '../../theme/themeShellRegistry';
 import { ThemeShellBoundary } from './ThemeShellBoundary';
 import { ThemeScriptLoader } from '../frontend/ThemeScriptLoader';
+import { PublicHeaderStack } from './PublicHeaderStack';
 
 const ADMIN_PREFIXES = [
   '/dashboard',
@@ -137,7 +136,7 @@ export const PublicSiteLayout: React.FC = () => {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { user, pendingTwoFactor } = useAuth();
-  const { getPageBySlug, getArticleBySlug, navigation } = usePublicSite();
+  const { getPageBySlug, getArticleBySlug, navigation, secondaryNavigation } = usePublicSite();
   const { settings } = useSettingsContext();
   const siteName = String(settings?.general?.siteName ?? 'PaginiumCMS');
   const activeThemeId = settings?.appearance?.activeThemeId ?? 'paginium-core';
@@ -147,8 +146,16 @@ export const PublicSiteLayout: React.FC = () => {
   }, [activeThemeId]);
   const ThemeShell = !shellFailed ? resolveThemeShell(activeThemeId) : null;
   const navLayout = useMemo(() => resolveNavigationLayout(settings), [settings]);
-  const showTopNav = navLayout.placement === 'top' || navLayout.placement === 'both';
-  const showSideNav = navLayout.placement === 'side' || navLayout.placement === 'both';
+  const chrome = useMemo(
+    () => resolvePublicNavChrome(settings, secondaryNavigation.length),
+    [settings, secondaryNavigation.length]
+  );
+  const showTopNav = chrome.showTopPrimary;
+  const showSideColumn = chrome.showSidePrimary || chrome.showSideSecondary;
+  const sideOnRight = chrome.showSideSecondary && chrome.secondary.side === 'right';
+  const sideSticky = chrome.showSideSecondary
+    ? chrome.secondary.position === 'sticky'
+    : true;
 
   const showCmsBar = Boolean(user && !pendingTwoFactor);
 
@@ -215,26 +222,58 @@ export const PublicSiteLayout: React.FC = () => {
     sitemapLink.title = t('public.meta.sitemapTitle', { siteName });
   }, [settings?.feeds, siteName, t]);
 
+  const navUi = {
+    defaultPreviewScale: Number(settings.navigationUi?.defaultPreviewScale ?? 1.5),
+    maxTooltipWidthPx: Number(settings.navigationUi?.maxTooltipWidthPx ?? 280),
+    enableHoverAnimations: settings.navigationUi?.enableHoverAnimations !== false,
+  };
+
+  const sideItems = chrome.showSideSecondary ? secondaryNavigation : navigation;
+  const sideColumn = showSideColumn ? (
+    <div
+      className={`pg-public-side-column ${sideOnRight ? 'pg-public-side-column-right' : ''} ${chrome.sideColumnClass}`}
+    >
+      <SideNav
+        items={sideItems}
+        layout={navLayout}
+        className={sideSticky ? 'pg-public-side-nav-sticky' : 'pg-public-side-nav-scroll'}
+        accordion={chrome.showSideSecondary && chrome.secondary.position === 'sticky'}
+        hoverPreview={chrome.showSideSecondary}
+        previewSide={sideOnRight ? 'start' : 'end'}
+        navUi={navUi}
+        ariaLabel={
+          chrome.showSideSecondary ? t('public.nav.secondaryMenu') : t('public.nav.sideMenu')
+        }
+      />
+    </div>
+  ) : null;
+
   const mainColumn = (
-    <div className="flex-1 flex min-h-0">
-      {showSideNav && !ThemeShell ? (
-        <div className={`pg-public-side-column ${sideNavBreakpointClass(navLayout.sideBreakpoint)}`}>
-          <SideNav items={navigation} layout={navLayout} className="pg-public-side-nav-sticky" />
-        </div>
-      ) : null}
-      <div className="flex-1 min-w-0">
+    <div className={`flex-1 flex min-h-0 min-w-0 ${sideOnRight ? 'flex-row-reverse' : ''}`}>
+      {sideColumn}
+      <div className="flex-1 min-w-0 pg-public-content-well">
         <Outlet />
       </div>
     </div>
   );
 
-  const coreChrome = (
-    <>
+  const headerStack = (
+    <PublicHeaderStack>
+      {showCmsBar && <CMSBar currentDoc={currentDoc} />}
       <Navbar
         onOpenSearch={() => setSearchOpen(true)}
         showPrimaryNav={showTopNav}
         navLayout={navLayout}
+        chrome={chrome}
+        secondaryItems={secondaryNavigation}
+        wideHeader={showSideColumn}
       />
+    </PublicHeaderStack>
+  );
+
+  const coreChrome = (
+    <>
+      {headerStack}
       {mainColumn}
       <Footer />
     </>
@@ -244,12 +283,16 @@ export const PublicSiteLayout: React.FC = () => {
     <MaintenanceGate>
       <CookieConsentProvider>
       <div
-        className="min-h-screen flex flex-col bg-theme-surface text-theme-text transition-colors"
+        className={`min-h-screen flex flex-col bg-theme-surface text-theme-text transition-colors ${
+          showCmsBar ? 'has-cms-bar' : ''
+        } ${showSideColumn ? 'has-public-side-nav' : ''}`}
         data-active-theme={activeThemeId}
+        data-public-chrome={
+          chrome.showSideSecondary ? 'top+catalog' : chrome.showSidePrimary ? 'side' : 'top'
+        }
       >
       <DemoPublicStrip />
       <ThemeScriptLoader />
-      {showCmsBar && <CMSBar currentDoc={currentDoc} />}
       {ThemeShell ? (
         <ThemeShellBoundary
           themeId={activeThemeId}
@@ -261,6 +304,10 @@ export const PublicSiteLayout: React.FC = () => {
             onOpenSearch={() => setSearchOpen(true)}
             showPrimaryNav={showTopNav}
             navLayout={navLayout}
+            chrome={chrome}
+            secondaryItems={secondaryNavigation}
+            wideHeader={showSideColumn}
+            headerPrefix={showCmsBar ? <CMSBar currentDoc={currentDoc} /> : null}
           >
             {mainColumn}
           </ThemeShell>

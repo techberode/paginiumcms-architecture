@@ -8,6 +8,7 @@ import { useI18n } from '../../context/I18nContext';
 import { BulkActionBar } from './BulkActionBar';
 import { summarizeBulkResult } from '../../types/bulk';
 import { slugifyTitle } from '../../utils/contentEditorMeta';
+import { ADMIN_CARD, ADMIN_INPUT, ADMIN_PAGE_SUBTITLE, ADMIN_PAGE_TITLE } from '../../theme/adminUiClasses';
 
 function isValidCategorySlug(slug: string): boolean {
   return /^[a-z0-9]+(?:-[a-z0-9]+){0,19}$/.test(slug);
@@ -150,14 +151,14 @@ export const CategoriesManager: React.FC = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6" data-testid="categories-manager">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
-            <Hash className="w-7 h-7 text-indigo-600" />
+          <h1 className={`${ADMIN_PAGE_TITLE} flex items-center gap-2`}>
+            <Hash className="w-7 h-7 text-admin-primary" />
             {t('platform.categories.title')}
           </h1>
-          <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">{t('platform.categories.subtitle')}</p>
+          <p className={ADMIN_PAGE_SUBTITLE}>{t('platform.categories.subtitle')}</p>
         </div>
         <div className="flex gap-2">
           <button type="button" className="btn btn-secondary" onClick={() => void load()} disabled={loading}>
@@ -171,32 +172,32 @@ export const CategoriesManager: React.FC = () => {
         </div>
       </div>
 
-      <p className="text-sm text-slate-600 dark:text-slate-300">
+      <p className="text-sm text-admin-muted">
         {t('platform.categories.hint')}{' '}
-        <Link to="/articles" className="font-semibold text-indigo-600 hover:underline">
+        <Link to="/articles" className="font-semibold text-admin-primary hover:underline">
           {t('platform.categories.articlesLink')}
         </Link>
       </p>
 
       {showCreate ? (
-        <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-4 dark:border-slate-800 dark:bg-slate-950">
-          <h2 className="font-bold text-slate-900 dark:text-white">{t('platform.categories.createTitle')}</h2>
+        <div className={`${ADMIN_CARD} p-4 space-y-4`}>
+          <h2 className="font-bold text-admin-text">{t('platform.categories.createTitle')}</h2>
           <div className="grid gap-4 md:grid-cols-2">
             <label className="space-y-1 text-sm">
-              <span className="font-semibold text-slate-700 dark:text-slate-200">{t('platform.categories.label')}</span>
+              <span className="font-semibold text-admin-text">{t('platform.categories.label')}</span>
               <input
                 type="text"
-                className="form-input w-full"
+                className={ADMIN_INPUT}
                 value={label}
                 onChange={(event) => setLabel(event.target.value)}
                 placeholder={t('platform.categories.labelPlaceholder')}
               />
             </label>
             <label className="space-y-1 text-sm">
-              <span className="font-semibold text-slate-700 dark:text-slate-200">{t('platform.categories.slug')}</span>
+              <span className="font-semibold text-admin-text">{t('platform.categories.slug')}</span>
               <input
                 type="text"
-                className="form-input w-full font-mono text-sm"
+                className={`${ADMIN_INPUT} font-mono text-sm`}
                 value={slugTouched ? slug : suggestedSlug}
                 onChange={(event) => {
                   setSlugTouched(true);
@@ -240,14 +241,14 @@ export const CategoriesManager: React.FC = () => {
         ]}
       />
 
-      <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 overflow-hidden">
+      <div className={`${ADMIN_CARD} overflow-hidden`}>
         {loading ? (
-          <p className="px-4 py-6 text-sm text-slate-500">{t('platform.categories.loading')}</p>
+          <p className="px-4 py-6 text-sm text-admin-muted">{t('platform.categories.loading')}</p>
         ) : categories.length === 0 ? (
-          <p className="px-4 py-6 text-sm text-slate-500">{t('platform.categories.empty')}</p>
+          <p className="px-4 py-6 text-sm text-admin-muted">{t('platform.categories.empty')}</p>
         ) : (
           <table className="min-w-full text-sm">
-            <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500 dark:bg-slate-900">
+            <thead className="bg-admin-canvas text-left text-xs uppercase tracking-wide text-admin-muted">
               <tr>
                 <th className="px-4 py-3 w-10">
                   <input
@@ -264,7 +265,7 @@ export const CategoriesManager: React.FC = () => {
             </thead>
             <tbody>
               {categories.map((category) => (
-                <tr key={category.slug} className="border-t border-slate-100 dark:border-slate-800">
+                <tr key={category.slug} className="border-t border-admin-border admin-row-hover">
                   <td className="px-4 py-3">
                     <input
                       type="checkbox"
@@ -276,7 +277,7 @@ export const CategoriesManager: React.FC = () => {
                   <td className="px-4 py-3">
                     <input
                       type="text"
-                      className="form-input w-full max-w-md"
+                      className={`${ADMIN_INPUT} max-w-md`}
                       value={editingLabels[category.slug] ?? category.label}
                       disabled={busySlug === category.slug}
                       onChange={(event) =>
@@ -285,7 +286,7 @@ export const CategoriesManager: React.FC = () => {
                       onBlur={() => void handleSaveLabel(category)}
                     />
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs text-slate-500">{category.slug}</td>
+                  <td className="px-4 py-3 font-mono text-xs text-admin-muted">{category.slug}</td>
                   <td className="px-4 py-3">
                     <div className="flex justify-end gap-2">
                       <button

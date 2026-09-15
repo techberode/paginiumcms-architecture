@@ -132,6 +132,11 @@ export interface PublicSettings {
     showListCounts?: boolean;
     adminListPageSize?: number;
     openLinksInNewTab?: boolean;
+    sidebarColor?: string;
+    topbarColor?: string;
+    chromeGradient?: boolean;
+    chromeGradientDirection?: string;
+    navPlacement?: 'side' | 'top';
   };
   navigationUi?: {
     defaultPreviewScale?: number;
@@ -143,6 +148,12 @@ export interface PublicSettings {
     sideBreakpoint?: 'sm' | 'md' | 'lg' | 'xl';
     expandAnimation?: boolean;
     maxDepth?: number;
+  };
+  secondaryNav?: {
+    enabled?: boolean;
+    maxDepth?: number;
+    side?: 'left' | 'right';
+    position?: 'scroll' | 'sticky';
   };
   content: Record<string, unknown>;
   editor: Record<string, unknown>;

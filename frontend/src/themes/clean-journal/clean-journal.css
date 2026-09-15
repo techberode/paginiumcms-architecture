@@ -36,6 +36,10 @@
   margin-inline: auto;
 }
 
+.pg-cj-main--wide {
+  max-width: none;
+}
+
 [data-active-theme='clean-journal'] header,
 [data-active-theme='clean-journal'] footer {
   max-width: 72rem;

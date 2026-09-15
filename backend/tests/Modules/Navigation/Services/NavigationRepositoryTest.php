@@ -47,4 +47,20 @@ class NavigationRepositoryTest extends TestCase
         $this->assertCount(1, $loaded->getItems());
         $this->assertSame('Services', $loaded->getItems()[0]->getLabel());
     }
+
+    public function testEnabledRoundTrip(): void
+    {
+        $item = NavigationItem::fromPayload([
+            'label' => 'Hidden',
+            'path' => '/hidden',
+            'enabled' => false,
+        ], 0);
+        $this->assertNotNull($item);
+        $this->assertFalse($item->isEnabled());
+
+        $this->repository->save(new Navigation([$item]));
+        $loaded = $this->repository->load();
+        $this->assertFalse($loaded->getItems()[0]->isEnabled());
+        $this->assertSame([], $loaded->toPublicPayload());
+    }
 }

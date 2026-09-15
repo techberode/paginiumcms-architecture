@@ -16,6 +16,12 @@ export const dashboardSk: MessageTree = {
     backups: 'Zálohy',
     visitsToday: 'Návštevy dnes',
     staleContent: 'Zastaralý obsah',
+    media: 'Médiá',
+  },
+  storage: {
+    title: 'Úložisko obsahu',
+    used: '{percent} % využité',
+    free: 'Voľné: {free}',
   },
   stats: {
     unreadMessages: 'Neprečítané správy',

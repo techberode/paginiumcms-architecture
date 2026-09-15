@@ -6,7 +6,6 @@ import {
   Home,
   Link2,
   Menu,
-  Save,
   Sparkles,
   X,
 } from 'lucide-react';
@@ -28,6 +27,8 @@ import type { ArticleAuthorSettings } from '../../utils/articleAuthorSettings';
 import { ContentMetaSuggestPanel } from './ContentMetaSuggestPanel';
 import { linkTargetProps } from '../../utils/linkTarget';
 import { useI18n } from '../../context/I18nContext';
+import { ADMIN_CARD, ADMIN_PILL_ACTIVE, ADMIN_PILL_IDLE } from '../../theme/adminUiClasses';
+import { AdminFormActions } from './AdminFormActions';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { useAuth } from '../../hooks/useAuth';
 import {
@@ -37,6 +38,7 @@ import {
 } from '../../layout/pageLayoutTemplates';
 import { LayoutPreviewFrame } from '../admin/LayoutPreviewFrame';
 import { ShortcodeInsertPanel } from './ShortcodeInsertPanel';
+import { WidgetInsertPanel } from './WidgetInsertPanel';
 import { SnippetInsertPanel } from './SnippetInsertPanel';
 import {
   DEFAULT_COLOR_SCHEME_ID,
@@ -186,6 +188,8 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
   const isAdmin = user?.roles?.some((role) => role === 'ADMIN' || role === 'SUPER_ADMIN') ?? false;
   const showLayoutTemplatePicker = type === 'page' && builderMode === 'templates';
   const showShortcodePicker = type === 'page' && builderMode === 'shortcodes' && Boolean(onInsertShortcode);
+  const showOutlineEditor = type === 'page' && builderMode === 'outline';
+  const showWysiwygToggle = !showOutlineEditor;
   const showDeveloperHint =
     type === 'page' && builderMode === 'developer' && developerRequiresAdmin && !isAdmin;
 
@@ -213,12 +217,12 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
 
   return (
     <div className="mx-auto w-full max-w-7xl">
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-950">
-        <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-200 px-5 py-4 dark:border-slate-800">
+      <div className={`overflow-hidden ${ADMIN_CARD}`}>
+        <div className="flex flex-wrap items-start justify-between gap-4 border-b border-admin-border px-5 py-4">
           <div className="min-w-0 space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-xl font-bold text-slate-900 dark:text-white">{heading}</h1>
-              <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-200">
+              <h1 className="text-xl font-bold text-admin-text">{heading}</h1>
+              <span className="inline-flex items-center gap-1 rounded-full bg-admin-sidebar-active px-2.5 py-1 text-xs font-semibold text-admin-sidebar-active-text">
                 {type === 'page' ? <Home size={12} /> : <Link2 size={12} />}
                 {contextLabel}
               </span>
@@ -239,18 +243,16 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
                         type="button"
                         disabled={!canEdit}
                         onClick={() => onLocaleChange(code)}
-                        className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold transition ${
-                          isActive
-                            ? 'border-indigo-600 bg-indigo-600 text-white'
-                            : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300'
+                        className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
+                          isActive ? ADMIN_PILL_ACTIVE : ADMIN_PILL_IDLE
                         }`}
                       >
                         <span>{code.toUpperCase()}</span>
                         <span
                           className={`rounded px-1 py-0.5 text-[10px] font-medium ${
                             isActive
-                              ? 'bg-indigo-500/30 text-white'
-                              : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
+                              ? 'bg-white/20 text-white'
+                              : 'bg-admin-canvas text-admin-muted'
                           }`}
                         >
                           {statusLabels[localeStatus] ?? localeStatus}
@@ -280,12 +282,11 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
                 {autoSaveLabel}
               </span>
             )}
+            {showWysiwygToggle ? (
             <button
               type="button"
-              className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition ${
-                editorMode === 'wysiwyg'
-                  ? 'border-indigo-600 bg-indigo-600 text-white'
-                  : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300'
+              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                editorMode === 'wysiwyg' ? ADMIN_PILL_ACTIVE : ADMIN_PILL_IDLE
               }`}
               disabled={!canEdit}
               onClick={() => onEditorModeChange(editorMode === 'wysiwyg' ? 'markdown' : 'wysiwyg')}
@@ -293,11 +294,16 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
               <Sparkles size={14} />
               {t('editor.shell.wysiwyg')}
             </button>
+            ) : (
+              <span className="admin-chip inline-flex items-center rounded-lg px-3 py-1.5 text-xs font-semibold text-admin-sidebar-active-text">
+                {t('editor.outline.title')}
+              </span>
+            )}
             {onOpenPreview && (
               <button
                 type="button"
                 onClick={onOpenPreview}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 dark:border-indigo-900 dark:bg-indigo-950/60 dark:text-indigo-200"
+                className="admin-chip inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-admin-sidebar-hover"
                 title={t('editor.shell.previewTitle')}
               >
                 <Eye size={14} />
@@ -318,7 +324,7 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
               <Link
                 to={previewPath}
                 {...linkTargetProps(openInNewTab)}
-                className="inline-flex items-center justify-center rounded-xl border border-slate-200 p-2 text-slate-500 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-900"
+                className="inline-flex items-center justify-center rounded-lg border border-admin-border p-2 text-admin-muted hover:bg-admin-sidebar-hover"
                 title={t('editor.shell.previewWebTitle')}
               >
                 <Eye size={16} />
@@ -326,7 +332,7 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
             )}
             <Link
               to={listPath}
-              className="inline-flex items-center justify-center rounded-xl border border-slate-200 p-2 text-slate-500 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-900"
+              className="inline-flex items-center justify-center rounded-lg border border-admin-border p-2 text-admin-muted hover:bg-admin-sidebar-hover"
               title={t('editor.shell.close')}
             >
               <X size={16} />
@@ -447,6 +453,18 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
                 />
               </div>
             )}
+
+            {onInsertShortcode && (
+              <div className="form-group md:col-span-2">
+                <WidgetInsertPanel disabled={!canEdit} onInsert={(snippet) => onInsertShortcode(snippet)} />
+              </div>
+            )}
+
+            {showOutlineEditor ? (
+              <p className="form-group md:col-span-2 text-xs text-slate-500 dark:text-slate-400">
+                {t('editor.outline.description')}
+              </p>
+            ) : null}
 
             {onInsertShortcode && (
               <div className="form-group md:col-span-2">
@@ -596,24 +614,21 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
           {footerExtra}
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-5 py-4 dark:border-slate-800">
-          <p className="text-xs text-slate-400">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-admin-border px-5 py-4">
+          <p className="text-xs text-admin-muted">
             {t('editor.shell.stats', { characters: stats.characters, lines: stats.lines })}
           </p>
-          <div className="flex gap-2">
-            <button type="button" className="btn btn-secondary" onClick={onCancel}>
-              {t('editor.shell.cancel')}
-            </button>
-            <button
-              type="button"
-              className="btn btn-primary inline-flex items-center gap-2"
-              disabled={saving || !canEdit}
-              onClick={onSave}
-            >
-              <Save size={16} />
-              {saving ? t('editor.shell.saving') : t('editor.shell.save')}
-            </button>
-          </div>
+          <AdminFormActions
+            onSave={onSave}
+            saveLabel={saving ? t('editor.shell.saving') : t('editor.shell.save')}
+            saveDisabled={saving || !canEdit}
+            saveBusy={saving}
+            extra={
+              <button type="button" className="btn btn-secondary" onClick={onCancel}>
+                {t('editor.shell.cancel')}
+              </button>
+            }
+          />
         </div>
       </div>
     </div>

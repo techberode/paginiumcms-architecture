@@ -36,6 +36,8 @@ All modes must read and write the same AST, and switching must not erase content
 
 Decisions and the phased plan are in [ITERATION_58_ALTERNATIVES.md](ITERATION_58_ALTERNATIVES.md). Security completion for 58d is coupled with planned [It.67](ITERATION_67.md); [It.66](ITERATION_66.md) delivered the write-time baseline.
 
-## Current interpretation
+## Current interpretation (September 2026)
 
-It.58 is not a closed iteration. 58b, 58c, 58d, and 58e are complete; 58f (outline/DnD) and 58g (compile/cache) remain deferred. Compile/cache work must align with It.48/69, and public rendering must not load the admin bundle.
+It.58 is not closed. **58b–58e shipped.** Implementation remainder for publishing UX is **[ITERATION_58f.md](ITERATION_58f.md)** (visual outline, forms, live preview, optional DAM hero video). **58g** compile/cache stays aligned with [It.48](ITERATION_48.md) / It.69 — not in 58f.
+
+Do not invent It.94 for page blocks.

@@ -3,6 +3,11 @@ import type { MessageTree } from '../../types';
 export const settingsEn: MessageTree = {
   "page": {
     "title": "Settings",
+    "apply": "Apply",
+    "applied": "Preview applied. Save to keep it.",
+    "applyUnavailable": "This group has no live preview — use Save.",
+    "previewActive": "Unsaved preview",
+    "previewActiveBody": "Changes are visible in admin now. If you leave this section without saving, the preview is discarded.",
     "save": "Save changes",
     "saving": "Saving…",
     "loadFailed": "Failed to load settings",
@@ -71,6 +76,7 @@ export const settingsEn: MessageTree = {
     "editor": "Editor",
     "navigationUi": "Navigation (UI)",
     "navigation": "Navigation layout",
+    "secondaryNav": "Catalog side menu",
     "smtp": "Email / SMTP",
     "notifications": "Toast notifications",
     "connectors": "Notification connectors",
@@ -199,7 +205,7 @@ export const settingsEn: MessageTree = {
       },
       "outline": {
         "name": "Block outline",
-        "description": "Reorder sections without code (optional later slice)."
+        "description": "Visual blocks with forms — no shortcode tags to type."
       },
       "developer": {
         "name": "Developer",
@@ -310,6 +316,7 @@ export const settingsEn: MessageTree = {
       "webhooks:manage": "Manage webhooks",
       "project-plan:read": "View project planner",
       "project-plan:manage": "Manage project planner",
+      "time-entry:manage": "Manage own time entries",
       "themes:read": "View theme studio",
       "themes:edit": "Edit themes",
       "profile:edit": "Edit profile"
@@ -465,6 +472,33 @@ export const settingsEn: MessageTree = {
         "label": "Show estimated reading time",
         "help": "On blog cards and article detail (computed from text length)."
       },
+      "shareEnabled": {
+        "label": "Content sharing",
+        "help": "Shows Facebook, X, LinkedIn, email, and copy-link buttons. Intent URLs only — no third-party SDKs."
+      },
+      "shareOnArticles": {
+        "label": "Share articles",
+        "help": "Buttons on the published article detail."
+      },
+      "shareOnPages": {
+        "label": "Share pages",
+        "help": "Buttons on published pages (never the home page)."
+      },
+      "shareFacebook": {
+        "label": "Share on Facebook"
+      },
+      "shareX": {
+        "label": "Share on X (Twitter)"
+      },
+      "shareLinkedin": {
+        "label": "Share on LinkedIn"
+      },
+      "shareEmail": {
+        "label": "Share by email"
+      },
+      "shareCopy": {
+        "label": "Copy link"
+      },
       "storageFormat": {
         "label": "Content storage format",
         "help": "md = YAML front matter + Markdown; json = pure JSON file."
@@ -583,7 +617,25 @@ export const settingsEn: MessageTree = {
       },
       "maxDepth": {
         "label": "Maximum menu depth",
-        "help": "SUPER_ADMIN may set 4 levels; default is 3."
+        "help": "SUPER_ADMIN may set 4 levels; default is 3. With the catalog side menu on, the header stays primary — the side column is reserved so links are not duplicated."
+      }
+    },
+    "secondaryNav": {
+      "enabled": {
+        "label": "Enable catalog side menu",
+        "help": "Separate tree (category → subcategory → item). Never shows the same links as the header menu."
+      },
+      "maxDepth": {
+        "label": "Maximum levels",
+        "help": "1–6 levels. Example: tools → subcategory → product."
+      },
+      "side": {
+        "label": "Placement",
+        "help": "Left or right of the content. On mobile it sits in the hamburger under the main menu."
+      },
+      "position": {
+        "label": "While scrolling",
+        "help": "scroll = moves with the page; sticky = stays in view and shows only the open branch."
       }
     },
     "comments": {
@@ -758,6 +810,27 @@ export const settingsEn: MessageTree = {
       "openLinksInNewTab": {
         "label": "Open previews and external links in a new tab",
         "help": "Applies to content preview, public site link, media download and footer external links."
+      },
+      "sidebarColor": {
+        "label": "Sidebar color",
+        "help": "Admin menu palette only — does not change the public site theme. Default follows the light/dark admin toggle."
+      },
+      "topbarColor": {
+        "label": "Top bar color",
+        "help": "Opaque header bar. Independent from the menu color."
+      },
+      "chromeGradient": {
+        "label": "Gradient on menu and top bar",
+        "help": "Soft blend from the chosen color into a darker stop. Pick the direction below.",
+        "directionLabel": "Gradient direction"
+      },
+      "chromeGradientDirection": {
+        "label": "Gradient direction",
+        "help": "Applies to the side menu and the top bar."
+      },
+      "navPlacement": {
+        "label": "Admin menu placement",
+        "help": "Side panel or a collapsible top menu grouped by sections."
       }
     },
     "security": {
@@ -1733,6 +1806,31 @@ export const settingsEn: MessageTree = {
       "below": "Below image",
       "overlay": "Overlay",
       "side": "Side"
+    },
+    "sidebarColor": {
+      "default": "Default (Falcon)",
+      "navy": "Navy",
+      "slate": "Slate",
+      "indigo": "Indigo",
+      "ocean": "Ocean",
+      "forest": "Forest",
+      "wine": "Wine",
+      "charcoal": "Charcoal"
+    },
+    "navPlacement": {
+      "side": "Side menu",
+      "sideHint": "Classic left panel with collapsible sections.",
+      "top": "Top dropdown menu",
+      "topHint": "Horizontal bar under the header; each section opens a dropdown.",
+      "active": "Selected"
+    },
+    "chromeGradientDirection": {
+      "to-bottom": "Down",
+      "to-top": "Up",
+      "to-right": "Right",
+      "to-left": "Left",
+      "to-bottom-right": "Diagonal down-right",
+      "to-bottom-left": "Diagonal down-left"
     }
   },
   "maintenance": {

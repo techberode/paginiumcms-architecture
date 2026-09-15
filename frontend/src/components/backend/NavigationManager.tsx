@@ -1,12 +1,15 @@
 // frontend/src/components/backend/NavigationManager.tsx
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Navigation, Plus, Trash2, ArrowUp, ArrowDown, Save, CornerDownRight, Settings2 } from 'lucide-react';
+import { Navigation, Plus, Trash2, ArrowUp, ArrowDown, CornerDownRight, Settings2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { getNavigation, NavigationItem, updateNavigation } from '../../api/navigation';
+import { getAdminNavigation, getAdminSecondaryNavigation, NavigationItem, updateNavigation, updateSecondaryNavigation } from '../../api/navigation';
 import { useToast } from '../../hooks/useToast';
 import { useI18n } from '../../context/I18nContext';
+import { ADMIN_PAGE_SUBTITLE, ADMIN_PAGE_TITLE } from '../../theme/adminUiClasses';
 import { MediaPickerModal } from './MediaPickerModal';
 import { NavigationItemRichFields } from './NavigationItemRichFields';
+import { AdminFormActions } from './AdminFormActions';
+import { AdminTabs } from '../ui/AdminTabs';
 import {
   buildNavigationTree,
   collectDescendantIds,
@@ -15,7 +18,7 @@ import {
   normalizeNavigationOrders,
   reorderSibling,
 } from '../../utils/navigationTree';
-import { resolveNavigationLayout } from '../../utils/navigationLayoutSettings';
+import { resolveNavigationLayout, resolveSecondaryNavLayout } from '../../utils/navigationLayoutSettings';
 import { useSettingsContext } from '../../context/SettingsContext';
 
 const createItem = (label: string, path: string, parentId: string | null, order: number): NavigationItem => ({
@@ -31,13 +34,17 @@ const createItem = (label: string, path: string, parentId: string | null, order:
   previewOnHover: false,
   previewScale: 1.5,
   thumbnailSize: 'sm',
+  enabled: true,
 });
 
 export const NavigationManager: React.FC = () => {
   const { error: showError, success: showSuccess } = useToast();
   const { t } = useI18n();
   const { settings } = useSettingsContext();
-  const maxDepth = resolveNavigationLayout(settings).maxDepth;
+  const primaryMaxDepth = resolveNavigationLayout(settings).maxDepth;
+  const secondaryLayout = resolveSecondaryNavLayout(settings);
+  const [slot, setSlot] = useState<'primary' | 'secondary'>('primary');
+  const maxDepth = slot === 'secondary' ? secondaryLayout.maxDepth : primaryMaxDepth;
   const [items, setItems] = useState<NavigationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -48,14 +55,15 @@ export const NavigationManager: React.FC = () => {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const nav = await getNavigation();
+      const nav =
+        slot === 'secondary' ? await getAdminSecondaryNavigation() : await getAdminNavigation();
       setItems(normalizeNavigationOrders(nav));
     } catch {
       showError(t('navigation.toast.loadFailed'));
     } finally {
       setLoading(false);
     }
-  }, [showError, t]);
+  }, [showError, t, slot]);
 
   useEffect(() => {
     void load();
@@ -109,9 +117,12 @@ export const NavigationManager: React.FC = () => {
     setSaving(true);
     try {
       const payload = normalizeNavigationOrders(items);
-      const saved = await updateNavigation(payload);
+      const saved =
+        slot === 'secondary'
+          ? await updateSecondaryNavigation(payload)
+          : await updateNavigation(payload);
       setItems(normalizeNavigationOrders(saved));
-      showSuccess(t('navigation.toast.saved'));
+      showSuccess(slot === 'secondary' ? t('navigation.toast.secondarySaved') : t('navigation.toast.saved'));
     } catch {
       showError(t('navigation.toast.saveFailed'));
     } finally {
@@ -131,24 +142,39 @@ export const NavigationManager: React.FC = () => {
     <div className="space-y-6 w-full max-w-none">
       <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <Navigation className="w-6 h-6 text-indigo-500" />
+          <h1 className={`${ADMIN_PAGE_TITLE} flex items-center gap-2`}>
+            <Navigation className="w-6 h-6 text-admin-primary" />
             {t('navigation.page.title')}
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className={ADMIN_PAGE_SUBTITLE}>
             {t('navigation.page.subtitle', { depth: String(maxDepth) })}
           </p>
-          <p className="text-xs text-gray-500 mt-2">
-            <Link to="/settings?category=site&group=navigation" className="inline-flex items-center gap-1 text-indigo-600 hover:underline">
+          <AdminTabs
+            className="mt-4"
+            ariaLabel={t('navigation.page.title')}
+            activeId={slot}
+            onSelect={(id) => setSlot(id === 'secondary' ? 'secondary' : 'primary')}
+            items={[
+              { id: 'primary', label: t('navigation.page.tabs.primary'), testId: 'nav-tab-primary' },
+              { id: 'secondary', label: t('navigation.page.tabs.secondary'), testId: 'nav-tab-secondary' },
+            ]}
+          />
+          {slot === 'secondary' ? (
+            <p className="text-xs text-admin-muted mt-2">{t('navigation.page.secondaryHint')}</p>
+          ) : null}
+          <p className="text-xs text-admin-muted mt-2">
+            <Link to="/settings?category=site&group=navigation" className="inline-flex items-center gap-1 text-admin-primary hover:underline">
               <Settings2 className="w-3.5 h-3.5" />
               {t('navigation.page.layoutSettingsLink')}
             </Link>
           </p>
         </div>
-        <button type="button" className="btn btn-primary" disabled={saving} onClick={() => void handleSave()}>
-          <Save className="w-4 h-4 inline mr-2" />
-          {saving ? t('navigation.actions.saving') : t('navigation.actions.save')}
-        </button>
+        <AdminFormActions
+          onSave={() => void handleSave()}
+          saveLabel={saving ? t('navigation.actions.saving') : t('navigation.actions.save')}
+          saveDisabled={saving}
+          saveBusy={saving}
+        />
       </div>
 
       <div className="card">
@@ -159,7 +185,7 @@ export const NavigationManager: React.FC = () => {
             flatTree.map((node) => (
               <div
                 key={node.id}
-                className="flex flex-col gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700"
+                className="flex flex-col gap-3 p-3 rounded-lg bg-admin-canvas border border-admin-border"
                 style={{ marginLeft: `${(node.depth - 1) * 1.25}rem` }}
               >
                 <div className="flex flex-col lg:flex-row lg:items-center gap-3">
@@ -186,6 +212,14 @@ export const NavigationManager: React.FC = () => {
                 </div>
 
                 <div className="flex flex-wrap gap-2 shrink-0">
+                  <label className="inline-flex items-center gap-1.5 text-xs text-admin-muted">
+                    <input
+                      type="checkbox"
+                      checked={node.enabled !== false}
+                      onChange={(e) => updateItem(node.id, { enabled: e.target.checked })}
+                    />
+                    {t('navigation.enabled')}
+                  </label>
                   {node.depth < maxDepth ? (
                     <button
                       type="button"

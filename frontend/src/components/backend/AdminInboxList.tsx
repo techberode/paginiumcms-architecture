@@ -8,7 +8,7 @@ export interface AdminInboxListProps {
 }
 
 export const AdminInboxList: React.FC<AdminInboxListProps> = ({ children }) => (
-  <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-900/40">
+  <div className="rounded-lg border border-admin-border overflow-hidden bg-admin-card shadow-admin">
     {children}
   </div>
 );
@@ -28,7 +28,7 @@ export const AdminInboxListHeader: React.FC<AdminInboxListHeaderProps> = ({
   const resolvedLabel = label ?? t('list.inbox.selectAllOnPage');
 
   return (
-  <div className="flex items-center gap-3 px-4 py-2.5 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
+  <div className="flex items-center gap-3 px-4 py-2.5 border-b border-admin-border bg-admin-canvas">
     <input
       type="checkbox"
       checked={allSelected}
@@ -36,7 +36,7 @@ export const AdminInboxListHeader: React.FC<AdminInboxListHeaderProps> = ({
       aria-label={resolvedLabel}
       className="rounded border-gray-300 dark:border-gray-600"
     />
-    <span className="text-xs text-gray-500 dark:text-gray-400">{resolvedLabel}</span>
+    <span className="text-xs text-admin-muted">{resolvedLabel}</span>
   </div>
   );
 };
@@ -68,15 +68,13 @@ export const AdminInboxRow: React.FC<AdminInboxRowProps> = ({
 }) => {
   const { t } = useI18n();
   const stripe =
-    index % 2 === 0
-      ? 'bg-white dark:bg-gray-900/20'
-      : 'bg-gray-50/90 dark:bg-gray-800/30';
+    index % 2 === 0 ? 'bg-admin-card' : 'bg-admin-canvas/80';
 
   return (
-    <div className={`border-b border-gray-100 dark:border-gray-800 last:border-b-0 ${stripe}`}>
+    <div className={`border-b border-admin-border last:border-b-0 ${stripe}`}>
       <div
-        className={`flex items-stretch gap-2 sm:gap-3 px-3 sm:px-4 py-3 cursor-pointer hover:bg-indigo-50/60 dark:hover:bg-indigo-950/20 transition-colors ${
-          selected ? 'ring-1 ring-inset ring-indigo-400/50' : ''
+        className={`flex items-stretch gap-2 sm:gap-3 px-3 sm:px-4 py-3 cursor-pointer admin-row-hover transition-colors ${
+          selected ? 'ring-1 ring-inset ring-admin-primary/40' : ''
         } ${unread ? 'font-semibold' : ''}`}
       >
         <div className="flex items-start pt-0.5 shrink-0">
@@ -96,7 +94,7 @@ export const AdminInboxRow: React.FC<AdminInboxRowProps> = ({
           onClick={() => onToggleExpand(id)}
           aria-expanded={expanded}
         >
-          <span className="mt-1 shrink-0 text-gray-400">
+          <span className="mt-1 shrink-0 text-admin-muted">
             {expanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
           </span>
           <div className="flex-1 min-w-0">{summary}</div>
@@ -106,7 +104,7 @@ export const AdminInboxRow: React.FC<AdminInboxRowProps> = ({
       </div>
 
       {expanded ? (
-        <div className="px-4 pb-4 pl-12 sm:pl-14 space-y-3 border-t border-gray-100 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/30">
+        <div className="px-4 pb-4 pl-12 sm:pl-14 space-y-3 border-t border-admin-border bg-admin-canvas/50">
           {detail}
           {actions ? <div className="flex flex-wrap gap-2 sm:hidden">{actions}</div> : null}
         </div>

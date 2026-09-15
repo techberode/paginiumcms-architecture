@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BookMarked, Plus, RefreshCw, Save, Trash2 } from 'lucide-react';
+import { BookMarked, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import {
   snippetsApi,
   type SnippetDocument,
@@ -9,6 +9,7 @@ import { useToast } from '../../hooks/useToast';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { useI18n } from '../../context/I18nContext';
 import { AdminBodyPreviewPanel } from './AdminBodyPreviewPanel';
+import { AdminFormActions } from './AdminFormActions';
 import { BulkActionBar } from './BulkActionBar';
 import { summarizeBulkResult } from '../../types/bulk';
 
@@ -372,27 +373,24 @@ export const SnippetsManager: React.FC = () => {
                 />
               </label>
               <p className="text-xs text-slate-500">{t('platform.snippets.insertHint', { tag: `[snippet name="${snippet.name}"/]` })}</p>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  disabled={!isDirty || saving}
-                  onClick={() => void handleSave()}
-                  className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white disabled:opacity-50"
-                >
-                  <Save className="h-4 w-4" />
-                  {saving ? t('platform.snippets.saving') : t('platform.snippets.save')}
-                </button>
-                {original && (
-                  <button
-                    type="button"
-                    onClick={() => void handleDelete()}
-                    className="inline-flex items-center gap-2 rounded-xl border border-red-200 px-4 py-2 text-xs font-bold text-red-700"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    {t('platform.snippets.delete')}
-                  </button>
-                )}
-              </div>
+              <AdminFormActions
+                onSave={() => void handleSave()}
+                saveLabel={saving ? t('platform.snippets.saving') : t('platform.snippets.save')}
+                saveDisabled={!isDirty || saving}
+                saveBusy={saving}
+                extra={
+                  original ? (
+                    <button
+                      type="button"
+                      onClick={() => void handleDelete()}
+                      className="inline-flex items-center gap-2 rounded-xl border border-red-200 px-4 py-2 text-xs font-bold text-red-700"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      {t('platform.snippets.delete')}
+                    </button>
+                  ) : null
+                }
+              />
               </div>
               <AdminBodyPreviewPanel
                 body={snippet.body}

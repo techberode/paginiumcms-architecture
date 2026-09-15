@@ -1,13 +1,22 @@
 // frontend/src/context/ThemeContext.tsx
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { isAdminAppRoute } from '../utils/appRoutes';
+import {
+  nextAdminTheme,
+  readAdminThemePreference,
+  resolveAdminIsDark,
+  systemPrefersDark,
+  writeAdminThemePreference,
+  type AdminThemePreference,
+} from '../utils/adminTheme';
 
-type Theme = 'light' | 'dark' | 'system';
+type Theme = AdminThemePreference;
 
 interface ThemeContextType {
   theme: Theme;
   setTheme: (theme: Theme) => void;
+  toggleTheme: () => void;
   isDark: boolean;
 }
 
@@ -15,29 +24,36 @@ export const ThemeContext = createContext<ThemeContextType | undefined>(undefine
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
-  const [theme, setTheme] = useState<Theme>(() => {
-    const saved = localStorage.getItem('theme') as Theme;
-    return saved || 'system';
-  });
+  const [theme, setThemeState] = useState<Theme>(() => readAdminThemePreference());
+  const [isDark, setIsDark] = useState(() => resolveAdminIsDark(theme, systemPrefersDark()));
 
-  const [isDark, setIsDark] = useState(false);
+  const setTheme = useCallback((next: Theme) => {
+    setThemeState(next);
+    writeAdminThemePreference(next);
+  }, []);
+
+  const toggleTheme = useCallback(() => {
+    setThemeState((current) => {
+      const next = nextAdminTheme(resolveAdminIsDark(current, systemPrefersDark()));
+      writeAdminThemePreference(next);
+      return next;
+    });
+  }, []);
 
   useEffect(() => {
-    if (!isAdminAppRoute(location.pathname)) {
-      return undefined;
-    }
-
     const updateTheme = () => {
-      const isDarkMode =
-        theme === 'dark' ||
-        (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-
-      setIsDark(isDarkMode);
-      document.documentElement.classList.toggle('dark', isDarkMode);
-      localStorage.setItem('theme', theme);
+      const dark = resolveAdminIsDark(theme, systemPrefersDark());
+      setIsDark(dark);
+      if (isAdminAppRoute(location.pathname)) {
+        document.documentElement.classList.toggle('dark', dark);
+      }
     };
 
     updateTheme();
+
+    if (theme !== 'system') {
+      return undefined;
+    }
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handler = () => updateTheme();
@@ -45,11 +61,12 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return () => mediaQuery.removeEventListener('change', handler);
   }, [theme, location.pathname]);
 
-  return (
-    <ThemeContext.Provider value={{ theme, setTheme, isDark }}>
-      {children}
-    </ThemeContext.Provider>
+  const value = useMemo(
+    () => ({ theme, setTheme, toggleTheme, isDark }),
+    [theme, setTheme, toggleTheme, isDark]
   );
+
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 };
 
 export const useTheme = () => {

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Languages, RotateCcw, Save, RefreshCw } from 'lucide-react';
+import { Languages, RotateCcw, RefreshCw } from 'lucide-react';
 import { MonacoCodeEditor, type MonacoCodeEditorHandle, type MonacoEditorMarker } from '../CodeEditor/MonacoCodeEditor';
 import {
   translationsApi,
@@ -9,6 +9,7 @@ import {
 import { useToast } from '../../hooks/useToast';
 import { useI18n } from '../../context/I18nContext';
 import { AdminHintCard } from './AdminHintCard';
+import { AdminFormActions } from './AdminFormActions';
 
 type SourceId = 'backend' | 'frontend';
 
@@ -307,15 +308,12 @@ export const TranslationEditor: React.FC = () => {
             <RotateCcw className="w-4 h-4" />
             {t('translations.actions.revert')}
           </button>
-          <button
-            type="button"
-            onClick={() => void handleSave()}
-            disabled={!isDirty || saving}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-bold disabled:opacity-40"
-          >
-            <Save className="w-4 h-4" />
-            {saving ? t('common.loading') : t('translations.actions.save')}
-          </button>
+          <AdminFormActions
+            onSave={() => void handleSave()}
+            saveLabel={saving ? t('common.loading') : t('translations.actions.save')}
+            saveDisabled={!isDirty || saving}
+            saveBusy={saving}
+          />
         </div>
       </div>
 

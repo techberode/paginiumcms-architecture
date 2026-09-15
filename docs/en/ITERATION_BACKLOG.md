@@ -1,6 +1,6 @@
 # PaginiumCMS — consolidated backlog
 
-> **Snapshot:** `v2.1.0-beta.71` · September 12, 2026  
+> **Snapshot:** `v2.1.0-beta.77` · September 15, 2026  
 > **Phase:** planned-iteration development — [CONTINUATION.md](CONTINUATION.md) (stabilization freeze **closed**)  
 > **Rule:** the active backlog contains only unshipped or precisely bounded remaining scope  
 > **No-SQL:** [architecture/NOSQL_MANDATE.md](architecture/NOSQL_MANDATE.md)  
@@ -35,7 +35,7 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | 8 | **It.73** Multi-locale document | 🟡 | ✅ | shipped in `v2.1.0-beta.29` — see [ITERATION_73](ITERATION_73.md) |
 | 9 | **It.74** API keys/JWT | 🟡 | ✅ | shipped in `v2.1.0-beta.30` — see [ITERATION_74](ITERATION_74.md) |
 | 10 | **It.80** SEO, integrations & ops toolkit | 🟡 | ✅ | shipped `beta.39` — see [ITERATION_80](en/ITERATION_80.md) |
-| 11 | **It.58d** Layout remainder | 🟡 | ✅ | shortcodes + public layout shell shipped; 58f/58g deferred |
+| 11 | **It.58f** Visual page blocks | 🟡 P1 | 🟡 partial | **58f-a/b** parser + outline UI shipped; next live preview — [ITERATION_58f](ITERATION_58f.md) |
 | 12 | **It.81** Editorial workflow & content ops | 🟡 | ✅ | 81a–81f shipped — [ITERATION_81](ITERATION_81.md) |
 | 13 | **It.82** Origin Panel (maintainer cockpit) | 🔵 | ✅ | env-gated; excluded from customer archive — [ITERATION_82](ITERATION_82.md) |
 | 14 | **It.87** Project site planner + UX audit completion | 🟡 P1 | ✅ shipped | [ITERATION_87](ITERATION_87.md) — 87a–87m |
@@ -45,11 +45,14 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | 18 | **It.90** Editor Workbench (toolbar + wizards, MD + Tiptap) | 🟡 P1 | ✅ | shipped `beta.72`–`73` — [ITERATION_90](ITERATION_90.md) |
 | 19 | **It.91** Trusted HTML & external embeds | 🟡 P1 | ✅ | shipped `beta.75` — [ITERATION_91](ITERATION_91.md) |
 | 20 | **It.25** Setup wizard/update UX | 🟡 | ✅ basic + M1+ | shipped `beta.62`–`beta.65`; not a release blocker anymore |
-| 21 | **It.76/77** Translation providers | 🔵 | ⏳ | after It.73 (shipped) |
-| 22 | **It.75** AI agent | 🔵 | ⏳ | after locale + translation providers |
-| 23 | **It.83** Theme runtime + Terminal Breach | 🟡 | ✅ | shipped `beta.59` — [ITERATION_83](ITERATION_83.md) |
-| 24 | **It.84** Categories, blog sidebar, landing, roles, nav | 🟡 | ✅ | **84a–84e** complete — [ITERATION_84](ITERATION_84.md) |
-| 25 | **It.86** Admin UX polish (search, print, bulk) | 🟡 | ✅ | shipped **2.1.0-beta.60** — ISS-158/159; 86d → It.87 |
+| 21 | **It.89** Plugin capability model | 🟡 | ⏳ | [ITERATION_89](ITERATION_89.md) |
+| 22 | **It.92** SQLite query index + Guard advisor | 🟡 | ⏳ | derived catalog index — [ITERATION_92](ITERATION_92.md) |
+| 23 | **It.93** Falcon-inspired admin (chrome + apps) | 🟡 P1 | 🟡 partial `beta.77` | chrome + teams/account/events/time/widgets/catalog shipped; **93l/93m** remain — [ITERATION_93](ITERATION_93.md) |
+| 24 | **It.76/77** Translation providers | 🔵 | ⏳ | after It.73 (shipped) |
+| 25 | **It.75** AI agent | 🔵 | ⏳ | after locale + translation providers |
+| 26 | **It.83** Theme runtime + Terminal Breach | 🟡 | ✅ | shipped `beta.59` — [ITERATION_83](ITERATION_83.md) |
+| 27 | **It.84** Categories, blog sidebar, landing, roles, nav | 🟡 | ✅ | **84a–84e** complete — [ITERATION_84](ITERATION_84.md) |
+| 28 | **It.86** Admin UX polish (search, print, bulk) | 🟡 | ✅ | shipped **2.1.0-beta.60** — ISS-158/159; 86d → It.87 |
 
 ---
 
@@ -269,7 +272,7 @@ Deferred (post-M1+ / stretch):
 
 | Item | Status | Note |
 |------|--------|------|
-| **It.58d** layout blocks/polish | ✅ | 58f/58g ⏳ planned remainder |
+| **It.58d** layout blocks/polish | ✅ | 58f-a ✅; 58f-b–g / 58g ⏳ remainder |
 | **It.81** editorial workflow | ✅ | [ITERATION_81](ITERATION_81.md) — complete (81f snippets) |
 | **It.82** Origin Panel | ✅ | [ITERATION_82](ITERATION_82.md) — shipped `beta.56`; excluded from archive |
 | **It.48** static/dynamic rendering | ⏳ | combine design with It.70 publishing pipeline |

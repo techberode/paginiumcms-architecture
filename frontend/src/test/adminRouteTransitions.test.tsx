@@ -12,6 +12,15 @@ vi.mock('../hooks/useAuth', () => ({
   }),
 }));
 
+vi.mock('../context/ThemeContext', () => ({
+  useTheme: () => ({
+    isDark: false,
+    theme: 'light',
+    setTheme: () => undefined,
+    toggleTheme: () => undefined,
+  }),
+}));
+
 vi.mock('../hooks/useAdminCounts', () => ({
   useAdminCounts: () => ({ counts: null, showListCounts: false, refresh: vi.fn() }),
 }));

@@ -1,13 +1,13 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import type { PublicNavItem } from '../../context/PublicSiteContext';
 import {
   NAVIGATION_THUMBNAIL_CLASS,
-  effectivePreviewScale,
   navigationItemHasVisual,
   resolveNavigationIconComponent,
   resolveNavigationIconUrl,
 } from '../../utils/navigationRich';
 import { NAV_LINK_ACTIVE, NAV_LINK_IDLE } from '../../theme/publicUiClasses';
+import { NavHoverPreview } from './navbarShared';
 
 interface NavMenuVisualProps {
   item: PublicNavItem;
@@ -59,12 +59,6 @@ export const NavDropdownEntry: React.FC<NavDropdownEntryProps> = ({
 }) => {
   const [hoverPreview, setHoverPreview] = useState(false);
   const showVisual = navigationItemHasVisual(item.iconType, item.iconValue);
-  const previewScale = effectivePreviewScale(item.previewScale, navUi.defaultPreviewScale);
-  const reducedMotion = useMemo(
-    () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
-    []
-  );
-  const animate = navUi.enableHoverAnimations && !reducedMotion;
 
   return (
     <div
@@ -91,22 +85,7 @@ export const NavDropdownEntry: React.FC<NavDropdownEntryProps> = ({
       </button>
 
       {item.previewOnHover && showVisual && hoverPreview ? (
-        <div
-          className="absolute left-full top-0 ml-2 z-[60] pointer-events-none"
-          style={{ maxWidth: navUi.maxTooltipWidthPx }}
-        >
-          <div
-            className={`rounded-xl border border-theme-border bg-theme-surface-elevated shadow-2xl p-3 ${
-              animate ? 'transition-transform duration-150' : ''
-            }`}
-            style={{ transform: animate ? `scale(${previewScale})` : undefined, transformOrigin: 'left center' }}
-          >
-            <NavMenuVisual item={{ ...item, thumbnailSize: 'lg' }} />
-            {item.description ? (
-              <p className="text-xs text-theme-text-muted mt-2 max-w-[240px]">{item.description}</p>
-            ) : null}
-          </div>
-        </div>
+        <NavHoverPreview item={item} visible navUi={navUi} />
       ) : null}
     </div>
   );

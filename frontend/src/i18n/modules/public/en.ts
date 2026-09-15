@@ -6,6 +6,15 @@ export const publicEn: MessageTree = {
     siteTagline: 'FlatFile CMS',
     editorial: 'Editorial',
   },
+  comingSoon: {
+    badge: 'Coming soon',
+    units: {
+      days: 'Days',
+      hours: 'Hours',
+      minutes: 'Min',
+      seconds: 'Sec',
+    },
+  },
   nav: {
     home: 'Home',
     blog: 'Blog',
@@ -15,6 +24,10 @@ export const publicEn: MessageTree = {
     architectureTagline: 'FlatFile Architecture',
     previewBanner: 'Preview — navigation is inactive',
     sideMenu: 'Site navigation',
+    primaryMenu: 'Main menu',
+    secondaryMenu: 'Catalog menu',
+    openMenu: 'Open menu',
+    closeMenu: 'Close menu',
   },
   layout: {
     noHomePage: 'No home page has been published yet (slug: home).',
@@ -255,6 +268,20 @@ export const publicEn: MessageTree = {
       ctaButton: 'Book a free consultation',
     },
   },
+  share: {
+    label: 'Share',
+    facebook: 'Share on Facebook',
+    x: 'Share on X',
+    linkedin: 'Share on LinkedIn',
+    email: 'Share by email',
+    copy: 'Copy link',
+    copied: 'Link copied',
+  },
+  staff: {
+    contactsTitle: 'Contact persons',
+    supportTitle: 'Support team',
+    chat: 'Direct chat',
+  },
   contact: {
     title: 'Contact form',
     subtitle: 'Messages are saved to the admin inbox.',
@@ -307,6 +334,7 @@ export const publicEn: MessageTree = {
     backToList: 'Back to article list',
     editorialAuthor: 'Paginium editorial author',
     printArticle: 'Print article',
+    share: 'Share',
     aboutAuthor: 'About the author: :author',
     list: {
       title: 'Magazine & News',

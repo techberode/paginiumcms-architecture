@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navbar } from '../../components/frontend/Navbar';
 import { Footer } from '../../components/frontend/Footer';
+import { PublicHeaderStack } from '../../components/layout/PublicHeaderStack';
 import type { ThemeShellProps } from '../../theme/themeShellRegistry';
 import './clean-journal.css';
 
@@ -10,18 +11,28 @@ export const CleanJournalShell: React.FC<ThemeShellProps> = ({
   onOpenSearch,
   showPrimaryNav,
   navLayout,
+  chrome,
+  secondaryItems,
+  wideHeader,
+  headerPrefix,
 }) => (
   <div className="pg-cj-shell">
     <div className="pg-cj-brandbar">
       <span className="pg-cj-brandbar__label">{siteName}</span>
       <span className="pg-cj-brandbar__hint">clean journal</span>
     </div>
-    <Navbar
-      onOpenSearch={onOpenSearch}
-      showPrimaryNav={showPrimaryNav}
-      navLayout={navLayout}
-    />
-    <div className="pg-cj-main flex-1 min-w-0">{children}</div>
+    <PublicHeaderStack>
+      {headerPrefix}
+      <Navbar
+        onOpenSearch={onOpenSearch}
+        showPrimaryNav={showPrimaryNav}
+        navLayout={navLayout}
+        chrome={chrome}
+        secondaryItems={secondaryItems}
+        wideHeader={wideHeader}
+      />
+    </PublicHeaderStack>
+    <div className={`pg-cj-main flex-1 min-w-0 ${wideHeader ? 'pg-cj-main--wide' : ''}`}>{children}</div>
     <Footer />
   </div>
 );

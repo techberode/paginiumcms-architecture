@@ -17,6 +17,12 @@ import { useToast } from '../../hooks/useToast';
 import { useSettings } from '../../hooks/useSettings';
 import { useI18n } from '../../context/I18nContext';
 import {
+  ADMIN_PAGE_SUBTITLE,
+  ADMIN_PAGE_TITLE,
+  ADMIN_SIDE_NAV_ACTIVE,
+  ADMIN_SIDE_NAV_IDLE,
+} from '../../theme/adminUiClasses';
+import {
   translateSettingEnumOption,
   translateSettingFieldHelp,
   translateSettingFieldLabel,
@@ -49,7 +55,14 @@ import { EngineSettingsPanel } from './EngineSettingsPanel';
 import { PrivacyCookieSettingsPanel } from './PrivacyCookieSettingsPanel';
 import { TimezoneSelect } from './TimezoneSelect';
 import { MaintenanceModeSelect } from './MaintenanceModeSelect';
+import { AdminChromeColorField } from './AdminChromeColorField';
+import { AdminNavPlacementField } from './AdminNavPlacementField';
+import { AdminGradientField } from './AdminGradientField';
+import { AdminFormActions } from './AdminFormActions';
+import { AdminTabs } from '../ui/AdminTabs';
 import { useAuth } from '../../hooks/useAuth';
+import { isAdminChromeColorId, isAdminGradientDirection, isAdminNavPlacement } from '../../theme/adminChrome';
+import { previewPatchFromGroup } from '../../utils/settingsPreview';
 
 function resolveRequestedSettingsGroup(
   searchParams: URLSearchParams,
@@ -85,7 +98,13 @@ export const SettingsView: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<SettingsCategoryId>('system');
   const [loading, setLoading] = useState(true);
   const { success, error: toastError } = useToast();
-  const { reload: reloadGlobalSettings } = useSettings();
+  const {
+    reload: reloadGlobalSettings,
+    applyPreview,
+    clearPreview,
+    clearPreviewGroup,
+    hasUnsavedPreview,
+  } = useSettings();
   const { user } = useAuth();
   const [permissionsCatalog, setPermissionsCatalog] = useState<string[]>([]);
   const [cmsInfoMeta, setCmsInfoMeta] = useState<CmsInfoMeta | null>(null);
@@ -108,6 +127,7 @@ export const SettingsView: React.FC = () => {
     setError,
     watch,
     setValue,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<Record<string, unknown>>({
     resolver: zodResolver(zodSchema),
@@ -142,6 +162,10 @@ export const SettingsView: React.FC = () => {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => () => {
+    clearPreview();
+  }, [clearPreview]);
 
   useEffect(() => {
     const groupKeys = Object.keys(schema);
@@ -178,12 +202,34 @@ export const SettingsView: React.FC = () => {
     setSearchParams({ category: categoryId, group: key }, { replace: true });
   };
 
-  const onSubmit = async (formValues: Record<string, unknown>) => {
+  const collectGroupValues = (parsed: Record<string, unknown>): Record<string, unknown> => ({
+    ...getValues(),
+    ...parsed,
+  });
+
+  const onApply = (parsed: Record<string, unknown>) => {
+    if (!activeGroup || isReadOnlyGroup) {
+      return;
+    }
+
+    const patch = previewPatchFromGroup(activeGroup, collectGroupValues(parsed));
+    if (!patch) {
+      toastError(t('settings.page.applyUnavailable'));
+      return;
+    }
+
+    applyPreview(patch);
+    success(t('settings.page.applied'));
+  };
+
+  const onSubmit = async (parsed: Record<string, unknown>) => {
     if (!activeGroup) return;
 
+    const formValues = collectGroupValues(parsed);
     const res = await updateSettingsGroup(activeGroup, formValues);
     if (res.success && res.data) {
       setValues((prev) => ({ ...prev, [activeGroup]: res.data!.values }));
+      clearPreviewGroup(activeGroup);
       await reloadGlobalSettings();
       success(t('settings.page.saved'));
       return;
@@ -196,6 +242,19 @@ export const SettingsView: React.FC = () => {
 
     toastError(res.error || t('settings.page.saveFailed'));
   };
+
+  const actionButtons = (
+    <AdminFormActions
+      showApply={!isReadOnlyGroup}
+      onApply={() => void handleSubmit(onApply)()}
+      onSave={() => void handleSubmit(onSubmit)()}
+      applyLabel={t('settings.page.apply')}
+      saveLabel={isSubmitting ? t('settings.page.saving') : t('settings.page.save')}
+      applyDisabled={isSubmitting || isReadOnlyGroup}
+      saveDisabled={isSubmitting || isReadOnlyGroup}
+      saveBusy={isSubmitting}
+    />
+  );
 
   const groupKeys = Object.keys(schema);
   const visibleGroups = groupsForCategory(activeCategory, groupKeys);
@@ -212,20 +271,19 @@ export const SettingsView: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('settings.page.title')}</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          <h1 className={ADMIN_PAGE_TITLE}>{t('settings.page.title')}</h1>
+          <p className={ADMIN_PAGE_SUBTITLE}>
             {t(`settings.categories.${activeCategory}.description`)}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => void handleSubmit(onSubmit)()}
-          disabled={isSubmitting || isReadOnlyGroup}
-          className="btn btn-primary shrink-0"
-        >
-          {isSubmitting ? t('settings.page.saving') : t('settings.page.save')}
-        </button>
+        {actionButtons}
       </div>
+
+      {hasUnsavedPreview ? (
+        <AdminHintCard tone="warning" title={t('settings.page.previewActive')}>
+          {t('settings.page.previewActiveBody')}
+        </AdminHintCard>
+      ) : null}
 
       <div className="grid grid-cols-1 lg:grid-cols-[220px_minmax(0,1fr)] gap-6">
         <aside className="space-y-1">
@@ -240,10 +298,10 @@ export const SettingsView: React.FC = () => {
                 key={category.id}
                 type="button"
                 onClick={() => selectCategory(category.id)}
-                className={`w-full text-left px-4 py-3 rounded-xl border transition-colors ${
+                className={`w-full text-left px-4 py-3 rounded-lg border transition-colors ${
                   active
-                    ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300'
-                    : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/60 text-gray-700 dark:text-gray-200'
+                    ? ADMIN_SIDE_NAV_ACTIVE
+                    : ADMIN_SIDE_NAV_IDLE
                 }`}
               >
                 <div className="text-sm font-bold">{t(category.labelKey)}</div>
@@ -254,22 +312,14 @@ export const SettingsView: React.FC = () => {
         </aside>
 
         <div className="space-y-4 min-w-0">
-          <div className="flex flex-wrap gap-2 border-b border-gray-200 dark:border-gray-700 pb-1">
-            {visibleGroups.map((key) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => selectGroup(key)}
-                className={`px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
-                  activeGroup === key
-                    ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'
-                }`}
-              >
-                {translateSettingGroup(t, key, schema[key].label)}
-              </button>
-            ))}
-          </div>
+          <AdminTabs
+            activeId={activeGroup}
+            onSelect={selectGroup}
+            items={visibleGroups.map((key) => ({
+              id: key,
+              label: translateSettingGroup(t, key, schema[key].label),
+            }))}
+          />
 
           {activeCategory === 'security' && activeGroup !== 'accessControl' && (
             <AdminHintCard tone="warning" title={t('settings.hints.security.title')}>
@@ -526,6 +576,66 @@ const SettingFieldRow: React.FC<RowProps> = ({ groupKey, field, register, watch,
         label={label}
         help={help}
         error={error}
+      />
+    );
+  }
+
+  if (groupKey === 'ui' && (field.key === 'sidebarColor' || field.key === 'topbarColor')) {
+    const currentValue = String(watch(field.key) ?? 'default');
+    return (
+      <AdminChromeColorField
+        id={inputId}
+        label={label}
+        help={help}
+        error={error}
+        value={currentValue}
+        onChange={(color) => {
+          if (isAdminChromeColorId(color)) {
+            setValue(field.key, color, { shouldDirty: true, shouldValidate: true });
+          }
+        }}
+      />
+    );
+  }
+
+  if (groupKey === 'ui' && field.key === 'chromeGradientDirection') {
+    return null;
+  }
+
+  if (groupKey === 'ui' && field.key === 'chromeGradient') {
+    return (
+      <AdminGradientField
+        id={inputId}
+        label={label}
+        help={help}
+        error={error}
+        enabled={Boolean(watch('chromeGradient'))}
+        direction={String(watch('chromeGradientDirection') ?? 'to-bottom')}
+        onEnabledChange={(enabled) =>
+          setValue('chromeGradient', enabled, { shouldDirty: true, shouldValidate: true })
+        }
+        onDirectionChange={(direction) => {
+          if (isAdminGradientDirection(direction)) {
+            setValue('chromeGradientDirection', direction, { shouldDirty: true, shouldValidate: true });
+          }
+        }}
+      />
+    );
+  }
+
+  if (groupKey === 'ui' && field.key === 'navPlacement') {
+    const currentValue = String(watch(field.key) ?? 'side');
+    return (
+      <AdminNavPlacementField
+        label={label}
+        help={help}
+        error={error}
+        value={currentValue}
+        onChange={(placement) => {
+          if (isAdminNavPlacement(placement)) {
+            setValue(field.key, placement, { shouldDirty: true, shouldValidate: true });
+          }
+        }}
       />
     );
   }

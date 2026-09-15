@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  filterLucideIconCatalog,
   navigationItemHasVisual,
   normalizeLucideIconName,
   resolveNavigationIconComponent,
@@ -20,6 +21,14 @@ describe('navigationRich', () => {
 
   it('returns null for unknown lucide icons', () => {
     expect(resolveNavigationIconComponent('NotARealLucideIconName123')).toBeNull();
+  });
+
+  it('lists default lucide icons and filters by name', () => {
+    const defaults = filterLucideIconCatalog('');
+    expect(defaults[0]).toBe('Home');
+    expect(defaults).toContain('Mail');
+    expect(filterLucideIconCatalog('mail')).toContain('Mail');
+    expect(filterLucideIconCatalog('book open')).toContain('BookOpen');
   });
 
   it('navigationItemHasVisual requires resolvable icon', () => {

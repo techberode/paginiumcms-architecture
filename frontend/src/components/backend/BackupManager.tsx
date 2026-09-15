@@ -14,6 +14,7 @@ import { SortableTableHeader } from './SortableTableHeader';
 import { applyClientListView } from '../../utils/clientListView';
 import { summarizeBulkResult } from '../../types/bulk';
 import { useI18n } from '../../context/I18nContext';
+import { AdminFormActions } from './AdminFormActions';
 
 const CONTENT_SCOPE_KEYS = ['pages', 'blog', 'media', 'data', 'navigation', 'trash'] as const;
 const DEFAULT_SCOPE_FLAGS: Record<(typeof CONTENT_SCOPE_KEYS)[number] | 'config', boolean> = {
@@ -544,14 +545,12 @@ export const BackupManager: React.FC = () => {
               {schedule.last_run ? ` · ${t('backups.schedule.lastRun', { at: schedule.last_run })}` : ''}
             </p>
           )}
-          <button
-            type="button"
-            disabled={savingSchedule}
-            onClick={() => void handleSaveSchedule()}
-            className="btn btn-primary"
-          >
-            {savingSchedule ? t('backups.schedule.saving') : t('backups.schedule.save')}
-          </button>
+          <AdminFormActions
+            onSave={() => void handleSaveSchedule()}
+            saveLabel={savingSchedule ? t('backups.schedule.saving') : t('backups.schedule.save')}
+            saveDisabled={savingSchedule}
+            saveBusy={savingSchedule}
+          />
         </div>
       </div>
 

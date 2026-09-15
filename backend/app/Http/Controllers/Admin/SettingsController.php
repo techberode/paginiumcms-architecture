@@ -265,6 +265,11 @@ final class SettingsController
                 'showListCounts' => (bool) ($all['ui']['showListCounts'] ?? true),
                 'adminListPageSize' => (int) ($all['ui']['adminListPageSize'] ?? 20),
                 'openLinksInNewTab' => (bool) ($all['ui']['openLinksInNewTab'] ?? false),
+                'sidebarColor' => (string) ($all['ui']['sidebarColor'] ?? 'default'),
+                'topbarColor' => (string) ($all['ui']['topbarColor'] ?? 'default'),
+                'chromeGradient' => (bool) ($all['ui']['chromeGradient'] ?? false),
+                'chromeGradientDirection' => (string) ($all['ui']['chromeGradientDirection'] ?? 'to-bottom'),
+                'navPlacement' => (string) ($all['ui']['navPlacement'] ?? 'side'),
             ],
             'navigationUi' => [
                 'defaultPreviewScale' => ((int) ($all['navigationUi']['defaultPreviewScale'] ?? 15)) / 10.0,
@@ -276,6 +281,16 @@ final class SettingsController
                 'sideBreakpoint' => (string) ($all['navigation']['sideBreakpoint'] ?? 'lg'),
                 'expandAnimation' => (bool) ($all['navigation']['expandAnimation'] ?? true),
                 'maxDepth' => max(3, min(4, (int) ($all['navigation']['maxDepth'] ?? 3))),
+            ],
+            'secondaryNav' => [
+                'enabled' => (bool) ($all['secondaryNav']['enabled'] ?? false),
+                'maxDepth' => max(1, min(6, (int) ($all['secondaryNav']['maxDepth'] ?? 3))),
+                'side' => in_array(($all['secondaryNav']['side'] ?? 'left'), ['left', 'right'], true)
+                    ? (string) $all['secondaryNav']['side']
+                    : 'left',
+                'position' => in_array(($all['secondaryNav']['position'] ?? 'scroll'), ['scroll', 'sticky'], true)
+                    ? (string) $all['secondaryNav']['position']
+                    : 'scroll',
             ],
             'content' => $all['content'] ?? [],
             'editor' => array_merge($all['editor'] ?? [], [

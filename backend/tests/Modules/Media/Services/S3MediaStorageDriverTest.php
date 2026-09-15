@@ -22,6 +22,14 @@ final class S3MediaStorageDriverTest extends TestCase
         return $this->buildDriver('private', '');
     }
 
+    public function testHealthProbeAcceptsInMemoryFilesystem(): void
+    {
+        $health = $this->createDriver()->health();
+
+        $this->assertTrue($health['ok'], $health['message']);
+        $this->assertSame('s3', $health['driver']);
+    }
+
     public function testPublicUrlUsesApiPathForPrivateBucket(): void
     {
         $driver = $this->buildDriver('private', '');
