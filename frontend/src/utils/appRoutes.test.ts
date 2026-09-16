@@ -19,9 +19,12 @@ describe('isAdminAppRoute', () => {
     }
   });
 
-  it('covers workspace categories and gallery (not only /platform/*)', () => {
+  it('covers workspace, inbox, and legacy /platform/* bookmarks', () => {
     expect(isAdminAppRoute('/categories')).toBe(true);
     expect(isAdminAppRoute('/gallery')).toBe(true);
+    expect(isAdminAppRoute('/mail')).toBe(true);
+    expect(isAdminAppRoute('/kanban')).toBe(true);
+    expect(isAdminAppRoute('/platform/mail')).toBe(true);
     expect(isAdminAppRoute('/preview/home')).toBe(true);
     expect(isAdminAppRoute('/developer/logs')).toBe(true);
     expect(isAdminAppRoute('/account')).toBe(true);

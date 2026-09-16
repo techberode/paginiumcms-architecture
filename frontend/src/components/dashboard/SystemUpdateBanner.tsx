@@ -178,7 +178,7 @@ export const SystemUpdateBanner: React.FC = () => {
         ) : null}
 
         <Link
-          to="/platform/update"
+          to="/update"
           className="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-indigo-800 dark:text-indigo-200 text-sm font-semibold hover:underline"
         >
           {t('dashboard.updateBanner.details')}

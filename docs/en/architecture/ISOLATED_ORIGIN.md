@@ -1,7 +1,7 @@
 # Isolated origin widgets (cancelled iteration — archive)
 
 > **Status:** ❌ **cancelled as an iteration** (2026-09-15). Never implemented. Spec-only; no code, no settings keys, no shortcode.  
-> **Was:** the first It.93 draft. Number **93** now means Falcon-inspired **admin** (chrome + daily apps).  
+> **Was:** the first It.93 draft. Number **93** now means **admin** chrome + daily apps.  
 > **This file** is an architecture archive (why iframe isolation was considered). It is **not** on the implementation queue. Do not schedule it. Do not invent a new iteration number for it.
 
 ---
@@ -296,7 +296,7 @@ Sidecar CSP is the operator’s problem; recommend `frame-ancestors` = CMS origi
 
 ## Slices (void)
 
-These IDs belonged to the **cancelled** iteration. They are not work items. Do not implement them as 93a–q (those IDs now mean Falcon admin slices).
+These IDs belonged to the **cancelled** iteration. They are not work items. Do not implement them as 93a–q (those IDs now mean admin chrome slices).
 
 | ID (void) | Work (not scheduled) | Status |
 |-----------|----------------------|--------|
@@ -309,7 +309,7 @@ These IDs belonged to the **cancelled** iteration. They are not work items. Do n
 | ~~93g~~ | Optional reference app + runbook | ❌ cancelled |
 | ~~93h~~ | Tests above | ❌ cancelled |
 
-These slice IDs must not be implemented. Falcon admin `93a`–`93q` are defined in [ITERATION_93.md](../ITERATION_93.md).
+These slice IDs must not be implemented. Admin chrome `93a`–`93q` are defined in [ITERATION_93.md](../ITERATION_93.md).
 
 ---
 

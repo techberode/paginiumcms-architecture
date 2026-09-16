@@ -49,7 +49,7 @@ export const ProjectPlannerSummaryWidget: React.FC = () => {
 
   return (
     <Link
-      to="/platform/project-planner"
+      to="/project-planner"
       className="block bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 hover:border-indigo-500/50 transition-all group"
     >
       <div className="flex items-start justify-between gap-3 mb-3">

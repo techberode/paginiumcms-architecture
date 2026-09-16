@@ -1,4 +1,4 @@
-/** Shared Tailwind class strings for Falcon-inspired admin chrome (It.93). */
+/** Shared Tailwind class strings for admin chrome (It.93). */
 
 export const ADMIN_CARD =
   'bg-admin-card border border-admin-border rounded-lg shadow-admin text-admin-text';

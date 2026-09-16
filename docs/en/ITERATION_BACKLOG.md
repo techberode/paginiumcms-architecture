@@ -47,7 +47,7 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | 20 | **It.25** Setup wizard/update UX | 🟡 | ✅ basic + M1+ | shipped `beta.62`–`beta.65`; not a release blocker anymore |
 | 21 | **It.89** Plugin capability model | 🟡 | ⏳ | [ITERATION_89](ITERATION_89.md) |
 | 22 | **It.92** SQLite query index + Guard advisor | 🟡 | ⏳ | derived catalog index — [ITERATION_92](ITERATION_92.md) |
-| 23 | **It.93** Falcon-inspired admin (chrome + apps) | 🟡 P1 | ✅ shipped | chrome + teams/account/events/time/widgets/catalog in `beta.77`; **93l** Kanban + **93m** domain IMAP in `beta.78` — [ITERATION_93](ITERATION_93.md); **93l-2** notes/SLA later |
+| 23 | **It.93** Admin chrome + daily apps | 🟡 P1 | ✅ shipped | chrome + teams/account/events/time/widgets/catalog in `beta.77`; **93l** Kanban + **93m** domain IMAP in `beta.78` — [ITERATION_93](ITERATION_93.md); **93l-2** notes/SLA later |
 | 24 | **It.76/77** Translation providers | 🔵 | ⏳ | after It.73 (shipped) |
 | 25 | **It.75** AI agent | 🔵 | ⏳ | after locale + translation providers |
 | 26 | **It.83** Theme runtime + Terminal Breach | 🟡 | ✅ | shipped `beta.59` — [ITERATION_83](ITERATION_83.md) |

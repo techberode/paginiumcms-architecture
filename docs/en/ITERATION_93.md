@@ -1,11 +1,10 @@
-# Iteration 93 — Falcon-inspired admin (chrome + daily apps)
+# Iteration 93 — Admin chrome + daily apps
 
 > **Status:** ✅ complete (Wave 1–5 shipped in tree; **93l-2** canned replies / SLA notes remain as a listed remainder, not a new iteration)  
 > **Priority:** 🟡 **P1 operator UX** — after [It.58f](ITERATION_58f.md) publishing blocks  
-> **Wave:** Admin chrome, then Falcon-like **apps** on our data  
+> **Wave:** Admin chrome, then daily **apps** on our data  
 > **Depends on:** `ResponsiveLayout`, dashboard/analytics APIs, users/roles (It.84), project planner (It.87), comments/messages, SMTP settings  
 > **Does not replace:** public Theme Studio look, Origin Panel, SQL  
-> **Reference look:** [Falcon v3.26 dashboard](https://prium.github.io/falcon/v3.26.0/index.html) · [Aurora account](https://aurora.themewagon.com/pages/account) · [Aurora time tracker](https://aurora.themewagon.com/apps/time-tracker) — **inspiration, not a copy**
 
 Former isolated-origin It.93 was **cancelled** (never implemented). Archive only: [architecture/ISOLATED_ORIGIN.md](architecture/ISOLATED_ORIGIN.md).
 
@@ -13,31 +12,29 @@ Former isolated-origin It.93 was **cancelled** (never implemented). Archive only
 
 The kitchen pass (admin) should match a modern SaaS console **and** grow the apps operators actually run a company site with: analytics, teams, support, domain mail, events, project time.
 
-Restaurant: Falcon is the dining-room *style guide*. We still cook **our** food (pageviews, comments, project plans) — we do not serve Falcon’s fake “Weekly Sales”.
+Restaurant: we still cook **our** food (pageviews, comments, project plans) — we do not plate demo metrics.
 
 ---
 
+## What this wave maps to in Paginium
+
+We do **not** clone shops, courses, or social apps.
 
 
-## What “Falcon Apps” maps to in Paginium
-
-Falcon’s **App** sidebar is Calendar / Chat / Email / Events / E-commerce / LMS / Kanban / Social / Support desk. We do **not** clone shops, courses, or social.
-
-
-| Falcon / Aurora                                                 | Paginium (this iteration)                                                                     | Already in Core                                           |
+| Area                                                            | Paginium (this iteration)                                                                     | Already in Core                                           |
 | --------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
 | Dashboard (KPI row, widget grid, storage bar, project progress) | Restyle `DashboardView` with **our** stats + planner progress                                 | Dashboard overview, disk, It.87 widget                    |
 | Dashboard → Analytics                                           | Restyle `/analytics` (same tabs/APIs: overview, pages, sources, devices, geo, bots, 404)      | It.6 + later analytics                                    |
 | Management                                                      | **Teams**: group CMS users; Support team is a team type                                       | Users + custom roles (`/security/roles`)                  |
 | Support desk                                                    | Tickets + agents (CMS users on the Support team). Foundation first, then canned replies / SLA | Comments + contact messages stay; tickets are a new store |
-| App → Email                                                     | **Domain mail inbox** (IMAP) for `@site-domain` mailboxes only, session required              | SMTP send exists; **no IMAP yet**                         |
-| App → Events                                                    | Public/company **events** (list + create). Not the editorial calendar                         | Editorial calendar = content go-live (It.81d)             |
-| App → Calendar                                                  | Restyle editorial calendar; events have their own calendar view                               | Editorial calendar                                        |
-| App → Chat                                                      | **Out.** Use comments + messages                                                              | Inbox                                                     |
-| Aurora account                                                  | Extended **user profile** tabs (avatar, bio, job, timezone, notify prefs, security link)      | Users: name/email/role/2FA/avatar/bio                     |
-| Aurora time tracker                                             | Time entries on a **project plan item** or **event** (start/stop + log)                       | Project planner items, no timer                           |
+| Email                                                           | **Domain mail inbox** (IMAP) for `@site-domain` mailboxes only, session required              | SMTP send exists; **no IMAP yet**                         |
+| Events                                                          | Public/company **events** (list + create). Not the editorial calendar                         | Editorial calendar = content go-live (It.81d)             |
+| Calendar                                                        | Restyle editorial calendar; events have their own calendar view                               | Editorial calendar                                        |
+| Chat                                                            | **Out.** Use comments + messages                                                              | Inbox                                                     |
+| User account                                                    | Extended **user profile** tabs (avatar, bio, job, timezone, notify prefs, security link)      | Users: name/email/role/2FA/avatar/bio                     |
+| Time tracker                                                    | Time entries on a **project plan item** or **event** (start/stop + log)                       | Project planner items, no timer                           |
 | Modules (Forms, Tables, Charts, Widgets)                        | Shared admin kit used by all of the above                                                     | Ad-hoc Tailwind per view                                  |
-| Modules Maps / E-commerce / LMS / Kanban / Social               | **Out** unless a later spec says otherwise                                                    | Geo is already an analytics tab                           |
+| Maps / E-commerce / LMS / Social                                | **Out** unless a later spec says otherwise                                                    | Geo is already an analytics tab                           |
 
 
 ---
@@ -48,19 +45,19 @@ Falcon’s **App** sidebar is Calendar / Chat / Email / Events / E-commerce / LM
 
 Same as before: canvas, cards, light sidebar, **opaque** topbar (flex sibling of the scroll pane — not sticky over content), search → command palette, list toolbars, dark tokens. Primary chips use `admin-chip` / `admin-chip-on` so label color stays readable in both modes. Operators pick sidebar/topbar color (8 swatches), optional gradient, and side vs top dropdown nav in Settings → Admin UI — not the public theme.
 
-Shared **module kit** (Falcon Modules, useful subset only): `AdminKpiCard`, `AdminWidgetCard`, `AdminDataTable`, `AdminToolbar`, chart wrappers around existing analytics charts. No Chart.js-from-Falcon, no Falcon SCSS.
+Shared **module kit**: `AdminKpiCard`, `AdminWidgetCard`, `AdminDataTable`, `AdminToolbar`, chart wrappers around existing analytics charts.
 
 ---
 
 
 
-## Wave 2 — Existing apps, Falcon layout
+## Wave 2 — Existing apps, admin layout
 
 
 
 ### Dashboard (full grid)
 
-Keep our numbers. Layout like Falcon Default:
+Keep our numbers. Layout:
 
 - KPI row: pages, articles, media, visitors (from overview/analytics — **real** fields only)
 - “Running projects” → default project plan progress (It.87), not fake product names
@@ -98,7 +95,7 @@ Flat-file `data/teams/{id}.json` (`team@1`). A team has `name`, `type` (`editori
 
 
 
-### Extended user account (Aurora)
+### Extended user account
 
 Route e.g. `/users/{id}` or `/account` tabs:
 
@@ -128,7 +125,7 @@ New SSOT `data/events/{id}.json` (`site-event@1`): title, slug, startsAt, endsAt
 
 
 
-### Time tracker (Aurora pattern, our projects)
+### Time tracker (our projects)
 
 Entries in `data/time-entries/{id}.json`: `userId`, `target` (`planItem`  `event`), ids, `startedAt`, `endedAt`, `seconds`, `note`.
 
@@ -145,8 +142,8 @@ Entries in `data/time-entries/{id}.json`: `userId`, `target` (`planItem`  `event
 **93l-1 foundation**
 
 - Tickets: `data/support-tickets/{id}.json` — subject, body, status (`openpendingclosed`), `assigneeUserId` (must be on Support team), requester email/name, timestamps.
-- Admin list + detail (Falcon ticket chrome: status chips, assignee).
-- Add/remove Support team members = Teams UI with `type=support` (same settings as Falcon agents at a **basic** level: user, role, active, avatar — not a second HRIS).
+- Admin list + detail (status chips, assignee).
+- Add/remove Support team members = Teams UI with `type=support` (user, role, active, avatar — not a second HRIS).
 
 **93l-2 later (same iteration if time, else explicit remainder in this spec)**
 
@@ -160,7 +157,7 @@ Comments and contact **messages** stay. A ticket may *link* a message id; do not
 
 ## Wave 5 — Domain mail inbox (strict)
 
-Not Falcon’s demo mailbox. A **logged-in** mail viewer for mailboxes **under the site’s domain only**.
+A **logged-in** mail viewer for mailboxes **under the site’s domain only**.
 
 ### Rules (fail-closed)
 
@@ -178,7 +175,7 @@ Not Falcon’s demo mailbox. A **logged-in** mail viewer for mailboxes **under t
 | CSRF        | Mutating send uses global CSRF.                                                                                                                                       |
 
 
-v1: list folders + message list + read pane (Falcon inbox layout). Send/reply reuse the existing SMTP group; From is the operator mailbox.
+v1: list folders + message list + read pane. Send/reply reuse the existing SMTP group; From is the operator mailbox.
 
 **Not v1:** fetching the whole internet, shared JWT to Roundcube, storing `.eml` in git, wildcards `*@`*.
 
@@ -190,7 +187,7 @@ v1: list folders + message list + read pane (Falcon inbox layout). Send/reply re
 
 - Mutating `/api/*` → `AuthMiddleware` + `PermissionMiddleware`.
 - Path traversal, Zip-Slip N/A unless attachments: attachments only via DAM allow-list.
-- No Falcon/Aurora JS or HTML in the repo.
+- No third-party admin template JS or HTML in the repo.
 - SK/EN i18n for every new screen.
 - Gate green per slice.
 
@@ -206,24 +203,24 @@ v1: list folders + message list + read pane (Falcon inbox layout). Send/reply re
 | **93a** | Admin tokens + shell (canvas, cards, light sidebar, topbar)                                               | ✅                                                              |     |
 | **93q** | Shared kit: KPI card, widget card, offer card, toolbar, data table (Modules: forms/tables/charts/widgets) | ✅                                                              |     |
 | **93f** | Persisted nav collapse, topbar search → palette                                                           | ✅                                                              |     |
-| **93b** | Dashboard Falcon grid (our KPIs, planner, storage, activity)                                              | ✅                                                              |     |
-| **93j** | Analytics Falcon layout (existing `/analytics` APIs)                                                      | ✅                                                              |     |
+| **93b** | Dashboard grid (our KPIs, planner, storage, activity)                                                     | ✅                                                              |     |
+| **93j** | Analytics layout (existing `/analytics` APIs)                                                             | ✅                                                              |     |
 | **93c** | Workspace + inbox list chrome                                                                             | ✅                                                              |     |
 | **93k** | Teams (management) + Support team type                                                                    | ✅                                                              |     |
-| **93o** | Extended user account (Aurora-like tabs)                                                                  | ✅ + chrome entry, public card, share bar, widget-card sections |     |
+| **93o** | Extended user account (profile tabs)                                                                      | ✅ + chrome entry, public card, share bar, widget-card sections |     |
 | **93n** | Events planner (list + create)                                                                            | ✅                                                              |     |
 | **93p** | Time tracker on plan item / event / page                                                                  | ✅                                                              |     |
 | **93u** | Catalog side menu (levels, hover preview, left/right, sticky; no clash with header)                       | ✅                                                              |     |
 | **93v** | Coming-soon countdown linked to a page/article and published as part of that page                         | ✅                                                              |     |
 | **93w** | Viewport audit: header/side/hamburger never overlap; grids adapt with side column                         | ✅                                                              |     |
-| **93l** | Support desk foundation (tickets + agents)                                                                | ✅ Kanban board + settings (our tickets; not Falcon vendoring) |
-| **93m** | Domain IMAP inbox (rules above)                                                                           | ✅ folders / tags / Junk / SMTP send+reply; own `@site` mailbox only |
+| **93l** | Support desk foundation (tickets + agents)                                                                | ✅ Kanban board + settings (our tickets)                       |
+| **93m** | Domain IMAP inbox (rules above)                                                                           | ✅ folders / tags / Junk / SMTP send+reply; two-pane inbox chrome; UTF-8 HTML; own `@site` mailbox only |
 | **93d** | Settings / navigation form chrome                                                                         | ✅                                                              |     |
 | **93e** | Content editor shell chrome                                                                               | ✅                                                              |     |
 | **93g** | Dark-mode token parity + admin light/dark toggle                                                          | ✅                                                              |     |
 | **93r** | Admin chrome colors (8) + gradient + top dropdown nav                                                     | ✅                                                              |     |
 | **93s** | Settings Apply preview + floating Apply/Save dock                                                         | ✅                                                              |     |
-| **93t** | Public **Widgets** (visual catalog + markdown insert) — CoreUI/Konrix *inspired*, not vendored            | ✅ a–c (d later)                                                |     |
+| **93t** | Public **Widgets** (visual catalog + markdown insert)                                                     | ✅ a–c (d later)                                                |     |
 | **93h** | SK/EN leftovers, gate                                                                                     | ✅                                                              |     |
 
 
@@ -231,9 +228,13 @@ Order: **Wave 1** `a → q → f → g` · **Wave 2** `b → j → c → d → e
 
 `93l` foundation is the Kanban board (columns/labels + tickets assigned to the Support team). **93l-2** (internal notes, canned replies, SLA dueAt UI) stays listed here; no new iteration number.
 
+**93m-2** — `MailHtmlSanitizer` now decodes libxml numeric/named entities to UTF-8 after `saveHTML`, while keeping `&lt;` / `&amp;` escaped so markup stays inert.
+
+**Admin SPA paths** — sidebar hrefs are first-segment (`/mail`, `/kanban`, `/teams`, `/security-audit`). Legacy `/platform/*` and `/security/{audit,roles}` redirect. Contract: [ADMIN_DEEP_LINKS.md](architecture/ADMIN_DEEP_LINKS.md).
+
 ### 93t — Public widgets (stepped)
 
-Inspired by [CoreUI widgets](https://coreui.io/react/docs/components/widgets/) and [Konrix UI](https://themes.coderthemes.com/konrix_r/ui/) — **look and density only**. No ThemeWagon/CoreUI source in git.
+Visual catalog of reusable blocks. No third-party UI kits in git.
 
 Restaurant: Widgets are plated dishes on the public table. The waiter (markdown `[widget type="kpi" … /]`) carries a ticket; the chef (PHP `WidgetCatalog`) plates HTML; the admin **Widgets** tab is the pass window with a visual picker (not JSON like Shortcodes).
 
@@ -241,13 +242,13 @@ Restaurant: Widgets are plated dishes on the public table. The waiter (markdown 
 | Slice     | Scope                                                                                         |
 | --------- | --------------------------------------------------------------------------------------------- |
 | **93t-a** | Built-in catalog + expand `[widget]` in `ShortcodeExpanderService` + public `pg-widget-`* CSS |
-| **93t-b** | Admin `/platform/widgets` — visual gallery, field form, live preview, copy markdown           |
+| **93t-b** | Admin `/widgets` — visual gallery, field form, live preview, copy markdown           |
 | **93t-c** | Markdown editor insert (same gallery)                                                         |
 | **93t-d** | Later: more types, WYSIWYG, outline palette                                                   |
-| **93t-e** | Custom widgets in `/platform/widgets` (HTML `{{fields}}` + CodePolicy, same expand path)      |
+| **93t-e** | Custom widgets in `/widgets` (HTML `{{fields}}` + CodePolicy, same expand path)      |
 
 
-Do **not** vendor CoreUI/Konrix. Existing landing shortcodes (`stats-row`, `cta-banner`, …) stay; widgets are a second, visual insert path.
+Do **not** vendor third-party widget kits. Existing landing shortcodes (`stats-row`, `cta-banner`, …) stay; widgets are a second, visual insert path.
 
 ---
 
@@ -255,9 +256,9 @@ Do **not** vendor CoreUI/Konrix. Existing landing shortcodes (`stats-row`, `cta-
 
 ## Out of scope
 
-- Vendoring Falcon / Aurora source
+- Vendoring third-party admin templates
 - Public theme restyle
-- LMS, e-commerce, social, chat app (support Kanban is **in** — our tickets, not Falcon’s board)
+- LMS, e-commerce, social, chat app (support Kanban is **in** — our tickets)
 - Isolated origin widgets (cancelled)
 - Inventing metrics the analytics API does not expose
 - IMAP for third-party domains or anonymous access
@@ -268,6 +269,6 @@ Do **not** vendor CoreUI/Konrix. Existing landing shortcodes (`stats-row`, `cta-
 
 ## Definition of Done (iteration)
 
-Wave 1–2: daily admin (shell, dashboard, analytics, lists) looks Falcon-like on **our** data.  
+Wave 1–2: daily admin (shell, dashboard, analytics, lists) uses the admin kit on **our** data.  
 Wave 3–5: teams, richer user profile, events, time log, support Kanban, domain mail — with the mail rules above — gate green.  
-Public site identity unchanged. No ThemeWagon files in git.
+Public site identity unchanged.

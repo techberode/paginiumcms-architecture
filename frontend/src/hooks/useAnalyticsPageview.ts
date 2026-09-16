@@ -2,49 +2,19 @@ import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { trackPublicPageview } from '../api/analyticsPageview';
 import { useCookieConsentOptional } from '../context/CookieConsentContext';
+import { isAdminAppRoute } from '../utils/appRoutes';
 
-const ADMIN_PREFIXES = [
-  '/dashboard',
-  '/pages',
-  '/articles',
-  '/media',
-  '/navigation',
-  '/comments',
-  '/messages',
-  '/newsletter',
-  '/github',
-  '/code-editor',
-  '/backups',
-  '/trash',
-  '/firewall',
-  '/logs',
-  '/audit',
-  '/notifications',
-  '/scheduler',
-  '/platform',
-  '/settings',
-  '/translations',
-  '/users',
-  '/developer',
-  '/analytics',
-  '/security',
-  '/blueprints',
-  '/extensions',
-  '/themes',
-  '/demo',
-  '/account',
-  '/login',
-  '/register',
-  '/forgot-password',
-  '/reset-password',
-];
+const GUEST_AUTH_PREFIXES = ['/login', '/register', '/forgot-password', '/reset-password'] as const;
 
 function isTrackablePublicPath(pathname: string): boolean {
   if (pathname.startsWith('/newsletter/') || pathname === '/cookies') {
     return false;
   }
+  if (isAdminAppRoute(pathname)) {
+    return false;
+  }
 
-  return !ADMIN_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+  return !GUEST_AUTH_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
 
 /**

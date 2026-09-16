@@ -73,9 +73,23 @@ Articles use the same editor core and can additionally contain excerpt, tags, fe
 
 Use bulk actions only after checking filters and item counts. With soft delete, inspect trash and retention before permanent removal.
 
+## 5.2 Inbox
+
+Same first-segment URLs as the rest of the admin ([ADMIN_DEEP_LINKS.md](../architecture/ADMIN_DEEP_LINKS.md)):
+
+| Item | Path |
+|------|------|
+| Comments | `/comments` |
+| Contact messages | `/messages` |
+| Domain IMAP mail | `/mail` |
+| Support Kanban | `/kanban` |
+| Newsletter | `/newsletter` |
+
+Bookmarks under `/platform/mail` or `/platform/kanban` redirect to the paths above. IMAP settings: `/settings?group=imap`.
+
 ## 5.1 Project site planner
 
-**Workspace → Project planner** (`/platform/project-planner`) is the Full CMS milestone board: phases, due dates, and on-time / late / overdue badges. It does **not** replace the editorial calendar (already-scheduled content) or Origin Panel (maintainer catalog).
+**Workspace → Project planner** (`/project-planner`) is the Full CMS milestone board: phases, due dates, and on-time / late / overdue badges. It does **not** replace the editorial calendar (already-scheduled content) or Origin Panel (maintainer catalog).
 
 Editors with `project-plan:manage` can create plans and items (page/article templates in the add-item flow). Disable via Settings → Site → Project planner. See [PROJECT_PLANNER.md](PROJECT_PLANNER.md).
 

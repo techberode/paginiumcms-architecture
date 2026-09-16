@@ -11,7 +11,7 @@ describe('adminChrome', () => {
     expect(ADMIN_CHROME_COLOR_IDS).toHaveLength(8);
   });
 
-  it('falls back to Falcon defaults for missing or junk values', () => {
+  it('falls back to admin defaults for missing or junk values', () => {
     expect(resolveAdminChrome(undefined)).toEqual({
       sidebarColor: 'default',
       topbarColor: 'default',

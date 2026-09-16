@@ -8,7 +8,7 @@ const STEP_HREFS: Record<string, string> = {
   pages: '/pages',
   articles: '/articles',
   media: '/media',
-  planner: '/platform/project-planner',
+  planner: '/project-planner',
   settings: '/settings',
 };
 

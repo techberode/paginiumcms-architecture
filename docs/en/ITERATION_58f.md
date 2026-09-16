@@ -4,7 +4,7 @@
 > **Priority:** 🟡 **P1 for the publishing product** (ahead of It.92/93; parallel with It.89)  
 > **Wave:** Layout builder (58b–e shipped; **58g compile stays with [It.48](ITERATION_48.md)**)  
 > **Depends on:** It.58d expander + catalog · It.58e `pg-*` · It.90 insert wizards · It.88 sandbox preview pattern · It.65 gallery · It.79 DAM video · It.67/It.91 sanitizers  
-> **Does not replace:** Theme Studio (It.88), plugins (It.89), Falcon-inspired admin ([It.93](ITERATION_93.md))
+> **Does not replace:** Theme Studio (It.88), plugins (It.89), admin chrome ([It.93](ITERATION_93.md))
 
 ## Why this iteration (September 2026)
 

@@ -177,7 +177,7 @@ Ak kľúče chýbajú, systém musí zachovať kompatibilné **Classic** správa
 | Asistovaný preklad cez LibreTranslate | ⏳ Plán | **It.76** |
 | Asistovaný preklad cez cloud providerov | ⏳ Plán | **It.77** |
 | JSON Schema pre všetky Monaco zápisy | ⏳ Plán | registry schém v **It.68** |
-| Widgety na izolovanom origíne | ❌ Zrušené | [ISOLATED_ORIGIN.md](../en/architecture/ISOLATED_ORIGIN.md) — nikdy sa neimplementovalo; 93 = Falcon admin |
+| Widgety na izolovanom origíne | ❌ Zrušené | [ISOLATED_ORIGIN.md](../en/architecture/ISOLATED_ORIGIN.md) — nikdy sa neimplementovalo; 93 = admin chrome |
 
 ---
 
