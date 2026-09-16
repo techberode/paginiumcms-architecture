@@ -357,7 +357,7 @@ export const ProjectPlanDetailView: React.FC = () => {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <Link
-            to="/platform/project-planner"
+            to="/project-planner"
             className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 mb-2"
           >
             <ArrowLeft className="w-3.5 h-3.5" />

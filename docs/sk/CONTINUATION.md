@@ -17,7 +17,7 @@ Stabilizačná fáza je **ukončená**. Pokračujeme v existujúcich špeckách;
 | Oblasť | Stav |
 |--------|------|
 | Najnovší tag | ✅ `v2.1.0-beta.78` — It.93l Support Kanban + It.93m domain IMAP |
-| Rozpracované | **It.58f** vizuálne bloky (**58f-a/b** hotové) · It.89 plugin SDK · It.92 |
+| Rozpracované | **It.58f** vizuálne bloky (**58f-a/b** hotové) · It.93m inbox chrome + UTF-8 sanitizer · sploštené admin URL (`/mail`, `/kanban`) · It.89 plugin SDK · It.92 |
 
 ## Fronta
 
@@ -27,13 +27,14 @@ Stabilizačná fáza je **ukončená**. Pokračujeme v existujúcich špeckách;
 4. **It.92** SQLite query index (odvodený) + poradca Performance Guard  
 5. **It.70** · **It.76/77** · **It.75** · **It.48** (58g compile s It.48)
 
-**Aktívny slice:** **It.58f-d** živý náhľad. It.93 (Kanban + IMAP) je v `v2.1.0-beta.78`.
+**Aktívny slice:** **It.58f-d** živý náhľad. It.93 (Kanban + IMAP) je v `v2.1.0-beta.78`. V tomto strome sú admin SPA cesty sploštené (`/mail`, `/kanban`; staré `/platform/*` presmerujú).
 
 ## Dokumentácia
 
 | Dokument | Obsah |
 |----------|--------|
-| [ITERATION_93.md](ITERATION_93.md) | Admin v štýle Falcon (chrome + denné aplikácie) |
+| [ITERATION_93.md](ITERATION_93.md) | Admin chrome + denné aplikácie |
+| [architecture/ADMIN_DEEP_LINKS.md](architecture/ADMIN_DEEP_LINKS.md) | Admin SPA cesty (`/{module}`; aliasy `/platform/*`) |
 | [RELEASE_2_1_0_BETA_78.md](RELEASE_2_1_0_BETA_78.md) | Posledný release |
 | [ITERATION_58f.md](ITERATION_58f.md) | Vizuálne bloky (58f-a/b hotové; ďalej náhľad) |
 | [ITERATION_92.md](ITERATION_92.md) | SQLite query index (plán) |

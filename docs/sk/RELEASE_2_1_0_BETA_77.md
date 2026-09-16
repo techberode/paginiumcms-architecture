@@ -1,4 +1,4 @@
-# Release `v2.1.0-beta.77` — Falcon admin chrome + denné aplikácie
+# Release `v2.1.0-beta.77` — Admin chrome + denné aplikácie
 
 > **Dátum:** 15. september 2026  
 > **Tag:** `v2.1.0-beta.77`  
@@ -10,7 +10,7 @@ Kanónické poznámky (EN): [../en/RELEASE_2_1_0_BETA_77.md](../en/RELEASE_2_1_0
 
 ## Zhrnutie
 
-Admin dostane Falcon chrome (tokeny, horné vs bočné menu, dok Použiť/Uložiť) a denné aplikácie na **našich** flat-file dátach: **tímy**, **účet**, **udalosti**, **časovač**, **widgety** a **katalógové bočné menu**, ktoré sa nebijú s hlavičkou.
+Admin dostane chrome (tokeny, horné vs bočné menu, dok Použiť/Uložiť) a denné aplikácie na **našich** flat-file dátach: **tímy**, **účet**, **udalosti**, **časovač**, **widgety** a **katalógové bočné menu**, ktoré sa nebijú s hlavičkou.
 
 **Nie v tomto release:** **93l** support desk, **93m** domain IMAP.
 

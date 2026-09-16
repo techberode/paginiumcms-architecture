@@ -73,9 +73,23 @@ Slug je súčasť URL a identity súboru. Jeho zmena môže vyžadovať redirect
 
 Bulk akciu používaj iba po filtrovaní a kontrole počtu položiek. Pri soft delete over kôš a retenciu pred permanentným zmazaním.
 
+## 5.2 Schránka
+
+Rovnaký tvar URL ako zvyšok administrácie ([ADMIN_DEEP_LINKS.md](../architecture/ADMIN_DEEP_LINKS.md)):
+
+| Položka | Cesta |
+|---------|-------|
+| Komentáre | `/comments` |
+| Kontaktné správy | `/messages` |
+| Domain IMAP pošta | `/mail` |
+| Support Kanban | `/kanban` |
+| Newsletter | `/newsletter` |
+
+Záložky `/platform/mail` a `/platform/kanban` presmerujú na cesty vyššie. IMAP nastavenia: `/settings?group=imap`.
+
 ## 5.1 Plánovač projektu stránky
 
-**Workspace → Plánovač projektu** (`/platform/project-planner`) je nástenka míľnikov v plnej verzii CMS: fázy, termíny a odznaky načas / meškanie. Nenahrádza redakčný kalendár ani Origin Panel.
+**Workspace → Plánovač projektu** (`/project-planner`) je nástenka míľnikov v plnej verzii CMS: fázy, termíny a odznaky načas / meškanie. Nenahrádza redakčný kalendár ani Origin Panel.
 
 Editori s `project-plan:manage` môžu vytvárať plány a položky (šablóny stránka/článok). Vypnutie: Nastavenia → Stránka → Plánovač projektu. Pozri [PROJECT_PLANNER.md](PROJECT_PLANNER.md).
 

@@ -80,7 +80,17 @@ final class MailMimeDecoderTest extends TestCase
         $this->assertArrayHasKey('html', $row);
         $this->assertIsString($row['html']);
         $this->assertStringContainsString('Prehľad návštevnosti', $row['html']);
+        $this->assertStringNotContainsString('&#318;', $row['html']);
+        $this->assertStringNotContainsString('&aacute;', $row['html']);
+        $this->assertIsString($row['body']);
         $this->assertStringContainsString('Prehľad návštevnosti', $row['body']);
+    }
+
+    public function testSanitizedHtmlKeepsEscapedAngleBrackets(): void
+    {
+        $out = MailMimeDecoder::htmlDocument('<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>');
+        $this->assertStringContainsString('&lt;script&gt;', $out);
+        $this->assertStringNotContainsString('<script', strtolower($out));
     }
 
     public function testPresentDecodesListRow(): void

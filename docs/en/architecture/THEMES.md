@@ -187,7 +187,7 @@ Visual effects in a theme or layout shortcode **must not** require JavaScript. K
 
 Do **not** send a hamburger menu or dark-mode toggle to an isolated origin / Cloudflare Worker. That track is live data and untrusted compute, not CSS.
 
-See also isolated widgets: [ISOLATED_ORIGIN.md](ISOLATED_ORIGIN.md). It.93 is Falcon-inspired **admin** (chrome + apps), not theme JS.
+See also isolated widgets: [ISOLATED_ORIGIN.md](ISOLATED_ORIGIN.md). It.93 is **admin** chrome + apps, not theme JS.
 
 ---
 

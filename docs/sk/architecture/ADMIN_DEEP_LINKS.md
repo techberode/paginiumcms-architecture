@@ -18,7 +18,7 @@ Deep link umožní otvoriť konkrétny modul, filter, settings group alebo audit
 
 | Typ | Formát | Príklad |
 |-----|--------|---------|
-| modul | `/{module}` | `/media`, `/comments` |
+| modul | `/{module}` | `/media`, `/comments`, `/mail`, `/kanban` |
 | resource zoznam | `/{module}?…` | `/pages?q=foo&page=2&status=draft` |
 | resource detail/edit | stabilná route podľa registry | `/pages/o-nas/edit` alebo kanonický projektový ekvivalent |
 | settings | `/settings?category={category}&group={group}` | `/settings?category=security&group=accessControl` |
@@ -26,6 +26,8 @@ Deep link umožní otvoriť konkrétny modul, filter, settings group alebo audit
 | audit content | `/audit/content/{contentId}` | `/audit/content/page-home` |
 | audit user | `/audit/user/{userId}` | `/audit/user/editor-1` |
 | locale | query/path podľa finálneho It.73 kontraktu | `/pages/o-nas/edit?locale=en` |
+
+Položky v sidebari sú cesty s **jedným segmentom** (`/mail`, `/teams`, `/security-audit`). Názov sekcie menu (`platform`, `inbox`, `security`) nie je prefix URL. Vnorené cesty patria tomu istému modulu (`/project-planner/{id}`, `/pages/{slug}`, `/account/security`).
 
 Dokument nefixuje neoverenú detail route len podľa hypotézy. Route registry a frontend test musia potvrdiť kanonický tvar; helper je jediný producer URL.
 
@@ -63,6 +65,7 @@ Settings groups zodpovedajú schema keys. Príklady:
 | firewall | `/settings?group=firewall` |
 | scheduler | `/settings?group=scheduler` |
 | SMTP | `/settings?group=smtp` |
+| IMAP | `/settings?group=imap` |
 | connectors | `/settings?group=connectors` |
 | code policy | `/settings?group=codePolicy` |
 
@@ -185,6 +188,16 @@ legacy location.state → jednorazový fallback → replace canonical URL
 Legacy alias dostane test a deprecation záznam. Nemá sa držať navždy, pretože neprežije refresh ani zdieľanie URL.
 
 Pri zmene route názvu sa použije interný redirect/alias na kanonický path počas migračného obdobia.
+
+Aktuálne aliasy (unreleased po `v2.1.0-beta.78`):
+
+| Starý path | Kanonický |
+|------------|-----------|
+| `/platform/{module}` | `/{module}` — napr. `/platform/mail` → `/mail`, `/platform/kanban` → `/kanban` |
+| `/security/roles` | `/roles` |
+| `/security/audit` | `/security-audit` (`/audit` ostáva obsahový audit trail) |
+
+API rodiny ako `/api/admin/platform/api-keys` sa nemenia; sploštená je len React SPA cesta.
 
 ---
 

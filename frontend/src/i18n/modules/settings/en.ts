@@ -1836,7 +1836,7 @@ export const settingsEn: MessageTree = {
       "side": "Side"
     },
     "sidebarColor": {
-      "default": "Default (Falcon)",
+      "default": "Default",
       "navy": "Navy",
       "slate": "Slate",
       "indigo": "Indigo",

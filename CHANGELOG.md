@@ -16,7 +16,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 | Release | Date | Scope |
 |---|---:|---|
 | [`2.1.0-beta.78`](#release-2-1-0-beta-78) | 2026-09-15 | It.93l/93m — Support Kanban + domain IMAP mail client |
-| [`2.1.0-beta.77`](#release-2-1-0-beta-77) | 2026-09-15 | It.93 Falcon admin (chrome + apps) — teams, account, events, time, widgets, catalog menu |
+| [`2.1.0-beta.77`](#release-2-1-0-beta-77) | 2026-09-15 | It.93 admin chrome + apps — teams, account, events, time, widgets, catalog menu |
 | [`2.1.0-beta.76`](#release-2-1-0-beta-76) | 2026-09-13 | It.72 complete — S3 driver + migration CLI |
 | [`2.1.0-beta.75`](#release-2-1-0-beta-75) | 2026-09-13 | It.91d complete; runtime i18n; translations WAF fix |
 | [`2.1.0-beta.74`](#release-2-1-0-beta-74) | 2026-09-13 | It.91c Tiptap trusted parity + audit; deploy UI hotfix |
@@ -157,11 +157,13 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 - **It.58f-a** — Page outline parse/serialize (`frontend/src/utils/pageOutline.ts`): top-level shortcodes, `:::video`, callouts; unclosed paired tags stay `raw`; Vitest round-trip. Spec: [ITERATION_58f.md](docs/en/ITERATION_58f.md).
 - **It.58f-b** — Outline palette + attr forms in the page editor (`PageOutlineEditor`) when `layout.builderMode=outline`. Canonical body stays Markdown.
+- **It.93m** — Domain inbox chrome: two-pane folder/label nav, INBOX first, custom labels, sort by date/sender/subject, dense list. Floating compose sits above Top. **93m-2** sanitizer emits UTF-8, not HTML entities.
+- **Admin SPA URLs** — sidebar routes are first-segment paths (`/mail`, `/kanban`, `/teams`, `/security-audit`, …) like `/messages` and `/comments`. Legacy `/platform/*` and `/security/{audit,roles}` redirect. Contract: [ADMIN_DEEP_LINKS.md](docs/en/architecture/ADMIN_DEEP_LINKS.md).
 
 ### Planning
 
 - **It.58f** — Visual page blocks (outline + forms + live preview; DAM hero video). **58f-a/b done;** next **58f-d** live preview. Spec: [ITERATION_58f.md](docs/en/ITERATION_58f.md).
-- **It.93** — Falcon admin complete in this tree; **93l-2** canned replies / SLA notes remain listed in [ITERATION_93.md](docs/en/ITERATION_93.md).
+- **It.93** — Admin chrome complete in this tree; **93l-2** canned replies / SLA notes remain listed in [ITERATION_93.md](docs/en/ITERATION_93.md).
 - **It.89** — Plugin capability model + Editor Tool SDK (manifest-registered custom tools). Spec: [ITERATION_89.md](docs/en/ITERATION_89.md).
 - **It.92** — Hybrid Engine SQLite **query index** (derived, optional) + Performance Guard advisor (suggest only, never auto-enable). Spec: [ITERATION_92.md](docs/en/ITERATION_92.md).
 - **Queue:** **It.58f** remainder → It.89 → It.92 → 70 → 76/77 → 75 → 48 (58g with 48). Isolated-origin widgets: **cancelled** as an iteration (archive only). Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
@@ -196,13 +198,13 @@ It.93 remainder — Support Kanban and domain IMAP mail client.
 
 ## [2.1.0-beta.77] – 2026-09-15
 
-It.93 Falcon-inspired admin — chrome + daily apps (teams, account, events, time tracker, widgets, catalog menu). Support desk and domain mail remain.
+It.93 admin chrome + daily apps (teams, account, events, time tracker, widgets, catalog menu). Support desk and domain mail remain.
 
 ### Added
 
 - **It.93g** — Admin light/dark toggle in the topbar (`AdminThemeToggle`); preference in `localStorage` (`paginium.admin.theme`), independent of public appearance. Dark tokens on `.admin-shell`.
-- **It.93 Wave 2** — Analytics KPI/tabs on admin kit; workspace/inbox list chrome (`AdminListToolbar`, `AdminInboxList`); Settings/Navigation side nav + form cards; content editor shell tokens. Cards/buttons/inputs inside `.admin-shell` use Falcon admin tokens.
-- **It.93t** — Public **Widgets**: built-in visual catalog (`WidgetCatalog`) expands `[widget type="kpi" … /]` like snippets; admin `/platform/widgets` gallery + markdown insert. CoreUI/Konrix inspired look only — no vendored UI. Spec: [ITERATION_93.md](docs/en/ITERATION_93.md).
+- **It.93 Wave 2** — Analytics KPI/tabs on admin kit; workspace/inbox list chrome (`AdminListToolbar`, `AdminInboxList`); Settings/Navigation side nav + form cards; content editor shell tokens. Cards/buttons/inputs inside `.admin-shell` use admin tokens.
+- **It.93t** — Public **Widgets**: built-in visual catalog (`WidgetCatalog`) expands `[widget type="kpi" … /]` like snippets; admin `/platform/widgets` gallery + markdown insert. Spec: [ITERATION_93.md](docs/en/ITERATION_93.md).
 - **It.93t-e** — Operators can add **custom widget types** in the Widgets editor (HTML template + fields, `pg-*` classes, CodePolicy). Stored under `data/widgets/definitions/`.
 - **It.93k** — **Teams** (`data/teams/{id}.json`, `team@1`): editorial / support / ops / custom grouping with member user ids. ADMIN+ manage at `/platform/teams`. Custom type requires a free-text team name; built-in types use the type label. Does not replace RBAC; Support type is the agent pool for 93l.
 - **It.93o** — Extended **account** at `/account` (Profile / Public card / Security / Preferences). Self-service `PUT /api/auth/me` plus own avatar; new fields `jobTitle`, `phone`, `timezone`, `locale`, notify toggles, optional address/experience/education/socials with per-field **publish** flags on the user JSON (`?? ''` / default true for notify, publish defaults **false**). Account is opened from the header/sidebar/top-nav user menu (self-edit only), not Platform nav. Security tab reuses existing 2FA; GDPR export includes the new profile keys. Per-user locale overrides site language. Public opt-in cards: `GET /api/public/staff`.

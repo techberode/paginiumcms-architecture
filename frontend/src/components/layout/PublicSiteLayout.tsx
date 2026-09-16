@@ -28,20 +28,7 @@ import { resolveThemeShell } from '../../theme/themeShellRegistry';
 import { ThemeShellBoundary } from './ThemeShellBoundary';
 import { ThemeScriptLoader } from '../frontend/ThemeScriptLoader';
 import { PublicHeaderStack } from './PublicHeaderStack';
-
-const ADMIN_PREFIXES = [
-  '/dashboard',
-  '/pages',
-  '/articles',
-  '/media',
-  '/code-editor',
-  '/backups',
-  '/trash',
-  '/audit',
-  '/notifications',
-  '/settings',
-  '/users',
-];
+import { isAdminAppRoute } from '../../utils/appRoutes';
 
 export function PublicHomePage() {
   const { t } = useI18n();
@@ -175,7 +162,7 @@ export const PublicSiteLayout: React.FC = () => {
       if (home) {
         return { type: 'page', slug: home.slug, title: home.title };
       }
-    } else if (pathname !== '/blog' && !ADMIN_PREFIXES.some((p) => pathname.startsWith(p))) {
+    } else if (pathname !== '/blog' && !isAdminAppRoute(pathname)) {
       const slug = pathname.slice(1);
       const page = getPageBySlug(slug);
       if (page) {

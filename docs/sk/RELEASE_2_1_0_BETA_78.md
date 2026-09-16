@@ -10,7 +10,7 @@ Kanónické poznámky (EN): [../en/RELEASE_2_1_0_BETA_78.md](../en/RELEASE_2_1_0
 
 ## Zhrnutie
 
-Operátori dostanú **Kanban** na našich ticketoch a **IMAP schránku** len pre `@doména-webu`, s odosielaním cez SMTP, extra účtami a plávajúcim tlačidlom Nová správa.
+Operátori dostanú **Kanban** (`/kanban`) na našich ticketoch a **IMAP schránku** (`/mail`) len pre `@doména-webu`, s odosielaním cez SMTP, extra účtami a plávajúcim tlačidlom Nová správa.
 
 **Zostáva:** **93l-2** interné poznámky / SLA.
 

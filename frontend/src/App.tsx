@@ -125,6 +125,15 @@ function AdminShell() {
   );
 }
 
+/** Old `/platform/*` bookmarks → same path without the section prefix. */
+function LegacyPlatformRedirect() {
+  const { pathname, search, hash } = useLocation();
+  const rest = pathname.slice('/platform'.length);
+  const next = rest === '' || rest === '/' ? ADMIN_DEFAULT_ROUTE : rest;
+
+  return <Navigate to={`${next}${search}${hash}`} replace />;
+}
+
 function App() {
   const { loading, user, pendingTwoFactor } = useAuth();
   const { loading: setupLoading, needsSetup } = useSetupStatus();
@@ -201,9 +210,9 @@ function App() {
         <Route path="/articles" element={<PagesManager type="articles" />} />
         <Route path="/articles/:slug" element={<MarkdownEditor type="article" />} />
         <Route path="/categories" element={<CategoriesManager />} />
-        <Route path="/platform/editorial-calendar" element={<EditorialCalendarView />} />
-        <Route path="/platform/project-planner" element={<ProjectPlannerView />} />
-        <Route path="/platform/project-planner/:planId" element={<ProjectPlanDetailView />} />
+        <Route path="/editorial-calendar" element={<EditorialCalendarView />} />
+        <Route path="/project-planner" element={<ProjectPlannerView />} />
+        <Route path="/project-planner/:planId" element={<ProjectPlanDetailView />} />
         <Route path="/media" element={<MediaManager />} />
         <Route path="/navigation" element={<NavigationManager />} />
         <Route path="/comments" element={<CommentsManager />} />
@@ -220,8 +229,10 @@ function App() {
         <Route path="/audit" element={<AuditTrail />} />
         <Route path="/audit/content/:contentId" element={<AuditTrail />} />
         <Route path="/audit/user/:userId" element={<AuditTrail />} />
-        <Route path="/security/audit" element={<SecurityAuditManager />} />
-        <Route path="/security/roles" element={<RolesManager />} />
+        <Route path="/security-audit" element={<SecurityAuditManager />} />
+        <Route path="/roles" element={<RolesManager />} />
+        <Route path="/security/audit" element={<Navigate to="/security-audit" replace />} />
+        <Route path="/security/roles" element={<Navigate to="/roles" replace />} />
         <Route path="/security/acl" element={<Navigate to="/settings?category=security&group=accessControl" replace />} />
         <Route path="/blueprints" element={<BlueprintManager />} />
         <Route path="/extensions" element={<ExtensionsManager />} />
@@ -231,14 +242,14 @@ function App() {
         <Route path="/demo" element={<DemoManager />} />
         <Route path="/notifications" element={<NotificationsOverview />} />
         <Route path="/scheduler" element={<SchedulerView />} />
-        <Route path="/platform/update" element={<SystemUpdateView />} />
-        <Route path="/platform/api-keys" element={<ApiKeysManager />} />
-        <Route path="/platform/redirects" element={<RedirectsManager />} />
-        <Route path="/platform/webhooks" element={<WebhooksManager />} />
-        <Route path="/platform/shortcodes" element={<ShortcodesManager />} />
-        <Route path="/platform/widgets" element={<WidgetsManager />} />
-        <Route path="/platform/snippets" element={<SnippetsManager />} />
-        <Route path="/platform/origin" element={<OriginPanelView />} />
+        <Route path="/update" element={<SystemUpdateView />} />
+        <Route path="/api-keys" element={<ApiKeysManager />} />
+        <Route path="/redirects" element={<RedirectsManager />} />
+        <Route path="/webhooks" element={<WebhooksManager />} />
+        <Route path="/shortcodes" element={<ShortcodesManager />} />
+        <Route path="/widgets" element={<WidgetsManager />} />
+        <Route path="/snippets" element={<SnippetsManager />} />
+        <Route path="/origin" element={<OriginPanelView />} />
         <Route path="/settings" element={<SettingsView />} />
         <Route path="/translations" element={<TranslationEditor />} />
         <Route path="/account" element={<AccountView />} />
@@ -246,11 +257,12 @@ function App() {
         <Route path="/account/security" element={<AccountView />} />
         <Route path="/account/preferences" element={<AccountView />} />
         <Route path="/users" element={<UsersManager />} />
-        <Route path="/platform/teams" element={<TeamsManager />} />
-        <Route path="/platform/events" element={<EventsManager />} />
-        <Route path="/platform/time-tracker" element={<TimeTrackerView />} />
-        <Route path="/platform/kanban" element={<KanbanBoardView />} />
-        <Route path="/platform/mail" element={<MailInboxView />} />
+        <Route path="/teams" element={<TeamsManager />} />
+        <Route path="/events" element={<EventsManager />} />
+        <Route path="/time-tracker" element={<TimeTrackerView />} />
+        <Route path="/kanban" element={<KanbanBoardView />} />
+        <Route path="/mail" element={<MailInboxView />} />
+        <Route path="/platform/*" element={<LegacyPlatformRedirect />} />
         <Route path="/developer/logs" element={<DeveloperLogsViewer />} />
       </Route>
 

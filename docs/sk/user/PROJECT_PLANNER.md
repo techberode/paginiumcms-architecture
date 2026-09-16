@@ -6,7 +6,7 @@ icon: material/clipboard-check
 
 # Plánovač projektu stránky
 
-> **Trasa:** Workspace → **Plánovač projektu** (`/platform/project-planner`)  
+> **Trasa:** Workspace → **Plánovač projektu** (`/project-planner`)  
 > **Oprávnenia:** `project-plan:read` (zobrazenie), `project-plan:manage` (vytváranie/úprava)  
 > **Nie je Origin Panel.** Origin je pre maintainera; plánovač je v plnej verzii CMS.
 

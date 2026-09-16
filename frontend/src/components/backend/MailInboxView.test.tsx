@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi, afterEach } from 'vitest';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { MailInboxView } from './MailInboxView';
@@ -32,8 +32,9 @@ vi.mock('../../api/mail', async (importOriginal) => {
       removeAccount: vi.fn(),
       selectAccount: vi.fn(async () => ({ success: true, data: { mailbox: 'info@paginium.test' } })),
       folders: vi.fn(async () => [
-        { name: 'INBOX', spam: false },
         { name: 'Junk', spam: true },
+        { name: 'Trash', spam: false },
+        { name: 'INBOX', spam: false },
       ]),
       createFolder: vi.fn(),
       deleteFolder: vi.fn(),
@@ -41,12 +42,23 @@ vi.mock('../../api/mail', async (importOriginal) => {
         {
           uid: 1,
           subject: 'Welcome',
-          from: 'noreply@paginium.test',
+          from: 'zebra@paginium.test',
           date: '2026-09-15',
           flags: [],
           tags: ['intro'],
           snippet: 'Thanks',
           seen: false,
+          flagged: false,
+        },
+        {
+          uid: 2,
+          subject: 'Alpha note',
+          from: 'alpha@paginium.test',
+          date: '2026-09-01',
+          flags: [],
+          tags: [],
+          snippet: 'Hello',
+          seen: true,
           flagged: false,
         },
       ]),
@@ -73,6 +85,10 @@ vi.mock('../../api/mail', async (importOriginal) => {
 });
 
 describe('MailInboxView', () => {
+  afterEach(() => {
+    window.localStorage.clear();
+  });
+
   const renderMail = () =>
     renderWithProviders(
       <MemoryRouter>
@@ -86,7 +102,7 @@ describe('MailInboxView', () => {
     expect(screen.queryByTestId('mail-password')).not.toBeInTheDocument();
     expect(screen.queryByTestId('mail-save-password')).not.toBeInTheDocument();
     expect(screen.getByTestId('mail-account')).toHaveTextContent('editor@paginium.test');
-    expect(screen.getByTestId('mail-folder-INBOX')).toHaveClass('admin-tab-on');
+    expect(screen.getByTestId('mail-folder-INBOX')).toHaveClass('mail-nav-on');
   });
 
   it('asks for the mailbox password only before login', async () => {
@@ -171,7 +187,6 @@ describe('MailInboxView', () => {
 
   it('composes a new message from the working mailbox', async () => {
     renderMail();
-    expect(await screen.findByTestId('mail-compose-fab')).toBeInTheDocument();
     fireEvent.click(await screen.findByTestId('mail-compose'));
     fireEvent.change(screen.getByTestId('mail-compose-to'), { target: { value: 'guest@example.com' } });
     fireEvent.change(screen.getByTestId('mail-compose-subject'), { target: { value: 'Hello' } });
@@ -199,5 +214,83 @@ describe('MailInboxView', () => {
     fireEvent.click(await screen.findByTestId('mail-reply'));
     expect(screen.getByTestId('mail-compose-to')).toHaveValue('noreply@paginium.test');
     expect(screen.getByTestId('mail-compose-subject')).toHaveValue('Re: Welcome');
+  });
+
+  it('filters starred messages from the side nav', async () => {
+    renderMail();
+    fireEvent.click(await screen.findByTestId('mail-filter-starred'));
+    expect(screen.queryByTestId('mail-row-1')).not.toBeInTheDocument();
+  });
+
+  it('hides the floating compose while the top compose is in view', async () => {
+    renderMail();
+    expect(await screen.findByTestId('mail-compose')).toBeInTheDocument();
+    expect(screen.queryByTestId('mail-compose-fab')).not.toBeInTheDocument();
+  });
+
+  it('lists INBOX first in the folder nav', async () => {
+    renderMail();
+    const inbox = await screen.findByTestId('mail-folder-INBOX');
+    const junk = screen.getByTestId('mail-folder-Junk');
+    expect(inbox.compareDocumentPosition(junk) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('shows IMAP Trash as Kôš', async () => {
+    renderMail();
+    expect(await screen.findByTestId('mail-folder-Trash')).toHaveTextContent('Kôš');
+  });
+
+  it('keeps the floating compose control above Top when the top compose is off-screen', async () => {
+    const rect = (top: number, height: number): DOMRect =>
+      ({
+        x: 0,
+        y: top,
+        top,
+        bottom: top + height,
+        left: 0,
+        right: 160,
+        width: 160,
+        height,
+        toJSON: () => ({}),
+      }) as DOMRect;
+
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement) {
+      if (this.getAttribute('data-testid') === 'mail-compose') {
+        return rect(-80, 40);
+      }
+      return rect(0, 600);
+    });
+
+    renderMail();
+    const fab = await screen.findByTestId('mail-compose-fab');
+    expect(fab).toHaveClass('mail-compose-fab');
+    expect(fab).not.toHaveClass('bottom-6');
+    vi.restoreAllMocks();
+  });
+
+  it('creates a custom label in the side nav', async () => {
+    renderMail();
+    fireEvent.change(await screen.findByTestId('mail-new-label'), { target: { value: 'Family' } });
+    fireEvent.click(screen.getByTestId('mail-add-label'));
+    expect(await screen.findByTestId('mail-label-family')).toBeInTheDocument();
+    expect(screen.getByTestId('mail-label-family')).toHaveTextContent('Family');
+  });
+
+  it('shows message tags as colored chips', async () => {
+    renderMail();
+    const row = await screen.findByTestId('mail-row-1');
+    expect(row.querySelector('.mail-tag')).toHaveTextContent('Intro');
+    expect(await screen.findByTestId('mail-label-intro')).toBeInTheDocument();
+  });
+
+  it('sorts messages by sender like other admin lists', async () => {
+    renderMail();
+    expect(await screen.findByTestId('mail-sort')).toBeInTheDocument();
+    const byDate = screen.getAllByTestId(/mail-row-/);
+    expect(byDate[0]).toHaveAttribute('data-testid', 'mail-row-1');
+    fireEvent.click(screen.getByRole('button', { name: /Zoradiť podľa Od/i }));
+    const byFrom = screen.getAllByTestId(/mail-row-/);
+    expect(byFrom[0]).toHaveAttribute('data-testid', 'mail-row-2');
+    expect(byFrom[1]).toHaveAttribute('data-testid', 'mail-row-1');
   });
 });

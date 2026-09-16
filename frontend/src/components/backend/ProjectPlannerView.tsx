@@ -148,7 +148,7 @@ export const ProjectPlannerView: React.FC = () => {
       toast.success(t('projectPlanner.toast.created'));
       setShowCreate(false);
       resetForm();
-      navigate(`/platform/project-planner/${created.data.id}`);
+      navigate(`/project-planner/${created.data.id}`);
     } finally {
       setCreating(false);
     }
@@ -243,7 +243,7 @@ export const ProjectPlannerView: React.FC = () => {
                 {overview.nextDeadlines.map((deadline) => (
                   <li key={`${deadline.planId}-${deadline.itemId}`}>
                     <Link
-                      to={`/platform/project-planner/${deadline.planId}`}
+                      to={`/project-planner/${deadline.planId}`}
                       className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 hover:border-indigo-300"
                     >
                       <div>
@@ -359,7 +359,7 @@ export const ProjectPlannerView: React.FC = () => {
                 {plans.map((plan) => (
                   <li key={plan.id}>
                     <Link
-                      to={`/platform/project-planner/${plan.id}`}
+                      to={`/project-planner/${plan.id}`}
                       className="block rounded-xl border border-slate-200 p-4 dark:border-slate-700 hover:border-indigo-300 space-y-3"
                     >
                       <div className="flex items-start justify-between gap-2">

@@ -1836,7 +1836,7 @@ export const settingsSk: MessageTree = {
       "side": "Bočne"
     },
     "sidebarColor": {
-      "default": "Predvolená (Falcon)",
+      "default": "Predvolená",
       "navy": "Námornícka",
       "slate": "Bridlicová",
       "indigo": "Indigo",

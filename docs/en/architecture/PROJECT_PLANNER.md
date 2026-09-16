@@ -8,7 +8,7 @@ The planner is a **product module**. Origin Panel remains maintainer-gated (`ORI
 
 ## What 87e provides
 
-Kuchár (PHP) owns the plan documents. Čašník (Slim API) is wired. Hosť (React panel) is **87g** (`/platform/project-planner`).
+Kuchár (PHP) owns the plan documents. Čašník (Slim API) is wired. Hosť (React panel) is **87g** (`/project-planner`).
 
 | Piece | Location |
 |-------|----------|
@@ -55,13 +55,13 @@ Frontend client: `frontend/src/api/projectPlanner.ts`.
 
 | Route | Component |
 |-------|-----------|
-| `/platform/project-planner` | `ProjectPlannerView.tsx` — KPI header, upcoming deadlines, plan cards |
-| `/platform/project-planner/{planId}` | `ProjectPlanDetailView.tsx` — phases, item table, add-item templates + milestone pack |
+| `/project-planner` | `ProjectPlannerView.tsx` — KPI header, upcoming deadlines, plan cards |
+| `/project-planner/{planId}` | `ProjectPlanDetailView.tsx` — phases, item table, add-item templates + milestone pack |
 
 Workspace nav (next to editorial calendar). Hidden when `projectPlanner.enabled=false`. Guide: [user/PROJECT_PLANNER.md](../user/PROJECT_PLANNER.md).
 
 ## Next slices
 
-- **87g** — `/platform/project-planner` panel ✅
+- **87g** — `/project-planner` panel ✅
 - **87h** — content-type deadline templates ✅
 - **87i–87j** — content linking + dashboard widgets

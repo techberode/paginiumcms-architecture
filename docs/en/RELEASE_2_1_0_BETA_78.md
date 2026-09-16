@@ -16,8 +16,8 @@ Operators get a Support **Kanban** board on our tickets and a **domain IMAP** in
 
 | Area | Change |
 |------|--------|
-| **Kanban** | `/platform/kanban` — columns/labels in `data/support-board.json`, tickets in `data/support-tickets/{id}.json`. Assignee pool is the Support team. Permission `support-ticket:manage`. |
-| **IMAP inbox** | `/platform/mail` — folders, sandboxed HTML, tags/star/read, local hide (IMAP intact). Host must be on the CMS domain; Gmail blocked. Passwords encrypted in `data/mail-secrets/`. |
+| **Kanban** | `/kanban` — columns/labels in `data/support-board.json`, tickets in `data/support-tickets/{id}.json`. Assignee pool is the Support team. Permission `support-ticket:manage`. |
+| **IMAP inbox** | `/mail` — folders, sandboxed HTML, tags/star/read, local hide (IMAP intact). Host must be on the CMS domain; Gmail blocked. Passwords encrypted in `data/mail-secrets/`. |
 | **SMTP send** | Compose + reply via existing SMTP settings. From is the working mailbox. Extra `@site` mailboxes can be added and switched. Floating **New message** stays on screen while scrolling. |
 | **Settings** | IMAP group under Settings → System (next to SMTP). |
 
@@ -53,7 +53,7 @@ DEPLOY_FORCE=1 GIT_REF=v2.1.0-beta.78 \
 
 ## Smoke test checklist
 
-- [ ] `/platform/kanban` create a column and a ticket assigned to a Support-team member
+- [ ] `/kanban` create a column and a ticket assigned to a Support-team member
 - [ ] Settings → Email / IMAP: enable host on the CMS domain; save mailbox password; list INBOX
 - [ ] Open a message (HTML in sandbox iframe); reply and send via SMTP
 - [ ] Add a second `@site` mailbox and switch; **New message** stays visible while scrolling

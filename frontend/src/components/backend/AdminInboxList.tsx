@@ -5,10 +5,11 @@ import { useI18n } from '../../context/I18nContext';
 
 export interface AdminInboxListProps {
   children: React.ReactNode;
+  className?: string;
 }
 
-export const AdminInboxList: React.FC<AdminInboxListProps> = ({ children }) => (
-  <div className="rounded-lg border border-admin-border overflow-hidden bg-admin-card shadow-admin">
+export const AdminInboxList: React.FC<AdminInboxListProps> = ({ children, className = '' }) => (
+  <div className={`rounded-lg border border-admin-border overflow-hidden bg-admin-card shadow-admin ${className}`.trim()}>
     {children}
   </div>
 );
@@ -52,6 +53,8 @@ export interface AdminInboxRowProps {
   summary: React.ReactNode;
   detail: React.ReactNode;
   actions?: React.ReactNode;
+  leading?: React.ReactNode;
+  dense?: boolean;
 }
 
 export const AdminInboxRow: React.FC<AdminInboxRowProps> = ({
@@ -65,6 +68,8 @@ export const AdminInboxRow: React.FC<AdminInboxRowProps> = ({
   summary,
   detail,
   actions,
+  leading,
+  dense = false,
 }) => {
   const { t } = useI18n();
   const stripe =
@@ -73,9 +78,9 @@ export const AdminInboxRow: React.FC<AdminInboxRowProps> = ({
   return (
     <div className={`border-b border-admin-border last:border-b-0 ${stripe}`}>
       <div
-        className={`flex items-stretch gap-2 sm:gap-3 px-3 sm:px-4 py-3 cursor-pointer admin-row-hover transition-colors ${
-          selected ? 'ring-1 ring-inset ring-admin-primary/40' : ''
-        } ${unread ? 'font-semibold' : ''}`}
+        className={`flex items-stretch gap-2 sm:gap-3 px-3 sm:px-4 cursor-pointer admin-row-hover transition-colors ${
+          dense ? 'py-2' : 'py-3'
+        } ${selected ? 'ring-1 ring-inset ring-admin-primary/40' : ''} ${unread ? 'font-semibold' : ''}`}
       >
         <div className="flex items-start pt-0.5 shrink-0">
           <input
@@ -87,6 +92,7 @@ export const AdminInboxRow: React.FC<AdminInboxRowProps> = ({
             className="rounded border-gray-300 dark:border-gray-600 mt-1"
           />
         </div>
+        {leading}
 
         <button
           type="button"

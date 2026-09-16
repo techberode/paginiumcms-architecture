@@ -53,7 +53,39 @@ final class MailHtmlSanitizer
             $out = preg_replace('/<head(\s[^>]*)?>/i', '<head$1><meta charset="UTF-8">', $out, 1) ?? $out;
         }
 
-        return $out;
+        return self::decodeUtf8Entities($out);
+    }
+
+    /**
+     * libxml saveHTML emits numeric/named entities for non-ASCII. Keep UTF-8 in the iframe
+     * without turning &lt; / &amp; back into markup.
+     */
+    private static function decodeUtf8Entities(string $html): string
+    {
+        $decoded = preg_replace_callback(
+            '/&(#(?:x[0-9A-Fa-f]+|[0-9]+)|[A-Za-z][A-Za-z0-9]+);/',
+            static function (array $match): string {
+                $name = $match[1];
+                $key = strtolower($name);
+                if (in_array($key, ['lt', 'gt', 'amp', 'quot', 'apos'], true)) {
+                    return $match[0];
+                }
+                if ($name[0] === '#') {
+                    $code = strtolower(substr($name, 1, 1)) === 'x'
+                        ? hexdec(substr($name, 2))
+                        : (int) substr($name, 1);
+                    if (in_array($code, [34, 38, 39, 60, 62], true)) {
+                        return $match[0];
+                    }
+                }
+                $out = html_entity_decode($match[0], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+                return $out !== '' ? $out : $match[0];
+            },
+            $html
+        );
+
+        return is_string($decoded) ? $decoded : $html;
     }
 
     private static function stripNodes(DOMDocument $document): void

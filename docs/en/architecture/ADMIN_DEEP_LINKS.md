@@ -18,7 +18,7 @@ A deep link opens a specific module, filter, settings group, or audit context af
 
 | Type | Format | Example |
 |------|--------|---------|
-| module | `/{module}` | `/media`, `/comments` |
+| module | `/{module}` | `/media`, `/comments`, `/mail`, `/kanban` |
 | resource list | `/{module}?…` | `/pages?q=foo&page=2&status=draft` |
 | resource detail/edit | stable route from registry | `/pages/about-us/edit` or the canonical project equivalent |
 | settings | `/settings?category={category}&group={group}` | `/settings?category=security&group=accessControl` |
@@ -26,6 +26,8 @@ A deep link opens a specific module, filter, settings group, or audit context af
 | content audit | `/audit/content/{contentId}` | `/audit/content/page-home` |
 | user audit | `/audit/user/{userId}` | `/audit/user/editor-1` |
 | locale | query/path according to final It.73 contract | `/pages/about-us/edit?locale=en` |
+
+Sidebar items are **first-segment** paths (`/mail`, `/teams`, `/security-audit`). Menu section names (`platform`, `inbox`, `security`) are not URL prefixes. Nested paths are the same module (`/project-planner/{id}`, `/pages/{slug}`, `/account/security`).
 
 This document does not freeze an unverified detail route by assumption. The route registry and frontend tests must confirm the canonical shape; a helper is the single URL producer.
 
@@ -63,6 +65,7 @@ Settings groups correspond to schema keys. Examples:
 | firewall | `/settings?group=firewall` |
 | scheduler | `/settings?group=scheduler` |
 | SMTP | `/settings?group=smtp` |
+| IMAP | `/settings?group=imap` |
 | connectors | `/settings?group=connectors` |
 | code policy | `/settings?group=codePolicy` |
 
@@ -185,6 +188,16 @@ legacy location.state → one-time fallback → replace canonical URL
 A legacy alias receives a test and deprecation entry. It should not remain forever because it does not survive refresh or sharing.
 
 When a route name changes, use an internal redirect/alias to the canonical path during the migration period.
+
+Current aliases (unreleased after `v2.1.0-beta.78`):
+
+| Legacy | Canonical |
+|--------|-----------|
+| `/platform/{module}` | `/{module}` — e.g. `/platform/mail` → `/mail`, `/platform/kanban` → `/kanban` |
+| `/security/roles` | `/roles` |
+| `/security/audit` | `/security-audit` (`/audit` stays the content audit trail) |
+
+API families such as `/api/admin/platform/api-keys` are unchanged; only the React SPA path is flattened.
 
 ---
 

@@ -730,7 +730,7 @@ export const AnalyticsView: React.FC = () => {
                           <td className="px-4 py-3 text-slate-500">{row.topReferer ?? '—'}</td>
                           <td className="px-4 py-3">
                             <Link
-                              to={`/platform/redirects?from=${encodeURIComponent(row.path)}`}
+                              to={`/redirects?from=${encodeURIComponent(row.path)}`}
                               className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-700 text-xs font-bold"
                             >
                               <ArrowRightLeft className="h-3.5 w-3.5" />

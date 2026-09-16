@@ -162,7 +162,7 @@
     @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200;
   }
 
-  /* It.93 — Falcon-inspired admin chrome. Plain CSS vars: @apply cannot see JIT admin-* utilities. */
+  /* It.93 — admin chrome. Plain CSS vars: @apply cannot see JIT admin-* utilities. */
   .admin-shell .btn-primary {
     background-color: var(--admin-primary);
     color: var(--admin-on-primary, #ffffff);

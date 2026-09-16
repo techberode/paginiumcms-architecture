@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, MailOpen, MailPlus, Plus, Reply, RotateCcw, Star, Trash2 } from 'lucide-react';
+import { Ban, FileText, Folder, Inbox, Mail, MailOpen, MailPlus, Plus, Reply, RotateCcw, Send, Star, Trash2 } from 'lucide-react';
 import {
   MAIL_LOCAL_TRASH,
   mailApi,
@@ -13,13 +13,14 @@ import { useI18n } from '../../context/I18nContext';
 import { useToast } from '../../hooks/useToast';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { useAdminListPageSize } from '../../hooks/useAdminListPageSize';
+import { useColumnSort } from '../../hooks/useColumnSort';
 import { applyClientListView } from '../../utils/clientListView';
-import { ADMIN_PAGE_SUBTITLE, ADMIN_PAGE_TITLE, ADMIN_TAB_LIST } from '../../theme/adminUiClasses';
+import { ADMIN_PAGE_SUBTITLE, ADMIN_PAGE_TITLE } from '../../theme/adminUiClasses';
 import { settingsGroupPath } from '../../utils/adminDeepLinks';
 import { AdminHintCard } from './AdminHintCard';
 import { AdminWidgetCard } from '../ui/AdminWidgetCard';
-import { adminTabClass } from '../ui/AdminTabs';
 import { AdminListToolbar } from './AdminListToolbar';
+import { AdminListSortBar } from './SortableTableHeader';
 import { AdminListPagination } from './AdminListPagination';
 import { BulkActionBar } from './BulkActionBar';
 import { AdminListSkeleton } from '../ui/AdminListSkeleton';
@@ -29,7 +30,151 @@ import { AdminInboxList, AdminInboxListHeader, AdminInboxRow } from './AdminInbo
 const MAIL_FIELD =
   'w-full min-w-0 rounded-lg border border-admin-border bg-admin-canvas px-3 py-2.5 text-sm text-admin-text placeholder:text-admin-muted';
 
+const ADMIN_SCROLL_ROOT = '[data-testid="admin-scroll-pane"]';
+
 const PROTECTED_FOLDERS = new Set(['inbox', 'sent', 'drafts', 'trash', 'junk', 'spam', MAIL_LOCAL_TRASH]);
+
+type MailNavKind = 'inbox' | 'sent' | 'drafts' | 'trash' | 'spam' | 'custom';
+
+function mailNavKind(name: string): MailNavKind {
+  const key = name.toLowerCase();
+  if (key === 'inbox') {
+    return 'inbox';
+  }
+  if (key.includes('sent')) {
+    return 'sent';
+  }
+  if (key.includes('draft')) {
+    return 'drafts';
+  }
+  if (key === MAIL_LOCAL_TRASH || key.includes('trash') || key.includes('deleted')) {
+    return 'trash';
+  }
+  if (key.includes('junk') || key.includes('spam')) {
+    return 'spam';
+  }
+
+  return 'custom';
+}
+
+function inboxFirst(items: MailFolder[]): MailFolder[] {
+  const inbox = items.filter((item) => mailNavKind(item.name) === 'inbox');
+  const rest = items.filter((item) => mailNavKind(item.name) !== 'inbox');
+  return [...inbox, ...rest];
+}
+
+function isComposeAnchorVisible(el: HTMLElement, root: Element | null): boolean {
+  const rect = el.getBoundingClientRect();
+  if (rect.width === 0 && rect.height === 0) {
+    return true;
+  }
+
+  const bounds = root
+    ? root.getBoundingClientRect()
+    : { top: 0, bottom: window.innerHeight };
+
+  return rect.bottom > bounds.top && rect.top < bounds.bottom;
+}
+
+function mailNavIcon(kind: MailNavKind) {
+  switch (kind) {
+    case 'inbox':
+      return Inbox;
+    case 'sent':
+      return Send;
+    case 'drafts':
+      return FileText;
+    case 'trash':
+      return Trash2;
+    case 'spam':
+      return Ban;
+    default:
+      return Folder;
+  }
+}
+
+function mailNavClass(active: boolean): string {
+  return active ? 'mail-nav-item mail-nav-on' : 'mail-nav-item';
+}
+
+function displayFrom(from: string): string {
+  const named = from.match(/^\s*"?([^"<]+?)"?\s*</);
+  if (named?.[1] !== undefined && named[1].trim() !== '') {
+    return named[1].trim();
+  }
+
+  return from.trim();
+}
+
+function mailDateValue(date: string): number {
+  const cleaned = date.replace(/\s*\([^)]*\)\s*$/, '');
+  const parsed = Date.parse(cleaned);
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+function tagToneClass(tag: string): string {
+  let sum = 0;
+  for (let i = 0; i < tag.length; i += 1) {
+    sum += tag.charCodeAt(i);
+  }
+
+  return `mail-tag-${(sum % 5) + 1}`;
+}
+
+function mailLabelsKey(mailbox: string): string {
+  return `paginium.mail.labels:${mailbox}`;
+}
+
+function normalizeLabelName(raw: string): string {
+  return raw.trim().replace(/\s+/g, ' ');
+}
+
+function labelKeyword(name: string): string {
+  const ascii = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return ascii.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+function readSavedLabels(mailbox: string): string[] {
+  if (mailbox === '') {
+    return [];
+  }
+  try {
+    const raw = window.localStorage.getItem(mailLabelsKey(mailbox));
+    if (raw === null || raw === '') {
+      return [];
+    }
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+    return parsed.filter((item): item is string => typeof item === 'string' && normalizeLabelName(item) !== '');
+  } catch {
+    return [];
+  }
+}
+
+function writeSavedLabels(mailbox: string, labels: string[]): void {
+  if (mailbox === '') {
+    return;
+  }
+  window.localStorage.setItem(mailLabelsKey(mailbox), JSON.stringify(labels));
+}
+
+function labelMatches(tags: string[], label: string): boolean {
+  const keyword = labelKeyword(label);
+  const lowered = label.toLowerCase();
+  return tags.some((tag) => {
+    const value = tag.toLowerCase();
+    return value === lowered || labelKeyword(tag) === keyword;
+  });
+}
+
+function displayLabel(name: string): string {
+  if (name === '') {
+    return name;
+  }
+  return name.charAt(0).toUpperCase() + name.slice(1);
+}
 
 function firstError(response: ApiResponse<unknown>): string {
   const mail: unknown = response.errors?.mail;
@@ -90,11 +235,18 @@ export const MailInboxView: React.FC = () => {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useAdminListPageSize('mail');
+  const { sortField, sortDirection, handleSort } = useColumnSort('date', 'desc');
   const [compose, setCompose] = useState<MailCompose | null>(null);
   const [sending, setSending] = useState(false);
   const [extraMailbox, setExtraMailbox] = useState('');
   const [extraPassword, setExtraPassword] = useState('');
   const [showAddAccount, setShowAddAccount] = useState(false);
+  const [listFilter, setListFilter] = useState<'all' | 'starred'>('all');
+  const [labelFilter, setLabelFilter] = useState<string | null>(null);
+  const [customLabels, setCustomLabels] = useState<string[]>([]);
+  const [newLabel, setNewLabel] = useState('');
+  const composeAnchorRef = useRef<HTMLButtonElement>(null);
+  const [composeAnchorVisible, setComposeAnchorVisible] = useState(true);
 
   const describeMailError = useCallback(
     (raw: string, fallbackKey: 'platform.mail.toast.loadFailed' | 'platform.mail.toast.saveFailed' | 'platform.mail.toast.sendFailed') => {
@@ -164,36 +316,117 @@ export const MailInboxView: React.FC = () => {
 
   useEffect(() => {
     setPage(1);
-  }, [search, folder, pageSize]);
+  }, [search, folder, pageSize, listFilter, labelFilter, sortField, sortDirection]);
+
+  useEffect(() => {
+    setListFilter('all');
+    setLabelFilter(null);
+  }, [folder]);
+
+  useEffect(() => {
+    setCustomLabels(readSavedLabels(status?.mailbox ?? ''));
+  }, [status?.mailbox]);
+
+  const persistLabel = (name: string) => {
+    const normalized = normalizeLabelName(name);
+    const keyword = labelKeyword(normalized);
+    if (keyword === '') {
+      return normalized;
+    }
+    const mailbox = status?.mailbox ?? '';
+    setCustomLabels((current) => {
+      if (current.some((item) => labelKeyword(item) === keyword)) {
+        return current;
+      }
+      const next = [...current, normalized];
+      writeSavedLabels(mailbox, next);
+      return next;
+    });
+    return normalized;
+  };
+
+  const labels = useMemo(() => {
+    const unique = new Map<string, string>();
+    for (const name of customLabels) {
+      const key = labelKeyword(name);
+      if (key !== '') {
+        unique.set(key, name);
+      }
+    }
+    for (const item of messages) {
+      for (const tag of item.tags ?? []) {
+        const key = labelKeyword(tag);
+        if (key !== '' && !unique.has(key)) {
+          unique.set(key, tag);
+        }
+      }
+    }
+    return [...unique.values()].sort((a, b) => a.localeCompare(b));
+  }, [customLabels, messages]);
+
+  const navFolders = useMemo(() => inboxFirst(folders), [folders]);
+
+  const visibleMessages = useMemo(
+    () =>
+      messages.filter((item) => {
+        if (listFilter === 'starred' && item.flagged !== true) {
+          return false;
+        }
+        if (labelFilter !== null && !labelMatches(item.tags ?? [], labelFilter)) {
+          return false;
+        }
+        return true;
+      }),
+    [labelFilter, listFilter, messages]
+  );
 
   const listView = useMemo(
     () =>
-      applyClientListView(messages, {
+      applyClientListView(visibleMessages, {
         search,
         searchText: (item) => `${item.subject} ${item.from} ${item.snippet} ${item.date}`,
-        sortField: 'date',
-        sortDirection: 'desc',
-        sortFields: [{ value: 'date', label: t('platform.mail.date'), getValue: (item) => item.date }],
+        sortField,
+        sortDirection,
+        sortFields: [
+          { value: 'date', label: t('platform.mail.date'), getValue: (item) => mailDateValue(item.date) },
+          { value: 'from', label: t('platform.mail.from'), getValue: (item) => displayFrom(item.from) },
+          { value: 'subject', label: t('platform.mail.subject'), getValue: (item) => item.subject },
+        ],
         page,
         pageSize,
       }),
-    [messages, page, pageSize, search, t]
+    [visibleMessages, page, pageSize, search, sortDirection, sortField, t]
   );
 
   const bulkSelection = useBulkSelection(
     listView.items.map((item) => rowId(item, folder)),
-    `${folder}:${page}:${search}:${pageSize}`
+    `${folder}:${page}:${search}:${pageSize}:${listFilter}:${labelFilter ?? ''}:${sortField}:${sortDirection}`
   );
 
   const unread = messages.filter((item) => item.seen !== true).length;
+  const starredCount = messages.filter((item) => item.flagged === true).length;
   const inLocalTrash = folder === MAIL_LOCAL_TRASH;
+  const folderNavActive = listFilter === 'all' && labelFilter === null;
 
   const folderLabel = (item: MailFolder): string => {
     if (item.name === MAIL_LOCAL_TRASH) {
       return t('platform.mail.localTrash');
     }
-    if (item.spam) {
-      return `${item.name} (${t('platform.mail.spam')})`;
+    const kind = mailNavKind(item.name);
+    if (kind === 'inbox') {
+      return t('platform.mail.inbox');
+    }
+    if (kind === 'sent') {
+      return t('platform.mail.sent');
+    }
+    if (kind === 'drafts') {
+      return t('platform.mail.drafts');
+    }
+    if (kind === 'trash') {
+      return t('platform.mail.trash');
+    }
+    if (item.spam || kind === 'spam') {
+      return t('platform.mail.spam');
     }
     return item.name;
   };
@@ -287,7 +520,8 @@ export const MailInboxView: React.FC = () => {
   };
 
   const addTag = async (message: MailMessage) => {
-    const tag = tagDraft.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+    const name = persistLabel(tagDraft);
+    const tag = labelKeyword(name);
     if (tag === '') {
       return;
     }
@@ -301,6 +535,16 @@ export const MailInboxView: React.FC = () => {
     }
     setTagDraft('');
     patchRow(id, { tags: Array.from(new Set([...(current.tags ?? []), tag])) });
+  };
+
+  const addCustomLabel = () => {
+    const name = persistLabel(newLabel);
+    if (labelKeyword(name) === '') {
+      return;
+    }
+    setNewLabel('');
+    setListFilter('all');
+    setLabelFilter(name);
   };
 
   const removeTag = async (message: MailMessage, tag: string) => {
@@ -465,6 +709,58 @@ export const MailInboxView: React.FC = () => {
   const accounts = status?.accounts ?? [];
   const activeAccount = accounts.find((item) => item.mailbox === status?.mailbox);
 
+  useEffect(() => {
+    const el = composeAnchorRef.current;
+    if (!el || !canSend || compose !== null) {
+      setComposeAnchorVisible(true);
+      return undefined;
+    }
+
+    const root = el.closest(ADMIN_SCROLL_ROOT);
+
+    const update = (intersecting?: boolean) => {
+      const geometryVisible = isComposeAnchorVisible(el, root instanceof Element ? root : null);
+      const rect = el.getBoundingClientRect();
+      const unmeasured = rect.width === 0 && rect.height === 0;
+      if (unmeasured) {
+        setComposeAnchorVisible(true);
+        return;
+      }
+      if (typeof intersecting === 'boolean') {
+        setComposeAnchorVisible(intersecting && geometryVisible);
+        return;
+      }
+      setComposeAnchorVisible(geometryVisible);
+    };
+
+    update();
+
+    let observer: IntersectionObserver | null = null;
+    if (typeof IntersectionObserver !== 'undefined') {
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          update(entry.isIntersecting);
+        },
+        {
+          root: root instanceof Element ? root : null,
+          threshold: [0, 0.01, 1],
+        }
+      );
+      observer.observe(el);
+    }
+
+    const onScrollOrResize = () => update();
+    const scrollTarget: EventTarget = root ?? window;
+    scrollTarget.addEventListener('scroll', onScrollOrResize, { passive: true });
+    window.addEventListener('resize', onScrollOrResize);
+
+    return () => {
+      observer?.disconnect();
+      scrollTarget.removeEventListener('scroll', onScrollOrResize);
+      window.removeEventListener('resize', onScrollOrResize);
+    };
+  }, [canSend, compose, mailboxReady, folders.length]);
+
   return (
     <div className="relative space-y-6 w-full max-w-none pb-24" data-testid="mail-inbox">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -520,8 +816,14 @@ export const MailInboxView: React.FC = () => {
             {status?.mailbox && mailboxReady ? <span>· {t('platform.mail.unread', { count: String(unread) })}</span> : null}
           </div>
         </div>
-        {canSend ? (
-          <button type="button" className="btn btn-primary" onClick={openCompose} data-testid="mail-compose">
+        {canSend && !mailboxReady ? (
+          <button
+            type="button"
+            ref={composeAnchorRef}
+            className="btn btn-primary"
+            onClick={openCompose}
+            data-testid="mail-compose"
+          >
             <MailPlus className="mr-1 inline h-4 w-4" />
             {t('platform.mail.compose')}
           </button>
@@ -672,125 +974,242 @@ export const MailInboxView: React.FC = () => {
       ) : null}
 
       {mailboxReady ? (
-        <>
-          <nav className={ADMIN_TAB_LIST} aria-label={t('platform.mail.folders')}>
-            {folders.map((item) => (
-              <div key={item.name} className="flex items-stretch">
+        <div className="mail-app">
+          <aside className="mail-app-nav">
+            {canSend ? (
+              <button
+                type="button"
+                ref={composeAnchorRef}
+                className="btn btn-primary mb-2 w-full"
+                onClick={openCompose}
+                data-testid="mail-compose"
+              >
+                <MailPlus className="mr-1 inline h-4 w-4" />
+                {t('platform.mail.compose')}
+              </button>
+            ) : null}
+            <p className="mail-nav-heading">{t('platform.mail.folders')}</p>
+            <nav className="flex flex-col gap-0.5" aria-label={t('platform.mail.folders')}>
+              {navFolders.map((item) => {
+                const kind = mailNavKind(item.name);
+                const Icon = mailNavIcon(kind);
+                const active = folderNavActive && folder === item.name;
+                return (
+                  <div key={item.name} className="flex items-center gap-0.5">
+                    <button
+                      type="button"
+                      className={mailNavClass(active)}
+                      onClick={() => {
+                        setListFilter('all');
+                        setLabelFilter(null);
+                        setFolder(item.name);
+                      }}
+                      aria-current={active ? 'page' : undefined}
+                      data-testid={`mail-folder-${item.name}`}
+                    >
+                      <Icon className="h-4 w-4 shrink-0" aria-hidden />
+                      <span className="min-w-0 truncate">{folderLabel(item)}</span>
+                      {kind === 'inbox' && unread > 0 && folder === item.name ? (
+                        <span className="mail-nav-count">{unread}</span>
+                      ) : null}
+                    </button>
+                    {canDeleteFolder(item) ? (
+                      <button
+                        type="button"
+                        className="shrink-0 rounded-full p-1.5 text-admin-muted hover:text-red-600"
+                        aria-label={t('platform.mail.deleteFolder')}
+                        onClick={() => void removeFolder(item.name)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    ) : null}
+                  </div>
+                );
+              })}
+              <button
+                type="button"
+                className={mailNavClass(listFilter === 'starred')}
+                onClick={() => {
+                  setLabelFilter(null);
+                  setListFilter('starred');
+                }}
+                aria-current={listFilter === 'starred' ? 'page' : undefined}
+                data-testid="mail-filter-starred"
+              >
+                <Star className="h-4 w-4 shrink-0" aria-hidden />
+                <span className="min-w-0 truncate">{t('platform.mail.starred')}</span>
+                {starredCount > 0 ? <span className="mail-nav-count">{starredCount}</span> : null}
+              </button>
+            </nav>
+            <p className="mail-nav-heading">{t('platform.mail.labels')}</p>
+            <nav className="flex flex-col gap-0.5" aria-label={t('platform.mail.labels')}>
+              {labels.map((tag) => (
                 <button
+                  key={labelKeyword(tag)}
                   type="button"
-                  className={adminTabClass(folder === item.name)}
-                  onClick={() => setFolder(item.name)}
-                  aria-current={folder === item.name ? 'page' : undefined}
-                  data-testid={`mail-folder-${item.name}`}
+                  className={mailNavClass(labelFilter !== null && labelMatches([labelFilter], tag))}
+                  onClick={() => {
+                    setListFilter('all');
+                    setLabelFilter(tag);
+                  }}
+                  aria-current={labelFilter !== null && labelMatches([labelFilter], tag) ? 'page' : undefined}
+                  data-testid={`mail-label-${labelKeyword(tag)}`}
                 >
-                  <span className="admin-tab-label">{folderLabel(item)}</span>
+                  <span className={`mail-tag-dot ${tagToneClass(labelKeyword(tag))}`} aria-hidden />
+                  <span className="min-w-0 truncate">{displayLabel(tag)}</span>
                 </button>
-                {canDeleteFolder(item) ? (
-                  <button
-                    type="button"
-                    className="self-center rounded-full p-1.5 text-admin-muted hover:text-red-600"
-                    aria-label={t('platform.mail.deleteFolder')}
-                    onClick={() => void removeFolder(item.name)}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                ) : null}
-              </div>
-            ))}
-          </nav>
-
-          <form
-            className="flex flex-col gap-2 sm:flex-row sm:items-end"
-            onSubmit={(event) => {
-              event.preventDefault();
-              void addFolder();
-            }}
-          >
-            <label className="block min-w-0 grow text-sm text-admin-muted">
-              {t('platform.mail.newCategory')}
-              <input
-                className={`${MAIL_FIELD} mt-1`}
-                value={newFolder}
-                onChange={(event) => setNewFolder(event.target.value)}
-                placeholder={t('platform.mail.newCategoryPlaceholder')}
-                autoComplete="off"
-                data-testid="mail-new-folder"
-              />
-            </label>
-            <button type="submit" className="btn btn-secondary shrink-0" data-testid="mail-add-folder">
-              {t('platform.mail.addCategory')}
-            </button>
-          </form>
-
-          <AdminListToolbar
-            search={search}
-            onSearchChange={setSearch}
-            searchPlaceholder={t('platform.mail.search')}
-            pageSize={pageSize}
-            onPageSizeChange={setPageSize}
-            pageSizeOptions={[5, 10, 20, 50]}
-          />
-
-          <BulkActionBar
-            count={bulkSelection.count}
-            totalCount={listView.total}
-            itemLabel={t('platform.mail.bulk.itemLabel')}
-            onClear={bulkSelection.clear}
-            actions={
-              inLocalTrash
-                ? [{ id: 'restore', label: t('platform.mail.restore'), variant: 'secondary', onClick: () => void handleBulk('restore') }]
-                : [
-                    { id: 'read', label: t('platform.mail.markRead'), variant: 'secondary', onClick: () => void handleBulk('read') },
-                    { id: 'unread', label: t('platform.mail.markUnread'), variant: 'secondary', onClick: () => void handleBulk('unread') },
-                    { id: 'star', label: t('platform.mail.star'), variant: 'secondary', onClick: () => void handleBulk('star') },
-                    { id: 'hide', label: t('platform.mail.hideLocal'), variant: 'danger', onClick: () => void handleBulk('hide') },
-                  ]
-            }
-          />
-
-          {loading ? (
-            <AdminListSkeleton rows={8} />
-          ) : listView.total === 0 ? (
-            <AdminEmptyState title={messages.length === 0 ? t('platform.mail.empty') : t('platform.mail.emptyFilter')} />
-          ) : (
-            <>
-              <AdminInboxList>
-                <AdminInboxListHeader
-                  allSelected={bulkSelection.allSelected && listView.items.length > 0}
-                  onToggleAll={bulkSelection.toggleAll}
+              ))}
+            </nav>
+            <form
+              className="mt-2 flex flex-col gap-2"
+              onSubmit={(event) => {
+                event.preventDefault();
+                addCustomLabel();
+              }}
+            >
+              <label className="block min-w-0 text-sm font-medium text-[#132337] dark:text-admin-text">
+                {t('platform.mail.newLabel')}
+                <input
+                  className={`${MAIL_FIELD} mt-1`}
+                  value={newLabel}
+                  onChange={(event) => setNewLabel(event.target.value)}
+                  placeholder={t('platform.mail.newLabelPlaceholder')}
+                  autoComplete="off"
+                  data-testid="mail-new-label"
                 />
-                {listView.items.map((message, index) => {
-                  const id = rowId(message, folder);
-                  const detail = details[id];
-                  return (
-                    <AdminInboxRow
-                      key={id}
-                      id={id}
-                      index={index}
-                      expanded={expandedId === id}
-                      onToggleExpand={toggleExpand}
-                      selected={bulkSelection.isSelected(id)}
-                      onToggleSelect={bulkSelection.toggle}
-                      unread={message.seen !== true}
-                      summary={
-                        <div className="grid w-full grid-cols-1 items-start gap-1 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-4" data-testid={`mail-row-${message.uid}`}>
-                          <div className="min-w-0">
-                            <div className="flex flex-wrap items-center gap-2">
-                              {message.flagged ? <Star className="h-3.5 w-3.5 fill-current text-amber-400" /> : null}
-                              <span className={message.seen ? 'text-admin-text' : 'font-semibold text-admin-text'}>
-                                {message.from || t('platform.mail.noSubject')}
+              </label>
+              <button type="submit" className="btn btn-secondary w-full" data-testid="mail-add-label">
+                {t('platform.mail.addLabel')}
+              </button>
+            </form>
+            <form
+              className="mt-auto flex flex-col gap-2 pt-4"
+              onSubmit={(event) => {
+                event.preventDefault();
+                void addFolder();
+              }}
+            >
+              <label className="block min-w-0 text-sm font-medium text-[#132337] dark:text-admin-text">
+                {t('platform.mail.newCategory')}
+                <input
+                  className={`${MAIL_FIELD} mt-1`}
+                  value={newFolder}
+                  onChange={(event) => setNewFolder(event.target.value)}
+                  placeholder={t('platform.mail.newCategoryPlaceholder')}
+                  autoComplete="off"
+                  data-testid="mail-new-folder"
+                />
+              </label>
+              <button type="submit" className="btn btn-secondary w-full" data-testid="mail-add-folder">
+                {t('platform.mail.addCategory')}
+              </button>
+            </form>
+          </aside>
+
+          <div className="mail-app-main">
+            <div className="mail-app-toolbar">
+              <AdminListToolbar
+                search={search}
+                onSearchChange={setSearch}
+                searchPlaceholder={t('platform.mail.search')}
+                pageSize={pageSize}
+                onPageSizeChange={setPageSize}
+                pageSizeOptions={[5, 10, 20, 50]}
+              />
+              <div className="px-4 pb-2" data-testid="mail-sort">
+                <AdminListSortBar
+                  columns={[
+                    { field: 'date', label: t('platform.mail.date') },
+                    { field: 'from', label: t('platform.mail.from') },
+                    { field: 'subject', label: t('platform.mail.subject') },
+                  ]}
+                  activeField={sortField}
+                  direction={sortDirection}
+                  onSort={handleSort}
+                />
+              </div>
+            </div>
+
+            <BulkActionBar
+              count={bulkSelection.count}
+              totalCount={listView.total}
+              itemLabel={t('platform.mail.bulk.itemLabel')}
+              onClear={bulkSelection.clear}
+              actions={
+                inLocalTrash
+                  ? [{ id: 'restore', label: t('platform.mail.restore'), variant: 'secondary', onClick: () => void handleBulk('restore') }]
+                  : [
+                      { id: 'read', label: t('platform.mail.markRead'), variant: 'secondary', onClick: () => void handleBulk('read') },
+                      { id: 'unread', label: t('platform.mail.markUnread'), variant: 'secondary', onClick: () => void handleBulk('unread') },
+                      { id: 'star', label: t('platform.mail.star'), variant: 'secondary', onClick: () => void handleBulk('star') },
+                      { id: 'hide', label: t('platform.mail.hideLocal'), variant: 'danger', onClick: () => void handleBulk('hide') },
+                    ]
+              }
+            />
+
+            {loading ? (
+              <AdminListSkeleton rows={8} />
+            ) : listView.total === 0 ? (
+              <AdminEmptyState title={messages.length === 0 ? t('platform.mail.empty') : t('platform.mail.emptyFilter')} />
+            ) : (
+              <>
+                <AdminInboxList className="rounded-none border-0 shadow-none">
+                  <AdminInboxListHeader
+                    allSelected={bulkSelection.allSelected && listView.items.length > 0}
+                    onToggleAll={bulkSelection.toggleAll}
+                  />
+                  {listView.items.map((message, index) => {
+                    const id = rowId(message, folder);
+                    const detail = details[id];
+                    const starred = (detail?.flagged ?? message.flagged) === true;
+                    const tags = message.tags ?? [];
+                    return (
+                      <AdminInboxRow
+                        key={id}
+                        id={id}
+                        index={index}
+                        expanded={expandedId === id}
+                        onToggleExpand={toggleExpand}
+                        selected={bulkSelection.isSelected(id)}
+                        onToggleSelect={bulkSelection.toggle}
+                        unread={message.seen !== true}
+                        dense
+                        leading={
+                          <button
+                            type="button"
+                            className="mt-0.5 shrink-0 rounded p-1 text-admin-muted hover:text-amber-400"
+                            aria-label={t('platform.mail.star')}
+                            aria-pressed={starred}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              void toggleFlag(detail ?? message, 'flagged');
+                            }}
+                            data-testid={`mail-star-${message.uid}`}
+                          >
+                            <Star className={`h-4 w-4 ${starred ? 'fill-current text-amber-400' : ''}`} />
+                          </button>
+                        }
+                        summary={
+                          <div className="mail-row-grid" data-testid={`mail-row-${message.uid}`}>
+                            <span className={`min-w-0 truncate ${message.seen ? 'text-admin-text' : 'font-semibold text-admin-text'}`}>
+                              {displayFrom(message.from) || t('platform.mail.noSubject')}
+                            </span>
+                            <span className="min-w-0 truncate text-sm">
+                              {tags.map((tag) => (
+                                <span key={tag} className={`mail-tag mr-1.5 ${tagToneClass(labelKeyword(tag) || tag)}`}>
+                                  {displayLabel(customLabels.find((item) => labelKeyword(item) === labelKeyword(tag)) ?? tag)}
+                                </span>
+                              ))}
+                              <span className={message.seen ? 'text-admin-muted' : 'text-admin-text'}>
+                                {message.subject || t('platform.mail.noSubject')}
                               </span>
-                            </div>
-                            <p className={`mt-0.5 truncate text-sm ${message.seen ? 'text-admin-muted' : 'text-admin-text'}`}>
-                              {message.subject || t('platform.mail.noSubject')}
-                            </p>
-                            {expandedId !== id ? (
-                              <p className="mt-0.5 truncate text-xs text-admin-muted">{message.snippet}</p>
-                            ) : null}
+                              {expandedId !== id && message.snippet !== '' ? (
+                                <span className="text-admin-muted"> — {message.snippet}</span>
+                              ) : null}
+                            </span>
+                            <span className="shrink-0 whitespace-nowrap text-xs text-admin-muted">{message.date}</span>
                           </div>
-                          <div className="shrink-0 text-xs text-admin-muted sm:text-right">{message.date}</div>
-                        </div>
-                      }
+                        }
                       detail={
                         <div className="space-y-3 text-sm">
                           <p className="text-xs text-admin-muted">
@@ -864,11 +1283,11 @@ export const MailInboxView: React.FC = () => {
                               <button
                                 key={tag}
                                 type="button"
-                                className="admin-chip"
+                                className={`mail-tag ${tagToneClass(labelKeyword(tag) || tag)}`}
                                 onClick={() => void removeTag(detail ?? message, tag)}
                                 title={t('platform.mail.removeTag')}
                               >
-                                {tag} ×
+                                {displayLabel(tag)} ×
                               </button>
                             ))}
                           </div>
@@ -903,13 +1322,14 @@ export const MailInboxView: React.FC = () => {
               />
             </>
           )}
-        </>
+          </div>
+        </div>
       ) : null}
 
-      {canSend && compose === null ? (
+      {canSend && compose === null && !composeAnchorVisible ? (
         <button
           type="button"
-          className="btn btn-primary fixed bottom-6 right-6 z-40 shadow-lg shadow-black/20"
+          className="btn btn-primary mail-compose-fab shadow-lg shadow-black/20"
           onClick={openCompose}
           data-testid="mail-compose-fab"
         >

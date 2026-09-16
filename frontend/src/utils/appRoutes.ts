@@ -4,8 +4,8 @@ import {
   ADMIN_NAV_SECTIONS,
 } from '../config/adminNavSections';
 
-/** Admin routes that are not sidebar items (account menu, preview frame, developer logs). */
-const EXTRA_ADMIN_ROUTE_PREFIXES = ['/account', '/preview', '/developer'] as const;
+/** Admin routes that are not sidebar items (account menu, preview, logs, legacy prefixes). */
+const EXTRA_ADMIN_ROUTE_PREFIXES = ['/account', '/preview', '/developer', '/platform', '/security'] as const;
 
 function firstSegmentPrefix(pathname: string): string | null {
   const segment = pathname.split('/').filter(Boolean)[0];

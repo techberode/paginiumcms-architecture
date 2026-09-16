@@ -6,7 +6,7 @@ icon: material/clipboard-check
 
 # Project site planner
 
-> **Route:** Workspace → **Project planner** (`/platform/project-planner`)  
+> **Route:** Workspace → **Project planner** (`/project-planner`)  
 > **Permissions:** `project-plan:read` (view), `project-plan:manage` (create/edit items)  
 > **Not Origin Panel.** Origin is maintainer-gated; the planner ships in the Full CMS.
 

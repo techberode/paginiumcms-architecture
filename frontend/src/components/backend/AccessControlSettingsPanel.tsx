@@ -97,7 +97,7 @@ export const AccessControlSettingsPanel: React.FC<AccessControlSettingsPanelProp
     <div className="space-y-6">
       <AdminHintCard tone="info" title={t('settings.accessControl.superAdminTitle')}>
         {t('settings.accessControl.superAdminHint')}{' '}
-        <Link to="/security/roles" className="text-indigo-600 font-semibold underline">
+        <Link to="/roles" className="text-indigo-600 font-semibold underline">
           {t('settings.accessControl.rolesManagerLink')}
         </Link>
         .
