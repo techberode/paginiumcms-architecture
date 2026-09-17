@@ -86,9 +86,9 @@ export const SystemUpdateView: React.FC = () => {
   const handleCheck = async () => {
     setChecking(true);
     try {
-      const result = await checkSystemUpdate();
+      const { data: result, error } = await checkSystemUpdate();
       if (!result) {
-        toastError(t('platform.systemUpdate.toast.checkFailed'));
+        toastError(error ?? t('platform.systemUpdate.toast.checkFailed'));
         return;
       }
       setRemoteCheck(result);
@@ -251,6 +251,9 @@ export const SystemUpdateView: React.FC = () => {
                       {t('platform.systemUpdate.versionUnknown')}
                     </div>
                   )}
+                  {remoteCheck.remote.error ? (
+                    <p className="text-xs text-amber-800">{remoteCheck.remote.error}</p>
+                  ) : null}
                   {updateStatus === 'update_available' && remoteCheck.release_notes && (
                     <div>
                       <h3 className="text-sm font-medium text-slate-800 mb-2">

@@ -215,6 +215,17 @@ final class SystemUpdateControllerTest extends TestCase
         $this->assertSame(403, $response->getStatusCode());
     }
 
+    public function testGetCheckForbiddenForAdmin(): void
+    {
+        $this->loginAsAdminUser();
+
+        $response = $this->handleRequest(
+            $this->createJsonRequest('GET', '/api/admin/system/update/check')
+        );
+
+        $this->assertSame(403, $response->getStatusCode());
+    }
+
     public function testCheckReturnsUpdateEnvelopeForSuperAdmin(): void
     {
         $this->loginAsSuperAdminUser();
@@ -237,5 +248,23 @@ final class SystemUpdateControllerTest extends TestCase
         if (is_array($data['data']['remote']['compare'] ?? null)) {
             $this->assertArrayHasKey('commits', $data['data']['remote']['compare']);
         }
+    }
+
+    public function testGetCheckReturnsUpdateEnvelopeForSuperAdmin(): void
+    {
+        $this->loginAsSuperAdminUser();
+
+        $response = $this->handleRequest(
+            $this->createJsonRequest('GET', '/api/admin/system/update/check')
+        );
+        $data = $this->getJsonResponse($response);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertTrue($data['success']);
+        $this->assertArrayHasKey('update', $data['data']);
+        $this->assertContains(
+            $data['data']['update']['status'] ?? '',
+            ['current', 'update_available', 'unknown']
+        );
     }
 }

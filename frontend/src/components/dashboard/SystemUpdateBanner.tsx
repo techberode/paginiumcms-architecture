@@ -46,16 +46,16 @@ export const SystemUpdateBanner: React.FC = () => {
 
   const handleCheck = async () => {
     const result = await refreshCheck();
-    if (!result) {
-      toastError(t('platform.systemUpdate.toast.checkFailed'));
+    if (!result.data) {
+      toastError(result.error ?? t('platform.systemUpdate.toast.checkFailed'));
       return;
     }
-    if (result.update?.status === 'current') {
+    if (result.data.update?.status === 'current') {
       success(t('platform.systemUpdate.toast.checkCurrent'));
-    } else if (result.update?.status === 'update_available') {
+    } else if (result.data.update?.status === 'update_available') {
       success(
         t('platform.systemUpdate.toast.checkUpdateAvailable', {
-          version: result.update.latest_tag ?? result.remote.latest_release_tag ?? '?',
+          version: result.data.update.latest_tag ?? result.data.remote.latest_release_tag ?? '?',
         })
       );
     } else {

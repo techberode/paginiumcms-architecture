@@ -22,6 +22,7 @@ return function (App $app): void {
         $controller = $container->get(SystemUpdateController::class);
 
         $group->get('/status', [$controller, 'status']);
+        $group->get('/check', [$controller, 'check']);
         $group->post('/check', [$controller, 'check']);
         $group->post('/run', [$controller, 'run']);
     })

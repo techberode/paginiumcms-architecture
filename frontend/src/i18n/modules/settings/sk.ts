@@ -1737,7 +1737,7 @@ export const settingsSk: MessageTree = {
       },
       "webhookDeployEnabled": {
         "label": "Zapnúť GitHub release webhook deploy",
-        "help": "Po zapnutí POST /api/webhooks/github/release zaradí deploy pri publikovaní release (vyžaduje HMAC secret)."
+        "help": "Po zapnutí POST /api/webhooks/github/release zaradí deploy pri publikovaní release (vyžaduje HMAC secret). Keď je vypnuté, GitHub doručenia sa potvrdia a ignorujú — novú verziu zistí Skontrolovať remote."
       },
       "githubWebhookSecret": {
         "label": "GitHub webhook secret",
