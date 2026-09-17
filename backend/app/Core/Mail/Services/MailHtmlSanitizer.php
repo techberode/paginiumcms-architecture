@@ -19,7 +19,11 @@ final class MailHtmlSanitizer
         'track', 'template', 'noscript',
     ];
 
-    public static function document(string $html): string
+    /** 1×1 transparent GIF — safe placeholder when remote images are blocked. */
+    private const REMOTE_IMAGE_PLACEHOLDER =
+        'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+
+    public static function document(string $html, bool $blockRemoteImages = true): string
     {
         $html = trim($html);
         if ($html === '') {
@@ -41,7 +45,7 @@ final class MailHtmlSanitizer
         self::stripNodes($document);
         $root = $document->documentElement;
         if ($root instanceof DOMElement) {
-            self::sanitizeTree($root);
+            self::sanitizeTree($root, $blockRemoteImages);
         }
 
         $out = $document->saveHTML();
@@ -102,7 +106,7 @@ final class MailHtmlSanitizer
         }
     }
 
-    private static function sanitizeTree(DOMElement $element): void
+    private static function sanitizeTree(DOMElement $element, bool $blockRemoteImages): void
     {
         if (strtolower($element->tagName) === 'meta') {
             $http = strtolower($element->getAttribute('http-equiv'));
@@ -143,6 +147,10 @@ final class MailHtmlSanitizer
             $element->removeAttribute($name);
         }
 
+        if ($blockRemoteImages) {
+            self::blockRemoteResourcesOnElement($element);
+        }
+
         if (strtolower($element->tagName) === 'a') {
             $element->setAttribute('target', '_blank');
             $element->setAttribute('rel', 'noopener noreferrer');
@@ -155,8 +163,51 @@ final class MailHtmlSanitizer
             }
         }
         foreach ($children as $child) {
-            self::sanitizeTree($child);
+            self::sanitizeTree($child, $blockRemoteImages);
         }
+    }
+
+    private static function blockRemoteResourcesOnElement(DOMElement $element): void
+    {
+        $tag = strtolower($element->tagName);
+
+        if ($tag === 'img') {
+            $src = trim($element->getAttribute('src'));
+            if ($src !== '' && self::isRemoteHttpUri($src)) {
+                $element->setAttribute('data-pg-blocked-src', $src);
+                $element->setAttribute('src', self::REMOTE_IMAGE_PLACEHOLDER);
+            }
+        }
+
+        if ($tag === 'table' || $tag === 'td' || $tag === 'th' || $tag === 'body') {
+            $background = trim($element->getAttribute('background'));
+            if ($background !== '' && self::isRemoteHttpUri($background)) {
+                $element->removeAttribute('background');
+            }
+        }
+
+        $style = $element->getAttribute('style');
+        if ($style !== '') {
+            $element->setAttribute('style', self::blockRemoteUrlsInCss($style));
+        }
+    }
+
+    private static function blockRemoteUrlsInCss(string $css): string
+    {
+        $blocked = preg_replace_callback(
+            '/url\s*\(\s*([\'"]?)(https?:\/\/[^)\'"]+)\1\s*\)/i',
+            static fn (array $match): string => 'url(' . self::REMOTE_IMAGE_PLACEHOLDER . ')',
+            $css
+        );
+
+        return is_string($blocked) ? trim($blocked) : trim($css);
+    }
+
+    private static function isRemoteHttpUri(string $uri): bool
+    {
+        $value = trim(html_entity_decode($uri, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+
+        return preg_match('~^https?://~i', $value) === 1;
     }
 
     private static function sanitizeCss(string $css): string

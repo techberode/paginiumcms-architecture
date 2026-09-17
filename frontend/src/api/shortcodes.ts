@@ -11,7 +11,7 @@ export interface ShortcodeListItem {
 export interface ShortcodeDefinition {
   name: string;
   version: number;
-  attrs: Record<string, { type: string; options?: string[] }>;
+  attrs: Record<string, { type: string; options?: string[]; accept?: string }>;
   expand: string;
 }
 

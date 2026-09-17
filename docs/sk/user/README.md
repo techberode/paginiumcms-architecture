@@ -18,11 +18,12 @@ PaginiumCMS sa vyvíja smerom k **Hybrid Headless Content Engineu**, ale povinn�
 | 2 | [Prvé kroky](FIRST_STEPS.md) | nový administrátor alebo editor |
 | 3 | [Príručka administrátora](ADMIN_GUIDE.md) | každodenná správa CMS |
 | 4 | [Editor obsahu](CONTENT_EDITOR.md) | editor stránok a článkov |
-| 5 | [Oprávnenia a Path ACL](ACCESS_CONTROL.md) | SUPER_ADMIN a bezpečnostný správca |
-| 6 | [Firewall](FIREWALL.md) a [Logy](LOGGING.md) | prevádzka a incident response |
-| 7 | [Beta tester](BETA_TESTER.md) | funkčné a bezpečnostné testovanie |
+| 5 | [Galéria funkcií](GALLERY.md) | spoločný katalóg fotiek na stránke |
+| 6 | [Oprávnenia a Path ACL](ACCESS_CONTROL.md) | SUPER_ADMIN a bezpečnostný správca |
+| 7 | [Firewall](FIREWALL.md) a [Logy](LOGGING.md) | prevádzka a incident response |
+| 8 | [Beta tester](BETA_TESTER.md) | funkčné a bezpečnostné testovanie |
 
-Doplňujúce používateľské príručky pokrývajú [branding](BRANDING.md), [pluginy](PLUGINS.md), [témy](THEMES.md), [Code Editor](CODE_EDITOR.md), [Developer Mode](DEVELOPER_MODE.md) a [plánovač projektu](PROJECT_PLANNER.md).
+Doplňujúce používateľské príručky pokrývajú [branding](BRANDING.md), [pluginy](PLUGINS.md), [témy](THEMES.md), [galériu](GALLERY.md), [Code Editor](CODE_EDITOR.md), [Developer Mode](DEVELOPER_MODE.md) a [plánovač projektu](PROJECT_PLANNER.md).
 
 ## 2. Stavové označenia
 

@@ -29,6 +29,23 @@ Pages and articles share one list (`PagesManager` on `/pages` and `/articles`). 
 
 Switching between Markdown and WYSIWYG may be lossy for unsupported HTML or extension nodes. Create a version/backup and review the diff before switching a complex document.
 
+### 2.1 Page layout builder (pages only)
+
+Settings → Layout (`layout.builderMode`) changes how the **page** editor looks. All four modes store the same Markdown body; switching does not wipe content. Articles stay Markdown / WYSIWYG.
+
+| Mode | What you see |
+|------|----------------|
+| **Templates** | Named structure picker (single column, hero, landing…) |
+| **Shortcodes** | Insert panel for `[landing-hero]` and other tags |
+| **Block outline** | Palette + forms (Hero, Cards, Gallery…). Recommended for new landings. |
+| **Developer** | Markdown/Monaco plus the same live preview. ADMIN+ when the restriction is on. |
+
+**Workspace** (optional fullscreen): hide admin chrome while editing. The canvas fills the viewport; outline/editor and live preview scroll independently, toolbar stays on top. Default in Settings → Editor; each browser can toggle it.
+
+Photos for the Gallery block live in [Feature gallery](GALLERY.md), not in the page form. A tag on the block is a filter sticker, not a second catalog.
+
+Landing walkthrough: [LANDING_PAGE.md](LANDING_PAGE.md).
+
 ## 3. Slug and identity
 
 A slug should be stable, URL-safe, and unique within its type/locale. On create it is generated from the title; you can edit it then or later. Changing it may:
@@ -161,4 +178,5 @@ Saving to SSOT is a local success. It.70 Git publishing has its own state and ma
 - [Versioning](../architecture/VERSIONING.md)
 - [Media and storage](../architecture/STORAGE.md)
 - [Permissions](ACCESS_CONTROL.md)
+- [Feature gallery](GALLERY.md)
 - [Project site planner](PROJECT_PLANNER.md)

@@ -85,6 +85,8 @@ The concrete script is authoritative. Expected safe contract:
 
 Do not change `APP_KEY` after encrypted data exists. Losing the key can mean losing TOTP/settings secrets.
 
+**Fail-closed writes:** If `APP_KEY` is missing or invalid, the API **refuses to encrypt new secrets** (IMAP mailbox passwords, SMTP password fields, 2FA seeds, webhook secrets) instead of storing plaintext. Setup preflight warns with check `app_key_encryption`; Origin Panel probe `security.at_rest_encryption` reports the same. See [ISS-170](../ISSUES.md#iss-170).
+
 ## 4.1 Browser setup wizard (alternative to CLI bootstrap)
 
 When **no user accounts exist**, you can skip `bootstrap-admin.php` output and finish onboarding in the browser:

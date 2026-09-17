@@ -100,7 +100,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
             type="button"
             onClick={onOpenCommandPalette}
             title={t('platform.commandPalette.openShortcut')}
-            className="hidden md:flex items-center gap-2 min-w-[12rem] lg:min-w-[16rem] px-3 py-2 rounded-lg border border-admin-border bg-admin-canvas text-admin-muted hover:text-admin-text text-xs font-medium transition-colors"
+            className="admin-topbar-control hidden md:flex items-center gap-2 min-w-[12rem] lg:min-w-[16rem] px-3 py-2 rounded-lg text-xs font-medium transition-colors"
           >
             <Search className="w-4 h-4 shrink-0 text-admin-primary" />
             <span className="truncate flex-1 text-left">{t('platform.commandPalette.headerPlaceholder')}</span>
@@ -122,7 +122,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
           onClick={() => void purge('content')}
           disabled={isPurging}
           title={t('admin.header.purgeCacheTitle')}
-          className="flex items-center gap-2 bg-admin-canvas hover:bg-admin-sidebar-hover text-admin-text px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer disabled:opacity-60 border border-admin-border"
+          className="admin-topbar-control flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer"
         >
           <Database className={`w-4 h-4 text-admin-primary ${isPurging ? 'animate-pulse' : ''}`} />
           <span className="hidden sm:inline">

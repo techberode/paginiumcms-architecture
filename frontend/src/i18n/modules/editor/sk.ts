@@ -13,6 +13,12 @@ export const editorSk: MessageTree = {
     previewTitle: 'Náhľad celej stránky (header + obsah + footer)',
     previewWebTitle: 'Náhľad na webe',
     close: 'Zavrieť',
+    workspace: 'Workspace',
+    workspaceToggleHint: 'Celoobrazovkový editor bez admin lišty — vhodné na menší monitor',
+    workspaceExit: 'Opustiť workspace',
+    workspaceDetails: 'Meta',
+    workspaceDetailsHint: 'SEO, menu a šablóna ostávajú v bežnom editore. Opustite workspace, ak ich potrebujete.',
+    workspaceHint: 'Escape alebo Opustiť workspace vráti admin lištu.',
     title: 'Názov',
     titlePlaceholder: 'Titulok stránky alebo článku',
     slug: 'Slug',
@@ -23,6 +29,16 @@ export const editorSk: MessageTree = {
     layoutTemplate: 'Layout šablóna stránky',
     developerLockedHint:
       'Site layout builder je Developer, ale vaša rola nemôže použiť Monaco režim, kým je zapnuté obmedzenie ADMIN.',
+    builderHelp: {
+      templates:
+        'Režim šablón: vyber pomenovanú štruktúru stránky. Telo ostane Markdown. Zmena: Nastavenia → Layout.',
+      shortcodes:
+        'Režim shortcodes: do Markdownu vkladáš tagy ako [landing-hero]. Uložené telo je rovnaké ako v Outline.',
+      outline:
+        'Outline: bloky z palety a polia vo formulári. Stránka sa ukladá ako Markdown. Fotky galérie berie z Galérie funkcií, nie z tohto formulára.',
+      developer:
+        'Developer: Markdown zdroj plus živý náhľad. Ten istý dokument ako Outline. Nové typy blokov sú v Shortcodes admin.',
+    },
     description: 'Popis',
     descriptionPlaceholder: 'Krátky popis pre vyhľadávače a sociálne siete',
     routingTitle: 'Kam smeruje táto položka',
@@ -277,6 +293,7 @@ export const editorSk: MessageTree = {
   mediaPicker: {
     defaultTitle: 'Vložiť z knižnice médií',
     empty: 'V knižnici médií nie sú žiadne obrázky.',
+    emptyVideo: 'V knižnici médií nie sú žiadne videá.',
   },
   tags: {
     title: 'Tagy článku',
@@ -334,6 +351,7 @@ export const editorSk: MessageTree = {
   outline: {
     title: 'Bloky stránky',
     description: 'Pridajte sekcie z palety a vyplňte polia. Stránka sa stále ukladá ako Markdown.',
+    livePreviewHint: 'Vpravo je živý náhľad (skripty vypnuté). Verejná stránka používa ten istý expander.',
     empty: 'Zatiaľ žiadne bloky. Pridajte hero, text alebo karty z palety.',
     add: 'Pridať',
     remove: 'Odstrániť',
@@ -346,7 +364,34 @@ export const editorSk: MessageTree = {
     noAttrs: 'Tento blok nemá ďalšie polia.',
     videoSrc: 'Súbor videa',
     videoPoster: 'Náhľadový obrázok',
+    pickMedia: 'Vybrať z knižnice',
+    clearMedia: 'Odstrániť',
+    fields: {
+      image: 'Hero obrázok',
+      poster: 'Poster videa',
+      src: 'Video na pozadí',
+      srcmobile: 'Video pre mobil',
+      title: 'Titulok',
+      tag: 'Značka',
+      subtitle: 'Podtitulok',
+      cta: 'Text tlačidla',
+      href: 'Odkaz tlačidla',
+    },
+    fieldHelp: {
+      tag: 'Nálepka z Galérie funkcií (web, mail). Prázdne = všetky publikované fotky. Nie je to slug stránky.',
+      title: 'Nadpis nad mriežkou pri bloku Galéria.',
+    },
     raw: 'Nerozpoznaný blok',
+    reorderHint: 'Presuňte sekcie ťahaním za úchyt alebo šípkami. Poradie sa zapíše do Markdownu.',
+    dragHandle: 'Presunúť blok',
+    moveUp: 'Posunúť nahor',
+    moveDown: 'Posunúť nadol',
+    starter: {
+      portfolio: 'Portfolio starter',
+      portfolioHint: 'Vloží hero, karty a výzvu k akcii. Stále ide o Markdown shortcody.',
+      landing: 'Landing starter',
+      landingHint: 'Vloží showcase hero, karty a výzvu k akcii.',
+    },
     palette: {
       prose: 'Text',
       video: 'Video',
@@ -355,6 +400,7 @@ export const editorSk: MessageTree = {
       'landing-hero': 'Hero',
       'showcase-hero': 'Showcase hero',
       'section-head': 'Nadpis sekcie',
+      'feature-gallery': 'Galéria',
       'feature-grid': 'Karty',
       'cta-banner': 'Výzva k akcii',
       testimonial: 'Citát',

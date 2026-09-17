@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Tests\Core\Security\Services;
 
 use PaginiumCMS\Core\Security\Services\EncryptionService;
+use PaginiumCMS\Core\Security\Services\EncryptionUnavailableException;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -25,20 +26,20 @@ final class EncryptionServiceTest extends TestCase
         $this->assertTrue($this->service()->isEnabled());
     }
 
-    public function testDisabledWithEmptyKey(): void
+    public function testDisabledWithEmptyKeyThrowsOnEncrypt(): void
     {
         $e = new EncryptionService(null);
         $this->assertFalse($e->isEnabled());
-        // Vypnuté = plaintext pass-through (fail-safe rollout).
-        $this->assertSame('secret', $e->encrypt('secret'));
+        $this->expectException(EncryptionUnavailableException::class);
+        $e->encrypt('secret');
     }
 
-    public function testDisabledWithPlaceholderKey(): void
+    public function testDisabledWithPlaceholderKeyThrowsOnEncrypt(): void
     {
-        // Predvídateľný placeholder (jeden opakovaný znak) nesmie aktivovať šifrovanie.
         $e = new EncryptionService('base64:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
         $this->assertFalse($e->isEnabled());
-        $this->assertSame('secret', $e->encrypt('secret'));
+        $this->expectException(EncryptionUnavailableException::class);
+        $e->encrypt('secret');
     }
 
     public function testRoundTrip(): void

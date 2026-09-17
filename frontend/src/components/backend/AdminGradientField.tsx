@@ -85,7 +85,7 @@ export const AdminGradientField: React.FC<AdminGradientFieldProps> = ({
                 className={`relative h-14 rounded-lg border-2 flex flex-col items-center justify-center gap-1 text-[10px] font-semibold transition ${
                   isOn
                     ? 'border-admin-primary ring-2 ring-admin-primary/30 text-admin-primary'
-                    : 'border-admin-border text-admin-muted hover:border-admin-primary hover:text-admin-text hover:bg-admin-sidebar-hover'
+                    : 'border-admin-border text-admin-muted hover:border-admin-primary hover:text-admin-text'
                 }`}
                 style={{
                   backgroundImage: `linear-gradient(${entry.angle}, #2c7be5 0%, #0b1727 100%)`,

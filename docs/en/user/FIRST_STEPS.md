@@ -81,7 +81,7 @@ Never include secrets in an issue report. Changing secrets may require service r
 
 1. Open **Pages** and create a new item.
 2. Enter a title and safe slug.
-3. Choose Markdown or WYSIWYG mode.
+3. For a marketing/landing page, set Settings → Layout to **Block outline**, then add Hero / Cards / Gallery from the palette. Otherwise choose Markdown or WYSIWYG.
 4. Add content, meta description, and optionally an OG image.
 5. Save as `draft` first.
 6. Review preview and links.

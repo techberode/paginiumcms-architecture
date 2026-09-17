@@ -66,8 +66,14 @@ final class ShortcodeDefinitionPolicy
                     continue;
                 }
                 $type = (string) ($schema['type'] ?? '');
-                if (!in_array($type, ['string', 'enum', 'int', 'bool'], true)) {
-                    $errors['schema'][] = 'Attribute type must be string|enum|int|bool: ' . $key;
+                if (!in_array($type, ['string', 'enum', 'int', 'bool', 'media'], true)) {
+                    $errors['schema'][] = 'Attribute type must be string|enum|int|bool|media: ' . $key;
+                }
+                if ($type === 'media') {
+                    $accept = (string) ($schema['accept'] ?? 'image');
+                    if (!in_array($accept, ['image', 'video'], true)) {
+                        $errors['schema'][] = 'Media attribute accept must be image|video: ' . $key;
+                    }
                 }
                 if ($type === 'enum') {
                     $options = $schema['options'] ?? null;

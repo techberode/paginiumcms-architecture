@@ -106,11 +106,17 @@ final class ContentSecuritySanitizer
         }
 
         if ($tags === []) {
-            return [
+            $tags = [
                 'p', 'br', 'strong', 'em', 'ul', 'ol', 'li', 'a', 'img', 'video', 'source', 'blockquote',
                 'code', 'pre', 'h1', 'h2', 'h3', 'h4', 'table', 'thead', 'tbody', 'tr', 'th', 'td',
                 'div', 'article', 'section', 'aside', 'span', 'footer', 'cite', 'iframe',
             ];
+        }
+
+        foreach (['video', 'source'] as $mediaTag) {
+            if (!in_array($mediaTag, $tags, true)) {
+                $tags[] = $mediaTag;
+            }
         }
 
         return $tags;

@@ -73,7 +73,7 @@ final class SettingsSchema
             'layout' => [
                 'label' => 'Rozloženie stránky',
                 'fields' => [
-                    ['key' => 'builderMode', 'type' => 'enum', 'label' => 'Predvolený layout builder', 'default' => 'templates', 'options' => ['templates', 'shortcodes', 'outline', 'developer'], 'rules' => ['required', 'in:templates,shortcodes,outline,developer'], 'help' => 'Ktorý editor layoutu sa použije v admin chrome. Shortcodes/outline/developer sa aktivujú v ďalších slice.'],
+                    ['key' => 'builderMode', 'type' => 'enum', 'label' => 'Predvolený layout builder', 'default' => 'templates', 'options' => ['templates', 'shortcodes', 'outline', 'developer'], 'rules' => ['required', 'in:templates,shortcodes,outline,developer'], 'help' => 'Ako vyzerá editor stránky: šablóny, shortcody, outline blokov (odporúčané pre landing) alebo developer (Markdown + živý náhľad). Všetky režimy ukladajú to isté Markdown telo. Platí len pre stránky, nie články.'],
                     ['key' => 'defaultTemplate', 'type' => 'enum', 'label' => 'Predvolená layout šablóna', 'default' => 'hero-content', 'options' => ['single', 'hero-content', 'two-column', 'landing', 'blog-article'], 'rules' => ['required', 'in:single,hero-content,two-column,landing,blog-article'], 'help' => 'Štruktúra pre nové stránky a LayoutPreviewFrame (nie chrome template home/contact).'],
                     ['key' => 'developerRequiresAdmin', 'type' => 'bool', 'label' => 'Developer režim len pre ADMIN+', 'default' => true, 'rules' => ['bool'], 'help' => 'Ak je zapnuté, builderMode=developer môžu vybrať len ADMIN / SUPER_ADMIN.'],
                 ],
@@ -132,6 +132,7 @@ final class SettingsSchema
                     ['key' => 'defaultProfilePage', 'type' => 'enum', 'label' => 'Predvolený profil (stránky)', 'default' => 'company', 'options' => ['company', 'blog', 'minimal', 'developer'], 'rules' => ['required', 'in:company,blog,minimal,developer'], 'help' => 'Modulárny toolbar pre stránky (Iterácia 54).'],
                     ['key' => 'defaultProfileArticle', 'type' => 'enum', 'label' => 'Predvolený profil (články)', 'default' => 'blog', 'options' => ['company', 'blog', 'minimal', 'developer'], 'rules' => ['required', 'in:company,blog,minimal,developer'], 'help' => 'Modulárny toolbar pre články (Iterácia 54).'],
                     ['key' => 'spellcheck', 'type' => 'bool', 'label' => 'Kontrola pravopisu', 'default' => true, 'rules' => ['bool'], 'help' => 'Zapnuté = prehliadač podčiarkne pravopisné chyby v editore. Vypnuté = bez kontroly.'],
+                    ['key' => 'fullscreenWorkspace', 'type' => 'bool', 'label' => 'Celoobrazovkový workspace editora', 'default' => false, 'rules' => ['bool'], 'help' => 'Predvolené pre nových návštevníkov. Operátor to vie zapnúť/vypnúť v editore (localStorage).'],
                     ['key' => 'tabSize', 'type' => 'int', 'label' => 'Veľkosť tabulátora', 'default' => 2, 'rules' => ['required', 'int', 'min:2', 'max:8']],
                     ['key' => 'markdownSurface', 'type' => 'enum', 'label' => 'Markdown surface (It.90d)', 'default' => 'native', 'options' => ['native', 'codemirror6'], 'rules' => ['required', 'in:native,codemirror6'], 'help' => 'native = textarea; codemirror6 = syntax highlight + line numbers (same SSOT).'],
                     ['key' => 'customComponentsEnabled', 'type' => 'bool', 'label' => 'Povoliť custom komponenty editora', 'default' => false, 'rules' => ['bool'], 'help' => 'Pluginy môžu registrovať vlastné bloky pre Markdown a WYSIWYG.'],
@@ -194,6 +195,8 @@ final class SettingsSchema
                     ['key' => 'port', 'type' => 'int', 'label' => 'IMAP port', 'default' => 993, 'rules' => ['int', 'min:1', 'max:65535']],
                     ['key' => 'encryption', 'type' => 'enum', 'label' => 'Šifrovanie', 'default' => 'ssl', 'options' => ['none', 'tls', 'ssl'], 'rules' => ['in:none,tls,ssl']],
                     ['key' => 'spamFolder', 'type' => 'string', 'label' => 'Priečinok spamu', 'default' => 'Junk', 'rules' => ['string', 'max:40'], 'help' => 'Názov serverového priečinka Junk/Spam. Správy sa tam presúvajú, neukladajú sa do data/.'],
+                    ['key' => 'listLimit', 'type' => 'int', 'label' => 'Počet správ zo servera', 'default' => 40, 'rules' => ['int', 'min:10', 'max:500'], 'help' => 'Koľko najnovších správ načíta IMAP klient v každom priečinku (10–500). Stránkovanie v UI je len v rámci tohto okna.'],
+                    ['key' => 'appendSentOnSend', 'type' => 'bool', 'label' => 'Append copy to Sent (IMAP)', 'default' => true, 'rules' => ['bool'], 'help' => 'When enabled, outbound mail is appended to the server Sent folder after SMTP (slower). When disabled, only SMTP runs and a local copy is kept if needed.'],
                 ],
             ],
             'notifications' => [
@@ -475,7 +478,7 @@ final class SettingsSchema
                     ['key' => 'stripExternalEntities', 'type' => 'bool', 'label' => 'Blokovať externé XML entity', 'default' => true, 'rules' => ['bool'], 'help' => 'XXE ochrana pri parsovaní XML/SVG obsahu.'],
                     ['key' => 'allowSvgInline', 'type' => 'bool', 'label' => 'Povoliť inline SVG v obsahu', 'default' => false, 'rules' => ['bool'], 'help' => 'SVG môže obsahovať skript — odporúčame vypnuté.'],
                     ['key' => 'allowScriptTags', 'type' => 'bool', 'label' => 'Povoliť <script> v obsahu', 'default' => false, 'rules' => ['bool'], 'help' => 'Len pre dôveryhodných editorov; default off.'],
-                    ['key' => 'allowedHtmlTags', 'type' => 'text', 'label' => 'Povolené HTML tagy', 'default' => 'p,h1,h2,h3,h4,ul,ol,li,a,strong,em,blockquote,code,pre,img,table,thead,tbody,tr,th,td,div,article,section,aside,span', 'rules' => ['required', 'string', 'max:2000'], 'help' => 'Čiarkou oddelený whitelist tagov. Layout shortcodes vyžadujú div/article/section/aside/span.'],
+                    ['key' => 'allowedHtmlTags', 'type' => 'text', 'label' => 'Povolené HTML tagy', 'default' => 'p,h1,h2,h3,h4,ul,ol,li,a,strong,em,blockquote,code,pre,img,video,source,table,thead,tbody,tr,th,td,div,article,section,aside,span', 'rules' => ['required', 'string', 'max:2000'], 'help' => 'Čiarkou oddelený whitelist tagov. Layout shortcodes vyžadujú div/article/section/aside/span. Video/source sú vždy dovolené pre DAM prehrávač (It.79 / 58f-e).'],
                     ['key' => 'trustedHtmlAllowedTags', 'type' => 'text', 'label' => 'Trusted HTML — povolené tagy (It.91)', 'default' => 'div,span,p,a,img,table,thead,tbody,tr,th,td,ul,ol,li,strong,em,blockquote,code,pre,h1,h2,h3,h4,br', 'rules' => ['string', 'max:2000'], 'help' => 'HTMLPurifier whitelist pre :::html-safe. Nikdy nepridávajte script, iframe, object, embed.'],
                 ],
             ],

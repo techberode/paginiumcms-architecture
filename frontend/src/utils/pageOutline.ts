@@ -64,7 +64,7 @@ const SHORTCODE_NAME = /^[a-z][a-z0-9_-]{0,39}$/;
 const CALLOUT_TYPES = ['note', 'tip', 'warning'] as const;
 
 const SELF_CLOSING_RE = /\[([a-z][a-z0-9_-]*)\b([^\]]*)\/\]/s;
-const VIDEO_MULTILINE_RE = /:::video\s*\n\s*src:\s*(\S+)(?:\n\s*poster:\s*(\S+))?\s*\n\s*:::/;
+const VIDEO_MULTILINE_RE = /:::video\s*\n\s*src:\s*(\S*)(?:\n\s*poster:\s*(\S*))?\s*\n\s*:::/;
 const VIDEO_ONELINE_RE = /:::video\s+src="([^"]+)"(?:\s+poster="([^"]+)")?\s*:::/;
 const CALLOUT_RE = /:::(note|tip|warning)\s*\n([\s\S]*?)\n\s*:::/;
 

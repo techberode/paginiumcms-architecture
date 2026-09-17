@@ -55,6 +55,8 @@ export interface AdminInboxRowProps {
   actions?: React.ReactNode;
   leading?: React.ReactNode;
   dense?: boolean;
+  /** When true, row click navigates to a detail view (no inline expand / chevron). */
+  navigationMode?: boolean;
 }
 
 export const AdminInboxRow: React.FC<AdminInboxRowProps> = ({
@@ -70,6 +72,7 @@ export const AdminInboxRow: React.FC<AdminInboxRowProps> = ({
   actions,
   leading,
   dense = false,
+  navigationMode = false,
 }) => {
   const { t } = useI18n();
   const stripe =
@@ -98,18 +101,20 @@ export const AdminInboxRow: React.FC<AdminInboxRowProps> = ({
           type="button"
           className="flex items-start gap-2 flex-1 min-w-0 text-left"
           onClick={() => onToggleExpand(id)}
-          aria-expanded={expanded}
+          aria-expanded={navigationMode ? undefined : expanded}
         >
-          <span className="mt-1 shrink-0 text-admin-muted">
-            {expanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-          </span>
+          {navigationMode ? null : (
+            <span className="mt-1 shrink-0 text-admin-muted">
+              {expanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+            </span>
+          )}
           <div className="flex-1 min-w-0">{summary}</div>
         </button>
 
         {actions ? <div className="hidden sm:flex items-center shrink-0">{actions}</div> : null}
       </div>
 
-      {expanded ? (
+      {!navigationMode && expanded ? (
         <div className="px-4 pb-4 pl-12 sm:pl-14 space-y-3 border-t border-admin-border bg-admin-canvas/50">
           {detail}
           {actions ? <div className="flex flex-wrap gap-2 sm:hidden">{actions}</div> : null}

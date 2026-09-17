@@ -18,6 +18,10 @@ export function buildShortcodeSampleMarkup(name: string): string {
     return `[${name} title="Preview headline" subtitle="Sample value proposition for layout preview." cta="Learn more" href="/contact"/]`;
   }
 
+  if (name === 'feature-gallery') {
+    return `[${name} title="Selected work" tag=""/]`;
+  }
+
   if (name === 'cta-banner') {
     return `[${name} title="Ready to start?" subtitle="Join teams shipping content with PaginiumCMS." cta="Get started" href="/contact" tone="primary"/]`;
   }

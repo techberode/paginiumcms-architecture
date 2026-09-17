@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\Notification\Adapters;
 
+use PaginiumCMS\Core\Mail\Services\MailRecipientParser;
 use PaginiumCMS\Core\Notification\Services\SmtpTransport;
 
 class EmailAdapter implements AdapterInterface
@@ -27,7 +28,12 @@ class EmailAdapter implements AdapterInterface
 
         if ($this->transport !== null) {
             try {
-                return $this->transport->send($this->from, $this->fromName, $to, $subject, (string) $html);
+                $recipients = MailRecipientParser::parse($to);
+                if ($recipients === []) {
+                    return false;
+                }
+
+                return $this->transport->send($this->from, $this->fromName, $recipients, $subject, (string) $html);
             } catch (\Throwable) {
                 // fall through to mail()
             }

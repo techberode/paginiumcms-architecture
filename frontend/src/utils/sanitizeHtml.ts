@@ -11,6 +11,7 @@ const ALLOWED_ATTR = [
   'colspan', 'rowspan', 'scope', 'loading', 'decoding', 'cite', 'lang', 'dir', 'role',
   'start', 'type', 'reversed', 'value', 'hreflang', 'controls', 'poster', 'preload', 'playsinline',
   'allow', 'allowfullscreen', 'referrerpolicy', 'sandbox', 'frameborder',
+  'data-tag', 'data-title',
 ];
 
 /**

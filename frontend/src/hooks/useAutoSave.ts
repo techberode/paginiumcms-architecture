@@ -12,6 +12,9 @@ import { useSettings } from './useSettings';
 /** Predvolený interval auto-save (s) – ak nastavenia ešte nie sú načítané. */
 const DEFAULT_AUTOSAVE_INTERVAL_SEC = 60;
 
+/** Po poslednej úprave textu (debounce pred periodickým tickom). */
+const AUTOSAVE_DEBOUNCE_MS = 2000;
+
 export type AutoSaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 type PersistMode = 'ui' | 'silent-leave';
@@ -141,6 +144,24 @@ export function useAutoSave({
     }
     return JSON.stringify(data) !== baselineSerialized;
   }, [baselineSerialized, data, enabled, slug]);
+
+  // === Blok: Uloženie po poslednej úprave (debounce) ===
+  useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
+    const serialized = JSON.stringify(data);
+    if (!shouldPersist(data, serialized)) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      void attemptPersist('ui');
+    }, AUTOSAVE_DEBOUNCE_MS);
+
+    return () => clearTimeout(timer);
+  }, [attemptPersist, data, enabled, shouldPersist]);
 
   // === Blok: Periodická slučka ===
   useEffect(() => {

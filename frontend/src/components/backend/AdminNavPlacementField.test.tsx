@@ -16,7 +16,14 @@ describe('AdminNavPlacementField', () => {
     );
     expect(screen.getByText(/aktívne|selected/i)).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('radio', { name: /horné|top dropdown/i }));
+    const selected = screen.getByRole('radio', { name: /bočné menu|side menu/i });
+    const idle = screen.getByRole('radio', { name: /horné|top dropdown/i });
+    expect(selected.className).toContain('admin-choice-on');
+    expect(selected.className).not.toContain('admin-sidebar-active');
+    expect(idle.className).toContain('admin-choice');
+    expect(idle.className).not.toContain('admin-sidebar-hover');
+
+    fireEvent.click(idle);
     expect(onChange).toHaveBeenCalledWith('top');
   });
 });

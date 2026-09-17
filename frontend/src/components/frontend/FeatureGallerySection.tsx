@@ -10,19 +10,25 @@ import { resolveGallerySlideDeepLink } from '../../utils/gallerySlideDeepLink';
 import { PUBLIC_SPINNER } from '../../theme/publicUiClasses';
 
 export interface FeatureGallerySectionProps {
-  variant?: 'embedded' | 'page' | 'preview';
+  variant?: 'embedded' | 'page' | 'preview' | 'block';
   /** Override items (admin live preview). */
   previewItems?: GalleryItem[];
+  /** Pin filter to this It.65 featureTag (outline `[feature-gallery tag="…"]`). */
+  featureTag?: string;
+  /** Optional heading for in-body blocks. */
+  heading?: string;
 }
 
 /**
  * Public feature gallery section.
- * It.58a entry point: a future layout block `featureGallery` should render this
- * component (same `GET /api/gallery/public` — no duplicate storage).
+ * It.58f-f outline block `feature-gallery` hydrates this component
+ * (same `GET /api/gallery/public` — no duplicate storage).
  */
 export const FeatureGallerySection: React.FC<FeatureGallerySectionProps> = ({
   variant = 'embedded',
   previewItems,
+  featureTag,
+  heading,
 }) => {
   const { t } = useI18n();
   const { settings } = useSettingsContext();
@@ -33,6 +39,7 @@ export const FeatureGallerySection: React.FC<FeatureGallerySectionProps> = ({
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [deepLinkModalIndex, setDeepLinkModalIndex] = useState<number | null>(null);
   const [deepLinkReady, setDeepLinkReady] = useState(variant === 'preview');
+  const pinnedTag = featureTag?.trim() || null;
 
   useEffect(() => {
     if (previewItems !== undefined) {
@@ -62,12 +69,18 @@ export const FeatureGallerySection: React.FC<FeatureGallerySectionProps> = ({
     if (variant === 'preview' || loading) {
       return;
     }
+    if (pinnedTag) {
+      setActiveTag(pinnedTag);
+      setDeepLinkModalIndex(null);
+      setDeepLinkReady(true);
+      return;
+    }
     const slide = searchParams.get('slide');
     const resolved = resolveGallerySlideDeepLink(items, slide);
     setActiveTag(resolved.activeTag);
     setDeepLinkModalIndex(resolved.modalIndex);
     setDeepLinkReady(true);
-  }, [items, loading, searchParams, variant]);
+  }, [items, loading, pinnedTag, searchParams, variant]);
 
   const tags = useMemo(() => {
     const set = new Set<string>();
@@ -81,13 +94,17 @@ export const FeatureGallerySection: React.FC<FeatureGallerySectionProps> = ({
   }, [items]);
 
   const filteredItems = useMemo(() => {
-    if (!activeTag) {
+    const pin = pinnedTag ?? activeTag;
+    if (!pin) {
       return items;
     }
-    return items.filter((item) => item.featureTag === activeTag);
-  }, [activeTag, items]);
+    return items.filter((item) => item.featureTag === pin);
+  }, [activeTag, items, pinnedTag]);
 
   const handleTagChange = (tag: string | null) => {
+    if (pinnedTag) {
+      return;
+    }
     setActiveTag(tag);
     setDeepLinkModalIndex(null);
     if (variant === 'preview') {
@@ -102,7 +119,7 @@ export const FeatureGallerySection: React.FC<FeatureGallerySectionProps> = ({
     setSearchParams(next, { replace: true });
   };
 
-  if (variant !== 'preview' && !gallerySettings?.enabled) {
+  if (variant !== 'preview' && variant !== 'block' && !gallerySettings?.enabled) {
     return null;
   }
 
@@ -120,6 +137,7 @@ export const FeatureGallerySection: React.FC<FeatureGallerySectionProps> = ({
   const autoplayEnabled = gallerySettings?.autoplayEnabled !== false;
   const autoplayIntervalMs = gallerySettings?.autoplayIntervalMs ?? 6000;
   const modalCaptionStyle = gallerySettings?.modalCaptionStyle ?? 'below';
+  const headingText = heading?.trim() ?? '';
 
   const body =
     layout === 'slider' || layout === 'hero-strip' ? (
@@ -142,30 +160,35 @@ export const FeatureGallerySection: React.FC<FeatureGallerySectionProps> = ({
       />
     );
 
+  const sectionClass =
+    variant === 'page'
+      ? 'py-10'
+      : variant === 'preview'
+        ? 'py-2'
+        : variant === 'block'
+          ? 'py-8'
+          : 'py-12 border-t border-theme-border';
+
   return (
-    <section
-      className={
-        variant === 'page'
-          ? 'py-10'
-          : variant === 'preview'
-            ? 'py-2'
-            : 'py-12 border-t border-theme-border'
-      }
-    >
+    <section className={sectionClass}>
       <div className={`mx-auto px-4 ${variant === 'preview' ? 'max-w-full' : 'container max-w-6xl'}`}>
-        {variant !== 'preview' ? (
+        {variant === 'preview' ? (
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            {t('gallery.preview.title')}
+          </p>
+        ) : headingText !== '' ? (
+          <div className="mb-8 text-center max-w-2xl mx-auto">
+            <h2 className="text-2xl sm:text-3xl font-black text-theme-text">{headingText}</h2>
+          </div>
+        ) : variant !== 'block' ? (
           <div className="mb-8 text-center max-w-2xl mx-auto">
             <h2 className="text-2xl sm:text-3xl font-black text-theme-text">
               {variant === 'page' ? t('public.gallery.pageTitle') : t('public.gallery.sectionTitle')}
             </h2>
             <p className="mt-2 text-theme-text-muted">{t('public.gallery.sectionSubtitle')}</p>
           </div>
-        ) : (
-          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-            {t('gallery.preview.title')}
-          </p>
-        )}
-        {showFeatureTags ? (
+        ) : null}
+        {showFeatureTags && !pinnedTag ? (
           <FeatureGalleryTagFilter tags={tags} activeTag={activeTag} onChange={handleTagChange} />
         ) : null}
         {body}

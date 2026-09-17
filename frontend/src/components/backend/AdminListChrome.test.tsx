@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { fireEvent, screen } from '@testing-library/react';
 import { renderWithProviders } from '../../test/renderWithProviders';
 import { AdminInboxList, AdminInboxListHeader, AdminInboxRow } from './AdminInboxList';
 import { AdminListToolbar } from './AdminListToolbar';
@@ -28,5 +29,14 @@ describe('admin list chrome (It.93c)', () => {
     expect(container.querySelector('.bg-admin-card')).toBeTruthy();
     expect(container.querySelector('.admin-row-hover')).toBeTruthy();
     expect(container.querySelector('.hover\\:bg-admin-sidebar-active')).toBeNull();
+  });
+
+  it('clears search from the toolbar button', () => {
+    let query = 'draft';
+    renderWithProviders(
+      <AdminListToolbar search={query} onSearchChange={(value) => { query = value; }} />
+    );
+    fireEvent.click(screen.getByTestId('list-search-clear'));
+    expect(query).toBe('');
   });
 });

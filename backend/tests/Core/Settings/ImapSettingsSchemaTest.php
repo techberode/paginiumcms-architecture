@@ -18,5 +18,7 @@ final class ImapSettingsSchemaTest extends TestCase
         self::assertSame(993, $defaults['port'] ?? null);
         self::assertSame('ssl', $defaults['encryption'] ?? null);
         self::assertSame('Junk', $defaults['spamFolder'] ?? null);
+        self::assertSame(40, $defaults['listLimit'] ?? null);
+        self::assertTrue((bool) ($defaults['appendSentOnSend'] ?? false));
     }
 }

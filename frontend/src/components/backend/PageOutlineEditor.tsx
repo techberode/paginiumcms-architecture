@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { LayoutList, Plus, Trash2, Type, Video } from 'lucide-react';
+import { ChevronDown, ChevronUp, GripVertical, Image as ImageIcon, LayoutList, Plus, Sparkles, Trash2, Type, Video } from 'lucide-react';
 import { shortcodesApi, type ShortcodeDefinition } from '../../api/shortcodes';
+import { MediaPickerModal } from './MediaPickerModal';
 import { useI18n } from '../../context/I18nContext';
 import {
   outlineFingerprint,
@@ -11,11 +12,14 @@ import {
   type ShortcodeOutlineBlock,
 } from '../../utils/pageOutline';
 import {
+  createOutlineStarterPack,
   createPaletteCallout,
   createPaletteMarkdown,
   createPaletteShortcode,
   createPaletteVideo,
+  moveOutlineBlock,
   OUTLINE_PALETTE_SHORTCODES,
+  type OutlineStarterPackId,
 } from '../../utils/outlinePalette';
 
 interface PageOutlineEditorProps {
@@ -38,6 +42,7 @@ export const PageOutlineEditor: React.FC<PageOutlineEditorProps> = ({
   const [catalogNames, setCatalogNames] = useState<string[]>([]);
   const [loadError, setLoadError] = useState(false);
   const [customName, setCustomName] = useState('');
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
   const blocksRef = useRef(blocks);
   blocksRef.current = blocks;
 
@@ -107,8 +112,29 @@ export const PageOutlineEditor: React.FC<PageOutlineEditorProps> = ({
     if (disabled) {
       return;
     }
-    commit([...blocks, block]);
+    commit([...blocksRef.current, block]);
     setSelectedId(block.id);
+  };
+
+  const applyStarter = (pack: OutlineStarterPackId): void => {
+    if (disabled) {
+      return;
+    }
+    const added = createOutlineStarterPack(pack);
+    commit([...blocksRef.current, ...added]);
+    setSelectedId(added[0]?.id ?? null);
+  };
+
+  const reorder = (fromIndex: number, toIndex: number): void => {
+    if (disabled) {
+      return;
+    }
+    const current = blocksRef.current;
+    const next = moveOutlineBlock(current, fromIndex, toIndex);
+    if (next === current) {
+      return;
+    }
+    commit(next);
   };
 
   const updateBlock = (id: string, next: OutlineBlock): void => {
@@ -132,20 +158,40 @@ export const PageOutlineEditor: React.FC<PageOutlineEditorProps> = ({
           {t('editor.outline.title')}
         </div>
         <p className="text-xs text-indigo-800/80 dark:text-indigo-200/80">{t('editor.outline.description')}</p>
+        <p className="text-xs text-indigo-800/70 dark:text-indigo-200/70">{t('editor.outline.livePreviewHint')}</p>
+        <p className="text-xs text-indigo-800/70 dark:text-indigo-200/70">{t('editor.outline.reorderHint')}</p>
         {loadError ? (
           <p className="text-xs text-amber-700 dark:text-amber-400">{t('editor.outline.loadFailed')}</p>
         ) : null}
+        <div className="flex flex-wrap gap-2" data-testid="page-outline-starters">
+          <PaletteButton
+            disabled={disabled}
+            label={t('editor.outline.starter.portfolio')}
+            icon={<Sparkles className="h-3.5 w-3.5" />}
+            testId="page-outline-starter-portfolio"
+            onClick={() => applyStarter('portfolio')}
+          />
+          <PaletteButton
+            disabled={disabled}
+            label={t('editor.outline.starter.landing')}
+            icon={<Sparkles className="h-3.5 w-3.5" />}
+            testId="page-outline-starter-landing"
+            onClick={() => applyStarter('landing')}
+          />
+        </div>
         <div className="flex flex-wrap gap-2" data-testid="page-outline-palette">
           <PaletteButton
             disabled={disabled}
             label={t('editor.outline.palette.prose')}
             icon={<Type className="h-3.5 w-3.5" />}
+            testId="page-outline-add-prose"
             onClick={() => addBlock(createPaletteMarkdown(t('editor.outline.prosePlaceholder')))}
           />
           <PaletteButton
             disabled={disabled}
             label={t('editor.outline.palette.video')}
             icon={<Video className="h-3.5 w-3.5" />}
+            testId="page-outline-add-video"
             onClick={() => addBlock(createPaletteVideo())}
           />
           {CALLOUT_TYPES.map((calloutType) => (
@@ -153,6 +199,7 @@ export const PageOutlineEditor: React.FC<PageOutlineEditorProps> = ({
               key={calloutType}
               disabled={disabled}
               label={t(`editor.callout.types.${calloutType}`)}
+              testId={`page-outline-add-callout-${calloutType}`}
               onClick={() => addBlock(createPaletteCallout(calloutType))}
             />
           ))}
@@ -203,31 +250,111 @@ export const PageOutlineEditor: React.FC<PageOutlineEditorProps> = ({
       </div>
 
       {blocks.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-slate-300 px-4 py-8 text-center text-sm text-slate-500 dark:border-slate-700">
-          {t('editor.outline.empty')}
-        </p>
+        <div
+          className="space-y-3 rounded-xl border border-dashed border-slate-300 px-4 py-8 text-center text-sm text-slate-500 dark:border-slate-700"
+          data-testid="page-outline-empty"
+        >
+          <p>{t('editor.outline.empty')}</p>
+          <p className="text-xs">{t('editor.outline.starter.portfolioHint')}</p>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={() => applyStarter('portfolio')}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-bold text-white disabled:opacity-50"
+              data-testid="page-outline-empty-starter-portfolio"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              {t('editor.outline.starter.portfolio')}
+            </button>
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={() => applyStarter('landing')}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-indigo-800 disabled:opacity-50 dark:border-indigo-800 dark:bg-slate-950 dark:text-indigo-100"
+              data-testid="page-outline-empty-starter-landing"
+            >
+              {t('editor.outline.starter.landing')}
+            </button>
+          </div>
+        </div>
       ) : (
         <ul className="space-y-2" data-testid="page-outline-stack">
           {blocks.map((block, index) => (
-            <li key={block.id}>
-              <button
-                type="button"
-                disabled={disabled}
-                onClick={() => setSelectedId(block.id)}
-                className={`flex w-full items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left text-sm transition ${
-                  selectedId === block.id
-                    ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200 dark:border-indigo-400 dark:bg-indigo-950/40'
-                    : 'border-slate-200 bg-white hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950 dark:hover:bg-slate-900'
-                }`}
-                data-testid={`page-outline-card-${index}`}
-              >
-                <span className="min-w-0 truncate font-medium text-slate-800 dark:text-slate-100">
-                  {blockLabel(block, t)}
-                </span>
-                <span className="shrink-0 font-mono text-[10px] uppercase tracking-wide text-slate-400">
-                  {block.kind === 'shortcode' ? block.name : block.kind}
-                </span>
-              </button>
+            <li
+              key={block.id}
+              onDragOver={(event) => {
+                event.preventDefault();
+                event.dataTransfer.dropEffect = 'move';
+              }}
+              onDrop={(event) => {
+                event.preventDefault();
+                const from = Number.parseInt(event.dataTransfer.getData('text/plain'), 10);
+                setDragIndex(null);
+                if (Number.isFinite(from)) {
+                  reorder(from, index);
+                }
+              }}
+              className={dragIndex === index ? 'opacity-60' : ''}
+              data-testid={`page-outline-row-${index}`}
+            >
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  draggable={!disabled}
+                  disabled={disabled}
+                  aria-label={t('editor.outline.dragHandle')}
+                  title={t('editor.outline.dragHandle')}
+                  data-testid={`page-outline-drag-${index}`}
+                  onDragStart={(event) => {
+                    event.dataTransfer.setData('text/plain', String(index));
+                    event.dataTransfer.effectAllowed = 'move';
+                    setDragIndex(index);
+                  }}
+                  onDragEnd={() => setDragIndex(null)}
+                  className="inline-flex h-9 w-8 shrink-0 cursor-grab items-center justify-center rounded-lg border border-slate-200 text-slate-400 hover:bg-slate-50 active:cursor-grabbing disabled:cursor-not-allowed dark:border-slate-700"
+                >
+                  <GripVertical className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => setSelectedId(block.id)}
+                  className={`flex min-w-0 flex-1 items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left text-sm transition ${
+                    selectedId === block.id
+                      ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200 dark:border-indigo-400 dark:bg-indigo-950/40'
+                      : 'border-slate-200 bg-white hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950 dark:hover:bg-slate-900'
+                  }`}
+                  data-testid={`page-outline-card-${index}`}
+                >
+                  <span className="min-w-0 truncate font-medium text-slate-800 dark:text-slate-100">
+                    {blockLabel(block, t)}
+                  </span>
+                  <span className="shrink-0 font-mono text-[10px] uppercase tracking-wide text-slate-400">
+                    {block.kind === 'shortcode' ? block.name : block.kind}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  disabled={disabled || index === 0}
+                  aria-label={t('editor.outline.moveUp')}
+                  data-testid={`page-outline-move-up-${index}`}
+                  onClick={() => reorder(index, index - 1)}
+                  className="inline-flex h-9 w-8 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40 dark:border-slate-700"
+                >
+                  <ChevronUp className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  disabled={disabled || index === blocks.length - 1}
+                  aria-label={t('editor.outline.moveDown')}
+                  data-testid={`page-outline-move-down-${index}`}
+                  onClick={() => reorder(index, index + 1)}
+                  className="inline-flex h-9 w-8 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40 dark:border-slate-700"
+                >
+                  <ChevronDown className="h-4 w-4" />
+                </button>
+              </div>
             </li>
           ))}
         </ul>
@@ -324,18 +451,22 @@ function OutlineBlockFields({
   if (block.kind === 'video') {
     return (
       <div className="grid gap-3 sm:grid-cols-2">
-        <TextField
+        <MediaAttrField
           label={t('editor.outline.videoSrc')}
           value={block.src}
           disabled={disabled}
+          accept="video"
           testId="page-outline-field-src"
+          t={t}
           onChange={(src) => onChange({ ...block, src })}
         />
-        <TextField
+        <MediaAttrField
           label={t('editor.outline.videoPoster')}
           value={block.poster}
           disabled={disabled}
+          accept="image"
           testId="page-outline-field-poster"
+          t={t}
           onChange={(poster) => onChange({ ...block, poster })}
         />
       </div>
@@ -408,10 +539,25 @@ function ShortcodeFields({
         keys.map((key) => {
           const rules = schema[key];
           const value = block.attrs[key] ?? '';
+          const label = outlineFieldLabel(t, key);
+          if (isOutlineMediaAttr(block.name, key, rules)) {
+            return (
+              <MediaAttrField
+                key={key}
+                label={label}
+                value={value}
+                disabled={disabled}
+                accept={outlineMediaAccept(key, rules)}
+                testId={`page-outline-attr-${key}`}
+                t={t}
+                onChange={(next) => setAttr(key, next)}
+              />
+            );
+          }
           if (rules?.type === 'enum' && Array.isArray(rules.options) && rules.options.length > 0) {
             return (
               <label key={key} className="block space-y-1 text-xs">
-                <span className="font-medium text-slate-700 dark:text-slate-300">{key}</span>
+                <span className="font-medium text-slate-700 dark:text-slate-300">{outlineFieldLabel(t, key)}</span>
                 <select
                   value={value}
                   disabled={disabled}
@@ -432,7 +578,8 @@ function ShortcodeFields({
           return (
             <TextField
               key={key}
-              label={key}
+              label={outlineFieldLabel(t, key)}
+              hint={outlineFieldHelp(t, key)}
               value={value}
               disabled={disabled}
               testId={`page-outline-attr-${key}`}
@@ -459,12 +606,14 @@ function ShortcodeFields({
 
 function TextField({
   label,
+  hint,
   value,
   disabled,
   onChange,
   testId,
 }: {
   label: string;
+  hint?: string | null;
   value: string;
   disabled: boolean;
   onChange: (value: string) => void;
@@ -481,8 +630,114 @@ function TextField({
         className="form-input text-sm"
         data-testid={testId}
       />
+      {hint ? <span className="block text-[11px] text-slate-500 dark:text-slate-400">{hint}</span> : null}
     </label>
   );
+}
+
+function MediaAttrField({
+  label,
+  value,
+  disabled,
+  accept,
+  testId,
+  t,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  disabled: boolean;
+  accept: 'image' | 'video';
+  testId: string;
+  t: (key: string, params?: Record<string, string | number>) => string;
+  onChange: (value: string) => void;
+}): React.ReactElement {
+  const [pickerOpen, setPickerOpen] = useState(false);
+
+  return (
+    <div className="space-y-1 text-xs">
+      <span className="font-medium text-slate-700 dark:text-slate-300">{label}</span>
+      <div className="flex flex-wrap gap-2">
+        <input
+          type="text"
+          value={value}
+          disabled={disabled}
+          onChange={(event) => onChange(event.target.value)}
+          className="form-input min-w-0 flex-1 text-sm"
+          data-testid={testId}
+        />
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={() => setPickerOpen(true)}
+          className="inline-flex items-center gap-1 rounded-lg border border-indigo-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-indigo-800 hover:bg-indigo-50 disabled:opacity-50 dark:border-indigo-800 dark:bg-slate-950 dark:text-indigo-100"
+          data-testid={`${testId}-pick`}
+        >
+          {accept === 'video' ? <Video size={14} /> : <ImageIcon size={14} />}
+          {t('editor.outline.pickMedia')}
+        </button>
+        {value !== '' ? (
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => onChange('')}
+            className="rounded-lg border border-admin-border px-2 py-1.5 text-xs font-semibold text-admin-muted admin-row-hover disabled:opacity-50"
+            data-testid={`${testId}-clear`}
+          >
+            {t('editor.outline.clearMedia')}
+          </button>
+        ) : null}
+      </div>
+      <MediaPickerModal
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        mediaMode={accept}
+        urlFormat="storage"
+        onSelect={(url) => onChange(url)}
+      />
+    </div>
+  );
+}
+
+function isOutlineMediaAttr(
+  blockName: string,
+  key: string,
+  rules?: { type: string }
+): boolean {
+  if (rules?.type === 'media') {
+    return true;
+  }
+
+  return (
+    blockName === 'landing-hero' &&
+    (key === 'image' || key === 'poster' || key === 'src' || key === 'srcmobile')
+  );
+}
+
+function outlineMediaAccept(key: string, rules?: { accept?: string }): 'image' | 'video' {
+  if (rules?.accept === 'video' || key === 'src' || key === 'srcmobile') {
+    return 'video';
+  }
+
+  return 'image';
+}
+
+function outlineFieldLabel(
+  t: (key: string, params?: Record<string, string | number>) => string,
+  key: string
+): string {
+  const i18nKey = `editor.outline.fields.${key}`;
+  const label = t(i18nKey);
+  return label !== i18nKey ? label : key;
+}
+
+function outlineFieldHelp(
+  t: (key: string, params?: Record<string, string | number>) => string,
+  key: string
+): string | null {
+  const i18nKey = `editor.outline.fieldHelp.${key}`;
+  const text = t(i18nKey);
+  return text !== i18nKey ? text : null;
 }
 
 function outlineBlockName(

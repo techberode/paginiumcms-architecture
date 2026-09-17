@@ -75,7 +75,7 @@ final class MailboxSecretRepository
         }
 
         $accounts = $doc['accounts'];
-        $accounts[$mailbox] = $this->encryption->encryptNullable($password) ?? $password;
+        $accounts[$mailbox] = $this->encryption->encrypt($password);
         $primary = $doc['primary'] !== '' ? $doc['primary'] : $mailbox;
         $active = $doc['active'] !== '' ? $doc['active'] : $mailbox;
         $this->writeDocument($userId, $primary, $active, $accounts);
@@ -159,7 +159,7 @@ final class MailboxSecretRepository
         if (count($accounts) >= self::MAX_ACCOUNTS) {
             throw new InvalidArgumentException('Too many mailboxes.');
         }
-        $accounts[$mailbox] = $this->encryption->encryptNullable($password) ?? $password;
+        $accounts[$mailbox] = $this->encryption->encrypt($password);
         $this->writeDocument($userId, $primary, $mailbox, $accounts);
     }
 
@@ -256,7 +256,7 @@ final class MailboxSecretRepository
             JsonHelper::encode([
                 'schema' => self::LEGACY_SCHEMA,
                 'userId' => $normalized,
-                'password' => $this->encryption->encryptNullable($password) ?? $password,
+                'password' => $this->encryption->encrypt($password),
             ]),
             false
         );

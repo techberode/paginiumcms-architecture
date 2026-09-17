@@ -10,6 +10,7 @@ use PaginiumCMS\Core\FlatFile\Services\FileValidator;
 use PaginiumCMS\Core\FlatFile\Services\FileWriter;
 use PaginiumCMS\Core\Mail\Services\DomainMailService;
 use PaginiumCMS\Core\Mail\Services\FakeImapClient;
+use PaginiumCMS\Core\Mail\Services\ImapClientInterface;
 use PaginiumCMS\Core\Mail\Services\MailboxSecretRepository;
 use PaginiumCMS\Core\Mail\Services\MailClientStateRepository;
 use PaginiumCMS\Core\Mail\Services\OutboundMailSenderInterface;
@@ -23,6 +24,7 @@ final class DomainMailServiceTest extends TestCase
 {
     private string $baseDir;
     private DomainMailService $service;
+    private MailClientStateRepository $clientState;
     private User $user;
     private RecordingOutboundMailSender $sender;
 
@@ -74,11 +76,13 @@ final class DomainMailServiceTest extends TestCase
         $this->user->setPasswordHash(password_hash('x', PASSWORD_BCRYPT));
 
         $this->sender = new RecordingOutboundMailSender();
+        $this->clientState = new MailClientStateRepository($reader, $writer);
         $this->service = new DomainMailService(
             $settings,
             $secrets,
             new SecurityAuditStore($reader),
-            new MailClientStateRepository($reader, $writer),
+            $this->clientState,
+            $reader,
             new FakeImapClient(),
             $this->sender
         );
@@ -112,6 +116,74 @@ final class DomainMailServiceTest extends TestCase
         $this->assertSame(1, $junk['messages'][0]['uid'] ?? null);
     }
 
+    public function testBlockedSenderExcludedFromInbox(): void
+    {
+        $this->service->blockSender($this->user, 'INBOX', 1, 'noreply@example.com');
+        $inbox = $this->service->messages($this->user, 'INBOX');
+        $this->assertSame([], $inbox['messages']);
+        $junk = $this->service->messages($this->user, 'Junk');
+        $this->assertSame([], $junk['messages']);
+    }
+
+    public function testUsesImapListLimitFromSettings(): void
+    {
+        $spy = new ListLimitSpyImapClient(new FakeImapClient());
+        $settings = $this->createMock(SettingsRepositoryInterface::class);
+        $settings->method('group')->willReturnCallback(static function (string $group): array {
+            return match ($group) {
+                'imap' => [
+                    'enabled' => true,
+                    'host' => 'imap.paginium.test',
+                    'port' => 993,
+                    'encryption' => 'ssl',
+                    'spamFolder' => 'Junk',
+                    'listLimit' => 75,
+                ],
+                'general' => ['siteUrl' => 'https://paginium.test'],
+                default => [],
+            };
+        });
+        $validator = new FileValidator($this->baseDir);
+        $reader = new FileReader($validator);
+        $writer = new FileWriter($validator);
+        $secrets = new MailboxSecretRepository(
+            $reader,
+            $writer,
+            new EncryptionService('base64:BGtLQwdzAE7ajivCghMa98DyudMghYZEkXKw5PJ/aUE=')
+        );
+        $service = new DomainMailService(
+            $settings,
+            $secrets,
+            new SecurityAuditStore($reader),
+            new MailClientStateRepository($reader, $writer),
+            $reader,
+            $spy
+        );
+        $service->savePassword($this->user, 'mailbox-pass');
+        $service->messages($this->user, 'INBOX');
+        $this->assertSame(75, $spy->lastMessagesLimit);
+        $this->assertSame(75, $service->status($this->user)['listLimit']);
+    }
+
+    public function testListsAndUnblocksSendersForMailbox(): void
+    {
+        $this->service->blockSender($this->user, 'INBOX', 1, 'noreply@example.com');
+        $list = $this->service->blockedSenders($this->user);
+        $this->assertContains('noreply@example.com', $list['blocked']);
+        $undo = $this->service->unblockSender($this->user, 'noreply@example.com');
+        $this->assertTrue($undo['removed']);
+        $this->assertSame([], $this->service->blockedSenders($this->user)['blocked']);
+    }
+
+    public function testAutocleanSpamHidesPurgedMessages(): void
+    {
+        $this->service->moveToSpam($this->user, 'INBOX', 1);
+        $purge = $this->service->autocleanSpam($this->user);
+        $this->assertSame(1, $purge['purged']);
+        $junk = $this->service->messages($this->user, 'Junk');
+        $this->assertSame([], $junk['messages']);
+    }
+
     public function testHidesMessageLocallyAndKeepsImapCopy(): void
     {
         $this->service->hideMessage($this->user, 'INBOX', 1, 'Welcome', 'noreply@example.com', '2026-09-15');
@@ -122,6 +194,17 @@ final class DomainMailServiceTest extends TestCase
         $this->service->unhideMessage($this->user, 'INBOX', 1);
         $restored = $this->service->messages($this->user, 'INBOX');
         $this->assertSame(1, $restored['messages'][0]['uid'] ?? null);
+    }
+
+    public function testEmptyLocalTrashPermanentlyDismissesHiddenMessages(): void
+    {
+        $this->service->hideMessage($this->user, 'INBOX', 1, 'Welcome', 'noreply@example.com', '2026-09-15');
+        $purge = $this->service->emptyLocalTrash($this->user);
+        $this->assertSame(1, $purge['removed']);
+        $trash = $this->service->messages($this->user, MailClientStateRepository::LOCAL_TRASH);
+        $this->assertSame([], $trash['messages']);
+        $inbox = $this->service->messages($this->user, 'INBOX');
+        $this->assertSame([], $inbox['messages']);
     }
 
     public function testStarsAndMarksRead(): void
@@ -177,6 +260,7 @@ final class DomainMailServiceTest extends TestCase
             $secrets,
             new SecurityAuditStore($reader),
             new MailClientStateRepository($reader, $writer),
+            $reader,
             new FakeImapClient()
         );
         $service->savePassword($user, 'mailbox-pass');
@@ -188,25 +272,84 @@ final class DomainMailServiceTest extends TestCase
         $this->removeTree($baseDir);
     }
 
+    public function testSendAppendsSignatureWhenEnabled(): void
+    {
+        $this->clientState->saveSignaturePrefs($this->user->getId(), [
+            'enabled' => true,
+            'templateId' => 'minimal',
+            'overrides' => ['displayName' => 'Editor Person'],
+        ]);
+        $this->service->send($this->user, 'guest@example.com', 'Sig', 'Body text');
+        $this->assertCount(1, $this->sender->sent);
+        $this->assertStringContainsString('Body text', $this->sender->sent[0]['htmlBody']);
+        $this->assertStringContainsString('Editor Person', $this->sender->sent[0]['htmlBody']);
+        $this->assertSame('Editor Person', $this->sender->sent[0]['fromName']);
+    }
+
+    public function testSendEmbedsCardSignatureAvatarAsInlineCid(): void
+    {
+        $mediaDir = $this->baseDir . '/media';
+        mkdir($mediaDir, 0777, true);
+        $png = base64_decode(
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+            true
+        );
+        $this->assertNotFalse($png);
+        file_put_contents($mediaDir . '/sig.png', $png);
+
+        $this->user->setAvatarUrl('/storage/app/content/media/sig.png');
+        $this->clientState->saveSignaturePrefs($this->user->getId(), [
+            'enabled' => true,
+            'templateId' => 'card',
+            'overrides' => ['displayName' => 'Photo Person'],
+        ]);
+
+        $this->service->send($this->user, 'guest@example.com', 'Card', 'Hello');
+
+        $this->assertCount(1, $this->sender->sent);
+        $this->assertStringContainsString('cid:paginium-signature-avatar', $this->sender->sent[0]['htmlBody']);
+        $this->assertCount(1, $this->sender->sent[0]['inlineImages']);
+        $this->assertSame('paginium-signature-avatar', $this->sender->sent[0]['inlineImages'][0]['contentId']);
+        $this->assertSame('image/png', $this->sender->sent[0]['inlineImages'][0]['mime']);
+    }
+
     public function testSendsThroughConfiguredSmtpAsMailbox(): void
     {
         $status = $this->service->status($this->user);
         $this->assertTrue($status['canSend']);
         $this->assertSame('editor@paginium.test', $status['mailbox']);
 
-        $this->service->send($this->user, 'guest@example.com', 'Hello', 'Hi there');
+        $result = $this->service->send($this->user, 'guest@example.com', 'Hello', 'Hi there');
+        $this->assertTrue($result['sent']);
+        $this->assertTrue($result['imapAppended']);
+        $this->assertSame(0, $result['localUid']);
         $this->assertCount(1, $this->sender->sent);
         $this->assertSame('editor@paginium.test', $this->sender->sent[0]['fromEmail']);
         $this->assertSame('Editor', $this->sender->sent[0]['fromName']);
-        $this->assertSame('guest@example.com', $this->sender->sent[0]['to']);
+        $this->assertSame(['guest@example.com'], $this->sender->sent[0]['recipients']);
         $this->assertSame('Hello', $this->sender->sent[0]['subject']);
         $this->assertStringContainsString('Hi there', $this->sender->sent[0]['htmlBody']);
+        $sentList = $this->service->messages($this->user, 'Sent');
+        $this->assertSame(1, count($sentList['messages']));
+        $this->assertFalse((bool) ($sentList['messages'][0]['localOnly'] ?? true));
     }
 
     public function testRejectsInjectedRecipientHeaders(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->service->send($this->user, "guest@example.com\nBcc: hidden@example.com", 'Hello', 'Hi');
+    }
+
+    public function testSendAcceptsMultipleRecipients(): void
+    {
+        $result = $this->service->send(
+            $this->user,
+            'guest@example.com, info@paginium.test',
+            'Bulk',
+            'Hello all'
+        );
+        $this->assertTrue($result['sent']);
+        $this->assertSame(['guest@example.com', 'info@paginium.test'], $this->sender->sent[0]['recipients']);
     }
 
     public function testAddsSecondDomainMailboxAndSendsAsIt(): void
@@ -247,19 +390,105 @@ final class DomainMailServiceTest extends TestCase
     }
 }
 
+final class ListLimitSpyImapClient implements ImapClientInterface
+{
+    public ?int $lastMessagesLimit = null;
+
+    public function __construct(private FakeImapClient $inner)
+    {
+    }
+
+    public function connect(string $host, int $port, string $encryption, string $username, string $password): void
+    {
+        $this->inner->connect($host, $port, $encryption, $username, $password);
+    }
+
+    public function disconnect(): void
+    {
+        $this->inner->disconnect();
+    }
+
+    public function folders(): array
+    {
+        return $this->inner->folders();
+    }
+
+    public function createFolder(string $name): void
+    {
+        $this->inner->createFolder($name);
+    }
+
+    public function deleteFolder(string $name): void
+    {
+        $this->inner->deleteFolder($name);
+    }
+
+    public function messages(string $folder, int $limit = 40): array
+    {
+        $this->lastMessagesLimit = $limit;
+
+        return $this->inner->messages($folder, $limit);
+    }
+
+    public function message(string $folder, int $uid): array
+    {
+        return $this->inner->message($folder, $uid);
+    }
+
+    public function setTags(string $folder, int $uid, array $tags): void
+    {
+        $this->inner->setTags($folder, $uid, $tags);
+    }
+
+    public function addFlags(string $folder, int $uid, array $flags): void
+    {
+        $this->inner->addFlags($folder, $uid, $flags);
+    }
+
+    public function removeFlags(string $folder, int $uid, array $flags): void
+    {
+        $this->inner->removeFlags($folder, $uid, $flags);
+    }
+
+    public function move(string $folder, int $uid, string $target): void
+    {
+        $this->inner->move($folder, $uid, $target);
+    }
+
+    public function appendMessage(string $folder, string $rfc822, array $flags = []): void
+    {
+        $this->inner->appendMessage($folder, $rfc822, $flags);
+    }
+
+    public function folderStatus(string $folder): array
+    {
+        return $this->inner->folderStatus($folder);
+    }
+}
+
 final class RecordingOutboundMailSender implements OutboundMailSenderInterface
 {
-    /** @var list<array{fromEmail: string, fromName: string, to: string, subject: string, htmlBody: string}> */
+    /** @var list<array{fromEmail: string, fromName: string, recipients: list<string>, subject: string, htmlBody: string, inlineImages: list<array{contentId: string, mime: string, bytes: string}>}> */
     public array $sent = [];
 
-    public function send(string $fromEmail, string $fromName, string $to, string $subject, string $htmlBody): bool
-    {
+    /**
+     * @param list<string> $recipients
+     */
+    public function send(
+        string $fromEmail,
+        string $fromName,
+        array $recipients,
+        string $subject,
+        string $htmlBody,
+        array $inlineImages = [],
+    ): bool {
         $this->sent[] = [
             'fromEmail' => $fromEmail,
             'fromName' => $fromName,
-            'to' => $to,
+            'recipients' => $recipients,
             'subject' => $subject,
             'htmlBody' => $htmlBody,
+            'inlineImages' => $inlineImages,
         ];
 
         return true;

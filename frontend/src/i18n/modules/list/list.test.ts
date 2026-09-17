@@ -14,6 +14,7 @@ describe('list i18n module', () => {
 
     expect(translate('sk', 'list.status.published')).toBe('Publikované');
     expect(translate('en', 'list.toolbar.clearFilters')).toBe('Clear filters');
+    expect(translate('en', 'list.toolbar.clearSearch')).toBe('Clear search');
     expect(translate('sk', 'list.pagination.pageOf', { total: 10, page: 2, totalPages: 5 })).toContain(
       'strana 2 / 5'
     );

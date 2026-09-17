@@ -32,7 +32,7 @@
 .dark .admin-shell {
   --admin-canvas: #0b1727;
   --admin-sidebar: #121e2d;
-  --admin-sidebar-muted: #748194;
+  --admin-sidebar-muted: #c5d0de;
   --admin-sidebar-text: #9da9bb;
   --admin-sidebar-hover: #1a2940;
   --admin-sidebar-active: #1b3a57;
@@ -96,6 +96,37 @@
   background-color: var(--admin-topbar-hover);
 }
 
+/* Opaque-enough chips on colored/gradient topbars (search, cache). Canvas+muted
+   Tailwind classes inherit topbar ink and disappear on navy/charcoal. */
+.admin-shell .admin-topbar .admin-topbar-control {
+  background-color: color-mix(in srgb, var(--admin-topbar-text) 16%, transparent);
+  color: var(--admin-topbar-text);
+  border: 1px solid color-mix(in srgb, var(--admin-topbar-text) 28%, transparent);
+  text-shadow: var(--admin-topbar-ink-shadow, none);
+}
+
+.admin-shell .admin-topbar .admin-topbar-control:hover {
+  background-color: color-mix(in srgb, var(--admin-topbar-text) 24%, transparent);
+  color: var(--admin-topbar-text);
+}
+
+.admin-shell .admin-topbar .admin-topbar-control:disabled {
+  opacity: 0.6;
+}
+
+.admin-shell .admin-topbar .admin-topbar-control kbd {
+  background-color: color-mix(in srgb, var(--admin-topbar-text) 12%, transparent);
+  color: var(--admin-topbar-text);
+  border-color: color-mix(in srgb, var(--admin-topbar-text) 28%, transparent);
+}
+
+.admin-shell .admin-topbar .admin-topbar-control .text-admin-primary,
+.admin-shell .admin-topbar .admin-topbar-control .text-admin-muted,
+.admin-shell .admin-topbar .admin-topbar-control .text-admin-text,
+.admin-shell .admin-topbar .admin-topbar-control svg {
+  color: var(--admin-topbar-text);
+}
+
 .admin-shell .admin-topbar .admin-topbar-identity {
   color: var(--admin-topbar-text);
   border-left-color: color-mix(in srgb, var(--admin-topbar-text) 22%, transparent);
@@ -116,6 +147,57 @@
 .admin-shell .admin-sidebar .text-admin-muted,
 .admin-shell .admin-sidebar .text-admin-sidebar-muted {
   color: var(--admin-sidebar-muted);
+}
+
+.admin-shell .admin-sidebar .admin-nav-count {
+  background-color: color-mix(in srgb, var(--admin-sidebar-text) 16%, transparent);
+  color: var(--admin-sidebar-text);
+}
+
+.admin-shell .admin-sidebar .admin-nav-count-on {
+  background-color: color-mix(in srgb, var(--admin-sidebar-active-text) 22%, transparent);
+  color: var(--admin-sidebar-active-text);
+}
+
+.admin-shell .admin-sidebar .admin-sidebar-footer-card {
+  background-color: color-mix(in srgb, var(--admin-sidebar-text) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--admin-sidebar-text) 16%, transparent);
+  color: var(--admin-sidebar-text);
+}
+
+.admin-shell .admin-sidebar .admin-sidebar-footer-title,
+.admin-shell .admin-sidebar .admin-sidebar-footer-title .text-admin-primary {
+  color: var(--admin-sidebar-text);
+}
+
+.admin-shell .admin-sidebar .admin-sidebar-footer-hint {
+  color: var(--admin-sidebar-muted);
+}
+
+/* Content-area choice cards (settings groups, nav placement). Never use sidebar
+   hover/active fills — those are navy/charcoal and swallow canvas ink. */
+.admin-shell .admin-choice {
+  background-color: var(--admin-card);
+  color: var(--admin-text);
+  border-color: var(--admin-border);
+}
+
+.admin-shell .admin-choice:hover {
+  background-color: var(--admin-row-hover);
+  border-color: var(--admin-primary);
+  color: var(--admin-text);
+}
+
+.admin-shell .admin-choice-on,
+.admin-shell .admin-choice-on:hover {
+  background-color: color-mix(in srgb, var(--admin-primary) 14%, var(--admin-card));
+  border-color: var(--admin-primary);
+  color: var(--admin-text);
+}
+
+.admin-shell .admin-choice-on .text-admin-muted,
+.admin-shell .admin-choice .text-admin-muted {
+  color: var(--admin-muted);
 }
 
 .admin-shell .admin-topnav {
@@ -297,7 +379,7 @@
 
 .admin-shell .admin-tab-on {
   color: var(--admin-primary);
-  background-color: color-mix(in srgb, var(--admin-primary) 8%, transparent);
+  background-color: color-mix(in srgb, var(--admin-primary) 12%, var(--admin-card));
 }
 
 .admin-shell .admin-tab-on .admin-tab-label {
@@ -505,18 +587,57 @@
   color: #86efac;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 1023px) {
   .admin-shell .mail-app {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+    position: relative;
+    min-height: min(70vh, 32rem);
   }
 
   .admin-shell .mail-app-nav {
-    border-right: 0;
-    border-bottom: 1px solid var(--admin-border);
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 60;
+    width: min(18rem, 88vw);
+    max-width: 100%;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+    border-right: 1px solid var(--admin-border);
+    border-bottom: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    box-shadow: 0 12px 40px rgba(15, 23, 42, 0.18);
+  }
+
+  .admin-shell .mail-app-nav-drawer-open .mail-app-nav {
+    transform: translateX(0);
+  }
+
+  .admin-shell .mail-app-nav-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: rgba(15, 23, 42, 0.45);
+    cursor: pointer;
   }
 
   .admin-shell .mail-row-grid {
-    grid-template-columns: 1fr auto;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .admin-shell .mail-row-grid > span:first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 1024px) {
+  .admin-shell .mail-app-nav-backdrop {
+    display: none;
   }
 }
 
@@ -525,4 +646,18 @@
   right: 1.5rem;
   bottom: 6.25rem;
   z-index: 50;
+}
+
+/* Fullscreen editor workspace: remaining viewport is a flex canvas; live-preview
+   columns scroll independently instead of one clipped 72vh iframe. */
+[data-testid="editor-workspace"] .editor-workspace-canvas:has([data-testid="page-live-preview-split"]) {
+  overflow: hidden;
+}
+
+[data-testid="editor-workspace"]
+  .editor-workspace-canvas:has([data-testid="page-live-preview-split"])
+  > [data-testid="page-live-preview-split"] {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
 }

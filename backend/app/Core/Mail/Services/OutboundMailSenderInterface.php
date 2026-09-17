@@ -6,5 +6,16 @@ namespace PaginiumCMS\Core\Mail\Services;
 
 interface OutboundMailSenderInterface
 {
-    public function send(string $fromEmail, string $fromName, string $to, string $subject, string $htmlBody): bool;
+    /**
+     * @param list<string> $recipients
+     * @param list<array{contentId: string, mime: string, bytes: string}> $inlineImages
+     */
+    public function send(
+        string $fromEmail,
+        string $fromName,
+        array $recipients,
+        string $subject,
+        string $htmlBody,
+        array $inlineImages = [],
+    ): bool;
 }

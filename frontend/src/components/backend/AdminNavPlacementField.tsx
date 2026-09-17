@@ -41,8 +41,8 @@ export const AdminNavPlacementField: React.FC<AdminNavPlacementFieldProps> = ({
               onClick={() => onChange(placement)}
               className={`flex items-start gap-3 rounded-lg border-2 px-4 py-3 text-left transition ${
                 isOn
-                  ? 'border-admin-primary bg-admin-sidebar-active text-admin-sidebar-active-text ring-2 ring-admin-primary/25 shadow-sm'
-                  : 'border-admin-border bg-admin-card text-admin-text hover:border-admin-primary hover:bg-admin-sidebar-hover hover:shadow-sm'
+                  ? 'admin-choice-on ring-2 ring-admin-primary/25 shadow-sm'
+                  : 'admin-choice hover:shadow-sm'
               }`}
             >
               <input

@@ -81,7 +81,7 @@ Po zmene secrets nevkladaj ich do issue reportu. Nastavenia môžu vyžadovať r
 
 1. Otvor **Stránky** a zvoľ novú položku.
 2. Zadaj názov a bezpečný slug.
-3. Vyber editor Markdown alebo WYSIWYG.
+3. Pre marketing/landing nastav Nastavenia → Layout na **Outline blokov** a pridaj Hero / karty / Galériu z palety. Inak vyber Markdown alebo WYSIWYG.
 4. Doplň obsah, meta popis a prípadne OG obrázok.
 5. Najprv ulož ako `draft`.
 6. Skontroluj náhľad a odkazy.

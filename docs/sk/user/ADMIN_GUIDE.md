@@ -61,6 +61,10 @@ Bežné workflow:
 
 Slug je súčasť URL a identity súboru. Jeho zmena môže vyžadovať redirect a kontrolu interných odkazov. Detail: [CONTENT_EDITOR.md](CONTENT_EDITOR.md).
 
+**Layout builder stránky:** Nastavenia → Layout volí Šablóny, Shortcodes, **Outline blokov** (paleta + formuláre; odporúčané pre landing) alebo Developer. Všetky režimy ukladajú to isté Markdown. Outline platí len pre stránky. Celoobrazovkový **Workspace** skryje admin lištu (Nastavenia → Editor, alebo prepínač v editore). Fotky galérie: [GALLERY.md](GALLERY.md).
+
+**Layout builder stránky:** Nastavenia → Layout volí Šablóny, Shortcodes, **Outline blokov** (paleta + formuláre; odporúčané pre landing) alebo Developer. Všetky režimy ukladajú to isté Markdown. Outline platí len pre stránky. Celoobrazovkový **Workspace** skryje admin lištu (Nastavenia → Editor, alebo prepínač v editore). Fotky galérie: [GALLERY.md](GALLERY.md).
+
 **Stránkovanie zoznamu:** Tabuľka stránok (a článkov — rovnaký komponent) má dole Previous/Next. Aktuálna strana je v URL (`/pages?page=2`). Zmena filtra alebo veľkosti stránky vráti na stranu 1; Next/Previous nesmie skočiť späť na prvú stranu ([ISS-169](../../ISSUES.md#iss-169)).
 
 ## 5. Články
@@ -85,7 +89,15 @@ Rovnaký tvar URL ako zvyšok administrácie ([ADMIN_DEEP_LINKS.md](../architect
 | Support Kanban | `/kanban` |
 | Newsletter | `/newsletter` |
 
-Záložky `/platform/mail` a `/platform/kanban` presmerujú na cesty vyššie. IMAP nastavenia: `/settings?group=imap`.
+Záložky `/platform/mail` a `/platform/kanban` presmerujú na cesty vyššie. IMAP nastavenia: `/settings?group=imap` (vrátane **Počet správ zo servera**; **Append copy to Sent (IMAP)** — vypni pre rýchlejšie odoslanie len cez SMTP).
+
+**Štítky a lokálny kôš (`beta.79`):** V sidebari **Štítky** — názov a farba, úprava/mazanie. Na správe klikni na chip (**×**) alebo hromadne **Odstrániť z vybraných**. **Lokálny kôš** = skryté v tomto klientovi; **Vysypať lokálny kôš** ich natrvalo odstráni z klienta (IMAP kópie na serveri ostávajú). **Obnoviť** načíta priečinky nanovo (bez automatického pollingu).
+
+**Súkromie v maili:** **Vzdialené obrázky sú predvolene vypnuté**; **Zobraziť obrázky od …** zapamätá odosielateľa pre aktívnu schránku. **Blokovať odosielateľa** = blocklist len pre túto schránku + presun na server spam + ďalšia pošta z adresy sa v klientovi **vôbec nenačíta** (`data/mail-client/`). V sidebari otvor **Blokovaní odosielatelia** — zoznam a tlačidlo **Odblokovať**. Pri **reload stránky** klient **autoclean spam** — správy, ktoré boli v server spam priečinku, sa v UI vymažú a znova sa neukážu (kým nepríde nový spam). **`APP_KEY`** pred uložením hesla ([ISS-170](../../ISSUES.md#iss-170)).
+
+**Mailová vizitka (93m-4):** V sidebari **Mailová vizitka** — šablóna, polia, **Načítať z profilu**, prepínač pripojenia k odosielaným správam. Ukladá sa **pre aktívnu schránku** (aj `info@` bez nového CMS usera). Avatar a profil v **Môj účet**.
+
+**Mobilný mail:** **Menu pošty** (hamburger v zozname pod admin hlavičkou) = priečinky, nová správa, vizitka, blocklist. Domov = len zoznam; správa na celú plochu, **Späť na zoznam** vráti list.
 
 ## 5.1 Plánovač projektu stránky
 
@@ -134,6 +146,7 @@ Nastavenia sú rozdelené do skupín. Typické oblasti:
 | Oblasť | Príklady |
 |---|---|
 | Site | názov, URL, jazyk, timezone, branding |
+| Layout | builder stránky (šablóny / shortcody / outline / developer) |
 | Content/SEO | editor, pagination, meta, feedy, **prepínač tlače článkov** |
 | Accounts/Security | registrácia, heslá, 2FA, upload policy |
 | Access control | RBAC a Path ACL pre SUPER_ADMIN |
@@ -141,6 +154,8 @@ Nastavenia sú rozdelené do skupín. Typické oblasti:
 | Operations | logging, firewall, cache, maintenance |
 
 Citlivé polia majú byť šifrované at rest a redigované v odpovediach. Po zmene `APP_KEY` bez migračného postupu sa môžu stať nečitateľnými.
+
+Screenshoty v **Galérii funkcií** (`/gallery`) sú spoločný katalóg. Na stránku ich dáš blokom `[feature-gallery]` (outline paleta → **Galéria**). Tag filtruje ten istý zoznam; nezakladá druhú galériu. Postup: [GALLERY.md](GALLERY.md).
 
 ## 10. Používatelia a bezpečnosť účtu
 
@@ -251,6 +266,7 @@ Analytika je odvodená prevádzková vrstva. Vypnutie alebo strata analytických
 
 - [Prvé kroky](FIRST_STEPS.md)
 - [Editor obsahu](CONTENT_EDITOR.md)
+- [Galéria funkcií](GALLERY.md)
 - [Oprávnenia](ACCESS_CONTROL.md)
 - [API kontrakt](../architecture/API_CONTRACT.md)
 - [Core hardening](../architecture/CORE_HARDENING.md)

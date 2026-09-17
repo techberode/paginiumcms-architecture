@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Core\Security\Services;
 
 use PaginiumCMS\Core\Editor\Services\ExternalEmbedShortcode;
+use PaginiumCMS\Core\Media\Services\DamMediaUrl;
 use DOMDocument;
 use DOMElement;
 
@@ -40,6 +41,20 @@ final class HtmlDomSanitizer
             'sandbox',
             'frameborder',
         ],
+        'video' => [
+            'src',
+            'poster',
+            'muted',
+            'loop',
+            'playsinline',
+            'autoplay',
+            'preload',
+            'controls',
+            'width',
+            'height',
+        ],
+        'source' => ['src', 'type', 'media'],
+        'section' => ['data-tag', 'data-title'],
     ];
 
     /**
@@ -128,6 +143,13 @@ final class HtmlDomSanitizer
 
             if (in_array($name, ['href', 'src', 'cite', 'poster', 'srcset'], true)
                 && !$this->isSafeUri($attribute->value)) {
+                $remove[] = $attribute->name;
+                continue;
+            }
+
+            if (in_array($tag, ['video', 'source'], true)
+                && in_array($name, ['src', 'poster'], true)
+                && DamMediaUrl::sanitize($attribute->value) === '') {
                 $remove[] = $attribute->name;
             }
         }

@@ -56,4 +56,14 @@ describe('AdminFormActions', () => {
     expect(screen.getByTestId('admin-floating-actions')).toBeInTheDocument();
     expect(screen.getByTestId('admin-floating-actions').querySelectorAll('button')).toHaveLength(2);
   });
+
+  it('does not float a save dock when the inline bar is inside a hidden card', () => {
+    renderWithProviders(
+      <div className="hidden">
+        <AdminFormActions onSave={vi.fn()} saveLabel="Uložiť zmeny" saveTestId="hidden-save" />
+      </div>
+    );
+
+    expect(screen.queryByTestId('admin-floating-actions')).not.toBeInTheDocument();
+  });
 });

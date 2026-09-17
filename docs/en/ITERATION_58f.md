@@ -1,6 +1,6 @@
 # Iteration 58f — Visual page blocks (amateur outline + developer live preview)
 
-> **Status:** 🔄 in progress — **58f-a/b shipped**; next **58f-d** live preview; remainder of [It.58](ITERATION_58.md)  
+> **Status:** ✅ shipped — **58f-a–g** (palette, live preview, DnD, DAM hero, `feature-gallery`, i18n/help). Remainder of [It.58](ITERATION_58.md) is **58g** compile/cache with [It.48](ITERATION_48.md).  
 > **Priority:** 🟡 **P1 for the publishing product** (ahead of It.92/93; parallel with It.89)  
 > **Wave:** Layout builder (58b–e shipped; **58g compile stays with [It.48](ITERATION_48.md)**)  
 > **Depends on:** It.58d expander + catalog · It.58e `pg-*` · It.90 insert wizards · It.88 sandbox preview pattern · It.65 gallery · It.79 DAM video · It.67/It.91 sanitizers  
@@ -37,7 +37,7 @@ Restaurant: amater si objedná z jedálnička. Developer dopíše recept (shortc
 
 | Piece | Use in 58f |
 |-------|------------|
-| `layout.builderMode` `outline` | Setting already in schema; **no editor UI yet** |
+| `layout.builderMode` `outline` | Settings → Layout; page editor palette + forms |
 | `ShortcodeInsertPanel` | Replace/augment with palette + forms when mode is outline |
 | `ShortcodeCatalogSeeder` | Bundled blocks: `landing-hero`, `showcase-hero`, `feature-grid`/`feature-card`, `cta-banner`, `testimonial`, `stats-row`, `section-head`, `pricing-*` |
 | `ShortcodeExpanderService` | Public render unchanged |
@@ -45,7 +45,7 @@ Restaurant: amater si objedná z jedálnička. Developer dopíše recept (shortc
 | Preview APIs | Theme Studio / snippet `AdminBodyPreviewPanel` / shortcode preview |
 | It.65 `featureGallery` | One block that **reads the existing gallery API**, no second store |
 | It.79 `:::video` | Content player block; hero background is a **separate** shortcode/attrs |
-| `ContentEditorShell` | Host outline vs markdown vs developer split |
+| `ContentEditorShell` | Host outline vs markdown vs developer split. Optional fullscreen **Workspace** (Elementor-style canvas; not a 58f slice) hides admin chrome so the outline + live preview fill the remaining viewport and scroll independently. |
 
 ---
 
@@ -124,13 +124,13 @@ This is **not** isolated-origin widgets. It is Core HTML like It.79, different p
 |----|------|--------|
 | **58f-a** | Parse/serialize top-level blocks ↔ Markdown + tests | ✅ `frontend/src/utils/pageOutline.ts` |
 | **58f-b** | Outline UI: palette, attr forms from schema, inner content | ✅ `PageOutlineEditor` |
-| **58f-c** | DnD reorder + starter pack (portfolio/landing) | ⏳ |
-| **58f-d** | Live preview pane in page editor (amateur + developer) | ⏳ |
-| **58f-e** | Media fields + `hero-video` / hero image on `landing-hero` | ⏳ |
-| **58f-f** | `featureGallery` outline block → It.65 API | ⏳ |
-| **58f-g** | i18n SK/EN, builderMode help, gate tests | ⏳ |
+| **58f-c** | DnD reorder + starter pack (portfolio/landing) | ✅ grip + arrows; portfolio/landing starters write shortcodes |
+| **58f-d** | Live preview pane in page editor (amateur + developer) | ✅ `AdminBodyPreviewPanel` sandbox iframe + `POST /api/admin/content/render-preview` |
+| **58f-e** | Media fields + `hero-video` / hero image on `landing-hero` | ✅ DAM picker on outline; `image`/`src`/`srcmobile`/`poster`; muted looping video; reduced-motion hides video |
+| **58f-f** | `feature-gallery` outline block → It.65 API | ✅ |
+| **58f-g** | i18n SK/EN, builderMode help, gate tests | ✅ |
 
-Order: `a → b → d → c → e → f → g`. Preview early so developers get live visual in the same iteration as amateurs get forms.
+Order: `a → b → d → c → e → f → g`. **58f complete.** Next planned iteration: [It.89](ITERATION_89.md).
 
 **58g** (compile/cache): not in this spec.
 
@@ -148,4 +148,4 @@ Order: `a → b → d → c → e → f → g`. Preview early so developers get 
 
 ## Queue note
 
-Product fit: **implement 58f next** for the dual amateur/developer story. It.89 remains the plugin-security track (does not unblock visual publishing). It.92/93 stay later.
+**58f is shipped.** Next planned iteration is [It.89](ITERATION_89.md) (plugin capabilities). **58g** compile/cache stays with [It.48](ITERATION_48.md).

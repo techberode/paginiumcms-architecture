@@ -38,6 +38,7 @@ const DEFAULT_PUBLIC: PublicSettings = {
     defaultEditor: 'markdown',
     spellcheck: true,
     tabSize: 2,
+    fullscreenWorkspace: false,
   },
   notifications: {
     toastEnabled: true,

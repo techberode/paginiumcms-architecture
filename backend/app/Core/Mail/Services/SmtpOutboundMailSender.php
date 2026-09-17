@@ -12,8 +12,18 @@ final class SmtpOutboundMailSender implements OutboundMailSenderInterface
     {
     }
 
-    public function send(string $fromEmail, string $fromName, string $to, string $subject, string $htmlBody): bool
-    {
-        return $this->transport->send($fromEmail, $fromName, $to, $subject, $htmlBody);
+    /**
+     * @param list<string> $recipients
+     * @param list<array{contentId: string, mime: string, bytes: string}> $inlineImages
+     */
+    public function send(
+        string $fromEmail,
+        string $fromName,
+        array $recipients,
+        string $subject,
+        string $htmlBody,
+        array $inlineImages = [],
+    ): bool {
+        return $this->transport->send($fromEmail, $fromName, $recipients, $subject, $htmlBody, $inlineImages);
     }
 }

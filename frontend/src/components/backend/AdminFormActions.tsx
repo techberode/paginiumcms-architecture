@@ -19,6 +19,10 @@ export interface AdminFormActionsProps {
   saveTestId?: string;
 }
 
+function isSuppressed(el: HTMLElement): boolean {
+  return Boolean(el.closest('.hidden, [hidden]'));
+}
+
 function isInlineVisible(el: HTMLElement, root: Element | null): boolean {
   const rect = el.getBoundingClientRect();
   if (rect.width === 0 && rect.height === 0) {
@@ -122,6 +126,10 @@ export const AdminFormActions: React.FC<AdminFormActionsProps> = ({
     const root = el.closest(ADMIN_SCROLL_ROOT);
 
     const update = (intersecting?: boolean) => {
+      if (isSuppressed(el)) {
+        setFloating(false);
+        return;
+      }
       const geometryVisible = isInlineVisible(el, root);
       if (typeof intersecting === 'boolean') {
         setFloating(!intersecting || !geometryVisible);

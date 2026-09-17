@@ -100,6 +100,14 @@ describe('pageOutline', () => {
     });
   });
 
+  it('keeps an empty palette video fence as a video block', () => {
+    const serialized = serializePageOutline([
+      { id: 'outline-0', kind: 'video', src: '', poster: '' },
+    ]);
+    const again = parsePageOutline(serialized);
+    expect(again[0]).toMatchObject({ kind: 'video', src: '', poster: '' });
+  });
+
   it('parses callout fences', () => {
     const blocks = parsePageOutline(':::tip\nUse outline mode.\n:::');
     expect(blocks[0]).toMatchObject({

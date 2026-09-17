@@ -1,8 +1,7 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Bold,
   Code,
-  Eye,
   Heading2,
   Image as ImageIcon,
   Video as VideoIcon,
@@ -28,13 +27,13 @@ import { EmbedInsertModal } from './EmbedInsertModal';
 import { HtmlBlockInsertModal } from './HtmlBlockInsertModal';
 import { TableInsertModal } from './TableInsertModal';
 import { MermaidInsertModal } from './MermaidInsertModal';
+import { AdminBodyPreviewPanel } from './AdminBodyPreviewPanel';
 import {
   MarkdownCodeMirrorEditor,
   type MarkdownEditorSurfaceHandle,
 } from './MarkdownCodeMirrorEditor';
 import type { ExternalEmbedProvider } from '../../utils/embedShortcode';
-import { markdownToHtml, wrapSelection, insertAtCursor } from '../../utils/contentEditor';
-import { sanitizePublicHtml } from '../../utils/sanitizeHtml';
+import { wrapSelection, insertAtCursor } from '../../utils/contentEditor';
 import {
   profileAllows,
   type EditorProfileDefinition,
@@ -56,6 +55,8 @@ interface MarkdownContentEditorProps {
   embedProviders?: ExternalEmbedProvider[];
   profile: EditorProfileDefinition;
   onBlockedAction?: (message: string) => void;
+  /** Hide Úprava/Rozdelený/Náhľad when a sibling live preview pane is already shown. */
+  hideClientPreview?: boolean;
 }
 
 type PreviewMode = 'edit' | 'split' | 'preview';
@@ -73,6 +74,7 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
   embedProviders = ['youtube', 'vimeo'],
   profile,
   onBlockedAction,
+  hideClientPreview = false,
 }) => {
   const { t } = useI18n();
   const { settings } = useSettingsContext();
@@ -80,7 +82,7 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const surfaceRef = useRef<MarkdownEditorSurfaceHandle>(null);
   const useCodeMirror = editorSettings?.markdownSurface === 'codemirror6';
-  const [previewMode, setPreviewMode] = useState<PreviewMode>('split');
+  const [previewMode, setPreviewMode] = useState<PreviewMode>(hideClientPreview ? 'edit' : 'split');
   const [customComponents, setCustomComponents] = useState<EditorComponentRegistration[]>([]);
   const [htmlBlockOpen, setHtmlBlockOpen] = useState(false);
   const [embedOpen, setEmbedOpen] = useState(false);
@@ -93,8 +95,6 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
   useEffect(() => {
     void loadAllowedEditorComponents(profile, editorSettings).then(setCustomComponents);
   }, [profile, editorSettings]);
-
-  const previewHtml = useMemo(() => markdownToHtml(value), [value]);
 
   const applyEdit = (mutator: (text: string, start: number, end: number) => { next: string; cursor: number }) => {
     const el = textareaRef.current;
@@ -273,6 +273,7 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
           )}
         </div>
 
+        {hideClientPreview ? null : (
         <div className="flex gap-1 text-xs">
           {(['edit', 'split', 'preview'] as PreviewMode[]).map((mode) => (
             <button
@@ -287,6 +288,7 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
             </button>
           ))}
         </div>
+        )}
       </div>
 
       <div
@@ -330,20 +332,12 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
           ))}
 
         {previewMode !== 'edit' && (
-          <div className="p-4 overflow-y-auto bg-admin-canvas">
-            <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-admin-muted mb-3">
-              <Eye size={14} />
-              {t('editor.markdownContent.previewLabel')}
-            </div>
-            {value.trim() ? (
-              <div
-                className="prose dark:prose-invert max-w-none prose-headings:scroll-mt-20"
-                dangerouslySetInnerHTML={{ __html: sanitizePublicHtml(previewHtml) }}
-              />
-            ) : (
-              <p className="text-sm text-slate-400">{t('editor.markdownContent.previewEmpty')}</p>
-            )}
-          </div>
+          <AdminBodyPreviewPanel
+            body={value}
+            bodyFormat="markdown"
+            sandbox
+            className="min-h-[420px] rounded-none border-0 border-l border-slate-200 dark:border-slate-700"
+          />
         )}
       </div>
 

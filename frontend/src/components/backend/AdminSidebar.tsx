@@ -59,10 +59,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
         {!collapsed && <span className="flex-1 text-left line-clamp-1">{label}</span>}
         {!collapsed && count !== undefined && (
           <span
-            className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold ml-auto ${
-              active
-                ? 'bg-white/70 text-admin-sidebar-active-text dark:bg-admin-sidebar'
-                : 'bg-admin-canvas text-admin-sidebar-muted'
+            className={`admin-nav-count px-1.5 py-0.5 rounded-md text-[10px] font-bold ml-auto ${
+              active ? 'admin-nav-count-on' : ''
             }`}
           >
             {count}
@@ -176,12 +174,12 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
 
       <div className="p-3 border-t border-admin-border shrink-0">
         {!collapsed ? (
-          <div className="bg-admin-canvas rounded-lg p-3 border border-admin-border">
-            <div className="flex items-center gap-2 text-admin-primary font-semibold text-xs mb-1">
+          <div className="admin-sidebar-footer-card rounded-lg p-3">
+            <div className="admin-sidebar-footer-title flex items-center gap-2 font-semibold text-xs mb-1">
               <Database className="w-3.5 h-3.5" />
               <span>{t('admin.sidebar.storageTitle')}</span>
             </div>
-            <p className="text-[10px] text-admin-sidebar-muted leading-relaxed">{t('admin.sidebar.storageHint')}</p>
+            <p className="admin-sidebar-footer-hint text-[10px] leading-relaxed">{t('admin.sidebar.storageHint')}</p>
           </div>
         ) : (
           <div className="flex justify-center text-admin-primary" title={t('admin.sidebar.storageTitle')}>

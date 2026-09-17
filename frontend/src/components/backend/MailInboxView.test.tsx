@@ -79,7 +79,31 @@ vi.mock('../../api/mail', async (importOriginal) => {
       hide: vi.fn(async () => ({ success: true, data: { hidden: true } })),
       unhide: vi.fn(),
       moveSpam: vi.fn(),
+      blockSender: vi.fn(async () => ({ success: true, data: { blocked: 'zebra@paginium.test', moved: true } })),
+      autocleanSpam: vi.fn(async () => ({ success: true, data: { purged: 0 } })),
+      blockedSenders: vi.fn(async () => ({ mailbox: 'editor@paginium.test', blocked: ['spam@evil.test'] })),
+      unblockSender: vi.fn(async () => ({ success: true, data: { unblocked: 'spam@evil.test', removed: true } })),
+      signature: vi.fn(async () => ({
+        mailbox: 'editor@paginium.test',
+        templates: [{ id: 'classic' }, { id: 'minimal' }],
+        prefs: { enabled: false, templateId: 'classic', overrides: {} },
+        fields: {
+          displayName: 'Editor',
+          jobTitle: '',
+          phone: '',
+          contactEmail: 'editor@paginium.test',
+          bio: '',
+          companyName: '',
+          website: '',
+          avatarUrl: '',
+        },
+        previewHtml: '<div>preview</div>',
+      })),
+      saveSignature: vi.fn(),
+      importSignatureProfile: vi.fn(),
       send: vi.fn(async () => ({ success: true, data: { sent: true } })),
+      saveDraft: vi.fn(async () => ({ success: true, data: { uid: -101 } })),
+      deleteLocalMessage: vi.fn(async () => ({ success: true, data: { deleted: true } })),
     },
   };
 });
@@ -145,6 +169,101 @@ describe('MailInboxView', () => {
     expect(await screen.findByTestId('mail-tag-input')).toBeVisible();
   });
 
+  it('removes a label from an open message', async () => {
+    vi.mocked(mailApi.changeFlags).mockClear();
+    renderMail();
+    fireEvent.click(await screen.findByTestId('mail-row-1'));
+    await screen.findByTestId('mail-message-labels');
+    fireEvent.click(await screen.findByTestId('mail-tag-remove-intro'));
+    await waitFor(() => {
+      expect(mailApi.changeFlags).toHaveBeenCalledWith('INBOX', 1, [], ['intro']);
+    });
+  });
+
+  it('shows signature panel for active mailbox', async () => {
+    renderMail();
+    fireEvent.click(await screen.findByTestId('mail-signature-toggle'));
+    expect(await screen.findByTestId('mail-signature-panel')).toBeInTheDocument();
+    expect(screen.getByTestId('mail-signature-field-displayName')).toHaveValue('Editor');
+  });
+
+  it('shows blocked senders panel and can unblock', async () => {
+    renderMail();
+    fireEvent.click(await screen.findByTestId('mail-blocked-toggle'));
+    expect(await screen.findByTestId('mail-blocked-panel')).toBeInTheDocument();
+    expect(screen.getByText('spam@evil.test')).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('mail-unblock-spam@evil.test'));
+    await waitFor(() => {
+      expect(mailApi.unblockSender).toHaveBeenCalledWith('spam@evil.test');
+    });
+  });
+
+  it('requests mail body with remote images off by default', async () => {
+    localStorage.clear();
+    vi.mocked(mailApi.message).mockClear();
+    renderMail();
+    fireEvent.click(await screen.findByTestId('mail-row-1'));
+    await waitFor(() => {
+      expect(mailApi.message).toHaveBeenCalled();
+    });
+    expect(vi.mocked(mailApi.message).mock.calls[0]?.[2]).toBe(false);
+  });
+
+  it('loads remote images when the sender is trusted for this mailbox', async () => {
+    localStorage.setItem(
+      'paginium.mail.trustedImageSenders:editor@paginium.test',
+      JSON.stringify(['zebra@paginium.test'])
+    );
+    vi.mocked(mailApi.message).mockClear();
+    renderMail();
+    fireEvent.click(await screen.findByTestId('mail-row-1'));
+    await waitFor(() => {
+      expect(vi.mocked(mailApi.message).mock.calls[0]?.[2]).toBe(true);
+    });
+  });
+
+  it('remembers sender when showing remote images once', async () => {
+    localStorage.clear();
+    vi.mocked(mailApi.message).mockResolvedValueOnce({
+      uid: 1,
+      subject: 'Newsletter',
+      from: 'News <news@partner.com>',
+      date: '2026-09-15',
+      flags: [],
+      tags: [],
+      snippet: 'Hello',
+      html: '<html><body><img data-pg-blocked-src="https://track.example/p.gif" src="data:image/gif;base64,R0l"></body></html>',
+      remoteImagesBlocked: true,
+      seen: true,
+      flagged: false,
+    });
+    renderMail();
+    fireEvent.click(await screen.findByTestId('mail-row-1'));
+    fireEvent.click(await screen.findByTestId('mail-load-remote-images'));
+    expect(localStorage.getItem('paginium.mail.trustedImageSenders:editor@paginium.test')).toContain(
+      'news@partner.com'
+    );
+  });
+
+  it('offers load remote images when the server blocked tracking pixels', async () => {
+    vi.mocked(mailApi.message).mockResolvedValueOnce({
+      uid: 1,
+      subject: 'Newsletter',
+      from: 'news@paginium.test',
+      date: '2026-09-15',
+      flags: [],
+      tags: [],
+      snippet: 'Hello',
+      html: '<html><body><img data-pg-blocked-src="https://track.example/p.gif" src="data:image/gif;base64,R0l"></body></html>',
+      remoteImagesBlocked: true,
+      seen: true,
+      flagged: false,
+    });
+    renderMail();
+    fireEvent.click(await screen.findByTestId('mail-row-1'));
+    expect(await screen.findByTestId('mail-load-remote-images')).toBeInTheDocument();
+  });
+
   it('renders HTML mail in a sandboxed iframe', async () => {
     vi.mocked(mailApi.message).mockResolvedValueOnce({
       uid: 1,
@@ -206,6 +325,27 @@ describe('MailInboxView', () => {
     await waitFor(() => {
       expect(mailApi.addAccount).toHaveBeenCalledWith('info@paginium.test', 'secret');
     });
+  });
+
+  it('opens mail folder drawer from mobile menu control', async () => {
+    renderMail();
+    const app = await screen.findByTestId('mail-inbox');
+    const mailApp = app.querySelector('.mail-app');
+    expect(mailApp).toBeTruthy();
+    fireEvent.click(await screen.findByTestId('mail-nav-toggle'));
+    expect(mailApp?.classList.contains('mail-app-nav-drawer-open')).toBe(true);
+    fireEvent.click(screen.getByTestId('mail-nav-backdrop'));
+    expect(mailApp?.classList.contains('mail-app-nav-drawer-open')).toBe(false);
+  });
+
+  it('opens message in main pane and returns to list with back control', async () => {
+    renderMail();
+    fireEvent.click(await screen.findByTestId('mail-row-1'));
+    expect(await screen.findByTestId('mail-message-view')).toBeInTheDocument();
+    expect(screen.queryByTestId('mail-row-1')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('mail-back-to-list'));
+    expect(await screen.findByTestId('mail-row-1')).toBeInTheDocument();
+    expect(screen.queryByTestId('mail-message-view')).not.toBeInTheDocument();
   });
 
   it('prefills a reply from the opened message', async () => {
@@ -279,7 +419,7 @@ describe('MailInboxView', () => {
   it('shows message tags as colored chips', async () => {
     renderMail();
     const row = await screen.findByTestId('mail-row-1');
-    expect(row.querySelector('.mail-tag')).toHaveTextContent('Intro');
+    expect(row.querySelector('.mail-tag')).toHaveTextContent('intro');
     expect(await screen.findByTestId('mail-label-intro')).toBeInTheDocument();
   });
 

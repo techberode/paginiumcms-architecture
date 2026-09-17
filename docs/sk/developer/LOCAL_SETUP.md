@@ -81,6 +81,8 @@ Konkrétny skript je zdroj pravdy. Očakávaný bezpečný kontrakt:
 
 `APP_KEY` po vzniku šifrovaných dát nemeň. Strata kľúča môže znamenať stratu TOTP/settings secrets.
 
+**Fail-closed zápis:** Bez platného `APP_KEY` API **odmietne zašifrovať nové tajomstvá** (IMAP heslá, SMTP polia, 2FA seed, webhook secrety) namiesto plaintextu. Setup preflight (`app_key_encryption`) a Origin probe `security.at_rest_encryption` to isté hlásia. Viď [ISS-170](../../ISSUES.md#iss-170).
+
 **Zdieľané dev storage:** PHPUnit setup testy vymažú userov len keď neexistuje reálny (ne-`@example.com`) účet. Po vytvorení admina cez `/setup` gate testy preskočí namiesto mazania účtu. Pre dev admin **nepoužívaj** `@example.com` — `dev:hygiene` ho považuje za test artefakt.
 
 Ak SPA stále presmeruje na `/setup` (`needsSetup: true`, `hasUsers: false`), súbory userov chýbajú (často po PHPUnit), ale `general.installed` zostalo `true`. Oprava: znova dokonči `/setup` alebo `php backend/bin/console user:create` s e-mailom mimo `@example.com`.

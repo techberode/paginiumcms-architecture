@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\Notification\Services;
 
+use PaginiumCMS\Core\Mail\Services\MailOutboundMimeBuilder;
+
 /**
  * Lightweight SMTP client (Iteration 6). Supports plain, TLS, and AUTH LOGIN.
  */
@@ -18,9 +20,20 @@ final class SmtpTransport
     ) {
     }
 
-    public function send(string $fromEmail, string $fromName, string $to, string $subject, string $htmlBody): bool
+    /**
+     * @param list<string> $recipients
+     * @param list<array{contentId: string, mime: string, bytes: string}> $inlineImages
+     */
+    public function send(
+        string $fromEmail,
+        string $fromName,
+        array $recipients,
+        string $subject,
+        string $htmlBody,
+        array $inlineImages = [],
+    ): bool
     {
-        if ($this->host === '') {
+        if ($this->host === '' || $recipients === []) {
             return false;
         }
 
@@ -59,21 +72,14 @@ final class SmtpTransport
 
             $this->command($socket, 'MAIL FROM:<' . $fromEmail . '>');
             $this->expect($socket, [250]);
-            $this->command($socket, 'RCPT TO:<' . $to . '>');
-            $this->expect($socket, [250, 251]);
+            foreach ($recipients as $recipient) {
+                $this->command($socket, 'RCPT TO:<' . $recipient . '>');
+                $this->expect($socket, [250, 251]);
+            }
             $this->command($socket, 'DATA');
             $this->expect($socket, [354]);
 
-            $headers = [
-                'From: ' . $this->formatAddress($fromEmail, $fromName),
-                'To: <' . $to . '>',
-                'Subject: ' . $this->encodeHeader($subject),
-                'MIME-Version: 1.0',
-                'Content-Type: text/html; charset=UTF-8',
-                'Content-Transfer-Encoding: 8bit',
-            ];
-
-            $message = implode("\r\n", $headers) . "\r\n\r\n" . $htmlBody . "\r\n.";
+            $message = MailOutboundMimeBuilder::buildRfc822($fromEmail, $fromName, $recipients, $subject, $htmlBody, $inlineImages) . "\r\n.";
             fwrite($socket, $message . "\r\n");
             $this->expect($socket, [250]);
             $this->command($socket, 'QUIT');
@@ -117,17 +123,4 @@ final class SmtpTransport
         return $data;
     }
 
-    private function formatAddress(string $email, string $name): string
-    {
-        if ($name === '') {
-            return '<' . $email . '>';
-        }
-
-        return $this->encodeHeader($name) . ' <' . $email . '>';
-    }
-
-    private function encodeHeader(string $value): string
-    {
-        return '=?UTF-8?B?' . base64_encode($value) . '?=';
-    }
 }

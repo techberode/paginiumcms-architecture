@@ -38,5 +38,6 @@ describe('platform i18n module', () => {
     expect(translate('en', 'platform.account.tabs.profile')).toBe('Profile');
     expect(translate('sk', 'platform.account.tabs.public')).toBe('Verejná karta');
     expect(translate('en', 'platform.account.sections.details')).toBe('Profile details');
+    expect(translate('sk', 'platform.preview.openFull')).toBe('Náhľad stránky');
   });
 });

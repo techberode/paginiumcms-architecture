@@ -124,6 +124,7 @@ final class CodePolicyEngineTest extends TestCase
             'version' => 1,
             'attrs' => [
                 'layout' => ['type' => 'enum', 'options' => ['2-columns', 'stack']],
+                'image' => ['type' => 'media', 'accept' => 'image'],
             ],
             'expand' => '<div class="pg-grid pg-grid-cols-1">{{body}}</div>',
         ]);

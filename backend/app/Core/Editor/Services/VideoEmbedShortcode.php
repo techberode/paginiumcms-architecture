@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\Editor\Services;
 
+use PaginiumCMS\Core\Media\Services\DamMediaUrl;
+
 /**
  * Expands guarded :::video Markdown blocks to safe HTML (It.79).
  */
@@ -56,32 +58,6 @@ final class VideoEmbedShortcode
 
     public function sanitizeMediaUrl(string $url): string
     {
-        $url = trim($url);
-        if ($url === '') {
-            return '';
-        }
-
-        if ($this->isAllowedMediaPath($url)) {
-            return $url;
-        }
-
-        $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
-        if (!in_array($scheme, ['http', 'https'], true)) {
-            return '';
-        }
-
-        $path = (string) parse_url($url, PHP_URL_PATH);
-
-        return $this->isAllowedMediaPath($path) ? $url : '';
-    }
-
-    private function isAllowedMediaPath(string $url): bool
-    {
-        if (!str_starts_with($url, '/')) {
-            return false;
-        }
-
-        return str_starts_with($url, '/storage/')
-            || str_starts_with($url, '/api/media/file/');
+        return DamMediaUrl::sanitize($url);
     }
 }

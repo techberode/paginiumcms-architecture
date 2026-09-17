@@ -101,6 +101,39 @@ class ContentSecuritySanitizerTest extends TestCase
         $this->assertStringContainsString('<svg', $result);
     }
 
+    public function testKeepsMutedHeroVideoAttributes(): void
+    {
+        $sanitizer = $this->makeSanitizer([
+            'sanitizeHtmlOnSave' => true,
+            'allowScriptTags' => false,
+        ]);
+
+        $html = '<section class="pg-hero"><video class="pg-hero-video" muted loop playsinline autoplay preload="metadata" poster="/storage/app/content/media/still.jpg"><source src="/storage/app/content/media/hero.mp4"></video></section>';
+        $result = $sanitizer->sanitizeHtml($html);
+
+        $this->assertStringContainsString('pg-hero-video', $result);
+        $this->assertStringContainsString('muted', $result);
+        $this->assertStringContainsString('loop', $result);
+        $this->assertStringContainsString('playsinline', $result);
+        $this->assertStringContainsString('poster="/storage/app/content/media/still.jpg"', $result);
+        $this->assertStringContainsString('src="/storage/app/content/media/hero.mp4"', $result);
+        $this->assertStringNotContainsString('javascript:', $result);
+    }
+
+    public function testStripsExternalVideoSrc(): void
+    {
+        $sanitizer = $this->makeSanitizer([
+            'sanitizeHtmlOnSave' => true,
+            'allowScriptTags' => false,
+        ]);
+
+        $result = $sanitizer->sanitizeHtml(
+            '<video src="https://evil.example/track.mp4" controls></video>'
+        );
+
+        $this->assertStringNotContainsString('evil.example', $result);
+    }
+
     /**
      * @param array<string, mixed> $contentSecurity
      */

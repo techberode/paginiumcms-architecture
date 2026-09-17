@@ -89,6 +89,7 @@ Complete index of the final bilingual PaginiumCMS documentation. Paths are relat
 - [Logo, Favicon, and Site Identity](user/BRANDING.md) — `docs/user/BRANDING.md`
 - [Code Editor — User Guide](user/CODE_EDITOR.md) — `docs/user/CODE_EDITOR.md`
 - [Content editor — pages and articles](user/CONTENT_EDITOR.md) — `docs/user/CONTENT_EDITOR.md`
+- [Feature gallery](user/GALLERY.md) — `docs/user/GALLERY.md`
 - [Developer Mode — Security Gate](user/DEVELOPER_MODE.md) — `docs/user/DEVELOPER_MODE.md`
 - [Firewall (WAF) — administrator guide](user/FIREWALL.md) — `docs/user/FIREWALL.md`
 - [First steps after installation](user/FIRST_STEPS.md) — `docs/user/FIRST_STEPS.md`

@@ -6,6 +6,7 @@ namespace PaginiumCMS\Http\Controllers\Admin;
 
 use InvalidArgumentException;
 use PaginiumCMS\Core\Mail\Services\DomainMailService;
+use PaginiumCMS\Core\Security\Services\EncryptionUnavailableException;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Modules\Security\Models\User;
@@ -48,6 +49,8 @@ final class MailController
             $this->mail->savePassword($user, $password);
         } catch (InvalidArgumentException $exception) {
             return $this->mailValidation($response, $exception);
+        } catch (EncryptionUnavailableException $exception) {
+            return $this->json->error($response, $exception->getMessage(), 503);
         }
 
         return $this->json->success($response, ['saved' => true]);
@@ -68,6 +71,8 @@ final class MailController
             $this->mail->addAccount($user, $mailbox, $password);
         } catch (InvalidArgumentException $exception) {
             return $this->mailValidation($response, $exception);
+        } catch (EncryptionUnavailableException $exception) {
+            return $this->json->error($response, $exception->getMessage(), 503);
         }
 
         return $this->json->success($response, ['added' => true], 201);
@@ -173,7 +178,13 @@ final class MailController
         $folder = $this->folderFromQuery($request);
         $uid = (int) ($args['uid'] ?? 0);
 
-        return $this->run($request, $response, fn (User $user): array => $this->mail->message($user, $folder, $uid));
+        $allowRemoteImages = $this->allowRemoteImagesFromQuery($request);
+
+        return $this->run(
+            $request,
+            $response,
+            fn (User $user): array => $this->mail->message($user, $folder, $uid, $allowRemoteImages)
+        );
     }
 
     /**
@@ -280,6 +291,24 @@ final class MailController
         return $this->json->success($response, ['restored' => true]);
     }
 
+    public function emptyLocalTrash(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $user = $this->actor($request);
+        if ($user === null) {
+            return $this->json->error($response, 'Unauthorized', 401);
+        }
+
+        try {
+            $result = $this->mail->emptyLocalTrash($user);
+        } catch (InvalidArgumentException $exception) {
+            return $this->mailValidation($response, $exception);
+        } catch (RuntimeException $exception) {
+            return $this->json->error($response, $exception->getMessage(), 503);
+        }
+
+        return $this->json->success($response, $result);
+    }
+
     /**
      * @param array<string, string> $args
      */
@@ -304,6 +333,131 @@ final class MailController
         return $this->json->success($response, ['moved' => true]);
     }
 
+    /**
+     * @param array<string, string> $args
+     */
+    public function blockSender(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $user = $this->actor($request);
+        if ($user === null) {
+            return $this->json->error($response, 'Unauthorized', 401);
+        }
+
+        $body = RequestJsonBody::decode($request) ?? [];
+        $folder = is_string($body['folder'] ?? null) ? $body['folder'] : $this->folderFromQuery($request);
+        $from = is_string($body['from'] ?? null) ? $body['from'] : '';
+
+        try {
+            $result = $this->mail->blockSender($user, $folder, (int) ($args['uid'] ?? 0), $from);
+        } catch (InvalidArgumentException $exception) {
+            return $this->mailValidation($response, $exception);
+        } catch (RuntimeException $exception) {
+            return $this->json->error($response, $exception->getMessage(), 503);
+        }
+
+        return $this->json->success($response, $result);
+    }
+
+    public function autocleanSpam(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $user = $this->actor($request);
+        if ($user === null) {
+            return $this->json->error($response, 'Unauthorized', 401);
+        }
+
+        try {
+            $result = $this->mail->autocleanSpam($user);
+        } catch (InvalidArgumentException $exception) {
+            return $this->mailValidation($response, $exception);
+        } catch (RuntimeException $exception) {
+            return $this->json->error($response, $exception->getMessage(), 503);
+        }
+
+        return $this->json->success($response, $result);
+    }
+
+    public function blockedSenders(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $user = $this->actor($request);
+        if ($user === null) {
+            return $this->json->error($response, 'Unauthorized', 401);
+        }
+
+        return $this->json->success($response, $this->mail->blockedSenders($user));
+    }
+
+    public function signature(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $user = $this->actor($request);
+        if ($user === null) {
+            return $this->json->error($response, 'Unauthorized', 401);
+        }
+
+        try {
+            $payload = $this->mail->signature($user);
+        } catch (InvalidArgumentException $exception) {
+            return $this->mailValidation($response, $exception);
+        }
+
+        return $this->json->success($response, $payload);
+    }
+
+    public function saveSignature(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $user = $this->actor($request);
+        if ($user === null) {
+            return $this->json->error($response, 'Unauthorized', 401);
+        }
+
+        $body = RequestJsonBody::decode($request) ?? [];
+
+        try {
+            $payload = $this->mail->saveSignature($user, $body);
+        } catch (InvalidArgumentException $exception) {
+            return $this->mailValidation($response, $exception);
+        }
+
+        return $this->json->success($response, $payload);
+    }
+
+    public function importSignatureProfile(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $user = $this->actor($request);
+        if ($user === null) {
+            return $this->json->error($response, 'Unauthorized', 401);
+        }
+
+        try {
+            $payload = $this->mail->importSignatureFromProfile($user);
+        } catch (InvalidArgumentException $exception) {
+            return $this->mailValidation($response, $exception);
+        }
+
+        return $this->json->success($response, $payload);
+    }
+
+    public function unblockSender(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $user = $this->actor($request);
+        if ($user === null) {
+            return $this->json->error($response, 'Unauthorized', 401);
+        }
+
+        $body = RequestJsonBody::decode($request) ?? [];
+        $email = is_string($body['email'] ?? null) ? trim($body['email']) : '';
+        if ($email === '') {
+            return $this->json->validation($response, 'Validation failed', ['email' => ['Email is required.']]);
+        }
+
+        try {
+            $result = $this->mail->unblockSender($user, $email);
+        } catch (InvalidArgumentException $exception) {
+            return $this->mailValidation($response, $exception);
+        }
+
+        return $this->json->success($response, $result);
+    }
+
     public function send(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $user = $this->actor($request);
@@ -317,14 +471,58 @@ final class MailController
         $text = is_string($body['body'] ?? null) ? $body['body'] : '';
 
         try {
-            $this->mail->send($user, $to, $subject, $text);
+            $result = $this->mail->send($user, $to, $subject, $text);
         } catch (InvalidArgumentException $exception) {
             return $this->mailValidation($response, $exception);
         } catch (RuntimeException $exception) {
             return $this->json->error($response, $exception->getMessage(), 503);
         }
 
-        return $this->json->success($response, ['sent' => true]);
+        return $this->json->success($response, $result);
+    }
+
+    public function saveDraft(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $user = $this->actor($request);
+        if ($user === null) {
+            return $this->json->error($response, 'Unauthorized', 401);
+        }
+
+        $body = RequestJsonBody::decode($request) ?? [];
+        $to = is_string($body['to'] ?? null) ? $body['to'] : '';
+        $subject = is_string($body['subject'] ?? null) ? $body['subject'] : '';
+        $text = is_string($body['body'] ?? null) ? $body['body'] : '';
+        $uid = (int) ($body['uid'] ?? 0);
+
+        try {
+            $result = $this->mail->saveDraft($user, $to, $subject, $text, $uid);
+        } catch (InvalidArgumentException $exception) {
+            return $this->mailValidation($response, $exception);
+        }
+
+        return $this->json->success($response, $result);
+    }
+
+    /**
+     * @param array<string, mixed> $args
+     */
+    public function deleteLocalMessage(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $user = $this->actor($request);
+        if ($user === null) {
+            return $this->json->error($response, 'Unauthorized', 401);
+        }
+
+        $folder = $this->folderFromQuery($request);
+        $uid = (int) ($args['uid'] ?? 0);
+
+        try {
+            $this->mail->deleteLocalMessage($user, $folder, $uid);
+        } catch (InvalidArgumentException $exception) {
+            return $this->mailValidation($response, $exception);
+        }
+
+        return $this->json->success($response, ['deleted' => true]);
     }
 
     /**
@@ -356,6 +554,14 @@ final class MailController
         $user = $request->getAttribute('user');
 
         return $user instanceof User ? $user : null;
+    }
+
+    private function allowRemoteImagesFromQuery(ServerRequestInterface $request): bool
+    {
+        $params = $request->getQueryParams();
+        $value = $params['remoteImages'] ?? null;
+
+        return $value === '1' || $value === 1 || $value === 'true';
     }
 
     /**

@@ -320,7 +320,7 @@ $containerBuilder->addDefinitions([
             $container->get(CacheManager::class),
             maxRequests: $isTesting ? 100000 : (int)($_ENV['RATE_LIMIT_MAX_REQUESTS'] ?? 60),
             window: $isTesting ? 60 : (int)($_ENV['RATE_LIMIT_WINDOW'] ?? 60),
-            excludedPaths: ['/api/health', '/api/test', '/api/debug/client-event'],
+            excludedPaths: ['/api/health', '/api/debug/client-event'],
             excludedIps: $isTesting ? ['127.0.0.1', '::1'] : [],
             // Ak beží ZA nginx reverse proxy (LAN: .26 → PHP .20), pridajte IP nginx hosta.
     trustedProxies: ClientIpResolver::trustedProxiesFromEnv()
@@ -431,8 +431,7 @@ $containerBuilder->addDefinitions([
     },
 
     // Šifrovanie tajomstiev „at-rest" (audit A1). Kľúč sa odvodí z APP_KEY;
-    // ak nie je platný 32-bajtový kľúč, služba je vypnutá (plaintext) a
-    // aktivuje sa nastavením reálneho APP_KEY – bez migračného skriptu.
+    // encrypt() fail-closed ak kľúč chýba; decrypt() legacy plaintext necháva.
     EncryptionService::class => function () {
         $appKey = getenv('APP_KEY') ?: ($_ENV['APP_KEY'] ?? null);
 

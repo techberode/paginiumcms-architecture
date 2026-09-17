@@ -1,6 +1,6 @@
 # PaginiumCMS — consolidated backlog
 
-> **Snapshot:** `v2.1.0-beta.78` · September 15, 2026  
+> **Snapshot:** `v2.1.0-beta.79` · September 17, 2026  
 > **Phase:** planned-iteration development — [CONTINUATION.md](CONTINUATION.md) (stabilization freeze **closed**)  
 > **Rule:** the active backlog contains only unshipped or precisely bounded remaining scope  
 > **No-SQL:** [architecture/NOSQL_MANDATE.md](architecture/NOSQL_MANDATE.md)  
@@ -35,7 +35,7 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | 8 | **It.73** Multi-locale document | 🟡 | ✅ | shipped in `v2.1.0-beta.29` — see [ITERATION_73](ITERATION_73.md) |
 | 9 | **It.74** API keys/JWT | 🟡 | ✅ | shipped in `v2.1.0-beta.30` — see [ITERATION_74](ITERATION_74.md) |
 | 10 | **It.80** SEO, integrations & ops toolkit | 🟡 | ✅ | shipped `beta.39` — see [ITERATION_80](en/ITERATION_80.md) |
-| 11 | **It.58f** Visual page blocks | 🟡 P1 | 🟡 partial | **58f-a/b** parser + outline UI shipped; next live preview — [ITERATION_58f](ITERATION_58f.md) |
+| 11 | **It.58f** Visual page blocks | 🟡 P1 | ✅ | **58f-a–g** shipped; 58g compile stays with It.48 — [ITERATION_58f](ITERATION_58f.md) |
 | 12 | **It.81** Editorial workflow & content ops | 🟡 | ✅ | 81a–81f shipped — [ITERATION_81](ITERATION_81.md) |
 | 13 | **It.82** Origin Panel (maintainer cockpit) | 🔵 | ✅ | env-gated; excluded from customer archive — [ITERATION_82](ITERATION_82.md) |
 | 14 | **It.87** Project site planner + UX audit completion | 🟡 P1 | ✅ shipped | [ITERATION_87](ITERATION_87.md) — 87a–87m |
@@ -47,7 +47,7 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | 20 | **It.25** Setup wizard/update UX | 🟡 | ✅ basic + M1+ | shipped `beta.62`–`beta.65`; not a release blocker anymore |
 | 21 | **It.89** Plugin capability model | 🟡 | ⏳ | [ITERATION_89](ITERATION_89.md) |
 | 22 | **It.92** SQLite query index + Guard advisor | 🟡 | ⏳ | derived catalog index — [ITERATION_92](ITERATION_92.md) |
-| 23 | **It.93** Admin chrome + daily apps | 🟡 P1 | ✅ shipped | chrome + teams/account/events/time/widgets/catalog in `beta.77`; **93l** Kanban + **93m** domain IMAP in `beta.78` — [ITERATION_93](ITERATION_93.md); **93l-2** notes/SLA later |
+| 23 | **It.93** Admin chrome + daily apps | 🟡 P1 | ✅ shipped | chrome in `beta.77`; **93l** Kanban + **93m** IMAP in `beta.78`; **93m-5** mail polish in `beta.79` — [ITERATION_93](ITERATION_93.md); **93l-2** notes/SLA later |
 | 24 | **It.76/77** Translation providers | 🔵 | ⏳ | after It.73 (shipped) |
 | 25 | **It.75** AI agent | 🔵 | ⏳ | after locale + translation providers |
 | 26 | **It.83** Theme runtime + Terminal Breach | 🟡 | ✅ | shipped `beta.59` — [ITERATION_83](ITERATION_83.md) |
@@ -272,7 +272,7 @@ Deferred (post-M1+ / stretch):
 
 | Item | Status | Note |
 |------|--------|------|
-| **It.58d** layout blocks/polish | ✅ | 58f-a ✅; 58f-b–g / 58g ⏳ remainder |
+| **It.58d** layout blocks/polish | ✅ | 58f-a–g ✅; 58g compile with It.48 |
 | **It.81** editorial workflow | ✅ | [ITERATION_81](ITERATION_81.md) — complete (81f snippets) |
 | **It.82** Origin Panel | ✅ | [ITERATION_82](ITERATION_82.md) — shipped `beta.56`; excluded from archive |
 | **It.48** static/dynamic rendering | ⏳ | combine design with It.70 publishing pipeline |
@@ -369,7 +369,7 @@ Docs gate
   → It.76 / It.77
   → It.75
 
-Parallel where safe: It.81 sub-phases, It.82 (no customer impact), It.58f/58g remainder, beta fixes, community testing.
+Parallel where safe: It.89 slices, It.82d, It.58g with It.48, beta fixes, community testing.
 Pre-Final: It.25 + GA gate.
 ```
 
