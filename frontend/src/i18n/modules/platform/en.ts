@@ -341,7 +341,7 @@ export const platformEn: MessageTree = {
   },
   extensions: {
     title: 'Extensions',
-    subtitle: 'External add-ons outside Core — ZIP import, hook and route activation.',
+    subtitle: 'External add-ons outside Core — ZIP import requires a capability manifest (It.89a).',
     importZip: 'Import ZIP',
     importing: 'Importing…',
     refresh: 'Refresh',

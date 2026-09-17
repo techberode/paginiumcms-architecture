@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Extensions\Services;
 
 use PaginiumCMS\Core\Hook\HookCatalog;
+use PaginiumCMS\Http\Extensions\Capabilities\ExtensionManifestSchema;
+use PaginiumCMS\Http\Extensions\Capabilities\PluginCapabilityCatalog;
 use PaginiumCMS\Support\AppVersion;
+use PaginiumCMS\Support\Lang;
 use RuntimeException;
 
 /**
@@ -36,6 +39,9 @@ final class ExtensionManifestValidator
             throw new RuntimeException('plugin.json must define version.');
         }
 
+        $this->validateManifestVersion($manifest);
+        $this->validateCapabilities($manifest);
+
         $minVersion = trim((string) ($manifest['minCmsVersion'] ?? ''));
         if ($minVersion !== '' && version_compare(AppVersion::current(), $minVersion, '<')) {
             throw new RuntimeException(
@@ -60,6 +66,45 @@ final class ExtensionManifestValidator
         $this->validateEditorComponents($manifest);
 
         return $id;
+    }
+
+    /**
+     * @param array<string, mixed> $manifest
+     */
+    private function validateManifestVersion(array $manifest): void
+    {
+        $version = $manifest['manifestVersion'] ?? null;
+        if (!is_int($version) || $version !== ExtensionManifestSchema::MANIFEST_VERSION) {
+            throw new RuntimeException(Lang::get('manifest_version_required', [], 'extensions'));
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $manifest
+     */
+    private function validateCapabilities(array $manifest): void
+    {
+        $raw = $manifest['capabilities'] ?? null;
+        if (!is_array($raw) || array_is_list($raw) === false) {
+            throw new RuntimeException(Lang::get('capabilities_required', [], 'extensions'));
+        }
+
+        $seen = [];
+        foreach ($raw as $entry) {
+            if (!is_string($entry)) {
+                throw new RuntimeException(Lang::get('capabilities_invalid', [], 'extensions'));
+            }
+
+            $capability = trim($entry);
+            if ($capability === '' || isset($seen[$capability])) {
+                throw new RuntimeException(Lang::get('capabilities_invalid', [], 'extensions'));
+            }
+
+            $seen[$capability] = true;
+            if (!PluginCapabilityCatalog::isAllowed($capability)) {
+                throw new RuntimeException(Lang::get('capabilities_unknown', ['capability' => $capability], 'extensions'));
+            }
+        }
     }
 
     /**

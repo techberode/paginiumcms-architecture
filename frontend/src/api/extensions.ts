@@ -22,6 +22,10 @@ export interface ExtensionImportResult {
   installedAt: string;
 }
 
+export type ExtensionImportResponse =
+  | { ok: true; data: ExtensionImportResult }
+  | { ok: false; data: null; error?: string };
+
 export const extensionsApi = {
   list: async (): Promise<ExtensionRecord[]> => {
     const response = await apiClient.get<{ extensions: ExtensionRecord[] }>('/api/admin/extensions');
@@ -39,17 +43,19 @@ export const extensionsApi = {
     return response.success && response.data ? response.data : null;
   },
 
-  importArchive: async (file: File): Promise<ExtensionImportResult | null> => {
+  importArchive: async (file: File): Promise<ExtensionImportResponse> => {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch('/api/admin/extensions/import', {
-      method: 'POST',
-      body: formData,
-      credentials: 'include',
-    });
+    const response = await apiClient.post<ExtensionImportResult>('/api/admin/extensions/import', formData);
+    if (response.success && response.data) {
+      return { ok: true, data: response.data };
+    }
 
-    const payload = await response.json();
-    return payload.success && payload.data ? (payload.data as ExtensionImportResult) : null;
+    return {
+      ok: false,
+      data: null,
+      error: typeof response.error === 'string' ? response.error : undefined,
+    };
   },
 };

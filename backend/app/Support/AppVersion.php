@@ -13,7 +13,7 @@ namespace PaginiumCMS\Support;
 final class AppVersion
 {
     /** Fallback when git tag cannot be resolved (e.g. exported tarball, CI without tags). */
-    public const VERSION = '2.1.0-beta.78';
+    public const VERSION = '2.1.0-beta.80';
 
     private static ?string $resolved = null;
 
@@ -62,11 +62,11 @@ final class AppVersion
             return null;
         }
 
-        $rootArg = escapeshellarg($root);
+        $git = GitCli::at($root);
         $commands = [
-            'git -C ' . $rootArg . ' describe --tags --exact-match 2>/dev/null',
-            'git -C ' . $rootArg . ' describe --tags --abbrev=0 2>/dev/null',
-            'git -C ' . $rootArg . ' describe --tags --always 2>/dev/null',
+            $git . ' describe --tags --exact-match 2>/dev/null',
+            $git . ' describe --tags --abbrev=0 2>/dev/null',
+            $git . ' describe --tags --always 2>/dev/null',
         ];
 
         foreach ($commands as $command) {

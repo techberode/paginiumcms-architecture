@@ -341,7 +341,7 @@ export const platformSk: MessageTree = {
   },
   extensions: {
     title: 'Rozšírenia',
-    subtitle: 'Externé doplnky mimo Core — import ZIP, aktivácia hookov a routes.',
+    subtitle: 'Externé doplnky mimo Core — ZIP import vyžaduje capability manifest (It.89a).',
     importZip: 'Import ZIP',
     importing: 'Importujem…',
     refresh: 'Obnoviť',

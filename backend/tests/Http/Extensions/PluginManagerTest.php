@@ -179,6 +179,10 @@ PHP);
      */
     private function writeManifest(string $id, array $manifest): void
     {
+        $manifest = array_merge([
+            'manifestVersion' => 1,
+            'capabilities' => ['content:read'],
+        ], $manifest);
         $dir = $this->extensionsRoot . '/' . $id;
         mkdir($dir, 0777, true);
         file_put_contents(

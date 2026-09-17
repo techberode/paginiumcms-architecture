@@ -1,6 +1,6 @@
 # Iteration 58f — Visual page blocks (amateur outline + developer live preview)
 
-> **Status:** ✅ shipped — **58f-a–g** (palette, live preview, DnD, DAM hero, `feature-gallery`, i18n/help). Remainder of [It.58](ITERATION_58.md) is **58g** compile/cache with [It.48](ITERATION_48.md).  
+> **Status:** 🟡 partial — **58f-a–g** shipped; **58f-h** visual block canvas planned (audit 2026-09-17). Remainder of [It.58](ITERATION_58.md) is **58g** compile/cache with [It.48](ITERATION_48.md).  
 > **Priority:** 🟡 **P1 for the publishing product** (ahead of It.92/93; parallel with It.89)  
 > **Wave:** Layout builder (58b–e shipped; **58g compile stays with [It.48](ITERATION_48.md)**)  
 > **Depends on:** It.58d expander + catalog · It.58e `pg-*` · It.90 insert wizards · It.88 sandbox preview pattern · It.65 gallery · It.79 DAM video · It.67/It.91 sanitizers  
@@ -129,10 +129,26 @@ This is **not** isolated-origin widgets. It is Core HTML like It.79, different p
 | **58f-e** | Media fields + `hero-video` / hero image on `landing-hero` | ✅ DAM picker on outline; `image`/`src`/`srcmobile`/`poster`; muted looping video; reduced-motion hides video |
 | **58f-f** | `feature-gallery` outline block → It.65 API | ✅ |
 | **58f-g** | i18n SK/EN, builderMode help, gate tests | ✅ |
+| **58f-h** | Visual block canvas (DnD stack), not template-only card | ⏳ planned — see below |
 
-Order: `a → b → d → c → e → f → g`. **58f complete.** Next planned iteration: [It.89](ITERATION_89.md).
+Order: `a → b → d → c → e → f → g`. **58f-a–g shipped.** **58f-h** closes the amateur gap when `LayoutBuilderCard` is template-pick only. Next core queue: [It.89](ITERATION_89.md); novice UX bundle: [It.94](ITERATION_94.md).
 
 **58g** (compile/cache): not in this spec.
+
+### Slice 58f-h — Visual block canvas
+
+**Problem (audit 2026-09-17):** `LayoutBuilderCard` (~69 lines) selects a **page template**, not a block-by-block layout. `PageOutlineEditor` exists for outline mode, but product expectation is a **visual canvas**: drag hero, gallery, CTA from a palette, reorder with **@dnd-kit** (already used elsewhere in the admin stack).
+
+**Goal:**
+
+- Wire outline / palette UX as the primary amateur surface when `layout.builderMode=outline` (or dedicated “Visual builder” entry on page edit).
+- Block stack with DnD reorder; click block → attr forms (reuse 58f-b patterns).
+- Live preview pane unchanged (`AdminBodyPreviewPanel` / render-preview API).
+- SSOT unchanged: Markdown shortcodes on save via `pageOutline.ts`.
+
+**Reuse:** `LandingHeroRenderer`, `FeatureGalleryRenderer`, bundled shortcodes from catalog; do **not** invent It.94 for this work ([ITERATION_58.md](ITERATION_58.md)).
+
+**DoD:** Non-developer can assemble landing from blocks without Monaco; iteration gate green; documented in CHANGELOG when shipped.
 
 ---
 

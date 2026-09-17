@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Core\SystemUpdate\Services;
 
 use PaginiumCMS\Support\AppRoot;
+use PaginiumCMS\Support\GitCli;
 
 /**
  * Read-only local git metadata for admin system update (It.63).
@@ -60,7 +61,7 @@ final class GitRepositoryInspector
 
     private function runGit(string $root, string $args): string
     {
-        $cmd = 'git -C ' . escapeshellarg($root) . ' ' . $args . ' 2>/dev/null';
+        $cmd = GitCli::at($root) . ' ' . $args . ' 2>/dev/null';
         $output = shell_exec($cmd);
 
         return is_string($output) ? trim($output) : '';

@@ -31,6 +31,9 @@ final class HelloWidgetReferencePluginTest extends TestCase
         $this->assertSame('hello-widget', $manifest['id']);
         $this->assertArrayHasKey(HookCatalog::EXTENSION_BOOT, $manifest['hooks']);
         $this->assertArrayHasKey(HookCatalog::CONTENT_AFTER_SAVE, $manifest['hooks']);
+        $this->assertSame(1, $manifest['manifestVersion']);
+        $this->assertContains('content:read', $manifest['capabilities']);
+        $this->assertContains('admin-ui:editor-block', $manifest['capabilities']);
     }
 
     public function testReferenceHookHandlersAreCallable(): void

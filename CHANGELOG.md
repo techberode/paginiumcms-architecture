@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.80`](#release-2-1-0-beta-80) | 2026-09-17 | It.89a plugin capabilities · Docker git version (GitCli / FPM env) |
 | [`2.1.0-beta.79`](#release-2-1-0-beta-79) | 2026-09-17 | It.93m-5 mail polish · It.58f layout blocks · editor workspace · at-rest encryption hardening |
 | [`2.1.0-beta.78`](#release-2-1-0-beta-78) | 2026-09-15 | It.93l/93m — Support Kanban + domain IMAP mail client |
 | [`2.1.0-beta.77`](#release-2-1-0-beta-77) | 2026-09-15 | It.93 admin chrome + apps — teams, account, events, time, widgets, catalog menu |
@@ -154,40 +155,38 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+### Planning
+
+- **It.89** — Plugin capability model. **89a shipped in beta.80.** Next: **89b** broker + runtime context. Spec: [ITERATION_89.md](docs/en/ITERATION_89.md).
+- **It.58f-h** — Visual block canvas (DnD stack). Spec: [ITERATION_58f.md](docs/en/ITERATION_58f.md).
+- **It.94** / **It.95** — Novice admin UX; Sandpack playground + private component registry. Specs: [ITERATION_94.md](docs/en/ITERATION_94.md), [ITERATION_95.md](docs/en/ITERATION_95.md).
+- **It.92** — Hybrid Engine SQLite **query index** (derived, optional) + Performance Guard advisor (suggest only, never auto-enable). Spec: [ITERATION_92.md](docs/en/ITERATION_92.md).
+- **Queue:** **It.89b–e** → It.92 → 70 → 76/77 → 75 → 48 (58g with 48). Isolated-origin widgets: **cancelled** as an iteration (archive only). Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+
+---
+
+<a id="release-2-1-0-beta-80"></a>
+
+## [2.1.0-beta.80] – 2026-09-17
+
+It.89a plugin capability catalog on ZIP import, and Docker PHP-FPM git metadata so production `/api/health` reports the checkout tag.
+
 ### Added
 
-- **It.58f-a** — Page outline parse/serialize (`frontend/src/utils/pageOutline.ts`): top-level shortcodes, `:::video`, callouts; unclosed paired tags stay `raw`; Vitest round-trip. Spec: [ITERATION_58f.md](docs/en/ITERATION_58f.md).
-- **It.58f-b** — Outline palette + attr forms in the page editor (`PageOutlineEditor`) when `layout.builderMode=outline`. Canonical body stays Markdown.
-- **It.58f-d** — Live preview pane beside the page editor (outline + developer): sandbox iframe, `POST /api/admin/content/render-preview`, same expander as public HTML.
-- **It.58f-c** — Outline DnD reorder (grip + up/down) and portfolio/landing starter packs (`landing-hero`/`showcase-hero` + `feature-grid` + `cta-banner`). Canonical body stays Markdown.
-- **It.58f-e** — DAM hero media on `landing-hero`: outline picker for image + muted looping background video (`src` / `srcmobile` / `poster`); expander allow-lists `/storage/` and `/api/media/file/` only; `prefers-reduced-motion` hides the video.
-- **It.58f-g** — SK/EN i18n and in-product help for `layout.builderMode` (Settings cards + page editor banner + gallery tag hint). Schema help no longer says modes are “later slices.” Operator walkthroughs: [GALLERY.md](docs/en/user/GALLERY.md), [CONTENT_EDITOR.md](docs/en/user/CONTENT_EDITOR.md).
-- **It.58f-f** — Outline block `[feature-gallery]` reads the existing It.65 gallery store (`GET /api/gallery/public`, `FeatureGallerySection`). No second catalog. PHP expander emits a static DAM-only grid for live preview; the public SPA hydrates the same island. Operator walkthrough: [GALLERY.md](docs/en/user/GALLERY.md).
-- **Editor workspace** — optional fullscreen canvas for page/article edit (Elementor-style). Toggle in the editor chrome; Settings → Editor sets the default; per-browser override in `localStorage`.
-- **It.93m** — Domain inbox chrome: two-pane folder/label nav, INBOX first, custom labels, sort by date/sender/subject, dense list. Floating compose sits above Top. **93m-2** sanitizer emits UTF-8, not HTML entities. **93m-4** mail signatures (six templates, per-mailbox prefs, profile import), **card** template avatar embedded as MIME inline (`cid:`) so Gmail shows the photo without a public site URL, mobile folder drawer, Gmail-style read pane, `imap.listLimit`.
-- **Admin SPA URLs** — sidebar routes are first-segment paths (`/mail`, `/kanban`, `/teams`, `/security-audit`, …) like `/messages` and `/comments`. Legacy `/platform/*` and `/security/{audit,roles}` redirect. Contract: [ADMIN_DEEP_LINKS.md](docs/en/architecture/ADMIN_DEEP_LINKS.md).
+- **It.89a** — Plugin capability catalog (`PluginCapabilityCatalog`) + `plugin.json` `manifestVersion` / `capabilities[]` on ZIP import and enable. Unknown capability → HTTP 422. Reference `hello-widget` declares `content:read` + `admin-ui:editor-block`. Spec: [ITERATION_89.md](docs/en/ITERATION_89.md). Notes: [RELEASE_2_1_0_BETA_80.md](docs/en/RELEASE_2_1_0_BETA_80.md).
 
 ### Fixed
 
-- **Security (audit)** — `EncryptionService::encrypt()` fail-closed when `APP_KEY` is missing/invalid (no silent plaintext for IMAP/SMTP/2FA/webhook secrets). Setup preflight warns; Origin probe `security.at_rest_encryption` reports missing key. Documented: [ISS-170](docs/ISSUES.md#iss-170), `SECURITY_ISSUES.md` SEC-2026-09-17-A.
-- **It.93m mail privacy** — HTML sanitizer blocks remote `http(s)` images by default (tracking pixels); **Show images from …** remembers trusted senders per mailbox (browser). [ISS-171](docs/ISSUES.md#iss-171).
-- **It.93m mail client** — **Block sender** (per active mailbox, flat-file state) moves to server spam and filters blocked addresses from all folder lists; sidebar **Blocked senders** lists the blocklist with **Unblock** (`GET`/`DELETE /api/admin/mail/blocked-senders`); **spam autoclean** on page reload purges current server spam from the UI (`POST /api/admin/mail/spam/autoclean`).
-- **It.93m send path** — After SMTP, **IMAP APPEND** to the server Sent folder (same RFC822 as SMTP via `MailOutboundMimeBuilder`); flat-file copy in `data/mail-client/` only when APPEND fails. Folder sidebar shows **IMAP STATUS** counts (unread in Inbox, totals elsewhere) plus local fallback drafts/sent.
-- **Hygiene** — removed unused `/api/test` route and empty `Http/Controllers/Auth/UserController.php`. [ISS-172](docs/ISSUES.md#iss-172).
-- **It.58f-b** — Outline palette insert works on HTTP/LAN (`crypto.randomUUID` throw), empty `:::video` round-trips, and the live-preview iframe no longer covers the palette.
-- **Site preview** — page/article preview chrome (scale + close) portals above the admin top bar so the controls stay clickable.
-- **Live preview pane** — iframe includes `pgLayout` CSS (stats/hero/widgets), landing reveal stays visible, and **Náhľad stránky** opens the full preview without scrolling to the editor header.
-- **Editor live preview** — Templates / Shortcodes (and articles) use the same `render-preview` pane as Outline. The Markdown split tab no longer shows raw `[widget]` / `[stats-row]` as text.
-- **Editor workspace** — overlay carries `.admin-shell` so `--admin-canvas` is set; sidebar and version history no longer show through a transparent portal. Fullscreen canvas fills the remaining viewport (editor + live preview scroll independently; Escape ignores media/preview overlays; hidden save bar does not float over the canvas).
-- **Admin chrome contrast** — content pickers (settings groups, nav placement) no longer use sidebar hover/active fills, so navy/charcoal chrome does not swallow labels. Topbar search/cache chips, sidebar counts, and the FlatFile Storage footer keep readable ink on colored chrome.
+- **Docker production version** — `GitCli` passes `safe.directory` on git invocations from PHP (`AppVersion`, system update inspector). `docker-compose.prod.yml` sets matching `GIT_CONFIG_*`; PHP-FPM pool `clear_env = no` (`zz-paginium-fpm.env.conf`) so compose env reaches workers (stock FPM otherwise strips it). Rebuild the PHP image after pull.
 
 ### Planning
 
-- **It.58f** — Visual page blocks (outline + forms + live preview; DAM hero video; `feature-gallery`; builderMode help). **58f-a–g done.** Spec: [ITERATION_58f.md](docs/en/ITERATION_58f.md).
-- **It.93** — Admin chrome complete in this tree; **93l-2** canned replies / SLA notes remain listed in [ITERATION_93.md](docs/en/ITERATION_93.md).
-- **It.89** — Plugin capability model + Editor Tool SDK (manifest-registered custom tools). Spec: [ITERATION_89.md](docs/en/ITERATION_89.md). **Next slice: 89a.**
-- **It.92** — Hybrid Engine SQLite **query index** (derived, optional) + Performance Guard advisor (suggest only, never auto-enable). Spec: [ITERATION_92.md](docs/en/ITERATION_92.md).
-- **Queue:** **It.89** → It.92 → 70 → 76/77 → 75 → 48 (58g with 48). Isolated-origin widgets: **cancelled** as an iteration (archive only). Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+- **58f-h**, **It.94**, **It.95** specs added to the tree (not implemented in this tag).
+
+### Tests
+
+- PHPUnit: capability catalog, manifest validator, ZIP import unknown-capability, `hello-widget` manifest, `GitCli`.
+- Frontend: extension import surfaces API 422 error; Origin catalog i18n keys for It.89.
 
 ---
 
