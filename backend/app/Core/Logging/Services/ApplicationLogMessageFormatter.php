@@ -118,6 +118,10 @@ final class ApplicationLogMessageFormatter
         if ($durationMs > 0) {
             $detail .= sprintf(' (%.0f ms)', $durationMs);
         }
+        $error = $context['error'] ?? null;
+        if (is_string($error) && trim($error) !== '') {
+            $detail .= ' — ' . trim($error);
+        }
 
         return match ($severity) {
             LogSeverity::CRITICAL, LogSeverity::ERROR => sprintf(

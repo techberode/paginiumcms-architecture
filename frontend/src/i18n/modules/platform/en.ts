@@ -501,7 +501,7 @@ export const platformEn: MessageTree = {
     backupBeforeDeployConfirm: 'Deploy {ref} now? Create a backup under Backups first if you have not done so recently.',
     deployUpToDate: 'Instance is up to date — deploy is not required unless you want to redeploy the same version.',
     webhookTitle: 'GitHub release webhook',
-    webhookHint: 'Configure in GitHub → Settings → Webhooks. Event: Release → Published only.',
+    webhookHint: 'Optional auto-deploy. When off, GitHub deliveries are acknowledged and ignored. New versions are detected with Check remote, not by the webhook.',
     webhookUrl: 'Webhook URL',
     webhookEnabled: 'Webhook auto-deploy',
     webhookSecretConfigured: 'Secret configured',

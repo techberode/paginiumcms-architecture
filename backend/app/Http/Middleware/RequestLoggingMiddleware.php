@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Middleware;
 
 use PaginiumCMS\Core\Logging\Services\AccessLogService;
+use PaginiumCMS\Support\LogSanitizer;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -64,11 +65,14 @@ final class RequestLoggingMiddleware implements MiddlewareInterface
             $response->getStatusCode(),
             $this->durationMs($started),
             $this->userIdFromRequest($request),
-            [
-                'query' => $request->getUri()->getQuery(),
-                'user_agent' => mb_substr($request->getHeaderLine('User-Agent'), 0, 256),
-                'size_bytes' => $this->resolveResponseSize($response),
-            ]
+            array_merge(
+                [
+                    'query' => $request->getUri()->getQuery(),
+                    'user_agent' => mb_substr($request->getHeaderLine('User-Agent'), 0, 256),
+                    'size_bytes' => $this->resolveResponseSize($response),
+                ],
+                $this->clientErrorContext($response)
+            )
         );
 
         return $response;
@@ -92,6 +96,47 @@ final class RequestLoggingMiddleware implements MiddlewareInterface
         }
 
         return null;
+    }
+
+    /**
+     * Best-effort 4xx reason for Admin → Logs (CSRF vs role vs WAF vs webhook).
+     *
+     * @return array<string, string>
+     */
+    private function clientErrorContext(ResponseInterface $response): array
+    {
+        $status = $response->getStatusCode();
+        if ($status < 400 || $status >= 500) {
+            return [];
+        }
+
+        $body = $response->getBody();
+        if (!$body->isSeekable()) {
+            return [];
+        }
+
+        $body->rewind();
+        $raw = trim($body->read(512));
+        $body->rewind();
+        if ($raw === '') {
+            return [];
+        }
+
+        $decoded = json_decode($raw, true);
+        if (is_array($decoded)) {
+            $error = $decoded['error'] ?? $decoded['code'] ?? null;
+            if (is_string($error) && trim($error) !== '') {
+                return ['error' => LogSanitizer::value($error, 240)];
+            }
+
+            return [];
+        }
+
+        if (str_starts_with($raw, '{') || str_starts_with($raw, '[')) {
+            return [];
+        }
+
+        return ['error' => LogSanitizer::value($raw, 120)];
     }
 
     private function resolveClientIp(ServerRequestInterface $request): string

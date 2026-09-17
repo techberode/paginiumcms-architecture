@@ -20,7 +20,7 @@ export interface SystemUpdateFlowState {
   updateStatus: 'current' | 'update_available' | 'unknown' | null;
   canDeploy: boolean;
   refreshStatus: () => Promise<void>;
-  refreshCheck: () => Promise<SystemUpdateCheckResult | null>;
+  refreshCheck: () => Promise<{ data: SystemUpdateCheckResult | null; error?: string }>;
   deployLatest: (tag: string) => Promise<{ ok: boolean; skipped?: boolean; error?: string }>;
 }
 
@@ -62,18 +62,19 @@ export function useSystemUpdateFlow(enabled: boolean): SystemUpdateFlowState {
 
   const refreshCheck = useCallback(async () => {
     if (!enabled) {
-      return null;
+      return { data: null };
     }
     setChecking(true);
     try {
-      const next = await checkSystemUpdate();
-      setCheck(next);
-      if (next?.deploy_readiness) {
+      const result = await checkSystemUpdate();
+      setCheck(result.data);
+      const readinessUpdate = result.data?.deploy_readiness;
+      if (readinessUpdate) {
         setStatus((prev) =>
-          prev ? { ...prev, deploy_readiness: next.deploy_readiness } : prev
+          prev ? { ...prev, deploy_readiness: readinessUpdate } : prev
         );
       }
-      return next;
+      return result;
     } finally {
       setChecking(false);
     }

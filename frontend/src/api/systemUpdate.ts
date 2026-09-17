@@ -119,9 +119,17 @@ export async function getSystemUpdateStatus(): Promise<SystemUpdateStatus | null
   return res.success && res.data ? res.data : null;
 }
 
-export async function checkSystemUpdate(): Promise<SystemUpdateCheckResult | null> {
-  const res = await apiClient.post<SystemUpdateCheckResult>('/api/admin/system/update/check', {});
-  return res.success && res.data ? res.data : null;
+export async function checkSystemUpdate(): Promise<{
+  data: SystemUpdateCheckResult | null;
+  error?: string;
+}> {
+  const res = await apiClient.get<SystemUpdateCheckResult>('/api/admin/system/update/check', {
+    timeout: 60_000,
+  });
+  if (res.success && res.data) {
+    return { data: res.data };
+  }
+  return { data: null, error: res.error || res.message };
 }
 
 export async function runSystemUpdate(

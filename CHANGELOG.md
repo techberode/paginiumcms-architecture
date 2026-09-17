@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.81`](#release-2-1-0-beta-81) | 2026-09-17 | System update GET check · GitHub webhook 200 when auto-deploy off |
 | [`2.1.0-beta.80`](#release-2-1-0-beta-80) | 2026-09-17 | It.89a plugin capabilities · Docker git version (GitCli / FPM env) |
 | [`2.1.0-beta.79`](#release-2-1-0-beta-79) | 2026-09-17 | It.93m-5 mail polish · It.58f layout blocks · editor workspace · at-rest encryption hardening |
 | [`2.1.0-beta.78`](#release-2-1-0-beta-78) | 2026-09-15 | It.93l/93m — Support Kanban + domain IMAP mail client |
@@ -162,6 +163,25 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **It.94** / **It.95** — Novice admin UX; Sandpack playground + private component registry. Specs: [ITERATION_94.md](docs/en/ITERATION_94.md), [ITERATION_95.md](docs/en/ITERATION_95.md).
 - **It.92** — Hybrid Engine SQLite **query index** (derived, optional) + Performance Guard advisor (suggest only, never auto-enable). Spec: [ITERATION_92.md](docs/en/ITERATION_92.md).
 - **Queue:** **It.89b–e** → It.92 → 70 → 76/77 → 75 → 48 (58g with 48). Isolated-origin widgets: **cancelled** as an iteration (archive only). Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+
+---
+
+<a id="release-2-1-0-beta-81"></a>
+
+## [2.1.0-beta.81] – 2026-09-17
+
+Production system-update UX: remote check no longer 403s on CSRF, and a published GitHub release does not look like a failed webhook when auto-deploy is off.
+
+### Fixed
+
+- **Admin remote check** — `GET /api/admin/system/update/check` (read-only; POST kept). Dashboard/banner no longer depend on CSRF for a GitHub compare. Notes: [RELEASE_2_1_0_BETA_81.md](docs/en/RELEASE_2_1_0_BETA_81.md).
+- **GitHub release webhook** — when `webhookDeployEnabled` is false, return **200 ignored** (`webhook_disabled`) instead of 403 so GitHub does not retry. Webhook is auto-deploy only; version discovery is Check remote.
+- **Access logs** — 4xx entries include JSON `error` / WAF `Access denied` text (not only “Zakázané”).
+
+### Tests
+
+- PHPUnit: GET check SUPER_ADMIN/ADMIN, webhook disabled → 200 ignored, log formatter 4xx error suffix.
+- Frontend: check uses GET; toast shows API error text.
 
 ---
 

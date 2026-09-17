@@ -58,6 +58,25 @@ final class ApplicationLogMessageFormatterTest extends TestCase
         );
     }
 
+    public function testFormatsHttpWarningWithResponseError(): void
+    {
+        $message = $this->formatter->format([
+            'severity' => LogSeverity::WARNING,
+            'category' => 'http_access',
+            'message' => 'POST /api/admin/system/update/check 403',
+            'context' => [
+                'method' => 'POST',
+                'path' => '/api/admin/system/update/check',
+                'status' => 403,
+                'duration_ms' => 27.0,
+                'error' => 'Neplatný alebo chýbajúci CSRF token',
+            ],
+        ]);
+
+        $this->assertStringContainsString('403 Zakázané (27 ms)', $message);
+        $this->assertStringContainsString('Neplatný alebo chýbajúci CSRF token', $message);
+    }
+
     public function testFormatsHttpErrorForServerFailure(): void
     {
         $message = $this->formatter->format([

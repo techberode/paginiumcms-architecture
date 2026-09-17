@@ -1,7 +1,7 @@
 # PaginiumCMS — kontext pre pokračovanie vývoja
 
 > **Účel:** stručný handoff pre ďalšiu reláciu  
-> **Checkpoint:** 17. september 2026 · **`v2.1.0-beta.80`**  
+> **Checkpoint:** 17. september 2026 · **`v2.1.0-beta.81`**  
 > **Aktívna fáza:** **plný vývoj naplánovaných iterácií** — stabilizačný freeze zrušený
 
 Anglický master: [en/CONTINUATION.md](../en/CONTINUATION.md)
@@ -16,7 +16,7 @@ Stabilizačná fáza je **ukončená**. Pokračujeme v existujúcich špeckách;
 
 | Oblasť | Stav |
 |--------|------|
-| Najnovší tag | ✅ `v2.1.0-beta.80` — It.89a plugin capabilities · Docker git verzia |
+| Najnovší tag | ✅ `v2.1.0-beta.81` — GET check aktualizácie · GitHub webhook 200 pri vypnutom auto-deployi |
 | Rozpracované | **58f-h** plátno blokov · **It.94** toast/checklist/tooltipy/skratky · It.89b–e plugin SDK · It.92 |
 
 ## Fronta
@@ -27,7 +27,7 @@ Stabilizačná fáza je **ukončená**. Pokračujeme v existujúcich špeckách;
 
 Hotové pred touto frontou: **It.58f** vizuálne bloky (**58f-a–g**) — [ITERATION_58f.md](ITERATION_58f.md). **It.93** ✅ `beta.77`–`78` (93l Kanban + 93m domain IMAP).
 
-**Aktívny slice:** **It.89b** (capability broker). **89a** je v **`v2.1.0-beta.80`**. **58f-a–g** a **93m-5** sú v **`v2.1.0-beta.79`**.
+**Aktívny slice:** **It.89b** (capability broker). **89a** je v **`v2.1.0-beta.80`**. Hotfix check/webhook v **`v2.1.0-beta.81`**. **58f-a–g** a **93m-5** sú v **`v2.1.0-beta.79`**.
 
 ## Dokumentácia
 
@@ -35,7 +35,7 @@ Hotové pred touto frontou: **It.58f** vizuálne bloky (**58f-a–g**) — [ITER
 |----------|--------|
 | [ITERATION_93.md](ITERATION_93.md) | Admin chrome + denné aplikácie |
 | [architecture/ADMIN_DEEP_LINKS.md](architecture/ADMIN_DEEP_LINKS.md) | Admin SPA cesty (`/{module}`; aliasy `/platform/*`) |
-| [RELEASE_2_1_0_BETA_80.md](RELEASE_2_1_0_BETA_80.md) | Posledný release |
+| [RELEASE_2_1_0_BETA_81.md](RELEASE_2_1_0_BETA_81.md) | Posledný release |
 | [ITERATION_58f.md](ITERATION_58f.md) | Vizuálne bloky (58f-a–g; **58f-h** plánované) |
 | [ITERATION_94.md](ITERATION_94.md) | Admin UX pre neskúsených (94a–94d) |
 | [ITERATION_95.md](ITERATION_95.md) | Sandpack playground + import komponentov z Git |

@@ -501,7 +501,7 @@ export const platformSk: MessageTree = {
     backupBeforeDeployConfirm: 'Nasadiť {ref} teraz? Ak ste nedávno nevytvorili zálohu, urobte ju najprv v module Zálohy.',
     deployUpToDate: 'Inštancia je aktuálna — deploy nie je potrebný, pokiaľ nechcete znovu nasadiť rovnakú verziu.',
     webhookTitle: 'GitHub release webhook',
-    webhookHint: 'Nastavte v GitHub → Settings → Webhooks. Udalosť: Release → len Published.',
+    webhookHint: 'Voliteľný auto-deploy. Keď je vypnutý, GitHub doručenia sa potvrdia a ignorujú. Novú verziu zistí tlačidlo Skontrolovať remote, nie webhook.',
     webhookUrl: 'Webhook URL',
     webhookEnabled: 'Auto-deploy cez webhook',
     webhookSecretConfigured: 'Secret nastavený',

@@ -77,7 +77,7 @@ final class GitHubReleaseWebhookControllerTest extends TestCase
         $this->assertTrue($data['data']['ignored']);
     }
 
-    public function testReleaseWebhookForbiddenWhenDisabled(): void
+    public function testReleaseWebhookIgnoredWhenDisabled(): void
     {
         $settings = $this->container()->get(SettingsRepositoryInterface::class);
         $settings->setGroup('systemUpdate', array_merge($settings->group('systemUpdate'), [
@@ -89,8 +89,12 @@ final class GitHubReleaseWebhookControllerTest extends TestCase
         $response = $this->handleRequest(
             $this->signedRequest($body, self::SECRET)
         );
+        $data = $this->getJsonResponse($response);
 
-        $this->assertSame(403, $response->getStatusCode());
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertTrue($data['success']);
+        $this->assertTrue($data['data']['ignored'] ?? false);
+        $this->assertSame('webhook_disabled', $data['data']['reason'] ?? null);
     }
 
     private function enableWebhookDeploy(): void

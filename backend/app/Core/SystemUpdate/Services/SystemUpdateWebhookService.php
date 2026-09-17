@@ -50,10 +50,13 @@ final class SystemUpdateWebhookService
 
         $config = $this->settings->group('systemUpdate');
         if (!(bool) ($config['webhookDeployEnabled'] ?? false)) {
+            // Acknowledge the delivery so GitHub does not retry / warn.
+            // Auto-deploy is opt-in; version discovery is the admin check endpoint.
             return [
-                'ok' => false,
-                'http_status' => 403,
-                'error' => 'GitHub release webhook deploy is disabled in settings',
+                'ok' => true,
+                'http_status' => 200,
+                'ignored' => true,
+                'reason' => 'webhook_disabled',
             ];
         }
 

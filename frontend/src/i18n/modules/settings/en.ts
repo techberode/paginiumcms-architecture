@@ -1737,7 +1737,7 @@ export const settingsEn: MessageTree = {
       },
       "webhookDeployEnabled": {
         "label": "Enable GitHub release webhook deploy",
-        "help": "When enabled, POST /api/webhooks/github/release queues deploy on release published (HMAC secret required)."
+        "help": "When enabled, POST /api/webhooks/github/release queues deploy on release published (HMAC secret required). When off, GitHub deliveries are acknowledged and ignored — use Check remote to see new tags."
       },
       "githubWebhookSecret": {
         "label": "GitHub webhook secret",
