@@ -1,10 +1,11 @@
 # Iteration 89 — Plugin capability model (3-layer extension security)
 
-> **Status:** ⏳ planned  
+> **Status:** ⏳ planned — **89a** shipped (catalog + import validation); **89b–e** remain  
 > **Priority:** 🟡 · closes RCE gap for server-side plugins  
 > **Wave:** Extension security (post It.67 / It.78)  
 > **Depends on:** [It.67](ITERATION_67.md) untrusted surfaces · [It.78](ITERATION_78.md) upload policy · [EXTENSION_CODE_POLICY.md](developer/EXTENSION_CODE_POLICY.md)  
-> **Blocks:** safe third-party plugin ecosystem, external IDE workflow
+> **Blocks:** safe third-party plugin ecosystem, external IDE workflow  
+**Related (FE sandbox):** [It.95](ITERATION_95.md) Sandpack playground + design-system packs (browser-only; server plugins still It.89)
 
 ## Goal
 
@@ -87,7 +88,7 @@ Hook handlers evolve to receive scoped context (backward-compatible deprecation 
 
 | Slice | Deliverable | DoD |
 |------:|-------------|-----|
-| **89a** | Capability catalog + manifest schema + import validation | Unknown capability → import 422; `hello-widget` updated |
+| **89a** | Capability catalog + manifest schema + import validation | ✅ Unknown capability → import 422; `hello-widget` updated |
 | **89b** | `PluginCapabilityBroker` + `PluginRuntimeContext` (content:read/write, media:read) | Hook invoke injects context; undeclared API unreachable |
 | **89c** | `SafeHookRunner` + auto-disable + capability audit events | One failing plugin does not break request; tests |
 | **89d** | Scanner indirection + manifest consistency pass | Regression pack in `security-regression.sh` |

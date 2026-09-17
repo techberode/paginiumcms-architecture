@@ -1,6 +1,6 @@
 # Iterácia 58f — Vizuálne bloky stránky (amater + developer náhľad)
 
-> **Stav:** ✅ hotové — **58f-a–g** (paleta, živý náhľad, DnD, DAM hero, galéria, i18n). 58g compile ostáva pri It.48.  
+> **Stav:** 🟡 partial — **58f-a–g** hotové; **58f-h** vizuálne plátno blokov ⏳ (audit 2026-09-17). 58g compile ostáva pri It.48.  
 > **Kanónická špecifikácia (EN):** [../en/ITERATION_58f.md](../en/ITERATION_58f.md)
 
 ## Prečo 58f, nie 94
@@ -23,3 +23,7 @@ SSOT ostáva telo stránky. Outline je pohľad, nie druhá databáza.
 Mimo 58f: editor stránky/článku má voliteľný celoobrazovkový **Workspace** (tlačidlo v chrome, predvolené v Settings → Editor).
 
 Hero video (muted, loop, poster, `prefers-reduced-motion`) je blok Core, nie izolovaný origin. 58g compile ostáva pri It.48.
+
+## 58f-h (plánované)
+
+`LayoutBuilderCard` dnes = výber šablóny, nie skladanie blokov. **58f-h** doplní vizuálny canvas (dnd-kit) nad existujúcimi renderermi — detail [EN](../en/ITERATION_58f.md#slice-58f-h--visual-block-canvas). Súvisí s [It.94](ITERATION_94.md) (toasty, checklist, tooltipy, skratky), ale builder ostáva pod **58f**.

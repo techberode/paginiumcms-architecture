@@ -30,12 +30,12 @@ export const ExtensionsManager: React.FC = () => {
   const handleImport = async (file: File) => {
     setImporting(true);
     try {
-      const imported = await extensionsApi.importArchive(file);
-      if (imported) {
-        success(t('platform.extensions.toast.imported', { name: imported.name }));
+      const result = await extensionsApi.importArchive(file);
+      if (result.ok) {
+        success(t('platform.extensions.toast.imported', { name: result.data.name }));
         await queryClient.invalidateQueries({ queryKey: queryKeys.extensions.list });
       } else {
-        toastError(t('platform.extensions.toast.importFailed'));
+        toastError(result.error ?? t('platform.extensions.toast.importFailed'));
       }
     } finally {
       setImporting(false);

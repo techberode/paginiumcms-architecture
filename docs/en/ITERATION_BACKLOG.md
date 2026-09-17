@@ -1,6 +1,6 @@
 # PaginiumCMS — consolidated backlog
 
-> **Snapshot:** `v2.1.0-beta.79` · September 17, 2026  
+> **Snapshot:** `v2.1.0-beta.80` · September 17, 2026  
 > **Phase:** planned-iteration development — [CONTINUATION.md](CONTINUATION.md) (stabilization freeze **closed**)  
 > **Rule:** the active backlog contains only unshipped or precisely bounded remaining scope  
 > **No-SQL:** [architecture/NOSQL_MANDATE.md](architecture/NOSQL_MANDATE.md)  
@@ -35,7 +35,7 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | 8 | **It.73** Multi-locale document | 🟡 | ✅ | shipped in `v2.1.0-beta.29` — see [ITERATION_73](ITERATION_73.md) |
 | 9 | **It.74** API keys/JWT | 🟡 | ✅ | shipped in `v2.1.0-beta.30` — see [ITERATION_74](ITERATION_74.md) |
 | 10 | **It.80** SEO, integrations & ops toolkit | 🟡 | ✅ | shipped `beta.39` — see [ITERATION_80](en/ITERATION_80.md) |
-| 11 | **It.58f** Visual page blocks | 🟡 P1 | ✅ | **58f-a–g** shipped; 58g compile stays with It.48 — [ITERATION_58f](ITERATION_58f.md) |
+| 11 | **It.58f** Visual page blocks | 🟡 P1 | 🟡 partial | **58f-a–g** shipped; **58f-h** visual canvas ⏳; 58g with It.48 — [ITERATION_58f](ITERATION_58f.md) |
 | 12 | **It.81** Editorial workflow & content ops | 🟡 | ✅ | 81a–81f shipped — [ITERATION_81](ITERATION_81.md) |
 | 13 | **It.82** Origin Panel (maintainer cockpit) | 🔵 | ✅ | env-gated; excluded from customer archive — [ITERATION_82](ITERATION_82.md) |
 | 14 | **It.87** Project site planner + UX audit completion | 🟡 P1 | ✅ shipped | [ITERATION_87](ITERATION_87.md) — 87a–87m |
@@ -45,7 +45,7 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | 18 | **It.90** Editor Workbench (toolbar + wizards, MD + Tiptap) | 🟡 P1 | ✅ | shipped `beta.72`–`73` — [ITERATION_90](ITERATION_90.md) |
 | 19 | **It.91** Trusted HTML & external embeds | 🟡 P1 | ✅ | shipped `beta.75` — [ITERATION_91](ITERATION_91.md) |
 | 20 | **It.25** Setup wizard/update UX | 🟡 | ✅ basic + M1+ | shipped `beta.62`–`beta.65`; not a release blocker anymore |
-| 21 | **It.89** Plugin capability model | 🟡 | ⏳ | [ITERATION_89](ITERATION_89.md) |
+| 21 | **It.89** Plugin capability model | 🟡 | ⏳ | **89a** shipped; 89b–e remain — [ITERATION_89](ITERATION_89.md) |
 | 22 | **It.92** SQLite query index + Guard advisor | 🟡 | ⏳ | derived catalog index — [ITERATION_92](ITERATION_92.md) |
 | 23 | **It.93** Admin chrome + daily apps | 🟡 P1 | ✅ shipped | chrome in `beta.77`; **93l** Kanban + **93m** IMAP in `beta.78`; **93m-5** mail polish in `beta.79` — [ITERATION_93](ITERATION_93.md); **93l-2** notes/SLA later |
 | 24 | **It.76/77** Translation providers | 🔵 | ⏳ | after It.73 (shipped) |
@@ -53,6 +53,8 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | 26 | **It.83** Theme runtime + Terminal Breach | 🟡 | ✅ | shipped `beta.59` — [ITERATION_83](ITERATION_83.md) |
 | 27 | **It.84** Categories, blog sidebar, landing, roles, nav | 🟡 | ✅ | **84a–84e** complete — [ITERATION_84](ITERATION_84.md) |
 | 28 | **It.86** Admin UX polish (search, print, bulk) | 🟡 | ✅ | shipped **2.1.0-beta.60** — ISS-158/159; 86d → It.87 |
+| 29 | **It.94** Admin self-service UX (toast, checklist, tooltips, shortcuts) | 🟡 P1 | ⏳ | audit 2026-09-17 — [ITERATION_94](en/ITERATION_94.md); **58f-h** canvas stays under It.58f |
+| 30 | **It.95** Component playground (Sandpack) + private design-system registry | 🟡 P1 / 🔵 P2 | ⏳ | Monaco bridge, settings pack toggles, Git import — [ITERATION_95](en/ITERATION_95.md) |
 
 ---
 

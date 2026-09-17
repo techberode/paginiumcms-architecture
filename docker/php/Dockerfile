@@ -21,5 +21,6 @@ COPY --from=node:22-bookworm-slim /usr/local/bin/npx /usr/local/bin/npx
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/99-paginium.ini
+COPY docker/php/zz-paginium-fpm.env.conf /usr/local/etc/php-fpm.d/zz-paginium-fpm.env.conf
 
 WORKDIR /var/www/html

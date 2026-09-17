@@ -1,7 +1,7 @@
 # PaginiumCMS — development continuation context
 
 > **Purpose:** concise, current handoff for the next development session  
-> **Checkpoint:** September 17, 2026 · `v2.1.0-beta.79`  
+> **Checkpoint:** September 17, 2026 · `v2.1.0-beta.80`  
 > **Active phase:** **Full planned-iteration development** — stabilization freeze lifted
 
 This document replaces the old chronological “log of everything.” Historical detail remains in [`CHANGELOG.md`](../../CHANGELOG.md), [`ISSUES.md`](ISSUES.md), and individual `ITERATION_*.md` files.
@@ -28,8 +28,8 @@ Historical freeze record: [STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) (supe
 
 | Area | Status |
 |------|--------|
-| Latest tag | ✅ `v2.1.0-beta.79` — It.93m-5 mail polish · It.58f blocks · editor workspace |
-| Unreleased (this tree) | — **It.89** plugin SDK · **It.92** SQLite · **It.48** static compile (58g) |
+| Latest tag | ✅ `v2.1.0-beta.80` — It.89a plugin capabilities · Docker git version |
+| Unreleased (this tree) | — **It.89** plugin SDK · **It.92** SQLite · **It.48** static compile (58g) · **It.94** novice admin UX · **58f-h** block canvas · **It.95** Sandpack playground + private component registry |
 | It.25 setup wizard | ✅ basic + M1+ (`beta.62`–`beta.66`) |
 | It.83 theme runtime | ✅ shipped `beta.59` (`terminal-breach`, `clean-journal`) |
 | It.84 / It.86 | ✅ shipped |
@@ -49,12 +49,13 @@ Do **not** invent new iteration numbers. Finish specs that already exist.
 | 4 | **It.76 / 77** translation providers | After It.73 (shipped) |
 | 5 | **It.75** CMS-aware AI agent | Last: proposals only, human apply |
 | 6 | **It.48** static / Jamstack output | Align with It.70; includes **58g** compile/cache |
+| — | **58f-h** + **It.94** (94a→94d) | **P1 product** after or parallel to It.89 — [ITERATION_94.md](ITERATION_94.md); canvas is **58f-h**, not 94 |
 
 Shipped ahead of this queue: **It.58f** visual page blocks (**58f-a–g**) — [ITERATION_58f.md](ITERATION_58f.md) in **`beta.79`**. **It.93** admin chrome + daily apps — [ITERATION_93.md](ITERATION_93.md) **`beta.77`–`79`** (93m-5 mail polish in **`beta.79`**).
 
 **Optional / later:** It.82d Origin host metrics. Isolated-origin widgets are **not** queued (cancelled iteration; archive only: [ISOLATED_ORIGIN.md](architecture/ISOLATED_ORIGIN.md)).
 
-**Active slice:** **It.89** plugin capability model (89a catalog + manifest). Fullscreen **editor workspace** and **93m-5** mail (labels, empty local trash, compose autosave, signatures/MIME) shipped in **`v2.1.0-beta.79`**. Admin SPA paths stay first-segment (`/mail`, `/kanban`; legacy `/platform/*` redirects). Settings field i18n: [SETTINGS_I18N.md](SETTINGS_I18N.md).
+**Active slice:** **It.89b** plugin capability broker. **89a** catalog + import validation shipped in **`v2.1.0-beta.80`**. Fullscreen **editor workspace** and **93m-5** mail shipped in **`v2.1.0-beta.79`**. Admin SPA paths stay first-segment (`/mail`, `/kanban`; legacy `/platform/*` redirects). Settings field i18n: [SETTINGS_I18N.md](SETTINGS_I18N.md).
 
 ---
 
@@ -89,8 +90,8 @@ curl -s http://127.0.0.1:8080/api/setup/preflight | jq .
 | [ITERATION_78.md](ITERATION_78.md) / [ITERATION_79.md](ITERATION_79.md) | Upload policy + DAM video (shipped `beta.70`–`71`) |
 | [ITERATION_90.md](ITERATION_90.md) | Editor Workbench (shipped `beta.72`–`73`) |
 | [ITERATION_91.md](ITERATION_91.md) | Trusted HTML & embeds (shipped `beta.75`) |
-| [RELEASE_2_1_0_BETA_78.md](RELEASE_2_1_0_BETA_78.md) | Latest release notes |
-| [ITERATION_89.md](ITERATION_89.md) | Plugin capability model (planned) |
+| [RELEASE_2_1_0_BETA_80.md](RELEASE_2_1_0_BETA_80.md) | Latest release notes |
+| [ITERATION_89.md](ITERATION_89.md) | Plugin capability model (**89a** shipped; 89b–e planned) |
 | [ITERATION_92.md](ITERATION_92.md) | SQLite query index + Guard advisor (planned) |
 | [ITERATION_93.md](ITERATION_93.md) | Admin chrome + teams, support, domain mail, events, time tracker |
 | [architecture/ADMIN_DEEP_LINKS.md](architecture/ADMIN_DEEP_LINKS.md) | Admin SPA paths (`/{module}`; `/platform/*` aliases) |

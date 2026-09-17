@@ -343,12 +343,12 @@ Failure rules:
 
 ## 15. Compatibility and versions
 
-A plugin declares minimum CMS version and its own SemVer. A recommended future contract adds:
+A plugin declares minimum CMS version, its own SemVer, **`manifestVersion: 1`**, and **`capabilities[]`** from the allow-list (`PluginCapabilityCatalog`). Unknown capabilities fail ZIP import with HTTP 422 (It.89a). Runtime scoping of those capabilities is It.89b.
 
-- `manifestVersion`,
+A later contract may add:
+
 - supported hook/API ABI versions,
-- required capabilities,
-- optional capabilities,
+- optional capabilities vs required,
 - checksum/signature metadata,
 - migration version.
 

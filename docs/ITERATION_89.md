@@ -1,6 +1,6 @@
 # Iteration 89 — Plugin capability model (3-layer extension security)
 
-> **Status:** ⏳ planned  
+> **Status:** ⏳ planned — **89a** shipped (catalog + import validation)  
 > **Priority:** 🟡  
 > **English spec:** [en/ITERATION_89.md](en/ITERATION_89.md)
 

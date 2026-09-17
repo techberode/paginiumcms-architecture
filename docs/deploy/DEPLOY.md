@@ -355,7 +355,12 @@ On load, the dashboard **automatically checks GitHub** for a newer release. When
 curl -s http://127.0.0.1:8089/api/health | jq '.data.version // .version'
 ```
 
-If version is stale but files updated → set stack directory in settings and redeploy, or run SSH deploy with `STACK_DIR=…`.
+If version is stale but files updated:
+
+1. Confirm checkout tag on the host: `git -C "$APP_ROOT" describe --tags --exact-match`.
+2. Inside PHP as **www-data**, if `git -C /var/www/html describe` prints **dubious ownership**, health/API version falls back to `AppVersion::VERSION` even on the correct tag. Set `GIT_CONFIG_*` → `safe.directory=/var/www/html` on the **php** service (see `docs/deploy/docker-compose.prod.yml`) **and** rebuild PHP so FPM passes env (`docker/php/zz-paginium-fpm.env.conf`, `clear_env = no`). Compose env alone is **not** enough on stock `php-fpm` (`clear_env=yes` strips `GIT_CONFIG_*` from workers). Do **not** use `git config --global` as www-data — `HOME=/var/www` is not writable. **beta.80+** also passes `safe.directory` on the git CLI (`GitCli`), so version works even without FPM env.
+3. If `curl …/api/health | jq` fails with **parse error**, print raw output first (`curl -sS -D- …`) — often **502** for ~30s after recreate; retry after nginx health is green.
+4. Otherwise check **stack directory** in settings and redeploy, or SSH deploy with `STACK_DIR=…`.
 
 ## 13. Upgrade, backup, and rollback
 

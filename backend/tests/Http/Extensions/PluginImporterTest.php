@@ -21,6 +21,7 @@ use PaginiumCMS\Core\CodePolicy\Services\UntrustedPolicyScanner;
 use PaginiumCMS\Http\Extensions\Services\PluginPolicyScanner;
 use PaginiumCMS\Http\Extensions\Services\PluginRegistry;
 use PaginiumCMS\Support\JsonHelper;
+use PaginiumCMS\Support\Lang;
 use PHPUnit\Framework\TestCase;
 use ZipArchive;
 
@@ -44,6 +45,9 @@ final class PluginImporterTest extends TestCase
         mkdir($this->routesRoot, 0777, true);
         mkdir($this->frontendRoot, 0777, true);
         mkdir($this->baseDir . '/data', 0777, true);
+
+        Lang::resetForTests();
+        Lang::setLocale('en');
 
         $validator = new FileValidator($this->baseDir);
         $reader = new FileReader($validator);
@@ -77,6 +81,8 @@ final class PluginImporterTest extends TestCase
                 'id' => 'hello-widget',
                 'name' => 'Hello Widget',
                 'version' => '1.0.0',
+                'manifestVersion' => 1,
+                'capabilities' => ['content:read'],
                 'description' => 'Demo',
             ]),
             'hello-widget/src/Hooks.php' => <<<'PHP'
@@ -122,6 +128,8 @@ PHP,
                 'id' => 'bad-widget',
                 'name' => 'Bad Widget',
                 'version' => '1.0.0',
+                'manifestVersion' => 1,
+                'capabilities' => ['content:read'],
             ]),
             'bad-widget/src/Bad.php' => '<?php eval("x");',
         ]);
@@ -138,6 +146,8 @@ PHP,
                 'id' => 'evil-widget',
                 'name' => 'Evil Widget',
                 'version' => '1.0.0',
+                'manifestVersion' => 1,
+                'capabilities' => ['content:read'],
             ]),
             'evil-widget/src/Loader.php' => '<?php $x = $_GET["f"]; include $x;',
         ]);
@@ -154,11 +164,31 @@ PHP,
                 'id' => 'ok-widget',
                 'name' => 'OK Widget',
                 'version' => '1.0.0',
+                'manifestVersion' => 1,
+                'capabilities' => ['content:read'],
             ]),
             '../../../../etc/pag_zip_slip.txt' => 'pwned',
         ]);
 
         $this->expectException(\RuntimeException::class);
+        $this->importer->importZip($zipPath);
+    }
+
+    public function testImportRejectsUnknownCapability(): void
+    {
+        $zipPath = $this->createZip([
+            'evil-cap/plugin.json' => JsonHelper::encode([
+                'id' => 'evil-cap',
+                'name' => 'Evil Cap',
+                'version' => '1.0.0',
+                'manifestVersion' => 1,
+                'capabilities' => ['shell:exec'],
+            ]),
+            'evil-cap/src/Hooks.php' => "<?php\n",
+        ]);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage(Lang::get('capabilities_unknown', ['capability' => 'shell:exec'], 'extensions'));
         $this->importer->importZip($zipPath);
     }
 
