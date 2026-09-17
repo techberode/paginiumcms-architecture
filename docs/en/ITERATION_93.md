@@ -230,6 +230,12 @@ Order: **Wave 1** `a → q → f → g` · **Wave 2** `b → j → c → d → e
 
 **93m-2** — `MailHtmlSanitizer` now decodes libxml numeric/named entities to UTF-8 after `saveHTML`, while keeping `&lt;` / `&amp;` escaped so markup stays inert.
 
+**93m-3 (privacy)** — Remote `http(s)` images in HTML mail are **blocked by default** (tracking-pixel protection). Operators opt in per message via **Load remote images** (`GET …/messages/{uid}?remoteImages=1`). See [ISS-171](../ISSUES.md#iss-171).
+
+**93m-4 (signatures + mobile UX)** — Per-mailbox HTML **signatures** (six templates, profile + company merge, overrides in `data/mail-client/`). Sidebar editor at `/mail`; SMTP send appends when enabled (`GET`/`PUT /api/admin/mail/signature`, `POST …/signature/import-profile`). **Trusted sender** remote images (browser) and **blocklist** + **spam autoclean** ship with the inbox client. **Mobile:** folder drawer (hamburger under admin topbar), list-only home, Gmail-style full-pane read with **Back to list**. **Settings → Email / IMAP:** `imap.listLimit` (10–500) for fetch window.
+
+**93m-5 (labels + trash + compose polish)** — Shipped **`v2.1.0-beta.79`**. Custom **labels** (name/color, browser catalog per mailbox) with edit/delete and remove-from-message (single + bulk). **Empty local trash** (`POST /api/admin/mail/local-trash/empty`) permanently dismisses hidden messages in this client. Compose **draft autosave**, multi-recipient To, manual refresh, expandable envelope details, optional **`imap.appendSentOnSend`**. Outbound MIME builder + inline signature avatars (CID). List toolbar **clear search** (×).
+
 **Admin SPA paths** — sidebar hrefs are first-segment (`/mail`, `/kanban`, `/teams`, `/security-audit`). Legacy `/platform/*` and `/security/{audit,roles}` redirect. Contract: [ADMIN_DEEP_LINKS.md](architecture/ADMIN_DEEP_LINKS.md).
 
 ### 93t — Public widgets (stepped)

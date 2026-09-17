@@ -29,7 +29,7 @@ export const AdminOfferCard: React.FC<AdminOfferCardProps> = ({
         <div
           className={`rounded-lg p-2 shrink-0 ${
             active
-              ? 'bg-admin-sidebar-active text-admin-sidebar-active-text'
+              ? 'bg-admin-primary/15 text-admin-primary'
               : 'bg-admin-canvas text-admin-primary'
           }`}
         >

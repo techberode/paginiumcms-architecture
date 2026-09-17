@@ -873,7 +873,6 @@ return [
     GalleryPublicController::class => create(GalleryPublicController::class)
         ->constructor(
             get(GalleryRepositoryInterface::class),
-            get(SettingsRepositoryInterface::class),
             get(JsonResponder::class)
         ),
 
@@ -1307,7 +1306,8 @@ return [
             get(FileReaderInterface::class),
             get(ContentSecuritySanitizer::class),
             get(SnippetRepository::class),
-            get(WidgetCatalog::class)
+            get(WidgetCatalog::class),
+            get(GalleryRepositoryInterface::class)
         ),
     SnippetRegistry::class => create(SnippetRegistry::class)
         ->constructor(
@@ -1435,7 +1435,8 @@ return [
             get(SettingsRepositoryInterface::class),
             get(MailboxSecretRepository::class),
             get(SecurityAuditStore::class),
-            get(MailClientStateRepository::class)
+            get(MailClientStateRepository::class),
+            get(FileReaderInterface::class)
         ),
     MailController::class => create(MailController::class)
         ->constructor(
@@ -1991,7 +1992,10 @@ return [
     OriginPanelMode::class => create(OriginPanelMode::class),
     ProbeSupport::class => create(ProbeSupport::class),
     FeatureProbeRegistry::class => create(FeatureProbeRegistry::class)
-        ->constructor(get(ProbeSupport::class)),
+        ->constructor(
+            get(ProbeSupport::class),
+            get(\PaginiumCMS\Core\Security\Services\EncryptionService::class),
+        ),
     ProjectCatalogReader::class => create(ProjectCatalogReader::class),
     CatalogDeployStatusResolver::class => create(CatalogDeployStatusResolver::class),
     ImplementationChecklistReader::class => create(ImplementationChecklistReader::class),
@@ -2013,6 +2017,7 @@ return [
         ->constructor(
             __DIR__ . '/../../../storage',
             null,
+            get(\PaginiumCMS\Core\Security\Services\EncryptionService::class),
         ),
     FirstAdminBootstrapService::class => create(FirstAdminBootstrapService::class)
         ->constructor(

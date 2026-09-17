@@ -17,6 +17,7 @@ export const listSk: MessageTree = {
     seoIssuesOnly: 'Len SEO problémy',
     staleOnly: 'Len zastaralé',
     clearFilters: 'Vymazať filtre',
+    clearSearch: 'Vymazať hľadanie',
   },
   pagination: {
     records: 'záznamov',

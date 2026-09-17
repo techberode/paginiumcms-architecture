@@ -10,7 +10,7 @@ icon: material/history
 
 | Field | Value |
 |---|---|
-| Status | 🟡 Partially complete: 58b/58c/58d/58e ✅, 58f–58g ⏳ |
+| Status | 🟡 Partially complete: 58b–58f ✅, **58g** compile/cache with It.48 ⏳ |
 | Release / period | 58c: 2.1.0-beta.23 |
 | Record type | historical product and architecture record |
 
@@ -38,6 +38,6 @@ Decisions and the phased plan are in [ITERATION_58_ALTERNATIVES.md](ITERATION_58
 
 ## Current interpretation (September 2026)
 
-It.58 is not closed. **58b–58e shipped.** Implementation remainder for publishing UX is **[ITERATION_58f.md](ITERATION_58f.md)** (visual outline, forms, live preview, optional DAM hero video). **58g** compile/cache stays aligned with [It.48](ITERATION_48.md) / It.69 — not in 58f.
+It.58 is not closed. **58b–58e shipped.** Publishing UX **[ITERATION_58f.md](ITERATION_58f.md)** (**58f-a–g shipped**: visual outline, forms, live preview, DAM hero video, feature-gallery, i18n/help). **58g** compile/cache stays aligned with [It.48](ITERATION_48.md) / It.69 — not in 58f.
 
 Do not invent It.94 for page blocks.

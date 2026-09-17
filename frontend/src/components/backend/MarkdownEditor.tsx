@@ -18,6 +18,7 @@ import { useSettingsContext } from '../../context/SettingsContext';
 import { useAuth } from '../../hooks/useAuth';
 import { ContentEditorShell } from './ContentEditorShell';
 import { PageOutlineEditor } from './PageOutlineEditor';
+import { PageLivePreviewSplit } from './AdminBodyPreviewPanel';
 import { SitePreviewModal } from './SitePreviewModal';
 import { OtpConfirmModal } from './OtpConfirmModal';
 import { extractOtpPending } from '../../api/workflows';
@@ -879,6 +880,13 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
 
   const builderMode = normalizeLayoutBuilderMode(settings.layout?.builderMode);
   const useOutlineEditor = type === 'page' && builderMode === 'outline';
+  const showLivePreview = type === 'page' || type === 'article';
+  const openSitePreview = useCallback(() => {
+    setPreviewHtml(
+      editorMode === 'wysiwyg' ? wysiwygRef.current?.getHtml() : markdownToHtml(content)
+    );
+    setPreviewOpen(true);
+  }, [content, editorMode]);
   const autoSaveLabelTone =
     autoSave.status === 'error'
       ? 'error'
@@ -895,6 +903,54 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
       </div>
     );
   }
+
+  const bodyEditor = useOutlineEditor ? (
+    <PageOutlineEditor value={content} onChange={setContent} disabled={!canEdit} />
+  ) : editorMode === 'wysiwyg' ? (
+    <WysiwygEditor
+      ref={wysiwygRef}
+      value={content}
+      storedFormat={contentFormat}
+      onChange={setContent}
+      readOnly={!canEdit}
+      onPickMedia={() => {
+        setMediaPickerMode('image');
+        setMediaPickerOpen(true);
+      }}
+      onPickVideo={() => {
+        setMediaPickerMode('video');
+        setMediaPickerOpen(true);
+      }}
+      onUploadImage={handleEditorImageUpload}
+      profile={wysiwygEditorProfile}
+      canUseTrustedHtml={canUseTrustedHtml}
+      canUseExternalEmbed={canUseExternalEmbed}
+      embedProviders={embedProviders}
+      onBlockedAction={(message) => toast.warning(message)}
+    />
+  ) : (
+    <MarkdownContentEditor
+      value={content}
+      onChange={setContent}
+      readOnly={!canEdit}
+      spellCheck={Boolean(settings.editor?.spellcheck ?? true)}
+      tabSize={Number(settings.editor?.tabSize ?? 2)}
+      hideClientPreview={showLivePreview}
+      onPickMedia={() => {
+        setMediaPickerMode('image');
+        setMediaPickerOpen(true);
+      }}
+      onPickVideo={() => {
+        setMediaPickerMode('video');
+        setMediaPickerOpen(true);
+      }}
+      profile={markdownEditorProfile}
+      canUseTrustedHtml={canUseTrustedHtml}
+      canUseExternalEmbed={canUseExternalEmbed}
+      embedProviders={embedProviders}
+      onBlockedAction={(message) => toast.warning(message)}
+    />
+  );
 
   return (
     <div className="space-y-6">
@@ -972,14 +1028,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         onCancel={() => navigate(type === 'article' ? '/articles' : '/pages')}
         onSave={() => void handleSave()}
         onMarkReviewed={() => void handleSave(undefined, undefined, { markReviewed: true })}
-        onOpenPreview={() => {
-          setPreviewHtml(
-            editorMode === 'wysiwyg'
-              ? wysiwygRef.current?.getHtml()
-              : markdownToHtml(content)
-          );
-          setPreviewOpen(true);
-        }}
+        onOpenPreview={openSitePreview}
         articleComments={type === 'article' ? articleComments : undefined}
         onArticleCommentsChange={type === 'article' ? setArticleComments : undefined}
         articleAuthorSettings={type === 'article' ? articleAuthorSettings : undefined}
@@ -1003,51 +1052,18 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
           </div>
         }
       >
-        {useOutlineEditor ? (
-          <PageOutlineEditor value={content} onChange={setContent} disabled={!canEdit} />
-        ) : editorMode === 'wysiwyg' ? (
-          <WysiwygEditor
-            ref={wysiwygRef}
-            value={content}
-            storedFormat={contentFormat}
-            onChange={setContent}
-            readOnly={!canEdit}
-            onPickMedia={() => {
-              setMediaPickerMode('image');
-              setMediaPickerOpen(true);
-            }}
-            onPickVideo={() => {
-              setMediaPickerMode('video');
-              setMediaPickerOpen(true);
-            }}
-            onUploadImage={handleEditorImageUpload}
-            profile={wysiwygEditorProfile}
-            canUseTrustedHtml={canUseTrustedHtml}
-            canUseExternalEmbed={canUseExternalEmbed}
-            embedProviders={embedProviders}
-            onBlockedAction={(message) => toast.warning(message)}
-          />
+        {showLivePreview ? (
+          <PageLivePreviewSplit
+            body={content}
+            bodyFormat={
+              contentFormat === 'html' || contentFormat === 'tiptap_json' ? contentFormat : 'markdown'
+            }
+            onOpenFullPreview={openSitePreview}
+          >
+            {bodyEditor}
+          </PageLivePreviewSplit>
         ) : (
-          <MarkdownContentEditor
-            value={content}
-            onChange={setContent}
-            readOnly={!canEdit}
-            spellCheck={Boolean(settings.editor?.spellcheck ?? true)}
-            tabSize={Number(settings.editor?.tabSize ?? 2)}
-            onPickMedia={() => {
-              setMediaPickerMode('image');
-              setMediaPickerOpen(true);
-            }}
-            onPickVideo={() => {
-              setMediaPickerMode('video');
-              setMediaPickerOpen(true);
-            }}
-            profile={markdownEditorProfile}
-            canUseTrustedHtml={canUseTrustedHtml}
-            canUseExternalEmbed={canUseExternalEmbed}
-            embedProviders={embedProviders}
-            onBlockedAction={(message) => toast.warning(message)}
-          />
+          bodyEditor
         )}
 
         <MediaPickerModal

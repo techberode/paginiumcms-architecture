@@ -18,11 +18,12 @@ PaginiumCMS is evolving into a **Hybrid Headless Content Engine**, while files r
 | 2 | [First steps](FIRST_STEPS.md) | new administrator or editor |
 | 3 | [Administrator guide](ADMIN_GUIDE.md) | day-to-day CMS management |
 | 4 | [Content editor](CONTENT_EDITOR.md) | page and article editors |
-| 5 | [Permissions and Path ACL](ACCESS_CONTROL.md) | SUPER_ADMIN and security operator |
-| 6 | [Firewall](FIREWALL.md) and [Logging](LOGGING.md) | operations and incident response |
-| 7 | [Beta tester](BETA_TESTER.md) | functional and security testing |
+| 5 | [Feature gallery](GALLERY.md) | shared photo catalog on pages |
+| 6 | [Permissions and Path ACL](ACCESS_CONTROL.md) | SUPER_ADMIN and security operator |
+| 7 | [Firewall](FIREWALL.md) and [Logging](LOGGING.md) | operations and incident response |
+| 8 | [Beta tester](BETA_TESTER.md) | functional and security testing |
 
-Additional guides cover [branding](BRANDING.md), [plugins](PLUGINS.md), [themes](THEMES.md), [Code Editor](CODE_EDITOR.md), [Developer Mode](DEVELOPER_MODE.md), and the [project site planner](PROJECT_PLANNER.md).
+Additional guides cover [branding](BRANDING.md), [plugins](PLUGINS.md), [themes](THEMES.md), [feature gallery](GALLERY.md), [Code Editor](CODE_EDITOR.md), [Developer Mode](DEVELOPER_MODE.md), and the [project site planner](PROJECT_PLANNER.md).
 
 ## 2. Status labels
 

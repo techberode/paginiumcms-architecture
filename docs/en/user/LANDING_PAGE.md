@@ -7,9 +7,10 @@ icon: material/rocket-launch
 # Build a landing page
 
 > **Route:** Pages → create or edit → set **Layout template** to `landing`  
-> **Shortcodes:** Settings → Appearance → Layout (builder mode Shortcodes) or page editor insert panel
+> **Amateur path:** Settings → Layout → **Block outline**, then palette → Hero / Cards / CTA / Gallery  
+> **Shortcodes path:** Settings → Layout → **Shortcodes**, or the page-editor insert panel
 
-PaginiumCMS landing pages are **markdown + shortcodes** — no drag-and-drop builder required. Shortcodes expand to safe HTML with allow-listed `pg-*` CSS classes at **render time** (source stays readable in the editor).
+PaginiumCMS landing pages are **markdown + shortcodes**. Outline is a form view of the same body (drag to reorder). Shortcodes expand to safe HTML with allow-listed `pg-*` CSS classes at **render time** (source stays readable in Developer mode).
 
 ---
 
@@ -19,7 +20,7 @@ PaginiumCMS landing pages are **markdown + shortcodes** — no drag-and-drop bui
 2. Set **Template** to `landing` (optional chrome hint).
 3. Set **Layout template** to `landing`.
 4. Publish the page.
-5. Open **Shortcodes** insert panel in the editor and compose sections (see §3).
+5. Open the page editor. In **Outline**, use **Landing starter** or add blocks from the palette. In **Shortcodes** mode, open the insert panel and compose sections (see §3).
 
 **Bundled seed:** copy `backend/resources/content-seeds/paginium-cms-landing.sk.md` into your content tree as `pages/paginium-cms.md`, or create the page in admin and paste the body from that file.
 
@@ -37,9 +38,10 @@ Demo installs include a sample page at `/paginium-cms` when demo mode seeds cont
 | `testimonial` | self-closing | Quote + author + role |
 | `pricing-table` + `pricing-plan` + `pricing-feature` | paired | Pricing columns |
 | `cta-banner` | self-closing | Bottom call-to-action band |
+| `feature-gallery` | self-closing | Published It.65 gallery grid (`title`, optional `tag`) |
 | `alert-box` | paired | Info / warning / success note |
 
-Styles live in `frontend/src/theme/pgLayout.css` and follow your active **color scheme** tokens.
+Related: [Feature gallery walkthrough](GALLERY.md) · Theme Studio shortcodes: [THEMES.md](THEMES.md).
 
 ---
 

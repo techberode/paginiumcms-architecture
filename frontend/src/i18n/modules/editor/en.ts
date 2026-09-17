@@ -13,6 +13,12 @@ export const editorEn: MessageTree = {
     previewTitle: 'Full page preview (header + content + footer)',
     previewWebTitle: 'Preview on site',
     close: 'Close',
+    workspace: 'Workspace',
+    workspaceToggleHint: 'Fullscreen editor without the admin chrome — better on a small monitor',
+    workspaceExit: 'Exit workspace',
+    workspaceDetails: 'Meta',
+    workspaceDetailsHint: 'SEO, menu and templates stay in the standard editor. Exit workspace if you need them.',
+    workspaceHint: 'Escape or Exit workspace restores the admin chrome.',
     title: 'Title',
     titlePlaceholder: 'Page or article title',
     slug: 'Slug',
@@ -23,6 +29,16 @@ export const editorEn: MessageTree = {
     layoutTemplate: 'Page layout template',
     developerLockedHint:
       'Site layout builder is set to Developer, but your role cannot use Monaco mode while ADMIN restriction is enabled.',
+    builderHelp: {
+      templates:
+        'Template mode: pick a named page structure. Body is still Markdown. Change this in Settings → Layout.',
+      shortcodes:
+        'Shortcode mode: insert [landing-hero] and other tags into Markdown. The stored body is the same as Outline.',
+      outline:
+        'Outline mode: add blocks from the palette and fill the fields. The page is still saved as Markdown. Gallery photos come from Feature gallery, not from this form.',
+      developer:
+        'Developer mode: Markdown source plus live preview. Same document as Outline. New block types live in Shortcodes admin.',
+    },
     description: 'Description',
     descriptionPlaceholder: 'Short description for search engines and social media',
     routingTitle: 'Where this item points',
@@ -277,6 +293,7 @@ export const editorEn: MessageTree = {
   mediaPicker: {
     defaultTitle: 'Insert from Media Library',
     empty: 'No images in media library.',
+    emptyVideo: 'No videos in media library.',
   },
   tags: {
     title: 'Article tags',
@@ -334,6 +351,7 @@ export const editorEn: MessageTree = {
   outline: {
     title: 'Page blocks',
     description: 'Add sections from the palette and fill in the fields. The page is still saved as Markdown.',
+    livePreviewHint: 'The right pane is a live preview (scripts off). The public page still uses the same expander.',
     empty: 'No blocks yet. Add a hero, text, or cards from the palette.',
     add: 'Add',
     remove: 'Remove',
@@ -346,7 +364,34 @@ export const editorEn: MessageTree = {
     noAttrs: 'This block has no extra fields.',
     videoSrc: 'Video file',
     videoPoster: 'Poster image',
+    pickMedia: 'Choose from library',
+    clearMedia: 'Remove',
+    fields: {
+      image: 'Hero image',
+      poster: 'Video poster',
+      src: 'Background video',
+      srcmobile: 'Mobile video',
+      title: 'Title',
+      tag: 'Feature tag',
+      subtitle: 'Subtitle',
+      cta: 'Button label',
+      href: 'Button link',
+    },
+    fieldHelp: {
+      tag: 'Filter sticker from Feature gallery (web, mail). Empty = all published photos. Not a page slug.',
+      title: 'Heading shown above the gallery grid on feature-gallery blocks.',
+    },
     raw: 'Unparsed block',
+    reorderHint: 'Reorder sections with the grip handle or the arrows. Order is written back to Markdown.',
+    dragHandle: 'Move block',
+    moveUp: 'Move up',
+    moveDown: 'Move down',
+    starter: {
+      portfolio: 'Portfolio starter',
+      portfolioHint: 'Inserts a hero, cards, and a call to action. Still Markdown shortcodes.',
+      landing: 'Landing starter',
+      landingHint: 'Inserts a showcase hero, cards, and a call to action.',
+    },
     palette: {
       prose: 'Text',
       video: 'Video',
@@ -355,6 +400,7 @@ export const editorEn: MessageTree = {
       'landing-hero': 'Hero',
       'showcase-hero': 'Showcase hero',
       'section-head': 'Section heading',
+      'feature-gallery': 'Gallery',
       'feature-grid': 'Cards',
       'cta-banner': 'Call to action',
       testimonial: 'Quote',

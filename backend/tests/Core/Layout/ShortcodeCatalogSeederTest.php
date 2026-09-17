@@ -81,6 +81,7 @@ final class ShortcodeCatalogSeederTest extends TestCase
                 'coming-soon',
                 'cta-banner',
                 'feature-card',
+                'feature-gallery',
                 'feature-grid',
                 'landing-hero',
                 'pricing-feature',
@@ -103,9 +104,33 @@ final class ShortcodeCatalogSeederTest extends TestCase
         $this->seeder->seedIfEmpty();
         $this->seeder->seedMissingBundled();
 
-        $this->assertCount(16, $this->manager->list());
+        $this->assertCount(17, $this->manager->list());
         $this->assertNotEmpty($this->manager->get('landing-hero'));
         $this->assertNotEmpty($this->manager->get('coming-soon'));
+        $this->assertNotEmpty($this->manager->get('feature-gallery'));
+    }
+
+    public function testSeedMissingBundledUpgradesLandingHeroToMediaAttrs(): void
+    {
+        $this->seeder->seedIfEmpty();
+        $this->manager->save('landing-hero', json_encode([
+            'name' => 'landing-hero',
+            'version' => 1,
+            'attrs' => [
+                'title' => ['type' => 'string'],
+            ],
+            'expand' => '<section class="pg-hero"><div class="pg-hero-inner"><h1 class="pg-hero-title">{{title}}</h1></div></section>',
+        ], JSON_THROW_ON_ERROR));
+
+        $this->seeder->seedMissingBundled();
+
+        $loaded = $this->manager->get('landing-hero');
+        $definition = $loaded['definition'];
+        $this->assertIsArray($definition);
+        $this->assertSame(2, (int) ($definition['version'] ?? 0));
+        $this->assertArrayHasKey('image', $definition['attrs']);
+        $this->assertSame('media', $definition['attrs']['image']['type']);
+        $this->assertSame('video', $definition['attrs']['src']['accept']);
     }
 
     private function removeDir(string $dir): void

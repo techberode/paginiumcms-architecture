@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace PaginiumCMS\Modules\Origin\Services;
 
 use PaginiumCMS\Modules\Origin\Contracts\FeatureProbeInterface;
+use PaginiumCMS\Core\Security\Services\EncryptionService;
 use PaginiumCMS\Modules\Origin\Probes\AdminCommandPaletteFeatureProbe;
+use PaginiumCMS\Modules\Origin\Probes\AtRestEncryptionFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\ApiKeysFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\ArticlePrintFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\BulkSelectionUxFeatureProbe;
@@ -27,9 +29,10 @@ final class FeatureProbeRegistry
     /** @var list<FeatureProbeInterface> */
     private array $probes;
 
-    public function __construct(ProbeSupport $support)
+    public function __construct(ProbeSupport $support, EncryptionService $encryption)
     {
         $this->probes = [
+            new AtRestEncryptionFeatureProbe($support, $encryption),
             new LockingFeatureProbe($support),
             new ShortcodesFeatureProbe($support),
             new ScheduledPublishFeatureProbe($support),

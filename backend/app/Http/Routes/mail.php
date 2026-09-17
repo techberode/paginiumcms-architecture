@@ -15,11 +15,17 @@ declare(strict_types=1);
  *  - PATCH /api/admin/mail/messages/{uid}/flags
  *  - POST /api/admin/mail/messages/{uid}/hide
  *  - POST /api/admin/mail/messages/{uid}/unhide
+ *  - POST /api/admin/mail/local-trash/empty
  *  - GET  /api/admin/mail/messages
  *  - GET  /api/admin/mail/messages/{uid}
  *  - PUT  /api/admin/mail/messages/{uid}/tags
  *  - POST /api/admin/mail/send
  *  - POST /api/admin/mail/messages/{uid}/spam
+ *  - GET  /api/admin/mail/blocked-senders
+ *  - DELETE /api/admin/mail/blocked-senders
+ *  - GET  /api/admin/mail/signature
+ *  - PUT  /api/admin/mail/signature
+ *  - POST /api/admin/mail/signature/import-profile
  */
 
 use PaginiumCMS\Http\Controllers\Admin\MailController;
@@ -52,8 +58,18 @@ return function (App $app): void {
         $group->patch('/messages/{uid}/flags', [$controller, 'flags']);
         $group->post('/messages/{uid}/hide', [$controller, 'hide']);
         $group->post('/messages/{uid}/unhide', [$controller, 'unhide']);
+        $group->post('/local-trash/empty', [$controller, 'emptyLocalTrash']);
         $group->post('/send', [$controller, 'send']);
+        $group->put('/drafts', [$controller, 'saveDraft']);
+        $group->delete('/messages/{uid}', [$controller, 'deleteLocalMessage']);
         $group->post('/messages/{uid}/spam', [$controller, 'spam']);
+        $group->post('/messages/{uid}/block-sender', [$controller, 'blockSender']);
+        $group->post('/spam/autoclean', [$controller, 'autocleanSpam']);
+        $group->get('/blocked-senders', [$controller, 'blockedSenders']);
+        $group->delete('/blocked-senders', [$controller, 'unblockSender']);
+        $group->get('/signature', [$controller, 'signature']);
+        $group->put('/signature', [$controller, 'saveSignature']);
+        $group->post('/signature/import-profile', [$controller, 'importSignatureProfile']);
     })
         ->add(new PermissionMiddleware($authz, 'mail:read-own'))
         ->add($container->get(TwoFactorMiddleware::class))

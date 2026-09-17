@@ -81,6 +81,10 @@ export const LayoutSettingsPanel: React.FC<LayoutSettingsPanelProps> = ({
             );
           })}
         </div>
+        <p className="text-sm text-slate-600 dark:text-slate-300" data-testid="layout-builder-help">
+          {t(`settings.layout.builders.${builderMode}.help`)}
+        </p>
+        <p className="text-xs text-slate-500 dark:text-slate-400">{t('settings.layout.pagesOnlyHint')}</p>
       </section>
 
       <section>

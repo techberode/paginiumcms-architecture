@@ -45,4 +45,14 @@ interface ImapClientInterface
     public function removeFlags(string $folder, int $uid, array $flags): void;
 
     public function move(string $folder, int $uid, string $target): void;
+
+    /**
+     * @param list<string> $flags e.g. \\Seen
+     */
+    public function appendMessage(string $folder, string $rfc822, array $flags = []): void;
+
+    /**
+     * @return array{messages: int, unseen: int}
+     */
+    public function folderStatus(string $folder): array;
 }

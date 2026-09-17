@@ -82,7 +82,7 @@ return [
     'it58f_preview' => 'Živý náhľad (amater + developer)',
     'it58f_hero' => 'DAM hero obrázok/video blok',
     'it58f_gallery' => 'Blok galérie → It.65 API',
-    'it58f_tests' => 'i18n + round-trip testy',
+    'it58f_tests' => 'i18n, nápoveda builderMode, gate testy',
     'it92' => 'It.92 SQLite query index (odvodený)',
     'it92_json_adapter' => 'QueryIndex rozhranie + JSON adaptér',
     'it92_sqlite_driver' => 'SQLite WAL/FTS driver + rebuild',
@@ -134,6 +134,7 @@ return [
     'it87' => 'Plánovač projektu stránky, UX audit (srcset, skeletony)',
 ],
     'probes' => [
+    'at_rest_encryption' => 'Šifrovanie tajomstiev at-rest (APP_KEY)',
     'it1_locking' => 'Zamykanie obsahu',
     'it58_shortcodes' => 'Layout shortcodes',
     'it59_scheduled' => 'Plánované publikovanie',

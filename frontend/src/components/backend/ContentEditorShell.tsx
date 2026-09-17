@@ -1,11 +1,13 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ExternalLink,
   Eye,
   Home,
   Link2,
+  Maximize2,
   Menu,
+  Minimize2,
   Sparkles,
   X,
 } from 'lucide-react';
@@ -29,6 +31,7 @@ import { linkTargetProps } from '../../utils/linkTarget';
 import { useI18n } from '../../context/I18nContext';
 import { ADMIN_CARD, ADMIN_PILL_ACTIVE, ADMIN_PILL_IDLE } from '../../theme/adminUiClasses';
 import { AdminFormActions } from './AdminFormActions';
+import { EditorWorkspaceFrame } from './EditorWorkspaceFrame';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { useAuth } from '../../hooks/useAuth';
 import {
@@ -45,6 +48,10 @@ import {
   isColorSchemeId,
   type AppearanceMode,
 } from '../../theme/colorSchemes';
+import {
+  resolveEditorWorkspace,
+  writeEditorWorkspaceOverride,
+} from '../../utils/editorWorkspace';
 
 const PAGE_TEMPLATE_VALUES = ['default', 'home', 'about', 'contact', 'landing', 'services', 'blog'] as const;
 
@@ -215,9 +222,43 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
     [t]
   );
 
+  const settingsWorkspaceDefault = Boolean(settings.editor?.fullscreenWorkspace);
+  const [workspace, setWorkspace] = useState(() => resolveEditorWorkspace(settingsWorkspaceDefault));
+  const [workspaceDetailsOpen, setWorkspaceDetailsOpen] = useState(false);
+
+  useEffect(() => {
+    setWorkspace(resolveEditorWorkspace(settingsWorkspaceDefault));
+  }, [settingsWorkspaceDefault]);
+
+  const toggleWorkspace = useCallback((): void => {
+    setWorkspace((current) => {
+      const next = !current;
+      writeEditorWorkspaceOverride(next);
+      if (next) {
+        setWorkspaceDetailsOpen(false);
+      }
+      return next;
+    });
+  }, []);
+
+  const workspaceToggle = (
+    <button
+      type="button"
+      onClick={toggleWorkspace}
+      data-testid="editor-workspace-toggle"
+      className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+        workspace ? ADMIN_PILL_ACTIVE : ADMIN_PILL_IDLE
+      }`}
+      title={t('editor.shell.workspaceToggleHint')}
+    >
+      {workspace ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+      {t('editor.shell.workspace')}
+    </button>
+  );
+
   return (
     <div className="mx-auto w-full max-w-7xl">
-      <div className={`overflow-hidden ${ADMIN_CARD}`}>
+      <div className={`overflow-hidden ${ADMIN_CARD}${workspace ? ' hidden' : ''}`}>
         <div className="flex flex-wrap items-start justify-between gap-4 border-b border-admin-border px-5 py-4">
           <div className="min-w-0 space-y-2">
             <div className="flex flex-wrap items-center gap-2">
@@ -299,6 +340,7 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
                 {t('editor.outline.title')}
               </span>
             )}
+            {workspaceToggle}
             {onOpenPreview && (
               <button
                 type="button"
@@ -460,9 +502,12 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
               </div>
             )}
 
-            {showOutlineEditor ? (
-              <p className="form-group md:col-span-2 text-xs text-slate-500 dark:text-slate-400">
-                {t('editor.outline.description')}
+            {type === 'page' ? (
+              <p
+                className="form-group md:col-span-2 text-xs text-slate-500 dark:text-slate-400"
+                data-testid="page-builder-help"
+              >
+                {t(`editor.shell.builderHelp.${builderMode}`)}
               </p>
             ) : null}
 
@@ -609,28 +654,113 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
             />
           ) : null}
 
-          <div className="space-y-3">{children}</div>
+          {workspace ? null : <div className="space-y-3">{children}</div>}
 
-          {footerExtra}
+          {workspace ? null : footerExtra}
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-admin-border px-5 py-4">
-          <p className="text-xs text-admin-muted">
-            {t('editor.shell.stats', { characters: stats.characters, lines: stats.lines })}
-          </p>
-          <AdminFormActions
-            onSave={onSave}
-            saveLabel={saving ? t('editor.shell.saving') : t('editor.shell.save')}
-            saveDisabled={saving || !canEdit}
-            saveBusy={saving}
-            extra={
-              <button type="button" className="btn btn-secondary" onClick={onCancel}>
-                {t('editor.shell.cancel')}
-              </button>
-            }
-          />
-        </div>
+        {workspace ? null : (
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-admin-border px-5 py-4">
+            <p className="text-xs text-admin-muted">
+              {t('editor.shell.stats', { characters: stats.characters, lines: stats.lines })}
+            </p>
+            <AdminFormActions
+              onSave={onSave}
+              saveLabel={saving ? t('editor.shell.saving') : t('editor.shell.save')}
+              saveDisabled={saving || !canEdit}
+              saveBusy={saving}
+              extra={
+                <button type="button" className="btn btn-secondary" onClick={onCancel}>
+                  {t('editor.shell.cancel')}
+                </button>
+              }
+            />
+          </div>
+        )}
       </div>
+      {workspace ? (
+        <EditorWorkspaceFrame
+          heading={heading}
+          title={title}
+          titlePlaceholder={t('editor.shell.titlePlaceholder')}
+          canEdit={canEdit}
+          saving={saving}
+          autoSaveLabel={autoSaveLabel}
+          detailsOpen={workspaceDetailsOpen}
+          onDetailsOpenChange={setWorkspaceDetailsOpen}
+          extraToolbar={
+            <>
+              {lockIndicator}
+              {showWysiwygToggle ? (
+                <button
+                  type="button"
+                  className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                    editorMode === 'wysiwyg' ? ADMIN_PILL_ACTIVE : ADMIN_PILL_IDLE
+                  }`}
+                  disabled={!canEdit}
+                  onClick={() => onEditorModeChange(editorMode === 'wysiwyg' ? 'markdown' : 'wysiwyg')}
+                >
+                  <Sparkles size={14} />
+                  {t('editor.shell.wysiwyg')}
+                </button>
+              ) : (
+                <span className="admin-chip inline-flex items-center rounded-lg px-3 py-1.5 text-xs font-semibold">
+                  {t('editor.outline.title')}
+                </span>
+              )}
+            </>
+          }
+          details={
+            <div className="space-y-4">
+              <div className="form-group">
+                <label className="form-label">{t('editor.shell.slug')}</label>
+                <input
+                  type="text"
+                  value={editSlug}
+                  onChange={(e) => onSlugChange(e.target.value)}
+                  disabled={!canEdit}
+                  className="form-input font-mono text-sm"
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">{t('editor.shell.status')}</label>
+                <select
+                  value={status}
+                  onChange={(e) => onStatusChange(e.target.value as ContentEditorStatus)}
+                  disabled={!canEdit}
+                  className="form-input"
+                >
+                  {Object.entries(statusLabels).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-group">
+                <label className="form-label">{t('editor.shell.description')}</label>
+                <textarea
+                  value={seo.seoDescription}
+                  onChange={(e) => onDescriptionChange(e.target.value)}
+                  disabled={!canEdit}
+                  className="form-input min-h-[72px]"
+                  maxLength={300}
+                />
+              </div>
+              <p className="text-xs text-slate-500">{t('editor.shell.workspaceDetailsHint')}</p>
+            </div>
+          }
+          footerExtra={footerExtra}
+          statsLabel={t('editor.shell.stats', { characters: stats.characters, lines: stats.lines })}
+          onTitleChange={onTitleChange}
+          onOpenPreview={onOpenPreview}
+          onSave={onSave}
+          onExit={toggleWorkspace}
+          onCloseEditor={onCancel}
+        >
+          {children}
+        </EditorWorkspaceFrame>
+      ) : null}
     </div>
   );
 };

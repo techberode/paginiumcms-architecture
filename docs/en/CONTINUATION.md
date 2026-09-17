@@ -1,7 +1,7 @@
 # PaginiumCMS — development continuation context
 
 > **Purpose:** concise, current handoff for the next development session  
-> **Checkpoint:** September 15, 2026 · `v2.1.0-beta.78`  
+> **Checkpoint:** September 17, 2026 · `v2.1.0-beta.79`  
 > **Active phase:** **Full planned-iteration development** — stabilization freeze lifted
 
 This document replaces the old chronological “log of everything.” Historical detail remains in [`CHANGELOG.md`](../../CHANGELOG.md), [`ISSUES.md`](ISSUES.md), and individual `ITERATION_*.md` files.
@@ -28,8 +28,8 @@ Historical freeze record: [STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) (supe
 
 | Area | Status |
 |------|--------|
-| Latest tag | ✅ `v2.1.0-beta.78` — It.93l Support Kanban + It.93m domain IMAP mail |
-| Unreleased (this tree) | — **It.58f** visual page blocks (**58f-a/b** done) · **It.93m** inbox chrome + UTF-8 sanitizer · first-segment admin URLs (`/mail`, `/kanban`) · **It.89** plugin SDK · **It.92** SQLite |
+| Latest tag | ✅ `v2.1.0-beta.79` — It.93m-5 mail polish · It.58f blocks · editor workspace |
+| Unreleased (this tree) | — **It.89** plugin SDK · **It.92** SQLite · **It.48** static compile (58g) |
 | It.25 setup wizard | ✅ basic + M1+ (`beta.62`–`beta.66`) |
 | It.83 theme runtime | ✅ shipped `beta.59` (`terminal-breach`, `clean-journal`) |
 | It.84 / It.86 | ✅ shipped |
@@ -43,18 +43,18 @@ Do **not** invent new iteration numbers. Finish specs that already exist.
 
 | Order | Item | Why this order |
 |------:|------|----------------|
-| 1 | **It.58f** Visual page blocks | Dual amateur/developer publishing — [ITERATION_58f.md](ITERATION_58f.md) |
-| 2 | **It.93** Admin chrome + daily apps | Dashboard/analytics look, teams, support Kanban, domain mail, events, time tracker — [ITERATION_93.md](ITERATION_93.md) **shipped `beta.77`–`78`** |
-| 3 | **It.89** Plugin capability model | Safe editor-tool plugins (It.90e SDK overlap) |
-| 4 | **It.92** SQLite query index + Guard advisor | Derived catalog index; files stay SSOT — [ITERATION_92.md](ITERATION_92.md) |
-| 5 | **It.70** GitHub API publisher UI | Local Git already shipped |
-| 6 | **It.76 / 77** translation providers | After It.73 (shipped) |
-| 7 | **It.75** CMS-aware AI agent | Last: proposals only, human apply |
-| 8 | **It.48** static / Jamstack output | Align with It.70; includes **58g** compile/cache |
+| 1 | **It.89** Plugin capability model | Safe editor-tool plugins (It.90e SDK overlap) |
+| 2 | **It.92** SQLite query index + Guard advisor | Derived catalog index; files stay SSOT — [ITERATION_92.md](ITERATION_92.md) |
+| 3 | **It.70** GitHub API publisher UI | Local Git already shipped |
+| 4 | **It.76 / 77** translation providers | After It.73 (shipped) |
+| 5 | **It.75** CMS-aware AI agent | Last: proposals only, human apply |
+| 6 | **It.48** static / Jamstack output | Align with It.70; includes **58g** compile/cache |
+
+Shipped ahead of this queue: **It.58f** visual page blocks (**58f-a–g**) — [ITERATION_58f.md](ITERATION_58f.md) in **`beta.79`**. **It.93** admin chrome + daily apps — [ITERATION_93.md](ITERATION_93.md) **`beta.77`–`79`** (93m-5 mail polish in **`beta.79`**).
 
 **Optional / later:** It.82d Origin host metrics. Isolated-origin widgets are **not** queued (cancelled iteration; archive only: [ISOLATED_ORIGIN.md](architecture/ISOLATED_ORIGIN.md)).
 
-**Active slice:** **It.58f-d** live preview. It.93 (including **93l** Kanban + **93m** domain IMAP) shipped in `v2.1.0-beta.78`. This tree flattens admin SPA paths (`/mail`, `/kanban`; legacy `/platform/*` redirects). Settings field i18n: [SETTINGS_I18N.md](SETTINGS_I18N.md).
+**Active slice:** **It.89** plugin capability model (89a catalog + manifest). Fullscreen **editor workspace** and **93m-5** mail (labels, empty local trash, compose autosave, signatures/MIME) shipped in **`v2.1.0-beta.79`**. Admin SPA paths stay first-segment (`/mail`, `/kanban`; legacy `/platform/*` redirects). Settings field i18n: [SETTINGS_I18N.md](SETTINGS_I18N.md).
 
 ---
 
@@ -95,11 +95,11 @@ curl -s http://127.0.0.1:8080/api/setup/preflight | jq .
 | [ITERATION_93.md](ITERATION_93.md) | Admin chrome + teams, support, domain mail, events, time tracker |
 | [architecture/ADMIN_DEEP_LINKS.md](architecture/ADMIN_DEEP_LINKS.md) | Admin SPA paths (`/{module}`; `/platform/*` aliases) |
 | [architecture/ISOLATED_ORIGIN.md](architecture/ISOLATED_ORIGIN.md) | Cancelled iteration archive (was first It.93 draft; never implemented) |
-| [ITERATION_58.md](ITERATION_58.md) / [ITERATION_58f.md](ITERATION_58f.md) | Layout 58b–e shipped; **58f-a/b** shipped; **58f-c–g** remainder |
+| [ITERATION_58.md](ITERATION_58.md) / [ITERATION_58f.md](ITERATION_58f.md) | Layout 58b–e shipped; **58f-a–g shipped**; **58g** compile with It.48 |
 | [ITERATION_87.md](ITERATION_87.md) | Project planner + UX remainder (shipped) |
 | [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) | Full remaining scope |
 | [STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) | Closed historical freeze |
-| [ISSUES.md](ISSUES.md#iss-169) | Admin list pagination (ISS-169); landing SEO hero (ISS-168) |
+| [ISSUES.md](ISSUES.md#iss-170) | Security audit fixes (ISS-170–172, [Unreleased]); pagination ISS-169; landing SEO ISS-168 |
 
 ---
 

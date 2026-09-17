@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 9 September 2026 · register **ISS-001–ISS-169** · admin list pagination (ISS-169)
+> **Last updated:** 17 September 2026 · register **ISS-001–ISS-172** · security audit follow-up (ISS-170–172)
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -192,6 +192,9 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-167](#iss-167) | Article author API fields missing from ContentEditorLoadData (TS) | Low (CI) | ✅ Fixed · **2.1.0-beta.66** |
 | [ISS-168](#iss-168) | Landing page ignored SEO / OG hero image | Medium (public UX) | ✅ Fixed · **2.1.0-beta.68** |
 | [ISS-169](#iss-169) | Admin list pagination stayed on page 1 | Medium (admin UX) | ✅ Fixed · **2.1.0-beta.68** |
+| [ISS-170](#iss-170) | Missing `APP_KEY` silently stored secrets as plaintext | **High (security)** | ✅ Fixed · **[Unreleased]** |
+| [ISS-171](#iss-171) | Mail HTML loaded remote tracking pixels by default | Medium (privacy) | ✅ Fixed · **[Unreleased]** |
+| [ISS-172](#iss-172) | Public `GET /api/test` probe + dead Auth controller file | Low (hygiene) | ✅ Fixed · **[Unreleased]** |
 
 ## CI failures (GitHub Actions)
 
@@ -1685,9 +1688,12 @@ ISSUE — thrown in .../backend/app/Http/Config/services.php
 
 Sensitive settings and TOTP seeds were persisted in clear text. EncryptionService and APP_KEY-backed at-rest encryption protect supported fields.
 
+**Follow-up (2026-09-17):** The original rollout allowed `encrypt()` to pass through plaintext when `APP_KEY` was missing (fail-open write). That regressed severity after It.93m IMAP passwords used the same service — see [ISS-170](#iss-170).
+
 ### Evidence and traceability
 
 - **Key technical identifiers:** `data/users/*.json`, `data/settings.json`, `EncryptionService`, `backend/app/Core/Security/Services/EncryptionService.php`, `APP_KEY`, `UserRepository`, `SettingsRepository`, `SettingsSchema::secretKeys()`, `EncryptionServiceTest`, `UserRepositoryTest`, `SettingsRepositoryTest`, `EncryptionService.php`, `UserRepository.php`, `SettingsRepository.php`, `SettingsSchema.php`
+- **Related incidents:** [ISS-170](#iss-170)
 - **History:** [CHANGELOG](../CHANGELOG.md)
 
 > The linked Slovak record preserves the complete symptom, root-cause analysis, implementation detail, and verification narrative from the supplied source.
@@ -5230,6 +5236,112 @@ In **Pages** (and the same table for articles), clicking **Next** left the list 
 - Reset to page 1 only when search/filters actually change, or when the user changes page size (wrapped setter — not a mount effect).
 - Keep bookmarked `/pages?page=N` on first mount.
 - Regression: `useAdminListQueryParams.test.tsx` (setPage + rerender, bookmark, status filter reset).
+
+---
+
+<a id="iss-170"></a>
+
+## ISS-170 – Missing APP_KEY silently stored secrets as plaintext
+
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-170)
+
+| Field | Value |
+|---|---|
+| **Severity** | **High (security)** |
+| **Status** | ✅ Fixed · **[Unreleased]** |
+| **Area** | `EncryptionService` · IMAP `MailboxSecretRepository` · settings/user/webhook stores |
+| **Related** | [ISS-052](#iss-052) (original at-rest encryption) · audit **SEC-2026-09-17-A** |
+
+### Symptom
+
+When `APP_KEY` was unset, a placeholder, or invalid, `EncryptionService::encrypt()` returned the **plaintext** secret with no error. Repositories then wrote readable passwords to flat files — notably **domain IMAP** credentials under `data/mail-secrets/*.json` after It.93m.
+
+### Root cause
+
+Fail-open “rollout” behaviour in `encrypt()` (`!isEnabled()` → return `$plain`). No setup or Origin probe surfaced a missing key before the 2026-09-17 audit.
+
+**Note:** The product uses **`APP_KEY`**, not a separate `ENCRYPTION_KEY` env variable.
+
+### Resolution
+
+- `encrypt()` throws `EncryptionUnavailableException` for non-empty plaintext when encryption is disabled or OpenSSL fails.
+- `decrypt()` still passes through legacy non-`enc:*` values (read-path migration).
+- Removed `?? $password` fallbacks in `MailboxSecretRepository`.
+- `MailController` returns **503** with an explicit message when saving mailbox passwords without encryption.
+- **Setup preflight** check `app_key_encryption` (soft warn + install steps).
+- **Origin probe** `security.at_rest_encryption` reports **missing** when `APP_KEY` is invalid.
+
+### Operator recovery
+
+1. Set a valid **`APP_KEY=base64:…`** (32 bytes) and restart PHP/containers.
+2. Re-enter IMAP/SMTP/2FA-related secrets if any file may have been written as plaintext during the fail-open window.
+3. Confirm Origin Panel / `GET /api/setup/preflight` shows encryption **enabled**.
+
+### Verification
+
+- `EncryptionServiceTest`, `MailboxSecretRepositoryTest`
+- `./scripts/iteration-gate.sh`
+
+---
+
+<a id="iss-171"></a>
+
+## ISS-171 – Mail HTML loaded remote tracking pixels by default
+
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-171)
+
+| Field | Value |
+|---|---|
+| **Severity** | Medium (privacy) |
+| **Status** | ✅ Fixed · **[Unreleased]** |
+| **Area** | It.93m domain mail · `MailHtmlSanitizer` · admin `/mail` |
+| **Related** | audit **SEC-2026-09-17-B** |
+
+### Symptom
+
+HTML messages rendered in a sandboxed iframe still **fetched remote `http(s)` images** on open (classic tracking pixels), leaking read receipts and client IP to third parties.
+
+### Root cause
+
+Sanitizer blocked active content (scripts, `on*=`, dangerous URIs) but treated remote image `src` as safe.
+
+### Resolution
+
+- Default sanitization **blocks remote HTTP(S) images**: `src` replaced with a 1×1 data-URI placeholder; original URL kept in `data-pg-blocked-src` (not fetched).
+- API: `GET /api/admin/mail/messages/{uid}?remoteImages=1` re-sanitizes with remote images allowed (explicit opt-in).
+- Admin UI: banner + **Load remote images** button; SK/EN i18n (`platform.mail.loadRemoteImages`).
+
+### Verification
+
+- `MailHtmlSanitizerTest`, `MailInboxView.test.tsx`
+
+---
+
+<a id="iss-172"></a>
+
+## ISS-172 – Public GET /api/test probe and dead Auth controller
+
+[↑ Overview](#overview) · [Slovak detailed record](sk/ISSUES.md#iss-172)
+
+| Field | Value |
+|---|---|
+| **Severity** | Low (hygiene / attack surface) |
+| **Status** | ✅ Fixed · **[Unreleased]** |
+| **Area** | Public routes · dead code |
+| **Related** | audit **SEC-2026-09-17-C/D** · historical **API8/9-TESTEP** |
+
+### Symptom
+
+`GET /api/test` remained a public JSON “API is running” endpoint (listed in maintenance and performance exclude lists). An empty `backend/app/Http/Controllers/Auth/UserController.php` file lingered unwired.
+
+### Resolution
+
+- Removed `/api/test` from `backend/app/Http/Routes/content.php` and exclude lists; integration smoke uses **`GET /api/health`** instead.
+- Deleted unused `Http/Controllers/Auth/UserController.php` (admin user API remains `Http/Controllers/Admin/UserController.php`).
+
+### Verification
+
+- `ApplicationFlowTest` · `./scripts/iteration-gate.sh`
 
 ---
 

@@ -59,4 +59,6 @@ After save, **Frontend (Admin UI)** strings merge at runtime via `GET /api/i18n/
 
 ## Custom settings panels
 
-Some groups use dedicated panels (`NewsletterSettingsPanel`, `PrivacyCookieSettingsPanel`, …) but still call the same helpers with a fixed `groupKey` (e.g. `'privacy'`). New keys follow the same `settings.fields.{group}.{key}.*` convention.
+Some groups use dedicated panels (`LayoutSettingsPanel`, `NewsletterSettingsPanel`, `PrivacyCookieSettingsPanel`, …) but still call the same helpers with a fixed `groupKey` (e.g. `'privacy'`). New keys follow the same `settings.fields.{group}.{key}.*` convention.
+
+Layout builder cards also use `settings.layout.builders.{mode}.name|description|help` (not the generic field renderer).

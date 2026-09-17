@@ -1,6 +1,6 @@
 # Iterácia 58f — Vizuálne bloky stránky (amater + developer náhľad)
 
-> **Stav:** 🔄 prebieha — **58f-a/b hotové**; ďalej **58f-d** živý náhľad 
+> **Stav:** ✅ hotové — **58f-a–g** (paleta, živý náhľad, DnD, DAM hero, galéria, i18n). 58g compile ostáva pri It.48.  
 > **Kanónická špecifikácia (EN):** [../en/ITERATION_58f.md](../en/ITERATION_58f.md)
 
 ## Prečo 58f, nie 94
@@ -18,6 +18,8 @@ SSOT ostáva telo stránky. Outline je pohľad, nie druhá databáza.
 
 ## Slicey
 
-`58f-a` ✅ parse ↔ Markdown → `58f-b` ✅ paleta/formáre → **ďalej `d` live preview** → `c` DnD + starter → `e` hero obrázok/video z DAM → `f` galéria It.65 → `g` testy.
+`58f-a` ✅ parse ↔ Markdown → `58f-b` ✅ paleta/formáre → `58f-d` ✅ live preview → `58f-c` ✅ DnD + starter → `58f-e` ✅ DAM hero obrázok/video na `landing-hero` → `58f-f` ✅ galéria It.65 (`feature-gallery`) → `58f-g` ✅ i18n / nápoveda builderMode.
+
+Mimo 58f: editor stránky/článku má voliteľný celoobrazovkový **Workspace** (tlačidlo v chrome, predvolené v Settings → Editor).
 
 Hero video (muted, loop, poster, `prefers-reduced-motion`) je blok Core, nie izolovaný origin. 58g compile ostáva pri It.48.

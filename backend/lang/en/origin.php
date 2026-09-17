@@ -81,8 +81,8 @@ return [
     'it58f_dnd' => 'DnD reorder + portfolio starter',
     'it58f_preview' => 'Live preview pane (amateur + developer)',
     'it58f_hero' => 'DAM hero image/video block',
-    'it58f_gallery' => 'featureGallery block → It.65 API',
-    'it58f_tests' => 'i18n + round-trip tests',
+    'it58f_gallery' => 'feature-gallery block → It.65 API',
+    'it58f_tests' => 'i18n, builderMode help, gate tests',
     'it92' => 'It.92 SQLite query index (derived)',
     'it92_json_adapter' => 'QueryIndex interface + JSON adapter',
     'it92_sqlite_driver' => 'SQLite WAL/FTS driver + rebuild',
@@ -134,6 +134,7 @@ return [
     'it87' => 'Project site planner, UX audit completion (srcset, skeletons)',
 ],
     'probes' => [
+    'at_rest_encryption' => 'At-rest secret encryption (APP_KEY)',
     'it1_locking' => 'Content locking',
     'it58_shortcodes' => 'Layout shortcodes',
     'it59_scheduled' => 'Scheduled publishing',

@@ -88,6 +88,7 @@
 - [Logo, favicon a identita stránky](user/BRANDING.md) — `docs/user/BRANDING.md`
 - [Code Editor — používateľská príručka](user/CODE_EDITOR.md) — `docs/user/CODE_EDITOR.md`
 - [Editor obsahu — stránky a články](user/CONTENT_EDITOR.md) — `docs/user/CONTENT_EDITOR.md`
+- [Galéria funkcií](user/GALLERY.md) — `docs/user/GALLERY.md`
 - [Developer Mode — bezpečnostná brána](user/DEVELOPER_MODE.md) — `docs/user/DEVELOPER_MODE.md`
 - [Firewall (WAF) — príručka administrátora](user/FIREWALL.md) — `docs/user/FIREWALL.md`
 - [Prvé kroky po inštalácii](user/FIRST_STEPS.md) — `docs/user/FIRST_STEPS.md`

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\Setup\Services;
 
+use PaginiumCMS\Core\Security\Services\EncryptionService;
 use PaginiumCMS\Core\Setup\Models\SetupPreflightCheck;
 use PaginiumCMS\Core\Setup\Models\SetupPreflightSeverity;
 use PaginiumCMS\Core\Setup\Models\SetupPreflightStatus;
@@ -26,6 +27,7 @@ final class SetupPreflightService
     public function __construct(
         private string $storagePath,
         private ?string $projectRoot = null,
+        private ?EncryptionService $encryption = null,
     ) {
         $this->storagePath = rtrim($storagePath, '/');
     }
@@ -44,6 +46,7 @@ final class SetupPreflightService
             $this->checkGitCli(),
             $this->checkComposerCli(),
             $this->checkDockerRuntime(),
+            $this->checkAppKeyEncryption(),
         ];
 
         $hardBlockers = 0;
@@ -214,6 +217,24 @@ final class SetupPreflightService
                 'sudo apt update',
                 'sudo apt install -y composer',
                 'composer --version',
+            ]),
+        );
+    }
+
+    private function checkAppKeyEncryption(): SetupPreflightCheck
+    {
+        $enabled = $this->encryption?->isEnabled() ?? false;
+
+        return new SetupPreflightCheck(
+            id: 'app_key_encryption',
+            status: $enabled ? SetupPreflightStatus::Pass : SetupPreflightStatus::Warn,
+            severity: SetupPreflightSeverity::Soft,
+            current: $enabled ? 'enabled' : 'disabled (missing or invalid APP_KEY)',
+            required: 'valid APP_KEY for secret encryption',
+            installSteps: $enabled ? [] : $this->debianInstallSteps([
+                'php -r "echo \'base64:\'.base64_encode(random_bytes(32)).PHP_EOL;"',
+                'Add APP_KEY=<output> to .env (never commit secrets)',
+                'Restart PHP-FPM / the app container so getenv() picks up the key',
             ]),
         );
     }

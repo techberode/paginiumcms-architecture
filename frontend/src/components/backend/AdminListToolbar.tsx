@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { X } from 'lucide-react';
 import { AdminViewModeToggle } from './AdminViewModeToggle';
 import type { AdminViewMode } from '../../hooks/useAdminViewMode';
 import { useI18n } from '../../context/I18nContext';
@@ -79,15 +80,26 @@ export const AdminListToolbar: React.FC<AdminListToolbarProps> = ({
   return (
     <div className="w-full space-y-3 rounded-lg border border-admin-border bg-admin-card shadow-admin p-3 sm:p-4">
       <div className="flex flex-col gap-3 md:flex-row md:items-center">
-        <div className="flex-1 min-w-0">
+        <div className="relative flex-1 min-w-0">
           <input
             type="search"
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder={resolvedSearchPlaceholder}
-            className="form-input w-full"
+            className="form-input w-full pr-9"
             aria-label={resolvedSearchPlaceholder}
           />
+          {search !== '' ? (
+            <button
+              type="button"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-admin-muted hover:bg-admin-sidebar-hover hover:text-admin-text"
+              onClick={() => onSearchChange('')}
+              aria-label={t('list.toolbar.clearSearch')}
+              data-testid="list-search-clear"
+            >
+              <X className="h-4 w-4" aria-hidden />
+            </button>
+          ) : null}
         </div>
 
         {onStatusFilterChange && statusFilter !== undefined && (

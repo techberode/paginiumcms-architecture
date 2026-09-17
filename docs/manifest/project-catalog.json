@@ -52,17 +52,17 @@
     {
       "id": "it.58f",
       "titleKey": "origin.catalog.it58f",
-      "phase": "partial",
+      "phase": "shipped",
       "doc": "docs/en/ITERATION_58f.md",
       "priority": "high",
       "items": [
         { "id": "58f-a", "titleKey": "origin.catalog.it58f_parse", "phase": "shipped", "weight": 1 },
         { "id": "58f-b", "titleKey": "origin.catalog.it58f_palette", "phase": "shipped", "weight": 1 },
-        { "id": "58f-c", "titleKey": "origin.catalog.it58f_dnd", "phase": "planned", "weight": 1 },
-        { "id": "58f-d", "titleKey": "origin.catalog.it58f_preview", "phase": "planned", "weight": 1 },
-        { "id": "58f-e", "titleKey": "origin.catalog.it58f_hero", "phase": "planned", "weight": 1 },
-        { "id": "58f-f", "titleKey": "origin.catalog.it58f_gallery", "phase": "planned", "weight": 1 },
-        { "id": "58f-g", "titleKey": "origin.catalog.it58f_tests", "phase": "planned", "weight": 1 }
+        { "id": "58f-c", "titleKey": "origin.catalog.it58f_dnd", "phase": "shipped", "weight": 1 },
+        { "id": "58f-d", "titleKey": "origin.catalog.it58f_preview", "phase": "shipped", "weight": 1 },
+        { "id": "58f-e", "titleKey": "origin.catalog.it58f_hero", "phase": "shipped", "weight": 1 },
+        { "id": "58f-f", "titleKey": "origin.catalog.it58f_gallery", "phase": "shipped", "weight": 1 },
+        { "id": "58f-g", "titleKey": "origin.catalog.it58f_tests", "phase": "shipped", "weight": 1 }
       ],
       "history": []
     },

@@ -12,7 +12,7 @@ class ApplicationFlowTest extends TestCase
     public function testPublicApiEndpointsRespondWithJson(): void
     {
         $endpoints = [
-            ['GET', '/api/test'],
+            ['GET', '/api/health'],
             ['GET', '/api/navigation'],
             ['GET', '/api/pages'],
             ['GET', '/api/articles'],

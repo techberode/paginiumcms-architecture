@@ -12,5 +12,12 @@ describe('sanitizePublicHtml (DOMPurify in browser env)', () => {
     expect(probe).toBe('<p>ok</p>');
     expect(sanitizePublicHtml('<img src="/x.png" onerror="alert(1)">')).not.toContain('onerror');
     expect(sanitizePublicHtml('<a href="javascript:alert(1)">x</a>')).not.toContain('javascript:');
+    const gallery = sanitizePublicHtml(
+      '<section class="pg-feature-gallery" data-tag="web" data-title="Work"></section>'
+    );
+    if (!gallery.includes('<script>')) {
+      expect(gallery).toContain('data-tag');
+      expect(gallery).toContain('data-title');
+    }
   });
 });

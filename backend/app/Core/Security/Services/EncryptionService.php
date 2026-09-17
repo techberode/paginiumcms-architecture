@@ -22,9 +22,11 @@ namespace PaginiumCMS\Core\Security\Services;
  *  - **Idempotencia:** `encrypt()` už zašifrovanú hodnotu znovu nešifruje.
  *  - **Krížová kompatibilita:** `decrypt()` rozpozná oba formáty (`s1`/`g1`)
  *    podľa prefixu, nezávisle od toho, ktorý backend je práve preferovaný.
- *  - **Fail-safe rollout:** ak `APP_KEY` nie je platný 32-bajtový kľúč (alebo
- *    nie je dostupný žiadny crypto backend), šifrovanie je vypnuté (plaintext)
- *    a aktivuje sa nastavením reálneho `APP_KEY` – bez migračného skriptu.
+ *  - **Fail-closed zápis:** `encrypt()` pri neprázdnom plaintexte vyhodí
+ *    {@see EncryptionUnavailableException}, ak nie je platný `APP_KEY` alebo
+ *    crypto backend — citlivé polia sa nesmú uložiť ako plaintext.
+ *  - **Fail-open čítanie:** `decrypt()` legacy plaintext neprefixované hodnoty
+ *    vráti nezmenené (transparentná migrácia).
  */
 final class EncryptionService
 {
@@ -63,8 +65,16 @@ final class EncryptionService
 
     public function encrypt(string $plain): string
     {
-        if ($plain === '' || !$this->isEnabled() || $this->isEncrypted($plain)) {
+        if ($plain === '') {
             return $plain;
+        }
+
+        if ($this->isEncrypted($plain)) {
+            return $plain;
+        }
+
+        if (!$this->isEnabled()) {
+            throw EncryptionUnavailableException::forMissingAppKey();
         }
 
         /** @var string $key */
@@ -82,7 +92,7 @@ final class EncryptionService
         $tag = '';
         $cipher = openssl_encrypt($plain, self::GCM_CIPHER, $key, OPENSSL_RAW_DATA, $iv, $tag);
         if ($cipher === false) {
-            return $plain;
+            throw EncryptionUnavailableException::forCipherFailure();
         }
 
         return self::OPENSSL_PREFIX . base64_encode($iv . $tag . $cipher);

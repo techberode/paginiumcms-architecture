@@ -17,6 +17,7 @@ export const listEn: MessageTree = {
     seoIssuesOnly: 'SEO issues only',
     staleOnly: 'Stale only',
     clearFilters: 'Clear filters',
+    clearSearch: 'Clear search',
   },
   pagination: {
     records: 'records',

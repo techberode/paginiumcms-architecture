@@ -1,11 +1,33 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Ban, FileText, Folder, Inbox, Mail, MailOpen, MailPlus, Plus, Reply, RotateCcw, Send, Star, Trash2 } from 'lucide-react';
+import {
+  ArrowLeft,
+  Ban,
+  ChevronDown,
+  Menu,
+  FileText,
+  Folder,
+  Contact,
+  Inbox,
+  Mail,
+  MailOpen,
+  MailPlus,
+  Pencil,
+  Plus,
+  Reply,
+  RotateCcw,
+  Send,
+  Star,
+  Trash2,
+} from 'lucide-react';
 import {
   MAIL_LOCAL_TRASH,
   mailApi,
   type MailFolder,
   type MailMessage,
+  type MailSignatureFields,
+  type MailSignaturePrefs,
+  type MailSignatureState,
   type MailStatus,
 } from '../../api/mail';
 import type { ApiResponse } from '../../api/client';
@@ -15,6 +37,33 @@ import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { useAdminListPageSize } from '../../hooks/useAdminListPageSize';
 import { useColumnSort } from '../../hooks/useColumnSort';
 import { applyClientListView } from '../../utils/clientListView';
+import { isTrustedImageSender, parseSenderEmail, rememberSenderRemoteImages } from '../../utils/mailTrustedImageSenders';
+import {
+  collectMailboxAddressHints,
+  formatRecipientList,
+  readRecentRecipients,
+  rememberRecipients,
+  validateRecipientList,
+} from '../../utils/mailRecipients';
+import {
+  createLabelDefinition,
+  findDefinitionByTag,
+  messageTagMatchesDefinition,
+  messageTagsForLabel,
+  resolveNavLabelDefinition,
+  labelColorToPickerValue,
+  labelDisplayName,
+  labelKeyword,
+  MAIL_LABEL_COLORS,
+  mailTagAttrs,
+  mailTagDotAttrs,
+  normalizeHexColor,
+  normalizeLabelName,
+  readLabelDefinitions,
+  type MailLabelColor,
+  type MailLabelDefinition,
+  writeLabelDefinitions,
+} from '../../utils/mailLabels';
 import { ADMIN_PAGE_SUBTITLE, ADMIN_PAGE_TITLE } from '../../theme/adminUiClasses';
 import { settingsGroupPath } from '../../utils/adminDeepLinks';
 import { AdminHintCard } from './AdminHintCard';
@@ -22,6 +71,7 @@ import { AdminWidgetCard } from '../ui/AdminWidgetCard';
 import { AdminListToolbar } from './AdminListToolbar';
 import { AdminListSortBar } from './SortableTableHeader';
 import { AdminListPagination } from './AdminListPagination';
+import { MailSignaturePanel } from './MailSignaturePanel';
 import { BulkActionBar } from './BulkActionBar';
 import { AdminListSkeleton } from '../ui/AdminListSkeleton';
 import { AdminEmptyState } from '../ui/AdminEmptyState';
@@ -112,54 +162,6 @@ function mailDateValue(date: string): number {
   return Number.isNaN(parsed) ? 0 : parsed;
 }
 
-function tagToneClass(tag: string): string {
-  let sum = 0;
-  for (let i = 0; i < tag.length; i += 1) {
-    sum += tag.charCodeAt(i);
-  }
-
-  return `mail-tag-${(sum % 5) + 1}`;
-}
-
-function mailLabelsKey(mailbox: string): string {
-  return `paginium.mail.labels:${mailbox}`;
-}
-
-function normalizeLabelName(raw: string): string {
-  return raw.trim().replace(/\s+/g, ' ');
-}
-
-function labelKeyword(name: string): string {
-  const ascii = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  return ascii.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-}
-
-function readSavedLabels(mailbox: string): string[] {
-  if (mailbox === '') {
-    return [];
-  }
-  try {
-    const raw = window.localStorage.getItem(mailLabelsKey(mailbox));
-    if (raw === null || raw === '') {
-      return [];
-    }
-    const parsed: unknown = JSON.parse(raw);
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-    return parsed.filter((item): item is string => typeof item === 'string' && normalizeLabelName(item) !== '');
-  } catch {
-    return [];
-  }
-}
-
-function writeSavedLabels(mailbox: string, labels: string[]): void {
-  if (mailbox === '') {
-    return;
-  }
-  window.localStorage.setItem(mailLabelsKey(mailbox), JSON.stringify(labels));
-}
-
 function labelMatches(tags: string[], label: string): boolean {
   const keyword = labelKeyword(label);
   const lowered = label.toLowerCase();
@@ -209,6 +211,7 @@ function parseFromAddress(from: string): string {
   return email.includes('@') ? email : '';
 }
 
+
 function replySubject(subject: string): string {
   const trimmed = subject.trim();
   if (trimmed === '') {
@@ -217,7 +220,18 @@ function replySubject(subject: string): string {
   return /^re:\s/i.test(trimmed) ? trimmed : `Re: ${trimmed}`;
 }
 
-type MailCompose = { to: string; subject: string; body: string };
+type MailCompose = { to: string; subject: string; body: string; draftUid?: number };
+
+const DRAFT_AUTOSAVE_DEBOUNCE_MS = 2000;
+const DRAFT_AUTOSAVE_TICK_MS = 5000;
+
+function isComposeEmpty(compose: MailCompose): boolean {
+  return compose.to.trim() === '' && compose.subject.trim() === '' && compose.body.trim() === '';
+}
+
+function composeFingerprint(compose: MailCompose): string {
+  return `${compose.to}\n${compose.subject}\n${compose.body}`;
+}
 
 export const MailInboxView: React.FC = () => {
   const { t } = useI18n();
@@ -231,6 +245,10 @@ export const MailInboxView: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [password, setPassword] = useState('');
   const [newFolder, setNewFolder] = useState('');
+  const [newLabel, setNewLabel] = useState('');
+  const [newLabelColor, setNewLabelColor] = useState<MailLabelColor>('1');
+  const [editingLabelId, setEditingLabelId] = useState<string | null>(null);
+  const [bulkLabelPick, setBulkLabelPick] = useState('');
   const [tagDraft, setTagDraft] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -238,18 +256,41 @@ export const MailInboxView: React.FC = () => {
   const { sortField, sortDirection, handleSort } = useColumnSort('date', 'desc');
   const [compose, setCompose] = useState<MailCompose | null>(null);
   const [sending, setSending] = useState(false);
+  const [mailboxRefreshing, setMailboxRefreshing] = useState(false);
+  const [recipientHintsTick, setRecipientHintsTick] = useState(0);
+  const [messageHeaderOpen, setMessageHeaderOpen] = useState(false);
   const [extraMailbox, setExtraMailbox] = useState('');
   const [extraPassword, setExtraPassword] = useState('');
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [listFilter, setListFilter] = useState<'all' | 'starred'>('all');
   const [labelFilter, setLabelFilter] = useState<string | null>(null);
-  const [customLabels, setCustomLabels] = useState<string[]>([]);
-  const [newLabel, setNewLabel] = useState('');
+  const [labelDefinitions, setLabelDefinitions] = useState<MailLabelDefinition[]>([]);
+  const [blockedSenders, setBlockedSenders] = useState<string[]>([]);
+  const [blockedPanelOpen, setBlockedPanelOpen] = useState(false);
+  const [signaturePanelOpen, setSignaturePanelOpen] = useState(false);
+  const [signatureState, setSignatureState] = useState<MailSignatureState | null>(null);
+  const [signatureDraftFields, setSignatureDraftFields] = useState<MailSignatureFields | null>(null);
+  const [signatureDraftPrefs, setSignatureDraftPrefs] = useState<MailSignaturePrefs | null>(null);
+  const [signatureSaving, setSignatureSaving] = useState(false);
+  const [mailNavOpen, setMailNavOpen] = useState(false);
   const composeAnchorRef = useRef<HTMLButtonElement>(null);
+  const spamAutocleanDoneRef = useRef(false);
   const [composeAnchorVisible, setComposeAnchorVisible] = useState(true);
+  const [trustedSendersTick, setTrustedSendersTick] = useState(0);
+  const composeRef = useRef<MailCompose | null>(null);
+  const draftSaveInFlightRef = useRef(false);
+  const lastDraftFingerprintRef = useRef('');
 
   const describeMailError = useCallback(
-    (raw: string, fallbackKey: 'platform.mail.toast.loadFailed' | 'platform.mail.toast.saveFailed' | 'platform.mail.toast.sendFailed') => {
+    (
+      raw: string,
+      fallbackKey:
+        | 'platform.mail.toast.loadFailed'
+        | 'platform.mail.toast.saveFailed'
+        | 'platform.mail.toast.sendFailed'
+        | 'platform.mail.toast.draftFailed'
+        | 'platform.mail.toast.deleteFailed'
+    ) => {
       switch (raw) {
         case 'IMAP is disabled.':
           return t('platform.mail.notEnabled');
@@ -267,6 +308,14 @@ export const MailInboxView: React.FC = () => {
           return t('platform.mail.toast.accountPrimary');
         case 'Too many mailboxes.':
           return t('platform.mail.toast.accountLimit');
+        case 'Recipient is invalid.':
+          return t('platform.mail.toast.recipientInvalid');
+        case 'Subject is invalid.':
+          return t('platform.mail.toast.subjectInvalid');
+        case 'Message body is invalid.':
+          return t('platform.mail.toast.bodyInvalid');
+        case 'Too many recipients.':
+          return t('platform.mail.toast.tooManyRecipients');
         default:
           return raw !== '' ? raw : t(fallbackKey);
       }
@@ -280,14 +329,156 @@ export const MailInboxView: React.FC = () => {
     return next;
   }, []);
 
+  const loadBlockedSenders = useCallback(async () => {
+    const next = await mailApi.blockedSenders();
+    setBlockedSenders(next.blocked);
+  }, []);
+
+  const applySignatureState = useCallback((next: MailSignatureState | null) => {
+    setSignatureState(next);
+    if (next) {
+      setSignatureDraftFields({ ...next.fields });
+      setSignatureDraftPrefs({ ...next.prefs, overrides: { ...next.prefs.overrides } });
+    } else {
+      setSignatureDraftFields(null);
+      setSignatureDraftPrefs(null);
+    }
+  }, []);
+
+  const loadSignature = useCallback(async () => {
+    applySignatureState(await mailApi.signature());
+  }, [applySignatureState]);
+
+  useEffect(() => {
+    composeRef.current = compose;
+  }, [compose]);
+
+  const persistDraft = useCallback(
+    async (silent: boolean): Promise<boolean> => {
+      const current = composeRef.current;
+      if (current === null || draftSaveInFlightRef.current || isComposeEmpty(current)) {
+        return false;
+      }
+      const fingerprint = composeFingerprint(current);
+      if (silent && fingerprint === lastDraftFingerprintRef.current) {
+        return false;
+      }
+      draftSaveInFlightRef.current = true;
+      try {
+        const response = await mailApi.saveDraft({
+          ...current,
+          uid: current.draftUid,
+        });
+        if (!response.success || !response.data) {
+          if (!silent) {
+            toast.error(describeMailError(firstError(response), 'platform.mail.toast.draftFailed'));
+          }
+          return false;
+        }
+        lastDraftFingerprintRef.current = fingerprint;
+        setCompose((prev) => (prev ? { ...prev, draftUid: response.data!.uid } : null));
+        const nextFolders = await mailApi.folders();
+        setFolders(nextFolders);
+        if (mailNavKind(folder) === 'drafts') {
+          setMessages(await mailApi.messages(folder));
+        }
+        if (!silent) {
+          toast.success(t('platform.mail.toast.draftSaved'));
+        }
+        return true;
+      } finally {
+        draftSaveInFlightRef.current = false;
+      }
+    },
+    [describeMailError, folder, t, toast]
+  );
+
+  useEffect(() => {
+    if (compose === null) {
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      void persistDraft(true);
+    }, DRAFT_AUTOSAVE_DEBOUNCE_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [compose, persistDraft]);
+
+  useEffect(() => {
+    if (compose === null) {
+      return;
+    }
+    const timer = window.setInterval(() => {
+      void persistDraft(true);
+    }, DRAFT_AUTOSAVE_TICK_MS);
+
+    return () => window.clearInterval(timer);
+  }, [compose, persistDraft]);
+
+  useEffect(() => {
+    return () => {
+      void persistDraft(true);
+    };
+  }, [persistDraft]);
+
+  useEffect(() => {
+    const flush = () => {
+      void persistDraft(true);
+    };
+    window.addEventListener('pagehide', flush);
+    return () => window.removeEventListener('pagehide', flush);
+  }, [persistDraft]);
+
+  const flushDraftBeforeLeave = useCallback(async () => {
+    await persistDraft(true);
+  }, [persistDraft]);
+
   const loadMailbox = useCallback(async (activeFolder: string) => {
     const nextFolders = await mailApi.folders();
     setFolders(nextFolders);
-    const nextMessages = await mailApi.messages(activeFolder);
+    const [nextMessages] = await Promise.all([
+      mailApi.messages(activeFolder),
+      loadBlockedSenders(),
+      loadSignature(),
+    ]);
     setMessages(nextMessages);
     setDetails({});
     setExpandedId(null);
-  }, []);
+  }, [loadBlockedSenders, loadSignature]);
+
+  const saveSignature = async () => {
+    if (signatureDraftFields === null || signatureDraftPrefs === null || signatureSaving) {
+      return;
+    }
+    setSignatureSaving(true);
+    const response = await mailApi.saveSignature({
+      enabled: signatureDraftPrefs.enabled,
+      templateId: signatureDraftPrefs.templateId,
+      overrides: signatureDraftFields,
+    });
+    setSignatureSaving(false);
+    if (response.success && response.data) {
+      applySignatureState(response.data);
+      toast.success(t('platform.mail.signatureSaved'));
+      return;
+    }
+    toast.error(describeMailError(response.message ?? '', 'platform.mail.toast.saveFailed'));
+  };
+
+  const importSignatureProfile = async () => {
+    if (signatureSaving) {
+      return;
+    }
+    setSignatureSaving(true);
+    const response = await mailApi.importSignatureProfile();
+    setSignatureSaving(false);
+    if (response.success && response.data) {
+      applySignatureState(response.data);
+      toast.success(t('platform.mail.signatureImported'));
+      return;
+    }
+    toast.error(describeMailError(response.message ?? '', 'platform.mail.toast.saveFailed'));
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -296,6 +487,10 @@ export const MailInboxView: React.FC = () => {
       .then(async (next) => {
         if (cancelled || next === null || !next.enabled || !next.hasPassword || !next.mailboxAllowed) {
           return;
+        }
+        if (!spamAutocleanDoneRef.current) {
+          await mailApi.autocleanSpam();
+          spamAutocleanDoneRef.current = true;
         }
         await loadMailbox(folder);
       })
@@ -324,47 +519,140 @@ export const MailInboxView: React.FC = () => {
   }, [folder]);
 
   useEffect(() => {
-    setCustomLabels(readSavedLabels(status?.mailbox ?? ''));
+    setLabelDefinitions(readLabelDefinitions(status?.mailbox ?? ''));
   }, [status?.mailbox]);
 
-  const persistLabel = (name: string) => {
-    const normalized = normalizeLabelName(name);
-    const keyword = labelKeyword(normalized);
-    if (keyword === '') {
-      return normalized;
+  const persistLabel = (name: string, color: MailLabelColor) => {
+    const created = createLabelDefinition(name, color);
+    if (created === null) {
+      return normalizeLabelName(name);
     }
     const mailbox = status?.mailbox ?? '';
-    setCustomLabels((current) => {
-      if (current.some((item) => labelKeyword(item) === keyword)) {
+    setLabelDefinitions((current) => {
+      if (current.some((item) => item.id === created.id)) {
         return current;
       }
-      const next = [...current, normalized];
-      writeSavedLabels(mailbox, next);
+      const next = [...current, created];
+      writeLabelDefinitions(mailbox, next);
       return next;
     });
+    return created.name;
+  };
+
+  const resetLabelForm = () => {
+    setEditingLabelId(null);
+    setNewLabel('');
+    setNewLabelColor('1');
+  };
+
+  const startEditLabelForItem = (item: { id: string; name: string }) => {
+    const def = resolveNavLabelDefinition(item, labelDefinitions);
+    setEditingLabelId(def.id);
+    setNewLabel(def.name);
+    setNewLabelColor(def.color);
+  };
+
+  const saveLabelDefinition = (): string | null => {
+    const normalized = normalizeLabelName(newLabel);
+    if (labelKeyword(normalized) === '') {
+      return null;
+    }
+    const mailbox = status?.mailbox ?? '';
+    if (editingLabelId === null) {
+      persistLabel(newLabel, newLabelColor);
+      resetLabelForm();
+      return normalized;
+    }
+    const updated: MailLabelDefinition = {
+      id: editingLabelId,
+      name: normalized,
+      color: newLabelColor,
+    };
+    setLabelDefinitions((current) => {
+      const index = current.findIndex((item) => item.id === editingLabelId);
+      const next = index >= 0 ? current.map((item, i) => (i === index ? updated : item)) : [...current, updated];
+      writeLabelDefinitions(mailbox, next);
+      return next;
+    });
+    if (labelFilter !== null && findDefinitionByTag(labelFilter, labelDefinitions)?.id === editingLabelId) {
+      setLabelFilter(normalized);
+    }
+    resetLabelForm();
+    toast.success(t('platform.mail.toast.labelSaved'));
     return normalized;
   };
 
-  const labels = useMemo(() => {
-    const unique = new Map<string, string>();
-    for (const name of customLabels) {
-      const key = labelKeyword(name);
-      if (key !== '') {
-        unique.set(key, name);
+  const removeLabelDefinition = async (def: MailLabelDefinition) => {
+    if (!window.confirm(t('platform.mail.confirmDeleteLabel', { name: def.name }))) {
+      return;
+    }
+    const mailbox = status?.mailbox ?? '';
+    setLabelDefinitions((current) => {
+      const next = current.filter((item) => item.id !== def.id);
+      writeLabelDefinitions(mailbox, next);
+      return next;
+    });
+    if (labelFilter !== null && findDefinitionByTag(labelFilter, labelDefinitions)?.id === def.id) {
+      setLabelFilter(null);
+    }
+    for (const row of messages) {
+      const tags = row.tags ?? [];
+      const tagsToRemove = tags.filter((tag) => messageTagMatchesDefinition(tag, def));
+      if (tagsToRemove.length === 0) {
+        continue;
       }
+      const sourceFolder = imapFolderOf(row, folder);
+      const id = rowId(row, folder);
+      for (const tag of tagsToRemove) {
+        const response = await mailApi.changeFlags(sourceFolder, row.uid, [], [tag]);
+        if (!response.success) {
+          toast.error(describeMailError(firstError(response), 'platform.mail.toast.loadFailed'));
+          return;
+        }
+      }
+      const current = details[id] ?? row;
+      patchRow(id, {
+        tags: (current.tags ?? []).filter((tag) => !messageTagMatchesDefinition(tag, def)),
+      });
+    }
+    toast.success(t('platform.mail.toast.labelDeleted'));
+    await loadMailbox(folder);
+  };
+
+  const labelNavItems = useMemo(() => {
+    const unique = new Map<string, { id: string; name: string }>();
+    for (const def of labelDefinitions) {
+      unique.set(def.id, { id: def.id, name: def.name });
     }
     for (const item of messages) {
       for (const tag of item.tags ?? []) {
-        const key = labelKeyword(tag);
-        if (key !== '' && !unique.has(key)) {
-          unique.set(key, tag);
+        const def = findDefinitionByTag(tag, labelDefinitions);
+        const id = def?.id ?? tag;
+        if (!unique.has(id)) {
+          unique.set(id, { id, name: labelDisplayName(tag, labelDefinitions) });
         }
       }
     }
-    return [...unique.values()].sort((a, b) => a.localeCompare(b));
-  }, [customLabels, messages]);
+    return [...unique.values()].sort((a, b) => a.name.localeCompare(b.name));
+  }, [labelDefinitions, messages]);
+
+  const labelMessageCount = useCallback(
+    (labelName: string) =>
+      messages.filter((item) => labelMatches(item.tags ?? [], labelName)).length,
+    [messages]
+  );
 
   const navFolders = useMemo(() => inboxFirst(folders), [folders]);
+
+  const mailPageSizeOptions = useMemo(() => {
+    const base = [5, 10, 20, 50];
+    const limit = status?.listLimit ?? 40;
+    if (limit > 50 && !base.includes(limit)) {
+      return [...base, limit].sort((a, b) => a - b);
+    }
+
+    return base;
+  }, [status?.listLimit]);
 
   const visibleMessages = useMemo(
     () =>
@@ -402,6 +690,17 @@ export const MailInboxView: React.FC = () => {
     listView.items.map((item) => rowId(item, folder)),
     `${folder}:${page}:${search}:${pageSize}:${listFilter}:${labelFilter ?? ''}:${sortField}:${sortDirection}`
   );
+
+  const openedMessageId = expandedId;
+  const openedListRow = useMemo(() => {
+    if (openedMessageId === null) {
+      return null;
+    }
+
+    return messages.find((item) => rowId(item, folder) === openedMessageId) ?? null;
+  }, [folder, messages, openedMessageId]);
+  const openedDetail = openedMessageId !== null ? details[openedMessageId] : undefined;
+  const messageViewOpen = openedMessageId !== null && openedListRow !== null;
 
   const unread = messages.filter((item) => item.seen !== true).length;
   const starredCount = messages.filter((item) => item.flagged === true).length;
@@ -445,10 +744,36 @@ export const MailInboxView: React.FC = () => {
     }
   };
 
-  const openMessage = async (row: MailMessage) => {
+  const resolveAllowRemoteImages = useCallback(
+    (row: MailMessage, explicit?: boolean): boolean => {
+      if (explicit === true) {
+        return true;
+      }
+      const mailbox = status?.mailbox?.trim() ?? '';
+      if (mailbox === '') {
+        return false;
+      }
+
+      return isTrustedImageSender(mailbox, row.from ?? '');
+    },
+    [status?.mailbox, trustedSendersTick]
+  );
+
+  const showRemoteImagesForMessage = (row: MailMessage) => {
+    const mailbox = status?.mailbox?.trim() ?? '';
+    const from = row.from ?? '';
+    if (mailbox !== '' && from !== '') {
+      rememberSenderRemoteImages(mailbox, from);
+      setTrustedSendersTick((n) => n + 1);
+    }
+    void openMessage(row, true);
+  };
+
+  const openMessage = async (row: MailMessage, allowRemoteImages?: boolean) => {
     const sourceFolder = imapFolderOf(row, folder);
     const id = rowId(row, folder);
-    const message = await mailApi.message(sourceFolder, row.uid);
+    const allow = resolveAllowRemoteImages(row, allowRemoteImages);
+    const message = await mailApi.message(sourceFolder, row.uid, allow);
     if (message === null) {
       toast.error(t('platform.mail.toast.loadFailed'));
       return;
@@ -458,18 +783,72 @@ export const MailInboxView: React.FC = () => {
     setMessages((current) => current.map((item) => (rowId(item, folder) === id ? { ...item, seen: true } : item)));
   };
 
-  const toggleExpand = (id: string) => {
-    setExpandedId((current) => {
-      const next = current === id ? null : id;
-      if (next !== null) {
-        const row = messages.find((item) => rowId(item, folder) === next);
-        if (row) {
-          void openMessage(row);
-        }
-      }
-      return next;
-    });
+  useEffect(() => {
+    setMessageHeaderOpen(false);
+  }, [expandedId]);
+
+  const openMessageView = (id: string) => {
+    if (expandedId === id) {
+      return;
+    }
+    setExpandedId(id);
+    const row = messages.find((item) => rowId(item, folder) === id);
+    if (row) {
+      void openMessage(row);
+    }
   };
+
+  const closeMessageView = () => {
+    setExpandedId(null);
+  };
+
+  const closeMailNav = useCallback(() => {
+    setMailNavOpen(false);
+  }, []);
+
+  const toggleMailNav = useCallback(() => {
+    setMailNavOpen((open) => !open);
+  }, []);
+
+  useEffect(() => {
+    if (!mailNavOpen) {
+      return;
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        closeMailNav();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [closeMailNav, mailNavOpen]);
+
+  const mobileNavTitle = useMemo(() => {
+    if (listFilter === 'starred') {
+      return t('platform.mail.starred');
+    }
+    if (labelFilter !== null) {
+      return displayLabel(labelFilter);
+    }
+    const current = navFolders.find((item) => item.name === folder);
+
+    return current ? folderLabel(current) : folder;
+  }, [folder, labelFilter, listFilter, navFolders, t]);
+
+  const mailNavToggleButton = (
+    <button
+      type="button"
+      className="admin-topbar-ghost inline-flex shrink-0 rounded-lg p-2 lg:hidden"
+      onClick={toggleMailNav}
+      aria-expanded={mailNavOpen}
+      aria-controls="mail-app-nav"
+      data-testid="mail-nav-toggle"
+      aria-label={t('platform.mail.openFoldersMenu')}
+    >
+      <Menu className="h-5 w-5" aria-hidden />
+    </button>
+  );
 
   const addFolder = async () => {
     const name = newFolder.trim();
@@ -520,7 +899,7 @@ export const MailInboxView: React.FC = () => {
   };
 
   const addTag = async (message: MailMessage) => {
-    const name = persistLabel(tagDraft);
+    const name = persistLabel(tagDraft, '1');
     const tag = labelKeyword(name);
     if (tag === '') {
       return;
@@ -537,26 +916,37 @@ export const MailInboxView: React.FC = () => {
     patchRow(id, { tags: Array.from(new Set([...(current.tags ?? []), tag])) });
   };
 
-  const addCustomLabel = () => {
-    const name = persistLabel(newLabel);
-    if (labelKeyword(name) === '') {
-      return;
+  const submitLabelForm = () => {
+    const creating = editingLabelId === null;
+    const name = saveLabelDefinition();
+    if (creating && name !== null) {
+      setListFilter('all');
+      setLabelFilter(name);
     }
-    setNewLabel('');
-    setListFilter('all');
-    setLabelFilter(name);
   };
 
-  const removeTag = async (message: MailMessage, tag: string) => {
+  const removeLabelFromMessage = async (message: MailMessage, labelRef: string) => {
     const sourceFolder = imapFolderOf(message, folder);
     const id = rowId(message, folder);
     const current = details[id] ?? message;
-    const response = await mailApi.changeFlags(sourceFolder, message.uid, [], [tag]);
-    if (!response.success) {
-      toast.error(describeMailError(firstError(response), 'platform.mail.toast.loadFailed'));
+    const tagsToRemove = messageTagsForLabel(current.tags ?? [], labelRef, labelDefinitions);
+    if (tagsToRemove.length === 0) {
       return;
     }
-    patchRow(id, { tags: (current.tags ?? []).filter((item) => item !== tag) });
+    for (const tag of tagsToRemove) {
+      const response = await mailApi.changeFlags(sourceFolder, message.uid, [], [tag]);
+      if (!response.success) {
+        toast.error(describeMailError(firstError(response), 'platform.mail.toast.loadFailed'));
+        return;
+      }
+    }
+    const def =
+      findDefinitionByTag(labelRef, labelDefinitions) ??
+      resolveNavLabelDefinition({ id: labelRef, name: labelRef }, labelDefinitions);
+    patchRow(id, {
+      tags: (current.tags ?? []).filter((tag) => !messageTagMatchesDefinition(tag, def)),
+    });
+    toast.success(t('platform.mail.toast.labelRemovedFromMessage'));
   };
 
   const hideLocal = async (message: MailMessage) => {
@@ -585,6 +975,20 @@ export const MailInboxView: React.FC = () => {
     await loadMailbox(folder);
   };
 
+  const emptyLocalTrash = async () => {
+    if (!window.confirm(t('platform.mail.confirmEmptyLocalTrash'))) {
+      return;
+    }
+    const response = await mailApi.emptyLocalTrash();
+    if (!response.success) {
+      toast.error(describeMailError(firstError(response), 'platform.mail.toast.loadFailed'));
+      return;
+    }
+    const removed = response.data?.removed ?? 0;
+    toast.success(t('platform.mail.toast.localTrashEmptied', { count: removed }));
+    await loadMailbox(folder);
+  };
+
   const moveSpam = async (message: MailMessage) => {
     const sourceFolder = imapFolderOf(message, folder);
     const response = await mailApi.moveSpam(sourceFolder, message.uid);
@@ -596,7 +1000,112 @@ export const MailInboxView: React.FC = () => {
     await loadMailbox(folder);
   };
 
+  const blockSender = async (message: MailMessage) => {
+    const sourceFolder = imapFolderOf(message, folder);
+    const from = message.from ?? '';
+    if (from.trim() === '') {
+      return;
+    }
+    const response = await mailApi.blockSender(sourceFolder, message.uid, from);
+    if (!response.success) {
+      toast.error(describeMailError(firstError(response), 'platform.mail.toast.loadFailed'));
+      return;
+    }
+    toast.success(
+      t('platform.mail.toast.senderBlocked', { sender: response.data?.blocked ?? parseSenderEmail(from) })
+    );
+    await loadMailbox(folder);
+  };
+
+  const unblockSenderAddress = async (email: string) => {
+    const response = await mailApi.unblockSender(email);
+    if (!response.success) {
+      toast.error(describeMailError(firstError(response), 'platform.mail.toast.loadFailed'));
+      return;
+    }
+    if (response.data?.removed === false) {
+      toast.warning(t('platform.mail.toast.senderNotBlocked'));
+      return;
+    }
+    toast.success(t('platform.mail.toast.senderUnblocked', { sender: response.data?.unblocked ?? email }));
+    await loadMailbox(folder);
+  };
+
   const selectedRows = listView.items.filter((item) => bulkSelection.isSelected(rowId(item, folder)));
+
+  const handleBulkLabel = async (labelName: string) => {
+    if (selectedRows.length === 0 || labelName === '') {
+      return;
+    }
+    const tag = labelKeyword(labelName);
+    if (tag === '') {
+      return;
+    }
+    for (const row of selectedRows) {
+      const sourceFolder = imapFolderOf(row, folder);
+      const id = rowId(row, folder);
+      const current = details[id] ?? row;
+      if (labelMatches(current.tags ?? [], labelName)) {
+        continue;
+      }
+      const response = await mailApi.changeFlags(sourceFolder, row.uid, [tag], []);
+      if (!response.success) {
+        toast.error(describeMailError(firstError(response), 'platform.mail.toast.loadFailed'));
+        return;
+      }
+      patchRow(id, { tags: Array.from(new Set([...(current.tags ?? []), tag])) });
+    }
+    bulkSelection.clear();
+    setBulkLabelPick('');
+    toast.success(t('platform.mail.toast.bulkLabelApplied'));
+    await loadMailbox(folder);
+  };
+
+  const handleBulkRemoveLabel = async (labelName: string) => {
+    if (selectedRows.length === 0 || labelName === '') {
+      return;
+    }
+    const def =
+      findDefinitionByTag(labelName, labelDefinitions) ??
+      resolveNavLabelDefinition({ id: labelKeyword(labelName), name: labelName }, labelDefinitions);
+    for (const row of selectedRows) {
+      const sourceFolder = imapFolderOf(row, folder);
+      const id = rowId(row, folder);
+      const current = details[id] ?? row;
+      const tagsToRemove = messageTagsForLabel(current.tags ?? [], labelName, labelDefinitions);
+      if (tagsToRemove.length === 0) {
+        continue;
+      }
+      for (const tag of tagsToRemove) {
+        const response = await mailApi.changeFlags(sourceFolder, row.uid, [], [tag]);
+        if (!response.success) {
+          toast.error(describeMailError(firstError(response), 'platform.mail.toast.loadFailed'));
+          return;
+        }
+      }
+      patchRow(id, {
+        tags: (current.tags ?? []).filter((tag) => !messageTagMatchesDefinition(tag, def)),
+      });
+    }
+    bulkSelection.clear();
+    setBulkLabelPick('');
+    toast.success(t('platform.mail.toast.bulkLabelRemoved'));
+    await loadMailbox(folder);
+  };
+
+  const bulkLabelOptions = useMemo(() => {
+    const names = new Map<string, string>();
+    for (const def of labelDefinitions) {
+      names.set(def.name, def.name);
+    }
+    for (const row of selectedRows) {
+      for (const tag of row.tags ?? []) {
+        const name = labelDisplayName(tag, labelDefinitions);
+        names.set(name, name);
+      }
+    }
+    return Array.from(names.values()).sort((a, b) => a.localeCompare(b));
+  }, [labelDefinitions, selectedRows]);
 
   const handleBulk = async (action: 'read' | 'unread' | 'star' | 'hide' | 'restore') => {
     if (selectedRows.length === 0) {
@@ -621,10 +1130,12 @@ export const MailInboxView: React.FC = () => {
   };
 
   const openCompose = () => {
+    lastDraftFingerprintRef.current = '';
     setCompose({ to: '', subject: '', body: '' });
   };
 
   const openReply = (message: MailMessage) => {
+    lastDraftFingerprintRef.current = '';
     const quoted = message.body && message.body !== '' ? message.body : (message.snippet ?? '');
     setCompose({
       to: parseFromAddress(message.from),
@@ -637,24 +1148,83 @@ export const MailInboxView: React.FC = () => {
     if (compose === null || sending) {
       return;
     }
+    const validated = validateRecipientList(compose.to);
+    if (!validated.ok) {
+      toast.error(t('platform.mail.toast.recipientInvalid'));
+      return;
+    }
+    const payload = {
+      to: formatRecipientList(validated.recipients),
+      subject: compose.subject.trim(),
+      body: compose.body.trim(),
+    };
+    if (payload.body === '') {
+      toast.error(t('platform.mail.toast.bodyInvalid'));
+      return;
+    }
     setSending(true);
     try {
-      const response = await mailApi.send(compose);
+      const response = await mailApi.send(payload);
       if (!response.success) {
         toast.error(describeMailError(firstError(response), 'platform.mail.toast.sendFailed'));
         return;
       }
       toast.success(t('platform.mail.toast.sent'));
+      if (status?.mailbox) {
+        rememberRecipients(status.mailbox, validated.recipients);
+        setRecipientHintsTick((tick) => tick + 1);
+      }
       setCompose(null);
+      const sentFolder = folders.find((item) => mailNavKind(item.name) === 'sent')?.name;
+      if (sentFolder) {
+        setFolder(sentFolder);
+        await loadMailbox(sentFolder);
+      } else {
+        await loadMailbox(folder);
+      }
     } finally {
       setSending(false);
     }
+  };
+
+  const saveDraft = async () => {
+    if (compose === null || sending) {
+      return;
+    }
+    await persistDraft(false);
+  };
+
+  const closeCompose = async () => {
+    if (compose !== null && !isComposeEmpty(compose)) {
+      await persistDraft(true);
+    }
+    setCompose(null);
+  };
+
+  const selectFolder = async (name: string) => {
+    await flushDraftBeforeLeave();
+    setListFilter('all');
+    setLabelFilter(null);
+    setFolder(name);
+    closeMailNav();
+  };
+
+  const deleteLocalCopy = async (message: MailMessage) => {
+    const response = await mailApi.deleteLocalMessage(folder, message.uid);
+    if (!response.success) {
+      toast.error(describeMailError(firstError(response), 'platform.mail.toast.deleteFailed'));
+      return;
+    }
+    toast.success(t('platform.mail.toast.deletedLocal'));
+    setExpandedId(null);
+    await loadMailbox(folder);
   };
 
   const switchAccount = async (mailbox: string) => {
     if (mailbox === '' || mailbox === status?.mailbox) {
       return;
     }
+    await flushDraftBeforeLeave();
     const response = await mailApi.selectAccount(mailbox);
     if (!response.success) {
       toast.error(describeMailError(firstError(response), 'platform.mail.toast.loadFailed'));
@@ -705,6 +1275,37 @@ export const MailInboxView: React.FC = () => {
   };
 
   const mailboxReady = Boolean(status?.enabled && status.mailboxAllowed && status.hasPassword);
+
+  const recipientAddressHints = useMemo(() => {
+    const mailbox = status?.mailbox ?? '';
+    if (mailbox === '') {
+      return [];
+    }
+    const rows = messages.map((item) => {
+      const detail = details[rowId(item, folder)];
+      return {
+        from: detail?.from ?? item.from,
+        to: detail?.to ?? item.to,
+      };
+    });
+    return collectMailboxAddressHints(rows, readRecentRecipients(mailbox));
+  }, [details, folder, messages, recipientHintsTick, status?.mailbox]);
+
+  const refreshMailbox = useCallback(async () => {
+    if (!mailboxReady || mailboxRefreshing) {
+      return;
+    }
+    setMailboxRefreshing(true);
+    try {
+      await loadMailbox(folder);
+      toast.success(t('platform.mail.toast.refreshed'));
+    } catch {
+      toast.error(t('platform.mail.toast.loadFailed'));
+    } finally {
+      setMailboxRefreshing(false);
+    }
+  }, [folder, loadMailbox, mailboxReady, mailboxRefreshing, t, toast]);
+
   const canSend = Boolean(status?.mailboxAllowed && status.canSend);
   const accounts = status?.accounts ?? [];
   const activeAccount = accounts.find((item) => item.mailbox === status?.mailbox);
@@ -761,9 +1362,14 @@ export const MailInboxView: React.FC = () => {
     };
   }, [canSend, compose, mailboxReady, folders.length]);
 
+  const mobileListOnly = mailboxReady && compose === null;
+
   return (
-    <div className="relative space-y-6 w-full max-w-none pb-24" data-testid="mail-inbox">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+    <div
+      className={`relative w-full max-w-none pb-24 ${mobileListOnly ? 'max-lg:space-y-0 max-lg:pb-20' : 'space-y-6'}`}
+      data-testid="mail-inbox"
+    >
+      <div className={`flex flex-wrap items-start justify-between gap-3 ${mobileListOnly ? 'hidden lg:flex' : ''}`}>
         <div className="min-w-0 grow">
           <h1 className={`${ADMIN_PAGE_TITLE} flex items-center gap-2`}>
             <Mail className="w-6 h-6 text-admin-primary" />
@@ -918,7 +1524,7 @@ export const MailInboxView: React.FC = () => {
       ) : null}
 
       {status?.enabled && status.mailboxAllowed && !status.canSend ? (
-        <p className="text-sm text-admin-muted">
+        <p className={`text-sm text-admin-muted ${mobileListOnly ? 'hidden lg:block' : ''}`}>
           {t('platform.mail.smtpOff')}{' '}
           <Link to={settingsGroupPath('smtp')} className="font-semibold text-admin-primary hover:underline">
             {t('platform.mail.openSmtp')}
@@ -939,8 +1545,16 @@ export const MailInboxView: React.FC = () => {
                 value={compose.to}
                 onChange={(event) => setCompose({ ...compose, to: event.target.value })}
                 autoComplete="off"
+                list="mail-compose-recipient-hints"
+                placeholder={t('platform.mail.recipientsPlaceholder')}
                 data-testid="mail-compose-to"
               />
+              <datalist id="mail-compose-recipient-hints">
+                {recipientAddressHints.map((email) => (
+                  <option key={email} value={email} />
+                ))}
+              </datalist>
+              <span className="mt-1 block text-xs text-admin-muted">{t('platform.mail.recipientsHint')}</span>
             </label>
             <label className="block text-sm text-admin-muted">
               {t('platform.mail.subject')}
@@ -965,7 +1579,10 @@ export const MailInboxView: React.FC = () => {
               <button type="button" className="btn btn-primary" onClick={() => void sendCompose()} disabled={sending} data-testid="mail-send">
                 {sending ? t('platform.mail.sending') : t('platform.mail.send')}
               </button>
-              <button type="button" className="btn btn-secondary" onClick={() => setCompose(null)} disabled={sending}>
+              <button type="button" className="btn btn-secondary" onClick={() => void saveDraft()} disabled={sending} data-testid="mail-save-draft">
+                {t('platform.mail.saveDraft')}
+              </button>
+              <button type="button" className="btn btn-secondary" onClick={() => void closeCompose()} disabled={sending}>
                 {t('common.cancel')}
               </button>
             </div>
@@ -974,14 +1591,26 @@ export const MailInboxView: React.FC = () => {
       ) : null}
 
       {mailboxReady ? (
-        <div className="mail-app">
-          <aside className="mail-app-nav">
+        <div className={`mail-app ${mailNavOpen ? 'mail-app-nav-drawer-open' : ''}`}>
+          {mailNavOpen ? (
+            <button
+              type="button"
+              className="mail-app-nav-backdrop lg:hidden"
+              aria-label={t('platform.mail.closeFoldersMenu')}
+              onClick={closeMailNav}
+              data-testid="mail-nav-backdrop"
+            />
+          ) : null}
+          <aside id="mail-app-nav" className="mail-app-nav" data-testid="mail-app-nav">
             {canSend ? (
               <button
                 type="button"
                 ref={composeAnchorRef}
                 className="btn btn-primary mb-2 w-full"
-                onClick={openCompose}
+                onClick={() => {
+                  closeMailNav();
+                  openCompose();
+                }}
                 data-testid="mail-compose"
               >
                 <MailPlus className="mr-1 inline h-4 w-4" />
@@ -999,19 +1628,19 @@ export const MailInboxView: React.FC = () => {
                     <button
                       type="button"
                       className={mailNavClass(active)}
-                      onClick={() => {
-                        setListFilter('all');
-                        setLabelFilter(null);
-                        setFolder(item.name);
-                      }}
+                      onClick={() => void selectFolder(item.name)}
                       aria-current={active ? 'page' : undefined}
                       data-testid={`mail-folder-${item.name}`}
                     >
                       <Icon className="h-4 w-4 shrink-0" aria-hidden />
                       <span className="min-w-0 truncate">{folderLabel(item)}</span>
-                      {kind === 'inbox' && unread > 0 && folder === item.name ? (
-                        <span className="mail-nav-count">{unread}</span>
-                      ) : null}
+                      {(() => {
+                        const badge =
+                          kind === 'inbox'
+                            ? (item.unseen ?? (folder === item.name ? unread : 0))
+                            : (item.total ?? 0);
+                        return badge > 0 ? <span className="mail-nav-count">{badge}</span> : null;
+                      })()}
                     </button>
                     {canDeleteFolder(item) ? (
                       <button
@@ -1032,6 +1661,7 @@ export const MailInboxView: React.FC = () => {
                 onClick={() => {
                   setLabelFilter(null);
                   setListFilter('starred');
+                  closeMailNav();
                 }}
                 aria-current={listFilter === 'starred' ? 'page' : undefined}
                 data-testid="mail-filter-starred"
@@ -1043,32 +1673,60 @@ export const MailInboxView: React.FC = () => {
             </nav>
             <p className="mail-nav-heading">{t('platform.mail.labels')}</p>
             <nav className="flex flex-col gap-0.5" aria-label={t('platform.mail.labels')}>
-              {labels.map((tag) => (
-                <button
-                  key={labelKeyword(tag)}
-                  type="button"
-                  className={mailNavClass(labelFilter !== null && labelMatches([labelFilter], tag))}
-                  onClick={() => {
-                    setListFilter('all');
-                    setLabelFilter(tag);
-                  }}
-                  aria-current={labelFilter !== null && labelMatches([labelFilter], tag) ? 'page' : undefined}
-                  data-testid={`mail-label-${labelKeyword(tag)}`}
-                >
-                  <span className={`mail-tag-dot ${tagToneClass(labelKeyword(tag))}`} aria-hidden />
-                  <span className="min-w-0 truncate">{displayLabel(tag)}</span>
-                </button>
-              ))}
+              {labelNavItems.map((item) => {
+                const def = resolveNavLabelDefinition(item, labelDefinitions);
+                return (
+                  <div key={item.id} className="flex min-w-0 items-center gap-0.5">
+                    <button
+                      type="button"
+                      className={`${mailNavClass(labelFilter !== null && labelMatches([labelFilter], item.name))} min-w-0 flex-1`}
+                      onClick={() => {
+                        setListFilter('all');
+                        setLabelFilter(item.name);
+                        closeMailNav();
+                      }}
+                      aria-current={labelFilter !== null && labelMatches([labelFilter], item.name) ? 'page' : undefined}
+                      data-testid={`mail-label-${item.id}`}
+                    >
+                      <span {...mailTagDotAttrs(item.id, labelDefinitions)} aria-hidden />
+                      <span className="min-w-0 truncate">{displayLabel(item.name)}</span>
+                      {labelMessageCount(item.name) > 0 ? (
+                        <span className="mail-nav-count">{labelMessageCount(item.name)}</span>
+                      ) : null}
+                    </button>
+                    <div className="flex shrink-0 gap-0.5 pr-1">
+                      <button
+                        type="button"
+                        className="rounded p-1 text-admin-muted hover:bg-admin-sidebar-hover hover:text-admin-text"
+                        onClick={() => startEditLabelForItem(item)}
+                        aria-label={t('platform.mail.editLabel', { name: def.name })}
+                        data-testid={`mail-label-edit-${item.id}`}
+                      >
+                        <Pencil className="h-3.5 w-3.5" aria-hidden />
+                      </button>
+                      <button
+                        type="button"
+                        className="rounded p-1 text-admin-muted hover:bg-admin-sidebar-hover hover:text-red-600"
+                        onClick={() => void removeLabelDefinition(def)}
+                        aria-label={t('platform.mail.deleteLabel', { name: def.name })}
+                        data-testid={`mail-label-delete-${item.id}`}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" aria-hidden />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </nav>
             <form
               className="mt-2 flex flex-col gap-2"
               onSubmit={(event) => {
                 event.preventDefault();
-                addCustomLabel();
+                submitLabelForm();
               }}
             >
               <label className="block min-w-0 text-sm font-medium text-[#132337] dark:text-admin-text">
-                {t('platform.mail.newLabel')}
+                {editingLabelId ? t('platform.mail.editLabelTitle') : t('platform.mail.newLabel')}
                 <input
                   className={`${MAIL_FIELD} mt-1`}
                   value={newLabel}
@@ -1078,10 +1736,127 @@ export const MailInboxView: React.FC = () => {
                   data-testid="mail-new-label"
                 />
               </label>
-              <button type="submit" className="btn btn-secondary w-full" data-testid="mail-add-label">
-                {t('platform.mail.addLabel')}
-              </button>
+              <fieldset className="space-y-1">
+                <legend className="text-xs font-medium text-admin-muted">{t('platform.mail.labelColor')}</legend>
+                <div className="flex flex-wrap items-center gap-2" data-testid="mail-label-colors">
+                  {MAIL_LABEL_COLORS.map((color) => (
+                    <button
+                      key={color}
+                      type="button"
+                      className={`mail-tag-dot mail-tag-${color} h-7 w-7 rounded-full border-2 ${
+                        newLabelColor === color ? 'border-admin-primary' : 'border-transparent'
+                      }`}
+                      aria-pressed={newLabelColor === color}
+                      aria-label={t('platform.mail.labelColorOption', { color })}
+                      onClick={() => setNewLabelColor(color)}
+                    />
+                  ))}
+                  <label className="inline-flex items-center gap-2 text-xs text-admin-muted">
+                    <span className="sr-only">{t('platform.mail.labelColorPicker')}</span>
+                    <input
+                      type="color"
+                      className="h-9 w-12 cursor-pointer rounded border border-admin-border bg-admin-canvas p-0.5"
+                      value={labelColorToPickerValue(newLabelColor)}
+                      onChange={(event) => {
+                        const hex = normalizeHexColor(event.target.value);
+                        if (hex !== null) {
+                          setNewLabelColor(hex);
+                        }
+                      }}
+                      data-testid="mail-label-color-picker"
+                    />
+                    <span aria-hidden>{t('platform.mail.labelColorPicker')}</span>
+                  </label>
+                </div>
+              </fieldset>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <button type="submit" className="btn btn-secondary w-full sm:flex-1" data-testid="mail-add-label">
+                  {editingLabelId ? t('platform.mail.saveLabel') : t('platform.mail.addLabel')}
+                </button>
+                {editingLabelId ? (
+                  <button type="button" className="btn btn-secondary w-full sm:w-auto" onClick={resetLabelForm}>
+                    {t('common.cancel')}
+                  </button>
+                ) : null}
+              </div>
             </form>
+            <div className="mt-4 border-t border-admin-border pt-3">
+              <button
+                type="button"
+                className="mail-nav-item w-full justify-between"
+                onClick={() => setSignaturePanelOpen((open) => !open)}
+                aria-expanded={signaturePanelOpen}
+                data-testid="mail-signature-toggle"
+              >
+                <span className="flex min-w-0 items-center gap-2">
+                  <Contact className="h-4 w-4 shrink-0" aria-hidden />
+                  <span className="truncate">{t('platform.mail.signatureTitle')}</span>
+                </span>
+                {signatureDraftPrefs?.enabled ? (
+                  <span className="mail-nav-count">ON</span>
+                ) : null}
+              </button>
+              {signaturePanelOpen && signatureDraftFields && signatureDraftPrefs && signatureState ? (
+                <MailSignaturePanel
+                  mailbox={signatureState.mailbox}
+                  templates={signatureState.templates}
+                  prefs={signatureDraftPrefs}
+                  fields={signatureDraftFields}
+                  previewHtml={signatureState.previewHtml}
+                  saving={signatureSaving}
+                  onChangePrefs={setSignatureDraftPrefs}
+                  onChangeFields={setSignatureDraftFields}
+                  onSave={() => void saveSignature()}
+                  onImportProfile={() => void importSignatureProfile()}
+                />
+              ) : null}
+            </div>
+            <div className="mt-4 border-t border-admin-border pt-3">
+              <button
+                type="button"
+                className="mail-nav-item w-full justify-between"
+                onClick={() => setBlockedPanelOpen((open) => !open)}
+                aria-expanded={blockedPanelOpen}
+                data-testid="mail-blocked-toggle"
+              >
+                <span className="flex min-w-0 items-center gap-2">
+                  <Ban className="h-4 w-4 shrink-0" aria-hidden />
+                  <span className="truncate">{t('platform.mail.blockedSenders')}</span>
+                </span>
+                {blockedSenders.length > 0 ? (
+                  <span className="mail-nav-count">{blockedSenders.length}</span>
+                ) : null}
+              </button>
+              {blockedPanelOpen ? (
+                <div className="mt-2 space-y-2" data-testid="mail-blocked-panel">
+                  <p className="text-xs text-admin-muted">{t('platform.mail.blockedSendersHint')}</p>
+                  {blockedSenders.length === 0 ? (
+                    <p className="text-sm text-admin-muted">{t('platform.mail.blockedSendersEmpty')}</p>
+                  ) : (
+                    <ul className="max-h-48 space-y-1 overflow-y-auto">
+                      {blockedSenders.map((email) => (
+                        <li
+                          key={email}
+                          className="flex items-center justify-between gap-2 rounded-md border border-admin-border px-2 py-1.5 text-xs"
+                        >
+                          <span className="min-w-0 truncate text-admin-text" title={email}>
+                            {email}
+                          </span>
+                          <button
+                            type="button"
+                            className="btn btn-secondary shrink-0 px-2 py-0.5 text-[11px]"
+                            data-testid={`mail-unblock-${email}`}
+                            onClick={() => void unblockSenderAddress(email)}
+                          >
+                            {t('platform.mail.unblockSender')}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ) : null}
+            </div>
             <form
               className="mt-auto flex flex-col gap-2 pt-4"
               onSubmit={(event) => {
@@ -1107,221 +1882,467 @@ export const MailInboxView: React.FC = () => {
           </aside>
 
           <div className="mail-app-main">
-            <div className="mail-app-toolbar">
-              <AdminListToolbar
-                search={search}
-                onSearchChange={setSearch}
-                searchPlaceholder={t('platform.mail.search')}
-                pageSize={pageSize}
-                onPageSizeChange={setPageSize}
-                pageSizeOptions={[5, 10, 20, 50]}
-              />
-              <div className="px-4 pb-2" data-testid="mail-sort">
-                <AdminListSortBar
-                  columns={[
-                    { field: 'date', label: t('platform.mail.date') },
-                    { field: 'from', label: t('platform.mail.from') },
-                    { field: 'subject', label: t('platform.mail.subject') },
-                  ]}
-                  activeField={sortField}
-                  direction={sortDirection}
-                  onSort={handleSort}
-                />
-              </div>
-            </div>
-
-            <BulkActionBar
-              count={bulkSelection.count}
-              totalCount={listView.total}
-              itemLabel={t('platform.mail.bulk.itemLabel')}
-              onClear={bulkSelection.clear}
-              actions={
-                inLocalTrash
-                  ? [{ id: 'restore', label: t('platform.mail.restore'), variant: 'secondary', onClick: () => void handleBulk('restore') }]
-                  : [
-                      { id: 'read', label: t('platform.mail.markRead'), variant: 'secondary', onClick: () => void handleBulk('read') },
-                      { id: 'unread', label: t('platform.mail.markUnread'), variant: 'secondary', onClick: () => void handleBulk('unread') },
-                      { id: 'star', label: t('platform.mail.star'), variant: 'secondary', onClick: () => void handleBulk('star') },
-                      { id: 'hide', label: t('platform.mail.hideLocal'), variant: 'danger', onClick: () => void handleBulk('hide') },
-                    ]
-              }
-            />
-
-            {loading ? (
-              <AdminListSkeleton rows={8} />
-            ) : listView.total === 0 ? (
-              <AdminEmptyState title={messages.length === 0 ? t('platform.mail.empty') : t('platform.mail.emptyFilter')} />
-            ) : (
+            {messageViewOpen && openedListRow ? (
               <>
-                <AdminInboxList className="rounded-none border-0 shadow-none">
-                  <AdminInboxListHeader
-                    allSelected={bulkSelection.allSelected && listView.items.length > 0}
-                    onToggleAll={bulkSelection.toggleAll}
-                  />
-                  {listView.items.map((message, index) => {
-                    const id = rowId(message, folder);
-                    const detail = details[id];
-                    const starred = (detail?.flagged ?? message.flagged) === true;
-                    const tags = message.tags ?? [];
-                    return (
-                      <AdminInboxRow
-                        key={id}
-                        id={id}
-                        index={index}
-                        expanded={expandedId === id}
-                        onToggleExpand={toggleExpand}
-                        selected={bulkSelection.isSelected(id)}
-                        onToggleSelect={bulkSelection.toggle}
-                        unread={message.seen !== true}
-                        dense
-                        leading={
-                          <button
-                            type="button"
-                            className="mt-0.5 shrink-0 rounded p-1 text-admin-muted hover:text-amber-400"
-                            aria-label={t('platform.mail.star')}
-                            aria-pressed={starred}
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              void toggleFlag(detail ?? message, 'flagged');
-                            }}
-                            data-testid={`mail-star-${message.uid}`}
-                          >
-                            <Star className={`h-4 w-4 ${starred ? 'fill-current text-amber-400' : ''}`} />
-                          </button>
-                        }
-                        summary={
-                          <div className="mail-row-grid" data-testid={`mail-row-${message.uid}`}>
-                            <span className={`min-w-0 truncate ${message.seen ? 'text-admin-text' : 'font-semibold text-admin-text'}`}>
-                              {displayFrom(message.from) || t('platform.mail.noSubject')}
-                            </span>
-                            <span className="min-w-0 truncate text-sm">
-                              {tags.map((tag) => (
-                                <span key={tag} className={`mail-tag mr-1.5 ${tagToneClass(labelKeyword(tag) || tag)}`}>
-                                  {displayLabel(customLabels.find((item) => labelKeyword(item) === labelKeyword(tag)) ?? tag)}
-                                </span>
-                              ))}
-                              <span className={message.seen ? 'text-admin-muted' : 'text-admin-text'}>
-                                {message.subject || t('platform.mail.noSubject')}
-                              </span>
-                              {expandedId !== id && message.snippet !== '' ? (
-                                <span className="text-admin-muted"> — {message.snippet}</span>
-                              ) : null}
-                            </span>
-                            <span className="shrink-0 whitespace-nowrap text-xs text-admin-muted">{message.date}</span>
-                          </div>
-                        }
-                      detail={
-                        <div className="space-y-3 text-sm">
-                          <p className="text-xs text-admin-muted">
-                            {t('platform.mail.from')}: {detail?.from ?? message.from}
-                          </p>
-                          <div className="flex flex-wrap gap-2">
-                            {canSend && !inLocalTrash ? (
-                              <button
-                                type="button"
-                                className="btn btn-primary px-2 py-1 text-xs"
-                                onClick={() => openReply(detail ?? message)}
-                                data-testid="mail-reply"
-                              >
-                                <Reply className="mr-1 inline h-3 w-3" />
-                                {t('platform.mail.reply')}
-                              </button>
-                            ) : null}
-                            <button type="button" className="btn btn-secondary px-2 py-1 text-xs" onClick={() => void toggleFlag(detail ?? message, 'flagged')}>
-                              <Star className={`mr-1 inline h-3 w-3 ${detail?.flagged || message.flagged ? 'fill-current text-amber-400' : ''}`} />
-                              {t('platform.mail.star')}
-                            </button>
-                            <button type="button" className="btn btn-secondary px-2 py-1 text-xs" onClick={() => void toggleFlag(detail ?? message, 'seen')}>
-                              {(detail?.seen ?? message.seen) ? (
-                                <MailOpen className="mr-1 inline h-3 w-3" />
-                              ) : (
-                                <Mail className="mr-1 inline h-3 w-3" />
-                              )}
-                              {(detail?.seen ?? message.seen) ? t('platform.mail.markUnread') : t('platform.mail.markRead')}
-                            </button>
-                            {inLocalTrash ? (
-                              <button type="button" className="btn btn-secondary px-2 py-1 text-xs" onClick={() => void restoreLocal(message)}>
-                                <RotateCcw className="mr-1 inline h-3 w-3" />
-                                {t('platform.mail.restore')}
-                              </button>
-                            ) : (
-                              <>
-                                <button
-                                  type="button"
-                                  className="btn btn-secondary px-2 py-1 text-xs"
-                                  onClick={() => void hideLocal(message)}
-                                  data-testid="mail-hide"
-                                >
-                                  <Trash2 className="mr-1 inline h-3 w-3" />
-                                  {t('platform.mail.hideLocal')}
-                                </button>
-                                <button
-                                  type="button"
-                                  className="btn btn-danger px-2 py-1 text-xs"
-                                  onClick={() => void moveSpam(message)}
-                                  data-testid="mail-move-spam"
-                                >
-                                  {t('platform.mail.moveSpam')}
-                                </button>
-                              </>
-                            )}
-                          </div>
-                          {detail?.html ? (
-                            <iframe
-                              title={detail.subject || t('platform.mail.selectMessage')}
-                              sandbox="allow-popups allow-popups-to-escape-sandbox"
-                              referrerPolicy="no-referrer"
-                              srcDoc={detail.html}
-                              className="h-[min(72vh,48rem)] w-full rounded-lg border border-admin-border bg-white"
-                              data-testid="mail-html-frame"
-                            />
-                          ) : (
-                            <p className="whitespace-pre-wrap text-admin-text">{detail?.body ?? message.snippet}</p>
-                          )}
-                          <div className="flex flex-wrap gap-2">
-                            {(detail?.tags ?? message.tags ?? []).map((tag) => (
+                <div className="mail-app-toolbar flex flex-col gap-2 border-b border-admin-border px-3 py-3 sm:px-4">
+                  <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+                    {mailNavToggleButton}
+                    <button
+                      type="button"
+                      className="btn btn-secondary flex shrink-0 items-center gap-1 px-2 py-1.5 text-sm"
+                      onClick={closeMessageView}
+                      data-testid="mail-back-to-list"
+                    >
+                      <ArrowLeft className="h-4 w-4" aria-hidden />
+                      {t('platform.mail.backToList')}
+                    </button>
+                    <h2 className="min-w-0 flex-1 truncate text-base font-semibold text-admin-text">
+                      {(openedDetail?.subject ?? openedListRow.subject) || t('platform.mail.noSubject')}
+                    </h2>
+                    <span className="hidden shrink-0 text-xs text-admin-muted sm:inline">{openedListRow.date}</span>
+                  </div>
+                  <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-xs text-admin-muted">
+                    <span className="min-w-0 truncate">
+                      {t('platform.mail.from')}: {openedDetail?.from ?? openedListRow.from}
+                    </span>
+                    <button
+                      type="button"
+                      className="inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-0.5 text-admin-primary hover:bg-admin-sidebar-hover"
+                      aria-expanded={messageHeaderOpen}
+                      onClick={() => setMessageHeaderOpen((open) => !open)}
+                      data-testid="mail-message-details-toggle"
+                    >
+                      <ChevronDown
+                        className={`h-3.5 w-3.5 transition-transform ${messageHeaderOpen ? 'rotate-180' : ''}`}
+                        aria-hidden
+                      />
+                      {messageHeaderOpen ? t('platform.mail.hideDetails') : t('platform.mail.showDetails')}
+                    </button>
+                  </div>
+                  {messageHeaderOpen ? (
+                    <dl
+                      className="grid gap-2 rounded-lg border border-admin-border bg-admin-canvas/60 p-3 text-xs text-admin-text sm:grid-cols-2"
+                      data-testid="mail-message-details"
+                    >
+                      <div className="min-w-0 sm:col-span-2">
+                        <dt className="font-medium text-admin-muted">{t('platform.mail.from')}</dt>
+                        <dd className="break-words">{openedDetail?.from ?? openedListRow.from}</dd>
+                      </div>
+                      <div className="min-w-0 sm:col-span-2">
+                        <dt className="font-medium text-admin-muted">{t('platform.mail.to')}</dt>
+                        <dd className="break-words">
+                          {openedDetail?.to?.trim() ||
+                            openedListRow.to?.trim() ||
+                            (mailNavKind(folder) === 'sent' ? '—' : status?.mailbox || '—')}
+                        </dd>
+                      </div>
+                      {openedDetail?.cc?.trim() ? (
+                        <div className="min-w-0 sm:col-span-2">
+                          <dt className="font-medium text-admin-muted">{t('platform.mail.cc')}</dt>
+                          <dd className="break-words">{openedDetail.cc}</dd>
+                        </div>
+                      ) : null}
+                      {openedDetail?.replyTo?.trim() ? (
+                        <div className="min-w-0 sm:col-span-2">
+                          <dt className="font-medium text-admin-muted">{t('platform.mail.replyTo')}</dt>
+                          <dd className="break-words">{openedDetail.replyTo}</dd>
+                        </div>
+                      ) : null}
+                      <div>
+                        <dt className="font-medium text-admin-muted">{t('platform.mail.date')}</dt>
+                        <dd>{openedDetail?.date ?? openedListRow.date}</dd>
+                      </div>
+                      <div>
+                        <dt className="font-medium text-admin-muted">{t('platform.mail.detailFolder')}</dt>
+                        <dd>{imapFolderOf(openedListRow, folder)}</dd>
+                      </div>
+                      <div>
+                        <dt className="font-medium text-admin-muted">{t('platform.mail.detailAccount')}</dt>
+                        <dd className="break-all">{status?.mailbox ?? '—'}</dd>
+                      </div>
+                      <div>
+                        <dt className="font-medium text-admin-muted">{t('platform.mail.detailUid')}</dt>
+                        <dd>{openedListRow.uid}</dd>
+                      </div>
+                      {(openedDetail?.tags ?? openedListRow.tags ?? []).length > 0 ? (
+                        <div className="min-w-0 sm:col-span-2">
+                          <dt className="mb-1 font-medium text-admin-muted">{t('platform.mail.tags')}</dt>
+                          <dd className="flex flex-wrap gap-1">
+                            {(openedDetail?.tags ?? openedListRow.tags ?? []).map((tag) => (
                               <button
                                 key={tag}
                                 type="button"
-                                className={`mail-tag ${tagToneClass(labelKeyword(tag) || tag)}`}
-                                onClick={() => void removeTag(detail ?? message, tag)}
+                                {...mailTagAttrs(tag, labelDefinitions)}
+                                onClick={() => void removeLabelFromMessage(openedDetail ?? openedListRow, tag)}
                                 title={t('platform.mail.removeTag')}
+                                data-testid={`mail-tag-remove-${tag}`}
                               >
-                                {displayLabel(tag)} ×
+                                {labelDisplayName(tag, labelDefinitions)} ×
                               </button>
                             ))}
-                          </div>
-                          <div className="flex flex-col gap-2 sm:flex-row">
-                            <input
-                              className={MAIL_FIELD}
-                              value={tagDraft}
-                              onChange={(event) => setTagDraft(event.target.value)}
-                              placeholder={t('platform.mail.addTag')}
-                              aria-label={t('platform.mail.tags')}
-                              data-testid="mail-tag-input"
-                            />
-                            <button type="button" className="btn btn-secondary shrink-0" onClick={() => void addTag(detail ?? message)}>
-                              {t('platform.mail.addTag')}
-                            </button>
-                          </div>
+                          </dd>
                         </div>
-                      }
+                      ) : null}
+                      {openedDetail?.localOnly || openedListRow.localOnly ? (
+                        <div className="sm:col-span-2">
+                          <dt className="font-medium text-admin-muted">{t('platform.mail.detailStorage')}</dt>
+                          <dd>{t('platform.mail.detailLocalCopy')}</dd>
+                        </div>
+                      ) : null}
+                    </dl>
+                  ) : null}
+                </div>
+                <div className="space-y-3 p-4 text-sm" data-testid="mail-message-view">
+                  <div className="flex flex-wrap gap-2">
+                    {canSend && !inLocalTrash ? (
+                      <button
+                        type="button"
+                        className="btn btn-primary px-2 py-1 text-xs"
+                        onClick={() => openReply(openedDetail ?? openedListRow)}
+                        data-testid="mail-reply"
+                      >
+                        <Reply className="mr-1 inline h-3 w-3" />
+                        {t('platform.mail.reply')}
+                      </button>
+                    ) : null}
+                    <button
+                      type="button"
+                      className="btn btn-secondary px-2 py-1 text-xs"
+                      onClick={() => void toggleFlag(openedDetail ?? openedListRow, 'flagged')}
+                    >
+                      <Star
+                        className={`mr-1 inline h-3 w-3 ${openedDetail?.flagged || openedListRow.flagged ? 'fill-current text-amber-400' : ''}`}
+                      />
+                      {t('platform.mail.star')}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-secondary px-2 py-1 text-xs"
+                      onClick={() => void toggleFlag(openedDetail ?? openedListRow, 'seen')}
+                    >
+                      {(openedDetail?.seen ?? openedListRow.seen) ? (
+                        <MailOpen className="mr-1 inline h-3 w-3" />
+                      ) : (
+                        <Mail className="mr-1 inline h-3 w-3" />
+                      )}
+                      {(openedDetail?.seen ?? openedListRow.seen) ? t('platform.mail.markUnread') : t('platform.mail.markRead')}
+                    </button>
+                    {inLocalTrash ? (
+                      <button type="button" className="btn btn-secondary px-2 py-1 text-xs" onClick={() => void restoreLocal(openedListRow)}>
+                        <RotateCcw className="mr-1 inline h-3 w-3" />
+                        {t('platform.mail.restore')}
+                      </button>
+                    ) : openedDetail?.localOnly || openedListRow.localOnly ? (
+                      <button
+                        type="button"
+                        className="btn btn-danger px-2 py-1 text-xs"
+                        onClick={() => void deleteLocalCopy(openedListRow)}
+                        data-testid="mail-delete-local"
+                      >
+                        <Trash2 className="mr-1 inline h-3 w-3" />
+                        {t('platform.mail.deleteLocalPermanent')}
+                      </button>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          className="btn btn-secondary px-2 py-1 text-xs"
+                          onClick={() => void hideLocal(openedListRow)}
+                          data-testid="mail-hide"
+                        >
+                          <Trash2 className="mr-1 inline h-3 w-3" />
+                          {t('platform.mail.hideLocal')}
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-danger px-2 py-1 text-xs"
+                          onClick={() => void moveSpam(openedListRow)}
+                          data-testid="mail-move-spam"
+                        >
+                          {t('platform.mail.moveSpam')}
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-danger px-2 py-1 text-xs"
+                          onClick={() => void blockSender(openedDetail ?? openedListRow)}
+                          data-testid="mail-block-sender"
+                        >
+                          <Ban className="mr-1 inline h-3 w-3" />
+                          {t('platform.mail.blockSender')}
+                        </button>
+                      </>
+                    )}
+                  </div>
+                  {(openedDetail?.tags ?? openedListRow.tags ?? []).length > 0 ? (
+                    <div className="flex flex-wrap items-center gap-2" data-testid="mail-message-labels">
+                      <span className="text-xs font-medium text-admin-muted">{t('platform.mail.tags')}</span>
+                      {(openedDetail?.tags ?? openedListRow.tags ?? []).map((tag) => (
+                        <button
+                          key={`chip-${tag}`}
+                          type="button"
+                          {...mailTagAttrs(tag, labelDefinitions)}
+                          onClick={() => void removeLabelFromMessage(openedDetail ?? openedListRow, tag)}
+                          title={t('platform.mail.removeTag')}
+                          data-testid={`mail-tag-remove-${tag}`}
+                        >
+                          {labelDisplayName(tag, labelDefinitions)} ×
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+                  {openedDetail?.remoteImagesBlocked ? (
+                    <div className="flex flex-col gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-admin-text">
+                      <span>{t('platform.mail.remoteImagesBlockedHint')}</span>
+                      <button
+                        type="button"
+                        className="btn btn-secondary px-2 py-1 text-xs"
+                        data-testid="mail-load-remote-images"
+                        onClick={() => showRemoteImagesForMessage(openedDetail ?? openedListRow)}
+                      >
+                        {t('platform.mail.loadRemoteImages', {
+                          sender: parseSenderEmail(openedDetail?.from ?? openedListRow.from),
+                        })}
+                      </button>
+                    </div>
+                  ) : null}
+                  {!openedDetail ? (
+                    <AdminListSkeleton rows={4} />
+                  ) : openedDetail.html ? (
+                    <iframe
+                      title={openedDetail.subject || t('platform.mail.selectMessage')}
+                      sandbox="allow-popups allow-popups-to-escape-sandbox"
+                      referrerPolicy="no-referrer"
+                      srcDoc={openedDetail.html}
+                      className="h-[min(72vh,48rem)] w-full rounded-lg border border-admin-border bg-white"
+                      data-testid="mail-html-frame"
                     />
-                  );
-                })}
-              </AdminInboxList>
+                  ) : (
+                    <p className="whitespace-pre-wrap text-admin-text">{openedDetail.body ?? openedListRow.snippet}</p>
+                  )}
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <input
+                      className={MAIL_FIELD}
+                      value={tagDraft}
+                      onChange={(event) => setTagDraft(event.target.value)}
+                      placeholder={t('platform.mail.addTag')}
+                      aria-label={t('platform.mail.tags')}
+                      data-testid="mail-tag-input"
+                    />
+                    <button type="button" className="btn btn-secondary shrink-0" onClick={() => void addTag(openedDetail ?? openedListRow)}>
+                      {t('platform.mail.addTag')}
+                    </button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="mail-mobile-chrome flex items-center gap-2 border-b border-admin-border px-3 py-2 lg:hidden">
+                  {mailNavToggleButton}
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-admin-text">{mobileNavTitle}</p>
+                    {accounts.length > 1 ? (
+                      <label className="mt-0.5 block min-w-0">
+                        <span className="sr-only">{t('platform.mail.accounts')}</span>
+                        <select
+                          className="w-full max-w-full truncate rounded border border-admin-border bg-admin-canvas px-1.5 py-0.5 text-xs text-admin-text"
+                          value={status?.mailbox ?? ''}
+                          onChange={(event) => void switchAccount(event.target.value)}
+                          data-testid="mail-account-mobile"
+                        >
+                          {accounts.map((item) => (
+                            <option key={item.mailbox} value={item.mailbox}>
+                              {item.mailbox}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    ) : status?.mailbox ? (
+                      <p className="truncate text-xs text-admin-muted">{status.mailbox}</p>
+                    ) : null}
+                  </div>
+                </div>
+                <div className="mail-app-toolbar">
+                  <AdminListToolbar
+                    search={search}
+                    onSearchChange={setSearch}
+                    searchPlaceholder={t('platform.mail.search')}
+                    pageSize={pageSize}
+                    onPageSizeChange={setPageSize}
+                    pageSizeOptions={mailPageSizeOptions}
+                  >
+                    {inLocalTrash && messages.length > 0 ? (
+                      <button
+                        type="button"
+                        className="btn btn-danger shrink-0 text-sm"
+                        onClick={() => void emptyLocalTrash()}
+                        data-testid="mail-empty-local-trash"
+                      >
+                        <Trash2 className="mr-1 inline h-4 w-4" aria-hidden />
+                        {t('platform.mail.emptyLocalTrash')}
+                      </button>
+                    ) : null}
+                    <button
+                      type="button"
+                      className="btn btn-secondary shrink-0 text-sm"
+                      onClick={() => void refreshMailbox()}
+                      disabled={mailboxRefreshing}
+                      data-testid="mail-refresh"
+                      title={t('platform.mail.syncHint')}
+                    >
+                      <RotateCcw className={`mr-1 inline h-4 w-4 ${mailboxRefreshing ? 'animate-spin' : ''}`} aria-hidden />
+                      {mailboxRefreshing ? t('platform.mail.refreshing') : t('platform.mail.refresh')}
+                    </button>
+                  </AdminListToolbar>
+                  <div className="px-4 pb-2" data-testid="mail-sort">
+                    <AdminListSortBar
+                      columns={[
+                        { field: 'date', label: t('platform.mail.date') },
+                        { field: 'from', label: t('platform.mail.from') },
+                        { field: 'subject', label: t('platform.mail.subject') },
+                      ]}
+                      activeField={sortField}
+                      direction={sortDirection}
+                      onSort={handleSort}
+                    />
+                  </div>
+                </div>
 
-              <AdminListPagination
-                page={listView.page}
-                totalPages={listView.totalPages}
-                total={listView.total}
-                pageSize={pageSize}
-                loading={loading}
-                onPageChange={setPage}
-                itemLabel={t('platform.mail.bulk.itemLabel')}
-              />
-            </>
-          )}
+                <BulkActionBar
+                  count={bulkSelection.count}
+                  totalCount={listView.total}
+                  itemLabel={t('platform.mail.bulk.itemLabel')}
+                  onClear={bulkSelection.clear}
+                  actions={
+                    inLocalTrash
+                      ? [{ id: 'restore', label: t('platform.mail.restore'), variant: 'secondary', onClick: () => void handleBulk('restore') }]
+                      : [
+                          { id: 'read', label: t('platform.mail.markRead'), variant: 'secondary', onClick: () => void handleBulk('read') },
+                          { id: 'unread', label: t('platform.mail.markUnread'), variant: 'secondary', onClick: () => void handleBulk('unread') },
+                          { id: 'star', label: t('platform.mail.star'), variant: 'secondary', onClick: () => void handleBulk('star') },
+                          { id: 'hide', label: t('platform.mail.hideLocal'), variant: 'danger', onClick: () => void handleBulk('hide') },
+                        ]
+                  }
+                />
+                {bulkSelection.count > 0 && bulkLabelOptions.length > 0 ? (
+                  <div className="flex flex-wrap items-center gap-2 px-4 pb-2" data-testid="mail-bulk-label">
+                    <label className="flex min-w-0 flex-1 items-center gap-2 text-sm text-admin-muted sm:flex-none">
+                      <span className="shrink-0">{t('platform.mail.bulk.applyLabel')}</span>
+                      <select
+                        className={`${MAIL_FIELD} min-w-[10rem]`}
+                        value={bulkLabelPick}
+                        onChange={(event) => setBulkLabelPick(event.target.value)}
+                        data-testid="mail-bulk-label-select"
+                      >
+                        <option value="">{t('platform.mail.bulk.chooseLabel')}</option>
+                        {bulkLabelOptions.map((name) => (
+                          <option key={labelKeyword(name)} value={name}>
+                            {displayLabel(name)}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <button
+                      type="button"
+                      className="btn btn-secondary text-xs"
+                      disabled={bulkLabelPick === ''}
+                      onClick={() => void handleBulkLabel(bulkLabelPick)}
+                      data-testid="mail-bulk-label-apply"
+                    >
+                      {t('platform.mail.bulk.applyLabelConfirm')}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-secondary text-xs"
+                      disabled={bulkLabelPick === ''}
+                      onClick={() => void handleBulkRemoveLabel(bulkLabelPick)}
+                      data-testid="mail-bulk-label-remove"
+                    >
+                      {t('platform.mail.bulk.removeLabelConfirm')}
+                    </button>
+                  </div>
+                ) : null}
+
+                {loading ? (
+                  <AdminListSkeleton rows={8} />
+                ) : listView.total === 0 ? (
+                  <AdminEmptyState title={messages.length === 0 ? t('platform.mail.empty') : t('platform.mail.emptyFilter')} />
+                ) : (
+                  <>
+                    <AdminInboxList className="rounded-none border-0 shadow-none">
+                      <AdminInboxListHeader
+                        allSelected={bulkSelection.allSelected && listView.items.length > 0}
+                        onToggleAll={bulkSelection.toggleAll}
+                      />
+                      {listView.items.map((message, index) => {
+                        const id = rowId(message, folder);
+                        const detail = details[id];
+                        const starred = (detail?.flagged ?? message.flagged) === true;
+                        const tags = message.tags ?? [];
+                        return (
+                          <AdminInboxRow
+                            key={id}
+                            id={id}
+                            index={index}
+                            expanded={false}
+                            navigationMode
+                            onToggleExpand={openMessageView}
+                            selected={bulkSelection.isSelected(id)}
+                            onToggleSelect={bulkSelection.toggle}
+                            unread={message.seen !== true}
+                            dense
+                            leading={
+                              <button
+                                type="button"
+                                className="mt-0.5 shrink-0 rounded p-1 text-admin-muted hover:text-amber-400"
+                                aria-label={t('platform.mail.star')}
+                                aria-pressed={starred}
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  void toggleFlag(detail ?? message, 'flagged');
+                                }}
+                                data-testid={`mail-star-${message.uid}`}
+                              >
+                                <Star className={`h-4 w-4 ${starred ? 'fill-current text-amber-400' : ''}`} />
+                              </button>
+                            }
+                            summary={
+                              <div className="mail-row-grid" data-testid={`mail-row-${message.uid}`}>
+                                <span className={`min-w-0 truncate ${message.seen ? 'text-admin-text' : 'font-semibold text-admin-text'}`}>
+                                  {displayFrom(message.from) || t('platform.mail.noSubject')}
+                                </span>
+                                <span className="min-w-0 truncate text-sm">
+                                  {tags.map((tag) => (
+                                    <span key={tag} {...mailTagAttrs(tag, labelDefinitions, 'mr-1.5')}>
+                                      {labelDisplayName(tag, labelDefinitions)}
+                                    </span>
+                                  ))}
+                                  <span className={message.seen ? 'text-admin-muted' : 'text-admin-text'}>
+                                    {message.subject || t('platform.mail.noSubject')}
+                                  </span>
+                                  {message.snippet !== '' ? <span className="text-admin-muted"> — {message.snippet}</span> : null}
+                                </span>
+                                <span className="shrink-0 whitespace-nowrap text-xs text-admin-muted">{message.date}</span>
+                              </div>
+                            }
+                            detail={<></>}
+                          />
+                        );
+                      })}
+                    </AdminInboxList>
+
+                    <AdminListPagination
+                      page={listView.page}
+                      totalPages={listView.totalPages}
+                      total={listView.total}
+                      pageSize={pageSize}
+                      loading={loading}
+                      onPageChange={setPage}
+                      itemLabel={t('platform.mail.bulk.itemLabel')}
+                    />
+                  </>
+                )}
+              </>
+            )}
           </div>
         </div>
       ) : null}

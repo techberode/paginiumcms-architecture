@@ -29,6 +29,23 @@ Stránky a články zdieľajú jeden zoznam (`PagesManager` na `/pages` a `/arti
 
 Prepínanie medzi Markdown a WYSIWYG môže byť stratové pri nepodporovanom HTML alebo extension node. Pred prepnutím zložitého dokumentu vytvor verziu alebo zálohu a skontroluj diff.
 
+### 2.1 Layout builder stránky (len stránky)
+
+Nastavenia → Layout (`layout.builderMode`) mení, ako vyzerá editor **stránky**. Všetky štyri režimy ukladajú to isté Markdown telo; prepnutie obsah nezmaže. Články ostávajú Markdown / WYSIWYG.
+
+| Režim | Čo vidíš |
+|-------|----------|
+| **Šablóny** | Výber pomenovanej štruktúry (jeden stĺpec, hero, landing…) |
+| **Shortcodes** | Panel na vloženie tagov ako `[landing-hero]` |
+| **Outline blokov** | Paleta + formuláre (Hero, karty, Galéria…). Odporúčané pre nové landingy. |
+| **Developer** | Markdown/Monaco plus ten istý živý náhľad. ADMIN+ keď je obmedzenie zapnuté. |
+
+**Workspace** (voliteľný celoobrazovkový editor): skryje admin lištu. Plátno vyplní okno; outline/editor a živý náhľad sa scrollujú samostatne, toolbar ostane hore. Predvolené v Nastavenia → Editor; každý prehliadač si to vie prepnúť.
+
+Fotky pre blok Galéria sú v [Galérii funkcií](GALLERY.md), nie vo formulári stránky. Tag na bloku je filter, nie druhá galéria.
+
+Landing (EN): [LANDING_PAGE.md](../en/user/LANDING_PAGE.md).
+
 ## 3. Slug a identita
 
 Slug má byť stabilný, URL-safe a unikátny v danom type/locale. Zmena slugu môže:
@@ -161,4 +178,5 @@ Save do SSOT je lokálny úspech. Git publish podľa It.70 má vlastný stav a m
 - [Verzovanie](../architecture/VERSIONING.md)
 - [Médiá a storage](../architecture/STORAGE.md)
 - [Oprávnenia](ACCESS_CONTROL.md)
+- [Galéria funkcií](GALLERY.md)
 - [Plánovač projektu](PROJECT_PLANNER.md)

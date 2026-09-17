@@ -6,7 +6,7 @@ icon: material/api
 
 # 🔌 PaginiumCMS API Reference
 
-> **Document status:** Public Beta · checkpoint `v2.1.0-beta.23` · 2 August 2026  
+> **Document status:** Public Beta · checkpoint `v2.1.0-beta.79` · 17 September 2026  
 > **Backend:** PHP 8.4+ · Slim 4 · JSON REST API  
 > **Response contract:** [API_CONTRACT.md](./API_CONTRACT.md)
 
@@ -114,7 +114,7 @@ Anonymous `/api/health` output must not expose stack traces, filesystem paths, c
 | `POST` | `/api/contact` | contact form with anti-abuse controls | ✅ |
 | `POST` | `/api/analytics/pageview` | privacy-aware pageview ingest when analytics is enabled | ✅ by module |
 | `POST` | `/api/newsletter/subscribe` | newsletter opt-in when the capability is deployed | ✅ by module |
-| `GET` | `/api/gallery/public` | public gallery slice when the module is enabled | ✅ by module |
+| `GET` | `/api/gallery/public` | published gallery items (It.65 store; `gallery.enabled` only gates home/route chrome) | ✅ by module |
 
 Exact query parameters, public rules, and write lifecycle are defined in [CONTENT_API.md](./CONTENT_API.md).
 
@@ -265,6 +265,28 @@ curl --fail-with-body \
 ```
 
 Real tokens, session cookies, and CSRF tokens do not belong in Git, issue reports, or documentation screenshots.
+
+---
+
+## 10. Domain mail admin API (It.93m)
+
+Session + CSRF + permission **`mail:read-own`** (own `@site` mailbox) or **`mail:read-all`**. Prefix: **`/api/admin/mail`**. Mutations require a valid CSRF token.
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | `/api/admin/mail` | Status, mailbox, SMTP/IMAP readiness |
+| GET | `/api/admin/mail/folders` | Folder list + virtual local trash |
+| GET | `/api/admin/mail/messages?folder=` | Message list (IMAP window + local Sent/Drafts) |
+| GET | `/api/admin/mail/messages/{uid}?folder=` | Full message; `remoteImages=1` opts in to remote HTML images |
+| POST | `/api/admin/mail/send` | SMTP send (+ optional IMAP Sent append) |
+| PUT | `/api/admin/mail/drafts` | Save compose draft (lenient recipient validation) |
+| POST | `/api/admin/mail/messages/{uid}/hide` | Local hide (client trash) |
+| POST | `/api/admin/mail/messages/{uid}/unhide` | Restore from local hide |
+| POST | `/api/admin/mail/local-trash/empty` | Permanently dismiss all locally hidden messages (`removed` count) |
+| PATCH | `/api/admin/mail/messages/{uid}/flags` | Add/remove IMAP flags (seen, flagged, keyword tags) |
+| GET/PUT | `/api/admin/mail/signature` | Per-mailbox HTML signature prefs |
+
+Label **names/colors** for the UI are stored in the browser (`paginium.mail.labels:v2:{mailbox}`); IMAP keyword tags are applied via the flags endpoint. See [ADMIN_GUIDE.md](../user/ADMIN_GUIDE.md) and [ITERATION_93.md](../ITERATION_93.md).
 
 ---
 

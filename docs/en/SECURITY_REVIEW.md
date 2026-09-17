@@ -189,7 +189,8 @@ GitHub CI should display only a sanitized log; raw CI output remains in `$RUNNER
 
 ## 11. Secrets and encryption at rest
 
-- production requires a non-placeholder `APP_KEY`,
+- production requires a non-placeholder `APP_KEY` (there is **no** separate `ENCRYPTION_KEY` env var),
+- **`encrypt()` fails closed** when the key is missing — new secrets must not be written as plaintext ([ISS-170](ISSUES.md#iss-170)),
 - encrypted fields use one format/prefix and fail closed on decrypt,
 - backups include recovery of `APP_KEY`, but not in the same openly accessible archive,
 - a secret is not displayed again after create/save,

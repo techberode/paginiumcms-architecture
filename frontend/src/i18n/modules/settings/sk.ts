@@ -189,7 +189,8 @@ export const settingsSk: MessageTree = {
   },
   "layout": {
     "buildersTitle": "Layout builder",
-    "buildersHint": "Vyberte, ako editormi skladajú štruktúru stránky. Režimy neskôr zdieľajú rovnaké dáta — prepínač mení len UI.",
+    "buildersHint": "Všetky štyri režimy ukladajú to isté Markdown telo stránky. Prepínač mení len editor — pri zmene sa obsah nestratí.",
+    "pagesOnlyHint": "Tento prepínač mení len editor stránok. Články ostávajú Markdown / WYSIWYG.",
     "templatesTitle": "Predvolená layout šablóna",
     "templatesHint": "Pre nové stránky a živý náhľad nižšie (štruktúra, nie chrome šablóny Home/Kontakt).",
     "previewTitle": "Náhľad layoutu",
@@ -198,19 +199,23 @@ export const settingsSk: MessageTree = {
     "builders": {
       "templates": {
         "name": "Šablóny",
-        "description": "Výber pomenovanej štruktúry a vyplnenie slotov — rýchle stránky."
+        "description": "Výber pomenovanej štruktúry a vyplnenie slotov — rýchle stránky.",
+        "help": "Editor stránky ukáže výber layout šablóny (jeden stĺpec, hero, landing…). Telo ostane Markdown. Použi, keď chceš pomenovanú štruktúru bez skladania blokov."
       },
       "shortcodes": {
         "name": "Shortcodes",
-        "description": "Skladanie cez shortcodes v Markdown / WYSIWYG."
+        "description": "Skladanie cez shortcodes v Markdown / WYSIWYG.",
+        "help": "Editor stránky ukáže panel na vloženie shortcodov. Tag ako [landing-hero …] píšeš do Markdownu. Uložené telo je rovnaké ako v Outline."
       },
       "outline": {
         "name": "Outline blokov",
-        "description": "Vizuálne bloky s formulármi — bez písania shortcode tagov."
+        "description": "Vizuálne bloky s formulármi — bez písania shortcode tagov.",
+        "help": "Editor stránky sa zmení na paletu blokov s formulármi (Hero, karty, Galéria…). Presun myšou. Ukladá sa ako Markdown shortcody — režim môžeš kedykoľvek prepnúť. Odporúčané pre nové landing a marketingové stránky."
       },
       "developer": {
         "name": "Developer",
-        "description": "Monaco pre layout JSON a definície shortcodes."
+        "description": "Markdown zdroj a živý náhľad — ten istý dokument ako Outline.",
+        "help": "Markdown/Monaco plus ten istý živý náhľad. Nové typy blokov registruješ v Shortcodes admin. Pri zaškrtnutom obmedzení len ADMIN+."
       }
     },
     "templates": {
@@ -572,6 +577,10 @@ export const settingsSk: MessageTree = {
         "label": "Kontrola pravopisu",
         "help": "Zapnuté = prehliadač podčiarkne pravopisné chyby v editore. Vypnuté = bez kontroly."
       },
+      "fullscreenWorkspace": {
+        "label": "Celoobrazovkový workspace editora",
+        "help": "Predvolené pre nových návštevníkov. Každý operátor to vie zapnúť/vypnúť v editore stránky alebo článku (uloží sa v prehliadači)."
+      },
       "tabSize": {
         "label": "Veľkosť tabulátora"
       },
@@ -692,6 +701,10 @@ export const settingsSk: MessageTree = {
       "spamFolder": {
         "label": "Priečinok spamu",
         "help": "Názov serverového priečinka Junk/Spam. Správy sa tam presúvajú, do data/ sa neukladajú."
+      },
+      "listLimit": {
+        "label": "Počet správ zo servera",
+        "help": "Koľko najnovších správ načíta IMAP v každom priečinku (10–500). Stránkovanie v maili platí len v rámci tohto okna."
       }
     },
     "notifications": {
@@ -1325,6 +1338,20 @@ export const settingsSk: MessageTree = {
         "help": "Fail-closed. Zapnuté = verejný web načíta len deklarované assets/*.js s SRI. Vypnuté = žiadne skripty z témy (predvolené)."
       }
     },
+    "layout": {
+      "builderMode": {
+        "label": "Predvolený layout builder",
+        "help": "Ako vyzerá editor stránky: šablóny, shortcody, outline blokov (odporúčané pre landing) alebo developer (Markdown + živý náhľad). Všetky režimy ukladajú to isté Markdown telo. Platí len pre stránky, nie články."
+      },
+      "defaultTemplate": {
+        "label": "Predvolená layout šablóna",
+        "help": "Štruktúra pre nové stránky a LayoutPreviewFrame (nie chrome šablóny Home/Kontakt)."
+      },
+      "developerRequiresAdmin": {
+        "label": "Developer režim len pre ADMIN+",
+        "help": "Ak je zapnuté, builderMode=developer môžu vybrať len ADMIN / SUPER_ADMIN."
+      }
+    },
     "projectPlanner": {
       "enabled": {
         "label": "Zapnúť plánovač projektu",
@@ -1824,6 +1851,12 @@ export const settingsSk: MessageTree = {
       "grid": "Mriežka",
       "slider": "Slider",
       "hero-strip": "Hero pás"
+    },
+    "builderMode": {
+      "templates": "Šablóny",
+      "shortcodes": "Shortcodes",
+      "outline": "Outline blokov",
+      "developer": "Developer"
     },
     "effectPreset": {
       "subtle": "Jemný",

@@ -123,11 +123,13 @@ final class StreamImapClient implements ImapClientInterface
     {
         $this->select($folder);
         $row = $this->overview($uid);
-        $part1 = $this->fetchPeek($uid, '1');
-        $part2 = $this->fetchPeek($uid, '2');
-        $text = $this->fetchPeek($uid, 'TEXT');
-        $row['body'] = $part1 !== '' ? $part1 : $text;
-        $row['html'] = $part2 !== '' ? $part2 : ($text !== '' ? $text : $part1);
+        $raw = $this->fetchPeek($uid, 'FULL');
+        if ($raw === '') {
+            $part1 = $this->fetchPeek($uid, '1');
+            $text = $this->fetchPeek($uid, 'TEXT');
+            $raw = $part1 !== '' ? $part1 : $text;
+        }
+        $row['mime'] = $raw;
 
         return $row;
     }
@@ -195,6 +197,49 @@ final class StreamImapClient implements ImapClientInterface
         }
     }
 
+    public function appendMessage(string $folder, string $rfc822, array $flags = []): void
+    {
+        $folder = trim($folder);
+        if ($folder === '') {
+            throw new InvalidArgumentException('Folder is invalid.');
+        }
+        $rfc822 = str_replace(["\r\n", "\r"], "\n", $rfc822);
+        $rfc822 = str_replace("\n", "\r\n", $rfc822);
+        $size = strlen($rfc822);
+        $flagList = '';
+        foreach ($flags as $flag) {
+            $flag = trim($flag);
+            if ($flag !== '') {
+                $flagList = $flagList === '' ? '(' . $flag : $flagList . ' ' . $flag;
+            }
+        }
+        if ($flagList !== '') {
+            $flagList .= ')';
+        }
+        $payload = 'APPEND ' . $this->quote($folder);
+        if ($flagList !== '') {
+            $payload .= ' ' . $flagList;
+        }
+        $payload .= ' {' . $size . '}';
+        $this->commandWithLiteral($payload, $rfc822);
+    }
+
+    public function folderStatus(string $folder): array
+    {
+        $lines = $this->command('STATUS ' . $this->quote($folder) . ' (MESSAGES UNSEEN)');
+        $blob = implode("\n", $lines);
+        $messages = 0;
+        $unseen = 0;
+        if (preg_match('/MESSAGES\s+(\d+)/i', $blob, $match) === 1) {
+            $messages = (int) $match[1];
+        }
+        if (preg_match('/UNSEEN\s+(\d+)/i', $blob, $match) === 1) {
+            $unseen = (int) $match[1];
+        }
+
+        return ['messages' => $messages, 'unseen' => $unseen];
+    }
+
     public function __destruct()
     {
         $this->disconnect();
@@ -251,12 +296,17 @@ final class StreamImapClient implements ImapClientInterface
 
     private function fetchPeek(int $uid, string $section): string
     {
-        if (!in_array($section, ['1', '2', 'TEXT'], true)) {
+        $imapSection = match ($section) {
+            'FULL' => '[]',
+            '1', '2', 'TEXT' => '[' . $section . ']',
+            default => '',
+        };
+        if ($imapSection === '') {
             return '';
         }
         try {
             return $this->extractBody(
-                $this->command('UID FETCH ' . $uid . ' (BODY.PEEK[' . $section . ']<0.200000>)')
+                $this->command('UID FETCH ' . $uid . ' (BODY.PEEK' . $imapSection . '<0.524288>)')
             );
         } catch (RuntimeException) {
             return '';
@@ -305,6 +355,30 @@ final class StreamImapClient implements ImapClientInterface
         }
 
         return trim(implode("\n", $body));
+    }
+
+    private function commandWithLiteral(string $payload, string $literal): void
+    {
+        $stream = $this->stream;
+        if (!is_resource($stream)) {
+            throw new RuntimeException('IMAP is not connected.');
+        }
+        $this->tag++;
+        $tag = 'A' . $this->tag;
+        fwrite($stream, $tag . ' ' . $payload . "\r\n");
+        while (true) {
+            $line = $this->readLine();
+            if (str_starts_with($line, '+')) {
+                fwrite($stream, $literal);
+                continue;
+            }
+            if (str_starts_with($line, $tag . ' OK')) {
+                return;
+            }
+            if (str_starts_with($line, $tag . ' NO') || str_starts_with($line, $tag . ' BAD')) {
+                throw new RuntimeException('IMAP APPEND failed.');
+            }
+        }
     }
 
     /**

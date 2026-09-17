@@ -39,17 +39,25 @@ final class ShortcodeCatalogSeeder
      */
     public function seedMissingBundled(): void
     {
-        $added = 0;
+        $changed = 0;
         foreach ($this->bundledDefinitions() as $name => $json) {
-            if ($this->registry->get($name) !== null) {
+            $existing = $this->registry->get($name);
+            if ($existing === null) {
+                $this->manager->save($name, $json);
+                $changed++;
                 continue;
             }
 
-            $this->manager->save($name, $json);
-            $added++;
+            /** @var array<string, mixed> $bundled */
+            $bundled = JsonHelper::decode($json);
+            $bundledVersion = (int) ($bundled['version'] ?? 1);
+            if ($bundledVersion > $existing->version) {
+                $this->manager->save($name, $json);
+                $changed++;
+            }
         }
 
-        if ($added > 0) {
+        if ($changed > 0) {
             $this->contentCache->invalidatePage();
         }
     }
@@ -92,12 +100,16 @@ final class ShortcodeCatalogSeeder
             ],
             'landing-hero' => [
                 'name' => 'landing-hero',
-                'version' => 1,
+                'version' => 2,
                 'attrs' => [
                     'title' => ['type' => 'string'],
                     'subtitle' => ['type' => 'string'],
                     'cta' => ['type' => 'string'],
                     'href' => ['type' => 'string'],
+                    'image' => ['type' => 'media', 'accept' => 'image'],
+                    'poster' => ['type' => 'media', 'accept' => 'image'],
+                    'src' => ['type' => 'media', 'accept' => 'video'],
+                    'srcmobile' => ['type' => 'media', 'accept' => 'video'],
                 ],
                 'expand' => '<section class="pg-hero"><div class="pg-hero-inner"><h1 class="pg-hero-title">{{title}}</h1><p class="pg-hero-subtitle">{{subtitle}}</p><a class="pg-btn pg-btn-primary" href="{{href}}">{{cta}}</a></div></section>',
             ],
@@ -224,6 +236,15 @@ final class ShortcodeCatalogSeeder
                     'subtitle' => ['type' => 'string'],
                 ],
                 'expand' => '<aside class="pg-coming-soon pg-reveal"><p class="pg-coming-soon-label">ACCESS RESTRICTED</p><h3 class="pg-coming-soon-title">{{title}}</h3><p class="pg-coming-soon-subtitle">{{subtitle}}</p></aside>',
+            ],
+            'feature-gallery' => [
+                'name' => 'feature-gallery',
+                'version' => 1,
+                'attrs' => [
+                    'title' => ['type' => 'string'],
+                    'tag' => ['type' => 'string'],
+                ],
+                'expand' => '<section class="pg-feature-gallery" data-tag="{{tag}}" data-title="{{title}}"></section>',
             ],
         ];
 

@@ -189,7 +189,8 @@ export const settingsEn: MessageTree = {
   },
   "layout": {
     "buildersTitle": "Layout builder",
-    "buildersHint": "Choose how editors build page structure. All modes share the same layout data later — this switch only changes the UI.",
+    "buildersHint": "All four modes store the same page Markdown. The switch only changes the editor chrome — switching never wipes the body.",
+    "pagesOnlyHint": "This switch changes the page editor only. Articles stay Markdown / WYSIWYG.",
     "templatesTitle": "Default page layout template",
     "templatesHint": "Used for new pages and the live layout preview below (structure, not chrome templates like Home/Contact).",
     "previewTitle": "Layout preview",
@@ -198,19 +199,23 @@ export const settingsEn: MessageTree = {
     "builders": {
       "templates": {
         "name": "Templates",
-        "description": "Pick a named structure and fill slots — best for quick pages."
+        "description": "Pick a named structure and fill slots — best for quick pages.",
+        "help": "The page editor shows a layout template picker (single column, hero, landing…). Body is still Markdown. Use this when you want a named structure without assembling blocks."
       },
       "shortcodes": {
         "name": "Shortcodes",
-        "description": "Compose with shortcodes in Markdown / WYSIWYG."
+        "description": "Compose with shortcodes in Markdown / WYSIWYG.",
+        "help": "The page editor shows the shortcode insert panel. You type or insert tags such as [landing-hero …] into Markdown. The stored body is the same as in Outline."
       },
       "outline": {
         "name": "Block outline",
-        "description": "Visual blocks with forms — no shortcode tags to type."
+        "description": "Visual blocks with forms — no shortcode tags to type.",
+        "help": "The page editor becomes a block palette with forms (Hero, Cards, Gallery…). Drag to reorder. Saved as Markdown shortcodes — switch modes any time without losing the page. Recommended for new marketing and landing pages."
       },
       "developer": {
         "name": "Developer",
-        "description": "Monaco for layout JSON and shortcode definitions."
+        "description": "Markdown source and live preview — the same document as Outline.",
+        "help": "Markdown/Monaco source plus the same live preview pane. Register new block types in Shortcodes admin. Restricted to ADMIN+ when the checkbox below is on."
       }
     },
     "templates": {
@@ -572,6 +577,10 @@ export const settingsEn: MessageTree = {
         "label": "Spellcheck",
         "help": "Enabled = browser underlines spelling errors in the editor. Disabled = no spellcheck."
       },
+      "fullscreenWorkspace": {
+        "label": "Fullscreen editor workspace",
+        "help": "Default for new browsers. Each operator can still toggle it in the page/article editor (saved in the browser)."
+      },
       "tabSize": {
         "label": "Tab size"
       },
@@ -896,6 +905,20 @@ export const settingsEn: MessageTree = {
       "themeScriptsEnabled": {
         "label": "Allow theme JavaScript (allow-list)",
         "help": "Fail-closed. On = public site loads only declared assets/*.js with SRI. Off = no theme scripts (default)."
+      }
+    },
+    "layout": {
+      "builderMode": {
+        "label": "Default layout builder",
+        "help": "How the page editor looks: templates, shortcodes, block outline (recommended for landings), or developer (Markdown + live preview). All modes store the same Markdown body. Pages only, not articles."
+      },
+      "defaultTemplate": {
+        "label": "Default layout template",
+        "help": "Structure for new pages and the layout preview frame (not chrome templates such as Home/Contact)."
+      },
+      "developerRequiresAdmin": {
+        "label": "Developer mode for ADMIN+ only",
+        "help": "When on, only ADMIN / SUPER_ADMIN can select builderMode=developer."
       }
     },
     "projectPlanner": {
@@ -1261,6 +1284,10 @@ export const settingsEn: MessageTree = {
       "spamFolder": {
         "label": "Spam folder",
         "help": "Server Junk/Spam folder name. Messages move there; they are not stored under data/."
+      },
+      "listLimit": {
+        "label": "Messages fetched from server",
+        "help": "How many newest messages IMAP loads per folder (10–500). Inbox pagination only applies within this window."
       }
     },
     "notifications": {
@@ -1824,6 +1851,12 @@ export const settingsEn: MessageTree = {
       "grid": "Grid",
       "slider": "Slider",
       "hero-strip": "Hero strip"
+    },
+    "builderMode": {
+      "templates": "Templates",
+      "shortcodes": "Shortcodes",
+      "outline": "Block outline",
+      "developer": "Developer"
     },
     "effectPreset": {
       "subtle": "Subtle",

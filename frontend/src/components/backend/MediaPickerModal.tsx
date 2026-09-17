@@ -46,7 +46,10 @@ export const MediaPickerModal: React.FC<MediaPickerModalProps> = ({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+    <div
+      className="fixed inset-0 z-[220] flex items-center justify-center p-4 bg-black/50"
+      data-testid="media-picker-modal"
+    >
       <div className="card w-full max-w-3xl max-h-[80vh] flex flex-col">
         <div className="card-body border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
           <h3 className="font-bold text-gray-900 dark:text-white">{resolvedTitle}</h3>
@@ -60,7 +63,9 @@ export const MediaPickerModal: React.FC<MediaPickerModalProps> = ({
               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600" />
             </div>
           ) : items.length === 0 ? (
-            <p className="text-center text-gray-500 py-8">{t('editor.mediaPicker.empty')}</p>
+            <p className="text-center text-gray-500 py-8">
+              {mediaMode === 'video' ? t('editor.mediaPicker.emptyVideo') : t('editor.mediaPicker.empty')}
+            </p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {items.map((file) => (

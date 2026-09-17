@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Známe incidenty a opravy
 
-> **Posledná aktualizácia:** 30. august 2026 · kanonický EN register **ISS-001–ISS-159**: [`../ISSUES.md`](../ISSUES.md) · ISS-158/159 fixed in **2.1.0-beta.60**
+> **Posledná aktualizácia:** 17. september 2026 · kanonický EN register **ISS-001–ISS-172**: [`../ISSUES.md`](../ISSUES.md) · bezpečnostný audit ISS-170–172 ([Unreleased])
 
 Tento dokument je kanonický verejný register produkčných, integračných, bezpečnostných, prevádzkových a CI problémov zistených počas vývoja PaginiumCMS. Každé číslo incidentu v prehľade je klikateľné a smeruje na stabilný explicitný anchor s popisom, príčinou, riešením a dostupným overením.
 
@@ -4074,6 +4074,64 @@ V plnom PHPUnit suite občas padali `BackupControllerTest`, `SystemUpdateControl
 ```bash
 ./scripts/iteration-gate.sh
 ```
+
+---
+
+<a id="iss-170"></a>
+
+## ISS-170 – Chýbajúci APP_KEY ticho ukladal tajomstvá ako plaintext
+
+[↑ Prehľad](#prehlad) · kanonická EN synopsa: [ISS-170](../ISSUES.md#iss-170)
+
+**Závažnosť:** Vysoká (bezpečnosť)  
+**Stav:** ✅ Opravené · **[Unreleased]**  
+**Súvisí:** [ISS-052](#iss-052) · audit SEC-2026-09-17-A
+
+### Symptóm
+
+Bez platného **`APP_KEY`** (nie `ENCRYPTION_KEY` — ten v PaginiumCMS neexistuje) metóda `EncryptionService::encrypt()` vrátila plaintext bez chyby. Do `data/mail-secrets/*.json` (It.93m IMAP) a ďalších flat-file polí tak mohli ísť heslá v čistom texte.
+
+### Oprava
+
+Fail-closed `encrypt()` → `EncryptionUnavailableException`; preflight `app_key_encryption`; Origin probe `security.at_rest_encryption`; odstránené fallbacky `?? $password` v `MailboxSecretRepository`.
+
+### Obnova na produkcii
+
+Nastaviť `APP_KEY`, reštartovať služby, znova zadať mailbox/SMTP heslá ak existuje podozrenie na plaintext v JSON.
+
+---
+
+<a id="iss-171"></a>
+
+## ISS-171 – HTML mail načítaval vzdialené tracking pixely
+
+[↑ Prehľad](#prehlad) · kanonická EN synopsa: [ISS-171](../ISSUES.md#iss-171)
+
+**Závažnosť:** Stredná (súkromie)  
+**Stav:** ✅ Opravené · **[Unreleased]** · audit SEC-2026-09-17-B
+
+### Symptóm
+
+Sandboxovaný iframe v `/mail` stále sťahoval `<img src="https://…">` pri otvorení správy.
+
+### Oprava
+
+`MailHtmlSanitizer` defaultne blokuje vzdialené obrázky; explicitné načítanie cez `?remoteImages=1` a tlačidlo **Načítať vzdialené obrázky** v admin UI.
+
+---
+
+<a id="iss-172"></a>
+
+## ISS-172 – Verejný GET /api/test a mŕtvy Auth UserController
+
+[↑ Prehľad](#prehlad) · kanonická EN synopsa: [ISS-172](../ISSUES.md#iss-172)
+
+**Závažnosť:** Nízka (hygiena)  
+**Stav:** ✅ Opravené · **[Unreleased]** · audit SEC-2026-09-17-C/D
+
+### Oprava
+
+Route `/api/test` odstránená (smoke → `/api/health`); zmazaný prázdny `Http/Controllers/Auth/UserController.php`.
 
 ---
 

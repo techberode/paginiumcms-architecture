@@ -6,6 +6,7 @@ namespace PaginiumCMS\Tests\Modules\Origin;
 
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Modules\Origin\Services\CatalogDeployStatusResolver;
+use PaginiumCMS\Core\Security\Services\EncryptionService;
 use PaginiumCMS\Modules\Origin\Services\FeatureProbeRegistry;
 use PaginiumCMS\Modules\Origin\Services\ImplementationChecklistReader;
 use PaginiumCMS\Modules\Origin\Services\OriginCatalogLabelResolver;
@@ -31,7 +32,10 @@ final class ProjectCatalogMergeServiceTest extends TestCase
 
     public function testMergeComputesPercentFromProbesAndCatalog(): void
     {
-        $probes = (new FeatureProbeRegistry(new ProbeSupport()))->runAll();
+        $probes = (new FeatureProbeRegistry(
+            new ProbeSupport(),
+            new EncryptionService('base64:BGtLQwdzAE7ajivCghMa98DyudMghYZEkXKw5PJ/aUE=')
+        ))->runAll();
         $merged = $this->service()->merge($probes);
 
         $this->assertSame(1, $merged['schemaVersion']);

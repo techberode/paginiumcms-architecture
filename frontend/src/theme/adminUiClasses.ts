@@ -34,11 +34,9 @@ export const ADMIN_TAB_ITEM = 'admin-tab';
 
 export const ADMIN_TAB_ACTIVE = 'admin-tab-on';
 
-export const ADMIN_SIDE_NAV_ACTIVE =
-  'border-admin-primary bg-admin-sidebar-active text-admin-sidebar-active-text';
+export const ADMIN_SIDE_NAV_ACTIVE = 'admin-choice-on border-2';
 
-export const ADMIN_SIDE_NAV_IDLE =
-  'border-admin-border hover:bg-admin-sidebar-hover text-admin-text';
+export const ADMIN_SIDE_NAV_IDLE = 'admin-choice border-2';
 
 export const ADMIN_PILL_ACTIVE = 'admin-chip-on';
 

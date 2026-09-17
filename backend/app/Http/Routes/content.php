@@ -17,8 +17,6 @@ use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
 use Slim\App;
 use Slim\Routing\RouteCollectorProxy;
 use PaginiumCMS\Http\Support\RouteBootstrap;
-use PaginiumCMS\Support\JsonHelper;
-
 return function (App $app): void {
     $container = RouteBootstrap::container($app);
     $controller = $container->get(ContentController::class);
@@ -27,19 +25,6 @@ return function (App $app): void {
     $calendarController = $container->get(EditorialCalendarController::class);
     $auth = $container->get(AuthMiddleware::class);
     $authz = $container->get(AuthorizationInterface::class);
-
-    $app->get('/api/test', function ($request, $response) {
-        $response->getBody()->write(JsonHelper::encode([
-            'success' => true,
-            'data' => [
-                'status' => 'ok',
-                'message' => 'API beží!',
-                'timestamp' => date('Y-m-d H:i:s'),
-            ],
-        ], JSON_PRETTY_PRINT));
-
-        return $response->withHeader('Content-Type', 'application/json');
-    });
 
     $app->get('/api/search', [$searchController, 'search']);
 

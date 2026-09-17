@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace PaginiumCMS\Core\Layout\Services;
 
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
+use PaginiumCMS\Core\Media\Services\DamMediaUrl;
 use PaginiumCMS\Core\Security\Services\ContentSecuritySanitizer;
 use PaginiumCMS\Core\Snippets\Services\SnippetRepository;
+use PaginiumCMS\Modules\Gallery\Contracts\GalleryRepositoryInterface;
 use PaginiumCMS\Support\JsonHelper;
 
 /**
@@ -24,6 +26,7 @@ final class ShortcodeExpanderService
         private ContentSecuritySanitizer $sanitizer,
         private ?SnippetRepository $snippets = null,
         private ?WidgetCatalog $widgets = null,
+        private ?GalleryRepositoryInterface $gallery = null,
         private string $definitionsRelativeDir = 'data/shortcodes/definitions',
     ) {
     }
@@ -83,6 +86,19 @@ final class ShortcodeExpanderService
         }
 
         $attrs = $this->parseAttributes($rawAttrs, $definition);
+        if ($name === 'landing-hero') {
+            $attrs = $this->overlayDamMediaAttrs($rawAttrs, $attrs);
+            if (LandingHeroRenderer::hasMedia($attrs)) {
+                return $this->sanitizer->sanitizeHtml(LandingHeroRenderer::render($attrs));
+            }
+        }
+
+        if ($name === 'feature-gallery') {
+            $items = $this->gallery !== null ? $this->gallery->findPublishedOrdered() : [];
+
+            return $this->sanitizer->sanitizeHtml(FeatureGalleryRenderer::render($attrs, $items));
+        }
+
         $template = (string) ($definition['expand'] ?? '');
         if ($template === '') {
             return $inner;
@@ -212,6 +228,34 @@ final class ShortcodeExpanderService
             return (string) (int) $value;
         }
 
+        if ($type === 'media') {
+            return DamMediaUrl::sanitize($value);
+        }
+
         return $value;
+    }
+
+    /**
+     * @param array<string, string> $attrs
+     * @return array<string, string>
+     */
+    private function overlayDamMediaAttrs(string $rawAttrs, array $attrs): array
+    {
+        $parsed = [];
+        if (preg_match_all('/([a-z][a-z0-9_-]*)\s*=\s*"([^"]*)"/', $rawAttrs, $matches, PREG_SET_ORDER) > 0) {
+            foreach ($matches as $match) {
+                $parsed[$match[1]] = $match[2];
+            }
+        }
+
+        foreach (['image', 'poster', 'src', 'srcmobile'] as $key) {
+            if (!array_key_exists($key, $parsed)) {
+                continue;
+            }
+
+            $attrs[$key] = DamMediaUrl::sanitize($parsed[$key]);
+        }
+
+        return $attrs;
     }
 }

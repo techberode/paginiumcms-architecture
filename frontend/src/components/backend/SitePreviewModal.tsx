@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Calendar, Maximize2, Minimize2, Tag, User, X } from 'lucide-react';
 import type { Article, Page } from '../../api/types';
 import { contentApi } from '../../api/content';
@@ -164,6 +165,23 @@ export const SitePreviewModal: React.FC<SitePreviewModalProps> = ({
   }, [draft]);
 
   useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const onKeyDown = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown, true);
+    return () => window.removeEventListener('keydown', onKeyDown, true);
+  }, [open, onClose]);
+
+  useEffect(() => {
     if (!open || !draft) {
       setPreviewHtml('');
       setPreviewLoading(false);
@@ -224,11 +242,23 @@ export const SitePreviewModal: React.FC<SitePreviewModalProps> = ({
   const contentTypeLabel =
     draft.type === 'article' ? t('editor.sitePreview.typeArticle') : t('editor.sitePreview.typePage');
 
-  return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-slate-950/80 backdrop-blur-sm">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 bg-slate-900 px-4 py-3 text-white">
+  const overlay = (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="site-preview-title"
+      data-testid="site-preview-modal"
+      className="fixed inset-0 z-[200] flex flex-col bg-slate-950/80 backdrop-blur-sm"
+    >
+      <div
+        data-testid="site-preview-toolbar"
+        className="relative z-10 flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-slate-800 bg-slate-900 px-4 py-3 text-white"
+      >
         <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-indigo-300">
+          <p
+            id="site-preview-title"
+            className="text-xs font-bold uppercase tracking-wider text-indigo-300"
+          >
             {t('editor.sitePreview.title')}
           </p>
           <p className="text-sm font-semibold truncate max-w-[60vw]">
@@ -249,6 +279,7 @@ export const SitePreviewModal: React.FC<SitePreviewModalProps> = ({
               key={value}
               type="button"
               onClick={() => setScale(value)}
+              data-testid={`site-preview-scale-${value}`}
               className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${
                 scale === value
                   ? 'bg-indigo-600 text-white'
@@ -265,14 +296,19 @@ export const SitePreviewModal: React.FC<SitePreviewModalProps> = ({
             title={
               isFullscreen ? t('editor.sitePreview.constrainWidth') : t('editor.sitePreview.fullscreen')
             }
+            aria-label={
+              isFullscreen ? t('editor.sitePreview.constrainWidth') : t('editor.sitePreview.fullscreen')
+            }
           >
             {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
           </button>
           <button
             type="button"
             onClick={onClose}
+            data-testid="site-preview-close"
             className="rounded-lg bg-slate-800 p-2 text-slate-200 hover:bg-red-600"
             title={t('editor.sitePreview.close')}
+            aria-label={t('editor.sitePreview.close')}
           >
             <X size={16} />
           </button>
@@ -311,6 +347,8 @@ export const SitePreviewModal: React.FC<SitePreviewModalProps> = ({
       </div>
     </div>
   );
+
+  return createPortal(overlay, document.body);
 };
 
 export default SitePreviewModal;

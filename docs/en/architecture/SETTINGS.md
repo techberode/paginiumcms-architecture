@@ -97,6 +97,7 @@ The public endpoint uses a field allow-list. It must not serialize a whole group
 | `maintenance` | coming-soon/maintenance modes | ADMIN+ |
 | `editor` | editor, spellcheck, tab size | ADMIN+ |
 | `smtp` | mail transport | ADMIN+, secret fields |
+| `imap` | domain IMAP inbox (`enabled`, host, `listLimit`, `appendSentOnSend`, …) | ADMIN+, secret mailbox passwords |
 | `notifications` | toast and UI behavior | ADMIN+; only a safe public slice |
 | `connectors` | email, ntfy, Discord, Telegram, webhook | ADMIN+, secret credentials |
 | `monitoring` | incidents and scheduled reports | ADMIN+ |
@@ -185,6 +186,7 @@ A secret endpoint never returns plaintext. An unchanged password input uses a se
 
 Sensitive fields use `EncryptionService` and application key material. Required rules:
 
+- **`encrypt()` fails closed** when `APP_KEY` is missing or invalid — mutating saves that persist secrets must error, not write plaintext ([ISS-170](../ISSUES.md#iss-170)),
 - ciphertext is a versioned format with algorithm/key-version metadata,
 - `APP_KEY` or the master key is not stored in the settings file,
 - rotation supports dry-run, backup, and rollback,

@@ -20,6 +20,8 @@ use PaginiumCMS\Core\Security\Services\ContentSecuritySanitizer;
 use PaginiumCMS\Core\Settings\Services\SettingsRepository;
 use PaginiumCMS\Core\Validation\Validator;
 use PaginiumCMS\Core\Editor\Services\TiptapHtmlRenderer;
+use PaginiumCMS\Modules\Gallery\Contracts\GalleryRepositoryInterface;
+use PaginiumCMS\Modules\Gallery\Models\GalleryItem;
 use PaginiumCMS\Tests\Support\StorageTestHelper;
 use PHPUnit\Framework\TestCase;
 
@@ -29,6 +31,9 @@ final class ShortcodeExpanderServiceTest extends TestCase
     private ShortcodeDefinitionManager $manager;
     private ShortcodeExpanderService $expander;
     private ContentBodyRenderer $bodyRenderer;
+    private ShortcodeRegistry $registry;
+    private FileReader $reader;
+    private SettingsRepository $settings;
 
     protected function setUp(): void
     {
@@ -48,6 +53,10 @@ final class ShortcodeExpanderServiceTest extends TestCase
             new Validator(),
             'data/settings.json'
         );
+
+        $this->reader = $reader;
+        $this->registry = $registry;
+        $this->settings = $settings;
 
         $policyEngine = new CodePolicyEngine($settings, new SyntaxChecker(), new SecurityScanner());
 
@@ -170,6 +179,90 @@ JSON;
         $this->assertStringContainsString('pg-stats', $result);
         $this->assertStringContainsString('pg-stat-value', $result);
         $this->assertStringNotContainsString('[cta-banner', $result);
+    }
+
+    public function testLandingHeroMediaUsesDamVideoWithoutControls(): void
+    {
+        $json = <<<'JSON'
+{
+  "name": "landing-hero",
+  "version": 2,
+  "attrs": {
+    "title": {"type": "string"},
+    "subtitle": {"type": "string"},
+    "cta": {"type": "string"},
+    "href": {"type": "string"},
+    "image": {"type": "media", "accept": "image"},
+    "poster": {"type": "media", "accept": "image"},
+    "src": {"type": "media", "accept": "video"},
+    "srcmobile": {"type": "media", "accept": "video"}
+  },
+  "expand": "<section class=\"pg-hero\"><div class=\"pg-hero-inner\"><h1 class=\"pg-hero-title\">{{title}}</h1></div></section>"
+}
+JSON;
+        $this->manager->save('landing-hero', $json);
+
+        $result = $this->expander->expand(
+            '[landing-hero title="Studio" image="/storage/app/content/media/hero.jpg" src="/storage/app/content/media/hero.mp4"/]'
+        );
+
+        $this->assertStringContainsString('pg-hero-video', $result);
+        $this->assertStringContainsString('/storage/app/content/media/hero.jpg', $result);
+        $this->assertStringContainsString('/storage/app/content/media/hero.mp4', $result);
+        $this->assertStringContainsString('muted', $result);
+        $this->assertStringNotContainsString('controls', $result);
+
+        $rejected = $this->expander->expand(
+            '[landing-hero title="Studio" image="https://evil.example/x.jpg" src="https://youtube.com/watch?v=1"/]'
+        );
+        $this->assertStringNotContainsString('evil.example', $rejected);
+        $this->assertStringNotContainsString('youtube.com', $rejected);
+        $this->assertStringNotContainsString('pg-hero-video', $rejected);
+    }
+
+    public function testFeatureGalleryReadsPublishedStoreAndKeepsDataAttrs(): void
+    {
+        $json = <<<'JSON'
+{
+  "name": "feature-gallery",
+  "version": 1,
+  "attrs": {
+    "title": {"type": "string"},
+    "tag": {"type": "string"}
+  },
+  "expand": "<section class=\"pg-feature-gallery\" data-tag=\"{{tag}}\" data-title=\"{{title}}\"></section>"
+}
+JSON;
+        $this->manager->save('feature-gallery', $json);
+
+        $item = GalleryItem::fromArray([
+            'title' => 'Analytics',
+            'description' => 'Dashboard',
+            'mediaPath' => '/storage/app/content/media/analytics.png',
+            'featureTag' => 'web',
+            'status' => 'published',
+        ], 'gallery_1');
+
+        $gallery = $this->createMock(GalleryRepositoryInterface::class);
+        $gallery->method('findPublishedOrdered')->willReturn([$item]);
+
+        $expander = new ShortcodeExpanderService(
+            $this->registry,
+            $this->reader,
+            new ContentSecuritySanitizer($this->settings),
+            null,
+            null,
+            $gallery
+        );
+
+        $result = $expander->expand('[feature-gallery title="Selected work" tag="web"/]');
+
+        $this->assertStringContainsString('pg-feature-gallery', $result);
+        $this->assertStringContainsString('data-tag="web"', $result);
+        $this->assertStringContainsString('data-title="Selected work"', $result);
+        $this->assertStringContainsString('Analytics', $result);
+        $this->assertStringContainsString('/storage/app/content/media/analytics.png', $result);
+        $this->assertStringNotContainsString('[feature-gallery', $result);
     }
 
     private function removeDir(string $dir): void

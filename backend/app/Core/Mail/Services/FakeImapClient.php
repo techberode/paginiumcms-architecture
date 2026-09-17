@@ -35,6 +35,8 @@ final class FakeImapClient implements ImapClientInterface
                 ],
             ],
             'Junk' => [],
+            'Sent' => [],
+            'Drafts' => [],
         ];
     }
 
@@ -229,6 +231,56 @@ final class FakeImapClient implements ImapClientInterface
         unset($row['body']);
 
         return $row;
+    }
+
+    public function appendMessage(string $folder, string $rfc822, array $flags = []): void
+    {
+        $this->assertConnected();
+        if (!isset($this->folders[$folder])) {
+            $this->folders[$folder] = [];
+        }
+        $nextUid = 1;
+        foreach ($this->folders[$folder] as $row) {
+            $uid = (int) ($row['uid'] ?? 0);
+            if ($uid >= $nextUid) {
+                $nextUid = $uid + 1;
+            }
+        }
+        $subject = 'Sent';
+        if (preg_match('/^Subject:\s*(.+)$/mi', $rfc822, $match) === 1) {
+            $subject = trim($match[1]);
+        }
+        $seen = false;
+        foreach ($flags as $flag) {
+            if (stripos($flag, 'seen') !== false) {
+                $seen = true;
+            }
+        }
+        $this->folders[$folder][] = [
+            'uid' => $nextUid,
+            'subject' => $subject,
+            'from' => 'local@append.test',
+            'date' => gmdate('Y-m-d'),
+            'flags' => [],
+            'tags' => [],
+            'seen' => $seen,
+            'flagged' => false,
+            'snippet' => $subject,
+            'mime' => $rfc822,
+        ];
+    }
+
+    public function folderStatus(string $folder): array
+    {
+        $rows = $this->folders[$folder] ?? [];
+        $unseen = 0;
+        foreach ($rows as $row) {
+            if (!((bool) ($row['seen'] ?? false))) {
+                $unseen++;
+            }
+        }
+
+        return ['messages' => count($rows), 'unseen' => $unseen];
     }
 
     private function assertConnected(): void

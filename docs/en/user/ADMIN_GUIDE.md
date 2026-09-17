@@ -61,6 +61,8 @@ Typical workflow:
 
 A slug is part of the URL and file identity. Changing it may require redirects and link verification. See [CONTENT_EDITOR.md](CONTENT_EDITOR.md).
 
+**Page layout builder:** Settings → Layout chooses Templates, Shortcodes, **Block outline** (palette + forms; recommended for landings), or Developer. All modes store the same Markdown. Outline applies to pages only. Fullscreen **Workspace** hides admin chrome (Settings → Editor, or the toggle in the editor). Gallery photos: [GALLERY.md](GALLERY.md).
+
 **List pagination:** The pages table (and the articles table, same component) uses Previous/Next at the bottom. The current page is in the URL (`/pages?page=2`). Changing filters or page size returns you to page 1; Next/Previous must not snap back to the first page ([ISS-169](../../ISSUES.md#iss-169)).
 
 ## 5. Articles
@@ -85,7 +87,15 @@ Same first-segment URLs as the rest of the admin ([ADMIN_DEEP_LINKS.md](../archi
 | Support Kanban | `/kanban` |
 | Newsletter | `/newsletter` |
 
-Bookmarks under `/platform/mail` or `/platform/kanban` redirect to the paths above. IMAP settings: `/settings?group=imap`.
+Bookmarks under `/platform/mail` or `/platform/kanban` redirect to the paths above. IMAP settings: `/settings?group=imap` (including **Messages fetched from server** — how many newest messages load per folder, default 40; **Append copy to Sent (IMAP)** — disable for faster send when SMTP alone is enough).
+
+**Mail labels and local trash (`beta.79`):** Sidebar **Labels** — create names and colors, edit/delete (including tags that exist only on IMAP). On an open message, click a label chip (**×**) to remove it; bulk-select rows and use **Remove from selected**. **Local trash** holds messages hidden in this client only; **Empty local trash** permanently dismisses them (they will not reappear in INBOX or trash here; IMAP copies stay on the server). Use **Refresh** to reload folders after external changes (no automatic polling).
+
+**Mail privacy:** HTML messages open in a sandboxed iframe. **Remote images are off by default.** **Show images from …** remembers the sender per active mailbox (this browser). **Block sender** applies to the **active mailbox only**, moves the message to server spam, and stops listing mail from that address in this client. Open **Blocked senders** in the mail sidebar to review the list and **Unblock** an address. Each **page reload** runs **spam autoclean** (server spam folder snapshot is purged from the UI and hidden on later loads). Requires **`APP_KEY`** before saving mailbox passwords ([ISS-170](../ISSUES.md#iss-170)).
+
+**Mail signature (93m-4):** Sidebar **Mail signature** — pick one of six templates, edit fields (or **Load from profile**), enable **Attach signature to outgoing messages**. Settings are stored **per active mailbox** (e.g. `info@` vs your login mailbox). Avatar and shared profile fields live under **My account**; extra mailboxes do not need separate CMS users.
+
+**Mobile mail:** Use the **mail menu** (hamburger in the message list, below the admin header) for folders, compose, signature, and blocklist. The inbox shows the message list only; tap a row to open the full message and **Back to list** to return.
 
 ## 5.1 Project site planner
 
@@ -134,6 +144,7 @@ Settings are divided into groups. Typical areas:
 | Area | Examples |
 |---|---|
 | Site | name, URL, language, timezone, branding |
+| Layout | page builder mode (templates / shortcodes / outline / developer) |
 | Content/SEO | editor, pagination, metadata, feeds, **article print toggle** |
 | Accounts/Security | registration, passwords, 2FA, upload policy |
 | Access control | RBAC and Path ACL for SUPER_ADMIN |
@@ -201,11 +212,15 @@ stored → pending_publish → committed → pushed
 
 A local save must not be marked failed merely because a remote Git push failed. Retry must not create a duplicate commit without an idempotency rule.
 
-## 16. Translation and localization
+## 16. Feature gallery
+
+Screenshots live in **Feature gallery** (`/gallery`), not in the page form. Put `[feature-gallery]` on a page (Outline palette → **Gallery**) to show published items. Tags filter the same catalog; they do not create extra stores. Full walkthrough: [GALLERY.md](GALLERY.md).
+
+## 17. Translation and localization
 
 Admin UI translation management is not the same as a multilingual content document. The target It.73/76/77 localization branch uses proposal and diff; translated content must not be published automatically without a separate approval.
 
-## 17. Firewall, logs, and audit
+## 18. Firewall, logs, and audit
 
 - [Firewall](FIREWALL.md) blocks defined probe scenarios and manages jails.
 - [Logs](LOGGING.md) diagnose requests and runtime events.
@@ -225,7 +240,7 @@ These layers complement each other but are not interchangeable. Audit should not
 | Firewall + outbound URL guard | Platform → Firewall; SSRF guard on configurable URLs |
 | Backups + scheduler cron | Platform → Backups, Scheduler; host cron required |
 
-## 18. Code Editor, Developer Mode, and extensions
+## 19. Code Editor, Developer Mode, and extensions
 
 These are high-risk capabilities. Use them on staging, with a time-limited unlock and a backup. Saving in Code Editor does not automatically build, reload, activate a plugin, or deploy.
 
@@ -234,23 +249,24 @@ These are high-risk capabilities. Use them on staging, with a time-limited unloc
 - [Plugins](PLUGINS.md)
 - [Themes](THEMES.md)
 
-## 19. Maintenance, privacy, and analytics
+## 20. Maintenance, privacy, and analytics
 
 Maintenance/Coming Soon mode should allow staff bypass only for authorized accounts and must not expose drafts accidentally. Newsletter and contact data are subject to privacy and unsubscribe rules.
 
 Analytics is a derived operations layer. Disabling or losing analytics data must not damage content. Cookie consent should respect categories and let visitors change their choice.
 
-## 20. Routine checklist
+## 21. Routine checklist
 
 **Daily:** critical logs, firewall jails, failed jobs, storage capacity.  
 **Weekly:** backup report, inactive accounts, pending comments, scheduler health.  
 **Before release:** backup + restore test, gate, changelog, config diff, smoke test.  
 **After incident:** preserve evidence, rotate compromised secrets, document timeline, and verify recovery.
 
-## 21. Related documents
+## 22. Related documents
 
 - [First steps](FIRST_STEPS.md)
 - [Content editor](CONTENT_EDITOR.md)
+- [Feature gallery](GALLERY.md)
 - [Permissions](ACCESS_CONTROL.md)
 - [API contract](../architecture/API_CONTRACT.md)
 - [Core hardening](../architecture/CORE_HARDENING.md)

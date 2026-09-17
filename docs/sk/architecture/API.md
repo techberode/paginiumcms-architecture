@@ -114,7 +114,7 @@ Neplatný Bearer token nesmie potichu fallbacknúť na session alebo anonymný p
 | `POST` | `/api/contact` | kontaktný formulár s anti-abuse ochranou | ✅ |
 | `POST` | `/api/analytics/pageview` | privacy-aware pageview ingest, ak je analytics povolená | ✅ podľa modulu |
 | `POST` | `/api/newsletter/subscribe` | newsletter opt-in podľa nasadenej funkcionality | ✅ podľa modulu |
-| `GET` | `/api/gallery/public` | public gallery slice, ak je modul povolený | ✅ podľa modulu |
+| `GET` | `/api/gallery/public` | publikované položky galérie (It.65; `gallery.enabled` len home/route chrome) | ✅ podľa modulu |
 
 Presné query parametre, public pravidlá a write lifecycle sú v [CONTENT_API.md](./CONTENT_API.md).
 

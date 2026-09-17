@@ -9,6 +9,7 @@ use PaginiumCMS\Core\FlatFile\Services\FileValidator;
 use PaginiumCMS\Core\FlatFile\Services\FileWriter;
 use PaginiumCMS\Core\Mail\Services\MailboxSecretRepository;
 use PaginiumCMS\Core\Security\Services\EncryptionService;
+use PaginiumCMS\Core\Security\Services\EncryptionUnavailableException;
 use PHPUnit\Framework\TestCase;
 
 final class MailboxSecretRepositoryTest extends TestCase
@@ -33,6 +34,19 @@ final class MailboxSecretRepositoryTest extends TestCase
     {
         $this->removeTree($this->baseDir);
         parent::tearDown();
+    }
+
+    public function testRefusesPlaintextWhenEncryptionDisabled(): void
+    {
+        $validator = new FileValidator($this->baseDir);
+        $repository = new MailboxSecretRepository(
+            new FileReader($validator),
+            new FileWriter($validator),
+            new EncryptionService(null)
+        );
+
+        $this->expectException(EncryptionUnavailableException::class);
+        $repository->savePassword('user_abc', 's3cret');
     }
 
     public function testEncryptsPasswordAtRest(): void

@@ -13,6 +13,7 @@ export interface MailStatus {
   smtpEnabled: boolean;
   canSend: boolean;
   accounts: MailAccount[];
+  listLimit?: number;
 }
 
 export interface MailAccount {
@@ -25,6 +26,41 @@ export interface MailFolder {
   name: string;
   spam: boolean;
   virtual?: boolean;
+  total?: number;
+  unseen?: number;
+}
+
+export type MailSignatureTemplateId =
+  | 'minimal'
+  | 'classic'
+  | 'card'
+  | 'compact'
+  | 'brand'
+  | 'support';
+
+export interface MailSignatureFields {
+  displayName: string;
+  jobTitle: string;
+  phone: string;
+  contactEmail: string;
+  bio: string;
+  companyName: string;
+  website: string;
+  avatarUrl: string;
+}
+
+export interface MailSignaturePrefs {
+  enabled: boolean;
+  templateId: MailSignatureTemplateId;
+  overrides: Partial<MailSignatureFields>;
+}
+
+export interface MailSignatureState {
+  mailbox: string;
+  templates: Array<{ id: MailSignatureTemplateId }>;
+  prefs: MailSignaturePrefs;
+  fields: MailSignatureFields;
+  previewHtml: string;
 }
 
 export interface MailMessage {
@@ -37,9 +73,15 @@ export interface MailMessage {
   snippet: string;
   body?: string;
   html?: string;
+  remoteImagesBlocked?: boolean;
   seen?: boolean;
   flagged?: boolean;
   originFolder?: string;
+  /** Stored only in CMS mail-client state (not on IMAP). */
+  localOnly?: boolean;
+  to?: string;
+  cc?: string;
+  replyTo?: string;
 }
 
 export const mailApi = {
@@ -96,9 +138,10 @@ export const mailApi = {
     return [];
   },
 
-  message: async (folder: string, uid: number): Promise<MailMessage | null> => {
+  message: async (folder: string, uid: number, allowRemoteImages = false): Promise<MailMessage | null> => {
+    const remote = allowRemoteImages ? '&remoteImages=1' : '';
     const response = await apiClient.get<{ message: MailMessage }>(
-      `/api/admin/mail/messages/${uid}?folder=${encodeURIComponent(folder)}`
+      `/api/admin/mail/messages/${uid}?folder=${encodeURIComponent(folder)}${remote}`
     );
     if (response.success && response.data) {
       return response.data.message;
@@ -128,11 +171,81 @@ export const mailApi = {
     return apiClient.post<{ restored: boolean }>(`/api/admin/mail/messages/${uid}/unhide`, { folder });
   },
 
+  emptyLocalTrash: async (): Promise<ApiResponse<{ removed: number }>> => {
+    return apiClient.post<{ removed: number }>('/api/admin/mail/local-trash/empty', {});
+  },
+
   moveSpam: async (folder: string, uid: number): Promise<ApiResponse<{ moved: boolean }>> => {
     return apiClient.post<{ moved: boolean }>(`/api/admin/mail/messages/${uid}/spam`, { folder });
   },
 
-  send: async (payload: { to: string; subject: string; body: string }): Promise<ApiResponse<{ sent: boolean }>> => {
-    return apiClient.post<{ sent: boolean }>('/api/admin/mail/send', payload);
+  blockSender: async (
+    folder: string,
+    uid: number,
+    from: string
+  ): Promise<ApiResponse<{ blocked: string; moved: boolean }>> => {
+    return apiClient.post<{ blocked: string; moved: boolean }>(`/api/admin/mail/messages/${uid}/block-sender`, {
+      folder,
+      from,
+    });
+  },
+
+  autocleanSpam: async (): Promise<ApiResponse<{ purged: number }>> => {
+    return apiClient.post<{ purged: number }>('/api/admin/mail/spam/autoclean', {});
+  },
+
+  blockedSenders: async (): Promise<{ mailbox: string; blocked: string[] }> => {
+    const response = await apiClient.get<{ mailbox: string; blocked: string[] }>('/api/admin/mail/blocked-senders');
+    if (response.success && response.data) {
+      return { mailbox: response.data.mailbox, blocked: response.data.blocked ?? [] };
+    }
+
+    return { mailbox: '', blocked: [] };
+  },
+
+  unblockSender: async (email: string): Promise<ApiResponse<{ unblocked: string; removed: boolean }>> => {
+    return apiClient.delete<{ unblocked: string; removed: boolean }>('/api/admin/mail/blocked-senders', {
+      data: { email },
+    });
+  },
+
+  signature: async (): Promise<MailSignatureState | null> => {
+    const response = await apiClient.get<MailSignatureState>('/api/admin/mail/signature');
+    return response.success && response.data ? response.data : null;
+  },
+
+  saveSignature: async (payload: {
+    enabled?: boolean;
+    templateId?: MailSignatureTemplateId;
+    overrides?: Partial<MailSignatureFields>;
+  }): Promise<ApiResponse<MailSignatureState>> => {
+    return apiClient.put<MailSignatureState>('/api/admin/mail/signature', payload);
+  },
+
+  importSignatureProfile: async (): Promise<ApiResponse<MailSignatureState>> => {
+    return apiClient.post<MailSignatureState>('/api/admin/mail/signature/import-profile', {});
+  },
+
+  send: async (payload: {
+    to: string;
+    subject: string;
+    body: string;
+  }): Promise<ApiResponse<{ sent: boolean; localUid: number }>> => {
+    return apiClient.post<{ sent: boolean; localUid: number }>('/api/admin/mail/send', payload);
+  },
+
+  saveDraft: async (payload: {
+    to: string;
+    subject: string;
+    body: string;
+    uid?: number;
+  }): Promise<ApiResponse<{ uid: number }>> => {
+    return apiClient.put<{ uid: number }>('/api/admin/mail/drafts', payload);
+  },
+
+  deleteLocalMessage: async (folder: string, uid: number): Promise<ApiResponse<{ deleted: boolean }>> => {
+    return apiClient.delete<{ deleted: boolean }>(
+      `/api/admin/mail/messages/${uid}?folder=${encodeURIComponent(folder)}`
+    );
   },
 };
