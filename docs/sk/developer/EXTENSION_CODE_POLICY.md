@@ -162,7 +162,7 @@ call_user_func* nad nekontrolovaným vstupom
 FFI
 ```
 
-Scanner má používať token/AST prístup, nie iba regex. Alias, namespace funkcia, concatenation alebo escape nesmie jednoduchú kontrolu obísť. Zoznam sa môže rozširovať; policy je deny-first, nie sľub, že všetko neuvedené je automaticky povolené.
+Scanner má používať token/AST prístup, nie iba regex. Alias, namespace funkcia, concatenation alebo escape nesmie jednoduchú kontrolu obísť. **It.89d** navyše odmieta `$fn()`, `$$` / `${}`, `extract()` a callback helpery ako `array_map('system', …)`. Druhý prechod porovná PHP pluginu s `capabilities[]`. **It.89e:** `php backend/bin/console plugin:create` / `plugin:scan` (aliasy `paginium:plugin:*`) používajú ten istý engine ako ZIP import. Zoznam sa môže rozširovať; policy je deny-first, nie sľub, že všetko neuvedené je automaticky povolené.
 
 ---
 
@@ -196,7 +196,7 @@ Plugin registruje hooky iba cez manifest. Povolený názov a payload určuje `Ho
 Handler:
 
 ```php
-public static function onContentAfterSave(array $context): void
+public static function onContentAfterSave(array $context, ?PluginRuntimeContext $runtime = null): void
 ```
 
 Pravidlá:
@@ -204,6 +204,8 @@ Pravidlá:
 - neznámy hook → import/enable failure,
 - classname musí patriť plugin namespace,
 - payload sa považuje za read-only,
+- voliteľný druhý argument je `PluginRuntimeContext` (It.89b); jednoparametrové handlery ostávajú platné,
+- platform API ide cez fasády (`content()`, `media()`) — nedeclarovaná capability hodí `PluginCapabilityDeniedException`,
 - handler nesmie spoliehať na nedokumentované keys,
 - citlivé fields sa do public hook payloadu neposielajú,
 - exception behavior je definovaný per hook,

@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Puzzle, RefreshCw, Trash2, Upload } from 'lucide-react';
+import { Puzzle, RefreshCw, Trash2, Upload, ShieldAlert } from 'lucide-react';
 import { extensionsApi, ExtensionRecord } from '../../api/extensions';
 import { queryKeys } from '../../api/queryKeys';
 import { useAdminListQuery } from '../../hooks/useAdminListQuery';
@@ -154,6 +154,13 @@ export const ExtensionsManager: React.FC = () => {
         </div>
       </div>
 
+      {items.some((item) => item.autoDisabled) ? (
+        <div className="flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-100">
+          <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" />
+          <p>{t('platform.extensions.autoDisabledBanner')}</p>
+        </div>
+      ) : null}
+
       {isLoading && items.length === 0 ? (
         <AdminListSkeleton rows={4} />
       ) : items.length === 0 ? (
@@ -206,7 +213,17 @@ export const ExtensionsManager: React.FC = () => {
                     {item.author ? ` · ${item.author}` : ''}
                   </p>
                   {item.description ? <p className="mt-2 text-sm">{item.description}</p> : null}
+                  {item.autoDisabled && item.disabledReason ? (
+                    <p className="mt-2 text-xs text-red-700 dark:text-red-300">
+                      {t('platform.extensions.autoDisabledDetail', { reason: item.disabledReason })}
+                    </p>
+                  ) : null}
                   <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                    {item.autoDisabled ? (
+                      <span className="rounded bg-red-100 px-2 py-1 text-red-800">
+                        {t('platform.extensions.autoDisabled')}
+                      </span>
+                    ) : null}
                     {!item.present ? (
                       <span className="rounded bg-amber-100 px-2 py-1 text-amber-800">
                         {t('platform.extensions.missingOnDisk')}

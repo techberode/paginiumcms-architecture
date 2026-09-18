@@ -351,6 +351,10 @@ export const platformSk: MessageTree = {
     frontend: 'Frontend',
     enabled: 'Zapnuté',
     disabled: 'Vypnuté',
+    autoDisabled: 'Automaticky vypnuté po zlyhaniach hooku',
+    autoDisabledBanner:
+      'Jedno alebo viac rozšírení bolo vypnutých po opakovaných zlyhaniach hooku. Skontroluj bezpečnostný audit a zapni plugin znova, až keď je bezpečný.',
+    autoDisabledDetail: 'Posledná chyba: :reason',
     uninstall: 'Odinštalovať',
     bulkUninstall: 'Odinštalovať vybrané',
     bulkItemLabel: 'rozšírení vybraných',
@@ -381,6 +385,9 @@ export const platformSk: MessageTree = {
       permission_denied: 'Zamietnuté oprávnenie',
       role_denied: 'Zamietnutá rola',
       settings_change: 'Zmena nastavení',
+      plugin_capability: 'Capability pluginu',
+      plugin_hook_failed: 'Zlyhanie hooku pluginu',
+      plugin_auto_disabled: 'Plugin automaticky vypnutý',
     },
     loading: 'Načítavam…',
     columns: {

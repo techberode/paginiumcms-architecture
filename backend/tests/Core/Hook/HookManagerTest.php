@@ -68,6 +68,21 @@ class HookManagerTest extends TestCase
         $this->assertEquals('test_first', $result);
     }
 
+    public function testRunIsolatesThrowingCallback(): void
+    {
+        $this->hookManager->add('test_hook', static function (): string {
+            throw new \RuntimeException('boom');
+        });
+        $this->hookManager->add('test_hook', static function (string $value): string {
+            return $value . '_ok';
+        });
+
+        $returned = $this->hookManager->run('test_hook', ['test']);
+
+        $this->assertNull($returned[0]);
+        $this->assertSame('test_ok', $returned[1]);
+    }
+
     public function testRemoveHook(): void
     {
         $this->hookManager->add('test_hook', function () {});

@@ -7,4 +7,5 @@ return [
     'capabilities_invalid' => 'plugin.json capabilities musia byť jedinečné neprázdne reťazce.',
     'capabilities_unknown' => 'Neznáma capability pluginu: :capability',
     'manifest_version_required' => 'plugin.json musí deklarovať manifestVersion ako celé číslo 1.',
+    'capability_denied' => 'Plugin :plugin nemá oprávnenie používať :capability.',
 ];

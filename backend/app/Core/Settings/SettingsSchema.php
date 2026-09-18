@@ -274,7 +274,7 @@ final class SettingsSchema
                     ['key' => 'strictMode', 'type' => 'bool', 'label' => 'Strict extension namespace rules', 'default' => true, 'rules' => ['bool'], 'help' => 'Zapnuté = prísnejšie namespaces pre Extensions. Untrusted PHP vždy vyžaduje strict_types.'],
                     ['key' => 'maxFileSizeKb', 'type' => 'int', 'label' => 'Max file size (KB)', 'default' => 512, 'rules' => ['required', 'int', 'min:16', 'max:4096']],
                     ['key' => 'untrustedMaxFileSizeKb', 'type' => 'int', 'label' => 'Max untrusted file size (KB)', 'default' => 256, 'rules' => ['required', 'int', 'min:16', 'max:1024'], 'help' => 'Cap for plugins/themes/layout shortcode artifacts (cannot exceed maxFileSizeKb).'],
-                    ['key' => 'forbiddenPhpFunctions', 'type' => 'text', 'label' => 'Forbidden PHP functions', 'default' => 'eval,exec,shell_exec,system,passthru,proc_open,popen,assert,create_function', 'rules' => ['string', 'max:2000'], 'help' => 'Comma-separated list scanned before save. Untrusted trees also block include/require/unserialize/call_user_func*.'],
+                    ['key' => 'forbiddenPhpFunctions', 'type' => 'text', 'label' => 'Forbidden PHP functions', 'default' => 'eval,exec,shell_exec,system,passthru,proc_open,popen,assert,create_function', 'rules' => ['string', 'max:2000'], 'help' => 'Comma-separated list scanned before save. Untrusted trees also block include/require/unserialize/extract/call_user_func* and indirect calls ($fn(), $$, array_map(\'system\')).'],
                 ],
             ],
             'engine' => [

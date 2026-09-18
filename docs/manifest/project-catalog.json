@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-09-15",
+  "updatedAt": "2026-09-18",
   "checklistDoc": "docs/manifest/implementation-checklist.json",
   "iterations": [
     {
@@ -69,15 +69,16 @@
     {
       "id": "it.89",
       "titleKey": "origin.catalog.it89",
-      "phase": "partial",
+      "phase": "shipped",
+      "since": "2.1.0-beta.82",
       "doc": "docs/en/ITERATION_89.md",
       "priority": "medium",
       "items": [
         { "id": "89a", "titleKey": "origin.catalog.it89_catalog", "phase": "shipped", "weight": 1 },
-        { "id": "89b", "titleKey": "origin.catalog.it89_broker", "phase": "planned", "weight": 1 },
-        { "id": "89c", "titleKey": "origin.catalog.it89_safe_hooks", "phase": "planned", "weight": 1 },
-        { "id": "89d", "titleKey": "origin.catalog.it89_scanner", "phase": "planned", "weight": 1 },
-        { "id": "89e", "titleKey": "origin.catalog.it89_cli", "phase": "planned", "weight": 1 }
+        { "id": "89b", "titleKey": "origin.catalog.it89_broker", "phase": "shipped", "weight": 1 },
+        { "id": "89c", "titleKey": "origin.catalog.it89_safe_hooks", "phase": "shipped", "weight": 1 },
+        { "id": "89d", "titleKey": "origin.catalog.it89_scanner", "phase": "shipped", "weight": 1 },
+        { "id": "89e", "titleKey": "origin.catalog.it89_cli", "phase": "shipped", "weight": 1 }
       ],
       "history": []
     },

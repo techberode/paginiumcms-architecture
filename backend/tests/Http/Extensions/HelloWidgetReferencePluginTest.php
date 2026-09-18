@@ -43,5 +43,6 @@ final class HelloWidgetReferencePluginTest extends TestCase
 
         Hooks::onContentAfterSave(['slug' => 'demo', 'type' => 'page']);
         $this->assertSame('demo', Hooks::$lastContentContext['slug'] ?? null);
+        $this->assertNull(Hooks::$lastRuntime);
     }
 }

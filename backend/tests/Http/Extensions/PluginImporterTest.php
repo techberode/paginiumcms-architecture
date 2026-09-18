@@ -14,12 +14,14 @@ use PaginiumCMS\Core\FlatFile\Services\FileWriter;
 use PaginiumCMS\Core\Hook\HookManager;
 use PaginiumCMS\Core\Settings\Services\SettingsRepository;
 use PaginiumCMS\Core\Validation\Validator;
+use PaginiumCMS\Http\Extensions\Capabilities\PluginCapabilityUsageScanner;
 use PaginiumCMS\Http\Extensions\Services\ExtensionManifestValidator;
 use PaginiumCMS\Http\Extensions\Services\PluginImporter;
 use PaginiumCMS\Http\Extensions\Services\PluginManager;
 use PaginiumCMS\Core\CodePolicy\Services\UntrustedPolicyScanner;
 use PaginiumCMS\Http\Extensions\Services\PluginPolicyScanner;
 use PaginiumCMS\Http\Extensions\Services\PluginRegistry;
+use PaginiumCMS\Http\Extensions\Services\PluginScanService;
 use PaginiumCMS\Support\JsonHelper;
 use PaginiumCMS\Support\Lang;
 use PHPUnit\Framework\TestCase;
@@ -59,8 +61,11 @@ final class PluginImporterTest extends TestCase
 
         $this->importer = new PluginImporter(
             $registry,
-            $scanner,
-            new ExtensionManifestValidator(),
+            new PluginScanService(
+                $scanner,
+                new ExtensionManifestValidator(),
+                new PluginCapabilityUsageScanner()
+            ),
             $this->extensionsRoot,
             $this->routesRoot,
             $this->frontendRoot,
@@ -189,6 +194,71 @@ PHP,
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage(Lang::get('capabilities_unknown', ['capability' => 'shell:exec'], 'extensions'));
+        $this->importer->importZip($zipPath);
+    }
+
+    public function testImportRejectsVariableFunctionIndirection(): void
+    {
+        $zipPath = $this->createZip([
+            'sneaky/plugin.json' => JsonHelper::encode([
+                'id' => 'sneaky',
+                'name' => 'Sneaky',
+                'version' => '1.0.0',
+                'manifestVersion' => 1,
+                'capabilities' => ['content:read'],
+            ]),
+            'sneaky/src/Hooks.php' => <<<'PHP'
+<?php
+
+declare(strict_types=1);
+
+namespace PaginiumCMS\Http\Extensions\Sneaky;
+
+final class Hooks
+{
+    public static function boot(): void
+    {
+        $fn = 'exec';
+        $fn('true');
+    }
+}
+PHP,
+        ]);
+
+        $this->expectException(CodePolicyViolationException::class);
+        $this->importer->importZip($zipPath);
+    }
+
+    public function testImportRejectsContentFacadeWithoutCapability(): void
+    {
+        $zipPath = $this->createZip([
+            'sneaky/plugin.json' => JsonHelper::encode([
+                'id' => 'sneaky',
+                'name' => 'Sneaky',
+                'version' => '1.0.0',
+                'manifestVersion' => 1,
+                'capabilities' => ['admin-ui:editor-block'],
+            ]),
+            'sneaky/src/Hooks.php' => <<<'PHP'
+<?php
+
+declare(strict_types=1);
+
+namespace PaginiumCMS\Http\Extensions\Sneaky;
+
+use PaginiumCMS\Http\Extensions\Capabilities\PluginRuntimeContext;
+
+final class Hooks
+{
+    public static function boot(array $context, PluginRuntimeContext $runtime): void
+    {
+        $runtime->content()->get('page', 'home');
+    }
+}
+PHP,
+        ]);
+
+        $this->expectException(CodePolicyViolationException::class);
         $this->importer->importZip($zipPath);
     }
 

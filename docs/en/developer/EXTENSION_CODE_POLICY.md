@@ -162,7 +162,7 @@ call_user_func* over uncontrolled input
 FFI
 ```
 
-Scanner should use tokens/AST rather than regex alone. Aliases, namespaced functions, concatenation, or escaping must not bypass a simplistic check. The list may grow; policy is deny-first, not a promise that everything unlisted is automatically allowed.
+Scanner should use tokens/AST rather than regex alone. Aliases, namespaced functions, concatenation, or escaping must not bypass a simplistic check. **It.89d** also rejects `$fn()`, `$$` / `${}`, `extract()`, and callback helpers such as `array_map('system', …)`. A second pass compares plugin PHP to `capabilities[]` (`content()` / `media()` / outbound HTTP vs declared caps; raw `ContentRepositoryInterface` / `FlatFileStorage` is forbidden). The list may grow; policy is deny-first, not a promise that everything unlisted is automatically allowed.
 
 ---
 
@@ -196,7 +196,7 @@ A plugin registers hooks only through its manifest. Allowed name and payload are
 Handler:
 
 ```php
-public static function onContentAfterSave(array $context): void
+public static function onContentAfterSave(array $context, ?PluginRuntimeContext $runtime = null): void
 ```
 
 Rules:
@@ -204,6 +204,11 @@ Rules:
 - unknown hook → import/enable failure,
 - class must belong to plugin namespace,
 - payload is treated as read-only,
+- optional second argument is `PluginRuntimeContext` (It.89b); one-argument handlers stay valid,
+- platform APIs go through the runtime facades (`content()`, `media()`) — undeclared capabilities throw `PluginCapabilityDeniedException`,
+- `HookManager::run()` / `runFirst()` always go through `SafeHookRunner` (It.89c): a throwing plugin does not abort the request or sibling listeners,
+- plugin hooks that throw a PHP `Error`, or three consecutive exceptions / quota breaches, are auto-disabled (`enabled=false`) with a security-audit event and an Extensions admin notice,
+- declared capability use is written to the security audit as `plugin {id} used {capability}` via `LogSanitizer`,
 - handler must not depend on undocumented keys,
 - sensitive fields are excluded from public hook payload,
 - exception behavior is defined per hook,
@@ -343,7 +348,15 @@ Failure rules:
 
 ## 15. Compatibility and versions
 
-A plugin declares minimum CMS version, its own SemVer, **`manifestVersion: 1`**, and **`capabilities[]`** from the allow-list (`PluginCapabilityCatalog`). Unknown capabilities fail ZIP import with HTTP 422 (It.89a). Runtime scoping of those capabilities is It.89b.
+A plugin declares minimum CMS version, its own SemVer, **`manifestVersion: 1`**, and **`capabilities[]`** from the allow-list (`PluginCapabilityCatalog`). Unknown capabilities fail ZIP import with HTTP 422 (It.89a). Runtime access is only through `PluginCapabilityBroker` / `PluginRuntimeContext` (It.89b). Hook dispatch is isolated by `SafeHookRunner` (It.89c). Import-time indirection and capability-usage scan is It.89d. CLI scaffold/scan uses the **same engine** as ZIP import (It.89e):
+
+```bash
+php backend/bin/console plugin:create seo-analyzer --capabilities=content:read
+php backend/bin/console plugin:scan seo-analyzer
+php backend/bin/console plugin:scan /path/to/plugin-folder --json
+```
+
+Aliases: `paginium:plugin:create`, `paginium:plugin:scan`. Create writes `Http/Extensions/{id}/` with `plugin.json` + `src/Hooks.php` and does **not** enable the plugin (`data/plugins.json` stays untouched until Extensions → Enable). Scan is fail-closed: any policy or undeclared-capability finding exits non-zero.
 
 A later contract may add:
 

@@ -1,6 +1,6 @@
 # PaginiumCMS — consolidated backlog
 
-> **Snapshot:** `v2.1.0-beta.81` · September 17, 2026  
+> **Snapshot:** `v2.1.0-beta.82` · September 18, 2026  
 > **Phase:** planned-iteration development — [CONTINUATION.md](CONTINUATION.md) (stabilization freeze **closed**)  
 > **Rule:** the active backlog contains only unshipped or precisely bounded remaining scope  
 > **No-SQL:** [architecture/NOSQL_MANDATE.md](architecture/NOSQL_MANDATE.md)  
@@ -45,7 +45,7 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | 18 | **It.90** Editor Workbench (toolbar + wizards, MD + Tiptap) | 🟡 P1 | ✅ | shipped `beta.72`–`73` — [ITERATION_90](ITERATION_90.md) |
 | 19 | **It.91** Trusted HTML & external embeds | 🟡 P1 | ✅ | shipped `beta.75` — [ITERATION_91](ITERATION_91.md) |
 | 20 | **It.25** Setup wizard/update UX | 🟡 | ✅ basic + M1+ | shipped `beta.62`–`beta.65`; not a release blocker anymore |
-| 21 | **It.89** Plugin capability model | 🟡 | ⏳ | **89a** shipped; 89b–e remain — [ITERATION_89](ITERATION_89.md) |
+| 21 | **It.89** Plugin capability model | 🟡 | ✅ | **89a–e** shipped `beta.80`–`82` — [ITERATION_89](ITERATION_89.md) |
 | 22 | **It.92** SQLite query index + Guard advisor | 🟡 | ⏳ | derived catalog index — [ITERATION_92](ITERATION_92.md) |
 | 23 | **It.93** Admin chrome + daily apps | 🟡 P1 | ✅ shipped | chrome in `beta.77`; **93l** Kanban + **93m** IMAP in `beta.78`; **93m-5** mail polish in `beta.79` — [ITERATION_93](ITERATION_93.md); **93l-2** notes/SLA later |
 | 24 | **It.76/77** Translation providers | 🔵 | ⏳ | after It.73 (shipped) |
@@ -130,7 +130,7 @@ See [ITERATION_79](ITERATION_79.md).
 ### It.90 — Editor Workbench ✅
 
 - Shipped `beta.72` (90a/b) + `beta.73` (90c–e): toolbar builder, table/callout/mermaid/chart wizards, CodeMirror 6 opt-in.
-- Plugin editor tools via manifest → **It.89** (remainder).
+- Plugin editor tools via manifest → **It.89** (shipped 89a–e).
 
 See [ITERATION_90](ITERATION_90.md) · [RELEASE_2_1_0_BETA_73](RELEASE_2_1_0_BETA_73.md).
 

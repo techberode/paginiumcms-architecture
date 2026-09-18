@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.82`](#release-2-1-0-beta-82) | 2026-09-18 | It.89b–e plugin broker · SafeHookRunner · scanner · plugin CLI |
 | [`2.1.0-beta.81`](#release-2-1-0-beta-81) | 2026-09-17 | System update GET check · GitHub webhook 200 when auto-deploy off |
 | [`2.1.0-beta.80`](#release-2-1-0-beta-80) | 2026-09-17 | It.89a plugin capabilities · Docker git version (GitCli / FPM env) |
 | [`2.1.0-beta.79`](#release-2-1-0-beta-79) | 2026-09-17 | It.93m-5 mail polish · It.58f layout blocks · editor workspace · at-rest encryption hardening |
@@ -158,11 +159,35 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ### Planning
 
-- **It.89** — Plugin capability model. **89a shipped in beta.80.** Next: **89b** broker + runtime context. Spec: [ITERATION_89.md](docs/en/ITERATION_89.md).
 - **It.58f-h** — Visual block canvas (DnD stack). Spec: [ITERATION_58f.md](docs/en/ITERATION_58f.md).
 - **It.94** / **It.95** — Novice admin UX; Sandpack playground + private component registry. Specs: [ITERATION_94.md](docs/en/ITERATION_94.md), [ITERATION_95.md](docs/en/ITERATION_95.md).
 - **It.92** — Hybrid Engine SQLite **query index** (derived, optional) + Performance Guard advisor (suggest only, never auto-enable). Spec: [ITERATION_92.md](docs/en/ITERATION_92.md).
-- **Queue:** **It.89b–e** → It.92 → 70 → 76/77 → 75 → 48 (58g with 48). Isolated-origin widgets: **cancelled** as an iteration (archive only). Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+- **Queue:** **It.92** → 70 → 76/77 → 75 → 48 (58g with 48). Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+
+---
+
+<a id="release-2-1-0-beta-82"></a>
+
+## [2.1.0-beta.82] – 2026-09-18
+
+It.89 plugin capability **runtime** (89b–e): scoped broker for hooks, safe hook runner with auto-disable, extended untrusted PHP scan, and plugin CLI aligned with ZIP import.
+
+### Added
+
+- **It.89b** — `PluginCapabilityBroker`, `PluginRuntimeContext`, `PluginContentGateway`, `PluginMediaGateway`. Hook handlers receive scoped context; undeclared platform API → `PluginCapabilityDeniedException`. Spec: [ITERATION_89.md](docs/en/ITERATION_89.md). Notes: [RELEASE_2_1_0_BETA_82.md](docs/en/RELEASE_2_1_0_BETA_82.md).
+- **It.89c** — `SafeHookRunner` + `PluginHookListener`; per-plugin time/memory budget; auto-disable after fatal error or repeated failures; capability audit events; `PluginHealthStore` + Extensions admin notice.
+- **It.89d** — Scanner indirection patterns (`$fn()`, `$$`, `extract()`, dangerous `array_map`); import-time capability usage vs manifest; regression in `scripts/security-regression.sh`.
+- **It.89e** — `plugin:create` / `plugin:scan` console commands (`PluginScaffoldService`, `PluginScanService`).
+
+### Changed
+
+- **hello-widget** — reference plugin uses broker APIs for `content:read`.
+- **Extensions admin** — surfaces plugin health/disable state; security audit filter for capability usage.
+
+### Tests
+
+- PHPUnit: broker, auditor, usage scanner, SafeHookRunner, PluginManager runtime hooks, CLI commands, SecurityScanner regressions, import 422 cases.
+- Frontend: extensions API types; platform i18n for plugin notices.
 
 ---
 

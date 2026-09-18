@@ -4,10 +4,16 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\Hook;
 
+use PaginiumCMS\Core\Hook\Services\SafeHookRunner;
+
 class HookManager
 {
     /** @var array<int|string, mixed> */
     private array $hooks = [];
+
+    public function __construct(private SafeHookRunner $runner = new SafeHookRunner())
+    {
+    }
 
     public function add(string $hook, callable $callback, int $priority = 10): void
     {
@@ -24,7 +30,10 @@ class HookManager
         $callbacks = $this->getCallbacks($hook);
 
         foreach ($callbacks as $callback) {
-            $result[] = call_user_func_array($callback, $args);
+            if (!is_callable($callback)) {
+                continue;
+            }
+            $result[] = $this->runner->run($hook, $callback, $args);
         }
 
         return $result;
@@ -36,10 +45,16 @@ class HookManager
     public function runFirst(string $hook, array $args = []): mixed
     {
         $callbacks = $this->getCallbacks($hook);
-        if (!empty($callbacks)) {
-            return call_user_func_array($callbacks[0], $args);
+        if ($callbacks === []) {
+            return null;
         }
-        return null;
+
+        $callback = $callbacks[0];
+        if (!is_callable($callback)) {
+            return null;
+        }
+
+        return $this->runner->run($hook, $callback, $args);
     }
 
     public function has(string $hook): bool

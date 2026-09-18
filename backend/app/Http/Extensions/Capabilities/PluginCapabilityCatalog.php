@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Extensions\Capabilities;
 
 /**
- * Allow-list of plugin capability strings (It.89a). Runtime scoping is It.89b.
+ * Allow-list of plugin capability strings (It.89a). Runtime broker It.89b; SafeHookRunner It.89c; scanner It.89d; CLI It.89e.
  */
 final class PluginCapabilityCatalog
 {

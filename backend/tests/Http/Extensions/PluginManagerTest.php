@@ -11,16 +11,23 @@ use PaginiumCMS\Core\CodePolicy\Services\UntrustedPolicyScanner;
 use PaginiumCMS\Core\FlatFile\Services\FileReader;
 use PaginiumCMS\Core\FlatFile\Services\FileValidator;
 use PaginiumCMS\Core\FlatFile\Services\FileWriter;
+use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
 use PaginiumCMS\Core\Hook\HookCatalog;
 use PaginiumCMS\Core\Hook\HookManager;
 use PaginiumCMS\Core\Hook\Services\HookEmitter;
+use PaginiumCMS\Core\Hook\Services\SafeHookRunner;
 use PaginiumCMS\Core\Settings\Services\SettingsRepository;
 use PaginiumCMS\Core\Validation\Validator;
+use PaginiumCMS\Http\Extensions\Capabilities\PluginCapabilityBroker;
+use PaginiumCMS\Http\Extensions\Capabilities\PluginCapabilityUsageScanner;
 use PaginiumCMS\Http\Extensions\Services\ExtensionManifestValidator;
+use PaginiumCMS\Http\Extensions\Services\PluginHealthStore;
 use PaginiumCMS\Http\Extensions\Services\PluginImporter;
 use PaginiumCMS\Http\Extensions\Services\PluginManager;
 use PaginiumCMS\Http\Extensions\Services\PluginPolicyScanner;
 use PaginiumCMS\Http\Extensions\Services\PluginRegistry;
+use PaginiumCMS\Http\Extensions\Services\PluginScanService;
+use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
 use PaginiumCMS\Support\JsonHelper;
 use PHPUnit\Framework\TestCase;
 
@@ -62,22 +69,30 @@ final class PluginManagerTest extends TestCase
         );
         $importer = new PluginImporter(
             $registry,
-            new PluginPolicyScanner(new UntrustedPolicyScanner($policy)),
-            new ExtensionManifestValidator(),
+            new PluginScanService(
+                new PluginPolicyScanner(new UntrustedPolicyScanner($policy)),
+                new ExtensionManifestValidator(),
+                new PluginCapabilityUsageScanner()
+            ),
             $this->extensionsRoot,
             $this->routesRoot,
             $this->frontendRoot,
             $this->baseDir
         );
 
-        $this->hookManager = new HookManager();
+        $health = new PluginHealthStore($reader, $writer, 'data/plugins/health.json');
+        $this->hookManager = new HookManager(new SafeHookRunner($registry, $health));
         $hookEmitter = new HookEmitter($this->hookManager);
+        $content = $this->createStub(ContentRepositoryInterface::class);
+        $media = $this->createStub(MediaRepositoryInterface::class);
         $this->manager = new PluginManager(
             $registry,
             $importer,
             $this->hookManager,
             $hookEmitter,
             new ExtensionManifestValidator(),
+            new PluginCapabilityBroker($content, $media),
+            $health,
             $this->extensionsRoot,
             $this->routesRoot,
             $this->frontendRoot
@@ -105,6 +120,7 @@ final class PluginManagerTest extends TestCase
         $this->assertSame('Hello Widget', $items[0]['name']);
         $this->assertFalse($items[0]['enabled']);
         $this->assertTrue($items[0]['present']);
+        $this->assertFalse($items[0]['autoDisabled']);
     }
 
     public function testEnableRegistersHooksOnBoot(): void
@@ -138,6 +154,102 @@ PHP);
 
         $this->assertTrue($this->hookManager->has(HookCatalog::EXTENSION_BOOT));
         $this->assertSame(['pong'], $this->hookManager->run(HookCatalog::EXTENSION_BOOT, [['id' => 'ping-demo']]));
+    }
+
+    public function testEnableInjectsRuntimeContextIntoTwoArgumentHandlers(): void
+    {
+        $this->writeManifest('runtime-demo', [
+            'id' => 'runtime-demo',
+            'name' => 'Runtime Demo',
+            'version' => '1.0.0',
+            'capabilities' => ['content:read'],
+            'hooks' => [
+                HookCatalog::EXTENSION_BOOT => 'PaginiumCMS\\Http\\Extensions\\RuntimeDemo\\Hooks::boot',
+            ],
+        ]);
+        $this->writePhp('runtime-demo/src/Hooks.php', <<<'PHP'
+<?php
+
+declare(strict_types=1);
+
+namespace PaginiumCMS\Http\Extensions\RuntimeDemo;
+
+use PaginiumCMS\Http\Extensions\Capabilities\PluginRuntimeContext;
+
+final class Hooks
+{
+    public static ?string $pluginId = null;
+
+    public static function boot(array $context, PluginRuntimeContext $runtime): string
+    {
+        self::$pluginId = $runtime->pluginId();
+
+        return $runtime->can('content:read') ? 'scoped' : 'missing';
+    }
+}
+PHP);
+
+        $this->manager->enable('runtime-demo');
+
+        $this->assertSame(['scoped'], $this->hookManager->run(HookCatalog::EXTENSION_BOOT, [['id' => 'runtime-demo']]));
+    }
+
+    public function testThrowingPluginHookDoesNotBreakSiblingListener(): void
+    {
+        $this->writeManifest('boom-demo', [
+            'id' => 'boom-demo',
+            'name' => 'Boom',
+            'version' => '1.0.0',
+            'hooks' => [
+                HookCatalog::CONTENT_AFTER_SAVE => 'PaginiumCMS\\Http\\Extensions\\BoomDemo\\Hooks::fail',
+            ],
+        ]);
+        $this->writePhp('boom-demo/src/Hooks.php', <<<'PHP'
+<?php
+
+declare(strict_types=1);
+
+namespace PaginiumCMS\Http\Extensions\BoomDemo;
+
+final class Hooks
+{
+    public static function fail(array $context): string
+    {
+        throw new \RuntimeException('boom');
+    }
+}
+PHP);
+
+        $this->writeManifest('ok-demo', [
+            'id' => 'ok-demo',
+            'name' => 'Ok',
+            'version' => '1.0.0',
+            'hooks' => [
+                HookCatalog::CONTENT_AFTER_SAVE => 'PaginiumCMS\\Http\\Extensions\\OkDemo\\Hooks::ok',
+            ],
+        ]);
+        $this->writePhp('ok-demo/src/Hooks.php', <<<'PHP'
+<?php
+
+declare(strict_types=1);
+
+namespace PaginiumCMS\Http\Extensions\OkDemo;
+
+final class Hooks
+{
+    public static function ok(array $context): string
+    {
+        return 'ok';
+    }
+}
+PHP);
+
+        $this->manager->enable('boom-demo');
+        $this->manager->enable('ok-demo');
+
+        $results = $this->hookManager->run(HookCatalog::CONTENT_AFTER_SAVE, [['slug' => 'x']]);
+        $this->assertContains(null, $results);
+        $this->assertContains('ok', $results);
     }
 
     public function testDisableTurnsOffEnabledFlag(): void

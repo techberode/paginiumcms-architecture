@@ -12,6 +12,9 @@ const TYPE_KEYS = [
   'permission_denied',
   'role_denied',
   'settings_change',
+  'plugin_capability',
+  'plugin_hook_failed',
+  'plugin_auto_disabled',
 ] as const;
 
 export const SecurityAuditManager: React.FC = () => {
