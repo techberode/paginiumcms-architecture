@@ -1,6 +1,7 @@
 # Iteration 92 — Hybrid Engine query index (SQLite derived) + Performance Guard advisor
 
-> **Status:** ⏳ planned  
+> **Status:** ✅ **complete** (September 2026) — slices **92a–92f** in tree; gate green  
+> **Pivot explainer (operators + devs):** [architecture/QUERY_INDEX.md](architecture/QUERY_INDEX.md)  
 > **Priority:** 🟡 P1 for large catalogs; Classic JSON index remains the default  
 > **Wave:** Hybrid Engine (extends [It.68](ITERATION_68.md) storage, [It.19](ITERATION_19.md) `content.json`, [It.71](ITERATION_71.md) Performance Guard)  
 > **Depends on:** It.68 `StorageInterface`, It.71 Performance Guard samples/remediation, existing `ContentIndexService`  
@@ -75,8 +76,11 @@ engine:
 | `queryIndexAdviseEnabled` | `true` | Independent of Guard `enabled`; advisor no-ops if Guard sampling is off (no samples). |
 | `queryIndexAdviseMinEntries` | `2000` | Do not nag small sites. |
 | `queryIndexAdviseListP95Ms` | `0` | `0` means “use Guard warning budget”. |
+| `queryIndexRuntimeWatchEnabled` | `true` | Per-request watch when driver is `sqlite`; throttled `query_index.sqlite_failure` alerts |
+| `queryIndexAutoFallbackOnFailure` | `false` | If `true`, persist `queryIndexDriver=json` after failure (plus alert) |
+| `queryIndexFailureAlertCooldownSeconds` | `900` | Dedupe window for SQLite failure incidents |
 
-**Never auto-flip `queryIndexDriver` to `sqlite`.** Not in `automatic` remediation, not in health repair, not on deploy.
+**Never auto-flip `queryIndexDriver` to `sqlite`.** Optional auto-flip **to `json`** only when `queryIndexAutoFallbackOnFailure` is enabled (operator choice). Not in `automatic` remediation, not in health repair, not on deploy.
 
 Disable path: set driver back to `json`; SQLite file may remain and be deleted by rebuild/purge. CMS must boot if the file is missing.
 
@@ -184,12 +188,12 @@ Advisor copy must not claim a universal SLA. Thresholds are starting points for 
 
 | ID | Slice | Priority | Status | Summary |
 |----|-------|----------|--------|---------|
-| **92a** | `QueryIndexInterface` + JSON adapter | 🟡 P1 | ⏳ | Same results as today; no SQLite required |
-| **92b** | SQLite driver + rebuild | 🟡 P1 | ⏳ | WAL, FTS5, path-safe file, prepared statements |
-| **92c** | Settings switch + dual-write + fallback | 🟡 P1 | ⏳ | SSOT write first; sqlite lag = incident |
-| **92d** | Guard advisor | 🟡 P1 | ⏳ | `query_index_sqlite` suggest only |
-| **92e** | Admin Engine UI + health/CLI | 🟡 P1 | ⏳ | Probe, rebuild, activate; Guard card |
-| **92f** | Tests + mandate docs | 🟡 P1 | ⏳ | PHPUnit, PHPStan L8, SK/EN |
+| **92a** | `QueryIndexInterface` + JSON adapter | 🟡 P1 | ✅ | `JsonQueryIndex`, `QueryIndexFactory`, DI |
+| **92b** | SQLite driver + rebuild | 🟡 P1 | ✅ | `SqliteQueryIndex`, `QueryIndexRebuilder`, schema/FTS5, path-safe file |
+| **92c** | Settings switch + dual-write + fallback | 🟡 P1 | ✅ | `FallbackQueryIndex`, `QueryIndexSync`, catalog reads via `QueryIndexInterface`, probe on sqlite activate |
+| **92d** | Guard advisor | 🟡 P1 | ✅ | `QueryIndexAdvisor`, breach hints, APM `advisor_hints`, dashboard deep-link to Engine |
+| **92e** | Admin Engine UI + health/CLI | 🟡 P1 | ✅ | `/api/admin/query-index/*`, CLI, `QueryIndexChecker`, Engine panel rebuild/activate |
+| **92f** | Tests + mandate docs + runtime watch | 🟡 P1 | ✅ | PHPUnit/PHPStan L8, SK/EN field help, `QueryIndexRuntimeWatch`, CHANGELOG on ship |
 
 **Recommended order:** `92a → 92b → 92c → 92d → 92e → 92f`.
 
@@ -212,12 +216,12 @@ Advisor copy must not claim a universal SLA. Thresholds are starting points for 
 
 ## Definition of Done
 
-- [ ] Classic default is JSON; small sites never need SQLite.
-- [ ] SQLite is documented as derived in NOSQL mandate, Hybrid Engine, STORAGE.
-- [ ] Performance Guard recommends enablement from load; never enables it.
-- [ ] Activate requires probe; disable and delete file leave CMS usable.
-- [ ] `./scripts/iteration-gate.sh` green.
-- [ ] SK/EN admin copy; CHANGELOG when shipped.
+- [x] Classic default is JSON; small sites never need SQLite.
+- [x] SQLite is documented as derived in NOSQL mandate, Hybrid Engine, STORAGE, [QUERY_INDEX.md](architecture/QUERY_INDEX.md).
+- [x] Performance Guard recommends enablement from load; never enables sqlite automatically.
+- [x] Activate requires probe; disable and delete file leave CMS usable; runtime watch alerts (optional auto-revert to JSON).
+- [x] `./scripts/iteration-gate.sh` green.
+- [x] SK/EN admin copy (labels, help, tooltips, Engine panel); CHANGELOG on ship.
 
 ---
 

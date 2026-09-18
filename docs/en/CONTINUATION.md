@@ -29,7 +29,7 @@ Historical freeze record: [STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) (supe
 | Area | Status |
 |------|--------|
 | Latest tag | ✅ `v2.1.0-beta.82` — It.89b–e plugin broker · SafeHookRunner · plugin CLI |
-| Unreleased (this tree) | — **It.92** SQLite · **It.48** static compile (58g) · **It.94** novice admin UX · **58f-h** block canvas · **It.95** Sandpack playground |
+| Unreleased (this tree) | — **It.92** ready to tag · **It.48** static compile (58g) · **It.94** novice admin UX · **58f-h** block canvas · **It.95** Sandpack playground |
 | It.25 setup wizard | ✅ basic + M1+ (`beta.62`–`beta.66`) |
 | It.83 theme runtime | ✅ shipped `beta.59` (`terminal-breach`, `clean-journal`) |
 | It.84 / It.86 | ✅ shipped |
@@ -43,18 +43,17 @@ Do **not** invent new iteration numbers. Finish specs that already exist.
 
 | Order | Item | Why this order |
 |------:|------|----------------|
-| 1 | **It.92** SQLite query index + Guard advisor | Derived catalog index; files stay SSOT — [ITERATION_92.md](ITERATION_92.md) |
-| 2 | **It.70** GitHub API publisher UI | Local Git already shipped |
-| 3 | **It.76 / 77** translation providers | After It.73 (shipped) |
-| 4 | **It.75** CMS-aware AI agent | Last: proposals only, human apply |
-| 5 | **It.48** static / Jamstack output | Align with It.70; includes **58g** compile/cache |
+| 1 | **It.70** GitHub API publisher UI | Local Git already shipped |
+| 2 | **It.76 / 77** translation providers | After It.73 (shipped) |
+| 3 | **It.75** CMS-aware AI agent | Last: proposals only, human apply |
+| 4 | **It.48** static / Jamstack output | Align with It.70; includes **58g** compile/cache |
 | — | **58f-h** + **It.94** (94a→94d) | **P1 product** — [ITERATION_94.md](ITERATION_94.md); canvas is **58f-h**, not 94 |
 
 Shipped ahead of this queue: **It.58f** visual page blocks (**58f-a–g**) — [ITERATION_58f.md](ITERATION_58f.md) in **`beta.79`**. **It.93** admin chrome + daily apps — [ITERATION_93.md](ITERATION_93.md) **`beta.77`–`79`** (93m-5 mail polish in **`beta.79`**).
 
 **Optional / later:** It.82d Origin host metrics. Isolated-origin widgets are **not** queued (cancelled iteration; archive only: [ISOLATED_ORIGIN.md](architecture/ISOLATED_ORIGIN.md)).
 
-**Active slice:** **It.92** SQLite query index + Guard advisor. **It.89** complete (**89a** `beta.80`, **89b–e** `beta.82`). Admin SPA paths stay first-segment (`/mail`, `/kanban`; legacy `/platform/*` redirects).
+**It.92** ✅ complete in tree — optional SQLite derived query index, Guard advisor, runtime watch/alerts, Engine admin UI, CLI, health. Ship as next beta tag when ready. Admin deep-links: `/settings?group=engine` (legacy `/settings/engine` redirects). Admin SPA paths stay first-segment (`/mail`, `/kanban`; legacy `/platform/*` redirects).
 
 ---
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Core\Feeds\Services;
 
 use PaginiumCMS\Core\FlatFile\Models\ContentIndexEntry;
-use PaginiumCMS\Core\FlatFile\Services\ContentIndexService;
+use PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexInterface;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Http\Support\PaginationQuery;
 
@@ -15,7 +15,7 @@ use PaginiumCMS\Http\Support\PaginationQuery;
 final class FeedGenerator
 {
     public function __construct(
-        private ContentIndexService $index,
+        private QueryIndexInterface $queryIndex,
         private SettingsRepositoryInterface $settings
     ) {
     }
@@ -42,7 +42,7 @@ final class FeedGenerator
         $entries = [];
         if (($feeds['includeArticles'] ?? true) !== false) {
             $query = new PaginationQuery(1, $limit, '', '-updatedAt', ['status' => 'published']);
-            $result = $this->index->query('article', $query);
+            $result = $this->queryIndex->query('article', $query);
             $entries = array_merge($entries, $result['entries']);
         }
 

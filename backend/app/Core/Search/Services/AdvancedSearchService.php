@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Core\Search\Services;
 
 use PaginiumCMS\Core\FlatFile\Models\ContentIndexEntry;
-use PaginiumCMS\Core\FlatFile\Services\ContentIndexService;
+use PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexInterface;
 use PaginiumCMS\Core\Search\AdminRouteCatalog;
 use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
 use PaginiumCMS\Modules\Security\Models\User;
@@ -19,7 +19,7 @@ final class AdvancedSearchService
     private const MAX_LIMIT_PER_TYPE = 20;
 
     public function __construct(
-        private ContentIndexService $index,
+        private QueryIndexInterface $queryIndex,
         private MediaRepositoryInterface $media
     ) {
     }
@@ -107,7 +107,7 @@ final class AdvancedSearchService
         $typeCounts = [];
 
         foreach ($contentTypes as $contentType) {
-            $entries = $this->index->search($query, $contentType, $limitPerType, $publishedOnly);
+            $entries = $this->queryIndex->search($query, $contentType, $limitPerType, $publishedOnly);
             foreach ($entries as $entry) {
                 $typeCounts[$contentType] = ($typeCounts[$contentType] ?? 0) + 1;
                 if ($typeCounts[$contentType] > $limitPerType) {

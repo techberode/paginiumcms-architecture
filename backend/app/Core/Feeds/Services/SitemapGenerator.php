@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Core\Feeds\Services;
 
 use PaginiumCMS\Core\FlatFile\Models\ContentIndexEntry;
-use PaginiumCMS\Core\FlatFile\Services\ContentIndexService;
+use PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexInterface;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Http\Support\PaginationQuery;
 
@@ -15,7 +15,7 @@ use PaginiumCMS\Http\Support\PaginationQuery;
 final class SitemapGenerator
 {
     public function __construct(
-        private ContentIndexService $index,
+        private QueryIndexInterface $queryIndex,
         private SettingsRepositoryInterface $settings
     ) {
     }
@@ -37,7 +37,7 @@ final class SitemapGenerator
         $limit = min(500, max(1, (int) ($feeds['itemsLimit'] ?? 20)) * 10);
 
         if (($feeds['includePages'] ?? true) !== false) {
-            $pages = $this->index->query(
+            $pages = $this->queryIndex->query(
                 'page',
                 new PaginationQuery(1, $limit, '', '-updatedAt', ['status' => 'published'])
             );
@@ -45,7 +45,7 @@ final class SitemapGenerator
         }
 
         if (($feeds['includeArticles'] ?? true) !== false) {
-            $articles = $this->index->query(
+            $articles = $this->queryIndex->query(
                 'article',
                 new PaginationQuery(1, $limit, '', '-updatedAt', ['status' => 'published'])
             );

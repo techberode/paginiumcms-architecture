@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { useI18n } from '../../context/I18nContext';
 import { useToast } from '../../hooks/useToast';
 import { clearApmSamples, type ApmOverview } from '../../api/metrics';
+import { settingsGroupPath } from '../../utils/adminDeepLinks';
 
 interface Props {
   overview: ApmOverview | null;
@@ -46,7 +47,7 @@ export const PerformanceGuardPanel: React.FC<Props> = ({ overview, loading, onRe
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
             {t('dashboard.panels.apm.title')}
           </h2>
-          <Link to="/settings" className="text-sm text-indigo-600 hover:underline">
+          <Link to={settingsGroupPath('engine')} className="text-sm text-indigo-600 hover:underline">
             {t('dashboard.panels.apm.settingsLink')}
           </Link>
         </div>
@@ -59,6 +60,18 @@ export const PerformanceGuardPanel: React.FC<Props> = ({ overview, loading, onRe
           <p className="text-sm text-gray-600 dark:text-gray-300">{t('dashboard.panels.apm.disabled')}</p>
         ) : (
           <>
+            {(overview.advisor_hints?.length ?? 0) > 0 ? (
+              <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/40 px-3 py-2 text-sm text-amber-900 dark:text-amber-100">
+                <p className="font-medium">{t('dashboard.panels.apm.queryIndexHintTitle')}</p>
+                <p className="mt-1 text-xs opacity-90">{overview.advisor_hints?.[0]?.message}</p>
+                <Link
+                  to={settingsGroupPath('engine')}
+                  className="mt-2 inline-block text-xs font-medium text-indigo-700 dark:text-indigo-300 hover:underline"
+                >
+                  {t('dashboard.panels.apm.queryIndexHintLink')}
+                </Link>
+              </div>
+            ) : null}
             <dl className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center mb-4">
               <div>
                 <dt className="text-xs text-gray-500">{t('dashboard.panels.apm.p95')}</dt>

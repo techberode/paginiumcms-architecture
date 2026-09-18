@@ -20,7 +20,8 @@ return [
         ->constructor(__DIR__ . '/../../../storage'),
     CacheChecker::class => create(CacheChecker::class)
         ->constructor(get(CacheManager::class)),
-    SecurityChecker::class => create(SecurityChecker::class),
+    SecurityChecker::class => create(SecurityChecker::class)
+        ->constructor(get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class)),
 
     // Health Manager
     HealthCheckManager::class => create(HealthCheckManager::class)

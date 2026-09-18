@@ -143,7 +143,7 @@ Tests use an isolated `settings.testing.json`. Production secrets must not be re
 
 ## 8. Index
 
-`data/index/content.json` is a derived projection for listings, filters, and search metadata. Optional **It.92** `data/index/content.sqlite` is the same class of artifact (queryable, disposable). Required contract:
+`data/index/content.json` is a derived projection for listings, filters, and search metadata. Optional **It.92** `data/index/content.sqlite` is the same class of artifact (queryable, disposable). See [QUERY_INDEX.md](./QUERY_INDEX.md) for operator outcomes and SSOT boundaries. Required contract:
 
 - it can be deleted and fully recreated from source documents,
 - it has a schema/version marker,

@@ -28,6 +28,16 @@ export interface ApmSummary {
   by_route: Array<{ route: string; count: number; p95_ms: number | null }>;
 }
 
+export interface ApmAdvisorHint {
+  code: string;
+  message: string;
+  route?: string;
+  route_p95_ms?: number;
+  threshold_ms?: number;
+  catalog_entries?: number;
+  settings_group?: string;
+}
+
 export interface ApmBreach {
   id: string;
   route: string;
@@ -35,12 +45,14 @@ export interface ApmBreach {
   duration_ms: number;
   opened_at: string;
   recommendations?: string[];
+  recommendation_hints?: ApmAdvisorHint[];
 }
 
 export interface ApmOverview {
   config: ApmConfig;
   summary: ApmSummary;
   recent_breaches: ApmBreach[];
+  advisor_hints?: ApmAdvisorHint[];
   host_metrics_note: string;
 }
 

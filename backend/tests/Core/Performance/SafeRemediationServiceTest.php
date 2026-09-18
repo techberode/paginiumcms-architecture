@@ -15,7 +15,11 @@ use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
 use PaginiumCMS\Core\Logging\Contracts\LoggerInterface;
 use PaginiumCMS\Core\Performance\PerformanceBreachStore;
 use PaginiumCMS\Core\Performance\PerformanceGuardSettings;
+use PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexAdvisor;
+use PaginiumCMS\Core\Performance\PerformanceAggregator;
+use PaginiumCMS\Core\Performance\PerformanceSampleStore;
 use PaginiumCMS\Core\Performance\SafeRemediationService;
+use PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexInterface;
 use PaginiumCMS\Core\Security\SecurityLogger;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PHPUnit\Framework\TestCase;
@@ -82,6 +86,16 @@ final class SafeRemediationServiceTest extends TestCase
         $writer = $this->createMock(FileWriterInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
+        $queryIndex = $this->createMock(QueryIndexInterface::class);
+        $queryIndex->method('entryCount')->willReturn(0);
+        $advisor = new QueryIndexAdvisor(
+            $settingsRepo,
+            $settings,
+            new PerformanceSampleStore($writer, sys_get_temp_dir() . '/apm-empty-' . uniqid('', true) . '.json'),
+            new PerformanceAggregator(new PerformanceSampleStore($writer, sys_get_temp_dir() . '/apm-empty2-' . uniqid('', true) . '.json')),
+            $queryIndex
+        );
+
         return new SafeRemediationService(
             $settings,
             $cacheAdmin,
@@ -89,7 +103,8 @@ final class SafeRemediationServiceTest extends TestCase
             new CacheDriverFactory($cachePath),
             $settingsRepo,
             new SecurityLogger($logger),
-            new PerformanceBreachStore($reader, $writer)
+            new PerformanceBreachStore($reader, $writer),
+            $advisor
         );
     }
 

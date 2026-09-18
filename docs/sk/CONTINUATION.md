@@ -17,16 +17,15 @@ Stabilizačná fáza je **ukončená**. Pokračujeme v existujúcich špeckách;
 | Oblasť | Stav |
 |--------|------|
 | Najnovší tag | ✅ `v2.1.0-beta.82` — It.89b–e plugin broker · CLI |
-| Rozpracované | **It.92** · **58f-h** · **It.94** · **It.95** |
+| Rozpracované | **58f-h** · **It.94** · **It.95** (It.92 hotové v strome, tag `beta.83`) |
 
 ## Fronta
 
-1. **It.92** SQLite query index (odvodený) + poradca Performance Guard  
-2. **It.70** · **It.76/77** · **It.75** · **It.48** (58g compile s It.48)
+1. **It.70** · **It.76/77** · **It.75** · **It.48** (58g compile s It.48)
 
 Hotové pred touto frontou: **It.58f** vizuálne bloky (**58f-a–g**) — [ITERATION_58f.md](ITERATION_58f.md). **It.93** ✅ `beta.77`–`78` (93l Kanban + 93m domain IMAP).
 
-**Aktívny slice:** **It.92** (SQLite index). **It.89** hotové (`beta.80`–`82`). Poznámka k release: [RELEASE_2_1_0_BETA_82.md](RELEASE_2_1_0_BETA_82.md).
+**It.92** ✅ SQLite odvodený query index, runtime watch, Engine UI — CHANGELOG `2.1.0-beta.83`. Deep-link: `/settings?group=engine` (alias `/settings/engine`). **It.89** hotové (`beta.80`–`82`).
 
 ## Dokumentácia
 
@@ -40,5 +39,6 @@ Hotové pred touto frontou: **It.58f** vizuálne bloky (**58f-a–g**) — [ITER
 | [ITERATION_94.md](ITERATION_94.md) | Admin UX pre neskúsených (94a–94d) |
 | [ITERATION_95.md](ITERATION_95.md) | Sandpack playground + import komponentov z Git |
 | [ISSUES.md](../ISSUES.md#iss-170) | Audit 2026-09-17 — ISS-170–172 (APP_KEY, mail pixely, `/api/test`) |
-| [ITERATION_92.md](ITERATION_92.md) | SQLite query index (plán) |
+| [ITERATION_92.md](ITERATION_92.md) | SQLite query index |
+| [architecture/QUERY_INDEX.md](architecture/QUERY_INDEX.md) | Prečo SQLite / kam to vedie (It.92) |
 | [ITERATION_90.md](ITERATION_90.md) | Editor Workbench (hotové `beta.72`–`73`) |

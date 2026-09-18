@@ -18,6 +18,8 @@ use PaginiumCMS\Core\Performance\PerformanceGuardSettings;
 use PaginiumCMS\Core\Performance\PerformanceIncidentService;
 use PaginiumCMS\Core\Performance\PerformanceRouteLabelResolver;
 use PaginiumCMS\Core\Performance\PerformanceSampleStore;
+use PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexAdvisor;
+use PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexInterface;
 use PaginiumCMS\Core\Performance\SafeRemediationService;
 use PaginiumCMS\Core\Security\SecurityLogger;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
@@ -50,6 +52,14 @@ return [
         ),
     PerformanceAggregator::class => create(PerformanceAggregator::class)
         ->constructor(get(PerformanceSampleStore::class)),
+    QueryIndexAdvisor::class => create(QueryIndexAdvisor::class)
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(PerformanceGuardSettings::class),
+            get(PerformanceSampleStore::class),
+            get(PerformanceAggregator::class),
+            get(QueryIndexInterface::class)
+        ),
     SafeRemediationService::class => create(SafeRemediationService::class)
         ->constructor(
             get(PerformanceGuardSettings::class),
@@ -58,7 +68,8 @@ return [
             get(CacheDriverFactory::class),
             get(SettingsRepositoryInterface::class),
             get(SecurityLogger::class),
-            get(PerformanceBreachStore::class)
+            get(PerformanceBreachStore::class),
+            get(QueryIndexAdvisor::class)
         ),
     PerformanceIncidentService::class => create(PerformanceIncidentService::class)
         ->constructor(
@@ -90,6 +101,7 @@ return [
             get(PerformanceAggregator::class),
             get(PerformanceBreachStore::class),
             get(PerformanceSampleStore::class),
+            get(QueryIndexAdvisor::class),
             get(JsonResponder::class)
         ),
 ];

@@ -78,10 +78,12 @@ final class ContentDuplicationServiceTest extends TestCase
         $staleness = new ContentStalenessService($settings);
         $index = new ContentIndexService($reader, $normalizer, $staleness, 'data/index/content.json');
 
+        $queryIndex = new \PaginiumCMS\Core\HybridEngine\QueryIndex\JsonQueryIndex($index);
         $this->repository = new ContentRepository(
             $reader,
             $writer,
             $index,
+            $queryIndex,
             $markdownStorage,
             $jsonStorage,
             $settings,

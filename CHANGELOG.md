@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.83`](#release-2-1-0-beta-83) | 2026-09-18 | It.92 SQLite derived query index · Guard advisor · runtime watch |
 | [`2.1.0-beta.82`](#release-2-1-0-beta-82) | 2026-09-18 | It.89b–e plugin broker · SafeHookRunner · scanner · plugin CLI |
 | [`2.1.0-beta.81`](#release-2-1-0-beta-81) | 2026-09-17 | System update GET check · GitHub webhook 200 when auto-deploy off |
 | [`2.1.0-beta.80`](#release-2-1-0-beta-80) | 2026-09-17 | It.89a plugin capabilities · Docker git version (GitCli / FPM env) |
@@ -157,12 +158,35 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+### Added
+
+- **It.92a (foundation)** — `QueryIndexInterface`, `JsonQueryIndex`, `QueryIndexFactory` (JSON default); Engine settings keys for future sqlite driver (validation still `json`-only). Architecture: [QUERY_INDEX.md](docs/en/architecture/QUERY_INDEX.md). Spec: [ITERATION_92.md](docs/en/ITERATION_92.md).
+
 ### Planning
 
 - **It.58f-h** — Visual block canvas (DnD stack). Spec: [ITERATION_58f.md](docs/en/ITERATION_58f.md).
 - **It.94** / **It.95** — Novice admin UX; Sandpack playground + private component registry. Specs: [ITERATION_94.md](docs/en/ITERATION_94.md), [ITERATION_95.md](docs/en/ITERATION_95.md).
 - **It.92** — Hybrid Engine SQLite **query index** (derived, optional) + Performance Guard advisor (suggest only, never auto-enable). Spec: [ITERATION_92.md](docs/en/ITERATION_92.md).
 - **Queue:** **It.92** → 70 → 76/77 → 75 → 48 (58g with 48). Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+
+---
+
+<a id="release-2-1-0-beta-83"></a>
+
+## [2.1.0-beta.83] – 2026-09-18
+
+It.92 **Hybrid Engine query index**: optional derived SQLite catalog (`content.sqlite`) with JSON SSOT unchanged; Performance Guard advisor; runtime failure watch with throttled incidents.
+
+### Added
+
+- **Query index core** — `QueryIndexInterface`, `JsonQueryIndex`, `SqliteQueryIndex`, `FallbackQueryIndex`, `QueryIndexFactory`, dual-write `QueryIndexSync`, rebuild CLI (`query-index:rebuild`, `query-index:status`).
+- **Admin** — Engine panel actions (rebuild, activate json/sqlite), `/api/admin/query-index/*`, health `QueryIndexChecker`, SK/EN settings labels/help/tooltips.
+- **Performance Guard** — `QueryIndexAdvisor`, dashboard hint with deep-link to Engine settings (`/settings?group=engine`; legacy `/settings/engine` redirects).
+- **Runtime watch** — `QueryIndexRuntimeWatch`, `QueryIndexFailureHandler`, middleware; settings `queryIndexRuntimeWatchEnabled`, optional `queryIndexAutoFallbackOnFailure`.
+
+### Docs
+
+- [ITERATION_92.md](docs/en/ITERATION_92.md), [QUERY_INDEX.md](docs/en/architecture/QUERY_INDEX.md); mandate cross-links in HYBRID_ENGINE / STORAGE / NOSQL_MANDATE.
 
 ---
 

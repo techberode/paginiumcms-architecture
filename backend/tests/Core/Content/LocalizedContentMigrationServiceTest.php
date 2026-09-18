@@ -76,10 +76,12 @@ final class LocalizedContentMigrationServiceTest extends TestCase
         $staleness = new ContentStalenessService($settings);
         $index = new ContentIndexService($reader, $normalizer, $staleness, 'data/index/content.json');
 
+        $queryIndex = new \PaginiumCMS\Core\HybridEngine\QueryIndex\JsonQueryIndex($index);
         $this->repository = new ContentRepository(
             $reader,
             $writer,
             $index,
+            $queryIndex,
             $markdownStorage,
             $jsonStorage,
             $settings,
@@ -190,10 +192,12 @@ final class LocalizedContentMigrationServiceTest extends TestCase
         $normalizer = new LocalizedContentNormalizer($settings);
         $staleness = new ContentStalenessService($settings);
         $index = new ContentIndexService($reader, $normalizer, $staleness, 'data/index/content.json');
+        $queryIndex = new \PaginiumCMS\Core\HybridEngine\QueryIndex\JsonQueryIndex($index);
         $repository = new ContentRepository(
             $reader,
             $writer,
             $index,
+            $queryIndex,
             new MarkdownContentStorage(new MarkdownParser(new FrontMatterParser(), new ContentBodyRenderer(
                 new MarkdownContentParser(),
                 new TiptapHtmlRenderer(),

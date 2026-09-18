@@ -7,6 +7,7 @@ namespace PaginiumCMS\Http\Controllers\Content;
 use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
 use PaginiumCMS\Core\FlatFile\Models\ContentIndexEntry;
 use PaginiumCMS\Core\FlatFile\Services\ContentIndexService;
+use PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexInterface;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Http\Support\PaginationMeta;
 use PaginiumCMS\Modules\Security\Models\User;
@@ -24,6 +25,7 @@ final class EditorialCalendarController
 
     public function __construct(
         private ContentIndexService $index,
+        private QueryIndexInterface $queryIndex,
         private ContentRepositoryInterface $repository,
         private ContentPathAclGuard $pathAcl,
         private JsonResponder $json,
@@ -68,7 +70,7 @@ final class EditorialCalendarController
         }
 
         $this->index->ensureBuilt($this->repository);
-        $entries = $this->index->queryEditorialCalendar($fromDate, $toDate, $typeFilter, $filters);
+        $entries = $this->queryIndex->queryEditorialCalendar($fromDate, $toDate, $typeFilter, $filters);
         $user = $this->resolveUser($request);
 
         $items = [];

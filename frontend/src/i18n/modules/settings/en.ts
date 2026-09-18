@@ -145,7 +145,19 @@ export const settingsEn: MessageTree = {
     "performanceGuardTitle": "Performance Guard (APM)",
     "performanceGuardIntro": "In-request latency and I/O sampling. Disabled by default — tune budgets for your hardware. Does not replace host metrics.",
     "performanceGuardOverhead": "Overhead grows with sample rate; ring buffer retains the latest 500 route templates without content payloads.",
-    "docsLink": "Hybrid Engine architecture documentation"
+    "docsLink": "Hybrid Engine architecture documentation",
+    "queryIndexTitle": "Content query index (derived)",
+    "queryIndexIntro": "JSON catalog is always written. SQLite is optional for faster lists/search — flat files remain SSOT.",
+    "queryIndexDriver": "Query index driver",
+    "queryIndexCounts": "Catalog entries",
+    "queryIndexRebuild": "Rebuild SQLite from JSON",
+    "queryIndexUseSqlite": "Switch to SQLite",
+    "queryIndexUseJson": "Switch to JSON",
+    "queryIndexWorking": "Working…",
+    "queryIndexRebuildSuccess": "SQLite index rebuilt from JSON catalog.",
+    "queryIndexActivateSqliteSuccess": "SQLite query index driver enabled.",
+    "queryIndexActivateJsonSuccess": "Query index driver set to JSON.",
+    "queryIndexActionFailed": "Query index action failed. Check probe status and try rebuild first."
   },
   "appearance": {
     "defaultBadge": "Default",
@@ -1483,6 +1495,41 @@ export const settingsEn: MessageTree = {
         "label": "Default cache TTL (seconds)",
         "help": "Applies to new cache keys when no other TTL is specified (60–86400)."
       },
+      "queryIndexDriver": {
+        "label": "Content query index driver",
+        "help": "json = content.json (default). sqlite = optional derived index (It.92); switching to sqlite requires a successful probe and rebuild.",
+        "tooltip": "Flat-file JSON remains authoritative. SQLite speeds lists, filters, and search — the file can be deleted and rebuilt without losing content."
+      },
+      "queryIndexAdviseEnabled": {
+        "label": "Advise SQLite query index from Performance Guard",
+        "help": "When Guard sees heavy catalog latency, suggest the sqlite driver. Never auto-enables.",
+        "tooltip": "Independent of Guard enabled; without APM samples no recommendation is shown."
+      },
+      "queryIndexAdviseMinEntries": {
+        "label": "Query index advise: min catalog entries",
+        "help": "Do not recommend SQLite on tiny catalogs (100–1,000,000).",
+        "tooltip": "Entry count in content.json — below the threshold the Dashboard hint is hidden."
+      },
+      "queryIndexAdviseListP95Ms": {
+        "label": "Query index advise: list p95 threshold (ms)",
+        "help": "0 = use Performance Guard latency warning threshold.",
+        "tooltip": "Applies to article/page/catalog route groups in APM samples."
+      },
+      "queryIndexRuntimeWatchEnabled": {
+        "label": "Watch SQLite query index at runtime",
+        "help": "When the driver is sqlite, detect missing/corrupt index and send throttled monitoring alerts. Catalog still falls back to JSON.",
+        "tooltip": "Middleware + factory; requires monitoring.alertsEnabled and a configured incident channel."
+      },
+      "queryIndexAutoFallbackOnFailure": {
+        "label": "Auto-revert driver to JSON on SQLite failure",
+        "help": "Off = alert only (site keeps serving via JSON fallback). On = also persist queryIndexDriver=json after an incident.",
+        "tooltip": "Leave off unless you want settings repaired automatically without operator action."
+      },
+      "queryIndexFailureAlertCooldownSeconds": {
+        "label": "SQLite index alert cooldown (seconds)",
+        "help": "Minimum interval between duplicate query_index.sqlite_failure incident types (60–86400).",
+        "tooltip": "Prevents alert spam on every request when the file is missing."
+      },
       "httpValidatorsEnabled": {
         "label": "Enable HTTP ETag / Last-Modified",
         "help": "Conditional requests on safe public GET endpoints (e.g. /api/settings/public).",
@@ -1536,16 +1583,24 @@ export const settingsEn: MessageTree = {
         "tooltip": "Use 0.1–0.3 on busy sites. Media/static routes are already excluded from skewing p95."
       },
       "performanceGuardLatencyMsWarning": {
-        "label": "Latency warning (ms)"
+        "label": "Latency warning (ms)",
+        "help": "Threshold for APM warning breaches and for query-index advise when advise p95 is 0.",
+        "tooltip": "Tune for your hardware — a small VPS may need higher values than a dedicated server."
       },
       "performanceGuardLatencyMsCritical": {
-        "label": "Latency critical (ms)"
+        "label": "Latency critical (ms)",
+        "help": "Threshold for critical breaches and higher-priority incidents.",
+        "tooltip": "Should be higher than the warning threshold."
       },
       "performanceGuardBreachCount": {
-        "label": "Breaches before incident"
+        "label": "Breaches before incident",
+        "help": "How many breaches in the window before a monitoring incident is sent.",
+        "tooltip": "Works with the breach window to filter brief spikes."
       },
       "performanceGuardWindowMinutes": {
-        "label": "Breach window (minutes)"
+        "label": "Breach window (minutes)",
+        "help": "Rolling window for counting latency breaches.",
+        "tooltip": "Shorter window = more sensitive alerts."
       },
       "performanceGuardRemediationMode": {
         "label": "Remediation mode",
@@ -1763,6 +1818,10 @@ export const settingsEn: MessageTree = {
       "memory": "Memory",
       "file": "File",
       "redis": "Redis"
+    },
+    "queryIndexDriver": {
+      "json": "JSON (content.json)",
+      "sqlite": "SQLite (derived)"
     },
     "gitPublishStrategy": {
       "disabled": "Disabled",

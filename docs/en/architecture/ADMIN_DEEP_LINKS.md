@@ -68,6 +68,10 @@ Settings groups correspond to schema keys. Examples:
 | IMAP | `/settings?group=imap` |
 | connectors | `/settings?group=connectors` |
 | code policy | `/settings?group=codePolicy` |
+| Hybrid Engine / query index | `/settings?group=engine` |
+| Performance Guard (APM budgets) | `/settings?group=engine` (same group) |
+
+Legacy path `/settings/{group}` (e.g. `/settings/engine`) redirects to `/settings?group={group}` for bookmarks and dashboard chips.
 
 If a group does not exist or the actor lacks permission, the UI shows a safe fallback/403 and must not accidentally open the first secret group.
 

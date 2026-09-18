@@ -224,6 +224,46 @@ final class ApplicationLogReader
     }
 
     /**
+     * @param list<string> $ids
+     * @return list<array<string, mixed>>
+     */
+    public function findByIds(array $ids): array
+    {
+        $idSet = $this->normalizeIdSet($ids);
+        if ($idSet === []) {
+            return [];
+        }
+
+        $found = [];
+        foreach ($this->loadAll(null) as $entry) {
+            $id = (string) ($entry['id'] ?? '');
+            if ($id !== '' && isset($idSet[$id])) {
+                $found[] = $entry;
+            }
+        }
+
+        return $found;
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public function collectForExport(
+        ?string $severity,
+        ?string $source,
+        ?string $category,
+        ?string $search,
+        string $archivedFilter,
+        int $max
+    ): array {
+        return array_slice(
+            $this->filterEntries($severity, $source, $category, $search, $archivedFilter),
+            0,
+            max(1, $max)
+        );
+    }
+
+    /**
      * @return list<array<string, mixed>>
      */
     private function filterEntries(

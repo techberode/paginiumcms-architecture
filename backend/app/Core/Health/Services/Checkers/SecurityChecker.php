@@ -6,9 +6,18 @@ namespace PaginiumCMS\Core\Health\Services\Checkers;
 
 use PaginiumCMS\Core\Health\Contracts\HealthCheckInterface;
 use PaginiumCMS\Core\Health\Models\HealthStatus;
+use PaginiumCMS\Core\Health\Services\HealthRuntimeContext;
+use PaginiumCMS\Core\Security\ClientIpResolver;
+use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
+use PaginiumCMS\Http\Support\RequestHttpsDetector;
 
 class SecurityChecker implements HealthCheckInterface
 {
+    public function __construct(
+        private SettingsRepositoryInterface $settings
+    ) {
+    }
+
     public function getName(): string { return 'security'; }
     public function getDescription(): string { return 'Kontrola bezpečnostných nastavení'; }
     public function getGroup(): string { return 'security'; }
@@ -19,24 +28,42 @@ class SecurityChecker implements HealthCheckInterface
         $issues = [];
         $data = [];
 
+        $server = HealthRuntimeContext::serverParams();
+        $trustedProxies = ClientIpResolver::trustedProxiesFromEnv();
+        $appEnv = getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? 'development');
+        $data['app_env'] = $appEnv;
+        $data['trusted_proxies_configured'] = $trustedProxies !== [];
+
         // 1. Debug mód
-        $debug = getenv('APP_DEBUG') === 'true';
+        $debug = getenv('APP_DEBUG') === 'true' || filter_var(getenv('APP_DEBUG'), FILTER_VALIDATE_BOOLEAN);
         $data['debug_mode'] = $debug;
-        if ($debug) {
-            $issues[] = 'Debug mód je zapnutý (APP_DEBUG=true)';
+        if ($debug && $appEnv === 'production') {
+            $issues[] = 'Debug mód je zapnutý (APP_DEBUG=true) v produkcii';
         }
 
-        // 2. HTTPS
-        $https = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on';
-        $data['https'] = $https;
-        if (!$https) {
-            $issues[] = 'HTTPS nie je aktívny';
+        // 2. HTTPS — current inbound request (admin dashboard uses same TLS termination as operators)
+        $httpsProbe = RequestHttpsDetector::detect($server, $trustedProxies);
+        $data['https'] = $httpsProbe['secure'];
+        $data['https_source'] = $httpsProbe['source'];
+
+        $siteUrl = (string) ($this->settings->get('general.siteUrl') ?? '');
+        $data['site_url'] = $siteUrl;
+        $siteExpectsHttps = str_starts_with(strtolower(trim($siteUrl)), 'https://');
+
+        if (!$httpsProbe['secure'] && $appEnv === 'production') {
+            if ($siteExpectsHttps && $httpsProbe['source'] === 'none' && $trustedProxies !== []) {
+                $issues[] = 'HTTPS: siteUrl je https, ale request nemá HTTPS ani dôveryhodný X-Forwarded-Proto (nastavte proxy hlavičku a TRUSTED_PROXIES)';
+            } elseif ($siteExpectsHttps) {
+                $issues[] = 'HTTPS: siteUrl je https, ale aktuálny request nie je detegovaný ako TLS';
+            } else {
+                $issues[] = 'HTTPS nie je aktívny pre aktuálny request';
+            }
         }
 
         // 3. Session nastavenia
         $sessionSecure = ini_get('session.cookie_secure');
         $data['session_secure'] = $sessionSecure;
-        if ($sessionSecure != 1 && $https) {
+        if ($sessionSecure != 1 && $httpsProbe['secure']) {
             $issues[] = 'session.cookie_secure nie je zapnutý';
         }
 
@@ -46,26 +73,28 @@ class SecurityChecker implements HealthCheckInterface
             $issues[] = 'session.cookie_httponly nie je zapnutý';
         }
 
-        // 4. .env súbor
-        $envExists = file_exists(__DIR__ . '/../../../../.env');
+        // 4. .env súbor (backend/ or repo root — same as bootstrap/app.php)
+        $envExists = $this->envFileExists();
         $data['env_exists'] = $envExists;
-        if (!$envExists) {
-            $issues[] = '.env súbor neexistuje';
+        if (!$envExists && $appEnv !== 'testing') {
+            $issues[] = '.env súbor neexistuje (backend/ ani koreň projektu)';
         }
 
-        // 5. Zakázané funkcie
+        // 5. Zakázané funkcie — odporúčanie len v produkcii
         $disabledFunctions = ini_get('disable_functions');
         $disabledFunctions = is_string($disabledFunctions) ? $disabledFunctions : '';
         $data['disabled_functions'] = $disabledFunctions;
-        $dangerousFunctions = ['exec', 'shell_exec', 'system', 'passthru'];
-        $found = [];
-        foreach ($dangerousFunctions as $func) {
-            if (strpos($disabledFunctions, $func) === false) {
-                $found[] = $func;
+        if ($appEnv === 'production') {
+            $dangerousFunctions = ['exec', 'shell_exec', 'system', 'passthru'];
+            $found = [];
+            foreach ($dangerousFunctions as $func) {
+                if ($disabledFunctions === '' || strpos($disabledFunctions, $func) === false) {
+                    $found[] = $func;
+                }
             }
-        }
-        if (!empty($found)) {
-            $issues[] = 'Nebezpečné funkcie nie sú zakázané: ' . implode(', ', $found);
+            if ($found !== []) {
+                $issues[] = 'Nebezpečné funkcie nie sú zakázané v php.ini: ' . implode(', ', $found);
+            }
         }
 
         $status = empty($issues) ? HealthStatus::STATUS_PASS : HealthStatus::STATUS_WARN;
@@ -76,5 +105,18 @@ class SecurityChecker implements HealthCheckInterface
         $check->setDuration(microtime(true) - $start);
 
         return $check;
+    }
+
+    private function backendRoot(): string
+    {
+        return dirname(__DIR__, 5);
+    }
+
+    private function envFileExists(): bool
+    {
+        $backendRoot = $this->backendRoot();
+        $projectRoot = dirname($backendRoot);
+
+        return is_file($backendRoot . '/.env') || is_file($projectRoot . '/.env');
     }
 }

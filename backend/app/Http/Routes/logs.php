@@ -22,6 +22,8 @@ return function (App $app): void {
         $group->get('', [$controller, 'list']);
         $group->post('/purge', [$controller, 'purge']);
         $group->post('/bulk', [$controller, 'bulkAction']);
+        $group->get('/export', [$controller, 'export']);
+        $group->post('/export', [$controller, 'exportPost']);
         $group->post('/delete-all', [$controller, 'deleteAll']);
     })
         ->add(new RoleMiddleware($authz, ['ADMIN', 'SUPER_ADMIN']))

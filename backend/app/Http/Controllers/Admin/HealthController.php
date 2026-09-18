@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Controllers\Admin;
 
 use PaginiumCMS\Core\Health\Services\HealthCheckManager;
+use PaginiumCMS\Core\Health\Services\HealthRuntimeContext;
 use PaginiumCMS\Http\Support\JsonResponder;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -25,7 +26,12 @@ final class HealthController
         $params = $request->getQueryParams();
         $group = isset($params['group']) ? (string) $params['group'] : null;
 
-        $report = $this->healthManager->run($group);
+        HealthRuntimeContext::bindFromRequest($request);
+        try {
+            $report = $this->healthManager->run($group);
+        } finally {
+            HealthRuntimeContext::clear();
+        }
 
         return $this->json->success(
             $response,
@@ -37,7 +43,12 @@ final class HealthController
     public function check(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $name = (string) $request->getAttribute('name');
-        $result = $this->healthManager->runCheck($name);
+        HealthRuntimeContext::bindFromRequest($request);
+        try {
+            $result = $this->healthManager->runCheck($name);
+        } finally {
+            HealthRuntimeContext::clear();
+        }
 
         if ($result === null) {
             return $this->json->error($response, 'Health check not found: ' . $name, 404);

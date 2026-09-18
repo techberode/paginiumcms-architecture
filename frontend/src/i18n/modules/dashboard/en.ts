@@ -118,6 +118,8 @@ export const dashboardEn: MessageTree = {
       clearing: 'Clearing…',
       storageP95: 'Storage p95',
       sessionLockP95: 'Session lock p95',
+      queryIndexHintTitle: 'Catalog latency — consider the derived SQLite index',
+      queryIndexHintLink: 'Hybrid Engine → query index',
     },
     logs: {
       title: 'Logs (:hours h)',

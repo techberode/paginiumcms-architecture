@@ -10,6 +10,7 @@ use PaginiumCMS\Core\Feeds\Services\SitemapGenerator;
 use PaginiumCMS\Core\FlatFile\Models\Article;
 use PaginiumCMS\Core\FlatFile\Models\Page;
 use PaginiumCMS\Core\FlatFile\Services\ContentIndexService;
+use PaginiumCMS\Core\HybridEngine\QueryIndex\JsonQueryIndex;
 use PaginiumCMS\Core\FlatFile\Services\ContentStalenessService;
 use PaginiumCMS\Core\FlatFile\Services\FileReader;
 use PaginiumCMS\Core\FlatFile\Services\FileValidator;
@@ -76,7 +77,7 @@ final class FeedGeneratorTest extends TestCase
             ]],
         ]);
 
-        $generator = new FeedGenerator($this->index, $this->settings);
+        $generator = new FeedGenerator(new JsonQueryIndex($this->index), $this->settings);
         $xml = $generator->generate();
 
         $this->assertStringContainsString('<rss version="2.0">', $xml);
@@ -108,7 +109,7 @@ final class FeedGeneratorTest extends TestCase
             ['general', ['siteUrl' => 'https://example.com']],
         ]);
 
-        $generator = new SitemapGenerator($this->index, $this->settings);
+        $generator = new SitemapGenerator(new JsonQueryIndex($this->index), $this->settings);
         $xml = $generator->generate();
 
         $this->assertStringContainsString('<urlset', $xml);

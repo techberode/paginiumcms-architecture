@@ -118,6 +118,8 @@ export const dashboardSk: MessageTree = {
       clearing: 'Mažem…',
       storageP95: 'Storage p95',
       sessionLockP95: 'Session lock p95',
+      queryIndexHintTitle: 'Latencia katalógu — zvážte odvodený SQLite index',
+      queryIndexHintLink: 'Hybridný engine → dopytový index',
     },
     logs: {
       title: 'Logy (:hours h)',

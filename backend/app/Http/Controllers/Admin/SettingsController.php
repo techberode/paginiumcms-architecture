@@ -14,6 +14,8 @@ use PaginiumCMS\Core\Security\SecurityLogger;
 use PaginiumCMS\Core\Layout\PageLayoutCatalog;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\Storage\Contracts\StorageInterface;
+use PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexCapabilityProbe;
+use PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexInterface;
 use PaginiumCMS\Core\Storage\Services\EngineCapabilityProbe;
 use PaginiumCMS\Core\Settings\SettingsSchema;
 use PaginiumCMS\Core\Editor\Services\EditorComponentRegistry;
@@ -72,6 +74,7 @@ final class SettingsController
         private MediaStorageFactory $mediaStorageFactory,
         private MediaStorageCapabilityProbe $mediaStorageProbe,
         private ThemeRuntimeService $themeRuntime,
+        private QueryIndexCapabilityProbe $queryIndexProbe,
         private ?ThemeScriptIntegrityService $themeScripts = null,
     ) {
     }
@@ -189,6 +192,16 @@ final class SettingsController
                 $payload['socialLinksJson'] = SocialLinksNormalizer::encode($normalized);
             } catch (InvalidArgumentException $e) {
                 return $this->json->error($response, $e->getMessage(), 422);
+            }
+        }
+
+        if ($group === 'engine' && ($payload['queryIndexDriver'] ?? null) === QueryIndexInterface::DRIVER_SQLITE) {
+            if (!$this->queryIndexProbe->verifyActivation()) {
+                return $this->json->error(
+                    $response,
+                    'SQLite query index is not ready. Ensure pdo_sqlite, a writable index directory, and a successful rebuild before enabling.',
+                    422
+                );
             }
         }
 
@@ -750,6 +763,18 @@ final class SettingsController
      * @param array<string, mixed> $engineValues
      * @return array<string, mixed>
      */
+    private function buildQueryIndexProbeMeta(array $engineValues): array
+    {
+        $probe = $this->queryIndexProbe->probe($engineValues);
+        $probe['activation_ready'] = $this->queryIndexProbe->runtimeReady() && $this->queryIndexProbe->parityWithJson();
+
+        return $probe;
+    }
+
+    /**
+     * @param array<string, mixed> $engineValues
+     * @return array<string, mixed>
+     */
     private function buildEngineMeta(array $engineValues): array
     {
         if (($engineValues['capabilityProbeEnabled'] ?? true) !== true) {
@@ -762,6 +787,7 @@ final class SettingsController
                 $this->cacheFactory->create(CacheDriverFactory::driverFromEngineSettings($engineValues)),
                 $engineValues
             ),
+            'queryIndexProbe' => $this->buildQueryIndexProbeMeta($engineValues),
             'gitProbe' => $this->gitProbe->probe(),
             'documentationUrl' => $this->repositoryDocsBlob('docs/en/architecture/HYBRID_ENGINE.md'),
         ];

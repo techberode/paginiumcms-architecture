@@ -31,6 +31,7 @@ use PaginiumCMS\Http\Middleware\ApiScopeMiddleware;
 use PaginiumCMS\Http\Middleware\ApiKeyRateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\SessionReleaseMiddleware;
 use PaginiumCMS\Http\Middleware\PerformanceGuardMiddleware;
+use PaginiumCMS\Http\Middleware\QueryIndexWatchMiddleware;
 use PaginiumCMS\Http\Middleware\RequestLoggingMiddleware;
 use PaginiumCMS\Http\Middleware\ServerTimingMiddleware;
 use PaginiumCMS\Support\AppVersion;
@@ -1072,6 +1073,7 @@ if (DebugEventLogger::isEnabled()) {
 }
 
 $app->add($container->get(PerformanceGuardMiddleware::class));
+$app->add($container->get(QueryIndexWatchMiddleware::class));
 $app->add($container->get(ServerTimingMiddleware::class));
 $app->add($container->get(RequestLoggingMiddleware::class));
 
@@ -1087,6 +1089,9 @@ if (DebugEventLogger::isEnabled()) {
 }
 
 $container->get(DemoStorageService::class)->ensureSeededSafely();
+
+$container->get(\PaginiumCMS\Core\FlatFile\Services\ContentIndexService::class)
+    ->attachQueryIndexSync($container->get(\PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexSync::class));
 
 $container->get(\PaginiumCMS\Modules\Newsletter\Services\NewsletterHookRegistrar::class)->register();
 $container->get(\PaginiumCMS\Core\Webhooks\Services\WebhookHookRegistrar::class)->register();
