@@ -23,7 +23,7 @@ export interface MediaFile {
 }
 
 export interface ListMediaFilters {
-  type?: 'image' | 'video';
+  type?: 'image' | 'video' | 'document';
   mimeType?: string;
   folder?: string;
 }
@@ -38,6 +38,12 @@ export interface MediaFormatsPayload {
   accept: string;
   previewableMimeTypes: string[];
   maxVideoUploadSizeKb?: number;
+  documentsEnabled?: boolean;
+  documentMimeTypes?: string[];
+  documentAccept?: string;
+  maxDocumentUploadSizeKb?: number;
+  textEditableMimeTypes?: string[];
+  adminPdfPreviewMimeTypes?: string[];
   imageOptimization?: ImageOptimizationCapabilities;
 }
 
@@ -142,6 +148,63 @@ export function isVideoMedia(file: MediaFile): boolean {
 
 export function isImageMedia(file: MediaFile): boolean {
   return file.mimeType.startsWith('image/');
+}
+
+const DOCUMENT_MIME_PREFIXES = [
+  'application/pdf',
+  'text/plain',
+  'text/markdown',
+  'application/vnd.oasis.opendocument.',
+  'application/vnd.openxmlformats-officedocument.',
+];
+
+export function isDocumentMedia(file: MediaFile): boolean {
+  const mime = file.mimeType.toLowerCase();
+  return DOCUMENT_MIME_PREFIXES.some((prefix) => mime.startsWith(prefix) || mime === prefix);
+}
+
+export function isTextEditableMedia(file: MediaFile, editableMimeTypes?: string[]): boolean {
+  if (editableMimeTypes && editableMimeTypes.length > 0) {
+    return editableMimeTypes.includes(file.mimeType);
+  }
+  const mime = file.mimeType.toLowerCase();
+  return mime === 'text/plain' || mime === 'text/markdown';
+}
+
+export function isPdfMedia(file: MediaFile): boolean {
+  return file.mimeType.toLowerCase() === 'application/pdf';
+}
+
+/** Admin PDF iframe preview (sandboxed response from backend). */
+export function resolveAdminMediaPdfPreviewUrl(path: string): string {
+  return `${resolveAdminMediaFileUrl(path)}?preview=1`;
+}
+
+export async function fetchMediaTextContent(
+  path: string
+): Promise<{ ok: true; content: string; version: number } | { ok: false; error: string }> {
+  const res = await apiClient.get<{ content: string; version: number }>(
+    `/api/media/${encodeURIComponent(path)}/content`
+  );
+  if (res.success && res.data) {
+    return { ok: true, content: res.data.content, version: res.data.version };
+  }
+  return { ok: false, error: res.error || res.message || 'Load failed' };
+}
+
+export async function saveMediaTextContent(
+  path: string,
+  content: string,
+  version: number
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const res = await apiClient.patch<{ version: number }>(
+    `/api/media/${encodeURIComponent(path)}/content`,
+    { content, version }
+  );
+  if (res.success) {
+    return { ok: true };
+  }
+  return { ok: false, error: res.error || res.message || 'Save failed' };
 }
 
 const OPTIMIZABLE_MIME_TYPES = new Set([
@@ -460,6 +523,50 @@ export async function applyOptimizeMedia(
   }
 
   return { ok: false, error: res.error ?? 'Optimization apply failed.' };
+}
+
+/** Bulk download selected library files as a ZIP (It.96b). */
+export async function bulkDownloadMedia(
+  paths: string[]
+): Promise<{ ok: true; blob: Blob } | { ok: false; error: string }> {
+  if (paths.length === 0) {
+    return { ok: false, error: 'empty' };
+  }
+
+  try {
+    const csrf = typeof localStorage !== 'undefined' ? localStorage.getItem('csrf_token') ?? '' : '';
+    const response = await fetch(`${resolveApiBaseUrl()}/api/media/bulk-download`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/zip',
+        'X-CSRF-TOKEN': csrf,
+      },
+      body: JSON.stringify({ paths }),
+    });
+
+    if (!response.ok) {
+      return { ok: false, error: `HTTP ${response.status}` };
+    }
+
+    const blob = await response.blob();
+    return { ok: true, blob };
+  } catch {
+    return { ok: false, error: 'network' };
+  }
+}
+
+export function saveMediaBulkDownloadBlob(blob: Blob, filename = 'media-export.zip'): void {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.rel = 'noopener';
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
 }
 
 /** Bulk delete media files by storage paths. */

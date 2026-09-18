@@ -22,6 +22,9 @@ final class UploadPolicyProfileId
     /** Placeholder for It.79 — extends {@see self::MEDIA} constraints. */
     public const MEDIA_VIDEO = 'media-video';
 
+    /** It.96 — Office/PDF/text documents (separate size limit). */
+    public const DOCUMENTS = 'documents';
+
     /**
      * @return list<string>
      */
@@ -34,6 +37,7 @@ final class UploadPolicyProfileId
             self::EXTENSION_ARCHIVE,
             self::STOCK_IMPORT,
             self::MEDIA_VIDEO,
+            self::DOCUMENTS,
         ];
     }
 }

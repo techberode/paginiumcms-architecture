@@ -246,6 +246,15 @@ final class ShortcodeCatalogSeeder
                 ],
                 'expand' => '<section class="pg-feature-gallery" data-tag="{{tag}}" data-title="{{title}}"></section>',
             ],
+            'document-link' => [
+                'name' => 'document-link',
+                'version' => 1,
+                'attrs' => [
+                    'href' => ['type' => 'string'],
+                    'label' => ['type' => 'string'],
+                ],
+                'expand' => '<p class="pg-document-link"><a class="pg-link-download" href="{{href}}" download rel="noopener noreferrer">{{label}}</a></p>',
+            ],
         ];
 
         $encoded = [];

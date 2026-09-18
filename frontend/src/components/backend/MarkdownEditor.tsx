@@ -52,6 +52,7 @@ import {
   resolveEditorToolbar,
   type EditorProfileId,
 } from '../../utils/editorProfiles';
+import { buildDocumentLinkShortcode } from '../../utils/documentShortcode';
 import { buildVideoShortcode } from '../../utils/videoShortcode';
 import type { ExternalEmbedProvider } from '../../utils/embedShortcode';
 import {
@@ -125,7 +126,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
   const [editorProfile, setEditorProfile] = useState<EditorProfileId>('company');
   const [contentFormat, setContentFormat] = useState<ContentFormat>('markdown');
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
-  const [mediaPickerMode, setMediaPickerMode] = useState<'image' | 'video'>('image');
+  const [mediaPickerMode, setMediaPickerMode] = useState<'image' | 'video' | 'document'>('image');
   const [seoOpen, setSeoOpen] = useState(false);
   const [publishOtp, setPublishOtp] = useState<{ challengeId: string; debugCode?: string } | null>(null);
   const [navigationItems, setNavigationItems] = useState<Awaited<ReturnType<typeof getNavigation>>>([]);
@@ -944,6 +945,10 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         setMediaPickerMode('video');
         setMediaPickerOpen(true);
       }}
+      onPickDocument={() => {
+        setMediaPickerMode('document');
+        setMediaPickerOpen(true);
+      }}
       profile={markdownEditorProfile}
       canUseTrustedHtml={canUseTrustedHtml}
       canUseExternalEmbed={canUseExternalEmbed}
@@ -1069,6 +1074,11 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         <MediaPickerModal
           open={mediaPickerOpen}
           onClose={() => setMediaPickerOpen(false)}
+          title={
+            mediaPickerMode === 'document'
+              ? t('editor.mediaPicker.documentTitle')
+              : undefined
+          }
           mediaMode={mediaPickerMode}
           onSelect={(url, alt) => {
             if (editorMode === 'wysiwyg') {
@@ -1082,6 +1092,14 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
                 ? url.slice(url.indexOf('/storage/'))
                 : resolvePublicMediaUrl(url);
               setContent((prev) => `${prev}${buildVideoShortcode(storageUrl)}`);
+            } else if (mediaPickerMode === 'document') {
+              const storageUrl = url.includes('/storage/')
+                ? url.slice(url.indexOf('/storage/'))
+                : resolvePublicMediaUrl(url);
+              const snippet = buildDocumentLinkShortcode(storageUrl, alt || 'Download');
+              if (snippet !== '') {
+                setContent((prev) => `${prev}${snippet}`);
+              }
             } else {
               setContent((prev) => `${prev}\n\n![${alt}](${url})\n`);
             }

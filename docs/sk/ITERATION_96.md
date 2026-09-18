@@ -1,6 +1,6 @@
 # Iterácia 96 — Knižnica dokumentov a file manager
 
-> **Stav:** ⏳ plánované (18. 9. 2026)  
+> **Stav:** ✅ hotové (18. 9. 2026) — detail v EN  
 > **Priorita:** 🟡 **P1 produkt**  
 > **Anglická špecifikácia:** [en/ITERATION_96.md](../en/ITERATION_96.md)
 

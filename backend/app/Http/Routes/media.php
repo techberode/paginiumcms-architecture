@@ -24,6 +24,7 @@ return function (App $app): void {
         $group->get('/folders', [$controller, 'listFolders']);
         $group->get('/stock-topics', [$controller, 'listStockTopics']);
         $group->get('/optimize-preview/{token}', [$controller, 'serveOptimizePreview']);
+        $group->get('/{path:.+}/content', [$controller, 'getTextContent']);
         $group->get('/{path:.+}/image-info', [$controller, 'imageInfo']);
     })
         ->add(new RoleMiddleware($authz, ['EDITOR', 'ADMIN', 'SUPER_ADMIN']))
@@ -33,7 +34,9 @@ return function (App $app): void {
         $group->post('/folders', [$controller, 'createFolder']);
         $group->post('/upload', [$controller, 'uploadMedia']);
         $group->post('/bulk-delete', [$controller, 'bulkDeleteMedia']);
+        $group->post('/bulk-download', [$controller, 'bulkDownloadMedia']);
         $group->post('/stock-import', [$controller, 'importStockImage']);
+        $group->patch('/{path:.+}/content', [$controller, 'patchTextContent']);
         $group->post('/{path:.+}/optimize/preview', [$controller, 'previewOptimizeMedia']);
         $group->post('/{path:.+}/optimize/apply', [$controller, 'applyOptimizeMedia']);
         $group->post('/{path:.+}/optimize', [$controller, 'optimizeMedia']);

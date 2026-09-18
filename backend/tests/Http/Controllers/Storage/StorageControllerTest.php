@@ -70,6 +70,20 @@ class StorageControllerTest extends TestCase
         $this->assertStringNotContainsString('twoFactorSecret', (string) $response->getBody());
     }
 
+    public function testServeDocumentMimeUsesAttachmentDisposition(): void
+    {
+        $relative = 'app/content/media/brochure.pdf';
+        file_put_contents($this->storageRoot . '/' . $relative, '%PDF-1.4 minimal');
+
+        $request = (new ServerRequestFactory())->createServerRequest('GET', '/storage/' . $relative);
+        $response = (new ResponseFactory())->createResponse();
+
+        $response = $this->controller->serve($request, $response, ['path' => $relative]);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertStringContainsString('attachment', (string) $response->getHeaderLine('Content-Disposition'));
+    }
+
     public function testServeMissingFileReturns404(): void
     {
         $request = (new ServerRequestFactory())->createServerRequest('GET', '/storage/missing.txt');

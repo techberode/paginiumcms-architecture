@@ -1684,6 +1684,22 @@ export const settingsSk: MessageTree = {
       "stockImageTopic": {
         "label": "Téma stock obrázkov",
         "help": "Obrázky sa vyberajú podľa zamerania webu (IT, varenie, cestovanie…)."
+      },
+      "documentsEnabled": {
+        "label": "Povoliť upload dokumentov (It.96)",
+        "help": "PDF, Office Open XML, OpenDocument a editovateľný .txt/.md v Media Library.",
+        "tooltip": "Vypnuté = profil documents sa nepoužije pri upload-e; existujúce súbory zostávajú.",
+        "docLink": "https://github.com/techberode/paginiumcms-architecture/blob/main/docs/en/ITERATION_96.md"
+      },
+      "maxDocumentUploadSizeKb": {
+        "label": "Max. veľkosť dokumentu (KB)",
+        "help": "20480 KB = 20 MB. Samostatný limit oproti obrázkom."
+      },
+      "documentMimeTypes": {
+        "label": "Povolené MIME typy dokumentov",
+        "help": "Allow-list oddelený čiarkou. Legacy .doc/.xls/.ppt nie sú podporované.",
+        "tooltip": "Upload musí prejsť magic-byte kontrolou. Verejné URL servírujú dokumenty ako prílohy.",
+        "docLink": "https://github.com/techberode/paginiumcms-architecture/blob/main/docs/en/ITERATION_96.md#upload-allow-list-initial"
       }
     },
     "sso": {

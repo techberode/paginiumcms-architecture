@@ -1,7 +1,9 @@
 // frontend/src/components/backend/MediaPickerModal.tsx
 import React, { useEffect, useState } from 'react';
-import { X } from 'lucide-react';
+import { FileText, X } from 'lucide-react';
 import {
+  isDocumentMedia,
+  isImageMedia,
   isVideoMedia,
   listMedia,
   MediaFile,
@@ -19,7 +21,7 @@ interface MediaPickerModalProps {
   title?: string;
   urlFormat?: MediaPickerUrlFormat;
   /** When `video`, lists only video/* assets from the library (It.79). */
-  mediaMode?: 'image' | 'video';
+  mediaMode?: 'image' | 'video' | 'document';
 }
 
 export const MediaPickerModal: React.FC<MediaPickerModalProps> = ({
@@ -38,7 +40,13 @@ export const MediaPickerModal: React.FC<MediaPickerModalProps> = ({
   useEffect(() => {
     if (!open) return;
     setLoading(true);
-    void listMedia({ type: mediaMode })
+    const filters =
+      mediaMode === 'document'
+        ? { type: 'document' as const }
+        : mediaMode === 'video'
+          ? { type: 'video' as const }
+          : { type: 'image' as const };
+    void listMedia(filters)
       .then(setItems)
       .finally(() => setLoading(false));
   }, [open, mediaMode]);
@@ -64,7 +72,11 @@ export const MediaPickerModal: React.FC<MediaPickerModalProps> = ({
             </div>
           ) : items.length === 0 ? (
             <p className="text-center text-gray-500 py-8">
-              {mediaMode === 'video' ? t('editor.mediaPicker.emptyVideo') : t('editor.mediaPicker.empty')}
+              {mediaMode === 'video'
+                ? t('editor.mediaPicker.emptyVideo')
+                : mediaMode === 'document'
+                  ? t('editor.mediaPicker.emptyDocument')
+                  : t('editor.mediaPicker.empty')}
             </p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -93,6 +105,8 @@ export const MediaPickerModal: React.FC<MediaPickerModalProps> = ({
                         muted
                         preload="metadata"
                       />
+                    ) : isDocumentMedia(file) || !isImageMedia(file) ? (
+                      <FileText className="w-10 h-10 text-slate-500" aria-hidden />
                     ) : (
                       <img
                         src={resolveAdminMediaPreviewUrl(file.path)}

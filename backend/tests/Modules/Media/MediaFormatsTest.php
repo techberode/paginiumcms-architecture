@@ -76,6 +76,40 @@ class MediaFormatsTest extends TestCase
         $this->assertSame('video/webm', $mime);
     }
 
+    public function testValidateAcceptsPlainText(): void
+    {
+        $mime = MediaFormats::validate('notes.txt', "Hello world\n", 'text/plain', ['text/plain']);
+
+        $this->assertSame('text/plain', $mime);
+        $this->assertTrue(MediaFormats::isDocumentMime($mime));
+        $this->assertTrue(MediaFormats::isTextEditableMime($mime));
+    }
+
+    public function testCoalesceDeclaredMimeFromOctetStreamUsesExtension(): void
+    {
+        $this->assertSame(
+            'text/markdown',
+            MediaFormats::coalesceDeclaredMime('readme.md', 'application/octet-stream')
+        );
+        $this->assertSame(
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            MediaFormats::coalesceDeclaredMime('report.docx', 'application/octet-stream')
+        );
+    }
+
+    public function testValidateAcceptsMinimalOfficeOpenXmlZip(): void
+    {
+        $bytes = "PK\x03\x04" . str_repeat("\0", 20) . '[Content_Types].xml' . str_repeat("\0", 40);
+        $mime = MediaFormats::validate(
+            'report.docx',
+            $bytes,
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            ['application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+        );
+
+        $this->assertTrue(MediaFormats::isDocumentMime($mime));
+    }
+
     public function testValidateRejectsPolyglotVideoWithScriptMarker(): void
     {
         $bytes = "\x00\x00\x00\x18ftypisom<script>alert(1)</script>";

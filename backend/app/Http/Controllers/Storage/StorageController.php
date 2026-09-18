@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Storage;
 
+use PaginiumCMS\Modules\Media\MediaFormats;
 use PaginiumCMS\Modules\Media\Services\MediaThumbnailService;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -99,10 +100,15 @@ class StorageController
             $response = $response->withHeader('Content-Length', (string) $size);
         }
 
-        if ($isActiveMime) {
+        $isDocument = MediaFormats::isDocumentMime($mime);
+
+        if ($isActiveMime || $isDocument) {
             $response = $response
-                ->withHeader('Content-Disposition', 'attachment; filename="' . addslashes(basename($realPath)) . '"')
-                ->withHeader('Content-Security-Policy', "sandbox; default-src 'none'");
+                ->withHeader('Content-Disposition', 'attachment; filename="' . addslashes(basename($realPath)) . '"');
+        }
+
+        if ($isActiveMime) {
+            $response = $response->withHeader('Content-Security-Policy', "sandbox; default-src 'none'");
         }
 
         return $response;

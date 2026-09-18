@@ -28,4 +28,8 @@ return [
     'optimize_encode_failed' => 'Optimalizovaný obrázok sa nepodarilo znovu zakódovať.',
     'optimize_no_reduction' => 'Obrázok je už optimálne komprimovaný (re-enkódovanie by nezmenšilo veľkosť).',
     'optimize_preview_expired' => 'Náhľad optimalizácie vypršal alebo je neplatný. Vygenerujte nový náhľad.',
+    'bulk_download_failed' => 'Nepodarilo sa vytvoriť archív na stiahnutie',
+    'bulk_download_too_many' => 'Príliš veľa súborov (maximum 50)',
+    'bulk_download_too_large' => 'Vybrané súbory presahujú limit 100 MB pre hromadné stiahnutie',
+    'bulk_download_zip_unavailable' => 'Export ZIP nie je na tomto serveri dostupný',
 ];

@@ -21,6 +21,14 @@ final class MediaFormats
         'image/webp' => ['extensions' => ['webp'], 'previewable' => true],
         'image/svg+xml' => ['extensions' => ['svg'], 'previewable' => true],
         'application/pdf' => ['extensions' => ['pdf'], 'previewable' => false],
+        'text/plain' => ['extensions' => ['txt'], 'previewable' => false],
+        'text/markdown' => ['extensions' => ['md'], 'previewable' => false],
+        'application/vnd.oasis.opendocument.text' => ['extensions' => ['odt'], 'previewable' => false],
+        'application/vnd.oasis.opendocument.spreadsheet' => ['extensions' => ['ods'], 'previewable' => false],
+        'application/vnd.oasis.opendocument.presentation' => ['extensions' => ['odp'], 'previewable' => false],
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => ['extensions' => ['docx'], 'previewable' => false],
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => ['extensions' => ['xlsx'], 'previewable' => false],
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation' => ['extensions' => ['pptx'], 'previewable' => false],
         'video/mp4' => ['extensions' => ['mp4'], 'previewable' => false],
         'video/webm' => ['extensions' => ['webm'], 'previewable' => false],
     ];
@@ -78,6 +86,54 @@ final class MediaFormats
         return isset(self::FORMATS[strtolower(trim($mimeType))]);
     }
 
+    /**
+     * Infer MIME from filename when the client sends a generic type (common for Office/text uploads).
+     */
+    public static function guessMimeFromExtension(string $filename): ?string
+    {
+        $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+        if ($extension === '') {
+            return null;
+        }
+
+        foreach (self::FORMATS as $mimeType => $meta) {
+            if (in_array($extension, $meta['extensions'], true)) {
+                return $mimeType;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Replace generic/unknown declared MIME with an extension-based guess when possible.
+     */
+    public static function coalesceDeclaredMime(string $filename, string $declaredMime): string
+    {
+        $declaredMime = strtolower(trim($declaredMime));
+        $inferred = self::guessMimeFromExtension($filename);
+
+        if ($inferred === null) {
+            return $declaredMime;
+        }
+
+        if ($declaredMime === '' || !self::isKnownMime($declaredMime) || self::isGenericDeclaredMime($declaredMime)) {
+            return $inferred;
+        }
+
+        return $declaredMime;
+    }
+
+    private static function isGenericDeclaredMime(string $mimeType): bool
+    {
+        return in_array($mimeType, [
+            'application/octet-stream',
+            'binary/octet-stream',
+            'application/x-msdownload',
+            'application/force-download',
+        ], true);
+    }
+
     public static function isImageMime(string $mimeType): bool
     {
         return str_starts_with(strtolower(trim($mimeType)), 'image/') && self::isKnownMime($mimeType);
@@ -86,6 +142,43 @@ final class MediaFormats
     public static function isVideoMime(string $mimeType): bool
     {
         return str_starts_with(strtolower(trim($mimeType)), 'video/') && self::isKnownMime($mimeType);
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function defaultDocumentMimeTypes(): array
+    {
+        return array_values(array_filter(
+            self::defaultMimeTypes(),
+            static fn (string $mime): bool => self::isDocumentMime($mime)
+        ));
+    }
+
+    public static function isDocumentMime(string $mimeType): bool
+    {
+        $mimeType = strtolower(trim($mimeType));
+
+        if (!self::isKnownMime($mimeType)) {
+            return false;
+        }
+
+        return self::isTextEditableMime($mimeType)
+            || $mimeType === 'application/pdf'
+            || self::isOpenDocumentMime($mimeType)
+            || self::isOfficeOpenXmlMime($mimeType);
+    }
+
+    public static function isTextEditableMime(string $mimeType): bool
+    {
+        $mimeType = strtolower(trim($mimeType));
+
+        return in_array($mimeType, ['text/plain', 'text/markdown'], true);
+    }
+
+    public static function isAdminPdfPreviewMime(string $mimeType): bool
+    {
+        return strtolower(trim($mimeType)) === 'application/pdf';
     }
 
     /**
@@ -180,10 +273,59 @@ final class MediaFormats
                 && substr($bytes, 8, 4) === 'WEBP',
             'image/svg+xml' => self::looksLikeSvg($bytes),
             'application/pdf' => str_starts_with($bytes, '%PDF-'),
+            'text/plain', 'text/markdown' => self::looksLikePlainText($bytes),
+            'application/vnd.oasis.opendocument.text',
+            'application/vnd.oasis.opendocument.spreadsheet',
+            'application/vnd.oasis.opendocument.presentation',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation' => self::looksLikeZipPackage($bytes),
             'video/mp4' => self::looksLikeMp4($bytes),
             'video/webm' => self::looksLikeWebm($bytes),
             default => false,
         };
+    }
+
+    public static function isOpenDocumentMime(string $mimeType): bool
+    {
+        return str_starts_with(strtolower(trim($mimeType)), 'application/vnd.oasis.opendocument.');
+    }
+
+    public static function isOfficeOpenXmlMime(string $mimeType): bool
+    {
+        return str_starts_with(
+            strtolower(trim($mimeType)),
+            'application/vnd.openxmlformats-officedocument.'
+        );
+    }
+
+    private static function looksLikePlainText(string $bytes): bool
+    {
+        if ($bytes === '') {
+            return false;
+        }
+
+        if (str_contains($bytes, "\0")) {
+            return false;
+        }
+
+        $sample = strtolower(substr($bytes, 0, 65536));
+        foreach (['<script', '<?php', 'javascript:'] as $marker) {
+            if (str_contains($sample, $marker)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static function looksLikeZipPackage(string $bytes): bool
+    {
+        if (!str_starts_with($bytes, "PK\x03\x04")) {
+            return false;
+        }
+
+        return str_contains($bytes, '[Content_Types].xml');
     }
 
     private static function looksLikeMp4(string $bytes): bool

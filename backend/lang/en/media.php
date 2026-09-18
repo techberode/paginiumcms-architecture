@@ -28,4 +28,8 @@ return [
     'optimize_encode_failed' => 'Could not re-encode optimized image.',
     'optimize_no_reduction' => 'Image is already optimally compressed (re-encoding would not reduce file size).',
     'optimize_preview_expired' => 'Optimization preview expired or is invalid. Generate a new preview.',
+    'bulk_download_failed' => 'Could not build download archive',
+    'bulk_download_too_many' => 'Too many files selected (maximum 50)',
+    'bulk_download_too_large' => 'Selected files exceed the 100 MB bulk download limit',
+    'bulk_download_zip_unavailable' => 'ZIP export is unavailable on this server',
 ];

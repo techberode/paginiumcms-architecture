@@ -51,6 +51,37 @@ final class UploadPolicyEngineTest extends TestCase
         );
     }
 
+    public function testDocumentSurfaceAllowsMdExtensionWithOctetStreamMime(): void
+    {
+        $engine = $this->makeEngine([
+            'uploadSecurity' => [
+                'unifiedPolicyEnabled' => true,
+                'allowedMimeTypes' => 'image/png,text/plain,text/markdown,application/pdf',
+                'allowedExtensions' => 'png,txt,md,pdf',
+                'maxUploadSizeKb' => 5120,
+                'scanMagicBytes' => true,
+                'blockDoubleExtensions' => true,
+                'blockExecutables' => true,
+            ],
+            'media' => [
+                'allowedMimeTypes' => 'image/png,application/pdf',
+                'maxUploadSizeKb' => 5120,
+                'documentsEnabled' => true,
+                'documentMimeTypes' => 'text/plain,text/markdown,application/pdf',
+                'maxDocumentUploadSizeKb' => 20480,
+            ],
+        ]);
+
+        $mime = $engine->enforceBinary(
+            UploadSurfaceRegistry::SURFACE_MEDIA_DOCUMENT_UPLOAD,
+            'notes.md',
+            "# Title\n",
+            'application/octet-stream'
+        );
+
+        $this->assertSame('text/markdown', $mime);
+    }
+
     public function testIntersectsSecurityAndMediaMimeLists(): void
     {
         $engine = $this->makeEngine([
@@ -66,6 +97,9 @@ final class UploadPolicyEngineTest extends TestCase
             'media' => [
                 'allowedMimeTypes' => 'image/png,image/jpeg,application/pdf',
                 'maxUploadSizeKb' => 5120,
+                'documentsEnabled' => true,
+                'documentMimeTypes' => 'application/pdf,text/plain',
+                'maxDocumentUploadSizeKb' => 20480,
             ],
         ]);
 
@@ -74,7 +108,14 @@ final class UploadPolicyEngineTest extends TestCase
             ['image/png', 'image/jpeg', 'application/pdf']
         );
 
-        $this->assertSame(['image/png', 'application/pdf'], $allowed);
+        $this->assertSame(['image/png'], $allowed);
+
+        $documents = $engine->resolveAllowedMimeTypes(
+            UploadSurfaceRegistry::SURFACE_MEDIA_DOCUMENT_UPLOAD,
+            ['application/pdf', 'text/plain']
+        );
+
+        $this->assertSame(['application/pdf'], $documents);
     }
 
     public function testRejectsUnsafeZipEntryOnBackupImport(): void

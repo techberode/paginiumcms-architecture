@@ -57,7 +57,7 @@ final class UploadPolicyEngine
 
         $profileId = UploadSurfaceRegistry::profileForSurface($surfaceId);
         $sizeBytes = strlen($binary);
-        $declaredMime = strtolower(trim($declaredMime));
+        $declaredMime = MediaFormats::coalesceDeclaredMime($filename, $declaredMime);
 
         try {
             $this->filenameGuard->assertAllowed($filename, $this->profiles->allowedExtensions($profileId));

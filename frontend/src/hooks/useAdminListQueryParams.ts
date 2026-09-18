@@ -296,7 +296,7 @@ export function useAdminListQueryParams(
   };
 }
 
-export type MediaTypeFilter = 'all' | 'image' | 'video';
+export type MediaTypeFilter = 'all' | 'image' | 'video' | 'document';
 
 export interface MediaListQueryState extends AdminListQueryState {
   folder: string;
@@ -319,7 +319,7 @@ export function useMediaListQueryParams(
   const folder = searchParams.get('folder') ?? '';
   const typeParam = searchParams.get('type');
   const typeFilter: MediaTypeFilter =
-    typeParam === 'image' || typeParam === 'video' ? typeParam : 'all';
+    typeParam === 'image' || typeParam === 'video' || typeParam === 'document' ? typeParam : 'all';
 
   const patchMediaParams = useCallback(
     (patch: { folder?: string; type?: MediaTypeFilter; resetPage?: boolean }) => {
@@ -336,7 +336,7 @@ export function useMediaListQueryParams(
         }
 
         if (patch.type !== undefined) {
-          if (patch.type === 'image' || patch.type === 'video') {
+          if (patch.type === 'image' || patch.type === 'video' || patch.type === 'document') {
             next.set('type', patch.type);
           } else {
             next.delete('type');

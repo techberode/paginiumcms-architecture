@@ -14,6 +14,7 @@ final class UploadSurfaceRegistryTest extends TestCase
     {
         $expected = [
             UploadSurfaceRegistry::SURFACE_MEDIA_UPLOAD => UploadPolicyProfileId::MEDIA,
+            UploadSurfaceRegistry::SURFACE_MEDIA_DOCUMENT_UPLOAD => UploadPolicyProfileId::DOCUMENTS,
             UploadSurfaceRegistry::SURFACE_MEDIA_VIDEO_UPLOAD => UploadPolicyProfileId::MEDIA_VIDEO,
             UploadSurfaceRegistry::SURFACE_AVATAR_UPLOAD => UploadPolicyProfileId::AVATAR,
             UploadSurfaceRegistry::SURFACE_BACKUP_IMPORT => UploadPolicyProfileId::BACKUP_ARCHIVE,

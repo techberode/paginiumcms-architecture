@@ -213,6 +213,7 @@ export const editorEn: MessageTree = {
       link: 'Link',
       image: 'Image',
       video: 'Video from library',
+      document: 'Document link',
       bulletList: 'Bullet list',
       orderedList: 'Numbered list',
       blockquote: 'Quote',
@@ -239,6 +240,7 @@ export const editorEn: MessageTree = {
     previewEmpty: 'Preview appears after you write content.',
     blockedHtmlPaste: 'Editor profile does not allow raw HTML paste.',
     videoPickerRequired: 'Pick a video from the Media Library (enable Video in Settings → Editor extensions).',
+    documentPickerRequired: 'Pick a document from the Media Library (enable documents in Settings → Media).',
   },
   wysiwyg: {
     loading: 'Loading editor…',
@@ -294,6 +296,8 @@ export const editorEn: MessageTree = {
     defaultTitle: 'Insert from Media Library',
     empty: 'No images in media library.',
     emptyVideo: 'No videos in media library.',
+    emptyDocument: 'No documents in media library.',
+    documentTitle: 'Insert document link',
   },
   tags: {
     title: 'Article tags',

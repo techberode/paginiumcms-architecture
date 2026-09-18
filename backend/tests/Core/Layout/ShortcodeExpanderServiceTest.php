@@ -181,6 +181,31 @@ JSON;
         $this->assertStringNotContainsString('[cta-banner', $result);
     }
 
+    public function testExpandsDocumentLinkShortcode(): void
+    {
+        $json = <<<'JSON'
+{
+  "name": "document-link",
+  "version": 1,
+  "attrs": {
+    "href": {"type": "string"},
+    "label": {"type": "string"}
+  },
+  "expand": "<p class=\"pg-document-link\"><a class=\"pg-link-download\" href=\"{{href}}\" download rel=\"noopener noreferrer\">{{label}}</a></p>"
+}
+JSON;
+        $this->manager->save('document-link', $json);
+
+        $result = $this->expander->expand(
+            '[document-link href="/storage/app/content/media/guide.pdf" label="Download PDF"/]'
+        );
+
+        $this->assertStringContainsString('pg-document-link', $result);
+        $this->assertStringContainsString('Download PDF', $result);
+        $this->assertStringContainsString('download', $result);
+        $this->assertStringNotContainsString('[document-link', $result);
+    }
+
     public function testLandingHeroMediaUsesDamVideoWithoutControls(): void
     {
         $json = <<<'JSON'

@@ -16,6 +16,8 @@ export const mediaSk: MessageTree = {
     generating: 'Generujem…',
     copyUrl: 'Kopírovať URL',
     download: 'Stiahnuť súbor',
+    editText: 'Upraviť text',
+    previewPdf: 'Náhľad PDF',
     delete: 'Zmazať',
     editMeta: 'Upraviť metadáta',
     optimize: 'Optimalizovať veľkosť',
@@ -35,6 +37,15 @@ export const mediaSk: MessageTree = {
     all: 'Všetky súbory',
     images: 'Len obrázky',
     videos: 'Len videá',
+    documents: 'Len dokumenty',
+  },
+  textEditor: {
+    title: 'Upraviť :name',
+    save: 'Uložiť text',
+    saved: 'Textový súbor uložený',
+  },
+  pdfPreview: {
+    title: 'Náhľad PDF',
   },
   stock: {
     topicLabel: 'Téma stock obrázka',
@@ -90,6 +101,7 @@ export const mediaSk: MessageTree = {
   },
   bulk: {
     itemLabel: 'vybraných súborov',
+    download: 'Stiahnuť ZIP',
     delete: 'Zmazať vybrané',
   },
   pagination: {
@@ -136,6 +148,8 @@ export const mediaSk: MessageTree = {
     urlCopyFailed: 'URL sa nepodarilo skopírovať.',
     bulkDeleted: ':count súbor(ov) zmazaných.',
     bulkDeleteFailed: 'Zmazanie vybraných súborov zlyhalo.',
+    bulkDownloadStarted: 'Sťahovanie ZIP bolo spustené.',
+    bulkDownloadFailed: 'Hromadné sťahovanie zlyhalo.',
     deleted: 'Súbor bol zmazaný.',
     deleteFailed: 'Zmazanie súboru zlyhalo.',
     metaUpdated: 'Metadáta boli aktualizované.',

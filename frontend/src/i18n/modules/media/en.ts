@@ -16,6 +16,8 @@ export const mediaEn: MessageTree = {
     generating: 'Generating…',
     copyUrl: 'Copy URL',
     download: 'Download file',
+    editText: 'Edit text',
+    previewPdf: 'Preview PDF',
     delete: 'Delete',
     editMeta: 'Edit metadata',
     optimize: 'Optimize file size',
@@ -35,6 +37,15 @@ export const mediaEn: MessageTree = {
     all: 'All files',
     images: 'Images only',
     videos: 'Videos only',
+    documents: 'Documents only',
+  },
+  textEditor: {
+    title: 'Edit :name',
+    save: 'Save text',
+    saved: 'Text file saved',
+  },
+  pdfPreview: {
+    title: 'PDF preview',
   },
   stock: {
     topicLabel: 'Stock image topic',
@@ -90,6 +101,7 @@ export const mediaEn: MessageTree = {
   },
   bulk: {
     itemLabel: 'selected files',
+    download: 'Download ZIP',
     delete: 'Delete selected',
   },
   pagination: {
@@ -136,6 +148,8 @@ export const mediaEn: MessageTree = {
     urlCopyFailed: 'Could not copy URL.',
     bulkDeleted: ':count file(s) deleted.',
     bulkDeleteFailed: 'Failed to delete selected files.',
+    bulkDownloadStarted: 'ZIP download started.',
+    bulkDownloadFailed: 'Bulk download failed.',
     deleted: 'Media deleted.',
     deleteFailed: 'Failed to delete media.',
     metaUpdated: 'Metadata updated.',

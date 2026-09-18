@@ -22,12 +22,16 @@ import { openExternalUrl } from '../../utils/linkTarget';
 import { getSettings } from '../../api/settings';
 import {
   bulkDeleteMedia,
+  bulkDownloadMedia,
+  saveMediaBulkDownloadBlob,
   createMediaFolder,
   deleteMedia,
   downloadMediaFile,
   formatMediaSize,
   importStockImage,
   isImageMedia,
+  isPdfMedia,
+  isTextEditableMedia,
   isVideoMedia,
   isOptimizableMedia,
   isPreviewableMedia,
@@ -65,6 +69,8 @@ import { applyClientListView } from '../../utils/clientListView';
 import { evaluateMediaSeo } from '../../utils/seoHealth';
 import { useI18n } from '../../context/I18nContext';
 import { useAdminConfirm } from '../../hooks/useAdminConfirm';
+import { MediaTextEditorModal } from './MediaTextEditorModal';
+import { MediaPdfPreviewModal } from './MediaPdfPreviewModal';
 
 export const MediaManager: React.FC = () => {
   const toast = useToast();
@@ -110,6 +116,9 @@ export const MediaManager: React.FC = () => {
     'image/jpeg,image/png,image/gif,image/webp,image/svg+xml,application/pdf'
   );
   const [previewableMimeTypes, setPreviewableMimeTypes] = useState<string[]>([]);
+  const [textEditableMimeTypes, setTextEditableMimeTypes] = useState<string[]>([]);
+  const [textEditFile, setTextEditFile] = useState<MediaFile | null>(null);
+  const [pdfPreviewFile, setPdfPreviewFile] = useState<MediaFile | null>(null);
   const [imageOptimization, setImageOptimization] = useState<ImageOptimizationCapabilities>({
     available: false,
     jpeg: false,
@@ -146,10 +155,13 @@ export const MediaManager: React.FC = () => {
       }
       const configured = String(settings?.values?.media?.stockImageTopic ?? 'tech');
       setStockTopic(configured);
-      if (formats.accept) {
-        setUploadAccept(formats.accept);
+      const acceptParts = [formats.accept];
+      if (formats.documentsEnabled && formats.documentAccept) {
+        acceptParts.push(formats.documentAccept);
       }
+      setUploadAccept(acceptParts.filter(Boolean).join(','));
       setPreviewableMimeTypes(formats.previewableMimeTypes);
+      setTextEditableMimeTypes(formats.textEditableMimeTypes ?? []);
       if (formats.imageOptimization) {
         setImageOptimization(formats.imageOptimization);
       }
@@ -160,7 +172,7 @@ export const MediaManager: React.FC = () => {
     setLoading(true);
     try {
       const filters =
-        typeFilter === 'image' || typeFilter === 'video'
+        typeFilter === 'image' || typeFilter === 'video' || typeFilter === 'document'
           ? { type: typeFilter, folder: currentFolder }
           : { folder: currentFolder };
       const [files, folderList] = await Promise.all([
@@ -328,6 +340,20 @@ export const MediaManager: React.FC = () => {
     pagedItems.map((file) => file.path),
     `${currentFolder}:${typeFilter}:${search}:${seoIssuesOnly}:${sortField}:${sortDirection}:${page}:${pageSize}`
   );
+
+  const handleBulkDownload = async () => {
+    if (bulkSelection.count === 0) {
+      return;
+    }
+
+    const result = await bulkDownloadMedia(bulkSelection.selectedIds);
+    if (result.ok) {
+      saveMediaBulkDownloadBlob(result.blob);
+      toast.success(t('media.toast.bulkDownloadStarted'));
+    } else {
+      toast.error(t('media.toast.bulkDownloadFailed'));
+    }
+  };
 
   const handleBulkDelete = async () => {
     if (bulkSelection.count === 0) {
@@ -660,6 +686,7 @@ export const MediaManager: React.FC = () => {
             <option value="all">{t('media.filter.all')}</option>
             <option value="image">{t('media.filter.images')}</option>
             <option value="video">{t('media.filter.videos')}</option>
+            <option value="document">{t('media.filter.documents')}</option>
           </select>
         </AdminListToolbar>
       </div>
@@ -669,6 +696,12 @@ export const MediaManager: React.FC = () => {
         itemLabel={t('media.bulk.itemLabel')}
         onClear={bulkSelection.clear}
         actions={[
+          {
+            id: 'download',
+            label: t('media.bulk.download'),
+            variant: 'secondary',
+            onClick: () => void handleBulkDownload(),
+          },
           {
             id: 'delete',
             label: t('media.bulk.delete'),
@@ -713,6 +746,12 @@ export const MediaManager: React.FC = () => {
               onOptimize={() => void handleOptimize(file)}
               optimizing={optimizingPath === file.path}
               canOptimize={isOptimizableMedia(file, imageOptimization)}
+              onEditText={
+                isTextEditableMedia(file, textEditableMimeTypes)
+                  ? () => setTextEditFile(file)
+                  : undefined
+              }
+              onPreviewPdf={isPdfMedia(file) ? () => setPdfPreviewFile(file) : undefined}
               onDelete={() => handleDelete(file)}
             />
           ))}
@@ -769,6 +808,13 @@ export const MediaManager: React.FC = () => {
         onClose={cancelEditMeta}
       />
 
+      <MediaTextEditorModal
+        file={textEditFile}
+        onClose={() => setTextEditFile(null)}
+        onSaved={() => void loadMedia()}
+      />
+      <MediaPdfPreviewModal file={pdfPreviewFile} onClose={() => setPdfPreviewFile(null)} />
+
       <MediaPreviewLightbox
         file={previewFile}
         mode={previewMode}
@@ -802,6 +848,8 @@ interface MediaCardProps {
   onOptimize: () => void;
   optimizing?: boolean;
   canOptimize?: boolean;
+  onEditText?: () => void;
+  onPreviewPdf?: () => void;
   onDelete: () => void;
 }
 
@@ -824,6 +872,8 @@ const MediaCard: React.FC<MediaCardProps> = ({
   onOptimize,
   optimizing = false,
   canOptimize = false,
+  onEditText,
+  onPreviewPdf,
   onDelete,
 }) => {
   const { t } = useI18n();
@@ -966,6 +1016,26 @@ const MediaCard: React.FC<MediaCardProps> = ({
               {optimizing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Zap className="w-3 h-3" />}
             </button>
           )}
+          {!editing && onPreviewPdf ? (
+            <button
+              type="button"
+              className="btn btn-secondary text-xs px-2 py-1"
+              title={t('media.actions.previewPdf')}
+              onClick={onPreviewPdf}
+            >
+              PDF
+            </button>
+          ) : null}
+          {!editing && onEditText ? (
+            <button
+              type="button"
+              className="btn btn-secondary text-xs px-2 py-1"
+              title={t('media.actions.editText')}
+              onClick={onEditText}
+            >
+              <Pencil className="w-3 h-3" />
+            </button>
+          ) : null}
           {!editing && (
             <button
               type="button"

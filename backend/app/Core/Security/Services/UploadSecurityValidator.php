@@ -9,6 +9,7 @@ use PaginiumCMS\Core\Security\Upload\UploadPolicyEngine;
 use PaginiumCMS\Core\Security\Upload\UploadPolicyException;
 use PaginiumCMS\Core\Security\Upload\UploadSurfaceRegistry;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
+use PaginiumCMS\Modules\Media\MediaDocumentPolicy;
 use PaginiumCMS\Modules\Media\MediaFormats;
 
 /**
@@ -35,9 +36,22 @@ final class UploadSecurityValidator
      */
     public function assertFilenameAllowed(string $filename): void
     {
+        $this->assertMediaUploadFilenameAllowed($filename, MediaFormats::guessMimeFromExtension($filename) ?? 'application/octet-stream');
+    }
+
+    /**
+     * Media Library upload — route filename checks to the correct It.78 surface (image vs document vs video).
+     *
+     * @throws FlatFileException
+     */
+    public function assertMediaUploadFilenameAllowed(string $filename, string $declaredMime): void
+    {
+        $declaredMime = MediaFormats::coalesceDeclaredMime($filename, $declaredMime);
+
         if ($this->policyEngine->isUnifiedEnabled()) {
             try {
-                $this->policyEngine->assertFilenameAllowed(UploadSurfaceRegistry::SURFACE_MEDIA_UPLOAD, $filename);
+                $surface = $this->resolveMediaUploadSurface($filename, $declaredMime);
+                $this->policyEngine->assertFilenameAllowed($surface, $filename);
             } catch (UploadPolicyException $exception) {
                 throw new FlatFileException($exception->getMessage(), 0, $exception);
             }
@@ -46,6 +60,30 @@ final class UploadSecurityValidator
         }
 
         $this->assertFilenameAllowedLegacy($filename);
+    }
+
+    private function resolveMediaUploadSurface(string $originalName, string $declaredMime): string
+    {
+        if (MediaFormats::isVideoMime($declaredMime)) {
+            return UploadSurfaceRegistry::SURFACE_MEDIA_VIDEO_UPLOAD;
+        }
+
+        if (MediaFormats::isDocumentMime($declaredMime)) {
+            return UploadSurfaceRegistry::SURFACE_MEDIA_DOCUMENT_UPLOAD;
+        }
+
+        $inferred = MediaFormats::guessMimeFromExtension($originalName);
+        if ($inferred !== null) {
+            if (MediaFormats::isVideoMime($inferred)) {
+                return UploadSurfaceRegistry::SURFACE_MEDIA_VIDEO_UPLOAD;
+            }
+
+            if (MediaFormats::isDocumentMime($inferred)) {
+                return UploadSurfaceRegistry::SURFACE_MEDIA_DOCUMENT_UPLOAD;
+            }
+        }
+
+        return UploadSurfaceRegistry::SURFACE_MEDIA_UPLOAD;
     }
 
     public function shouldScanMagicBytes(): bool
@@ -175,6 +213,13 @@ final class UploadSecurityValidator
     private function assertExtensionWhitelisted(string $filename, array $cfg): void
     {
         $allowed = $this->parseCsv((string) ($cfg['allowedExtensions'] ?? ''));
+        if (MediaDocumentPolicy::isEnabled($this->settings)) {
+            $documentExtensions = MediaFormats::toApiPayload(
+                MediaDocumentPolicy::allowedMimeTypes($this->settings)
+            )['extensions'];
+            $allowed = array_values(array_unique(array_merge($allowed, $documentExtensions)));
+        }
+
         if ($allowed === []) {
             return;
         }

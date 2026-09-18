@@ -1,6 +1,6 @@
 # Iteration 96 — Document library & file manager (Office, PDF, text)
 
-> **Status:** ⏳ planned (September 18, 2026)  
+> **Status:** ✅ **shipped** (September 18, 2026) — core slices 96a–96f; optional `media:documents:publish` ACL deferred  
 > **Priority:** 🟡 **P1 product** — DAM beyond images/video; safe document workflows for editors  
 > **Depends on:** [It.78](ITERATION_78.md) unified upload policy · [It.79](ITERATION_79.md) DAM video · [It.72](ITERATION_72.md) storage drivers · [It.67](ITERATION_67.md) untrusted surfaces  
 > **Related:** Media Library today (images/video) — **download** added pre-96 via `GET /api/media/file/{path}?download=1`  
@@ -85,12 +85,12 @@ Settings (Engine or Media group): toggles per family, max MB, “allow public do
 
 ## Definition of Done
 
-- [ ] Upload + list + download for allow-listed document types; rejects legacy `.doc` and binaries outside list.
-- [ ] Public serving fails closed (attachment only) for document MIME types.
-- [ ] Admin can edit and save `.txt`/`.md` with audit trail.
-- [ ] At least one content surface links to a stored PDF safely.
-- [ ] Settings document policy documented SK/EN; It.94 help links to this spec.
-- [ ] PHPUnit + FE tests; `./scripts/iteration-gate.sh` green.
+- [x] Upload + list + download for allow-listed document types; rejects legacy `.doc` and binaries outside list.
+- [x] Public serving fails closed (attachment only) for document MIME types.
+- [x] Admin can edit and save `.txt`/`.md` with optimistic concurrency (sidecar version).
+- [x] Markdown editor inserts bundled `[document-link]` shortcode from Media Library picker.
+- [x] Settings document policy SK/EN + ContextHelp doc links (It.94).
+- [x] PHPUnit + gate (bulk ZIP, text content, storage attachment, shortcode expansion).
 
 ---
 

@@ -15,9 +15,12 @@ use PaginiumCMS\Core\Security\Upload\UploadSurfaceRegistry;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
 use PaginiumCMS\Modules\Media\Contracts\MediaStorageDriverInterface;
+use PaginiumCMS\Modules\Media\MediaDocumentPolicy;
 use PaginiumCMS\Modules\Media\MediaFormats;
 use PaginiumCMS\Support\JsonHelper;
 use PaginiumCMS\Support\Lang;
+use RuntimeException;
+use ZipArchive;
 
 class MediaRepository implements MediaRepositoryInterface
 {
@@ -25,6 +28,8 @@ class MediaRepository implements MediaRepositoryInterface
     private const REGISTRY = 'media/registry.json';
     private const FOLDERS_INDEX = 'media/folders.json';
     private const FOLDER_MARKER = '.paginium-folder';
+    private const BULK_DOWNLOAD_MAX_FILES = 50;
+    private const BULK_DOWNLOAD_MAX_BYTES = 104_857_600;
 
     public function __construct(
         private FileReaderInterface $reader,
@@ -83,26 +88,28 @@ class MediaRepository implements MediaRepositoryInterface
             throw new FlatFileException('Prázdny alebo neplatný súbor');
         }
 
+        $declaredMime = MediaFormats::coalesceDeclaredMime($originalName, $mimeType);
+
         if ($this->uploadPolicy->isUnifiedEnabled()) {
             try {
                 $mimeType = $this->uploadPolicy->enforceBinary(
-                    $this->resolveMediaUploadSurface($mimeType),
+                    $this->resolveMediaUploadSurface($originalName, $declaredMime),
                     $originalName,
                     $binary,
-                    $mimeType,
+                    $declaredMime,
                     $userId
                 );
             } catch (UploadPolicyException $exception) {
                 throw new FlatFileException($exception->getMessage(), 0, $exception);
             }
         } else {
-            $this->uploadSecurity->assertFilenameAllowed($originalName);
+            $this->uploadSecurity->assertMediaUploadFilenameAllowed($originalName, $declaredMime);
 
             $allowedMimeTypes = $this->uploadSecurity->resolveAllowedMimeTypes($this->resolveMediaMimeTypes());
             $mimeType = MediaFormats::validate(
                 $originalName,
                 $binary,
-                $mimeType,
+                $declaredMime,
                 $allowedMimeTypes,
                 $this->uploadSecurity->shouldScanMagicBytes()
             );
@@ -591,6 +598,10 @@ class MediaRepository implements MediaRepositoryInterface
             return false;
         }
 
+        if (isset($filters['type']) && $filters['type'] === 'document' && !MediaFormats::isDocumentMime($file->getMimeType())) {
+            return false;
+        }
+
         return true;
     }
 
@@ -671,11 +682,27 @@ class MediaRepository implements MediaRepositoryInterface
     {
         $media = $this->settings->group('media');
 
+        $documentMimeTypes = MediaDocumentPolicy::isEnabled($this->settings)
+            ? MediaDocumentPolicy::allowedMimeTypes($this->settings)
+            : [];
+
         return array_merge(
             MediaFormats::toApiPayload($this->resolveAllowedMimeTypes()),
             [
                 'imageOptimization' => MediaImageOptimizer::capabilities(),
                 'maxVideoUploadSizeKb' => max(1024, (int) ($media['maxVideoUploadSizeKb'] ?? 102400)),
+                'documentsEnabled' => MediaDocumentPolicy::isEnabled($this->settings),
+                'documentMimeTypes' => $documentMimeTypes,
+                'documentAccept' => MediaFormats::buildAcceptHeader($documentMimeTypes),
+                'maxDocumentUploadSizeKb' => max(64, (int) ($media['maxDocumentUploadSizeKb'] ?? 20480)),
+                'textEditableMimeTypes' => array_values(array_filter(
+                    $documentMimeTypes,
+                    static fn (string $mime): bool => MediaFormats::isTextEditableMime($mime)
+                )),
+                'adminPdfPreviewMimeTypes' => array_values(array_filter(
+                    $documentMimeTypes,
+                    static fn (string $mime): bool => MediaFormats::isAdminPdfPreviewMime($mime)
+                )),
             ]
         );
     }
@@ -695,7 +722,21 @@ class MediaRepository implements MediaRepositoryInterface
             static fn (string $type): bool => $type !== '' && MediaFormats::isKnownMime($type)
         ));
 
-        return $types !== [] ? $types : MediaFormats::defaultMimeTypes();
+        if ($types === []) {
+            $types = MediaFormats::defaultMimeTypes();
+        }
+
+        if (MediaDocumentPolicy::isEnabled($this->settings)) {
+            $types = array_values(array_unique(array_merge(
+                $types,
+                MediaDocumentPolicy::allowedMimeTypes($this->settings)
+            )));
+        }
+
+        return array_values(array_filter(
+            $types,
+            static fn (string $mime): bool => MediaFormats::isKnownMime($mime)
+        ));
     }
 
     private function resolveMediaMaxUploadBytes(): int
@@ -712,13 +753,245 @@ class MediaRepository implements MediaRepositoryInterface
         return max(1024, min(524288, $maxKb)) * 1024;
     }
 
-    private function resolveMediaUploadSurface(string $declaredMime): string
+    private function resolveMediaUploadSurface(string $originalName, string $declaredMime): string
     {
         if (MediaFormats::isVideoMime($declaredMime)) {
             return UploadSurfaceRegistry::SURFACE_MEDIA_VIDEO_UPLOAD;
         }
 
+        if (MediaFormats::isDocumentMime($declaredMime)) {
+            return UploadSurfaceRegistry::SURFACE_MEDIA_DOCUMENT_UPLOAD;
+        }
+
+        $inferred = MediaFormats::guessMimeFromExtension($originalName);
+        if ($inferred !== null) {
+            if (MediaFormats::isVideoMime($inferred)) {
+                return UploadSurfaceRegistry::SURFACE_MEDIA_VIDEO_UPLOAD;
+            }
+
+            if (MediaFormats::isDocumentMime($inferred)) {
+                return UploadSurfaceRegistry::SURFACE_MEDIA_DOCUMENT_UPLOAD;
+            }
+        }
+
         return UploadSurfaceRegistry::SURFACE_MEDIA_UPLOAD;
+    }
+
+    /**
+     * @return array{content: string, version: int, mimeType: string, path: string}
+     */
+    public function readTextContent(string $path): array
+    {
+        $media = $this->findByPath($path);
+        if ($media === null) {
+            throw new FlatFileException('Médium nebolo nájdené');
+        }
+
+        if (!MediaFormats::isTextEditableMime($media->getMimeType())) {
+            throw new FlatFileException('Súbor nie je editovateľný text');
+        }
+
+        $binary = $this->readBinary($path);
+        if (strlen($binary) > 2_097_152) {
+            throw new FlatFileException('Textový súbor presahuje limit 2 MB pre editáciu');
+        }
+
+        return [
+            'path' => $path,
+            'mimeType' => $media->getMimeType(),
+            'content' => $binary,
+            'version' => $this->readContentVersion($path),
+        ];
+    }
+
+    /**
+     * @return array{media: array<string, mixed>, version: int}
+     */
+    public function saveTextContent(string $path, string $content, ?int $expectedVersion): array
+    {
+        $media = $this->findByPath($path);
+        if ($media === null) {
+            throw new FlatFileException('Médium nebolo nájdené');
+        }
+
+        if (!MediaFormats::isTextEditableMime($media->getMimeType())) {
+            throw new FlatFileException('Súbor nie je editovateľný text');
+        }
+
+        if (str_contains($content, "\0")) {
+            throw new FlatFileException('Text obsahuje neplatné znaky');
+        }
+
+        if (strlen($content) > 2_097_152) {
+            throw new FlatFileException('Text presahuje limit 2 MB');
+        }
+
+        if (!MediaFormats::contentMatchesMime($content, $media->getMimeType())) {
+            throw new FlatFileException('Text neprešiel bezpečnostnou kontrolou');
+        }
+
+        $currentVersion = $this->readContentVersion($path);
+        if ($expectedVersion !== null && $expectedVersion !== $currentVersion) {
+            throw new FlatFileException('Súbor bol medzitým upravený — obnovte obsah a skúste znova');
+        }
+
+        $this->storage()->put($path, $content);
+        $sizeBytes = strlen($content);
+        $media->setSizeBytes($sizeBytes);
+        $nextVersion = $currentVersion + 1;
+        $this->writeSidecarWithContentVersion($media, $nextVersion);
+
+        $registry = $this->loadRegistry();
+        foreach ($registry as $index => $entry) {
+            if (($entry['path'] ?? '') === $path) {
+                $registry[$index]['sizeBytes'] = strlen($content);
+                break;
+            }
+        }
+        $this->saveRegistry($registry);
+
+        return [
+            'media' => $media->jsonSerialize(),
+            'version' => $nextVersion,
+        ];
+    }
+
+    /**
+     * @param list<string> $paths
+     */
+    public function buildBulkDownloadArchive(array $paths): string
+    {
+        if ($paths === []) {
+            throw new FlatFileException(Lang::get('paths_required', [], 'media'));
+        }
+
+        if (count($paths) > self::BULK_DOWNLOAD_MAX_FILES) {
+            throw new FlatFileException(Lang::get('bulk_download_too_many', [], 'media'));
+        }
+
+        if (!class_exists(ZipArchive::class)) {
+            throw new FlatFileException(Lang::get('bulk_download_zip_unavailable', [], 'media'));
+        }
+
+        $totalBytes = 0;
+        $entries = [];
+        $usedNames = [];
+
+        foreach ($paths as $path) {
+            if ($path === '') {
+                continue;
+            }
+
+            MediaStoragePathGuard::assertSafeRelativePath($path);
+            $media = $this->findByPath($path);
+            if ($media === null) {
+                throw new FlatFileException(Lang::get('not_found', [], 'media'));
+            }
+
+            $sizeBytes = $media->getSizeBytes();
+            $totalBytes += $sizeBytes;
+            if ($totalBytes > self::BULK_DOWNLOAD_MAX_BYTES) {
+                throw new FlatFileException(Lang::get('bulk_download_too_large', [], 'media'));
+            }
+
+            $zipName = $this->uniqueZipEntryName($media->getFileName(), $usedNames);
+            $entries[] = ['path' => $path, 'zipName' => $zipName];
+        }
+
+        if ($entries === []) {
+            throw new FlatFileException(Lang::get('paths_required', [], 'media'));
+        }
+
+        $tempPath = tempnam(sys_get_temp_dir(), 'pag_media_zip_');
+        if ($tempPath === false) {
+            throw new RuntimeException('Could not create temporary ZIP file');
+        }
+
+        $zip = new ZipArchive();
+        if ($zip->open($tempPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+            @unlink($tempPath);
+
+            throw new FlatFileException(Lang::get('bulk_download_zip_unavailable', [], 'media'));
+        }
+
+        foreach ($entries as $entry) {
+            try {
+                $binary = $this->readBinary($entry['path']);
+            } catch (FlatFileException) {
+                $zip->close();
+                @unlink($tempPath);
+
+                throw new FlatFileException(Lang::get('not_found', [], 'media'));
+            }
+
+            if ($zip->addFromString($entry['zipName'], $binary) !== true) {
+                $zip->close();
+                @unlink($tempPath);
+
+                throw new FlatFileException(Lang::get('bulk_download_zip_unavailable', [], 'media'));
+            }
+        }
+
+        $zip->close();
+
+        return $tempPath;
+    }
+
+    /**
+     * @param array<string, true> $usedNames
+     */
+    private function uniqueZipEntryName(string $fileName, array &$usedNames): string
+    {
+        $base = basename(str_replace('\\', '/', $fileName));
+        if ($base === '' || $base === '.' || $base === '..') {
+            $base = 'file';
+        }
+
+        $candidate = $base;
+        $counter = 1;
+        while (isset($usedNames[$candidate])) {
+            $dot = strrpos($base, '.');
+            if ($dot !== false && $dot > 0) {
+                $candidate = substr($base, 0, $dot) . '-' . $counter . substr($base, $dot);
+            } else {
+                $candidate = $base . '-' . $counter;
+            }
+            ++$counter;
+        }
+
+        $usedNames[$candidate] = true;
+
+        return $candidate;
+    }
+
+    private function readContentVersion(string $path): int
+    {
+        $sidecar = $this->sidecarPath($path);
+        if (!$this->reader->exists($sidecar)) {
+            return 1;
+        }
+
+        try {
+            $data = json_decode($this->reader->read($sidecar), true);
+
+            return max(1, (int) ($data['contentVersion'] ?? 1));
+        } catch (FlatFileException) {
+            return 1;
+        }
+    }
+
+    private function writeSidecarWithContentVersion(MediaFile $file, int $contentVersion): void
+    {
+        $payload = [
+            'altText' => $file->getAltText(),
+            'title' => $file->getTitle(),
+            'folder' => $file->getFolder(),
+            'updatedAt' => time(),
+            'contentVersion' => $contentVersion,
+        ];
+
+        $json = JsonHelper::encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        $this->writer->write($this->sidecarPath($file->getPath()), $json, true);
     }
 
     private function normalizeFolder(string $folder): string

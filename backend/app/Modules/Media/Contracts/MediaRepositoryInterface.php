@@ -142,4 +142,23 @@ interface MediaRepositoryInterface
      * @return array{mimeType: string, binary: string, mediaPath: string}|null
      */
     public function readOptimizePreview(string $previewToken, string $ownerUserId): ?array;
+
+    /**
+     * @return array{content: string, version: int, mimeType: string, path: string}
+     */
+    public function readTextContent(string $path): array;
+
+    /**
+     * @return array{media: array<string, mixed>, version: int}
+     */
+    public function saveTextContent(string $path, string $content, ?int $expectedVersion): array;
+
+    /**
+     * Build a ZIP archive of existing media files (It.96b).
+     *
+     * @param list<string> $paths
+     *
+     * @throws FlatFileException
+     */
+    public function buildBulkDownloadArchive(array $paths): string;
 }

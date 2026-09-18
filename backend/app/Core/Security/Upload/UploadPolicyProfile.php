@@ -6,6 +6,7 @@ namespace PaginiumCMS\Core\Security\Upload;
 
 use PaginiumCMS\Core\Content\AvatarImageProcessor;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
+use PaginiumCMS\Modules\Media\MediaDocumentPolicy;
 use PaginiumCMS\Modules\Media\MediaFormats;
 
 /**
@@ -27,6 +28,7 @@ final class UploadPolicyProfile
             UploadPolicyProfileId::MEDIA => $this->nonVideoMediaMimeTypes(),
             UploadPolicyProfileId::AVATAR => AvatarImageProcessor::ALLOWED_MIMES,
             UploadPolicyProfileId::MEDIA_VIDEO => $this->intersectMimeTypes($this->resolveVideoMimeTypes()),
+            UploadPolicyProfileId::DOCUMENTS => $this->intersectMimeTypes(MediaDocumentPolicy::allowedMimeTypes($this->settings)),
             UploadPolicyProfileId::BACKUP_ARCHIVE,
             UploadPolicyProfileId::EXTENSION_ARCHIVE => ['application/zip', 'application/x-zip-compressed'],
             UploadPolicyProfileId::STOCK_IMPORT => $this->intersectMimeTypes($this->resolveMediaMimeTypes()),
@@ -43,6 +45,7 @@ final class UploadPolicyProfile
             UploadPolicyProfileId::MEDIA => $this->extensionsForMimes($this->allowedMimeTypes($profileId)),
             UploadPolicyProfileId::AVATAR => ['jpg', 'jpeg', 'png', 'webp'],
             UploadPolicyProfileId::MEDIA_VIDEO => $this->extensionsForMimes($this->allowedMimeTypes($profileId)),
+            UploadPolicyProfileId::DOCUMENTS => $this->extensionsForMimes($this->allowedMimeTypes($profileId)),
             UploadPolicyProfileId::BACKUP_ARCHIVE,
             UploadPolicyProfileId::EXTENSION_ARCHIVE => ['zip'],
             UploadPolicyProfileId::STOCK_IMPORT => $this->extensionsForMimes($this->allowedMimeTypes($profileId)),
@@ -63,6 +66,7 @@ final class UploadPolicyProfile
             UploadPolicyProfileId::MEDIA => $this->resolveMediaMaxUploadBytes(),
             UploadPolicyProfileId::AVATAR => AvatarImageProcessor::MAX_UPLOAD_BYTES,
             UploadPolicyProfileId::MEDIA_VIDEO => $this->resolveMediaMaxVideoUploadBytes(),
+            UploadPolicyProfileId::DOCUMENTS => MediaDocumentPolicy::maxUploadBytes($this->settings),
             UploadPolicyProfileId::BACKUP_ARCHIVE => max(1024, (int) ($this->settings->group('uploadSecurity')['backupImportMaxSizeKb'] ?? 102400)) * 1024,
             UploadPolicyProfileId::EXTENSION_ARCHIVE => 52_428_800,
             UploadPolicyProfileId::STOCK_IMPORT => $this->resolveMediaMaxUploadBytes(),
@@ -162,7 +166,7 @@ final class UploadPolicyProfile
     {
         return array_values(array_filter(
             $this->intersectMimeTypes($this->resolveMediaMimeTypes()),
-            static fn (string $mime): bool => !MediaFormats::isVideoMime($mime)
+            static fn (string $mime): bool => !MediaFormats::isVideoMime($mime) && !MediaFormats::isDocumentMime($mime)
         ));
     }
 

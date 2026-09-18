@@ -13,6 +13,7 @@ import {
   Sparkles,
   SquareCode,
   FileCode2,
+  FileText,
   Youtube,
   Table2,
   Megaphone,
@@ -50,6 +51,7 @@ interface MarkdownContentEditorProps {
   tabSize?: number;
   onPickMedia?: () => void;
   onPickVideo?: () => void;
+  onPickDocument?: () => void;
   canUseTrustedHtml?: boolean;
   canUseExternalEmbed?: boolean;
   embedProviders?: ExternalEmbedProvider[];
@@ -69,6 +71,7 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
   tabSize = 2,
   onPickMedia,
   onPickVideo,
+  onPickDocument,
   canUseTrustedHtml = false,
   canUseExternalEmbed = false,
   embedProviders = ['youtube', 'vimeo'],
@@ -190,6 +193,14 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
                 return;
               }
               onBlockedAction?.(t('editor.markdownContent.videoPickerRequired'));
+            })}
+          {profileAllows(profile, 'link') &&
+            toolbarButton(t('editor.markdownContent.toolbar.document'), <FileText size={16} />, () => {
+              if (onPickDocument) {
+                onPickDocument();
+                return;
+              }
+              onBlockedAction?.(t('editor.markdownContent.documentPickerRequired'));
             })}
           {profileAllows(profile, 'bulletList') &&
             toolbarButton(t('editor.markdownContent.toolbar.bulletList'), <List size={16} />, () =>

@@ -58,6 +58,9 @@ class MediaRepositoryTest extends TestCase
                 return [
                     'allowedMimeTypes' => 'image/jpeg,image/png,image/gif,image/webp,image/svg+xml,application/pdf',
                     'maxUploadSizeKb' => 5120,
+                    'documentsEnabled' => true,
+                    'documentMimeTypes' => 'application/pdf,text/plain,text/markdown',
+                    'maxDocumentUploadSizeKb' => 20480,
                 ];
             }
 
@@ -193,6 +196,47 @@ class MediaRepositoryTest extends TestCase
 
         $this->assertSame(2, $deleted);
         $this->assertSame([], $this->repository->findAll());
+    }
+
+    public function testBulkDownloadArchiveContainsSelectedFiles(): void
+    {
+        if (!class_exists(\ZipArchive::class)) {
+            $this->markTestSkipped('ZipArchive extension is required.');
+        }
+
+        $first = $this->repository->saveUpload('notes.txt', "hello\n", 'text/plain');
+        $second = $this->repository->saveUpload('readme.md', '# Title', 'text/markdown');
+
+        $zipPath = $this->repository->buildBulkDownloadArchive([$first->getPath(), $second->getPath()]);
+        $this->assertFileExists($zipPath);
+
+        $zip = new \ZipArchive();
+        $this->assertTrue($zip->open($zipPath) === true);
+        $this->assertSame(2, $zip->numFiles);
+        $zip->close();
+        @unlink($zipPath);
+    }
+
+    public function testSaveUploadMarkdownWithOctetStreamMime(): void
+    {
+        $media = $this->repository->saveUpload('readme.md', "# Hello\n", 'application/octet-stream');
+
+        $this->assertSame('text/markdown', $media->getMimeType());
+        $this->assertStringContainsString('readme.md', $media->getFileName());
+    }
+
+    public function testTextContentReadSaveIncrementsVersion(): void
+    {
+        $media = $this->repository->saveUpload('note.txt', 'v1', 'text/plain');
+        $path = $media->getPath();
+
+        $read = $this->repository->readTextContent($path);
+        $this->assertSame('v1', $read['content']);
+        $this->assertSame(1, $read['version']);
+
+        $saved = $this->repository->saveTextContent($path, 'v2', 1);
+        $this->assertSame(2, $saved['version']);
+        $this->assertSame('v2', $this->repository->readTextContent($path)['content']);
     }
 
     public function testListFoldersIncludesRootAndCreatedFolder(): void

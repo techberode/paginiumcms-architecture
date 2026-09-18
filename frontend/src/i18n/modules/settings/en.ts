@@ -1207,6 +1207,22 @@ export const settingsEn: MessageTree = {
       "stockImageTopic": {
         "label": "Stock image topic",
         "help": "Images are picked by site focus (IT, food, travel…)."
+      },
+      "documentsEnabled": {
+        "label": "Enable document uploads (It.96)",
+        "help": "PDF, Office Open XML, OpenDocument, and editable .txt/.md in Media Library.",
+        "tooltip": "When off, the documents upload profile is disabled; existing files remain stored.",
+        "docLink": "https://github.com/techberode/paginiumcms-architecture/blob/main/docs/en/ITERATION_96.md"
+      },
+      "maxDocumentUploadSizeKb": {
+        "label": "Max document upload size (KB)",
+        "help": "20480 KB = 20 MB. Separate limit from images."
+      },
+      "documentMimeTypes": {
+        "label": "Allowed document MIME types",
+        "help": "Comma-separated allow-list. Legacy .doc/.xls/.ppt are not supported.",
+        "tooltip": "Upload magic-byte verification must match these types. Public URLs serve documents as attachments.",
+        "docLink": "https://github.com/techberode/paginiumcms-architecture/blob/main/docs/en/ITERATION_96.md#upload-allow-list-initial"
       }
     },
     "sso": {

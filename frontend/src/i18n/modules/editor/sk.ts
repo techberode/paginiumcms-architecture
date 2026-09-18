@@ -213,6 +213,7 @@ export const editorSk: MessageTree = {
       link: 'Odkaz',
       image: 'Obrázok',
       video: 'Video z knižnice',
+      document: 'Odkaz na dokument',
       bulletList: 'Zoznam',
       orderedList: 'Číslovaný zoznam',
       blockquote: 'Citácia',
@@ -239,6 +240,7 @@ export const editorSk: MessageTree = {
     previewEmpty: 'Náhľad sa zobrazí po napísaní obsahu.',
     blockedHtmlPaste: 'Profil editora nepovoľuje vloženie raw HTML.',
     videoPickerRequired: 'Vyberte video z Media Library (zapnite Video v Nastavenia → Editor → voliteľné rozšírenia).',
+    documentPickerRequired: 'Vyberte dokument z Media Library (povolte dokumenty v Nastavenia → Médiá).',
   },
   wysiwyg: {
     loading: 'Načítavanie editora…',
@@ -294,6 +296,8 @@ export const editorSk: MessageTree = {
     defaultTitle: 'Vložiť z knižnice médií',
     empty: 'V knižnici médií nie sú žiadne obrázky.',
     emptyVideo: 'V knižnici médií nie sú žiadne videá.',
+    emptyDocument: 'V knižnici médií nie sú žiadne dokumenty.',
+    documentTitle: 'Vložiť odkaz na dokument',
   },
   tags: {
     title: 'Tagy článku',

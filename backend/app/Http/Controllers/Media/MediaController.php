@@ -8,6 +8,7 @@ use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
+use PaginiumCMS\Modules\Media\MediaFormats;
 use PaginiumCMS\Modules\Media\Services\StockImageCatalog;
 use PaginiumCMS\Modules\Media\Services\StockImageImporter;
 use PaginiumCMS\Modules\Security\Exception\AuthorizationException;
@@ -17,6 +18,7 @@ use PaginiumCMS\Support\Lang;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UploadedFileInterface;
+use Slim\Psr7\Stream;
 
 class MediaController
 {
@@ -68,8 +70,20 @@ class MediaController
 
         $query = $request->getQueryParams();
         $forceDownload = in_array(strtolower((string) ($query['download'] ?? '')), ['1', 'true', 'yes'], true);
+        $adminPreview = in_array(strtolower((string) ($query['preview'] ?? '')), ['1', 'true', 'yes'], true);
 
-        $disposition = ($isActiveMime || $forceDownload) ? 'attachment' : 'inline';
+        $isDocument = MediaFormats::isDocumentMime($mimeType);
+        $pdfAdminPreview = $isDocument
+            && $adminPreview
+            && MediaFormats::isAdminPdfPreviewMime($mimeType);
+
+        if ($isActiveMime || $forceDownload) {
+            $disposition = 'attachment';
+        } elseif ($isDocument && !$pdfAdminPreview) {
+            $disposition = 'attachment';
+        } else {
+            $disposition = 'inline';
+        }
 
         $response = $response
             ->withHeader('Content-Type', $mimeType)
@@ -78,7 +92,7 @@ class MediaController
             ->withHeader('Cache-Control', 'private, max-age=3600')
             ->withHeader('Content-Disposition', $disposition . '; filename="' . addslashes($media->getFileName()) . '"');
 
-        if ($isActiveMime) {
+        if ($isActiveMime || $pdfAdminPreview) {
             $response = $response->withHeader('Content-Security-Policy', 'sandbox; default-src \'none\'');
         }
 
@@ -215,12 +229,59 @@ class MediaController
 
         $deleted = $this->mediaRepository->bulkDelete($paths);
 
-        return $this->json->success(
-            $response,
-            ['deleted' => $deleted],
-            200,
-            Lang::get('bulk_deleted', [], 'media')
-        );
+        return $this->json->success($response, ['deleted' => $deleted], 200, Lang::get('bulk_deleted', [], 'media'));
+    }
+
+    public function bulkDownloadMedia(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $data = RequestJsonBody::decode($request);
+        if (!is_array($data) || !isset($data['paths']) || !is_array($data['paths'])) {
+            return $this->json->error($response, Lang::get('paths_required', [], 'media'), 400);
+        }
+
+        $paths = array_values(array_filter(
+            array_map(static fn ($path): string => is_string($path) ? $path : '', $data['paths']),
+            static fn (string $path): bool => $path !== ''
+        ));
+
+        if ($paths === []) {
+            return $this->json->error($response, Lang::get('paths_required', [], 'media'), 400);
+        }
+
+        foreach ($paths as $path) {
+            try {
+                $this->pathAcl->requireAccess($this->resolveUser($request), $path, 'media:upload');
+            } catch (AuthorizationException $e) {
+                return $this->json->error($response, $e->getMessage(), 403);
+            }
+        }
+
+        try {
+            $zipPath = $this->mediaRepository->buildBulkDownloadArchive($paths);
+        } catch (FlatFileException $e) {
+            return $this->json->error($response, $e->getMessage(), 400);
+        }
+
+        $handle = fopen($zipPath, 'rb');
+        if ($handle === false) {
+            @unlink($zipPath);
+
+            return $this->json->error($response, Lang::get('bulk_download_failed', [], 'media'), 500);
+        }
+
+        $filename = 'media-export-' . date('Y-m-d') . '.zip';
+        $stream = new Stream($handle);
+        register_shutdown_function(static function () use ($zipPath): void {
+            @unlink($zipPath);
+        });
+
+        return $response
+            ->withHeader('Content-Type', 'application/zip')
+            ->withHeader('Content-Disposition', 'attachment; filename="' . addslashes($filename) . '"')
+            ->withHeader('Content-Length', (string) filesize($zipPath))
+            ->withHeader('X-Content-Type-Options', 'nosniff')
+            ->withBody($stream)
+            ->withStatus(200);
     }
 
     public function uploadMedia(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -476,6 +537,52 @@ class MediaController
             return $this->json->success($response, $media->jsonSerialize(), 200, Lang::get('updated', [], 'media'));
         } catch (FlatFileException $e) {
             return $this->json->error($response, $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * @param array<int|string, mixed> $args
+     */
+    public function getTextContent(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $path = urldecode((string) ($args['path'] ?? ''));
+
+        try {
+            $this->pathAcl->requireAccess($this->resolveUser($request), $path, 'media:upload');
+
+            return $this->json->success($response, $this->mediaRepository->readTextContent($path));
+        } catch (FlatFileException $e) {
+            return $this->json->error($response, $e->getMessage(), 400);
+        } catch (AuthorizationException $e) {
+            return $this->json->error($response, $e->getMessage(), 403);
+        }
+    }
+
+    /**
+     * @param array<int|string, mixed> $args
+     */
+    public function patchTextContent(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $path = urldecode((string) ($args['path'] ?? ''));
+        $data = RequestJsonBody::decode($request);
+        if (!is_array($data) || !array_key_exists('content', $data)) {
+            return $this->json->error($response, Lang::get('file_required', [], 'media'), 400);
+        }
+
+        $expectedVersion = array_key_exists('version', $data) ? (int) $data['version'] : null;
+
+        try {
+            $this->pathAcl->requireAccess($this->resolveUser($request), $path, 'media:upload');
+            $result = $this->mediaRepository->saveTextContent($path, (string) $data['content'], $expectedVersion);
+
+            return $this->json->success($response, $result, 200, Lang::get('updated', [], 'media'));
+        } catch (FlatFileException $e) {
+            $message = $e->getMessage();
+            $status = str_contains($message, 'medzitým') ? 409 : 400;
+
+            return $this->json->error($response, $message, $status);
+        } catch (AuthorizationException $e) {
+            return $this->json->error($response, $e->getMessage(), 403);
         }
     }
 
