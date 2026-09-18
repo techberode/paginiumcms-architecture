@@ -54,6 +54,12 @@ export interface EngineSettingsMeta {
     message: string;
     details: Record<string, unknown>;
   } | null;
+  queryIndexProbe?: {
+    queryIndexDriver: { configured: string; active: string; status: string };
+    capabilities: Record<string, EngineCapabilityRow>;
+    counts: { jsonEntries: number; sqliteEntries: number };
+    activation_ready?: boolean;
+  } | null;
   documentationUrl?: string;
 }
 

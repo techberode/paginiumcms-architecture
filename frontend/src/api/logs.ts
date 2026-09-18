@@ -1,5 +1,6 @@
 // frontend/src/api/logs.ts
 import apiClient from './client';
+import { resolveApiBaseUrl } from '../utils/apiBaseUrl';
 import type { BulkBatchResult } from '../types/bulk';
 
 export type LogSeverity = 'debug' | 'info' | 'warning' | 'error' | 'critical';
@@ -81,7 +82,48 @@ export const logsApi = {
     );
     return res.success && res.data ? res.data : null;
   },
+
+  exportDownload: async (params: {
+    format: 'txt' | 'pdf' | 'zip';
+    ids?: string[];
+    filters?: {
+      severity?: string;
+      source?: string;
+      category?: string;
+      search?: string;
+      archived?: LogArchivedFilter;
+    };
+  }): Promise<Blob | null> => {
+    try {
+      const csrf = typeof localStorage !== 'undefined' ? localStorage.getItem('csrf_token') ?? '' : '';
+      const response = await fetch(`${resolveApiBaseUrl()}/api/admin/logs/export`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: '*/*',
+          'X-CSRF-TOKEN': csrf,
+        },
+        body: JSON.stringify(params),
+      });
+      if (!response.ok) {
+        return null;
+      }
+      return await response.blob();
+    } catch {
+      return null;
+    }
+  },
 };
+
+export function saveLogsExportBlob(blob: Blob, filename: string): void {
+  const url = window.URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.click();
+  window.URL.revokeObjectURL(url);
+}
 
 export const LOG_SEVERITY_LABELS: Record<LogSeverity, string> = {
   debug: 'Debug',

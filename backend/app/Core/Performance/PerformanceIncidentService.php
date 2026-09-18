@@ -49,7 +49,8 @@ final class PerformanceIncidentService
         }
 
         $breachId = bin2hex(random_bytes(8));
-        $recommendations = $this->remediation->recommendations($route, $severity);
+        $bundle = $this->remediation->recommendationBundle($route, $severity);
+        $recommendations = $bundle['messages'];
         $remediationResult = $this->remediation->maybeApplyAutomatic($route, $severity, $recommendations);
 
         $breach = [
@@ -60,6 +61,7 @@ final class PerformanceIncidentService
             'opened_at' => date('c'),
             'window_minutes' => $this->settings->windowMinutes(),
             'recommendations' => $recommendations,
+            'recommendation_hints' => $bundle['hints'],
             'remediation' => $remediationResult,
             'resolved_at' => null,
         ];

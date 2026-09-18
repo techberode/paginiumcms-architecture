@@ -96,6 +96,12 @@ describe('settings i18n module', () => {
 
     expect(translate('en', 'settings.fields.engine.performanceGuardEnabled.tooltip')).toContain('Dashboard');
     expect(translate('sk', 'settings.fields.engine.performanceGuardEnabled.tooltip')).toContain('Dashboard');
+    expect(translate('sk', 'settings.fields.engine.queryIndexDriver.label')).toBe(
+      'Ovládač dopytového indexu katalógu'
+    );
+    expect(translate('en', 'settings.fields.engine.queryIndexRuntimeWatchEnabled.label')).toContain('Watch');
+    expect(translate('sk', 'settings.enum.queryIndexDriver.json')).toContain('content.json');
+    expect(translate('en', 'settings.enum.queryIndexDriver.sqlite')).toContain('derived');
     expect(translate('sk', 'settings.fields.ui.sidebarColor.label')).toBe('Farba bočného menu');
     expect(translate('en', 'settings.enum.navPlacement.top')).toBe('Top dropdown menu');
     expect(translate('sk', 'settings.enum.navPlacement.active')).toBe('Aktívne');

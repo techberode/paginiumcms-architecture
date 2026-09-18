@@ -145,7 +145,19 @@ export const settingsSk: MessageTree = {
     "performanceGuardTitle": "Performance Guard (APM)",
     "performanceGuardIntro": "Meranie latencie a I/O v rámci requestu. Predvolene vypnuté — budgety nastavte podľa vlastného hardvéru. Nenahrádza metriky hostiteľa.",
     "performanceGuardOverhead": "Overhead rastie so sample rate; ring buffer drží posledných 500 route šablón bez content payloadov.",
-    "docsLink": "Dokumentácia architektúry hybridného enginu"
+    "docsLink": "Dokumentácia architektúry hybridného enginu",
+    "queryIndexTitle": "Dopytový index katalógu (odvodený)",
+    "queryIndexIntro": "JSON katalóg sa vždy zapisuje. SQLite je voliteľné pre rýchlejšie zoznamy a vyhľadávanie — flat-file zostáva jediným zdrojom pravdy.",
+    "queryIndexDriver": "Ovládač dopytového indexu",
+    "queryIndexCounts": "Položky v katalógu",
+    "queryIndexRebuild": "Rebuild SQLite z JSON",
+    "queryIndexUseSqlite": "Prepnúť na SQLite",
+    "queryIndexUseJson": "Prepnúť na JSON",
+    "queryIndexWorking": "Prebieha…",
+    "queryIndexRebuildSuccess": "SQLite index rebuildnutý z JSON katalógu.",
+    "queryIndexActivateSqliteSuccess": "SQLite query index zapnutý.",
+    "queryIndexActivateJsonSuccess": "Query index nastavený na JSON.",
+    "queryIndexActionFailed": "Akcia zlyhala. Skontrolujte probe a skúste rebuild."
   },
   "appearance": {
     "defaultBadge": "Predvolená",
@@ -900,6 +912,41 @@ export const settingsSk: MessageTree = {
         "label": "Predvolená TTL cache (s)",
         "help": "Platí pre nové cache kľúče, ak nie je uvedené inak (60–86400)."
       },
+      "queryIndexDriver": {
+        "label": "Ovládač dopytového indexu katalógu",
+        "help": "json = content.json (predvolené). sqlite = voliteľný odvodený index (It.92); prepnutie na sqlite vyžaduje úspešný probe a rebuild.",
+        "tooltip": "Flat-file JSON zostáva autoritatívny. SQLite urýchľuje zoznamy, filtre a search — súbor môžete zmazať a znova rebuildnúť bez straty obsahu."
+      },
+      "queryIndexAdviseEnabled": {
+        "label": "Performance Guard odporúča SQLite index",
+        "help": "Pri vysokej latencii katalógu Guard navrhne sqlite ovládač. Nikdy ho nezapne automaticky.",
+        "tooltip": "Nezávislé od zapnutia Guard; bez APM vzoriek sa odporúčanie nezobrazí."
+      },
+      "queryIndexAdviseMinEntries": {
+        "label": "Odporúčanie indexu: min. položiek v katalógu",
+        "help": "Na malých weboch sa SQLite neodporúča (100–1 000 000).",
+        "tooltip": "Počet záznamov v content.json — pod prahom sa hint na Dashboarde nezobrazí."
+      },
+      "queryIndexAdviseListP95Ms": {
+        "label": "Odporúčanie indexu: prah p95 zoznamov (ms)",
+        "help": "0 = použiť varovací prah latencie z Performance Guard.",
+        "tooltip": "Platí pre route skupiny článkov/stránok/katalógu v APM vzorkách."
+      },
+      "queryIndexRuntimeWatchEnabled": {
+        "label": "Sledovať SQLite index za behu",
+        "help": "Pri ovládači sqlite deteguje chýbajúci/poškodený index a pošle throttled monitoring alert. Katalóg stále padá späť na JSON.",
+        "tooltip": "Middleware + factory; vyžaduje monitoring.alertsEnabled a kanál pre incidenty."
+      },
+      "queryIndexAutoFallbackOnFailure": {
+        "label": "Pri výpadku SQLite prepnúť ovládač na JSON",
+        "help": "Vypnuté = len alert (web beží cez JSON fallback). Zapnuté = navyše uloží queryIndexDriver=json po incidente.",
+        "tooltip": "Odporúčané nechať vypnuté, kým nechcete automatickú opravu nastavenia bez zásahu operátora."
+      },
+      "queryIndexFailureAlertCooldownSeconds": {
+        "label": "Cooldown alertu SQLite indexu (s)",
+        "help": "Minimálny interval medzi rovnakými typmi incidentov query_index.sqlite_failure (60–86400).",
+        "tooltip": "Zabraňuje spamu pri opakovaných requestoch, keď súbor chýba."
+      },
       "httpValidatorsEnabled": {
         "label": "HTTP ETag / Last-Modified",
         "help": "Podmienené requesty na bezpečných verejných GET endpointoch (napr. /api/settings/public).",
@@ -948,24 +995,32 @@ export const settingsSk: MessageTree = {
         "tooltip": "Ukladá časy podľa route do ring bufferu na Dashboarde. Overhead rastie so sample rate; obsah a nastavenia nemení automaticky okrem allow-list cache purge v remediation režime."
       },
       "performanceGuardSampleRate": {
-        "label": "APM sample rate",
-        "help": "1.0 = každý request keď je zapnuté; nižšie hodnoty znižujú overhead.",
-        "tooltip": "Na vyťažených weboch skúste 0.1–0.3. Media/static trasy sú vylúčené zo skreslenia p95."
+        "label": "Vzorkovacia frekvencia APM",
+        "help": "1,0 = každý request keď je zapnuté; nižšie hodnoty znižujú overhead.",
+        "tooltip": "Na vyťažených weboch skúste 0,1–0,3. Media/static trasy sú vylúčené zo skreslenia p95."
       },
       "performanceGuardLatencyMsWarning": {
-        "label": "Varovanie latencie (ms)"
+        "label": "Varovanie latencie (ms)",
+        "help": "Prah pre žlté porušenie budgetu v APM a pre odporúčanie query indexu, ak je prah advise 0.",
+        "tooltip": "Nastavte podľa hardvéru — malý VPS môže mať vyššie hodnoty ako dedikovaný server."
       },
       "performanceGuardLatencyMsCritical": {
-        "label": "Kritická latencia (ms)"
+        "label": "Kritická latencia (ms)",
+        "help": "Prah pre kritické porušenie a prioritnejší incident.",
+        "tooltip": "Mala by byť vyššia ako varovací prah."
       },
       "performanceGuardBreachCount": {
-        "label": "Porušení pred incidentom"
+        "label": "Porušení pred incidentom",
+        "help": "Koľko porušení v okne pred odoslaním monitoring incidentu.",
+        "tooltip": "Spolu s oknom minút filtruje krátke špičky."
       },
       "performanceGuardWindowMinutes": {
-        "label": "Okno porušení (min)"
+        "label": "Okno porušení (min)",
+        "help": "Rolling okno pre počítanie porušení latencie.",
+        "tooltip": "Kratšie okno = citlivejšie alerty."
       },
       "performanceGuardRemediationMode": {
-        "label": "Remediation režim",
+        "label": "Režim nápravy",
         "help": "suggest = len incidenty; automatic = allow-list cache purge po probe.",
         "tooltip": "automatic nikdy nezapne Redis ani nemení engine režim — len bezpečné vymazanie cache po opakovaných porušeniach budgetu. suggest = manuálna kontrola incidentov."
       },
@@ -1763,6 +1818,10 @@ export const settingsSk: MessageTree = {
       "memory": "Pamäť",
       "file": "Súbor",
       "redis": "Redis"
+    },
+    "queryIndexDriver": {
+      "json": "JSON (content.json)",
+      "sqlite": "SQLite (odvodený)"
     },
     "gitPublishStrategy": {
       "disabled": "Vypnuté",

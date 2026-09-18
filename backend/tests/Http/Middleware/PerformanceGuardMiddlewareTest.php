@@ -15,6 +15,7 @@ use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
 use PaginiumCMS\Core\Logging\Contracts\LoggerInterface;
 use PaginiumCMS\Core\Notification\NotificationService;
 use PaginiumCMS\Core\Notification\Services\IncidentNotifier;
+use PaginiumCMS\Core\Performance\PerformanceAggregator;
 use PaginiumCMS\Core\Performance\PerformanceBreachStore;
 use PaginiumCMS\Core\Performance\PerformanceContext;
 use PaginiumCMS\Core\Performance\PerformanceGuardPolicy;
@@ -132,6 +133,20 @@ final class PerformanceGuardMiddlewareTest extends TestCase
         $cacheAdmin = new CacheAdminService($cache, new ContentCacheService($cache), $this->cacheDir);
         $logger = $this->createMock(LoggerInterface::class);
 
+        $queryIndex = $this->createMock(\PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexInterface::class);
+        $queryIndex->method('entryCount')->willReturn(0);
+        $emptySamples = new PerformanceSampleStore(
+            $writer,
+            sys_get_temp_dir() . '/apm-mw-' . uniqid('', true) . '.json'
+        );
+        $advisor = new \PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexAdvisor(
+            $settingsRepo,
+            $settings,
+            $emptySamples,
+            new PerformanceAggregator($emptySamples),
+            $queryIndex
+        );
+
         $remediation = new SafeRemediationService(
             $settings,
             $cacheAdmin,
@@ -139,7 +154,8 @@ final class PerformanceGuardMiddlewareTest extends TestCase
             new CacheDriverFactory($this->cacheDir),
             $settingsRepo,
             new SecurityLogger($logger),
-            $breaches
+            $breaches,
+            $advisor
         );
 
         $incidents = new PerformanceIncidentService(

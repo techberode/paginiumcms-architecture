@@ -8,6 +8,7 @@ use PaginiumCMS\Core\Cache\Services\CacheCapabilityProbe;
 use PaginiumCMS\Core\Cache\CacheDriverFactory;
 use PaginiumCMS\Core\Cache\Services\CacheAdminService;
 use PaginiumCMS\Core\Security\SecurityLogger;
+use PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexAdvisor;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 
 /**
@@ -24,7 +25,8 @@ final class SafeRemediationService
         private CacheDriverFactory $cacheFactory,
         private SettingsRepositoryInterface $settingsRepo,
         private SecurityLogger $securityLogger,
-        private PerformanceBreachStore $breaches
+        private PerformanceBreachStore $breaches,
+        private QueryIndexAdvisor $queryIndexAdvisor
     ) {
     }
 
@@ -32,6 +34,23 @@ final class SafeRemediationService
      * @return list<string>
      */
     public function recommendations(string $route, string $severity): array
+    {
+        return $this->recommendationBundle($route, $severity)['messages'];
+    }
+
+    /**
+     * @return list<array{code: string, message: string, route?: string, route_p95_ms?: float, threshold_ms?: int, catalog_entries?: int, settings_group?: string}>
+     */
+    public function recommendationHints(string $route, string $severity): array
+    {
+        /** @var list<array{code: string, message: string, route?: string, route_p95_ms?: float, threshold_ms?: int, catalog_entries?: int, settings_group?: string}> */
+        return $this->recommendationBundle($route, $severity)['hints'];
+    }
+
+    /**
+     * @return array{messages: list<string>, hints: list<array{code: string, message: string, route?: string, route_p95_ms?: float, threshold_ms?: int, catalog_entries?: int, settings_group?: string}>}
+     */
+    public function recommendationBundle(string $route, string $severity): array
     {
         $items = [
             'Review recent admin changes and scheduled jobs for this route group.',
@@ -47,7 +66,14 @@ final class SafeRemediationService
             $items[] = 'Check host metrics separately (It.46) — PHP APM does not replace OS monitoring.';
         }
 
-        return $items;
+        $hints = [];
+        $queryIndexHint = $this->queryIndexAdvisor->evaluateForRoute($route);
+        if ($queryIndexHint !== null) {
+            $hints[] = $queryIndexHint;
+            $items[] = $queryIndexHint['message'];
+        }
+
+        return ['messages' => $items, 'hints' => $hints];
     }
 
     /**

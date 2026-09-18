@@ -427,7 +427,7 @@ export const SettingsView: React.FC = () => {
                         error={errors[field.key]?.message as string | undefined}
                       />
                     ))}
-                    <EngineSettingsPanel meta={engineMeta} />
+                    <EngineSettingsPanel meta={engineMeta} onRefresh={() => void load()} />
                   </>
                 ) : activeGroup === 'privacy' ? (
                   <PrivacyCookieSettingsPanel register={register} watch={watch} setValue={setValue} />

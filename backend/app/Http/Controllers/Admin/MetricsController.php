@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Admin;
 
+use PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexAdvisor;
 use PaginiumCMS\Core\Performance\PerformanceAggregator;
 use PaginiumCMS\Core\Performance\PerformanceBreachStore;
 use PaginiumCMS\Core\Performance\PerformanceGuardSettings;
@@ -22,6 +23,7 @@ final class MetricsController
         private PerformanceAggregator $aggregator,
         private PerformanceBreachStore $breaches,
         private PerformanceSampleStore $samples,
+        private QueryIndexAdvisor $queryIndexAdvisor,
         private JsonResponder $json
     ) {
     }
@@ -32,6 +34,7 @@ final class MetricsController
             'config' => $this->settings->publicSummary(),
             'summary' => $this->aggregator->summary(),
             'recent_breaches' => $this->breaches->recent(),
+            'advisor_hints' => $this->queryIndexAdvisor->activeHints(),
             'host_metrics_note' => 'Host CPU/RAM/disk metrics remain under It.46 — not conflated with PHP APM.',
         ]);
     }

@@ -9,6 +9,7 @@ use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Models\Content;
 use PaginiumCMS\Core\FlatFile\Models\ContentIndexEntry;
+use PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexSync;
 use PaginiumCMS\Http\Support\PaginationQuery;
 use PaginiumCMS\Support\JsonHelper;
 use RuntimeException;
@@ -22,6 +23,8 @@ final class ContentIndexService
 {
     private string $absolutePath;
 
+    private ?QueryIndexSync $queryIndexSync = null;
+
     public function __construct(
         private FileReaderInterface $reader,
         private LocalizedContentNormalizer $localizedNormalizer,
@@ -29,6 +32,11 @@ final class ContentIndexService
         private string $indexFile = 'data/index/content.json'
     ) {
         $this->absolutePath = rtrim($this->reader->getBasePath(), '/') . '/' . ltrim($this->indexFile, '/');
+    }
+
+    public function attachQueryIndexSync(QueryIndexSync $sync): void
+    {
+        $this->queryIndexSync = $sync;
     }
 
     public function upsertFromContent(Content $content, string $type): void
@@ -47,6 +55,7 @@ final class ContentIndexService
             ));
             $items[] = $entry->toArray();
         });
+        $this->queryIndexSync?->afterUpsert($entry->toArray());
     }
 
     public function remove(string $type, string $slug): void
@@ -59,6 +68,7 @@ final class ContentIndexService
                 )
             ));
         });
+        $this->queryIndexSync?->afterRemove($type, $slug);
     }
 
     public function removeByPath(string $type, string $path): void
@@ -75,6 +85,7 @@ final class ContentIndexService
                 )
             ));
         });
+        $this->queryIndexSync?->afterRemoveByPath($type, $path);
     }
 
     /**
@@ -233,6 +244,25 @@ final class ContentIndexService
         });
     }
 
+    public function countAllEntries(): int
+    {
+        return $this->withLockedIndex(function (array &$items): int {
+            return count($items);
+        });
+    }
+
+    /**
+     * Snapshot of index rows for derived SQLite rebuild (It.92b).
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function snapshotItems(): array
+    {
+        return $this->withLockedIndex(function (array &$items): array {
+            return array_values($items);
+        });
+    }
+
     /**
      * @param array<string, string> $filters
      */
@@ -327,9 +357,12 @@ final class ContentIndexService
             $items[] = ContentIndexEntry::fromContent($article, 'article', '', $canonical)->toArray();
         }
 
-        $this->withLockedIndex(function (array &$stored) use ($items): void {
+        $snapshot = $this->withLockedIndex(function (array &$stored) use ($items): array {
             $stored = $items;
+
+            return $stored;
         });
+        $this->queryIndexSync?->afterFullJsonRebuild($snapshot);
     }
 
     public function ensureBuilt(ContentRepositoryInterface $repository): void

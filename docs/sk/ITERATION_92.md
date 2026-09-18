@@ -1,7 +1,8 @@
 # Iterácia 92 — Hybrid Engine query index (odvodené SQLite) + poradca Performance Guard
 
-> **Stav:** ⏳ plánované  
-> **Kanónická špecifikácia (EN):** [../en/ITERATION_92.md](../en/ITERATION_92.md)
+> **Stav:** ✅ hotové (september 2026) — kanón EN: [../en/ITERATION_92.md](../en/ITERATION_92.md)  
+> **Kanónická špecifikácia (EN):** [../en/ITERATION_92.md](../en/ITERATION_92.md)  
+> **Prečo SQLite / kam to vedie:** [architecture/QUERY_INDEX.md](architecture/QUERY_INDEX.md)
 
 ## Cieľ
 
@@ -13,12 +14,12 @@ Nie je to prechod na SQL CMS.
 
 | ID | Čo | Stav |
 |----|-----|------|
-| **92a** | `QueryIndexInterface` + JSON adaptér | ⏳ |
-| **92b** | SQLite driver + rebuild | ⏳ |
-| **92c** | Settings prepínač, dual-write, fallback na JSON | ⏳ |
-| **92d** | Guard advisor `query_index_sqlite` (len suggest) | ⏳ |
-| **92e** | Admin Engine UI, health, CLI | ⏳ |
-| **92f** | Testy + mandát v dokumentácii | ⏳ |
+| **92a** | `QueryIndexInterface` + JSON adaptér | ✅ |
+| **92b** | SQLite driver + rebuild | ✅ |
+| **92c** | Settings prepínač, dual-write, fallback na JSON | ✅ |
+| **92d** | Guard advisor `query_index_sqlite` (len suggest) | ✅ |
+| **92e** | Admin Engine UI, health, CLI | ✅ |
+| **92f** | Testy, runtime watch, SK/EN admin, CHANGELOG | ✅ |
 
 Poradie: `92a → 92b → 92c → 92d → 92e → 92f`.
 

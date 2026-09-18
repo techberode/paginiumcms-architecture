@@ -6,6 +6,7 @@ namespace PaginiumCMS\Http\Controllers\Admin;
 
 use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\Logging\Models\LogSeverity;
+use PaginiumCMS\Core\Logging\Services\ApplicationLogExportService;
 use PaginiumCMS\Core\Logging\Services\ApplicationLogMessageFormatter;
 use PaginiumCMS\Core\Logging\Services\ApplicationLogReader;
 use PaginiumCMS\Core\Logging\Services\LogRetentionService;
@@ -18,6 +19,7 @@ final class LogController
     public function __construct(
         private ApplicationLogReader $logReader,
         private ApplicationLogMessageFormatter $logFormatter,
+        private ApplicationLogExportService $logExport,
         private LogRetentionService $logRetention,
         private JsonResponder $json
     ) {
@@ -115,6 +117,115 @@ final class LogController
             200,
             $action === 'delete' ? 'Vybrané logy boli vymazané' : 'Vybrané logy boli archivované'
         );
+    }
+
+    public function export(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $params = $request->getQueryParams();
+        $format = strtolower((string) ($params['format'] ?? 'txt'));
+        if (!in_array($format, ['txt', 'pdf', 'zip'], true)) {
+            return $this->json->error($response, 'Neplatný formát exportu', 422);
+        }
+
+        $ids = isset($params['ids']) ? $this->normalizeIds(explode(',', (string) $params['ids'])) : [];
+
+        $filters = [
+            'severity' => isset($params['severity']) ? (string) $params['severity'] : null,
+            'source' => isset($params['source']) ? (string) $params['source'] : null,
+            'category' => isset($params['category']) ? (string) $params['category'] : null,
+            'search' => isset($params['search']) ? (string) $params['search'] : null,
+            'archived' => $this->resolveArchivedFilter((string) ($params['archived'] ?? 'active')),
+        ];
+
+        return $this->exportDownload($response, $format, $ids !== [] ? $ids : null, $filters);
+    }
+
+    public function exportPost(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $data = RequestJsonBody::decode($request);
+        if (!is_array($data)) {
+            return $this->json->error($response, 'Neplatné dáta požiadavky', 400);
+        }
+
+        $format = strtolower((string) ($data['format'] ?? 'txt'));
+        if (!in_array($format, ['txt', 'pdf', 'zip'], true)) {
+            return $this->json->error($response, 'Neplatný formát exportu', 422);
+        }
+
+        $ids = $this->normalizeIds($data['ids'] ?? null);
+        $filters = is_array($data['filters'] ?? null) ? $data['filters'] : null;
+
+        return $this->exportDownload($response, $format, $ids !== [] ? $ids : null, $filters);
+    }
+
+    /**
+     * @param list<string>|null $ids
+     * @param array<string, mixed>|null $filters
+     */
+    private function exportDownload(
+        ResponseInterface $response,
+        string $format,
+        ?array $ids,
+        ?array $filters
+    ): ResponseInterface {
+        $severity = isset($filters['severity']) ? (string) $filters['severity'] : null;
+        $source = isset($filters['source']) ? (string) $filters['source'] : null;
+        $category = isset($filters['category']) ? (string) $filters['category'] : null;
+        $search = isset($filters['search']) ? (string) $filters['search'] : null;
+        $archived = $this->resolveArchivedFilter((string) ($filters['archived'] ?? 'active'));
+
+        if ($severity !== null && $severity !== '') {
+            $severity = strtoupper($severity);
+            if (!LogSeverity::isValid($severity)) {
+                return $this->json->error($response, 'Neplatná severity', 400);
+            }
+        }
+
+        $raw = $this->logExport->resolveEntries($ids, $severity, $source, $category, $search, $archived);
+        if ($raw === []) {
+            return $this->json->error($response, 'Žiadne logy pre export', 404);
+        }
+
+        $records = $this->logExport->extendedRecords($raw);
+        $stamp = date('Y-m-d_His');
+
+        return match ($format) {
+            'pdf' => $this->binaryResponse(
+                $response,
+                $this->logExport->toPdfBinary($records),
+                'application/pdf',
+                "paginium-logs-$stamp.pdf"
+            ),
+            'zip' => $this->binaryResponse(
+                $response,
+                $this->logExport->toZipBinary($records),
+                'application/zip',
+                "paginium-logs-$stamp.zip"
+            ),
+            default => $this->binaryResponse(
+                $response,
+                $this->logExport->toPlainText($records),
+                'text/plain; charset=utf-8',
+                "paginium-logs-$stamp.txt"
+            ),
+        };
+    }
+
+    private function binaryResponse(
+        ResponseInterface $response,
+        string $body,
+        string $contentType,
+        string $filename
+    ): ResponseInterface {
+        $safeName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $filename) ?? 'export.dat';
+
+        $response->getBody()->write($body);
+
+        return $response
+            ->withHeader('Content-Type', $contentType)
+            ->withHeader('Content-Disposition', 'attachment; filename="' . $safeName . '"')
+            ->withHeader('Cache-Control', 'no-store')
+            ->withStatus(200);
     }
 
     public function deleteAll(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface

@@ -6,16 +6,17 @@
     {
       "id": "it.92",
       "titleKey": "origin.catalog.it92",
-      "phase": "planned",
+      "phase": "shipped",
+      "since": "2.1.0-beta.83",
       "doc": "docs/en/ITERATION_92.md",
       "priority": "medium",
       "items": [
-        { "id": "92a", "titleKey": "origin.catalog.it92_json_adapter", "phase": "planned", "weight": 1 },
-        { "id": "92b", "titleKey": "origin.catalog.it92_sqlite_driver", "phase": "planned", "weight": 1 },
-        { "id": "92c", "titleKey": "origin.catalog.it92_switch", "phase": "planned", "weight": 1 },
-        { "id": "92d", "titleKey": "origin.catalog.it92_advisor", "phase": "planned", "weight": 1 },
-        { "id": "92e", "titleKey": "origin.catalog.it92_admin", "phase": "planned", "weight": 1 },
-        { "id": "92f", "titleKey": "origin.catalog.it92_tests", "phase": "planned", "weight": 1 }
+        { "id": "92a", "titleKey": "origin.catalog.it92_json_adapter", "phase": "shipped", "weight": 1 },
+        { "id": "92b", "titleKey": "origin.catalog.it92_sqlite_driver", "phase": "shipped", "weight": 1 },
+        { "id": "92c", "titleKey": "origin.catalog.it92_switch", "phase": "shipped", "weight": 1 },
+        { "id": "92d", "titleKey": "origin.catalog.it92_advisor", "phase": "shipped", "weight": 1 },
+        { "id": "92e", "titleKey": "origin.catalog.it92_admin", "phase": "shipped", "weight": 1 },
+        { "id": "92f", "titleKey": "origin.catalog.it92_tests", "phase": "shipped", "weight": 1 }
       ],
       "history": []
     },

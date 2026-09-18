@@ -38,6 +38,8 @@ This pivot does not change the foundational data principle. It changes how the s
 
 PaginiumCMS **keeps data ownership and the No-SQL SSOT**. It adds professional layers around files; it does not replace them with a database.
 
+**Optional SQLite query index (It.92):** derived catalog acceleration only — see [QUERY_INDEX.md](./QUERY_INDEX.md) for why it is a product pivot without becoming an SQL CMS.
+
 ---
 
 ## Layered model
@@ -164,7 +166,7 @@ When keys are absent, the system must preserve compatible **Classic** behavior.
 | No-SQL SSOT (JSON / Markdown) | ✅ Shipped | `ContentRepository`, `STORAGE.md` |
 | Safe writes with `flock` | ✅ Shipped | settings, index, locks, newsletter, and other stores |
 | Content index `content.json` | ✅ Shipped | `ContentIndexService` |
-| Optional SQLite query index | ⏳ Planned | **It.92** — derived listings/search; Guard advisor; never SSOT |
+| Optional SQLite query index | ✅ Shipped | **It.92** — derived listings/search; Guard advisor; runtime watch; never SSOT |
 | File and memory cache | ✅ Shipped | `ChainedDriver`, `ContentCacheService` |
 | Unified Redis cache | ⏳ Planned | It.49 absorbed into **It.69** |
 | OCC and HTTP 409 conflicts | ✅ Shipped | `ContentRevision`, `ContentConflictException` |

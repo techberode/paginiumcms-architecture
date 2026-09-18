@@ -19,8 +19,16 @@ use PaginiumCMS\Core\Analytics\Services\Tracker;
 use PaginiumCMS\Core\Health\Services\HealthCheckManager;
 use PaginiumCMS\Core\Health\Services\Checkers\CacheChecker;
 use PaginiumCMS\Core\Health\Services\Checkers\SecurityChecker;
+use PaginiumCMS\Core\Health\Services\Checkers\QueryIndexChecker;
 use PaginiumCMS\Core\Health\Services\Checkers\StorageChecker;
 use PaginiumCMS\Core\Health\Services\Checkers\SystemChecker;
+use PaginiumCMS\Core\HybridEngine\QueryIndex\Commands\QueryIndexRebuildCommand;
+use PaginiumCMS\Core\HybridEngine\QueryIndex\Commands\QueryIndexStatusCommand;
+use PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexAdminService;
+use PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexFailureHandler;
+use PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexRuntimeWatch;
+use PaginiumCMS\Http\Middleware\QueryIndexWatchMiddleware;
+use PaginiumCMS\Http\Controllers\Admin\QueryIndexController;
 use PaginiumCMS\Core\AuditTrail\Services\AuditTrailService;
 use PaginiumCMS\Core\Monitoring\Services\MonitoringReportScheduler;
 use PaginiumCMS\Core\Monitoring\Services\MonitoringScheduler;
@@ -125,6 +133,14 @@ use PaginiumCMS\Core\FlatFile\Services\ContentDuplicationService;
 use PaginiumCMS\Core\FlatFile\Services\ContentRepository;
 use PaginiumCMS\Core\Import\WordPressWxrImporter;
 use PaginiumCMS\Core\FlatFile\Services\ContentIndexService;
+use PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexCapabilityProbe;
+use PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexFactory;
+use PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexInterface;
+use PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexPaths;
+use PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexRebuilder;
+use PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexSqliteStore;
+use PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexSync;
+use PaginiumCMS\Core\HybridEngine\QueryIndex\SqliteQueryIndex;
 use PaginiumCMS\Core\FlatFile\Services\ContentStalenessService;
 use PaginiumCMS\Core\FlatFile\Services\JsonContentStorage;
 use PaginiumCMS\Core\FlatFile\Services\MarkdownContentStorage;
@@ -163,6 +179,7 @@ use PaginiumCMS\Core\Security\Firewall\FirewallScanner;
 use PaginiumCMS\Core\Security\Firewall\FirewallService;
 use PaginiumCMS\Core\Logging\LogStoragePaths;
 use PaginiumCMS\Core\Logging\Services\ApplicationLogMessageFormatter;
+use PaginiumCMS\Core\Logging\Services\ApplicationLogExportService;
 use PaginiumCMS\Core\Logging\Services\ApplicationLogReader;
 use PaginiumCMS\Core\Logging\Services\AccessLogService;
 use PaginiumCMS\Core\Logging\Services\LogRetentionService;
@@ -458,6 +475,7 @@ return [
             get(FileReaderInterface::class),
             get(FileWriterInterface::class),
             get(ContentIndexService::class),
+            get(QueryIndexInterface::class),
             get(MarkdownContentStorage::class),
             get(JsonContentStorage::class),
             get(SettingsRepositoryInterface::class),
@@ -512,6 +530,86 @@ return [
         );
     },
     CacheCapabilityProbe::class => create(CacheCapabilityProbe::class),
+    QueryIndexPaths::class => create(QueryIndexPaths::class)
+        ->constructor(get(FileReaderInterface::class)),
+    QueryIndexSqliteStore::class => create(QueryIndexSqliteStore::class)
+        ->constructor(get(QueryIndexPaths::class)),
+    QueryIndexRebuilder::class => create(QueryIndexRebuilder::class)
+        ->constructor(
+            get(ContentIndexService::class),
+            get(QueryIndexSqliteStore::class)
+        ),
+    QueryIndexCapabilityProbe::class => create(QueryIndexCapabilityProbe::class)
+        ->constructor(
+            get(QueryIndexPaths::class),
+            get(QueryIndexRebuilder::class),
+            get(QueryIndexSqliteStore::class),
+            get(ContentIndexService::class)
+        ),
+    QueryIndexSync::class => create(QueryIndexSync::class)
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(QueryIndexCapabilityProbe::class),
+            get(QueryIndexSqliteStore::class),
+            get(\PaginiumCMS\Core\Notification\Services\IncidentNotifier::class)
+        ),
+    QueryIndexRuntimeWatch::class => create(QueryIndexRuntimeWatch::class)
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(QueryIndexCapabilityProbe::class),
+            get(QueryIndexPaths::class),
+            get(QueryIndexSqliteStore::class)
+        ),
+    QueryIndexFailureHandler::class => create(QueryIndexFailureHandler::class)
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(QueryIndexRuntimeWatch::class),
+            get(\PaginiumCMS\Core\Notification\Services\IncidentNotifier::class),
+            get(CacheManager::class),
+            get(SecurityLogger::class)
+        ),
+    QueryIndexWatchMiddleware::class => create(QueryIndexWatchMiddleware::class)
+        ->constructor(
+            get(QueryIndexRuntimeWatch::class),
+            get(QueryIndexFailureHandler::class)
+        ),
+    QueryIndexAdminService::class => create(QueryIndexAdminService::class)
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(QueryIndexCapabilityProbe::class),
+            get(QueryIndexRebuilder::class),
+            get(ContentIndexService::class)
+        ),
+    QueryIndexController::class => create(QueryIndexController::class)
+        ->constructor(
+            get(QueryIndexAdminService::class),
+            get(SecurityLogger::class),
+            get(JsonResponder::class)
+        ),
+    QueryIndexStatusCommand::class => create(QueryIndexStatusCommand::class)
+        ->constructor(get(QueryIndexAdminService::class)),
+    QueryIndexRebuildCommand::class => create(QueryIndexRebuildCommand::class)
+        ->constructor(get(QueryIndexAdminService::class)),
+    SqliteQueryIndex::class => create(SqliteQueryIndex::class)
+        ->constructor(
+            get(QueryIndexPaths::class),
+            get(ContentStalenessService::class),
+            get(QueryIndexRebuilder::class)
+        ),
+    QueryIndexFactory::class => create(QueryIndexFactory::class)
+        ->constructor(
+            get(ContentIndexService::class),
+            get(SettingsRepositoryInterface::class),
+            get(QueryIndexCapabilityProbe::class),
+            get(SqliteQueryIndex::class),
+            get(QueryIndexFailureHandler::class)
+        ),
+    QueryIndexInterface::class => function ($container) {
+        /** @var QueryIndexFactory $factory */
+        $factory = $container->get(QueryIndexFactory::class);
+
+        return $factory->create();
+    },
 
     // === Blok: Nastavenia + validácia (Iterácia 4) ===
     // Zdieľaný validator (bezstavový) – používa ho SettingsRepository aj ďalšie moduly.
@@ -574,6 +672,7 @@ return [
             get(MediaStorageFactory::class),
             get(MediaStorageCapabilityProbe::class),
             get(ThemeRuntimeService::class),
+            get(QueryIndexCapabilityProbe::class),
             get(ThemeScriptIntegrityService::class),
         ),
 
@@ -1206,7 +1305,7 @@ return [
         ),
     AdvancedSearchService::class => create(AdvancedSearchService::class)
         ->constructor(
-            get(ContentIndexService::class),
+            get(QueryIndexInterface::class),
             get(\PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface::class)
         ),
     SearchController::class => create(SearchController::class)
@@ -1220,6 +1319,7 @@ return [
     EditorialCalendarController::class => create(EditorialCalendarController::class)
         ->constructor(
             get(ContentIndexService::class),
+            get(QueryIndexInterface::class),
             get(ContentRepositoryInterface::class),
             get(ContentPathAclGuard::class),
             get(JsonResponder::class)
@@ -1732,13 +1832,20 @@ return [
         ->constructor(dirname(__DIR__, 3) . '/storage', get(DemoStorageQuotaService::class)),
     CacheChecker::class => create(CacheChecker::class)
         ->constructor(get(CacheManager::class)),
-    SecurityChecker::class => create(SecurityChecker::class),
+    SecurityChecker::class => create(SecurityChecker::class)
+        ->constructor(get(SettingsRepositoryInterface::class)),
+    QueryIndexChecker::class => create(QueryIndexChecker::class)
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(QueryIndexCapabilityProbe::class)
+        ),
     HealthCheckManager::class => create(HealthCheckManager::class)
         ->method('addChecks', [
             get(SystemChecker::class),
             get(StorageChecker::class),
             get(CacheChecker::class),
             get(SecurityChecker::class),
+            get(QueryIndexChecker::class),
         ]),
     HealthController::class => create(HealthController::class)
         ->constructor(
@@ -1855,17 +1962,23 @@ return [
             get(LogWriterInterface::class),
             get(SettingsRepositoryInterface::class)
         ),
+    ApplicationLogExportService::class => create(ApplicationLogExportService::class)
+        ->constructor(
+            get(ApplicationLogReader::class),
+            get(ApplicationLogMessageFormatter::class)
+        ),
     LogController::class => create(LogController::class)
         ->constructor(
             get(ApplicationLogReader::class),
             get(ApplicationLogMessageFormatter::class),
+            get(ApplicationLogExportService::class),
             get(LogRetentionService::class),
             get(JsonResponder::class)
         ),
     FeedGenerator::class => create(FeedGenerator::class)
-        ->constructor(get(ContentIndexService::class), get(SettingsRepositoryInterface::class)),
+        ->constructor(get(QueryIndexInterface::class), get(SettingsRepositoryInterface::class)),
     SitemapGenerator::class => create(SitemapGenerator::class)
-        ->constructor(get(ContentIndexService::class), get(SettingsRepositoryInterface::class)),
+        ->constructor(get(QueryIndexInterface::class), get(SettingsRepositoryInterface::class)),
     RobotsTxtGenerator::class => create(RobotsTxtGenerator::class)
         ->constructor(get(SettingsRepositoryInterface::class)),
     FeedController::class => create(FeedController::class)

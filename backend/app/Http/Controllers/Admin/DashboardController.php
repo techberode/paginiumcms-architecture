@@ -11,6 +11,7 @@ use PaginiumCMS\Core\Analytics\Services\RealtimeTracker;
 use PaginiumCMS\Core\Conflict\Contracts\ConflictLoggerInterface;
 use PaginiumCMS\Core\Conflict\Models\ConflictRecord;
 use PaginiumCMS\Core\Health\Services\HealthCheckManager;
+use PaginiumCMS\Core\Health\Services\HealthRuntimeContext;
 use PaginiumCMS\Core\Logging\Services\ApplicationLogReader;
 use PaginiumCMS\Core\Locking\Contracts\LockManagerInterface;
 use PaginiumCMS\Http\Support\JsonResponder;
@@ -50,7 +51,12 @@ final class DashboardController
             $this->conflicts->getRecent(10)
         );
 
-        $healthReport = $this->health->run();
+        HealthRuntimeContext::bindFromRequest($request);
+        try {
+            $healthReport = $this->health->run();
+        } finally {
+            HealthRuntimeContext::clear();
+        }
         $healthPayload = $this->normalizeHealthReport($healthReport->toArray());
         $counts = $this->counts->collect($user);
 

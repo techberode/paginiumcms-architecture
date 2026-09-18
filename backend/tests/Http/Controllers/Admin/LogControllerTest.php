@@ -73,6 +73,23 @@ final class LogControllerTest extends TestCase
         $this->assertArrayHasKey('total', $listData['data']);
     }
 
+    public function testAdminCanExportLogsAsTxt(): void
+    {
+        $this->loginAsAdminUser();
+
+        $exportRequest = $this->createJsonRequest('POST', '/api/admin/logs/export', [
+            'format' => 'txt',
+            'ids' => ['log_api_test'],
+        ]);
+        $exportResponse = $this->handleRequest($exportRequest);
+
+        $this->assertEquals(200, $exportResponse->getStatusCode());
+        $this->assertStringContainsString('text/plain', $exportResponse->getHeaderLine('Content-Type'));
+        $body = (string) $exportResponse->getBody();
+        $this->assertStringContainsString('log_api_test', $body);
+        $this->assertStringContainsString('Log controller test entry', $body);
+    }
+
     public function testAdminCanBulkArchiveAndDeleteLogs(): void
     {
         $this->loginAsAdminUser();

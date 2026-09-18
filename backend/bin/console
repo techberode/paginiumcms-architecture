@@ -29,6 +29,8 @@ use PaginiumCMS\Modules\Media\Commands\MediaMigrateVerifyCommand;
 use PaginiumCMS\Modules\Media\Commands\MediaStorageProbeCommand;
 use PaginiumCMS\Http\Extensions\Commands\PluginCreateCommand;
 use PaginiumCMS\Http\Extensions\Commands\PluginScanCommand;
+use PaginiumCMS\Core\HybridEngine\QueryIndex\Commands\QueryIndexRebuildCommand;
+use PaginiumCMS\Core\HybridEngine\QueryIndex\Commands\QueryIndexStatusCommand;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
@@ -61,4 +63,6 @@ $application->addCommand($container->get(MediaMigrateVerifyCommand::class));
 $application->addCommand($container->get(MediaMigrateRollbackCommand::class));
 $application->addCommand($container->get(PluginCreateCommand::class));
 $application->addCommand($container->get(PluginScanCommand::class));
+$application->addCommand($container->get(QueryIndexStatusCommand::class));
+$application->addCommand($container->get(QueryIndexRebuildCommand::class));
 $application->run();

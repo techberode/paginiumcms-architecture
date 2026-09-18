@@ -1,6 +1,7 @@
 // frontend/src/App.tsx
 import React from 'react';
-import { Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, Outlet, useLocation, useParams } from 'react-router-dom';
+import { settingsGroupPath } from './utils/adminDeepLinks';
 import { ResponsiveLayout } from './components/layout/ResponsiveLayout';
 import {
   PublicSiteLayout,
@@ -101,6 +102,12 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }
 
   return <>{children}</>;
+}
+
+function SettingsGroupDeepLinkRedirect() {
+  const { group } = useParams<{ group: string }>();
+  const target = settingsGroupPath(group?.trim() || 'general');
+  return <Navigate to={target} replace />;
 }
 
 function GuestRoute({ children }: { children: React.ReactNode }) {
@@ -250,6 +257,7 @@ function App() {
         <Route path="/widgets" element={<WidgetsManager />} />
         <Route path="/snippets" element={<SnippetsManager />} />
         <Route path="/origin" element={<OriginPanelView />} />
+        <Route path="/settings/:group" element={<SettingsGroupDeepLinkRedirect />} />
         <Route path="/settings" element={<SettingsView />} />
         <Route path="/translations" element={<TranslationEditor />} />
         <Route path="/account" element={<AccountView />} />

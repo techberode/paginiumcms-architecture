@@ -16,6 +16,7 @@ use PaginiumCMS\Core\FlatFile\Models\Page;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Core\FlatFile\Exception\FileNotFoundException;
 use PaginiumCMS\Core\Git\Services\GitPublishDispatcher;
+use PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexInterface;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\Storage\Contracts\StorageInterface;
 use PaginiumCMS\Http\Support\PaginationQuery;
@@ -38,6 +39,7 @@ class ContentRepository implements ContentRepositoryInterface
         private FileReaderInterface $reader,
         private FileWriterInterface $writer,
         private ContentIndexService $index,
+        private QueryIndexInterface $queryIndex,
         private MarkdownContentStorage $markdownStorage,
         private JsonContentStorage $jsonStorage,
         private SettingsRepositoryInterface $settings,
@@ -95,7 +97,7 @@ class ContentRepository implements ContentRepositoryInterface
     public function findBySlug(string $slug, string $type = 'page'): ?Content
     {
         $this->index->ensureBuilt($this);
-        $all = $this->index->query(
+        $all = $this->queryIndex->query(
             $type,
             new PaginationQuery(1, PaginationQuery::MAX_PER_PAGE, '', '-updatedAt', [])
         );
@@ -111,7 +113,7 @@ class ContentRepository implements ContentRepositoryInterface
         if ($total > PaginationQuery::MAX_PER_PAGE) {
             $page = 1;
             while (($page - 1) * PaginationQuery::MAX_PER_PAGE < $total) {
-                $batch = $this->index->query(
+                $batch = $this->queryIndex->query(
                     $type,
                     new PaginationQuery($page, PaginationQuery::MAX_PER_PAGE, '', '-updatedAt', [])
                 );
@@ -195,7 +197,7 @@ class ContentRepository implements ContentRepositoryInterface
      */
     public function listDistinctTags(string $type, array $filters = []): array
     {
-        return $this->index->listDistinctTags($type, $filters);
+        return $this->queryIndex->listDistinctTags($type, $filters);
     }
 
     /**
@@ -203,7 +205,7 @@ class ContentRepository implements ContentRepositoryInterface
      */
     public function listDistinctCategories(string $type, array $filters = []): array
     {
-        return $this->index->listDistinctCategories($type, $filters);
+        return $this->queryIndex->listDistinctCategories($type, $filters);
     }
 
     /**
@@ -211,7 +213,7 @@ class ContentRepository implements ContentRepositoryInterface
      */
     public function countIndexed(string $type, array $filters = []): int
     {
-        return $this->index->countMatching($type, $filters);
+        return $this->queryIndex->countMatching($type, $filters);
     }
 
     /**
@@ -344,7 +346,7 @@ class ContentRepository implements ContentRepositoryInterface
     private function findPaginated(string $type, PaginationQuery $query): array
     {
         $this->index->ensureBuilt($this);
-        $result = $this->index->query($type, $query);
+        $result = $this->queryIndex->query($type, $query);
 
         $items = [];
         foreach ($result['entries'] as $entry) {

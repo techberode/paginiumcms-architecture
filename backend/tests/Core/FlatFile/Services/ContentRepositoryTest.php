@@ -79,10 +79,12 @@ class ContentRepositoryTest extends TestCase
         $staleness = new ContentStalenessService($settings);
         $this->index = new ContentIndexService($reader, $normalizer, $staleness, 'data/index/content.json');
 
+        $queryIndex = new \PaginiumCMS\Core\HybridEngine\QueryIndex\JsonQueryIndex($this->index);
         $this->repository = new ContentRepository(
             $reader,
             $writer,
             $this->index,
+            $queryIndex,
             $markdownStorage,
             $jsonStorage,
             $settings,

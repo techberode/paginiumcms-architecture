@@ -73,10 +73,12 @@ final class DemoLocaleMigrationIntegrationTest extends TestCase
         $this->normalizer = new LocalizedContentNormalizer($settings);
         $index = new ContentIndexService($reader, $this->normalizer, new ContentStalenessService($settings), 'data/index/content.json');
 
+        $queryIndex = new \PaginiumCMS\Core\HybridEngine\QueryIndex\JsonQueryIndex($index);
         $this->repository = new ContentRepository(
             $reader,
             $writer,
             $index,
+            $queryIndex,
             $markdownStorage,
             $jsonStorage,
             $settings,
