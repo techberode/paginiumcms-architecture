@@ -15,7 +15,6 @@ final class QueryIndexCapabilityProbe
 {
     public function __construct(
         private QueryIndexPaths $paths,
-        private QueryIndexRebuilder $rebuilder,
         private QueryIndexSqliteStore $store,
         private ContentIndexService $contentIndex
     ) {
@@ -96,13 +95,22 @@ final class QueryIndexCapabilityProbe
             return false;
         }
 
-        try {
-            $this->rebuilder->rebuild();
-        } catch (\Throwable) {
+        $path = $this->paths->absolutePath();
+        if (!is_readable($path)) {
             return false;
         }
 
-        return $this->parityWithJson();
+        try {
+            if (!$this->runtimeReady()) {
+                return false;
+            }
+
+            $this->store->openConnection();
+
+            return $this->parityWithJson();
+        } catch (\Throwable) {
+            return false;
+        }
     }
 
     public function parityWithJson(): bool

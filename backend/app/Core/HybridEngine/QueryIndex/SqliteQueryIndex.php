@@ -47,9 +47,9 @@ final class SqliteQueryIndex implements QueryIndexInterface
             return [];
         }
 
-        $sql = 'SELECT e.* FROM entries_fts fts
-            INNER JOIN entries e ON e.id = fts.rowid
-            WHERE fts MATCH :match';
+        $sql = 'SELECT e.* FROM entries_fts
+            INNER JOIN entries e ON e.id = entries_fts.rowid
+            WHERE entries_fts MATCH :match';
         $params = ['match' => $match];
 
         if ($type === 'page' || $type === 'article') {

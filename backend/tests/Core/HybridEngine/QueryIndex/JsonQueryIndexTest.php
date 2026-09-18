@@ -112,7 +112,7 @@ final class JsonQueryIndexTest extends TestCase
         $paths = new QueryIndexPaths(new FileReader(new FileValidator($this->baseDir)));
         $store = new QueryIndexSqliteStore($paths);
         $rebuilder = new QueryIndexRebuilder($this->contentIndex, $store);
-        $probe = new QueryIndexCapabilityProbe($paths, $rebuilder, $store, $this->contentIndex);
+        $probe = new QueryIndexCapabilityProbe($paths, $store, $this->contentIndex);
         $sqlite = new SqliteQueryIndex(
             $paths,
             new ContentStalenessService($settings),

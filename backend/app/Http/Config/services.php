@@ -542,7 +542,6 @@ return [
     QueryIndexCapabilityProbe::class => create(QueryIndexCapabilityProbe::class)
         ->constructor(
             get(QueryIndexPaths::class),
-            get(QueryIndexRebuilder::class),
             get(QueryIndexSqliteStore::class),
             get(ContentIndexService::class)
         ),

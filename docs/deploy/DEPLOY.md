@@ -299,7 +299,10 @@ Admin deploy uses the same `scripts/deploy-instance-update.sh` as SSH, but PHP m
 | **Allow deploy from semver tags** | on | Tag deploy (`v2.1.0-beta.63`) |
 | **Docker stack directory** | `/var/lib/docker/compose/paginiumcms` | Passed as `STACK_DIR` — **PHP restart** |
 | **Backend health port** | `8089` | Post-deploy health check |
-| **GitHub owner/repo/token** | … | Remote version check (Dashboard auto-check) |
+| **GitHub owner/repo/token** | … | Remote check **and** HTTPS `git fetch` inside Docker (PHP has no `ssh`) |
+| **`GITHUB_DEPLOY_TOKEN` in php `.env`** (optional) | `ghp_…` / fine-grained PAT | Fallback when settings token is empty or `APP_KEY` cannot decrypt stored token |
+
+**Webhook secret ≠ GitHub token.** Webhook auto-deploy still needs a **repo read token** (settings or env) for `git fetch` in the container.
 
 Without **stack directory**, deploy may pull code but skip `stack.sh up -d --force-recreate` → old PHP/opcache keeps running (ISS-152).
 
@@ -340,6 +343,8 @@ Readiness blockers:
 | `stack_dir_missing` | Settings/env `stackDir` empty |
 | `stack_dir_not_visible` | Path set but not mounted into PHP container |
 | `stack_script_missing` | Directory visible but `stack.sh` missing or not executable **for www-data** — run `bootstrap-stack-permissions.sh` |
+| `github_token_missing` | No `ssh` in PHP container and no deploy token in settings / `GITHUB_DEPLOY_TOKEN` |
+| `github_token_unreadable` | Token stored in `settings.json` but decrypt yields empty — fix **`APP_KEY`**, re-save token |
 
 ### Dashboard banner (SUPER_ADMIN)
 

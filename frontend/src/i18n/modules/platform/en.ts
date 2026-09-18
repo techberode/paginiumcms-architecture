@@ -527,6 +527,10 @@ export const platformEn: MessageTree = {
       app_root_missing: 'Application root (APP_ROOT) could not be resolved on the server.',
       deploy_script_missing: 'scripts/deploy-instance-update.sh is missing in the application root.',
       tag_deploy_disabled: 'Tag deploy is disabled — enable “Allow deploy from semver tags”.',
+      github_token_missing:
+        'SSH is unavailable in the PHP container — set GitHub token (repo read) under Settings → System update, or GITHUB_DEPLOY_TOKEN in the php service .env.',
+      github_token_unreadable:
+        'A GitHub token is stored but PHP cannot decrypt it (usually APP_KEY changed or missing). Re-enter and save the token, or set GITHUB_DEPLOY_TOKEN in .env.',
     },
     toast: {
       checkOk: 'Remote check completed',

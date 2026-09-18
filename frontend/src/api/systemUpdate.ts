@@ -33,6 +33,8 @@ export interface SystemUpdateDeployReadiness {
   app_root_configured?: boolean;
   deploy_enabled?: boolean;
   allow_deploy_tags?: boolean;
+  github_token_configured?: boolean;
+  git_ssh_available?: boolean;
 }
 
 export interface SystemUpdateWebhookConfig {

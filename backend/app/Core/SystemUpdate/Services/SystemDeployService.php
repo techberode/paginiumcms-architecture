@@ -71,11 +71,23 @@ final class SystemDeployService
 
         $env = $this->buildDeployEnvironment($config, $root, $ref);
 
+        if (GitDeployTransport::requiresHttpsToken($config) && !GitDeployTransport::hasUsableGithubDeployToken($config)) {
+            return new JobRunResult(
+                false,
+                'GitHub deploy token is required for HTTPS git fetch in Docker. '
+                . 'Set Settings → System update → GitHub token (repo read), or GITHUB_DEPLOY_TOKEN in PHP .env. '
+                . 'If a token is already saved but deploy fails, verify APP_KEY is stable (encrypted settings cannot decrypt after key change).',
+                ['ref' => $ref],
+                'github_token_missing'
+            );
+        }
+
         $command = $this->buildCommand($script, $env);
         $outputLines = [];
         $exitCode = 1;
 
         set_time_limit(0);
+        $this->applyDeployProcessEnvironment($env);
         exec($command . ' 2>&1', $outputLines, $exitCode);
         $output = implode("\n", $outputLines);
 
@@ -188,13 +200,42 @@ final class SystemDeployService
             'DEPLOY_FORCE' => '1',
         ];
 
-        $githubToken = trim((string) ($config['githubToken'] ?? ''));
+        $githubToken = GitDeployTransport::resolveGithubDeployToken($config);
         if ($githubToken !== '') {
             // Used by deploy-instance-update.sh for HTTPS git fetch when ssh is unavailable (admin UI / Docker).
             $env['GITHUB_DEPLOY_TOKEN'] = $githubToken;
+            $tokenFile = $cacheRoot . '/.github-deploy-token';
+            $env['GITHUB_DEPLOY_TOKEN_FILE'] = $tokenFile;
         }
 
         return array_filter($env, static fn (string $value): bool => $value !== '');
+    }
+
+    /**
+     * @param array<string, string> $env
+     */
+    private function applyDeployProcessEnvironment(array $env): void
+    {
+        $tokenFile = $env['GITHUB_DEPLOY_TOKEN_FILE'] ?? '';
+        $token = $env['GITHUB_DEPLOY_TOKEN'] ?? '';
+        if ($tokenFile !== '' && $token !== '') {
+            $dir = dirname($tokenFile);
+            if (!is_dir($dir)) {
+                mkdir($dir, 0770, true);
+            }
+            file_put_contents($tokenFile, $token);
+            chmod($tokenFile, 0600);
+        }
+
+        foreach ($env as $key => $value) {
+            if ($key === 'GITHUB_DEPLOY_TOKEN_FILE') {
+                continue;
+            }
+            putenv($key . '=' . $value);
+        }
+        if ($tokenFile !== '') {
+            putenv('GITHUB_DEPLOY_TOKEN_FILE=' . $tokenFile);
+        }
     }
 
     /**

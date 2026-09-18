@@ -46,6 +46,7 @@ export * from './newsletter';
 export * from './notifications';
 export * from './origin';
 export * from './projectPlanner';
+export * from './queryIndex';
 export * from './redirects';
 export * from './roles';
 export * from './search';

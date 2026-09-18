@@ -77,7 +77,7 @@ final class QueryIndexFactoryTest extends TestCase
         $store = new QueryIndexSqliteStore($paths);
         $rebuilder = new QueryIndexRebuilder($contentIndex, $store);
         $rebuilder->rebuild();
-        $probe = new QueryIndexCapabilityProbe($paths, $rebuilder, $store, $contentIndex);
+        $probe = new QueryIndexCapabilityProbe($paths, $store, $contentIndex);
         $sqlite = new SqliteQueryIndex($paths, new ContentStalenessService($settingsRepo), $rebuilder);
 
         $watch = new QueryIndexRuntimeWatch($settingsRepo, $probe, $paths, $store);
