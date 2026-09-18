@@ -379,13 +379,23 @@ final class SqliteQueryIndex implements QueryIndexInterface
 
     private function ftsMatchExpression(string $q): string
     {
-        $parts = preg_split('/\s+/u', trim($q), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $q = trim($q);
+        $q = preg_replace('/\b(or|and|not|near)\b/ui', ' ', $q) ?? $q;
+
+        $parts = preg_split('/\s+/u', $q, -1, PREG_SPLIT_NO_EMPTY) ?: [];
         $escaped = [];
         foreach ($parts as $part) {
             $part = preg_replace('/[^\p{L}\p{N}._-]/u', '', $part) ?? '';
-            if ($part !== '') {
-                $escaped[] = '"' . str_replace('"', '', $part) . '"';
+            if ($part === '') {
+                continue;
             }
+            if (preg_match('/^\d+$/u', $part) === 1) {
+                continue;
+            }
+            if (mb_strlen($part) < PaginationQuery::MIN_SEARCH_LENGTH) {
+                continue;
+            }
+            $escaped[] = '"' . str_replace('"', '', $part) . '"';
         }
 
         return implode(' AND ', $escaped);
