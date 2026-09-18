@@ -9,7 +9,16 @@ namespace PaginiumCMS\Core\SystemUpdate\Services;
  */
 final class GitDeployTransport
 {
+    /**
+     * True when git@github.com can authenticate non-interactively (deploy key / agent).
+     * PHP containers often ship the ssh binary without any key for www-data.
+     */
     public static function isSshAvailable(): bool
+    {
+        return self::isGithubSshAuthAvailable();
+    }
+
+    public static function hasSshBinary(): bool
     {
         $path = getenv('PATH');
         $dirs = $path !== false && $path !== ''
@@ -28,6 +37,25 @@ final class GitDeployTransport
         }
 
         return false;
+    }
+
+    public static function isGithubSshAuthAvailable(): bool
+    {
+        if (!self::hasSshBinary()) {
+            return false;
+        }
+
+        $outputLines = [];
+        $exitCode = 255;
+        exec(
+            'ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -T git@github.com 2>&1',
+            $outputLines,
+            $exitCode
+        );
+        $output = implode("\n", $outputLines);
+
+        return str_contains($output, 'successfully authenticated')
+            || preg_match('/\bHi [^\n!]+!/i', $output) === 1;
     }
 
     /**

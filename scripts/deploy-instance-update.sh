@@ -65,19 +65,28 @@ load_github_deploy_token() {
   fi
 }
 
+github_ssh_auth_available() {
+  if ! command -v ssh >/dev/null 2>&1; then
+    return 1
+  fi
+  local out
+  out="$(ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -T git@github.com 2>&1)" || true
+  [[ "$out" == *"successfully authenticated"* || "$out" == *"Hi "* ]]
+}
+
 configure_git_fetch_transport() {
   GIT_DEPLOY_EXTRA_CONFIG=(-c "safe.directory=$APP_ROOT")
   load_github_deploy_token
 
-  if ! command -v ssh >/dev/null 2>&1; then
+  if ! github_ssh_auth_available; then
     if [[ -n "${GITHUB_DEPLOY_TOKEN:-}" ]]; then
-      echo "→ ssh unavailable; git fetch/pull will use HTTPS with GitHub token"
+      echo "→ GitHub SSH auth unavailable for $(whoami); git fetch/pull will use HTTPS with token"
       local auth_base="https://x-access-token:${GITHUB_DEPLOY_TOKEN}@github.com/"
       GIT_DEPLOY_EXTRA_CONFIG+=(-c "url.${auth_base}.insteadOf=git@github.com:")
       GIT_DEPLOY_EXTRA_CONFIG+=(-c "url.${auth_base}.insteadOf=ssh://git@github.com/")
       GIT_DEPLOY_EXTRA_CONFIG+=(-c "http.https://github.com/.extraHeader=Authorization: Bearer ${GITHUB_DEPLOY_TOKEN}")
     else
-      echo "→ ssh unavailable; git fetch/pull will use HTTPS insteadOf for GitHub"
+      echo "→ GitHub SSH auth unavailable for $(whoami); git fetch/pull will use HTTPS insteadOf (private repos need GITHUB_DEPLOY_TOKEN)" >&2
       GIT_DEPLOY_EXTRA_CONFIG+=(-c "url.https://github.com/.insteadOf=git@github.com:")
       GIT_DEPLOY_EXTRA_CONFIG+=(-c "url.https://github.com/.insteadOf=ssh://git@github.com/")
     fi

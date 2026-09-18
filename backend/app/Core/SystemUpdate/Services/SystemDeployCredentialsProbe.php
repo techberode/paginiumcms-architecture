@@ -27,7 +27,8 @@ final class SystemDeployCredentialsProbe
         $config = $this->settings->group('systemUpdate');
         $owner = trim((string) ($config['githubOwner'] ?? ''));
         $repo = trim((string) ($config['githubRepo'] ?? ''));
-        $sshAvailable = GitDeployTransport::isSshAvailable();
+        $sshAvailable = GitDeployTransport::isGithubSshAuthAvailable();
+        $sshBinaryOnly = GitDeployTransport::hasSshBinary() && !$sshAvailable;
         $token = GitDeployTransport::resolveGithubDeployToken($config);
         $tokenUnreadable = $this->settings->hasOverride('systemUpdate', 'githubToken') && $token === '';
 
@@ -72,7 +73,7 @@ final class SystemDeployCredentialsProbe
         }
 
         $appRoot = AppRoot::resolve();
-        $gitFetch = $this->probeGitFetch($appRoot, $token, $sshAvailable);
+        $gitFetch = $this->probeGitFetch($appRoot, $token, $sshAvailable, $sshBinaryOnly);
 
         $webhookSecretStatus = 'not_required';
         $webhookSecretDetail = null;
@@ -124,7 +125,7 @@ final class SystemDeployCredentialsProbe
      *     app_root: ?string
      * }
      */
-    private function probeGitFetch(?string $appRoot, string $token, bool $sshAvailable): array
+    private function probeGitFetch(?string $appRoot, string $token, bool $sshAvailable, bool $sshBinaryOnly): array
     {
         if ($appRoot === null || !is_dir($appRoot . '/.git')) {
             return [
@@ -137,10 +138,14 @@ final class SystemDeployCredentialsProbe
 
         $transport = $sshAvailable ? 'ssh' : ($token !== '' ? 'https_token' : 'https_no_token');
         if (!$sshAvailable && $token === '') {
+            $detail = $sshBinaryOnly
+                ? 'Remote uses git@github.com but PHP (www-data) has no GitHub SSH key — set GITHUB_DEPLOY_TOKEN in PHP .env or mount a read-only deploy key'
+                : 'Cannot run git ls-remote — no GitHub SSH auth and no deploy token';
+
             return [
                 'status' => 'failed',
                 'transport' => 'https_no_token',
-                'detail' => 'Cannot run git ls-remote — no SSH and no GitHub token',
+                'detail' => $detail,
                 'app_root' => $appRoot,
             ];
         }

@@ -47,8 +47,8 @@ final class SystemDeployReadinessServiceTest extends TestCase
 
     public function testReportsGithubTokenBlockerWhenHttpsOnlyAndNoToken(): void
     {
-        if (GitDeployTransport::isSshAvailable()) {
-            $this->markTestSkipped('SSH is available in this environment');
+        if (GitDeployTransport::isGithubSshAuthAvailable()) {
+            $this->markTestSkipped('GitHub SSH auth is available in this environment');
         }
 
         $settings = $this->container()->get(SettingsRepositoryInterface::class);

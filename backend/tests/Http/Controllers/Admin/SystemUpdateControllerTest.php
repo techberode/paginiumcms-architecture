@@ -43,6 +43,7 @@ final class SystemUpdateControllerTest extends TestCase
             'allowDeployMain' => false,
             'stackDir' => $stackDir,
             'backendPort' => '8089',
+            'githubToken' => 'test-deploy-token-for-phpunit',
         ]));
     }
 
