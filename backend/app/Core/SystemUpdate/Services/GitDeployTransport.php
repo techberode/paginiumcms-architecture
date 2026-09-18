@@ -46,16 +46,60 @@ final class GitDeployTransport
         }
 
         $outputLines = [];
-        $exitCode = 255;
         exec(
-            'ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -T git@github.com 2>&1',
-            $outputLines,
-            $exitCode
+            self::shellEnvPrefixForGit() . self::githubSshBaseCommand() . ' -T git@github.com 2>&1',
+            $outputLines
         );
         $output = implode("\n", $outputLines);
 
         return str_contains($output, 'successfully authenticated')
             || preg_match('/\bHi [^\n!]+!/i', $output) === 1;
+    }
+
+    /**
+     * Host path to a read-only GitHub deploy private key (mounted into the PHP container).
+     */
+    public static function resolveDeploySshKeyPath(): ?string
+    {
+        $path = trim((string) (getenv('GITHUB_DEPLOY_SSH_KEY_PATH') ?: ($_ENV['GITHUB_DEPLOY_SSH_KEY_PATH'] ?? '')));
+        if ($path === '' || !is_readable($path)) {
+            return null;
+        }
+
+        return $path;
+    }
+
+    public static function hasDeploySshKeyConfigured(): bool
+    {
+        return self::resolveDeploySshKeyPath() !== null;
+    }
+
+    public static function gitSshCommandValue(): ?string
+    {
+        $key = self::resolveDeploySshKeyPath();
+        if ($key === null) {
+            return null;
+        }
+
+        return self::githubSshBaseCommand() . ' -i ' . escapeshellarg($key);
+    }
+
+    /**
+     * Prefix for exec() so git/ssh use the deploy key (GIT_SSH_COMMAND).
+     */
+    public static function shellEnvPrefixForGit(): string
+    {
+        $command = self::gitSshCommandValue();
+        if ($command === null) {
+            return '';
+        }
+
+        return 'GIT_SSH_COMMAND=' . escapeshellarg($command) . ' ';
+    }
+
+    private static function githubSshBaseCommand(): string
+    {
+        return 'ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o IdentitiesOnly=yes';
     }
 
     /**
@@ -87,5 +131,13 @@ final class GitDeployTransport
     public static function hasUsableGithubDeployToken(array $config): bool
     {
         return self::resolveGithubDeployToken($config) !== '';
+    }
+
+    /**
+     * @param array<string, mixed> $config
+     */
+    public static function hasUsableGitTransport(array $config): bool
+    {
+        return self::isGithubSshAuthAvailable() || self::hasUsableGithubDeployToken($config);
     }
 }

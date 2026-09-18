@@ -65,18 +65,26 @@ load_github_deploy_token() {
   fi
 }
 
+load_github_deploy_ssh_key() {
+  if [[ -n "${GITHUB_DEPLOY_SSH_KEY_PATH:-}" && -r "${GITHUB_DEPLOY_SSH_KEY_PATH}" ]]; then
+    export GIT_SSH_COMMAND="ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o IdentitiesOnly=yes -i ${GITHUB_DEPLOY_SSH_KEY_PATH}"
+  fi
+}
+
 github_ssh_auth_available() {
   if ! command -v ssh >/dev/null 2>&1; then
     return 1
   fi
+  load_github_deploy_ssh_key
   local out
-  out="$(ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -T git@github.com 2>&1)" || true
+  out="$(ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o IdentitiesOnly=yes ${GITHUB_DEPLOY_SSH_KEY_PATH:+-i "$GITHUB_DEPLOY_SSH_KEY_PATH"} -T git@github.com 2>&1)" || true
   [[ "$out" == *"successfully authenticated"* || "$out" == *"Hi "* ]]
 }
 
 configure_git_fetch_transport() {
   GIT_DEPLOY_EXTRA_CONFIG=(-c "safe.directory=$APP_ROOT")
   load_github_deploy_token
+  load_github_deploy_ssh_key
 
   if ! github_ssh_auth_available; then
     if [[ -n "${GITHUB_DEPLOY_TOKEN:-}" ]]; then

@@ -162,6 +162,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ### Added
 
+- **Admin deploy** — GitHub deploy key path (`GITHUB_DEPLOY_SSH_KEY_PATH`), `scripts/bootstrap-github-deploy-key.sh`, DEPLOY.md §12.5 (WebUI git fetch without PAT in CMS settings).
 - **It.94 (complete)** — Accessible confirm dialog (`ConfirmProvider`, `useAdminConfirm`, `confirmDialog` bridge); dashboard getting-started checklist; keyboard shortcuts modal (`?`, Ctrl/Cmd+/); `ContextHelpPanel` doc links (system update, performance guard, media S3, redirects); `FieldError` on settings, API keys, change password. Docs: [ITERATION_94.md](docs/en/ITERATION_94.md), [ADMIN_TOAST_COVERAGE_94.md](docs/en/ADMIN_TOAST_COVERAGE_94.md).
 - **It.92a (foundation)** — `QueryIndexInterface`, `JsonQueryIndex`, `QueryIndexFactory` (JSON default); Engine settings keys for future sqlite driver (validation still `json`-only). Architecture: [QUERY_INDEX.md](docs/en/architecture/QUERY_INDEX.md). Spec: [ITERATION_92.md](docs/en/ITERATION_92.md).
 

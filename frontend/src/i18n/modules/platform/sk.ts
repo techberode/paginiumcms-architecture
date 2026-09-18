@@ -519,7 +519,7 @@ export const platformSk: MessageTree = {
       subtitle:
         'Live test GitHub tokenu, git fetch (rovnako ako deploy script) a webhook secret — spustite po uložení nastavení.',
       pathHint:
-        'Deploy z adminu beží v PHP kontajneri (v Dockeri často /var/www/html). To je bind-mount hostiteľského git checkoutu (napr. /var/www/paginiumcms.com) — nie cesta, ktorú používate pri manuálnom deployi cez SSH na hoste.',
+        'Odporúčané: GitHub deploy key namontovaný do PHP (GITHUB_DEPLOY_SSH_KEY_PATH) — scripts/bootstrap-github-deploy-key.sh a DEPLOY.md §12.5. PAT v nastaveniach nie je nutný na git fetch, ak kľúč funguje.',
       verifyButton: 'Overiť pripojenie',
       verifying: 'Overujem…',
       notRunYet: 'Spustite overenie, aby ste potvrdili token a git prístup pred deployom.',
@@ -567,7 +567,9 @@ export const platformSk: MessageTree = {
       deploy_script_missing: 'scripts/deploy-instance-update.sh chýba v koreni aplikácie.',
       tag_deploy_disabled: 'Deploy tagov je vypnutý — zapnite „Povoliť deploy zo semver tagov“.',
       github_token_missing:
-        'V PHP kontajneri nie je SSH — nastavte GitHub token (repo read) v Nastaveniach → Aktualizácia systému, alebo GITHUB_DEPLOY_TOKEN v .env pre službu php.',
+        'Git fetch pre admin UI nie je nastavený — na hoste spustite scripts/bootstrap-github-deploy-key.sh, namontujte kľúč v docker-compose (GITHUB_DEPLOY_SSH_KEY_PATH), alebo GITHUB_DEPLOY_TOKEN v .env PHP. DEPLOY.md §12.5.',
+      github_deploy_ssh_key_invalid:
+        'Cesta k deploy kľúču je v PHP nastavená, ale SSH na GitHub zlyhalo — pridajte verejný kľúč v repozitári (Deploy keys), skontrolujte práva (600) a reštartujte PHP kontajner.',
       github_token_unreadable:
         'GitHub token je uložený, ale PHP ho nevie prečítať (typicky zmenený alebo chýbajúci APP_KEY). Token znova vložte a uložte, alebo nastavte GITHUB_DEPLOY_TOKEN v .env.',
     },

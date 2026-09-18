@@ -519,7 +519,7 @@ export const platformEn: MessageTree = {
       subtitle:
         'Live test of GitHub token, git fetch (same as deploy script), and webhook secret — run after saving settings.',
       pathHint:
-        'WebUI deploy runs inside the PHP container (often /var/www/html in Docker). That is the bind mount of your host git checkout (e.g. /var/www/paginiumcms.com) — not the path you use for manual SSH deploy on the host.',
+        'Recommended: GitHub deploy key mounted into PHP (GITHUB_DEPLOY_SSH_KEY_PATH) — see scripts/bootstrap-github-deploy-key.sh and DEPLOY.md §12.5. PAT in settings is optional for git fetch when the key works.',
       verifyButton: 'Verify connection',
       verifying: 'Verifying…',
       notRunYet: 'Run verification to confirm token and git access before deploy.',
@@ -567,7 +567,9 @@ export const platformEn: MessageTree = {
       deploy_script_missing: 'scripts/deploy-instance-update.sh is missing in the application root.',
       tag_deploy_disabled: 'Tag deploy is disabled — enable “Allow deploy from semver tags”.',
       github_token_missing:
-        'SSH is unavailable in the PHP container — set GitHub token (repo read) under Settings → System update, or GITHUB_DEPLOY_TOKEN in the php service .env.',
+        'Admin UI git fetch is not configured — on the host run scripts/bootstrap-github-deploy-key.sh, mount the key in docker-compose (GITHUB_DEPLOY_SSH_KEY_PATH), or set GITHUB_DEPLOY_TOKEN in the PHP service .env. See DEPLOY.md §12.5.',
+      github_deploy_ssh_key_invalid:
+        'Deploy key path is set in PHP but GitHub SSH auth failed — add the public key on the repo (Deploy keys), check file permissions (600 on host), and recreate the PHP container.',
       github_token_unreadable:
         'A GitHub token is stored but PHP cannot decrypt it (usually APP_KEY changed or missing). Re-enter and save the token, or set GITHUB_DEPLOY_TOKEN in .env.',
     },

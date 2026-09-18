@@ -299,10 +299,29 @@ Admin deploy uses the same `scripts/deploy-instance-update.sh` as SSH, but PHP m
 | **Allow deploy from semver tags** | on | Tag deploy (`v2.1.0-beta.63`) |
 | **Docker stack directory** | `/var/lib/docker/compose/paginiumcms` | Passed as `STACK_DIR` — **PHP restart** |
 | **Backend health port** | `8089` | Post-deploy health check |
-| **GitHub owner/repo/token** | … | Remote check **and** HTTPS `git fetch` inside Docker (PHP has no `ssh`) |
-| **`GITHUB_DEPLOY_TOKEN` in php `.env`** (optional) | `ghp_…` / fine-grained PAT | Fallback when settings token is empty or `APP_KEY` cannot decrypt stored token |
+| **GitHub owner/repo** | `techberode/paginiumcms-architecture` | Remote release compare (API) |
+| **GitHub deploy key (recommended)** | see below | **`git fetch` for admin UI** without PAT in CMS settings |
+| **GitHub token** (settings or env) | optional if deploy key works | API release check; HTTPS git when no deploy key |
+| **`GITHUB_DEPLOY_TOKEN` in php `.env`** | `ghp_…` | Alternative to settings token |
+| **`GITHUB_DEPLOY_SSH_KEY_PATH` in php service** | `/run/secrets/github_deploy_key` | Private key file mounted read-only into PHP container |
 
-**Webhook secret ≠ GitHub token.** Webhook auto-deploy still needs a **repo read token** (settings or env) for `git fetch` in the container.
+**Webhook secret ≠ GitHub token.**
+
+### GitHub deploy key (recommended for admin UI)
+
+One-time on the host (any org member with repo admin can add the public key on GitHub):
+
+```bash
+cd /var/www/paginiumcms.com
+SECRETS_DIR=/var/lib/paginiumcms/secrets ./scripts/bootstrap-github-deploy-key.sh
+```
+
+1. Paste the printed **public** key into GitHub → repository → **Settings → Deploy keys** (read-only).
+2. Uncomment the **deploy key volume** and **`GITHUB_DEPLOY_SSH_KEY_PATH`** in `docs/deploy/docker-compose.prod.yml` on the PHP service (adjust host path if needed).
+3. Recreate PHP: `"$STACK_DIR/stack.sh" up -d --force-recreate php`.
+4. In admin → **System update → Verify connection** — **Git fetch** should be OK without saving a PAT in Settings.
+
+**GitHub token in settings** remains useful for **Check remote / release API** on private repos; deploy itself can work with deploy key only.
 
 Without **stack directory**, deploy may pull code but skip `stack.sh up -d --force-recreate` → old PHP/opcache keeps running (ISS-152).
 
@@ -343,7 +362,8 @@ Readiness blockers:
 | `stack_dir_missing` | Settings/env `stackDir` empty |
 | `stack_dir_not_visible` | Path set but not mounted into PHP container |
 | `stack_script_missing` | Directory visible but `stack.sh` missing or not executable **for www-data** — run `bootstrap-stack-permissions.sh` |
-| `github_token_missing` | No `ssh` in PHP container and no deploy token in settings / `GITHUB_DEPLOY_TOKEN` |
+| `github_token_missing` | No GitHub SSH auth in PHP and no deploy token — run `bootstrap-github-deploy-key.sh` or set `GITHUB_DEPLOY_TOKEN` |
+| `github_deploy_ssh_key_invalid` | `GITHUB_DEPLOY_SSH_KEY_PATH` is set but `ssh -T git@github.com` fails — wrong key, not added on GitHub, or bad mount permissions |
 | `github_token_unreadable` | Token stored in `settings.json` but decrypt yields empty — fix **`APP_KEY`**, re-save token |
 
 ### Dashboard banner (SUPER_ADMIN)

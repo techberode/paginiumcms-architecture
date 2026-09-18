@@ -208,6 +208,11 @@ final class SystemDeployService
             $env['GITHUB_DEPLOY_TOKEN_FILE'] = $tokenFile;
         }
 
+        $deploySshKey = GitDeployTransport::resolveDeploySshKeyPath();
+        if ($deploySshKey !== null) {
+            $env['GITHUB_DEPLOY_SSH_KEY_PATH'] = $deploySshKey;
+        }
+
         return array_filter($env, static fn (string $value): bool => $value !== '');
     }
 

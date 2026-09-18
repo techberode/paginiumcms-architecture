@@ -96,6 +96,10 @@ final class SystemDeployCredentialsProbe
         return [
             'checked_at' => gmdate('c'),
             'overall_ok' => $deployCredentialsOk,
+            'deploy_ssh_key' => [
+                'configured' => GitDeployTransport::hasDeploySshKeyConfigured(),
+                'path' => GitDeployTransport::resolveDeploySshKeyPath(),
+            ],
             'github' => [
                 'owner' => $owner,
                 'repo' => $repo,
@@ -153,7 +157,7 @@ final class SystemDeployCredentialsProbe
         $command = $this->buildGitLsRemoteCommand($appRoot, $token, $sshAvailable);
         $outputLines = [];
         $exitCode = 1;
-        exec($command . ' 2>&1', $outputLines, $exitCode);
+        exec(GitDeployTransport::shellEnvPrefixForGit() . $command . ' 2>&1', $outputLines, $exitCode);
         $output = LogSanitizer::value(implode("\n", $outputLines), 2000);
 
         if ($exitCode === 0) {

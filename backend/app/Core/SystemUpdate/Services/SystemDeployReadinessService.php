@@ -92,9 +92,12 @@ final class SystemDeployReadinessService
 
         $gitSshAvailable = GitDeployTransport::isSshAvailable();
         $githubTokenConfigured = GitDeployTransport::hasUsableGithubDeployToken($config);
+        $deploySshKeyConfigured = GitDeployTransport::hasDeploySshKeyConfigured();
         if (!$gitSshAvailable && !$githubTokenConfigured) {
             if ($this->settings->hasOverride('systemUpdate', 'githubToken')) {
                 $blockers[] = 'github_token_unreadable';
+            } elseif ($deploySshKeyConfigured) {
+                $blockers[] = 'github_deploy_ssh_key_invalid';
             } else {
                 $blockers[] = 'github_token_missing';
             }
@@ -114,6 +117,7 @@ final class SystemDeployReadinessService
             'allow_deploy_tags' => $allowDeployTags,
             'github_token_configured' => $githubTokenConfigured,
             'git_ssh_available' => $gitSshAvailable,
+            'github_deploy_ssh_key_configured' => $deploySshKeyConfigured,
         ];
     }
 }
