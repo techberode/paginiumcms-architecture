@@ -1,9 +1,10 @@
 FROM php:8.5-fpm-bookworm
 
-# mbstring, curl, opcache are compiled into the official image — git, zip, composer, node for admin deploy.
+# mbstring, curl, opcache are compiled into the official image — git, openssh-client, zip, composer, node for admin deploy.
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         git \
+        openssh-client \
         unzip \
         libzip-dev \
         libpng-dev \

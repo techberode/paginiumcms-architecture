@@ -319,7 +319,8 @@ SECRETS_DIR=/var/lib/paginiumcms/secrets ./scripts/bootstrap-github-deploy-key.s
 1. Paste the printed **public** key into GitHub → repository → **Settings → Deploy keys** (read-only).
 2. Uncomment the **deploy key volume** and **`GITHUB_DEPLOY_SSH_KEY_PATH`** in `docs/deploy/docker-compose.prod.yml` on the PHP service (adjust host path if needed).
 3. Recreate PHP: `"$STACK_DIR/stack.sh" up -d --force-recreate php`.
-4. In admin → **System update → Verify connection** — **Git fetch** should be OK without saving a PAT in Settings.
+4. Rebuild the PHP image (the container must include `openssh-client` for deploy keys): `"$STACK_DIR/stack.sh" build php && "$STACK_DIR/stack.sh" up -d --force-recreate php`.
+5. In admin → **System update → Verify connection** — **Git fetch** should be OK without saving a PAT in Settings.
 
 **GitHub token in settings** remains useful for **Check remote / release API** on private repos; deploy itself can work with deploy key only.
 
