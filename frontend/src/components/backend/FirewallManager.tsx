@@ -27,6 +27,7 @@ import { AdminListToolbar } from './AdminListToolbar';
 import { BulkActionBar } from './BulkActionBar';
 import { applyClientListView } from '../../utils/clientListView';
 import { useI18n } from '../../context/I18nContext';
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { repositoryDoc } from '../../config/repositoryDocs';
 import { summarizeBulkResult } from '../../types/bulk';
 
@@ -34,6 +35,7 @@ type TabId = 'incidents' | 'bans' | 'whitelist';
 
 export const FirewallManager: React.FC = () => {
   const { t, locale } = useI18n();
+  const confirmDestructive = useAdminConfirm();
   const toast = useToast();
   const openInNewTab = useOpenLinksInNewTab();
   const dateLocale = locale === 'en' ? 'en-US' : 'sk-SK';
@@ -171,7 +173,7 @@ export const FirewallManager: React.FC = () => {
   const whitelistBulkSelection = useBulkSelection(whitelistIps, `${tab}:whitelist:${search}`);
 
   const handleUnban = async (ip: string) => {
-    if (!confirm(t('platform.firewall.toast.unbanConfirm', { ip }))) {
+    if (!(await confirmDestructive(t('platform.firewall.toast.unbanConfirm', { ip })))) {
       return;
     }
     setBusyIp(ip);
@@ -233,7 +235,7 @@ export const FirewallManager: React.FC = () => {
   };
 
   const handleRemoveWhitelist = async (ip: string) => {
-    if (!confirm(t('platform.firewall.toast.whitelistRemoveConfirm', { ip }))) {
+    if (!(await confirmDestructive(t('platform.firewall.toast.whitelistRemoveConfirm', { ip })))) {
       return;
     }
     setBusyIp(ip);
@@ -253,7 +255,7 @@ export const FirewallManager: React.FC = () => {
     if (banBulkSelection.count === 0) {
       return;
     }
-    if (!confirm(t('platform.firewall.confirm.bulkUnban', { count: String(banBulkSelection.count) }))) {
+    if (!(await confirmDestructive(t('platform.firewall.confirm.bulkUnban', { count: String(banBulkSelection.count) })))) {
       return;
     }
     setBusyIp('bulk-unban');
@@ -276,9 +278,9 @@ export const FirewallManager: React.FC = () => {
       return;
     }
     if (
-      !confirm(
+      !(await confirmDestructive(
         t('platform.firewall.confirm.bulkRemoveWhitelist', { count: String(whitelistBulkSelection.count) })
-      )
+      ))
     ) {
       return;
     }

@@ -6,20 +6,28 @@ import { useAuth } from '../../hooks/useAuth';
 import { useSettings } from '../../hooks/useSettings';
 import { useToast } from '../../hooks/useToast';
 import { useI18n } from '../../context/I18nContext';
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import {
   checkSystemUpdate,
   getSystemUpdateStatus,
   runSystemUpdate,
+  verifySystemUpdateCredentials,
   type SystemUpdateCheckResult,
+  type SystemUpdateCredentialsVerify,
   type SystemUpdateRemote,
   type SystemUpdateStatus,
 } from '../../api/systemUpdate';
+import {
+  firstCredentialsFailureDetail,
+  SystemUpdateCredentialsPanel,
+} from './SystemUpdateCredentialsPanel';
 import { settingsGroupPath } from '../../utils/adminDeepLinks';
 import { DeployBlockersList } from '../dashboard/DeployBlockersList';
 import { interpretDeployRunResult } from '../../utils/deployRunResult';
 
 export const SystemUpdateView: React.FC = () => {
   const { t } = useI18n();
+  const confirmDestructive = useAdminConfirm();
   const { user } = useAuth();
   const { settings } = useSettings();
   const { success, error: toastError, warning } = useToast();
@@ -28,6 +36,10 @@ export const SystemUpdateView: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [checking, setChecking] = useState(false);
   const [deploying, setDeploying] = useState(false);
+  const [credentialsReport, setCredentialsReport] = useState<SystemUpdateCredentialsVerify | null>(
+    null
+  );
+  const [credentialsLoading, setCredentialsLoading] = useState(false);
   const [ref, setRef] = useState('');
 
   const isSuperAdmin = user?.roles?.includes('SUPER_ADMIN') ?? false;
@@ -52,6 +64,36 @@ export const SystemUpdateView: React.FC = () => {
     remoteCheck?.update?.latest_tag ??
     null;
 
+  const runCredentialsVerify = useCallback(
+    async (options?: { notify?: boolean }): Promise<SystemUpdateCredentialsVerify | null> => {
+      const notify = options?.notify === true;
+      setCredentialsLoading(true);
+      try {
+        const { data: report, error } = await verifySystemUpdateCredentials();
+        if (!report) {
+          if (notify) {
+            toastError(error ?? t('platform.systemUpdate.toast.verifyFailed'));
+          }
+          setCredentialsReport(null);
+          return null;
+        }
+        setCredentialsReport(report);
+        if (notify) {
+          if (report.overall_ok) {
+            success(t('platform.systemUpdate.toast.verifyOk'));
+          } else {
+            const detail = firstCredentialsFailureDetail(report);
+            toastError(detail ?? t('platform.systemUpdate.toast.verifyFailed'));
+          }
+        }
+        return report;
+      } finally {
+        setCredentialsLoading(false);
+      }
+    },
+    [success, t, toastError]
+  );
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -66,6 +108,10 @@ export const SystemUpdateView: React.FC = () => {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    void runCredentialsVerify({ notify: false });
+  }, [runCredentialsVerify]);
 
   if (!isSuperAdmin) {
     return (
@@ -121,10 +167,18 @@ export const SystemUpdateView: React.FC = () => {
       toastError(t('platform.systemUpdate.toast.refRequired'));
       return;
     }
+    const creds =
+      credentialsReport && !credentialsLoading
+        ? credentialsReport
+        : await runCredentialsVerify({ notify: false });
+    if (!creds?.overall_ok) {
+      warning(t('platform.systemUpdate.toast.credentialsNotReady'));
+      return;
+    }
     if (
-      !window.confirm(
+      !(await confirmDestructive(
         t('platform.systemUpdate.backupBeforeDeployConfirm', { ref: deployRef })
-      )
+      ))
     ) {
       return;
     }
@@ -158,9 +212,7 @@ export const SystemUpdateView: React.FC = () => {
       return;
     }
     if (
-      !window.confirm(
-        t('platform.systemUpdate.deployLatestConfirm', { tag })
-      )
+      !(await confirmDestructive(t('platform.systemUpdate.deployLatestConfirm', { tag })))
     ) {
       return;
     }
@@ -171,12 +223,15 @@ export const SystemUpdateView: React.FC = () => {
   const compareCommits = remoteCheck?.remote.compare?.commits ?? [];
   const readiness = remoteCheck?.deploy_readiness ?? data?.deploy_readiness ?? null;
   const deployReady = readiness?.ready === true;
+  const credentialsOk =
+    credentialsReport === null || credentialsLoading || credentialsReport.overall_ok;
   const canDeployLatestTag =
     Boolean(latestTag) &&
     updateStatus === 'update_available' &&
     data?.config?.deployEnabled === true &&
     data?.job_registered === true &&
-    deployReady;
+    deployReady &&
+    credentialsOk;
 
   const webhookPath = data?.webhook?.path ?? '/api/webhooks/github/release';
   const webhookUrl =
@@ -354,6 +409,12 @@ export const SystemUpdateView: React.FC = () => {
             </div>
           </div>
 
+          <SystemUpdateCredentialsPanel
+            report={credentialsReport}
+            loading={credentialsLoading}
+            onVerify={() => void runCredentialsVerify({ notify: true })}
+          />
+
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm space-y-3">
             <h2 className="font-semibold text-slate-800">{t('platform.systemUpdate.deployTitle')}</h2>
             <DeployBlockersList readiness={readiness} />
@@ -394,7 +455,13 @@ export const SystemUpdateView: React.FC = () => {
               ) : null}
               <button
                 type="button"
-                disabled={deploying || !data?.job_registered || !deployReady || ref.trim() === ''}
+                disabled={
+                  deploying ||
+                  !data?.job_registered ||
+                  !deployReady ||
+                  !credentialsOk ||
+                  ref.trim() === ''
+                }
                 onClick={() => void handleDeploy()}
                 className={canDeployLatestTag ? 'btn-secondary inline-flex items-center gap-2' : 'btn-primary inline-flex items-center gap-2'}
               >

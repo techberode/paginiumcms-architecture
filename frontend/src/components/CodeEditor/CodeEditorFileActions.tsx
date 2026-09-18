@@ -1,3 +1,4 @@
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 // frontend/src/components/CodeEditor/CodeEditorFileActions.tsx
 import React, { useEffect, useState } from 'react';
 import { codeEditorApi } from '../../api/codeEditor';
@@ -21,6 +22,7 @@ export const CodeEditorFileActions: React.FC<CodeEditorFileActionsProps> = ({
   onBackupRestored,
 }) => {
   const toast = useToast();
+  const confirmDestructive = useAdminConfirm();
   const [backups, setBackups] = useState<string[]>([]);
   const [loadingBackups, setLoadingBackups] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -54,7 +56,7 @@ export const CodeEditorFileActions: React.FC<CodeEditorFileActionsProps> = ({
     );
     if (!input?.trim()) return;
 
-    const ok = window.confirm(
+    const ok = await confirmDestructive(
       `Vytvoriť súbor?\n\n${input.trim()}\n\nUistite sa, že cesta je v povolenom adresári.`
     );
     if (!ok) return;
@@ -76,7 +78,7 @@ export const CodeEditorFileActions: React.FC<CodeEditorFileActionsProps> = ({
   const handleDelete = async () => {
     if (!currentFile) return;
 
-    const ok = window.confirm(
+    const ok = await confirmDestructive(
       `Naozaj zmazať súbor?\n\n${currentFile}\n\nPred zmazaním sa vytvorí záloha. Táto akcia môže znefunkčniť CMS.`
     );
     if (!ok) return;
@@ -99,11 +101,11 @@ export const CodeEditorFileActions: React.FC<CodeEditorFileActionsProps> = ({
     if (!currentFile) return;
 
     if (isDirty) {
-      const ok = window.confirm('Máte neuložené zmeny. Obnoviť zálohu a prepísať editor?');
+      const ok = await confirmDestructive('Máte neuložené zmeny. Obnoviť zálohu a prepísať editor?');
       if (!ok) return;
     }
 
-    const ok = window.confirm(`Obnoviť zálohu?\n\n${backupFile}\n\n→ ${currentFile}`);
+    const ok = await confirmDestructive(`Obnoviť zálohu?\n\n${backupFile}\n\n→ ${currentFile}`);
     if (!ok) return;
 
     setBusy(true);

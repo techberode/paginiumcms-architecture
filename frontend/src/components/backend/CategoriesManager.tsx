@@ -5,6 +5,7 @@ import { categoriesApi, type ContentCategory } from '../../api/categories';
 import { useToast } from '../../hooks/useToast';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { useI18n } from '../../context/I18nContext';
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { BulkActionBar } from './BulkActionBar';
 import { summarizeBulkResult } from '../../types/bulk';
 import { slugifyTitle } from '../../utils/contentEditorMeta';
@@ -16,6 +17,7 @@ function isValidCategorySlug(slug: string): boolean {
 
 export const CategoriesManager: React.FC = () => {
   const { t } = useI18n();
+  const confirmDestructive = useAdminConfirm();
   const toast = useToast();
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<ContentCategory[]>([]);
@@ -113,7 +115,7 @@ export const CategoriesManager: React.FC = () => {
     if (bulkSelection.count === 0) {
       return;
     }
-    if (!window.confirm(t('platform.categories.confirm.bulkDelete', { count: String(bulkSelection.count) }))) {
+    if (!(await confirmDestructive(t('platform.categories.confirm.bulkDelete', { count: String(bulkSelection.count) })))) {
       return;
     }
     setBusySlug('bulk');
@@ -132,7 +134,7 @@ export const CategoriesManager: React.FC = () => {
   };
 
   const handleDelete = async (category: ContentCategory) => {
-    if (!window.confirm(t('platform.categories.confirmDelete', { label: category.label }))) {
+    if (!(await confirmDestructive(t('platform.categories.confirmDelete', { label: category.label })))) {
       return;
     }
 

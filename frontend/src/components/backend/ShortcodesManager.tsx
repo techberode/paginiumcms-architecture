@@ -5,6 +5,7 @@ import { shortcodesApi, type ShortcodeListItem } from '../../api/shortcodes';
 import { useToast } from '../../hooks/useToast';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { useI18n } from '../../context/I18nContext';
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { AdminHintCard } from './AdminHintCard';
 import { AdminFormActions } from './AdminFormActions';
 import { AdminBodyPreviewPanel } from './AdminBodyPreviewPanel';
@@ -26,6 +27,7 @@ const DEFAULT_DEFINITION = (name: string) =>
 
 export const ShortcodesManager: React.FC = () => {
   const { t } = useI18n();
+  const confirmDestructive = useAdminConfirm();
   const toast = useToast();
   const draftNameRef = useRef<string | null>(null);
 
@@ -190,7 +192,7 @@ export const ShortcodesManager: React.FC = () => {
   };
 
   const handleDelete = async (name: string) => {
-    if (!window.confirm(t('platform.shortcodes.confirmDelete', { name }))) {
+    if (!(await confirmDestructive(t('platform.shortcodes.confirmDelete', { name })))) {
       return;
     }
     setBusyName(name);
@@ -216,7 +218,7 @@ export const ShortcodesManager: React.FC = () => {
     if (bulkSelection.count === 0) {
       return;
     }
-    if (!window.confirm(t('platform.shortcodes.confirmBulkDelete', { count: String(bulkSelection.count) }))) {
+    if (!(await confirmDestructive(t('platform.shortcodes.confirmBulkDelete', { count: String(bulkSelection.count) })))) {
       return;
     }
     setBusyName('bulk');

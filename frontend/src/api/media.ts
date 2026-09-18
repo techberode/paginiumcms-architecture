@@ -58,6 +58,40 @@ export function resolveAdminMediaPreviewUrl(path: string): string {
   return resolveAdminMediaFileUrl(path);
 }
 
+/** Force `Content-Disposition: attachment` on the authenticated media file route. */
+export function resolveAdminMediaDownloadUrl(path: string): string {
+  return `${resolveAdminMediaFileUrl(path)}?download=1`;
+}
+
+/** Download a library file to the user's device (session cookie auth). */
+export async function downloadMediaFile(
+  file: MediaFile
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const url = resolveAdminMediaDownloadUrl(file.path);
+
+  try {
+    const response = await fetch(url, { credentials: 'include' });
+    if (!response.ok) {
+      return { ok: false, error: `HTTP ${response.status}` };
+    }
+
+    const blob = await response.blob();
+    const objectUrl = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = objectUrl;
+    anchor.download = file.fileName || 'download';
+    anchor.rel = 'noopener';
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(objectUrl);
+
+    return { ok: true };
+  } catch {
+    return { ok: false, error: 'network' };
+  }
+}
+
 /** Public storage URL (same origin). */
 export function resolvePublicMediaUrl(url: string): string {
   return resolveStorageUrl(url);

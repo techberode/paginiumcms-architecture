@@ -27,12 +27,14 @@ import { BulkActionBar } from './BulkActionBar';
 import { applyClientListView } from '../../utils/clientListView';
 import { summarizeBulkResult } from '../../types/bulk';
 import { useI18n } from '../../context/I18nContext';
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { NewsletterSettingsPanel } from './NewsletterSettingsPanel';
 
 const sourceLabelKey = (source: string): string => `newsletter.source.${source}`;
 
 export const NewsletterSubscribersPanel: React.FC = () => {
   const { t, locale } = useI18n();
+  const confirmDestructive = useAdminConfirm();
   const { user } = useAuth();
   const dateLocale = locale === 'en' ? 'en-US' : 'sk-SK';
   const { error: showError, success: showSuccess, warning: showWarning } = useToast();
@@ -144,7 +146,7 @@ export const NewsletterSubscribersPanel: React.FC = () => {
 
     const confirmKey =
       action === 'delete' ? 'newsletter.confirm.bulkDelete' : 'newsletter.confirm.bulkUnsubscribe';
-    if (!confirm(t(confirmKey, { count: String(bulkSelection.count) }))) {
+    if (!(await confirmDestructive(t(confirmKey, { count: String(bulkSelection.count) })))) {
       return;
     }
 
@@ -181,7 +183,7 @@ export const NewsletterSubscribersPanel: React.FC = () => {
   };
 
   const handleUnsubscribeOne = async (id: string) => {
-    if (!confirm(t('newsletter.confirm.unsubscribeOne'))) {
+    if (!(await confirmDestructive(t('newsletter.confirm.unsubscribeOne')))) {
       return;
     }
 
@@ -203,7 +205,7 @@ export const NewsletterSubscribersPanel: React.FC = () => {
   };
 
   const handleDeleteOne = async (id: string) => {
-    if (!confirm(t('newsletter.confirm.deleteOne'))) {
+    if (!(await confirmDestructive(t('newsletter.confirm.deleteOne')))) {
       return;
     }
 

@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useI18n } from '../../context/I18nContext';
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { useToast } from '../../hooks/useToast';
 import { clearApmSamples, type ApmOverview } from '../../api/metrics';
 import { settingsGroupPath } from '../../utils/adminDeepLinks';
@@ -14,11 +15,12 @@ interface Props {
 
 export const PerformanceGuardPanel: React.FC<Props> = ({ overview, loading, onRefresh }) => {
   const { t } = useI18n();
+  const confirmDestructive = useAdminConfirm();
   const toast = useToast();
   const [clearing, setClearing] = useState(false);
 
   const handleClearSamples = async () => {
-    if (!window.confirm(t('dashboard.panels.apm.clearConfirm'))) {
+    if (!(await confirmDestructive(t('dashboard.panels.apm.clearConfirm')))) {
       return;
     }
 

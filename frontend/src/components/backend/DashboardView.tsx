@@ -39,6 +39,7 @@ import { useI18n } from '../../context/I18nContext';
 import { useSettings } from '../../hooks/useSettings';
 import { storageUsedPercent } from '../../utils/adminStorageMeter';
 import { ProgressBar } from './ProgressBar';
+import { GettingStartedChecklist } from '../dashboard/GettingStartedChecklist';
 
 interface ContentStats {
   totalPages: number;
@@ -206,6 +207,12 @@ export const DashboardView: React.FC = () => {
           </button>
         </div>
       </AdminToolbar>
+
+      <GettingStartedChecklist
+        totalPages={stats.totalPages}
+        totalArticles={stats.totalArticles}
+        totalMedia={counts?.media ?? stats.totalMedia}
+      />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5 gap-4">
         {kpiCards.map((card) => (

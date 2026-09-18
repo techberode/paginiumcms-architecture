@@ -8,6 +8,7 @@ import {
 } from '../../api/translations';
 import { useToast } from '../../hooks/useToast';
 import { useI18n } from '../../context/I18nContext';
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { AdminHintCard } from './AdminHintCard';
 import { AdminFormActions } from './AdminFormActions';
 
@@ -26,6 +27,7 @@ function formatDate(timestamp: number): string {
 
 export const TranslationEditor: React.FC = () => {
   const { t } = useI18n();
+  const confirmDestructive = useAdminConfirm();
   const toast = useToast();
   const monacoRef = useRef<MonacoCodeEditorHandle>(null);
 
@@ -202,7 +204,7 @@ export const TranslationEditor: React.FC = () => {
       return;
     }
 
-    const ok = window.confirm(t('translations.confirm.save', { path: currentPath }));
+    const ok = await confirmDestructive(t('translations.confirm.save', { path: currentPath }));
     if (!ok) {
       return;
     }
@@ -242,11 +244,11 @@ export const TranslationEditor: React.FC = () => {
     }
   };
 
-  const handleRevert = () => {
+  const handleRevert = async () => {
     if (!isDirty) {
       return;
     }
-    if (!window.confirm(t('translations.confirm.revert'))) {
+    if (!(await confirmDestructive(t('translations.confirm.revert')))) {
       return;
     }
     setContent(originalContent);
@@ -260,7 +262,7 @@ export const TranslationEditor: React.FC = () => {
     if (!currentPath) {
       return;
     }
-    if (!window.confirm(t('translations.confirm.restore', { backup: backupFile }))) {
+    if (!(await confirmDestructive(t('translations.confirm.restore', { backup: backupFile })))) {
       return;
     }
 

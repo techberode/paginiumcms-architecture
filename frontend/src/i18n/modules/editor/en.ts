@@ -516,4 +516,8 @@ export const editorEn: MessageTree = {
     cancel: 'Cancel',
     toolbar: 'Insert chart',
   },
+  versions: {
+    confirmRestore: 'Restore version {version}? The current draft will be replaced.',
+    confirmPrune: 'Delete all but the last 10 versions of this file?',
+  },
 };

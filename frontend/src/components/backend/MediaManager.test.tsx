@@ -153,7 +153,6 @@ describe('MediaManager', () => {
     mocks.bulkDeleteMedia.mockResolvedValue(1);
     mocks.createMediaFolder.mockResolvedValue(true);
     mocks.updateMediaMetadata.mockResolvedValue(true);
-    vi.stubGlobal('confirm', vi.fn(() => true));
     vi.stubGlobal('prompt', vi.fn(() => 'new-folder'));
   });
 

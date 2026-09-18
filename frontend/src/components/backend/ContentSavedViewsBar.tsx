@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { MoreHorizontal, X } from 'lucide-react';
 import type { ContentFilterPreset, ContentSavedView } from '../../utils/contentSavedViews';
 import { useI18n } from '../../context/I18nContext';
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 
 interface ContentSavedViewsBarProps {
   views: ContentSavedView[];
@@ -25,6 +26,7 @@ export const ContentSavedViewsBar: React.FC<ContentSavedViewsBarProps> = ({
   onDelete,
 }) => {
   const { t } = useI18n();
+  const confirmDestructive = useAdminConfirm();
   const [menuViewId, setMenuViewId] = useState<string | null>(null);
 
   const resolveLabel = (view: ContentSavedView): string => {
@@ -44,8 +46,8 @@ export const ContentSavedViewsBar: React.FC<ContentSavedViewsBarProps> = ({
     setMenuViewId(null);
   };
 
-  const handleDelete = (view: ContentSavedView) => {
-    if (!window.confirm(t('content.savedViews.deleteConfirm', { name: view.name }))) {
+  const handleDelete = async (view: ContentSavedView) => {
+    if (!(await confirmDestructive(t('content.savedViews.deleteConfirm', { name: view.name })))) {
       return;
     }
     onDelete(view.id);

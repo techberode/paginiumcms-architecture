@@ -182,6 +182,55 @@ final class GitHubReleaseClient
     }
 
     /**
+     * Live probe for admin UI — validates token can read the configured repository.
+     *
+     * @return array{ok: bool, http_status: int, error: ?string}
+     */
+    public function probeRepositoryAccess(string $owner, string $repo, string $token): array
+    {
+        $owner = trim($owner);
+        $repo = trim($repo);
+        if ($owner === '' || $repo === '') {
+            return [
+                'ok' => false,
+                'http_status' => 0,
+                'error' => 'GitHub owner or repository is not configured',
+            ];
+        }
+
+        if ($token === '') {
+            return [
+                'ok' => false,
+                'http_status' => 0,
+                'error' => 'GitHub token is missing',
+            ];
+        }
+
+        $url = self::API_BASE . '/repos/' . rawurlencode($owner) . '/' . rawurlencode($repo);
+
+        try {
+            $this->request($url, $token);
+
+            return ['ok' => true, 'http_status' => 200, 'error' => null];
+        } catch (RuntimeException $e) {
+            $message = $e->getMessage();
+            $http = 0;
+            if (preg_match('/HTTP (\d+)/', $message, $m) === 1) {
+                $http = (int) $m[1];
+            }
+
+            $error = match ($http) {
+                401 => 'GitHub rejected the token (invalid or expired)',
+                403 => 'Token lacks permission to read this repository (scope or SSO authorization)',
+                404 => 'Repository not found — check owner/repo settings',
+                default => $message,
+            };
+
+            return ['ok' => false, 'http_status' => $http, 'error' => $error];
+        }
+    }
+
+    /**
      * @return array<string, mixed>
      */
     private function request(string $url, string $token): array

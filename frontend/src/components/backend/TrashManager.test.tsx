@@ -1,6 +1,7 @@
 // frontend/src/components/backend/TrashManager.test.tsx
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, fireEvent, waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { TrashManager } from './TrashManager';
 import { renderWithRouter } from '../../test/renderWithRouter';
 
@@ -43,7 +44,6 @@ describe('TrashManager', () => {
     vi.clearAllMocks();
     mocks.list.mockResolvedValue([sampleItem]);
     mocks.restore.mockResolvedValue({ originalPath: 'pages/home.md' });
-    vi.stubGlobal('confirm', vi.fn(() => true));
   });
 
   it('renders trash items after load', async () => {
@@ -61,10 +61,12 @@ describe('TrashManager', () => {
   });
 
   it('calls restore API on button click', async () => {
+    const user = userEvent.setup();
     renderWithRouter(<TrashManager />);
 
     const button = await screen.findByRole('button', { name: /Obnoviť/i });
-    fireEvent.click(button);
+    await user.click(button);
+    await user.click(screen.getByRole('button', { name: 'Zmazať' }));
 
     await waitFor(() => {
       expect(mocks.restore).toHaveBeenCalledWith('trash_abc');

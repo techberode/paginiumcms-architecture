@@ -5,11 +5,14 @@ import { redirectsApi, type RedirectRule } from '../../api/redirects';
 import { useToast } from '../../hooks/useToast';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { useI18n } from '../../context/I18nContext';
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { BulkActionBar } from './BulkActionBar';
+import { ContextHelpPanel } from '../admin/ContextHelpPanel';
 import { summarizeBulkResult } from '../../types/bulk';
 
 export const RedirectsManager: React.FC = () => {
   const { t } = useI18n();
+  const confirmDestructive = useAdminConfirm();
   const toast = useToast();
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
@@ -99,7 +102,7 @@ export const RedirectsManager: React.FC = () => {
     if (bulkSelection.count === 0) {
       return;
     }
-    if (!window.confirm(t('platform.redirects.confirm.bulkDelete', { count: String(bulkSelection.count) }))) {
+    if (!(await confirmDestructive(t('platform.redirects.confirm.bulkDelete', { count: String(bulkSelection.count) })))) {
       return;
     }
     setBusyId('bulk');
@@ -118,7 +121,7 @@ export const RedirectsManager: React.FC = () => {
   };
 
   const handleDelete = async (rule: RedirectRule) => {
-    if (!window.confirm(t('platform.redirects.confirmDelete', { from: rule.from }))) {
+    if (!(await confirmDestructive(t('platform.redirects.confirmDelete', { from: rule.from })))) {
       return;
     }
     setBusyId(rule.id);
@@ -142,6 +145,11 @@ export const RedirectsManager: React.FC = () => {
           <h1 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
             <ArrowRightLeft className="w-7 h-7 text-indigo-600" />
             {t('platform.redirects.title')}
+            <ContextHelpPanel
+              summary={t('platform.redirects.contextHelpSummary')}
+              detail={t('platform.redirects.contextHelpDetail')}
+              docUrl={t('platform.redirects.contextHelpDocLink')}
+            />
           </h1>
           <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">{t('platform.redirects.subtitle')}</p>
         </div>

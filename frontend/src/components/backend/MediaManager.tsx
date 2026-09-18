@@ -2,6 +2,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Copy,
+  Download,
   FolderPlus,
   Loader2,
   Trash2,
@@ -23,6 +24,7 @@ import {
   bulkDeleteMedia,
   createMediaFolder,
   deleteMedia,
+  downloadMediaFile,
   formatMediaSize,
   importStockImage,
   isImageMedia,
@@ -62,10 +64,12 @@ import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { applyClientListView } from '../../utils/clientListView';
 import { evaluateMediaSeo } from '../../utils/seoHealth';
 import { useI18n } from '../../context/I18nContext';
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 
 export const MediaManager: React.FC = () => {
   const toast = useToast();
   const { t } = useI18n();
+  const confirmDestructive = useAdminConfirm();
   const folderLabel = (folder: string): string =>
     folder === '' ? t('media.folder.all') : folder;
   const openInNewTab = useOpenLinksInNewTab();
@@ -267,6 +271,15 @@ export const MediaManager: React.FC = () => {
     }
   };
 
+  const handleDownload = async (file: MediaFile) => {
+    const result = await downloadMediaFile(file);
+    if (result.ok) {
+      toast.success(t('media.toast.downloadStarted'));
+    } else {
+      toast.error(t('media.toast.downloadFailed'));
+    }
+  };
+
   const filteredItems = items.filter((item) => {
     if (seoIssuesOnly && evaluateMediaSeo(item) === 'ok') {
       return false;
@@ -322,7 +335,7 @@ export const MediaManager: React.FC = () => {
     }
 
     if (
-      !confirm(t('media.confirm.deleteBulk', { count: String(bulkSelection.count) }))
+      !(await confirmDestructive(t('media.confirm.deleteBulk', { count: String(bulkSelection.count) })))
     ) {
       return;
     }
@@ -365,7 +378,7 @@ export const MediaManager: React.FC = () => {
   };
 
   const handleDelete = async (file: MediaFile) => {
-    if (!confirm(t('media.confirm.deleteOne', { name: file.fileName }))) {
+    if (!(await confirmDestructive(t('media.confirm.deleteOne', { name: file.fileName })))) {
       return;
     }
 
@@ -420,7 +433,7 @@ export const MediaManager: React.FC = () => {
     }
 
     const isQuickOptimize = options.targetWidth === undefined && options.targetHeight === undefined;
-    if (isQuickOptimize && !confirm(t('media.confirm.optimize', { name: file.fileName }))) {
+    if (isQuickOptimize && !(await confirmDestructive(t('media.confirm.optimize', { name: file.fileName })))) {
       return;
     }
 
@@ -694,6 +707,7 @@ export const MediaManager: React.FC = () => {
               onCancelEdit={cancelEditMeta}
               onSaveEdit={() => saveEditMeta(file.path)}
               onCopyUrl={() => handleCopyUrl(file)}
+              onDownload={() => void handleDownload(file)}
               onPreview={() => openPreview(file)}
               onPreviewNative={() => openPreview(file, 'native')}
               onOptimize={() => void handleOptimize(file)}
@@ -712,6 +726,7 @@ export const MediaManager: React.FC = () => {
           onToggleSelect={bulkSelection.toggle}
           onToggleSelectAll={bulkSelection.toggleAll}
           onCopyUrl={handleCopyUrl}
+          onDownload={handleDownload}
           onPreview={openPreview}
           onDelete={handleDelete}
           onStartEdit={startEditMeta}
@@ -781,6 +796,7 @@ interface MediaCardProps {
   onCancelEdit: () => void;
   onSaveEdit: () => void;
   onCopyUrl: () => void;
+  onDownload: () => void;
   onPreview: () => void;
   onPreviewNative: () => void;
   onOptimize: () => void;
@@ -802,6 +818,7 @@ const MediaCard: React.FC<MediaCardProps> = ({
   onCancelEdit,
   onSaveEdit,
   onCopyUrl,
+  onDownload,
   onPreview,
   onPreviewNative,
   onOptimize,
@@ -969,6 +986,14 @@ const MediaCard: React.FC<MediaCardProps> = ({
           </button>
           <button
             type="button"
+            className="btn btn-secondary text-xs px-2 py-1"
+            title={t('media.actions.download')}
+            onClick={onDownload}
+          >
+            <Download className="w-3 h-3" />
+          </button>
+          <button
+            type="button"
             className="btn btn-danger text-xs px-2 py-1 ml-auto"
             title={t('media.actions.delete')}
             onClick={onDelete}
@@ -991,6 +1016,7 @@ interface MediaListTableProps {
   onToggleSelect: (path: string) => void;
   onToggleSelectAll: () => void;
   onCopyUrl: (file: MediaFile) => void;
+  onDownload: (file: MediaFile) => void;
   onPreview: (file: MediaFile) => void;
   onDelete: (file: MediaFile) => void;
   onStartEdit: (file: MediaFile) => void;
@@ -1007,6 +1033,7 @@ const MediaListTable: React.FC<MediaListTableProps> = ({
   onToggleSelect,
   onToggleSelectAll,
   onCopyUrl,
+  onDownload,
   onPreview,
   onDelete,
   onStartEdit,
@@ -1118,6 +1145,14 @@ const MediaListTable: React.FC<MediaListTableProps> = ({
                     </button>
                     <button type="button" className="btn btn-secondary text-xs px-2 py-1" onClick={() => onCopyUrl(file)}>
                       <Copy className="w-3 h-3" />
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-secondary text-xs px-2 py-1"
+                      title={t('media.actions.download')}
+                      onClick={() => void onDownload(file)}
+                    >
+                      <Download className="w-3 h-3" />
                     </button>
                     <button type="button" className="btn btn-danger text-xs px-2 py-1" onClick={() => onDelete(file)}>
                       <Trash2 className="w-3 h-3" />

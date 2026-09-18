@@ -7,6 +7,7 @@ use PaginiumCMS\Core\SystemUpdate\Commands\SystemDeployCommand;
 use PaginiumCMS\Core\SystemUpdate\Services\GitHubReleaseClient;
 use PaginiumCMS\Core\SystemUpdate\Services\GitHubReleaseWebhookVerifier;
 use PaginiumCMS\Core\SystemUpdate\Services\GitRepositoryInspector;
+use PaginiumCMS\Core\SystemUpdate\Services\SystemDeployCredentialsProbe;
 use PaginiumCMS\Core\SystemUpdate\Services\SystemDeployReadinessService;
 use PaginiumCMS\Core\SystemUpdate\Services\SystemDeployService;
 use PaginiumCMS\Core\SystemUpdate\Services\SystemDeployTriggerService;
@@ -29,6 +30,11 @@ return [
         ->constructor(
             get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class),
             get(SystemDeployService::class)
+        ),
+    SystemDeployCredentialsProbe::class => create(SystemDeployCredentialsProbe::class)
+        ->constructor(
+            get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class),
+            get(GitHubReleaseClient::class)
         ),
     SystemDeployTriggerService::class => create(SystemDeployTriggerService::class)
         ->constructor(
@@ -62,6 +68,7 @@ return [
             get(SystemUpdateWebhookService::class),
             get(SystemUpdateVersionMatcher::class),
             get(SystemDeployReadinessService::class),
+            get(SystemDeployCredentialsProbe::class),
             get(\PaginiumCMS\Http\Support\JsonResponder::class)
         ),
     GitHubReleaseWebhookController::class => create(GitHubReleaseWebhookController::class)

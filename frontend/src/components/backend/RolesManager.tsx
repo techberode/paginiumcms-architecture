@@ -6,6 +6,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { useI18n } from '../../context/I18nContext';
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { AdminHintCard } from './AdminHintCard';
 import { BulkActionBar } from './BulkActionBar';
 import { summarizeBulkResult } from '../../types/bulk';
@@ -21,6 +22,7 @@ function roleLabel(role: CustomRole, t: (key: string) => string): string {
 
 export const RolesManager: React.FC = () => {
   const { t } = useI18n();
+  const confirmDestructive = useAdminConfirm();
   const { user } = useAuth();
   const toast = useToast();
   const isSuperAdmin = user?.roles?.includes('SUPER_ADMIN') ?? false;
@@ -164,7 +166,7 @@ export const RolesManager: React.FC = () => {
       return;
     }
 
-    if (!confirm(t('platform.roles.confirmDelete', { id: role.id }))) {
+    if (!(await confirmDestructive(t('platform.roles.confirmDelete', { id: role.id })))) {
       return;
     }
 
@@ -187,7 +189,7 @@ export const RolesManager: React.FC = () => {
     if (bulkSelection.count === 0) {
       return;
     }
-    if (!confirm(t('platform.roles.confirmBulkDelete', { count: String(bulkSelection.count) }))) {
+    if (!(await confirmDestructive(t('platform.roles.confirmBulkDelete', { count: String(bulkSelection.count) })))) {
       return;
     }
 

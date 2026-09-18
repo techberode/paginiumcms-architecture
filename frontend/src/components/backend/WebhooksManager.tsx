@@ -9,6 +9,7 @@ import {
 import { useToast } from '../../hooks/useToast';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { useI18n } from '../../context/I18nContext';
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { BulkActionBar } from './BulkActionBar';
 import { summarizeBulkResult } from '../../types/bulk';
 
@@ -19,6 +20,7 @@ const EVENT_LABEL_KEYS: Record<string, string> = {
 
 export const WebhooksManager: React.FC = () => {
   const { t } = useI18n();
+  const confirmDestructive = useAdminConfirm();
   const toast = useToast();
   const [loading, setLoading] = useState(true);
   const [index, setIndex] = useState<WebhooksIndexResponse | null>(null);
@@ -126,7 +128,7 @@ export const WebhooksManager: React.FC = () => {
     if (bulkSelection.count === 0) {
       return;
     }
-    if (!window.confirm(t('platform.webhooks.confirm.bulkDelete', { count: String(bulkSelection.count) }))) {
+    if (!(await confirmDestructive(t('platform.webhooks.confirm.bulkDelete', { count: String(bulkSelection.count) })))) {
       return;
     }
     setBusyId('bulk');
@@ -145,7 +147,7 @@ export const WebhooksManager: React.FC = () => {
   };
 
   const handleDelete = async (webhook: WebhookMetadata) => {
-    if (!window.confirm(t('platform.webhooks.confirm.delete', { label: webhook.label }))) {
+    if (!(await confirmDestructive(t('platform.webhooks.confirm.delete', { label: webhook.label })))) {
       return;
     }
     setBusyId(webhook.id);
@@ -163,7 +165,7 @@ export const WebhooksManager: React.FC = () => {
   };
 
   const handleRotate = async (webhook: WebhookMetadata) => {
-    if (!window.confirm(t('platform.webhooks.confirm.rotate', { label: webhook.label }))) {
+    if (!(await confirmDestructive(t('platform.webhooks.confirm.rotate', { label: webhook.label })))) {
       return;
     }
     setBusyId(webhook.id);

@@ -20,6 +20,7 @@ import { settingsGroupPath } from '../../utils/adminDeepLinks';
 import { formatApplicationLogMessage, shouldShowLogContext } from '../../utils/formatApplicationLog';
 import { summarizeBulkResult } from '../../types/bulk';
 import { useI18n } from '../../context/I18nContext';
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 
 const SEVERITIES: LogSeverity[] = ['debug', 'info', 'warning', 'error', 'critical'];
 const LOGS_PAGE_SIZE_KEY = 'paginium-admin-page-size-logs';
@@ -44,6 +45,7 @@ function readStoredLogsPageSize(): number {
 
 export const LogsManager: React.FC = () => {
   const { t } = useI18n();
+  const confirmDestructive = useAdminConfirm();
   const toast = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
@@ -134,7 +136,7 @@ export const LogsManager: React.FC = () => {
   );
 
   const handlePurge = async () => {
-    if (!confirm(t('logs.confirm.purge'))) {
+    if (!(await confirmDestructive(t('logs.confirm.purge')))) {
       return;
     }
     setPurging(true);
@@ -153,7 +155,7 @@ export const LogsManager: React.FC = () => {
   };
 
   const handleDeleteAll = async () => {
-    if (!confirm(t('logs.confirm.deleteAll'))) {
+    if (!(await confirmDestructive(t('logs.confirm.deleteAll')))) {
       return;
     }
     setDeletingAll(true);
@@ -208,7 +210,7 @@ export const LogsManager: React.FC = () => {
       return;
     }
 
-    if (action === 'delete' && !confirm(t('logs.confirm.bulkDelete', { count: String(bulkSelection.count) }))) {
+    if (action === 'delete' && !(await confirmDestructive(t('logs.confirm.bulkDelete', { count: String(bulkSelection.count) })))) {
       return;
     }
 

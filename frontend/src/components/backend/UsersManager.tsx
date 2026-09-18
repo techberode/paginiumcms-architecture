@@ -36,6 +36,7 @@ import { getValidationRulesFor } from '../../api/validation';
 import { useToast } from '../../hooks/useToast';
 import { useAuth } from '../../hooks/useAuth';
 import { useI18n } from '../../context/I18nContext';
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { AdminFormActions } from './AdminFormActions';
 import { usePasswordPolicy } from '../../hooks/usePasswordPolicy';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
@@ -73,6 +74,7 @@ const emptyForm = (): FormState => ({
 
 export const UsersManager: React.FC = () => {
   const { t, locale } = useI18n();
+  const confirmDestructive = useAdminConfirm();
   const passwordPolicy = usePasswordPolicy();
   const [users, setUsers] = useState<User[]>([]);
   const [requireTwoFactorStaff, setRequireTwoFactorStaff] = useState(true);
@@ -253,7 +255,7 @@ export const UsersManager: React.FC = () => {
   };
 
   const handleDelete = async (user: User) => {
-    if (!confirm(t('users.confirm.delete', { email: user.email }))) return;
+    if (!(await confirmDestructive(t('users.confirm.delete', { email: user.email })))) return;
     const res = await deleteUser(user.id);
     if (res.success) {
       success(t('users.toast.deleted'));
@@ -288,7 +290,7 @@ export const UsersManager: React.FC = () => {
 
   const handleBulkDelete = async () => {
     if (bulkSelection.count === 0) return;
-    if (!confirm(t('users.confirm.bulkDelete', { count: String(bulkSelection.count) }))) return;
+    if (!(await confirmDestructive(t('users.confirm.bulkDelete', { count: String(bulkSelection.count) })))) return;
     const result = await bulkDeleteUsers(bulkSelection.selectedIds);
     if (result) {
       success(summarizeBulkResult(result, t));
@@ -335,7 +337,7 @@ export const UsersManager: React.FC = () => {
       toastError(t('users.gdpr.alreadyAnonymized'));
       return;
     }
-    if (!confirm(t('users.gdpr.anonymizeConfirm', { email: form.email }))) return;
+    if (!(await confirmDestructive(t('users.gdpr.anonymizeConfirm', { email: form.email })))) return;
 
     setGdprBusy(true);
     try {

@@ -9,6 +9,7 @@ import {
 } from '../../api/timeEntries';
 import { useToast } from '../../hooks/useToast';
 import { useI18n } from '../../context/I18nContext';
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { AdminHintCard } from './AdminHintCard';
 import { AdminWidgetCard } from '../ui/AdminWidgetCard';
 import { AdminDataTable } from '../ui/AdminDataTable';
@@ -21,6 +22,7 @@ type RangeFilter = 'today' | 'week';
 
 export const TimeTrackerView: React.FC = () => {
   const { t } = useI18n();
+  const confirmDestructive = useAdminConfirm();
   const toast = useToast();
   const [now, setNow] = useState(() => Math.floor(Date.now() / 1000));
   const [loading, setLoading] = useState(true);
@@ -151,7 +153,7 @@ export const TimeTrackerView: React.FC = () => {
   };
 
   const handleDelete = async (entry: TimeEntry) => {
-    if (!window.confirm(t('platform.timeTracker.confirmDelete'))) {
+    if (!(await confirmDestructive(t('platform.timeTracker.confirmDelete')))) {
       return;
     }
     const ok = await timeEntriesApi.remove(entry.id);

@@ -35,6 +35,7 @@ import { applyClientListView } from '../../utils/clientListView';
 import { messagePriorityWeight } from '../../constants/messageSubjects';
 import { summarizeBulkResult } from '../../types/bulk';
 import { useI18n } from '../../context/I18nContext';
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { ADMIN_PAGE_SUBTITLE, ADMIN_PAGE_TITLE } from '../../theme/adminUiClasses';
 
 const truncate = (text: string, max = 90): string =>
@@ -42,6 +43,7 @@ const truncate = (text: string, max = 90): string =>
 
 export const MessagesViewer: React.FC = () => {
   const { t, locale } = useI18n();
+  const confirmDestructive = useAdminConfirm();
   const dateLocale = locale === 'en' ? 'en-US' : 'sk-SK';
   const priorityLabel = (priority: string): string => {
     const key = `messages.priority.${priority}` as const;
@@ -125,7 +127,7 @@ export const MessagesViewer: React.FC = () => {
           : action === 'read'
             ? 'messages.confirm.bulkRead'
             : 'messages.confirm.bulkProcessed';
-    if (!confirm(t(confirmKey, counts))) {
+    if (!(await confirmDestructive(t(confirmKey, counts)))) {
       return;
     }
     const result = await bulkMessageAction(bulkSelection.selectedIds, action);
@@ -146,7 +148,7 @@ export const MessagesViewer: React.FC = () => {
   };
 
   const removeOne = async (id: string) => {
-    if (!confirm(t('messages.confirm.deleteOne'))) {
+    if (!(await confirmDestructive(t('messages.confirm.deleteOne')))) {
       return;
     }
     if (await deleteMessage(id)) {

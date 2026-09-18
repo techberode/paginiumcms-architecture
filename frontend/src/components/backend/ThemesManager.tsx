@@ -8,12 +8,14 @@ import { useAdminListQuery } from '../../hooks/useAdminListQuery';
 import { useToast } from '../../hooks/useToast';
 import { AdminListSkeleton } from '../ui/AdminListSkeleton';
 import { useI18n } from '../../context/I18nContext';
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { useSettingsContext } from '../../context/SettingsContext';
 
 const STARTER_THEME_ID = 'clean-journal';
 
 export const ThemesManager: React.FC = () => {
   const { t } = useI18n();
+  const confirmDestructive = useAdminConfirm();
   const { reload: reloadPublicSettings } = useSettingsContext();
   const queryClient = useQueryClient();
   const [importing, setImporting] = useState(false);
@@ -55,7 +57,7 @@ export const ThemesManager: React.FC = () => {
       return;
     }
 
-    if (!window.confirm(t('platform.themes.toast.uninstallConfirm', { name: item.name }))) {
+    if (!(await confirmDestructive(t('platform.themes.toast.uninstallConfirm', { name: item.name })))) {
       return;
     }
 

@@ -60,7 +60,6 @@ const renderPanel = (ui: React.ReactElement) =>
 describe('PerformanceGuardPanel', () => {
   beforeEach(() => {
     clearApmSamples.mockReset();
-    vi.stubGlobal('confirm', vi.fn(() => true));
   });
 
   it('renders disabled state', () => {
@@ -86,6 +85,9 @@ describe('PerformanceGuardPanel', () => {
     );
 
     await user.click(screen.getByRole('button', { name: 'Vymazať vzorky' }));
+    await user.click(
+      screen.getByRole('button', { name: 'Zmazať' })
+    );
 
     expect(clearApmSamples).toHaveBeenCalledTimes(1);
     expect(onRefresh).toHaveBeenCalledTimes(1);

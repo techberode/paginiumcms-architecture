@@ -4,6 +4,7 @@ import type { LucideIcon } from 'lucide-react';
 import { teamsApi, type Team, type TeamMember, type TeamType } from '../../api/teams';
 import { useToast } from '../../hooks/useToast';
 import { useI18n } from '../../context/I18nContext';
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { AdminHintCard } from './AdminHintCard';
 import { AdminOfferCard } from '../ui/AdminOfferCard';
 import { AdminWidgetCard } from '../ui/AdminWidgetCard';
@@ -26,6 +27,7 @@ const EMPTY_DRAFT = {
 
 export const TeamsManager: React.FC = () => {
   const { t } = useI18n();
+  const confirmDestructive = useAdminConfirm();
   const toast = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -141,7 +143,7 @@ export const TeamsManager: React.FC = () => {
   };
 
   const handleDelete = async (team: Team) => {
-    if (!window.confirm(t('platform.teams.confirmDelete', { name: teamTitle(team) }))) {
+    if (!(await confirmDestructive(t('platform.teams.confirmDelete', { name: teamTitle(team) })))) {
       return;
     }
     const ok = await teamsApi.remove(team.id);

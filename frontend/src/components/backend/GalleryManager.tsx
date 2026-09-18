@@ -29,6 +29,7 @@ import { resolvePublicMediaUrl } from '../../api/media';
 import { useToast } from '../../hooks/useToast';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { useI18n } from '../../context/I18nContext';
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { BulkActionBar } from './BulkActionBar';
 import { AdminFormActions } from './AdminFormActions';
 import { summarizeBulkResult } from '../../types/bulk';
@@ -57,6 +58,7 @@ const emptyForm = (): FormState => ({
 
 export const GalleryManager: React.FC = () => {
   const { t } = useI18n();
+  const confirmDestructive = useAdminConfirm();
   const { settings } = useSettingsContext();
   const { error: showError, success: showSuccess } = useToast();
   const [items, setItems] = useState<GalleryItem[]>([]);
@@ -117,7 +119,7 @@ export const GalleryManager: React.FC = () => {
     if (!file) {
       return;
     }
-    if (!confirm(t('gallery.confirm.importReplace'))) {
+    if (!(await confirmDestructive(t('gallery.confirm.importReplace')))) {
       return;
     }
     setImporting(true);
@@ -208,7 +210,7 @@ export const GalleryManager: React.FC = () => {
     if (bulkSelection.count === 0) {
       return;
     }
-    if (!confirm(t('gallery.confirm.bulkDelete', { count: String(bulkSelection.count) }))) {
+    if (!(await confirmDestructive(t('gallery.confirm.bulkDelete', { count: String(bulkSelection.count) })))) {
       return;
     }
     const result = await bulkDeleteGalleryItems(bulkSelection.selectedIds);
@@ -222,7 +224,7 @@ export const GalleryManager: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm(t('gallery.confirm.delete'))) {
+    if (!(await confirmDestructive(t('gallery.confirm.delete')))) {
       return;
     }
     const result = await deleteGalleryItem(id);

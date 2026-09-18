@@ -1149,22 +1149,30 @@ export const settingsEn: MessageTree = {
     "media": {
       "storageDriver": {
         "label": "Media storage driver",
-        "help": "local = flat-file binaries under media/. s3 = S3-compatible storage when bucket, region, and credentials are set; otherwise falls back to local."
+        "help": "local = flat-file binaries under media/. s3 = S3-compatible storage when bucket, region, and credentials are set; otherwise falls back to local.",
+        "tooltip": "Switching drivers does not migrate existing files automatically — plan a backup before changing production.",
+        "docLink": "https://github.com/techberode/paginiumcms-architecture/blob/main/docs/en/ITERATION_94.md#slice-94e--context-help-complex-fields"
       },
       "s3Endpoint": {
-        "label": "S3 endpoint URL"
+        "label": "S3 endpoint URL",
+        "tooltip": "Custom endpoint for MinIO, Cloudflare R2, etc. Must pass server OutboundUrlGuard.",
+        "docLink": "https://github.com/techberode/paginiumcms-architecture/blob/main/docs/en/ITERATION_94.md#slice-94e--context-help-complex-fields"
       },
       "s3Region": {
         "label": "S3 region"
       },
       "s3Bucket": {
-        "label": "S3 bucket"
+        "label": "S3 bucket",
+        "tooltip": "Bucket name only — no s3:// prefix. Required together with region and credentials for S3 mode.",
+        "docLink": "https://github.com/techberode/paginiumcms-architecture/blob/main/docs/en/ITERATION_94.md#slice-94e--context-help-complex-fields"
       },
       "s3KeyId": {
         "label": "S3 access key ID"
       },
       "s3Secret": {
-        "label": "S3 secret key"
+        "label": "S3 secret key",
+        "tooltip": "Stored encrypted at rest when APP_KEY is set. Never shown again after save.",
+        "docLink": "https://github.com/techberode/paginiumcms-architecture/blob/main/docs/en/ITERATION_94.md#slice-94e--context-help-complex-fields"
       },
       "s3PathStyle": {
         "label": "S3 path-style URLs",
@@ -1575,7 +1583,9 @@ export const settingsEn: MessageTree = {
       "performanceGuardEnabled": {
         "label": "Enable Performance Guard (APM)",
         "help": "Lightweight in-request latency and I/O sampling. Disabled by default.",
-        "tooltip": "Records per-route timings to a ring buffer shown on Dashboard. Overhead grows with sample rate; does not modify content or settings automatically unless remediation mode allows cache purge."
+        "tooltip": "Records per-route timings to a ring buffer shown on Dashboard. Overhead grows with sample rate; does not modify content or settings automatically unless remediation mode allows cache purge.",
+        "tooltipDetail": "Start with sample rate 0.2 on production. Review breaches on Dashboard → Performance Guard before enabling automatic remediation.",
+        "docLink": "https://github.com/techberode/paginiumcms-architecture/blob/main/docs/en/ITERATION_94.md#slice-94e--context-help-complex-fields"
       },
       "performanceGuardSampleRate": {
         "label": "APM sample rate",
@@ -1605,7 +1615,8 @@ export const settingsEn: MessageTree = {
       "performanceGuardRemediationMode": {
         "label": "Remediation mode",
         "help": "suggest = incidents only; automatic = allow-listed cache purge after probe.",
-        "tooltip": "automatic never enables Redis or changes engine mode — only safe cache/content-cache purges after repeated budget breaches. suggest logs incidents for manual review."
+        "tooltip": "automatic never enables Redis or changes engine mode — only safe cache/content-cache purges after repeated budget breaches. suggest logs incidents for manual review.",
+        "docLink": "https://github.com/techberode/paginiumcms-architecture/blob/main/docs/en/ITERATION_94.md#slice-94e--context-help-complex-fields"
       },
       "performanceGuardServerTiming": {
         "label": "Server-Timing header",
@@ -1771,7 +1782,10 @@ export const settingsEn: MessageTree = {
       },
       "githubToken": {
         "label": "GitHub token (repo read)",
-        "help": "Fine-grained or classic token with read access to code and releases."
+        "help": "Fine-grained or classic token with read access to code and releases.",
+        "tooltip": "Required for admin UI deploy when PHP runs in Docker without SSH git.",
+        "tooltipDetail": "This is not the webhook secret. Use a PAT with Contents: Read for your repository.\n\nIf a token is saved but deploy still fails, verify APP_KEY has not changed (encrypted settings).",
+        "docLink": "https://github.com/techberode/paginiumcms-architecture/blob/main/docs/deploy/DEPLOY.md#125-admin-ui-deploy-platform--system-update--dashboard-banner"
       },
       "defaultBranch": {
         "label": "Default branch"
@@ -1784,7 +1798,10 @@ export const settingsEn: MessageTree = {
       },
       "stackDir": {
         "label": "Docker stack directory (host path)",
-        "help": "Absolute path on the host, e.g. /var/lib/docker/compose/paginiumcms — required for admin UI deploy to restart PHP. Falls back to STACK_DIR env when empty."
+        "help": "Absolute path on the host, e.g. /var/lib/docker/compose/paginiumcms — required for admin UI deploy to restart PHP. Falls back to STACK_DIR env when empty.",
+        "tooltip": "Host path where stack.sh lives — PHP must see it (bind mount) to recreate containers after deploy.",
+        "tooltipDetail": "Without this, git pull may succeed but opcache keeps old code.\n\nRun bootstrap-stack-permissions.sh so www-data can execute stack.sh.",
+        "docLink": "https://github.com/techberode/paginiumcms-architecture/blob/main/docs/deploy/DEPLOY.md#125-admin-ui-deploy-platform--system-update--dashboard-banner"
       },
       "backendPort": {
         "label": "Backend health port",

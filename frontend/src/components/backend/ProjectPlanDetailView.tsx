@@ -12,6 +12,7 @@ import {
 } from '../../api/projectPlanner';
 import type { Page } from '../../api/types';
 import { useI18n } from '../../context/I18nContext';
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { useSettings } from '../../hooks/useSettings';
 import { useToast } from '../../hooks/useToast';
 import { progressBarTone } from '../../utils/projectPlanProgress';
@@ -36,6 +37,7 @@ const STATUSES: ProjectPlanStatus[] = ['planned', 'in_progress', 'done', 'skippe
 export const ProjectPlanDetailView: React.FC = () => {
   const { planId = '' } = useParams<{ planId: string }>();
   const { t, locale } = useI18n();
+  const confirmDestructive = useAdminConfirm();
   const toast = useToast();
   const { settings } = useSettings();
   const [loading, setLoading] = useState(true);
@@ -241,7 +243,7 @@ export const ProjectPlanDetailView: React.FC = () => {
     if (!plan) {
       return;
     }
-    if (!window.confirm(t('projectPlanner.confirm.deleteItem'))) {
+    if (!(await confirmDestructive(t('projectPlanner.confirm.deleteItem')))) {
       return;
     }
     setBusyItemId(item.id);

@@ -14,6 +14,8 @@ import {
   type EngineSettingsMeta,
 } from '../../api/settings';
 import { useToast } from '../../hooks/useToast';
+import { verifySystemUpdateCredentials } from '../../api/systemUpdate';
+import { firstCredentialsFailureDetail } from './SystemUpdateCredentialsPanel';
 import { useSettings } from '../../hooks/useSettings';
 import { useI18n } from '../../context/I18nContext';
 import {
@@ -28,9 +30,12 @@ import {
   translateSettingFieldLabel,
   translateSettingFieldNote,
   translateSettingFieldTooltip,
+  translateSettingFieldTooltipDetail,
+  translateSettingFieldDocLink,
   translateSettingGroup,
 } from '../../i18n/modules/settings/helpers';
 import { SettingFieldLabel } from './SettingHelpTooltip';
+import { FieldError } from '../ui/FieldError';
 import { zodFromRules } from '../../validation/zodFromRules';
 import { applyApiValidationErrors } from '../../validation/mapApiErrors';
 import {
@@ -97,7 +102,7 @@ export const SettingsView: React.FC = () => {
   const [activeGroup, setActiveGroup] = useState<string>('');
   const [activeCategory, setActiveCategory] = useState<SettingsCategoryId>('system');
   const [loading, setLoading] = useState(true);
-  const { success, error: toastError } = useToast();
+  const { success, error: toastError, warning } = useToast();
   const {
     reload: reloadGlobalSettings,
     applyPreview,
@@ -232,6 +237,17 @@ export const SettingsView: React.FC = () => {
       clearPreviewGroup(activeGroup);
       await reloadGlobalSettings();
       success(t('settings.page.saved'));
+      if (activeGroup === 'systemUpdate' && isSuperAdmin) {
+        const { data: report, error: verifyError } = await verifySystemUpdateCredentials();
+        if (report?.overall_ok) {
+          success(t('platform.systemUpdate.toast.settingsVerifyOk'));
+        } else if (report) {
+          const detail = firstCredentialsFailureDetail(report);
+          warning(detail ?? t('platform.systemUpdate.toast.settingsVerifyFailed'));
+        } else if (verifyError) {
+          warning(verifyError);
+        }
+      }
       return;
     }
 
@@ -488,6 +504,8 @@ const SettingFieldRow: React.FC<RowProps> = ({ groupKey, field, register, watch,
   const help = translateSettingFieldHelp(t, groupKey, field.key, field.help);
   const note = translateSettingFieldNote(t, groupKey, field.key);
   const tooltip = translateSettingFieldTooltip(t, groupKey, field.key);
+  const tooltipDetail = translateSettingFieldTooltipDetail(t, groupKey, field.key);
+  const docUrl = translateSettingFieldDocLink(t, groupKey, field.key);
 
   if (groupKey === 'content' && field.key === 'blogAuthorAvatarUrl') {
     const currentValue = String(watch(field.key) ?? '');
@@ -509,7 +527,7 @@ const SettingFieldRow: React.FC<RowProps> = ({ groupKey, field, register, watch,
         {help && !error && (
           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{help}</p>
         )}
-        {error && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>}
+        <FieldError message={error} />
       </div>
     );
   }
@@ -668,12 +686,24 @@ const SettingFieldRow: React.FC<RowProps> = ({ groupKey, field, register, watch,
             })}
             className="h-4 w-4 rounded border-gray-300 text-indigo-600 shrink-0"
           />
-          <SettingFieldLabel htmlFor={inputId} label={label} tooltip={tooltip} />
+          <SettingFieldLabel
+            htmlFor={inputId}
+            label={label}
+            tooltip={tooltip}
+            tooltipDetail={tooltipDetail}
+            docUrl={docUrl}
+          />
         </div>
       ) : (
         <>
           <div className="mb-1">
-            <SettingFieldLabel htmlFor={inputId} label={label} tooltip={tooltip} />
+            <SettingFieldLabel
+            htmlFor={inputId}
+            label={label}
+            tooltip={tooltip}
+            tooltipDetail={tooltipDetail}
+            docUrl={docUrl}
+          />
           </div>
 
           {field.type === 'text' && (
@@ -745,7 +775,7 @@ const SettingFieldRow: React.FC<RowProps> = ({ groupKey, field, register, watch,
       {note && !error && (
         <p className="mt-1 text-xs text-amber-700 dark:text-amber-300/90">{note}</p>
       )}
-      {error && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>}
+      <FieldError message={error} />
     </div>
   );
 };

@@ -3,6 +3,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useApi } from '../../hooks/useApi';
 import { useToast } from '../../hooks/useToast';
+import { useConfirm } from '../../hooks/useConfirm';
 import { useAdminListQuery } from '../../hooks/useAdminListQuery';
 import { queryKeys } from '../../api/queryKeys';
 import { Link, useNavigate } from 'react-router-dom';
@@ -181,6 +182,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
   const { user } = useAuth();
   const { get, delete: del } = useApi();
   const toast = useToast();
+  const confirmAction = useConfirm();
   const navigate = useNavigate();
   const {
     views: savedViews,
@@ -313,7 +315,12 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
     queryClient.invalidateQueries({ queryKey: ['admin', 'content', type, 'list'] });
 
   const handleDelete = async (slug: string) => {
-    if (!confirm(t('content.confirm.deleteOne', { item: itemLabel }))) {
+    const confirmed = await confirmAction({
+      title: t('admin.confirm.deleteTitle', { item: itemLabel }),
+      message: t('content.confirm.deleteOne', { item: itemLabel }),
+      variant: 'destructive',
+    });
+    if (!confirmed) {
       return;
     }
 
@@ -385,7 +392,12 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
     if (bulkSelection.count === 0) {
       return;
     }
-    if (!confirm(t('content.confirm.bulkDelete', bulkSelectionCounts(bulkSelection.count, bulkListTotal)))) {
+    const confirmed = await confirmAction({
+      title: t('admin.confirm.bulkDeleteTitle'),
+      message: t('content.confirm.bulkDelete', bulkSelectionCounts(bulkSelection.count, bulkListTotal)),
+      variant: 'destructive',
+    });
+    if (!confirmed) {
       return;
     }
     const result = await contentApi.bulkDelete(type, bulkSelection.selectedIds);
@@ -408,7 +420,12 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
         : status === 'draft'
           ? 'content.confirm.bulkDraft'
           : 'content.confirm.bulkArchive';
-    if (!confirm(t(confirmKey, bulkSelectionCounts(bulkSelection.count, bulkListTotal)))) {
+    const confirmed = await confirmAction({
+      title: t('admin.confirm.bulkActionTitle'),
+      message: t(confirmKey, bulkSelectionCounts(bulkSelection.count, bulkListTotal)),
+      variant: status === 'published' ? 'default' : 'destructive',
+    });
+    if (!confirmed) {
       return;
     }
     const result = await contentApi.bulkUpdateStatus(type, bulkSelection.selectedIds, status);

@@ -22,6 +22,19 @@ export const enCore: MessageTree = {
     confirm: 'Confirm',
     resend: 'Resend',
   },
+  auth: {
+    changePassword: {
+      title: 'Change password',
+      current: 'Current password',
+      new: 'New password',
+      confirm: 'Confirm new password',
+      save: 'Save',
+      saving: 'Saving…',
+      success: 'Password changed',
+      failed: 'Password change failed',
+      mismatch: 'New passwords do not match',
+    },
+  },
   nav: {
     dashboard: 'Dashboard',
     pages: 'Pages',

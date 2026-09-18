@@ -9,10 +9,12 @@ import { useToast } from '../../hooks/useToast';
 import { AdminListSkeleton } from '../ui/AdminListSkeleton';
 import { BulkActionBar } from './BulkActionBar';
 import { useI18n } from '../../context/I18nContext';
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { summarizeBulkResult } from '../../types/bulk';
 
 export const ExtensionsManager: React.FC = () => {
   const { t } = useI18n();
+  const confirmDestructive = useAdminConfirm();
   const queryClient = useQueryClient();
   const [importing, setImporting] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -68,7 +70,7 @@ export const ExtensionsManager: React.FC = () => {
   };
 
   const handleUninstall = async (item: ExtensionRecord) => {
-    if (!window.confirm(t('platform.extensions.toast.uninstallConfirm', { name: item.name }))) {
+    if (!(await confirmDestructive(t('platform.extensions.toast.uninstallConfirm', { name: item.name })))) {
       return;
     }
 
@@ -90,7 +92,7 @@ export const ExtensionsManager: React.FC = () => {
     if (bulkSelection.count === 0) {
       return;
     }
-    if (!window.confirm(t('platform.extensions.confirm.bulkUninstall', { count: String(bulkSelection.count) }))) {
+    if (!(await confirmDestructive(t('platform.extensions.confirm.bulkUninstall', { count: String(bulkSelection.count) })))) {
       return;
     }
 

@@ -8,8 +8,10 @@ import {
 } from '../../api/apiKeys';
 import { useToast } from '../../hooks/useToast';
 import { useI18n } from '../../context/I18nContext';
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { BulkActionBar } from './BulkActionBar';
+import { FieldError } from '../ui/FieldError';
 import { summarizeBulkResult } from '../../types/bulk';
 
 const SCOPE_LABEL_KEYS: Record<string, string> = {
@@ -24,6 +26,7 @@ const SCOPE_LABEL_KEYS: Record<string, string> = {
 
 export const ApiKeysManager: React.FC = () => {
   const { t } = useI18n();
+  const confirmDestructive = useAdminConfirm();
   const toast = useToast();
   const [loading, setLoading] = useState(true);
   const [index, setIndex] = useState<ApiKeysIndexResponse | null>(null);
@@ -35,6 +38,7 @@ export const ApiKeysManager: React.FC = () => {
   const [copyToken, setCopyToken] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [labelError, setLabelError] = useState<string | null>(null);
 
   const scopeGroups = useMemo(
     () => index?.scopeGroups ?? { read: [], write: [], token: [] },
@@ -76,9 +80,12 @@ export const ApiKeysManager: React.FC = () => {
 
   const handleCreate = async () => {
     if (!label.trim()) {
-      toast.error(t('platform.apiKeys.toast.labelRequired'));
+      const message = t('platform.apiKeys.toast.labelRequired');
+      setLabelError(message);
+      toast.error(message);
       return;
     }
+    setLabelError(null);
     if (selectedScopes.length === 0) {
       toast.error(t('platform.apiKeys.toast.scopeRequired'));
       return;
@@ -117,7 +124,7 @@ export const ApiKeysManager: React.FC = () => {
   };
 
   const handleRevoke = async (key: ApiKeyMetadata) => {
-    if (!window.confirm(t('platform.apiKeys.confirm.revoke', { label: key.label }))) {
+    if (!(await confirmDestructive(t('platform.apiKeys.confirm.revoke', { label: key.label })))) {
       return;
     }
     setBusyId(key.id);
@@ -135,7 +142,7 @@ export const ApiKeysManager: React.FC = () => {
   };
 
   const handleRotate = async (key: ApiKeyMetadata) => {
-    if (!window.confirm(t('platform.apiKeys.confirm.rotate', { label: key.label }))) {
+    if (!(await confirmDestructive(t('platform.apiKeys.confirm.rotate', { label: key.label })))) {
       return;
     }
     setBusyId(key.id);
@@ -157,7 +164,7 @@ export const ApiKeysManager: React.FC = () => {
     if (bulkSelection.count === 0) {
       return;
     }
-    if (!window.confirm(t('platform.apiKeys.confirm.bulkPurge', { count: String(bulkSelection.count) }))) {
+    if (!(await confirmDestructive(t('platform.apiKeys.confirm.bulkPurge', { count: String(bulkSelection.count) })))) {
       return;
     }
     setBusyId('bulk');
@@ -179,7 +186,7 @@ export const ApiKeysManager: React.FC = () => {
     if (inactiveKeys.length === 0) {
       return;
     }
-    if (!window.confirm(t('platform.apiKeys.confirm.purgeAllInactive'))) {
+    if (!(await confirmDestructive(t('platform.apiKeys.confirm.purgeAllInactive')))) {
       return;
     }
     setBusyId('bulk-all');
@@ -291,10 +298,17 @@ export const ApiKeysManager: React.FC = () => {
               <span className="font-semibold">{t('platform.apiKeys.fields.label')}</span>
               <input
                 value={label}
-                onChange={(e) => setLabel(e.target.value)}
+                onChange={(e) => {
+                  setLabel(e.target.value);
+                  if (labelError) {
+                    setLabelError(null);
+                  }
+                }}
                 className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 px-3 py-2"
                 placeholder={t('platform.apiKeys.fields.labelPlaceholder')}
+                aria-invalid={labelError ? true : undefined}
               />
+              <FieldError message={labelError} />
             </label>
             <label className="block text-sm">
               <span className="font-semibold">{t('platform.apiKeys.fields.expiresAt')}</span>

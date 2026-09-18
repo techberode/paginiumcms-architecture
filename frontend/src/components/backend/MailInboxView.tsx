@@ -32,6 +32,7 @@ import {
 } from '../../api/mail';
 import type { ApiResponse } from '../../api/client';
 import { useI18n } from '../../context/I18nContext';
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { useToast } from '../../hooks/useToast';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { useAdminListPageSize } from '../../hooks/useAdminListPageSize';
@@ -235,6 +236,7 @@ function composeFingerprint(compose: MailCompose): string {
 
 export const MailInboxView: React.FC = () => {
   const { t } = useI18n();
+  const confirmDestructive = useAdminConfirm();
   const toast = useToast();
   const [status, setStatus] = useState<MailStatus | null>(null);
   const [folders, setFolders] = useState<MailFolder[]>([]);
@@ -583,7 +585,7 @@ export const MailInboxView: React.FC = () => {
   };
 
   const removeLabelDefinition = async (def: MailLabelDefinition) => {
-    if (!window.confirm(t('platform.mail.confirmDeleteLabel', { name: def.name }))) {
+    if (!(await confirmDestructive(t('platform.mail.confirmDeleteLabel', { name: def.name })))) {
       return;
     }
     const mailbox = status?.mailbox ?? '';
@@ -866,7 +868,7 @@ export const MailInboxView: React.FC = () => {
   };
 
   const removeFolder = async (name: string) => {
-    if (!window.confirm(t('platform.mail.confirmDeleteFolder', { name }))) {
+    if (!(await confirmDestructive(t('platform.mail.confirmDeleteFolder', { name })))) {
       return;
     }
     const response = await mailApi.deleteFolder(name);
@@ -976,7 +978,7 @@ export const MailInboxView: React.FC = () => {
   };
 
   const emptyLocalTrash = async () => {
-    if (!window.confirm(t('platform.mail.confirmEmptyLocalTrash'))) {
+    if (!(await confirmDestructive(t('platform.mail.confirmEmptyLocalTrash')))) {
       return;
     }
     const response = await mailApi.emptyLocalTrash();
@@ -1259,7 +1261,7 @@ export const MailInboxView: React.FC = () => {
   };
 
   const removeExtraAccount = async (mailbox: string) => {
-    if (!window.confirm(t('platform.mail.confirmRemoveAccount', { mailbox }))) {
+    if (!(await confirmDestructive(t('platform.mail.confirmRemoveAccount', { mailbox })))) {
       return;
     }
     const response = await mailApi.removeAccount(mailbox);

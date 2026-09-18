@@ -7,6 +7,7 @@ import { queryClient } from './lib/queryClient';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { NotificationProvider } from './context/NotificationContext';
+import { ConfirmProvider } from './context/ConfirmContext';
 import { ContentProvider } from './context/ContentContext';
 import { SettingsProvider } from './context/SettingsContext';
 import { PublicAppearanceProvider } from './context/PublicAppearanceProvider';
@@ -43,9 +44,11 @@ async function bootstrap(): Promise<void> {
               <I18nProvider>
                 <PublicSiteProvider>
                   <NotificationProvider>
-                    <ContentProvider>
-                      <App />
-                    </ContentProvider>
+                    <ConfirmProvider>
+                      <ContentProvider>
+                        <App />
+                      </ContentProvider>
+                    </ConfirmProvider>
                   </NotificationProvider>
                 </PublicSiteProvider>
               </I18nProvider>

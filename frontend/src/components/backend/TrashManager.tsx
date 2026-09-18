@@ -13,6 +13,7 @@ import { AdminListPagination } from './AdminListPagination';
 import { applyClientListView } from '../../utils/clientListView';
 import { summarizeBulkResult } from '../../types/bulk';
 import { useI18n } from '../../context/I18nContext';
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 
 function formatBytes(size: number): string {
   if (size < 1024) {
@@ -34,6 +35,7 @@ function formatDeletedAt(value: string, locale: string): string {
 
 export const TrashManager: React.FC = () => {
   const { t, locale } = useI18n();
+  const confirmDestructive = useAdminConfirm();
   const [items, setItems] = useState<TrashItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [restoringId, setRestoringId] = useState<string | null>(null);
@@ -104,7 +106,7 @@ export const TrashManager: React.FC = () => {
   );
 
   const handleRestore = async (item: TrashItem) => {
-    if (!confirm(t('trash.confirm.restoreOne', { path: item.originalPath }))) {
+    if (!(await confirmDestructive(t('trash.confirm.restoreOne', { path: item.originalPath })))) {
       return;
     }
 
@@ -128,7 +130,7 @@ export const TrashManager: React.FC = () => {
     if (bulkSelection.count === 0) {
       return;
     }
-    if (!confirm(t('trash.confirm.bulkRestore', { count: String(bulkSelection.count) }))) {
+    if (!(await confirmDestructive(t('trash.confirm.bulkRestore', { count: String(bulkSelection.count) })))) {
       return;
     }
 
@@ -151,7 +153,7 @@ export const TrashManager: React.FC = () => {
     if (bulkSelection.count === 0) {
       return;
     }
-    if (!confirm(t('trash.confirm.bulkPurge', { count: String(bulkSelection.count) }))) {
+    if (!(await confirmDestructive(t('trash.confirm.bulkPurge', { count: String(bulkSelection.count) })))) {
       return;
     }
 
@@ -196,7 +198,7 @@ export const TrashManager: React.FC = () => {
     if (items.length === 0) {
       return;
     }
-    if (!confirm(t('trash.confirm.empty', { count: String(items.length) }))) {
+    if (!(await confirmDestructive(t('trash.confirm.empty', { count: String(items.length) })))) {
       return;
     }
 

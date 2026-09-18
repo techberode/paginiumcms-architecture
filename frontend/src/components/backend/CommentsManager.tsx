@@ -37,6 +37,7 @@ import { OtpConfirmModal } from './OtpConfirmModal';
 import { applyClientListView } from '../../utils/clientListView';
 import { summarizeBulkResult } from '../../types/bulk';
 import { useI18n } from '../../context/I18nContext';
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { ADMIN_PAGE_SUBTITLE, ADMIN_PAGE_TITLE } from '../../theme/adminUiClasses';
 
 const statusBadgeClass = (status: CommentStatus): string => {
@@ -57,6 +58,7 @@ const truncate = (text: string, max = 90): string =>
 
 export const CommentsManager: React.FC = () => {
   const { t, locale } = useI18n();
+  const confirmDestructive = useAdminConfirm();
   const dateLocale = locale === 'en' ? 'en-US' : 'sk-SK';
   const statusLabel = (status: CommentStatus): string => t(`comments.status.${status}`);
   const { error: showError, success: showSuccess } = useToast();
@@ -154,7 +156,7 @@ export const CommentsManager: React.FC = () => {
         : action === 'read'
           ? 'comments.confirm.bulkRead'
           : 'comments.confirm.bulkProcessed';
-    if (!confirm(t(confirmKey, counts))) {
+    if (!(await confirmDestructive(t(confirmKey, counts)))) {
       return;
     }
     const result = await bulkCommentWorkflow(bulkSelection.selectedIds, action);
@@ -171,7 +173,7 @@ export const CommentsManager: React.FC = () => {
     if (bulkSelection.count === 0) {
       return;
     }
-    if (!confirm(t('comments.confirm.bulkDelete', bulkSelectionCounts(bulkSelection.count, listView.total)))) {
+    if (!(await confirmDestructive(t('comments.confirm.bulkDelete', bulkSelectionCounts(bulkSelection.count, listView.total))))) {
       return;
     }
     const result = await bulkDeleteComments(bulkSelection.selectedIds);
@@ -210,7 +212,7 @@ export const CommentsManager: React.FC = () => {
   };
 
   const removeOne = async (id: string) => {
-    if (!confirm(t('comments.confirm.deleteOne'))) {
+    if (!(await confirmDestructive(t('comments.confirm.deleteOne')))) {
       return;
     }
     if (await deleteComment(id)) {

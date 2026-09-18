@@ -1,3 +1,4 @@
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 // frontend/src/components/auth/TwoFactorSettings.tsx
 // === 2FA nastavenia pre prihláseného používateľa (Iterácia 5) ===
 import React, { useCallback, useEffect, useState } from 'react';
@@ -16,6 +17,7 @@ const COMPATIBLE_APPS = [
 
 export const TwoFactorSettings: React.FC = () => {
   const { user, updateUser, refreshUser } = useAuth();
+  const confirmDestructive = useAdminConfirm();
   const toast = useToast();
   const [enabled, setEnabled] = useState(false);
   const [verified, setVerified] = useState(false);
@@ -95,7 +97,7 @@ export const TwoFactorSettings: React.FC = () => {
   };
 
   const handleDisable = async () => {
-    if (!window.confirm('Naozaj chcete vypnúť dvojfaktorové overenie?')) {
+    if (!(await confirmDestructive('Naozaj chcete vypnúť dvojfaktorové overenie?'))) {
       return;
     }
 

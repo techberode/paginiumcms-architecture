@@ -992,7 +992,9 @@ export const settingsSk: MessageTree = {
       "performanceGuardEnabled": {
         "label": "Povoliť Performance Guard (APM)",
         "help": "Ľahke vzorkovanie latencie a I/O v rámci requestu. Predvolene vypnuté.",
-        "tooltip": "Ukladá časy podľa route do ring bufferu na Dashboarde. Overhead rastie so sample rate; obsah a nastavenia nemení automaticky okrem allow-list cache purge v remediation režime."
+        "tooltip": "Ukladá časy podľa route do ring bufferu na Dashboarde. Overhead rastie so sample rate; obsah a nastavenia nemení automaticky okrem allow-list cache purge v remediation režime.",
+        "tooltipDetail": "Na produkcii začnite so sample rate 0,2. Porušenia sledujte na Dashboarde → Performance Guard pred zapnutím automatickej remedácie.",
+        "docLink": "https://github.com/techberode/paginiumcms-architecture/blob/main/docs/en/ITERATION_94.md#slice-94e--context-help-complex-fields"
       },
       "performanceGuardSampleRate": {
         "label": "Vzorkovacia frekvencia APM",
@@ -1022,7 +1024,8 @@ export const settingsSk: MessageTree = {
       "performanceGuardRemediationMode": {
         "label": "Režim nápravy",
         "help": "suggest = len incidenty; automatic = allow-list cache purge po probe.",
-        "tooltip": "automatic nikdy nezapne Redis ani nemení engine režim — len bezpečné vymazanie cache po opakovaných porušeniach budgetu. suggest = manuálna kontrola incidentov."
+        "tooltip": "automatic nikdy nezapne Redis ani nemení engine režim — len bezpečné vymazanie cache po opakovaných porušeniach budgetu. suggest = manuálna kontrola incidentov.",
+        "docLink": "https://github.com/techberode/paginiumcms-architecture/blob/main/docs/en/ITERATION_94.md#slice-94e--context-help-complex-fields"
       },
       "performanceGuardServerTiming": {
         "label": "Server-Timing hlavička",
@@ -1623,22 +1626,30 @@ export const settingsSk: MessageTree = {
     "media": {
       "storageDriver": {
         "label": "Ovládač úložiska médií",
-        "help": "local = binárne súbory pod media/. s3 = S3-compatible úložisko pri vyplnenom buckete, regióne a credentials; inak fallback na local."
+        "help": "local = binárne súbory pod media/. s3 = S3-compatible úložisko pri vyplnenom buckete, regióne a credentials; inak fallback na local.",
+        "tooltip": "Zmena ovládača automaticky nemigruje existujúce súbory — pred zmenou na produkcii urobte zálohu.",
+        "docLink": "https://github.com/techberode/paginiumcms-architecture/blob/main/docs/en/ITERATION_94.md#slice-94e--context-help-complex-fields"
       },
       "s3Endpoint": {
-        "label": "S3 endpoint URL"
+        "label": "S3 endpoint URL",
+        "tooltip": "Vlastný endpoint pre MinIO, Cloudflare R2 atď. Musí prejsť OutboundUrlGuard na serveri.",
+        "docLink": "https://github.com/techberode/paginiumcms-architecture/blob/main/docs/en/ITERATION_94.md#slice-94e--context-help-complex-fields"
       },
       "s3Region": {
         "label": "S3 región"
       },
       "s3Bucket": {
-        "label": "S3 bucket"
+        "label": "S3 bucket",
+        "tooltip": "Len názov bucketu — bez prefixu s3://. Spolu s regiónom a credentials potrebné pre režim S3.",
+        "docLink": "https://github.com/techberode/paginiumcms-architecture/blob/main/docs/en/ITERATION_94.md#slice-94e--context-help-complex-fields"
       },
       "s3KeyId": {
         "label": "S3 access key ID"
       },
       "s3Secret": {
-        "label": "S3 secret key"
+        "label": "S3 secret key",
+        "tooltip": "Uložené šifrované pri nastavenom APP_KEY. Po uložení sa znova nezobrazí.",
+        "docLink": "https://github.com/techberode/paginiumcms-architecture/blob/main/docs/en/ITERATION_94.md#slice-94e--context-help-complex-fields"
       },
       "s3PathStyle": {
         "label": "S3 path-style URLs",
@@ -1771,7 +1782,10 @@ export const settingsSk: MessageTree = {
       },
       "githubToken": {
         "label": "GitHub token (repo read)",
-        "help": "Fine-grained alebo classic token s read prístupom ku kódu a release."
+        "help": "Fine-grained alebo classic token s read prístupom ku kódu a release.",
+        "tooltip": "Potrebný pre admin deploy z Dockeru bez SSH git.",
+        "tooltipDetail": "Nie je to webhook secret. PAT s Contents: Read pre váš repozitár.\n\nAk je token uložený a deploy padá, skontrolujte APP_KEY (šifrované nastavenia).",
+        "docLink": "https://github.com/techberode/paginiumcms-architecture/blob/main/docs/deploy/DEPLOY.md#125-admin-ui-deploy-platform--system-update--dashboard-banner"
       },
       "defaultBranch": {
         "label": "Predvolená vetva"
@@ -1784,7 +1798,10 @@ export const settingsSk: MessageTree = {
       },
       "stackDir": {
         "label": "Docker stack directory (host path)",
-        "help": "Absolútna cesta na hoste, napr. /var/lib/docker/compose/paginiumcms — potrebné pre admin deploy a reštart PHP. Ak je prázdne, použije sa STACK_DIR z env."
+        "help": "Absolútna cesta na hoste, napr. /var/lib/docker/compose/paginiumcms — potrebné pre admin deploy a reštart PHP. Ak je prázdne, použije sa STACK_DIR z env.",
+        "tooltip": "Cesta na hoste kde je stack.sh — PHP ju musí vidieť (bind mount), aby po deployi reštartovalo kontajnery.",
+        "tooltipDetail": "Bez toho môže git pull prejsť, ale opcache servíruje starý kód.\n\nSpustite bootstrap-stack-permissions.sh, aby www-data vedelo spustiť stack.sh.",
+        "docLink": "https://github.com/techberode/paginiumcms-architecture/blob/main/docs/deploy/DEPLOY.md#125-admin-ui-deploy-platform--system-update--dashboard-banner"
       },
       "backendPort": {
         "label": "Backend health port",

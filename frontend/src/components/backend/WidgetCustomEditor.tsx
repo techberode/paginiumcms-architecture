@@ -7,6 +7,7 @@ import {
   type WidgetFieldSchema,
 } from '../../api/widgets';
 import { useI18n } from '../../context/I18nContext';
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { useToast } from '../../hooks/useToast';
 import { ADMIN_INPUT } from '../../theme/adminUiClasses';
 import { AdminFormActions } from './AdminFormActions';
@@ -60,6 +61,7 @@ function emptyDraft(): WidgetDraft {
 
 export const WidgetCustomEditor: React.FC<WidgetCustomEditorProps> = ({ onChanged }) => {
   const { t } = useI18n();
+  const confirmDestructive = useAdminConfirm();
   const toast = useToast();
   const [items, setItems] = useState<string[]>([]);
   const [draft, setDraft] = useState<WidgetDraft>(emptyDraft());
@@ -120,7 +122,7 @@ export const WidgetCustomEditor: React.FC<WidgetCustomEditorProps> = ({ onChange
   };
 
   const remove = async () => {
-    if (!draft.id || !window.confirm(t('platform.widgets.custom.confirmDelete'))) {
+    if (!draft.id || !(await confirmDestructive(t('platform.widgets.custom.confirmDelete')))) {
       return;
     }
     try {

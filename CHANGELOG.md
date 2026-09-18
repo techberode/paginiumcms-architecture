@@ -162,12 +162,13 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ### Added
 
+- **It.94 (complete)** — Accessible confirm dialog (`ConfirmProvider`, `useAdminConfirm`, `confirmDialog` bridge); dashboard getting-started checklist; keyboard shortcuts modal (`?`, Ctrl/Cmd+/); `ContextHelpPanel` doc links (system update, performance guard, media S3, redirects); `FieldError` on settings, API keys, change password. Docs: [ITERATION_94.md](docs/en/ITERATION_94.md), [ADMIN_TOAST_COVERAGE_94.md](docs/en/ADMIN_TOAST_COVERAGE_94.md).
 - **It.92a (foundation)** — `QueryIndexInterface`, `JsonQueryIndex`, `QueryIndexFactory` (JSON default); Engine settings keys for future sqlite driver (validation still `json`-only). Architecture: [QUERY_INDEX.md](docs/en/architecture/QUERY_INDEX.md). Spec: [ITERATION_92.md](docs/en/ITERATION_92.md).
 
 ### Planning
 
 - **It.58f-h** — Visual block canvas (DnD stack). Spec: [ITERATION_58f.md](docs/en/ITERATION_58f.md).
-- **It.94** / **It.95** — Novice admin UX; Sandpack playground + private component registry. Specs: [ITERATION_94.md](docs/en/ITERATION_94.md), [ITERATION_95.md](docs/en/ITERATION_95.md).
+- **It.95** — Sandpack playground + private component registry. Spec: [ITERATION_95.md](docs/en/ITERATION_95.md).
 - **It.92** — Hybrid Engine SQLite **query index** (derived, optional) + Performance Guard advisor (suggest only, never auto-enable). Spec: [ITERATION_92.md](docs/en/ITERATION_92.md).
 - **Queue:** **It.92** → 70 → 76/77 → 75 → 48 (58g with 48). Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
 

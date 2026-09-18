@@ -514,6 +514,45 @@ export const platformEn: MessageTree = {
     webhookSecretConfigured: 'Secret configured',
     webhookSecretMissing: 'Set GitHub webhook secret in Settings → System update',
     webhookEvents: 'Subscribe to: Release (published)',
+    credentials: {
+      title: 'Deploy credentials check',
+      subtitle:
+        'Live test of GitHub token, git fetch (same as deploy script), and webhook secret — run after saving settings.',
+      pathHint:
+        'WebUI deploy runs inside the PHP container (often /var/www/html in Docker). That is the bind mount of your host git checkout (e.g. /var/www/paginiumcms.com) — not the path you use for manual SSH deploy on the host.',
+      verifyButton: 'Verify connection',
+      verifying: 'Verifying…',
+      notRunYet: 'Run verification to confirm token and git access before deploy.',
+      checkedAt: 'Last checked: {time}',
+      overallOk: 'All checks passed — deploy credentials look good.',
+      overallFail: 'One or more checks failed — fix settings before deploy.',
+      tokenLabel: 'GitHub token (API)',
+      gitFetchLabel: 'Git fetch (origin HEAD)',
+      webhookSecretLabel: 'Webhook secret',
+      tokenStatus: {
+        ok: 'OK',
+        missing: 'Missing',
+        invalid: 'Invalid',
+        unreadable: 'Unreadable',
+        not_required: 'Not required',
+      },
+      gitStatus: {
+        ok: 'OK',
+        failed: 'Failed',
+        skipped: 'Skipped',
+        missing: 'Missing',
+        invalid: 'Invalid',
+        unreadable: 'Unreadable',
+        not_required: 'Not required',
+      },
+      webhookStatus: {
+        ok: 'OK',
+        missing: 'Missing',
+        not_required: 'Not required',
+        invalid: 'Invalid',
+        unreadable: 'Unreadable',
+      },
+    },
     blockers: {
       title: 'Deploy is blocked until these items are resolved:',
       deploy_disabled: 'Enable admin deploy in Settings → System update.',
@@ -543,6 +582,11 @@ export const platformEn: MessageTree = {
       deployDisabled: 'Enable deploy in Settings → System update first',
       deployNotReady: 'Deploy is not ready — resolve blockers in Settings → System update',
       refRequired: 'Enter a deploy ref (tag or origin/branch)',
+      verifyOk: 'Credentials verified — deploy transport is OK',
+      verifyFailed: 'Credentials check failed',
+      credentialsNotReady: 'Fix deploy credentials before deploy — run Verify connection',
+      settingsVerifyOk: 'System update settings saved — credentials verified',
+      settingsVerifyFailed: 'Settings saved, but credentials check failed — see System update',
     },
   },
   acl: {
@@ -1237,6 +1281,11 @@ export const platformEn: MessageTree = {
   redirects: {
     title: 'Redirects',
     subtitle: 'Manage 301/302 rules for old URLs — flat-file map at data/redirects.json.',
+    contextHelpSummary: 'Redirects run before the CMS router. Use relative paths; avoid open redirects to external sites.',
+    contextHelpDetail:
+      'Rules live in data/redirects.json. “From” must be a site path (leading slash). “To” can be another path or an allowed external URL validated by the backend.\n\n301 is permanent (SEO); 302 is temporary. Disable a rule instead of deleting when testing.',
+    contextHelpDocLink:
+      'https://github.com/techberode/paginiumcms-architecture/blob/main/docs/en/architecture/FRONTEND.md',
     refresh: 'Refresh',
     create: 'New redirect',
     createTitle: 'Create redirect',

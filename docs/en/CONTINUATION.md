@@ -29,7 +29,7 @@ Historical freeze record: [STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) (supe
 | Area | Status |
 |------|--------|
 | Latest tag | ✅ `v2.1.0-beta.82` — It.89b–e plugin broker · SafeHookRunner · plugin CLI |
-| Unreleased (this tree) | — **It.92** ready to tag · **It.48** static compile (58g) · **It.94** novice admin UX · **58f-h** block canvas · **It.95** Sandpack playground |
+| Unreleased (this tree) | — **It.94** novice admin UX ✅ · **It.96** document file manager (planned) · **58f-h** · **It.95** Sandpack · **It.48** static (58g) |
 | It.25 setup wizard | ✅ basic + M1+ (`beta.62`–`beta.66`) |
 | It.83 theme runtime | ✅ shipped `beta.59` (`terminal-breach`, `clean-journal`) |
 | It.84 / It.86 | ✅ shipped |
@@ -47,7 +47,7 @@ Do **not** invent new iteration numbers. Finish specs that already exist.
 | 2 | **It.76 / 77** translation providers | After It.73 (shipped) |
 | 3 | **It.75** CMS-aware AI agent | Last: proposals only, human apply |
 | 4 | **It.48** static / Jamstack output | Align with It.70; includes **58g** compile/cache |
-| — | **58f-h** + **It.94** (94a→94d) | **P1 product** — [ITERATION_94.md](ITERATION_94.md); canvas is **58f-h**, not 94 |
+| — | **58f-h** | **P1 product** — visual canvas; novice UX shipped in **It.94** ([ITERATION_94.md](ITERATION_94.md)) |
 
 Shipped ahead of this queue: **It.58f** visual page blocks (**58f-a–g**) — [ITERATION_58f.md](ITERATION_58f.md) in **`beta.79`**. **It.93** admin chrome + daily apps — [ITERATION_93.md](ITERATION_93.md) **`beta.77`–`79`** (93m-5 mail polish in **`beta.79`**).
 

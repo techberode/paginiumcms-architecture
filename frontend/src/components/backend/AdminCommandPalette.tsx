@@ -21,6 +21,7 @@ const MAX_RECENT = 8;
 interface AdminCommandPaletteProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpenShortcuts?: () => void;
 }
 
 function loadRecent(): AdminSearchResultItem[] {
@@ -55,7 +56,11 @@ function typeIcon(type: AdminSearchResultItem['type']) {
   }
 }
 
-export const AdminCommandPalette: React.FC<AdminCommandPaletteProps> = ({ isOpen, onClose }) => {
+export const AdminCommandPalette: React.FC<AdminCommandPaletteProps> = ({
+  isOpen,
+  onClose,
+  onOpenShortcuts,
+}) => {
   const { t } = useI18n();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -281,8 +286,22 @@ export const AdminCommandPalette: React.FC<AdminCommandPaletteProps> = ({ isOpen
           })}
         </div>
 
-        <div className="px-5 py-3 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 flex items-center justify-between">
-          <span>{t('platform.commandPalette.footer')}</span>
+        <div className="px-5 py-3 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 flex items-center justify-between gap-3">
+          <span className="flex flex-wrap items-center gap-2">
+            <span>{t('platform.commandPalette.footer')}</span>
+            {onOpenShortcuts ? (
+              <button
+                type="button"
+                className="font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+                onClick={() => {
+                  onClose();
+                  onOpenShortcuts();
+                }}
+              >
+                {t('admin.shortcuts.title')} (?)
+              </button>
+            ) : null}
+          </span>
           <span>
             {loading
               ? t('platform.commandPalette.searching')

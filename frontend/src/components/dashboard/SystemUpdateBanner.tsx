@@ -5,12 +5,14 @@ import { useAuth } from '../../hooks/useAuth';
 import { useSettings } from '../../hooks/useSettings';
 import { useToast } from '../../hooks/useToast';
 import { useI18n } from '../../context/I18nContext';
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { useSystemUpdateFlow } from '../../hooks/useSystemUpdateFlow';
 import { settingsGroupPath } from '../../utils/adminDeepLinks';
 import { DeployBlockersList } from './DeployBlockersList';
 
 export const SystemUpdateBanner: React.FC = () => {
   const { t } = useI18n();
+  const confirmDestructive = useAdminConfirm();
   const { user } = useAuth();
   const { settings } = useSettings();
   const { success, error: toastError, warning } = useToast();
@@ -74,9 +76,9 @@ export const SystemUpdateBanner: React.FC = () => {
       return;
     }
     if (
-      !window.confirm(
+      !(await confirmDestructive(
         t('platform.systemUpdate.backupBeforeDeployConfirm', { ref: tag })
-      )
+      ))
     ) {
       return;
     }

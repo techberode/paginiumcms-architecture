@@ -267,4 +267,35 @@ final class SystemUpdateControllerTest extends TestCase
             ['current', 'update_available', 'unknown']
         );
     }
+
+    public function testVerifyForbiddenForAdmin(): void
+    {
+        $this->loginAsAdminUser();
+
+        $response = $this->handleRequest(
+            $this->createJsonRequest('GET', '/api/admin/system/update/verify')
+        );
+
+        $this->assertSame(403, $response->getStatusCode());
+    }
+
+    public function testVerifyReturnsCredentialsEnvelopeForSuperAdmin(): void
+    {
+        $this->loginAsSuperAdminUser();
+
+        $response = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/admin/system/update/verify', [])
+        );
+        $data = $this->getJsonResponse($response);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertTrue($data['success']);
+        $this->assertArrayHasKey('overall_ok', $data['data']);
+        $this->assertArrayHasKey('checked_at', $data['data']);
+        $this->assertArrayHasKey('github', $data['data']);
+        $this->assertArrayHasKey('git_fetch', $data['data']);
+        $this->assertArrayHasKey('webhook', $data['data']);
+        $this->assertArrayHasKey('token', $data['data']['github']);
+        $this->assertArrayHasKey('status', $data['data']['github']['token']);
+    }
 }

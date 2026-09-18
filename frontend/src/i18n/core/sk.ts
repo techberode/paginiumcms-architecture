@@ -22,6 +22,19 @@ export const skCore: MessageTree = {
     confirm: 'Potvrdiť',
     resend: 'Poslať znova',
   },
+  auth: {
+    changePassword: {
+      title: 'Zmena hesla',
+      current: 'Súčasné heslo',
+      new: 'Nové heslo',
+      confirm: 'Potvrdenie nového hesla',
+      save: 'Uložiť',
+      saving: 'Ukladám…',
+      success: 'Heslo bolo zmenené',
+      failed: 'Zmena hesla zlyhala',
+      mismatch: 'Nové heslá sa nezhodujú',
+    },
+  },
   nav: {
     dashboard: 'Prehľad',
     pages: 'Stránky',

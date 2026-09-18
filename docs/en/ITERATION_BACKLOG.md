@@ -55,6 +55,7 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | 28 | **It.86** Admin UX polish (search, print, bulk) | 🟡 | ✅ | shipped **2.1.0-beta.60** — ISS-158/159; 86d → It.87 |
 | 29 | **It.94** Admin self-service UX (toast, checklist, tooltips, shortcuts) | 🟡 P1 | ⏳ | audit 2026-09-17 — [ITERATION_94](en/ITERATION_94.md); **58f-h** canvas stays under It.58f |
 | 30 | **It.95** Component playground (Sandpack) + private design-system registry | 🟡 P1 / 🔵 P2 | ⏳ | Monaco bridge, settings pack toggles, Git import — [ITERATION_95](en/ITERATION_95.md) |
+| 31 | **It.96** Document library & file manager (PDF, Office, text) | 🟡 P1 | ⏳ | Upload policy `documents`, safe serve, text edit, download — [ITERATION_96](ITERATION_96.md); media download pre-shipped |
 
 ---
 

@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { useI18n } from '../../context/I18nContext';
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { formatRelativeTime } from '../../utils/contentDates';
 import { DiffViewer } from '../versioning/DiffViewer';
 import type { Version } from '../../api/types';
@@ -13,7 +14,8 @@ interface VersionHistoryProps {
 }
 
 export const VersionHistory: React.FC<VersionHistoryProps> = ({ contentId, onRestore }) => {
-  const { locale } = useI18n();
+  const { locale, t } = useI18n();
+  const confirmDestructive = useAdminConfirm();
   const [versions, setVersions] = useState<Version[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedVersions, setSelectedVersions] = useState<[number, number] | null>(null);
@@ -38,7 +40,7 @@ export const VersionHistory: React.FC<VersionHistoryProps> = ({ contentId, onRes
   }, [loadHistory]);
 
   const handleRestore = async (version: number) => {
-    if (!confirm(`Are you sure you want to restore version ${version}?`)) {
+    if (!(await confirmDestructive(t('editor.versions.confirmRestore', { version: String(version) })))) {
       return;
     }
 
@@ -78,7 +80,7 @@ export const VersionHistory: React.FC<VersionHistoryProps> = ({ contentId, onRes
   };
 
   const handleCleanup = async () => {
-    if (!confirm(`Delete all but last 10 versions of this file?`)) {
+    if (!(await confirmDestructive(t('editor.versions.confirmPrune')))) {
       return;
     }
 

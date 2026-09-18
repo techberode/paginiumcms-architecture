@@ -4,6 +4,7 @@ import { eventsApi, type EventStatus, type SiteEvent } from '../../api/events';
 import { projectPlannerApi, type ProjectPlanSummary } from '../../api/projectPlanner';
 import { useToast } from '../../hooks/useToast';
 import { useI18n } from '../../context/I18nContext';
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { AdminHintCard } from './AdminHintCard';
 import { AdminWidgetCard } from '../ui/AdminWidgetCard';
 import { AdminDataTable } from '../ui/AdminDataTable';
@@ -44,6 +45,7 @@ function formatWhen(unix: number, locale: string): string {
 
 export const EventsManager: React.FC = () => {
   const { t, locale } = useI18n();
+  const confirmDestructive = useAdminConfirm();
   const toast = useToast();
   const now = new Date();
   const [loading, setLoading] = useState(true);
@@ -154,7 +156,7 @@ export const EventsManager: React.FC = () => {
   };
 
   const handleDelete = async (event: SiteEvent) => {
-    if (!window.confirm(t('platform.events.confirmDelete', { title: event.title }))) {
+    if (!(await confirmDestructive(t('platform.events.confirmDelete', { title: event.title })))) {
       return;
     }
     const ok = await eventsApi.remove(event.id);

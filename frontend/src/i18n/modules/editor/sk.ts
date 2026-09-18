@@ -516,4 +516,8 @@ export const editorSk: MessageTree = {
     cancel: 'Zrušiť',
     toolbar: 'Vložiť graf',
   },
+  versions: {
+    confirmRestore: 'Obnoviť verziu {version}? Aktuálny koncept bude prepísaný.',
+    confirmPrune: 'Zmazať všetky verzie okrem posledných 10 pre tento súbor?',
+  },
 };

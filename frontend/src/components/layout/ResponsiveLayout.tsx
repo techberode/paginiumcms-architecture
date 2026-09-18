@@ -16,6 +16,7 @@ import { useI18n } from '../../context/I18nContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useSettings } from '../../hooks/useSettings';
 import { AdminTopNav } from '../backend/AdminTopNav';
+import { KeyboardShortcutsModal } from '../admin/KeyboardShortcutsModal';
 import { adminChromeCssVars, resolveAdminChrome } from '../../theme/adminChrome';
 
 interface ResponsiveLayoutProps {
@@ -39,6 +40,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const location = useLocation();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const isMobile = useMediaQuery('(max-width: 1023px)');
@@ -61,24 +63,46 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) 
   }, [isMobile]);
 
   useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      const key = event.key.toLowerCase();
-      if (!(event.ctrlKey || event.metaKey) || key !== 'k') {
-        return;
-      }
-
-      const target = event.target;
+    const isTypingTarget = (target: EventTarget | null): boolean => {
       if (
         target instanceof HTMLInputElement ||
         target instanceof HTMLTextAreaElement ||
         target instanceof HTMLSelectElement ||
         (target instanceof HTMLElement && target.isContentEditable)
       ) {
+        return true;
+      }
+      return false;
+    };
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      const key = event.key.toLowerCase();
+
+      if ((event.ctrlKey || event.metaKey) && key === 'k') {
+        if (isTypingTarget(event.target)) {
+          return;
+        }
+        event.preventDefault();
+        setCommandPaletteOpen((open) => !open);
         return;
       }
 
-      event.preventDefault();
-      setCommandPaletteOpen((open) => !open);
+      if ((event.ctrlKey || event.metaKey) && key === '/') {
+        if (isTypingTarget(event.target)) {
+          return;
+        }
+        event.preventDefault();
+        setShortcutsOpen(true);
+        return;
+      }
+
+      if (event.key === '?' && !event.ctrlKey && !event.metaKey && !event.altKey) {
+        if (isTypingTarget(event.target)) {
+          return;
+        }
+        event.preventDefault();
+        setShortcutsOpen((open) => !open);
+      }
     };
 
     window.addEventListener('keydown', onKeyDown);
@@ -153,7 +177,12 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) 
       </div>
 
       <ChangePasswordModal open={changePasswordOpen} onClose={() => setChangePasswordOpen(false)} />
-      <AdminCommandPalette isOpen={commandPaletteOpen} onClose={() => setCommandPaletteOpen(false)} />
+      <AdminCommandPalette
+        isOpen={commandPaletteOpen}
+        onClose={() => setCommandPaletteOpen(false)}
+        onOpenShortcuts={() => setShortcutsOpen(true)}
+      />
+      <KeyboardShortcutsModal open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
     </div>
   );
 };

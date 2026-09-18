@@ -2,6 +2,7 @@
 import { render, type RenderOptions } from '@testing-library/react';
 import { TestI18nProvider } from '../context/I18nContext';
 import { TestSettingsProvider } from '../context/SettingsContext';
+import { ConfirmProvider } from '../context/ConfirmContext';
 import type { Locale } from '../i18n';
 
 export type RenderWithProvidersOptions = Omit<RenderOptions, 'wrapper'> & {
@@ -16,7 +17,9 @@ export function renderWithProviders(
     ...options,
     wrapper: ({ children }) => (
       <TestI18nProvider locale={locale}>
-        <TestSettingsProvider>{children}</TestSettingsProvider>
+        <TestSettingsProvider>
+          <ConfirmProvider>{children}</ConfirmProvider>
+        </TestSettingsProvider>
       </TestI18nProvider>
     ),
   });

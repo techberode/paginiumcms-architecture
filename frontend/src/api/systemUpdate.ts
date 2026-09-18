@@ -116,9 +116,61 @@ export interface SystemUpdateRunResult {
   result?: SystemUpdateJobRunPayload | null;
 }
 
+export type SystemUpdateCredentialCheckStatus =
+  | 'ok'
+  | 'missing'
+  | 'invalid'
+  | 'unreadable'
+  | 'not_required';
+
+export type SystemUpdateGitFetchCheckStatus = 'ok' | 'failed' | 'skipped';
+
+export interface SystemUpdateCredentialsVerify {
+  checked_at: string;
+  overall_ok: boolean;
+  github: {
+    owner: string;
+    repo: string;
+    token: {
+      status: SystemUpdateCredentialCheckStatus;
+      detail: string | null;
+      api_http_status: number | null;
+      ssh_available: boolean;
+    };
+  };
+  git_fetch: {
+    status: SystemUpdateGitFetchCheckStatus;
+    transport: 'ssh' | 'https_token' | 'https_no_token';
+    detail: string | null;
+    app_root: string | null;
+  };
+  webhook: {
+    auto_deploy_enabled: boolean;
+    secret: {
+      status: SystemUpdateCredentialCheckStatus;
+      detail: string | null;
+    };
+  };
+}
+
 export async function getSystemUpdateStatus(): Promise<SystemUpdateStatus | null> {
   const res = await apiClient.get<SystemUpdateStatus>('/api/admin/system/update/status');
   return res.success && res.data ? res.data : null;
+}
+
+export async function verifySystemUpdateCredentials(): Promise<{
+  data: SystemUpdateCredentialsVerify | null;
+  error?: string;
+}> {
+  const res = await apiClient.post<SystemUpdateCredentialsVerify>(
+    '/api/admin/system/update/verify',
+    {},
+    { timeout: 120_000 }
+  );
+  if (res.success && res.data) {
+    return { data: res.data };
+  }
+  return { data: null, error: res.error || res.message };
 }
 
 export async function checkSystemUpdate(): Promise<{

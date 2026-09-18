@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import { TwoFactorSettings } from './TwoFactorSettings';
+import { renderWithProviders } from '../../test/renderWithProviders';
 
 vi.mock('../../api/auth', () => ({
   authApi: {
@@ -41,7 +42,7 @@ describe('TwoFactorSettings', () => {
       setupPending: false,
     });
 
-    render(<TwoFactorSettings />);
+    renderWithProviders(<TwoFactorSettings />);
 
     expect(await screen.findByRole('button', { name: /Začať nastavenie 2FA/i })).toBeInTheDocument();
   });
@@ -58,7 +59,7 @@ describe('TwoFactorSettings', () => {
       provisioning_uri: 'otpauth://totp/test',
     });
 
-    render(<TwoFactorSettings />);
+    renderWithProviders(<TwoFactorSettings />);
 
     await waitFor(() => {
       expect(authApi.twoFactor.getQrCode).toHaveBeenCalled();

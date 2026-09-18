@@ -14,6 +14,7 @@ import { SortableTableHeader } from './SortableTableHeader';
 import { applyClientListView } from '../../utils/clientListView';
 import { summarizeBulkResult } from '../../types/bulk';
 import { useI18n } from '../../context/I18nContext';
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { AdminFormActions } from './AdminFormActions';
 
 const CONTENT_SCOPE_KEYS = ['pages', 'blog', 'media', 'data', 'navigation', 'trash'] as const;
@@ -43,6 +44,7 @@ function includesFromSelection(
 
 export const BackupManager: React.FC = () => {
   const { t } = useI18n();
+  const confirmDestructive = useAdminConfirm();
   const [backups, setBackups] = useState<Backup[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -232,7 +234,7 @@ export const BackupManager: React.FC = () => {
 
   const handleRestoreBackup = async (backup: Backup) => {
     const incremental = backup.mode === 'incremental';
-    if (!confirm(incremental ? t('backups.confirm.restoreIncremental') : t('backups.confirm.restoreOne'))) {
+    if (!(await confirmDestructive(incremental ? t('backups.confirm.restoreIncremental') : t('backups.confirm.restoreOne')))) {
       return;
     }
 
@@ -258,7 +260,7 @@ export const BackupManager: React.FC = () => {
   };
 
   const handleDeleteBackup = async (id: string) => {
-    if (!confirm(t('backups.confirm.deleteOne'))) {
+    if (!(await confirmDestructive(t('backups.confirm.deleteOne')))) {
       return;
     }
     const ok = await backupApi.delete(id);
@@ -274,7 +276,7 @@ export const BackupManager: React.FC = () => {
     if (bulkSelection.count === 0) {
       return;
     }
-    if (!confirm(t('backups.confirm.bulkDelete', { count: String(bulkSelection.count) }))) {
+    if (!(await confirmDestructive(t('backups.confirm.bulkDelete', { count: String(bulkSelection.count) })))) {
       return;
     }
     const result = await backupApi.bulkDelete(bulkSelection.selectedIds);
@@ -291,7 +293,7 @@ export const BackupManager: React.FC = () => {
     if (bulkSelection.count === 0) {
       return;
     }
-    if (!confirm(t('backups.confirm.bulkRestore', { count: String(bulkSelection.count) }))) {
+    if (!(await confirmDestructive(t('backups.confirm.bulkRestore', { count: String(bulkSelection.count) })))) {
       return;
     }
     toast.info(t('backups.toast.bulkRestoreInProgress', { count: String(bulkSelection.count) }));

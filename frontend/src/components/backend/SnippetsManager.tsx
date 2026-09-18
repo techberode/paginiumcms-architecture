@@ -8,6 +8,7 @@ import {
 import { useToast } from '../../hooks/useToast';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { useI18n } from '../../context/I18nContext';
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { AdminBodyPreviewPanel } from './AdminBodyPreviewPanel';
 import { AdminFormActions } from './AdminFormActions';
 import { BulkActionBar } from './BulkActionBar';
@@ -24,6 +25,7 @@ const emptySnippet = (name: string): SnippetDocument => ({
 
 export const SnippetsManager: React.FC = () => {
   const { t } = useI18n();
+  const confirmDestructive = useAdminConfirm();
   const toast = useToast();
   const draftNameRef = useRef<string | null>(null);
 
@@ -159,7 +161,7 @@ export const SnippetsManager: React.FC = () => {
   };
 
   const handleDelete = async () => {
-    if (!snippet || !window.confirm(t('platform.snippets.confirmDelete', { name: snippet.name }))) {
+    if (!snippet || !(await confirmDestructive(t('platform.snippets.confirmDelete', { name: snippet.name })))) {
       return;
     }
     try {
@@ -181,7 +183,7 @@ export const SnippetsManager: React.FC = () => {
     if (bulkSelection.count === 0) {
       return;
     }
-    if (!window.confirm(t('platform.snippets.confirmBulkDelete', { count: String(bulkSelection.count) }))) {
+    if (!(await confirmDestructive(t('platform.snippets.confirmBulkDelete', { count: String(bulkSelection.count) })))) {
       return;
     }
     try {

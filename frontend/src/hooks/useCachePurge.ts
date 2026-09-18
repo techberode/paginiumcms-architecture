@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { purgeCache, type CachePurgeScope } from '../api/cache';
 import { useToast } from './useToast';
 import { useI18n } from '../context/I18nContext';
+import { confirmDialogDestructive } from '../utils/confirmDialog';
 
 export function useCachePurge() {
   const { t } = useI18n();
@@ -12,7 +13,7 @@ export function useCachePurge() {
     async (scope: CachePurgeScope): Promise<boolean> => {
       const confirmMessage =
         scope === 'all' ? t('settings.cache.confirmAll') : t('settings.cache.confirmContent');
-      if (!window.confirm(confirmMessage)) {
+      if (!(await confirmDialogDestructive(confirmMessage, t('admin.confirm.proceedTitle')))) {
         return false;
       }
 

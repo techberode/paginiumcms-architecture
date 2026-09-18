@@ -1,3 +1,4 @@
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useToast } from '../../hooks/useToast';
 import { FileTree } from './FileTree';
@@ -32,6 +33,7 @@ const CodeEditorContent: React.FC<CodeEditorProps> = ({ initialPath = '' }) => {
   const [wordWrap, setWordWrap] = useState(false);
   const monacoRef = useRef<MonacoCodeEditorHandle>(null);
   const toast = useToast();
+  const confirmDestructive = useAdminConfirm();
 
   const loadFiles = useCallback(async () => {
     setLoadingFiles(true);
@@ -86,7 +88,7 @@ const CodeEditorContent: React.FC<CodeEditorProps> = ({ initialPath = '' }) => {
   const handleSave = async () => {
     if (!currentFile || !isDirty) return;
 
-    const ok = window.confirm(
+    const ok = await confirmDestructive(
       `Uložiť zmeny do súboru?\n\n${currentFile}\n\nChybný PHP kód môže znefunkčniť CMS. Pokračovať?`
     );
     if (!ok) return;
@@ -138,12 +140,12 @@ const CodeEditorContent: React.FC<CodeEditorProps> = ({ initialPath = '' }) => {
 
   const handleLockEditor = async () => {
     if (isDirty) {
-      const ok = window.confirm(
+      const ok = await confirmDestructive(
         'Máte neuložené zmeny. Naozaj chcete zamknúť Code Editor bez uloženia?'
       );
       if (!ok) return;
     } else {
-      const ok = window.confirm(
+      const ok = await confirmDestructive(
         'Zamknúť Code Editor? Na ďalšie úpravy kódu budete musieť znova zadať TOTP kód.'
       );
       if (!ok) return;

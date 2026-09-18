@@ -17,7 +17,7 @@ Stabilizačná fáza je **ukončená**. Pokračujeme v existujúcich špeckách;
 | Oblasť | Stav |
 |--------|------|
 | Najnovší tag | ✅ `v2.1.0-beta.82` — It.89b–e plugin broker · CLI |
-| Rozpracované | **58f-h** · **It.94** · **It.95** (It.92 hotové v strome, tag `beta.83`) |
+| Rozpracované | **58f-h** · **It.95** · **It.96** (It.94 ✅ · It.92 v tagoch `beta.83+`) |
 
 ## Fronta
 

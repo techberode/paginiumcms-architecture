@@ -2,12 +2,14 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { comingSoonApi, type ComingSoonItem, type ComingSoonKind } from '../../api/comingSoon';
 import { useToast } from '../../hooks/useToast';
 import { useI18n } from '../../context/I18nContext';
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { AdminWidgetCard } from '../ui/AdminWidgetCard';
 import { ADMIN_INPUT } from '../../theme/adminUiClasses';
 import { datetimeLocalToUnix, unixToDatetimeLocal, nextHourDatetimeLocal } from '../../utils/siteEvents';
 
 export const ComingSoonPanel: React.FC = () => {
   const { t } = useI18n();
+  const confirmDestructive = useAdminConfirm();
   const toast = useToast();
   const [items, setItems] = useState<ComingSoonItem[]>([]);
   const [pages, setPages] = useState<Array<{ slug: string; title: string }>>([]);
@@ -78,7 +80,7 @@ export const ComingSoonPanel: React.FC = () => {
   };
 
   const handleDelete = async (item: ComingSoonItem) => {
-    if (!window.confirm(t('platform.comingSoon.confirmDelete'))) {
+    if (!(await confirmDestructive(t('platform.comingSoon.confirmDelete')))) {
       return;
     }
     const ok = await comingSoonApi.remove(item.id);

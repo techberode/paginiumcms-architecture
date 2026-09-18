@@ -42,6 +42,7 @@ import { AdminToolbar } from '../ui/AdminToolbar';
 import { AdminTabs } from '../ui/AdminTabs';
 import { ADMIN_CARD, ADMIN_PAGE_SUBTITLE, ADMIN_PAGE_TITLE, ADMIN_PILL_ACTIVE, ADMIN_PILL_IDLE } from '../../theme/adminUiClasses';
 import { useI18n } from '../../context/I18nContext';
+import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { useToast } from '../../hooks/useToast';
 import { countryCodeToFlag } from '../../utils/countryFlag';
 
@@ -140,6 +141,7 @@ function trendClassName(tone: 'positive' | 'negative' | 'neutral'): string {
 
 export const AnalyticsView: React.FC = () => {
   const { t } = useI18n();
+  const confirmDestructive = useAdminConfirm();
   const { error: toastError, success: toastSuccess } = useToast();
   const [period, setPeriod] = useState<PeriodDays>(30);
   const [tab, setTab] = useState<AnalyticsTab>('overview');
@@ -204,7 +206,7 @@ export const AnalyticsView: React.FC = () => {
   };
 
   const handleBanBot = async (ip: string, botName: string, ipMasked: string) => {
-    if (!window.confirm(t('analytics.bots.banConfirm', { ip: ipMasked }))) {
+    if (!(await confirmDestructive(t('analytics.bots.banConfirm', { ip: ipMasked })))) {
       return;
     }
     setBanningIp(ip);

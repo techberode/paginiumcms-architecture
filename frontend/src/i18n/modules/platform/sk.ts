@@ -514,6 +514,45 @@ export const platformSk: MessageTree = {
     webhookSecretConfigured: 'Secret nastavený',
     webhookSecretMissing: 'Nastavte GitHub webhook secret v Nastaveniach → Aktualizácia systému',
     webhookEvents: 'Odber: Release (published)',
+    credentials: {
+      title: 'Kontrola deploy credentials',
+      subtitle:
+        'Live test GitHub tokenu, git fetch (rovnako ako deploy script) a webhook secret — spustite po uložení nastavení.',
+      pathHint:
+        'Deploy z adminu beží v PHP kontajneri (v Dockeri často /var/www/html). To je bind-mount hostiteľského git checkoutu (napr. /var/www/paginiumcms.com) — nie cesta, ktorú používate pri manuálnom deployi cez SSH na hoste.',
+      verifyButton: 'Overiť pripojenie',
+      verifying: 'Overujem…',
+      notRunYet: 'Spustite overenie, aby ste potvrdili token a git prístup pred deployom.',
+      checkedAt: 'Naposledy overené: {time}',
+      overallOk: 'Všetky kontroly prešli — deploy credentials sú v poriadku.',
+      overallFail: 'Niektorá kontrola zlyhala — pred deployom upravte nastavenia.',
+      tokenLabel: 'GitHub token (API)',
+      gitFetchLabel: 'Git fetch (origin HEAD)',
+      webhookSecretLabel: 'Webhook secret',
+      tokenStatus: {
+        ok: 'OK',
+        missing: 'Chýba',
+        invalid: 'Neplatný',
+        unreadable: 'Nečitateľný',
+        not_required: 'Nepovinné',
+      },
+      gitStatus: {
+        ok: 'OK',
+        failed: 'Zlyhalo',
+        skipped: 'Preskočené',
+        missing: 'Chýba',
+        invalid: 'Neplatný',
+        unreadable: 'Nečitateľný',
+        not_required: 'Nepovinné',
+      },
+      webhookStatus: {
+        ok: 'OK',
+        missing: 'Chýba',
+        not_required: 'Nepovinné',
+        invalid: 'Neplatný',
+        unreadable: 'Nečitateľný',
+      },
+    },
     blockers: {
       title: 'Deploy je blokovaný, kým nevyriešite:',
       deploy_disabled: 'Zapnite admin deploy v Nastaveniach → Aktualizácia systému.',
@@ -543,6 +582,11 @@ export const platformSk: MessageTree = {
       deployDisabled: 'Najprv zapnite deploy v Nastaveniach → Aktualizácia systému',
       deployNotReady: 'Deploy nie je pripravený — vyriešte blockery v Nastaveniach → Aktualizácia systému',
       refRequired: 'Zadajte deploy ref (tag alebo origin/vetva)',
+      verifyOk: 'Credentials overené — deploy transport je OK',
+      verifyFailed: 'Kontrola credentials zlyhala',
+      credentialsNotReady: 'Pred deployom opravte credentials — spustite Overiť pripojenie',
+      settingsVerifyOk: 'Nastavenia aktualizácie uložené — credentials overené',
+      settingsVerifyFailed: 'Nastavenia uložené, ale kontrola credentials zlyhala — pozrite Aktualizáciu systému',
     },
   },
   acl: {
@@ -1237,6 +1281,11 @@ export const platformSk: MessageTree = {
   redirects: {
     title: 'Redirecty',
     subtitle: 'Správa 301/302 pravidiel pre staré URL — flat-file mapa v data/redirects.json.',
+    contextHelpSummary: 'Redirecty bežia pred CMS routerom. Používajte relatívne cesty; vyhnite sa otvoreným presmerovaniam na externé weby.',
+    contextHelpDetail:
+      'Pravidlá sú v data/redirects.json. „Z“ musí byť cesta webu (s úvodným lomítkom). „Na“ môže byť iná cesta alebo povolená externá URL overená backendom.\n\n301 je trvalé (SEO); 302 dočasné. Pri testovaní radšej vypnite pravidlo než ho zmažte.',
+    contextHelpDocLink:
+      'https://github.com/techberode/paginiumcms-architecture/blob/main/docs/en/architecture/FRONTEND.md',
     refresh: 'Obnoviť',
     create: 'Nový redirect',
     createTitle: 'Vytvoriť redirect',

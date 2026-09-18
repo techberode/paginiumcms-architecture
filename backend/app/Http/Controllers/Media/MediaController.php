@@ -66,7 +66,10 @@ class MediaController
             || str_contains($mimeType, 'html')
             || str_contains($mimeType, 'xml');
 
-        $disposition = $isActiveMime ? 'attachment' : 'inline';
+        $query = $request->getQueryParams();
+        $forceDownload = in_array(strtolower((string) ($query['download'] ?? '')), ['1', 'true', 'yes'], true);
+
+        $disposition = ($isActiveMime || $forceDownload) ? 'attachment' : 'inline';
 
         $response = $response
             ->withHeader('Content-Type', $mimeType)

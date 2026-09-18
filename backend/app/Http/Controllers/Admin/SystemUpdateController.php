@@ -9,6 +9,7 @@ use PaginiumCMS\Core\Scheduler\Services\JobRunStore;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\SystemUpdate\Services\GitHubReleaseClient;
 use PaginiumCMS\Core\SystemUpdate\Services\GitRepositoryInspector;
+use PaginiumCMS\Core\SystemUpdate\Services\SystemDeployCredentialsProbe;
 use PaginiumCMS\Core\SystemUpdate\Services\SystemDeployReadinessService;
 use PaginiumCMS\Core\SystemUpdate\Services\SystemDeployTriggerService;
 use PaginiumCMS\Core\SystemUpdate\Services\SystemUpdateVersionMatcher;
@@ -38,8 +39,18 @@ final class SystemUpdateController
         private SystemUpdateWebhookService $webhook,
         private SystemUpdateVersionMatcher $versionMatcher,
         private SystemDeployReadinessService $deployReadiness,
+        private SystemDeployCredentialsProbe $credentialsProbe,
         private JsonResponder $json
     ) {
+    }
+
+    public function verify(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        if (DemoMode::isEnabledFromEnv()) {
+            return $this->json->error($response, 'System update is disabled on demo instance', 403);
+        }
+
+        return $this->json->success($response, $this->credentialsProbe->evaluate());
     }
 
     public function status(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
