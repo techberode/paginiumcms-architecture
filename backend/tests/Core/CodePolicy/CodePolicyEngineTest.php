@@ -69,6 +69,26 @@ final class CodePolicyEngineTest extends TestCase
         );
     }
 
+    public function testUntrustedBlocksVariableFunctionIndirection(): void
+    {
+        $engine = $this->makeEngine();
+        $this->expectException(CodePolicyViolationException::class);
+        $engine->validate(
+            'backend/app/Http/Extensions/evil/src/Hooks.php',
+            '<?php declare(strict_types=1); namespace PaginiumCMS\\Http\\Extensions\\evil; $fn = "exec"; $fn("x");'
+        );
+    }
+
+    public function testUntrustedBlocksExtract(): void
+    {
+        $engine = $this->makeEngine();
+        $this->expectException(CodePolicyViolationException::class);
+        $engine->validate(
+            'backend/app/Http/Extensions/evil/src/Hooks.php',
+            '<?php declare(strict_types=1); namespace PaginiumCMS\\Http\\Extensions\\evil; extract($_GET);'
+        );
+    }
+
     public function testIsUntrustedPathDetectsLayoutAndThemes(): void
     {
         $engine = $this->makeEngine();

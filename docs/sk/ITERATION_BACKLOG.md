@@ -47,7 +47,7 @@ Tento dokument opravuje starý backlog, v ktorom sa miešali hotové iterácie, 
 | 21 | **It.83** Theme runtime + Terminal Breach | 🟡 | ✅ | `beta.59` — [ITERATION_83](../en/ITERATION_83.md) |
 | 22 | **It.84** Kategórie, blog sidebar, landing, role, menu | 🟡 | ✅ | **84a–84e** hotové — [ITERATION_84](../en/ITERATION_84.md) |
 | 23 | **It.85** Request diagnostics + admin APM clear | 🟡 | ✅ | **85a–85f** hotové — [ITERATION_85](../en/ITERATION_85.md); `v2.1.0-beta.59` |
-| 24 | **It.89** Plugin capability model | 🟡 | ⏳ | **89a** hotové; 89b–e ostávajú — [ITERATION_89](../en/ITERATION_89.md) |
+| 24 | **It.89** Plugin capability model | 🟡 | ✅ | **89a–e** hotové — [ITERATION_89](../en/ITERATION_89.md) |
 | 25 | **It.92** SQLite query index + Guard advisor | 🟡 | ⏳ | odvodený katalóg — [ITERATION_92](ITERATION_92.md) |
 | 26 | **It.93** Admin chrome + denné aplikácie | 🟡 P1 | ✅ shipped | chrome v `beta.77`; **93l** Kanban + **93m** IMAP v `beta.78`; **93m-5** mail polish v `beta.79` — [ITERATION_93](ITERATION_93.md) |
 | 27 | **It.58f-h** Vizuálne plátno blokov | 🟡 P1 | ⏳ | pod It.58f — [ITERATION_58f](ITERATION_58f.md) |

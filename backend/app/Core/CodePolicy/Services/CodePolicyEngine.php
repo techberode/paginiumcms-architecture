@@ -37,6 +37,7 @@ final class CodePolicyEngine implements CodePolicyEngineInterface
         'unserialize',
         'call_user_func',
         'call_user_func_array',
+        'extract',
         'include',
         'include_once',
         'require',
@@ -145,6 +146,12 @@ final class CodePolicyEngine implements CodePolicyEngineInterface
 
             foreach ($this->securityScanner->scanPhp($content, $forbidden) as $violation) {
                 $errors['security'][] = $violation;
+            }
+
+            if ($untrusted) {
+                foreach ($this->securityScanner->scanUntrustedIndirection($content, $forbidden) as $violation) {
+                    $errors['security'][] = $violation;
+                }
             }
 
             if ($untrusted) {

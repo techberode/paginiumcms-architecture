@@ -7,7 +7,9 @@ namespace PaginiumCMS\Http\Extensions\Services;
 use PaginiumCMS\Core\Editor\Models\EditorComponentDefinition;
 use PaginiumCMS\Core\Hook\HookCatalog;
 use PaginiumCMS\Core\Hook\HookManager;
+use PaginiumCMS\Core\Hook\PluginHookListener;
 use PaginiumCMS\Core\Hook\Services\HookEmitter;
+use PaginiumCMS\Http\Extensions\Capabilities\PluginCapabilityBroker;
 use PaginiumCMS\Http\Extensions\Contracts\PluginManagerInterface;
 use PaginiumCMS\Http\Extensions\Models\PluginRecord;
 use PaginiumCMS\Support\JsonHelper;
@@ -29,6 +31,8 @@ final class PluginManager implements PluginManagerInterface
         private HookManager $hookManager,
         private HookEmitter $hookEmitter,
         private ExtensionManifestValidator $manifestValidator,
+        private PluginCapabilityBroker $capabilityBroker,
+        private PluginHealthStore $healthStore,
         private string $extensionsRoot,
         private string $extensionRoutesRoot,
         private string $frontendExtensionsRoot,
@@ -148,6 +152,7 @@ final class PluginManager implements PluginManagerInterface
                 continue;
             }
 
+            $health = $this->healthStore->snapshot($id);
             $items[] = [
                 'id' => $id,
                 'name' => $id,
@@ -156,6 +161,8 @@ final class PluginManager implements PluginManagerInterface
                 'enabled' => $record->enabled,
                 'installedAt' => $record->installedAt,
                 'present' => false,
+                'autoDisabled' => $health !== null && $health['autoDisabled'],
+                'disabledReason' => $health !== null ? $health['lastError'] : '',
             ];
         }
 
@@ -188,6 +195,7 @@ final class PluginManager implements PluginManagerInterface
             : gmdate('c');
 
         $this->registry->upsert(new PluginRecord($id, true, $installedAt));
+        $this->healthStore->clear($id);
         $this->loadPluginClasses($id);
         $this->registerHooks($id, $manifest);
         $this->hookEmitter->emit(HookCatalog::EXTENSION_ENABLED, [
@@ -225,6 +233,7 @@ final class PluginManager implements PluginManagerInterface
         $id = $this->normalizeId($id);
         $this->unregisterHooks($id);
         $this->registry->remove($id);
+        $this->healthStore->clear($id);
         $this->removeInstalledFiles($id);
         $this->bootedIds = array_values(array_filter(
             $this->bootedIds,
@@ -313,6 +322,8 @@ final class PluginManager implements PluginManagerInterface
      */
     private function mergeEntry(string $id, array $manifest, ?PluginRecord $record): array
     {
+        $health = $this->healthStore->snapshot($id);
+
         return [
             'id' => $id,
             'name' => (string) ($manifest['name'] ?? $id),
@@ -326,6 +337,8 @@ final class PluginManager implements PluginManagerInterface
                 || (bool) ($manifest['routes'] ?? false),
             'hasFrontend' => is_dir($this->frontendExtensionsRoot . '/' . $id)
                 || (bool) ($manifest['frontend'] ?? false),
+            'autoDisabled' => $health !== null && $health['autoDisabled'],
+            'disabledReason' => $health !== null ? $health['lastError'] : '',
         ];
     }
 
@@ -380,8 +393,40 @@ final class PluginManager implements PluginManagerInterface
                 continue;
             }
 
-            $this->hookManager->add($hookName, $callable);
+            $pluginId = $id;
+            $capabilities = $this->capabilitiesFromManifest($manifest);
+            $broker = $this->capabilityBroker;
+            $this->hookManager->add(
+                $hookName,
+                new PluginHookListener(
+                    $pluginId,
+                    static function (array $context) use ($broker, $callable, $pluginId, $capabilities): mixed {
+                        return $broker->invoke($callable, $context, $pluginId, $capabilities);
+                    }
+                )
+            );
         }
+    }
+
+    /**
+     * @param array<string, mixed> $manifest
+     * @return list<string>
+     */
+    private function capabilitiesFromManifest(array $manifest): array
+    {
+        $raw = $manifest['capabilities'] ?? [];
+        if (!is_array($raw)) {
+            return [];
+        }
+
+        $out = [];
+        foreach ($raw as $item) {
+            if (is_string($item) && trim($item) !== '') {
+                $out[] = trim($item);
+            }
+        }
+
+        return $out;
     }
 
     private function unregisterHooks(string $id): void

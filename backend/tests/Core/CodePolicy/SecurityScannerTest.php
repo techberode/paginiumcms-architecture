@@ -49,4 +49,48 @@ final class SecurityScannerTest extends TestCase
 
         $this->assertSame([], $violations);
     }
+
+    public function testDetectsVariableFunctionCall(): void
+    {
+        $violations = $this->scanner->scanUntrustedIndirection(
+            '<?php $fn = "exec"; $fn("ls");',
+            ['exec']
+        );
+
+        $this->assertNotSame([], $violations);
+        $this->assertStringContainsString('variable function', $violations[0]);
+    }
+
+    public function testDetectsVariableVariable(): void
+    {
+        $violations = $this->scanner->scanUntrustedIndirection(
+            '<?php $a = "x"; $$a = 1;',
+            ['exec']
+        );
+
+        $this->assertNotSame([], $violations);
+        $this->assertStringContainsString('variable variable', $violations[0]);
+    }
+
+    public function testDetectsArrayMapForbiddenCallback(): void
+    {
+        $violations = $this->scanner->scanUntrustedIndirection(
+            '<?php array_map("system", ["ls"]);',
+            ['system']
+        );
+
+        $this->assertNotSame([], $violations);
+        $this->assertStringContainsString('system', $violations[0]);
+        $this->assertStringContainsString('array_map', $violations[0]);
+    }
+
+    public function testAllowsArrayMapWithClosure(): void
+    {
+        $violations = $this->scanner->scanUntrustedIndirection(
+            '<?php array_map(static fn ($x) => $x, ["a"]);',
+            ['exec', 'system']
+        );
+
+        $this->assertSame([], $violations);
+    }
 }

@@ -9,7 +9,10 @@ echo "=== CodePolicy + shortcode/theme hostile pack ==="
 vendor/bin/phpunit --colors=always \
   backend/tests/Core/CodePolicy/ \
   backend/tests/Core/Layout/ShortcodeDefinitionManagerTest.php \
-  backend/tests/Http/Themes/ThemeImporterTest.php
+  backend/tests/Http/Themes/ThemeImporterTest.php \
+  backend/tests/Http/Extensions/PluginImporterTest.php \
+  backend/tests/Http/Extensions/Capabilities/PluginCapabilityUsageScannerTest.php \
+  backend/tests/Http/Extensions/PluginCliCommandsTest.php
 
 echo "=== Trusted content hostile pack (It.91d) ==="
 vendor/bin/phpunit --colors=always \

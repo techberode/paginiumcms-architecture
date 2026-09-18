@@ -563,6 +563,11 @@ php backend/bin/console user:create admin@example.test "Admin User" 'SecurePass1
 # Existing user helpers
 php backend/bin/console user:list
 php backend/bin/console user:reset-password admin@example.test 'NewSecurePass1!'
+
+# Plugin scaffold + same-engine scan as ZIP import (It.89e)
+php backend/bin/console plugin:create seo-analyzer --capabilities=content:read
+php backend/bin/console plugin:scan seo-analyzer
+php backend/bin/console plugin:scan /path/to/plugin --json
 ```
 
 Import rules: slug collisions rename to `import-{slug}`; WordPress WXR imports posts as articles and pages as pages; media URLs in HTML are not downloaded in phase 1.

@@ -12,6 +12,8 @@ export interface ExtensionRecord {
   present: boolean;
   hasRoutes?: boolean;
   hasFrontend?: boolean;
+  autoDisabled?: boolean;
+  disabledReason?: string;
 }
 
 export interface ExtensionImportResult {

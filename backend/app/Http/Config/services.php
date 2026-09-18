@@ -87,6 +87,7 @@ use PaginiumCMS\Core\Git\Services\PublishPlanner;
 use PaginiumCMS\Core\Git\Services\PublishQueueStore;
 use PaginiumCMS\Core\Hook\HookManager;
 use PaginiumCMS\Core\Hook\Services\HookEmitter;
+use PaginiumCMS\Core\Hook\Services\SafeHookRunner;
 use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
@@ -269,12 +270,20 @@ use PaginiumCMS\Http\Controllers\Content\ContentMetaController;
 use PaginiumCMS\Http\Controllers\Content\EditorialCalendarController;
 use PaginiumCMS\Http\Controllers\Content\DraftController;
 use PaginiumCMS\Http\Controllers\Content\SearchController;
+use PaginiumCMS\Http\Extensions\Capabilities\PluginCapabilityAuditor;
+use PaginiumCMS\Http\Extensions\Capabilities\PluginCapabilityBroker;
+use PaginiumCMS\Http\Extensions\Capabilities\PluginCapabilityUsageScanner;
+use PaginiumCMS\Http\Extensions\Commands\PluginCreateCommand;
+use PaginiumCMS\Http\Extensions\Commands\PluginScanCommand;
 use PaginiumCMS\Http\Extensions\Contracts\PluginManagerInterface;
 use PaginiumCMS\Http\Extensions\Services\ExtensionManifestValidator;
+use PaginiumCMS\Http\Extensions\Services\PluginHealthStore;
 use PaginiumCMS\Http\Extensions\Services\PluginImporter;
 use PaginiumCMS\Http\Extensions\Services\PluginManager;
 use PaginiumCMS\Http\Extensions\Services\PluginPolicyScanner;
 use PaginiumCMS\Http\Extensions\Services\PluginRegistry;
+use PaginiumCMS\Http\Extensions\Services\PluginScanService;
+use PaginiumCMS\Http\Extensions\Services\PluginScaffoldService;
 use PaginiumCMS\Http\Themes\Services\ThemeCatalogSeeder;
 use PaginiumCMS\Http\Themes\Services\ThemeImporter;
 use PaginiumCMS\Http\Themes\Services\ThemeManager;
@@ -1234,10 +1243,34 @@ return [
     // Code editor / versioning / audit (auto-discovered admin routes)
     ConfigManager::class => create(ConfigManager::class),
     EventDispatcher::class => create(EventDispatcher::class),
-    HookManager::class => create(HookManager::class),
+    PluginHealthStore::class => create(PluginHealthStore::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class),
+            'data/plugins/health.json'
+        ),
+    PluginCapabilityAuditor::class => create(PluginCapabilityAuditor::class)
+        ->constructor(get(SecurityAuditStore::class)),
+    SafeHookRunner::class => create(SafeHookRunner::class)
+        ->constructor(
+            get(PluginRegistry::class),
+            get(PluginHealthStore::class),
+            get(SecurityAuditStore::class),
+            SafeHookRunner::DEFAULT_TIME_BUDGET_MS,
+            SafeHookRunner::DEFAULT_MEMORY_BUDGET_BYTES,
+            SafeHookRunner::DEFAULT_FAILURE_THRESHOLD
+        ),
+    HookManager::class => create(HookManager::class)
+        ->constructor(get(SafeHookRunner::class)),
     HookEmitter::class => create(HookEmitter::class)
         ->constructor(get(HookManager::class)),
     ExtensionManifestValidator::class => create(ExtensionManifestValidator::class),
+    PluginCapabilityBroker::class => create(PluginCapabilityBroker::class)
+        ->constructor(
+            get(ContentRepositoryInterface::class),
+            get(MediaRepositoryInterface::class),
+            get(PluginCapabilityAuditor::class)
+        ),
     UntrustedPolicyScanner::class => create(UntrustedPolicyScanner::class)
         ->constructor(get(CodePolicyEngineInterface::class)),
     PluginPolicyScanner::class => create(PluginPolicyScanner::class)
@@ -1248,11 +1281,29 @@ return [
             get(FileWriterInterface::class),
             'data/plugins.json'
         ),
+    PluginCapabilityUsageScanner::class => create(PluginCapabilityUsageScanner::class),
+    PluginScanService::class => create(PluginScanService::class)
+        ->constructor(
+            get(PluginPolicyScanner::class),
+            get(ExtensionManifestValidator::class),
+            get(PluginCapabilityUsageScanner::class)
+        ),
+    PluginScaffoldService::class => create(PluginScaffoldService::class)
+        ->constructor(dirname(__DIR__, 2) . '/Extensions'),
+    PluginCreateCommand::class => create(PluginCreateCommand::class)
+        ->constructor(
+            get(PluginScaffoldService::class),
+            get(PluginScanService::class)
+        ),
+    PluginScanCommand::class => create(PluginScanCommand::class)
+        ->constructor(
+            get(PluginScanService::class),
+            dirname(__DIR__, 2) . '/Extensions'
+        ),
     PluginImporter::class => create(PluginImporter::class)
         ->constructor(
             get(PluginRegistry::class),
-            get(PluginPolicyScanner::class),
-            get(ExtensionManifestValidator::class),
+            get(PluginScanService::class),
             dirname(__DIR__, 2) . '/Extensions',
             dirname(__DIR__, 2) . '/Routes/extensions',
             dirname(__DIR__, 4) . '/frontend/src/extensions',
@@ -1265,6 +1316,8 @@ return [
             get(HookManager::class),
             get(HookEmitter::class),
             get(ExtensionManifestValidator::class),
+            get(PluginCapabilityBroker::class),
+            get(PluginHealthStore::class),
             dirname(__DIR__, 2) . '/Extensions',
             dirname(__DIR__, 2) . '/Routes/extensions',
             dirname(__DIR__, 4) . '/frontend/src/extensions'

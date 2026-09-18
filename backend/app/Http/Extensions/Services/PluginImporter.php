@@ -17,8 +17,7 @@ final class PluginImporter
 {
     public function __construct(
         private PluginRegistry $registry,
-        private PluginPolicyScanner $policyScanner,
-        private ExtensionManifestValidator $manifestValidator,
+        private PluginScanService $scanService,
         private string $extensionsRoot,
         private string $extensionRoutesRoot,
         private string $frontendExtensionsRoot,
@@ -50,18 +49,18 @@ final class PluginImporter
 
         try {
             $this->extractZip($zipPath, $tempDir);
-            [$pluginRoot, $manifest] = $this->resolvePluginRoot($tempDir);
-            $id = $this->manifestValidator->validate($manifest, basename($pluginRoot));
+            [$pluginRoot] = $this->resolvePluginRoot($tempDir);
+            $report = $this->scanService->scan($pluginRoot);
+            if ($report['errors'] !== []) {
+                throw new CodePolicyViolationException($this->mapScanErrors($report['errors']));
+            }
+
+            $id = $report['id'];
+            $manifest = $report['manifest'];
 
             $targetDir = $this->extensionsRoot . '/' . $id;
             if (is_dir($targetDir)) {
                 throw new RuntimeException('Extension already installed: ' . $id);
-            }
-
-            $policyPrefix = 'backend/app/Http/Extensions/' . $id;
-            $errors = $this->policyScanner->scanDirectory($pluginRoot, $policyPrefix);
-            if ($errors !== []) {
-                throw new CodePolicyViolationException($this->mapScanErrors($errors));
             }
 
             $this->installPluginFiles($pluginRoot, $id, $manifest);

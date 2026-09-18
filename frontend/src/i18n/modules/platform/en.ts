@@ -351,6 +351,10 @@ export const platformEn: MessageTree = {
     frontend: 'Frontend',
     enabled: 'Enabled',
     disabled: 'Disabled',
+    autoDisabled: 'Auto-disabled after hook failures',
+    autoDisabledBanner:
+      'One or more extensions were disabled after repeated hook failures. Review the security audit, then enable again if the plugin is safe.',
+    autoDisabledDetail: 'Last error: :reason',
     uninstall: 'Uninstall',
     bulkUninstall: 'Uninstall selected',
     bulkItemLabel: 'extensions selected',
@@ -381,6 +385,9 @@ export const platformEn: MessageTree = {
       permission_denied: 'Permission denied',
       role_denied: 'Role denied',
       settings_change: 'Settings change',
+      plugin_capability: 'Plugin capability',
+      plugin_hook_failed: 'Plugin hook failed',
+      plugin_auto_disabled: 'Plugin auto-disabled',
     },
     loading: 'Loading…',
     columns: {
