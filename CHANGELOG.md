@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.84`](#release-2-1-0-beta-84) | 2026-09-18 | Hotfix — admin deploy GitHub token · It.92 SQLite FTS + activate probe · API barrel |
 | [`2.1.0-beta.83`](#release-2-1-0-beta-83) | 2026-09-18 | It.92 SQLite derived query index · Guard advisor · runtime watch |
 | [`2.1.0-beta.82`](#release-2-1-0-beta-82) | 2026-09-18 | It.89b–e plugin broker · SafeHookRunner · scanner · plugin CLI |
 | [`2.1.0-beta.81`](#release-2-1-0-beta-81) | 2026-09-17 | System update GET check · GitHub webhook 200 when auto-deploy off |
@@ -168,6 +169,31 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **It.94** / **It.95** — Novice admin UX; Sandpack playground + private component registry. Specs: [ITERATION_94.md](docs/en/ITERATION_94.md), [ITERATION_95.md](docs/en/ITERATION_95.md).
 - **It.92** — Hybrid Engine SQLite **query index** (derived, optional) + Performance Guard advisor (suggest only, never auto-enable). Spec: [ITERATION_92.md](docs/en/ITERATION_92.md).
 - **Queue:** **It.92** → 70 → 76/77 → 75 → 48 (58g with 48). Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+
+---
+
+<a id="release-2-1-0-beta-84"></a>
+
+## [2.1.0-beta.84] – 2026-09-18
+
+Post–**beta.83** hotfixes: **admin UI deploy** in Docker (no `ssh`) and **It.92 SQLite query index** CI/regression fixes.
+
+### Fixed — System update (deploy)
+
+- **Deploy auth** — `GitDeployTransport`, token file + `putenv` before `deploy-instance-update.sh`, `x-access-token` HTTPS insteadOf, `GITHUB_DEPLOY_TOKEN` env fallback.
+- **Readiness** — blockers `github_token_missing` / `github_token_unreadable` (APP_KEY decrypt); SK/EN platform copy.
+- **Settings** — ignore masked `********` on password save; `hasOverride()` for encrypted token detection.
+
+### Fixed — Query index (It.92)
+
+- **FTS search** — `SqliteQueryIndex` uses `entries_fts MATCH :match` (SQLite rejects `alias MATCH`; caused `no such column: fts` on CI).
+- **Activate sqlite** — `QueryIndexCapabilityProbe::verifyActivation()` verifies an existing `content.sqlite` (`runtimeReady()` + JSON parity); does **not** rebuild during activate (rebuild first in Engine UI / CLI).
+- **API barrel** — export `frontend/src/api/queryIndex.ts` from `api/index.ts` (`lint-api-barrel`).
+
+### Docs
+
+- [DEPLOY.md](docs/deploy/DEPLOY.md) §12.5 — webhook secret ≠ GitHub token; `GITHUB_DEPLOY_TOKEN` env.
+- [QUERY_INDEX.md](docs/en/architecture/QUERY_INDEX.md) — activation order, FTS `MATCH` note (EN + SK).
 
 ---
 

@@ -113,6 +113,28 @@ final class SettingsRepository implements SettingsRepositoryInterface
         });
     }
 
+    public function hasOverride(string $group, string $key): bool
+    {
+        if (!$this->storage->exists($this->file)) {
+            return false;
+        }
+
+        try {
+            $decoded = json_decode($this->storage->read($this->file), true);
+        } catch (\Throwable) {
+            return false;
+        }
+
+        if (!is_array($decoded)) {
+            return false;
+        }
+
+        $overrides = $this->normalizeOverrides($decoded);
+        $value = $overrides[$group][$key] ?? null;
+
+        return is_string($value) && trim($value) !== '';
+    }
+
     // === Blok: Efektívne hodnoty (predvolby prekryté odchýlkami) ===
 
     /**
@@ -350,9 +372,15 @@ final class SettingsRepository implements SettingsRepositoryInterface
         }
 
         foreach (SettingsSchema::secretKeys()[$group] ?? [] as $key) {
-            if (isset($values[$key]) && is_string($values[$key]) && $values[$key] !== '') {
-                $values[$key] = $this->encryption->encrypt($values[$key]);
+            if (!isset($values[$key]) || !is_string($values[$key])) {
+                continue;
             }
+            if ($values[$key] === '' || $values[$key] === '********') {
+                unset($values[$key]);
+
+                continue;
+            }
+            $values[$key] = $this->encryption->encrypt($values[$key]);
         }
 
         return $values;

@@ -19,10 +19,11 @@ PaginiumCMS **nemení** pravidlo: **súbory = SSOT** (Markdown, JSON, zálohy, G
 ## K čomu zapnutie vedie
 
 1. **Veľké weby** — tisíce článkov/stránok bez full JSON decode pri každom liste.  
-2. **Vyhľadávanie** — FTS5 nad poliami indexu (title, slug, excerpt, tagy), bez user SQL.  
-3. **Prevádzka** — chýbajúci `.sqlite` → **fallback JSON**, health varovanie, CLI rebuild. Záloha môže `.sqlite` vynechať.  
-4. **Bezpečnosť zápisu** — článok sa uloží aj keď sync SQLite zlyhá (incident, nie rollback).  
-5. **Positioning** — No-SQL SSOT pre audit/GitOps; SQLite = **performance switch**, nie migrácia dát.
+2. **Vyhľadávanie** — FTS5 nad poliami indexu (title, slug, excerpt, tagy), bez user SQL; v SQL musí byť `entries_fts MATCH :match` (nie alias tabuľky).  
+3. **Aktivácia** — najprv **Rebuild**, potom **Activate sqlite**; aktivácia nespúšťa rebuild, len existujúci súbor + paritu s JSON. Bez súboru → **422**, driver zostane `json`.  
+4. **Prevádzka** — chýbajúci `.sqlite` → **fallback JSON**, health varovanie, CLI rebuild. Záloha môže `.sqlite` vynechať.  
+5. **Bezpečnosť zápisu** — článok sa uloží aj keď sync SQLite zlyhá (incident, nie rollback).  
+6. **Positioning** — No-SQL SSOT pre audit/GitOps; SQLite = **performance switch**, nie migrácia dát.
 
 ## Čo SQLite **nie je**
 

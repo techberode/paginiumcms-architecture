@@ -55,16 +55,33 @@ export GIT_TERMINAL_PROMPT=0
 # Extra git -c flags for fetch/pull (admin UI in Docker often has no ssh binary).
 GIT_DEPLOY_EXTRA_CONFIG=()
 
+load_github_deploy_token() {
+  if [[ -n "${GITHUB_DEPLOY_TOKEN:-}" ]]; then
+    return 0
+  fi
+  if [[ -n "${GITHUB_DEPLOY_TOKEN_FILE:-}" && -f "${GITHUB_DEPLOY_TOKEN_FILE}" ]]; then
+    GITHUB_DEPLOY_TOKEN="$(tr -d '\n\r' < "${GITHUB_DEPLOY_TOKEN_FILE}")"
+    export GITHUB_DEPLOY_TOKEN
+  fi
+}
+
 configure_git_fetch_transport() {
   GIT_DEPLOY_EXTRA_CONFIG=(-c "safe.directory=$APP_ROOT")
+  load_github_deploy_token
 
   if ! command -v ssh >/dev/null 2>&1; then
-    echo "→ ssh unavailable; git fetch/pull will use HTTPS insteadOf for GitHub"
-    GIT_DEPLOY_EXTRA_CONFIG+=(-c "url.https://github.com/.insteadOf=git@github.com:")
-    GIT_DEPLOY_EXTRA_CONFIG+=(-c "url.https://github.com/.insteadOf=ssh://git@github.com/")
-  fi
-
-  if [[ -n "${GITHUB_DEPLOY_TOKEN:-}" ]]; then
+    if [[ -n "${GITHUB_DEPLOY_TOKEN:-}" ]]; then
+      echo "→ ssh unavailable; git fetch/pull will use HTTPS with GitHub token"
+      local auth_base="https://x-access-token:${GITHUB_DEPLOY_TOKEN}@github.com/"
+      GIT_DEPLOY_EXTRA_CONFIG+=(-c "url.${auth_base}.insteadOf=git@github.com:")
+      GIT_DEPLOY_EXTRA_CONFIG+=(-c "url.${auth_base}.insteadOf=ssh://git@github.com/")
+      GIT_DEPLOY_EXTRA_CONFIG+=(-c "http.https://github.com/.extraHeader=Authorization: Bearer ${GITHUB_DEPLOY_TOKEN}")
+    else
+      echo "→ ssh unavailable; git fetch/pull will use HTTPS insteadOf for GitHub"
+      GIT_DEPLOY_EXTRA_CONFIG+=(-c "url.https://github.com/.insteadOf=git@github.com:")
+      GIT_DEPLOY_EXTRA_CONFIG+=(-c "url.https://github.com/.insteadOf=ssh://git@github.com/")
+    fi
+  elif [[ -n "${GITHUB_DEPLOY_TOKEN:-}" ]]; then
     GIT_DEPLOY_EXTRA_CONFIG+=(-c "http.https://github.com/.extraHeader=Authorization: Bearer ${GITHUB_DEPLOY_TOKEN}")
   fi
 }

@@ -29,7 +29,7 @@ What *does* change with **It.92** is the **Hybrid Engine maturity story**:
 
 - **Content catalog operations:** paginated lists, filters (status, locale, tags, categories), admin search, public blog listing, editorial calendar slices that already use the JSON index.
 - **Location:** `data/index/content.sqlite` next to `data/index/content.json`.
-- **Activation:** SUPER_ADMIN, Settings → Hybrid Engine, after **probe** (extension, writable dir, rebuild parity with JSON).
+- **Activation:** SUPER_ADMIN, Settings → Hybrid Engine — run **Rebuild** first, then **Activate sqlite**. `verifyActivation()` checks an existing `content.sqlite` (readable, integrity, JSON parity); it does **not** rebuild during activate. Activating without a rebuilt file returns **422** and keeps `queryIndexDriver=json`.
 
 ### Explicitly out of scope
 
@@ -42,7 +42,7 @@ What *does* change with **It.92** is the **Hybrid Engine maturity story**:
 ## Where enabling SQLite leads (operator outcomes)
 
 1. **Large sites (thousands of entries)** — Admin content lists and public `/api/articles`-style catalogs stay responsive without raising PHP memory for a full JSON decode on every request.
-2. **Search** — FTS5 over title/slug/excerpt/tags (bounded fields already in `ContentIndexEntry`), with bound parameters only (no user SQL).
+2. **Search** — FTS5 over title/slug/excerpt/tags (bounded fields already in `ContentIndexEntry`), with bound parameters only (no user SQL). SQL uses the FTS **table name** in `MATCH` (e.g. `entries_fts MATCH :match`), not a table alias — SQLite rejects `alias MATCH`.
 3. **Operations** — Missing or corrupt `.sqlite` → **runtime JSON fallback** (settings may still say `sqlite` until operator or auto-fallback changes it), **throttled monitoring alert**, health warning, **rebuild CLI** (`query-index:rebuild`). Backups may omit `.sqlite`; restore + rebuild is supported.
 4. **Safety** — SSOT write **always succeeds first**; SQLite sync failure = **incident**, not rolled-back article. Same pattern as cache lag.
 5. **Product positioning** — Paginium stays **No-SQL SSOT** for compliance and GitOps; SQLite is an **optional performance layer** documented in the mandate, not a hidden database migration.
@@ -79,6 +79,13 @@ What *does* change with **It.92** is the **Hybrid Engine maturity story**:
 ```
 
 **Default path today:** `QueryIndexFactory` → `JsonQueryIndex` → existing `ContentIndexService` (**92a**).
+
+### Operator workflow (sqlite)
+
+1. Engine settings → **Rebuild query index** (or `php backend/bin/console query-index:rebuild`).
+2. Confirm health / admin status shows SQLite file + parity counts.
+3. **Activate sqlite** — probe must pass; on failure fix directory permissions or rerun rebuild.
+4. Optional: enable runtime watch; use **Activate json** or delete `content.sqlite` to return to JSON-only reads.
 
 ---
 

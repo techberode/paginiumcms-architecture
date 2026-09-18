@@ -114,7 +114,7 @@ final class QueryIndexFailureHandlerTest extends TestCase
         $paths = new QueryIndexPaths($reader);
         $store = new QueryIndexSqliteStore($paths);
         $rebuilder = new QueryIndexRebuilder($contentIndex, $store);
-        $probe = new QueryIndexCapabilityProbe($paths, $rebuilder, $store, $contentIndex);
+        $probe = new QueryIndexCapabilityProbe($paths, $store, $contentIndex);
         $watch = new QueryIndexRuntimeWatch($settings, $probe, $paths, $store);
 
         $notifications = new NotificationService();

@@ -202,7 +202,8 @@ Advisor copy must not claim a universal SLA. Thresholds are starting points for 
 ## Tests
 
 - JSON driver: existing list/search tests still pass with factory default.
-- SQLite: rebuild from fixtures → query/search match JSON counts; FTS finds a title.
+- SQLite: rebuild from fixtures → query/search match JSON counts; FTS finds a title (`entries_fts MATCH`, not alias — see [QUERY_INDEX.md](architecture/QUERY_INDEX.md)).
+- Activate sqlite without rebuild/probe → `InvalidArgumentException` (422); driver stays `json`.
 - Hostile: user string in search bound, not interpolated (no `OR 1=1` injection).
 - Missing `pdo_sqlite` (or probe fail) → activate 422, driver stays json.
 - Delete `.sqlite` while driver is sqlite → request falls back to JSON, health warns, no 500 on public list.
@@ -221,7 +222,7 @@ Advisor copy must not claim a universal SLA. Thresholds are starting points for 
 - [x] Performance Guard recommends enablement from load; never enables sqlite automatically.
 - [x] Activate requires probe; disable and delete file leave CMS usable; runtime watch alerts (optional auto-revert to JSON).
 - [x] `./scripts/iteration-gate.sh` green.
-- [x] SK/EN admin copy (labels, help, tooltips, Engine panel); CHANGELOG on ship.
+- [x] SK/EN admin copy (labels, help, tooltips, Engine panel); CHANGELOG on ship ([2.1.0-beta.83](../../CHANGELOG.md#release-2-1-0-beta-83) + post-ship fixes in [2.1.0-beta.84](../../CHANGELOG.md#release-2-1-0-beta-84): FTS `MATCH`, activate probe, deploy token).
 
 ---
 

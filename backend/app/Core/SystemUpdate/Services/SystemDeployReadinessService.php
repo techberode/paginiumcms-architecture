@@ -31,7 +31,9 @@ final class SystemDeployReadinessService
      *     deploy_script_exists: bool,
      *     app_root_configured: bool,
      *     deploy_enabled: bool,
-     *     allow_deploy_tags: bool
+     *     allow_deploy_tags: bool,
+     *     github_token_configured: bool,
+     *     git_ssh_available: bool
      * }
      */
     public function evaluate(bool $jobRegistered): array
@@ -88,6 +90,16 @@ final class SystemDeployReadinessService
             $blockers[] = 'tag_deploy_disabled';
         }
 
+        $gitSshAvailable = GitDeployTransport::isSshAvailable();
+        $githubTokenConfigured = GitDeployTransport::hasUsableGithubDeployToken($config);
+        if (!$gitSshAvailable && !$githubTokenConfigured) {
+            if ($this->settings->hasOverride('systemUpdate', 'githubToken')) {
+                $blockers[] = 'github_token_unreadable';
+            } else {
+                $blockers[] = 'github_token_missing';
+            }
+        }
+
         return [
             'ready' => $blockers === [],
             'blockers' => $blockers,
@@ -100,6 +112,8 @@ final class SystemDeployReadinessService
             'app_root_configured' => $appRootConfigured,
             'deploy_enabled' => $deployEnabled,
             'allow_deploy_tags' => $allowDeployTags,
+            'github_token_configured' => $githubTokenConfigured,
+            'git_ssh_available' => $gitSshAvailable,
         ];
     }
 }

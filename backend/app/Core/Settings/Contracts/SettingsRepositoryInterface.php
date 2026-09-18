@@ -47,4 +47,9 @@ interface SettingsRepositoryInterface
      * Zahodí uložené odchýlky – vráti všetko na predvolené hodnoty.
      */
     public function reset(): void;
+
+    /**
+     * Whether a non-empty override exists on disk for a field (encrypted or plaintext).
+     */
+    public function hasOverride(string $group, string $key): bool;
 }

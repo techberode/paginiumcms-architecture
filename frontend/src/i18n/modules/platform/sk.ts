@@ -527,6 +527,10 @@ export const platformSk: MessageTree = {
       app_root_missing: 'Koreň aplikácie (APP_ROOT) sa na serveri nepodarilo rozlíšiť.',
       deploy_script_missing: 'scripts/deploy-instance-update.sh chýba v koreni aplikácie.',
       tag_deploy_disabled: 'Deploy tagov je vypnutý — zapnite „Povoliť deploy zo semver tagov“.',
+      github_token_missing:
+        'V PHP kontajneri nie je SSH — nastavte GitHub token (repo read) v Nastaveniach → Aktualizácia systému, alebo GITHUB_DEPLOY_TOKEN v .env pre službu php.',
+      github_token_unreadable:
+        'GitHub token je uložený, ale PHP ho nevie prečítať (typicky zmenený alebo chýbajúci APP_KEY). Token znova vložte a uložte, alebo nastavte GITHUB_DEPLOY_TOKEN v .env.',
     },
     toast: {
       checkOk: 'Kontrola remote dokončená',
