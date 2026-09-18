@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.85`](#release-2-1-0-beta-85) | 2026-09-18 | Hotfix — SQLite FTS search token sanitization (CI) |
 | [`2.1.0-beta.84`](#release-2-1-0-beta-84) | 2026-09-18 | Hotfix — admin deploy GitHub token · It.92 SQLite FTS + activate probe · API barrel |
 | [`2.1.0-beta.83`](#release-2-1-0-beta-83) | 2026-09-18 | It.92 SQLite derived query index · Guard advisor · runtime watch |
 | [`2.1.0-beta.82`](#release-2-1-0-beta-82) | 2026-09-18 | It.89b–e plugin broker · SafeHookRunner · scanner · plugin CLI |
@@ -169,6 +170,20 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **It.94** / **It.95** — Novice admin UX; Sandpack playground + private component registry. Specs: [ITERATION_94.md](docs/en/ITERATION_94.md), [ITERATION_95.md](docs/en/ITERATION_95.md).
 - **It.92** — Hybrid Engine SQLite **query index** (derived, optional) + Performance Guard advisor (suggest only, never auto-enable). Spec: [ITERATION_92.md](docs/en/ITERATION_92.md).
 - **Queue:** **It.92** → 70 → 76/77 → 75 → 48 (58g with 48). Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+
+---
+
+<a id="release-2-1-0-beta-85"></a>
+
+## [2.1.0-beta.85] – 2026-09-18
+
+### Fixed
+
+- **SQLite search** — `ftsMatchExpression()` strips FTS operator words and numeric-only tokens so bound `MATCH` behaves like JSON substring search and rejects broadening (`"Hello" OR 1=1` → match `Hello` only).
+
+### Docs
+
+- [QUERY_INDEX.md](docs/en/architecture/QUERY_INDEX.md) — FTS input sanitization note.
 
 ---
 

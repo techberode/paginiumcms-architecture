@@ -42,7 +42,7 @@ What *does* change with **It.92** is the **Hybrid Engine maturity story**:
 ## Where enabling SQLite leads (operator outcomes)
 
 1. **Large sites (thousands of entries)** — Admin content lists and public `/api/articles`-style catalogs stay responsive without raising PHP memory for a full JSON decode on every request.
-2. **Search** — FTS5 over title/slug/excerpt/tags (bounded fields already in `ContentIndexEntry`), with bound parameters only (no user SQL). SQL uses the FTS **table name** in `MATCH` (e.g. `entries_fts MATCH :match`), not a table alias — SQLite rejects `alias MATCH`.
+2. **Search** — FTS5 over title/slug/excerpt/tags (bounded fields already in `ContentIndexEntry`), with bound parameters only (no user SQL). SQL uses the FTS **table name** in `MATCH` (e.g. `entries_fts MATCH :match`), not a table alias — SQLite rejects `alias MATCH`. User input is tokenized for FTS (drops `OR`/`AND`/`NOT`, quotes, numeric-only tokens); it is never passed as raw FTS grammar (injection like `"Hello" OR 1=1` matches only `Hello`).
 3. **Operations** — Missing or corrupt `.sqlite` → **runtime JSON fallback** (settings may still say `sqlite` until operator or auto-fallback changes it), **throttled monitoring alert**, health warning, **rebuild CLI** (`query-index:rebuild`). Backups may omit `.sqlite`; restore + rebuild is supported.
 4. **Safety** — SSOT write **always succeeds first**; SQLite sync failure = **incident**, not rolled-back article. Same pattern as cache lag.
 5. **Product positioning** — Paginium stays **No-SQL SSOT** for compliance and GitOps; SQLite is an **optional performance layer** documented in the mandate, not a hidden database migration.
