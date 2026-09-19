@@ -30,14 +30,18 @@ fi
 
 STACK_SCRIPT="$STACK_DIR/stack.sh"
 
-if [[ ! -f "$STACK_SCRIPT" ]]; then
-  if [[ -n "$APP_ROOT" && -f "$APP_ROOT/docs/deploy/stack.sh" ]]; then
-    echo "→ installing stack.sh from $APP_ROOT/docs/deploy/stack.sh"
-    sudo cp "$APP_ROOT/docs/deploy/stack.sh" "$STACK_SCRIPT"
-  else
-    echo "ERROR: $STACK_SCRIPT missing — set APP_ROOT to copy from docs/deploy/stack.sh" >&2
-    exit 1
-  fi
+if [[ -n "$APP_ROOT" && -f "$APP_ROOT/docs/deploy/stack.sh" ]]; then
+  echo "→ installing stack.sh from $APP_ROOT/docs/deploy/stack.sh"
+  sudo cp "$APP_ROOT/docs/deploy/stack.sh" "$STACK_SCRIPT"
+elif [[ ! -f "$STACK_SCRIPT" ]]; then
+  echo "ERROR: $STACK_SCRIPT missing — set APP_ROOT to copy from docs/deploy/stack.sh" >&2
+  exit 1
+fi
+
+if [[ -n "$APP_ROOT" && -f "$APP_ROOT/docs/deploy/docker-compose.deploy-key.yml" ]]; then
+  echo "→ installing docker-compose.deploy-key.yml"
+  sudo cp "$APP_ROOT/docs/deploy/docker-compose.deploy-key.yml" "$STACK_DIR/docker-compose.deploy-key.yml"
+  sudo chmod 640 "$STACK_DIR/docker-compose.deploy-key.yml"
 fi
 
 echo "→ PaginiumCMS stack permissions bootstrap"

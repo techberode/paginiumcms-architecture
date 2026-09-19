@@ -97,7 +97,7 @@
 - Color schemes and light/dark/system modes.
 - Maintenance/coming-soon mode.
 - Cookie consent settings.
-- Contact form with configurable subjects.
+- Contact form with configurable subjects, required E.164 phone (`+421909554887`), and Messages **Reply** to the visitor mailbox.
 - Newsletter subscribe/confirm/preferences/unsubscribe and admin subscribers.
 - Feature gallery with layouts, effects, deep links, and metadata export/import.
 - Layout template selection shipped in It.58c.
@@ -178,7 +178,7 @@ The Hybrid Engine must not weaken this baseline. New drivers use the existing do
 | Unified upload security | ❌ | It.78 |
 | Multi-locale document | ❌ | It.73 |
 | API keys/JWT | ❌ | It.74 |
-| AI agent | ❌ | It.75 |
+| AI agent | ✅ | It.75 (`beta.88`) — proposals only, human Apply, default off |
 | Self-hosted translation | 🟡 foundation | It.76 (`beta.87`) — own LibreTranslate instance required; Apply = draft |
 | Cloud translation | 🟡 foundation | It.77 (`beta.87`) — DeepL/Google API keys, fixed hosts |
 

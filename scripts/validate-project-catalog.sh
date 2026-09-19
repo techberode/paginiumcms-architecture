@@ -55,6 +55,18 @@ for it in catalog.get('iterations', []):
         if tk:
             title_keys.add(tk)
 
+snapshot = catalog.get('snapshot') or {}
+if snapshot.get('headlineKey'):
+    title_keys.add(snapshot['headlineKey'])
+for group in snapshot.get('groups') or []:
+    if group.get('titleKey'):
+        title_keys.add(group['titleKey'])
+    for item in group.get('items') or []:
+        if item.get('titleKey'):
+            title_keys.add(item['titleKey'])
+        if item.get('noteKey'):
+            title_keys.add(item['noteKey'])
+
 missing_probes = sorted(catalog_probe_ids - probe_ids_in_code)
 if missing_probes:
     raise SystemExit(f'validate-project-catalog: catalog probeId(s) without probe class: {missing_probes}')
@@ -89,7 +101,7 @@ for lang_path in (lang_sk, lang_en):
     catalog_keys = lang_catalog_keys(lang_path)
     missing_lang = sorted(
         k for k in title_keys
-        if k.startswith('origin.catalog.')
+        if (k.startswith('origin.catalog.') or k.startswith('origin.snapshot.'))
         and k.rsplit('.', 1)[-1] not in catalog_keys
     )
     if missing_lang:

@@ -43,6 +43,7 @@ class ContactMessage implements JsonSerializable
     private string $id;
     private string $name;
     private string $email;
+    private string $phone = '';
     private string $subject;
     private string $message;
     private string $createdAt;
@@ -64,6 +65,7 @@ class ContactMessage implements JsonSerializable
     private bool $registrationRequest = false;
     /** @var list<array{id: string, authorType: string, authorUserId: string, authorName: string, body: string, createdAt: string}> */
     private array $thread = [];
+    private bool $lastMailed = false;
 
     public function __construct(string $name, string $email, string $message)
     {
@@ -107,6 +109,30 @@ class ContactMessage implements JsonSerializable
         $this->email = $email;
 
         return $this;
+    }
+
+    public function getPhone(): string
+    {
+        return $this->phone;
+    }
+
+    public function setPhone(string $phone): self
+    {
+        $this->phone = trim($phone);
+
+        return $this;
+    }
+
+    public function setLastMailed(bool $mailed): self
+    {
+        $this->lastMailed = $mailed;
+
+        return $this;
+    }
+
+    public function wasLastMailed(): bool
+    {
+        return $this->lastMailed;
     }
 
     public function getSubject(): string
@@ -395,6 +421,9 @@ class ContactMessage implements JsonSerializable
         $idProp = $reflection->getProperty('id');
         $idProp->setValue($message, $id);
 
+        if (!empty($entry['phone'])) {
+            $message->setPhone((string) $entry['phone']);
+        }
         if (!empty($entry['subject'])) {
             $message->setSubject((string) $entry['subject']);
         }
@@ -466,6 +495,7 @@ class ContactMessage implements JsonSerializable
             'path' => $this->getPath(),
             'name' => $this->name,
             'email' => $this->email,
+            'phone' => $this->phone,
             'subject' => $this->subject,
             'message' => $this->message,
             'createdAt' => $this->createdAt,

@@ -489,7 +489,7 @@ export const platformEn: MessageTree = {
     recentRuns: 'Recent deploy runs',
     superAdminOnly: 'System update is available only to SUPER_ADMIN.',
     demoDisabled: 'System update is disabled on the demo instance — use SSH deploy workflow.',
-    refTagOnlyHint: 'Branch deploy is disabled in settings — use a semver tag (e.g. v2.1.0-beta.12), not origin/main.',
+    refTagOnlyHint: 'Branch deploy is disabled in settings — use a semver tag (e.g. v2.1.0-beta.87), not origin/main.',
     versionCurrent: 'Your version is up to date — no newer release is available.',
     versionUpdateAvailable: 'Update available: {version}',
     versionUnknown: 'Could not determine version status — check GitHub token and repo settings.',
@@ -519,7 +519,7 @@ export const platformEn: MessageTree = {
       subtitle:
         'Live test of GitHub token, git fetch (same as deploy script), and webhook secret — run after saving settings.',
       pathHint:
-        'Recommended: GitHub deploy key mounted into PHP (GITHUB_DEPLOY_SSH_KEY_PATH) — see scripts/bootstrap-github-deploy-key.sh and DEPLOY.md §12.5. PAT in settings is optional for git fetch when the key works.',
+        'Recommended: GitHub deploy key mounted into PHP — scripts/bootstrap-github-deploy-key.sh, then on the host scripts/ensure-php-deploy-key-mount.sh (DEPLOY.md §12.5). PAT in settings is optional for git fetch when the key works.',
       verifyButton: 'Verify connection',
       verifying: 'Verifying…',
       notRunYet: 'Run verification to confirm token and git access before deploy.',
@@ -537,6 +537,7 @@ export const platformEn: MessageTree = {
         invalid: 'Invalid',
         unreadable: 'Unreadable',
         not_required: 'Not required',
+        unknown: 'Unknown',
       },
       gitStatus: {
         ok: 'OK',
@@ -546,6 +547,7 @@ export const platformEn: MessageTree = {
         invalid: 'Invalid',
         unreadable: 'Unreadable',
         not_required: 'Not required',
+        unknown: 'Unknown',
       },
       webhookStatus: {
         ok: 'OK',
@@ -553,6 +555,7 @@ export const platformEn: MessageTree = {
         not_required: 'Not required',
         invalid: 'Invalid',
         unreadable: 'Unreadable',
+        unknown: 'Unknown',
       },
     },
     blockers: {
@@ -572,6 +575,8 @@ export const platformEn: MessageTree = {
         'Admin UI git fetch is not configured — on the host run scripts/bootstrap-github-deploy-key.sh, mount the key in docker-compose (GITHUB_DEPLOY_SSH_KEY_PATH), or set GITHUB_DEPLOY_TOKEN in the PHP service .env. See DEPLOY.md §12.5.',
       github_deploy_ssh_key_invalid:
         'Deploy key path is set in PHP but GitHub SSH auth failed — add the public key on the repo (Deploy keys), check file permissions (600 on host), and recreate the PHP container.',
+      github_deploy_ssh_key_unreadable:
+        'GITHUB_DEPLOY_SSH_KEY_PATH is set in PHP but the file is not readable in the container — on the host run scripts/ensure-php-deploy-key-mount.sh and recreate PHP.',
       ssh_binary_missing:
         'Deploy key is mounted but the PHP image has no ssh binary. On the host (not in admin): cd /var/lib/docker/compose/paginiumcms && ./stack.sh build php && ./stack.sh up -d --force-recreate php',
       github_token_unreadable:

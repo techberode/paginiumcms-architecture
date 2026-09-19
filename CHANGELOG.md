@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.88`](#release-2-1-0-beta-88) | 2026-09-19 | It.75 CMS AI assistant · contact E.164 + SMTP reply · discussion ratings · deploy-key remount · Origin today snapshot |
 | [`2.1.0-beta.87`](#release-2-1-0-beta-87) | 2026-09-19 | It.70 GitHub API publisher · It.76/77 assisted translation · outbound grep allow-list |
 | [`2.1.0-beta.86`](#release-2-1-0-beta-86) | 2026-09-19 | It.93o-2–8 desk/staff/external team · It.96 document library · CI media/webhook/shortcode |
 | [`2.1.0-beta.85`](#release-2-1-0-beta-85) | 2026-09-18 | Hotfix — SQLite FTS search token sanitization (CI) |
@@ -162,19 +163,37 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+### Planning
+
+- **It.58f-h** — Visual block canvas (DnD stack). Spec: [ITERATION_58f.md](docs/en/ITERATION_58f.md).
+- **It.95** — Sandpack playground + private component registry. Spec: [ITERATION_95.md](docs/en/ITERATION_95.md).
+- **Queue:** **It.48** (58g with 48). Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+
+---
+
+<a id="release-2-1-0-beta-88"></a>
+
+## [2.1.0-beta.88] – 2026-09-19
+
+Ships **It.75** CMS AI assistant (proposals only), visitor contact/discussion polish, System Update deploy-key remount, and Origin Panel today-snapshot honesty. Includes the post-`beta.87` git-fetch hotfix already on `main` (`c0a0afda`).
+
+Docs: [ITERATION_75.md](docs/en/ITERATION_75.md) · [RELEASE_2_1_0_BETA_88.md](docs/en/RELEASE_2_1_0_BETA_88.md)
+
+### Added
+
+- Contact form requires country prefix + national number as E.164 (`+421909554887`) with a visible format hint. Messages **Reply** sends through site SMTP (To = form e-mail; From stays the configured SMTP mailbox). Article comments are a **discussion**; optional **1–5 star rating with the comment** (`comments.ratingEnabled`, per-article override). `GET /api/auth/me/desk` no longer 500s the admin log when the queue fails — it returns an empty desk.
+- **It.75 CMS AI assistant** (default off, empty tool allow-list). Settings → CMS AI assistant. Editor **Suggest SEO** enqueues `POST /api/admin/agent/runs` (202) and executes via `POST …/execute` or the `agent.run` job. Apply is a separate OCC write and never publishes. Tools are schema-bound; prompt injection cannot unlock `shell.exec`. Translation tool reuses It.76/77. Provider HTTP goes through `OutboundUrlGuard`. Audit `agent.run` / `agent.applied` / `agent.tool_denied` without prompts or completions.
+
 ### Fixed
 
+- System Update credentials no longer show the raw i18n key `tokenStatus.undefined` when PHP omits `deploy_ssh_key.status` (older probe). The probe now reports env-set-but-unreadable keys; `stack.sh` auto-mounts the host deploy key so a PHP recreate does not drop git fetch. On the host: `scripts/ensure-php-deploy-key-mount.sh`. Do not deploy the old placeholder tag `v2.1.0-beta.12`.
 - API barrel registers `contentTranslationsApi` as `api.contentTranslations` so `npm run lint:api-barrel` matches the It.76/77 client (CI after `beta.87`).
 - Admin UI deploy health no longer reports an “invalid deploy key” when the key is mounted but the PHP image has no `ssh` (`ssh_binary_missing`). Host `deploy-instance-update.sh` rebuilds the PHP image when `docker` is on PATH so `openssh-client` lands.
 - Admin UI git fetch pins GitHub SSH host keys (`docker/php/github_known_hosts`) so `www-data` is not blocked by `Host key verification failed` (no writable `~/.ssh`).
 - Deploy key wins over a leftover GitHub PAT: `git ls-remote` / `deploy-instance-update.sh` stay on SSH and no longer rewrite `git@` to HTTPS (that produced `invalid credentials` on production).
 - Settings password fields can be cleared: empty value removes the stored secret (`********` still means keep). The GitHub token field no longer stays as stars after you wipe it.
-
-### Planning
-
-- **It.58f-h** — Visual block canvas (DnD stack). Spec: [ITERATION_58f.md](docs/en/ITERATION_58f.md).
-- **It.95** — Sandpack playground + private component registry. Spec: [ITERATION_95.md](docs/en/ITERATION_95.md).
-- **Queue:** **It.75** → 48 (58g with 48). Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+- Origin Panel catalog/checklist catch-up: It.72 S3, It.78, It.79, It.83, It.86, It.87 no longer look unfinished; 100% iterations show **Shipped**. Remaining work is explicit (It.48, It.95, 58f-h, 93l-2).
+- Origin Panel **today snapshot** (as of 2026-09-19, latest tag `2.1.0-beta.88`): live vs unreleased vs next. Roadmap splits focus vs shipped. The ops wave card is not a numbered iteration and does not pull catalog %.
 
 ---
 

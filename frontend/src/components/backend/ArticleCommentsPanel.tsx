@@ -12,6 +12,7 @@ interface ArticleCommentsPanelProps {
   disabled?: boolean;
   globalRequireApproval?: boolean;
   globalAllowGuests?: boolean;
+  globalRatingEnabled?: boolean;
 }
 
 export const ArticleCommentsPanel: React.FC<ArticleCommentsPanelProps> = ({
@@ -20,6 +21,7 @@ export const ArticleCommentsPanel: React.FC<ArticleCommentsPanelProps> = ({
   disabled = false,
   globalRequireApproval = true,
   globalAllowGuests = true,
+  globalRatingEnabled = false,
 }) => {
   const { t } = useI18n();
 
@@ -91,6 +93,31 @@ export const ArticleCommentsPanel: React.FC<ArticleCommentsPanelProps> = ({
                       globalAllowGuests
                         ? t('editor.comments.inheritGuestsOn')
                         : t('editor.comments.inheritGuestsOff')
+                    })`
+                  : ''}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="form-group sm:col-span-2">
+          <label className="form-label">{t('editor.comments.rating')}</label>
+          <select
+            className="form-input"
+            disabled={disabled || !value.commentsEnabled}
+            value={value.commentsRatingEnabled}
+            onChange={(e) =>
+              onChange({ ...value, commentsRatingEnabled: e.target.value as TriStateSetting })
+            }
+          >
+            {triStateOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+                {option.value === 'inherit'
+                  ? ` (${
+                      globalRatingEnabled
+                        ? t('editor.comments.inheritRatingOn')
+                        : t('editor.comments.inheritRatingOff')
                     })`
                   : ''}
               </option>

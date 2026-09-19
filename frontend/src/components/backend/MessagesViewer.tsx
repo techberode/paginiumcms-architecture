@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   Eye,
   Mail,
+  Phone,
   Trash2,
 } from 'lucide-react';
 import {
@@ -38,7 +39,6 @@ import { messagePriorityWeight } from '../../constants/messageSubjects';
 import { summarizeBulkResult } from '../../types/bulk';
 import { useI18n } from '../../context/I18nContext';
 import { useAdminConfirm } from '../../hooks/useAdminConfirm';
-import { useDeskInbox } from '../../hooks/useDeskInbox';
 import { ADMIN_PAGE_SUBTITLE, ADMIN_PAGE_TITLE } from '../../theme/adminUiClasses';
 
 const truncate = (text: string, max = 90): string =>
@@ -47,7 +47,6 @@ const truncate = (text: string, max = 90): string =>
 export const MessagesViewer: React.FC = () => {
   const { t, locale } = useI18n();
   const location = useLocation();
-  const { inPageChatActive } = useDeskInbox();
   const confirmDestructive = useAdminConfirm();
   const dateLocale = locale === 'en' ? 'en-US' : 'sk-SK';
   const priorityLabel = (priority: string): string => {
@@ -99,7 +98,7 @@ export const MessagesViewer: React.FC = () => {
       applyClientListView(items, {
         search,
         searchText: (msg) =>
-          `${msg.name} ${msg.email} ${msg.subject} ${msg.message} ${msg.priority} ${msg.channel ?? ''} ${msg.claimedByName ?? ''}`,
+          `${msg.name} ${msg.email} ${msg.phone ?? ''} ${msg.subject} ${msg.message} ${msg.priority} ${msg.channel ?? ''} ${msg.claimedByName ?? ''}`,
         sortField,
         sortDirection,
         sortFields: [
@@ -303,12 +302,19 @@ export const MessagesViewer: React.FC = () => {
                   <div className="space-y-3 text-sm">
                     <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
                       <span>{msg.email}</span>
+                      {msg.phone ? <span>{msg.phone}</span> : null}
                       {msg.ip ? <span>{t('messages.detail.ip', { ip: msg.ip })}</span> : null}
                     </div>
+                    {msg.phone ? (
+                      <a className="btn btn-secondary text-xs px-2 py-1" href={`tel:${msg.phone}`}>
+                        <Phone className="w-3 h-3 inline mr-1" />
+                        {t('messages.actions.call')}
+                      </a>
+                    ) : null}
                     <p className="font-medium text-gray-900 dark:text-white">{msg.subject}</p>
                     <MessageMessengerThread
                       message={msg}
-                      composerEnabled={inPageChatActive}
+                      composerEnabled
                       onUpdated={(next) =>
                         setItems((current) => current.map((item) => (item.id === next.id ? next : item)))
                       }

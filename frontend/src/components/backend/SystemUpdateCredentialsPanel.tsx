@@ -2,6 +2,7 @@ import React from 'react';
 import { CheckCircle2, AlertTriangle, Loader2, ShieldCheck } from 'lucide-react';
 import { useI18n } from '../../context/I18nContext';
 import type { SystemUpdateCredentialsVerify } from '../../api/systemUpdate';
+import { resolveCredentialStatus } from '../../utils/systemUpdateCredentials';
 
 type Props = {
   report: SystemUpdateCredentialsVerify | null;
@@ -104,7 +105,10 @@ export const SystemUpdateCredentialsPanel: React.FC<Props> = ({ report, loading,
             {report.deploy_ssh_key ? (
               <Row
                 label={t('platform.systemUpdate.credentials.deployKeyLabel')}
-                status={report.deploy_ssh_key.status}
+                status={resolveCredentialStatus(
+                  report.deploy_ssh_key.status,
+                  report.deploy_ssh_key.configured
+                )}
                 detail={report.deploy_ssh_key.detail}
                 statusKeyPrefix="platform.systemUpdate.credentials.tokenStatus"
               />
@@ -112,26 +116,26 @@ export const SystemUpdateCredentialsPanel: React.FC<Props> = ({ report, loading,
             {report.ssh ? (
               <Row
                 label={t('platform.systemUpdate.credentials.sshLabel')}
-                status={report.ssh.status}
+                status={resolveCredentialStatus(report.ssh.status)}
                 detail={report.ssh.detail}
                 statusKeyPrefix="platform.systemUpdate.credentials.tokenStatus"
               />
             ) : null}
             <Row
               label={t('platform.systemUpdate.credentials.tokenLabel')}
-              status={report.github.token.status}
+              status={resolveCredentialStatus(report.github.token.status)}
               detail={report.github.token.detail}
               statusKeyPrefix="platform.systemUpdate.credentials.tokenStatus"
             />
             <Row
               label={t('platform.systemUpdate.credentials.gitFetchLabel')}
-              status={report.git_fetch.status}
+              status={resolveCredentialStatus(report.git_fetch.status)}
               detail={report.git_fetch.detail}
               statusKeyPrefix="platform.systemUpdate.credentials.gitStatus"
             />
             <Row
               label={t('platform.systemUpdate.credentials.webhookSecretLabel')}
-              status={report.webhook.secret.status}
+              status={resolveCredentialStatus(report.webhook.secret.status)}
               detail={report.webhook.secret.detail}
               statusKeyPrefix="platform.systemUpdate.credentials.webhookStatus"
             />
@@ -148,6 +152,15 @@ export const SystemUpdateCredentialsPanel: React.FC<Props> = ({ report, loading,
 export function firstCredentialsFailureDetail(
   report: SystemUpdateCredentialsVerify
 ): string | undefined {
+  if (report.deploy_ssh_key) {
+    const keyStatus = resolveCredentialStatus(
+      report.deploy_ssh_key.status,
+      report.deploy_ssh_key.configured
+    );
+    if (keyStatus !== 'ok' && report.deploy_ssh_key.detail) {
+      return report.deploy_ssh_key.detail;
+    }
+  }
   if (report.ssh && report.ssh.status !== 'ok' && report.ssh.detail) {
     return report.ssh.detail;
   }

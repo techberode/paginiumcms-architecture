@@ -105,6 +105,26 @@ class Article extends Content
         return $this;
     }
 
+    public function getCommentsRatingEnabled(): ?bool
+    {
+        if (!array_key_exists('commentsRatingEnabled', $this->frontMatter)) {
+            return null;
+        }
+
+        return (bool) $this->frontMatter['commentsRatingEnabled'];
+    }
+
+    public function setCommentsRatingEnabled(?bool $value): self
+    {
+        if ($value === null) {
+            unset($this->frontMatter['commentsRatingEnabled']);
+        } else {
+            $this->frontMatter['commentsRatingEnabled'] = $value;
+        }
+
+        return $this;
+    }
+
     public function getAuthorId(): string
     {
         $raw = $this->frontMatter['authorId'] ?? '';

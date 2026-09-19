@@ -1,6 +1,6 @@
 # PaginiumCMS — consolidated backlog
 
-> **Snapshot:** `v2.1.0-beta.87` · September 19, 2026  
+> **Snapshot:** `v2.1.0-beta.88` · September 19, 2026  
 > **Phase:** planned-iteration development — [CONTINUATION.md](CONTINUATION.md) (stabilization freeze **closed**)  
 > **Rule:** the active backlog contains only unshipped or precisely bounded remaining scope  
 > **No-SQL:** [architecture/NOSQL_MANDATE.md](architecture/NOSQL_MANDATE.md)  
@@ -49,7 +49,7 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | 22 | **It.92** SQLite query index + Guard advisor | 🟡 | ✅ done | [ITERATION_92](ITERATION_92.md) · [QUERY_INDEX.md](architecture/QUERY_INDEX.md) — tag on next beta release |
 | 23 | **It.93** Admin chrome + daily apps | 🟡 P1 | ✅ shipped | chrome in `beta.77`; **93l** Kanban + **93m** IMAP in `beta.78`; **93m-5** mail polish in `beta.79`; **93o-2–8** staff/desk/external team in `beta.86` — [ITERATION_93](ITERATION_93.md); **93l-2** notes/SLA later |
 | 24 | **It.76/77** Translation providers | 🔵 | 🟡 partial | **It.76** LibreTranslate + **It.77** DeepL/Google API-key drivers in tree; Google service-account JSON later |
-| 25 | **It.75** AI agent | 🔵 | ⏳ | after locale + translation providers |
+| 25 | **It.75** AI agent | 🔵 | ✅ `beta.88` | proposals only, human Apply, default off |
 | 26 | **It.83** Theme runtime + Terminal Breach | 🟡 | ✅ | shipped `beta.59` — [ITERATION_83](ITERATION_83.md) |
 | 27 | **It.84** Categories, blog sidebar, landing, roles, nav | 🟡 | ✅ | **84a–84e** complete — [ITERATION_84](ITERATION_84.md) |
 | 28 | **It.86** Admin UX polish (search, print, bulk) | 🟡 | ✅ | shipped **2.1.0-beta.60** — ISS-158/159; 86d → It.87 |

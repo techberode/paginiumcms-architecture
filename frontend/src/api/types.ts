@@ -112,6 +112,7 @@ export interface Article extends Page {
   commentsEnabled?: boolean;
   commentsRequireApproval?: boolean | null;
   commentsAllowGuests?: boolean | null;
+  commentsRatingEnabled?: boolean | null;
 }
 
 export interface Backup {

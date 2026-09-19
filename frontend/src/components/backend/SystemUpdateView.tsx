@@ -430,9 +430,13 @@ export const SystemUpdateView: React.FC = () => {
                 value={ref}
                 onChange={(e) => setRef(e.target.value)}
                 placeholder={
-                  data?.config?.allowDeployMain
-                    ? 'v2.1.0-beta.12 or origin/main'
-                    : 'v2.1.0-beta.12'
+                  latestTag
+                    ? data?.config?.allowDeployMain
+                      ? `${latestTag} or origin/main`
+                      : latestTag
+                    : data?.config?.allowDeployMain
+                      ? 'v2.1.0-beta.87 or origin/main'
+                      : 'v2.1.0-beta.87'
                 }
               />
             </label>

@@ -103,6 +103,28 @@ export interface OriginTimelineEntry {
   summaryLabel?: string;
 }
 
+export interface OriginSnapshotItem {
+  titleKey: string;
+  titleLabel?: string;
+  noteKey?: string | null;
+  noteLabel?: string | null;
+}
+
+export interface OriginSnapshotGroup {
+  id: string;
+  titleKey: string;
+  titleLabel?: string;
+  items: OriginSnapshotItem[];
+}
+
+export interface OriginCatalogSnapshot {
+  asOf: string;
+  latestTag: string;
+  headlineKey: string;
+  headlineLabel?: string;
+  groups: OriginSnapshotGroup[];
+}
+
 export interface OriginCatalog {
   schemaVersion: number;
   updatedAt: string;
@@ -110,6 +132,7 @@ export interface OriginCatalog {
   progress: OriginCatalogProgress;
   iterations: OriginCatalogIteration[];
   timeline: OriginTimelineEntry[];
+  snapshot?: OriginCatalogSnapshot;
   checklist?: OriginOperatorChecklist;
 }
 

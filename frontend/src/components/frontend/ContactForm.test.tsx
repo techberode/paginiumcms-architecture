@@ -40,6 +40,7 @@ describe('ContactForm', () => {
     renderWithRouter(<ContactForm />);
 
     expect(screen.getByLabelText('Predmet')).toBeInTheDocument();
+    expect(screen.getByText('Zadajte predvoľbu krajiny a číslo bez medzier. Platný tvar: +421909554887')).toBeInTheDocument();
     expect(screen.getByRole('option', { name: 'Predaj' })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: 'Podpora' })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: 'Vlastný predmet…' })).toBeInTheDocument();

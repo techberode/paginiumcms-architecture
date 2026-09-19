@@ -14,6 +14,7 @@ interface ArticleCommentsProps {
   enabled?: boolean;
   allowGuests?: boolean;
   requireApproval?: boolean;
+  ratingEnabled?: boolean;
 }
 
 const inputClassName = `w-full px-3 py-2 rounded-lg ${INPUT_THEME}`;
@@ -49,7 +50,10 @@ const CommentCard: React.FC<{
   return (
     <div id={`comment-${comment.id}`} className={`${PUBLIC_CARD} p-4 scroll-mt-24`}>
       <p className="font-semibold text-sm text-theme-text">{comment.author}</p>
-      <p className="text-xs text-theme-text-muted mb-2">{formatDisplayDateTime(comment.createdAt, locale)}</p>
+      <p className="text-xs text-theme-text-muted mb-2">
+        {formatDisplayDateTime(comment.createdAt, locale)}
+        {comment.rating && comment.rating > 0 ? ` · ${'★'.repeat(comment.rating)}${'☆'.repeat(5 - comment.rating)}` : ''}
+      </p>
       <p className="text-sm text-theme-text">{comment.content}</p>
       {(comment.replies ?? []).map((reply) => (
         <div
@@ -96,6 +100,7 @@ export const ArticleComments: React.FC<ArticleCommentsProps> = ({
   enabled = true,
   allowGuests = true,
   requireApproval = true,
+  ratingEnabled = false,
 }) => {
   const { t, locale } = useI18n();
   const toast = useToast();
@@ -106,11 +111,20 @@ export const ArticleComments: React.FC<ArticleCommentsProps> = ({
   const [email, setEmail] = useState('');
   const [content, setContent] = useState('');
   const [honeypot, setHoneypot] = useState('');
+  const [rating, setRating] = useState(0);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [canReply, setCanReply] = useState(false);
 
   const canSubmit = useMemo(() => enabled && (allowGuests || Boolean(user)), [allowGuests, enabled, user]);
+  const ratingSummary = useMemo(() => {
+    const rated = comments.filter((row) => (row.rating ?? 0) >= 1);
+    if (rated.length === 0) {
+      return null;
+    }
+    const total = rated.reduce((sum, row) => sum + (row.rating ?? 0), 0);
+    return { average: (total / rated.length).toFixed(1), count: rated.length };
+  }, [comments]);
 
   useEffect(() => {
     if (!user) {
@@ -180,15 +194,27 @@ export const ArticleComments: React.FC<ArticleCommentsProps> = ({
       toast.error(t('public.comments.toast.emailRequired'));
       return;
     }
+    if (ratingEnabled && (rating < 1 || rating > 5)) {
+      toast.error(t('public.comments.toast.ratingRequired'));
+      return;
+    }
 
     setSubmitting(true);
-    const result = await submitComment({ articleSlug, author, email, content, _hp: honeypot });
+    const result = await submitComment({
+      articleSlug,
+      author,
+      email,
+      content,
+      rating: ratingEnabled ? rating : undefined,
+      _hp: honeypot,
+    });
     setSubmitting(false);
     if (result.ok) {
       toast.success(
         requireApproval ? t('public.comments.toast.pendingApproval') : t('public.comments.toast.published')
       );
       setContent('');
+      setRating(0);
       if (result.comment.status === 'approved') {
         setComments((prev) => [result.comment, ...prev]);
       }
@@ -200,6 +226,14 @@ export const ArticleComments: React.FC<ArticleCommentsProps> = ({
   return (
     <section className="mt-12 space-y-6">
       <h3 className="text-2xl font-bold text-theme-text">{t('public.comments.title')}</h3>
+      {ratingSummary ? (
+        <p className="text-sm text-theme-text-muted">
+          {t('public.comments.rating.average', {
+            value: ratingSummary.average,
+            count: String(ratingSummary.count),
+          })}
+        </p>
+      ) : null}
 
       {loading ? (
         <p className="text-sm text-theme-text-muted">{t('public.comments.loading')}</p>
@@ -245,6 +279,24 @@ export const ArticleComments: React.FC<ArticleCommentsProps> = ({
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
+          {ratingEnabled ? (
+            <fieldset className="space-y-1">
+              <legend className="text-sm font-medium text-theme-text">{t('public.comments.rating.label')}</legend>
+              <div className="flex gap-1" role="radiogroup" aria-label={t('public.comments.rating.label')}>
+                {[1, 2, 3, 4, 5].map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    className={`text-2xl leading-none ${value <= rating ? 'text-amber-400' : 'text-theme-text-muted'}`}
+                    aria-pressed={value === rating}
+                    onClick={() => setRating(value)}
+                  >
+                    {value <= rating ? '★' : '☆'}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+          ) : null}
           <textarea
             className={`${inputClassName} min-h-[100px]`}
             required

@@ -46,6 +46,19 @@ COMPOSE=(
   --project-name "$COMPOSE_PROJECT_NAME"
 )
 
+DEPLOY_KEY_FILE="${GITHUB_DEPLOY_KEY_FILE:-/var/lib/paginiumcms/secrets/github_deploy_key}"
+if [[ -f "$DEPLOY_KEY_FILE" ]]; then
+  KEY_OVERLAY=""
+  if [[ -f "$STACK_DIR/docker-compose.deploy-key.yml" ]]; then
+    KEY_OVERLAY="$STACK_DIR/docker-compose.deploy-key.yml"
+  elif [[ -f "$APP_ROOT/docs/deploy/docker-compose.deploy-key.yml" ]]; then
+    KEY_OVERLAY="$APP_ROOT/docs/deploy/docker-compose.deploy-key.yml"
+  fi
+  if [[ -n "$KEY_OVERLAY" ]]; then
+    COMPOSE+=(-f "$KEY_OVERLAY")
+  fi
+fi
+
 # Validate the merged model before executing an operational command.
 "${COMPOSE[@]}" config --quiet
 exec "${COMPOSE[@]}" "$@"

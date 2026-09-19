@@ -58,5 +58,11 @@ describe('platform i18n module', () => {
       'Odosielať odpovede stola z tímovej schránky',
     );
     expect(translate('sk', 'platform.preview.openFull')).toBe('Náhľad stránky');
+    expect(translate('sk', 'platform.systemUpdate.credentials.tokenStatus.unknown')).toBe(
+      'Neznámy',
+    );
+    expect(translate('en', 'platform.systemUpdate.blockers.github_deploy_ssh_key_unreadable')).toContain(
+      'ensure-php-deploy-key-mount.sh',
+    );
   });
 });

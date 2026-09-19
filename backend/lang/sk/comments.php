@@ -23,4 +23,5 @@ return [
     'forbidden' => 'Na tento komentár nemôžete odpovedať',
     'claimed' => 'Tento komentár už niekto rieši',
     'replied' => 'Odpoveď je zverejnená',
+    'rating_required' => 'Ohodnoťte článok 1 až 5 hviezdičkami spolu s komentárom.',
 ];

@@ -87,5 +87,9 @@ final class SystemDeployReadinessServiceTest extends TestCase
             'github_token_unreadable',
             SystemDeployReadinessService::classifyTransportBlocker(false, false, true, false, false)
         );
+        $this->assertSame(
+            'github_deploy_ssh_key_unreadable',
+            SystemDeployReadinessService::classifyTransportBlocker(false, false, false, false, true, true)
+        );
     }
 }

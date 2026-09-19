@@ -4,6 +4,8 @@ import apiClient from './client';
 export async function submitContactForm(payload: {
   name: string;
   email: string;
+  phonePrefix: string;
+  phoneNumber: string;
   subject?: string;
   message: string;
   registrationRequest?: boolean;

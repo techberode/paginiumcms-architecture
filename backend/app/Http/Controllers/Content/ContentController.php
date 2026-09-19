@@ -1003,6 +1003,12 @@ class ContentController
                     $override === null ? null : (bool) $override
                 );
             }
+            if (array_key_exists('commentsRatingEnabled', $data)) {
+                $override = $data['commentsRatingEnabled'];
+                $content->setCommentsRatingEnabled(
+                    $override === null ? null : (bool) $override
+                );
+            }
             $this->applyCategoryField($content, $data);
         }
 
@@ -1083,6 +1089,12 @@ class ContentController
             if (array_key_exists('commentsAllowGuests', $data)) {
                 $override = $data['commentsAllowGuests'];
                 $content->setCommentsAllowGuests(
+                    $override === null ? null : (bool) $override
+                );
+            }
+            if (array_key_exists('commentsRatingEnabled', $data)) {
+                $override = $data['commentsRatingEnabled'];
+                $content->setCommentsRatingEnabled(
                     $override === null ? null : (bool) $override
                 );
             }
@@ -1279,6 +1291,7 @@ class ContentController
             $payload['commentsEnabled'] = $content->getCommentsEnabled();
             $payload['commentsRequireApproval'] = $content->getCommentsRequireApproval();
             $payload['commentsAllowGuests'] = $content->getCommentsAllowGuests();
+            $payload['commentsRatingEnabled'] = $content->getCommentsRatingEnabled();
             $payload['authorId'] = $content->getAuthorId();
             $payload['authorBioStored'] = $content->getAuthorBio();
             $payload['authorAvatarUrlStored'] = $content->getAuthorAvatarUrl();

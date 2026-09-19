@@ -89,6 +89,7 @@ export const settingsSk: MessageTree = {
     "codePolicy": "Politika kódu",
     "engine": "Hybridný engine",
     "translation": "Asistovaný preklad",
+    "agent": "CMS AI asistent",
     "comments": "Komentáre",
     "contact": "Kontaktný formulár",
     "newsletter": "Newsletter",
@@ -132,6 +133,15 @@ export const settingsSk: MessageTree = {
     "linkPhilosophy": "Filozofia projektu",
     "linkChangelog": "Changelog (história verzií)",
     "footer": "Verzia sa aktualizuje pri release tagu. Táto sekcia je len na čítanie."
+  },
+  "agent": {
+    "privacyWarning": "Model vidí len minimálny autorizovaný výrez (titulok, úryvok, SEO). Prompty a odpovede sa nelogujú. Apply je samostatný potvrdený zápis — agent nikdy nepublikuje.",
+    "localWarning": "URL Ollama / OpenAI-compatible musí prejsť outbound politikou (ako LibreTranslate). LAN adresa nie je automaticky povolená. Ceny sú externé a CMS ich nesľubuje.",
+    "testConnection": "Otestovať pripojenie",
+    "testing": "Testujem…",
+    "testOk": "Poskytovateľ je dostupný",
+    "testFailed": "Poskytovateľ je offline alebo požiadavku odmietol",
+    "loadFailed": "Stav asistenta sa nepodarilo načítať"
   },
   "translation": {
     "privacyWarning": "Poskytovateľ dostane len vybrané polia titulku, tela a SEO — nikdy tajomstvá, logy ani celý admin dokument. Vypnuté = žiadna odchádzajúca prevádzka.",
@@ -641,6 +651,52 @@ export const settingsSk: MessageTree = {
       "profileCustomComponents": {
         "label": "Custom komponenty podľa profilu (JSON)",
         "help": "Spravuje sa v matici nižšie."
+      }
+    },
+    "agent": {
+      "enabled": {
+        "label": "Povoliť CMS AI asistenta",
+        "help": "Vypnuté = žiadna odchádzajúca prevádzka. Zapnuté = editor vie vyžiadať návrh. Apply je samostatný potvrdený zápis. Agent nikdy nepublikuje."
+      },
+      "provider": {
+        "label": "LLM poskytovateľ",
+        "help": "none = žiadny model. ollama / openai_compatible = OpenAI-compatible /v1/chat/completions na allow-listnutej URL."
+      },
+      "baseUrl": {
+        "label": "Základná URL poskytovateľa",
+        "help": "Musí prejsť outbound politikou. LAN adresa nie je automaticky povolená."
+      },
+      "apiKey": {
+        "label": "API kľúč poskytovateľa",
+        "help": "Voliteľný Bearer token. Šifrovaný. Po uložení sa nevracia."
+      },
+      "model": {
+        "label": "Názov modelu",
+        "help": "ID modelu. Prázdne = predvolené."
+      },
+      "maxTokensPerRun": {
+        "label": "Max. tokenov na beh",
+        "help": "Horný strop jedného jobu."
+      },
+      "maxToolSteps": {
+        "label": "Max. krokov toolov",
+        "help": "Ohraničená slučka. Ďalšie kroky beh zastavia."
+      },
+      "dailyTokenLimit": {
+        "label": "Denný limit tokenov",
+        "help": "0 = bez limitu (politika administrátora)."
+      },
+      "allowedTools": {
+        "label": "Povolené tooly",
+        "help": "Čiarkou oddelený allow-list. Prázdne = žiadne tooly. Známe: content.read, content.propose_patch, seo.suggest_meta, media.suggest_alt, comments.summarize, translation.translate."
+      },
+      "proposalTtlMinutes": {
+        "label": "TTL návrhu (minúty)",
+        "help": "Expirované nepoužité návrhy sa mažú. Aplikované ostanú v audite."
+      },
+      "timeoutSeconds": {
+        "label": "Timeout poskytovateľa (s)",
+        "help": "Timeout odchádzajúceho volania."
       }
     },
     "translation": {
@@ -1219,6 +1275,10 @@ export const settingsSk: MessageTree = {
       "allowGuestComments": {
         "label": "Povoliť komentáre od hostí",
         "help": "Neprihlásení návštevníci môžu pridávať komentáre. Dá sa prepísať pri jednotlivom článku."
+      },
+      "ratingEnabled": {
+        "label": "Hodnotenie článku s komentárom",
+        "help": "Zapnuté = v diskusii je povinné hodnotenie 1–5 hviezdičiek spolu s komentárom. Vypnuté = len diskusia. Dá sa prepísať pri článku."
       },
       "maxLength": {
         "label": "Max. dĺžka komentára"
@@ -1958,7 +2018,9 @@ export const settingsSk: MessageTree = {
       "none": "Žiadny (ručne)",
       "libretranslate": "LibreTranslate (vlastná inštancia)",
       "deepl": "DeepL",
-      "google": "Google Cloud Translation"
+      "google": "Google Cloud Translation",
+      "ollama": "Ollama (OpenAI-compatible)",
+      "openai_compatible": "OpenAI-compatible HTTP"
     },
     "fallbackProvider": {
       "none": "Žiadny",

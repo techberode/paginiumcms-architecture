@@ -137,6 +137,8 @@ Settings → Content: master switch + per-network (Facebook, X, LinkedIn, email,
 - **In-page chat vs Desk** — Opening a hash (`/comments#comment-…`, `/messages#message-…`) expands that thread. The in-item composer is visible only while `deskBubbleEnabled` is false. Comment replies still publish as approved children under the article.
 - **Desk queue labels** — Beacon and Stôl mark each item as message or comment, show message priority, and keep “your desk / in progress”.
 - **Shared admin tabs** — Newsletter: Settings / Email sending / Recipients. Backups: Backup management / Backup list (sortable by name, created, size, scope, type). Firewall incidents / bans / whitelist use the same `AdminTabs` chrome as Settings → System.
+- **Contact phone + SMTP Reply** — Public contact requires country prefix + national number as E.164 (`+421909554887`) with a format hint. Messages composer always sends through site SMTP (To = form e-mail; From = configured SMTP mailbox). **Call** uses `tel:` when a phone is present.
+- **Article discussion + rating** — Public comments are a discussion. Settings → Comments can require a 1–5 star rating with the comment (`ratingEnabled`); each article can inherit/override. `GET /api/auth/me/desk` returns an empty queue instead of HTTP 500 when the inbox fails.
 
 ### Events planner
 

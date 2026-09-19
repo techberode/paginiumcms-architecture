@@ -176,6 +176,7 @@ export interface PublicSettings {
     enabled?: boolean;
     requireApproval?: boolean;
     allowGuestComments?: boolean;
+    ratingEnabled?: boolean;
   };
   contact?: {
     subjects?: string;

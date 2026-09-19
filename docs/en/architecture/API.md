@@ -197,10 +197,27 @@ This is a family-level overview. A release-grade reference requires a generated 
 | It.72 | media driver capability and local/S3 migration | ⏳ |
 | It.73 | locale-aware content read/write, explicit fallback, and revision | ⏳ |
 | It.74 | API key lifecycle and short-lived JWT | ⏳ |
-| It.75 | AI proposal/tool workflow; human Apply and no autonomous publish | ⏳ |
+| It.75 | `/api/admin/agent/*` proposal/tool workflow; human Apply, no autonomous publish | ✅ `beta.88` |
 | It.76–77 | translation proposal/diff/Apply and provider status/quota | ⏳ |
 
 A route name in a historical iteration is not automatically final. Before implementation it must pass threat modeling, naming review, and contract testing.
+
+### It.75 — CMS AI assistant (shipped `beta.88`)
+
+Auth: session + CSRF + 2FA + `content:edit`. Default off (`agent.enabled=false`, `allowedTools=[]`). Apply never publishes.
+
+| Method | Route | Role |
+|--------|-------|------|
+| `GET` | `/api/admin/agent/status` | settings + last run (no secrets) |
+| `POST` | `/api/admin/agent/connection` | outbound probe via `OutboundUrlGuard` |
+| `POST` | `/api/admin/agent/runs` | enqueue (202) |
+| `GET` | `/api/admin/agent/runs/{runId}` | poll |
+| `POST` | `/api/admin/agent/runs/{runId}/execute` | run now (or `agent.run` job) |
+| `POST` | `/api/admin/agent/runs/{runId}/cancel` | cancel |
+| `POST` | `/api/admin/agent/proposals/{proposalId}/apply` | OCC write as draft |
+| `DELETE` | `/api/admin/agent/proposals/{proposalId}` | discard |
+
+See [ITERATION_75.md](../ITERATION_75.md).
 
 ### It.68 — engine settings and capability probe (shipped)
 

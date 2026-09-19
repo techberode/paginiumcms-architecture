@@ -31,6 +31,23 @@ final class GitDeployTransportTest extends TestCase
         );
     }
 
+    public function testDiagnoseDeploySshKeyReportsMissingEnvPath(): void
+    {
+        putenv('GITHUB_DEPLOY_SSH_KEY_PATH=/this/path/does/not/exist/github_deploy_key');
+        $_ENV['GITHUB_DEPLOY_SSH_KEY_PATH'] = '/this/path/does/not/exist/github_deploy_key';
+
+        $diagnosis = GitDeployTransport::diagnoseDeploySshKey();
+        if ($diagnosis['configured']) {
+            $this->assertSame('ok', $diagnosis['status']);
+
+            return;
+        }
+
+        $this->assertSame('missing', $diagnosis['status']);
+        $this->assertSame('/this/path/does/not/exist/github_deploy_key', $diagnosis['env_path']);
+        $this->assertStringContainsString('not inside the PHP container', $diagnosis['detail']);
+    }
+
     public function testResolveDeploySshKeyPathUsesReadableEnvPath(): void
     {
         $key = tempnam(sys_get_temp_dir(), 'paginium-deploy-key-');

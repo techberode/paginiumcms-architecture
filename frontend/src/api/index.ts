@@ -4,6 +4,7 @@ export * from './client';
 export * from './types';
 export * from './setup';
 
+export * from './agent';
 export * from './analytics';
 export * from './analyticsPageview';
 export * from './audit';
@@ -87,6 +88,7 @@ export type { TopPage } from './analytics';
 import { authApi } from './auth';
 import { apiKeysApi } from './apiKeys';
 import { auditApi } from './audit';
+import { agentApi } from './agent';
 import { backupApi } from './backup';
 import { blogSidebarApi } from './blogSidebar';
 import { blueprintApi } from './blueprint';
@@ -127,6 +129,7 @@ import { widgetsApi } from './widgets';
 
 /** Typed API modules with object interface (`*Api`). Function-only modules stay as named exports. */
 export const api = {
+  agent: agentApi,
   auth: authApi,
   apiKeys: apiKeysApi,
   audit: auditApi,

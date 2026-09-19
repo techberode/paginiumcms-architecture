@@ -30,6 +30,8 @@ export const messagesEn: MessageTree = {
     staff: 'Staff',
     placeholder: 'Write a reply…',
     send: 'Send',
+    mailed: 'Reply was e-mailed to the address from the form.',
+    mailFailed: 'Reply is saved, but e-mail could not be sent. Check SMTP.',
   },
   invite: {
     send: 'Send registration link',
@@ -59,6 +61,8 @@ export const messagesEn: MessageTree = {
     state: 'Status',
   },
   actions: {
+    reply: 'Reply',
+    call: 'Call',
     read: 'Mark read',
     processed: 'Mark handled',
     archive: 'Archive',

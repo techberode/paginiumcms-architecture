@@ -20,6 +20,7 @@ export interface Comment {
   claimedBy?: string;
   staffReply?: boolean;
   handleStatus?: string;
+  rating?: number;
   replies?: Comment[];
 }
 
@@ -38,6 +39,7 @@ export async function submitComment(payload: {
   author: string;
   email?: string;
   content: string;
+  rating?: number;
   _hp?: string;
 }): Promise<{ ok: true; comment: Comment } | { ok: false; error: string }> {
   const res = await apiClient.post<Comment>('/api/comments', payload);

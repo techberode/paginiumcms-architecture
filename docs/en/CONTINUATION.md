@@ -1,7 +1,7 @@
 # PaginiumCMS — development continuation context
 
 > **Purpose:** concise, current handoff for the next development session  
-> **Checkpoint:** September 19, 2026 · `v2.1.0-beta.87`  
+> **Checkpoint:** September 19, 2026 · `v2.1.0-beta.88`  
 > **Active phase:** **Full planned-iteration development** — stabilization freeze lifted
 
 This document replaces the old chronological “log of everything.” Historical detail remains in [`CHANGELOG.md`](../../CHANGELOG.md), [`ISSUES.md`](ISSUES.md), and individual `ITERATION_*.md` files.
@@ -28,9 +28,10 @@ Historical freeze record: [STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) (supe
 
 | Area | Status |
 |------|--------|
-| Latest tag | ✅ `v2.1.0-beta.87` — It.70 GitHub API publisher · It.76/77 assisted translation |
-| Unreleased | (empty feature slice) — next: **It.75** |
-| Previous tag | `v2.1.0-beta.86` — It.93o-2–8 desk/staff · It.96 documents · remaining beta.85 CI |
+| Latest tag | ✅ `v2.1.0-beta.88` — It.75 CMS AI assistant · contact E.164 + SMTP reply · discussion ratings · deploy-key remount · Origin snapshot |
+| Unreleased | Production deploy of `beta.88` — next numbered work: **It.48** |
+| Origin Panel | Today snapshot (live / unreleased / next) as of 2026-09-19 · latest tag `2.1.0-beta.88` · remaining: It.48, 58f-h, It.95, 93l-2 |
+| Previous tag | `v2.1.0-beta.87` — It.70 GitHub API publisher · It.76/77 assisted translation |
 | It.93o | ✅ **93o-2–8** in `beta.86` — social verify, staff cards, subject routing + Messenger, comment desk, reply mail, external team + one-time invite, Users/desk/admin-tab follow-ups |
 | It.96 | ✅ document library in `beta.86` |
 | It.94 | ✅ novice admin UX |
@@ -48,8 +49,7 @@ Do **not** invent new iteration numbers. Finish specs that already exist.
 
 | Order | Item | Why this order |
 |------:|------|----------------|
-| 1 | **It.75** CMS-aware AI agent | After translation providers; proposals only, human apply |
-| 2 | **It.48** static / Jamstack output | Align with It.70; includes **58g** compile/cache |
+| 1 | **It.48** static / Jamstack output | Align with It.70; includes **58g** compile/cache |
 | — | **58f-h** | **P1 product** — visual canvas; novice UX shipped in **It.94** ([ITERATION_94.md](ITERATION_94.md)) |
 
 **Optional / later:** It.82d Origin host metrics. Isolated-origin widgets are **not** queued (cancelled iteration; archive only: [ISOLATED_ORIGIN.md](architecture/ISOLATED_ORIGIN.md)).
@@ -90,7 +90,7 @@ Frontend Vite: **`:3025`** (not 3026). White screen on the wrong port is not a C
 
 | Doc | Content |
 |-----|---------|
-| [RELEASE_2_1_0_BETA_87.md](RELEASE_2_1_0_BETA_87.md) | Latest release — It.70 GitHub API · It.76/77 translation |
+| [RELEASE_2_1_0_BETA_88.md](RELEASE_2_1_0_BETA_88.md) | Latest release — It.75 assistant · visitor polish · Origin snapshot |
 | [ITERATION_70.md](ITERATION_70.md) | Git publish (`local` + `github_api`) |
 | [ITERATION_76.md](ITERATION_76.md) / [ITERATION_77.md](ITERATION_77.md) | Assisted translation (own LibreTranslate or DeepL/Google) |
 | [ITERATION_93.md](ITERATION_93.md) | Admin chrome + daily apps; **93o-2–8** desk/staff/external |

@@ -27,8 +27,11 @@ final class VisitorReplyMailer
             return false;
         }
         $from = $this->resolver->resolve($actor, $thread);
-        if ($from === null) {
-            return false;
+        $options = [];
+        if ($from !== null) {
+            $options['reply_to'] = $from['email'];
+        } elseif (filter_var($actor->getEmail(), FILTER_VALIDATE_EMAIL) !== false) {
+            $options['reply_to'] = strtolower(trim($actor->getEmail()));
         }
 
         try {
@@ -37,11 +40,7 @@ final class VisitorReplyMailer
                 $toEmail,
                 LogSanitizer::value($subject, 160),
                 $body,
-                [
-                    'from' => $from['email'],
-                    'from_name' => $from['name'],
-                    'reply_to' => $from['email'],
-                ]
+                $options
             );
         } catch (\Throwable) {
             return false;

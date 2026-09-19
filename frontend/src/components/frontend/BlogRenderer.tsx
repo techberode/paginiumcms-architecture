@@ -366,10 +366,13 @@ export const BlogRenderer: React.FC = () => {
 
     const globalRequireApproval = settings.comments?.requireApproval !== false;
     const globalAllowGuests = settings.comments?.allowGuestComments !== false;
+    const globalRatingEnabled = settings.comments?.ratingEnabled === true;
     const requireApproval =
       activeArticle.commentsRequireApproval ?? globalRequireApproval;
     const allowGuests =
       activeArticle.commentsAllowGuests ?? globalAllowGuests;
+    const ratingEnabled =
+      activeArticle.commentsRatingEnabled ?? globalRatingEnabled;
 
     return (
       <div className="min-h-screen bg-theme-surface text-theme-text pb-24 transition-colors">
@@ -544,6 +547,7 @@ export const BlogRenderer: React.FC = () => {
             enabled={commentsEnabled}
             allowGuests={allowGuests}
             requireApproval={requireApproval}
+            ratingEnabled={ratingEnabled}
           />
           </div>
           </>,

@@ -57,6 +57,7 @@ class CommentPolicyResolverTest extends TestCase
         $this->assertTrue($policy['enabled']);
         $this->assertFalse($policy['requireApproval']);
         $this->assertFalse($policy['allowGuestComments']);
+        $this->assertFalse($policy['ratingEnabled']);
     }
 
     public function testDisabledOnArticleBlocksComments(): void

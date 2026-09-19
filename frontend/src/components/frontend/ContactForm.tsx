@@ -5,6 +5,7 @@ import { useToast } from '../../hooks/useToast';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { useI18n } from '../../context/I18nContext';
 import { parseContactSubjects } from '../../utils/contactSubjects';
+import { DEFAULT_PHONE_PREFIX, isValidVisitorPhone } from '../../utils/visitorPhone';
 import { BTN_PRIMARY, INPUT_THEME, PUBLIC_CARD } from '../../theme/publicUiClasses';
 
 const CUSTOM_SUBJECT_VALUE = '__custom__';
@@ -22,6 +23,8 @@ export const ContactForm: React.FC = () => {
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phonePrefix, setPhonePrefix] = useState(DEFAULT_PHONE_PREFIX);
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [subjectChoice, setSubjectChoice] = useState(subjects[0] ?? '');
   const [customSubject, setCustomSubject] = useState('');
   const [message, setMessage] = useState('');
@@ -39,11 +42,17 @@ export const ContactForm: React.FC = () => {
       toast.error(t('public.contact.toast.subjectRequired'));
       return;
     }
+    if (!isValidVisitorPhone(phonePrefix, phoneNumber)) {
+      toast.error(t('public.contact.toast.phoneInvalid'));
+      return;
+    }
 
     setSending(true);
     const result = await submitContactForm({
       name,
       email,
+      phonePrefix,
+      phoneNumber,
       subject: resolvedSubject,
       message,
       registrationRequest,
@@ -56,6 +65,8 @@ export const ContactForm: React.FC = () => {
       toast.success(result.message ?? t('public.contact.toast.sent'));
       setName('');
       setEmail('');
+      setPhonePrefix(DEFAULT_PHONE_PREFIX);
+      setPhoneNumber('');
       setSubjectChoice(subjects[0] ?? '');
       setCustomSubject('');
       setMessage('');
@@ -114,6 +125,37 @@ export const ContactForm: React.FC = () => {
           onChange={(e) => setEmail(e.target.value)}
         />
       </div>
+
+      <fieldset className="space-y-2">
+        <legend className="text-sm font-medium text-theme-text">{t('public.contact.fields.phone')}</legend>
+        <div className="grid grid-cols-[7.5rem_minmax(0,1fr)] gap-3">
+          <input
+            id="contact-phone-prefix"
+            className={inputClassName}
+            required
+            inputMode="tel"
+            autoComplete="tel-country-code"
+            aria-describedby="contact-phone-hint"
+            placeholder={t('public.contact.fields.phonePrefix')}
+            value={phonePrefix}
+            onChange={(e) => setPhonePrefix(e.target.value)}
+          />
+          <input
+            id="contact-phone-number"
+            className={inputClassName}
+            required
+            inputMode="tel"
+            autoComplete="tel-national"
+            aria-describedby="contact-phone-hint"
+            placeholder={t('public.contact.fields.phoneNumber')}
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
+          />
+        </div>
+        <p id="contact-phone-hint" className="text-xs text-theme-text-muted">
+          {t('public.contact.fields.phoneHint')}
+        </p>
+      </fieldset>
 
       <div className="space-y-2">
         <label className="block text-sm font-medium text-theme-text mb-1" htmlFor="contact-subject">

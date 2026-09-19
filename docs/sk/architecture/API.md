@@ -197,7 +197,7 @@ Táto tabuľka je rodinný prehľad. Pre release-grade referenciu je potrebný g
 | It.72 | media driver capability a migrácia local/S3 | ⏳ |
 | It.73 | locale-aware content read/write, explicitný fallback a revision | ⏳ |
 | It.74 | API key lifecycle a krátko žijúce JWT | ⏳ |
-| It.75 | AI proposal/tool workflow; human Apply, bez autonomous publish | ⏳ |
+| It.75 | `/api/admin/agent/*` proposal/tool workflow; human Apply, bez autonomous publish | ✅ `beta.88` |
 | It.76–77 | translate proposal/diff/Apply, provider status/quota | ⏳ |
 
 Názov plánovanej route v historickej iterácii nie je automaticky finálny. Pred implementáciou musí prejsť threat modelom, naming review a kontraktným testom.

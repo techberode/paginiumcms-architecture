@@ -24,7 +24,8 @@ final class CommentPolicyResolver
      * @return array{
      *     enabled: bool,
      *     requireApproval: bool,
-     *     allowGuestComments: bool
+     *     allowGuestComments: bool,
+     *     ratingEnabled: bool
      * }
      */
     public function resolveForArticle(string $articleSlug): array
@@ -34,6 +35,7 @@ final class CommentPolicyResolver
         $enabled = ($settings['enabled'] ?? true) !== false;
         $requireApproval = ($settings['requireApproval'] ?? true) !== false;
         $allowGuestComments = ($settings['allowGuestComments'] ?? true) !== false;
+        $ratingEnabled = ($settings['ratingEnabled'] ?? false) === true;
 
         $content = $this->contentRepository->findBySlug($articleSlug, 'article');
         if (!$content instanceof Article) {
@@ -41,6 +43,7 @@ final class CommentPolicyResolver
                 'enabled' => $enabled,
                 'requireApproval' => $requireApproval,
                 'allowGuestComments' => $allowGuestComments,
+                'ratingEnabled' => $ratingEnabled,
             ];
         }
 
@@ -58,10 +61,16 @@ final class CommentPolicyResolver
             $allowGuestComments = $guestsOverride;
         }
 
+        $ratingOverride = $content->getCommentsRatingEnabled();
+        if ($ratingOverride !== null) {
+            $ratingEnabled = $ratingOverride;
+        }
+
         return [
             'enabled' => $enabled,
             'requireApproval' => $requireApproval,
             'allowGuestComments' => $allowGuestComments,
+            'ratingEnabled' => $ratingEnabled,
         ];
     }
 

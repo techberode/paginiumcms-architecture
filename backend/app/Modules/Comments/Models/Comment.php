@@ -28,6 +28,7 @@ class Comment implements JsonSerializable
     private string $claimedBy = '';
     private int $claimedAt = 0;
     private string $handleStatus = 'open';
+    private int $rating = 0;
 
     public function __construct(string $articleSlug, string $author, string $content)
     {
@@ -188,6 +189,18 @@ class Comment implements JsonSerializable
         return $this->parentId !== '' && $this->authorUserId !== '';
     }
 
+    public function getRating(): int
+    {
+        return $this->rating;
+    }
+
+    public function setRating(int $rating): self
+    {
+        $this->rating = $rating >= 1 && $rating <= 5 ? $rating : 0;
+
+        return $this;
+    }
+
     /**
      * @param array<int|string, mixed> $entry
      */
@@ -200,14 +213,14 @@ class Comment implements JsonSerializable
         );
 
         $reflection = new \ReflectionClass($comment);
-        foreach (['id', 'email', 'status', 'createdAt', 'approvedAt', 'isRead', 'isArchived', 'parentId', 'authorUserId', 'claimedBy', 'claimedAt', 'handleStatus'] as $property) {
+        foreach (['id', 'email', 'status', 'createdAt', 'approvedAt', 'isRead', 'isArchived', 'parentId', 'authorUserId', 'claimedBy', 'claimedAt', 'handleStatus', 'rating'] as $property) {
             if (!array_key_exists($property, $entry)) {
                 continue;
             }
 
             $prop = $reflection->getProperty($property);
             $value = $entry[$property];
-            if ($property === 'claimedAt') {
+            if ($property === 'claimedAt' || $property === 'rating') {
                 $value = (int) $value;
             } elseif (in_array($property, ['isRead', 'isArchived'], true)) {
                 $value = (bool) $value;
@@ -245,6 +258,7 @@ class Comment implements JsonSerializable
             'claimedBy' => $this->claimedBy,
             'claimedAt' => $this->claimedAt,
             'handleStatus' => $this->handleStatus,
+            'rating' => $this->rating,
         ];
     }
 }

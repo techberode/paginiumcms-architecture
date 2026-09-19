@@ -36,6 +36,11 @@ export const MessageMessengerThread: React.FC<{
     if (next) {
       setBody('');
       onUpdated(next);
+      if (next.mailed) {
+        toast.success(t('messages.thread.mailed'));
+      } else {
+        toast.error(t('messages.thread.mailFailed'));
+      }
     }
   };
 

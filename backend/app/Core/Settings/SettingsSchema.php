@@ -163,6 +163,22 @@ final class SettingsSchema
                     ['key' => 'timeoutSeconds', 'type' => 'int', 'label' => 'Provider timeout (seconds)', 'default' => 15, 'rules' => ['required', 'int', 'min:3', 'max:60']],
                 ],
             ],
+            'agent' => [
+                'label' => 'CMS AI assistant',
+                'fields' => [
+                    ['key' => 'enabled', 'type' => 'bool', 'label' => 'Enable CMS AI assistant', 'default' => false, 'rules' => ['bool'], 'help' => 'Off = zero outbound traffic. On = the editor can request a proposal. Apply is a separate confirmed write. The agent never publishes.'],
+                    ['key' => 'provider', 'type' => 'enum', 'label' => 'LLM provider', 'default' => 'none', 'options' => ['none', 'ollama', 'openai_compatible'], 'rules' => ['required', 'in:none,ollama,openai_compatible'], 'help' => 'none = no model. ollama / openai_compatible = OpenAI-compatible /v1/chat/completions on your allow-listed URL. Pricing is external and not promised.'],
+                    ['key' => 'baseUrl', 'type' => 'string', 'label' => 'Provider base URL', 'default' => '', 'rules' => ['string', 'max:500'], 'help' => 'e.g. http://127.0.0.1:11434 or https://api.example.com. Must pass outbound URL policy (same as LibreTranslate).'],
+                    ['key' => 'apiKey', 'type' => 'password', 'label' => 'Provider API key', 'default' => '', 'rules' => ['string', 'max:512'], 'help' => 'Optional Bearer token. Encrypted at rest. Never returned after save.'],
+                    ['key' => 'model', 'type' => 'string', 'label' => 'Model name', 'default' => '', 'rules' => ['string', 'max:128'], 'help' => 'Provider model id (e.g. llama3.2). Empty = provider default.'],
+                    ['key' => 'maxTokensPerRun', 'type' => 'int', 'label' => 'Max tokens per run', 'default' => 4000, 'rules' => ['required', 'int', 'min:256', 'max:32000']],
+                    ['key' => 'maxToolSteps', 'type' => 'int', 'label' => 'Max tool steps', 'default' => 6, 'rules' => ['required', 'int', 'min:1', 'max:12']],
+                    ['key' => 'dailyTokenLimit', 'type' => 'int', 'label' => 'Daily token budget', 'default' => 0, 'rules' => ['int', 'min:0', 'max:2000000'], 'help' => '0 = unlimited (administrator policy). Counted on provider-reported tokens.'],
+                    ['key' => 'allowedTools', 'type' => 'string', 'label' => 'Allowed tools', 'default' => '', 'rules' => ['string', 'max:500'], 'help' => 'Comma-separated allow-list. Empty = no tools (enabling the agent grants nothing). Known: content.read, content.propose_patch, seo.suggest_meta, media.suggest_alt, comments.summarize, translation.translate.'],
+                    ['key' => 'proposalTtlMinutes', 'type' => 'int', 'label' => 'Proposal TTL (minutes)', 'default' => 60, 'rules' => ['required', 'int', 'min:5', 'max:1440']],
+                    ['key' => 'timeoutSeconds', 'type' => 'int', 'label' => 'Provider timeout (seconds)', 'default' => 30, 'rules' => ['required', 'int', 'min:5', 'max:120']],
+                ],
+            ],
             'navigationUi' => [
                 'label' => 'Navigácia (UI)',
                 'fields' => [
@@ -338,6 +354,7 @@ final class SettingsSchema
                     ['key' => 'enabled', 'type' => 'bool', 'label' => 'Povoliť komentáre globálne', 'default' => true, 'rules' => ['bool'], 'help' => 'Vypnutím sa skryje formulár na celom webe (okrem článkov s vlastným prepínačom).'],
                     ['key' => 'requireApproval', 'type' => 'bool', 'label' => 'Globálne vyžadovať schválenie', 'default' => true, 'rules' => ['bool'], 'help' => 'Nové komentáre čakajú na schválenie v administrácii. Dá sa prepísať pri jednotlivom článku.'],
                     ['key' => 'allowGuestComments', 'type' => 'bool', 'label' => 'Povoliť komentáre od hostí', 'default' => true, 'rules' => ['bool'], 'help' => 'Neprihlásení návštevníci môžu pridávať komentáre. Dá sa prepísať pri jednotlivom článku.'],
+                    ['key' => 'ratingEnabled', 'type' => 'bool', 'label' => 'Hodnotenie článku s komentárom', 'default' => false, 'rules' => ['bool'], 'help' => 'Zapnuté = v diskusii je povinné hodnotenie 1–5 hviezdičiek spolu s komentárom. Vypnuté = len diskusia. Dá sa prepísať pri článku.'],
                     ['key' => 'maxLength', 'type' => 'int', 'label' => 'Max. dĺžka komentára', 'default' => 2000, 'rules' => ['required', 'int', 'min:50', 'max:5000']],
                     ['key' => 'spamHeuristicsEnabled', 'type' => 'bool', 'label' => 'Spam heuristika', 'default' => true, 'rules' => ['bool'], 'help' => 'Honeypot + skóre (linky, disposable e-mail, rýchlosť). Vypnutím zostáva len honeypot.'],
                     ['key' => 'spamMaxLinks', 'type' => 'int', 'label' => 'Spam: max. linkov v texte', 'default' => 2, 'rules' => ['int', 'min:0', 'max:20']],

@@ -30,6 +30,8 @@ export const messagesSk: MessageTree = {
     staff: 'Tím',
     placeholder: 'Napíš odpoveď…',
     send: 'Odoslať',
+    mailed: 'Odpoveď odišla na e-mail z formulára.',
+    mailFailed: 'Odpoveď je uložená, e-mail sa nepodarilo odoslať. Skontrolujte SMTP.',
   },
   invite: {
     send: 'Poslať registračný link',
@@ -59,6 +61,8 @@ export const messagesSk: MessageTree = {
     state: 'Stav',
   },
   actions: {
+    reply: 'Odpovedať',
+    call: 'Zavolať',
     read: 'Prečítané',
     processed: 'Vybavené',
     archive: 'Archivovať',

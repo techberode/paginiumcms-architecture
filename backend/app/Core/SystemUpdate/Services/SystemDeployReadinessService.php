@@ -95,13 +95,15 @@ final class SystemDeployReadinessService
         $sshBinary = GitDeployTransport::hasSshBinary();
         $gitSshAvailable = GitDeployTransport::isGithubSshAuthAvailable();
         $githubTokenConfigured = GitDeployTransport::hasUsableGithubDeployToken($config);
-        $deploySshKeyConfigured = GitDeployTransport::hasDeploySshKeyConfigured();
+        $deployKey = GitDeployTransport::diagnoseDeploySshKey();
+        $deploySshKeyConfigured = $deployKey['configured'];
         $transportBlocker = self::classifyTransportBlocker(
             $gitSshAvailable,
             $githubTokenConfigured,
             $this->settings->hasOverride('systemUpdate', 'githubToken'),
             $deploySshKeyConfigured,
-            $sshBinary
+            $sshBinary,
+            $deployKey['env_path'] !== '' && !$deploySshKeyConfigured
         );
         if ($transportBlocker !== null) {
             $blockers[] = $transportBlocker;
@@ -135,13 +137,17 @@ final class SystemDeployReadinessService
         bool $tokenUsable,
         bool $storedTokenUnreadable,
         bool $deployKeyConfigured,
-        bool $sshBinary
+        bool $sshBinary,
+        bool $deployKeyEnvUnusable = false
     ): ?string {
         if ($githubSshAuth || $tokenUsable) {
             return null;
         }
         if ($storedTokenUnreadable) {
             return 'github_token_unreadable';
+        }
+        if ($deployKeyEnvUnusable) {
+            return 'github_deploy_ssh_key_unreadable';
         }
         if ($deployKeyConfigured && !$sshBinary) {
             return 'ssh_binary_missing';

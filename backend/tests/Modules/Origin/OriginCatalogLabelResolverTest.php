@@ -47,5 +47,13 @@ final class OriginCatalogLabelResolverTest extends TestCase
             'Bulk selected-of-total UX',
             $resolver->resolve('origin.probes.it86_bulk_selection')
         );
+        $this->assertSame(
+            'State as of 19 September 2026',
+            $resolver->resolve('origin.snapshot.headline')
+        );
+        $this->assertSame(
+            'Contact form E.164 phone',
+            $resolver->resolve('origin.catalog.ops_phone')
+        );
     }
 }

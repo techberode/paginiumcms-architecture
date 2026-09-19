@@ -27,6 +27,8 @@ describe('contact API', () => {
     const result = await submitContactForm({
       name: 'Jane',
       email: 'jane@example.com',
+      phonePrefix: '+421',
+      phoneNumber: '909554887',
       subject: 'Technická podpora',
       message: 'Hello from the contact form.',
     });
@@ -34,6 +36,8 @@ describe('contact API', () => {
     expect(mocks.post).toHaveBeenCalledWith('/api/contact', {
       name: 'Jane',
       email: 'jane@example.com',
+      phonePrefix: '+421',
+      phoneNumber: '909554887',
       subject: 'Technická podpora',
       message: 'Hello from the contact form.',
     });
@@ -45,6 +49,8 @@ describe('contact API', () => {
     const result = await submitContactForm({
       name: 'Jane',
       email: 'jane@example.com',
+      phonePrefix: '+421',
+      phoneNumber: '909554887',
       message: 'Too short',
     });
     expect(result).toEqual({ ok: false, error: 'Validation failed' });

@@ -29,7 +29,8 @@ final class SystemDeployCredentialsProbe
         $repo = trim((string) ($config['githubRepo'] ?? ''));
         $sshAvailable = GitDeployTransport::isGithubSshAuthAvailable();
         $sshBinary = GitDeployTransport::hasSshBinary();
-        $deployKeyConfigured = GitDeployTransport::hasDeploySshKeyConfigured();
+        $deployKey = GitDeployTransport::diagnoseDeploySshKey();
+        $deployKeyConfigured = $deployKey['configured'];
         $token = GitDeployTransport::resolveGithubDeployToken($config);
         $tokenUnreadable = $this->settings->hasOverride('systemUpdate', 'githubToken') && $token === '';
 
@@ -82,7 +83,8 @@ final class SystemDeployCredentialsProbe
             $token,
             $sshAvailable,
             $sshBinary,
-            $deployKeyConfigured
+            $deployKeyConfigured,
+            $deployKey['detail']
         );
 
         $webhookSecretStatus = 'not_required';
@@ -108,12 +110,11 @@ final class SystemDeployCredentialsProbe
             'checked_at' => gmdate('c'),
             'overall_ok' => $deployCredentialsOk,
             'deploy_ssh_key' => [
-                'configured' => $deployKeyConfigured,
-                'path' => GitDeployTransport::resolveDeploySshKeyPath(),
-                'status' => $deployKeyConfigured ? 'ok' : 'missing',
-                'detail' => $deployKeyConfigured
-                    ? 'GITHUB_DEPLOY_SSH_KEY_PATH is readable in PHP'
-                    : 'No deploy key mounted — set GITHUB_DEPLOY_SSH_KEY_PATH or use a PAT',
+                'configured' => $deployKey['configured'],
+                'path' => $deployKey['path'],
+                'env_path' => $deployKey['env_path'] !== '' ? $deployKey['env_path'] : null,
+                'status' => $deployKey['status'],
+                'detail' => $deployKey['detail'],
             ],
             'ssh' => [
                 'binary' => $sshBinary,
@@ -159,7 +160,8 @@ final class SystemDeployCredentialsProbe
         string $token,
         bool $sshAvailable,
         bool $sshBinary,
-        bool $deployKeyConfigured
+        bool $deployKeyConfigured,
+        string $deployKeyDetail
     ): array {
         if ($appRoot === null || !is_dir($appRoot . '/.git')) {
             return [
@@ -177,7 +179,9 @@ final class SystemDeployCredentialsProbe
             if (!$sshBinary && $deployKeyConfigured) {
                 $detail = 'Deploy key is mounted but the PHP image has no ssh binary — on the host run: stack.sh build php && stack.sh up -d --force-recreate php';
             } elseif ($sshBinary && !$deployKeyConfigured) {
-                $detail = 'Remote uses git@github.com but PHP (www-data) has no GitHub SSH key — mount GITHUB_DEPLOY_SSH_KEY_PATH or set GITHUB_DEPLOY_TOKEN';
+                $detail = $deployKeyDetail !== ''
+                    ? $deployKeyDetail
+                    : 'Remote uses git@github.com but PHP (www-data) has no GitHub SSH key — mount GITHUB_DEPLOY_SSH_KEY_PATH or set GITHUB_DEPLOY_TOKEN';
             }
 
             return [

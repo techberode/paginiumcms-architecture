@@ -94,19 +94,49 @@ final class AccountController
             return $this->json->error($response, 'Neprihlásený používateľ', 401);
         }
 
-        $status = $this->deskInbox->status($user);
+        try {
+            $status = $this->deskInbox->status($user);
 
-        return $this->json->success($response, array_merge(
-            $this->directory->chatStatus($user),
-            $status,
-            [
-                'items' => $this->deskInbox->items($user),
-                'deskBubbleEnabled' => $user->isDeskBubbleEnabled(),
-                'deskBubbleAnchor' => $user->getDeskBubbleAnchor(),
-                'deskBubbleX' => $user->getDeskBubbleX(),
-                'deskBubbleY' => $user->getDeskBubbleY(),
-            ]
-        ));
+            return $this->json->success($response, array_merge(
+                $this->directory->chatStatus($user),
+                $status,
+                [
+                    'items' => $this->deskInbox->items($user),
+                    'deskBubbleEnabled' => $user->isDeskBubbleEnabled(),
+                    'deskBubbleAnchor' => $user->getDeskBubbleAnchor(),
+                    'deskBubbleX' => $user->getDeskBubbleX(),
+                    'deskBubbleY' => $user->getDeskBubbleY(),
+                ]
+            ));
+        } catch (\Throwable $exception) {
+            error_log('desk_inbox_failed ' . LogSanitizer::value($exception->getMessage(), 240));
+
+            try {
+                $chat = $this->directory->chatStatus($user);
+            } catch (\Throwable) {
+                $chat = [
+                    'chatEnabled' => false,
+                    'online' => false,
+                    'lastSeen' => 0,
+                    'inSupportTeam' => false,
+                    'canPublicChat' => false,
+                ];
+            }
+
+            return $this->json->success($response, array_merge(
+                $chat,
+                [
+                    'hasDesk' => false,
+                    'canReplyComments' => false,
+                    'deskCount' => 0,
+                    'items' => [],
+                    'deskBubbleEnabled' => $user->isDeskBubbleEnabled(),
+                    'deskBubbleAnchor' => $user->getDeskBubbleAnchor(),
+                    'deskBubbleX' => $user->getDeskBubbleX(),
+                    'deskBubbleY' => $user->getDeskBubbleY(),
+                ]
+            ));
+        }
     }
 
     public function updatePresence(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface

@@ -54,23 +54,31 @@ final class DeskInboxService
     public function items(User $actor): array
     {
         $items = [];
-        foreach ($this->messages->visibleFor($actor) as $message) {
-            if ($message->isProcessed() || $message->isArchived()) {
-                continue;
+        try {
+            foreach ($this->messages->visibleFor($actor) as $message) {
+                if ($message->isProcessed() || $message->isArchived()) {
+                    continue;
+                }
+                $mine = $this->messages->isMine($message, $actor);
+                if (!$mine && $message->getClaimedBy() !== '' && $message->getClaimedBy() !== $actor->getId()) {
+                    continue;
+                }
+                $items[] = $this->presentMessage($message, $actor, $mine);
             }
-            $mine = $this->messages->isMine($message, $actor);
-            if (!$mine && $message->getClaimedBy() !== '' && $message->getClaimedBy() !== $actor->getId()) {
-                continue;
-            }
-            $items[] = $this->presentMessage($message, $actor, $mine);
+        } catch (\Throwable $exception) {
+            error_log('desk_messages_failed ' . LogSanitizer::value($exception->getMessage(), 240));
         }
 
         if ($this->canReplyComments($actor)) {
-            foreach ($this->openComments() as $comment) {
-                if ($comment->getClaimedBy() !== '' && $comment->getClaimedBy() !== $actor->getId() && !$actor->isAdmin()) {
-                    continue;
+            try {
+                foreach ($this->openComments() as $comment) {
+                    if ($comment->getClaimedBy() !== '' && $comment->getClaimedBy() !== $actor->getId() && !$actor->isAdmin()) {
+                        continue;
+                    }
+                    $items[] = $this->presentComment($comment, $actor);
                 }
-                $items[] = $this->presentComment($comment, $actor);
+            } catch (\Throwable $exception) {
+                error_log('desk_comments_failed ' . LogSanitizer::value($exception->getMessage(), 240));
             }
         }
 
@@ -174,6 +182,7 @@ final class DeskInboxService
             'authorUserId' => $comment->getAuthorUserId(),
             'staffReply' => $comment->isStaffReply(),
             'handleStatus' => $comment->getHandleStatus(),
+            'rating' => $comment->getRating(),
             'replies' => $replies,
         ];
     }

@@ -33,6 +33,8 @@ class ApplicationFlowTest extends TestCase
         $submit = $this->createJsonRequest('POST', '/api/contact', [
             'name' => 'Flow Test User',
             'email' => 'flow-test@example.com',
+            'phonePrefix' => '+421',
+            'phoneNumber' => '909554887',
             'subject' => 'Integration',
             'message' => 'End-to-end contact form message for admin inbox.',
         ]);

@@ -35,6 +35,7 @@ final class ProjectCatalogMergeService
      *   },
      *   iterations: list<array<string, mixed>>,
      *   timeline: list<array<string, mixed>>,
+     *   snapshot: array<string, mixed>,
      *   checklist: array{updatedAt: string, slices: list<array<string, mixed>>}
      * }
      */
@@ -47,6 +48,7 @@ final class ProjectCatalogMergeService
         }
 
         $iterations = [];
+        $progressPercents = [];
         $shippedCount = 0;
         $partialCount = 0;
         $plannedCount = 0;
@@ -89,14 +91,21 @@ final class ProjectCatalogMergeService
             }
 
             $percent = $weightTotal > 0 ? (int) round(($scoreTotal / $weightTotal) * 100) : 0;
-            $iterationPhase = (string) ($iteration['phase'] ?? 'planned');
+            $declaredPhase = (string) ($iteration['phase'] ?? 'planned');
+            $iterationPhase = $percent >= 100
+                ? 'shipped'
+                : ($percent > 0 || $declaredPhase === 'partial' ? 'partial' : 'planned');
 
-            if ($percent >= 100) {
-                ++$shippedCount;
-            } elseif ($percent > 0 || $iterationPhase === 'partial') {
-                ++$partialCount;
-            } else {
-                ++$plannedCount;
+            $countsTowardProgress = !str_starts_with((string) ($iteration['id'] ?? ''), 'ops.');
+            if ($countsTowardProgress) {
+                $progressPercents[] = $percent;
+                if ($percent >= 100) {
+                    ++$shippedCount;
+                } elseif ($percent > 0 || $iterationPhase === 'partial') {
+                    ++$partialCount;
+                } else {
+                    ++$plannedCount;
+                }
             }
 
             $iterationTitleKey = (string) ($iteration['titleKey'] ?? '');
@@ -117,17 +126,21 @@ final class ProjectCatalogMergeService
             ];
         }
 
-        $overallPercent = count($iterations) > 0
-            ? (int) round(array_sum(array_column($iterations, 'percentComplete')) / count($iterations))
+        $overallPercent = count($progressPercents) > 0
+            ? (int) round(array_sum($progressPercents) / count($progressPercents))
             : 0;
 
         $runtime = $this->deployStatus->runtimeContext();
-        $liveCount = count(array_filter(
+        $catalogIterations = array_values(array_filter(
             $iterations,
+            static fn (array $row): bool => !str_starts_with((string) $row['id'], 'ops.')
+        ));
+        $liveCount = count(array_filter(
+            $catalogIterations,
             static fn (array $row): bool => $row['deployStatus'] === 'live'
         ));
         $pendingDeployCount = count(array_filter(
-            $iterations,
+            $catalogIterations,
             static fn (array $row): bool => $row['deployStatus'] === 'pending_deploy'
         ));
 
@@ -140,12 +153,13 @@ final class ProjectCatalogMergeService
                 'shipped' => $shippedCount,
                 'partial' => $partialCount,
                 'planned' => $plannedCount,
-                'total' => count($iterations),
+                'total' => count($progressPercents),
                 'liveOnInstance' => $liveCount,
                 'pendingDeploy' => $pendingDeployCount,
             ],
             'iterations' => $iterations,
             'timeline' => $this->normalizeTimeline($catalog['timeline'] ?? null),
+            'snapshot' => $this->normalizeSnapshot($catalog['snapshot'] ?? null, (string) ($catalog['updatedAt'] ?? '')),
             'checklist' => $this->mergeChecklist($probeIndex),
         ];
     }
@@ -258,6 +272,70 @@ final class ProjectCatalogMergeService
             'required' => 'pending',
             default => 'pending',
         };
+    }
+
+    /**
+     * Maintainer “as of today” overview — not a new iteration number.
+     *
+     * @return array{
+     *   asOf: string,
+     *   latestTag: string,
+     *   headlineKey: string,
+     *   headlineLabel: string,
+     *   groups: list<array{id: string, titleKey: string, titleLabel: string, items: list<array{titleKey: string, titleLabel: string, noteKey: string|null, noteLabel: string|null}>}>
+     * }
+     */
+    private function normalizeSnapshot(mixed $raw, string $fallbackAsOf): array
+    {
+        $asOf = $fallbackAsOf;
+        $latestTag = '';
+        $headlineKey = 'origin.snapshot.headline';
+        $groupsIn = [];
+
+        if (is_array($raw)) {
+            $asOf = trim((string) ($raw['asOf'] ?? $fallbackAsOf));
+            $latestTag = trim((string) ($raw['latestTag'] ?? ''));
+            $headlineKey = trim((string) ($raw['headlineKey'] ?? $headlineKey));
+            $groupsIn = is_array($raw['groups'] ?? null) ? $raw['groups'] : [];
+        }
+
+        $groups = [];
+        foreach ($groupsIn as $group) {
+            if (!is_array($group)) {
+                continue;
+            }
+
+            $titleKey = (string) ($group['titleKey'] ?? '');
+            $items = [];
+            foreach ($group['items'] ?? [] as $item) {
+                if (!is_array($item)) {
+                    continue;
+                }
+                $titleItemKey = (string) ($item['titleKey'] ?? '');
+                $noteKey = isset($item['noteKey']) ? trim((string) $item['noteKey']) : '';
+                $items[] = [
+                    'titleKey' => $titleItemKey,
+                    'titleLabel' => $this->labels->resolve($titleItemKey),
+                    'noteKey' => $noteKey !== '' ? $noteKey : null,
+                    'noteLabel' => $noteKey !== '' ? $this->labels->resolve($noteKey) : null,
+                ];
+            }
+
+            $groups[] = [
+                'id' => (string) ($group['id'] ?? ''),
+                'titleKey' => $titleKey,
+                'titleLabel' => $this->labels->resolve($titleKey),
+                'items' => $items,
+            ];
+        }
+
+        return [
+            'asOf' => $asOf !== '' ? $asOf : $fallbackAsOf,
+            'latestTag' => $latestTag,
+            'headlineKey' => $headlineKey,
+            'headlineLabel' => $this->labels->resolve($headlineKey),
+            'groups' => $groups,
+        ];
     }
 
     /**

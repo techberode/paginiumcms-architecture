@@ -26,6 +26,8 @@ use PaginiumCMS\Core\Notification\NotificationService;
 use PaginiumCMS\Core\Notification\Services\IncidentNotifier;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
 use PaginiumCMS\Core\FlatFile\Services\ContentScheduledPublishService;
+use PaginiumCMS\Core\Agent\Contracts\AgentRunExecutorInterface;
+use PaginiumCMS\Core\Scheduler\Handlers\AgentRunHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\BackupScheduledHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\ContentScheduledPublishHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\MaintenanceCleanupHandler;
@@ -116,7 +118,8 @@ final class ScheduledJobRunnerTest extends TestCase
             $systemDeploy,
             new NewsletterWeeklyDigestHandler($this->makeNewsletterMailService($settings)),
             GitPublishTestHelper::disabledHandler($reader, $writer, $settings),
-            $this->webhookDeliveryHandler()
+            $this->webhookDeliveryHandler(),
+            new AgentRunHandler($this->createMock(AgentRunExecutorInterface::class))
         );
 
         $runner = new ScheduledJobRunner(
@@ -154,7 +157,8 @@ final class ScheduledJobRunnerTest extends TestCase
             $systemDeploy,
             new NewsletterWeeklyDigestHandler($this->makeNewsletterMailService($settings)),
             GitPublishTestHelper::disabledHandler($reader, $writer, $settings),
-            $this->webhookDeliveryHandler()
+            $this->webhookDeliveryHandler(),
+            new AgentRunHandler($this->createMock(AgentRunExecutorInterface::class))
         );
 
         return new ScheduledJobRunner(

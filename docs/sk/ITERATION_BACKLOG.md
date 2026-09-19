@@ -43,7 +43,7 @@ Tento dokument opravuje starý backlog, v ktorom sa miešali hotové iterácie, 
 | 17 | **It.79** DAM video | 🟡 | ⏳ | po It.78 |
 | 18 | **It.25** Setup wizard/update UX | 🟡 | ✅ basic + M1+ | dodané; už nie je gate na stable tag |
 | 19 | **It.76/77** Translation providers | 🔵 | ⏳ | po It.73 |
-| 20 | **It.75** AI agent | 🔵 | ⏳ | po locale a provider vrstvách |
+| 20 | **It.75** AI agent | 🔵 | ✅ `beta.88` | len návrhy, ľudské Apply, predvolene vypnuté |
 | 21 | **It.83** Theme runtime + Terminal Breach | 🟡 | ✅ | `beta.59` — [ITERATION_83](../en/ITERATION_83.md) |
 | 22 | **It.84** Kategórie, blog sidebar, landing, role, menu | 🟡 | ✅ | **84a–84e** hotové — [ITERATION_84](../en/ITERATION_84.md) |
 | 23 | **It.85** Request diagnostics + admin APM clear | 🟡 | ✅ | **85a–85f** hotové — [ITERATION_85](../en/ITERATION_85.md); `v2.1.0-beta.59` |

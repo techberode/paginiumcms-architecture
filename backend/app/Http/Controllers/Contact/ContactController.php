@@ -8,6 +8,7 @@ use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\Validation\ValidationException;
 use PaginiumCMS\Core\Validation\Validator;
 use PaginiumCMS\Core\Validation\VisitorEmailGuard;
+use PaginiumCMS\Core\Validation\VisitorPhoneGuard;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Messages\Models\ContactMessage;
 use PaginiumCMS\Modules\Messages\Services\MessageDeskService;
@@ -21,7 +22,8 @@ class ContactController
         private Validator $validator,
         private JsonResponder $json,
         private MessageDeskService $desk,
-        private VisitorEmailGuard $visitorEmail
+        private VisitorEmailGuard $visitorEmail,
+        private VisitorPhoneGuard $visitorPhone
     ) {
     }
 
@@ -45,6 +47,9 @@ class ContactController
             $validated = $this->validator->validate($data, [
                 'name' => ['required', 'string', 'min:2', 'max:120'],
                 'email' => ['required', 'email', 'max:255'],
+                'phonePrefix' => ['string', 'max:8'],
+                'phoneNumber' => ['string', 'max:16'],
+                'phone' => ['string', 'max:20'],
                 'subject' => ['string', 'max:200'],
                 'message' => ['required', 'string', 'min:10', 'max:5000'],
             ]);
@@ -58,6 +63,7 @@ class ContactController
 
         try {
             $email = $this->visitorEmail->normalize((string) $validated['email'], 'contact');
+            $phone = $this->normalizePhone($data, $validated);
         } catch (ValidationException $e) {
             return $this->json->validation($response, Lang::get('validation_failed', [], 'contact'), $e->getErrors());
         }
@@ -67,6 +73,7 @@ class ContactController
             $email,
             (string) $validated['message']
         );
+        $message->setPhone($phone);
 
         $registrationRequest = filter_var($data['registrationRequest'] ?? false, FILTER_VALIDATE_BOOLEAN);
         $subject = trim((string) ($validated['subject'] ?? ''));
@@ -88,5 +95,20 @@ class ContactController
             201,
             Lang::get('submitted', [], 'contact')
         );
+    }
+
+    /**
+     * @param array<int|string, mixed> $data
+     * @param array<int|string, mixed> $validated
+     */
+    private function normalizePhone(array $data, array $validated): string
+    {
+        $prefix = trim((string) ($validated['phonePrefix'] ?? $data['phonePrefix'] ?? ''));
+        $number = trim((string) ($validated['phoneNumber'] ?? $data['phoneNumber'] ?? ''));
+        if ($prefix !== '' || $number !== '') {
+            return $this->visitorPhone->normalize($prefix, $number);
+        }
+
+        return $this->visitorPhone->normalizeCombined((string) ($validated['phone'] ?? $data['phone'] ?? ''));
     }
 }

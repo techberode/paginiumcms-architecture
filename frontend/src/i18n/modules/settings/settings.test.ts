@@ -60,6 +60,13 @@ describe('settings i18n module', () => {
     expect(SETTINGS_CATEGORIES.find((category) => category.id === 'site')?.groups).toContain(
       'translation'
     );
+    expect(SETTINGS_CATEGORIES.find((category) => category.id === 'site')?.groups).toContain(
+      'agent'
+    );
+    expect(translate('en', 'settings.groups.agent')).toBe('CMS AI assistant');
+    expect(translate('sk', 'settings.fields.agent.enabled.label')).toContain('asistent');
+    expect(translate('en', 'settings.enum.provider.ollama')).toContain('Ollama');
+    expect(translate('en', 'settings.agent.privacyWarning')).toContain('Apply');
     expect(translate('en', 'settings.groups.translation')).toBe('Assisted translation');
     expect(translate('sk', 'settings.fields.translation.enabled.label')).toBe(
       'Povoliť asistovaný preklad'

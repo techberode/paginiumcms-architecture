@@ -27,7 +27,7 @@ while IFS= read -r line; do
     continue
   fi
   # Services known to call assertAllowed before fetch
-  if echo "$file" | rg -q '(OAuthSsoService|GitHubService|GitHubApiClient|GitHubReleaseClient|SystemDeploy|Notification|Ntfy|Discord|Webhook|GeoIp|IpApi|HttpOutbound|TranslationHttpClient)'; then
+  if echo "$file" | rg -q '(OAuthSsoService|GitHubService|GitHubApiClient|GitHubReleaseClient|SystemDeploy|Notification|Ntfy|Discord|Webhook|GeoIp|IpApi|HttpOutbound|TranslationHttpClient|OpenAiCompatibleLlmDriver)'; then
     continue
   fi
   bad+="$line"$'\n'

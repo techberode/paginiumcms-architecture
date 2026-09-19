@@ -39,6 +39,9 @@ final class MessageDeskService
                 'authorName' => $incoming->getName(),
                 'body' => $incoming->getMessage(),
             ]);
+            if ($incoming->getPhone() !== '') {
+                $open->setPhone($incoming->getPhone());
+            }
             $open->markRead(false);
             $this->messages->update($open);
             $this->notify($open, $this->notifyTargets($open), 'reply');
@@ -131,13 +134,14 @@ final class MessageDeskService
         ]);
         $message->markRead(true);
         $this->messages->update($message);
-        $this->visitorMail?->send(
+        $mailed = $this->visitorMail?->send(
             $message->getEmail(),
             $actor,
             'Re: ' . $message->getSubject(),
             $body,
             $message
-        );
+        ) ?? false;
+        $message->setLastMailed($mailed);
 
         return true;
     }
@@ -198,6 +202,7 @@ final class MessageDeskService
         $payload['canReply'] = $this->canReply($message, $actor)
             && ($message->getClaimedBy() === '' || $message->getClaimedBy() === $actor->getId() || $actor->isAdmin());
         $payload['claimedByName'] = $this->displayName($message->getClaimedBy());
+        $payload['mailed'] = $message->wasLastMailed();
 
         return $payload;
     }

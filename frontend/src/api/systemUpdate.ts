@@ -133,7 +133,8 @@ export interface SystemUpdateCredentialsVerify {
   deploy_ssh_key?: {
     configured: boolean;
     path: string | null;
-    status: SystemUpdateCredentialCheckStatus;
+    env_path?: string | null;
+    status?: SystemUpdateCredentialCheckStatus;
     detail: string | null;
   };
   ssh?: {

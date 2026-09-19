@@ -95,6 +95,74 @@ final class GitDeployTransport
         return self::resolveDeploySshKeyPath() !== null;
     }
 
+    public static function deploySshKeyEnvPath(): string
+    {
+        return trim((string) (getenv('GITHUB_DEPLOY_SSH_KEY_PATH') ?: ($_ENV['GITHUB_DEPLOY_SSH_KEY_PATH'] ?? '')));
+    }
+
+    /**
+     * Operator-facing diagnosis: env may be set while the file is missing or unreadable in PHP.
+     *
+     * @return array{
+     *     configured: bool,
+     *     path: ?string,
+     *     env_path: string,
+     *     status: 'ok'|'missing'|'unreadable',
+     *     detail: string
+     * }
+     */
+    public static function diagnoseDeploySshKey(): array
+    {
+        $envPath = self::deploySshKeyEnvPath();
+        $resolved = self::resolveDeploySshKeyPath();
+        if ($resolved !== null) {
+            return [
+                'configured' => true,
+                'path' => $resolved,
+                'env_path' => $envPath,
+                'status' => 'ok',
+                'detail' => 'Deploy key is readable by PHP (www-data)',
+            ];
+        }
+
+        if ($envPath !== '') {
+            if (is_dir($envPath)) {
+                return [
+                    'configured' => false,
+                    'path' => $envPath,
+                    'env_path' => $envPath,
+                    'status' => 'unreadable',
+                    'detail' => 'GITHUB_DEPLOY_SSH_KEY_PATH points at a directory (Docker created a folder because the host key file was missing). Remove that directory, restore the key file, recreate php.',
+                ];
+            }
+            if (is_file($envPath) && !is_readable($envPath)) {
+                return [
+                    'configured' => false,
+                    'path' => $envPath,
+                    'env_path' => $envPath,
+                    'status' => 'unreadable',
+                    'detail' => 'GITHUB_DEPLOY_SSH_KEY_PATH is set but www-data cannot read the file (chmod 640 + root:www-data, then recreate php).',
+                ];
+            }
+
+            return [
+                'configured' => false,
+                'path' => $envPath,
+                'env_path' => $envPath,
+                'status' => 'missing',
+                'detail' => 'GITHUB_DEPLOY_SSH_KEY_PATH is set but that file is not inside the PHP container — recreate php (stack.sh auto-mounts the host key when the file exists).',
+            ];
+        }
+
+        return [
+            'configured' => false,
+            'path' => null,
+            'env_path' => '',
+            'status' => 'missing',
+            'detail' => 'No deploy key mounted — run scripts/bootstrap-github-deploy-key.sh then scripts/ensure-php-deploy-key-mount.sh, or set GITHUB_DEPLOY_TOKEN.',
+        ];
+    }
+
     public static function gitSshCommandValue(): ?string
     {
         $key = self::resolveDeploySshKeyPath();

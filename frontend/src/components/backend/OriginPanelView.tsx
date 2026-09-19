@@ -6,6 +6,7 @@ import {
   CircleDashed,
   History,
   Layers,
+  Newspaper,
   RefreshCw,
   Radar,
 } from 'lucide-react';
@@ -105,6 +106,26 @@ export const OriginPanelView: React.FC = () => {
   }, [overview]);
 
   const catalog = overview?.catalog;
+
+  const { focusIterations, shippedIterations } = useMemo(() => {
+    const rows = catalog?.iterations ?? [];
+    const focus = rows.filter((iteration) => {
+      if (iteration.id.startsWith('ops.')) {
+        return true;
+      }
+      if (iteration.percentComplete < 100) {
+        return true;
+      }
+      return iteration.deployStatus === 'unreleased'
+        || iteration.deployStatus === 'pending_deploy'
+        || iteration.deployStatus === 'in_progress';
+    });
+    const focusIds = new Set(focus.map((row) => row.id));
+    return {
+      focusIterations: focus,
+      shippedIterations: rows.filter((row) => !focusIds.has(row.id)),
+    };
+  }, [catalog]);
 
   const deployLabel = (status: OriginDeployStatus | undefined) =>
     status ? t(`origin.deploy.${status}`) : t('origin.deploy.planned');
@@ -261,6 +282,64 @@ export const OriginPanelView: React.FC = () => {
             </div>
           </section>
 
+          {catalog.snapshot && catalog.snapshot.groups.length > 0 ? (
+            <section className="rounded-xl border border-violet-200 bg-violet-50/60 p-4 dark:border-violet-900/50 dark:bg-violet-950/20 space-y-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h2 className="text-sm font-bold flex items-center gap-2">
+                    <Newspaper className="h-4 w-4 text-violet-600" />
+                    {t('origin.sections.snapshot')}
+                  </h2>
+                  <p className="mt-1 text-sm text-slate-700 dark:text-slate-200">
+                    {originLabel(t, catalog.snapshot.headlineKey, catalog.snapshot.headlineLabel)}
+                  </p>
+                </div>
+                <div className="text-xs text-slate-600 dark:text-slate-300 space-y-1 text-right">
+                  <div>
+                    {t('origin.snapshot.asOf')}: <strong>{catalog.snapshot.asOf}</strong>
+                  </div>
+                  {catalog.snapshot.latestTag ? (
+                    <div>
+                      {t('origin.snapshot.latestTag')}:{' '}
+                      <strong className="font-mono">{catalog.snapshot.latestTag}</strong>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+              <div className="grid gap-3 lg:grid-cols-3">
+                {catalog.snapshot.groups.map((group) => {
+                  const tone =
+                    group.id === 'live'
+                      ? 'border-emerald-200 dark:border-emerald-900/40'
+                      : group.id === 'unreleased'
+                        ? 'border-violet-200 dark:border-violet-900/40'
+                        : 'border-slate-200 dark:border-slate-700';
+                  return (
+                    <div key={group.id || group.titleKey} className={`rounded-lg border bg-white/80 p-3 dark:bg-slate-950/40 ${tone}`}>
+                      <h3 className="text-xs font-bold uppercase tracking-wide text-slate-500 mb-2">
+                        {originLabel(t, group.titleKey, group.titleLabel)}
+                      </h3>
+                      <ul className="space-y-2">
+                        {group.items.map((item) => (
+                          <li key={`${group.id}-${item.titleKey}`} className="text-sm">
+                            <div className="font-semibold text-slate-800 dark:text-slate-100">
+                              {originLabel(t, item.titleKey, item.titleLabel)}
+                            </div>
+                            {item.noteKey || item.noteLabel ? (
+                              <div className="text-[11px] text-slate-500 mt-0.5">
+                                {originLabel(t, item.noteKey ?? '', item.noteLabel ?? undefined)}
+                              </div>
+                            ) : null}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          ) : null}
+
           {catalog.checklist && catalog.checklist.slices.length > 0 ? (
             <section className="rounded-xl border border-slate-200 p-4 dark:border-slate-700 space-y-4">
               <h2 className="text-sm font-bold flex items-center gap-2">
@@ -319,7 +398,22 @@ export const OriginPanelView: React.FC = () => {
               <Layers className="h-4 w-4" />
               {t('origin.sections.roadmap')}
             </h2>
-            <ul className="space-y-3">{catalog.iterations.map(renderIteration)}</ul>
+            {focusIterations.length > 0 ? (
+              <div className="space-y-3">
+                <h3 className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                  {t('origin.sections.focus')}
+                </h3>
+                <ul className="space-y-3">{focusIterations.map(renderIteration)}</ul>
+              </div>
+            ) : null}
+            {shippedIterations.length > 0 ? (
+              <div className="space-y-3">
+                <h3 className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                  {t('origin.sections.shipped')}
+                </h3>
+                <ul className="space-y-3">{shippedIterations.map(renderIteration)}</ul>
+              </div>
+            ) : null}
           </section>
 
           <section className="rounded-xl border border-slate-200 p-4 dark:border-slate-700 space-y-3">

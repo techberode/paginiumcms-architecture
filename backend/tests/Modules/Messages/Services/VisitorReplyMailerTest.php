@@ -46,12 +46,15 @@ final class VisitorReplyMailerTest extends TestCase
             public string $to = '';
             public string $from = '';
             public string $fromName = '';
+            /** @var array<int|string, mixed> */
+            public array $options = [];
 
             public function send(string $to, string $subject, string $message, array $options = []): bool
             {
                 $this->to = $to;
                 $this->from = (string) ($options['from'] ?? '');
                 $this->fromName = (string) ($options['from_name'] ?? '');
+                $this->options = $options;
 
                 return true;
             }
@@ -68,8 +71,8 @@ final class VisitorReplyMailerTest extends TestCase
 
         $this->assertTrue($mailer->send('guest@example.com', $actor, 'Re: Help', 'We are looking into it.'));
         $this->assertSame('guest@example.com', $probe->to);
-        $this->assertSame('ada@cms.example.com', $probe->from);
-        $this->assertSame('Ada', $probe->fromName);
+        $this->assertSame('', $probe->from);
+        $this->assertSame('ada@cms.example.com', (string) ($probe->options['reply_to'] ?? ''));
     }
 
     public function testSkipsWhenNoDomainFrom(): void
@@ -81,6 +84,35 @@ final class VisitorReplyMailerTest extends TestCase
         $actor->setDeskMailEnabled(true);
 
         $this->assertFalse($mailer->send('guest@example.com', $actor, 'Re: Help', 'Body'));
+    }
+
+    public function testSendsToVisitorUsingSmtpFromWhenNoSiteMailbox(): void
+    {
+        $probe = new class implements AdapterInterface {
+            public string $to = '';
+            /** @var array<int|string, mixed> */
+            public array $options = [];
+
+            public function send(string $to, string $subject, string $message, array $options = []): bool
+            {
+                $this->to = $to;
+                $this->options = $options;
+
+                return true;
+            }
+        };
+
+        $notifications = new NotificationService();
+        $notifications->addAdapter('email', $probe);
+        $mailer = new VisitorReplyMailer($this->resolver, $notifications);
+
+        $actor = new User();
+        $actor->setEmail('ada@gmail.com');
+        $actor->setDeskMailEnabled(true);
+
+        $this->assertTrue($mailer->send('guest@example.com', $actor, 'Re: Help', 'We will call you.'));
+        $this->assertSame('guest@example.com', $probe->to);
+        $this->assertArrayNotHasKey('from', $probe->options);
     }
 
     private function removeTree(string $path): void

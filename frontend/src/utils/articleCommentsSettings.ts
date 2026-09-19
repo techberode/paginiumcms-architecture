@@ -4,12 +4,14 @@ export interface ArticleCommentsSettings {
   commentsEnabled: boolean;
   commentsRequireApproval: TriStateSetting;
   commentsAllowGuests: TriStateSetting;
+  commentsRatingEnabled: TriStateSetting;
 }
 
 export const DEFAULT_ARTICLE_COMMENTS_SETTINGS: ArticleCommentsSettings = {
   commentsEnabled: true,
   commentsRequireApproval: 'inherit',
   commentsAllowGuests: 'inherit',
+  commentsRatingEnabled: 'inherit',
 };
 
 export function triStateFromApi(value: boolean | null | undefined): TriStateSetting {

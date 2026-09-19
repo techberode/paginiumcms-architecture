@@ -72,7 +72,7 @@ It.73 je týmto dokumentom kanonicky zaradená do **HE-6**. V staršom návrhu b
 | **74** | [API keys a JWT](ITERATION_74.md) | 🟡 | ✅ hotové `[Unreleased]` | It.68; cache lookup z It.69 odporúčaný | session auth zostáva |
 | **76** | [Self-hosted translation](ITERATION_76.md) | 🔵 | ⏳ | It.73 | vytvára provider kontrakt |
 | **77** | [Cloud translation](ITERATION_77.md) | 🔵 | ⏳ | It.76 | pridáva cloud drivers bez druhého UI |
-| **75** | [CMS-aware AI agent](ITERATION_75.md) | 🔵 | ⏳ | It.73 + stabilná provider/tool vrstva | používa It.29 queue a It.66 gates |
+| **75** | [CMS-aware AI agent](ITERATION_75.md) | 🔵 | ✅ `beta.88` | It.73 + stabilná provider/tool vrstva | používa It.29 queue a It.66 gates |
 
 ---
 

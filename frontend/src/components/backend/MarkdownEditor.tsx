@@ -18,6 +18,7 @@ import { useSettingsContext } from '../../context/SettingsContext';
 import { useAuth } from '../../hooks/useAuth';
 import { ContentEditorShell } from './ContentEditorShell';
 import { TranslateMissingPanel } from './TranslateMissingPanel';
+import { AgentAssistantPanel } from './AgentAssistantPanel';
 import { PageOutlineEditor } from './PageOutlineEditor';
 import { PageLivePreviewSplit } from './AdminBodyPreviewPanel';
 import { SitePreviewModal } from './SitePreviewModal';
@@ -483,6 +484,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
             commentsEnabled: response.data.commentsEnabled !== false,
             commentsRequireApproval: triStateFromApi(response.data.commentsRequireApproval),
             commentsAllowGuests: triStateFromApi(response.data.commentsAllowGuests),
+            commentsRatingEnabled: triStateFromApi(response.data.commentsRatingEnabled),
           });
           setArticleAuthorSettings(
             articleAuthorFromFrontMatter(fm, {
@@ -535,7 +537,10 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
               setArticleCategory(restored.articleCategory);
             }
             if (restored.articleComments) {
-              setArticleComments(restored.articleComments);
+              setArticleComments({
+                ...DEFAULT_ARTICLE_COMMENTS_SETTINGS,
+                ...restored.articleComments,
+              });
             }
             if (restored.articleAuthorSettings) {
               setArticleAuthorSettings(restored.articleAuthorSettings);
@@ -647,6 +652,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
           data.commentsEnabled = articleComments.commentsEnabled;
           data.commentsRequireApproval = triStateToApi(articleComments.commentsRequireApproval);
           data.commentsAllowGuests = triStateToApi(articleComments.commentsAllowGuests);
+          data.commentsRatingEnabled = triStateToApi(articleComments.commentsRatingEnabled);
           Object.assign(data, articleAuthorToPayload(articleAuthorSettings));
           data.category = articleCategory.trim();
         }
@@ -1018,23 +1024,35 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         localeStatusMap={localeStatusMap as Record<string, ContentEditorStatus>}
         onLocaleChange={(code) => handleLocaleChange(code as ContentLocaleCode)}
         localeExtra={
-          <TranslateMissingPanel
-            type={type}
-            slug={isNew ? '' : (slug ?? '')}
-            sourceLocale={activeLocale}
-            missingLocales={[...SUPPORTED_LOCALES].filter((code) => {
-              if (code === activeLocale) {
-                return false;
-              }
-              const state = localeStates[code];
-              return !state || (state.title.trim() === '' && state.content.trim() === '');
-            })}
-            sourceRevision={baseRevision}
-            canEdit={canEdit && !isNew}
-            onApplied={() => {
-              void loadContent();
-            }}
-          />
+          <div className="space-y-3">
+            <TranslateMissingPanel
+              type={type}
+              slug={isNew ? '' : (slug ?? '')}
+              sourceLocale={activeLocale}
+              missingLocales={[...SUPPORTED_LOCALES].filter((code) => {
+                if (code === activeLocale) {
+                  return false;
+                }
+                const state = localeStates[code];
+                return !state || (state.title.trim() === '' && state.content.trim() === '');
+              })}
+              sourceRevision={baseRevision}
+              canEdit={canEdit && !isNew}
+              onApplied={() => {
+                void loadContent();
+              }}
+            />
+            <AgentAssistantPanel
+              type={type}
+              slug={isNew ? '' : (slug ?? '')}
+              locale={activeLocale}
+              sourceRevision={baseRevision}
+              canEdit={canEdit && !isNew}
+              onApplied={() => {
+                void loadContent();
+              }}
+            />
+          </div>
         }
         onTitleChange={setTitle}
         onSlugChange={(value) => {
@@ -1063,6 +1081,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         defaultBlogAuthor={String(settings.content?.blogAuthorName ?? settings.general?.siteName ?? '')}
         globalCommentsRequireApproval={settings.comments?.requireApproval !== false}
         globalCommentsAllowGuests={settings.comments?.allowGuestComments !== false}
+        globalCommentsRatingEnabled={settings.comments?.ratingEnabled === true}
         footerExtra={
           <div className="form-group">
             <label className="form-label">{t('editor.markdown.commitMessage.label')}</label>

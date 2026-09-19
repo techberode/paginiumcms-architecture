@@ -31,6 +31,9 @@ describe('public i18n module', () => {
     expect(translate('en', 'public.auth.login.title')).toBe('Sign in');
     expect(translate('sk', 'public.share.label')).toBe('Zdieľať');
     expect(translate('en', 'public.staff.supportTitle')).toBe('Support team');
+    expect(translate('sk', 'public.contact.fields.phoneHint')).toBe(
+      'Zadajte predvoľbu krajiny a číslo bez medzier. Platný tvar: +421909554887',
+    );
     expect(translate('sk', 'public.comments.form.email')).toBe('E-mail');
     expect(translate('en', 'public.comments.toast.emailRequired')).toBe('A lasting e-mail address is required.');
     expect(translate('sk', 'public.auth.register.fields.registrationType')).toBe('Typ registrácie');

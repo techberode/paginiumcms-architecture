@@ -317,10 +317,9 @@ SECRETS_DIR=/var/lib/paginiumcms/secrets ./scripts/bootstrap-github-deploy-key.s
 ```
 
 1. Paste the printed **public** key into GitHub → repository → **Settings → Deploy keys** (read-only).
-2. Uncomment the **deploy key volume** and **`GITHUB_DEPLOY_SSH_KEY_PATH`** in `docs/deploy/docker-compose.prod.yml` on the PHP service.
-   The key stays in `/var/lib/paginiumcms/secrets/` — **not** in `/var/lib/docker/compose/paginiumcms`. Mount it at the **same path** inside PHP so the env var can be the host path.
+2. `stack.sh` auto-mounts the key via `docs/deploy/docker-compose.deploy-key.yml` when the host file exists (PHP sees `/run/secrets/github_deploy_key`). If fetch fails after a recreate, run `STACK_DIR=/var/lib/docker/compose/paginiumcms ./scripts/ensure-php-deploy-key-mount.sh` on the host — that copies the new wrapper and remounts the key. Do **not** store the private key under `/var/lib/docker/compose/paginiumcms`.
 3. **Rebuild** the PHP image, then recreate (recreate alone keeps the old image without `ssh`): `"$STACK_DIR/stack.sh" build php && "$STACK_DIR/stack.sh" up -d --force-recreate php`.
-4. In admin → **System update → Verify connection** — **ssh in PHP** and **Git fetch** should be OK without saving a PAT in Settings.
+4. In admin → **System update → Verify connection** — **ssh in PHP** and **Git fetch** should be OK without saving a PAT in Settings. Do **not** type `v2.1.0-beta.12` — that is an old placeholder; use the latest tag from **Check remote**.
 
 **GitHub token in settings** remains useful for **Check remote / release API** on private repos; deploy itself can work with deploy key only.
 
@@ -366,6 +365,7 @@ Readiness blockers:
 | `github_token_missing` | No GitHub SSH auth in PHP and no deploy token — run `bootstrap-github-deploy-key.sh` or set `GITHUB_DEPLOY_TOKEN` |
 | `ssh_binary_missing` | Deploy key is mounted but the PHP image has no `ssh` — **`stack.sh build php`** then recreate (not recreate alone) |
 | `github_deploy_ssh_key_invalid` | `GITHUB_DEPLOY_SSH_KEY_PATH` is set and `ssh` exists but `ssh -T git@github.com` fails — wrong key, not added on GitHub, or bad mount permissions |
+| `github_deploy_ssh_key_unreadable` | Env path is set but the file is missing or not readable **inside** PHP — remount with `ensure-php-deploy-key-mount.sh` |
 | `github_token_unreadable` | Token stored in `settings.json` but decrypt yields empty — fix **`APP_KEY`**, re-save token |
 
 ### Dashboard banner (SUPER_ADMIN)

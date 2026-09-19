@@ -89,6 +89,7 @@ export const settingsEn: MessageTree = {
     "codePolicy": "Code policy",
     "engine": "Hybrid Engine",
     "translation": "Assisted translation",
+    "agent": "CMS AI assistant",
     "comments": "Comments",
     "contact": "Contact form",
     "newsletter": "Newsletter",
@@ -132,6 +133,15 @@ export const settingsEn: MessageTree = {
     "linkPhilosophy": "Project philosophy",
     "linkChangelog": "Changelog (release history)",
     "footer": "Version updates with each release tag. This section is read-only."
+  },
+  "agent": {
+    "privacyWarning": "The model sees a minimal authorized slice (title, excerpt, SEO). Prompts and completions are not logged. Apply is a separate confirmed write — the agent never publishes.",
+    "localWarning": "Ollama / OpenAI-compatible URLs must pass outbound policy (same as LibreTranslate). A LAN URL is not implied. Pricing is external and not promised.",
+    "testConnection": "Test connection",
+    "testing": "Testing…",
+    "testOk": "Provider is reachable",
+    "testFailed": "Provider is offline or rejected the request",
+    "loadFailed": "Could not load assistant status"
   },
   "translation": {
     "privacyWarning": "The provider receives only the selected title, body, and SEO fields — never secrets, logs, or the full admin document. Disabled means zero outbound traffic.",
@@ -643,6 +653,52 @@ export const settingsEn: MessageTree = {
         "help": "Managed in the matrix below."
       }
     },
+    "agent": {
+      "enabled": {
+        "label": "Enable CMS AI assistant",
+        "help": "Off = no outbound requests. On = the editor can request a proposal. Apply is a separate confirmed write. The agent never publishes."
+      },
+      "provider": {
+        "label": "LLM provider",
+        "help": "none = no model. ollama / openai_compatible = OpenAI-compatible /v1/chat/completions on your allow-listed URL."
+      },
+      "baseUrl": {
+        "label": "Provider base URL",
+        "help": "Must pass outbound URL policy. A LAN URL is not implied."
+      },
+      "apiKey": {
+        "label": "Provider API key",
+        "help": "Optional Bearer token. Encrypted at rest. Write-only after save."
+      },
+      "model": {
+        "label": "Model name",
+        "help": "Provider model id. Empty = provider default."
+      },
+      "maxTokensPerRun": {
+        "label": "Max tokens per run",
+        "help": "Hard cap for one assistant job."
+      },
+      "maxToolSteps": {
+        "label": "Max tool steps",
+        "help": "Bounded tool loop. Extra steps stop the run."
+      },
+      "dailyTokenLimit": {
+        "label": "Daily token budget",
+        "help": "0 = unlimited (administrator policy)."
+      },
+      "allowedTools": {
+        "label": "Allowed tools",
+        "help": "Comma-separated allow-list. Empty = no tools. Known: content.read, content.propose_patch, seo.suggest_meta, media.suggest_alt, comments.summarize, translation.translate."
+      },
+      "proposalTtlMinutes": {
+        "label": "Proposal TTL (minutes)",
+        "help": "Expired unused proposals are deleted. Applied ones stay in the audit."
+      },
+      "timeoutSeconds": {
+        "label": "Provider timeout (seconds)",
+        "help": "Outbound call timeout."
+      }
+    },
     "translation": {
       "enabled": {
         "label": "Enable assisted translation",
@@ -754,6 +810,10 @@ export const settingsEn: MessageTree = {
       "allowGuestComments": {
         "label": "Allow guest comments",
         "help": "Visitors without an account can comment. Can be overridden per article."
+      },
+      "ratingEnabled": {
+        "label": "Article rating with comment",
+        "help": "On = discussion requires a 1–5 star rating together with the comment. Off = discussion only. Can be overridden per article."
       },
       "maxLength": {
         "label": "Max comment length"
@@ -1958,7 +2018,9 @@ export const settingsEn: MessageTree = {
       "none": "None (manual)",
       "libretranslate": "LibreTranslate (own instance)",
       "deepl": "DeepL",
-      "google": "Google Cloud Translation"
+      "google": "Google Cloud Translation",
+      "ollama": "Ollama (OpenAI-compatible)",
+      "openai_compatible": "OpenAI-compatible HTTP"
     },
     "fallbackProvider": {
       "none": "None",

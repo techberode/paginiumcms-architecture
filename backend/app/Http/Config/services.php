@@ -107,6 +107,18 @@ use PaginiumCMS\Core\Translation\Services\TranslationQuotaStore;
 use PaginiumCMS\Core\Translation\Services\TranslationService;
 use PaginiumCMS\Core\Translation\Services\TranslationSettings;
 use PaginiumCMS\Http\Controllers\Admin\ContentTranslationController;
+use PaginiumCMS\Core\Agent\Services\AgentSettings;
+use PaginiumCMS\Core\Agent\Services\AgentBudgetStore;
+use PaginiumCMS\Core\Agent\Services\AgentProposalStore;
+use PaginiumCMS\Core\Agent\Services\AgentRunStore;
+use PaginiumCMS\Core\Agent\Services\AgentLlmProviderRegistry;
+use PaginiumCMS\Core\Agent\Services\AgentToolRegistry;
+use PaginiumCMS\Core\Agent\Services\AgentOrchestrator;
+use PaginiumCMS\Core\Agent\Services\AgentApplyService;
+use PaginiumCMS\Core\Agent\Contracts\AgentRunExecutorInterface;
+use PaginiumCMS\Core\Agent\Services\AgentService;
+use PaginiumCMS\Core\Scheduler\Handlers\AgentRunHandler;
+use PaginiumCMS\Http\Controllers\Admin\AgentController;
 use PaginiumCMS\Core\Hook\HookManager;
 use PaginiumCMS\Core\Hook\Services\HookEmitter;
 use PaginiumCMS\Core\Hook\Services\SafeHookRunner;
@@ -238,6 +250,7 @@ use PaginiumCMS\Modules\Messages\Services\MessageRoutingStore;
 use PaginiumCMS\Modules\Messages\Services\ReplyMailboxResolver;
 use PaginiumCMS\Modules\Messages\Services\VisitorReplyMailer;
 use PaginiumCMS\Core\Validation\VisitorEmailGuard;
+use PaginiumCMS\Core\Validation\VisitorPhoneGuard;
 use PaginiumCMS\Http\Controllers\Admin\NotificationController;
 use PaginiumCMS\Http\Controllers\Admin\CodeEditorController;
 use PaginiumCMS\Http\Controllers\Admin\DemoController;
@@ -800,6 +813,76 @@ return [
     ContentTranslationController::class => create(ContentTranslationController::class)
         ->constructor(get(TranslationService::class), get(JsonResponder::class)),
 
+    AgentSettings::class => create(AgentSettings::class)
+        ->constructor(get(SettingsRepositoryInterface::class)),
+    AgentBudgetStore::class => create(AgentBudgetStore::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class),
+            get(AgentSettings::class)
+        ),
+    AgentProposalStore::class => create(AgentProposalStore::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class),
+            get(AgentSettings::class)
+        ),
+    AgentRunStore::class => create(AgentRunStore::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class)
+        ),
+    AgentLlmProviderRegistry::class => create(AgentLlmProviderRegistry::class)
+        ->constructor(get(AgentSettings::class)),
+    AgentToolRegistry::class => create(AgentToolRegistry::class)
+        ->constructor(
+            get(AgentSettings::class),
+            get(ContentRepositoryInterface::class),
+            get(\PaginiumCMS\Core\FlatFile\Services\ContentRevision::class),
+            get(LocalizedContentNormalizer::class),
+            get(\PaginiumCMS\Modules\Comments\Contracts\CommentsRepositoryInterface::class),
+            get(\PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface::class),
+            get(TranslationService::class),
+            get(AuthorizationInterface::class),
+            get(SecurityAuditStore::class)
+        ),
+    AgentOrchestrator::class => create(AgentOrchestrator::class)
+        ->constructor(
+            get(AgentSettings::class),
+            get(AgentLlmProviderRegistry::class),
+            get(AgentToolRegistry::class),
+            get(AgentProposalStore::class),
+            get(AgentBudgetStore::class),
+            get(SecurityAuditStore::class)
+        ),
+    AgentApplyService::class => create(AgentApplyService::class)
+        ->constructor(
+            get(AgentProposalStore::class),
+            get(ContentRepositoryInterface::class),
+            get(\PaginiumCMS\Core\FlatFile\Services\ContentRevision::class),
+            get(LocalizedContentNormalizer::class),
+            get(LocalizedContentWriter::class),
+            get(\PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface::class),
+            get(AuthorizationInterface::class),
+            get(SecurityAuditStore::class)
+        ),
+    AgentService::class => create(AgentService::class)
+        ->constructor(
+            get(AgentSettings::class),
+            get(AgentRunStore::class),
+            get(AgentProposalStore::class),
+            get(AgentBudgetStore::class),
+            get(AgentOrchestrator::class),
+            get(AgentApplyService::class),
+            get(AgentLlmProviderRegistry::class),
+            get(UserRepository::class)
+        ),
+    AgentRunExecutorInterface::class => get(AgentService::class),
+    AgentRunHandler::class => create(AgentRunHandler::class)
+        ->constructor(get(AgentRunExecutorInterface::class)),
+    AgentController::class => create(AgentController::class)
+        ->constructor(get(AgentService::class), get(JsonResponder::class)),
+
     TranslationFileManagerInterface::class => create(TranslationFileManager::class)
         ->constructor(
             get(TranslationPolicyValidator::class),
@@ -1136,8 +1219,10 @@ return [
             get(Validator::class),
             get(JsonResponder::class),
             get(MessageDeskService::class),
-            get(VisitorEmailGuard::class)
+            get(VisitorEmailGuard::class),
+            get(VisitorPhoneGuard::class)
         ),
+    VisitorPhoneGuard::class => create(VisitorPhoneGuard::class),
     MessageRoutingStore::class => create(MessageRoutingStore::class)
         ->constructor(
             get(FileReaderInterface::class),

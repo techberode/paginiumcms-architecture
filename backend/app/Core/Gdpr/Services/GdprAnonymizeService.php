@@ -68,6 +68,7 @@ final class GdprAnonymizeService
         foreach ($this->messages->findByEmail($originalEmail) as $message) {
             $message->setName($pseudonym);
             $message->setEmail($pseudonymEmail);
+            $message->setPhone('');
             $message->setIp('redacted');
             $this->messages->update($message);
             ++$messagesUpdated;

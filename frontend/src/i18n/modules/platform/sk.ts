@@ -489,7 +489,7 @@ export const platformSk: MessageTree = {
     recentRuns: 'Posledné deploy behy',
     superAdminOnly: 'Aktualizácia systému je len pre SUPER_ADMIN.',
     demoDisabled: 'Na demo inštancii je deploy vypnutý — použite SSH deploy workflow.',
-    refTagOnlyHint: 'Deploy z vetvy je v nastaveniach vypnutý — použite semver tag (napr. v2.1.0-beta.12), nie origin/main.',
+    refTagOnlyHint: 'Deploy z vetvy je v nastaveniach vypnutý — použite semver tag (napr. v2.1.0-beta.87), nie origin/main.',
     versionCurrent: 'Vaša verzia je aktuálna — nie je dostupná novšia release.',
     versionUpdateAvailable: 'Dostupná aktualizácia: {version}',
     versionUnknown: 'Nepodarilo sa jednoznačne určiť stav verzie — skontrolujte GitHub token a repo nastavenia.',
@@ -519,7 +519,7 @@ export const platformSk: MessageTree = {
       subtitle:
         'Live test GitHub tokenu, git fetch (rovnako ako deploy script) a webhook secret — spustite po uložení nastavení.',
       pathHint:
-        'Odporúčané: GitHub deploy key namontovaný do PHP (GITHUB_DEPLOY_SSH_KEY_PATH) — scripts/bootstrap-github-deploy-key.sh a DEPLOY.md §12.5. PAT v nastaveniach nie je nutný na git fetch, ak kľúč funguje.',
+        'Odporúčané: GitHub deploy key namontovaný do PHP — scripts/bootstrap-github-deploy-key.sh, potom na hoste scripts/ensure-php-deploy-key-mount.sh (DEPLOY.md §12.5). PAT v nastaveniach nie je nutný na git fetch, ak kľúč funguje.',
       verifyButton: 'Overiť pripojenie',
       verifying: 'Overujem…',
       notRunYet: 'Spustite overenie, aby ste potvrdili token a git prístup pred deployom.',
@@ -537,6 +537,7 @@ export const platformSk: MessageTree = {
         invalid: 'Neplatný',
         unreadable: 'Nečitateľný',
         not_required: 'Nepovinné',
+        unknown: 'Neznámy',
       },
       gitStatus: {
         ok: 'OK',
@@ -546,6 +547,7 @@ export const platformSk: MessageTree = {
         invalid: 'Neplatný',
         unreadable: 'Nečitateľný',
         not_required: 'Nepovinné',
+        unknown: 'Neznámy',
       },
       webhookStatus: {
         ok: 'OK',
@@ -553,6 +555,7 @@ export const platformSk: MessageTree = {
         not_required: 'Nepovinné',
         invalid: 'Neplatný',
         unreadable: 'Nečitateľný',
+        unknown: 'Neznámy',
       },
     },
     blockers: {
@@ -572,6 +575,8 @@ export const platformSk: MessageTree = {
         'Git fetch pre admin UI nie je nastavený — na hoste spustite scripts/bootstrap-github-deploy-key.sh, namontujte kľúč v docker-compose (GITHUB_DEPLOY_SSH_KEY_PATH), alebo GITHUB_DEPLOY_TOKEN v .env PHP. DEPLOY.md §12.5.',
       github_deploy_ssh_key_invalid:
         'Cesta k deploy kľúču je v PHP nastavená, ale SSH na GitHub zlyhalo — pridajte verejný kľúč v repozitári (Deploy keys), skontrolujte práva (600) a reštartujte PHP kontajner.',
+      github_deploy_ssh_key_unreadable:
+        'GITHUB_DEPLOY_SSH_KEY_PATH je v PHP nastavená, ale súbor v kontajneri nie je čitateľný — na hoste spustite scripts/ensure-php-deploy-key-mount.sh a reštartujte PHP.',
       ssh_binary_missing:
         'Deploy kľúč je namontovaný, ale v PHP image chýba binárka ssh. Na hoste (nie v admin): cd /var/lib/docker/compose/paginiumcms && ./stack.sh build php && ./stack.sh up -d --force-recreate php',
       github_token_unreadable:

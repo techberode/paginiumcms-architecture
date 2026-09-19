@@ -177,7 +177,7 @@ Hybrid Engine nesmie znížiť tento baseline. Nové ovládače používajú exi
 | Unified upload security | ❌ | It.78 |
 | Multi-locale document | ❌ | It.73 |
 | API keys/JWT | ❌ | It.74 |
-| AI agent | ❌ | It.75 |
+| AI agent | ✅ | It.75 (`beta.88`) — len návrhy, ľudské Apply, predvolene vypnuté |
 | Self-hosted translation | ❌ | It.76 |
 | Cloud translation | ❌ | It.77 |
 

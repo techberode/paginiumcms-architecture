@@ -30,6 +30,7 @@ export interface ContactMessage {
   path: string;
   name: string;
   email: string;
+  phone?: string;
   subject: string;
   message: string;
   createdAt: string;
@@ -53,6 +54,7 @@ export interface ContactMessage {
   canReply?: boolean;
   claimedByName?: string;
   registrationRequest?: boolean;
+  mailed?: boolean;
 }
 
 export interface MessagesListResponse {

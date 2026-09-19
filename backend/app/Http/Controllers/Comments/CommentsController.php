@@ -151,6 +151,18 @@ class CommentsController
             return $this->json->validation($response, Lang::get('validation_failed', [], 'comments'), $e->getErrors());
         }
 
+        $rating = (int) ($data['rating'] ?? 0);
+        if ($policy['ratingEnabled']) {
+            if ($rating < 1 || $rating > 5) {
+                return $this->json->validation(
+                    $response,
+                    Lang::get('validation_failed', [], 'comments'),
+                    ['rating' => [Lang::get('rating_required', [], 'comments')]]
+                );
+            }
+            $comment->setRating($rating);
+        }
+
         if ($spamVerdict->isQuarantine()) {
             $comment->setStatus(Comment::STATUS_QUARANTINE);
         } elseif (!$policy['requireApproval']) {

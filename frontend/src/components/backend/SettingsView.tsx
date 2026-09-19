@@ -60,6 +60,7 @@ import { EngineSettingsPanel } from './EngineSettingsPanel';
 import { PrivacyCookieSettingsPanel } from './PrivacyCookieSettingsPanel';
 import { ContactRoutingPanel } from './ContactRoutingPanel';
 import { TranslationSettingsPanel } from './TranslationSettingsPanel';
+import { AgentSettingsPanel } from './AgentSettingsPanel';
 import { TimezoneSelect } from './TimezoneSelect';
 import { MaintenanceModeSelect } from './MaintenanceModeSelect';
 import { AdminChromeColorField } from './AdminChromeColorField';
@@ -461,6 +462,21 @@ export const SettingsView: React.FC = () => {
                       />
                     ))}
                     <TranslationSettingsPanel />
+                  </>
+                ) : activeGroup === 'agent' ? (
+                  <>
+                    {group.fields.map((field) => (
+                      <SettingFieldRow
+                        key={field.key}
+                        groupKey={activeGroup}
+                        field={field}
+                        register={register}
+                        watch={watch}
+                        setValue={setValue}
+                        error={errors[field.key]?.message as string | undefined}
+                      />
+                    ))}
+                    <AgentSettingsPanel />
                   </>
                 ) : activeGroup === 'contact' ? (
                   <>

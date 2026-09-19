@@ -104,6 +104,7 @@ interface ContentEditorShellProps {
   defaultBlogAuthor?: string;
   globalCommentsRequireApproval?: boolean;
   globalCommentsAllowGuests?: boolean;
+  globalCommentsRatingEnabled?: boolean;
   activeLocale?: string;
   localeOptions?: string[];
   localeStatusMap?: Record<string, ContentEditorStatus>;
@@ -160,6 +161,7 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
   defaultBlogAuthor = '',
   globalCommentsRequireApproval = true,
   globalCommentsAllowGuests = true,
+  globalCommentsRatingEnabled = false,
   activeLocale,
   localeOptions = [],
   localeStatusMap = {},
@@ -654,6 +656,7 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
               disabled={!canEdit}
               globalRequireApproval={globalCommentsRequireApproval}
               globalAllowGuests={globalCommentsAllowGuests}
+              globalRatingEnabled={globalCommentsRatingEnabled}
             />
           ) : null}
 

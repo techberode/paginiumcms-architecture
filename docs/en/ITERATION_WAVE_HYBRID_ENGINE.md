@@ -73,7 +73,7 @@ This document canonically assigns It.73 to **HE-6**. The earlier draft inconsist
 | **74** | [API keys and JWT](ITERATION_74.md) | 🟡 | ✅ complete `[Unreleased]` | It.68; cached lookup from It.69 recommended | session auth remains |
 | **76** | [Self-hosted translation](ITERATION_76.md) | 🔵 | ⏳ | It.73 | creates the provider contract |
 | **77** | [Cloud translation](ITERATION_77.md) | 🔵 | ⏳ | It.76 | adds cloud drivers without a second UI |
-| **75** | [CMS-aware AI agent](ITERATION_75.md) | 🔵 | ⏳ | It.73 + stable provider/tool layer | uses It.29 queue and It.66 gates |
+| **75** | [CMS-aware AI agent](ITERATION_75.md) | 🔵 | ✅ `beta.88` | It.73 + stable provider/tool layer | uses It.29 queue and It.66 gates |
 
 ---
 

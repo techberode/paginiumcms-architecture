@@ -1,16 +1,61 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-08-30",
+  "updatedAt": "2026-09-19",
   "description": "Operator checklist mirrored for Origin Panel automation. Progress percent and deploy badges are computed from project-catalog.json + runtime probes.",
   "catalogPath": "docs/manifest/project-catalog.json",
   "releaseReadinessDoc": "docs/en/CHECKLIST.md",
   "issuesRegister": "docs/ISSUES.md",
   "slices": [
     {
+      "id": "slice-2026-09-19-it75-agent",
+      "catalogIterationIds": ["it.75"],
+      "status": "in_progress",
+      "items": [
+        {
+          "id": "75-code",
+          "labelKey": "origin.catalog.it75",
+          "phase": "shipped"
+        },
+        {
+          "id": "75-tag-deploy",
+          "labelKey": "origin.checklist.deploy_production",
+          "phase": "pending"
+        }
+      ]
+    },
+    {
+      "id": "slice-2026-09-19-remaining",
+      "catalogIterationIds": ["it.48", "it.95"],
+      "status": "planned",
+      "items": [
+        {
+          "id": "48-static",
+          "labelKey": "origin.catalog.it48_static",
+          "phase": "pending"
+        },
+        {
+          "id": "58f-h-canvas",
+          "labelKey": "origin.catalog.it58f_canvas",
+          "phase": "pending"
+        },
+        {
+          "id": "95-sandpack",
+          "labelKey": "origin.catalog.it95_sandpack",
+          "phase": "pending"
+        },
+        {
+          "id": "93l-2",
+          "labelKey": "origin.catalog.it93_canned",
+          "phase": "pending"
+        }
+      ]
+    },
+    {
       "id": "slice-2026-08-30-it87-planner",
       "catalogIterationIds": ["it.87"],
-      "targetVersion": "2.2.0",
-      "status": "planned",
+      "targetVersion": "2.1.0-beta.68",
+      "since": "2.1.0-beta.68",
+      "status": "shipped",
       "items": [
         {
           "id": "87-spec",
@@ -21,14 +66,14 @@
         {
           "id": "87-mvp",
           "labelKey": "origin.catalog.it87_planner_panel",
-          "phase": "pending",
-          "dependsOnVersion": "2.2.0"
+          "phase": "shipped",
+          "dependsOnVersion": "2.1.0-beta.68"
         },
         {
           "id": "87-theme-js",
           "labelKey": "origin.catalog.it87_theme_js_csp",
-          "phase": "pending",
-          "dependsOnVersion": "2.2.0"
+          "phase": "shipped",
+          "dependsOnVersion": "2.1.0-beta.68"
         }
       ]
     },
@@ -36,13 +81,14 @@
       "id": "slice-2026-08-30-admin-ux",
       "catalogIterationIds": ["it.86"],
       "targetVersion": "2.1.0-beta.60",
-      "status": "in_progress",
+      "since": "2.1.0-beta.60",
+      "status": "shipped",
       "issues": ["ISS-158", "ISS-159"],
       "items": [
         {
           "id": "86-gate",
           "labelKey": "origin.checklist.gate_green",
-          "phase": "required",
+          "phase": "shipped",
           "verify": "./scripts/iteration-gate.sh"
         },
         {
@@ -77,7 +123,8 @@
       "id": "slice-2026-08-30-themes",
       "catalogIterationIds": ["it.83"],
       "since": "2.1.0-beta.59",
-      "status": "partial_live",
+      "targetVersion": "2.1.0-beta.59",
+      "status": "shipped",
       "items": [
         {
           "id": "83-theme-runtime",

@@ -1,6 +1,6 @@
 # Iterácia 75 — CMS-aware AI agent
 
-> **Stav:** ⏳ plánované; po stabilizácii It.73/76/77  
+> **Stav:** ✅ vydané v `v2.1.0-beta.88` — len návrhy, ľudské Apply, predvolene `enabled=false`  
 > **Priorita:** 🔵 · voliteľná enterprise capability  
 > **Vlna:** [Hybrid Engine HE-6](ITERATION_WAVE_HYBRID_ENGINE.md)  
 > **Závisí od:** [It.68](ITERATION_68.md), [It.73](ITERATION_73.md), stabilný tool/provider kontrakt; používa It.29 queue a It.66 write gates
@@ -80,6 +80,19 @@ Povinné kontroly:
 | `AgentBudgetStore` | denný token/run budget ako bounded flat-file prevádzkový stav |
 | job `agent.run` | async execution, retry iba pri bezpečných provider chybách |
 | Apply service | explicitná session/Bearer autorizácia, OCC a audit |
+
+Dodané admin API (`Auth` + 2FA + `content:edit`):
+
+| Metóda | Cesta | Efekt |
+|--------|-------|--------|
+| GET | `/api/admin/agent/status` | enabled, provider, allow-list, kvóta |
+| POST | `/api/admin/agent/connection` | health providera (bez promptu) |
+| POST | `/api/admin/agent/runs` | enqueue — **202**, bez LLM volania |
+| GET | `/api/admin/agent/runs/{runId}` | beh + návrh |
+| POST | `/api/admin/agent/runs/{runId}/execute` | worker slučka (aj job `agent.run`) |
+| POST | `/api/admin/agent/runs/{runId}/cancel` | zrušiť queued/running |
+| POST | `/api/admin/agent/proposals/{proposalId}/apply` | OCC zápis, nikdy publish |
+| DELETE | `/api/admin/agent/proposals/{proposalId}` | zahodiť |
 
 ---
 
@@ -182,14 +195,14 @@ Credentialy sú šifrované. Local provider URL v LAN vyžaduje explicitnú outb
 
 ## Definition of Done
 
-- [ ] „Navrhni SEO pre článok“ vytvorí editovateľný proposal bez zápisu.
-- [ ] Apply je samostatná autorizovaná mutácia s OCC/schema/audit.
-- [ ] Agent používa iba allow-listované schémované tooly.
-- [ ] Prompt injection testy nevedú k escalácii toolov alebo čítaniu secretov.
-- [ ] Default `enabled=false`, `allowedTools=[]` znamená nulový outbound traffic.
-- [ ] Async worker zvládne dlhé provider volanie bez blokovania HTTP.
-- [ ] Translation tool znovu používa It.76/77, nie duplicitný provider stack.
-- [ ] SK/EN user, security, privacy a operations dokumentácia je aktualizovaná.
+- [x] „Navrhni SEO pre článok“ vytvorí editovateľný proposal bez zápisu.
+- [x] Apply je samostatná autorizovaná mutácia s OCC/schema/audit.
+- [x] Agent používa iba allow-listované schémované tooly.
+- [x] Prompt injection testy nevedú k escalácii toolov alebo čítaniu secretov.
+- [x] Default `enabled=false`, `allowedTools=[]` znamená nulový outbound traffic.
+- [x] Async worker zvládne dlhé provider volanie bez blokovania HTTP.
+- [x] Translation tool znovu používa It.76/77, nie duplicitný provider stack.
+- [x] SK/EN user, security, privacy a operations dokumentácia je aktualizovaná.
 
 ## Súvisiace
 

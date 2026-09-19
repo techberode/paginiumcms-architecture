@@ -14,7 +14,7 @@ describe('editor i18n module', () => {
 
     expect(translate('sk', 'editor.shell.createArticle')).toBe('Vytvoriť článok');
     expect(translate('en', 'editor.seo.seoTitle')).toBe('SEO title');
-    expect(translate('sk', 'editor.comments.title')).toBe('Komentáre k článku');
+    expect(translate('sk', 'editor.comments.title')).toBe('Diskusia k článku');
     expect(translate('en', 'editor.markdown.toast.saved')).toBe('Content saved');
     expect(translate('sk', 'editor.wysiwyg.blocked.images')).toBe(
       'Profil editora nepovoľuje obrázky.'
@@ -43,5 +43,7 @@ describe('editor i18n module', () => {
     expect(translate('en', 'editor.outline.fieldHelp.tag')).toContain('Filter sticker');
     expect(translate('en', 'editor.translation.applyDraft')).toBe('Apply as draft');
     expect(translate('sk', 'editor.translation.translateMissing')).toBe('Preložiť chýbajúce');
+    expect(translate('en', 'editor.agent.suggestSeo')).toBe('Suggest SEO for this article');
+    expect(translate('sk', 'editor.agent.apply')).toBe('Použiť vybrané');
   });
 });

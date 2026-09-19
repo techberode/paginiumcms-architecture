@@ -1,6 +1,6 @@
 # Iteration 75 — CMS-aware AI agent
 
-> **Status:** ⏳ planned; after It.73/76/77 stabilization  
+> **Status:** ✅ shipped `v2.1.0-beta.88` — proposals only, human Apply, default `enabled=false`  
 > **Priority:** 🔵 · optional enterprise capability  
 > **Wave:** [Hybrid Engine HE-6](ITERATION_WAVE_HYBRID_ENGINE.md)  
 > **Depends on:** [It.68](ITERATION_68.md), [It.73](ITERATION_73.md), a stable tool/provider contract; uses It.29 queue and It.66 write gates
@@ -80,6 +80,19 @@ Mandatory controls:
 | `AgentBudgetStore` | daily token/run budget as bounded flat-file operational state |
 | `agent.run` job | async execution; retry only for safe provider failures |
 | Apply service | explicit session/Bearer authorization, OCC, and audit |
+
+Shipped admin API (`Auth` + 2FA + `content:edit`):
+
+| Method | Path | Effect |
+|--------|------|--------|
+| GET | `/api/admin/agent/status` | enabled, provider, allow-list, quota |
+| POST | `/api/admin/agent/connection` | provider health (no prompt) |
+| POST | `/api/admin/agent/runs` | enqueue only — **202**, no LLM call |
+| GET | `/api/admin/agent/runs/{runId}` | run + proposal |
+| POST | `/api/admin/agent/runs/{runId}/execute` | worker loop (also job `agent.run`) |
+| POST | `/api/admin/agent/runs/{runId}/cancel` | cancel queued/running |
+| POST | `/api/admin/agent/proposals/{proposalId}/apply` | OCC write, never publish |
+| DELETE | `/api/admin/agent/proposals/{proposalId}` | discard |
 
 ---
 
@@ -182,14 +195,14 @@ Credentials are encrypted. A local provider URL on a LAN requires explicit outbo
 
 ## Definition of Done
 
-- [ ] “Suggest SEO for this article” creates an editable proposal without writing.
-- [ ] Apply is a separate authorized mutation with OCC/schema/audit.
-- [ ] The agent uses only allow-listed schema-bound tools.
-- [ ] Prompt-injection tests do not escalate tools or expose secrets.
-- [ ] Default `enabled=false`, `allowedTools=[]` means zero outbound traffic.
-- [ ] The async worker handles a long provider call without blocking HTTP.
-- [ ] The translation tool reuses It.76/77 rather than a duplicate provider stack.
-- [ ] SK/EN user, security, privacy, and operations documentation is updated.
+- [x] “Suggest SEO for this article” creates an editable proposal without writing.
+- [x] Apply is a separate authorized mutation with OCC/schema/audit.
+- [x] The agent uses only allow-listed schema-bound tools.
+- [x] Prompt-injection tests do not escalate tools or expose secrets.
+- [x] Default `enabled=false`, `allowedTools=[]` means zero outbound traffic.
+- [x] The async worker handles a long provider call without blocking HTTP.
+- [x] The translation tool reuses It.76/77 rather than a duplicate provider stack.
+- [x] SK/EN user, security, privacy, and operations documentation is updated.
 
 ## Related
 

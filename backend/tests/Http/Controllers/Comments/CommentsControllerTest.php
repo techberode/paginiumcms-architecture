@@ -114,6 +114,40 @@ class CommentsControllerTest extends TestCase
         ]));
     }
 
+    public function testDiscussionRatingRequiredWhenEnabled(): void
+    {
+        $settings = $this->app->getContainer()->get(SettingsRepositoryInterface::class);
+        $settings->setGroup('comments', array_merge($settings->group('comments'), [
+            'enabled' => true,
+            'requireApproval' => false,
+            'allowGuestComments' => true,
+            'ratingEnabled' => true,
+        ]));
+
+        $slug = 'rated-' . uniqid('', true);
+        $missing = $this->handleRequest($this->createJsonRequest('POST', '/api/comments', [
+            'articleSlug' => $slug,
+            'author' => 'Guest',
+            'email' => 'guest-rate@example.com',
+            'content' => 'The article helped me set up SMTP.',
+        ]));
+        $this->assertSame(422, $missing->getStatusCode());
+
+        $ok = $this->handleRequest($this->createJsonRequest('POST', '/api/comments', [
+            'articleSlug' => $slug,
+            'author' => 'Guest',
+            'email' => 'guest-rate@example.com',
+            'content' => 'The article helped me set up SMTP.',
+            'rating' => 5,
+        ]));
+        $this->assertSame(201, $ok->getStatusCode());
+        $this->assertSame(5, $this->getJsonResponse($ok)['data']['rating'] ?? null);
+
+        $settings->setGroup('comments', array_merge($settings->group('comments'), [
+            'ratingEnabled' => false,
+        ]));
+    }
+
     public function testApproveCommentWithOtpEnabled(): void
     {
         putenv('APP_ENV=testing');

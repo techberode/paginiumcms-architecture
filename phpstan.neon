@@ -21,5 +21,9 @@ parameters:
 
     phpVersion: 80500
 
+    # Sequential workers: parallel AppImage/node workers fail on some hosts (FUSE / php.ini).
+    parallel:
+        maximumNumberOfProcesses: 1
+
     ignoreErrors:
         # Legacy routes folder removed; public debug scripts excluded above.

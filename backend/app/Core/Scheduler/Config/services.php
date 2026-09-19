@@ -12,6 +12,7 @@ use PaginiumCMS\Core\Scheduler\Handlers\MaintenanceCleanupHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\MonitoringPipelineHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\SystemDeployHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\WebhookDeliveryHandler;
+use PaginiumCMS\Core\Scheduler\Handlers\AgentRunHandler;
 use PaginiumCMS\Modules\Newsletter\Handlers\NewsletterWeeklyDigestHandler;
 use PaginiumCMS\Core\Scheduler\Services\CronExpressionEvaluator;
 use PaginiumCMS\Core\Scheduler\Services\JobHandlerRegistry;
@@ -74,7 +75,8 @@ return [
             get(SystemDeployHandler::class),
             get(NewsletterWeeklyDigestHandler::class),
             get(GitPublishHandler::class),
-            get(WebhookDeliveryHandler::class)
+            get(WebhookDeliveryHandler::class),
+            get(AgentRunHandler::class)
         ),
     ScheduledJobRunner::class => create(ScheduledJobRunner::class)
         ->constructor(

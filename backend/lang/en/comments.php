@@ -23,4 +23,5 @@ return [
     'forbidden' => 'You cannot reply to this comment',
     'claimed' => 'This comment is already being handled',
     'replied' => 'Reply published',
+    'rating_required' => 'Rate the article from 1 to 5 stars together with your comment.',
 ];

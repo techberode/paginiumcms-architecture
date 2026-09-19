@@ -1,0 +1,12 @@
+# Auto-included by stack.sh when the host deploy-key file exists.
+# Do not copy the private key into this compose directory.
+secrets:
+  github_deploy_key:
+    file: ${GITHUB_DEPLOY_KEY_FILE:-/var/lib/paginiumcms/secrets/github_deploy_key}
+
+services:
+  php:
+    secrets:
+      - github_deploy_key
+    environment:
+      GITHUB_DEPLOY_SSH_KEY_PATH: /run/secrets/github_deploy_key

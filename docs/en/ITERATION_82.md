@@ -34,7 +34,7 @@ Ship an **Origin Panel** — an admin-only cockpit for the **project-owned** Pag
 
 | Artifact | Role | Origin uses |
 |----------|------|-------------|
-| `docs/manifest/project-catalog.json` | Product iteration progress, sub-items, weights, timeline | ✅ merged with probes |
+| `docs/manifest/project-catalog.json` | Product iteration progress, sub-items, weights, timeline, today snapshot | ✅ merged with probes |
 | Runtime probes | Wiring verification (routes, services) | ✅ auto status |
 | `docs/en/CHECKLIST.md` | Human **release gate** before tag (security, CI) | ❌ link only — not imported |
 | `ITERATION_BACKLOG.md` | Human planning doc | ❌ mirror via catalog |
@@ -62,7 +62,7 @@ In `APP_ENV=development`, private/LAN IPs are allowed when `ORIGIN_PANEL=true` (
 |--------|-------|----------|
 | `GET` | `/api/admin/origin/overview` | health, counts, probes, summary, catalog |
 | `GET` | `/api/admin/origin/probes` | probes + summary + catalog |
-| `GET` | `/api/admin/origin/catalog` | catalog merge only |
+| `GET` | `/api/admin/origin/catalog` | catalog merge only (includes `snapshot`) |
 
 Auth: `SUPER_ADMIN` + 2FA. Disabled gate → **404**.
 

@@ -13,6 +13,8 @@ class ContactControllerTest extends TestCase
         $request = $this->createJsonRequest('POST', '/api/contact', [
             'name' => 'Jane Doe',
             'email' => 'jane@example.com',
+            'phonePrefix' => '+421',
+            'phoneNumber' => '909554887',
             'subject' => 'Question',
             'message' => 'I would like to know more about your CMS.',
         ]);
@@ -28,6 +30,8 @@ class ContactControllerTest extends TestCase
     {
         $missing = $this->handleRequest($this->createJsonRequest('POST', '/api/contact', [
             'name' => 'Jane Doe',
+            'phonePrefix' => '+421',
+            'phoneNumber' => '909554887',
             'message' => 'I would like to know more about your CMS.',
         ]));
         $this->assertSame(422, $missing->getStatusCode());
@@ -35,6 +39,8 @@ class ContactControllerTest extends TestCase
         $disposable = $this->handleRequest($this->createJsonRequest('POST', '/api/contact', [
             'name' => 'Jane Doe',
             'email' => 'guest@mailinator.com',
+            'phonePrefix' => '+421',
+            'phoneNumber' => '909554887',
             'message' => 'I would like to know more about your CMS.',
         ]));
         $this->assertSame(422, $disposable->getStatusCode());
@@ -47,6 +53,8 @@ class ContactControllerTest extends TestCase
         $submit = $this->createJsonRequest('POST', '/api/contact', [
             'name' => 'Admin Test',
             'email' => 'admin-test@example.com',
+            'phonePrefix' => '+421',
+            'phoneNumber' => '909554887',
             'message' => 'Message for admin inbox test.',
         ]);
         $this->handleRequest($submit);
@@ -69,6 +77,8 @@ class ContactControllerTest extends TestCase
         $first = $this->handleRequest($this->createJsonRequest('POST', '/api/contact', [
             'name' => 'Jane Doe',
             'email' => $email,
+            'phonePrefix' => '+421',
+            'phoneNumber' => '909554887',
             'subject' => 'Technická podpora',
             'message' => 'Prvá správa pre vlákno formulára.',
         ]));
@@ -78,6 +88,8 @@ class ContactControllerTest extends TestCase
         $second = $this->handleRequest($this->createJsonRequest('POST', '/api/contact', [
             'name' => 'Jane Doe',
             'email' => $email,
+            'phonePrefix' => '+421',
+            'phoneNumber' => '909554887',
             'subject' => 'Technická podpora',
             'message' => 'Druhá správa dopĺňa rovnaké vlákno.',
         ]));
@@ -104,6 +116,8 @@ class ContactControllerTest extends TestCase
         $submit = $this->handleRequest($this->createJsonRequest('POST', '/api/contact', [
             'name' => 'Desk Guest',
             'email' => 'desk-guest-' . uniqid('', true) . '@example.com',
+            'phonePrefix' => '+421',
+            'phoneNumber' => '909554887',
             'subject' => 'Všeobecný dotaz',
             'message' => 'Potrebujem pomôcť s nastavením webu.',
         ]));
@@ -125,6 +139,46 @@ class ContactControllerTest extends TestCase
         $thread = $this->getJsonResponse($replied)['data']['thread'] ?? [];
         $this->assertIsArray($thread);
         $this->assertSame('staff', $thread[0]['authorType'] ?? null);
+    }
+
+    public function testSubmitRequiresE164Phone(): void
+    {
+        $missing = $this->handleRequest($this->createJsonRequest('POST', '/api/contact', [
+            'name' => 'Jane Doe',
+            'email' => 'jane-phone@example.com',
+            'message' => 'I would like to know more about your CMS.',
+        ]));
+        $this->assertSame(422, $missing->getStatusCode());
+        $this->assertArrayHasKey('phone', $this->getJsonResponse($missing)['errors'] ?? []);
+
+        $local = $this->handleRequest($this->createJsonRequest('POST', '/api/contact', [
+            'name' => 'Jane Doe',
+            'email' => 'jane-phone@example.com',
+            'phonePrefix' => '421',
+            'phoneNumber' => '909554887',
+            'message' => 'I would like to know more about your CMS.',
+        ]));
+        $this->assertSame(422, $local->getStatusCode());
+
+        $ok = $this->handleRequest($this->createJsonRequest('POST', '/api/contact', [
+            'name' => 'Jane Doe',
+            'email' => 'jane-phone@example.com',
+            'phone' => '+421909554887',
+            'message' => 'I would like to know more about your CMS.',
+        ]));
+        $this->assertSame(201, $ok->getStatusCode());
+
+        $this->loginAsAdminUser();
+        $inbox = $this->getJsonResponse($this->handleRequest($this->createJsonRequest('GET', '/api/admin/messages')));
+        $match = null;
+        foreach ($inbox['data']['items'] ?? [] as $item) {
+            if (is_array($item) && ($item['email'] ?? null) === 'jane-phone@example.com') {
+                $match = $item;
+                break;
+            }
+        }
+        $this->assertIsArray($match);
+        $this->assertSame('+421909554887', $match['phone'] ?? null);
     }
 
     public function testAdminCanSaveMessageRouting(): void
