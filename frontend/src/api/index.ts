@@ -94,6 +94,7 @@ import { categoriesApi } from './categories';
 import { codeEditorApi } from './codeEditor';
 import { comingSoonApi } from './comingSoon';
 import { contentApi } from './content';
+import { contentTranslationsApi } from './contentTranslations';
 import { demoApi } from './demo';
 import { eventsApi } from './events';
 import { extensionsApi } from './extensions';
@@ -136,6 +137,7 @@ export const api = {
   codeEditor: codeEditorApi,
   comingSoon: comingSoonApi,
   content: contentApi,
+  contentTranslations: contentTranslationsApi,
   demo: demoApi,
   events: eventsApi,
   extensions: extensionsApi,

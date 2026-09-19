@@ -162,6 +162,10 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+### Fixed
+
+- API barrel registers `contentTranslationsApi` as `api.contentTranslations` so `npm run lint:api-barrel` matches the It.76/77 client (CI after `beta.87`).
+
 ### Planning
 
 - **It.58f-h** — Visual block canvas (DnD stack). Spec: [ITERATION_58f.md](docs/en/ITERATION_58f.md).
