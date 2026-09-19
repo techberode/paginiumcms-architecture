@@ -33,6 +33,9 @@ export const contentEn: MessageTree = {
     updated: 'Updated',
     actions: 'Actions',
   },
+  git: {
+    pendingPublish: 'Pending Git',
+  },
   bulk: {
     publish: 'Publish',
     draft: 'Draft',

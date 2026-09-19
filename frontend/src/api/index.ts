@@ -20,6 +20,7 @@ export * from './comments';
 export * from './conflicts';
 export * from './contact';
 export * from './content';
+export * from './contentTranslations';
 export * from './counts';
 export * from './dashboard';
 export * from './demo';

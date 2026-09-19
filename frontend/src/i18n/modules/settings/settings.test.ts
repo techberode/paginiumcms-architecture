@@ -57,6 +57,18 @@ describe('settings i18n module', () => {
     expect(SETTINGS_CATEGORIES.find((category) => category.id === 'system')?.groups).toContain(
       'imap'
     );
+    expect(SETTINGS_CATEGORIES.find((category) => category.id === 'site')?.groups).toContain(
+      'translation'
+    );
+    expect(translate('en', 'settings.groups.translation')).toBe('Assisted translation');
+    expect(translate('sk', 'settings.fields.translation.enabled.label')).toBe(
+      'Povoliť asistovaný preklad'
+    );
+    expect(translate('en', 'settings.translation.instanceRequired')).toContain('own');
+    expect(translate('sk', 'settings.translation.instanceRequired')).toContain('vlastnú');
+    expect(translate('en', 'settings.enum.provider.deepl')).toBe('DeepL');
+    expect(translate('en', 'settings.enum.provider.google')).toContain('Google');
+    expect(translate('sk', 'settings.fields.translation.deeplApiKey.label')).toBe('DeepL API kľúč');
     expect(translate('en', 'settings.fields.general.language.label')).toBe('Admin language');
     expect(translate('en', 'settings.enum.language.sk')).toBe('Slovak');
     expect(translate('sk', 'settings.fields.login.backgroundPicker.pickFromMedia')).toBe(

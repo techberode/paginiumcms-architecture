@@ -1,11 +1,17 @@
 import { apiClient } from './client';
 
+export interface GitPublishPendingItem {
+  id: string;
+  resourcePath: string;
+  status: string;
+}
+
 export interface GitPublishStatus {
   enabled: boolean;
   strategy: 'disabled' | 'immediate' | 'queued';
   publisher: string;
   pendingCount: number;
-  pending: Array<Record<string, unknown>>;
+  pending: GitPublishPendingItem[];
   publisherStatus: Record<string, unknown>;
 }
 

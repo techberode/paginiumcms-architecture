@@ -1,6 +1,6 @@
 # Iteration 77 — assisted translation through cloud providers
 
-> **Status:** ⏳ planned  
+> **Status:** 🟡 foundation in tree (DeepL + Google API-key drivers; same It.76 editor)  
 > **Priority:** 🔵  
 > **Wave:** [Hybrid Engine HE-6](ITERATION_WAVE_HYBRID_ENGINE.md)  
 > **Depends on:** [It.76](ITERATION_76.md)
@@ -148,13 +148,15 @@ The editor uses exactly the same Translate → Diff → Apply interface as It.76
 
 ## Definition of Done
 
-- [ ] At least two cloud drivers pass the shared mocked contract suite.
-- [ ] Provider changes through settings without deployment or a second UI.
-- [ ] Credentials are encrypted, write-only, and rotatable.
-- [ ] Error/failover/privacy policy is explicit and audited.
-- [ ] The editor proposal workflow is identical to It.76.
-- [ ] Classic/disabled performs no outbound request.
-- [ ] SK/EN admin and security documentation contains no stale price/free-tier promise.
+- [x] At least two cloud drivers pass the shared mocked contract suite.
+- [x] Provider changes through settings without deployment or a second UI.
+- [x] Credentials are encrypted, write-only, and rotatable.
+- [x] Error/failover/privacy policy is explicit and audited.
+- [x] The editor proposal workflow is identical to It.76.
+- [x] Classic/disabled performs no outbound request.
+- [x] SK/EN admin and security documentation contains no stale price/free-tier promise.
+
+**Remainder:** service-account JSON for Google v3; vendor usage metadata beyond the internal character quota.
 
 ## Follow-up
 

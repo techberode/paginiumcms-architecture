@@ -1,6 +1,6 @@
 # Iteration 76 — assisted translation through a self-hosted provider
 
-> **Status:** ⏳ planned  
+> **Status:** 🟡 foundation in tree (sync proposal + Apply draft; async `content.translate` job later)  
 > **Priority:** 🔵  
 > **Wave:** [Hybrid Engine HE-6](ITERATION_WAVE_HYBRID_ENGINE.md)  
 > **Depends on:** [It.73](ITERATION_73.md)  
@@ -48,10 +48,14 @@ A translation request must not bypass It.73 lock/OCC. If the source changes whil
 
 ```http
 POST /api/admin/content/{type}/{slug}/translations
-GET  /api/admin/translations/{jobId}
-POST /api/admin/translations/{jobId}/apply
-DELETE /api/admin/translations/{jobId}
+GET  /api/admin/content-translations/status
+POST /api/admin/content-translations/connection
+GET  /api/admin/content-translations/{jobId}
+POST /api/admin/content-translations/{jobId}/apply
+DELETE /api/admin/content-translations/{jobId}
 ```
+
+Job routes live under `/api/admin/content-translations` so they do not collide with the It.18d catalog editor at `/api/admin/translations`.
 
 The create body includes `sourceLocale`, `targetLocales`, `fields`, and `sourceRevision`. Apply requires the same revision or an explicitly resolved conflict.
 
@@ -82,6 +86,7 @@ translation:
   timeoutSeconds: 15
 ```
 
+- **Own instance required:** PaginiumCMS does not ship or host LibreTranslate. Active `libretranslate` translation needs an administrator-operated (or compatible) HTTP instance and its `baseUrl`. The official hosted LibreTranslate.com API is a third-party service (typically paid) and is not included.
 - The API key is encrypted and write-only in frontend responses.
 - `baseUrl` passes `OutboundUrlGuard`.
 - A provider on a LAN/private range requires explicit administrator approval in the outbound allow-list; general private-IP access is prohibited.
@@ -156,13 +161,15 @@ Settings → Translation provides URL, write-only credential field, connection t
 
 ## Definition of Done
 
-- [ ] A self-hosted provider creates an SK→EN draft proposal in the editor.
-- [ ] Apply writes through It.73 schema/OCC and audits `content.translated`.
-- [ ] Publish is not part of Apply.
-- [ ] Provider URL, secrets, quota, and logging have security tests.
-- [ ] The shared provider interface is ready for It.77.
-- [ ] Classic/disabled has no outbound traffic or mandatory service.
-- [ ] SK/EN user, security, and deployment documentation is updated.
+- [x] A self-hosted provider creates an SK→EN draft proposal in the editor.
+- [x] Apply writes through It.73 schema/OCC and audits `content.translated`.
+- [x] Publish is not part of Apply.
+- [x] Provider URL, secrets, quota, and logging have security tests.
+- [x] The shared provider interface is ready for It.77.
+- [x] Classic/disabled has no outbound traffic or mandatory service.
+- [x] SK/EN user, security, and deployment documentation is updated.
+
+**Remainder:** It.29 `content.translate` worker for long requests; Tiptap JSON text-node allow-list (Markdown/HTML placeholders ship now).
 
 ## Follow-ups
 

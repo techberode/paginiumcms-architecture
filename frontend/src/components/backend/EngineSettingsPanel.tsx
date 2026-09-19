@@ -3,6 +3,7 @@ import { useI18n } from '../../context/I18nContext';
 import { useToast } from '../../hooks/useToast';
 import type { EngineSettingsMeta } from '../../api/settings';
 import { activateQueryIndexDriver, rebuildQueryIndex } from '../../api/queryIndex';
+import { GitPublishPanel } from './GitPublishPanel';
 
 interface Props {
   meta: EngineSettingsMeta | null;
@@ -195,6 +196,8 @@ export const EngineSettingsPanel: React.FC<Props> = ({ meta, onRefresh }) => {
           <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{meta.gitProbe.message}</p>
         </>
       ) : null}
+
+      <GitPublishPanel />
 
       <h5 className="mt-4 text-sm font-semibold text-gray-900 dark:text-white">
         {t('settings.engine.performanceGuardTitle')}

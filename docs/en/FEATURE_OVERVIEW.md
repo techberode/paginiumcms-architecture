@@ -120,7 +120,7 @@
 | Notifications | ✅ | SMTP, ntfy, Discord, Telegram, webhook |
 | Monitoring reports | ✅ | scheduled HTML reports; cron required |
 | WAF | ✅ | detection, jail/ban, admin UI |
-| GitHub content sync | ✅ partial toward target | content integration; not the full It.70 Git publisher |
+| GitHub content sync | ✅ | It.70 local + `github_api` publisher + Publish release UI (`beta.87`) |
 | System update | ✅ | version check, tag deployment, optional webhook |
 | Demo sandbox | ✅ | isolated demo mode and reset |
 | Setup wizard | ✅ M1+ | It.25 `beta.62`–`beta.65` — `/setup` with server preflight, infra defaults; `first-run.sh` CLI fallback |
@@ -171,7 +171,7 @@ The Hybrid Engine must not weaken this baseline. New drivers use the existing do
 | File/memory cache | ✅ | unify in It.69 |
 | Redis | ❌ | optional It.69 driver |
 | HTTP validators | ❌ | `ETag`/`Last-Modified` in It.69 |
-| Git publishing | 🟡 foundation shipped | immediate/queued via It.70 API; UI modal + It.48 hook deferred |
+| Git publishing | ✅ | local + `github_api` (`beta.87`); It.48 static hook still later |
 | APM | ❌ | Performance Guard in It.71 |
 | S3 media | 🟡 partial | It.72 MVP local |
 | Video in media | ✅ | It.79 (`beta.71`) |
@@ -179,8 +179,8 @@ The Hybrid Engine must not weaken this baseline. New drivers use the existing do
 | Multi-locale document | ❌ | It.73 |
 | API keys/JWT | ❌ | It.74 |
 | AI agent | ❌ | It.75 |
-| Self-hosted translation | ❌ | It.76 |
-| Cloud translation | ❌ | It.77 |
+| Self-hosted translation | 🟡 foundation | It.76 (`beta.87`) — own LibreTranslate instance required; Apply = draft |
+| Cloud translation | 🟡 foundation | It.77 (`beta.87`) — DeepL/Google API keys, fixed hosts |
 
 ---
 

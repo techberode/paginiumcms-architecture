@@ -33,6 +33,9 @@ export const contentSk: MessageTree = {
     updated: 'Upravené',
     actions: 'Akcie',
   },
+  git: {
+    pendingPublish: 'Čaká na Git',
+  },
   bulk: {
     publish: 'Publikovať',
     draft: 'Koncept',

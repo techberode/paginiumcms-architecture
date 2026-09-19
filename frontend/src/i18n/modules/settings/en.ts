@@ -87,6 +87,7 @@ export const settingsEn: MessageTree = {
     "systemUpdate": "System update (deploy)",
     "codePolicy": "Code policy",
     "engine": "Hybrid Engine",
+    "translation": "Assisted translation",
     "comments": "Comments",
     "contact": "Contact form",
     "newsletter": "Newsletter",
@@ -131,6 +132,19 @@ export const settingsEn: MessageTree = {
     "linkChangelog": "Changelog (release history)",
     "footer": "Version updates with each release tag. This section is read-only."
   },
+  "translation": {
+    "privacyWarning": "The provider receives only the selected title, body, and SEO fields — never secrets, logs, or the full admin document. Disabled means zero outbound traffic.",
+    "instanceRequired": "LibreTranslate is not bundled. That provider needs your own (or compatible) instance and its base URL. The official hosted LibreTranslate.com API is a third-party paid service — not included.",
+    "cloudWarning": "DeepL and Google send only the selected title, body, and SEO fields to that vendor. Endpoints are fixed (no custom URL). Pricing and terms are external — the CMS does not promise a free tier. Apply still stores a draft only.",
+    "quotaLabel": "Today’s quota",
+    "quotaUnlimited": "Unlimited",
+    "quotaUsed": ":used / :limit characters",
+    "testConnection": "Test connection",
+    "testing": "Testing…",
+    "testOk": "Provider is reachable",
+    "testFailed": "Provider is offline or rejected the request",
+    "loadFailed": "Could not load translation status"
+  },
   "engine": {
     "probeTitle": "Engine capability probe",
     "probeIntro": "Current deployment profile and installed Hybrid Engine capabilities. Future modes are shown as unavailable — not as working switches.",
@@ -142,6 +156,21 @@ export const settingsEn: MessageTree = {
     "gitProbeTitle": "Git publish probe",
     "gitProbeStatus": "Git publish status",
     "gitProbeStrategy": "Configured strategy",
+    "gitPublishTitle": "Publish release",
+    "gitPublishIntro": "CMS files stay on disk. This only sends queued pages/blog files to Git (local binary or GitHub API).",
+    "gitPublishDriver": "Publisher",
+    "gitPublishPending": "Pending files",
+    "gitPublishEmpty": "No queued Git changes.",
+    "gitPublishRun": "Publish release",
+    "gitPublishWorking": "Publishing…",
+    "gitPublishLoading": "Loading Git publish status…",
+    "gitPublishLoadFailed": "Could not load Git publish status.",
+    "gitPublishSuccess": "Git release published.",
+    "gitPublishFailed": "Git publish failed. The CMS document is still stored.",
+    "gitPublishConfirmTitle": "Publish Git release?",
+    "gitPublishConfirmBody": "Create one release commit for :count queued file(s). SSOT is already saved.",
+    "gitPublishConfirmAction": "Create release commit",
+    "gitPublishImmediateHint": "Immediate strategy commits on each save. Switch to queued to batch a release.",
     "performanceGuardTitle": "Performance Guard (APM)",
     "performanceGuardIntro": "In-request latency and I/O sampling. Disabled by default — tune budgets for your hardware. Does not replace host metrics.",
     "performanceGuardOverhead": "Overhead grows with sample rate; ring buffer retains the latest 500 route templates without content payloads.",
@@ -611,6 +640,55 @@ export const settingsEn: MessageTree = {
       "profileCustomComponents": {
         "label": "Custom components by profile (JSON)",
         "help": "Managed in the matrix below."
+      }
+    },
+    "translation": {
+      "enabled": {
+        "label": "Enable assisted translation",
+        "help": "Off = no outbound requests. On = the editor can request a review proposal. LibreTranslate needs your own instance. DeepL/Google need a vendor API key. Apply stores a draft only."
+      },
+      "provider": {
+        "label": "Translation provider",
+        "help": "none = manual only. libretranslate = your own instance + URL. deepl / google = vendor API key on a fixed HTTPS host. Pricing is external."
+      },
+      "baseUrl": {
+        "label": "LibreTranslate base URL",
+        "help": "Required only for LibreTranslate: URL of your instance (e.g. https://translate.example.com), without /translate. Ignored for DeepL/Google."
+      },
+      "apiKey": {
+        "label": "LibreTranslate API key",
+        "help": "Optional LibreTranslate api_key. Encrypted at rest. Write-only after save."
+      },
+      "deeplApiKey": {
+        "label": "DeepL API key",
+        "help": "Encrypted at rest. Keys ending in :fx use the DeepL free endpoint. Never returned after save."
+      },
+      "googleApiKey": {
+        "label": "Google Translation API key",
+        "help": "Cloud Translation v2 API key. Encrypted at rest. Endpoint is fixed to translation.googleapis.com."
+      },
+      "googleProjectId": {
+        "label": "Google Cloud project ID",
+        "help": "Optional admin reference. The v2 API-key driver does not upload a service-account JSON."
+      },
+      "fallbackEnabled": {
+        "label": "Enable explicit failover",
+        "help": "Off = never switch providers. On = if the primary is unavailable or rate-limited, try the fallback. Auth failures never fail over."
+      },
+      "fallbackProvider": {
+        "label": "Fallback provider",
+        "help": "Used only when failover is on and differs from the primary."
+      },
+      "dailyCharLimit": {
+        "label": "Daily character quota",
+        "help": "0 = unlimited. Counted on source characters sent to the provider."
+      },
+      "overwriteExisting": {
+        "label": "Overwrite existing locales",
+        "help": "Off = translate missing locales only. On = a reviewed proposal may replace filled locales (still as draft)."
+      },
+      "timeoutSeconds": {
+        "label": "Provider timeout (seconds)"
       }
     },
     "navigationUi": {
@@ -1571,8 +1649,18 @@ export const settingsEn: MessageTree = {
       },
       "gitPublisher": {
         "label": "Git publisher driver",
-        "help": "local = server git binary. github_api deferred in this release.",
-        "tooltip": "Publish runs on the server filesystem only. github_api requires token and outbound network — not active yet."
+        "help": "local = server git binary. github_api = GitHub Git Data API (token + owner/name).",
+        "tooltip": "local needs a writable working tree on the server. github_api reads SSOT from disk and creates the remote commit — token is encrypted at rest and never shown again."
+      },
+      "gitGithubRepository": {
+        "label": "GitHub repository (owner/name)",
+        "help": "Required for github_api. Example: acme/site-content.",
+        "tooltip": "Must match owner/name. Used only as the GitHub API path — not a shell fragment."
+      },
+      "gitGithubToken": {
+        "label": "GitHub publish token",
+        "help": "Token with contents:write on the publish repository. Encrypted at rest.",
+        "tooltip": "Separate from the system-update deploy token when you want content distribution to a different repo. Never logged."
       },
       "gitRepositoryPath": {
         "label": "Git repository path",
@@ -1864,6 +1952,18 @@ export const settingsEn: MessageTree = {
     "gitPublisher": {
       "local": "Local git",
       "github_api": "GitHub API"
+    },
+    "provider": {
+      "none": "None (manual)",
+      "libretranslate": "LibreTranslate (own instance)",
+      "deepl": "DeepL",
+      "google": "Google Cloud Translation"
+    },
+    "fallbackProvider": {
+      "none": "None",
+      "libretranslate": "LibreTranslate (own instance)",
+      "deepl": "DeepL",
+      "google": "Google Cloud Translation"
     },
     "performanceGuardRemediationMode": {
       "off": "Off",

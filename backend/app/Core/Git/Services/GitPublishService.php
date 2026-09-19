@@ -20,6 +20,7 @@ final class GitPublishService
         private PublishQueueStore $queue,
         private PublishPlanner $planner,
         private LocalGitPublisher $localPublisher,
+        private GitHubApiPublisher $githubPublisher,
         private GitPathValidator $paths,
         private LoggerInterface $logger,
     ) {
@@ -31,12 +32,12 @@ final class GitPublishService
     public function status(): array
     {
         $publisherStatus = [];
-        if ($this->gitSettings->isActive() && $this->gitSettings->publisher() === 'local') {
+        if ($this->gitSettings->isActive()) {
             try {
-                $publisherStatus = $this->localPublisher->status();
+                $publisherStatus = $this->resolvePublisher()->status();
             } catch (\Throwable $e) {
                 $publisherStatus = [
-                    'publisher' => 'local',
+                    'publisher' => $this->gitSettings->publisher(),
                     'repositoryConfigured' => false,
                     'error' => $e->getMessage(),
                 ];
@@ -198,10 +199,8 @@ final class GitPublishService
 
     private function resolvePublisher(): GitPublisherInterface
     {
-        if ($this->gitSettings->publisher() !== 'local') {
-            throw new RuntimeException('Only local Git publisher is available in this release.');
-        }
-
-        return $this->localPublisher;
+        return $this->gitSettings->publisher() === 'github_api'
+            ? $this->githubPublisher
+            : $this->localPublisher;
     }
 }

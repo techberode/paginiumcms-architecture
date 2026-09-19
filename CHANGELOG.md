@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.87`](#release-2-1-0-beta-87) | 2026-09-19 | It.70 GitHub API publisher · It.76/77 assisted translation · outbound grep allow-list |
 | [`2.1.0-beta.86`](#release-2-1-0-beta-86) | 2026-09-19 | It.93o-2–8 desk/staff/external team · It.96 document library · CI media/webhook/shortcode |
 | [`2.1.0-beta.85`](#release-2-1-0-beta-85) | 2026-09-18 | Hotfix — SQLite FTS search token sanitization (CI) |
 | [`2.1.0-beta.84`](#release-2-1-0-beta-84) | 2026-09-18 | Hotfix — admin deploy GitHub token · It.92 SQLite FTS + activate probe · API barrel |
@@ -165,7 +166,36 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 - **It.58f-h** — Visual block canvas (DnD stack). Spec: [ITERATION_58f.md](docs/en/ITERATION_58f.md).
 - **It.95** — Sandpack playground + private component registry. Spec: [ITERATION_95.md](docs/en/ITERATION_95.md).
-- **Queue:** **It.70** → 76/77 → 75 → 48 (58g with 48). Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+- **Queue:** **It.75** → 48 (58g with 48). Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+
+---
+
+<a id="release-2-1-0-beta-87"></a>
+
+## [2.1.0-beta.87] – 2026-09-19
+
+Ships the remaining **It.70** GitHub API publisher + Publish release UI, **It.76** self-hosted LibreTranslate proposals, and **It.77** DeepL/Google drivers on the same editor workflow. Apply never publishes. Also allow-lists the new outbound clients in `security-static-grep` (they already call `OutboundUrlGuard`).
+
+Docs: [ITERATION_70.md](docs/en/ITERATION_70.md) · [ITERATION_76.md](docs/en/ITERATION_76.md) · [ITERATION_77.md](docs/en/ITERATION_77.md) · [RELEASE_2_1_0_BETA_87.md](docs/en/RELEASE_2_1_0_BETA_87.md)
+
+### Added — It.70 GitHub API publisher
+
+- `GitHubApiPublisher` creates one remote commit via the Git Data API (`OutboundUrlGuard`, encrypted `engine.gitGithubToken`, `owner/name` repo). Settings accept `gitPublisher=github_api`. Settings → Engine shows a **Publish release** panel (preview paths, queued commit). Pages/articles list a `pending_publish` badge. Local git publisher is unchanged. Git failure still does not roll back SSOT.
+
+### Added — It.76 / It.77 assisted translation
+
+- Settings → Translation (`enabled` default off). Providers: `none | libretranslate | deepl | google`.
+- **LibreTranslate requires your own (or compatible) instance** — the CMS does not bundle or host the translator; hosted LibreTranslate.com is a third-party paid API.
+- DeepL and Google use **fixed vendor HTTPS hosts** (no custom URL). Encrypted `deeplApiKey` / `googleApiKey` (write-only).
+- Editor **Translate missing** creates a review proposal via `POST /api/admin/content/{type}/{slug}/translations`. Apply writes an It.73 locale **draft** only (`content.translated` audit, no publish).
+- Job routes are `/api/admin/content-translations/*` so they do not collide with the It.18d catalog editor.
+- Optional explicit failover (`fallbackEnabled` + `fallbackProvider`) for unavailable/429 only — never on auth failure; audited as `content.translation_fallback`.
+- Disabled = zero outbound. Daily character quota. No free-tier/price promise. CI uses mocked HTTP only.
+
+### Fixed
+
+- `security-static-grep` allow-list includes `GitHubApiClient` and `TranslationHttpClient` (both already call `OutboundUrlGuard` before `curl_init`).
+- PHPStan L8 on `GitHubApiClient`: allow-listed HTTP verbs + string-keyed JSON decode.
 
 ---
 

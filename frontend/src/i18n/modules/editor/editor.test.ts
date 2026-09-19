@@ -41,5 +41,7 @@ describe('editor i18n module', () => {
     expect(translate('en', 'editor.shell.builderHelp.developer')).toContain('live preview');
     expect(translate('sk', 'editor.outline.fieldHelp.tag')).toContain('Nálepka');
     expect(translate('en', 'editor.outline.fieldHelp.tag')).toContain('Filter sticker');
+    expect(translate('en', 'editor.translation.applyDraft')).toBe('Apply as draft');
+    expect(translate('sk', 'editor.translation.translateMissing')).toBe('Preložiť chýbajúce');
   });
 });

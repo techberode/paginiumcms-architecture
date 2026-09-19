@@ -87,6 +87,7 @@ export const settingsSk: MessageTree = {
     "systemUpdate": "Aktualizácia systému (deploy)",
     "codePolicy": "Politika kódu",
     "engine": "Hybridný engine",
+    "translation": "Asistovaný preklad",
     "comments": "Komentáre",
     "contact": "Kontaktný formulár",
     "newsletter": "Newsletter",
@@ -131,6 +132,19 @@ export const settingsSk: MessageTree = {
     "linkChangelog": "Changelog (história verzií)",
     "footer": "Verzia sa aktualizuje pri release tagu. Táto sekcia je len na čítanie."
   },
+  "translation": {
+    "privacyWarning": "Poskytovateľ dostane len vybrané polia titulku, tela a SEO — nikdy tajomstvá, logy ani celý admin dokument. Vypnuté = žiadna odchádzajúca prevádzka.",
+    "instanceRequired": "LibreTranslate v CMS nie je. Tento provider vyžaduje vlastnú (alebo kompatibilnú) inštanciu a jej základnú URL. Oficiálne hostované LibreTranslate.com je platená služba tretej strany — v CMS nie je.",
+    "cloudWarning": "DeepL a Google pošlú len vybrané polia titulku, tela a SEO danému vendorovi. Endpointy sú pevné (žiadna vlastná URL). Ceny a podmienky sú externé — CMS nesľubuje free tier. Apply stále uloží len koncept.",
+    "quotaLabel": "Dnešná kvóta",
+    "quotaUnlimited": "Bez limitu",
+    "quotaUsed": ":used / :limit znakov",
+    "testConnection": "Otestovať pripojenie",
+    "testing": "Testujem…",
+    "testOk": "Poskytovateľ je dostupný",
+    "testFailed": "Poskytovateľ je offline alebo požiadavku odmietol",
+    "loadFailed": "Stav prekladu sa nepodarilo načítať"
+  },
   "engine": {
     "probeTitle": "Diagnostika schopností enginu",
     "probeIntro": "Aktuálny profil nasadenia a nainštalované schopnosti hybridného enginu. Budúce režimy sú zobrazené ako nedostupné — nie ako funkčné prepínače.",
@@ -141,6 +155,21 @@ export const settingsSk: MessageTree = {
     "cacheHealth": "Stav cache",
     "gitProbeTitle": "Git publish — diagnostika",
     "gitProbeStatus": "Stav Git publish",
+    "gitPublishTitle": "Publish release",
+    "gitPublishIntro": "Súbory CMS ostávajú na disku. Toto len odošle zaradené pages/blog súbory do Gitu (lokálny binary alebo GitHub API).",
+    "gitPublishDriver": "Ovládač",
+    "gitPublishPending": "Čakajúce súbory",
+    "gitPublishEmpty": "Žiadne zaradené Git zmeny.",
+    "gitPublishRun": "Publish release",
+    "gitPublishWorking": "Publikujem…",
+    "gitPublishLoading": "Načítavam stav Git publish…",
+    "gitPublishLoadFailed": "Stav Git publish sa nepodarilo načítať.",
+    "gitPublishSuccess": "Git release je publikovaný.",
+    "gitPublishFailed": "Git publish zlyhal. Dokument v CMS ostáva uložený.",
+    "gitPublishConfirmTitle": "Publikovať Git release?",
+    "gitPublishConfirmBody": "Vytvoriť jeden release commit pre :count zaradených súborov. SSOT je už uložené.",
+    "gitPublishConfirmAction": "Vytvoriť release commit",
+    "gitPublishImmediateHint": "Stratégia immediate commituje pri každom uložení. Pre dávku prepnite na queued.",
     "gitProbeStrategy": "Nastavená stratégia",
     "performanceGuardTitle": "Performance Guard (APM)",
     "performanceGuardIntro": "Meranie latencie a I/O v rámci requestu. Predvolene vypnuté — budgety nastavte podľa vlastného hardvéru. Nenahrádza metriky hostiteľa.",
@@ -613,6 +642,55 @@ export const settingsSk: MessageTree = {
         "help": "Spravuje sa v matici nižšie."
       }
     },
+    "translation": {
+      "enabled": {
+        "label": "Povoliť asistovaný preklad",
+        "help": "Vypnuté = žiadne odchádzajúce požiadavky. Zapnuté = editor vie vyžiadať návrh. LibreTranslate = vlastná inštancia. DeepL/Google = vendor API kľúč. Apply uloží len koncept."
+      },
+      "provider": {
+        "label": "Poskytovateľ prekladu",
+        "help": "none = len ručne. libretranslate = vlastná inštancia + URL. deepl / google = vendor API kľúč na pevnom HTTPS hoste. Ceny sú externé."
+      },
+      "baseUrl": {
+        "label": "LibreTranslate — základná URL",
+        "help": "Povinné len pre LibreTranslate: URL tvojej inštancie (napr. https://translate.example.com), bez /translate. Pri DeepL/Google sa ignoruje."
+      },
+      "apiKey": {
+        "label": "LibreTranslate API kľúč",
+        "help": "Voliteľný LibreTranslate api_key. Šifrovaný na disku. Po uložení sa do frontendu nevracia."
+      },
+      "deeplApiKey": {
+        "label": "DeepL API kľúč",
+        "help": "Šifrovaný na disku. Kľúč končiaci na :fx ide na DeepL free endpoint. Po uložení sa nevracia."
+      },
+      "googleApiKey": {
+        "label": "Google Translation API kľúč",
+        "help": "Cloud Translation v2 API kľúč. Šifrovaný na disku. Endpoint je pevný: translation.googleapis.com."
+      },
+      "googleProjectId": {
+        "label": "Google Cloud project ID",
+        "help": "Voliteľná referencia. V2 driver s API kľúčom neodosiela service-account JSON."
+      },
+      "fallbackEnabled": {
+        "label": "Povoliť explicitný failover",
+        "help": "Vypnuté = nikdy neprepína providera. Zapnuté = pri výpadku alebo 429 skúsi fallback. Auth zlyhanie failover nespustí."
+      },
+      "fallbackProvider": {
+        "label": "Záložný poskytovateľ",
+        "help": "Použije sa len keď je failover zapnutý a líši sa od primárneho."
+      },
+      "dailyCharLimit": {
+        "label": "Denná kvóta znakov",
+        "help": "0 = bez limitu. Počíta sa zdrojový text odoslaný poskytovateľovi."
+      },
+      "overwriteExisting": {
+        "label": "Prepísať existujúce jazyky",
+        "help": "Vypnuté = prekladá len chýbajúce locale. Zapnuté = schválený návrh môže nahradiť vyplnené locale (stále ako koncept)."
+      },
+      "timeoutSeconds": {
+        "label": "Timeout poskytovateľa (s)"
+      }
+    },
     "navigationUi": {
       "defaultPreviewScale": {
         "label": "Predvolená mierka hover náhľadu (×10)",
@@ -964,8 +1042,18 @@ export const settingsSk: MessageTree = {
       },
       "gitPublisher": {
         "label": "Ovládač Git publish",
-        "help": "local = git binary na serveri. github_api je v tomto release odložené.",
-        "tooltip": "Publish beží len na serveri. github_api vyžaduje token a outbound sieť — zatiaľ nie je aktívne."
+        "help": "local = git binary na serveri. github_api = GitHub Git Data API (token + owner/name).",
+        "tooltip": "local potrebuje zapisovateľný working tree. github_api číta SSOT z disku a vytvorí vzdialený commit — token je šifrovaný a znova sa nezobrazí."
+      },
+      "gitGithubRepository": {
+        "label": "GitHub repozitár (owner/name)",
+        "help": "Povinné pre github_api. Príklad: acme/site-content.",
+        "tooltip": "Len tvar owner/name. Používa sa ako cesta GitHub API, nie ako shell fragment."
+      },
+      "gitGithubToken": {
+        "label": "GitHub publish token",
+        "help": "Token s contents:write na publish repozitár. Šifrovaný v úložisku.",
+        "tooltip": "Oddelený od deploy tokenu System update, ak chcete obsah do iného repa. Nikdy do logu."
       },
       "gitRepositoryPath": {
         "label": "Cesta k Git repozitáru",
@@ -1864,6 +1952,18 @@ export const settingsSk: MessageTree = {
     "gitPublisher": {
       "local": "Lokálny git",
       "github_api": "GitHub API"
+    },
+    "provider": {
+      "none": "Žiadny (ručne)",
+      "libretranslate": "LibreTranslate (vlastná inštancia)",
+      "deepl": "DeepL",
+      "google": "Google Cloud Translation"
+    },
+    "fallbackProvider": {
+      "none": "Žiadny",
+      "libretranslate": "LibreTranslate (vlastná inštancia)",
+      "deepl": "DeepL",
+      "google": "Google Cloud Translation"
     },
     "performanceGuardRemediationMode": {
       "off": "Vypnuté",

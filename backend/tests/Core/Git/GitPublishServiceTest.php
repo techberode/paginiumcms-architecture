@@ -17,6 +17,7 @@ use PaginiumCMS\Core\Git\Services\PublishQueueStore;
 use PaginiumCMS\Core\Logging\Contracts\LoggerInterface;
 use PaginiumCMS\Core\Settings\Services\SettingsRepository;
 use PaginiumCMS\Core\Validation\Validator;
+use PaginiumCMS\Tests\Support\GitPublishTestHelper;
 use PaginiumCMS\Tests\Support\StorageTestHelper;
 use PHPUnit\Framework\TestCase;
 
@@ -153,9 +154,15 @@ final class GitPublishServiceTest extends TestCase
         $queue = new PublishQueueStore($reader, $writer);
         $planner = new PublishPlanner($settings);
         $publisher = new LocalGitPublisher($settings, new LocalGitProcess(), new GitPathValidator());
+        $github = new \PaginiumCMS\Core\Git\Services\GitHubApiPublisher(
+            $gitSettings,
+            new GitPathValidator(),
+            $reader,
+            GitPublishTestHelper::noopGithubTransport()
+        );
         $logger = $this->noopLogger();
 
-        return new GitPublishService($gitSettings, $queue, $planner, $publisher, new GitPathValidator(), $logger);
+        return new GitPublishService($gitSettings, $queue, $planner, $publisher, $github, new GitPathValidator(), $logger);
     }
 
     private function noopLogger(): LoggerInterface

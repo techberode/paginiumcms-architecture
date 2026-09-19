@@ -1,6 +1,6 @@
 # Iteration 70 — Git publish modes
 
-> **Status:** ✅ Shipped (foundation)  
+> **Status:** ✅ Shipped (foundation + github_api / Publish release UI)  
 > **Priority:** 🟡  
 > **Wave:** [Hybrid Engine HE-3](ITERATION_WAVE_HYBRID_ENGINE.md)  
 > **Release:** `v2.1.0-beta.27`  
@@ -143,7 +143,7 @@ Remote push and static build are separate steps. It.48 may trigger a build only 
 - [x] The local publisher and queue work without a remote service.
 - [x] Immediate and queued strategies have PHPUnit coverage (`GitPublishServiceTest`).
 - [x] Admin API distinguishes stored / pending_publish / committed / publish_failed states.
-- [ ] Full content-list UI and **Publish release** modal (API client shipped; admin UI deferred).
+- [x] Content-list `pending_publish` badges and **Publish release** panel (Settings → Engine).
 - [x] Retry endpoint reuses idempotent queued release publish.
 - [x] Command/path/remote security validation (`GitPathValidator` + regression tests).
 - [ ] It.48 uses the same publish contract rather than a parallel pipeline (deferred).
@@ -154,14 +154,16 @@ Remote push and static build are separate steps. It.48 may trigger a build only 
 
 | Area | Delivered |
 |------|-----------|
-| Core | `GitPublishService`, `LocalGitPublisher`, `PublishQueueStore`, `PublishPlanner`, `GitPublishDispatcher` |
+| Core | `GitPublishService`, `LocalGitPublisher`, `GitHubApiPublisher`, `PublishQueueStore`, `PublishPlanner`, `GitPublishDispatcher` |
 | Scheduler | `git.publish` handler via `GitPublishHandler` |
 | Admin API | `GET /api/admin/git/status`, preview, publish, retry (`git:publish`) |
-| Settings | `engine.git*` keys with encrypted-at-rest credentials pattern for future API publisher |
-| FE | `frontend/src/api/git.ts`, engine settings `gitProbe` in `EngineSettingsPanel` |
-| Tests | `GitPublishServiceTest`, `GitPublishTestHelper`, wiring in scheduler/content tests |
+| Settings | `engine.git*` keys; `gitGithubToken` encrypted at rest; `gitPublisher` `local` \| `github_api` |
+| FE | `frontend/src/api/git.ts`, Engine **Publish release** panel, content-list pending badges |
+| Tests | `GitPublishServiceTest`, `GitHubApiPublisherTest`, `GitPublishPanel.test.tsx` |
 
-**Deferred:** `github_api` publisher, remote push e2e in CI, content-list publish badges, It.48 static render hook.
+**Deferred:** remote push e2e against live GitHub in CI, It.48 static render hook.
+
+**70-ui / github_api (this slice):** `GitHubApiPublisher` (Git Data API, `OutboundUrlGuard`, encrypted `gitGithubToken`), Settings allow `github_api`, Engine **Publish release** panel, content-list `pending_publish` badges.
 
 ## Related
 

@@ -1,5 +1,5 @@
 // frontend/src/components/backend/PagesManager.tsx
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useApi } from '../../hooks/useApi';
 import { useToast } from '../../hooks/useToast';
@@ -28,6 +28,7 @@ import { SortableTableHeader } from './SortableTableHeader';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { contentApi } from '../../api/content';
+import { gitApi } from '../../api/git';
 import { summarizeBulkResult } from '../../types/bulk';
 import { getContentSeoHealth } from '../../utils/seoHealth';
 import { bulkSelectionCounts } from '../../utils/bulkSelectionLabel';
@@ -179,6 +180,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
   const [previewLoadingSlug, setPreviewLoadingSlug] = useState<string | null>(null);
   const [bulkTagsOpen, setBulkTagsOpen] = useState(false);
   const [saveViewOpen, setSaveViewOpen] = useState(false);
+  const [gitPendingPaths, setGitPendingPaths] = useState<Set<string>>(new Set());
   const { user } = useAuth();
   const { get, delete: del } = useApi();
   const toast = useToast();
@@ -194,6 +196,37 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
   } = useContentSavedViews(user?.id, type);
   const isMobile = useMediaQuery('(max-width: 767px)');
   const { mode: viewMode, setMode: setViewMode } = useAdminViewMode(section, 'list');
+
+  useEffect(() => {
+    const canSeeGit =
+      user?.permissions?.includes('git:publish') ||
+      user?.roles?.some((role) => role === 'ADMIN' || role === 'SUPER_ADMIN');
+    if (!canSeeGit) {
+      return;
+    }
+    void gitApi.status().then((res) => {
+      if (!res.success || !res.data?.enabled) {
+        return;
+      }
+      const paths = new Set(
+        (res.data.pending ?? [])
+          .map((item) => item.resourcePath)
+          .filter((path): path is string => typeof path === 'string' && path !== '')
+      );
+      setGitPendingPaths(paths);
+    });
+  }, [user]);
+
+  const isPendingGit = useCallback(
+    (item: ContentItem): boolean => {
+      if (item.path && gitPendingPaths.has(item.path)) {
+        return true;
+      }
+      const prefix = type === 'articles' ? 'blog/' : 'pages/';
+      return gitPendingPaths.has(`${prefix}${item.slug}.json`) || gitPendingPaths.has(`${prefix}${item.slug}.md`);
+    },
+    [gitPendingPaths, type]
+  );
 
   const endpoint = type === 'articles' ? '/api/articles' : '/api/pages';
   const routeBase = type === 'articles' ? 'articles' : 'pages';
@@ -596,6 +629,9 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                   <p className="text-xs text-gray-500 truncate">/{listSlug || '—'}</p>
                   <div className="flex flex-wrap items-center gap-2">
                     <span className={getStatusBadge(item.status)}>{statusLabel(item.status)}</span>
+                    {isPendingGit(item) ? (
+                      <span className="admin-chip text-xs">{t('content.git.pendingPublish')}</span>
+                    ) : null}
                     <LocaleStatusBadges
                       localeStatus={item.localeStatus}
                       statusLabels={editorStatusLabels}
@@ -755,6 +791,9 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
                         <td>
                           <div className="flex flex-col gap-1">
                             <span className={getStatusBadge(item.status)}>{statusLabel(item.status)}</span>
+                            {isPendingGit(item) ? (
+                              <span className="admin-chip text-xs">{t('content.git.pendingPublish')}</span>
+                            ) : null}
                             <LocaleStatusBadges
                               localeStatus={item.localeStatus}
                               statusLabels={editorStatusLabels}

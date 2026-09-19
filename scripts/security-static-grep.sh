@@ -9,7 +9,7 @@ cd "$ROOT"
 
 # Files allowed to call curl_*/file_get_contents for HTTP without inline Guard
 # (they must still gate via OutboundUrlGuard elsewhere in the same class).
-ALLOW_REGEX='(OutboundUrlGuard\.php|GitHubService\.php|GitHubReleaseClient\.php|OAuthSsoService\.php|SystemDeployTriggerService\.php|GeoIp|Ntfy|Discord|Webhook|HttpClient|file_get_contents\(.*__DIR__|file_get_contents\(\$path|file_get_contents\(\$full)'
+ALLOW_REGEX='(OutboundUrlGuard\.php|GitHubService\.php|GitHubApiClient\.php|GitHubReleaseClient\.php|OAuthSsoService\.php|SystemDeployTriggerService\.php|TranslationHttpClient\.php|GeoIp|Ntfy|Discord|Webhook|HttpClient|file_get_contents\(.*__DIR__|file_get_contents\(\$path|file_get_contents\(\$full)'
 
 hits="$(rg -n --glob '*.php' -e 'curl_exec\s*\(|curl_init\s*\(|file_get_contents\s*\(\s*['\''\"]https?://' backend/app 2>/dev/null || true)"
 
@@ -27,7 +27,7 @@ while IFS= read -r line; do
     continue
   fi
   # Services known to call assertAllowed before fetch
-  if echo "$file" | rg -q '(OAuthSsoService|GitHubService|GitHubReleaseClient|SystemDeploy|Notification|Ntfy|Discord|Webhook|GeoIp|IpApi|HttpOutbound)'; then
+  if echo "$file" | rg -q '(OAuthSsoService|GitHubService|GitHubApiClient|GitHubReleaseClient|SystemDeploy|Notification|Ntfy|Discord|Webhook|GeoIp|IpApi|HttpOutbound|TranslationHttpClient)'; then
     continue
   fi
   bad+="$line"$'\n'

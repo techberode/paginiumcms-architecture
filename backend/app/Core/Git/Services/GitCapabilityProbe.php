@@ -32,6 +32,46 @@ final class GitCapabilityProbe
             ];
         }
 
+        if ($this->gitSettings->publisher() === 'github_api') {
+            $repo = $this->gitSettings->githubRepository();
+            $token = $this->gitSettings->githubToken();
+            if ($repo === '' || $token === '') {
+                return [
+                    'status' => 'misconfigured',
+                    'message' => 'GitHub API publisher requires owner/name repository and a token.',
+                    'details' => [
+                        'strategy' => $this->gitSettings->strategy(),
+                        'publisher' => 'github_api',
+                        'repositoryConfigured' => $repo !== '',
+                    ],
+                ];
+            }
+
+            try {
+                $this->gitSettings->githubOwnerRepo();
+                $this->paths->assertSafeRef($this->gitSettings->branch(), 'branch');
+            } catch (\Throwable $e) {
+                return [
+                    'status' => 'misconfigured',
+                    'message' => $e->getMessage(),
+                    'details' => [
+                        'strategy' => $this->gitSettings->strategy(),
+                        'publisher' => 'github_api',
+                    ],
+                ];
+            }
+
+            return [
+                'status' => 'available',
+                'message' => 'GitHub API publisher is configured.',
+                'details' => [
+                    'strategy' => $this->gitSettings->strategy(),
+                    'publisher' => 'github_api',
+                    'repositoryConfigured' => true,
+                ],
+            ];
+        }
+
         if (!$this->process->isAvailable()) {
             return [
                 'status' => 'unavailable',

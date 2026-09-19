@@ -108,6 +108,7 @@ interface ContentEditorShellProps {
   localeOptions?: string[];
   localeStatusMap?: Record<string, ContentEditorStatus>;
   onLocaleChange?: (locale: string) => void;
+  localeExtra?: React.ReactNode;
 }
 
 export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
@@ -163,6 +164,7 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
   localeOptions = [],
   localeStatusMap = {},
   onLocaleChange,
+  localeExtra,
 }) => {
   const { t } = useI18n();
   const { settings } = useSettingsContext();
@@ -302,6 +304,7 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
                     );
                   })}
                 </div>
+                {localeExtra}
               </div>
             )}
           </div>

@@ -6,6 +6,8 @@ namespace PaginiumCMS\Tests\Support;
 
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
+use PaginiumCMS\Core\Git\Contracts\GitHubApiTransport;
+use PaginiumCMS\Core\Git\Services\GitHubApiPublisher;
 use PaginiumCMS\Core\Git\Services\GitPathValidator;
 use PaginiumCMS\Core\Git\Services\GitPublishDispatcher;
 use PaginiumCMS\Core\Git\Services\GitPublishService;
@@ -49,15 +51,32 @@ final class GitPublishTestHelper
         $queue = new PublishQueueStore($reader, $writer);
         $planner = new PublishPlanner($settings);
         $publisher = new LocalGitPublisher($settings, new LocalGitProcess(), new GitPathValidator());
+        $github = new GitHubApiPublisher(
+            $gitSettings,
+            new GitPathValidator(),
+            $reader,
+            self::noopGithubTransport()
+        );
 
         return new GitPublishService(
             $gitSettings,
             $queue,
             $planner,
             $publisher,
+            $github,
             new GitPathValidator(),
             self::noopLogger(),
         );
+    }
+
+    public static function noopGithubTransport(): GitHubApiTransport
+    {
+        return new class implements GitHubApiTransport {
+            public function request(string $method, string $url, string $token, ?array $body = null): array
+            {
+                throw new \RuntimeException('GitHub API transport is not configured in this test.');
+            }
+        };
     }
 
     public static function noopLogger(): LoggerInterface

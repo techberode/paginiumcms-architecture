@@ -90,9 +90,23 @@ use PaginiumCMS\Core\Git\Services\GitPublishDispatcher;
 use PaginiumCMS\Core\Git\Services\GitPublishService;
 use PaginiumCMS\Core\Git\Services\GitPublishSettings;
 use PaginiumCMS\Core\Git\Services\LocalGitProcess;
+use PaginiumCMS\Core\Git\Services\GitHubApiClient;
+use PaginiumCMS\Core\Git\Services\GitHubApiPublisher;
 use PaginiumCMS\Core\Git\Services\LocalGitPublisher;
 use PaginiumCMS\Core\Git\Services\PublishPlanner;
 use PaginiumCMS\Core\Git\Services\PublishQueueStore;
+use PaginiumCMS\Core\Translation\Contracts\TranslationHttpTransport;
+use PaginiumCMS\Core\Translation\Services\TranslationHttpClient;
+use PaginiumCMS\Core\Translation\Services\TranslationPlaceholderGuard;
+use PaginiumCMS\Core\Translation\Services\TranslationProposalStore;
+use PaginiumCMS\Core\Translation\Services\TranslationCredentialResolver;
+use PaginiumCMS\Core\Translation\Services\TranslationFixedHostPolicy;
+use PaginiumCMS\Core\Translation\Services\TranslationProviderRegistry;
+use PaginiumCMS\Core\Translation\Services\TranslationUsageMeter;
+use PaginiumCMS\Core\Translation\Services\TranslationQuotaStore;
+use PaginiumCMS\Core\Translation\Services\TranslationService;
+use PaginiumCMS\Core\Translation\Services\TranslationSettings;
+use PaginiumCMS\Http\Controllers\Admin\ContentTranslationController;
 use PaginiumCMS\Core\Hook\HookManager;
 use PaginiumCMS\Core\Hook\Services\HookEmitter;
 use PaginiumCMS\Core\Hook\Services\SafeHookRunner;
@@ -711,12 +725,21 @@ return [
             get(LocalGitProcess::class),
             get(GitPathValidator::class)
         ),
+    GitHubApiClient::class => create(GitHubApiClient::class),
+    GitHubApiPublisher::class => create(GitHubApiPublisher::class)
+        ->constructor(
+            get(GitPublishSettings::class),
+            get(GitPathValidator::class),
+            get(FileReaderInterface::class),
+            get(GitHubApiClient::class)
+        ),
     GitPublishService::class => create(GitPublishService::class)
         ->constructor(
             get(GitPublishSettings::class),
             get(PublishQueueStore::class),
             get(PublishPlanner::class),
             get(LocalGitPublisher::class),
+            get(GitHubApiPublisher::class),
             get(GitPathValidator::class),
             get(LoggerInterface::class)
         ),
@@ -733,6 +756,49 @@ return [
         ->constructor(get(GitPublishService::class), get(JsonResponder::class)),
     GitPublishHandler::class => create(GitPublishHandler::class)
         ->constructor(get(GitPublishService::class)),
+
+    TranslationHttpTransport::class => create(TranslationHttpClient::class),
+    TranslationSettings::class => create(TranslationSettings::class)
+        ->constructor(get(SettingsRepositoryInterface::class)),
+    TranslationPlaceholderGuard::class => create(TranslationPlaceholderGuard::class),
+    TranslationQuotaStore::class => create(TranslationQuotaStore::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class),
+            get(TranslationSettings::class)
+        ),
+    TranslationProposalStore::class => create(TranslationProposalStore::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class)
+        ),
+    TranslationCredentialResolver::class => create(TranslationCredentialResolver::class)
+        ->constructor(get(TranslationSettings::class)),
+    TranslationFixedHostPolicy::class => create(TranslationFixedHostPolicy::class),
+    TranslationUsageMeter::class => create(TranslationUsageMeter::class)
+        ->constructor(get(TranslationQuotaStore::class)),
+    TranslationProviderRegistry::class => create(TranslationProviderRegistry::class)
+        ->constructor(
+            get(TranslationSettings::class),
+            get(TranslationHttpTransport::class),
+            get(TranslationCredentialResolver::class),
+            get(TranslationFixedHostPolicy::class)
+        ),
+    TranslationService::class => create(TranslationService::class)
+        ->constructor(
+            get(TranslationSettings::class),
+            get(TranslationProviderRegistry::class),
+            get(TranslationPlaceholderGuard::class),
+            get(TranslationProposalStore::class),
+            get(TranslationQuotaStore::class),
+            get(ContentRepositoryInterface::class),
+            get(LocalizedContentNormalizer::class),
+            get(LocalizedContentWriter::class),
+            get(ContentRevision::class),
+            get(SecurityAuditStore::class)
+        ),
+    ContentTranslationController::class => create(ContentTranslationController::class)
+        ->constructor(get(TranslationService::class), get(JsonResponder::class)),
 
     TranslationFileManagerInterface::class => create(TranslationFileManager::class)
         ->constructor(

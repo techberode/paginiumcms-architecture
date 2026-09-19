@@ -17,6 +17,7 @@ import { VersionHistory } from '../CodeEditor/VersionHistory';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { useAuth } from '../../hooks/useAuth';
 import { ContentEditorShell } from './ContentEditorShell';
+import { TranslateMissingPanel } from './TranslateMissingPanel';
 import { PageOutlineEditor } from './PageOutlineEditor';
 import { PageLivePreviewSplit } from './AdminBodyPreviewPanel';
 import { SitePreviewModal } from './SitePreviewModal';
@@ -1016,6 +1017,25 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         localeOptions={[...SUPPORTED_LOCALES]}
         localeStatusMap={localeStatusMap as Record<string, ContentEditorStatus>}
         onLocaleChange={(code) => handleLocaleChange(code as ContentLocaleCode)}
+        localeExtra={
+          <TranslateMissingPanel
+            type={type}
+            slug={isNew ? '' : (slug ?? '')}
+            sourceLocale={activeLocale}
+            missingLocales={[...SUPPORTED_LOCALES].filter((code) => {
+              if (code === activeLocale) {
+                return false;
+              }
+              const state = localeStates[code];
+              return !state || (state.title.trim() === '' && state.content.trim() === '');
+            })}
+            sourceRevision={baseRevision}
+            canEdit={canEdit && !isNew}
+            onApplied={() => {
+              void loadContent();
+            }}
+          />
+        }
         onTitleChange={setTitle}
         onSlugChange={(value) => {
           setSlugTouched(true);
