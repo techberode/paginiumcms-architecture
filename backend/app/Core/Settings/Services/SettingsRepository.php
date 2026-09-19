@@ -88,6 +88,13 @@ final class SettingsRepository implements SettingsRepositoryInterface
         // Prijmeme len polia definované v schéme (ochrana pred pretečením neznámych kľúčov).
         $filtered = array_intersect_key($values, $rules);
 
+        $clearSecrets = [];
+        foreach (SettingsSchema::secretKeys()[$group] ?? [] as $key) {
+            if (array_key_exists($key, $filtered) && $filtered[$key] === '') {
+                $clearSecrets[] = $key;
+            }
+        }
+
         // Validujeme iba odoslané polia – setGroup je čiastočná aktualizácia (merge s existujúcimi).
         $filteredRules = array_intersect_key($rules, $filtered);
 
@@ -98,9 +105,13 @@ final class SettingsRepository implements SettingsRepositoryInterface
         // password) sa do settings.json ukladajú zašifrované. Idempotentné.
         $validated = $this->encryptSecrets($group, $validated);
 
-        $this->withLockedOverrides(function (array &$overrides) use ($group, $validated): void {
+        $this->withLockedOverrides(function (array &$overrides) use ($group, $validated, $clearSecrets): void {
             $current = $overrides[$group] ?? [];
-            $overrides[$group] = array_merge($current, $validated);
+            $merged = array_merge($current, $validated);
+            foreach ($clearSecrets as $key) {
+                unset($merged[$key]);
+            }
+            $overrides[$group] = $merged;
         });
 
         return $this->group($group);
@@ -375,9 +386,12 @@ final class SettingsRepository implements SettingsRepositoryInterface
             if (!isset($values[$key]) || !is_string($values[$key])) {
                 continue;
             }
-            if ($values[$key] === '' || $values[$key] === '********') {
+            if ($values[$key] === '********') {
                 unset($values[$key]);
 
+                continue;
+            }
+            if ($values[$key] === '') {
                 continue;
             }
             $values[$key] = $this->encryption->encrypt($values[$key]);

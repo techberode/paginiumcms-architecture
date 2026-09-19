@@ -35,6 +35,8 @@ export interface SystemUpdateDeployReadiness {
   allow_deploy_tags?: boolean;
   github_token_configured?: boolean;
   git_ssh_available?: boolean;
+  github_deploy_ssh_key_configured?: boolean;
+  ssh_binary?: boolean;
 }
 
 export interface SystemUpdateWebhookConfig {
@@ -128,6 +130,18 @@ export type SystemUpdateGitFetchCheckStatus = 'ok' | 'failed' | 'skipped';
 export interface SystemUpdateCredentialsVerify {
   checked_at: string;
   overall_ok: boolean;
+  deploy_ssh_key?: {
+    configured: boolean;
+    path: string | null;
+    status: SystemUpdateCredentialCheckStatus;
+    detail: string | null;
+  };
+  ssh?: {
+    binary: boolean;
+    github_auth: boolean;
+    status: SystemUpdateCredentialCheckStatus;
+    detail: string | null;
+  };
   github: {
     owner: string;
     repo: string;

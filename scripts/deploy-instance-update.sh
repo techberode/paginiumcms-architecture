@@ -15,6 +15,8 @@
 #   SKIP_COMPOSER=1   — skip composer install
 #   SKIP_FRONTEND=1   — skip npm build (PHP-only hotfix)
 #   SKIP_RESTART=1    — skip docker restart
+#   REBUILD_PHP=auto  — default: rebuild PHP image when `docker` is on PATH (host deploy).
+#                        Set 0 to skip; set 1 to force. Recreate-only leaves an old image without ssh.
 #   DEPLOY_CACHE_ROOT — composer/npm caches (default: $APP_ROOT/backend/storage/app/deploy-cache)
 #   SMOKE_DEMO_CORS=1   — POST login with Origin header (ISS-098); auto when DEMO_MODE=true
 #
@@ -65,9 +67,21 @@ load_github_deploy_token() {
   fi
 }
 
+github_ssh_base() {
+  local known="${GITHUB_KNOWN_HOSTS:-}"
+  if [[ -z "$known" && -r "${APP_ROOT}/docker/php/github_known_hosts" ]]; then
+    known="${APP_ROOT}/docker/php/github_known_hosts"
+  fi
+  if [[ -n "$known" && -r "$known" ]]; then
+    echo "ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=$(printf '%q' "$known")"
+    return
+  fi
+  echo "ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=${DEPLOY_CACHE_ROOT}/github_known_hosts"
+}
+
 load_github_deploy_ssh_key() {
   if [[ -n "${GITHUB_DEPLOY_SSH_KEY_PATH:-}" && -r "${GITHUB_DEPLOY_SSH_KEY_PATH}" ]]; then
-    export GIT_SSH_COMMAND="ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o IdentitiesOnly=yes -i ${GITHUB_DEPLOY_SSH_KEY_PATH}"
+    export GIT_SSH_COMMAND="$(github_ssh_base) -i $(printf '%q' "${GITHUB_DEPLOY_SSH_KEY_PATH}")"
   fi
 }
 
@@ -76,8 +90,12 @@ github_ssh_auth_available() {
     return 1
   fi
   load_github_deploy_ssh_key
-  local out
-  out="$(ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o IdentitiesOnly=yes ${GITHUB_DEPLOY_SSH_KEY_PATH:+-i "$GITHUB_DEPLOY_SSH_KEY_PATH"} -T git@github.com 2>&1)" || true
+  local out cmd
+  cmd="$(github_ssh_base)"
+  if [[ -n "${GITHUB_DEPLOY_SSH_KEY_PATH:-}" && -r "${GITHUB_DEPLOY_SSH_KEY_PATH}" ]]; then
+    cmd+=" -i $(printf '%q' "${GITHUB_DEPLOY_SSH_KEY_PATH}")"
+  fi
+  out="$($cmd -T git@github.com 2>&1)" || true
   [[ "$out" == *"successfully authenticated"* || "$out" == *"Hi "* ]]
 }
 
@@ -85,6 +103,11 @@ configure_git_fetch_transport() {
   GIT_DEPLOY_EXTRA_CONFIG=(-c "safe.directory=$APP_ROOT")
   load_github_deploy_token
   load_github_deploy_ssh_key
+
+  if command -v ssh >/dev/null 2>&1 && [[ -n "${GITHUB_DEPLOY_SSH_KEY_PATH:-}" && -r "${GITHUB_DEPLOY_SSH_KEY_PATH}" ]]; then
+    echo "→ git fetch/pull will use GitHub deploy key (SSH) — leftover HTTPS token is ignored"
+    return
+  fi
 
   if ! github_ssh_auth_available; then
     if [[ -n "${GITHUB_DEPLOY_TOKEN:-}" ]]; then
@@ -205,6 +228,16 @@ if [[ "${SKIP_FRONTEND:-0}" != "1" ]]; then
 fi
 
 if [[ "${SKIP_RESTART:-0}" != "1" && -n "$STACK_DIR" && -x "$STACK_DIR/stack.sh" ]]; then
+  rebuild_php=0
+  if [[ "${REBUILD_PHP:-auto}" == "1" ]]; then
+    rebuild_php=1
+  elif [[ "${REBUILD_PHP:-auto}" == "auto" ]] && command -v docker >/dev/null 2>&1; then
+    rebuild_php=1
+  fi
+  if [[ "$rebuild_php" == "1" ]]; then
+    echo "→ rebuild PHP image (picks up Dockerfile packages such as openssh-client)"
+    "$STACK_DIR/stack.sh" build php
+  fi
   echo "→ recreate stack via $STACK_DIR/stack.sh (reload code + opcache + nginx mounts)"
   "$STACK_DIR/stack.sh" up -d --force-recreate
   echo "→ waiting ${HEALTH_WAIT_SEC}s (502 right after restart is normal — ISS-096)"

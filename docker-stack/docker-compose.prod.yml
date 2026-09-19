@@ -14,6 +14,8 @@ services:
     working_dir: /var/www/html
     volumes:
       - ${APP_ROOT}:/var/www/html
+      # Deploy key stays in /var/lib/paginiumcms/secrets — not in this compose directory.
+      # - /var/lib/paginiumcms/secrets/github_deploy_key:/var/lib/paginiumcms/secrets/github_deploy_key:ro
       # Optional: expose host stack wrapper so admin deploy readiness can see stack.sh.
       # Uncomment and set to your STACK_DIR (Settings → System update).
       # - /var/lib/docker/compose/paginiumcms:/var/lib/docker/compose/paginiumcms:ro
@@ -22,6 +24,7 @@ services:
     environment:
       APP_ENV: production
       APP_DEBUG: "false"
+      # GITHUB_DEPLOY_SSH_KEY_PATH: /var/lib/paginiumcms/secrets/github_deploy_key
 
   nginx:
     restart: unless-stopped

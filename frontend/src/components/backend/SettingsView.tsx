@@ -782,21 +782,32 @@ const SettingFieldRow: React.FC<RowProps> = ({ groupKey, field, register, watch,
             field.type === 'email' ||
             field.type === 'url' ||
             field.type === 'password') && (
-            <input
-              id={inputId}
-              type={
-                field.type === 'email'
-                  ? 'email'
-                  : field.type === 'url'
-                    ? 'url'
-                    : field.type === 'password'
-                      ? 'password'
-                      : 'text'
-              }
-              {...register(field.key)}
-              className={`form-input w-full ${errorClass}`}
-              autoComplete={field.type === 'password' ? 'new-password' : undefined}
-            />
+            <div className={field.type === 'password' ? 'flex flex-wrap items-center gap-2' : undefined}>
+              <input
+                id={inputId}
+                type={
+                  field.type === 'email'
+                    ? 'email'
+                    : field.type === 'url'
+                      ? 'url'
+                      : field.type === 'password'
+                        ? 'password'
+                        : 'text'
+                }
+                {...register(field.key)}
+                className={`form-input w-full ${errorClass} ${field.type === 'password' ? 'min-w-[12rem] flex-1' : ''}`}
+                autoComplete={field.type === 'password' ? 'new-password' : undefined}
+              />
+              {field.type === 'password' && String(watch(field.key) ?? '') !== '' ? (
+                <button
+                  type="button"
+                  className="btn-secondary text-xs shrink-0"
+                  onClick={() => setValue(field.key, '', { shouldDirty: true, shouldValidate: true })}
+                >
+                  {t('settings.page.clearSecret')}
+                </button>
+              ) : null}
+            </div>
           )}
         </>
       )}

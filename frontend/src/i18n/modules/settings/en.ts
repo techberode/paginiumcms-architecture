@@ -14,6 +14,7 @@ export const settingsEn: MessageTree = {
     "saved": "Settings saved",
     "validationFailed": "Validation failed",
     "saveFailed": "Save failed",
+    "clearSecret": "Clear stored secret",
     "groupCount": ":count groups"
   },
   "helpTooltip": {

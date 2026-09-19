@@ -15,8 +15,10 @@ services:
     volumes:
       - ${APP_ROOT}:/var/www/html
       # Recommended: GitHub deploy key for admin UI git fetch (no PAT in CMS settings).
-      # Generate on host: SECRETS_DIR=/var/lib/paginiumcms/secrets ./scripts/bootstrap-github-deploy-key.sh
-      # - /var/lib/paginiumcms/secrets/github_deploy_key:/run/secrets/github_deploy_key:ro
+      # Key lives on the host under /var/lib/paginiumcms/secrets — NOT in this compose directory.
+      # Same-path mount so GITHUB_DEPLOY_SSH_KEY_PATH can be the host path you already know.
+      # Generate: SECRETS_DIR=/var/lib/paginiumcms/secrets ./scripts/bootstrap-github-deploy-key.sh
+      # - /var/lib/paginiumcms/secrets/github_deploy_key:/var/lib/paginiumcms/secrets/github_deploy_key:ro
       # Optional: expose host stack wrapper so admin deploy readiness can see stack.sh.
       # Uncomment and set to your STACK_DIR (Settings → System update).
       # - /var/lib/docker/compose/paginiumcms:/var/lib/docker/compose/paginiumcms:ro
@@ -29,8 +31,8 @@ services:
       GIT_CONFIG_COUNT: "1"
       GIT_CONFIG_KEY_0: safe.directory
       GIT_CONFIG_VALUE_0: /var/www/html
-      # When deploy key volume is mounted (see above):
-      # GITHUB_DEPLOY_SSH_KEY_PATH: /run/secrets/github_deploy_key
+      # When deploy key volume is mounted (same path as on the host):
+      # GITHUB_DEPLOY_SSH_KEY_PATH: /var/lib/paginiumcms/secrets/github_deploy_key
 
   nginx:
     restart: unless-stopped

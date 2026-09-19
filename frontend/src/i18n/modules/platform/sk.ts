@@ -526,6 +526,8 @@ export const platformSk: MessageTree = {
       checkedAt: 'Naposledy overené: {time}',
       overallOk: 'Všetky kontroly prešli — deploy credentials sú v poriadku.',
       overallFail: 'Niektorá kontrola zlyhala — pred deployom upravte nastavenia.',
+      deployKeyLabel: 'GitHub deploy key (mount v PHP)',
+      sshLabel: 'ssh v PHP kontajneri',
       tokenLabel: 'GitHub token (API)',
       gitFetchLabel: 'Git fetch (origin HEAD)',
       webhookSecretLabel: 'Webhook secret',
@@ -570,6 +572,8 @@ export const platformSk: MessageTree = {
         'Git fetch pre admin UI nie je nastavený — na hoste spustite scripts/bootstrap-github-deploy-key.sh, namontujte kľúč v docker-compose (GITHUB_DEPLOY_SSH_KEY_PATH), alebo GITHUB_DEPLOY_TOKEN v .env PHP. DEPLOY.md §12.5.',
       github_deploy_ssh_key_invalid:
         'Cesta k deploy kľúču je v PHP nastavená, ale SSH na GitHub zlyhalo — pridajte verejný kľúč v repozitári (Deploy keys), skontrolujte práva (600) a reštartujte PHP kontajner.',
+      ssh_binary_missing:
+        'Deploy kľúč je namontovaný, ale v PHP image chýba binárka ssh. Na hoste (nie v admin): cd /var/lib/docker/compose/paginiumcms && ./stack.sh build php && ./stack.sh up -d --force-recreate php',
       github_token_unreadable:
         'GitHub token je uložený, ale PHP ho nevie prečítať (typicky zmenený alebo chýbajúci APP_KEY). Token znova vložte a uložte, alebo nastavte GITHUB_DEPLOY_TOKEN v .env.',
     },

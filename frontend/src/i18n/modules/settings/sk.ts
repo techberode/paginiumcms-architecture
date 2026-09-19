@@ -14,6 +14,7 @@ export const settingsSk: MessageTree = {
     "saved": "Nastavenia uložené",
     "validationFailed": "Validácia zlyhala",
     "saveFailed": "Uloženie zlyhalo",
+    "clearSecret": "Vymazať uložené tajomstvo",
     "groupCount": ":count skupín"
   },
   "helpTooltip": {

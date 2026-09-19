@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\SystemUpdate\Services;
 
+use PaginiumCMS\Support\AppRoot;
+
 /**
  * Git transport detection for admin UI deploy (Docker PHP-FPM often has no ssh).
  */
@@ -46,10 +48,8 @@ final class GitDeployTransport
         }
 
         $outputLines = [];
-        exec(
-            self::shellEnvPrefixForGit() . self::githubSshBaseCommand() . ' -T git@github.com 2>&1',
-            $outputLines
-        );
+        $ssh = self::gitSshCommandValue() ?? self::githubSshBaseCommand();
+        exec($ssh . ' -T git@github.com 2>&1', $outputLines);
         $output = implode("\n", $outputLines);
 
         return str_contains($output, 'successfully authenticated')
@@ -57,16 +57,37 @@ final class GitDeployTransport
     }
 
     /**
-     * Host path to a read-only GitHub deploy private key (mounted into the PHP container).
+     * Readable deploy-key path inside the PHP process.
+     *
+     * The host may store the key under /var/lib/paginiumcms/secrets while Compose
+     * lives under /var/lib/docker/compose — those directories are unrelated.
+     * What matters is a volume mount + a path that exists *inside* the container.
+     * If the env var still points at the host path, fall back to the usual mounts.
      */
     public static function resolveDeploySshKeyPath(): ?string
     {
-        $path = trim((string) (getenv('GITHUB_DEPLOY_SSH_KEY_PATH') ?: ($_ENV['GITHUB_DEPLOY_SSH_KEY_PATH'] ?? '')));
-        if ($path === '' || !is_readable($path)) {
-            return null;
+        $candidates = [
+            trim((string) (getenv('GITHUB_DEPLOY_SSH_KEY_PATH') ?: ($_ENV['GITHUB_DEPLOY_SSH_KEY_PATH'] ?? ''))),
+            '/run/secrets/github_deploy_key',
+            '/var/lib/paginiumcms/secrets/github_deploy_key',
+        ];
+
+        foreach ($candidates as $path) {
+            if ($path !== '' && self::isReadableKeyFile($path)) {
+                return $path;
+            }
         }
 
-        return $path;
+        return null;
+    }
+
+    private static function isReadableKeyFile(string $path): bool
+    {
+        if (!str_starts_with($path, '/') || str_contains($path, "\0")) {
+            return false;
+        }
+
+        return is_file($path) && is_readable($path);
     }
 
     public static function hasDeploySshKeyConfigured(): bool
@@ -94,12 +115,37 @@ final class GitDeployTransport
             return '';
         }
 
-        return 'GIT_SSH_COMMAND=' . escapeshellarg($command) . ' ';
+        return 'HOME=/tmp GIT_SSH_COMMAND=' . escapeshellarg($command) . ' ';
     }
 
-    private static function githubSshBaseCommand(): string
+    public static function resolveGithubKnownHostsFile(): ?string
     {
-        return 'ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o IdentitiesOnly=yes';
+        $candidates = [];
+        $root = AppRoot::resolve();
+        if ($root !== null) {
+            $candidates[] = $root . '/docker/php/github_known_hosts';
+        }
+        $candidates[] = '/var/www/html/docker/php/github_known_hosts';
+
+        foreach ($candidates as $path) {
+            if (is_file($path) && is_readable($path)) {
+                return $path;
+            }
+        }
+
+        return null;
+    }
+
+    public static function githubSshBaseCommand(): string
+    {
+        $knownHosts = self::resolveGithubKnownHostsFile();
+        if ($knownHosts !== null) {
+            return 'ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile='
+                . escapeshellarg($knownHosts);
+        }
+
+        return 'ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new'
+            . ' -o UserKnownHostsFile=/tmp/paginium-github-known_hosts';
     }
 
     /**
@@ -138,6 +184,16 @@ final class GitDeployTransport
      */
     public static function hasUsableGitTransport(array $config): bool
     {
-        return self::isGithubSshAuthAvailable() || self::hasUsableGithubDeployToken($config);
+        return self::prefersDeployKeySsh()
+            || self::isGithubSshAuthAvailable()
+            || self::hasUsableGithubDeployToken($config);
+    }
+
+    /**
+     * Mounted deploy key + ssh binary — use git@ SSH and ignore a leftover PAT.
+     */
+    public static function prefersDeployKeySsh(): bool
+    {
+        return self::hasSshBinary() && self::hasDeploySshKeyConfigured();
     }
 }

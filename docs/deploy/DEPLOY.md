@@ -317,10 +317,10 @@ SECRETS_DIR=/var/lib/paginiumcms/secrets ./scripts/bootstrap-github-deploy-key.s
 ```
 
 1. Paste the printed **public** key into GitHub → repository → **Settings → Deploy keys** (read-only).
-2. Uncomment the **deploy key volume** and **`GITHUB_DEPLOY_SSH_KEY_PATH`** in `docs/deploy/docker-compose.prod.yml` on the PHP service (adjust host path if needed).
-3. Recreate PHP: `"$STACK_DIR/stack.sh" up -d --force-recreate php`.
-4. Rebuild the PHP image (the container must include `openssh-client` for deploy keys): `"$STACK_DIR/stack.sh" build php && "$STACK_DIR/stack.sh" up -d --force-recreate php`.
-5. In admin → **System update → Verify connection** — **Git fetch** should be OK without saving a PAT in Settings.
+2. Uncomment the **deploy key volume** and **`GITHUB_DEPLOY_SSH_KEY_PATH`** in `docs/deploy/docker-compose.prod.yml` on the PHP service.
+   The key stays in `/var/lib/paginiumcms/secrets/` — **not** in `/var/lib/docker/compose/paginiumcms`. Mount it at the **same path** inside PHP so the env var can be the host path.
+3. **Rebuild** the PHP image, then recreate (recreate alone keeps the old image without `ssh`): `"$STACK_DIR/stack.sh" build php && "$STACK_DIR/stack.sh" up -d --force-recreate php`.
+4. In admin → **System update → Verify connection** — **ssh in PHP** and **Git fetch** should be OK without saving a PAT in Settings.
 
 **GitHub token in settings** remains useful for **Check remote / release API** on private repos; deploy itself can work with deploy key only.
 
@@ -364,7 +364,8 @@ Readiness blockers:
 | `stack_dir_not_visible` | Path set but not mounted into PHP container |
 | `stack_script_missing` | Directory visible but `stack.sh` missing or not executable **for www-data** — run `bootstrap-stack-permissions.sh` |
 | `github_token_missing` | No GitHub SSH auth in PHP and no deploy token — run `bootstrap-github-deploy-key.sh` or set `GITHUB_DEPLOY_TOKEN` |
-| `github_deploy_ssh_key_invalid` | `GITHUB_DEPLOY_SSH_KEY_PATH` is set but `ssh -T git@github.com` fails — wrong key, not added on GitHub, or bad mount permissions |
+| `ssh_binary_missing` | Deploy key is mounted but the PHP image has no `ssh` — **`stack.sh build php`** then recreate (not recreate alone) |
+| `github_deploy_ssh_key_invalid` | `GITHUB_DEPLOY_SSH_KEY_PATH` is set and `ssh` exists but `ssh -T git@github.com` fails — wrong key, not added on GitHub, or bad mount permissions |
 | `github_token_unreadable` | Token stored in `settings.json` but decrypt yields empty — fix **`APP_KEY`**, re-save token |
 
 ### Dashboard banner (SUPER_ADMIN)

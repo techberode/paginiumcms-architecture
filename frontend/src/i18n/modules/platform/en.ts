@@ -526,6 +526,8 @@ export const platformEn: MessageTree = {
       checkedAt: 'Last checked: {time}',
       overallOk: 'All checks passed — deploy credentials look good.',
       overallFail: 'One or more checks failed — fix settings before deploy.',
+      deployKeyLabel: 'GitHub deploy key (PHP mount)',
+      sshLabel: 'ssh in PHP container',
       tokenLabel: 'GitHub token (API)',
       gitFetchLabel: 'Git fetch (origin HEAD)',
       webhookSecretLabel: 'Webhook secret',
@@ -570,6 +572,8 @@ export const platformEn: MessageTree = {
         'Admin UI git fetch is not configured — on the host run scripts/bootstrap-github-deploy-key.sh, mount the key in docker-compose (GITHUB_DEPLOY_SSH_KEY_PATH), or set GITHUB_DEPLOY_TOKEN in the PHP service .env. See DEPLOY.md §12.5.',
       github_deploy_ssh_key_invalid:
         'Deploy key path is set in PHP but GitHub SSH auth failed — add the public key on the repo (Deploy keys), check file permissions (600 on host), and recreate the PHP container.',
+      ssh_binary_missing:
+        'Deploy key is mounted but the PHP image has no ssh binary. On the host (not in admin): cd /var/lib/docker/compose/paginiumcms && ./stack.sh build php && ./stack.sh up -d --force-recreate php',
       github_token_unreadable:
         'A GitHub token is stored but PHP cannot decrypt it (usually APP_KEY changed or missing). Re-enter and save the token, or set GITHUB_DEPLOY_TOKEN in .env.',
     },

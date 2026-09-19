@@ -165,6 +165,10 @@ This canonical history records release facts supported by the supplied `CHANGELO
 ### Fixed
 
 - API barrel registers `contentTranslationsApi` as `api.contentTranslations` so `npm run lint:api-barrel` matches the It.76/77 client (CI after `beta.87`).
+- Admin UI deploy health no longer reports an “invalid deploy key” when the key is mounted but the PHP image has no `ssh` (`ssh_binary_missing`). Host `deploy-instance-update.sh` rebuilds the PHP image when `docker` is on PATH so `openssh-client` lands.
+- Admin UI git fetch pins GitHub SSH host keys (`docker/php/github_known_hosts`) so `www-data` is not blocked by `Host key verification failed` (no writable `~/.ssh`).
+- Deploy key wins over a leftover GitHub PAT: `git ls-remote` / `deploy-instance-update.sh` stay on SSH and no longer rewrite `git@` to HTTPS (that produced `invalid credentials` on production).
+- Settings password fields can be cleared: empty value removes the stored secret (`********` still means keep). The GitHub token field no longer stays as stars after you wipe it.
 
 ### Planning
 

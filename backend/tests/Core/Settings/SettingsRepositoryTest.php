@@ -140,6 +140,33 @@ class SettingsRepositoryTest extends TestCase
         $this->assertSame('super-smtp-secret', $fresh->get('smtp.password'));
     }
 
+    public function testEmptyPasswordClearsStoredSecret(): void
+    {
+        $encryption = new EncryptionService('base64:BGtLQwdzAE7ajivCghMa98DyudMghYZEkXKw5PJ/aUE=');
+        $repo = $this->makeRepo($encryption);
+        $repo->setGroup('systemUpdate', ['githubToken' => 'ghp_stale_token']);
+        $this->assertTrue($repo->hasOverride('systemUpdate', 'githubToken'));
+
+        $repo->setGroup('systemUpdate', ['githubToken' => '']);
+
+        $this->assertFalse($repo->hasOverride('systemUpdate', 'githubToken'));
+        $this->assertSame('', $repo->get('systemUpdate.githubToken'));
+        $raw = (string) file_get_contents($this->baseDir . '/data/settings.json');
+        $this->assertStringNotContainsString('ghp_stale_token', $raw);
+        $this->assertStringNotContainsString('githubToken', $raw);
+    }
+
+    public function testMaskedPasswordKeepsStoredSecret(): void
+    {
+        $encryption = new EncryptionService('base64:BGtLQwdzAE7ajivCghMa98DyudMghYZEkXKw5PJ/aUE=');
+        $repo = $this->makeRepo($encryption);
+        $repo->setGroup('systemUpdate', ['githubToken' => 'ghp_keep_me']);
+
+        $repo->setGroup('systemUpdate', ['githubToken' => '********', 'deployEnabled' => true]);
+
+        $this->assertSame('ghp_keep_me', $this->makeRepo($encryption)->get('systemUpdate.githubToken'));
+    }
+
     public function testNonSecretFieldsRemainPlaintext(): void
     {
         $encryption = new EncryptionService('base64:BGtLQwdzAE7ajivCghMa98DyudMghYZEkXKw5PJ/aUE=');

@@ -33,7 +33,9 @@ final class SystemDeployReadinessService
      *     deploy_enabled: bool,
      *     allow_deploy_tags: bool,
      *     github_token_configured: bool,
-     *     git_ssh_available: bool
+     *     git_ssh_available: bool,
+     *     github_deploy_ssh_key_configured: bool,
+     *     ssh_binary: bool
      * }
      */
     public function evaluate(bool $jobRegistered): array
@@ -90,17 +92,19 @@ final class SystemDeployReadinessService
             $blockers[] = 'tag_deploy_disabled';
         }
 
-        $gitSshAvailable = GitDeployTransport::isSshAvailable();
+        $sshBinary = GitDeployTransport::hasSshBinary();
+        $gitSshAvailable = GitDeployTransport::isGithubSshAuthAvailable();
         $githubTokenConfigured = GitDeployTransport::hasUsableGithubDeployToken($config);
         $deploySshKeyConfigured = GitDeployTransport::hasDeploySshKeyConfigured();
-        if (!$gitSshAvailable && !$githubTokenConfigured) {
-            if ($this->settings->hasOverride('systemUpdate', 'githubToken')) {
-                $blockers[] = 'github_token_unreadable';
-            } elseif ($deploySshKeyConfigured) {
-                $blockers[] = 'github_deploy_ssh_key_invalid';
-            } else {
-                $blockers[] = 'github_token_missing';
-            }
+        $transportBlocker = self::classifyTransportBlocker(
+            $gitSshAvailable,
+            $githubTokenConfigured,
+            $this->settings->hasOverride('systemUpdate', 'githubToken'),
+            $deploySshKeyConfigured,
+            $sshBinary
+        );
+        if ($transportBlocker !== null) {
+            $blockers[] = $transportBlocker;
         }
 
         return [
@@ -118,6 +122,34 @@ final class SystemDeployReadinessService
             'github_token_configured' => $githubTokenConfigured,
             'git_ssh_available' => $gitSshAvailable,
             'github_deploy_ssh_key_configured' => $deploySshKeyConfigured,
+            'ssh_binary' => $sshBinary,
         ];
+    }
+
+    /**
+     * When GitHub SSH auth and PAT are both missing, pick the operator-facing blocker.
+     * A mounted deploy key without `ssh` in the PHP image is not “invalid key”.
+     */
+    public static function classifyTransportBlocker(
+        bool $githubSshAuth,
+        bool $tokenUsable,
+        bool $storedTokenUnreadable,
+        bool $deployKeyConfigured,
+        bool $sshBinary
+    ): ?string {
+        if ($githubSshAuth || $tokenUsable) {
+            return null;
+        }
+        if ($storedTokenUnreadable) {
+            return 'github_token_unreadable';
+        }
+        if ($deployKeyConfigured && !$sshBinary) {
+            return 'ssh_binary_missing';
+        }
+        if ($deployKeyConfigured) {
+            return 'github_deploy_ssh_key_invalid';
+        }
+
+        return 'github_token_missing';
     }
 }

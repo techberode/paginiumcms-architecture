@@ -65,4 +65,27 @@ final class SystemDeployReadinessServiceTest extends TestCase
         $this->assertContains('github_token_missing', $result['blockers']);
         $this->assertFalse($result['github_token_configured']);
     }
+
+    public function testClassifyTransportBlockerPrefersSshBinaryWhenKeyMounted(): void
+    {
+        $this->assertSame(
+            'ssh_binary_missing',
+            SystemDeployReadinessService::classifyTransportBlocker(false, false, false, true, false)
+        );
+        $this->assertSame(
+            'github_deploy_ssh_key_invalid',
+            SystemDeployReadinessService::classifyTransportBlocker(false, false, false, true, true)
+        );
+        $this->assertSame(
+            'github_token_missing',
+            SystemDeployReadinessService::classifyTransportBlocker(false, false, false, false, false)
+        );
+        $this->assertNull(
+            SystemDeployReadinessService::classifyTransportBlocker(true, false, false, true, true)
+        );
+        $this->assertSame(
+            'github_token_unreadable',
+            SystemDeployReadinessService::classifyTransportBlocker(false, false, true, false, false)
+        );
+    }
 }

@@ -101,6 +101,22 @@ export const SystemUpdateCredentialsPanel: React.FC<Props> = ({ report, loading,
             </p>
           ) : null}
           <div className="space-y-2">
+            {report.deploy_ssh_key ? (
+              <Row
+                label={t('platform.systemUpdate.credentials.deployKeyLabel')}
+                status={report.deploy_ssh_key.status}
+                detail={report.deploy_ssh_key.detail}
+                statusKeyPrefix="platform.systemUpdate.credentials.tokenStatus"
+              />
+            ) : null}
+            {report.ssh ? (
+              <Row
+                label={t('platform.systemUpdate.credentials.sshLabel')}
+                status={report.ssh.status}
+                detail={report.ssh.detail}
+                statusKeyPrefix="platform.systemUpdate.credentials.tokenStatus"
+              />
+            ) : null}
             <Row
               label={t('platform.systemUpdate.credentials.tokenLabel')}
               status={report.github.token.status}
@@ -132,6 +148,9 @@ export const SystemUpdateCredentialsPanel: React.FC<Props> = ({ report, loading,
 export function firstCredentialsFailureDetail(
   report: SystemUpdateCredentialsVerify
 ): string | undefined {
+  if (report.ssh && report.ssh.status !== 'ok' && report.ssh.detail) {
+    return report.ssh.detail;
+  }
   const token = report.github.token;
   if (token.status !== 'ok' && token.status !== 'not_required' && token.detail) {
     return token.detail;
